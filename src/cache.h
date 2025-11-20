@@ -170,10 +170,10 @@ template< typename T > class cache_base
    bool use_placement_new;
    bool allow_lazy_writes;
 
-   std::auto_ptr< cache_item< T > > ap_temp_read_item;
-   std::auto_ptr< cache_item< T > > ap_temp_write_item;
+   std::unique_ptr< cache_item< T > > up_temp_read_item;
+   std::unique_ptr< cache_item< T > > up_temp_write_item;
 
-   std::auto_ptr< std::vector< cache_region< T > > > ap_cache_regions;
+   std::unique_ptr< std::vector< cache_region< T > > > up_cache_regions;
 
    char* p_buffer;
 
@@ -282,12 +282,12 @@ template< typename T > struct cache_region
     most_recently_used( c_npos ), least_recently_used( c_npos ),
     most_recently_changed( c_npos ), least_recently_changed( c_npos ),
     most_recently_unchanged( c_npos ), least_recently_unchanged( c_npos ),
-    ap_cache_items( new std::vector< cache_item< T >* > )
+    up_cache_items( new std::vector< cache_item< T >* > )
    {
    }
 
    cache_region( const cache_region< T >& src )
-    : ap_cache_items( new std::vector< cache_item< T >* > )
+    : up_cache_items( new std::vector< cache_item< T >* > )
    {
       copy_from( src );
    }
@@ -313,7 +313,7 @@ template< typename T > struct cache_region
       most_recently_unchanged = src.most_recently_unchanged;
       least_recently_unchanged = src.least_recently_unchanged;
 
-      *ap_cache_items = *src.ap_cache_items;
+      *up_cache_items = *src.up_cache_items;
    }
 
    void reset( )
@@ -343,7 +343,7 @@ template< typename T > struct cache_region
    unsigned most_recently_unchanged;
    unsigned least_recently_unchanged;
 
-   std::auto_ptr< std::vector< cache_item< T >* > > ap_cache_items;
+   std::unique_ptr< std::vector< cache_item< T >* > > up_cache_items;
 };
 
 template< typename T > cache_base< T >::cache_base( unsigned max_cache_items,
@@ -362,15 +362,15 @@ template< typename T > cache_base< T >::cache_base( unsigned max_cache_items,
  regions_in_cache( regions_in_cache ),
  use_placement_new( use_placement_new ),
  allow_lazy_writes( allow_lazy_writes ),
- ap_temp_read_item( new cache_item< T > ),
- ap_temp_write_item( new cache_item< T > ),
- ap_cache_regions( new std::vector< cache_region< T > >( regions_in_cache ) )
+ up_temp_read_item( new cache_item< T > ),
+ up_temp_write_item( new cache_item< T > ),
+ up_cache_regions( new std::vector< cache_region< T > >( regions_in_cache ) )
 {
    if( use_placement_new && sizeof( T ) < sizeof( free_list ) )
       throw error_cannot_use_placement_new_when_sizeof_T_is_too_small;
 
    for( unsigned i = 0; i < regions_in_cache; i++ )
-      ( *ap_cache_regions )[ i ].ap_cache_items->resize( items_per_region, 0 );
+      ( *up_cache_regions )[ i ].up_cache_items->resize( items_per_region, 0 );
 
    if( use_placement_new )
    {
@@ -386,17 +386,17 @@ template< typename T > cache_base< T >::~cache_base( )
       for( unsigned j = 0; j < items_per_region; j++ )
       {
 #ifdef CACHE_DEBUG
-         if( ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]
-          && ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_flag_for_changed )
+         if( ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]
+          && ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->flags & c_flag_for_changed )
             std::cout << "warning: destroying changed cache item #"
              << ( i * items_per_region + j ) << "..." << std::endl;
 #endif
-         if( ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ] )
+         if( ( *( *up_cache_regions )[ i ].up_cache_items )[ j ] )
          {
             if( use_placement_new )
-               ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->cache_item< T >::~cache_item( );
+               ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->cache_item< T >::~cache_item( );
             else
-               delete ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ];
+               delete ( *( *up_cache_regions )[ i ].up_cache_items )[ j ];
          }
       }
    }
@@ -420,45 +420,46 @@ template< typename T > T cache_base< T >::get( unsigned num, bool retain )
    if( num == temp_write_num )
    {
       if( retain )
-         retain_item_in_cache( *ap_temp_write_item, num );
+         retain_item_in_cache( *up_temp_write_item, num );
 
-      p_item = ap_temp_write_item.get( );
+      p_item = up_temp_write_item.get( );
    }
    else
    {
       if( num != temp_read_num )
       {
-         if( index != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] )
+         if( index != c_npos && ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ] )
          {
             if( use_placement_new )
-               *ap_temp_read_item = *( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ];
+               *up_temp_read_item = *( *( *up_cache_regions )[ index ].up_cache_items )[ offset ];
             else
             {
-               std::auto_ptr< cache_item< T > > ap_temp_item(
-                new cache_item< T >( *( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] ) );
+               std::unique_ptr< cache_item< T > > up_temp_item(
+                new cache_item< T >( *( *( *up_cache_regions )[ index ].up_cache_items )[ offset ] ) );
 
-               ap_temp_read_item = ap_temp_item;
+               up_temp_read_item = std::move( up_temp_item );
             }
          }
          else
          {
-            std::auto_ptr< cache_item< T > > ap_temp_item( new cache_item< T > );
-            perform_fetch( ap_temp_item->data, num );
+            std::unique_ptr< cache_item< T > > up_temp_item( new cache_item< T > );
+            perform_fetch( up_temp_item->data, num );
             fetched = true;
 
-            ap_temp_read_item = ap_temp_item;
+            up_temp_read_item = std::move( up_temp_item );
          }
 
          temp_read_num = num;
       }
 
       if( retain )
-         retain_item_in_cache( *ap_temp_read_item, num );
+         retain_item_in_cache( *up_temp_read_item, num );
 
-      p_item = ap_temp_read_item.get( );
+      p_item = up_temp_read_item.get( );
    }
 
    ++item_req_count;
+
    if( !fetched )
       ++item_hit_count;
 
@@ -484,13 +485,14 @@ template< typename T > void cache_base< T >::put(
    locate_item( num, index, region, offset );
 
    bool was_retained = false;
-   std::auto_ptr< cache_item< T > > ap_temp_item( new cache_item< T >( data ) );
 
-   ap_temp_item->flags |= c_flag_for_changed;
+   std::unique_ptr< cache_item< T > > up_temp_item( new cache_item< T >( data ) );
+
+   up_temp_item->flags |= c_flag_for_changed;
 
    if( retain
-    || ( index != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] ) )
-      was_retained = retain_item_in_cache( *ap_temp_item, num );
+    || ( index != c_npos && ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ] ) )
+      was_retained = retain_item_in_cache( *up_temp_item, num );
 
    unsigned old_temp_read_num( temp_read_num );
 
@@ -502,27 +504,27 @@ template< typename T > void cache_base< T >::put(
 
    if( !was_retained || !allow_lazy_writes || prevent_lazy_write )
    {
-      perform_store( ap_temp_item->data, num );
+      perform_store( up_temp_item->data, num );
 
-      if( index != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags &= ~c_flag_for_changed;
+      if( index != c_npos && ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ] )
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->flags &= ~c_flag_for_changed;
    }
 
-   ap_temp_write_item = ap_temp_item;
-   ap_temp_write_item->flags = 0;
+   up_temp_write_item = std::move( up_temp_item );
+   up_temp_write_item->flags = 0;
 
    temp_write_num = num;
 
    if( num == old_temp_read_num )
    {
       if( use_placement_new )
-         *ap_temp_read_item = *ap_temp_write_item;
+         *up_temp_read_item = *up_temp_write_item;
       else
       {
-         std::auto_ptr< cache_item< T > >
-          ap_temp_item_copy( new cache_item< T >( *ap_temp_write_item ) );
+         std::unique_ptr< cache_item< T > >
+          up_temp_item_copy( new cache_item< T >( *up_temp_write_item ) );
 
-         ap_temp_read_item = ap_temp_item_copy;
+         up_temp_read_item = std::move( up_temp_item_copy );
       }
 
       temp_read_num = num;
@@ -537,17 +539,17 @@ template< typename T > void cache_base< T >::flush( bool mark_as_most_recent )
    {
       for( unsigned j = 0; j < items_per_region; j++ )
       {
-         if( ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]
-          && ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_flag_for_changed )
+         if( ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]
+          && ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->flags & c_flag_for_changed )
          {
             perform_store(
-             ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->data,
-             ( *ap_cache_regions )[ i ].region * items_per_region + j );
+             ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->data,
+             ( *up_cache_regions )[ i ].region * items_per_region + j );
 
             unlink_cached_item( i, j, true );
 
-            ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags &= ~c_flag_for_changed;
-            --( *ap_cache_regions )[ i ].flush_cost;
+            ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->flags &= ~c_flag_for_changed;
+            --( *up_cache_regions )[ i ].flush_cost;
 
             if( mark_as_most_recent )
                link_item_as_most_recent( i, j, true );
@@ -558,18 +560,18 @@ template< typename T > void cache_base< T >::flush( bool mark_as_most_recent )
 
       for( unsigned j = 0; j < items_per_region; j++ )
       {
-         if( ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ] )
+         if( ( *( *up_cache_regions )[ i ].up_cache_items )[ j ] )
          {
-            unsigned prev_used_link = ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->prev_used_link;
-            unsigned next_used_link = ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->next_used_link;
+            unsigned prev_used_link = ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->prev_used_link;
+            unsigned next_used_link = ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->next_used_link;
 
-            ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->prev_unchanged_link = prev_used_link;
-            ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->next_unchanged_link = next_used_link;
+            ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->prev_unchanged_link = prev_used_link;
+            ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->next_unchanged_link = next_used_link;
          }
       }
 
-      ( *ap_cache_regions )[ i ].most_recently_unchanged = ( *ap_cache_regions )[ i ].most_recently_used;
-      ( *ap_cache_regions )[ i ].least_recently_unchanged = ( *ap_cache_regions )[ i ].least_recently_used;
+      ( *up_cache_regions )[ i ].most_recently_unchanged = ( *up_cache_regions )[ i ].most_recently_used;
+      ( *up_cache_regions )[ i ].least_recently_unchanged = ( *up_cache_regions )[ i ].least_recently_used;
    }
 
    perform_post_flush( );
@@ -603,11 +605,11 @@ template< typename T > void cache_base< T >::clear_from( unsigned num )
    {
       for( unsigned i = 0; i < regions_in_cache; i++ )
       {
-         if( ( *ap_cache_regions )[ i ].region == c_npos
-          || ( *ap_cache_regions )[ i ].region < region )
+         if( ( *up_cache_regions )[ i ].region == c_npos
+          || ( *up_cache_regions )[ i ].region < region )
             continue;
 
-         if( offset != 0 && region == ( *ap_cache_regions )[ i ].region )
+         if( offset != 0 && region == ( *up_cache_regions )[ i ].region )
          {
             for( unsigned j = offset; j < items_per_region; j++ )
                free_cache_item( i, j, true );
@@ -651,11 +653,11 @@ template< typename T > void cache_base< T >::set_max_cache_items( unsigned new_m
       {
          for( unsigned j = 0; j < items_per_region; j++ )
          {
-            if( ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ] )
+            if( ( *( *up_cache_regions )[ i ].up_cache_items )[ j ] )
             {
-               cache_item< T >* p_old_item = ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ];
+               cache_item< T >* p_old_item = ( *( *up_cache_regions )[ i ].up_cache_items )[ j ];
 
-               ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]
+               ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]
                 = new( p_item++ ) cache_item< T >( *p_old_item );
             }
          }
@@ -685,7 +687,7 @@ template< typename T > void cache_base< T >::set_items_per_region( unsigned new_
       {
          for( unsigned j = new_items_per_region; j < items_per_region; j++ )
          {
-            if( ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ] )
+            if( ( *( *up_cache_regions )[ i ].up_cache_items )[ j ] )
                free_cache_item( i, j );
          }
       }
@@ -694,16 +696,16 @@ template< typename T > void cache_base< T >::set_items_per_region( unsigned new_
    std::vector< cache_region< T > > tmp_cache_regions( regions_in_cache );
 
    for( unsigned i = 0; i < regions_in_cache; i++ )
-      tmp_cache_regions[ i ].ap_cache_items->resize( new_items_per_region, 0 );
+      tmp_cache_regions[ i ].up_cache_items->resize( new_items_per_region, 0 );
 
    for( unsigned i = 0; i < regions_in_cache; i++ )
    {
-      std::copy( ( *ap_cache_regions )[ i ].ap_cache_items->begin( ),
-       ( *ap_cache_regions )[ i ].ap_cache_items->begin( )
+      std::copy( ( *up_cache_regions )[ i ].up_cache_items->begin( ),
+       ( *up_cache_regions )[ i ].up_cache_items->begin( )
        + std::min( items_per_region, new_items_per_region ),
-       tmp_cache_regions[ i ].ap_cache_items->begin( ) );
+       tmp_cache_regions[ i ].up_cache_items->begin( ) );
 
-      ( *ap_cache_regions )[ i ].ap_cache_items = tmp_cache_regions[ i ].ap_cache_items;
+      ( *up_cache_regions )[ i ].up_cache_items = std::move( tmp_cache_regions[ i ].up_cache_items );
    }
 
    items_per_region = new_items_per_region;
@@ -719,16 +721,16 @@ template< typename T > void cache_base< T >::set_regions_in_cache( unsigned new_
          free_cache_region( i - 1 );
    }
 
-   std::auto_ptr< std::vector< cache_region< T > > >
-    ap_tmp_cache_regions( new std::vector< cache_region< T > >( new_regions_in_cache ) );
+   std::unique_ptr< std::vector< cache_region< T > > >
+    up_tmp_cache_regions( new std::vector< cache_region< T > >( new_regions_in_cache ) );
 
    for( unsigned i = 0; i < new_regions_in_cache; i++ )
-      ( *ap_tmp_cache_regions )[ i ].ap_cache_items->resize( items_per_region, 0 );
+      ( *up_tmp_cache_regions )[ i ].up_cache_items->resize( items_per_region, 0 );
 
    for( unsigned i = 0; i < std::min( regions_in_cache, new_regions_in_cache ); i++ )
-      ( *ap_tmp_cache_regions )[ i ] = ( *ap_cache_regions )[ i ];
+      ( *up_tmp_cache_regions )[ i ] = ( *up_cache_regions )[ i ];
 
-   ap_cache_regions = ap_tmp_cache_regions;
+   up_cache_regions = std::move( up_tmp_cache_regions );
 
    regions_in_cache = new_regions_in_cache;
 }
@@ -742,7 +744,7 @@ template< typename T > bool cache_base< T >::is_item_cached( unsigned num )
 
    locate_item( num, index, region, offset );
 
-   return index != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ];
+   return index != c_npos && ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ];
 }
 
 template< typename T > void cache_base< T >::locate_item(
@@ -760,7 +762,7 @@ template< typename T > void cache_base< T >::locate_item(
 template< typename T > unsigned cache_base< T >::locate_region( unsigned region )
 {
    for( unsigned i = 0; i < regions_in_cache; i++ )
-      if( ( *ap_cache_regions )[ i ].region == region )
+      if( ( *up_cache_regions )[ i ].region == region )
          return i;
    return c_npos;
 }
@@ -771,7 +773,7 @@ template< typename T > void cache_base< T >::free_cache_region(
    for( unsigned i = 0; i < items_per_region; i++ )
       free_cache_item( index, i, discard_changes );
 
-   ( *ap_cache_regions )[ index ].reset( );
+   ( *up_cache_regions )[ index ].reset( );
 
    if( !will_reuse && index == num_regions - 1 )
       --num_regions;
@@ -782,60 +784,60 @@ template< typename T > void cache_base< T >::unlink_cached_item(
 {
    if( !skip_used )
    {
-      unsigned prev_used_link = ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_used_link;
-      unsigned next_used_link = ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_used_link;
+      unsigned prev_used_link = ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->prev_used_link;
+      unsigned next_used_link = ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->next_used_link;
 
-      if( prev_used_link != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ prev_used_link ] )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ prev_used_link ]->next_used_link = next_used_link;
+      if( prev_used_link != c_npos && ( *( *up_cache_regions )[ index ].up_cache_items )[ prev_used_link ] )
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ prev_used_link ]->next_used_link = next_used_link;
 
-      if( next_used_link != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ next_used_link ] )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ next_used_link ]->prev_used_link = prev_used_link;
+      if( next_used_link != c_npos && ( *( *up_cache_regions )[ index ].up_cache_items )[ next_used_link ] )
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ next_used_link ]->prev_used_link = prev_used_link;
 
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_used_link = c_npos;
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_used_link = c_npos;
+      ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->prev_used_link = c_npos;
+      ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->next_used_link = c_npos;
 
-      if( offset == ( *ap_cache_regions )[ index ].most_recently_used )
-         ( *ap_cache_regions )[ index ].most_recently_used = prev_used_link;
+      if( offset == ( *up_cache_regions )[ index ].most_recently_used )
+         ( *up_cache_regions )[ index ].most_recently_used = prev_used_link;
 
-      if( offset == ( *ap_cache_regions )[ index ].least_recently_used )
-         ( *ap_cache_regions )[ index ].least_recently_used = next_used_link;
+      if( offset == ( *up_cache_regions )[ index ].least_recently_used )
+         ( *up_cache_regions )[ index ].least_recently_used = next_used_link;
    }
 
-   unsigned prev_changed_link = ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_changed_link;
-   unsigned next_changed_link = ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_changed_link;
+   unsigned prev_changed_link = ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->prev_changed_link;
+   unsigned next_changed_link = ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->next_changed_link;
 
-   if( prev_changed_link != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ prev_changed_link ] )
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ prev_changed_link ]->next_changed_link = next_changed_link;
+   if( prev_changed_link != c_npos && ( *( *up_cache_regions )[ index ].up_cache_items )[ prev_changed_link ] )
+      ( *( *up_cache_regions )[ index ].up_cache_items )[ prev_changed_link ]->next_changed_link = next_changed_link;
 
-   if( next_changed_link != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ next_changed_link ] )
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ next_changed_link ]->prev_changed_link = prev_changed_link;
+   if( next_changed_link != c_npos && ( *( *up_cache_regions )[ index ].up_cache_items )[ next_changed_link ] )
+      ( *( *up_cache_regions )[ index ].up_cache_items )[ next_changed_link ]->prev_changed_link = prev_changed_link;
 
-   ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_changed_link = c_npos;
-   ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_changed_link = c_npos;
+   ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->prev_changed_link = c_npos;
+   ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->next_changed_link = c_npos;
 
-   if( offset == ( *ap_cache_regions )[ index ].most_recently_changed )
-      ( *ap_cache_regions )[ index ].most_recently_changed = prev_changed_link;
+   if( offset == ( *up_cache_regions )[ index ].most_recently_changed )
+      ( *up_cache_regions )[ index ].most_recently_changed = prev_changed_link;
 
-   if( offset == ( *ap_cache_regions )[ index ].least_recently_changed )
-      ( *ap_cache_regions )[ index ].least_recently_changed = next_changed_link;
+   if( offset == ( *up_cache_regions )[ index ].least_recently_changed )
+      ( *up_cache_regions )[ index ].least_recently_changed = next_changed_link;
 
-   unsigned prev_unchanged_link = ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_unchanged_link;
-   unsigned next_unchanged_link = ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_unchanged_link;
+   unsigned prev_unchanged_link = ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->prev_unchanged_link;
+   unsigned next_unchanged_link = ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->next_unchanged_link;
 
-   if( prev_unchanged_link != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ prev_unchanged_link ] )
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ prev_unchanged_link ]->next_unchanged_link = next_unchanged_link;
+   if( prev_unchanged_link != c_npos && ( *( *up_cache_regions )[ index ].up_cache_items )[ prev_unchanged_link ] )
+      ( *( *up_cache_regions )[ index ].up_cache_items )[ prev_unchanged_link ]->next_unchanged_link = next_unchanged_link;
 
-   if( next_unchanged_link != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ next_unchanged_link ] )
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ next_unchanged_link ]->prev_unchanged_link = prev_unchanged_link;
+   if( next_unchanged_link != c_npos && ( *( *up_cache_regions )[ index ].up_cache_items )[ next_unchanged_link ] )
+      ( *( *up_cache_regions )[ index ].up_cache_items )[ next_unchanged_link ]->prev_unchanged_link = prev_unchanged_link;
 
-   ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_unchanged_link = c_npos;
-   ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_unchanged_link = c_npos;
+   ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->prev_unchanged_link = c_npos;
+   ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->next_unchanged_link = c_npos;
 
-   if( offset == ( *ap_cache_regions )[ index ].most_recently_unchanged )
-      ( *ap_cache_regions )[ index ].most_recently_unchanged = prev_unchanged_link;
+   if( offset == ( *up_cache_regions )[ index ].most_recently_unchanged )
+      ( *up_cache_regions )[ index ].most_recently_unchanged = prev_unchanged_link;
 
-   if( offset == ( *ap_cache_regions )[ index ].least_recently_unchanged )
-      ( *ap_cache_regions )[ index ].least_recently_unchanged = next_unchanged_link;
+   if( offset == ( *up_cache_regions )[ index ].least_recently_unchanged )
+      ( *up_cache_regions )[ index ].least_recently_unchanged = next_unchanged_link;
 }
 
 template< typename T > void cache_base< T >::link_item_as_most_recent(
@@ -843,51 +845,51 @@ template< typename T > void cache_base< T >::link_item_as_most_recent(
 {
    if( !skip_used )
    {
-      unsigned most_recently_used = ( *ap_cache_regions )[ index ].most_recently_used;
+      unsigned most_recently_used = ( *up_cache_regions )[ index ].most_recently_used;
 
       if( most_recently_used != c_npos
-       && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ most_recently_used ] )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ most_recently_used ]->next_used_link = offset;
+       && ( *( *up_cache_regions )[ index ].up_cache_items )[ most_recently_used ] )
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ most_recently_used ]->next_used_link = offset;
 
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_used_link = most_recently_used;
+      ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->prev_used_link = most_recently_used;
 
-      ( *ap_cache_regions )[ index ].most_recently_used = offset;
+      ( *up_cache_regions )[ index ].most_recently_used = offset;
 
-      if( ( *ap_cache_regions )[ index ].least_recently_used == c_npos )
-         ( *ap_cache_regions )[ index ].least_recently_used = offset;
+      if( ( *up_cache_regions )[ index ].least_recently_used == c_npos )
+         ( *up_cache_regions )[ index ].least_recently_used = offset;
    }
 
-   unsigned changed = ( *( *ap_cache_regions )[
-    index ].ap_cache_items )[ offset ]->flags & c_flag_for_changed;
+   unsigned changed = ( *( *up_cache_regions )[
+    index ].up_cache_items )[ offset ]->flags & c_flag_for_changed;
 
-   unsigned most_recently_changed = ( *ap_cache_regions )[ index ].most_recently_changed;
-   unsigned most_recently_unchanged = ( *ap_cache_regions )[ index ].most_recently_unchanged;
+   unsigned most_recently_changed = ( *up_cache_regions )[ index ].most_recently_changed;
+   unsigned most_recently_unchanged = ( *up_cache_regions )[ index ].most_recently_unchanged;
 
    if( changed )
    {
       if( most_recently_changed != c_npos
-       && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ most_recently_changed ] )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ most_recently_changed ]->next_changed_link = offset;
+       && ( *( *up_cache_regions )[ index ].up_cache_items )[ most_recently_changed ] )
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ most_recently_changed ]->next_changed_link = offset;
 
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_changed_link = most_recently_changed;
+      ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->prev_changed_link = most_recently_changed;
 
-      ( *ap_cache_regions )[ index ].most_recently_changed = offset;
+      ( *up_cache_regions )[ index ].most_recently_changed = offset;
 
-      if( ( *ap_cache_regions )[ index ].least_recently_changed == c_npos )
-         ( *ap_cache_regions )[ index ].least_recently_changed = offset;
+      if( ( *up_cache_regions )[ index ].least_recently_changed == c_npos )
+         ( *up_cache_regions )[ index ].least_recently_changed = offset;
    }
    else
    {
       if( most_recently_unchanged != c_npos
-       && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ most_recently_unchanged ] )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ most_recently_unchanged ]->next_unchanged_link = offset;
+       && ( *( *up_cache_regions )[ index ].up_cache_items )[ most_recently_unchanged ] )
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ most_recently_unchanged ]->next_unchanged_link = offset;
 
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_unchanged_link = most_recently_unchanged;
+      ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->prev_unchanged_link = most_recently_unchanged;
 
-      ( *ap_cache_regions )[ index ].most_recently_unchanged = offset;
+      ( *up_cache_regions )[ index ].most_recently_unchanged = offset;
 
-      if( ( *ap_cache_regions )[ index ].least_recently_unchanged == c_npos )
-         ( *ap_cache_regions )[ index ].least_recently_unchanged = offset;
+      if( ( *up_cache_regions )[ index ].least_recently_unchanged == c_npos )
+         ( *up_cache_regions )[ index ].least_recently_unchanged = offset;
    }
 }
 
@@ -896,51 +898,51 @@ template< typename T > void cache_base< T >::link_item_as_least_recent(
 {
    if( !skip_used )
    {
-      unsigned least_recently_used = ( *ap_cache_regions )[ index ].least_recently_used;
+      unsigned least_recently_used = ( *up_cache_regions )[ index ].least_recently_used;
 
       if( least_recently_used != c_npos
-       && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ least_recently_used ] )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ least_recently_used ]->prev_used_link = offset;
+       && ( *( *up_cache_regions )[ index ].up_cache_items )[ least_recently_used ] )
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ least_recently_used ]->prev_used_link = offset;
 
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_used_link = least_recently_used;
+      ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->next_used_link = least_recently_used;
 
-      ( *ap_cache_regions )[ index ].least_recently_used = offset;
+      ( *up_cache_regions )[ index ].least_recently_used = offset;
 
-      if( ( *ap_cache_regions )[ index ].most_recently_used == c_npos )
-         ( *ap_cache_regions )[ index ].most_recently_used = offset;
+      if( ( *up_cache_regions )[ index ].most_recently_used == c_npos )
+         ( *up_cache_regions )[ index ].most_recently_used = offset;
    }
 
    unsigned changed =
-    ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags & c_flag_for_changed;
+    ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->flags & c_flag_for_changed;
 
-   unsigned least_recently_changed = ( *ap_cache_regions )[ index ].least_recently_changed;
-   unsigned least_recently_unchanged = ( *ap_cache_regions )[ index ].least_recently_unchanged;
+   unsigned least_recently_changed = ( *up_cache_regions )[ index ].least_recently_changed;
+   unsigned least_recently_unchanged = ( *up_cache_regions )[ index ].least_recently_unchanged;
 
    if( changed )
    {
       if( least_recently_changed != c_npos
-       && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ least_recently_changed ] )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ least_recently_changed ]->prev_changed_link = offset;
+       && ( *( *up_cache_regions )[ index ].up_cache_items )[ least_recently_changed ] )
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ least_recently_changed ]->prev_changed_link = offset;
 
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_changed_link = least_recently_changed;
+      ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->next_changed_link = least_recently_changed;
 
-      ( *ap_cache_regions )[ index ].least_recently_changed = offset;
+      ( *up_cache_regions )[ index ].least_recently_changed = offset;
 
-      if( ( *ap_cache_regions )[ index ].most_recently_changed == c_npos )
-         ( *ap_cache_regions )[ index ].most_recently_changed = offset;
+      if( ( *up_cache_regions )[ index ].most_recently_changed == c_npos )
+         ( *up_cache_regions )[ index ].most_recently_changed = offset;
    }
    else
    {
       if( least_recently_unchanged != c_npos
-       && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ least_recently_unchanged ] )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ least_recently_unchanged ]->prev_unchanged_link = offset;
+       && ( *( *up_cache_regions )[ index ].up_cache_items )[ least_recently_unchanged ] )
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ least_recently_unchanged ]->prev_unchanged_link = offset;
 
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_unchanged_link = least_recently_unchanged;
+      ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->next_unchanged_link = least_recently_unchanged;
 
-      ( *ap_cache_regions )[ index ].least_recently_unchanged = offset;
+      ( *up_cache_regions )[ index ].least_recently_unchanged = offset;
 
-      if( ( *ap_cache_regions )[ index ].most_recently_unchanged == c_npos )
-         ( *ap_cache_regions )[ index ].most_recently_unchanged = offset;
+      if( ( *up_cache_regions )[ index ].most_recently_unchanged == c_npos )
+         ( *up_cache_regions )[ index ].most_recently_unchanged = offset;
    }
 }
 
@@ -955,10 +957,10 @@ template< typename T > void cache_base< T >::free_least_costly_item( )
 
    for( unsigned i = 0; i < regions_in_cache; i++ )
    {
-      if( ( *ap_cache_regions )[ i ].least_recently_changed != c_npos )
+      if( ( *up_cache_regions )[ i ].least_recently_changed != c_npos )
       {
-         unsigned j = ( *ap_cache_regions )[ i ].least_recently_changed;
-         unsigned counter = ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_mask_for_counter;
+         unsigned j = ( *up_cache_regions )[ i ].least_recently_changed;
+         unsigned counter = ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->flags & c_mask_for_counter;
 
          if( counter < least_recently_changed_counter )
          {
@@ -968,10 +970,10 @@ template< typename T > void cache_base< T >::free_least_costly_item( )
          }
       }
 
-      if( ( *ap_cache_regions )[ i ].least_recently_unchanged != c_npos )
+      if( ( *up_cache_regions )[ i ].least_recently_unchanged != c_npos )
       {
-         unsigned j = ( *ap_cache_regions )[ i ].least_recently_unchanged;
-         unsigned counter = ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_mask_for_counter;
+         unsigned j = ( *up_cache_regions )[ i ].least_recently_unchanged;
+         unsigned counter = ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->flags & c_mask_for_counter;
 
          if( counter < least_recently_unchanged_counter )
          {
@@ -990,37 +992,37 @@ template< typename T > void cache_base< T >::free_least_costly_item( )
 
 template< typename T > void cache_base< T >::free_cache_item( unsigned index, unsigned offset, bool discard_changes )
 {
-   if( ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] )
+   if( ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ] )
    {
-      if( ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags & c_flag_for_changed )
+      if( ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->flags & c_flag_for_changed )
       {
          if( !discard_changes )
             perform_store(
-             ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->data,
-             ( *ap_cache_regions )[ index ].region * items_per_region + offset );
+             ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->data,
+             ( *up_cache_regions )[ index ].region * items_per_region + offset );
 
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags &= ~c_flag_for_changed;
-         --( *ap_cache_regions )[ index ].flush_cost;
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->flags &= ~c_flag_for_changed;
+         --( *up_cache_regions )[ index ].flush_cost;
       }
 
       unlink_cached_item( index, offset, false );
 
       unsigned counter
-       = ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags & c_mask_for_counter;
+       = ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->flags & c_mask_for_counter;
 
       if( use_placement_new )
       {
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->cache_item< T >::~cache_item( );
-         push_item_on_free_list( ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] );
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->cache_item< T >::~cache_item( );
+         push_item_on_free_list( ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ] );
       }
       else
-         delete ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ];
+         delete ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ];
 
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] = 0;
-      ( *ap_cache_regions )[ index ].counter_total -= counter;
+      ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ] = 0;
+      ( *up_cache_regions )[ index ].counter_total -= counter;
 
       --num_cached;
-      --( *ap_cache_regions )[ index ].item_cost;
+      --( *up_cache_regions )[ index ].item_cost;
    }
 }
 
@@ -1036,7 +1038,7 @@ template< typename T > bool cache_base< T >::retain_item_in_cache( const cache_i
 
    bool region_was_in_cache = ( index != c_npos );
 
-   bool is_cached = region_was_in_cache && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ];
+   bool is_cached = region_was_in_cache && ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ];
 
    if( !is_cached
     && ( index == c_npos || num_cached == max_cache_items ) )
@@ -1062,42 +1064,46 @@ template< typename T > bool cache_base< T >::retain_item_in_cache( const cache_i
       {
          for( unsigned i = 0; i < regions_in_cache; i++ )
          {
-            if( index == c_npos && num_regions == regions_in_cache )
+            if( ( index == c_npos ) && ( num_regions == regions_in_cache ) )
             {
-               if( ( *ap_cache_regions )[ i ].flush_cost )
+               if( ( *up_cache_regions )[ i ].flush_cost )
                {
-                  if( ( *ap_cache_regions )[ i ].flush_cost < least_region_flush_cost )
+                  if( ( *up_cache_regions )[ i ].flush_cost < least_region_flush_cost )
                   {
-                     least_region_flush_cost = ( *ap_cache_regions )[ i ].flush_cost;
-                     least_region_flush_total = ( *ap_cache_regions )[ i ].counter_total;
+                     least_region_flush_cost = ( *up_cache_regions )[ i ].flush_cost;
+                     least_region_flush_total = ( *up_cache_regions )[ i ].counter_total;
+
                      region_flush_index = i;
                   }
-                  else if( ( *ap_cache_regions )[ i ].counter_total < least_region_flush_total )
+                  else if( ( *up_cache_regions )[ i ].counter_total < least_region_flush_total )
                   {
-                     least_region_flush_total = ( *ap_cache_regions )[ i ].counter_total;
+                     least_region_flush_total = ( *up_cache_regions )[ i ].counter_total;
+
                      region_flush_index = i;
                   }
                }
                else
                {
-                  if( ( *ap_cache_regions )[ i ].item_cost < least_region_item_cost )
+                  if( ( *up_cache_regions )[ i ].item_cost < least_region_item_cost )
                   {
-                     least_region_item_cost = ( *ap_cache_regions )[ i ].item_cost;
-                     least_region_item_total = ( *ap_cache_regions )[ i ].counter_total;
+                     least_region_item_cost = ( *up_cache_regions )[ i ].item_cost;
+                     least_region_item_total = ( *up_cache_regions )[ i ].counter_total;
+
                      region_item_index = i;
                   }
-                  else if( ( *ap_cache_regions )[ i ].counter_total < least_region_item_total )
+                  else if( ( *up_cache_regions )[ i ].counter_total < least_region_item_total )
                   {
-                     least_region_item_total = ( *ap_cache_regions )[ i ].counter_total;
+                     least_region_item_total = ( *up_cache_regions )[ i ].counter_total;
+
                      region_item_index = i;
                   }
                }
             }
 
-            if( ( *ap_cache_regions )[ i ].least_recently_changed != c_npos )
+            if( ( *up_cache_regions )[ i ].least_recently_changed != c_npos )
             {
-               unsigned j = ( *ap_cache_regions )[ i ].least_recently_changed;
-               unsigned counter = ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_mask_for_counter;
+               unsigned j = ( *up_cache_regions )[ i ].least_recently_changed;
+               unsigned counter = ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->flags & c_mask_for_counter;
 
                if( counter < least_recently_changed_counter )
                {
@@ -1107,10 +1113,10 @@ template< typename T > bool cache_base< T >::retain_item_in_cache( const cache_i
                }
             }
 
-            if( ( *ap_cache_regions )[ i ].least_recently_unchanged != c_npos )
+            if( ( *up_cache_regions )[ i ].least_recently_unchanged != c_npos )
             {
-               unsigned j = ( *ap_cache_regions )[ i ].least_recently_unchanged;
-               unsigned counter = ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_mask_for_counter;
+               unsigned j = ( *up_cache_regions )[ i ].least_recently_unchanged;
+               unsigned counter = ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->flags & c_mask_for_counter;
 
                if( counter < least_recently_unchanged_counter )
                {
@@ -1137,7 +1143,7 @@ template< typename T > bool cache_base< T >::retain_item_in_cache( const cache_i
 
       if( !region_was_in_cache )
       {
-         unsigned last_region( ( *ap_cache_regions )[ index ].region );
+         unsigned last_region( ( *up_cache_regions )[ index ].region );
          if( last_region != c_npos )
             free_cache_region( index, true );
          else
@@ -1146,7 +1152,7 @@ template< typename T > bool cache_base< T >::retain_item_in_cache( const cache_i
 #ifdef CACHE_DEBUG
          std::cout << "index = " << index << ", region = " << region << std::endl;
 #endif
-         ( *ap_cache_regions )[ index ].region = region;
+         ( *up_cache_regions )[ index ].region = region;
 
          if( last_region != c_npos )
             observe_region_replacement( last_region, region );
@@ -1166,7 +1172,7 @@ template< typename T > bool cache_base< T >::retain_item_in_cache( const cache_i
    // IMPORTANT: If the counter total is about to set the change flag (i.e. by causing the most
    // significant bit to be set) then halve the counter value and do the same to all the region
    // items and to each region's counter total.
-   if( ( *ap_cache_regions )[ index ].counter_total + counter + 1 & c_flag_for_changed )
+   if( ( *up_cache_regions )[ index ].counter_total + counter + 1 & c_flag_for_changed )
    {
       counter /= 2;
 
@@ -1174,18 +1180,18 @@ template< typename T > bool cache_base< T >::retain_item_in_cache( const cache_i
       {
          for( unsigned j = 0; j < items_per_region; j++ )
          {
-            if( ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ] )
+            if( ( *( *up_cache_regions )[ i ].up_cache_items )[ j ] )
             {
-               unsigned changed_flag = ( *( *ap_cache_regions )[
-                i ].ap_cache_items )[ j ]->flags & c_flag_for_changed;
+               unsigned changed_flag = ( *( *up_cache_regions )[
+                i ].up_cache_items )[ j ]->flags & c_flag_for_changed;
 
-               unsigned val = ( *( *ap_cache_regions )[
-                i ].ap_cache_items )[ j ]->flags & c_mask_for_counter;
+               unsigned val = ( *( *up_cache_regions )[
+                i ].up_cache_items )[ j ]->flags & c_mask_for_counter;
 
-               ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags = ( val / 2 );
-               ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags |= changed_flag;
+               ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->flags = ( val / 2 );
+               ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->flags |= changed_flag;
 
-               ( *ap_cache_regions )[ i ].counter_total -= val - ( val / 2 );
+               ( *up_cache_regions )[ i ].counter_total -= val - ( val / 2 );
             }
          }
       }
@@ -1195,25 +1201,25 @@ template< typename T > bool cache_base< T >::retain_item_in_cache( const cache_i
 
    if( is_cached )
    {
-      if( changed_flag && !( ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags & c_flag_for_changed ) )
-         ++( *ap_cache_regions )[ index ].flush_cost;
+      if( changed_flag && !( ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->flags & c_flag_for_changed ) )
+         ++( *up_cache_regions )[ index ].flush_cost;
 
-      ( *ap_cache_regions )[ index ].counter_total
-       -= ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags & c_mask_for_counter;
+      ( *up_cache_regions )[ index ].counter_total
+       -= ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->flags & c_mask_for_counter;
 
-      changed_flag |= ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags & c_flag_for_changed;
+      changed_flag |= ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->flags & c_flag_for_changed;
 
       if( use_placement_new )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->data = item.data;
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->data = item.data;
       else
       {
-         std::auto_ptr< cache_item< T > > temp_cache_item( new cache_item< T >( item ) );
+         std::unique_ptr< cache_item< T > > temp_cache_item( new cache_item< T >( item ) );
 
-         temp_cache_item->copy_flags_and_links( *( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] );
+         temp_cache_item->copy_flags_and_links( *( *( *up_cache_regions )[ index ].up_cache_items )[ offset ] );
 
-         delete ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ];
+         delete ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ];
 
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] = temp_cache_item.release( );
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ] = temp_cache_item.release( );
       }
    }
    else
@@ -1223,27 +1229,27 @@ template< typename T > bool cache_base< T >::retain_item_in_cache( const cache_i
          cache_item< T >* p_free_list_item = pop_item_from_free_list( );
 
          if( p_free_list_item )
-            ( *( *ap_cache_regions )[ index ].ap_cache_items )[
+            ( *( *up_cache_regions )[ index ].up_cache_items )[
              offset ] = new( p_free_list_item ) cache_item< T >( item );
          else
-            ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]
+            ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]
              = new( p_buffer + ( sizeof( cache_item< T > ) * num_cached ) ) cache_item< T >( item );
       }
       else
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] = new cache_item< T >( item );
+         ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ] = new cache_item< T >( item );
 
-      ++( *ap_cache_regions )[ index ].item_cost;
+      ++( *up_cache_regions )[ index ].item_cost;
 
       if( changed_flag )
-         ++( *ap_cache_regions )[ index ].flush_cost;
+         ++( *up_cache_regions )[ index ].flush_cost;
    }
 
    unlink_cached_item( index, offset, false );
 
-   ( *ap_cache_regions )[ index ].counter_total += ++counter;
+   ( *up_cache_regions )[ index ].counter_total += ++counter;
 
-   ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags = counter;
-   ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags |= changed_flag;
+   ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->flags = counter;
+   ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ]->flags |= changed_flag;
 
    link_item_as_most_recent( index, offset, false );
 
@@ -1281,18 +1287,18 @@ template< typename T > void cache_base< T >::mark_cached_item( unsigned num, boo
 
    locate_item( num, index, region, offset );
 
-   bool is_cached = index != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ];
+   bool is_cached = index != c_npos && ( *( *up_cache_regions )[ index ].up_cache_items )[ offset ];
 
    if( is_cached )
    {
       unlink_cached_item( index, offset, false );
 
-      cache_item< T >& item( *( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] );
-      ( *ap_cache_regions )[ index ].counter_total -= item.flags & c_mask_for_counter;
+      cache_item< T >& item( *( *( *up_cache_regions )[ index ].up_cache_items )[ offset ] );
+      ( *up_cache_regions )[ index ].counter_total -= item.flags & c_mask_for_counter;
       unsigned changed_flag = item.flags & c_flag_for_changed;
 
       item.flags = is_new ? ++counter : 0;
-      ( *ap_cache_regions )[ index ].counter_total += item.flags;
+      ( *up_cache_regions )[ index ].counter_total += item.flags;
 
       item.flags |= changed_flag;
 
@@ -1323,67 +1329,67 @@ template< typename T > void cache_base< T >::dump_cached_item_info( std::ostream
 
    if( dump_type > dmp_info )
    {
-      for( size_t i = 0; i < ap_cache_regions->size( ); i++ )
+      for( size_t i = 0; i < up_cache_regions->size( ); i++ )
       {
-         if( ( *ap_cache_regions )[ i ].region == c_npos )
+         if( ( *up_cache_regions )[ i ].region == c_npos )
             continue;
 
          outs << "\n<cache region: "
-          << ( signed )( ( *ap_cache_regions )[ i ].region * items_per_region ) << "-"
-          << ( signed )( ( *ap_cache_regions )[ i ].region * items_per_region + items_per_region - 1 )
+          << ( signed )( ( *up_cache_regions )[ i ].region * items_per_region ) << "-"
+          << ( signed )( ( *up_cache_regions )[ i ].region * items_per_region + items_per_region - 1 )
           << ">\n";
 
-         outs << " item_cost: " << ( signed )( *ap_cache_regions )[ i ].item_cost << "\n";
-         outs << " flush_cost: " << ( signed )( *ap_cache_regions )[ i ].flush_cost << "\n";
-         outs << " counter_total: " << ( signed )( *ap_cache_regions )[ i ].counter_total << "\n\n";
+         outs << " item_cost: " << ( signed )( *up_cache_regions )[ i ].item_cost << "\n";
+         outs << " flush_cost: " << ( signed )( *up_cache_regions )[ i ].flush_cost << "\n";
+         outs << " counter_total: " << ( signed )( *up_cache_regions )[ i ].counter_total << "\n\n";
 
          outs << " most_recently_used: "
-          << ( signed )( *ap_cache_regions )[ i ].most_recently_used << "\n";
+          << ( signed )( *up_cache_regions )[ i ].most_recently_used << "\n";
 
          outs << " least_recently_used: "
-          << ( signed )( *ap_cache_regions )[ i ].least_recently_used << "\n";
+          << ( signed )( *up_cache_regions )[ i ].least_recently_used << "\n";
 
          outs << " most_recently_changed: "
-          << ( signed )( *ap_cache_regions )[ i ].most_recently_changed << "\n";
+          << ( signed )( *up_cache_regions )[ i ].most_recently_changed << "\n";
 
          outs << " least_recently_changed: "
-          << ( signed )( *ap_cache_regions )[ i ].least_recently_changed << "\n";
+          << ( signed )( *up_cache_regions )[ i ].least_recently_changed << "\n";
 
          outs << " most_recently_unchanged: "
-          << ( signed )( *ap_cache_regions )[ i ].most_recently_unchanged << "\n";
+          << ( signed )( *up_cache_regions )[ i ].most_recently_unchanged << "\n";
 
          outs << " least_recently_unchanged: "
-          << ( signed )( *ap_cache_regions )[ i ].least_recently_unchanged << "\n";
+          << ( signed )( *up_cache_regions )[ i ].least_recently_unchanged << "\n";
 
          if( dump_type > dmp_summary )
          {
-            if( ( *ap_cache_regions )[ i ].item_cost )
+            if( ( *up_cache_regions )[ i ].item_cost )
                outs << "\n<cache region items>\n";
 
-            for( size_t j = 0; j < ( *ap_cache_regions )[ i ].ap_cache_items->size( ); j++ )
+            for( size_t j = 0; j < ( *up_cache_regions )[ i ].up_cache_items->size( ); j++ )
             {
-               if( ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ] )
+               if( ( *( *up_cache_regions )[ i ].up_cache_items )[ j ] )
                {
                   signed counter =
-                   ( ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_mask_for_counter );
+                   ( ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->flags & c_mask_for_counter );
 
                   unsigned changed =
-                   ( ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_flag_for_changed );
+                   ( ( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->flags & c_flag_for_changed );
 
                   outs << " item #"
-                   << ( signed )( ( *ap_cache_regions )[ i ].region * items_per_region + j )
+                   << ( signed )( ( *up_cache_regions )[ i ].region * items_per_region + j )
                    << ", chg: " << ( changed != 0 ) << ", counter: " << counter << ", used ("
-                   << ( signed )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->prev_used_link
+                   << ( signed )( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->prev_used_link
                    << ", "
-                   << ( signed )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->next_used_link
+                   << ( signed )( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->next_used_link
                    << "), chg ("
-                   << ( signed )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->prev_changed_link
+                   << ( signed )( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->prev_changed_link
                    << ", "
-                   << ( signed )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->next_changed_link
+                   << ( signed )( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->next_changed_link
                    << "), unchg ("
-                   << ( signed )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->prev_unchanged_link
+                   << ( signed )( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->prev_unchanged_link
                    << ", "
-                   << ( signed )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->next_unchanged_link
+                   << ( signed )( *( *up_cache_regions )[ i ].up_cache_items )[ j ]->next_unchanged_link
                    << ")\n";
                }
             }

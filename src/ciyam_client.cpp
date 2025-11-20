@@ -172,7 +172,7 @@ string g_rpc_password;
 string g_quiet_cmd_prefix( " ." );
 
 #ifdef SSL_SUPPORT
-auto_ptr< private_key > gap_priv_key;
+unique_ptr< private_key > gup_priv_key;
 #endif
 
 class ciyam_console_startup_functor : public command_functor
@@ -1156,7 +1156,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   if( chunk_size )
                      p_chunk = ( unsigned char* )chunk_data.data( );
 
-                  auto_ptr< udp_helper > ap_udp_helper;
+                  unique_ptr< udp_helper > up_udp_helper;
 
                   bool no_udp = has_environment_variable( c_env_var_no_udp );
 
@@ -1169,7 +1169,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         --num_udp_skips;
                      else
                      {
-                        ap_udp_helper.reset( new udp_helper( put_file_hash ) );
+                        up_udp_helper.reset( new udp_helper( put_file_hash ) );
 
                         string slotx( get_environment_variable( c_env_var_slotx ) );
 
@@ -1303,16 +1303,16 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                    c_file_transfer_max_line_size, &prefix, p_chunk, chunk_size, c_response_okay_skip );
 
                   file_transfer( filename, socket, e_ft_direction_send,
-                   g_max_file_size, c_response_okay_more, &ft_extra, 0, ap_udp_helper.get( ) );
+                   g_max_file_size, c_response_okay_more, &ft_extra, 0, up_udp_helper.get( ) );
 
-                  if( ap_udp_helper.get( ) )
+                  if( up_udp_helper.get( ) )
                   {
                      // NOTE: If the server is not using UDP then do not try again.
-                     if( !ap_udp_helper->had_recv_help )
+                     if( !up_udp_helper->had_recv_help )
                         usocket.close( );
                      else
                      {
-                        float percent = ap_udp_helper->recv_percent;
+                        float percent = up_udp_helper->recv_percent;
 
                         cout << '(' << setfill( '0' ) << ffmt( 1, 2 ) << percent << "% UDP)\n";
 
@@ -1698,7 +1698,7 @@ int main( int argc, char* argv[ ] )
 #ifdef SSL_SUPPORT
    ssl_socket socket;
 
-   gap_priv_key.reset( new private_key( ) );
+   gup_priv_key.reset( new private_key( ) );
 #else
    tcp_socket socket;
 #endif
@@ -1875,7 +1875,7 @@ int main( int argc, char* argv[ ] )
             string pubkey;
 
 #ifdef SSL_SUPPORT
-            pubkey = gap_priv_key->get_public( );
+            pubkey = gup_priv_key->get_public( );
 #endif
             if( pubkey.empty( ) )
                pubkey = string( c_none );

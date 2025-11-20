@@ -373,67 +373,67 @@ int main( int argc, char* argv[ ] )
 
       bool is_update = false;
 
-      auto_ptr< dynamic_library > ap_dynamic_library;
+      unique_ptr< dynamic_library > up_dynamic_library;
 
       while( true )
       {
          g_server_shutdown = 0;
 
-         ap_dynamic_library.reset( new dynamic_library( c_ciyam_base_lib, "ciyam_base" ) );
+         up_dynamic_library.reset( new dynamic_library( c_ciyam_base_lib, "ciyam_base" ) );
 
          fp_trace_flags fp_trace_flags_func;
-         fp_trace_flags_func = ( fp_trace_flags )ap_dynamic_library->bind_to_function( c_trace_flags_func_name );
+         fp_trace_flags_func = ( fp_trace_flags )up_dynamic_library->bind_to_function( c_trace_flags_func_name );
 
          fp_init_globals fp_init_globals_func;
-         fp_init_globals_func = ( fp_init_globals )ap_dynamic_library->bind_to_function( c_init_globals_func_name );
+         fp_init_globals_func = ( fp_init_globals )up_dynamic_library->bind_to_function( c_init_globals_func_name );
 
          fp_term_globals fp_term_globals_func;
-         fp_term_globals_func = ( fp_term_globals )ap_dynamic_library->bind_to_function( c_term_globals_func_name );
+         fp_term_globals_func = ( fp_term_globals )up_dynamic_library->bind_to_function( c_term_globals_func_name );
 
          fp_server_command fp_server_command_func;
-         fp_server_command_func = ( fp_server_command )ap_dynamic_library->bind_to_function( c_server_command_func_name );
+         fp_server_command_func = ( fp_server_command )up_dynamic_library->bind_to_function( c_server_command_func_name );
 
          fp_set_server_port fp_set_server_port_func;
-         fp_set_server_port_func = ( fp_set_server_port )ap_dynamic_library->bind_to_function( c_set_server_port_func_name );
+         fp_set_server_port_func = ( fp_set_server_port )up_dynamic_library->bind_to_function( c_set_server_port_func_name );
 
          fp_init_auto_script fp_init_auto_script_func;
-         fp_init_auto_script_func = ( fp_init_auto_script )ap_dynamic_library->bind_to_function( c_init_auto_script_func_name );
+         fp_init_auto_script_func = ( fp_init_auto_script )up_dynamic_library->bind_to_function( c_init_auto_script_func_name );
 
          fp_init_udp_streams fp_init_udp_streams_func;
-         fp_init_udp_streams_func = ( fp_init_udp_streams )ap_dynamic_library->bind_to_function( c_init_udp_streams_func_name );
+         fp_init_udp_streams_func = ( fp_init_udp_streams )up_dynamic_library->bind_to_function( c_init_udp_streams_func_name );
 
          fp_log_trace_string fp_log_trace_string_func;
-         fp_log_trace_string_func = ( fp_log_trace_string )ap_dynamic_library->bind_to_function( c_log_trace_string_func_name );
+         fp_log_trace_string_func = ( fp_log_trace_string )up_dynamic_library->bind_to_function( c_log_trace_string_func_name );
 
          fp_register_listener fp_register_listener_func;
-         fp_register_listener_func = ( fp_register_listener )ap_dynamic_library->bind_to_function( c_register_listener_func_name );
+         fp_register_listener_func = ( fp_register_listener )up_dynamic_library->bind_to_function( c_register_listener_func_name );
 
          fp_set_log_files_dir fp_set_log_files_dir_func;
-         fp_set_log_files_dir_func = ( fp_set_log_files_dir )ap_dynamic_library->bind_to_function( c_set_log_files_dir_func_name );
+         fp_set_log_files_dir_func = ( fp_set_log_files_dir )up_dynamic_library->bind_to_function( c_set_log_files_dir_func_name );
 
          fp_set_stream_socket fp_set_stream_socket_func;
-         fp_set_stream_socket_func = ( fp_set_stream_socket )ap_dynamic_library->bind_to_function( c_set_stream_socket_func_name );
+         fp_set_stream_socket_func = ( fp_set_stream_socket )up_dynamic_library->bind_to_function( c_set_stream_socket_func_name );
 
          fp_init_ciyam_session fp_init_ciyam_session_func;
-         fp_init_ciyam_session_func = ( fp_init_ciyam_session )ap_dynamic_library->bind_to_function( c_init_ciyam_session_func_name );
+         fp_init_ciyam_session_func = ( fp_init_ciyam_session )up_dynamic_library->bind_to_function( c_init_ciyam_session_func_name );
 
          fp_set_files_area_dir fp_set_files_area_dir_func;
-         fp_set_files_area_dir_func = ( fp_set_files_area_dir )ap_dynamic_library->bind_to_function( c_set_files_area_dir_func_name );
+         fp_set_files_area_dir_func = ( fp_set_files_area_dir )up_dynamic_library->bind_to_function( c_set_files_area_dir_func_name );
 
          fp_set_test_peer_port fp_set_test_peer_port_func;
-         fp_set_test_peer_port_func = ( fp_set_test_peer_port )ap_dynamic_library->bind_to_function( c_set_test_peer_port_func_name );
+         fp_set_test_peer_port_func = ( fp_set_test_peer_port )up_dynamic_library->bind_to_function( c_set_test_peer_port_func_name );
 
          fp_init_peer_sessions fp_init_peer_sessions_func;
-         fp_init_peer_sessions_func = ( fp_init_peer_sessions )ap_dynamic_library->bind_to_function( c_init_peer_sessions_func_name );
+         fp_init_peer_sessions_func = ( fp_init_peer_sessions )up_dynamic_library->bind_to_function( c_init_peer_sessions_func_name );
 
          fp_check_timezone_info fp_check_timezone_info_func;
-         fp_check_timezone_info_func = ( fp_check_timezone_info )ap_dynamic_library->bind_to_function( c_check_timezone_info_func_name );
+         fp_check_timezone_info_func = ( fp_check_timezone_info )up_dynamic_library->bind_to_function( c_check_timezone_info_func_name );
 
          fp_is_accepted_ip_addr fp_is_accepted_ip_addr_func;
-         fp_is_accepted_ip_addr_func = ( fp_is_accepted_ip_addr )ap_dynamic_library->bind_to_function( c_is_accepted_ip_addr_func_name );
+         fp_is_accepted_ip_addr_func = ( fp_is_accepted_ip_addr )up_dynamic_library->bind_to_function( c_is_accepted_ip_addr_func_name );
 
          fp_unregister_listener fp_unregister_listener_func;
-         fp_unregister_listener_func = ( fp_unregister_listener )ap_dynamic_library->bind_to_function( c_unregister_listener_func_name );
+         fp_unregister_listener_func = ( fp_unregister_listener )up_dynamic_library->bind_to_function( c_unregister_listener_func_name );
 
          // NOTE: If trace flags has been provided then set before calling other functions
          // (as it could be of some assistance in tracing issues with the those functions).
@@ -605,12 +605,12 @@ int main( int argc, char* argv[ ] )
                   if( !g_server_shutdown )
                   {
 #ifdef SSL_SUPPORT
-                     auto_ptr< ssl_socket > ap_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
+                     unique_ptr< ssl_socket > up_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
 #else
-                     auto_ptr< tcp_socket > ap_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
+                     unique_ptr< tcp_socket > up_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
 #endif
-                     if( *ap_socket && ( *fp_is_accepted_ip_addr_func )( address.get_addr_string( ).c_str( ) ) )
-                        ( *fp_init_ciyam_session_func )( ap_socket.release( ), address.get_addr_string( ).c_str( ) );
+                     if( *up_socket && ( *fp_is_accepted_ip_addr_func )( address.get_addr_string( ).c_str( ) ) )
+                        ( *fp_init_ciyam_session_func )( up_socket.release( ), address.get_addr_string( ).c_str( ) );
 
                      // NOTE: Support for being able to issue special commands using a file
                      // (such as dumping mutexes) if connection via a socket is not working.
@@ -680,7 +680,7 @@ int main( int argc, char* argv[ ] )
          ( *fp_log_trace_string_func )( TRACE_MINIMAL, "*** reloading ciyam_base.so library ***" );
 
          // NOTE: Force the dynamic library to be unloaded.
-         ap_dynamic_library.reset( 0 );
+         up_dynamic_library.reset( 0 );
       }
    }
    catch( exception& x )

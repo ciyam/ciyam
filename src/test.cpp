@@ -171,7 +171,7 @@ void copy_file( const char* p_input_file, const char* p_output_file )
    if( !inpf.good( ) )
       throw runtime_error( "unexpected seek error for '" + string( p_input_file ) + "'" );
 
-   auto_ptr< char > ap_buffer( new char[ c_buffer_size ] );
+   unique_ptr< char > up_buffer( new char[ c_buffer_size ] );
 
    for( size_t i = 0; i < length - 1; i += c_buffer_size )
    {
@@ -180,12 +180,12 @@ void copy_file( const char* p_input_file, const char* p_output_file )
       if( ( i + chunk ) > ( length - 1 ) )
          chunk = length - i;
 
-      inpf.read( ap_buffer.get( ), chunk );
+      inpf.read( up_buffer.get( ), chunk );
 
       if( !inpf.good( ) )
          throw runtime_error( "unexpected read error for '" + string( p_input_file ) + "'" );
 
-      outf.write( ap_buffer.get( ), chunk );
+      outf.write( up_buffer.get( ), chunk );
 
       if( !outf.good( ) )
          throw runtime_error( "unexpected write error for '" + string( p_output_file ) + "'" );
@@ -232,8 +232,8 @@ bool files_differ( const char* p_file_name_1, const char* p_file_name_2 )
       if( !inpf2.good( ) )
          throw runtime_error( "unexpected seek error for '" + string( p_file_name_2 ) + "'" );
 
-      auto_ptr< char > ap_buffer1( new char[ c_buffer_size ] );
-      auto_ptr< char > ap_buffer2( new char[ c_buffer_size ] );
+      unique_ptr< char > up_buffer1( new char[ c_buffer_size ] );
+      unique_ptr< char > up_buffer2( new char[ c_buffer_size ] );
 
       for( size_t i = 0; i < length - 1; i += c_buffer_size )
       {
@@ -242,17 +242,17 @@ bool files_differ( const char* p_file_name_1, const char* p_file_name_2 )
          if( ( i + chunk ) > ( length - 1 ) )
             chunk = length - i;
 
-         inpf1.read( ap_buffer1.get( ), chunk );
+         inpf1.read( up_buffer1.get( ), chunk );
 
          if( !inpf1.good( ) )
             throw runtime_error( "unexpected read error for '" + string( p_file_name_1 ) + "'" );
 
-         inpf2.read( ap_buffer2.get( ), chunk );
+         inpf2.read( up_buffer2.get( ), chunk );
 
          if( !inpf2.good( ) )
             throw runtime_error( "unexpected read error for '" + string( p_file_name_2 ) + "'" );
 
-         if( memcmp( ap_buffer1.get( ), ap_buffer2.get( ), chunk ) != 0 )
+         if( memcmp( up_buffer1.get( ), up_buffer2.get( ), chunk ) != 0 )
          {
             different = true;
             break;

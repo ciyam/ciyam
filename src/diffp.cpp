@@ -48,6 +48,7 @@ struct chunk_t
    size_t line;
    size_t size;
    size_t offs;
+
    mode_t mode;
 
    chunk_t( ) : line( 0 ), size( 0 ), offs( 0 ), mode( e_mode_nul ) { }
@@ -213,14 +214,15 @@ int main( int argc, char* argv[ ] )
    {
       text_file_buffer base( argv[ first_arg ] );
       text_file_buffer diff( argv[ first_arg + 1 ] );
-      auto_ptr< text_file_buffer > ap_diff_2( argc < first_arg + 3 ? 0 : new text_file_buffer( argv[ first_arg + 2 ] ) );
+
+      unique_ptr< text_file_buffer > up_diff_2( argc < first_arg + 3 ? 0 : new text_file_buffer( argv[ first_arg + 2 ] ) );
 
       size_t diff_line = 0;
       size_t diff_line_2 = 0;
 
       size_t base_lines = base.size( );
       size_t diff_lines = diff.size( );
-      size_t diff_lines_2 = ( argc < first_arg + 3 ? 0 : ap_diff_2->size( ) );
+      size_t diff_lines_2 = ( argc < first_arg + 3 ? 0 : up_diff_2->size( ) );
 
       if( !base_lines && !diff_lines && !diff_lines_2 )
       {
@@ -307,7 +309,7 @@ int main( int argc, char* argv[ ] )
             {
                xname = c_diff_2;
                xline = diff_line_2;
-               read_next_chunk( ( *ap_diff_2 )[ diff_line_2 ], diff_chunk_2, line, base_lines );
+               read_next_chunk( ( *up_diff_2 )[ diff_line_2 ], diff_chunk_2, line, base_lines );
 
                right_start = diff_chunk_2.line;
                if( diff_chunk_2.mode == e_mode_add )
@@ -452,7 +454,7 @@ int main( int argc, char* argv[ ] )
 
                   for( size_t i = 0; i < num; i++ )
                   {
-                     if( strcmp( diff[ lo + i ], ( *ap_diff_2 )[ ro + i ] ) != 0 )
+                     if( strcmp( diff[ lo + i ], ( *up_diff_2 )[ ro + i ] ) != 0 )
                         break;
 
 #ifdef DEBUG
@@ -497,7 +499,7 @@ int main( int argc, char* argv[ ] )
                   for( size_t i = 0; i < minimum; i++ )
                   {
                      if( strcmp( diff[ left_chunks[ ls - 1 ].offs + left_size - i - 1 ],
-                      ( *ap_diff_2 )[ right_chunks[ rs - 1 ].offs + right_size - i - 1 ] ) != 0 )
+                      ( *up_diff_2 )[ right_chunks[ rs - 1 ].offs + right_size - i - 1 ] ) != 0 )
                         break;
 
                      --left_chunks[ ls - 1 ].size;
@@ -617,7 +619,7 @@ int main( int argc, char* argv[ ] )
                   cout << ">>>>>> (2)\n";
 
                output_differences( is_conflict,
-                skip_right_original, right_chunks, start, finish, base, *ap_diff_2 );
+                skip_right_original, right_chunks, start, finish, base, *up_diff_2 );
             }
 
             if( has_left && skip_left_original )
@@ -653,8 +655,10 @@ int main( int argc, char* argv[ ] )
    catch( exception& x )
    {
       cerr << "error: " << x.what( );
+
       if( xline )
          cerr << " (" << xname << " line #" << xline << ')';
+
       cerr << endl;
 
       rc = 2;
@@ -663,10 +667,10 @@ int main( int argc, char* argv[ ] )
    if( had_conflict )
    {
       rc = 1;
+
       if( !is_quiet )
          cerr << "*** Error: One or more conflicts were found whilst merging." << endl;
    }
 
    return rc;
 }
-

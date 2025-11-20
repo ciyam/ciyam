@@ -560,7 +560,7 @@ string check_for_proof_of_work(
    if( range == 0 )
       throw runtime_error( "invalid range 0 for 'check_for_proof_of_work'" );
 
-   auto_ptr< unsigned char > ap_buffer( new unsigned char[ c_work_buffer_size ] );
+   unique_ptr< unsigned char > up_buffer( new unsigned char[ c_work_buffer_size ] );
 
    bool okay = true;
    uint32_t nonce = 0;
@@ -588,7 +588,7 @@ string check_for_proof_of_work(
       }
 
       unsigned char ch = '\0';
-      unsigned char* p_start = ap_buffer.get( );
+      unsigned char* p_start = up_buffer.get( );
 
       unsigned char* p_next = p_start;
       uint8_t wrap = c_sha256_digest_size - 1;
@@ -629,9 +629,9 @@ string check_for_proof_of_work(
       // pass has to have been completed before any hashing can commence. Another
       // approach would be to change the SHA256 code to be able to operate itself
       // in reverse but tests showed that the reversing time is not significant.
-      reverse( ap_buffer.get( ), ap_buffer.get( ) + c_work_buffer_size );
+      reverse( up_buffer.get( ), up_buffer.get( ) + c_work_buffer_size );
 
-      sha256 buf_hash( ap_buffer.get( ), c_work_buffer_size );
+      sha256 buf_hash( up_buffer.get( ), c_work_buffer_size );
 
       okay = true;
       hash_string = buf_hash.get_digest_as_string( );

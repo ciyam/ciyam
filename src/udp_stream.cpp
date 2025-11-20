@@ -100,8 +100,8 @@ void udp_stream_session::on_start( )
    int port = get_stream_port( );
    int sock = get_stream_sock( );
 
-   auto_ptr< ip_address > ap_addr;
-   auto_ptr< udp_socket > ap_sock;
+   unique_ptr< ip_address > up_addr;
+   unique_ptr< udp_socket > up_sock;
 
    unsigned char buffer[ c_buffer_size + 1 ];
 
@@ -118,8 +118,8 @@ void udp_stream_session::on_start( )
 
    if( direction == e_udp_direction_recv )
    {
-      ap_addr.reset( new ip_address( port ) );
-      ap_sock.reset( new udp_socket( sock ) );
+      up_addr.reset( new ip_address( port ) );
+      up_sock.reset( new udp_socket( sock ) );
    }
 
    try
@@ -139,24 +139,24 @@ void udp_stream_session::on_start( )
 
          if( direction == e_udp_direction_recv )
          {
-            int len = recv_from( *ap_sock, *ap_addr, buffer, sizeof( buffer ), c_timeout, p_progress );
+            int len = recv_from( *up_sock, *up_addr, buffer, sizeof( buffer ), c_timeout, p_progress );
 
             if( len > 0 )
             {
-               addr_data_pairs[ 0 ].first = *ap_addr;
+               addr_data_pairs[ 0 ].first = *up_addr;
                memcpy( &addr_data_pairs[ 0 ].second[ 0 ], buffer, len );
 
                int num = 1;
                for( size_t i = 1; i < c_max_buffers; i++ )
                {
-                  len = recv_from( *ap_sock, *ap_addr, buffer, sizeof( buffer ), ( c_timeout / 10 ), p_progress );
+                  len = recv_from( *up_sock, *up_addr, buffer, sizeof( buffer ), ( c_timeout / 10 ), p_progress );
 
                   if( len <= 0 )
                      break;
 
                   num++;
 
-                  addr_data_pairs[ i ].first = *ap_addr;
+                  addr_data_pairs[ i ].first = *up_addr;
                   memcpy( &addr_data_pairs[ i ].second[ 0 ], buffer, len );
                }
 
@@ -224,7 +224,7 @@ void udp_stream_session::on_start( )
 
                                     string data( slotx + ":XXX:" + hash );
 
-                                    send_to( *ap_sock, addr, ( const unsigned char* )&data[ 0 ], data.length( ), c_timeout, p_progress );
+                                    send_to( *up_sock, addr, ( const unsigned char* )&data[ 0 ], data.length( ), c_timeout, p_progress );
 
                                     existing_files.insert( hash );
                                  }

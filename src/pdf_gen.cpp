@@ -3131,16 +3131,16 @@ bool process_group(
                      int rc = system( cmd.c_str( ) );
                      ( void )rc;
 
-                     auto_ptr< pdf_image > ap_image;
+                     unique_ptr< pdf_image > up_image;
 
                      if( format.fields[ j ].is_png )
-                        ap_image.reset( new pdf_png_image( doc, temp_file_name ) );
+                        up_image.reset( new pdf_png_image( doc, temp_file_name ) );
                      else if( format.fields[ j ].is_jpg )
-                        ap_image.reset( new pdf_jpeg_image( doc, temp_file_name ) );
+                        up_image.reset( new pdf_jpeg_image( doc, temp_file_name ) );
 
                      temporary_image_files.push_back( temp_file_name );
 
-                     images.insert( make_pair( data, p_image = ap_image.release( ) ) );
+                     images.insert( make_pair( data, p_image = up_image.release( ) ) );
                   }
                }
                else
@@ -3155,16 +3155,16 @@ bool process_group(
                      p_image = images[ data ].get( );
                   else
                   {
-                     auto_ptr< pdf_image > ap_image;
+                     unique_ptr< pdf_image > up_image;
 
                      if( ext == "png" )
-                        ap_image.reset( new pdf_png_image( doc, data ) );
+                        up_image.reset( new pdf_png_image( doc, data ) );
                      else if( ext == "jpg" || ext == "jpeg" )
-                        ap_image.reset( new pdf_jpeg_image( doc, data ) );
+                        up_image.reset( new pdf_jpeg_image( doc, data ) );
                      else
                         throw runtime_error( "unsupported image type '" + ext + "' in field #" + to_string( j ) );
 
-                     images.insert( make_pair( data, p_image = ap_image.release( ) ) );
+                     images.insert( make_pair( data, p_image = up_image.release( ) ) );
                   }
                }
 
@@ -3709,7 +3709,7 @@ bool process_group(
                   string wrap_over_data( data.substr( 0, wrap_over_pos ) );
 
                   bool force_wrap_fit = false;
-                  if( is_last_line && wrap_fit_data.length( ) < wrap_over_data.length( ) )
+                  if( is_last_line && ( wrap_fit_data.length( ) < wrap_over_data.length( ) ) )
                   {
                      force_wrap_fit = true;
                      wrap_fit_data += ellipsis;
@@ -4434,7 +4434,7 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
 
    for( font_const_iterator fci = format.fonts.begin( ); fci != format.fonts.end( ); ++fci )
    {
-      auto_ptr< pdf_font > ap_font;
+      unique_ptr< pdf_font > up_font;
 
       string::size_type pos = fci->second.font_name.find( ',' );
       string font_family( lower( fci->second.font_name.substr( 0, pos ) ) );
@@ -4446,25 +4446,25 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
          if( fci->second.font_encoding.empty( ) )
             throw runtime_error( "cannot use '" + fci->second.font_name + "' without specifying encoding" );
 
-         ap_font.reset( new pdf_true_type_font( doc, fci->second.font_name, fci->second.font_encoding ) );
+         up_font.reset( new pdf_true_type_font( doc, fci->second.font_name, fci->second.font_encoding ) );
       }
       else if( font_family == "simsun" || font_family == "simhei" )
       {
          if( fci->second.font_encoding.empty( ) )
             throw runtime_error( "cannot use '" + fci->second.font_name + "' without specifying encoding" );
 
-         ap_font.reset( new pdf_chinese_font( doc, fci->second.font_name, fci->second.font_encoding ) );
+         up_font.reset( new pdf_chinese_font( doc, fci->second.font_name, fci->second.font_encoding ) );
       }
       else
       {
          if( fci->second.font_encoding.empty( ) )
-            ap_font.reset( new pdf_standard_font( doc, fci->second.font_name ) );
+            up_font.reset( new pdf_standard_font( doc, fci->second.font_name ) );
          else
-            ap_font.reset( new pdf_standard_font( doc, fci->second.font_name, fci->second.font_encoding.c_str( ) ) );
+            up_font.reset( new pdf_standard_font( doc, fci->second.font_name, fci->second.font_encoding.c_str( ) ) );
       }
 
       view_fonts.insert( make_pair( fci->first,
-       make_pair( ap_font.release( ), font_extra( fci->second.font_size, fci->second.ypos_adjust ) ) ) );
+       make_pair( up_font.release( ), font_extra( fci->second.font_size, fci->second.ypos_adjust ) ) ) );
    }
 
    // NOTE: The processing order for nested groups in particular needs to occur as a directed graph of
@@ -4632,19 +4632,19 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
    bool has_left_and_right_boundaries = false;
    while( !finished )
    {
-      auto_ptr< pdf_page > ap_page;
+      unique_ptr< pdf_page > up_page;
 
       if( format.ps != e_page_size_not_applicable )
-         ap_page.reset( new pdf_page( doc, format.ps, format.pd ) );
+         up_page.reset( new pdf_page( doc, format.ps, format.pd ) );
       else
-         ap_page.reset( new pdf_page( doc, format.page_width, format.page_height ) );
+         up_page.reset( new pdf_page( doc, format.page_width, format.page_height ) );
 
       ++num_pages;
 
       // NOTE: This will ensure that the PDF reader displays the whole page when opening
       // (this perhaps should be optional down the track).
       if( num_pages == 1 )
-         ap_page->set_to_fit( );
+         up_page->set_to_fit( );
 
       string grid( format.grid );
       if( variables.count( c_grid_variable ) )
@@ -4653,11 +4653,11 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
       if( grid == c_grid_normal || grid == c_grid_reverse )
       {
          bool is_reverse = ( grid == string( c_grid_reverse ) );
-         pdf_print_grid( doc, *ap_page, !is_reverse );
+         pdf_print_grid( doc, *up_page, !is_reverse );
       }
 
-      float page_width = ap_page->get_width( );
-      float page_height = ap_page->get_height( );
+      float page_width = up_page->get_width( );
+      float page_height = up_page->get_height( );
 
       float header_size = format.header_size;
       if( variables.count( c_header_size_variable ) )
@@ -4907,7 +4907,7 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
                    || parent_repeat_num[ group ] == group_repeats[ parent_for_trio ] )
                   {
                      extend_linked_boundaries( group, format,
-                      *ap_page, group_boundaries, normal_group_page_top, true,
+                      *up_page, group_boundaries, normal_group_page_top, true,
                       page_height, normal_group_page_height, normal_group_page_height, true, true );
                   }
                }
@@ -5581,7 +5581,7 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
 
                   bool had_overflow_or_page_delay = false;
 
-                  if( process_group( group, format, variables, permissions, dynamic_variables, doc, *ap_page,
+                  if( process_group( group, format, variables, permissions, dynamic_variables, doc, *up_page,
                    group_has_overflow[ group ], page_width, page_height, normal_group_page_top, normal_group_page_height,
                    group_boundaries, view_fonts, view_images, group_last_row, group_page_delayed[ group ], has_overflow, page_count_info,
                    temp_image_files, group_cols_processed, group_text_overflows, repeat_prefix, repeat_num, repeat_after, is_nested_repeat ) )
@@ -5707,7 +5707,7 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
                            adjust_relative_boundaries( group, format, groups, group_boundaries );
 
                            extend_linked_boundaries( group, format,
-                            *ap_page, group_boundaries, normal_group_page_top, false,
+                            *up_page, group_boundaries, normal_group_page_top, false,
                             page_height, normal_group_page_height, group_boundaries[ group ].bottom, false, false );
 
                            // NOTE: When returning to process a parent group set the "processed" flag for
@@ -5811,7 +5811,7 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
                            adjust_relative_boundaries( dep_group, format, groups, group_boundaries );
 
                            extend_linked_boundaries( group, format,
-                            *ap_page, group_boundaries, normal_group_page_top, false,
+                            *up_page, group_boundaries, normal_group_page_top, false,
                             page_height, normal_group_page_height, group_boundaries[ group ].bottom, false, false );
 
                            string dep_par_group( format.groups.find( dep_group )->second.par_group );
@@ -5999,7 +5999,7 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
                         }
 
                         extend_linked_boundaries( extend_from, format,
-                         *ap_page, group_boundaries, normal_group_page_top, false,
+                         *up_page, group_boundaries, normal_group_page_top, false,
                          page_height, normal_group_page_height, normal_group_page_height, true, true );
 
                         // NOTE: If this is a "detail" group that has a "footer" then set the footer's
@@ -6016,7 +6016,7 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
                         // every parent level as the page overflow/delay could occur at any depth.
                         if( !has_further_children )
                            adjust_boundaries_for_ancestors( group, next_parent,
-                            parent_with_further_children, *ap_page, format, group_boundaries, groups,
+                            parent_with_further_children, *up_page, format, group_boundaries, groups,
                             group_detail_footer, page_height, normal_group_page_top, normal_group_page_height );
 
                         // NOTE: If this group is a child then make sure all parent "detail" or
@@ -6157,13 +6157,13 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
 
             if( !header_or_detail_still_to_come && !group_child_start_point[ ancestor ].empty( ) )
                extend_linked_boundaries( group,
-                format, *ap_page, group_boundaries, normal_group_page_top, false,
+                format, *up_page, group_boundaries, normal_group_page_top, false,
                 page_height, normal_group_page_height, normal_group_page_height, true, false );
          }
          else if( group_has_overflow[ group ] )
          {
             extend_linked_boundaries( group,
-             format, *ap_page, group_boundaries, normal_group_page_top, true, page_height,
+             format, *up_page, group_boundaries, normal_group_page_top, true, page_height,
              normal_group_page_height, normal_group_page_height, true, false, &group_still_to_come );
          }
          else if( group_has_processed[ group ] && !group_already_processed[ group ] )
@@ -6176,7 +6176,7 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
                extra_bottom = format.groups.find( group )->second.border / 2.0;
 
             extend_linked_boundaries( group,
-             format, *ap_page, group_boundaries, normal_group_page_top, true, page_height,
+             format, *up_page, group_boundaries, normal_group_page_top, true, page_height,
              normal_group_page_height, group_boundaries[ group ].bottom - extra_bottom, false, false );
          }
       }
@@ -6208,7 +6208,7 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
       if( !had_overflow && !has_group_to_come )
          finished = true;
 
-      pages.push_back( ref_count_ptr< pdf_page >( ap_page.release( ) ) );
+      pages.push_back( ref_count_ptr< pdf_page >( up_page.release( ) ) );
    }
 
    // NOTE: If a total page count field was found and there were multiple pages

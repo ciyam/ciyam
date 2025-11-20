@@ -144,9 +144,9 @@ string get_id_from_server_identity( const char* p_server_id )
 
    clear_key( key );
 
-   auto_ptr< char > ap_digest( md5.hex_digest( ) );
+   unique_ptr< char > up_digest( md5.hex_digest( ) );
 
-   return string( ap_digest.get( ) ).substr( 12 );
+   return string( up_digest.get( ) ).substr( 12 );
 }
 
 void init_strings( )

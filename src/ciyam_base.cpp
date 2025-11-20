@@ -498,16 +498,17 @@ struct session
    module_container modules_by_id;
    module_container modules_by_name;
 
-   auto_ptr< sql_db > ap_db;
+   unique_ptr< sql_db > up_db;
 
 #ifdef SSL_SUPPORT
    private_key priv_key;
 #endif
 
    bool buffer_is_locked;
-   auto_ptr< unsigned char > ap_buffer;
 
-   auto_ptr< global_storage_name_lock > ap_storage_name_lock;
+   unique_ptr< unsigned char > up_buffer;
+
+   unique_ptr< global_storage_name_lock > up_storage_name_lock;
 
    command_handler& cmd_handler;
 
@@ -539,8 +540,8 @@ struct session
    deque< string > file_hashes_to_get;
    deque< string > file_hashes_to_put;
 
-   auto_ptr< storage_ods_bulk_read > ap_bulk_read;
-   auto_ptr< storage_ods_bulk_write > ap_bulk_write;
+   unique_ptr< storage_ods_bulk_read > up_bulk_read;
+   unique_ptr< storage_ods_bulk_write > up_bulk_write;
 
    set< string > tx_key_info;
 
@@ -1021,13 +1022,13 @@ string storage_handler::get_variable( const string& var_name )
 
       if( persist )
       {
-         if( gtp_session->ap_bulk_read.get( ) )
+         if( gtp_session->up_bulk_read.get( ) )
             throw runtime_error( "storage is bulk locked for read by this session" );
 
-         auto_ptr< storage_ods_bulk_write > ap_bulk_write;
+         unique_ptr< storage_ods_bulk_write > up_bulk_write;
 
-         if( !gtp_session->ap_bulk_write.get( ) )
-            ap_bulk_write.reset( new storage_ods_bulk_write( ) );
+         if( !gtp_session->up_bulk_write.get( ) )
+            up_bulk_write.reset( new storage_ods_bulk_write( ) );
 
          ods_file_system ofs( *ods::instance( ) );
 
@@ -1098,11 +1099,11 @@ string storage_handler::get_variable( const string& var_name )
       }
       else
       {
-         auto_ptr< storage_ods_bulk_read > ap_bulk_read;
+         unique_ptr< storage_ods_bulk_read > up_bulk_read;
 
-         if( !gtp_session->ap_bulk_read.get( )
-          && !gtp_session->ap_bulk_write.get( ) )
-            ap_bulk_read.reset( new storage_ods_bulk_read( ) );
+         if( !gtp_session->up_bulk_read.get( )
+          && !gtp_session->up_bulk_write.get( ) )
+            up_bulk_read.reset( new storage_ods_bulk_read( ) );
 
          ods_file_system ofs( *ods::instance( ) );
 
@@ -1223,13 +1224,13 @@ void storage_handler::set_variable( const string& var_name, const string& new_va
           if( !ods::instance( ) )
             throw runtime_error( "no ODS DB exists for this session in storage_handler::set_variable" );
 
-        if( gtp_session->ap_bulk_read.get( ) )
+        if( gtp_session->up_bulk_read.get( ) )
             throw runtime_error( "storage is bulk locked for read by this session" );
 
-         auto_ptr< storage_ods_bulk_write > ap_bulk_write;
+         unique_ptr< storage_ods_bulk_write > up_bulk_write;
 
-         if( !gtp_session->ap_bulk_write.get( ) )
-            ap_bulk_write.reset( new storage_ods_bulk_write( ) );
+         if( !gtp_session->up_bulk_write.get( ) )
+            up_bulk_write.reset( new storage_ods_bulk_write( ) );
 
          ods_file_system ofs( *ods::instance( ) );
 
@@ -1936,9 +1937,9 @@ size_t g_num_send_stream_sessions = c_num_send_stream_sessions_default;
 const char* const c_default_storage_name = "<none>";
 const char* const c_default_storage_identity = "<default>";
 
-auto_ptr< ods > gap_ods;
+unique_ptr< ods > gup_ods;
 
-auto_ptr< ods_file_system > gap_ofs;
+unique_ptr< ods_file_system > gup_ofs;
 
 string g_domain;
 string g_timezone;
@@ -2270,93 +2271,93 @@ void init_system_ods( bool* p_restored = 0 )
       }
    }
 
-   gap_ods.reset(
+   gup_ods.reset(
     new ods( ods_db_name.c_str( ),
     ods::e_open_mode_create_if_not_exist,
     ods::e_write_mode_exclusive, true, 0, 0, g_ods_use_sync_write ) );
 
    bool was_just_created = false;
 
-   if( gap_ods->is_corrupt( ) )
+   if( gup_ods->is_corrupt( ) )
    {
       reconstruct_trace_progress progress( ods_db_name, true );
 
-      gap_ods->repair_corrupt_database( &progress );
+      gup_ods->repair_corrupt_database( &progress );
    }
-   else if( gap_ods->is_new( ) )
+   else if( gup_ods->is_new( ) )
       was_just_created = true;
 
    if( !was_just_created
-    && ( gap_ods->get_next_transaction_id( ) >= c_num_txs_for_reset ) )
+    && ( gup_ods->get_next_transaction_id( ) >= c_num_txs_for_reset ) )
    {
       reconstruct_trace_progress progress( ods_db_name, true );
 
-      gap_ods->compress_and_reset_tx_log( &progress );
+      gup_ods->compress_and_reset_tx_log( &progress );
    }
 
    system_ods_bulk_write ods_bulk_write;
 
-   gap_ofs.reset( new ods_file_system( *gap_ods ) );
+   gup_ofs.reset( new ods_file_system( *gup_ods ) );
 
-   auto_ptr< ods::transaction > ap_tx;
+   unique_ptr< ods::transaction > up_tx;
 
    if( was_just_created
-    || !gap_ofs->has_folder( c_system_archives_folder )
-    || !gap_ofs->has_folder( c_system_blacklist_folder )
-    || !gap_ofs->has_folder( c_system_datachain_folder )
-    || !gap_ofs->has_folder( c_system_peerchain_folder )
-    || !gap_ofs->has_folder( c_system_variables_folder )
-    || !gap_ofs->has_folder( c_system_repository_folder ) )
-      ap_tx.reset( new ods::transaction( *gap_ods ) );
+    || !gup_ofs->has_folder( c_system_archives_folder )
+    || !gup_ofs->has_folder( c_system_blacklist_folder )
+    || !gup_ofs->has_folder( c_system_datachain_folder )
+    || !gup_ofs->has_folder( c_system_peerchain_folder )
+    || !gup_ofs->has_folder( c_system_variables_folder )
+    || !gup_ofs->has_folder( c_system_repository_folder ) )
+      up_tx.reset( new ods::transaction( *gup_ods ) );
 
-   if( !gap_ofs->has_folder( c_system_archives_folder ) )
-      gap_ofs->add_folder( c_system_archives_folder );
+   if( !gup_ofs->has_folder( c_system_archives_folder ) )
+      gup_ofs->add_folder( c_system_archives_folder );
 
-   if( !gap_ofs->has_folder( c_system_blacklist_folder ) )
-      gap_ofs->add_folder( c_system_blacklist_folder );
+   if( !gup_ofs->has_folder( c_system_blacklist_folder ) )
+      gup_ofs->add_folder( c_system_blacklist_folder );
 
-   if( !gap_ofs->has_folder( c_system_datachain_folder ) )
-      gap_ofs->add_folder( c_system_datachain_folder );
+   if( !gup_ofs->has_folder( c_system_datachain_folder ) )
+      gup_ofs->add_folder( c_system_datachain_folder );
 
-   if( !gap_ofs->has_folder( c_system_peerchain_folder ) )
-      gap_ofs->add_folder( c_system_peerchain_folder );
+   if( !gup_ofs->has_folder( c_system_peerchain_folder ) )
+      gup_ofs->add_folder( c_system_peerchain_folder );
 
-   if( !gap_ofs->has_folder( c_system_variables_folder ) )
-      gap_ofs->add_folder( c_system_variables_folder );
+   if( !gup_ofs->has_folder( c_system_variables_folder ) )
+      gup_ofs->add_folder( c_system_variables_folder );
 
-   if( !gap_ofs->has_folder( c_system_repository_folder ) )
-      gap_ofs->add_folder( c_system_repository_folder );
+   if( !gup_ofs->has_folder( c_system_repository_folder ) )
+      gup_ofs->add_folder( c_system_repository_folder );
 
    if( num_system_backup_files )
    {
       if( dir_exists( c_system_repository_folder ) )
       {
-         gap_ofs->set_folder( c_system_repository_folder );
+         gup_ofs->set_folder( c_system_repository_folder );
 
-         import_objects( *gap_ofs, c_system_repository_folder );
+         import_objects( *gup_ofs, c_system_repository_folder );
 
-         gap_ofs->set_folder( ".." );
+         gup_ofs->set_folder( ".." );
 
          delete_directory_files( c_system_repository_folder, true );
       }
    }
 
-   if( ap_tx.get( ) )
-      ap_tx->commit( );
+   if( up_tx.get( ) )
+      up_tx->commit( );
 
    if( !was_just_created )
    {
       // NOTE: Restore all persistent system variable values.
       vector< string > variable_files;
 
-      gap_ofs->set_root_folder( c_system_variables_folder );
+      gup_ofs->set_root_folder( c_system_variables_folder );
 
-      gap_ofs->list_files( variable_files );
+      gup_ofs->list_files( variable_files );
 
       for( size_t i = 0; i < variable_files.size( ); i++ )
       {
          string value;
-         gap_ofs->fetch_from_text_file( variable_files[ i ], value );
+         gup_ofs->fetch_from_text_file( variable_files[ i ], value );
 
          set_system_variable( variable_files[ i ], value, true );
       }
@@ -2365,21 +2366,21 @@ void init_system_ods( bool* p_restored = 0 )
 
 void term_system_ods( )
 {
-   if( gap_ofs.get( ) )
+   if( gup_ofs.get( ) )
    {
       // NOTE: Clear all persistent system variable values.
       vector< string > variable_files;
 
-      gap_ofs->set_root_folder( c_system_variables_folder );
+      gup_ofs->set_root_folder( c_system_variables_folder );
 
-      gap_ofs->list_files( variable_files );
+      gup_ofs->list_files( variable_files );
 
       for( size_t i = 0; i < variable_files.size( ); i++ )
          set_system_variable( variable_files[ i ], "" );
    }
 
-   gap_ofs.reset( );
-   gap_ods.reset( );
+   gup_ofs.reset( );
+   gup_ods.reset( );
 }
 
 typedef map< unsigned int, string > listener_container;
@@ -2462,8 +2463,8 @@ void perform_storage_op( storage_op op,
       if( !slot || ( slot == g_max_storage_handlers ) )
          throw runtime_error( "max. permitted concurrent storage handlers currently active" );
 
-      if( gtp_session->ap_storage_name_lock.get( ) )
-         gtp_session->ap_storage_name_lock.reset( );
+      if( gtp_session->up_storage_name_lock.get( ) )
+         gtp_session->up_storage_name_lock.reset( );
 
       if( name == g_storage_name_lock )
          throw runtime_error( "storage '" + name + "' cannot be administered as it is currently in use" );
@@ -2512,29 +2513,29 @@ void perform_storage_op( storage_op op,
             }
          }
 
-         auto_ptr< ods > ap_ods( new ods( name.c_str( ), open_mode,
+         unique_ptr< ods > up_ods( new ods( name.c_str( ), open_mode,
           ods::e_write_mode_exclusive, true, &file_not_found, p_password, g_ods_use_sync_write ) );
 
          clear_key( sid );
 
-         auto_ptr< storage_handler > ap_handler( new storage_handler( slot, name, ap_ods.get( ) ) );
+         unique_ptr< storage_handler > up_handler( new storage_handler( slot, name, up_ods.get( ) ) );
 
-         if( ap_ods->is_corrupt( ) )
+         if( up_ods->is_corrupt( ) )
          {
             reconstruct_trace_progress progress( name );
 
-            ap_ods->repair_corrupt_database( &progress );
+            up_ods->repair_corrupt_database( &progress );
          }
 
-         ods::instance( ap_ods.get( ) );
+         ods::instance( up_ods.get( ) );
 
-         if( ap_ods->is_new( ) && has_exported_objects )
+         if( up_ods->is_new( ) && has_exported_objects )
          {
-            ods::bulk_write bulk_write( *ap_ods );
+            ods::bulk_write bulk_write( *up_ods );
 
-            ods::transaction tx( *ap_ods );
+            ods::transaction tx( *up_ods );
 
-            ods_file_system ofs( *ap_ods );
+            ods_file_system ofs( *up_ods );
 
             import_objects( ofs, name );
 
@@ -2554,13 +2555,13 @@ void perform_storage_op( storage_op op,
             }
          }
 
-         if( ap_ods->is_new( ) && !has_exported_objects )
+         if( up_ods->is_new( ) && !has_exported_objects )
          {
-            ods::bulk_write bulk_write( *ap_ods );
+            ods::bulk_write bulk_write( *up_ods );
 
-            ods::transaction tx( *ap_ods );
+            ods::transaction tx( *up_ods );
 
-            ap_handler->get_root( ).module_directory = directory;
+            up_handler->get_root( ).module_directory = directory;
 
             string blockchain( get_raw_system_variable(
              get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
@@ -2571,9 +2572,9 @@ void perform_storage_op( storage_op op,
                is_peerchain_application = true;
 
             if( is_peerchain_application )
-               ap_handler->get_root( ).type = e_storage_type_peerchain;
+               up_handler->get_root( ).type = e_storage_type_peerchain;
 
-            ods_file_system ofs( *ap_ods );
+            ods_file_system ofs( *up_ods );
 
             ofs.add_folder( c_storage_folder_name_modules );
 
@@ -2594,20 +2595,20 @@ void perform_storage_op( storage_op op,
 
             ofs.add_folder( c_storage_folder_name_variables );
 
-            ap_handler->get_root( ).store_as_text_files( ofs );
+            up_handler->get_root( ).store_as_text_files( ofs );
 
             tx.commit( );
          }
          else
          {
-            if( ap_handler->get_root( ).version != c_storage_format_version )
-               throw runtime_error( "found incorrect storage format version " + to_string( ap_handler->get_root( ).version ) );
+            if( up_handler->get_root( ).version != c_storage_format_version )
+               throw runtime_error( "found incorrect storage format version " + to_string( up_handler->get_root( ).version ) );
 
-            ods::bulk_read bulk_read( *ap_ods );
+            ods::bulk_read bulk_read( *up_ods );
 
-            ods_file_system ofs( *ap_ods );
+            ods_file_system ofs( *up_ods );
 
-            ap_handler->get_root( ).fetch_from_text_files( ofs );
+            up_handler->get_root( ).fetch_from_text_files( ofs );
 
             ofs.set_folder( c_storage_folder_name_modules );
 
@@ -2624,7 +2625,7 @@ void perform_storage_op( storage_op op,
                if( pos != string::npos )
                   next.erase( 0, pos + 1 );
 
-               ap_handler->get_root( ).module_list.push_back( next );
+               up_handler->get_root( ).module_list.push_back( next );
             }
 
             ofs.set_folder( ".." );
@@ -2644,15 +2645,15 @@ void perform_storage_op( storage_op op,
 
                   ofs.fetch_from_text_file( variable_files[ i ], value );
 
-                  ap_handler->set_variable( variable_files[ i ], value );
+                  up_handler->set_variable( variable_files[ i ], value );
                }
             }
 
             // NOTE: Force an identity write to occur when the first transaction is logged.
-            ap_handler->get_root( ).log_id.ceiling = ap_handler->get_root( ).log_id.next_id;
+            up_handler->get_root( ).log_id.ceiling = up_handler->get_root( ).log_id.next_id;
          }
 
-         string dead_keys_file( ap_handler->get_name( ) + c_dead_keys_suffix );
+         string dead_keys_file( up_handler->get_name( ) + c_dead_keys_suffix );
 
          if( exists_file( dead_keys_file ) )
          {
@@ -2670,14 +2671,14 @@ void perform_storage_op( storage_op op,
                   if( pos == string::npos )
                      throw runtime_error( "unexpected invalid dead key format '" + next + "'" );
 
-                  ap_handler->get_dead_keys( ).insert( next );
+                  up_handler->get_dead_keys( ).insert( next );
                }
             }
 
-            buffer_file_lines( dead_keys_file, ap_handler->get_dead_keys( ) );
+            buffer_file_lines( dead_keys_file, up_handler->get_dead_keys( ) );
          }
 
-         p_new_handler = ap_handler.release( );
+         p_new_handler = up_handler.release( );
 
          was_constructed = true;
 
@@ -2685,7 +2686,7 @@ void perform_storage_op( storage_op op,
          g_storage_handler_index.insert( make_pair( name, slot ) );
 
          // NOTE: The ODS instance now belongs to the storage handler (and not to this session).
-         ap_ods.release( );
+         up_ods.release( );
          ods::instance( 0, true );
       }
       catch( ... )
@@ -2712,7 +2713,7 @@ void perform_storage_op( storage_op op,
 
       try
       {
-         gtp_session->ap_db.reset( new sql_db( p_new_handler->get_name( ), p_new_handler->get_name( ) ) );
+         gtp_session->up_db.reset( new sql_db( p_new_handler->get_name( ), p_new_handler->get_name( ) ) );
 
          ods::instance( new ods( *p_new_handler->get_ods( ) ) );
 
@@ -2835,10 +2836,10 @@ bool is_child_constrained( class_base& instance,
          {
             p_class_base = instance_accessor.get_next_foreign_key_child( i, next_child_field, next_op );
 
-            auto_ptr< class_cascade > ap_tmp_cascading;
+            unique_ptr< class_cascade > up_tmp_cascading;
 
             if( p_class_base )
-               ap_tmp_cascading.reset( new class_cascade( *p_class_base ) );
+               up_tmp_cascading.reset( new class_cascade( *p_class_base ) );
 
             // FUTURE: The handling of cascades needs to be revisited at some stage to improve performance
             // as currently iteration occurs three times (firstly to lock, secondly to test if constrained
@@ -2932,10 +2933,10 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
          {
             p_class_base = instance_accessor.get_next_foreign_key_child( i, next_child_field, next_op );
 
-            auto_ptr< class_cascade > ap_tmp_cascading;
+            unique_ptr< class_cascade > up_tmp_cascading;
 
             if( p_class_base )
-               ap_tmp_cascading.reset( new class_cascade( *p_class_base ) );
+               up_tmp_cascading.reset( new class_cascade( *p_class_base ) );
 
             // FUTURE: The handling of cascades needs to be revisited at some stage to improve performance
             // as currently iteration occurs three times (firstly to lock, secondly to test if constrained
@@ -5541,9 +5542,9 @@ void create_peerchain(
 
    system_ods_bulk_write ods_bulk_write;
 
-   gap_ofs->set_root_folder( c_system_peerchain_folder );
+   gup_ofs->set_root_folder( c_system_peerchain_folder );
 
-   if( gap_ofs->has_file( identity ) )
+   if( gup_ofs->has_file( identity ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Peerchain '" + identity + "' already exists." );
 
@@ -5592,7 +5593,7 @@ void create_peerchain(
 
    writer.finish_sections( );
 
-   gap_ofs->store_file( identity, 0, &sio_data );
+   gup_ofs->store_file( identity, 0, &sio_data );
 }
 
 void update_peerchain( const string& identity,
@@ -5603,15 +5604,15 @@ void update_peerchain( const string& identity,
 
    system_ods_bulk_write ods_bulk_write;
 
-   gap_ofs->set_root_folder( c_system_peerchain_folder );
+   gup_ofs->set_root_folder( c_system_peerchain_folder );
 
-   if( !gap_ofs->has_file( identity ) )
+   if( !gup_ofs->has_file( identity ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Peerchain '" + identity + "' was not found." );
 
    stringstream sio_data;
 
-   gap_ofs->get_file( identity, &sio_data );
+   gup_ofs->get_file( identity, &sio_data );
 
    sio_reader reader( sio_data );
 
@@ -5688,7 +5689,7 @@ void update_peerchain( const string& identity,
 
    writer.finish_sections( );
 
-   gap_ofs->store_file( identity, 0, &sio_data );
+   gup_ofs->store_file( identity, 0, &sio_data );
 }
 
 void destroy_peerchain( const string& identity, progress* p_progress )
@@ -5697,7 +5698,7 @@ void destroy_peerchain( const string& identity, progress* p_progress )
 
    system_ods_bulk_write ods_bulk_write;
 
-   gap_ofs->set_root_folder( c_system_peerchain_folder );
+   gup_ofs->set_root_folder( c_system_peerchain_folder );
 
    string backup_identity( get_raw_system_variable(
     get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
@@ -5711,7 +5712,7 @@ void destroy_peerchain( const string& identity, progress* p_progress )
    if( identity == peer_hub_identity )
       throw runtime_error( "invalid attempt to destroy system peer hub identity" );
 
-   if( !gap_ofs->has_file( identity ) )
+   if( !gup_ofs->has_file( identity ) )
       throw runtime_error( "invalid attempt to destroy unknown peerchain '" + identity + "'" );
 
    if( has_system_variable( identity )
@@ -5723,7 +5724,7 @@ void destroy_peerchain( const string& identity, progress* p_progress )
 
    stringstream sio_data;
 
-   gap_ofs->get_file( identity, &sio_data );
+   gup_ofs->get_file( identity, &sio_data );
 
    sio_reader reader( sio_data );
 
@@ -5737,7 +5738,7 @@ void destroy_peerchain( const string& identity, progress* p_progress )
    string peer_type( reader.read_attribute( c_peerchain_attribute_peer_type ) );
    string shared_secret( reader.read_attribute( c_peerchain_attribute_shared_secret ) );
 
-   gap_ofs->remove_file( identity );
+   gup_ofs->remove_file( identity );
 
    int type = from_string< int >( peer_type );
 
@@ -5863,11 +5864,11 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
 
    string retval;
 
-   gap_ofs->set_root_folder( c_system_peerchain_folder );
+   gup_ofs->set_root_folder( c_system_peerchain_folder );
 
    vector< string > peerchains;
 
-   gap_ofs->list_files( "", peerchains );
+   gup_ofs->list_files( "", peerchains );
 
    string reversed( identity );
    reverse( reversed.begin( ), reversed.end( ) );
@@ -5883,7 +5884,7 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
       {
          stringstream sio_data;
 
-         gap_ofs->get_file( !is_reversed ? identity : reversed, &sio_data );
+         gup_ofs->get_file( !is_reversed ? identity : reversed, &sio_data );
 
          sio_reader reader( sio_data );
 
@@ -5935,11 +5936,11 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
 
    system_ods_bulk_read  ods_bulk_read;
 
-   gap_ofs->set_root_folder( c_system_peerchain_folder );
+   gup_ofs->set_root_folder( c_system_peerchain_folder );
 
    vector< string > peerchains;
 
-   gap_ofs->list_files( "", peerchains );
+   gup_ofs->list_files( "", peerchains );
 
    for( size_t i = 0; i < peerchains.size( ); i++ )
    {
@@ -5947,7 +5948,7 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
 
       stringstream sio_data;
 
-      gap_ofs->get_file( identity, &sio_data );
+      gup_ofs->get_file( identity, &sio_data );
 
       sio_reader reader( sio_data );
 
@@ -5985,11 +5986,11 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
 
    system_ods_bulk_read ods_bulk_read;
 
-   gap_ofs->set_root_folder( c_system_peerchain_folder );
+   gup_ofs->set_root_folder( c_system_peerchain_folder );
 
    vector< string > peerchains;
 
-   gap_ofs->list_files( "", peerchains );
+   gup_ofs->list_files( "", peerchains );
 
    string blockchain_backup_prefix, blockchain_backup_suffix;
 
@@ -6011,7 +6012,7 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
 
       stringstream sio_data;
 
-      gap_ofs->get_file( identity, &sio_data );
+      gup_ofs->get_file( identity, &sio_data );
 
       sio_reader reader( sio_data );
 
@@ -6604,13 +6605,13 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
       string arguments( process_script_args( g_scripts[ script_name ].arguments ) );
 
-      auto_ptr< restorable< bool > > ap_running_script;
+      unique_ptr< restorable< bool > > up_running_script;
 
       if( gtp_session )
       {
          gtp_session->script_temp_args_file.erase( );
 
-         ap_running_script.reset( new restorable< bool >( gtp_session->running_script, true ) );
+         up_running_script.reset( new restorable< bool >( gtp_session->running_script, true ) );
       }
 
       string cmd_and_args;
@@ -7499,14 +7500,14 @@ session_file_buffer_access::session_file_buffer_access( )
       p_buffer = new unsigned char[ bufsize ];
    else
    {
-      if( gtp_session->ap_buffer.get( ) )
-         memset( gtp_session->ap_buffer.get( ), 0, bufsize );
+      if( gtp_session->up_buffer.get( ) )
+         memset( gtp_session->up_buffer.get( ), 0, bufsize );
       else
-         gtp_session->ap_buffer.reset( new unsigned char[ bufsize ] );
+         gtp_session->up_buffer.reset( new unsigned char[ bufsize ] );
 
       gtp_session->buffer_is_locked = true;
 
-      p_buffer = gtp_session->ap_buffer.get( );
+      p_buffer = gtp_session->up_buffer.get( );
    }
 
    size = bufsize;
@@ -8436,13 +8437,13 @@ bool has_raw_session_variable( const string& name, size_t sess_id )
 {
    bool retval = false;
 
-   auto_ptr< guard > ap_guard;
-   auto_ptr< restorable< session* > > ap_temp_session;
+   unique_ptr< guard > up_guard;
+   unique_ptr< restorable< session* > > up_temp_session;
 
    if( sess_id )
    {
-      ap_guard.reset( new guard( g_session_mutex, "has_raw_session_variable" ) );
-      ap_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
+      up_guard.reset( new guard( g_session_mutex, "has_raw_session_variable" ) );
+      up_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
    }
 
    if( gtp_session )
@@ -8457,13 +8458,13 @@ string get_raw_session_variable( const string& name, size_t sess_id )
 
    bool found = false;
 
-   auto_ptr< guard > ap_guard;
-   auto_ptr< restorable< session* > > ap_temp_session;
+   unique_ptr< guard > up_guard;
+   unique_ptr< restorable< session* > > up_temp_session;
 
    if( sess_id )
    {
-      ap_guard.reset( new guard( g_session_mutex, "get_raw_session_variable" ) );
-      ap_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
+      up_guard.reset( new guard( g_session_mutex, "get_raw_session_variable" ) );
+      up_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
    }
 
    if( gtp_session )
@@ -8862,13 +8863,13 @@ void set_session_variable( const string& name, const string& value,
    if( p_sess_id )
       sess_id = from_string< size_t >( *p_sess_id );
 
-   auto_ptr< guard > ap_guard;
-   auto_ptr< restorable< session* > > ap_temp_session;
+   unique_ptr< guard > up_guard;
+   unique_ptr< restorable< session* > > up_temp_session;
 
    if( sess_id )
    {
-      ap_guard.reset( new guard( g_session_mutex, "set_session_variable" ) );
-      ap_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
+      up_guard.reset( new guard( g_session_mutex, "set_session_variable" ) );
+      up_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
    }
 
    if( gtp_session )
@@ -9858,7 +9859,7 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
 
                size_t num_rows = 0;
 
-               if( gtp_session->ap_db.get( ) )
+               if( gtp_session->up_db.get( ) )
                {
                   string select_sql( "SELECT * FROM " + table_name );
 
@@ -9876,7 +9877,7 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
 
                   instance.get_sql_column_names( sql_column_names );
 
-                  sql_dataset ds( *gtp_session->ap_db.get( ), select_sql );
+                  sql_dataset ds( *gtp_session->up_db.get( ), select_sql );
 
                   while( ds.next( ) )
                   {
@@ -10083,8 +10084,8 @@ void restore_storage( command_handler& cmd_handler )
       if( !file_exists( sql_file_name ) )
          throw runtime_error( "did not find backup file '" + sql_file_name + "'" );
 
-      if( gtp_session->ap_db.get( ) )
-         exec_sql_from_file( *gtp_session->ap_db, sql_file_name, &cmd_handler, true );
+      if( gtp_session->up_db.get( ) )
+         exec_sql_from_file( *gtp_session->up_db, sql_file_name, &cmd_handler, true );
    }
 }
 
@@ -10104,8 +10105,8 @@ void upgrade_storage( command_handler& cmd_handler )
 
       sql_file_name += ".upgrade.sql";
 
-      if( file_exists( sql_file_name ) && gtp_session->ap_db.get( ) )
-         exec_sql_from_file( *gtp_session->ap_db, sql_file_name, &cmd_handler );
+      if( file_exists( sql_file_name ) && gtp_session->up_db.get( ) )
+         exec_sql_from_file( *gtp_session->up_db, sql_file_name, &cmd_handler );
    }
 }
 
@@ -10115,12 +10116,12 @@ void term_storage( command_handler& cmd_handler )
 
    if( ods::instance( ) )
    {
-      gtp_session->ap_bulk_read.reset( );
+      gtp_session->up_bulk_read.reset( );
 
       while( !gtp_session->transactions.empty( ) )
          transaction_rollback( );
 
-      gtp_session->ap_bulk_write.reset( );
+      gtp_session->up_bulk_write.reset( );
 
       if( gtp_session->p_storage_handler->get_ref_count( ) == 1 )
       {
@@ -10212,10 +10213,10 @@ void storage_admin_name_lock( const string& name )
          throw runtime_error( "storage '" + name + "' cannot be administered as it is currently in use" );
 
       // NOTE: If this session has an existing lock name then that will need to be removed first.
-      if( gtp_session->ap_storage_name_lock.get( ) )
-         gtp_session->ap_storage_name_lock.reset( );
+      if( gtp_session->up_storage_name_lock.get( ) )
+         gtp_session->up_storage_name_lock.reset( );
 
-      gtp_session->ap_storage_name_lock.reset( new global_storage_name_lock( name ) );
+      gtp_session->up_storage_name_lock.reset( new global_storage_name_lock( name ) );
    }
 }
 
@@ -10295,7 +10296,7 @@ void storage_process_rewind( const string& label, map< string, string >& file_in
 
    bool okay = true;
 
-   if( okay && gtp_session->ap_db.get( ) )
+   if( okay && gtp_session->up_db.get( ) )
    {
       ifstream inpf( undo_sql.c_str( ) );
       if( !inpf )
@@ -10352,7 +10353,7 @@ void storage_process_rewind( const string& label, map< string, string >& file_in
          {
             TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, next_statement );
 
-            exec_sql( *gtp_session->ap_db, next_statement );
+            exec_sql( *gtp_session->up_db, next_statement );
          }
       }
    }
@@ -11033,16 +11034,16 @@ void storage_bulk_start( bool is_write )
       if( !gtp_session->p_storage_handler->get_ods( ) )
          throw runtime_error( "no storage is currently linked" );
 
-      if( gtp_session->ap_bulk_read.get( ) )
+      if( gtp_session->up_bulk_read.get( ) )
          throw runtime_error( "storage is already bulk locked for read by this session" );
 
-      if( gtp_session->ap_bulk_write.get( ) )
+      if( gtp_session->up_bulk_write.get( ) )
          throw runtime_error( "storage is already bulk locked for write by this session" );
 
       if( !is_write )
-         gtp_session->ap_bulk_read.reset( new storage_ods_bulk_read( ) );
+         gtp_session->up_bulk_read.reset( new storage_ods_bulk_read( ) );
       else
-         gtp_session->ap_bulk_write.reset( new storage_ods_bulk_write( ) );
+         gtp_session->up_bulk_write.reset( new storage_ods_bulk_write( ) );
    }
 }
 
@@ -11053,8 +11054,8 @@ void storage_bulk_finish( )
       if( !gtp_session->p_storage_handler->get_ods( ) )
          throw runtime_error( "no storage is currently linked" );
 
-      gtp_session->ap_bulk_read.reset( );
-      gtp_session->ap_bulk_write.reset( );
+      gtp_session->up_bulk_read.reset( );
+      gtp_session->up_bulk_write.reset( );
    }
 }
 
@@ -11104,11 +11105,11 @@ void storage_lock_all_tables( )
          }
 
          if( !all_table_info.empty( ) )
-            exec_sql( *gtp_session->ap_db, "LOCK TABLES " + all_table_info );
+            exec_sql( *gtp_session->up_db, "LOCK TABLES " + all_table_info );
       }
       catch( ... )
       {
-         exec_sql( *gtp_session->ap_db, "UNLOCK TABLES" );
+         exec_sql( *gtp_session->up_db, "UNLOCK TABLES" );
 
          throw;
       }
@@ -11118,7 +11119,7 @@ void storage_lock_all_tables( )
 void storage_unlock_all_tables( )
 {
    if( ods::instance( ) && gtp_session->p_storage_handler->get_ods( ) )
-      exec_sql( *gtp_session->ap_db, "UNLOCK TABLES" );
+      exec_sql( *gtp_session->up_db, "UNLOCK TABLES" );
 }
 
 bool storage_locked_for_admin( )
@@ -11147,7 +11148,7 @@ struct storage_ods_bulk_read::impl
       {
          try
          {
-            ap_ods_bulk_read.reset( new ods::bulk_read( *p_ods ) );
+            up_ods_bulk_read.reset( new ods::bulk_read( *p_ods ) );
 
             if( gtp_session )
                gtp_session->p_storage_handler->set_bulk_lock_sess_id( );
@@ -11173,7 +11174,7 @@ struct storage_ods_bulk_read::impl
       }
    }
 
-   auto_ptr< ods::bulk_read > ap_ods_bulk_read;
+   unique_ptr< ods::bulk_read > up_ods_bulk_read;
 };
 
 storage_ods_bulk_read::storage_ods_bulk_read( )
@@ -11185,7 +11186,7 @@ storage_ods_bulk_read::~storage_ods_bulk_read( )
 {
    uint64_t trace_flag = 0;
 
-   if( p_impl && p_impl->ap_ods_bulk_read.get( ) )
+   if( p_impl && p_impl->up_ods_bulk_read.get( ) )
       trace_flag = ( TRACE_INITIAL | TRACE_LOCKING );
 
    TRACE_LOG( trace_flag, "[bulk_read] storage_ods (released)" );
@@ -11206,7 +11207,7 @@ struct storage_ods_bulk_write::impl
       {
          try
          {
-            ap_ods_bulk_write.reset( new ods::bulk_write( *p_ods, p_progress ) );
+            up_ods_bulk_write.reset( new ods::bulk_write( *p_ods, p_progress ) );
 
             if( gtp_session )
                gtp_session->p_storage_handler->set_bulk_lock_sess_id( );
@@ -11233,7 +11234,7 @@ struct storage_ods_bulk_write::impl
       }
    }
 
-   auto_ptr< ods::bulk_write > ap_ods_bulk_write;
+   unique_ptr< ods::bulk_write > up_ods_bulk_write;
 };
 
 storage_ods_bulk_write::storage_ods_bulk_write( progress* p_progress )
@@ -11245,7 +11246,7 @@ storage_ods_bulk_write::~storage_ods_bulk_write( )
 {
    uint64_t trace_flag = 0;
 
-   if( p_impl && p_impl->ap_ods_bulk_write.get( ) )
+   if( p_impl && p_impl->up_ods_bulk_write.get( ) )
       trace_flag = ( TRACE_INITIAL | TRACE_LOCKING );
 
    TRACE_LOG( trace_flag, "[bulk_write] storage_ods (released)" );
@@ -11255,12 +11256,12 @@ storage_ods_bulk_write::~storage_ods_bulk_write( )
 
 ods& system_ods_instance( )
 {
-   return *gap_ods;
+   return *gup_ods;
 }
 
 ods_file_system& system_ods_file_system( )
 {
-   return *gap_ofs;
+   return *gup_ofs;
 }
 
 void export_repository_entries( )
@@ -11269,22 +11270,22 @@ void export_repository_entries( )
 
    system_ods_bulk_read ods_bulk_read;
 
-   gap_ofs->set_root_folder( c_system_repository_folder );
+   gup_ofs->set_root_folder( c_system_repository_folder );
 
-   export_objects( *gap_ofs, c_system_repository_folder );
+   export_objects( *gup_ofs, c_system_repository_folder );
 }
 
 struct system_ods_bulk_read::impl
 {
    impl( )
    {
-      if( !gap_ods->is_thread_bulk_locked( ) )
+      if( !gup_ods->is_thread_bulk_locked( ) )
       {
          try
          {
-            ap_ods_bulk_read.reset( new ods::bulk_read( *gap_ods ) );
+            up_ods_bulk_read.reset( new ods::bulk_read( *gup_ods ) );
 
-            ap_scoped_instance.reset( new scoped_ods_instance( *gap_ods ) );
+            up_scoped_instance.reset( new scoped_ods_instance( *gup_ods ) );
 
             TRACE_LOG( TRACE_INITIAL | TRACE_LOCKING, "[bulk_read] system_ods (obtained)" );
          }
@@ -11297,8 +11298,8 @@ struct system_ods_bulk_read::impl
       }
    }
 
-   auto_ptr< ods::bulk_read > ap_ods_bulk_read;
-   auto_ptr< scoped_ods_instance > ap_scoped_instance;
+   unique_ptr< ods::bulk_read > up_ods_bulk_read;
+   unique_ptr< scoped_ods_instance > up_scoped_instance;
 };
 
 system_ods_bulk_read::system_ods_bulk_read( )
@@ -11310,7 +11311,7 @@ system_ods_bulk_read::~system_ods_bulk_read( )
 {
    uint64_t trace_flag = 0;
 
-   if( p_impl && p_impl->ap_ods_bulk_read.get( ) )
+   if( p_impl && p_impl->up_ods_bulk_read.get( ) )
       trace_flag = ( TRACE_INITIAL | TRACE_LOCKING );
 
    TRACE_LOG( trace_flag, "[bulk_read] system_ods (released)" );
@@ -11322,13 +11323,13 @@ struct system_ods_bulk_write::impl
 {
    impl( progress* p_progress )
    {
-      if( !gap_ods->is_thread_bulk_write_locked( ) )
+      if( !gup_ods->is_thread_bulk_write_locked( ) )
       {
          try
          {
-            ap_ods_bulk_write.reset( new ods::bulk_write( *gap_ods, p_progress ) );
+            up_ods_bulk_write.reset( new ods::bulk_write( *gup_ods, p_progress ) );
 
-            ap_scoped_instance.reset( new scoped_ods_instance( *gap_ods ) );
+            up_scoped_instance.reset( new scoped_ods_instance( *gup_ods ) );
 
             TRACE_LOG( TRACE_INITIAL | TRACE_LOCKING, "[bulk_write] system_ods (obtained)" );
          }
@@ -11341,8 +11342,8 @@ struct system_ods_bulk_write::impl
       }
    }
 
-   auto_ptr< ods::bulk_write > ap_ods_bulk_write;
-   auto_ptr< scoped_ods_instance > ap_scoped_instance;
+   unique_ptr< ods::bulk_write > up_ods_bulk_write;
+   unique_ptr< scoped_ods_instance > up_scoped_instance;
 };
 
 system_ods_bulk_write::system_ods_bulk_write( progress* p_progress )
@@ -11354,7 +11355,7 @@ system_ods_bulk_write::~system_ods_bulk_write( )
 {
    uint64_t trace_flag = 0;
 
-   if( p_impl && p_impl->ap_ods_bulk_write.get( ) )
+   if( p_impl && p_impl->up_ods_bulk_write.get( ) )
       trace_flag = ( TRACE_INITIAL | TRACE_LOCKING );
 
    TRACE_LOG( trace_flag, "[bulk_write] system_ods (released)" );
@@ -11679,12 +11680,12 @@ string get_gid( )
 
 bool has_sql_db( )
 {
-   return gtp_session->ap_db.get( );
+   return gtp_session->up_db.get( );
 }
 
 sql_db& get_sql_db( )
 {
-   return *gtp_session->ap_db;
+   return *gtp_session->up_db;
 }
 
 void set_class( const string& mclass )
@@ -12059,7 +12060,7 @@ void module_load( const string& module_name,
          throw runtime_error( "cannot load a module whilst a transaction is active" );
       }
 
-      auto_ptr< guard > ap_guard( new guard( g_mutex ) );
+      unique_ptr< guard > up_guard( new guard( g_mutex ) );
 
       ods* p_ods( ods::instance( ) );
 
@@ -12188,16 +12189,16 @@ void module_load( const string& module_name,
 
                outf.flush( );
 
-               if( gtp_session->ap_db.get( ) )
+               if( gtp_session->up_db.get( ) )
                {
                   // NOTE: As MySQL DDL operations with InnoDB can be very slow the global
                   // thread lock is released whilst performing the DDL. As the storage has
                   // already been locked for administration this should be of no concern.
-                  ap_guard.reset( );
+                  up_guard.reset( );
 
                   try
                   {
-                     exec_sql_from_file( *gtp_session->ap_db, temp_sql_file_name, &cmd_handler );
+                     exec_sql_from_file( *gtp_session->up_db, temp_sql_file_name, &cmd_handler );
                   }
                   catch( ... )
                   {
@@ -12211,7 +12212,7 @@ void module_load( const string& module_name,
                      throw;
                   }
 
-                  ap_guard.reset( new guard( g_mutex ) );
+                  up_guard.reset( new guard( g_mutex ) );
                }
 
                storage_ods_bulk_write ods_bulk_write;
@@ -13497,11 +13498,11 @@ bool fetch_instance_from_db( class_base& instance,
    if( sys_only_fields && allow_caching )
       found = fetch_instance_from_cache( instance, instance_accessor.get_lazy_fetch_key( ), true );
 
-   if( !found && gtp_session && gtp_session->ap_db.get( ) )
+   if( !found && gtp_session && gtp_session->up_db.get( ) )
    {
       TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, sql );
 
-      sql_dataset ds( *gtp_session->ap_db.get( ), sql );
+      sql_dataset ds( *gtp_session->up_db.get( ), sql );
 
       found = ds.next( );
 
@@ -13969,10 +13970,10 @@ void instance_prepare_execute( size_t handle,
       instance_accessor.clear( );
    else
    {
-      auto_ptr< temporary_object_variable > ap_tmp_skip_after_fetch;
+      unique_ptr< temporary_object_variable > up_tmp_skip_after_fetch;
 
       if( skip_after_fetch )
-         ap_tmp_skip_after_fetch.reset( new temporary_object_variable(
+         up_tmp_skip_after_fetch.reset( new temporary_object_variable(
           instance, get_special_var_name( e_special_var_skip_after_fetch ), c_true_value ) );
 
       instance.perform_fetch( key );
@@ -14153,11 +14154,11 @@ void transaction_start( )
    if( !ods::instance( ) )
       throw runtime_error( "no storage is currently attached" );
 
-   if( gtp_session->ap_db.get( ) && gtp_session->transactions.empty( ) )
+   if( gtp_session->up_db.get( ) && gtp_session->transactions.empty( ) )
    {
       TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, "BEGIN" );
 
-      exec_sql( *gtp_session->ap_db, "BEGIN" );
+      exec_sql( *gtp_session->up_db, "BEGIN" );
    }
 
    gtp_session->transactions.push( new ods::transaction( *ods::instance( ) ) );
@@ -14206,11 +14207,11 @@ void transaction_commit( )
 
          set_session_variable( get_special_var_name( e_special_var_skip_persistence ), "" );
 
-         if( gtp_session->ap_db.get( ) )
+         if( gtp_session->up_db.get( ) )
          {
             TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, "COMMIT" );
 
-            exec_sql( *gtp_session->ap_db, "COMMIT" );
+            exec_sql( *gtp_session->up_db, "COMMIT" );
          }
 
          if( gtp_session->p_tx_helper )
@@ -14303,11 +14304,11 @@ void transaction_rollback( )
 
       gtp_session->transactions.pop( );
 
-      if( gtp_session->ap_db.get( ) && gtp_session->transactions.empty( ) )
+      if( gtp_session->up_db.get( ) && gtp_session->transactions.empty( ) )
       {
          TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, "ROLLBACK" );
 
-         exec_sql( *gtp_session->ap_db, "ROLLBACK" );
+         exec_sql( *gtp_session->up_db, "ROLLBACK" );
 
          gtp_session->transaction_log_command.erase( );
       }

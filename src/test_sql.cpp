@@ -69,25 +69,25 @@ int main( int argc, char* argv[ ] )
             vector< string > queries;
             buffer_file_lines( sql.substr( 1 ), queries );
 
-            auto_ptr< sql_dataset_group > ap_dsg;
+            unique_ptr< sql_dataset_group > up_dsg;
 
             if( order_columns.empty( ) )
-               ap_dsg.reset( new sql_dataset_group( db, queries ) );
+               up_dsg.reset( new sql_dataset_group( db, queries ) );
             else
             {
                vector< string > all_order_columns;
                split( order_columns, all_order_columns );
 
-               ap_dsg.reset( new sql_dataset_group( db, queries, false, false, &all_order_columns ) );
+               up_dsg.reset( new sql_dataset_group( db, queries, false, false, &all_order_columns ) );
             }
 
-            while( ap_dsg->next( ) )
+            while( up_dsg->next( ) )
             {
-               for( int i = 0; i < ap_dsg->get_fieldcount( ); i++ )
+               for( int i = 0; i < up_dsg->get_fieldcount( ); i++ )
                {
                   if( i > 0 )
                      cout << '|';
-                  cout << ap_dsg->as_string( i );
+                  cout << up_dsg->as_string( i );
                }
                cout << '\n';
             }

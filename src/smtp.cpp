@@ -283,20 +283,20 @@ string determine_challenge_response( const string& challenge, const string& user
 
    md5_ipad.finalize( );
 
-   auto_ptr< unsigned char > ap_idigest( md5_ipad.raw_digest( ) );
+   unique_ptr< unsigned char > up_idigest( md5_ipad.raw_digest( ) );
 
    MD5 md5_opad;
 
    md5_opad.update( opad_buf, 64 );
-   md5_opad.update( ap_idigest.get( ), 16 );
+   md5_opad.update( up_idigest.get( ), 16 );
 
    md5_opad.finalize( );
 
-   auto_ptr< char > ap_odigest( md5_opad.hex_digest( ) );
+   unique_ptr< char > up_odigest( md5_opad.hex_digest( ) );
 
    string response( user + " " );
 
-   response += string( ap_odigest.get( ) );
+   response += string( up_odigest.get( ) );
 
    return base64::encode( response );
 }
@@ -672,7 +672,7 @@ void send_message( const string& host_and_port,
             }
          }
 
-         auto_ptr< mime_encoder > ap_mime;
+         unique_ptr< mime_encoder > up_mime;
 
          bool has_html = ( p_html && !p_html->empty( ) );
          bool has_files = ( p_file_names && !p_file_names->empty( ) );
@@ -696,22 +696,22 @@ void send_message( const string& host_and_port,
          // NOTE: If there is HTML or attached files then format the message as MIME.
          if( has_html || has_files )
          {
-            ap_mime.reset( new mime_encoder( ) );
+            up_mime.reset( new mime_encoder( ) );
 
             if( has_html )
             {
                if( has_images )
                {
-                  ap_mime->create_child( "related" );
+                  up_mime->create_child( "related" );
 
                   if( !has_message )
-                     ap_mime->get_child( ).add_html( *p_html, p_charset );
+                     up_mime->get_child( ).add_html( *p_html, p_charset );
                   else
                   {
-                     ap_mime->get_child( ).create_child( "alternative" );
+                     up_mime->get_child( ).create_child( "alternative" );
 
-                     ap_mime->get_child( ).get_child( ).add_text( *p_message, p_charset );
-                     ap_mime->get_child( ).get_child( ).add_html( *p_html, p_charset );
+                     up_mime->get_child( ).get_child( ).add_text( *p_message, p_charset );
+                     up_mime->get_child( ).get_child( ).add_html( *p_html, p_charset );
                   }
 
                   const char* p_path_prefix = 0;
@@ -720,33 +720,33 @@ void send_message( const string& host_and_port,
                      p_path_prefix = ( *p_image_path_prefix ).c_str( );
 
                   for( size_t i = 0; i < p_image_names->size( ); i++ )
-                     ap_mime->get_child( ).add_image( ( *p_image_names )[ i ], p_path_prefix );
+                     up_mime->get_child( ).add_image( ( *p_image_names )[ i ], p_path_prefix );
                }
                else
                {
                   if( !has_message )
-                     ap_mime->add_html( *p_html, p_charset );
+                     up_mime->add_html( *p_html, p_charset );
                   else
                   {
-                     ap_mime->create_child( "related" );
+                     up_mime->create_child( "related" );
 
-                     ap_mime->get_child( ).create_child( "alternative" );
+                     up_mime->get_child( ).create_child( "alternative" );
 
-                     ap_mime->get_child( ).get_child( ).add_text( *p_message, p_charset );
-                     ap_mime->get_child( ).get_child( ).add_html( *p_html, p_charset );
+                     up_mime->get_child( ).get_child( ).add_text( *p_message, p_charset );
+                     up_mime->get_child( ).get_child( ).add_html( *p_html, p_charset );
                   }
                }
             }
             else if( has_message )
-               ap_mime->add_text( *p_message, p_charset );
+               up_mime->add_text( *p_message, p_charset );
 
             if( has_files )
             {
                for( size_t i = 0; i < p_file_names->size( ); i++ )
-                  ap_mime->add_file( ( *p_file_names )[ i ] );
+                  up_mime->add_file( ( *p_file_names )[ i ] );
             }
 
-            str += ap_mime->get_data( );
+            str += up_mime->get_data( );
          }
          else if( p_message )
          {

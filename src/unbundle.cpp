@@ -484,7 +484,7 @@ int main( int argc, char* argv[ ] )
       set< string > created;
       set< string > matched_filters;
 
-      auto_ptr< ofstream > ap_ofstream;
+      unique_ptr< ofstream > up_ofstream;
 
       MD5 md5;
       string next;
@@ -516,7 +516,7 @@ int main( int argc, char* argv[ ] )
       {
          if( raw_file_size )
          {
-            if( !ap_ofstream.get( ) )
+            if( !up_ofstream.get( ) )
             {
 #ifdef ZLIB_SUPPORT
                if( use_zlib )
@@ -604,20 +604,23 @@ int main( int argc, char* argv[ ] )
 
                   md5.update( ( unsigned char* )buffer, count );
 
-                  ap_ofstream->rdbuf( )->sputn( buffer, count );
-                  if( !ap_ofstream->good( ) )
+                  up_ofstream->rdbuf( )->sputn( buffer, count );
+
+                  if( !up_ofstream->good( ) )
                      throw runtime_error( "unexpected bad output file stream" );
 
                   raw_file_size -= count;
                }
 
                md5.finalize( );
-               auto_ptr< char > ap_digest( md5.hex_digest( ) );
 
-               if( next_md5 != string( ap_digest.get( ) ) )
+               unique_ptr< char > up_digest( md5.hex_digest( ) );
+
+               if( next_md5 != string( up_digest.get( ) ) )
                   cerr << "*** error: file '" << next_file << "' failed MD5 digest check ***" << endl;
 
-               ap_ofstream.reset( );
+               up_ofstream.reset( );
+
                file_perms( next_file, rwx_perms );
 
                if( !is_quieter && !was_skipped )
@@ -651,7 +654,7 @@ int main( int argc, char* argv[ ] )
             // line (after unescaping) it is safe to "seek" one byte less
             // forwards and then read the remainder of the line (the size
             // of this will depend upon how much escaping is being used).
-            if( !ap_ofstream.get( ) && line_size && file_data_lines > 1 )
+            if( !up_ofstream.get( ) && line_size && file_data_lines > 1 )
             {
                if( !use_zlib )
                   p_is->seekg( line_size - 1, ios::cur );
@@ -667,7 +670,7 @@ int main( int argc, char* argv[ ] )
 
                uint64_t elapsed = seconds_between( dtm, now );
 
-               if( ap_ofstream.get( ) && elapsed >= 1 )
+               if( up_ofstream.get( ) && elapsed >= 1 )
                {
                   if( initial_progress )
                      cout << ' ';
@@ -680,10 +683,10 @@ int main( int argc, char* argv[ ] )
                }
             }
 
-            if( !is_quieter && ap_ofstream.get( ) && file_data_lines == 0 )
+            if( !is_quieter && up_ofstream.get( ) && file_data_lines == 0 )
                cout << endl;
 
-            if( ap_ofstream.get( ) )
+            if( up_ofstream.get( ) )
             {
                string fdata;
 
@@ -694,25 +697,29 @@ int main( int argc, char* argv[ ] )
                else
                   fdata = base64::decode( next );
 
-               if( ap_ofstream->rdbuf( )->sputn( fdata.c_str( ), fdata.length( ) ) != ( int )fdata.length( ) )
+               if( up_ofstream->rdbuf( )->sputn( fdata.c_str( ), fdata.length( ) ) != ( int )fdata.length( ) )
                   throw runtime_error( "write failed for file '" + next_file + "'" );
 
                md5.update( ( unsigned char* )fdata.c_str( ), fdata.length( ) );
 
                if( file_data_lines == 0 )
                {
-                  ap_ofstream->flush( );
-                  if( !ap_ofstream->good( ) )
-                     throw runtime_error( "flush failed for file '" + next_file + "'" );
-                  ap_ofstream->close( );
+                  up_ofstream->flush( );
 
-                  ap_ofstream.reset( );
+                  if( !up_ofstream->good( ) )
+                     throw runtime_error( "flush failed for file '" + next_file + "'" );
+
+                  up_ofstream->close( );
+
+                  up_ofstream.reset( );
+
                   file_perms( next_file, rwx_perms );
 
                   md5.finalize( );
-                  auto_ptr< char > ap_digest( md5.hex_digest( ) );
 
-                  if( next_md5 != string( ap_digest.get( ) ) )
+                  unique_ptr< char > up_digest( md5.hex_digest( ) );
+
+                  if( next_md5 != string( up_digest.get( ) ) )
                      cerr << "*** error: file '" << next_file << "' failed MD5 digest check ***" << endl;
                }
             }
@@ -903,10 +910,10 @@ int main( int argc, char* argv[ ] )
                 directory_perms, destination_directory, list_only, is_quieter );
 
             if( !matched )
-               ap_ofstream.reset( );
+               up_ofstream.reset( );
             else if( list_only )
             {
-               ap_ofstream.reset( );
+               up_ofstream.reset( );
 
                cout << next_file;
 
@@ -922,9 +929,9 @@ int main( int argc, char* argv[ ] )
 
                initial_progress = true;
 
-               ap_ofstream = auto_ptr< ofstream >( new ofstream( next_file.c_str( ), ios::out | ios::binary ) );
+               up_ofstream = unique_ptr< ofstream >( new ofstream( next_file.c_str( ), ios::out | ios::binary ) );
 
-               if( !*ap_ofstream.get( ) )
+               if( !*up_ofstream.get( ) )
                {
                   if( !is_quieter )
                      cout << endl;
@@ -998,12 +1005,12 @@ int main( int argc, char* argv[ ] )
             md5.update( ( unsigned char* )path_name.c_str( ), path_name.length( ) );
             md5.finalize( );
 
-            auto_ptr< char > ap_digest( md5.hex_digest( ) );
+            unique_ptr< char > up_digest( md5.hex_digest( ) );
 
-            if( check != string( ap_digest.get( ) ) )
+            if( check != string( up_digest.get( ) ) )
                cerr << "*** error: directory '" << path_name << "' failed MD5 digest check ***" << endl;
 
-            g_md5.update( ( unsigned char* )ap_digest.get( ), 32 );
+            g_md5.update( ( unsigned char* )up_digest.get( ), 32 );
 
             if( include || level > 0 )
             {
@@ -1035,11 +1042,12 @@ int main( int argc, char* argv[ ] )
          else if( type == c_type_checksum )
          {
             g_md5.finalize( );
-            auto_ptr< char > ap_digest( g_md5.hex_digest( ) );
+
+            unique_ptr< char > up_digest( g_md5.hex_digest( ) );
 
             next.erase( 0, 2 );
 
-            if( next != string( ap_digest.get( ) ) )
+            if( next != string( up_digest.get( ) ) )
                cerr << "*** error: bundle file failed MD5 digest check ***" << endl;
 
             finished = true;

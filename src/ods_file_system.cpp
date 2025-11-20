@@ -710,10 +710,10 @@ string ods_file_system::determine_folder(
 
       if( new_folder != string( c_root_folder ) )
       {
-         auto_ptr< ods::bulk_read > ap_bulk;
+         unique_ptr< ods::bulk_read > up_bulk;
 
          if( !o.is_thread_bulk_locked( ) )
-            ap_bulk.reset( new ods::bulk_read( o ) );
+            up_bulk.reset( new ods::bulk_read( o ) );
 
          if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
          {
@@ -801,10 +801,10 @@ void ods_file_system::list_links( const string& name, ostream& os )
 
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_read > ap_bulk;
+   unique_ptr< ods::bulk_read > up_bulk;
 
    if( !o.is_thread_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_read( o ) );
+      up_bulk.reset( new ods::bulk_read( o ) );
 
    btree_type::iterator tmp_iter;
    btree_type::item_type tmp_item;
@@ -1024,10 +1024,10 @@ void ods_file_system::add_file( const string& name,
 
       string value( key_value( name ) );
 
-      auto_ptr< ods::bulk_write > ap_bulk;
+      unique_ptr< ods::bulk_write > up_bulk;
 
       if( !o.is_thread_bulk_write_locked( ) )
-         ap_bulk.reset( new ods::bulk_write( o, p_progress ) );
+         up_bulk.reset( new ods::bulk_write( o, p_progress ) );
 
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
@@ -1039,10 +1039,10 @@ void ods_file_system::add_file( const string& name,
          p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
 
-      auto_ptr< ods::transaction > ap_ods_tx;
+      unique_ptr< ods::transaction > up_ods_tx;
 
       if( !o.is_in_transaction( ) )
-         ap_ods_tx.reset( new ods::transaction( o ) );
+         up_ods_tx.reset( new ods::transaction( o ) );
 
       btree_trans_type bt_tx( bt );
 
@@ -1116,8 +1116,8 @@ void ods_file_system::add_file( const string& name,
 
             bt_tx.commit( );
 
-            if( ap_ods_tx.get( ) )
-               ap_ods_tx->commit( );
+            if( up_ods_tx.get( ) )
+               up_ods_tx->commit( );
 
             p_impl->next_transaction_id = o.get_next_transaction_id( );
          }
@@ -1137,10 +1137,10 @@ void ods_file_system::get_file( const string& name,
 
    string value( key_value( name ) );
 
-   auto_ptr< ods::bulk_read > ap_bulk;
+   unique_ptr< ods::bulk_read > up_bulk;
 
    if( !o.is_thread_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_read( o ) );
+      up_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -1195,10 +1195,10 @@ bool ods_file_system::is_link( const string& name )
 
    string value( key_value( name ) );
 
-   auto_ptr< ods::bulk_read > ap_bulk;
+   unique_ptr< ods::bulk_read > up_bulk;
 
    if( !o.is_thread_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_read( o ) );
+      up_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -1226,10 +1226,10 @@ bool ods_file_system::has_file( const string& name, bool is_prefix,
 
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_read > ap_bulk;
+   unique_ptr< ods::bulk_read > up_bulk;
 
    if( !o.is_thread_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_read( o ) );
+      up_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -1304,10 +1304,10 @@ string ods_file_system::last_file_name_with_prefix( const string& prefix )
 
    value += prefix;
 
-   auto_ptr< ods::bulk_read > ap_bulk;
+   unique_ptr< ods::bulk_read > up_bulk;
 
    if( !o.is_thread_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_read( o ) );
+      up_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -1348,10 +1348,10 @@ string ods_file_system::link_source( const string& name )
 
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_read > ap_bulk;
+   unique_ptr< ods::bulk_read > up_bulk;
 
    if( !o.is_thread_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_read( o ) );
+      up_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -1416,10 +1416,10 @@ void ods_file_system::link_file( const string& name, const string& source )
 {
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_write > ap_bulk;
+   unique_ptr< ods::bulk_write > up_bulk;
 
    if( !o.is_thread_bulk_write_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o ) );
+      up_bulk.reset( new ods::bulk_write( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -1443,10 +1443,10 @@ void ods_file_system::link_file( const string& name, const string& source )
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
 
-      auto_ptr< ods::transaction > ap_ods_tx;
+      unique_ptr< ods::transaction > up_ods_tx;
 
       if( !o.is_in_transaction( ) )
-         ap_ods_tx.reset( new ods::transaction( o ) );
+         up_ods_tx.reset( new ods::transaction( o ) );
 
       btree_trans_type bt_tx( bt );
 
@@ -1522,8 +1522,8 @@ void ods_file_system::link_file( const string& name, const string& source )
 
                bt_tx.commit( );
 
-               if( ap_ods_tx.get( ) )
-                  ap_ods_tx->commit( );
+               if( up_ods_tx.get( ) )
+                  up_ods_tx->commit( );
 
                p_impl->next_transaction_id = o.get_next_transaction_id( );
             }
@@ -1541,10 +1541,10 @@ void ods_file_system::move_file( const string& source, const string& destination
 
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_write > ap_bulk;
+   unique_ptr< ods::bulk_write > up_bulk;
 
    if( !o.is_thread_bulk_write_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o ) );
+      up_bulk.reset( new ods::bulk_write( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -1574,9 +1574,10 @@ void ods_file_system::move_file( const string& source, const string& destination
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
 
-      auto_ptr< ods::transaction > ap_ods_tx;
+      unique_ptr< ods::transaction > up_ods_tx;
+
       if( !o.is_in_transaction( ) )
-         ap_ods_tx.reset( new ods::transaction( o ) );
+         up_ods_tx.reset( new ods::transaction( o ) );
 
       btree_trans_type bt_tx( bt );
 
@@ -1660,8 +1661,8 @@ void ods_file_system::move_file( const string& source, const string& destination
 
                   bt_tx.commit( );
 
-                  if( ap_ods_tx.get( ) )
-                     ap_ods_tx->commit( );
+                  if( up_ods_tx.get( ) )
+                     up_ods_tx->commit( );
 
                   p_impl->next_transaction_id = o.get_next_transaction_id( );
                }
@@ -1684,10 +1685,10 @@ bool ods_file_system::store_file( const string& name,
 
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_write > ap_bulk;
+   unique_ptr< ods::bulk_write > up_bulk;
 
    if( !o.is_thread_bulk_write_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o, p_progress ) );
+      up_bulk.reset( new ods::bulk_write( o, p_progress ) );
 
    bool changed = false;
 
@@ -1721,10 +1722,10 @@ void ods_file_system::remove_file( const string& name, ostream* p_os, progress* 
 {
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_write > ap_bulk;
+   unique_ptr< ods::bulk_write > up_bulk;
 
    if( !o.is_thread_bulk_write_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o, p_progress ) );
+      up_bulk.reset( new ods::bulk_write( o, p_progress ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -1733,10 +1734,10 @@ void ods_file_system::remove_file( const string& name, ostream* p_os, progress* 
       p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
-   auto_ptr< ods::transaction > ap_ods_tx;
+   unique_ptr< ods::transaction > up_ods_tx;
 
    if( !o.is_in_transaction( ) )
-      ap_ods_tx.reset( new ods::transaction( o ) );
+      up_ods_tx.reset( new ods::transaction( o ) );
 
    btree_trans_type bt_tx( bt );
 
@@ -1744,8 +1745,8 @@ void ods_file_system::remove_file( const string& name, ostream* p_os, progress* 
    {
       bt_tx.commit( );
 
-      if( ap_ods_tx.get( ) )
-         ap_ods_tx->commit( );
+      if( up_ods_tx.get( ) )
+         up_ods_tx->commit( );
 
       p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
@@ -1764,10 +1765,10 @@ void ods_file_system::replace_file( const string& name,
 
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_write > ap_bulk;
+   unique_ptr< ods::bulk_write > up_bulk;
 
    if( !o.is_thread_bulk_write_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o, p_progress ) );
+      up_bulk.reset( new ods::bulk_write( o, p_progress ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -1779,10 +1780,10 @@ void ods_file_system::replace_file( const string& name,
    btree_type::iterator tmp_iter;
    btree_type::item_type tmp_item;
 
-   auto_ptr< ods::transaction > ap_ods_tx;
+   unique_ptr< ods::transaction > up_ods_tx;
 
    if( !o.is_in_transaction( ) )
-      ap_ods_tx.reset( new ods::transaction( o ) );
+      up_ods_tx.reset( new ods::transaction( o ) );
 
    btree_trans_type bt_tx( bt );
 
@@ -1903,8 +1904,8 @@ void ods_file_system::replace_file( const string& name,
 
       bt_tx.commit( );
 
-      if( ap_ods_tx.get( ) )
-         ap_ods_tx->commit( );
+      if( up_ods_tx.get( ) )
+         up_ods_tx->commit( );
 
       p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
@@ -1914,10 +1915,10 @@ void ods_file_system::get_time_stamp( const string& name, ostream* p_os )
 {
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_read > ap_bulk;
+   unique_ptr< ods::bulk_read > up_bulk;
 
    if( !o.is_thread_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_read( o ) );
+      up_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -1967,10 +1968,10 @@ void ods_file_system::set_time_stamp( const string& name, int64_t tm_val, ostrea
 {
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_write > ap_bulk;
+   unique_ptr< ods::bulk_write > up_bulk;
 
    if( !o.is_thread_bulk_write_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o ) );
+      up_bulk.reset( new ods::bulk_write( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -2015,10 +2016,10 @@ void ods_file_system::set_time_stamp( const string& name, int64_t tm_val, ostrea
 
       if( tm_val != old_tm_val )
       {
-         auto_ptr< ods::transaction > ap_ods_tx;
+         unique_ptr< ods::transaction > up_ods_tx;
 
          if( !o.is_in_transaction( ) )
-            ap_ods_tx.reset( new ods::transaction( o ) );
+            up_ods_tx.reset( new ods::transaction( o ) );
 
          btree_trans_type bt_tx( bt );
 
@@ -2029,8 +2030,8 @@ void ods_file_system::set_time_stamp( const string& name, int64_t tm_val, ostrea
 
          bt_tx.commit( );
 
-         if( ap_ods_tx.get( ) )
-            ap_ods_tx->commit( );
+         if( up_ods_tx.get( ) )
+            up_ods_tx->commit( );
 
          p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
@@ -2041,10 +2042,10 @@ void ods_file_system::get_permissions( const string& name, ostream* p_os )
 {
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_read > ap_bulk;
+   unique_ptr< ods::bulk_read > up_bulk;
 
    if( !o.is_thread_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_read( o ) );
+      up_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -2109,10 +2110,10 @@ void ods_file_system::set_permissions( const string& name, const string& perms, 
 
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_write > ap_bulk;
+   unique_ptr< ods::bulk_write > up_bulk;
 
    if( !o.is_thread_bulk_write_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o ) );
+      up_bulk.reset( new ods::bulk_write( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -2160,10 +2161,10 @@ void ods_file_system::set_permissions( const string& name, const string& perms, 
 
       if( perms != old_perms )
       {
-         auto_ptr< ods::transaction > ap_ods_tx;
+         unique_ptr< ods::transaction > up_ods_tx;
 
          if( !o.is_in_transaction( ) )
-            ap_ods_tx.reset( new ods::transaction( o ) );
+            up_ods_tx.reset( new ods::transaction( o ) );
 
          btree_trans_type bt_tx( bt );
 
@@ -2174,8 +2175,8 @@ void ods_file_system::set_permissions( const string& name, const string& perms, 
 
          bt_tx.commit( );
 
-         if( ap_ods_tx.get( ) )
-            ap_ods_tx->commit( );
+         if( up_ods_tx.get( ) )
+            up_ods_tx->commit( );
 
          p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
@@ -2245,13 +2246,13 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
 
    string folder_name( name );
 
-   auto_ptr< temporary_set_folder > ap_temp_folder;
+   unique_ptr< temporary_set_folder > up_temp_folder;
 
    string::size_type pos = folder_name.rfind( c_folder );
 
    if( pos != string::npos )
    {
-      ap_temp_folder.reset( new temporary_set_folder( *this, folder_name.substr( 0, pos ) ) );
+      up_temp_folder.reset( new temporary_set_folder( *this, folder_name.substr( 0, pos ) ) );
       folder_name.erase( 0, pos + 1 );
    }
 
@@ -2269,10 +2270,10 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
    }
    else
    {
-      auto_ptr< ods::bulk_write > ap_bulk;
+      unique_ptr< ods::bulk_write > up_bulk;
 
       if( !o.is_thread_bulk_write_locked( ) )
-         ap_bulk.reset( new ods::bulk_write( o ) );
+         up_bulk.reset( new ods::bulk_write( o ) );
 
       if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
       {
@@ -2284,10 +2285,10 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
 
-      auto_ptr< ods::transaction > ap_ods_tx;
+      unique_ptr< ods::transaction > up_ods_tx;
 
       if( !o.is_in_transaction( ) )
-         ap_ods_tx.reset( new ods::transaction( o ) );
+         up_ods_tx.reset( new ods::transaction( o ) );
 
       btree_trans_type bt_tx( bt );
 
@@ -2406,8 +2407,8 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
       {
          bt_tx.commit( );
 
-         if( ap_ods_tx.get( ) )
-            ap_ods_tx->commit( );
+         if( up_ods_tx.get( ) )
+            up_ods_tx->commit( );
 
          p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
@@ -2418,10 +2419,10 @@ bool ods_file_system::has_folder( const string& name, string* p_perms, int64_t* 
 {
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_read > ap_bulk;
+   unique_ptr< ods::bulk_read > up_bulk;
 
    if( !o.is_thread_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_read( o ) );
+      up_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -2497,10 +2498,10 @@ void ods_file_system::move_folder( const string& name, const string& destination
 {
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_write > ap_bulk;
+   unique_ptr< ods::bulk_write > up_bulk;
 
    if( !o.is_thread_bulk_write_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o ) );
+      up_bulk.reset( new ods::bulk_write( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -2512,10 +2513,10 @@ void ods_file_system::move_folder( const string& name, const string& destination
    btree_type::iterator tmp_iter;
    btree_type::item_type tmp_item;
 
-   auto_ptr< ods::transaction > ap_ods_tx;
+   unique_ptr< ods::transaction > up_ods_tx;
 
    if( !o.is_in_transaction( ) )
-      ap_ods_tx.reset( new ods::transaction( o ) );
+      up_ods_tx.reset( new ods::transaction( o ) );
 
    btree_trans_type bt_tx( bt );
 
@@ -2613,8 +2614,8 @@ void ods_file_system::move_folder( const string& name, const string& destination
       {
          bt_tx.commit( );
 
-         if( ap_ods_tx.get( ) )
-            ap_ods_tx->commit( );
+         if( up_ods_tx.get( ) )
+            up_ods_tx->commit( );
 
          p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
@@ -2627,10 +2628,10 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
 
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_write > ap_bulk;
+   unique_ptr< ods::bulk_write > up_bulk;
 
    if( !o.is_thread_bulk_write_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o ) );
+      up_bulk.reset( new ods::bulk_write( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -2639,10 +2640,10 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
       p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
-   auto_ptr< ods::transaction > ap_ods_tx;
+   unique_ptr< ods::transaction > up_ods_tx;
 
    if( !o.is_in_transaction( ) )
-      ap_ods_tx.reset( new ods::transaction( o ) );
+      up_ods_tx.reset( new ods::transaction( o ) );
 
    btree_trans_type bt_tx( bt );
 
@@ -2703,8 +2704,8 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
       {
          bt_tx.commit( );
 
-         if( ap_ods_tx.get( ) )
-            ap_ods_tx->commit( );
+         if( up_ods_tx.get( ) )
+            up_ods_tx->commit( );
 
          p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
@@ -2715,10 +2716,10 @@ void ods_file_system::replace_folder( const string& name, ostream* p_os, string*
 {
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_write > ap_bulk;
+   unique_ptr< ods::bulk_write > up_bulk;
 
    if( !o.is_thread_bulk_write_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o ) );
+      up_bulk.reset( new ods::bulk_write( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -2730,10 +2731,10 @@ void ods_file_system::replace_folder( const string& name, ostream* p_os, string*
    btree_type::iterator tmp_iter;
    btree_type::item_type tmp_item;
 
-   auto_ptr< ods::transaction > ap_ods_tx;
+   unique_ptr< ods::transaction > up_ods_tx;
 
    if( !o.is_in_transaction( ) )
-      ap_ods_tx.reset( new ods::transaction( o ) );
+      up_ods_tx.reset( new ods::transaction( o ) );
 
    btree_trans_type bt_tx( bt );
 
@@ -2786,8 +2787,8 @@ void ods_file_system::replace_folder( const string& name, ostream* p_os, string*
 
          bt_tx.commit( );
 
-         if( ap_ods_tx.get( ) )
-            ap_ods_tx->commit( );
+         if( up_ods_tx.get( ) )
+            up_ods_tx->commit( );
 
          p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
@@ -2798,10 +2799,10 @@ void ods_file_system::rebuild_index( )
 {
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_write > ap_bulk;
+   unique_ptr< ods::bulk_write > up_bulk;
 
    if( !o.is_thread_bulk_write_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o ) );
+      up_bulk.reset( new ods::bulk_write( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -2823,10 +2824,10 @@ void ods_file_system::dump_node_data( const string& file_name, ostream* p_os )
 {
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_read > ap_bulk;
+   unique_ptr< ods::bulk_read > up_bulk;
 
    if( !o.is_thread_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_read( o ) );
+      up_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -2898,10 +2899,10 @@ void ods_file_system::perform_match(
 {
    btree_type& bt( p_impl->bt );
 
-   auto_ptr< ods::bulk_read > ap_bulk;
+   unique_ptr< ods::bulk_read > up_bulk;
 
    if( !o.is_thread_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_read( o ) );
+      up_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
@@ -2941,10 +2942,10 @@ void ods_file_system::perform_match(
     && ( pos > 0 ) && ( expr[ pos - 1 ] == c_folder ) )
       is_folder_expr = true;
 
-   auto_ptr< regex > ap_regex;
+   unique_ptr< regex > up_regex;
 
    if( !regexpr.empty( ) )
-      ap_regex.reset( new regex( regexpr ) );
+      up_regex.reset( new regex( regexpr ) );
 
 #ifdef USE_BULK_PAUSE
    size_t iterations = 0;
@@ -3020,13 +3021,13 @@ void ods_file_system::perform_match(
             break;
 
 #ifdef USE_BULK_PAUSE
-         if( ap_bulk.get( ) && ( ++iterations % 5000 == 0 ) )
+         if( up_bulk.get( ) && ( ++iterations % 5000 == 0 ) )
          {
             btree_type::item_type tmp_item;
 
             tmp_item.val = match_iter->val;
 
-            ap_bulk->pause( );
+            up_bulk->pause( );
 
             if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
             {
@@ -3059,7 +3060,7 @@ void ods_file_system::perform_match(
 
          if( !skip && compare_equal( tmp_item, *match_iter ) )
          {
-            string::size_type pos = ap_regex.get( ) ? ap_regex->search( match_iter->val ) : 0;
+            string::size_type pos = up_regex.get( ) ? up_regex->search( match_iter->val ) : 0;
 
             if( pos != string::npos )
             {
@@ -3638,13 +3639,13 @@ void ods_file_system::branch_files_or_objects( ostream& os,
  const string& folder, const string& expr, branch_style style,
  bool show_folders, const string* p_start_folder, size_t depth )
 {
-   auto_ptr< restorable< bool > > ap_show_folders;
+   unique_ptr< restorable< bool > > up_show_folders;
 
    restorable< string > tmp_branch_prefix( p_impl->branch_prefix, "" );
    restorable< string > tmp_branch_suffix( p_impl->branch_suffix, c_dummy_suffix );
 
    if( !show_folders )
-      ap_show_folders.reset( new restorable< bool >( p_impl->show_folders, false ) );
+      up_show_folders.reset( new restorable< bool >( p_impl->show_folders, false ) );
 
    list_files_or_objects( expr, os, "", show_folders, ( list_style )style, true, 0, false, true );
 }

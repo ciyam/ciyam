@@ -289,7 +289,7 @@ struct mime_decoder::impl
 
    vector< mime_part* > parts;
 
-   auto_ptr< mime_decoder > ap_child;
+   unique_ptr< mime_decoder > up_child;
 };
 
 void mime_decoder::impl::process_data( )
@@ -389,7 +389,7 @@ void mime_decoder::impl::process_data( )
          if( processing_data )
          {
             if( next_type == "multipart" )
-               ap_child.reset( new mime_decoder( true, next_data ) );
+               up_child.reset( new mime_decoder( true, next_data ) );
             else
             {
                mime_part* p_next_part = new mime_part;
@@ -495,15 +495,15 @@ string mime_decoder::get_text_data( ) const
 
 bool mime_decoder::has_child( )
 {
-   return p_impl->ap_child.get( ) != 0;
+   return p_impl->up_child.get( ) != 0;
 }
 
 mime_decoder& mime_decoder::get_child( )
 {
-   if( !p_impl->ap_child.get( ) )
+   if( !p_impl->up_child.get( ) )
       throw runtime_error( "mime_decoder: child has not been created" );
 
-   return *p_impl->ap_child;
+   return *p_impl->up_child;
 }
 
 size_t mime_decoder::num_parts( ) const
@@ -543,7 +543,7 @@ struct mime_encoder::impl
    string multi_part_subtype;
    string multi_part_extra_subtype;
 
-   auto_ptr< mime_encoder > ap_child;
+   unique_ptr< mime_encoder > up_child;
 
    bool is_child;
    bool finished;
@@ -781,18 +781,18 @@ void mime_encoder::add_image( const string& file_name, const char* p_path_prefix
 
 void mime_encoder::create_child( const char* p_multi_part_subtype, const char* p_multi_part_extra_subtype )
 {
-   p_impl->ap_child.reset(
+   p_impl->up_child.reset(
     new mime_encoder( p_multi_part_subtype, p_multi_part_extra_subtype, p_impl->max_chars_per_line ) );
 
-   p_impl->ap_child->p_impl->is_child = true;
+   p_impl->up_child->p_impl->is_child = true;
 }
 
 mime_encoder& mime_encoder::get_child( )
 {
-   if( !p_impl->ap_child.get( ) )
+   if( !p_impl->up_child.get( ) )
       throw runtime_error( "mime_encoder: child has not been created" );
 
-   return *p_impl->ap_child;
+   return *p_impl->up_child;
 }
 
 string mime_encoder::get_data( )
@@ -808,7 +808,7 @@ string mime_encoder::get_data( )
 
       bool is_multi = false;
 
-      if( p_impl->num_parts > 1 || p_impl->ap_child.get( ) )
+      if( ( p_impl->num_parts > 1 ) || p_impl->up_child.get( ) )
          is_multi = true;
 
       if( is_multi )
@@ -821,10 +821,11 @@ string mime_encoder::get_data( )
          if( !p_impl->is_child )
             final_data += string( "This is a multipart MIME message." ) + g_new_line;
 
-         if( p_impl->ap_child.get( ) )
+         if( p_impl->up_child.get( ) )
          {
             final_data += string( "--" ) + p_impl->mime_boundary + g_new_line;
-            final_data += p_impl->ap_child->get_data( );
+
+            final_data += p_impl->up_child->get_data( );
          }
       }
 

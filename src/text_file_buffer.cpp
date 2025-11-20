@@ -33,22 +33,23 @@ text_file_buffer::text_file_buffer( const string& file_name )
  file_name( file_name )
 {
    FILE* fp = fopen( file_name.c_str( ), "rb" );
+
    if( !fp )
       throw runtime_error( "unable to open file '" + file_name + "' for input" );
 
    fseek( fp, 0, SEEK_END );
    long size = ftell( fp );
 
-   auto_ptr< char > ap( new char[ size + 1 ] );
+   unique_ptr< char > up( new char[ size + 1 ] );
 
    fseek( fp, 0, SEEK_SET );
-   if( fread( ap.get( ), 1, ( size_t )size, fp ) != ( size_t )size )
+   if( fread( up.get( ), 1, ( size_t )size, fp ) != ( size_t )size )
       throw runtime_error( "reading from input file '" + file_name + "'" );
 
    fclose( fp );
    lines.reserve( size / 10 );
 
-   char* tmp = ap.get( );
+   char* tmp = up.get( );
    char* last = tmp;
 
    tmp[ size ] = '\0';
@@ -74,6 +75,6 @@ text_file_buffer::text_file_buffer( const string& file_name )
       }
    }
 
-   p = ap.release( );
+   p = up.release( );
 }
 

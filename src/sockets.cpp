@@ -874,8 +874,8 @@ size_t file_transfer( const string& name, tcp_socket& s,
 
       size_t max_unencoded = base64::decode_size( max_line_size, true );
 
-      auto_ptr< char > ap_buf1( new char[ max_line_size ] );
-      auto_ptr< char > ap_buf2( new char[ max_line_size ] );
+      unique_ptr< char > up_buf1( new char[ max_line_size ] );
+      unique_ptr< char > up_buf2( new char[ max_line_size ] );
 
       bool is_first = true;
 
@@ -1014,12 +1014,12 @@ size_t file_transfer( const string& name, tcp_socket& s,
          if( is_first && has_prefix_char )
          {
             ++offset;
-            *( ap_buf1.get( ) ) = *p_ft_extra->p_prefix_char;
+            *( up_buf1.get( ) ) = *p_ft_extra->p_prefix_char;
          }
 
          is_first = false;
 
-         if( !p_istream->read( ap_buf1.get( ) + offset, max_unencoded - offset ) )
+         if( !p_istream->read( up_buf1.get( ) + offset, max_unencoded - offset ) )
             count = p_istream->gcount( ) + offset;
 
          if( !count )
@@ -1027,12 +1027,12 @@ size_t file_transfer( const string& name, tcp_socket& s,
 
          size_t enc_len = 0;
 
-         base64::encode( ( const unsigned char* )ap_buf1.get( ), count, ap_buf2.get( ), &enc_len );
+         base64::encode( ( const unsigned char* )up_buf1.get( ), count, up_buf2.get( ), &enc_len );
 
          while( enc_len < max_line_size )
-            *( ap_buf2.get( ) + enc_len++ ) = '.';
+            *( up_buf2.get( ) + enc_len++ ) = '.';
 
-         if( s.send_n( ( unsigned char* )ap_buf2.get( ), max_line_size, line_timeout, p_progress ) != max_line_size )
+         if( s.send_n( ( unsigned char* )up_buf2.get( ), max_line_size, line_timeout, p_progress ) != max_line_size )
             throw runtime_error( "unable to send " + to_string( max_line_size ) + " bytes using send_n in file transfer" );
 
          if( p_istream->eof( ) )
@@ -1381,18 +1381,18 @@ void recv_test_datagrams( size_t num, int port, int sock, string& str, size_t ti
 
 void send_test_datagrams( size_t num, const string& host_name, int port, size_t timeout, udp_socket* p_socket, bool reverse )
 {
-   auto_ptr< udp_socket > ap_udp_socket;
+   unique_ptr< udp_socket > up_udp_socket;
 
    if( !p_socket || !*p_socket )
    {
-      ap_udp_socket.reset( new udp_socket );
+      up_udp_socket.reset( new udp_socket );
 
-      if( !ap_udp_socket->open( ) )
+      if( !up_udp_socket->open( ) )
          throw runtime_error( "unable to open udp_socket in send_test_datagrams" );
 
-      ap_udp_socket->set_reuse_addr( );
+      up_udp_socket->set_reuse_addr( );
 
-      p_socket = ap_udp_socket.get( );
+      p_socket = up_udp_socket.get( );
    }
 
    ip_address address( host_name.c_str( ), port );

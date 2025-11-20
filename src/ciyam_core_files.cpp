@@ -751,21 +751,21 @@ string create_peer_repository_entry_push_info(
    file_data += c_file_repository_meta_data_info_type_raw;
    file_data += '\n';
 
-   auto_ptr< private_key > ap_priv_key;
+   unique_ptr< private_key > up_priv_key;
 
    if( is_for_testing )
-      ap_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
+      up_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
    else
       // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
       // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
-      ap_priv_key.reset(
+      up_priv_key.reset(
        new private_key( "0" + sha256( file_hash + password ).get_digest_as_string( ).substr( 1 ) ) );
 
    if( p_pub_key )
-      *p_pub_key = ap_priv_key->get_public( );
+      *p_pub_key = up_priv_key->get_public( );
 
    file_data += c_file_repository_public_key_line_prefix;
-   file_data += ap_priv_key->get_public( true, true );
+   file_data += up_priv_key->get_public( true, true );
 
    file_data += '\n';
 
@@ -826,14 +826,14 @@ void decrypt_pulled_peer_file( const string& dest_hash,
 #else
    public_key pub_key( public_key_in_hex );
 
-   auto_ptr< private_key > ap_priv_key;
+   unique_ptr< private_key > up_priv_key;
 
    if( is_for_testing )
-      ap_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
+      up_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
    else
       // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
       // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
-      ap_priv_key.reset(
+      up_priv_key.reset(
        new private_key( "0" + sha256( dest_hash + password ).get_digest_as_string( ).substr( 1 ) ) );
 
    bool is_encrypted = false;
@@ -871,7 +871,7 @@ void decrypt_pulled_peer_file( const string& dest_hash,
 
    stringstream ss( file_data );
 
-   crypt_stream( ss, ap_priv_key->construct_shared( pub_key ), stream_cipher_value( stream_cipher ) );
+   crypt_stream( ss, up_priv_key->construct_shared( pub_key ), stream_cipher_value( stream_cipher ) );
 
    string raw_file_data( ( char )type_and_extra + ss.str( ) );
 

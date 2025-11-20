@@ -296,30 +296,30 @@ template< typename T, typename L > void test_btree< T, L >::create_as_directory_
 template< typename T, typename L >
  void test_btree< T, L >::dump_node_info( ostream& outf, uint64_t node, bool output_as_xml, int indent )
 {
-   auto_ptr< bt_node_ref< T > > ap_node_ref( base_class::allocate_node_ref( node ) );
+   unique_ptr< bt_node_ref< T > > up_node_ref( base_class::allocate_node_ref( node ) );
 
-   for( short i = 0; i < ap_node_ref->get_node( ).size( ); i++ )
+   for( short i = 0; i < up_node_ref->get_node( ).size( ); i++ )
    {
       if( !output_as_xml )
       {
-         outf << "mkdir \"" << ap_node_ref->get_node( ).get_item_data( i );
-         if( !( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf ) )
+         outf << "mkdir \"" << up_node_ref->get_node( ).get_item_data( i );
+         if( !( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf ) )
             outf << " (less than)";
          outf << "\"\n";
       }
 
-      if( !( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf ) )
+      if( !( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf ) )
       {
          if( output_as_xml )
          {
             outf << string( indent, ' ' );
-            outf << "<less_than name=\"" << ap_node_ref->get_node( ).get_item_data( i ) << "\">\n";
+            outf << "<less_than name=\"" << up_node_ref->get_node( ).get_item_data( i ) << "\">\n";
          }
          else
              outf << "cd \""
-              << ap_node_ref->get_node( ).get_item_data( i ) << " (less than)\"\n";
+              << up_node_ref->get_node( ).get_item_data( i ) << " (less than)\"\n";
 
-          dump_node_info( outf, ap_node_ref->get_node( ).get_item_link( i ), output_as_xml, indent + 1 );
+          dump_node_info( outf, up_node_ref->get_node( ).get_item_link( i ), output_as_xml, indent + 1 );
 
          if( output_as_xml )
          {
@@ -332,28 +332,28 @@ template< typename T, typename L >
          if( output_as_xml )
          {
             outf << string( indent, ' ' );
-            outf << "<equal_to name = \"" << ap_node_ref->get_node( ).get_item_data( i ) << "\"/>\n";
+            outf << "<equal_to name = \"" << up_node_ref->get_node( ).get_item_data( i ) << "\"/>\n";
          }
       }
 
-      if( i == ap_node_ref->get_node( ).size( ) - 1
-       && ap_node_ref->get_node( ).ref_data( ).dge_link != c_npos )
+      if( i == up_node_ref->get_node( ).size( ) - 1
+       && up_node_ref->get_node( ).ref_data( ).dge_link != c_npos )
       {
          if( output_as_xml )
          {
             outf << string( indent, ' ' );
-            outf << "<same_or_greater_than name=\"" << ap_node_ref->get_node( ).get_item_data( i ) << "\">\n";
+            outf << "<same_or_greater_than name=\"" << up_node_ref->get_node( ).get_item_data( i ) << "\">\n";
          }
          else
          {
-            outf << "mkdir \"" << ap_node_ref->get_node( ).get_item_data( i );
+            outf << "mkdir \"" << up_node_ref->get_node( ).get_item_data( i );
             outf << " (same or greater)\"\n";
 
-            outf << "cd \"" << ap_node_ref->get_node( ).get_item_data( i );
+            outf << "cd \"" << up_node_ref->get_node( ).get_item_data( i );
             outf << " (same or greater)\"\n";
          }
 
-         dump_node_info( outf, ap_node_ref->get_node( ).ref_data( ).dge_link, output_as_xml, indent + 1 );
+         dump_node_info( outf, up_node_ref->get_node( ).ref_data( ).dge_link, output_as_xml, indent + 1 );
 
          if( output_as_xml )
          {

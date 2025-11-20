@@ -350,13 +350,13 @@ class test_cache_command_handler : public console_command_handler
    void init( )
    {
 #ifdef USE_NON_POD
-      ap_cache.reset( new test_cache<
+      up_cache.reset( new test_cache<
        mem_block< c_test_item_size > >( max_cache_items, items_per_region, number_of_regions ) );
 #else
-      ap_cache.reset( new test_cache<
+      up_cache.reset( new test_cache<
        mem_block< c_test_item_size > >( max_cache_items, items_per_region, number_of_regions, true ) );
 #endif
-      ap_cache->open_file_normal( c_cache_file_name );
+      up_cache->open_file_normal( c_cache_file_name );
    }
 
    private:
@@ -364,7 +364,7 @@ class test_cache_command_handler : public console_command_handler
    unsigned items_per_region;
    unsigned number_of_regions;
 
-   auto_ptr< test_cache< mem_block< c_test_item_size > > > ap_cache;
+   unique_ptr< test_cache< mem_block< c_test_item_size > > > up_cache;
 
    mem_block< c_test_item_size > test_item;
 
@@ -396,7 +396,7 @@ class test_cache_command_functor : public command_functor
    test_cache_command_functor( test_cache_command_handler& cache_handler )
     : command_functor( cache_handler ),
     cache_handler( cache_handler ),
-    ap_cache( cache_handler.ap_cache ),
+    up_cache( cache_handler.up_cache ),
     test_item( cache_handler.test_item ),
     retain( cache_handler.retain ),
     limit( cache_handler.limit )
@@ -408,7 +408,7 @@ class test_cache_command_functor : public command_functor
    private:
    test_cache_command_handler& cache_handler;
 
-   auto_ptr< test_cache< mem_block< c_test_item_size > > >& ap_cache;
+   unique_ptr< test_cache< mem_block< c_test_item_size > > >& up_cache;
 
    mem_block< c_test_item_size >& test_item;
 
@@ -463,7 +463,7 @@ void test_cache_command_functor::operator ( )( const string& command, const para
 
          for( unsigned i = start; i <= finish; i++ )
          {
-            test_item = ap_cache->get( i, retain );
+            test_item = up_cache->get( i, retain );
 
             if( filename.length( ) )
             {
@@ -517,7 +517,7 @@ void test_cache_command_functor::operator ( )( const string& command, const para
             sprintf( buf, data.c_str( ), i );
 
             test_item = buf;
-            ap_cache->put( test_item, i, retain );
+            up_cache->put( test_item, i, retain );
          }
 
          if( old_fetch_count != total_physical_fetch_count )
@@ -554,7 +554,7 @@ void test_cache_command_functor::operator ( )( const string& command, const para
          }
 
          for( unsigned i = start; i <= finish; i++ )
-            ap_cache->mark_cached_item( i, is_new );
+            up_cache->mark_cached_item( i, is_new );
       }
       else if( command == c_cmd_test_cache_dump )
       {
@@ -576,7 +576,7 @@ void test_cache_command_functor::operator ( )( const string& command, const para
 
             handler.issue_command_response( "" );
 
-            ap_cache->dump_cached_item_info( *cache_handler.get_std_out( ), dump_type );
+            up_cache->dump_cached_item_info( *cache_handler.get_std_out( ), dump_type );
          }
          else
          {
@@ -593,7 +593,7 @@ void test_cache_command_functor::operator ( )( const string& command, const para
             outf << "total_physical_store_count = " << total_physical_store_count << '\n';
             outf << "total_physical_fetch_count = " << total_physical_fetch_count << "\n\n";
 
-            ap_cache->dump_cached_item_info( outf, dump_type );
+            up_cache->dump_cached_item_info( outf, dump_type );
          }
       }
       else if( command == c_cmd_test_cache_flush )
@@ -603,7 +603,7 @@ void test_cache_command_functor::operator ( )( const string& command, const para
             is_new = true;
 
          unsigned old_store_count = total_physical_store_count;
-         ap_cache->flush( is_new );
+         up_cache->flush( is_new );
 
          if( old_store_count != total_physical_store_count )
             handler.issue_command_response( "*** physical store count = "
@@ -640,9 +640,9 @@ void test_cache_command_functor::operator ( )( const string& command, const para
       else if( command == c_cmd_test_cache_clear )
       {
          if( !has_parm_val( parameters, c_cmd_test_cache_clear_stats ) )
-            ap_cache->clear( );
+            up_cache->clear( );
          else
-            ap_cache->clear_statistics( );
+            up_cache->clear_statistics( );
       }
       else if( command == c_cmd_test_cache_max )
       {
@@ -650,13 +650,13 @@ void test_cache_command_functor::operator ( )( const string& command, const para
          unsigned old_store_count = total_physical_store_count;
 
          if( has_parm_val( parameters, c_cmd_test_cache_max_items ) )
-            ap_cache->set_max_cache_items(
+            up_cache->set_max_cache_items(
              atoi( get_parm_val( parameters, c_cmd_test_cache_max_num ).c_str( ) ) );
          else if( has_parm_val( parameters, c_cmd_test_cache_max_itemspr ) )
-            ap_cache->set_items_per_region(
+            up_cache->set_items_per_region(
              atoi( get_parm_val( parameters, c_cmd_test_cache_max_num ).c_str( ) ) );
          else
-            ap_cache->set_regions_in_cache(
+            up_cache->set_regions_in_cache(
              atoi( get_parm_val( parameters, c_cmd_test_cache_max_num ).c_str( ) ) );
 
          if( old_fetch_count != total_physical_fetch_count )

@@ -3585,15 +3585,15 @@ void crypt_file( const string& repository,
 
    session_progress_settings( num_seconds, p_progress );
 
-   auto_ptr< set< string > > ap_files_processed;
+   unique_ptr< set< string > > up_files_processed;
 
    // NOTE: Use the file content hash as salt.
    combined_clear_key password_and_hash( password, hash );
 
    if( !p_files_processed )
    {
-      ap_files_processed.reset( new set< string >( ) );
-      p_files_processed = ap_files_processed.get( );
+      up_files_processed.reset( new set< string >( ) );
+      p_files_processed = up_files_processed.get( );
    }
 
    p_files_processed->insert( hash );
@@ -3989,17 +3989,17 @@ bool store_file( const string& hash,
    {
       session_file_buffer_access file_buffer;
 
-      auto_ptr< udp_stream_helper > ap_udp_stream_helper;
+      unique_ptr< udp_stream_helper > up_udp_stream_helper;
 
       if( get_stream_sock( ) )
-         ap_udp_stream_helper.reset( new udp_stream_helper( hash ) );
+         up_udp_stream_helper.reset( new udp_stream_helper( hash ) );
 
       ft_extra_info ft_extra( c_file_transfer_initial_timeout,
        c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0,
        file_buffer.get_buffer( ), file_buffer.get_size( ), ( !is_existing ? 0 : c_response_okay_skip ) );
 
       total_bytes = file_transfer( "", socket, e_ft_direction_recv, max_bytes,
-       ( is_existing ? c_response_okay_skip : c_response_okay_more ), &ft_extra, p_sock_progress, ap_udp_stream_helper.get( ) );
+       ( is_existing ? c_response_okay_skip : c_response_okay_more ), &ft_extra, p_sock_progress, up_udp_stream_helper.get( ) );
 
       string session_secret( get_session_secret( ) );
 
@@ -5300,15 +5300,15 @@ void create_raw_file_in_archive( const string& archive,
 
       if( has_changed )
       {
-         auto_ptr< ods::transaction > ap_ods_tx;
+         unique_ptr< ods::transaction > up_ods_tx;
 
          if( !system_ods_instance( ).is_in_transaction( ) )
-            ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
+            up_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
 
          ods_fs.store_as_text_file( c_file_archive_size_avail, new_avail );
 
-         if( ap_ods_tx.get( ) )
-            ap_ods_tx->commit( );
+         if( up_ods_tx.get( ) )
+            up_ods_tx->commit( );
       }
    }
 }
@@ -5632,10 +5632,10 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
 
    string all_archives( list_file_archives( e_archive_list_type_minimal, &paths ) );
 
-   auto_ptr< ods::transaction > ap_ods_tx;
+   unique_ptr< ods::transaction > up_ods_tx;
 
    if( !system_ods_instance( ).is_in_transaction( ) )
-      ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
+      up_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -5714,8 +5714,8 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
       }
    }
 
-   if( ap_ods_tx.get( ) )
-      ap_ods_tx->commit( );
+   if( up_ods_tx.get( ) )
+      up_ods_tx->commit( );
 }
 
 bool has_repository_entry_record( const string& repository, const string& hash )
@@ -5973,10 +5973,10 @@ size_t remove_all_repository_entries( const string& repository,
       }
    }
 
-   auto_ptr< temporary_session_variable > ap_temp_archive_path;
+   unique_ptr< temporary_session_variable > up_temp_archive_path;
 
    if( !archive_path.empty( ) )
-      ap_temp_archive_path.reset( new temporary_session_variable(
+      up_temp_archive_path.reset( new temporary_session_variable(
        get_special_var_name( e_special_var_blockchain_archive_path ), archive_path ) );
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
@@ -6092,10 +6092,10 @@ size_t remove_obsolete_repository_entries( const string& repository,
       }
    }
 
-   auto_ptr< temporary_session_variable > ap_temp_archive_path;
+   unique_ptr< temporary_session_variable > up_temp_archive_path;
 
    if( !archive_path.empty( ) )
-      ap_temp_archive_path.reset( new temporary_session_variable(
+      up_temp_archive_path.reset( new temporary_session_variable(
        get_special_var_name( e_special_var_blockchain_archive_path ), archive_path ) );
 
    ods_file_system& ods_fs( system_ods_file_system( ) );

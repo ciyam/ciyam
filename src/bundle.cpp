@@ -214,12 +214,12 @@ void output_directory( set< string >& file_names,
       md5.update( ( unsigned char* )path_name.c_str( ), path_name.length( ) );
       md5.finalize( );
 
-      auto_ptr< char > ap_digest( md5.hex_digest( ) );
+      unique_ptr< char > up_digest( md5.hex_digest( ) );
 
       ostringstream osstr;
-      osstr << "D " << level << ' ' << perms << ' ' << path_name << ' ' << ap_digest.get( );
+      osstr << "D " << level << ' ' << perms << ' ' << path_name << ' ' << up_digest.get( );
 
-      g_md5.update( ( unsigned char* )ap_digest.get( ), 32 );
+      g_md5.update( ( unsigned char* )up_digest.get( ), 32 );
 
 #ifndef ZLIB_SUPPORT
       os << osstr.str( ) << '\n';
@@ -472,14 +472,14 @@ void process_directory( const string& directory, const string& filespec_path,
                ++num;
          }
 
-         auto_ptr< char > ap_digest( md5.hex_digest( ) );
+         unique_ptr< char > up_digest( md5.hex_digest( ) );
 
          ostringstream osstr;
-         osstr << "F " << num << ' ' << perms << ' ' << fname << ' ' << ap_digest.get( );
+         osstr << "F " << num << ' ' << perms << ' ' << fname << ' ' << up_digest.get( );
 
          file_names.insert( ffsi.get_name( ) );
 
-         g_md5.update( ( unsigned char* )ap_digest.get( ), 32 );
+         g_md5.update( ( unsigned char* )up_digest.get( ), 32 );
 
 #ifndef ZLIB_SUPPORT
          os << osstr.str( ) << '\n';
@@ -1340,10 +1340,12 @@ int main( int argc, char* argv[ ] )
          }
 
          g_md5.finalize( );
-         ostringstream osstr;
-         auto_ptr< char > ap_digest( g_md5.hex_digest( ) );
 
-         osstr << "C " << ap_digest.get( );
+         ostringstream osstr;
+
+         unique_ptr< char > up_digest( g_md5.hex_digest( ) );
+
+         osstr << "C " << up_digest.get( );
 
 #ifndef ZLIB_SUPPORT
          *p_os << osstr.str( ) << '\n';

@@ -1988,13 +1988,13 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
       {
          stringstream sio_data;
 
-         auto_ptr< sio_reader > ap_sio_reader;
+         unique_ptr< sio_reader > up_sio_reader;
 
          if( is_file_not_folder )
          {
             sys_ods_fs.get_file( key, &sio_data );
 
-            ap_sio_reader.reset( new sio_reader( sio_data ) );
+            up_sio_reader.reset( new sio_reader( sio_data ) );
          }
 
          for( size_t i = 0; i < field_names.size( ); i++ )
@@ -2012,7 +2012,7 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
             }
 
             if( is_file_not_folder )
-               data = ap_sio_reader->read_opt_attribute( attribute_name );
+               data = up_sio_reader->read_opt_attribute( attribute_name );
             else if( sys_ods_fs.has_file( attribute_name ) )
                sys_ods_fs.fetch_from_text_file( attribute_name, data );
 
@@ -4032,10 +4032,10 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                   {
                      stringstream sio_data;
 
-                     auto_ptr< sio_writer > ap_sio_writer;
+                     unique_ptr< sio_writer > up_sio_writer;
 
                      if( is_file_not_folder )
-                        ap_sio_writer.reset( new sio_writer( sio_data ) );
+                        up_sio_writer.reset( new sio_writer( sio_data ) );
 
                      bool had_any_non_transients = false;
 
@@ -4065,14 +4065,14 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                         if( !is_file_not_folder )
                            sys_ods_fs.store_as_text_file( attribute_name, data );
                         else
-                           ap_sio_writer->write_attribute( attribute_name, data );
+                           up_sio_writer->write_attribute( attribute_name, data );
                      }
 
                      if( is_file_not_folder )
                      {
                         if( had_any_non_transients )
                         {
-                           ap_sio_writer->finish_sections( );
+                           up_sio_writer->finish_sections( );
 
                            sys_ods_fs.store_file( instance.get_key( ), 0, &sio_data );
                         }
@@ -4513,14 +4513,14 @@ bool perform_instance_iterate( class_base& instance,
       throw runtime_error( "cannot begin iteration whilst currently perfoming an instance operation" );
    else
    {
-      auto_ptr< storage_ods_bulk_read > ap_storage_ods_bulk_read;
+      unique_ptr< storage_ods_bulk_read > up_storage_ods_bulk_read;
 
       // IMPORTANT: As bulk locking is being performed when fetching
       // the instance keys and then again for each separate instance
       // in order to prevent potential bulk locking conflicts obtain
       // the ODS bulk read lock now.
       if( persistence_type == 1 )
-         ap_storage_ods_bulk_read.reset( new storage_ods_bulk_read( ) );
+         up_storage_ods_bulk_read.reset( new storage_ods_bulk_read( ) );
 
       if( ( row_limit >= 0 ) && ( key_info != c_null_key ) )
       {

@@ -84,13 +84,13 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
    // NOTE: If the OID has been set to zero then instead treat it as a zero length file.
    int64_t size = !sf.get_id( ).get_num( ) ? 0 : sf.get_ods( )->get_size( sf.get_id( ) );
 
-   auto_ptr< ofstream > ap_outf;
+   unique_ptr< ofstream > up_outf;
 
    if( !sf.p_ostream )
    {
-      ap_outf.reset( new ofstream( sf.file_name.c_str( ), ios::out | ios::binary ) );
+      up_outf.reset( new ofstream( sf.file_name.c_str( ), ios::out | ios::binary ) );
 
-      if( !( *ap_outf ) )
+      if( !( *up_outf ) )
          throw runtime_error( "unable to open '" + sf.file_name + "' for output" );
    }
 
@@ -109,7 +109,7 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
       rs.read( &data[ 0 ], bytes );
 
       if( !sf.p_ostream )
-         ap_outf->write( ( const char* )&data[ 0 ], bytes );
+         up_outf->write( ( const char* )&data[ 0 ], bytes );
       else
          sf.p_ostream->write( ( const char* )&data[ 0 ], bytes );
 
@@ -129,7 +129,7 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
    }
 
    if( !sf.p_ostream )
-      ap_outf->close( );
+      up_outf->close( );
 
    return rs;
 }
@@ -138,13 +138,13 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
 {
    int64_t size = size_of( sf );
 
-   auto_ptr< ifstream > ap_inpf;
+   unique_ptr< ifstream > up_inpf;
 
    if( !sf.p_istream )
    {
-      ap_inpf.reset( new ifstream( sf.file_name.c_str( ), ios::in | ios::binary ) );
+      up_inpf.reset( new ifstream( sf.file_name.c_str( ), ios::in | ios::binary ) );
 
-      if( !( *ap_inpf ) )
+      if( !( *up_inpf ) )
          throw runtime_error( "unable to open '" + sf.file_name + "' for input" );
    }
 
@@ -163,7 +163,7 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
       bool okay = true;
 
       if( !sf.p_istream )
-         okay = ( bool )ap_inpf->read( ( char* )&data[ 0 ], bytes );
+         okay = ( bool )up_inpf->read( ( char* )&data[ 0 ], bytes );
       else
          okay = ( bool )sf.p_istream->read( ( char* )&data[ 0 ], bytes );
 
@@ -188,7 +188,7 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
    }
 
    if( !sf.p_istream )
-      ap_inpf->close( );
+      up_inpf->close( );
 
    return ws;
 }

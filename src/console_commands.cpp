@@ -3713,12 +3713,12 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            restorable< bool > tmp_executing_commands( is_executing_commands, true );
                            restorable< bool > tmp_allow_history_addition( allow_history_addition, false );
 
-                           auto_ptr< restorable< bool > > ap_tmp_is_skipping_to_label;
+                           unique_ptr< restorable< bool > > up_tmp_is_skipping_to_label;
 
                            // NOTE: If an existing loop is being replayed then make sure that once it has been completed no further
                            // skipping will take place (otherwise the console could effectively end up "stuck" waiting for a label).
                            if( is_old_loop )
-                              ap_tmp_is_skipping_to_label.reset( new restorable< bool >( is_skipping_to_label, is_skipping_to_label ) );
+                              up_tmp_is_skipping_to_label.reset( new restorable< bool >( is_skipping_to_label, is_skipping_to_label ) );
 
                            if( n > 0 )
                            {

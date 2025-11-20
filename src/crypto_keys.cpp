@@ -828,14 +828,16 @@ string create_p2sh_address( const string& hex_script, bool use_override, address
 {
    size_t size = hex_script.size( ) / 2;
 
-   auto_ptr< unsigned char > ap_buf;
-   ap_buf.reset( new unsigned char[ size ] );
+   unique_ptr< unsigned char > up_buf;
 
-   hex_decode( hex_script, ap_buf.get( ), size );
+   up_buf.reset( new unsigned char[ size ] );
+
+   hex_decode( hex_script, up_buf.get( ), size );
 
    unsigned char buf1[ c_sha256_digest_size ];
 
-   sha256 hash( ap_buf.get( ), size );
+   sha256 hash( up_buf.get( ), size );
+
    hash.copy_digest_to_buffer( buf1 );
 
    unsigned char buf2[ RIPEMD160_DIGEST_LENGTH ];

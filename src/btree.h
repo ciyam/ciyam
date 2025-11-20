@@ -701,33 +701,33 @@ template< typename T, typename L, typename N, typename M >
 template< typename T, typename L, typename N, typename M >
  void bt_base< T, L, N, M >::dump_root( std::ostream& outs ) const
 {
-   std::auto_ptr< bt_node_ref< T > > ap_node_ref( allocate_node_ref( state.root_node ) );
+   std::unique_ptr< bt_node_ref< T > > up_node_ref( allocate_node_ref( state.root_node ) );
 
    outs << "[Root " << state.root_node << "] flags = "
-    << ( int )ap_node_ref->get_node( ).ref_data( ).flags
-    << ", dge_link = " << ( int )ap_node_ref->get_node( ).ref_data( ).dge_link << '\n';
+    << ( int )up_node_ref->get_node( ).ref_data( ).flags
+    << ", dge_link = " << ( int )up_node_ref->get_node( ).ref_data( ).dge_link << '\n';
 
-   for( int i = 0; i < ap_node_ref->get_node( ).size( ); i++ )
+   for( int i = 0; i < up_node_ref->get_node( ).size( ); i++ )
       outs << "Item #" << i << ", data = "
-       << ap_node_ref->get_node( ).get_item_data( i )
-       << ", link = " << ( int )ap_node_ref->get_node( ).get_item_link( i ) << '\n';
+       << up_node_ref->get_node( ).get_item_data( i )
+       << ", link = " << ( int )up_node_ref->get_node( ).get_item_link( i ) << '\n';
 }
 
 template< typename T, typename L, typename N, typename M >
  void bt_base< T, L, N, M >::dump_node( std::ostream& outs, uint64_t num ) const
 {
-   std::auto_ptr< bt_node_ref< T > > ap_node_ref( allocate_node_ref( num ) );
+   std::unique_ptr< bt_node_ref< T > > up_node_ref( allocate_node_ref( num ) );
 
    outs << "[Node " << num
-    << "] flags = " << ( int )ap_node_ref->get_node( ).ref_data( ).flags
-    << ", dge_link = " << ( int )ap_node_ref->get_node( ).ref_data( ).dge_link
-    << "\n         lft_link = " << ( int )ap_node_ref->get_node( ).ref_data( ).lft_link
-    << ", rgt_link = " << ( int )ap_node_ref->get_node( ).ref_data( ).rgt_link << '\n';
+    << "] flags = " << ( int )up_node_ref->get_node( ).ref_data( ).flags
+    << ", dge_link = " << ( int )up_node_ref->get_node( ).ref_data( ).dge_link
+    << "\n         lft_link = " << ( int )up_node_ref->get_node( ).ref_data( ).lft_link
+    << ", rgt_link = " << ( int )up_node_ref->get_node( ).ref_data( ).rgt_link << '\n';
 
-   for( int i = 0; i < ap_node_ref->get_node( ).size( ); i++ )
+   for( int i = 0; i < up_node_ref->get_node( ).size( ); i++ )
       outs << "Item #" << i << ", data = "
-       << ap_node_ref->get_node( ).get_item_data( i )
-       << ", link = " << ( int )ap_node_ref->get_node( ).get_item_link( i ) << '\n';
+       << up_node_ref->get_node( ).get_item_data( i )
+       << ", link = " << ( int )up_node_ref->get_node( ).get_item_link( i ) << '\n';
 }
 
 template< typename T, typename L, typename N, typename M >
@@ -738,7 +738,8 @@ template< typename T, typename L, typename N, typename M >
    outs << "\nTotal number of items = " << state.total_items << "\n\n";
 
    int level = 0;
-   uint64_t first_node_in_level( state.root_node );
+
+   uint64_t first_node_in_level = state.root_node;
 
    while( first_node_in_level != c_npos )
    {
@@ -746,20 +747,25 @@ template< typename T, typename L, typename N, typename M >
          outs << '\n';
 
       outs << "Dumping level #" << level++ << '\n';
-      uint64_t current_node( first_node_in_level );
+
+      uint64_t current_node = first_node_in_level;
 
       first_node_in_level = c_npos;
+
       while( true )
       {
-         std::auto_ptr< bt_node_ref< T > > ap_node_ref( allocate_node_ref( current_node ) );
+         std::unique_ptr< bt_node_ref< T > > up_node_ref( allocate_node_ref( current_node ) );
 
-         if( first_node_in_level == c_npos && ap_node_ref->get_node( ).size( ) > 0 )
-            first_node_in_level = ap_node_ref->get_node( ).get_item_link( 0 );
+         if( ( first_node_in_level == c_npos ) && ( up_node_ref->get_node( ).size( ) > 0 ) )
+            first_node_in_level = up_node_ref->get_node( ).get_item_link( 0 );
 
          dump_node( outs, current_node );
-         current_node = ap_node_ref->get_node( ).ref_data( ).rgt_link;
+
+         current_node = up_node_ref->get_node( ).ref_data( ).rgt_link;
+
          if( current_node == c_npos )
             break;
+
          outs << '\n';
       }
 
@@ -769,18 +775,21 @@ template< typename T, typename L, typename N, typename M >
 
    if( state.first_append_node != c_npos )
    {
-      uint64_t current_node( state.first_append_node );
+      uint64_t current_node = state.first_append_node;
+
       outs << "Dumping appended node(s)\n";
 
       while( true )
       {
-         std::auto_ptr< bt_node_ref< T > > ap_node_ref( allocate_node_ref( current_node ) );
+         std::unique_ptr< bt_node_ref< T > > up_node_ref( allocate_node_ref( current_node ) );
 
          dump_node( outs, current_node );
-         current_node = ap_node_ref->get_node( ).ref_data( ).rgt_link;
+
+         current_node = up_node_ref->get_node( ).ref_data( ).rgt_link;
 
          if( current_node == c_npos )
             break;
+
          outs << '\n';
       }
    }
@@ -1027,20 +1036,22 @@ template< typename T, typename L, typename N, typename M >
 #  ifdef BTREE_DEBUG
    std::cout << "find_item: node_link = " << node_link << '\n';
 #  endif
-   std::auto_ptr< bt_node_ref< T > > ap_node_ref( allocate_node_ref( node_link ) );
+   std::unique_ptr< bt_node_ref< T > > up_node_ref( allocate_node_ref( node_link ) );
 
-   for( s = 0; s < ap_node_ref->get_node( ).size( ); s++ )
+   for( s = 0; s < up_node_ref->get_node( ).size( ); s++ )
    {
       bool is_equal = false;
 #  ifdef BTREE_DEBUG
       std::cout << "comparing item #" << ( int )s << '\n';
 #  endif
-      if( compare_less( key, ap_node_ref->get_node( ).get_item_data( s ) ) )
+      if( compare_less( key, up_node_ref->get_node( ).get_item_data( s ) ) )
       {
-         if( !( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf ) )
+         if( !( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf ) )
          {
-            node_link = ap_node_ref->get_node( ).get_item_link( s );
+            node_link = up_node_ref->get_node( ).get_item_link( s );
+
             pos = find_item( node_link, key, type_of_find );
+
             break;
          }
          else if( type_of_find != e_find_equal_to )
@@ -1051,9 +1062,9 @@ template< typename T, typename L, typename N, typename M >
          else
             break;
       }
-      else if( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
+      else if( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
       {
-         if( !compare_less( ap_node_ref->get_node( ).get_item_data( s ), key ) )
+         if( !compare_less( up_node_ref->get_node( ).get_item_data( s ), key ) )
             is_equal = true;
 
          if( is_equal && type_of_find != e_find_greater_than )
@@ -1062,39 +1073,42 @@ template< typename T, typename L, typename N, typename M >
             break;
          }
 
-         if( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split )
+         if( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split )
          {
-            node_link = ap_node_ref->get_node( ).ref_data( ).dge_link;
+            node_link = up_node_ref->get_node( ).ref_data( ).dge_link;
 
             do
             {
-               ap_node_ref.reset( allocate_node_ref( node_link ) );
+               up_node_ref.reset( allocate_node_ref( node_link ) );
 
-               if( ap_node_ref->get_node( ).size( ) )
+               if( up_node_ref->get_node( ).size( ) )
                {
                   s = c_none;
+
                   break;
                }
 
-               node_link = ap_node_ref->get_node( ).ref_data( ).rgt_link;
-            } while( ap_node_ref->get_node( ).ref_data( ).rgt_link != c_npos );
+               node_link = up_node_ref->get_node( ).ref_data( ).rgt_link;
+
+            } while( up_node_ref->get_node( ).ref_data( ).rgt_link != c_npos );
 #  ifdef BTREE_DEBUG
             std::cout << "node_link = " << node_link << '\n';
 #  endif
          }
          else if( type_of_find == e_find_greater_than )
          {
-            if( s == ap_node_ref->get_node( ).size( ) - 1 )
+            if( s == ( up_node_ref->get_node( ).size( ) - 1 ) )
             {
-               while( ap_node_ref->get_node( ).ref_data( ).rgt_link != c_npos )
+               while( up_node_ref->get_node( ).ref_data( ).rgt_link != c_npos )
                {
-                  node_link = ap_node_ref->get_node( ).ref_data( ).rgt_link;
+                  node_link = up_node_ref->get_node( ).ref_data( ).rgt_link;
 
-                  ap_node_ref.reset( allocate_node_ref( node_link ) );
+                  up_node_ref.reset( allocate_node_ref( node_link ) );
 
-                  if( ap_node_ref->get_node( ).size( ) )
+                  if( up_node_ref->get_node( ).size( ) )
                   {
                      s = c_none;
+
                      break;
                   }
                }
@@ -1106,11 +1120,12 @@ template< typename T, typename L, typename N, typename M >
       }
    }
 
-   if( s == ap_node_ref->get_node( ).size( ) )
+   if( s == up_node_ref->get_node( ).size( ) )
    {
-      if( !( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf ) )
+      if( !( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf ) )
       {
-         node_link = ap_node_ref->get_node( ).ref_data( ).dge_link;
+         node_link = up_node_ref->get_node( ).ref_data( ).dge_link;
+
          if( node_link != c_npos )
             pos = find_item( node_link, key, type_of_find );
       }
@@ -1118,20 +1133,21 @@ template< typename T, typename L, typename N, typename M >
 
    if( pos == -1 && type_of_find == e_find_equal_to_or_greater_than )
    {
-      if( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
+      if( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
       {
-         if( s < ap_node_ref->get_node( ).size( ) )
+         if( s < up_node_ref->get_node( ).size( ) )
             pos = s;
          else
          {
             bool has_next_link = false;
-            while( ap_node_ref->get_node( ).ref_data( ).rgt_link != c_npos )
+
+            while( up_node_ref->get_node( ).ref_data( ).rgt_link != c_npos )
             {
-               node_link = ap_node_ref->get_node( ).ref_data( ).rgt_link;
+               node_link = up_node_ref->get_node( ).ref_data( ).rgt_link;
 
-               ap_node_ref.reset( allocate_node_ref( node_link ) );
+               up_node_ref.reset( allocate_node_ref( node_link ) );
 
-               if( ap_node_ref->get_node( ).size( ) )
+               if( up_node_ref->get_node( ).size( ) )
                {
 #  ifdef BTREE_DEBUG
                   std::cout << "node_link = " << node_link << '\n';
@@ -1203,9 +1219,9 @@ template< typename T, typename L, typename N, typename M >
       ++state.total_nodes;
    }
 
-   std::auto_ptr< bt_node_ref< T > > ap_node_ref( allocate_node_ref( state.current_append_node ) );
+   std::unique_ptr< bt_node_ref< T > > up_node_ref( allocate_node_ref( state.current_append_node ) );
 
-   uint8_t size = ap_node_ref->get_node( ).size( );
+   uint8_t size = up_node_ref->get_node( ).size( );
 
    bool is_duplicate = false;
 
@@ -1225,10 +1241,10 @@ template< typename T, typename L, typename N, typename M >
    }
    else if( size != 0 )
    {
-      if( compare_less( item, ap_node_ref->get_node( ).get_item_data( size - 1 ) ) )
+      if( compare_less( item, up_node_ref->get_node( ).get_item_data( size - 1 ) ) )
          throw std::runtime_error( "invalid attempt to append #2" );
 
-      if( keys_are_equal( item, ap_node_ref->get_node( ).get_item_data( size - 1 ) ) )
+      if( keys_are_equal( item, up_node_ref->get_node( ).get_item_data( size - 1 ) ) )
       {
          if( !state.allow_duplicates )
             throw std::runtime_error( "invalid attempt to append #3" );
@@ -1242,74 +1258,76 @@ template< typename T, typename L, typename N, typename M >
 
    uint8_t items_per_node( node_manager.get_items_per_node( ) );
 
-   if( size < ( uint8_t )( items_per_node * fill_factor )
-    && ( is_duplicate || ap_node_ref->get_node( ).ref_data( ).dge_link == c_npos ) )
-      ap_node_ref->get_node( ).append_item( item, c_npos );
+   if( ( size < ( uint8_t )( items_per_node * fill_factor ) )
+    && ( is_duplicate || ( up_node_ref->get_node( ).ref_data( ).dge_link == c_npos ) ) )
+      up_node_ref->get_node( ).append_item( item, c_npos );
    else
    {
       uint64_t new_append_node = node_manager.create_node( );
 
       ++state.total_nodes;
 
-      std::auto_ptr< bt_node_ref< T > > ap_new_node_ref( allocate_node_ref( new_append_node ) );
+      std::unique_ptr< bt_node_ref< T > > up_new_node_ref( allocate_node_ref( new_append_node ) );
 
-      ap_new_node_ref->get_node( ).ref_data( ).lft_link = state.current_append_node;
+      up_new_node_ref->get_node( ).ref_data( ).lft_link = state.current_append_node;
 
       if( is_duplicate )
       {
          uint8_t first_dup;
+
          for( first_dup = 0; first_dup < items_per_node; first_dup++ )
          {
-            if( keys_are_equal( item, ap_node_ref->get_node( ).get_item_data( first_dup ) ) )
+            if( keys_are_equal( item, up_node_ref->get_node( ).get_item_data( first_dup ) ) )
                break;
          }
 
          if( first_dup != 0 )
          {
             for( uint8_t i = first_dup; i < items_per_node; i++ )
-               ap_new_node_ref->get_node( ).append_item(
-                ap_node_ref->get_node( ).get_item_data( i ),
-                ap_node_ref->get_node( ).get_item_link( i ) );
+               up_new_node_ref->get_node( ).append_item(
+                up_node_ref->get_node( ).get_item_data( i ),
+                up_node_ref->get_node( ).get_item_link( i ) );
 
-            ap_node_ref->get_node( ).erase_items( first_dup );
+            up_node_ref->get_node( ).erase_items( first_dup );
          }
          else
          {
-            uint64_t dup_link( ap_node_ref->get_node( ).ref_data( ).dge_link );
+            uint64_t dup_link = up_node_ref->get_node( ).ref_data( ).dge_link;
 
             if( dup_link != c_npos )
             {
-               std::auto_ptr< bt_node_ref< T > > ap_dup_node_ref( allocate_node_ref( dup_link ) );
-               ap_dup_node_ref->get_node( ).ref_data( ).dge_link = new_append_node;
-               ap_dup_node_ref->get_node( ).touch( );
+               std::unique_ptr< bt_node_ref< T > > up_dup_node_ref( allocate_node_ref( dup_link ) );
+               up_dup_node_ref->get_node( ).ref_data( ).dge_link = new_append_node;
+               up_dup_node_ref->get_node( ).touch( );
 
-               ap_node_ref->get_node( ).ref_data( ).dge_link = c_npos;
-               ap_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_has_dup_split;
+               up_node_ref->get_node( ).ref_data( ).dge_link = c_npos;
+               up_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_has_dup_split;
 
-               ap_new_node_ref->get_node( ).ref_data( ).dge_link = dup_link;
+               up_new_node_ref->get_node( ).ref_data( ).dge_link = dup_link;
             }
             else
             {
-               ap_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_has_dup_split;
-               ap_node_ref->get_node( ).ref_data( ).dge_link = new_append_node;
-               ap_new_node_ref->get_node( ).ref_data( ).dge_link = state.current_append_node;
+               up_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_has_dup_split;
+               up_node_ref->get_node( ).ref_data( ).dge_link = new_append_node;
+
+               up_new_node_ref->get_node( ).ref_data( ).dge_link = state.current_append_node;
             }
          }
       }
 
-      ap_new_node_ref->get_node( ).append_item( item, c_npos );
+      up_new_node_ref->get_node( ).append_item( item, c_npos );
 
-      ap_node_ref->get_node( ).ref_data( ).rgt_link = new_append_node;
-      ap_node_ref->get_node( ).touch( );
+      up_node_ref->get_node( ).ref_data( ).rgt_link = new_append_node;
+      up_node_ref->get_node( ).touch( );
 
       state.current_append_node = new_append_node;
 
-      ap_node_ref = ap_new_node_ref;
+      up_node_ref = std::move( up_new_node_ref );
    }
 
-   size = ap_node_ref->get_node( ).size( );
+   size = up_node_ref->get_node( ).size( );
 
-   ap_node_ref->get_node( ).touch( );
+   up_node_ref->get_node( ).touch( );
 
    transaction.commit( );
 }
@@ -1331,9 +1349,11 @@ template< typename T, typename L, typename N, typename M >
 
       ++state.total_nodes;
 
-      std::auto_ptr< bt_node_ref< T > > ap_node_ref( allocate_node_ref( state.root_node ) );
-      ap_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_is_rgt_leaf;
-      ap_node_ref->get_node( ).touch( );
+      std::unique_ptr< bt_node_ref< T > > up_node_ref( allocate_node_ref( state.root_node ) );
+
+      up_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_is_rgt_leaf;
+
+      up_node_ref->get_node( ).touch( );
    }
 
    uint64_t last_insert_node = c_npos;
@@ -1342,7 +1362,9 @@ template< typename T, typename L, typename N, typename M >
    uint64_t new_duplicate_dge_node = c_npos;
 
    T tmp_item( item );
-   uint64_t tmp_link( state.root_node );
+
+   uint64_t tmp_link = state.root_node;
+
    uint64_t link = insert_item( tmp_link, tmp_item, last_insert_node, last_insert_item, new_duplicate_dge_node );
 
    ++state.total_items;
@@ -1358,23 +1380,26 @@ template< typename T, typename L, typename N, typename M >
       else
       {
          state.root_node = node_manager.create_node( );
+
          ++state.total_nodes;
       }
 
-      std::auto_ptr< bt_node_ref< T > > ap_node_ref( allocate_node_ref( state.root_node ) );
+      std::unique_ptr< bt_node_ref< T > > up_node_ref( allocate_node_ref( state.root_node ) );
 
       if( state.free_list_node != c_npos )
       {
-         state.free_list_node = ap_node_ref->get_node( ).ref_data( ).dge_link;
-         ap_node_ref->get_node( ).reset( );
+         state.free_list_node = up_node_ref->get_node( ).ref_data( ).dge_link;
+
+         up_node_ref->get_node( ).reset( );
       }
 
-      ap_node_ref->get_node( ).ref_data( ).dge_link = link;
-      ap_node_ref->get_node( ).ref_data( ).flags &= ~c_node_flag_is_leaf;
+      up_node_ref->get_node( ).ref_data( ).dge_link = link;
+      up_node_ref->get_node( ).ref_data( ).flags &= ~c_node_flag_is_leaf;
 
-      ap_node_ref->get_node( ).append_item( tmp_item, left );
+      up_node_ref->get_node( ).append_item( tmp_item, left );
 
-      ap_node_ref->get_node( ).touch( );
+      up_node_ref->get_node( ).touch( );
+
       ++state.num_levels;
 #  ifdef BTREE_DEBUG
       dump_root( std::cout );
@@ -1416,9 +1441,9 @@ template< typename T, typename L, typename N, typename M >
    if( node_link == c_npos )
       throw std::runtime_error( "bad node link #0" );
 
-   std::auto_ptr< bt_node_ref< T > > ap_node_ref( allocate_node_ref( node_link ) );
+   std::unique_ptr< bt_node_ref< T > > up_node_ref( allocate_node_ref( node_link ) );
 
-   uint8_t size = ap_node_ref->get_node( ).size( );
+   uint8_t size = up_node_ref->get_node( ).size( );
 
    while( true )
    {
@@ -1428,28 +1453,33 @@ template< typename T, typename L, typename N, typename M >
          break;
       }
 
-      if( !compare_less( item, ap_node_ref->get_node( ).get_item_data( size - 1 ) ) )
+      if( !compare_less( item, up_node_ref->get_node( ).get_item_data( size - 1 ) ) )
       {
-         if( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split )
+         if( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split )
          {
             s = 0;
+
             dup_node_link = node_link;
-            node_link = ap_node_ref->get_node( ).ref_data( ).dge_link;
 
-            ap_node_ref.reset( allocate_node_ref( node_link ) );
+            node_link = up_node_ref->get_node( ).ref_data( ).dge_link;
 
-            size = ap_node_ref->get_node( ).size( );
+            up_node_ref.reset( allocate_node_ref( node_link ) );
+
+            size = up_node_ref->get_node( ).size( );
+
             continue;
          }
          else
          {
             s = size;
-            if( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
-               dup_node_link = ap_node_ref->get_node( ).ref_data( ).dge_link;
+
+            if( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
+               dup_node_link = up_node_ref->get_node( ).ref_data( ).dge_link;
+
             break;
          }
       }
-      else if( size == 1 || compare_less( item, ap_node_ref->get_node( ).get_item_data( 0 ) ) )
+      else if( ( size == 1 ) || compare_less( item, up_node_ref->get_node( ).get_item_data( 0 ) ) )
       {
          s = 0;
       }
@@ -1466,8 +1496,8 @@ template< typename T, typename L, typename N, typename M >
             {
                uint8_t middle = ( uint8_t )( ( lower + upper ) / 2 );
 
-               if( middle == size - 1
-                || compare_less( item, ap_node_ref->get_node( ).get_item_data( middle ) ) )
+               if( ( middle == size - 1 )
+                || compare_less( item, up_node_ref->get_node( ).get_item_data( middle ) ) )
                {
                   s = middle;
                   if( upper == middle )
@@ -1484,11 +1514,11 @@ template< typename T, typename L, typename N, typename M >
          }
       }
 
-      if( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
+      if( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
          pos = s;
       else
       {
-         uint64_t tmp_link( ap_node_ref->get_node( ).get_item_link( s ) );
+         uint64_t tmp_link = up_node_ref->get_node( ).get_item_link( s );
 
          new_link = insert_item( tmp_link, item,
           last_insert_node, last_insert_item, new_duplicate_dge_node );
@@ -1496,8 +1526,10 @@ template< typename T, typename L, typename N, typename M >
          if( new_link != c_npos )
          {
             pos = s;
-            link = ap_node_ref->get_node( ).get_item_link( s );
-            ap_node_ref->get_node( ).set_item_link( s, new_link );
+
+            link = up_node_ref->get_node( ).get_item_link( s );
+
+            up_node_ref->get_node( ).set_item_link( s, new_link );
 
             has_changed = true;
          }
@@ -1506,7 +1538,7 @@ template< typename T, typename L, typename N, typename M >
       break;
    }
 
-   bool is_leaf_node = ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf;
+   bool is_leaf_node = up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf;
 
    if( s == size )
    {
@@ -1514,7 +1546,7 @@ template< typename T, typename L, typename N, typename M >
          pos = s;
       else
       {
-         uint64_t tmp_link( ap_node_ref->get_node( ).ref_data( ).dge_link );
+         uint64_t tmp_link = up_node_ref->get_node( ).ref_data( ).dge_link;
 
          if( tmp_link == c_npos )
             throw std::runtime_error( "bad node link #1" );
@@ -1525,14 +1557,17 @@ template< typename T, typename L, typename N, typename M >
          if( new_link != c_npos )
          {
             pos = s;
-            link = ap_node_ref->get_node( ).ref_data( ).dge_link;
-            ap_node_ref->get_node( ).ref_data( ).dge_link = new_link;
+
+            link = up_node_ref->get_node( ).ref_data( ).dge_link;
+
+            up_node_ref->get_node( ).ref_data( ).dge_link = new_link;
 
             has_changed = true;
          }
          else if( new_duplicate_dge_node != c_npos )
          {
-            ap_node_ref->get_node( ).ref_data( ).dge_link = new_duplicate_dge_node;
+            up_node_ref->get_node( ).ref_data( ).dge_link = new_duplicate_dge_node;
+
             has_changed = true;
          }
       }
@@ -1541,7 +1576,8 @@ template< typename T, typename L, typename N, typename M >
    if( pos != -1 )
    {
       bool items_are_equal = false;
-      if( pos > 0 && keys_are_equal( item, ap_node_ref->get_node( ).get_item_data( pos - 1 ) ) )
+
+      if( ( pos > 0 ) && keys_are_equal( item, up_node_ref->get_node( ).get_item_data( pos - 1 ) ) )
          items_are_equal = true;
 
       if( !state.allow_duplicates && items_are_equal )
@@ -1557,9 +1593,9 @@ template< typename T, typename L, typename N, typename M >
          new_link = c_npos;
 
          if( pos < ( short )size )
-            ap_node_ref->get_node( ).insert_item( pos, item, link );
+            up_node_ref->get_node( ).insert_item( pos, item, link );
          else
-            ap_node_ref->get_node( ).append_item( item, link );
+            up_node_ref->get_node( ).append_item( item, link );
 
          if( is_leaf_node )
          {
@@ -1583,12 +1619,13 @@ template< typename T, typename L, typename N, typename M >
             ++state.total_nodes;
          }
 
-         std::auto_ptr< bt_node_ref< T > > ap_new_node_ref( allocate_node_ref( new_link ) );
+         std::unique_ptr< bt_node_ref< T > > up_new_node_ref( allocate_node_ref( new_link ) );
 
          if( state.free_list_node != c_npos )
          {
-            state.free_list_node = ap_new_node_ref->get_node( ).ref_data( ).dge_link;
-            ap_new_node_ref->get_node( ).reset( );
+            state.free_list_node = up_new_node_ref->get_node( ).ref_data( ).dge_link;
+
+            up_new_node_ref->get_node( ).reset( );
          }
 
          uint8_t items_per_node = node_manager.get_items_per_node( );
@@ -1614,12 +1651,13 @@ template< typename T, typename L, typename N, typename M >
          if( split == size - 1 )
             split_okay = true;
          else if( !( keys_are_equal(
-          ap_node_ref->get_node( ).get_item_data( split ),
-          ap_node_ref->get_node( ).get_item_data( split + 1 ) ) ) )
+          up_node_ref->get_node( ).get_item_data( split ),
+          up_node_ref->get_node( ).get_item_data( split + 1 ) ) ) )
          {
             split_okay = true;
-            if( pos == split + 1
-             && keys_are_equal( item, ap_node_ref->get_node( ).get_item_data( split ) ) )
+
+            if( ( pos == split + 1 )
+             && keys_are_equal( item, up_node_ref->get_node( ).get_item_data( split ) ) )
                split++;
 #  ifdef BTREE_DEBUG
             std::cout << "split point passed initial compare at " << ( int )split << '\n';
@@ -1631,11 +1669,11 @@ template< typename T, typename L, typename N, typename M >
              s2 = ( uint8_t )( split + 1 ); ; s1--, s2++ )
             {
                if( !( keys_are_equal(
-                ap_node_ref->get_node( ).get_item_data( s1 ),
-                ap_node_ref->get_node( ).get_item_data( s1 + 1 ) ) ) )
+                up_node_ref->get_node( ).get_item_data( s1 ),
+                up_node_ref->get_node( ).get_item_data( s1 + 1 ) ) ) )
                {
-                  if( pos == s1 + 1
-                   && keys_are_equal( item, ap_node_ref->get_node( ).get_item_data( s1 ) ) )
+                  if( ( pos == s1 + 1 )
+                   && keys_are_equal( item, up_node_ref->get_node( ).get_item_data( s1 ) ) )
                      s1++;
 #  ifdef BTREE_DEBUG
                   std::cout << "split point passed back compare at " << ( int )s1 << '\n';
@@ -1646,8 +1684,8 @@ template< typename T, typename L, typename N, typename M >
                }
 
                if( !( keys_are_equal(
-                ap_node_ref->get_node( ).get_item_data( s2 ),
-                ap_node_ref->get_node( ).get_item_data( s2 - 1 ) ) ) )
+                up_node_ref->get_node( ).get_item_data( s2 ),
+                up_node_ref->get_node( ).get_item_data( s2 - 1 ) ) ) )
                {
 #  ifdef BTREE_DEBUG
                   std::cout << "split point passed forward compare at " << ( int )s2 << '\n';
@@ -1662,8 +1700,8 @@ template< typename T, typename L, typename N, typename M >
             }
 
             if( !split_okay
-             && ( pos == 0 || pos == items_per_node ) && !( keys_are_equal( item,
-             ap_node_ref->get_node( ).get_item_data( pos ? items_per_node - 1 : 0 ) ) ) )
+             && ( ( pos == 0 ) || ( pos == items_per_node ) ) && !( keys_are_equal( item,
+             up_node_ref->get_node( ).get_item_data( pos ? items_per_node - 1 : 0 ) ) ) )
             {
                split_okay = true;
                split = pos ? ( uint8_t )( items_per_node - 1 ) : ( uint8_t )0;
@@ -1680,7 +1718,8 @@ template< typename T, typename L, typename N, typename M >
              << ( int )( items_per_node - 1 ) << " and duplicate flagged\n";
 #  endif
             split = ( uint8_t )( items_per_node - 1 );
-            ap_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_has_dup_split;
+
+            up_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_has_dup_split;
          }
 
 #  ifdef BTREE_DEBUG
@@ -1693,13 +1732,13 @@ template< typename T, typename L, typename N, typename M >
             std::cout << "insert item into old node\n";
 #  endif
             for( s = 0; s < size - split; s++ )
-               ap_new_node_ref->get_node( ).append_item(
-                ap_node_ref->get_node( ).get_item_data( split + s ),
-                ap_node_ref->get_node( ).get_item_link( split + s ) );
+               up_new_node_ref->get_node( ).append_item(
+                up_node_ref->get_node( ).get_item_data( split + s ),
+                up_node_ref->get_node( ).get_item_link( split + s ) );
 
-            ap_node_ref->get_node( ).erase_items( split );
+            up_node_ref->get_node( ).erase_items( split );
 
-            ap_node_ref->get_node( ).insert_item( pos, item, link );
+            up_node_ref->get_node( ).insert_item( pos, item, link );
 
             if( is_leaf_node )
             {
@@ -1712,14 +1751,14 @@ template< typename T, typename L, typename N, typename M >
 #  ifdef BTREE_DEBUG
             std::cout << "put item at start of new node\n";
 #  endif
-            ap_new_node_ref->get_node( ).append_item( item, link );
+            up_new_node_ref->get_node( ).append_item( item, link );
 
             for( s = ( uint8_t )pos; s < size; s++ )
-               ap_new_node_ref->get_node( ).append_item(
-                ap_node_ref->get_node( ).get_item_data( s ),
-                ap_node_ref->get_node( ).get_item_link( s ) );
+               up_new_node_ref->get_node( ).append_item(
+                up_node_ref->get_node( ).get_item_data( s ),
+                up_node_ref->get_node( ).get_item_link( s ) );
 
-            ap_node_ref->get_node( ).erase_items( split + 1 );
+            up_node_ref->get_node( ).erase_items( split + 1 );
 
             if( is_leaf_node )
             {
@@ -1735,18 +1774,18 @@ template< typename T, typename L, typename N, typename M >
             uint8_t new_pos = ( uint8_t )( pos - split - 1 );
 
             for( s = 0; s < new_pos; s++ )
-               ap_new_node_ref->get_node( ).append_item(
-                ap_node_ref->get_node( ).get_item_data( split + s + 1 ),
-                ap_node_ref->get_node( ).get_item_link( split + s + 1 ) );
+               up_new_node_ref->get_node( ).append_item(
+                up_node_ref->get_node( ).get_item_data( split + s + 1 ),
+                up_node_ref->get_node( ).get_item_link( split + s + 1 ) );
 
-            ap_new_node_ref->get_node( ).append_item( item, link );
+            up_new_node_ref->get_node( ).append_item( item, link );
 
             for( s = ( uint8_t )pos; s < size; s++ )
-               ap_new_node_ref->get_node( ).append_item(
-                ap_node_ref->get_node( ).get_item_data( s ),
-                ap_node_ref->get_node( ).get_item_link( s ) );
+               up_new_node_ref->get_node( ).append_item(
+                up_node_ref->get_node( ).get_item_data( s ),
+                up_node_ref->get_node( ).get_item_link( s ) );
 
-            ap_node_ref->get_node( ).erase_items( split + 1 );
+            up_node_ref->get_node( ).erase_items( split + 1 );
 
             if( is_leaf_node )
             {
@@ -1756,13 +1795,14 @@ template< typename T, typename L, typename N, typename M >
          }
 
          if( dup_node_link != c_npos
-          && !( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split ) )
+          && !( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split ) )
             ;
          else
          {
-            ap_new_node_ref->get_node( ).ref_data( ).dge_link
-             = ap_node_ref->get_node( ).ref_data( ).dge_link;
-            ap_node_ref->get_node( ).ref_data( ).dge_link = c_npos;
+            up_new_node_ref->get_node( ).ref_data( ).dge_link
+             = up_node_ref->get_node( ).ref_data( ).dge_link;
+
+            up_node_ref->get_node( ).ref_data( ).dge_link = c_npos;
          }
 
          // IMPORTANT: Do not change the "right leaf node" if the node that has just been split
@@ -1770,68 +1810,69 @@ template< typename T, typename L, typename N, typename M >
          // will be the case if the new item was greater than the item value of items that form
          // a duplicate sub-list) then move the "right leaf node" flag, if applicable, into the
          // new node.
-         if( !( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split ) )
+         if( !( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split ) )
          {
-            if( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_rgt_leaf )
+            if( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_rgt_leaf )
             {
                state.rgt_leaf_node = new_link;
-               ap_node_ref->get_node( ).ref_data( ).flags &= ~c_node_flag_is_rgt_leaf;
-               ap_new_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_is_rgt_leaf;
+               up_node_ref->get_node( ).ref_data( ).flags &= ~c_node_flag_is_rgt_leaf;
+               up_new_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_is_rgt_leaf;
             }
             else if( dup_node_link != c_npos )
             {
-               std::auto_ptr< bt_node_ref< T > > ap_dup_node_ref( allocate_node_ref( dup_node_link ) );
-               if( ap_dup_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_rgt_leaf )
+               std::unique_ptr< bt_node_ref< T > > up_dup_node_ref( allocate_node_ref( dup_node_link ) );
+
+               if( up_dup_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_rgt_leaf )
                {
-                  ap_dup_node_ref->get_node( ).ref_data( ).flags &= ~c_node_flag_is_rgt_leaf;
-                  ap_dup_node_ref->get_node( ).touch( );
+                  up_dup_node_ref->get_node( ).ref_data( ).flags &= ~c_node_flag_is_rgt_leaf;
+                  up_dup_node_ref->get_node( ).touch( );
 
                   state.rgt_leaf_node = new_link;
-                  ap_new_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_is_rgt_leaf;
+                  up_new_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_is_rgt_leaf;
                }
             }
          }
 
-         if( !( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf ) )
-            ap_new_node_ref->get_node( ).ref_data( ).flags &= ~c_node_flag_is_leaf;
+         if( !( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf ) )
+            up_new_node_ref->get_node( ).ref_data( ).flags &= ~c_node_flag_is_leaf;
 
-         ap_new_node_ref->get_node( ).ref_data( ).rgt_link = ap_node_ref->get_node( ).ref_data( ).rgt_link;
+         up_new_node_ref->get_node( ).ref_data( ).rgt_link = up_node_ref->get_node( ).ref_data( ).rgt_link;
 
-         if( ap_new_node_ref->get_node( ).ref_data( ).rgt_link != c_npos )
+         if( up_new_node_ref->get_node( ).ref_data( ).rgt_link != c_npos )
          {
-            std::auto_ptr< bt_node_ref< T > > ap_rgt_node_ref(
-             allocate_node_ref( ap_new_node_ref->get_node( ).ref_data( ).rgt_link ) );
+            std::unique_ptr< bt_node_ref< T > > up_rgt_node_ref(
+             allocate_node_ref( up_new_node_ref->get_node( ).ref_data( ).rgt_link ) );
 
-            ap_rgt_node_ref->get_node( ).ref_data( ).lft_link = new_link;
-            ap_rgt_node_ref->get_node( ).touch( );
+            up_rgt_node_ref->get_node( ).ref_data( ).lft_link = new_link;
+            up_rgt_node_ref->get_node( ).touch( );
          }
 
-         ap_node_ref->get_node( ).ref_data( ).rgt_link = new_link;
-         ap_new_node_ref->get_node( ).ref_data( ).lft_link = node_link;
+         up_node_ref->get_node( ).ref_data( ).rgt_link = new_link;
+         up_new_node_ref->get_node( ).ref_data( ).lft_link = node_link;
 
-         ap_node_ref->get_node( ).resize_items( split + 1 );
-         ap_new_node_ref->get_node( ).resize_items( size - split );
+         up_node_ref->get_node( ).resize_items( split + 1 );
+         up_new_node_ref->get_node( ).resize_items( size - split );
 
          // IMPORTANT: If the split is occurring within duplicate key values then create a link
          // between the first and last split nodes to ensure that subsequent inserts will avoid
          // any performance overhead that would be needed to span across these duplicate links.
-         if( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split )
+         if( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split )
          {
             if( dup_node_link != c_npos )
             {
-               std::auto_ptr< bt_node_ref< T > > ap_dup_node_ref( allocate_node_ref( dup_node_link ) );
+               std::unique_ptr< bt_node_ref< T > > up_dup_node_ref( allocate_node_ref( dup_node_link ) );
 
-               ap_dup_node_ref->get_node( ).ref_data( ).dge_link = new_link;
-               ap_dup_node_ref->get_node( ).touch( );
+               up_dup_node_ref->get_node( ).ref_data( ).dge_link = new_link;
+               up_dup_node_ref->get_node( ).touch( );
             }
             else
             {
-               ap_node_ref->get_node( ).ref_data( ).dge_link = new_link;
-               ap_new_node_ref->get_node( ).ref_data( ).dge_link = node_link;
+               up_node_ref->get_node( ).ref_data( ).dge_link = new_link;
+               up_new_node_ref->get_node( ).ref_data( ).dge_link = node_link;
             }
          }
 
-         ap_new_node_ref->get_node( ).touch( );
+         up_new_node_ref->get_node( ).touch( );
 
 #  ifdef BTREE_DEBUG
          dump_node( std::cout, new_link );
@@ -1844,22 +1885,22 @@ template< typename T, typename L, typename N, typename M >
          // as only leaf nodes are permitted to contain duplicates.
          if( is_leaf_node )
          {
-            if( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split )
+            if( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split )
             {
-               if( ap_new_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_rgt_leaf )
+               if( up_new_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_rgt_leaf )
                   new_duplicate_dge_node = new_link;
                new_link = c_npos;
             }
             else
-               item = ap_new_node_ref->get_node( ).get_item_data( 0 );
+               item = up_new_node_ref->get_node( ).get_item_data( 0 );
          }
          else
-            item = ap_node_ref->get_node( ).get_item_data( split );
+            item = up_node_ref->get_node( ).get_item_data( split );
       }
    }
 
    if( has_changed )
-      ap_node_ref->get_node( ).touch( );
+      up_node_ref->get_node( ).touch( );
 
    return new_link;
 }
@@ -1926,9 +1967,10 @@ template< typename T, typename L, typename N, typename M >
          {
             if( position.rp_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split )
             {
-               std::auto_ptr< bt_node_ref< T > > ap_rgt_node_ref(
+               std::unique_ptr< bt_node_ref< T > > up_rgt_node_ref(
                 allocate_node_ref( position.rp_node_ref->get_node( ).ref_data( ).rgt_link ) );
-               ap_rgt_node_ref->get_node( ).copy_items( 0, position.rp_node_ref->get_node( ) );
+
+               up_rgt_node_ref->get_node( ).copy_items( 0, position.rp_node_ref->get_node( ) );
 
                if( position.rp_node_ref->get_node( ).ref_data( ).rgt_link
                 == position.rp_node_ref->get_node( ).ref_data( ).dge_link )
@@ -1940,9 +1982,9 @@ template< typename T, typename L, typename N, typename M >
                uint64_t old_link = position.rp_node_ref->get_node( ).ref_data( ).rgt_link;
 
                position.rp_node_ref->get_node( ).ref_data( ).rgt_link
-                = ap_rgt_node_ref->get_node( ).ref_data( ).rgt_link;
+                = up_rgt_node_ref->get_node( ).ref_data( ).rgt_link;
 
-               if( ap_rgt_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_rgt_leaf )
+               if( up_rgt_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_rgt_leaf )
                {
                   state.rgt_leaf_node = position.node;
                   position.rp_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_is_rgt_leaf;
@@ -1950,67 +1992,67 @@ template< typename T, typename L, typename N, typename M >
 
                if( position.rp_node_ref->get_node( ).ref_data( ).rgt_link != c_npos )
                {
-                  std::auto_ptr< bt_node_ref< T > > ap_new_rgt_node_ref(
+                  std::unique_ptr< bt_node_ref< T > > up_new_rgt_node_ref(
                    allocate_node_ref( position.rp_node_ref->get_node( ).ref_data( ).rgt_link ) );
 
-                  ap_new_rgt_node_ref->get_node( ).ref_data( ).lft_link = position.node;
-                  ap_new_rgt_node_ref->get_node( ).touch( );
+                  up_new_rgt_node_ref->get_node( ).ref_data( ).lft_link = position.node;
+                  up_new_rgt_node_ref->get_node( ).touch( );
                }
 
-               ap_rgt_node_ref->get_node( ).reset( );
-               ap_rgt_node_ref->get_node( ).ref_data( ).dge_link = state.free_list_node;
+               up_rgt_node_ref->get_node( ).reset( );
+               up_rgt_node_ref->get_node( ).ref_data( ).dge_link = state.free_list_node;
                state.free_list_node = old_link;
 
-               ap_rgt_node_ref->get_node( ).touch( );
+               up_rgt_node_ref->get_node( ).touch( );
             }
             else
             {
-               std::auto_ptr< bt_node_ref< T > > ap_lft_node_ref(
+               std::unique_ptr< bt_node_ref< T > > up_lft_node_ref(
                 allocate_node_ref( position.rp_node_ref->get_node( ).ref_data( ).lft_link ) );
 
                if( position.rp_node_ref->get_node( ).ref_data( ).dge_link
                 == position.rp_node_ref->get_node( ).ref_data( ).lft_link )
                {
-                  ap_lft_node_ref->get_node( ).ref_data( ).dge_link = c_npos;
-                  ap_lft_node_ref->get_node( ).ref_data( ).flags &= ~c_node_flag_has_dup_split;
+                  up_lft_node_ref->get_node( ).ref_data( ).dge_link = c_npos;
+                  up_lft_node_ref->get_node( ).ref_data( ).flags &= ~c_node_flag_has_dup_split;
                }
                else
                {
-                  ap_lft_node_ref->get_node( ).ref_data( ).dge_link
+                  up_lft_node_ref->get_node( ).ref_data( ).dge_link
                    = position.rp_node_ref->get_node( ).ref_data( ).dge_link;
 
-                  std::auto_ptr< bt_node_ref< T > > ap_dge_node_ref(
-                   allocate_node_ref( ap_lft_node_ref->get_node( ).ref_data( ).dge_link ) );
+                  std::unique_ptr< bt_node_ref< T > > up_dge_node_ref(
+                   allocate_node_ref( up_lft_node_ref->get_node( ).ref_data( ).dge_link ) );
 
-                  ap_dge_node_ref->get_node( ).ref_data( ).dge_link
+                  up_dge_node_ref->get_node( ).ref_data( ).dge_link
                    = position.rp_node_ref->get_node( ).ref_data( ).lft_link;
 
-                  ap_dge_node_ref->get_node( ).touch( );
+                  up_dge_node_ref->get_node( ).touch( );
                }
 
-               ap_lft_node_ref->get_node( ).ref_data( ).flags &= ~c_node_flag_has_dup_split;
+               up_lft_node_ref->get_node( ).ref_data( ).flags &= ~c_node_flag_has_dup_split;
 
-               ap_lft_node_ref->get_node( ).ref_data( ).rgt_link
+               up_lft_node_ref->get_node( ).ref_data( ).rgt_link
                 = position.rp_node_ref->get_node( ).ref_data( ).rgt_link;
 
                if( position.rp_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_rgt_leaf )
                {
-                  ap_lft_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_is_rgt_leaf;
+                  up_lft_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_is_rgt_leaf;
                   state.rgt_leaf_node = position.rp_node_ref->get_node( ).ref_data( ).lft_link;
                }
 
-               ap_lft_node_ref->get_node( ).touch( );
+               up_lft_node_ref->get_node( ).touch( );
 
                uint64_t rgt_link = position.rp_node_ref->get_node( ).ref_data( ).rgt_link;
 
                if( rgt_link != c_npos )
                {
-                  std::auto_ptr< bt_node_ref< T > > ap_rgt_node_ref( allocate_node_ref( rgt_link ) );
+                  std::unique_ptr< bt_node_ref< T > > up_rgt_node_ref( allocate_node_ref( rgt_link ) );
 
-                  ap_rgt_node_ref->get_node( ).ref_data( ).lft_link
+                  up_rgt_node_ref->get_node( ).ref_data( ).lft_link
                    = position.rp_node_ref->get_node( ).ref_data( ).lft_link;
 
-                  ap_rgt_node_ref->get_node( ).touch( );
+                  up_rgt_node_ref->get_node( ).touch( );
                }
 
                position.rp_node_ref->get_node( ).reset( );
@@ -2022,18 +2064,19 @@ template< typename T, typename L, typename N, typename M >
          }
          else if( position.rp_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split )
          {
-            std::auto_ptr< bt_node_ref< T > > ap_lft_node_ref(
+            std::unique_ptr< bt_node_ref< T > > up_lft_node_ref(
              allocate_node_ref( position.rp_node_ref->get_node( ).ref_data( ).lft_link ) );
-            std::auto_ptr< bt_node_ref< T > > ap_rgt_node_ref(
+
+            std::unique_ptr< bt_node_ref< T > > up_rgt_node_ref(
              allocate_node_ref( position.rp_node_ref->get_node( ).ref_data( ).rgt_link ) );
 
-            ap_lft_node_ref->get_node( ).ref_data( ).rgt_link
+            up_lft_node_ref->get_node( ).ref_data( ).rgt_link
              = position.rp_node_ref->get_node( ).ref_data( ).rgt_link;
-            ap_rgt_node_ref->get_node( ).ref_data( ).lft_link
+            up_rgt_node_ref->get_node( ).ref_data( ).lft_link
              = position.rp_node_ref->get_node( ).ref_data( ).lft_link;
 
-            ap_lft_node_ref->get_node( ).touch( );
-            ap_rgt_node_ref->get_node( ).touch( );
+            up_lft_node_ref->get_node( ).touch( );
+            up_rgt_node_ref->get_node( ).touch( );
 
             position.rp_node_ref->get_node( ).reset( );
             position.rp_node_ref->get_node( ).ref_data( ).dge_link = state.free_list_node;
@@ -2048,9 +2091,11 @@ template< typename T, typename L, typename N, typename M >
 
       if( orig_rgt_leaf_node != state.rgt_leaf_node )
       {
-         std::auto_ptr< bt_node_ref< T > > ap_root_node_ref( allocate_node_ref( state.root_node ) );
-         ap_root_node_ref->get_node( ).ref_data( ).dge_link = state.rgt_leaf_node;
-         ap_root_node_ref->get_node( ).touch( );
+         std::unique_ptr< bt_node_ref< T > > up_root_node_ref( allocate_node_ref( state.root_node ) );
+
+         up_root_node_ref->get_node( ).ref_data( ).dge_link = state.rgt_leaf_node;
+
+         up_root_node_ref->get_node( ).touch( );
 
          // NOTE: It would be very unsafe to allow an iterator to exist which is now presumably
          // a part of the free list, therefore set it to "end" to prevent potential corruption.
@@ -2072,17 +2117,18 @@ template< typename T, typename L, typename N, typename M > void bt_base< T, L, N
 
    uint64_t next_node = state.root_node;
    uint64_t first_node_in_next_level = c_npos;
-   std::auto_ptr< bt_node_ref< T > > ap_node_ref;
+
+   std::unique_ptr< bt_node_ref< T > > up_node_ref;
 
    while( next_node != c_npos )
    {
-      ap_node_ref.reset( allocate_node_ref( next_node ) );
+      up_node_ref.reset( allocate_node_ref( next_node ) );
 
-      if( first_node_in_next_level == c_npos && ap_node_ref->get_node( ).size( ) )
-         first_node_in_next_level = ap_node_ref->get_node( ).get_item_link( 0 );
+      if( ( first_node_in_next_level == c_npos ) && up_node_ref->get_node( ).size( ) )
+         first_node_in_next_level = up_node_ref->get_node( ).get_item_link( 0 );
 
       node_manager.destroy_node( next_node );
-      next_node = ap_node_ref->get_node( ).ref_data( ).rgt_link;
+      next_node = up_node_ref->get_node( ).ref_data( ).rgt_link;
 
       if( next_node == c_npos )
       {
@@ -2092,21 +2138,25 @@ template< typename T, typename L, typename N, typename M > void bt_base< T, L, N
    }
 
    next_node = state.first_append_node;
+
    while( next_node != c_npos )
    {
-      ap_node_ref.reset( allocate_node_ref( next_node ) );
+      up_node_ref.reset( allocate_node_ref( next_node ) );
 
       node_manager.destroy_node( next_node );
-      next_node = ap_node_ref->get_node( ).ref_data( ).rgt_link;
+
+      next_node = up_node_ref->get_node( ).ref_data( ).rgt_link;
    }
 
    next_node = state.free_list_node;
+
    while( next_node != c_npos )
    {
-      ap_node_ref.reset( allocate_node_ref( next_node ) );
+      up_node_ref.reset( allocate_node_ref( next_node ) );
 
       node_manager.destroy_node( next_node );
-      next_node = ap_node_ref->get_node( ).ref_data( ).rgt_link;
+
+      next_node = up_node_ref->get_node( ).ref_data( ).rgt_link;
    }
 
    node_manager.reset( );
@@ -2132,8 +2182,8 @@ template< typename T, typename L, typename N, typename M > void bt_base< T, L, N
 
    uint8_t old_num_levels( state.num_levels );
 
-   std::auto_ptr< bt_node_ref< T > > ap_node_ref;
-   std::auto_ptr< bt_node_ref< T > > ap_index_node_ref;
+   std::unique_ptr< bt_node_ref< T > > up_node_ref;
+   std::unique_ptr< bt_node_ref< T > > up_index_node_ref;
 
    if( ( state.root_node == c_npos && state.first_append_node == c_npos )
     || ( state.root_node != c_npos
@@ -2149,32 +2199,39 @@ template< typename T, typename L, typename N, typename M > void bt_base< T, L, N
    if( state.root_node != c_npos && state.root_node != state.lft_leaf_node )
    {
       next_index_node = state.root_node;
-      ap_index_node_ref.reset( allocate_node_ref( next_index_node ) );
+
+      up_index_node_ref.reset( allocate_node_ref( next_index_node ) );
 
       if( old_num_levels > 1 )
-         first_old_index_node_in_next_level = ap_index_node_ref->get_node( ).get_item_link( 0 );
+         first_old_index_node_in_next_level = up_index_node_ref->get_node( ).get_item_link( 0 );
    }
    else
    {
       next_index_node = state.free_list_node;
+
       if( next_index_node == c_npos )
       {
          next_index_node = node_manager.create_node( );
-         ap_index_node_ref.reset( allocate_node_ref( next_index_node ) );
+
+         up_index_node_ref.reset( allocate_node_ref( next_index_node ) );
+
          ++state.total_nodes;
       }
       else
       {
-         ap_index_node_ref.reset( allocate_node_ref( next_index_node ) );
-         state.free_list_node = ap_index_node_ref->get_node( ).ref_data( ).dge_link;
+         up_index_node_ref.reset( allocate_node_ref( next_index_node ) );
+
+         state.free_list_node = up_index_node_ref->get_node( ).ref_data( ).dge_link;
       }
    }
 
    first_new_index_node = next_index_node;
-   ap_index_node_ref->get_node( ).clear_items( );
-   ap_index_node_ref->get_node( ).ref_data( ).flags = 0;
-   ap_index_node_ref->get_node( ).ref_data( ).lft_link = c_npos;
-   ap_index_node_ref->get_node( ).ref_data( ).dge_link = c_npos;
+
+   up_index_node_ref->get_node( ).clear_items( );
+
+   up_index_node_ref->get_node( ).ref_data( ).flags = 0;
+   up_index_node_ref->get_node( ).ref_data( ).lft_link = c_npos;
+   up_index_node_ref->get_node( ).ref_data( ).dge_link = c_npos;
 
    next_node = state.lft_leaf_node;
    bool is_processing_appended = false;
@@ -2198,29 +2255,33 @@ template< typename T, typename L, typename N, typename M > void bt_base< T, L, N
 
    state.num_levels = 0;
 
-   ap_node_ref.reset( allocate_node_ref( next_node ) );
+   up_node_ref.reset( allocate_node_ref( next_node ) );
 
    if( is_processing_appended )
-      state.total_items += ap_node_ref->get_node( ).size( );
+      state.total_items += up_node_ref->get_node( ).size( );
 
-   next_node = ap_node_ref->get_node( ).ref_data( ).rgt_link;
+   next_node = up_node_ref->get_node( ).ref_data( ).rgt_link;
+
    if( next_node == c_npos )
    {
       if( !is_processing_appended && state.first_append_node != c_npos )
       {
          next_node = state.first_append_node;
+
          is_processing_appended = true;
          set_left_link_to_previous = true;
 
-         ap_node_ref->get_node( ).ref_data( ).flags = c_node_flag_is_leaf;
-         ap_node_ref->get_node( ).ref_data( ).rgt_link = next_node;
-         ap_node_ref->get_node( ).touch( );
+         up_node_ref->get_node( ).ref_data( ).flags = c_node_flag_is_leaf;
+         up_node_ref->get_node( ).ref_data( ).rgt_link = next_node;
+
+         up_node_ref->get_node( ).touch( );
       }
       else
       {
          state.root_node = last_node;
          state.rgt_leaf_node = last_node;
-         ap_node_ref->get_node( ).ref_data( ).flags
+
+         up_node_ref->get_node( ).ref_data( ).flags
           = ( c_node_flag_is_leaf | c_node_flag_is_rgt_leaf );
       }
    }
@@ -2230,212 +2291,241 @@ template< typename T, typename L, typename N, typename M > void bt_base< T, L, N
 
    while( next_node != c_npos )
    {
-      ap_node_ref.reset( allocate_node_ref( next_node ) );
+      up_node_ref.reset( allocate_node_ref( next_node ) );
 
       if( is_processing_appended
-       && ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
-         state.total_items += ap_node_ref->get_node( ).size( );
+       && up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
+         state.total_items += up_node_ref->get_node( ).size( );
 
       if( set_left_link_to_previous )
       {
          set_left_link_to_previous = false;
-         ap_node_ref->get_node( ).ref_data( ).lft_link = last_node;
+
+         up_node_ref->get_node( ).ref_data( ).lft_link = last_node;
       }
 
-      if( ap_node_ref->get_node( ).size( )
-       && ( ( ap_node_ref->get_node( ).ref_data( ).dge_link == c_npos
-       && !( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split ) )
-       || ( ap_node_ref->get_node( ).ref_data( ).dge_link != c_npos
-       && ( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split ) ) ) )
+      if( up_node_ref->get_node( ).size( )
+       && ( ( up_node_ref->get_node( ).ref_data( ).dge_link == c_npos
+       && !( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split ) )
+       || ( up_node_ref->get_node( ).ref_data( ).dge_link != c_npos
+       && ( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_has_dup_split ) ) ) )
       {
-         if( !ap_index_node_ref.get( )
-          || ap_index_node_ref->get_node( ).size( ) == items_to_fill_per_node )
+         if( !up_index_node_ref.get( )
+          || up_index_node_ref->get_node( ).size( ) == items_to_fill_per_node )
          {
             uint64_t last_index_node( next_index_node );
 
-            if( ap_index_node_ref.get( ) )
+            if( up_index_node_ref.get( ) )
             {
-               ap_index_node_ref->get_node( ).touch( );
+               up_index_node_ref->get_node( ).touch( );
 
-               next_index_node = ap_index_node_ref->get_node( ).ref_data( ).rgt_link;
+               next_index_node = up_index_node_ref->get_node( ).ref_data( ).rgt_link;
+
                if( next_index_node != c_npos )
-                  ap_index_node_ref.reset( allocate_node_ref( next_index_node ) );
+                  up_index_node_ref.reset( allocate_node_ref( next_index_node ) );
             }
 
-            if( !ap_index_node_ref.get( ) || next_index_node == c_npos )
+            if( !up_index_node_ref.get( ) || ( next_index_node == c_npos ) )
             {
                if( first_old_index_node_in_next_level != c_npos )
                {
                   next_index_node = first_old_index_node_in_next_level;
 
-                  if( ap_index_node_ref.get( ) )
+                  if( up_index_node_ref.get( ) )
                   {
-                     ap_index_node_ref->get_node( ).ref_data( ).rgt_link = next_index_node;
-                     ap_index_node_ref->get_node( ).touch( );
+                     up_index_node_ref->get_node( ).ref_data( ).rgt_link = next_index_node;
+
+                     up_index_node_ref->get_node( ).touch( );
                   }
 
-                  ap_index_node_ref.reset( allocate_node_ref( next_index_node ) );
+                  up_index_node_ref.reset( allocate_node_ref( next_index_node ) );
 
                   if( --old_num_levels <= 1 )
                      first_old_index_node_in_next_level = c_npos;
                   else
-                     first_old_index_node_in_next_level = ap_index_node_ref->get_node( ).get_item_link( 0 );
+                     first_old_index_node_in_next_level = up_index_node_ref->get_node( ).get_item_link( 0 );
                }
                else if( state.free_list_node != c_npos )
                {
                   next_index_node = state.free_list_node;
 
-                  if( ap_index_node_ref.get( ) )
+                  if( up_index_node_ref.get( ) )
                   {
-                     ap_index_node_ref->get_node( ).ref_data( ).rgt_link = next_index_node;
-                     ap_index_node_ref->get_node( ).touch( );
+                     up_index_node_ref->get_node( ).ref_data( ).rgt_link = next_index_node;
+
+                     up_index_node_ref->get_node( ).touch( );
                   }
 
-                  ap_index_node_ref.reset( allocate_node_ref( next_index_node ) );
-                  state.free_list_node = ap_index_node_ref->get_node( ).ref_data( ).dge_link;
+                  up_index_node_ref.reset( allocate_node_ref( next_index_node ) );
+
+                  state.free_list_node = up_index_node_ref->get_node( ).ref_data( ).dge_link;
                }
                else
                {
                   next_index_node = node_manager.create_node( );
+
                   ++state.total_nodes;
 
-                  if( ap_index_node_ref.get( ) )
+                  if( up_index_node_ref.get( ) )
                   {
-                     ap_index_node_ref->get_node( ).ref_data( ).rgt_link = next_index_node;
-                     ap_index_node_ref->get_node( ).touch( );
+                     up_index_node_ref->get_node( ).ref_data( ).rgt_link = next_index_node;
+
+                     up_index_node_ref->get_node( ).touch( );
                   }
 
-                  ap_index_node_ref.reset( allocate_node_ref( next_index_node ) );
+                  up_index_node_ref.reset( allocate_node_ref( next_index_node ) );
                }
             }
 
-            ap_index_node_ref->get_node( ).clear_items( );
-            ap_index_node_ref->get_node( ).ref_data( ).flags = 0;
-            ap_index_node_ref->get_node( ).ref_data( ).dge_link = c_npos;
+            up_index_node_ref->get_node( ).clear_items( );
+
+            up_index_node_ref->get_node( ).ref_data( ).flags = 0;
+            up_index_node_ref->get_node( ).ref_data( ).dge_link = c_npos;
 
             if( first_new_index_node == c_npos )
                first_new_index_node = next_index_node;
             else
-               ap_index_node_ref->get_node( ).ref_data( ).lft_link = last_index_node;
+               up_index_node_ref->get_node( ).ref_data( ).lft_link = last_index_node;
          }
 
-         if( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
-            ap_index_node_ref->get_node( ).append_item(
-             ap_node_ref->get_node( ).get_item_data( 0 ), dup_node == c_npos ? last_node : dup_node );
+         if( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
+            up_index_node_ref->get_node( ).append_item(
+             up_node_ref->get_node( ).get_item_data( 0 ), dup_node == c_npos ? last_node : dup_node );
          else
-            ap_index_node_ref->get_node( ).append_item(
-             ap_node_ref->get_node( ).get_item_data( ap_node_ref->get_node( ).size( ) - 1 ), next_node );
+            up_index_node_ref->get_node( ).append_item(
+             up_node_ref->get_node( ).get_item_data( up_node_ref->get_node( ).size( ) - 1 ), next_node );
       }
 
       last_node = next_node;
-      dup_node = ap_node_ref->get_node( ).ref_data( ).dge_link;
-      next_node = ap_node_ref->get_node( ).ref_data( ).rgt_link;
+
+      dup_node = up_node_ref->get_node( ).ref_data( ).dge_link;
+      next_node = up_node_ref->get_node( ).ref_data( ).rgt_link;
 
       if( next_node == c_npos && !is_processing_appended )
       {
          next_node = state.first_append_node;
+
          is_processing_appended = true;
 
          if( next_node != c_npos )
          {
             set_left_link_to_previous = true;
-            ap_node_ref->get_node( ).ref_data( ).rgt_link = next_node;
+
+            up_node_ref->get_node( ).ref_data( ).rgt_link = next_node;
          }
       }
 
       if( next_node == c_npos )
       {
-         if( ap_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
+         if( up_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
          {
-            if( ap_node_ref->get_node( ).ref_data( ).dge_link == c_npos )
+            if( up_node_ref->get_node( ).ref_data( ).dge_link == c_npos )
             {
                state.rgt_leaf_node = last_node;
-               ap_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_is_rgt_leaf;
-               ap_node_ref->get_node( ).touch( );
+
+               up_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_is_rgt_leaf;
+
+               up_node_ref->get_node( ).touch( );
             }
             else
             {
-               std::auto_ptr< bt_node_ref< T > > ap_dup_node_ref(
-                allocate_node_ref( ap_node_ref->get_node( ).ref_data( ).dge_link ) );
+               std::unique_ptr< bt_node_ref< T > > up_dup_node_ref(
+                allocate_node_ref( up_node_ref->get_node( ).ref_data( ).dge_link ) );
 
-               state.rgt_leaf_node = ap_node_ref->get_node( ).ref_data( ).dge_link;
-               ap_dup_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_is_rgt_leaf;
-               ap_dup_node_ref->get_node( ).touch( );
+               state.rgt_leaf_node = up_node_ref->get_node( ).ref_data( ).dge_link;
+
+               up_dup_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_is_rgt_leaf;
+
+               up_dup_node_ref->get_node( ).touch( );
             }
          }
 
          if( next_index_node == first_new_index_node )
          {
             state.root_node = next_index_node;
-            ap_index_node_ref->get_node( ).ref_data( ).dge_link = state.rgt_leaf_node;
-            ap_index_node_ref->get_node( ).touch( );
+
+            up_index_node_ref->get_node( ).ref_data( ).dge_link = state.rgt_leaf_node;
+
+            up_index_node_ref->get_node( ).touch( );
+
             break;
          }
 
          last_node = next_node = first_new_index_node;
-         ap_node_ref.reset( allocate_node_ref( next_node ) );
+
+         up_node_ref.reset( allocate_node_ref( next_node ) );
 
          ++state.num_levels;
-         if( ap_index_node_ref->get_node( ).ref_data( ).rgt_link != c_npos )
+
+         if( up_index_node_ref->get_node( ).ref_data( ).rgt_link != c_npos )
          {
-            next_index_node = ap_index_node_ref->get_node( ).ref_data( ).rgt_link;
-            ap_index_node_ref->get_node( ).ref_data( ).rgt_link = c_npos;
-            ap_index_node_ref->get_node( ).touch( );
+            next_index_node = up_index_node_ref->get_node( ).ref_data( ).rgt_link;
+
+            up_index_node_ref->get_node( ).ref_data( ).rgt_link = c_npos;
+
+            up_index_node_ref->get_node( ).touch( );
 
             first_new_index_node = next_index_node;
-            ap_index_node_ref.reset( allocate_node_ref( next_index_node ) );
 
-            ap_index_node_ref->get_node( ).clear_items( );
-            ap_index_node_ref->get_node( ).ref_data( ).flags = 0;
-            ap_index_node_ref->get_node( ).ref_data( ).lft_link = c_npos;
-            ap_index_node_ref->get_node( ).ref_data( ).dge_link = c_npos;
+            up_index_node_ref.reset( allocate_node_ref( next_index_node ) );
+
+            up_index_node_ref->get_node( ).clear_items( );
+
+            up_index_node_ref->get_node( ).ref_data( ).flags = 0;
+            up_index_node_ref->get_node( ).ref_data( ).lft_link = c_npos;
+            up_index_node_ref->get_node( ).ref_data( ).dge_link = c_npos;
          }
          else
          {
-            ap_index_node_ref->get_node( ).touch( );
+            up_index_node_ref->get_node( ).touch( );
 
-            ap_index_node_ref.reset( );
+            up_index_node_ref.reset( );
 
             first_new_index_node = c_npos;
          }
       }
       else
-         ap_node_ref->get_node( ).touch( );
+         up_node_ref->get_node( ).touch( );
    }
 
    // NOTE: Any "old" index nodes which have not already been reused during this index building
    // process will need to be added to the "free list". This might involve having to handle the
    // possibility of one or more index levels that may be "left over".
-   if( ap_index_node_ref.get( ) )
+   if( up_index_node_ref.get( ) )
    {
-      while( ap_index_node_ref->get_node( ).ref_data( ).rgt_link != c_npos )
+      while( up_index_node_ref->get_node( ).ref_data( ).rgt_link != c_npos )
       {
-         next_node = ap_index_node_ref->get_node( ).ref_data( ).rgt_link;
-         ap_index_node_ref->get_node( ).ref_data( ).rgt_link = c_npos;
-         ap_index_node_ref->get_node( ).touch( );
+         next_node = up_index_node_ref->get_node( ).ref_data( ).rgt_link;
 
-         ap_index_node_ref.reset( allocate_node_ref( next_node ) );
+         up_index_node_ref->get_node( ).ref_data( ).rgt_link = c_npos;
 
-         if( ap_index_node_ref->get_node( ).ref_data( ).rgt_link == c_npos )
+         up_index_node_ref->get_node( ).touch( );
+
+         up_index_node_ref.reset( allocate_node_ref( next_node ) );
+
+         if( up_index_node_ref->get_node( ).ref_data( ).rgt_link == c_npos )
          {
             if( first_old_index_node_in_next_level != c_npos )
             {
                next_node = first_old_index_node_in_next_level;
-               ap_index_node_ref.reset( allocate_node_ref( next_node ) );
+
+               up_index_node_ref.reset( allocate_node_ref( next_node ) );
 
                if( --old_num_levels <= 1 )
                   first_old_index_node_in_next_level = c_npos;
                else
-                  first_old_index_node_in_next_level = ap_index_node_ref->get_node( ).get_item_link( 0 );
+                  first_old_index_node_in_next_level = up_index_node_ref->get_node( ).get_item_link( 0 );
             }
          }
 
          if( state.free_list_node != c_npos )
-            ap_index_node_ref->get_node( ).ref_data( ).dge_link = state.free_list_node;
+            up_index_node_ref->get_node( ).ref_data( ).dge_link = state.free_list_node;
 
          state.free_list_node = next_node;
-         ap_index_node_ref->get_node( ).clear_items( );
-         ap_index_node_ref->get_node( ).touch( );
+
+         up_index_node_ref->get_node( ).clear_items( );
+
+         up_index_node_ref->get_node( ).touch( );
       }
    }
 
@@ -2444,14 +2534,15 @@ template< typename T, typename L, typename N, typename M > void bt_base< T, L, N
    // the left leaf node.
    if( state.num_levels == 1 )
    {
-      std::auto_ptr< bt_node_ref< T > > ap_root_node_ref( allocate_node_ref( state.root_node ) );
+      std::unique_ptr< bt_node_ref< T > > up_root_node_ref( allocate_node_ref( state.root_node ) );
 
-      if( !ap_root_node_ref->get_node( ).size( ) )
+      if( !up_root_node_ref->get_node( ).size( ) )
       {
-         uint64_t new_root_node = ap_root_node_ref->get_node( ).ref_data( ).dge_link;
+         uint64_t new_root_node = up_root_node_ref->get_node( ).ref_data( ).dge_link;
 
-         ap_root_node_ref->get_node( ).ref_data( ).dge_link = state.free_list_node;
-         ap_root_node_ref->get_node( ).touch( );
+         up_root_node_ref->get_node( ).ref_data( ).dge_link = state.free_list_node;
+
+         up_root_node_ref->get_node( ).touch( );
 
          state.free_list_node = state.root_node;
          state.root_node = new_root_node;

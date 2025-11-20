@@ -22,8 +22,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "peer_session.h"
 
 #include "regex.h"
@@ -1540,7 +1538,7 @@ void process_repository_file( const string& blockchain,
       {
          public_key pub_key( extra_info, !are_hex_nibbles( extra_info ) );
 
-         auto_ptr< private_key > ap_priv_key;
+         unique_ptr< private_key > up_priv_key;
 
          if( !is_test_session )
          {
@@ -1549,7 +1547,7 @@ void process_repository_file( const string& blockchain,
 
             // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
             // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
-            ap_priv_key.reset( new private_key( "0"
+            up_priv_key.reset( new private_key( "0"
              + sha256( combined_clear_key( src_hash, password ) ).get_digest_as_string( ).substr( 1 ) ) );
 
             clear_key( password );
@@ -1560,7 +1558,7 @@ void process_repository_file( const string& blockchain,
             // the file system doesn't get confused flag the file as being encrypted anyway.
             type_and_extra |= c_file_type_char_encrypted;
 
-            ap_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
+            up_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
          }
 
          string stream_cipher( get_raw_session_variable(
@@ -1576,7 +1574,7 @@ void process_repository_file( const string& blockchain,
 
          stringstream ss( file_content );
 
-         crypt_stream( ss, ap_priv_key->construct_shared( pub_key ), stream_cipher_value( stream_cipher ) );
+         crypt_stream( ss, up_priv_key->construct_shared( pub_key ), stream_cipher_value( stream_cipher ) );
 
          file_data = ( char )type_and_extra + ss.str( );
 
@@ -1589,10 +1587,10 @@ void process_repository_file( const string& blockchain,
             create_raw_file_in_archive( identity, "", file_data, &local_hash );
 
          store_repository_entry_record( identity, src_hash,
-          local_hash, ap_priv_key->get_public( ), pub_key.get_public( ) );
+          local_hash, up_priv_key->get_public( ), pub_key.get_public( ) );
 
          add_peer_mapped_hash_info( c_local_prefix + peer_map_key, src_hash,
-          local_hash + ':' + ap_priv_key->get_public( ) + pub_key.get_public( ) );
+          local_hash + ':' + up_priv_key->get_public( ) + pub_key.get_public( ) );
       }
    }
 }
@@ -1745,10 +1743,10 @@ void check_for_missing_other_sessions( const date_time& now )
          // NOTE: If possible will ensure that the peer session is being secured.
          string secret_hash( get_raw_system_variable( secret_hash_name + '_' + paired_identity ) );
 
-         auto_ptr< temporary_session_variable > ap_temp_secret_hash;
+         unique_ptr< temporary_session_variable > up_temp_secret_hash;
 
          if( !secret_hash.empty( ) )
-            ap_temp_secret_hash.reset( new temporary_session_variable( secret_hash_name, secret_hash ) );
+            up_temp_secret_hash.reset( new temporary_session_variable( secret_hash_name, secret_hash ) );
 
          string reversed_chain( c_bc_prefix + reversed );
 
@@ -1798,10 +1796,10 @@ void check_for_missing_other_sessions( const date_time& now )
          if( secret_hash.empty( ) && !backup_identity.empty( ) )
             secret_hash = get_raw_system_variable( secret_hash_name + '_' + backup_identity );
 
-         auto_ptr< temporary_session_variable > ap_temp_secret_hash;
+         unique_ptr< temporary_session_variable > up_temp_secret_hash;
 
          if( !secret_hash.empty( ) )
-            ap_temp_secret_hash.reset( new temporary_session_variable( secret_hash_name, secret_hash ) );
+            up_temp_secret_hash.reset( new temporary_session_variable( secret_hash_name, secret_hash ) );
 
          if( chain_type != e_peerchain_type_any )
          {
@@ -6536,13 +6534,13 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 
 #ifdef SSL_SUPPORT
 peer_session* construct_session(
- const date_time& dtm, bool is_responder, auto_ptr< ssl_socket >& ap_socket,
+ const date_time& dtm, bool is_responder, unique_ptr< ssl_socket >& up_socket,
  const string& addr_info, bool is_for_support = false, peer_extra extra = e_peer_extra_none,
  const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any,
  bool has_support_sessions = false, bool must_clear_system_variable = false )
 #else
 peer_session* construct_session(
- const date_time& dtm, bool is_responder, auto_ptr< tcp_socket >& ap_socket,
+ const date_time& dtm, bool is_responder, unique_ptr< tcp_socket >& up_socket,
  const string& addr_info, bool is_for_support = false, peer_extra extra = e_peer_extra_none,
  const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any,
  bool has_support_sessions = false, bool must_clear_system_variable = false )
@@ -6572,7 +6570,7 @@ peer_session* construct_session(
     || addr_info.substr( 0, pos ) == c_local_ip_addr
     || addr_info.substr( 0, pos ) == c_local_ip_addr_for_ipv6 )
       p_session = new peer_session( unix_time( dtm ),
-       is_responder, ap_socket, addr_info, is_for_support, extra,
+       is_responder, up_socket, addr_info, is_for_support, extra,
        p_identity, chain_type, has_support_sessions, must_clear_system_variable );
 
    return p_session;
@@ -6582,12 +6580,12 @@ peer_session* construct_session(
 
 #ifdef SSL_SUPPORT
 peer_session::peer_session( int64_t time_val, bool is_responder,
- auto_ptr< ssl_socket >& ap_socket, const string& addr_info,
+ unique_ptr< ssl_socket >& up_socket, const string& addr_info,
  bool is_for_support, peer_extra extra, const char* p_identity,
  peerchain_type chain_type, bool has_support_sessions, bool must_clear_system_variable )
 #else
 peer_session::peer_session( int64_t time_val, bool is_responder,
- auto_ptr< tcp_socket >& ap_socket, const string& addr_info,
+ unique_ptr< tcp_socket >& up_socket, const string& addr_info,
  bool is_for_support, peer_extra extra, const char* p_identity,
  peerchain_type chain_type, bool has_support_sessions, bool must_clear_system_variable )
 #endif
@@ -6601,7 +6599,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
  ip_addr( addr_info ),
  time_val( time_val ),
  num_for_support( 0 ),
- ap_socket( ap_socket ),
+ up_socket( move( up_socket ) ),
  is_responder( is_responder ),
  is_for_support( is_for_support ),
  other_is_owner( false ),
@@ -6611,7 +6609,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
  has_support_sessions( has_support_sessions ),
  must_clear_system_variable( must_clear_system_variable )
 {
-   if( !( *this->ap_socket ) )
+   if( !( *this->up_socket ) )
       throw runtime_error( "unexpected invalid socket in peer_session::peer_session" );
 
    try
@@ -6686,7 +6684,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          p_sock_progress = &sock_progress;
 #endif
 
-      this->ap_socket->set_no_delay( );
+      this->up_socket->set_no_delay( );
 
       // NOTE: A dummy PID is being written/read here so that the standard general
       // purpose client can be used to connect as a peer (for interactive testing).
@@ -6757,14 +6755,14 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
                 + hash.get_digest_as_string( ).substr( 0, 9 ) + '=' + base64::encode( ss.str( ) );
 
 #ifdef SSL_SUPPORT
-               this->ap_socket->ssl_connect( c_initial_timeout );
+               this->up_socket->ssl_connect( c_initial_timeout );
 
                using_tls = true;
 #endif
             }
          }
 
-         this->ap_socket->write_line( pid, c_initial_timeout, p_sock_progress );
+         this->up_socket->write_line( pid, c_initial_timeout, p_sock_progress );
 
          process_greeting( );
       }
@@ -6775,15 +6773,15 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          pid.erase( );
 
 #ifdef SSL_SUPPORT
-         if( this->ap_socket->is_tls_handshake( ) )
+         if( this->up_socket->is_tls_handshake( ) )
          {
-            this->ap_socket->ssl_accept( );
+            this->up_socket->ssl_accept( );
 
             using_tls = true;
          }
 #endif
 
-         this->ap_socket->read_line( pid, c_initial_timeout, c_max_greeting_size, p_sock_progress );
+         this->up_socket->read_line( pid, c_initial_timeout, c_max_greeting_size, p_sock_progress );
 
          string::size_type pos = pid.find( '=' );
 
@@ -6977,7 +6975,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
                   if( !error.empty( ) )
                   {
-                     this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_initial_timeout );
+                     this->up_socket->write_line( string( c_response_error_prefix ) + error, c_initial_timeout );
 
                      throw runtime_error( error );
                   }
@@ -7054,8 +7052,8 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
    }
    catch( exception& x )
    {
-      if( *this->ap_socket )
-         this->ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
+      if( *this->up_socket )
+         this->up_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
 
       throw;
    }
@@ -7090,7 +7088,7 @@ void peer_session::on_start( )
 
    try
    {
-      socket_command_handler cmd_handler( *ap_socket, state,
+      socket_command_handler cmd_handler( *up_socket, state,
        time_value, is_local, is_owner, blockchain, is_for_support );
 
       cmd_handler.add_commands( 0,
@@ -7142,7 +7140,7 @@ void peer_session::on_start( )
             extra = base64::encode( ss.str( ) );
          }
 
-         ap_socket->write_line( string( c_protocol_version )
+         up_socket->write_line( string( c_protocol_version )
           + ':' + extra + '\n' + string( c_response_okay ), c_initial_timeout, p_sock_progress );
       }
 
@@ -7177,15 +7175,15 @@ void peer_session::on_start( )
          // NOTE: After handshake exchange public keys then commence peer protocol.
          if( is_responder )
          {
-            ap_socket->write_line( slot_and_pubkey, c_request_timeout, p_sock_progress );
+            up_socket->write_line( slot_and_pubkey, c_request_timeout, p_sock_progress );
 
-            ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout, c_max_pubkey_size, p_sock_progress );
+            up_socket->read_line( slotx_and_pubkeyx, c_request_timeout, c_max_pubkey_size, p_sock_progress );
          }
          else
          {
-            ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout, c_max_pubkey_size, p_sock_progress );
+            up_socket->read_line( slotx_and_pubkeyx, c_request_timeout, c_max_pubkey_size, p_sock_progress );
 
-            ap_socket->write_line( slot_and_pubkey, c_request_timeout, p_sock_progress );
+            up_socket->write_line( slot_and_pubkey, c_request_timeout, p_sock_progress );
          }
 
          string::size_type pos = slotx_and_pubkeyx.find( '-' );
@@ -7395,13 +7393,13 @@ void peer_session::on_start( )
 
          if( !session_secret.empty( ) )
          {
-            hash_or_tag = encrypt_cmd_data( *ap_socket,
+            hash_or_tag = encrypt_cmd_data( *up_socket,
              session_secret, hash_or_tag, c_min_chk_req_length, c_cmd_peer_session_chk );
 
             clear_key( session_secret );
          }
 
-         ap_socket->write_line( string( c_cmd_peer_session_chk )
+         up_socket->write_line( string( c_cmd_peer_session_chk )
           + " " + hash_or_tag, c_request_timeout, p_sock_progress );
 
          cmd_handler.state( ) = e_peer_state_waiting_for_put;
@@ -7411,7 +7409,7 @@ void peer_session::on_start( )
          {
             string block_hash;
 
-            if( ap_socket->read_line( block_hash, c_request_timeout, c_max_line_length, p_sock_progress ) <= 0 )
+            if( up_socket->read_line( block_hash, c_request_timeout, c_max_line_length, p_sock_progress ) <= 0 )
                okay = false;
             else if( !is_for_support && ( block_hash != string( c_response_not_found ) ) )
             {
@@ -7419,7 +7417,7 @@ void peer_session::on_start( )
 
                if( !session_secret.empty( ) )
                {
-                  block_hash = decrypt_cmd_data( *ap_socket, session_secret, block_hash );
+                  block_hash = decrypt_cmd_data( *up_socket, session_secret, block_hash );
 
                   clear_key( session_secret );
                }
@@ -7548,11 +7546,11 @@ void peer_session::on_start( )
           + ( !is_owner ? "" : " owner" ) + ( !is_for_support ? "" : " support" )
           + " (tid = " + to_string( current_thread_id( ) ) + ")" );
 
-         socket_command_processor processor( *ap_socket, cmd_handler, is_local, is_owner, is_responder );
+         socket_command_processor processor( *up_socket, cmd_handler, is_local, is_owner, is_responder );
          processor.process_commands( );
       }
 
-      ap_socket->close( );
+      up_socket->close( );
 
       if( was_initialised )
          has_terminated = terminate_peer_session( is_for_support, identity );
@@ -7561,10 +7559,10 @@ void peer_session::on_start( )
    {
       issue_error( x.what( ), true );
 
-      if( ap_socket->okay( ) )
+      if( up_socket->okay( ) )
       {
-         ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
-         ap_socket->close( );
+         up_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
+         up_socket->close( );
       }
 
       if( was_initialised )
@@ -7574,10 +7572,10 @@ void peer_session::on_start( )
    {
       issue_error( "unexpected unknown exception occurred" );
 
-      if( ap_socket->okay( ) )
+      if( up_socket->okay( ) )
       {
-         ap_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred", c_request_timeout );
-         ap_socket->close( );
+         up_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred", c_request_timeout );
+         up_socket->close( );
       }
 
       if( was_initialised )
@@ -7607,23 +7605,23 @@ void peer_session::process_greeting( )
 
    string greeting;
 
-   if( ap_socket->read_line( greeting, c_initial_timeout, c_max_greeting_size, p_sock_progress ) <= 0 )
+   if( up_socket->read_line( greeting, c_initial_timeout, c_max_greeting_size, p_sock_progress ) <= 0 )
    {
       string error;
 
-      if( ap_socket->had_timeout( ) )
+      if( up_socket->had_timeout( ) )
          error = GS( c_str_timeout_connecting_to_peer );
       else
          error = GS( c_str_peer_terminated_connection );
 
-      ap_socket->close( );
+      up_socket->close( );
 
       throw runtime_error( error );
    }
 
    if( greeting.find( c_response_error_prefix ) == 0 )
    {
-      ap_socket->close( );
+      up_socket->close( );
 
       greeting.erase( 0, strlen( c_response_error_prefix ) );
 
@@ -7634,14 +7632,14 @@ void peer_session::process_greeting( )
 
    if( get_version_info( greeting, ver_info ) != string( c_response_okay ) )
    {
-      ap_socket->close( );
+      up_socket->close( );
 
       throw runtime_error( greeting );
    }
 
    if( !check_version_info( ver_info, c_protocol_major_version, c_protocol_minor_version ) )
    {
-      ap_socket->close( );
+      up_socket->close( );
 
       string error( get_string_message( GS( c_str_version_mismatch ),
        make_pair( c_str_version_mismatch_found, ver_info.ver ),
@@ -7715,7 +7713,7 @@ void peer_session::process_greeting( )
 
       if( unformat_bytes( ver_info.extra ) != get_files_area_item_max_size( ) )
       {
-         ap_socket->close( );
+         up_socket->close( );
 
          throw runtime_error( GS( c_str_files_area_item_size_mismatch ) );
       }
@@ -7880,11 +7878,11 @@ void peer_listener::on_start( )
 
                // NOTE: Check for accepts and create new sessions.
 #ifdef SSL_SUPPORT
-               auto_ptr< ssl_socket > ap_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
+               unique_ptr< ssl_socket > up_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
 #else
-               auto_ptr< tcp_socket > ap_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
+               unique_ptr< tcp_socket > up_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
 #endif
-               if( !g_server_shutdown && *ap_socket && !is_preparing
+               if( !g_server_shutdown && *up_socket && !is_preparing
                 && !has_max_peers( ) && get_is_accepted_peer_ip_addr( address.get_addr_string( ) ) )
                {
                   peer_session* p_session = 0;
@@ -7893,7 +7891,7 @@ void peer_listener::on_start( )
                   // required in order to determine whether it is actually a support session or not).
                   try
                   {
-                     p_session = construct_session( dtm, true, ap_socket,
+                     p_session = construct_session( dtm, true, up_socket,
                       address.get_addr_string( ) + '=' + blockchains + ':' + to_string( port ), true );
                   }
                   catch( exception& x )
@@ -8144,10 +8142,10 @@ peer_session* create_peer_initiator( const string& blockchain,
 
    date_time dtm( date_time::local( ) );
 
-   auto_ptr< temporary_system_variable > ap_blockchain_connect;
+   unique_ptr< temporary_system_variable > up_blockchain_connect;
 
    if( !is_secondary && !num_for_support && !has_set_system_variable )
-      ap_blockchain_connect.reset( new temporary_system_variable( identity, c_true_value ) );
+      up_blockchain_connect.reset( new temporary_system_variable( identity, c_true_value ) );
 
    for( size_t i = 0; i < total_to_create; i++ )
    {
@@ -8155,12 +8153,12 @@ peer_session* create_peer_initiator( const string& blockchain,
          break;
 
 #ifdef SSL_SUPPORT
-      auto_ptr< ssl_socket > ap_socket( new ssl_socket );
+      unique_ptr< ssl_socket > up_socket( new ssl_socket );
 #else
-      auto_ptr< tcp_socket > ap_socket( new tcp_socket );
+      unique_ptr< tcp_socket > up_socket( new tcp_socket );
 #endif
 
-      if( ap_socket->open( ) )
+      if( up_socket->open( ) )
       {
          if( force )
             remove_peer_ip_addr_from_rejection( ip_addr );
@@ -8181,7 +8179,7 @@ peer_session* create_peer_initiator( const string& blockchain,
             }
          }
 
-         if( ap_socket->connect( address, !has_main_session ? c_connect_timeout : c_support_timeout ) )
+         if( up_socket->connect( address, !has_main_session ? c_connect_timeout : c_support_timeout ) )
          {
             const char* p_identity = 0;
 
@@ -8204,7 +8202,7 @@ peer_session* create_peer_initiator( const string& blockchain,
 
             try
             {
-               p_session = construct_session( dtm, false, ap_socket,
+               p_session = construct_session( dtm, false, up_socket,
                 ip_addr + '=' + session_blockchain + ':' + to_string( port ), has_main_session,
                 extra, p_identity, chain_type, has_support_sessions, has_set_system_variable );
             }
@@ -8258,7 +8256,7 @@ peer_session* create_peer_initiator( const string& blockchain,
          {
             string error;
 
-            if( !ap_socket->had_timeout( ) )
+            if( !up_socket->had_timeout( ) )
                error = get_string_message(
                 GS( c_str_failed_connect_to_peer ),
                 make_pair( c_str_failed_connect_to_peer_host, host ),
@@ -8565,12 +8563,12 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
 
-   auto_ptr< temporary_system_variable > ap_temp_secret_hash;
+   unique_ptr< temporary_system_variable > up_temp_secret_hash;
 
    string secret_hash( get_raw_system_variable( secret_hash_name + '_' + identity ) );
 
    if( !secret_hash.empty( ) )
-      ap_temp_secret_hash.reset( new temporary_system_variable( secret_hash_name, secret_hash ) );
+      up_temp_secret_hash.reset( new temporary_system_variable( secret_hash_name, secret_hash ) );
 
    string paired_suffix;
 

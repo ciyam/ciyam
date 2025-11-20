@@ -2397,8 +2397,9 @@ ods::ods( const ods& o )
    if( !o.permit_copy )
       THROW_ODS_ERROR( "copy construction was disallowed" );
 
-   auto_ptr< impl > ap_impl( new impl( *o.p_impl ) );
-   p_impl = ap_impl.get( );
+   unique_ptr< impl > up_impl( new impl( *o.p_impl ) );
+
+   p_impl = up_impl.get( );
 
    guard tmp_lock( *p_impl->rp_impl_lock );
 
@@ -2410,12 +2411,12 @@ ods::ods( const ods& o )
    if( *p_impl->rp_header_file <= 0 )
       THROW_ODS_ERROR( "unexpected header file handle is invalid" );
 
-   auto_ptr< transaction_buffer > ap_trans_buffer( new transaction_buffer );
+   unique_ptr< transaction_buffer > up_trans_buffer( new transaction_buffer );
 
-   auto_ptr< ods_trans_op_cache_buffer > ap_ods_trans_op_cache_buffer(
+   unique_ptr< ods_trans_op_cache_buffer > up_ods_trans_op_cache_buffer(
     new ods_trans_op_cache_buffer( c_trans_op_max_cache_items, c_trans_op_items_per_region ) );
 
-   auto_ptr< ods_trans_data_cache_buffer > ap_ods_trans_data_cache_buffer(
+   unique_ptr< ods_trans_data_cache_buffer > up_ods_trans_data_cache_buffer(
     new ods_trans_data_cache_buffer( c_trans_data_max_cache_items, c_trans_data_items_per_region ) );
 
    vector< ods* >::iterator iter;
@@ -2437,11 +2438,11 @@ ods::ods( const ods& o )
    p_impl->total_trans_size = 0;
    p_impl->total_trans_op_count = 0;
 
-   p_impl->p_trans_buffer = ap_trans_buffer.release( );
-   p_impl->p_ods_trans_op_cache_buffer = ap_ods_trans_op_cache_buffer.release( );
-   p_impl->p_ods_trans_data_cache_buffer = ap_ods_trans_data_cache_buffer.release( );
+   p_impl->p_trans_buffer = up_trans_buffer.release( );
+   p_impl->p_ods_trans_op_cache_buffer = up_ods_trans_op_cache_buffer.release( );
+   p_impl->p_ods_trans_data_cache_buffer = up_ods_trans_data_cache_buffer.release( );
 
-   ap_impl.release( );
+   up_impl.release( );
 
    okay = true;
    permit_copy = true;
@@ -2479,8 +2480,9 @@ ods::ods(
 
    DEBUG_LOG( "ods::ods( )" );
 
-   auto_ptr< impl > ap_impl( new impl );
-   p_impl = ap_impl.get( );
+   unique_ptr< impl > up_impl( new impl );
+
+   p_impl = up_impl.get( );
 
    p_impl->name = string( p_name );
 
@@ -2529,7 +2531,7 @@ ods::ods(
    if( p_impl->is_read_only && o_mode == e_open_mode_create_if_not_exist )
       THROW_ODS_ERROR( "cannot create if not exists when opening database for read only access" );
 
-   auto_ptr< ods::header_file_lock > ap_header_file_lock( new ods::header_file_lock( *this ) );
+   unique_ptr< ods::header_file_lock > up_header_file_lock( new ods::header_file_lock( *this ) );
 
    if( !file_exists( p_impl->index_file_name ) )
       p_impl->is_new = true;
@@ -2539,7 +2541,7 @@ ods::ods(
       case e_open_mode_exist:
       if( p_impl->is_new )
       {
-         ap_header_file_lock.reset( );
+         up_header_file_lock.reset( );
 
          p_impl->rp_header_file = 0;
          remove( p_impl->header_file_name.c_str( ) );
@@ -2711,19 +2713,19 @@ ods::ods(
     p_impl->index_file_name, p_impl->rp_header_file->get_offset( ), c_index_max_cache_items,
     c_index_items_per_region, c_index_num_cache_regions, true, true, ( !using_tranlog && use_sync_write ) );
 
-   auto_ptr< transaction_buffer > ap_trans_buffer( new transaction_buffer );
+   unique_ptr< transaction_buffer > up_trans_buffer( new transaction_buffer );
 
-   auto_ptr< ods_trans_op_cache_buffer > ap_ods_trans_op_cache_buffer(
+   unique_ptr< ods_trans_op_cache_buffer > up_ods_trans_op_cache_buffer(
     new ods_trans_op_cache_buffer( c_trans_op_max_cache_items, c_trans_op_items_per_region ) );
 
-   auto_ptr< ods_trans_data_cache_buffer > ap_ods_trans_data_cache_buffer(
+   unique_ptr< ods_trans_data_cache_buffer > up_ods_trans_data_cache_buffer(
     new ods_trans_data_cache_buffer( c_trans_data_max_cache_items, c_trans_data_items_per_region ) );
 
-   p_impl->p_trans_buffer = ap_trans_buffer.release( );
-   p_impl->p_ods_trans_op_cache_buffer = ap_ods_trans_op_cache_buffer.release( );
-   p_impl->p_ods_trans_data_cache_buffer = ap_ods_trans_data_cache_buffer.release( );
+   p_impl->p_trans_buffer = up_trans_buffer.release( );
+   p_impl->p_ods_trans_op_cache_buffer = up_ods_trans_op_cache_buffer.release( );
+   p_impl->p_ods_trans_data_cache_buffer = up_ods_trans_data_cache_buffer.release( );
 
-   ap_impl.release( );
+   up_impl.release( );
 
    okay = true;
 
@@ -2995,10 +2997,10 @@ void ods::rewind_transactions(
 
    bool is_encrypted = p_impl->is_encrypted;
 
-   auto_ptr< ods::bulk_write > ap_bulk_write;
+   unique_ptr< ods::bulk_write > up_bulk_write;
 
    if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
+      up_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
    if( tranlog_info.append_offs > tranlog_info.size_of( ) )
    {
@@ -3367,10 +3369,10 @@ int64_t ods::get_size( const oid& id )
 
          ods::header_file_lock header_file_lock( *this );
 
-         auto_ptr< ods::file_scope > ap_file_scope;
+         unique_ptr< ods::file_scope > up_file_scope;
 
          if( !*p_impl->rp_bulk_level )
-            ap_file_scope.reset( new ods::file_scope( *this ) );
+            up_file_scope.reset( new ods::file_scope( *this ) );
 
          if( id.get_num( ) < p_impl->rp_header_info->total_entries )
          {
@@ -3432,10 +3434,10 @@ void ods::destroy( const oid& id )
 
          ods::header_file_lock header_file_lock( *this );
 
-         auto_ptr< ods::file_scope > ap_file_scope;
+         unique_ptr< ods::file_scope > up_file_scope;
 
          if( !*p_impl->rp_bulk_level )
-            ap_file_scope.reset( new ods::file_scope( *this ) );
+            up_file_scope.reset( new ods::file_scope( *this ) );
 
          int64_t tx_id = p_impl->p_trans_buffer->tran_id;
 
@@ -3565,10 +3567,10 @@ string ods::backup_database( const char* p_ext, char sep )
    if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot backup a database when bulk locked for dumping or reading" );
 
-   auto_ptr< ods::bulk_write > ap_bulk_write;
+   unique_ptr< ods::bulk_write > up_bulk_write;
 
    if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this ) );
+      up_bulk_write.reset( new ods::bulk_write( *this ) );
 
    string ext( p_ext ? p_ext : c_sav_file_name_ext );
 
@@ -3659,10 +3661,10 @@ void ods::move_free_data_to_end( progress* p_progress )
    if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot move free data to end when bulk locked for dumping or reading" );
 
-   auto_ptr< ods::bulk_write > ap_bulk_write;
+   unique_ptr< ods::bulk_write > up_bulk_write;
 
    if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
+      up_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
    ods_index_entry_pos entry;
    set< ods_index_entry_pos > entries;
@@ -3930,10 +3932,10 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
    if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot truncate log when bulk locked for dumping or reading" );
 
-   auto_ptr< ods::bulk_write > ap_bulk_write;
+   unique_ptr< ods::bulk_write > up_bulk_write;
 
    if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
+      up_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
    log_info tranlog_info;
 
@@ -4185,10 +4187,10 @@ void ods::compress_and_reset_tx_log( progress* p_progress )
    if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot truncate log when bulk locked for dumping or reading" );
 
-   auto_ptr< ods::bulk_write > ap_bulk_write;
+   unique_ptr< ods::bulk_write > up_bulk_write;
 
    if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
+      up_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
    move_free_data_to_end( p_progress );
 
@@ -5111,10 +5113,10 @@ void ods::transaction_start( const char* p_label )
       {
          ods::header_file_lock header_file_lock( *this );
 
-         auto_ptr< ods::file_scope > ap_file_scope;
+         unique_ptr< ods::file_scope > up_file_scope;
 
          if( !*p_impl->rp_bulk_level )
-            ap_file_scope.reset( new ods::file_scope( *this ) );
+            up_file_scope.reset( new ods::file_scope( *this ) );
 
          p_impl->p_trans_buffer->tran_id = p_impl->rp_header_info->transaction_id++;
 
@@ -5247,10 +5249,10 @@ void ods::transaction_commit( )
 
       int64_t tx_id = p_impl->p_trans_buffer->tran_id;
 
-      auto_ptr< ods::bulk_write > ap_bulk_write;
+      unique_ptr< ods::bulk_write > up_bulk_write;
 
       if( !*p_impl->rp_bulk_level )
-         ap_bulk_write.reset( new ods::bulk_write( *this ) );
+         up_bulk_write.reset( new ods::bulk_write( *this ) );
 
       int64_t commit_items = 0;
       int64_t append_offset = 0;
@@ -5500,10 +5502,10 @@ void ods::transaction_rollback( )
          memset( trans_read_buffer.data, '\0', c_trans_bytes_per_item );
    }
 
-   auto_ptr< ods::bulk_write > ap_bulk_write;
+   unique_ptr< ods::bulk_write > up_bulk_write;
 
    if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this ) );
+      up_bulk_write.reset( new ods::bulk_write( *this ) );
 
    if( p_impl->using_tranlog && ( p_impl->trans_level > 1 ) )
    {
@@ -5963,10 +5965,10 @@ void ods::rollback_dead_transactions( progress* p_progress )
 
    temp_set_value< bool > temp_is_restoring( p_impl->is_restoring, true );
 
-   auto_ptr< ods::bulk_write > ap_bulk_write;
+   unique_ptr< ods::bulk_write > up_bulk_write;
 
    if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
+      up_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
    ods_index_entry index_entry;
 
@@ -6050,10 +6052,10 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
    temp_set_value< bool > temp_is_restoring( p_impl->is_restoring, true );
 
-   auto_ptr< ods::bulk_write > ap_bulk_write;
+   unique_ptr< ods::bulk_write > up_bulk_write;
 
    if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
+      up_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
    fstream fs;
    log_info tranlog_info;
@@ -6692,10 +6694,10 @@ ods& operator >>( ods& o, storable_base& s )
          guard tmp_lock( *o.p_impl->rp_impl_lock );
          ods::header_file_lock header_file_lock( o );
 
-         auto_ptr< ods::file_scope > ap_file_scope;
+         unique_ptr< ods::file_scope > up_file_scope;
 
          if( !*o.p_impl->rp_bulk_level )
-            ap_file_scope.reset( new ods::file_scope( o ) );
+            up_file_scope.reset( new ods::file_scope( o ) );
 
          if( s.id.get_num( ) < o.p_impl->rp_header_info->total_entries )
             can_read = true;
@@ -6860,10 +6862,10 @@ ods& operator <<( ods& o, storable_base& s )
          guard tmp_lock( *o.p_impl->rp_impl_lock );
          ods::header_file_lock header_file_lock( o );
 
-         auto_ptr< ods::file_scope > ap_file_scope;
+         unique_ptr< ods::file_scope > up_file_scope;
 
          if( !*o.p_impl->rp_bulk_level )
-            ap_file_scope.reset( new ods::file_scope( o ) );
+            up_file_scope.reset( new ods::file_scope( o ) );
 
 #ifdef ODS_DEBUG
          ostringstream osstr;
@@ -7119,10 +7121,10 @@ ods& operator <<( ods& o, storable_base& s )
       guard tmp_lock( *o.p_impl->rp_impl_lock );
       ods::header_file_lock header_file_lock( o );
 
-      auto_ptr< ods::file_scope > ap_file_scope;
+      unique_ptr< ods::file_scope > up_file_scope;
 
       if( !*o.p_impl->rp_bulk_level )
-         ap_file_scope.reset( new ods::file_scope( o ) );
+         up_file_scope.reset( new ods::file_scope( o ) );
 
       flags &= ~c_log_entry_item_mask_op;
       flags |= c_log_entry_item_op_store | c_log_entry_item_flag_is_post_op;

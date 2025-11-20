@@ -244,7 +244,7 @@ void op_algo_handler::suggest( ostream& os, const string& info )
       }
    }
 
-   auto_ptr< op_algo_handler > ap_ops_handler( create_clone( ) );
+   unique_ptr< op_algo_handler > up_ops_handler( create_clone( ) );
 
 #ifdef DEBUG
    cout << "[suggest] " << info << endl;
@@ -253,7 +253,7 @@ void op_algo_handler::suggest( ostream& os, const string& info )
    {
       string output;
 
-      auto_ptr< op_algo_handler > ap_tmp_handler( ap_ops_handler->create_clone( ) );
+      unique_ptr< op_algo_handler > up_tmp_handler( up_ops_handler->create_clone( ) );
 
       size_t find_from = 0;
       size_t start_from = 0;
@@ -334,7 +334,7 @@ void op_algo_handler::suggest( ostream& os, const string& info )
                has_seen_stop_at_stage = true;
 
             if( !stage_pattern.empty( )
-             && has_found_goal( ap_ops_handler->current_state( ), stage_pattern ) )
+             && has_found_goal( up_ops_handler->current_state( ), stage_pattern ) )
                stage_reached = stage_name;
 
             if( stage_name == stop_at_stage )
@@ -358,7 +358,7 @@ void op_algo_handler::suggest( ostream& os, const string& info )
          string::size_type pos = next_line.find( ' ' );
          if( pos != string::npos )
          {
-            string state( ap_ops_handler->current_state( ) );
+            string state( up_ops_handler->current_state( ) );
             string pattern( next_line.substr( 0, pos ) );
 
             if( pattern.find_first_not_of( "." ) == string::npos )
@@ -399,10 +399,11 @@ void op_algo_handler::suggest( ostream& os, const string& info )
                         if( !start_prefix.empty( ) && next.length( ) > start_prefix.length( ) )
                            continue;
 
-                        auto_ptr< op_algo_handler > ap_tmp_handler( ap_ops_handler->create_clone( ) );
-                        ap_tmp_handler->exec_ops( next );
+                        unique_ptr< op_algo_handler > up_tmp_handler( up_ops_handler->create_clone( ) );
 
-                        if( has_found_goal( ap_tmp_handler->current_state( ), pattern ) )
+                        up_tmp_handler->exec_ops( next );
+
+                        if( has_found_goal( up_tmp_handler->current_state( ), pattern ) )
                         {
                            start_from = i;
                            start_prefix = next;
@@ -460,14 +461,14 @@ void op_algo_handler::suggest( ostream& os, const string& info )
             parse_stage_info( next_line.substr( 1 ), stage_name, stage_pattern, &force_break );
 
             if( !stage_pattern.empty( )
-             && has_found_goal( ap_ops_handler->current_state( ), stage_pattern ) )
+             && has_found_goal( up_ops_handler->current_state( ), stage_pattern ) )
             {
                find_from = i;
                stage_reached = stage_name;
 #ifdef DEBUG
                cout << "reached stage: " << stage_reached << endl;
 #endif
-               if( stop_at_stage == "?:" || ap_ops_handler->is_final_state( ) )
+               if( ( stop_at_stage == "?:" ) || up_ops_handler->is_final_state( ) )
                   stop_at_stage = stage_reached;
 
                // NOTE: After each stage is reached (and not stopping) then will search for
@@ -526,7 +527,7 @@ void op_algo_handler::suggest( ostream& os, const string& info )
             {
                stringstream ss;
 
-               if( ap_tmp_handler->suggest_algo( ss, next_line, &prefix_ops, j + 1, true, &found_next ) )
+               if( up_tmp_handler->suggest_algo( ss, next_line, &prefix_ops, j + 1, true, &found_next ) )
                {
                   string result( ss.str( ) );
 
@@ -571,11 +572,11 @@ void op_algo_handler::suggest( ostream& os, const string& info )
 #ifdef DEBUG
                cout << "ops: " << ops << endl;
 #endif
-               ap_tmp_handler->exec_ops( ops );
+               up_tmp_handler->exec_ops( ops );
 
-               ap_ops_handler.reset( ap_tmp_handler->create_clone( ) );
+               up_ops_handler.reset( up_tmp_handler->create_clone( ) );
 #ifdef DEBUG
-               cout << "state " << ap_tmp_handler->current_state( ) << endl;
+               cout << "state " << up_tmp_handler->current_state( ) << endl;
 #endif
             }
             else if( !found_next )
@@ -609,8 +610,8 @@ void op_algo_handler::suggest( ostream& os, const string& info )
          has_had_output = true;
       }
 
-      if( ap_ops_handler->is_final_state( )
-       || ( !stop_at_stage.empty( ) && stage_reached == stop_at_stage ) )
+      if( up_ops_handler->is_final_state( )
+       || ( !stop_at_stage.empty( ) && ( stage_reached == stop_at_stage ) ) )
          break;
    }
 
@@ -661,7 +662,7 @@ bool op_algo_handler::suggest_algo( ostream& os, const string& info,
    }
    else if( !goal.empty( ) )
    {
-      auto_ptr< op_algo_handler > ap_best_handler( create_clone( ) );
+      unique_ptr< op_algo_handler > up_best_handler( create_clone( ) );
 
       multimap< string, string >::iterator mi;
       string prefix( g_algo_prefix + type_key( ) + c_type_separator );
@@ -687,8 +688,8 @@ bool op_algo_handler::suggest_algo( ostream& os, const string& info,
             algo.erase( 0, pos + 1 );
          }
 
-         auto_ptr< op_algo_handler > ap_tmp_handler( create_clone( ) );
-         auto_ptr< op_algo_handler > ap_new_handler( ap_tmp_handler->create_clone( ) );
+         unique_ptr< op_algo_handler > up_tmp_handler( create_clone( ) );
+         unique_ptr< op_algo_handler > up_new_handler( up_tmp_handler->create_clone( ) );
 
          replace( algo, ",", " " );
 
@@ -713,7 +714,7 @@ bool op_algo_handler::suggest_algo( ostream& os, const string& info,
             // that the current state must match as if it were the goal.
             if( is_full_length_pattern )
             {
-               okay = has_found_goal( ap_tmp_handler->current_state( ), pat );
+               okay = has_found_goal( up_tmp_handler->current_state( ), pat );
 
                // NOTE: If prefix ops were provided then each of these will be
                // executed in order to attempt to find a match for the current
@@ -726,14 +727,15 @@ bool op_algo_handler::suggest_algo( ostream& os, const string& info,
 
                      replace( next, ",", " " );
 
-                     ap_tmp_handler.reset( create_clone( ) );
-                     ap_tmp_handler->exec_ops( next );
+                     up_tmp_handler.reset( create_clone( ) );
 
-                     okay = has_found_goal( ap_tmp_handler->current_state( ), pat );
+                     up_tmp_handler->exec_ops( next );
+
+                     okay = has_found_goal( up_tmp_handler->current_state( ), pat );
 
                      if( okay )
                      {
-                        ap_tmp_handler.reset( create_clone( ) );
+                        up_tmp_handler.reset( create_clone( ) );
                         algo = next + " " + algo;
                         break;
                      }
@@ -754,21 +756,21 @@ bool op_algo_handler::suggest_algo( ostream& os, const string& info,
                   output += algo;
                }
 
-               ap_new_handler->exec_ops( algo );
+               up_new_handler->exec_ops( algo );
 #ifdef DEBUG
                cout << algo << endl;
-               cout << "news: " << ap_new_handler->current_state( ) << endl;
+               cout << "news: " << up_new_handler->current_state( ) << endl;
 #endif
 
                if( check_only_after_last_round && j != rounds - 1 )
                   continue;
 
-               string repeat_suffix( ap_new_handler->step_repeat_suffix( j + 1 ) );
+               string repeat_suffix( up_new_handler->step_repeat_suffix( j + 1 ) );
 
                if( j > 0 && repeat_suffix.empty( ) )
                   repeat_suffix = to_string( j + 1 );
 
-               if( has_found_goal( ap_new_handler->current_state( ), goal ) )
+               if( has_found_goal( up_new_handler->current_state( ), goal ) )
                {
                   if( !has_parts )
                      output = algo + repeat_suffix;
@@ -788,10 +790,10 @@ bool op_algo_handler::suggest_algo( ostream& os, const string& info,
                }
                else if( !is_full_length_pattern )
                {
-                  if( is_closer_to_goal( ap_new_handler->current_state( ), ap_best_handler->current_state( ), goal ) )
+                  if( is_closer_to_goal( up_new_handler->current_state( ), up_best_handler->current_state( ), goal ) )
                   {
-                     ap_tmp_handler.reset( ap_new_handler->create_clone( ) );
-                     ap_best_handler.reset( ap_new_handler->create_clone( ) );
+                     up_tmp_handler.reset( up_new_handler->create_clone( ) );
+                     up_best_handler.reset( up_new_handler->create_clone( ) );
 
                      if( !has_parts )
                         output = algo + repeat_suffix;
@@ -802,7 +804,7 @@ bool op_algo_handler::suggest_algo( ostream& os, const string& info,
 #endif
                   }
                   else if( !best_partial.empty( )
-                     && is_as_close_to_goal( ap_new_handler->current_state( ), ap_best_handler->current_state( ), goal ) )
+                     && is_as_close_to_goal( up_new_handler->current_state( ), up_best_handler->current_state( ), goal ) )
                   {
                      if( !has_parts )
                         output = algo + repeat_suffix;
@@ -811,8 +813,8 @@ bool op_algo_handler::suggest_algo( ostream& os, const string& info,
                      {
                         best_partial = output;
 
-                        ap_tmp_handler.reset( ap_new_handler->create_clone( ) );
-                        ap_best_handler.reset( ap_new_handler->create_clone( ) );
+                        up_tmp_handler.reset( up_new_handler->create_clone( ) );
+                        up_best_handler.reset( up_new_handler->create_clone( ) );
 
 #ifdef DEBUG
                         cout << "[partial] best_partial: " << best_partial << endl;
@@ -912,7 +914,7 @@ void op_algo_handler::train_algo( const string& pat,
  const string& goal, const string& algo, size_t rounds,
  size_t max_tries_allowed, bool* p_can_keep, bool* p_found_match )
 {
-   auto_ptr< op_algo_handler > ap_tmp_handler( create_clone( ) );
+   unique_ptr< op_algo_handler > up_tmp_handler( create_clone( ) );
 
    string mask;
    vector< string > all_masks;
@@ -944,9 +946,9 @@ void op_algo_handler::train_algo( const string& pat,
    if( algo.find( '*' ) != string::npos )
       using_random_patterns = true;
    else
-      ap_tmp_handler->init_random( );
+      up_tmp_handler->init_random( );
 
-   string start( ap_tmp_handler->current_state( ) );
+   string start( up_tmp_handler->current_state( ) );
 
    if( goal.length( ) < start.length( ) )
       throw runtime_error( "invalid goal length < start length" );
@@ -957,7 +959,7 @@ void op_algo_handler::train_algo( const string& pat,
    {
       is_full_state = true;
 
-      ap_tmp_handler->init( patterns[ 0 ] );
+      up_tmp_handler->init( patterns[ 0 ] );
 
       if( !using_random_patterns )
       {
@@ -965,7 +967,7 @@ void op_algo_handler::train_algo( const string& pat,
          start = goal;
       }
 
-      string state( ap_tmp_handler->current_state( ) );
+      string state( up_tmp_handler->current_state( ) );
 
       for( size_t i = 0; i < goal.size( ); i++ )
       {
@@ -992,13 +994,14 @@ void op_algo_handler::train_algo( const string& pat,
    {
       if( using_random_patterns )
       {
-         ap_tmp_handler->init( start );
-         algx = expand_pattern( *ap_tmp_handler, algo );
+         up_tmp_handler->init( start );
+
+         algx = expand_pattern( *up_tmp_handler, algo );
       }
 
-      ap_tmp_handler->exec_ops( algx );
+      up_tmp_handler->exec_ops( algx );
 
-      string next( ap_tmp_handler->current_state( ) );
+      string next( up_tmp_handler->current_state( ) );
 
       if( next == start || using_random_patterns )
       {
@@ -1032,8 +1035,9 @@ void op_algo_handler::train_algo( const string& pat,
             mask.erase( );
             found_partial = false;
 
-            ap_tmp_handler->init_random( );
-            next = start = ap_tmp_handler->current_state( );
+            up_tmp_handler->init_random( );
+
+            next = start = up_tmp_handler->current_state( );
 
             found_match = has_found_goal( start, goal );
             found_partial = has_partial_goal( next, goal );
@@ -1229,11 +1233,11 @@ void op_algo_handler::attempt_own_algo( ostream& os, const string& pat, const st
 
          if( can_keep )
          {
-            auto_ptr< op_algo_handler > ap_tmp_handler( create_clone( ) );
+            unique_ptr< op_algo_handler > up_tmp_handler( create_clone( ) );
 
-            ap_tmp_handler->exec_ops( next_algo );
+            up_tmp_handler->exec_ops( next_algo );
 
-            if( is_closer_to_goal( ap_tmp_handler->current_state( ), current_state( ), goal ) )
+            if( is_closer_to_goal( up_tmp_handler->current_state( ), current_state( ), goal ) )
             {
                last_retained = next_algo;
                break;

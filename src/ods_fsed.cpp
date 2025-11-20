@@ -155,8 +155,8 @@ class ods_fsed_command_handler : public console_command_handler
    void init_ods( const char* p_file_name );
 
    private:
-   auto_ptr< ods > ap_ods;
-   auto_ptr< ods_file_system > ap_ofs;
+   unique_ptr< ods > up_ods;
+   unique_ptr< ods_file_system > up_ofs;
 
    stack< string, deque< string > > folder_stack;
    stack< ods::transaction*, deque< ods::transaction* > > ods_tx_stack;
@@ -192,10 +192,10 @@ void ods_fsed_command_handler::init_ods( const char* p_file_name )
       p_password = password.c_str( );
 
    if( g_read_only )
-      ap_ods.reset( new ods( p_file_name, ods::e_open_mode_exist,
+      up_ods.reset( new ods( p_file_name, ods::e_open_mode_exist,
        ods::e_write_mode_none, g_use_transaction_log, &not_found, p_password ) );
    else
-      ap_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
+      up_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
        ( g_shared_write ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ),
        g_use_transaction_log, &not_found, p_password, !g_use_unsynchronised_write ) );
 
@@ -204,11 +204,11 @@ void ods_fsed_command_handler::init_ods( const char* p_file_name )
    if( not_found )
       throw runtime_error( "unexpected database not found" );
 
-   if( ap_ods->is_corrupt( ) || g_reconstruct_from_transaction_log )
+   if( up_ods->is_corrupt( ) || g_reconstruct_from_transaction_log )
    {
       if( g_shared_write )
       {
-         if( !ap_ods->is_corrupt( ) )
+         if( !up_ods->is_corrupt( ) )
             throw runtime_error( "restart using exclusive write access in order to reconstruct" );
          else
             throw runtime_error( "ODS DB is corrupt - restart using exclusive write access in order to repair/reconstruct" );
@@ -218,12 +218,12 @@ void ods_fsed_command_handler::init_ods( const char* p_file_name )
       console_progress* p_progress = has_option_no_progress( ) ? 0 : &progress;
 
       if( g_reconstruct_from_transaction_log )
-         ap_ods->reconstruct_database( p_progress );
+         up_ods->reconstruct_database( p_progress );
       else
-         ap_ods->repair_corrupt_database( p_progress );
+         up_ods->repair_corrupt_database( p_progress );
    }
 
-   ap_ofs.reset( new ods_file_system( *ap_ods, g_oid, g_use_for_regression_tests ) );
+   up_ofs.reset( new ods_file_system( *up_ods, g_oid, g_use_for_regression_tests ) );
 }
 
 void ods_fsed_command_handler::process_custom_startup_option( size_t num, const string& option )
@@ -247,12 +247,12 @@ class ods_fsed_command_functor : public command_functor
    ods_fsed_command_functor( ods_fsed_command_handler& ods_fsed_handler )
     : command_functor( ods_fsed_handler ),
     ods_fsed_handler( ods_fsed_handler ),
-    ap_ods( ods_fsed_handler.ap_ods ),
-    ap_ofs( ods_fsed_handler.ap_ofs ),
+    up_ods( ods_fsed_handler.up_ods ),
+    up_ofs( ods_fsed_handler.up_ofs ),
     folder_stack( ods_fsed_handler.folder_stack ),
     ods_tx_stack( ods_fsed_handler.ods_tx_stack )
    {
-      ods_fsed_handler.set_prompt_prefix( ap_ofs->get_folder( ) );
+      ods_fsed_handler.set_prompt_prefix( up_ofs->get_folder( ) );
    }
 
    void operator ( )( const string& command, const parameter_info& parameters );
@@ -260,8 +260,9 @@ class ods_fsed_command_functor : public command_functor
    private:
    ods_fsed_command_handler& ods_fsed_handler;
 
-   auto_ptr< ods >& ap_ods;
-   auto_ptr< ods_file_system >& ap_ofs;
+   unique_ptr< ods >& up_ods;
+
+   unique_ptr< ods_file_system >& up_ofs;
 
    stack< string, deque< string > >& folder_stack;
    stack< ods::transaction*, deque< ods::transaction* > >& ods_tx_stack;
@@ -278,14 +279,14 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          string folder( get_parm_val( parameters, c_cmd_ods_fsed_cd_folder ) );
 
          if( folder.empty( ) )
-            handler.issue_command_response( ap_ofs->get_folder( ) );
+            handler.issue_command_response( up_ofs->get_folder( ) );
          else
          {
-            folder = ap_ofs->determine_folder( folder );
+            folder = up_ofs->determine_folder( folder );
 
             if( !folder.empty( ) )
             {
-               ap_ofs->set_folder( folder );
+               up_ofs->set_folder( folder );
 
                if( ods_tx_stack.size( ) )
                   folder += c_trans_suffix;
@@ -309,12 +310,12 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          else if( full_blown )
             style = ods_file_system::e_list_style_full_blown;
 
-         auto_ptr< temporary_include_hidden > ap_tmp_include_hidden;
+         unique_ptr< temporary_include_hidden > up_tmp_include_hidden;
 
          if( unredacted )
-            ap_tmp_include_hidden.reset( new temporary_include_hidden( *ap_ofs ) );
+            up_tmp_include_hidden.reset( new temporary_include_hidden( *up_ofs ) );
 
-         ap_ofs->list_files( expr, *ods_fsed_handler.get_std_out( ), start, style );
+         up_ofs->list_files( expr, *ods_fsed_handler.get_std_out( ), start, style );
       }
       else if( command == c_cmd_ods_fsed_folders )
       {
@@ -322,12 +323,12 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          bool unredacted( has_parm_val( parameters, c_cmd_ods_fsed_folders_unredacted ) );
          string expr( get_parm_val( parameters, c_cmd_ods_fsed_folders_expr ) );
 
-         auto_ptr< temporary_include_hidden > ap_tmp_include_hidden;
+         unique_ptr< temporary_include_hidden > up_tmp_include_hidden;
 
          if( unredacted )
-            ap_tmp_include_hidden.reset( new temporary_include_hidden( *ap_ofs ) );
+            up_tmp_include_hidden.reset( new temporary_include_hidden( *up_ofs ) );
 
-         ap_ofs->list_folders( expr, *ods_fsed_handler.get_std_out( ), full_blown );
+         up_ofs->list_folders( expr, *ods_fsed_handler.get_std_out( ), full_blown );
       }
       else if( command == c_cmd_ods_fsed_objects )
       {
@@ -344,12 +345,12 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          else if( full_blown )
             style = ods_file_system::e_list_style_full_blown;
 
-         auto_ptr< temporary_include_hidden > ap_tmp_include_hidden;
+         unique_ptr< temporary_include_hidden > up_tmp_include_hidden;
 
          if( unredacted )
-            ap_tmp_include_hidden.reset( new temporary_include_hidden( *ap_ofs ) );
+            up_tmp_include_hidden.reset( new temporary_include_hidden( *up_ofs ) );
 
-         ap_ofs->list_objects( expr, *ods_fsed_handler.get_std_out( ), start, style );
+         up_ofs->list_objects( expr, *ods_fsed_handler.get_std_out( ), start, style );
       }
       else if( command == c_cmd_ods_fsed_branch )
       {
@@ -365,19 +366,19 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          else if( full_blown )
             style = ods_file_system::e_branch_style_full_blown;
 
-         auto_ptr< temporary_include_hidden > ap_tmp_include_hidden;
+         unique_ptr< temporary_include_hidden > up_tmp_include_hidden;
 
          if( unredacted )
-            ap_tmp_include_hidden.reset( new temporary_include_hidden( *ap_ofs ) );
+            up_tmp_include_hidden.reset( new temporary_include_hidden( *up_ofs ) );
 
          if( has_parm_val( parameters, c_cmd_ods_fsed_branch_folders ) )
-            ap_ofs->branch_folders( expr, *ods_fsed_handler.get_std_out( ), style );
+            up_ofs->branch_folders( expr, *ods_fsed_handler.get_std_out( ), style );
          else
          {
             if( !has_parm_val( parameters, c_cmd_ods_fsed_branch_objects ) )
-               ap_ofs->branch_files( expr, *ods_fsed_handler.get_std_out( ), style );
+               up_ofs->branch_files( expr, *ods_fsed_handler.get_std_out( ), style );
             else
-               ap_ofs->branch_objects( expr, *ods_fsed_handler.get_std_out( ), style );
+               up_ofs->branch_objects( expr, *ods_fsed_handler.get_std_out( ), style );
          }
       }
       else if( command == c_cmd_ods_fsed_file_add )
@@ -389,7 +390,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ap_ofs->add_file( name, file_name, ( use_cin ? &cout : 0 ), ( use_cin ? &cin : 0 ), p_progress );
+         up_ofs->add_file( name, file_name, ( use_cin ? &cout : 0 ), ( use_cin ? &cin : 0 ), p_progress );
       }
       else if( command == c_cmd_ods_fsed_file_get )
       {
@@ -398,18 +399,18 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_get_file_name ) );
 
          string original_name( name );
-         string original_folder( ap_ofs->determine_strip_and_change_folder( name ) );
+         string original_folder( up_ofs->determine_strip_and_change_folder( name ) );
 
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ap_ofs->get_file( name, file_name, ( use_cout ? &cout : 0 ), p_progress );
+         up_ofs->get_file( name, file_name, ( use_cout ? &cout : 0 ), p_progress );
 
          if( use_cout )
             cout << endl;
 
          if( !original_folder.empty( ) )
-            ap_ofs->set_folder( original_folder );
+            up_ofs->set_folder( original_folder );
       }
       else if( command == c_cmd_ods_fsed_file_link )
       {
@@ -417,22 +418,22 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          string source( get_parm_val( parameters, c_cmd_ods_fsed_file_link_source ) );
 
          if( !source.empty( ) )
-            ap_ofs->link_file( name, source );
+            up_ofs->link_file( name, source );
          else
-            *ods_fsed_handler.get_std_out( ) << ap_ofs->link_source( name ) << '\n';
+            *ods_fsed_handler.get_std_out( ) << up_ofs->link_source( name ) << '\n';
       }
       else if( command == c_cmd_ods_fsed_file_links )
       {
          string name( get_parm_val( parameters, c_cmd_ods_fsed_file_links_name ) );
 
-         ap_ofs->list_links( name, *ods_fsed_handler.get_std_out( ) );
+         up_ofs->list_links( name, *ods_fsed_handler.get_std_out( ) );
       }
       else if( command == c_cmd_ods_fsed_file_move )
       {
          string name( get_parm_val( parameters, c_cmd_ods_fsed_file_move_name ) );
          string destination( get_parm_val( parameters, c_cmd_ods_fsed_file_move_destination ) );
 
-         ap_ofs->move_file( name, destination );
+         up_ofs->move_file( name, destination );
       }
       else if( command == c_cmd_ods_fsed_file_remove )
       {
@@ -441,7 +442,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ap_ofs->remove_file( name, 0, p_progress );
+         up_ofs->remove_file( name, 0, p_progress );
       }
       else if( command == c_cmd_ods_fsed_file_replace )
       {
@@ -452,13 +453,13 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ap_ofs->replace_file( name, file_name, 0, ( use_cin ? &cin : 0 ), p_progress );
+         up_ofs->replace_file( name, file_name, 0, ( use_cin ? &cin : 0 ), p_progress );
       }
       else if( command == c_cmd_ods_fsed_folder_add )
       {
          string name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_name ) );
 
-         ap_ofs->add_folder( name );
+         up_ofs->add_folder( name );
       }
       else if( command == c_cmd_ods_fsed_folder_move )
       {
@@ -466,14 +467,14 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          string name( get_parm_val( parameters, c_cmd_ods_fsed_folder_move_name ) );
          string destination( get_parm_val( parameters, c_cmd_ods_fsed_folder_move_destination ) );
 
-         ap_ofs->move_folder( name, destination, overwrite );
+         up_ofs->move_folder( name, destination, overwrite );
       }
       else if( command == c_cmd_ods_fsed_folder_remove )
       {
          string name( get_parm_val( parameters, c_cmd_ods_fsed_folder_remove_name ) );
          bool recurse( has_parm_val( parameters, c_cmd_ods_fsed_folder_remove_recurse ) );
 
-         ap_ofs->remove_folder( name, 0, recurse );
+         up_ofs->remove_folder( name, 0, recurse );
       }
       else if( command == c_cmd_ods_fsed_object_time_stamp )
       {
@@ -481,7 +482,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          string time_stamp( get_parm_val( parameters, c_cmd_ods_fsed_object_time_stamp_time_stamp ) );
 
          if( time_stamp.empty( ) )
-            ap_ofs->get_time_stamp( name, ods_fsed_handler.get_std_out( ) );
+            up_ofs->get_time_stamp( name, ods_fsed_handler.get_std_out( ) );
          else
          {
             int64_t tm_val = 0;
@@ -491,7 +492,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
             else
                tm_val = unix_time( date_time( time_stamp ) );
 
-            ap_ofs->set_time_stamp( name, tm_val, ods_fsed_handler.get_std_out( ) );
+            up_ofs->set_time_stamp( name, tm_val, ods_fsed_handler.get_std_out( ) );
          }
       }
       else if( command == c_cmd_ods_fsed_object_permissions )
@@ -500,9 +501,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          string permissions( get_parm_val( parameters, c_cmd_ods_fsed_object_permissions_permissions ) );
 
          if( permissions.empty( ) )
-            ap_ofs->get_permissions( name, ods_fsed_handler.get_std_out( ) );
+            up_ofs->get_permissions( name, ods_fsed_handler.get_std_out( ) );
          else
-            ap_ofs->set_permissions( name, permissions, ods_fsed_handler.get_std_out( ) );
+            up_ofs->set_permissions( name, permissions, ods_fsed_handler.get_std_out( ) );
       }
       else if( command == c_cmd_ods_fsed_export )
       {
@@ -517,9 +518,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ods::bulk_read bulk( *ap_ods );
+         ods::bulk_read bulk( *up_ods );
 
-         export_objects( *ap_ofs, directory, &rename_expressions, ods_fsed_handler.get_std_out( ), p_progress );
+         export_objects( *up_ofs, directory, &rename_expressions, ods_fsed_handler.get_std_out( ), p_progress );
       }
       else if( command == c_cmd_ods_fsed_import )
       {
@@ -535,11 +536,11 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ods::bulk_write bulk( *ap_ods, p_progress );
+         ods::bulk_write bulk( *up_ods, p_progress );
 
-         ods::transaction tx( *ap_ods );
+         ods::transaction tx( *up_ods );
 
-         import_objects( *ap_ofs, directory, &rename_expressions, ods_fsed_handler.get_std_out( ), p_progress, force );
+         import_objects( *up_ofs, directory, &rename_expressions, ods_fsed_handler.get_std_out( ), p_progress, force );
 
          tx.commit( );
       }
@@ -550,16 +551,16 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          if( ods_tx_stack.size( ) )
             throw runtime_error( "currently in a transaction" );
 
-         ods::transaction label_tx( *ap_ods, name );
+         ods::transaction label_tx( *up_ods, name );
       }
       else if( command == c_cmd_ods_fsed_trans )
       {
-         folder_stack.push( ap_ofs->get_folder( ) );
-         ods_tx_stack.push( new ods::transaction( *ap_ods ) );
+         folder_stack.push( up_ofs->get_folder( ) );
+         ods_tx_stack.push( new ods::transaction( *up_ods ) );
 
          handler.issue_command_response( "begin transaction (level = " + to_string( ods_tx_stack.size( ) ) + ")" );
 
-         ods_fsed_handler.set_prompt_prefix( ap_ofs->get_folder( ) + c_trans_suffix );
+         ods_fsed_handler.set_prompt_prefix( up_ofs->get_folder( ) + c_trans_suffix );
       }
       else if( command == c_cmd_ods_fsed_commit )
       {
@@ -569,7 +570,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ods::bulk_write bulk( *ap_ods, p_progress );
+         ods::bulk_write bulk( *up_ods, p_progress );
 
          ods_tx_stack.top( )->commit( );
 
@@ -580,7 +581,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 
          folder_stack.pop( );
 
-         string folder( ap_ofs->get_folder( true ) );
+         string folder( up_ofs->get_folder( true ) );
 
          if( !ods_tx_stack.empty( ) )
             folder += c_trans_suffix;
@@ -595,9 +596,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ods::bulk_write bulk( *ap_ods, p_progress );
+         ods::bulk_write bulk( *up_ods, p_progress );
 
-         string folder( ap_ofs->get_folder( ) );
+         string folder( up_ofs->get_folder( ) );
 
          ods_tx_stack.top( )->rollback( );
 
@@ -606,14 +607,14 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          delete ods_tx_stack.top( );
          ods_tx_stack.pop( );
 
-         if( !ap_ofs->has_folder( folder ) )
+         if( !up_ofs->has_folder( folder ) )
             folder = folder_stack.top( );
 
          folder_stack.pop( );
 
-         ap_ofs->set_folder( folder );
+         up_ofs->set_folder( folder );
 
-         folder = ap_ofs->get_folder( );
+         folder = up_ofs->get_folder( );
 
          if( !ods_tx_stack.empty( ) )
             folder += c_trans_suffix;
@@ -652,12 +653,12 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
             console_progress progress;
             console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-            ap_ods->rewind_transactions( label_or_value, rewind_value, p_progress );
+            up_ods->rewind_transactions( label_or_value, rewind_value, p_progress );
 
             // NOTE: Need to reconstruct the ODS FS to ensure data integrity.
-            ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );
+            up_ofs.reset( new ods_file_system( *up_ods, g_oid ) );
 
-            ods_fsed_handler.set_prompt_prefix( ap_ofs->get_folder( ) );
+            ods_fsed_handler.set_prompt_prefix( up_ofs->get_folder( ) );
          }
       }
       else if( command == c_cmd_ods_fsed_rebuild )
@@ -665,13 +666,13 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          if( ods_tx_stack.size( ) )
             throw runtime_error( "currently in a transaction" );
 
-         ap_ofs->rebuild_index( );
+         up_ofs->rebuild_index( );
       }
       else if( command == c_cmd_ods_fsed_dump )
       {
          string filename( get_parm_val( parameters, c_cmd_ods_fsed_dump_filename ) );
 
-         ap_ofs->dump_node_data( filename, ods_fsed_handler.get_std_out( ) );
+         up_ofs->dump_node_data( filename, ods_fsed_handler.get_std_out( ) );
       }
       else if( command == c_cmd_ods_fsed_compress )
       {
@@ -685,7 +686,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
             console_progress progress;
             console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-            ap_ods->move_free_data_to_end( p_progress );
+            up_ods->move_free_data_to_end( p_progress );
          }
       }
       else if( command == c_cmd_ods_fsed_truncate )
@@ -698,7 +699,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          if( g_shared_write )
             handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
          else
-            ap_ods->truncate_log( "", reset );
+            up_ods->truncate_log( "", reset );
       }
       else if( command == c_cmd_ods_fsed_exit )
       {

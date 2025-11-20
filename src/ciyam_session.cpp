@@ -28,8 +28,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "ciyam_session.h"
 
 #include "ods.h"
@@ -1803,7 +1801,7 @@ class socket_command_handler : public command_handler
    const string& get_restore_error( ) const { return restore_error; }
    void set_restore_error( const string& new_error ) { restore_error = new_error; }
 
-   auto_ptr< restorable< bool > > set_restoring( ) { return auto_ptr< restorable< bool > >( new restorable< bool >( restoring, true ) ); }
+   unique_ptr< restorable< bool > > set_restoring( ) { return unique_ptr< restorable< bool > >( new restorable< bool >( restoring, true ) ); }
 
    private:
    void preprocess_command_and_args( string& str, const string& cmd_and_args, bool /*skip_command_usage*/ );
@@ -3524,10 +3522,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( type_hub && !paired_primary.empty( ) )
             throw runtime_error( "invalid paired blockchain usage with type hub" );
 
-         auto_ptr< temporary_session_variable > ap_temp_secret_hash;
+         unique_ptr< temporary_session_variable > up_temp_secret_hash;
 
          if( !secret_hash.empty( ) )
-            ap_temp_secret_hash.reset( new temporary_session_variable( secret_hash_name, secret_hash ) );
+            up_temp_secret_hash.reset( new temporary_session_variable( secret_hash_name, secret_hash ) );
 
          if( paired_primary.empty( ) )
             create_peer_initiator( blockchain,
@@ -4215,10 +4213,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // NOTE: If no key was provided then will automatically generate a key.
          if( key.empty( ) || ( key[ 0 ] == ' ' ) )
          {
-            auto_ptr< temporary_identity_suffix > ap_identity_suffix;
+            unique_ptr< temporary_identity_suffix > up_identity_suffix;
 
             if( !key_suffix.empty( ) )
-               ap_identity_suffix.reset( new temporary_identity_suffix( key_suffix ) );
+               up_identity_suffix.reset( new temporary_identity_suffix( key_suffix ) );
 
             string new_key( gen_key( ) );
 
@@ -5705,10 +5703,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             use_dots = true;
          }
 
-         auto_ptr< guard > ap_guard;
+         unique_ptr< guard > up_guard;
 
          if( lock )
-            ap_guard.reset( new guard( g_mutex, "wait" ) );
+            up_guard.reset( new guard( g_mutex, "wait" ) );
 
          if( msecs <= 2000 )
             msleep( msecs );
@@ -6170,7 +6168,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool partial = has_parm_val( parameters, c_cmd_ciyam_session_storage_restore_partial );
          bool quicker = has_parm_val( parameters, c_cmd_ciyam_session_storage_restore_quicker );
 
-         auto_ptr< regex > ap_regex;
+         unique_ptr< regex > up_regex;
 
          if( !stop_regex.empty( ) )
          {
@@ -6178,7 +6176,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
              && ( stop_regex[ 0 ] = '"' ) && ( stop_regex[ stop_regex.length( ) - 1 ] == '"' ) )
                stop_regex = stop_regex.substr( 1, stop_regex.length( ) - 2 );
 
-            ap_regex.reset( new regex( stop_regex ) );
+            up_regex.reset( new regex( stop_regex ) );
          }
 
          bool is_meta = ( name == c_meta_model_name );
@@ -6364,7 +6362,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                socket_handler.set_restore_error( "" );
 
-               auto_ptr< restorable< bool > > ap_restoring( socket_handler.set_restoring( ) );
+               unique_ptr< restorable< bool > > up_restoring( socket_handler.set_restoring( ) );
 
                set_session_variable( get_special_var_name( e_special_var_restore ), c_true_value );
 
@@ -6468,9 +6466,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   if( stop_at_tx && ( tran_id >= stop_at_tx ) )
                      break;
 
-                  if( ap_regex.get( ) )
+                  if( up_regex.get( ) )
                   {
-                     if( ap_regex->search( next ) != string::npos )
+                     if( up_regex->search( next ) != string::npos )
                         break;
                   }
 
@@ -8406,25 +8404,25 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
  needs_key_exchange( false ),
  ip_addr( ip_addr )
 {
-   ap_socket.reset( p_socket );
+   up_socket.reset( p_socket );
 
-   if( !( *ap_socket ) )
+   if( !( *up_socket ) )
       throw runtime_error( "unexpected invalid socket in ciyam_session::ciyam_session" );
 
    if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
 
 #ifdef SSL_SUPPORT
-   if( this->ap_socket->is_tls_handshake( ) )
+   if( this->up_socket->is_tls_handshake( ) )
    {
-      this->ap_socket->ssl_accept( );
+      this->up_socket->ssl_accept( );
 
       using_tls = true;
    }
 #endif
 
    string pid;
-   ap_socket->read_line( pid, c_request_timeout );
+   up_socket->read_line( pid, c_request_timeout );
 
    string::size_type pos = pid.find( c_key_exchange_suffix );
 
@@ -8444,9 +8442,9 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
 }
 
 #ifdef SSL_SUPPORT
-ciyam_session::ciyam_session( auto_ptr< ssl_socket >& ap_socket, const string& ip_addr )
+ciyam_session::ciyam_session( unique_ptr< ssl_socket >& up_socket, const string& ip_addr )
 #else
-ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket, const string& ip_addr )
+ciyam_session::ciyam_session( unique_ptr< tcp_socket >& up_socket, const string& ip_addr )
 #endif
  :
  is_local( false ),
@@ -8454,25 +8452,26 @@ ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket, const string& i
  pid_is_self( false ),
  needs_key_exchange( false ),
  ip_addr( ip_addr ),
- ap_socket( ap_socket )
+ up_socket( move( up_socket ) )
 {
-   if( !( *this->ap_socket ) )
+   if( !( *this->up_socket ) )
       throw runtime_error( "unexpected invalid socket in ciyam_session::ciyam_session" );
 
-   if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
+   if( ( ip_addr == c_local_ip_addr ) || ( ip_addr == c_local_ip_addr_for_ipv6 ) )
       is_local = true;
 
 #ifdef SSL_SUPPORT
-   if( this->ap_socket->is_tls_handshake( ) )
+   if( this->up_socket->is_tls_handshake( ) )
    {
-      this->ap_socket->ssl_accept( );
+      this->up_socket->ssl_accept( );
 
       using_tls = true;
    }
 #endif
 
    string pid;
-   this->ap_socket->read_line( pid, c_request_timeout );
+
+   this->up_socket->read_line( pid, c_request_timeout );
 
    string::size_type pos = pid.find( c_key_exchange_suffix );
 
@@ -8482,7 +8481,7 @@ ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket, const string& i
       needs_key_exchange = true;
    }
 
-   if( is_local && pid == to_string( get_pid( ) ) )
+   if( is_local && ( pid == to_string( get_pid( ) ) ) )
       pid_is_self = true;
 
    increment_session_count( );
@@ -8500,12 +8499,12 @@ void ciyam_session::on_start( )
 #endif
    try
    {
-      socket_command_handler cmd_handler( *ap_socket );
+      socket_command_handler cmd_handler( *up_socket );
 
       cmd_handler.add_commands( 0,
        ciyam_session_command_functor_factory, ARRAY_PTR_AND_SIZE( ciyam_session_command_definitions ) );
 
-      ap_socket->write_line( string( c_protocol_version )
+      up_socket->write_line( string( c_protocol_version )
        + ':' + to_string( get_files_area_item_max_size( ) )
        + '\n' + string( c_response_okay ), c_request_timeout );
 
@@ -8521,10 +8520,10 @@ void ciyam_session::on_start( )
          slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
 
          // NOTE: After handshake exchange public keys then commence application protocol.
-         ap_socket->write_line( slot_and_pubkey );
+         up_socket->write_line( slot_and_pubkey );
 
          string slotx, pubkeyx, slotx_and_pubkeyx;
-         ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout );
+         up_socket->read_line( slotx_and_pubkeyx, c_request_timeout );
 
          string::size_type pos = slotx_and_pubkeyx.find( '-' );
 
@@ -8544,10 +8543,10 @@ void ciyam_session::on_start( )
          set_session_variable( get_special_var_name( e_special_var_pubkeyx ), pubkeyx );
       }
 
-      socket_command_processor processor( *ap_socket, cmd_handler );
+      socket_command_processor processor( *up_socket, cmd_handler );
       processor.process_commands( );
 
-      ap_socket->close( );
+      up_socket->close( );
 
       term_storage( cmd_handler );
       module_unload_all( cmd_handler );
@@ -8558,8 +8557,8 @@ void ciyam_session::on_start( )
    {
       issue_error( x.what( ) );
 
-      ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
-      ap_socket->close( );
+      up_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
+      up_socket->close( );
 
       term_session( );
    }
@@ -8567,8 +8566,8 @@ void ciyam_session::on_start( )
    {
       issue_error( "unexpected unknown exception occurred" );
 
-      ap_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred", c_request_timeout );
-      ap_socket->close( );
+      up_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred", c_request_timeout );
+      up_socket->close( );
 
       term_session( );
    }

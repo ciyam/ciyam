@@ -85,7 +85,7 @@ void command_handler::set_option_value( const string& name, const string& value 
 void command_handler::add_command( const string& name, size_t group_num,
  const string& syntax, const string& description, command_functor* p_functor )
 {
-   auto_ptr< command_functor > ap_functor( p_functor );
+   unique_ptr< command_functor > up_functor( p_functor );
 
    string dispatch_name( command_prefix );
 
@@ -99,15 +99,16 @@ void command_handler::add_command( const string& name, size_t group_num,
       short_commands.insert( make_pair( short_name, name.substr( 0, pos ) ) );
    }
 
-   auto_ptr< command_parser > ap_parser( new command_parser );
-   ap_parser->parse_syntax( syntax.c_str( ) );
+   unique_ptr< command_parser > up_parser( new command_parser );
+
+   up_parser->parse_syntax( syntax.c_str( ) );
 
    command_items.push_back( command_item( short_name, dispatch_name, group_num, description ) );
 
    try
    {
       command_dispatchers.insert( make_pair( dispatch_name,
-       command_dispatcher( name, ap_parser.release( ), ap_functor.release( ) ) ) );
+       command_dispatcher( name, up_parser.release( ), up_functor.release( ) ) ) );
 
       if( change_notify )
          perform_after_command_changes( );

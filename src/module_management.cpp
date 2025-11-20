@@ -20,8 +20,6 @@
 #  endif
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #ifdef __GNUG__
 #  define _access access
 #endif
@@ -232,25 +230,25 @@ module_load_error load_module( const string& module_name )
    if( _access( dyn_lib_name.c_str( ), 0 ) != 0 )
       return e_module_load_error_file_does_not_exist;
 
-   auto_ptr< dynamic_library > ap_dynamic_library( new dynamic_library( dyn_lib_name, module_name ) );
+   unique_ptr< dynamic_library > up_dynamic_library( new dynamic_library( dyn_lib_name, module_name ) );
 
    fp_init_dir fp_init_dir_func;
-   fp_init_dir_func = ( fp_init_dir )ap_dynamic_library->bind_to_function( c_init_dir_func_name );
+   fp_init_dir_func = ( fp_init_dir )up_dynamic_library->bind_to_function( c_init_dir_func_name );
 
    fp_load_strings fp_load_strings_func;
-   fp_load_strings_func = ( fp_load_strings )ap_dynamic_library->bind_to_function( c_load_strings_func_name );
+   fp_load_strings_func = ( fp_load_strings )up_dynamic_library->bind_to_function( c_load_strings_func_name );
 
    fp_init_classes fp_init_classes_func;
-   fp_init_classes_func = ( fp_init_classes )ap_dynamic_library->bind_to_function( c_init_classes_func_name );
+   fp_init_classes_func = ( fp_init_classes )up_dynamic_library->bind_to_function( c_init_classes_func_name );
 
    fp_term_classes fp_term_classes_func;
-   fp_term_classes_func = ( fp_term_classes )ap_dynamic_library->bind_to_function( c_term_classes_func_name );
+   fp_term_classes_func = ( fp_term_classes )up_dynamic_library->bind_to_function( c_term_classes_func_name );
 
    fp_obtain_externals fp_obtain_externals_func;
-   fp_obtain_externals_func = ( fp_obtain_externals )ap_dynamic_library->bind_to_function( c_obtain_externals_func_name );
+   fp_obtain_externals_func = ( fp_obtain_externals )up_dynamic_library->bind_to_function( c_obtain_externals_func_name );
 
    fp_obtain_module_details fp_obtain_module_details_func;
-   fp_obtain_module_details_func = ( fp_obtain_module_details )ap_dynamic_library->bind_to_function( c_obtain_module_details_func_name );
+   fp_obtain_module_details_func = ( fp_obtain_module_details )up_dynamic_library->bind_to_function( c_obtain_module_details_func_name );
 
    const module_details* p_details;
 
@@ -286,12 +284,12 @@ module_load_error load_module( const string& module_name )
    }
 
    g_modules.insert( module_value_type( directory + p_details->p_id,
-    module_library_info( p_details, ap_dynamic_library.get( ), fp_term_classes_func, fp_obtain_externals_func ) ) );
+    module_library_info( p_details, up_dynamic_library.get( ), fp_term_classes_func, fp_obtain_externals_func ) ) );
 
    g_module_ids.insert( make_pair( directory + p_details->p_id, p_details->p_name ) );
    g_module_names.insert( make_pair( directory + p_details->p_name, p_details->p_id ) );
 
-   ap_dynamic_library.release( );
+   up_dynamic_library.release( );
 
    return e_module_load_error_none;
 }

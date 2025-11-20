@@ -17,8 +17,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "mail_source.h"
 
 #include "pop3.h"
@@ -338,8 +336,8 @@ struct pop3_source::impl
    string username;
    string password;
 
-   auto_ptr< pop3 > ap_pop;
-   auto_ptr< progress > ap_progress;
+   unique_ptr< pop3 > up_pop;
+   unique_ptr< progress > up_progress;
 };
 
 pop3_source::impl::impl( )
@@ -382,9 +380,9 @@ pop3_source::impl::impl( )
    }
 
    if( get_trace_flags( ) & ( TRACE_DETAILS | TRACE_SOCKETS ) )
-      ap_progress.reset( new trace_progress( TRACE_DETAILS | TRACE_SOCKETS ) );
+      up_progress.reset( new trace_progress( TRACE_DETAILS | TRACE_SOCKETS ) );
 
-   ap_pop.reset( new pop3( host, port, ctype, ap_progress.get( ) ) );
+   up_pop.reset( new pop3( host, port, ctype, up_progress.get( ) ) );
 }
 
 pop3_source::impl::impl( const string& username, const string& password )
@@ -423,39 +421,39 @@ pop3_source::impl::impl( const string& username, const string& password )
    }
 
    if( get_trace_flags( ) & ( TRACE_DETAILS | TRACE_SOCKETS ) )
-      ap_progress.reset( new trace_progress( TRACE_DETAILS | TRACE_SOCKETS ) );
+      up_progress.reset( new trace_progress( TRACE_DETAILS | TRACE_SOCKETS ) );
 
-   ap_pop.reset( new pop3( host, port, ctype, ap_progress.get( ) ) );
+   up_pop.reset( new pop3( host, port, ctype, up_progress.get( ) ) );
 }
 
 void pop3_source::impl::start_processing( )
 {
-   ap_pop->login( username, password );
+   up_pop->login( username, password );
 }
 
 int pop3_source::impl::get_num_messages( )
 {
-   return ap_pop->get_num_messages( );
+   return up_pop->get_num_messages( );
 }
 
 void pop3_source::impl::get_message_headers( int num, vector< string >& headers )
 {
-   ap_pop->get_message_headers( num, headers );
+   up_pop->get_message_headers( num, headers );
 }
 
 void pop3_source::impl::get_message( int num, ostream& os, bool* p_is_mime )
 {
-   ap_pop->get_message( num, os, p_is_mime );
+   up_pop->get_message( num, os, p_is_mime );
 }
 
 void pop3_source::impl::delete_message( int num )
 {
-   ap_pop->delete_message( num );
+   up_pop->delete_message( num );
 }
 
 void pop3_source::impl::finish_processing( )
 {
-   ap_pop->disconnect( );
+   up_pop->disconnect( );
 }
 
 pop3_source::pop3_source( )

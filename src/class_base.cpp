@@ -28,8 +28,6 @@
 #  include <algorithm>
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "class_base.h"
 
 #include "md5.h"
@@ -1991,10 +1989,10 @@ void class_base::destroy( )
          {
             p_class_base = get_next_foreign_key_child( i, next_child_field, next_op );
 
-            auto_ptr< class_cascade > ap_tmp_cascading;
+            unique_ptr< class_cascade > up_tmp_cascading;
 
             if( p_class_base )
-               ap_tmp_cascading.reset( new class_cascade( *p_class_base ) );
+               up_tmp_cascading.reset( new class_cascade( *p_class_base ) );
 
             // FUTURE: The handling of cascades needs to be revisited at some stage to improve performance
             // as currently iteration occurs four times (firstly to lock, secondly to test if constrained,
@@ -4279,12 +4277,12 @@ string check_with_regex( const string& r, const string& s,
    else if( re == c_special_regex_for_peerchain_description )
       re = "^" + string( c_regex_peerchain_description ) + "$";
 
-   auto_ptr< regex_base > ap_regex;
+   unique_ptr< regex_base > up_regex;
 
    if( !use_chain )
-      ap_regex.reset( new regex( re ) );
+      up_regex.reset( new regex( re ) );
    else
-      ap_regex.reset( new regex_chain( re ) );
+      up_regex.reset( new regex_chain( re ) );
 
    if( p_rc )
       *p_rc = true;
@@ -4293,7 +4291,7 @@ string check_with_regex( const string& r, const string& s,
 
    vector< string > refs;
 
-   string::size_type pos = ap_regex->search( s, &length, &refs );
+   string::size_type pos = up_regex->search( s, &length, &refs );
 
    string regex_serach_expense_var_name(
     get_special_var_name( e_special_var_regex_search_expense ) );
@@ -4301,7 +4299,7 @@ string check_with_regex( const string& r, const string& s,
    // NOTE: If interested to know the regex "search expense"
    // then will need to have first set the session variable.
    if( has_session_variable( regex_serach_expense_var_name ) )
-      set_session_variable( regex_serach_expense_var_name, to_string( ap_regex->get_search_expense( ) ) );
+      set_session_variable( regex_serach_expense_var_name, to_string( up_regex->get_search_expense( ) ) );
 
    if( pos == string::npos )
    {
@@ -5673,16 +5671,16 @@ string check_email_headers( const vector< string >& headers, bool create_script_
 {
    ostringstream osstr;
 
-   auto_ptr< mail_source > ap_mail_source;
+   unique_ptr< mail_source > up_mail_source;
 
    if( !get_mbox_username( ).empty( ) )
-      ap_mail_source.reset( new mbox_source( ) );
+      up_mail_source.reset( new mbox_source( ) );
    else
-      ap_mail_source.reset( new pop3_source( ) );
+      up_mail_source.reset( new pop3_source( ) );
 
-   ap_mail_source->start_processing( );
+   up_mail_source->start_processing( );
 
-   int num_messages = ap_mail_source->get_num_messages( );
+   int num_messages = up_mail_source->get_num_messages( );
 
    if( !create_script_output )
       osstr << "\nfound " << num_messages << ( num_messages == 1 ? " message\n" : " messages\n" ) << endl;
@@ -5703,7 +5701,7 @@ string check_email_headers( const vector< string >& headers, bool create_script_
          email_headers.push_back( "Date:" );
       }
 
-      ap_mail_source->get_message_headers( i + 1, email_headers );
+      up_mail_source->get_message_headers( i + 1, email_headers );
 
       string script_from;
       string script_name;
@@ -5736,14 +5734,15 @@ string check_email_headers( const vector< string >& headers, bool create_script_
          osstr << ".run_script " << script_name << "\n";
 
          has_any_scripts = true;
-         ap_mail_source->delete_message( i + 1 );
+
+         up_mail_source->delete_message( i + 1 );
       }
    }
 
    if( create_script_output && has_any_scripts )
       osstr << ".quit\n";
 
-   ap_mail_source->finish_processing( );
+   up_mail_source->finish_processing( );
 
    return osstr.str( );
 }
@@ -5751,7 +5750,7 @@ string check_email_headers( const vector< string >& headers, bool create_script_
 void fetch_email_messages( const user_account& account,
  const string* p_file_name_prefix, vector< pair< bool, string > >* p_messages, bool skip_scripts )
 {
-   auto_ptr< mail_source > ap_mail_source;
+   unique_ptr< mail_source > up_mail_source;
 
    string::size_type pos = account.username.find( '@' );
 
@@ -5759,25 +5758,28 @@ void fetch_email_messages( const user_account& account,
 
    if( !get_mbox_path( ).empty( ) && ( pos == string::npos
     || account.username.substr( pos + 1 ) == get_domain( ) ) )
-      ap_mail_source.reset( new mbox_source( account.username ) );
+      up_mail_source.reset( new mbox_source( account.username ) );
    else
-      ap_mail_source.reset( new pop3_source( account.username, password ) );
+      up_mail_source.reset( new pop3_source( account.username, password ) );
 
-   ap_mail_source->start_processing( );
+   up_mail_source->start_processing( );
 
-   int num_messages = ap_mail_source->get_num_messages( );
+   int num_messages = up_mail_source->get_num_messages( );
 
    for( int i = 0; i < num_messages; i++ )
    {
       if( p_file_name_prefix )
       {
          ostringstream osstr;
+
          osstr << *p_file_name_prefix << ifmt( 4 ) << ( i + 1 ) << ".txt";
 
          ofstream outf( osstr.str( ).c_str( ) );
-         ap_mail_source->get_message( i + 1, outf );
+
+         up_mail_source->get_message( i + 1, outf );
 
          outf.flush( );
+
          if( !outf.good( ) )
             throw runtime_error( "unexpected bad output stream" );
       }
@@ -5791,23 +5793,25 @@ void fetch_email_messages( const user_account& account,
          if( skip_scripts )
          {
             vector< string > email_headers;
+
             email_headers.push_back( "Subject:" );
 
-            ap_mail_source->get_message_headers( i + 1, email_headers );
+            up_mail_source->get_message_headers( i + 1, email_headers );
 
-            if( lower( email_headers[ 0 ] ).find( "subject: " ) == 0
-             && email_headers[ 0 ].find( c_email_subject_script_marker ) != string::npos )
+            if( ( lower( email_headers[ 0 ] ).find( "subject: " ) == 0 )
+             && ( email_headers[ 0 ].find( c_email_subject_script_marker ) != string::npos ) )
                continue;
          }
 
-         ap_mail_source->get_message( i + 1, osstr, &is_mime );
+         up_mail_source->get_message( i + 1, osstr, &is_mime );
+
          p_messages->push_back( make_pair( is_mime, osstr.str( ) ) );
       }
 
-      ap_mail_source->delete_message( i + 1 );
+      up_mail_source->delete_message( i + 1 );
    }
 
-   ap_mail_source->finish_processing( );
+   up_mail_source->finish_processing( );
 }
 
 void fetch_email_messages( const string& file_name_prefix, bool skip_scripts )
@@ -6931,7 +6935,7 @@ string create_address_key_pair( const string& ext_key,
  string& pub_key, string& priv_key, const string& priv_info, bool is_secret, bool use_base64, bool compressed )
 {
 #ifdef SSL_SUPPORT
-   auto_ptr< private_key > ap_new_key;
+   unique_ptr< private_key > up_new_key;
 
    external_client client_info;
 
@@ -6942,7 +6946,7 @@ string create_address_key_pair( const string& ext_key,
    get_crypto_info( client_info.extra_info, info );
 
    if( !is_secret )
-      ap_new_key.reset( new private_key( priv_info, true, &compressed ) );
+      up_new_key.reset( new private_key( priv_info, true, &compressed ) );
    else
    {
       // NOTE: If prefixed with '!' then just assumes that the hash of the remainder of the string
@@ -6950,7 +6954,8 @@ string create_address_key_pair( const string& ext_key,
       if( !priv_info.empty( ) && priv_info[ 0 ] == '!' )
       {
          sha256 hash( priv_info.substr( 1 ) );
-         ap_new_key.reset( new private_key( hash.get_digest_as_string( ) ) );
+
+         up_new_key.reset( new private_key( hash.get_digest_as_string( ) ) );
       }
       else
       {
@@ -6958,14 +6963,14 @@ string create_address_key_pair( const string& ext_key,
 
          // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
          // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
-         ap_new_key.reset( new private_key( "0" + hash.get_digest_as_string( ).substr( 1 ) ) );
+         up_new_key.reset( new private_key( "0" + hash.get_digest_as_string( ).substr( 1 ) ) );
       }
    }
 
-   pub_key = ap_new_key->get_public( compressed, use_base64 );
-   priv_key = ap_new_key->get_secret( use_base64 );
+   pub_key = up_new_key->get_public( compressed, use_base64 );
+   priv_key = up_new_key->get_secret( use_base64 );
 
-   return ap_new_key->get_address( compressed, info.override, info.addr_prefix );
+   return up_new_key->get_address( compressed, info.override, info.addr_prefix );
 #else
    throw runtime_error( "SSL support is needed in order to use create_address_key_pair" );
 #endif
@@ -7877,16 +7882,16 @@ string construct_p2sh_redeem_transaction(
    vector< utxo_information > inputs;
    vector< output_information > outputs;
 
-   auto_ptr< private_key > ap_priv_key;
+   unique_ptr< private_key > up_priv_key;
 
    if( txid.empty( ) )
       throw runtime_error( "unexpected missing txid in construct_p2sh_redeem_transaction" );
 
    if( !key.empty( ) )
-      ap_priv_key.reset( new private_key( key, is_wif_format ) );
+      up_priv_key.reset( new private_key( key, is_wif_format ) );
 
    inputs.push_back( utxo_information( index,
-    hex_reverse( txid ), redeem_script.c_str( ), ap_priv_key.release( ), true ) );
+    hex_reverse( txid ), redeem_script.c_str( ), up_priv_key.release( ), true ) );
 
    outputs.push_back( output_information( amount, to_address ) );
 

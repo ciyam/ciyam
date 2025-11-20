@@ -391,7 +391,7 @@ class test_ods_command_handler : public console_command_handler
 
    void init_ods( const char* p_file_name );
 
-   ods& get_ods( ) { return *ap_ods.get( ); }
+   ods& get_ods( ) { return *up_ods.get( ); }
 
    outline& get_node( ) { return node; }
 
@@ -406,7 +406,7 @@ class test_ods_command_handler : public console_command_handler
    ods::transaction** get_trans_buffer( ) { return trans_buffer; }
 
    private:
-   auto_ptr< ods > ap_ods;
+   unique_ptr< ods > up_ods;
 
    outline node;
    stack< oid, vector< oid > > oid_stack;
@@ -446,10 +446,10 @@ void test_ods_command_handler::init_ods( const char* p_file_name )
       p_password = password.c_str( );
 
    if( g_read_only )
-      ap_ods.reset( new ods( p_file_name, ods::e_open_mode_exist,
+      up_ods.reset( new ods( p_file_name, ods::e_open_mode_exist,
        ods::e_write_mode_none, g_use_transaction_log, &not_found, p_password ) );
    else
-      ap_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
+      up_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
        ( g_shared_write ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ),
        g_use_transaction_log, &not_found, p_password, g_use_synchronised_write ) );
 
@@ -655,15 +655,20 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       else
       {
          ods::bulk_write bulk( o );
+
          o >> node;
 
-         auto_ptr< ods::transaction > ap_ods_tx;
+         unique_ptr< ods::transaction > up_ods_tx;
+
          if( !o.is_in_transaction( ) )
-            ap_ods_tx.reset( new ods::transaction( o ) );
+            up_ods_tx.reset( new ods::transaction( o ) );
 
          int num = 1;
+
          bool is_multi = false;
+
          pos = name.find( '*' );
+
          if( pos != string::npos )
          {
             is_multi = true;
@@ -689,9 +694,11 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
                temp_node.set_description( name );
 
             o << temp_node;
+
             node.add_child( temp_node );
 
             date_time now( date_time::local( ) );
+
             uint64_t elapsed = seconds_between( dtm, now );
 
             if( p_progress && elapsed >= 1 )
@@ -703,8 +710,8 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
          o << node;
 
-         if( ap_ods_tx.get( ) )
-            ap_ods_tx->commit( );
+         if( up_ods_tx.get( ) )
+            up_ods_tx->commit( );
       }
    }
    else if( command == c_cmd_test_ods_del )
@@ -715,12 +722,15 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
       bool found = false;
+
       ods::bulk_write bulk( o, p_progress );
+
       o >> node;
 
-      auto_ptr< ods::transaction > ap_ods_tx;
+      unique_ptr< ods::transaction > up_ods_tx;
+
       if( !o.is_in_transaction( ) )
-         ap_ods_tx.reset( new ods::transaction( o ) );
+         up_ods_tx.reset( new ods::transaction( o ) );
 
       int num = 1;
       size_t index = 0;
@@ -842,8 +852,8 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             cout << "cannot find folder: " << name << endl;
       }
 
-      if( ap_ods_tx.get( ) )
-         ap_ods_tx->commit( );
+      if( up_ods_tx.get( ) )
+         up_ods_tx->commit( );
    }
    else if( command == c_cmd_test_ods_import )
    {
@@ -853,11 +863,13 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
       ods::bulk_write bulk( o, p_progress );
+
       o >> node;
 
-      auto_ptr< ods::transaction > ap_ods_tx;
+      unique_ptr< ods::transaction > up_ods_tx;
+
       if( !o.is_in_transaction( ) )
-         ap_ods_tx.reset( new ods::transaction( o ) );
+         up_ods_tx.reset( new ods::transaction( o ) );
 
       string::size_type pos = file_name.find_last_of( "/" );
 
@@ -877,10 +889,11 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       o << temp_node;
 
       node.add_child( temp_node );
+
       o << node;
 
-      if( ap_ods_tx.get( ) )
-         ap_ods_tx->commit( );
+      if( up_ods_tx.get( ) )
+         up_ods_tx->commit( );
    }
    else if( command == c_cmd_test_ods_export )
    {

@@ -49,13 +49,13 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    public:
 #  ifdef SSL_SUPPORT
    peer_session( int64_t time_val, bool is_responder,
-    std::auto_ptr< ssl_socket >& ap_socket, const std::string& addr_info,
+    std::unique_ptr< ssl_socket >& up_socket, const std::string& addr_info,
     bool is_for_support = false, peer_extra extra = e_peer_extra_none,
     const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any,
     bool has_support_sessions = false, bool must_clear_system_variable = false );
 #  else
    peer_session( int64_t time_val, bool is_responder,
-    std::auto_ptr< tcp_socket >& ap_socket, const std::string& addr_info,
+    std::unique_ptr< tcp_socket >& up_socket, const std::string& addr_info,
     bool is_for_support = false, peer_extra extra = e_peer_extra_none,
     const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any,
     bool has_support_sessions = false, bool must_clear_system_variable = false );
@@ -119,9 +119,9 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    std::string session_id_owner;
 
 #  ifdef SSL_SUPPORT
-   std::auto_ptr< ssl_socket > ap_socket;
+   std::unique_ptr< ssl_socket > up_socket;
 #  else
-   std::auto_ptr< tcp_socket > ap_socket;
+   std::unique_ptr< tcp_socket > up_socket;
 #  endif
 };
 
