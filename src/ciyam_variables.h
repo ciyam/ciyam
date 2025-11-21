@@ -11,22 +11,15 @@
 #     include <string>
 #  endif
 
-#  include "macros.h"
 #  include "ptypes.h"
 
 #  include "ciyam_variable_names.h"
 
-#  ifdef CIYAM_BASE_IMPL
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
-#  endif
-
 struct progress;
 
-std::string CIYAM_BASE_DECL_SPEC get_special_var_name( special_var var );
+std::string get_special_var_name( special_var var );
 
-class CIYAM_BASE_DECL_SPEC system_variable_lock
+class system_variable_lock
 {
    public:
    system_variable_lock( const std::string& name );
@@ -41,20 +34,20 @@ class CIYAM_BASE_DECL_SPEC system_variable_lock
    void acquire_lock( const std::string& name, const char* p_display_name_str = 0 );
 };
 
-std::string CIYAM_BASE_DECL_SPEC get_raw_system_variable( const std::string& name, bool is_internal = true );
-std::string CIYAM_BASE_DECL_SPEC get_system_variable( const std::string& name_or_expr, bool is_internal = true );
+std::string get_raw_system_variable( const std::string& name, bool is_internal = true );
+std::string get_system_variable( const std::string& name_or_expr, bool is_internal = true );
 
-bool CIYAM_BASE_DECL_SPEC has_raw_system_variable( const std::string& name );
-bool CIYAM_BASE_DECL_SPEC has_system_variable( const std::string& name_or_expr );
+bool has_raw_system_variable( const std::string& name );
+bool has_system_variable( const std::string& name_or_expr );
 
-void CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name,
+void set_system_variable( const std::string& name,
  const std::string& value, bool is_init = false, progress* p_progress = 0 );
 
-bool CIYAM_BASE_DECL_SPEC set_system_variable(
+bool set_system_variable(
  const std::string& name, const std::string& value,
  const std::string& current, progress* p_progress = 0, const char append_separator = '\0' );
 
-void CIYAM_BASE_DECL_SPEC rename_system_variable(
+void rename_system_variable(
  const std::string& old_name, const std::string& new_name );
 
 enum variable_check_type
@@ -83,11 +76,11 @@ struct set_variable_checker
    set_variable_checker* p_additional_check;
 };
 
-bool CIYAM_BASE_DECL_SPEC set_system_variable(
+bool set_system_variable(
  const std::string& name, const std::string& value,
  set_variable_checker& checker, bool is_init = false, progress* p_progress = 0 );
 
-void CIYAM_BASE_DECL_SPEC system_variable_expression( const std::string& expr );
+void system_variable_expression( const std::string& expr );
 
 struct temporary_system_variable
 {
@@ -108,11 +101,10 @@ struct temporary_system_variable
    std::string original_value;
 };
 
-std::string CIYAM_BASE_DECL_SPEC variable_name_from_name_and_value( const std::string& name_and_value, std::string* p_value = 0 );
+std::string variable_name_from_name_and_value( const std::string& name_and_value, std::string* p_value = 0 );
 
 class mutex;
 
-mutex& CIYAM_BASE_DECL_SPEC get_mutex_for_ciyam_variables( );
+mutex& get_mutex_for_ciyam_variables( );
 
 #endif
-

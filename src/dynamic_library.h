@@ -34,7 +34,7 @@ class dynamic_library
    std::string file_name;
    std::string module_name;
 
-   DYNAMIC_LIBRARY dyn_lib;
+   void* dyn_lib;
 };
 
 #endif

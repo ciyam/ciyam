@@ -14,22 +14,12 @@
 #  include "macros.h"
 #  include "op_algo_handler.h"
 
-#  ifdef CIYAM_BASE_LIB
-#     ifdef CIYAM_BASE_IMPL
-#        define CUBE_DECL_SPEC DYNAMIC_EXPORT
-#     else
-#        define CUBE_DECL_SPEC DYNAMIC_IMPORT
-#     endif
-#  else
-#     define CUBE_DECL_SPEC
-#  endif
-
 const size_t c_cube_default_max_tries = 3;
 const size_t c_cube_default_max_attempts = 5;
 const size_t c_cube_default_max_suggests = 8;
 const size_t c_cube_default_train_rounds = 300;
 
-class CUBE_DECL_SPEC cube : public op_algo_handler
+class cube : public op_algo_handler
 {
    public:
    cube( const std::string& type_and_or_state );

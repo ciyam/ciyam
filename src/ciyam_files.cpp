@@ -20,8 +20,6 @@
 #  endif
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "ciyam_files.h"
 
 #include "ods.h"

@@ -15,8 +15,6 @@
 #  include <iostream>
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "ciyam_base_ops.h"
 
 #include "ods.h"

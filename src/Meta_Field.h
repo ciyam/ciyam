@@ -12,11 +12,6 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_FIELD_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_FIELD_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class Meta_List_Field;
 class Meta_Index;
@@ -36,7 +31,7 @@ class Meta_Type;
 
 class numeric;
 
-class META_FIELD_DECL_SPEC Meta_Field : public class_base
+class Meta_Field : public class_base
 {
    friend class Meta_List_Field;
    friend class Meta_Index;

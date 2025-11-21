@@ -14,23 +14,13 @@
 
 #  include "ptypes.h"
 
-#  ifdef CIYAM_BASE_LIB
-#     ifdef CIYAM_BASE_IMPL
-#        define NUMERIC_DECL_SPEC DYNAMIC_EXPORT
-#     else
-#        define NUMERIC_DECL_SPEC DYNAMIC_IMPORT
-#     endif
-#  else
-#     define NUMERIC_DECL_SPEC
-#  endif
-
 const char c_decimal = '.';
 const char c_separator = ',';
 
 class read_stream;
 class write_stream;
 
-class NUMERIC_DECL_SPEC numeric
+class numeric
 {
    typedef void ( numeric::*bool_type )( ) const;
    void dummy_function_for_bool_type( ) const { }
@@ -126,24 +116,24 @@ class NUMERIC_DECL_SPEC numeric
    static numeric pi( );
    static numeric phi( );
 
-   friend void NUMERIC_DECL_SPEC perform_add_or_subtract( numeric& n1, numeric n2, bool is_add );
+   friend void perform_add_or_subtract( numeric& n1, numeric n2, bool is_add );
 
-   friend numeric NUMERIC_DECL_SPEC operator +( const numeric& lhs, const numeric& rhs );
-   friend numeric NUMERIC_DECL_SPEC operator -( const numeric& lhs, const numeric& rhs );
-   friend numeric NUMERIC_DECL_SPEC operator *( const numeric& lhs, const numeric& rhs );
-   friend numeric NUMERIC_DECL_SPEC operator /( const numeric& lhs, const numeric& rhs );
+   friend numeric operator +( const numeric& lhs, const numeric& rhs );
+   friend numeric operator -( const numeric& lhs, const numeric& rhs );
+   friend numeric operator *( const numeric& lhs, const numeric& rhs );
+   friend numeric operator /( const numeric& lhs, const numeric& rhs );
 
-   friend bool NUMERIC_DECL_SPEC operator <( const numeric& lhs, const numeric& rhs );
-   friend bool NUMERIC_DECL_SPEC operator >( const numeric& lhs, const numeric& rhs );
-   friend bool NUMERIC_DECL_SPEC operator <=( const numeric& lhs, const numeric& rhs );
-   friend bool NUMERIC_DECL_SPEC operator >=( const numeric& lhs, const numeric& rhs );
-   friend bool NUMERIC_DECL_SPEC operator !=( const numeric& lhs, const numeric& rhs );
-   friend bool NUMERIC_DECL_SPEC operator ==( const numeric& lhs, const numeric& rhs );
+   friend bool operator <( const numeric& lhs, const numeric& rhs );
+   friend bool operator >( const numeric& lhs, const numeric& rhs );
+   friend bool operator <=( const numeric& lhs, const numeric& rhs );
+   friend bool operator >=( const numeric& lhs, const numeric& rhs );
+   friend bool operator !=( const numeric& lhs, const numeric& rhs );
+   friend bool operator ==( const numeric& lhs, const numeric& rhs );
 
-   friend std::ostream NUMERIC_DECL_SPEC& operator <<( std::ostream& os, const numeric& f );
+   friend std::ostream& operator <<( std::ostream& os, const numeric& f );
 
-   friend read_stream NUMERIC_DECL_SPEC& operator >>( read_stream& rs, numeric& n );
-   friend write_stream NUMERIC_DECL_SPEC& operator <<( write_stream& ws, const numeric& n );
+   friend read_stream& operator >>( read_stream& rs, numeric& n );
+   friend write_stream& operator <<( write_stream& ws, const numeric& n );
 
    private:
    uint8_t decimals;
@@ -237,12 +227,12 @@ inline bool operator !=( const numeric& lhs, const numeric& rhs ) { return !( lh
 numeric abs( const numeric& n );
 numeric sqrt( const numeric& n );
 
-std::string NUMERIC_DECL_SPEC format_numeric( const numeric& n, const std::string& mask,
+std::string format_numeric( const numeric& n, const std::string& mask,
  const char* p_decimal_point = 0, const char* p_plus = 0, const char* p_minus = 0,
  const char* p_group_separator = 0, const char* p_plus_left = 0, const char* p_plus_right = 0,
  const char* p_minus_left = 0, const char* p_minus_right = 0, const char* p_currency_symbol = 0 );
 
-std::string NUMERIC_DECL_SPEC format_percentage(
+std::string format_percentage(
  size_t& fracs, unsigned long& prior, unsigned long count, unsigned long total, const char suffix = '%' );
 
 #endif

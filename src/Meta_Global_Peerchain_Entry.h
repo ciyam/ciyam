@@ -12,13 +12,8 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
-class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public class_base
+class Meta_Global_Peerchain_Entry : public class_base
 {
    public:
    typedef Meta_Global_Peerchain_Entry class_type;

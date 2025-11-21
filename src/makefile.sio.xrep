@@ -90,13 +90,6 @@
     <cpp_files/>
      <filename>auto_script.cpp
      <filename>ciyam_base.cpp
-     <filename>ciyam_base_char_array.cpp
-     <filename>ciyam_base_command_handler.cpp
-     <filename>ciyam_base_cube.cpp
-     <filename>ciyam_base_date_time.cpp
-     <filename>ciyam_base_file_buffer.cpp
-     <filename>ciyam_base_numeric.cpp
-     <filename>ciyam_base_ods.cpp
      <filename>ciyam_base_ops.cpp
      <filename>ciyam_channels.cpp
      <filename>ciyam_core_files.cpp

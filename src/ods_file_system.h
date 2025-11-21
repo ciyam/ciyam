@@ -16,16 +16,6 @@
 #  include "macros.h"
 #  include "ptypes.h"
 
-#  ifdef CIYAM_BASE_LIB
-#     ifdef CIYAM_BASE_IMPL
-#        define ODS_FILE_SYSTEM_DECL_SPEC DYNAMIC_EXPORT
-#     else
-#        define ODS_FILE_SYSTEM_DECL_SPEC DYNAMIC_IMPORT
-#     endif
-#  else
-#     define ODS_FILE_SYSTEM_DECL_SPEC
-#  endif
-
 class ods;
 
 struct progress;
@@ -34,7 +24,7 @@ struct temporary_force_write;
 struct temporary_allow_specials;
 struct temporary_include_hidden;
 
-class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
+class ods_file_system
 {
    public:
    ods_file_system( ods& o, int64_t i = 0, bool for_regression_tests = false );
@@ -391,11 +381,11 @@ struct temporary_include_hidden
    bool old_skip_hidden;
 };
 
-void ODS_FILE_SYSTEM_DECL_SPEC export_objects( ods_file_system& ofs,
+void export_objects( ods_file_system& ofs,
  const std::string& directory, std::vector< std::string >* p_rename_expressions = 0,
  std::ostream* p_os = 0, progress* p_progress = 0, int level = 0, int start_pos = 0 );
 
-void ODS_FILE_SYSTEM_DECL_SPEC import_objects( ods_file_system& ofs,
+void import_objects( ods_file_system& ofs,
  const std::string& directory, std::vector< std::string >* p_rename_expressions = 0,
  std::ostream* p_os = 0, progress* p_progress = 0, bool force_write = false );
 

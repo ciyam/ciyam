@@ -11,17 +11,10 @@
 #     include <iosfwd>
 #  endif
 
-#  include "macros.h"
 #  include "ptypes.h"
 #  include "threads.h"
 
-#  ifdef CIYAM_BASE_IMPL
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
-#  endif
-
-class CIYAM_BASE_DECL_SPEC ciyam_notifier : public thread
+class ciyam_notifier : public thread
 {
    public:
    ciyam_notifier( const std::string& watch_root,

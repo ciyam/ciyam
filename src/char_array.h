@@ -13,17 +13,7 @@
 
 #  include "macros.h"
 
-#  ifdef CIYAM_BASE_LIB
-#     ifdef CIYAM_BASE_IMPL
-#        define CHAR_ARRAY_DECL_SPEC DYNAMIC_EXPORT
-#     else
-#        define CHAR_ARRAY_DECL_SPEC DYNAMIC_IMPORT
-#     endif
-#  else
-#     define CHAR_ARRAY_DECL_SPEC
-#  endif
-
-class CHAR_ARRAY_DECL_SPEC char_array
+class char_array
 {
    public:
    char_array( const std::string& type_and_or_state );

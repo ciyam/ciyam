@@ -12,18 +12,13 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_PACKAGE_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_PACKAGE_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class Meta_Package_Option;
 class Meta_Workgroup;
 class Meta_Model;
 class Meta_Package_Type;
 
-class META_PACKAGE_DECL_SPEC Meta_Package : public class_base
+class Meta_Package : public class_base
 {
    friend class Meta_Package_Option;
    friend class Meta_Workgroup;

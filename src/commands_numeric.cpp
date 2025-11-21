@@ -13,8 +13,6 @@
 #  include <string>
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "class_base.h"
 
 #include "numeric.h"

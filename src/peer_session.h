@@ -14,17 +14,10 @@
 #  endif
 
 #  include "config.h"
-#  include "macros.h"
 #  include "sockets.h"
 #  include "threads.h"
 #  ifdef SSL_SUPPORT
 #     include "ssl_socket.h"
-#  endif
-
-#  ifdef CIYAM_BASE_IMPL
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
 enum peer_extra
@@ -44,7 +37,7 @@ enum peerchain_type
    e_peerchain_type_shared
 };
 
-class CIYAM_BASE_DECL_SPEC peer_session : public thread
+class peer_session : public thread
 {
    public:
 #  ifdef SSL_SUPPORT
@@ -125,7 +118,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 #  endif
 };
 
-class CIYAM_BASE_DECL_SPEC peer_listener : public thread
+class peer_listener : public thread
 {
    public:
    peer_listener( int port ) : port( port ) { }
@@ -139,7 +132,7 @@ class CIYAM_BASE_DECL_SPEC peer_listener : public thread
    std::string blockchains;
 };
 
-class CIYAM_BASE_DECL_SPEC peer_session_starter : public thread
+class peer_session_starter : public thread
 {
    public:
    peer_session_starter( );
@@ -183,27 +176,27 @@ struct other_session_extras
 
 class mutex;
 
-mutex& CIYAM_BASE_DECL_SPEC get_mutex_for_peer_session( );
+mutex& get_mutex_for_peer_session( );
 
-std::string CIYAM_BASE_DECL_SPEC peer_channel_height(
+std::string peer_channel_height(
  const std::string& identity, bool minimal = false, bool reversed = false, size_t minimum_height = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC prefixed_blockchains( const std::string& blockchains );
-std::string CIYAM_BASE_DECL_SPEC unprefixed_blockchains( const std::string& blockchains );
+std::string prefixed_blockchains( const std::string& blockchains );
+std::string unprefixed_blockchains( const std::string& blockchains );
 
-void CIYAM_BASE_DECL_SPEC create_peer_listener( int port, const std::string& blockchains );
+void create_peer_listener( int port, const std::string& blockchains );
 
 struct other_session_extras;
 
-peer_session* CIYAM_BASE_DECL_SPEC create_peer_initiator( const std::string& blockchain,
+peer_session* create_peer_initiator( const std::string& blockchain,
  const std::string& host_and_or_port, bool force = false, size_t num_for_support = 0,
  bool is_interactive = true, bool is_secondary = false, bool has_main_session = false,
  peerchain_type chain_type = e_peerchain_type_any, bool has_set_system_variable = false,
  const std::string* p_extra_value = 0, other_session_extras* p_other_session_extras = 0 );
 
-void CIYAM_BASE_DECL_SPEC create_initial_peer_sessions( );
+void create_initial_peer_sessions( );
 
-extern "C" void CIYAM_BASE_DECL_SPEC init_peer_sessions( int start_listeners );
+extern "C" void init_peer_sessions( int start_listeners );
 
 typedef void ( *fp_init_peer_sessions )( int );
 

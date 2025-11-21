@@ -16,8 +16,6 @@
 #  include <sstream>
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "ciyam_notifier.h"
 
 #include "notifier.h"

@@ -12,17 +12,12 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_INDEX_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_INDEX_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class Meta_Class;
 class Meta_Field;
 class Meta_Index;
 
-class META_INDEX_DECL_SPEC Meta_Index : public class_base
+class Meta_Index : public class_base
 {
    friend class Meta_Class;
    friend class Meta_Field;

@@ -13,14 +13,7 @@
 #     include <string>
 #  endif
 
-#  include "macros.h"
 #  include "class_base.h"
-
-#  ifdef MODULE_INTERFACE_IMPL
-#     define MODULE_INTERFACE_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define MODULE_INTERFACE_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 #  define GMS( s ) get_module_string( s )
 
@@ -119,22 +112,25 @@ template< typename T > struct registration : registration_base
 
 class command_functor;
 class command_handler;
+
 struct command_definition;
+
 typedef command_functor* command_functor_creator( const std::string& name, command_handler& handler );
 
 typedef std::vector< std::string > externals_container;
 
-extern "C" void MODULE_INTERFACE_DECL_SPEC init_dir( const char* p_dir );
-extern "C" bool MODULE_INTERFACE_DECL_SPEC load_strings( const char* p_name );
-extern "C" void MODULE_INTERFACE_DECL_SPEC init_classes( const char* p_name );
-extern "C" void MODULE_INTERFACE_DECL_SPEC term_classes( const char* p_name );
-extern "C" void MODULE_INTERFACE_DECL_SPEC obtain_externals( externals_container*& p_externals );
-extern "C" void MODULE_INTERFACE_DECL_SPEC create_class_object( const char* p_name, class_base*& p_object );
-extern "C" void MODULE_INTERFACE_DECL_SPEC destroy_class_object( const char* p_name, class_base*& p_object );
-extern "C" void MODULE_INTERFACE_DECL_SPEC obtain_class_registry( const class_registry_container*& p_class_registry );
-extern "C" void MODULE_INTERFACE_DECL_SPEC obtain_module_details( const module_details*& p_info );
-extern "C" void MODULE_INTERFACE_DECL_SPEC obtain_module_strings( const module_strings_container*& p_module_strings );
-extern "C" void MODULE_INTERFACE_DECL_SPEC obtain_module_commands(
+extern "C" void init_dir( const char* p_dir );
+extern "C" bool load_strings( const char* p_name );
+extern "C" void init_classes( const char* p_name );
+extern "C" void term_classes( const char* p_name );
+extern "C" void obtain_externals( externals_container*& p_externals );
+extern "C" void create_class_object( const char* p_name, class_base*& p_object );
+extern "C" void destroy_class_object( const char* p_name, class_base*& p_object );
+extern "C" void obtain_class_registry( const class_registry_container*& p_class_registry );
+extern "C" void obtain_module_details( const module_details*& p_info );
+extern "C" void obtain_module_strings( const module_strings_container*& p_module_strings );
+
+extern "C" void obtain_module_commands(
  command_functor_creator*& p_functor_creator, command_definition*& p_definitions, size_t* p_num_commands );
 
 typedef void ( *fp_init_dir )( const char* p_dir );
@@ -147,6 +143,7 @@ typedef void ( *fp_destroy_class_object )( const char* p_name, class_base*& p_ob
 typedef void ( *fp_obtain_class_registry )( const class_registry_container*& p_class_registry );
 typedef void ( *fp_obtain_module_details )( const module_details*& p_info );
 typedef void ( *fp_obtain_module_strings )( const module_strings_container*& p_module_strings );
+
 typedef void ( *fp_obtain_module_commands )(
  command_functor_creator*& p_functor_creator, command_definition*& p_definitions, size_t* p_num_commands );
 

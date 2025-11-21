@@ -12,17 +12,12 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_PROCEDURE_ARG_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_PROCEDURE_ARG_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class Meta_Specification;
 class Meta_Procedure;
 class Meta_Procedure_Arg;
 
-class META_PROCEDURE_ARG_DECL_SPEC Meta_Procedure_Arg : public class_base
+class Meta_Procedure_Arg : public class_base
 {
    friend class Meta_Specification;
    friend class Meta_Procedure;

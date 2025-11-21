@@ -12,11 +12,6 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_WORKGROUP_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_WORKGROUP_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class Meta_Application;
 class Meta_Enum;
@@ -26,7 +21,7 @@ class Meta_Type;
 class Meta_User;
 class Meta_Package;
 
-class META_WORKGROUP_DECL_SPEC Meta_Workgroup : public class_base
+class Meta_Workgroup : public class_base
 {
    friend class Meta_Application;
    friend class Meta_Enum;

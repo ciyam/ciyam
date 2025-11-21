@@ -12,16 +12,11 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_SPECIFICATION_TYPE_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_SPECIFICATION_TYPE_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class Meta_Specification;
 class Meta_Specification_Type;
 
-class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_base
+class Meta_Specification_Type : public class_base
 {
    friend class Meta_Specification;
 

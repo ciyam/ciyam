@@ -12,18 +12,13 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_MODIFIER_AFFECT_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_MODIFIER_AFFECT_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class Meta_Class;
 class Meta_Field;
 class Meta_Modifier;
 class Meta_Modifier_Affect;
 
-class META_MODIFIER_AFFECT_DECL_SPEC Meta_Modifier_Affect : public class_base
+class Meta_Modifier_Affect : public class_base
 {
    friend class Meta_Class;
    friend class Meta_Field;

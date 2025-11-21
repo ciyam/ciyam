@@ -8,14 +8,7 @@
 #  define STORABLE_FILE_H
 
 #  include "ods.h"
-#  include "macros.h"
 #  include "utilities.h"
-
-#  ifdef CIYAM_BASE_IMPL
-#     define FILE_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define FILE_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class read_stream;
 class write_stream;
@@ -55,7 +48,7 @@ struct storable_file_extra : public storable_extra
    progress* p_progress;
 };
 
-class FILE_DECL_SPEC storable_file : public storable_base
+class storable_file : public storable_base
 {
    friend int64_t size_of( const storable_file& sf );
    friend read_stream& operator >>( read_stream& rs, storable_file& sf );

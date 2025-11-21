@@ -12,15 +12,10 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_GLOBAL_ARCHIVE_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_GLOBAL_ARCHIVE_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class numeric;
 
-class META_GLOBAL_ARCHIVE_DECL_SPEC Meta_Global_Archive : public class_base
+class Meta_Global_Archive : public class_base
 {
    public:
    typedef Meta_Global_Archive class_type;

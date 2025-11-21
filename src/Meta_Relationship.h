@@ -12,11 +12,6 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_RELATIONSHIP_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_RELATIONSHIP_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class Meta_List_Field;
 class Meta_Specification;
@@ -26,7 +21,7 @@ class Meta_Model;
 class Meta_Field;
 class Meta_Relationship;
 
-class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
+class Meta_Relationship : public class_base
 {
    friend class Meta_List_Field;
    friend class Meta_Specification;

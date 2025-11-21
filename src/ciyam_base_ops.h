@@ -11,15 +11,8 @@
 #     include <string>
 #  endif
 
-#  include "macros.h"
 #  include "ptypes.h"
 #  include "ciyam_core.h"
-
-#  ifdef CIYAM_BASE_IMPL
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class class_base;
 class command_handler;
@@ -48,28 +41,28 @@ class mutex;
 
 mutex& get_mutex_for_ciyam_base_ops( );
 
-std::string CIYAM_BASE_DECL_SPEC exec_bulk_ops( const std::string& module,
+std::string exec_bulk_ops( const std::string& module,
  const std::string& uid, const std::string& dtm, const std::string& mclass,
  const std::string& filename, const std::string& export_fields, const std::string& tz_name, bool destroy_records,
  const std::string& search_text, const std::string& search_query, const std::string& fixed_field_values, command_handler& handler );
 
-void CIYAM_BASE_DECL_SPEC begin_instance_op( instance_op op,
+void begin_instance_op( instance_op op,
  class_base& instance, const std::string& key, bool internal_operation = true, instance_op_rc* p_rc = 0 );
 
-void CIYAM_BASE_DECL_SPEC finish_instance_op( class_base& instance, bool apply_changes,
+void finish_instance_op( class_base& instance, bool apply_changes,
  bool internal_operation = true, instance_op_rc* p_rc = 0, std::set< std::string >* p_fields_set = 0 );
 
-bool CIYAM_BASE_DECL_SPEC perform_instance_check( class_base& instance, const std::string& key );
+bool perform_instance_check( class_base& instance, const std::string& key );
 
-void CIYAM_BASE_DECL_SPEC perform_instance_fetch(
+void perform_instance_fetch(
  class_base& instance, const std::string& key_info,
  instance_fetch_rc* p_rc = 0, bool only_sys_fields = false, bool do_not_use_cache = false );
 
-bool CIYAM_BASE_DECL_SPEC perform_instance_iterate( class_base& instance,
+bool perform_instance_iterate( class_base& instance,
  const std::string& key_info, const std::string& fields, const std::string& text,
  const std::string& query, iter_direction direction, bool inclusive = true, int row_limit = 0,
  sql_optimisation optimisation = e_sql_optimisation_none, const std::set< std::string >* p_filters = 0 );
 
-bool CIYAM_BASE_DECL_SPEC perform_instance_iterate_next( class_base& instance );
+bool perform_instance_iterate_next( class_base& instance );
 
 #endif

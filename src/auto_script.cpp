@@ -21,8 +21,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "auto_script.h"
 
 #include "sio.h"

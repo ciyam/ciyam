@@ -24,8 +24,4 @@
 
 #  define APPEND_LINE_NUMBER( text ) CONCATIZE( text, __LINE__ )
 
-#  define DYNAMIC_EXPORT
-#  define DYNAMIC_IMPORT
-#  define DYNAMIC_LIBRARY void*
-
 #endif

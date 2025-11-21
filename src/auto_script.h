@@ -11,18 +11,11 @@
 #     include <iosfwd>
 #  endif
 
-#  include "macros.h"
 #  include "threads.h"
 
-#  ifdef CIYAM_BASE_IMPL
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
-#  endif
+void output_schedule( std::ostream& os, bool from_now = false );
 
-void CIYAM_BASE_DECL_SPEC output_schedule( std::ostream& os, bool from_now = false );
-
-class CIYAM_BASE_DECL_SPEC autoscript_session : public thread
+class autoscript_session : public thread
 {
    public:
    autoscript_session( );
@@ -31,9 +24,8 @@ class CIYAM_BASE_DECL_SPEC autoscript_session : public thread
    void on_start( );
 };
 
-extern "C" void CIYAM_BASE_DECL_SPEC init_auto_script( );
+extern "C" void init_auto_script( );
 
 typedef void ( *fp_init_auto_script )( );
 
 #endif
-

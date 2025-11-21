@@ -12,16 +12,11 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_INITIAL_RECORD_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_INITIAL_RECORD_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class Meta_Initial_Record_Value;
 class Meta_Class;
 
-class META_INITIAL_RECORD_DECL_SPEC Meta_Initial_Record : public class_base
+class Meta_Initial_Record : public class_base
 {
    friend class Meta_Initial_Record_Value;
    friend class Meta_Class;

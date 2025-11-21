@@ -19,16 +19,6 @@
 #  include "threads.h"
 #  include "auto_buffer.h"
 
-#  ifdef CIYAM_BASE_LIB
-#     ifdef CIYAM_BASE_IMPL
-#        define ODS_DECL_SPEC DYNAMIC_EXPORT
-#     else
-#        define ODS_DECL_SPEC DYNAMIC_IMPORT
-#     endif
-#  else
-#     define ODS_DECL_SPEC
-#  endif
-
 const int c_ods_page_size = 4096;
 
 const int64_t c_max_int_val = std::numeric_limits< int64_t >::max( );
@@ -46,7 +36,7 @@ std::string ods_file_names( const std::string& name, char sep = ',', bool includ
 std::string ods_backup_file_names( const std::string& name,
  const char* p_ext = 0, char sep = ',', bool include_tranlog = true );
 
-class ODS_DECL_SPEC char_buffer
+class char_buffer
 {
    friend class ods;
 
@@ -263,10 +253,10 @@ class oid
    int64_t num;
 
    friend class ods;
-   friend ods ODS_DECL_SPEC& operator >>( ods& o, storable_base& s );
-   friend ods ODS_DECL_SPEC& operator <<( ods& o, storable_base& s );
-   friend read_stream ODS_DECL_SPEC& operator >>( read_stream& rs, oid& id );
-   friend write_stream ODS_DECL_SPEC& operator <<( write_stream& ws, const oid& id );
+   friend ods& operator >>( ods& o, storable_base& s );
+   friend ods& operator <<( ods& o, storable_base& s );
+   friend read_stream& operator >>( read_stream& rs, oid& id );
+   friend write_stream& operator <<( write_stream& ws, const oid& id );
 };
 
 inline size_t size_determiner( const oid* p_o ) { return sizeof( oid ); }
@@ -288,8 +278,8 @@ struct byte_skip
    int64_t num;
 };
 
-read_stream ODS_DECL_SPEC& operator >>( read_stream& rs, byte_skip& bs );
-write_stream ODS_DECL_SPEC& operator <<( write_stream& ws, const byte_skip& bs );
+read_stream& operator >>( read_stream& rs, byte_skip& bs );
+write_stream& operator <<( write_stream& ws, const byte_skip& bs );
 
 template< class T, int64_t R, class B > class storable;
 
@@ -298,7 +288,7 @@ struct storable_extra
    virtual ~storable_extra( ) { }
 };
 
-class ODS_DECL_SPEC storable_base
+class storable_base
 {
    template< class T, int64_t R, class B > friend class storable;
 
@@ -420,8 +410,8 @@ class ODS_DECL_SPEC storable_base
    mutex storable_lock;
 
    friend class ods;
-   friend ods ODS_DECL_SPEC& operator >>( ods& o, storable_base& s );
-   friend ods ODS_DECL_SPEC& operator <<( ods& o, storable_base& s );
+   friend ods& operator >>( ods& o, storable_base& s );
+   friend ods& operator <<( ods& o, storable_base& s );
 
    protected:
    virtual void begin_read( ) { }
@@ -543,7 +533,7 @@ struct trans_data_buffer
 
 class ods_index_entry;
 
-class ODS_DECL_SPEC ods
+class ods
 {
    public:
    enum open_mode
@@ -849,8 +839,8 @@ class ODS_DECL_SPEC ods
    int64_t current_read_object_num;
    int64_t current_write_object_num;
 
-   friend ods ODS_DECL_SPEC& operator >>( ods& o, storable_base& s );
-   friend ods ODS_DECL_SPEC& operator <<( ods& o, storable_base& s );
+   friend ods& operator >>( ods& o, storable_base& s );
+   friend ods& operator <<( ods& o, storable_base& s );
 
    friend bool storable_base::had_interim_update( ) const;
 };

@@ -17,8 +17,6 @@
 #  include <exception>
 #endif
 
-#define MODULE_META_IMPL
-
 #include "utilities.h"
 #include "ciyam_base.h"
 #include "class_base.h"

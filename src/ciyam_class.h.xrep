@@ -76,11 +76,6 @@
 #  include "`{`$parent_class`}.h"\
 `}
 
-#  ifdef MODULE_`{`@upper`(`$module_name`)`}_IMPL
-#     define `{`@upper`(`$full_class_name`)`}_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define `{`@upper`(`$full_class_name`)`}_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 `{`?`$related_types`[`$related_types`,
 class \$;\
 `]`}
@@ -88,7 +83,7 @@ class \$;\
 class \$;\
 `]`}
 
-class `{`@upper`(`$full_class_name`)`}_DECL_SPEC `{`$full_class_name`} : public `{`$base_class`}
+class `{`$full_class_name`} : public `{`$base_class`}
 {`{`?`$related_other_types`&`!`@eq`(`$related_other_types`,`'`'`)`[`$related_other_types`,
    friend class \$;\
 `]\n`}

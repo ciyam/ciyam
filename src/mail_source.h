@@ -13,14 +13,6 @@
 #     include <iosfwd>
 #  endif
 
-#  include "macros.h"
-
-#  ifdef CIYAM_BASE_IMPL
-#     define MAIL_SOURCE_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define MAIL_SOURCE_DECL_SPEC DYNAMIC_IMPORT
-#  endif
-
 struct mail_source
 {
    virtual ~mail_source( ) { }
@@ -37,7 +29,7 @@ struct mail_source
    virtual void finish_processing( ) = 0;
 };
 
-class MAIL_SOURCE_DECL_SPEC mbox_source : public mail_source
+class mbox_source : public mail_source
 {
    public:
    mbox_source( );
@@ -62,7 +54,7 @@ class MAIL_SOURCE_DECL_SPEC mbox_source : public mail_source
    impl* p_impl;
 };
 
-class MAIL_SOURCE_DECL_SPEC pop3_source : public mail_source
+class pop3_source : public mail_source
 {
    public:
    pop3_source( );

@@ -16,16 +16,6 @@
 
 #  include "progress.h"
 
-#  ifdef CIYAM_BASE_LIB
-#     ifdef CIYAM_BASE_IMPL
-#        define COMMAND_HANDLER_DECL_SPEC DYNAMIC_EXPORT
-#     else
-#        define COMMAND_HANDLER_DECL_SPEC DYNAMIC_IMPORT
-#     endif
-#  else
-#     define COMMAND_HANDLER_DECL_SPEC
-#  endif
-
 class command_parser;
 class command_handler;
 class command_processor;
@@ -112,7 +102,7 @@ struct command_dispatcher
    command_functor* p_functor;
 };
 
-class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
+class command_handler : public progress
 {
    friend class command_processor;
 

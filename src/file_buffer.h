@@ -12,17 +12,7 @@
 #     include <string>
 #  endif
 
-#  ifdef CIYAM_BASE_LIB
-#     ifdef CIYAM_BASE_IMPL
-#        define FILE_BUFFER_DECL_SPEC DYNAMIC_EXPORT
-#     else
-#        define FILE_BUFFER_DECL_SPEC DYNAMIC_IMPORT
-#     endif
-#  else
-#     define FILE_BUFFER_DECL_SPEC
-#  endif
-
-class FILE_BUFFER_DECL_SPEC file_buffer
+class file_buffer
 {
    public:
    file_buffer( ) { }
@@ -48,4 +38,3 @@ class FILE_BUFFER_DECL_SPEC file_buffer
 };
 
 #endif
-

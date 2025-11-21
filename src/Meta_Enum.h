@@ -12,18 +12,13 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_ENUM_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_ENUM_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class Meta_Field;
 class Meta_Enum_Item;
 class Meta_Specification;
 class Meta_Workgroup;
 
-class META_ENUM_DECL_SPEC Meta_Enum : public class_base
+class Meta_Enum : public class_base
 {
    friend class Meta_Field;
    friend class Meta_Enum_Item;

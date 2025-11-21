@@ -12,11 +12,6 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_VIEW_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_VIEW_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class Meta_Package_Option;
 class Meta_View_Field;
@@ -25,7 +20,7 @@ class Meta_Class;
 class Meta_Model;
 class Meta_View_Type;
 
-class META_VIEW_DECL_SPEC Meta_View : public class_base
+class Meta_View : public class_base
 {
    friend class Meta_Package_Option;
    friend class Meta_View_Field;

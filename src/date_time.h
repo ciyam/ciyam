@@ -15,16 +15,6 @@
 
 #  include "ptypes.h"
 
-#  ifdef CIYAM_BASE_LIB
-#     ifdef CIYAM_BASE_IMPL
-#        define DATE_TIME_DECL_SPEC DYNAMIC_EXPORT
-#     else
-#        define DATE_TIME_DECL_SPEC DYNAMIC_IMPORT
-#     endif
-#  else
-#     define DATE_TIME_DECL_SPEC
-#  endif
-
 enum month
 {
    e_month_january = 1,
@@ -182,7 +172,7 @@ class date_time;
 class read_stream;
 class write_stream;
 
-class DATE_TIME_DECL_SPEC mtime
+class mtime
 {
    friend class date_time;
 
@@ -238,18 +228,18 @@ class DATE_TIME_DECL_SPEC mtime
    static mtime minimum( );
    static mtime maximum( );
 
-   friend bool DATE_TIME_DECL_SPEC operator <( const mtime& lhs, const mtime& rhs );
-   friend bool DATE_TIME_DECL_SPEC operator <=( const mtime& lhs, const mtime& rhs );
+   friend bool operator <( const mtime& lhs, const mtime& rhs );
+   friend bool operator <=( const mtime& lhs, const mtime& rhs );
 
-   friend bool DATE_TIME_DECL_SPEC operator >( const mtime& lhs, const mtime& rhs );
-   friend bool DATE_TIME_DECL_SPEC operator >=( const mtime& lhs, const mtime& rhs );
+   friend bool operator >( const mtime& lhs, const mtime& rhs );
+   friend bool operator >=( const mtime& lhs, const mtime& rhs );
 
-   friend bool DATE_TIME_DECL_SPEC operator ==( const mtime& lhs, const mtime& rhs );
+   friend bool operator ==( const mtime& lhs, const mtime& rhs );
 
-   friend std::ostream DATE_TIME_DECL_SPEC& operator <<( std::ostream& os, const mtime& src );
+   friend std::ostream& operator <<( std::ostream& os, const mtime& src );
 
-   friend read_stream DATE_TIME_DECL_SPEC& operator >>( read_stream& rs, mtime& dest );
-   friend write_stream DATE_TIME_DECL_SPEC& operator <<( write_stream& ws, const mtime& src );
+   friend read_stream& operator >>( read_stream& rs, mtime& dest );
+   friend write_stream& operator <<( write_stream& ws, const mtime& src );
 
    private:
    millisecond ms;
@@ -302,7 +292,7 @@ struct yyyymmdd
    day dy;
 };
 
-class DATE_TIME_DECL_SPEC udate
+class udate
 {
    friend class date_time;
 
@@ -388,18 +378,18 @@ class DATE_TIME_DECL_SPEC udate
    static year minimum_year( );
    static year maximum_year( );
 
-   friend bool DATE_TIME_DECL_SPEC operator <( const udate& lhs, const udate& rhs );
-   friend bool DATE_TIME_DECL_SPEC operator <=( const udate& lhs, const udate& rhs );
+   friend bool operator <( const udate& lhs, const udate& rhs );
+   friend bool operator <=( const udate& lhs, const udate& rhs );
 
-   friend bool DATE_TIME_DECL_SPEC operator >( const udate& lhs, const udate& rhs );
-   friend bool DATE_TIME_DECL_SPEC operator >=( const udate& lhs, const udate& rhs );
+   friend bool operator >( const udate& lhs, const udate& rhs );
+   friend bool operator >=( const udate& lhs, const udate& rhs );
 
-   friend bool DATE_TIME_DECL_SPEC operator ==( const udate& lhs, const udate& rhs );
+   friend bool operator ==( const udate& lhs, const udate& rhs );
 
-   friend std::ostream DATE_TIME_DECL_SPEC& operator <<( std::ostream& os, const udate& src );
+   friend std::ostream& operator <<( std::ostream& os, const udate& src );
 
-   friend read_stream DATE_TIME_DECL_SPEC& operator >>( read_stream& rs, udate& dest );
-   friend write_stream DATE_TIME_DECL_SPEC& operator <<( write_stream& ws, const udate& src );
+   friend read_stream& operator >>( read_stream& rs, udate& dest );
+   friend write_stream& operator <<( write_stream& ws, const udate& src );
 
    private:
    union
@@ -479,7 +469,7 @@ inline days operator -( const udate& lhs, const udate& rhs )
    return ( daynum )lhs - ( daynum )rhs;
 }
 
-class DATE_TIME_DECL_SPEC date_time
+class date_time
 {
    public:
    date_time( ) { }
@@ -610,20 +600,20 @@ class DATE_TIME_DECL_SPEC date_time
    static year minimum_year( ) { return udate::minimum_year( ); }
    static year maximum_year( ) { return udate::maximum_year( ); }
 
-   friend bool DATE_TIME_DECL_SPEC operator <( const date_time& lhs, const date_time& rhs );
-   friend bool DATE_TIME_DECL_SPEC operator <=( const date_time& lhs, const date_time& rhs );
+   friend bool operator <( const date_time& lhs, const date_time& rhs );
+   friend bool operator <=( const date_time& lhs, const date_time& rhs );
 
-   friend bool DATE_TIME_DECL_SPEC operator >( const date_time& lhs, const date_time& rhs );
-   friend bool DATE_TIME_DECL_SPEC operator >=( const date_time& lhs, const date_time& rhs );
+   friend bool operator >( const date_time& lhs, const date_time& rhs );
+   friend bool operator >=( const date_time& lhs, const date_time& rhs );
 
-   friend bool DATE_TIME_DECL_SPEC operator ==( const date_time& lhs, const date_time& rhs );
+   friend bool operator ==( const date_time& lhs, const date_time& rhs );
 
-   friend seconds DATE_TIME_DECL_SPEC operator -( const date_time& lhs, const date_time& rhs );
+   friend seconds operator -( const date_time& lhs, const date_time& rhs );
 
-   friend std::ostream DATE_TIME_DECL_SPEC& operator <<( std::ostream& os, const date_time& src );
+   friend std::ostream& operator <<( std::ostream& os, const date_time& src );
 
-   friend read_stream DATE_TIME_DECL_SPEC& operator >>( read_stream& rs, date_time& dest );
-   friend write_stream DATE_TIME_DECL_SPEC& operator <<( write_stream& ws, const date_time& src );
+   friend read_stream& operator >>( read_stream& rs, date_time& dest );
+   friend write_stream& operator <<( write_stream& ws, const date_time& src );
 
    private:
    udate ud;
@@ -747,38 +737,38 @@ inline date_time operator -( const date_time& src, milliseconds m )
    return dt;
 }
 
-seconds DATE_TIME_DECL_SPEC seconds_per_day( );
+seconds seconds_per_day( );
 
-year DATE_TIME_DECL_SPEC gregorian_year_begin( );
-month DATE_TIME_DECL_SPEC gregorian_month_begin( );
-day DATE_TIME_DECL_SPEC gregorian_day_begin( );
-day DATE_TIME_DECL_SPEC julian_day_of_month( );
+year gregorian_year_begin( );
+month gregorian_month_begin( );
+day gregorian_day_begin( );
+day julian_day_of_month( );
 
 inline weekday day_of_week( year yr, month mh, day dy )
 {
    return ( weekday )udate( yr, mh, dy );
 }
 
-days DATE_TIME_DECL_SPEC days_in_year( year yr );
+days days_in_year( year yr );
 
-days DATE_TIME_DECL_SPEC days_in_month( year yr, month mh );
+days days_in_month( year yr, month mh );
 
-julian DATE_TIME_DECL_SPEC convert_calendar_to_julian(
+julian convert_calendar_to_julian(
  year yr, month mo, day dy, hour hr = 0, minute mn = 0, seconds secs = 0.0 );
 
-void DATE_TIME_DECL_SPEC convert_julian_to_calendar( julian jdt, year& yr, month& mo, day& dy );
-void DATE_TIME_DECL_SPEC convert_julian_to_calendar( julian jdt, year& yr, month& mo, day& dy, hour& hr, minute& mn, second& sc );
+void convert_julian_to_calendar( julian jdt, year& yr, month& mo, day& dy );
+void convert_julian_to_calendar( julian jdt, year& yr, month& mo, day& dy, hour& hr, minute& mn, second& sc );
 
-void DATE_TIME_DECL_SPEC convert_julian_to_calendar( julian jdt,
+void convert_julian_to_calendar( julian jdt,
  year& yr, month& mo, day& dy, hour& hr, minute& mn, seconds& secs );
 
-void DATE_TIME_DECL_SPEC convert_julian_to_calendar( julian jdt,
+void convert_julian_to_calendar( julian jdt,
  year& yr, month& mo, day& dy, hour& hr, minute& mn, second& sc, tenth& te, hundredth& hd, thousandth& th );
 
-int64_t DATE_TIME_DECL_SPEC unix_time( const date_time& dt, time_t* p_tt = 0, bool force_epoch_if_earlier = false );
-inline int64_t DATE_TIME_DECL_SPEC unix_time( time_t* p_tt = 0 ) { return unix_time( date_time::standard( ), p_tt ); }
+int64_t unix_time( const date_time& dt, time_t* p_tt = 0, bool force_epoch_if_earlier = false );
+inline int64_t unix_time( time_t* p_tt = 0 ) { return unix_time( date_time::standard( ), p_tt ); }
 
-int64_t DATE_TIME_DECL_SPEC seconds_between( const date_time& lhs, const date_time& rhs );
+int64_t seconds_between( const date_time& lhs, const date_time& rhs );
 
 std::string format_udate( const udate& ud, const std::string& mask );
 std::string format_mtime( const mtime& mt, const std::string& mask );

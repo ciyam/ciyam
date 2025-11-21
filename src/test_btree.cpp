@@ -27,8 +27,6 @@
 
 #include <iterator>
 
-#define BTREE_IMPL
-
 #include "btree.h"
 #include "utilities.h"
 #include "console_commands.h"

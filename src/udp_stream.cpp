@@ -17,8 +17,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "udp_stream.h"
 
 #include "sockets.h"

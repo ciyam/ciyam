@@ -22,12 +22,6 @@
 #  include "threads.h"
 #  include "ciyam_core.h"
 
-#  ifdef CIYAM_BASE_IMPL
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
-#  endif
-
 #  define GS( s ) get_string( STRINGIZE( s ) )
 
 class ods;
@@ -68,11 +62,11 @@ if( ( flags ) && ( ( get_trace_flags( ) & ( flags ) ) == ( flags ) ) )\
 
 #  define TEMP_TRACE( message ) TRACE_LOG( TRACE_MINIMAL, message )
 
-uint32_t CIYAM_BASE_DECL_SPEC get_trace_flags( );
+uint32_t get_trace_flags( );
 
-void CIYAM_BASE_DECL_SPEC set_trace_flags( uint32_t flags );
+void set_trace_flags( uint32_t flags );
 
-extern "C" void CIYAM_BASE_DECL_SPEC trace_flags( uint32_t );
+extern "C" void trace_flags( uint32_t );
 
 typedef void ( *fp_trace_flags )( uint32_t );
 
@@ -93,11 +87,11 @@ struct temp_trace_flags
    uint32_t flags;
 };
 
-void CIYAM_BASE_DECL_SPEC list_trace_flags( std::ostream& os );
+void list_trace_flags( std::ostream& os );
 
-void CIYAM_BASE_DECL_SPEC trace_flag_names( const std::string& names, bool unset = false );
+void trace_flag_names( const std::string& names, bool unset = false );
 
-std::string CIYAM_BASE_DECL_SPEC get_trace_flag_names( );
+std::string get_trace_flag_names( );
 
 inline void set_trace_flag_names( const std::string& names )
 {
@@ -109,19 +103,19 @@ inline void unset_trace_flag_names( const std::string& names )
    trace_flag_names( names, true );
 }
 
-std::string CIYAM_BASE_DECL_SPEC get_trace_level( );
+std::string get_trace_level( );
 
-void CIYAM_BASE_DECL_SPEC set_trace_level( const std::string& level_name );
+void set_trace_level( const std::string& level_name );
 
-void CIYAM_BASE_DECL_SPEC list_trace_levels( std::vector< std::string >& level_names );
+void list_trace_levels( std::vector< std::string >& level_names );
 
-void CIYAM_BASE_DECL_SPEC log_trace_message( uint32_t flag, const std::string& message );
+void log_trace_message( uint32_t flag, const std::string& message );
 
-extern "C" void CIYAM_BASE_DECL_SPEC log_trace_string( uint32_t flag, const char* p_message );
+extern "C" void log_trace_string( uint32_t flag, const char* p_message );
 
 typedef void ( *fp_log_trace_string )( uint32_t, const char* );
 
-class CIYAM_BASE_DECL_SPEC trace_mutex : public mutex
+class trace_mutex : public mutex
 {
    protected:
    void pre_acquire( const guard* p_guard, const char* p_msg );
@@ -130,29 +124,29 @@ class CIYAM_BASE_DECL_SPEC trace_mutex : public mutex
    void has_released( const guard* p_guard, const char* p_msg );
 };
 
-void CIYAM_BASE_DECL_SPEC list_trace_mutex_lock_ids(
+void list_trace_mutex_lock_ids(
  std::ostream& os, mutex* p_mutex = 0, const char* p_mutex_name = 0 );
 
-unsigned int CIYAM_BASE_DECL_SPEC get_server_port( );
+unsigned int get_server_port( );
 
-extern "C" void CIYAM_BASE_DECL_SPEC set_server_port( unsigned int p );
+extern "C" void set_server_port( unsigned int p );
 
 typedef void ( *fp_set_server_port )( unsigned int );
 
-unsigned int CIYAM_BASE_DECL_SPEC get_stream_port( );
-unsigned int CIYAM_BASE_DECL_SPEC get_stream_sock( );
+unsigned int get_stream_port( );
+unsigned int get_stream_sock( );
 
-extern "C" void CIYAM_BASE_DECL_SPEC set_stream_socket( unsigned int p, unsigned int s );
+extern "C" void set_stream_socket( unsigned int p, unsigned int s );
 
 typedef void ( *fp_set_stream_socket )( unsigned int, unsigned int );
 
-extern "C" void CIYAM_BASE_DECL_SPEC register_listener( unsigned int port, const char* p_info, const char* p_id_info = 0 );
-extern "C" void CIYAM_BASE_DECL_SPEC unregister_listener( unsigned int port, const char* p_id_info = 0 );
+extern "C" void register_listener( unsigned int port, const char* p_info, const char* p_id_info = 0 );
+extern "C" void unregister_listener( unsigned int port, const char* p_id_info = 0 );
 
 typedef void ( *fp_register_listener )( unsigned int, const char*, const char* );
 typedef void ( *fp_unregister_listener )( unsigned int, const char* );
 
-class CIYAM_BASE_DECL_SPEC listener_registration
+class listener_registration
 {
    public:
    listener_registration( unsigned int port, const std::string& info, const char* p_id_info = 0 );
@@ -168,54 +162,53 @@ class CIYAM_BASE_DECL_SPEC listener_registration
    std::string id_info;
 };
 
-bool CIYAM_BASE_DECL_SPEC has_registered_listener( unsigned int port );
-bool CIYAM_BASE_DECL_SPEC has_registered_listener_id( const std::string& id, unsigned int* p_port = 0 );
+bool has_registered_listener( unsigned int port );
+bool has_registered_listener_id( const std::string& id, unsigned int* p_port = 0 );
 
-void CIYAM_BASE_DECL_SPEC list_listeners( std::ostream& os );
+void list_listeners( std::ostream& os );
 
-extern "C" void CIYAM_BASE_DECL_SPEC init_globals( const char* p_sid = 0, int* p_use_udp = 0 );
-extern "C" void CIYAM_BASE_DECL_SPEC term_globals( );
+extern "C" void init_globals( const char* p_sid = 0, int* p_use_udp = 0 );
+extern "C" void term_globals( );
 
 typedef void ( *fp_init_globals )( const char*, int* );
 typedef void ( *fp_term_globals )( );
 
-void CIYAM_BASE_DECL_SPEC resync_system_ods( progress* p_progress );
+void resync_system_ods( progress* p_progress );
 
-extern "C" void CIYAM_BASE_DECL_SPEC check_timezone_info( );
+extern "C" void check_timezone_info( );
 
 typedef void ( *fp_check_timezone_info )( );
 
-void CIYAM_BASE_DECL_SPEC list_strings( std::ostream& os );
+void list_strings( std::ostream& os );
 
-std::string CIYAM_BASE_DECL_SPEC get_string( const std::string& key );
+std::string get_string( const std::string& key );
 
-std::string CIYAM_BASE_DECL_SPEC get_string_message(
+std::string get_string_message(
  const std::string& string_message, const std::pair< std::string, std::string >& parm1 );
 
-std::string CIYAM_BASE_DECL_SPEC get_string_message( const std::string& string_message,
+std::string get_string_message( const std::string& string_message,
  const std::pair< std::string, std::string >& parm1, const std::pair< std::string, std::string >& parm2 );
 
-std::string CIYAM_BASE_DECL_SPEC get_string_message( const std::string& string_message,
+std::string get_string_message( const std::string& string_message,
  const std::pair< std::string, std::string >& parm1, const std::pair< std::string, std::string >& parm2,
  const std::pair< std::string, std::string >& parm3 );
 
-std::string CIYAM_BASE_DECL_SPEC get_string_message( const std::string& string_message,
+std::string get_string_message( const std::string& string_message,
  const std::pair< std::string, std::string >& parm1, const std::pair< std::string, std::string >& parm2,
  const std::pair< std::string, std::string >& parm3, const std::pair< std::string, std::string >& parm4 );
 
-unsigned int CIYAM_BASE_DECL_SPEC get_max_peers( );
+unsigned int get_max_peers( );
 
-unsigned int CIYAM_BASE_DECL_SPEC get_max_user_limit( );
-void CIYAM_BASE_DECL_SPEC set_max_user_limit( unsigned int new_limit );
+unsigned int get_max_user_limit( );
+void set_max_user_limit( unsigned int new_limit );
 
-std::string CIYAM_BASE_DECL_SPEC get_prefix( );
-std::string CIYAM_BASE_DECL_SPEC get_domain( );
+std::string get_prefix( );
+std::string get_domain( );
 
-std::string CIYAM_BASE_DECL_SPEC get_app_url( const std::string& suffix );
+std::string get_app_url( const std::string& suffix );
 
-void CIYAM_BASE_DECL_SPEC get_identity(
- std::string& s, bool append_max_user_limit = false,
- bool use_max_sid_entropy = false, const char* p_pubkey = 0 );
+void get_identity( std::string& s,
+ bool append_max_user_limit = false, bool use_max_sid_entropy = false, const char* p_pubkey = 0 );
 
 inline std::string get_identity(
  bool append_max_user_limit = false,
@@ -228,74 +221,74 @@ inline std::string get_identity(
    return s;
 }
 
-bool CIYAM_BASE_DECL_SPEC has_identity( bool* p_is_encrypted = 0 );
+bool has_identity( bool* p_is_encrypted = 0 );
 
-void CIYAM_BASE_DECL_SPEC set_identity( const std::string& info, const char* p_encrypted_sid = 0 );
+void set_identity( const std::string& info, const char* p_encrypted_sid = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC get_checksum( const std::string& data );
+std::string get_checksum( const std::string& data );
 
-std::string CIYAM_BASE_DECL_SPEC get_timezone( );
-std::string CIYAM_BASE_DECL_SPEC get_web_root( );
+std::string get_timezone( );
+std::string get_web_root( );
 
-std::string CIYAM_BASE_DECL_SPEC get_ntfy_server( );
+std::string get_ntfy_server( );
 
-bool CIYAM_BASE_DECL_SPEC get_is_accepted_ip_addr( const std::string& ip_addr );
-bool CIYAM_BASE_DECL_SPEC get_is_accepted_peer_ip_addr( const std::string& ip_addr );
+bool get_is_accepted_ip_addr( const std::string& ip_addr );
+bool get_is_accepted_peer_ip_addr( const std::string& ip_addr );
 
-extern "C" int CIYAM_BASE_DECL_SPEC is_accepted_ip_addr( const char* p_addr );
+extern "C" int is_accepted_ip_addr( const char* p_addr );
 
 typedef int ( *fp_is_accepted_ip_addr )( const char* );
 
-void CIYAM_BASE_DECL_SPEC add_peer_ip_addr_for_rejection( const std::string& ip_addr );
-void CIYAM_BASE_DECL_SPEC remove_peer_ip_addr_from_rejection( const std::string& ip_addr );
+void add_peer_ip_addr_for_rejection( const std::string& ip_addr );
+void remove_peer_ip_addr_from_rejection( const std::string& ip_addr );
 
-std::string CIYAM_BASE_DECL_SPEC list_peer_ip_addrs_for_rejection( );
+std::string list_peer_ip_addrs_for_rejection( );
 
-std::string CIYAM_BASE_DECL_SPEC get_non_extra_identity( const std::string& extra_identity );
+std::string get_non_extra_identity( const std::string& extra_identity );
 
 inline bool is_extra_non_hub_identity( const std::string& identity )
 {
    return ( get_non_extra_identity( identity ) != identity );
 }
 
-void CIYAM_BASE_DECL_SPEC get_extra_identities(
+void get_extra_identities(
  const std::string& identity, std::vector< std::string >& extras );
 
-std::string CIYAM_BASE_DECL_SPEC get_extra_identity_variable(
+std::string get_extra_identity_variable(
  const std::string& identity_variable_name, const std::string& extra );
 
 std::string get_identity_variable_extra(
  const std::string& identity_variable_name, const std::string& identity_value, bool force_extra_match = false );
 
-void CIYAM_BASE_DECL_SPEC identity_variable_name_prefix_and_suffix(
+void identity_variable_name_prefix_and_suffix(
  const std::string& identity_variable_name, std::string& prefix, std::string& suffix );
 
-void CIYAM_BASE_DECL_SPEC create_peerchain( const std::string& identity,
+void create_peerchain( const std::string& identity,
  const std::string& host_and_port, const std::string& description, const std::string& extra_value,
  const std::string& shared_secret, bool auto_start = true, size_t num_helpers = 5, int peer_type = 0 );
 
-void CIYAM_BASE_DECL_SPEC update_peerchain( const std::string& identity,
+void update_peerchain( const std::string& identity,
  const std::string* p_host_and_port = 0, const std::string* p_description = 0,
  const std::string* p_shared_secret = 0, bool* p_auto_start = 0, size_t* p_num_helpers = 0 );
 
-void CIYAM_BASE_DECL_SPEC destroy_peerchain( const std::string& identity, progress* p_progress = 0 );
+void destroy_peerchain( const std::string& identity, progress* p_progress = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC get_peerchain_info(
+std::string get_peerchain_info(
  const std::string& identity, bool* p_is_listener = 0, std::string* p_shared_secret = 0 );
 
-void CIYAM_BASE_DECL_SPEC get_peerchain_externals(
+void get_peerchain_externals(
  std::vector< std::string >& peerchain_externals, bool auto_start_only = true );
 
-void CIYAM_BASE_DECL_SPEC get_peerchain_listeners(
+void get_peerchain_listeners(
  std::multimap< int, std::string >& peerchain_listeners, bool auto_start_only = true );
 
-bool CIYAM_BASE_DECL_SPEC get_use_udp( );
+bool get_use_udp( );
 
-bool CIYAM_BASE_DECL_SPEC get_using_ssl( );
+bool get_using_ssl( );
 
-std::string CIYAM_BASE_DECL_SPEC get_log_files_dir( );
+std::string get_log_files_dir( );
 
-extern "C" void CIYAM_BASE_DECL_SPEC set_log_files_dir( const char* p_dir_name );
+extern "C" void set_log_files_dir( const char* p_dir_name );
 
 typedef void ( *fp_set_log_files_dir )( const char* );
 
@@ -304,9 +297,9 @@ inline void set_log_files_dir( const std::string& log_files_dir )
    set_log_files_dir( log_files_dir.c_str( ) );
 }
 
-std::string CIYAM_BASE_DECL_SPEC get_files_area_dir( );
+std::string get_files_area_dir( );
 
-extern "C" void CIYAM_BASE_DECL_SPEC set_files_area_dir( const char* p_files_area_dir );
+extern "C" void set_files_area_dir( const char* p_files_area_dir );
 
 typedef void ( *fp_set_files_area_dir )( const char* );
 
@@ -315,37 +308,37 @@ inline void set_files_area_dir( const std::string& files_area_dir )
    set_files_area_dir( files_area_dir.c_str( ) );
 }
 
-size_t CIYAM_BASE_DECL_SPEC get_notifier_ignore_secs( );
+size_t get_notifier_ignore_secs( );
 
-size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_num( );
-size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_size( );
+size_t get_files_area_item_max_num( );
+size_t get_files_area_item_max_size( );
 
-size_t CIYAM_BASE_DECL_SPEC get_num_recv_stream_sessions( );
-size_t CIYAM_BASE_DECL_SPEC get_num_send_stream_sessions( );
+size_t get_num_recv_stream_sessions( );
+size_t get_num_send_stream_sessions( );
 
-std::string CIYAM_BASE_DECL_SPEC get_mbox_path( );
-std::string CIYAM_BASE_DECL_SPEC get_mbox_username( );
+std::string get_mbox_path( );
+std::string get_mbox_username( );
 
-std::string CIYAM_BASE_DECL_SPEC get_pop3_server( );
-std::string CIYAM_BASE_DECL_SPEC get_pop3_suffix( );
-std::string CIYAM_BASE_DECL_SPEC get_pop3_username( );
-std::string CIYAM_BASE_DECL_SPEC get_pop3_password( );
-std::string CIYAM_BASE_DECL_SPEC get_pop3_security( );
+std::string get_pop3_server( );
+std::string get_pop3_suffix( );
+std::string get_pop3_username( );
+std::string get_pop3_password( );
+std::string get_pop3_security( );
 
-std::string CIYAM_BASE_DECL_SPEC get_pop3_suffix_or_domain( );
+std::string get_pop3_suffix_or_domain( );
 
-std::string CIYAM_BASE_DECL_SPEC get_smtp_server( );
-std::string CIYAM_BASE_DECL_SPEC get_smtp_sender( );
-std::string CIYAM_BASE_DECL_SPEC get_smtp_suffix( );
-std::string CIYAM_BASE_DECL_SPEC get_smtp_username( );
-std::string CIYAM_BASE_DECL_SPEC get_smtp_password( );
-std::string CIYAM_BASE_DECL_SPEC get_smtp_security( );
+std::string get_smtp_server( );
+std::string get_smtp_sender( );
+std::string get_smtp_suffix( );
+std::string get_smtp_username( );
+std::string get_smtp_password( );
+std::string get_smtp_security( );
 
-int CIYAM_BASE_DECL_SPEC get_smtp_max_send_attempts( );
+int get_smtp_max_send_attempts( );
 
-int64_t CIYAM_BASE_DECL_SPEC get_smtp_max_attached_data( );
+int64_t get_smtp_max_attached_data( );
 
-std::string CIYAM_BASE_DECL_SPEC get_smtp_suffix_or_domain( );
+std::string get_smtp_suffix_or_domain( );
 
 struct external_client
 {
@@ -360,15 +353,15 @@ struct external_client
    std::string script_name;
 };
 
-std::string CIYAM_BASE_DECL_SPEC list_externals( );
+std::string list_externals( );
 
-bool CIYAM_BASE_DECL_SPEC is_local_external_client( const std::string& key );
+bool is_local_external_client( const std::string& key );
 
-void CIYAM_BASE_DECL_SPEC get_external_client_info( const std::string& key, external_client& info );
+void get_external_client_info( const std::string& key, external_client& info );
 
-void CIYAM_BASE_DECL_SPEC verify_active_external_service( const std::string& ext_key );
+void verify_active_external_service( const std::string& ext_key );
 
-void CIYAM_BASE_DECL_SPEC decrypt_data( std::string& s, const std::string& data,
+void decrypt_data( std::string& s, const std::string& data,
  bool empty_key = false, bool harden_key = false, bool is_pwd_and_data = false );
 
 inline std::string decrypt_data( const std::string& data,
@@ -381,7 +374,7 @@ inline std::string decrypt_data( const std::string& data,
    return s;
 }
 
-void CIYAM_BASE_DECL_SPEC encrypt_data( std::string& s, const std::string& data, bool no_ssl = false,
+void encrypt_data( std::string& s, const std::string& data, bool no_ssl = false,
  bool empty_key = false, bool use_sid_only = false, bool harden_key = false, bool is_pwd_and_data = false );
 
 inline std::string encrypt_data( const std::string& data, bool no_ssl = false,
@@ -394,58 +387,58 @@ inline std::string encrypt_data( const std::string& data, bool no_ssl = false,
    return s;
 }
 
-std::string CIYAM_BASE_DECL_SPEC totp_secret_key( const std::string& unique );
+std::string totp_secret_key( const std::string& unique );
 
-int CIYAM_BASE_DECL_SPEC exec_system( const std::string& cmd, bool async = false, bool delay = false, bool* p_delayed = 0 );
+int exec_system( const std::string& cmd, bool async = false, bool delay = false, bool* p_delayed = 0 );
 
-int CIYAM_BASE_DECL_SPEC run_script( const std::string& script_name,
+int run_script( const std::string& script_name,
  bool async = true, bool delay = false, bool no_logging = false, bool sleep_after = false );
 
-void CIYAM_BASE_DECL_SPEC list_scripts( const std::string& pattern, std::ostream& os );
+void list_scripts( const std::string& pattern, std::ostream& os );
 
-void CIYAM_BASE_DECL_SPEC check_script_args( const std::string& script_name, bool* p_rc = 0 );
+void check_script_args( const std::string& script_name, bool* p_rc = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC process_script_args(
+std::string process_script_args(
  const std::string& raw_args, bool use_system_variables = false );
 
-bool CIYAM_BASE_DECL_SPEC create_script_lock_file( const std::string& name );
+bool create_script_lock_file( const std::string& name );
 
-bool CIYAM_BASE_DECL_SPEC can_create_script_lock_file( const std::string& name );
+bool can_create_script_lock_file( const std::string& name );
 
-void CIYAM_BASE_DECL_SPEC generate_new_script_sio_files( );
+void generate_new_script_sio_files( );
 
-void CIYAM_BASE_DECL_SPEC init_session(
+void init_session(
  command_handler& cmd_handler, bool is_peer_session = false,
  const std::string* p_ip_addr = 0, const std::string* p_blockchain = 0,
  int port = 0, bool is_support_session = false, bool add_pubkey_variable = true );
 
-void CIYAM_BASE_DECL_SPEC term_session( );
+void term_session( );
 
-size_t CIYAM_BASE_DECL_SPEC session_id( );
+size_t session_id( );
 
-std::string CIYAM_BASE_DECL_SPEC session_ip_addr( );
+std::string session_ip_addr( );
 
-std::string CIYAM_BASE_DECL_SPEC session_ip_addr( size_t slot );
+std::string session_ip_addr( size_t slot );
 
-void CIYAM_BASE_DECL_SPEC session_is_using_tls( );
+void session_is_using_tls( );
 
-void CIYAM_BASE_DECL_SPEC session_inc_sql_count( );
+void session_inc_sql_count( );
 
-size_t CIYAM_BASE_DECL_SPEC first_other_session_id( const std::string& var_name, const std::string& value );
+size_t first_other_session_id( const std::string& var_name, const std::string& value );
 
-bool CIYAM_BASE_DECL_SPEC has_session_with_ip_addr( const std::string& ip_addr, const std::string& blockchain );
+bool has_session_with_ip_addr( const std::string& ip_addr, const std::string& blockchain );
 
-std::string CIYAM_BASE_DECL_SPEC get_random_same_port_peer_ip_addr( const std::string& empty_value );
+std::string get_random_same_port_peer_ip_addr( const std::string& empty_value );
 
-void CIYAM_BASE_DECL_SPEC list_sessions( std::ostream& os, bool inc_dtms = true, bool include_progress = true );
+void list_sessions( std::ostream& os, bool inc_dtms = true, bool include_progress = true );
 
-command_handler CIYAM_BASE_DECL_SPEC& get_session_command_handler( );
+command_handler& get_session_command_handler( );
 
-extern "C" void CIYAM_BASE_DECL_SPEC server_command( const char* p_cmd );
+extern "C" void server_command( const char* p_cmd );
 
 typedef void ( *fp_server_command )( const char* );
 
-class CIYAM_BASE_DECL_SPEC session_file_buffer_access
+class session_file_buffer_access
 {
    public:
    session_file_buffer_access( );
@@ -465,76 +458,76 @@ class CIYAM_BASE_DECL_SPEC session_file_buffer_access
    unsigned char* p_buffer;
 };
 
-void CIYAM_BASE_DECL_SPEC increment_peer_files_uploaded( int64_t bytes );
-void CIYAM_BASE_DECL_SPEC increment_peer_files_downloaded( int64_t bytes );
+void increment_peer_files_uploaded( int64_t bytes );
+void increment_peer_files_downloaded( int64_t bytes );
 
-void CIYAM_BASE_DECL_SPEC increment_session_commands_executed( );
+void increment_session_commands_executed( );
 
-void CIYAM_BASE_DECL_SPEC set_slowest_if_applicable( );
+void set_slowest_if_applicable( );
 
-void CIYAM_BASE_DECL_SPEC session_progress_settings( size_t& seconds, progress* p_progress = 0 );
+void session_progress_settings( size_t& seconds, progress* p_progress = 0 );
 
-void CIYAM_BASE_DECL_SPEC set_session_progress_message( const std::string& progress_message );
+void set_session_progress_message( const std::string& progress_message );
 
-void CIYAM_BASE_DECL_SPEC set_last_session_cmd( const std::string& cmd );
+void set_last_session_cmd( const std::string& cmd );
 
-bool CIYAM_BASE_DECL_SPEC set_session_sync_time( const std::string* p_check_blockchain = 0,
+bool set_session_sync_time( const std::string* p_check_blockchain = 0,
  bool matching_own_ip_address = false, int num_seconds = 1, const std::string* p_sync_var_name = 0 );
 
-void CIYAM_BASE_DECL_SPEC condemn_session(
+void condemn_session(
  size_t sess_id, int num_seconds, bool force_uncapture, bool wait_until_term );
 
-void CIYAM_BASE_DECL_SPEC condemn_this_session( );
-void CIYAM_BASE_DECL_SPEC condemn_matching_sessions( int num_seconds = 0, bool wait_until_term = false );
+void condemn_this_session( );
+void condemn_matching_sessions( int num_seconds = 0, bool wait_until_term = false );
 
-void CIYAM_BASE_DECL_SPEC condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wait_until_term );
+void condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wait_until_term );
 
-bool CIYAM_BASE_DECL_SPEC is_condemned_session( );
+bool is_condemned_session( );
 
-void CIYAM_BASE_DECL_SPEC capture_session( size_t sess_id );
-void CIYAM_BASE_DECL_SPEC capture_all_other_sessions( );
+void capture_session( size_t sess_id );
+void capture_all_other_sessions( );
 
-bool CIYAM_BASE_DECL_SPEC is_captured_session( );
+bool is_captured_session( );
 
-bool CIYAM_BASE_DECL_SPEC has_any_matching_session( bool support_only = false );
+bool has_any_matching_session( bool support_only = false );
 
-void CIYAM_BASE_DECL_SPEC release_session( size_t sess_id, bool wait_until_term );
-void CIYAM_BASE_DECL_SPEC release_all_other_sessions( bool wait_until_term );
+void release_session( size_t sess_id, bool wait_until_term );
+void release_all_other_sessions( bool wait_until_term );
 
-bool CIYAM_BASE_DECL_SPEC session_skip_fk_fetches( );
-void CIYAM_BASE_DECL_SPEC session_skip_fk_fetches( bool skip_fk_fetches );
+bool session_skip_fk_fetches( );
+void session_skip_fk_fetches( bool skip_fk_fetches );
 
-bool CIYAM_BASE_DECL_SPEC session_skip_validation( );
-void CIYAM_BASE_DECL_SPEC session_skip_validation( bool skip_validation );
+bool session_skip_validation( );
+void session_skip_validation( bool skip_validation );
 
-bool CIYAM_BASE_DECL_SPEC session_skip_is_constained( );
-void CIYAM_BASE_DECL_SPEC session_skip_is_constained( bool skip_fk_fetches );
+bool session_skip_is_constained( );
+void session_skip_is_constained( bool skip_fk_fetches );
 
-bool CIYAM_BASE_DECL_SPEC get_script_reconfig( );
+bool get_script_reconfig( );
 
-std::string CIYAM_BASE_DECL_SPEC get_gpg_password( );
-std::string CIYAM_BASE_DECL_SPEC get_rpc_password( );
-std::string CIYAM_BASE_DECL_SPEC get_sql_password( );
+std::string get_gpg_password( );
+std::string get_rpc_password( );
+std::string get_sql_password( );
 
-unsigned int CIYAM_BASE_DECL_SPEC get_test_peer_port( );
+unsigned int get_test_peer_port( );
 
-extern "C" void CIYAM_BASE_DECL_SPEC set_test_peer_port( unsigned int port );
+extern "C" void set_test_peer_port( unsigned int port );
 
 typedef int ( *fp_set_test_peer_port )( unsigned int );
 
-std::string CIYAM_BASE_DECL_SPEC get_encrypted_gpg_password( );
-std::string CIYAM_BASE_DECL_SPEC get_encrypted_pem_password( );
-std::string CIYAM_BASE_DECL_SPEC get_encrypted_sql_password( );
-std::string CIYAM_BASE_DECL_SPEC get_encrypted_rpc_password( );
+std::string get_encrypted_gpg_password( );
+std::string get_encrypted_pem_password( );
+std::string get_encrypted_sql_password( );
+std::string get_encrypted_rpc_password( );
 
-std::string CIYAM_BASE_DECL_SPEC get_encrypted_pop3_password( );
-std::string CIYAM_BASE_DECL_SPEC get_encrypted_smtp_password( );
+std::string get_encrypted_pop3_password( );
+std::string get_encrypted_smtp_password( );
 
-std::string CIYAM_BASE_DECL_SPEC get_session_blockchain( );
+std::string get_session_blockchain( );
 
-std::string CIYAM_BASE_DECL_SPEC get_session_identity_suffix( );
+std::string get_session_identity_suffix( );
 
-size_t CIYAM_BASE_DECL_SPEC get_num_sessions_for_blockchain(
+size_t get_num_sessions_for_blockchain(
  const std::string& blockchain, bool matching_own_ip_address = false, bool excluding_own_session = false );
 
 inline bool any_session_has_blockchain( const std::string& blockchain )
@@ -542,52 +535,52 @@ inline bool any_session_has_blockchain( const std::string& blockchain )
    return ( get_num_sessions_for_blockchain( blockchain ) > 0 );
 }
 
-bool CIYAM_BASE_DECL_SPEC get_storage_using_verbose_logging( );
+bool get_storage_using_verbose_logging( );
 
-unsigned int CIYAM_BASE_DECL_SPEC get_session_timeout( );
-void CIYAM_BASE_DECL_SPEC set_session_timeout( unsigned int seconds );
+unsigned int get_session_timeout( );
+void set_session_timeout( unsigned int seconds );
 
-void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_get( const std::string& hash,
+void add_peer_file_hash_for_get( const std::string& hash,
  bool check_for_supporters = false, bool add_at_front = false, const std::string* p_hash_to_remove = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC top_next_peer_file_hash_to_get(
+std::string top_next_peer_file_hash_to_get(
  bool take_from_supporter = false, bool* p_any_supporter_has = 0 );
 
-void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_get( );
+void pop_next_peer_file_hash_to_get( );
 
-void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_put( const std::string& hash, bool check_for_supporters = false );
+void add_peer_file_hash_for_put( const std::string& hash, bool check_for_supporters = false );
 
-void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_put_for_all_peers(
+void add_peer_file_hash_for_put_for_all_peers(
  const std::string& hash, const std::string* p_blockchain = 0,
  const std::string* p_session_variable = 0, bool include_self = true, size_t session_id_to_skip = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC top_next_peer_file_hash_to_put(
+std::string top_next_peer_file_hash_to_put(
  bool take_from_supporter = false, bool* p_any_supporter_has = 0 );
 
-void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_put( );
+void pop_next_peer_file_hash_to_put( );
 
-bool CIYAM_BASE_DECL_SPEC any_peer_still_has_file_hash_to_put(
+bool any_peer_still_has_file_hash_to_put(
  const std::string& hash, const std::string* p_blockchain = 0 );
 
-void CIYAM_BASE_DECL_SPEC add_peer_mapped_hash_info(
+void add_peer_mapped_hash_info(
  const std::string& key, const std::string& hash, const std::string& info );
 
-std::string CIYAM_BASE_DECL_SPEC get_peer_mapped_hash_info( const std::string& key, const std::string& hash );
+std::string get_peer_mapped_hash_info( const std::string& key, const std::string& hash );
 
-void CIYAM_BASE_DECL_SPEC clear_peer_mapped_hash( const std::string& key, const std::string& hash );
+void clear_peer_mapped_hash( const std::string& key, const std::string& hash );
 
-void CIYAM_BASE_DECL_SPEC clear_all_peer_mapped_hashes( const std::string& key );
+void clear_all_peer_mapped_hashes( const std::string& key );
 
-void CIYAM_BASE_DECL_SPEC set_default_session_variables( int port = 0 );
+void set_default_session_variables( int port = 0 );
 
-bool CIYAM_BASE_DECL_SPEC has_raw_session_variable( const std::string& name, size_t sess_id = 0 );
+bool has_raw_session_variable( const std::string& name, size_t sess_id = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC get_raw_session_variable( const std::string& name, size_t sess_id = 0 );
+std::string get_raw_session_variable( const std::string& name, size_t sess_id = 0 );
 
-bool CIYAM_BASE_DECL_SPEC has_session_variable( const std::string& name_or_expr, const std::string* p_sess_id = 0 );
+bool has_session_variable( const std::string& name_or_expr, const std::string* p_sess_id = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name, size_t slot );
-std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name_or_expr, const std::string* p_sess_id = 0 );
+std::string get_session_variable( const std::string& name, size_t slot );
+std::string get_session_variable( const std::string& name_or_expr, const std::string* p_sess_id = 0 );
 
 std::string get_session_variable_from_matching_blockchain( const std::string& name,
  const std::string& check_name, const std::string& check_value, bool matching_own_ip_address = false );
@@ -595,14 +588,14 @@ std::string get_session_variable_from_matching_blockchain( const std::string& na
 bool has_mismatched_variables_for_matching_blockchains( const std::string& name,
  const std::string& value, const std::string* p_name = 0, const std::string* p_value = 0 );
 
-void CIYAM_BASE_DECL_SPEC set_session_variable(
+void set_session_variable(
  const std::string& name, const std::string& value,
  bool* p_set_special_temporary = 0, command_handler* p_command_handler = 0, const std::string* p_sess_id = 0 );
 
-bool CIYAM_BASE_DECL_SPEC set_session_variable(
+bool set_session_variable(
  const std::string& name, const std::string& value, const std::string& current );
 
-void CIYAM_BASE_DECL_SPEC set_session_variable_for_matching_blockchains( const std::string& name,
+void set_session_variable_for_matching_blockchains( const std::string& name,
  const std::string& value, const std::string& check_name, const std::string& check_value, bool matching_own_ip_address = false );
 
 inline void set_session_variable_for_matching_blockchains(
@@ -611,16 +604,16 @@ inline void set_session_variable_for_matching_blockchains(
    set_session_variable_for_matching_blockchains( name, value, "", "", matching_own_ip_address );
 }
 
-bool CIYAM_BASE_DECL_SPEC has_any_session_variable( const std::string& name );
-bool CIYAM_BASE_DECL_SPEC has_any_session_variable( const std::string& name, const std::string& value );
+bool has_any_session_variable( const std::string& name );
+bool has_any_session_variable( const std::string& name, const std::string& value );
 
-size_t CIYAM_BASE_DECL_SPEC num_have_session_variable( const std::string& name, bool matching_own_ip_address = false );
+size_t num_have_session_variable( const std::string& name, bool matching_own_ip_address = false );
 
-size_t CIYAM_BASE_DECL_SPEC num_have_session_variable( const std::string& name,
+size_t num_have_session_variable( const std::string& name,
  const std::string& value, std::vector< std::string >* p_identities = 0, bool matching_own_ip_address = false );
 
-bool CIYAM_BASE_DECL_SPEC is_first_using_session_variable( const std::string& name );
-bool CIYAM_BASE_DECL_SPEC is_first_using_session_variable( const std::string& name, const std::string& value );
+bool is_first_using_session_variable( const std::string& name );
+bool is_first_using_session_variable( const std::string& name, const std::string& value );
 
 struct temporary_session_variable
 {
@@ -648,9 +641,9 @@ struct temporary_session_variable
    std::string original_value;
 };
 
-void CIYAM_BASE_DECL_SPEC copy_session_variables( std::map< std::string, std::string >& variables );
+void copy_session_variables( std::map< std::string, std::string >& variables );
 
-void CIYAM_BASE_DECL_SPEC restore_session_variables( const std::map< std::string, std::string >& variables );
+void restore_session_variables( const std::map< std::string, std::string >& variables );
 
 struct restorable_session_variables
 {
@@ -677,39 +670,43 @@ struct temporary_identity_suffix
    std::string original_suffix;
 };
 
-void CIYAM_BASE_DECL_SPEC add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const std::string& info_and_data );
-void CIYAM_BASE_DECL_SPEC add_udp_send_file_chunk_info( size_t slot, size_t chunk, const std::string& info_and_data );
+void add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const std::string& info_and_data );
+void add_udp_send_file_chunk_info( size_t slot, size_t chunk, const std::string& info_and_data );
 
-void CIYAM_BASE_DECL_SPEC clear_udp_recv_file_chunks( );
+void clear_udp_recv_file_chunks( );
 
-size_t CIYAM_BASE_DECL_SPEC elapsed_since_last_recv( const date_time& dtm, const date_time* p_dtm = 0 );
+size_t elapsed_since_last_recv( const date_time& dtm, const date_time* p_dtm = 0 );
 
-bool CIYAM_BASE_DECL_SPEC has_udp_recv_file_chunk_info( size_t* p_num_chunks = 0 );
-std::string CIYAM_BASE_DECL_SPEC get_udp_recv_file_chunk_info( size_t& chunk,
+bool has_udp_recv_file_chunk_info( size_t* p_num_chunks = 0 );
+
+std::string get_udp_recv_file_chunk_info( size_t& chunk,
  bool chunk_specified = false, size_t* p_first_chunk = 0, size_t* p_num_chunks = 0 );
 
-bool CIYAM_BASE_DECL_SPEC has_crypt_key_for_blockchain_account( const std::string& blockchain, const std::string& account );
-std::string CIYAM_BASE_DECL_SPEC get_crypt_key_for_blockchain_account( const std::string& blockchain, const std::string& account );
+bool has_crypt_key_for_blockchain_account( const std::string& blockchain, const std::string& account );
 
-void CIYAM_BASE_DECL_SPEC set_crypt_key_for_blockchain_account(
+std::string get_crypt_key_for_blockchain_account( const std::string& blockchain, const std::string& account );
+
+void set_crypt_key_for_blockchain_account(
  const std::string& blockchain, const std::string& account, const std::string& crypt_key );
 
-void CIYAM_BASE_DECL_SPEC init_storage( const std::string& name,
+void init_storage( const std::string& name,
  const std::string& directory, command_handler& cmd_handler, bool lock_for_admin );
-void CIYAM_BASE_DECL_SPEC create_storage( const std::string& name,
- const std::string& directory, command_handler& cmd_handler, bool lock_for_admin );
-void CIYAM_BASE_DECL_SPEC attach_storage( const std::string& name, command_handler& cmd_handler, bool lock_for_admin );
 
-void CIYAM_BASE_DECL_SPEC backup_storage(
+void create_storage( const std::string& name,
+ const std::string& directory, command_handler& cmd_handler, bool lock_for_admin );
+
+void attach_storage( const std::string& name, command_handler& cmd_handler, bool lock_for_admin );
+
+void backup_storage(
  command_handler& cmd_handler, int* p_truncation_count = 0, std::string* p_sav_db_file_names = 0 );
 
-bool CIYAM_BASE_DECL_SPEC export_storage( command_handler& cmd_handler );
+bool export_storage( command_handler& cmd_handler );
 
-void CIYAM_BASE_DECL_SPEC restore_storage( command_handler& cmd_handler );
+void restore_storage( command_handler& cmd_handler );
 
-void CIYAM_BASE_DECL_SPEC upgrade_storage( command_handler& cmd_handler );
+void upgrade_storage( command_handler& cmd_handler );
 
-void CIYAM_BASE_DECL_SPEC term_storage( command_handler& cmd_handler );
+void term_storage( command_handler& cmd_handler );
 
 struct storage_scoped_lock_holder
 {
@@ -724,58 +721,63 @@ struct storage_scoped_lock_holder
    impl* p_impl;
 };
 
-void CIYAM_BASE_DECL_SPEC storage_admin_name_lock( const std::string& name );
+void storage_admin_name_lock( const std::string& name );
 
-void CIYAM_BASE_DECL_SPEC storage_comment( const std::string& comment );
+void storage_comment( const std::string& comment );
 
-void CIYAM_BASE_DECL_SPEC storage_cache_clear( );
-size_t CIYAM_BASE_DECL_SPEC storage_cache_limit( );
-size_t CIYAM_BASE_DECL_SPEC storage_cache_limit( size_t new_limit );
+void storage_cache_clear( );
 
-void CIYAM_BASE_DECL_SPEC slice_storage_log( command_handler& cmd_handler,
+size_t storage_cache_limit( );
+size_t storage_cache_limit( size_t new_limit );
+
+void slice_storage_log( command_handler& cmd_handler,
  const std::string& name, const std::vector< std::string >& module_list );
-void CIYAM_BASE_DECL_SPEC splice_storage_log( command_handler& cmd_handler,
+
+void splice_storage_log( command_handler& cmd_handler,
  const std::string& name, const std::vector< std::string >& module_list );
 
-bool CIYAM_BASE_DECL_SPEC storage_is_dead_key(
+bool storage_is_dead_key(
  const std::string& cid, const std::string& key, std::string* p_key_found = 0 );
 
-void CIYAM_BASE_DECL_SPEC storage_add_dead_key( const std::string& cid, const std::string& key );
+void storage_add_dead_key( const std::string& cid, const std::string& key );
 
-void CIYAM_BASE_DECL_SPEC check_storage( bool* p_rc = 0 );
+void check_storage( bool* p_rc = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC storage_name( bool* p_is_standard = 0 );
+std::string storage_name( bool* p_is_standard = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC storage_identity( );
-void CIYAM_BASE_DECL_SPEC storage_identity( const std::string& new_identity );
+std::string storage_identity( );
 
-std::string CIYAM_BASE_DECL_SPEC storage_blockchain( );
-std::string CIYAM_BASE_DECL_SPEC storage_module_directory( );
+void storage_identity( const std::string& new_identity );
 
-bool CIYAM_BASE_DECL_SPEC storage_supports_sql_undo( );
+std::string storage_blockchain( );
 
-bool CIYAM_BASE_DECL_SPEC has_storage_variable( const std::string& name_or_expr );
+std::string storage_module_directory( );
 
-std::string CIYAM_BASE_DECL_SPEC get_storage_variable( const std::string& name_or_expr );
-std::string CIYAM_BASE_DECL_SPEC get_raw_storage_variable( const std::string& var_name );
+bool storage_supports_sql_undo( );
 
-void CIYAM_BASE_DECL_SPEC set_storage_variable( const std::string& var_name, const std::string& new_value );
+bool has_storage_variable( const std::string& name_or_expr );
 
-std::string CIYAM_BASE_DECL_SPEC storage_web_root( bool expand, bool check_is_linked = false );
-void CIYAM_BASE_DECL_SPEC storage_web_root( const std::string& new_root );
+std::string get_storage_variable( const std::string& name_or_expr );
+std::string get_raw_storage_variable( const std::string& var_name );
 
-void CIYAM_BASE_DECL_SPEC storage_bulk_start( bool is_write = false );
+void set_storage_variable( const std::string& var_name, const std::string& new_value );
 
-void CIYAM_BASE_DECL_SPEC storage_bulk_finish( );
+std::string storage_web_root( bool expand, bool check_is_linked = false );
 
-void CIYAM_BASE_DECL_SPEC storage_lock_all_tables( );
-void CIYAM_BASE_DECL_SPEC storage_unlock_all_tables( );
+void storage_web_root( const std::string& new_root );
 
-bool CIYAM_BASE_DECL_SPEC storage_locked_for_admin( );
+void storage_bulk_start( bool is_write = false );
 
-ods CIYAM_BASE_DECL_SPEC& storage_ods_instance( );
+void storage_bulk_finish( );
 
-class CIYAM_BASE_DECL_SPEC storage_ods_bulk_read
+void storage_lock_all_tables( );
+void storage_unlock_all_tables( );
+
+bool storage_locked_for_admin( );
+
+ods& storage_ods_instance( );
+
+class storage_ods_bulk_read
 {
    public:
    storage_ods_bulk_read( );
@@ -787,7 +789,7 @@ class CIYAM_BASE_DECL_SPEC storage_ods_bulk_read
    impl* p_impl;
 };
 
-class CIYAM_BASE_DECL_SPEC storage_ods_bulk_write
+class storage_ods_bulk_write
 {
    public:
    storage_ods_bulk_write( progress* p_progress = 0 );
@@ -799,13 +801,13 @@ class CIYAM_BASE_DECL_SPEC storage_ods_bulk_write
    impl* p_impl;
 };
 
-ods CIYAM_BASE_DECL_SPEC& system_ods_instance( );
+ods& system_ods_instance( );
 
-ods_file_system CIYAM_BASE_DECL_SPEC& system_ods_file_system( );
+ods_file_system& system_ods_file_system( );
 
-void CIYAM_BASE_DECL_SPEC export_repository_entries( );
+void export_repository_entries( );
 
-class CIYAM_BASE_DECL_SPEC system_ods_bulk_read
+class system_ods_bulk_read
 {
    public:
    system_ods_bulk_read( );
@@ -817,7 +819,7 @@ class CIYAM_BASE_DECL_SPEC system_ods_bulk_read
    impl* p_impl;
 };
 
-class CIYAM_BASE_DECL_SPEC system_ods_bulk_write
+class system_ods_bulk_write
 {
    public:
    system_ods_bulk_write( progress* p_progress = 0 );
@@ -829,10 +831,11 @@ class CIYAM_BASE_DECL_SPEC system_ods_bulk_write
    impl* p_impl;
 };
 
-std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0, bool use_get_dtm = false );
+std::string gen_key( const char* p_suffix = 0, bool use_get_dtm = false );
 
-std::string CIYAM_BASE_DECL_SPEC get_uid( bool remove_display_name = true );
-void CIYAM_BASE_DECL_SPEC set_uid( const std::string& uid, bool do_not_erase_sec = false );
+std::string get_uid( bool remove_display_name = true );
+
+void set_uid( const std::string& uid, bool do_not_erase_sec = false );
 
 struct temporary_uid
 {
@@ -855,25 +858,26 @@ struct temporary_uid
    bool do_not_erase_sec;
 };
 
-bool CIYAM_BASE_DECL_SPEC is_sys_uid( );
-bool CIYAM_BASE_DECL_SPEC is_anon_uid( );
-bool CIYAM_BASE_DECL_SPEC is_auto_uid( );
-bool CIYAM_BASE_DECL_SPEC is_init_uid( );
-bool CIYAM_BASE_DECL_SPEC is_peer_uid( );
-bool CIYAM_BASE_DECL_SPEC is_admin_uid( );
+bool is_sys_uid( );
+bool is_anon_uid( );
+bool is_auto_uid( );
+bool is_init_uid( );
+bool is_peer_uid( );
+bool is_admin_uid( );
 
-bool CIYAM_BASE_DECL_SPEC is_system_uid( );
+bool is_system_uid( );
 
-bool CIYAM_BASE_DECL_SPEC is_admin_uid_key( const std::string& key );
+bool is_admin_uid_key( const std::string& key );
 
-bool CIYAM_BASE_DECL_SPEC is_uid_not_self_and_not_in_set( const std::string& key, const std::string& key_set );
+bool is_uid_not_self_and_not_in_set( const std::string& key, const std::string& key_set );
 
-bool CIYAM_BASE_DECL_SPEC has_sec_level( const std::string& level );
+bool has_sec_level( const std::string& level );
 
-bool CIYAM_BASE_DECL_SPEC has_tx_key_info( const std::string& key_info );
+bool has_tx_key_info( const std::string& key_info );
 
-std::string CIYAM_BASE_DECL_SPEC get_grp( );
-void CIYAM_BASE_DECL_SPEC set_grp( const std::string& grp );
+std::string get_grp( );
+
+void set_grp( const std::string& grp );
 
 struct temporary_grp_and_uid
 {
@@ -900,180 +904,189 @@ struct temporary_grp_and_uid
    bool do_not_erase_sec;
 };
 
-std::string CIYAM_BASE_DECL_SPEC get_dtm( );
-void CIYAM_BASE_DECL_SPEC set_dtm( const std::string& dtm );
+std::string get_dtm( );
 
-std::string CIYAM_BASE_DECL_SPEC get_gid( );
+void set_dtm( const std::string& dtm );
 
-bool CIYAM_BASE_DECL_SPEC has_sql_db( );
+std::string get_gid( );
 
-sql_db CIYAM_BASE_DECL_SPEC& get_sql_db( );
+bool has_sql_db( );
 
-void CIYAM_BASE_DECL_SPEC set_class( const std::string& mclass );
-void CIYAM_BASE_DECL_SPEC set_module( const std::string& module );
+sql_db& get_sql_db( );
 
-std::string CIYAM_BASE_DECL_SPEC get_tz_name( );
-void CIYAM_BASE_DECL_SPEC set_tz_name( const std::string& tz_name );
+void set_class( const std::string& mclass );
+void set_module( const std::string& module );
 
-void CIYAM_BASE_DECL_SPEC clear_perms( );
-const std::set< std::string > CIYAM_BASE_DECL_SPEC& get_perms( );
-void CIYAM_BASE_DECL_SPEC set_perms( const std::set< std::string >& perms );
+std::string get_tz_name( );
 
-std::string CIYAM_BASE_DECL_SPEC get_tmp_directory( );
-void CIYAM_BASE_DECL_SPEC set_tmp_directory( const std::string& tmp_directory );
+void set_tz_name( const std::string& tz_name );
 
-std::string CIYAM_BASE_DECL_SPEC get_session_secret( );
-void CIYAM_BASE_DECL_SPEC set_session_secret( const std::string& secret );
+void clear_perms( );
 
-void CIYAM_BASE_DECL_SPEC session_shared_decrypt(
+const std::set< std::string >& get_perms( );
+
+void set_perms( const std::set< std::string >& perms );
+
+std::string get_tmp_directory( );
+
+void set_tmp_directory( const std::string& tmp_directory );
+
+std::string get_session_secret( );
+
+void set_session_secret( const std::string& secret );
+
+void session_shared_decrypt(
  std::string& data, const std::string& pubkey, const std::string& message );
 
-void CIYAM_BASE_DECL_SPEC session_shared_encrypt(
+void session_shared_encrypt(
  std::string& data, const std::string& pubkey, const std::string& message );
 
-void CIYAM_BASE_DECL_SPEC add_security_group( const std::string& group_key );
+void add_security_group( const std::string& group_key );
 
-int64_t CIYAM_BASE_DECL_SPEC group_security_value( const std::string& group_key_value );
+int64_t group_security_value( const std::string& group_key_value );
 
-std::string CIYAM_BASE_DECL_SPEC convert_group_keys_to_numbers( const std::string& group_keys );
+std::string convert_group_keys_to_numbers( const std::string& group_keys );
 
-bool CIYAM_BASE_DECL_SPEC get_uid_data( const std::string& uid, size_t& level, std::string& gids );
-void CIYAM_BASE_DECL_SPEC set_uid_data( const std::string& uid, const std::string& level, const std::string& group_keys );
+bool get_uid_data( const std::string& uid, size_t& level, std::string& gids );
 
-size_t CIYAM_BASE_DECL_SPEC get_next_handle( );
+void set_uid_data( const std::string& uid, const std::string& level, const std::string& group_keys );
 
-void CIYAM_BASE_DECL_SPEC module_list( std::ostream& os );
-size_t CIYAM_BASE_DECL_SPEC module_count( );
+size_t get_next_handle( );
 
-std::string CIYAM_BASE_DECL_SPEC module_identity( const std::string& module );
+void module_list( std::ostream& os );
 
-void CIYAM_BASE_DECL_SPEC module_class_list( const std::string& module, std::ostream& os, const char* p_pat = 0 );
-void CIYAM_BASE_DECL_SPEC module_strings_list( const std::string& module, std::ostream& os );
+size_t module_count( );
 
-void CIYAM_BASE_DECL_SPEC module_class_fields_list(
+std::string module_identity( const std::string& module );
+
+void module_class_list( const std::string& module, std::ostream& os, const char* p_pat = 0 );
+
+void module_strings_list( const std::string& module, std::ostream& os );
+
+void module_class_fields_list(
  const std::string& module, const std::string& class_id_or_name, std::ostream& os );
 
-void CIYAM_BASE_DECL_SPEC module_class_procedures_list(
+void module_class_procedures_list(
  const std::string& module, const std::string& class_id_or_name, std::ostream& os );
 
-void CIYAM_BASE_DECL_SPEC module_load( const std::string& module_name,
+void module_load( const std::string& module_name,
  command_handler& cmd_handler, bool log_tx_comment = false, bool append_to_module_list = true );
 
-void CIYAM_BASE_DECL_SPEC module_unload(
+void module_unload(
  const std::string& module_name, command_handler& cmd_handler, bool check_controlled = false );
 
-void CIYAM_BASE_DECL_SPEC module_unload_all( command_handler& cmd_handler );
+void module_unload_all( command_handler& cmd_handler );
 
-std::string CIYAM_BASE_DECL_SPEC loaded_module_id( const std::string& module );
-std::string CIYAM_BASE_DECL_SPEC loaded_module_name( const std::string& module );
+std::string loaded_module_id( const std::string& module );
+std::string loaded_module_name( const std::string& module );
 
-void CIYAM_BASE_DECL_SPEC register_module_commands( const std::string& module_name, command_handler& handler );
-void CIYAM_BASE_DECL_SPEC unregister_module_commands( const std::string& module_name, command_handler& handler );
-void CIYAM_BASE_DECL_SPEC unregister_all_module_commands( command_handler& handler );
+void register_module_commands( const std::string& module_name, command_handler& handler );
+void unregister_module_commands( const std::string& module_name, command_handler& handler );
+void unregister_all_module_commands( command_handler& handler );
 
-void CIYAM_BASE_DECL_SPEC list_object_instances( std::ostream& os );
+void list_object_instances( std::ostream& os );
 
-size_t CIYAM_BASE_DECL_SPEC create_object_instance(
+size_t create_object_instance(
  const std::string& module, const std::string& class_id, size_t handle = 0, bool dynamic_enabled = true );
 
-std::string CIYAM_BASE_DECL_SPEC execute_object_command(
+std::string execute_object_command(
  size_t handle, const std::string& context, const std::string& method_name_and_args );
 
-void CIYAM_BASE_DECL_SPEC init_object_instance( size_t handle, const std::string& context, bool for_create = false );
+void init_object_instance( size_t handle, const std::string& context, bool for_create = false );
 
-void CIYAM_BASE_DECL_SPEC prepare_object_instance( size_t handle,
+void prepare_object_instance( size_t handle,
  const std::string& context, bool for_create = false, bool call_to_store = true, bool starting_iteration = false );
 
-void CIYAM_BASE_DECL_SPEC validate_object_instance( size_t handle, const std::string& context );
+void validate_object_instance( size_t handle, const std::string& context );
 
-void CIYAM_BASE_DECL_SPEC destroy_object_instance( size_t handle );
-void CIYAM_BASE_DECL_SPEC destroy_object_instances( const std::string& module_name );
+void destroy_object_instance( size_t handle );
+void destroy_object_instances( const std::string& module_name );
 
-void CIYAM_BASE_DECL_SPEC destroy_all_object_instances( );
+void destroy_all_object_instances( );
 
-std::string CIYAM_BASE_DECL_SPEC get_class_id( size_t handle, const std::string& context );
-std::string CIYAM_BASE_DECL_SPEC get_class_name( size_t handle, const std::string& context );
-std::string CIYAM_BASE_DECL_SPEC get_class_display_name( size_t handle, const std::string& context, bool plural = false );
+std::string get_class_id( size_t handle, const std::string& context );
+std::string get_class_name( size_t handle, const std::string& context );
+std::string get_class_display_name( size_t handle, const std::string& context, bool plural = false );
 
-std::string CIYAM_BASE_DECL_SPEC get_create_instance_info( size_t handle, const std::string& context );
-std::string CIYAM_BASE_DECL_SPEC get_update_instance_info( size_t handle, const std::string& context );
-std::string CIYAM_BASE_DECL_SPEC get_destroy_instance_info( size_t handle, const std::string& context );
+std::string get_create_instance_info( size_t handle, const std::string& context );
+std::string get_update_instance_info( size_t handle, const std::string& context );
+std::string get_destroy_instance_info( size_t handle, const std::string& context );
 
-std::string CIYAM_BASE_DECL_SPEC get_execute_procedure_info(
+std::string get_execute_procedure_info(
  size_t handle, const std::string& context, const std::string& procedure_id );
 
-std::string CIYAM_BASE_DECL_SPEC get_instance_owner( size_t handle, const std::string& context );
+std::string get_instance_owner( size_t handle, const std::string& context );
 
-void CIYAM_BASE_DECL_SPEC get_all_enum_pairs( size_t handle,
+void get_all_enum_pairs( size_t handle,
  const std::string& context, std::vector< std::pair< std::string, std::string > >& pairs );
 
-void CIYAM_BASE_DECL_SPEC get_all_field_names( size_t handle,
+void get_all_field_names( size_t handle,
  const std::string& context, std::vector< std::string >& fields, bool include_transients = true );
 
-void CIYAM_BASE_DECL_SPEC get_all_field_scope_and_permission_info( size_t handle,
+void get_all_field_scope_and_permission_info( size_t handle,
  const std::string& context, std::map< std::string, std::string >& field_scope_and_perm_info, bool by_name = false );
 
-std::string CIYAM_BASE_DECL_SPEC get_field_name_for_id(
+std::string get_field_name_for_id(
  size_t handle, const std::string& context, const std::string& id, bool no_throw = false );
 
-std::string CIYAM_BASE_DECL_SPEC get_field_id_for_name(
+std::string get_field_id_for_name(
  size_t handle, const std::string& context, const std::string& name, bool no_throw = false );
 
-std::string CIYAM_BASE_DECL_SPEC get_field_type_name(
+std::string get_field_type_name(
  size_t handle, const std::string& context, const std::string& id_or_name,
  bool* p_is_encrypted = 0, bool* p_is_transient = 0, bool* p_is_file_field = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC get_field_uom_symbol(
+std::string get_field_uom_symbol(
  size_t handle, const std::string& context, const std::string& id_or_name );
 
-std::string CIYAM_BASE_DECL_SPEC get_field_display_name(
+std::string get_field_display_name(
  size_t handle, const std::string& context, const std::string& id_or_name );
 
-std::string CIYAM_BASE_DECL_SPEC get_field_value( size_t handle, const std::string& context, const std::string& field );
+std::string get_field_value( size_t handle, const std::string& context, const std::string& field );
 
-std::string CIYAM_BASE_DECL_SPEC get_field_values( size_t handle,
+std::string get_field_values( size_t handle,
  const std::string& parent_context, const std::vector< std::string >& field_list,
  const std::string& tz_name, bool is_default = false, bool as_csv = false,
  std::vector< std::string >* p_raw_values = 0, const std::multimap< size_t, std::string >* p_inserts = 0,
  const std::map< std::string, std::string >* p_replace_map = 0, const std::vector< std::string >* p_omit_matching = 0 );
 
-void CIYAM_BASE_DECL_SPEC set_any_field_ids_to_names( size_t handle,
+void set_any_field_ids_to_names( size_t handle,
  const std::string& context, std::vector< std::string >& fields );
 
-void CIYAM_BASE_DECL_SPEC set_any_field_names_to_ids( size_t handle,
+void set_any_field_names_to_ids( size_t handle,
  const std::string& context, std::vector< std::string >& fields );
 
-bool CIYAM_BASE_DECL_SPEC determine_alternative_key_fields( size_t handle, const std::string& context,
+bool determine_alternative_key_fields( size_t handle, const std::string& context,
  const std::vector< std::string > available_fields, std::vector< std::string >& selected_fields );
 
-void CIYAM_BASE_DECL_SPEC get_foreign_field_and_class_ids( size_t handle,
+void get_foreign_field_and_class_ids( size_t handle,
  const std::string& context, std::map< std::string, std::string >& foreign_field_and_class_ids );
 
-void CIYAM_BASE_DECL_SPEC get_base_class_info( size_t handle,
+void get_base_class_info( size_t handle,
  const std::string& context, std::vector< std::pair< std::string, std::string > >& base_class_info );
 
-bool CIYAM_BASE_DECL_SPEC has_locked_instance( const std::string& lock_class_id, const std::string& key );
+bool has_locked_instance( const std::string& lock_class_id, const std::string& key );
 
-bool CIYAM_BASE_DECL_SPEC is_child_constrained( class_base& instance, std::string& constraining_class );
+bool is_child_constrained( class_base& instance, std::string& constraining_class );
 
-size_t CIYAM_BASE_DECL_SPEC obtain_storage_lock(
+size_t obtain_storage_lock(
  const std::string& type, const std::string& lock_class_id, const std::string& key, size_t num_attempts = 0 );
 
-bool CIYAM_BASE_DECL_SPEC obtain_cascade_locks( class_base& instance );
+bool obtain_cascade_locks( class_base& instance );
 
-size_t CIYAM_BASE_DECL_SPEC obtain_instance_lock(
+size_t obtain_instance_lock(
  const std::string& type, class_base& instance, size_t num_attempts = 0, std::string* p_key_value = 0 );
 
-size_t CIYAM_BASE_DECL_SPEC obtain_instance_fk_lock( const std::string& lock_class_id, const std::string& key, bool review_required );
+size_t obtain_instance_fk_lock( const std::string& lock_class_id, const std::string& key, bool review_required );
 
-void CIYAM_BASE_DECL_SPEC release_obtained_lock( size_t lock_handle );
+void release_obtained_lock( size_t lock_handle );
 
-void CIYAM_BASE_DECL_SPEC release_instance_locks( class_base& instance, bool force_removal = false );
+void release_instance_locks( class_base& instance, bool force_removal = false );
 
-void CIYAM_BASE_DECL_SPEC transform_obtained_lock( size_t lock_handle, const std::string& type, size_t num_attempts = 0 );
+void transform_obtained_lock( size_t lock_handle, const std::string& type, size_t num_attempts = 0 );
 
-void CIYAM_BASE_DECL_SPEC dump_storage_cache( std::ostream& os );
-void CIYAM_BASE_DECL_SPEC dump_storage_locks( std::ostream& os );
+void dump_storage_cache( std::ostream& os );
+void dump_storage_locks( std::ostream& os );
 
 std::string resolve_class_id( const std::string& module,
  const std::string& id_or_name, const std::string& exception_context );
@@ -1133,21 +1146,23 @@ bool fetch_instance_from_cache( class_base& instance, const std::string& key, bo
 void get_instance_sql_stmts( class_base& instance,
  std::vector< std::string >& sql_stmts, std::vector< std::string >* p_sql_undo_stmts = 0 );
 
-void CIYAM_BASE_DECL_SPEC append_undo_sql_stmts( const std::vector< std::string >& sql_undo_stmts );
+void append_undo_sql_stmts( const std::vector< std::string >& sql_undo_stmts );
 
-std::string CIYAM_BASE_DECL_SPEC instance_class( size_t handle, const std::string& context );
-std::string CIYAM_BASE_DECL_SPEC instance_key_info( size_t handle, const std::string& context, bool key_only = false );
+std::string instance_class( size_t handle, const std::string& context );
 
-std::string CIYAM_BASE_DECL_SPEC instance_get_variable( size_t handle, const std::string& context, const std::string& vname );
-void CIYAM_BASE_DECL_SPEC instance_set_variable( size_t handle, const std::string& context, const std::string& vname, const std::string& value );
+std::string instance_key_info( size_t handle, const std::string& context, bool key_only = false );
 
-void CIYAM_BASE_DECL_SPEC instance_special_field_names( size_t handle, const std::string& context, const std::string& empty,
+std::string instance_get_variable( size_t handle, const std::string& context, const std::string& vname );
+
+void instance_set_variable( size_t handle, const std::string& context, const std::string& vname, const std::string& value );
+
+void instance_special_field_names( size_t handle, const std::string& context, const std::string& empty,
  std::string* p_group_name = 0, std::string* p_level_name = 0, std::string* p_order_name = 0, std::string* p_owner_name = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC instance_group_field_name( size_t handle, const std::string& context );
-std::string CIYAM_BASE_DECL_SPEC instance_level_field_name( size_t handle, const std::string& context );
-std::string CIYAM_BASE_DECL_SPEC instance_order_field_name( size_t handle, const std::string& context );
-std::string CIYAM_BASE_DECL_SPEC instance_owner_field_name( size_t handle, const std::string& context );
+std::string instance_group_field_name( size_t handle, const std::string& context );
+std::string instance_level_field_name( size_t handle, const std::string& context );
+std::string instance_order_field_name( size_t handle, const std::string& context );
+std::string instance_owner_field_name( size_t handle, const std::string& context );
 
 enum instance_check_rc
 {
@@ -1155,89 +1170,90 @@ enum instance_check_rc
    e_instance_check_rc_not_found
 };
 
-void CIYAM_BASE_DECL_SPEC instance_check( class_base& instance, instance_check_rc* p_rc = 0 );
+void instance_check( class_base& instance, instance_check_rc* p_rc = 0 );
 
-void CIYAM_BASE_DECL_SPEC instance_tx_check( class_base& instance );
+void instance_tx_check( class_base& instance );
 
-void CIYAM_BASE_DECL_SPEC update_session_locks_for_transaction( );
+void update_session_locks_for_transaction( );
 
-bool CIYAM_BASE_DECL_SPEC is_change_locked( class_base& instance, bool include_cascades = false );
-bool CIYAM_BASE_DECL_SPEC is_destroy_locked( class_base& instance, bool include_cascades = false );
+bool is_change_locked( class_base& instance, bool include_cascades = false );
+bool is_destroy_locked( class_base& instance, bool include_cascades = false );
 
-bool CIYAM_BASE_DECL_SPEC is_create_locked_by_own_session( class_base& instance,
+bool is_create_locked_by_own_session( class_base& instance,
  const char* p_key = 0, bool copy_field_values = false, bool also_check_tx_lock_type = false );
 
-bool CIYAM_BASE_DECL_SPEC was_create_locked_by_own_session(
+bool was_create_locked_by_own_session(
  class_base& instance, const char* p_key = 0, bool copy_field_values = false );
 
-bool CIYAM_BASE_DECL_SPEC is_update_locked_by_own_session( class_base& instance, const char* p_key = 0 );
-bool CIYAM_BASE_DECL_SPEC is_destroy_locked_by_own_session( class_base& instance, const char* p_key = 0 );
-bool CIYAM_BASE_DECL_SPEC is_update_or_destroy_locked_by_own_session( class_base& instance, const char* p_key = 0 );
+bool is_update_locked_by_own_session( class_base& instance, const char* p_key = 0 );
+bool is_destroy_locked_by_own_session( class_base& instance, const char* p_key = 0 );
+bool is_update_or_destroy_locked_by_own_session( class_base& instance, const char* p_key = 0 );
 
-void CIYAM_BASE_DECL_SPEC instance_fetch( size_t handle,
+void instance_fetch( size_t handle,
  const std::string& context, const std::string& key_info, instance_fetch_rc* p_rc = 0 );
 
-void CIYAM_BASE_DECL_SPEC instance_set_parent( size_t handle,
+void instance_set_parent( size_t handle,
  const std::string& context, const std::string& new_key );
 
-void CIYAM_BASE_DECL_SPEC instance_prepare_execute( size_t handle,
+void instance_prepare_execute( size_t handle,
  const std::string& context, const std::string& key, const std::string& ver_info, bool skip_after_fetch = false );
 
-std::string CIYAM_BASE_DECL_SPEC instance_execute( size_t handle,
+std::string instance_execute( size_t handle,
  const std::string& context, const std::string& key, const std::string& method_name_and_args );
 
-void CIYAM_BASE_DECL_SPEC instance_get_field_values( size_t handle,
+void instance_get_field_values( size_t handle,
  const std::string& context, std::vector< std::string >& field_values );
 
-std::string CIYAM_BASE_DECL_SPEC instance_get_fields_and_values( size_t handle,
+std::string instance_get_fields_and_values( size_t handle,
  const std::string& context, const std::vector< std::string >* p_initial_field_values = 0 );
 
-bool CIYAM_BASE_DECL_SPEC instance_has_changed( size_t handle, const std::string& context );
+bool instance_has_changed( size_t handle, const std::string& context );
 
-bool CIYAM_BASE_DECL_SPEC instance_persistence_uses_log( size_t handle );
+bool instance_persistence_uses_log( size_t handle );
 
-bool CIYAM_BASE_DECL_SPEC instance_iterate( size_t handle,
+bool instance_iterate( size_t handle,
  const std::string& context, const std::string& key_info, const std::string& fields,
  const std::string& text, const std::string& query, iter_direction direction, bool inclusive,
  int row_limit = 0, sql_optimisation optimisation = e_sql_optimisation_none, const std::set< std::string >* p_filters = 0 );
 
-bool CIYAM_BASE_DECL_SPEC instance_iterate_next( size_t handle, const std::string& context );
-void CIYAM_BASE_DECL_SPEC instance_iterate_stop( size_t handle, const std::string& context );
+bool instance_iterate_next( size_t handle, const std::string& context );
+void instance_iterate_stop( size_t handle, const std::string& context );
 
-bool CIYAM_BASE_DECL_SPEC instance_filtered( size_t handle, const std::string& context );
-bool CIYAM_BASE_DECL_SPEC instance_uid_filtered( size_t handle, const std::string& context );
-bool CIYAM_BASE_DECL_SPEC instance_has_transient_filter_fields( size_t handle, const std::string& context );
+bool instance_filtered( size_t handle, const std::string& context );
+bool instance_uid_filtered( size_t handle, const std::string& context );
+bool instance_has_transient_filter_fields( size_t handle, const std::string& context );
 
-void CIYAM_BASE_DECL_SPEC instance_review_begin( size_t handle, const std::string& context, const std::string& key );
-void CIYAM_BASE_DECL_SPEC instance_review_finish( size_t handle, const std::string& context );
+void instance_review_begin( size_t handle, const std::string& context, const std::string& key );
+void instance_review_finish( size_t handle, const std::string& context );
 
-void CIYAM_BASE_DECL_SPEC op_instance_create( size_t handle,
+void op_instance_create( size_t handle,
  const std::string& context, const std::string& key, bool internal_operation = true, op_create_rc* p_rc = 0 );
 
-void CIYAM_BASE_DECL_SPEC op_instance_update( size_t handle, const std::string& context,
+void op_instance_update( size_t handle, const std::string& context,
  const std::string& key, const std::string& ver_info, bool internal_operation = true, op_update_rc* p_rc = 0 );
 
-void CIYAM_BASE_DECL_SPEC op_instance_destroy( size_t handle, const std::string& context,
+void op_instance_destroy( size_t handle, const std::string& context,
  const std::string& key, const std::string& ver_info, bool internal_operation = true, op_destroy_rc* p_rc = 0 );
 
-void CIYAM_BASE_DECL_SPEC op_instance_apply( size_t handle, const std::string& context,
+void op_instance_apply( size_t handle, const std::string& context,
  bool internal_operation = true, op_apply_rc* p_rc = 0, std::set< std::string >* p_fields_set = 0 );
 
-void CIYAM_BASE_DECL_SPEC op_instance_cancel( size_t handle, const std::string& context, bool internal_operation = true );
+void op_instance_cancel( size_t handle, const std::string& context, bool internal_operation = true );
 
-void CIYAM_BASE_DECL_SPEC output_progress_message( const std::string& message );
+void output_progress_message( const std::string& message );
 
-bool CIYAM_BASE_DECL_SPEC is_in_transaction( );
+bool is_in_transaction( );
 
-void CIYAM_BASE_DECL_SPEC transaction_start( );
-void CIYAM_BASE_DECL_SPEC transaction_commit( );
-void CIYAM_BASE_DECL_SPEC transaction_rollback( );
+void transaction_start( );
+void transaction_commit( );
+void transaction_rollback( );
 
-size_t CIYAM_BASE_DECL_SPEC transaction_id( );
-size_t CIYAM_BASE_DECL_SPEC transaction_level( );
+size_t transaction_id( );
+size_t transaction_level( );
 
-size_t CIYAM_BASE_DECL_SPEC set_transaction_id( size_t tx_id );
-size_t CIYAM_BASE_DECL_SPEC next_transaction_id( );
+size_t set_transaction_id( size_t tx_id );
+
+size_t next_transaction_id( );
 
 struct transaction_commit_helper
 {
@@ -1246,16 +1262,16 @@ struct transaction_commit_helper
    virtual void after_rollback( ) { }
 };
 
-std::string CIYAM_BASE_DECL_SPEC transaction_log_command( );
+std::string transaction_log_command( );
 
-void CIYAM_BASE_DECL_SPEC transaction_log_command(
+void transaction_log_command(
  const std::string& log_command, transaction_commit_helper* p_tx_helper = 0, bool replace_current = false );
 
-void CIYAM_BASE_DECL_SPEC append_peerchain_log_command( const std::string& identity, const std::string& log_command );
+void append_peerchain_log_command( const std::string& identity, const std::string& log_command );
 
-void CIYAM_BASE_DECL_SPEC append_transaction_log_command( const std::string& log_command );
+void append_transaction_log_command( const std::string& log_command );
 
-class CIYAM_BASE_DECL_SPEC transaction
+class transaction
 {
    public:
    transaction( bool is_not_dummy = true );
@@ -1273,7 +1289,7 @@ class CIYAM_BASE_DECL_SPEC transaction
    transaction& operator =( const transaction& );
 };
 
-struct CIYAM_BASE_DECL_SPEC record_initialiser
+struct record_initialiser
 {
    record_initialiser( std::ofstream& log_file );
 

@@ -22,8 +22,6 @@
 #  include <unistd.h>
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "ciyam_core_files.h"
 
 #include "regex.h"

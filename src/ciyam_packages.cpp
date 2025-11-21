@@ -19,8 +19,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "ciyam_packages.h"
 
 #include "sio.h"

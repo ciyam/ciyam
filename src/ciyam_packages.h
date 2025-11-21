@@ -10,28 +10,19 @@
 #     include <string>
 #  endif
 
-#  include "macros.h"
+std::string get_meta_class_field_list( const std::string& mclass );
 
-#  ifdef CIYAM_BASE_IMPL
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
-#  endif
-
-std::string CIYAM_BASE_DECL_SPEC get_meta_class_field_list( const std::string& mclass );
-
-void CIYAM_BASE_DECL_SPEC export_package(
+void export_package(
  const std::string& module, const std::string& mclass,
  const std::string& key, const std::string& exclude_info, const std::string& skip_field_info,
  const std::string& test_info, const std::string& include_info, const std::string& filename );
 
-void CIYAM_BASE_DECL_SPEC import_package(
+void import_package(
  const std::string& module, const std::string& uid,
  const std::string& dtm, const std::string& filename,
  const std::string& key_prefix, const std::string& replace_info,
  const std::string& skip_field_info, bool new_only = false, bool for_remove = false );
 
-void CIYAM_BASE_DECL_SPEC update_package( const std::string& name );
+void update_package( const std::string& name );
 
 #endif
-

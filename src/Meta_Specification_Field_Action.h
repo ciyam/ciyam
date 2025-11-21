@@ -14,16 +14,11 @@
 
 #  include "Meta_Specification.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_SPECIFICATION_FIELD_ACTION_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_SPECIFICATION_FIELD_ACTION_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class Meta_Class;
 class Meta_Field;
 
-class META_SPECIFICATION_FIELD_ACTION_DECL_SPEC Meta_Specification_Field_Action : public Meta_Specification
+class Meta_Specification_Field_Action : public Meta_Specification
 {
    friend class Meta_Class;
    friend class Meta_Field;

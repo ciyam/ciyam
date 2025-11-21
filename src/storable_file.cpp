@@ -15,8 +15,6 @@
 #  include <utility>
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "storable_file.h"
 
 #include "ods.h"

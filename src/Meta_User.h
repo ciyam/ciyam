@@ -12,15 +12,10 @@
 
 #  include "class_base.h"
 
-#  ifdef MODULE_META_IMPL
-#     define META_USER_DECL_SPEC DYNAMIC_EXPORT
-#  else
-#     define META_USER_DECL_SPEC DYNAMIC_IMPORT
-#  endif
 
 class Meta_Workgroup;
 
-class META_USER_DECL_SPEC Meta_User : public class_base
+class Meta_User : public class_base
 {
    friend class Meta_Workgroup;
 

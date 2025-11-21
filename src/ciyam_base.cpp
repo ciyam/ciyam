@@ -28,8 +28,6 @@
 #  endif
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "ciyam_base.h"
 
 #include "md5.h"
