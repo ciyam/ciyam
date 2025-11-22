@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -770,7 +767,7 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -1491,7 +1488,7 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_Global_Peerchain_Entry::impl::finalise_fetch( bool skip_set_original )
+void Meta_Global_Peerchain_Entry::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -1499,8 +1496,8 @@ void Meta_Global_Peerchain_Entry::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_Global_Peerchain_Entry::impl::at_create( )
@@ -1626,6 +1623,7 @@ void Meta_Global_Peerchain_Entry::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -1915,9 +1913,9 @@ void Meta_Global_Peerchain_Entry::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_Global_Peerchain_Entry::finalise_fetch( bool skip_set_original )
+void Meta_Global_Peerchain_Entry::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_Global_Peerchain_Entry::at_create( )
@@ -2942,31 +2940,31 @@ int Meta_Global_Peerchain_Entry::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Actions || field == c_field_name_Actions )
+   else if( ( field == c_field_id_Actions ) || ( field == c_field_name_Actions ) )
       rc += 1;
-   else if( field == c_field_id_Auto_Start || field == c_field_name_Auto_Start )
+   else if( ( field == c_field_id_Auto_Start ) || ( field == c_field_name_Auto_Start ) )
       rc += 2;
-   else if( field == c_field_id_Chain_Id || field == c_field_name_Chain_Id )
+   else if( ( field == c_field_id_Chain_Id ) || ( field == c_field_name_Chain_Id ) )
       rc += 3;
-   else if( field == c_field_id_Description || field == c_field_name_Description )
+   else if( ( field == c_field_id_Description ) || ( field == c_field_name_Description ) )
       rc += 4;
-   else if( field == c_field_id_Extra_Value || field == c_field_name_Extra_Value )
+   else if( ( field == c_field_id_Extra_Value ) || ( field == c_field_name_Extra_Value ) )
       rc += 5;
-   else if( field == c_field_id_Host_Name || field == c_field_name_Host_Name )
+   else if( ( field == c_field_id_Host_Name ) || ( field == c_field_name_Host_Name ) )
       rc += 6;
-   else if( field == c_field_id_Host_Port || field == c_field_name_Host_Port )
+   else if( ( field == c_field_id_Host_Port ) || ( field == c_field_name_Host_Port ) )
       rc += 7;
-   else if( field == c_field_id_Local_Port || field == c_field_name_Local_Port )
+   else if( ( field == c_field_id_Local_Port ) || ( field == c_field_name_Local_Port ) )
       rc += 8;
-   else if( field == c_field_id_Num_Helpers || field == c_field_name_Num_Helpers )
+   else if( ( field == c_field_id_Num_Helpers ) || ( field == c_field_name_Num_Helpers ) )
       rc += 9;
-   else if( field == c_field_id_Peer_Type || field == c_field_name_Peer_Type )
+   else if( ( field == c_field_id_Peer_Type ) || ( field == c_field_name_Peer_Type ) )
       rc += 10;
-   else if( field == c_field_id_Port_Numbers || field == c_field_name_Port_Numbers )
+   else if( ( field == c_field_id_Port_Numbers ) || ( field == c_field_name_Port_Numbers ) )
       rc += 11;
-   else if( field == c_field_id_Shared_Secret || field == c_field_name_Shared_Secret )
+   else if( ( field == c_field_id_Shared_Secret ) || ( field == c_field_name_Shared_Secret ) )
       rc += 12;
-   else if( field == c_field_id_Status || field == c_field_name_Status )
+   else if( ( field == c_field_id_Status ) || ( field == c_field_name_Status ) )
       rc += 13;
 
    return rc - 1;

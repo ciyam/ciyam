@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -388,7 +385,7 @@ struct Meta_Auto_Code::impl : public Meta_Auto_Code_command_handler
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -803,7 +800,7 @@ void Meta_Auto_Code::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_Auto_Code::impl::finalise_fetch( bool skip_set_original )
+void Meta_Auto_Code::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -811,8 +808,8 @@ void Meta_Auto_Code::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_Auto_Code::impl::at_create( )
@@ -936,6 +933,7 @@ void Meta_Auto_Code::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -1110,9 +1108,9 @@ void Meta_Auto_Code::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_Auto_Code::finalise_fetch( bool skip_set_original )
+void Meta_Auto_Code::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_Auto_Code::at_create( )
@@ -1699,11 +1697,11 @@ int Meta_Auto_Code::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Exhausted || field == c_field_name_Exhausted )
+   else if( ( field == c_field_id_Exhausted ) || ( field == c_field_name_Exhausted ) )
       rc += 1;
-   else if( field == c_field_id_Mask || field == c_field_name_Mask )
+   else if( ( field == c_field_id_Mask ) || ( field == c_field_name_Mask ) )
       rc += 2;
-   else if( field == c_field_id_Next || field == c_field_name_Next )
+   else if( ( field == c_field_id_Next ) || ( field == c_field_name_Next ) )
       rc += 3;
 
    return rc - 1;

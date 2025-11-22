@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -1214,7 +1211,7 @@ struct Meta_View::impl : public Meta_View_command_handler
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -2566,7 +2563,7 @@ void Meta_View::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_View::impl::finalise_fetch( bool skip_set_original )
+void Meta_View::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -2574,8 +2571,8 @@ void Meta_View::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_View::impl::at_create( )
@@ -2756,6 +2753,7 @@ void Meta_View::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -3165,9 +3163,9 @@ void Meta_View::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_View::finalise_fetch( bool skip_set_original )
+void Meta_View::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_View::at_create( )
@@ -4627,47 +4625,47 @@ int Meta_View::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+   else if( ( field == c_field_id_Access_Permission ) || ( field == c_field_name_Access_Permission ) )
       rc += 1;
-   else if( field == c_field_id_Access_Restriction || field == c_field_name_Access_Restriction )
+   else if( ( field == c_field_id_Access_Restriction ) || ( field == c_field_name_Access_Restriction ) )
       rc += 2;
-   else if( field == c_field_id_Allow_Copy_Action || field == c_field_name_Allow_Copy_Action )
+   else if( ( field == c_field_id_Allow_Copy_Action ) || ( field == c_field_name_Allow_Copy_Action ) )
       rc += 3;
-   else if( field == c_field_id_Allow_Printable_Version || field == c_field_name_Allow_Printable_Version )
+   else if( ( field == c_field_id_Allow_Printable_Version ) || ( field == c_field_name_Allow_Printable_Version ) )
       rc += 4;
-   else if( field == c_field_id_Auto_Back_After_Save || field == c_field_name_Auto_Back_After_Save )
+   else if( ( field == c_field_id_Auto_Back_After_Save ) || ( field == c_field_name_Auto_Back_After_Save ) )
       rc += 5;
-   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
+   else if( ( field == c_field_id_Change_Permission ) || ( field == c_field_name_Change_Permission ) )
       rc += 6;
-   else if( field == c_field_id_Change_Restriction || field == c_field_name_Change_Restriction )
+   else if( ( field == c_field_id_Change_Restriction ) || ( field == c_field_name_Change_Restriction ) )
       rc += 7;
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( ( field == c_field_id_Class ) || ( field == c_field_name_Class ) )
       rc += 8;
-   else if( field == c_field_id_File_Links_Always_As_Single || field == c_field_name_File_Links_Always_As_Single )
+   else if( ( field == c_field_id_File_Links_Always_As_Single ) || ( field == c_field_name_File_Links_Always_As_Single ) )
       rc += 9;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( ( field == c_field_id_Id ) || ( field == c_field_name_Id ) )
       rc += 10;
-   else if( field == c_field_id_Ignore_Parent_Record || field == c_field_name_Ignore_Parent_Record )
+   else if( ( field == c_field_id_Ignore_Parent_Record ) || ( field == c_field_name_Ignore_Parent_Record ) )
       rc += 11;
-   else if( field == c_field_id_Ignore_Unactionable_Records || field == c_field_name_Ignore_Unactionable_Records )
+   else if( ( field == c_field_id_Ignore_Unactionable_Records ) || ( field == c_field_name_Ignore_Unactionable_Records ) )
       rc += 12;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( ( field == c_field_id_Model ) || ( field == c_field_name_Model ) )
       rc += 13;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( ( field == c_field_id_Name ) || ( field == c_field_name_Name ) )
       rc += 14;
-   else if( field == c_field_id_PDF_Font_Type || field == c_field_name_PDF_Font_Type )
+   else if( ( field == c_field_id_PDF_Font_Type ) || ( field == c_field_name_PDF_Font_Type ) )
       rc += 15;
-   else if( field == c_field_id_PDF_View_Type || field == c_field_name_PDF_View_Type )
+   else if( ( field == c_field_id_PDF_View_Type ) || ( field == c_field_name_PDF_View_Type ) )
       rc += 16;
-   else if( field == c_field_id_Print_Without_Highlight || field == c_field_name_Print_Without_Highlight )
+   else if( ( field == c_field_id_Print_Without_Highlight ) || ( field == c_field_name_Print_Without_Highlight ) )
       rc += 17;
-   else if( field == c_field_id_Title || field == c_field_name_Title )
+   else if( ( field == c_field_id_Title ) || ( field == c_field_name_Title ) )
       rc += 18;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( ( field == c_field_id_Type ) || ( field == c_field_name_Type ) )
       rc += 19;
-   else if( field == c_field_id_Type_Key || field == c_field_name_Type_Key )
+   else if( ( field == c_field_id_Type_Key ) || ( field == c_field_name_Type_Key ) )
       rc += 20;
-   else if( field == c_field_id_Use_First_Row_As_Header || field == c_field_name_Use_First_Row_As_Header )
+   else if( ( field == c_field_id_Use_First_Row_As_Header ) || ( field == c_field_name_Use_First_Row_As_Header ) )
       rc += 21;
 
    return rc - 1;

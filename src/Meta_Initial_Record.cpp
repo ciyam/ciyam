@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -495,7 +492,7 @@ struct Meta_Initial_Record::impl : public Meta_Initial_Record_command_handler
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -962,7 +959,7 @@ void Meta_Initial_Record::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_Initial_Record::impl::finalise_fetch( bool skip_set_original )
+void Meta_Initial_Record::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -970,8 +967,8 @@ void Meta_Initial_Record::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_Initial_Record::impl::at_create( )
@@ -1123,6 +1120,7 @@ void Meta_Initial_Record::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -1327,9 +1325,9 @@ void Meta_Initial_Record::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_Initial_Record::finalise_fetch( bool skip_set_original )
+void Meta_Initial_Record::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_Initial_Record::at_create( )
@@ -2008,13 +2006,13 @@ int Meta_Initial_Record::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( ( field == c_field_id_Class ) || ( field == c_field_name_Class ) )
       rc += 1;
-   else if( field == c_field_id_Comments || field == c_field_name_Comments )
+   else if( ( field == c_field_id_Comments ) || ( field == c_field_name_Comments ) )
       rc += 2;
-   else if( field == c_field_id_Key || field == c_field_name_Key )
+   else if( ( field == c_field_id_Key ) || ( field == c_field_name_Key ) )
       rc += 3;
-   else if( field == c_field_id_Order || field == c_field_name_Order )
+   else if( ( field == c_field_id_Order ) || ( field == c_field_name_Order ) )
       rc += 4;
 
    return rc - 1;

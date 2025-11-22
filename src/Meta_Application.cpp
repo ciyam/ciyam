@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -1788,7 +1785,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -3747,7 +3744,7 @@ void Meta_Application::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_Application::impl::finalise_fetch( bool skip_set_original )
+void Meta_Application::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -3755,8 +3752,8 @@ void Meta_Application::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_Application::impl::at_create( )
@@ -4084,6 +4081,7 @@ void Meta_Application::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -4673,9 +4671,9 @@ void Meta_Application::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_Application::finalise_fetch( bool skip_set_original )
+void Meta_Application::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_Application::at_create( )
@@ -6781,85 +6779,85 @@ int Meta_Application::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Actions || field == c_field_name_Actions )
+   else if( ( field == c_field_id_Actions ) || ( field == c_field_name_Actions ) )
       rc += 1;
-   else if( field == c_field_id_Add_Modules_Automatically || field == c_field_name_Add_Modules_Automatically )
+   else if( ( field == c_field_id_Add_Modules_Automatically ) || ( field == c_field_name_Add_Modules_Automatically ) )
       rc += 2;
-   else if( field == c_field_id_Allow_Duplicate_Logins || field == c_field_name_Allow_Duplicate_Logins )
+   else if( ( field == c_field_id_Allow_Duplicate_Logins ) || ( field == c_field_name_Allow_Duplicate_Logins ) )
       rc += 3;
-   else if( field == c_field_id_Allow_Module_Switching || field == c_field_name_Allow_Module_Switching )
+   else if( ( field == c_field_id_Allow_Module_Switching ) || ( field == c_field_name_Allow_Module_Switching ) )
       rc += 4;
-   else if( field == c_field_id_Auto_Login_Days || field == c_field_name_Auto_Login_Days )
+   else if( ( field == c_field_id_Auto_Login_Days ) || ( field == c_field_name_Auto_Login_Days ) )
       rc += 5;
-   else if( field == c_field_id_Blockchain_Id || field == c_field_name_Blockchain_Id )
+   else if( ( field == c_field_id_Blockchain_Id ) || ( field == c_field_name_Blockchain_Id ) )
       rc += 6;
-   else if( field == c_field_id_Create_Database || field == c_field_name_Create_Database )
+   else if( ( field == c_field_id_Create_Database ) || ( field == c_field_name_Create_Database ) )
       rc += 7;
-   else if( field == c_field_id_Created_Database || field == c_field_name_Created_Database )
+   else if( ( field == c_field_id_Created_Database ) || ( field == c_field_name_Created_Database ) )
       rc += 8;
-   else if( field == c_field_id_Creation_Script || field == c_field_name_Creation_Script )
+   else if( ( field == c_field_id_Creation_Script ) || ( field == c_field_name_Creation_Script ) )
       rc += 9;
-   else if( field == c_field_id_Default_Image_Height || field == c_field_name_Default_Image_Height )
+   else if( ( field == c_field_id_Default_Image_Height ) || ( field == c_field_name_Default_Image_Height ) )
       rc += 10;
-   else if( field == c_field_id_Default_Image_Width || field == c_field_name_Default_Image_Width )
+   else if( ( field == c_field_id_Default_Image_Width ) || ( field == c_field_name_Default_Image_Width ) )
       rc += 11;
-   else if( field == c_field_id_Default_List_Print_Row_Limit || field == c_field_name_Default_List_Print_Row_Limit )
+   else if( ( field == c_field_id_Default_List_Print_Row_Limit ) || ( field == c_field_name_Default_List_Print_Row_Limit ) )
       rc += 12;
-   else if( field == c_field_id_Default_List_Row_Limit || field == c_field_name_Default_List_Row_Limit )
+   else if( ( field == c_field_id_Default_List_Row_Limit ) || ( field == c_field_name_Default_List_Row_Limit ) )
       rc += 13;
-   else if( field == c_field_id_Default_Max_Attached_File_Size || field == c_field_name_Default_Max_Attached_File_Size )
+   else if( ( field == c_field_id_Default_Max_Attached_File_Size ) || ( field == c_field_name_Default_Max_Attached_File_Size ) )
       rc += 14;
-   else if( field == c_field_id_Default_Multiline_Max_Rows || field == c_field_name_Default_Multiline_Max_Rows )
+   else if( ( field == c_field_id_Default_Multiline_Max_Rows ) || ( field == c_field_name_Default_Multiline_Max_Rows ) )
       rc += 15;
-   else if( field == c_field_id_Default_Multiline_Min_Rows || field == c_field_name_Default_Multiline_Min_Rows )
+   else if( ( field == c_field_id_Default_Multiline_Min_Rows ) || ( field == c_field_name_Default_Multiline_Min_Rows ) )
       rc += 16;
-   else if( field == c_field_id_Default_Multiline_Text_Limit || field == c_field_name_Default_Multiline_Text_Limit )
+   else if( ( field == c_field_id_Default_Multiline_Text_Limit ) || ( field == c_field_name_Default_Multiline_Text_Limit ) )
       rc += 17;
-   else if( field == c_field_id_Default_Multiline_Text_Trunc || field == c_field_name_Default_Multiline_Text_Trunc )
+   else if( ( field == c_field_id_Default_Multiline_Text_Trunc ) || ( field == c_field_name_Default_Multiline_Text_Trunc ) )
       rc += 18;
-   else if( field == c_field_id_Encrypt_Dynamic_Content || field == c_field_name_Encrypt_Dynamic_Content )
+   else if( ( field == c_field_id_Encrypt_Dynamic_Content ) || ( field == c_field_name_Encrypt_Dynamic_Content ) )
       rc += 19;
-   else if( field == c_field_id_Generate_Details || field == c_field_name_Generate_Details )
+   else if( ( field == c_field_id_Generate_Details ) || ( field == c_field_name_Generate_Details ) )
       rc += 20;
-   else if( field == c_field_id_Generate_Status || field == c_field_name_Generate_Status )
+   else if( ( field == c_field_id_Generate_Status ) || ( field == c_field_name_Generate_Status ) )
       rc += 21;
-   else if( field == c_field_id_Generate_Type || field == c_field_name_Generate_Type )
+   else if( ( field == c_field_id_Generate_Type ) || ( field == c_field_name_Generate_Type ) )
       rc += 22;
-   else if( field == c_field_id_Installing_Script || field == c_field_name_Installing_Script )
+   else if( ( field == c_field_id_Installing_Script ) || ( field == c_field_name_Installing_Script ) )
       rc += 23;
-   else if( field == c_field_id_Keep_Existing_Data || field == c_field_name_Keep_Existing_Data )
+   else if( ( field == c_field_id_Keep_Existing_Data ) || ( field == c_field_name_Keep_Existing_Data ) )
       rc += 24;
-   else if( field == c_field_id_Module_Prefix || field == c_field_name_Module_Prefix )
+   else if( ( field == c_field_id_Module_Prefix ) || ( field == c_field_name_Module_Prefix ) )
       rc += 25;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( ( field == c_field_id_Name ) || ( field == c_field_name_Name ) )
       rc += 26;
-   else if( field == c_field_id_Print_Lists_With_Check_Boxes || field == c_field_name_Print_Lists_With_Check_Boxes )
+   else if( ( field == c_field_id_Print_Lists_With_Check_Boxes ) || ( field == c_field_name_Print_Lists_With_Check_Boxes ) )
       rc += 27;
-   else if( field == c_field_id_Print_Lists_With_Row_Numbers || field == c_field_name_Print_Lists_With_Row_Numbers )
+   else if( ( field == c_field_id_Print_Lists_With_Row_Numbers ) || ( field == c_field_name_Print_Lists_With_Row_Numbers ) )
       rc += 28;
-   else if( field == c_field_id_Registration_Key || field == c_field_name_Registration_Key )
+   else if( ( field == c_field_id_Registration_Key ) || ( field == c_field_name_Registration_Key ) )
       rc += 29;
-   else if( field == c_field_id_Show_Inaccessible_Modules || field == c_field_name_Show_Inaccessible_Modules )
+   else if( ( field == c_field_id_Show_Inaccessible_Modules ) || ( field == c_field_name_Show_Inaccessible_Modules ) )
       rc += 30;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( ( field == c_field_id_Type ) || ( field == c_field_name_Type ) )
       rc += 31;
-   else if( field == c_field_id_Use_Check_Boxes_for_Bools || field == c_field_name_Use_Check_Boxes_for_Bools )
+   else if( ( field == c_field_id_Use_Check_Boxes_for_Bools ) || ( field == c_field_name_Use_Check_Boxes_for_Bools ) )
       rc += 32;
-   else if( field == c_field_id_Use_Embedded_Images || field == c_field_name_Use_Embedded_Images )
+   else if( ( field == c_field_id_Use_Embedded_Images ) || ( field == c_field_name_Use_Embedded_Images ) )
       rc += 33;
-   else if( field == c_field_id_Use_Script || field == c_field_name_Use_Script )
+   else if( ( field == c_field_id_Use_Script ) || ( field == c_field_name_Use_Script ) )
       rc += 34;
-   else if( field == c_field_id_Use_TLS_Sessions || field == c_field_name_Use_TLS_Sessions )
+   else if( ( field == c_field_id_Use_TLS_Sessions ) || ( field == c_field_name_Use_TLS_Sessions ) )
       rc += 35;
-   else if( field == c_field_id_Use_URL_Checksum || field == c_field_name_Use_URL_Checksum )
+   else if( ( field == c_field_id_Use_URL_Checksum ) || ( field == c_field_name_Use_URL_Checksum ) )
       rc += 36;
-   else if( field == c_field_id_Use_Vertical_Menu || field == c_field_name_Use_Vertical_Menu )
+   else if( ( field == c_field_id_Use_Vertical_Menu ) || ( field == c_field_name_Use_Vertical_Menu ) )
       rc += 37;
-   else if( field == c_field_id_Version || field == c_field_name_Version )
+   else if( ( field == c_field_id_Version ) || ( field == c_field_name_Version ) )
       rc += 38;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       rc += 39;
-   else if( field == c_field_id_Year_Created || field == c_field_name_Year_Created )
+   else if( ( field == c_field_id_Year_Created ) || ( field == c_field_name_Year_Created ) )
       rc += 40;
 
    return rc - 1;

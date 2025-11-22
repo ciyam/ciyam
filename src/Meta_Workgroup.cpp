@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -688,7 +685,7 @@ struct Meta_Workgroup::impl : public Meta_Workgroup_command_handler
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -1254,7 +1251,7 @@ void Meta_Workgroup::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_Workgroup::impl::finalise_fetch( bool skip_set_original )
+void Meta_Workgroup::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -1262,8 +1259,8 @@ void Meta_Workgroup::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_Workgroup::impl::at_create( )
@@ -1453,6 +1450,7 @@ void Meta_Workgroup::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -1737,9 +1735,9 @@ void Meta_Workgroup::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_Workgroup::finalise_fetch( bool skip_set_original )
+void Meta_Workgroup::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_Workgroup::at_create( )
@@ -2597,19 +2595,19 @@ int Meta_Workgroup::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( ( field == c_field_id_Id ) || ( field == c_field_name_Id ) )
       rc += 1;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( ( field == c_field_id_Name ) || ( field == c_field_name_Name ) )
       rc += 2;
-   else if( field == c_field_id_Next_Enum_Id || field == c_field_name_Next_Enum_Id )
+   else if( ( field == c_field_id_Next_Enum_Id ) || ( field == c_field_name_Next_Enum_Id ) )
       rc += 3;
-   else if( field == c_field_id_Next_Model_Id || field == c_field_name_Next_Model_Id )
+   else if( ( field == c_field_id_Next_Model_Id ) || ( field == c_field_name_Next_Model_Id ) )
       rc += 4;
-   else if( field == c_field_id_Next_Permission_Id || field == c_field_name_Next_Permission_Id )
+   else if( ( field == c_field_id_Next_Permission_Id ) || ( field == c_field_name_Next_Permission_Id ) )
       rc += 5;
-   else if( field == c_field_id_Next_Type_Id || field == c_field_name_Next_Type_Id )
+   else if( ( field == c_field_id_Next_Type_Id ) || ( field == c_field_name_Next_Type_Id ) )
       rc += 6;
-   else if( field == c_field_id_Standard_Package || field == c_field_name_Standard_Package )
+   else if( ( field == c_field_id_Standard_Package ) || ( field == c_field_name_Standard_Package ) )
       rc += 7;
 
    return rc - 1;

@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -1178,7 +1175,7 @@ struct Meta_Type::impl : public Meta_Type_command_handler
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -2177,7 +2174,7 @@ void Meta_Type::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_Type::impl::finalise_fetch( bool skip_set_original )
+void Meta_Type::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -2185,8 +2182,8 @@ void Meta_Type::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_Type::impl::at_create( )
@@ -2325,6 +2322,7 @@ void Meta_Type::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -2689,9 +2687,9 @@ void Meta_Type::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_Type::finalise_fetch( bool skip_set_original )
+void Meta_Type::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_Type::at_create( )
@@ -4098,47 +4096,47 @@ int Meta_Type::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Auto_Round || field == c_field_name_Auto_Round )
+   else if( ( field == c_field_id_Auto_Round ) || ( field == c_field_name_Auto_Round ) )
       rc += 1;
-   else if( field == c_field_id_Date_Precision || field == c_field_name_Date_Precision )
+   else if( ( field == c_field_id_Date_Precision ) || ( field == c_field_name_Date_Precision ) )
       rc += 2;
-   else if( field == c_field_id_Default_UOM || field == c_field_name_Default_UOM )
+   else if( ( field == c_field_id_Default_UOM ) || ( field == c_field_name_Default_UOM ) )
       rc += 3;
-   else if( field == c_field_id_Fraction_Limit || field == c_field_name_Fraction_Limit )
+   else if( ( field == c_field_id_Fraction_Limit ) || ( field == c_field_name_Fraction_Limit ) )
       rc += 4;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( ( field == c_field_id_Id ) || ( field == c_field_name_Id ) )
       rc += 5;
-   else if( field == c_field_id_Int_Type || field == c_field_name_Int_Type )
+   else if( ( field == c_field_id_Int_Type ) || ( field == c_field_name_Int_Type ) )
       rc += 6;
-   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+   else if( ( field == c_field_id_Internal ) || ( field == c_field_name_Internal ) )
       rc += 7;
-   else if( field == c_field_id_Max_Size || field == c_field_name_Max_Size )
+   else if( ( field == c_field_id_Max_Size ) || ( field == c_field_name_Max_Size ) )
       rc += 8;
-   else if( field == c_field_id_Max_Value || field == c_field_name_Max_Value )
+   else if( ( field == c_field_id_Max_Value ) || ( field == c_field_name_Max_Value ) )
       rc += 9;
-   else if( field == c_field_id_Min_Value || field == c_field_name_Min_Value )
+   else if( ( field == c_field_id_Min_Value ) || ( field == c_field_name_Min_Value ) )
       rc += 10;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( ( field == c_field_id_Name ) || ( field == c_field_name_Name ) )
       rc += 11;
-   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
+   else if( ( field == c_field_id_Numeric_Decimals ) || ( field == c_field_name_Numeric_Decimals ) )
       rc += 12;
-   else if( field == c_field_id_Numeric_Digits || field == c_field_name_Numeric_Digits )
+   else if( ( field == c_field_id_Numeric_Digits ) || ( field == c_field_name_Numeric_Digits ) )
       rc += 13;
-   else if( field == c_field_id_Numeric_Type || field == c_field_name_Numeric_Type )
+   else if( ( field == c_field_id_Numeric_Type ) || ( field == c_field_name_Numeric_Type ) )
       rc += 14;
-   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
+   else if( ( field == c_field_id_Primitive ) || ( field == c_field_name_Primitive ) )
       rc += 15;
-   else if( field == c_field_id_Rounding_Method || field == c_field_name_Rounding_Method )
+   else if( ( field == c_field_id_Rounding_Method ) || ( field == c_field_name_Rounding_Method ) )
       rc += 16;
-   else if( field == c_field_id_Show_Plus_Sign || field == c_field_name_Show_Plus_Sign )
+   else if( ( field == c_field_id_Show_Plus_Sign ) || ( field == c_field_name_Show_Plus_Sign ) )
       rc += 17;
-   else if( field == c_field_id_String_Domain || field == c_field_name_String_Domain )
+   else if( ( field == c_field_id_String_Domain ) || ( field == c_field_name_String_Domain ) )
       rc += 18;
-   else if( field == c_field_id_Time_Precision || field == c_field_name_Time_Precision )
+   else if( ( field == c_field_id_Time_Precision ) || ( field == c_field_name_Time_Precision ) )
       rc += 19;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       rc += 20;
-   else if( field == c_field_id_Zero_Padding || field == c_field_name_Zero_Padding )
+   else if( ( field == c_field_id_Zero_Padding ) || ( field == c_field_name_Zero_Padding ) )
       rc += 21;
 
    return rc - 1;

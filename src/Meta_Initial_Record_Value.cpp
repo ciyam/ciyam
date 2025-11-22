@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -454,7 +451,7 @@ struct Meta_Initial_Record_Value::impl : public Meta_Initial_Record_Value_comman
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -754,7 +751,7 @@ void Meta_Initial_Record_Value::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_Initial_Record_Value::impl::finalise_fetch( bool skip_set_original )
+void Meta_Initial_Record_Value::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -762,8 +759,8 @@ void Meta_Initial_Record_Value::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_Initial_Record_Value::impl::at_create( )
@@ -887,6 +884,7 @@ void Meta_Initial_Record_Value::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -1066,9 +1064,9 @@ void Meta_Initial_Record_Value::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_Initial_Record_Value::finalise_fetch( bool skip_set_original )
+void Meta_Initial_Record_Value::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_Initial_Record_Value::at_create( )
@@ -1686,11 +1684,11 @@ int Meta_Initial_Record_Value::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Field || field == c_field_name_Field )
+   else if( ( field == c_field_id_Field ) || ( field == c_field_name_Field ) )
       rc += 1;
-   else if( field == c_field_id_Initial_Record || field == c_field_name_Initial_Record )
+   else if( ( field == c_field_id_Initial_Record ) || ( field == c_field_name_Initial_Record ) )
       rc += 2;
-   else if( field == c_field_id_Value || field == c_field_name_Value )
+   else if( ( field == c_field_id_Value ) || ( field == c_field_name_Value ) )
       rc += 3;
 
    return rc - 1;

@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -3670,7 +3667,7 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -6463,7 +6460,7 @@ void Meta_Specification_Type::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_Specification_Type::impl::finalise_fetch( bool skip_set_original )
+void Meta_Specification_Type::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -6471,8 +6468,8 @@ void Meta_Specification_Type::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_Specification_Type::impl::at_create( )
@@ -6620,6 +6617,7 @@ void Meta_Specification_Type::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -8031,9 +8029,9 @@ void Meta_Specification_Type::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_Specification_Type::finalise_fetch( bool skip_set_original )
+void Meta_Specification_Type::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_Specification_Type::at_create( )
@@ -13159,245 +13157,245 @@ int Meta_Specification_Type::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Allow_Child_Relationship || field == c_field_name_Allow_Child_Relationship )
+   else if( ( field == c_field_id_Allow_Child_Relationship ) || ( field == c_field_name_Allow_Child_Relationship ) )
       rc += 1;
-   else if( field == c_field_id_Allow_Enum || field == c_field_name_Allow_Enum )
+   else if( ( field == c_field_id_Allow_Enum ) || ( field == c_field_name_Allow_Enum ) )
       rc += 2;
-   else if( field == c_field_id_Allow_Enum_Item || field == c_field_name_Allow_Enum_Item )
+   else if( ( field == c_field_id_Allow_Enum_Item ) || ( field == c_field_name_Allow_Enum_Item ) )
       rc += 3;
-   else if( field == c_field_id_Allow_FK_Source_Field_Choice || field == c_field_name_Allow_FK_Source_Field_Choice )
+   else if( ( field == c_field_id_Allow_FK_Source_Field_Choice ) || ( field == c_field_name_Allow_FK_Source_Field_Choice ) )
       rc += 4;
-   else if( field == c_field_id_Allow_FK_Test_Field_Choice || field == c_field_name_Allow_FK_Test_Field_Choice )
+   else if( ( field == c_field_id_Allow_FK_Test_Field_Choice ) || ( field == c_field_name_Allow_FK_Test_Field_Choice ) )
       rc += 5;
-   else if( field == c_field_id_Allow_Field || field == c_field_name_Allow_Field )
+   else if( ( field == c_field_id_Allow_Field ) || ( field == c_field_name_Allow_Field ) )
       rc += 6;
-   else if( field == c_field_id_Allow_Modifier || field == c_field_name_Allow_Modifier )
+   else if( ( field == c_field_id_Allow_Modifier ) || ( field == c_field_name_Allow_Modifier ) )
       rc += 7;
-   else if( field == c_field_id_Allow_Options || field == c_field_name_Allow_Options )
+   else if( ( field == c_field_id_Allow_Options ) || ( field == c_field_name_Allow_Options ) )
       rc += 8;
-   else if( field == c_field_id_Allow_Other_Class || field == c_field_name_Allow_Other_Class )
+   else if( ( field == c_field_id_Allow_Other_Class ) || ( field == c_field_name_Allow_Other_Class ) )
       rc += 9;
-   else if( field == c_field_id_Allow_Other_Class_Field || field == c_field_name_Allow_Other_Class_Field )
+   else if( ( field == c_field_id_Allow_Other_Class_Field ) || ( field == c_field_name_Allow_Other_Class_Field ) )
       rc += 10;
-   else if( field == c_field_id_Allow_Other_Field || field == c_field_name_Allow_Other_Field )
+   else if( ( field == c_field_id_Allow_Other_Field ) || ( field == c_field_name_Allow_Other_Field ) )
       rc += 11;
-   else if( field == c_field_id_Allow_Other_Field_2 || field == c_field_name_Allow_Other_Field_2 )
+   else if( ( field == c_field_id_Allow_Other_Field_2 ) || ( field == c_field_name_Allow_Other_Field_2 ) )
       rc += 12;
-   else if( field == c_field_id_Allow_Other_Modifier || field == c_field_name_Allow_Other_Modifier )
+   else if( ( field == c_field_id_Allow_Other_Modifier ) || ( field == c_field_name_Allow_Other_Modifier ) )
       rc += 13;
-   else if( field == c_field_id_Allow_Other_Modifier_2 || field == c_field_name_Allow_Other_Modifier_2 )
+   else if( ( field == c_field_id_Allow_Other_Modifier_2 ) || ( field == c_field_name_Allow_Other_Modifier_2 ) )
       rc += 14;
-   else if( field == c_field_id_Allow_Other_Procedure || field == c_field_name_Allow_Other_Procedure )
+   else if( ( field == c_field_id_Allow_Other_Procedure ) || ( field == c_field_name_Allow_Other_Procedure ) )
       rc += 15;
-   else if( field == c_field_id_Allow_Other_Procedure_2 || field == c_field_name_Allow_Other_Procedure_2 )
+   else if( ( field == c_field_id_Allow_Other_Procedure_2 ) || ( field == c_field_name_Allow_Other_Procedure_2 ) )
       rc += 16;
-   else if( field == c_field_id_Allow_Other_Source_Child || field == c_field_name_Allow_Other_Source_Child )
+   else if( ( field == c_field_id_Allow_Other_Source_Child ) || ( field == c_field_name_Allow_Other_Source_Child ) )
       rc += 17;
-   else if( field == c_field_id_Allow_Other_Source_Child_2 || field == c_field_name_Allow_Other_Source_Child_2 )
+   else if( ( field == c_field_id_Allow_Other_Source_Child_2 ) || ( field == c_field_name_Allow_Other_Source_Child_2 ) )
       rc += 18;
-   else if( field == c_field_id_Allow_Permission || field == c_field_name_Allow_Permission )
+   else if( ( field == c_field_id_Allow_Permission ) || ( field == c_field_name_Allow_Permission ) )
       rc += 19;
-   else if( field == c_field_id_Allow_Procedure || field == c_field_name_Allow_Procedure )
+   else if( ( field == c_field_id_Allow_Procedure ) || ( field == c_field_name_Allow_Procedure ) )
       rc += 20;
-   else if( field == c_field_id_Allow_Procedure_Arg || field == c_field_name_Allow_Procedure_Arg )
+   else if( ( field == c_field_id_Allow_Procedure_Arg ) || ( field == c_field_name_Allow_Procedure_Arg ) )
       rc += 21;
-   else if( field == c_field_id_Allow_Source_Child || field == c_field_name_Allow_Source_Child )
+   else if( ( field == c_field_id_Allow_Source_Child ) || ( field == c_field_name_Allow_Source_Child ) )
       rc += 22;
-   else if( field == c_field_id_Allow_Source_Class || field == c_field_name_Allow_Source_Class )
+   else if( ( field == c_field_id_Allow_Source_Class ) || ( field == c_field_name_Allow_Source_Class ) )
       rc += 23;
-   else if( field == c_field_id_Allow_Source_Field || field == c_field_name_Allow_Source_Field )
+   else if( ( field == c_field_id_Allow_Source_Field ) || ( field == c_field_name_Allow_Source_Field ) )
       rc += 24;
-   else if( field == c_field_id_Allow_Source_Grandchild || field == c_field_name_Allow_Source_Grandchild )
+   else if( ( field == c_field_id_Allow_Source_Grandchild ) || ( field == c_field_name_Allow_Source_Grandchild ) )
       rc += 25;
-   else if( field == c_field_id_Allow_Source_Parent || field == c_field_name_Allow_Source_Parent )
+   else if( ( field == c_field_id_Allow_Source_Parent ) || ( field == c_field_name_Allow_Source_Parent ) )
       rc += 26;
-   else if( field == c_field_id_Allow_Test_Field || field == c_field_name_Allow_Test_Field )
+   else if( ( field == c_field_id_Allow_Test_Field ) || ( field == c_field_name_Allow_Test_Field ) )
       rc += 27;
-   else if( field == c_field_id_Allow_Test_Value || field == c_field_name_Allow_Test_Value )
+   else if( ( field == c_field_id_Allow_Test_Value ) || ( field == c_field_name_Allow_Test_Value ) )
       rc += 28;
-   else if( field == c_field_id_Allow_Value || field == c_field_name_Allow_Value )
+   else if( ( field == c_field_id_Allow_Value ) || ( field == c_field_name_Allow_Value ) )
       rc += 29;
-   else if( field == c_field_id_Can_Access_Below_Model || field == c_field_name_Can_Access_Below_Model )
+   else if( ( field == c_field_id_Can_Access_Below_Model ) || ( field == c_field_name_Can_Access_Below_Model ) )
       rc += 30;
-   else if( field == c_field_id_Child_Prefix || field == c_field_name_Child_Prefix )
+   else if( ( field == c_field_id_Child_Prefix ) || ( field == c_field_name_Child_Prefix ) )
       rc += 31;
-   else if( field == c_field_id_Child_Rel_Grandparent_Match || field == c_field_name_Child_Rel_Grandparent_Match )
+   else if( ( field == c_field_id_Child_Rel_Grandparent_Match ) || ( field == c_field_name_Child_Rel_Grandparent_Match ) )
       rc += 32;
-   else if( field == c_field_id_Child_Rel_Parent_Match || field == c_field_name_Child_Rel_Parent_Match )
+   else if( ( field == c_field_id_Child_Rel_Parent_Match ) || ( field == c_field_name_Child_Rel_Parent_Match ) )
       rc += 33;
-   else if( field == c_field_id_Child_Relationship_Class_Match || field == c_field_name_Child_Relationship_Class_Match )
+   else if( ( field == c_field_id_Child_Relationship_Class_Match ) || ( field == c_field_name_Child_Relationship_Class_Match ) )
       rc += 34;
-   else if( field == c_field_id_Child_Specification_Type || field == c_field_name_Child_Specification_Type )
+   else if( ( field == c_field_id_Child_Specification_Type ) || ( field == c_field_name_Child_Specification_Type ) )
       rc += 35;
-   else if( field == c_field_id_Default_Child_Vars || field == c_field_name_Default_Child_Vars )
+   else if( ( field == c_field_id_Default_Child_Vars ) || ( field == c_field_name_Default_Child_Vars ) )
       rc += 36;
-   else if( field == c_field_id_Field_type || field == c_field_name_Field_type )
+   else if( ( field == c_field_id_Field_type ) || ( field == c_field_name_Field_type ) )
       rc += 37;
-   else if( field == c_field_id_Has_Next_Specification_Info || field == c_field_name_Has_Next_Specification_Info )
+   else if( ( field == c_field_id_Has_Next_Specification_Info ) || ( field == c_field_name_Has_Next_Specification_Info ) )
       rc += 38;
-   else if( field == c_field_id_Is_Child_Only || field == c_field_name_Is_Child_Only )
+   else if( ( field == c_field_id_Is_Child_Only ) || ( field == c_field_name_Is_Child_Only ) )
       rc += 39;
-   else if( field == c_field_id_Is_Required_For_UI_Gen || field == c_field_name_Is_Required_For_UI_Gen )
+   else if( ( field == c_field_id_Is_Required_For_UI_Gen ) || ( field == c_field_name_Is_Required_For_UI_Gen ) )
       rc += 40;
-   else if( field == c_field_id_Is_System || field == c_field_name_Is_System )
+   else if( ( field == c_field_id_Is_System ) || ( field == c_field_name_Is_System ) )
       rc += 41;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( ( field == c_field_id_Name ) || ( field == c_field_name_Name ) )
       rc += 42;
-   else if( field == c_field_id_Needs_Child_Relationship || field == c_field_name_Needs_Child_Relationship )
+   else if( ( field == c_field_id_Needs_Child_Relationship ) || ( field == c_field_name_Needs_Child_Relationship ) )
       rc += 43;
-   else if( field == c_field_id_Needs_Class || field == c_field_name_Needs_Class )
+   else if( ( field == c_field_id_Needs_Class ) || ( field == c_field_name_Needs_Class ) )
       rc += 44;
-   else if( field == c_field_id_Needs_Enum || field == c_field_name_Needs_Enum )
+   else if( ( field == c_field_id_Needs_Enum ) || ( field == c_field_name_Needs_Enum ) )
       rc += 45;
-   else if( field == c_field_id_Needs_Enum_Item || field == c_field_name_Needs_Enum_Item )
+   else if( ( field == c_field_id_Needs_Enum_Item ) || ( field == c_field_name_Needs_Enum_Item ) )
       rc += 46;
-   else if( field == c_field_id_Needs_Enum_Item_2 || field == c_field_name_Needs_Enum_Item_2 )
+   else if( ( field == c_field_id_Needs_Enum_Item_2 ) || ( field == c_field_name_Needs_Enum_Item_2 ) )
       rc += 47;
-   else if( field == c_field_id_Needs_Enum_Item_3 || field == c_field_name_Needs_Enum_Item_3 )
+   else if( ( field == c_field_id_Needs_Enum_Item_3 ) || ( field == c_field_name_Needs_Enum_Item_3 ) )
       rc += 48;
-   else if( field == c_field_id_Needs_Enum_Item_4 || field == c_field_name_Needs_Enum_Item_4 )
+   else if( ( field == c_field_id_Needs_Enum_Item_4 ) || ( field == c_field_name_Needs_Enum_Item_4 ) )
       rc += 49;
-   else if( field == c_field_id_Needs_Enum_Item_5 || field == c_field_name_Needs_Enum_Item_5 )
+   else if( ( field == c_field_id_Needs_Enum_Item_5 ) || ( field == c_field_name_Needs_Enum_Item_5 ) )
       rc += 50;
-   else if( field == c_field_id_Needs_Field || field == c_field_name_Needs_Field )
+   else if( ( field == c_field_id_Needs_Field ) || ( field == c_field_name_Needs_Field ) )
       rc += 51;
-   else if( field == c_field_id_Needs_Modifier || field == c_field_name_Needs_Modifier )
+   else if( ( field == c_field_id_Needs_Modifier ) || ( field == c_field_name_Needs_Modifier ) )
       rc += 52;
-   else if( field == c_field_id_Needs_Other_Class || field == c_field_name_Needs_Other_Class )
+   else if( ( field == c_field_id_Needs_Other_Class ) || ( field == c_field_name_Needs_Other_Class ) )
       rc += 53;
-   else if( field == c_field_id_Needs_Other_Class_Field || field == c_field_name_Needs_Other_Class_Field )
+   else if( ( field == c_field_id_Needs_Other_Class_Field ) || ( field == c_field_name_Needs_Other_Class_Field ) )
       rc += 54;
-   else if( field == c_field_id_Needs_Other_Field || field == c_field_name_Needs_Other_Field )
+   else if( ( field == c_field_id_Needs_Other_Field ) || ( field == c_field_name_Needs_Other_Field ) )
       rc += 55;
-   else if( field == c_field_id_Needs_Other_Field_2 || field == c_field_name_Needs_Other_Field_2 )
+   else if( ( field == c_field_id_Needs_Other_Field_2 ) || ( field == c_field_name_Needs_Other_Field_2 ) )
       rc += 56;
-   else if( field == c_field_id_Needs_Other_Modifier || field == c_field_name_Needs_Other_Modifier )
+   else if( ( field == c_field_id_Needs_Other_Modifier ) || ( field == c_field_name_Needs_Other_Modifier ) )
       rc += 57;
-   else if( field == c_field_id_Needs_Other_Modifier_2 || field == c_field_name_Needs_Other_Modifier_2 )
+   else if( ( field == c_field_id_Needs_Other_Modifier_2 ) || ( field == c_field_name_Needs_Other_Modifier_2 ) )
       rc += 58;
-   else if( field == c_field_id_Needs_Other_Permission || field == c_field_name_Needs_Other_Permission )
+   else if( ( field == c_field_id_Needs_Other_Permission ) || ( field == c_field_name_Needs_Other_Permission ) )
       rc += 59;
-   else if( field == c_field_id_Needs_Other_Permission_2 || field == c_field_name_Needs_Other_Permission_2 )
+   else if( ( field == c_field_id_Needs_Other_Permission_2 ) || ( field == c_field_name_Needs_Other_Permission_2 ) )
       rc += 60;
-   else if( field == c_field_id_Needs_Other_Procedure || field == c_field_name_Needs_Other_Procedure )
+   else if( ( field == c_field_id_Needs_Other_Procedure ) || ( field == c_field_name_Needs_Other_Procedure ) )
       rc += 61;
-   else if( field == c_field_id_Needs_Other_Procedure_2 || field == c_field_name_Needs_Other_Procedure_2 )
+   else if( ( field == c_field_id_Needs_Other_Procedure_2 ) || ( field == c_field_name_Needs_Other_Procedure_2 ) )
       rc += 62;
-   else if( field == c_field_id_Needs_Other_Source_Child || field == c_field_name_Needs_Other_Source_Child )
+   else if( ( field == c_field_id_Needs_Other_Source_Child ) || ( field == c_field_name_Needs_Other_Source_Child ) )
       rc += 63;
-   else if( field == c_field_id_Needs_Other_Source_Child_2 || field == c_field_name_Needs_Other_Source_Child_2 )
+   else if( ( field == c_field_id_Needs_Other_Source_Child_2 ) || ( field == c_field_name_Needs_Other_Source_Child_2 ) )
       rc += 64;
-   else if( field == c_field_id_Needs_Permission || field == c_field_name_Needs_Permission )
+   else if( ( field == c_field_id_Needs_Permission ) || ( field == c_field_name_Needs_Permission ) )
       rc += 65;
-   else if( field == c_field_id_Needs_Procedure || field == c_field_name_Needs_Procedure )
+   else if( ( field == c_field_id_Needs_Procedure ) || ( field == c_field_name_Needs_Procedure ) )
       rc += 66;
-   else if( field == c_field_id_Needs_Procedure_Arg || field == c_field_name_Needs_Procedure_Arg )
+   else if( ( field == c_field_id_Needs_Procedure_Arg ) || ( field == c_field_name_Needs_Procedure_Arg ) )
       rc += 67;
-   else if( field == c_field_id_Needs_Procedure_Arg_2 || field == c_field_name_Needs_Procedure_Arg_2 )
+   else if( ( field == c_field_id_Needs_Procedure_Arg_2 ) || ( field == c_field_name_Needs_Procedure_Arg_2 ) )
       rc += 68;
-   else if( field == c_field_id_Needs_Procedure_Arg_3 || field == c_field_name_Needs_Procedure_Arg_3 )
+   else if( ( field == c_field_id_Needs_Procedure_Arg_3 ) || ( field == c_field_name_Needs_Procedure_Arg_3 ) )
       rc += 69;
-   else if( field == c_field_id_Needs_Source_Child || field == c_field_name_Needs_Source_Child )
+   else if( ( field == c_field_id_Needs_Source_Child ) || ( field == c_field_name_Needs_Source_Child ) )
       rc += 70;
-   else if( field == c_field_id_Needs_Source_Field || field == c_field_name_Needs_Source_Field )
+   else if( ( field == c_field_id_Needs_Source_Field ) || ( field == c_field_name_Needs_Source_Field ) )
       rc += 71;
-   else if( field == c_field_id_Needs_Source_Field_Or_Child || field == c_field_name_Needs_Source_Field_Or_Child )
+   else if( ( field == c_field_id_Needs_Source_Field_Or_Child ) || ( field == c_field_name_Needs_Source_Field_Or_Child ) )
       rc += 72;
-   else if( field == c_field_id_Needs_Source_Parent || field == c_field_name_Needs_Source_Parent )
+   else if( ( field == c_field_id_Needs_Source_Parent ) || ( field == c_field_name_Needs_Source_Parent ) )
       rc += 73;
-   else if( field == c_field_id_Needs_Test_Field || field == c_field_name_Needs_Test_Field )
+   else if( ( field == c_field_id_Needs_Test_Field ) || ( field == c_field_name_Needs_Test_Field ) )
       rc += 74;
-   else if( field == c_field_id_Needs_Test_Value || field == c_field_name_Needs_Test_Value )
+   else if( ( field == c_field_id_Needs_Test_Value ) || ( field == c_field_name_Needs_Test_Value ) )
       rc += 75;
-   else if( field == c_field_id_Needs_Value || field == c_field_name_Needs_Value )
+   else if( ( field == c_field_id_Needs_Value ) || ( field == c_field_name_Needs_Value ) )
       rc += 76;
-   else if( field == c_field_id_Next_Child_Specification_Type || field == c_field_name_Next_Child_Specification_Type )
+   else if( ( field == c_field_id_Next_Child_Specification_Type ) || ( field == c_field_name_Next_Child_Specification_Type ) )
       rc += 77;
-   else if( field == c_field_id_Next_Protect_Child_Rel || field == c_field_name_Next_Protect_Child_Rel )
+   else if( ( field == c_field_id_Next_Protect_Child_Rel ) || ( field == c_field_name_Next_Protect_Child_Rel ) )
       rc += 78;
-   else if( field == c_field_id_Next_Protect_Procedure || field == c_field_name_Next_Protect_Procedure )
+   else if( ( field == c_field_id_Next_Protect_Procedure ) || ( field == c_field_name_Next_Protect_Procedure ) )
       rc += 79;
-   else if( field == c_field_id_Next_Protect_Source_Parent || field == c_field_name_Next_Protect_Source_Parent )
+   else if( ( field == c_field_id_Next_Protect_Source_Parent ) || ( field == c_field_name_Next_Protect_Source_Parent ) )
       rc += 80;
-   else if( field == c_field_id_Next_Specification_Actions || field == c_field_name_Next_Specification_Actions )
+   else if( ( field == c_field_id_Next_Specification_Actions ) || ( field == c_field_name_Next_Specification_Actions ) )
       rc += 81;
-   else if( field == c_field_id_Notes || field == c_field_name_Notes )
+   else if( ( field == c_field_id_Notes ) || ( field == c_field_name_Notes ) )
       rc += 82;
-   else if( field == c_field_id_Parent_Specification_Type || field == c_field_name_Parent_Specification_Type )
+   else if( ( field == c_field_id_Parent_Specification_Type ) || ( field == c_field_name_Parent_Specification_Type ) )
       rc += 83;
-   else if( field == c_field_id_Procedure_Arg_primitive || field == c_field_name_Procedure_Arg_primitive )
+   else if( ( field == c_field_id_Procedure_Arg_primitive ) || ( field == c_field_name_Procedure_Arg_primitive ) )
       rc += 84;
-   else if( field == c_field_id_Procedure_Arg_type || field == c_field_name_Procedure_Arg_type )
+   else if( ( field == c_field_id_Procedure_Arg_type ) || ( field == c_field_name_Procedure_Arg_type ) )
       rc += 85;
-   else if( field == c_field_id_Protect_Child_Rel_From_Update || field == c_field_name_Protect_Child_Rel_From_Update )
+   else if( ( field == c_field_id_Protect_Child_Rel_From_Update ) || ( field == c_field_name_Protect_Child_Rel_From_Update ) )
       rc += 86;
-   else if( field == c_field_id_Protect_Class_From_Edit || field == c_field_name_Protect_Class_From_Edit )
+   else if( ( field == c_field_id_Protect_Class_From_Edit ) || ( field == c_field_name_Protect_Class_From_Edit ) )
       rc += 87;
-   else if( field == c_field_id_Protect_Class_From_Update || field == c_field_name_Protect_Class_From_Update )
+   else if( ( field == c_field_id_Protect_Class_From_Update ) || ( field == c_field_name_Protect_Class_From_Update ) )
       rc += 88;
-   else if( field == c_field_id_Protect_Other_Class_From_Edit || field == c_field_name_Protect_Other_Class_From_Edit )
+   else if( ( field == c_field_id_Protect_Other_Class_From_Edit ) || ( field == c_field_name_Protect_Other_Class_From_Edit ) )
       rc += 89;
-   else if( field == c_field_id_Protect_Procedure_From_Edit || field == c_field_name_Protect_Procedure_From_Edit )
+   else if( ( field == c_field_id_Protect_Procedure_From_Edit ) || ( field == c_field_name_Protect_Procedure_From_Edit ) )
       rc += 90;
-   else if( field == c_field_id_Protect_Source_Parent || field == c_field_name_Protect_Source_Parent )
+   else if( ( field == c_field_id_Protect_Source_Parent ) || ( field == c_field_name_Protect_Source_Parent ) )
       rc += 91;
-   else if( field == c_field_id_Set_Field_To_Source_Field_Or_Child || field == c_field_name_Set_Field_To_Source_Field_Or_Child )
+   else if( ( field == c_field_id_Set_Field_To_Source_Field_Or_Child ) || ( field == c_field_name_Set_Field_To_Source_Field_Or_Child ) )
       rc += 92;
-   else if( field == c_field_id_Source_Field_Needs_Test_Field || field == c_field_name_Source_Field_Needs_Test_Field )
+   else if( ( field == c_field_id_Source_Field_Needs_Test_Field ) || ( field == c_field_name_Source_Field_Needs_Test_Field ) )
       rc += 93;
-   else if( field == c_field_id_Source_Field_Type_Match || field == c_field_name_Source_Field_Type_Match )
+   else if( ( field == c_field_id_Source_Field_Type_Match ) || ( field == c_field_name_Source_Field_Type_Match ) )
       rc += 94;
-   else if( field == c_field_id_Source_Parent_type || field == c_field_name_Source_Parent_type )
+   else if( ( field == c_field_id_Source_Parent_type ) || ( field == c_field_name_Source_Parent_type ) )
       rc += 95;
-   else if( field == c_field_id_Source_type || field == c_field_name_Source_type )
+   else if( ( field == c_field_id_Source_type ) || ( field == c_field_name_Source_type ) )
       rc += 96;
-   else if( field == c_field_id_Specification_Actions || field == c_field_name_Specification_Actions )
+   else if( ( field == c_field_id_Specification_Actions ) || ( field == c_field_name_Specification_Actions ) )
       rc += 97;
-   else if( field == c_field_id_Specification_Name || field == c_field_name_Specification_Name )
+   else if( ( field == c_field_id_Specification_Name ) || ( field == c_field_name_Specification_Name ) )
       rc += 98;
-   else if( field == c_field_id_Specification_Object || field == c_field_name_Specification_Object )
+   else if( ( field == c_field_id_Specification_Object ) || ( field == c_field_name_Specification_Object ) )
       rc += 99;
-   else if( field == c_field_id_Specification_Strings || field == c_field_name_Specification_Strings )
+   else if( ( field == c_field_id_Specification_Strings ) || ( field == c_field_name_Specification_Strings ) )
       rc += 100;
-   if( field == c_field_id_Specification_Vars || field == c_field_name_Specification_Vars )
+   if( ( field == c_field_id_Specification_Vars ) || ( field == c_field_name_Specification_Vars ) )
       rc += 101;
-   else if( field == c_field_id_Test_Field_Type_Match || field == c_field_name_Test_Field_Type_Match )
+   else if( ( field == c_field_id_Test_Field_Type_Match ) || ( field == c_field_name_Test_Field_Type_Match ) )
       rc += 102;
-   else if( field == c_field_id_Test_Field_type || field == c_field_name_Test_Field_type )
+   else if( ( field == c_field_id_Test_Field_type ) || ( field == c_field_name_Test_Field_type ) )
       rc += 103;
-   else if( field == c_field_id_Use_Class_As_Source_Parent_Class || field == c_field_name_Use_Class_As_Source_Parent_Class )
+   else if( ( field == c_field_id_Use_Class_As_Source_Parent_Class ) || ( field == c_field_name_Use_Class_As_Source_Parent_Class ) )
       rc += 104;
-   else if( field == c_field_id_Use_Field_Enum || field == c_field_name_Use_Field_Enum )
+   else if( ( field == c_field_id_Use_Field_Enum ) || ( field == c_field_name_Use_Field_Enum ) )
       rc += 105;
-   else if( field == c_field_id_Use_Parent_Child_Rel_As_Source_Parent || field == c_field_name_Use_Parent_Child_Rel_As_Source_Parent )
+   else if( ( field == c_field_id_Use_Parent_Child_Rel_As_Source_Parent ) || ( field == c_field_name_Use_Parent_Child_Rel_As_Source_Parent ) )
       rc += 106;
-   else if( field == c_field_id_Use_Parent_Child_Rel_For_Class || field == c_field_name_Use_Parent_Child_Rel_For_Class )
+   else if( ( field == c_field_id_Use_Parent_Child_Rel_For_Class ) || ( field == c_field_name_Use_Parent_Child_Rel_For_Class ) )
       rc += 107;
-   else if( field == c_field_id_Use_Parent_Child_Rel_For_Other_Class || field == c_field_name_Use_Parent_Child_Rel_For_Other_Class )
+   else if( ( field == c_field_id_Use_Parent_Child_Rel_For_Other_Class ) || ( field == c_field_name_Use_Parent_Child_Rel_For_Other_Class ) )
       rc += 108;
-   else if( field == c_field_id_Use_Parent_Class || field == c_field_name_Use_Parent_Class )
+   else if( ( field == c_field_id_Use_Parent_Class ) || ( field == c_field_name_Use_Parent_Class ) )
       rc += 109;
-   else if( field == c_field_id_Use_Parent_Field_For_Class || field == c_field_name_Use_Parent_Field_For_Class )
+   else if( ( field == c_field_id_Use_Parent_Field_For_Class ) || ( field == c_field_name_Use_Parent_Field_For_Class ) )
       rc += 110;
-   else if( field == c_field_id_Use_Parent_Other_Class || field == c_field_name_Use_Parent_Other_Class )
+   else if( ( field == c_field_id_Use_Parent_Other_Class ) || ( field == c_field_name_Use_Parent_Other_Class ) )
       rc += 111;
-   else if( field == c_field_id_Use_Parent_Other_Class_For_Class || field == c_field_name_Use_Parent_Other_Class_For_Class )
+   else if( ( field == c_field_id_Use_Parent_Other_Class_For_Class ) || ( field == c_field_name_Use_Parent_Other_Class_For_Class ) )
       rc += 112;
-   else if( field == c_field_id_Use_Parent_Procedure || field == c_field_name_Use_Parent_Procedure )
+   else if( ( field == c_field_id_Use_Parent_Procedure ) || ( field == c_field_name_Use_Parent_Procedure ) )
       rc += 113;
-   else if( field == c_field_id_Use_Parent_Source_Class || field == c_field_name_Use_Parent_Source_Class )
+   else if( ( field == c_field_id_Use_Parent_Source_Class ) || ( field == c_field_name_Use_Parent_Source_Class ) )
       rc += 114;
-   else if( field == c_field_id_Use_Parent_Source_Field_For_Class || field == c_field_name_Use_Parent_Source_Field_For_Class )
+   else if( ( field == c_field_id_Use_Parent_Source_Field_For_Class ) || ( field == c_field_name_Use_Parent_Source_Field_For_Class ) )
       rc += 115;
-   else if( field == c_field_id_Use_Parent_Source_Parent || field == c_field_name_Use_Parent_Source_Parent )
+   else if( ( field == c_field_id_Use_Parent_Source_Parent ) || ( field == c_field_name_Use_Parent_Source_Parent ) )
       rc += 116;
-   else if( field == c_field_id_Use_Parent_Source_Parent_For_Class || field == c_field_name_Use_Parent_Source_Parent_For_Class )
+   else if( ( field == c_field_id_Use_Parent_Source_Parent_For_Class ) || ( field == c_field_name_Use_Parent_Source_Parent_For_Class ) )
       rc += 117;
-   else if( field == c_field_id_Use_Source_Field_Enum || field == c_field_name_Use_Source_Field_Enum )
+   else if( ( field == c_field_id_Use_Source_Field_Enum ) || ( field == c_field_name_Use_Source_Field_Enum ) )
       rc += 118;
-   else if( field == c_field_id_Use_Source_Field_Or_Child_Enum || field == c_field_name_Use_Source_Field_Or_Child_Enum )
+   else if( ( field == c_field_id_Use_Source_Field_Or_Child_Enum ) || ( field == c_field_name_Use_Source_Field_Or_Child_Enum ) )
       rc += 119;
-   else if( field == c_field_id_View_Id || field == c_field_name_View_Id )
+   else if( ( field == c_field_id_View_Id ) || ( field == c_field_name_View_Id ) )
       rc += 120;
 
    return rc - 1;

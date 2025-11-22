@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -488,7 +485,7 @@ struct Meta_Application_Script::impl : public Meta_Application_Script_command_ha
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -866,7 +863,7 @@ void Meta_Application_Script::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_Application_Script::impl::finalise_fetch( bool skip_set_original )
+void Meta_Application_Script::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -874,8 +871,8 @@ void Meta_Application_Script::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_Application_Script::impl::at_create( )
@@ -999,6 +996,7 @@ void Meta_Application_Script::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -1203,9 +1201,9 @@ void Meta_Application_Script::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_Application_Script::finalise_fetch( bool skip_set_original )
+void Meta_Application_Script::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_Application_Script::at_create( )
@@ -1908,15 +1906,15 @@ int Meta_Application_Script::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( ( field == c_field_id_Name ) || ( field == c_field_name_Name ) )
       rc += 1;
-   else if( field == c_field_id_Other_Package_Types || field == c_field_name_Other_Package_Types )
+   else if( ( field == c_field_id_Other_Package_Types ) || ( field == c_field_name_Other_Package_Types ) )
       rc += 2;
-   else if( field == c_field_id_Package_Type || field == c_field_name_Package_Type )
+   else if( ( field == c_field_id_Package_Type ) || ( field == c_field_name_Package_Type ) )
       rc += 3;
-   else if( field == c_field_id_Script_Name || field == c_field_name_Script_Name )
+   else if( ( field == c_field_id_Script_Name ) || ( field == c_field_name_Script_Name ) )
       rc += 4;
-   else if( field == c_field_id_Version || field == c_field_name_Version )
+   else if( ( field == c_field_id_Version ) || ( field == c_field_name_Version ) )
       rc += 5;
 
    return rc - 1;

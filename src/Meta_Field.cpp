@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -2835,7 +2832,7 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -4220,7 +4217,7 @@ void Meta_Field::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_Field::impl::finalise_fetch( bool skip_set_original )
+void Meta_Field::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -4228,8 +4225,8 @@ void Meta_Field::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_Field::impl::at_create( )
@@ -4831,6 +4828,7 @@ void Meta_Field::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -5795,9 +5793,9 @@ void Meta_Field::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_Field::finalise_fetch( bool skip_set_original )
+void Meta_Field::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_Field::at_create( )
@@ -8341,73 +8339,73 @@ int Meta_Field::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+   else if( ( field == c_field_id_Access_Permission ) || ( field == c_field_name_Access_Permission ) )
       rc += 1;
-   else if( field == c_field_id_Access_Restriction || field == c_field_name_Access_Restriction )
+   else if( ( field == c_field_id_Access_Restriction ) || ( field == c_field_name_Access_Restriction ) )
       rc += 2;
-   else if( field == c_field_id_Access_Scope || field == c_field_name_Access_Scope )
+   else if( ( field == c_field_id_Access_Scope ) || ( field == c_field_name_Access_Scope ) )
       rc += 3;
-   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
+   else if( ( field == c_field_id_Change_Permission ) || ( field == c_field_name_Change_Permission ) )
       rc += 4;
-   else if( field == c_field_id_Change_Restriction || field == c_field_name_Change_Restriction )
+   else if( ( field == c_field_id_Change_Restriction ) || ( field == c_field_name_Change_Restriction ) )
       rc += 5;
-   else if( field == c_field_id_Change_Scope || field == c_field_name_Change_Scope )
+   else if( ( field == c_field_id_Change_Scope ) || ( field == c_field_name_Change_Scope ) )
       rc += 6;
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( ( field == c_field_id_Class ) || ( field == c_field_name_Class ) )
       rc += 7;
-   else if( field == c_field_id_Create_List_Field || field == c_field_name_Create_List_Field )
+   else if( ( field == c_field_id_Create_List_Field ) || ( field == c_field_name_Create_List_Field ) )
       rc += 8;
-   else if( field == c_field_id_Create_View_Field || field == c_field_name_Create_View_Field )
+   else if( ( field == c_field_id_Create_View_Field ) || ( field == c_field_name_Create_View_Field ) )
       rc += 9;
-   else if( field == c_field_id_Def_Value || field == c_field_name_Def_Value )
+   else if( ( field == c_field_id_Def_Value ) || ( field == c_field_name_Def_Value ) )
       rc += 10;
-   else if( field == c_field_id_Default || field == c_field_name_Default )
+   else if( ( field == c_field_id_Default ) || ( field == c_field_name_Default ) )
       rc += 11;
-   else if( field == c_field_id_Dummy_1 || field == c_field_name_Dummy_1 )
+   else if( ( field == c_field_id_Dummy_1 ) || ( field == c_field_name_Dummy_1 ) )
       rc += 12;
-   else if( field == c_field_id_Encrypted || field == c_field_name_Encrypted )
+   else if( ( field == c_field_id_Encrypted ) || ( field == c_field_name_Encrypted ) )
       rc += 13;
-   else if( field == c_field_id_Enum || field == c_field_name_Enum )
+   else if( ( field == c_field_id_Enum ) || ( field == c_field_name_Enum ) )
       rc += 14;
-   else if( field == c_field_id_Enum_Filter || field == c_field_name_Enum_Filter )
+   else if( ( field == c_field_id_Enum_Filter ) || ( field == c_field_name_Enum_Filter ) )
       rc += 15;
-   else if( field == c_field_id_Extra || field == c_field_name_Extra )
+   else if( ( field == c_field_id_Extra ) || ( field == c_field_name_Extra ) )
       rc += 16;
-   else if( field == c_field_id_Extra_Filter || field == c_field_name_Extra_Filter )
+   else if( ( field == c_field_id_Extra_Filter ) || ( field == c_field_name_Extra_Filter ) )
       rc += 17;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( ( field == c_field_id_Id ) || ( field == c_field_name_Id ) )
       rc += 18;
-   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+   else if( ( field == c_field_id_Internal ) || ( field == c_field_name_Internal ) )
       rc += 19;
-   else if( field == c_field_id_Is_Foreign_Key || field == c_field_name_Is_Foreign_Key )
+   else if( ( field == c_field_id_Is_Foreign_Key ) || ( field == c_field_name_Is_Foreign_Key ) )
       rc += 20;
-   else if( field == c_field_id_Is_Text_Type || field == c_field_name_Is_Text_Type )
+   else if( ( field == c_field_id_Is_Text_Type ) || ( field == c_field_name_Is_Text_Type ) )
       rc += 21;
-   else if( field == c_field_id_Mandatory || field == c_field_name_Mandatory )
+   else if( ( field == c_field_id_Mandatory ) || ( field == c_field_name_Mandatory ) )
       rc += 22;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( ( field == c_field_id_Name ) || ( field == c_field_name_Name ) )
       rc += 23;
-   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
+   else if( ( field == c_field_id_Numeric_Decimals ) || ( field == c_field_name_Numeric_Decimals ) )
       rc += 24;
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( ( field == c_field_id_Parent_Class ) || ( field == c_field_name_Parent_Class ) )
       rc += 25;
-   else if( field == c_field_id_Parent_Class_Name || field == c_field_name_Parent_Class_Name )
+   else if( ( field == c_field_id_Parent_Class_Name ) || ( field == c_field_name_Parent_Class_Name ) )
       rc += 26;
-   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
+   else if( ( field == c_field_id_Primitive ) || ( field == c_field_name_Primitive ) )
       rc += 27;
-   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
+   else if( ( field == c_field_id_Source_Field ) || ( field == c_field_name_Source_Field ) )
       rc += 28;
-   else if( field == c_field_id_Transient || field == c_field_name_Transient )
+   else if( ( field == c_field_id_Transient ) || ( field == c_field_name_Transient ) )
       rc += 29;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( ( field == c_field_id_Type ) || ( field == c_field_name_Type ) )
       rc += 30;
-   else if( field == c_field_id_UOM || field == c_field_name_UOM )
+   else if( ( field == c_field_id_UOM ) || ( field == c_field_name_UOM ) )
       rc += 31;
-   else if( field == c_field_id_UOM_Name || field == c_field_name_UOM_Name )
+   else if( ( field == c_field_id_UOM_Name ) || ( field == c_field_name_UOM_Name ) )
       rc += 32;
-   else if( field == c_field_id_UOM_Symbol || field == c_field_name_UOM_Symbol )
+   else if( ( field == c_field_id_UOM_Symbol ) || ( field == c_field_name_UOM_Symbol ) )
       rc += 33;
-   else if( field == c_field_id_Use_In_Text_Search || field == c_field_name_Use_In_Text_Search )
+   else if( ( field == c_field_id_Use_In_Text_Search ) || ( field == c_field_name_Use_In_Text_Search ) )
       rc += 34;
 
    return rc - 1;

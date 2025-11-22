@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -623,7 +620,7 @@ struct Meta_User::impl : public Meta_User_command_handler
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -1084,7 +1081,7 @@ void Meta_User::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_User::impl::finalise_fetch( bool skip_set_original )
+void Meta_User::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -1092,8 +1089,8 @@ void Meta_User::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_User::impl::at_create( )
@@ -1227,6 +1224,7 @@ void Meta_User::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -1471,9 +1469,9 @@ void Meta_User::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_User::finalise_fetch( bool skip_set_original )
+void Meta_User::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_User::at_create( )
@@ -2336,25 +2334,25 @@ int Meta_User::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Active || field == c_field_name_Active )
+   else if( ( field == c_field_id_Active ) || ( field == c_field_name_Active ) )
       rc += 1;
-   else if( field == c_field_id_Description || field == c_field_name_Description )
+   else if( ( field == c_field_id_Description ) || ( field == c_field_name_Description ) )
       rc += 2;
-   else if( field == c_field_id_Email || field == c_field_name_Email )
+   else if( ( field == c_field_id_Email ) || ( field == c_field_name_Email ) )
       rc += 3;
-   else if( field == c_field_id_New_Password || field == c_field_name_New_Password )
+   else if( ( field == c_field_id_New_Password ) || ( field == c_field_name_New_Password ) )
       rc += 4;
-   else if( field == c_field_id_Password || field == c_field_name_Password )
+   else if( ( field == c_field_id_Password ) || ( field == c_field_name_Password ) )
       rc += 5;
-   else if( field == c_field_id_Password_Hash || field == c_field_name_Password_Hash )
+   else if( ( field == c_field_id_Password_Hash ) || ( field == c_field_name_Password_Hash ) )
       rc += 6;
-   else if( field == c_field_id_Permissions || field == c_field_name_Permissions )
+   else if( ( field == c_field_id_Permissions ) || ( field == c_field_name_Permissions ) )
       rc += 7;
-   else if( field == c_field_id_User_Hash || field == c_field_name_User_Hash )
+   else if( ( field == c_field_id_User_Hash ) || ( field == c_field_name_User_Hash ) )
       rc += 8;
-   else if( field == c_field_id_Username || field == c_field_name_Username )
+   else if( ( field == c_field_id_Username ) || ( field == c_field_name_Username ) )
       rc += 9;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       rc += 10;
 
    return rc - 1;

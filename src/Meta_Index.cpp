@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -831,7 +828,7 @@ struct Meta_Index::impl : public Meta_Index_command_handler
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -1568,7 +1565,7 @@ void Meta_Index::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_Index::impl::finalise_fetch( bool skip_set_original )
+void Meta_Index::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -1576,8 +1573,8 @@ void Meta_Index::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_Index::impl::at_create( )
@@ -1753,6 +1750,7 @@ void Meta_Index::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -2047,9 +2045,9 @@ void Meta_Index::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_Index::finalise_fetch( bool skip_set_original )
+void Meta_Index::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_Index::at_create( )
@@ -3012,25 +3010,25 @@ int Meta_Index::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( ( field == c_field_id_Class ) || ( field == c_field_name_Class ) )
       rc += 1;
-   else if( field == c_field_id_Field_1 || field == c_field_name_Field_1 )
+   else if( ( field == c_field_id_Field_1 ) || ( field == c_field_name_Field_1 ) )
       rc += 2;
-   else if( field == c_field_id_Field_2 || field == c_field_name_Field_2 )
+   else if( ( field == c_field_id_Field_2 ) || ( field == c_field_name_Field_2 ) )
       rc += 3;
-   else if( field == c_field_id_Field_3 || field == c_field_name_Field_3 )
+   else if( ( field == c_field_id_Field_3 ) || ( field == c_field_name_Field_3 ) )
       rc += 4;
-   else if( field == c_field_id_Field_4 || field == c_field_name_Field_4 )
+   else if( ( field == c_field_id_Field_4 ) || ( field == c_field_name_Field_4 ) )
       rc += 5;
-   else if( field == c_field_id_Field_5 || field == c_field_name_Field_5 )
+   else if( ( field == c_field_id_Field_5 ) || ( field == c_field_name_Field_5 ) )
       rc += 6;
-   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+   else if( ( field == c_field_id_Internal ) || ( field == c_field_name_Internal ) )
       rc += 7;
-   else if( field == c_field_id_Order || field == c_field_name_Order )
+   else if( ( field == c_field_id_Order ) || ( field == c_field_name_Order ) )
       rc += 8;
-   else if( field == c_field_id_Source_Index || field == c_field_name_Source_Index )
+   else if( ( field == c_field_id_Source_Index ) || ( field == c_field_name_Source_Index ) )
       rc += 9;
-   else if( field == c_field_id_Unique || field == c_field_name_Unique )
+   else if( ( field == c_field_id_Unique ) || ( field == c_field_name_Unique ) )
       rc += 10;
 
    return rc - 1;

@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -341,7 +338,7 @@ struct Meta_Global_Blacklist_Entry::impl : public Meta_Global_Blacklist_Entry_co
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -574,7 +571,7 @@ void Meta_Global_Blacklist_Entry::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_Global_Blacklist_Entry::impl::finalise_fetch( bool skip_set_original )
+void Meta_Global_Blacklist_Entry::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -582,8 +579,8 @@ void Meta_Global_Blacklist_Entry::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_Global_Blacklist_Entry::impl::at_create( )
@@ -714,6 +711,7 @@ void Meta_Global_Blacklist_Entry::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -863,9 +861,9 @@ void Meta_Global_Blacklist_Entry::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_Global_Blacklist_Entry::finalise_fetch( bool skip_set_original )
+void Meta_Global_Blacklist_Entry::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_Global_Blacklist_Entry::at_create( )
@@ -1362,7 +1360,7 @@ int Meta_Global_Blacklist_Entry::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Content_Hash || field == c_field_name_Content_Hash )
+   else if( ( field == c_field_id_Content_Hash ) || ( field == c_field_name_Content_Hash ) )
       rc += 1;
 
    return rc - 1;

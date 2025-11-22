@@ -95,7 +95,7 @@ class Meta_List_Type : public class_base
    void validate_set_fields( std::set< std::string >& fields_set );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );

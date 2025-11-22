@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -1444,7 +1441,7 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -2348,7 +2345,7 @@ void Meta_Relationship::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_Relationship::impl::finalise_fetch( bool skip_set_original )
+void Meta_Relationship::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -2356,8 +2353,8 @@ void Meta_Relationship::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_Relationship::impl::at_create( )
@@ -2683,6 +2680,7 @@ void Meta_Relationship::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -3122,9 +3120,9 @@ void Meta_Relationship::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_Relationship::finalise_fetch( bool skip_set_original )
+void Meta_Relationship::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_Relationship::at_create( )
@@ -4691,51 +4689,51 @@ int Meta_Relationship::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+   else if( ( field == c_field_id_Access_Permission ) || ( field == c_field_name_Access_Permission ) )
       rc += 1;
-   else if( field == c_field_id_Access_Restriction || field == c_field_name_Access_Restriction )
+   else if( ( field == c_field_id_Access_Restriction ) || ( field == c_field_name_Access_Restriction ) )
       rc += 2;
-   else if( field == c_field_id_Access_Scope || field == c_field_name_Access_Scope )
+   else if( ( field == c_field_id_Access_Scope ) || ( field == c_field_name_Access_Scope ) )
       rc += 3;
-   else if( field == c_field_id_Cascade_Op || field == c_field_name_Cascade_Op )
+   else if( ( field == c_field_id_Cascade_Op ) || ( field == c_field_name_Cascade_Op ) )
       rc += 4;
-   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
+   else if( ( field == c_field_id_Change_Permission ) || ( field == c_field_name_Change_Permission ) )
       rc += 5;
-   else if( field == c_field_id_Change_Restriction || field == c_field_name_Change_Restriction )
+   else if( ( field == c_field_id_Change_Restriction ) || ( field == c_field_name_Change_Restriction ) )
       rc += 6;
-   else if( field == c_field_id_Change_Scope || field == c_field_name_Change_Scope )
+   else if( ( field == c_field_id_Change_Scope ) || ( field == c_field_name_Change_Scope ) )
       rc += 7;
-   else if( field == c_field_id_Child_Class || field == c_field_name_Child_Class )
+   else if( ( field == c_field_id_Child_Class ) || ( field == c_field_name_Child_Class ) )
       rc += 8;
-   else if( field == c_field_id_Child_Class_Id || field == c_field_name_Child_Class_Id )
+   else if( ( field == c_field_id_Child_Class_Id ) || ( field == c_field_name_Child_Class_Id ) )
       rc += 9;
-   else if( field == c_field_id_Child_Class_Name || field == c_field_name_Child_Class_Name )
+   else if( ( field == c_field_id_Child_Class_Name ) || ( field == c_field_name_Child_Class_Name ) )
       rc += 10;
-   else if( field == c_field_id_Child_Name || field == c_field_name_Child_Name )
+   else if( ( field == c_field_id_Child_Name ) || ( field == c_field_name_Child_Name ) )
       rc += 11;
-   else if( field == c_field_id_Extra || field == c_field_name_Extra )
+   else if( ( field == c_field_id_Extra ) || ( field == c_field_name_Extra ) )
       rc += 12;
-   else if( field == c_field_id_Field_Id || field == c_field_name_Field_Id )
+   else if( ( field == c_field_id_Field_Id ) || ( field == c_field_name_Field_Id ) )
       rc += 13;
-   else if( field == c_field_id_Field_Key || field == c_field_name_Field_Key )
+   else if( ( field == c_field_id_Field_Key ) || ( field == c_field_name_Field_Key ) )
       rc += 14;
-   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+   else if( ( field == c_field_id_Internal ) || ( field == c_field_name_Internal ) )
       rc += 15;
-   else if( field == c_field_id_Mandatory || field == c_field_name_Mandatory )
+   else if( ( field == c_field_id_Mandatory ) || ( field == c_field_name_Mandatory ) )
       rc += 16;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( ( field == c_field_id_Model ) || ( field == c_field_name_Model ) )
       rc += 17;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( ( field == c_field_id_Name ) || ( field == c_field_name_Name ) )
       rc += 18;
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( ( field == c_field_id_Parent_Class ) || ( field == c_field_name_Parent_Class ) )
       rc += 19;
-   else if( field == c_field_id_Parent_Field_For_List || field == c_field_name_Parent_Field_For_List )
+   else if( ( field == c_field_id_Parent_Field_For_List ) || ( field == c_field_name_Parent_Field_For_List ) )
       rc += 20;
-   else if( field == c_field_id_Parent_Field_For_View || field == c_field_name_Parent_Field_For_View )
+   else if( ( field == c_field_id_Parent_Field_For_View ) || ( field == c_field_name_Parent_Field_For_View ) )
       rc += 21;
-   else if( field == c_field_id_Source_Relationship || field == c_field_name_Source_Relationship )
+   else if( ( field == c_field_id_Source_Relationship ) || ( field == c_field_name_Source_Relationship ) )
       rc += 22;
-   else if( field == c_field_id_Transient || field == c_field_name_Transient )
+   else if( ( field == c_field_id_Transient ) || ( field == c_field_name_Transient ) )
       rc += 23;
 
    return rc - 1;

@@ -16,9 +16,6 @@
 #  include <stdexcept>
 #endif
 
-#define CIYAM_BASE_LIB
-#define MODULE_META_IMPL
-
 // [<start macros>]
 // [<finish macros>]
 
@@ -854,7 +851,7 @@ struct Meta_List_Field_Type::impl : public Meta_List_Field_Type_command_handler
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( bool skip_set_original );
+   void completed_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -1488,7 +1485,7 @@ void Meta_List_Field_Type::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_List_Field_Type::impl::finalise_fetch( bool skip_set_original )
+void Meta_List_Field_Type::impl::completed_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
@@ -1496,8 +1493,8 @@ void Meta_List_Field_Type::impl::finalise_fetch( bool skip_set_original )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [<start finalise_fetch>]
-   // [<finish finalise_fetch>]
+   // [<start completed_fetch>]
+   // [<finish completed_fetch>]
 }
 
 void Meta_List_Field_Type::impl::at_create( )
@@ -1621,6 +1618,7 @@ void Meta_List_Field_Type::impl::get_required_transients( ) const
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
    size_t num_required = required_transients.size( );
+
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
@@ -1990,9 +1988,9 @@ void Meta_List_Field_Type::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_List_Field_Type::finalise_fetch( bool skip_set_original )
+void Meta_List_Field_Type::completed_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( skip_set_original );
+   p_impl->completed_fetch( skip_set_original );
 }
 
 void Meta_List_Field_Type::at_create( )
@@ -3325,49 +3323,49 @@ int Meta_List_Field_Type::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Allow_Child_Rel_Select_Specifics || field == c_field_name_Allow_Child_Rel_Select_Specifics )
+   else if( ( field == c_field_id_Allow_Child_Rel_Select_Specifics ) || ( field == c_field_name_Allow_Child_Rel_Select_Specifics ) )
       rc += 1;
-   else if( field == c_field_id_Allow_Exclude_In_Use_FK || field == c_field_name_Allow_Exclude_In_Use_FK )
+   else if( ( field == c_field_id_Allow_Exclude_In_Use_FK ) || ( field == c_field_name_Allow_Exclude_In_Use_FK ) )
       rc += 2;
-   else if( field == c_field_id_Allow_Link_Empty_Restriction || field == c_field_name_Allow_Link_Empty_Restriction )
+   else if( ( field == c_field_id_Allow_Link_Empty_Restriction ) || ( field == c_field_name_Allow_Link_Empty_Restriction ) )
       rc += 3;
-   else if( field == c_field_id_Allow_Link_Permission || field == c_field_name_Allow_Link_Permission )
+   else if( ( field == c_field_id_Allow_Link_Permission ) || ( field == c_field_name_Allow_Link_Permission ) )
       rc += 4;
-   else if( field == c_field_id_Allow_Link_Specifics || field == c_field_name_Allow_Link_Specifics )
+   else if( ( field == c_field_id_Allow_Link_Specifics ) || ( field == c_field_name_Allow_Link_Specifics ) )
       rc += 5;
-   else if( field == c_field_id_Allow_Link_Type || field == c_field_name_Allow_Link_Type )
+   else if( ( field == c_field_id_Allow_Link_Type ) || ( field == c_field_name_Allow_Link_Type ) )
       rc += 6;
-   else if( field == c_field_id_Allow_Procedure || field == c_field_name_Allow_Procedure )
+   else if( ( field == c_field_id_Allow_Procedure ) || ( field == c_field_name_Allow_Procedure ) )
       rc += 7;
-   else if( field == c_field_id_Allow_Restriction_Field || field == c_field_name_Allow_Restriction_Field )
+   else if( ( field == c_field_id_Allow_Restriction_Field ) || ( field == c_field_name_Allow_Restriction_Field ) )
       rc += 8;
-   else if( field == c_field_id_Allow_Restriction_Spec || field == c_field_name_Allow_Restriction_Spec )
+   else if( ( field == c_field_id_Allow_Restriction_Spec ) || ( field == c_field_name_Allow_Restriction_Spec ) )
       rc += 9;
-   else if( field == c_field_id_Allow_Restriction_Value || field == c_field_name_Allow_Restriction_Value )
+   else if( ( field == c_field_id_Allow_Restriction_Value ) || ( field == c_field_name_Allow_Restriction_Value ) )
       rc += 10;
-   else if( field == c_field_id_Allow_Search_Option_Limit || field == c_field_name_Allow_Search_Option_Limit )
+   else if( ( field == c_field_id_Allow_Search_Option_Limit ) || ( field == c_field_name_Allow_Search_Option_Limit ) )
       rc += 11;
-   else if( field == c_field_id_Allow_Select_Specifics || field == c_field_name_Allow_Select_Specifics )
+   else if( ( field == c_field_id_Allow_Select_Specifics ) || ( field == c_field_name_Allow_Select_Specifics ) )
       rc += 12;
-   else if( field == c_field_id_Allow_Sort_Manually || field == c_field_name_Allow_Sort_Manually )
+   else if( ( field == c_field_id_Allow_Sort_Manually ) || ( field == c_field_name_Allow_Sort_Manually ) )
       rc += 13;
-   else if( field == c_field_id_Allow_View_Parent_Extra || field == c_field_name_Allow_View_Parent_Extra )
+   else if( ( field == c_field_id_Allow_View_Parent_Extra ) || ( field == c_field_name_Allow_View_Parent_Extra ) )
       rc += 14;
-   else if( field == c_field_id_Is_Restrict_Search || field == c_field_name_Is_Restrict_Search )
+   else if( ( field == c_field_id_Is_Restrict_Search ) || ( field == c_field_name_Is_Restrict_Search ) )
       rc += 15;
-   else if( field == c_field_id_List_Field_Name || field == c_field_name_List_Field_Name )
+   else if( ( field == c_field_id_List_Field_Name ) || ( field == c_field_name_List_Field_Name ) )
       rc += 16;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( ( field == c_field_id_Name ) || ( field == c_field_name_Name ) )
       rc += 17;
-   else if( field == c_field_id_Needs_Restriction_Field || field == c_field_name_Needs_Restriction_Field )
+   else if( ( field == c_field_id_Needs_Restriction_Field ) || ( field == c_field_name_Needs_Restriction_Field ) )
       rc += 18;
-   else if( field == c_field_id_Needs_Source || field == c_field_name_Needs_Source )
+   else if( ( field == c_field_id_Needs_Source ) || ( field == c_field_name_Needs_Source ) )
       rc += 19;
-   else if( field == c_field_id_Needs_Switch_Type || field == c_field_name_Needs_Switch_Type )
+   else if( ( field == c_field_id_Needs_Switch_Type ) || ( field == c_field_name_Needs_Switch_Type ) )
       rc += 20;
-   else if( field == c_field_id_Non_Simple_Field || field == c_field_name_Non_Simple_Field )
+   else if( ( field == c_field_id_Non_Simple_Field ) || ( field == c_field_name_Non_Simple_Field ) )
       rc += 21;
-   else if( field == c_field_id_Trivial_Field_Only || field == c_field_name_Trivial_Field_Only )
+   else if( ( field == c_field_id_Trivial_Field_Only ) || ( field == c_field_name_Trivial_Field_Only ) )
       rc += 22;
 
    return rc - 1;
