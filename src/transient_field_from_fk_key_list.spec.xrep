@@ -1,4 +1,4 @@
-`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'finalise_fetch`'`,`$section`)\
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'completed_fetch`'`,`$section`)\
    // [(start transient_field_from_fk_key_list)] `{`$arg_id`}
    if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
     && `}`{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )

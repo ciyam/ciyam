@@ -1,4 +1,4 @@
-`{`@eq`(`'finalise_fetch`'`,`$section`)\
+`{`@eq`(`'completed_fetch`'`,`$section`)\
    // [(start field_from_procedure_call)] `{`$arg_id`}
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )

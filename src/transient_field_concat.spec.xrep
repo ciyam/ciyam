@@ -1,4 +1,4 @@
-`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'finalise_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'completed_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_concat)] `{`$arg_id`}
    if( `{`@eq`(`$arg_new_only`,`'true`'`)get_obj( ).get_key( ).empty( )
     && `,`{`@eq`(`$arg_inc_dflt`,`'`'`)!get_obj( ).get_key( ).empty( )

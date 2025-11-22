@@ -1,4 +1,4 @@
-`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'finalise_fetch`'`,`$section`)\
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'completed_fetch`'`,`$section`)\
 `{`$separator`=`$arg_separator`}`{`@eq`(`$separator`,`'@CR`'`)`$separator`=`'\\r`'`}`{`@eq`(`$separator`,`'@LF`'`)`$separator`=`'\\n`'`}\
 `{`$is_user`=`'`'`}`{`@eq`(`$arg_rvalue`,`'@user`'`)`$is_user`=`'1`'`}\
 `{`$is_group`=`'`'`}`{`@eq`(`$arg_rvalue`,`'@group`'`)`$is_group`=`'1`'`}\

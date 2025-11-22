@@ -1,4 +1,4 @@
-`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'finalise_fetch`'`,`$section`)\
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'completed_fetch`'`,`$section`)\
 `{`$lit1`=`$arg_func_arg1`/@qt`/"`/@sp`/ `/@cl`/:`/@sc`/;`/@cm`/,`}\
 `{`$lit2`=`$arg_func_arg2`/@qt`/"`/@sp`/ `/@cl`/:`/@sc`/;`/@cm`/,`}\
    // [(start transient_field_alias)] `{`$arg_id`}
