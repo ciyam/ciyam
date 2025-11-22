@@ -639,7 +639,7 @@ class class_base
    void cache_original_values( );
 
    virtual void after_fetch( ) = 0;
-   virtual void finalise_fetch( bool skip_set_original = false ) = 0;
+   virtual void completed_fetch( bool skip_set_original = false ) = 0;
 
    void perform_after_fetch( bool is_minimal = false, bool is_for_prepare = false );
 

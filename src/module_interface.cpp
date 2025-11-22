@@ -11,8 +11,6 @@
 #  include <stdexcept>
 #endif
 
-#define MODULE_INTERFACE_IMPL
-
 #include "module_interface.h"
 
 using namespace std;
