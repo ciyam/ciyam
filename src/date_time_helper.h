@@ -22,11 +22,7 @@ REGISTER_TYPEOF( 30, date_time )
 
 inline size_t size_determiner( const date_time* ) { return sizeof( date_time ); }
 
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option push -w-8027
-#  endif
-// KLUDGE: Extra boolean arg is to avoid overload ambiguity.
-inline std::string to_string( const julian& j, bool )
+inline std::string to_string( const julian& j )
 {
    std::ostringstream oss;
    oss << ffmt( 6, 6 ) << j;
@@ -43,9 +39,6 @@ inline std::string to_rep_string( const date_time& dt )
 {
    return dt.as_string( false );
 }
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option pop
-#  endif
 
 template< > inline date_time from_string< date_time >( const std::string& s )
 {
@@ -68,4 +61,3 @@ template< > inline std::string to_formatted_string< date_time >( const date_time
 template< > inline bool is_valid_str_val< date_time >( const std::string& s ) { return is_valid_date_time( s ); }
 
 #endif
-

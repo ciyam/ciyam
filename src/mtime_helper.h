@@ -21,16 +21,10 @@ REGISTER_TYPEOF( 32, mtime )
 
 inline size_t size_determiner( const mtime* ) { return sizeof( mtime ); }
 
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option push -w-8027
-#  endif
 inline std::string to_string( const mtime& mt )
 {
    return mt.as_string( true, false );
 }
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option pop
-#  endif
 
 template< > inline mtime from_string< mtime >( const std::string& s )
 {
@@ -46,4 +40,3 @@ template< > inline mtime from_string< mtime >( const std::string& s )
 template< > inline bool is_valid_str_val< mtime >( const std::string& s ) { return is_valid_time( s ); }
 
 #endif
-

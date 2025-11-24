@@ -113,9 +113,6 @@ inline bool is_null( const tdatetime& tdt ) { return tdt.is_null( ); }
 
 inline size_t size_determiner( const tdatetime* ) { return sizeof( bool ) + sizeof( date_time ); }
 
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option push -w-8027
-#  endif
 inline std::string to_string( const tdatetime& tdt )
 {
    std::string s;
@@ -131,9 +128,6 @@ inline std::string to_rep_string( const tdatetime& tdt )
       s = to_rep_string( *tdt );
    return s;
 }
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option pop
-#  endif
 
 template< > inline tdatetime from_string< tdatetime >( const std::string& s )
 {

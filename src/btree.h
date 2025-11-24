@@ -25,10 +25,6 @@
 #  include "pointers.h"
 #  include "utilities.h"
 
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option push -w-8027
-#  endif
-
 #  define USE_BTREE_NAMESPACE
 
 #  ifdef USE_BTREE_NAMESPACE
@@ -2625,9 +2621,4 @@ template< typename T, typename L, typename N, typename M > void bt_transaction< 
 }
 #  endif
 
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option pop
-#  endif
-
 #endif
-

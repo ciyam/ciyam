@@ -62,9 +62,6 @@ inline bool is_null( const ttime& tt ) { return tt.is_null( ); }
 
 inline size_t size_determiner( const ttime* ) { return sizeof( bool ) + sizeof( mtime ); }
 
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option push -w-8027
-#  endif
 inline std::string to_string( const ttime& tt )
 {
    std::string s;
@@ -72,9 +69,6 @@ inline std::string to_string( const ttime& tt )
       s = to_string( *tt );
    return s;
 }
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option pop
-#  endif
 
 template< > inline ttime from_string< ttime >( const std::string& s )
 {
@@ -137,4 +131,3 @@ inline write_stream& operator <<( write_stream& ws, const ttime& tt )
 }
 
 #endif
-

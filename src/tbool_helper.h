@@ -30,9 +30,6 @@ inline bool is_null( const tbool& tb ) { return tb.is_null( ); }
 
 inline size_t size_determiner( const tbool* ) { return sizeof( char ); }
 
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option push -w-8027
-#  endif
 inline std::string to_string( const tbool& tb )
 {
    std::string s;
@@ -43,9 +40,6 @@ inline std::string to_string( const tbool& tb )
 
    return s;
 }
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option pop
-#  endif
 
 template< > inline tbool from_string< tbool >( const std::string& s )
 {
@@ -110,4 +104,3 @@ inline write_stream& operator <<( write_stream& ws, const tbool& tb )
 }
 
 #endif
-

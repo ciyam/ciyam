@@ -70,9 +70,6 @@ inline bool is_null( const tdate& td ) { return td.is_null( ); }
 
 inline size_t size_determiner( const tdate* ) { return sizeof( bool ) + sizeof( udate ); }
 
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option push -w-8027
-#  endif
 inline std::string to_string( const tdate& td )
 {
    std::string s;
@@ -80,9 +77,6 @@ inline std::string to_string( const tdate& td )
       s = to_string( *td );
    return s;
 }
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option pop
-#  endif
 
 template< > inline tdate from_string< tdate >( const std::string& s )
 {
@@ -145,4 +139,3 @@ inline write_stream& operator <<( write_stream& ws, const tdate& td )
 }
 
 #endif
-
