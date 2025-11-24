@@ -7,15 +7,15 @@
    if( !storage_locked_for_admin( ) )
    {
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
-      auto_ptr< channel_lock > ap_channel_lock;
-      auto_ptr< temporary_session_variable > ap_temp_skip_submit_file;
+      unique_ptr< channel_lock > up_channel_lock;
+      unique_ptr< temporary_session_variable > up_temp_skip_submit_file;
 
       if( !is_null( get_obj( ).`{`$arg_tfield`}( ) ) )
       {
-         ap_channel_lock.reset(
+         up_channel_lock.reset(
           new channel_lock( get_obj( ), get_obj( ).`{`$arg_tfield`}( ) ) );
 
-         ap_temp_skip_submit_file.reset( new temporary_session_variable(
+         up_temp_skip_submit_file.reset( new temporary_session_variable(
           get_special_var_name( e_special_var_skip_submit_file ), c_true_value ) );
       }
 
