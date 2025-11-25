@@ -1480,7 +1480,7 @@ std::string value_rightpart( const std::string& s );
 
 std::string increment_numbers( const std::string& s );
 
-std::string auto_int_increment( const std::string& current );
+std::string auto_int_increment( const std::string& current, bool skip_to_next_level = false );
 
 struct daylight_info
 {

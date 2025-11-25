@@ -4832,23 +4832,25 @@ string increment_numbers( const string& s )
    return rc;
 }
 
-string auto_int_increment( const string& current )
+string auto_int_increment( const string& current, bool skip_to_next_level )
 {
    string new_auto_int;
 
-   // NOTE: If the current value is empty then no auto-increment will occur. If the current value
+   // NOTE: If the current value is empty then no auto-increment takes place. If the current value
    // is equal to the maximum possible then "new_auto_int" will be left as an empty string so that
-   // all possible values can be used (assuming the target field is mandatory and the auto-increment
-   // is optional).
+   // all possible values can be used.
    if( !current.empty( ) )
    {
       int val = 0;
-      size_t i = 0;
       int num_digits = 0;
+
       bool had_digits = false;
+
+      size_t i = 0;
+
       for( i = current.size( ) - 1; i >= 0; i-- )
       {
-         if( current[ i ] >= '0' && current[ i ] <= '9' )
+         if( ( current[ i ] >= '0' ) && ( current[ i ] <= '9' ) )
          {
             ++num_digits;
 
@@ -4862,22 +4864,43 @@ string auto_int_increment( const string& current )
          }
       }
 
-      val = atoi( current.substr( i ).c_str( ) );
+      if( !num_digits )
+         throw runtime_error( "unexpected zero digits found in 'auto_int_increment'" );
 
-      string max( num_digits, '9' );
-      int max_val = atoi( max.c_str( ) );
-
-      if( val < max_val )
+      if( skip_to_next_level )
       {
-         ++val;
+         if( current[ i ] == '9' )
+            throw runtime_error( "attempting to exceed maximum available levels in 'auto_inc_increment'" );
 
-         ostringstream osstr;
-         osstr << setw( num_digits ) << setfill( '0' ) << val;
+         val = ( current[ i ] - '0' ) + 1;
 
-         new_auto_int += osstr.str( );
+         new_auto_int = string( num_digits, '0' );
 
-         if( i > 0 )
-            new_auto_int = current.substr( 0, i ) + new_auto_int;
+         new_auto_int[ 0 ] = '0' + val;
+
+         new_auto_int = current.substr( 0, i ) + new_auto_int;
+      }
+      else
+      {
+         val = atoi( current.substr( i ).c_str( ) );
+
+         string max( num_digits, '9' );
+
+         int max_val = atoi( max.c_str( ) );
+
+         if( val < max_val )
+         {
+            ++val;
+
+            ostringstream osstr;
+
+            osstr << setw( num_digits ) << setfill( '0' ) << val;
+
+            new_auto_int += osstr.str( );
+
+            if( i > 0 )
+               new_auto_int = current.substr( 0, i ) + new_auto_int;
+         }
       }
    }
 
@@ -4887,6 +4910,7 @@ string auto_int_increment( const string& current )
 void generate_timezones_sio( const vector< timezone_info >& timezones )
 {
    ofstream outf( "timezones.sio" );
+
    if( !outf )
       throw runtime_error( "unable to open file 'timezones.sio' for output" );
 
@@ -4963,6 +4987,7 @@ void generate_timezones_sio( const vector< timezone_info >& timezones )
 void setup_time_zones( )
 {
    ifstream inpf( "timezones.sio" );
+
    if( !inpf )
       throw runtime_error( "unable to open file 'timezones.sio' for input" );
 
