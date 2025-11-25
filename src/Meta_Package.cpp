@@ -937,12 +937,31 @@ void Meta_Package::impl::impl_Check_Install( )
       get_obj( ).Installed( true );
       get_obj( ).Installed_Order( get_dtm( ) );
 
-      if( get_obj( ).Name( ) == "Standard" && is_null( get_obj( ).Model( ).Workgroup( ).Standard_Package( ) ) )
-      {
-         get_obj( ).Model( ).Workgroup( ).op_update( );
+      get_obj( ).Model( ).op_update( );
+
+      get_obj( ).Model( ).Next_Class_Id( auto_int_increment( get_obj( ).Model( ).Next_Class_Id( ), true ) );
+      get_obj( ).Model( ).Next_Specification_Id( auto_int_increment( get_obj( ).Model( ).Next_Specification_Id( ), true ) );
+      get_obj( ).Model( ).Next_List_Id( auto_int_increment( get_obj( ).Model( ).Next_List_Id( ), true ) );
+      get_obj( ).Model( ).Next_View_Id( auto_int_increment( get_obj( ).Model( ).Next_View_Id( ), true ) );
+
+      get_obj( ).Model( ).op_apply( );
+
+      get_obj( ).Model( ).Workgroup( ).op_update( );
+
+      get_obj( ).Model( ).Workgroup( ).Next_Enum_Id(
+       auto_int_increment( get_obj( ).Model( ).Workgroup( ).Next_Enum_Id( ), true ) );
+
+      get_obj( ).Model( ).Workgroup( ).Next_Type_Id(
+       auto_int_increment( get_obj( ).Model( ).Workgroup( ).Next_Type_Id( ), true ) );
+
+      get_obj( ).Model( ).Workgroup( ).Next_Permission_Id(
+       auto_int_increment( get_obj( ).Model( ).Workgroup( ).Next_Permission_Id( ), true ) );
+
+      if( ( get_obj( ).Name( ) == "Standard" )
+       && is_null( get_obj( ).Model( ).Workgroup( ).Standard_Package( ) ) )
          get_obj( ).Model( ).Workgroup( ).Standard_Package( get_obj( ).get_key( ) );
-         get_obj( ).Model( ).Workgroup( ).op_apply( );
-      }
+
+      get_obj( ).Model( ).Workgroup( ).op_apply( );
    }
 
    get_obj( ).op_apply( );
