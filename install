@@ -73,19 +73,24 @@ CIYAM_GROUP=$(id -gn)
 
 name=$1
 
-if [ "$name" = "" ]; then
- name="*"
-fi
-
 is_dev_env=
 
 if [ -d src ]; then
  is_dev_env=1
 
- if [ -f src/.app_name ]; then
-  name=$(<src/.app_name)
-  name=${name,,}
+ # NOTE: If no name was provided then
+ # will use 'src/.app_name' (to lower
+ # case if it exists).
+ if [ "$name" = "" ]; then
+  if [ -f src/.app_name ]; then
+   name=$(<src/.app_name)
+   name=${name,,}
+  fi
  fi
+fi
+
+if [ "$name" = "" ]; then
+ name="*"
 fi
 
 is_git_env=
