@@ -187,14 +187,14 @@ enum public_key_scale
 
 size_t g_num_peers = 0;
 
-bool g_starting_externals = false;
-
 bool has_max_peers( )
 {
    guard g( g_mutex );
 
    return g_num_peers >= get_max_peers( );
 }
+
+bool g_starting_externals = false;
 
 inline void issue_error( const string& message, bool possibly_expected = false )
 {
@@ -206,6 +206,9 @@ inline void issue_warning( const string& message )
 {
    TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, string( "peer session warning: " ) + message );
 }
+
+string g_test_backup_blockchain = string( c_bc_prefix ) + string( c_test_backup_identity );
+string g_test_shared_blockchain = string( c_bc_prefix ) + string( c_test_shared_identity );
 
 void increment_active_listeners( )
 {
@@ -1043,6 +1046,7 @@ peerchain_type get_blockchain_type( const string& blockchain )
          genesis_info.erase( pos );
 
       string prefix( "," );
+
       prefix += string( c_file_type_core_block_header_targeted_ident_prefix );
 
       bool has_target = false;
@@ -3073,16 +3077,10 @@ void process_public_key_file( const string& blockchain,
 
    pubkey_tag += ".";
 
-   string test_backup_blockchain( c_bc_prefix );
-   test_backup_blockchain += c_test_backup_identity;
-
-   string test_shared_blockchain( c_bc_prefix );
-   test_shared_blockchain += c_test_shared_identity;
-
    size_t scaling_value = c_bc_scaling_value;
 
-   if( ( blockchain == test_backup_blockchain )
-    || ( blockchain == test_shared_blockchain ) )
+   if( ( blockchain == g_test_backup_blockchain )
+    || ( blockchain == g_test_shared_blockchain ) )
       scaling_value = c_bc_scaling_test_value;
 
    size_t scaling_squared = ( scaling_value * scaling_value );
@@ -4687,13 +4685,43 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             {
                if( !set_new_zenith )
                {
+                  size_t scaling_value = c_bc_scaling_value;
+
+                  if( ( blockchain == g_test_backup_blockchain )
+                   || ( blockchain == g_test_shared_blockchain ) )
+                     scaling_value = c_bc_scaling_test_value;
+
+                  size_t scaling_squared = ( scaling_value * scaling_value );
+
+                  size_t sig_check_height = blockchain_height;
+
+                  // NOTE: If paired and the other chain is ahead then will skip to the
+                  // next modulus (or squared) if it can in order to reduce the syncing
+                  // time and enable chain pruning (for backup/shared type chains).
+                  if( ( blockchain_height_other > blockchain_height )
+                   && has_session_variable( get_special_var_name( e_special_var_paired_identity ) ) )
+                  {
+                     size_t mod_offset = ( blockchain_height % scaling_value );
+
+                     size_t skipped_height = ( blockchain_height - mod_offset ) + ( scaling_value - 1 );
+                     size_t squared_height = ( blockchain_height - mod_offset ) + ( scaling_squared - 1 );
+
+                     if( ( blockchain_height_other > squared_height )
+                      && has_tag( blockchain + '.' + to_string( squared_height ) + c_pub_suffix ) )
+                        sig_check_height = squared_height;
+                     else if( ( blockchain_height_other > skipped_height )
+                      && has_tag( blockchain + '.' + to_string( skipped_height ) + c_pub_suffix ) )
+                        sig_check_height = skipped_height;
+                  }
+
                   string next_sig_tag( blockchain
-                   + '.' + to_string( blockchain_height ) + c_sig_suffix );
+                   + '.' + to_string( sig_check_height ) + c_sig_suffix );
 
                   temporary_session_variable temp_is_checking(
                    get_special_var_name( e_special_var_blockchain_is_checking ), c_true_value );
 
                   string next_sig_hash;
+
                   has_tree_files = chk_file( next_sig_tag, &next_sig_hash );
 
                   has_issued_chk = true;
@@ -4706,7 +4734,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         set_new_zenith = true;
 
                      add_peer_file_hash_for_get( next_sig_hash );
-                     blockchain_height_pending = blockchain_height + 1;
+
+                     blockchain_height_pending = sig_check_height + 1;
 
                      set_session_variable( blockchain_is_fetching_name, c_true_value );
 
@@ -8780,5 +8809,6 @@ void init_peer_sessions( int start_listeners )
    }
 
    peer_session_starter* p_peer_session_start = new peer_session_starter;
+
    p_peer_session_start->start( );
 }
