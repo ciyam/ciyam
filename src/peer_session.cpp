@@ -4685,22 +4685,23 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             {
                if( !set_new_zenith )
                {
-                  size_t scaling_value = c_bc_scaling_value;
-
-                  if( ( blockchain == g_test_backup_blockchain )
-                   || ( blockchain == g_test_shared_blockchain ) )
-                     scaling_value = c_bc_scaling_test_value;
-
-                  size_t scaling_squared = ( scaling_value * scaling_value );
-
                   size_t sig_check_height = blockchain_height;
 
                   // NOTE: If paired and the other chain is ahead then will skip to the
                   // next modulus (or squared) if it can in order to reduce the syncing
-                  // time and enable chain pruning (for backup/shared type chains).
+                  // time and to enable chain pruning (for backup/shared type chains).
                   if( ( blockchain_height_other > blockchain_height )
-                   && has_session_variable( get_special_var_name( e_special_var_paired_identity ) ) )
+                   && has_session_variable( get_special_var_name( e_special_var_paired_identity ) )
+                   && !has_session_variable( get_special_var_name( e_special_var_blockchain_user ) ) )
                   {
+                     size_t scaling_value = c_bc_scaling_value;
+
+                     if( ( blockchain == g_test_backup_blockchain )
+                      || ( blockchain == g_test_shared_blockchain ) )
+                        scaling_value = c_bc_scaling_test_value;
+
+                     size_t scaling_squared = ( scaling_value * scaling_value );
+
                      size_t mod_offset = ( blockchain_height % scaling_value );
 
                      size_t skipped_height = ( blockchain_height - mod_offset ) + ( scaling_value - 1 );
@@ -7334,8 +7335,8 @@ void peer_session::on_start( )
 
                string signature_tag( blockchain + '.' + to_string( blockchain_height ) + c_sig_suffix );
 
-               // NOTE: If there is a signature at this height but no next block file then need
-               // to remove the signature file so that synchronisation can be cleanly restarted.
+               // NOTE: If there is a signature at this height but no next block file then
+               // first purge the signature file so that syncing can be cleanly restarted.
                if( has_tag( signature_tag ) )
                {
                   string next_block_tag( blockchain + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
