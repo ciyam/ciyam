@@ -4689,10 +4689,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                   // NOTE: If paired and the other chain is ahead then will skip to the
                   // next modulus (or squared) if it can in order to reduce the syncing
-                  // time and to enable chain pruning (for backup/shared type chains).
+                  // time and to support chain pruning (for backup/shared type chains).
+                  // The system variable "@blockchain_force_skip" is available to force
+                  // skipping to occur (intended for testing purposes only).
                   if( ( blockchain_height_other > blockchain_height )
-                   && has_session_variable( get_special_var_name( e_special_var_paired_identity ) )
-                   && !has_session_variable( get_special_var_name( e_special_var_blockchain_user ) ) )
+                   && ( has_system_variable( get_special_var_name( e_special_var_blockchain_force_skip ) )
+                   || ( has_session_variable( get_special_var_name( e_special_var_paired_identity ) )
+                   && !has_session_variable( get_special_var_name( e_special_var_blockchain_user ) ) ) ) )
                   {
                      size_t scaling_value = c_bc_scaling_value;
 

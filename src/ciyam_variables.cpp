@@ -270,6 +270,7 @@ const char* const c_special_variable_disallow_connections = "@disallow_connectio
 const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_ratios";
 const char* const c_special_variable_regex_search_expense = "@regex_search_expense";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
+const char* const c_special_variable_blockchain_force_skip = "@blockchain_force_skip";
 const char* const c_special_variable_blockchain_next_extra = "@blockchain_next_extra";
 const char* const c_special_variable_blockchain_time_value = "@blockchain_time_value";
 const char* const c_special_variable_keep_user_peers_alive = "@keep_user_peers_alive";
@@ -597,6 +598,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_ods_cache_hit_ratios );
       g_special_variable_names.push_back( c_special_variable_regex_search_expense );
       g_special_variable_names.push_back( c_special_variable_secondary_validation );
+      g_special_variable_names.push_back( c_special_variable_blockchain_force_skip );
       g_special_variable_names.push_back( c_special_variable_blockchain_next_extra );
       g_special_variable_names.push_back( c_special_variable_blockchain_time_value );
       g_special_variable_names.push_back( c_special_variable_keep_user_peers_alive );
