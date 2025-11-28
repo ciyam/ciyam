@@ -1238,7 +1238,9 @@ fi
 
 current_external_ip=$(dig +tls @9.9.9.9 +short ***domain_name***)
 
-if [ "$current_external_ip=" = "" ]; then
+not_good=
+
+if [ "$current_external_ip" = "" ]; then
  not_good=1
 fi
 
@@ -1246,7 +1248,7 @@ if [[ "$current_external_ip" = *" "* ]]; then
  not_good=1
 fi
 
-if [ "$current_external_ip=" = "127.0.0.1" ]; then
+if [ "$current_external_ip" = "127.0.0.1" ]; then
  not_good=1
 fi
 
