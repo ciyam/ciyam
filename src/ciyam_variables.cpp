@@ -284,6 +284,7 @@ const char* const c_special_variable_peer_limited_arguments = "@peer_limited_arg
 const char* const c_special_variable_single_string_response = "@single_string_response";
 const char* const c_special_variable_skip_tagging_if_exists = "@skip_tagging_if_exists";
 const char* const c_special_variable_blockchain_archive_path = "@blockchain_archive_path";
+const char* const c_special_variable_blockchain_checked_skip = "@blockchain_checked_skip";
 const char* const c_special_variable_blockchain_first_mapped = "@blockchain_first_mapped";
 const char* const c_special_variable_blockchain_height_other = "@blockchain_height_other";
 const char* const c_special_variable_blockchain_op_list_hash = "@blockchain_op_list_hash";
@@ -612,6 +613,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_single_string_response );
       g_special_variable_names.push_back( c_special_variable_skip_tagging_if_exists );
       g_special_variable_names.push_back( c_special_variable_blockchain_archive_path );
+      g_special_variable_names.push_back( c_special_variable_blockchain_checked_skip );
       g_special_variable_names.push_back( c_special_variable_blockchain_first_mapped );
       g_special_variable_names.push_back( c_special_variable_blockchain_height_other );
       g_special_variable_names.push_back( c_special_variable_blockchain_op_list_hash );
