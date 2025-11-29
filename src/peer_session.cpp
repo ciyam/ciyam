@@ -2510,22 +2510,25 @@ bool last_data_tree_is_identical( const string& blockchain,
 
       block_tag += c_blk_suffix;
 
-      string prior_block_hash( tag_file_hash( block_tag ) );
-
-      string prior_block_content(
-       construct_blob_for_block_content( extract_file( prior_block_hash, "" ) ) );
-
-      verify_core_file( prior_block_content, false );
-
-      string prior_data_tree_hash( get_raw_session_variable(
-       get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
-
-      if( tree_root_hash == prior_data_tree_hash )
-         retval = true;
-      else
+      if( has_tag( block_tag ) )
       {
-         if( p_prior_data_tree_hash )
-            *p_prior_data_tree_hash = prior_data_tree_hash;
+         string prior_block_hash( tag_file_hash( block_tag ) );
+
+         string prior_block_content(
+          construct_blob_for_block_content( extract_file( prior_block_hash, "" ) ) );
+
+         verify_core_file( prior_block_content, false );
+
+         string prior_data_tree_hash( get_raw_session_variable(
+          get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
+
+         if( tree_root_hash == prior_data_tree_hash )
+            retval = true;
+         else
+         {
+            if( p_prior_data_tree_hash )
+               *p_prior_data_tree_hash = prior_data_tree_hash;
+         }
       }
    }
 
@@ -4687,15 +4690,29 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                {
                   size_t sig_check_height = blockchain_height;
 
-                  // NOTE: If paired and the other chain is ahead then will skip to the
-                  // next modulus (or squared) if it can in order to reduce the syncing
-                  // time and to support chain pruning (for backup/shared type chains).
-                  // The system variable "@blockchain_force_skip" is available to force
-                  // skipping to occur (intended for testing purposes only).
+                  string force_skip_name( get_special_var_name( e_special_var_blockchain_force_skip ) );
+                  string checked_skip_name( get_special_var_name( e_special_var_blockchain_checked_skip ) );
+
+                  if( !has_session_variable( checked_skip_name ) )
+                  {
+                     peerchain_type type = get_blockchain_type( blockchain );
+
+                     if( ( type == e_peerchain_type_backup )
+                      || ( type == e_peerchain_type_shared ) )
+                        set_session_variable( force_skip_name, c_true_value );
+
+                     set_session_variable( checked_skip_name, c_true_value );
+                  }
+
+                  // NOTE: If either the session or system variable "@blockchain_force_skip"
+                  // is set then will skip to the next modulus (or squared) when possible in
+                  // order to dramatically reduce the syncing time and support chain pruning
+                  // (currently only intended for usage with backup/shared type chains). The
+                  // system variable "@blockchain_force_skip" is available to force skipping
+                  // to occur for any chain type and is intended for testing purposes only.
                   if( ( blockchain_height_other > blockchain_height )
-                   && ( has_system_variable( get_special_var_name( e_special_var_blockchain_force_skip ) )
-                   || ( has_session_variable( get_special_var_name( e_special_var_paired_identity ) )
-                   && !has_session_variable( get_special_var_name( e_special_var_blockchain_user ) ) ) ) )
+                   && ( has_session_variable( force_skip_name )
+                   || has_system_variable( force_skip_name ) ) )
                   {
                      size_t scaling_value = c_bc_scaling_value;
 
