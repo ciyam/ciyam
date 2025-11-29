@@ -65,6 +65,7 @@ OPL_FILE_HASH_ENC=$OUTPUT
 @skip
 ;
 @:NEXT
+BACKUP=
 CHANNEL=
 @ifndef $DATA
 @ifndef $SHARED
@@ -76,7 +77,9 @@ ERROR=No backup blockchain identity was found.
 @label END_OUTER
 @else
 <bc_checked_identity.cin -backup $IDENT
-@ifndef "$OUTPUT"
+@ifdef "$OUTPUT"
+BACKUP=1
+@else
 CHANNEL=1
 @endif
 @endif
@@ -346,6 +349,7 @@ t:$TREE_ROOT_HASH_ENC\n\
 u:$UTIME
 ;
 @endif
+;
 @:TREE_ERROR
 @ifdef $ERROR
 @label END_INNER
@@ -359,6 +363,31 @@ BLOCK_HASH=$OUTPUT
 ;
 .file_kill -q bc.$IDENT.$LAST.key
 .file_put $UUID.sig bc.$IDENT.$LAST.sig
+;
+PRUNE_OLD_TAGGED=
+@ifdef $BACKUP
+PRUNE_OLD_TAGGED=1
+@endif
+@ifdef $SHARED
+PRUNE_OLD_TAGGED=1
+@endif
+;
+@ifdef $PRUNE_OLD_TAGGED
+MODULUS=@$HEIGHT#$MULTIPLE
+@ifneq "$MODULUS" "0"
+IS_OLD=@$LAST_BLOCK_HEIGHT>=$MULTIPLE
+@ifeq "$IS_OLD" "1"
+HEIGHT_FOR_REMOVAL=@$LAST_BLOCK_HEIGHT-$MULTIPLE
+MODULUS=@$HEIGHT_FOR_REMOVAL#$MULTIPLE
+@ifneq "$MODULUS" "0"
+.file_kill -q bc.$IDENT.$HEIGHT_FOR_REMOVAL.pub
+@endif
+.file_kill -q bc.$IDENT.$HEIGHT_FOR_REMOVAL.sig
+HEIGHT_FOR_REMOVAL=@$HEIGHT_FOR_REMOVAL+1
+.file_kill -q bc.$IDENT.$HEIGHT_FOR_REMOVAL.blk
+@endif
+@endif
+@endif
 ;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
