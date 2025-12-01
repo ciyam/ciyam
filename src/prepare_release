@@ -26,31 +26,57 @@ elif [ ! "$1" = "-keep_source" ]; then
  exit
 fi
 
-sudo systemctl stop ciyam
+using_service=
+
+sudo systemctl is-active ciyam >/dev/null
+
+if [ $? -eq 0 ]; then
+ using_service=1
+fi
+
+if [ "$using_service" = "" ]; then
+ touch ciyam_server.stop
+
+ for i in {1..20}
+ do
+  sleep 0.5
+  if [ ! -f ciyam_server.stop ]; then
+   break;
+  fi
+ done
+
+ if [ -f ciyam_server.stop ]; then
+  echo "Error: Timed out trying to stop the CIYAM application server (is not running?)."
+  rm -f ciyam_server.stop
+
+  exit
+ fi
+else
+ sudo systemctl stop ciyam
+fi
 
 make strip
 
-sudo systemctl daemon-reload
-sudo systemctl start ciyam
-sudo systemctl restart apache2
+if [ "$using_service" = "" ]; then
+ ./ciyam_server &
+else
+ sudo systemctl daemon-reload
+ sudo systemctl start ciyam
+ sudo systemctl restart apache2
+fi
 
 make release
 
-./reconstruct_meta okay
-
 if [ "$rm_src" = "1" ]; then
+ ./reconstruct_meta okay
+
  rm -rf $WEBDIR/meta
-fi
 
-cd ..
-
-if [ "$rm_src" = "1" ]; then
+ cd ..
  rm -rf src
-fi
 
-./install
+ ./install
 
-if [ "$rm_src" = "1" ]; then
  cd ..
  rm -rf ciyam
 fi
