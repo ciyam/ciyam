@@ -17,7 +17,7 @@ else
 
   CHECK=$(sudo ps -A -o "pid user" | grep "$pid $user_id")
 
-  if [ ! "$CHECK" == "" ]; then
+  if [ ! "$CHECK" = "" ]; then
    sudo kill -9 $pid
   fi
  fi

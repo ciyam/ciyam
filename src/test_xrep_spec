@@ -17,9 +17,9 @@ else
  # elements need to be able to can contain spaces (hence setting IFS for
  # reading a specification arguments file to only use LFs as separators).
 
- if [ "$3" == "-f" ]; then
+ if [ "$3" = "-f" ]; then
   shift 1
-  if [ ! "$3" == "" ]; then
+  if [ ! "$3" = "" ]; then
    IFS=$'\n'
    spec_args=($(< $3))
   fi
@@ -28,7 +28,7 @@ else
   spec_args=("$@")
  fi
 
- if [ "$spec_args" == "" ]; then
+ if [ "$spec_args" = "" ]; then
    echo "Error: Missing spec arguments for 'test_xrep_spec'."
  else
   ./xrep @test_spec.xrep model_name=Model object=$spec section=$section "${spec_args[@]}"

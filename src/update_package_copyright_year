@@ -4,10 +4,10 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-# NOTE: Replace with an explicit year leave this empty to derive the year from 'date'.
+# NOTE: Replace with a specific year or leave it empty to derive the year from 'date'.
 DATEYEAR=""
 
-if [ "$DATEYEAR" == "" ]; then
+if [ "$DATEYEAR" = "" ]; then
  DATEYEAR=$(date +%Y)
 fi
 
