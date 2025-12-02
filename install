@@ -287,9 +287,18 @@ if [ ! -L $INSTALL_PATH/ciyam_server.log ]; then
  sudo chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/ciyam_server.log
 fi
 
+service_path=/etc/systemd/system
+
+# NOTE: If not installing as a tarball then should instead use
+# use the following directory (which can be achieved by having
+# package installations "touch" this file before this script).
+if [ -f /usr/lib/systemd/system/ciyam.service ]; then
+ service_path=/usr/lib/systemd/system
+fi
+
 has_service=
 
-if [ -f /usr/lib/systemd/system/ciyam.service ]; then
+if [ -s $service_path/ciyam.service ]; then
  has_service=1
  sudo systemctl stop ciyam
 fi
@@ -447,7 +456,7 @@ fi
 
 $INSTALL_PATH/xrep @$INSTALL_PATH/ciyam.service.xrep user=$CIYAM_USER group=$CIYAM_GROUP mysql=$MYSQL webdir=$WEBDIR >ciyam.service
 
-sudo mv ciyam.service /usr/lib/systemd/system
+sudo mv ciyam.service $service_path
 
 sudo systemctl daemon-reload
 
