@@ -2404,9 +2404,10 @@ bool has_all_list_items(
                   last_repo_entry_hash = next_hash;
                }
 
-               if( has_next_repo_entry || !is_list_file( next_hash ) )
+               if( has_next_repo_entry || ( has_next_file && !is_list_file( next_hash ) ) )
                {
                   string prefix( c_prefix_length, '\0' );
+
                   hex_decode( local_hash.substr( 0, c_prefix_length * 2 ), ( unsigned char* )prefix.data( ), c_prefix_length );
 
                   if( !p_first_prefixed->count( prefix ) )
@@ -2455,6 +2456,7 @@ bool has_all_list_items(
             if( !has_next_file && !has_next_repo_entry )
             {
                retval = false;
+
                break;
             }
             else if( recurse && !has_next_repo_entry && is_list_file( next_hash ) )
