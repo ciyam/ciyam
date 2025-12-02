@@ -2459,8 +2459,11 @@ bool has_all_list_items(
             }
             else if( recurse && !has_next_repo_entry && is_list_file( next_hash ) )
             {
-               retval = has_all_list_items( blockchain, next_hash, recurse,
-                touch_all_lists, p_dtm, p_progress, p_total_processed, p_blob_data, p_first_prefixed );
+               if( !has_file( next_hash ) )
+                  retval = false;
+               else
+                  retval = has_all_list_items( blockchain, next_hash, recurse,
+                   touch_all_lists, p_dtm, p_progress, p_total_processed, p_blob_data, p_first_prefixed );
 
                if( !retval )
                   break;
@@ -3595,6 +3598,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
             if( !is_fetching )
             {
                size_t total_items = 0;
+
                map< string, size_t > first_prefixed;
 
                temporary_session_variable temp_progress(
@@ -3603,8 +3607,11 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                temporary_session_variable temp_height( get_special_var_name(
                 e_special_var_blockchain_height_processing ), to_string( height ) );
 
-               has_all_tree_items = has_all_list_items( blockchain,
-                tree_root_hash, true, false, &dtm, p_progress, &total_items, 0, &first_prefixed );
+               if( !has_file( tree_root_hash ) )
+                  has_all_tree_items = false;
+               else
+                  has_all_tree_items = has_all_list_items( blockchain,
+                   tree_root_hash, true, false, &dtm, p_progress, &total_items, 0, &first_prefixed );
 
                if( !has_all_tree_items )
                {
@@ -5851,13 +5858,17 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         bool has_all_tree_items = false;
 
                         size_t total_items = 0;
+
                         map< string, size_t > first_prefixed;
 
                         temporary_session_variable temp_progress(
                          get_special_var_name( e_special_var_progress_message ) );
 
-                        has_all_tree_items = has_all_list_items( blockchain,
-                         tree_root_hash, true, false, &dtm, &socket_handler, &total_items, 0, &first_prefixed );
+                        if( !has_file( tree_root_hash ) )
+                           has_all_tree_items = false;
+                        else
+                           has_all_tree_items = has_all_list_items( blockchain,
+                            tree_root_hash, true, false, &dtm, &socket_handler, &total_items, 0, &first_prefixed );
 
                         if( !has_all_tree_items )
                         {
