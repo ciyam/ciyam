@@ -306,9 +306,9 @@ vi autoscript.sio
 (uncomment out all standard scripts)
 
 (if no ciyam.service exists then ./init_service)
-sudo cp ciyam.service /usr/lib/systemd/system
+sudo cp ciyam.service /etc/systemd/system
 
-sudo vi /usr/lib/systemd/system/ciyam.service
+sudo vi /etc/systemd/system/ciyam.service
 (ensure that the "Environment" values matches the exported values above)
 
 Make necessary changes (for VMs) to the "ciyam_server.sio" configuration file:
