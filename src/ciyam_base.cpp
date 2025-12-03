@@ -5667,7 +5667,7 @@ void update_peerchain( const string& identity,
    if( p_num_helpers
     && ( ( peer_type != c_peerchain_type_hub )
     && ( peer_type != c_peerchain_type_local_only ) ) )
-      new_num_helpers = *p_num_helpers;
+      new_num_helpers = to_string( *p_num_helpers );
 
    // NOTE: Reset the stringstream.
    sio_data.str( "" );
