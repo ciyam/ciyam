@@ -4628,6 +4628,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      // then assume that fetching had not been previously completed.
                      need_to_check = true;
 
+                     set_new_zenith = false;
+
                      size_t num_items_found = 0;
 
                      set_blockchain_tree_item( blockchain, 0 );
@@ -4662,6 +4664,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      if( first_mapped.empty( ) && top_next_peer_file_hash_to_get( ).empty( ) && !wants_tree_root )
                      {
                         set_new_zenith = true;
+
                         block_processing = next_block_hash;
                      }
                      else
