@@ -79,8 +79,8 @@ if [ -d src ]; then
  is_dev_env=1
 
  # NOTE: If no name was provided then
- # will use 'src/.app_name' (to lower
- # case if it exists).
+ # will use 'src/.app_name' (changing
+ # to lower case) if exists.
  if [ "$name" = "" ]; then
   if [ -f src/.app_name ]; then
    name=$(<src/.app_name)
@@ -300,7 +300,37 @@ has_service=
 
 if [ -s $service_path/ciyam.service ]; then
  has_service=1
- sudo systemctl stop ciyam
+
+ sudo systemctl is-active apache2 >/dev/null
+
+ if [ $? -eq 0 ]; then
+  sudo systemctl restart apache2
+ fi
+
+ sudo systemctl is-active ciyam >/dev/null
+
+ if [ $? -eq 0 ]; then
+  sudo systemctl stop ciyam
+ fi
+
+ for i in {1..20}
+ do
+  sudo systemctl is-active ciyam >/dev/null
+
+  if [ $? -ne 0 ]; then
+   break;
+  fi
+
+  sleep 0.5
+ done
+
+ sudo systemctl is-active ciyam >/dev/null
+
+ if [ $? -eq 0 ]; then
+  echo "Error: Unable to stop the CIYAM service."
+
+  exit
+ fi
 fi
 
 is_new=
