@@ -2824,6 +2824,7 @@ void process_list_items( const string& blockchain,
          if( !skip_secondary_blobs && ( next_hash == first_hash_to_get ) )
          {
             first_hash_to_get.erase( );
+
             set_session_variable( first_hash_name, "" );
 
             // NOTE: If the next hash requested was an item in the previous tree then
@@ -2861,6 +2862,7 @@ void process_list_items( const string& blockchain,
                   if( next_secondary.empty( ) )
                   {
                      added = true;
+
                      add_peer_file_hash_for_get( next_hash );
                   }
                   else
@@ -2890,6 +2892,7 @@ void process_list_items( const string& blockchain,
                         if( has_targeted_identity )
                         {
                            added = true;
+
                            add_peer_file_hash_for_get( next_hash, check_for_supporters );
                         }
                         else if( !has_set_first_mapped )
@@ -4585,7 +4588,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          }
          else if( !is_waiting_for_hub )
          {
-            // NOTE: Check whether a new block has been created either locally or remotely.
+            // NOTE: Check whether a new block exists either locally or remotely.
             string next_block_tag( blockchain + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
 
             bool has_tree_files = false;
@@ -4651,6 +4654,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                       get_special_var_name( e_special_var_blockchain_waiting_for_hub ) );
 
                      string first_mapped( get_raw_session_variable( blockchain_first_mapped_name ) );
+
                      set_session_variable( blockchain_first_mapped_name, "" );
 
                      string tree_root_hash( get_raw_session_variable(
@@ -4661,8 +4665,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      if( !tree_root_hash.empty( ) && !has_file( tree_root_hash ) )
                         wants_tree_root = true;
 
-                     if( first_mapped.empty( ) && top_next_peer_file_hash_to_get( ).empty( ) && !wants_tree_root )
+                     if( !wants_tree_root && first_mapped.empty( ) && top_next_peer_file_hash_to_get( ).empty( ) )
                      {
+                        TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "*** nothing found to fetch (will try setting new zenith) ***" );
+
                         set_new_zenith = true;
 
                         block_processing = next_block_hash;
@@ -4809,10 +4815,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       {
          string tag_or_hash( prior_file( ) );
 
-         if( tag_or_hash.empty( ) || is_waiting_for_hub )
+         if( is_waiting_for_hub || tag_or_hash.empty( ) )
             tag_or_hash = blockchain + c_dummy_suffix;
 
          string chk_hash;
+
          chk_file( tag_or_hash, &chk_hash );
 
          if( chk_hash.empty( ) )
@@ -5274,9 +5281,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       get_raw_session_variable( get_special_var_name( e_special_var_progress_clear ) );
 
       set_session_variable( get_special_var_name( e_special_var_blockchain_num_puts ), "" );
-
-      set_session_variable(
-       get_special_var_name( e_special_var_blockchain_zenith_height ), to_string( blockchain_height ) );
 
       if( has_raw_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ) )
          process_queued_hub_using_peerchains( identity );
@@ -5764,6 +5768,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                if( pos != string::npos )
                {
                   string prefix( c_bc_prefix + identity + '.' );
+
                   size_t height = from_string< size_t >( tag_or_hash.substr( prefix.length( ), pos - prefix.length( ) ) );
 
                   string block_tag( c_bc_prefix + identity + '.' + to_string( height + 1 ) + c_blk_suffix );
@@ -5784,6 +5789,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   if( !nonce.empty( ) && nonce[ 0 ] == '@' )
                   {
                      was_incomplete = true;
+
                      first_item_hash = nonce.substr( 1 );
 
                      if( first_item_hash == string( c_none ) )
