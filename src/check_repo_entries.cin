@@ -1,0 +1,95 @@
+; Copyright (c) 2025 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifeq "$1" ""
+#Usage: check_repo_entries <identity> [<height>]
+@else
+IDENTITY=$1
+CHECK_HEIGHT=$2
+;
+TOTAL_REPO_ENTRIES=0
+;
+.session_variable @uuid
+UUID=$OUTPUT
+.session_variable @set commence
+.session_variable @deque commence
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+.session_variable @blockchain_archive_path $FILES_AREA_DIR/$IDENTITY
+@ifeq "$CHECK_HEIGHT" ""
+.file_core -attribute bc.$IDENTITY.zenith t
+@else
+.file_core -attribute bc.$IDENTITY.$CHECK_HEIGHT.blk t
+@endif
+@ifndef $ERROR
+.decode $OUTPUT
+TREE_ROOT_HASH=$OUTPUT
+.file_info -content $TREE_ROOT_HASH
+LAST_LINE=%OUTPUT:3%
+BACKUP_LINES=@repstr: /\n:$LAST_LINE
+BACKUP_HASH=%BACKUP_LINES:1%
+.file_info -content $BACKUP_HASH
+BACKUP_PARTS=$OUTPUT
+@:LOOP
+@label NEXT
+BACKUP_PARTS=%BACKUP_PARTS:-1%
+@ifeq "$BACKUP_PARTS" ""
+@label END_LOOP
+@endif
+@skip
+@:NEXT
+NEXT_PART=%BACKUP_PARTS:1%
+NEXT_PART_LINES=@repstr: /\n:$NEXT_PART
+NEXT_PART_HASH=%NEXT_PART_LINES:1%
+#Checking: %NEXT_PART_LINES:2%
+>$UUID
+file_info -content $NEXT_PART_HASH
+>
+.session_variable @deque ""
+.session_variable @deque @$UUID
+.session_variable @deque pop_front
+@:INNER_LOOP
+@label NEXT
+.session_variable @deque front
+NEXT_LIST_ENTRY=$OUTPUT
+@ifeq "$NEXT_LIST_ENTRY" ""
+@label END_INNER_LOOP
+@endif
+@skip
+@:NEXT
+NEXT_LINES=@repstr: /\n:$NEXT_LIST_ENTRY
+NEXT_HASH=%NEXT_LINES:1%
+.session_variable @set $NEXT_HASH
+TOTAL_REPO_ENTRIES=@$TOTAL_REPO_ENTRIES+1
+.file_repo_entry $IDENTITY $NEXT_HASH
+@ifdef $ERROR
+#$ERROR
+ERROR=
+.session_variable @deque ""
+@else
+@ifdef $OUTPUT
+.session_variable @deque pop_front
+@else
+#Error: Unable to find repo entry for $NEXT_HASH
+.session_variable @deque ""
+@endif
+@endif
+!!@:INNER_LOOP
+;
+@:END_INNER_LOOP
+;
+~rm -f $UUID
+!!@:LOOP
+;
+@:END_LOOP
+#Total Repo Entries: $TOTAL_REPO_ENTRIES
+.session_variable @set size
+TOTAL_UNIQUE_HASHES=$OUTPUT
+#Total Unique Hashes: $TOTAL_UNIQUE_HASHES
+@endif
+.session_variable @set complete
+.session_variable @deque complete
+;
+@endif
