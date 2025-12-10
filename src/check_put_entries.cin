@@ -1,0 +1,89 @@
+; Copyright (c) 2025 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifeq "$2" ""
+#Usage: check_put_entries <identity> <height>
+@else
+IDENTITY=$1
+CHECK_HEIGHT=$2
+;
+PUT_FILE_HASHES=
+TOTAL_PUT_ENTRIES=0
+;
+.session_variable @uuid
+UUID=$OUTPUT
+.session_variable @set commence
+.session_variable @deque commence
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+.session_variable @blockchain_archive_path $FILES_AREA_DIR/$IDENTITY
+.file_info -content bc.$IDENTITY.$CHECK_HEIGHT.put
+@ifndef $ERROR
+; NOTE: Skip file information header.
+PUT_FILE_HASHES=%OUTPUT:-1%
+;
+@:LOOP
+;
+@label NEXT
+NEXT_PUT_FILE=%PUT_FILE_HASHES:1%
+;
+@ifeq "$NEXT_PUT_FILE" ""
+@label END_LOOP
+@endif
+;
+@skip
+@:NEXT
+.decode $NEXT_PUT_FILE
+NEXT_PUT_FILE_HASH=$OUTPUT
+>$UUID
+file_info -content $NEXT_PUT_FILE_HASH
+>
+@ifdef $ERROR
+PUT_FILE_HASHES=
+@else
+#Checking $NEXT_PUT_FILE_HASH
+.session_variable @deque "@$UUID"
+; NOTE: Skip file information header.
+.session_variable @deque pop_front
+; NOTE: Skip initial meta data prefix.
+.session_variable @deque pop_front
+;
+@:INNER_LOOP
+;
+@label INNER_NEXT
+;
+.session_variable @deque front
+@ifeq "$OUTPUT" ""
+@label END_INNER_LOOP
+@endif
+;
+@skip
+;
+@:INNER_NEXT
+.session_variable @set $OUTPUT
+; NOTE: Each entry needs three lines.
+.session_variable @deque pop_front
+.session_variable @deque pop_front
+.session_variable @deque pop_front
+TOTAL_PUT_ENTRIES=@$TOTAL_PUT_ENTRIES+1
+!!@:INNER_LOOP
+;
+@:END_INNER_LOOP
+;
+PUT_FILE_HASHES=%PUT_FILE_HASHES:-1%
+@endif
+!!@:LOOP
+;
+@:END_LOOP
+#Total Put Entries: $TOTAL_PUT_ENTRIES
+.session_variable @set size
+TOTAL_UNIQUE_ENTRIES=$OUTPUT
+#Total Unique Entries: $TOTAL_UNIQUE_ENTRIES
+@endif
+~rm -f $UUID
+.session_variable @set complete
+.session_variable @deque complete
+;
+@endif
