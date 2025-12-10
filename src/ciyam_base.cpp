@@ -4390,7 +4390,22 @@ void log_trace_message( uint32_t flag, const string& message )
          break;
       }
 
-      ofstream outf( c_server_log_file, ios::out | ios::app );
+      string log_file_dir( get_log_files_dir( ) );
+
+      // NOTE: If was not explicitly set then checks
+      // if the log file (or a link to it) exists in
+      // the current directory. If found will use it
+      // but if not then will instead default to the
+      // files area directory.
+      if( log_file_dir.empty( ) )
+      {
+         if( file_exists( c_server_log_file ) )
+            log_file_dir = ".";
+         else
+            log_file_dir = get_files_area_dir( );
+      }
+
+      ofstream outf( log_file_dir + '/' + c_server_log_file, ios::out | ios::app );
 
       string time_stamp( now.as_string( true, g_log_milliseconds ) );
 
@@ -6088,10 +6103,7 @@ string get_log_files_dir( )
 {
    guard g( g_mutex );
 
-   if( !g_log_files_dir.empty( ) )
-      return g_log_files_dir;
-   else
-      return g_files_area_dir;
+   return g_log_files_dir;
 }
 
 void set_log_files_dir( const char* p_dir_name )
@@ -6101,18 +6113,7 @@ void set_log_files_dir( const char* p_dir_name )
    if( !p_dir_name )
       g_log_files_dir.erase( );
    else
-   {
-      string dir_name( p_dir_name );
-
-      // NOTE: If is now the same as the
-      // files area then will just erase
-      // (in order to "follow" the files
-      // area if it is later changed).
-      if( dir_name == g_files_area_dir )
-         g_log_files_dir.erase( );
-      else
-         g_log_files_dir = dir_name;
-   }
+      g_log_files_dir = p_dir_name;
 }
 
 string get_files_area_dir( )
