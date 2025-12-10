@@ -2266,7 +2266,7 @@ bool has_all_list_items(
    bool is_fetching = has_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_is_fetching ) );
 
-   size_t max_blob_file_data = get_files_area_item_max_size( ) - c_max_put_blob_size;
+   size_t max_blob_file_data = ( get_files_area_item_max_size( ) - c_max_put_blob_size );
 
    if( has_targeted_identity || secondary_values.empty( ) || prefixed_secondary_values )
    {
@@ -2387,6 +2387,8 @@ bool has_all_list_items(
                   has_next_repo_entry = true;
             }
 
+            bool force_full_repo_fetch = false;
+
             if( !has_next_repo_entry )
                has_next_file = has_file( next_hash );
 
@@ -2402,6 +2404,9 @@ bool has_all_list_items(
                      local_hash = next_hash;
 
                   last_repo_entry_hash = next_hash;
+
+                  if( p_blob_data && peer_mapped_info.empty( ) )
+                     force_full_repo_fetch = true;
                }
 
                if( has_next_repo_entry || ( has_next_file && !is_list_file( next_hash ) ) )
@@ -2420,23 +2425,34 @@ bool has_all_list_items(
                has_next_repo_entry = has_repository_entry_record( identity, next_hash );
 
                if( has_next_repo_entry )
+               {
                   last_repo_entry_hash = next_hash;
+
+                  if( p_blob_data && peer_mapped_info.empty( ) )
+                     force_full_repo_fetch = true;
+               }
             }
 
-            if( p_blob_data && !peer_mapped_info.empty( ) )
+            if( p_blob_data && ( force_full_repo_fetch || !peer_mapped_info.empty( ) ) )
             {
                if( p_blob_data->size( ) > 1 )
                   *p_blob_data += c_blob_separator;
 
                string local_hash, local_public_key, master_public_key;
 
-               parse_peer_mapped_info( peer_mapped_info,
-                local_hash, local_public_key, master_public_key, false );
+               if( force_full_repo_fetch )
+                  fetch_repository_entry_record( identity, next_hash,
+                   local_hash, local_public_key, master_public_key, true );
+               else
+               {
+                  parse_peer_mapped_info( peer_mapped_info,
+                   local_hash, local_public_key, master_public_key, false );
+
+                  clear_peer_mapped_hash( mapped_info_key, next_hash );
+               }
 
                *p_blob_data += create_peer_repository_entry_pull_info( identity,
                 next_hash, local_hash, local_public_key, master_public_key, false );
-
-               clear_peer_mapped_hash( mapped_info_key, next_hash );
 
                if( p_blob_data->size( ) >= max_blob_file_data )
                {
@@ -2473,7 +2489,7 @@ bool has_all_list_items(
          }
       }
 
-      if( p_blob_data && p_blob_data->size( ) > 1 )
+      if( p_blob_data && ( p_blob_data->size( ) > 1 ) )
       {
          string file_hash;
 
@@ -2755,8 +2771,8 @@ void process_list_items( const string& blockchain,
 
             if( is_fetching )
             {
-               // NOTE: If "blockchain_height_processing" is empty then will output the
-               // message created above so at least a progress message has been issued.
+               // NOTE: If "blockchain_height_processing" is empty then will use the
+               // message created above so that there will always be some indicator.
                if( blockchain_height_processing.empty( ) )
                   set_session_progress_message( progress );
                else
@@ -2812,6 +2828,7 @@ void process_list_items( const string& blockchain,
       }
 
       string next_item( list_items[ i ] );
+
       string next_secondary;
 
       if( !secondary_values.empty( ) )
