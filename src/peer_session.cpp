@@ -1849,7 +1849,8 @@ bool get_block_height_from_tags( const string& blockchain, const string& hash, s
    return found;
 }
 
-bool add_put_list_if_available( const string& hub_identity, const string& blockchain, size_t blockchain_height )
+bool is_put_list_available( const string& hub_identity,
+ const string& blockchain, size_t blockchain_height, bool add_hash_to_get )
 {
    string hub_blockchain( c_bc_prefix + hub_identity );
    string hub_zenith_tag( hub_blockchain + c_zenith_suffix );
@@ -1908,7 +1909,7 @@ bool add_put_list_if_available( const string& hub_identity, const string& blockc
 
                      if( put_height != blockchain_height )
                         set_session_variable( get_special_var_name( e_special_var_blockchain_zenith_tree_hash ), "" );
-                     else
+                     else if( add_hash_to_get )
                      {
                         string put_file_hash( hex_encode( base64::decode( encoded_hash ) ) );
 
@@ -3604,7 +3605,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                   {
                      fetch_tree_root = false;
 
-                     if( !add_put_list_if_available( hub_identity, blockchain, height ) )
+                     if( !is_put_list_available( hub_identity, blockchain, height, true ) )
                         set_waiting_for_hub_progress( identity, hub_identity );
                   }
                }
@@ -3655,7 +3656,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 
             if( is_fetching && !has_all_tree_items && !hub_identity.empty( ) )
             {
-               if( !add_put_list_if_available( hub_identity, blockchain, height ) )
+               if( !is_put_list_available( hub_identity, blockchain, height, true ) )
                   set_waiting_for_hub_progress( identity, hub_identity );
                else
                {
@@ -4487,6 +4488,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    string block_processing( get_raw_session_variable( blockchain_block_processing_name ) );
 
+   bool is_fetching = has_raw_session_variable(
+    get_special_var_name( e_special_var_blockchain_is_fetching ) );
+
    bool is_waiting_for_hub = has_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_waiting_for_hub ) );
 
@@ -4559,9 +4563,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
     get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
 
    if( is_waiting_for_hub
-    && add_put_list_if_available( hub_identity, blockchain, blockchain_height_pending ) )
+    && is_put_list_available( hub_identity, blockchain, blockchain_height_pending, is_fetching ) )
    {
       is_waiting_for_hub = false;
+
       set_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ), "" );
    }
 
