@@ -148,7 +148,7 @@ else
 
  cp ext_request run_script run_temp script set_password $release_name/ciyam
 
- cp bundle unbundle ciyam_client ciyam_server ods_fsed $all_modules $release_name/ciyam
+ cp bundle unbundle ciyam_client ciyam_server ods_dump ods_fsed $all_modules $release_name/ciyam
 
  if [ "$main_module" = "Meta" ]; then
   ./ods_fsed -quiet "-exec=export $main_module" $main_module
