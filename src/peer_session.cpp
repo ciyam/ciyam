@@ -554,6 +554,7 @@ void set_waiting_for_hub_progress( const string& identity, const string& hub_ide
    progress_message += c_ellipsis;
 
    set_session_progress_message( progress_message );
+
    set_system_variable( c_progress_output_prefix + identity, progress_message );
 }
 
@@ -2036,6 +2037,7 @@ void process_put_file( const string& blockchain,
                   if( next_height > upper_limit )
                   {
                      next_height = upper_limit;
+
                      add_to_blockchain_tree_item( blockchain, 0, upper_limit );
                   }
                }
@@ -2066,6 +2068,8 @@ void process_put_file( const string& blockchain,
                progress_message += to_string( c_ellipsis );
 
                set_session_progress_message( progress_message );
+
+               system_identity_progress_message( identity );
             }
 
             *p_dtm = now;
@@ -4794,14 +4798,14 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      if( !block_processing.empty( ) )
                         set_new_zenith = true;
 
-                     add_peer_file_hash_for_get( next_sig_hash );
-
                      blockchain_height_pending = sig_check_height + 1;
 
                      set_session_variable( blockchain_is_fetching_name, c_true_value );
 
                      set_session_variable(
                       get_special_var_name( e_special_var_blockchain_signature_file_hash ), next_sig_hash );
+
+                     add_peer_file_hash_for_get( next_sig_hash );
                   }
                }
             }
