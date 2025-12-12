@@ -2387,6 +2387,8 @@ ods::ods( const ods& o )
  trans_write_ops_buffer_num( -1 ),
  trans_write_data_buffer_num( -1 ),
  trans_write_data_buffer_offs( 0 ),
+ data_ratio( 0 ),
+ index_ratio( 0 ),
  current_read_object_num( -1 ),
  current_write_object_num( -1 )
 {
@@ -2420,6 +2422,7 @@ ods::ods( const ods& o )
     new ods_trans_data_cache_buffer( c_trans_data_max_cache_items, c_trans_data_items_per_region ) );
 
    vector< ods* >::iterator iter;
+
    for( iter = p_impl->rp_instances->begin( ); iter != p_impl->rp_instances->end( ); ++iter )
    {
       if( !*iter )
@@ -2473,6 +2476,8 @@ ods::ods(
  trans_write_ops_buffer_num( -1 ),
  trans_write_data_buffer_num( -1 ),
  trans_write_data_buffer_offs( 0 ),
+ data_ratio( 0 ),
+ index_ratio( 0 ),
  current_read_object_num( -1 ),
  current_write_object_num( -1 )
 {
@@ -4207,20 +4212,20 @@ void ods::clear_cache_statistics( )
    if( !okay )
       THROW_ODS_ERROR( "database instance in bad state" );
 
+   data_ratio = index_ratio = 0;
+
    p_impl->rp_ods_data_cache_buffer->clear_statistics( );
    p_impl->rp_ods_index_cache_buffer->clear_statistics( );
 }
 
 string ods::get_cache_hit_ratios( ) const
 {
-   guard lock_impl( *p_impl->rp_impl_lock );
+   guard lock_stats( stats_lock );
 
-   if( !okay )
-      THROW_ODS_ERROR( "database instance in bad state" );
-
-   float data_ratio = p_impl->rp_ods_data_cache_buffer->get_item_hit_ratio( ) * 100.0;
-   float index_ratio = p_impl->rp_ods_index_cache_buffer->get_item_hit_ratio( ) * 100.0;
-
+   // NOTE: To avoid thread locking delays (which could be huge)
+   // the ratio values are being obtained from the cache objects
+   // only after a bulk operation has been completed or if there
+   // is no active bulk operation at transaction completion.
    ostringstream osstr;
 
    osstr << "data: " << setfill( '0' ) << ffmt( 1, 2 ) << data_ratio
@@ -4623,6 +4628,20 @@ void ods::dump_transaction_log( ostream& os, bool omit_dtms,
    }
 }
 
+ods::stats::stats( ods& o )
+ :
+ o( o )
+{
+}
+
+ods::stats::~stats( )
+{
+   guard lock_stats( o.stats_lock );
+
+   o.data_ratio = o.p_impl->rp_ods_data_cache_buffer->get_item_hit_ratio( ) * 100.0;
+   o.index_ratio = o.p_impl->rp_ods_index_cache_buffer->get_item_hit_ratio( ) * 100.0;
+}
+
 void ods::bulk_base::pause( )
 {
    guard lock_write( o.write_lock );
@@ -4678,11 +4697,13 @@ ods::bulk_dump::bulk_dump( ods& o, progress* p_progress )
          try
          {
             o.bulk_operation_start( );
+
             break;
          }
          catch( ... )
          {
             *o.p_impl->rp_bulk_mode = old_bulk_mode;
+
             throw;
          }
       }
@@ -4746,12 +4767,15 @@ ods::bulk_read::bulk_read( ods& o, progress* p_progress, bool allow_thread_demot
          try
          {
             o.bulk_operation_start( );
+
             *o.p_impl->rp_bulk_read_thread_id = current_thread_id( );
+
             break;
          }
          catch( ... )
          {
             *o.p_impl->rp_bulk_mode = old_bulk_mode;
+
             throw;
          }
       }
@@ -4773,6 +4797,8 @@ ods::bulk_read::~bulk_read( )
 
       if( !*o.p_impl->rp_bulk_level )
       {
+         ods::stats stats( o );
+
          *o.p_impl->rp_bulk_mode = impl::e_bulk_mode_none;
          *o.p_impl->rp_bulk_read_thread_id = o.p_impl->dummy_thread_id;
       }
@@ -4818,12 +4844,15 @@ ods::bulk_write::bulk_write( ods& o, progress* p_progress, bool allow_thread_pro
          try
          {
             o.bulk_operation_start( );
+
             *o.p_impl->rp_bulk_write_thread_id = current_thread_id( );
+
             break;
          }
          catch( ... )
          {
             *o.p_impl->rp_bulk_mode = old_bulk_mode;
+
             throw;
          }
       }
@@ -4845,6 +4874,8 @@ ods::bulk_write::~bulk_write( )
 
       if( !*o.p_impl->rp_bulk_level )
       {
+         ods::stats stats( o );
+
          *o.p_impl->rp_bulk_mode = impl::e_bulk_mode_none;
          *o.p_impl->rp_bulk_write_thread_id = o.p_impl->dummy_thread_id;
       }
@@ -4878,6 +4909,9 @@ ods::transaction::~transaction( )
    {
       if( can_commit && !has_committed )
          o.transaction_rollback( );
+
+      if( !o.p_impl->rp_bulk_level )
+         ods::stats stats( o );
    }
 }
 
@@ -4997,6 +5031,7 @@ void ods::bulk_operation_open( )
    DEBUG_LOG( "ods::bulk_operation_open( )" );
 
    lock_header_file( );
+
    try
    {
       open_store( );
@@ -5203,6 +5238,8 @@ void ods::transaction_commit( )
       THROW_ODS_ERROR( "cannot commit transaction when bulk locked for dumping or reading" );
 
    guard lock_impl( *p_impl->rp_impl_lock );
+
+   ods::stats stats( *this );
 
    int64_t size = p_impl->p_trans_buffer->levels.top( ).size;
    int64_t op_count = p_impl->p_trans_buffer->levels.top( ).op_count;
@@ -5475,6 +5512,8 @@ void ods::transaction_rollback( )
       THROW_ODS_ERROR( "cannot rollback transaction when bulk locked for dumping or reading" );
 
    guard lock_impl( *p_impl->rp_impl_lock );
+
+   ods::stats stats( *this );
 
    int64_t size = p_impl->p_trans_buffer->levels.top( ).size;
 
@@ -6692,6 +6731,7 @@ ods& operator >>( ods& o, storable_base& s )
       // NOTE: Start file lock section.
       {
          guard tmp_lock( *o.p_impl->rp_impl_lock );
+
          ods::header_file_lock header_file_lock( o );
 
          unique_ptr< ods::file_scope > up_file_scope;
@@ -6860,6 +6900,7 @@ ods& operator <<( ods& o, storable_base& s )
       // NOTE: Start file lock section.
       {
          guard tmp_lock( *o.p_impl->rp_impl_lock );
+
          ods::header_file_lock header_file_lock( o );
 
          unique_ptr< ods::file_scope > up_file_scope;
@@ -7119,6 +7160,7 @@ ods& operator <<( ods& o, storable_base& s )
    // NOTE: Start file lock section.
    {
       guard tmp_lock( *o.p_impl->rp_impl_lock );
+
       ods::header_file_lock header_file_lock( o );
 
       unique_ptr< ods::file_scope > up_file_scope;

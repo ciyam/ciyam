@@ -632,6 +632,18 @@ class ods
     std::ostream& os, bool omit_dtms = false, bool header_only = true,
     std::string* p_entry_ranges = 0, bool skip_header = false, bool entries_are_condensed = false ) const;
 
+   struct stats
+   {
+      stats( ods& o );
+
+      ~stats( );
+
+      protected:
+      ods& o;
+   };
+
+   friend struct stats;
+
    struct bulk_dump;
    struct bulk_read;
    struct bulk_write;
@@ -829,6 +841,11 @@ class ods
    mutex read_lock;
    mutex write_lock;
    mutex index_lock;
+
+   mutable mutex stats_lock;
+
+   float data_ratio;
+   float index_ratio;
 
    int64_t bytes_used;
    int64_t bytes_reserved;
