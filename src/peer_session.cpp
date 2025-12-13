@@ -2822,7 +2822,8 @@ void process_list_items( const string& blockchain,
                   progress_message += c_ellipsis;
 
                   set_session_progress_message( progress_message );
-                  set_system_variable( c_progress_output_prefix + extra_identity, progress_message );
+
+                  system_identity_progress_message( identity );
                }
 
                progress = ".";
@@ -4651,10 +4652,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                      set_session_variable( blockchain_zenith_height_name, to_string( current_zenith_height ) );
                   }
-                  else
+                  else if( blockchain_height_other > current_zenith_height )
                   {
-                     // NOTE: If zenith height is not greater than the blockchain height
-                     // then assume that fetching had not been previously completed.
+                     // NOTE: If the current zenith height is less than the peer's blockchain
+                     // height then assumes that fetching had not been previously completed.
                      need_to_check = true;
 
                      set_new_zenith = false;
