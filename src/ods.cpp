@@ -5239,8 +5239,6 @@ void ods::transaction_commit( )
 
    guard lock_impl( *p_impl->rp_impl_lock );
 
-   ods::stats stats( *this );
-
    int64_t size = p_impl->p_trans_buffer->levels.top( ).size;
    int64_t op_count = p_impl->p_trans_buffer->levels.top( ).op_count;
 
@@ -5512,8 +5510,6 @@ void ods::transaction_rollback( )
       THROW_ODS_ERROR( "cannot rollback transaction when bulk locked for dumping or reading" );
 
    guard lock_impl( *p_impl->rp_impl_lock );
-
-   ods::stats stats( *this );
 
    int64_t size = p_impl->p_trans_buffer->levels.top( ).size;
 
