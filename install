@@ -495,7 +495,7 @@ if [ "$has_service" = "" ]; then
 fi
 
 sudo systemctl start ciyam
-sudo systemctl status ciyam
+sudo systemctl --no-pager status ciyam
 
 cd ..
 
