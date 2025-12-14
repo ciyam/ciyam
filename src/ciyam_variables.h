@@ -82,6 +82,22 @@ bool set_system_variable(
 
 void system_variable_expression( const std::string& expr );
 
+struct system_variable_eraser
+{
+   system_variable_eraser( const std::string& name )
+    :
+    name( name )
+   {
+   }
+
+   ~system_variable_eraser( )
+   {
+      set_system_variable( name, "" );
+   }
+
+   std::string name;
+};
+
 struct temporary_system_variable
 {
    temporary_system_variable( const std::string& name, const std::string& value )
