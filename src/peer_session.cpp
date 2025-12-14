@@ -97,11 +97,16 @@ const char* const c_special_message_1 = "@1";
 const char* const c_special_message_2 = "@2";
 const char* const c_special_message_3 = "@3";
 
+const char* const c_system_repository_lock = "system_repo_lock";
+
 const size_t c_prefix_length = 4;
 const size_t c_checksum_length = 8;
 
 const size_t c_dummy_num_for_support = 999;
 const size_t c_default_progress_seconds = 2;
+
+const size_t c_repo_lock_sleep_time = 2000;
+const size_t c_max_repo_lock_attempts = 1000;
 
 const int64_t c_max_seconds_difference = 60;
 
@@ -4511,7 +4516,15 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       {
          set_dtm_last_issued( now );
 
-         size_t num_tree_item = get_blockchain_tree_item( blockchain );
+         size_t num_tree_item = 0;
+
+         // NOTE: Will ignore "num_tree_item" if this session
+         // is not syncing (to prevent incorrectly displaying
+         // progress when another session is syncing with the
+         // same blockchain).
+         if( ( blockchain_height != blockchain_height_other )
+          || ( blockchain_height != blockchain_height_pending ) )
+            num_tree_item = get_blockchain_tree_item( blockchain );
 
          if( num_tree_item != last_num_tree_item )
          {
@@ -5271,7 +5284,38 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             throw runtime_error( "unexpected missing tree root" );
       }
 
-      remove_obsolete_repository_entries( identity, &dtm, this, true );
+      size_t num_lock_attempts = 0;
+
+      // NOTE: Due to a potentially very large transaction the obsolete repository entry
+      // removal call is only performed after a system-wide lock has been obtained (this
+      // allows a session to wait much longer than simply trying to obtain a "bulk lock"
+      // which would fail if another session is busy performing the same operation).
+      while( true )
+      {
+         if( !set_system_variable( c_system_repository_lock, c_true_value, string( "" ) ) )
+         {
+            msleep( c_repo_lock_sleep_time );
+
+            // NOTE: If the application server is shutting down
+            // then immediately will stop attempting to acquire
+            // the system repository lock.
+            if( g_server_shutdown )
+               num_lock_attempts = c_max_repo_lock_attempts;
+
+            if( ++num_lock_attempts > c_max_repo_lock_attempts )
+               throw runtime_error( "unable to obtain system repository lock" );
+
+            output_progress( "." );
+         }
+         else
+         {
+            system_variable_eraser lock_eraser( c_system_repository_lock );
+
+            remove_obsolete_repository_entries( identity, &dtm, this, true );
+
+            break;
+         }
+      }
 
       last_num_tree_item = 0;
       set_blockchain_tree_item( blockchain, 0 );
