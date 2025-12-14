@@ -164,14 +164,24 @@ void read_script_info( )
       {
          string output( "[autoscript.sio] reloaded" );
 
+         uint32_t trace_flag = TRACE_MINIMAL;
+
+         // NOTE: If reloading is due to time
+         // difference (as might occur due to
+         // changing time zone or "waking up"
+         // after sleeping) then will not log
+         // unless tracing is detailed.
          if( !g_read_script_extra.empty( ) )
          {
             output += ' ' + g_read_script_extra;
+
             g_read_script_extra.erase( );
+
+            trace_flag = TRACE_DETAILS;
          }
 
-         // NOTE: If is not the first read then log the reload.
-         TRACE_LOG( TRACE_MINIMAL, output );
+         // NOTE: Only logs if reloaded.
+         TRACE_LOG( trace_flag, output );
       }
 
       g_scripts.clear( );
