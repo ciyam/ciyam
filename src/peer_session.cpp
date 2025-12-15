@@ -4516,61 +4516,61 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       {
          set_dtm_last_issued( now );
 
-         size_t num_tree_item = 0;
-
-         // NOTE: Will ignore "num_tree_item" if this session
-         // is not syncing (to prevent incorrectly displaying
-         // progress when another session is syncing with the
-         // same blockchain).
+         // NOTE: Will ignore the "blockchain tree item" if this
+         // session is not currently syncing (to prevent setting
+         // the progress output to that of another session using
+         // the same blockchain).
          if( ( blockchain_height != blockchain_height_other )
           || ( blockchain_height != blockchain_height_pending ) )
-            num_tree_item = get_blockchain_tree_item( blockchain );
-
-         if( num_tree_item != last_num_tree_item )
          {
-            last_num_tree_item = num_tree_item;
+            size_t num_tree_item = get_blockchain_tree_item( blockchain );
 
-            string num_tree_items( get_raw_session_variable(
-             get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
-
-            if( !num_tree_items.empty( ) )
+            if( num_tree_item != last_num_tree_item )
             {
-               size_t upper_limit = from_string< size_t >( num_tree_items );
+               last_num_tree_item = num_tree_item;
 
-               // NOTE: Ensure that the upper limit is not exceeded.
-               if( num_tree_item > upper_limit )
+               string num_tree_items( get_raw_session_variable(
+                get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
+
+               if( !num_tree_items.empty( ) )
                {
-                  last_num_tree_item = num_tree_item = upper_limit;
-                  add_to_blockchain_tree_item( blockchain, 0, upper_limit );
+                  size_t upper_limit = from_string< size_t >( num_tree_items );
+
+                  // NOTE: Ensure that the upper limit is not exceeded.
+                  if( num_tree_item > upper_limit )
+                  {
+                     last_num_tree_item = num_tree_item = upper_limit;
+                     add_to_blockchain_tree_item( blockchain, 0, upper_limit );
+                  }
                }
+
+               string progress_message(
+                GS( c_str_syncing_at_height_prefix ) + to_string( blockchain_height + 1 ) );
+
+               if( blockchain_height_other > ( blockchain_height + 1 ) )
+                  progress_message += '/' + to_string( blockchain_height_other );
+
+               progress_message += c_percentage_separator;
+
+               string count( to_string( num_tree_item ) );
+
+               if( num_tree_items.empty( ) )
+                  progress_message += count;
+               else
+               {
+                  set_session_variable( progress_count_name, count );
+                  set_session_variable( progress_total_name, num_tree_items );
+
+                  progress_message += get_raw_session_variable( progress_value_name );
+               }
+
+               progress_message += to_string( c_ellipsis );
+
+               set_session_progress_message( progress_message );
             }
 
-            string progress_message(
-             GS( c_str_syncing_at_height_prefix ) + to_string( blockchain_height + 1 ) );
-
-            if( blockchain_height_other > ( blockchain_height + 1 ) )
-               progress_message += '/' + to_string( blockchain_height_other );
-
-            progress_message += c_percentage_separator;
-
-            string count( to_string( num_tree_item ) );
-
-            if( num_tree_items.empty( ) )
-               progress_message += count;
-            else
-            {
-               set_session_variable( progress_count_name, count );
-               set_session_variable( progress_total_name, num_tree_items );
-
-               progress_message += get_raw_session_variable( progress_value_name );
-            }
-
-            progress_message += to_string( c_ellipsis );
-
-            set_session_progress_message( progress_message );
+            system_identity_progress_message( identity );
          }
-
-         system_identity_progress_message( identity );
 
          if( !has_raw_session_variable( get_special_var_name( e_special_var_paired_sync ) ) )
             check_for_missing_other_sessions( now );
