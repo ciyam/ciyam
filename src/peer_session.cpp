@@ -99,6 +99,8 @@ const char* const c_special_message_3 = "@3";
 
 const char* const c_system_repository_lock = "system_repo_lock";
 
+const char* const c_remove_obsolete_file_name = ".remove_obsolete";
+
 const size_t c_prefix_length = 4;
 const size_t c_checksum_length = 8;
 
@@ -950,7 +952,7 @@ bool terminate_peer_session( bool is_for_support, const string& identity )
    {
       condemn_matching_sessions( );
 
-      while( has_any_matching_session( true ) )
+      while( has_any_supoprt_session( ) )
          msleep( c_wait_sleep_time );
 
       remove_from_hub_queue_if_present( identity );
@@ -4516,12 +4518,12 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       {
          set_dtm_last_issued( now );
 
-         // NOTE: Will ignore the "blockchain tree item" if this
-         // session is not currently syncing (to prevent setting
-         // the progress output to that of another session using
-         // the same blockchain).
-         if( ( blockchain_height != blockchain_height_other )
-          || ( blockchain_height != blockchain_height_pending ) )
+         // NOTE: Will ignore the "blockchain tree item" if there
+         // are any other (non-support) sessions also tied to the
+         // same blockchain and this session is not syncing.
+         if( !has_matching_peer_session( )
+          || ( ( blockchain_height != blockchain_height_other )
+          || ( blockchain_height != blockchain_height_pending ) ) )
          {
             size_t num_tree_item = get_blockchain_tree_item( blockchain );
 
@@ -5311,7 +5313,23 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          {
             system_variable_eraser lock_eraser( c_system_repository_lock );
 
-            remove_obsolete_repository_entries( identity, &dtm, this, true );
+            // NOTE: In order to better constrol when obsolete repo entries
+            // are removed this file (if exists) is used to hold identities
+            // with the actual removal taking place when it can be expected
+            // that no other sessions are active (i.e. at a time when large
+            // transactions will not cause any issues).
+            if( file_exists( c_remove_obsolete_file_name ) )
+            {
+               set< string > identities;
+
+               buffer_file_lines( c_remove_obsolete_file_name, identities );
+
+               identities.insert( identity );
+
+               write_file_lines( c_remove_obsolete_file_name, identities );
+            }
+            else
+               remove_obsolete_repository_entries( identity, &dtm, this, true );
 
             break;
          }
@@ -8864,6 +8882,27 @@ void init_peer_sessions( int start_listeners )
             if( get_block_height_from_tags( next_blockchain, zenith_hash, blockchain_height ) )
                output_sync_progress_message( next_identity, blockchain_height );
          }
+      }
+   }
+
+   // NOTE: If obsolete repository entries need to be removed then will do that now.
+   if( set_system_variable( c_system_repository_lock, c_true_value, string( "" ) ) )
+   {
+      system_variable_eraser lock_eraser( c_system_repository_lock );
+
+      if( file_exists( c_remove_obsolete_file_name ) )
+      {
+         set< string > identities;
+
+         buffer_file_lines( c_remove_obsolete_file_name, identities );
+
+         for( set< string >::const_iterator ci = identities.begin( ); ci != identities.end( ); ++ci )
+            remove_obsolete_repository_entries( *ci );
+
+         file_remove( c_remove_obsolete_file_name );
+
+         // NOTE: Ensure that an empty file remains.
+         file_touch( c_remove_obsolete_file_name );
       }
    }
 
