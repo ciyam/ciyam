@@ -6189,6 +6189,9 @@ size_t remove_obsolete_repository_entries( const string& repository,
 
    if( total_entries )
    {
+      // NOTE: Log if detailed tracing is currently active (as it could be a large tx).
+      TRACE_LOG( TRACE_DETAILS, "Removing obsolete repo entries for: " + repository );
+
       system_ods_bulk_write ods_bulk_write( p_progress );
 
       ods::transaction ods_tx( system_ods_instance( ) );
