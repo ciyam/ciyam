@@ -56,12 +56,47 @@ CHECK=@$NUM_TRIES>$MAX_TRIES
 !!@:LOOP
 ;
 @:END_LOOP
-.system_variable @disallow_connections ""
 ;
 @ifeq "$CHECK" "1"
+;
+.system_variable @disallow_connections ""
+;
 ERROR=Failed due to active sessions not being automatically terminated.
 ~echo "*** ERROR: BACKUP FAILED DUE TO ACTIVE SESSIONS NOT AUTOMATICALLY TERMINATED ***" > Backup.txt
 @else
+;
+REMOVE_OBSOLETE=@files::.remove_obsolete
+;
+@ifdef $REMOVE_OBSOLETE
+LINES=@file:.remove_obsolete
+;
+@:REPO_LOOP
+;
+@label NEXT
+;
+NEXT_IDENTITY=%LINES:1%
+;
+@ifeq "$NEXT_IDENTITY" ""
+@label END_REPO_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+;
+.file_repo_entries -remove_obsolete $NEXT_IDENTITY
+;
+LINES=$LINES:-1%
+;
+!!@:REPO_LOOP
+;
+@:END_REPO_LOOP
+;
+~rm -f .remove_obsolete && touch .remove_obsolete
+;
+@endif
+;
+.system_variable @disallow_connections ""
 ;
 @ifdef $WEBDIR
 CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/$APP_DIR/backup.log
