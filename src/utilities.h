@@ -1148,6 +1148,8 @@ inline void write_file( const std::string& file_name,
    write_file( file_name.c_str( ), ( unsigned char* )file_buffer.data( ), file_buffer.length( ), append, start_pos );
 }
 
+void write_file_lines( const std::string& file_name, const std::set< std::string >& lines );
+void write_file_lines( const std::string& file_name, const std::deque< std::string >& lines );
 void write_file_lines( const std::string& file_name, const std::vector< std::string >& lines );
 
 std::string buffer_file_lines( const std::string& file_name,

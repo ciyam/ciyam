@@ -2263,6 +2263,25 @@ void write_file( const char* p_file_name, unsigned char* p_data, size_t length, 
    fclose( fp );
 }
 
+void write_file_lines( const string& file_name, const set< string >& lines )
+{
+   ofstream outf( file_name.c_str( ) );
+
+   for( set< string >::const_iterator ci = lines.begin( ); ci != lines.end( ); ++ci )
+      outf << *ci << '\n';
+
+   outf.flush( );
+}
+void write_file_lines( const string& file_name, const deque< string >& lines )
+{
+   ofstream outf( file_name.c_str( ) );
+
+   for( size_t i = 0; i < lines.size( ); i++ )
+      outf << lines[ i ] << '\n';
+
+   outf.flush( );
+}
+
 void write_file_lines( const string& file_name, const vector< string >& lines )
 {
    ofstream outf( file_name.c_str( ) );
