@@ -7837,18 +7837,20 @@ bool has_any_matching_session( bool support_only )
       size_t sess_id = gtp_session->id;
 
       string ip_addr( gtp_session->ip_addr );
+
       string blockchain( gtp_session->blockchain );
 
       for( size_t i = 0; i < g_max_sessions; i++ )
       {
-         if( g_sessions[ i ] && ( g_sessions[ i ]->id != sess_id )
-          && ( g_sessions[ i ]->ip_addr == ip_addr ) && ( g_sessions[ i ]->blockchain == blockchain ) )
+         if( g_sessions[ i ]
+          && ( g_sessions[ i ]->id != sess_id )
+          && ( g_sessions[ i ]->blockchain == blockchain )
+          && ( ( support_only && ( g_sessions[ i ]->ip_addr == ip_addr ) )
+          || ( !support_only && ( g_sessions[ i ]->ip_addr != ip_addr ) ) ) )
          {
-            if( !support_only || g_sessions[ i ]->is_support_session )
-            {
-               retval = true;
-               break;
-            }
+            retval = true;
+
+            break;
          }
       }
    }

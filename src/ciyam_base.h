@@ -478,6 +478,7 @@ void condemn_session(
  size_t sess_id, int num_seconds, bool force_uncapture, bool wait_until_term );
 
 void condemn_this_session( );
+
 void condemn_matching_sessions( int num_seconds = 0, bool wait_until_term = false );
 
 void condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wait_until_term );
@@ -485,13 +486,18 @@ void condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wai
 bool is_condemned_session( );
 
 void capture_session( size_t sess_id );
+
 void capture_all_other_sessions( );
 
 bool is_captured_session( );
 
-bool has_any_matching_session( bool support_only = false );
+bool has_any_matching_session( bool support_only = true );
+
+inline bool has_any_supoprt_session( ) { return has_any_matching_session( ); }
+inline bool has_matching_peer_session( ) { return has_any_matching_session( false ); }
 
 void release_session( size_t sess_id, bool wait_until_term );
+
 void release_all_other_sessions( bool wait_until_term );
 
 bool session_skip_fk_fetches( );
