@@ -5698,7 +5698,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   if( was_initial_state
                    || ( blockchain_height_other != old_blockchain_height_other ) )
+                  {
                      socket_handler.set_blockchain_height_other( blockchain_height_other );
+
+                     // NOTE: If in sync then ensure that "waiting for hub" is cleared.
+                     if( blockchain_height >= blockchain_height_other )
+                        set_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ), "" );
+                  }
                }
             }
          }
