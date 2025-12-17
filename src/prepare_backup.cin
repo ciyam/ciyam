@@ -86,7 +86,7 @@ NEXT_IDENTITY=%LINES:1%
 ;
 .file_repo_entries -remove_obsolete $NEXT_IDENTITY
 ;
-LINES=$LINES:-1%
+LINES=%LINES:-1%
 ;
 !!@:REPO_LOOP
 ;
