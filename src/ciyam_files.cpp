@@ -6189,8 +6189,13 @@ size_t remove_obsolete_repository_entries( const string& repository,
 
    if( total_entries )
    {
-      // NOTE: Log if detailed tracing is currently active (as it could be a large tx).
-      TRACE_LOG( TRACE_DETAILS, "Removing obsolete repo entries for: " + repository );
+      uint32_t trace_flag = TRACE_DETAILS;
+
+      if( total_entries >= 20000 )
+         trace_flag = TRACE_MINIMAL;
+
+      // NOTE: Log tracing is minimal if a large number of files will be removed.
+      TRACE_LOG( trace_flag, "Removing obsolete repo entries for: " + repository );
 
       system_ods_bulk_write ods_bulk_write( p_progress );
 
