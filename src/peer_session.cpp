@@ -3764,6 +3764,7 @@ class socket_command_handler : public command_handler
     is_test_identity( false ),
     is_time_for_check( false ),
     has_identity_archive( false ),
+    had_first_chk_command( false ),
     has_checked_stream_cipher( false ),
     session_state( session_state ),
     session_op_state( session_state ),
@@ -3895,6 +3896,9 @@ class socket_command_handler : public command_handler
    bool get_last_issued_was_put( ) const { return last_issued_was_put; }
    void set_last_issued_was_put( bool val ) { last_issued_was_put = val; }
 
+   bool get_had_first_chk_command( ) const { return had_first_chk_command; }
+   void set_had_first_chk_command( bool val ) { had_first_chk_command = val; }
+
    const string& get_identity( ) const { return identity; }
    const string& get_blockchain( ) const { return blockchain; }
    const string& get_archive_identity( ) const { return archive_identity; }
@@ -3995,6 +3999,7 @@ class socket_command_handler : public command_handler
    bool is_time_for_check;
    bool last_issued_was_put;
    bool has_identity_archive;
+   bool had_first_chk_command;
    bool has_checked_stream_cipher;
 
    set< string > list_items_to_ignore;
@@ -5685,6 +5690,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                set_session_variable( get_special_var_name( e_special_var_tree_match ), "" );
                set_session_variable( get_special_var_name( e_special_var_tree_total ), "" );
 
+               bool not_waiting_for_hub = false;
+
                if( has || was_initial_state )
                {
                   size_t old_blockchain_height_other = blockchain_height_other;
@@ -5701,13 +5708,22 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   {
                      socket_handler.set_blockchain_height_other( blockchain_height_other );
 
-                     // NOTE: If in sync then ensure that "waiting for hub" is cleared.
                      if( blockchain_height >= blockchain_height_other )
-                        set_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ), "" );
+                        not_waiting_for_hub = true;
                   }
                }
+               else if( is_owner && ( height_from_tag == blockchain_height ) )
+                  not_waiting_for_hub = true;
+
+               // NOTE: If blockchain is in sync (or ahead) ensures that "waiting for hub"
+               // is cleared (due to it having being set when the hub session was created).
+               if( not_waiting_for_hub && !socket_handler.get_had_first_chk_command( ) )
+                  set_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ), "" );
+
             }
          }
+
+         socket_handler.set_had_first_chk_command( true );
 
          if( !has )
          {
@@ -7243,6 +7259,17 @@ void peer_session::on_start( )
    bool has_terminated = false;
    bool was_initialised = false;
 
+   string unprefixed_blockchain( blockchain );
+
+   replace( unprefixed_blockchain, c_bc_prefix, "" );
+
+   unique_ptr< system_variable_eraser > up_identity_eraser;
+
+   // NOTE: If an identity system variable must be cleared then
+   // need to first construct a system variable eraser object.
+   if( must_clear_system_variable )
+      up_identity_eraser.reset( new system_variable_eraser( !identity.empty( ) ? identity : unprefixed_blockchain ) );
+
    string paired_identity;
 
    peer_state state = ( is_responder ? e_peer_state_responder : e_peer_state_initiator );
@@ -7268,9 +7295,6 @@ void peer_session::on_start( )
       if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
          p_sock_progress = &sock_progress;
 #endif
-
-      string unprefixed_blockchain( blockchain );
-      replace( unprefixed_blockchain, c_bc_prefix, "" );
 
       if( is_responder )
       {
@@ -7518,9 +7542,6 @@ void peer_session::on_start( )
 
          if( !is_for_support )
             set_session_variable( identity, c_true_value );
-
-         if( must_clear_system_variable )
-            set_system_variable( paired_identity.empty( ) ? identity : paired_identity, "" );
       }
 
       bool had_tag = false;
