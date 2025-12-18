@@ -493,7 +493,7 @@ bool is_captured_session( );
 
 bool has_any_matching_session( bool support_only = true );
 
-inline bool has_any_supoprt_session( ) { return has_any_matching_session( ); }
+inline bool has_any_supoprt_session( ) { return has_any_matching_session( true ); }
 inline bool has_matching_peer_session( ) { return has_any_matching_session( false ); }
 
 void release_session( size_t sess_id, bool wait_until_term );
