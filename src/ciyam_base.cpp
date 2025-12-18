@@ -7050,19 +7050,52 @@ void init_session(
 
       gtp_session = 0;
 
+      string ip_addr;
+      string blockchain;
+
+      if( p_ip_addr )
+         ip_addr = *p_ip_addr;
+
+      if( p_blockchain )
+         blockchain = *p_blockchain;
+
+      size_t offset = 0;
+
       for( size_t i = 0; i < g_max_sessions; i++ )
       {
-         if( !g_sessions[ i ] )
+         if( !gtp_session && !g_sessions[ i ] )
          {
             g_sessions[ i ] = new session( ++g_next_session_id,
              i, cmd_handler, g_storage_handlers[ 0 ], is_peer_session,
              p_ip_addr, p_blockchain, is_support_session, add_pubkey_variable );
 
+            offset = i;
+
             gtp_session = g_sessions[ i ];
 
             ods::instance( 0, true );
 
-            break;
+            if( !is_peer_session || is_support_session )
+               break;
+         }
+         else if( is_peer_session && !is_support_session )
+         {
+            session* p_next_session = g_sessions[ i ];
+
+            if( p_next_session && !p_next_session->is_support_session )
+            {
+               if( ( ip_addr == p_next_session->ip_addr )
+                && ( blockchain == p_next_session->blockchain ) )
+               {
+                  if( gtp_session )
+                  {
+                     delete g_sessions[ offset ];
+                     g_sessions[ offset ] = 0;
+                  }
+
+                  throw runtime_error( "found existing main peer session for blockchain '" + blockchain + "'" );
+               }
+            }
          }
       }
    }
@@ -7845,6 +7878,8 @@ bool has_any_matching_session( bool support_only )
          if( g_sessions[ i ]
           && ( g_sessions[ i ]->id != sess_id )
           && ( g_sessions[ i ]->blockchain == blockchain )
+          && ( ( support_only && g_sessions[ i ]->is_support_session )
+          || ( !support_only && !g_sessions[ i ]->is_support_session ) )
           && ( ( support_only && ( g_sessions[ i ]->ip_addr == ip_addr ) )
           || ( !support_only && ( g_sessions[ i ]->ip_addr != ip_addr ) ) ) )
          {
