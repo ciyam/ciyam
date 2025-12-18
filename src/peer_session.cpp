@@ -7259,17 +7259,6 @@ void peer_session::on_start( )
    bool has_terminated = false;
    bool was_initialised = false;
 
-   string unprefixed_blockchain( blockchain );
-
-   replace( unprefixed_blockchain, c_bc_prefix, "" );
-
-   unique_ptr< system_variable_eraser > up_identity_eraser;
-
-   // NOTE: If an identity system variable must be cleared then
-   // need to first construct a system variable eraser object.
-   if( must_clear_system_variable )
-      up_identity_eraser.reset( new system_variable_eraser( !identity.empty( ) ? identity : unprefixed_blockchain ) );
-
    string paired_identity;
 
    peer_state state = ( is_responder ? e_peer_state_responder : e_peer_state_initiator );
@@ -7282,6 +7271,17 @@ void peer_session::on_start( )
 
    try
    {
+      string unprefixed_blockchain( blockchain );
+
+      replace( unprefixed_blockchain, c_bc_prefix, "" );
+
+      unique_ptr< system_variable_eraser > up_identity_eraser;
+
+      // NOTE: If an identity system variable must be cleared then
+      // need to first construct a system variable eraser object.
+      if( must_clear_system_variable )
+         up_identity_eraser.reset( new system_variable_eraser( !identity.empty( ) ? identity : unprefixed_blockchain ) );
+
       socket_command_handler cmd_handler( *up_socket, state,
        time_value, is_local, is_owner, blockchain, is_for_support );
 
@@ -7716,6 +7716,11 @@ void peer_session::on_start( )
 
       if( okay )
       {
+         // NOTE: Force the eraser to be destroyed
+         // (if it had been constructed earlier).
+         if( up_identity_eraser.get( ) )
+            up_identity_eraser.reset( 0 );
+
          // NOTE: For an initiator all relevant peerchain identity error
          // messages will have been cleared before starting each session
          // but for responders will need to clear own error message now.
