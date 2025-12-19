@@ -551,7 +551,7 @@ void add_to_num_puts_value( size_t num_to_add )
       set_session_variable( num_puts_name, to_string( num_puts ) );
 }
 
-void set_waiting_for_hub_progress( const string& identity, const string& hub_identity )
+void set_waiting_for_hub_progress( const string& identity )
 {
    set_session_variable(
     get_special_var_name( e_special_var_blockchain_waiting_for_hub ), c_true_value );
@@ -3618,7 +3618,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                      fetch_tree_root = false;
 
                      if( !is_put_list_available( hub_identity, blockchain, height, true ) )
-                        set_waiting_for_hub_progress( identity, hub_identity );
+                        set_waiting_for_hub_progress( identity );
                   }
                }
 
@@ -3669,7 +3669,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
             if( is_fetching && !has_all_tree_items && !hub_identity.empty( ) )
             {
                if( !is_put_list_available( hub_identity, blockchain, height, true ) )
-                  set_waiting_for_hub_progress( identity, hub_identity );
+                  set_waiting_for_hub_progress( identity );
                else
                {
                   string put_list_hash( top_next_peer_file_hash_to_get( ) );
@@ -4262,6 +4262,7 @@ void socket_command_handler::msg_peer( const string& data )
     + ' ' + msg_info, c_request_timeout, p_sock_progress );
 
    string response;
+
    if( socket.read_line( response, c_request_timeout, 0, p_sock_progress ) <= 0 )
    {
       string error;
@@ -4387,7 +4388,12 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
          response = process_message_response( socket, response );
 
          if( response != "." )
+         {
             set_session_progress_message( response );
+
+            if( !identity.empty( ) )
+               system_identity_progress_message( identity );
+         }
 
          check_for_missing_other_sessions( date_time::local( ) );
 
@@ -5718,8 +5724,22 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                // NOTE: If blockchain is in sync (or ahead) ensures that "waiting for hub"
                // is cleared (due to it having being set when the hub session was created).
                if( not_waiting_for_hub && !socket_handler.get_had_first_chk_command( ) )
-                  set_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ), "" );
+               {
+                  string progress_message( get_current_height_prefix( ) );
 
+                  progress_message += to_string( blockchain_height );
+
+                  if( blockchain_height != blockchain_height_other )
+                  {
+                     progress_message += '/' + to_string( blockchain_height_other );
+
+                     progress_message += c_ellipsis;
+                  }
+
+                  set_session_progress_message( progress_message );
+
+                  set_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ), "" );
+               }
             }
          }
 
@@ -7709,8 +7729,7 @@ void peer_session::on_start( )
 
             set_hub_system_variable_if_required( identity, hub_identity );
 
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_waiting_for_hub ), c_true_value );
+            set_waiting_for_hub_progress( identity );
          }
       }
 
