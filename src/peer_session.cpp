@@ -2120,7 +2120,7 @@ void process_put_file( const string& blockchain,
 
                      string target_hash;
 
-                     if( lines.size( ) > 3 && lines[ 3 ].find( c_file_repository_target_hash_line_prefix ) == 0 )
+                     if( ( lines.size( ) > 3 ) && ( lines[ 3 ].find( c_file_repository_target_hash_line_prefix ) == 0 ) )
                         target_hash = lines[ 3 ].substr( strlen( c_file_repository_target_hash_line_prefix ) );
                      else if( !is_test_session )
                         throw runtime_error( "unexpected missing target hash in put file info" );
@@ -2139,6 +2139,7 @@ void process_put_file( const string& blockchain,
                         guard g( g_mutex, "process_put_file" );
 
                         okay = true;
+
                         pos = peer_mapped_info.find( ':' );
 
                         string hex_target_hash( hex_encode( base64::decode( target_hash ) ) );
@@ -3092,14 +3093,16 @@ void process_put_list_file( const string& blockchain,
    vector< string > lines;
    split( file_data, lines, '\n' );
 
+   string increment_name( get_special_var_name( e_special_var_increment ) );
+   string num_put_files_name( get_special_var_name( e_special_var_num_put_files ) );
+
    for( size_t i = 0; i < lines.size( ); i++ )
    {
       string next_line( lines[ i ] );
 
-      add_peer_file_hash_for_get( hex_encode( base64::decode( next_line ) ) );
+      set_session_variable( num_put_files_name, increment_name );
 
-      set_session_variable( get_special_var_name(
-       e_special_var_num_put_files ), get_special_var_name( e_special_var_increment ) );
+      add_peer_file_hash_for_get( hex_encode( base64::decode( next_line ) ) );
    }
 
    string tree_root_hash( get_raw_session_variable(
@@ -3107,6 +3110,9 @@ void process_put_list_file( const string& blockchain,
 
    if( !tree_root_hash.empty( ) && !has_file( tree_root_hash ) )
       add_peer_file_hash_for_get( tree_root_hash );
+
+   set_session_progress_message( GS( c_str_preparing_to_sync_at_height )
+    + get_raw_session_variable( get_special_var_name( e_special_var_blockchain_height_processing ) ) + c_ellipsis );
 }
 
 void process_public_key_file( const string& blockchain,
