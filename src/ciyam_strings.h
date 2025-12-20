@@ -90,6 +90,7 @@ const char* const c_str_peer_terminated_connection = "Peer has unexpectedly term
 const char* const c_str_restoring_std_meta_records = "Restoring standard Meta records...";
 const char* const c_str_timeout_connecting_to_peer = "Timeout occurred trying to connect to peer.";
 const char* const c_str_unexpected_blockchain_fork = "Unexpected blockchain fork detected.";
+const char* const c_str_preparing_to_sync_at_height = "Preparing to sync at height ";
 const char* const c_str_unable_to_determine_address = "Unable to determine address for domain name '@domain'.";
 const char* const c_str_unable_to_determine_address_domain = "@domain";
 const char* const c_str_external_service_unavailable = "External service @symbol does not appear to be currently available.";

@@ -112,6 +112,7 @@ peer_terminated_connection Peer has unexpectedly terminated this connection.
 permission_denied Permission denied.
 polling_at_height_prefix Polling at height 
 preparing Preparing
+preparing_to_sync_at_height Preparing to sync at height 
 processed_items Processed @num items
 processing_prefix Processing: 
 record_constrained This record cannot be deleted as it is being used by one or more @class records.
