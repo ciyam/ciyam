@@ -197,9 +197,10 @@ this allows CIYAM scripts to perform looping (which can be nested).
 The following is an example of a simple loop that will output the numbers 0 to 9:
 
 I=0
+@label NEXT
+;
 @:LOOP
 ;
-@label NEXT
 @ifeq $I 10
 @label DONE
 @endif
@@ -218,3 +219,60 @@ And the "!!@:LOOP" special history execute command will scan backwards for the "
 all of the history (including the actual !!@:LOOP command itself) only stopping when the "@skip" command will
 cause the commands to no longer be repeated (which is the case when "$I" equals "10" with "@label DONE" being
 conditionally executed causing the "@skip" to ignore the loop waiting for the "@:DONE" label to be reached).
+
+Another simplistic looping approach that is suitable for small "list files" is as follows:
+
+@label NEXT
+MNEMONICS=@file:~grep "^un" mnemonics.txt
+;
+@:LOOP
+;
+@ifeq "$MNEMONICS" ""
+@label DONE
+@endif
+;
+@skip
+;
+@:NEXT
+#%MNEMONICS:1%
+MNEMONICS=%MNEMONICS:-1%
+!!@:LOOP
+;
+@:DONE
+
+In the example above all mnemonics beginning with "un" are first read into the MNEMONICS environment variable
+and in the loop the first line of MNEMONICS is being output (i.e. #%MNEMONICS:1%) after which this same first
+line is removed from the variable (i.e. MNEMONICS=%MNEMONICS:-1%).
+
+For larger files the special "@deque" session variable is recommended with the following example illustrating
+how it could be used to output all mnemonic words that contain "and". Usage of both "commence" and "complete"
+is optional for this example but is necessary if needing to nest "@deque" usage (such as where a script calls
+another that is also using the "@deque" session variable).
+
+@label NEXT
+.session_variable @deque commence
+.session_variable @deque "@mnemonics.txt"
+;
+@:LOOP
+.session_variable @deque front
+NEXT_LINE=$OUTPUT
+;
+@ifeq "$NEXT_LINE" ""
+@label DONE
+@endif
+;
+@skip
+;
+@:NEXT
+;
+TEST_LINE=@repstr:and/:$NEXT_LINE
+;
+@ifneq "$NEXT_LINE" "$TEST_LINE"
+#$NEXT_LINE
+@endif
+;
+.session_variable @deque pop_front
+!!@:LOOP
+;
+@:DONE
+.session_variable @deque complete
