@@ -11776,6 +11776,16 @@ void set_tmp_directory( const string& tmp_directory )
    gtp_session->tmp_directory = tmp_directory;
 }
 
+bool has_session_secret( )
+{
+   bool retval = false;
+
+   if( gtp_session )
+      retval = !gtp_session->secret.empty( );
+
+   return retval;
+}
+
 string get_session_secret( )
 {
    return gtp_session->secret;

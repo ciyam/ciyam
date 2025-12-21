@@ -937,6 +937,8 @@ std::string get_tmp_directory( );
 
 void set_tmp_directory( const std::string& tmp_directory );
 
+bool has_session_secret( );
+
 std::string get_session_secret( );
 
 void set_session_secret( const std::string& secret );
