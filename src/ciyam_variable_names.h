@@ -135,6 +135,7 @@ enum special_var
    e_special_var_transaction,
    e_special_var_backup_files,
    e_special_var_block_height,
+   e_special_var_cmd_and_args,
    e_special_var_dump_minimal,
    e_special_var_local_folder,
    e_special_var_local_origin,
