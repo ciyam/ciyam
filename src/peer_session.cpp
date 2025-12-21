@@ -830,6 +830,22 @@ string decrypt_cmd_data( const tcp_socket& socket,
    if( pos != string::npos )
       data.erase( pos );
 
+   IF_IS_TRACING( TRACE_DETAILS | TRACE_SESSION )
+   {
+      string cmd_and_args_name( get_special_var_name( e_special_var_cmd_and_args ) );
+
+      string trace_cmd_and_args( get_raw_session_variable( cmd_and_args_name ) );
+
+      if( !trace_cmd_and_args.empty( ) )
+      {
+         set_session_variable( cmd_and_args_name, "" );
+
+         trace_cmd_and_args = '*' + trace_cmd_and_args + ' ' + data;
+
+         log_trace_message( TRACE_DETAILS | TRACE_SESSION, trace_cmd_and_args );
+      }
+   }
+
    return data;
 }
 
@@ -5447,7 +5463,21 @@ void socket_command_handler::preprocess_command_and_args( string& str, const str
 
    if( !str.empty( ) )
    {
-      TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, cmd_and_args );
+      uint32_t trace_flags = ( TRACE_DETAILS | TRACE_SESSION );
+
+      // NOTE: If command args have been encrypted then will output
+      // this trace only after the args have been decrypted (unless
+      // the trace level is verbose).
+      if( has_session_secret( ) )
+      {
+         trace_flags = ( TRACE_VERBOSE | TRACE_SESSION );
+
+         set_session_variable(
+          get_special_var_name( e_special_var_cmd_and_args ),
+          cmd_and_args.substr( 0, cmd_and_args.find( ' ' ) ) );
+      }
+
+      TRACE_LOG( trace_flags, cmd_and_args );
 
       if( ( str[ 0 ] == '?' ) || ( str.find( "help" ) == 0 ) )
       {
@@ -5479,6 +5509,7 @@ void socket_command_handler::preprocess_command_and_args( string& str, const str
 void socket_command_handler::postprocess_command_and_args( const string& cmd_and_args )
 {
    string::size_type pos = cmd_and_args.find( ' ' );
+
    last_command = cmd_and_args.substr( 0, pos );
 }
 
