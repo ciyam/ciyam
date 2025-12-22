@@ -109,6 +109,14 @@ void set_trace_level( const std::string& level_name );
 
 void list_trace_levels( std::vector< std::string >& level_names );
 
+std::string get_trace_filters( );
+
+void set_trace_filters( const std::string& filters );
+
+std::string get_trace_session_ids( );
+
+void set_trace_session_ids( const std::string& ids );
+
 void log_trace_message( uint32_t flag, const std::string& message );
 
 extern "C" void log_trace_string( uint32_t flag, const char* p_message );

@@ -4121,6 +4121,10 @@ int64_t g_log_unix_check_time = 0;
 bool g_log_milliseconds = false;
 bool g_log_check_excessive = true;
 
+set< string > g_trace_filters;
+
+set< size_t > g_trace_session_ids;
+
 // IMPORTANT: Any changes made to this function could
 // prevent the "admin" account from using the FCGI UI
 // (so will need to carefully check before changing).
@@ -4294,6 +4298,164 @@ void list_trace_levels( vector< string >& level_names )
    level_names.push_back( hex_level( level ) + ' ' + string( c_trace_level_verbose ) );
 }
 
+string get_trace_filters( )
+{
+   guard g( g_trace_mutex );
+
+   string retval;
+
+   for( set< string >::const_iterator ci = g_trace_filters.begin( ); ci != g_trace_filters.end( ); ++ci )
+   {
+      if( !retval.empty( ) )
+         retval += ',';
+
+      retval += to_string( *ci );
+   }
+
+   return retval;
+}
+
+void set_trace_filters( const string& filters )
+{
+   guard g( g_trace_mutex );
+
+   if( filters.empty( ) )
+      g_trace_filters.clear( );
+   else
+   {
+      vector< string > all_filters;
+
+      split( filters, all_filters );
+
+      bool set_assign = false;
+
+      string::size_type pos = filters.find_first_of( "+-" );
+
+      // NOTE: For simplicity accepts "X,Y..." in order to
+      // mean first clear the set then insert each filter.
+      if( pos == string::npos )
+      {
+         set_assign = true;
+
+         g_trace_filters.clear( );
+      }
+
+      for( size_t i = 0; i < all_filters.size( ); i++ )
+      {
+         string next( all_filters[ i ] );
+
+         if( !next.empty( ) )
+         {
+            bool erase = false;
+            bool insert = false;
+
+            if( !set_assign )
+            {
+               if( next[ 0 ] == '-' )
+                  erase = true;
+               else if( next[ 0 ] == '+' )
+                  insert = true;
+
+               if( erase || insert )
+                  next.erase( 0, 1 );
+            }
+
+            if( !next.empty( ) )
+            {
+               if( !erase && !insert && !set_assign )
+                  g_trace_filters.clear( );
+
+               if( erase )
+                  g_trace_filters.erase( next );
+               else
+                  g_trace_filters.insert( next );
+            }
+         }
+      }
+   }
+}
+
+string get_trace_session_ids( )
+{
+   guard g( g_trace_mutex );
+
+   string retval;
+
+   for( set< size_t >::const_iterator ci = g_trace_session_ids.begin( ); ci != g_trace_session_ids.end( ); ++ci )
+   {
+      if( !retval.empty( ) )
+         retval += ',';
+
+      retval += to_string( *ci );
+   }
+
+   return retval;
+}
+
+void set_trace_session_ids( const string& ids )
+{
+   guard g( g_trace_mutex );
+
+   if( ids.empty( ) )
+      g_trace_session_ids.clear( );
+   else
+   {
+      vector< string > all_ids;
+
+      split( ids, all_ids );
+
+      bool set_assign = false;
+
+      string::size_type pos = ids.find_first_of( "+-" );
+
+      // NOTE: For simplicity will accept "X,Y..." to
+      // mean first clear the set then insert each id.
+      if( pos == string::npos )
+      {
+         set_assign = true;
+
+         g_trace_session_ids.clear( );
+      }
+
+      for( size_t i = 0; i < all_ids.size( ); i++ )
+      {
+         string next( all_ids[ i ] );
+
+         if( !next.empty( ) )
+         {
+            bool erase = false;
+            bool insert = false;
+
+            if( !set_assign )
+            {
+               if( next[ 0 ] == '-' )
+                  erase = true;
+               else if( next[ 0 ] == '+' )
+                  insert = true;
+
+               if( erase || insert )
+                  next.erase( 0, 1 );
+            }
+
+            size_t id = from_string< size_t >( next );
+
+            // NOTE: If the id was empty then will
+            // instead use the current session id.
+            if( next.empty( ) && gtp_session )
+               id = gtp_session->id;
+
+            if( !erase && !insert && !set_assign )
+               g_trace_session_ids.clear( );
+
+            if( erase )
+               g_trace_session_ids.erase( id );
+            else
+               g_trace_session_ids.insert( id );
+         }
+      }
+   }
+}
+
 void log_trace_message( uint32_t flag, const string& message )
 {
    guard g( g_trace_mutex );
@@ -4304,16 +4466,23 @@ void log_trace_message( uint32_t flag, const string& message )
 
    if( flag != TRACE_MINIMAL )
    {
-      // FUTURE: If setting the system variable just set a global
-      // variable then this would prevent potential mutex issues.
-      string trace_session_id( get_raw_system_variable(
-       get_special_var_name( e_special_var_trace_session_id ) ) );
+      if( !g_trace_filters.empty( ) )
+      {
+         for( set< string >::const_iterator ci = g_trace_filters.begin( ); ci != g_trace_filters.end( ); ++ci )
+         {
+            if( message.find( *ci ) != string::npos )
+            {
+               ignore = true;
+               break;
+            }
+         }
+      }
 
-      if( !trace_session_id.empty( ) )
+      if( !g_trace_session_ids.empty( ) )
       {
          size_t session_id = ( gtp_session ? gtp_session->id : 0 );
 
-         if( session_id != from_string< size_t >( trace_session_id ) )
+         if( !g_trace_session_ids.count( session_id ) )
             ignore = true;
       }
 
