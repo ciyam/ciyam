@@ -121,6 +121,40 @@ wait 250
 (started test4)
 (finished test4)
 (finished test3)
+system_variable @trace_filters test1,test2,test3
+system_variable @trace_filters
+test1,test2,test3
+system_variable @trace_filters -test2
+system_variable @trace_filters
+test1,test3
+system_variable @trace_filters -test1
+system_variable @trace_filters
+test3
+system_variable @trace_filters +test1,+test2
+system_variable @trace_filters
+test1,test2,test3
+system_variable @trace_filters ""
+system_variable @trace_filters
+system_variable @trace_session_ids 1,2,3,4,5
+system_variable @trace_session_ids
+1,2,3,4,5
+system_variable @trace_session_ids -
+system_variable @trace_session_ids
+1,2,3,5
+system_variable @trace_session_ids +
+system_variable @trace_session_ids
+1,2,3,4,5
+system_variable @trace_session_ids 2
+system_variable @trace_session_ids
+2
+system_variable @trace_session_ids +1,+3
+system_variable @trace_session_ids
+1,2,3
+system_variable @trace_session_ids -1,-3
+system_variable @trace_session_ids
+2
+system_variable @trace_session_ids ""
+system_variable @trace_session_ids
 system_variable *needed*
 system_variable @backup_needed 1
 system_variable *needed*

@@ -193,6 +193,7 @@ const char* const c_special_variable_shared_secret = "@shared_secret";
 const char* const c_special_variable_skip_set_vars = "@skip_set_vars";
 const char* const c_special_variable_stream_cipher = "@stream_cipher";
 const char* const c_special_variable_sub_directory = "@sub_directory";
+const char* const c_special_variable_trace_filters = "@trace_filters";
 const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_cmd_delay_wait = "@cmd_delay_wait";
 const char* const c_special_variable_files_area_dir = "@files_area_dir";
@@ -234,7 +235,6 @@ const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_skip_persistence = "@skip_persistence";
 const char* const c_special_variable_skip_submit_file = "@skip_submit_file";
 const char* const c_special_variable_style_full_blown = "@style_full_blown";
-const char* const c_special_variable_trace_session_id = "@trace_session_id";
 const char* const c_special_variable_trigger_variable = "@trigger_variable";
 const char* const c_special_variable_autoscript_reload = "@autoscript_reload";
 const char* const c_special_variable_blockchain_height = "@blockchain_height";
@@ -246,6 +246,7 @@ const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_peer_data_created = "@peer_data_created";
 const char* const c_special_variable_peer_is_dependent = "@peer_is_dependent";
 const char* const c_special_variable_preparing_restore = "@preparing_restore";
+const char* const c_special_variable_trace_session_ids = "@trace_session_ids";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
 const char* const c_special_variable_check_script_error = "@check_script_error";
 const char* const c_special_variable_encrypted_password = "@encrypted_password";
@@ -523,6 +524,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_skip_set_vars );
       g_special_variable_names.push_back( c_special_variable_stream_cipher );
       g_special_variable_names.push_back( c_special_variable_sub_directory );
+      g_special_variable_names.push_back( c_special_variable_trace_filters );
       g_special_variable_names.push_back( c_special_variable_update_fields );
       g_special_variable_names.push_back( c_special_variable_cmd_delay_wait );
       g_special_variable_names.push_back( c_special_variable_files_area_dir );
@@ -564,7 +566,6 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_skip_persistence );
       g_special_variable_names.push_back( c_special_variable_skip_submit_file );
       g_special_variable_names.push_back( c_special_variable_style_full_blown );
-      g_special_variable_names.push_back( c_special_variable_trace_session_id );
       g_special_variable_names.push_back( c_special_variable_trigger_variable );
       g_special_variable_names.push_back( c_special_variable_autoscript_reload );
       g_special_variable_names.push_back( c_special_variable_blockchain_height );
@@ -576,6 +577,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_peer_data_created );
       g_special_variable_names.push_back( c_special_variable_peer_is_dependent );
       g_special_variable_names.push_back( c_special_variable_preparing_restore );
+      g_special_variable_names.push_back( c_special_variable_trace_session_ids );
       g_special_variable_names.push_back( c_special_variable_attached_file_path );
       g_special_variable_names.push_back( c_special_variable_check_script_error );
       g_special_variable_names.push_back( c_special_variable_encrypted_password );
@@ -958,11 +960,31 @@ string get_raw_system_variable( const string& name, bool is_internal )
       if( wildcard_match( var_name, c_special_variable_backup_needed ) )
          set_backup_needed( );
 
+      if( wildcard_match( var_name, c_special_variable_trace_filters ) )
+      {
+         string trace_filters( get_trace_filters( ) );
+
+         if( trace_filters.empty( ) )
+            g_variables.erase( c_special_variable_trace_filters );
+         else
+            g_variables[ c_special_variable_trace_filters ] = trace_filters;
+      }
+
       if( wildcard_match( var_name, c_special_variable_restore_needed ) )
          set_restore_needed( );
 
       if( wildcard_match( var_name, c_special_variable_generate_hub_block ) )
          set_generate_hub_block( );
+
+      if( wildcard_match( var_name, c_special_variable_trace_session_ids ) )
+      {
+         string trace_session_ids( get_trace_session_ids( ) );
+
+         if( trace_session_ids.empty( ) )
+            g_variables.erase( c_special_variable_trace_session_ids );
+         else
+            g_variables[ c_special_variable_trace_session_ids ] = trace_session_ids;
+      }
 
       if( wildcard_match( var_name, c_special_variable_system_is_for_devt ) )
          set_system_is_for_devt( );
@@ -1014,11 +1036,31 @@ string get_raw_system_variable( const string& name, bool is_internal )
       if( var_name == c_special_variable_backup_needed )
          set_backup_needed( );
 
+      if( var_name == c_special_variable_trace_filters )
+      {
+         string trace_filters( get_trace_filters( ) );
+
+         if( trace_filters.empty( ) )
+            g_variables.erase( c_special_variable_trace_filters );
+         else
+            g_variables[ c_special_variable_trace_filters ] = trace_filters;
+      }
+
       if( var_name == c_special_variable_restore_needed )
          set_restore_needed( );
 
       if( var_name == c_special_variable_generate_hub_block )
          set_generate_hub_block( );
+
+      if( var_name == c_special_variable_trace_session_ids )
+      {
+         string trace_session_ids( get_trace_session_ids( ) );
+
+         if( trace_session_ids.empty( ) )
+            g_variables.erase( c_special_variable_trace_session_ids );
+         else
+            g_variables[ c_special_variable_trace_session_ids ] = trace_session_ids;
+      }
 
       if( var_name == c_special_variable_system_is_for_devt )
          set_system_is_for_devt( );
@@ -1140,6 +1182,8 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
       set_backup_needed( );
    }
+   else if( name == c_special_variable_trace_filters )
+      set_trace_filters( value );
    else if( name == c_special_variable_restore_needed )
    {
       guard g( g_mutex );
@@ -1165,6 +1209,8 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
       set_restore_needed( );
    }
+   else if( name == c_special_variable_trace_session_ids )
+      set_trace_session_ids( value );
    else if( name == c_special_variable_generate_hub_block )
    {
       guard g( g_mutex );
@@ -1283,7 +1329,9 @@ void set_system_variable( const string& name, const string& value, bool is_init,
        || ( var_name == c_special_variable_peer_port )
        || ( var_name == c_special_variable_sid_locked )
        || ( var_name == c_special_variable_log_files_dir )
+       || ( var_name == c_special_variable_trace_filters )
        || ( var_name == c_special_variable_files_area_dir )
+       || ( var_name == c_special_variable_trace_session_ids )
        || ( var_name == c_special_variable_generate_hub_block )
        || ( var_name == c_special_variable_disallow_connections )
        || ( var_name == c_special_variable_ods_cache_hit_ratios )
