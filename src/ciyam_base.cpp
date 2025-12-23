@@ -4513,7 +4513,7 @@ void log_trace_message( uint32_t flag, const string& message )
          g_log_num_messages = 0;
          g_log_unix_check_time = unix_now;
       }
-      else
+      else if( !ignore )
       {
          if( ++g_log_num_messages >= c_log_num_excessive )
          {
@@ -4561,18 +4561,10 @@ void log_trace_message( uint32_t flag, const string& message )
 
       string log_file_dir( get_log_files_dir( ) );
 
-      // NOTE: If was not explicitly set then checks
-      // if the log file (or a link to it) exists in
-      // the current directory. If found will use it
-      // but if not then will instead default to the
-      // files area directory.
+      // NOTE: If no directory was provided
+      // then will instead use the current.
       if( log_file_dir.empty( ) )
-      {
-         if( file_exists( c_server_log_file ) )
-            log_file_dir = ".";
-         else
-            log_file_dir = get_files_area_dir( );
-      }
+         log_file_dir = ".";
 
       ofstream outf( log_file_dir + '/' + c_server_log_file, ios::out | ios::app );
 
