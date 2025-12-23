@@ -1317,7 +1317,7 @@ void process_core_file( const string& hash, const string& blockchain )
 {
    guard g( g_mutex, "process_core_file" );
 
-   TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, "(process_core_file) hash: " + hash );
+   TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "(process_core_file) hash: " + hash );
 
    string::size_type pos = hash.find( ':' );
 
@@ -1416,7 +1416,7 @@ void process_repository_file( const string& blockchain,
 {
    guard g( g_mutex, "process_repository_file" );
 
-   TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, "(process_repository_file) hash_info: " + hash_info );
+   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(process_repository_file) hash_info: " + hash_info );
 
    string::size_type pos = hash_info.find( ':' );
 
@@ -1957,7 +1957,7 @@ void process_put_file( const string& blockchain,
  const string& file_data, bool check_for_supporters, bool is_test_session,
  set< string >& target_hashes, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
-   TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, "(process_put_file) blockchain: " + blockchain );
+   TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "(process_put_file) blockchain: " + blockchain );
 
    vector< string > blobs;
    split( file_data, blobs, c_blob_separator );
@@ -2231,7 +2231,7 @@ bool has_all_list_items(
  bool touch_all_lists = false, date_time* p_dtm = 0, progress* p_progress = 0,
  size_t* p_total_processed = 0, string* p_blob_data = 0, map< string, size_t >* p_first_prefixed = 0 )
 {
-   TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, "(has_all_list_items) hash: " + hash );
+   TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "(has_all_list_items) hash: " + hash );
 
    bool retval = true;
 
@@ -2589,7 +2589,7 @@ void process_list_items( const string& blockchain,
  const string& hash, bool recurse, size_t* p_num_items_found = 0,
  set< string >* p_list_items_to_ignore = 0, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
-   TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, "(process_list_items) hash: " + hash );
+   TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "(process_list_items) hash: " + hash );
 
    string all_list_items( extract_file( hash, "" ) );
 
@@ -3030,7 +3030,7 @@ void process_signature_file( const string& blockchain, const string& hash, size_
 {
    guard g( g_mutex, "process_signature_file" );
 
-   TRACE_LOG( TRACE_DETAILS | TRACE_SESSION,
+   TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
     "(process_signature_file) hash: " + hash + " height: " + to_string( height ) );
 
    if( !height )
@@ -3218,7 +3218,7 @@ void process_public_key_file( const string& blockchain,
 
       output_sync_progress_message( identity, height, height_other, true );
 
-      TRACE_LOG( TRACE_DETAILS | TRACE_SESSION,
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
        "::: new zenith hash: " + block_hash + " height: " + to_string( height ) );
 
       if( is_hub_blockchain )
@@ -3486,7 +3486,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
    bool peer_has_tree_items = has_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_get_tree_files ) );
 
-   TRACE_LOG( TRACE_DETAILS | TRACE_SESSION,
+   TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
     "(process_block_for_height) hash: " + hash + " height: "
     + to_string( height ) + " (is_fetching = " + to_string( is_fetching ) + ")" );
 
@@ -4547,6 +4547,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       uint64_t elapsed = seconds_between( dtm, now );
 
+      bool has_put_files = has_session_variable( get_special_var_name( e_special_var_num_put_files ) );
+
       if( elapsed >= c_default_progress_seconds )
       {
          set_dtm_last_issued( now );
@@ -4554,7 +4556,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          // NOTE: Will ignore the "blockchain tree item" if there
          // are any other (non-support) sessions also tied to the
          // same blockchain and this session is not syncing.
-         if( !has_matching_peer_session( )
+         if( !has_put_files && !has_matching_peer_session( )
           || ( ( blockchain_height != blockchain_height_other )
           || ( blockchain_height != blockchain_height_pending ) ) )
          {
@@ -5385,7 +5387,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       output_sync_progress_message( identity, blockchain_height, blockchain_height_other, true );
 
-      TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, "=== new zenith hash: "
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "=== new zenith hash: "
        + block_processing + " height: " + to_string( blockchain_height ) );
 
       if( !peer_map_key.empty( ) )
