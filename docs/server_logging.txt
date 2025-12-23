@@ -1,0 +1,108 @@
+Server Logging Implementation
+-----------------------------
+
+CIYAM application servers append to log files (for binary installations check the "/var/log/ciyam" directory)
+in order to provide information (such as when starting up or after shutting down or when certain scripts have
+been executed or if any unexpected errors occur) which can be useful for both developers and administrators.
+
+Changing the Log Files Directory
+--------------------------------
+
+The main application server log file is "ciyam_server.log" with "ciyam_script.log" being used for logging any
+applicable CIYAM protocol (or other more general) scripts that have been invoked by an application or through
+the automated scheduling sub-system.
+
+The log file names may not be changed but the directory that they are located in can be changed by either use
+of the "<log_files_path>" attribute in the application server's configuration file (i.e. ciyam_server.sio) or
+with the command line option "-log_dir=<directory>" (with the command line option always taking precedence).
+
+The command line option is generally only intended for developers and is most useful when wanting to have two
+or more server instances running on the same machine (so each instance can have its own log files).
+
+If no configuration or command line option was supplied then the server's "current" directory will instead be
+used although this can still be effectively customised (and is for binary releases) by using soft-link files.
+
+The system variable "@log_files_dir" can also be used in order to change this directory at runtime (note that
+this change will take almost immediate effect in "ciyam_server.log" and after any currently executing scripts
+have completed for "ciyam_script.log"). The initial log file directory (from either the configuration file or
+command line option if had been provided) will be restored if this system variable is cleared.
+
+Checking Log File Content
+-------------------------
+
+Using a standard tool such as "tail" is generally the best way for an administrator to check log file content
+(e.g. tail /var/log/ciyam/ciyam_server.log) whereas developers might prefer to use the "log_tail" application
+protocol command (as it will automatically handle the correct log file directory and can be used if logged in
+as "admin" from the System Information "Settings" in the application web UI).
+
+Application Server Tracing
+--------------------------
+
+The "ciyam_server.log" file by default will only contain a very minimal set of messages (such as for start up
+and shut down along with any unexpected errors) but through the use of "trace flags" the number and frequency
+of logging messages can be greatly increased.
+
+Some care should be taken when choosing more detailed logging (and especially the "verbose" level) as the log
+file size can grow very rapidly (setting the "@log_files_dir" system variable to "/tmp" would be a suggestion
+to avoid blowing out the size of the "normal" log file when using the verbose log trace level).
+
+The "trace flags" value is shown (and needs to be provided) as a hexadecimal value. The value consists of two
+parts that are a maximum of four nibbles in size with the first four containing the log "level" value and the
+second four holding the log "flags" value. All leading zero digits can be omitted but it should be noted that
+if the level is zero then no logging will occur at all. Use server configuration attribute "<trace_flags>" or
+the command line option "-trace=<flags>" (with the command line option always taking precedence). If no value
+is specified then the default is "10000" (which will result in only minimal general messages being logged).
+
+The application protocol command "system_trace" (or simply "trace") is available to get/set the "trace flags"
+value but in order to view the names and hex values of both flags and levels (and to allow setting them using
+names rather than values) further "system_trace" prefixed commands are as follows:
+
+system_trace_flags
+system_trace_level
+system_trace_levels
+
+> trace_level
+minimal
+
+> trace_flags
+general
+
+> trace
+10000
+
+To view all available trace flags use "trace_flags -list" and the command "trace_levels" will list all of the
+available trace levels. If wanting to view trace "details" of both "session" commands and RDBMS "queries" the
+following commands will perform this along with showing the actual "trace flags" value (if needing this value
+for either the configuration file or command line option).
+
+> trace_level details
+
+> trace_flags -set queries,session
+
+> trace
+7000c
+
+There is also a "system_trace_message" command available to log a customised message (which is very useful if
+needing to debug an application protocol script).
+
+As detailed (and especially verbose) tracing can result in very large amount of log file output there are two
+special server variables that can be set in order to limit this output. The first is "@trace_session_ids" and
+this can be used to set the specific session ids for tracing (very useful to target main peer sessions whilst
+skipping logging for support sessions).
+
+> system_variable @trace_session_ids 1,3
+
+Using a "+" or "-" prefix will add or remove a session id from the set of session ids that tracing will apply
+to (use just "+" or "-" to add/remove the current session).
+
+> system_variable @trace_session_ids -3,+5
+
+The second system variable is "@trace_filters" which is a set of strings which every trace message is checked
+to contain. If any one of the filter strings is found then the trace message will be omitted. This example is
+a simplistic filter to prevent any "session_list" and "system_variable" commands from being logged.
+
+> system_variable @trace_filters session_list,system_variable
+
+Finally some hard-coded constants and global variables are being used in order to prevent logging more than a
+fixed number of messages every few seconds (where a special "****** skipped excessive logging ******" message
+will appear in the log file to indicate that this has happened).
