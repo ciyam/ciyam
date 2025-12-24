@@ -223,6 +223,7 @@ const char* const c_special_variable_paired_identity = "@paired_identity";
 const char* const c_special_variable_queue_hub_users = "@queue_hub_users";
 const char* const c_special_variable_row_cache_limit = "@row_cache_limit";
 const char* const c_special_variable_system_identity = "@system_identity";
+const char* const c_special_variable_total_put_files = "@total_put_files";
 const char* const c_special_variable_can_omit_prepare = "@can_omit_prepare";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_dummy_time_stamp = "@dummy_time_stamp";
@@ -554,6 +555,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_queue_hub_users );
       g_special_variable_names.push_back( c_special_variable_row_cache_limit );
       g_special_variable_names.push_back( c_special_variable_system_identity );
+      g_special_variable_names.push_back( c_special_variable_total_put_files );
       g_special_variable_names.push_back( c_special_variable_can_omit_prepare );
       g_special_variable_names.push_back( c_special_variable_check_if_changed );
       g_special_variable_names.push_back( c_special_variable_dummy_time_stamp );
