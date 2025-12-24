@@ -1980,8 +1980,15 @@ void process_put_file( const string& blockchain,
    string num_tree_items( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
+   string num_put_files_name( get_special_var_name( e_special_var_num_put_files ) );
+
+   string total_put_files_name( get_special_var_name( e_special_var_total_put_files ) );
+
    string blockchain_height_other( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_height_other ) ) );
+
+   string blockchain_zenith_height( get_raw_session_variable(
+    get_special_var_name( e_special_var_blockchain_zenith_height ) ) );
 
    string blockchain_height_processing( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processing ) ) );
@@ -2046,24 +2053,59 @@ void process_put_file( const string& blockchain,
 
                progress += c_ellipsis;
             }
+            else if( has_session_variable( total_put_files_name ) )
+            {
+               size_t next_height = from_string< size_t >( blockchain_zenith_height ) + 1;
+
+               string progress_message(
+                GS( c_str_preparing_at_height_prefix ) + to_string( next_height ) );
+
+               if( !blockchain_height_other.empty( ) )
+               {
+                  size_t other_height = from_string< size_t >( blockchain_height_other );
+
+                  if( next_height < other_height )
+                     progress_message += '/' + blockchain_height_other;
+               }
+
+               progress_message += c_percentage_separator;
+
+               size_t num_put_files = from_string< size_t >( get_raw_session_variable( num_put_files_name ) );
+               size_t total_put_files = from_string< size_t >( get_raw_session_variable( total_put_files_name ) );
+
+               size_t num_processed = ( total_put_files - num_put_files ) + 1;
+
+               set_session_variable( progress_count_name, to_string( num_processed ) );
+               set_session_variable( progress_total_name, to_string( total_put_files ) );
+
+               progress_message += get_raw_session_variable( progress_value_name );
+
+               progress_message += to_string( c_ellipsis );
+
+               set_session_progress_message( progress_message );
+
+               system_identity_progress_message( identity );
+            }
             else
             {
                string count( to_string( get_blockchain_tree_item( blockchain ) ) );
 
-               size_t next_height = from_string< size_t >( blockchain_height_processing );
+               size_t num_count = from_string< size_t >( count );
 
                if( !num_tree_items.empty( ) )
                {
                   size_t upper_limit = from_string< size_t >( num_tree_items );
 
                   // NOTE: Ensure that the upper limit is not exceeded.
-                  if( next_height > upper_limit )
+                  if( num_count > upper_limit )
                   {
-                     next_height = upper_limit;
+                     num_count = upper_limit;
 
                      add_to_blockchain_tree_item( blockchain, 0, upper_limit );
                   }
                }
+
+               size_t next_height = from_string< size_t >( blockchain_height_processing );
 
                string progress_message(
                 GS( c_str_syncing_at_height_prefix ) + to_string( next_height ) );
@@ -2082,8 +2124,8 @@ void process_put_file( const string& blockchain,
                   progress_message += count;
                else
                {
-                  set_session_variable( progress_count_name, count );
                   set_session_variable( progress_total_name, num_tree_items );
+                  set_session_variable( progress_count_name, to_string( num_count ) );
 
                   progress_message += get_raw_session_variable( progress_value_name );
                }
@@ -3093,6 +3135,9 @@ void process_put_list_file( const string& blockchain,
 {
    guard g( g_mutex, "process_put_list_file" );
 
+   TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
+    "(process_put_list_file) hash: " + hash + " height: " + to_string( height ) );
+
    if( is_new_file )
    {
       string put_list_tag( blockchain );
@@ -3105,6 +3150,8 @@ void process_put_list_file( const string& blockchain,
 
       tag_file( put_list_tag, hash );
    }
+
+   string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
    vector< string > lines;
    split( file_data, lines, '\n' );
@@ -3121,14 +3168,36 @@ void process_put_list_file( const string& blockchain,
       add_peer_file_hash_for_get( hex_encode( base64::decode( next_line ) ) );
    }
 
+   set_session_variable( get_special_var_name(
+    e_special_var_total_put_files ), get_raw_session_variable( num_put_files_name ) );
+
    string tree_root_hash( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
    if( !tree_root_hash.empty( ) && !has_file( tree_root_hash ) )
       add_peer_file_hash_for_get( tree_root_hash );
 
-   set_session_progress_message( GS( c_str_preparing_to_sync_at_height )
-    + get_raw_session_variable( get_special_var_name( e_special_var_blockchain_height_processing ) ) + c_ellipsis );
+   string progress( GS( c_str_preparing_to_sync_at_height ) + to_string( height ) );
+
+   string blockchain_height_other( get_raw_session_variable(
+    get_special_var_name( e_special_var_blockchain_height_other ) ) );
+
+   if( !blockchain_height_other.empty( ) )
+   {
+      size_t height_other = from_string< size_t >( blockchain_height_other );
+
+      if( height < height_other )
+      {
+         progress += '/';
+         progress += blockchain_height_other;
+      }
+   }
+
+   progress += c_ellipsis;
+
+   set_session_progress_message( progress );
+
+   system_identity_progress_message( identity );
 }
 
 void process_public_key_file( const string& blockchain,
@@ -4520,9 +4589,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    string peer_map_key( get_peer_map_key( false ) );
 
+   string num_put_files_name( get_special_var_name( e_special_var_num_put_files ) );
+
    string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
    string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
    string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
+
+   string total_put_files_name( get_special_var_name( e_special_var_total_put_files ) );
 
    string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
    string blockchain_is_fetching_name( get_special_var_name( e_special_var_blockchain_is_fetching ) );
@@ -4547,7 +4620,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       uint64_t elapsed = seconds_between( dtm, now );
 
-      bool has_put_files = has_session_variable( get_special_var_name( e_special_var_num_put_files ) );
+      bool has_put_files = has_session_variable( num_put_files_name );
 
       if( elapsed >= c_default_progress_seconds )
       {
@@ -4961,8 +5034,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       {
          pop_next_peer_file_hash_to_get( );
 
-         string num_put_files( get_raw_session_variable(
-          get_special_var_name( e_special_var_num_put_files ) ) );
+         string num_put_files( get_raw_session_variable( num_put_files_name ) );
 
          if( !num_put_files.empty( ) )
          {
@@ -4976,8 +5048,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             if( !target_hashes.empty( ) )
                add_to_num_puts_value( target_hashes.size( ) );
 
-            set_session_variable(
-             get_special_var_name( e_special_var_num_put_files ), get_special_var_name( e_special_var_decrement ) );
+            set_session_variable( num_put_files_name, get_special_var_name( e_special_var_decrement ) );
+
+            if( !has_session_variable( num_put_files_name ) )
+               set_session_variable( total_put_files_name, "" );
          }
 
          next_hash = top_next_peer_file_hash_to_get( is_for_support || check_for_supporters );
@@ -5049,8 +5123,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          if( !targeted_identity.empty( ) && ( targeted_identity[ 0 ] != '@' ) )
             has_targeted_identity = true;
 
-         string num_put_files( get_raw_session_variable(
-          get_special_var_name( e_special_var_num_put_files ) ) );
+         string num_put_files( get_raw_session_variable( num_put_files_name ) );
 
          if( !num_put_files.empty( ) )
          {
@@ -5069,8 +5142,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             if( !target_hashes.empty( ) )
                add_to_num_puts_value( target_hashes.size( ) );
 
-            set_session_variable(
-             get_special_var_name( e_special_var_num_put_files ), get_special_var_name( e_special_var_decrement ) );
+            set_session_variable( num_put_files_name, get_special_var_name( e_special_var_decrement ) );
+
+            if( !has_session_variable( num_put_files_name ) )
+               set_session_variable( total_put_files_name, "" );
          }
          else if( next_hash == op_list_hash )
          {
@@ -6401,7 +6476,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
             socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_sock_progress );
 
-            TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "*** condemning session due to data session sync ***" );
+            TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, "*** condemning session due to data session sync ***" );
          }
       }
    }
@@ -6417,7 +6492,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_sock_progress );
 
-         TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "*** condemning session due to paired session sync ***" );
+         TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, "*** condemning session due to paired session sync ***" );
       }
    }
 
@@ -6497,12 +6572,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                if( is_only_session )
                {
-                  TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
+                  TRACE_LOG( TRACE_DETAILS | TRACE_SESSION,
                    "(ending session due to matching paired identity '" + paired_identity + "' session not being found)" );
                }
                else if( is_missing_backup )
                {
-                  TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
+                  TRACE_LOG( TRACE_DETAILS | TRACE_SESSION,
                    "(ending session due to mandatory backup identity '" + backup_identity + "' session not being found)" );
                }
 
