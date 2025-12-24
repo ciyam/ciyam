@@ -2076,7 +2076,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          if( !okay )
+         {
+            possibly_expected_error = true;
+
             throw runtime_error( GS( c_str_session_rpc_access_denied ) );
+         }
       }
 
       if( socket_handler.has_restricted_commands( ) )
