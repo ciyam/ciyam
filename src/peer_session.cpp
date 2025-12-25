@@ -236,6 +236,11 @@ string get_current_height_prefix( )
    return GS( c_str_current_height_prefix );
 }
 
+string get_preparing_height_prefix( )
+{
+   return GS( c_str_preparing_to_sync_at_height );
+}
+
 string special_connection_message( const string& id, bool has_timed_out = false )
 {
    string msg;
@@ -565,7 +570,7 @@ void set_waiting_for_hub_progress( const string& identity )
    set_system_variable( c_progress_output_prefix + identity, progress_message );
 }
 
-void system_identity_progress_message( const string& identity )
+void system_identity_progress_message( const string& identity, bool is_preparing = false )
 {
    bool is_blockchain_owner = has_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_is_owner ) );
@@ -602,9 +607,9 @@ void system_identity_progress_message( const string& identity )
 
    bool is_changing = ( progress_message.find( c_ellipsis ) != string::npos );
 
-   string current_prefix( get_current_height_prefix( ) );
+   string current_prefix( !is_preparing ? get_current_height_prefix( ) : get_preparing_height_prefix( ) );
 
-   string prefix( current_prefix + to_string( zenith_height ) );
+   string prefix( current_prefix + to_string( !is_preparing ? zenith_height : zenith_height + 1 ) );
 
    if( is_changing )
    {
@@ -2046,19 +2051,11 @@ void process_put_file( const string& blockchain,
          {
             string progress( "." );
 
-            if( num_tree_items.empty( ) || blockchain_height_processing.empty( ) )
-            {
-               progress = get_string_message( GS( c_str_processed_items ),
-                make_pair( c_str_processed_items_num, to_string( i ) ) );
-
-               progress += c_ellipsis;
-            }
-            else if( has_session_variable( total_put_files_name ) )
+            if( has_session_variable( num_put_files_name ) )
             {
                size_t next_height = from_string< size_t >( blockchain_zenith_height ) + 1;
 
-               string progress_message(
-                GS( c_str_preparing_at_height_prefix ) + to_string( next_height ) );
+               string progress_message( get_preparing_height_prefix( ) + to_string( next_height ) );
 
                if( !blockchain_height_other.empty( ) )
                {
@@ -2073,62 +2070,19 @@ void process_put_file( const string& blockchain,
                size_t num_put_files = from_string< size_t >( get_raw_session_variable( num_put_files_name ) );
                size_t total_put_files = from_string< size_t >( get_raw_session_variable( total_put_files_name ) );
 
+               if( !total_put_files )
+               {
+                  total_put_files = num_put_files;
+
+                  set_session_variable( total_put_files_name, to_string( total_put_files ) );
+               }
+
                size_t num_processed = ( total_put_files - num_put_files ) + 1;
 
                set_session_variable( progress_count_name, to_string( num_processed ) );
                set_session_variable( progress_total_name, to_string( total_put_files ) );
 
                progress_message += get_raw_session_variable( progress_value_name );
-
-               progress_message += to_string( c_ellipsis );
-
-               set_session_progress_message( progress_message );
-
-               system_identity_progress_message( identity );
-            }
-            else
-            {
-               string count( to_string( get_blockchain_tree_item( blockchain ) ) );
-
-               size_t num_count = from_string< size_t >( count );
-
-               if( !num_tree_items.empty( ) )
-               {
-                  size_t upper_limit = from_string< size_t >( num_tree_items );
-
-                  // NOTE: Ensure that the upper limit is not exceeded.
-                  if( num_count > upper_limit )
-                  {
-                     num_count = upper_limit;
-
-                     add_to_blockchain_tree_item( blockchain, 0, upper_limit );
-                  }
-               }
-
-               size_t next_height = from_string< size_t >( blockchain_height_processing );
-
-               string progress_message(
-                GS( c_str_syncing_at_height_prefix ) + to_string( next_height ) );
-
-               if( !blockchain_height_other.empty( ) )
-               {
-                  size_t other_height = from_string< size_t >( blockchain_height_other );
-
-                  if( next_height < other_height )
-                     progress_message += '/' + blockchain_height_other;
-               }
-
-               progress_message += c_percentage_separator;
-
-               if( num_tree_items.empty( ) )
-                  progress_message += count;
-               else
-               {
-                  set_session_variable( progress_total_name, num_tree_items );
-                  set_session_variable( progress_count_name, to_string( num_count ) );
-
-                  progress_message += get_raw_session_variable( progress_value_name );
-               }
 
                progress_message += to_string( c_ellipsis );
 
@@ -2778,7 +2732,7 @@ void process_list_items( const string& blockchain,
 
             // FUTURE: These messages should be handled as server string messages.
             if( !p_num_items_found )
-               progress = GS( processing_prefix ) + hash;
+               progress = GS( c_str_processing_prefix ) + hash;
             else
             {
                string count( to_string( *p_num_items_found ) );
@@ -3177,7 +3131,7 @@ void process_put_list_file( const string& blockchain,
    if( !tree_root_hash.empty( ) && !has_file( tree_root_hash ) )
       add_peer_file_hash_for_get( tree_root_hash );
 
-   string progress( GS( c_str_preparing_to_sync_at_height ) + to_string( height ) );
+   string progress( get_preparing_height_prefix( ) + to_string( height ) );
 
    string blockchain_height_other( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_height_other ) ) );
@@ -4635,6 +4589,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          {
             size_t num_tree_item = get_blockchain_tree_item( blockchain );
 
+            bool is_preparing = false;
+
             if( num_tree_item != last_num_tree_item )
             {
                last_num_tree_item = num_tree_item;
@@ -4678,8 +4634,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                set_session_progress_message( progress_message );
             }
+            else if( blockchain_height != blockchain_height_pending )
+               is_preparing = true;
 
-            system_identity_progress_message( identity );
+            system_identity_progress_message( identity, is_preparing );
          }
 
          if( !has_raw_session_variable( get_special_var_name( e_special_var_paired_sync ) ) )
