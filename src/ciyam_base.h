@@ -22,7 +22,7 @@
 #  include "threads.h"
 #  include "ciyam_core.h"
 
-#  define GS( s ) get_string( STRINGIZE( s ) )
+#  define GS( s ) get_string( STRINGIZE( s ), s )
 
 class ods;
 class sql_db;
@@ -189,7 +189,7 @@ typedef void ( *fp_check_timezone_info )( );
 
 void list_strings( std::ostream& os );
 
-std::string get_string( const std::string& key );
+std::string get_string( const std::string& key, const char* p_default = 0 );
 
 std::string get_string_message(
  const std::string& string_message, const std::pair< std::string, std::string >& parm1 );

@@ -5127,9 +5127,9 @@ void list_strings( ostream& os )
       os << sci->first.substr( strlen( "c_str_" ) ) << ' ' << sci->second << '\n';
 }
 
-string get_string( const string& key )
+string get_string( const string& key, const char* p_default )
 {
-   string str( key );
+   string str( !p_default ? key : p_default );
 
    string_const_iterator sci = g_strings.find( key );
 
