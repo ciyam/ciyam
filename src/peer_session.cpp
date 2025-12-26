@@ -238,7 +238,7 @@ string get_current_height_prefix( )
 
 string get_preparing_height_prefix( )
 {
-   return GS( c_str_preparing_to_sync_at_height );
+   return GS( c_str_preparing_at_height_prefix );
 }
 
 string special_connection_message( const string& id, bool has_timed_out = false )
