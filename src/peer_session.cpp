@@ -302,11 +302,11 @@ string get_own_identity( bool is_shared, const string* p_extra )
    return own_identity;
 }
 
-const size_t c_max_map_keys = 1000;
-
 bool g_keys_populated = false;
 
 deque< string > g_peer_map_keys;
+
+const size_t c_max_peer_map_keys = 1000;
 
 string obtain_peer_map_key( )
 {
@@ -318,14 +318,14 @@ string obtain_peer_map_key( )
    {
       g_keys_populated = true;
 
-      size_t key_len = log10( c_max_map_keys );
+      size_t key_len = log10( c_max_peer_map_keys );
 
-      for( size_t i = 0; i < c_max_map_keys; i++ )
+      for( size_t i = 0; i < c_max_peer_map_keys; i++ )
          g_peer_map_keys.push_back( to_comparable_string( i, false, key_len ) );
    }
 
    if( g_peer_map_keys.empty( ) )
-      throw runtime_error( "unable to locate an unused peer map key" );
+      throw runtime_error( "*** unable to locate an unused peer map key ***" );
 
    retval = g_peer_map_keys.front( );
    g_peer_map_keys.pop_front( );
@@ -362,31 +362,7 @@ string get_peer_map_key( bool mandatory = true )
    return retval;
 }
 
-map< string, size_t > g_blockchain_tree_item;
-
-size_t get_blockchain_tree_item( const string& blockchain )
-{
-   guard g( g_mutex );
-
-   return g_blockchain_tree_item[ blockchain ];
-}
-
-void set_blockchain_tree_item( const string& blockchain, size_t num )
-{
-   guard g( g_mutex );
-
-   g_blockchain_tree_item[ blockchain ] = num;
-}
-
-void add_to_blockchain_tree_item( const string& blockchain, size_t num_to_add, size_t upper_limit = 0 )
-{
-   guard g( g_mutex );
-
-   g_blockchain_tree_item[ blockchain ] += num_to_add;
-
-   if( upper_limit && g_blockchain_tree_item[ blockchain ] > upper_limit )
-      g_blockchain_tree_item[ blockchain ] = upper_limit;
-}
+map< string, size_t > g_peer_tree_item;
 
 map< string, size_t > g_peer_total_items;
 
@@ -395,6 +371,36 @@ map< string, string > g_peer_found_matching;
 map< string, size_t > g_peer_found_prefixed;
 
 map< string, map< string, size_t > > g_peer_first_prefixed;
+
+size_t get_peer_tree_item( )
+{
+   guard g( g_mutex );
+
+   string peer_map_key( get_peer_map_key( ) );
+
+   return g_peer_tree_item[ peer_map_key ];
+}
+
+void set_peer_tree_item( size_t num )
+{
+   guard g( g_mutex );
+
+   string peer_map_key( get_peer_map_key( ) );
+
+   g_peer_tree_item[ peer_map_key ] = num;
+}
+
+void add_to_peer_tree_item( size_t num_to_add, size_t upper_limit = 0 )
+{
+   guard g( g_mutex );
+
+   string peer_map_key( get_peer_map_key( ) );
+
+   g_peer_tree_item[ peer_map_key ] += num_to_add;
+
+   if( upper_limit && ( g_peer_tree_item[ peer_map_key ] > upper_limit ) )
+      g_peer_tree_item[ peer_map_key ] = upper_limit;
+}
 
 void save_first_prefixed( map< string, size_t >& first_prefixed, size_t total_items )
 {
@@ -436,6 +442,7 @@ void check_found_prefixed( const string& hash, unsigned char file_type )
    if( g_peer_first_prefixed.count( peer_map_key ) )
    {
       string prefix( c_prefix_length, '\0' );
+
       hex_decode( hash.substr( 0, c_prefix_length * 2 ), ( unsigned char* )prefix.data( ), c_prefix_length );
 
       bool increment = false;
@@ -511,24 +518,20 @@ void check_found_prefixed( const string& hash, unsigned char file_type )
    }
 }
 
-void clear_first_prefixed( )
-{
-   guard g( g_mutex );
+void clear_peer_item_info( const string& peer_map_key );
 
+void clear_peer_item_info( )
+{
    string peer_map_key( get_peer_map_key( ) );
 
-   g_peer_total_items[ peer_map_key ] = 0;
-
-   g_peer_found_bounding[ peer_map_key ] = 0;
-   g_peer_found_matching[ peer_map_key ] = string( );
-   g_peer_found_prefixed[ peer_map_key ] = 0;
-
-   g_peer_first_prefixed[ peer_map_key ].clear( );
+   clear_peer_item_info( peer_map_key );
 }
 
-void clear_first_prefixed( const string& peer_map_key )
+void clear_peer_item_info( const string& peer_map_key )
 {
    guard g( g_mutex );
+
+   g_peer_tree_item[ peer_map_key ] = 0;
 
    g_peer_total_items[ peer_map_key ] = 0;
 
@@ -984,13 +987,13 @@ bool terminate_peer_session( bool is_for_support, const string& identity )
 
       if( !peer_map_key.empty( ) )
       {
-         restore_peer_map_key( peer_map_key );
-
-         clear_first_prefixed( peer_map_key );
+         clear_peer_item_info( peer_map_key );
 
          clear_all_peer_mapped_hashes( peer_map_key );
          clear_all_peer_mapped_hashes( c_local_prefix + peer_map_key );
          clear_all_peer_mapped_hashes( c_external_prefix + peer_map_key );
+
+         restore_peer_map_key( peer_map_key );
       }
    }
 
@@ -2808,7 +2811,7 @@ void process_list_items( const string& blockchain,
                      size_t upper_limit = from_string< size_t >( num_tree_items );
 
                      // NOTE: Ensure that the upper limit is not exceeded.
-                     add_to_blockchain_tree_item( blockchain, 0, upper_limit );
+                     add_to_peer_tree_item( 0, upper_limit );
                   }
 
                   string progress_message;
@@ -2828,7 +2831,7 @@ void process_list_items( const string& blockchain,
 
                   progress_message += c_percentage_separator;
 
-                  string count( to_string( get_blockchain_tree_item( blockchain ) ) );
+                  string count( to_string( get_peer_tree_item( ) ) );
 
                   if( num_tree_items.empty( ) )
                      progress_message += count;
@@ -2884,7 +2887,7 @@ void process_list_items( const string& blockchain,
                ++( *p_num_items_found );
 
             if( is_fetching && blob_increment )
-               add_to_blockchain_tree_item( blockchain, 1, upper_limit );
+               add_to_peer_tree_item( 1, upper_limit );
 
             continue;
          }
@@ -3018,7 +3021,7 @@ void process_list_items( const string& blockchain,
          }
 
          if( add_to_tree_items )
-            add_to_blockchain_tree_item( blockchain, 1, upper_limit );
+            add_to_peer_tree_item( 1, upper_limit );
       }
    }
 }
@@ -3829,7 +3832,7 @@ class socket_command_handler : public command_handler
       if( !blockchain.empty( ) )
       {
          if( !is_for_support )
-            set_blockchain_tree_item( blockchain, 0 );
+            set_peer_tree_item( 0 );
 
          identity = replaced( blockchain, c_bc_prefix, "" );
 
@@ -4250,7 +4253,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
 
       date_time dtm( date_time::local( ) );
 
-      size_t num_items_found = get_blockchain_tree_item( blockchain );
+      size_t num_items_found = get_peer_tree_item( );
 
       process_list_items( blockchain, hash, false, &num_items_found, &list_items_to_ignore, &dtm, this );
    }
@@ -4588,7 +4591,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
           || ( ( blockchain_height != blockchain_height_other )
           || ( blockchain_height != blockchain_height_pending ) ) )
          {
-            size_t num_tree_item = get_blockchain_tree_item( blockchain );
+            size_t num_tree_item = get_peer_tree_item( );
 
             bool is_preparing = false;
 
@@ -4607,7 +4610,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                   if( num_tree_item > upper_limit )
                   {
                      last_num_tree_item = num_tree_item = upper_limit;
-                     add_to_blockchain_tree_item( blockchain, 0, upper_limit );
+
+                     add_to_peer_tree_item( 0, upper_limit );
                   }
                }
 
@@ -4744,7 +4748,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                      size_t num_items_found = 0;
 
-                     set_blockchain_tree_item( blockchain, 0 );
+                     set_peer_tree_item( 0 );
 
                      blockchain_height_pending = blockchain_height + 1;
 
@@ -5070,7 +5074,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
           && ( next_hash != block_file_hash ) && ( next_hash != primary_pubkey_hash )
           && ( next_hash != signature_file_hash ) && ( next_hash != tertiary_pubkey_hash )
           && ( next_hash != secondary_pubkey_hash ) ) )
-            add_to_blockchain_tree_item( blockchain, 1 );
+            add_to_peer_tree_item( 1 );
 
          bool has_tertiary = !tertiary_pubkey_hash.empty( );
 
@@ -5405,7 +5409,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       }
 
       last_num_tree_item = 0;
-      set_blockchain_tree_item( blockchain, 0 );
+
+      set_peer_tree_item( 0 );
 
       list_items_to_ignore.clear( );
 
@@ -5763,7 +5768,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                height.erase( pos );
                height_from_tag = from_string< size_t >( height );
 
-               clear_first_prefixed( );
+               clear_peer_item_info( );
 
                set_session_variable( get_special_var_name( e_special_var_tree_count ), "" );
                set_session_variable( get_special_var_name( e_special_var_tree_match ), "" );
