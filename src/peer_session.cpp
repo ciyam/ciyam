@@ -3831,9 +3831,6 @@ class socket_command_handler : public command_handler
 
       if( !blockchain.empty( ) )
       {
-         if( !is_for_support )
-            set_peer_tree_item( 0 );
-
          identity = replaced( blockchain, c_bc_prefix, "" );
 
          if( ( identity == c_test_backup_identity )
