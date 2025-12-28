@@ -7267,7 +7267,7 @@ void connect_peerchain( const string& connect_info, bool no_delay )
             set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, c_true_value );
 
          if( !no_delay )
-            msleep( c_peer_sleep_time * ( is_peer_node ? 2 : 5 ) );
+            msleep( c_peer_sleep_time * ( is_peer_node ? 3 : 5 ) );
       }
       else
          set_system_variable( identity, "" );
