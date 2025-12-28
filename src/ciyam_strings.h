@@ -58,6 +58,7 @@ const char* const c_str_record_constrained = "This record cannot be destroyed as
 const char* const c_str_record_constrained_class = "@class";
 const char* const c_str_session_terminated = "Session was terminated by server.";
 const char* const c_str_db_identity_mismatch = "DB identity mismatch with transaction log.";
+const char* const c_str_checking_peer_status = "Checking peer status...";
 const char* const c_str_restored_num_log_ops = "Restored @num log operations...";
 const char* const c_str_restored_num_log_ops_num = "@num";
 const char* const c_str_current_height_prefix = "Currently at height ";

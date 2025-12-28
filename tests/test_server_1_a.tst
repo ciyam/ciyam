@@ -23,6 +23,7 @@ cannot_destroy Delete not permitted for this @class record.
 cannot_link_to_self @class cannot be linked to itself.
 cannot_update Update not permitted for this @class record.
 checking_at_height_prefix Checking at height 
+checking_peer_status Checking peer status...
 class_is_locked This @class is currently locked - retry again shortly.
 copy_password_to_clipboard @clipboard:Password;@value
 current_height_prefix Currently at height 
