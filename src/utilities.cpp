@@ -887,16 +887,26 @@ string file_target( const char* p_name )
 
    char buf[ _MAX_PATH ];
 
-   size_t length = readlink( p_name, buf, sizeof( buf ) - 1 );
+   ssize_t length = readlink( p_name, buf, sizeof( buf ) - 1 );
 
-   // NOTE: If not a symbolic link will just return the name.
+   if( length < 0 )
+   {
+      if( ( errno == EINVAL ) || ( errno == ENOENT ) )
+         length = 0;
+      else
+         throw runtime_error( "unable to determine file target for '"
+          + string( p_name ) + "' (errno = " + to_string( errno ) + ") " );
+   }
+
+   // NOTE: If isn't a symbolic link then
+   // will just return the name argument.
    if( !length )
-      target = p_name;
+      target = string( p_name );
    else
    {
       buf[ length ] = 0;
 
-      target = buf;
+      target = string( buf );
    }
 
    return target;

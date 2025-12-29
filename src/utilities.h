@@ -425,6 +425,16 @@ inline void file_link( const std::string& target, const std::string& name ) { fi
 std::string file_target( const char* p_name );
 inline std::string file_target( const std::string& name ) { return file_target( name.c_str( ) ); }
 
+inline bool file_target_exists( const char* p_name )
+{
+   return file_exists( file_target( p_name ) );
+}
+
+inline bool file_target_exists( const std::string& name )
+{
+   return file_exists( file_target( name ) );
+}
+
 void file_copy( const char* p_src, const char* p_dest, bool append = false );
 
 inline void file_copy( const std::string& src, const char* p_dest, bool append = false )
