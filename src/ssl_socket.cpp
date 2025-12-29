@@ -243,6 +243,18 @@ ssl_socket::~ssl_socket( )
       SSL_free( p_ssl );
 }
 
+void ssl_socket::close( )
+{
+   secure = false;
+
+   tcp_socket::close( );
+
+   if( p_ssl )
+      SSL_free( p_ssl );
+
+   p_ssl = SSL_new( p_ctx );
+}
+
 void ssl_socket::ssl_accept( size_t timeout, bool* p_rc )
 {
    if( secure )

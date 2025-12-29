@@ -39,6 +39,8 @@ class ssl_socket : public tcp_socket
 
    virtual ~ssl_socket( );
 
+   void close( );
+
    void ssl_accept( size_t timeout = c_default_ssl_accept_timeout, bool* p_rc = 0 );
 
    void ssl_connect( size_t timeout = c_default_ssl_connect_timeout, bool* p_rc = 0 );
