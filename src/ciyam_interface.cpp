@@ -293,7 +293,9 @@ tcp_socket* get_tcp_socket( )
 #  else
             g_sockets[ i ].second = new tcp_socket;
 #  endif
+
          p_socket = g_sockets[ i ].second;
+
          break;
       }
    }
@@ -1189,7 +1191,9 @@ void request_handler::process_request( )
       title = mod_info.title;
       module_id = mod_info.id;
 
-      if( g_id.empty( ) && file_exists( c_id_file ) && file_exists( c_id_file, true ) )
+      // NOTE: If is a symbolic link then ensures that the
+      // target exists (to prevent a "buffer_file" error).
+      if( g_id.empty( ) && file_target_exists( c_id_file ) )
          g_id = buffer_file( c_id_file );
 
       bool is_invalid_session = false;
@@ -1723,7 +1727,6 @@ void request_handler::process_request( )
                      }
                      else
                      {
-
                         if( g_seed == c_unlock )
                         {
 #ifdef SSL_SUPPORT
@@ -1875,7 +1878,7 @@ void request_handler::process_request( )
                            }
 #endif
                            if( !skip_save_encrypted
-                            && ( !file_exists( eid_file_name ) || !file_exists( eid_file_name, true ) ) )
+                            && ( !file_target_exists( eid_file_name ) ) )
                            {
                               ofstream outf( eid_file_name.c_str( ) );
 
@@ -1933,19 +1936,19 @@ void request_handler::process_request( )
                            has_set_identity = true;
                         }
 
-                        if( !file_exists( id_file_name ) )
+                        if( !file_target_exists( id_file_name ) )
                         {
                            ofstream outf( id_file_name.c_str( ) );
 
                            outf << server_identity;
                         }
 
-                        if( !file_exists( id_file_name ) )
+                        if( !file_target_exists( id_file_name ) )
                            throw runtime_error( "unable to create identity file (incorrect directory perms?)" );
                      }
                      else
                      {
-                        if( was_unlock )
+                        if( was_unlock && !g_reset_identity )
                         {
                            ++g_unlock_attempts;
 
@@ -1971,12 +1974,12 @@ void request_handler::process_request( )
 
                         string encrypted_identity;
 
-                        if( file_exists( eid_file_name ) && file_exists( eid_file_name, true ) )
+                        if( file_target_exists( eid_file_name ) )
                         {
                            encrypted_identity = buffer_file( eid_file_name );
 
-                           if( ( server_identity != encrypted_identity )
-                            && !file_exists( id_file_name ) && !file_exists( id_file_name, true ) )
+                           if( !file_target_exists( id_file_name )
+                            && ( server_identity != encrypted_identity ) )
                            {
                               login_refresh = true;
 
@@ -3722,6 +3725,7 @@ void request_handler::process_request( )
          if( p_session_info->p_socket )
          {
             release_socket( p_session_info->p_socket );
+
             p_session_info->p_socket = 0;
          }
 #endif
@@ -3842,6 +3846,7 @@ void request_handler::process_request( )
    if( p_session_info && p_session_info->p_socket )
    {
       release_socket( p_session_info->p_socket );
+
       p_session_info->p_socket = 0;
    }
 #endif
