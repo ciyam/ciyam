@@ -709,7 +709,9 @@ Sync_Status,M001C207F156
 System_Secret,M001C207F157
 Verified_Checksum,M001C207F158
 Verified_Checksum_And_Auto_Off,M001C207F159
-Unverified_Checksum,M001C207F160
+Waiting_For_Verification,M001C207F160
+Unverified_Checksum,M001C207F161
+Unverified_With_Checksum,M001C207F162
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000
