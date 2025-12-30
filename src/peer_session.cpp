@@ -658,10 +658,16 @@ void system_identity_progress_message( const string& identity, bool is_preparing
             paired_base_height = from_string< size_t >(
              get_raw_session_variable( blockchain_zenith_height_name, paired_session_id ) );
 
-         paired_other_height = from_string< size_t >(
+         string paired_height_other(
           get_raw_session_variable( blockchain_height_other_name, paired_session_id ) );
 
-         if( paired_is_changing && !is_preparing )
+         if( !paired_height_other.empty( ) )
+            paired_other_height = from_string< size_t >( paired_height_other );
+
+         // NOTE: If the paired session's progress is "changing" but is not "fetching" then
+         // is assuming that its peer must be syncing at "paired_other_height + 1" and will
+         // increment the value for comparisons that are used to output the other height.
+         if( !is_preparing && paired_is_changing && !paired_height_other.empty( ) )
          {
             if( !paired_is_current && !has_raw_session_variable(
              get_special_var_name( e_special_var_blockchain_is_fetching ), paired_session_id ) )
