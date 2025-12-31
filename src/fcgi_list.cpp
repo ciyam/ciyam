@@ -1251,6 +1251,17 @@ void output_list_form( ostream& os,
             if( !( source.lici->second )->restricts[ i ].extra.empty( ) )
                parse_field_extra( ( source.lici->second )->restricts[ i ].extra, field_extras );
 
+            // NOTE: If the restrict search field is actually the security level and the user is
+            // anonymous or only has "level 0" security then will not display the security level.
+            if( field_extras.count( c_field_extra_enum )
+             && field_extras.count( c_field_extra_security_level ) )
+            {
+               const enum_info& info( sinfo.enums.find( field_extras.find( c_field_extra_enum )->second )->second );
+
+               if( sess_info.user_id.empty( ) || ( info.values[ 0 ].first == sess_info.user_slevel ) )
+                  continue;
+            }
+
             os << "<tr>";
 
             os << "<td class=\"list\">"
@@ -1300,6 +1311,7 @@ void output_list_form( ostream& os,
                      os << c_dbl_nbsp;
 
                   opt = 'A' + j;
+
                   svname = opt + ( source.lici->second )->restricts[ i ].field;
 
                   string any_display( GDS( c_display_any ) );
@@ -1342,13 +1354,15 @@ void output_list_form( ostream& os,
 
                   size_t opt_count = 0;
 
-                  if( !( source.lici->second )->restricts[ i ].mandatory )
+                  if( !field_extras.count( c_field_extra_security_level ) && !( source.lici->second )->restricts[ i ].mandatory )
                   {
                      ++opt_count;
 
                      os << "<option value=\"~\"";
+
                      if( value == "~" )
                         os << " selected";
+
                      os << ">" << c_lt << GDS( c_display_none ) << c_gt << c_dbl_nbsp << "</option>\n";
                   }
 
@@ -1368,19 +1382,24 @@ void output_list_form( ostream& os,
                   for( size_t k = 0; k < info.values.size( ); k++ )
                   {
                      // NOTE: Enum values that start with a '-' are not included for user selection
-                     // as they are deemed as being only available for internal application purposes.
-                     if( info.values[ j ].first[ 0 ] == '-' )
+                     // as they are deemed as being only applicable for internal application usage.
+                     if( info.values[ k ].first[ 0 ] == '-' )
                         continue;
 
                      ++opt_count;
 
                      os << "<option";
 
-                     if( !value.empty( ) && k == value_offset )
+                     if( !value.empty( ) && ( k == value_offset ) )
                         os << " selected";
 
                      os << " value=\"" << info.values[ k ].first << "\">"
                       << get_display_string( info.values[ k ].second ) << c_dbl_nbsp << "</option>\n";
+
+                     // NOTE: Stop security enumeration at the user's limit.
+                     if( field_extras.count( c_field_extra_security_level )
+                      && ( info.values[ k ].first == sess_info.user_slevel ) )
+                        break;
                   }
 
                   os << "</select>";
