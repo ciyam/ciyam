@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2013-2025 CIYAM Developers
+# Copyright (c) 2013-2026 CIYAM Developers
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -26,9 +26,9 @@ git ls-files | grep -Ev "\.gz$|\.jpg$|\.png$" | xargs -I{} sed -i "s/Copyright (
 git ls-files | grep -Ev "\.gz$|\.jpg$|\.png$" | xargs -I{} sed -i "s/Copyright \([0-9]\{4\}\)-\([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
 git ls-files | grep -Ev "\.gz$|\.jpg$|\.png$" | xargs -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\)-\([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
 
-pushd src
+pushd src >/dev/null
 ./update_package_copyright_year
-popd
+popd >/dev/null
 
 echo
 echo "NOTE: Also need to manually update 'footer.htms' files for generated applications as well as re-generate all HTML documentation files."

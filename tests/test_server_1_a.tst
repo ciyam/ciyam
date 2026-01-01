@@ -67,7 +67,7 @@ field_must_not_be_zero @field must not be zero.
 field_not_comaptible This @field1 cannot be used with this @field2.
 field_types_must_match @field1 and @field2 types must match.
 files_area_item_size_mismatch Unexpected files area item size mismatch.
-footer Copyright (c) 2012-2025 CIYAM Developers
+footer Copyright (c) 2012-2026 CIYAM Developers
 found_another_record_1 Another @tfield @class already exists.
 found_another_record_2 Another @tfield @class with the same @ofield already exists.
 found_child_record Found @class for @field.

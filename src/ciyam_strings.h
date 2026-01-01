@@ -1,5 +1,5 @@
 // Copyright (c) 2010-2012 CIYAM Pty. Ltd. ACN 093 704 539
-// Copyright (c) 2012-2025 CIYAM Developers
+// Copyright (c) 2012-2026 CIYAM Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -13,7 +13,7 @@ const char* const c_str_page = "Page";
 const char* const c_str_true = "True";
 const char* const c_str_false = "False";
 const char* const c_str_total = "Total";
-const char* const c_str_footer = "Copyright (c) 2012-2025 CIYAM Developers";
+const char* const c_str_footer = "Copyright (c) 2012-2026 CIYAM Developers";
 const char* const c_str_records = "record(s)";
 const char* const c_str_syncing = "Syncing";
 const char* const c_str_subtotal = "Subtotal";
