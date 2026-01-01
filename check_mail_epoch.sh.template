@@ -27,7 +27,16 @@ subject=${last:53}
 ignore=0
 changed=0
 
-new_epoch=$(date -d "${DOLLAR}when" +"%s")
+unix_tm=$(date "+%s")
+
+new_epoch=$(date -d "${DOLLAR}when" "+%s")
+
+# NOTE: As the extracted mail header omits the year if it looks
+# to be in the future then subtract one (non-leap) year's worth
+# of seconds (otherwise could end up skipping many new emails).
+if [ $((${DOLLAR}new_epoch)) -gt $((${DOLLAR}unix_tm)) ]; then
+ new_epoch=$[new_epoch - 31536000]
+fi
 
 if [ -f .mail_epoch ]; then
  old_epoch=$(<.mail_epoch)
@@ -36,7 +45,7 @@ if [ -f .mail_epoch ]; then
   changed=1
 
   if [[ "${DOLLAR}from" == *"Mail System"* ]]; then
-   if [[ "${DOLLAR}subject" == *"FOLDER INTERNAL DATA"* ]]; then
+   if [[ "${DOLLAR}subject" == *"DON'T DELETE THIS MESSAGE"* ]]; then
     ignore=1
    fi
   fi
