@@ -632,12 +632,15 @@ void system_identity_progress_message( const string& identity, bool is_preparing
    bool has_paired_session = false;
    bool paired_is_changing = false;
 
+   // NOTE: If the peer does not have a backup identity (i.e. is just a hub) then will ignore the paired session.
+   bool has_backup_identity = has_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) );
+
    string paired_identity_name(
     get_special_var_name( e_special_var_paired_identity ) );
 
    string own_paired_identity( get_raw_session_variable( paired_identity_name ) );
 
-   if( !is_blockchain_owner && !own_paired_identity.empty( ) )
+   if( has_backup_identity && !is_blockchain_owner && !own_paired_identity.empty( ) )
    {
       size_t paired_session_id = first_other_session_id( paired_identity_name, own_paired_identity );
 
