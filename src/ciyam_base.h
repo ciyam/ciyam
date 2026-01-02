@@ -233,6 +233,8 @@ bool has_identity( bool* p_is_encrypted = 0 );
 
 void set_identity( const std::string& info, const char* p_encrypted_sid = 0 );
 
+std::string create_pin_locked_sid_hash( );
+
 std::string get_checksum( const std::string& data );
 
 std::string get_timezone( );

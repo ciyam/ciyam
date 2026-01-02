@@ -106,6 +106,11 @@ const size_t c_storable_file_pad_len = 32;
 
 const size_t c_num_extra_entropy_chars = 10;
 
+const size_t c_pin_length = 6;
+
+const size_t c_pin_file_name_start = 32;
+const size_t c_pin_file_name_length = 8;
+
 const size_t c_sleep_after_script_time = 1500;
 
 const size_t c_min_smtp_max_send_attempts = 1;
@@ -139,6 +144,8 @@ const char* const c_dummy_host_name = "ciyam.peer";
 
 const char* const c_at_init_script = "./at_init";
 const char* const c_at_term_script = "./at_term";
+
+const char* const c_pin_file_ext = ".pin";
 
 const char* const c_server_log_file = "ciyam_server.log";
 const char* const c_server_sid_file = "ciyam_server.sid";
@@ -3087,6 +3094,7 @@ void append_undo_sql_statements( storage_handler& handler )
          outf << escaped( gtp_session->sql_undo_statements[ i ], "\"", c_nul, "rn\r\n" ) << '\n';
 
       outf.flush( );
+
       if( !outf.good( ) )
          throw runtime_error( "*** unexpected error occurred writing to undo sql ***" );
 
@@ -5369,7 +5377,28 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          key = info;
 
+         bool was_pin_locked = false;
+         bool possible_lock_pin = false;
+
+         string pin_file_name;
+
+         if( ( key.length( ) == c_pin_length )
+          && ( key.find_first_not_of( "0123456789" ) == string::npos ) )
+            possible_lock_pin = true;
+
          harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
+
+         if( possible_lock_pin )
+         {
+            pin_file_name = key.substr( c_pin_file_name_start, c_pin_file_name_length ) + c_pin_file_ext;
+
+            if( file_exists( pin_file_name ) )
+            {
+               was_pin_locked = true;
+
+               sid = buffer_file( pin_file_name );
+            }
+         }
 
          data_decrypt( sid, sid, key );
 
@@ -5401,6 +5430,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             catch( ... )
             {
                g_sid.erase( );
+
                throw;
             }
          }
@@ -5410,7 +5440,12 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             // NOTE: Either now simply store the hash of the entropy or if any extra
             // entropy had been supplied then use this in order to harden the value.
             if( extra.empty( ) )
-               hash_sid_val( sid );
+            {
+               if( !was_pin_locked )
+                  hash_sid_val( sid );
+               else
+                  file_remove( pin_file_name );
+            }
             else
             {
                g_hardened_identity = true;
@@ -5496,6 +5531,39 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
       check_if_is_known_demo_identity( );
    }
+}
+
+string create_pin_locked_sid_hash( )
+{
+   string pin( random_characters( c_pin_length, 0, e_printable_type_numeric ) );
+
+   string key;
+   key.reserve( c_key_reserve_size );
+
+   key = pin;
+
+   harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
+
+   string pin_file_name( key.substr( c_pin_file_name_start, c_pin_file_name_length ) + c_pin_file_ext );
+
+   string sid_hash;
+
+   get_sid( sid_hash );
+
+   data_encrypt( sid_hash, sid_hash, key );
+
+   ofstream outf( pin_file_name.c_str( ) );
+
+   outf << sid_hash;
+
+   outf.flush( );
+
+   if( !outf.good( ) )
+      throw runtime_error( "*** unexpected error occurred writing to pin lock file ***" );
+
+   outf.close( );
+
+   return pin;
 }
 
 string get_checksum( const string& data )
@@ -10173,6 +10241,7 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
       }
 
       outf << "\nCOMMIT;\n";
+
       outf.flush( );
 
       if( !outf.good( ) )
@@ -10532,6 +10601,7 @@ void storage_process_rewind( const string& label, map< string, string >& file_in
          throw runtime_error( "unexpected rewind point " + label + " not found" );
 
       outf.flush( );
+
       if( !outf.good( ) )
          throw runtime_error( "*** unexpected error occurred writing to new undo sql ***" );
 
@@ -11092,6 +11162,7 @@ void storage_add_dead_key( const string& cid, const string& key )
       throw runtime_error( "unable to open '" + dead_keys_file + "' for output" );
 
    outf << dead_key << '\n';
+
    outf.flush( );
 
    if( !outf.good( ) )
