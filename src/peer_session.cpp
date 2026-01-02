@@ -602,175 +602,183 @@ void system_identity_progress_message( const string& identity, bool is_preparing
    if( !base_height )
       base_height = zenith_height;
 
-   size_t other_height = from_string< size_t >(
-    get_raw_session_variable( blockchain_height_other_name ) );
+   string identity_progress_message;
 
-   string percentage_value( get_raw_session_variable( progress_value_name ) );
-   string progress_message( get_raw_session_variable( progress_message_name ) );
-
-   size_t paired_base_height = 0;
-   size_t paired_other_height = 0;
-
-   bool is_changing = ( progress_message.find( c_ellipsis ) != string::npos );
-
-   string current_prefix( !is_preparing ? get_current_height_prefix( ) : get_preparing_height_prefix( ) );
-
-   string prefix( current_prefix + to_string( !is_preparing ? zenith_height : zenith_height + 1 ) );
-
-   if( is_changing )
-   {
-      string::size_type pos = progress_message.find( c_percentage_separator );
-
-      if( pos != string::npos )
-      {
-         prefix = progress_message.substr( 0, pos );
-         percentage_value = progress_message.substr( pos + strlen( c_percentage_separator ) );
-      }
-   }
-
-   bool paired_is_current = false;
-   bool has_paired_session = false;
-   bool paired_is_changing = false;
-
-   // NOTE: If the peer does not have a backup identity (i.e. is just a hub) then will ignore the paired session.
    bool has_backup_identity = has_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) );
 
-   string paired_identity_name(
-    get_special_var_name( e_special_var_paired_identity ) );
-
-   string own_paired_identity( get_raw_session_variable( paired_identity_name ) );
-
-   if( has_backup_identity && !is_blockchain_owner && !own_paired_identity.empty( ) )
+   // NOTE: If the peer does not have a backup identity (i.e. is just a hub) then will just
+   // set the progress to the "current zenith height" (as it is not being used for the UI).
+   if( !has_backup_identity )
+      identity_progress_message = get_current_height_prefix( ) + to_string( zenith_height );
+   else
    {
-      size_t paired_session_id = first_other_session_id( paired_identity_name, own_paired_identity );
+      size_t other_height = from_string< size_t >(
+       get_raw_session_variable( blockchain_height_other_name ) );
 
-      if( paired_session_id )
+      string percentage_value( get_raw_session_variable( progress_value_name ) );
+      string progress_message( get_raw_session_variable( progress_message_name ) );
+
+      size_t paired_base_height = 0;
+      size_t paired_other_height = 0;
+
+      bool is_changing = ( progress_message.find( c_ellipsis ) != string::npos );
+
+      string current_prefix( !is_preparing ? get_current_height_prefix( ) : get_preparing_height_prefix( ) );
+
+      string prefix( current_prefix + to_string( !is_preparing ? zenith_height : zenith_height + 1 ) );
+
+      if( is_changing )
       {
-         has_paired_session = true;
+         string::size_type pos = progress_message.find( c_percentage_separator );
 
-         string paired_progress_message( get_raw_session_variable( progress_message_name, paired_session_id ) );
-
-         paired_is_current = ( paired_progress_message.find( current_prefix ) == 0 );
-
-         paired_is_changing = ( paired_progress_message.find( c_ellipsis ) != string::npos );
-
-         paired_base_height = from_string< size_t >(
-          get_raw_session_variable( blockchain_height_procesing_name, paired_session_id ) );
-
-         if( !paired_base_height )
-            paired_base_height = from_string< size_t >(
-             get_raw_session_variable( blockchain_zenith_height_name, paired_session_id ) );
-
-         string paired_height_other(
-          get_raw_session_variable( blockchain_height_other_name, paired_session_id ) );
-
-         if( !paired_height_other.empty( ) )
-            paired_other_height = from_string< size_t >( paired_height_other );
-
-         // NOTE: If the paired session's progress is "changing" but is not "fetching" then
-         // is assuming that its peer must be syncing at "paired_other_height + 1" and will
-         // increment the value for comparisons that are used to output the other height.
-         if( !is_preparing && paired_is_changing && !paired_height_other.empty( ) )
+         if( pos != string::npos )
          {
-            if( !paired_is_current && !has_raw_session_variable(
-             get_special_var_name( e_special_var_blockchain_is_fetching ), paired_session_id ) )
-               ++paired_other_height;
+            prefix = progress_message.substr( 0, pos );
+            percentage_value = progress_message.substr( pos + strlen( c_percentage_separator ) );
          }
+      }
 
-         if( paired_is_changing )
+      bool paired_is_current = false;
+      bool has_paired_session = false;
+      bool paired_is_changing = false;
+
+      string paired_identity_name(
+       get_special_var_name( e_special_var_paired_identity ) );
+
+      string own_paired_identity( get_raw_session_variable( paired_identity_name ) );
+
+      if( !is_blockchain_owner && !own_paired_identity.empty( ) )
+      {
+         size_t paired_session_id = first_other_session_id( paired_identity_name, own_paired_identity );
+
+         if( paired_session_id )
          {
-            string paired_percentage_value(
-             get_raw_session_variable( progress_value_name, paired_session_id ) );
+            has_paired_session = true;
 
-            float percentage = from_string< float >( percentage_value );
-            float paired_percentage = from_string< float >( paired_percentage_value );
+            string paired_progress_message( get_raw_session_variable( progress_message_name, paired_session_id ) );
 
-            bool paired_is_less = false;
+            paired_is_current = ( paired_progress_message.find( current_prefix ) == 0 );
 
-            // NOTE: If both are changing will use the paired value
-            // if it is lower (to prevent the value being displayed
-            // from suddenly jumping backwards after completion for
-            // one of the paired identities).
-            if( is_changing && ( paired_percentage < percentage ) )
-               paired_is_less = true;
+            paired_is_changing = ( paired_progress_message.find( c_ellipsis ) != string::npos );
 
-            if( !is_changing || paired_is_less )
+            paired_base_height = from_string< size_t >(
+             get_raw_session_variable( blockchain_height_procesing_name, paired_session_id ) );
+
+            if( !paired_base_height )
+               paired_base_height = from_string< size_t >(
+                get_raw_session_variable( blockchain_zenith_height_name, paired_session_id ) );
+
+            string paired_height_other(
+             get_raw_session_variable( blockchain_height_other_name, paired_session_id ) );
+
+            if( !paired_height_other.empty( ) )
+               paired_other_height = from_string< size_t >( paired_height_other );
+
+            // NOTE: If the paired session's progress is "changing" but is not "fetching" then
+            // is assuming that its peer must be syncing at "paired_other_height + 1" and will
+            // increment the value for comparisons that are used to output the other height.
+            if( !is_preparing && paired_is_changing && !paired_height_other.empty( ) )
             {
-               string::size_type pos = paired_progress_message.find( c_percentage_separator );
+               if( !paired_is_current && !has_raw_session_variable(
+                get_special_var_name( e_special_var_blockchain_is_fetching ), paired_session_id ) )
+                  ++paired_other_height;
+            }
 
-               if( pos == string::npos )
-                  percentage_value = get_raw_session_variable( progress_value_name, paired_session_id );
-               else
+            if( paired_is_changing )
+            {
+               string paired_percentage_value(
+                get_raw_session_variable( progress_value_name, paired_session_id ) );
+
+               float percentage = from_string< float >( percentage_value );
+               float paired_percentage = from_string< float >( paired_percentage_value );
+
+               bool paired_is_less = false;
+
+               // NOTE: If both are changing will use the paired value
+               // if it is lower (to prevent the value being displayed
+               // from suddenly jumping backwards after completion for
+               // one of the paired identities).
+               if( is_changing && ( paired_percentage < percentage ) )
+                  paired_is_less = true;
+
+               if( !is_changing || paired_is_less )
                {
-                  prefix = paired_progress_message.substr( 0, pos );
+                  string::size_type pos = paired_progress_message.find( c_percentage_separator );
 
-                  percentage_value = paired_progress_message.substr( pos + strlen( c_percentage_separator ) );
-
-                  pos = prefix.rfind( ' ' );
-
-                  if( pos != string::npos )
+                  if( pos == string::npos )
+                     percentage_value = get_raw_session_variable( progress_value_name, paired_session_id );
+                  else
                   {
-                     prefix.erase( pos + 1 );
+                     prefix = paired_progress_message.substr( 0, pos );
 
-                     prefix += to_string( base_height );
+                     percentage_value = paired_progress_message.substr( pos + strlen( c_percentage_separator ) );
 
-                     if( other_height > base_height )
-                        prefix += '/' + to_string( other_height );
+                     pos = prefix.rfind( ' ' );
+
+                     if( pos != string::npos )
+                     {
+                        prefix.erase( pos + 1 );
+
+                        prefix += to_string( base_height );
+
+                        if( other_height > base_height )
+                           prefix += '/' + to_string( other_height );
+                     }
                   }
                }
             }
          }
       }
-   }
 
-   string identity_progress_message( prefix );
+      identity_progress_message = prefix;
 
-   if( has_paired_session )
-   {
-      identity_progress_message += " (";
-
-      if( !paired_other_height && ( paired_base_height > 1 ) )
+      if( has_paired_session )
       {
-         paired_is_changing = true;
-         identity_progress_message += "<" + to_string( paired_base_height );
-      }
-      else
-      {
-         identity_progress_message += to_string( paired_other_height );
+         identity_progress_message += " (";
 
-         if( paired_base_height > paired_other_height )
+         if( !paired_other_height && ( paired_base_height > 1 ) )
          {
             paired_is_changing = true;
-            identity_progress_message += '/' + to_string( paired_base_height );
+            identity_progress_message += "<" + to_string( paired_base_height );
          }
+         else
+         {
+            identity_progress_message += to_string( paired_other_height );
+
+            if( paired_base_height > paired_other_height )
+            {
+               paired_is_changing = true;
+               identity_progress_message += '/' + to_string( paired_base_height );
+            }
+         }
+
+         identity_progress_message += ')';
       }
 
-      identity_progress_message += ')';
-   }
-
-   if( is_changing || paired_is_changing )
-   {
-      if( !percentage_value.empty( ) )
+      if( is_changing || paired_is_changing )
       {
-         identity_progress_message += c_percentage_separator;
-         identity_progress_message += percentage_value;
+         if( !percentage_value.empty( ) )
+         {
+            identity_progress_message += c_percentage_separator;
+            identity_progress_message += percentage_value;
+         }
+
+         identity_progress_message += c_ellipsis;
       }
 
-      identity_progress_message += c_ellipsis;
-   }
+      string time_value( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_time_value ) ) );
 
-   string time_value( get_session_variable(
-    get_special_var_name( e_special_var_blockchain_time_value ) ) );
+      // NOTE: Display a "checking" message if likely
+      // to still be reading the initial peer status.
+      if( !time_value.empty( ) )
+      {
+         int64_t current = unix_time( date_time::local( ) );
+         int64_t check_time = from_string< int64_t >( time_value );
 
-   // NOTE: Display a "checking" message if likely
-   // to still be reading the initial peer status.
-   if( !time_value.empty( ) )
-   {
-      int64_t current = unix_time( date_time::local( ) );
-      int64_t check_time = from_string< int64_t >( time_value );
-
-      if( current < check_time )
-         identity_progress_message = GS( c_str_checking_peer_status );
+         if( current < check_time )
+            identity_progress_message = GS( c_str_checking_peer_status );
+      }
    }
 
    set_system_variable( c_progress_output_prefix + identity, identity_progress_message );
