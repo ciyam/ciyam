@@ -7663,6 +7663,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
             throw runtime_error( "unknown system password name '" + name + "'" );
       }
+      else if( command == c_cmd_ciyam_session_system_pin_lock )
+         response = create_pin_locked_sid_hash( );
       else if( command == c_cmd_ciyam_session_system_schedule )
       {
          bool reload = has_parm_val( parameters, c_cmd_ciyam_session_system_schedule_reload );
