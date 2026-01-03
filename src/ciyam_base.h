@@ -233,7 +233,9 @@ bool has_identity( bool* p_is_encrypted = 0 );
 
 void set_identity( const std::string& info, const char* p_encrypted_sid = 0 );
 
-std::string create_pin_locked_sid_hash( );
+bool unlock_create_allowed( );
+
+std::string create_unlock_sid_hash_pin( );
 
 std::string get_checksum( const std::string& data );
 
@@ -697,13 +699,6 @@ bool has_udp_recv_file_chunk_info( size_t* p_num_chunks = 0 );
 
 std::string get_udp_recv_file_chunk_info( size_t& chunk,
  bool chunk_specified = false, size_t* p_first_chunk = 0, size_t* p_num_chunks = 0 );
-
-bool has_crypt_key_for_blockchain_account( const std::string& blockchain, const std::string& account );
-
-std::string get_crypt_key_for_blockchain_account( const std::string& blockchain, const std::string& account );
-
-void set_crypt_key_for_blockchain_account(
- const std::string& blockchain, const std::string& account, const std::string& crypt_key );
 
 void init_storage( const std::string& name,
  const std::string& directory, command_handler& cmd_handler, bool lock_for_admin );

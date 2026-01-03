@@ -108,6 +108,8 @@ const size_t c_num_extra_entropy_chars = 10;
 
 const size_t c_pin_length = 6;
 
+const size_t c_pin_multiplier = 5;
+
 const size_t c_pin_file_name_start = 32;
 const size_t c_pin_file_name_length = 8;
 
@@ -338,6 +340,8 @@ mutex g_session_mutex;
 
 size_t g_key_count;
 int64_t g_key_tm_val;
+
+int64_t g_pin_tm_val;
 
 bool g_hardened_identity;
 bool g_encrypted_identity;
@@ -5377,26 +5381,34 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          key = info;
 
-         bool was_pin_locked = false;
-         bool possible_lock_pin = false;
+         bool was_pin_unlocked = false;
+         bool possible_unlock_pin = false;
 
          string pin_file_name;
 
          if( ( key.length( ) == c_pin_length )
           && ( key.find_first_not_of( "0123456789" ) == string::npos ) )
-            possible_lock_pin = true;
+            possible_unlock_pin = true;
 
-         harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
+         harden_key_with_hash_rounds( key, key, key,
+          c_key_rounds_multiplier * ( !possible_unlock_pin ? 1 : c_pin_multiplier ) );
 
-         if( possible_lock_pin )
+         if( possible_unlock_pin )
          {
             pin_file_name = key.substr( c_pin_file_name_start, c_pin_file_name_length ) + c_pin_file_ext;
 
             if( file_exists( pin_file_name ) )
             {
-               was_pin_locked = true;
+               was_pin_unlocked = true;
 
                sid = buffer_file( pin_file_name );
+            }
+            else
+            {
+               key = info;
+
+               // NOTE: If not actually a PIN then needs to harden as per a non-PIN.
+               harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
             }
          }
 
@@ -5441,7 +5453,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             // entropy had been supplied then use this in order to harden the value.
             if( extra.empty( ) )
             {
-               if( !was_pin_locked )
+               if( !was_pin_unlocked )
                   hash_sid_val( sid );
                else
                   file_remove( pin_file_name );
@@ -5533,8 +5545,27 @@ void set_identity( const string& info, const char* p_encrypted_sid )
    }
 }
 
-string create_pin_locked_sid_hash( )
+bool unlock_create_allowed( )
 {
+   guard g( g_mutex );
+
+   bool retval = false;
+
+   int64_t now = unix_time( );
+
+   if( !g_pin_tm_val || ( abs( now - g_pin_tm_val ) >= 3 ) )
+      retval = true;
+
+   return retval;
+}
+
+string create_unlock_sid_hash_pin( )
+{
+   guard g( g_mutex );
+
+   if( !unlock_create_allowed( ) )
+      throw runtime_error( "*** attempt to create another PIN too quickly ***" );
+
    string pin( random_characters( c_pin_length, 0, e_printable_type_numeric ) );
 
    string key;
@@ -5542,11 +5573,13 @@ string create_pin_locked_sid_hash( )
 
    key = pin;
 
-   harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
+   // NOTE: As a PIN has low entropy is increasing the number of rounds that are applied.
+   harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier * c_pin_multiplier );
 
    string pin_file_name( key.substr( c_pin_file_name_start, c_pin_file_name_length ) + c_pin_file_ext );
 
    string sid_hash;
+   sid_hash.reserve( c_key_reserve_size );
 
    get_sid( sid_hash );
 
@@ -5559,9 +5592,11 @@ string create_pin_locked_sid_hash( )
    outf.flush( );
 
    if( !outf.good( ) )
-      throw runtime_error( "*** unexpected error occurred writing to pin lock file ***" );
+      throw runtime_error( "*** unexpected error occurred writing to pin unlock file ***" );
 
    outf.close( );
+
+   g_pin_tm_val = unix_time( );
 
    return pin;
 }
