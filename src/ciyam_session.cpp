@@ -7663,8 +7663,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
             throw runtime_error( "unknown system password name '" + name + "'" );
       }
-      else if( command == c_cmd_ciyam_session_system_pin_lock )
-         response = create_pin_locked_sid_hash( );
       else if( command == c_cmd_ciyam_session_system_schedule )
       {
          bool reload = has_parm_val( parameters, c_cmd_ciyam_session_system_schedule_reload );
@@ -7785,6 +7783,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = ntfy_topic( uid );
       }
+      else if( command == c_cmd_ciyam_session_system_pin_unlock )
+         response = create_unlock_sid_hash_pin( );
       else if( command == c_cmd_ciyam_session_system_run_script )
       {
          string script_name( get_parm_val( parameters, c_cmd_ciyam_session_system_run_script_script_name ) );
