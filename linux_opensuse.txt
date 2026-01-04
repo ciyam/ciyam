@@ -343,7 +343,7 @@ sudo vi /etc/hosts
 ******************************** FOR NON-VM MACHINES ******************************
 
 (determine the current external IP address)
-hostname -i
+curl -s https://https://icanhazip.com
 ***external_ip_address***
 
 (determine the current internal IP address which needs to be static)

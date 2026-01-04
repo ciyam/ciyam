@@ -408,7 +408,7 @@ sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.ta
 sudo systemctl status sleep.target suspend.target hibernate.target hybrid-sleep.target
 
 (determine the current external IP address)
-hostname -i
+curl -s https://https://icanhazip.com
 ***external_ip_address***
 
 (determine the current internal IP address which needs to be static)
