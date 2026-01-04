@@ -1895,7 +1895,10 @@ void request_handler::process_request( )
                      if( pos == string::npos )
                         throw runtime_error( "unexpected identity information '" + identity_info + "'" );
 
-                     string sid, server_identity( identity_info.substr( 0, pos ) );
+                     string sid;
+                     sid.reserve( c_key_reserve_size );
+
+                     string server_identity( identity_info.substr( 0, pos ) );
 #ifdef SSL_SUPPORT
                      // NOTE: If mnemonics then will have been encrypted (confirmed by finding the salt marker).
                      if( server_identity.find( ':' ) != string::npos )

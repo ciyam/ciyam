@@ -151,6 +151,8 @@ string get_id_from_server_identity( const char* p_server_id )
 
 void init_strings( )
 {
+   g_sid.reserve( c_key_reserve_size );
+
    read_strings( c_str_file, g_strings, "c_display_" );
 }
 
