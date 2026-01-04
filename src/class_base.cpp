@@ -247,11 +247,11 @@ string get_mask( int numeric_digits, int numeric_decimals,
    int whole_digits = numeric_digits;
 
    if( !whole_digits )
-      whole_digits = is_numeric ? 19 : 10;
+      whole_digits = ( is_numeric ? 19 : 10 );
 
    whole_digits -= numeric_decimals;
 
-   if( zero_padding < 2 || zero_padding == 3 )
+   if( ( zero_padding < 2 ) || ( zero_padding == 3 ) )
       mask += string( whole_digits, '#' );
    else if( zero_padding == 2 )
       mask += string( whole_digits, '0' );
@@ -264,7 +264,7 @@ string get_mask( int numeric_digits, int numeric_decimals,
 
       if( zero_padding < 1 )
          mask += string( numeric_decimals, '#' );
-      else if( zero_padding == 3 && numeric_decimals > 1 )
+      else if( ( zero_padding == 3 ) && ( numeric_decimals > 1 ) )
          mask += "0" + string( numeric_decimals - 1, '#' );
       else
          mask += string( numeric_decimals, '0' );
@@ -1200,11 +1200,12 @@ void class_base::perform_lazy_fetch( )
    if( !lazy_fetch_key.empty( ) )
    {
       string s( lazy_fetch_key );
+
       lazy_fetch_key.erase( );
 
       // NOTE: If not in an op and the new lazy fetch key is the same as the previous
       // one then don't perform the fetch (i.e. optimsation to avoid excess queries).
-      if( ( get_is_in_op( ) && !get_in_op_begin( ) ) || s != last_lazy_fetch_key )
+      if( ( get_is_in_op( ) && !get_in_op_begin( ) ) || ( s != last_lazy_fetch_key ) )
       {
          perform_fetch_rc rc;
 
@@ -1314,6 +1315,7 @@ void class_base::iterate_stop( )
    init( false );
 
    row_cache.clear( );
+
    transient_filter_field_values.clear( );
 }
 
@@ -1693,8 +1695,8 @@ string class_base::get_short_field_id( int field ) const
 
    string field_id( get_field_id( field ) );
 
-   // KLUDGE: If module_id starts with a number assume it is Meta (which doesn't support field shortening).
-   if( !module_id.empty( ) && module_id[ 0 ] >= '0' && module_id[ 0 ] <= '9' )
+   // NOTE: If "module_id" starts with a number assume it is Meta (i.e. no shortening).
+   if( !module_id.empty( ) && ( module_id[ 0 ] >= '0' ) && ( module_id[ 0 ] <= '9' ) )
       return field_id;
 
    string::size_type pos = field_id.find( class_id );
@@ -1822,8 +1824,10 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts,
          revision = is_init_uid( ) ? 0 : c_unconfirmed_revision;
 
       original_identity = construct_class_identity( *this );
+
       do_generate_sql( e_generate_sql_type_insert, sql_stmts, tx_key_info, p_sql_undo_stmts );
-      /* drop through */
+
+      /* IMPORTANT: Drops through to next case. */
 
       case e_op_type_update:
       if( !p_sql_undo_stmts )
@@ -1896,6 +1900,7 @@ void class_base::cancel( )
 void class_base::fetch( string& sql, bool check_only, bool use_lazy_key )
 {
    vector< string > sql_column_names;
+
    get_sql_column_names( sql_column_names );
 
    if( !fetch_field_names.empty( ) )
@@ -1914,7 +1919,7 @@ void class_base::fetch( string& sql, bool check_only, bool use_lazy_key )
          while( is_field_transient( i + transient_offset ) )
             ++transient_offset;
 
-         if( fetch_field_names.count( sql_column_names[ i ].substr( 2 ) ) ) // i.e. skip the "C_" prefix
+         if( fetch_field_names.count( sql_column_names[ i ].substr( 2 ) ) ) // i.e. "C_" prefix
             required_sql_columns.push_back( sql_column_names[ i ] );
          else
             required_sql_columns.push_back( sql_quote( get_field_value( i + transient_offset ) ) );
@@ -1934,10 +1939,7 @@ void class_base::fetch( string& sql, bool check_only, bool use_lazy_key )
          sql = "SELECT C_Key_,C_Ver_,C_Rev_,C_Sec_,C_Typ_";
 
          for( size_t i = 0; i < sql_column_names.size( ); i++ )
-         {
-            sql += ',';
-            sql += sql_column_names[ i ];
-         }
+            sql += ',' + sql_column_names[ i ];
       }
 
       string table_name( "T_" + get_module_name( ) + "_" + get_class_name( ) );
@@ -1959,6 +1961,7 @@ void class_base::destroy( )
    if( num_children > 0 )
    {
       time_t ts = time( 0 );
+
       bool output_progress = false;
 
       TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "=== begin cascade [class: "
@@ -2079,6 +2082,7 @@ void class_base::cache_original_values( )
       original_values.push_back( get_field_value( i ) );
 
    p_impl->foreign_key_values.clear( );
+
    get_foreign_key_values( p_impl->foreign_key_values );
 }
 
@@ -2318,7 +2322,9 @@ void class_base::perform_field_search_replacements( )
             }
 
             string empty_replace;
+
             string::size_type npos = replace.find( '|' );
+
             if( npos != string::npos )
             {
                empty_replace = replace.substr( npos + 1 );
@@ -2329,6 +2335,7 @@ void class_base::perform_field_search_replacements( )
             // that the search/replace following this optional prefix must
             // have been empty.
             bool was_at_end( epos == str.length( ) - 1 );
+
             if( !was_at_end && str[ epos + 1 ] == '[' )
                was_at_end = true;
 
@@ -2345,8 +2352,8 @@ void class_base::perform_field_search_replacements( )
          }
       }
 
-      if( search_replace_separators.count( srci->first )
-       && str.length( ) && str[ str.length( ) - 1 ] == search_replace_separators[ srci->first ] )
+      if( str.length( ) && search_replace_separators.count( srci->first )
+       && ( str[ str.length( ) - 1 ] == search_replace_separators[ srci->first ] ) )
          str.erase( str.length( ) - 1 );
 
       set_field_value( field_num, str );
@@ -2356,18 +2363,21 @@ void class_base::perform_field_search_replacements( )
 void class_base::get_alternative_key_field_info( vector< key_field_info_container >& all_key_field_info ) const
 {
    vector< string > unique_indexes;
+
    get_sql_unique_indexes( unique_indexes );
 
    for( size_t i = 0; i < unique_indexes.size( ); i++ )
    {
       vector< string > fields;
+
       split( unique_indexes[ i ], fields );
 
       key_field_info_container next_key_fields;
 
       for( size_t j = 0; j < fields.size( ); j++ )
       {
-         string field_name( fields[ j ].substr( 2 ) ); // i.e. skip the "C_" prefix
+         string field_name( fields[ j ].substr( 2 ) ); // i.e. "C_" prefix
+
          string field_id( get_field_id( field_name ) );
 
          next_key_fields.push_back( key_field_info( field_id, field_name ) );
@@ -2382,17 +2392,22 @@ int class_base::get_max_index_depth( const vector< string >& field_names ) const
    int max_depth = 0;
 
    vector< string > indexes;
+
    get_sql_indexes( indexes );
 
    for( size_t i = 0; i < indexes.size( ); i++ )
    {
       vector< string > columns;
+
       split( indexes[ i ], columns );
 
       int depth = 0;
+
       for( size_t j = 0; j < min( columns.size( ), field_names.size( ) ); j++ )
       {
-         if( columns[ j ] == "C_" + field_names[ j ] )
+         string field_name( columns[ j ].substr( 2 ) ); // i.e. "C_" prefix
+
+         if( field_name == field_names[ j ] )
             ++depth;
          else
             break;
@@ -2443,7 +2458,9 @@ string class_base::generate_sql_insert( const string& class_name, string* p_undo
    string sql_stmt( "INSERT INTO T_" + get_module_name( ) + "_" + class_name );
 
    bool done = false;
+
    vector< string > sql_column_names;
+
    get_sql_column_names( sql_column_names, &done, &class_name );
 
    if( sql_column_names.empty( ) )
@@ -2453,10 +2470,7 @@ string class_base::generate_sql_insert( const string& class_name, string* p_undo
       sql_stmt += " (C_Key_,C_Ver_,C_Rev_,C_Sec_,C_Typ_";
 
       for( size_t i = 0; i < sql_column_names.size( ); i++ )
-      {
-         sql_stmt += ',';
-         sql_stmt += sql_column_names[ i ];
-      }
+         sql_stmt += ',' + sql_column_names[ i ];
 
       sql_stmt += ") VALUES (";
       sql_stmt += sql_quote( key );
@@ -2474,14 +2488,13 @@ string class_base::generate_sql_insert( const string& class_name, string* p_undo
       sql_stmt += sql_quote( original_identity );
 
       done = false;
+
       vector< string > sql_column_values;
+
       get_sql_column_values( sql_column_values, &done, &class_name );
 
       for( size_t i = 0; i < sql_column_values.size( ); i++ )
-      {
-         sql_stmt += ',';
-         sql_stmt += sql_column_values[ i ];
-      }
+         sql_stmt += ',' + sql_column_values[ i ];
 
       sql_stmt += ");";
    }
@@ -2507,6 +2520,7 @@ string class_base::generate_sql_update( const string& class_name, string* p_undo
    bool done = false;
 
    vector< string > sql_column_names;
+
    get_sql_column_names( sql_column_names, &done, &class_name );
 
    if( sql_column_names.empty( ) )
@@ -2521,6 +2535,7 @@ string class_base::generate_sql_update( const string& class_name, string* p_undo
       done = false;
 
       vector< string > sql_column_values;
+
       get_sql_column_values( sql_column_values, &done, &class_name );
 
       // NOTE: Need to use a separate variable for the column lookup
@@ -2548,7 +2563,7 @@ string class_base::generate_sql_update( const string& class_name, string* p_undo
             {
                bool is_text = false;
 
-               if( !sql_column_values[ j ].empty( ) && sql_column_values[ j ][ 0 ] == '\'' )
+               if( !sql_column_values[ j ].empty( ) && ( sql_column_values[ j ][ 0 ] == '\'' ) )
                   is_text = true;
 
                *p_undo_stmt += ",";
@@ -2590,7 +2605,7 @@ void class_base::set_class_pointer_base( class_pointer_base* p_cpb )
 void class_base::cleanup( )
 {
    // NOTE: If it is a dynamic instance being cleaned up then do nothing here.
-   if( !p_owning_instance && op != e_op_type_none && ods::instance( ) )
+   if( !p_owning_instance && ( op != e_op_type_none ) && ods::instance( ) )
    {
       if( op != e_op_type_review )
          op_cancel( );
@@ -2647,9 +2662,10 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
 
    bool is_optional_fk = false;
 
-   if( !new_key_value.empty( ) && new_key_value[ 0 ] == '?' )
+   if( !new_key_value.empty( ) && ( new_key_value[ 0 ] == '?' ) )
    {
       is_optional_fk = true;
+
       new_key_value.erase( 0, 1 );
    }
 
@@ -2664,6 +2680,7 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
    if( !get_raw_variable( c_object_variable_skip_fk_handling ).empty( ) )
    {
       skip_fk_handling = true;
+
       set_variable( c_object_variable_skip_fk_handling, "" );
    }
 
@@ -2693,6 +2710,7 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
        && ( p_graph_parent->op == e_op_type_create || p_graph_parent->op == e_op_type_update ) )
       {
          size_t fk_lock_handle( 0 );
+
          bool found_locked_instance = false;
 
          // NOTE: A link lock is held in the graph parent for every foreign key value that was set during
@@ -2708,6 +2726,7 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
             if( is_create_locked_by_own_session( *this, new_key_value.c_str( ), true ) )
             {
                lazy_fetch_key.erase( );
+
                found_locked_instance = true;
 
                p_graph_parent->set_foreign_key_value( graph_parent_fk_field, new_key_value );
@@ -2728,6 +2747,7 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
          else
          {
             lazy_fetch_key.erase( );
+
             clear( );
          }
 
@@ -2772,6 +2792,7 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
       else
       {
          lazy_fetch_key.erase( );
+
          clear( );
 
          // NOTE: If the key value of a foreign key is being set in this manner then the
@@ -2882,9 +2903,10 @@ procedure_progress::~procedure_progress( )
 
 void procedure_progress::check_progress( size_t amount )
 {
-   if( time( 0 ) - p_impl->ts >= p_impl->seconds )
+   if( ( time( 0 ) - p_impl->ts ) >= p_impl->seconds )
    {
       p_impl->ts = time( 0 );
+
       // FUTURE: This message should be handled as a server string message.
       output_progress_message( "Processed " + to_string( amount ) + " records..." );
    }
@@ -2906,26 +2928,29 @@ class_base_filter::~class_base_filter( )
 bool is_valid_int( const string& s )
 {
    bool rc = true;
+
    if( s.empty( ) )
       rc = false;
    else
    {
-      if( s.length( ) == 1 && s[ 0 ] == '-' )
+      if( ( s.length( ) == 1 ) && ( s[ 0 ] == '-' ) )
          rc = false;
 
       size_t spos = 0;
+
       if( s[ 0 ] == '-' )
          ++spos;
 
-      if( s.length( ) - spos > c_int_digits10 )
+      if( ( s.length( ) - spos ) > c_int_digits10 )
          rc = false;
       else
       {
          for( size_t i = spos; i < s.length( ); i++ )
          {
-            if( s[ i ] < '0' || s[ i ] > '9' )
+            if( ( s[ i ] < '0' ) || ( s[ i ] > '9' ) )
             {
                rc = false;
+
                break;
             }
          }
@@ -2937,12 +2962,13 @@ bool is_valid_int( const string& s )
 
 bool is_valid_bool( const string& s )
 {
-   return s == "0" || s == "1";
+   return ( s == "0" ) || ( s == "1" );
 }
 
 bool is_valid_date( const string& s )
 {
    bool rc = true;
+
    try
    {
       udate ud( s );
@@ -2958,6 +2984,7 @@ bool is_valid_date( const string& s )
 bool is_valid_time( const string& s )
 {
    bool rc = true;
+
    try
    {
       mtime mt( s );
@@ -2973,6 +3000,7 @@ bool is_valid_time( const string& s )
 bool is_valid_numeric( const string& s )
 {
    bool rc = true;
+
    try
    {
       numeric n( s.c_str( ) );
@@ -2988,6 +3016,7 @@ bool is_valid_numeric( const string& s )
 bool is_valid_date_time( const string& s )
 {
    bool rc = true;
+
    try
    {
       date_time dtm( s );
@@ -3006,12 +3035,12 @@ bool is_valid_value( const string& s, primitive p,
    int rc = true;
 
    bool has_min_and_max = p_min_value && p_max_value
-    && string( p_min_value ).length( ) > 0 && string( p_max_value ).length( ) > 0;
+    && ( string( p_min_value ).length( ) > 0 ) && ( string( p_max_value ).length( ) > 0 );
 
    switch( p )
    {
       case e_primitive_string:
-      if( max_size && s.length( ) > max_size )
+      if( max_size && ( s.length( ) > max_size ) )
          rc = false;
       break;
 
@@ -3026,7 +3055,7 @@ bool is_valid_value( const string& s, primitive p,
             date_time min( p_min_value );
             date_time max( p_max_value );
 
-            if( dtm < min || dtm > max )
+            if( ( dtm < min ) || ( dtm > max ) )
                rc = false;
          }
       }
@@ -3043,7 +3072,7 @@ bool is_valid_value( const string& s, primitive p,
             udate min( p_min_value );
             udate max( p_max_value );
 
-            if( ud < min || ud > max )
+            if( ( ud < min ) || ( ud > max ) )
                rc = false;
          }
       }
@@ -3060,7 +3089,7 @@ bool is_valid_value( const string& s, primitive p,
             mtime min( p_min_value );
             mtime max( p_max_value );
 
-            if( mt < min || mt > max )
+            if( ( mt < min ) || ( mt > max ) )
                rc = false;
          }
       }
@@ -3077,7 +3106,7 @@ bool is_valid_value( const string& s, primitive p,
             numeric min( p_min_value );
             numeric max( p_max_value );
 
-            if( n < min || n > max )
+            if( ( n < min ) || ( n > max ) )
                rc = false;
          }
       }
@@ -3094,7 +3123,7 @@ bool is_valid_value( const string& s, primitive p,
             int min = atoi( p_min_value );
             int max = atoi( p_max_value );
 
-            if( i < min || i > max )
+            if( ( i < min ) || ( i > max ) )
                rc = false;
          }
       }
@@ -3121,7 +3150,7 @@ bool is_valid_file_name( const string& name, bool allow_directory_path )
    {
       string::size_type pos = name.rfind( '/' );
 
-      if( pos == name.length( ) - 1 )
+      if( pos == ( name.length( ) - 1 ) )
          retval = false;
       else
       {
@@ -3145,6 +3174,7 @@ bool is_valid_file_name( const string& name, bool allow_directory_path )
                 || ( valid_file_name( next_name, &has_utf8 ) != next_name ) )
                {
                   retval = false;
+
                   break;
                }
             }
@@ -3173,6 +3203,7 @@ void from_string( class_base& cb, const string& s )
 string incremented_key_val( const string& s, const numeric& amt_to_add )
 {
    string str( s );
+
    string suffix;
 
    string::size_type pos = str.find( '_' );
@@ -3189,6 +3220,7 @@ string incremented_key_val( const string& s, const numeric& amt_to_add )
       pos = str.length( ) - 18;
 
    numeric n( str.substr( pos ).c_str( ) );
+
    n += amt_to_add;
 
    return ( pos == 0 ? "" : str.substr( 0, pos ).c_str( ) ) + to_string( n ) + suffix;
@@ -3197,6 +3229,7 @@ string incremented_key_val( const string& s, const numeric& amt_to_add )
 string construct_key_from_int( const string& prefix, int num, int num_digits )
 {
    string retval( prefix );
+
    retval += to_comparable_string( num, false, num_digits );
 
    return retval;
@@ -3348,12 +3381,14 @@ string get_ext( const string& filename )
    string str( filename );
 
    string::size_type pos;
+
    pos = str.find_last_of( "/\\" );
 
    if( pos != string::npos )
       str.erase( 0, pos + 1 );
 
    pos = str.find( '.' );
+
    if( pos == string::npos )
       str.erase( );
    else
@@ -3367,6 +3402,7 @@ string get_path( const string& filename )
    string str( filename );
 
    string::size_type pos;
+
    pos = str.find_last_of( "/\\" );
 
    if( pos == string::npos )
@@ -3385,6 +3421,7 @@ bool exists_file( const string& filename, bool check_link_target )
 bool exists_files( const string& filenames, char sep, bool check_link_target )
 {
    vector< string > files;
+
    split( filenames, files, sep );
 
    for( size_t i = 0; i < files.size( ); i++ )
@@ -3407,6 +3444,7 @@ void remove_file( const string& filename )
 void remove_files( const string& filenames, char sep )
 {
    vector< string > files;
+
    split( filenames, files, sep );
 
    for( size_t i = 0; i < files.size( ); i++ )
@@ -3536,12 +3574,14 @@ string copy_class_file( const string& src_path,
    string ext( dest_path.substr( pos ) );
 
    pos = dest_path.rfind( '/' );
+
    if( pos == string::npos )
       throw runtime_error( "unexpected dest path format '" + dest_path + "'" );
 
    dest_path.erase( pos );
 
    pos = dest_path.rfind( '/' );
+
    if( pos == string::npos )
       throw runtime_error( "unexpected dest path format '" + dest_path + "'" );
 
@@ -3573,6 +3613,7 @@ void copy_class_files( const class_base& src, class_base& dest )
        + src.get_class_name( ) + "' to a '" + dest.get_class_name( ) + "'" );
 
    vector< string > file_field_names;
+
    src.get_file_field_names( file_field_names );
 
    for( size_t i = 0; i < file_field_names.size( ); i++ )
@@ -3663,6 +3704,7 @@ string get_attached_file_dir( )
 string get_attached_file_path( const string& module_id, const string& class_id )
 {
    string path( storage_web_root( true ) );
+
    path += "/" + string( c_files_directory ) + "/" + module_id + "/" + class_id;
 
    return path;
@@ -3671,6 +3713,7 @@ string get_attached_file_path( const string& module_id, const string& class_id )
 string get_attached_file_path( const string& module_id, const string& class_id, const string& file_name )
 {
    string path( storage_web_root( true ) );
+
    path += "/" + string( c_files_directory ) + "/" + module_id + "/" + class_id;
 
    if( !file_name.empty( ) )
@@ -3687,6 +3730,7 @@ string expand_lf_to_cr_lf( const string& input )
    {
       if( input[ i ] == '\n' )
          output += '\r';
+
       output += input[ i ];
    }
 
@@ -3706,6 +3750,7 @@ void create_directories_for_file_name( const string& file_name )
 string get_directory_for_file_name( const string& file_name )
 {
    string directory;
+
    string::size_type pos = file_name.find_last_of( "/\\" );
 
    if( pos != string::npos )
@@ -3778,9 +3823,11 @@ void remove_gpg_key( const string& gpg_key_id, bool ignore_error )
       throw runtime_error( "unexpected system failure for remove_gpg_key" );
 
    vector< string > lines;
+
    buffer_file_lines( tmp, lines );
 
    string response( buffer_file( tmp ) );
+
    file_remove( tmp );
 
    if( !ignore_error && !lines.empty( ) )
@@ -3801,6 +3848,7 @@ void locate_gpg_key( const string& email, string& gpg_key_id, string& gpg_finger
       throw runtime_error( "unexpected system failure for locate_gpg_key" );
 
    vector< string > lines;
+
    buffer_file_lines( tmp, lines );
 
    file_remove( tmp );
@@ -3808,9 +3856,11 @@ void locate_gpg_key( const string& email, string& gpg_key_id, string& gpg_finger
    if( lines.size( ) >= 3 )
    {
       string::size_type pos = lines[ 0 ].find( '/' );
+
       if( pos != string::npos )
       {
          string::size_type epos = lines[ 0 ].find( ' ', pos + 1 );
+
          if( epos != string::npos )
          {
             string key = lines[ 0 ].substr( pos + 1, epos - pos );
@@ -3848,6 +3898,7 @@ void install_gpg_key( const string& key_file,
          throw runtime_error( "unexpected system failure for install_gpg_key" );
 
       vector< string > lines;
+
       buffer_file_lines( tmp, lines );
 
       file_remove( tmp );
@@ -3882,11 +3933,13 @@ void install_gpg_key( const string& key_file,
             if( result == "imported" || result == "not changed" )
             {
                pos = first_line.find( " key " );
+
                if( pos == string::npos )
                   had_unexpected_error = true;
                else
                {
                   string::size_type epos = first_line.find( ':' );
+
                   if( epos == string::npos )
                      had_unexpected_error = true;
                   else
@@ -3943,6 +3996,7 @@ void install_gpg_key( const string& key_file,
                                  throw runtime_error( lines[ 0 ] );
 
                               pos = lines[ 1 ].find( c_gpg_key_fingerprint_prefix );
+
                               if( pos == string::npos )
                                  had_unexpected_error = true;
                               else
@@ -4117,7 +4171,7 @@ string quoted_literal( const string& s, char esc, bool add_quotes )
 
    // NOTE: If the original string is found to be surrounded by quotes then change both the
    // start and finish as it is assumed that such surrounding quotes are not to be escaped.
-   if( s.size( ) >= 2 && s[ 0 ] == '"' && s[ s.length( ) - 1 ] == '"' )
+   if( ( s.size( ) >= 2 ) && ( s[ 0 ] == '"' ) && ( s[ s.length( ) - 1 ] == '"' ) )
    {
       ++start;
       --finish;
@@ -4127,12 +4181,13 @@ string quoted_literal( const string& s, char esc, bool add_quotes )
       qs += '"';
 
    // NOTE: If 'null' is provided (and requires quoting) then returns the empty quoted string.
-   if( !add_quotes || start > 0 || s != "null" )
+   if( !add_quotes || ( start > 0 ) || ( s != "null" ) )
    {
       for( size_t i = start; i < finish; i++ )
       {
          if( s[ i ] == '"' )
             qs += esc;
+
          qs += s[ i ];
       }
    }
@@ -4146,12 +4201,14 @@ string quoted_literal( const string& s, char esc, bool add_quotes )
 string replace_leading_cols_with_ws( const string& s, const string& sep, size_t num_spaces )
 {
    vector< string > vs;
+
    split_string( s, vs, sep );
 
    string retval, rep( num_spaces, ' ' );
+
    for( size_t i = 0; i < vs.size( ); i++ )
    {
-      if( i == vs.size( ) - 1 )
+      if( i == ( vs.size( ) - 1 ) )
          retval += vs[ i ];
       else
          retval += rep;
@@ -4193,6 +4250,7 @@ string insert_or_remove_list_item( const string& item, const string& list, bool 
             {
                if( !retval.empty( ) )
                   retval += ',';
+
                retval += next;
             }
          }
@@ -4202,6 +4260,7 @@ string insert_or_remove_list_item( const string& item, const string& list, bool 
       {
          if( !retval.empty( ) )
             retval += ',';
+
          retval += item;
       }
 
@@ -4231,6 +4290,7 @@ string decode_if_base64( const string& s )
    if( retval[ 0 ] == '*' )
    {
       is_hex = true;
+
       retval.erase( 0, 1 );
    }
 
@@ -4255,6 +4315,7 @@ string encode_to_base64( const string& s )
    if( is_hex )
    {
       prefix = "*";
+
       str = decode_hex( str );
    }
 
@@ -4421,6 +4482,7 @@ string shared_decrypt( const string& pk, const string& s )
       return string( );
 
    public_key pub_key( pk, true );
+
    private_key priv_key( secret );
 
    return priv_key.decrypt_message( pub_key, s );
@@ -4438,6 +4500,7 @@ string shared_encrypt( const string& pk, const string& s )
       return string( );
 
    public_key pub_key( pk, true );
+
    private_key priv_key( secret );
 
    return priv_key.encrypt_message( pub_key, s, 0, true );
@@ -4614,6 +4677,7 @@ string file_extension( const string& str )
 string valid_utf8_filename( const string& str )
 {
    bool has_utf8 = false;
+
    return valid_file_name( str, &has_utf8 );
 }
 
@@ -4713,13 +4777,14 @@ string value_label( const string& s )
    {
       string special;
 
-      if( s[ i ] == ' ' || s[ i ] == '.' )
+      if( ( s[ i ] == ' ' ) || ( s[ i ] == '.' ) )
          rs += '_';
       else if( s[ i ] == '>' )
       {
-         if( i < s.size( ) - 1 && s[ i + 1 ] == '=' )
+         if( ( i < ( s.size( ) - 1 ) ) && ( s[ i + 1 ] == '=' ) )
          {
             special = "gteq";
+
             ++i;
          }
          else
@@ -4727,9 +4792,10 @@ string value_label( const string& s )
       }
       else if( s[ i ] == '<' )
       {
-         if( i < s.size( ) - 1 && s[ i + 1 ] == '=' )
+         if( ( i < ( s.size( ) - 1 ) ) && ( s[ i + 1 ] == '=' ) )
          {
             special = "lteq";
+
             ++i;
          }
          else
@@ -4737,9 +4803,10 @@ string value_label( const string& s )
       }
       else if( s[ i ] == '!' )
       {
-         if( i < s.size( ) - 1 && s[ i + 1 ] == '=' )
+         if( ( i < ( s.size( ) - 1 ) ) && ( s[ i + 1 ] == '=' ) )
          {
             special = "not_eq";
+
             ++i;
          }
          else
@@ -4751,19 +4818,19 @@ string value_label( const string& s )
          special = "plus";
       else if( s[ i ] == '-' )
          special = "minus";
-      else if( s[ i ] == '_' || ( s[ i ] >= 'A' && s[ i ] <= 'Z' )
-       || ( s[ i ] >= 'a' && s[ i ] <= 'z' ) || s[ i ] >= '0' && s[ i ] <= '9' )
+      else if( ( s[ i ] == '_' ) || ( ( s[ i ] >= 'A' ) && ( s[ i ] <= 'Z' ) )
+       || ( ( s[ i ] >= 'a' ) && ( s[ i ] <= 'z' ) ) || ( ( s[ i ] >= '0' ) && ( s[ i ] <= '9' ) ) )
          rs += s[ i ];
 
       if( !special.empty( ) )
       {
-         if( !rs.empty( ) && rs[ rs.length( ) - 1 ] != '_' )
+         if( !rs.empty( ) && ( rs[ rs.length( ) - 1 ] != '_' ) )
             rs += '_';
       }
 
       rs += special;
 
-      if( !special.empty( ) && i < s.size( ) - 1 && s[ i + 1 ] != ' ' )
+      if( !special.empty( ) && ( i < ( s.size( ) - 1 ) ) && ( s[ i + 1 ] != ' ' ) )
          rs += '_';
    }
 
@@ -4787,7 +4854,7 @@ string value_rightpart( const string& s )
 
    string::size_type pos = s.find( ' ' );
 
-   if( pos == string::npos || s[ 0 ] == '"' )
+   if( ( pos == string::npos ) || ( s[ 0 ] == '"' ) )
       return "";
    else
       return s.substr( pos + 1 );
@@ -4823,6 +4890,7 @@ string increment_numbers( const string& s )
       else
       {
          rc += tmp;
+
          break;
       }
 
@@ -4860,6 +4928,7 @@ string auto_int_increment( const string& current, bool skip_to_next_level )
          else
          {
             ++i;
+
             break;
          }
       }
