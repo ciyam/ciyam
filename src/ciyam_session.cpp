@@ -7783,8 +7783,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = ntfy_topic( uid );
       }
-      else if( command == c_cmd_ciyam_session_system_pin_unlock )
-         response = create_unlock_sid_hash_pin( );
       else if( command == c_cmd_ciyam_session_system_run_script )
       {
          string script_name( get_parm_val( parameters, c_cmd_ciyam_session_system_run_script_script_name ) );
@@ -7860,6 +7858,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( response.find( own_tz + ' ' ) != string::npos )
             replace( response, own_tz + ' ', "*" + own_tz + ' ' );
       }
+      else if( command == c_cmd_ciyam_session_system_unlock_key )
+         response = create_unlock_sid_hash_key( false );
       else if( command == c_cmd_ciyam_session_system_export_repo )
       {
          // NOTE: To make sure the console client doesn't time out issue a progress message.

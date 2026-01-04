@@ -134,10 +134,10 @@ system_externals|externals "display a list of system external services"
 system_listeners|listeners "display a list of all current system listeners"
 system_ntfy_send|ntfy_send "send a simple ntfy message" [<opt/-uid=/uid>]<val//message>
 system_ntfy_topic|ntfy_topic "display ntfy topic value" [<val//uid>]
-system_pin_unlock|pin_unlock "create a PIN for unlocking the system identity"
 system_run_script|run_script "run an external script or program" <val//script_name>[<list//arg_val_pairs>]
 system_smtp_owner|smtp_owner "retrieves the system SMTP sender name or address"
 system_time_zones|time_zones "display a list of known time zones"
+system_unlock_key|unlock_key "create a key for unlocking the system identity"
 system_export_repo|export_repo "exports all repository entries"
 system_trace_flags|trace_flags "get/set/list system trace flags" [<opt/-list/list>|{{<opt/-set/set>|<opt/-unset/unset>}<list//names>}]
 system_trace_level|trace_level "get/set system trace level" [<val//new_level>]

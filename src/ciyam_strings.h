@@ -85,8 +85,10 @@ const char* const c_str_waiting_for_peer_hub_sync = "Waiting for peer hub sync";
 const char* const c_str_host_address_not_permitted = "Host '@host' address @address is not permitted.";
 const char* const c_str_host_address_not_permitted_host = "@host";
 const char* const c_str_host_address_not_permitted_address = "@address";
-const char* const c_str_copy_password_to_clipboard = "Copy password to clipboard: @value";
+const char* const c_str_copy_password_to_clipboard = "@clipboard:Password;@value";
 const char* const c_str_copy_password_to_clipboard_value = "@value";
+const char* const c_str_copy_unlock_key_to_clipboard = "@clipboard:Unlock Key;@value";
+const char* const c_str_copy_unlock_key_to_clipboard_value = "@value";
 const char* const c_str_peer_terminated_connection = "Peer has unexpectedly terminated this connection.";
 const char* const c_str_preparing_at_height_prefix = "Preparing at height ";
 const char* const c_str_restoring_std_meta_records = "Restoring standard Meta records...";
@@ -107,4 +109,3 @@ const char* const c_str_incorrect_or_unsupported_peer_type = "Incorrect or unsup
 const char* const c_str_timed_out_waiting_for_verification = "Timed out waiting for peer verification.";
 
 #endif
-

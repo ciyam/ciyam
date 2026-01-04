@@ -26,6 +26,7 @@ checking_at_height_prefix Checking at height
 checking_peer_status Checking peer status...
 class_is_locked This @class is currently locked - retry again shortly.
 copy_password_to_clipboard @clipboard:Password;@value
+copy_unlock_key_to_clipboard @clipboard:Unlock Key;@value
 current_height_prefix Currently at height 
 currently_locked Currently locked (please try again later).
 db_identity_mismatch DB identity mismatch with transaction log.
