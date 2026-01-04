@@ -1975,7 +1975,7 @@ void Meta_Application::impl::impl_Generate( )
       outs << "#!/bin/bash\n\n";
 
       outs << "export WEBDIR=" << get_web_root( ) << "\n\n";
-      outs << "echo Starting Generate... >" << generate_log_file << "\n";
+      outs << "echo \"Started Generate\" >" << generate_log_file << "\n";
 
       outs << "\necho \"" << get_obj( ).Name( ) << "\" > .app_name\n\n";
 
@@ -2270,7 +2270,7 @@ void Meta_Application::impl::impl_Generate( )
 
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
       {
-         outs << "\necho Updating Links... >>" << generate_log_file << "\n";
+         outs << "\necho \"Updating Links...\" >>" << generate_log_file << "\n";
          outs << "./ciyam_client " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".generate.2.cin\n";
       }
 
@@ -2284,7 +2284,7 @@ void Meta_Application::impl::impl_Generate( )
 
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
       {
-         outs << "\necho Starting Make... >>" << generate_log_file << "\n";
+         outs << "\necho \"Starting Make...\" >>" << generate_log_file << "\n";
 
          outs << "./ciyam_client " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".generate.3.cin\n";
 
@@ -2293,7 +2293,7 @@ void Meta_Application::impl::impl_Generate( )
          outs << "fi\n";
 
          outs << "make " << all_modules << " dtm >>" << generate_log_file << " 2>&1\n";
-         outs << "echo Finished Make... >>" << generate_log_file << "\n\n";
+         outs << "echo \"Finished Make...\" >>" << generate_log_file << "\n\n";
 
          outs << "if [ -f make.dtm ]; then\n";
 
@@ -2407,7 +2407,7 @@ void Meta_Application::impl::impl_Generate( )
       outs << "\n./ciyam_client -quiet " << standard_client_args << " < " << get_obj( ).Name( ) << ".generate.x.cin\n";
 
       outs << "\nrm $WEBDIR/" << app_dir << "/ciyam_interface.stop\n";
-      outs << "echo Finished Generate... >>" << generate_log_file << "\n";
+      outs << "echo \"Finished Generate\" >>" << generate_log_file << "\n";
 
       outv.flush( );
       if( !outv.good( ) )
