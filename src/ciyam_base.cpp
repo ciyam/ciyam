@@ -81,8 +81,6 @@ const size_t c_identity_burn = 100;
 
 const size_t c_default_seconds = 1;
 
-const size_t c_key_reserve_size = 128;
-
 const size_t c_default_max_peers = 100;
 
 // NOTE: This limit is supplied (along with the identity information) to
@@ -5576,6 +5574,9 @@ string create_unlock_sid_hash_pin( )
    // NOTE: As a PIN has low entropy is increasing the number of rounds that are applied.
    harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier * c_pin_multiplier );
 
+   // NOTE: The PIN file name is obtained from the hash (after all rounds) to ensure that
+   // having access to the file system does not make reversing the identity hash straight
+   // forward (assuming the actual PIN that was used is not known).
    string pin_file_name( key.substr( c_pin_file_name_start, c_pin_file_name_length ) + c_pin_file_ext );
 
    string sid_hash;

@@ -23,6 +23,8 @@ const size_t c_bc_identity_length = 9;
 const size_t c_bc_scaling_value = 50;
 const size_t c_bc_scaling_test_value = 5;
 
+const size_t c_key_reserve_size = 128;
+
 const size_t c_secret_reserve_size = 256;
 
 const size_t c_key_rounds_multiplier = 30;
