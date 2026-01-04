@@ -389,10 +389,6 @@ HEIGHT_FOR_REMOVAL=@$HEIGHT_FOR_REMOVAL+1
 @endif
 @endif
 ;
-.system_variable @os
-@ifeq "$OUTPUT" "Linux"
-~shred $UUID.key
-@endif
 ~rm $UUID.key $UUID.pub $UUID.sig
 ;
 @ifndef $ERROR

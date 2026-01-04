@@ -133,10 +133,6 @@ ENTROPY_HASH=$OUTPUT
 .file_put new_primary.key bc.$IDENT.$HEIGHT.key
 .file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
 ;
-.system_variable @os
-@ifeq "$OUTPUT" "Linux"
-~shred new_primary.key
-@endif
 ~rm new_primary.key new_primary.pub
 ;
 HEIGHT=@$HEIGHT+$MULTIPLE
@@ -167,10 +163,6 @@ ENTROPY_HASH=$OUTPUT
 ;
 .file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
 ;
-.system_variable @os
-@ifeq "$OUTPUT" "Linux"
-~shred new_primary.key
-@endif
 ~rm new_primary.key new_primary.pub
 ;
 HEIGHT=@$NEXT_HEIGHT-1
@@ -203,10 +195,6 @@ ENTROPY_HASH=$OUTPUT
 ;
 .file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
 ;
-.system_variable @os
-@ifeq "$OUTPUT" "Linux"
-~shred new_primary.key
-@endif
 ~rm new_primary.key new_primary.pub
 @endif
 ;
