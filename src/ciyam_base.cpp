@@ -104,12 +104,13 @@ const size_t c_storable_file_pad_len = 32;
 
 const size_t c_num_extra_entropy_chars = 10;
 
-const size_t c_pin_length = 6;
+const size_t c_unlock_key_length = 11;
+const size_t c_unlock_ext_key_length = 17;
 
-const size_t c_pin_multiplier = 5;
+const size_t c_unlock_key_multiplier = 5;
 
-const size_t c_pin_file_name_start = 32;
-const size_t c_pin_file_name_length = 8;
+const size_t c_unlock_file_name_start = 32;
+const size_t c_unlock_file_name_length = 8;
 
 const size_t c_sleep_after_script_time = 1500;
 
@@ -144,8 +145,6 @@ const char* const c_dummy_host_name = "ciyam.peer";
 
 const char* const c_at_init_script = "./at_init";
 const char* const c_at_term_script = "./at_term";
-
-const char* const c_pin_file_ext = ".pin";
 
 const char* const c_server_log_file = "ciyam_server.log";
 const char* const c_server_sid_file = "ciyam_server.sid";
@@ -339,7 +338,7 @@ mutex g_session_mutex;
 size_t g_key_count;
 int64_t g_key_tm_val;
 
-int64_t g_pin_tm_val;
+int64_t g_key_unlock_tm_val;
 
 bool g_hardened_identity;
 bool g_encrypted_identity;
@@ -5379,33 +5378,49 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          key = info;
 
-         bool was_pin_unlocked = false;
-         bool possible_unlock_pin = false;
+         bool was_key_unlocked = false;
+         bool possible_unlock_key = false;
 
-         string pin_file_name;
+         string key_file_name;
 
-         if( ( key.length( ) == c_pin_length )
-          && ( key.find_first_not_of( "0123456789" ) == string::npos ) )
-            possible_unlock_pin = true;
+         // NOTE: Unlock keys are expected to be base64 URL
+         // characters in three groups of five (using space
+         // separators).
+         if( ( key.length( ) == c_unlock_ext_key_length )
+           && ( ( key[ 5 ] == ' ' ) && ( key[ 11 ] == ' ' ) ) )
+         {
+            possible_unlock_key = true;
+
+            key.erase( 11, 1 );
+            key.erase( 5, 1 );
+
+            if( base64::valid_characters( key, true ) )
+               key = base64::decode( key, true );
+            else
+            {
+               key = info;
+               possible_unlock_key = false;
+            }
+         }
 
          harden_key_with_hash_rounds( key, key, key,
-          c_key_rounds_multiplier * ( !possible_unlock_pin ? 1 : c_pin_multiplier ) );
+          c_key_rounds_multiplier * ( !possible_unlock_key ? 1 : c_unlock_key_multiplier ) );
 
-         if( possible_unlock_pin )
+         if( possible_unlock_key )
          {
-            pin_file_name = key.substr( c_pin_file_name_start, c_pin_file_name_length ) + c_pin_file_ext;
+            key_file_name = key.substr( c_unlock_file_name_start, c_unlock_file_name_length ) + c_key_suffix;
 
-            if( file_exists( pin_file_name ) )
+            if( file_exists( key_file_name ) )
             {
-               was_pin_unlocked = true;
+               was_key_unlocked = true;
 
-               sid = buffer_file( pin_file_name );
+               sid = buffer_file( key_file_name );
             }
             else
             {
                key = info;
 
-               // NOTE: If not actually a PIN then needs to harden as per a non-PIN.
+               // NOTE: If not actually a key then needs to harden as per normal.
                harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
             }
          }
@@ -5428,6 +5443,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             extra = sid.substr( pos + 1 );
 
             num_spaces = 11;
+
             sid.erase( pos );
          }
 
@@ -5451,10 +5467,10 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             // entropy had been supplied then use this in order to harden the value.
             if( extra.empty( ) )
             {
-               if( !was_pin_unlocked )
+               if( !was_key_unlocked )
                   hash_sid_val( sid );
                else
-                  file_remove( pin_file_name );
+                  file_remove( key_file_name );
             }
             else
             {
@@ -5551,33 +5567,33 @@ bool unlock_create_allowed( )
 
    int64_t now = unix_time( );
 
-   if( !g_pin_tm_val || ( abs( now - g_pin_tm_val ) >= 3 ) )
+   if( !g_key_unlock_tm_val || ( abs( now - g_key_unlock_tm_val ) >= 3 ) )
       retval = true;
 
    return retval;
 }
 
-string create_unlock_sid_hash_pin( )
+string create_unlock_sid_hash_key( bool for_web_ui )
 {
    guard g( g_mutex );
 
    if( !unlock_create_allowed( ) )
-      throw runtime_error( "*** attempt to create another PIN too quickly ***" );
+      throw runtime_error( "*** attempt to create another unlock key too quickly ***" );
 
-   string pin( random_characters( c_pin_length, 0, e_printable_type_numeric ) );
+   string unlock_key( random_characters( c_unlock_key_length, 0, e_printable_type_alpha_numeric ) );
 
    string key;
    key.reserve( c_key_reserve_size );
 
-   key = pin;
+   key = unlock_key;
 
-   // NOTE: As a PIN has low entropy is increasing the number of rounds that are applied.
-   harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier * c_pin_multiplier );
+   // NOTE: As the key uses only alpha numerics increase the number of hash rounds multiplier.
+   harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier * c_unlock_key_multiplier );
 
-   // NOTE: The PIN file name is obtained from the hash (after all rounds) to ensure that
+   // NOTE: The key file name is obtained from the hash (after all rounds) to ensure that
    // having access to the file system does not make reversing the identity hash straight
-   // forward (assuming the actual PIN that was used is not known).
-   string pin_file_name( key.substr( c_pin_file_name_start, c_pin_file_name_length ) + c_pin_file_ext );
+   // forward (assuming that the relevant key value is not known).
+   string key_file_name( key.substr( c_unlock_file_name_start, c_unlock_file_name_length ) + c_key_suffix );
 
    string sid_hash;
    sid_hash.reserve( c_key_reserve_size );
@@ -5586,20 +5602,31 @@ string create_unlock_sid_hash_pin( )
 
    data_encrypt( sid_hash, sid_hash, key );
 
-   ofstream outf( pin_file_name.c_str( ) );
+   ofstream outf( key_file_name.c_str( ) );
 
    outf << sid_hash;
 
    outf.flush( );
 
    if( !outf.good( ) )
-      throw runtime_error( "*** unexpected error occurred writing to pin unlock file ***" );
+      throw runtime_error( "unexpected error occurred writing to unlock key file" );
 
    outf.close( );
 
-   g_pin_tm_val = unix_time( );
+   g_key_unlock_tm_val = unix_time( );
 
-   return pin;
+   unlock_key = base64::encode( unlock_key, true );
+
+   if( unlock_key.size( ) != 15 )
+      throw runtime_error( "unexpected b64 encoded unlock key size != 15" );
+
+   unlock_key = unlock_key.substr( 0, 5 ) + ' ' + unlock_key.substr( 5, 5 ) + ' ' + unlock_key.substr( 10 );
+
+   if( !for_web_ui )
+      return unlock_key;
+   else
+      return get_string_message( GS( c_str_copy_unlock_key_to_clipboard ),
+       make_pair( c_str_copy_unlock_key_to_clipboard_value, unlock_key ) );
 }
 
 string get_checksum( const string& data )
