@@ -5602,6 +5602,8 @@ string create_unlock_sid_hash_key( bool for_web_ui )
 
    data_encrypt( sid_hash, sid_hash, key );
 
+   temp_umask tum( 077 );
+
    ofstream outf( key_file_name.c_str( ) );
 
    outf << sid_hash;
