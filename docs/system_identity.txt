@@ -4,7 +4,8 @@ System Identity Implementation
 Every CIYAM node requires its own "identity" in order to differentiate it from all other nodes and which also
 will allow its backup data to be restored (assuming that at least one "backup peer" exists). When it is first
 started a list of twelve randomly chosen words (from a small dictionary of 2048 words) appears in the browser
-interface (along with fields for a master password that is used to unlock the system when it is restarted).
+interface (along with fields for a master password that is used to encrypt these words prior to being written
+to the node's primary storage device).
 
 Keeping Your Identity Secure
 ----------------------------
@@ -15,6 +16,13 @@ node for the first time it would be recommended that no internet connection be p
 have made a copy of the twelve words (using an analog method such as pen and paper) and have also entered the
 master password (which should be typed in twice manually to confirm that it is correct).
 
+After creating it would be suggested to then reboot the node (or restart the CIYAM service) and then from the
+browser when prompted to "Enter unlock key or system identity password" instead type 7 asterisks (*******) to
+force the system identity confirmation to reappear. This permits a new master password to be entered (just in
+case it was forgotton) and requires the original 12 words (and any extra characters) to be provided. The same
+master password can now be provided (i.e. it does not need to be changed) but by performing this step it will
+confirm that the system identity can be restored in the future (i.e. that the words were correctly recorded).
+
 The master password is hardened (with over 1.1M hash operations) in order to ensure that any attempt to crack
 it by brute force would take a very long time, however, it would still be recommended to use a password which
 includes special characters, digits and both lower and upper case letters and which is at least 10 characters
@@ -23,7 +31,7 @@ in length.
 Calculating Password Strength
 -----------------------------
 
-A typical high-end Bitcoin mining device can perform 100 TH/s and although the way that CIYAM hash operations
+A typical high-end Bitcoin mining device can perform 200 TH/s and although the way that CIYAM hash operations
 are performed is not the same (meaning a specific ASIC device would need to be manufactured for this purpose)
 this can be a useful way to perform some "back of the envelope" calculations to measure just how much a brute
 force attack on a password would cost in terms of hashing time. In order to make the calulations a bit easier
@@ -31,7 +39,7 @@ the relevant numbers will be rounded. Although over 1.1M hashes are performed pe
 will be rounded down to 1M and although there are 95 different characters that could be typed with a standard
 keyboard this will be rounded up to 100.
 
-100,000,000,000,000 (100 TH/s - Bitcoin hashing device)
+200,000,000,000,000 (200 TH/s - Bitcoin mining device)
 1,000,000 (number of hashes required for a password)
 100 (number of possible character values)
 10 (recommended minimum password characters)
@@ -42,25 +50,21 @@ So a password of 2 characters would require on average (100x100)/2 attempts and 
 3 would require on average (100x100x100)/2. So with every increase in length the total number of combinations
 is multiplied by the number of possible characters. So a password with 10 characters would 100x100x100...x100
 or a 1 followed by 20 zeroes (100,000,000,000,000,000,000). Next it needs to be taken into account the number
-of hashes per password attempt (1,000,000) so we add another 6 zeros (now 26 zeroes). With the latest hashing
-devices able to perform 100 TH/s we would subtract 14 zeroes leaving a 1 followed by 12 zeroes divided by two
-(on average) seconds in order to brute force the 10 character password (500,000,000,000 seconds). Again to be
-simple assume 600 billion which would require 10 billion minutes or nearly 20,000 years! Even using a pool of
-10,000 such devices would take around 2 years in order to complete this brute force attack therefore provided
-the password is not a pattern (i.e. it is purely random) then it should never likely be discovered using this
-approach.
+of hashes per password attempt (1,000,000) so we add another 6 zeros (now 26 zeroes). Using a 200 TH/s device
+means that we remove 14 zeroes and then divide by 2 to leave a 5 followed by 11 zeroes. Dividing by two again
+to get the average number of seconds to brute force the password would be 250,000,000,000. In minutes this is
+over 4 billion which in years is more 7,500!
 
 If the password is not strong then of course it could be brute forced in a small fraction of this time so the
-use of a strong password is highly recommended (and should be considered essential if other people could have
-physical access to the device).
+use of a strong password is highly recommended (and should be considered essential if other people could ever
+have physical access to the node device).
 
 Restoring an Existing Identity
 ------------------------------
 
 If wishing to restore an already existing CIYAM system using a new node then the twelve words which initially
 appear should be replaced with those that had been written down previously (the master password that had been
-used before is not relevant when restoring so a new one can be provided meaning that this is also how one can
-restore a system if the master password has been forgotten).
+used before is not relevant when restoring so a new one can be provided).
 
 Enhancing Your Identity Security
 --------------------------------
@@ -101,3 +105,28 @@ Using additonal characters in order to create a more "future proof" identity:
 
 Identity: 59a23c2bb
 Mnemonics: detect jazz kick ghost novel rifle scout mirror stairs craft outdoor crisp #!@A11E4sy
+
+System Unlock Keys
+------------------
+
+Although the master password can be used to unlock a CIYAM node (after a reboot or service restart) it is not
+recommended to enter the master password from another device (and in particular from an outside network). For
+this reason when logged in as "admin" from the System Information view a "Generate Unlock Key" action appears
+in order to create a "one-off" password for unlocking the system.
+
+When an unlock key is created 11 random "alphanumeric" characters are hardened (by 5+ million hash rounds) to
+then be used to encrypt a hash of the system identity which is stored as a file (the name being obtained from
+a substring of the hex characters from the hardened password's hash).
+
+Once the unlock key has been used the file will be deleted (thus each unlock key can only be used once). Many
+unlock keys can be created so it is recommended to always have a few (and to create replacement keys prior to
+using up all those that had been previously created).
+
+To improve readability the 11 random alphanumeric characters are encoded to 15 base64 URL characters which in
+turn are split into sets of 5 (with two space separators). To make things easier when using the browser UI/UX
+a button will copy the unlock key characters to the clipboard (although it is recommended to later write them
+down on paper).
+
+As the unlock key encrypts the system identity "hash" (and not the original passphrase) they will never allow
+the original passphrase to be discovered and therefore are the recommended way for unlocking a node (usage of
+the master password should be limited to only when physical access to the node is possible).
