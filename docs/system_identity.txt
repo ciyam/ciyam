@@ -18,7 +18,7 @@ master password (which should be typed in twice manually to confirm that it is c
 
 After creating it would be suggested to then reboot the node (or restart the CIYAM service) and then from the
 browser when prompted to "Enter unlock key or system identity password" instead type 7 asterisks (*******) to
-force the system identity confirmation to reappear. This permits a new master password to be entered (just in
+force the "Reset Master Password" dialog to appear. This permits a new master password to be entered (just in
 case it was forgotton) and requires the original 12 words (and any extra characters) to be provided. The same
 master password can now be provided (i.e. it does not need to be changed) but by performing this step it will
 confirm that the system identity can be restored in the future (i.e. that the words were correctly recorded).
