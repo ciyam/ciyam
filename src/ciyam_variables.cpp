@@ -144,6 +144,7 @@ const char* const c_special_variable_permission = "@permission";
 const char* const c_special_variable_queue_puts = "@queue_puts";
 const char* const c_special_variable_session_id = "@session_id";
 const char* const c_special_variable_sid_locked = "@sid_locked";
+const char* const c_special_variable_sid_secure = "@sid_secure";
 const char* const c_special_variable_tag_prefix = "@tag_prefix";
 const char* const c_special_variable_tree_count = "@tree_count";
 const char* const c_special_variable_tree_match = "@tree_match";
@@ -476,6 +477,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_queue_puts );
       g_special_variable_names.push_back( c_special_variable_session_id );
       g_special_variable_names.push_back( c_special_variable_sid_locked );
+      g_special_variable_names.push_back( c_special_variable_sid_secure );
       g_special_variable_names.push_back( c_special_variable_tag_prefix );
       g_special_variable_names.push_back( c_special_variable_tree_count );
       g_special_variable_names.push_back( c_special_variable_tree_match );
@@ -753,6 +755,7 @@ void check_system_variable_can_be_set( const string& var_name )
    if( ( var_name == c_special_variable_os )
     || ( var_name == c_special_variable_peer_port )
     || ( var_name == c_special_variable_sid_locked )
+    || ( var_name == c_special_variable_sid_secure )
     || ( var_name == c_special_variable_backup_files )
     || ( var_name == c_special_variable_opened_files )
     || ( var_name == c_special_variable_shared_files )
@@ -1330,6 +1333,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
        && ( ( var_name == c_special_variable_os )
        || ( var_name == c_special_variable_peer_port )
        || ( var_name == c_special_variable_sid_locked )
+       || ( var_name == c_special_variable_sid_secure )
        || ( var_name == c_special_variable_log_files_dir )
        || ( var_name == c_special_variable_trace_filters )
        || ( var_name == c_special_variable_files_area_dir )
