@@ -278,8 +278,6 @@ string g_sid;
 
 #include "sid.enc"
 
-string g_identity_suffix;
-
 struct instance_info
 {
    instance_info( class_base* p_class_base, dynamic_library* p_dynamic_library )
@@ -340,6 +338,9 @@ int64_t g_key_tm_val;
 
 int64_t g_key_unlock_tm_val;
 
+string g_identity_suffix;
+
+bool g_secure_identity;
 bool g_hardened_identity;
 bool g_encrypted_identity;
 
@@ -4918,8 +4919,13 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       has_identity( &g_encrypted_identity );
 
+      g_secure_identity = g_encrypted_identity;
+
       if( g_encrypted_identity )
+      {
          set_system_variable( get_special_var_name( e_special_var_sid_locked ), c_true_value, true );
+         set_system_variable( get_special_var_name( e_special_var_sid_secure ), c_true_value, true );
+      }
 
       read_server_configuration( );
 
@@ -5352,6 +5358,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          }
          else if( is_encrypted && p_encrypted_sid )
          {
+            g_secure_identity = false;
             g_hardened_identity = false;
             g_encrypted_identity = false;
 
@@ -5362,6 +5369,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             hash_sid_val( sid );
 
             set_system_variable( get_special_var_name( e_special_var_sid_locked ), "", true );
+            set_system_variable( get_special_var_name( e_special_var_sid_secure ), "", true );
 
             if( get_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
                run_init_script = true;
@@ -5535,6 +5543,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
 
+         set_system_variable( get_special_var_name( e_special_var_sid_secure ), c_true_value, true );
+
          if( get_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
             run_init_script = true;
       }
@@ -5579,6 +5589,9 @@ string create_unlock_sid_hash_key( bool for_web_ui )
 
    if( !unlock_create_allowed( ) )
       throw runtime_error( "*** attempt to create another unlock key too quickly ***" );
+
+   if( !has_system_variable( get_special_var_name( e_special_var_sid_secure ) ) )
+      throw runtime_error( "invalid attempt to create unlock key for unencrypted identity" );
 
    string unlock_key( random_characters( c_unlock_key_length, 0, e_printable_type_alpha_numeric ) );
 
