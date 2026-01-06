@@ -10,6 +10,8 @@ elif [ $# -lt 3 ] && [ "$1" = "-trunc" ]; then
  echo "Usage: ciyam_backup [[-trunc]] [app name] [app dir]"
 elif [ "$WEBDIR" = "" ]; then
  echo "Error: Missing environment variable 'WEBDIR'."
+
+ exit 1
 else
  opt=
  export CIYAM_STORAGE=$1

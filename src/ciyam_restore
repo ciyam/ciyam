@@ -10,6 +10,8 @@ elif [ $# -lt 3 ] && [ "$1" = "-rebuild" ]; then
  echo "Usage: ciyam_restore [[-rebuild]] [app name] [app dir]"
 elif [ "$WEBDIR" = "" ]; then
  echo "Error: Missing environment variable 'WEBDIR'."
+
+ exit 1
 else
  opt=
  work_path=$PWD
@@ -51,5 +53,7 @@ else
   echo "Finished $CIYAM_STORAGE restore..."
  else
   echo "Error: Backup file '$CIYAM_STORAGE.backup.bun.gz' not found."
+
+  exit 1
  fi
 fi

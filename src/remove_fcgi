@@ -5,13 +5,15 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: remove_fcgi [app dir] [[web dir]]
+ echo "Usage: remove_fcgi [app dir] [[web dir]]"
 else
  if [ $# -gt 1 ]; then
   export WEBDIR=$2
  fi
  if [ "$WEBDIR" = "" ]; then
-  echo Error: Missing environment variable 'WEBDIR'.
+  echo "Error: Missing environment variable 'WEBDIR'."
+
+  exit 1
  else
   if [ -d $WEBDIR/$1 ]; then
    if [ -f $WEBDIR/$1/upload.kill.sh ]; then

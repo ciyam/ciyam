@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: init [model name] [[app name]]
+ echo "Usage: init [model name] [[app name]]"
 else
  had_error=
 
@@ -19,25 +19,24 @@ else
  if [ "$2" = "ciyam" ]; then
   export CIYAM_TEST_STORAGE=1
  elif [ "$WEBDIR" = "" ]; then
-  had_error=true
-  echo Error: Missing environment variable 'WEBDIR'.
+  echo "Error: Missing environment variable 'WEBDIR'."
+
+  exit 1
  fi
 
- if [ ! "$had_error" = "true" ]; then
-  rm -f $CIYAM_STORAGE.log $CIYAM_STORAGE.tlg $CIYAM_STORAGE.dat $CIYAM_STORAGE.idx $CIYAM_STORAGE.hdr >/dev/null
-  ./ciyam_server -quiet -no_auto -no_peers &
+ rm -f $CIYAM_STORAGE.log $CIYAM_STORAGE.tlg $CIYAM_STORAGE.dat $CIYAM_STORAGE.idx $CIYAM_STORAGE.hdr >/dev/null
+ ./ciyam_server -quiet -no_auto -no_peers &
 
-  sleep 2
-  ./ciyam_client -quiet -no_prompt -connect_retries=10 < init.cin
-  touch ciyam_server.stop
+ sleep 2
+ ./ciyam_client -quiet -no_prompt -connect_retries=10 < init.cin
+ touch ciyam_server.stop
 
-  for i in {1..20}
-  do
-   sleep 0.5
-   if [ ! -f ciyam_server.stop ]; then
-    break;
-   fi
-  done
+ for i in {1..20}
+ do
+  sleep 0.5
+  if [ ! -f ciyam_server.stop ]; then
+   break;
+  fi
+ done
 
- fi
 fi

@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 2 ]; then
- echo Usage: remove_app_module [module name] [app dir] [[app name]]
+ echo "Usage: remove_app_module [module name] [app dir] [[app name]]"
 else
  directory=$WEBDIR/$2
 

@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -ne 2 ]; then
- echo Usage: remove_identical [old file] [new file]
+ echo "Usage: remove_identical [old file] [new file]"
 else
  if [ -f $1 ]; then
   cmp -s $1 $2

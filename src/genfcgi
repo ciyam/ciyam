@@ -5,24 +5,30 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 2 ]; then
- echo Usage: genfcgi [app name] [app dir] [[web dir]]
+ echo "Usage: genfcgi [app name] [app dir] [[web dir]]"
 else
  if [ $# -gt 2 ]; then
   export WEBDIR=$3
  fi
  if [ "$WEBDIR" = "" ]; then
-  echo Error: Missing environment variable 'WEBDIR'.
+  echo "Error: Missing environment variable 'WEBDIR'."
+
+  exit 1
  else
   directory=$WEBDIR/$2
 
   if [ ! -f $1.app.vars.xrep ]; then
-   echo Error: File \'$1.app.vars.xrep\' does not exist.
+   echo "Error: File '$1.app.vars.xrep' does not exist."
+
+   exit 1
   else
    if [ ! -d $directory ]; then
     ./setup $1 $2 $3
    fi
    if [ ! -f $directory/activate.htms ]; then
-    echo Error: File \'$directory/activate.htms\' does not exist.
+    echo "Error: File '$directory/activate.htms' does not exist."
+
+    exit 1
    else
     tmp_file=$(mktemp --suffix ".tmp")
 

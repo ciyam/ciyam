@@ -5,14 +5,16 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 2 ]; then
- echo Usage: setup [app name] [app dir] [[web dir]]
+ echo "Usage: setup [app name] [app dir] [[web dir]]"
 else
  if [ $# -gt 2 ]; then
   export WEBDIR=$3
  fi
 
  if [ "$WEBDIR" = "" ]; then
-  echo Error: Missing environment variable 'WEBDIR'.
+  echo "Error: Missing environment variable 'WEBDIR'."
+
+  exit 1
  else
   [ -d $WEBDIR/$2 ] ||
   {

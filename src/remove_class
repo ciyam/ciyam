@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -ne 2 ]; then
- echo Usage: remove_class [module name] [class name]
+ echo "Usage: remove_class [module name] [class name]"
 else
  if [ -f $1_$2.cmh ]; then
   rm $1_$2.cmh

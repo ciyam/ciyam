@@ -5,10 +5,12 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: prepare_cloned_prototype [name]
+ echo "Usage: prepare_cloned_prototype [name]"
 else
  if [ "$WEBDIR" = "" ]; then
   echo "Error: Missing environment variable 'WEBDIR'."
+
+  exit 1
  else
   sudo systemctl stop ciyam
 

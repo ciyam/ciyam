@@ -29,7 +29,9 @@ else
  fi
 
  if [ "$spec_args" = "" ]; then
-   echo "Error: Missing spec arguments for 'test_xrep_spec'."
+  echo "Error: Missing spec arguments for 'test_xrep_spec'."
+
+  exit 1
  else
   ./xrep @test_spec.xrep model_name=Model object=$spec section=$section "${spec_args[@]}"
  fi

@@ -5,23 +5,33 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ "$WEBDIR" = "" ]; then
- echo Error: Missing environment variable \'WEBDIR\'.
+ echo "Error: Missing environment variable 'WEBDIR'."
+
+ exit 1
 else
  if [ ! -f test_fcgi ]; then
-  echo Error: File \'test_fcgi\' does not exist \(not built?\).
+  echo "Error: File 'test_fcgi' does not exist (not built?)."
+
+  exit 1
  else
   if [ ! -f test_fcgi.html ]; then
-   echo Error: File \'test_fcgi.html\' does not exist.
+   echo "Error: File 'test_fcgi.html' does not exist."
+
+   exit 1
   else
    cp test_fcgi.html "$WEBDIR"
    if [ ! -f "$WEBDIR/test_fcgi.html" ]; then
-    echo Error: Unable to copy \'test_fcgi.html\' to "$WEBDIR".
+    echo "Error: Unable to copy 'test_fcgi.html' to '$WEBDIR'."
+
+    exit 1
    else
     cp test_fcgi "$WEBDIR/test_fcgi.fcgi"
     if [ ! -f "$WEBDIR/test_fcgi.fcgi" ]; then
-     echo Error: Unable to copy \'test_fcgi.fcgi\' to "$WEBDIR".
+     echo "Error: Unable to copy 'test_fcgi.fcgi' to '$WEBDIR'."
+
+     exit 1
     else
-     echo Installed. Use http://localhost/test_fcgi.html to test.
+     echo "Installed. Use http://localhost/test_fcgi.html to test."
     fi
    fi
   fi

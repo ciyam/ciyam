@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -ne 2 ]; then
- echo Usage: genpdfs [module name] [class name]
+ echo "Usage: genpdfs [module name] [class name]"
 else
  full_name=$1_$2
 

@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -ne 1 ]; then
- echo Usage: remove_app [app name]
+ echo "Usage: remove_app [app name]"
 else
  if [ -f $1.map ]; then
   rm $1.map

@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: export_encrypted_ods_db [app name]
+ echo "Usage: export_encrypted_ods_db [app name]"
 else
  ./ciyam_client -echo -quiet -no_prompt -no_stderr -exec="<export_encrypted_ods_db.cin $*"
 fi

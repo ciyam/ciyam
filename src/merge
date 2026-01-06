@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -ne 3 ]; then
- echo Usage: merge [base file] [first variation] [second variation]
+ echo "Usage: merge [base file] [first variation] [second variation]"
 else
  tmp_file1=$(mktemp --suffix ".tmp")
  tmp_file2=$(mktemp --suffix ".tmp")

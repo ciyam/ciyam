@@ -9,6 +9,8 @@ if [ $# -ne 3 ]; then
 else
  if [ "$CIYAM_PACKAGE" = "" ]; then
   echo "Error: Missing environment variable 'CIYAM_PACKAGE'."
+
+  exit 1
  else
   tmp_file=$(mktemp --suffix ".tmp")
 

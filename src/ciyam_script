@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: ciyam_script [name]
+ echo "Usage: ciyam_script [name]"
 else
  NAME=$1
 

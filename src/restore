@@ -31,7 +31,7 @@ else
   if [ ! -f Meta_init_std.cin ]; then
    echo "Error: Meta application is not installed."
 
-   exit
+   exit 1
   fi
  fi
 

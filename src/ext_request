@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: ext_request [address] [[output_file]]
+ echo "Usage: ext_request [address] [[output_file]]"
 else
  if [ ! "$2" = "" ]; then
   curl -s -m 8 $1 >$2

@@ -21,7 +21,9 @@ else
  rm -f $tmp_file
 
  if [ "$CIYAM_APPLICATION" = "" ]; then
-  echo "Error: Unknown application '$1'."
+  echo "Error: Unknown application name '$1'."
+
+  exit 1
  else
   ./ciyam_client -quiet -no_prompt -no_stderr -exec="<gen_app_script.cin $CIYAM_APPLICATION"
  fi

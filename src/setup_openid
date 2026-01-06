@@ -7,15 +7,18 @@
 if [ $# -gt 0 ]; then
  export WEBDIR=$1
 fi
+
 if [ "$WEBDIR" = "" ]; then
  echo "Error: Missing environment variable 'WEBDIR'."
+
+ exit 1
 else
  if [ -d $WEBDIR/openid ]; then
   echo "Error: OpenID has already been installed."
+
+  exit 1
  else
- {
   mkdir $WEBDIR/openid
   ./unbundle -q open -d $WEBDIR
- }
+ fi
 fi
-

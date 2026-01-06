@@ -16,7 +16,9 @@ else
  fi
 
  if [ ! "$is_rdbms" = "1" ] && [ ! -f $mod_name.cpp ]; then
-  echo Error: Module \'$mod_name\' does not exist.
+  echo "Error: Module '$mod_name' does not exist."
+
+  exit 1
  else
   ./xrep @remove_module.xrep name=$mod_name modules=@modules.lst >modules.lst.new
 

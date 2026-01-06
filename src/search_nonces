@@ -5,10 +5,12 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 3 ]; then
- echo Usage: search_nonces [data] [start num] [num searches] [[search range]]
+ echo "Usage: search_nonces [data] [start num] [num searches] [[search range]]"
 else
  if [ "$4" = "0" ] || [ "$4" = "1" ]; then
-  echo Error: If supplied then 'search range' must be greater than or equal to 2.
+  echo "Error: If supplied then 'search range' must be greater than or equal to 2."
+
+  exit 1
  else
   export CIYAM_DATA=$1
   export CIYAM_START_NUM=$2

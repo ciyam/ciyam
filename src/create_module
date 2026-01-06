@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: create_module [[-rdbms]] [module name]
+ echo "Usage: create_module [[-rdbms]] [module name]"
 else
  mod_name=$1
  is_rdbms=
@@ -16,7 +16,9 @@ else
  fi
 
  if [ -f $mod_name.cpp ]; then
-  echo Error: Module \'$mod_name\' already exists.
+  echo "Error: Module '$mod_name' already exists."
+
+  exit 1
  else
 
   if [ "$is_rdbms" = "1" ]; then
@@ -39,7 +41,9 @@ else
      ./genmodule $mod_name
     fi
    else
-    echo Error: Running script \'$mod_name.cin\' failed to create \'$mod_name.sio\'.
+    echo "Error: Running script '$mod_name.cin' failed to create '$mod_name.sio'."
+
+    exit 1
    fi
   fi
  fi

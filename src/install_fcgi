@@ -5,21 +5,27 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 2 ]; then
- echo Usage: install_fcgi [FCGI w/o ext] [app dir] [[extra files]]
+ echo "Usage: install_fcgi [FCGI w/o ext] [app dir] [[extra files]]"
 else
  tmp=$1.fcgi
  args=$1.fcgi
  directory=$WEBDIR/$2
 
  if [ ! -f $1 ]; then
-  echo Error: File \'$1\' does not exist.
+  echo "Error: File '$1' does not exist."
+
+  exit 1
  else
   cp $1 $1.fcgi
 
   if [ ! -f $args ]; then
-   echo Error: File \'$args\' does not exist.
+   echo "Error: File '$args' does not exist."
+
+   exit 1
   elif [ ! -f $directory/fcgi.sio ]; then
-   echo Error: File \'$directory/fcgi.sio\' does not exist.
+   echo "Error: File '$directory/fcgi.sio' does not exist."
+
+   exit 1
   else
    shift
    shift

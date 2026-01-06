@@ -5,10 +5,12 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 2 ]; then
- echo Usage: create_demo_application [model name] [demo name]
+ echo "Usage: create_demo_application [model name] [demo name]"
 else
  if [ ! -f create_demo_$2_application.cin ]; then
-  echo Error: File 'create_demo_$2_application.cin' does not exist.
+  echo "Error: File 'create_demo_$2_application.cin' does not exist."
+
+  exit 1
  else
   export CIYAM_MODEL=$1
   ./ciyam_client -quiet -no_prompt < create_demo_$2_application.cin

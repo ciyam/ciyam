@@ -5,7 +5,9 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ "$WEBDIR" = "" ]; then
-  echo Error: Missing environment variable 'WEBDIR'.
+ echo "Error: Missing environment variable 'WEBDIR'."
+
+ exit 1
 else
  restored_any=
  restored_meta=

@@ -20,10 +20,16 @@ rm_src=
 
 if [ "$1" = "-remove_source" ]; then
  rm_src=1
+
+ if [ "$CIYAM_CPP_OPTS" != "" ]; then
+  echo "Error: Found CIYAM_CPP_OPTS (unset if really wanting to remove source code)."
+
+  exit 1
+ fi
 elif [ ! "$1" = "-keep_source" ]; then
  echo "Error: Invalid option '$1' for prepare_release"
 
- exit
+ exit 1
 fi
 
 using_service=
@@ -49,7 +55,7 @@ if [ "$using_service" = "" ]; then
   echo "Error: Timed out trying to stop the CIYAM application server (is not running?)."
   rm -f ciyam_server.stop
 
-  exit
+  exit 1
  fi
 else
  sudo systemctl stop ciyam
@@ -59,6 +65,7 @@ make strip
 
 if [ "$using_service" = "" ]; then
  ./ciyam_server &
+ sleep 1
 else
  sudo systemctl daemon-reload
  sudo systemctl start ciyam
@@ -66,6 +73,10 @@ else
 fi
 
 make release
+
+if [ $? -ne 0 ]; then
+ exit
+fi
 
 if [ "$rm_src" = "1" ]; then
  ./reconstruct_meta okay

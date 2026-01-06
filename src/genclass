@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 2 ]; then
- echo Usage: genclass [[-rdbms]] [module name] [class name]
+ echo "Usage: genclass [[-rdbms]] [module name] [class name]"
 else
  gen_class=0
  module=$1

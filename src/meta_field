@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: meta_field [field name]
+ echo "Usage: meta_field [field name]"
 else
  grep "^field_add.*Specification_Type.*$1 " Meta.cin
 fi

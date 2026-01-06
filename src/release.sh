@@ -16,7 +16,7 @@ fi
 if [ ! -f .app_name ]; then
  echo "Error: Missing '.app_name' file."
 
- exit
+ exit 1
 fi
 
 app_name=$(<.app_name)
@@ -25,13 +25,13 @@ app_dir_name=${app_name,,}
 if [ "$app_name" = "" ]; then
  echo "Error: Unexpected empty '.app_name' file."
 
- exit
+ exit 1
 fi
 
 if [ ! -f $app_name.txt ]; then
  echo "Error: Missing application strings file '$app_name.txt'."
 
- exit
+ exit 1
 fi
 
 app_version=$(grep "^version " $app_name.txt | sed 's/[^0-9.]//g')
@@ -39,7 +39,7 @@ app_version=$(grep "^version " $app_name.txt | sed 's/[^0-9.]//g')
 if [ "$app_version" = "" ]; then
  echo "Error: Application strings file '$app_name.txt' is missing expected 'version' string."
 
- exit
+ exit 1
 fi
 
 release_name=ciyam_$app_dir_name.$app_version
@@ -70,7 +70,7 @@ fi
 if [ "$WEBDIR" = "" ]; then
  echo "Error: Missing WEBDIR environment variable."
 
- exit
+ exit 1
 fi
 
 # NOTE: Check if the application server is running.
@@ -80,7 +80,7 @@ sleep 1
 if [ -f ciyam_server.cmd ]; then
  echo "Error: Application server needs to be running to create a release archive."
 
- exit
+ exit 1
 fi
 
 if [ "$has_base" = "" ]; then
@@ -116,14 +116,14 @@ else
   if [ ! -d $release_name ]; then
    echo "Error: Unable to create '$release_name' directory (incorrect perms?)."
 
-   exit
+   exit 1
   fi
 
   mkdir $release_name/ciyam
   if [ ! -d $release_name/ciyam ]; then
    echo "Error: Unable to create '$release_name/ciyam' directory (incorrect umask?)."
 
-   exit
+   exit 1
   fi
  fi
 

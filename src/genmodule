@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: genmodule [[-rdbms]] [module name] [[app dir]] [[module alias]]
+ echo "Usage: genmodule [[-rdbms]] [module name] [[app dir]] [[module alias]]"
 else
  app_dir=$2
  gen_fcgi=0

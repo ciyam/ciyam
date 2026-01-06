@@ -5,15 +5,19 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -ne 1 ]; then
- echo Usage: reinstall_packages [okay]
+ echo "Usage: reinstall_packages [okay]"
 else
  if [ ! "$1" = "okay" ]; then
   echo "Error: Invalid argument '$1' for 'reinstall_packages'."
+
+  exit 1
  else
   ./ciyam_client -quiet -no_prompt < get_acyclic_package_types.cin
 
   if [ ! -f packages.acyclic.lst ]; then
-   echo Error: File 'packages.acyclic.lst' does not exist.
+   echo "Error: File 'packages.acyclic.lst' does not exist."
+
+   exit 1
   else
    ./ciyam_client -quiet -no_prompt < recreate_meta.cin
    ./xrep @reinstall_packages.cin.xrep packages=@packages.acyclic.lst >reinstall_packages.cin

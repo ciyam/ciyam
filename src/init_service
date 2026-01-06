@@ -6,6 +6,8 @@
 
 if [ "$WEBDIR" = "" ]; then
  echo "Error: Missing environment variable 'WEBDIR'."
+
+ exit 1
 else
  MYSQL=
 
@@ -23,6 +25,8 @@ else
 
  if [ "$MYSQL" = "" ]; then
   echo "Error: Neither MySQL (nor MariaDB) program was found (not installed?)."
+
+  exit 1
  else
   ./xrep @ciyam.service.xrep user=$USER group=$GROUP mysql=$MYSQL webdir=$WEBDIR >ciyam.service
  fi

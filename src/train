@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: train [name]
+ echo "Usage: train [name]"
 else
  ./ciyam_client -quiet -no_prompt < train_$1_algos.cin
 fi

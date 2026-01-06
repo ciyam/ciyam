@@ -5,15 +5,19 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 2 ]; then
- echo Usage: install_module [module name] [app dir] [[module alias]]
+ echo "Usage: install_module [module name] [app dir] [[module alias]]"
 else
  export alias=$3
  export directory=$WEBDIR/$2
 
  if [ ! -f $1.fcgi.sio ]; then
-  echo Error: File \'$1.fcgi.sio\' does not exist.
+  echo "Error: File '$1.fcgi.sio' does not exist."
+
+  exit 1
  elif [ ! -f $directory/fcgi.sio ]; then
-  echo Error: File \'$directory/fcgi.sio\' does not exist.
+  echo "Error: File '$directory/fcgi.sio' does not exist."
+
+  exit 1
  else
   cp $1.fcgi.sio $directory
   chmod a+r $directory/$1.fcgi.sio

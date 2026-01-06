@@ -6,13 +6,18 @@
 
 if [ "$WEBDIR" = "" ]; then
   echo "Error: Missing environment variable 'WEBDIR'."
+
+  exit 1
 else
  if [ ! -f ciyam_server.sid.sav ]; then
   echo "Error: Saved identity not found (try running 'save_identity' first)."
+
+  exit 1
  else
   rm -f ciyam_server.sid
   rm -f $WEBDIR/meta/identity.txt
   rm -f $WEBDIR/meta/encrypted.txt
+
   echo "NOTE: Will need to restart both the application and HTTP server."
  fi
 fi

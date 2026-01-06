@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -ne 1 ]; then
- echo Usage: run_temp [temp script]
+ echo "Usage: run_temp [temp script]"
 else
  ./$1
  rm $1
