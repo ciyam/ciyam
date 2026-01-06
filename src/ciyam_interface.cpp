@@ -2067,14 +2067,14 @@ void request_handler::process_request( )
 
                               if( g_reset_identity )
                                  str_replace( identity_html,
-                                  c_identity_introduction_1, GDS( c_display_reset_admin_password_1 ) );
+                                  c_identity_introduction_1, GDS( c_display_reset_master_password_1 ) );
                               else
                                  str_replace( identity_html,
                                   c_identity_introduction_1, GDS( c_display_identity_introduction_1 ) );
 
                               if( g_reset_identity )
                                  str_replace( identity_html,
-                                  c_identity_introduction_2, GDS( c_display_reset_admin_password_2 ) );
+                                  c_identity_introduction_2, GDS( c_display_reset_master_password_2 ) );
                               else
                                  str_replace( identity_html,
                                   c_identity_introduction_2, GDS( c_display_identity_introduction_2 ) );
