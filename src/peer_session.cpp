@@ -5912,7 +5912,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                {
                   socket_handler.set_blockchain_height_other( blockchain_height_other );
 
-                  if( has_tag( blockchain + c_shared_suffix, e_file_type_blob ) )
+                  // NOTE: Unless currently exporting if the "bc.<identity>.shared" tag
+                  // exists then will set the system variable to enable export (this is
+                  // for when a restart has occurred before an export was commenced).
+                  if( !has_system_variable(
+                   get_special_var_name( e_special_var_exporting_for_identity ) )
+                   && has_tag( blockchain + c_shared_suffix, e_file_type_blob ) )
                   {
                      string backup_identity( get_raw_session_variable(
                       get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
