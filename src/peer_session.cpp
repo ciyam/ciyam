@@ -255,7 +255,7 @@ string special_connection_message( const string& id, bool has_timed_out = false 
    else if( id == c_special_message_1 )
    {
       if( !has_timed_out )
-         msg = GS( c_str_waiting_for_verification );
+         msg = GS( c_str_waiting_for_peer_verification );
       else
          msg = GS( c_str_timed_out_waiting_for_verification );
    }

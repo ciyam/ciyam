@@ -146,7 +146,8 @@ unknown (unknown)
 value_must_be_in_range must contain a value in the range @from to @to.
 version_mismatch Version mismatch (found @found but expected @expected).
 waiting_for_peer_hub_sync Waiting for peer hub sync
-waiting_for_verification Waiting for peer verification.
+waiting_for_peer_verification Waiting for peer verification
+waiting_for_verification Waiting for verification
 string_message total
 Total
 string_message processed_items @num=999
