@@ -5,6 +5,7 @@
    if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`)
 `{`$i`} && `}`}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )`} )
 `}\
-`{`$i`}   get_obj( ).`{`$arg_field`}( `{`$arg_func_name`}(`{`!`@eq`(`$arg_arg1`,`'`'`) get_obj( ).`{`$arg_arg1`}( )`{`!`@eq`(`$arg_arg2`,`'`'`), get_obj( ).`{`$arg_arg2`}( )`}`} ) );
+`{`$i`}   get_obj( ).`{`$arg_field`}( `{`$arg_func_name`}(`{`!`@eq`(`$arg_arg`,`'`'`) "`{`$arg_arg`}"`}\
+`{`!`@eq`(`$arg_arg1`,`'`'`)`{`!`@eq`(`$arg_arg`,`'`'`),`} get_obj( ).`{`$arg_arg1`}( )`{`!`@eq`(`$arg_arg2`,`'`'`), get_obj( ).`{`$arg_arg2`}( )`}`} ) );
    // [(finish transient_field_from_function)] `{`$arg_id`}
 `}

@@ -2165,7 +2165,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `@eq`(`'\1`'`,`'transient_field_from_function`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_from_function.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_func_name=$specification_\0_func_name\
- arg_arg1=$specification_\0_arg1 arg_arg2=$specification_\0_arg2 arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier`}\
+ arg_arg=$specification_\0_arg arg_arg1=$specification_\0_arg1 arg_arg2=$specification_\0_arg2\
+ arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_graph_parent`'`)
 `{`#transient_field_from_graph_parent.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
@@ -2510,7 +2511,8 @@ void `{`$full_class_name`}::impl::post_init( )
 `@eq`(`'\1`'`,`'transient_field_from_function`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_from_function.spec.xrep section=post_init class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_func_name=$specification_\0_func_name\
- arg_arg1=$specification_\0_arg1 arg_arg2=$specification_\0_arg2 arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier`}
+ arg_arg=$specification_\0_arg arg_arg1=$specification_\0_arg1 arg_arg2=$specification_\0_arg2\
+ arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier`}
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_key`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_from_key.spec.xrep section=post_init class_name=$class_name\
