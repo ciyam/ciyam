@@ -67,6 +67,7 @@ int main( int argc, char* argv[ ] )
    {
       cout << c_app_title << " v" << c_app_version << '\n';
       cout << c_app_usage << endl;
+
       return 0;
    }
 
@@ -86,6 +87,7 @@ int main( int argc, char* argv[ ] )
       else
       {
          cerr << "error: invalid command line option '" << argv[ first_arg ] << "'" << endl;
+
          return 1;
       }
    }
@@ -93,6 +95,7 @@ int main( int argc, char* argv[ ] )
    if( first_arg == argc )
    {
       cerr << "error: must specify an input filename" << endl;
+
       return 1;
    }
 
@@ -116,15 +119,17 @@ int main( int argc, char* argv[ ] )
       command_constant_prefix += '_';
    }
 
-   cout << input_file_name << ':' << endl;
+   cout << input_file_name << endl;
 
    string output_file_name;
+
    if( first_arg < argc - 1 )
       output_file_name = string( argv[ first_arg + 1 ] );
    else
       output_file_name = input_file_name.substr( 0, input_file_name.find_last_of( '.' ) );
 
    pos = output_file_name.find( '.' );
+
    if( pos == string::npos )
       output_file_name += c_default_output_file_extension;
 
@@ -136,13 +141,16 @@ int main( int argc, char* argv[ ] )
    }
 
    command_parser p;
+
    vector< command_item > command_syntax_items;
+
    typedef vector< command_item >::size_type command_syntax_size_type;
    typedef vector< command_item >::value_type command_syntax_value_type;
 
-   outf << "// NOTE: DO NOT EDIT FILE (this file was automatically generated)\n";
+   outf << "// NOTE: DO NOT EDIT FILE (content was automatically generated)\n";
 
    size_t line_number = 0;
+
    while( getline( inpf, next ) )
    {
       ++line_number;
@@ -157,10 +165,13 @@ int main( int argc, char* argv[ ] )
          continue;
 
       pos = next.find( ' ' );
+
       string command( next.substr( 0, pos ) );
 
       string short_cmd;
+
       string::size_type spos = command.find( '|' );
+
       if( spos != string::npos )
       {
          short_cmd = command.substr( spos );
@@ -173,11 +184,11 @@ int main( int argc, char* argv[ ] )
       if( command.empty( ) )
          continue;
 
-      outf << '\n' << c_output_command_prefix << command_constant_prefix
-       << command << " = \"" << command << "\";" << '\n';
+      outf << '\n' << c_output_command_prefix
+       << command_constant_prefix << command << " = \"" << command << "\";" << '\n';
 
-      string syntax;
-      string description;
+      string syntax, description;
+
       if( pos != string::npos )
       {
          next.erase( 0, pos + 1 );
@@ -185,9 +196,11 @@ int main( int argc, char* argv[ ] )
          if( next[ 0 ] == '"' )
          {
             pos = next.find( '"', 1 );
+
             if( pos == string::npos )
             {
                cerr << "error: unexpected description missing end-quote at line #" << line_number << endl;
+
                return 1;
             }
 
@@ -205,6 +218,7 @@ int main( int argc, char* argv[ ] )
                if( next[ 0 ] != ' ' )
                {
                   cerr << "error: unexpected missing space after description at line #" << line_number << endl;
+
                   return 1;
                }
 
@@ -216,12 +230,17 @@ int main( int argc, char* argv[ ] )
             cout << " command syntax is: " << description << endl;
 #endif
             p.parse_syntax( syntax.c_str( ) );
+
             if( !p.okay( ) )
             {
                cerr << "error: invalid syntax found in command '" << command << "' at line #" << line_number;
+
                string error_marker( p.get_error_pos( ), ' ' );
+
                error_marker += '^';
+
                cerr << '\n' << syntax << '\n' << error_marker << endl;
+
                return 1;
             }
 
@@ -246,6 +265,7 @@ int main( int argc, char* argv[ ] )
                      if( default_constant[ j ] < '0' || default_constant[ j ] > '9' )
                      {
                         is_number = false;
+
                         break;
                      }
                   }
@@ -272,6 +292,7 @@ int main( int argc, char* argv[ ] )
    if( !inpf.eof( ) )
    {
       cerr << "error: unexpected error occurred whilst reading '" << input_file_name << "' for input" << endl;
+
       return 1;
    }
 
@@ -279,6 +300,7 @@ int main( int argc, char* argv[ ] )
     << command_constant_prefix << c_output_command_definition_suffix << '\n';
 
    outf << "{\n";
+
    for( command_syntax_size_type i = 0; i < command_syntax_items.size( ); i++ )
    {
       if( i != 0 )
@@ -289,12 +311,13 @@ int main( int argc, char* argv[ ] )
        << "\", \"" << command_syntax_items[ i ].syntax
        << "\", \"" << command_syntax_items[ i ].description << "\" }";
    }
+
    outf << "\n};\n";
 
    if( !outf.good( ) )
    {
       cerr << "error: unexpected write error for file '" << output_file_name << "'" << endl;
+
       return 1;
    }
 }
-
