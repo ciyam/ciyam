@@ -284,6 +284,7 @@ const char* const c_special_variable_prepare_backup_needed = "@prepare_backup_ne
 const char* const c_special_variable_blockchain_is_checking = "@blockchain_is_checking";
 const char* const c_special_variable_blockchain_is_combined = "@blockchain_is_combined";
 const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
+const char* const c_special_variable_exporting_for_identity = "@exporting_for_identity";
 const char* const c_special_variable_peer_limited_arguments = "@peer_limited_arguments";
 const char* const c_special_variable_single_string_response = "@single_string_response";
 const char* const c_special_variable_skip_tagging_if_exists = "@skip_tagging_if_exists";
@@ -617,6 +618,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_is_checking );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_combined );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_fetching );
+      g_special_variable_names.push_back( c_special_variable_exporting_for_identity );
       g_special_variable_names.push_back( c_special_variable_peer_limited_arguments );
       g_special_variable_names.push_back( c_special_variable_single_string_response );
       g_special_variable_names.push_back( c_special_variable_skip_tagging_if_exists );
