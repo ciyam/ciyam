@@ -2270,7 +2270,7 @@ void Meta_Application::impl::impl_Generate( )
 
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
       {
-         outs << "\necho \"Updating Links...\" >>" << generate_log_file << "\n";
+         outs << "\necho \"Updating Links\" >>" << generate_log_file << "\n";
          outs << "./ciyam_client " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".generate.2.cin\n";
       }
 
@@ -2284,7 +2284,7 @@ void Meta_Application::impl::impl_Generate( )
 
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
       {
-         outs << "\necho \"Starting Make...\" >>" << generate_log_file << "\n";
+         outs << "\necho \"Starting Make\" >>" << generate_log_file << "\n";
 
          outs << "./ciyam_client " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".generate.3.cin\n";
 
@@ -2293,7 +2293,7 @@ void Meta_Application::impl::impl_Generate( )
          outs << "fi\n";
 
          outs << "make " << all_modules << " dtm >>" << generate_log_file << " 2>&1\n";
-         outs << "echo \"Finished Make...\" >>" << generate_log_file << "\n\n";
+         outs << "echo \"Finished Make\" >>" << generate_log_file << "\n\n";
 
          outs << "if [ -f make.dtm ]; then\n";
 
@@ -2320,7 +2320,7 @@ void Meta_Application::impl::impl_Generate( )
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Upgrading DB...\"\n";
       outss4 << "quit\n";
 
-      outupg << "#Starting DB Rebuild...\n";
+      outupg << "#Starting DB Rebuild\n";
 
       outupg << "CIYAM_STORAGE=" << get_obj( ).Name( ) << "\n";
       outupg << "CIYAM_OUTPUT_COMMANDS=1\n";
@@ -2330,11 +2330,11 @@ void Meta_Application::impl::impl_Generate( )
 
       outupg << "<restore.cin\n";
 
-      outupg << "#Finished DB Rebuild...\n";
+      outupg << "#Finished DB Rebuild\n";
 
       if( !package_training.empty( ) )
       {
-         outupg << "#Starting algo training...\n";
+         outupg << "#Starting algo training\n";
 
          for( size_t i = 0; i < package_training.size( ); i++ )
             outupg << "<" << package_training[ i ] << "\n";
@@ -2344,7 +2344,7 @@ void Meta_Application::impl::impl_Generate( )
          outupg << ".session_variable @algos \"save " + algos_file_name + "\"\n";
          outupg << ".session_variable @algos \"kill *\"\n";
 
-         outupg << "#Finished algo training...\n";
+         outupg << "#Finished algo training\n";
       }
 
       outupg << ".quit\n";
