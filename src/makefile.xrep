@@ -65,6 +65,7 @@ CPP_OPTS = $(CIYAM_CPP_OPTS) -fPIC -fno-gnu-unique -ftemplate-depth-50 -felide-c
 %.compile:
 #	@echo echo [$@] $(CPP) $(target_opts_$*) -c \$$3 $(CPP_OPTS) -o \$$1 \$$2>compile.sh
 	@echo echo \$$2>compile.sh
+	@echo set -e>>compile.sh
 	@echo "if [ \"\$$2\" = \"ciyam_base.cpp\" ] || [ \"\$$2\" = \"fcgi_utils.cpp\" ] && [ -f sid.enc.chk ]; then encrypt=1; ./crypt -h -t sid.enc; fi">>compile.sh
 	@echo $(CPP) $(target_opts_$*) -c \$$3 $(CPP_OPTS) -o \$$1 \$$2>>compile.sh
 	@echo "if [ \"\$$2\" = \"ciyam_base.cpp\" ] || [ \"\$$2\" = \"fcgi_utils.cpp\" ] && [ \"\$$encrypt\" = \"1\" ]; then ./crypt -c -h -t sid.enc; fi">>compile.sh;chmod u+x compile.sh
