@@ -1443,8 +1443,8 @@ inline std::string hashed_decrypt( const std::string& s, bool use_sha256 = false
       return hash_sha256( decrypt( s ) );
 }
 
-std::string shared_secret(
- const std::string& identity_for_peer, const std::string& encrypted_identity );
+std::string shared_secret( const std::string& identity_for_peer,
+ const std::string& peer_pseudo_identity, bool pseudo_identity_encrypted = true );
 
 bool is_own_identity( const std::string& identity );
 

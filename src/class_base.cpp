@@ -4509,13 +4509,17 @@ string shared_encrypt( const string& pk, const string& s )
 #endif
 }
 
-string shared_secret( const string& identity_for_peer, const string& encrypted_identity )
+string shared_secret( const string& identity_for_peer,
+ const string& peer_pseudo_identity, bool pseudo_identity_encrypted )
 {
    string secret;
 
    secret.reserve( c_reserve_for_secret );
 
-   decrypt_data( secret, encrypted_identity );
+   if( !pseudo_identity_encrypted )
+      secret = peer_pseudo_identity;
+   else
+      decrypt_data( secret, peer_pseudo_identity );
 
    string other_secret( private_identity( identity_for_peer ) );
 
