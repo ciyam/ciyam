@@ -13,6 +13,8 @@ crypto_p2sh_addr "output a P2SH address" <val//extkey><val//script>
 crypto_p2sh_redeem "outputs a P2SH redeem raw tx" <val//txid><val//index><val//script><val//address><val//amount><val//wif_privkey>[<list/-e=/extras>][<val//lock_time>]
 crypto_nonce_search "searches for a proof of work nonce for given data" <val//data>[<opt/-faster/faster>][<oval//start>][<oval//range>][<val//difficulty>]
 crypto_nonce_verify "verifies if a proof of work nonce is valid for given data" <val//data><val//nonce>[<val//difficulty>]
+crypto_peer_identity "output pseudo identity" <val//extra_identity>
+crypto_shared_secret "creates an encrypted shared secret" <val//extra_identity><val//external_pseudo_identity>
 file_chk "check if a file exists in the files area" <val//tag_or_hash>
 file_get "fetch a file from the files area" <val//tag_or_hash>[<val//filename>]
 file_put "stores a file to the files area" <val//filename>[<val//tag>]

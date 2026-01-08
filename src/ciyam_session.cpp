@@ -2354,6 +2354,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = check_for_proof_of_work( data, from_string< size_t >( nonce ), 1, difficulty_val );
       }
+      else if( command == c_cmd_ciyam_session_crypto_peer_identity )
+      {
+         string extra_identity( get_parm_val( parameters, c_cmd_ciyam_session_crypto_peer_identity_extra_identity ) );
+
+         response = private_identity( extra_identity );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_shared_secret )
+      {
+         string extra_identity( get_parm_val( parameters, c_cmd_ciyam_session_crypto_shared_secret_extra_identity ) );
+         string external_pseudo_identity( get_parm_val( parameters, c_cmd_ciyam_session_crypto_shared_secret_external_pseudo_identity ) );
+
+         response = shared_secret( extra_identity, external_pseudo_identity, false );
+      }
       else if( command == c_cmd_ciyam_session_file_chk )
       {
          string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_chk_tag_or_hash ) );
