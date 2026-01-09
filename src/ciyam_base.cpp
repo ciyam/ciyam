@@ -7683,6 +7683,8 @@ string get_random_same_port_peer_ip_addr( const string& empty_value )
 
 void list_all_sessions( ostream& os, bool inc_dtms, bool include_progress )
 {
+   guard g( g_session_mutex );
+
    map< size_t, string > sessions;
 
    for( size_t i = 0; i < g_max_sessions; i++ )
@@ -9873,7 +9875,8 @@ bool has_any_session_variable( const string& name, const string& value )
    return false;
 }
 
-size_t num_have_session_variable( const string& name, bool matching_own_ip_address )
+size_t num_have_session_variable( const string& name,
+ bool matching_own_ip_address, bool include_condemned )
 {
    guard g( g_session_mutex );
 
@@ -9890,15 +9893,16 @@ size_t num_have_session_variable( const string& name, bool matching_own_ip_addre
        && ( !matching_own_ip_address
        || ( g_sessions[ i ]->ip_addr == own_ip_addr ) )
        && ( ( g_sessions[ i ]->variables.count( name ) )
-       || ( g_sessions[ i ]->deque_variables.count( name ) ) ) )
+       || ( g_sessions[ i ]->deque_variables.count( name ) ) )
+       && ( include_condemned || !g_condemned_sessions.count( g_sessions[ i ]->id ) ) )
          ++total;
    }
 
    return total;
 }
 
-size_t num_have_session_variable( const string& name,
- const string& value, vector< string >* p_identities, bool matching_own_ip_address )
+size_t num_have_session_variable( const string& name, const string& value,
+ vector< string >* p_identities, bool matching_own_ip_address, bool include_condemned )
 {
    guard g( g_session_mutex );
 
@@ -9915,7 +9919,8 @@ size_t num_have_session_variable( const string& name,
        && ( !matching_own_ip_address
        || ( g_sessions[ i ]->ip_addr == own_ip_addr ) )
        && g_sessions[ i ]->variables.count( name )
-       && ( g_sessions[ i ]->variables[ name ] == value ) )
+       && ( g_sessions[ i ]->variables[ name ] == value )
+       && ( include_condemned || !g_condemned_sessions.count( g_sessions[ i ]->id ) ) )
       {
          ++total;
 

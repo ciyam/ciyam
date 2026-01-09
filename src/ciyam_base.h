@@ -505,7 +505,7 @@ bool is_captured_session( );
 
 bool has_any_matching_session( bool support_only = true );
 
-inline bool has_any_supoprt_session( ) { return has_any_matching_session( true ); }
+inline bool has_any_support_session( ) { return has_any_matching_session( true ); }
 inline bool has_matching_peer_session( ) { return has_any_matching_session( false ); }
 
 void release_session( size_t sess_id, bool wait_until_term );
@@ -625,10 +625,12 @@ inline void set_session_variable_for_matching_blockchains(
 bool has_any_session_variable( const std::string& name );
 bool has_any_session_variable( const std::string& name, const std::string& value );
 
-size_t num_have_session_variable( const std::string& name, bool matching_own_ip_address = false );
+size_t num_have_session_variable( const std::string& name,
+ bool matching_own_ip_address = false, bool include_condemned = true );
 
 size_t num_have_session_variable( const std::string& name,
- const std::string& value, std::vector< std::string >* p_identities = 0, bool matching_own_ip_address = false );
+ const std::string& value, std::vector< std::string >* p_identities = 0,
+ bool matching_own_ip_address = false, bool include_condemned = true );
 
 bool is_first_using_session_variable( const std::string& name );
 bool is_first_using_session_variable( const std::string& name, const std::string& value );
