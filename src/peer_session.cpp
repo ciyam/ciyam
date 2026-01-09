@@ -1029,8 +1029,32 @@ bool terminate_peer_session( bool is_for_support, const string& identity )
    {
       condemn_matching_sessions( );
 
-      while( has_any_supoprt_session( ) )
+      bool is_blockchain_owner = has_raw_session_variable(
+       get_special_var_name( e_special_var_blockchain_is_owner ) );
+
+      string paired_identity(
+       get_raw_session_variable( get_special_var_name( e_special_var_paired_identity ) ) );
+
+      // NOTE: If is not a support session then will only terminate
+      // after support sessions have terminated and if is the owner
+      // then will also wait for its "paired session" to terminate.
+      while( true )
+      {
+         bool has_dependent = false;
+
+         if( has_any_support_session( ) )
+            has_dependent = true;
+         else if( !is_blockchain_owner && !paired_identity.empty( ) )
+         {
+            if( num_have_session_variable( paired_identity, true ) > 1 )
+               has_dependent = true;
+         }
+
+         if( !has_dependent )
+            break;
+
          msleep( c_wait_sleep_time );
+      }
 
       remove_from_hub_queue_if_present( identity );
 
@@ -1288,7 +1312,7 @@ void check_shared_for_support_session( const string& blockchain )
    vector< string > identities;
 
    if( num_have_session_variable(
-    get_special_var_name( e_special_var_peer ), blockchain, &identities, true ) )
+    get_special_var_name( e_special_var_peer ), blockchain, &identities, true, false ) )
    {
       size_t index = 0;
       size_t lowest = 0;
@@ -1745,7 +1769,7 @@ void check_for_missing_other_sessions( const date_time& now )
 
          if( unix_time( now ) >= time_val )
          {
-            if( num_have_session_variable( paired_identity, true ) < 2 )
+            if( num_have_session_variable( paired_identity, true, false ) < 2 )
             {
                condemn_this_session( );
 
@@ -1754,7 +1778,7 @@ void check_for_missing_other_sessions( const date_time& now )
             }
 
             if( !backup_identity.empty( )
-             && num_have_session_variable( backup_identity, true ) < 2 )
+             && num_have_session_variable( backup_identity, true, false ) < 2 )
             {
                condemn_this_session( );
 
@@ -1787,7 +1811,7 @@ void check_for_missing_other_sessions( const date_time& now )
       string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
       if( !num_have_session_variable(
-       get_special_var_name( e_special_var_blockchain_peer_hub_identity ), identity, 0, true ) )
+       get_special_var_name( e_special_var_blockchain_peer_hub_identity ), identity, 0, true, false ) )
       {
          condemn_this_session( );
 
@@ -4488,10 +4512,10 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
             if( get_is_time_for_check( ) )
             {
-               is_only_session = ( num_have_session_variable( paired_identity ) < 2 );
+               is_only_session = ( num_have_session_variable( paired_identity, true, false ) < 2 );
 
                if( !is_only_session && !backup_identity.empty( ) 
-                && ( num_have_session_variable( backup_identity, true ) < 2 ) )
+                && ( num_have_session_variable( backup_identity, true, false ) < 2 ) )
                   is_missing_backup = true;
             }
 
@@ -6552,7 +6576,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    if( send_okay_response && socket_handler.get_is_for_support( ) )
    {
       if( socket_handler.get_is_time_for_check( )
-       && !num_have_session_variable( identity, true ) )
+       && !num_have_session_variable( identity, true, false ) )
          condemn_this_session( );
    }
 
@@ -6593,10 +6617,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( socket_handler.get_is_time_for_check( ) )
          {
-            is_only_session = ( num_have_session_variable( paired_identity, true ) < 2 );
+            is_only_session = ( num_have_session_variable( paired_identity, true, false ) < 2 );
 
             if( !is_only_session && !backup_identity.empty( )
-             && ( num_have_session_variable( backup_identity, true ) < 2 ) )
+             && ( num_have_session_variable( backup_identity, true, false ) < 2 ) )
                is_missing_backup = true;
          }
 
@@ -7259,6 +7283,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          if( pos != string::npos )
          {
             pid.erase( pos );
+
             this->has_support_sessions = true;
          }
 
@@ -7593,7 +7618,7 @@ void peer_session::on_start( )
          set_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ), c_true_value );
 
          if( num_have_session_variable( get_special_var_name(
-          e_special_var_blockchain_peer_hub_identity ), unprefixed_blockchain, 0, true ) )
+          e_special_var_blockchain_peer_hub_identity ), unprefixed_blockchain, 0, true, false ) )
             set_session_variable( get_special_var_name( e_special_var_peer_is_dependent ), c_true_value );
 
          string progress_message(
@@ -8929,8 +8954,7 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    // NOTE: If this is a new (non-local) blockchain
    // then will initially disallow support sessions
    // (as checksum verification is first required).
-   if( !has_tag( blockchain + c_zenith_suffix )
-    || ( create_reversed && !has_tag( reversed_chain + c_zenith_suffix ) ) )
+   if( !has_tag( blockchain + c_zenith_suffix ) )
       num_for_support = 0;
 
    string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
