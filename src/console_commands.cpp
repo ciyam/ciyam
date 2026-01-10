@@ -390,7 +390,12 @@ command_functor* startup_command_functor_factory( const string& /*name*/, comman
 
 struct choice
 {
+   choice( ) : is_def( false ) { }
+
    char ch;
+
+   bool is_def;
+
    string show;
    string value;
    string output;
@@ -400,7 +405,7 @@ bool is_choice_input( const string& input )
 {
    string::size_type pos = input.find( '[' );
 
-   if( pos != string::npos && input.find( ']', pos + 1 ) != string::npos )
+   if( ( pos != string::npos ) && ( input.find( ']', pos + 1 ) != string::npos ) )
       return true;
    else
       return false;
@@ -410,32 +415,32 @@ bool is_choice_input( const string& input )
 //
 // If you used the following:
 //
-// &Continue? [yes=1|no=] (choose one)
+// &Continue? [Yes==1|No=] (choose one)
 //
 // then it will output:
 //
-// Continue? [y]es, [n]o (choose one)
+// Continue? <[Y]>es, [N]o (choose one)
 //
-// and assuming you keyed in 'y' it would then output:
+// and assuming you keyed in 'y' (or 'Y' or just Enter) then it would then output:
 //
-// Continue? yes
+// Continue? Yes
 //
 // but the actual string returned will be:
 //
 // Continue=1
 //
-// (in the above example if 'n' was selected it would return "Continue=" instead)
+// (in the above example if 'n' or 'N' was typed then it would return "Continue=")
 //
 // If instead you used the following:
 //
-// &Continue? [CONT:yes=1!Yes|no=!No] (choose one)
+// &Continue? [CONT:Yes==1!YES|No=!NO] (choose one)
 //
-// then the output after typing 'y' or 'n' would be 'Yes' or 'No' instead of 'yes'
-// or 'no' and the actual string returned will now be:
+// then the output after hitting 'y' (or 'Y' or just Enter) would now output "YES"
+// with the actual string returned being:
 //
 // CONT=1
 //
-// (or CONT= if 'n' was pressed)
+// (or CONT= if 'n' or 'N' was pressed)
 
 string get_input_from_choices( const string& input )
 {
@@ -465,6 +470,8 @@ string get_input_from_choices( const string& input )
             choice_info.erase( 0, vpos + 1 );
          }
 
+         bool had_default = false;
+
          while( true )
          {
             string::size_type npos = choice_info.find( '|' );
@@ -493,9 +500,21 @@ string get_input_from_choices( const string& input )
 
             next_choice.value = next.substr( epos + 1 );
 
+            if( ( next_choice.value.size( ) > 1 )
+             && ( next_choice.value[ 0 ] == '=' ) )
+            {
+               if( !had_default )
+                  next_choice.is_def = true;
+
+               had_default = true;
+
+               next_choice.value.erase( 0, 1 );
+            }
+
             next.erase( epos );
 
             char ch = '\0';
+
             bool found = false;
 
             for( size_t i = 0; i < next.length( ); i++ )
@@ -524,7 +543,10 @@ string get_input_from_choices( const string& input )
 
                   next_choice.ch = ch;
 
-                  next_choice.show += '[' + string( 1, ch ) + ']';
+                  if( !next_choice.is_def )
+                     next_choice.show += '[' + string( 1, ch ) + ']';
+                  else
+                     next_choice.show += "<[" + string( 1, ch ) + "]>";
                }
             }
 
@@ -552,21 +574,37 @@ string get_input_from_choices( const string& input )
          cout.flush( );
 
          string value, output;
+
          bool found = false;
 
          while( !found )
          {
             char ch = get_char( );
 
-            for( size_t i = 0; i < choices.size( ); i++ )
+            // NOTE: If no case sensitive
+            // match was found then check
+            // again using reversed case.
+            for( size_t p = 0; p < 2; p++ )
             {
-               if( choices[ i ].ch == ch )
+               if( p == 1 )
                {
-                  value = choices[ i ].value;
-                  output = choices[ i ].output;
+                  if( ch == toupper( ch ) )
+                     ch = tolower( ch );
+                  else
+                     ch = toupper( ch );
+               }
 
-                  found = true;
-                  break;
+               for( size_t i = 0; i < choices.size( ); i++ )
+               {
+                  if( ( ch == choices[ i ].ch )
+                   || ( ( ch == '\n' ) && choices[ i ].is_def ) )
+                  {
+                     value = choices[ i ].value;
+                     output = choices[ i ].output;
+
+                     found = true;
+                     break;
+                  }
                }
             }
          }
@@ -2615,7 +2653,27 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                msg = str.substr( 1 );
 
             if( !is_choice_input( msg ) )
-               str = msg + get_line( msg.c_str( ), false );
+            {
+               string prompt( msg );
+
+               // NOTE: If wanting to use a different
+               // prompt to the variable name need to
+               // prefix the variable assignment with
+               // a ':' as per the following example.
+               //
+               // &Enter value: :VALUE=
+               // #VALUE is: $VALUE
+               string::size_type pos = msg.rfind( ':' );
+
+               if( pos != string::npos )
+               {
+                  prompt = msg.substr( 0, pos );
+
+                  msg.erase( 0, pos + 1 );
+               }
+
+               str = msg + get_line( prompt.c_str( ), false );
+            }
             else
                str = get_input_from_choices( msg + ' ' );
          }
