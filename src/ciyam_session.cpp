@@ -2363,9 +2363,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_crypto_shared_secret )
       {
          string extra_identity( get_parm_val( parameters, c_cmd_ciyam_session_crypto_shared_secret_extra_identity ) );
-         string external_pseudo_identity( get_parm_val( parameters, c_cmd_ciyam_session_crypto_shared_secret_external_pseudo_identity ) );
+         string ext_pseudo_identity( get_parm_val( parameters, c_cmd_ciyam_session_crypto_shared_secret_ext_pseudo_identity ) );
 
-         response = shared_secret( extra_identity, external_pseudo_identity, false );
+         response = shared_secret( extra_identity, ext_pseudo_identity, false );
       }
       else if( command == c_cmd_ciyam_session_file_chk )
       {
