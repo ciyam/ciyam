@@ -1,0 +1,81 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "2"
+#NOTE: This script requires a description and domain name.
+@else
+ERROR=
+;
+EXT_NAME=$1
+EXT_DOMAIN=$2
+LOT_NUMBER=$3
+EXT_QR_CODE=$4
+PEER_TYPE=$5
+NUM_HELPERS=$6
+AUTO_START=$7
+;
+EXT_LINES=@repstr:-/\n:$EXT_DOMAIN
+;
+PORT_NUMBER=%EXT_LINES:2%
+;
+@ifeq "$PORT_NUMBER" ""
+PORT_NUMBER=12021
+@else
+EXT_DOMAIN=%EXT_LINES:1%
+@endif
+;
+@ifeq "$LOT_NUMBER" ""
+&Lot Number? [LOT_NUMBER:Primary=1|Secondary=2|Tertiary=3]
+@endif
+;
+.system_variable @blockchain_backup_%LOT_NUMBER%_identity
+BACKUP_IDENTITY=$OUTPUT
+@ifeq "$BACKUP_IDENTITY" ""
+ERROR=Unexpected missing backup identity for lot #$LOT_NUMBER.
+#Error: $ERROR
+@else
+.crypto_peer_identity $BACKUP_IDENTITY
+#QR Code: $BACKUP_IDENTITY:$OUTPUT
+;
+@ifneq "$EXT_QR_CODE" ""
+#External QR Code: $EXT_QR_CODE
+@else
+&External QR Code: :EXT_QR_CODE=
+@endif
+;
+EXT_LINES=@repstr:\:/\n:$EXT_QR_CODE
+;
+EXT_IDENTITY=%EXT_LINES:1%
+EXT_PSEUDO_ID=%EXT_LINES:2%
+;
+@ifeq "$PEER_TYPE" ""
+&Peer Type? [PEER_TYPE:Combined==0|Backup Only=1|Shared Only=2]
+@endif
+;
+@ifeq "$NUM_HELPERS" ""
+&Connection Type? [NUM_HELPERS:Minimal=0|Standard==5|Throttled=11]
+@endif
+;
+@ifeq "$AUTO_START" ""
+AUTO_START=1
+@endif
+;
+.crypto_shared_secret $BACKUP_IDENTITY $EXT_PSEUDO_ID
+SHARED_SECRET=$OUTPUT
+;
+run_script create_peerchain_entry "@identity=$EXT_IDENTITY,@auto_start=$AUTO_START,@peer_type=$PEER_TYPE\
+,@description=$EXT_NAME,@host_name=$EXT_DOMAIN,@host_port=$PORT_NUMBER,@num_helpers=$NUM_HELPERS,@extra_value=$LOT_NUMBER,@shared_secret=$SHARED_SECRET"
+;
+@endif
+;
+@endif
