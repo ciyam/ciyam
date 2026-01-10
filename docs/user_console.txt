@@ -116,13 +116,13 @@ The following prefixes are designed for use with interactive scripts:
 '^' - use this for a simple pause that waits for a key to be pressed (suffix for a custom prompt)
 '&' - use this for either single key selection of choices or a general user appended command input
 
-For user input the following is a selection choice example (sets/clears environment variable "Continue"):
+For user input the following is a selection choice example (sets/clears environment variable "CONT"):
 
-> &Continue? [yes=1|no=] (choose one)
+> &Continue? [CONT:Yes==1|No=!NO] (hit 'y', 'Y' or Enter else hit 'n' or 'N')
 
 whilst this is a simpler user appended command input example to set the TEST variable to any arbitrary text):
 
-> &TEST=
+> &Test is (enter text value): :TEST=
 
 Console Command History
 -----------------------
