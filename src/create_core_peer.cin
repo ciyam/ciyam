@@ -73,8 +73,32 @@ AUTO_START=1
 .crypto_shared_secret $BACKUP_IDENTITY $EXT_PSEUDO_ID
 SHARED_SECRET=$OUTPUT
 ;
-run_script create_peerchain_entry "@identity=$EXT_IDENTITY,@auto_start=$AUTO_START,@peer_type=$PEER_TYPE\
-,@description=$EXT_NAME,@host_name=$EXT_DOMAIN,@host_port=$PORT_NUMBER,@num_helpers=$NUM_HELPERS,@extra_value=$LOT_NUMBER,@shared_secret=$SHARED_SECRET"
+.system_variable @storage
+STORAGE=$OUTPUT
+@ifeq "$STORAGE" "Meta"
+STORAGE=
+@endif
+;
+@ifeq "$STORAGE" ""
+run_script create_peerchain_entry "@identity=$EXT_IDENTITY\
+,@auto_start=$AUTO_START,@peer_type=$PEER_TYPE,@description=$EXT_NAME,@host_name=$EXT_DOMAIN\
+,@host_port=$PORT_NUMBER,@num_helpers=$NUM_HELPERS,@extra_value=$LOT_NUMBER,@shared_secret=$SHARED_SECRET"
+@else
+.storage_init $STORAGE
+@ifndef $ERROR
+.encrypt $EXT_PSEUDO_ID
+ENCRYPTED_EXT_PSEUDO_ID=$OUTPUT
+;
+@retain *
+<$STORAGE.create_core_peer.vars.lst
+;
+.pc admin @now $STORAGE $CLASS_NAME $EXT_IDENTITY "$FLD_DESCRIPTION=$EXT_NAME,$FLD_LOT_NUMBER=$LOT_NUMBER\
+,$FLD_HOST_NAME=$EXT_DOMAIN,$FLD_PORT_NUMBER=$PORT_NUMBER,$FLD_IDENTITY_FOR_PEER=$BACKUP_IDENTITY\
+,$FLD_CORE_PEER_TYPE=$PEER_TYPE,$FLD_QR_CODE_SCANNED=$ENCRYPTED_EXT_PSEUDO_ID,$FLD_CONNECTION_TYPE=$NUM_HELPERS"
+;
+.storage_term
+@endif
+@endif
 ;
 @endif
 ;
