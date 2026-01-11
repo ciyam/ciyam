@@ -1029,8 +1029,9 @@ bool terminate_peer_session( bool is_for_support, const string& identity )
    {
       condemn_matching_sessions( );
 
-      bool is_blockchain_owner = has_raw_session_variable(
-       get_special_var_name( e_special_var_blockchain_is_owner ) );
+      string peer( get_raw_session_variable( get_special_var_name( e_special_var_peer ) ) );
+
+      string unprefixed_peer( replaced( peer, c_bc_prefix, "" ) );
 
       string paired_identity(
        get_raw_session_variable( get_special_var_name( e_special_var_paired_identity ) ) );
@@ -1044,13 +1045,13 @@ bool terminate_peer_session( bool is_for_support, const string& identity )
 
          if( has_any_support_session( ) )
             has_dependent = true;
-         else if( !is_blockchain_owner && !paired_identity.empty( ) )
+         else if( !paired_identity.empty( ) && ( paired_identity != unprefixed_peer ) )
          {
             if( num_have_session_variable( paired_identity, true ) > 1 )
                has_dependent = true;
          }
 
-         if( !has_dependent )
+         if( !has_dependent || g_server_shutdown )
             break;
 
          msleep( c_wait_sleep_time );
@@ -6508,6 +6509,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       TRACE_LOG( ( possibly_expected_error ? TRACE_INITIAL | TRACE_SESSION : 0 ), string( "peer session error: " ) + x.what( ) );
 
       send_okay_response = false;
+
       response = string( c_response_error_prefix ) + x.what( );
 
       socket_handler.state( ) = e_peer_state_invalid;
@@ -6517,6 +6519,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       TRACE_LOG( TRACE_MINIMAL, "peer session error: unexpected unknown exception caught" );
 
       send_okay_response = false;
+
       response = string( c_response_error_prefix ) + "unexpected unknown exception caught";
 
       socket_handler.state( ) = e_peer_state_invalid;
@@ -7680,6 +7683,7 @@ void peer_session::on_start( )
       size_t blockchain_height = 0;
 
       string hello_data, hello_hash;
+
       hello_data = get_hello_data( hello_hash );
 
       // NOTE: Create the dummy "hello" blob as it will be required.
@@ -7805,6 +7809,15 @@ void peer_session::on_start( )
                okay = false;
             else if( !is_for_support && ( block_hash != string( c_response_not_found ) ) )
             {
+               if( block_hash.find( c_response_error_prefix ) == 0 )
+               {
+                  up_socket->close( );
+
+                  block_hash.erase( 0, strlen( c_response_error_prefix ) );
+
+                  throw runtime_error( block_hash );
+               }
+
                string session_secret( get_session_secret( ) );
 
                if( !session_secret.empty( ) )
