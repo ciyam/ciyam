@@ -6,7 +6,7 @@
 .session_variable @deque commence
 .session_variable @single_string_response 1
 ;
-;~rm -f $WEBDIR/meta/all.map
+~rm -f $WEBDIR/meta/all.map
 ;
 .storage_init Meta
 @ifndef $ERROR
@@ -17,6 +17,8 @@
 ;
 @label NEXT
 .session_variable @deque front
+NEXT_KEY=$OUTPUT
+;
 @ifndef $OUTPUT
 @label END_LOOP
 @endif
@@ -25,7 +27,7 @@
 ;
 @:NEXT
 ;
-~cat $WEBDIR/meta/files/100/136100/$OUTPUT.map >> $WEBDIR/meta/all.map
+~cat $WEBDIR/meta/files/100/136100/$NEXT_KEY.map >> $WEBDIR/meta/all.map
 ;
 .session_variable @deque pop_front
 ;
@@ -45,11 +47,8 @@ pf Meta Field "" @key,Id -min all.map
 #;;; Procedures
 pf Meta Procedure "" @key,Id -min all.map
 ;
-storage_term
-;
-;~rm -f $WEBDIR/meta/all.map
+.storage_term
 ;
 @endif
 ;
 .session_variable @deque complete
-
