@@ -10189,7 +10189,7 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
                   cmd_handler.output_progress( "." );
                }
 
-               outf << "\n#Creating table " << table_name << "...\n";
+               outf << "\n#Creating table " << table_name << "\n";
 
                outf << "\nDROP TABLE IF EXISTS " << table_name << ";\n";
 
@@ -10258,15 +10258,15 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
 
                      outf << insert_sql << ");\n";
 
-                     if( ++num_rows % 1000 == 0 )
+                     if( ( ++num_rows % 1000 ) == 0 )
                      {
                         // FUTURE: These messages should be handled as a server string messages.
-                        if( num_rows % 10000 == 0 )
+                        if( ( num_rows % 10000 ) == 0 )
                            cmd_handler.output_progress( "Processed "
                             + to_string( num_rows ) + " rows for " + table_name + "..." );
 
                         outf << "\n#Inserted " << num_rows
-                         << " rows into table " << table_name << "...\n\n";
+                         << " rows into table " << table_name << "\n\n";
 
                         outf << "COMMIT;\n";
                         outf << "BEGIN;\n";
@@ -10274,9 +10274,9 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
                   }
 
                   // FUTURE: This message should be handled as a server string message.
-                  if( num_rows % 1000 != 0 )
+                  if( ( num_rows % 1000 ) != 0 )
                      outf << "\n#Inserted " << num_rows
-                      << " rows into table " << table_name << "...\n";
+                      << " rows into table " << table_name << "\n";
 
                   destroy_object_instance( handle );
                }
@@ -10287,7 +10287,7 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
 
                // FUTURE: This message should be handled as a server string message.
                if( num_rows < 1000 )
-                  outf << "\n#Creating indexes for table " << table_name << "...\n";
+                  outf << "\n#Creating indexes for table " << table_name << "\n";
 
                string index_prefix( "I_" + *mci + "_" + class_ids_and_names[ class_list[ i ] ] );
 
@@ -10303,7 +10303,7 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
                      outf << "\n#Creating index #";
                      if( j < 10 )
                         outf << '0';
-                     outf << j << " for table " << table_name << "...\n";
+                     outf << j << " for table " << table_name << "\n";
                   }
 
                   outf << "\nCREATE UNIQUE INDEX " << index_prefix << "_";
@@ -12500,7 +12500,7 @@ void module_load( const string& module_name,
 
                      // FUTURE: This message should be handled as a server string message.
                      outf << "\n#Creating table and indexes for " << module_name
-                      << "_" << class_ids_and_names[ class_list[ i ] ] << "...\n";
+                      << "_" << class_ids_and_names[ class_list[ i ] ] << "\n";
 
                      outf << "\nCREATE TABLE " << table_name << '\n';
                      outf << "(\n";
