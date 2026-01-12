@@ -3238,28 +3238,6 @@ void process_put_list_file( const string& blockchain,
 
    if( !tree_root_hash.empty( ) && !has_file( tree_root_hash ) )
       add_peer_file_hash_for_get( tree_root_hash );
-
-   string progress( get_preparing_height_prefix( ) + to_string( height ) );
-
-   string blockchain_height_other( get_raw_session_variable(
-    get_special_var_name( e_special_var_blockchain_height_other ) ) );
-
-   if( !blockchain_height_other.empty( ) )
-   {
-      size_t height_other = from_string< size_t >( blockchain_height_other );
-
-      if( height < height_other )
-      {
-         progress += '/';
-         progress += blockchain_height_other;
-      }
-   }
-
-   progress += c_ellipsis;
-
-   set_session_progress_message( progress );
-
-   system_identity_progress_message( identity, true );
 }
 
 void process_public_key_file( const string& blockchain,
