@@ -2219,6 +2219,7 @@ void Meta_Application::impl::impl_Generate( )
                 << " " << app_dir << " " << lower( module_alias ) << " >>" << generate_log_file << " 2>&1\n";
          }
       }
+
       outs << "./genfcgi " << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file << "\n";
 
       for( set< string >::iterator i = old_modules.begin( ); i != old_modules.end( ); ++i )
@@ -2384,6 +2385,9 @@ void Meta_Application::impl::impl_Generate( )
          outs << "fi\n";
       }
 
+      // NOTE: This script generates the application map file (necessary for upgrades) but is not expected to require
+      // any noticeable time so no specific status updates or progress output occurs. If any significant time elapses
+      // between "Finished DB Rebuild" and "Finished Generate" will require additional status and/or progress output.
       outssx << ">" << get_obj( ).Name( ) << ".map.new\n";
       outssx << "<output_all_mapped_meta_data.cin\n";
       outssx << ">\n";
@@ -2399,7 +2403,7 @@ void Meta_Application::impl::impl_Generate( )
 
       outssx << "system_variable @" << storage_name( ) << "_protect \"\"\n";
 
-      if( async )
+      if( async && !skip_exec )
          outssx << ".session_lock -release -at_term " << session_id( ) << "\n"; // see NOTE below...
 
       outssx << ".quit\n";
@@ -2458,6 +2462,7 @@ void Meta_Application::impl::impl_Generate( )
    catch( ... )
    {
       set_system_variable( "@" + storage_name( ) + "_protect", "" );
+
       throw;
    }
 
