@@ -8736,7 +8736,15 @@ void peer_session_starter::on_start( )
             if( g_server_shutdown || has_max_peers( ) )
                break;
 
-            start_peer_session( peerchain_externals[ i ] );
+            string next_external( peerchain_externals[ i ] );
+
+            string::size_type pos = next_external.find_first_of( "-+=" );
+
+            // NOTE: Always ignores any locked blockchains.
+            if( has_tag( c_bc_prefix + next_external.substr( 0, pos ) + c_locked_suffix ) )
+               continue;
+
+            start_peer_session( next_external );
          }
       }
 
@@ -8835,9 +8843,15 @@ void peer_session_starter::on_start( )
             {
                string next_entry( all_entries[ i ] );
 
+               string::size_type pos = next_entry.find_first_of( "-+=" );
+
+               // NOTE: Always ignores any locked blockchains.
+               if( has_tag( c_bc_prefix + next_entry.substr( 0, pos ) + c_locked_suffix ) )
+                  continue;
+
                string peer_info( next_entry );
 
-               if( peer_info.find( '=' ) == string::npos )
+               if( pos == string::npos )
                   peer_info = get_peerchain_info( next_entry, is_listener ? 0 : &is_listener );
 
                if( !peer_info.empty( ) )
