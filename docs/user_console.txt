@@ -78,18 +78,22 @@ for usage only by "ciyam_client").
 
 Prefixes are a single character (surround by single quotes here) as follows:
 
-'@' - conditional command prefix (covered in the next section)
-'#' - echo whatever characters that follow (after environment variable replacements)
-';' - ignore whatever characters that follow (i.e. this is simply used for comments)
-' ' - use this as a prefix for any normal command in order to not have the command line recorded in history
-'_' - use this as a prefix for any normal command in order prevent $ (or %) environment variable expansions
-'.' - use this as a prefix for any normal command to suppress command output (OUTPUT var is still assigned)
-'-' - use on its own to not record the command line if identical to the prior one (else is the same as ' ')
-'+' - use on its own to record repeated lines in the command line history (or as a prefix just the current)
-'<' - use this prefix followed by a file name (with optionally any arguments) for executing an input script
-'>' - use this prefix followed by a file name to redirect command output to that file (use no name to stop)
-'~' - use this prefix to execute what follows as a "system" command (such as an external script or program)
-'*' - use this prefix for executing a FISSILE command (being a functional programming interpreted language)
+'@' - Conditional command prefix (covered in the next section).
+'#' - Echo whatever characters that follow (after environment variable replacements).
+';' - Ignore whatever characters that follow (i.e. this is simply used for comments).
+' ' - Use this as a prefix for any normal command in order to not have the command line recorded in history.
+'_' - Use this as a prefix for any normal command in order prevent $ (or %) environment variable expansions.
+'.' - Use this as a prefix for any normal command to suppress command output (OUTPUT var is still assigned).
+'-' - Use on its own to not record the command line if identical to the prior one (else is the same as ' ').
+'+' - Use on its own to record repeated lines in the command line history (or as a prefix just the current).
+'<' - Use this prefix followed by a file name (with optionally any arguments) for executing an input script.
+'>' - Use this prefix followed by a file name to redirect command output to that file (use no name to stop).
+'~' - Use this prefix to execute what follows as a "system" command (such as an external script or program).
+'*' - Use this prefix for executing a FISSILE command (being a functional programming interpreted language).
+
+If the echo prefix is doubled (i.e. "##") then the echo will only occur if progress output is being permitted
+(it can be switched off for "ciyam_client" with the "-no_progress" option). The echo output is also unescaped
+so that "#\#123" would echo "#123" whether or not progress output is permitted.
 
 It should be noted that the '<' prefix can be doubled up (i.e. "<<") in order to place every script line read
 into history and the '>' prefix can be doubled up (i.e. ">>") in order to append command output to an already
@@ -113,8 +117,8 @@ normally be kept in the history in order to correctly behave in loops).
 
 The following prefixes are designed for use with interactive scripts:
 
-'^' - use this for a simple pause that waits for a key to be pressed (suffix for a custom prompt)
-'&' - use this for either single key selection of choices or a general user appended command input
+'^' - Use this for a simple pause that waits for a key to be pressed (suffix with a custom prompt).
+'&' - Use this for either single key selection of choices or a general user appended command input.
 
 For user input the following is a selection choice example (sets/clears environment variable "CONT"):
 
