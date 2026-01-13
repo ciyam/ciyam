@@ -1,0 +1,157 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+<ciyam.fissile
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "1"
+#NOTE: This script requires a core peer identity.
+@else
+ERROR=
+;
+IDENTITY=$1
+;
+OKAY=
+FOUND=
+REVERSED=*!reverse?$IDENTITY
+;
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+;
+.file_tags bc.$IDENTITY.zenith*
+@ifdef $OUTPUT
+.file_tags bc.$IDENTITY.locked*
+@ifndef $OUTPUT
+OKAY=1
+##Identity $IDENTITY appears to have already been verified.
+@endif
+@endif
+;
+@ifndef $OKAY
+;
+.system_variable %%$IDENTITY
+@ifndef $OUTPUT
+.system_variable @queue_peers $IDENTITY
+.wait 2000
+@endif
+.system_variable $$$IDENTITY
+@ifndef $OUTPUT
+.system_variable %%$IDENTITY
+@ifdef $OUTPUT
+OUTPUT=
+@else
+.wait 2000
+.system_variable $$$IDENTITY
+@endif
+@endif
+;
+@ifdef $OUTPUT
+ERROR=$OUTPUT
+#Error: $ERROR
+@else
+.system_variable %%$IDENTITY
+@ifdef $OUTPUT
+FOUND=1
+@endif
+@endif
+;
+@ifdef $FOUND
+;
+I=0
+@label NEXT
+;
+@:LOOP
+;
+.file_tags bc.$IDENTITY.locked*
+@ifdef $OUTPUT
+OKAY=1
+@label END_LOOP
+@else
+@ifeq "$I" "10"
+@label END_LOOP
+ERROR=Timed out attempting to verify (retry after checking).
+#Error: $ERROR
+@endif
+@endif
+;
+@skip
+;
+@:NEXT
+;
+I=@$I+1
+.wait 2000
+;
+!!@:LOOP
+;
+@:END_LOOP
+;
+@ifeq "$OKAY" "1"
+SIO_FIELD=peer_type
+PEER_TYPE=@file:~./ods_fsed -ro -exec="file_get peer/$IDENTITY -c" $FILES_AREA_DIR/ciyam_server | grep $SIO_FIELD | sed 's/.*<$SIO_FIELD>//'
+;
+SIO_FIELD=extra_value
+EXTRA_VALUE=@file:~./ods_fsed -ro -exec="file_get peer/$IDENTITY -c" $FILES_AREA_DIR/ciyam_server | grep $SIO_FIELD | sed 's/.*<$SIO_FIELD>//'
+;
+@ifneq "$PEER_TYPE" "3"
+.system_variable @blockchain_backup_%EXTRA_VALUE%_identity
+.file_hash bc.$OUTPUT.master
+LOCAL_BACKUP_HASH=$OUTPUT
+LOCAL_CHECKSUM_VALS=$LOCAL_BACKUP_HASH
+;
+.file_hash bc.$IDENTITY.0.blk
+REMOTE_BACKUP_HASH=$OUTPUT
+REMOTE_CHECKSUM_VALS=$REMOTE_BACKUP_HASH
+@endif
+;
+@ifneq "$PEER_TYPE" "2"
+.system_variable @blockchain_shared_%EXTRA_VALUE%_identity
+.file_hash bc.$OUTPUT.master
+LOCAL_SHARED_HASH=$OUTPUT
+LOCAL_CHECKSUM_VALS=$LOCAL_SHARED_HASH
+;
+.file_hash bc.$REVERSED.0.blk
+REMOTE_SHARED_HASH=$OUTPUT
+REMOTE_CHECKSUM_VALS=$REMOTE_SHARED_HASH
+@endif
+;
+@ifeq "$PEER_TYPE" "0"
+LOCAL_CHECKSUM_VALS=$LOCAL_BACKUP_HASH,$LOCAL_SHARED_HASH
+REMOTE_CHECKSUM_VALS=$REMOTE_BACKUP_HASH,$REMOTE_SHARED_HASH
+@endif
+;
+.crypto_checksum $LOCAL_CHECKSUM_VALS
+#Local Checksum: $OUTPUT
+.crypto_checksum $REMOTE_CHECKSUM_VALS
+#Remote Checksum: $OUTPUT
+;
+&Checksum Correct? [CORRECT:Yes=1|No=!*** NO ***]
+;
+@ifdef $CORRECT
+.file_tag -remove bc.$IDENTITY.locked
+@endif
+;
+@endif
+;
+@else
+;
+@ifndef $ERROR
+.system_variable @queue_peers
+@ifdef $OUTPUT
+ERROR=It appears that peer handling is not currently active.
+#Error: $ERROR
+@else
+ERROR=$IDENTITY does not appear to be a valid identity.
+#Error: $ERROR
+@endif
+@endif
+@endif
+;
+@endif
+;
+@endif
