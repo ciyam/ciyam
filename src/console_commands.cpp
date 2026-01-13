@@ -4075,9 +4075,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                if( str.size( ) > 1 )
                {
                   if( str[ 1 ] != c_message_command_prefix )
-                     handle_command_response( str.substr( 1 ) );
-                  else
-                     handle_progress_message( str.substr( 2 ) );
+                     handle_command_response( unescaped( str.substr( 1 ) ) );
+                  else if( !has_option_no_progress( ) )
+                     handle_progress_message( unescaped( str.substr( 2 ) ) );
                }
 
                str.erase( );
