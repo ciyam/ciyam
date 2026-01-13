@@ -18,7 +18,7 @@ else
  else
   [ -d $WEBDIR/$2 ] ||
   {
-   echo Creating $WEBDIR/$2...
+   echo Creating $WEBDIR/$2
    mkdir $WEBDIR/$2
    chmod 775 $WEBDIR/$2
   }
