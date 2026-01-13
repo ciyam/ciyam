@@ -59,7 +59,7 @@ EXT_IDENTITY=%EXT_LINES:1%
 EXT_PSEUDO_ID=%EXT_LINES:2%
 ;
 @ifeq "$PEER_TYPE" ""
-&Peer Type? [PEER_TYPE:Combined==0|Backup Only=1|Shared Only=2]
+&Peer Type? [PEER_TYPE:Combined==0|Backup Only=2|Shared Only=3]
 @endif
 ;
 @ifeq "$NUM_HELPERS" ""
