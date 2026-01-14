@@ -16,6 +16,20 @@ NUM_ARGS=@$NUM_ARGS+1
 @else
 ERROR=
 ;
+.system_variable @system_identity
+SYSTEM_IDENTITY=$OUTPUT
+@ifeq "$SYSTEM_IDENTITY" "unknown"
+SYSTEM_IDENTITY=
+@endif
+@ifndef $SYSTEM_IDENTITY
+ERROR=No system identity was found.
+@else
+.system_variable @sid_locked
+@ifdef $OUTPUT
+ERROR=System identity is currently locked.
+@endif
+@endif
+;
 EXT_NAME=$1
 EXT_DOMAIN=$2
 LOT_NUMBER=$3
@@ -23,6 +37,18 @@ EXT_QR_CODE=$4
 PEER_TYPE=$5
 NUM_HELPERS=$6
 AUTO_START=$7
+;
+@ifndef $ERROR
+@ifdef $CIYAM_USE_DEFAULT
+@ifndef $EXT_QR_CODE
+ERROR=For automated usage need to also provide the Lot Number and external QR Code.
+@endif
+@endif
+@endif
+;
+@ifdef $ERROR
+#Error: $ERROR
+@else
 ;
 EXT_LINES=@repstr:-/\n:$EXT_DOMAIN
 ;
@@ -34,7 +60,9 @@ PORT_NUMBER=12021
 EXT_DOMAIN=%EXT_LINES:1%
 @endif
 ;
-@ifeq "$LOT_NUMBER" ""
+@ifneq "$LOT_NUMBER" ""
+#Lot Number: $LOT_NUMBER
+@else
 &Lot Number? [LOT_NUMBER:Primary=1|Secondary=2|Tertiary=3]
 @endif
 ;
@@ -57,6 +85,27 @@ EXT_LINES=@repstr:\:/\n:$EXT_QR_CODE
 ;
 EXT_IDENTITY=%EXT_LINES:1%
 EXT_PSEUDO_ID=%EXT_LINES:2%
+;
+@ifndef $EXT_PSEUDO_ID
+ERROR=Invalid external QR Code.
+@else
+;
+.regex "^[a-f0-9]{9}$$" $EXT_IDENTITY
+@ifneq "$OUTPUT" "$EXT_IDENTITY"
+ERROR=Invalid external QR Code.
+@else
+;
+.regex "^[a-f0-9]{9}$$" $EXT_PSEUDO_ID
+@ifneq "$OUTPUT" "$EXT_PSEUDO_ID"
+ERROR=Invalid external QR Code.
+@endif
+;
+@endif
+@endif
+;
+@ifdef $ERROR
+#Error: $ERROR
+@else
 ;
 @ifeq "$PEER_TYPE" ""
 &Peer Type? [PEER_TYPE:Combined==0|Backup Only=2|Shared Only=3]
@@ -99,7 +148,9 @@ ENCRYPTED_EXT_PSEUDO_ID=$OUTPUT
 .storage_term
 @endif
 @endif
+@endif
 ;
 @endif
 ;
+@endif
 @endif
