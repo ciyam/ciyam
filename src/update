@@ -11,12 +11,12 @@ else
   cmp -s $1 $2
   if [ $? -eq 1 ]; then
    mv $2 $1
-   echo Updated $1
+   echo "Updated $1"
   else
    rm $2
   fi
  else
   mv $2 $1
-  echo Created $1
+  echo "Created $1"
  fi
 fi

@@ -63,22 +63,22 @@ CPP_OPTS = $(CIYAM_CPP_OPTS) -fPIC -fno-gnu-unique -ftemplate-depth-50 -felide-c
 	@./generate_commands $<
 
 %.compile:
-#	@echo echo [$@] $(CPP) $(target_opts_$*) -c \$$3 $(CPP_OPTS) -o \$$1 \$$2>compile.sh
-	@echo echo \$$2>compile.sh
-	@echo set -e>>compile.sh
-	@echo "if [ \"\$$2\" = \"ciyam_base.cpp\" ] || [ \"\$$2\" = \"fcgi_utils.cpp\" ] && [ -f sid.enc.chk ]; then encrypt=1; ./crypt -h -t sid.enc; fi">>compile.sh
-	@echo $(CPP) $(target_opts_$*) -c \$$3 $(CPP_OPTS) -o \$$1 \$$2>>compile.sh
-	@echo "if [ \"\$$2\" = \"ciyam_base.cpp\" ] || [ \"\$$2\" = \"fcgi_utils.cpp\" ] && [ \"\$$encrypt\" = \"1\" ]; then ./crypt -c -h -t sid.enc; fi">>compile.sh;chmod u+x compile.sh
+#	@echo "echo [$@] $(CPP) $(target_opts_$*) -c \$$3 $(CPP_OPTS) -o \$$1 \$$2" >compile.sh
+	@echo "echo \$$2" >compile.sh
+	@echo "set -e" >>compile.sh
+	@echo "if [ \"\$$2\" = \"ciyam_base.cpp\" ] || [ \"\$$2\" = \"fcgi_utils.cpp\" ] && [ -f sid.enc.chk ]; then encrypt=1; ./crypt -h -t sid.enc; fi" >>compile.sh
+	@echo "$(CPP) $(target_opts_$*) -c \$$3 $(CPP_OPTS) -o \$$1 \$$2" >>compile.sh
+	@echo "if [ \"\$$2\" = \"ciyam_base.cpp\" ] || [ \"\$$2\" = \"fcgi_utils.cpp\" ] && [ \"\$$encrypt\" = \"1\" ]; then ./crypt -c -h -t sid.enc; fi" >>compile.sh;chmod u+x compile.sh
 
 # Notes: For file specific options use "file_opts_XXX.o = <opts>" (where XXX.cpp is the source file name)
 # and for target specific options use "target_opts_XXX.so = <opts>" (where XXX.so is the name of the target).
 
-BIND_NORMAL = @echo Binding $@;$(BIND) -c -r $@
+BIND_NORMAL = @echo "Binding $@";$(BIND) -c -r $@
 
-LINK_NORMAL = @echo Linking $@;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -export-dynamic -o $@
+LINK_NORMAL = @echo "Linking $@";$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -export-dynamic -o $@
 LINK_NORMAL_DYN_USER = @echo Linking $@;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -o $@
 
-LINK_DYNAMIC = @echo Linking $@;$(LINK) -shared -lc -Wl,--no-as-needed,-rpath,. -o $@
+LINK_DYNAMIC = @echo "Linking $@";$(LINK) -shared -lc -Wl,--no-as-needed,-rpath,. -o $@
 
 THREAD_LIBS = -lpthread
 READLINE_LIBS = -lreadline
@@ -154,7 +154,7 @@ all:\
 `]`}
 
 dtm:
-	@echo $$(date) > make.dtm
+	@echo "$$(date)" > make.dtm
 
 list:
 	@echo "`{`[`$libs`,lib_\$.a`+,`]`},`{`[`$dyn_libs`,\$.so`+,`]`},`{`[`$executables`,\$`+,`]`}" | tr ',' '\n' > make.lst

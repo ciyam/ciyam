@@ -10,11 +10,11 @@ else
  if [ -f $1 ]; then
   cmp -s $1 $2
   if [ $? -eq 1 ]; then
-   echo Created $2
+   echo "Created $2"
   else
    rm $2
   fi
  else
-  echo Created $2
+  echo "Created $2"
  fi
 fi

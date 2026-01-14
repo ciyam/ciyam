@@ -21,7 +21,7 @@ if [ $# -lt 1 ]; then
  echo "Usage: script [[-do_not_log\|-log_on_error]] [script and args file] [[script name]]"
 else
  if [ $# -gt 1 ]; then
-  echo $(date) [$2] >>$1.log
+  echo "$(date) [$2]" >>$1.log
  fi
 
  log=1
