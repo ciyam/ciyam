@@ -21,6 +21,24 @@ OKAY=
 FOUND=
 REVERSED=*!reverse?$IDENTITY
 ;
+.system_variable @system_identity
+SYSTEM_IDENTITY=$OUTPUT
+@ifeq "$SYSTEM_IDENTITY" "unknown"
+SYSTEM_IDENTITY=
+@endif
+@ifndef $SYSTEM_IDENTITY
+ERROR=No system identity was found.
+@else
+.system_variable @sid_locked
+@ifdef $OUTPUT
+ERROR=System identity is currently locked.
+@endif
+@endif
+;
+@ifdef $ERROR
+#Error: $ERROR
+@else
+;
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
@@ -134,6 +152,10 @@ REMOTE_CHECKSUM_VALS=$REMOTE_BACKUP_HASH,$REMOTE_SHARED_HASH
 ;
 @ifdef $CORRECT
 .file_tag -remove bc.$IDENTITY.locked
+&Reconnect To Peer Now? [CONNECT:Yes==1|No=]
+@ifdef $CONNECT
+.system_variable @queue_peers $IDENTITY
+@endif
 @endif
 ;
 @endif
@@ -154,4 +176,5 @@ ERROR=$IDENTITY does not appear to be a valid identity.
 ;
 @endif
 ;
+@endif
 @endif
