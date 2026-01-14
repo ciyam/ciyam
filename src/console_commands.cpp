@@ -71,6 +71,7 @@ const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
 
 const char* const c_env_var_ciyam_fissile = "CIYAM_FISSILE";
+const char* const c_env_var_ciyam_use_default = "CIYAM_USE_DEFAULT";
 
 const char* const c_default_value_prompt = "VALUE=";
 
@@ -576,10 +577,22 @@ string get_input_from_choices( const string& input )
          string value, output;
 
          bool found = false;
+         bool use_default = false;
+
+         // NOTE: If CIYAM_USE_DEFAULT exists and a default choice
+         // was found then just automatically chooses that option.
+         if( had_default
+          && has_environment_variable( c_env_var_ciyam_use_default ) )
+            use_default = true;
 
          while( !found )
          {
-            char ch = get_char( );
+            char ch = '\0';
+
+            if( use_default )
+               ch = '\n';
+            else
+               ch = get_char( );
 
             // NOTE: If no case sensitive
             // match was found then check

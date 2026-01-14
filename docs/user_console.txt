@@ -120,13 +120,17 @@ The following prefixes are designed for use with interactive scripts:
 '^' - Use this for a simple pause that waits for a key to be pressed (suffix with a custom prompt).
 '&' - Use this for either single key selection of choices or a general user appended command input.
 
-For user input the following is a selection choice example (sets/clears environment variable "CONT"):
+For user input the following is a selection choice example (sets/clears the environment variable "CONT"):
 
 > &Continue? [CONT:Yes==1|No=!NO] (hit 'y', 'Y' or Enter else hit 'n' or 'N')
 
 whilst this is a simpler user appended command input example to set the TEST variable to any arbitrary text):
 
 > &Test is (enter text value): :TEST=
+
+It should be noted that if the environment variable CIYAM_USE_DEFAULT is present then selection choices which
+include a default option (such as "Yes==1" in the above Continue example) will have the default option chosen
+automatically (so can be used to help automate certain application protocol scripts).
 
 Console Command History
 -----------------------
