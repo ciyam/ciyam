@@ -1,0 +1,18 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+.system_variable @system_identity
+SYSTEM_IDENTITY=$OUTPUT
+@ifeq "$SYSTEM_IDENTITY" "unknown"
+SYSTEM_IDENTITY=
+@endif
+@ifndef $SYSTEM_IDENTITY
+ERROR=No system identity was found.
+@else
+.system_variable @sid_locked
+@ifdef $OUTPUT
+ERROR=System identity is currently locked.
+@endif
+@endif
