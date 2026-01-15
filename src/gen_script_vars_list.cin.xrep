@@ -1,4 +1,6 @@
 CLASS_NAME=`{`$class`}
+`{`!`@eq`(`$procedure`,`'`'`)PROCEDURE=`{`$procedure`}`}
+`{`!`@eq`(`$oprocedure`,`'`'`)OPROCEDURE=`{`$oprocedure`}`}
 `{`!`@eq`(`$tfield`,`'`'`)TEST_FIELD=`{`$tfield`}\nTEST_VALUE=`{`$tvalue`}`}
 `{`(`?`$field_list`)`[`$field_list`,`{`$tmp`=`'\$`'`}`{`[`$tmp`%,`,`{`$fld`=`'\\0`'`}`{`$parent`=`'\\1`'`}`{`$var`=`'\\2`'`}\
 `{`$var`=`@upper`(`$var`/@`/`)`}`{`$var`}=`{`!`@eq`(`$parent`,`'`'`)`{`$parent`}.`}`{`$fld`}`]`}`+\n`]`}
