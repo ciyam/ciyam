@@ -21,17 +21,28 @@ OKAY=
 FOUND=
 REVERSED=*!reverse?$IDENTITY
 ;
-.system_variable @system_identity
-SYSTEM_IDENTITY=$OUTPUT
-@ifeq "$SYSTEM_IDENTITY" "unknown"
-SYSTEM_IDENTITY=
-@endif
-@ifndef $SYSTEM_IDENTITY
-ERROR=No system identity was found.
+<check_system_identity.cin
+;
+@ifdef $ERROR
+#Error: $ERROR
 @else
-.system_variable @sid_locked
-@ifdef $OUTPUT
-ERROR=System identity is currently locked.
+PEER_IDENTITY=$IDENTITY
+;
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+;
+PEERS=@file:~./ods_fsed -quiet -ro -exec="list -b peer" $FILES_AREA_DIR/ciyam_server
+;
+CHECK_PEERS=@repstr:$IDENTITY/:$PEERS
+;
+@ifeq "$PEERS" "$CHECK_PEERS"
+CHECK_PEERS=@repstr:$REVERSED/:$PEERS
+;
+@ifneq "$PEERS" "$CHECK_PEERS"
+PEER_IDENTITY=$REVERSED
+@else
+ERROR=Unknown or invalid peer identity $IDENTITY.
+@endif
 @endif
 @endif
 ;
@@ -39,12 +50,9 @@ ERROR=System identity is currently locked.
 #Error: $ERROR
 @else
 ;
-.system_variable @files_area_dir
-FILES_AREA_DIR=$OUTPUT
-;
-.file_tags bc.$IDENTITY.zenith*
+.file_tags bc.$PEER_IDENTITY.zenith*
 @ifdef $OUTPUT
-.file_tags bc.$IDENTITY.locked*
+.file_tags bc.$PEER_IDENTITY.locked*
 @ifndef $OUTPUT
 OKAY=1
 ##Identity $IDENTITY appears to have already been verified.
@@ -53,19 +61,19 @@ OKAY=1
 ;
 @ifndef $OKAY
 ;
-.system_variable %%$IDENTITY
+.system_variable %%$PEER_IDENTITY
 @ifndef $OUTPUT
-.system_variable @queue_peers $IDENTITY
+.system_variable @queue_peers $PEER_IDENTITY
 .wait 2000
 @endif
-.system_variable $$$IDENTITY
+.system_variable #$PEER_IDENTITY
 @ifndef $OUTPUT
-.system_variable %%$IDENTITY
+.system_variable %%$PEER_IDENTITY
 @ifdef $OUTPUT
 OUTPUT=
 @else
 .wait 2000
-.system_variable $$$IDENTITY
+.system_variable #$PEER_IDENTITY
 @endif
 @endif
 ;
@@ -73,7 +81,7 @@ OUTPUT=
 ERROR=$OUTPUT
 #Error: $ERROR
 @else
-.system_variable %%$IDENTITY
+.system_variable %%$PEER_IDENTITY
 @ifdef $OUTPUT
 FOUND=1
 @endif
@@ -86,14 +94,14 @@ I=0
 ;
 @:LOOP
 ;
-.file_tags bc.$IDENTITY.locked*
+.file_tags bc.$PEER_IDENTITY.locked*
 @ifdef $OUTPUT
 OKAY=1
 @label END_LOOP
 @else
 @ifeq "$I" "10"
 @label END_LOOP
-ERROR=Timed out attempting to verify (retry after checking).
+ERROR=Timed out attempting to verify (check before retrying).
 #Error: $ERROR
 @endif
 @endif
@@ -111,10 +119,10 @@ I=@$I+1
 ;
 @ifeq "$OKAY" "1"
 SIO_FIELD=peer_type
-PEER_TYPE=@file:~./ods_fsed -ro -exec="file_get peer/$IDENTITY -c" $FILES_AREA_DIR/ciyam_server | grep $SIO_FIELD | sed 's/.*<$SIO_FIELD>//'
+PEER_TYPE=@file:~./ods_fsed -ro -exec="file_get peer/$PEER_IDENTITY -c" $FILES_AREA_DIR/ciyam_server | grep $SIO_FIELD | sed 's/.*<$SIO_FIELD>//'
 ;
 SIO_FIELD=extra_value
-EXTRA_VALUE=@file:~./ods_fsed -ro -exec="file_get peer/$IDENTITY -c" $FILES_AREA_DIR/ciyam_server | grep $SIO_FIELD | sed 's/.*<$SIO_FIELD>//'
+EXTRA_VALUE=@file:~./ods_fsed -ro -exec="file_get peer/$PEER_IDENTITY -c" $FILES_AREA_DIR/ciyam_server | grep $SIO_FIELD | sed 's/.*<$SIO_FIELD>//'
 ;
 @ifneq "$PEER_TYPE" "3"
 .system_variable @blockchain_backup_%EXTRA_VALUE%_identity
@@ -133,6 +141,12 @@ REMOTE_CHECKSUM_VALS=$REMOTE_BACKUP_HASH
 LOCAL_SHARED_HASH=$OUTPUT
 LOCAL_CHECKSUM_VALS=$LOCAL_SHARED_HASH
 ;
+; NOTE: Allows for a small lag
+; if using paired blockchains.
+.file_tags bc.$REVERSED.0.blk*
+@ifndef $OUTPUT
+.wait 2000
+@endif
 .file_hash bc.$REVERSED.0.blk
 REMOTE_SHARED_HASH=$OUTPUT
 REMOTE_CHECKSUM_VALS=$REMOTE_SHARED_HASH
@@ -151,11 +165,28 @@ REMOTE_CHECKSUM_VALS=$REMOTE_BACKUP_HASH,$REMOTE_SHARED_HASH
 &Checksum Correct? [CORRECT:Yes=1|No=!*** NO ***]
 ;
 @ifdef $CORRECT
-.file_tag -remove bc.$IDENTITY.locked
+;
+.system_variable @storage
+STORAGE=$OUTPUT
+@ifeq "$STORAGE" "Meta"
+STORAGE=
+@endif
+;
+@ifeq "$STORAGE" ""
+.file_tag -remove bc.$PEER_IDENTITY.locked
 &Reconnect To Peer Now? [CONNECT:Yes==1|No=]
 @ifdef $CONNECT
-.system_variable @queue_peers $IDENTITY
+.system_variable @queue_peers $PEER_IDENTITY
 @endif
+;
+@else
+;
+@retain *
+<$STORAGE.create_core_peer.vars.lst
+;
+.storage_init $STORAGE
+.pe admin @now $STORAGE $CLASS_NAME $IDENTITY $PROCEDURE
+.storage_term
 @endif
 ;
 @endif
@@ -170,6 +201,7 @@ ERROR=It appears that peer handling is not currently active.
 @else
 ERROR=$IDENTITY does not appear to be a valid identity.
 #Error: $ERROR
+@endif
 @endif
 @endif
 @endif

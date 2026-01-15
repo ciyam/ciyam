@@ -3,6 +3,8 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+<ciyam.fissile
+;
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -16,20 +18,6 @@ NUM_ARGS=@$NUM_ARGS+1
 @else
 ERROR=
 ;
-.system_variable @system_identity
-SYSTEM_IDENTITY=$OUTPUT
-@ifeq "$SYSTEM_IDENTITY" "unknown"
-SYSTEM_IDENTITY=
-@endif
-@ifndef $SYSTEM_IDENTITY
-ERROR=No system identity was found.
-@else
-.system_variable @sid_locked
-@ifdef $OUTPUT
-ERROR=System identity is currently locked.
-@endif
-@endif
-;
 EXT_NAME=$1
 EXT_DOMAIN=$2
 LOT_NUMBER=$3
@@ -37,6 +25,8 @@ EXT_QR_CODE=$4
 PEER_TYPE=$5
 NUM_HELPERS=$6
 AUTO_START=$7
+;
+<check_system_identity.cin
 ;
 @ifndef $ERROR
 @ifdef $CIYAM_USE_DEFAULT
@@ -129,7 +119,11 @@ STORAGE=
 @endif
 ;
 @ifeq "$STORAGE" ""
-run_script create_peerchain_entry "@identity=$EXT_IDENTITY\
+ENTRY_IDENTITY=$EXT_IDENTITY
+@ifeq "$PEER_TYPE" "3"
+ENTRY_IDENTITY=*!reverse?$EXT_IDENTITY
+@endif
+run_script create_peerchain_entry "@identity=$ENTRY_IDENTITY\
 ,@auto_start=$AUTO_START,@peer_type=$PEER_TYPE,@description=$EXT_NAME,@host_name=$EXT_DOMAIN\
 ,@host_port=$PORT_NUMBER,@num_helpers=$NUM_HELPERS,@extra_value=$LOT_NUMBER,@shared_secret=$SHARED_SECRET"
 @else
