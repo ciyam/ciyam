@@ -88,6 +88,7 @@ FOUND=1
 ;
 @ifeq "$I" "10"
 @label END_LOOP
+@endif
 ;
 @skip
 ;
@@ -116,9 +117,16 @@ SHARED_SECRET=@file:~./ods_fsed -ro -exec="file_get peer/$PEER_IDENTITY -c" $FIL
 ;
 .system_variable @exporting_for_identity $IDENTITY
 ;
+~rm -f $IDENTITY.txt
 .run_script shared_export
+;
 .wait 2000
-~cat $IDENTITY.txt
+EXPORT_OUTPUT=@files::$IDENTITY.txt
+;
+@ifdef $EXPORT_OUTPUT
+tail -f $IDENTITY.txt | sed '/^Finished /{n;q}'
+@endif
+;
 @endif
 @endif
 ;
