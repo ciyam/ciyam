@@ -7681,16 +7681,28 @@ string get_random_same_port_peer_ip_addr( const string& empty_value )
    return retval;
 }
 
-void list_all_sessions( ostream& os, bool inc_dtms, bool include_progress )
+void list_all_sessions( ostream& os, bool inc_dtms,
+ bool include_progress, const string* p_blockchain = 0 )
 {
    guard g( g_session_mutex );
 
    map< size_t, string > sessions;
 
+   string blockchain;
+
+   if( p_blockchain )
+      blockchain = *p_blockchain;
+
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
       if( g_sessions[ i ] )
       {
+         if( p_blockchain )
+         {
+            if( blockchain != g_sessions[ i ]->blockchain )
+               continue;
+         }
+
          stringstream ss;
 
          ss << g_sessions[ i ]->id;
@@ -7787,11 +7799,12 @@ void list_all_sessions( ostream& os, bool inc_dtms, bool include_progress )
       os << i->second << '\n';
 }
 
-void list_sessions( ostream& os, bool inc_dtms, bool include_progress )
+void list_sessions( ostream& os, bool inc_dtms,
+ bool include_progress, const string* p_blockchain )
 {
    guard g( g_session_mutex, "list_sessions" );
 
-   list_all_sessions( os, inc_dtms, include_progress );
+   list_all_sessions( os, inc_dtms, include_progress, p_blockchain );
 }
 
 command_handler& get_session_command_handler( )

@@ -442,7 +442,8 @@ bool has_session_with_ip_addr( const std::string& ip_addr, const std::string& bl
 
 std::string get_random_same_port_peer_ip_addr( const std::string& empty_value );
 
-void list_sessions( std::ostream& os, bool inc_dtms = true, bool include_progress = true );
+void list_sessions( std::ostream& os, bool inc_dtms = true,
+ bool include_progress = true, const std::string* p_blockchain = 0 );
 
 command_handler& get_session_command_handler( );
 
