@@ -2565,6 +2565,7 @@ console_command_handler::console_command_handler( )
  history_offset( 0 ),
  max_history_lines( c_max_history ),
  description_offset( 0 ),
+ progress_output_count( 0 ),
  num_custom_startup_options( 0 ),
  ignore_prior( false ),
  is_reading_input( false ),
@@ -2615,6 +2616,11 @@ bool console_command_handler::has_option_quiet( ) const
    return has_option( c_cmd_quiet );
 }
 
+bool console_command_handler::has_option_no_pause( ) const
+{
+   return has_option( c_cmd_no_pause );
+}
+
 bool console_command_handler::has_option_no_prompt( ) const
 {
    return has_option( c_cmd_no_prompt );
@@ -2628,6 +2634,18 @@ bool console_command_handler::has_option_no_progress( ) const
 bool console_command_handler::is_redirected_output( ) const
 {
    return ( p_std_out == &p_impl->output_file );
+}
+
+void console_command_handler::clear_progress_output( )
+{
+   if( progress_output_count )
+   {
+      *p_std_out << '\r' << string( progress_output_count, ' ' ) << '\r';
+
+      p_std_out->flush( );
+
+      progress_output_count = 0;
+   }
 }
 
 void console_command_handler::perform_after_command_changes( )
@@ -3672,6 +3690,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             }
             else if( str[ 0 ] == c_system_command_prefix )
             {
+               clear_progress_output( );
+
                system_command( str.c_str( ) + 1 );
 
                str.erase( );
@@ -4162,12 +4182,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             }
             else if( str[ 0 ] == c_pause_message_command_prefix )
             {
-               // NOTE: Will ignore the "no_pause" option if CIYAM_PAUSE_SECONDS
-               // has been provided (as use of the "no_pause" option is intended
-               // just to prevent a script from being unable to continue without
-               // user input).
-               if( !has_option( c_cmd_no_pause )
-                || has_environment_variable( c_env_var_ciyam_pause_seconds ) )
+               if( !has_option_no_pause( ) )
                {
                   string msg( c_message_press_any_key );
 
@@ -4195,6 +4210,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                   str.erase( );
 
+                  // NOTE: If no explicit (or zero value) seconds was found then
+                  // will use the CIYAM_PAUSE_SECONDS value (if present) instead.
                   if( !num_seconds )
                      num_seconds = from_string< size_t >( get_environment_variable( c_env_var_ciyam_pause_seconds ) );
 
@@ -4357,7 +4374,11 @@ void console_command_handler::handle_invalid_command( const command_parser&, con
 void console_command_handler::handle_command_response( const string& response, bool is_special )
 {
    if( !is_special || has_option( c_cmd_no_stderr ) )
+   {
+      clear_progress_output( );
+
       *p_std_out << response << endl;
+   }
    else
       *p_std_err << response << endl;
 }
@@ -4370,12 +4391,22 @@ void console_command_handler::handle_progress_message( const string& message )
       put_line( prefix + message, message.length( ) != 1 );
    else if( message.length( ) == 1 )
    {
+      *p_std_out << message;
+
+      p_std_out->flush( );
+
+      ++progress_output_count;
+   }
+   else
+   {
+      clear_progress_output( );
+
       *p_std_out << prefix << message;
 
       p_std_out->flush( );
+
+      progress_output_count = prefix.length( ) + message.length( );
    }
-   else
-      *p_std_out << prefix << message << endl;
 
    set_environment_variable( c_env_var_progress_prefix, "" );
 }

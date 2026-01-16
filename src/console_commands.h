@@ -35,6 +35,7 @@ class console_command_handler : public command_handler
    bool has_option_echo( ) const;
    bool has_option_quiet( ) const;
 
+   bool has_option_no_pause( ) const;
    bool has_option_no_prompt( ) const;
    bool has_option_no_progress( ) const;
 
@@ -50,6 +51,8 @@ class console_command_handler : public command_handler
    const std::string& get_custom_startup_options_usage( ) const { return custom_startup_options_usage; }
 
    private:
+   void clear_progress_output( );
+
    void perform_after_command_changes( );
 
    std::string format_usage_output(
@@ -68,6 +71,8 @@ class console_command_handler : public command_handler
    std::string script_file;
 
    size_t description_offset;
+
+   size_t progress_output_count;
 
    bool ignore_prior;
    bool is_reading_input;
