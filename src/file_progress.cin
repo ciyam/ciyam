@@ -30,15 +30,20 @@ CONTENT_FILE=@files::$FILE_NAME
 ;
 CHECK_STRING=@file:~grep "$SEARCH_STRING" "$FILE_NAME"
 ;
+@ifdef $CIYAM_NO_PAUSE
+##.
+.wait 2000
+@else
 ~clear
 ~cat $FILE_NAME
-; NOTE: In case the last line was not LF terminated.
+; NOTE: Forces a flush (in case last line has no LF).
 ~echo ""
 ;
 @ifndef $CHECK_STRING
 ^Press any key to quit...
 @ifdef $CIYAM_KEY_WAS_PRESSED
 CHECK_STRING=1
+@endif
 @endif
 @endif
 ;
@@ -53,6 +58,11 @@ CHECK_STRING=1
 !!@:LOOP
 ;
 @:END_LOOP
+;
+@ifdef $CIYAM_NO_PAUSE
+#($FILE_NAME)
+~cat $FILE_NAME
+@endif
 ;
 @endif
 ;
