@@ -120,6 +120,17 @@ The following prefixes are designed for use with interactive scripts:
 '^' - Use this for a simple pause that waits for a key to be pressed (suffix with a custom prompt).
 '&' - Use this for either single key selection of choices or a general user appended command input.
 
+For '^' if the custom prompt begins with "X=" (such as "^10=") then pausing will automatically complete after
+X seconds when no key is pressed.
+
+If no explicit seconds are set then a CIYAM_PAUSE_SECONDS value (if present) will be used (although a seconds
+"countdown" will only be displayed for explicit second values).
+
+To see the seconds countdown but use the CIYAM_PAUSE_SECONDS value use "^0=" as the custom prompt prefix.
+
+If a pause prompt had been displayed and a key had been pressed (rather than a seconds "countdown" finishing)
+this can be detected with the CIYAM_KEY_WAS_PRESSED environment variable (which can be useful for scripts).
+
 For user input the following is a selection choice example (sets/clears the environment variable "CONT"):
 
 > &Continue? [CONT:Yes==1|No=!NO] (hit 'y', 'Y' or Enter else hit 'n' or 'N')
@@ -131,6 +142,9 @@ whilst this is a simpler user appended command input example to set the TEST var
 It should be noted that if the environment variable CIYAM_USE_DEFAULT is present then selection choices which
 include a default option (such as "Yes==1" in the above Continue example) will have the default option chosen
 automatically (so can be used to help automate certain application protocol scripts).
+
+If not using CIYAM_USE_DEFAULT then CIYAM_DEFAULT_SECONDS can be provided to select the default choice option
+after a specific number of seconds (for this case a seconds "countdown" will appear after the choice prompt).
 
 Console Command History
 -----------------------
