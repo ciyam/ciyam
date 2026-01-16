@@ -72,6 +72,9 @@ const char* const c_env_var_output = "OUTPUT";
 
 const char* const c_env_var_ciyam_fissile = "CIYAM_FISSILE";
 const char* const c_env_var_ciyam_use_default = "CIYAM_USE_DEFAULT";
+const char* const c_env_var_ciyam_pause_seconds = "CIYAM_PAUSE_SECONDS";
+const char* const c_env_var_ciyam_default_seconds = "CIYAM_DEFAULT_SECONDS";
+const char* const c_env_var_ciyam_key_was_pressed = "CIYAM_KEY_WAS_PRESSED";
 
 const char* const c_default_value_prompt = "VALUE=";
 
@@ -149,6 +152,7 @@ command_definition startup_command_definitions[ ] =
 
 const char* const c_command_prompt = "\n> ";
 const char* const c_message_press_any_key = "(press any key to continue)...";
+const char* const c_message_press_any_key_or_wait = "Press any key to continue or wait for";
 
 void system_command( const char* p_cmd )
 {
@@ -501,7 +505,7 @@ string get_input_from_choices( const string& input )
 
             next_choice.value = next.substr( epos + 1 );
 
-            if( ( next_choice.value.size( ) > 1 )
+            if( ( next_choice.value.size( ) >= 1 )
              && ( next_choice.value[ 0 ] == '=' ) )
             {
                if( !had_default )
@@ -577,13 +581,27 @@ string get_input_from_choices( const string& input )
          string value, output;
 
          bool found = false;
+
          bool use_default = false;
 
          // NOTE: If CIYAM_USE_DEFAULT exists and a default choice
-         // was found then just automatically chooses that option.
+         // does exist then will automatically choose that option.
          if( had_default
           && has_environment_variable( c_env_var_ciyam_use_default ) )
             use_default = true;
+
+         size_t default_seconds = 0;
+
+         bool use_default_secs = false;
+
+         if( had_default && !use_default )
+         {
+            string auto_default_seconds( get_environment_variable( c_env_var_ciyam_default_seconds ) );
+
+            default_seconds = from_string< size_t >( auto_default_seconds );
+
+            use_default_secs = ( default_seconds > 0 );
+         }
 
          while( !found )
          {
@@ -592,12 +610,45 @@ string get_input_from_choices( const string& input )
             if( use_default )
                ch = '\n';
             else
-               ch = get_char( );
+            {
+               // NOTE: If CIYAM_DEFAULT_SECONDS exists then will
+               // automatically default if no choice was provided
+               // (invalid choices will simply reduce the counter
+               // by one second - if wanting to simply ignore any
+               // invalid choices "has_any_key" would require all
+               // valid choice characters to be passed to it).
+               if( default_seconds )
+               {
+                  string secs( to_string( default_seconds ) + 's' );
+
+                  cout << secs;
+                  cout.flush( );
+
+                  --default_seconds;
+
+                  if( !has_any_key( true, 1000, &ch ) )
+                  {
+                     if( !default_seconds )
+                        use_default = true;
+                  }
+
+                  string secs_bs( secs.length( ), '\b' );
+
+                  cout << secs_bs << string( secs.length( ), ' ' ) << secs_bs;
+                  cout.flush( );
+
+                  if( ch == '\0' )
+                     continue;
+               }
+
+               if( ch == '\0' )
+                  ch = get_char( );
+            }
 
             // NOTE: If no case sensitive
             // match was found then check
             // again using reversed case.
-            for( size_t p = 0; p < 2; p++ )
+            for( size_t p = 0; p < 3; p++ )
             {
                if( p == 1 )
                {
@@ -605,6 +656,17 @@ string get_input_from_choices( const string& input )
                      ch = tolower( ch );
                   else
                      ch = toupper( ch );
+               }
+
+               // NOTE: If an invaild choice was made but
+               // the default should be used according to
+               // CIYAM_DEFAULT_SECONDS then do that now.
+               if( p == 2 )
+               {
+                  if( !use_default_secs || default_seconds )
+                     break;
+
+                  ch = '\n';
                }
 
                for( size_t i = 0; i < choices.size( ); i++ )
@@ -619,6 +681,9 @@ string get_input_from_choices( const string& input )
                      break;
                   }
                }
+
+               if( found )
+                  break;
             }
          }
 
@@ -4097,15 +4162,82 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             }
             else if( str[ 0 ] == c_pause_message_command_prefix )
             {
-               if( !has_option( c_cmd_no_pause ) )
+               // NOTE: Will ignore the "no_pause" option if CIYAM_PAUSE_SECONDS
+               // has been provided (as use of the "no_pause" option is intended
+               // just to prevent a script from being unable to continue without
+               // user input).
+               if( !has_option( c_cmd_no_pause )
+                || has_environment_variable( c_env_var_ciyam_pause_seconds ) )
                {
                   string msg( c_message_press_any_key );
 
+                  size_t num_seconds = 0;
+
+                  bool num_was_explicit = false;
+
+                  // NOTE: Use "^X=Message" to wait for either a
+                  // key press or for X seconds to have elapsed.
                   if( str.length( ) > 1 )
+                  {
                      msg = str.substr( 1 );
 
+                     string::size_type pos = msg.find_first_not_of( "0123456789" );
+
+                     if( ( pos != string::npos ) && ( msg[ pos ] == '=' ) )
+                     {
+                        num_seconds = from_string< size_t >( msg.substr( 0, pos ) );
+
+                        msg.erase( 0, pos + 1 );
+
+                        num_was_explicit = true;
+                     }
+                  }
+
                   str.erase( );
-                  get_char( msg.c_str( ) );
+
+                  if( !num_seconds )
+                     num_seconds = from_string< size_t >( get_environment_variable( c_env_var_ciyam_pause_seconds ) );
+
+                  if( !num_seconds )
+                     get_char( msg.c_str( ) );
+                  else
+                  {
+                     if( msg.empty( ) )
+                        msg = c_message_press_any_key_or_wait;
+
+                     cout << msg;
+
+                     if( !num_was_explicit )
+                        cout.flush( );
+
+                     set_environment_variable( c_env_var_ciyam_key_was_pressed, "" );
+
+                     while( num_seconds )
+                     {
+                        string extra( ' ' + to_string( num_seconds ) + 's' );
+
+                        string extra_bs( extra.length( ), '\b' );
+
+                        if( num_was_explicit )
+                        {
+                           cout << extra;
+                           cout.flush( );
+                        }
+
+                        --num_seconds;
+
+                        if( has_any_key( true, 1000 ) )
+                        {
+                           num_seconds = 0;
+
+                           // NOTE: Set CIYAM_KEY_WAS_PRESSED for usage in application protocol scripts.
+                           set_environment_variable( c_env_var_ciyam_key_was_pressed, to_string( true ) );
+                        }
+
+                        if( num_was_explicit )
+                           cout << extra_bs << string( extra.length( ), ' ' ) << extra_bs;
+                     }
+                  }
 
                   cout << '\r' << string( msg.length( )
                    + prompt_prefix.length( ) + strlen( c_command_prompt ), ' ' ) << '\r';
