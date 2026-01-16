@@ -107,7 +107,9 @@ const char* const c_env_var_local_udp = "LOCAL_UDP";
 const char* const c_env_var_rpc_password = "RPC_PASSWORD";
 const char* const c_env_var_ciyam_seconds = "CIYAM_SECONDS";
 const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
+const char* const c_env_var_ciyam_no_pause = "CIYAM_NO_PAUSE";
 const char* const c_env_var_progress_prefix = "PROGRESS_PREFIX";
+const char* const c_env_var_ciyam_no_progress = "CIYAM_NO_PROGRESS";
 const char* const c_env_var_ciyam_file_name_only = "CIYAM_FILE_NAME_ONLY";
 
 const char* const c_udp_msg_cancel = "XXX";
@@ -1732,6 +1734,12 @@ int main( int argc, char* argv[ ] )
           "<val//max_attempts>", "server connection retries", new ciyam_console_startup_functor( cmd_handler ) );
 
          processor.process_commands( );
+
+         if( cmd_handler.has_option_no_pause( ) )
+            set_environment_variable( c_env_var_ciyam_no_pause, c_true_value );
+
+         if( cmd_handler.has_option_no_progress( ) )
+            set_environment_variable( c_env_var_ciyam_no_progress, c_true_value );
       }
 
       const char* p_pid = getenv( c_env_var_pid );
