@@ -13,6 +13,8 @@
 
 bool is_stdout_console( );
 
+bool has_any_key( bool flush_input = false, size_t num_msecs = 0, char* p_ch = 0 );
+
 char get_char( const char* p_prompt = 0, bool flush_input = true );
 
 inline char get_char( const std::string& prompt, bool flush_input = true )

@@ -18,8 +18,10 @@
 #  include <stdlib.h>
 #  include <unistd.h>
 #  include <termios.h>
+#  include <sys/time.h>
+#  include <sys/ioctl.h>
 #else
-#  error unsupported compiler platform...
+#  error Unsupported compiler platform...
 #endif
 #include <stdexcept>
 
@@ -50,11 +52,94 @@ namespace
 
 const int c_max_pwd_len = 128;
 
+int keys_waiting( bool flush_input, size_t num_msecs, char* p_ch )
+{
+   struct termios oldt, newt;
+
+   int infd = STDIN_FILENO;
+
+   // NOTE: If standard input is not a terminal (such as is the case with redirected input) then
+   // instead attempt to open the TTY device directly.
+   if( !isatty( infd ) )
+   {
+      if( ( infd = open( _PATH_TTY, O_RDWR ) ) == -1 )
+      {
+         cerr << "fatal: unable to open terminal device" << endl;
+         exit( 1 );
+      }
+   }
+
+   tcgetattr( infd, &oldt );
+
+   newt = oldt;
+
+   newt.c_lflag &= ~( ICANON | ECHO );
+
+   tcsetattr( infd, TCSANOW, &newt );
+
+   int oldf = fcntl( infd, F_GETFL, 0 );
+
+   fcntl( infd, F_SETFL, oldf | O_NONBLOCK );
+
+   int waiting = 0;
+
+   struct timeval te;
+
+   int64_t milliseconds = 0;
+
+   if( num_msecs )
+   {
+      gettimeofday( &te, 0 );
+
+      milliseconds = ( te.tv_sec * 1000LL ) + ( te.tv_usec / 1000 ) + num_msecs;
+   }
+
+   // NOTE: If waiting for X milliseconds then
+   // perform multiple "usleep" calls checking
+   // the number of milliseconds after each of
+   // them to obtain a fairly accurate result.
+   while( true )
+   {
+      ioctl( infd, FIONREAD, &waiting );
+
+      if( waiting || !num_msecs )
+         break;
+
+      usleep( 10000 );
+
+      gettimeofday( &te, 0 );
+
+      if( ( ( te.tv_sec * 1000LL ) + te.tv_usec / 1000 ) >= milliseconds )
+      {
+         // NOTE: Perform a final recheck.
+         ioctl( infd, FIONREAD, &waiting );
+
+         break;
+      }
+   }
+
+   if( p_ch && waiting )
+      read( infd, p_ch, 1 );
+
+   tcsetattr( infd, TCSANOW, &oldt );
+
+   if( flush_input )
+      tcsetattr( infd, TCSAFLUSH, &oldt );
+
+   fcntl( infd, F_SETFL, oldf );
+
+   if( infd != STDIN_FILENO )
+      close( infd );
+
+   return waiting;
+}
+
 void get_line_using_get_char( string& str )
 {
    while( true )
    {
       cout.flush( );
+
       char ch = get_char( 0, false );
 
       if( ( ch == '\r' ) || ( ch == '\n' ) || ( ch == 0x03 ) ) // i.e. ctrl-c
@@ -107,6 +192,11 @@ bool is_stdout_console( )
    return false;
 }
 
+bool has_any_key( bool flush_input, size_t num_msecs, char* p_ch )
+{
+   return ( keys_waiting( flush_input, num_msecs, p_ch ) > 0 );
+}
+
 char get_char( const char* p_prompt, bool flush_input )
 {
    if( p_prompt && p_prompt[ 0 ] != 0 )
@@ -133,6 +223,7 @@ char get_char( const char* p_prompt, bool flush_input )
    tcgetattr( infd, &systerm );
 
    systerm.c_lflag &= ~( ICANON | ECHO );
+
    systerm.c_cc[ VMIN ] = 0;
    systerm.c_cc[ VTIME ] = 1;
 
@@ -142,6 +233,7 @@ char get_char( const char* p_prompt, bool flush_input )
       tcsetattr( infd, TCSAFLUSH, &systerm );
 
    char ch;
+
    while( true )
    {
       if( !read( infd, &ch, 1 ) )
@@ -151,7 +243,9 @@ char get_char( const char* p_prompt, bool flush_input )
    }
 
    fflush( stdout );
+
    systerm.c_lflag |= ( ICANON | ECHO );
+
    tcsetattr( infd, TCSANOW, &systerm );
 
    if( infd != STDIN_FILENO )
