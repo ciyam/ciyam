@@ -123,8 +123,16 @@ SHARED_SECRET=@file:~./ods_fsed -ro -exec="file_get peer/$PEER_IDENTITY -c" $FIL
 .wait 2000
 EXPORT_OUTPUT=@files::$IDENTITY.txt
 ;
-@ifdef $EXPORT_OUTPUT
-tail -f $IDENTITY.txt | sed '/^Finished /{n;q}'
+@ifndef $EXPORT_OUTPUT
+ERROR=Unexpected export output file not found.
+#Error: $ERROR
+@else
+STARTING=@file:~grep "Starting" $IDENTITY.txt
+@ifeq "$STARTING" ""
+~cat $IDENTITY.txt
+@else
+<file_progress.cin $IDENTITY.txt Finished
+@endif
 @endif
 ;
 @endif
