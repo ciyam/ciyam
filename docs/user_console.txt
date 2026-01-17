@@ -146,6 +146,74 @@ automatically (so can be used to help automate certain application protocol scri
 If not using CIYAM_USE_DEFAULT then CIYAM_DEFAULT_SECONDS can be provided to select the default choice option
 after a specific number of seconds (for this case a seconds "countdown" will appear after the choice prompt).
 
+In order to better illustrate usage of pause and progress handling the following bash script is used for each
+of the "ciyam_client" executions (noting that the CIYAM application server must be running):
+
+vi x
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#!/bin/bash
+echo "(Starting)" >xx
+for i in {1..10}; do
+ echo -n "." >> xx
+ sleep 1
+done
+echo "" >>xx
+echo "(Finished)" >>xx
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+chmod a+x x
+
+Example 1:
+(./x &) && ./ciyam_client -quiet -exec="<file_progress.cin xx Finished"
+
+This will clear the terminal and initially output something similar to the following:
+[xx]
+(Starting)
+.
+Press any key to quit...
+
+Further "dots" on the third line will be output and (if no key is pressed) will finish with this output:
+[xx]
+(Starting)
+..........
+(Finished)
+
+In this example the "file_progress" application protocol script is using CIYAM_PAUSE_SECONDS and looping with
+each repeat clearing the terminal again and calling "cat xx".
+
+Example 2:
+(./x &) && ./ciyam_client -quiet -no_pause -exec="<file_progress.cin xx Finished"
+
+Initial output will be similar to the following:
+[xx].
+
+Further "dots" after "[xx]" will appear until they are erased and the script finishes with this output:
+[xx]
+(Starting)
+..........
+(Finished)
+
+In this example CIYAM_NO_PAUSE is used to detect the "-no_pause" option in order to then output only progress
+"dots" (after "[xx]") until completion when the dots are erased and a (one off) "cat xx" occurs.
+
+Example 3:
+(./x &) && ./ciyam_client -quiet -no_pause -no_progress -exec="<file_progress.cin xx Finished"
+
+There is no output initially and even whilst processing but instead only the following final output:
+(Starting)
+..........
+(Finished)
+
+This example is perhaps more likely what might be used when the output is to be redirected although the final
+example illustrates another approach for redirection.
+
+Example 4:
+(./x &) && ./ciyam_client -quiet -monitor -no_pause\
+ -exec="<file_progress.cin xx Finished" >xxx && echo "" && cat xxx
+
+Output will appear to be identical to example 2 but the actual content of "xxx" is identical to example 3 (so
+the "-monitor" option outputs "[xx]" and the progress "dots" to the console). Thus the use of "-monitor" will
+enable progress to be output to the console whilst non-progress output is being redirected to a file.
+
 Console Command History
 -----------------------
 
