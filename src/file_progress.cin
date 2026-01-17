@@ -18,6 +18,7 @@ NUM_ARGS=@$NUM_ARGS+1
 FILE_NAME=$1
 SEARCH_STRING=$2
 ;
+PROGRESS_PREFIX=[$FILE_NAME]
 CIYAM_PAUSE_SECONDS=2
 ;
 CONTENT_FILE=@files::$FILE_NAME
@@ -31,12 +32,15 @@ CONTENT_FILE=@files::$FILE_NAME
 CHECK_STRING=@file:~grep "$SEARCH_STRING" "$FILE_NAME"
 ;
 @ifdef $CIYAM_NO_PAUSE
+@ifndef $CIYAM_NO_PROGRESS
 ##.
+@endif
 .wait 2000
 @else
 ~clear
+#[$FILE_NAME]
 ~cat $FILE_NAME
-; NOTE: Forces a flush (in case last line has no LF).
+; NOTE: Force a flush (in case the last line has no LF).
 ~echo ""
 ;
 @ifndef $CHECK_STRING
@@ -60,7 +64,6 @@ CHECK_STRING=1
 @:END_LOOP
 ;
 @ifdef $CIYAM_NO_PAUSE
-#($FILE_NAME)
 ~cat $FILE_NAME
 @endif
 ;
