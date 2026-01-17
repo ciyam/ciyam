@@ -51,7 +51,7 @@ class console_command_handler : public command_handler
    const std::string& get_custom_startup_options_usage( ) const { return custom_startup_options_usage; }
 
    private:
-   void clear_progress_output( );
+   void clear_progress_output( bool finished );
 
    void perform_after_command_changes( );
 
@@ -76,6 +76,7 @@ class console_command_handler : public command_handler
 
    bool ignore_prior;
    bool is_reading_input;
+   bool had_progress_prefix;
    bool is_skipping_to_label;
    bool is_executing_commands;
    bool allow_history_addition;

@@ -2569,6 +2569,7 @@ console_command_handler::console_command_handler( )
  num_custom_startup_options( 0 ),
  ignore_prior( false ),
  is_reading_input( false ),
+ had_progress_prefix( false ),
  is_skipping_to_label( false ),
  is_executing_commands( false ),
  allow_history_addition( true ),
@@ -2636,32 +2637,53 @@ bool console_command_handler::is_redirected_output( ) const
    return ( p_std_out == &p_impl->output_file );
 }
 
-void console_command_handler::clear_progress_output( )
+void console_command_handler::clear_progress_output( bool finished )
 {
    if( progress_output_count )
    {
-      *p_std_out << '\r' << string( progress_output_count, ' ' ) << '\r';
+      string prog_erase( progress_output_count, '\b' );
 
-      p_std_out->flush( );
+      if( has_option( c_cmd_monitor ) )
+         put_line( prog_erase + string( progress_output_count, ' ' ) + prog_erase, false );
+      else
+      {
+         if( is_stdout_console( ) && !is_redirected_output( ) )
+         {
+            *p_std_out << prog_erase << string( progress_output_count, ' ' ) << prog_erase;
+
+            p_std_out->flush( );
+         }
+      }
 
       progress_output_count = 0;
+   }
+
+   if( finished && had_progress_prefix )
+   {
+      if( !has_option( c_cmd_monitor ) )
+         *p_std_out << endl;
+
+      had_progress_prefix = false;
    }
 }
 
 void console_command_handler::perform_after_command_changes( )
 {
    string::size_type max_size = 0;
+
    size_t num = get_num_commands( );
+
    for( size_t i = 0; i < num; i++ )
    {
       string name( get_command_name( i ) );
       string::size_type size( name.size( ) );
 
       string usage( get_usage_for_command( name ) );
+
       if( !usage.empty( ) )
          size += usage.size( ) + 1;
 
-      if( size <= c_max_usage_width && size > max_size )
+      if( ( size > max_size ) && ( size <= c_max_usage_width ) )
          max_size = size;
    }
 
@@ -3690,7 +3712,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             }
             else if( str[ 0 ] == c_system_command_prefix )
             {
-               clear_progress_output( );
+               clear_progress_output( true );
 
                system_command( str.c_str( ) + 1 );
 
@@ -4375,7 +4397,7 @@ void console_command_handler::handle_command_response( const string& response, b
 {
    if( !is_special || has_option( c_cmd_no_stderr ) )
    {
-      clear_progress_output( );
+      clear_progress_output( true );
 
       *p_std_out << response << endl;
    }
@@ -4387,26 +4409,31 @@ void console_command_handler::handle_progress_message( const string& message )
 {
    string prefix( get_environment_variable( c_env_var_progress_prefix ) );
 
+   bool single_character_message = ( message.length( ) == 1 );
+
+   if( !single_character_message )
+      clear_progress_output( false );
+
    if( has_option( c_cmd_monitor ) )
-      put_line( prefix + message, message.length( ) != 1 );
-   else if( message.length( ) == 1 )
-   {
-      *p_std_out << message;
-
-      p_std_out->flush( );
-
-      ++progress_output_count;
-   }
+      put_line( prefix + message, !single_character_message );
    else
    {
-      clear_progress_output( );
-
       *p_std_out << prefix << message;
 
-      p_std_out->flush( );
+      if( !single_character_message
+       && ( !is_stdout_console( ) || is_redirected_output( ) ) )
+         *p_std_out << '\n';
 
-      progress_output_count = prefix.length( ) + message.length( );
+      p_std_out->flush( );
    }
+
+   if( !prefix.empty( ) )
+      had_progress_prefix = true;
+
+   if( single_character_message )
+      ++progress_output_count;
+   else
+      progress_output_count = message.length( );
 
    set_environment_variable( c_env_var_progress_prefix, "" );
 }
