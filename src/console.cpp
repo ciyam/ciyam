@@ -365,7 +365,7 @@ void console_progress::output_progress( const string& message, unsigned long num
    else
       new_length = output_length + 1;
 
-   if( is_space || message.length( ) != 1 )
+   if( is_space || ( message.length( ) != 1 ) )
       cout << '\r';
 
    cout << output_prefix << message;
