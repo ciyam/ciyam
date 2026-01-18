@@ -77,7 +77,7 @@ perform_package_export "export a record package" <val//module><val//mclass><list
 perform_package_import "import a record package" <val//uid><val//dtm><val//module><val//filename>[<opt/-new_only/new_only>|<opt/-for_remove/for_remove>][<val/-k=/key_prefix>][<val/-r=/replace_info>][<val/-s=/skip_field_info>]
 perform_package_update "update an existing meta package" <val//name>
 session_kill "kill one or more sessions" [<opt/-force/force>][<opt/-at_term/at_term>]{<opt/*/all>|<list//sess_ids>}[<val//seconds>]
-session_list "list active sessions" [<opt/-min/minimal>][<oval//blockchain>]
+session_list "list active sessions" [<opt/-min/minimal>][<olist//blockchains>]
 session_lock "capture/release one or more sessions" {<opt/-capture/capture>|{<opt/-release/release>[<opt/-at_term/at_term>]}}<opt/*/all>|<list//sess_ids>
 session_wait|wait "wait for a number of milliseconds" [<opt/-lock/lock>][<val/-u=/uid>]<val//milliseconds>
 session_timeout "get/set server session timeout" [<val//seconds>]

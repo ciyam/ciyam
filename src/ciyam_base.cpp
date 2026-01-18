@@ -5827,6 +5827,7 @@ string get_identity_variable_extra( const string& identity_variable_name, const 
       if( next_extra == identity_value )
       {
          extra = to_string( i );
+
          break;
       }
       else if( force_extra_match && !next_extra.empty( ) )
@@ -6598,6 +6599,7 @@ string list_externals( )
          s += '\n';
 
       s += eci->first;
+
       s += " (" + eci->second.protocol + ")";
    }
 
@@ -6656,6 +6658,7 @@ void decrypt_data( string& s, const string& data,
       else
       {
          key.resize( pos );
+
          memcpy( &key[ 0 ], &str[ 0 ], pos );
 
          str.erase( 0, pos + 1 + is_double );
@@ -6735,6 +6738,7 @@ void encrypt_data( string& s, const string& data,
       else
       {
          key.resize( pos );
+
          memcpy( &key[ 0 ], &str[ 0 ], pos );
 
          str.erase( 0, pos + 1 + is_double );
@@ -7101,6 +7105,7 @@ void check_script_args( const string& script_name, bool* p_rc )
                else
                {
                   *p_rc = false;
+
                   break;
                }
             }
@@ -7128,6 +7133,7 @@ string process_script_args( const string& raw_args, bool use_system_variables )
          if( next_arg == c_script_arg_opt )
          {
             ++skipped;
+
             continue;
          }
 
@@ -7191,8 +7197,10 @@ void generate_new_script_sio( bool for_autoscript )
 
       buffer_file_lines( file_name, original_lines );
 
-      bool found_start = false;
       size_t finish_line = 0;
+
+      bool found_start = false;
+
       for( size_t i = 0; i < original_lines.size( ); i++ )
       {
          string next( original_lines[ i ] );
@@ -7205,11 +7213,13 @@ void generate_new_script_sio( bool for_autoscript )
          else if( found_start && next == "### [<finish generated>]" )
          {
             finish_line = i;
+
             break;
          }
       }
 
       file_filter ff;
+
       fs_iterator fs( ".", &ff );
 
       while( fs.has_next( ) )
@@ -7217,6 +7227,7 @@ void generate_new_script_sio( bool for_autoscript )
          if( wildcard_match( "*.extra.lst", fs.get_name( ) ) )
          {
             vector< string > lines;
+
             buffer_file_lines( fs.get_name( ), lines );
 
             for( size_t i = 0; i < lines.size( ); i++ )
@@ -7224,9 +7235,11 @@ void generate_new_script_sio( bool for_autoscript )
                if( file_exists( lines[ i ] ) )
                {
                   vector< string > script_lines;
+
                   buffer_file_lines( lines[ i ], script_lines );
 
                   bool is_script = false;
+
                   for( size_t j = 0; j < script_lines.size( ); j++ )
                   {
                      string next( script_lines[ j ] );
@@ -7262,6 +7275,7 @@ void generate_new_script_sio( bool for_autoscript )
       }
 
       ofstream outf( ( file_name + ".new" ).c_str( ) );
+
       for( size_t i = 0; i < new_lines.size( ); i++ )
          outf << new_lines[ i ] << '\n';
    }
@@ -7398,6 +7412,8 @@ void init_session(
                   {
                      delete g_sessions[ offset ];
                      g_sessions[ offset ] = 0;
+
+                     gtp_session = 0;
                   }
 
                   throw runtime_error( "found existing main peer session for blockchain '" + blockchain + "'" );
@@ -7420,6 +7436,7 @@ void term_session( )
    if( gtp_session )
    {
       session* p_main_session = 0;
+
       vector< session* > other_supporters;
 
       // NOTE: If a support session is being terminated then any file hashes
@@ -7595,6 +7612,7 @@ size_t first_other_session_id( const string& var_name, const string& value )
             if( !p_session->variables.count( var_name ) )
             {
                id = p_session->id;
+
                break;
             }
          }
@@ -7604,6 +7622,7 @@ size_t first_other_session_id( const string& var_name, const string& value )
              && p_session->variables[ var_name ] == value )
             {
                id = p_session->id;
+
                break;
             }
          }
@@ -7642,6 +7661,7 @@ session* get_session_pointer( size_t sess_id )
       if( g_sessions[ i ] && g_sessions[ i ]->id == sess_id )
       {
          p_session = g_sessions[ i ];
+
          break;
       }
    }
@@ -7682,24 +7702,24 @@ string get_random_same_port_peer_ip_addr( const string& empty_value )
 }
 
 void list_all_sessions( ostream& os, bool inc_dtms,
- bool include_progress, const string* p_blockchain = 0 )
+ bool include_progress, const string* p_blockchains = 0 )
 {
    guard g( g_session_mutex );
 
    map< size_t, string > sessions;
 
-   string blockchain;
+   set< string > blockchains;
 
-   if( p_blockchain )
-      blockchain = *p_blockchain;
+   if( p_blockchains )
+      split( *p_blockchains, blockchains );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
       if( g_sessions[ i ] )
       {
-         if( p_blockchain )
+         if( blockchains.size( ) )
          {
-            if( blockchain != g_sessions[ i ]->blockchain )
+            if( !blockchains.count( g_sessions[ i ]->blockchain ) )
                continue;
          }
 
@@ -7800,11 +7820,11 @@ void list_all_sessions( ostream& os, bool inc_dtms,
 }
 
 void list_sessions( ostream& os, bool inc_dtms,
- bool include_progress, const string* p_blockchain )
+ bool include_progress, const string* p_blockchains )
 {
    guard g( g_session_mutex, "list_sessions" );
 
-   list_all_sessions( os, inc_dtms, include_progress, p_blockchain );
+   list_all_sessions( os, inc_dtms, include_progress, p_blockchains );
 }
 
 command_handler& get_session_command_handler( )
@@ -8052,8 +8072,9 @@ void condemn_session( size_t sess_id, int num_seconds, bool force_uncapture, boo
 {
    guard g( g_session_mutex );
 
-   // NOTE: This function is not designed to be used to self terminate (use condemn_this_session).
-   if( gtp_session && sess_id == gtp_session->id )
+   // NOTE: This function is not intended to be called for self
+   // termination ("condemn_this_session" is for that purpose).
+   if( gtp_session && ( sess_id == gtp_session->id ) )
       return;
 
    date_time dtm( date_time::local( ) + ( seconds )num_seconds );
@@ -8113,6 +8134,7 @@ void condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wai
    guard g( g_session_mutex );
 
    size_t sess_id = 0;
+
    if( gtp_session )
       sess_id = gtp_session->id;
 
@@ -8155,6 +8177,7 @@ void capture_session( size_t sess_id )
       if( g_sessions[ i ] && ( g_sessions[ i ]->id == sess_id ) )
       {
          g_sessions[ i ]->is_captured = true;
+
          break;
       }
    }
@@ -8222,6 +8245,7 @@ void release_session( size_t sess_id, bool wait_until_term )
    if( !sess_id && gtp_session )
    {
       wait_until_term = false;
+
       sess_id = gtp_session->id;
    }
 
@@ -8324,7 +8348,7 @@ string get_sql_password( )
     && ( gtp_session->p_storage_handler->get_name( ) == c_meta_storage_name ) )
    {
       if( g_sql_password.empty( ) )
-         pwd = "."; // i.e. used to give batch scripts a non-empty password argument
+         pwd = "."; // i.e. used to pass scripts a non-empty password value
       else if( g_sql_password.length( ) < c_minimum_encrypted_password_size )
          pwd = g_sql_password;
       else

@@ -5665,10 +5665,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_session_list )
       {
          bool minimal = has_parm_val( parameters, c_cmd_ciyam_session_session_list_minimal );
-         string blockchain( get_parm_val( parameters, c_cmd_ciyam_session_session_list_blockchain ) );
-         bool has_blockchain = has_parm_val( parameters, c_cmd_ciyam_session_session_list_blockchain );
+         string blockchains( get_parm_val( parameters, c_cmd_ciyam_session_session_list_blockchains ) );
+         bool has_blockchains = has_parm_val( parameters, c_cmd_ciyam_session_session_list_blockchains );
 
-         list_sessions( osstr, !minimal, !minimal, ( !has_blockchain ? 0 : &blockchain ) );
+         list_sessions( osstr, !minimal, !minimal, ( !has_blockchains ? 0 : &blockchains ) );
 
          if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
             response = osstr.str( );
