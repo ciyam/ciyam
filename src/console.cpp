@@ -119,7 +119,10 @@ int keys_waiting( bool flush_input, size_t num_msecs, char* p_ch )
    }
 
    if( p_ch && waiting )
-      read( infd, p_ch, 1 );
+   {
+      ssize_t rc = read( infd, p_ch, 1 );
+      ( void )rc;
+   }
 
    tcsetattr( infd, TCSANOW, &oldt );
 
