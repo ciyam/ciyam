@@ -66,6 +66,10 @@ ERROR=$OUTPUT
 HAS_REVERSED=1
 .session_list $REVERSED
 @ifndef $OUTPUT
+.wait 2000
+@endif
+.session_list $REVERSED
+@ifndef $OUTPUT
 ERROR=No session was found for $REVERSED.
 @endif
 @endif
@@ -100,7 +104,7 @@ I=@$I+1
 @:END_LOOP
 ;
 @ifeq "$FOUND" "1"
-&Export Shared now? [EXPORT:Yes==1|No=]
+&Export Shared? [EXPORT:Yes==1|No=]
 @ifdef $EXPORT
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
@@ -117,21 +121,23 @@ SHARED_SECRET=@file:~./ods_fsed -ro -exec="file_get peer/$PEER_IDENTITY -c" $FIL
 ;
 .system_variable @exporting_for_identity $IDENTITY
 ;
-~rm -f $IDENTITY.txt
+EXPORT_FILE=$IDENTITY.txt
+;
+~rm -f $EXPORT_FILE
 .run_script shared_export
 ;
 .wait 2000
-EXPORT_OUTPUT=@files::$IDENTITY.txt
+EXPORT_OUTPUT=@files::$EXPORT_FILE
 ;
 @ifndef $EXPORT_OUTPUT
-ERROR=Unexpected export output file not found.
+ERROR=Unexpected file '$EXPORT_FILE' not found.
 #Error: $ERROR
 @else
-STARTING=@file:~grep "Starting" $IDENTITY.txt
+STARTING=@file:~grep "Starting" $EXPORT_OUTPUT
 @ifeq "$STARTING" ""
-~cat $IDENTITY.txt
+~cat $EXPORT_OUTPUT
 @else
-<file_progress.cin $IDENTITY.txt Finished
+<file_progress.cin $EXPORT_OUTPUT Finished
 @endif
 @endif
 ;
