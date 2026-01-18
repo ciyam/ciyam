@@ -270,7 +270,7 @@ string special_connection_message( const string& id, bool has_timed_out = false 
    return msg;
 }
 
-string get_hub_identity( const string& own_identity, bool force_extra_match = false )
+string get_hub_identity( const string& own_identity, bool force_extra_match )
 {
    string hub_identity_var_name( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) );
    string backup_identity_var_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
@@ -1485,12 +1485,14 @@ void process_core_file( const string& hash, const string& blockchain )
          catch( ... )
          {
             delete_file( hash.substr( 0, pos ), false );
+
             throw;
          }
       }
       else
       {
          delete_file( hash.substr( 0, pos ), false );
+
          throw runtime_error( "unexpected core file type '" + core_type + "' found in process_core_file" );
       }
    }
@@ -1751,6 +1753,12 @@ void check_for_missing_other_sessions( const date_time& now )
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
+   bool is_owner = has_session_variable(
+    get_special_var_name( e_special_var_blockchain_is_owner ) );
+
+   bool is_initiator = has_session_variable(
+    get_special_var_name( e_special_var_peer_initiator ) );
+
    string backup_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
@@ -1758,6 +1766,8 @@ void check_for_missing_other_sessions( const date_time& now )
     get_raw_session_variable( get_special_var_name( e_special_var_paired_identity ) ) );
 
    string condemned_message_prefix( "peer session has been condemned due to " );
+
+   bool checked_paired = false;
 
    if( !paired_identity.empty( ) && !has_raw_system_variable( paired_identity ) )
    {
@@ -1770,6 +1780,8 @@ void check_for_missing_other_sessions( const date_time& now )
 
          if( unix_time( now ) >= time_val )
          {
+            checked_paired = true;
+
             if( num_have_session_variable( paired_identity, true, false ) < 2 )
             {
                condemn_this_session( );
@@ -1820,14 +1832,32 @@ void check_for_missing_other_sessions( const date_time& now )
       }
    }
 
+   if( checked_paired && ( is_owner || is_initiator ) )
+   {
+      string hub_identity( get_raw_session_variable(
+       get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
+
+      if( !hub_identity.empty( ) )
+      {
+         string peer_blockchain( c_bc_prefix + hub_identity );
+
+         if( !num_have_session_variable(
+          get_special_var_name( e_special_var_peer ), peer_blockchain, 0, true, false ) )
+         {
+            condemn_this_session( );
+
+            throw runtime_error( "missing required hub session '" + hub_identity + "'" );
+         }
+      }
+   }
+
    bool disallowed = has_raw_system_variable(
     get_special_var_name( e_special_var_disallow_connections ) );
 
    size_t num_for_support = from_string< size_t >(
     get_raw_session_variable( get_special_var_name( e_special_var_blockchain_num_for_support ) ) );
 
-   if( !disallowed && !g_server_shutdown && !is_condemned_session( )
-    && has_session_variable( get_special_var_name( e_special_var_blockchain_is_owner ) )
+   if( !is_owner && !disallowed && !g_server_shutdown && !is_condemned_session( )
     && has_session_variable( get_special_var_name( e_special_var_blockchain_is_combined ) ) )
    {
       string reversed( paired_identity );
@@ -4649,8 +4679,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    bool is_waiting_for_hub = has_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_waiting_for_hub ) );
 
-   // FUTURE: Should use the hub session's X/Y height for identity progress.
-   if( !is_for_support && !is_waiting_for_hub )
+   if( !is_for_support )
    {
       date_time now( date_time::local( ) );
       date_time dtm( get_dtm_last_issued( ) );
@@ -4663,12 +4692,15 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       {
          set_dtm_last_issued( now );
 
-         // NOTE: Will ignore the "blockchain tree item" if there
-         // are any other (non-support) sessions also tied to the
-         // same blockchain and this session is not syncing.
-         if( !has_put_files && !has_matching_peer_session( )
+         // NOTE: Ignore the "peer tree item" if currently has put
+         // files or is a backup waiting for its hub chain to sync
+         // or if any other (non-support) sessions are tied to the
+         // same blockchain when this session is not syncing.
+         if( !has_put_files
+          && !is_waiting_for_hub
+          && ( !has_matching_peer_session( )
           || ( ( blockchain_height != blockchain_height_other )
-          || ( blockchain_height != blockchain_height_pending ) ) )
+          || ( blockchain_height != blockchain_height_pending ) ) ) )
          {
             size_t num_tree_item = get_peer_tree_item( );
 
@@ -7078,7 +7110,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
                if( !is_owner && ( chain_type == e_peerchain_type_backup ) )
                {
-                  string hub_identity( get_hub_identity( unprefixed_blockchain ) );
+                  string hub_identity( get_hub_identity( unprefixed_blockchain, true ) );
 
                   if( !hub_identity.empty( ) )
                      pid += '&' + hub_identity;
@@ -7670,30 +7702,40 @@ void peer_session::on_start( )
 
       if( !blockchain.empty( ) )
       {
-         if( !is_for_support && has_tag( blockchain + c_zenith_suffix ) )
+         if( !is_for_support )
          {
-            string zenith_hash( tag_file_hash( blockchain + c_zenith_suffix ) );
-
-            if( get_block_height_from_tags( blockchain, zenith_hash, blockchain_height ) )
+            if( has_tag( blockchain + c_zenith_suffix ) )
             {
-               has_zenith = true;
+               string zenith_hash( tag_file_hash( blockchain + c_zenith_suffix ) );
 
-               cmd_handler.set_blockchain_height( blockchain_height );
-
-               string signature_tag( blockchain + '.' + to_string( blockchain_height ) + c_sig_suffix );
-
-               // NOTE: If there is a signature at this height but no next block file then
-               // first purge the signature file so that syncing can be cleanly restarted.
-               if( has_tag( signature_tag ) )
+               if( get_block_height_from_tags( blockchain, zenith_hash, blockchain_height ) )
                {
-                  string next_block_tag( blockchain + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
+                  has_zenith = true;
 
-                  if( !has_tag( next_block_tag ) )
-                     delete_file( tag_file_hash( signature_tag ) );
+                  cmd_handler.set_blockchain_height( blockchain_height );
+
+                  string signature_tag( blockchain + '.' + to_string( blockchain_height ) + c_sig_suffix );
+
+                  // NOTE: If there is a signature at this height but no next block file then
+                  // first purge the signature file so that syncing can be cleanly restarted.
+                  if( has_tag( signature_tag ) )
+                  {
+                     string next_block_tag( blockchain + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
+
+                     if( !has_tag( next_block_tag ) )
+                        delete_file( tag_file_hash( signature_tag ) );
+                  }
+
+                  set_session_variable( get_special_var_name(
+                   e_special_var_blockchain_zenith_height ), to_string( blockchain_height ) );
                }
-
-               set_session_variable( get_special_var_name(
-                e_special_var_blockchain_zenith_height ), to_string( blockchain_height ) );
+            }
+            else if( has_tag( blockchain + c_genesis_suffix ) )
+            {
+               // NOTE: If has the genesis block but no zenith tag
+               // exists then will purge the block so that syncing
+               // can be cleanly restarted.
+               delete_file( tag_file_hash( blockchain + c_genesis_suffix ) );
             }
          }
 
