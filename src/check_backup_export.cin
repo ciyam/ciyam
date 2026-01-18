@@ -1,0 +1,105 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "1"
+#NOTE: This script requires a core peer identity.
+@else
+ERROR=
+;
+IDENTITY=$1
+;
+<check_system_identity.cin
+;
+@ifdef $ERROR
+#Error: $ERROR
+@else
+;
+.session_list $IDENTITY
+@ifndef $OUTPUT
+.system_variable @queue_peers $IDENTITY
+.wait 2000
+@endif
+;
+.system_variable #$IDENTITY
+@ifdef $OUTPUT
+ERROR=$OUTPUT
+@else
+;
+.session_list $IDENTITY
+@ifndef $OUTPUT
+.wait 2000
+@endif
+.session_list $IDENTITY
+@ifndef $OUTPUT
+ERROR=No session was found for $IDENTITY.
+@endif
+;
+@endif
+;
+@ifdef $ERROR
+#Error: $ERROR
+@else
+;
+I=0
+FOUND=
+@label NEXT
+;
+@:LOOP
+.system_variable @restore_needed
+@ifdef $OUTPUT
+FOUND=1
+@label END_LOOP
+@endif
+;
+@ifeq "$I" "10"
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+I=@$I+1
+.wait 2000
+!!@:LOOP
+;
+@:END_LOOP
+;
+@ifeq "$FOUND" "1"
+&Export Backup? [EXPORT:Yes==1|No=]
+@ifdef $EXPORT
+;
+EXPORT_FILE=Backup.txt
+;
+~rm -f $EXPORT_FILE
+.run_script backup_export
+;
+.wait 2000
+EXPORT_OUTPUT=@files::$EXPORT_FILE
+;
+@ifndef $EXPORT_OUTPUT
+ERROR=Unexpected file '$EXPORT_FILE' not found.
+#Error: $ERROR
+@else
+STARTING=@file:~grep "Starting" $EXPORT_OUTPUT
+@ifeq "$STARTING" ""
+~cat $EXPORT_OUTPUT
+@else
+<file_progress.cin $EXPORT_OUTPUT Finished
+@endif
+@endif
+;
+@endif
+@endif
+;
+@endif
+;
+@endif
+;
+@endif
