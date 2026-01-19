@@ -17,9 +17,9 @@ ERROR=
 ;
 IDENTITY=$1
 ;
-REVERSED=*!reverse?$IDENTITY
-;
 HAS_REVERSED=
+;
+REVERSED=*!reverse?$IDENTITY
 ;
 <check_system_identity.cin
 ;
@@ -31,7 +31,8 @@ PEER_IDENTITY=$IDENTITY
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
-PEERS=@file:~./ods_fsed -quiet -ro -exec="list -b peer" $FILES_AREA_DIR/ciyam_server
+.peerchain_info -list
+PEERS=$OUTPUT
 ;
 CHECK_PEERS=@repstr:$IDENTITY/:$PEERS
 ;
@@ -109,9 +110,8 @@ I=@$I+1
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
-SIO_FIELD=shared_secret
-SHARED_SECRET=@file:~./ods_fsed -ro -exec="file_get peer/$PEER_IDENTITY -c" $FILES_AREA_DIR/ciyam_server | grep $SIO_FIELD | sed 's/.*<$SIO_FIELD>//'
-.system_variable @shared_secret $SHARED_SECRET
+.peerchain_info $PEER_IDENTITY shared_secret
+.system_variable @shared_secret $OUTPUT
 ;
 @ifdef $HAS_REVERSED
 .system_variable @export_needed $REVERSED
