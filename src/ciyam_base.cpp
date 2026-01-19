@@ -5887,6 +5887,12 @@ void create_peerchain(
       num_helpers = 0;
    }
 
+   if( !port
+    && ( ( peer_type == c_peerchain_type_combined )
+    || ( peer_type == c_peerchain_type_backup_only )
+    || ( peer_type == c_peerchain_type_shared_only ) ) )
+      port = from_string< int >( peer_port );
+
    if( host_name.empty( )
     || ( peer_type == c_peerchain_type_hub )
     || ( peer_type == c_peerchain_type_local_only ) )
@@ -5915,6 +5921,57 @@ void create_peerchain(
    writer.finish_sections( );
 
    gup_ofs->store_file( identity, 0, &sio_data );
+}
+
+void review_peerchain( ostream& os, const string& identity, const string& attribute )
+{
+   system_ods_fs_guard ods_fs_guard;
+
+   system_ods_bulk_read ods_bulk_read;
+
+   gup_ofs->set_root_folder( c_system_peerchain_folder );
+
+   if( !identity.empty( ) )
+   {
+      if( !gup_ofs->has_file( identity ) )
+         throw runtime_error( "peerchain '" + identity + "' was not found" );
+
+      if( attribute.empty( ) )
+         gup_ofs->get_file( identity, "", &os );
+      else
+      {
+         ostringstream osstr;
+
+         gup_ofs->get_file( identity, "", &osstr );
+
+         string lines( osstr.str( ) );
+
+         if( !lines.empty( ) )
+         {
+            vector< string > all_lines;
+
+            split( lines, all_lines, '\n' );
+
+            string search( '<' + attribute + '>' );
+
+            for( size_t i = 0; i < all_lines.size( ); i++ )
+            {
+               string next_line( all_lines[ i ] );
+
+               string::size_type pos = next_line.find( search );
+
+               if( pos != string::npos )
+               {
+                  os << next_line.substr( pos + search.length( ) );
+
+                  break;
+               }
+            }
+         }
+      }
+   }
+   else
+      gup_ofs->list_files( "*", os, "", ods_file_system::e_list_style_brief );
 }
 
 void update_peerchain( const string& identity,
