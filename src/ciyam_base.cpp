@@ -1266,10 +1266,12 @@ void storage_handler::dump_cache( ostream& os ) const
    guard g( cache_mutex );
 
    os << "date_time_accessed  key (class_id:instance)                                          ver.rev\n";
-   os << "------------------- ---------------------------------------------------------------- -------\n";
+   os << "------------------- ---------------------------------------------------------------- -------";
 
    for( time_info_const_iterator ci = key_for_time.begin( ); ci != key_for_time.end( ); ++ci )
    {
+      os << '\n';
+
       time_t t = ci->first;
       struct tm* p_t = localtime( &t );
 
@@ -1281,10 +1283,9 @@ void storage_handler::dump_cache( ostream& os ) const
       os << dt.as_string( e_time_format_hhmmss, true ) << ' ' << setw( 64 ) << ci->second << ' ';
 
       const vector< string >& columns( record_cache.find( ci->second )->second );
+
       if( columns.size( ) > 2 )
          os << columns[ 1 ] << '.' << columns[ 2 ];
-
-      os << '\n';
    }
 }
 
@@ -1300,7 +1301,7 @@ void storage_handler::dump_locks( ostream& os ) const
    if( minimal_output )
    {
       os << "handle   key (class_id:instance)                                          type\n";
-      os << "-------- ---------------------------------------------------------------- ----------\n";
+      os << "-------- ---------------------------------------------------------------- ----------";
    }
    else
    {
@@ -1308,11 +1309,13 @@ void storage_handler::dump_locks( ostream& os ) const
       os << "tx_type    tran_id    tran_level p_session      p_class_base   p_root_class\n";
 
       os << "-------- ---------------------------------------------------------------- ---------- ";
-      os << "---------- ---------- ---------- -------------- -------------- --------------\n";
+      os << "---------- ---------- ---------- -------------- -------------- --------------";
    }
 
    for( lici = lock_index.begin( ); lici != lock_index.end( ); ++lici )
    {
+      os << '\n';
+
       op_lock& next_lock( lici->second->second );
 
       os.setf( ios::left );
@@ -1322,14 +1325,11 @@ void storage_handler::dump_locks( ostream& os ) const
        << ' ' << setw( 10 ) << op_lock::lock_type_name( next_lock.type );
 
       if( minimal_output )
-      {
-         os << '\n';
          continue;
-      }
 
       os << ' ' << setw( 10 ) << op_lock::lock_type_name( next_lock.tx_type )
        << ' ' << setw( 10 ) << next_lock.transaction_id << ' ' << setw( 10 ) << next_lock.transaction_level
-       << ' ' << setw( 14 ) << next_lock.p_session << ' ' << setw( 14 ) << next_lock.p_class_base << ' ' << next_lock.p_root_class << '\n';
+       << ' ' << setw( 14 ) << next_lock.p_session << ' ' << setw( 14 ) << next_lock.p_class_base << ' ' << next_lock.p_root_class;
    }
 }
 
@@ -13777,7 +13777,6 @@ void dump_storage_cache( ostream& os )
    if( !gtp_session->p_storage_handler->get_ods( ) )
       throw runtime_error( "no storage is currently linked" );
 
-   os << '\n';
    gtp_session->p_storage_handler->dump_cache( os );
 }
 
@@ -13788,7 +13787,6 @@ void dump_storage_locks( ostream& os )
    if( !gtp_session->p_storage_handler->get_ods( ) )
       throw runtime_error( "no storage is currently linked" );
 
-   os << '\n';
    gtp_session->p_storage_handler->dump_locks( os );
 }
 
