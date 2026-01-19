@@ -102,7 +102,7 @@ ERROR=Invalid external QR Code.
 @endif
 ;
 @ifeq "$NUM_HELPERS" ""
-&Connection Type? [NUM_HELPERS:Minimal=0|Standard==5|Throttled=11]
+&Connection Type? [NUM_HELPERS:Minimal=0|Standard==5|Throttled=9]
 @endif
 ;
 @ifeq "$AUTO_START" ""

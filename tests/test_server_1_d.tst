@@ -192,4 +192,86 @@ system_variable *needed*
 @complete_restore_needed 1
 system_variable @complete_restore_needed ""
 system_variable *needed*
+system_peerchain_info -list
+system_peerchain_create -auto=0 abc111cba 111.domain.com "Peerchain 1"
+system_peerchain_info -list
+abc111cba
+system_peerchain_info abc111cba
+<sio/>
+ <auto_start>0
+ <description>Peerchain 1
+ <extra_value>
+ <host_name>111.domain.com
+ <host_port>12021
+ <local_port>12021
+ <num_helpers>5
+ <peer_type>0
+ <shared_secret>
+</sio>
+system_peerchain_info abc111cba host_name
+111.domain.com
+system_peerchain_info abc111cba description
+Peerchain 1
+system_peerchain_update abc111cba "Peerchain 111"
+system_peerchain_info abc111cba host_name
+111.domain.com
+system_peerchain_info abc111cba description
+Peerchain 111
+system_peerchain_create -auto=0 abc222cba 222.domain.com "Peerchain 2"
+system_peerchain_create -auto=0 abc333cba 333.domain.com "Peerchain 3"
+system_peerchain_info -list
+abc111cba
+abc222cba
+abc333cba
+system_peerchain_info abc222cba
+<sio/>
+ <auto_start>0
+ <description>Peerchain 2
+ <extra_value>
+ <host_name>222.domain.com
+ <host_port>12021
+ <local_port>12021
+ <num_helpers>5
+ <peer_type>0
+ <shared_secret>
+</sio>
+system_peerchain_update -num=9 abc222cba
+system_peerchain_info abc222cba host_name
+222.domain.com
+system_peerchain_info abc222cba num_helpers
+9
+system_peerchain_info abc333cba
+<sio/>
+ <auto_start>0
+ <description>Peerchain 3
+ <extra_value>
+ <host_name>333.domain.com
+ <host_port>12021
+ <local_port>12021
+ <num_helpers>5
+ <peer_type>0
+ <shared_secret>
+</sio>
+system_peerchain_update abc333cba "Peerchain 333"
+system_peerchain_info abc333cba
+<sio/>
+ <auto_start>0
+ <description>Peerchain 333
+ <extra_value>
+ <host_name>333.domain.com
+ <host_port>12021
+ <local_port>12021
+ <num_helpers>5
+ <peer_type>0
+ <shared_secret>
+</sio>
+system_peerchain_destroy abc222cba
+system_peerchain_info -list
+abc111cba
+abc333cba
+system_peerchain_destroy abc111cba
+system_peerchain_info -list
+abc333cba
+system_peerchain_destroy abc333cba
+system_peerchain_info -list
 quit

@@ -109,4 +109,29 @@ system_variable @complete_restore_needed 1
 system_variable *needed*
 system_variable @complete_restore_needed ""
 system_variable *needed*
+system_peerchain_info -list
+system_peerchain_create -auto=0 abc111cba 111.domain.com "Peerchain 1"
+system_peerchain_info -list
+system_peerchain_info abc111cba
+system_peerchain_info abc111cba host_name
+system_peerchain_info abc111cba description
+system_peerchain_update abc111cba "Peerchain 111"
+system_peerchain_info abc111cba host_name
+system_peerchain_info abc111cba description
+system_peerchain_create -auto=0 abc222cba 222.domain.com "Peerchain 2"
+system_peerchain_create -auto=0 abc333cba 333.domain.com "Peerchain 3"
+system_peerchain_info -list
+system_peerchain_info abc222cba
+system_peerchain_update -num=9 abc222cba
+system_peerchain_info abc222cba host_name
+system_peerchain_info abc222cba num_helpers
+system_peerchain_info abc333cba
+system_peerchain_update abc333cba "Peerchain 333"
+system_peerchain_info abc333cba
+system_peerchain_destroy abc222cba
+system_peerchain_info -list
+system_peerchain_destroy abc111cba
+system_peerchain_info -list
+system_peerchain_destroy abc333cba
+system_peerchain_info -list
 quit

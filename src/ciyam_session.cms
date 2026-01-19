@@ -146,6 +146,7 @@ system_trace_level|trace_level "get/set system trace level" [<val//new_level>]
 system_trace_levels|trace_levels "view available system trace levels"
 system_trace_message|trace_message "output a message to the server trace log" [<val/-f=/flag>]<val//text>
 system_string_message|string_message "output a server keyed message string" <val//key_value>[<oval//parm_and_value_1>][<oval//parm_and_value_2>][<oval//parm_and_value_3>][<oval//parm_and_value_4>]
+system_peerchain_info|peerchain_info "output all peerchain identities or specific entry information" <opt/-list/list>|<val//identity>[<val//attribute>]
 system_peerchain_create|peerchain_create "create a new peerchain entry" [<val/-num=5/num_extra>][<val/-auto=1/auto_start>][<val/-type=0/peer_type>][<oval/-extra=/extra_value>][<oval/-secret=/shared_secret>]<val//identity><val//host_and_port><val//description>
 system_peerchain_update|peerchain_update "update an exisiting peerchain entry" [<val/-num=/num_extra>][<val/-auto=/auto_start>][<oval/-secret=/shared_secret>][<val/-host_info=/host_and_port>]<val//identity>[<val//description>]
 system_peerchain_destroy|peerchain_destroy "destroy an existing peerchain entry" <val//identity>
