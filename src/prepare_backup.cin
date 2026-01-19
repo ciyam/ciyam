@@ -25,7 +25,6 @@ APP_DIR=@lower:$STORAGE
 .system_variable @disallow_connections 1
 ;
 .session_kill *
-.session_variable @single_string_response 1
 ;
 CHECK=0
 NUM_TRIES=0
