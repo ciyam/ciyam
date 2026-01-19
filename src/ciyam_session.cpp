@@ -1152,21 +1152,6 @@ void perform_field_value_transformations(
    }
 }
 
-void output_response_lines( tcp_socket& socket, const string& response )
-{
-   progress* p_progress = 0;
-   trace_progress progress( TRACE_VERBOSE | TRACE_SOCKETS );
-
-   if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
-      p_progress = &progress;
-
-   vector< string > lines;
-   split( response, lines, '\n' );
-
-   for( size_t i = 0; i < lines.size( ); i++ )
-      socket.write_line( lines[ i ], c_request_timeout, p_progress );
-}
-
 struct query_data
 {
    query_data( ) : is_indexed( false ) { }
@@ -3179,10 +3164,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          module_list( osstr );
 
-         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
-            response = osstr.str( );
-         else
-            output_response_lines( socket, osstr.str( ) );
+         response = osstr.str( );
       }
       else if( command == c_cmd_ciyam_session_module_load )
       {
@@ -3203,10 +3185,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          module_class_list( module, osstr, ( pattern.empty( ) ? 0 : pattern.c_str( ) ) );
 
-         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
-            response = osstr.str( );
-         else
-            output_response_lines( socket, osstr.str( ) );
+         response = osstr.str( );
       }
       else if( command == c_cmd_ciyam_session_module_strings_list )
       {
@@ -3214,10 +3193,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          module_strings_list( module, osstr );
 
-         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
-            response = osstr.str( );
-         else
-            output_response_lines( socket, osstr.str( ) );
+         response = osstr.str( );
       }
       else if( command == c_cmd_ciyam_session_module_class_field_list )
       {
@@ -3226,10 +3202,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          module_class_fields_list( module, class_id_or_name, osstr );
 
-         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
-            response = osstr.str( );
-         else
-            output_response_lines( socket, osstr.str( ) );
+         response = osstr.str( );
       }
       else if( command == c_cmd_ciyam_session_module_class_procedure_list )
       {
@@ -3238,19 +3211,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          module_class_procedures_list( module, class_id_or_name, osstr );
 
-         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
-            response = osstr.str( );
-         else
-            output_response_lines( socket, osstr.str( ) );
+         response = osstr.str( );
       }
       else if( command == c_cmd_ciyam_session_object_list )
       {
          list_object_instances( osstr );
 
-         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
-            response = osstr.str( );
-         else
-            output_response_lines( socket, osstr.str( ) );
+         response = osstr.str( );
       }
       else if( command == c_cmd_ciyam_session_object_fetch )
       {
@@ -5670,10 +5637,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          list_sessions( osstr, !minimal, !minimal, ( !has_blockchains ? 0 : &blockchains ) );
 
-         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
-            response = osstr.str( );
-         else
-            output_response_lines( socket, osstr.str( ) );
+         response = osstr.str( );
       }
       else if( command == c_cmd_ciyam_session_session_lock )
       {
@@ -7123,19 +7087,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          dump_storage_cache( osstr );
 
-         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
-            response = osstr.str( );
-         else
-            output_response_lines( socket, osstr.str( ) );
+         response = osstr.str( );
       }
       else if( command == c_cmd_ciyam_session_storage_dump_locks )
       {
          dump_storage_locks( osstr );
 
-         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
-            response = osstr.str( );
-         else
-            output_response_lines( socket, osstr.str( ) );
+         response = osstr.str( );
       }
       else if( command == c_cmd_ciyam_session_storage_log_splice )
       {
@@ -7693,10 +7651,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          output_schedule( osstr, from_now );
 
-         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
-            response = osstr.str( );
-         else
-            output_response_lines( socket, osstr.str( ) );
+         response = osstr.str( );
       }
       else if( command == c_cmd_ciyam_session_system_sendmail )
       {
@@ -8006,10 +7961,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          review_peerchain( osstr, ( list ? "" : identity ), attribute );
 
-         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
-            response = osstr.str( );
-         else
-            output_response_lines( socket, osstr.str( ) );
+         response = osstr.str( );
       }
       else if( command == c_cmd_ciyam_session_system_peerchain_create )
       {
