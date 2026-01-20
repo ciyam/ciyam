@@ -97,6 +97,8 @@ const size_t c_listen_wait_repeats = 20;
 
 const int c_pdf_default_limit = 10000;
 
+const int c_max_pdf_or_single_limit = 100000;
+
 const size_t c_response_reserve_size = 1024;
 
 const size_t c_max_key_append_chars = 7;
@@ -3697,10 +3699,39 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          set< string > filter_set( filter_list.begin( ), filter_list.end( ) );
 
-         int num_limit = create_pdf ? c_pdf_default_limit : 0;
+         int num_limit = ( create_pdf ? c_pdf_default_limit : 0 );
 
          if( !limit.empty( ) )
+         {
             num_limit = from_string< int >( limit );
+
+            if( num_limit < 0 )
+               throw runtime_error( "invalid perform_fetch limit < 0" );
+         }
+
+         // NOTE: Force a maxiumum limit when either
+         // generating PDF or when a "single string"
+         // response will be output. If the argument
+         // "limit" has been provided and this value
+         // could result in potentially more records
+         // being processed will throw an exception.
+         if( create_pdf || single_string_response )
+         {
+            if( !num_limit
+             || ( num_limit > c_max_pdf_or_single_limit ) )
+            {
+               if( !limit.empty( ) )
+               {
+                  string restricted_response(
+                   create_pdf ? "PDF output" : "a single string response" );
+
+                  throw runtime_error( "invalid perform_fetch limit value #"
+                   + limit + " provided when creating " + restricted_response );
+               }
+
+               num_limit = c_max_pdf_or_single_limit;
+            }
+         }
 
          map< string, string > set_value_items;
 
@@ -3746,7 +3777,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                // be found within class keys) therefore although useful the map file does
                // not guarantee that a package record can be restored to the exact format
                // appearing in the package file.
-               if( data.length( ) > 3
+               if( ( data.length( ) > 3 )
                 && ( ( data.substr( 0, 4 ) == "opt_" ) || ( data.substr( 0, 4 ) == "loc_" ) ) )
                {
                   pos = data.find( "_class" );
@@ -3788,7 +3819,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
          {
-            // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
+            // NOTE: If a field name starts with @ then it is assumed to be a "variable".
             if( !i->first.empty( ) && ( i->first[ 0 ] == '@' ) )
                instance_set_variable( handle, context, i->first, i->second );
             else
@@ -3856,8 +3887,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
             }
 
-            // NOTE: If a space is provided as the key then fetch the default record values or if the
-            // first character of the key is a space then clone a default record from another.
+            // NOTE: If a space was provided as the key then fetch the default record values or if
+            // the first character of the key is a space then clone a default record from another.
             if( !key_info.empty( ) && ( key_info[ 0 ] == ' ' ) )
             {
                if( create_pdf )
@@ -3887,7 +3918,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
                {
-                  // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
+                  // NOTE: If a field name starts with @ then it is assumed to be a "variable".
                   if( !i->first.empty( ) && ( i->first[ 0 ] != '@' ) )
                   {
                      string method_name_and_args( "set " );
