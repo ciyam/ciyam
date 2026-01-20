@@ -84,14 +84,20 @@ string get_uid_info( const session_info& sess_info, bool quote_if_has_space_in_n
 void read_module_strings( module_info& info, tcp_socket& socket )
 {
    string strings_cmd( "module_strings_list " );
+
    strings_cmd += info.id;
 
    if( socket.write_line( strings_cmd ) <= 0 )
       throw runtime_error( "Unable to retrieve '" + info.name + "' module strings." );
 
    info.strings.clear( );
+
    int timeout = c_initial_response_timeout;
 
+   // NOTE: Although only a single response is
+   // expected this approach also functions if
+   // the string pairs were returned in chunks
+   // (or each pair in its own response).
    while( true )
    {
       string response;
@@ -109,11 +115,24 @@ void read_module_strings( module_info& info, tcp_socket& socket )
 
       timeout = c_subsequent_response_timeout;
 
-      string::size_type pos = response.find( ' ' );
-      if( pos == string::npos )
-         throw runtime_error( "unexpected string format '" + response + "'" );
+      if( !response.empty( ) )
+      {
+         vector< string > all_strings;
 
-      info.strings.insert( make_pair( response.substr( 0, pos ), response.substr( pos + 1 ) ) );
+         split( response, all_strings, '\n' );
+
+         for( size_t i = 0; i < all_strings.size( ); i++ )
+         {
+            string next_pair( all_strings[ i ] );
+
+            string::size_type pos = next_pair.find( ' ' );
+
+            if( pos == string::npos )
+               throw runtime_error( "unexpected string pair '" + next_pair + "'" );
+
+            info.strings.insert( make_pair( next_pair.substr( 0, pos ), next_pair.substr( pos + 1 ) ) );
+         }
+      }
    }
 
    // NOTE: The list menus container is only constructed here as the model strings
