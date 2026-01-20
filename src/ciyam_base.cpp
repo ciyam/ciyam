@@ -9969,8 +9969,9 @@ bool has_any_session_variable( const string& name, const string& value )
    return false;
 }
 
-size_t num_have_session_variable( const string& name,
- bool matching_own_ip_address, bool include_condemned )
+size_t num_have_session_variable(
+ const string& name, bool matching_own_ip_address,
+ bool include_condemned, size_t check_session_id_less_than )
 {
    guard g( g_session_mutex );
 
@@ -9989,7 +9990,11 @@ size_t num_have_session_variable( const string& name,
        && ( ( g_sessions[ i ]->variables.count( name ) )
        || ( g_sessions[ i ]->deque_variables.count( name ) ) )
        && ( include_condemned || !g_condemned_sessions.count( g_sessions[ i ]->id ) ) )
-         ++total;
+      {
+         if( !check_session_id_less_than
+          || ( g_sessions[ i ]->id < check_session_id_less_than ) )
+            ++total;
+      }
    }
 
    return total;

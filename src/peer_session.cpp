@@ -1790,8 +1790,11 @@ void check_for_missing_other_sessions( const date_time& now )
                 + "missing paired session '" + paired_identity + "'" );
             }
 
+            // NOTE: As the backup session should have been created before
+            // the shared one will only include sessions that have an "id"
+            // that is less than that of the current session.
             if( !backup_identity.empty( )
-             && num_have_session_variable( backup_identity, true, false ) < 2 )
+             && num_have_session_variable( backup_identity, true, false, session_id( ) ) < 2 )
             {
                condemn_this_session( );
 

@@ -628,8 +628,9 @@ inline void set_session_variable_for_matching_blockchains(
 bool has_any_session_variable( const std::string& name );
 bool has_any_session_variable( const std::string& name, const std::string& value );
 
-size_t num_have_session_variable( const std::string& name,
- bool matching_own_ip_address = false, bool include_condemned = true );
+size_t num_have_session_variable(
+ const std::string& name, bool matching_own_ip_address = false,
+ bool include_condemned = true, size_t check_session_id_less_than = 0 );
 
 size_t num_have_session_variable( const std::string& name,
  const std::string& value, std::vector< std::string >* p_identities = 0,
