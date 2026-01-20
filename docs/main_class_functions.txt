@@ -240,3 +240,10 @@ It should be noted that when fetching multiple records via the protocol if the r
 if is generating PDF a default limit will be used otherwise the number of records returned is unlimited. When
 wanting to discontinue iteration in rules code by breaking out of an iteration loop the method "iterate_stop"
 needs to be called otherwise object state errors can occur.
+
+When using the application protocol command "perform_fetch" in a CIYAM script the OUTPUT environment variable
+will only contain the last record unless the session variable "@single_string_response" had been set prior to
+the command (in which case OUTPUT would contain all of the output records). As the total number of records is
+potentially more than could even be stored in physical memory the use of "@single_string_response" and OUTPUT
+would only be recommended for fetches that are not expected to return a large number of records and the total
+number of records will be automatically limited.
