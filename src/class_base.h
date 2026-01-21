@@ -1697,7 +1697,7 @@ std::string local_peer_hub_checksum( const std::string& extra );
 void lock_blockchain( const std::string& identity );
 void unlock_blockchain( const std::string& identity );
 
-bool is_locked_blockchain( const std::string& identity );
+bool is_locked_blockchain( const std::string& identity, bool check_reversed_also = false );
 
 bool any_session_backup_blockchains( );
 

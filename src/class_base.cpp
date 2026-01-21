@@ -6420,11 +6420,23 @@ void unlock_blockchain( const string& identity )
    }
 }
 
-bool is_locked_blockchain( const string& identity )
+bool is_locked_blockchain( const string& identity, bool check_reversed_also )
 {
-   string lock_tag( c_bc_prefix + identity + c_locked_suffix );
+   bool retval = false;
 
-   return has_tag( lock_tag );
+   if( has_tag( c_bc_prefix + identity + c_locked_suffix ) )
+      retval = true;
+   else if( check_reversed_also )
+   {
+      string reversed( identity );
+
+      reverse( reversed.begin( ), reversed.end( ) );
+
+      if( has_tag( c_bc_prefix + reversed + c_locked_suffix ) )
+         retval = true;
+   }
+
+   return retval;
 }
 
 bool any_session_backup_blockchains( )
