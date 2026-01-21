@@ -99,6 +99,7 @@ I=0
 .file_tags bc.$PEER_IDENTITY.locked*
 @ifdef $OUTPUT
 OKAY=1
+.wait 1000
 @label END_LOOP
 @else
 @ifeq "$I" "10"
@@ -112,6 +113,7 @@ ERROR=Timed out attempting to verify (check before retrying).
 ;
 @:NEXT
 ;
+##.
 I=@$I+1
 .wait 2000
 ;
@@ -120,6 +122,17 @@ I=@$I+1
 @:END_LOOP
 ;
 @ifeq "$OKAY" "1"
+;
+.session_list $PEER_IDENTITY
+@ifdef $OUTPUT
+.wait 1000
+@endif
+;
+.session_list $PEER_IDENTITY
+@ifdef $OUTPUT
+.wait 2000
+@endif
+;
 .peerchain_info $PEER_IDENTITY peer_type
 PEER_TYPE=$OUTPUT
 ;
