@@ -3352,8 +3352,9 @@ void process_public_key_file( const string& blockchain,
                      lock_blockchain( identity );
                }
 
-               needs_verification = true;
             }
+
+            needs_verification = true;
          }
       }
 
