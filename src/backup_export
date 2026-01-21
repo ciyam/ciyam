@@ -75,8 +75,8 @@ export CIYAM_FILE_NAME_ONLY=1
 export CIYAM_STREAM_CIPHER=cc
 export REPO_CRYPT_PASSWORD=@sid
 
-BLOCK_TREE=$(./block_tree_hash @blockchain_backup_identity)
-BACKUP_LIST=$(./tree_list $BLOCK_TREE 0 Backup | tail -n 1)
+BLOCK_TREE=$(./ciyam_script  block_tree_hash @blockchain_backup_identity)
+BACKUP_LIST=$(./ciyam_script tree_list $BLOCK_TREE 0 Backup | tail -n 1)
 
 if [ ! "$TARGET_FILE" = "" ]; then
  ./export_files $BACKUP_LIST $BACKUP_PATH >>Backup.txt

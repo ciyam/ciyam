@@ -84,8 +84,8 @@ export ENCRYPTED_PASSWORD=@shared_secret
 
 export CIYAM_ARCHIVE_PATH=$(./ciyam_command file_archives -path_only $IDENTITY)
 
-BLOCK_TREE=$(./block_tree_hash $IDENTITY)
-SHARED_LIST=$(./tree_list $BLOCK_TREE 0 Shared | tail -n 1)
+BLOCK_TREE=$(./ciyam_script block_tree_hash $IDENTITY)
+SHARED_LIST=$(./ciyam_script tree_list $BLOCK_TREE 0 Shared | tail -n 1)
 
 ./export_files $SHARED_LIST $CIYAM_USER_PATH >>$SHARED_DETAILS
 
