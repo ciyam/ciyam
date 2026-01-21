@@ -3334,20 +3334,26 @@ void process_public_key_file( const string& blockchain,
           || ( chain_type == e_peerchain_type_backup )
           || ( chain_type == e_peerchain_type_shared ) )
          {
-            if( chain_type == e_peerchain_type_user )
+            // NOTE: If the '@blockchain_backup_identity' session variable is found
+            // then will not lock this blockchain (i.e. only the backup is locked).
+            if( !has_session_variable(
+             get_special_var_name( e_special_var_blockchain_backup_identity ) ) )
             {
-               if( !has_tag( blockchain + c_master_suffix ) )
-                  lock_blockchain( identity );
-            }
-            else
-            {
-               string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
+               if( chain_type == e_peerchain_type_user )
+               {
+                  if( !has_tag( blockchain + c_master_suffix ) )
+                     lock_blockchain( identity );
+               }
+               else
+               {
+                  string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
 
-               if( has_system_variable( secret_hash_name + '_' + identity ) )
-                  lock_blockchain( identity );
-            }
+                  if( has_system_variable( secret_hash_name + '_' + identity ) )
+                     lock_blockchain( identity );
+               }
 
-            needs_verification = true;
+               needs_verification = true;
+            }
          }
       }
 
@@ -3365,6 +3371,7 @@ void process_public_key_file( const string& blockchain,
 
       if( is_hub_blockchain )
          process_queued_hub_using_peerchains( identity );
+
       if( needs_verification )
       {
          condemn_this_session( );
@@ -7419,7 +7426,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
                   has_user = true;
             }
 
-            if( is_locked_blockchain( unprefixed_blockchain ) )
+            if( is_locked_blockchain( unprefixed_blockchain, true ) )
                throw runtime_error( c_special_message_1 );
 
             if( !has_data && !has_user && !blockchains.count( blockchain ) )
