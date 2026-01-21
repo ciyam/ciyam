@@ -5,11 +5,11 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo "Usage: ciyam_script [name]"
+ echo "Usage: ciyam_script [name] [[arg1 [arg2 [...]]]]"
 else
  NAME=$1
 
  shift
 
- ./ciyam_client -echo -quiet -no_prompt -no_stderr -exec="\<$NAME.cin $*"
+ ./ciyam_client -quiet -no_prompt -no_stderr -exec="\<$NAME.cin $*"
 fi
