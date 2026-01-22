@@ -1899,7 +1899,7 @@ void check_for_missing_other_sessions( const date_time& now )
 
          other_session_extras other_extras( num_for_support );
 
-         other_extras.backup_identity = paired_identity;
+         other_extras.other_identity = paired_identity;
 
          size_t zero_or_dummy = ( !num_for_support ? 0 : c_dummy_num_for_support );
 
@@ -7678,8 +7678,8 @@ void peer_session::on_start( )
       if( !hub_identity.empty( ) )
          set_session_variable( get_special_var_name( e_special_var_blockchain_peer_hub_identity ), hub_identity );
 
-      if( !backup_identity.empty( ) )
-         set_session_variable( get_special_var_name( e_special_var_blockchain_backup_identity ), backup_identity );
+      if( !is_user && !other_identity.empty( ) )
+         set_session_variable( get_special_var_name( e_special_var_blockchain_backup_identity ), other_identity );
 
       if( !is_for_support )
       {
@@ -8681,7 +8681,7 @@ peer_session* create_peer_initiator( const string& blockchain,
                   // variable here (it will be cleared and the "auto" variable set assuming
                   // the handshake is successful).
                   if( is_paired && !is_secondary && has_tag( blockchain + c_zenith_suffix )
-                   && ( !p_other_session_extras || p_other_session_extras->backup_identity.empty( ) ) )
+                   && ( !p_other_session_extras || p_other_session_extras->other_identity.empty( ) ) )
                      set_system_variable(
                       get_special_var_name( e_special_var_tag ) + '_' + identity, c_true_value );
                }
@@ -9134,7 +9134,7 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    // NOTE: If peer type is user or combined then will also create reversed identity sessions.
    if( p_local_main && create_reversed )
    {
-      other_extras.backup_identity = identity;
+      other_extras.other_identity = identity;
       other_extras.is_combined_backup = false;
 
       peer_session* p_local_reversed = create_peer_initiator( reversed_chain + paired_suffix, info,

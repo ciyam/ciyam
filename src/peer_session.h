@@ -62,7 +62,7 @@ class peer_session : public thread
 
    void set_num_for_support( size_t new_num ) { num_for_support = new_num; }
 
-   void set_backup_identity( const std::string& identity ) { backup_identity = identity; }
+   void set_other_identity( const std::string& identity ) { other_identity = identity; }
 
    void set_is_combined_backup( bool new_val ) { is_combined_backup = new_val; }
 
@@ -99,7 +99,7 @@ class peer_session : public thread
 
    std::string blockchain;
    std::string hub_identity;
-   std::string backup_identity;
+   std::string other_identity;
 
    std::string public_ext;
    std::string public_loc;
@@ -145,23 +145,23 @@ class peer_session_starter : public thread
 
 struct other_session_extras
 {
-   other_session_extras( size_t num = 0, const std::string* p_backup_identity = 0 )
+   other_session_extras( size_t num = 0, const std::string* p_other_identity = 0 )
    {
       num_for_support = num;
 
-      if( p_backup_identity )
-         backup_identity = *p_backup_identity;
+      if( p_other_identity )
+         other_identity = *p_other_identity;
 
       is_combined_backup = false;
    }
 
    void set_extras( peer_session& s )
    {
+      if( !other_identity.empty( ) )
+         s.set_other_identity( other_identity );
+
       if( num_for_support )
          s.set_num_for_support( num_for_support );
-
-      if( !backup_identity.empty( ) )
-         s.set_backup_identity( backup_identity );
 
       s.set_is_combined_backup( is_combined_backup );
    }
@@ -170,7 +170,7 @@ struct other_session_extras
 
    bool is_combined_backup;
 
-   std::string backup_identity;
+   std::string other_identity;
    std::string special_message;
 };
 
