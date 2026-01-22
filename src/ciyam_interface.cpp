@@ -1172,6 +1172,7 @@ void request_handler::process_request( )
          if( has_ui_stop_file( ) )
          {
             using_anonymous = true;
+
             throw runtime_error( GDS( c_display_under_maintenance_try_again_later ) );
          }
       }
@@ -1526,6 +1527,7 @@ void request_handler::process_request( )
          bool is_meta_module = false;
          bool has_output_form = false;
          bool has_set_identity = false;
+         bool was_unlocked_with_key = false;
 
          if( module_name == c_meta_model_name )
          {
@@ -1738,6 +1740,13 @@ void request_handler::process_request( )
                               throw runtime_error( "unable to unlock encrypted identity information" );
 #endif
                            was_unlock = true;
+
+                           if( file_exists( c_unlocked_with_key_file ) )
+                           {
+                              was_unlocked_with_key = true;
+
+                              file_remove( c_unlocked_with_key_file );
+                           }
 
                            if( !file_exists( c_has_restored_file ) )
                            {
@@ -2355,7 +2364,8 @@ void request_handler::process_request( )
                         if( !is_encrypted || ( sid == sha256( id_pwd ).get_digest_as_string( ) ) )
                            id_pwd = sid;
 
-                        reset_admin_password( *p_session_info, module_id, mod_info, id_pwd, sid );
+                        if( !was_unlocked_with_key )
+                           reset_admin_password( *p_session_info, module_id, mod_info, id_pwd, sid );
 
                         g_seed.erase( );
                         g_id_pwd.erase( );

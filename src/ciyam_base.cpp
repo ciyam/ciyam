@@ -5478,7 +5478,17 @@ void set_identity( const string& info, const char* p_encrypted_sid )
                if( !was_key_unlocked )
                   hash_sid_val( sid );
                else
+               {
                   file_remove( key_file_name );
+
+                  if( !g_default_storage.empty( ) )
+                  {
+                     string web_app_dir( get_web_root( ) + '/' + lower( g_default_storage ) );
+
+                     if( dir_exists( web_app_dir ) )
+                        file_touch( web_app_dir + '/' + c_unlocked_with_key_file, 0, true );
+                  }
+               }
             }
             else
             {
