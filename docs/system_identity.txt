@@ -64,14 +64,14 @@ Restoring an Existing Identity
 
 If wishing to restore an already existing CIYAM system using a new node then the twelve words which initially
 appear should be replaced with those that had been written down previously (the master password that had been
-used before is not relevant when restoring so a new one can be provided).
+used before is not relevant when restoring so a new one can be provided **).
 
 Enhancing Your Identity Security
 --------------------------------
 
 It should be noted that the dictionary being used is that defined by BIP39 (being the standard used in crypto
 wallets). Although it might be a convenience to use the same words for both your crypto wallet and CIYAM node
-THIS SHOULD NEVER BE DONE as it might lead to the loss of all your crypto assets.
+THIS SHOULD NEVER BE DONE as it could lead to the loss of all your crypto assets.
 
 As the dictionary is 2048 words each single word is 11 bits (1024 being 10 bits so 2048 being one extra bit).
 This means that twelve words is 132 bits, however, to minimise human error the last 4 bits are being used for
@@ -130,3 +130,7 @@ down on paper).
 As the unlock key encrypts the system identity "hash" (and not the original passphrase) they will never allow
 the original passphrase to be discovered and therefore are the recommended way for unlocking a node (usage of
 the master password should be limited to only when physical access to the node is possible).
+
+** If after restoring a CIYAM system an unlock key is used (rather than the new master password) then "admin"
+will not have its password changed (so normally this situation should be avoided by using the master password
+to perform the initial "unlock" for a restored CIYAM system).
