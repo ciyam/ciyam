@@ -1994,7 +1994,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_ftransient=$specification_\0_ftransient arg_ext_field=$specification_\0_ext_field\
  arg_allow_parent_iteration=$specification_\0_allow_parent_iteration`}\
 `,\
-`@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)`&`@eq`(`$specification_\0_ftransient`,`'1`'`)\
+`@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)`&`@eq`(`$specification_\0_ftransient`,`'1`'`)
 `{`#field_from_op.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value arg_vtype=$specification_\0_vtype arg_ofield=$specification_\0_ofield\
