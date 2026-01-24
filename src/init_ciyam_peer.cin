@@ -38,7 +38,7 @@ PEER_HUB=$OUTPUT
 .system_peerchain_create -auto=1 -type=-2 $PEER_HUB $PEER_PORT "Home Hub"
 ;
 @ifndef $ERROR
-#Created global peerchain entries for identities '$PEER_HUB' and '$BACKUP' (plus '$SHARED').
+#Created global peerchain entries for identities '$PEER_HUB' and '$BACKUP'.
 @endif
 @endif
 @endif

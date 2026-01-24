@@ -424,7 +424,7 @@ CHANNEL_SIZE=1GB
 #Created keys, genesis block and file archive for shared identity '$IDENT'.
 @endif
 @else
-#Created keys, genesis block and file archives for identity '$IDENT' (plus '$REVERSED').
+#Created keys, genesis block and file archives for identity '$IDENT'.
 @endif
 @endif
 @endif
