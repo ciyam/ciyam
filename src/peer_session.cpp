@@ -5310,27 +5310,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          {
             if( !is_list )
             {
-               if( has_targeted_identity )
-               {
-                  if( !has_raw_session_variable(
-                   get_special_var_name( e_special_var_blockchain_user ) ) )
-                  {
-                     string file_data_hash( sha256( file_data ).get_digest_as_string( ) );
-
-                     string peer_mapped_hash( get_peer_mapped_hash_info( peer_map_key, next_hash ) );
-
-                     if( peer_mapped_hash.empty( ) )
-                        throw runtime_error( "unexpected unmapped file hash '" + next_hash + "'" );
-                     else if( file_data_hash != peer_mapped_hash )
-                        throw runtime_error( "found invalid encrypted file content for hash '" + next_hash + "'" );
-                  }
-
-                  if( has_archive )
-                     create_raw_file_in_archive( archive_identity, next_hash, file_data );
-                  else
-                     create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
-               }
-               else if( has_raw_session_variable(
+               if( has_targeted_identity || has_raw_session_variable(
                 get_special_var_name( e_special_var_blockchain_data ) ) )
                {
                   if( has_archive )
