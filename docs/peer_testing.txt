@@ -399,9 +399,9 @@ ciyam
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
  mkdir -p tmp
- BLOCK_TREE_HASH=`./block_tree_hash @blockchain_backup_identity`
+ BLOCK_TREE_HASH=`./ciyam_script block_tree_hash @blockchain_backup_identity`
  export USE_BACKUP_ARCHIVE=1
- BACKUP_LIST_HASH=`./tree_list $BLOCK_TREE_HASH 0 Backup | tail -n 1`
+ BACKUP_LIST_HASH=`./ciyam_script tree_list $BLOCK_TREE_HASH 0 Backup | tail -n 1`
  export CIYAM_STREAM_CIPHER=cc
  export REPO_CRYPT_PASSWORD=@sid
  ./export_files $BACKUP_LIST_HASH tmp
