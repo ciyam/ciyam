@@ -4801,6 +4801,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    {
       bool was_not_found = false;
       bool has_issued_chk = false;
+      bool force_dummy_check = false;
+
+      if( has_session_variable( get_special_var_name( e_special_var_blockchain_check_dummy ) ) )
+         force_dummy_check = true;
 
       if( !is_for_support && !blockchain.empty( ) )
       {
@@ -4820,7 +4824,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             else
                add_peer_file_hash_for_get( genesis_block_hash );
          }
-         else if( !is_waiting_for_hub )
+         else if( !force_dummy_check && !is_waiting_for_hub )
          {
             // NOTE: Check whether a new block exists either locally or remotely.
             string next_block_tag( blockchain + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
@@ -5049,7 +5053,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       {
          string tag_or_hash( prior_file( ) );
 
-         if( is_waiting_for_hub || tag_or_hash.empty( ) )
+         if( force_dummy_check || is_waiting_for_hub || tag_or_hash.empty( ) )
             tag_or_hash = blockchain + c_dummy_suffix;
 
          string chk_hash;
@@ -6994,6 +6998,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
  is_for_support( is_for_support ),
  other_is_owner( false ),
  both_are_owners( false ),
+ only_check_dummy( false ),
  is_combined_backup( false ),
  needs_key_exchange( false ),
  has_support_sessions( has_support_sessions ),
@@ -7666,13 +7671,17 @@ void peer_session::on_start( )
          if( !blockchain.empty( ) )
             set_session_variable( get_special_var_name( e_special_var_peer_map_key ), obtain_peer_map_key( ) );
 
-         if( !is_responder && num_for_support )
-            set_session_variable( get_special_var_name( e_special_var_blockchain_num_for_support ), to_string( num_for_support ) );
+         if( !is_responder && only_check_dummy )
+            set_session_variable( get_special_var_name( e_special_var_blockchain_check_dummy ), c_true_value );
 
          if( !is_responder && is_combined_backup )
             set_session_variable( get_special_var_name( e_special_var_blockchain_is_combined ), c_true_value );
 
+         if( !is_responder && num_for_support )
+            set_session_variable( get_special_var_name( e_special_var_blockchain_num_for_support ), to_string( num_for_support ) );
+
          set_session_variable( get_special_var_name( e_special_var_blockchain_time_value ), to_string( time_value ) );
+
          set_session_variable( get_special_var_name( e_special_var_progress_seconds ), to_string( c_default_progress_seconds ) );
       }
 
@@ -8608,6 +8617,7 @@ peer_session* create_peer_initiator( const string& blockchain,
             if( !has_main_session && ( is_secondary || has_separate_identity ) )
             {
                p_identity = identity.c_str( );
+
                extra = ( !is_secondary ? e_peer_extra_primary : e_peer_extra_secondary );
             }
             else if( !explicit_paired_identity.empty( ) )
@@ -8989,11 +8999,16 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    string reversed_chain( c_bc_prefix + reversed );
 
+   bool requires_verification = false;
+
    // NOTE: If this is a new (non-local) blockchain
    // then will initially disallow support sessions
    // (as checksum verification is first required).
    if( !has_tag( blockchain + c_zenith_suffix ) )
+   {
       num_for_support = 0;
+      requires_verification = true;
+   }
 
    string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
 
@@ -9033,6 +9048,9 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    set_system_variable( identity, c_true_value );
 
    other_session_extras other_extras( num_for_support );
+
+   if( requires_verification )
+      other_extras.only_check_dummy = true;
 
    if( chain_type == e_peerchain_type_backup )
       other_extras.is_combined_backup = ( peer_type == c_peer_type_combined );
@@ -9121,8 +9139,10 @@ void peer_session_starter::start_peer_session( const string& peer_info )
        false, zero_or_dummy, false, false, false, reversed_chain_type, false, p_extra_value, &other_extras );
 
       if( p_local_reversed && ( peer_type >= c_peer_type_combined ) )
+      {
          create_peer_initiator( reversed_chain, info,
           false, zero_or_dummy, false, true, false, reversed_chain_type, false, p_extra_value, &other_extras );
+      }
    }
 }
 

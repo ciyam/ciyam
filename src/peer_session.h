@@ -64,6 +64,7 @@ class peer_session : public thread
 
    void set_other_identity( const std::string& identity ) { other_identity = identity; }
 
+   void set_only_check_dummy( bool new_val ) { only_check_dummy = new_val; }
    void set_is_combined_backup( bool new_val ) { is_combined_backup = new_val; }
 
    static void increment_session_count( );
@@ -84,6 +85,7 @@ class peer_session : public thread
 
    bool other_is_owner;
    bool both_are_owners;
+   bool only_check_dummy;
    bool is_combined_backup;
    bool needs_key_exchange;
    bool has_support_sessions;
@@ -152,6 +154,7 @@ struct other_session_extras
       if( p_other_identity )
          other_identity = *p_other_identity;
 
+      only_check_dummy = false;
       is_combined_backup = false;
    }
 
@@ -163,11 +166,13 @@ struct other_session_extras
       if( num_for_support )
          s.set_num_for_support( num_for_support );
 
+      s.set_only_check_dummy( only_check_dummy );
       s.set_is_combined_backup( is_combined_backup );
    }
 
    size_t num_for_support;
 
+   bool only_check_dummy;
    bool is_combined_backup;
 
    std::string other_identity;
