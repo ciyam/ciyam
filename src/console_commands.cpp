@@ -2770,6 +2770,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             if( str.length( ) > 1 )
                msg = str.substr( 1 );
 
+            clear_progress_output( false );
+
             if( !is_choice_input( msg ) )
             {
                string prompt( msg );
@@ -4231,6 +4233,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   }
 
                   str.erase( );
+
+                  clear_progress_output( false );
 
                   // NOTE: If no explicit (or zero value) seconds was found then
                   // will use the CIYAM_PAUSE_SECONDS value (if present) instead.
