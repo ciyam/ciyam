@@ -8,6 +8,12 @@ xxx
 xxxx
 x.cin
 x.cpp
+xx.cin
+xx.cpp
+xxx.cin
+xxx.cpp
+xxxx.cin
+xxxx.cpp
 
 # Ignore all .old, .sav and .tmp files.
 *.old
@@ -19,8 +25,6 @@ x.cpp
 
 # Ignore dependency files.
 *.d
-*.dep
-*.inc
 
 # Ignore object and target files.
 *.a
@@ -150,21 +154,13 @@ Forum_*.png
 photo_*.jpg
 gen_photo_*.xrep
 
-# Ignore ciyam storage and related files.
-ciyam.dat
-ciyam.hdr
-ciyam.idx
-ciyam.sql
-ciyam.tlg
-ciyam.modules.lst
-
 # Ignore ods_fsed storage files.
 ods_fsed.dat
 ods_fsed.hdr
 ods_fsed.idx
 ods_fsed.tlg
 
-# Ignore Meta storage and related.
+# Ignore Meta storage and others.
 Meta.dat
 Meta.hdr
 Meta.idx
@@ -172,17 +168,25 @@ Meta.sql
 Meta.tlg
 Meta.modules.lst
 
-# Ignore ciyam config files.
+# Ignore CIYAM storage and others.
+ciyam.dat
+ciyam.hdr
+ciyam.idx
+ciyam.sql
+ciyam.tlg
+ciyam.modules.lst
+
+# Ignore CIYAM config files.
 modules.lst
 packages.lst
 ciyam_ddns_info
 ciyam_server.sid
 ciyam_server.sio
 
-# Ignore storage backups.
+# Ignore storage backup files.
 *.backup.bun.gz
 *.backup_files.bun.gz
 
-# Ignore PEM and service.
+# Ignore PEM and service files.
 ciyam.pem
 ciyam.service
