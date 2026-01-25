@@ -197,6 +197,7 @@ else
   rm -f $release_name/ciyam/Meta.so
 
   rm -f $release_name/ciyam/getmeta.cin
+  rm -f $release_name/ciyam/modules.lst
   rm -f $release_name/ciyam/recreate_meta.cin
   rm -f $release_name/ciyam/meta_user_set_active.cin
   rm -f $release_name/ciyam/output_all_mapped_meta_data.cin
