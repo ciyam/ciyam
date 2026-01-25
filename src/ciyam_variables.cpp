@@ -281,6 +281,7 @@ const char* const c_special_variable_keep_user_peers_alive = "@keep_user_peers_a
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
 const char* const c_special_variable_prepare_backup_needed = "@prepare_backup_needed";
+const char* const c_special_variable_blockchain_check_dummy = "@blockchain_check_dummy";
 const char* const c_special_variable_blockchain_is_checking = "@blockchain_is_checking";
 const char* const c_special_variable_blockchain_is_combined = "@blockchain_is_combined";
 const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
@@ -615,6 +616,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_package_install_extra );
       g_special_variable_names.push_back( c_special_variable_peer_is_synchronising );
       g_special_variable_names.push_back( c_special_variable_prepare_backup_needed );
+      g_special_variable_names.push_back( c_special_variable_blockchain_check_dummy );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_checking );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_combined );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_fetching );
