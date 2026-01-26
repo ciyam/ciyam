@@ -4201,6 +4201,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   else if( !has_option_no_progress( ) )
                      handle_progress_message( unescaped( str.substr( 2 ) ) );
                }
+               else
+                  clear_progress_output( false );
 
                str.erase( );
             }
