@@ -206,6 +206,7 @@ const char* const c_attribute_peer_ips_reject = "peer_ips_reject";
 const char* const c_attribute_script_reconfig = "script_reconfig";
 const char* const c_attribute_session_timeout = "session_timeout";
 const char* const c_attribute_protocol_handler = "protocol_handler";
+const char* const c_attribute_system_variables = "system_variables";
 const char* const c_attribute_max_send_attempts = "max_send_attempts";
 const char* const c_attribute_max_attached_data = "max_attached_data";
 const char* const c_attribute_ods_use_encrypted = "ods_use_encrypted";
@@ -3899,6 +3900,25 @@ void read_server_configuration( )
       string protocol_handler( reader.read_opt_attribute( c_attribute_protocol_handler, c_default_protocol_handler ) );
 
       set_system_variable( get_special_var_name( e_special_var_protocol_handler ), protocol_handler );
+
+      string system_variables( reader.read_opt_attribute( c_attribute_system_variables ) );
+
+      if( !system_variables.empty( ) )
+      {
+         vector< string > sys_var_pairs;
+
+         split( system_variables, sys_var_pairs );
+
+         for( size_t i = 0; i < sys_var_pairs.size( ); i++ )
+         {
+            string next_pair( sys_var_pairs[ i ] );
+
+            string::size_type pos = next_pair.find( '=' );
+
+            if( pos != string::npos )
+               set_system_variable( next_pair.substr( 0, pos ), next_pair.substr( pos + 1 ) );
+         }
+      }
 
       g_ods_use_encrypted = ( lower( reader.read_opt_attribute( c_attribute_ods_use_encrypted, c_true ) ) == c_true );
 
