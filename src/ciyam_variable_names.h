@@ -262,6 +262,7 @@ enum special_var
    e_special_var_blockchain_height_other,
    e_special_var_blockchain_op_list_hash,
    e_special_var_complete_restore_needed,
+   e_special_var_do_not_start_supporters,
    e_special_var_blockchain_backup_height,
    e_special_var_blockchain_put_list_hash,
    e_special_var_blockchain_shared_height,

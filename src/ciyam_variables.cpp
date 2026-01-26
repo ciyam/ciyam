@@ -295,6 +295,7 @@ const char* const c_special_variable_blockchain_first_mapped = "@blockchain_firs
 const char* const c_special_variable_blockchain_height_other = "@blockchain_height_other";
 const char* const c_special_variable_blockchain_op_list_hash = "@blockchain_op_list_hash";
 const char* const c_special_variable_complete_restore_needed = "@complete_restore_needed";
+const char* const c_special_variable_do_not_start_supporters = "@do_not_start_supporters";
 const char* const c_special_variable_blockchain_backup_height = "@blockchain_backup_height";
 const char* const c_special_variable_blockchain_put_list_hash = "@blockchain_put_list_hash";
 const char* const c_special_variable_blockchain_shared_height = "@blockchain_shared_height";
@@ -630,6 +631,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_height_other );
       g_special_variable_names.push_back( c_special_variable_blockchain_op_list_hash );
       g_special_variable_names.push_back( c_special_variable_complete_restore_needed );
+      g_special_variable_names.push_back( c_special_variable_do_not_start_supporters );
       g_special_variable_names.push_back( c_special_variable_blockchain_backup_height );
       g_special_variable_names.push_back( c_special_variable_blockchain_put_list_hash );
       g_special_variable_names.push_back( c_special_variable_blockchain_shared_height );
