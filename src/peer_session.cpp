@@ -101,6 +101,8 @@ const char* const c_system_repository_lock = "system_repo_lock";
 
 const char* const c_remove_obsolete_file_name = ".remove_obsolete";
 
+const size_t c_timeout_ticks = 90;
+
 const size_t c_prefix_length = 4;
 const size_t c_checksum_length = 8;
 
@@ -8775,28 +8777,31 @@ void peer_session_starter::on_start( )
    {
       msleep( c_start_sleep_time );
 
-      vector< string > peerchain_externals;
-
-      get_peerchain_externals( peerchain_externals );
-
-      if( !peerchain_externals.empty( ) )
+      if( !has_system_variable( get_special_var_name( e_special_var_no_auto_peers ) ) )
       {
-         restorable< bool > starting_externals( g_starting_externals, true );
+         vector< string > peerchain_externals;
 
-         for( size_t i = 0; i < peerchain_externals.size( ); i++ )
+         get_peerchain_externals( peerchain_externals );
+
+         if( !peerchain_externals.empty( ) )
          {
-            if( g_server_shutdown || has_max_peers( ) )
-               break;
+            restorable< bool > starting_externals( g_starting_externals, true );
 
-            string next_external( peerchain_externals[ i ] );
+            for( size_t i = 0; i < peerchain_externals.size( ); i++ )
+            {
+               if( g_server_shutdown || has_max_peers( ) )
+                  break;
 
-            string::size_type pos = next_external.find_first_of( "-+=" );
+               string next_external( peerchain_externals[ i ] );
 
-            // NOTE: Always ignores any locked blockchains.
-            if( has_tag( c_bc_prefix + next_external.substr( 0, pos ) + c_locked_suffix ) )
-               continue;
+               string::size_type pos = next_external.find_first_of( "-+=" );
 
-            start_peer_session( next_external );
+               // NOTE: Always ignores any locked blockchains.
+               if( has_tag( c_bc_prefix + next_external.substr( 0, pos ) + c_locked_suffix ) )
+                  continue;
+
+               start_peer_session( next_external );
+            }
          }
       }
 
@@ -8875,7 +8880,77 @@ void peer_session_starter::on_start( )
          }
 
          if( entries.empty( ) )
+         {
+            // NOTE: Check for any timeouts (such as "waiting for peer verification").
+            string timeout_vars( get_raw_system_variable(
+             get_special_var_name( e_special_var_timeout ) + "_*" ) );
+
+            if( !timeout_vars.empty( ) )
+            {
+               vector< string > all_timeout_vars;
+
+               split( timeout_vars, all_timeout_vars, '\n' );
+
+               for( size_t i = 0; i < all_timeout_vars.size( ); i++ )
+               {
+                  string next_line( all_timeout_vars[ i ] );
+
+                  string::size_type pos = next_line.find( ' ' );
+
+                  if( pos != string::npos )
+                  {
+                     string next_var( next_line.substr( 0, pos ) );
+                     string next_value( next_line.substr( pos + 1 ) );
+
+                     pos = next_var.find( '_' );
+
+                     if( pos != string::npos )
+                     {
+                        string identity( next_var.substr( pos + 1 ) );
+
+                        if( !identity.empty( ) && !next_value.empty( ) )
+                        {
+                           pos = next_value.find( ':' );
+
+                           string ticks( next_value.substr( 0, pos ) );
+
+                           string error;
+
+                           if( pos != string::npos )
+                              error = next_value.substr( pos + 1 );
+
+                           size_t num_ticks = from_string< size_t >( ticks );
+
+                           bool has_identity_variable = has_system_variable( identity );
+                           bool has_blockchain_session = any_session_has_blockchain( identity );
+
+                           if( !num_ticks
+                            || !has_identity_variable || has_blockchain_session )
+                           {
+                              set_system_variable( next_var, "" );
+
+                              if( has_identity_variable )
+                              {
+                                 set_system_variable( identity, "" );
+
+                                 if( !has_blockchain_session )
+                                 {
+                                    set_system_variable( c_progress_output_prefix + identity, "" );
+
+                                    set_system_variable( c_error_message_prefix + identity, error );
+                                 }
+                              }
+                           }
+                           else
+                              set_system_variable( next_var, to_string( --num_ticks ) + ':' + error );
+                        }
+                     }
+                  }
+               }
+            }
+
             msleep( c_wait_sleep_time );
+         }
          else
          {
             bool is_listener = false;
@@ -9106,14 +9181,21 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    if( !p_local_main )
    {
-      set_system_variable( identity, "" );
-
       if( just_unlocked && ( other_extras.special_message == c_special_message_1 ) )
+      {
+         set_system_variable( get_special_var_name( e_special_var_timeout ) + '_' + identity,
+          to_string( c_timeout_ticks ) + ':' + special_connection_message( other_extras.special_message, true ) );
+
          set_system_variable( c_progress_output_prefix + identity,
           special_connection_message( other_extras.special_message ) );
+      }
       else
+      {
+         set_system_variable( identity, "" );
+
          set_system_variable( c_error_message_prefix + identity,
           special_connection_message( other_extras.special_message, true ) );
+      }
    }
    else if( peer_type >= c_peer_type_combined )
    {
