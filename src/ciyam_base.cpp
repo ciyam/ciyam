@@ -7429,8 +7429,8 @@ void generate_new_script_sio_files( )
 
 void init_session(
  command_handler& cmd_handler, bool is_peer_session,
- const string* p_ip_addr, const string* p_blockchain,
- int port, bool is_support_session, bool add_pubkey_variable )
+ const string* p_ip_addr, const string* p_blockchain, int port,
+ bool is_support_session, bool add_pubkey_variable, size_t session_id )
 {
    // NOTE: Scope for guard object.
    {
@@ -7453,7 +7453,10 @@ void init_session(
       {
          if( !gtp_session && !g_sessions[ i ] )
          {
-            g_sessions[ i ] = new session( ++g_next_session_id,
+            if( !session_id )
+               session_id = ++g_next_session_id;
+
+            g_sessions[ i ] = new session( session_id,
              i, cmd_handler, g_storage_handlers[ 0 ], is_peer_session,
              p_ip_addr, p_blockchain, is_support_session, add_pubkey_variable );
 
@@ -7613,6 +7616,17 @@ void term_session( )
 
    if( gtp_session )
       throw runtime_error( "unable to terminate session" );
+}
+
+size_t reserve_session_id( size_t num_extras )
+{
+   guard g( g_session_mutex );
+
+   size_t next_session_id = ++g_next_session_id;
+
+   g_next_session_id += num_extras;
+
+   return next_session_id;
 }
 
 size_t session_id( )

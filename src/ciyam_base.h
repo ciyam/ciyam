@@ -424,9 +424,11 @@ void generate_new_script_sio_files( );
 void init_session(
  command_handler& cmd_handler, bool is_peer_session = false,
  const std::string* p_ip_addr = 0, const std::string* p_blockchain = 0,
- int port = 0, bool is_support_session = false, bool add_pubkey_variable = true );
+ int port = 0, bool is_support_session = false, bool add_pubkey_variable = true, size_t session_id = 0 );
 
 void term_session( );
+
+size_t reserve_session_id( size_t num_extras = 0 );
 
 size_t session_id( );
 
