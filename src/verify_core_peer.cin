@@ -102,7 +102,7 @@ OKAY=1
 .wait 1000
 @label END_LOOP
 @else
-@ifeq "$I" "10"
+@ifeq "$I" "25"
 @label END_LOOP
 ERROR=Timed out attempting to verify (check before retrying).
 #Error: $ERROR
