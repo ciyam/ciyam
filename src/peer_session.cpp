@@ -1045,9 +1045,11 @@ bool terminate_peer_session( bool is_for_support, const string& identity )
 
          if( has_any_support_session( ) )
             has_dependent = true;
-         else if( !paired_identity.empty( ) && ( paired_identity != unprefixed_peer ) )
+         else if( !peer.empty( )
+          && !paired_identity.empty( ) && ( paired_identity != unprefixed_peer ) )
          {
-            if( num_have_session_variable( paired_identity, true ) > 1 )
+            if( !has_system_variable( "~" + paired_identity )
+             && ( num_have_session_variable( paired_identity, true ) > 1 ) )
                has_dependent = true;
          }
 
@@ -1841,7 +1843,7 @@ void check_for_missing_other_sessions( const date_time& now )
       }
    }
 
-   if( checked_paired && ( is_owner || is_initiator ) )
+   if( is_initiator && checked_paired )
    {
       string hub_identity( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
@@ -7972,7 +7974,7 @@ void peer_session::on_start( )
 
          // NOTE: If the peer session should be able to be automatically
          // reconnected then will set the system variable for that now.
-         if( had_tag )
+         if( had_tag && !has_system_variable( get_special_var_name( e_special_var_no_auto_peers ) ) )
             set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, c_true_value );
 
          TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
@@ -9017,9 +9019,9 @@ void peer_session_starter::start_peer_session( const string& peer_info )
       requires_verification = true;
    }
 
-   // NOTE: If "@do_not_start_supporters" system variable exists then always set to zero
+   // NOTE: If "@no_support_sessions" system variable found then will always set to zero
    // (which can be useful to do temporarily when tracing peer session starting issues).
-   if( has_system_variable( get_special_var_name( e_special_var_do_not_start_supporters ) ) )
+   if( has_system_variable( get_special_var_name( e_special_var_no_support_sessions ) ) )
       num_for_support = 0;
 
    string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
@@ -9083,74 +9085,36 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    size_t zero_or_dummy = ( !num_for_support ? 0 : c_dummy_num_for_support );
 
-   peer_session* p_local_main = 0;
+   string unlocked_variable( get_special_var_name( e_special_var_unlocked ) );
 
-   // NOTE: Empty code block for scope purposes.
+   if( chain_type != e_peerchain_type_user )
+      unlocked_variable += '_' + identity;
+   else
+      unlocked_variable += '_' + reversed;
+
+   bool just_unlocked = false;
+
+   if( has_system_variable( unlocked_variable ) )
    {
-      size_t max_retry_seconds = 0;
+      just_unlocked = true;
 
-      string unlocked_variable( get_special_var_name( e_special_var_unlocked ) );
-
-      if( chain_type != e_peerchain_type_user )
-         unlocked_variable += '_' + identity;
-      else
-         unlocked_variable += '_' + reversed;
-
-      // NOTE: If the blockchain has just been unlocked
-      // then will try re-connecting for 30 seconds (to
-      // provide some time for the peer to also unlock).
-      if( has_system_variable( unlocked_variable ) )
-      {
-         max_retry_seconds = 30;
-
-         set_system_variable( unlocked_variable, "" );
-      }
-
-      date_time dtm( date_time::local( ) );
-
-      bool progress_message_changed = false;
-
-      string original_progress_message(
-       get_raw_system_variable( c_progress_output_prefix + identity ) );
-
-      while( true )
-      {
-         p_local_main = create_peer_initiator( blockchain + paired_suffix, info,
-          false, zero_or_dummy, false, false, false, chain_type, true, p_extra_value, &other_extras );
-
-         if( p_local_main )
-            break;
-
-         date_time now( date_time::local( ) );
-
-         uint64_t elapsed = seconds_between( dtm, now );
-
-         if( ( elapsed >= max_retry_seconds )
-          || ( other_extras.special_message != c_special_message_1 ) )
-         {
-            // NOTE: If not looping then will ignore "waiting for verification".
-            if( !other_extras.special_message.empty( )
-             && ( max_retry_seconds || ( other_extras.special_message != c_special_message_1 ) ) )
-               set_system_variable( c_error_message_prefix + identity,
-                special_connection_message( other_extras.special_message, ( elapsed >= max_retry_seconds ) ) );
-
-            break;
-         }
-
-         progress_message_changed = true;
-
-         set_system_variable( c_progress_output_prefix + identity,
-          special_connection_message( other_extras.special_message ) );
-
-         msleep( 1000 );
-      }
-
-      if( progress_message_changed )
-         set_system_variable( c_progress_output_prefix + identity, original_progress_message );
+      set_system_variable( unlocked_variable, "" );
    }
 
+   peer_session* p_local_main = create_peer_initiator( blockchain + paired_suffix, info,
+    false, zero_or_dummy, false, false, false, chain_type, true, p_extra_value, &other_extras );
+
    if( !p_local_main )
+   {
       set_system_variable( identity, "" );
+
+      if( just_unlocked && ( other_extras.special_message == c_special_message_1 ) )
+         set_system_variable( c_progress_output_prefix + identity,
+          special_connection_message( other_extras.special_message ) );
+      else
+         set_system_variable( c_error_message_prefix + identity,
+          special_connection_message( other_extras.special_message, true ) );
+   }
    else if( peer_type >= c_peer_type_combined )
    {
       if( other_extras.reserved_sess_id )
