@@ -75,6 +75,7 @@ enum special_var
    e_special_var_restore,
    e_special_var_slowest,
    e_special_var_storage,
+   e_special_var_timeout,
    e_special_var_tz_name,
    e_special_var_trigger,
    e_special_var_waiting,

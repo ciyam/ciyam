@@ -108,6 +108,7 @@ const char* const c_special_variable_pubkeyx = "@pubkeyx";
 const char* const c_special_variable_restore = "@restore";
 const char* const c_special_variable_slowest = "@slowest";
 const char* const c_special_variable_storage = "@storage";
+const char* const c_special_variable_timeout = "@timeout";
 const char* const c_special_variable_tz_name = "@tz_name";
 const char* const c_special_variable_trigger = "@trigger";
 const char* const c_special_variable_waiting = "@waiting";
@@ -445,6 +446,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_restore );
       g_special_variable_names.push_back( c_special_variable_slowest );
       g_special_variable_names.push_back( c_special_variable_storage );
+      g_special_variable_names.push_back( c_special_variable_timeout );
       g_special_variable_names.push_back( c_special_variable_tz_name );
       g_special_variable_names.push_back( c_special_variable_trigger );
       g_special_variable_names.push_back( c_special_variable_waiting );
