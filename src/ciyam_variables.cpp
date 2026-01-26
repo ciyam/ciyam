@@ -185,6 +185,7 @@ const char* const c_special_variable_export_needed = "@export_needed";
 const char* const c_special_variable_import_needed = "@import_needed";
 const char* const c_special_variable_last_file_put = "@last_file_put";
 const char* const c_special_variable_log_files_dir = "@log_files_dir";
+const char* const c_special_variable_no_auto_peers = "@no_auto_peers";
 const char* const c_special_variable_num_put_files = "@num_put_files";
 const char* const c_special_variable_peer_sec_hash = "@peer_sec_hash";
 const char* const c_special_variable_prior_storage = "@prior_storage";
@@ -265,6 +266,7 @@ const char* const c_special_variable_blockchain_identity = "@blockchain_identity
 const char* const c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
 const char* const c_special_variable_blockchain_num_puts = "@blockchain_num_puts";
 const char* const c_special_variable_key_prefix_is_first = "@key_prefix_is_first";
+const char* const c_special_variable_no_support_sessions = "@no_support_sessions";
 const char* const c_special_variable_peer_identity_alias = "@peer_identity_alias";
 const char* const c_special_variable_repo_crypt_password = "@repo_crypt_password";
 const char* const c_special_variable_skip_parent_updates = "@skip_parent_updates";
@@ -295,7 +297,6 @@ const char* const c_special_variable_blockchain_first_mapped = "@blockchain_firs
 const char* const c_special_variable_blockchain_height_other = "@blockchain_height_other";
 const char* const c_special_variable_blockchain_op_list_hash = "@blockchain_op_list_hash";
 const char* const c_special_variable_complete_restore_needed = "@complete_restore_needed";
-const char* const c_special_variable_do_not_start_supporters = "@do_not_start_supporters";
 const char* const c_special_variable_blockchain_backup_height = "@blockchain_backup_height";
 const char* const c_special_variable_blockchain_put_list_hash = "@blockchain_put_list_hash";
 const char* const c_special_variable_blockchain_shared_height = "@blockchain_shared_height";
@@ -521,6 +522,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_import_needed );
       g_special_variable_names.push_back( c_special_variable_last_file_put );
       g_special_variable_names.push_back( c_special_variable_log_files_dir );
+      g_special_variable_names.push_back( c_special_variable_no_auto_peers );
       g_special_variable_names.push_back( c_special_variable_num_put_files );
       g_special_variable_names.push_back( c_special_variable_peer_sec_hash );
       g_special_variable_names.push_back( c_special_variable_prior_storage );
@@ -601,6 +603,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_is_owner );
       g_special_variable_names.push_back( c_special_variable_blockchain_num_puts );
       g_special_variable_names.push_back( c_special_variable_key_prefix_is_first );
+      g_special_variable_names.push_back( c_special_variable_no_support_sessions );
       g_special_variable_names.push_back( c_special_variable_peer_identity_alias );
       g_special_variable_names.push_back( c_special_variable_repo_crypt_password );
       g_special_variable_names.push_back( c_special_variable_skip_parent_updates );
@@ -631,7 +634,6 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_height_other );
       g_special_variable_names.push_back( c_special_variable_blockchain_op_list_hash );
       g_special_variable_names.push_back( c_special_variable_complete_restore_needed );
-      g_special_variable_names.push_back( c_special_variable_do_not_start_supporters );
       g_special_variable_names.push_back( c_special_variable_blockchain_backup_height );
       g_special_variable_names.push_back( c_special_variable_blockchain_put_list_hash );
       g_special_variable_names.push_back( c_special_variable_blockchain_shared_height );
