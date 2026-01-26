@@ -60,9 +60,11 @@ class peer_session : public thread
 
    void process_greeting( );
 
+   void set_other_identity( const std::string& identity ) { other_identity = identity; }
+
    void set_num_for_support( size_t new_num ) { num_for_support = new_num; }
 
-   void set_other_identity( const std::string& identity ) { other_identity = identity; }
+   void set_reserved_sess_id( size_t new_id ) { reserved_sess_id = new_id; }
 
    void set_only_check_dummy( bool new_val ) { only_check_dummy = new_val; }
    void set_is_combined_backup( bool new_val ) { is_combined_backup = new_val; }
@@ -94,6 +96,7 @@ class peer_session : public thread
    int64_t time_val;
 
    size_t num_for_support;
+   size_t reserved_sess_id;
 
    std::string port;
    std::string ip_addr;
@@ -147,12 +150,11 @@ class peer_session_starter : public thread
 
 struct other_session_extras
 {
-   other_session_extras( size_t num = 0, const std::string* p_other_identity = 0 )
+   other_session_extras( size_t num = 0 )
    {
       num_for_support = num;
 
-      if( p_other_identity )
-         other_identity = *p_other_identity;
+      reserved_sess_id = 0;
 
       only_check_dummy = false;
       is_combined_backup = false;
@@ -166,11 +168,16 @@ struct other_session_extras
       if( num_for_support )
          s.set_num_for_support( num_for_support );
 
+      if( reserved_sess_id )
+         s.set_reserved_sess_id( reserved_sess_id );
+
       s.set_only_check_dummy( only_check_dummy );
+
       s.set_is_combined_backup( is_combined_backup );
    }
 
    size_t num_for_support;
+   size_t reserved_sess_id;
 
    bool only_check_dummy;
    bool is_combined_backup;

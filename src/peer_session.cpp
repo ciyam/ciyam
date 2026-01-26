@@ -1790,11 +1790,17 @@ void check_for_missing_other_sessions( const date_time& now )
                 + "missing paired session '" + paired_identity + "'" );
             }
 
+            size_t sess_id = 0;
+
+            if( is_initiator )
+               sess_id = session_id( );
+
             // NOTE: As the backup session should have been created before
             // the shared one will only include sessions that have an "id"
-            // that is less than that of the current session.
+            // that is less than that of the current session (only when is
+            // the initiator as session ids are reserved by an initiator).
             if( !backup_identity.empty( )
-             && num_have_session_variable( backup_identity, true, false, session_id( ) ) < 2 )
+             && num_have_session_variable( backup_identity, true, false, sess_id ) < 2 )
             {
                condemn_this_session( );
 
@@ -6993,6 +6999,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
  ip_addr( addr_info ),
  time_val( time_val ),
  num_for_support( 0 ),
+ reserved_sess_id( 0 ),
  up_socket( move( up_socket ) ),
  is_responder( is_responder ),
  is_for_support( is_for_support ),
@@ -7549,7 +7556,7 @@ void peer_session::on_start( )
       }
 
       init_session( cmd_handler, true, &ip_addr,
-       &unprefixed_blockchain, from_string< int >( port ), is_for_support, false );
+       &unprefixed_blockchain, from_string< int >( port ), is_for_support, false, reserved_sess_id );
 
       if( using_tls )
          session_is_using_tls( );
@@ -9010,6 +9017,11 @@ void peer_session_starter::start_peer_session( const string& peer_info )
       requires_verification = true;
    }
 
+   // NOTE: If "@do_not_start_supporters" system variable exists then always set to zero
+   // (which can be useful to do temporarily when tracing peer session starting issues).
+   if( has_system_variable( get_special_var_name( e_special_var_do_not_start_supporters ) ) )
+      num_for_support = 0;
+
    string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
 
    unique_ptr< temporary_system_variable > up_temp_secret_hash;
@@ -9054,6 +9066,20 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    if( chain_type == e_peerchain_type_backup )
       other_extras.is_combined_backup = ( peer_type == c_peer_type_combined );
+
+   if( !requires_verification
+    && ( create_reversed || other_extras.is_combined_backup ) )
+   {
+      size_t num_extras = 0;
+
+      if( peer_type >= c_peer_type_combined )
+         ++num_extras;
+
+      if( create_reversed )
+         num_extras += ( num_extras + 1 );
+
+      other_extras.reserved_sess_id = reserve_session_id( num_extras );
+   }
 
    size_t zero_or_dummy = ( !num_for_support ? 0 : c_dummy_num_for_support );
 
@@ -9126,8 +9152,13 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    if( !p_local_main )
       set_system_variable( identity, "" );
    else if( peer_type >= c_peer_type_combined )
+   {
+      if( other_extras.reserved_sess_id )
+         ++other_extras.reserved_sess_id;
+
       create_peer_initiator( blockchain, info,
        false, zero_or_dummy, false, true, false, chain_type, false, p_extra_value, &other_extras );
+   }
 
    // NOTE: If peer type is user or combined then will also create reversed identity sessions.
    if( p_local_main && create_reversed )
@@ -9135,11 +9166,17 @@ void peer_session_starter::start_peer_session( const string& peer_info )
       other_extras.other_identity = identity;
       other_extras.is_combined_backup = false;
 
+      if( other_extras.reserved_sess_id )
+         ++other_extras.reserved_sess_id;
+
       peer_session* p_local_reversed = create_peer_initiator( reversed_chain + paired_suffix, info,
        false, zero_or_dummy, false, false, false, reversed_chain_type, false, p_extra_value, &other_extras );
 
       if( p_local_reversed && ( peer_type >= c_peer_type_combined ) )
       {
+         if( other_extras.reserved_sess_id )
+            ++other_extras.reserved_sess_id;
+
          create_peer_initiator( reversed_chain, info,
           false, zero_or_dummy, false, true, false, reversed_chain_type, false, p_extra_value, &other_extras );
       }
