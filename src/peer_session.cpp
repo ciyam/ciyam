@@ -6961,6 +6961,7 @@ peer_session* construct_session(
    if( pos != string::npos )
    {
       blockchains = addr_info.substr( pos + 1 );
+
       string::size_type ppos = blockchains.find( ':' );
 
       if( ppos != string::npos )
@@ -7261,6 +7262,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
                            if( hash_prefix == hash.get_digest_as_string( ).substr( 0, 9 ) )
                            {
                               secret_hash = next_hash;
+
                               break;
                            }
                         }
@@ -7287,6 +7289,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          if( pos != string::npos )
          {
             pid.erase( pos );
+
             needs_key_exchange = true;
          }
 
@@ -7295,6 +7298,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          if( pos != string::npos )
          {
             pid.erase( pos );
+
             other_is_owner = true;
          }
 
@@ -8353,6 +8357,7 @@ void peer_listener::on_start( )
          else
          {
             s.close( );
+
             issue_error( "unexpected socket error" );
 
             if( !unprefixed_blockchains.empty( ) )
@@ -9162,10 +9167,16 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    string unlocked_variable( get_special_var_name( e_special_var_unlocked ) );
 
+   bool is_locked_user_chain = false;
+
    if( chain_type != e_peerchain_type_user )
       unlocked_variable += '_' + identity;
    else
+   {
       unlocked_variable += '_' + reversed;
+
+      is_locked_user_chain = is_locked_blockchain( reversed );
+   }
 
    bool just_unlocked = false;
 
@@ -9193,8 +9204,13 @@ void peer_session_starter::start_peer_session( const string& peer_info )
       {
          set_system_variable( identity, "" );
 
-         set_system_variable( c_error_message_prefix + identity,
-          special_connection_message( other_extras.special_message, true ) );
+         // NOTE: If is a user chain and both are locked then assume
+         // the user will be prompted to verify (and can thus ignore
+         // this error which just occurs due to the check ordering).
+         if( !is_locked_user_chain
+          || ( other_extras.special_message != c_special_message_1 ) )
+            set_system_variable( c_error_message_prefix + identity,
+             special_connection_message( other_extras.special_message, true ) );
       }
    }
    else if( peer_type >= c_peer_type_combined )
