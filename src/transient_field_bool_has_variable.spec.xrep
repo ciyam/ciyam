@@ -1,6 +1,6 @@
 `{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_bool_has_variable)] `{`$arg_id`}
-`{`$val`=`$arg_value`}`{`@eq`(`$val`,`'@null`'`)`$val`=`'`'`}\
+`{`$val`=`$arg_value`}`{`@eq`(`$val`,`'""`'`)`$val`=`'`'`}\
 `{`@eq`(`$arg_system`,`'true`'`)\
    get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_is_neq`,`'true`'`)!`}has_system_variable( "`{`$val`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`} ) );
 `,`@eq`(`$arg_session`,`'true`'`)\
