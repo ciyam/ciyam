@@ -268,7 +268,6 @@ string special_connection_message( const string& id, bool has_timed_out = false 
    else
       msg = "unexpected special connection message '" + id + "'";
 
-
    return msg;
 }
 
@@ -9194,8 +9193,9 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    {
       if( just_unlocked && ( other_extras.special_message == c_special_message_1 ) )
       {
-         set_system_variable( get_special_var_name( e_special_var_timeout ) + '_' + identity,
-          to_string( c_timeout_ticks ) + ':' + special_connection_message( other_extras.special_message, true ) );
+         if( has_system_variable( identity ) )
+            set_system_variable( get_special_var_name( e_special_var_timeout ) + '_' + identity,
+             to_string( c_timeout_ticks ) + ':' + special_connection_message( other_extras.special_message, true ) );
 
          set_system_variable( c_progress_output_prefix + identity,
           special_connection_message( other_extras.special_message ) );
@@ -9204,13 +9204,16 @@ void peer_session_starter::start_peer_session( const string& peer_info )
       {
          set_system_variable( identity, "" );
 
-         // NOTE: If is a user chain and both are locked then assume
-         // the user will be prompted to verify (and can thus ignore
-         // this error which just occurs due to the check ordering).
-         if( !is_locked_user_chain
-          || ( other_extras.special_message != c_special_message_1 ) )
-            set_system_variable( c_error_message_prefix + identity,
-             special_connection_message( other_extras.special_message, true ) );
+         if( !other_extras.special_message.empty( ) )
+         {
+            // NOTE: If is a user chain and both are locked then assume
+            // the user will be prompted to verify (and can thus ignore
+            // this error which just occurs due to the check ordering).
+            if( !is_locked_user_chain
+             || ( other_extras.special_message != c_special_message_1 ) )
+               set_system_variable( c_error_message_prefix + identity,
+                special_connection_message( other_extras.special_message, true ) );
+         }
       }
    }
    else if( peer_type >= c_peer_type_combined )
