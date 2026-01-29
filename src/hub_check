@@ -12,6 +12,6 @@ if [ -f "$GENERATE_HUB_BLOCK_FILE" ]; then
  PEER_HUB_HEIGHT=$(./system_variable get @blockchain_peer_hub_height)
 
  if [ ! "$PEER_HUB_HEIGHT" = "" ]; then
-  ./generate_next_block -hub
+  ./ciyam_script generate_next_block -hub
  fi
 fi
