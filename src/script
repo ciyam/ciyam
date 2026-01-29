@@ -30,7 +30,7 @@ else
   log=0
  fi
 
- ./ciyam_client -echo -quiet -no_prompt -no_stderr -no_progress -args_file=$1 < $1 >>$1.log
+ ./ciyam_client -quiet -no_prompt -no_stderr -no_progress -args_file=$1 < $1 >>$1.log
 
  if [ $? -eq 0 ] && [ $log_on_error = 1 ]; then
   log=0

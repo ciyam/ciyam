@@ -7,5 +7,5 @@
 if [ $# -lt 1 ]; then
  echo "Usage: export_encrypted_ods_db [app name]"
 else
- ./ciyam_client -echo -quiet -no_prompt -no_stderr -exec="<export_encrypted_ods_db.cin $*"
+ ./ciyam_client -quiet -no_prompt -no_stderr -exec="<export_encrypted_ods_db.cin $*"
 fi
