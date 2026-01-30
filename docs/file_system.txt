@@ -19,9 +19,7 @@ To see the list and usage of all the file system commands issue the following co
 
 > ? file*
 
-When starting "ciyam_server" the files area directory can be modified using the "-files_area_dir=<directory>"
-option and it should also be noted that the system log files ("ciyam_script.log" and "ciyam_server.log") will
-be created in the files area directory if no specific log files directory has been provided.
+When starting "ciyam_server" the files area path can be modified using the "-files_area=<path>" option.
 
 Fundamental File Types
 ----------------------
@@ -276,23 +274,23 @@ files are using 152 bytes of the maximum possible capacity of 100 GB being used 
 There are three settings in "ciyam_server.sio" configuration file that are relevant to this file system which
 are as follows (uncomment and change then restart "ciyam_server" for the new settings to take effect):
 
- <files/>
-#  <directory>.files
+ <files_area/>
+#  <path>.files
 #  <max_file_size>1M
 #  <max_num_files>100K
- </files>
+ </files_area>
 
-The files directory is named ".files" by default (and is located immediately beneath the application server's
-current working directory) and can be changed with the directory attribute in the server's configuration file
-or via a server startup option. It can also be changed at run-time by using the special system variable named
-"@files_area_dir" (which will result in an automatic "file_resync" when set).
+The files path is set to ".files" by default (being a hidden directory created below the application server's
+directory) and can be changed with the path attribute in the server's configuration file or by using a server
+startup option. It can also be changed at run-time by setting the system variable "@files_area_path" (with an
+automatic "file_resync" taking place when its value is changed).
 
 It may be useful to increase the maximum number of files permitted (assuming there is available disk storage)
 but any change to the maximum file size should only be temporary (such as for testing purposes) as this value
 needs to be identical between peer connections.
 
-It is not recommended to do any changes to the "files" subdirectory directly but if this has occurred then it
-is possible to re-synchronise the application server with the following command:
+It is not recommended to make any changes to the ".files" directory directly but if this has occurred then it
+is possible to resync the application server with the following command:
 
 > file_resync
 

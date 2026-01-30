@@ -29,7 +29,7 @@ cd ~/ciyam/src
  rm -rf $CDD/*
  mkdir -p $CDD/e3733d121
 
- ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_dir=$CDD -files_area_dir=$CDD 13031 &
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_files=$CDD -files_area=$CDD 13031 &
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
 
  ./ciyam_client -quiet -connect_retries=10 13031
@@ -176,7 +176,7 @@ e3733d121 [okay      ] (178.4 kB/10.0 MB) bc.e3733d121/e3733d121
 ^C
 
  fg
-./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_dir=$CDD -files_area_dir=$CDD 13031
+./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_files=$CDD -files_area=$CDD 13031
 ^C
 
 #-----------------------------------------------------------------------------------------------------------#
@@ -215,7 +215,7 @@ exit
 #-----------------------------------------------------------------------------------------------------------#
  rm -rf .files/*
 
- ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_dir=$CDD -files_area_dir=$CDD 13031 &
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_files=$CDD -files_area=$CDD 13031 &
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
 
  ./ciyam_client -quiet -connect_retries=10 13031
@@ -273,11 +273,11 @@ e3733d121 [okay      ] (178.4 kB/10.0 MB) .files/e3733d121
 [core-blob] 2f81b61b72185ec053c8f5bfaa65c78ba2ac49f3cf28583701ab25c3f5870c7c (285 B) blk
 
 #-----------------------------------------------------------------------------------------------------------#
-# Now shut down the '-log_dir=$CDD -files_area_dir=$CDD' server instance using 'fg' and 'ctrl-c'            #
+# Now shut down the '-log_files=$CDD -files_area=$CDD' server instance using 'fg' and 'ctrl-c'              #
 #-----------------------------------------------------------------------------------------------------------#
 
  fg %1
-./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_dir=$CDD -files_area_dir=$CDD 13031
+./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_files=$CDD -files_area=$CDD 13031
 ^C
 
 #-----------------------------------------------------------------------------------------------------------#
@@ -286,7 +286,7 @@ e3733d121 [okay      ] (178.4 kB/10.0 MB) .files/e3733d121
  rm -rf $CDD/*
  mkdir -p $CDD/e3733d121
 
- ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_dir=$CDD -files_area_dir=$CDD 13031 &
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_files=$CDD -files_area=$CDD 13031 &
 
  ./ciyam_client -quiet -connect_retries=10 13031
 file_archive -add $CDD/e3733d121 10MB e3733d121
@@ -432,7 +432,7 @@ ciyam
 ^C
 
  fg
-./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_dir=$CDD -files_area_dir=$CDD 13031
+./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_files=$CDD -files_area=$CDD 13031
 ^C
 
 #-----------------------------------------------------------------------------------------------------------#
@@ -593,7 +593,7 @@ d74a4c88ad8f3fc3295da8967ffa452ac2669d3cbf6dee738fadb180ddfd3751 (photo_5.jpg.00
 #-----------------------------------------------------------------------------------------------------------#
 # Assuming normal files area is owner and at height 5 use this to test incomplete backup recovery           #
 #-----------------------------------------------------------------------------------------------------------#
- ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_dir=$CDD -files_area_dir=$CDD 13031 &
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_files=$CDD -files_area=$CDD 13031 &
 
 ./ciyam_client 13031
 file_info -content bc.e3733d121.zenith
@@ -661,7 +661,7 @@ vi .files/ciyam_server.log
 #-----------------------------------------------------------------------------------------------------------#
 # Assuming special files area is backup and at height 5 use this to test incomplete clone recovery          #
 #-----------------------------------------------------------------------------------------------------------#
- ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_dir=$CDD -files_area_dir=$CDD 13031 &
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_files=$CDD -files_area=$CDD 13031 &
 
  ./ciyam_client -quiet -connect_retries=10 13031
 peer_listen 12021 e3733d121
@@ -728,7 +728,7 @@ vi .files/ciyam_server.log
 #-----------------------------------------------------------------------------------------------------------#
 # Assuming special files area is backup and at height 5 use this to test incomplete restore recovery        #
 #-----------------------------------------------------------------------------------------------------------#
- ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_dir=$CDD -files_area_dir=$CDD 13031 &
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -log_files=$CDD -files_area=$CDD 13031 &
 
  ./ciyam_client -quiet -connect_retries=10 13031
 peer_listen 12021 e3733d121
