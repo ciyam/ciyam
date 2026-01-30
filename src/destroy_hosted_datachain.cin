@@ -14,7 +14,7 @@ ERROR=1
 ;
 IDENTITY=$1
 ;
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 .file_kill -p=bc.$IDENTITY.*

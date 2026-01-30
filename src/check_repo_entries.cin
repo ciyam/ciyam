@@ -15,7 +15,7 @@ TOTAL_REPO_ENTRIES=0
 UUID=$OUTPUT
 .session_variable @set commence
 .session_variable @deque commence
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 .session_variable @blockchain_archive_path $FILES_AREA_DIR/$IDENTITY
 @ifeq "$CHECK_HEIGHT" ""

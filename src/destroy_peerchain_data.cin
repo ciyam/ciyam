@@ -11,7 +11,7 @@
 @ifdef $OUTPUT
 IDENTITY=$OUTPUT
 ;
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 .file_kill -p=bc.$IDENTITY.*

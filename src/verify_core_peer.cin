@@ -29,7 +29,7 @@ REVERSED=*!reverse?$IDENTITY
 @else
 PEER_IDENTITY=$IDENTITY
 ;
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 .peerchain_info -list

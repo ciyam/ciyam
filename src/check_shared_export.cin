@@ -28,7 +28,7 @@ REVERSED=*!reverse?$IDENTITY
 @else
 PEER_IDENTITY=$IDENTITY
 ;
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 .peerchain_info -list
@@ -108,7 +108,7 @@ I=@$I+1
 @ifeq "$FOUND" "1"
 &Export Shared? [EXPORT:Yes==1|No=]
 @ifdef $EXPORT
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 .peerchain_info $PEER_IDENTITY shared_secret

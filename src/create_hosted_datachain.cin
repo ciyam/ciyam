@@ -28,7 +28,7 @@ PEER_DATA_SIZE=1GB
 PEER_DATA_SIZE=100MB
 @endif
 ;
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 ~mkdir $FILES_AREA_DIR/$IDENTITY

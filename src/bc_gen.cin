@@ -358,7 +358,7 @@ HUB_EXTRA_OR_TEST_CHAIN=1
 @endif
 ;
 @ifndef $HUB_EXTRA_OR_TEST_CHAIN
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 @ifdef $DATA

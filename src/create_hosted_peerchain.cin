@@ -77,7 +77,7 @@ BACKUP_SIZE=100GB
 SHARED_SIZE=10GB
 @endif
 ;
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 ~mkdir $FILES_AREA_DIR/$IDENTITY

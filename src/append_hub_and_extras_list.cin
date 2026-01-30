@@ -8,7 +8,7 @@
 @else
 FILE_NAME=$1
 ;
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 .session_variable @set commence

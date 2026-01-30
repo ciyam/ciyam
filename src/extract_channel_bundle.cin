@@ -57,7 +57,7 @@ MODULE=%MODULES:2%
 BLOCK_HEIGHT=$OUTPUT
 @endif
 ;
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 .session_variable @blockchain_archive_path $FILES_AREA_DIR/$BLOCKCHAIN

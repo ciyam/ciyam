@@ -26,7 +26,7 @@ REVERSE=*!reverse?$CHANNEL
 .file_archive -destroy $CHANNEL
 .file_archive -destroy $REVERSE
 ;
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 ~rmdir $FILES_AREA_DIR/$CHANNEL

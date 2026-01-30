@@ -92,7 +92,7 @@ FETCH_HIGHEST=$OUTPUT
 ;
 SUBMIT_AFTER_FETCH=
 ;
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 @:PRE_LOOP

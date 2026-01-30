@@ -88,7 +88,7 @@ REVERSED=*!reverse?$IDENTITY
 @endif
 ;
 @ifndef $PEERCHAIN_HUB
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 <bc_next_extra.cin

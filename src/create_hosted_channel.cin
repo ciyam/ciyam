@@ -37,7 +37,7 @@ CHANNEL_SIZE=100MB
 CHANNEL_SIZE=1GB
 @endif
 ;
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 ~mkdir $FILES_AREA_DIR/$COMBINED

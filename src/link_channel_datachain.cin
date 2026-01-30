@@ -38,7 +38,7 @@ ERROR=Unexpected datachain type missing for '$IDENTITY'.
 #Error: $ERROR
 @else
 ;
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 DEMO=

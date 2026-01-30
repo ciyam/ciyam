@@ -21,7 +21,7 @@ OTHER=$2
 @retain COMBINED,REVERSED
 <channel_identity.cin $IDENT $OTHER
 ;
-.system_variable @files_area_dir
+.system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
 .file_kill -p=bc.$COMBINED.*
