@@ -279,9 +279,9 @@ file_kill -p=test
 file_put 1K*~test.jpg test
 ~rm ~test.jpg
 file_stats
-system_variable @files_area_dir test1
+system_variable @files_area_path test1
 file_stats
-system_variable @files_area_dir ""
+system_variable @files_area_path ""
 file_stats
 ~rm test1/ciyam_server.dat
 ~rm test1/ciyam_server.hdr

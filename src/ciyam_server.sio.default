@@ -53,11 +53,6 @@
 #   <max_attached_data>100kB
 #  </smtp>
  </email>
- <files/>
-#  <directory>.files
-#  <max_file_size>1M
-#  <max_num_files>100K
- </files>
 # <extern/>
 #  <client/>
 #   <label>XBT
@@ -71,4 +66,9 @@
 #   <script_name>tbitcoin
 #  </client>
 # </extern>
+ <files_area/>
+#  <path>.files
+#  <max_file_size>1M
+#  <max_num_files>100K
+ </files_area>
 </sio>

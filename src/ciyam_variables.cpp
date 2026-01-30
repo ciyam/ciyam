@@ -185,7 +185,6 @@ const char* const c_special_variable_backup_needed = "@backup_needed";
 const char* const c_special_variable_export_needed = "@export_needed";
 const char* const c_special_variable_import_needed = "@import_needed";
 const char* const c_special_variable_last_file_put = "@last_file_put";
-const char* const c_special_variable_log_files_dir = "@log_files_dir";
 const char* const c_special_variable_no_auto_peers = "@no_auto_peers";
 const char* const c_special_variable_num_put_files = "@num_put_files";
 const char* const c_special_variable_peer_sec_hash = "@peer_sec_hash";
@@ -199,8 +198,8 @@ const char* const c_special_variable_sub_directory = "@sub_directory";
 const char* const c_special_variable_trace_filters = "@trace_filters";
 const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_cmd_delay_wait = "@cmd_delay_wait";
-const char* const c_special_variable_files_area_dir = "@files_area_dir";
 const char* const c_special_variable_force_internal = "@force_internal";
+const char* const c_special_variable_log_files_path = "@log_files_path";
 const char* const c_special_variable_peer_clone_key = "@peer_clone_key";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
@@ -219,6 +218,7 @@ const char* const c_special_variable_blockchain_data = "@blockchain_data";
 const char* const c_special_variable_blockchain_user = "@blockchain_user";
 const char* const c_special_variable_ciyam_list_hash = "@ciyam_list_hash";
 const char* const c_special_variable_cmd_delay_after = "@cmd_delay_after";
+const char* const c_special_variable_files_area_path = "@files_area_path";
 const char* const c_special_variable_force_db_create = "@force_db_create";
 const char* const c_special_variable_log_all_scripts = "@log_all_scripts";
 const char* const c_special_variable_notifier_events = "@notifier_events";
@@ -523,7 +523,6 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_export_needed );
       g_special_variable_names.push_back( c_special_variable_import_needed );
       g_special_variable_names.push_back( c_special_variable_last_file_put );
-      g_special_variable_names.push_back( c_special_variable_log_files_dir );
       g_special_variable_names.push_back( c_special_variable_no_auto_peers );
       g_special_variable_names.push_back( c_special_variable_num_put_files );
       g_special_variable_names.push_back( c_special_variable_peer_sec_hash );
@@ -537,8 +536,8 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_trace_filters );
       g_special_variable_names.push_back( c_special_variable_update_fields );
       g_special_variable_names.push_back( c_special_variable_cmd_delay_wait );
-      g_special_variable_names.push_back( c_special_variable_files_area_dir );
       g_special_variable_names.push_back( c_special_variable_force_internal );
+      g_special_variable_names.push_back( c_special_variable_log_files_path );
       g_special_variable_names.push_back( c_special_variable_peer_clone_key );
       g_special_variable_names.push_back( c_special_variable_peer_initiator );
       g_special_variable_names.push_back( c_special_variable_peer_responder );
@@ -557,6 +556,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_user );
       g_special_variable_names.push_back( c_special_variable_ciyam_list_hash );
       g_special_variable_names.push_back( c_special_variable_cmd_delay_after );
+      g_special_variable_names.push_back( c_special_variable_files_area_path );
       g_special_variable_names.push_back( c_special_variable_force_db_create );
       g_special_variable_names.push_back( c_special_variable_log_all_scripts );
       g_special_variable_names.push_back( c_special_variable_notifier_events );
@@ -1112,7 +1112,7 @@ string get_raw_system_variable( const string& name, bool is_internal )
       }
       else if( name == get_special_var_name( e_special_var_none ) )
          retval = " ";
-      else if( var_name == c_special_variable_files_area_dir )
+      else if( var_name == c_special_variable_files_area_path )
          retval = c_ciyam_files_directory;
    }
 
@@ -1344,9 +1344,9 @@ void set_system_variable( const string& name, const string& value, bool is_init,
        || ( var_name == c_special_variable_peer_port )
        || ( var_name == c_special_variable_sid_locked )
        || ( var_name == c_special_variable_sid_secure )
-       || ( var_name == c_special_variable_log_files_dir )
        || ( var_name == c_special_variable_trace_filters )
-       || ( var_name == c_special_variable_files_area_dir )
+       || ( var_name == c_special_variable_log_files_path )
+       || ( var_name == c_special_variable_files_area_path )
        || ( var_name == c_special_variable_trace_session_ids )
        || ( var_name == c_special_variable_generate_hub_block )
        || ( var_name == c_special_variable_disallow_connections )
@@ -1392,7 +1392,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
       }
       else
       {
-         if( val.empty( ) && ( var_name == string( c_special_variable_files_area_dir ) ) )
+         if( val.empty( ) && ( var_name == string( c_special_variable_files_area_path ) ) )
             val = string( c_ciyam_files_directory );
 
          if( !is_init )
@@ -1407,12 +1407,12 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          }
       }
 
-      if( var_name == string( c_special_variable_log_files_dir ) )
+      if( var_name == string( c_special_variable_log_files_path ) )
       {
          if( !is_init )
-            set_log_files_dir( val );
+            set_log_files_path( val );
       }
-      else if( var_name == string( c_special_variable_files_area_dir ) )
+      else if( var_name == string( c_special_variable_files_area_path ) )
       {
          if( !is_init )
          {
@@ -1423,9 +1423,9 @@ void set_system_variable( const string& name, const string& value, bool is_init,
             // just in case a deadlock could arise during the resync calls.
             guard g( g_mutex, "set_system_variable" );
 
-            string from( get_files_area_dir( ) );
+            string from( get_files_area_path( ) );
 
-            set_files_area_dir( val );
+            set_files_area_path( val );
 
             resync_files_area( p_progress );
             resync_system_ods( p_progress );
@@ -1466,8 +1466,8 @@ bool set_system_variable( const string& name, const string& value,
 
    check_system_variable_can_be_set( name );
 
-   if( name == string( c_special_variable_files_area_dir ) )
-      throw runtime_error( "invalid attempt to change the files area dir" );
+   if( name == string( c_special_variable_files_area_path ) )
+      throw runtime_error( "invalid attempt to change the files area path" );
 
    string new_value( value );
 

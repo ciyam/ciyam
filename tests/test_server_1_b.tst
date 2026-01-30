@@ -542,10 +542,10 @@ file_kill -p=test
 file_put 1K*~test.jpg test
 file_stats
 [8/100000]7.0 kB/100.0 GB:8 tag(s)
-system_variable @files_area_dir test1
+system_variable @files_area_path test1
 file_stats
 [0/100000]0 B/100.0 GB:0 tag(s)
-system_variable @files_area_dir ""
+system_variable @files_area_path ""
 file_stats
 [8/100000]7.0 kB/100.0 GB:8 tag(s)
 file_info -recurse -d=999 test

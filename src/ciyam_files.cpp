@@ -406,7 +406,7 @@ string construct_file_name_from_hash(
          return file_name;
    }
 
-   file_name = get_files_area_dir( );
+   file_name = get_files_area_path( );
 
    file_name += '/';
    file_name += lower( hash.substr( 0, 2 ) );
@@ -882,7 +882,7 @@ string dir_archive_path( const string& path )
    {
       retval.erase( 0, files_prefix.size( ) );
 
-      retval.insert( 0, get_files_area_dir( ) );
+      retval.insert( 0, get_files_area_path( ) );
    }
 
    return retval;
@@ -1086,22 +1086,22 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
 {
    string cwd( get_cwd( ) );
 
-   string files_area_dir( get_system_variable( get_special_var_name( e_special_var_files_area_dir ) ) );
+   string files_area_path( get_system_variable( get_special_var_name( e_special_var_files_area_path ) ) );
 
-   set_files_area_dir( files_area_dir );
+   set_files_area_path( files_area_path );
 
-   // NOTE: If no system variable then setting the directory to an empty string
-   // results in it being reset to the default directory (which is now fetched).
-   files_area_dir = get_files_area_dir( );
+   // NOTE: If no system variable then setting the path to an empty string
+   // results in it being reset to the default path (which is now fetched).
+   files_area_path = get_files_area_path( );
 
-   if( !files_area_dir.empty( ) && files_area_dir[ 0 ] != '/' )
-      files_area_dir = cwd + '/' + files_area_dir;
+   if( !files_area_path.empty( ) && ( files_area_path[ 0 ] != '/' ) )
+      files_area_path = cwd + '/' + files_area_path;
 
    size_t max_num = get_files_area_item_max_num( );
    size_t max_size = get_files_area_item_max_size( );
 
-   if( !dir_exists( files_area_dir ) )
-      create_directories( files_area_dir + "/" );
+   if( !dir_exists( files_area_path ) )
+      create_directories( files_area_path + "/" );
    else
    {
       date_time dtm( date_time::local( ) );
@@ -1109,7 +1109,7 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
 
       directory_filter df;
 
-      fs_iterator dfsi( files_area_dir, &df );
+      fs_iterator dfsi( files_area_path, &df );
 
       bool is_first = true;
 
@@ -1622,7 +1622,7 @@ string file_type_info( const string& tag_or_hash,
 
    string header_suffix;
    string use_tag_or_hash( tag_or_hash );
-   string files_area_dir( get_files_area_dir( ) );
+   string files_area_path( get_files_area_path( ) );
 
    size_t num_seconds = 0;
 
@@ -2846,7 +2846,7 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
    if( pos == string::npos )
    {
       if( name.find( c_time_stamp_tag_prefix ) != 0 )
-         file_remove( get_files_area_dir( ) + '/' + name );
+         file_remove( get_files_area_path( ) + '/' + name );
 
       if( g_tag_hashes.count( name ) )
       {
@@ -2979,7 +2979,7 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
 
          bool insert_tag = true;
 
-         string prefix( get_files_area_dir( ) );
+         string prefix( get_files_area_path( ) );
 
          // NOTE: If the tag name is time-stamp prefixed then will "touch" the
          // file so it will have the same tag prefix (to the same second) when
@@ -4648,11 +4648,11 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
 
    string path_to_store( path );
 
-   string files_area_dir( get_files_area_dir( ) );
+   string files_area_path( get_files_area_path( ) );
 
-   if( path_to_store.find( files_area_dir + '/' ) == 0 )
+   if( path_to_store.find( files_area_path + '/' ) == 0 )
    {
-      path_to_store.erase( 0, files_area_dir.length( ) );
+      path_to_store.erase( 0, files_area_path.length( ) );
 
       path_to_store.insert( 0, get_special_var_name( e_special_var_files ) );
    }
