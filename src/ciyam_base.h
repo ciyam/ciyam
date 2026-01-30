@@ -300,26 +300,26 @@ bool get_use_udp( );
 
 bool get_using_ssl( );
 
-std::string get_log_files_dir( );
+std::string get_log_files_path( );
 
-extern "C" void set_log_files_dir( const char* p_dir_name );
+extern "C" void set_log_files_path( const char* p_log_files_path );
 
-typedef void ( *fp_set_log_files_dir )( const char* );
+typedef void ( *fp_set_log_files_path )( const char* );
 
-inline void set_log_files_dir( const std::string& log_files_dir )
+inline void set_log_files_path( const std::string& log_files_path )
 {
-   set_log_files_dir( log_files_dir.c_str( ) );
+   set_log_files_path( log_files_path.c_str( ) );
 }
 
-std::string get_files_area_dir( );
+std::string get_files_area_path( );
 
-extern "C" void set_files_area_dir( const char* p_files_area_dir );
+extern "C" void set_files_area_path( const char* p_files_area_path );
 
-typedef void ( *fp_set_files_area_dir )( const char* );
+typedef void ( *fp_set_files_area_path )( const char* );
 
-inline void set_files_area_dir( const std::string& files_area_dir )
+inline void set_files_area_path( const std::string& files_area_path )
 {
-   set_files_area_dir( files_area_dir.c_str( ) );
+   set_files_area_path( files_area_path.c_str( ) );
 }
 
 size_t get_notifier_ignore_secs( );

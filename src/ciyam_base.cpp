@@ -166,8 +166,10 @@ const char* const c_section_mbox = "mbox";
 const char* const c_section_pop3 = "pop3";
 const char* const c_section_smtp = "smtp";
 const char* const c_section_email = "email";
-const char* const c_section_files = "files";
+const char* const c_section_client = "client";
+const char* const c_section_extern = "extern";
 const char* const c_section_script = "script";
+const char* const c_section_files_area = "files_area";
 
 const char* const c_attribute_name = "name";
 const char* const c_attribute_path = "path";
@@ -185,7 +187,6 @@ const char* const c_attribute_timezone = "timezone";
 const char* const c_attribute_username = "username";
 const char* const c_attribute_web_root = "web_root";
 const char* const c_attribute_arguments = "arguments";
-const char* const c_attribute_directory = "directory";
 const char* const c_attribute_max_peers = "max_peers";
 const char* const c_attribute_use_https = "use_https";
 const char* const c_attribute_ntfy_server = "ntfy_server";
@@ -215,9 +216,6 @@ const char* const c_attribute_max_storage_handlers = "max_storage_handlers";
 const char* const c_attribute_notifier_ignore_secs = "notifier_ignore_secs";
 const char* const c_attribute_num_recv_stream_sessions = "num_recv_stream_sessions";
 const char* const c_attribute_num_send_stream_sessions = "num_send_stream_sessions";
-
-const char* const c_section_client = "client";
-const char* const c_section_extern = "extern";
 
 const char* const c_attribute_port = "port";
 const char* const c_attribute_label = "label";
@@ -1931,10 +1929,10 @@ size_t g_max_storage_handlers = c_max_storage_handlers_default + 1; // i.e. extr
 
 size_t g_notifier_ignore_secs = c_notifier_ignore_secs_default;
 
-string g_log_files_dir;
+string g_log_files_path;
 
-string g_files_area_dir;
-string g_files_area_dir_default;
+string g_files_area_path;
+string g_files_area_path_default;
 
 size_t g_files_area_item_max_num = c_files_area_item_max_num_default;
 size_t g_files_area_item_max_size = c_files_area_item_max_size_default;
@@ -2204,7 +2202,8 @@ struct reconstruct_trace_progress : progress
 
 void init_system_ods( bool* p_restored = 0 )
 {
-   string ods_db_name( get_files_area_dir( ) );
+   string ods_db_name( get_files_area_path( ) );
+
    ods_db_name += '/' + string( c_ciyam_server );
 
    string system_db_files = ods_file_names( ods_db_name );
@@ -2263,7 +2262,7 @@ void init_system_ods( bool* p_restored = 0 )
 
             string stored_file_name( replaced( backup_file_name, c_sav_file_ext, c_old_file_ext ) );
 
-            string system_file_name( get_files_area_dir( ) + '/' + replaced( backup_file_name, c_sav_file_ext, "" ) );
+            string system_file_name( get_files_area_path( ) + '/' + replaced( backup_file_name, c_sav_file_ext, "" ) );
 
             if( file_exists( backup_file_name ) )
             {
@@ -3844,13 +3843,13 @@ void read_server_configuration( )
       g_rpc_password = reader.read_opt_attribute( c_attribute_rpc_password );
       g_sql_password = reader.read_opt_attribute( c_attribute_sql_password );
 
-      string log_files_dir( reader.read_opt_attribute( c_attribute_log_files_path ) );
+      string log_files_path( reader.read_opt_attribute( c_attribute_log_files_path ) );
 
       // NOTE: Don't override if was provided as a startup option.
-      if( g_log_files_dir.empty( ) )
-         set_log_files_dir( log_files_dir );
+      if( g_log_files_path.empty( ) )
+         set_log_files_path( log_files_path );
 
-      set_system_variable( get_special_var_name( e_special_var_log_files_dir ), g_log_files_dir, true );
+      set_system_variable( get_special_var_name( e_special_var_log_files_path ), g_log_files_path, true );
 
       int test_peer_port = atoi( reader.read_opt_attribute( c_attribute_test_peer_port, "0" ).c_str( ) );
 
@@ -3994,23 +3993,6 @@ void read_server_configuration( )
 
       reader.finish_section( c_section_email );
 
-      reader.start_section( c_section_files );
-
-      string files_area_dir( reader.read_opt_attribute( c_attribute_directory ) );
-
-      // NOTE: Don't override if was provided as a startup option.
-      if( !has_system_variable( get_special_var_name( e_special_var_files_area_dir ) ) )
-         set_files_area_dir( files_area_dir );
-
-      g_files_area_item_max_size = ( size_t )unformat_bytes( reader.read_opt_attribute(
-       c_attribute_max_file_size, to_string( c_files_area_item_max_size_default ) ).c_str( ) );
-
-      // NOTE: Use "unformat_bytes" here also so 100K (instead of 100000) can be used.
-      g_files_area_item_max_num = ( size_t )unformat_bytes( reader.read_opt_attribute(
-       c_attribute_max_num_files, to_string( c_files_area_item_max_num_default ) ).c_str( ) );
-
-      reader.finish_section( c_section_files );
-
       if( reader.has_started_section( c_section_extern ) )
       {
          while( reader.has_started_section( c_section_client ) )
@@ -4033,6 +4015,23 @@ void read_server_configuration( )
 
          reader.finish_section( c_section_extern );
       }
+
+      reader.start_section( c_section_files_area );
+
+      string files_area_path( reader.read_opt_attribute( c_attribute_path ) );
+
+      // NOTE: Don't override if was provided as a startup option.
+      if( !has_system_variable( get_special_var_name( e_special_var_files_area_path ) ) )
+         set_files_area_path( files_area_path );
+
+      g_files_area_item_max_size = ( size_t )unformat_bytes( reader.read_opt_attribute(
+       c_attribute_max_file_size, to_string( c_files_area_item_max_size_default ) ).c_str( ) );
+
+      // NOTE: Use "unformat_bytes" here also so 100K (instead of 100000) can be used.
+      g_files_area_item_max_num = ( size_t )unformat_bytes( reader.read_opt_attribute(
+       c_attribute_max_num_files, to_string( c_files_area_item_max_num_default ) ).c_str( ) );
+
+      reader.finish_section( c_section_files_area );
 
       reader.verify_finished_sections( );
    }
@@ -4589,14 +4588,14 @@ void log_trace_message( uint32_t flag, const string& message )
          break;
       }
 
-      string log_file_dir( get_log_files_dir( ) );
+      string log_file_path( get_log_files_path( ) );
 
-      // NOTE: If no directory was provided
+      // NOTE: If no path has been provided
       // then will instead use the current.
-      if( log_file_dir.empty( ) )
-         log_file_dir = ".";
+      if( log_file_path.empty( ) )
+         log_file_path = ".";
 
-      ofstream outf( log_file_dir + '/' + c_server_log_file, ios::out | ios::app );
+      ofstream outf( log_file_path + '/' + c_server_log_file, ios::out | ios::app );
 
       string time_stamp( now.as_string( true, g_log_milliseconds ) );
 
@@ -6494,66 +6493,66 @@ bool get_using_ssl( )
    return g_using_ssl;
 }
 
-string get_log_files_dir( )
+string get_log_files_path( )
 {
    guard g( g_mutex );
 
-   return g_log_files_dir;
+   return g_log_files_path;
 }
 
-void set_log_files_dir( const char* p_dir_name )
+void set_log_files_path( const char* p_log_files_path )
 {
    guard g( g_mutex );
 
-   if( !p_dir_name )
-      g_log_files_dir.erase( );
+   if( !p_log_files_path )
+      g_log_files_path.erase( );
    else
-      g_log_files_dir = p_dir_name;
+      g_log_files_path = p_log_files_path;
 }
 
-string get_files_area_dir( )
+string get_files_area_path( )
 {
    guard g( g_mutex );
 
-   return g_files_area_dir;
+   return g_files_area_path;
 }
 
-void set_files_area_dir( const char* p_files_area_dir )
+void set_files_area_path( const char* p_files_area_path )
 {
    guard g( g_mutex );
 
    bool was_first = false;
 
-   if( p_files_area_dir )
+   if( p_files_area_path )
    {
-      string files_area_dir( p_files_area_dir );
+      string files_area_path( p_files_area_path );
 
-      if( !files_area_dir.empty( ) )
+      if( !files_area_path.empty( ) )
       {
-         g_files_area_dir = files_area_dir;
+         g_files_area_path = files_area_path;
 
-         if( g_files_area_dir_default.empty( ) )
+         if( g_files_area_path_default.empty( ) )
          {
             was_first = true;
 
-            g_files_area_dir_default = g_files_area_dir;
+            g_files_area_path_default = g_files_area_path;
          }
       }
       else
       {
-         if( g_files_area_dir_default.empty( ) )
+         if( g_files_area_path_default.empty( ) )
          {
             was_first = true;
 
-            g_files_area_dir_default = string( c_ciyam_files_directory );
+            g_files_area_path_default = string( c_ciyam_files_directory );
          }
 
-         g_files_area_dir = g_files_area_dir_default;
+         g_files_area_path = g_files_area_path_default;
       }
    }
 
    if( was_first )
-      set_system_variable( get_special_var_name( e_special_var_files_area_dir ), g_files_area_dir, true );
+      set_system_variable( get_special_var_name( e_special_var_files_area_path ), g_files_area_path, true );
 }
 
 size_t get_notifier_ignore_secs( )
