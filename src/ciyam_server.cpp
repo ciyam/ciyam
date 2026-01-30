@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2012 CIYAM Pty. Ltd. ACN 093 704 539
+// // Copyright (c) 2006-2012 CIYAM Pty. Ltd. ACN 093 704 539
 // Copyright (c) 2012-2026 CIYAM Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
@@ -50,9 +50,9 @@ volatile sig_atomic_t g_server_shutdown = 0;
 namespace
 {
 
-bool g_start_autoscript = true;
+bool g_start_auto_script = true;
+bool g_start_udp_streams = true;
 bool g_start_peer_sessions = true;
-bool g_start_udp_stream_sessions = true;
 
 void* signal_handler( void* id )
 {
@@ -71,23 +71,20 @@ const char* const c_app_version = "0.1";
 const char* const c_cmd_sid = "sid";
 const char* const c_cmd_sid_entropy = "entropy";
 
-const char* const c_cmd_chdir = "chdir";
-const char* const c_cmd_chdir_directory = "directory";
-
 const char* const c_cmd_quiet = "quiet";
 
 const char* const c_cmd_trace = "trace";
 const char* const c_cmd_trace_flags = "flags";
 
-const char* const c_cmd_log_dir = "log_dir";
-const char* const c_cmd_log_dir_directory = "directory";
+const char* const c_cmd_log_files = "log_files";
+const char* const c_cmd_log_files_path = "path";
 
-const char* const c_cmd_files_area_dir = "files_area_dir";
-const char* const c_cmd_files_area_dir_directory = "directory";
+const char* const c_cmd_files_area = "files_area";
+const char* const c_cmd_files_area_path = "path";
 
+const char* const c_cmd_no_udp = "no_udp";
 const char* const c_cmd_no_auto = "no_auto";
 const char* const c_cmd_no_peers = "no_peers";
-const char* const c_cmd_no_streams = "no_streams";
 
 const char* const c_cmd_test_peer_port = "test_peer_port";
 const char* const c_cmd_test_peer_port_port = "port";
@@ -109,9 +106,9 @@ uint32_t g_trace_flags = 0;
 
 bool g_set_trace_flags = false;
 
-string g_log_files_directory;
+string g_log_files_path;
 
-string g_files_area_directory;
+string g_files_area_path;
 
 unsigned int g_test_peer_port = 0;
 
@@ -135,14 +132,14 @@ const char* const c_init_auto_script_func_name = "init_auto_script";
 const char* const c_init_udp_streams_func_name = "init_udp_streams";
 const char* const c_log_trace_string_func_name = "log_trace_string";
 const char* const c_register_listener_func_name = "register_listener";
-const char* const c_set_log_files_dir_func_name = "set_log_files_dir";
 const char* const c_set_stream_socket_func_name = "set_stream_socket";
 const char* const c_init_ciyam_session_func_name = "init_ciyam_session";
-const char* const c_set_files_area_dir_func_name = "set_files_area_dir";
-const char* const c_set_test_peer_port_func_name = "set_test_peer_port";
 const char* const c_init_peer_sessions_func_name = "init_peer_sessions";
+const char* const c_set_log_files_path_func_name = "set_log_files_path";
+const char* const c_set_test_peer_port_func_name = "set_test_peer_port";
 const char* const c_check_timezone_info_func_name = "check_timezone_info";
 const char* const c_is_accepted_ip_addr_func_name = "is_accepted_ip_addr";
+const char* const c_set_files_area_path_func_name = "set_files_area_path";
 const char* const c_unregister_listener_func_name = "unregister_listener";
 
 string application_title( app_info_request request )
@@ -208,12 +205,6 @@ class ciyam_server_startup_functor : public command_functor
 
          g_entropy = entropy;
       }
-      else if( command == c_cmd_chdir )
-      {
-         string directory( get_parm_val( parameters, c_cmd_chdir_directory ) );
-
-         set_cwd( directory );
-      }
       else if( command == c_cmd_quiet )
          g_is_quiet = true;
       else if( command == c_cmd_trace )
@@ -226,23 +217,23 @@ class ciyam_server_startup_functor : public command_functor
 
          isstr >> hex >> g_trace_flags;
       }
-      else if( command == c_cmd_log_dir )
-      {
-         string directory( get_parm_val( parameters, c_cmd_log_dir_directory ) );
-
-         g_log_files_directory = directory;
-      }
+      else if( command == c_cmd_no_udp )
+         g_start_udp_streams = false;
       else if( command == c_cmd_no_auto )
-         g_start_autoscript = false;
+         g_start_auto_script = false;
       else if( command == c_cmd_no_peers )
          g_start_peer_sessions = false;
-      else if( command == c_cmd_no_streams )
-         g_start_udp_stream_sessions = false;
-      else if( command == c_cmd_files_area_dir )
+      else if( command == c_cmd_log_files )
       {
-         string directory( get_parm_val( parameters, c_cmd_files_area_dir_directory ) );
+         string path( get_parm_val( parameters, c_cmd_log_files_path ) );
 
-         g_files_area_directory = directory;
+         g_log_files_path = path;
+      }
+      else if( command == c_cmd_files_area )
+      {
+         string path( get_parm_val( parameters, c_cmd_files_area_path ) );
+
+         g_files_area_path = path;
       }
       else if( command == c_cmd_test_peer_port )
       {
@@ -274,37 +265,33 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_sid, 0,
           "<val//entropy>", "system identity entropy", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_chdir, 1,
-          "<val//directory>", "change working directory", new ciyam_server_startup_functor( cmd_handler ) );
-
-         cmd_handler.add_command( c_cmd_quiet, 2,
+         cmd_handler.add_command( c_cmd_quiet, 1,
           "", "use quiet operating mode", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_trace, 3,
+         cmd_handler.add_command( c_cmd_trace, 2,
           "<val//flags>", "hex trace flags value", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_log_dir, 4,
-          "<val//directory>", "log files directory", new ciyam_server_startup_functor( cmd_handler ) );
-
-         cmd_handler.add_command( c_cmd_no_auto, 5,
-          "", "do not start the autoscript thread", new ciyam_server_startup_functor( cmd_handler ) );
-
-         cmd_handler.add_command( c_cmd_no_peers, 5,
-          "", "do not start the peer sessions thread", new ciyam_server_startup_functor( cmd_handler ) );
-
-         cmd_handler.add_command( c_cmd_no_streams, 5,
-          "", "do not start any udp stream session threads", new ciyam_server_startup_functor( cmd_handler ) );
-
-         cmd_handler.add_command( c_cmd_files_area_dir, 6,
-          "<val//directory>", "files area directory", new ciyam_server_startup_functor( cmd_handler ) );
-
-         cmd_handler.add_command( c_cmd_test_peer_port, 7,
-          "<val//port>", "port number for interactive peer testing", new ciyam_server_startup_functor( cmd_handler ) );
-
 #ifdef __GNUG__
-         cmd_handler.add_command( c_cmd_daemon, 8,
+         cmd_handler.add_command( c_cmd_daemon, 3,
           "", "run server as a daemon", new ciyam_server_startup_functor( cmd_handler ) );
 #endif
+         cmd_handler.add_command( c_cmd_no_udp, 4,
+          "", "do not start any udp streams", new ciyam_server_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_no_auto, 4,
+          "", "do not start the autoscript thread", new ciyam_server_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_no_peers, 4,
+          "", "do not start the peer sessions thread", new ciyam_server_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_log_files, 5,
+          "<val//path>", "log files path", new ciyam_server_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_files_area, 5,
+          "<val//path>", "files area path", new ciyam_server_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_test_peer_port, 6,
+          "<val//port>", "port number for interactive peer testing", new ciyam_server_startup_functor( cmd_handler ) );
 
          processor.process_commands( );
       }
@@ -408,29 +395,29 @@ int main( int argc, char* argv[ ] )
          fp_register_listener fp_register_listener_func;
          fp_register_listener_func = ( fp_register_listener )up_dynamic_library->bind_to_function( c_register_listener_func_name );
 
-         fp_set_log_files_dir fp_set_log_files_dir_func;
-         fp_set_log_files_dir_func = ( fp_set_log_files_dir )up_dynamic_library->bind_to_function( c_set_log_files_dir_func_name );
-
          fp_set_stream_socket fp_set_stream_socket_func;
          fp_set_stream_socket_func = ( fp_set_stream_socket )up_dynamic_library->bind_to_function( c_set_stream_socket_func_name );
 
          fp_init_ciyam_session fp_init_ciyam_session_func;
          fp_init_ciyam_session_func = ( fp_init_ciyam_session )up_dynamic_library->bind_to_function( c_init_ciyam_session_func_name );
 
-         fp_set_files_area_dir fp_set_files_area_dir_func;
-         fp_set_files_area_dir_func = ( fp_set_files_area_dir )up_dynamic_library->bind_to_function( c_set_files_area_dir_func_name );
+         fp_init_peer_sessions fp_init_peer_sessions_func;
+         fp_init_peer_sessions_func = ( fp_init_peer_sessions )up_dynamic_library->bind_to_function( c_init_peer_sessions_func_name );
+
+         fp_set_log_files_path fp_set_log_files_path_func;
+         fp_set_log_files_path_func = ( fp_set_log_files_path )up_dynamic_library->bind_to_function( c_set_log_files_path_func_name );
 
          fp_set_test_peer_port fp_set_test_peer_port_func;
          fp_set_test_peer_port_func = ( fp_set_test_peer_port )up_dynamic_library->bind_to_function( c_set_test_peer_port_func_name );
-
-         fp_init_peer_sessions fp_init_peer_sessions_func;
-         fp_init_peer_sessions_func = ( fp_init_peer_sessions )up_dynamic_library->bind_to_function( c_init_peer_sessions_func_name );
 
          fp_check_timezone_info fp_check_timezone_info_func;
          fp_check_timezone_info_func = ( fp_check_timezone_info )up_dynamic_library->bind_to_function( c_check_timezone_info_func_name );
 
          fp_is_accepted_ip_addr fp_is_accepted_ip_addr_func;
          fp_is_accepted_ip_addr_func = ( fp_is_accepted_ip_addr )up_dynamic_library->bind_to_function( c_is_accepted_ip_addr_func_name );
+
+         fp_set_files_area_path fp_set_files_area_path_func;
+         fp_set_files_area_path_func = ( fp_set_files_area_path )up_dynamic_library->bind_to_function( c_set_files_area_path_func_name );
 
          fp_unregister_listener fp_unregister_listener_func;
          fp_unregister_listener_func = ( fp_unregister_listener )up_dynamic_library->bind_to_function( c_unregister_listener_func_name );
@@ -440,11 +427,11 @@ int main( int argc, char* argv[ ] )
          if( g_set_trace_flags )
             ( *fp_trace_flags_func )( g_trace_flags );
 
-         if( !g_log_files_directory.empty( ) )
-            ( *fp_set_log_files_dir_func )( g_log_files_directory.c_str( ) );
+         if( !g_log_files_path.empty( ) )
+            ( *fp_set_log_files_path_func )( g_log_files_path.c_str( ) );
 
-         if( !g_files_area_directory.empty( ) )
-            ( *fp_set_files_area_dir_func )( g_files_area_directory.c_str( ) );
+         if( !g_files_area_path.empty( ) )
+            ( *fp_set_files_area_path_func )( g_files_area_path.c_str( ) );
 
          if( g_test_peer_port )
             ( *fp_set_test_peer_port_func )( g_test_peer_port );
@@ -456,7 +443,7 @@ int main( int argc, char* argv[ ] )
          file_remove( c_update_signal_file );
 
          if( !use_udp )
-            g_start_udp_stream_sessions = false;
+            g_start_udp_streams = false;
 
          tcp_socket s;
          udp_socket u;
@@ -499,7 +486,7 @@ int main( int argc, char* argv[ ] )
 
                bool has_udp = false;
 
-               if( g_start_udp_stream_sessions )
+               if( g_start_udp_streams )
                   has_udp = u.open( );
 
                if( has_udp )
@@ -526,13 +513,13 @@ int main( int argc, char* argv[ ] )
 
                int expected_min_active = 0;
 
-               if( g_start_autoscript )
+               if( g_start_auto_script )
                {
                   ( *fp_init_auto_script_func )( );
                   ++expected_min_active;
                }
 
-               if( has_udp && g_start_udp_stream_sessions )
+               if( has_udp && g_start_udp_streams )
                   ( *fp_init_udp_streams_func )( g_port, u.get_socket( ), 0, 0, &expected_min_active );
 
                int start_wait_attempts = 0;

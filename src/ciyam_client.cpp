@@ -67,7 +67,7 @@ const char* const c_cmd_exec_command = "command";
 const char* const c_cmd_exec_arguments = "arguments";
 
 const char* const c_cmd_vars = "vars";
-const char* const c_cmd_vars_name_vals = "name_vals";
+const char* const c_cmd_vars_env_pairs = "env_pairs";
 
 const char* const c_cmd_args_file = "args_file";
 const char* const c_cmd_args_file_name = "name";
@@ -200,21 +200,22 @@ class ciyam_console_startup_functor : public command_functor
       }
       else if( command == c_cmd_vars )
       {
-         string name_vals( get_parm_val( parameters, c_cmd_vars_name_vals ) );
+         string env_pairs( get_parm_val( parameters, c_cmd_vars_env_pairs ) );
 
-         vector< string  > all_name_vals;
-         split( name_vals, all_name_vals );
+         vector< string  > all_env_pairs;
 
-         for( size_t i = 0; i < all_name_vals.size( ); i++ )
+         split( env_pairs, all_env_pairs );
+
+         for( size_t i = 0; i < all_env_pairs.size( ); i++ )
          {
-            string next_name_val( all_name_vals[ i ] );
+            string next_env_pair( all_env_pairs[ i ] );
 
-            string::size_type pos = next_name_val.find( '=' );
+            string::size_type pos = next_env_pair.find( '=' );
 
             if( pos == string::npos )
-               set_environment_variable( next_name_val, c_true );
+               set_environment_variable( next_env_pair, c_true );
             else
-               set_environment_variable( next_name_val.substr( 0, pos ), next_name_val.substr( pos + 1 ) );
+               set_environment_variable( next_env_pair.substr( 0, pos ), next_env_pair.substr( pos + 1 ) );
          }
       }
       else if( command == c_cmd_args_file )
@@ -1718,19 +1719,19 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_tls, 1,
           "", "start TLS after connecting", new ciyam_console_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_exec, 1,
+         cmd_handler.add_command( c_cmd_exec, 2,
           "<val//command>[<list//arguments// >]", "single command to execute", new ciyam_console_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_vars, 1,
-          "<list//name_vals//,>", "set environment variables", new ciyam_console_startup_functor( cmd_handler ) );
+         cmd_handler.add_command( c_cmd_vars, 3,
+          "<list//env_pairs//,>", "set environment variables", new ciyam_console_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_args_file, 1,
+         cmd_handler.add_command( c_cmd_args_file, 4,
           "<val//name>", "name of console args file", new ciyam_console_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_rpc_unlock, 1,
+         cmd_handler.add_command( c_cmd_rpc_unlock, 4,
           "<val//password>", "RPC access unlock password", new ciyam_console_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_connect_retries, 2,
+         cmd_handler.add_command( c_cmd_connect_retries, 5,
           "<val//max_attempts>", "server connection retries", new ciyam_console_startup_functor( cmd_handler ) );
 
          processor.process_commands( );

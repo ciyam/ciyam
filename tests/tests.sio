@@ -1752,7 +1752,7 @@
      <kill>!$FILES_DIR/ciyam_server.tlg
      <test_step/>
       <name>*init*
-      <exec>*ciyam_server -quiet -no_auto -no_peers -no_streams
+      <exec>*ciyam_server -quiet -no_udp -no_auto -no_peers
       <input>false
       <output>none
      </test_step>

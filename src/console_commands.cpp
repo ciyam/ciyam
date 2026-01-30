@@ -60,10 +60,9 @@ const int c_bad_system_exit = 999;
 
 const size_t c_max_pwd_size = 128;
 
-const char c_startup_prefix = '-';
+const char c_option_prefix = '-';
 
 const char* const c_help_command = "help";
-const char* const c_startup_alt_help = "-help";
 
 const char* const c_retain_all = "*";
 
@@ -144,9 +143,11 @@ command_definition startup_command_definitions[ ] =
    { c_cmd_echo, "", "switch on local echo of input" },
    { c_cmd_quiet, "", "switch on quiet operating mode" },
    { c_cmd_monitor, "", "switch on progress monitoring" },
+   { "", "", "" },
    { c_cmd_no_pause, "", "switch off support for pausing" },
    { c_cmd_no_prompt, "", "switch off console command prompt" },
    { c_cmd_no_stderr, "", "switch off outputting errors to stderr" },
+   { "", "", "" },
    { c_cmd_no_progress, "", "switch off outputting progress messages" }
 };
 
@@ -2676,15 +2677,19 @@ void console_command_handler::perform_after_command_changes( )
    for( size_t i = 0; i < num; i++ )
    {
       string name( get_command_name( i ) );
+
       string::size_type size( name.size( ) );
 
-      string usage( get_usage_for_command( name ) );
+      if( size )
+      {
+         string usage( get_usage_for_command( name ) );
 
-      if( !usage.empty( ) )
-         size += usage.size( ) + 1;
+         if( !usage.empty( ) )
+            size += usage.size( ) + 1;
 
-      if( ( size > max_size ) && ( size <= c_max_usage_width ) )
-         max_size = size;
+         if( ( size > max_size ) && ( size <= c_max_usage_width ) )
+            max_size = size;
+      }
    }
 
    description_offset = max_size + 1;
@@ -2732,13 +2737,17 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
    {
       if( !str.empty( ) )
       {
-         if( str[ 0 ] == c_startup_prefix )
+         if( str[ 0 ] == c_option_prefix )
+            str.erase( 0, 1 );
+
+         // NOTE: Options can optionally be double prefixed (to
+         // be consistent with the Linux "long" option format).
+         if( !str.empty( ) && ( str[ 0 ] == c_option_prefix ) )
             str.erase( 0, 1 );
 
          if( !str.empty( ) )
          {
-            if( str[ 0 ] == c_output_command_usage
-             || str == string( c_help_command ) || str == string( c_startup_alt_help ) )
+            if( ( str[ 0 ] == c_output_command_usage ) || ( str == string( c_help_command ) ) )
             {
                if( get_command_processor( ) )
                   get_command_processor( )->output_command_usage( "" );
@@ -4461,6 +4470,7 @@ void console_command_processor::get_cmd_and_args( string& cmd_and_args )
    if( !get_is_continuation( ) && !handler.has_option( c_cmd_no_prompt ) )
    {
       prompt = string( c_command_prompt );
+
       string prefix( handler.get_option_value( c_prompt_prefix_option ) );
 
       if( !prefix.empty( ) )
@@ -4473,7 +4483,7 @@ void console_command_processor::get_cmd_and_args( string& cmd_and_args )
 void console_command_processor::output_command_usage( const string& wildcard_match_expr ) const
 {
    cout << '\n';
-   cout << "commands:";
+   cout << "Commands:";
 
    if( !wildcard_match_expr.empty( ) )
       cout << " " << wildcard_match_expr;
@@ -4490,10 +4500,10 @@ startup_command_processor::startup_command_processor( console_command_handler& h
  get_app_info_string_func( get_app_info_string_func )
 {
    int i;
+
    for( i = 1; i < argc; i++ )
    {
-      if( ( argv[ i ][ 0 ] == c_startup_prefix )
-       || ( string( argv[ i ] ) == string( c_startup_alt_help ) )
+      if( ( argv[ i ][ 0 ] == c_option_prefix )
        || ( string( argv[ i ] ) == string( 1, c_output_command_usage ) ) )
          args.push_back( argv[ i ] );
       else
@@ -4515,10 +4525,10 @@ startup_command_processor::startup_command_processor( console_command_handler& h
  get_app_info_string_func( get_app_info_string_func )
 {
    int i;
+
    for( i = 1; i < argc; i++ )
    {
-      if( ( argv[ i ][ 0 ] == c_startup_prefix )
-       || ( string( argv[ i ] ) == string( c_startup_alt_help ) )
+      if( ( argv[ i ][ 0 ] == c_option_prefix )
        || ( string( argv[ i ] ) == string( 1, c_output_command_usage ) ) )
          args.push_back( argv[ i ] );
       else
@@ -4560,15 +4570,15 @@ void startup_command_processor::get_cmd_and_args( string& cmd_and_args )
 
 void startup_command_processor::output_command_usage( const string& wildcard_match_expr ) const
 {
-   cout << ( *get_app_info_string_func )( e_app_info_request_title_and_version ) << endl;
+   cout << ( *get_app_info_string_func )( e_app_info_request_title_and_version ) << '\n' << endl;
 
-   cout << "usage: "
-    << ( *get_app_info_string_func )( e_app_info_request_title ) << " [" << c_startup_prefix << "<options>]";
+   cout << "Usage: " << ( *get_app_info_string_func )( e_app_info_request_title )
+    << " [" << c_option_prefix << "<option> or " << c_option_prefix << c_option_prefix << "<option> [...]]";
 
    if( !handler.get_custom_startup_options_usage( ).empty( ) )
       cout << ' ' << handler.get_custom_startup_options_usage( );
 
-   cout << "\n\nwhere <options> can be one or more of the following:\n\n";
+   cout << "\n\nWhere each <option> can be one of the following (in any order):\n\n";
 
    cout << get_usage_for_commands( wildcard_match_expr, '=' );
 
