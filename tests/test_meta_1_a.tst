@@ -364,7 +364,7 @@ Contact_Group_Member,Contact_Group_Members,M001C206
 Core_Peer,Core_Peers,M001C207
 pf 100 107100 "107110 " 107101,107110 -min
 Name,M001C100F100
-Not_Backup_Or_Restore_Needed,M001C100F101
+Not_Backup_Prepare_Or_Restore,M001C100F101
 Not_Executing_Procedure,M001C100F102
 Prepare_Backup_Needed,M001C100F103
 Prepare_in_Progress,M001C100F104
@@ -390,7 +390,7 @@ Backup_Details,M001C100F123
 Backup_File_Name,M001C100F124
 Backup_In_Progress,M001C100F125
 Backup_Needed,M001C100F126
-Backup_Or_Restore_Needed,M001C100F127
+Backup_Prepare_Or_Restore,M001C100F127
 Blockchain_Backup_Height,M001C100F128
 Blockchain_Hashes,M001C100F129
 Can_Create_Unlock_Key,M001C100F130
