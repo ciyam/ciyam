@@ -14,7 +14,7 @@ NEW_TAG=$2
 NEW_TAG=$PREFIX
 @endif
 ;
-REPLACED=@repstr:,/*:$PREFIX
+REPLACED=@repstr:,/:$PREFIX
 ;
 ; NOTE: Assume if it has commas then PREFIX must be a "tag list" rather than a prefix.
 @ifneq $PREFIX $REPLACED
