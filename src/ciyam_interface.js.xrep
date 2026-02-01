@@ -1212,7 +1212,7 @@ function hash_password( salt, pwd, skip_id )
    var rounds = hashRounds;
 
    // NOTE: (see NOTE in hash_username below)
-   if( salt.length && salt.charAt( 0 ) == '!' )
+   if( salt.length && ( salt.charAt( 0 ) == '!' ) )
    {
       rounds = 100;
       salt = salt.substring( 1 );
@@ -1252,7 +1252,7 @@ function hash_username( user, pwd, pwd_hash )
    // the UI which isn't used until after the records have been later edited). For
    // any *live* system all such init records should have their passwords properly
    // set via the UI or instead be removed.
-   if( user.length && user.charAt( 0 ) == '!' )
+   if( user.length && ( user.charAt( 0 ) == '!' ) )
       return hex_sha256( user.substring( 1 ) + pwd ).toLowerCase( );
    else
       return hex_sha256( user + pwd_hash ).toLowerCase( );
@@ -1283,7 +1283,7 @@ function encrypt_raw_data( raw_data, key, min_length )
    
    var raw_data_copy = raw_data;
    
-   if( min_length != null && raw_data_copy.length < min_length )
+   if( ( min_length != null ) && ( raw_data_copy.length < min_length ) )
    {
       raw_data_copy += '\0';
 
@@ -1309,8 +1309,10 @@ function encrypt_raw_data( raw_data, key, min_length )
       var val = ( full_key.charCodeAt( i ) ^ all_bytes[ i ] );
 
       var hex = '';
+
       if( val < 16 )
          hex += '0';
+
       hex += val.toString( 16 );
 
       encrypted += hex;
@@ -1326,7 +1328,7 @@ function decrypt_hex_data( hex_data, key )
    var full_key = key;
    var last_key = full_key;
 
-   while( full_key.length < hex_data.length / 2 )
+   while( full_key.length < ( hex_data.length / 2 ) )
    {
       var next = hex_sha256( last_key );
 
@@ -1355,8 +1357,10 @@ function escape_char( input, ch )
    for( var i = 0; i < input.length; i++ )
    {
       var next = input.charAt( i );
-      if( next == ch || next == '\\' )
+
+      if( ( next == ch ) || ( next == '\\' ) )
          output += '\\';
+
       output += next;
    }
 
@@ -1365,14 +1369,16 @@ function escape_char( input, ch )
 
 function form_keys( event, enter, cancel )
 {
-   if( enter != null && event.keyCode == 13 )
+   if( ( enter != null ) && ( event.keyCode == 13 ) )
    {
       enter.click( );
+
       return false;
    }
-   else if( cancel != null && event.keyCode == 27 )
+   else if( ( cancel != null ) && ( event.keyCode == 27 ) )
    {
       cancel.click( );
+
       return false;
    }
 
@@ -1402,7 +1408,7 @@ function scroll_page( x, y )
 
 function goto_slide( num )
 {
-   if( totalNumSlides > 0  && num >= 0 && num < totalNumSlides )
+   if( ( totalNumSlides > 0 )  && ( num >= 0 ) && ( num < totalNumSlides ) )
    {
       clearTimeout( slideTimeoutId );
 

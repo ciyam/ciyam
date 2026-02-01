@@ -2418,9 +2418,11 @@ void request_handler::process_request( )
                         throw runtime_error( GDS( c_display_invalid_or_already_activated ) );
 
                      string field_list( mod_info.user_uid_field_id );
+
                      field_list += "," + mod_info.user_pwd_field_id;
 
                      string key_info( mod_info.user_uid_field_id );
+
                      key_info += " " + user;
 
                      bool login_okay = false;
@@ -2435,9 +2437,10 @@ void request_handler::process_request( )
                         throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
 
                      vector< string > user_data;
+
                      split( user_info.second, user_data );
 
-                     if( user_data.size( ) < 2 || user_data[ 0 ] != username )
+                     if( ( user_data.size( ) < 2 ) || ( user_data[ 0 ] != username ) )
                         throw runtime_error( "unexpected missing user information" );
 
                      string activate_password( password );
@@ -2457,6 +2460,7 @@ void request_handler::process_request( )
                      if( activate_password == lower( hash_password( id_for_login + user_data[ 0 ] + user ) ) )
                      {
                         force_refresh = true;
+
                         throw runtime_error( GDS( c_display_password_must_not_be_the_same_as_your_user_id ) );
                      }
 
@@ -2485,6 +2489,7 @@ void request_handler::process_request( )
 
                      password = activate_password;
                      p_session_info->user_id = user;
+
                      userhash = sha256( user + activate_password ).get_digest_as_string( );
                   }
 
@@ -2501,7 +2506,7 @@ void request_handler::process_request( )
 
                      fetch_user_record( id_for_login,
                       module_id, module_name, mod_info, *p_session_info,
-                      is_authorised || ( persistent == c_true ) || !base64_data.empty( ),
+                      ( is_authorised || ( persistent == c_true ) || !base64_data.empty( ) ),
                       true, username, userhash, password, unique_id );
 
                      pwd_hash = p_session_info->user_pwd_hash;
