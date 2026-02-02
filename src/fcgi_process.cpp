@@ -1454,7 +1454,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
       if( cookies_permitted && get_storage_info( ).login_days && !g_login_persistent_html.empty( ) )
          pwd_display_name = g_display_login_info;
-      else
+      else if( !p_session_info->is_admin_user || !file_target_exists( c_eid_file ) )
          pwd_display_name = g_display_change_password;
 
       if( ( cmd != c_cmd_pview ) && ( cmd != c_cmd_plist ) )

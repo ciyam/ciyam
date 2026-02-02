@@ -93,9 +93,6 @@ const int c_greeting_timeout = 2500;
 
 const char* const c_unlock = "unlock";
 
-const char* const c_id_file = "identity.txt";
-const char* const c_eid_file = "encrypted.txt";
-
 const char* const c_stop_file = "ciyam_interface.stop";
 const char* const c_all_stop_file = "../ciyam_interface.stop";
 
@@ -124,6 +121,7 @@ const char* const c_registered_htms = "registered.htms";
 const char* const c_ssl_signup_htms = "ssl_signup.htms";
 const char* const c_no_identity_htms = "no_identity.htms";
 const char* const c_authenticate_htms = "authenticate.htms";
+const char* const c_new_admin_pin_htms = "new_admin_pin.htms";
 const char* const c_login_password_htms = "login_password.htms";
 const char* const c_ciyam_interface_htms = "ciyam_interface.htms";
 const char* const c_login_persistent_htms = "login_persistent.htms";
@@ -206,6 +204,7 @@ string g_id;
 string g_seed;
 string g_id_pwd;
 string g_bad_seed;
+string g_admin_pin;
 string g_seed_error;
 string g_register_error;
 
@@ -230,6 +229,7 @@ string g_registered_html;
 string g_ssl_signup_html;
 string g_no_identity_html;
 string g_authenticate_html;
+string g_new_admin_pin_html;
 
 string g_login_password_html;
 string g_ciyam_interface_html;
@@ -709,7 +709,12 @@ bool process_log_file( const string& module_name,
 void reset_admin_password( session_info& sess_info,
  const string& module_id, const module_info& mod_info, string& pwd, string& sid )
 {
-   string admin_pwd_hash( hash_password( g_id + pwd + c_admin_user_key ) );
+   string salt( c_admin_user_key );
+
+   if( !g_admin_pin.empty( ) )
+      salt = g_admin_pin;
+
+   string admin_pwd_hash( hash_password( g_id + pwd + salt ) );
 
    string admin_user_hash( sha256( c_admin_user_key + admin_pwd_hash ).get_digest_as_string( ) );
 
@@ -1339,6 +1344,7 @@ void request_handler::process_request( )
       if( ( cmd == c_cmd_password ) || ( cmd == c_cmd_credentials ) )
       {
          cmd = c_cmd_home;
+
          is_sign_in = true;
 
          if( is_invalid_session )
@@ -1398,6 +1404,7 @@ void request_handler::process_request( )
                if( cmd != c_cmd_activate )
                {
                   is_login_screen = true;
+
                   output_form( module_name, extra_content, login_html );
                }
                else
@@ -1551,11 +1558,10 @@ void request_handler::process_request( )
             bool connection_okay = false;
 
             // NOTE: Before the FCGI interface has ever connected to the server if the "identity.txt"
-            // file was not present then it will have an empty identity string. In production systems
-            // this should never occur, but for a development environment a newly created application
-            // will not have an identity so the very first attempt to "log in" (if the application is
-            // not allowing anonymous access) the user password will have been hashed with an "empty"
-            // identity string (so the original string is being copied here for this very situation).
+            // file was not present then it will have an empty identity string so a the first attempt
+            // to "log in" (if is a non-blockchain application that does not permit anonymous access)
+            // the user password will have been hashed with an empty identity string (so the original
+            // string is being copied here for this exact situation).
             string id_for_login( g_id );
 
             // NOTE: If was attempting to reset the identity password
@@ -1586,7 +1592,7 @@ void request_handler::process_request( )
                   // sometimes fail after a system restore due to the new server socket acceptor).
                   // To prevent unnecessary delays initially only wait for 0.5s but if connect has
                   // failed again will then wait for another 2.5s before a final retry (after that
-                  // the user can manually attempt to reconnect).
+                  // the user will need to manually attempt to reconnect).
                   if( !has_connected )
                   {
                      p_session_info->p_socket->close( );
@@ -1821,7 +1827,13 @@ void request_handler::process_request( )
                                  string entropy_hash( sha1( hash.get_digest_as_string( ) ).get_digest_as_string( ) );
 
                                  if( g_id == entropy_hash )
+                                 {
                                     g_reset_identity = false;
+
+                                    // NOTE: Will remove the target file if the
+                                    // file name is actually a "symbolic link".
+                                    file_remove( file_target( eid_file_name ) );
+                                 }
                                  else
                                  {
                                     g_bad_seed = g_seed;
@@ -1893,8 +1905,15 @@ void request_handler::process_request( )
 
                               outf << current_identity;
 
-                              if( !using_anonymous )
-                                 login_refresh = true;
+                              istringstream isstr( current_identity.substr( 0, 4 ) );
+
+                              int id_num = 0;
+
+                              isstr >> hex >> id_num;
+
+                              g_reset_identity = false;
+
+                              g_admin_pin = to_comparable_string( id_num % 100000, false, 5 );
                            }
                         }
                      }
@@ -2362,13 +2381,44 @@ void request_handler::process_request( )
                         // "admin" password to the system identity hash (which then requires using
                         // the system identity entropy as the login password).
                         if( !is_encrypted || ( sid == sha256( id_pwd ).get_digest_as_string( ) ) )
+                        {
                            id_pwd = sid;
+                           g_admin_pin.erase( );
+                        }
 
                         if( !was_unlocked_with_key )
                            reset_admin_password( *p_session_info, module_id, mod_info, id_pwd, sid );
 
                         g_seed.erase( );
+
                         g_id_pwd.erase( );
+
+                        // NOTE: Output the new "admin" PIN form.
+                        if( !g_admin_pin.empty( ) )
+                        {
+                           string new_admin_pin_html( g_new_admin_pin_html );
+
+                           str_replace( new_admin_pin_html, c_new_admin_pin_message,
+                            string_message( GDS( c_display_new_admin_pin_number ),
+                            make_pair( c_display_new_admin_pin_number_parm_pin, g_admin_pin ) ) );
+
+                           str_replace( new_admin_pin_html, c_new_admin_pin_cont_message,
+                            string_message( GDS( c_display_click_here_to_continue ),
+                            make_pair( c_display_click_here_to_continue_parm_href,
+                            "<a href=\"?cmd=" + string( c_cmd_home ) + "\">" ), "</a>" ) );
+
+                           output_form( module_name, extra_content,
+                            new_admin_pin_html, "", false, GDS( c_display_admin_pin_number ) );
+
+                           g_admin_pin.erase( );
+
+                           okay = false;
+
+                           force_refresh = false;
+                           login_refresh = false;
+
+                           has_output_form = true;
+                        }
 
                         if( !is_encrypted )
                            g_skip_admin_reset = true;
@@ -2406,7 +2456,8 @@ void request_handler::process_request( )
             if( connection_okay && mod_info.strings.empty( ) )
                read_module_strings( mod_info, *p_session_info->p_socket );
 
-            if( connection_okay && ( cmd != c_cmd_open ) && p_session_info->user_id.empty( ) )
+            if( connection_okay
+             && !has_output_form && ( cmd != c_cmd_open ) && p_session_info->user_id.empty( ) )
             {
                bool is_replacement_session = false;
 
@@ -2611,15 +2662,18 @@ void request_handler::process_request( )
                      if( !mod_info.user_select_uo_field.empty( ) || !mod_info.user_select_sl_field.empty( ) )
                      {
                         deque< pair< string, string > >::iterator i;
+
                         for( i = p_session_info->select_data.begin( ); i != p_session_info->select_data.end( ); ++i )
                         {
                            string key_ver_rev_state_and_type_info = i->first;
                            string key( key_ver_rev_state_and_type_info.substr( 0, key_ver_rev_state_and_type_info.find( ' ' ) ) );
 
                            string column_values( i->second );
+
                            if( !mod_info.user_select_uo_field.empty( ) )
                            {
                               string::size_type pos = column_values.find( "," );
+
                               if( pos == string::npos )
                                  throw runtime_error( "unexpected column values '" + column_values + "' for user_other query result" );
 
@@ -2636,6 +2690,7 @@ void request_handler::process_request( )
                            if( !mod_info.user_select_sl_field.empty( ) )
                            {
                               string::size_type pos = column_values.find( "," );
+
                               if( pos == string::npos )
                                  throw runtime_error( "unexpected column values '" + column_values + "' for user_other query result" );
 
@@ -2652,7 +2707,7 @@ void request_handler::process_request( )
                      fetch_user_quick_links( mod_info, *p_session_info );
                }
 
-               if( !temp_session )
+               if( !temp_session && !has_output_form )
                {
                   if( p_session_info->user_id.empty( ) && p_session_info->user_name.empty( ) )
                      throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
@@ -2667,7 +2722,8 @@ void request_handler::process_request( )
                   path += "/" + string( c_tmp_directory );
                   path += "/" + session_id;
 
-                  bool rc;
+                  bool rc = 0;
+
                   create_dir( path, &rc, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
 
                   if( !is_non_persistent( session_id ) )
@@ -3652,7 +3708,7 @@ void request_handler::process_request( )
          }
       }
 
-      if( !act_as_logged_in && !using_anonymous )
+      if( !using_anonymous && !act_as_logged_in )
       {
          string login_html( !cookies_permitted || !get_storage_info( ).login_days
           || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
@@ -3945,6 +4001,7 @@ int main( int argc, char* argv[ ] )
       g_ssl_signup_html = buffer_file( c_ssl_signup_htms );
       g_no_identity_html = buffer_file( c_no_identity_htms );
       g_authenticate_html = buffer_file( c_authenticate_htms );
+      g_new_admin_pin_html = buffer_file( c_new_admin_pin_htms );
 
       g_ciyam_interface_html = buffer_file( c_ciyam_interface_htms );
 

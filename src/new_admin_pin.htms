@@ -1,0 +1,13 @@
+<div class="wrapper box-shadow">
+
+<div align="center">
+<p>
+@@new_admin_pin_message
+</p>
+
+<p>
+@@new_admin_pin_cont_message
+</p>
+
+</div>
+</div>

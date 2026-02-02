@@ -1245,6 +1245,18 @@ function hash_password( salt, pwd, skip_id )
 
 function hash_username( user, pwd, pwd_hash )
 {
+   // NOTE: For secured systems a five digit
+   // code is being used instead of "admin".
+   // This code is needed by "hash_password"
+   // but "admin" needs to be used here.
+   if( user.length == 5 )
+   {
+      let is_digits = /^\d+$/.test( user );
+
+      if( is_digits )
+         user = "admin";
+   }
+
    // NOTE: In order to be able to use "init" user records the hashing needs to be
    // made insecure (iff you prefix the "user id" with '!' which means that *real*
    // usernames must not start with this character). This is because for such init
