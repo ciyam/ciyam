@@ -1905,15 +1905,9 @@ void request_handler::process_request( )
 
                               outf << current_identity;
 
-                              istringstream isstr( current_identity.substr( 0, 4 ) );
-
-                              int id_num = 0;
-
-                              isstr >> hex >> id_num;
-
                               g_reset_identity = false;
 
-                              g_admin_pin = to_comparable_string( id_num % 100000, false, 5 );
+                              g_admin_pin = random_characters( 5, 0, e_printable_type_numeric );
                            }
                         }
                      }
@@ -2408,7 +2402,7 @@ void request_handler::process_request( )
                             "<a href=\"?cmd=" + string( c_cmd_home ) + "\">" ), "</a>" ) );
 
                            output_form( module_name, extra_content,
-                            new_admin_pin_html, "", false, GDS( c_display_admin_pin_number ) );
+                            new_admin_pin_html, "", false, GDS( c_display_administration_pin ) );
 
                            g_admin_pin.erase( );
 
