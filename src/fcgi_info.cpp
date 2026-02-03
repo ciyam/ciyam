@@ -257,6 +257,7 @@ const string& module_info::get_string( const string& key ) const
 
 storage_info::storage_info( )
  :
+ is_devt( false ),
  use_tls( c_default_use_tls ),
  row_limit( c_default_row_limit ),
  login_days( c_default_login_days ),
@@ -278,6 +279,8 @@ storage_info::storage_info( )
 
 void storage_info::clear( )
 {
+   is_devt = false;
+
    use_tls = c_default_use_tls;
    row_limit = c_default_row_limit;
    notes_rmin = c_default_notes_rmin;

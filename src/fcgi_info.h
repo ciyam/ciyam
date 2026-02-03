@@ -454,6 +454,7 @@ struct storage_info
    int image_width;
    int image_height;
 
+   bool is_devt;
    bool use_tls;
    bool embed_images;
    bool encrypt_data;
@@ -471,6 +472,7 @@ struct storage_info
    std::string menu_opts;
 
    int login_days;
+
    std::string login_opts;
 
    std::string blockchain;
