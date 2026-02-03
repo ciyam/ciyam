@@ -1714,6 +1714,17 @@ void request_handler::process_request( )
                            throw runtime_error( "unable to unlock RPC access" );
                      }
 
+                     if( !get_storage_info( ).is_devt )
+                     {
+                        string is_devt;
+
+                        if( !simple_command( *p_session_info, "system_variable @system_is_for_devt", &is_devt, true ) )
+                           throw runtime_error( "unable to determine if is a devt environment" );
+
+                        if( is_devt == c_true_value )
+                           get_storage_info( ).is_devt = true;
+                     }
+
                      string identity_info;
 
 #ifdef SSL_SUPPORT
@@ -1907,7 +1918,8 @@ void request_handler::process_request( )
 
                               g_reset_identity = false;
 
-                              g_admin_pin = random_characters( 5, 0, e_printable_type_numeric );
+                              if( !get_storage_info( ).is_devt )
+                                 g_admin_pin = random_characters( 5, 0, e_printable_type_numeric );
                            }
                         }
                      }
