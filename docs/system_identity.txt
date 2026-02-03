@@ -28,6 +28,22 @@ it by brute force would take a very long time, however, it would still be recomm
 includes special characters, digits and both lower and upper case letters and which is at least 10 characters
 in length.
 
+Administration PIN
+------------------
+
+Immediately after completing the Confirm Identity (or Reset Password) form the "Administration PIN" form will
+appear which displays a 5 digit PIN. This should be recorded (in writing preferrably) for use as the Username
+when wanting to "sign in" as the "admin" user (i.e. providing the Username "admin" will always fail). Also it
+should be noted that the Password for this "admin" user is the same as the master password and that resetting
+the master password will always change the PIN (even if the actual master password is unchanged).
+
+The reason for using a 5 digit PIN is because the browser UI hashes the combined Username and Password values
+around 12K times (rather than the 1.1M rounds that are used to encrypt the mnemonics). The reason for this is
+to not burden the browser (especially when used on a phone) with a potentially large time and power consuming
+operation. Without further entropy this would make cracking the master password (which is being also used for
+the "admin" account password) much easier so the additional 5 numbers (which are randomly picked) effectively
+makes the "admin" password hash just as safe from a brute-force attack without needing any additional rounds.
+
 Calculating Password Strength
 -----------------------------
 
