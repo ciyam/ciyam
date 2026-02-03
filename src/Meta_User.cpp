@@ -186,6 +186,8 @@ inline bool is_transient_field( const string& field )
     c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), compare );
 }
 
+const uint64_t c_modifier_Is_Admin = UINT64_C( 0x100 );
+
 domain_string_max_size< 100 > g_Description_domain;
 domain_string_max_size< 200 > g_New_Password_domain;
 domain_string_max_size< 200 > g_Password_domain;
@@ -871,6 +873,16 @@ uint64_t Meta_User::impl::get_state( ) const
 {
    uint64_t state = 0;
 
+   // [(start protect_equal)] 600001b
+   if( check_equal( get_obj( ).Username( ), "admin" ) )
+      state |= ( c_state_uneditable | c_state_undeletable );
+   // [(finish protect_equal)] 600001b
+
+   // [(start modifier_field_value)] 680001a
+   if( get_obj( ).Username( ) == "admin" )
+      state |= c_modifier_Is_Admin;
+   // [(finish modifier_field_value)] 680001a
+
    // [<start get_state>]
    // [<finish get_state>]
 
@@ -881,6 +893,9 @@ string Meta_User::impl::get_state_names( ) const
 {
    string state_names;
    uint64_t state = get_state( );
+
+   if( state & c_modifier_Is_Admin )
+      state_names += "|" + string( "Is_Admin" );
 
    return state_names.empty( ) ? state_names : state_names.substr( 1 );
 }
@@ -2128,6 +2143,22 @@ void Meta_User::get_always_required_field_names(
    ( void )names;
    ( void )dependents;
    ( void )use_transients;
+
+   // [(start protect_equal)] 600001b
+   dependents.insert( "Username" );
+
+   if( ( use_transients && is_field_transient( e_field_id_Username ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Username ) ) )
+      names.insert( "Username" );
+   // [(finish protect_equal)] 600001b
+
+   // [(start modifier_field_value)] 680001a
+   dependents.insert( "Username" ); // (for Is_Admin modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Username ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Username ) ) )
+      names.insert( "Username" );
+   // [(finish modifier_field_value)] 680001a
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

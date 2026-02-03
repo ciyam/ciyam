@@ -26492,6 +26492,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600001b
+      <item>class
+     </specification>
+     <specification/>
       <id>600999
       <item>class
      </specification>
@@ -26505,6 +26509,10 @@
      </specification>
      <specification/>
       <id>601020
+      <item>class
+     </specification>
+     <specification/>
+      <id>680001a
       <item>class
      </specification>
     </specifications>
@@ -26611,6 +26619,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>100310
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -26629,6 +26641,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>100310
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -26739,6 +26755,10 @@
       </modifiers>
       <specifications/>
        <specification/>
+        <id>600001b
+        <item>field
+       </specification>
+       <specification/>
         <id>600999
         <item>uid
        </specification>
@@ -26752,6 +26772,10 @@
        </specification>
        <specification/>
         <id>601020
+        <item>field
+       </specification>
+       <specification/>
+        <id>680001a
         <item>field
        </specification>
       </specifications>
@@ -26848,6 +26872,10 @@
      </index>
     </indexes>
     <modifiers/>
+     <modifier/>
+      <id>100310
+      <name>Is_Admin
+     </modifier>
     </modifiers>
     <procedures/>
     </procedures>
@@ -39017,6 +39045,26 @@
     <data/>
      <class_id>100100
      <field_id>100106
+    </data>
+   </specification>
+   <specification/>
+    <id>680001a
+    <name>{User}_Is_Admin
+    <type>modifier_field_value
+    <data/>
+     <class_id>100100
+     <modifier_id>100310
+     <field_id>100101
+     <field_value>admin
+    </data>
+   </specification>
+   <specification/>
+    <id>600001b
+    <name>{User}_Is_Admin_protect
+    <type>state_protect
+    <data/>
+     <protect_spec>protect_equal.spec.xrep
+     <protect_value>"admin"
     </data>
    </specification>
    <specification/>

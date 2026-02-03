@@ -7986,7 +7986,7 @@
      <ftype>string
      <extra>non_new+admin_only+hpassword+encrypted+max_size=200
      <mandatory>false
-     <modifiers>
+     <modifiers>100:relegate
     </field>
     <field/>
      <name>field_user_description
@@ -8002,7 +8002,7 @@
      <ftype>string
      <extra>mailto
      <mandatory>false
-     <modifiers>
+     <modifiers>100:relegate
     </field>
     <field/>
      <name>field_user_workgroup

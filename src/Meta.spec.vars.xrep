@@ -5962,7 +5962,7 @@
 `{`$specification_User_view_field003`=`'100109`'`}
 `{`$specification_User_view_ftype003`=`'string`'`}
 `{`$specification_User_view_extra003`=`'non_new+admin_only+hpassword+encrypted+max_size=200`'`}
-`{`$specification_User_view_fmods003`=`'`'`}
+`{`$specification_User_view_fmods003`=`'100:relegate`'`}
 `{`$specification_User_view_fname003`=`'field_user_new_password`'`}
 `{`$specification_User_view_fmand003`=`'false`'`}
 `{`$specification_User_view_field004`=`'100104`'`}
@@ -5974,7 +5974,7 @@
 `{`$specification_User_view_field005`=`'100105`'`}
 `{`$specification_User_view_ftype005`=`'string`'`}
 `{`$specification_User_view_extra005`=`'mailto`'`}
-`{`$specification_User_view_fmods005`=`'`'`}
+`{`$specification_User_view_fmods005`=`'100:relegate`'`}
 `{`$specification_User_view_fname005`=`'field_user_email`'`}
 `{`$specification_User_view_fmand005`=`'false`'`}
 `{`$specification_User_view_field006`=`'300100`'`}
