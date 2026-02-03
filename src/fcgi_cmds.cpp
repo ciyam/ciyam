@@ -167,6 +167,7 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
    if( sess_info.p_socket->write_line( cmd ) <= 0 )
    {
       DEBUG_TRACE( "socket write failure" );
+
       return false;
    }
 
@@ -377,6 +378,7 @@ bool perform_action( const string& module_name,
    }
 
    date_time dt( date_time::standard( ) );
+
    string current_dtm( dt.as_string( ) );
 
    // NOTE: If a view is found for the class and it contains a "modified" date/time field then this field will be updated.
@@ -553,6 +555,7 @@ bool perform_action( const string& module_name,
       if( sess_info.p_socket->write_line( act_cmd ) <= 0 )
       {
          okay = false;
+
          break;
       }
 
@@ -634,6 +637,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    }
 
    map< string, string >::const_iterator i;
+
    for( i = sess_info.user_perms.begin( ); i != sess_info.user_perms.end( ); ++i )
    {
       if( !perms.empty( ) )
@@ -686,6 +690,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
       fetch_cmd += " -pdf " + *p_pdf_spec_name + " \"";
 
       string link_file_name;
+
       if( p_pdf_link_filename )
          link_file_name = *p_pdf_link_filename;
 
@@ -763,12 +768,14 @@ bool fetch_list_info( const string& module,
    bool okay = true;
 
    set< string > exclude_keys;
+
    if( !exclude_key_info.empty( ) )
       split( exclude_key_info, exclude_keys );
 
    string fetch_cmd( string( c_cmd_fetch ) + " " + module + " " + class_id );
 
    string extra_debug;
+
    if( p_extra_debug )
       extra_debug = *p_extra_debug;
 
@@ -779,6 +786,7 @@ bool fetch_list_info( const string& module,
       fetch_cmd += " -rev";
 
    string user_info( get_uid_info( sess_info, false ) );
+
    if( !user_info.empty( ) )
       fetch_cmd += " \"-u=" + user_info + "\"";
 
@@ -849,6 +857,7 @@ bool fetch_list_info( const string& module,
       fetch_cmd += " -pdf " + *p_pdf_spec_name + " \"";
 
       string link_file_name;
+
       if( p_pdf_link_filename )
          link_file_name = *p_pdf_link_filename;
 
@@ -858,6 +867,7 @@ bool fetch_list_info( const string& module,
       string title( link_file_name );
 
       bool has_utf8_chars = false;
+
       string path( string( c_files_directory ) + "/" + string( c_tmp_directory )
        + "/" + sess_info.session_id + "/" + valid_file_name( link_file_name, &has_utf8_chars ) + ".pdf" );
 
@@ -938,7 +948,7 @@ bool fetch_list_info( const string& module,
 
    if( p_prev )
    {
-      if( *p_prev && row_limit && rows.size( ) > ( size_t )( row_limit + 1 ) )
+      if( *p_prev && row_limit && ( rows.size( ) > ( size_t )( row_limit + 1 ) ) )
          rows.pop_front( );
       else
          *p_prev = false;
@@ -955,6 +965,7 @@ bool fetch_parent_row_data( const string& module,
  bool *p_has_view_id, const set< string >* p_exclude_keys, string* p_skey_required )
 {
    bool okay = true;
+
    int num_fixed = 0;
 
    string extra_debug( "[field_id: " + field_id + "] " );
@@ -1010,6 +1021,7 @@ bool fetch_parent_row_data( const string& module,
          }
 
          values += extras[ i ].substr( pos + 1 );
+
          key_info += extras[ i ].substr( 0, pos );
       }
       else
@@ -1017,9 +1029,10 @@ bool fetch_parent_row_data( const string& module,
          pos = extras[ i ].find( ':' );
          string key( extras[ i ].substr( 0, pos ) );
 
-         if( !key.empty( ) && ( key[ 0 ] == '@' || key[ 0 ] == '?' ) )
+         if( !key.empty( ) && ( ( key[ 0 ] == '@' ) || ( key[ 0 ] == '?' ) ) )
          {
             bool is_optional = false;
+
             if( key[ 0 ] == '?' )
             {
                key.erase( 0, 1 );
@@ -1038,226 +1051,272 @@ bool fetch_parent_row_data( const string& module,
             if( key == c_parent_extra_key )
             {
                value = record_key;
+
                found_special = true;
             }
             else if( key == c_parent_extra_null )
             {
                value.erase( );
+
                found_special = true;
             }
             else if( key == c_parent_extra_user )
             {
                value = sess_info.user_key;
+
                found_special = true;
             }
             else if( key == c_parent_extra_key0 )
             {
                if( p_key_values )
                   value = p_key_values->value0;
+
                found_special = true;
             }
             else if( key == c_parent_extra_key1 )
             {
                if( p_key_values )
                   value = p_key_values->value1;
+
                found_special = true;
             }
             else if( key == c_parent_extra_key2 )
             {
                if( p_key_values )
                   value = p_key_values->value2;
+
                found_special = true;
             }
             else if( key == c_parent_extra_key3 )
             {
                if( p_key_values )
                   value = p_key_values->value3;
+
                found_special = true;
             }
             else if( key == c_parent_extra_key4 )
             {
                if( p_key_values )
                   value = p_key_values->value4;
+
                found_special = true;
             }
             else if( key == c_parent_extra_key5 )
             {
                if( p_key_values )
                   value = p_key_values->value5;
+
                found_special = true;
             }
             else if( key == c_parent_extra_key6 )
             {
                if( p_key_values )
                   value = p_key_values->value6;
+
                found_special = true;
             }
             else if( key == c_parent_extra_key7 )
             {
                if( p_key_values )
                   value = p_key_values->value7;
+
                found_special = true;
             }
             else if( key == c_parent_extra_key8 )
             {
                if( p_key_values )
                   value = p_key_values->value8;
+
                found_special = true;
             }
             else if( key == c_parent_extra_key9 )
             {
                if( p_key_values )
                   value = p_key_values->value9;
+
                found_special = true;
             }
             else if( key == c_parent_extra_fkey0 )
             {
                if( p_fkey_values )
                   value = p_fkey_values->value0;
+
                found_special = true;
             }
             else if( key == c_parent_extra_fkey1 )
             {
                if( p_fkey_values )
                   value = p_fkey_values->value1;
+
                found_special = true;
             }
             else if( key == c_parent_extra_fkey2 )
             {
                if( p_fkey_values )
                   value = p_fkey_values->value2;
+
                found_special = true;
             }
             else if( key == c_parent_extra_fkey3 )
             {
                if( p_fkey_values )
                   value = p_fkey_values->value3;
+
                found_special = true;
             }
             else if( key == c_parent_extra_fkey4 )
             {
                if( p_fkey_values )
                   value = p_fkey_values->value4;
+
                found_special = true;
             }
             else if( key == c_parent_extra_fkey5 )
             {
                if( p_fkey_values )
                   value = p_fkey_values->value5;
+
                found_special = true;
             }
             else if( key == c_parent_extra_fkey6 )
             {
                if( p_fkey_values )
                   value = p_fkey_values->value6;
+
                found_special = true;
             }
             else if( key == c_parent_extra_fkey7 )
             {
                if( p_fkey_values )
                   value = p_fkey_values->value7;
+
                found_special = true;
             }
             else if( key == c_parent_extra_fkey8 )
             {
                if( p_fkey_values )
                   value = p_fkey_values->value8;
+
                found_special = true;
             }
             else if( key == c_parent_extra_fkey9 )
             {
                if( p_fkey_values )
                   value = p_fkey_values->value9;
+
                found_special = true;
             }
             else if( key == c_parent_extra_skey0 )
             {
                if( p_skey_values )
                   value = p_skey_values->value0;
+
                if( p_skey_required )
                   *p_skey_required = c_parent_extra_skey0;
+
                found_special = true;
             }
             else if( key == c_parent_extra_skey1 )
             {
                if( p_skey_values )
                   value = p_skey_values->value1;
+
                if( p_skey_required )
                   *p_skey_required = c_parent_extra_skey1;
+
                found_special = true;
             }
             else if( key == c_parent_extra_skey2 )
             {
                if( p_skey_values )
                   value = p_skey_values->value2;
+
                if( p_skey_required )
                   *p_skey_required = c_parent_extra_skey2;
+
                found_special = true;
             }
             else if( key == c_parent_extra_skey3 )
             {
                if( p_skey_values )
                   value = p_skey_values->value3;
+
                if( p_skey_required )
                   *p_skey_required = c_parent_extra_skey3;
+
                found_special = true;
             }
             else if( key == c_parent_extra_skey4 )
             {
                if( p_skey_values )
                   value = p_skey_values->value4;
+
                if( p_skey_required )
                   *p_skey_required = c_parent_extra_skey4;
+
                found_special = true;
             }
             else if( key == c_parent_extra_skey5 )
             {
                if( p_skey_values )
                   value = p_skey_values->value5;
+
                if( p_skey_required )
                   *p_skey_required = c_parent_extra_skey5;
+
                found_special = true;
             }
             else if( key == c_parent_extra_skey6 )
             {
                if( p_skey_values )
                   value = p_skey_values->value6;
+
                if( p_skey_required )
                   *p_skey_required = c_parent_extra_skey6;
+
                found_special = true;
             }
             else if( key == c_parent_extra_skey7 )
             {
                if( p_skey_values )
                   value = p_skey_values->value7;
+
                if( p_skey_required )
                   *p_skey_required = c_parent_extra_skey7;
+
                found_special = true;
             }
             else if( key == c_parent_extra_skey8 )
             {
                if( p_skey_values )
                   value = p_skey_values->value8;
+
                if( p_skey_required )
                   *p_skey_required = c_parent_extra_skey8;
+
                found_special = true;
             }
             else if( key == c_parent_extra_skey9 )
             {
                if( p_skey_values )
                   value = p_skey_values->value9;
+
                if( p_skey_required )
                   *p_skey_required = c_parent_extra_skey9;
+
                found_special = true;
             }
             else if( key == c_parent_extra_extkey )
             {
                string::size_type pos = data.find( '#' );
+
                if( pos != string::npos )
                {
                   value = get_extkey( data.substr( pos + 1 ).c_str( ) );
+
                   data.erase( pos );
                }
+
                found_special = true;
             }
             else if( key == c_parent_extra_group )
@@ -1266,6 +1325,7 @@ bool fetch_parent_row_data( const string& module,
                   continue;
 
                value = sess_info.user_group;
+
                found_special = true;
             }
             else if( key == c_parent_extra_other )
@@ -1274,6 +1334,7 @@ bool fetch_parent_row_data( const string& module,
                   continue;
 
                value = user_other;
+
                found_special = true;
             }
             else if( key == c_parent_extra_parent )
@@ -1283,76 +1344,89 @@ bool fetch_parent_row_data( const string& module,
                   data = field_id;
 
                value = parent_key;
+
                found_special = true;
             }
             else if( key == c_parent_extra_xself )
             {
                exclude_key_info = sess_info.user_key;
+
                continue;
             }
             else if( key == c_parent_extra_xfkey0 )
             {
                if( p_fkey_values )
                   exclude_key_info = p_fkey_values->value0;
+
                continue;
             }
             else if( key == c_parent_extra_xfkey1 )
             {
                if( p_fkey_values )
                   exclude_key_info = p_fkey_values->value1;
+
                continue;
             }
             else if( key == c_parent_extra_xfkey2 )
             {
                if( p_fkey_values )
                   exclude_key_info = p_fkey_values->value2;
+
                continue;
             }
             else if( key == c_parent_extra_xfkey3 )
             {
                if( p_fkey_values )
                   exclude_key_info = p_fkey_values->value3;
+
                continue;
             }
             else if( key == c_parent_extra_xfkey4 )
             {
                if( p_fkey_values )
                   exclude_key_info = p_fkey_values->value4;
+
                continue;
             }
             else if( key == c_parent_extra_xfkey5 )
             {
                if( p_fkey_values )
                   exclude_key_info = p_fkey_values->value5;
+
                continue;
             }
             else if( key == c_parent_extra_xfkey6 )
             {
                if( p_fkey_values )
                   exclude_key_info = p_fkey_values->value6;
+
                continue;
             }
             else if( key == c_parent_extra_xfkey7 )
             {
                if( p_fkey_values )
                   exclude_key_info = p_fkey_values->value7;
+
                continue;
             }
             else if( key == c_parent_extra_xfkey8 )
             {
                if( p_fkey_values )
                   exclude_key_info = p_fkey_values->value8;
+
                continue;
             }
             else if( key == c_parent_extra_xfkey9 )
             {
                if( p_fkey_values )
                   exclude_key_info = p_fkey_values->value9;
+
                continue;
             }
             else if( key == c_parent_extra_xparent )
             {
                exclude_key_info = parent_key;
+
                continue;
             }
             else if( key == c_parent_extra_manuallink )
@@ -1360,12 +1434,14 @@ bool fetch_parent_row_data( const string& module,
             else if( key == c_parent_extra_permission )
             {
                map< string, string >::const_iterator i;
+
                for( i = sess_info.user_perms.begin( ); i != sess_info.user_perms.end( ); ++i )
                {
                   if( !perms.empty( ) )
                      perms += ",";
                   perms += i->first;
                }
+
                p_perms = &perms;
 
                continue;
@@ -1373,18 +1449,22 @@ bool fetch_parent_row_data( const string& module,
             else if( key == c_parent_extra_xselfadmin )
             {
                exclude_key_info = sess_info.user_key + "," + to_string( c_admin_user_key );
+
                continue;
             }
             else if( key == c_parent_extra_decrypt )
             {
                needs_decrypting = true;
+
                continue;
             }
-            else if( key == c_parent_extra_sort || key == c_parent_extra_sortlinks )
+            else if( ( key == c_parent_extra_sort ) || ( key == c_parent_extra_sortlinks ) )
             {
                sort_manually = true;
+
                if( key == c_parent_extra_sortlinks )
                   remove_manual_links = true;
+
                continue;
             }
             else if( key == c_parent_extra_view )
@@ -1393,6 +1473,7 @@ bool fetch_parent_row_data( const string& module,
                   *p_has_view_id = true;
 
                view_id_field = data;
+
                continue;
             }
 
@@ -1416,6 +1497,7 @@ bool fetch_parent_row_data( const string& module,
          {
             if( !key_info.empty( ) )
                key_info += ",";
+
             key_info += extras[ i ];
          }
       }
@@ -1427,6 +1509,7 @@ bool fetch_parent_row_data( const string& module,
    {
       if( !key_info.empty( ) )
          key_info += ",";
+
       key_info += pfield;
    }
 
@@ -1442,6 +1525,7 @@ bool fetch_parent_row_data( const string& module,
    {
       if( !pfield.empty( ) )
          pfield += ",";
+
       pfield += view_id_field;
    }
 
@@ -1557,16 +1641,16 @@ bool populate_list_info( list_source& list,
          }
 
          // NOTE: For optional selects "~" is being used to indicate null.
-         if( field_value == "~" && svname[ 0 ] >= 'A' && svname[ 0 ] <= 'G' )
+         if( ( field_value == "~" ) && ( svname[ 0 ] >= 'A' ) && ( svname[ 0 ] <= 'G' ) )
             field_value.erase( );
 
          if( query_values.count( field_id ) )
          {
             string query_value( query_values[ field_id ] );
 
-            if( svname[ 0 ] >= 'A' && svname[ 0 ] <= 'G' )
+            if( ( svname[ 0 ] >= 'A' ) && ( svname[ 0 ] <= 'G' ) )
                query_value += '|';
-            else if( svname[ 0 ] >= 'H' && svname[ 0 ] <= 'M' )
+            else if( ( svname[ 0 ] >= 'H' ) && ( svname[ 0 ] <= 'M' ) )
                query_value += '&';
             else
                query_value += "..";
@@ -1611,7 +1695,7 @@ bool populate_list_info( list_source& list,
    // fixed field as the "user" context is needed as the parent context for the fetch.
    string fixed_parent_field, fixed_parent_keyval;
 
-   if( !view_pfield.empty( ) && list.type == c_list_type_user_child )
+   if( !view_pfield.empty( ) && ( list.type == c_list_type_user_child ) )
    {
       fixed_parent_field = view_pfield;
       fixed_parent_keyval = parent_key;
@@ -1722,6 +1806,7 @@ bool populate_list_info( list_source& list,
       key_prefix += " ";
 
    string key_info( key_prefix );
+
    string class_info( list.cid );
 
    if( p_view && !p_view->cid.empty( ) && list.type != c_list_type_user_child )
@@ -1737,7 +1822,7 @@ bool populate_list_info( list_source& list,
 
    // NOTE: A "group" list is a parent qualified list where the parent is the nominated "group" class whilst a
    // "user" list (and its variants) are parent qualified lists where the parent is the nominated "user" class.
-   if( list.type == c_list_type_group || list.type == c_list_type_nongroup )
+   if( ( list.type == c_list_type_group ) || ( list.type == c_list_type_nongroup ) )
    {
       if( list.type == c_list_type_nongroup )
          key_info = ":" + key_prefix;
@@ -1753,7 +1838,8 @@ bool populate_list_info( list_source& list,
 
       field_list += ( list.lici->second )->pfield;
    }
-   else if( list.type == c_list_type_user || list.type == c_list_type_nonuser || list.type == c_list_type_user_child )
+   else if( ( list.type == c_list_type_user )
+    || ( list.type == c_list_type_nonuser ) || ( list.type == c_list_type_user_child ) )
    {
       if( list.type == c_list_type_nonuser )
          key_info = ":" + key_prefix;
@@ -1829,7 +1915,7 @@ bool populate_list_info( list_source& list,
       okay = false;
    else if( is_printable )
    {
-      if( row_limit && list.row_data.size( ) == row_limit + 1 )
+      if( row_limit && ( list.row_data.size( ) == ( row_limit + 1 ) ) )
       {
          list.row_data.pop_back( );
          list.print_limited = true;
@@ -1878,6 +1964,7 @@ bool populate_list_info( list_source& list,
             index_field = i + 1;
 
             vector< string > all_index_fields;
+
             index_count = split( list.all_index_fields, all_index_fields );
 
             break;
@@ -1891,6 +1978,7 @@ bool populate_list_info( list_source& list,
          if( row_limit && list.row_data.size( ) && !listinfo.empty( ) && ( next || prev ) )
          {
             string key_ver_and_state( list.row_data.front( ).first );
+
             string key( key_ver_and_state.substr( 0, key_ver_and_state.find( ' ' ) ) );
 
             if( !index_field )
@@ -1898,6 +1986,7 @@ bool populate_list_info( list_source& list,
             else
             {
                vector< string > columns;
+
                raw_split( list.row_data.front( ).second, columns );
 
                list.prev_key_info.erase( );
@@ -1922,6 +2011,7 @@ bool populate_list_info( list_source& list,
          if( row_limit && ( list.row_data.size( ) == ( row_limit + 1 ) ) )
          {
             string key_ver_and_state( list.row_data.back( ).first );
+
             string key( key_ver_and_state.substr( 0, key_ver_and_state.find( ' ' ) ) );
 
             if( !index_field )
@@ -2138,6 +2228,7 @@ bool populate_list_info( list_source& list,
 void fetch_sys_record( const string& module_id, const module_info& mod_info, session_info& sess_info )
 {
    string field_list( mod_info.sys_name_field_id );
+
    field_list += "," + mod_info.sys_vendor_field_id;
    field_list += "," + mod_info.sys_actions_field_id;
    field_list += "," + mod_info.sys_message_field_id;
@@ -2153,6 +2244,7 @@ void fetch_sys_record( const string& module_id, const module_info& mod_info, ses
       throw runtime_error( "unexpected error occurred fetching system information" );
 
    vector< string > sys_data;
+
    split( sys_info.second, sys_data );
 
    if( sys_data.size( ) < 5 )
@@ -2254,6 +2346,7 @@ bool fetch_user_record(
    sess_info.user_key = user_info.first.substr( 0, pos );
 
    vector< string > user_data;
+
    split( user_info.second, user_data );
 
    if( user_data.size( ) < 2 )
@@ -2449,6 +2542,7 @@ void add_user( const string& user_id, const string& user_name,
  string* p_new_key, bool active, const string* p_gpg_key_file )
 {
    bool okay = true;
+
    string new_user_cmd( c_cmd_create );
 
    new_user_cmd += " sys " + date_time::standard( ).as_string( )
@@ -2460,8 +2554,10 @@ void add_user( const string& user_id, const string& user_name,
 
    new_user_cmd += " \"" + mod_info.user_uid_field_id + "=" + escaped( uid, ",\"" );
    new_user_cmd += "," + mod_info.user_pwd_field_id + "=" + escaped( pwd, ",\"" );
+
    if( password.empty( ) )
       new_user_cmd += "," + mod_info.user_hash_field_id + "=" + escaped( uid, ",\"" );
+
    new_user_cmd += "," + mod_info.user_name_field_id + "=" + escaped( name, ",\"" );
 
    new_user_cmd += "," + mod_info.user_active_field_id + "=" + to_string( active );
@@ -2525,11 +2621,13 @@ void add_quick_link( const string& module_ref,
    if( cmd == c_cmd_view )
    {
       prefix = data;
+
       URL += "&data=" + data;
    }
    else if( cmd == c_cmd_list )
    {
       suffix = "+" + data + listsrch;
+
       URL += "&listextra=find&findinfo=" + escape_specials( data );
 
       if( !listsrch.empty( ) )
@@ -2538,6 +2636,7 @@ void add_quick_link( const string& module_ref,
       if( p_list_selections )
       {
          string name;
+
          for( int i = 0; i < 10; i++ )
          {
             name = c_list_prefix;
@@ -2547,6 +2646,7 @@ void add_quick_link( const string& module_ref,
             if( p_list_selections->count( name ) )
             {
                suffix += p_list_selections->find( name )->second;
+
                URL += "&" + name + "=" + escape_specials( p_list_selections->find( name )->second );
             }
 
@@ -2557,6 +2657,7 @@ void add_quick_link( const string& module_ref,
             if( p_list_selections->count( name ) )
             {
                suffix += p_list_selections->find( name )->second;
+
                URL += "&" + name + "=" + escape_specials( p_list_selections->find( name )->second );
             }
          }
@@ -2578,6 +2679,7 @@ void add_quick_link( const string& module_ref,
     + " " + mod_info.id + " " + mod_info.user_qlink_class_id + " \"\"";
 
    escape( URL, "," );
+
    string name( escaped( extra, "," ) );
    string checksum( escaped( prefix + oident + suffix, "," ) );
 
@@ -2592,6 +2694,7 @@ void add_quick_link( const string& module_ref,
    else
    {
       string response;
+
       if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 )
          had_send_or_recv_error = true;
       else if( response != c_response_okay )
