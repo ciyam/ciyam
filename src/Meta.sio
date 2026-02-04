@@ -39065,6 +39065,7 @@
     <data/>
      <protect_spec>protect_equal.spec.xrep
      <protect_value>"admin"
+     <is_ui_only>true
     </data>
    </specification>
    <specification/>

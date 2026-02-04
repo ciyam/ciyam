@@ -875,7 +875,7 @@ uint64_t Meta_User::impl::get_state( ) const
 
    // [(start protect_equal)] 600001b
    if( check_equal( get_obj( ).Username( ), "admin" ) )
-      state |= ( c_state_uneditable | c_state_undeletable );
+      state |= ( c_state_uneditable | c_state_ignore_uneditable | c_state_undeletable );
    // [(finish protect_equal)] 600001b
 
    // [(start modifier_field_value)] 680001a
