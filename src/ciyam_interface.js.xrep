@@ -21,6 +21,7 @@ var secureOnly = false;
 var autoConfirm = true;
 var encryptPosts = `{`?`$encrypt_data`&`@eq`(`$encrypt_data`,`'true`'`)true`,false`};
 var useHashUserid = true;
+var hideHashUserid = `{`?`$hidden_userhash`&`@eq`(`$hidden_userhash`,`'true`'`)true`,false`};
 var usePageFading = false;
 var useAutoProgress = true;
 var useLoadProgress = true;
@@ -1245,29 +1246,34 @@ function hash_password( salt, pwd, skip_id )
 
 function hash_username( user, pwd, pwd_hash )
 {
-   // NOTE: For secured systems a five digit
-   // code is being used instead of "admin".
-   // This code is needed by "hash_password"
-   // but "admin" needs to be used here.
-   if( user.length == 5 )
-   {
-      let is_digits = /^\d+$/.test( user );
-
-      if( is_digits )
-         user = "admin";
-   }
-
-   // NOTE: In order to be able to use "init" user records the hashing needs to be
-   // made insecure (iff you prefix the "user id" with '!' which means that *real*
-   // usernames must not start with this character). This is because for such init
-   // records the correct hash values are not known (as they are only provided via
-   // the UI which isn't used until after the records have been later edited). For
-   // any *live* system all such init records should have their passwords properly
-   // set via the UI or instead be removed.
-   if( user.length && ( user.charAt( 0 ) == '!' ) )
-      return hex_sha256( user.substring( 1 ) + pwd ).toLowerCase( );
+   if( hideHashUserid )
+      return "10101";
    else
-      return hex_sha256( user + pwd_hash ).toLowerCase( );
+   {
+      // NOTE: For secured systems a five digit
+      // code is being used instead of "admin".
+      // This code is needed by "hash_password"
+      // but "admin" needs to be used here.
+      if( user.length == 5 )
+      {
+         let is_digits = /^\d+$/.test( user );
+
+         if( is_digits )
+            user = "admin";
+      }
+
+      // NOTE: In order to be able to use "init" user records the hashing needs to be
+      // made insecure (iff you prefix the "user id" with '!' which means that *real*
+      // usernames must not start with this character). This is because for such init
+      // records the correct hash values are not known (as they are only provided via
+      // the UI which isn't used until after the records have been later edited). For
+      // any *live* system all such init records should have their passwords properly
+      // set via the UI or instead be removed.
+      if( user.length && ( user.charAt( 0 ) == '!' ) )
+         return hex_sha256( user.substring( 1 ) + pwd ).toLowerCase( );
+      else
+         return hex_sha256( user + pwd_hash ).toLowerCase( );
+   }
 }
 
 function hash_with_unique( pwd_hash )

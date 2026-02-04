@@ -145,6 +145,7 @@ const char* const c_attribute_view_show_key = "view_show_key";
 const char* const c_attribute_checkbox_bools = "checkbox_bools";
 const char* const c_attribute_filesize_limit = "filesize_limit";
 const char* const c_attribute_user_pin_value = "user_pin_value";
+const char* const c_attribute_hidden_userhash = "hidden_userhash";
 const char* const c_attribute_print_list_opts = "print_list_opts";
 const char* const c_attribute_user_gpg_install = "user_gpg_install";
 
@@ -273,6 +274,7 @@ storage_info::storage_info( )
  view_show_key( c_default_view_show_key ),
  checkbox_bools( c_default_checkbox_bools ),
  filesize_limit( c_default_filesize_limit ),
+ hidden_userhash( c_default_hidden_userhash ),
  quick_link_limit( c_default_quick_link_limit )
 {
 }
@@ -299,6 +301,8 @@ void storage_info::clear( )
    checkbox_bools = c_default_checkbox_bools;
 
    filesize_limit = c_default_filesize_limit;
+
+   hidden_userhash = c_default_hidden_userhash;
 
    quick_link_limit = c_default_quick_link_limit;
 
@@ -508,6 +512,11 @@ void read_storage_info( storage_info& info, vector< string > log_messages )
 
       info.storage_name = reader.read_attribute( c_attribute_storage_name );
       info.module_prefix = reader.read_attribute( c_attribute_module_prefix );
+
+      string hidden_userhash( reader.read_opt_attribute( c_attribute_hidden_userhash ) );
+
+      if( !hidden_userhash.empty( ) )
+         info.hidden_userhash = ( hidden_userhash == c_true );
 
       if( reader.has_started_section( c_section_modules ) )
       {

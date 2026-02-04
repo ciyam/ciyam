@@ -31,6 +31,7 @@ const bool c_default_embed_images = false;
 const bool c_default_encrypt_data = false;
 const bool c_default_view_show_key = false;
 const bool c_default_checkbox_bools = false;
+const bool c_default_hidden_userhash = false;
 
 const size_t c_default_filesize_limit = 0;
 

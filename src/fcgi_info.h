@@ -460,6 +460,7 @@ struct storage_info
    bool encrypt_data;
    bool view_show_key;
    bool checkbox_bools;
+   bool hidden_userhash;
 
    size_t filesize_limit;
 

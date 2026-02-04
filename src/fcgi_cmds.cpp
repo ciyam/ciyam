@@ -624,12 +624,18 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    if( !sess_info.tz_name.empty( ) )
       fetch_cmd += " -tz=" + sess_info.tz_name;
 
+   // NOTE: If key is empty and "@verify" will be set then just
+   // assumes that record filtering is used to choose a record.
+   if( item_key.empty( )
+    && ( set_field_values.find( "@verify=" ) != string::npos ) )
+      fetch_cmd += " -f=verify";
+
    string perms;
 
    if( sess_info.is_admin_user )
       perms = "@admin";
 
-   if( p_owner && *p_owner == sess_info.user_key )
+   if( p_owner && ( *p_owner == sess_info.user_key ) )
    {
       if( !perms.empty( ) )
          perms += ",";
@@ -2334,8 +2340,21 @@ bool fetch_user_record(
 
    pair< string, string > user_info;
 
+   string set_field_values, query_info;
+
+   if( get_storage_info( ).hidden_userhash
+    && check_password && !unique_data.empty( ) )
+   {
+      key_info.clear( );
+
+      set_field_values = "@unique=" + unique_data + ",@verify=" + password;
+
+      if( !mod_info.user_active_field_id.empty( ) )
+         query_info = mod_info.user_active_field_id + "=1";
+   }
+
    if( !fetch_item_info( module_id, mod_info,
-    mod_info.user_class_id, key_info, field_list, "", "", sess_info, user_info ) )
+    mod_info.user_class_id, key_info, field_list, set_field_values, query_info, sess_info, user_info ) )
       throw runtime_error( "unexpected error occurred processing login information" );
 
    if( user_info.first.empty( ) )
@@ -2385,7 +2404,8 @@ bool fetch_user_record(
       if( password == final_password )
          matched_password = true;
 
-      if( ( !username.empty( ) && user_data[ 0 ] != username ) || ( !is_authorised && !matched_password ) )
+      if( ( !is_authorised && !matched_password )
+       || ( !username.empty( ) && ( user_data[ 0 ] != username ) ) )
          throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
 
       if( !userhash.empty( ) )
@@ -2401,9 +2421,9 @@ bool fetch_user_record(
 
    if( !mod_info.user_hash_field_id.empty( ) )
    {
-      string hash = user_data[ offset++ ];
+      string hash( user_data[ offset++ ] );
 
-      if( !userhash.empty( ) && hash != userhash )
+      if( !key_info.empty( ) && !userhash.empty( ) && ( hash != userhash ) )
       {
          // NOTE: If password is empty then assume is a new OpenID account.
          if( password.empty( ) )
@@ -2423,6 +2443,7 @@ bool fetch_user_record(
    if( !mod_info.user_perm_field_id.empty( ) )
    {
       string user_perm_info( user_data[ offset++ ] );
+
       vector< string > user_perms;
 
       if( !user_perm_info.empty( ) )
