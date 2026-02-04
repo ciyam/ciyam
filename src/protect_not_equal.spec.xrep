@@ -7,11 +7,11 @@
     && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
     && `}check_not_equal( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ), `{`$value`} ) )`{`!`@eq`(`$arg_label`,`'`'`) // i.e. `{`$arg_label`}`}\
 `{`@eq`(`$arg_scope`,`'edit`'`)
-      state |= ( c_state_uneditable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`}`{`@eq`(`$arg_could_change`,`'true`'`) | c_state_potentially_changing`} );\
+      state |= ( c_state_uneditable`{`@eq`(`$arg_is_ui_only`,`'true`'`) | c_state_ignore_uneditable`}`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`}`{`@eq`(`$arg_could_change`,`'true`'`) | c_state_potentially_changing`} );\
 `,`@eq`(`$arg_scope`,`'delete`'`)
       state |= ( c_state_undeletable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`}`{`@eq`(`$arg_could_change`,`'true`'`) | c_state_potentially_changing`} );\
 `,
-      state |= ( c_state_uneditable | c_state_undeletable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`}`{`@eq`(`$arg_could_change`,`'true`'`) | c_state_potentially_changing`} );\
+      state |= ( c_state_uneditable`{`@eq`(`$arg_is_ui_only`,`'true`'`) | c_state_ignore_uneditable`} | c_state_undeletable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`}`{`@eq`(`$arg_could_change`,`'true`'`) | c_state_potentially_changing`} );\
 `}
    // [(finish protect_not_equal)] `{`$arg_id`}
 `}

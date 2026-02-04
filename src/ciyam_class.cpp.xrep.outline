@@ -1433,7 +1433,7 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_label=$specification_\0_label arg_value=$specification_\0_value arg_modifier=$specification_\0_modifier\
  arg_tfield=$specification_\0_tfield arg_scope=$specification_\0_scope arg_changing=$specification_\0_changing\
  arg_could_change=$specification_\0_could_change arg_admin_always=$specification_\0_admin_always\
- arg_scripts_always=$specification_\0_scripts_always`}\
+ arg_is_ui_only=$specification_\0_is_ui_only arg_scripts_always=$specification_\0_scripts_always`}\
 `,\
 `@eq`(`'\1`'`,`'protect_modifier`'`)
 `{`#protect_modifier.spec.xrep section=get_state\
@@ -1448,7 +1448,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_label=$specification_\0_label arg_value=$specification_\0_value arg_modifier=$specification_\0_modifier\
  arg_tfield=$specification_\0_tfield arg_scope=$specification_\0_scope\
  arg_changing=$specification_\0_changing arg_could_change=$specification_\0_could_change\
- arg_admin_always=$specification_\0_admin_always arg_scripts_always=$specification_\0_scripts_always`}\
+ arg_admin_always=$specification_\0_admin_always arg_is_ui_only=$specification_\0_is_ui_only\
+ arg_scripts_always=$specification_\0_scripts_always`}\
 `,\
 `@eq`(`'\1`'`,`'refresh_on_focus`'`)
 `{`#refresh_on_focus.spec.xrep section=get_state\
@@ -1475,7 +1476,7 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_label=$specification_\0_label arg_value=$specification_\0_spec_value arg_modifier=$specification_\0_modifier\
  arg_tfield=$specification_\0_tfield arg_scope=$specification_\0_spec_scope arg_changing=$specification_\0_changing\
  arg_could_change=$specification_\0_could_change arg_admin_always=$specification_\0_admin_always\
- arg_scripts_always=$specification_\0_scripts_always`}\
+ arg_is_ui_only=$specification_\0_is_ui_only arg_scripts_always=$specification_\0_scripts_always`}\
 `,\
 `@eq`(`'\1`'`,`'unactionable_field_value`'`)
 `{`#unactionable_field_value.spec.xrep section=get_state\

@@ -43,6 +43,7 @@ const char* const c_arg_opt_prefix = "-opt_prefix";
 const char* const c_arg_self_child = "-self_child";
 const char* const c_arg_skip_nulls = "-skip_nulls";
 const char* const c_arg_check_null = "-check_null";
+const char* const c_arg_is_ui_only = "-is_ui_only";
 const char* const c_arg_not_create = "-not_create";
 const char* const c_arg_embed_links = "-embed_links";
 const char* const c_arg_exact_match = "-exact_match";
@@ -148,6 +149,7 @@ const char* const c_attribute_spfield_id = "spfield_id";
 const char* const c_attribute_tcfield_id = "tcfield_id";
 const char* const c_attribute_tpfield_id = "tpfield_id";
 const char* const c_attribute_tvfield_id = "tvfield_id";
+const char* const c_attribute_is_ui_only = "is_ui_only";
 const char* const c_attribute_vdfield_id = "vdfield_id";
 const char* const c_attribute_vsfield_id = "vsfield_id";
 const char* const c_attribute_dest_value = "dest_value";
@@ -452,6 +454,7 @@ const char* const c_data_crgpmfield = "crgpmfield";
 const char* const c_data_fmandatory = "fmandatory";
 const char* const c_data_ftransient = "ftransient";
 const char* const c_data_is_testval = "is_testval";
+const char* const c_data_is_ui_only = "is_ui_only";
 const char* const c_data_link_class = "link_class";
 const char* const c_data_mask_field = "mask_field";
 const char* const c_data_next_field = "next_field";
@@ -9682,6 +9685,7 @@ struct state_protect_specification : specification
    string protect_value;
    string protect_scope;
 
+   bool is_ui_only;
    bool is_changing;
 };
 
@@ -9696,12 +9700,16 @@ void state_protect_specification::add( model& m, const vector< string >& args, v
    string arg_field_value( args[ 3 ] );
    string arg_protect_scope;
 
+   is_ui_only = false;
    is_changing = false;
+
    for( size_t arg = 4; arg < args.size( ); arg++ )
    {
       string next_arg( args[ arg ] );
 
-      if( next_arg == c_arg_changing )
+      if( next_arg == c_arg_is_ui_only )
+         is_ui_only = true;
+      else if( next_arg == c_arg_changing )
          is_changing = true;
       else if( next_arg.find( c_arg_scope_prefix ) == 0 )
          arg_protect_scope = next_arg.substr( strlen( c_arg_scope_prefix ) );
@@ -9742,6 +9750,7 @@ void state_protect_specification::read_data( sio_reader& reader )
    protect_spec = reader.read_attribute( c_attribute_protect_spec );
    protect_value = reader.read_opt_attribute( c_attribute_protect_value );
    protect_scope = reader.read_opt_attribute( c_attribute_protect_scope );
+   is_ui_only = ( reader.read_opt_attribute( c_attribute_is_ui_only ) == c_true );
    is_changing = ( reader.read_opt_attribute( c_attribute_is_changing ) == c_true );
 }
 
@@ -9750,6 +9759,7 @@ void state_protect_specification::write_data( sio_writer& writer ) const
    writer.write_attribute( c_attribute_protect_spec, protect_spec );
    writer.write_opt_attribute( c_attribute_protect_value, protect_value );
    writer.write_opt_attribute( c_attribute_protect_scope, protect_scope );
+   writer.write_opt_attribute( c_attribute_is_ui_only, is_ui_only ? c_true : "" );
    writer.write_opt_attribute( c_attribute_is_changing, is_changing ? c_true : "" );
 }
 
@@ -9759,6 +9769,7 @@ void state_protect_specification::add_specification_data( model& /*m*/, specific
    spec_data.data_pairs.push_back( make_pair( c_data_spec_value, protect_value ) );
    spec_data.data_pairs.push_back( make_pair( c_data_spec_scope, protect_scope ) );
    spec_data.data_pairs.push_back( make_pair( c_data_changing, is_changing ? c_true : "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_is_ui_only, is_ui_only ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_label, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_pfield, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, "" ) );
