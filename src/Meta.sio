@@ -724,6 +724,23 @@
       </specifications>
      </field>
      <field/>
+      <id>127140
+      <name>Use_Hidden_Userhash
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602910
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>127137
       <name>Use_Script
       <type>bool
@@ -31340,6 +31357,7 @@
      <field_info>127107
      <field_info>127131
      <field_info>127130
+     <field_info>127140
      <field_info>127124;enum=906
      <field_info>127108
      <field_info>127104

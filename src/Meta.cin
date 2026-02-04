@@ -788,6 +788,7 @@ field_add -id=127136 Application Type bool mand -def=1 -transient -e=app_type
 field_add -id=127137 Application Use_Script bool mand -def=0
 field_add -id=127138 Application Installing_Script bool mand -def=0
 field_add -id=127139 Application Year_Created year_created mand -x=defcurrentyear
+field_add -id=127140 Application Use_Hidden_Userhash bool mand -def=0
 modifier_add -id=127310 Application Is_Traditional Blockchain_Id:relegate
 modifier_add -id=127311 Application Is_Non_Traditional Allow_Duplicate_Logins:relegate\
 ,Auto_Login_Days:relegate,Encrypt_Dynamic_Content:relegate,Use_Embedded_Images:relegate
@@ -2323,7 +2324,7 @@ specification_add -id=602910 {Application}_view view "? standard:can_copy Applic
 ,Default_Image_Width,Default_Image_Height,Default_List_Row_Limit,Default_Multiline_Min_Rows,Default_Multiline_Max_Rows\
 ,Default_Multiline_Text_Limit,Default_Multiline_Text_Trunc,Default_List_Print_Row_Limit,Default_Max_Attached_File_Size\
 ,@tab:Other_Settings,Year_Created,Module_Prefix,Use_TLS_Sessions,Use_URL_Checksum,Use_Embedded_Images,Encrypt_Dynamic_Content\
-,Auto_Login_Days,Allow_Duplicate_Logins,Actions"
+,Use_Hidden_Userhash,Auto_Login_Days,Allow_Duplicate_Logins,Actions"
 specification_add -id=602950 {Module}_child_list0 list "@602950_* child:no_limit Module {Model}:Name;link\
  -act=+!126410+@rfields+@rvalues,+!^126420+@rfields+@rvalues {Application}"
 specification_add -id=602960 {Module}_view view "? standard:no_edit Module {Application}:Name;no_edit+link,{Model}:Name!@group:{Workgroup};link"

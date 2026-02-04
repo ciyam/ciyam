@@ -26,6 +26,7 @@
  <filesize_limit>`{`$filesize_limit`}
  <storage_name>`{`$storage_name`}
  <module_prefix>`{`$module_prefix`}
+ <hidden_userhash>`{`$hidden_userhash`}
  <modules/>
 `{`[`$modules`,\
   <module/>

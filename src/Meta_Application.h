@@ -62,13 +62,14 @@ class Meta_Application : public class_base
       e_field_id_Type = 31,
       e_field_id_Use_Check_Boxes_for_Bools = 32,
       e_field_id_Use_Embedded_Images = 33,
-      e_field_id_Use_Script = 34,
-      e_field_id_Use_TLS_Sessions = 35,
-      e_field_id_Use_URL_Checksum = 36,
-      e_field_id_Use_Vertical_Menu = 37,
-      e_field_id_Version = 38,
-      e_field_id_Workgroup = 39,
-      e_field_id_Year_Created = 40
+      e_field_id_Use_Hidden_Userhash = 34,
+      e_field_id_Use_Script = 35,
+      e_field_id_Use_TLS_Sessions = 36,
+      e_field_id_Use_URL_Checksum = 37,
+      e_field_id_Use_Vertical_Menu = 38,
+      e_field_id_Version = 39,
+      e_field_id_Workgroup = 40,
+      e_field_id_Year_Created = 41
    };
 
    Meta_Application( );
@@ -169,6 +170,9 @@ class Meta_Application : public class_base
 
    bool Use_Embedded_Images( ) const;
    void Use_Embedded_Images( bool Use_Embedded_Images );
+
+   bool Use_Hidden_Userhash( ) const;
+   void Use_Hidden_Userhash( bool Use_Hidden_Userhash );
 
    bool Use_Script( ) const;
    void Use_Script( bool Use_Script );

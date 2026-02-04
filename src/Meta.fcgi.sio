@@ -2907,6 +2907,14 @@
      <modifiers>800:relegate
     </field>
     <field/>
+     <name>field_application_use_hidden_userhash
+     <field>127140
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_application_auto_login_days
      <field>127124
      <ftype>int

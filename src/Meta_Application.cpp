@@ -123,6 +123,7 @@ const char* const c_field_id_Show_Inaccessible_Modules = "127110";
 const char* const c_field_id_Type = "127136";
 const char* const c_field_id_Use_Check_Boxes_for_Bools = "127121";
 const char* const c_field_id_Use_Embedded_Images = "127131";
+const char* const c_field_id_Use_Hidden_Userhash = "127140";
 const char* const c_field_id_Use_Script = "127137";
 const char* const c_field_id_Use_TLS_Sessions = "127134";
 const char* const c_field_id_Use_URL_Checksum = "127107";
@@ -164,6 +165,7 @@ const char* const c_field_name_Show_Inaccessible_Modules = "Show_Inaccessible_Mo
 const char* const c_field_name_Type = "Type";
 const char* const c_field_name_Use_Check_Boxes_for_Bools = "Use_Check_Boxes_for_Bools";
 const char* const c_field_name_Use_Embedded_Images = "Use_Embedded_Images";
+const char* const c_field_name_Use_Hidden_Userhash = "Use_Hidden_Userhash";
 const char* const c_field_name_Use_Script = "Use_Script";
 const char* const c_field_name_Use_TLS_Sessions = "Use_TLS_Sessions";
 const char* const c_field_name_Use_URL_Checksum = "Use_URL_Checksum";
@@ -205,6 +207,7 @@ const char* const c_field_display_name_Show_Inaccessible_Modules = "field_applic
 const char* const c_field_display_name_Type = "field_application_type";
 const char* const c_field_display_name_Use_Check_Boxes_for_Bools = "field_application_use_check_boxes_for_bools";
 const char* const c_field_display_name_Use_Embedded_Images = "field_application_use_embedded_images";
+const char* const c_field_display_name_Use_Hidden_Userhash = "field_application_use_hidden_userhash";
 const char* const c_field_display_name_Use_Script = "field_application_use_script";
 const char* const c_field_display_name_Use_TLS_Sessions = "field_application_use_tls_sessions";
 const char* const c_field_display_name_Use_URL_Checksum = "field_application_use_url_checksum";
@@ -213,7 +216,7 @@ const char* const c_field_display_name_Version = "field_application_version";
 const char* const c_field_display_name_Workgroup = "field_application_workgroup";
 const char* const c_field_display_name_Year_Created = "field_application_year_created";
 
-const int c_num_fields = 40;
+const int c_num_fields = 41;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -255,6 +258,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "127137",
    "127138",
    "127139",
+   "127140",
    "302220",
    "302225"
 };
@@ -294,6 +298,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Type",
    "Use_Check_Boxes_for_Bools",
    "Use_Embedded_Images",
+   "Use_Hidden_Userhash",
    "Use_Script",
    "Use_TLS_Sessions",
    "Use_URL_Checksum",
@@ -448,6 +453,7 @@ bool g_default_Show_Inaccessible_Modules = bool( 0 );
 bool g_default_Type = bool( 1 );
 bool g_default_Use_Check_Boxes_for_Bools = bool( 1 );
 bool g_default_Use_Embedded_Images = bool( 0 );
+bool g_default_Use_Hidden_Userhash = bool( 0 );
 bool g_default_Use_Script = bool( 0 );
 bool g_default_Use_TLS_Sessions = bool( 0 );
 bool g_default_Use_URL_Checksum = bool( 0 );
@@ -1073,6 +1079,13 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_Embedded_Images( ), cmd_handler.retval );
       }
 
+      if( !handled && ( ( field_name == c_field_id_Use_Hidden_Userhash ) || ( field_name == c_field_name_Use_Hidden_Userhash ) ) )
+      {
+         handled = true;
+
+         string_getter< bool >( cmd_handler.p_Meta_Application->Use_Hidden_Userhash( ), cmd_handler.retval );
+      }
+
       if( !handled && ( ( field_name == c_field_id_Use_Script ) || ( field_name == c_field_name_Use_Script ) ) )
       {
          handled = true;
@@ -1399,6 +1412,14 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_Embedded_Images, field_value );
       }
 
+      if( !handled && ( ( field_name == c_field_id_Use_Hidden_Userhash ) || ( field_name == c_field_name_Use_Hidden_Userhash ) ) )
+      {
+         handled = true;
+
+         func_string_setter< Meta_Application, bool >(
+          *cmd_handler.p_Meta_Application, &Meta_Application::Use_Hidden_Userhash, field_value );
+      }
+
       if( !handled && ( ( field_name == c_field_id_Use_Script ) || ( field_name == c_field_name_Use_Script ) ) )
       {
          handled = true;
@@ -1642,6 +1663,9 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    bool impl_Use_Embedded_Images( ) const { return lazy_fetch( p_obj ), v_Use_Embedded_Images; }
    void impl_Use_Embedded_Images( bool Use_Embedded_Images ) { v_Use_Embedded_Images = Use_Embedded_Images; }
 
+   bool impl_Use_Hidden_Userhash( ) const { return lazy_fetch( p_obj ), v_Use_Hidden_Userhash; }
+   void impl_Use_Hidden_Userhash( bool Use_Hidden_Userhash ) { v_Use_Hidden_Userhash = Use_Hidden_Userhash; }
+
    bool impl_Use_Script( ) const { return lazy_fetch( p_obj ), v_Use_Script; }
    void impl_Use_Script( bool Use_Script ) { v_Use_Script = Use_Script; }
 
@@ -1846,6 +1870,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    bool v_Type;
    bool v_Use_Check_Boxes_for_Bools;
    bool v_Use_Embedded_Images;
+   bool v_Use_Hidden_Userhash;
    bool v_Use_Script;
    bool v_Use_TLS_Sessions;
    bool v_Use_URL_Checksum;
@@ -1889,9 +1914,9 @@ void Meta_Application::impl::impl_Generate( )
    bool async = true;
 
    if( get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "0"
-    || get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "false"
+    || get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == c_false
     || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "0"
-    || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "false" )
+    || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == c_false )
       async = false;
 
    // NOTE: The UI allows this to be set so use this as the value during
@@ -2047,25 +2072,25 @@ void Meta_Application::impl::impl_Generate( )
 
       outv << "\x60{\x60$filesize_limit\x60=\x60'" << get_obj( ).Default_Max_Attached_File_Size( ) << "\x60'\x60}\n";
 
-      string use_tls( "false" );
+      string use_tls( c_false );
 
       if( get_obj( ).Use_TLS_Sessions( ) )
-         use_tls = "true";
+         use_tls = c_true;
 
-      string embed_images( "false" );
+      string embed_images( c_false );
 
       if( get_obj( ).Use_Embedded_Images( ) )
-         embed_images = "true";
+         embed_images = c_true;
 
-      string encrypt_data( "false" );
+      string encrypt_data( c_false );
 
       if( get_obj( ).Encrypt_Dynamic_Content( ) )
-         encrypt_data = "true";
+         encrypt_data = c_true;
 
-      string checkbox_bools( "false" );
+      string checkbox_bools( c_false );
 
       if( get_obj( ).Use_Check_Boxes_for_Bools( ) )
-         checkbox_bools = "true";
+         checkbox_bools = c_true;
 
       string print_list_ops;
 
@@ -2076,8 +2101,14 @@ void Meta_Application::impl::impl_Generate( )
       {
          if( !print_list_ops.empty( ) )
             print_list_ops += '+';
+
          print_list_ops += "show_numbers";
       }
+
+      string hidden_hash( c_false );
+
+      if( get_obj( ).Use_Hidden_Userhash( ) )
+         hidden_hash = c_true;
 
       outv << "\x60{\x60$print_list_ops\x60=\x60'" << print_list_ops << "\x60'\x60}\n";
 
@@ -2097,6 +2128,8 @@ void Meta_Application::impl::impl_Generate( )
 
       outv << "\x60{\x60$storage_name\x60=\x60'" << get_obj( ).Name( ) << "\x60'\x60}\n";
       outv << "\x60{\x60$module_prefix\x60=\x60'" << get_obj( ).Module_Prefix( ) << "\x60'\x60}\n";
+
+      outv << "\x60{\x60$hidden_userhash\x60=\x60'" << hidden_hash << "\x60'\x60}\n";
 
       string all_modules;
 
@@ -2776,30 +2809,34 @@ string Meta_Application::impl::get_field_value( int field ) const
       break;
 
       case 33:
-      retval = to_string( impl_Use_Script( ) );
+      retval = to_string( impl_Use_Hidden_Userhash( ) );
       break;
 
       case 34:
-      retval = to_string( impl_Use_TLS_Sessions( ) );
+      retval = to_string( impl_Use_Script( ) );
       break;
 
       case 35:
-      retval = to_string( impl_Use_URL_Checksum( ) );
+      retval = to_string( impl_Use_TLS_Sessions( ) );
       break;
 
       case 36:
-      retval = to_string( impl_Use_Vertical_Menu( ) );
+      retval = to_string( impl_Use_URL_Checksum( ) );
       break;
 
       case 37:
-      retval = to_string( impl_Version( ) );
+      retval = to_string( impl_Use_Vertical_Menu( ) );
       break;
 
       case 38:
-      retval = to_string( impl_Workgroup( ) );
+      retval = to_string( impl_Version( ) );
       break;
 
       case 39:
+      retval = to_string( impl_Workgroup( ) );
+      break;
+
+      case 40:
       retval = to_string( impl_Year_Created( ) );
       break;
 
@@ -2947,30 +2984,34 @@ void Meta_Application::impl::set_field_value( int field, const string& value )
       break;
 
       case 33:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Script, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Hidden_Userhash, value );
       break;
 
       case 34:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_TLS_Sessions, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Script, value );
       break;
 
       case 35:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_URL_Checksum, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_TLS_Sessions, value );
       break;
 
       case 36:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Vertical_Menu, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_URL_Checksum, value );
       break;
 
       case 37:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Version, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Vertical_Menu, value );
       break;
 
       case 38:
-      func_string_setter< Meta_Application::impl, Meta_Workgroup >( *this, &Meta_Application::impl::impl_Workgroup, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Version, value );
       break;
 
       case 39:
+      func_string_setter< Meta_Application::impl, Meta_Workgroup >( *this, &Meta_Application::impl::impl_Workgroup, value );
+      break;
+
+      case 40:
       func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Year_Created, value );
       break;
 
@@ -3116,30 +3157,34 @@ void Meta_Application::impl::set_field_default( int field )
       break;
 
       case 33:
-      impl_Use_Script( g_default_Use_Script );
+      impl_Use_Hidden_Userhash( g_default_Use_Hidden_Userhash );
       break;
 
       case 34:
-      impl_Use_TLS_Sessions( g_default_Use_TLS_Sessions );
+      impl_Use_Script( g_default_Use_Script );
       break;
 
       case 35:
-      impl_Use_URL_Checksum( g_default_Use_URL_Checksum );
+      impl_Use_TLS_Sessions( g_default_Use_TLS_Sessions );
       break;
 
       case 36:
-      impl_Use_Vertical_Menu( g_default_Use_Vertical_Menu );
+      impl_Use_URL_Checksum( g_default_Use_URL_Checksum );
       break;
 
       case 37:
-      impl_Version( g_default_Version );
+      impl_Use_Vertical_Menu( g_default_Use_Vertical_Menu );
       break;
 
       case 38:
-      impl_Workgroup( g_default_Workgroup );
+      impl_Version( g_default_Version );
       break;
 
       case 39:
+      impl_Workgroup( g_default_Workgroup );
+      break;
+
+      case 40:
       impl_Year_Created( g_default_Year_Created );
       break;
 
@@ -3287,30 +3332,34 @@ bool Meta_Application::impl::is_field_default( int field ) const
       break;
 
       case 33:
-      retval = ( v_Use_Script == g_default_Use_Script );
+      retval = ( v_Use_Hidden_Userhash == g_default_Use_Hidden_Userhash );
       break;
 
       case 34:
-      retval = ( v_Use_TLS_Sessions == g_default_Use_TLS_Sessions );
+      retval = ( v_Use_Script == g_default_Use_Script );
       break;
 
       case 35:
-      retval = ( v_Use_URL_Checksum == g_default_Use_URL_Checksum );
+      retval = ( v_Use_TLS_Sessions == g_default_Use_TLS_Sessions );
       break;
 
       case 36:
-      retval = ( v_Use_Vertical_Menu == g_default_Use_Vertical_Menu );
+      retval = ( v_Use_URL_Checksum == g_default_Use_URL_Checksum );
       break;
 
       case 37:
-      retval = ( v_Version == g_default_Version );
+      retval = ( v_Use_Vertical_Menu == g_default_Use_Vertical_Menu );
       break;
 
       case 38:
-      retval = ( v_Workgroup == g_default_Workgroup );
+      retval = ( v_Version == g_default_Version );
       break;
 
       case 39:
+      retval = ( v_Workgroup == g_default_Workgroup );
+      break;
+
+      case 40:
       retval = ( v_Year_Created == g_default_Year_Created );
       break;
 
@@ -3506,6 +3555,7 @@ void Meta_Application::impl::clear( )
    v_Type = g_default_Type;
    v_Use_Check_Boxes_for_Bools = g_default_Use_Check_Boxes_for_Bools;
    v_Use_Embedded_Images = g_default_Use_Embedded_Images;
+   v_Use_Hidden_Userhash = g_default_Use_Hidden_Userhash;
    v_Use_Script = g_default_Use_Script;
    v_Use_TLS_Sessions = g_default_Use_TLS_Sessions;
    v_Use_URL_Checksum = g_default_Use_URL_Checksum;
@@ -3921,9 +3971,9 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
       bool async = true;
 
       if( get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "0"
-       || get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "false"
+       || get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == c_false
        || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "0"
-       || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "false" )
+       || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == c_false )
          async = false;
 
       if( !async )
@@ -4435,6 +4485,16 @@ bool Meta_Application::Use_Embedded_Images( ) const
 void Meta_Application::Use_Embedded_Images( bool Use_Embedded_Images )
 {
    p_impl->impl_Use_Embedded_Images( Use_Embedded_Images );
+}
+
+bool Meta_Application::Use_Hidden_Userhash( ) const
+{
+   return p_impl->impl_Use_Hidden_Userhash( );
+}
+
+void Meta_Application::Use_Hidden_Userhash( bool Use_Hidden_Userhash )
+{
+   p_impl->impl_Use_Hidden_Userhash( Use_Hidden_Userhash );
 }
 
 bool Meta_Application::Use_Script( ) const
@@ -5068,6 +5128,16 @@ const char* Meta_Application::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Use_Hidden_Userhash )
+   {
+      p_id = c_field_id_Use_Hidden_Userhash;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Use_Script )
    {
       p_id = c_field_id_Use_Script;
@@ -5479,6 +5549,16 @@ const char* Meta_Application::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Use_Hidden_Userhash )
+   {
+      p_name = c_field_name_Use_Hidden_Userhash;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Use_Script )
    {
       p_name = c_field_name_Use_Script;
@@ -5758,6 +5838,11 @@ string Meta_Application::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Use_Embedded_Images );
       get_module_string( c_field_display_name_Use_Embedded_Images, &next );
    }
+   if( ( id_or_name == c_field_id_Use_Hidden_Userhash ) || ( id_or_name == c_field_name_Use_Hidden_Userhash ) )
+   {
+      name = string( c_field_display_name_Use_Hidden_Userhash );
+      get_module_string( c_field_display_name_Use_Hidden_Userhash, &next );
+   }
    if( ( id_or_name == c_field_id_Use_Script ) || ( id_or_name == c_field_name_Use_Script ) )
    {
       name = string( c_field_display_name_Use_Script );
@@ -5874,6 +5959,8 @@ string Meta_Application::get_field_display_name( const string& id_or_name ) cons
       display_name = get_module_string( c_field_display_name_Use_Check_Boxes_for_Bools );
    if( ( id_or_name == c_field_id_Use_Embedded_Images ) || ( id_or_name == c_field_name_Use_Embedded_Images ) )
       display_name = get_module_string( c_field_display_name_Use_Embedded_Images );
+   if( ( id_or_name == c_field_id_Use_Hidden_Userhash ) || ( id_or_name == c_field_name_Use_Hidden_Userhash ) )
+      display_name = get_module_string( c_field_display_name_Use_Hidden_Userhash );
    if( ( id_or_name == c_field_id_Use_Script ) || ( id_or_name == c_field_name_Use_Script ) )
       display_name = get_module_string( c_field_display_name_Use_Script );
    if( ( id_or_name == c_field_id_Use_TLS_Sessions ) || ( id_or_name == c_field_name_Use_TLS_Sessions ) )
@@ -6175,6 +6262,7 @@ void Meta_Application::get_sql_column_names(
    names.push_back( "C_Show_Inaccessible_Modules" );
    names.push_back( "C_Use_Check_Boxes_for_Bools" );
    names.push_back( "C_Use_Embedded_Images" );
+   names.push_back( "C_Use_Hidden_Userhash" );
    names.push_back( "C_Use_Script" );
    names.push_back( "C_Use_TLS_Sessions" );
    names.push_back( "C_Use_URL_Checksum" );
@@ -6221,6 +6309,7 @@ void Meta_Application::get_sql_column_values(
    values.push_back( to_string( Show_Inaccessible_Modules( ) ) );
    values.push_back( to_string( Use_Check_Boxes_for_Bools( ) ) );
    values.push_back( to_string( Use_Embedded_Images( ) ) );
+   values.push_back( to_string( Use_Hidden_Userhash( ) ) );
    values.push_back( to_string( Use_Script( ) ) );
    values.push_back( to_string( Use_TLS_Sessions( ) ) );
    values.push_back( to_string( Use_URL_Checksum( ) ) );
@@ -6397,6 +6486,7 @@ void Meta_Application::static_get_field_info( field_info_container& all_field_in
    all_field_info.push_back( field_info( "127136", "Type", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127121", "Use_Check_Boxes_for_Bools", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127131", "Use_Embedded_Images", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127140", "Use_Hidden_Userhash", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127137", "Use_Script", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127134", "Use_TLS_Sessions", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127107", "Use_URL_Checksum", "bool", false, "", "" ) );
@@ -6571,30 +6661,34 @@ const char* Meta_Application::static_get_field_id( field_id id )
       break;
 
       case 34:
-      p_id = "127137";
+      p_id = "127140";
       break;
 
       case 35:
-      p_id = "127134";
+      p_id = "127137";
       break;
 
       case 36:
-      p_id = "127107";
+      p_id = "127134";
       break;
 
       case 37:
-      p_id = "127133";
+      p_id = "127107";
       break;
 
       case 38:
-      p_id = "127102";
+      p_id = "127133";
       break;
 
       case 39:
-      p_id = "302220";
+      p_id = "127102";
       break;
 
       case 40:
+      p_id = "302220";
+      break;
+
+      case 41:
       p_id = "127139";
       break;
    }
@@ -6744,30 +6838,34 @@ const char* Meta_Application::static_get_field_name( field_id id )
       break;
 
       case 34:
-      p_id = "Use_Script";
+      p_id = "Use_Hidden_Userhash";
       break;
 
       case 35:
-      p_id = "Use_TLS_Sessions";
+      p_id = "Use_Script";
       break;
 
       case 36:
-      p_id = "Use_URL_Checksum";
+      p_id = "Use_TLS_Sessions";
       break;
 
       case 37:
-      p_id = "Use_Vertical_Menu";
+      p_id = "Use_URL_Checksum";
       break;
 
       case 38:
-      p_id = "Version";
+      p_id = "Use_Vertical_Menu";
       break;
 
       case 39:
-      p_id = "Workgroup";
+      p_id = "Version";
       break;
 
       case 40:
+      p_id = "Workgroup";
+      break;
+
+      case 41:
       p_id = "Year_Created";
       break;
    }
@@ -6850,20 +6948,22 @@ int Meta_Application::static_get_field_num( const string& field )
       rc += 32;
    else if( ( field == c_field_id_Use_Embedded_Images ) || ( field == c_field_name_Use_Embedded_Images ) )
       rc += 33;
-   else if( ( field == c_field_id_Use_Script ) || ( field == c_field_name_Use_Script ) )
+   else if( ( field == c_field_id_Use_Hidden_Userhash ) || ( field == c_field_name_Use_Hidden_Userhash ) )
       rc += 34;
-   else if( ( field == c_field_id_Use_TLS_Sessions ) || ( field == c_field_name_Use_TLS_Sessions ) )
+   else if( ( field == c_field_id_Use_Script ) || ( field == c_field_name_Use_Script ) )
       rc += 35;
-   else if( ( field == c_field_id_Use_URL_Checksum ) || ( field == c_field_name_Use_URL_Checksum ) )
+   else if( ( field == c_field_id_Use_TLS_Sessions ) || ( field == c_field_name_Use_TLS_Sessions ) )
       rc += 36;
-   else if( ( field == c_field_id_Use_Vertical_Menu ) || ( field == c_field_name_Use_Vertical_Menu ) )
+   else if( ( field == c_field_id_Use_URL_Checksum ) || ( field == c_field_name_Use_URL_Checksum ) )
       rc += 37;
-   else if( ( field == c_field_id_Version ) || ( field == c_field_name_Version ) )
+   else if( ( field == c_field_id_Use_Vertical_Menu ) || ( field == c_field_name_Use_Vertical_Menu ) )
       rc += 38;
-   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
+   else if( ( field == c_field_id_Version ) || ( field == c_field_name_Version ) )
       rc += 39;
-   else if( ( field == c_field_id_Year_Created ) || ( field == c_field_name_Year_Created ) )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       rc += 40;
+   else if( ( field == c_field_id_Year_Created ) || ( field == c_field_name_Year_Created ) )
+      rc += 41;
 
    return rc - 1;
 }
@@ -6925,6 +7025,7 @@ string Meta_Application::static_get_sql_columns( )
     "C_Show_Inaccessible_Modules INTEGER NOT NULL,"
     "C_Use_Check_Boxes_for_Bools INTEGER NOT NULL,"
     "C_Use_Embedded_Images INTEGER NOT NULL,"
+    "C_Use_Hidden_Userhash INTEGER NOT NULL,"
     "C_Use_Script INTEGER NOT NULL,"
     "C_Use_TLS_Sessions INTEGER NOT NULL,"
     "C_Use_URL_Checksum INTEGER NOT NULL,"
