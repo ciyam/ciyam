@@ -56,6 +56,8 @@ var had_act_error = false;
 
 var separator_digits = 3;
 
+var dummy_user_hash = '4062e2166e6bb644b5a9187557a7411c1394de242c007afc3888ab52736f38ee';
+
 var serverId = '';
 var uniqueId = '';
 
@@ -120,7 +122,7 @@ function is_leap_year( year )
 
 function can_write_to_storage( use_local )
 {
-   var test = 'test', storage = use_local ? localStorage : sessionStorage;
+   var test = 'test', storage = ( use_local ? localStorage : sessionStorage );
 
    if( typeof storage != 'object' )
       return false;
@@ -678,7 +680,7 @@ function load2( )
 
    if( can_write_to_local_storage( ) )
    {
-      if( localStorage.getItem( 'skey' ) == null && localStorage.getItem( 'key' ) != null )
+      if( ( localStorage.getItem( 'skey' ) == null ) && ( localStorage.getItem( 'key' ) != null ) )
       {
          if( !has_session )
             full_context += '&userhash=' + localStorage.getItem( 'hash' ) + '&persistent=true&session=new_session';
@@ -703,6 +705,7 @@ function load2( )
    else
    {
       var post_data = '';
+
       var key = localStorage.getItem( 'skey' );
 
       if( !is_login && has_session && loggedIn && ( key != null ) && encryptPosts )
@@ -1212,7 +1215,7 @@ function hash_password( salt, pwd, skip_id )
    var retval = '';
    var rounds = hashRounds;
 
-   // NOTE: (see NOTE in hash_username below)
+   // NOTE: (see second NOTE in hash_username below)
    if( salt.length && ( salt.charAt( 0 ) == '!' ) )
    {
       rounds = 100;
@@ -1239,7 +1242,17 @@ function hash_password( salt, pwd, skip_id )
    }
 
    if( !skip_id && !loggedIn && encryptPosts && can_write_to_session_storage( ) )
-      localStorage.setItem( 'skey', retval );
+   {
+      var skey = retval;
+
+      if( hideHashUserid && ( ( uniqueId == null ) || ( uniqueId == '' ) ) )
+         throw new Error( "unexpected missing unique server value" );
+
+      if( uniqueId != '' )
+         skey = hex_sha256( uniqueId + retval );
+
+      localStorage.setItem( 'skey', skey );
+   }
 
    return retval;
 }
@@ -1247,7 +1260,7 @@ function hash_password( salt, pwd, skip_id )
 function hash_username( user, pwd, pwd_hash )
 {
    if( hideHashUserid )
-      return "10101";
+      return dummy_user_hash;
    else
    {
       // NOTE: For secured systems a five digit
@@ -1802,10 +1815,11 @@ function get_all_field_values( form )
             if( form.elements[ i ].getAttribute( 'salt' ) == '1' )
                salt = value;
 
-            if( value != '' && form.elements[ i ].getAttribute( 'hash' ) == '1' )
+            if( ( value != '' ) && ( form.elements[ i ].getAttribute( 'hash' ) == '1' ) )
             {
                if( salt == '' )
                   alert( '*** no salt found possibly bad hash created ***' );
+
                value = hash_password( salt, value, true );
             }
 
