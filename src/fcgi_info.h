@@ -202,8 +202,10 @@ struct rest_info
    rest_info( ) : mandatory( false ) { }
 
    std::string name;
+
    std::string field;
    std::string ftype;
+
    std::string extra;
 
    bool mandatory;
@@ -214,6 +216,7 @@ struct rest_info
 struct enum_info
 {
    std::string id;
+
    std::string name;
 
    std::map< std::string, std::string > filters;
@@ -258,22 +261,27 @@ struct list_info
    std::string id;
    std::string cid;
    std::string pid;
+
    std::string name;
    std::string type;
    std::string perm;
+
    std::string extra;
 
    std::string view;
+
    std::string module;
    std::string mclass;
    std::string bclass;
 
    std::string order;
 
+   bool nexclude;
+
    std::string nclass;
    std::string nfield;
-   bool nexclude;
    std::string nextra;
+
    std::string dfenum;
    std::string dfield;
    std::string dvalue;
@@ -297,7 +305,9 @@ struct list_info
    std::vector< std::string > actions;
 
    std::vector< fld_info > fields;
+
    std::vector< par_info > parents;
+
    std::vector< rest_info > restricts;
 };
 
@@ -511,8 +521,10 @@ struct session_info
    bool is_default_other( ) const;
 
    bool locked;
+
    bool logged_in;
    bool needs_pin;
+
    bool is_meta_module;
    bool was_file_remove;
 
@@ -545,8 +557,11 @@ struct session_info
    std::string user_pin_value;
 
    bool pwd_encrypted;
+
    std::string user_pwd_hash;
-   std::string content_pwd_hash;
+   std::string user_key_hash;
+
+   std::string content_key_hash;
 
    std::string default_user_group;
    std::string default_user_other;
@@ -576,10 +591,12 @@ struct session_info
    int64_t change_pwd_tm;
 
    int row_limit;
+
    int notes_rmin;
    int notes_rmax;
    int notes_trunc;
    int notes_limit;
+
    int print_limit;
 
    int image_width;
@@ -874,4 +891,3 @@ bool read_module_info( const std::string& name, module_info& info, storage_info&
 void sort_row_data_manually( data_container& row_data, bool remove_manual_links = false );
 
 #endif
-

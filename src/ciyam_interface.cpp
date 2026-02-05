@@ -1032,7 +1032,7 @@ void request_handler::process_request( )
 
       session_id = input_data[ c_param_session ];
 
-      string pwd_hash;
+      string key_hash;
 
       // NOTE: If an existing session is present then obtain its
       // password hash for decrypting base64 data (if required).
@@ -1042,10 +1042,10 @@ void request_handler::process_request( )
 
          if( p_session_info )
          {
-            if( p_session_info->content_pwd_hash.empty( ) )
-               p_session_info->content_pwd_hash = p_session_info->user_pwd_hash;
+            if( p_session_info->content_key_hash.empty( ) )
+               p_session_info->content_key_hash = p_session_info->user_key_hash;
 
-            pwd_hash = p_session_info->content_pwd_hash;
+            key_hash = p_session_info->content_key_hash;
          }
       }
 
@@ -1069,11 +1069,11 @@ void request_handler::process_request( )
 
          bool check_decoded = false;
 
-         if( !pwd_hash.empty( ) )
+         if( !key_hash.empty( ) )
          {
             check_decoded = true;
 
-            crypt_decoded( pwd_hash, decoded );
+            crypt_decoded( key_hash, decoded );
          }
 
          if( check_decoded )
@@ -2566,7 +2566,7 @@ void request_handler::process_request( )
                       ( is_authorised || ( persistent == c_true ) || !base64_data.empty( ) ),
                       true, username, userhash, password, unique_id );
 
-                     pwd_hash = p_session_info->user_pwd_hash;
+                     key_hash = p_session_info->user_key_hash;
                   }
 
                   if( !is_authorised )
@@ -2575,7 +2575,7 @@ void request_handler::process_request( )
                      {
                         string decoded( base64::decode( base64_data ) );
 
-                        crypt_decoded( pwd_hash, decoded );
+                        crypt_decoded( key_hash, decoded );
 
                         size_t pos = decoded.find( c_dummy_param_prefix );
 
@@ -3897,10 +3897,10 @@ void request_handler::process_request( )
          while( output.length( ) % 40 )
             output += ' ';
 
-         if( p_session_info->content_pwd_hash.empty( ) )
-            p_session_info->content_pwd_hash = p_session_info->user_pwd_hash;
+         if( p_session_info->content_key_hash.empty( ) )
+            p_session_info->content_key_hash = p_session_info->user_key_hash;
 
-         crypt_decoded( p_session_info->content_pwd_hash, output, false );
+         crypt_decoded( p_session_info->content_key_hash, output, false );
 
          output = base64::encode( output );
       }

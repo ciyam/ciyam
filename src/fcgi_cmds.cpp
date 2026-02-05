@@ -2412,6 +2412,9 @@ bool fetch_user_record(
          username = user_data[ 0 ];
 
       sess_info.user_pwd_hash = user_password;
+
+      // NOTE: Hash the reversed combination for usage as the session's data encryption key.
+      sess_info.user_key_hash = sha256( unique_data + user_password ).get_digest_as_string( );
    }
 
    size_t offset = 2;
