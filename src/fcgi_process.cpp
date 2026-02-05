@@ -1438,6 +1438,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       LOG_TRACE( "[logout: " + ( p_session_info->user_name.empty( )
        ? p_session_info->user_id : p_session_info->user_name ) + " from " + p_session_info->ip_addr + "]" );
 
+      extra_content_func += "\nclear_local_storage( ); ";
+
       // FUTURE: If this module allows anonymous access and a logout has just occurred
       // then currently a page refresh is being forced to occur in order to reload the
       // "home" page anonymously. It would be cleaner if this refresh could be avoided
@@ -1445,6 +1447,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       if( mod_info.allows_anonymous_access )
       {
          extra_content.clear( );
+
          extra_content_func += "refresh( false );\n";
       }
    }
