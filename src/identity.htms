@@ -14,8 +14,8 @@
 
 <form method="POST" name="identity" id="identity"
  onsubmit="return dyn_load( this, 'cmd=identity'
-  + '&data=' + encrypt_raw_data( document.identity.entropy.value, uniqueId )
-  + '&extra=' + encrypt_raw_data( document.identity.password.value, uniqueId, 64 ), false );">
+  + '&data=' + encrypt_raw_data( document.identity.entropy.value, unique_id )
+  + '&extra=' + encrypt_raw_data( document.identity.password.value, unique_id, 64 ), false );">
 <table class="list login box-shadow" border="0" cellpadding="0" cellspacing="0">
 <tbody>
 <tr>

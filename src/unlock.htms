@@ -8,7 +8,7 @@
 
 <form method="POST" name="unlock" id="unlock"
  onsubmit="return dyn_load( this,
-  'cmd=identity&data=unlock&extra=' + encrypt_raw_data( document.unlock.password.value, uniqueId, 64 ), false );">
+  'cmd=identity&data=unlock&extra=' + encrypt_raw_data( document.unlock.password.value, unique_id, 64 ), false );">
     <input type="password" name="password" tabindex="1"
      id="password" size="35" maxlength="50" validate="reqd" />
     <br/>

@@ -6,7 +6,7 @@ onsubmit="clear_local_storage( );
 var pwd_hash = hash_password( document.login.username.value, document.login.password.value );
 var user_hash = hash_username( document.login.username.value, document.login.password.value, pwd_hash );
 
-if( useHashUserid )
+if( use_hash_user_id )
    return dyn_load( this, 'userhash=' + user_hash + '&password=' + hash_with_unique( pwd_hash ), false );
 else
    return dyn_load( this, 'username='

@@ -10,7 +10,7 @@ var user_hash = hash_username( document.login.username.value, document.login.pas
 if( document.login.persistent.checked )
    checkval = document.login.persistent.value;
 
-if( useHashUserid )
+if( use_hash_user_id )
    return dyn_load( this, 'userhash=' + user_hash
     + '&password=' + hash_with_unique( pwd_hash ) + '&persistent=' + checkval, false );
 else

@@ -12,9 +12,9 @@
 <form method="POST" name="register" id="register"
  onsubmit="return dyn_load( this, 'cmd=register'
   + '&hostname=' + document.register.hostname.value
-  + '&password=' + encrypt_raw_data( document.register.password.value, uniqueId )
+  + '&password=' + encrypt_raw_data( document.register.password.value, unique_id )
   + '&token_id=' + document.register.token_id.value
-  + '&username=' + document.register.username.value, uniqueId, false );">
+  + '&username=' + document.register.username.value, unique_id, false );">
 <table class="list login box-shadow" border="0" cellpadding="0" cellspacing="0">
 <tbody>
 <tr>

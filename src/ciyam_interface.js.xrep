@@ -5,52 +5,58 @@
 
 `{`#$include @`}
 `{`#config.info @`}
-var isOpera = navigator.userAgent.indexOf( 'Opera' ) > -1;
-var isIE = navigator.userAgent.indexOf( 'MSIE' ) > 1 && !isOpera;
-var isMoz = navigator.userAgent.indexOf( 'Mozilla/5.' ) == 0 && !isOpera;
+var is_opera = navigator.userAgent.indexOf( 'Opera' ) > -1;
+var is_msiexp = !is_opera && ( navigator.userAgent.indexOf( 'MSIE' ) > 1 );
+var is_mozilla = !is_opera && ( navigator.userAgent.indexOf( 'Mozilla' ) == 0 );
 
-var xmlReq = null;
-var reqDone = false;
+var xml_req = null;
+var req_done = false;
 var load_form = null;
 
-var ServerApp = 'ciyam_interface.fcgi';
-var qsContext = window.location.search.substring( 1 ); //i.e. remove the ? prefix
-var qsFurther = '';
+var server_app = 'ciyam_interface.fcgi';
 
-var secureOnly = false;
-var autoConfirm = true;
-var encryptPosts = `{`?`$encrypt_data`&`@eq`(`$encrypt_data`,`'true`'`)true`,false`};
-var useHashUserid = true;
-var hideHashUserid = `{`?`$hidden_userhash`&`@eq`(`$hidden_userhash`,`'true`'`)true`,false`};
-var usePageFading = false;
-var useAutoProgress = true;
-var useLoadProgress = true;
-var debugDynamicContent = false;
+var qs_context = window.location.search.substring( 1 ); //i.e. remove the ? prefix
+var qs_further = '';
+
+var secure_only = false;
+var auto_confirm = true;
+var encrypt_posts = `{`?`$encrypt_data`&`@eq`(`$encrypt_data`,`'true`'`)true`,false`};
+var use_hash_user_id = true;
+var hide_hash_user_id = `{`?`$hidden_userhash`&`@eq`(`$hidden_userhash`,`'true`'`)true`,false`};
+
+var use_page_fading = false;
+
+var use_auto_progress = true;
+var use_load_progress = true;
+
+var debug_dynamic_content = false;
 
 var source = window.location.href.split( ':' );
 
-if( secureOnly && source[ 0 ] != 'https' )
+if( secure_only && source[ 0 ] != 'https' )
    window.location.replace( 'https:' + source[ 1 ] );
 
-var scrollTop = 0;
-var scrollLeft = 0;
-var goBackTimer = 25;
-var pageFadeMin = 50;
-var pageFadeRate = 5;
-var pageFadeTimer = 15;
-var loadProgressDelay = 20;
+var scroll_top = 0;
+var scroll_left = 0;
 
-var isFirst = true;
-var windowHeight = 0;
+var go_back_timer = 25;
 
-var slideNum = 0;
-var slideTimeoutId;
-var showSlideNum = 0;
-var totalNumSlides = 0;
+var page_fade_min = 50;
+var page_fade_rate = 5;
+var page_fade_timer = 15;
 
-var loggedIn = false;
-var isDynamicLoad = false;
-var hasShownAutoProgress = false;
+var load_progress_delay = 20;
+
+var is_first = true;
+var window_height = 0;
+
+var show_slide_num = 0;
+var total_num_slides = 0;
+var slide_timeout_id = null;
+
+var logged_in = false;
+var is_dynamic_load = false;
+var has_shown_auto_progress = false;
 
 var had_act_error = false;
 
@@ -58,40 +64,40 @@ var separator_digits = 3;
 
 var dummy_user_hash = '4062e2166e6bb644b5a9187557a7411c1394de242c007afc3888ab52736f38ee';
 
-var serverId = '';
-var uniqueId = '';
+var server_id = '';
+var unique_id = '';
 
-var hashRounds = `{`$pwd_rounds`};
-var newHashRounds = `{`$new_rounds`};
+var hash_rounds = `{`$pwd_rounds`};
+var new_hash_rounds = `{`$new_rounds`};
 
-var scriptVersion = `{`$ui_script_version`};
+var script_version = `{`$ui_script_version`};
 
 var validation_error = '';
 
-var displayReload = 'Reloading...';
-var displayTimeout = 'Timeout occurred.';
-var displayInvalidDate = 'Invalid date.';
-var displayInvalidTime = 'Invalid time.';
-var displayIncorrectDateFormat = 'Incorrect date format.';
-var displayIncorrectTimeFormat = 'Incorrect time format.';
-var displayEnterRequiredValues = 'Enter required values.';
-var displayIncorrectBytesFormat = 'Incorrect bytes format.';
-var displaySelectOneOrMoreItems = 'Select one or more items to perform this operation on.';
-var displayIncorrectIntegerFormat = 'Incorrect integer format.';
-var displayIncorrectNumericFormat = 'Incorrect numeric format.';
-var displayIncorrectDurationFormat = 'Incorrect duration format.';
-var displayMaximumTextLimitReached = 'Maximum text limit reached.';
-var displayYourSessionIsAboutToExpire = 'Your session is about to expire. Click OK to continue.';
-var displayYourSessionHasBecomeInvalid = 'Your session has become invalid. This window should now be closed.';
-var displaySelectedRecordsWillBeRemoved = 'Selected record(s) will be permanently removed. Click OK to confirm.';
-var displayPasswordVerificationIncorrect = 'Password verification incorrect.';
+var display_reload = 'Reloading...';
+var display_timeout = 'Timeout occurred.';
+var display_invalid_date = 'Invalid date.';
+var display_invalid_date = 'Invalid time.';
+var display_enter_required_values = 'Enter required values.';
+var display_incorrect_date_format = 'Incorrect date format.';
+var display_incorrect_time_format = 'Incorrect time format.';
+var display_incorrect_bytes_format = 'Incorrect bytes format.';
+var display_incorrect_integer_format = 'Incorrect integer format.';
+var display_incorrect_numeric_format = 'Incorrect numeric format.';
+var display_select_one_or_more_items = 'Select one or more items to perform this operation on.';
+var display_incorrect_duration_format = 'Incorrect duration format.';
+var display_maximum_text_limit_reached = 'Maximum text limit reached.';
+var display_your_session_has_become_invalid = 'Your session has become invalid. This window should now be closed.';
+var display_your_session_is_about_to_expire = 'Your session is about to expire. Click OK to continue.';
+var display_password_verification_incorrect = 'Password verification incorrect.';
+var display_selected_records_will_be_removed = 'Selected record(s) will be permanently removed. Click OK to confirm.';
 
-var dataFieldList = '';
+var data_field_list = '';
 
 var all_checkboxes = null;
 var previous_checked = null;
 
-var autoCompleteValues = [ ];
+var autocomplete_values = [ ];
 
 var extra_fields = '';
 var extra_values = '';
@@ -180,32 +186,32 @@ function go_back( num )
    if( can_write_to_session_storage( ) )
       sessionStorage.setItem( 'back', num );
 
-   window.setTimeout( 'history.go( ' + ( num * -1 ) + ' )', goBackTimer );
+   window.setTimeout( 'history.go( ' + ( num * -1 ) + ' )', go_back_timer );
 }
 
 function refresh( back )
 {
-   if( isIE )
+   if( is_msiexp )
       window.location = window.location;
    else
       window.location.replace( window.location );
 
-   if( isMoz && back )
+   if( back && is_mozilla )
       history.go( -1 );
 }
 
 function replace_with_scroll_info( history )
 {
-   if( xmlReq != null )
+   if( xml_req != null )
       return;
 
-   if( qsContext.length > 0 )
+   if( qs_context.length > 0 )
       insert_scroll_info( );
 
    var new_href = '';
    new_href += window.location.href;
 
-   if( qsContext.length > 0 )
+   if( qs_context.length > 0 )
    {
       var pos = new_href.indexOf( '?' );
       if( pos >= 0 )
@@ -213,7 +219,7 @@ function replace_with_scroll_info( history )
       else
          new_href += '?';
          
-      new_href += qsContext;
+      new_href += qs_context;
    }
 
    if( history != true )
@@ -228,7 +234,7 @@ function auto_refresh( )
       replace_with_scroll_info( );
    else if( auto_refresh_seconds > 0 )
    {
-      if( useAutoProgress && !hasShownAutoProgress )
+      if( use_auto_progress && !has_shown_auto_progress )
       {
          show_auto_progress( );
 
@@ -246,7 +252,7 @@ function warn_refresh( )
    {
       warn_refresh_seconds = 0;
 
-      if( autoConfirm || confirm( displayYourSessionIsAboutToExpire ) )
+      if( auto_confirm || confirm( display_your_session_is_about_to_expire ) )
       {
          if( warn_refresh_func != '' )
             eval( warn_refresh_func );
@@ -289,33 +295,33 @@ function determine_scroll_info( )
    if( typeof( window.pageYOffset ) == 'number' )
    {
       // Netscape compliant
-      scrollTop = window.pageYOffset;
-      scrollLeft = window.pageXOffset;
+      scroll_top = window.pageYOffset;
+      scroll_left = window.pageXOffset;
    }
    else if( document.body && ( document.body.scrollLeft || document.body.scrollTop ) )
    {
       // DOM compliant
-      scrollTop = document.body.scrollTop;
-      scrollLeft = document.body.scrollLeft;
+      scroll_top = document.body.scrollTop;
+      scroll_left = document.body.scrollLeft;
    }
    else if( document.documentElement && ( document.documentElement.scrollLeft || document.documentElement.scrollTop ) )
    {
       // IE6 standards compliant mode
-      scrollTop = document.documentElement.scrollTop;
-      scrollLeft = document.documentElement.scrollLeft;
+      scroll_top = document.documentElement.scrollTop;
+      scroll_left = document.documentElement.scrollLeft;
    }
    else
    {
-      scrollTop = 0;
-      scrollLeft = 0;
+      scroll_top = 0;
+      scroll_left = 0;
    }
 }
 
 function insert_scroll_info( )
 {
-   var qvars = qsContext.split( '&' );
+   var qvars = qs_context.split( '&' );
 
-   qsContext = '';
+   qs_context = '';
 
    determine_scroll_info( );
 
@@ -332,7 +338,8 @@ function insert_scroll_info( )
        && qvars[ i ].substring( 0, sx.length ) == sx )
       {
          foundx = true;
-         qvars[ i ] = sx + '=' + scrollLeft;
+
+         qvars[ i ] = sx + '=' + scroll_left;
       }
 
       if( qvars[ i ].length >= sy.length + 1
@@ -340,50 +347,52 @@ function insert_scroll_info( )
        && qvars[ i ].substring( 0, sy.length ) == sy )
       {
          foundy = true;
-         qvars[ i ] = sy + '=' + scrollTop;
+
+         qvars[ i ] = sy + '=' + scroll_top;
       }
 
-      if( qsContext != '' )
-         qsContext += '&';
+      if( qs_context != '' )
+         qs_context += '&';
 
-      qsContext += qvars[ i ];
+      qs_context += qvars[ i ];
    }
 
    if( !foundx )
    {
-      if( qsContext != '' )
-         qsContext += '&';
+      if( qs_context != '' )
+         qs_context += '&';
 
-      qsContext += 'scrollx=' + scrollLeft;
+      qs_context += 'scrollx=' + scroll_left;
    }
 
    if( !foundy )
    {
-      if( qsContext != '' )
-         qsContext += '&';
+      if( qs_context != '' )
+         qs_context += '&';
 
-      qsContext += 'scrolly=' + scrollTop;
+      qs_context += 'scrolly=' + scroll_top;
    }
 }
 
 function check_for_new_window_height( )
 {
-   var currentWindowHeight = 0;
+   var current_window_height = 0;
 
    if( window.addEventListener )
-      currentWindowHeight = window.innerHeight;
+      current_window_height = window.innerHeight;
    else
-      currentWindowHeight = document.documentElement.clientHeight || document.body.clientHeight;
+      current_window_height = document.documentElement.clientHeight || document.body.clientHeight;
 
    // KLUDGE: This value should be determined according to the footer height;
-   currentWindowHeight -= 165;
+   current_window_height -= 165;
 
-   if( isFirst || ( windowHeight != currentWindowHeight ) )
+   if( is_first || ( window_height != current_window_height ) )
    {
-      isFirst = false;
-      windowHeight = currentWindowHeight;
+      is_first = false;
 
-      document.getElementById( 'extra_content' ).style.minHeight = currentWindowHeight + 'px';
+      window_height = current_window_height;
+
+      document.getElementById( 'extra_content' ).style.minHeight = current_window_height + 'px';
 
       if( document.getElementById( 'footer' ) != null )
          document.getElementById( 'footer' ).style.visibility = 'visible';
@@ -486,13 +495,13 @@ function load( )
    {
       sessionStorage.setItem( 'app', '`{`@lower`(`$storage_name`)`}' );
 
-      if( !isDynamicLoad && ( sessionStorage.getItem( 'old_content' ) != null ) )
+      if( !is_dynamic_load && ( sessionStorage.getItem( 'old_content' ) != null ) )
          document.getElementById( 'content' ).innerHTML = sessionStorage.getItem( 'old_content' );
    }
    else if( source[ 0 ] != 'https' )
       window.location.replace( 'https:' + source[ 1 ] );
 
-   if( usePageFading )
+   if( use_page_fading )
       fade_out( 100 );
    else
       load2( );
@@ -512,9 +521,9 @@ function load2( )
    // indicates that the user is currently logged in
    // (otherwise is reset using application links).
    if( sessionStorage.getItem( 'logged' ) != null )
-      loggedIn = true;
+      logged_in = true;
 
-   var pos = qsFurther.indexOf( 'act=' );
+   var pos = qs_further.indexOf( 'act=' );
 
    if( pos != 0 )
    {
@@ -553,13 +562,15 @@ function load2( )
    
    if( typeof window.ActiveXObject != 'undefined' )
    {
-      xmlReq = new ActiveXObject( 'Microsoft.XMLHTTP' );
-      xmlReq.onreadystatechange = process;
+      xml_req = new ActiveXObject( 'Microsoft.XMLHTTP' );
+
+      xml_req.onreadystatechange = process;
    }
    else
    {
-      xmlReq = new XMLHttpRequest( );
-      xmlReq.onload = process;
+      xml_req = new XMLHttpRequest( );
+
+      xml_req.onload = process;
    }
 
    var session_id = '';
@@ -579,13 +590,13 @@ function load2( )
       }
    }
 
-   var qs_both = qsContext;
+   var qs_both = qs_context;
    var persistent = '';
 
    if( qs_both == '' )
-      qs_both = qsFurther;
-   else if( qsFurther != '' )
-      qs_both += '&' + qsFurther;
+      qs_both = qs_further;
+   else if( qs_further != '' )
+      qs_both += '&' + qs_further;
 
    var is_login = false;
    var non_cookie = false;
@@ -643,16 +654,17 @@ function load2( )
 
    var full_context = module;
 
-   if( qsContext != '' )
+   if( qs_context != '' )
    {
       if( full_context != '' )
          full_context += '&';
-      full_context += qsContext;
+
+      full_context += qs_context;
    }
 
    var dummy = 'dummy=';
 
-   if( encryptPosts )
+   if( encrypt_posts )
    {
       var num_random = 10 + Math.floor( Math.random( ) * 6 );
 
@@ -662,10 +674,10 @@ function load2( )
       full_context += '&' + dummy;
    }
 
-   full_context += '&ver=' + scriptVersion;
+   full_context += '&ver=' + script_version;
 
-   if( qsFurther != '' )
-      full_context += '&' + qsFurther;
+   if( qs_further != '' )
+      full_context += '&' + qs_further;
 
    if( !is_login
     && can_write_to_session_storage( ) && sessionStorage.getItem( 'newhash' ) != null )
@@ -675,8 +687,8 @@ function load2( )
       sessionStorage.removeItem( 'newhash' );
    }
 
-   if( dataFieldList != '' )
-      full_context += '&fieldlist=' + dataFieldList;
+   if( data_field_list != '' )
+      full_context += '&fieldlist=' + data_field_list;
 
    if( can_write_to_local_storage( ) )
    {
@@ -687,9 +699,9 @@ function load2( )
 
          localStorage.setItem( 'skey', localStorage.getItem( 'key' ) );
       }
-      else if( !loggedIn && encryptPosts && localStorage.getItem( 'skey' ) == null )
+      else if( !logged_in && encrypt_posts && ( localStorage.getItem( 'skey' ) == null ) )
          full_context += '&session=new_session';
-      else if( !loggedIn && localStorage.getItem( 'key' ) != null )
+      else if( !logged_in && ( localStorage.getItem( 'key' ) != null ) )
          full_context += '&userhash=' + localStorage.getItem( 'hash' ) + '&persistent=true';
    }
 
@@ -698,17 +710,17 @@ function load2( )
    full_context += '&utcdtm=' + utc_dtm( cd );
    full_context += '&tzoffcur=' + escape( cd.getTimezoneOffset( ) );
 
-   xmlReq.open( 'POST', ServerApp, true );
+   xml_req.open( 'POST', server_app, true );
 
-   if( !encryptPosts )
-      xmlReq.send( full_context );
+   if( !encrypt_posts )
+      xml_req.send( full_context );
    else
    {
       var post_data = '';
 
       var key = localStorage.getItem( 'skey' );
 
-      if( !is_login && has_session && loggedIn && ( key != null ) && encryptPosts )
+      if( !is_login && has_session && logged_in && encrypt_posts && ( key != null ) )
       {
          var prefix = 'prefix=';
 
@@ -732,7 +744,7 @@ function load2( )
       else
          post_data = full_context;
 
-      xmlReq.send( post_data );
+      xml_req.send( post_data );
    }
 
    if( load_form != null )
@@ -740,18 +752,18 @@ function load2( )
 
    load_content_timer_id = setTimeout( load_timeout, load_content_seconds * 1000 );
 
-   reqDone = false;
+   req_done = false;
 
-   if( useLoadProgress )
-      show_load_progress( loadProgressDelay );
+   if( use_load_progress )
+      show_load_progress( load_progress_delay );
 }
 
 function hide_auto_progress( )
 {
-   if( hasShownAutoProgress )
+   if( has_shown_auto_progress )
    {
       auto_refresh_seconds = 0;
-      hasShownAutoProgress = false;
+      has_shown_auto_progress = false;
 
       $( "auto_progress" ).className = "invisible";
    }
@@ -759,7 +771,7 @@ function hide_auto_progress( )
 
 function show_auto_progress( )
 {
-   hasShownAutoProgress = true;
+   has_shown_auto_progress = true;
 
    $( "auto_progress" ).className = "visible";
 }
@@ -779,7 +791,7 @@ function hide_load_progress( )
 
 function show_load_progress( n )
 {
-   if( reqDone == false )
+   if( req_done == false )
    {
       if( n == 0 )
       {
@@ -795,17 +807,18 @@ function show_load_progress( n )
 
 function load_timeout( )
 {
-   reqDone = true;
-   xmlReq.abort( );
+   req_done = true;
 
-   xmlReq = null;
+   xml_req.abort( );
+
+   xml_req = null;
 
    if( load_form != null )
       enable_form( load_form );
 
    hide_load_progress( );
 
-   alert( displayTimeout );
+   alert( display_timeout );
 }
 
 function fade_in( n )
@@ -816,9 +829,9 @@ function fade_in( n )
    {
       document.body.style.opacity = n / 100;
 
-      n += pageFadeRate;
+      n += page_fade_rate;
 
-      window.setTimeout( 'fade_in( ' + n + ' )', pageFadeTimer );
+      window.setTimeout( 'fade_in( ' + n + ' )', page_fade_timer );
    }
    else
       focus_on_first_text( );
@@ -828,13 +841,13 @@ function fade_out( n )
 {
    // NOTE: Currently only works for FF (under IE use blendTrans headers)
    // in order to try and make the page rendering look a little smoother.
-   if( n > pageFadeMin )
+   if( n > page_fade_min )
    {
       document.body.style.opacity = n / 100;
 
-      n -= pageFadeRate;
+      n -= page_fade_rate;
 
-      window.setTimeout( 'fade_out( ' + n + ' )', pageFadeTimer );
+      window.setTimeout( 'fade_out( ' + n + ' )', page_fade_timer );
    }
    else
       load2( );
@@ -842,7 +855,7 @@ function fade_out( n )
 
 function after_force( )
 {
-   loggedIn = false;
+   logged_in = false;
 
    if( document.getElementById( 'form_content_func' ) != null )
       eval( document.getElementById( 'form_content_func' ).value );
@@ -850,24 +863,24 @@ function after_force( )
    if( document.getElementById( 'extra_content_func' ) != null )
       eval( document.getElementById( 'extra_content_func' ).value );
 
-   if( encryptPosts && can_write_to_session_storage( ) )
+   if( encrypt_posts && can_write_to_session_storage( ) )
    {
-      if( !loggedIn )
+      if( !logged_in )
          sessionStorage.removeItem( 'logged' );
       else
          sessionStorage.setItem( 'logged', '1' );
    }
 
-   if( ( uniqueId != '' ) && can_write_to_session_storage( ) )
-      sessionStorage.setItem( 'unique', uniqueId );
+   if( ( unique_id != '' ) && can_write_to_session_storage( ) )
+      sessionStorage.setItem( 'unique', unique_id );
 
-   if( usePageFading )
-      fade_in( pageFadeMin );
+   if( use_page_fading )
+      fade_in( page_fade_min );
    else
       // KLUDGE: A delay is needed in order for the focussing to work correctly in IE.
       setTimeout( "focus_on_first_text( )", 50 );
 
-   isFirst = true;
+   is_first = true;
 
    check_for_new_window_height( );
 }
@@ -891,11 +904,11 @@ function force_update( )
 
 function process( )
 {
-   reqDone = true;
+   req_done = true;
 
-   if( xmlReq.readyState != 4 )
+   if( xml_req.readyState != 4 )
    {
-      xmlReq = null;
+      xml_req = null;
 
       return;
    }
@@ -909,18 +922,18 @@ function process( )
 
    document.body.style.opacity = 25;
 
-   if( ( xmlReq.responseText == null ) || ( xmlReq.responseText.length == 0 ) )
+   if( ( xml_req.responseText == null ) || ( xml_req.responseText.length == 0 ) )
    {
-      xmlReq = null;
+      xml_req = null;
 
-      alert( displayTimeout );
+      alert( display_timeout );
 
       return;
    }
 
-   var response = xmlReq.responseText.substring( 2 );
+   var response = xml_req.responseText.substring( 2 );
 
-   xmlReq = null;
+   xml_req = null;
 
    var base64test = /[^A-Za-z0-9\+\/\=]/g;
    base64test.exec( response ); // KLUDGE: Need to investigate javascript reg exps more to get rid of this.
@@ -930,7 +943,7 @@ function process( )
    {
       var str = response;
 
-      if( debugDynamicContent )
+      if( debug_dynamic_content )
       {
          str = str.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' );
          str = "<div id='debug'><pre>\n" + str + "\n</pre></div>\n";
@@ -938,7 +951,7 @@ function process( )
       }
 
       if( str.indexOf( "extra_content" ) < 0 )
-         alert( displayYourSessionHasBecomeInvalid );
+         alert( display_your_session_has_become_invalid );
       else
          document.getElementById( 'content' ).innerHTML = str;
    }
@@ -948,7 +961,7 @@ function process( )
 
       var str = utf8_decode( decrypted );
 
-      if( debugDynamicContent )
+      if( debug_dynamic_content )
       {
          str = str.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' );
          str = "<div id='debug'><pre>\n" + str + "\n</pre></div>\n";
@@ -956,7 +969,7 @@ function process( )
       }
 
       if( str.indexOf( "extra_content" ) < 0 )
-         alert( displayYourSessionHasBecomeInvalid );
+         alert( display_your_session_has_become_invalid );
       else
          document.getElementById( 'content' ).innerHTML = str;
    }
@@ -981,7 +994,7 @@ function dyn_load( f, extra, clearContext )
    if( ( f == null ) || validate( f ) )
    {
       if( clearContext )
-        qsContext = ''
+        qs_context = ''
 
       if( extra.indexOf( 'username' ) != 0 )
          insert_scroll_info( );
@@ -994,9 +1007,9 @@ function dyn_load( f, extra, clearContext )
          extra += '&extravalues=' + encodeURIComponent( extra_values );
       }
 
-      qsFurther = extra;
+      qs_further = extra;
 
-      isDynamicLoad = true;
+      is_dynamic_load = true;
 
       auto_refresh_seconds = 0;
       slow_refresh_seconds = 0;
@@ -1048,7 +1061,7 @@ function list_exec_action( f, cls, lst, exec, qvar1, qval1, qvar2, qval2, no_app
 function query_value( qvar )
 {
    var qval = '';
-   var qvars = qsContext.split( '&' );
+   var qvars = qs_context.split( '&' );
 
    for( var i = 0; i < qvars.length; i++ )
    {
@@ -1068,9 +1081,9 @@ function query_update( qvar, qval, keep_location )
 {
    var found = false;
    var empty = ( qval == '' );
-   var qvars = qsContext.split( '&' );
+   var qvars = qs_context.split( '&' );
 
-   qsContext = '';
+   qs_context = '';
 
    for( var i = 0; i < qvars.length; i++ )
    {
@@ -1090,19 +1103,21 @@ function query_update( qvar, qval, keep_location )
 
       if( !skip )
       {
-         if( qsContext != '' )
-            qsContext += '&';
-         qsContext += qvars[ i ];
+         if( qs_context != '' )
+            qs_context += '&';
+
+         qs_context += qvars[ i ];
       }
    }
 
    if( !found && !empty )
-      qsContext += '&' + qvar + '=' + encodeURIComponent( qval );
+      qs_context += '&' + qvar + '=' + encodeURIComponent( qval );
 
    if( keep_location != true )
    {
       insert_scroll_info( );
-      window.location.search = qsContext;
+
+      window.location.search = qs_context;
    }
 }
 
@@ -1213,7 +1228,7 @@ function hash_value( s, n )
 function hash_password( salt, pwd, skip_id )
 {
    var retval = '';
-   var rounds = hashRounds;
+   var rounds = hash_rounds;
 
    // NOTE: (see second NOTE in hash_username below)
    if( salt.length && ( salt.charAt( 0 ) == '!' ) )
@@ -1235,21 +1250,21 @@ function hash_password( salt, pwd, skip_id )
             pwd = hex_sha256( pwd ).toLowerCase( );
       }
 
-      retval = hash_value( serverId + pwd + salt, rounds ).toLowerCase( );
+      retval = hash_value( server_id + pwd + salt, rounds ).toLowerCase( );
 
-      if( !loggedIn && ( rounds == hashRounds ) && ( hashRounds != newHashRounds ) && can_write_to_session_storage( ) )
-         sessionStorage.setItem( 'newhash', hash_value( serverId + pwd + salt, newHashRounds ).toLowerCase( ) );
+      if( !logged_in && ( rounds == hash_rounds ) && ( hash_rounds != new_hash_rounds ) && can_write_to_session_storage( ) )
+         sessionStorage.setItem( 'newhash', hash_value( server_id + pwd + salt, new_hash_rounds ).toLowerCase( ) );
    }
 
-   if( !skip_id && !loggedIn && encryptPosts && can_write_to_session_storage( ) )
+   if( !skip_id && !logged_in && encrypt_posts && can_write_to_session_storage( ) )
    {
       var skey = retval;
 
-      if( hideHashUserid && ( ( uniqueId == null ) || ( uniqueId == '' ) ) )
+      if( hide_hash_user_id && ( ( unique_id == null ) || ( unique_id == '' ) ) )
          throw new Error( "unexpected missing unique server value" );
 
-      if( uniqueId != '' )
-         skey = hex_sha256( uniqueId + retval );
+      if( unique_id != '' )
+         skey = hex_sha256( unique_id + retval );
 
       localStorage.setItem( 'skey', skey );
    }
@@ -1259,7 +1274,7 @@ function hash_password( salt, pwd, skip_id )
 
 function hash_username( user, pwd, pwd_hash )
 {
-   if( hideHashUserid )
+   if( hide_hash_user_id )
       return dummy_user_hash;
    else
    {
@@ -1296,11 +1311,11 @@ function hash_with_unique( pwd_hash )
    if( typeof sessionStorage == 'object' )
    {
       if( sessionStorage.getItem( 'unique' ) != null )
-         uniqueId = sessionStorage.getItem( 'unique' );
+         unique_id = sessionStorage.getItem( 'unique' );
    }
 
-   if( uniqueId != '' )
-      retval = hex_sha256( retval + uniqueId ).toLowerCase( );
+   if( unique_id != '' )
+      retval = hex_sha256( retval + unique_id ).toLowerCase( );
 
    return retval;
 }
@@ -1416,7 +1431,7 @@ function form_keys( event, enter, cancel )
    return true;
 }
 
-function getY( elem )
+function get_y( elem )
 {
    var y = 0;
 
@@ -1431,28 +1446,29 @@ function getY( elem )
 
 function scroll_page( x, y )
 {
-   scrollLeft = x;
-   scrollTop = y;
+   scroll_left = x;
+   scroll_top = y;
 
-   scrollTo( scrollLeft, scrollTop );
+   scrollTo( scroll_left, scroll_top );
 }
 
 function goto_slide( num )
 {
-   if( ( totalNumSlides > 0 )  && ( num >= 0 ) && ( num < totalNumSlides ) )
+   if( ( total_num_slides > 0 )  && ( num >= 0 ) && ( num < total_num_slides ) )
    {
-      clearTimeout( slideTimeoutId );
+      clearTimeout( slide_timeout_id );
 
-      showSlideNum = num;
+      show_slide_num = num;
+
       show_next_slide( );
    }
 }
 
 function goto_next_slide( )
 {
-   if( totalNumSlides > 0 )
+   if( total_num_slides > 0 )
    {
-      clearTimeout( slideTimeoutId );
+      clearTimeout( slide_timeout_id );
 
       show_next_slide( );
    }
@@ -1460,19 +1476,19 @@ function goto_next_slide( )
 
 function goto_prev_slide( )
 {
-   if( totalNumSlides > 0 )
+   if( total_num_slides > 0 )
    {
-      clearTimeout( slideTimeoutId );
+      clearTimeout( slide_timeout_id );
 
-      if( showSlideNum == 0 )
-         showSlideNum = totalNumSlides - 2;
-      else if( showSlideNum == 1 )
-         showSlideNum = totalNumSlides - 1;
+      if( show_slide_num == 0 )
+         show_slide_num = total_num_slides - 2;
+      else if( show_slide_num == 1 )
+         show_slide_num = total_num_slides - 1;
       else
-         showSlideNum -= 2;
+         show_slide_num -= 2;
 
-      if( showSlideNum < 0 )
-         showSlideNum = 0;
+      if( show_slide_num < 0 )
+         show_slide_num = 0;
          
       show_next_slide( );
    }
@@ -1480,42 +1496,43 @@ function goto_prev_slide( )
 
 function show_next_slide( )
 {
-   if( totalNumSlides > 0 )
+   if( total_num_slides > 0 )
    {
       var node;
-      var slideNum = 0;
+      var slide_num = 0;
 
       for( node = document.getElementById( 'home_slides_paginate' ).childNodes[ 0 ]; node; node = node.nextSibling )
       {
          if( node.nodeType == 1 )
          {
-            if( slideNum == showSlideNum )
+            if( slide_num == show_slide_num )
                node.setAttribute( 'class', 'active' );
             else
                node.setAttribute( 'class', 'inactive' );
 
-            ++slideNum;
+            ++slide_num;
          }
       }
 
-      slideNum = 0;
+      slide_num = 0;
+
       for( node = document.getElementById( 'home_slides_container' ).childNodes[ 0 ]; node; node = node.nextSibling )
       {
          if( node.nodeType == 1 && node.getAttribute( 'class' ).indexOf( 'home_slide ' ) == 0 )
          {
-            if( slideNum == showSlideNum )
+            if( slide_num == show_slide_num )
                node.setAttribute( 'class', 'home_slide clearfix' );
             else
                node.setAttribute( 'class', 'home_slide clearfix invisible' );
 
-            ++slideNum;
+            ++slide_num;
          }
       }
 
-      if( ++showSlideNum >= totalNumSlides )
-         showSlideNum = 0;
+      if( ++show_slide_num >= total_num_slides )
+         show_slide_num = 0;
 
-      slideTimeoutId = setTimeout( "show_next_slide( )", 5000 );
+      slide_timeout_id = setTimeout( "show_next_slide( )", 5000 );
    }
 }
 
@@ -1566,7 +1583,7 @@ function focus_on_first_text( )
       for( var j = 0; j < form.elements.length; j++ )
       {
          // NOTE: If the control above the scroll top then don't consider it for focus.
-         if( getY( form.elements[ j ] ) < scrollTop )
+         if( get_y( form.elements[ j ] ) < scroll_top )
             continue;
 
          if( !form.elements[ j ].disabled && form.elements[ j ].getAttribute( 'nofocus' ) != 'true' )
@@ -1606,7 +1623,8 @@ function limit_text( limit_field, limit_count, limit_num )
    if( limit_field.value.length > limit_num )
    {
       limit_field.value = limit_field.value.substring( 0, limit_num );
-      alert( displayMaximumTextLimitReached );
+
+      alert( display_maximum_text_limit_reached );
    }
    else if( limit_count != null )
       document.getElementById( limit_count ).innerHTML = limit_num - limit_field.value.length;
@@ -1632,74 +1650,74 @@ function resize_text_rows( t, min, max )
       b = max;
 
    // KLUDGE: IE8 (and possibly IE7) end up with a half line (therefore scrollbars) unless this is done.
-   if( isIE && b > 10 )
+   if( is_msiexp && ( b > 10 ) )
       b += 2;
 
    t.rows = b;
 }
 
-function textbox_select( oTextbox, iStart, iEnd )
+function textbox_select( text_box, iStart, iEnd )
 {
    switch( arguments.length )
    {
       case 1:
-      oTextbox.select( );
+      text_box.select( );
       break;
 
       case 2:
-      iEnd = oTextbox.value.length;
+      iEnd = text_box.value.length;
       // i.e. fall through
             
       case 3:
-      if( isIE )
+      if( is_msiexp )
       {
-         var oRange = oTextbox.createTextRange( );
+         var oRange = text_box.createTextRange( );
          oRange.moveStart( 'character', iStart );
-         oRange.moveEnd( 'character', -oTextbox.value.length + iEnd );
+         oRange.moveEnd( 'character', -text_box.value.length + iEnd );
          oRange.select( );
       }
-      else if( isMoz || isOpera )
-         oTextbox.setSelectionRange( iStart, iEnd );
+      else if( is_opera || is_mozilla )
+         text_box.setSelectionRange( iStart, iEnd );
    }
 
-   oTextbox.focus( );
+   text_box.focus( );
 } 
 
-function textbox_replace_select( oTextbox, sText )
+function textbox_replace_select( text_box, text )
 {
-   if( isIE )
+   if( is_msiexp )
    {
       var oRange = document.selection.createRange( );
-      oRange.text = sText;
+      oRange.text = text;
       oRange.collapse( true );
       oRange.select( );
    }
-   else if( isMoz || isOpera )
+   else if( is_opera || is_mozilla )
    {
-      var iStart = oTextbox.selectionStart;
-      oTextbox.value = oTextbox.value.substring( 0, iStart )
-       + sText + oTextbox.value.substring( oTextbox.selectionEnd, oTextbox.value.length );
+      var iStart = text_box.selectionStart;
+      text_box.value = text_box.value.substring( 0, iStart )
+       + text + text_box.value.substring( text_box.selectionEnd, text_box.value.length );
 
-      oTextbox.setSelectionRange( iStart + sText.length, iStart + sText.length );
+      text_box.setSelectionRange( iStart + text.length, iStart + text.length );
    } 
 
-   oTextbox.focus( );
+   text_box.focus( );
 } 
 
-function autocomplete_match( sText, autoCompleteValues )
+function autocomplete_match( text, autocomplete_values )
 {
-   for( var i = 0; i < autoCompleteValues.length; i++ )
+   for( var i = 0; i < autocomplete_values.length; i++ )
    {
-      if( autoCompleteValues[ i ].indexOf( sText ) == 0 )
-         return autoCompleteValues[ i ];
+      if( autocomplete_values[ i ].indexOf( text ) == 0 )
+         return autocomplete_values[ i ];
    }
 
    return null; 
 }
 
-function autocomplete( oTextbox, oEvent, autoCompleteValues )
+function autocomplete( text_box, event, autocomplete_values )
 {
-   switch( oEvent.keyCode )
+   switch( event.keyCode )
    {
       case 13: //enter
       case 38: //up arrow
@@ -1722,21 +1740,23 @@ function autocomplete( oTextbox, oEvent, autoCompleteValues )
       return true;
 
       default:
-      textbox_replace_select( oTextbox, String.fromCharCode( isMoz ? oEvent.charCode : oEvent.keyCode ) );
+      textbox_replace_select( text_box, String.fromCharCode( is_mozilla ? event.charCode : event.keyCode ) );
 
-      var iLen = oTextbox.value.length;
-      var sMatch = autocomplete_match( oTextbox.value, autoCompleteValues );
+      var len = text_box.value.length;
+      var match = autocomplete_match( text_box.value, autocomplete_values );
 
-      if( sMatch != null )
+      if( match != null )
       {
-         if( isOpera && sMatch.length == oTextbox.value.length )
+         if( is_opera && ( match.length == text_box.value.length ) )
          {
-            oTextbox.value = sMatch.substring( 0, sMatch.length - 1 );
+            text_box.value = match.substring( 0, match.length - 1 );
+
             return true;
          }
 
-         oTextbox.value = sMatch;
-         textbox_select( oTextbox, iLen, oTextbox.value.length );
+         text_box.value = match;
+
+         textbox_select( text_box, len, text_box.value.length );
       }
 
       return false;
@@ -1758,7 +1778,7 @@ function check_or_uncheck_all( form, checkbox )
             var list_error = form.elements[ i ].getAttribute( 'list_error' );
 
             // KLUDGE: For some reason Opera can find empty strings rather than nulls so check value isn't empty as well.
-            if( list_id != null && list_id != '' && list_error != null && list_error != '' )
+            if( ( list_id != null ) && ( list_id != '' ) && ( list_error != null ) && ( list_error != '' ) )
                remove_table_row_error( document.getElementById( list_id ), list_error );
          }
       }
@@ -1773,7 +1793,7 @@ function get_all_checked_items( form )
 
    for( var i = 0; i < form.elements.length; i++ )
    {
-      if( form.elements[ i ].name.indexOf( 'item' ) == 0 && form.elements[ i ].checked )
+      if( form.elements[ i ].checked && ( form.elements[ i ].name.indexOf( 'item' ) == 0 ) )
       {
          if( all_names != '' )
             all_names += ',';
@@ -1862,6 +1882,7 @@ function get_all_search_values( form, leave_unencoded )
 
          if( num++ > 0 )
             all_values += ',';
+
          all_values += form.elements[ i ].name.substring( 7 );
          all_values += '=' + escape_char( value, ',' );
       }
@@ -1882,12 +1903,13 @@ function verify_one_or_more_checked( form )
       if( form.elements[ i ].checked )
       {
          okay = true;
+
          break;
       }
    }
 
    if( !okay )
-      alert( displaySelectOneOrMoreItems );
+      alert( display_select_one_or_more_items );
 
    return okay;
 }
@@ -1920,15 +1942,18 @@ function validate_element( e, is_first )
          else if( cmd == 'verify' )
          {
             var other = document.getElementById( args );
-            if( is_first && e.value != other.value )
+
+            if( is_first && ( e.value != other.value ) )
             {
                okay = false;
+
                is_first = false;
 
                if( other.getAttribute( 'nofocus' ) != 'true' )
                   other.focus( );
 
-               if( other.getAttribute( 'class' ) != 'textinput' && other.getAttribute( 'className' ) != 'textinput' )
+               if( ( other.getAttribute( 'class' ) != 'textinput' )
+                && ( other.getAttribute( 'className' ) != 'textinput' ) )
                {
                   other.setAttribute( 'class', other.getAttribute( 'class' ) + ' error' );
                   other.setAttribute( 'className', other.getAttribute( 'className' ) + ' error' );
@@ -1939,7 +1964,7 @@ function validate_element( e, is_first )
                   other.setAttribute( 'className', other.getAttribute( 'className' ) + ' texterror' );
                }
 
-               validation_error = displayPasswordVerificationIncorrect;
+               validation_error = display_password_verification_incorrect;
             }
          }
          else if( cmd == 'time' )
@@ -1950,31 +1975,32 @@ function validate_element( e, is_first )
 
                okay = false;
 
-               if( e.value.length == 5 && components.length == 2 )
+               if( ( e.value.length == 5 ) && ( components.length == 2 ) )
                {
                   var hour = parseInt( components[ 0 ] );
                   var minute = parseInt( components[ 1 ] );
 
-                  if( hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59 )
+                  if( ( hour >= 0 ) && ( hour <= 23 ) && ( minute >= 0 ) && ( minute <= 59 ) )
                      okay = true;
                   else
-                     validation_error = displayInvalidTime;
+                     validation_error = display_invalid_date;
                }
 
-               if( e.value.length == 8 && components.length == 3 )
+               if( ( e.value.length == 8 ) && ( components.length == 3 ) )
                {
                   var hour = parseInt( components[ 0 ] );
                   var minute = parseInt( components[ 1 ] );
                   var second = parseInt( components[ 2 ] );
 
-                  if( hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59 && second >= 0 && second <= 59 )
+                  if( ( hour >= 0 ) && ( hour <= 23 ) && ( minute >= 0 )
+                   && ( minute <= 59 ) && ( second >= 0 ) && ( second <= 59 ) )
                      okay = true;
                   else
-                     validation_error = displayInvalidTime;
+                     validation_error = display_invalid_date;
                }
 
-               if( !okay && validation_error == '' )
-                  validation_error = displayIncorrectTimeFormat;
+               if( !okay && ( validation_error == '' ) )
+                  validation_error = display_incorrect_time_format;
             }
          }
          else if( cmd == 'datetime' )
@@ -1995,9 +2021,10 @@ function validate_element( e, is_first )
                   var month = parseInt( date_components[ 1 ], 10 );
                   var day = parseInt( date_components[ 2 ], 10 );
 
-                  if( year >= 1900 && year <= 2100 )
+                  if( ( year >= 1900 ) && ( year <= 2100 ) )
                   {
                      var max_day = 0;
+
                      switch( month )
                      {
                         case 1:
@@ -2024,48 +2051,50 @@ function validate_element( e, is_first )
                         max_day = 30;
                      }
 
-                     if( day >= 1 && day <= max_day )
+                     if( ( day >= 1 ) && ( day <= max_day ) )
                         okay = true;
                      else
-                        validation_error = displayInvalidDate;
+                        validation_error = display_invalid_date;
                   }
                }
 
-               if( !okay && validation_error == '' )
-                  validation_error = displayIncorrectDateFormat;
+               if( !okay && ( validation_error == '' ) )
+                  validation_error = display_incorrect_date_format;
 
-               if( okay && components.length > 1 )
+               if( okay && ( components.length > 1 ) )
                {
                   var time_value = components[ 1 ];
                   var time_components = time_value.split( ':' );
 
                   okay = false;
 
-                  if( time_value.length == 5 && time_components.length == 2 )
+                  if( ( time_value.length == 5 ) && ( time_components.length == 2 ) )
                   {
                      var hour = parseInt( time_components[ 0 ] );
                      var minute = parseInt( time_components[ 1 ] );
 
-                     if( hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59 )
+                     if( ( hour >= 0 ) && ( hour <= 23 ) && ( minute >= 0 ) && ( minute <= 59 ) )
                         okay = true;
                      else
-                        validation_error = displayInvalidTime;
+                        validation_error = display_invalid_date;
                   }
 
-                  if( time_value.length == 8 && time_components.length == 3 )
+                  if( ( time_value.length == 8 ) && ( time_components.length == 3 ) )
                   {
                      var hour = parseInt( time_components[ 0 ] );
                      var minute = parseInt( time_components[ 1 ] );
                      var second = parseInt( time_components[ 2 ] );
 
-                     if( hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59 && second >= 0 && second <= 59 )
+                     if( ( hour >= 0 ) && ( hour <= 23 )
+                      && ( minute >= 0 ) && ( minute <= 59 )
+                      && ( second >= 0 ) && ( second <= 59 ) )
                         okay = true;
                      else
-                        validation_error = displayInvalidTime;
+                        validation_error = display_invalid_date;
                   }
 
-                  if( !okay && validation_error == '' )
-                     validation_error = displayIncorrectTimeFormat;
+                  if( !okay && ( validation_error == '' ) )
+                     validation_error = display_incorrect_time_format;
                }
             }
          }
@@ -2079,27 +2108,30 @@ function validate_element( e, is_first )
 
                for( var j = 0; j < e.value.length; j++ )
                {
-                  if( j == 0 && ( e.value.charAt( j ) == '+' || e.value.charAt( j ) == '-' ) )
+                  if( j == 0 && ( ( e.value.charAt( j ) == '+' ) || ( e.value.charAt( j ) == '-' ) ) )
                      continue;
 
                   if( j != 0 && e.value.charAt( j ) == ',' )
                   {
-                     if( had_separator && number_of_digits_after_separator != separator_digits )
+                     if( had_separator && ( number_of_digits_after_separator != separator_digits ) )
                      {
                         okay = false;
+
                         break;
                      }
                      else
                      {
                         had_separator = true;
                         number_of_digits_after_separator = 0;
+
                         continue;
                      }
                   }
 
-                  if( e.value.charAt( j ) < '0' || e.value.charAt( j ) > '9' )
+                  if( ( e.value.charAt( j ) < '0' ) || ( e.value.charAt( j ) > '9' ) )
                   {
                      okay = false;
+
                      break;
                   }
                   else if( had_separator )
@@ -2112,12 +2144,12 @@ function validate_element( e, is_first )
                }
 
                if( had_separator
-                && ( number_of_digits_after_separator != separator_digits
-                || number_of_digits_before_separator > separator_digits ) )
+                && ( ( number_of_digits_after_separator != separator_digits )
+                || ( number_of_digits_before_separator > separator_digits ) ) )
                   okay = false;
 
-               if( !okay && validation_error == '' )
-                  validation_error = displayIncorrectIntegerFormat;
+               if( !okay && ( validation_error == '' ) )
+                  validation_error = display_incorrect_integer_format;
             }
          }
          else if( cmd == 'numeric' )
@@ -2131,27 +2163,29 @@ function validate_element( e, is_first )
 
                for( var j = 0; j < e.value.length; j++ )
                {
-                  if( j == 0 && ( e.value.charAt( j ) == '+' || e.value.charAt( j ) == '-' ) )
+                  if( j == 0 && ( ( e.value.charAt( j ) == '+' ) || ( e.value.charAt( j ) == '-' ) ) )
                      continue;
 
-                  if( !had_decimal && j != 0 && e.value.charAt( j ) == ',' )
+                  if( !had_decimal && ( j != 0 ) && ( e.value.charAt( j ) == ',' ) )
                   {
-                     if( had_separator && number_of_digits_after_separator != separator_digits )
+                     if( had_separator && ( number_of_digits_after_separator != separator_digits ) )
                      {
                         okay = false;
+
                         break;
                      }
                      else
                      {
                         had_separator = true;
                         number_of_digits_after_separator = 0;
+
                         continue;
                      }
                   }
 
-                  if( e.value.charAt( j ) < '0' || e.value.charAt( j ) > '9' )
+                  if( ( e.value.charAt( j ) < '0' ) || ( e.value.charAt( j ) > '9' ) )
                   {
-                     if( !had_decimal && e.value.charAt( j ) == '.' )
+                     if( !had_decimal && ( e.value.charAt( j ) == '.' ) )
                         had_decimal = true;
                      else
                      {
@@ -2169,12 +2203,12 @@ function validate_element( e, is_first )
                }
 
                if( had_separator
-                && ( number_of_digits_after_separator != separator_digits
-                || number_of_digits_before_separator > separator_digits ) )
+                && ( ( number_of_digits_after_separator != separator_digits )
+                || ( number_of_digits_before_separator > separator_digits ) ) )
                   okay = false;
 
-               if( !okay && validation_error == '' )
-                  validation_error = displayIncorrectNumericFormat;
+               if( !okay && ( validation_error == '' ) )
+                  validation_error = display_incorrect_numeric_format;
             }
          }
          else if( cmd == 'bytes' )
@@ -2191,44 +2225,49 @@ function validate_element( e, is_first )
 
                for( var j = 0; j < e.value.length; j++ )
                {
-                  if( e.value.charAt( j ) < '0' || e.value.charAt( j ) > '9' )
+                  if( ( e.value.charAt( j ) < '0' ) || ( e.value.charAt( j ) > '9' ) )
                   {
-                     if( e.value.charAt( j ) == 'i' || e.value.charAt( j ) == 'I' )
+                     if( ( e.value.charAt( j ) == 'i' ) || ( e.value.charAt( j ) == 'I' ) )
                      {
                         if( had_iec || had_bytes || !found_token )
                         {
                            okay = false;
+
                            break;
                         }
 
                         had_iec = true;
+
                         continue;
                      }
 
-                     if( e.value.charAt( j ) == 'b' || e.value.charAt( j ) == 'B'
-                      || e.value.charAt( j ) == 'k' || e.value.charAt( j ) == 'K'
-                      || e.value.charAt( j ) == 'm' || e.value.charAt( j ) == 'M'
-                      || e.value.charAt( j ) == 'g' || e.value.charAt( j ) == 'G'
-                      || e.value.charAt( j ) == 't' || e.value.charAt( j ) == 'T' )
+                     if( ( e.value.charAt( j ) == 'b' ) || ( e.value.charAt( j ) == 'B' )
+                      || ( e.value.charAt( j ) == 'k' ) || ( e.value.charAt( j ) == 'K' )
+                      || ( e.value.charAt( j ) == 'm' ) || ( e.value.charAt( j ) == 'M' )
+                      || ( e.value.charAt( j ) == 'g' ) || ( e.value.charAt( j ) == 'G' )
+                      || ( e.value.charAt( j ) == 't' ) || ( e.value.charAt( j ) == 'T' ) )
                      {
-                        if( found_token
-                         && ( had_bytes || ( e.value.charAt( j ) != 'b' && e.value.charAt( j ) != 'B' ) ) )
+                        if( found_token && ( had_bytes
+                         || ( ( e.value.charAt( j ) != 'b' ) && ( e.value.charAt( j ) != 'B' ) ) ) )
                         {
                            okay = false;
+
                            break;
                         }
 
                         found_token = true;
-                        if( e.value.charAt( j ) == 'b' || e.value.charAt( j ) == 'B' )
+
+                        if( ( e.value.charAt( j ) == 'b' ) || ( e.value.charAt( j ) == 'B' ) )
                            had_bytes = true;
                      }
-                     else if( !had_decimal && e.value.charAt( j ) == '.' )
+                     else if( !had_decimal && ( e.value.charAt( j ) == '.' ) )
                         had_decimal = true;
-                     else if( !found_token && e.value.charAt( j ) == ' ' )
+                     else if( !found_token && ( e.value.charAt( j ) == ' ' ) )
                         had_whitespace = true;
                      else
                      {
                         okay = false;
+
                         break;
                      }
                   }
@@ -2237,10 +2276,10 @@ function validate_element( e, is_first )
                }
             }
 
-            if( !okay && validation_error == '' )
-               validation_error = displayIncorrectBytesFormat;
+            if( !okay && ( validation_error == '' ) )
+               validation_error = display_incorrect_bytes_format;
          }
-         else if( cmd == 'duration_dhm' || cmd == 'duration_hms' )
+         else if( ( cmd == 'duration_dhm' ) || ( cmd == 'duration_hms' ) )
          {
             var had_days = false;
             var had_hours = false;
@@ -2248,24 +2287,28 @@ function validate_element( e, is_first )
             var had_seconds = false;
 
             var parts = e.value.split( ' ' );
+
             for( var j = 0; j < parts.length; j++ )
             {
                var next_part = parts[ j ];
+
                for( var k = 0; k < next_part.length; k++ )
                {
-                  if( next_part[ k ] < '0' || next_part[ k ] > '9' )
+                  if( ( next_part[ k ] < '0' ) || ( next_part[ k ] > '9' ) )
                   {
-                     if( k != next_part.length - 1 )
+                     if( k != ( next_part.length - 1 ) )
                      {
                         okay = false;
+
                         break;
                      }
 
-                     if( cmd == 'duration_dhm' && next_part[ k ] == 'd' )
+                     if( ( cmd == 'duration_dhm' ) && ( next_part[ k ] == 'd' ) )
                      {
                         if( had_days || had_hours || had_minutes || had_seconds )
                         {
                            okay = false;
+
                            break;
                         }
 
@@ -2276,6 +2319,7 @@ function validate_element( e, is_first )
                         if( had_hours || had_minutes || had_seconds )
                         {
                            okay = false;
+
                            break;
                         }
 
@@ -2286,16 +2330,18 @@ function validate_element( e, is_first )
                         if( had_minutes || had_seconds )
                         {
                            okay = false;
+
                            break;
                         }
 
                         had_minutes = true;
                      }
-                     else if( cmd == 'duration_hms' && next_part[ k ] == 's' )
+                     else if( ( cmd == 'duration_hms' ) && ( next_part[ k ] == 's' ) )
                      {
                         if( had_seconds )
                         {
                            okay = false;
+
                            break;
                         }
 
@@ -2304,6 +2350,7 @@ function validate_element( e, is_first )
                      else
                      {
                         okay = false;
+
                         break;
                      }
                   }
@@ -2316,16 +2363,16 @@ function validate_element( e, is_first )
             if( !had_days && !had_hours && !had_minutes && !had_seconds )
                okay = false;
 
-            if( !okay && validation_error == '' )
-               validation_error = displayIncorrectDurationFormat;
+            if( !okay && ( validation_error == '' ) )
+               validation_error = display_incorrect_duration_format;
          }
 
          if( !okay )
          {
-            if( is_first && e.getAttribute( 'nofocus' ) != 'true' )
+            if( is_first && ( e.getAttribute( 'nofocus' ) != 'true' ) )
                e.focus( );
 
-            if( e.getAttribute( 'class' ) != 'textinput' && e.getAttribute( 'className' ) != 'textinput' )
+            if( ( e.getAttribute( 'class' ) != 'textinput' ) && ( e.getAttribute( 'className' ) != 'textinput' ) )
             {
                e.setAttribute( 'class', e.getAttribute( 'class' ) + ' error' );
                e.setAttribute( 'className', e.getAttribute( 'className' ) + ' error' );
@@ -2351,6 +2398,7 @@ function validate( frm )
    if( document.getElementsByTagName )
    {
       elements = frm.getElementsByTagName( 'input' );
+
       for( var i = 0, e; e = elements.item( i++ ); )
       {
          if( e.getAttribute( 'type' ) == 'text'
@@ -2367,7 +2415,7 @@ function validate( frm )
       if( validation_error != '' )
          alert( validation_error );
       else
-         alert( displayEnterRequiredValues );
+         alert( display_enter_required_values );
    }
 
    return okay;
@@ -2380,7 +2428,7 @@ function confirm_delete( frm )
       if( frm.elements[ i ].name.indexOf( 'item' ) == 0 )
       {
          if( frm.elements[ i ].checked )
-            return confirm( displaySelectedRecordsWillBeRemoved );
+            return confirm( display_selected_records_will_be_removed );
       }
    }
 

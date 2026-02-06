@@ -3584,12 +3584,12 @@ void request_handler::process_request( )
 
       if( cmd != c_cmd_status )
       {
-         extra_content_func += " serverId = '" + g_id + "';";
-         extra_content_func += " uniqueId = '" + unique_id + "';";
+         extra_content_func += " server_id = '" + g_id + "';";
+         extra_content_func += " unique_id = '" + unique_id + "';";
 
          // NOTE: Mnemonics are (simplistically) encrypted to prevent clear text observation via packet sniffing.
          if( is_identity_form )
-            extra_content_func += " document.identity.entropy.value = decrypt_hex_data( document.identity.entropy.value, uniqueId );";
+            extra_content_func += " document.identity.entropy.value = decrypt_hex_data( document.identity.entropy.value, unique_id );";
       }
 
       if( is_backup_or_restore )
@@ -3764,8 +3764,8 @@ void request_handler::process_request( )
       }
       else
       {
-         extra_content << "<input type=\"hidden\" value=\"serverId = '"
-          + g_id + "'; uniqueId = '" + unique_id + "'; had_act_error = true;\" id=\"extra_content_func\"/>\n";
+         extra_content << "<input type=\"hidden\" value=\"server_id = '"
+          + g_id + "'; unique_id = '" + unique_id + "'; had_act_error = true;\" id=\"extra_content_func\"/>\n";
       }
    }
    catch( ... )

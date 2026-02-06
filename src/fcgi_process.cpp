@@ -2184,7 +2184,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      {
                         found_slides = true;
 
-                        extra_content_func += "totalNumSlides = " + to_string( ( i->second ).row_data.size( ) ) + "; show_next_slide( );";
+                        extra_content_func += "total_num_slides = " + to_string( ( i->second ).row_data.size( ) ) + "; show_next_slide( );";
 
                         extra_content << "            <div class=\"home_slides_container clearfix\" id=\"home_slides_container\">\n";
 
@@ -2991,7 +2991,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
             p_session_info->was_file_remove = false;
 
-            extra_content_func += "dataFieldList = '" + edit_field_list + "';\n";
+            extra_content_func += "data_field_list = '" + edit_field_list + "';\n";
 
             uint64_t state( view.state );
 
@@ -3446,56 +3446,56 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          extra_content_func += "document.cookie = '" + get_cookie_value( session_id,
           p_session_info->user_id, cmd == c_cmd_quit, p_session_info->dtm_offset ) + "';\n";
 
-      extra_content_func += "displayReload = '"
+      extra_content_func += "display_reload = '"
        + replaced( GDS( c_display_reload ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
-      extra_content_func += "displayTimeout = '"
+      extra_content_func += "display_timeout = '"
        + replaced( GDS( c_display_timeout ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
-      extra_content_func += "displayInvalidDate = '"
+      extra_content_func += "display_invalid_date = '"
        + replaced( GDS( c_display_invalid_date ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
-      extra_content_func += "displayInvalidTime = '"
+      extra_content_func += "display_invalid_time = '"
        + replaced( GDS( c_display_invalid_time ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
-      extra_content_func += "displayIncorrectDateFormat = '"
-       + replaced( GDS( c_display_incorrect_date_format ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
-
-      extra_content_func += "displayIncorrectTimeFormat = '"
-       + replaced( GDS( c_display_incorrect_time_format ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
-
-      extra_content_func += "displayEnterRequiredValues = '"
+      extra_content_func += "display_enter_required_values = '"
        + replaced( GDS( c_display_enter_required_values ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
-      extra_content_func += "displayIncorrectBytesFormat = '"
+      extra_content_func += "display_incorrect_date_format = '"
+       + replaced( GDS( c_display_incorrect_date_format ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
+
+      extra_content_func += "display_incorrect_time_format = '"
+       + replaced( GDS( c_display_incorrect_time_format ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
+
+      extra_content_func += "display_incorrect_bytes_format = '"
        + replaced( GDS( c_display_incorrect_bytes_format ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
-      extra_content_func += "displaySelectOneOrMoreItems = '"
-       + replaced( GDS( c_display_select_one_or_more_items ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
-
-      extra_content_func += "displayIncorrectIntegerFormat = '"
+      extra_content_func += "display_incorrect_integer_format = '"
        + replaced( GDS( c_display_incorrect_integer_format ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
-      extra_content_func += "displayIncorrectNumericFormat = '"
+      extra_content_func += "display_incorrect_numeric_format = '"
        + replaced( GDS( c_display_incorrect_numeric_format ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
-      extra_content_func += "displayIncorrectDurationFormat = '"
+      extra_content_func += "display_select_one_or_more_items = '"
+       + replaced( GDS( c_display_select_one_or_more_items ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
+
+      extra_content_func += "display_incorrect_duration_format = '"
        + replaced( GDS( c_display_incorrect_duration_format ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
-      extra_content_func += "displayMaximumTextLimitReached = '"
+      extra_content_func += "display_maximum_text_limit_reached = '"
        + replaced( GDS( c_display_maximum_text_limit_reached ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
-      extra_content_func += "displayYourSessionIsAboutToExpire = '"
-       + replaced( GDS( c_display_your_session_is_about_to_expire ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
-
-      extra_content_func += "displayYourSessionHasBecomeInvalid = '"
+      extra_content_func += "display_your_session_has_become_invalid = '"
        + replaced( GDS( c_display_your_session_has_become_invalid ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
-      extra_content_func += "displaySelectedRecordsWillBeRemoved = '"
-       + replaced( GDS( c_display_selected_records_will_be_removed ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
+      extra_content_func += "display_your_session_is_about_to_expire = '"
+       + replaced( GDS( c_display_your_session_is_about_to_expire ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
-      extra_content_func += "displayPasswordVerificationIncorrect = '"
+      extra_content_func += "display_password_verification_incorrect = '"
        + replaced( GDS( c_display_password_verification_incorrect ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
+
+      extra_content_func += "display_selected_records_will_be_removed = '"
+       + replaced( GDS( c_display_selected_records_will_be_removed ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
       if( ( cont != c_true ) && !new_key.empty( ) )
       {
@@ -3532,7 +3532,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       }
 
       if( p_session_info && p_session_info->logged_in )
-         extra_content_func += "\nloggedIn = true;";
+         extra_content_func += "\nlogged_in = true;";
 
       if( !scrollx.empty( ) && !scrolly.empty( ) )
          extra_content_func += "\nscroll_page( " + scrollx + ", " + scrolly + " );";
