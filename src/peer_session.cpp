@@ -101,7 +101,7 @@ const char* const c_system_repository_lock = "system_repo_lock";
 
 const char* const c_remove_obsolete_file_name = ".remove_obsolete";
 
-const size_t c_timeout_ticks = 90;
+const size_t c_timeout_seconds = 30;
 
 const size_t c_prefix_length = 4;
 const size_t c_checksum_length = 8;
@@ -774,7 +774,8 @@ void system_identity_progress_message( const string& identity, bool is_preparing
       // to still be reading the initial peer status.
       if( !time_value.empty( ) )
       {
-         int64_t current = unix_time( date_time::local( ) );
+         int64_t current = unix_time( );
+
          int64_t check_time = from_string< int64_t >( time_value );
 
          if( current < check_time )
@@ -2165,7 +2166,7 @@ void process_put_file( const string& blockchain,
 
       if( p_dtm && p_progress )
       {
-         date_time now( date_time::local( ) );
+         date_time now( date_time::standard( ) );
 
          uint64_t elapsed = seconds_between( *p_dtm, now );
 
@@ -2451,7 +2452,7 @@ bool has_all_list_items(
 
          if( p_dtm && p_progress )
          {
-            date_time now( date_time::local( ) );
+            date_time now( date_time::standard( ) );
 
             uint64_t elapsed = seconds_between( *p_dtm, now );
 
@@ -2872,7 +2873,7 @@ void process_list_items( const string& blockchain,
 
       if( p_dtm && p_progress )
       {
-         date_time now( date_time::local( ) );
+         date_time now( date_time::standard( ) );
 
          uint64_t elapsed = seconds_between( *p_dtm, now );
 
@@ -3784,7 +3785,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
       }
       else if( !tree_root_hash.empty( ) )
       {
-         date_time dtm( date_time::local( ) );
+         date_time dtm( date_time::standard( ) );
 
          if( !has_file( tree_root_hash ) )
          {
@@ -4007,7 +4008,7 @@ class socket_command_handler : public command_handler
       if( is_time_for_check )
          return true;
 
-      int64_t current = unix_time( date_time::local( ) );
+      int64_t current = unix_time( );
 
       if( current >= time_val )
          is_time_for_check = true;
@@ -4380,7 +4381,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
 
-      date_time dtm( date_time::local( ) );
+      date_time dtm( date_time::standard( ) );
 
       size_t num_items_found = get_peer_tree_item( );
 
@@ -4573,7 +4574,7 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
                system_identity_progress_message( identity );
          }
 
-         check_for_missing_other_sessions( date_time::local( ) );
+         check_for_missing_other_sessions( date_time::standard( ) );
 
          continue;
       }
@@ -4701,7 +4702,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    if( !is_for_support )
    {
-      date_time now( date_time::local( ) );
+      date_time now( date_time::standard( ) );
       date_time dtm( get_dtm_last_issued( ) );
 
       uint64_t elapsed = seconds_between( dtm, now );
@@ -5036,7 +5037,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                if( !has_tree_files )
                {
                   if( !has_raw_session_variable( get_special_var_name( e_special_var_paired_sync ) ) )
-                     check_for_missing_other_sessions( date_time::local( ) );
+                     check_for_missing_other_sessions( date_time::standard( ) );
 
                   set_session_variable( get_special_var_name( e_special_var_blockchain_get_tree_files ), "" );
                   set_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ), "" );
@@ -5135,7 +5136,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          if( !num_put_files.empty( ) )
          {
-            date_time dtm( date_time::local( ) );
+            date_time dtm( date_time::standard( ) );
 
             set< string > target_hashes;
 
@@ -5224,7 +5225,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          if( !num_put_files.empty( ) )
          {
-            date_time dtm( date_time::local( ) );
+            date_time dtm( date_time::standard( ) );
 
             set< string > target_hashes;
 
@@ -5409,7 +5410,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    if( set_new_zenith )
    {
-      date_time dtm( date_time::local( ) );
+      date_time dtm( date_time::standard( ) );
 
       string zenith_tree_hash( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_tree_hash ) ) );
@@ -6177,7 +6178,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   if( num_items_found )
                   {
-                     date_time dtm( date_time::local( ) );
+                     date_time dtm( date_time::standard( ) );
 
                      string block_tag_name( c_bc_prefix + identity + '.' + to_string( blockchain_height ) + c_blk_suffix );
 
@@ -6310,7 +6311,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                if( !tree_count.empty( ) && !tree_total.empty( ) )
                {
-                  date_time now( date_time::local( ) );
+                  date_time now( date_time::standard( ) );
                   date_time dtm( socket_handler.get_dtm_last_get( ) );
 
                   uint64_t elapsed = seconds_between( dtm, now );
@@ -6421,7 +6422,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( ( hash != hello_hash ) && ( blockchain.empty( )
           || has_raw_session_variable( get_special_var_name( e_special_var_blockchain_get_tree_files ) ) ) )
          {
-            date_time dtm( date_time::local( ) );
+            date_time dtm( date_time::standard( ) );
 
             set< string > target_hashes;
 
@@ -6829,7 +6830,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
                if( response != "." )
                   set_session_progress_message( response );
 
-               check_for_missing_other_sessions( date_time::local( ) );
+               check_for_missing_other_sessions( date_time::standard( ) );
 
                continue;
             }
@@ -6907,7 +6908,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
                cmd_and_args.erase( );
 
-               check_for_missing_other_sessions( date_time::local( ) );
+               check_for_missing_other_sessions( date_time::standard( ) );
 
                continue;
             }
@@ -7223,10 +7224,11 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
                   istringstream isstr( unix_in_hex );
 
-                  int64_t peer_unix_time;
+                  int64_t peer_unix_time = 0;
+
                   isstr >> hex >> peer_unix_time;
 
-                  int64_t difference = unix_time( ) - peer_unix_time;
+                  int64_t difference = ( unix_time( ) - peer_unix_time );
 
                   if( difference < 0 )
                      difference *= -1;
@@ -7490,11 +7492,11 @@ void peer_session::on_start( )
 
    peer_state state = ( is_responder ? e_peer_state_responder : e_peer_state_initiator );
 
-   int64_t current = unix_time( date_time::local( ) );
+   int64_t current = unix_time( );
 
    int64_t difference = ( current - time_val ) + 2;
 
-   int64_t time_value = current + ( difference * 2 );
+   int64_t time_value = ( current + ( difference * 2 ) );
 
    try
    {
@@ -8313,7 +8315,7 @@ void peer_listener::on_start( )
                   }
                }
 
-               date_time dtm( date_time::local( ) );
+               date_time dtm( date_time::standard( ) );
 
                bool is_preparing = has_system_variable(
                 get_special_var_name( e_special_var_preparing_backup )
@@ -8551,10 +8553,14 @@ peer_session* create_peer_initiator( const string& blockchain,
 
    string ip_addr( address.get_addr_string( ) );
 
+   bool valid_ip_address = true;
+
    peer_session* p_main_session = 0;
 
    if( ( ip_addr == c_null_ip_addr ) || ( ip_addr == c_null_ip_addr_for_ipv6 ) )
    {
+      valid_ip_address = false;
+
       string error(
        get_string_message( GS( c_str_unable_to_determine_address ),
        make_pair( c_str_unable_to_determine_address_domain, host ) ) );
@@ -8562,162 +8568,161 @@ peer_session* create_peer_initiator( const string& blockchain,
       if( is_interactive )
          throw runtime_error( error );
       else
-      {
          set_system_variable( c_error_message_prefix + identity, error );
-
-         return p_main_session;
-      }
    }
 
-   string own_identity( get_own_identity( is_shared, p_extra_value ) );
-
-   bool has_separate_identity = false;
-
-   if( is_paired && !is_secondary && !is_interactive
-    && !own_identity.empty( ) && ( identity != own_identity ) )
-      has_separate_identity = true;
-
-   string session_blockchain( c_bc_prefix );
-
-   if( !has_separate_identity )
-      session_blockchain += identity;
-   else
-      session_blockchain += own_identity;
-
-   date_time dtm( date_time::local( ) );
-
-   unique_ptr< temporary_system_variable > up_blockchain_connect;
-
-   if( !is_secondary && !num_for_support && !has_set_system_variable )
-      up_blockchain_connect.reset( new temporary_system_variable( identity, c_true_value ) );
-
-   for( size_t i = 0; i < total_to_create; i++ )
+   if( valid_ip_address )
    {
-      if( g_server_shutdown )
-         break;
+      string own_identity( get_own_identity( is_shared, p_extra_value ) );
+
+      bool has_separate_identity = false;
+
+      if( is_paired && !is_secondary && !is_interactive
+       && !own_identity.empty( ) && ( identity != own_identity ) )
+         has_separate_identity = true;
+
+      string session_blockchain( c_bc_prefix );
+
+      if( !has_separate_identity )
+         session_blockchain += identity;
+      else
+         session_blockchain += own_identity;
+
+      date_time dtm( date_time::standard( ) );
+
+      unique_ptr< temporary_system_variable > up_blockchain_connect;
+
+      if( !is_secondary && !num_for_support && !has_set_system_variable )
+         up_blockchain_connect.reset( new temporary_system_variable( identity, c_true_value ) );
+
+      for( size_t i = 0; i < total_to_create; i++ )
+      {
+         if( g_server_shutdown )
+            break;
 
 #ifdef SSL_SUPPORT
-      unique_ptr< ssl_socket > up_socket( new ssl_socket );
+         unique_ptr< ssl_socket > up_socket( new ssl_socket );
 #else
-      unique_ptr< tcp_socket > up_socket( new tcp_socket );
+         unique_ptr< tcp_socket > up_socket( new tcp_socket );
 #endif
 
-      if( up_socket->open( ) )
-      {
-         if( force )
-            remove_peer_ip_addr_from_rejection( ip_addr );
-         else if( !get_is_accepted_peer_ip_addr( ip_addr ) )
+         if( up_socket->open( ) )
          {
-            string error(
-             get_string_message( GS( c_str_host_address_not_permitted ),
-             make_pair( c_str_host_address_not_permitted_host, host ),
-             make_pair( c_str_host_address_not_permitted_address, ip_addr ) ) );
-
-            if( is_interactive )
-               throw runtime_error( error );
-            else
+            if( force )
+               remove_peer_ip_addr_from_rejection( ip_addr );
+            else if( !get_is_accepted_peer_ip_addr( ip_addr ) )
             {
-               set_system_variable( c_error_message_prefix + identity, error );
+               string error(
+                get_string_message( GS( c_str_host_address_not_permitted ),
+                make_pair( c_str_host_address_not_permitted_host, host ),
+                make_pair( c_str_host_address_not_permitted_address, ip_addr ) ) );
 
-               break;
-            }
-         }
-
-         if( up_socket->connect( address, !has_main_session ? c_connect_timeout : c_support_timeout ) )
-         {
-            const char* p_identity = 0;
-
-            peer_extra extra = e_peer_extra_none;
-
-            if( !has_main_session && ( is_secondary || has_separate_identity ) )
-            {
-               p_identity = identity.c_str( );
-
-               extra = ( !is_secondary ? e_peer_extra_primary : e_peer_extra_secondary );
-            }
-            else if( !explicit_paired_identity.empty( ) )
-               p_identity = explicit_paired_identity.c_str( );
-
-            bool has_support_sessions = false;
-
-            if( !has_main_session && ( num_for_support || will_have_support ) )
-               has_support_sessions = true;
-
-            peer_session* p_session = 0;
-
-            try
-            {
-               p_session = construct_session( dtm, false, up_socket,
-                ip_addr + '=' + session_blockchain + ':' + to_string( port ), has_main_session,
-                extra, p_identity, chain_type, has_support_sessions, has_set_system_variable );
-            }
-            catch( exception& x )
-            {
-               string error( x.what( ) );
-
-               if( !error.empty( ) && ( error[ 0 ] == '@' ) )
+               if( is_interactive )
+                  throw runtime_error( error );
+               else
                {
-                  if( p_other_session_extras )
-                     p_other_session_extras->special_message = error;
-               }
-               else if( !has_main_session )
                   set_system_variable( c_error_message_prefix + identity, error );
-            }
-            catch( ... )
-            {
-               if( !has_main_session )
-                  set_system_variable( c_error_message_prefix + identity, "unexpected error constructing session" );
+
+                  break;
+               }
             }
 
-            if( !p_session )
-               break;
-            else
+            if( up_socket->connect( address, !has_main_session ? c_connect_timeout : c_support_timeout ) )
             {
-               if( !p_main_session )
+               const char* p_identity = 0;
+
+               peer_extra extra = e_peer_extra_none;
+
+               if( !has_main_session && ( is_secondary || has_separate_identity ) )
                {
-                  has_main_session = true;
+                  p_identity = identity.c_str( );
 
-                  p_main_session = p_session;
+                  extra = ( !is_secondary ? e_peer_extra_primary : e_peer_extra_secondary );
+               }
+               else if( !explicit_paired_identity.empty( ) )
+                  p_identity = explicit_paired_identity.c_str( );
 
-                  // NOTE: If okay when initially started then will later automatically try
-                  // reconnecting (unless not applicable or does not have a zenith tag). To
-                  // be sure an error in "on_start" (perhaps due to a fork or other serious
-                  // issue) does not result in looping repeatedly only set the "tag" system
-                  // variable here (it will be cleared and the "auto" variable set assuming
-                  // the handshake is successful).
-                  if( is_paired && !is_secondary && has_tag( blockchain + c_zenith_suffix )
-                   && ( !p_other_session_extras || p_other_session_extras->other_identity.empty( ) ) )
-                     set_system_variable(
-                      get_special_var_name( e_special_var_tag ) + '_' + identity, c_true_value );
+               bool has_support_sessions = false;
+
+               if( !has_main_session && ( num_for_support || will_have_support ) )
+                  has_support_sessions = true;
+
+               peer_session* p_session = 0;
+
+               try
+               {
+                  p_session = construct_session( dtm, false, up_socket,
+                   ip_addr + '=' + session_blockchain + ':' + to_string( port ), has_main_session,
+                   extra, p_identity, chain_type, has_support_sessions, has_set_system_variable );
+               }
+               catch( exception& x )
+               {
+                  string error( x.what( ) );
+
+                  if( !error.empty( ) && ( error[ 0 ] == '@' ) )
+                  {
+                     if( p_other_session_extras )
+                        p_other_session_extras->special_message = error;
+                  }
+                  else if( !has_main_session )
+                     set_system_variable( c_error_message_prefix + identity, error );
+               }
+               catch( ... )
+               {
+                  if( !has_main_session )
+                     set_system_variable( c_error_message_prefix + identity, "unexpected error constructing session" );
                }
 
-               if( p_other_session_extras )
-                  p_other_session_extras->set_extras( *p_session );
+               if( !p_session )
+                  break;
+               else
+               {
+                  if( !p_main_session )
+                  {
+                     has_main_session = true;
 
-               p_session->start( );
+                     p_main_session = p_session;
+
+                     // NOTE: If okay when initially started then will later automatically try
+                     // reconnecting (unless not applicable or does not have a zenith tag). To
+                     // be sure an error in "on_start" (perhaps due to a fork or other serious
+                     // issue) does not result in looping repeatedly only set the "tag" system
+                     // variable here (it will be cleared and the "auto" variable set assuming
+                     // the handshake is successful).
+                     if( is_paired && !is_secondary && has_tag( blockchain + c_zenith_suffix )
+                      && ( !p_other_session_extras || p_other_session_extras->other_identity.empty( ) ) )
+                        set_system_variable(
+                         get_special_var_name( e_special_var_tag ) + '_' + identity, c_true_value );
+                  }
+
+                  if( p_other_session_extras )
+                     p_other_session_extras->set_extras( *p_session );
+
+                  p_session->start( );
+               }
             }
-         }
-         else if( !has_main_session )
-         {
-            string error;
-
-            if( !up_socket->had_timeout( ) )
-               error = get_string_message(
-                GS( c_str_failed_connect_to_peer ),
-                make_pair( c_str_failed_connect_to_peer_host, host ),
-                make_pair( c_str_failed_connect_to_peer_port, to_string( port ) ) );
-            else
-               error = get_string_message(
-                GS( c_str_timed_out_connecting_to_peer ),
-                make_pair( c_str_timed_out_connecting_to_peer_host, host ),
-                make_pair( c_str_timed_out_connecting_to_peer_port, to_string( port ) ) );
-
-            if( is_interactive )
-               throw runtime_error( error );
-            else
+            else if( !has_main_session )
             {
-               set_system_variable( c_error_message_prefix + identity, error );
-               break;
+               string error;
+
+               if( !up_socket->had_timeout( ) )
+                  error = get_string_message(
+                   GS( c_str_failed_connect_to_peer ),
+                   make_pair( c_str_failed_connect_to_peer_host, host ),
+                   make_pair( c_str_failed_connect_to_peer_port, to_string( port ) ) );
+               else
+                  error = get_string_message(
+                   GS( c_str_timed_out_connecting_to_peer ),
+                   make_pair( c_str_timed_out_connecting_to_peer_host, host ),
+                   make_pair( c_str_timed_out_connecting_to_peer_port, to_string( port ) ) );
+
+               if( is_interactive )
+                  throw runtime_error( error );
+               else
+               {
+                  set_system_variable( c_error_message_prefix + identity, error );
+                  break;
+               }
             }
          }
       }
@@ -8728,15 +8733,20 @@ peer_session* create_peer_initiator( const string& blockchain,
       string auto_unix( get_raw_system_variable(
        get_special_var_name( e_special_var_auto ) + '_' + identity ) );
 
+      // NOTE: If was starting an external
+      // then retry as if it was the sixth
+      // attempt (to provide a little more
+      // time to notice errors in the UI).
       if( g_starting_externals )
       {
          if( auto_unix.empty( ) )
-            auto_unix = c_true_value;
+            auto_unix = to_string( 6 );
       }
 
       if( !auto_unix.empty( ) )
       {
-         size_t unix_now = unix_time( date_time::standard( ) );
+         size_t unix_now = unix_time( );
+
          size_t unix_time = from_string< size_t >( auto_unix );
 
          // NOTE: The last digit is used as a connection "attempt"
@@ -8746,12 +8756,10 @@ peer_session* create_peer_initiator( const string& blockchain,
 
          unix_now -= ( unix_now % c_last_decimal_digit );
 
-         unix_time -= attempt;
-
          size_t next = ( attempt + 1 );
 
          // NOTE: Always wait the same amount after 9 attempts.
-         if( !attempt || ( next == 9 ) )
+         if( !attempt || ( next >= 9 ) )
          {
             next = 0;
             attempt = 10;
@@ -8800,8 +8808,9 @@ void peer_session_starter::on_start( )
 
                string::size_type pos = next_external.find_first_of( "-+=" );
 
-               // NOTE: Always ignores any locked blockchains.
-               if( has_tag( c_bc_prefix + next_external.substr( 0, pos ) + c_locked_suffix ) )
+               // NOTE: Always ignore any locked or currently unknown blockchains.
+               if( has_tag( c_bc_prefix + next_external.substr( 0, pos ) + c_locked_suffix )
+                || !has_tag( c_bc_prefix + next_external.substr( 0, pos ) + c_zenith_suffix ) )
                   continue;
 
                start_peer_session( next_external );
@@ -8840,7 +8849,7 @@ void peer_session_starter::on_start( )
 
                split( pending_vars, all_pending_vars, '\n' );
 
-               size_t unix_now = unix_time( date_time::standard( ) );
+               size_t unix_now = unix_time( );
 
                for( size_t i = 0; i < all_pending_vars.size( ); i++ )
                {
@@ -8895,6 +8904,8 @@ void peer_session_starter::on_start( )
 
                split( timeout_vars, all_timeout_vars, '\n' );
 
+               int64_t current = unix_time( );
+
                for( size_t i = 0; i < all_timeout_vars.size( ); i++ )
                {
                   string next_line( all_timeout_vars[ i ] );
@@ -8916,19 +8927,17 @@ void peer_session_starter::on_start( )
                         {
                            pos = next_value.find( ':' );
 
-                           string ticks( next_value.substr( 0, pos ) );
+                           int64_t expires = from_string< int64_t >( next_value.substr( 0, pos ) );
 
                            string error;
 
                            if( pos != string::npos )
                               error = next_value.substr( pos + 1 );
 
-                           size_t num_ticks = from_string< size_t >( ticks );
-
                            bool has_identity_variable = has_system_variable( identity );
                            bool has_blockchain_session = any_session_has_blockchain( identity );
 
-                           if( !num_ticks
+                           if( !expires || ( current >= expires )
                             || !has_identity_variable || has_blockchain_session )
                            {
                               set_system_variable( next_var, "" );
@@ -8945,8 +8954,6 @@ void peer_session_starter::on_start( )
                                  }
                               }
                            }
-                           else
-                              set_system_variable( next_var, to_string( --num_ticks ) + ':' + error );
                         }
                      }
                   }
@@ -9194,8 +9201,12 @@ void peer_session_starter::start_peer_session( const string& peer_info )
       if( just_unlocked && ( other_extras.special_message == c_special_message_1 ) )
       {
          if( has_system_variable( identity ) )
+         {
+            int64_t current = unix_time( );
+
             set_system_variable( get_special_var_name( e_special_var_timeout ) + '_' + identity,
-             to_string( c_timeout_ticks ) + ':' + special_connection_message( other_extras.special_message, true ) );
+             to_string( current + c_timeout_seconds ) + ':' + special_connection_message( other_extras.special_message, true ) );
+         }
 
          set_system_variable( c_progress_output_prefix + identity,
           special_connection_message( other_extras.special_message ) );
