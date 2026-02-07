@@ -321,21 +321,6 @@ file_constructor::~file_constructor( )
    g_files_constructing.erase( file_name );
 }
 
-int64_t local_secs_diff( )
-{
-   date_time local( date_time::local( ) );
-   date_time standard( date_time::standard( ) );
-
-   int64_t secs_diff = seconds_between( standard, local );
-
-   if( ( secs_diff % 60 ) == 1 )
-      --secs_diff;
-   else if( ( secs_diff % 60 ) == 59 )
-      ++secs_diff;
-
-   return secs_diff;
-}
-
 string unique_time_stamp_tag( const string& prefix, const date_time& dt )
 {
    string retval;
@@ -623,7 +608,7 @@ string transform_shared_list_info( const string& repository,
    string archive_path( get_session_variable(
     get_special_var_name( e_special_var_blockchain_archive_path ) ) );
 
-   date_time dtm( date_time::local( ) );
+   date_time dtm( date_time::standard( ) );
 
    map< string, string > mapped_hashes;
 
@@ -697,7 +682,7 @@ string transform_shared_list_info( const string& repository,
 
       if( p_progress )
       {
-         date_time now( date_time::local( ) );
+         date_time now( date_time::standard( ) );
 
          uint64_t elapsed = seconds_between( dtm, now );
 
@@ -733,7 +718,7 @@ string create_repository_lists(
    string archive_path( get_session_variable(
     get_special_var_name( e_special_var_blockchain_archive_path ) ) );
 
-   date_time dtm( date_time::local( ) );
+   date_time dtm( date_time::standard( ) );
 
    map< string, string > mapped_hashes;
 
@@ -849,7 +834,7 @@ string create_repository_lists(
 
       if( p_progress )
       {
-         date_time now( date_time::local( ) );
+         date_time now( date_time::standard( ) );
 
          uint64_t elapsed = seconds_between( dtm, now );
 
@@ -1104,7 +1089,7 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
       create_directories( files_area_path + "/" );
    else
    {
-      date_time dtm( date_time::local( ) );
+      date_time dtm( date_time::standard( ) );
       date_time dt_epoch( c_time_stamp_unix_epoch );
 
       directory_filter df;
@@ -1112,8 +1097,6 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
       fs_iterator dfsi( files_area_path, &df );
 
       bool is_first = true;
-
-      int64_t secs_diff = local_secs_diff( );
 
       string ciyam_prefix( c_ciyam_tag );
 
@@ -1130,6 +1113,7 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
             continue;
 
          file_filter ff;
+
          fs_iterator fs( dfsi.get_path_name( ), &ff );
 
          vector< string > files_to_delete;
@@ -1201,8 +1185,6 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
                         if( dt == dt_epoch )
                            dt = date_time::standard( );
 
-                        dt += ( seconds )secs_diff;
-
                         string tag_name( c_time_stamp_tag_prefix );
 
                         tag_name += unique_time_stamp_tag( tag_name, dt );
@@ -1218,7 +1200,7 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
 
             if( p_progress )
             {
-               date_time now( date_time::local( ) );
+               date_time now( date_time::standard( ) );
 
                uint64_t elapsed = seconds_between( dtm, now );
 
@@ -1281,7 +1263,7 @@ void init_archive_info( progress* p_progress, bool has_restored_system )
 
       size_t total_files = 0;
 
-      date_time dtm( date_time::local( ) );
+      date_time dtm( date_time::standard( ) );
 
       size_t num_seconds = 0;
 
@@ -1334,7 +1316,7 @@ void init_archive_info( progress* p_progress, bool has_restored_system )
 
             if( p_progress )
             {
-               date_time now( date_time::local( ) );
+               date_time now( date_time::standard( ) );
 
                uint64_t elapsed = seconds_between( dtm, now );
 
@@ -1379,11 +1361,12 @@ string current_time_stamp_tag( bool truncated, size_t days_ahead )
    if( !dummy_time_stamp.empty( ) )
    {
       retval += dummy_time_stamp;
+
       set_session_variable( get_special_var_name( e_special_var_dummy_time_stamp ), "" );
    }
    else
    {
-      date_time dt( date_time::local( ) );
+      date_time dt( date_time::standard( ) );
 
       if( days_ahead )
          dt += ( days )days_ahead;
@@ -1617,6 +1600,7 @@ string file_type_info( const string& tag_or_hash,
    string hash, file_name;
 
    int depth = max_depth;
+
    bool output_last_only = false;
    bool include_header_suffix = false;
 
@@ -1630,7 +1614,7 @@ string file_type_info( const string& tag_or_hash,
 
    if( p_dtm )
    {
-      date_time now( date_time::local( ) );
+      date_time now( date_time::standard( ) );
 
       uint64_t elapsed = seconds_between( *p_dtm, now );
 
@@ -2118,7 +2102,7 @@ void file_list_item_pos(
       {
          if( p_dtm && p_progress )
          {
-            date_time now( date_time::local( ) );
+            date_time now( date_time::standard( ) );
 
             uint64_t elapsed = seconds_between( *p_dtm, now );
 
@@ -3266,7 +3250,8 @@ string extract_tags_from_lists( const string& tag_or_hash,
 
          if( p_dtm && p_progress )
          {
-            date_time now( date_time::local( ) );
+            date_time now( date_time::standard( ) );
+
             uint64_t elapsed = seconds_between( *p_dtm, now );
 
             if( elapsed >= num_seconds )
@@ -3339,9 +3324,10 @@ string list_file_tags(
    int64_t min_bytes = 0;
    int64_t num_bytes = 0;
 
-   date_time dtm( date_time::local( ) );
+   date_time dtm( date_time::standard( ) );
 
    string all_excludes( p_excludes ? p_excludes : "" );
+
    vector< string > excludes;
 
    if( pat.empty( ) )
@@ -3367,7 +3353,7 @@ string list_file_tags(
 
          if( p_progress )
          {
-            date_time now( date_time::local( ) );
+            date_time now( date_time::standard( ) );
 
             uint64_t elapsed = seconds_between( p_dtm ? *p_dtm : dtm, now );
 
@@ -3444,7 +3430,7 @@ string list_file_tags(
       {
          ++pcount;
 
-         date_time now( date_time::local( ) );
+         date_time now( date_time::standard( ) );
 
          uint64_t elapsed = seconds_between( dtm, now );
 
@@ -3601,7 +3587,8 @@ void crypt_file( const string& repository,
 
    if( p_dtm && p_progress )
    {
-      date_time now( date_time::local( ) );
+      date_time now( date_time::standard( ) );
+
       uint64_t elapsed = seconds_between( *p_dtm, now );
 
       if( elapsed >= num_seconds )
@@ -4387,7 +4374,8 @@ void delete_file( const string& hash, bool even_if_tagged, bool ignore_not_found
 void delete_file_tree( const string& hash, progress* p_progress )
 {
    size_t total = 0;
-   date_time dtm( date_time::local( ) );
+
+   date_time dtm( date_time::standard( ) );
 
    string all_hashes( file_type_info( hash,
     e_file_expansion_recursive_hashes, 0, 0, false, 0, true, false, p_progress, &dtm, &total, true ) );
@@ -4395,6 +4383,7 @@ void delete_file_tree( const string& hash, progress* p_progress )
    if( !all_hashes.empty( ) )
    {
       vector< string > hashes;
+
       split( all_hashes, hashes, '\n' );
 
       for( size_t i = 0; i < hashes.size( ); i++ )
@@ -4406,7 +4395,7 @@ void delete_files_for_tags( const string& pat, progress* p_progress, const char*
 {
    guard g( g_mutex );
 
-   date_time dtm( date_time::local( ) );
+   date_time dtm( date_time::standard( ) );
 
    string tags( list_file_tags( pat, p_excludes, 0, 0, 0, 0, true, p_progress, &dtm ) );
 
@@ -4432,7 +4421,7 @@ void delete_files_for_tags( const string& pat, progress* p_progress, const char*
 
          if( p_progress )
          {
-            date_time now( date_time::local( ) );
+            date_time now( date_time::standard( ) );
 
             uint64_t elapsed = seconds_between( dtm, now );
 
@@ -4730,7 +4719,7 @@ void remove_file_archive( const string& name, bool destroy_files, bool remove_di
 {
    guard g( g_mutex );
 
-   date_time dtm( date_time::local( ) );
+   date_time dtm( date_time::standard( ) );
 
    system_ods_bulk_write ods_bulk_write( p_progress );
 
@@ -4781,7 +4770,7 @@ void remove_file_archive( const string& name, bool destroy_files, bool remove_di
 
                if( p_progress )
                {
-                  date_time now( date_time::local( ) );
+                  date_time now( date_time::standard( ) );
 
                   uint64_t elapsed = seconds_between( dtm, now );
 
@@ -4815,7 +4804,7 @@ void repair_file_archive( const string& name, progress* p_progress )
    g_archive_file_info.erase( name );
    g_archive_file_info.insert( make_pair( name, archive_file_info( ) ) );
 
-   date_time dtm( date_time::local( ) );
+   date_time dtm( date_time::standard( ) );
 
    system_ods_bulk_write ods_bulk_write;
 
@@ -4879,7 +4868,7 @@ void repair_file_archive( const string& name, progress* p_progress )
 
             if( p_progress )
             {
-               date_time now( date_time::local( ) );
+               date_time now( date_time::standard( ) );
 
                uint64_t elapsed = seconds_between( dtm, now );
 
@@ -5912,7 +5901,7 @@ size_t count_total_repository_entries(
    {
       system_ods_bulk_read ods_bulk_read;
 
-      date_time now( date_time::local( ) );
+      date_time now( date_time::standard( ) );
 
       vector< string > repo_entries;
 
@@ -5998,7 +5987,7 @@ size_t remove_all_repository_entries( const string& repository,
    {
       system_ods_bulk_read ods_bulk_read;
 
-      date_time now( date_time::local( ) );
+      date_time now( date_time::standard( ) );
 
       vector< string > repo_entries;
 
@@ -6039,7 +6028,7 @@ size_t remove_all_repository_entries( const string& repository,
 
       for( size_t i = 0; i < files_to_remove.size( ); i++ )
       {
-         date_time now( date_time::local( ) );
+         date_time now( date_time::standard( ) );
 
          ods_fs.remove_file( files_to_remove[ i ] );
 
@@ -6117,7 +6106,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
    {
       system_ods_bulk_read ods_bulk_read;
 
-      date_time now( date_time::local( ) );
+      date_time now( date_time::standard( ) );
 
       vector< string > repo_entries;
 
@@ -6203,7 +6192,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
 
       for( size_t i = 0; i < total_entries; i++ )
       {
-         date_time now( date_time::local( ) );
+         date_time now( date_time::standard( ) );
 
          ods_fs.remove_file( files_to_remove[ i ] );
 

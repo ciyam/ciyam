@@ -679,11 +679,12 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         date_time dtm( date_time::local( ) );
+         date_time dtm( date_time::standard( ) );
 
          for( int i = 0; i < num; i++ )
          {
             temp_node.set_new( );
+
             if( is_multi )
             {
                ostringstream str;
@@ -697,7 +698,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
             node.add_child( temp_node );
 
-            date_time now( date_time::local( ) );
+            date_time now( date_time::standard( ) );
 
             uint64_t elapsed = seconds_between( dtm, now );
 
@@ -748,7 +749,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       size_t start = 0;
       long num_deleted = 0;
 
-      date_time dtm( date_time::local( ) );
+      date_time dtm( date_time::standard( ) );
 
       int val;
       string str;
@@ -782,7 +783,8 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
                   o.destroy( temp_node.get_id( ) );
 
-                  date_time now( date_time::local( ) );
+                  date_time now( date_time::standard( ) );
+
                   uint64_t elapsed = seconds_between( dtm, now );
 
                   if( p_progress && elapsed >= 1 )
@@ -828,7 +830,8 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             o.destroy( temp_node.get_id( ) );
             o << node;
 
-            date_time now( date_time::local( ) );
+            date_time now( date_time::standard( ) );
+
             uint64_t elapsed = seconds_between( dtm, now );
 
             break;

@@ -2639,7 +2639,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( total_blobs || total_items || total_encrypted || total_repo_entries )
          {
-            date_time dtm( date_time::local( ) );
+            date_time dtm( date_time::standard( ) );
 
             size_t total = 0;
             size_t item_pos = 0;
@@ -2724,7 +2724,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                output_total_blob_size = true;
             }
 
-            date_time dtm( date_time::local( ) );
+            date_time dtm( date_time::standard( ) );
 
             for( size_t i = 0; i < tags_or_hashes.size( ); i++ )
             {
@@ -2801,11 +2801,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( extract )
          {
             int depth_val = c_cmd_ciyam_session_file_tags_depth_default;
+
             if( !depth.empty( ) )
                depth_val = atoi( depth.c_str( ) );
 
             size_t total = 0;
-            date_time dtm( date_time::local( ) );
+
+            date_time dtm( date_time::standard( ) );
 
             response = extract_tags_from_lists( tag_or_hash, prefix, depth_val, 0, &handler, &dtm, &total );
          }
@@ -2959,7 +2961,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          try
          {
             size_t total = 0;
-            date_time dtm( date_time::local( ) );
+
+            date_time dtm( date_time::standard( ) );
 
             crypt_target target = e_crypt_target_all;
             crypt_operation operation = e_crypt_operation_reverse;
@@ -2988,6 +2991,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             clear_key( password );
             possibly_expected_error = true;
+
             throw;
          }
 
@@ -3153,7 +3157,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool remove_all = has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entries_remove_all );
          bool remove_obsolete = has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entries_remove_obsolete );
 
-         date_time dtm( date_time::local( ) );
+         date_time dtm( date_time::standard( ) );
 
          if( total )
             response = to_string( count_total_repository_entries( repository, &dtm, &handler ) );

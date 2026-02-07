@@ -500,7 +500,7 @@ int main( int argc, char* argv[ ] )
       encoding_type encoding;
       string top_level_directory;
 
-      date_time dtm( date_time::local( ) );
+      date_time dtm( date_time::standard( ) );
 
       // NOTE: If any filespecs were provided then automatically prune empty directories.
       if( !filename_filters.empty( ) )
@@ -540,7 +540,7 @@ int main( int argc, char* argv[ ] )
 
                      if( !is_quieter )
                      {
-                        date_time now( date_time::local( ) );
+                        date_time now( date_time::standard( ) );
 
                         uint64_t elapsed = seconds_between( dtm, now );
 
@@ -585,7 +585,7 @@ int main( int argc, char* argv[ ] )
 
                   if( !is_quieter )
                   {
-                     date_time now( date_time::local( ) );
+                     date_time now( date_time::standard( ) );
 
                      uint64_t elapsed = seconds_between( dtm, now );
 
@@ -666,7 +666,7 @@ int main( int argc, char* argv[ ] )
 
             if( !is_quieter )
             {
-               date_time now( date_time::local( ) );
+               date_time now( date_time::standard( ) );
 
                uint64_t elapsed = seconds_between( dtm, now );
 
@@ -867,7 +867,7 @@ int main( int argc, char* argv[ ] )
                   {
                      ch = get_char( prompt.c_str( ) );
 
-                     dtm = date_time::local( );
+                     dtm = date_time::standard( );
 
                      if( ch == 'A' )
                         replace_all = true;

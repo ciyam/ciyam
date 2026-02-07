@@ -96,7 +96,7 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
 
    unsigned char data[ c_ods_page_size ];
 
-   date_time dtm( date_time::local( ) );
+   date_time dtm( date_time::standard( ) );
 
    while( size )
    {
@@ -115,7 +115,8 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
 
       if( sf.p_progress )
       {
-         date_time now( date_time::local( ) );
+         date_time now( date_time::standard( ) );
+
          uint64_t elapsed = seconds_between( dtm, now );
 
          if( elapsed >= 1 )
@@ -150,11 +151,12 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
 
    unsigned char data[ c_ods_page_size ];
 
-   date_time dtm( date_time::local( ) );
+   date_time dtm( date_time::standard( ) );
 
    while( size )
    {
       size_t bytes = c_ods_page_size;
+
       if( size < bytes )
          bytes = size;
 
@@ -174,7 +176,8 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
 
       if( sf.p_progress )
       {
-         date_time now( date_time::local( ) );
+         date_time now( date_time::standard( ) );
+
          uint64_t elapsed = seconds_between( dtm, now );
 
          if( elapsed >= 1 )

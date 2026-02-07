@@ -418,7 +418,7 @@ void process_directory( const string& directory, const string& filespec_path,
 
          bool initial_progress = true;
 
-         date_time dtm( date_time::local( ) );
+         date_time dtm( date_time::standard( ) );
 
          int64_t size_left = size;
 
@@ -437,7 +437,7 @@ void process_directory( const string& directory, const string& filespec_path,
 
             if( !is_quieter )
             {
-               date_time now( date_time::local( ) );
+               date_time now( date_time::standard( ) );
 
                uint64_t elapsed = seconds_between( dtm, now );
 
@@ -503,7 +503,7 @@ void process_directory( const string& directory, const string& filespec_path,
 
             if( !is_quieter )
             {
-               date_time now( date_time::local( ) );
+               date_time now( date_time::standard( ) );
 
                uint64_t elapsed = seconds_between( dtm, now );
 
@@ -1014,7 +1014,7 @@ int main( int argc, char* argv[ ] )
             string next;
             string current_sub_path;
 
-            date_time dtm( date_time::local( ) );
+            date_time dtm( date_time::standard( ) );
 
             while( true )
             {
@@ -1061,7 +1061,7 @@ int main( int argc, char* argv[ ] )
 #endif
                         if( !is_quieter )
                         {
-                           date_time now( date_time::local( ) );
+                           date_time now( date_time::standard( ) );
 
                            uint64_t elapsed = seconds_between( dtm, now );
 
@@ -1143,7 +1143,7 @@ int main( int argc, char* argv[ ] )
 
                   if( !is_quieter )
                   {
-                     date_time now( date_time::local( ) );
+                     date_time now( date_time::standard( ) );
 
                      uint64_t elapsed = seconds_between( dtm, now );
 

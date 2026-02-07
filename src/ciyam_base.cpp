@@ -2098,7 +2098,7 @@ struct reconstruct_trace_progress : progress
    reconstruct_trace_progress( const string& name, bool also_to_cout = false )
     :
     name( name ),
-    dtm( date_time::local( ) ),
+    dtm( date_time::standard( ) ),
     also_to_cout( also_to_cout ),
     num_chars_to_cout( 0 )
    {
@@ -2140,7 +2140,8 @@ struct reconstruct_trace_progress : progress
 
    void output_progress( const string& message, unsigned long num, unsigned long total )
    {
-      date_time now( date_time::local( ) );
+      date_time now( date_time::standard( ) );
+
       uint64_t elapsed = seconds_between( dtm, now );
 
       string extra;
@@ -6251,7 +6252,7 @@ void destroy_peerchain( const string& identity, progress* p_progress )
 
       if( is_backup_type )
       {
-         date_time dtm( date_time::local( ) );
+         date_time dtm( date_time::standard( ) );
 
          remove_all_repository_entries( identity, &dtm, p_progress );
       }
@@ -10274,7 +10275,7 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
       if( ods::instance( )->get_transaction_level( ) )
          throw runtime_error( "cannot perform a backup whilst a transaction is active" );
 
-      date_time dtm( date_time::local( ) );
+      date_time dtm( date_time::standard( ) );
 
       ods* p_ods( ods::instance( ) );
 
@@ -10321,7 +10322,7 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
 
                string table_name( "T_" + *mci + "_" + class_ids_and_names[ class_list[ i ] ] );
 
-               date_time now( date_time::local( ) );
+               date_time now( date_time::standard( ) );
 
                uint64_t elapsed = seconds_between( dtm, now );
 

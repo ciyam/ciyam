@@ -3113,7 +3113,7 @@ void ods::rewind_transactions(
       }
       else if( !entry_offsets.empty( ) )
       {
-         date_time dtm( date_time::local( ) );
+         date_time dtm( date_time::standard( ) );
 
          set< int64_t >::iterator si( entry_offsets.end( ) );
 
@@ -3195,7 +3195,7 @@ void ods::rewind_transactions(
 
                            if( p_progress )
                            {
-                              date_time now( date_time::local( ) );
+                              date_time now( date_time::standard( ) );
 
                               uint64_t elapsed = seconds_between( dtm, now );
 
@@ -3281,7 +3281,8 @@ void ods::rewind_transactions(
 
                if( p_progress )
                {
-                  date_time now( date_time::local( ) );
+                  date_time now( date_time::standard( ) );
+
                   uint64_t elapsed = seconds_between( dtm, now );
 
                   if( elapsed >= p_progress->num_seconds )
@@ -3676,7 +3677,7 @@ void ods::move_free_data_to_end( progress* p_progress )
 
    ods_index_entry index_entry;
 
-   date_time dtm( date_time::local( ) );
+   date_time dtm( date_time::standard( ) );
 
    int64_t total_entries = p_impl->rp_header_info->total_entries;
    int64_t total_size_of_data = p_impl->rp_header_info->total_size_of_data;
@@ -3690,7 +3691,7 @@ void ods::move_free_data_to_end( progress* p_progress )
    {
       if( p_progress )
       {
-         date_time now( date_time::local( ) );
+         date_time now( date_time::standard( ) );
 
          uint64_t elapsed = seconds_between( dtm, now );
 
@@ -3789,7 +3790,7 @@ void ods::move_free_data_to_end( progress* p_progress )
 
                if( p_progress )
                {
-                  date_time now( date_time::local( ) );
+                  date_time now( date_time::standard( ) );
 
                   uint64_t elapsed = seconds_between( dtm, now );
 
@@ -3857,7 +3858,8 @@ void ods::move_free_data_to_end( progress* p_progress )
 
             if( p_progress )
             {
-               date_time now( date_time::local( ) );
+               date_time now( date_time::standard( ) );
+
                uint64_t elapsed = seconds_between( dtm, now );
 
                if( elapsed >= p_progress->num_seconds )
@@ -5296,7 +5298,7 @@ void ods::transaction_commit( )
       int64_t last_delete_size = 0;
       int64_t prior_deleted_bytes = 0;
 
-      date_time dtm( date_time::local( ) );
+      date_time dtm( date_time::standard( ) );
 
       if( p_impl->using_tranlog )
          append_offset = log_append_offset( );
@@ -5319,7 +5321,8 @@ void ods::transaction_commit( )
 
          if( p_progress )
          {
-            date_time now( date_time::local( ) );
+            date_time now( date_time::standard( ) );
+
             uint64_t elapsed = seconds_between( dtm, now );
 
             if( elapsed >= p_progress->num_seconds )
@@ -5415,7 +5418,8 @@ void ods::transaction_commit( )
                         // whilst writing data for objects that are large.
                         if( p_progress )
                         {
-                           date_time now( date_time::local( ) );
+                           date_time now( date_time::standard( ) );
+
                            uint64_t elapsed = seconds_between( dtm, now );
 
                            if( elapsed >= p_progress->num_seconds )
@@ -5879,7 +5883,7 @@ int64_t ods::append_log_entry_item( int64_t num,
  const ods_index_entry& index_entry, unsigned char flags,
  bool is_in_tx, int64_t old_tx_id, int64_t old_data_pos, progress* p_progress )
 {
-   date_time dtm( date_time::local( ) );
+   date_time dtm( date_time::standard( ) );
 
    log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
 
@@ -5930,7 +5934,8 @@ int64_t ods::append_log_entry_item( int64_t num,
 
          if( p_progress )
          {
-            date_time now( date_time::local( ) );
+            date_time now( date_time::standard( ) );
+
             uint64_t elapsed = seconds_between( dtm, now );
 
             if( elapsed >= p_progress->num_seconds )
@@ -5996,7 +6001,7 @@ void ods::rollback_dead_transactions( progress* p_progress )
    if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot rollback dead transactions when bulk locked for dumping or reading" );
 
-   date_time dtm( date_time::local( ) );
+   date_time dtm( date_time::standard( ) );
 
    temp_set_value< bool > temp_is_restoring( p_impl->is_restoring, true );
 
@@ -6013,7 +6018,8 @@ void ods::rollback_dead_transactions( progress* p_progress )
    {
       if( p_progress )
       {
-         date_time now( date_time::local( ) );
+         date_time now( date_time::standard( ) );
+
          uint64_t elapsed = seconds_between( dtm, now );
 
          if( elapsed >= p_progress->num_seconds )
@@ -6083,7 +6089,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
    if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot restore from transaction log when bulk locked for dumping or reading" );
 
-   date_time dtm( date_time::local( ) );
+   date_time dtm( date_time::standard( ) );
 
    temp_set_value< bool > temp_is_restoring( p_impl->is_restoring, true );
 
@@ -6228,7 +6234,8 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
             if( entry_num && p_progress )
             {
-               date_time now( date_time::local( ) );
+               date_time now( date_time::standard( ) );
+
                uint64_t elapsed = seconds_between( dtm, now );
 
                if( elapsed >= p_progress->num_seconds )
@@ -6460,7 +6467,8 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
                               if( p_progress )
                               {
-                                 date_time now( date_time::local( ) );
+                                 date_time now( date_time::standard( ) );
+
                                  uint64_t elapsed = seconds_between( dtm, now );
 
                                  if( elapsed >= p_progress->num_seconds )

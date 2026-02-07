@@ -581,7 +581,8 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                          + "' exceeds maximum file size (" + format_bytes( max_size_using_chunks ) + ").";
                   }
 
-                  dtm = date_time::local( );
+                  dtm = date_time::standard( );
+
                   had_chunk_progress = false;
 
                   if( put_file_error.empty( ) && !has_option_no_progress( ) )
@@ -648,7 +649,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                   if( !has_option_no_progress( ) )
                   {
-                     date_time now( date_time::local( ) );
+                     date_time now( date_time::standard( ) );
 
                      uint64_t elapsed = seconds_between( dtm, now );
 
@@ -858,7 +859,8 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                            append_prefix.erase( );
                            append_last_name.erase( );
 
-                           dtm = date_time::local( );
+                           dtm = date_time::standard( );
+
                            had_chunk_progress = false;
 
                            if( !has_option_no_progress( ) )
@@ -1107,7 +1109,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                      if( !has_option_no_progress( ) )
                      {
-                        date_time now( date_time::local( ) );
+                        date_time now( date_time::standard( ) );
 
                         uint64_t elapsed = seconds_between( dtm, now );
 
@@ -1575,7 +1577,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         had_single_char_message = true;
                      }
 
-                     date_time now( date_time::local( ) );
+                     date_time now( date_time::standard( ) );
 
                      uint64_t elapsed = seconds_between( dtm, now );
 
