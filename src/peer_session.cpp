@@ -123,12 +123,6 @@ const int c_last_decimal_digit = 10;
 
 const int c_max_num_for_support = 11;
 
-const int c_peer_type_hub = -2;
-const int c_peer_type_user = -1;
-const int c_peer_type_combined = 0;
-const int c_peer_type_backup_only = 2;
-const int c_peer_type_shared_only = 3;
-
 const size_t c_min_msg_length = 85;
 
 const size_t c_max_pubkey_size = 256;
@@ -9320,6 +9314,7 @@ void init_peer_sessions( int start_listeners )
          create_peer_listener( test_peer_port, "" );
 
       multimap< int, string > peerchain_listeners;
+
       get_peerchain_listeners( peerchain_listeners );
 
       map< int, string > port_blockchains;
