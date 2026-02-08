@@ -5585,7 +5585,7 @@
     <procedures/>
      <procedure/>
       <id>145410
-      <name>Connect
+      <name>Allow
       <specifications/>
       </specifications>
       <args/>
@@ -5593,15 +5593,7 @@
      </procedure>
      <procedure/>
       <id>145420
-      <name>Disconnect
-      <specifications/>
-      </specifications>
-      <args/>
-      </args>
-     </procedure>
-     <procedure/>
-      <id>145440
-      <name>Finish
+      <name>Connect
       <specifications/>
       </specifications>
       <args/>
@@ -5609,7 +5601,15 @@
      </procedure>
      <procedure/>
       <id>145430
-      <name>Start
+      <name>Disallow
+      <specifications/>
+      </specifications>
+      <args/>
+      </args>
+     </procedure>
+     <procedure/>
+      <id>145440
+      <name>Disconnect
       <specifications/>
       </specifications>
       <args/>

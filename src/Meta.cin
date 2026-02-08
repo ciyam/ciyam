@@ -936,10 +936,10 @@ modifier_add -id=145304 Global_Peerchain_Entry Is_Connected @class:extralight1;l
 modifier_add -id=145305 Global_Peerchain_Entry Is_Connecting @class:extralight;list,Status:extralight;view
 modifier_add -id=145306 Global_Peerchain_Entry Is_Disconnecting @class:extralight;list,Status:extralight;view
 modifier_add -id=145307 Global_Peerchain_Entry Not_Is_Halted Host_Name:protect,Host_Port:protect,Local_Port:protect,Num_Helpers:protect,Extra_Value:protect,Shared_Secret:protect
-procedure_add -id=145410 Global_Peerchain_Entry Connect
-procedure_add -id=145420 Global_Peerchain_Entry Disconnect
-procedure_add -id=145430 Global_Peerchain_Entry Start
-procedure_add -id=145440 Global_Peerchain_Entry Finish
+procedure_add -id=145410 Global_Peerchain_Entry Allow
+procedure_add -id=145420 Global_Peerchain_Entry Connect
+procedure_add -id=145430 Global_Peerchain_Entry Disallow
+procedure_add -id=145440 Global_Peerchain_Entry Disconnect
 class_add -id=150100 Global_Repository_Entry Global_Repository_Entries -x=global:repo!
 field_add -id=150101 Global_Repository_Entry File_Hash str100 opt -transient
 field_add -id=150102 Global_Repository_Entry Local_Hash str100 mand
