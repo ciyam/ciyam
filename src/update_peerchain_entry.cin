@@ -22,21 +22,25 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $6
 NUM_ARGS=@$NUM_ARGS+1
 @endif
+@ifdef $7
+NUM_ARGS=@$NUM_ARGS+1
+@endif
 ;
-@ifneq "$NUM_ARGS" "6"
-#NOTE: This script requires an identity, auto-start, description, host name, port number and number of helpers.
+@ifneq "$NUM_ARGS" "7"
+#NOTE: This script requires an identity, auto-start, peer type, description, host name, port number and number of helpers.
 @else
 ERROR=
 ;
 IDENTITY=$1
 AUTO_START=$2
-DESCRIPTION=$3
-HOST_NAME=$4
-HOST_PORT=$5
-NUM_HELPERS=$6
-SHARED_SECRET=$7
+PEER_TYPE=$3
+DESCRIPTION=$4
+HOST_NAME=$5
+HOST_PORT=$6
+NUM_HELPERS=$7
+SHARED_SECRET=$8
 ;
-.system_peerchain_update -num=$NUM_HELPERS -auto=$AUTO_START -secret=$SHARED_SECRET -host_info=$HOST_NAME-$HOST_PORT $IDENTITY "$DESCRIPTION"
+.system_peerchain_update -num=$NUM_HELPERS -auto=$AUTO_START -type=$PEER_TYPE -secret=$SHARED_SECRET -host_info=$HOST_NAME-$HOST_PORT $IDENTITY "$DESCRIPTION"
 ;
 @ifndef $ERROR
 #Updated global peerchain entry for identity '$IDENTITY'.

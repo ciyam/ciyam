@@ -238,7 +238,7 @@
  <script/>
   <name>update_peerchain_entry
   <filename>*script*
-  <arguments>update_peerchain_entry.cin @identity @auto_start @description @host_name @host_port @num_helpers @shared_secret
+  <arguments>update_peerchain_entry.cin @identity @auto_start @peer_type @description @host_name @host_port @num_helpers @shared_secret
  </script>
  <script/>
   <name>link_channel_datachain

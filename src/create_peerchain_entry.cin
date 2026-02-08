@@ -72,10 +72,7 @@ IS_ONLY=1
 @endif
 @endif
 ;
-REVERSED=
-@ifndef $IS_ONLY
 REVERSED=*!reverse?$IDENTITY
-@endif
 ;
 .system_peerchain_create -num=$NUM_HELPERS -auto=$AUTO_START -type=$PEER_TYPE -extra=$EXTRA_VALUE -secret=$SHARED_SECRET $IDENTITY $HOST_NAME-$HOST_PORT "$DESCRIPTION"
 ;
@@ -115,10 +112,11 @@ BACKUP_SIZE=100GB
 SHARED_SIZE=10GB
 @endif
 ;
-~mkdir $FILES_AREA_DIR/$IDENTITY
 @ifdef $SHARED_ONLY
-.file_archive -add $FILES_AREA_DIR/$IDENTITY $SHARED_SIZE $IDENTITY
+~mkdir $FILES_AREA_DIR/$REVERSED
+.file_archive -add $FILES_AREA_DIR/$REVERSED $SHARED_SIZE $REVERSED
 @else
+~mkdir $FILES_AREA_DIR/$IDENTITY
 .file_archive -add $FILES_AREA_DIR/$IDENTITY $BACKUP_SIZE $IDENTITY
 @endif
 ;
