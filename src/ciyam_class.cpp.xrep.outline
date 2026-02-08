@@ -1106,7 +1106,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `@eq`(`'\\1`'`,`'for_function`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_function.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
  arg_id=$specification_\\0_id arg_procedure=$specification_\\0_procedure arg_procedure_arg=$specification_\\0_procedure_arg\
- arg_field=$specification_\\0_field arg_fisfk=$specification_\\0_fisfk\
+ arg_field=$specification_\\0_field arg_fisfk=$specification_\\0_fisfk arg_ofield=$specification_\\0_ofield\
  arg_tfield=$specification_\\0_tfield arg_func_name=$specification_\\0_func_name\
  arg_skip_restore=$specification_\\0_skip_restore`}\
 `,\
