@@ -8031,6 +8031,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string num_extra( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_update_num_extra ) );
          string auto_start( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_update_auto_start ) );
+         string peer_type( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_update_peer_type ) );
          string shared_secret( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_update_shared_secret ) );
          string host_and_port( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_update_host_and_port ) );
          string identity( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_update_identity ) );
@@ -8064,6 +8065,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             auto_val = from_string< bool >( auto_start );
          }
 
+         int type_val = -1;
+
+         if( !peer_type.empty( ) )
+            type_val = from_string< int >( peer_type );
+
          string* p_description = 0;
 
          if( !description.empty( ) )
@@ -8080,7 +8086,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             p_shared_secret = &shared_secret;
 
          update_peerchain( identity, p_host_and_port, p_description,
-          p_shared_secret, ( has_auto ? &auto_val : 0 ), ( has_num ? &num : 0 ) );
+          p_shared_secret, ( has_auto ? &auto_val : 0 ), ( has_num ? &num : 0 ), type_val );
       }
       else if( command == c_cmd_ciyam_session_system_peerchain_destroy )
       {
