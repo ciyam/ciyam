@@ -283,7 +283,7 @@ void review_peerchain( std::ostream& os, const std::string& identity, const std:
 
 void update_peerchain( const std::string& identity,
  const std::string* p_host_and_port = 0, const std::string* p_description = 0,
- const std::string* p_shared_secret = 0, bool* p_auto_start = 0, size_t* p_num_helpers = 0 );
+ const std::string* p_shared_secret = 0, bool* p_auto_start = 0, size_t* p_num_helpers = 0, int new_peer_type = -1 );
 
 void destroy_peerchain( const std::string& identity, progress* p_progress = 0 );
 

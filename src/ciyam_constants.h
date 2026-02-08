@@ -12,6 +12,14 @@ const int c_tx_id_standard = 5;
 
 const int c_num_sys_field_names = 5;
 
+const int c_peer_type_any = -3;
+const int c_peer_type_hub = -2;
+const int c_peer_type_user = -1;
+const int c_peer_type_combined = 0;
+const int c_peer_type_local_only = 1;
+const int c_peer_type_backup_only = 2;
+const int c_peer_type_shared_only = 3;
+
 const size_t c_max_extras = 9;
 const size_t c_chunk_digits = 6;
 

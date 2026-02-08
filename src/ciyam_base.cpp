@@ -124,13 +124,6 @@ const uint64_t c_unset_trace_flags = TRACE_WAITING;
 // call returns buffer too small then the file can be stored uncompressed).
 const int c_max_file_buffer_expansion = 2;
 
-const int c_peerchain_type_hub = -2;
-const int c_peerchain_type_user = -1;
-const int c_peerchain_type_combined = 0;
-const int c_peerchain_type_local_only = 1;
-const int c_peerchain_type_backup_only = 2;
-const int c_peerchain_type_shared_only = 3;
-
 const char c_module_prefix_separator = '_';
 const char c_module_order_prefix_separator = '.';
 
@@ -5910,27 +5903,27 @@ void create_peerchain(
    if( peer_port.empty( ) )
       throw runtime_error( "unexpect missing 'peer_port' system variable" );
 
-   if( ( peer_type == c_peerchain_type_hub )
-    || ( peer_type == c_peerchain_type_local_only ) )
+   if( ( peer_type == c_peer_type_hub )
+    || ( peer_type == c_peer_type_local_only ) )
    {
       port = 0;
       num_helpers = 0;
    }
 
    if( !port
-    && ( ( peer_type == c_peerchain_type_combined )
-    || ( peer_type == c_peerchain_type_backup_only )
-    || ( peer_type == c_peerchain_type_shared_only ) ) )
+    && ( ( peer_type == c_peer_type_combined )
+    || ( peer_type == c_peer_type_backup_only )
+    || ( peer_type == c_peer_type_shared_only ) ) )
       port = from_string< int >( peer_port );
 
    if( host_name.empty( )
-    || ( peer_type == c_peerchain_type_hub )
-    || ( peer_type == c_peerchain_type_local_only ) )
+    || ( peer_type == c_peer_type_hub )
+    || ( peer_type == c_peer_type_local_only ) )
       host_name = c_local_host;
 
    if( ( host_name == c_local_host )
-    && ( peer_type != c_peerchain_type_hub )
-    && ( peer_type != c_peerchain_type_local_only ) )
+    && ( peer_type != c_peer_type_hub )
+    && ( peer_type != c_peer_type_local_only ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Peerchain '" + identity + "' host name '" + host_name + "' is invalid." );
 
@@ -6006,7 +5999,7 @@ void review_peerchain( ostream& os, const string& identity, const string& attrib
 
 void update_peerchain( const string& identity,
  const string* p_host_and_port, const string* p_description,
- const string* p_shared_secret, bool* p_auto_start, size_t* p_num_helpers )
+ const string* p_shared_secret, bool* p_auto_start, size_t* p_num_helpers, int new_peer_type )
 {
    system_ods_fs_guard ods_fs_guard;
 
@@ -6045,8 +6038,8 @@ void update_peerchain( const string& identity,
    string new_host_port( old_host_port );
 
    if( p_host_and_port
-    && ( ( peer_type != c_peerchain_type_hub )
-    && ( peer_type != c_peerchain_type_local_only ) ) )
+    && ( ( peer_type != c_peer_type_hub )
+    && ( peer_type != c_peer_type_local_only ) ) )
    {
       int port = 0;
 
@@ -6057,8 +6050,8 @@ void update_peerchain( const string& identity,
 
    if( new_host_name.empty( )
     || ( ( new_host_name == c_local_host )
-    && ( peer_type != c_peerchain_type_hub )
-    && ( peer_type != c_peerchain_type_local_only ) ) )
+    && ( peer_type != c_peer_type_hub )
+    && ( peer_type != c_peer_type_local_only ) ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Peerchain '" + identity + "' host name '" + new_host_name + "' is invalid." );
 
@@ -6075,9 +6068,19 @@ void update_peerchain( const string& identity,
    string new_num_helpers( old_num_helpers );
 
    if( p_num_helpers
-    && ( ( peer_type != c_peerchain_type_hub )
-    && ( peer_type != c_peerchain_type_local_only ) ) )
+    && ( ( peer_type != c_peer_type_hub )
+    && ( peer_type != c_peer_type_local_only ) ) )
       new_num_helpers = to_string( *p_num_helpers );
+
+   bool has_changed_type = false;
+
+   if( new_peer_type >= 0 )
+   {
+      if( peer_type < 0 )
+         throw runtime_error( "invalid attempt to change peer type in update_peerchain" );
+
+      has_changed_type = true;
+   }
 
    // NOTE: Reset the stringstream.
    sio_data.str( "" );
@@ -6092,7 +6095,7 @@ void update_peerchain( const string& identity,
    writer.write_attribute( c_peerchain_attribute_host_port, new_host_port );
    writer.write_attribute( c_peerchain_attribute_local_port, old_local_port );
    writer.write_attribute( c_peerchain_attribute_num_helpers, new_num_helpers );
-   writer.write_attribute( c_peerchain_attribute_peer_type, old_peer_type );
+   writer.write_attribute( c_peerchain_attribute_peer_type, ( !has_changed_type ? old_peer_type : to_string( new_peer_type ) ) );
    writer.write_attribute( c_peerchain_attribute_shared_secret, new_shared_secret );
 
    writer.finish_sections( );
@@ -6157,12 +6160,12 @@ void destroy_peerchain( const string& identity, progress* p_progress )
 
    bool has_reversed = false;
 
-   if( ( type == c_peerchain_type_combined )
-    || ( type == c_peerchain_type_local_only ) )
+   if( ( type == c_peer_type_combined )
+    || ( type == c_peer_type_local_only ) )
       has_reversed = true;
 
-   if( ( type == c_peerchain_type_combined )
-    || ( type == c_peerchain_type_backup_only ) )
+   if( ( type == c_peer_type_combined )
+    || ( type == c_peer_type_backup_only ) )
    {
       is_backup_type = true;
 
@@ -6354,6 +6357,9 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
    {
       string identity( peerchains[ i ] );
 
+      string reversed( identity );
+      reverse( reversed.begin( ), reversed.end( ) );
+
       stringstream sio_data;
 
       gup_ofs->get_file( identity, &sio_data );
@@ -6373,10 +6379,12 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
       if( auto_start_only && ( host_name == c_dummy_host_name ) )
          continue;
 
+      int type = from_string< int >( peer_type );
+
       if( ( host_name != string( c_local_host ) )
        && ( !auto_start_only || ( auto_start == c_true_value ) ) )
       {
-         string peer_info( identity );
+         string peer_info( ( type != c_peer_type_shared_only ) ? identity : reversed );
 
          if( !extra_value.empty( ) )
             peer_info += '-' + extra_value;
@@ -6418,6 +6426,9 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
    {
       string identity( peerchains[ i ] );
 
+      string reversed( identity );
+      reverse( reversed.begin( ), reversed.end( ) );
+
       stringstream sio_data;
 
       gup_ofs->get_file( identity, &sio_data );
@@ -6443,10 +6454,10 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
       {
          string suffix;
 
-         if( ( type == c_peerchain_type_combined ) || ( type == c_peerchain_type_local_only ) )
+         if( ( type == c_peer_type_combined ) || ( type == c_peer_type_local_only ) )
             suffix = '!';
 
-         if( ( type == c_peerchain_type_local_only )
+         if( ( type == c_peer_type_local_only )
           && ( identity == get_system_variable( blockchain_backup_identity_name ) ) )
          {
             for( size_t i = 1; i <= c_max_extras; i++ )
@@ -6459,7 +6470,7 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
                peerchain_listeners.insert( make_pair( port, next_extra + suffix ) );
             }
          }
-         else if( ( type == c_peerchain_type_hub ) && ( identity == get_system_variable( blockchain_peer_hub_identity_name ) ) )
+         else if( ( type == c_peer_type_hub ) && ( identity == get_system_variable( blockchain_peer_hub_identity_name ) ) )
          {
             size_t num_listeners = peerchain_listeners.size( );
 
@@ -6478,6 +6489,8 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
             if( num_listeners == peerchain_listeners.size( ) )
                peerchain_listeners.insert( make_pair( port, identity + suffix ) );
          }
+         else if( type == c_peer_type_shared_only )
+            peerchain_listeners.insert( make_pair( port, reversed ) );
          else
             peerchain_listeners.insert( make_pair( port, identity + suffix ) );
       }
