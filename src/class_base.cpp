@@ -7279,16 +7279,18 @@ void get_mnemonics_or_hex_seed( string& s, const string& mnemonics_or_hex_seed )
    }
 }
 
-void use_peerchain( const string& identity, bool no_delay )
+void allow_peerchain( const string& identity, int peer_type, bool no_delay )
 {
-   guard g( g_mutex, "use_peerchain" );
+   guard g( g_mutex, "allow_peerchain" );
 
    string identities( identity );
 
    string reversed( identity );
+
    reverse( reversed.begin( ), reversed.end( ) );
 
-   identities += ',' + reversed;
+   if( peer_type == c_peer_type_combined )
+      identities += ',' + reversed;
 
    set_system_variable( get_special_var_name( e_special_var_queue_peers ), '!' + identities );
 
@@ -7296,21 +7298,23 @@ void use_peerchain( const string& identity, bool no_delay )
       msleep( c_peer_sleep_time );
 }
 
-void disuse_peerchain( const string& identity, bool no_delay )
+void disallow_peerchain( const string& identity, int peer_type, bool no_delay )
 {
-   guard g( g_mutex, "disuse_peerchain" );
+   guard g( g_mutex, "disallow_peerchain" );
 
    unsigned int port = 0;
 
    string identities( identity );
 
-   if( has_registered_listener_id( identity, &port ) )
-   {
-      string reversed( identity );
-      reverse( reversed.begin( ), reversed.end( ) );
+   string reversed( identity );
 
+   reverse( reversed.begin( ), reversed.end( ) );
+
+   if( peer_type == c_peer_type_combined )
       identities += ',' + reversed;
 
+   if( has_registered_listener_id( identity, &port ) )
+   {
       set_system_variable( '@' + to_string( port ), '~' + identities );
 
       set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, "" );
