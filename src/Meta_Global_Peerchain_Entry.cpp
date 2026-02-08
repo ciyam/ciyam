@@ -189,10 +189,10 @@ inline bool is_transient_field( const string& field )
     c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), compare );
 }
 
-const char* const c_procedure_id_Connect = "145410";
-const char* const c_procedure_id_Disconnect = "145420";
-const char* const c_procedure_id_Finish = "145440";
-const char* const c_procedure_id_Start = "145430";
+const char* const c_procedure_id_Allow = "145410";
+const char* const c_procedure_id_Connect = "145420";
+const char* const c_procedure_id_Disallow = "145430";
+const char* const c_procedure_id_Disconnect = "145440";
 
 const uint64_t c_modifier_Is_Backup_Only = UINT64_C( 0x100 );
 const uint64_t c_modifier_Is_Connected = UINT64_C( 0x200 );
@@ -640,6 +640,13 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
    }
+   else if( command == c_cmd_Meta_Global_Peerchain_Entry_Allow )
+   {
+      cmd_handler.p_Meta_Global_Peerchain_Entry->Allow( );
+
+      cmd_handler.retval.erase( );
+
+   }
    else if( command == c_cmd_Meta_Global_Peerchain_Entry_Connect )
    {
       cmd_handler.p_Meta_Global_Peerchain_Entry->Connect( );
@@ -647,23 +654,16 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
       cmd_handler.retval.erase( );
 
    }
+   else if( command == c_cmd_Meta_Global_Peerchain_Entry_Disallow )
+   {
+      cmd_handler.p_Meta_Global_Peerchain_Entry->Disallow( );
+
+      cmd_handler.retval.erase( );
+
+   }
    else if( command == c_cmd_Meta_Global_Peerchain_Entry_Disconnect )
    {
       cmd_handler.p_Meta_Global_Peerchain_Entry->Disconnect( );
-
-      cmd_handler.retval.erase( );
-
-   }
-   else if( command == c_cmd_Meta_Global_Peerchain_Entry_Finish )
-   {
-      cmd_handler.p_Meta_Global_Peerchain_Entry->Finish( );
-
-      cmd_handler.retval.erase( );
-
-   }
-   else if( command == c_cmd_Meta_Global_Peerchain_Entry_Start )
-   {
-      cmd_handler.p_Meta_Global_Peerchain_Entry->Start( );
 
       cmd_handler.retval.erase( );
 
@@ -728,13 +728,13 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
    int impl_Status( ) const { return lazy_fetch( p_obj ), v_Status; }
    void impl_Status( int Status ) { v_Status = Status; }
 
+   void impl_Allow( );
+
    void impl_Connect( );
 
+   void impl_Disallow( );
+
    void impl_Disconnect( );
-
-   void impl_Finish( );
-
-   void impl_Start( );
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
@@ -811,6 +811,18 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
    int v_Status;
 };
 
+void Meta_Global_Peerchain_Entry::impl::impl_Allow( )
+{
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
+   // [<start Allow_impl>]
+//nyi
+   allow_peerchain( get_obj( ).Chain_Id( ), get_obj( ).Peer_Type( ) );
+
+   // [<finish Allow_impl>]
+}
+
 void Meta_Global_Peerchain_Entry::impl::impl_Connect( )
 {
    uint64_t state = p_obj->get_state( );
@@ -822,6 +834,17 @@ void Meta_Global_Peerchain_Entry::impl::impl_Connect( )
    // [<finish Connect_impl>]
 }
 
+void Meta_Global_Peerchain_Entry::impl::impl_Disallow( )
+{
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
+   // [<start Disallow_impl>]
+//nyi
+   disallow_peerchain( get_obj( ).Chain_Id( ), get_obj( ).Peer_Type( ) );
+   // [<finish Disallow_impl>]
+}
+
 void Meta_Global_Peerchain_Entry::impl::impl_Disconnect( )
 {
    uint64_t state = p_obj->get_state( );
@@ -831,28 +854,6 @@ void Meta_Global_Peerchain_Entry::impl::impl_Disconnect( )
 //nyi
    disconnect_peerchain( get_obj( ).Chain_Id( ) );
    // [<finish Disconnect_impl>]
-}
-
-void Meta_Global_Peerchain_Entry::impl::impl_Finish( )
-{
-   uint64_t state = p_obj->get_state( );
-   ( void )state;
-
-   // [<start Finish_impl>]
-//nyi
-   disuse_peerchain( get_obj( ).Chain_Id( ) );
-   // [<finish Finish_impl>]
-}
-
-void Meta_Global_Peerchain_Entry::impl::impl_Start( )
-{
-   uint64_t state = p_obj->get_state( );
-   ( void )state;
-
-   // [<start Start_impl>]
-//nyi
-   use_peerchain( get_obj( ).Chain_Id( ) );
-   // [<finish Start_impl>]
 }
 
 string Meta_Global_Peerchain_Entry::impl::get_field_value( int field ) const
@@ -1441,17 +1442,25 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
 //nyi
    get_obj( ).Actions( "" );
 
-   get_obj( ).Chain_Id( get_obj( ).get_key( ) );
+   string identity( get_obj( ).get_key( ) );
+
+   string reversed( identity );
+   reverse( reversed.begin( ), reversed.end( ) );
+
+   if( get_obj( ).Peer_Type( ) != c_enum_peerchain_peer_type_Shared_Only )
+      get_obj( ).Chain_Id( identity );
+   else
+      get_obj( ).Chain_Id( reversed );
 
    if( get_obj( ).Host_Name( ) == c_local_host )
    {
       if( has_registered_listener_id( get_obj( ).Chain_Id( ) ) )
       {
          get_obj( ).Status( c_enum_peerchain_status_Waiting );
-         get_obj( ).Actions( '<' + string( c_procedure_id_Finish ) );
+         get_obj( ).Actions( '<' + string( c_procedure_id_Disallow ) );
       }
       else
-         get_obj( ).Actions( '<' + string( c_procedure_id_Start ) );
+         get_obj( ).Actions( '<' + string( c_procedure_id_Allow ) );
 
       get_obj( ).Port_Numbers( to_string( get_obj( ).Local_Port( ) ) );
    }
@@ -1476,10 +1485,10 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
             {
                get_obj( ).Status( c_enum_peerchain_status_Waiting );
 
-               get_obj( ).Actions( '<' + string( c_procedure_id_Finish ) + ",<" + string( c_procedure_id_Connect ) );
+               get_obj( ).Actions( '<' + string( c_procedure_id_Disallow ) + ",<" + string( c_procedure_id_Connect ) );
             }
             else
-               get_obj( ).Actions( '<' + string( c_procedure_id_Start ) );
+               get_obj( ).Actions( '<' + string( c_procedure_id_Allow ) );
          }
       }
 
@@ -1784,24 +1793,24 @@ void Meta_Global_Peerchain_Entry::Status( int Status )
    p_impl->impl_Status( Status );
 }
 
+void Meta_Global_Peerchain_Entry::Allow( )
+{
+   p_impl->impl_Allow( );
+}
+
 void Meta_Global_Peerchain_Entry::Connect( )
 {
    p_impl->impl_Connect( );
 }
 
+void Meta_Global_Peerchain_Entry::Disallow( )
+{
+   p_impl->impl_Disallow( );
+}
+
 void Meta_Global_Peerchain_Entry::Disconnect( )
 {
    p_impl->impl_Disconnect( );
-}
-
-void Meta_Global_Peerchain_Entry::Finish( )
-{
-   p_impl->impl_Finish( );
-}
-
-void Meta_Global_Peerchain_Entry::Start( )
-{
-   p_impl->impl_Start( );
 }
 
 string Meta_Global_Peerchain_Entry::get_field_value( int field ) const
@@ -2545,13 +2554,13 @@ string Meta_Global_Peerchain_Entry::get_execute_procedure_info( const string& pr
 
    if( procedure_id.empty( ) )
       throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
-   else if( procedure_id == "145410" ) // i.e. Connect
+   else if( procedure_id == "145410" ) // i.e. Allow
       retval = "";
-   else if( procedure_id == "145420" ) // i.e. Disconnect
+   else if( procedure_id == "145420" ) // i.e. Connect
       retval = "";
-   else if( procedure_id == "145440" ) // i.e. Finish
+   else if( procedure_id == "145430" ) // i.e. Disallow
       retval = "";
-   else if( procedure_id == "145430" ) // i.e. Start
+   else if( procedure_id == "145440" ) // i.e. Disconnect
       retval = "";
 
    return retval;
@@ -2978,10 +2987,10 @@ procedure_info_container& Meta_Global_Peerchain_Entry::static_get_procedure_info
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "145410", procedure_info( "Connect" ) ) );
-      procedures.insert( make_pair( "145420", procedure_info( "Disconnect" ) ) );
-      procedures.insert( make_pair( "145440", procedure_info( "Finish" ) ) );
-      procedures.insert( make_pair( "145430", procedure_info( "Start" ) ) );
+      procedures.insert( make_pair( "145410", procedure_info( "Allow" ) ) );
+      procedures.insert( make_pair( "145420", procedure_info( "Connect" ) ) );
+      procedures.insert( make_pair( "145430", procedure_info( "Disallow" ) ) );
+      procedures.insert( make_pair( "145440", procedure_info( "Disconnect" ) ) );
    }
 
    return procedures;

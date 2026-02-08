@@ -78,13 +78,13 @@ class Meta_Global_Peerchain_Entry : public class_base
    int Status( ) const;
    void Status( int Status );
 
+   virtual void Allow( );
+
    virtual void Connect( );
 
+   virtual void Disallow( );
+
    virtual void Disconnect( );
-
-   virtual void Finish( );
-
-   virtual void Start( );
 
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );
