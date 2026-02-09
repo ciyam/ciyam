@@ -1,0 +1,18 @@
+#!/bin/bash
+# Copyright (c) 2026 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+# NOTE: Tools to obtain own external IP address.
+#
+#ip_addr=$(curl -m 10 -s https://icanhazip.com)
+#ip_addr=$(curl -m 10 -s https://ipecho.net/plain)
+#ip_addr=$(curl -m 10 -s https://api.ipify.org?format=text)
+
+ip_addr=$(curl -m 10 -s https://ipv4.icanhazip.com)
+
+# NOTE: If changing this script name then the output
+# name should be changed for consistency and need to
+# also change the "check_ext_ip_addr" constant.
+echo -n "$ip_addr" > ~check_ext_ip_addr
