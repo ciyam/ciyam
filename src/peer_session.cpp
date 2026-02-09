@@ -3354,6 +3354,15 @@ void process_public_key_file( const string& blockchain,
 
                   if( has_system_variable( secret_hash_name + '_' + identity ) )
                      lock_blockchain( identity );
+                  else if( chain_type == e_peerchain_type_shared )
+                  {
+                     string reversed( identity );
+
+                     reverse( reversed.begin( ), reversed.end( ) );
+
+                     if( has_system_variable( secret_hash_name + '_' + reversed ) )
+                        lock_blockchain( identity );
+                  }
                }
 
             }
@@ -8802,9 +8811,11 @@ void peer_session_starter::on_start( )
 
                string::size_type pos = next_external.find_first_of( "-+=" );
 
-               // NOTE: Always ignore any locked or currently unknown blockchains.
-               if( has_tag( c_bc_prefix + next_external.substr( 0, pos ) + c_locked_suffix )
-                || !has_tag( c_bc_prefix + next_external.substr( 0, pos ) + c_zenith_suffix ) )
+               string identity( next_external.substr( 0, pos ) );
+
+               // NOTE: Always ignore any locked or unknown blockchains.
+               if( has_tag( c_bc_prefix + identity + c_locked_suffix )
+                || !has_tag( c_bc_prefix + identity + c_zenith_suffix ) )
                   continue;
 
                start_peer_session( next_external );
@@ -8977,8 +8988,15 @@ void peer_session_starter::on_start( )
 
                string::size_type pos = next_entry.find_first_of( "-+=" );
 
+               string identity( next_entry.substr( 0, pos ) );
+
+               string reversed( identity );
+
+               reverse( reversed.begin( ), reversed.end( ) );
+
                // NOTE: Always ignores any locked blockchains.
-               if( has_tag( c_bc_prefix + next_entry.substr( 0, pos ) + c_locked_suffix ) )
+               if( has_tag( c_bc_prefix + identity + c_locked_suffix )
+                || has_tag( c_bc_prefix + reversed + c_locked_suffix ) )
                   continue;
 
                string peer_info( next_entry );
@@ -8988,6 +9006,8 @@ void peer_session_starter::on_start( )
 
                if( !peer_info.empty( ) )
                {
+                  TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(peer_session_starter) peer_info = '" + peer_info + "'" );
+
                   if( !is_listener )
                      start_peer_session( peer_info );
                   else
@@ -9109,6 +9129,9 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    unique_ptr< temporary_system_variable > up_temp_secret_hash;
 
    string secret_hash( get_raw_system_variable( secret_hash_name + '_' + identity ) );
+
+   if( secret_hash.empty( ) )
+      secret_hash = get_raw_system_variable( secret_hash_name + '_' + reversed );
 
    if( !secret_hash.empty( ) )
       up_temp_secret_hash.reset( new temporary_system_variable( secret_hash_name, secret_hash ) );

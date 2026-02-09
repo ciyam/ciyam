@@ -38,13 +38,16 @@ PEERS=$OUTPUT
 CHECK_PEERS=@repstr:$IDENTITY/:$PEERS
 ;
 @ifeq "$PEERS" "$CHECK_PEERS"
-CHECK_PEERS=@repstr:$REVERSED/:$PEERS
-;
-@ifneq "$PEERS" "$CHECK_PEERS"
-PEER_IDENTITY=$REVERSED
-@else
 ERROR=Unknown or invalid peer identity $IDENTITY.
-@endif
+@else
+.peerchain_info $IDENTITY peer_type
+PEER_TYPE=$OUTPUT
+;
+.peerchain_info $IDENTITY extra_value
+EXTRA_VALUE=$OUTPUT
+;
+@ifeq "$PEER_TYPE" "3"
+PEER_IDENTITY=$REVERSED
 @endif
 @endif
 ;
@@ -65,7 +68,7 @@ OKAY=1
 ;
 .system_variable %%$PEER_IDENTITY
 @ifndef $OUTPUT
-.system_variable @queue_peers $PEER_IDENTITY
+.system_variable @queue_peers $IDENTITY
 .wait 2000
 @endif
 .system_variable #$PEER_IDENTITY
@@ -133,12 +136,6 @@ I=@$I+1
 .wait 2000
 @endif
 ;
-.peerchain_info $PEER_IDENTITY peer_type
-PEER_TYPE=$OUTPUT
-;
-.peerchain_info $PEER_IDENTITY extra_value
-EXTRA_VALUE=$OUTPUT
-;
 @ifneq "$PEER_TYPE" "3"
 .system_variable @blockchain_backup_%EXTRA_VALUE%_identity
 .file_hash bc.$OUTPUT.master
@@ -191,7 +188,7 @@ STORAGE=
 .file_tag -remove bc.$PEER_IDENTITY.locked
 &Reconnect To Peer Now? [CONNECT:Yes==1|No=]
 @ifdef $CONNECT
-.system_variable @queue_peers $PEER_IDENTITY
+.system_variable @queue_peers $IDENTITY
 @endif
 ;
 @else
@@ -221,6 +218,7 @@ ERROR=$IDENTITY does not appear to be a valid identity.
 @endif
 @endif
 ;
+@endif
 @endif
 ;
 @endif

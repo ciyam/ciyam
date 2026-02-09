@@ -6231,6 +6231,7 @@ void destroy_peerchain( const string& identity, progress* p_progress )
    bool is_backup_type = false;
 
    string reversed( identity );
+
    reverse( reversed.begin( ), reversed.end( ) );
 
    bool has_reversed = false;
@@ -6357,20 +6358,16 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
    gup_ofs->list_files( "", peerchains );
 
    string reversed( identity );
+
    reverse( reversed.begin( ), reversed.end( ) );
 
    for( size_t i = 0; i < peerchains.size( ); i++ )
    {
-      bool is_reversed = false;
-
-      if( reversed == peerchains[ i ] )
-         is_reversed = true;
-
-      if( is_reversed || ( identity == peerchains[ i ] ) )
+      if( identity == peerchains[ i ] )
       {
          stringstream sio_data;
 
-         gup_ofs->get_file( !is_reversed ? identity : reversed, &sio_data );
+         gup_ofs->get_file( identity, &sio_data );
 
          sio_reader reader( sio_data );
 
@@ -6387,19 +6384,26 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
          if( p_shared_secret )
             *p_shared_secret = shared_secret;
 
+         bool is_reversed = false;
+
+         int type = from_string< int >( peer_type );
+
+         if( type == c_peer_type_shared_only )
+            is_reversed = true;
+
          if( !p_is_listener || ( host_name == string( c_local_host ) ) )
          {
             if( p_is_listener )
                *p_is_listener = true;
 
-            retval = identity + '=' + local_port;
+            retval = ( !is_reversed ? identity : reversed ) + '=' + local_port;
          }
          else
          {
             if( p_is_listener )
                *p_is_listener = false;
 
-            retval = identity;
+            retval = ( !is_reversed ? identity : reversed );
 
             if( !extra_value.empty( ) )
                retval += '-' + extra_value;
@@ -6407,9 +6411,7 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
             retval += '+' + num_helpers + '=' + host_name + '-' + host_port + ':' + peer_type;
          }
 
-         // NOTE: Only break if not reversed in case both "backup only" and "shared only" entries exist.
-         if( !is_reversed )
-            break;
+         break;
       }
    }
 
@@ -6433,6 +6435,7 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
       string identity( peerchains[ i ] );
 
       string reversed( identity );
+
       reverse( reversed.begin( ), reversed.end( ) );
 
       stringstream sio_data;
@@ -6502,6 +6505,7 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
       string identity( peerchains[ i ] );
 
       string reversed( identity );
+
       reverse( reversed.begin( ), reversed.end( ) );
 
       stringstream sio_data;
