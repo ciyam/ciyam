@@ -26,6 +26,7 @@
 
 #include "config.h"
 #include "sockets.h"
+#include "date_time.h"
 #include "utilities.h"
 #include "ciyam_base.h"
 #include "udp_stream.h"
@@ -53,6 +54,8 @@ namespace
 bool g_start_auto_script = true;
 bool g_start_udp_streams = true;
 bool g_start_peer_sessions = true;
+
+bool g_has_external_ip_address = false;
 
 void* signal_handler( void* id )
 {
@@ -141,6 +144,7 @@ const char* const c_check_timezone_info_func_name = "check_timezone_info";
 const char* const c_is_accepted_ip_addr_func_name = "is_accepted_ip_addr";
 const char* const c_set_files_area_path_func_name = "set_files_area_path";
 const char* const c_unregister_listener_func_name = "unregister_listener";
+const char* const c_has_external_ip_address_func_name = "has_external_ip_address";
 
 string application_title( app_info_request request )
 {
@@ -422,6 +426,9 @@ int main( int argc, char* argv[ ] )
          fp_unregister_listener fp_unregister_listener_func;
          fp_unregister_listener_func = ( fp_unregister_listener )up_dynamic_library->bind_to_function( c_unregister_listener_func_name );
 
+         fp_has_external_ip_address fp_has_external_ip_address_func;
+         fp_has_external_ip_address_func = ( fp_has_external_ip_address )up_dynamic_library->bind_to_function( c_has_external_ip_address_func_name );
+
          // NOTE: If trace flags has been provided then set before calling other functions
          // (as it could be of some assistance in tracing issues with the those functions).
          if( g_set_trace_flags )
@@ -547,6 +554,8 @@ int main( int argc, char* argv[ ] )
                if( g_start_peer_sessions )
                   ( *fp_init_peer_sessions_func )( true );
 
+               int64_t utm = unix_time( );
+
                while( !g_server_shutdown || g_active_sessions )
                {
                   if( !g_server_shutdown && !s )
@@ -591,6 +600,26 @@ int main( int argc, char* argv[ ] )
                   // NOTE: Check for accepts and create new sessions.
                   if( !g_server_shutdown )
                   {
+                     if( g_start_auto_script )
+                     {
+                        // NOTE: Determine if currently has an external IP address.
+                        if( !g_has_external_ip_address )
+                           g_has_external_ip_address = ( ( *fp_has_external_ip_address_func )( ) );
+                        else
+                        {
+                           int64_t now = unix_time( );
+
+                           uint64_t elapsed = ( now - utm );
+
+                           // NOTE: Force the external IP address to be re-checked once per minute.
+                           if( elapsed >= 60 )
+                           {
+                              utm = now;
+
+                              g_has_external_ip_address = false;
+                           }
+                        }
+                     }
 #ifdef SSL_SUPPORT
                      unique_ptr< ssl_socket > up_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
 #else

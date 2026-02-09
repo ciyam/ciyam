@@ -181,6 +181,10 @@ extern "C" void term_globals( );
 typedef void ( *fp_init_globals )( const char*, int* );
 typedef void ( *fp_term_globals )( );
 
+extern "C" int has_external_ip_address( );
+
+typedef int ( *fp_has_external_ip_address )( );
+
 void resync_system_ods( progress* p_progress );
 
 extern "C" void check_timezone_info( );

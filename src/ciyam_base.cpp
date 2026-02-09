@@ -144,6 +144,8 @@ const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
+const char* const c_check_ext_ip_addr = "check_ext_ip_addr";
+
 const char* const c_server_demo_identities_list = "ciyam_demo_identities.lst";
 
 const char* const c_default_trace_flags = "10000";
@@ -329,6 +331,8 @@ size_t g_key_count;
 int64_t g_key_tm_val;
 
 int64_t g_key_unlock_tm_val;
+
+int64_t g_ext_ip_check_tm_val;
 
 string g_identity_suffix;
 
@@ -5130,6 +5134,77 @@ void term_globals( )
    if( g_using_ssl )
       term_ssl( );
 #endif
+}
+
+int has_external_ip_address( )
+{
+   int rc = 0;
+
+   int64_t now = unix_time( );
+
+   string ext_ip_addr_file( "~" );
+
+   ext_ip_addr_file += c_check_ext_ip_addr;
+
+   // NOTE: If being called for the first time
+   // then will ensure that the output file is
+   // removed (to avoid incorrect assignment).
+   if( !g_ext_ip_check_tm_val )
+   {
+      g_ext_ip_check_tm_val++;
+
+      file_remove( ext_ip_addr_file );
+
+      if( file_exists( ext_ip_addr_file ) )
+         throw runtime_error( "unable to remove '" + ext_ip_addr_file + "'" );
+   }
+
+   // NOTE: Will execute a bash script to get
+   // the current external IP address at most
+   // once per minute. The execution is async
+   // so it is expected that this function is
+   // being called repeatedly.
+   if( now >= ( g_ext_ip_check_tm_val + 60 ) )
+   {
+      g_ext_ip_check_tm_val = now;
+
+      string cmd( "./" );
+
+      cmd += c_check_ext_ip_addr;
+
+      cmd += " &";
+
+      system( cmd.c_str( ) );
+   }
+   else
+   {
+      if( file_exists( ext_ip_addr_file ) )
+      {
+         string ext_ip_addr( buffer_file( ext_ip_addr_file ) );
+
+         string::size_type pos = ext_ip_addr.find( '\n' );
+
+         // NOTE: If more than one line only considers the first.
+         if( pos != string::npos )
+            ext_ip_addr.erase( pos );
+
+         string ip_ext_addr_name( get_special_var_name( e_special_var_ip_ext_addr ) );
+
+         if( ext_ip_addr.empty( )
+          || ( ext_ip_addr.find_first_not_of( "0123456789abcdef.:" ) != string::npos ) )
+            set_system_variable( ip_ext_addr_name, "", true );
+         else
+         {
+            rc = 1;
+
+            set_system_variable( ip_ext_addr_name, ext_ip_addr, true );
+         }
+
+         file_remove( ext_ip_addr_file );
+      }
+   }
+
+   return rc;
 }
 
 void resync_system_ods( progress* p_progress )
