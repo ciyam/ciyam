@@ -13,7 +13,7 @@
      <description>Test installation of the Standard and User packages as well as Global Archive maintenance.
      <test_step/>
       <name>*init*
-      <exec>*ciyam_server -quiet
+      <exec>*ciyam_server -quiet -no_udp -no_auto -no_peers
       <input>false
       <output>none
      </test_step>
