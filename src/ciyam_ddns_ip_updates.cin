@@ -20,15 +20,11 @@
 ;
 ; If a file with the name "ciyam.<name>.ip.log" is found then it is assumed to contain
 ; the current IP address (in its last line) otherwise the server's own IP address will
-; be obtained via the GET_IP_ADDR service.
+; be obtained via the "@ip_ext_addr" system variable.
 ;
 ; NOTE: To ensure correct file access and permissions and prevent the accidental usage
 ; of the server's own IP address use "touch ciyam.<name>.ip.log" before adding any new
 ; name that will be using this.
-;
-GET_IP_ADDR=icanhazip.com
-;GET_IP_ADDR=ipecho.net/plain
-;GET_IP_ADDR=api.ipify.org?format=text
 ;
 DDNS_INFO_FILE=@files::ciyam_ddns_info
 ;
@@ -95,11 +91,8 @@ TRUNCATE_LOG=
 ; NOTE: Either NEW_IP exists (due to being an alias)
 ; or it will now obtain the server's own IP address.
 @ifndef $ALIAS_FOR_NAME
-NEW_IP=@file:~curl -sS https://$GET_IP_ADDR
-;
-@ifneq "$SYSTEM_RETVAL" "0"
-NEW_IP=
-@endif
+.system_variable @ip_ext_addr
+NEW_IP=$OUTPUT
 ;
 @endif
 ;
