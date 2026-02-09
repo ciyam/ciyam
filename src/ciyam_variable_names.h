@@ -121,6 +121,7 @@ enum special_var
    e_special_var_application,
    e_special_var_errors_only,
    e_special_var_init_log_id,
+   e_special_var_ip_ext_addr,
    e_special_var_opened_user,
    e_special_var_output_file,
    e_special_var_paired_sync,
