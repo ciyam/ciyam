@@ -6373,7 +6373,7 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
       {
          stringstream sio_data;
 
-         gup_ofs->get_file( identity, &sio_data );
+         gup_ofs->get_file( !is_reversed ? identity : reversed, &sio_data );
 
          sio_reader reader( sio_data );
 
