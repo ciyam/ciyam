@@ -5174,7 +5174,8 @@ int has_external_ip_address( )
 
       cmd += " &";
 
-      system( cmd.c_str( ) );
+      int rc = system( cmd.c_str( ) );
+      ( void )rc;
    }
    else
    {
@@ -6363,7 +6364,12 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
 
    for( size_t i = 0; i < peerchains.size( ); i++ )
    {
-      if( identity == peerchains[ i ] )
+      bool is_reversed = false;
+
+      if( reversed == peerchains[ i ] )
+         is_reversed = true;
+
+      if( is_reversed || ( identity == peerchains[ i ] ) )
       {
          stringstream sio_data;
 
@@ -6383,8 +6389,6 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
 
          if( p_shared_secret )
             *p_shared_secret = shared_secret;
-
-         bool is_reversed = false;
 
          int type = from_string< int >( peer_type );
 

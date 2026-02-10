@@ -328,6 +328,7 @@ string obtain_peer_map_key( )
       throw runtime_error( "*** unable to locate an unused peer map key ***" );
 
    retval = g_peer_map_keys.front( );
+
    g_peer_map_keys.pop_front( );
 
    return retval;
@@ -1120,6 +1121,7 @@ bool is_targeted_identity( const string& identity,
    password += tree_root_hash + to_string( blockchain_height );
 
    sha256 hash( password );
+
    string digest( hash.get_digest_as_string( ) );
 
    for( size_t i = 0; i < c_num_hash_rounds; i++ )
@@ -1224,6 +1226,7 @@ void check_blockchain_type( const string& blockchain, peerchain_type chain_type,
          genesis_info.erase( pos );
 
       string prefix( "," );
+
       prefix += string( c_file_type_core_block_header_targeted_ident_prefix );
 
       bool has_target = false;
@@ -1352,6 +1355,7 @@ void set_hub_system_variable_if_required( const string& identity, const string& 
    if( get_raw_system_variable( "@" + identity ).empty( ) )
    {
       string hub_genesis_tag( c_bc_prefix + hub_identity + c_genesis_suffix );
+
       string hub_genesis_hash;
 
       if( has_tag( hub_genesis_tag ) )
@@ -1408,6 +1412,7 @@ void process_core_file( const string& hash, const string& blockchain )
    string file_info( file_type_info( hash.substr( 0, pos ) ) );
 
    vector< string > info_parts;
+
    split( file_info, info_parts, ' ' );
 
    // NOTE: A core file will return three parts in the form of: <type> <hash> <core_type>
@@ -2083,6 +2088,7 @@ void process_put_file( const string& blockchain,
    TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "(process_put_file) blockchain: " + blockchain );
 
    vector< string > blobs;
+
    split( file_data, blobs, c_blob_separator );
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
@@ -2148,6 +2154,7 @@ void process_put_file( const string& blockchain,
       string next_blob( blobs[ i ] );
 
       vector< string > lines;
+
       split( next_blob, lines, '\n' );
 
       bool okay = false;
@@ -3253,6 +3260,7 @@ void process_put_list_file( const string& blockchain,
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
    vector< string > lines;
+
    split( file_data, lines, '\n' );
 
    string increment_name( get_special_var_name( e_special_var_increment ) );
@@ -3418,6 +3426,7 @@ void validate_signature_file( const string& file_data )
       throw runtime_error( "unexpected empty file content in 'validate_signature_file'" );
 
    vector< string > lines;
+
    split( content, lines, '\n' );
 
    if( !lines.empty( ) && lines[ lines.size( ) - 1 ].empty( ) )
@@ -3461,6 +3470,7 @@ void validate_op_list_file( const string& file_data )
       throw runtime_error( "unexpected empty file content in 'validate_op_list_file'" );
 
    vector< string > lines;
+
    split( content, lines, '\n' );
 
    if( !lines.empty( ) && lines[ lines.size( ) - 1 ].empty( ) )
@@ -3479,9 +3489,11 @@ void validate_op_list_file( const string& file_data )
       else
       {
          string tag_parts( next_line.substr( 0, pos ) );
+
          next_line.erase( 0, pos + 1 );
 
          vector< string > parts;
+
          split( tag_parts, parts, '.' );
 
          // NOTE: Tag should be in the form "bc.<ident>.<height>.put".
@@ -3545,6 +3557,7 @@ void validate_put_list_file( const string& file_data )
       throw runtime_error( "unexpected empty file content in 'validate_put_list_file'" );
 
    vector< string > lines;
+
    split( content, lines, '\n' );
 
    bool is_invalid = false;
@@ -3579,6 +3592,7 @@ void validate_public_key_file( const string& file_data )
       throw runtime_error( "unexpected empty file content in 'validate_public_key_file'" );
 
    vector< string > lines;
+
    split( content, lines, '\n' );
 
    if( !lines.empty( ) && lines[ lines.size( ) - 1 ].empty( ) )
@@ -8367,6 +8381,7 @@ void peer_listener::on_start( )
             if( !unprefixed_blockchains.empty( ) )
             {
                vector< string > identities;
+
                split( unprefixed_blockchains, identities );
 
                string error( get_string_message( GS( c_str_unable_to_start_peerchain ),
@@ -9284,6 +9299,7 @@ void init_peer_sessions( int start_listeners )
    if( !all_tags.empty( ) )
    {
       vector< string > tags;
+
       split( all_tags, tags, '\n' );
 
       for( size_t i = 0; i < tags.size( ); i++ )
