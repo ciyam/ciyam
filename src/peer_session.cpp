@@ -8584,7 +8584,12 @@ peer_session* create_peer_initiator( const string& blockchain,
        make_pair( c_str_unable_to_determine_address_domain, host ) ) );
 
       if( is_interactive )
+      {
+         if( has_set_system_variable )
+            set_system_variable( identity, "" );
+
          throw runtime_error( error );
+      }
       else
          set_system_variable( c_error_message_prefix + identity, error );
    }
@@ -8739,12 +8744,16 @@ peer_session* create_peer_initiator( const string& blockchain,
                else
                {
                   set_system_variable( c_error_message_prefix + identity, error );
+
                   break;
                }
             }
          }
       }
    }
+
+   if( !has_main_session && has_set_system_variable )
+      set_system_variable( identity, "" );
 
    if( !is_secondary && !has_main_session )
    {
@@ -8776,7 +8785,7 @@ peer_session* create_peer_initiator( const string& blockchain,
 
          size_t next = ( attempt + 1 );
 
-         // NOTE: Always wait the same amount after 9 attempts.
+         // NOTE: Always waits the same amount after 9 attempts.
          if( !attempt || ( next >= 9 ) )
          {
             next = 0;
@@ -9009,10 +9018,16 @@ void peer_session_starter::on_start( )
 
                reverse( reversed.begin( ), reversed.end( ) );
 
-               // NOTE: Always ignores any locked blockchains.
+               // NOTE: Always ignores any locked blockchains (but will
+               // clear the "identity" system variable for them as this
+               // will be set when started using "connect_peerchain").
                if( has_tag( c_bc_prefix + identity + c_locked_suffix )
                 || has_tag( c_bc_prefix + reversed + c_locked_suffix ) )
+               {
+                  set_system_variable( identity, "" );
+
                   continue;
+               }
 
                string peer_info( next_entry );
 
