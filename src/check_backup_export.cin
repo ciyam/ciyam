@@ -21,6 +21,9 @@ IDENTITY=$1
 #Error: $ERROR
 @else
 ;
+.system_variable #$IDENTITY
+PRIOR_ERROR=$OUTPUT
+;
 .session_list $IDENTITY
 @ifndef $OUTPUT
 .system_variable @queue_peers $IDENTITY
@@ -39,6 +42,9 @@ ERROR=$OUTPUT
 .session_list $IDENTITY
 @ifndef $OUTPUT
 ERROR=No session was found for $IDENTITY.
+@ifdef "$PRIOR_ERROR"
+ERROR=$ERROR\n($PRIOR_ERROR)
+@endif
 @endif
 ;
 @endif

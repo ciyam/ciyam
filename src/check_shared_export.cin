@@ -41,6 +41,9 @@ ERROR=Unknown or invalid peer identity $IDENTITY.
 #Error: $ERROR
 @else
 ;
+.system_variable #$REVERSED
+PRIOR_ERROR=$OUTPUT
+;
 .session_list $REVERSED
 @ifndef $OUTPUT
 .system_variable @queue_peers $IDENTITY
@@ -59,6 +62,9 @@ ERROR=$OUTPUT
 .session_list $REVERSED
 @ifndef $OUTPUT
 ERROR=No session was found for $REVERSED.
+@ifdef "$PRIOR_ERROR"
+ERROR=$ERROR\n($PRIOR_ERROR)
+@endif
 @endif
 @endif
 ;

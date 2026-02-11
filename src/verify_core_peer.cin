@@ -66,6 +66,9 @@ OKAY=1
 ;
 @ifndef $OKAY
 ;
+.system_variable #$PEER_IDENTITY
+PRIOR_ERROR=$OUTPUT
+;
 .system_variable %%$PEER_IDENTITY
 @ifndef $OUTPUT
 .system_variable @queue_peers $IDENTITY
@@ -90,7 +93,16 @@ ERROR=$OUTPUT
 @ifdef $OUTPUT
 FOUND=1
 @else
-ERROR=No session was found for $IDENTITY.
+.wait 2000
+.system_variable #$PEER_IDENTITY
+@ifdef $OUTPUT
+ERROR=$OUTPUT
+@else
+ERROR=No session was found for $PEER_IDENTITY.
+@ifdef "$PRIOR_ERROR"
+ERROR=$ERROR\n($PRIOR_ERROR)
+@endif
+@endif
 #Error: $ERROR
 @endif
 @endif
