@@ -3385,7 +3385,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                               char buffer[ c_max_pwd_size ];
 
-                              get_password( rhs.c_str( ), buffer, c_max_pwd_size );
+                              get_password( unescaped( rhs.c_str( ), c_special_characters ), buffer, c_max_pwd_size );
 
                               str.resize( strlen( buffer ) + 1 );
                               strncpy( &str[ 0 ], buffer, str.length( ) );
@@ -4206,9 +4206,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                if( str.size( ) > 1 )
                {
                   if( str[ 1 ] != c_message_command_prefix )
-                     handle_command_response( unescaped( str.substr( 1 ) ) );
+                     handle_command_response( unescaped( str.substr( 1 ), c_special_characters ) );
                   else if( !has_option_no_progress( ) )
-                     handle_progress_message( unescaped( str.substr( 2 ) ) );
+                     handle_progress_message( unescaped( str.substr( 2 ), c_special_characters ) );
                }
                else
                   clear_progress_output( false );

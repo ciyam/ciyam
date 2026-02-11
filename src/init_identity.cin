@@ -20,9 +20,9 @@ EXT_PUBKEY=$OUTPUT
 .crypto_seed
 MNEMONICS=$OUTPUT
 .crypto_seed "$MNEMONICS"
-#Possible Entropy: $OUTPUT ($MNEMONICS)
+#Possible Entropy: $OUTPUT\n$MNEMONICS
 ;
-DATA_AND_PUBKEY=@password:Enter Password and optional Entropy (with two spaces as a separator if password has spaces):$EXT_PUBKEY
+DATA_AND_PUBKEY=@password:Enter Password and optional Entropy\n(with two spaces as a separator if password has spaces):$EXT_PUBKEY
 ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
 .encrypt -harden_key -pwd_and_data $ARGS
 @ifndef $ERROR
