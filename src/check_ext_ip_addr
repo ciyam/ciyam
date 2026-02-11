@@ -6,6 +6,7 @@
 
 # NOTE: Tools to obtain own external IP address.
 #
+#ip_addr=$(curl -m 10 -s https://api.myip.la)
 #ip_addr=$(curl -m 10 -s https://icanhazip.com)
 #ip_addr=$(curl -m 10 -s https://ipecho.net/plain)
 #ip_addr=$(curl -m 10 -s https://api.ipify.org?format=text)
