@@ -86,9 +86,12 @@ OUTPUT=
 ERROR=$OUTPUT
 #Error: $ERROR
 @else
-.system_variable %%$PEER_IDENTITY
+.session_list $PEER_IDENTITY
 @ifdef $OUTPUT
 FOUND=1
+@else
+ERROR=No session was found for $IDENTITY.
+#Error: $ERROR
 @endif
 @endif
 ;
