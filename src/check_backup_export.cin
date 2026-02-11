@@ -58,7 +58,7 @@ FOUND=1
 @label END_LOOP
 @endif
 ;
-@ifeq "$I" "10"
+@ifeq "$I" "25"
 @label END_LOOP
 @endif
 ;
