@@ -17,8 +17,6 @@ ERROR=
 ;
 IDENTITY=$1
 ;
-HAS_REVERSED=
-;
 REVERSED=*!reverse?$IDENTITY
 ;
 <check_system_identity.cin
@@ -26,8 +24,6 @@ REVERSED=*!reverse?$IDENTITY
 @ifdef $ERROR
 #Error: $ERROR
 @else
-PEER_IDENTITY=$IDENTITY
-;
 .system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
@@ -37,13 +33,7 @@ PEERS=$OUTPUT
 CHECK_PEERS=@repstr:$IDENTITY/:$PEERS
 ;
 @ifeq "$PEERS" "$CHECK_PEERS"
-CHECK_PEERS=@repstr:$REVERSED/:$PEERS
-;
-@ifneq "$PEERS" "$CHECK_PEERS"
-PEER_IDENTITY=$REVERSED
-@else
 ERROR=Unknown or invalid peer identity $IDENTITY.
-@endif
 @endif
 @endif
 ;
@@ -51,20 +41,17 @@ ERROR=Unknown or invalid peer identity $IDENTITY.
 #Error: $ERROR
 @else
 ;
-.session_list $PEER_IDENTITY
+.session_list $REVERSED
 @ifndef $OUTPUT
-.system_variable @queue_peers $PEER_IDENTITY
+.system_variable @queue_peers $IDENTITY
 .wait 2000
 @endif
 ;
-.system_variable #$PEER_IDENTITY
+.system_variable #$REVERSED
 @ifdef $OUTPUT
 ERROR=$OUTPUT
 @else
 ;
-.file_tags bc.$REVERSED.0.blk*
-@ifdef $OUTPUT
-HAS_REVERSED=1
 .session_list $REVERSED
 @ifndef $OUTPUT
 .wait 2000
@@ -72,7 +59,6 @@ HAS_REVERSED=1
 .session_list $REVERSED
 @ifndef $OUTPUT
 ERROR=No session was found for $REVERSED.
-@endif
 @endif
 @endif
 ;
@@ -85,13 +71,13 @@ FOUND=
 @label NEXT
 ;
 @:LOOP
-.system_variable @export_needed_$PEER_IDENTITY
+.system_variable @export_needed_$REVERSED
 @ifdef $OUTPUT
 FOUND=1
 @label END_LOOP
 @endif
 ;
-@ifeq "$I" "10"
+@ifeq "$I" "25"
 @label END_LOOP
 @endif
 ;
@@ -111,15 +97,10 @@ I=@$I+1
 .system_variable @files_area_path
 FILES_AREA_DIR=$OUTPUT
 ;
-.peerchain_info $PEER_IDENTITY shared_secret
+.peerchain_info $IDENTITY shared_secret
 .system_variable @shared_secret $OUTPUT
 ;
-@ifdef $HAS_REVERSED
 .system_variable @export_needed $REVERSED
-@else
-.system_variable @export_needed $PEER_IDENTITY
-@endif
-;
 .system_variable @exporting_for_identity $IDENTITY
 ;
 EXPORT_FILE=$IDENTITY.txt
