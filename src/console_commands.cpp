@@ -3385,7 +3385,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                               char buffer[ c_max_pwd_size ];
 
-                              get_password( unescaped( rhs.c_str( ), c_special_characters ), buffer, c_max_pwd_size );
+                              rhs = unescaped( rhs, c_special_characters );
+
+                              get_password( rhs.c_str( ), buffer, c_max_pwd_size );
 
                               str.resize( strlen( buffer ) + 1 );
                               strncpy( &str[ 0 ], buffer, str.length( ) );
