@@ -20,9 +20,14 @@ EXT_PUBKEY=$OUTPUT
 .crypto_seed
 MNEMONICS=$OUTPUT
 .crypto_seed "$MNEMONICS"
-#Possible Entropy: $OUTPUT\n$MNEMONICS
+#Default Entropy: ($OUTPUT)\n$MNEMONICS
+#
+CIYAM_PWD_APPEND_LEN=32
+; IMPORTANT: Do not remove space.
+CIYAM_PASSWORD_APPEND= $MNEMONICS
 ;
 DATA_AND_PUBKEY=@password:Enter Password and optional Entropy\n(with two spaces as a separator if password has spaces):$EXT_PUBKEY
+;
 ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
 .encrypt -harden_key -pwd_and_data $ARGS
 @ifndef $ERROR
@@ -34,6 +39,7 @@ LOCKED=%COMBINED:1%
 .identity $ARGS $ENCRYPTED
 COMBINED=@repstr:!/\n:$OUTPUT
 UNLOCKED=%COMBINED:1%
+#
 #Identity: $UNLOCKED
 ;
 .system_variable @storage

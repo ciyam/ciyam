@@ -46,7 +46,9 @@ file_kill -recurse root
 ~touch test1/yyy
 TEST=@file:~./diff -q test1/xxx test1/yyy
 #$SYSTEM_RETVAL
+@ifneq "$SYSTEM_RETVAL" "0"
 #$TEST
+@endif
 ~rm test1/yyy
 TEST=@file:~./diff -q test1/xxx test1/yyy
 #$SYSTEM_RETVAL

@@ -72,8 +72,10 @@ const char* const c_env_var_output = "OUTPUT";
 const char* const c_env_var_ciyam_fissile = "CIYAM_FISSILE";
 const char* const c_env_var_ciyam_use_default = "CIYAM_USE_DEFAULT";
 const char* const c_env_var_ciyam_pause_seconds = "CIYAM_PAUSE_SECONDS";
+const char* const c_env_var_ciyam_pwd_append_len = "CIYAM_PWD_APPEND_LEN";
 const char* const c_env_var_ciyam_default_seconds = "CIYAM_DEFAULT_SECONDS";
 const char* const c_env_var_ciyam_key_was_pressed = "CIYAM_KEY_WAS_PRESSED";
+const char* const c_env_var_ciyam_password_append = "CIYAM_PASSWORD_APPEND";
 
 const char* const c_default_value_prompt = "VALUE=";
 
@@ -3385,19 +3387,47 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                               char buffer[ c_max_pwd_size ];
 
-                              rhs = unescaped( rhs, c_special_characters );
+                              unescape( rhs, c_special_characters );
 
                               get_password( rhs.c_str( ), buffer, c_max_pwd_size );
 
-                              str.resize( strlen( buffer ) + 1 );
-                              strncpy( &str[ 0 ], buffer, str.length( ) );
+                              size_t pwd_len = strlen( buffer );
+
+                              string password_append( get_environment_variable( c_env_var_ciyam_password_append ) );
+
+                              str.reserve( pwd_len + password_append.length( ) + 1 );
+
+                              str.resize( pwd_len );
+
+                              // NOTE: Is reserving and resizing then
+                              // using "strncpy" to prevent temporary
+                              // strings from being constructed.
+                              strncpy( &str[ 0 ], buffer, pwd_len );
 
                               memset( buffer, '\0', c_max_pwd_size );
+
+                              // NOTE: If the password append was provided then will append it
+                              // unless any provided password append length has been exceeded.
+                              if( !password_append.empty( ) )
+                              {
+                                 string pwd_append_len( get_environment_variable( c_env_var_ciyam_pwd_append_len ) );
+
+                                 size_t max_len_for_append = from_string< size_t >( pwd_append_len );
+
+                                 bool append = false;
+
+                                 if( !max_len_for_append || ( str.length( ) < max_len_for_append ) )
+                                    append = true;
+
+                                 if( append )
+                                    str += password_append;
+                              }
 
                               if( !pubkey.empty( ) )
                               {
 #ifdef SSL_SUPPORT
                                  public_key pub_key( pubkey );
+
                                  private_key priv_key;
 
                                  string data( priv_key.encrypt_message( pub_key, str ) );
@@ -3405,6 +3435,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  data += ":" + priv_key.get_public( );
 
                                  clear_key( str );
+
                                  str = data;
 #else
                                  throw runtime_error( "@password with public key crypto requires SSL support" );
@@ -4205,15 +4236,10 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             }
             else if( str[ 0 ] == c_message_command_prefix )
             {
-               if( str.size( ) > 1 )
-               {
-                  if( str[ 1 ] != c_message_command_prefix )
-                     handle_command_response( unescaped( str.substr( 1 ), c_special_characters ) );
-                  else if( !has_option_no_progress( ) )
-                     handle_progress_message( unescaped( str.substr( 2 ), c_special_characters ) );
-               }
-               else
-                  clear_progress_output( false );
+               if( ( str.size( ) == 1 ) || ( str[ 1 ] != c_message_command_prefix ) )
+                  handle_command_response( unescaped( str.substr( 1 ), c_special_characters ) );
+               else if( !has_option_no_progress( ) )
+                  handle_progress_message( unescaped( str.substr( 2 ), c_special_characters ) );
 
                str.erase( );
             }

@@ -77,7 +77,10 @@ FOUND=
 @label NEXT
 ;
 @:LOOP
+.system_variable @export_needed_$IDENTITY
+@ifndef $OUTPUT
 .system_variable @export_needed_$REVERSED
+@endif
 @ifdef $OUTPUT
 FOUND=1
 @label END_LOOP
@@ -131,7 +134,7 @@ STARTING=@file:~grep "Starting" $EXPORT_OUTPUT
 ;
 @endif
 @else
-#
+##
 @endif
 ;
 @endif
