@@ -4209,7 +4209,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string field_values_to_log;
 
-         string initial_module_and_mclass( module + mclass );
+         string initial_module_and_mclass( module + ' ' + mclass );
 
          string module_unmapped( module );
 
@@ -4618,7 +4618,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string field_values_to_log;
 
-         string initial_module_and_mclass( module + mclass );
+         string initial_module_and_mclass( module + ' ' + mclass );
 
          string module_unmapped( module );
 
@@ -5093,7 +5093,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string key_prefix;
          string field_values_to_log;
 
-         string initial_module_and_mclass( module + mclass );
+         string initial_module_and_mclass( module + ' ' + mclass );
 
          string module_unmapped( module );
 
@@ -5450,8 +5450,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      if( !fields_and_values.empty( ) )
                      {
-                        next_command = "pu " + uid + " " + dtm + " " + module
-                         + " " + mclass + " " + next_key + " =" + next_ver + " \"" + fields_and_values + "\"";
+                        next_command = "pu " + uid + " " + dtm
+                         + " " + initial_module_and_mclass + " " + next_key;
+
+                        if( !next_ver.empty( ) )
+                           next_command += " =" + next_ver;
+
+                        next_command += " \"" + fields_and_values + "\"";
 
                         if( !using_verbose_logging )
                            replace_module_and_class_to_log( next_command, initial_module_and_mclass, module, mclass );
