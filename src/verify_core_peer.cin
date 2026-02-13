@@ -192,6 +192,7 @@ REMOTE_CHECKSUM_VALS=$REMOTE_BACKUP_HASH,$REMOTE_SHARED_HASH
 &Checksum Correct? [CORRECT:Yes=1|No=!*** NO ***]
 ;
 @ifdef $CORRECT
+.wait 2000
 ;
 .system_variable @storage
 STORAGE=$OUTPUT
@@ -212,7 +213,7 @@ STORAGE=
 <$STORAGE.create_core_peer.vars.lst
 ;
 .storage_init $STORAGE
-.pe admin @now $STORAGE $CLASS_NAME $IDENTITY $PROCEDURE
+.pe admin @now $STORAGE $CLASS_NAME $IDENTITY /$PROCEDURE
 .storage_term
 @endif
 ;
