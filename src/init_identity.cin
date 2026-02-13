@@ -26,7 +26,7 @@ CIYAM_PWD_APPEND_LEN=32
 ; IMPORTANT: Do not remove space.
 CIYAM_PASSWORD_APPEND= $MNEMONICS
 ;
-DATA_AND_PUBKEY=@password:Enter Password and optional Entropy\n(with two spaces as a separator if password has spaces):$EXT_PUBKEY
+DATA_AND_PUBKEY=@password:Enter Password and optional Mnemonics\n(with two spaces as a separator if password has spaces):$EXT_PUBKEY
 ;
 ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
 .encrypt -harden_key -pwd_and_data $ARGS
