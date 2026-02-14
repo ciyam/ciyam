@@ -1943,7 +1943,7 @@ void check_for_missing_other_sessions( const date_time& now )
 
          string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
 
-         // NOTE: If possible will ensure that the peer session is being secured.
+         // NOTE: If possible will need to ensure that the peer session is being secured.
          string secret_hash( get_raw_system_variable( secret_hash_name + '_' + identity ) );
 
          if( secret_hash.empty( ) && !paired_identity.empty( ) )
@@ -1951,6 +1951,23 @@ void check_for_missing_other_sessions( const date_time& now )
 
          if( secret_hash.empty( ) && !backup_identity.empty( ) )
             secret_hash = get_raw_system_variable( secret_hash_name + '_' + backup_identity );
+
+         // NOTE: For a "shared only" core peer the identities are reversed.
+         if( secret_hash.empty( ) && ( chain_type == e_peerchain_type_shared ) )
+         {
+            string reversed( identity );
+            reverse( reversed.begin( ), reversed.end( ) );
+
+            secret_hash = get_raw_system_variable( secret_hash_name + '_' + reversed );
+
+            if( secret_hash.empty( ) && !paired_identity.empty( ) )
+            {
+               string reversed( paired_identity );
+               reverse( reversed.begin( ), reversed.end( ) );
+
+               secret_hash = get_raw_system_variable( secret_hash_name + '_' + reversed );
+            }
+         }
 
          unique_ptr< temporary_session_variable > up_temp_secret_hash;
 
@@ -8753,7 +8770,28 @@ peer_session* create_peer_initiator( const string& blockchain,
    }
 
    if( !has_main_session && has_set_system_variable )
-      set_system_variable( identity, "" );
+   {
+      string unlocked_variable( get_special_var_name( e_special_var_unlocked ) );
+
+      if( chain_type != e_peerchain_type_user )
+         unlocked_variable += '_' + identity;
+      else
+      {
+         string reversed( identity );
+
+         reverse( reversed.begin( ), reversed.end( ) );
+
+         unlocked_variable += '_' + reversed;
+      }
+
+      bool just_unlocked = false;
+
+      if( has_system_variable( unlocked_variable ) )
+         just_unlocked = true;
+
+      if( !just_unlocked )
+         set_system_variable( identity, "" );
+   }
 
    if( !is_secondary && !has_main_session )
    {
@@ -9233,11 +9271,13 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    bool just_unlocked = false;
 
+   unique_ptr< system_variable_eraser > up_unlocked_eraser;
+
    if( has_system_variable( unlocked_variable ) )
    {
       just_unlocked = true;
 
-      set_system_variable( unlocked_variable, "" );
+      up_unlocked_eraser.reset( new system_variable_eraser( unlocked_variable ) );
    }
 
    peer_session* p_local_main = create_peer_initiator( blockchain + paired_suffix, info,
