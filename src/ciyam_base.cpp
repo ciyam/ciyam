@@ -6395,12 +6395,21 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
          if( type == c_peer_type_shared_only )
             is_reversed = true;
 
+         // NOTE: If "p_is_listener" is not provided then it is being
+         // assumed that only listening information is required (else
+         // returns connection information unless the host is "local"
+         // and will set "*p_is_listener" true or false accordingly).
          if( !p_is_listener || ( host_name == string( c_local_host ) ) )
          {
             if( p_is_listener )
                *p_is_listener = true;
 
-            retval = ( !is_reversed ? identity : reversed ) + '=' + local_port;
+            if( type == c_peer_type_combined )
+               retval = identity + ',' + reversed;
+            else
+               retval = ( !is_reversed ? identity : reversed );
+
+            retval += '=' + local_port;
          }
          else
          {
@@ -7592,18 +7601,9 @@ void init_session(
             if( p_next_session && !p_next_session->is_support_session )
             {
                if( ( ip_addr == p_next_session->ip_addr )
-                && ( blockchain == p_next_session->blockchain ) )
-               {
-                  if( gtp_session )
-                  {
-                     delete g_sessions[ offset ];
-                     g_sessions[ offset ] = 0;
-
-                     gtp_session = 0;
-                  }
-
-                  throw runtime_error( "found existing main peer session for blockchain '" + blockchain + "'" );
-               }
+                && ( blockchain == p_next_session->blockchain )
+                && ( !g_condemned_sessions.count( p_next_session->id ) ) )
+                  g_condemned_sessions.insert( make_pair( p_next_session->id, date_time::local( ) ) );
             }
          }
       }
