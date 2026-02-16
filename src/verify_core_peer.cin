@@ -174,9 +174,14 @@ LOCAL_CHECKSUM_VALS=$LOCAL_SHARED_HASH
 @ifndef $OUTPUT
 .wait 2000
 @endif
+.file_tags bc.$REVERSED.0.blk*
+@ifndef $OUTPUT
+ERROR=Unexpected missing $REVERSED genesis block.
+@else
 .file_hash bc.$REVERSED.0.blk
 REMOTE_SHARED_HASH=$OUTPUT
 REMOTE_CHECKSUM_VALS=$REMOTE_SHARED_HASH
+@endif
 @endif
 ;
 @ifeq "$PEER_TYPE" "0"
@@ -184,15 +189,19 @@ LOCAL_CHECKSUM_VALS=$LOCAL_BACKUP_HASH,$LOCAL_SHARED_HASH
 REMOTE_CHECKSUM_VALS=$REMOTE_BACKUP_HASH,$REMOTE_SHARED_HASH
 @endif
 ;
+@ifdef $ERROR
+CORRECT=
+@else
 .crypto_checksum $LOCAL_CHECKSUM_VALS
 #Local Checksum: $OUTPUT
 .crypto_checksum $REMOTE_CHECKSUM_VALS
 #Remote Checksum: $OUTPUT
 ;
 &Checksum Correct? [CORRECT:Yes=1|No=!*** NO ***]
+@endif
 ;
 @ifdef $CORRECT
-.wait 2000
+.wait 1000
 ;
 .system_variable @storage
 STORAGE=$OUTPUT
