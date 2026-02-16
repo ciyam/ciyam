@@ -6404,10 +6404,10 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
             if( p_is_listener )
                *p_is_listener = true;
 
+            retval = identity;
+
             if( type == c_peer_type_combined )
-               retval = identity + ',' + reversed;
-            else
-               retval = ( !is_reversed ? identity : reversed );
+               retval += ',' + reversed;
 
             retval += '=' + local_port;
          }
@@ -6416,7 +6416,7 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
             if( p_is_listener )
                *p_is_listener = false;
 
-            retval = ( !is_reversed ? identity : reversed );
+            retval = identity;
 
             if( !extra_value.empty( ) )
                retval += '-' + extra_value;
