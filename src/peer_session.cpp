@@ -9031,14 +9031,15 @@ void peer_session_starter::on_start( )
          }
          else
          {
-            bool is_listener = false;
+            bool all_listeners = false;
 
             vector< string > all_entries;
 
-            // NOTE: If first entry is prefixed with '!' then will start all as listeners.
-            if( entries[ 0 ] == '!' )
+            // NOTE: If first entry is prefixed with '@' then will treat all as listeners.
+            if( entries[ 0 ] == '@' )
             {
-               is_listener = true;
+               all_listeners = true;
+
                entries.erase( 0, 1 );
             }
 
@@ -9068,6 +9069,8 @@ void peer_session_starter::on_start( )
                }
 
                string peer_info( next_entry );
+
+               bool is_listener = all_listeners;
 
                if( pos == string::npos )
                   peer_info = get_peerchain_info( next_entry, is_listener ? 0 : &is_listener );

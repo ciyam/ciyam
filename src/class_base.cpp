@@ -7292,7 +7292,7 @@ void allow_peerchain( const string& identity, int peer_type, bool no_delay )
    if( peer_type == c_peer_type_combined )
       identities += ',' + reversed;
 
-   set_system_variable( get_special_var_name( e_special_var_queue_peers ), '!' + identities );
+   set_system_variable( get_special_var_name( e_special_var_queue_peers ), '@' + identities );
 
    if( !no_delay )
       msleep( c_peer_sleep_time );
