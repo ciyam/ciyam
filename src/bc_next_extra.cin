@@ -3,16 +3,23 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+EXTRA=$1
+;
+@ifndef $EXTRA
 .system_variable @blockchain_next_extra
 @ifdef $OUTPUT
 .session_variable @next_extra $OUTPUT
 .session_variable @next_extra @increment
 .session_variable @next_extra
 EXTRA=$OUTPUT
+@endif
+@endif
+;
 .system_variable @blockchain_backup_%EXTRA%_identity
 @ifndef $OUTPUT
 EXTRA=1
 @endif
+;
 .system_variable >@blockchain_next_extra $EXTRA
 ;
 .system_variable @blockchain_backup_%EXTRA%_identity
@@ -23,4 +30,3 @@ EXTRA=1
 ;
 .system_variable @blockchain_peer_hub_%EXTRA%_identity
 .system_variable >@blockchain_next_peer_hub $OUTPUT
-@endif

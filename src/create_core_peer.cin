@@ -62,6 +62,7 @@ BACKUP_IDENTITY=$OUTPUT
 ERROR=Unexpected missing backup identity for lot #$LOT_NUMBER.
 #Error: $ERROR
 @else
+<bc_next_extra.cin $LOT_NUMBER
 .crypto_peer_identity $BACKUP_IDENTITY
 #QR Code: $BACKUP_IDENTITY:$OUTPUT
 ;
