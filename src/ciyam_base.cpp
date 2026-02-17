@@ -6301,26 +6301,34 @@ void destroy_peerchain( const string& identity, progress* p_progress )
       }
    }
 
-   set_system_variable( "#" + identity, "" );
-   set_system_variable( "%" + identity, "" );
+   string peer_identity( identity );
 
-   set_system_variable( ">@" + identity, "" );
+   if( type == c_peer_type_shared_only )
+      peer_identity = reversed;
+
+   set_system_variable( "#" + peer_identity, "" );
+   set_system_variable( "%" + peer_identity, "" );
 
    set_system_variable( get_special_var_name(
-    e_special_var_auto ) + '_' + identity, "" );
+    e_special_var_auto ) + '_' + peer_identity, "" );
 
-   set_system_variable( ">" + get_special_var_name(
-    e_special_var_hub ) + '_' + identity, "" );
+   if( type != c_peer_type_shared_only )
+   {
+      set_system_variable( ">@" + peer_identity, "" );
+
+      set_system_variable( ">" + get_special_var_name(
+       e_special_var_hub ) + '_' + peer_identity, "" );
+   }
 
    set_system_variable( ">" + get_special_var_name(
     e_special_var_secret_hash ) + '_' + identity, "" );
 
    set_system_variable( get_special_var_name(
-    e_special_var_export_needed ) + '_' + identity, "" );
+    e_special_var_export_needed ) + '_' + peer_identity, "" );
 
-   if( has_files_area_archive( identity ) )
+   if( has_files_area_archive( peer_identity ) )
    {
-      remove_files_area_archive( identity, true, true );
+      remove_files_area_archive( peer_identity, true, true );
 
       if( has_reversed && has_files_area_archive( reversed ) )
       {
@@ -6341,7 +6349,7 @@ void destroy_peerchain( const string& identity, progress* p_progress )
    if( has_reversed )
       delete_files_area_files_for_pat( c_bc_prefix + reversed + ".*" );
 
-   delete_files_area_files_for_pat( c_bc_prefix + identity + ".*" );
+   delete_files_area_files_for_pat( c_bc_prefix + peer_identity + ".*" );
 }
 
 string get_peerchain_info( const string& identity, bool* p_is_listener, string* p_shared_secret )

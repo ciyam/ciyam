@@ -3385,11 +3385,10 @@ void process_public_key_file( const string& blockchain,
 
                      reverse( reversed.begin( ), reversed.end( ) );
 
-                     // NOTE: Handles the case for a "shared only" core peer
-                     // (whose peerchain identity is the identity reversed).
+                     // NOTE: Handles the case for a "shared only" core peer.
                      if( !has_registered_listener_id( reversed )
                       && has_system_variable( secret_hash_name + '_' + reversed ) )
-                        lock_blockchain( reversed );
+                        lock_blockchain( identity );
                   }
                }
 
