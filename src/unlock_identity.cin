@@ -64,4 +64,10 @@ Retry=
 ;
 @:DONE
 ;
+@else
+;
+@ifndef $1
+#Identity is not currently locked.
+@endif
+;
 @endif
