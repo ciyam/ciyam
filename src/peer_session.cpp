@@ -3385,8 +3385,10 @@ void process_public_key_file( const string& blockchain,
 
                      reverse( reversed.begin( ), reversed.end( ) );
 
+                     // NOTE: Handles the case for a "shared only" core peer
+                     // (whose peerchain identity is the identity reversed).
                      if( has_system_variable( secret_hash_name + '_' + reversed ) )
-                        lock_blockchain( identity );
+                        lock_blockchain( reversed );
                   }
                }
 
