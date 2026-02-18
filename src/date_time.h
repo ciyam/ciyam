@@ -93,6 +93,14 @@ enum date_format
    e_date_format_yyyymmdd = 3
 };
 
+enum chinese_new_year_format
+{
+   e_chinese_new_year_format_pinyin,
+   e_chinese_new_year_format_chinese,
+   e_chinese_new_year_format_english,
+   e_chinese_new_year_format_combined
+};
+
 typedef fp64_t julian;
 
 typedef uint32_t daynum;
@@ -353,7 +361,7 @@ class udate
    std::string month_name( bool short_name = false ) const;
    std::string weekday_name( bool short_name = false ) const;
 
-   std::string chinese_year_name( bool as_english_animal_name = true ) const;
+   std::string chinese_year_name( chinese_new_year_format format = e_chinese_new_year_format_combined ) const;
 
    bool is_leap_year( ) const;
    bool is_weekend_day( ) const;
@@ -576,9 +584,9 @@ class date_time
    std::string month_name( bool short_name = false ) const { return ud.month_name( short_name ); }
    std::string weekday_name( bool short_name = false ) const { return ud.weekday_name( short_name ); }
 
-   std::string chinese_year_name( bool as_english_animal_name = true ) const
+   std::string chinese_year_name( chinese_new_year_format format = e_chinese_new_year_format_combined ) const
    {
-      return ud.chinese_year_name( as_english_animal_name );
+      return ud.chinese_year_name( format );
    }
 
    bool is_leap_year( ) const { return ud.is_leap_year( ); }
@@ -776,4 +784,3 @@ std::string format_mtime( const mtime& mt, const std::string& mask );
 std::string format_date_time( const date_time& dt, const std::string& dmask, const std::string& tmask );
 
 #endif
-

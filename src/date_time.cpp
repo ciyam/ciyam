@@ -162,42 +162,45 @@ enum element
 struct celestial_stem
 {
    const char* p_str;
+   const char* p_chinese;
+   const char* p_english;
 
    element elem;
 }
 celestial_stems[ ] =
 {
-   { "jia", e_element_wood },
-   { "yi", e_element_wood },
-   { "bing", e_element_fire },
-   { "ding", e_element_fire },
-   { "wu", e_element_earth },
-   { "ji", e_element_earth },
-   { "geng", e_element_metal },
-   { "xin", e_element_metal },
-   { "ren", e_element_water },
-   { "gui", e_element_water }
+   { "jia", "甲", "Wood", e_element_wood },
+   { "yi", "乙", "Wood", e_element_wood },
+   { "bing", "丙", "Fire", e_element_fire },
+   { "ding", "丁", "Fire", e_element_fire },
+   { "wu", "戊", "Earth", e_element_earth },
+   { "ji", "己", "Earth", e_element_earth },
+   { "geng", "庚", "Gold", e_element_metal },
+   { "xin", "辛", "Gold", e_element_metal },
+   { "ren", "壬", "Water", e_element_water },
+   { "gui", "癸", "Water", e_element_water }
 };
 
 struct terrestial_branch
 {
    const char* p_str;
+   const char* p_chinese;
    const char* p_english;
 }
 terrestial_branches[ ] =
 {
-   { "zi", "rat" },
-   { "chou", "ox" },
-   { "yin", "tiger" },
-   { "mao", "rabbit" },
-   { "chen", "dragon" },
-   { "si", "snake" },
-   { "wu", "horse" },
-   { "wei", "goat" },
-   { "shen", "monkey" },
-   { "you", "rooster" },
-   { "xu", "dog" },
-   { "hai", "pig" }
+   { "zi", "子", "Rat" },
+   { "chou", "丑", "Ox" },
+   { "yin", "寅", "Tiger" },
+   { "mao", "卯", "Rabbit" },
+   { "chen", "辰", "Dragon" },
+   { "si", "巳", "Snake" },
+   { "wu", "午", "Horse" },
+   { "wei", "未", "Goat" },
+   { "shen", "申", "Monkey" },
+   { "you", "酉", "Rooster" },
+   { "xu", "戌", "Dog" },
+   { "hai", "亥", "Pig" }
 };
 
 // NOTE: Chinese new year is being taken from this table rather than being determined.
@@ -432,7 +435,7 @@ double adjust_360( double deg )
 
 // NOTE: This algorithm was taken from the Almanac for Computers 1990 which was published
 // by the Nautical Almanac Office at the United States Naval Observatory in Washington DC
-// (and should be accurate to around +-2 minutes).
+// (and should be accurate to around plus or minus 2 minutes).
 
 bool determine_sun_rise_or_set( year yr, month mh, day dy,
  hour& hr, minute& mn, bool sunrise, int tzadjust, double latitude, double longitude, double zenith )
@@ -792,7 +795,7 @@ void julian_to_calendar( julian jdt,
    millisecond_to_components( m, hr, mn, sc, te, hd, th );
 }
 
-string chinese_calendar_year_name( year yr, bool as_english_animal_name )
+string chinese_calendar_year_name( year yr, chinese_new_year_format format )
 {
    string str;
 
@@ -805,13 +808,27 @@ string chinese_calendar_year_name( year yr, bool as_english_animal_name )
    {
       if( i == target )
       {
-         if( as_english_animal_name )
-            str = string( terrestial_branches[ terrestial_branch ].p_english );
+         if( format == e_chinese_new_year_format_pinyin )
+         {
+            str = string( celestial_stems[ celestial_stem ].p_str )
+             + ' ' + string( terrestial_branches[ terrestial_branch ].p_str );
+         }
+         else if( format == e_chinese_new_year_format_chinese )
+         {
+            str = string( celestial_stems[ celestial_stem ].p_chinese )
+             + string( terrestial_branches[ terrestial_branch ].p_chinese );
+         }
+         else if( format == e_chinese_new_year_format_english )
+         {
+            str = string( celestial_stems[ celestial_stem ].p_english )
+             + ' ' + string( terrestial_branches[ terrestial_branch ].p_english );
+         }
          else
          {
-            str = string( celestial_stems[ celestial_stem ].p_str );
-            str += ' ';
-            str += string( terrestial_branches[ terrestial_branch ].p_str );
+            str = string( celestial_stems[ celestial_stem ].p_english )
+             + ' ' + string( terrestial_branches[ terrestial_branch ].p_english )
+             + " (" + string( celestial_stems[ celestial_stem ].p_chinese )
+             + string( terrestial_branches[ terrestial_branch ].p_chinese ) + ")";
          }
 
          break;
@@ -2225,7 +2242,7 @@ std::string udate::weekday_name( bool short_name ) const
    return short_name ? full_name.substr( 0, 3 ) : full_name;
 }
 
-std::string udate::chinese_year_name( bool as_english_animal_name ) const
+std::string udate::chinese_year_name( chinese_new_year_format format ) const
 {
    year yr;
    month mo;
@@ -2236,7 +2253,7 @@ std::string udate::chinese_year_name( bool as_english_animal_name ) const
    else
       daynum_to_calendar( dn & ~c_day_number_in_use, yr, mo, dy );
 
-   return chinese_calendar_year_name( yr, as_english_animal_name );
+   return chinese_calendar_year_name( yr, format );
 }
 
 bool udate::is_leap_year( ) const
