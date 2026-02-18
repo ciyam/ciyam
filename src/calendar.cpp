@@ -43,6 +43,9 @@ const char* const c_attribute_type = "type";
 const char* const c_attribute_extra = "extra";
 const char* const c_attribute_occurs = "occurs";
 
+const char* const c_special_event_easter_sunday = "EAS";
+const char* const c_special_event_chinese_new_year = "CNY";
+
 struct event
 {
    event( ) : repeat( 0 ) { }
@@ -79,6 +82,7 @@ string pad_left_for_line_size( const string& str, size_t len )
 string put_title_in_line_center( const string& line, const string& title )
 {
    string s( line );
+
    size_t len = line.size( );
 
    string::size_type pos = ( len / 2 ) - ( title.length( ) / 2 );
@@ -105,15 +109,21 @@ void read_calendar_events( ifstream& inpf, const udate& udm )
 
          if( !type.empty( ) )
          {
-            if( type == "EAS" )
+            if( type == c_special_event_easter_sunday )
                new_event.date = udate( udm.get_year( ), e_day_of_significance_easter_sunday );
-            else if( type == "CNY" )
+            else if( type == c_special_event_chinese_new_year )
                new_event.date = udate( udm.get_year( ), e_day_of_significance_chinese_new_year );
             else
                throw runtime_error( "unknown event type '" + type + "'" );
          }
 
          new_event.extra = reader.read_opt_attribute( c_attribute_extra );
+
+         if( new_event.extra.empty( ) )
+         {
+            if( type == c_special_event_chinese_new_year )
+               new_event.extra = udm.chinese_year_name( );
+         }
 
          string occurs( reader.read_opt_attribute( c_attribute_occurs ) );
 
@@ -222,6 +232,7 @@ void output_calendar( ostream& outf, const udate& ud, const udate& udm )
    outf << '\n' << c_dline << '\n';
 
    string month_and_year( udm.month_name( ) );
+
    month_and_year += ' ' + to_string( udm.get_year( ) );
 
    outf << pad_left_for_line_size( month_and_year, 35 ) << '\n';
@@ -233,6 +244,7 @@ void output_calendar( ostream& outf, const udate& ud, const udate& udm )
    outf << c_line << '\n';
 
    udate ud_tmp( udm );
+
    weekday wd = ( weekday )ud_tmp;
 
    if( wd > e_weekday_monday )
@@ -259,11 +271,13 @@ void output_calendar( ostream& outf, const udate& ud, const udate& udm )
       outf << to_string( ( int )ud_tmp.get_day( ) );
 
       bool has_event = false;
+
       for( size_t i = 0; i < g_events.size( ); i++ )
       {
          if( g_events[ i ].date == ud_tmp && g_events[ i ].repeat >= 0 )
          {
             has_event = true;
+
             string extra( g_events[ i ].extra );
 
             if( g_events[ i ].repeat > 0 )
@@ -316,6 +330,7 @@ void output_calendar( ostream& outf, const udate& ud, const udate& udm )
    if( has_today )
    {
       outf << c_line << '\n';
+
       string weekday_month_day_and_year( ud.weekday_name( ) );
 
       weekday_month_day_and_year += ", " + ud.month_name( );
@@ -347,10 +362,12 @@ void output_calendar( ostream& outf, const udate& ud, const udate& udm )
       outf << '\n' << put_title_in_line_center( c_dline, " Events " ) << '\n';
 
       udate ud_mon( ud );
+
       while( ( weekday )ud_mon != e_weekday_monday )
          --ud_mon;
 
       bool todays = false;
+
       for( multimap< udate, pair< string, string > >::iterator
        i = month_events.begin( ); i != month_events.end( ); ++i )
       {
@@ -417,27 +434,28 @@ int main( int argc, char* argv[ ] )
       {
          string input( argv[ 1 ] );
 
+         if( ( input == "-?" ) || ( input == "--help" ) )
+         {
+            cout << "Usage: calendar [mm|yyyy|yyyy-mm|yyyy-mm-dd]" << endl;
+
+            return rc;
+         }
+
          if( input.length( ) <= 2 )
             m = ( month )atoi( input.c_str( ) );
          else if( input.length( ) == 4 )
             y = ( year )atoi( input.c_str( ) );
+         else if( input.length( ) > 7 )
+            ud = udm = date_time( input );
          else
          {
             string::size_type pos = input.find( '-' );
-            if( pos != string::npos )
-            {
-               y = ( year )atoi( input.substr( 0, pos ).c_str( ) );
-               m = ( month )atoi( input.substr( pos + 1 ).c_str( ) );
-            }
-            else
-            {
-               pos = input.find( '/' );
-               if( pos != string::npos )
-               {
-                  m = ( month )atoi( input.substr( 0, pos ).c_str( ) );
-                  y = ( year )atoi( input.substr( pos + 1 ).c_str( ) );
-               }
-            }
+
+            if( pos == string::npos )
+               throw runtime_error( "unexpected yyyy-mm format" );
+
+            y = ( year )atoi( input.substr( 0, pos ).c_str( ) );
+            m = ( month )atoi( input.substr( pos + 1 ).c_str( ) );
          }
 
          udm = udate( y, m, d );
