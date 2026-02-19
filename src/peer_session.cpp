@@ -1109,6 +1109,7 @@ bool is_targeted_identity( const string& identity,
  const string& targeted_identity, const string& tree_root_hash, size_t blockchain_height )
 {
    string password;
+
    password.reserve( 256 );
 
    get_peerchain_info( identity, 0, &password );
@@ -1544,6 +1545,7 @@ void process_repository_file( const string& blockchain,
    if( p_file_data && !p_file_data->empty( ) )
    {
       file_data = *p_file_data;
+
       type_and_extra = file_data[ 0 ];
 
       peer_mapped_hash = get_peer_mapped_hash_info( peer_map_key, src_hash );
@@ -1563,6 +1565,7 @@ void process_repository_file( const string& blockchain,
    else
    {
       was_extracted = true;
+
       file_content = extract_file( src_hash, "", 0, 0, &type_and_extra, 0, true );
    }
 
@@ -1583,6 +1586,7 @@ void process_repository_file( const string& blockchain,
       if( pos != string::npos )
       {
          hex_master = hex_pub_key.substr( pos + 1 );
+
          hex_pub_key.erase( pos );
 
          if( !are_hex_nibbles( hex_master ) )
@@ -1621,6 +1625,7 @@ void process_repository_file( const string& blockchain,
          else
          {
             string password;
+
             get_identity( password, false, true );
 
             peer_mapped_hash = get_peer_mapped_hash_info( peer_map_key, target_hash );
@@ -1662,6 +1667,7 @@ void process_repository_file( const string& blockchain,
          if( !is_test_session )
          {
             string password;
+
             get_identity( password, false, true );
 
             // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
@@ -2297,6 +2303,7 @@ void process_put_file( const string& blockchain,
                   if( pos != string::npos )
                   {
                      master_key = public_key.substr( pos + 1 );
+
                      public_key.erase( pos );
                   }
 
@@ -2821,6 +2828,7 @@ void process_list_items( const string& blockchain,
    if( !skip_secondary_blobs && ( hash == first_hash_to_get ) )
    {
       first_hash_to_get.erase( );
+
       set_session_variable( first_hash_name, "" );
    }
 
@@ -2839,7 +2847,7 @@ void process_list_items( const string& blockchain,
 
    // NOTE: If the list does not contain file chunks then will not use any
    // support sessions (i.e. limit the support sessions to processing file
-   // chunks rather then lists).
+   // chunks rather than lists).
    if( !list_items.empty( ) )
    {
       string first_list_item( list_items[ 0 ] );
@@ -2850,7 +2858,8 @@ void process_list_items( const string& blockchain,
 
       string::size_type pos = first_list_item.rfind( initial_file_chunk );
 
-      if( ( pos == string::npos ) || ( pos != first_list_item.length( ) - initial_file_chunk.length( ) ) )
+      if( ( pos == string::npos )
+       || ( pos != ( first_list_item.length( ) - initial_file_chunk.length( ) ) ) )
          check_for_supporters = false;
    }
 
@@ -3602,6 +3611,7 @@ void validate_put_list_file( const string& file_data )
       else
       {
          bool rc = false;
+
          base64::validate( next_line, &rc );
 
          is_invalid = !rc;
@@ -4326,6 +4336,7 @@ void socket_command_handler::put_hello( )
    last_issued_was_put = true;
 
    progress* p_sock_progress = 0;
+
    trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
    if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
@@ -4362,6 +4373,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
    last_issued_was_put = false;
 
    progress* p_sock_progress = 0;
+
    trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
    if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
@@ -4444,6 +4456,7 @@ void socket_command_handler::put_file( const string& hash )
    last_issued_was_put = true;
 
    progress* p_sock_progress = 0;
+
    trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
    if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
@@ -4474,6 +4487,7 @@ void socket_command_handler::put_file( const string& hash )
 void socket_command_handler::msg_peer( const string& data )
 {
    progress* p_sock_progress = 0;
+
    trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
    if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
@@ -4509,6 +4523,7 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
    bool has_extra = false;
 
    progress* p_sock_progress = 0;
+
    trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
    if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
@@ -5720,6 +5735,7 @@ void socket_command_handler::postprocess_command_and_args( const string& cmd_and
 void socket_command_handler::handle_command_response( const string& response, bool is_special )
 {
    progress* p_sock_progress = 0;
+
    trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
    if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
@@ -5788,6 +5804,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 #endif
 
    progress* p_sock_progress = 0;
+
    trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
    if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
@@ -6847,6 +6864,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
    while( true )
    {
       progress* p_sock_progress = 0;
+
       trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
       if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
@@ -7134,6 +7152,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
       }
 
       progress* p_sock_progress = 0;
+
       trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
 #ifdef DEBUG_PEER_HANDSHAKE
@@ -7568,6 +7587,7 @@ void peer_session::on_start( )
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
 
       progress* p_sock_progress = 0;
+
       trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
 #ifdef DEBUG_PEER_HANDSHAKE
@@ -8091,6 +8111,7 @@ void peer_session::on_start( )
 void peer_session::process_greeting( )
 {
    progress* p_sock_progress = 0;
+
    trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
 #ifdef DEBUG_PEER_HANDSHAKE
@@ -9194,9 +9215,6 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    reverse( reversed.begin( ), reversed.end( ) );
 
    string reversed_chain( c_bc_prefix + reversed );
-
-   if( peer_type == c_peer_type_shared_only )
-      blockchain = reversed_chain;
 
    bool requires_verification = false;
 
