@@ -52,6 +52,7 @@ STORAGE=Meta
 APP_DIR=@lower:$STORAGE
 ;
 ~echo -n $LOCKED > $WEBDIR/$APP_DIR/encrypted.txt
+~echo -n $UNLOCKED > $WEBDIR/$APP_DIR/identity.txt
 ;
 @endif
 @endif
