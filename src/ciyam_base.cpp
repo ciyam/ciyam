@@ -6374,10 +6374,16 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
    {
       bool is_reversed = false;
 
-      if( reversed == peerchains[ i ] )
+      string next_identity( peerchains[ i ] );
+
+      if( reversed == next_identity )
          is_reversed = true;
 
-      if( is_reversed || ( identity == peerchains[ i ] ) )
+      string next_reversed( next_identity );
+
+      reverse( next_reversed.begin( ), next_reversed.end( ) );
+
+      if( is_reversed || ( identity == next_identity ) )
       {
          stringstream sio_data;
 
@@ -6400,9 +6406,6 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
 
          int type = from_string< int >( peer_type );
 
-         if( type == c_peer_type_shared_only )
-            is_reversed = true;
-
          // NOTE: If "p_is_listener" is not provided then it is being
          // assumed that only listening information is required (else
          // returns connection information unless the host is "local"
@@ -6412,10 +6415,12 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
             if( p_is_listener )
                *p_is_listener = true;
 
-            retval = identity;
+            retval = next_identity;
 
             if( type == c_peer_type_combined )
-               retval += ',' + reversed;
+               retval += ',' + next_reversed;
+            else if( type == c_peer_type_shared_only )
+               retval = next_reversed;
 
             retval += '=' + local_port;
          }
@@ -6424,7 +6429,10 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
             if( p_is_listener )
                *p_is_listener = false;
 
-            retval = identity;
+            retval = next_identity;
+
+            if( type == c_peer_type_shared_only )
+               retval = next_reversed;
 
             if( !extra_value.empty( ) )
                retval += '-' + extra_value;
