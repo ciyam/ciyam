@@ -2474,6 +2474,12 @@ bool has_all_list_items(
       {
          string next_item( list_items[ i ] );
 
+         if( is_condemned_session( ) )
+            throw runtime_error( "peer session has been condemned" );
+
+         if( g_server_shutdown )
+            throw runtime_error( "application server is being shutdown" );
+
          if( p_dtm && p_progress )
          {
             date_time now( date_time::standard( ) );
@@ -9188,6 +9194,9 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    reverse( reversed.begin( ), reversed.end( ) );
 
    string reversed_chain( c_bc_prefix + reversed );
+
+   if( peer_type == c_peer_type_shared_only )
+      blockchain = reversed_chain;
 
    bool requires_verification = false;
 
