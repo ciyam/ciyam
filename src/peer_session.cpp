@@ -5661,15 +5661,12 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             {
                tag_file( blockchain + c_shared_suffix, block_processing );
 
-               string backup_identity( get_raw_session_variable(
-                get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+               string reversed( identity );
 
-               if( backup_identity.empty( ) )
-                  set_system_variable( get_special_var_name(
-                   e_special_var_export_needed ) + '_' + identity, identity );
-               else
-                  set_system_variable( get_special_var_name(
-                   e_special_var_export_needed ) + '_' + backup_identity, identity );
+               reverse( reversed.begin( ), reversed.end( ) );
+
+               set_system_variable( get_special_var_name(
+                e_special_var_export_needed ) + '_' + reversed, identity );
             }
          }
       }
@@ -6024,15 +6021,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                    get_special_var_name( e_special_var_exporting_for_identity ) )
                    && has_tag( blockchain + c_shared_suffix, e_file_type_blob ) )
                   {
-                     string backup_identity( get_raw_session_variable(
-                      get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+                     string reversed( identity );
 
-                     if( backup_identity.empty( ) )
-                        set_system_variable( get_special_var_name(
-                         e_special_var_export_needed ) + '_' + identity, identity );
-                     else
-                        set_system_variable( get_special_var_name(
-                         e_special_var_export_needed ) + '_' + backup_identity, identity );
+                     reverse( reversed.begin( ), reversed.end( ) );
+
+                     set_system_variable( get_special_var_name(
+                      e_special_var_export_needed ) + '_' + reversed, identity );
                   }
 
                   output_sync_progress_message( identity, blockchain_height, blockchain_height_other );
