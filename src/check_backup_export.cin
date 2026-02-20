@@ -99,6 +99,17 @@ STARTING=@file:~grep "Starting" $EXPORT_OUTPUT
 ~cat $EXPORT_OUTPUT
 @else
 <file_progress.cin $EXPORT_OUTPUT Finished
+.system_variable @complete_restore_needed
+@ifdef $OUTPUT
+.system_variable @storage
+STORAGE=$OUTPUT
+@ifdef $STORAGE
+&Complete Restore? [RESTORE:Yes==1|No=]
+@ifdef $RESTORE
+<complete_restore.cin $STORAGE
+@endif
+@endif
+@endif
 @endif
 @endif
 ;
