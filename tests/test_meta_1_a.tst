@@ -667,7 +667,7 @@ Checksum_Null,M001C207F112
 Connecting,M001C207F113
 Import_Needed,M001C207F114
 Shared_Details,M001C207F115
-Importing_For_Chain_Id,M001C207F116
+Importing_For_Identity,M001C207F116
 Inactive,M001C207F117
 Description,M001C207F118
 Dummy_0,M001C207F119
@@ -676,7 +676,7 @@ Dummy_Host_Name,M001C207F121
 Error,M001C207F122
 Export_In_Progress,M001C207F123
 Export_Needed,M001C207F124
-Exporting_For_Chain_Id,M001C207F125
+Exporting_For_Identity,M001C207F125
 Fetching_And_Not_Reconnecting,M001C207F126
 Host_And_Port_Info,M001C207F127
 Lot_Number,M001C207F128
