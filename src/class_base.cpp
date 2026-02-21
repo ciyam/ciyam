@@ -7289,13 +7289,19 @@ void allow_peerchain( const string& identity, int peer_type, bool no_delay )
 
    reverse( reversed.begin( ), reversed.end( ) );
 
+   bool is_single = true;
+
    if( peer_type == c_peer_type_combined )
+   {
+      is_single = false;
+
       identities += ',' + reversed;
+   }
 
    set_system_variable( get_special_var_name( e_special_var_queue_peers ), '@' + identities );
 
    if( !no_delay )
-      msleep( c_peer_sleep_time );
+      msleep( c_peer_sleep_time * ( is_single ? 2 : 4 ) );
 }
 
 void disallow_peerchain( const string& identity, int peer_type, bool no_delay )
