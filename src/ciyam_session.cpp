@@ -5711,10 +5711,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_session_wait )
       {
          bool lock = has_parm_val( parameters, c_cmd_ciyam_session_session_wait_lock );
-         string uid( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_uid ) );
+         bool no_progress = has_parm_val( parameters, c_cmd_ciyam_session_session_wait_no_progress );
          string milliseconds( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_milliseconds ) );
-
-         set_uid( uid );
 
          int msecs = atoi( milliseconds.c_str( ) );
 
@@ -5731,7 +5729,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( lock )
             up_guard.reset( new guard( g_mutex, "wait" ) );
 
-         if( msecs <= 2000 )
+         if( no_progress || ( msecs <= 2000 ) )
             msleep( msecs );
          else
          {

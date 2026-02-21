@@ -79,7 +79,7 @@ perform_package_update "update an existing meta package" <val//name>
 session_kill "kill one or more sessions" [<opt/-force/force>][<opt/-at_term/at_term>]{<opt/*/all>|<list//sess_ids>}[<val//seconds>]
 session_list "list active sessions" [<opt/-min/minimal>][<olist//blockchains>]
 session_lock "capture/release one or more sessions" {<opt/-capture/capture>|{<opt/-release/release>[<opt/-at_term/at_term>]}}<opt/*/all>|<list//sess_ids>
-session_wait|wait "wait for a number of milliseconds" [<opt/-lock/lock>][<val/-u=/uid>]<val//milliseconds>
+session_wait|wait "wait for a number of milliseconds" [<opt/-lock/lock>][<opt/-no_progress/no_progress>]<val//milliseconds>
 session_timeout "get/set server session timeout" [<val//seconds>]
 session_restrict|restrict "set/clear restricted protocol command list" <val//key>[<olist//commands>]
 session_variable "get/set a session variable" [<val/-id=/sess_id>|<opt/-num_found/num_found>]<val//name_or_expr>[<oval//new_value>]
