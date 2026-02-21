@@ -201,7 +201,7 @@ CORRECT=
 @endif
 ;
 @ifdef $CORRECT
-.wait 1000
+.wait 2000
 ;
 .system_variable @storage
 STORAGE=$OUTPUT

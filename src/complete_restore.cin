@@ -16,7 +16,7 @@ APP_DIR=@lower:$STORAGE
 .system_variable @restore_in_progress 1
 ~echo "(restore completion is now commencing)" > Backup.txt
 ;
-.wait 5000
+.wait -no_progress 5000
 ;
 @ifdef $WEBDIR
 ~touch $WEBDIR/$APP_DIR/.prepare.restore
@@ -27,6 +27,7 @@ APP_DIR=@lower:$STORAGE
 .session_kill *
 ;
 CHECK=0
+;
 NUM_TRIES=0
 MAX_TRIES=60
 ;
@@ -44,6 +45,7 @@ SECOND_LINE=%OUTPUT:2%
 @endif
 ;
 CHECK=@$NUM_TRIES>$MAX_TRIES
+;
 @ifeq "$CHECK" "1"
 @label END_LOOP
 @endif
