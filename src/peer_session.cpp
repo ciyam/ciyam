@@ -9210,6 +9210,34 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    string reversed_chain( c_bc_prefix + reversed );
 
+   bool okay = false;
+
+   // NOTE: Will check if any existing sessions
+   // are present and unless they have finished
+   // then will simply do nothing.
+   for( size_t i = 0; i < 10; i++ )
+   {
+      if( !any_session_has_blockchain( identity )
+       && !any_session_has_blockchain( reversed ) )
+      {
+         okay = true;
+
+         break;
+      }
+
+      msleep( c_wait_sleep_time );
+   }
+
+   if( !okay )
+   {
+      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION,
+       "*** aborted start for '" + peer_info + "' due to existing session(s) ***" );
+
+      set_system_variable( identity, "" );
+
+      return;
+   }
+
    bool requires_verification = false;
 
    // NOTE: If this is a new (non-local) blockchain
