@@ -201,7 +201,18 @@ CORRECT=
 @endif
 ;
 @ifdef $CORRECT
+;
+; NOTE: Wait here a while for the shared
+; session (if is combined) to terminate.
+;
+.session_list $REVERSED
+@ifdef $OUTPUT
+.wait 1000
+@endif
+.session_list $REVERSED
+@ifdef $OUTPUT
 .wait 2000
+@endif
 ;
 .system_variable @storage
 STORAGE=$OUTPUT
