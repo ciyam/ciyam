@@ -93,7 +93,8 @@ const char* const c_openid_ext_email = "openid.ext1.value.email";
 const char* const c_user_key_arg = "$user";
 const char* const c_user_perms_arg = "$perms";
 
-const char* const c_dummy_server_command = "wait";
+// NOTE: Uses "0110" so this can be easily grepped for.
+const char* const c_dummy_server_command = "wait 0110";
 
 const char* const c_sign_up_types_map = "sign_up_types.map";
 const char* const c_sign_up_testers_file = "sign_up_testers.lst";
@@ -337,20 +338,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          }
       }
 
-      string dummy_command( string( c_dummy_server_command ) + " \"-u="
-       + p_session_info->user_key + ":" + p_session_info->user_id + "\" 0" );
-
       // NOTE: Issue a dummy command to ensure that a server session timeout won't occur.
-      if( !issued_command && !simple_command( *p_session_info, dummy_command ) )
+      if( !issued_command && !simple_command( *p_session_info, c_dummy_server_command ) )
          throw runtime_error( "unexpected response to dummy server command" );
    }
    else if( cmd == c_cmd_pwd )
    {
-      string dummy_command( string( c_dummy_server_command ) + " \"-u="
-       + p_session_info->user_key + ":" + p_session_info->user_id + "\" 0" );
-
       // NOTE: Issue a dummy command to ensure that a server session timeout won't occur.
-      if( !simple_command( *p_session_info, dummy_command ) )
+      if( !simple_command( *p_session_info, c_dummy_server_command ) )
          throw runtime_error( "unexpected response to dummy server command" );
    }
    else if( ( cmd == c_cmd_view ) || ( cmd == c_cmd_pview ) )
