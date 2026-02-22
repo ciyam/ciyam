@@ -6415,11 +6415,9 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
             if( p_is_listener )
                *p_is_listener = true;
 
-            retval = next_identity;
+            retval = identity;
 
-            if( type == c_peer_type_combined )
-               retval += ',' + next_reversed;
-            else if( type == c_peer_type_shared_only )
+            if( type == c_peer_type_shared_only )
                retval = next_reversed;
 
             retval += '=' + local_port;
