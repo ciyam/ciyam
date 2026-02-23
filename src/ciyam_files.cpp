@@ -1281,18 +1281,28 @@ void init_archive_info( progress* p_progress, bool has_restored_system )
          int64_t used = 0;
 
          int64_t avail = 0;
+
          ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
 
          int64_t limit = 0;
+
          ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
 
          if( !dir_exists( path ) )
-            // FUTURE: This message should be handled as a server string message.
-            throw runtime_error( "Archive '" + archive + "' path '" + path + "' is not accessible." );
+         {
+            if( has_restored_system )
+               set_system_variable( get_special_var_name(
+                e_special_var_queue_archive_info_for_resize ), archive );
+            else
+               TRACE_LOG( TRACE_MINIMAL, "(archive '" + archive + "' path '" + path + "' was not found)" );
+
+            continue;
+         }
 
          // NOTE: Iterate through the files in the path adding all
          // that have names that appear to be valid SHA256 hashes.
          file_filter ff;
+
          fs_iterator fs( path, &ff );
 
          regex expr( c_regex_hash_256, true, true );
@@ -1336,8 +1346,7 @@ void init_archive_info( progress* p_progress, bool has_restored_system )
                set_system_variable( get_special_var_name(
                 e_special_var_queue_archive_info_for_resize ), archive + ',' + to_string( used ) );
             else
-               // FUTURE: This message should be handled as a server string message.
-               TRACE_LOG( TRACE_MINIMAL, "Archive '" + archive + "' needs to be repaired (incorrect size info)." );
+               TRACE_LOG( TRACE_MINIMAL, "(archive '" + archive + "' needs to be repaired due to incorrect size info)" );
          }
       }
    }
@@ -4845,6 +4854,7 @@ void repair_file_archive( const string& name, progress* p_progress )
          // NOTE: Iterate through the files in the path adding all
          // that have names that appear to be valid SHA256 hashes.
          file_filter ff;
+
          fs_iterator fs( path, &ff );
 
          regex expr( c_regex_hash_256, true, true );
@@ -4993,6 +5003,7 @@ void archives_status_update( const string& name )
    ods_fs.set_root_folder( c_system_archives_folder );
 
    vector< string > names;
+
    ods_fs.list_folders( names );
 
    ods::transaction ods_tx( system_ods_instance( ) );
@@ -5007,6 +5018,7 @@ void archives_status_update( const string& name )
       ods_fs.set_folder( next );
 
       string path;
+
       ods_fs.fetch_from_text_file( c_file_archive_path, path );
 
       path = dir_archive_path( path );
@@ -5080,6 +5092,7 @@ bool has_file_archive( const string& archive, string* p_path )
                *p_path = paths[ i ];
 
             retval = true;
+
             break;
          }
       }
@@ -5153,7 +5166,7 @@ string list_file_archives( archive_list_type list_type,
       ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
       ods_fs.fetch_from_text_file( c_file_archive_status_info, status_info );
 
-      if( min_avail <= 0 || avail >= min_avail )
+      if( ( min_avail <= 0 ) || ( avail >= min_avail ) )
       {
          retval += next;
 

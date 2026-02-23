@@ -4981,6 +4981,15 @@ void init_globals( const char* p_sid, int* p_use_udp )
             if( next_info.empty( ) )
                break;
 
+            // NOTE: If just the archive name is found
+            // then will remove rather than resize it.
+            if( next_info.find( ',' ) == string::npos )
+            {
+               remove_file_archive( next_info );
+
+               continue;
+            }
+
             vector< string > columns;
 
             split( next_info, columns );
