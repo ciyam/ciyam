@@ -106,7 +106,7 @@ STORAGE=$OUTPUT
 @ifdef $STORAGE
 &Complete Restore? [RESTORE:Yes==1|No=]
 @ifdef $RESTORE
-~echo "$(date) [complete_restore]" >> ciyam_script.log
+~echo "$$(date) [complete_restore]" >> ciyam_script.log
 .session_variable @uuid
 UUID=$OUTPUT
 >$UUID
