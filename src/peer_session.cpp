@@ -3374,12 +3374,12 @@ void process_public_key_file( const string& blockchain,
       bool is_hub_blockchain = false;
       bool needs_verification = false;
 
+      peerchain_type chain_type = get_blockchain_type( blockchain );
+
       if( has_raw_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ) )
          is_hub_blockchain = true;
       else if( scaling_value != c_bc_scaling_test_value )
       {
-         peerchain_type chain_type = get_blockchain_type( blockchain );
-
          if( ( chain_type == e_peerchain_type_user )
           || ( chain_type == e_peerchain_type_backup )
           || ( chain_type == e_peerchain_type_shared ) )
@@ -3423,6 +3423,11 @@ void process_public_key_file( const string& blockchain,
        blockchain + '.' + to_string( height ) + c_blk_suffix ) );
 
       tag_file( blockchain + c_zenith_suffix, block_hash );
+
+      if( ( chain_type == e_peerchain_type_hub )
+       || ( chain_type == e_peerchain_type_backup )
+       || ( chain_type == e_peerchain_type_shared ) )
+         tag_file( blockchain + c_marker_suffix, block_hash );
 
       set_session_variable( zenith_height_name, to_string( height ) );
 
