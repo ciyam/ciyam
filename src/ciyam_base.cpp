@@ -4973,6 +4973,40 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       if( restored )
       {
+         string markers( "*" );
+
+         markers += c_marker_suffix;
+
+         string marker_tags( list_file_tags( markers ) );
+
+         // NOTE: For all '.marker' tagged files will add
+         // '.zenith' tags if they do not already exist.
+         if( !marker_tags.empty( ) )
+         {
+            vector< string > all_marker_tags;
+
+            split( markers, all_marker_tags, '\n' );
+
+            for( size_t i = 0; i < all_marker_tags.size( ); i++ )
+            {
+               string next_marker_tag( all_marker_tags[ i ] );
+
+               bool rc = false;
+
+               string file_hash( tag_file_hash( next_marker_tag, &rc ) );
+
+               if( rc )
+               {
+                  string next_zenith_tag( next_marker_tag );
+
+                  replace( next_zenith_tag, c_marker_suffix, c_zenith_suffix );
+
+                  if( !has_tag( next_zenith_tag ) )
+                     tag_file( next_zenith_tag, file_hash );
+               }
+            }
+         }
+
          while( true )
          {
             string next_info( get_raw_system_variable(
