@@ -4,7 +4,7 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 @ifndef $1
-#Usage: append_peer_marker_info_list.cin <file_name>
+#Usage: append_peer_pinned_info_list.cin <file_name>
 @else
 FILE_NAME=$1
 ;
@@ -13,7 +13,7 @@ FILES_AREA_DIR=$OUTPUT
 ;
 .session_variable @deque commence
 ;
-.file_tags *.marker
+.file_tags *.pinned
 ;
 @ifdef $OUTPUT
 ;
@@ -55,7 +55,7 @@ HASH_SUFFIX=@substr:2:$FILE_HASH
 ;
 #$FILES_AREA_DIR/$HASH_PREFIX/$HASH_SUFFIX
 ;
-PUB_0=@repstr:.marker/.0.pub:$NEXT_TAG
+PUB_0=@repstr:.pinned/.0.pub:$NEXT_TAG
 ;
 .file_tags $PUB_0*
 @ifdef $OUTPUT
@@ -74,7 +74,7 @@ HASH_SUFFIX=@substr:2:$FILE_HASH
 @endif
 @endif
 ;
-PUB_49=@repstr:.marker/.49.pub:$NEXT_TAG
+PUB_49=@repstr:.pinned/.49.pub:$NEXT_TAG
 ;
 .file_tags $PUB_49*
 @ifdef $OUTPUT
@@ -93,7 +93,7 @@ HASH_SUFFIX=@substr:2:$FILE_HASH
 @endif
 @endif
 ;
-PUB_2499=@repstr:.marker/.2499.pub:$NEXT_TAG
+PUB_2499=@repstr:.pinned/.2499.pub:$NEXT_TAG
 ;
 .file_tags $PUB_2499*
 @ifdef $OUTPUT

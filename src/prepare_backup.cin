@@ -112,7 +112,7 @@ BACKUP_FILES_PATH=$OUTPUT
 ~mv $STORAGE.backup*.bun.gz $BACKUP_FILES_PATH/.ciyam
 <create_peer_info_file_list.cin "~prepare_backup.files"
 <append_hub_and_extras_list.cin "~prepare_backup.files"
-<append_peer_marker_info_list.cin "~prepare_backup.files"
+<append_peer_pinned_info_list.cin "~prepare_backup.files"
 ~tar -cf $BACKUP_FILES_PATH/.ciyam/System_Files_And_Archives.tar --files-from="~prepare_backup.files"
 ~rm -f .prepare_backup_needed "~prepare_backup.files"
 #Prepared application server files, archives and databases.

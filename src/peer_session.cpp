@@ -3427,7 +3427,7 @@ void process_public_key_file( const string& blockchain,
       if( ( chain_type == e_peerchain_type_hub )
        || ( chain_type == e_peerchain_type_backup )
        || ( chain_type == e_peerchain_type_shared ) )
-         tag_file( blockchain + c_marker_suffix, block_hash );
+         tag_file( blockchain + c_pinned_suffix, block_hash );
 
       set_session_variable( zenith_height_name, to_string( height ) );
 

@@ -4973,33 +4973,33 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       if( restored )
       {
-         string markers( "*" );
+         string pinned( "*" );
 
-         markers += c_marker_suffix;
+         pinned += c_pinned_suffix;
 
-         string marker_tags( list_file_tags( markers ) );
+         string pinned_tags( list_file_tags( pinned ) );
 
-         // NOTE: For all '.marker' tagged files will add
+         // NOTE: For all '.pinned' tagged files will add
          // '.zenith' tags if they do not already exist.
-         if( !marker_tags.empty( ) )
+         if( !pinned_tags.empty( ) )
          {
-            vector< string > all_marker_tags;
+            vector< string > all_pinned_tags;
 
-            split( markers, all_marker_tags, '\n' );
+            split( pinned, all_pinned_tags, '\n' );
 
-            for( size_t i = 0; i < all_marker_tags.size( ); i++ )
+            for( size_t i = 0; i < all_pinned_tags.size( ); i++ )
             {
-               string next_marker_tag( all_marker_tags[ i ] );
+               string next_pinned_tag( all_pinned_tags[ i ] );
 
                bool rc = false;
 
-               string file_hash( tag_file_hash( next_marker_tag, &rc ) );
+               string file_hash( tag_file_hash( next_pinned_tag, &rc ) );
 
                if( rc )
                {
-                  string next_zenith_tag( next_marker_tag );
+                  string next_zenith_tag( next_pinned_tag );
 
-                  replace( next_zenith_tag, c_marker_suffix, c_zenith_suffix );
+                  replace( next_zenith_tag, c_pinned_suffix, c_zenith_suffix );
 
                   if( !has_tag( next_zenith_tag ) )
                      tag_file( next_zenith_tag, file_hash );

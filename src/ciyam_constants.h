@@ -101,8 +101,8 @@ const char* const c_put_suffix = ".put";
 const char* const c_sig_suffix = ".sig";
 
 const char* const c_locked_suffix = ".locked";
-const char* const c_marker_suffix = ".marker";
 const char* const c_master_suffix = ".master";
+const char* const c_pinned_suffix = ".pinned";
 const char* const c_shared_suffix = ".shared";
 const char* const c_zenith_suffix = ".zenith";
 
