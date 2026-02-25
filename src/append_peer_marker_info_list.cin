@@ -1,0 +1,128 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#Usage: append_peer_marker_info_list.cin <file_name>
+@else
+FILE_NAME=$1
+;
+.system_variable @files_area_path
+FILES_AREA_DIR=$OUTPUT
+;
+.session_variable @deque commence
+;
+.file_tags *.marker
+;
+@ifdef $OUTPUT
+;
+.session_variable @deque "~$OUTPUT"
+;
+ERROR=
+;
+>>$FILE_NAME
+;
+@label NEXT
+;
+@:LOOP
+;
+.session_variable @deque front
+NEXT_TAG=$OUTPUT
+;
+@ifeq "$NEXT_TAG" ""
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+.file_hash $NEXT_TAG
+@ifdef $ERROR
+ERROR=
+@else
+FILE_HASH=$OUTPUT
+;
+.file_tags $FILE_HASH
+FILE_TAGS=$OUTPUT
+;
+FILE_NAMES=@repstr:bc./$FILES_AREA_DIR\/bc.:$FILE_TAGS
+;
+#$FILE_NAMES
+;
+HASH_PREFIX=@substr:0,2:$FILE_HASH
+HASH_SUFFIX=@substr:2:$FILE_HASH
+;
+#$FILES_AREA_DIR/$HASH_PREFIX/$HASH_SUFFIX
+;
+PUB_0=@repstr:.marker/.0.pub:$NEXT_TAG
+;
+.file_tags $PUB_0*
+@ifdef $OUTPUT
+#$FILES_AREA_DIR/$PUB_0
+.file_hash $PUB_0
+@ifdef $ERROR
+ERROR=
+@else
+FILE_HASH=$OUTPUT
+;
+HASH_PREFIX=@substr:0,2:$FILE_HASH
+HASH_SUFFIX=@substr:2:$FILE_HASH
+;
+#$FILES_AREA_DIR/$HASH_PREFIX/$HASH_SUFFIX
+;
+@endif
+@endif
+;
+PUB_49=@repstr:.marker/.49.pub:$NEXT_TAG
+;
+.file_tags $PUB_49*
+@ifdef $OUTPUT
+#$FILES_AREA_DIR/$PUB_49
+.file_hash $PUB_49
+@ifdef $ERROR
+ERROR=
+@else
+FILE_HASH=$OUTPUT
+;
+HASH_PREFIX=@substr:0,2:$FILE_HASH
+HASH_SUFFIX=@substr:2:$FILE_HASH
+;
+#$FILES_AREA_DIR/$HASH_PREFIX/$HASH_SUFFIX
+;
+@endif
+@endif
+;
+PUB_2499=@repstr:.marker/.2499.pub:$NEXT_TAG
+;
+.file_tags $PUB_2499*
+@ifdef $OUTPUT
+#$FILES_AREA_DIR/$PUB_2499
+.file_hash $PUB_2499
+@ifdef $ERROR
+ERROR=
+@else
+FILE_HASH=$OUTPUT
+;
+HASH_PREFIX=@substr:0,2:$FILE_HASH
+HASH_SUFFIX=@substr:2:$FILE_HASH
+;
+#$FILES_AREA_DIR/$HASH_PREFIX/$HASH_SUFFIX
+;
+@endif
+@endif
+;
+@endif
+.session_variable @deque pop_front
+;
+!!@:LOOP
+;
+@:END_LOOP
+;
+>>
+;
+@endif
+;
+.session_variable @deque complete
+;
+@endif

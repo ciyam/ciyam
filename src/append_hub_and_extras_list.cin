@@ -84,7 +84,7 @@ HASH_SUFFIX=@substr:2:$FILE_HASH
 ;
 @:END_FILE_LOOP
 ;
->
+>>
 ;
 .session_variable @set complete
 .session_variable @deque complete
