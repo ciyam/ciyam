@@ -43,8 +43,21 @@ ERROR=
 @else
 FILE_HASH=$OUTPUT
 ;
+PREFIX=@repstr:.pinned/:$NEXT_TAG
+;
 .file_tags $FILE_HASH
 FILE_TAGS=$OUTPUT
+;
+; NOTE: Convert LFs to commas in order to remove
+; the ".zenith" tag (if present) as it might not
+; be correct after restoring (and if not present
+; during restore is re-created).
+FILE_TAGS=@repstr:\n/,:$FILE_TAGS
+;
+ZENITH=$PREFIX.zenith
+FILE_TAGS=@repstr:,$ZENITH/:$FILE_TAGS
+;
+FILE_TAGS=@repstr:,/\n:$FILE_TAGS
 ;
 FILE_NAMES=@repstr:bc./$FILES_AREA_DIR\/bc.:$FILE_TAGS
 ;
