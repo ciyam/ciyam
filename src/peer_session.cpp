@@ -673,7 +673,7 @@ void system_identity_progress_message( const string& identity, bool is_preparing
             // NOTE: If the paired session's progress is "changing" but is not "fetching" then
             // is assuming that its peer must be syncing at "paired_other_height + 1" and will
             // increment the value for comparisons that are used to output the other height.
-            if( !is_preparing && paired_is_changing && !paired_height_other.empty( ) )
+            if( !is_preparing && paired_is_changing && paired_base_height )
             {
                if( !paired_is_current && !has_raw_session_variable(
                 get_special_var_name( e_special_var_blockchain_is_fetching ), paired_session_id ) )
