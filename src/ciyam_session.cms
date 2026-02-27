@@ -81,8 +81,8 @@ session_list "list active sessions" [<opt/-min/minimal>][<olist//blockchains>]
 session_lock "capture/release one or more sessions" {<opt/-capture/capture>|{<opt/-release/release>[<opt/-at_term/at_term>]}}<opt/*/all>|<list//sess_ids>
 session_wait|wait "wait for a number of milliseconds" [<opt/-lock/lock>][<opt/-no_progress/no_progress>]<val//milliseconds>
 session_timeout "get/set server session timeout" [<val//seconds>]
-session_restrict|restrict "set/clear restricted protocol command list" <val//key>[<olist//commands>]
-session_variable "get/set a session variable" [<val/-id=/sess_id>|<opt/-num_found/num_found>]<val//name_or_expr>[<oval//new_value>]
+session_restrict "set/clear restricted protocol command list" <val//key>[<olist//commands>]
+session_variable|var "get/set a session variable" [<val/-id=/sess_id>|<opt/-num_found/num_found>]<val//name_or_expr>[<oval//new_value>]
 session_terminate|quit "terminate session"
 session_rpc_unlock "unlock full RPC access for a session" <val//password>[<val//seconds>]
 starttls|tls "start TLS session"
@@ -130,7 +130,7 @@ system_passtotp|passtotp "retrieve a TOTP system password" <val//secret>
 system_password|password "retrieve an encrypted system password" <val//name>
 system_schedule|schedule "display system autoscript schedule" [<opt/-reload/reload>][<opt/-from_now/from_now>]
 system_sendmail|sendmail "send a simple test system email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_name>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
-system_variable "get/set a system variable" <val//name_or_expr>[<oval//new_value>][<oval//check_value>]
+system_variable|variable "get/set a system variable" <val//name_or_expr>[<oval//new_value>][<oval//check_value>]
 system_checkmail|checkmail "check for incoming email or process system email script calls" [<opt/-script/create_script>|<list//headers>]
 system_externals|externals "display a list of system external services"
 system_listeners|listeners "display a list of all current system listeners"
