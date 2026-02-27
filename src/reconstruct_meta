@@ -26,6 +26,10 @@ else
 
   ./destroy_apps_and_models $1 "~reconstruct_meta" "reconstruct_meta.pipe"
 
+  if [ $? -ne 0 ]; then
+   touch ~reconstruct_meta
+  fi
+
   # NOTE: The "wait" is needed to suppress normal "PID Terminated" output.
   kill "$tail_pid"
   wait $! 2>/dev/null
