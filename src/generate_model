@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo "Usage: generate [module name] [[app dir]] [[module alias]]"
+ echo "Usage: generate_model [model name] [[app dir]] [[module alias]]"
 else
  export CIYAM_MODEL=
 
@@ -20,11 +20,11 @@ else
  . ./$tmp_file
 
  if [ "$CIYAM_MODEL" = "" ]; then
-  echo "Error: Unknown module '$1'."
+  echo "Error: Unknown model '$1'."
  else
-  echo "Starting generate..."
+  echo "Starting model generate..."
 
-  ./ciyam_client -quiet -no_prompt -no_stderr -exec="<generate.cin $CIYAM_MODEL" >$tmp_file
+  ./ciyam_client -quiet -no_prompt -no_stderr -exec="<generate_model.cin $CIYAM_MODEL" >$tmp_file
 
   cat $tmp_file
   if grep -q "Error" $tmp_file || grep -q "error" $tmp_file; then
@@ -32,14 +32,14 @@ else
   else
    ./genmodule -rdbms $1 $2 $3
 
-   ./ciyam_client -quiet -no_prompt -no_stderr -exec="<genlinks.cin $CIYAM_MODEL" >$tmp_file
+   ./ciyam_client -quiet -no_prompt -no_stderr -exec="<generate_links.cin $CIYAM_MODEL" >$tmp_file
 
    cat $tmp_file
 
    if [ -f manuscript.sio.new ]; then
     ./remove_identical manuscript.sio manuscript.sio.new
    fi
-   echo "Finished generate..."
+   echo "Finished model generate..."
   fi
  fi
  rm -f $tmp_file
