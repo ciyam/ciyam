@@ -509,6 +509,10 @@ if [ "$has_service" = "" ]; then
  sudo systemctl enable ciyam
 fi
 
+if [ "$unlock_key" != "" ]; then
+ touch $INSTALL_PATH/.skip_compress
+fi
+
 sudo systemctl start ciyam
 
 show_restore_message=$needs_restore

@@ -144,6 +144,8 @@ const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
+const char* const c_skip_compress_file = ".skip_compress";
+
 const char* const c_check_ext_ip_addr = "check_ext_ip_addr";
 
 const char* const c_server_demo_identities_list = "ciyam_demo_identities.lst";
@@ -2292,13 +2294,23 @@ void init_system_ods( bool* p_restored = 0 )
    else if( gup_ods->is_new( ) )
       was_just_created = true;
 
+   bool skip_compress = file_exists( c_skip_compress_file );
+
    if( !was_just_created
     && ( gup_ods->get_next_transaction_id( ) >= c_num_txs_for_reset ) )
    {
-      reconstruct_trace_progress progress( ods_db_name, true );
+      if( skip_compress )
+         TRACE_LOG( TRACE_MINIMAL, "(restart recommended for compress)" );
+      else
+      {
+         reconstruct_trace_progress progress( ods_db_name, true );
 
-      gup_ods->compress_and_reset_tx_log( &progress );
+         gup_ods->compress_and_reset_tx_log( &progress );
+      }
    }
+
+   if( skip_compress )
+      file_remove( c_skip_compress_file );
 
    system_ods_bulk_write ods_bulk_write;
 
