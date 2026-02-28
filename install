@@ -296,6 +296,7 @@ if [ -f /usr/lib/systemd/system/ciyam.service ]; then
  service_path=/usr/lib/systemd/system
 fi
 
+unlock_key=
 has_service=
 
 if [ -s $service_path/ciyam.service ]; then
@@ -310,6 +311,20 @@ if [ -s $service_path/ciyam.service ]; then
  sudo systemctl is-active ciyam >/dev/null
 
  if [ $? -eq 0 ]; then
+  pushd $INSTALL_PATH >/dev/null
+  is_locked=$(./ciyam_command "system_variable @sid_locked")
+
+  if [ $? -eq 0 ]; then
+   if [ "$is_locked" = "" ]; then
+    unlock_key=$(./ciyam_command system_unlock_key)
+
+    if [ $? -ne 0 ]; then
+     unlock_key=
+    fi
+   fi
+   popd >/dev/null
+  fi
+
   sudo systemctl stop ciyam
  fi
 
@@ -495,7 +510,29 @@ if [ "$has_service" = "" ]; then
 fi
 
 sudo systemctl start ciyam
-sudo systemctl --no-pager -l status ciyam
+
+show_restore_message=$needs_restore
+
+if [ "$unlock_key" != "" ]; then
+ pushd $INSTALL_PATH >/dev/null
+ sleep 1
+ ./unlock_identity "$unlock_key"
+ if [ $? -eq 0 ]; then
+  if [ "$needs_restore" = "1" ]; then
+   ./restore $CIYAM_APP_MOD
+   if [ $? -eq 0 ]; then
+    show_restore_message=
+   fi
+  fi
+ fi
+ popd >/dev/null
+else
+ sudo systemctl --no-pager -l status ciyam
+fi
+
+if [ "$show_restore_message" = "1" ]; then
+ echo "NOTE: Unlock the system identity and restore the $CIYAM_APP_MOD application."
+fi
 
 cd ..
 
