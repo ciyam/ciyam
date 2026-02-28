@@ -23,7 +23,7 @@ EXT_PUBKEY=$OUTPUT
 ; for typical usage (but is used by "release.sh" so that the password
 ; will only need to be entered a single time).
 @ifdef $1
-ARGS=$1
+ARGS="$1"
 @else
 DATA_AND_PUBKEY=@password:Enter password to unlock identity:$EXT_PUBKEY
 ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
