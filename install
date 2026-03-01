@@ -311,18 +311,22 @@ if [ -s $service_path/ciyam.service ]; then
  sudo systemctl is-active ciyam >/dev/null
 
  if [ $? -eq 0 ]; then
-  pushd $INSTALL_PATH >/dev/null
-  is_locked=$(./ciyam_command "system_variable @sid_locked")
+  if [ -f $INSTALL_PATH/ciyam_command ]; then
+   pushd $INSTALL_PATH >/dev/null
 
-  if [ $? -eq 0 ]; then
-   if [ "$is_locked" = "" ]; then
-    unlock_key=$(./ciyam_command system_unlock_key)
+   is_locked=$(./ciyam_command "system_variable @sid_locked")
 
-    if [ $? -ne 0 ]; then
-     unlock_key=
+   if [ $? -eq 0 ]; then
+    if [ "$is_locked" = "" ]; then
+     unlock_key=$(./ciyam_command system_unlock_key)
+
+     if [ $? -ne 0 ]; then
+      unlock_key=
+     fi
     fi
+
+    popd >/dev/null
    fi
-   popd >/dev/null
   fi
 
   sudo systemctl stop ciyam
