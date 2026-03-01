@@ -1718,8 +1718,13 @@ int main( int argc, char* argv[ ] )
       {
          startup_command_processor processor( cmd_handler, application_title, 0, argc, argv );
 
+#ifdef SSL_SUPPORT
          cmd_handler.add_command( c_cmd_tls, 1,
-          "", "start TLS after connecting", new ciyam_console_startup_functor( cmd_handler ) );
+          "", "will start TLS after connecting to server", new ciyam_console_startup_functor( cmd_handler ) );
+#else
+         cmd_handler.add_command( c_cmd_tls, 1,
+          "", "dummy option due to *missing* SSL support", new ciyam_console_startup_functor( cmd_handler ) );
+#endif
 
          cmd_handler.add_command( c_cmd_exec, 2,
           "<val//command>[<list//arguments// >]", "single command to execute", new ciyam_console_startup_functor( cmd_handler ) );
