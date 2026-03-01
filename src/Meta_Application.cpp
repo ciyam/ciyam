@@ -2013,7 +2013,7 @@ void Meta_Application::impl::impl_Generate( )
        << "\nln -s $WEBDIR/" << c_meta_app_directory << "/encrypted.txt $WEBDIR/" << app_dir
        << "\nfi\n\n";
 
-      string standard_client_args( "-quiet -no_prompt" );
+      string standard_client_args( "-tls -quiet -no_prompt" );
 
       string rpc_password( get_rpc_password( ) );
 
@@ -2441,7 +2441,7 @@ void Meta_Application::impl::impl_Generate( )
 
       outssx << ".quit\n";
 
-      outs << "\n./ciyam_client -quiet " << standard_client_args << " < " << get_obj( ).Name( ) << ".generate.x.cin\n";
+      outs << "\n./ciyam_client " << standard_client_args << " < " << get_obj( ).Name( ) << ".generate.x.cin\n";
 
       outs << "\nrm $WEBDIR/" << app_dir << "/ciyam_interface.stop\n";
       outs << "echo \"Finished Generate\" >>" << generate_log_file << "\n";
