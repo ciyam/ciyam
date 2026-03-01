@@ -35,5 +35,5 @@ else
   fi
  fi
 
- ./ciyam_client -quiet -no_prompt < $input
+ ./ciyam_client -tls -quiet -no_prompt < $input
 fi

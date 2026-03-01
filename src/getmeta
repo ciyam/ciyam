@@ -14,7 +14,7 @@ else
   script_and_args="getmeta.cin $1 $2 $3 files/100/136100/$4.map"
  fi
 
- ./ciyam_client -quiet -no_prompt -exec="<$script_and_args"
+ ./ciyam_client -tls -quiet -no_prompt -exec="<$script_and_args"
 
  retval=$?
 

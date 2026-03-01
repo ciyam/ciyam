@@ -12,17 +12,17 @@ else
 
   exit 1
  else
-  ./ciyam_client -quiet -no_prompt < get_acyclic_package_types.cin
+  ./ciyam_client -tls -quiet -no_prompt < get_acyclic_package_types.cin
 
   if [ ! -f packages.acyclic.lst ]; then
    echo "Error: File 'packages.acyclic.lst' does not exist."
 
    exit 1
   else
-   ./ciyam_client -quiet -no_prompt < recreate_meta.cin
+   ./ciyam_client -tls -quiet -no_prompt < recreate_meta.cin
    ./xrep @reinstall_packages.cin.xrep packages=@packages.acyclic.lst >reinstall_packages.cin
 
-   ./ciyam_client -quiet -no_prompt < reinstall_packages.cin
+   ./ciyam_client -tls -quiet -no_prompt < reinstall_packages.cin
 
    rm reinstall_packages.cin
    rm packages.acyclic.lst

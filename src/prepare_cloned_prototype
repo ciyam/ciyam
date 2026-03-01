@@ -26,7 +26,7 @@ else
 
   ./restore Meta
 
-  ./ciyam_client -quiet -no_prompt -exec="<meta_user_set_active.cin guest 0"
+  ./ciyam_client -tls -quiet -no_prompt -exec="<meta_user_set_active.cin guest 0"
 
   sudo systemctl stop ciyam
 

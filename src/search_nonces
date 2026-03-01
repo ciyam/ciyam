@@ -17,6 +17,6 @@ else
   export CIYAM_NUM_SEARCHES=$3
   export CIYAM_SEARCH_RANGE=$4
 
-  ./ciyam_client -quiet -no_prompt < search_nonces.cin
+  ./ciyam_client -tls -quiet -no_prompt < search_nonces.cin
  fi
 fi

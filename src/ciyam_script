@@ -11,5 +11,5 @@ else
 
  shift
 
- ./ciyam_client -quiet -no_prompt -no_stderr -exec="\<$NAME.cin $*"
+ ./ciyam_client -tls -quiet -no_prompt -no_stderr -exec="\<$NAME.cin $*"
 fi

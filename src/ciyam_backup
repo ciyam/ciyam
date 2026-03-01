@@ -30,7 +30,7 @@ else
  touch $web_path/ciyam_interface.stop
 
  echo "[application data]"
- ./ciyam_client -quiet -no_prompt -no_stderr -exec="<ciyam_backup.cin $opt"
+ ./ciyam_client -tls -quiet -no_prompt -no_stderr -exec="<ciyam_backup.cin $opt"
 
  pushd $web_path >/dev/null
  if [ $? -eq 0 ]; then

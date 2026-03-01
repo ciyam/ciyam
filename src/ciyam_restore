@@ -30,7 +30,7 @@ else
   echo "Starting $CIYAM_STORAGE restore..."
 
   echo "[application data]"
-  ./ciyam_client -quiet -no_prompt -exec="<ciyam_restore.cin $opt"
+  ./ciyam_client -tls -quiet -no_prompt -exec="<ciyam_restore.cin $opt"
 
   if [ "$app_name" = "Meta" ]; then
    touch ciyam_base.update

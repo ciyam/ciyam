@@ -13,6 +13,6 @@ else
   exit 1
  else
   export CIYAM_MODEL=$1
-  ./ciyam_client -quiet -no_prompt < create_demo_$2_application.cin
+  ./ciyam_client -tls -quiet -no_prompt < create_demo_$2_application.cin
  fi
 fi

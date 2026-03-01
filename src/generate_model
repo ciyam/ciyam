@@ -15,7 +15,7 @@ else
  tmp_file=~$uuid
 
  echo -n "export CIYAM_MODEL=" >$tmp_file
- ./ciyam_client -quiet -no_prompt -no_stderr -exec="<model_key.cin $1" >>$tmp_file
+ ./ciyam_client -tls -quiet -no_prompt -no_stderr -exec="<model_key.cin $1" >>$tmp_file
  chmod a+x $tmp_file
  . ./$tmp_file
 
@@ -24,7 +24,7 @@ else
  else
   echo "Starting model generate..."
 
-  ./ciyam_client -quiet -no_prompt -no_stderr -exec="<generate_model.cin $CIYAM_MODEL" >$tmp_file
+  ./ciyam_client -tls -quiet -no_prompt -no_stderr -exec="<generate_model.cin $CIYAM_MODEL" >$tmp_file
 
   cat $tmp_file
   if grep -q "Error" $tmp_file || grep -q "error" $tmp_file; then
@@ -32,7 +32,7 @@ else
   else
    ./genmodule -rdbms $1 $2 $3
 
-   ./ciyam_client -quiet -no_prompt -no_stderr -exec="<generate_links.cin $CIYAM_MODEL" >$tmp_file
+   ./ciyam_client -tls -quiet -no_prompt -no_stderr -exec="<generate_links.cin $CIYAM_MODEL" >$tmp_file
 
    cat $tmp_file
 

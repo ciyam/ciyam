@@ -25,6 +25,6 @@ else
 
   exit 1
  else
-  ./ciyam_client -quiet -no_prompt -no_stderr -exec="<gen_app_script.cin $CIYAM_APPLICATION"
+  ./ciyam_client -tls -quiet -no_prompt -no_stderr -exec="<gen_app_script.cin $CIYAM_APPLICATION"
  fi
 fi
