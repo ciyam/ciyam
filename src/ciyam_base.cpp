@@ -120,6 +120,9 @@ const size_t c_minimum_encrypted_password_size = 10;
 
 const uint64_t c_unset_trace_flags = TRACE_WAITING;
 
+const char c_hardened_identity = '\1';
+const char c_encrypted_identity = '\2';
+
 // NOTE: Limit the buffer to twice the maximum file size (if a compression
 // call returns buffer too small then the file can be stored uncompressed).
 const int c_max_file_buffer_expansion = 2;
@@ -4940,21 +4943,48 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       g_sid.reserve( c_key_reserve_size );
 
-      if( !sid.empty( ) && ( sid.find( ':' ) == string::npos ) )
+      char ch = '\0';
+
+      if( !sid.empty( ) )
+         ch = sid[ 0 ];
+
+      bool has_kept_unlocked = false;
+
+      if( ( ch == c_hardened_identity )
+       || ( ch == c_encrypted_identity ) )
+         has_kept_unlocked = true;
+
+      if( !sid.empty( ) && !has_kept_unlocked
+       && ( sid.find( ':' ) == string::npos ) )
          hash_sid_val( sid );
+
+      bool force_secure = false;
+
+      if( has_kept_unlocked )
+      {
+         sid.erase( 0, 1 );
+
+         force_secure = true;
+
+         if( ch == c_hardened_identity )
+            g_hardened_identity = true;
+      }
 
       set_sid( sid );
       clear_key( sid );
 
       has_identity( &g_encrypted_identity );
 
-      g_secure_identity = g_encrypted_identity;
+      if( force_secure )
+         g_secure_identity = true;
+      else
+         g_secure_identity = g_encrypted_identity;
+
+      if( g_secure_identity )
+         set_system_variable( get_special_var_name( e_special_var_sid_secure ), c_true_value, true );
 
       if( g_encrypted_identity )
-      {
          set_system_variable( get_special_var_name( e_special_var_sid_locked ), c_true_value, true );
-         set_system_variable( get_special_var_name( e_special_var_sid_secure ), c_true_value, true );
-      }
 
       read_server_configuration( );
 
@@ -5189,6 +5219,32 @@ void term_globals( )
    if( g_using_ssl )
       term_ssl( );
 #endif
+}
+
+int get_sid_value( char* p_sid, int max_size )
+{
+   if( !g_secure_identity || g_encrypted_identity )
+      return 0;
+
+   string sid;
+   get_sid( sid );
+
+   if( p_sid && sid.length( ) )
+   {
+      if( ( max_size < 0 ) || ( max_size < sid.length( ) + 1 ) )
+         throw runtime_error( "invalid or unsufficient max_size provided to 'get_sid_value'" );
+
+      if( g_hardened_identity )
+         *p_sid = c_hardened_identity;
+      else
+         *p_sid = c_encrypted_identity;
+
+      memcpy( p_sid + 1, sid.c_str( ), sid.length( ) );
+   }
+
+   clear_key( sid );
+
+   return sid.length( ) + 1;
 }
 
 int has_external_ip_address( )
@@ -5493,12 +5549,19 @@ void set_identity( const string& info, const char* p_encrypted_sid )
       // NOTE: Checks for an encrypted identity.
       if( info.length( ) >= c_encrypted_length )
       {
+         if( !sid.empty( ) )
+            throw runtime_error( "cannot change existing identity" );
+
          sid = info;
 
          if( info.find( ':' ) != string::npos )
          {
+            g_secure_identity = true;
             g_hardened_identity = false;
             g_encrypted_identity = true;
+
+            set_system_variable( get_special_var_name( e_special_var_sid_locked ), c_true_value, true );
+            set_system_variable( get_special_var_name( e_special_var_sid_secure ), c_true_value, true );
          }
          else if( is_encrypted && p_encrypted_sid )
          {
@@ -5643,6 +5706,9 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
             set_sid( sid );
 
+            if( !p_encrypted_sid )
+               g_encrypted_identity = false;
+
             set_system_variable( get_special_var_name( e_special_var_sid_locked ), "", true );
 
             if( get_raw_system_variable(
@@ -5656,6 +5722,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             }
          }
       }
+      else
+         throw runtime_error( "cannot change existing identity" );
 
       string extra;
 
@@ -5696,6 +5764,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          }
 
          write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
+
+         g_encrypted_identity = false;
 
          set_system_variable( get_special_var_name( e_special_var_sid_secure ), c_true_value, true );
 

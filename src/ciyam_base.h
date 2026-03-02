@@ -181,6 +181,10 @@ extern "C" void term_globals( );
 typedef void ( *fp_init_globals )( const char*, int* );
 typedef void ( *fp_term_globals )( );
 
+extern "C" int get_sid_value( char* p_sid, int max_size );
+
+typedef int ( *fp_get_sid_value )( char*, int );
+
 extern "C" int has_external_ip_address( );
 
 typedef int ( *fp_has_external_ip_address )( );
