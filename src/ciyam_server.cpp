@@ -122,13 +122,16 @@ const int c_max_wait_attempts = 20;
 
 const char* const c_server_cmd_file = "ciyam_server.cmd";
 const char* const c_update_signal_file = "ciyam_base.update";
+const char* const c_restore_signal_file = "ciyam_base.restore";
 const char* const c_shutdown_signal_file = "ciyam_server.stop";
 
 const char* const c_ciyam_base_lib = "ciyam_base.so";
+const char* const c_ciyam_base_lib_new = "ciyam_base.so.new";
 
 const char* const c_trace_flags_func_name = "trace_flags";
 const char* const c_init_globals_func_name = "init_globals";
 const char* const c_term_globals_func_name = "term_globals";
+const char* const c_get_sid_value_func_name = "get_sid_value";
 const char* const c_server_command_func_name = "server_command";
 const char* const c_set_server_port_func_name = "set_server_port";
 const char* const c_init_auto_script_func_name = "init_auto_script";
@@ -363,6 +366,9 @@ int main( int argc, char* argv[ ] )
       string shutdown_reason( "due to interrupt" );
 
       bool is_update = false;
+      bool was_restore = false;
+
+      bool entropy_provided = !g_entropy.empty( );
 
       unique_ptr< dynamic_library > up_dynamic_library;
 
@@ -380,6 +386,9 @@ int main( int argc, char* argv[ ] )
 
          fp_term_globals fp_term_globals_func;
          fp_term_globals_func = ( fp_term_globals )up_dynamic_library->bind_to_function( c_term_globals_func_name );
+
+         fp_get_sid_value fp_get_sid_value_func;
+         fp_get_sid_value_func = ( fp_get_sid_value )up_dynamic_library->bind_to_function( c_get_sid_value_func_name );
 
          fp_server_command fp_server_command_func;
          fp_server_command_func = ( fp_server_command )up_dynamic_library->bind_to_function( c_server_command_func_name );
@@ -447,7 +456,11 @@ int main( int argc, char* argv[ ] )
 
          ( *fp_init_globals_func )( g_entropy.empty( ) ? 0 : g_entropy.c_str( ), &use_udp );
 
+         if( !entropy_provided )
+            clear_key( g_entropy );
+
          file_remove( c_update_signal_file );
+         file_remove( c_restore_signal_file );
 
          if( !use_udp )
             g_start_udp_streams = false;
@@ -523,6 +536,7 @@ int main( int argc, char* argv[ ] )
                if( g_start_auto_script )
                {
                   ( *fp_init_auto_script_func )( );
+
                   ++expected_min_active;
                }
 
@@ -541,6 +555,7 @@ int main( int argc, char* argv[ ] )
                   if( ++start_wait_attempts > c_max_wait_attempts )
                   {
                      ++g_server_shutdown;
+
                      shutdown_reason = "max. wait attempts for system sessions";
 
                      break;
@@ -558,21 +573,28 @@ int main( int argc, char* argv[ ] )
 
                while( !g_server_shutdown || g_active_sessions )
                {
-                  if( !g_server_shutdown && !s )
+                  if( !s && !g_server_shutdown )
                   {
                      ++g_server_shutdown;
+
                      shutdown_reason = "bad listener";
                   }
 
                   if( !g_server_shutdown && file_exists( c_shutdown_signal_file ) )
                   {
                      ++g_server_shutdown;
+
                      shutdown_reason = "due to stop file";
                   }
 
-                  if( !is_update && !g_server_shutdown && file_exists( c_update_signal_file ) )
+                  if( !is_update && !g_server_shutdown
+                   && ( file_exists( c_update_signal_file ) || file_exists( c_restore_signal_file ) ) )
                   {
                      is_update = true;
+
+                     if( file_exists( c_restore_signal_file ) )
+                        was_restore = true;
+
                      ++g_server_shutdown;
                   }
 
@@ -600,6 +622,24 @@ int main( int argc, char* argv[ ] )
                   // NOTE: Check for accepts and create new sessions.
                   if( !g_server_shutdown )
                   {
+                     // NOTE: Support for being able to issue special commands using a file
+                     // (such as dumping mutexes) if connection via a socket is not working
+                     // (also provides a way to check that the server is waiting to accept).
+                     if( file_exists( c_server_cmd_file ) )
+                     {
+                        string cmd( buffer_file( c_server_cmd_file ) );
+
+                        string::size_type pos = cmd.find( '\n' );
+
+                        if( pos != string::npos )
+                           cmd.erase( pos );
+
+                        if( !cmd.empty( ) )
+                           ( *fp_server_command_func )( cmd.c_str( ) );
+
+                        file_remove( c_server_cmd_file );
+                     }
+
                      if( g_start_auto_script )
                      {
                         // NOTE: Determine if currently has an external IP address.
@@ -620,6 +660,7 @@ int main( int argc, char* argv[ ] )
                            }
                         }
                      }
+
 #ifdef SSL_SUPPORT
                      unique_ptr< ssl_socket > up_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
 #else
@@ -627,23 +668,6 @@ int main( int argc, char* argv[ ] )
 #endif
                      if( *up_socket && ( *fp_is_accepted_ip_addr_func )( address.get_addr_string( ).c_str( ) ) )
                         ( *fp_init_ciyam_session_func )( up_socket.release( ), address.get_addr_string( ).c_str( ) );
-
-                     // NOTE: Support for being able to issue special commands using a file
-                     // (such as dumping mutexes) if connection via a socket is not working.
-                     if( file_exists( c_server_cmd_file ) )
-                     {
-                        string cmd( buffer_file( c_server_cmd_file ) );
-
-                        string::size_type pos = cmd.find( '\n' );
-
-                        if( pos != string::npos )
-                           cmd.erase( pos );
-
-                        if( !cmd.empty( ) )
-                           ( *fp_server_command_func )( cmd.c_str( ) );
-
-                        file_remove( c_server_cmd_file );
-                     }
                   }
                }
 
@@ -671,6 +695,7 @@ int main( int argc, char* argv[ ] )
                      cout << "server shutdown (" << shutdown_reason << ") now completed..." << endl;
 
                   string term_message( "server shutdown (" + shutdown_reason + ")" );
+
                   ( *fp_log_trace_string_func )( TRACE_MINIMAL, term_message.c_str( ) );
                }
             }
@@ -693,10 +718,34 @@ int main( int argc, char* argv[ ] )
          if( !is_update )
             break;
 
+         if( !was_restore && !entropy_provided )
+         {
+            int sid_size = ( *fp_get_sid_value_func )( 0, 0 );
+
+            if( sid_size )
+            {
+               g_entropy.resize( sid_size );
+
+               ( *fp_get_sid_value_func )( g_entropy.data( ), sid_size );
+            }
+         }
+
          ( *fp_log_trace_string_func )( TRACE_MINIMAL, "*** reloading ciyam_base.so library ***" );
 
          // NOTE: Force the dynamic library to be unloaded.
          up_dynamic_library.reset( 0 );
+
+         was_restore = false;
+
+         g_has_external_ip_address = false;
+
+         // NOTE: Replace base with a new version.
+         if( file_exists( c_ciyam_base_lib_new ) )
+         {
+            file_remove( c_ciyam_base_lib );
+
+            file_rename( c_ciyam_base_lib_new, c_ciyam_base_lib );
+         }
       }
    }
    catch( exception& x )
