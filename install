@@ -298,6 +298,7 @@ fi
 
 unlock_key=
 has_service=
+force_reload=
 
 if [ -s $service_path/ciyam.service ]; then
  has_service=1
@@ -307,48 +308,68 @@ if [ -s $service_path/ciyam.service ]; then
  if [ $? -eq 0 ]; then
   sudo systemctl restart apache2
  fi
+fi
 
- sudo systemctl is-active ciyam >/dev/null
+if [ "$has_service" = "1" ]; then
+ cmp -s ciyam/ciyam_server $INSTALL_PATH/ciyam_server
 
  if [ $? -eq 0 ]; then
-  if [ -f $INSTALL_PATH/ciyam_command ]; then
-   pushd $INSTALL_PATH >/dev/null
+  force_reload=1
 
-   is_locked=$(./ciyam_command "system_variable @sid_locked")
+  rm -f ciyam/ciyam_server
+  touch $INSTALL_PATH/ciyam_server
 
-   if [ $? -eq 0 ]; then
-    if [ "$is_locked" = "" ]; then
-     unlock_key=$(./ciyam_command system_unlock_key)
+  cmp -s ciyam/ciyam_base.so $INSTALL_PATH/ciyam_base.so
 
-     if [ $? -ne 0 ]; then
-      unlock_key=
-     fi
-    fi
-
-    popd >/dev/null
-   fi
+  if [ $? -eq 0 ]; then
+   rm -f ciyam/ciyam_base.so
+   touch $INSTALL_PATH/ciyam_base.so
+  else
+   mv ciyam/ciyam_base.so ciyam/ciyam_base.so.new
   fi
-
-  sudo systemctl stop ciyam
- fi
-
- for i in {1..20}
- do
+ else
   sudo systemctl is-active ciyam >/dev/null
 
-  if [ $? -ne 0 ]; then
-   break;
+  if [ $? -eq 0 ]; then
+   if [ -f $INSTALL_PATH/ciyam_command ]; then
+    pushd $INSTALL_PATH >/dev/null
+
+    is_locked=$(./ciyam_command "system_variable @sid_locked")
+
+    if [ $? -eq 0 ]; then
+     if [ "$is_locked" = "" ]; then
+      unlock_key=$(./ciyam_command system_unlock_key)
+
+      if [ $? -ne 0 ]; then
+       unlock_key=
+      fi
+     fi
+
+     popd >/dev/null
+    fi
+   fi
+
+   sudo systemctl stop ciyam
   fi
 
-  sleep 0.5
- done
+  for i in {1..20}
+  do
+   sudo systemctl is-active ciyam >/dev/null
 
- sudo systemctl is-active ciyam >/dev/null
+   if [ $? -ne 0 ]; then
+    break;
+   fi
 
- if [ $? -eq 0 ]; then
-  echo "Error: Unable to stop the CIYAM service."
+   sleep 0.5
+  done
 
-  exit 1
+  sudo systemctl is-active ciyam >/dev/null
+
+  if [ $? -eq 0 ]; then
+   echo "Error: Unable to stop the CIYAM service."
+
+   exit 1
+  fi
  fi
 fi
 
@@ -515,21 +536,37 @@ fi
 
 if [ "$unlock_key" != "" ]; then
  touch $INSTALL_PATH/.skip_compress
+ touch $INSTALL_PATH/ciyam_server.cmd
 fi
 
-sudo systemctl start ciyam
+if [ "$force_reload" = "" ]; then
+ sudo systemctl start ciyam
+else
+ touch $INSTALL_PATH/ciyam_base.update
+fi
 
 show_restore_message=$needs_restore
 
 if [ "$unlock_key" != "" ]; then
  pushd $INSTALL_PATH >/dev/null
- sleep 1
- ./unlock_identity "$unlock_key"
- if [ $? -eq 0 ]; then
-  if [ "$needs_restore" = "1" ]; then
-   ./restore $CIYAM_APP_MOD
-   if [ $? -eq 0 ]; then
-    show_restore_message=
+
+ for i in {1..50}
+ do
+  if [ ! -f ciyam_server.cmd ]; then
+   break;
+  fi
+
+  sleep 0.5
+ done
+
+ if [ ! -f ciyam_server.cmd ]; then
+  ./unlock_identity "$unlock_key"
+  if [ $? -eq 0 ]; then
+   if [ "$needs_restore" = "1" ]; then
+    ./restore $CIYAM_APP_MOD
+    if [ $? -eq 0 ]; then
+     show_restore_message=
+    fi
    fi
   fi
  fi
