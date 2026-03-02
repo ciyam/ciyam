@@ -1727,7 +1727,7 @@ int main( int argc, char* argv[ ] )
 #endif
 
          cmd_handler.add_command( c_cmd_exec, 2,
-          "<val//command>[<list//arguments// >]", "single command to execute", new ciyam_console_startup_functor( cmd_handler ) );
+          "<val//command>[<olist//arguments// >]", "single command to execute", new ciyam_console_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_vars, 3,
           "<list//env_pairs//,>", "set environment variables", new ciyam_console_startup_functor( cmd_handler ) );
