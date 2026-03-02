@@ -102,7 +102,7 @@ NO_ADD_USER=@files::.no_add_user
 @endif
 ;
 .system_export_repo
-~touch ciyam_base.update
+~touch ciyam_base.restore
 @endif
 ;
 @endif
