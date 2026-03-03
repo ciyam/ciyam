@@ -1208,36 +1208,65 @@ typedef string_container::value_type string_value_type;
 void uudecode( std::ostream& outs, const char* p_input, int num_bytes );
 void uuencode( const char* p_data, int num_bytes, std::ostream& outs );
 
-void hex_decode( const std::string& data, unsigned char* p_data, size_t len );
+void hex_decode( const std::string& src, unsigned char* p_dest, size_t len );
 
-inline std::string hex_decode( const std::string& data )
+inline void hex_decode( const std::string& src, std::string& dest )
 {
-   std::string str( data.length( ) / 2, '\0' );
+   if( src.length( ) )
+   {
+      dest.resize( src.length( ) / 2 );
 
-   hex_decode( data, ( unsigned char* )str.c_str( ), str.length( ) );
-
-   return str;
+      hex_decode( src, ( unsigned char* )dest.data( ), src.length( ) / 2 );
+   }
 }
 
-void hex_encode( std::string& data, const unsigned char* p_data, size_t len, int max_chars_per_line = 0 );
-
-inline std::string hex_encode( const unsigned char* p_data, size_t len, int max_chars_per_line = 0 )
+inline std::string hex_decode( const std::string& src )
 {
-   size_t num_chars( len * 2 );
+   if( src.empty( ) )
+      return std::string( );
+   else
+   {
+      std::string dest( src.length( ) / 2, '\0' );
 
-   if( max_chars_per_line )
-      num_chars += ( len / max_chars_per_line );
+      hex_decode( src, ( unsigned char* )dest.data( ), dest.length( ) );
 
-   std::string str( num_chars, '\0' );
-
-   hex_encode( str, p_data, len, max_chars_per_line );
-
-   return str;
+      return dest;
+   }
 }
 
-inline std::string hex_encode( const std::string& data, int max_chars_per_line = 0 )
+void hex_encode( std::string& dest, const unsigned char* p_src, size_t len, int max_chars_per_line = 0 );
+
+inline void hex_encode( std::string& dest, const std::string& src )
 {
-   return hex_encode( ( const unsigned char* )data.c_str( ), data.length( ), max_chars_per_line );
+   if( src.length( ) )
+      hex_encode( dest, ( const unsigned char* )src.data( ), src.length( ) );
+}
+
+inline std::string hex_encode( const unsigned char* p_src, size_t len, int max_chars_per_line = 0 )
+{
+   if( !len )
+      return std::string( );
+   else
+   {
+      size_t num_chars( len * 2 );
+
+      if( max_chars_per_line )
+         num_chars += ( len / max_chars_per_line );
+
+      std::string dest( num_chars, '\0' );
+
+      hex_encode( dest, p_src, len, max_chars_per_line );
+
+      return dest;
+   }
+}
+
+inline std::string hex_encode( const std::string& src, int max_chars_per_line = 0 )
+{
+   if( src.empty( ) )
+      return std::string( );
+   else
+      return hex_encode( ( const unsigned char* )src.data( ), src.length( ), max_chars_per_line );
 }
 
 void hex_reverse( std::string& reversed, const std::string& hex_value );

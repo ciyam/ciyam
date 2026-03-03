@@ -103,6 +103,7 @@ string quote( const string& s, char quote_char, char escape_char )
    // NOTE: Escape or double the quote character (double if set to '\0').
    // A non '\0' escape character will itself be escaped if present also.
    qs += quote_char;
+
    for( size_t i = 0, len = s.length( ); i < len; i++ )
    {
       if( s[ i ] == quote_char )
@@ -112,11 +113,12 @@ string quote( const string& s, char quote_char, char escape_char )
          else
             qs += escape_char;
       }
-      else if( escape_char != '\0' && s[ i ] == escape_char )
+      else if( ( escape_char != '\0' ) && ( s[ i ] == escape_char ) )
          qs += escape_char;
 
       qs += s[ i ];
    }
+
    qs += quote_char;
 
    return qs;
@@ -132,21 +134,23 @@ bool are_hex_nibbles( const char* p_str )
 
       retval = true;
 
-      if( ch < '0' || ch > '9' )
+      if( ( ch < '0' ) || ( ch > '9' ) )
       {
-         if( ch != 'a' && ch != 'A'
-          && ch != 'b' && ch != 'B'
-          && ch != 'c' && ch != 'C'
-          && ch != 'd' && ch != 'D'
-          && ch != 'e' && ch != 'E'
-          && ch != 'f' && ch != 'F' )
+         if( ( ch != 'a' ) && ( ch != 'A' )
+          && ( ch != 'b' ) && ( ch != 'B' )
+          && ( ch != 'c' ) && ( ch != 'C' )
+          && ( ch != 'd' ) && ( ch != 'D' )
+          && ( ch != 'e' ) && ( ch != 'E' )
+          && ( ch != 'f' ) && ( ch != 'F' ) )
          {
             retval = false;
+
             break;
          }
       }
 
       ++p_str;
+
       if( *p_str == '\0' )
          break;
    }
@@ -158,10 +162,12 @@ void uuidgen( unsigned char buf[ ] )
 {
    static int fd;
 
-   // NOTE: This initialisation is not threadsafe and should therefore occur prior to multiple thread usage.
+   // NOTE: Due to the "static" need to call this
+   // function before creating any other threads.
    if( !fd )
    {
       fd = open( "/dev/urandom", O_RDONLY );
+
       assert( fd > 0 );
    }
 
@@ -395,6 +401,7 @@ int vmem_used( )
    while( getline( inpf, next ) )
    {
       string::size_type pos = next.find( "VmSize:" );
+
       if( pos != string::npos )
       {
          string remainder( next.substr( pos + 7 ) );
@@ -502,6 +509,7 @@ void create_dir( const char* p_name, bool* p_rc, dir_perms perms, int um )
 bool dir_exists( const char* p_name, bool check_link_target )
 {
    bool rc = false;
+
    struct stat statbuf;
 
    if( check_link_target )
@@ -544,7 +552,7 @@ bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists, bo
 
    int rc = _utime( p_name, p_ut );
 
-   if( rc != 0 && create_if_not_exists )
+   if( ( rc != 0 ) && create_if_not_exists )
    {
       if( !file_exists( p_name ) )
       {
@@ -1216,7 +1224,8 @@ string unescaped( const char* p_start, size_t len, const char* p_specials, char 
    size_t offset = !p_specials ? 0 : strlen( p_specials ) / 2;
 
    size_t n = 0;
-   bool was_escape = false;
+
+  bool was_escape = false;
 
    for( size_t i = 0; i < len; i++ )
    {
@@ -2564,7 +2573,7 @@ time_t last_modification_time( const string& file_name, bool try_avoiding_epoch_
    {
       retval = statbuf.st_ctime;
 
-      if( !retval && try_avoiding_epoch_time )
+      if( !retval )
          retval = statbuf.st_atime;
    }
 
@@ -2604,8 +2613,8 @@ void uudecode( ostream& outs, const char* p_input, int num_bytes )
    int triplets, remainder;
    unsigned char composite;
 
-   triplets = num_bytes / 4;
-   remainder = num_bytes % 4;
+   triplets = ( num_bytes / 4 );
+   remainder = ( num_bytes % 4 );
 
    // NOTE: Decode each of the triplets.
    for( int i = 0; i < triplets; i++, p_input++ )
@@ -2640,6 +2649,7 @@ void uuencode( const char* p_data, int num_bytes, ostream& outs )
    for( int i = 0; i < triplets; i++ )
    {
       composite = 0;
+
       for( int j = 2; j < 7; j += 2, p_data++ )
       {
          outs.put( ( *p_data & c_low_mask ) + c_space );
@@ -2657,6 +2667,7 @@ void uuencode( const char* p_data, int num_bytes, ostream& outs )
       for( int j = 2; j < 2 * remainder + 1; j += 2, p_data++ )
       {
          outs.put( ( *p_data & c_low_mask ) + c_space );
+
          composite |= ( *p_data & c_high_mask ) >> j;
       }
 
@@ -2664,58 +2675,64 @@ void uuencode( const char* p_data, int num_bytes, ostream& outs )
    }
 }
 
-void hex_decode( const string& data, unsigned char* p_data, size_t len )
+void hex_decode( const string& src, unsigned char* p_dest, size_t len )
 {
-   if( data.length( ) % 2 != 0 )
-      throw runtime_error( "incorrect hex for decoding (add a leading zero?)" );
-
-   if( len < data.length( ) / 2 )
-      throw runtime_error( "data buffer is " + to_string( len )
-       + " bytes but hex_decode requires at least " + to_string( data.length( ) / 2 ) );
-
-   memset( p_data, len, 0 );
-   
-   size_t n = 0;
-
-   for( size_t i = 0; i < data.size( ); i += 2 )
+   if( src.length( ) )
    {
-      unsigned char val = hex_nibble( data[ i ] );
+      if( ( src.length( ) % 2 ) != 0 )
+         throw runtime_error( "incorrect hex for decoding (add a leading zero?)" );
 
-     val <<= 4;
+      if( len < ( src.length( ) / 2 ) )
+         throw runtime_error( "data buffer is " + to_string( len )
+          + " bytes but hex_decode requires at least " + to_string( src.length( ) / 2 ) );
 
-      val |= hex_nibble( data[ i + 1 ] );
+      memset( p_dest, len, 0 );
 
-      p_data[ n++ ] = val;
+      size_t n = 0;
+
+      for( size_t i = 0; i < src.size( ); i += 2 )
+      {
+         unsigned char val = hex_nibble( src[ i ] );
+
+        val <<= 4;
+
+         val |= hex_nibble( src[ i + 1 ] );
+
+         p_dest[ n++ ] = val;
+      }
    }
 }
 
-void hex_encode( string& data, const unsigned char* p_data, size_t len, int max_chars_per_line )
+void hex_encode( string& dest, const unsigned char* p_src, size_t len, int max_chars_per_line )
 {
-   size_t n = 0;
-   size_t line_chars = 0;
-
-   size_t required = ( len * 2 );
-
-   if( max_chars_per_line )
-      required += ( len / max_chars_per_line );
-
-   // NOTE: If had not been pre-allocated then must now be resized.
-   if( data.length( ) < required )
-      data.resize( required );
-
-   for( size_t i = 0; i < len; i++ )
+   if( len )
    {
-      data[ n++ ] = ascii_digit( ( p_data[ i ] & 0xf0 ) >> 4 );
-      data[ n++ ] = ascii_digit( p_data[ i ] & 0x0f );
+      size_t n = 0;
+      size_t line_chars = 0;
 
-      line_chars += 2;
+      size_t required = ( len * 2 );
 
-      if( max_chars_per_line
-       && ( line_chars >= max_chars_per_line ) && ( i != len - 1 ) )
+      if( max_chars_per_line )
+         required += ( len / max_chars_per_line );
+
+      // NOTE: If had not been pre-allocated then must now be resized.
+      if( dest.length( ) < required )
+         dest.resize( required );
+
+      for( size_t i = 0; i < len; i++ )
       {
-         line_chars = 0;
+         dest[ n++ ] = ascii_digit( ( p_src[ i ] & 0xf0 ) >> 4 );
+         dest[ n++ ] = ascii_digit( p_src[ i ] & 0x0f );
 
-         data[ n++ ] = '\n';
+         line_chars += 2;
+
+         if( max_chars_per_line
+          && ( line_chars >= max_chars_per_line ) && ( i != ( len - 1 ) ) )
+         {
+            line_chars = 0;
+
+            dest[ n++ ] = '\n';
+         }
       }
    }
 }
