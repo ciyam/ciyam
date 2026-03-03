@@ -273,8 +273,6 @@ const char* const c_temporary_special_variable_suffix = "_temporary";
 const char* const c_demo_sid_1 = "729c82d85a1da11074ea60a42ded01ece34928592aa8620a67c364d7fc70a3fb";
 const char* const c_demo_sid_2 = "b7560eb88fdbc58bd76a6b1a33e07dc39f22e1b834cf470398a0ecf0fc16ca78";
 
-string g_sid;
-
 #include "sid.enc"
 
 struct instance_info
@@ -2678,6 +2676,7 @@ void perform_storage_op( storage_op op,
          if( exists_file( dead_keys_file ) )
          {
             vector< string > lines;
+
             buffer_file_lines( dead_keys_file, lines );
 
             for( size_t i = 0; i < lines.size( ); i++ )
@@ -2707,6 +2706,7 @@ void perform_storage_op( storage_op op,
 
          // NOTE: The ODS instance now belongs to the storage handler (and not to this session).
          up_ods.release( );
+
          ods::instance( 0, true );
       }
       catch( ... )
@@ -2729,6 +2729,7 @@ void perform_storage_op( storage_op op,
          throw runtime_error( "Application is currently locked for Administration." );
 
       bool created_ods_instance = false;
+
       storage_handler* p_old_handler = gtp_session->p_storage_handler;
 
       try
@@ -2790,6 +2791,7 @@ void perform_storage_op( storage_op op,
          if( created_ods_instance )
          {
             delete ods::instance( );
+
             ods::instance( 0, true );
          }
 
@@ -3099,9 +3101,11 @@ void append_undo_sql_statements( storage_handler& handler )
    if( !gtp_session->sql_undo_statements.empty( ) )
    {
       string undo_sql_filename( handler.get_name( ) );
+
       undo_sql_filename += ".undo.sql";
 
       ofstream outf( undo_sql_filename.c_str( ), ios::out | ios::app );
+
       if( !outf )
          throw runtime_error( "unable to open '" + undo_sql_filename + "' for output" );
 
@@ -3197,6 +3201,7 @@ void append_peerchain_log_commands( )
       if( file_exists( identity_log ) )
       {
          had_log_file = true;
+
          buffer_file_lines( identity_log, log_lines );
       }
 
@@ -3864,7 +3869,7 @@ void read_server_configuration( )
 
       set_system_variable( get_special_var_name( e_special_var_log_files_path ), g_log_files_path, true );
 
-      int test_peer_port = atoi( reader.read_opt_attribute( c_attribute_test_peer_port, "0" ).c_str( ) );
+      int test_peer_port = atoi( reader.read_opt_attribute( c_attribute_test_peer_port, c_false_value ).c_str( ) );
 
       // NOTE: Don't override if was provided as a startup option.
       if( !g_test_peer_port )
@@ -3907,7 +3912,7 @@ void read_server_configuration( )
 
       g_script_reconfig = ( lower( reader.read_opt_attribute( c_attribute_script_reconfig, c_false ) ) == c_true );
 
-      g_session_timeout = atoi( reader.read_opt_attribute( c_attribute_session_timeout, "0" ).c_str( ) );
+      g_session_timeout = atoi( reader.read_opt_attribute( c_attribute_session_timeout, c_false_value ).c_str( ) );
 
       string protocol_handler( reader.read_opt_attribute( c_attribute_protocol_handler, c_default_protocol_handler ) );
 
@@ -4012,7 +4017,7 @@ void read_server_configuration( )
          {
             external_client client;
 
-            client.port = atoi( reader.read_opt_attribute( c_attribute_port, "0" ).c_str( ) );
+            client.port = atoi( reader.read_opt_attribute( c_attribute_port, c_false_value ).c_str( ) );
 
             string key = reader.read_attribute( c_attribute_label );
             client.is_local = ( lower( reader.read_opt_attribute( c_attribute_is_local, c_false ) ) == c_true );
@@ -7146,7 +7151,7 @@ int exec_system( const string& cmd, bool async, bool delay, bool* p_delayed )
    string async_var( get_raw_session_variable( get_special_var_name( e_special_var_allow_async ) ) );
 
    // NOTE: The session variable @allow_async can be used to force non-async execution.
-   if( ( async_var == "0" ) || ( async_var == c_false ) )
+   if( ( async_var == c_false ) || ( async_var == c_false_value ) )
       async = false;
 
    if( async || delay )
@@ -9205,10 +9210,10 @@ string get_raw_session_variable( const string& name, size_t sess_id )
          string progress_prior_name( get_special_var_name( e_special_var_progress_prior ) );
          string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
 
-         gtp_session->variables[ progress_count_name ] = "0";
-         gtp_session->variables[ progress_fracs_name ] = "0";
-         gtp_session->variables[ progress_prior_name ] = "0";
-         gtp_session->variables[ progress_total_name ] = "0";
+         gtp_session->variables[ progress_count_name ] = c_false_value;
+         gtp_session->variables[ progress_fracs_name ] = c_false_value;
+         gtp_session->variables[ progress_prior_name ] = c_false_value;
+         gtp_session->variables[ progress_total_name ] = c_false_value;
       }
       else if( name == progress_value_name )
       {
