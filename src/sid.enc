@@ -3,13 +3,38 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+string g_sid;
+
+bool g_enc = false;
+
 void get_sid( string& sid )
 {
-   sid = g_sid;
+   if( !g_enc || g_sid.empty( ) )
+      sid = g_sid;
+   else
+      hex_encode( sid, g_sid );
 }
 
 void set_sid( const string& sid )
 {
-   g_sid = sid;
-}
+   clear_key( g_sid );
 
+   if( !sid.length( ) )
+      g_sid.erase( );
+   else
+   {
+      if( ( sid.length( ) % 2 ) != 0 )
+         g_enc = false;
+      else
+         g_enc = are_hex_nibbles( sid );
+
+      // NOTE: If the identity is found
+      // to be hex digits then store as
+      // binary (which stops simplistic
+      // discovery by dumping strings).
+      if( !g_enc )
+         g_sid = sid;
+      else
+         hex_decode( sid, g_sid );
+   }
+}

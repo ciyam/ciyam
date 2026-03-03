@@ -50,8 +50,6 @@ namespace
 
 mutex g_mutex;
 
-string g_sid;
-
 #include "sid.enc"
 
 string g_identity;
