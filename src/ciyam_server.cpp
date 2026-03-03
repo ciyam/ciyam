@@ -726,7 +726,7 @@ int main( int argc, char* argv[ ] )
             {
                g_entropy.resize( sid_size );
 
-               ( *fp_get_sid_value_func )( g_entropy.data( ), sid_size );
+               ( *fp_get_sid_value_func )( ( char* )g_entropy.data( ), sid_size );
             }
          }
 
