@@ -96,6 +96,7 @@ const char* const c_special_variable_opened = "@opened";
 const char* const c_special_variable_pubkey = "@pubkey";
 const char* const c_special_variable_return = "@return";
 const char* const c_special_variable_script = "@script";
+const char* const c_special_variable_source = "@source";
 const char* const c_special_variable_command = "@command";
 const char* const c_special_variable_do_exec = "@do_exec";
 const char* const c_special_variable_ip_addr = "@ip_addr";
@@ -435,6 +436,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_pubkey );
       g_special_variable_names.push_back( c_special_variable_return );
       g_special_variable_names.push_back( c_special_variable_script );
+      g_special_variable_names.push_back( c_special_variable_source );
       g_special_variable_names.push_back( c_special_variable_command );
       g_special_variable_names.push_back( c_special_variable_do_exec );
       g_special_variable_names.push_back( c_special_variable_ip_addr );

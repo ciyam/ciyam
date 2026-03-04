@@ -63,6 +63,7 @@ enum special_var
    e_special_var_pubkey,
    e_special_var_return,
    e_special_var_script,
+   e_special_var_source,
    e_special_var_command,
    e_special_var_do_exec,
    e_special_var_ip_addr,
