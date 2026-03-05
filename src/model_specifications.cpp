@@ -4837,6 +4837,7 @@ void field_from_other_field_specification::add_specification_data( model& m, spe
    spec_data.data_pairs.push_back( make_pair( "procedure", "" ) );
    spec_data.data_pairs.push_back( make_pair( "func_arg1", "" ) );
    spec_data.data_pairs.push_back( make_pair( "func_arg2", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "oprocedure", "" ) );
    spec_data.data_pairs.push_back( make_pair( "non_trigger", "" ) );
    spec_data.data_pairs.push_back( make_pair( "internal_only", "" ) );
    spec_data.data_pairs.push_back( make_pair( "include_clones", "" ) );
