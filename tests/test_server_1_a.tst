@@ -98,6 +98,9 @@ invalid_time_difference Invalid time difference (check system clocks).
 invalid_type @field is not a valid @label.
 key_invalid Key '@key' contains invalid characters.
 linking_to_class_prohibited Linking to this @class is prohibited.
+list_begin @item
+list_extend , @item
+list_finish  and @item
 mapping_at_height_prefix Mapping at height 
 mapping_for_height_prefix Mapping for height 
 module_depends_reqd Module '@module' requires external dependencies to be loaded first.
