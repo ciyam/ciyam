@@ -30,6 +30,10 @@
 `{`!`@eq`(`$arg_session_var`,`'`'`)`|`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)
 `{`$i`}    && `}state & c_modifier_`{`$arg_modifier`}`} )
 `{`$i`}   {
+`}`{`!`@eq`(`$arg_sfield`,`'`'`)\
+`{`$j`}   temporary_session_variable tmp_session_source_field(
+`{`$j`}    get_special_var_name( e_special_var_source ), get_obj( ).`{`$arg_sfield`}( ) );
+
 `}`{`!`@eq`(`$arg_skip_submit_file`,`'`'`)\
 `{`$j`}   temporary_session_variable tmp_session_skip_submit_file(
 `{`$j`}    get_special_var_name( e_special_var_skip_submit_file ), c_true_value );
