@@ -1,0 +1,70 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+`{`$needs_extra`=`'`'`}`{`!`@eq`(`$arg_ofield`,`'`'`)`$needs_extra`=`'true`'`}\
+`{`@eq`(`$arg_append_current`,`'true`'`)`$needs_extra`=`'true`'`}\
+   // [(start field_fk_list_from_keys)] `{`$arg_id`}
+   if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create
+    && `{`@eq`(`$needs_extra`,`'true`'`)( `}`}`{`@eq`(`$arg_append_current`,`'true`'`)!is_null( get_obj( ).`{`$arg_spfield`}( ) )
+    || `}`{`!`@eq`(`$arg_ofield`,`'`'`)!is_null( get_obj( ).`{`$arg_ofield`}( ) )
+    || `}!is_null( get_obj( ).`{`$arg_sfield`}( ) ) )`{`@eq`(`$arg_create_only`,`'true`'`)`&`@eq`(`$needs_extra`,`'true`'`) )`}
+   {
+      string keys( get_obj( ).`{`$arg_sfield`}( ) );
+
+      vector< string > all_keys;
+      vector< string > all_values;
+
+      if( !keys.empty( ) )
+         split( keys, all_keys );
+`{`@eq`(`$arg_append_current`,`'true`'`)
+      if( !is_null( get_obj( ).`{`$arg_spfield`}( ) ) )
+         all_keys.push_back( get_obj( ).`{`$arg_spfield`}( ).get_key( ) );
+`}`{`@eq`(`$arg_sort_values`,`'true`'`)
+      set< string > unique_values;
+`{`!`@eq`(`$arg_ofield`,`'`'`)
+      if( !is_null( get_obj( ).`{`$arg_ofield`}( ) ) )
+         unique_values.insert( get_obj( ).`{`$arg_ofield`}( ) );
+`}`}
+      class_pointer< `{`$module_name`}_`{`$arg_spclass`} > cp_source( e_create_instance );
+
+      for( size_t i = 0; i < all_keys.size( ); i++ )
+      {
+         string next_key( all_keys[ i ] );
+
+         cp_source->perform_fetch( next_key );
+
+`{`!`@eq`(`$arg_sort_values`,`'true`'`)\
+         all_values.push_back( cp_source->`{`$arg_scfield`}( ) );
+`,\
+         unique_values.insert( cp_source->`{`$arg_scfield`}( ) );
+`}\
+      }
+`{`@eq`(`$arg_sort_values`,`'true`'`)
+      for( set< string >::const_iterator ci = unique_values.begin( ); ci != unique_values.end( ); ++ci )
+         all_values.push_back( *ci );
+`,`{`!`@eq`(`$arg_ofield`,`'`'`)
+      if( !is_null( get_obj( ).`{`$arg_ofield`}( ) ) )
+         all_values.push_back( get_obj( ).`{`$arg_ofield`}( ) );
+`}`}
+      string value;
+
+      for( size_t i = 0; i < all_values.size( ); i++ )
+      {
+         string next_value( all_values[ i ] );
+
+         if( i == 0 )
+            value += get_string_message( GS( c_str_list_begin ),
+             make_pair( c_str_list_begin_item, next_value ) );
+         else
+         {
+            if( i < ( all_keys.size( ) - 1 ) )
+               value += get_string_message( GS( c_str_list_extend ),
+                make_pair( c_str_list_extend_item, next_value ) );
+            else
+               value += get_string_message( GS( c_str_list_finish ),
+                make_pair( c_str_list_finish_item, next_value ) );
+         }
+      }
+
+      get_obj( ).`{`$arg_field`}( value );
+   }
+   // [(finish field_fk_list_from_keys)] `{`$arg_id`}
+`}

@@ -4930,12 +4930,16 @@ void Meta_Class::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start field_from_other_field)] 600025
-   if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && !is_null( get_obj( ).Source_Class( ) ) )
       get_obj( ).Name( get_obj( ).Source_Class( ).Name( ) );
    // [(finish field_from_other_field)] 600025
 
    // [(start field_from_other_field)] 600026
-   if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && !is_null( get_obj( ).Source_Class( ) ) )
       get_obj( ).Plural( get_obj( ).Source_Class( ).Plural( ) );
    // [(finish field_from_other_field)] 600026
 
@@ -4956,22 +4960,30 @@ void Meta_Class::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_global)] 600028b
 
    // [(start field_from_other_field)] 610026
-   if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && !is_null( get_obj( ).Source_Class( ) ) )
       get_obj( ).Id( get_obj( ).Source_Class( ).Id( ) );
    // [(finish field_from_other_field)] 610026
 
    // [(start field_from_other_field)] 620026
-   if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && !is_null( get_obj( ).Source_Class( ) ) )
       get_obj( ).Type( get_obj( ).Source_Class( ).Type( ) );
    // [(finish field_from_other_field)] 620026
 
    // [(start field_from_other_field)] 630026
-   if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && !is_null( get_obj( ).Source_Class( ) ) )
       get_obj( ).Extra( get_obj( ).Source_Class( ).Extra( ) );
    // [(finish field_from_other_field)] 630026
 
    // [(start field_from_other_field)] 640026
-   if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && !is_null( get_obj( ).Source_Class( ) ) )
       get_obj( ).Static_Instance_Key( get_obj( ).Source_Class( ).Static_Instance_Key( ) );
    // [(finish field_from_other_field)] 640026
 
