@@ -29,6 +29,7 @@
 `{`@eq`(`$type`,`'day`'`)`$type`=`'days`'`}\
 `{`@eq`(`$type`,`'month`'`)`$type`=`'months`'`}\
 `{`@eq`(`$type`,`'year`'`)`$type`=`'years`'`}\
+`{`@eq`(`$arg_value`,`'@br`'`)`$arg_value`=`'<br>`'`}\
 `{`$value`=`$arg_value`}\
 `{`@eq`(`$arg_type`,`'`'`)\
 `{`@eq`(`$arg_sfistexttype`,`'1`'`)`&`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
