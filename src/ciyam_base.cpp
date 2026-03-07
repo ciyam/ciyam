@@ -5554,9 +5554,6 @@ void set_identity( const string& info, const char* p_encrypted_sid )
       // NOTE: Checks for an encrypted identity.
       if( info.length( ) >= c_encrypted_length )
       {
-         if( !sid.empty( ) )
-            throw runtime_error( "cannot change existing identity" );
-
          sid = info;
 
          if( info.find( ':' ) != string::npos )
