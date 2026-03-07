@@ -16916,6 +16916,86 @@
       <item>class
      </specification>
      <specification/>
+      <id>600210a
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210b
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210c
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210d
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210e
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210f
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210g
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210h
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210i
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210j
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210k
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210l
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210m
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210n
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210o
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210p
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210q
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210r
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210s
+      <item>class
+     </specification>
+     <specification/>
+      <id>600210t
+      <item>class
+     </specification>
+     <specification/>
       <id>600298
       <item>cclass
      </specification>
@@ -21237,6 +21317,10 @@
       <id>115439
       <name>Add_Arg_1
       <specifications/>
+       <specification/>
+        <id>600210a
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21245,6 +21329,10 @@
       <id>115440
       <name>Add_Arg_2
       <specifications/>
+       <specification/>
+        <id>600210b
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21253,6 +21341,10 @@
       <id>115432
       <name>Add_Child_Info
       <specifications/>
+       <specification/>
+        <id>600210c
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21261,6 +21353,10 @@
       <id>115447
       <name>Add_Destination_Info
       <specifications/>
+       <specification/>
+        <id>600210d
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21269,6 +21365,10 @@
       <id>115443
       <name>Add_Extra_Info
       <specifications/>
+       <specification/>
+        <id>600210e
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21277,6 +21377,10 @@
       <id>115430
       <name>Add_Field
       <specifications/>
+       <specification/>
+        <id>600210f
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21285,6 +21389,10 @@
       <id>115446
       <name>Add_Field_Info
       <specifications/>
+       <specification/>
+        <id>600210g
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21293,6 +21401,10 @@
       <id>115431
       <name>Add_Field_Pair
       <specifications/>
+       <specification/>
+        <id>600210h
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21301,6 +21413,10 @@
       <id>115438
       <name>Add_Grandchild_Info
       <specifications/>
+       <specification/>
+        <id>600210i
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21309,6 +21425,10 @@
       <id>115441
       <name>Add_Info
       <specifications/>
+       <specification/>
+        <id>600210j
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21317,6 +21437,10 @@
       <id>115444
       <name>Add_Next
       <specifications/>
+       <specification/>
+        <id>600210k
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21325,6 +21449,10 @@
       <id>115442
       <name>Add_Opt_Info
       <specifications/>
+       <specification/>
+        <id>600210l
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21333,6 +21461,10 @@
       <id>115445
       <name>Add_Other_Info
       <specifications/>
+       <specification/>
+        <id>600210m
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21341,6 +21473,10 @@
       <id>115433
       <name>Add_Secondary
       <specifications/>
+       <specification/>
+        <id>600210n
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21349,6 +21485,10 @@
       <id>115437
       <name>Add_Source_Info
       <specifications/>
+       <specification/>
+        <id>600210o
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21357,6 +21497,10 @@
       <id>115434
       <name>Add_Stats_1
       <specifications/>
+       <specification/>
+        <id>600210p
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21365,6 +21509,10 @@
       <id>115435
       <name>Add_Stats_2
       <specifications/>
+       <specification/>
+        <id>600210q
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21373,6 +21521,10 @@
       <id>115436
       <name>Add_Stats_Info
       <specifications/>
+       <specification/>
+        <id>600210r
+        <item>proc
+       </specification>
       </specifications>
       <args/>
       </args>
@@ -21384,6 +21536,10 @@
        <specification/>
         <id>600210
         <item>procedure
+       </specification>
+       <specification/>
+        <id>600210s
+        <item>proc
        </specification>
       </specifications>
       <args/>
@@ -21412,6 +21568,10 @@
        <specification/>
         <id>600209
         <item>procedure
+       </specification>
+       <specification/>
+        <id>600210t
+        <item>proc
        </specification>
       </specifications>
       <args/>
@@ -38456,6 +38616,186 @@
      <self_child>true
      <cfield_id>301405
      <fkcfield_id>301700
+    </data>
+   </specification>
+   <specification/>
+    <id>600210a
+    <name>{Specification}_dummy_Add_Arg_1
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115439
+    </data>
+   </specification>
+   <specification/>
+    <id>600210b
+    <name>{Specification}_dummy_Add_Arg_2
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115440
+    </data>
+   </specification>
+   <specification/>
+    <id>600210c
+    <name>{Specification}_dummy_Add_Child_Info
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115432
+    </data>
+   </specification>
+   <specification/>
+    <id>600210d
+    <name>{Specification}_dummy_Add_Destination_Info
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115447
+    </data>
+   </specification>
+   <specification/>
+    <id>600210e
+    <name>{Specification}_dummy_Add_Extra_Info
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115443
+    </data>
+   </specification>
+   <specification/>
+    <id>600210f
+    <name>{Specification}_dummy_Add_Field
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115430
+    </data>
+   </specification>
+   <specification/>
+    <id>600210g
+    <name>{Specification}_dummy_Add_Field_Info
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115446
+    </data>
+   </specification>
+   <specification/>
+    <id>600210h
+    <name>{Specification}_dummy_Add_Field_Pair
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115431
+    </data>
+   </specification>
+   <specification/>
+    <id>600210i
+    <name>{Specification}_dummy_Add_Grandchild_Info
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115438
+    </data>
+   </specification>
+   <specification/>
+    <id>600210j
+    <name>{Specification}_dummy_Add_Info
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115441
+    </data>
+   </specification>
+   <specification/>
+    <id>600210k
+    <name>{Specification}_dummy_Add_Next
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115444
+    </data>
+   </specification>
+   <specification/>
+    <id>600210l
+    <name>{Specification}_dummy_Add_Opt_Info
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115442
+    </data>
+   </specification>
+   <specification/>
+    <id>600210m
+    <name>{Specification}_dummy_Add_Other_Info
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115445
+    </data>
+   </specification>
+   <specification/>
+    <id>600210n
+    <name>{Specification}_dummy_Add_Secondary
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115433
+    </data>
+   </specification>
+   <specification/>
+    <id>600210o
+    <name>{Specification}_dummy_Add_Source_Info
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115437
+    </data>
+   </specification>
+   <specification/>
+    <id>600210p
+    <name>{Specification}_dummy_Add_Stats_1
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115434
+    </data>
+   </specification>
+   <specification/>
+    <id>600210q
+    <name>{Specification}_dummy_Add_Stats_2
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115435
+    </data>
+   </specification>
+   <specification/>
+    <id>600210r
+    <name>{Specification}_dummy_Add_Stats_Info
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115436
+    </data>
+   </specification>
+   <specification/>
+    <id>600210s
+    <name>{Specification}_dummy_Generate_All_Strings
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115510
+    </data>
+   </specification>
+   <specification/>
+    <id>600210t
+    <name>{Specification}_dummy_Generate_All_Vars
+    <type>ciyam_dummy_proc
+    <data/>
+     <class_id>115100
+     <procedure_id>115500
     </data>
    </specification>
    <specification/>

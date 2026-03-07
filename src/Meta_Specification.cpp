@@ -4205,6 +4205,8 @@ void Meta_Specification::impl::impl_Add_Arg_1( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
+   // NOTE: Need to remove '600210a' spec if needing any generated code for this procedure.
+
    // [<start Add_Arg_1_impl>]
    // [<finish Add_Arg_1_impl>]
 }
@@ -4213,6 +4215,8 @@ void Meta_Specification::impl::impl_Add_Arg_2( )
 {
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   // NOTE: Need to remove '600210b' spec if needing any generated code for this procedure.
 
    // [<start Add_Arg_2_impl>]
    // [<finish Add_Arg_2_impl>]
@@ -4223,6 +4227,8 @@ void Meta_Specification::impl::impl_Add_Child_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
+   // NOTE: Need to remove '600210c' spec if needing any generated code for this procedure.
+
    // [<start Add_Child_Info_impl>]
    // [<finish Add_Child_Info_impl>]
 }
@@ -4231,6 +4237,8 @@ void Meta_Specification::impl::impl_Add_Destination_Info( )
 {
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   // NOTE: Need to remove '600210d' spec if needing any generated code for this procedure.
 
    // [<start Add_Destination_Info_impl>]
    // [<finish Add_Destination_Info_impl>]
@@ -4241,6 +4249,8 @@ void Meta_Specification::impl::impl_Add_Extra_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
+   // NOTE: Need to remove '600210e' spec if needing any generated code for this procedure.
+
    // [<start Add_Extra_Info_impl>]
    // [<finish Add_Extra_Info_impl>]
 }
@@ -4249,6 +4259,8 @@ void Meta_Specification::impl::impl_Add_Field( )
 {
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   // NOTE: Need to remove '600210f' spec if needing any generated code for this procedure.
 
    // [<start Add_Field_impl>]
    // [<finish Add_Field_impl>]
@@ -4259,6 +4271,8 @@ void Meta_Specification::impl::impl_Add_Field_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
+   // NOTE: Need to remove '600210g' spec if needing any generated code for this procedure.
+
    // [<start Add_Field_Info_impl>]
    // [<finish Add_Field_Info_impl>]
 }
@@ -4267,6 +4281,8 @@ void Meta_Specification::impl::impl_Add_Field_Pair( )
 {
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   // NOTE: Need to remove '600210h' spec if needing any generated code for this procedure.
 
    // [<start Add_Field_Pair_impl>]
    // [<finish Add_Field_Pair_impl>]
@@ -4277,6 +4293,8 @@ void Meta_Specification::impl::impl_Add_Grandchild_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
+   // NOTE: Need to remove '600210i' spec if needing any generated code for this procedure.
+
    // [<start Add_Grandchild_Info_impl>]
    // [<finish Add_Grandchild_Info_impl>]
 }
@@ -4285,6 +4303,8 @@ void Meta_Specification::impl::impl_Add_Info( )
 {
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   // NOTE: Need to remove '600210j' spec if needing any generated code for this procedure.
 
    // [<start Add_Info_impl>]
    // [<finish Add_Info_impl>]
@@ -4295,6 +4315,8 @@ void Meta_Specification::impl::impl_Add_Next( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
+   // NOTE: Need to remove '600210k' spec if needing any generated code for this procedure.
+
    // [<start Add_Next_impl>]
    // [<finish Add_Next_impl>]
 }
@@ -4303,6 +4325,8 @@ void Meta_Specification::impl::impl_Add_Opt_Info( )
 {
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   // NOTE: Need to remove '600210l' spec if needing any generated code for this procedure.
 
    // [<start Add_Opt_Info_impl>]
    // [<finish Add_Opt_Info_impl>]
@@ -4313,6 +4337,8 @@ void Meta_Specification::impl::impl_Add_Other_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
+   // NOTE: Need to remove '600210m' spec if needing any generated code for this procedure.
+
    // [<start Add_Other_Info_impl>]
    // [<finish Add_Other_Info_impl>]
 }
@@ -4321,6 +4347,8 @@ void Meta_Specification::impl::impl_Add_Secondary( )
 {
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   // NOTE: Need to remove '600210n' spec if needing any generated code for this procedure.
 
    // [<start Add_Secondary_impl>]
    // [<finish Add_Secondary_impl>]
@@ -4331,6 +4359,8 @@ void Meta_Specification::impl::impl_Add_Source_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
+   // NOTE: Need to remove '600210o' spec if needing any generated code for this procedure.
+
    // [<start Add_Source_Info_impl>]
    // [<finish Add_Source_Info_impl>]
 }
@@ -4339,6 +4369,8 @@ void Meta_Specification::impl::impl_Add_Stats_1( )
 {
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   // NOTE: Need to remove '600210p' spec if needing any generated code for this procedure.
 
    // [<start Add_Stats_1_impl>]
    // [<finish Add_Stats_1_impl>]
@@ -4349,6 +4381,8 @@ void Meta_Specification::impl::impl_Add_Stats_2( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
+   // NOTE: Need to remove '600210q' spec if needing any generated code for this procedure.
+
    // [<start Add_Stats_2_impl>]
    // [<finish Add_Stats_2_impl>]
 }
@@ -4358,6 +4392,8 @@ void Meta_Specification::impl::impl_Add_Stats_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
+   // NOTE: Need to remove '600210r' spec if needing any generated code for this procedure.
+
    // [<start Add_Stats_Info_impl>]
    // [<finish Add_Stats_Info_impl>]
 }
@@ -4366,6 +4402,8 @@ void Meta_Specification::impl::impl_Generate_All_Strings( string& All_Strings, c
 {
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   // NOTE: Need to remove '600210s' spec if needing any generated code for this procedure.
 
    // [<start Generate_All_Strings_impl>]
 //nyi
@@ -4432,6 +4470,8 @@ void Meta_Specification::impl::impl_Generate_All_Vars( string& All_Vars, const s
 {
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   // NOTE: Need to remove '600210t' spec if needing any generated code for this procedure.
 
    // [<start Generate_All_Vars_impl>]
 //nyi
@@ -4574,8 +4614,8 @@ void Meta_Specification::impl::impl_Move_Down( const string& Restrict_Fields, co
    // Type matches a known field list "field" type then force an update (on the grandparent).
    string spec_type( get_obj( ).Specification_Type( ).get_key( ) );
 
-   if( spec_type == "field" || spec_type == "field_pair" || spec_type == "field_pair2"
-    || spec_type == "field_pair_g" || spec_type == "field_restrict" || spec_type == "field_source_and_value" )
+   if( ( spec_type == "field" ) || ( spec_type == "field_pair" ) || ( spec_type == "field_pair2" )
+    || ( spec_type == "field_pair_g" ) || ( spec_type == "field_restrict" ) || ( spec_type == "field_source_and_value" ) )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
@@ -4660,8 +4700,8 @@ void Meta_Specification::impl::impl_Move_Up( const string& Restrict_Fields, cons
    // Type matches a known field list "field" type then force an update (on the grandparent).
    string spec_type( get_obj( ).Specification_Type( ).get_key( ) );
 
-   if( spec_type == "field" || spec_type == "field_pair" || spec_type == "field_pair2"
-    || spec_type == "field_pair_g" || spec_type == "field_restrict" || spec_type == "field_source_and_value" )
+   if( ( spec_type == "field" ) || ( spec_type == "field_pair" ) || ( spec_type == "field_pair2" )
+    || ( spec_type == "field_pair_g" ) || ( spec_type == "field_restrict" ) || ( spec_type == "field_source_and_value" ) )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 

@@ -189,58 +189,58 @@ const char* const c_attribute_dfield_type = "dfield_type";
 const char* const c_attribute_modifier_id = "modifier_id";
 const char* const c_attribute_sftfield_id = "sftfield_id";
 const char* const c_attribute_act_field_id = "act_field_id";
+const char* const c_attribute_action_value = "action_value";
 const char* const c_attribute_append_value = "append_value";
 const char* const c_attribute_combine_keys = "combine_keys";
 const char* const c_attribute_crpmfield_id = "crpmfield_id";
+const char* const c_attribute_dtm_field_id = "dtm_field_id";
 const char* const c_attribute_field_key_id = "field_key_id";
 const char* const c_attribute_fkcffield_id = "fkcffield_id";
 const char* const c_attribute_is_transient = "is_transient";
 const char* const c_attribute_mcrcfield_id = "mcrcfield_id";
-const char* const c_attribute_tfield_value = "tfield_value";
-const char* const c_attribute_uid_field_id = "uid_field_id";
+const char* const c_attribute_options_left = "options_left";
+const char* const c_attribute_procedure_id = "procedure_id";
+const char* const c_attribute_protect_spec = "protect_spec";
 const char* const c_attribute_pw_enum_name = "pw_enum_name";
+const char* const c_attribute_status_value = "status_value";
+const char* const c_attribute_tfield_value = "tfield_value";
 const char* const c_attribute_ug_enum_name = "ug_enum_name";
+const char* const c_attribute_uid_field_id = "uid_field_id";
 const char* const c_attribute_append_to_ext = "append_to_ext";
+const char* const c_attribute_auto_class_id = "auto_class_id";
 const char* const c_attribute_crgpmfield_id = "crgpmfield_id";
+const char* const c_attribute_default_value = "default_value";
+const char* const c_attribute_dtm2_field_id = "dtm2_field_id";
 const char* const c_attribute_link_class_id = "link_class_id";
-const char* const c_attribute_opt_field2_id = "opt_field2_id";
-const char* const c_attribute_src_field2_id = "src_field2_id";
-const char* const c_attribute_type_field_id = "type_field_id";
-const char* const c_attribute_uid2_field_id = "uid2_field_id";
 const char* const c_attribute_mask_field_id = "mask_field_id";
 const char* const c_attribute_next_field_id = "next_field_id";
-const char* const c_attribute_auto_class_id = "auto_class_id";
-const char* const c_attribute_field_field_id = "field_field_id";
-const char* const c_attribute_opt_prefix2_id = "opt_prefix2_id";
-const char* const c_attribute_pw_enum_2_name = "pw_enum_2_name";
-const char* const c_attribute_pw_enum_value = "pw_enum_value";
-const char* const c_attribute_ug_enum_value = "ug_enum_value";
-const char* const c_attribute_action_value = "action_value";
-const char* const c_attribute_status_value = "status_value";
-const char* const c_attribute_options_left = "options_left";
-const char* const c_attribute_protect_spec = "protect_spec";
+const char* const c_attribute_opt_field2_id = "opt_field2_id";
 const char* const c_attribute_options_right = "options_right";
 const char* const c_attribute_protect_value = "protect_value";
 const char* const c_attribute_protect_scope = "protect_scope";
-const char* const c_attribute_procedure_id = "procedure_id";
-const char* const c_attribute_dtm_field_id = "dtm_field_id";
-const char* const c_attribute_dtm2_field_id = "dtm2_field_id";
+const char* const c_attribute_pw_enum_value = "pw_enum_value";
+const char* const c_attribute_special_value = "special_value";
+const char* const c_attribute_src_field2_id = "src_field2_id";
+const char* const c_attribute_type_field_id = "type_field_id";
 const char* const c_attribute_test_field_id = "test_field_id";
 const char* const c_attribute_task_class_id = "task_class_id";
-const char* const c_attribute_default_value = "default_value";
-const char* const c_attribute_special_value = "special_value";
+const char* const c_attribute_ug_enum_value = "ug_enum_value";
+const char* const c_attribute_uid2_field_id = "uid2_field_id";
 const char* const c_attribute_user_info_key = "user_info_key";
 const char* const c_attribute_allow_internal = "allow_internal";
-const char* const c_attribute_is_exact_match = "is_exact_match";
-const char* const c_attribute_test2_field_id = "test2_field_id";
-const char* const c_attribute_restrict_value = "restrict_value";
 const char* const c_attribute_child_class_id = "child_class_id";
 const char* const c_attribute_child_field_id = "child_field_id";
 const char* const c_attribute_extra_field_id = "extra_field_id";
+const char* const c_attribute_field_field_id = "field_field_id";
 const char* const c_attribute_has_opt_prefix = "has_opt_prefix";
 const char* const c_attribute_include_clones = "include_clones";
+const char* const c_attribute_is_exact_match = "is_exact_match";
+const char* const c_attribute_opt_prefix2_id = "opt_prefix2_id";
 const char* const c_attribute_order_field_id = "order_field_id";
+const char* const c_attribute_pw_enum_2_name = "pw_enum_2_name";
+const char* const c_attribute_restrict_value = "restrict_value";
 const char* const c_attribute_test_not_equal = "test_not_equal";
+const char* const c_attribute_test2_field_id = "test2_field_id";
 const char* const c_attribute_child_pclass_id = "child_pclass_id";
 const char* const c_attribute_child_pfield_id = "child_pfield_id";
 const char* const c_attribute_enum_value_name = "enum_value_name";
@@ -266,17 +266,18 @@ const char* const c_attribute_special_cfield_id = "special_cfield_id";
 const char* const c_attribute_source_field_value = "source_field_value";
 const char* const c_attribute_exhausted_field_id = "exhausted_field_id";
 const char* const c_attribute_neq_status_field_id = "neq_status_field_id";
-const char* const c_attribute_increment_procedure_id = "increment_procedure_id";
-const char* const c_attribute_special_extra_class_id = "special_extra_class_id";
-const char* const c_attribute_special_extra_source_id = "special_extra_source_id";
-const char* const c_attribute_special_extra_field_info = "special_extra_field_info";
-const char* const c_attribute_increment_next_value_arg_id = "increment_next_value_arg_id";
 const char* const c_attribute_move_up_procedure_id = "move_up_procedure_id";
 const char* const c_attribute_move_up_fields_arg_id = "move_up_fields_args_id";
 const char* const c_attribute_move_up_values_arg_id = "move_up_values_args_id";
+const char* const c_attribute_increment_procedure_id = "increment_procedure_id";
 const char* const c_attribute_move_down_procedure_id = "move_down_procedure_id";
+const char* const c_attribute_special_extra_class_id = "special_extra_class_id";
+const char* const c_attribute_special_extra_source_id = "special_extra_source_id";
 const char* const c_attribute_move_down_fields_arg_id = "move_down_fields_args_id";
 const char* const c_attribute_move_down_values_arg_id = "move_down_values_args_id";
+const char* const c_attribute_special_extra_field_info = "special_extra_field_info";
+const char* const c_attribute_increment_next_value_arg_id = "increment_next_value_arg_id";
+
 const char* const c_attribute_class1_fld_id = "class1_fld_id";
 const char* const c_attribute_class1_fk_id = "class1_fk_id";
 const char* const c_attribute_class2_fld_id = "class2_fld_id";
@@ -503,6 +504,7 @@ const char* const c_data_field_list = "field_list";
 const char* const c_data_major_only = "major_only";
 const char* const c_data_skip_nulls = "skip_nulls";
 const char* const c_data_allow_internal = "allow_internal";
+const char* const c_data_dummy_procedure = "dummy_procedure";
 const char* const c_data_special_extra_source = "special_extra_source";
 const char* const c_data_primary_stats1_cclass = "primary_stats1_cclass";
 const char* const c_data_primary_stats2_cclass = "primary_stats2_cclass";
@@ -1681,6 +1683,68 @@ void child_field_change_cascade_specification::add_specification_data( model& m,
 string child_field_change_cascade_specification::static_class_name( ) { return "child_field_change_cascade"; }
 
 DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, child_field_change_cascade_specification, static_class_name );
+
+struct ciyam_dummy_proc_specification : specification
+{
+   void add( model& m, const vector< string >& args, vector< specification_detail >& details );
+
+   specification_data_source get_specification_data_source( ) const { return e_specification_data_source_non_model; }
+
+   bool has_specification_data_for_class( const string& id ) const { return id == class_id; }
+
+   void read_data( sio_reader& reader );
+   void write_data( sio_writer& writer ) const;
+
+   void add_specification_data( model& m, specification_data& spec_data ) const;
+
+   static string static_class_name( );
+
+   string class_id;
+   string procedure_id;
+};
+
+void ciyam_dummy_proc_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
+{
+   if( args.size( ) < 2 )
+      throw runtime_error( "unexpected number of args for 'ciyam_dummy_proc' specification" );
+
+   string arg_class_name( args[ 0 ] );
+   string arg_proc_name( args[ 1 ] );
+
+   class_id = get_class_id_for_name( m, arg_class_name );
+
+   procedure_id = get_procedure_id_for_name( m, arg_class_name, arg_proc_name );
+   if( procedure_id.empty( ) )
+      throw runtime_error( "procedure '" + arg_proc_name + "' not found in class '" + arg_class_name + "'" );
+
+   details.push_back( specification_detail( class_id, "class", e_model_element_type_class ) );
+   details.push_back( specification_detail( procedure_id, "proc", e_model_element_type_procedure ) );
+}
+
+void ciyam_dummy_proc_specification::read_data( sio_reader& reader )
+{
+   class_id = reader.read_attribute( c_attribute_class_id );
+   procedure_id = reader.read_attribute( c_attribute_procedure_id );
+}
+
+void ciyam_dummy_proc_specification::write_data( sio_writer& writer ) const
+{
+   writer.write_attribute( c_attribute_class_id, class_id );
+   writer.write_attribute( c_attribute_procedure_id, procedure_id );
+}
+
+void ciyam_dummy_proc_specification::add_specification_data( model& m, specification_data& spec_data ) const
+{
+   string class_name = get_class_name_for_id( m, class_id );
+   spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
+
+   string procedure_name = get_procedure_name_for_id( m, class_name, procedure_id );
+   spec_data.data_pairs.push_back( make_pair( string( c_data_dummy_procedure ), procedure_name ) );
+}
+
+string ciyam_dummy_proc_specification::static_class_name( ) { return "ciyam_dummy_proc"; }
+
+DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, ciyam_dummy_proc_specification, static_class_name );
 
 struct clone_children_specification : specification
 {

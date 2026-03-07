@@ -163,6 +163,8 @@
 `{`$all_get_required_field_names_specifications`=`'`'`}
 `{`$all_get_always_required_field_names_specifications`=`'`'`}
 `{`$all_get_transient_replacement_field_names_specifications`=`'`'`}
+`{`$all_dummy_procedures`=`'`'`}
+`{`$all_dummy_procedure_specifications`=`'`'`}
 `{`?`$all_specifications`[`$all_specifications`%,`,\
 `{`(`?`$specification_\0_sections`)`[`$specification_\0_sections`,\
 `{`$all_\\$_specifications`=`$all_\\$_specifications`+`'\0,\1`'`}`]`}\
@@ -189,6 +191,8 @@
 `{`(`?`$specification_\0_recover_proc`)`$all_procedure_specifications`=`$all_procedure_specifications`+`'\0,\1`'`}\
 `{`(`?`$specification_\0_gen_procedure`)`$all_procedure_specifications`=`$all_procedure_specifications`+`'\0,\1`'`}\
 `{`(`?`$specification_\0_calc_procedure`)`$all_procedure_specifications`=`$all_procedure_specifications`+`'\0,\1`'`}\
+`{`(`?`$specification_\0_dummy_procedure`)`$all_dummy_procedures`=`$all_dummy_procedures`+`$specification_\0_dummy_procedure`}\
+`{`(`?`$specification_\0_dummy_procedure`)`$all_dummy_procedure_specifications`=`$all_dummy_procedure_specifications`+`'\0,\1`'`}\
 `{`(`?`$specification_\0_accept_procedure`)`$all_procedure_specifications`=`$all_procedure_specifications`+`'\0,\1`'`}\
 `{`(`?`$specification_\0_reject_procedure`)`$all_procedure_specifications`=`$all_procedure_specifications`+`'\0,\1`'`}\
 `{`(`?`$specification_\0_confirm_procedure`)`$all_procedure_specifications`=`$all_procedure_specifications`+`'\0,\1`'`}\
@@ -906,8 +910,13 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 {
    uint64_t state = p_obj->get_state( );
    ( void )state;
-`{`?`$all_procedure_specifications`[`$all_procedure_specifications`%,`,\
-`{`@eq`(`'\\1`'`,`'clone_children_from_fk`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
+`{`(`?`$all_procedure_specifications`)`{`@in`(`'\$`'`,`$all_dummy_procedures`)\
+`$tmp_procedure_specifications`=`$all_dummy_procedure_specifications`,`$tmp_procedure_specifications`=`$all_procedure_specifications`}`}\
+`{`?`$tmp_procedure_specifications`[`$tmp_procedure_specifications`%,`,\
+`{`@eq`(`'\\1`'`,`'ciyam_dummy_proc`'`)`&`@eq`(`'\$`'`,`$specification_\\0_dummy_procedure`)
+`{`@eq`(`$module_name`,`'Meta`'`)   // NOTE: Need to remove '`{`$specification_\\0_id`}' spec if needing any generated code for this procedure.
+`}`,\
+`@eq`(`'\\1`'`,`'clone_children_from_fk`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#clone_children_from_fk.spec.xrep section=procedure module_name=$module_name\
  arg_id=$specification_\\0_id arg_child=$specification_\\0_child arg_pfield=$specification_\\0_pfield\
  arg_dfield=$specification_\\0_dfield arg_fkfield=$specification_\\0_fkfield arg_fkchild=$specification_\\0_fkchild\

@@ -1892,6 +1892,30 @@ specification_add -id=600209 {Specification}_All_Vars_from_procedure_call field_
  "Specification All_Vars Generate_All_Vars \"\" -transient"
 specification_add -id=600210 {Specification}_All_Strings_from_procedure_call field_from_procedure_call\
  "Specification All_Strings Generate_All_Strings \"\" -transient"
+;
+;NOTE: Dummy procedure specs (only use if no other specs exist in order) to reduce the generation time.
+;
+specification_add -id=600210a {Specification}_dummy_Add_Arg_1 ciyam_dummy_proc "Specification Add_Arg_1"
+specification_add -id=600210b {Specification}_dummy_Add_Arg_2 ciyam_dummy_proc "Specification Add_Arg_2"
+specification_add -id=600210c {Specification}_dummy_Add_Child_Info ciyam_dummy_proc "Specification Add_Child_Info"
+specification_add -id=600210d {Specification}_dummy_Add_Destination_Info ciyam_dummy_proc "Specification Add_Destination_Info"
+specification_add -id=600210e {Specification}_dummy_Add_Extra_Info ciyam_dummy_proc "Specification Add_Extra_Info"
+specification_add -id=600210f {Specification}_dummy_Add_Field ciyam_dummy_proc "Specification Add_Field"
+specification_add -id=600210g {Specification}_dummy_Add_Field_Info ciyam_dummy_proc "Specification Add_Field_Info"
+specification_add -id=600210h {Specification}_dummy_Add_Field_Pair ciyam_dummy_proc "Specification Add_Field_Pair"
+specification_add -id=600210i {Specification}_dummy_Add_Grandchild_Info ciyam_dummy_proc "Specification Add_Grandchild_Info"
+specification_add -id=600210j {Specification}_dummy_Add_Info ciyam_dummy_proc "Specification Add_Info"
+specification_add -id=600210k {Specification}_dummy_Add_Next ciyam_dummy_proc "Specification Add_Next"
+specification_add -id=600210l {Specification}_dummy_Add_Opt_Info ciyam_dummy_proc "Specification Add_Opt_Info"
+specification_add -id=600210m {Specification}_dummy_Add_Other_Info ciyam_dummy_proc "Specification Add_Other_Info"
+specification_add -id=600210n {Specification}_dummy_Add_Secondary ciyam_dummy_proc "Specification Add_Secondary"
+specification_add -id=600210o {Specification}_dummy_Add_Source_Info ciyam_dummy_proc "Specification Add_Source_Info"
+specification_add -id=600210p {Specification}_dummy_Add_Stats_1 ciyam_dummy_proc "Specification Add_Stats_1"
+specification_add -id=600210q {Specification}_dummy_Add_Stats_2 ciyam_dummy_proc "Specification Add_Stats_2"
+specification_add -id=600210r {Specification}_dummy_Add_Stats_Info ciyam_dummy_proc "Specification Add_Stats_Info"
+specification_add -id=600210s {Specification}_dummy_Generate_All_Strings ciyam_dummy_proc "Specification Generate_All_Strings"
+specification_add -id=600210t {Specification}_dummy_Generate_All_Vars ciyam_dummy_proc "Specification Generate_All_Vars"
+;
 specification_add -id=600211 {Specification_Type}_Field_type_val meta_trait_val_proc "Specification_Type\
  Field_type Is_Valid_Field_Type Class Parent_Class Primitive Error Test_Value Procedure_Arg_Primitive Procedure_Arg_Type"
 specification_add -id=600212 {Specification_Type}_Source_type_val meta_trait_val_proc "Specification_Type\
