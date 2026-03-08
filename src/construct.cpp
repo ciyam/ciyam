@@ -10,6 +10,7 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <cstring>
 #  include <string>
 #  include <vector>
 #  include <fstream>
@@ -21,14 +22,19 @@
 
 using namespace std;
 
+const char* const c_comment_prefix = ";;;";
 const char* const c_section_prefix = "### ";
+
 const char* const c_outline_extension = ".outline";
+
+const char* const c_option_uncomment = "-uncomment";
 
 int main( int argc, char* argv[ ] )
 {
-   if( argc < 2 || argc > 4 )
+   if( ( argc < 2 ) || ( argc > 5 ) )
    {
-      cout << "Usage: construct [@<package.lst>] <target>" << endl;
+      cout << "Usage: construct [-uncomment] [@<package.lst>] <target>" << endl;
+
       return 0;
    }
 
@@ -37,29 +43,64 @@ int main( int argc, char* argv[ ] )
    try
    {
       int arg_num = 1;
+
+      bool uncomment = false;
+
+      size_t comment_prefix_length = strlen( c_comment_prefix );
+
       vector< string > packages;
+
       map< string, vector< string > > package_details;
 
       if( argc > 2 )
-         buffer_file_lines( string( argv[ arg_num++ ] ).substr( 1 ), packages );
+      {
+         string next( argv[ arg_num++ ] );
+
+         if( next == c_option_uncomment )
+         {
+            uncomment = true;
+
+            if( argc > 3 )
+               buffer_file_lines( string( argv[ arg_num++ ] ).substr( 1 ), packages );
+         }
+         else
+            buffer_file_lines( next.substr( 1 ), packages );
+      }
 
       string outline_filename( argv[ arg_num ] );
+
       outline_filename += c_outline_extension;
 
       ifstream inpf( outline_filename.c_str( ) );
+
       if( !inpf )
          throw runtime_error( "unable to open '" + outline_filename + "' for input" );
 
       string target_filename( argv[ arg_num ] );
+
       for( size_t i = 0; i < packages.size( ); i++ )
       {
          string package_filename( packages[ i ] + "." + target_filename );
+
          if( file_exists( package_filename ) )
          {
             vector< string > details;
+
             buffer_file_lines( package_filename, details );
 
-            package_details.insert( make_pair( packages[ i ], details ) );
+            vector< string > filtered_details;
+
+            for( size_t i = 0; i < details.size( ); i++ )
+            {
+               string next( details[ i ] );
+
+               if( next.find( c_comment_prefix ) != 0 )
+                  filtered_details.push_back( next );
+               else if( uncomment )
+                  filtered_details.push_back( next.substr( comment_prefix_length ) );
+            }
+
+            package_details.insert( make_pair( packages[ i ], filtered_details ) );
          }
       }
 
@@ -68,18 +109,30 @@ int main( int argc, char* argv[ ] )
       // NOTE: Empty code block for scope purposes.
       {
          ofstream outf( new_filename.c_str( ) );
+
          if( !outf )
             throw runtime_error( "unable to open '" + new_filename + "' for output" );
 
          string next;
+
          size_t line_num = 0;
+
          while( getline( inpf, next ) )
          {
             remove_trailing_cr_from_text_file_line( next, ++line_num == 1 );
 
+            if( next.find( c_comment_prefix ) == 0 )
+            {
+               if( !uncomment )
+                  continue;
+               else
+                  next.erase( 0, comment_prefix_length );
+            }
+
             if( !next.empty( ) && !packages.empty( ) )
             {
                string::size_type pos = next.find( c_section_prefix );
+
                if( pos == 0 )
                {
                   for( size_t i = 0; i < packages.size( ); i++ )
@@ -87,9 +140,11 @@ int main( int argc, char* argv[ ] )
                      if( package_details.count( packages[ i ] ) )
                      {
                         bool found_matching = false;
+
                         for( size_t j = 0; j < package_details[ packages[ i ] ].size( ); j++ )
                         {
                            pos = package_details[ packages[ i ] ][ j ].find( c_section_prefix );
+
                            if( pos == 0 )
                            {
                               if( package_details[ packages[ i ] ][ j ] == next )
@@ -114,6 +169,7 @@ int main( int argc, char* argv[ ] )
             throw runtime_error( "unexpected error occurred whilst reading '" + outline_filename + "'" );
 
          outf.flush( );
+
          if( !outf.good( ) )
             throw runtime_error( "unexpected error occurred whilst writing '" + new_filename + "'" );
 
