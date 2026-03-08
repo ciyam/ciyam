@@ -55,7 +55,7 @@
              make_pair( c_str_list_begin_item, next_value ) );
          else
          {
-            if( i < ( all_keys.size( ) - 1 ) )
+            if( i < ( all_values.size( ) - 1 ) )
                value += get_string_message( GS( c_str_list_extend ),
                 make_pair( c_str_list_extend_item, next_value ) );
             else
