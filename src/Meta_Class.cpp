@@ -2543,6 +2543,7 @@ void Meta_Class::impl::impl_Generate( )
       remove_file( extra_lst_file_name );
 
    ofstream outf( xrep_file_name.c_str( ) );
+
    if( !outf )
       throw runtime_error( "unexpected error opening '" + xrep_file_name + "' for output" );
 
@@ -2567,6 +2568,7 @@ void Meta_Class::impl::impl_Generate( )
     << ( get_obj( ).Source_Class( ).get_key( ).empty( ) ? "false" : "true" ) << "\x60'\x60}\n";
 
    string instance_create;
+
    switch( get_obj( ).Create_Restriction( ) )
    {
       case 0: // i.e. none
@@ -2593,6 +2595,7 @@ void Meta_Class::impl::impl_Generate( )
    {
       if( instance_create.empty( ) )
          instance_create = c_denied_always;
+
       instance_create += "=!" + get_obj( ).Create_Permission( ).Id( );
    }
    else if( instance_create.empty( ) )
@@ -2628,6 +2631,7 @@ void Meta_Class::impl::impl_Generate( )
    {
       if( instance_update.empty( ) )
          instance_update = c_denied_always;
+
       instance_update += "=!" + get_obj( ).Change_Permission( ).Id( );
    }
    else if( instance_update.empty( ) )
@@ -2718,9 +2722,11 @@ void Meta_Class::impl::impl_Generate( )
       outf << "\x60{\x60$base_fields\x60=\x60'\\\n";
 
       string key_info( to_string( Meta_Field::static_get_field_id( Meta_Field::e_field_id_Name ) ) + ' ' );
+
       if( get_obj( ).child_Field( ).iterate_forwards( key_info ) )
       {
          bool is_first = true;
+
          do
          {
             if( is_first )
@@ -2730,6 +2736,7 @@ void Meta_Class::impl::impl_Generate( )
 
             outf << get_obj( ).child_Field( ).Name( )
              << "," << get_obj( ).child_Field( ).Id( ) << "," << get_obj( ).Source_Class( ).Name( );
+
          } while( get_obj( ).child_Field( ).iterate_next( ) );
       }
 
@@ -2742,6 +2749,7 @@ void Meta_Class::impl::impl_Generate( )
       outf << "\x60{\x60$all_fields\x60=\x60'\\\n";
 
       string key_info( to_string( Meta_Field::static_get_field_id( Meta_Field::e_field_id_Name ) ) + ' ' );
+
       if( get_obj( ).child_Field( ).iterate_forwards( key_info ) )
       {
          bool is_first = true;
@@ -2819,6 +2827,7 @@ void Meta_Class::impl::impl_Generate( )
             {
                if( field_update.empty( ) )
                   field_update = c_denied_always;
+
                field_update += "=!" + get_obj( ).child_Field( ).Change_Permission( ).Id( );
             }
             else if( field_update.empty( ) )
@@ -2875,9 +2884,11 @@ void Meta_Class::impl::impl_Generate( )
                commandable_fields.push_back( make_pair( get_obj( ).child_Field( ).Name( ), field_type ) );
 
             bool is_numeric_literal = false;
+
             if( get_obj( ).child_Field( ).Primitive( ) >= 4 && get_obj( ).child_Field( ).Primitive( ) <= 6 )
             {
                is_numeric_literal = true;
+
                sql_numeric_fields.push_back( get_obj( ).child_Field( ).Name( ) );
             }
 
@@ -2888,6 +2899,7 @@ void Meta_Class::impl::impl_Generate( )
 
                if( !all_enums.empty( ) )
                   all_enums += ' ';
+
                all_enums += get_obj( ).child_Field( ).Enum( ).Name( ) + ',' + field_type;
 
                if( is_numeric_literal )
@@ -2899,18 +2911,23 @@ void Meta_Class::impl::impl_Generate( )
 
                if( !enum_fields.empty( ) )
                   enum_fields += ' ';
+
                enum_fields += get_obj( ).child_Field( ).Name( ) + ',' + enum_name;
 
                string enum_values;
+
                string enum_key_info( to_string( Meta_Enum_Item::static_get_field_id( Meta_Enum_Item::e_field_id_Order ) ) + ' ' );
+
                if( get_obj( ).child_Field( ).Enum( ).child_Enum_Item( ).iterate_forwards( enum_key_info ) )
                {
                   do
                   {
                      if( !enum_values.empty( ) )
                         enum_values += ' ';
+
                      enum_values += get_obj( ).child_Field( ).Enum( ).child_Enum_Item( ).Value( )
                       + '=' + get_obj( ).child_Field( ).Enum( ).child_Enum_Item( ).Label( );
+
                   } while( get_obj( ).child_Field( ).Enum( ).child_Enum_Item( ).iterate_next( ) );
                }
 
@@ -2934,6 +2951,7 @@ void Meta_Class::impl::impl_Generate( )
             else if( !get_obj( ).child_Field( ).Parent_Class( ).get_key( ).empty( ) )
             {
                parent_fields.push_back( get_obj( ).child_Field( ).Name( ) );
+
                if( get_obj( ).child_Field( ).Mandatory( ) )
                   mandatory_parent_fields.push_back( get_obj( ).child_Field( ).Name( ) );
 
@@ -2942,6 +2960,7 @@ void Meta_Class::impl::impl_Generate( )
             else
             {
                complex_fields.push_back( get_obj( ).child_Field( ).Name( ) );
+
                if( get_obj( ).child_Field( ).Mandatory( ) && get_obj( ).child_Field( ).Primitive( ) != 4 )
                   mandatory_normal_fields.push_back( get_obj( ).child_Field( ).Name( ) );
             }
@@ -2968,6 +2987,7 @@ void Meta_Class::impl::impl_Generate( )
             if( get_obj( ).child_Field( ).Type( ).Auto_Round( ) )
             {
                string method;
+
                switch( get_obj( ).child_Field( ).Type( ).Rounding_Method( ) )
                {
                   case 1:
@@ -2999,6 +3019,7 @@ void Meta_Class::impl::impl_Generate( )
 
             if( get_obj( ).child_Field( ).Use_In_Text_Search( ) )
                text_search_fields.push_back( get_obj( ).child_Field( ).Name( ) );
+
          } while( get_obj( ).child_Field( ).iterate_next( ) );
 
          if( !sql_columns.empty( ) )
@@ -3032,96 +3053,120 @@ void Meta_Class::impl::impl_Generate( )
    if( !basic_fields.empty( ) )
    {
       outf << "\x60{\x60$basic_fields\x60=\x60'";
+
       for( size_t i = 0; i < basic_fields.size( ); i++ )
       {
          if( i > 0 )
             outf << ' ';
+
          outf << basic_fields[ i ];
       }
+
       outf << "\x60'\x60}\n";
    }
 
    if( !parent_fields.empty( ) )
    {
       outf << "\x60{\x60$parent_fields\x60=\x60'";
+
       for( size_t i = 0; i < parent_fields.size( ); i++ )
       {
          if( i > 0 )
             outf << ' ';
+
          outf << parent_fields[ i ];
       }
+
       outf << "\x60'\x60}\n";
    }
 
    if( !complex_fields.empty( ) )
    {
       outf << "\x60{\x60$complex_fields\x60=\x60'";
+
       for( size_t i = 0; i < complex_fields.size( ); i++ )
       {
          if( i > 0 )
             outf << ' ';
+
          outf << complex_fields[ i ];
       }
+
       outf << "\x60'\x60}\n";
    }
 
    if( !file_field_names.empty( ) )
    {
       outf << "\x60{\x60$file_field_names\x60=\x60'";
+
       for( size_t i = 0; i < file_field_names.size( ); i++ )
       {
          if( i > 0 )
             outf << ' ';
+
          outf << file_field_names[ i ];
       }
+
       outf << "\x60'\x60}\n";
    }
 
    if( !encrypted_fields.empty( ) )
    {
       outf << "\x60{\x60$encrypted_fields\x60=\x60'";
+
       for( size_t i = 0; i < encrypted_fields.size( ); i++ )
       {
          if( i > 0 )
             outf << ' ';
+
          outf << encrypted_fields[ i ];
       }
+
       outf << "\x60'\x60}\n";
    }
 
    if( !transient_fields.empty( ) )
    {
       outf << "\x60{\x60$transient_fields\x60=\x60'";
+
       for( size_t i = 0; i < transient_fields.size( ); i++ )
       {
          if( i > 0 )
             outf << ' ';
+
          outf << transient_fields[ i ];
       }
+
       outf << "\x60'\x60}\n";
    }
 
    if( !text_search_fields.empty( ) )
    {
       outf << "\x60{\x60$text_search_fields\x60=\x60'";
+
       for( size_t i = 0; i < text_search_fields.size( ); i++ )
       {
          if( i > 0 )
             outf << ' ';
+
          outf << text_search_fields[ i ];
       }
+
       outf << "\x60'\x60}\n";
    }
 
    if( !sql_numeric_fields.empty( ) )
    {
       outf << "\x60{\x60$sql_numeric_fields\x60=\x60'";
+
       for( size_t i = 0; i < sql_numeric_fields.size( ); i++ )
       {
          if( i > 0 )
             outf << ' ';
+
          outf << sql_numeric_fields[ i ];
       }
+
       outf << "\x60'\x60}\n";
    }
 
@@ -3130,17 +3175,21 @@ void Meta_Class::impl::impl_Generate( )
    if( !domain_fields.empty( ) )
    {
       outf << "\x60{\x60$domain_fields\x60=\x60'";
+
       for( size_t i = 0; i < domain_fields.size( ); i++ )
       {
          if( i > 0 )
             outf << ' ';
+
          outf << domain_fields[ i ];
       }
+
       outf << "\x60'\x60}\n";
 
       for( size_t i = 0; i < domain_fields.size( ); i++ )
       {
          outf << "\x60{\x60$domain_type_" << domain_fields[ i ] << "\x60=\x60'" << domain_types[ domain_fields[ i ] ] << "\x60'\x60}\n";
+
          if( domain_masks.count( domain_fields[ i ] ) )
             outf << "\x60{\x60$domain_mask_" << domain_fields[ i ] << "\x60=\x60'" << domain_masks[ domain_fields[ i ] ] << "\x60'\x60}\n";
       }
@@ -3151,24 +3200,30 @@ void Meta_Class::impl::impl_Generate( )
    if( !auto_round_fields.empty( ) )
    {
       outf << "\x60{\x60$auto_round_fields\x60=\x60'";
+
       for( size_t i = 0; i < auto_round_fields.size( ); i++ )
       {
          if( i > 0 )
             outf << ' ';
+
          outf << auto_round_fields[ i ];
       }
+
       outf << "\x60'\x60}\n";
    }
 
    if( !commandable_fields.empty( ) )
    {
       outf << "\x60{\x60$commandable_fields\x60=\x60'";
+
       for( size_t i = 0; i < commandable_fields.size( ); i++ )
       {
          if( i > 0 )
             outf << ' ';
+
          outf << commandable_fields[ i ].first << ',' << commandable_fields[ i ].second;
       }
+
       outf << "\x60'\x60}\n";
 
       outf << "\x60{\x60}\n";
@@ -3179,24 +3234,30 @@ void Meta_Class::impl::impl_Generate( )
       if( !mandatory_normal_fields.empty( ) )
       {
          outf << "\x60{\x60$mandatory_normal_fields\x60=\x60'";
+
          for( size_t i = 0; i < mandatory_normal_fields.size( ); i++ )
          {
             if( i > 0 )
                outf << ' ';
+
             outf << mandatory_normal_fields[ i ];
          }
+
          outf << "\x60'\x60}\n";
       }
 
       if( !mandatory_parent_fields.empty( ) )
       {
          outf << "\x60{\x60$mandatory_parent_fields\x60=\x60'";
+
          for( size_t i = 0; i < mandatory_parent_fields.size( ); i++ )
          {
             if( i > 0 )
                outf << ' ';
+
             outf << mandatory_parent_fields[ i ];
          }
+
          outf << "\x60'\x60}\n";
       }
 
@@ -3231,6 +3292,7 @@ void Meta_Class::impl::impl_Generate( )
          get_customised_types_for_class( get_obj( ).child_Relationship_Parent( ).Child_Class( ), customised_types );
 
          string cascade_op;
+
          switch( get_obj( ).child_Relationship_Parent( ).Cascade_Op( ) )
          {
             case -1:
@@ -3258,6 +3320,7 @@ void Meta_Class::impl::impl_Generate( )
           + get_obj( ).child_Relationship_Parent( ).Name( ) + ',' + get_mapped_id( model_name, get_obj( ).child_Relationship_Parent( ).Field_Id( ) ) + ',' + cascade_op ) );
 
          child_types.insert( get_obj( ).Model( ).Name( ) + '_' + get_obj( ).child_Relationship_Parent( ).Child_Class( ).Name( ) );
+
       } while( get_obj( ).child_Relationship_Parent( ).iterate_next( ) );
 
       if( !child_info.empty( ) )
@@ -3281,6 +3344,7 @@ void Meta_Class::impl::impl_Generate( )
          outf << "\x60{\x60}\n";
 
          is_first = true;
+
          outf << "\x60{\x60$child_types\x60=\x60'";
 
          for( set< string >::const_iterator i = child_types.begin( ), end = child_types.end( ); i != end; ++i )
@@ -3299,6 +3363,7 @@ void Meta_Class::impl::impl_Generate( )
       if( !trans_types.empty( ) )
       {
          bool is_first = true;
+
          outf << "\x60{\x60$trans_types\x60=\x60'";
 
          for( set< string >::const_iterator i = trans_types.begin( ), end = trans_types.end( ); i != end; ++i )
@@ -3332,15 +3397,18 @@ void Meta_Class::impl::impl_Generate( )
       else
          outf << "\x60{\x60$parent_class\x60=\x60'"
           << get_obj( ).Source_Model( ).Name( ) << "_" << get_obj( ).Source_Class( ).Name( );
+
       outf << "\x60'\x60}\n";
    }
 
    if( !parent_types.empty( ) )
    {
       had_child_info_parents_or_custom = true;
+
       outf << "\x60{\x60$parent_types\x60=\x60'";
 
       bool is_first = true;
+
       for( set< string >::const_iterator i = parent_types.begin( ), end = parent_types.end( ); i != end; ++i )
       {
          if( is_first )
@@ -3350,6 +3418,7 @@ void Meta_Class::impl::impl_Generate( )
 
          outf << *i;
       }
+
       outf << "\x60'\x60}\n";
    }
 
@@ -3358,12 +3427,14 @@ void Meta_Class::impl::impl_Generate( )
       had_child_info_parents_or_custom = true;
 
       outf << "\x60{\x60$customised_types\x60=\x60'";
+
       for( set< string >::const_iterator i = customised_types.begin( ), end = customised_types.end( ); i != end; ++i )
       {
          if( i != customised_types.begin( ) )
             outf << ' ';
          outf << *i;
       }
+
       outf << "\x60'\x60}\n";
    }
 
@@ -3406,6 +3477,7 @@ void Meta_Class::impl::impl_Generate( )
                throw runtime_error( "Cannot use Transient field '" + get_obj( ).child_Index( ).Field_1( ).Name( ) + "' in an Index." );
 
             string next_index( get_obj( ).child_Index( ).Field_1( ).Name( ) );
+
             index_field_types.push_back( meta_field_type_name(
              get_obj( ).child_Index( ).Field_1( ).Primitive( ), get_obj( ).child_Index( ).Field_1( ).Mandatory( ), "", "" ) );
 
@@ -3467,16 +3539,19 @@ void Meta_Class::impl::impl_Generate( )
             {
                if( !all_unique_indexes.empty( ) )
                   all_unique_indexes += ' ';
+
                all_unique_indexes += next_index;
 
                if( !all_sql_unique_indexes.empty( ) )
                   all_sql_unique_indexes += ' ';
+
                all_sql_unique_indexes += next_sql_index;
             }
             else
             {
                next_index += ",@pk";
                next_sql_index += ",C_Key_";
+
                index_field_types.push_back( "string" );
             }
 
@@ -3484,12 +3559,14 @@ void Meta_Class::impl::impl_Generate( )
 
             if( !all_sql_indexes.empty( ) )
                all_sql_indexes += " \\\n";
+
             all_sql_indexes += next_sql_index;
 
             for( size_t i = 0; i < index_field_types.size( ); i++ )
             {
                if( i > 0 )
                   all_indexes += ',';
+
                all_indexes += index_field_types[ i ];
             }
 
@@ -3519,6 +3596,7 @@ void Meta_Class::impl::impl_Generate( )
 
          if( !all_modifiers.empty( ) )
             all_modifiers += ' ';
+
          all_modifiers += get_obj( ).child_Modifier( ).Name( ) + ',' + osstr.str( );
 
          flag_value <<= 1;
@@ -3552,12 +3630,14 @@ void Meta_Class::impl::impl_Generate( )
          {
             if( !all_procedures.empty( ) )
                all_procedures += ' ';
+
             all_procedures += get_obj( ).child_Procedure( ).Name( );
 
             all_procedure_names.push_back( get_obj( ).child_Procedure( ).Name( ) );
 
             if( !all_procedure_info.empty( ) )
                all_procedure_info += ' ';
+
             all_procedure_info += get_obj( ).child_Procedure( ).Id( ) + ',' + get_obj( ).child_Procedure( ).Name( );
 
             string procedure_access;
@@ -3588,6 +3668,7 @@ void Meta_Class::impl::impl_Generate( )
             {
                if( procedure_access.empty( ) )
                   procedure_access = c_denied_always;
+
                procedure_access += "=!" + get_obj( ).child_Procedure( ).Access_Permission( ).Id( );
             }
             else if( procedure_access.empty( ) )
@@ -3695,7 +3776,10 @@ void Meta_Class::impl::impl_Generate( )
 
    if( get_obj( ).child_Specification( ).iterate_forwards( specification_key_info ) )
    {
+      set< string > specification_types;
+
       vector< string > all_specification_details;
+
       string all_specifications, all_specification_types;
 
       do
@@ -3749,13 +3833,20 @@ void Meta_Class::impl::impl_Generate( )
 
                all_specifications += specification_name + ',' + specification_object;
 
-               if( !all_specification_types.empty( ) )
-                  all_specification_types += " \\\n";
+               if( ( specification_object != "n/a" )
+                && !specification_types.count( specification_object ) )
+               {
+                  if( !all_specification_types.empty( ) )
+                     all_specification_types += " \\\n";
 
-               all_specification_types += specification_object;
+                  all_specification_types += specification_object;
+
+                  specification_types.insert( specification_object );
+               }
             }
 
             string::size_type pos = 0;
+
             string specification_details;
 
             string vars( get_obj( ).child_Specification( ).All_Vars( ) );
