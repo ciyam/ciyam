@@ -7017,35 +7017,9 @@ peer_session* construct_session(
  bool has_support_sessions = false, bool must_clear_system_variable = false )
 #endif
 {
-   peer_session* p_session = 0;
-
-   string::size_type pos = addr_info.find( '=' );
-
-   string blockchains;
-
-   bool already_has_session = false;
-
-   if( pos != string::npos )
-   {
-      blockchains = addr_info.substr( pos + 1 );
-
-      string::size_type ppos = blockchains.find( ':' );
-
-      if( ppos != string::npos )
-         blockchains.erase( ppos );
-
-      if( blockchains.find( ',' ) == string::npos )
-         already_has_session = has_session_with_ip_addr( addr_info.substr( 0, pos ), blockchains );
-   }
-
-   if( is_for_support || !already_has_session 
-    || addr_info.substr( 0, pos ) == c_local_ip_addr
-    || addr_info.substr( 0, pos ) == c_local_ip_addr_for_ipv6 )
-      p_session = new peer_session( unix_time( dtm ),
-       is_responder, up_socket, addr_info, is_for_support, extra,
-       p_identity, chain_type, has_support_sessions, must_clear_system_variable );
-
-   return p_session;
+   return new peer_session( unix_time( dtm ),
+    is_responder, up_socket, addr_info, is_for_support, extra,
+    p_identity, chain_type, has_support_sessions, must_clear_system_variable );
 }
 
 }
