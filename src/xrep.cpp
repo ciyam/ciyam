@@ -203,7 +203,7 @@ any_char                      ::= any printable character
 using namespace std;
 
 const char c_escape = '`';
-const char c_hidden_escape = '\1'; // NOTE: For MBCS '\0' would be better, however, error messages will end up truncated if present.
+const char c_hidden_escape = '\1'; // NOTE: For MBCS '\0' might be best (but might end up with C style string issues).
 
 const char c_variable = '$';
 const char c_optional = '?';
@@ -973,7 +973,7 @@ class xrep_expression : public expression_base
 string xrep_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate xrep_expression" << endl;
+   cout << "evaluate xrep_expression" << endl;
 #endif
    string lhs( up_lhs->evaluate( xi ) );
 
@@ -1009,7 +1009,7 @@ class okay_expression : public expression_base
 string okay_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate okay_expression" << endl;
+   cout << "evaluate okay_expression" << endl;
 #endif
    if( okay )
       return up_lhs->evaluate( xi );
@@ -1048,7 +1048,7 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
 string include_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate include_expression" << endl;
+   cout << "evaluate include_expression" << endl;
 #endif
    string str( up_lhs->evaluate( xi ) );
 
@@ -1130,6 +1130,7 @@ cout << "evaluate include_expression" << endl;
       try
       {
          ostringstream osstr;
+
          process_input( inpf, use_current_variables ? xi : new_xi, osstr, false );
 
          retval = osstr.str( );
@@ -1176,7 +1177,7 @@ class combined_expression : public expression_base
 string combined_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate combined_expression" << endl;
+   cout << "evaluate combined_expression" << endl;
 #endif
    string retval( up_lhs->evaluate( xi ) );
 
@@ -1224,7 +1225,7 @@ class replacement_expression : public expression_base
 string replacement_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate replacement_expression" << endl;
+   cout << "evaluate replacement_expression" << endl;
 #endif
    return up_lhs->evaluate( xi );
 }
@@ -1267,7 +1268,7 @@ class padding_expression : public expression_base
 string padding_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate padding_expression" << endl;
+   cout << "evaluate padding_expression" << endl;
 #endif
    string retval( up_lhs->evaluate( xi ) );
 
@@ -1300,7 +1301,7 @@ class prefix_expression : public expression_base
 string prefix_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate prefix_expression" << endl;
+   cout << "evaluate prefix_expression" << endl;
 #endif
    string retval( up_lhs->evaluate( xi ) );
 
@@ -1347,7 +1348,7 @@ class value_expression : public expression_base
 string value_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate value_expression" << endl;
+   cout << "evaluate value_expression" << endl;
 #endif
    string retval( up_lhs->evaluate( xi ) );
 
@@ -1443,7 +1444,7 @@ string item_expression::get_label( ) const
 string item_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate item_expression" << endl;
+   cout << "evaluate item_expression" << endl;
 #endif
    return up_lhs->evaluate( xi );
 }
@@ -1470,7 +1471,7 @@ class template_expression : public expression_base
 string template_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate template_expression" << endl;
+   cout << "evaluate template_expression" << endl;
 #endif
    string lhs( up_lhs->evaluate( xi ) );
    string prefix;
@@ -1565,6 +1566,7 @@ cout << "evaluate template_expression" << endl;
          if( xi.get_version( ) && ( rhs[ j ] == c_escape ) )
          {
             can_escape = true;
+
             continue;
          }
 
@@ -1597,9 +1599,10 @@ cout << "evaluate template_expression" << endl;
                else
                   p_secondary_set = &secondary_original_set;
             }
-            else if( rhs[ j ] >= '0' && rhs[ j ] <= '9' )
+            else if( ( rhs[ j ] >= '0' ) && ( rhs[ j ] <= '9' ) )
             {
                size_t offset = rhs[ j ] - '0';
+
                if( offset < p_secondary_set->size( ) )
                   retval += ( *p_secondary_set )[ offset ];
             }
@@ -1648,7 +1651,7 @@ class or_expression : public expression_base
 string or_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate or_expression" << endl;
+   cout << "evaluate or_expression" << endl;
 #endif
    string lhs( up_lhs->evaluate( xi ) );
 
@@ -1685,7 +1688,7 @@ class and_expression : public expression_base
 string and_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate and_expression" << endl;
+   cout << "evaluate and_expression" << endl;
 #endif
    string lhs( up_lhs->evaluate( xi ) );
 
@@ -1722,7 +1725,7 @@ class not_expression : public expression_base
 string not_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate not_expression" << endl;
+   cout << "evaluate not_expression" << endl;
 #endif
    string lhs( up_lhs->evaluate( xi ) );
 
@@ -1756,7 +1759,7 @@ class test_expression : public expression_base
 string test_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate test_expression" << endl;
+   cout << "evaluate test_expression" << endl;
 #endif
    string lhs( up_lhs->evaluate( xi ) );
 
@@ -1790,7 +1793,7 @@ class union_expression : public expression_base
 string union_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate union_expression" << endl;
+   cout << "evaluate union_expression" << endl;
 #endif
    string lhs( up_lhs->evaluate( xi ) );
    string rhs( up_rhs->evaluate( xi ) );
@@ -1822,7 +1825,7 @@ class append_expression : public expression_base
 string append_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate append_expression" << endl;
+   cout << "evaluate append_expression" << endl;
 #endif
    string lhs( up_lhs->evaluate( xi ) );
    string rhs( up_rhs->evaluate( xi ) );
@@ -1857,7 +1860,7 @@ class intersection_expression : public expression_base
 string intersection_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate intersection_expression" << endl;
+   cout << "evaluate intersection_expression" << endl;
 #endif
    string lhs( up_lhs->evaluate( xi ) );
    string rhs( up_rhs->evaluate( xi ) );
@@ -1893,7 +1896,7 @@ class assign_append_expression : public expression_base
 string assign_append_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate assign_append_expression" << endl;
+   cout << "evaluate assign_append_expression" << endl;
 #endif
    string val;
 
@@ -1930,7 +1933,7 @@ class eq_function_expression : public expression_base
 string eq_function_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate eq_function_expression" << endl;
+   cout << "evaluate eq_function_expression" << endl;
 #endif
    string retval( c_false );
 
@@ -1974,7 +1977,7 @@ class in_function_expression : public expression_base
 string in_function_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate in_function_expression" << endl;
+   cout << "evaluate in_function_expression" << endl;
 #endif
    string retval;
    string lhs( up_lhs->evaluate( xi ) );
@@ -2026,7 +2029,7 @@ class count_function_expression : public expression_base
 string count_function_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate count_function_expression" << endl;
+   cout << "evaluate count_function_expression" << endl;
 #endif
    string lhs( up_lhs->evaluate( xi ) );
 
@@ -2072,7 +2075,7 @@ class set_function_expression : public expression_base
 string set_function_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate set_function_expression" << endl;
+   cout << "evaluate set_function_expression" << endl;
 #endif
    string retval( up_lhs->evaluate( xi ) );
 
@@ -2165,13 +2168,14 @@ class variable_expression : public expression_base
 
    private:
    bool is_ref;
+
    string identifier;
 };
 
 string variable_expression::evaluate( xrep_info& xi )
 {
 #ifdef DEBUG
-cout << "evaluate variable_expression" << endl;
+   cout << "evaluate variable_expression" << endl;
 #endif
    if( is_ref )
       return identifier;
@@ -3641,6 +3645,7 @@ string process_expression( const string& input, xrep_info& xi, int line_number )
 void pre_process_expr( string& expr )
 {
    int expr_level = 0;
+
    bool was_escape = false;
 
    for( string::size_type i = 0; i < expr.size( ); i++ )
@@ -3648,6 +3653,7 @@ void pre_process_expr( string& expr )
       if( was_escape )
       {
          was_escape = false;
+
          if( expr[ i ] == c_left_brace[ 1 ] )
          {
             if( ++expr_level > 1 )
@@ -3707,7 +3713,7 @@ bool process_next( const string& line, string& result,
             else
                ++nested_expressions;
          }
-         else if( start != string::npos && line[ i ] == c_right_brace[ 1 ] )
+         else if( ( start != string::npos ) && ( line[ i ] == c_right_brace[ 1 ] ) )
          {
             if( nested_expressions )
                --nested_expressions;
@@ -3721,7 +3727,9 @@ bool process_next( const string& line, string& result,
 #endif
 
                pre_process_expr( expr );
+
                result += process_expression( expr, xi, line_number );
+
                post_process_result( result );
 
                // NOTE: If an include has been processed at the end of the input
@@ -3732,12 +3740,16 @@ bool process_next( const string& line, string& result,
                   include_appended = true;
 
                end = i + 1;
+
                last.erase( );
+
                start = string::npos;
+
                has_processed_expression = true;
 
                if( end < line.size( ) )
                   result += line.substr( end );
+
                break;
             }
          }
@@ -3907,7 +3919,7 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
          has_expression = false;
       }
 
-      bool had_result( process_next( next, result, xi, line_number, last, nested_expressions, include_appended ) );
+      bool had_result = process_next( next, result, xi, line_number, last, nested_expressions, include_appended );
 
       if( !last.empty( ) )
       {
