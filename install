@@ -317,13 +317,11 @@ if [ "$has_service" = "1" ]; then
   force_reload=1
 
   rm -f ciyam/ciyam_server
-  touch $INSTALL_PATH/ciyam_server
 
   cmp -s ciyam/ciyam_base.so $INSTALL_PATH/ciyam_base.so
 
   if [ $? -eq 0 ]; then
    rm -f ciyam/ciyam_base.so
-   touch $INSTALL_PATH/ciyam_base.so
   else
    mv ciyam/ciyam_base.so ciyam/ciyam_base.so.new
   fi
@@ -550,7 +548,7 @@ show_restore_message=$needs_restore
 if [ "$unlock_key" != "" ]; then
  pushd $INSTALL_PATH >/dev/null
 
- for i in {1..50}
+ for i in {1..60}
  do
   if [ ! -f ciyam_server.cmd ]; then
    break;
@@ -572,7 +570,18 @@ if [ "$unlock_key" != "" ]; then
  fi
  popd >/dev/null
 else
- sudo systemctl --no-pager -l status ciyam
+ if [ "$force_reload" = "1" ]; then
+  pushd $INSTALL_PATH >/dev/null
+  if [ "$needs_restore" = "1" ]; then
+   ./restore $CIYAM_APP_MOD
+   if [ $? -eq 0 ]; then
+    show_restore_message=
+   fi
+  fi
+  popd >/dev/null
+ else
+  sudo systemctl --no-pager -l status ciyam
+ fi
 fi
 
 if [ "$show_restore_message" = "1" ]; then
