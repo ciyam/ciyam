@@ -3937,14 +3937,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                prepare_object_instance( handle, context, true );
 
-               string output( "[" + instance_key_info( handle, context ) + "]" );
+               response = "[" + instance_key_info( handle, context ) + "]";
 
                string field_output( get_field_values( handle, context, field_list, tz_name, true, false, 0, &field_inserts ) );
 
-               if( !field_output.empty( ) )
-                  output += " " + field_output;
-
-               socket.write_line( output, c_request_timeout, p_sock_progress );
+               if( minimal )
+                  response = field_output;
+               else if( !field_output.empty( ) )
+                  response += " " + field_output;
             }
             // NOTE: If just performing a simple record fetch then use "instance_fetch"
             // instead of "instance_iterate" (reduces complexity and supports caching).
