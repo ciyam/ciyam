@@ -1,0 +1,92 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "3"
+#NOTE: This script requires a description, host information and user name.
+@else
+ERROR=
+;
+DESCRIPTION=$1
+HOST_INFO=$2
+USER_NAME=$3
+EXT_QR_CODE=$4
+;
+HOST_LINES=@repstr:-/\n:$HOST_INFO
+;
+HOST_NAME=%HOST_LINES:1%
+PORT=%HOST_LINES:2%
+;
+@ifeq "$PORT" ""
+PORT=12021
+@endif
+;
+.system_variable @storage
+STORAGE=$OUTPUT
+@ifeq "$STORAGE" ""
+#Error: No default storage found.
+@else
+.storage_init $STORAGE
+.pf $STORAGE User "Name#1 $USER_NAME" #1 @key -min
+@ifndef $OUTPUT
+#Error: User '$USER_NAME' was not found.
+@else
+USER_KEY=$OUTPUT
+.pf $STORAGE User $USER_KEY Default_Group -min
+USER_GROUP=$OUTPUT
+;
+@ifeq "$USER_KEY" "admin"
+ERROR=User name must not be 'admin'.
+#$ERROR
+@endif
+;
+@ifndef $ERROR
+.pf $STORAGE Peer_Node " " QR_Code_Text -min
+QR_CODE_TEXT=$OUTPUT
+;
+#QR Code: $QR_CODE_TEXT
+;
+QR_CODE_TEXT=@repstr:\:/i:$QR_CODE_TEXT
+KEY_AND_PUB=@repstr:i/\n:$QR_CODE_TEXT
+;
+@ifneq "$EXT_QR_CODE" ""
+#External QR Code: $EXT_QR_CODE
+@else
+&External QR Code: :EXT_QR_CODE=
+@endif
+;
+EXT_QR_CODE=@repstr:\:/i:$EXT_QR_CODE
+;
+EXT_KEY_AND_PUB=@repstr:i/\n:$EXT_QR_CODE
+;
+KEY_VALUE=%EXT_KEY_AND_PUB:1%
+;
+.encrypt %EXT_KEY_AND_PUB:2%
+ENCRYPTED_QR_CODE_SCANNED=$OUTPUT
+;
+@retain *
+<$STORAGE.channel_information.vars.lst
+;
+.pc $USER_KEY @now $STORAGE $CLASS_NAME -g=$USER_GROUP $KEY_VALUE "$FLD_ALIAS=%KEY_AND_PUB:1%\
+,$FLD_DESCRIPTION=$DESCRIPTION,$FLD_HOST_NAME=$HOST_NAME,$FLD_PORT_NUMBER=$PORT,$FLD_QR_CODE_SCANNED=$ENCRYPTED_QR_CODE_SCANNED"
+;
+@endif
+;
+.storage_term
+@endif
+;
+@endif
+;
+@endif
