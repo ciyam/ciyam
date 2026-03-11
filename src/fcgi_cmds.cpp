@@ -1641,7 +1641,16 @@ bool populate_list_info( list_source& list,
          {
             date_time dt( field_value );
 
-            dt -= ( seconds )sess_info.gmt_offset;
+            // KLUDGE: If "gmt_offset" is subtracted directly from
+            // "dt" (after casting its value to the floating point
+            // "seconds" type) then the result ends up being "off"
+            // by one second. To avoid this issue is converting to
+            // (and then back from) the "unix time" value.
+            int64_t uval = unix_time( dt );
+
+            uval -= sess_info.gmt_offset;
+
+            dt = date_time( uval );
 
             field_value = format_date_time( dt );
          }
