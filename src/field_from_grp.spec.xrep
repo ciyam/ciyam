@@ -6,8 +6,9 @@
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start field_from_grp)] `{`$arg_id`}
-   if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( ) && `}\
-`{`!`@eq`(`$arg_check`,`'`'`)get_obj( ).`{`$arg_field`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`$arg_field`} && `}!get_grp( ).empty( ) )
+   if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create
+    && `}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( ) && `}!get_grp( ).empty( )`{`!`@eq`(`$arg_check`,`'`'`)
+    && ( get_obj( ).`{`$arg_field`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`$arg_field`} )`} )
       get_obj( ).`{`$arg_field`}( get_grp( )`{`!`@eq`(`$arg_append`,`'`'`) + "`{`$arg_append`}"`} );
    // [(finish field_from_grp)] `{`$arg_id`}
 `}
