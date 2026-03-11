@@ -2139,6 +2139,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( !data_update_text.empty( ) )
                p_update = &data_update_text;
 
+            // NOTE: In order to create an FCGI UI compatible password hash:
+            // crypto_hash -x=! <identity><pwd><uid> -u=<identity><pwd><uid>
+            if( extra_rounds == "!" )
+               extra_rounds = to_string( c_password_hash_rounds - 1 );
+
             response = crypto_digest( data, use_sha512, hex_decode, from_string< size_t >( extra_rounds ), p_update );
          }
 
