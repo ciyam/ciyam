@@ -268,6 +268,7 @@ string get_module_id( const string& module_name )
    storage_info& sinfo( get_storage_info( ) );
 
    module_const_iterator mci, end;
+
    for( mci = sinfo.modules.begin( ), end = sinfo.modules.end( ); mci != end; ++mci )
    {
       if( mci->name == module_name )
@@ -297,7 +298,9 @@ string get_module_id_for_attached_file( const source& source )
    storage_info& sinfo( get_storage_info( ) );
 
    module_index_const_iterator mici;
+
    mici = sinfo.modules_index.find( name );
+
    if( mici == sinfo.modules_index.end( ) )
       throw runtime_error( "unexpected index entry for module '" + name + "' not found" );
 
@@ -307,6 +310,7 @@ string get_module_id_for_attached_file( const source& source )
 string get_module_page_name( const string& module_ref, bool check_for_index )
 {
    string str( lower( module_ref ) );
+
    string page_name;
 
    if( check_for_index )
@@ -355,6 +359,7 @@ string get_user_hash( const string& user_id )
    clear_key( sid );
 
    vector< string > sha1_quads;
+
    split( hash.get_digest_as_string( ',' ), sha1_quads );
 
    if( sha1_quads.size( ) != 5 )
@@ -375,6 +380,7 @@ string get_checksum( const string& values )
    clear_key( sid );
 
    vector< string > sha1_quads;
+
    split( hash.get_digest_as_string( ',' ), sha1_quads );
 
    if( sha1_quads.size( ) != 5 )
@@ -398,6 +404,7 @@ string get_checksum( const session_info& sess_info, const string& values )
    sha1 hash( sess_info.checksum_prefix + values );
 
    vector< string > sha1_quads;
+
    split( hash.get_digest_as_string( ',' ), sha1_quads );
 
    if( sha1_quads.size( ) != 5 )
@@ -459,6 +466,9 @@ void setup_gmt_and_dtm_offset( map< string, string >& input_data, session_info& 
       date_time dt( input_data[ c_param_utcdtm ] );
 
       sess_info.dtm_offset = ( seconds )( dt - date_time::standard( ) );
+
+      // NOTE: Value should be an exact minute (so remove extra seconds).
+      sess_info.dtm_offset += ( ( sess_info.dtm_offset % 60 ) * -1 );
    }
 
    // NOTE: The current GMT offset is used to determine "defcurrent" values
@@ -541,7 +551,9 @@ string double_escaped( const string& src, const string& chars )
 void str_replace( string& src, const char* p_find, const string& replace )
 {
    string str;
+
    size_t pos = src.find( p_find );
+
    if( pos != string::npos )
    {
       str = src.substr( 0, pos );
@@ -549,6 +561,7 @@ void str_replace( string& src, const char* p_find, const string& replace )
       str += replace;
 
       pos += strlen( p_find );
+
       str += src.substr( pos );
 
       src = str;
@@ -558,6 +571,7 @@ void str_replace( string& src, const char* p_find, const string& replace )
 string remove_key( const string& src )
 {
    string str( src );
+
    string::size_type pos = str.find( " [key: " );
 
    if( pos == string::npos )
@@ -566,6 +580,7 @@ string remove_key( const string& src )
    if( pos != string::npos )
    {
       string::size_type epos = str.find( "] ", pos + 1 );
+
       if( epos != string::npos )
          str.erase( pos, epos - pos + 1 );
    }
@@ -579,10 +594,12 @@ string string_message( const string& display_string,
    string result;
 
    string::size_type pos = display_string.find( parm1.first );
+
    if( pos == string::npos )
       throw runtime_error( "parameter '" + parm1.first + "' not found in string message '" + display_string + "'" );
 
    result += display_string.substr( 0, pos );
+
    result += parm1.second;
 
    pos += parm1.first.length( ) - 1;
@@ -619,7 +636,8 @@ string string_message( const string& display_string,
  const pair< string, string >& parm1, const char* p_close1,
  const pair< string, string >& parm2, const char* p_close2 )
 {
-   string result = string_message( display_string, parm1, p_close1 );
+   string result( string_message( display_string, parm1, p_close1 ) );
+
    result = string_message( result, parm2, p_close2 );
 
    return result;
@@ -688,7 +706,7 @@ string format_time( const mtime& mt, const char* p_tp )
 
    bool output_seconds = true;
 
-   if( p_tp && string( p_tp ) == "minutes" )
+   if( p_tp && ( string( p_tp ) == "minutes" ) )
       output_seconds = false;
 
    osstr << setfill( '0' )
@@ -707,7 +725,7 @@ string format_date_time( const date_time& dt, const char* p_tp )
 
    bool output_seconds = true;
 
-   if( p_tp && string( p_tp ) == "minutes" )
+   if( p_tp && ( string( p_tp ) == "minutes" ) )
       output_seconds = false;
 
    osstr << dt.get_year( ) << setfill( '0' )
@@ -826,7 +844,7 @@ string replace_spaces( const string& input, const char* p_rep, size_t spos )
 
    string::size_type pos;
 
-   if( p_rep && *p_rep != 0 )
+   if( p_rep && ( *p_rep != 0 ) )
    {
       for( pos = spos; pos < str.length( ); pos++ )
       {
@@ -834,6 +852,7 @@ string replace_spaces( const string& input, const char* p_rep, size_t spos )
             break;
 
          str.replace( pos, 1, p_rep );
+
          pos += strlen( p_rep );
       }
    }
@@ -848,7 +867,7 @@ string replace_crlfs_and_spaces( const string& input,
 
    string::size_type pos;
 
-   if( p_srep && *p_srep != 0 )
+   if( p_srep && ( *p_srep != 0 ) )
       str = replace_spaces( str, p_srep, 0 );
 
    // NOTE: Replace all paired CR-LF's with LF's.
@@ -868,7 +887,7 @@ string replace_crlfs_and_spaces( const string& input,
 
          str.replace( pos, 2, p_rep );
 
-         if( p_srep && *p_srep != 0 )
+         if( p_srep && ( *p_srep != 0 ) )
             str = replace_spaces( str, p_srep, pos + strlen( p_rep ) );
       }
    }
@@ -884,7 +903,7 @@ string replace_crlfs_and_spaces( const string& input,
 
          str.replace( pos, 4, p_rep );
 
-         if( p_srep && *p_srep != 0 )
+         if( p_srep && ( *p_srep != 0 ) )
             str = replace_spaces( str, p_srep, pos + strlen( p_rep ) );
       }
 
@@ -902,7 +921,7 @@ string replace_crlfs_and_spaces( const string& input,
          else
             str.replace( pos, 2, p_srep );
 
-         if( p_srep && *p_srep != 0 )
+         if( p_srep && ( *p_srep != 0 ) )
             str = replace_spaces( str, p_srep, pos + strlen( p_rep ) );
       }
    }
@@ -911,9 +930,11 @@ string replace_crlfs_and_spaces( const string& input,
    {
       for( pos = 0; pos < str.length( ); pos++ )
       {
-         if( pos > 0 && str[ pos ] == ' ' && str[ pos - 1 ] == ' ' )
+         if( ( pos > 0 )
+          && ( str[ pos ] == ' ' ) && ( str[ pos - 1 ] == ' ' ) )
          {
             str.replace( pos, 1, p_srep );
+
             pos += strlen( p_srep );
          }
       }
@@ -927,11 +948,13 @@ void force_html_tags_to_lower_case( string& html )
    static regex html_tag( c_regex_html_tag );
 
    string old_html( html );
+
    string new_html;
 
    while( true )
    {
       string::size_type len;
+
       vector< string > refs;
 
       string::size_type pos = html_tag.search( old_html, &len, &refs );
@@ -939,6 +962,7 @@ void force_html_tags_to_lower_case( string& html )
       if( pos == string::npos )
       {
          new_html += old_html;
+
          break;
       }
 
@@ -952,7 +976,7 @@ void force_html_tags_to_lower_case( string& html )
 
       // NOTE: If matched a closing tag then extend the length (as the '/'
       // is not included in the reference).
-      if( rlen && old_html[ pos + 1 ] == '/' )
+      if( rlen && ( old_html[ pos + 1 ] == '/' ) )
          ++rlen;
 
       new_html += lower( old_html.substr( pos, rlen + 1 ) );
@@ -985,6 +1009,7 @@ void create_tmp_file_link_or_copy( string& tmp_path, const string& file_name,
       file_copy( get_storage_info( ).web_root + "/" + file_name, tmp_path );
 
       fstream fs;
+
       fs.open( tmp_path.c_str( ), ios::in | ios::out | ios::binary );
 
       if( fs )
@@ -999,6 +1024,7 @@ void create_tmp_file_link_or_copy( string& tmp_path, const string& file_name,
    else
    {
       file_remove( tmp_path );
+
       file_link( get_storage_info( ).web_root + "/" + file_name, tmp_path );
    }
 }
@@ -1061,9 +1087,10 @@ void setup_directories( )
 
    vector< string > dead_sessions;
 
-   // NOTE: If sessions had ended without cleaning up their temporary directories
-   // then these will be cleaned up.
+   // NOTE: If sessions had ended without cleaning up their
+   // temporary directories then these will be cleaned up.
    directory_filter df;
+
    fs_iterator dfsi( files_tmp_dir, &df );
 
    while( dfsi.has_next( ) )
@@ -1081,6 +1108,7 @@ void setup_directories( )
       const module_info& mod_info( *mici->second );
 
       view_info_const_iterator vici;
+
       for( vici = mod_info.view_info.begin( ); vici != mod_info.view_info.end( ); ++vici )
       {
          if( !( vici->second )->file_ids.empty( ) )
@@ -1106,6 +1134,7 @@ void setup_directories( )
    for( i = module_file_class_ids.begin( ); i != module_file_class_ids.end( ); ++i )
    {
       mici = sinfo.modules_index.find( i->first );
+
       if( mici == sinfo.modules_index.end( ) )
          throw runtime_error( "unexpected index entry for module '" + i->first + "' not found" );
 
@@ -1121,6 +1150,7 @@ void setup_directories( )
       if( !file_exists( notes_file ) )
       {
          ofstream outf( notes_file.c_str( ) );
+
          outf << file_directory_note;
       }
 
@@ -1196,8 +1226,9 @@ bool replace_action_parms( string& id, string& action,
 
    string::size_type spos = 0;
 
-   while( !( ( action[ spos ] >= '0' && action[ spos ] <= '9' )
-    || ( action[ spos ] >= 'A' && action[ spos ] <= 'Z' ) || ( action[ spos ] >= 'a' && action[ spos ] <= 'z' ) ) )
+   while( !( ( ( action[ spos ] >= '0' ) && ( action[ spos ] <= '9' ) )
+    || ( ( action[ spos ] >= 'A' ) && ( action[ spos ] <= 'Z' ) )
+    || ( ( action[ spos ] >= 'a' ) && ( action[ spos ] <= 'z' ) ) ) )
       ++spos;
 
    id = action.substr( spos );
@@ -1264,9 +1295,10 @@ bool replace_action_parms( string& id, string& action,
 
                bool exists = true;
 
-               if( !file_name.empty( ) && file_name[ 0 ] == '!' )
+               if( !file_name.empty( ) && ( file_name[ 0 ] == '!' ) )
                {
                   exists = false;
+
                   file_name.erase( 0, 1 );
                }
 
@@ -1274,6 +1306,7 @@ bool replace_action_parms( string& id, string& action,
                 || ( !exists && file_exists( file_name ) ) )
                {
                   retval = false;
+
                   break;
                }
 
@@ -1316,7 +1349,7 @@ string remove_links( const string& s )
 
       string::size_type npos = str.find( ':' );
 
-      if( npos == string::npos || npos > rpos )
+      if( ( npos == string::npos ) || ( npos > rpos ) )
          throw runtime_error( "unexpected manual link format in '" + s + "'" );
 
       rc += str.substr( npos + 1, rpos - npos - 1 );
@@ -1390,6 +1423,7 @@ void replace_links_and_output( const string& s,
       if( cpos != string::npos )
       {
          vid = next_key.substr( 0, cpos );
+
          next_key.erase( 0, cpos + 1 );
 
          if( !mod_info.view_cids.count( vid ) )
@@ -1611,6 +1645,7 @@ void output_actions( ostream& os,
          if( pos != string::npos )
          {
             clone_key = child_class.substr( pos + 1 );
+
             child_class.erase( pos );
 
             if( clone_key == c_action_ident_key_id )
@@ -1623,6 +1658,7 @@ void output_actions( ostream& os,
             if( pos != string::npos )
             {
                record_key = child_class.substr( pos + 1 );
+
                child_class.erase( pos );
 
                if( record_key == c_action_ident_key_id )
@@ -1635,12 +1671,15 @@ void output_actions( ostream& os,
          if( pos != string::npos )
          {
             child_field = child_class.substr( pos + 1 );
+
             child_class.erase( pos );
 
             pos = child_field.find( '=' );
+
             if( pos != string::npos )
             {
                child_key = child_field.substr( pos + 1 );
+
                child_field.erase( pos );
 
                if( child_key == c_action_child_key_user )
@@ -1659,12 +1698,15 @@ void output_actions( ostream& os,
       if( next_action[ 0 ] == '*' )
       {
          action = c_act_edit;
+
          needs_editing = true;
+
          next_action.erase( 0, 1 );
       }
       else if( next_action[ 0 ] == '?' )
       {
          needs_confirmation = true;
+
          next_action.erase( 0, 1 );
       }
 
@@ -1695,7 +1737,7 @@ void output_actions( ostream& os,
       }
       else if( next_action[ 0 ] == '%' )
       {
-         if( !sess_info.is_admin_user && sess_info.user_key != owner )
+         if( !sess_info.is_admin_user && ( sess_info.user_key != owner ) )
             continue;
 
          next_action.erase( 0, 1 );
@@ -1741,6 +1783,7 @@ void output_actions( ostream& os,
       if( pos != string::npos )
       {
          next_id.erase( 0, pos + 1 );
+
          next_label.erase( pos );
 
          // NOTE: Need to also erase the label part from the 'action'.
@@ -1877,11 +1920,13 @@ void output_actions( ostream& os,
 void parse_field_extra( const string& extra, map< string, string >& extra_data )
 {
    vector< string > extras;
+
    split( extra, extras, '+' );
 
    for( size_t i = 0; i < extras.size( ); i++ )
    {
       string extra( extras[ i ] );
+
       string::size_type pos = extra.find( '=' );
 
       if( pos == string::npos )
@@ -1898,13 +1943,16 @@ void parse_key_ver_rev_state_and_type_info(
    string str( key_ver_rev_state_and_type_info );
 
    string::size_type pos = str.find_last_of( " " );
+
    if( pos == string::npos )
       throw runtime_error( "unexpected key_ver_rev_state_and_type_info '" + key_ver_rev_state_and_type_info + "'" );
 
    type_info = str.substr( pos + 1 );
 
    str.erase( pos );
+
    pos = str.find_last_of( " " );
+
    if( pos == string::npos )
       throw runtime_error( "unexpected key_ver_rev_state_and_type_info '" + key_ver_rev_state_and_type_info + "'" );
 
@@ -1930,7 +1978,7 @@ void determine_fixed_query_info( string& fixed_fields,
    string user_other;
 
    if( !sess_info.other_aliases.count( sess_info.user_other )
-    || ( list.type == c_list_type_user && list.type == c_list_type_user_child ) )
+    || ( ( list.type == c_list_type_user ) && ( list.type == c_list_type_user_child ) ) )
       user_other = sess_info.user_other;
    else
       user_other = sess_info.other_aliases.find( sess_info.user_other )->second;
@@ -1985,10 +2033,12 @@ void determine_fixed_query_info( string& fixed_fields,
 
             if( num_fixed_key_values > 1 )
                fixed_fields += ",";
+
             fixed_fields += ( list.lici->second )->parents[ i ].field;
 
             if( num_fixed_key_values > 1 )
                fixed_key_values += ",";
+
             fixed_key_values += ( list.lici->second )->parents[ i ].operations[ c_operation_checked ];
          }
       }
@@ -2052,6 +2102,7 @@ void determine_fixed_query_info( string& fixed_fields,
    for( size_t i = 0; i < ( list.lici->second )->restricts.size( ); i++ )
    {
       map< string, string > restrict_extras;
+
       parse_field_extra( ( list.lici->second )->restricts[ i ].extra, restrict_extras );
 
       if( p_parent_state && restrict_extras.count( c_list_field_extra_pstate ) )
@@ -2097,21 +2148,23 @@ void determine_fixed_query_info( string& fixed_fields,
          bool is_opt = false;
          bool is_applicable = true;
 
-         if( !value.empty( ) && value[ 0 ] == '?' )
+         if( !value.empty( ) && ( value[ 0 ] == '?' ) )
          {
             is_opt = true;
             value.erase( 0, 1 );
          }
 
          string append;
+
          string::size_type pos = value.find( '+' );
+
          if( pos != string::npos )
          {
             append = value.substr( pos + 1 );
             value.erase( pos );
          }
 
-         if( !value.empty( ) && value[ 0 ] == '@' )
+         if( !value.empty( ) && ( value[ 0 ] == '@' ) )
          {
             if( value == c_parent_extra_user )
                value = sess_info.user_key;
@@ -2130,7 +2183,8 @@ void determine_fixed_query_info( string& fixed_fields,
             else
             {
                string::size_type pos = value.find( '=' );
-               if( pos != string::npos && value.substr( 0, pos ) == c_extkey )
+
+               if( ( pos != string::npos ) && ( value.substr( 0, pos ) == c_extkey ) )
                   value = get_extkey( value.substr( pos + 1 ).c_str( ) );
             }
          }
@@ -2144,10 +2198,12 @@ void determine_fixed_query_info( string& fixed_fields,
 
             if( num_fixed_key_values > 1 )
                fixed_fields += ",";
+
             fixed_fields += ( list.lici->second )->restricts[ i ].field;
 
             if( num_fixed_key_values > 1 )
                fixed_key_values += ",";
+
             fixed_key_values += value;
          }
       }
