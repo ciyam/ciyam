@@ -35,25 +35,31 @@ PORT=12021
 ;
 .system_variable @storage
 STORAGE=$OUTPUT
+;
 @ifeq "$STORAGE" ""
 #Error: No default storage found.
 @else
 .storage_init $STORAGE
-.pf $STORAGE User "Name#1 $USER_NAME" #1 @key -min
+;
+@retain *
+<$STORAGE.user_information.vars.lst
+;
+.pf $STORAGE $CLASS_NAME "$FLD_NAME#1 $USER_NAME" #1 @key -min
 @ifndef $OUTPUT
 #Error: User '$USER_NAME' was not found.
 @else
 USER_KEY=$OUTPUT
-.pf $STORAGE User $USER_KEY Default_Group -min
-USER_GROUP=$OUTPUT
 ;
 @ifeq "$USER_KEY" "admin"
 ERROR=User name must not be 'admin'.
 #$ERROR
 @endif
 ;
+@retain *
+<$STORAGE.channel_information.vars.lst
+;
 @ifndef $ERROR
-.pf $STORAGE Peer_Node " " QR_Code_Text -min
+.pf $STORAGE $CLASS_NAME " " $FLD_QR_CODE_TEXT -min
 QR_CODE_TEXT=$OUTPUT
 ;
 #QR Code: $QR_CODE_TEXT
@@ -76,10 +82,7 @@ KEY_VALUE=%EXT_KEY_AND_PUB:1%
 .encrypt %EXT_KEY_AND_PUB:2%
 ENCRYPTED_QR_CODE_SCANNED=$OUTPUT
 ;
-@retain *
-<$STORAGE.channel_information.vars.lst
-;
-.pc $USER_KEY @now $STORAGE $CLASS_NAME -g=$USER_GROUP $KEY_VALUE "$FLD_ALIAS=%KEY_AND_PUB:1%\
+.pc $USER_KEY @now $STORAGE $CLASS_NAME $KEY_VALUE "$FLD_ALIAS=%KEY_AND_PUB:1%\
 ,$FLD_DESCRIPTION=$DESCRIPTION,$FLD_HOST_NAME=$HOST_NAME,$FLD_PORT_NUMBER=$PORT,$FLD_QR_CODE_SCANNED=$ENCRYPTED_QR_CODE_SCANNED"
 ;
 @endif
