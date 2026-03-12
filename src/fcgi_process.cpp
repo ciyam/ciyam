@@ -1640,7 +1640,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             {
                if( ( cmd == c_cmd_pwd ) && !input_data.count( c_param_newpwd ) )
                   extra_content << " | " << pwd_display_name << "";
-               else
+               else if( !pwd_display_name.empty( ) )
                {
                   extra_content << " | <a href=\"" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_pwd;
 
