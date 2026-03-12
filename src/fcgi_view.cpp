@@ -2091,19 +2091,19 @@ bool output_view_form( ostream& os, const string& act,
             {
                os << "<br/><div id=\"qrcode_reader\"></div>";
 
-               extra_content_func += "const scanner = new Html5QrcodeScanner( 'qrcode_reader', { qrbox: { width: 250, height: 250, }, fps: 20, } );\n\n";
+               extra_content_func += "const scanner = new Html5QrcodeScanner( 'qrcode_reader', { qrbox: { width: 250, height: 250 }, fps: 20 } );\n\n";
 
                extra_content_func += "scanner.render( qrcode_reader_success, qrcode_reader_failure );\n\n";
 
-               extra_content_func += "function qrcode_reader_success( result )\n";
+               extra_content_func += "function qrcode_reader_success( text_value, result )\n";
                extra_content_func += "{\n";
-               extra_content_func += "   document.getElementById( 'field_" + source_field_id + "' ).value = result;\n";
+               extra_content_func += "   document.getElementById( 'field_" + source_field_id + "' ).value = text_value;\n\n";
 
                extra_content_func += "   scanner.clear( );\n";
                extra_content_func += "   document.getElementById( 'qrcode_reader' ).remove( );\n";
                extra_content_func += "}\n\n";
 
-               extra_content_func += "function qrcode_reader_failure( err ) { console.log( err ); }\n";
+               extra_content_func += "function qrcode_reader_failure( error ) { console.warn( 'Code scan error = ${error}' ); }\n";
             }
 #endif
          }
