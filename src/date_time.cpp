@@ -1079,50 +1079,54 @@ mtime& mtime::operator +=( seconds s )
 {
    if( s < 0.0 )
       return operator -=( s * -1.0 );
-
-   return operator +=( ( milliseconds )( s * 1000 + 0.5 ) );
+   else
+      return operator +=( ( milliseconds )floor( s * 1000 ) );
 }
 
 mtime& mtime::operator -=( seconds s )
 {
    if( s < 0.0 )
       return operator +=( s * -1.0 );
-
-   return operator -=( ( milliseconds )( s * 1000 + 0.5 ) );
+   else
+      return operator -=( ( milliseconds )floor( ( s * 1000 ) + 0.5 ) );
 }
 
 mtime& mtime::operator +=( milliseconds m )
 {
    if( m < 0 )
       return operator -=( m * -1 );
+   else
+   {
+      milliseconds nms( ms );
 
-   milliseconds nms( ms );
+      nms += m;
 
-   nms += m;
+      if( nms < ms || nms > ( milliseconds )c_max_millisecond )
+         throw runtime_error( "time out of range" );
 
-   if( nms < ms || nms > ( milliseconds )c_max_millisecond )
-      throw runtime_error( "time out of range" );
+      ms = ( millisecond )nms;
 
-   ms = ( millisecond )nms;
-
-   return *this;
+      return *this;
+   }
 }
 
 mtime& mtime::operator -=( milliseconds m )
 {
    if( m < 0 )
       return operator +=( m * -1 );
+   else
+   {
+      milliseconds nms( ms );
 
-   milliseconds nms( ms );
+      nms -= m;
 
-   nms -= m;
+      if( nms > ms )
+         throw runtime_error( "time out of range" );
 
-   if( nms > ms )
-      throw runtime_error( "time out of range" );
+      ms = ( millisecond )nms;
 
-   ms = ( millisecond )nms;
-
-   return *this;
+      return *this;
+   }
 }
 
 hour mtime::get_hour( ) const
@@ -1921,42 +1925,45 @@ udate& udate::operator +=( months m )
    if( m.m < 0 )
    {
       m.m *= -1;
+
       return operator -=( m );
    }
-
-   if( dn & c_day_number_in_use )
+   else
    {
-      daynum_to_calendar( dn & ~c_day_number_in_use, ymd.yr, ymd.mo, ymd.dy );
-      dn &= ~c_day_number_in_use;
+      if( dn & c_day_number_in_use )
+      {
+         daynum_to_calendar( dn & ~c_day_number_in_use, ymd.yr, ymd.mo, ymd.dy );
+         dn &= ~c_day_number_in_use;
+      }
+
+      int yr = m.m / 12;
+
+      m.m -= ( yr * 12 );
+
+      int mo = ymd.mo - 1 + m.m;
+
+      if( mo > 11 )
+      {
+         ++yr;
+         mo -= 12;
+      }
+
+      if( ymd.yr + yr > c_max_year )
+         throw runtime_error( "date out of range" );
+
+      ymd.yr += yr;
+      ymd.mo = ( month )( mo + 1 );
+
+      days d = days_for_month[ ymd.mo - 1 ];
+
+      if( ymd.mo == e_month_february && leap_year( ymd.yr ) )
+         ++d;
+
+      if( ymd.dy > d )
+         ymd.dy = d;
+
+      return *this;
    }
-
-   int yr = m.m / 12;
-
-   m.m -= ( yr * 12 );
-
-   int mo = ymd.mo - 1 + m.m;
-
-   if( mo > 11 )
-   {
-      ++yr;
-      mo -= 12;
-   }
-
-   if( ymd.yr + yr > c_max_year )
-      throw runtime_error( "date out of range" );
-
-   ymd.yr += yr;
-   ymd.mo = ( month )( mo + 1 );
-
-   days d = days_for_month[ ymd.mo - 1 ];
-
-   if( ymd.mo == e_month_february && leap_year( ymd.yr ) )
-      ++d;
-
-   if( ymd.dy > d )
-      ymd.dy = d;
-
-   return *this;
 }
 
 udate& udate::operator -=( months m )
@@ -1964,89 +1971,96 @@ udate& udate::operator -=( months m )
    if( m.m < 0 )
    {
       m.m *= -1;
+
       return operator +=( m );
    }
-
-   if( dn & c_day_number_in_use )
+   else
    {
-      daynum_to_calendar( dn & ~c_day_number_in_use, ymd.yr, ymd.mo, ymd.dy );
-      dn &= ~c_day_number_in_use;
+      if( dn & c_day_number_in_use )
+      {
+         daynum_to_calendar( dn & ~c_day_number_in_use, ymd.yr, ymd.mo, ymd.dy );
+         dn &= ~c_day_number_in_use;
+      }
+
+      int yr = m.m / 12;
+      m.m -= ( yr * 12 );
+
+      int mo = ymd.mo - 1 - m.m;
+
+      if( mo < 0 )
+      {
+         ++yr;
+         mo += 12;
+      }
+
+      if( ymd.yr - yr < c_min_year )
+         throw runtime_error( "date out of range" );
+
+      ymd.yr -= yr;
+      ymd.mo = ( month )( mo + 1 );
+
+      days d = days_for_month[ ymd.mo - 1 ];
+
+      if( ( ymd.mo == e_month_february ) && leap_year( ymd.yr ) )
+         ++d;
+
+      if( ymd.dy > d )
+         ymd.dy = d;
+
+      return *this;
    }
-
-   int yr = m.m / 12;
-   m.m -= ( yr * 12 );
-
-   int mo = ymd.mo - 1 - m.m;
-
-   if( mo < 0 )
-   {
-      ++yr;
-      mo += 12;
-   }
-
-   if( ymd.yr - yr < c_min_year )
-      throw runtime_error( "date out of range" );
-
-   ymd.yr -= yr;
-   ymd.mo = ( month )( mo + 1 );
-
-   days d = days_for_month[ ymd.mo - 1 ];
-
-   if( ( ymd.mo == e_month_february ) && leap_year( ymd.yr ) )
-      ++d;
-
-   if( ymd.dy > d )
-      ymd.dy = d;
-
-   return *this;
 }
 
 udate& udate::operator +=( days d )
 {
    if( d < 0 )
       return operator -=( d * -1 );
-
-   daynum n;
-
-   if( dn & c_day_number_in_use )
-      n = dn & ~c_day_number_in_use;
    else
-      n = calendar_to_daynum( ymd.yr, ymd.mo, ymd.dy );
+   {
+      daynum n;
 
-   daynum on = n;
+      if( dn & c_day_number_in_use )
+         n = dn & ~c_day_number_in_use;
+      else
+         n = calendar_to_daynum( ymd.yr, ymd.mo, ymd.dy );
 
-   n += d;
+      daynum on = n;
 
-   if( ( n < on ) || ( n > c_max_day_number ) )
-      throw runtime_error( "date out of range" );
+      n += d;
 
-   dn = n | c_day_number_in_use;
+      if( ( n < on ) || ( n > c_max_day_number ) )
+         throw runtime_error( "date out of range" );
 
-   return *this;
+      dn = n | c_day_number_in_use;
+
+      return *this;
+   }
 }
 
 udate& udate::operator -=( days d )
 {
    if( d < 0 )
       return operator +=( d * -1 );
-
-   daynum n;
-
-   if( dn & c_day_number_in_use )
-      n = dn & ~c_day_number_in_use;
    else
-      n = calendar_to_daynum( ymd.yr, ymd.mo, ymd.dy );
+   {
+      daynum n;
 
-   daynum on = n;
+      if( dn & c_day_number_in_use )
+         n = dn & ~c_day_number_in_use;
+      else
+         n = calendar_to_daynum( ymd.yr, ymd.mo, ymd.dy );
 
-   n -= d;
+      daynum on = n;
 
-   if( n < c_min_day_number || ( n > on ) )
-      throw runtime_error( "date out of range" );
+      n -= d;
 
-   dn = n | c_day_number_in_use;
+      if( n < c_min_day_number || ( n > on ) )
+         throw runtime_error( "date out of range" );
 
-   return *this;
+      dn = n | c_day_number_in_use;
+
+      return *this;
+   }
 }
 
 udate::operator daynum( ) const
@@ -2076,6 +2090,7 @@ udate::operator julian( ) const
 udate::operator weekday( ) const
 {
    daynum n;
+
    if( dn & c_day_number_in_use )
       n = ( dn & ~c_day_number_in_use );
    else
@@ -2979,7 +2994,7 @@ date_time& date_time::operator +=( seconds s )
 
    operator +=( d );
 
-   return operator +=( milliseconds( s * 1000 + 0.5 ) );
+   return operator +=( milliseconds( floor( s * 1000 ) ) );
 }
 
 date_time& date_time::operator -=( seconds s )
@@ -2990,62 +3005,66 @@ date_time& date_time::operator -=( seconds s )
 
    operator -=( d );
 
-   return operator -=( milliseconds( s * 1000 + 0.5 ) );
+   return operator -=( milliseconds( floor( ( s * 1000 ) + 0.5 ) ) );
 }
 
 date_time& date_time::operator +=( milliseconds m )
 {
    if( m < 0 )
       return operator -=( m * -1 );
-
-   milliseconds ms( ( milliseconds )mt );
-
-   ms += m;
-
-   if( ms > ( milliseconds )c_max_millisecond )
-   {
-      days d = ms / c_milliseconds_per_day;
-      ms -= ( d * c_milliseconds_per_day );
-
-      ud += d;
-      mt = ( millisecond )ms;
-   }
    else
-      mt += m;
+   {
+      milliseconds ms( ( milliseconds )mt );
 
-   return *this;
+      ms += m;
+
+      if( ms > ( milliseconds )c_max_millisecond )
+      {
+         days d = ms / c_milliseconds_per_day;
+         ms -= ( d * c_milliseconds_per_day );
+
+         ud += d;
+         mt = ( millisecond )ms;
+      }
+      else
+         mt += m;
+
+      return *this;
+   }
 }
 
 date_time& date_time::operator -=( milliseconds m )
 {
    if( m < 0 )
       return operator +=( m * -1 );
-
-   milliseconds ms( ( milliseconds )mt );
-   milliseconds oms( ms );
-
-   ms -= m;
-
-   if( ms < 0 )
-   {
-      ms = ms * -1;
-
-      days d = ms / c_milliseconds_per_day;
-      ms -= ( d * c_milliseconds_per_day );
-
-      if( ms > 0 )
-         ms = c_milliseconds_per_day - ms;
-
-      if( ms > oms )
-         ++d;
-
-      ud -= d;
-      mt = ( millisecond )ms;
-   }
    else
-      mt -= m;
+   {
+      milliseconds ms( ( milliseconds )mt );
+      milliseconds oms( ms );
 
-   return *this;
+      ms -= m;
+
+      if( ms < 0 )
+      {
+         ms = ms * -1;
+
+         days d = ms / c_milliseconds_per_day;
+         ms -= ( d * c_milliseconds_per_day );
+
+         if( ms > 0 )
+            ms = c_milliseconds_per_day - ms;
+
+         if( ms > oms )
+            ++d;
+
+         ud -= d;
+         mt = ( millisecond )ms;
+      }
+      else
+         mt -= m;
+
+      return *this;
+   }
 }
 
 date_time::operator julian( ) const
