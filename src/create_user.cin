@@ -13,12 +13,9 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $3
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-@ifdef $4
-NUM_ARGS=@$NUM_ARGS+1
-@endif
 ;
-@ifneq "$NUM_ARGS" "4"
-#NOTE: This script requires a name, login, handle and template.
+@ifneq "$NUM_ARGS" "3"
+#NOTE: This script requires a name, login and handle.
 @else
 ERROR=
 ;
@@ -27,6 +24,14 @@ USER_LOGIN=$2
 USER_HANDLE=$3
 USER_TEMPLATE=$4
 PASSWORD=$5
+;
+; NOTE: If not wanting to use
+; a template but is requiring
+; a password argument then is
+; supporting a "@null" value.
+@ifeq "$USER_TEMPLATE" "@null"
+USER_TEMPLATE=
+@endif
 ;
 .system_variable @storage
 STORAGE=$OUTPUT
