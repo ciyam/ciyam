@@ -318,8 +318,10 @@ void replace_input_arg_values( string& str, const vector< string >& args, char m
 
             // NOTE: If the argument has been quoted but the position at which it is being
             // inserted after is also a quote then remove the quotes from the argument.
-            if( argval.length( ) > 1 && argval[ 0 ] == '"'
-             && argval[ argval.length( ) - 1 ] == '"' && pos > 0 && str[ pos - 1 ] == '"' )
+            if( ( argval.length( ) > 1 )
+             && ( argval[ 0 ] == '"' )
+             && ( argval[ argval.length( ) - 1 ] == '"' )
+             && ( pos > 0 ) && ( str[ pos - 1 ] == '"' ) )
                argval = argval.substr( 1, argval.length( ) - 2 );
 
             str.erase( pos, 2 );
@@ -327,7 +329,7 @@ void replace_input_arg_values( string& str, const vector< string >& args, char m
 
             // NOTE: If the argument value is an empty string and the next character
             // is a space then erase this space to ensure the correct command syntax.
-            if( argval.empty( ) && str[ pos ] == ' ' )
+            if( argval.empty( ) && ( str[ pos ] == ' ' ) )
                str.erase( pos, 1 );
 
             pos += argval.length( );
@@ -336,7 +338,11 @@ void replace_input_arg_values( string& str, const vector< string >& args, char m
          {
             string all;
 
-            for( int i = 0; i < 10; i++ )
+            // NOTE: Skips over "args[ 0 ]" as
+            // it is expected to be the script
+            // name itself (can use "$0 $*" if
+            // wanting to include it as well).
+            for( int i = 1; i < 10; i++ )
             {
                string argval( args[ i ] );
 
@@ -344,6 +350,7 @@ void replace_input_arg_values( string& str, const vector< string >& args, char m
                {
                   if( !all.empty( ) )
                      all += " ";
+
                   all += argval;
                }
             }
@@ -351,7 +358,7 @@ void replace_input_arg_values( string& str, const vector< string >& args, char m
             str.erase( pos, 2 );
             str.insert( pos, all );
 
-            if( all.empty( ) && str[ pos ] == ' ' ) // see above NOTE
+            if( all.empty( ) && ( str[ pos ] == ' ' ) ) // see above NOTE
                str.erase( pos, 1 );
 
             pos += all.length( );
