@@ -73,7 +73,9 @@ ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 ;
 @:WAIT_DONE
 ;
+@ifneq "$STORAGE" "@dummy"
 .storage_init $STORAGE
+@endif
 ;
 @ifndef $ERROR
 .storage_channel_documents -height_retrieved $IDENTITY
@@ -307,6 +309,10 @@ NESTED_DONE=1
 !!@:FETCH_LOOP
 ;
 @:FETCH_DONE
+;
+@ifneq "$STORAGE" "@dummy"
+.storage_term
+@endif
 ;
 @ifdef $ERROR
 .system_variable $$%IDENTITY%_error "$ERROR"
