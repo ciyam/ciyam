@@ -60,7 +60,7 @@ PEER_IDENTITY=$REVERSED
 .file_tags bc.$PEER_IDENTITY.locked*
 @ifndef $OUTPUT
 OKAY=1
-##Identity $IDENTITY appears to have already been verified.
+#Identity '$IDENTITY' appears to have already been verified.
 @endif
 @endif
 ;

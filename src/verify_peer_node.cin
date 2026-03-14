@@ -1,0 +1,98 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+<ciyam.fissile
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "1"
+#NOTE: This script requires a peer node identity.
+@else
+ERROR=
+;
+IDENTITY=$1
+;
+<check_system_identity.cin
+;
+@ifdef $ERROR
+#Error: $ERROR
+@else
+.system_variable @storage
+STORAGE=$OUTPUT
+;
+@ifeq "$STORAGE" ""
+#Error: No default storage found.
+@else
+.storage_init $STORAGE
+@ifndef $ERROR
+@retain *
+<$STORAGE.channel_information.vars.lst
+;
+.pf $STORAGE $CLASS_NAME $IDENTITY "$FLD_OWNER,$FLD_VERIFIED_CHECKSUM,$FLD_CONNECT_INFORMATION,$FLD_SHARED_SECRET,$FLD_SUBMIT_CHAIN_ID" -min
+@ifndef $ERROR
+PEER_INFO=$OUTPUT
+INFO_LINES=@repstr:,/\n:$PEER_INFO
+;
+PEER_OWNER_ID=%INFO_LINES:1%
+PEER_VERIFIED=%INFO_LINES:2%
+QUEUE_CONNECT=%INFO_LINES:3%
+SHARED_SECRET=%INFO_LINES:4%
+SUMBMIT_IDENT=%INFO_LINES:5%
+;
+@ifeq "$PEER_VERIFIED" "1"
+#Identity '$IDENTITY' appears to have already been verified.
+@else
+;
+.system_variable @shared_secret $SHARED_SECRET
+;
+.system_variable $SUMBMIT_IDENT 1 ""
+@ifeq $OUTPUT 1
+.wait 250
+;
+.session_list $SUMBMIT_IDENT
+@ifdef $OUTPUT
+ERROR=Found an existing session for '$IDENTITY' ($SUMBMIT_IDENT).
+#Error: $ERROR
+@else
+;
+.system_variable @queue_peers $QUEUE_CONNECT
+.wait 2000
+;
+<fetch_from_channel.cin @dummy $IDENTITY
+;
+.pf $STORAGE $CLASS_NAME $IDENTITY $FLD_SUBMIT_CHECKSUM,$FLD_RECEIVE_CHECKSUM -min
+CHECKSUM_INFO=$OUTPUT
+CHECKSUM_LINES=@repstr:,/\n:$CHECKSUM_INFO
+;
+SUBMIT_CHECKSUM=%CHECKSUM_LINES:1%
+RECEIVE_CHECKSUM=%CHECKSUM_LINES:2%
+;
+@ifneq "$RECEIVE_CHECKSUM" ""
+#Submit Checksum: $SUBMIT_CHECKSUM
+#Receive Checksum: $RECEIVE_CHECKSUM
+;
+&Checksum Correct? [CORRECT:Yes=1|No=!*** NO ***]
+;
+@ifdef $CORRECT
+.pe $PEER_OWNER_ID @now $STORAGE $CLASS_NAME $IDENTITY /$PROCEDURE
+@endif
+;
+@endif
+@endif
+;
+@endif
+;
+@endif
+;
+@endif
+.storage_term
+@endif
+@endif
+@endif
+;
+@endif
