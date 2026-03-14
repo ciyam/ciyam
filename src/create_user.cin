@@ -33,6 +33,12 @@ PASSWORD=$5
 USER_TEMPLATE=
 @endif
 ;
+<check_system_identity.cin
+;
+@ifdef $ERROR
+#Error: $ERROR
+@else
+;
 .system_variable @storage
 STORAGE=$OUTPUT
 ;
@@ -40,6 +46,7 @@ STORAGE=$OUTPUT
 #Error: No default storage found.
 @else
 .storage_init $STORAGE
+@ifndef $ERROR
 ;
 @retain *
 <$STORAGE.user_information.vars.lst
@@ -58,7 +65,8 @@ PASSWORD=$OUTPUT
 .pc admin @now $STORAGE $CLASS_NAME " $USER_TEMPLATE" "$FLD_NAME=$USER_NAME,$FLD_HANDLE=$USER_HANDLE,$FLD_USERNAME=$USER_LOGIN,$FLD_PASSWORD=$PASSWORD"
 ;
 .storage_term
-;
+@endif
+@endif
 @endif
 ;
 @endif
