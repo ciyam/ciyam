@@ -30,21 +30,42 @@ STORAGE=$OUTPUT
 @else
 .storage_init $STORAGE
 @ifndef $ERROR
+;
 @retain *
 <$STORAGE.channel_information.vars.lst
 ;
-.pf $STORAGE $CLASS_NAME $IDENTITY "$FLD_ACTIVE,$FLD_OWNER,$FLD_VERIFIED_CHECKSUM,$FLD_CONNECT_INFORMATION,$FLD_SHARED_SECRET,$FLD_SUBMIT_CHAIN_ID" -min
+DONE=
 ;
-@ifndef $ERROR
+.pf $STORAGE $CLASS_NAME $IDENTITY "$FLD_FILES_RECEIVED" -min
+;
+@ifdef $ERROR
+DONE=1
+@else
+@ifdef $OUTPUT
+DONE=1
+#[Files Received]
+OUTPUT=@repstr:\\\\n/\n:$OUTPUT
+#$OUTPUT
+@endif
+@endif
+;
+@ifndef $DONE
+.pf $STORAGE $CLASS_NAME $IDENTITY "$FLD_ACTIVE,$FLD_VERIFIED_CHECKSUM,$FLD_CONNECT_INFORMATION,$FLD_SHARED_SECRET,$FLD_SUBMIT_CHAIN_ID" -min
+;
+@ifdef $ERROR
+DONE=1
+@endif
+@endif
+;
+@ifndef $DONE
 PEER_INFO=$OUTPUT
 INFO_LINES=@repstr:,/\n:$PEER_INFO
 ;
 PEER_IS_VALID=%INFO_LINES:1%
-PEER_OWNER_ID=%INFO_LINES:2%
-PEER_VERIFIED=%INFO_LINES:3%
-QUEUE_CONNECT=%INFO_LINES:4%
-SHARED_SECRET=%INFO_LINES:5%
-SUBMIT_IDENTITY=%INFO_LINES:6%
+PEER_VERIFIED=%INFO_LINES:2%
+QUEUE_CONNECT=%INFO_LINES:3%
+SHARED_SECRET=%INFO_LINES:4%
+SUBMIT_IDENTITY=%INFO_LINES:5%
 ;
 @ifeq "$PEER_IS_VALID" "0"
 ERROR=Peer Node '$IDENTITY' has been set to inactive.
@@ -55,8 +76,8 @@ ERROR=Peer Node '$IDENTITY' has been set to inactive.
 ;
 @ifndef $ERROR
 ;
-@ifeq "$PEER_VERIFIED" "1"
-#Peer Node '$IDENTITY' has already been verified.
+@ifeq "$PEER_VERIFIED" "0"
+#Peer Node '$IDENTITY' has not been verified.
 @else
 ;
 .system_variable $SUBMIT_IDENTITY 1 ""
@@ -76,23 +97,13 @@ ERROR=Found an existing session for '$IDENTITY' ($SUBMIT_IDENTITY).
 ;
 <fetch_from_channel.cin @dummy $IDENTITY
 ;
-.pf $STORAGE $CLASS_NAME $IDENTITY $FLD_SUBMIT_CHECKSUM,$FLD_RECEIVE_CHECKSUM -min
-CHECKSUM_INFO=$OUTPUT
-CHECKSUM_LINES=@repstr:,/\n:$CHECKSUM_INFO
+<$STORAGE.channel_information.vars.lst
 ;
-SUBMIT_CHECKSUM=%CHECKSUM_LINES:1%
-RECEIVE_CHECKSUM=%CHECKSUM_LINES:2%
-;
-@ifneq "$RECEIVE_CHECKSUM" ""
-#Submit Checksum: $SUBMIT_CHECKSUM
-#Receive Checksum: $RECEIVE_CHECKSUM
-;
-&Checksum Correct? [CORRECT:Yes=1|No=!*** NO ***]
-;
-@ifdef $CORRECT
-.pe $PEER_OWNER_ID @now $STORAGE $CLASS_NAME $IDENTITY /$PROCEDURE
-@endif
-;
+.pf $STORAGE $CLASS_NAME $IDENTITY "$FLD_FILES_RECEIVED" -min
+@ifdef $OUTPUT
+#[Files Received]
+OUTPUT=@repstr:\\\\n/\n:$OUTPUT
+#$OUTPUT
 @else
 .system_variable #$SUBMIT_IDENTITY
 @ifdef $OUTPUT
