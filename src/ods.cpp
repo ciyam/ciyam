@@ -270,7 +270,7 @@ class log_stream : public read_write_stream
          fd = 0;
       }
 #else
-      if( fd && _close( fd ) != 0 )
+      if( fd && ( _close( fd ) != 0 ) )
       {
          ostringstream osstr;
 
@@ -312,6 +312,20 @@ class log_stream : public read_write_stream
          THROW_ODS_ERROR( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
 
       pos += len;
+   }
+
+   void sync( )
+   {
+      if( fd && ( syncfs( fd ) != 0 ) )
+      {
+#ifdef ODS_DEBUG
+         ostringstream osstr;
+
+         osstr << "syncfs failed for fd in sync (errno = " << errno << ')';
+
+         DEBUG_LOG( osstr.str( ) );
+#endif
+      }
    }
 
    private:
@@ -2217,7 +2231,8 @@ struct ods::impl
    ref_count_ptr< mutex > rp_impl_lock;
    ref_count_ptr< mutex > rp_file_section;
 
-   void read_header_file_info( );
+   void read_header_file_info( header_info* p_copy = 0 );
+
    void write_header_file_info( bool for_close = false );
 
    void force_write_header_file_info( bool for_close = false );
@@ -2228,7 +2243,7 @@ struct ods::impl
    ref_count_ptr< vector< ods* > > rp_instances;
 };
 
-void ods::impl::read_header_file_info( )
+void ods::impl::read_header_file_info( header_info* p_copy )
 {
    if( _lseek( *rp_header_file, 0, SEEK_SET ) != 0 )
       THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
@@ -2236,6 +2251,9 @@ void ods::impl::read_header_file_info( )
    if( _read( *rp_header_file,
     ( void* )rp_header_info.get( ), sizeof( header_info ) ) != sizeof( header_info ) )
       THROW_ODS_ERROR( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
+
+   if( p_copy )
+      *p_copy = *rp_header_info;
 }
 
 void ods::impl::write_header_file_info( bool for_close )
@@ -2963,6 +2981,7 @@ void ods::rewind_transactions(
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
+
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
@@ -3557,6 +3576,7 @@ string ods::backup_database( const char* p_ext, char sep )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
+
    guard lock_impl( *p_impl->rp_impl_lock );
 
    string retval;
@@ -3653,6 +3673,7 @@ void ods::move_free_data_to_end( progress* p_progress )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
+
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
@@ -3922,6 +3943,7 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
+
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
@@ -3943,6 +3965,10 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
 
    if( !*p_impl->rp_bulk_level )
       up_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
+
+   header_info old_header_info;
+
+   p_impl->read_header_file_info( &old_header_info );
 
    log_info tranlog_info;
 
@@ -3966,6 +3992,9 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
    if( ext.empty( ) )
       ext = "." + to_string( tranlog_info.sequence );
 
+   // FUTURE: Perhaps a different directory should be
+   // able to be specified (to ensure that free space
+   // will not run out creating the new log).
    string sequence_file_name( log_file_name + ext );
 
    if( !file_rename( log_file_name, sequence_file_name ) )
@@ -3973,206 +4002,226 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
 
    int64_t dtm = time( 0 );
 
-   // NOTE: Empty code block for scope purposes.
+   try
    {
-      log_stream logf( log_file_name.c_str( ), use_sync_write );
-
-      if( !reset )
-         ++tranlog_info.sequence;
-      else
+      // NOTE: Empty code block for scope purposes.
       {
-         tranlog_info.sequence = 1;
-         tranlog_info.init_time = dtm;
-      }
+         log_stream logf( log_file_name.c_str( ) );
 
-      tranlog_info.entry_offs = 0;
-      tranlog_info.entry_time = 0;
-      tranlog_info.append_offs = tranlog_info.size_of( );
-
-      if( reset )
-      {
-         tranlog_info.sequence_old_tm = 0;
-         tranlog_info.sequence_new_tm = dtm;
-      }
-      else
-      {
-         tranlog_info.sequence_old_tm = tranlog_info.sequence_new_tm;
-         tranlog_info.sequence_new_tm = dtm;
-      }
-
-      tranlog_info.write( logf );
-
-      if( reset )
-      {
-         p_impl->rp_header_info->init_tranlog = dtm;
-         p_impl->rp_header_info->transaction_id = 1;
-         p_impl->rp_header_info->tranlog_offset = tranlog_info.append_offs;
-      }
-
-      p_impl->rp_header_info->num_logs = tranlog_info.sequence;
-
-      p_impl->force_write_header_file_info( );
-   }
-
-   if( reset )
-   {
-      bool is_encrypted = p_impl->is_encrypted;
-
-      log_stream logf( log_file_name.c_str( ), use_sync_write );
-
-      tranlog_info.read( logf );
-
-      log_entry tranlog_entry;
-
-      tranlog_entry.tx_id = 1;
-      tranlog_entry.tx_time = dtm;
-
-      tranlog_entry.write( logf );
-
-      tranlog_info.append_offs = logf.get_pos( );
-
-      logf.set_pos( 0 );
-
-      tranlog_info.write( logf );
-
-      logf.set_pos( tranlog_info.append_offs );
-
-      p_impl->rp_header_info->index_free_list = 0;
-
-      ods_index_entry index_entry;
-
-      int64_t total_bytes = 0;
-      int64_t total_entries = p_impl->rp_header_info->total_entries;
-
-      int64_t commit_items = 0;
-      int64_t commit_offset = tranlog_info.append_offs;
-
-      for( int64_t i = 0; i < total_entries; i++ )
-      {
-         if( p_progress )
-         {
-            int64_t now = time( 0 );
-
-            uint64_t elapsed = ( now - dtm );
-
-            if( elapsed >= 1 )
-            {
-               dtm = now;
-               p_progress->output_progress( "." );
-            }
-         }
-
-         unsigned char flags = c_log_entry_item_flag_is_post_op;
-
-         ++commit_items;
-
-         read_index_entry( index_entry, i );
-
-         index_entry.data.tran_id = 1;
-
-         if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
-            flags |= c_log_entry_item_op_store;
+         if( !reset )
+            ++tranlog_info.sequence;
          else
-            flags |= c_log_entry_item_op_destroy;
-
-         log_entry_item tranlog_item;
-
-         tranlog_item.flags = flags;
-
-         tranlog_item.index_entry_id = i;
-
-         if( tranlog_item.has_pos_and_size( ) )
          {
-            tranlog_item.data_pos = index_entry.data.pos;
-            tranlog_item.data_size = index_entry.data.size;
-
-            int64_t pos_and_size = index_entry.data.pos + index_entry.data.size;
-
-            if( pos_and_size > total_bytes )
-               total_bytes = pos_and_size;
+            tranlog_info.sequence = 1;
+            tranlog_info.init_time = dtm;
          }
 
-         tranlog_item.write( logf );
+         tranlog_info.entry_offs = 0;
+         tranlog_info.entry_time = 0;
+         tranlog_info.append_offs = tranlog_info.size_of( );
 
-         if( tranlog_item.has_pos_and_size( ) )
+         if( reset )
          {
-            set_read_data_pos( index_entry.data.pos, true, is_encrypted );
+            tranlog_info.sequence_old_tm = 0;
+            tranlog_info.sequence_new_tm = dtm;
+         }
+         else
+         {
+            tranlog_info.sequence_old_tm = tranlog_info.sequence_new_tm;
+            tranlog_info.sequence_new_tm = dtm;
+         }
 
-            int64_t chunk = c_buffer_chunk_size;
+         tranlog_info.write( logf );
 
-            char buffer[ c_buffer_chunk_size ];
+         if( reset )
+         {
+            p_impl->rp_header_info->init_tranlog = dtm;
+            p_impl->rp_header_info->transaction_id = 1;
+            p_impl->rp_header_info->tranlog_offset = tranlog_info.append_offs;
+         }
 
-            for( int64_t j = 0; j < index_entry.data.size; j += chunk )
+         p_impl->rp_header_info->num_logs = tranlog_info.sequence;
+
+         p_impl->force_write_header_file_info( );
+
+         if( !use_sync_write )
+            logf.sync( );
+      }
+
+      if( reset )
+      {
+         bool is_encrypted = p_impl->is_encrypted;
+
+         log_stream logf( log_file_name.c_str( ) );
+
+         tranlog_info.read( logf );
+
+         log_entry tranlog_entry;
+
+         tranlog_entry.tx_id = 1;
+         tranlog_entry.tx_time = dtm;
+
+         tranlog_entry.write( logf );
+
+         tranlog_info.append_offs = logf.get_pos( );
+
+         logf.set_pos( 0 );
+
+         tranlog_info.write( logf );
+
+         logf.set_pos( tranlog_info.append_offs );
+
+         p_impl->rp_header_info->index_free_list = 0;
+
+         ods_index_entry index_entry;
+
+         int64_t total_bytes = 0;
+         int64_t total_entries = p_impl->rp_header_info->total_entries;
+
+         int64_t commit_items = 0;
+         int64_t commit_offset = tranlog_info.append_offs;
+
+         for( int64_t i = 0; i < total_entries; i++ )
+         {
+            if( p_progress )
             {
-               if( j + chunk > index_entry.data.size )
-                  chunk = index_entry.data.size - j;
+               int64_t now = time( 0 );
 
-               read_data_bytes( buffer, chunk, is_encrypted );
+               uint64_t elapsed = ( now - dtm );
 
-               logf.write( ( unsigned char* )buffer, chunk );
-
-               if( p_progress )
+               if( elapsed >= 1 )
                {
-                  int64_t now = time( 0 );
-
-                  uint64_t elapsed = ( now - dtm );
-
-                  if( elapsed >= 1 )
-                  {
-                     dtm = now;
-                     p_progress->output_progress( "." );
-                  }
+                  dtm = now;
+                  p_progress->output_progress( "." );
                }
             }
 
-            if( is_encrypted )
-               set_read_data_pos( -1 );
+            unsigned char flags = c_log_entry_item_flag_is_post_op;
+
+            ++commit_items;
+
+            read_index_entry( index_entry, i );
+
+            index_entry.data.tran_id = 1;
+
+            if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
+               flags |= c_log_entry_item_op_store;
+            else
+               flags |= c_log_entry_item_op_destroy;
+
+            log_entry_item tranlog_item;
+
+            tranlog_item.flags = flags;
+
+            tranlog_item.index_entry_id = i;
+
+            if( tranlog_item.has_pos_and_size( ) )
+            {
+               tranlog_item.data_pos = index_entry.data.pos;
+               tranlog_item.data_size = index_entry.data.size;
+
+               int64_t pos_and_size = index_entry.data.pos + index_entry.data.size;
+
+               if( pos_and_size > total_bytes )
+                  total_bytes = pos_and_size;
+            }
+
+            tranlog_item.write( logf );
+
+            if( tranlog_item.has_pos_and_size( ) )
+            {
+               set_read_data_pos( index_entry.data.pos, true, is_encrypted );
+
+               int64_t chunk = c_buffer_chunk_size;
+
+               char buffer[ c_buffer_chunk_size ];
+
+               for( int64_t j = 0; j < index_entry.data.size; j += chunk )
+               {
+                  if( j + chunk > index_entry.data.size )
+                     chunk = index_entry.data.size - j;
+
+                  read_data_bytes( buffer, chunk, is_encrypted );
+
+                  logf.write( ( unsigned char* )buffer, chunk );
+
+                  if( p_progress )
+                  {
+                     int64_t now = time( 0 );
+
+                     uint64_t elapsed = ( now - dtm );
+
+                     if( elapsed >= 1 )
+                     {
+                        dtm = now;
+                        p_progress->output_progress( "." );
+                     }
+                  }
+               }
+
+               if( is_encrypted )
+                  set_read_data_pos( -1 );
+            }
+            else
+            {
+               index_entry.data.pos = p_impl->rp_header_info->index_free_list;
+               index_entry.data.size = 0;
+
+               index_entry.trans_flag = ods_index_entry::e_trans_free_list;
+
+               p_impl->rp_header_info->index_free_list = i + 1;
+            }
+
+            write_index_entry( index_entry, i );
+
+            tranlog_info.append_offs = logf.get_pos( );
          }
-         else
-         {
-            index_entry.data.pos = p_impl->rp_header_info->index_free_list;
-            index_entry.data.size = 0;
 
-            index_entry.trans_flag = ods_index_entry::e_trans_free_list;
+         logf.set_pos( p_impl->rp_header_info->tranlog_offset );
 
-            p_impl->rp_header_info->index_free_list = i + 1;
-         }
+         tranlog_entry.read( logf );
 
-         write_index_entry( index_entry, i );
+         tranlog_entry.commit_offs = commit_offset;
+         tranlog_entry.commit_items = commit_items;
 
-         tranlog_info.append_offs = logf.get_pos( );
+         logf.set_pos( p_impl->rp_header_info->tranlog_offset );
+
+         tranlog_entry.write( logf );
+
+         logf.set_pos( 0 );
+
+         tranlog_info.entry_offs = p_impl->rp_header_info->tranlog_offset;
+
+         tranlog_info.write( logf );
+
+         p_impl->rp_header_info->transaction_id = 2;
+
+         p_impl->rp_header_info->data_transform_id = 1;
+         p_impl->rp_header_info->index_transform_id = 1;
+
+         p_impl->rp_header_info->total_size_of_data = total_bytes;
+
+         p_impl->force_write_header_file_info( );
+
+         logf.sync( );
+
+         file_remove( sequence_file_name );
       }
+   }
+   catch( ... )
+   {
+      // NOTE: If any error then remove the new log file
+      // and restore the original one (which was renamed
+      // prior to creating the new one).
+      file_remove( log_file_name );
 
-      logf.set_pos( p_impl->rp_header_info->tranlog_offset );
+      file_rename( sequence_file_name, log_file_name );
 
-      tranlog_entry.read( logf );
-
-      tranlog_entry.commit_offs = commit_offset;
-      tranlog_entry.commit_items = commit_items;
-
-      logf.set_pos( p_impl->rp_header_info->tranlog_offset );
-
-      tranlog_entry.write( logf );
-
-      logf.set_pos( 0 );
-
-      tranlog_info.entry_offs = p_impl->rp_header_info->tranlog_offset;
-
-      tranlog_info.write( logf );
-
-      p_impl->rp_header_info->transaction_id = 2;
-
-      p_impl->rp_header_info->data_transform_id = 1;
-      p_impl->rp_header_info->index_transform_id = 1;
-
-      p_impl->rp_header_info->total_size_of_data = total_bytes;
+      *p_impl->rp_header_info = old_header_info;
 
       p_impl->force_write_header_file_info( );
 
-      // FUTURE: Perhaps an option should determine whether to remove
-      // the original log before or after the creation of the new log
-      // (depending upon the amount of free disk space available).
-      file_remove( sequence_file_name );
+      throw;
    }
 }
 
@@ -4180,6 +4229,7 @@ void ods::compress_and_reset_tx_log( progress* p_progress )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
+
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
@@ -4648,6 +4698,7 @@ void ods::bulk_base::pause( )
 {
    guard lock_write( o.write_lock );
    guard lock_read( o.read_lock );
+
    guard lock_impl( *o.p_impl->rp_impl_lock );
 
    o.bulk_operation_pause( );
@@ -4687,6 +4738,7 @@ ods::bulk_dump::bulk_dump( ods& o, progress* p_progress )
       {
          guard lock_write( o.write_lock );
          guard lock_read( o.read_lock );
+
          guard lock_impl( *o.p_impl->rp_impl_lock );
 
          if( *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_none )
@@ -4719,6 +4771,7 @@ ods::bulk_dump::~bulk_dump( )
 {
    guard lock_write( o.write_lock );
    guard lock_read( o.read_lock );
+
    guard lock_impl( *o.p_impl->rp_impl_lock );
 
    if( o.is_okay( ) )
@@ -4744,6 +4797,7 @@ ods::bulk_read::bulk_read( ods& o, progress* p_progress, bool allow_thread_demot
       {
          guard lock_write( o.write_lock );
          guard lock_read( o.read_lock );
+
          guard lock_impl( *o.p_impl->rp_impl_lock );
 
          if( *o.p_impl->rp_bulk_mode == impl::e_bulk_mode_dump )
@@ -4791,6 +4845,7 @@ ods::bulk_read::~bulk_read( )
 {
    guard lock_write( o.write_lock );
    guard lock_read( o.read_lock );
+
    guard lock_impl( *o.p_impl->rp_impl_lock );
 
    if( o.is_okay( ) )
@@ -4824,6 +4879,7 @@ ods::bulk_write::bulk_write( ods& o, progress* p_progress, bool allow_thread_pro
       {
          guard lock_write( o.write_lock );
          guard lock_read( o.read_lock );
+
          guard lock_impl( *o.p_impl->rp_impl_lock );
 
          if( ( *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_none )
@@ -4868,6 +4924,7 @@ ods::bulk_write::~bulk_write( )
 {
    guard lock_write( o.write_lock );
    guard lock_read( o.read_lock );
+
    guard lock_impl( *o.p_impl->rp_impl_lock );
 
    if( o.is_okay( ) )
@@ -5136,6 +5193,7 @@ void ods::transaction_start( const char* p_label )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
+
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
@@ -5653,6 +5711,7 @@ void ods::transaction_completed( bool keep_buffered )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
+
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
@@ -5985,6 +6044,7 @@ void ods::rollback_dead_transactions( progress* p_progress )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
+
    guard lock_impl( *p_impl->rp_impl_lock );
 
    DEBUG_LOG( "(rollback dead transactions)" );
@@ -6070,6 +6130,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
+
    guard lock_impl( *p_impl->rp_impl_lock );
 
    DEBUG_LOG( "(restore from transaction log)" );
