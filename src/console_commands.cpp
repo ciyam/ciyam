@@ -369,6 +369,41 @@ void replace_input_arg_values( string& str, const vector< string >& args, char m
    }
 }
 
+void retain_prior_env_var_value( const string& assign_env_var_name,
+ stack< set< string > >& variables_retaining, stack< map< string, string > >& variables_prior_values )
+{
+   deque< set< string > > new_retaining;
+   deque< map< string, string > > new_prior_values;
+
+   string old_env_var_value( get_environment_variable( assign_env_var_name ) );
+
+   // NOTE: Need to store the old value for each prior nested script level
+   // (and could be made more efficient if a deque rather than a stack was
+   // being used by the command handler itself).
+   while( true )
+   {
+      if( variables_retaining.empty( ) || variables_prior_values.empty( ) )
+         break;
+
+      if( !variables_retaining.top( ).count( c_retain_all )
+       && !variables_retaining.top( ).count( assign_env_var_name )
+       && !variables_prior_values.empty( ) && !variables_prior_values.top( ).count( assign_env_var_name ) )
+         variables_prior_values.top( ).insert( make_pair( assign_env_var_name, old_env_var_value ) );
+
+      new_retaining.push_front( variables_retaining.top( ) );
+      new_prior_values.push_front( variables_prior_values.top( ) );
+
+      variables_retaining.pop( );
+      variables_prior_values.pop( );
+   }
+
+   for( size_t i = 0; i < new_retaining.size( ); i++ )
+      variables_retaining.push( new_retaining[ i ] );
+
+   for( size_t i = 0; i < new_prior_values.size( ); i++ )
+      variables_prior_values.push( new_prior_values[ i ] );
+}
+
 class startup_command_functor : public command_functor
 {
    public:
@@ -3522,11 +3557,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             if( input_depth
              && ( assign_env_var_name != c_env_var_error )
              && ( assign_env_var_name != c_env_var_output )
-             && ( assign_env_var_name != c_env_var_ciyam_fissile )
-             && !variables_retaining.top( ).count( c_retain_all )
-             && !variables_retaining.top( ).count( assign_env_var_name )
-             && !variables_prior_values.empty( ) && !variables_prior_values.top( ).count( assign_env_var_name ) )
-               variables_prior_values.top( ).insert( make_pair( assign_env_var_name, get_environment_variable( assign_env_var_name ) ) );
+             && ( assign_env_var_name != c_env_var_ciyam_fissile ) )
+               retain_prior_env_var_value( assign_env_var_name, variables_retaining, variables_prior_values );
 
             set_environment_variable( assign_env_var_name.c_str( ), str.c_str( ) );
 
