@@ -2300,14 +2300,14 @@ void init_system_ods( bool* p_restored = 0 )
    if( !was_just_created
     && ( gup_ods->get_next_transaction_id( ) >= c_num_txs_for_reset ) )
    {
-      if( skip_compress )
-         TRACE_LOG( TRACE_MINIMAL, "(restart recommended for compress)" );
-      else
+      if( !skip_compress )
       {
          reconstruct_trace_progress progress( ods_db_name, true );
 
          gup_ods->compress_and_reset_tx_log( &progress );
       }
+      else
+         TRACE_LOG( TRACE_MINIMAL, "(restart recommended for compress)" );
    }
 
    if( skip_compress )

@@ -56,9 +56,15 @@ if( ( get_trace_flags( ) & ( flags ) ) == ( flags ) )
 #  define IF_NOT_IS_TRACING( flags )\
 if( !( ( get_trace_flags( ) & ( flags ) ) == ( flags ) ) )
 
+// NOTE: Braces are used in the following macro to prevent
+// immediately following it with an "else" (as it does not
+// work as it might be expected to). The compilation error
+// that does occur if such an "else" was coded should lead
+// to reading this comment. Try using IF_IS (or IF_NOT_IS)
+// or placing the TRACE_LOG *after* an else (which works).
+
 #  define TRACE_LOG( flags, message )\
-if( ( flags ) && ( ( get_trace_flags( ) & ( flags ) ) == ( flags ) ) )\
-   log_trace_message( flags, message )
+if( ( flags ) && ( ( get_trace_flags( ) & ( flags ) ) == ( flags ) ) ) { log_trace_message( flags, message ); }
 
 #  define TEMP_TRACE( message ) TRACE_LOG( TRACE_MINIMAL, message )
 
