@@ -38,7 +38,9 @@ DEPTH=2
 @endif
 ;
 @ifdef $OUTPUT
+@ifndef $CIYAM_NESTED_LEVEL
 #$OUTPUT
+@endif
 @endif
 ;
 @endif
