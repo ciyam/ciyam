@@ -31,7 +31,8 @@ SUFFIX=zenith
 @endif
 ;
 @ifeq "$IDENT" ""
-#No local blockchain identity was found.
+ERROR=No blockchain identity was found.
+#Error: $ERROR
 @else
 .file_hash -q bc.$IDENT.$HEIGHT$SUFFIX
 ;
@@ -41,7 +42,9 @@ SUFFIX=zenith
 ;
 @ifdef $OUTPUT
 .decode $OUTPUT
+@ifndef $CIYAM_NESTED_LEVEL
 #$OUTPUT
+@endif
 @endif
 ;
 @endif
