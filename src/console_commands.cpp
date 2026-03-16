@@ -71,6 +71,7 @@ const char* const c_env_var_output = "OUTPUT";
 
 const char* const c_env_var_ciyam_fissile = "CIYAM_FISSILE";
 const char* const c_env_var_ciyam_use_default = "CIYAM_USE_DEFAULT";
+const char* const c_env_var_ciyam_nested_level = "CIYAM_NESTED_LEVEL";
 const char* const c_env_var_ciyam_pause_seconds = "CIYAM_PAUSE_SECONDS";
 const char* const c_env_var_ciyam_pwd_append_len = "CIYAM_PWD_APPEND_LEN";
 const char* const c_env_var_ciyam_default_seconds = "CIYAM_DEFAULT_SECONDS";
@@ -370,38 +371,25 @@ void replace_input_arg_values( string& str, const vector< string >& args, char m
 }
 
 void retain_prior_env_var_value( const string& assign_env_var_name,
- stack< set< string > >& variables_retaining, stack< map< string, string > >& variables_prior_values )
+ deque< set< string > >& variables_retaining, deque< map< string, string > >& variables_prior_values )
 {
-   deque< set< string > > new_retaining;
-   deque< map< string, string > > new_prior_values;
-
    string old_env_var_value( get_environment_variable( assign_env_var_name ) );
 
-   // NOTE: Need to store the old value for each prior nested script level
-   // (and could be made more efficient if a deque rather than a stack was
-   // being used by the command handler itself).
-   while( true )
+   size_t min = variables_retaining.size( );
+
+   if( variables_prior_values.size( ) < min )
+      min = variables_prior_values.size( );
+
+   // NOTE: In order to handle "nested" scripts
+   // need to keep the old environment variable
+   // value at every prior level.
+   for( size_t i = 0; i < min; i++ )
    {
-      if( variables_retaining.empty( ) || variables_prior_values.empty( ) )
-         break;
-
-      if( !variables_retaining.top( ).count( c_retain_all )
-       && !variables_retaining.top( ).count( assign_env_var_name )
-       && !variables_prior_values.empty( ) && !variables_prior_values.top( ).count( assign_env_var_name ) )
-         variables_prior_values.top( ).insert( make_pair( assign_env_var_name, old_env_var_value ) );
-
-      new_retaining.push_front( variables_retaining.top( ) );
-      new_prior_values.push_front( variables_prior_values.top( ) );
-
-      variables_retaining.pop( );
-      variables_prior_values.pop( );
+      if( !variables_retaining[ i ].count( c_retain_all )
+       && !variables_retaining[ i ].count( assign_env_var_name )
+       && !variables_prior_values[ i ].count( assign_env_var_name ) )
+         variables_prior_values[ i ].insert( make_pair( assign_env_var_name, old_env_var_value ) );
    }
-
-   for( size_t i = 0; i < new_retaining.size( ); i++ )
-      variables_retaining.push( new_retaining[ i ] );
-
-   for( size_t i = 0; i < new_prior_values.size( ); i++ )
-      variables_prior_values.push( new_prior_values[ i ] );
 }
 
 class startup_command_functor : public command_functor
@@ -2645,6 +2633,8 @@ console_command_handler::console_command_handler( )
 
    for( size_t i = 0; i < sizeof( g_default_fissile_pairs ) / sizeof( g_default_fissile_pairs[ 0 ] ); i++ )
       p_impl->fissile_values.insert( make_pair( g_default_fissile_pairs[ i ].p_key, g_default_fissile_pairs[ i ].p_data ) );
+
+   set_environment_variable( c_env_var_ciyam_nested_level, "" );
 }
 
 console_command_handler::~console_command_handler( )
@@ -3641,13 +3631,23 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   string next;
                   string next_command;
 
+                  string depth_string;
+
+                  // NOTE: The nested level value is empty
+                  // for the first script executed so that
+                  // is why it is set before incrementing.
+                  if( input_depth )
+                     depth_string = to_string( input_depth );
+
                   ++input_depth;
+
+                  set_environment_variable( c_env_var_ciyam_nested_level, depth_string );
 
                   bool is_first = true;
 
-                  variables_retaining.push( next_retaining );
+                  variables_retaining.push_back( next_retaining );
 
-                  variables_prior_values.push( map< string, string >( ) );
+                  variables_prior_values.push_back( map< string, string >( ) );
 
                   // NOTE: When a script begins "next_retaining" is cleared
                   // (so it will not accidentally pass on values to further
@@ -3690,6 +3690,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                   --input_depth;
 
+                  if( input_depth <= 1 )
+                     depth_string.erase( );
+                  else
+                     depth_string = to_string( input_depth );
+
+                  set_environment_variable( c_env_var_ciyam_nested_level, depth_string );
+
                   if( !keep_added_history )
                   {
                      size_t offset = virtual_history_size;
@@ -3711,16 +3718,16 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                      throw runtime_error( "unexpected error occurred whilst reading '" + new_args[ 0 ] + "'" + error_context );
 
                   if( !variables_retaining.empty( ) )
-                     variables_retaining.pop( );
+                     variables_retaining.pop_back( );
 
                   if( !variables_prior_values.empty( ) )
                   {
                      map< string, string >::const_iterator ci;
 
-                     for( ci = variables_prior_values.top( ).begin( ); ci != variables_prior_values.top( ).end( ); ++ci )
+                     for( ci = variables_prior_values.back( ).begin( ); ci != variables_prior_values.back( ).end( ); ++ci )
                         set_environment_variable( ci->first, ci->second );
 
-                     variables_prior_values.pop( );
+                     variables_prior_values.pop_back( );
                   }
                }
                catch( exception& x )
@@ -4233,7 +4240,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         {
                            set< string >::const_iterator i;
 
-                           for( i = variables_retaining.top( ).begin( ); i != variables_retaining.top( ).end( ); ++i )
+                           for( i = variables_retaining.back( ).begin( ); i != variables_retaining.back( ).end( ); ++i )
                               cout << *i << endl;
                         }
                      }

@@ -11,7 +11,6 @@
 #     include <map>
 #     include <set>
 #     include <deque>
-#     include <stack>
 #     include <iosfwd>
 #     include <string>
 #     include <vector>
@@ -95,8 +94,8 @@ class console_command_handler : public command_handler
 
    std::set< std::string > next_retaining;
 
-   std::stack< std::set< std::string > > variables_retaining;
-   std::stack< std::map< std::string, std::string > > variables_prior_values;
+   std::deque< std::set< std::string > > variables_retaining;
+   std::deque< std::map< std::string, std::string > > variables_prior_values;
 
    std::string label;
 
