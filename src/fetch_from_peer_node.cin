@@ -95,7 +95,16 @@ ERROR=Found an existing session for '$IDENTITY' ($SUBMIT_IDENTITY).
 ;
 .system_variable @shared_secret_$IDENTITY $SHARED_SECRET
 ;
+OLD_FILE_NAME=$FILE_NAME
+OLD_NO_PROGRESS=$CIYAM_NO_PROGRESS
+;
+FILE_NAME=@dummy
+CIYAM_NO_PROGRESS=1
+;
 <fetch_from_channel.cin @dummy $IDENTITY
+;
+FILE_NAME=$OLD_FILE_NAME
+CIYAM_NO_PROGRESS=$OLD_NO_PROGRESS
 ;
 <$STORAGE.channel_information.vars.lst
 ;
