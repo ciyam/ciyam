@@ -103,7 +103,9 @@ FILES_AREA_DIR=$OUTPUT
 .session_variable @blockchain_archive_path $FILES_AREA_DIR/$BLOCKCHAIN
 ;
 SUBMIT_HEIGHT=@$SUBMIT_HEIGHT+1
+@ifndef $CIYAM_NESTED_LEVEL
 #Processing submit block $SUBMIT_HEIGHT/$SUBMIT_HIGHEST...
+@endif
 <block_tree_hash.cin $BLOCKCHAIN $SUBMIT_HEIGHT
 ;
 @ifdef $OUTPUT
@@ -111,6 +113,7 @@ SUBMIT_HEIGHT=@$SUBMIT_HEIGHT+1
 BUNDLE_HASH=%OUTPUT:2%
 ;
 <export_files.cin $BUNDLE_HASH .
+;
 ~mkdir $UUID
 ~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID 2>&1
 ;
@@ -164,7 +167,9 @@ PRE_IS_DONE=1
 .session_variable @blockchain_archive_path $FILES_AREA_DIR/$IN_REVERSE
 ;
 FETCH_HEIGHT=@$FETCH_HEIGHT+1
+@ifndef $CIYAM_NESTED_LEVEL
 #Processing fetch block $FETCH_HEIGHT/$FETCH_HIGHEST...
+@endif
 <block_tree_hash.cin $IN_REVERSE $FETCH_HEIGHT
 ;
 @ifdef $OUTPUT
@@ -255,7 +260,9 @@ NESTED_DONE=
 .session_variable @blockchain_archive_path $FILES_AREA_DIR/$BLOCKCHAIN
 ;
 SUBMIT_HEIGHT=@$SUBMIT_HEIGHT+1
+@ifndef $CIYAM_NESTED_LEVEL
 #Processing submit block $SUBMIT_HEIGHT/$SUBMIT_HIGHEST...
+@endif
 <block_tree_hash.cin $BLOCKCHAIN $SUBMIT_HEIGHT
 ;
 @ifdef $OUTPUT
