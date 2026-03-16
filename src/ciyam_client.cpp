@@ -116,6 +116,8 @@ const char* const c_udp_msg_cancel = "XXX";
 
 const char* const c_file_test_cmd = "file_test";
 
+const char* const c_dummy_file_name = "@dummy";
+
 const char* const c_not_found_output = "Not Found";
 const char* const c_error_output_prefix = "Error: ";
 
@@ -376,6 +378,11 @@ void ciyam_console_command_handler::preprocess_command_and_args(
          handle_command_response( error_prefix + x.what( ), true );
       }
 
+      bool show_no_progress = has_option_no_progress( );
+
+      if( has_environment_variable( c_env_var_ciyam_no_progress ) )
+         show_no_progress = true;
+
       if( !str.empty( ) )
       {
          bool was_chk = false;
@@ -585,7 +592,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                   had_chunk_progress = false;
 
-                  if( put_file_error.empty( ) && !has_option_no_progress( ) )
+                  if( !show_no_progress && put_file_error.empty( ) )
                   {
                      string file_name( get_environment_variable( c_env_var_file_name ) );
 
@@ -647,7 +654,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      buffer_file( chunk_data, file_name,
                       min( file_bytes, chunk_size ), 0, file_start + ( chunk * chunk_size ) );
 
-                  if( !has_option_no_progress( ) )
+                  if( !show_no_progress )
                   {
                      date_time now( date_time::standard( ) );
 
@@ -863,7 +870,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                            had_chunk_progress = false;
 
-                           if( !has_option_no_progress( ) )
+                           if( !show_no_progress )
                            {
                               string file_name( get_environment_variable( c_env_var_file_name ) );
 
@@ -1028,6 +1035,8 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         file_append( filename, append_filename );
                      else
                      {
+                        string file_name( get_environment_variable( c_env_var_file_name ) );
+
                         // NOTE: It is assumed that a file chunk number is a final file extension.
                         pos = append_filename.rfind( '.' );
 
@@ -1051,7 +1060,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                            if( file_parts )
                               prefix_append_name_for_display += ":0";
 
-                           if( !has_option_no_progress( ) )
+                           if( !show_no_progress )
                            {
                               if( is_stdout_console( ) )
                               {
@@ -1070,14 +1079,14 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                               had_chunk_progress = true;
                            }
-                           else
+                           else if( file_name != c_dummy_file_name )
                               handle_command_response( prefix_append_name_for_display );
                         }
-                        else if( chunk == 0 && file_parts )
+                        else if( ( chunk == 0 ) && file_parts )
                         {
                            prefix_append_name_for_display += ':' + to_string( ++next_part );
 
-                           if( !has_option_no_progress( ) )
+                           if( !show_no_progress )
                            {
                               if( is_stdout_console( ) )
                               {
@@ -1094,7 +1103,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                               had_chunk_progress = true;
                            }
-                           else
+                           else if( file_name != c_dummy_file_name )
                               handle_command_response( prefix_append_name_for_display );
 
                            --file_parts;
@@ -1107,7 +1116,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                      ++chunk;
 
-                     if( !has_option_no_progress( ) )
+                     if( !show_no_progress )
                      {
                         date_time now( date_time::standard( ) );
 
@@ -1588,7 +1597,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      {
                         dtm = now;
 
-                        if( !has_option_no_progress( ) )
+                        if( !show_no_progress )
                         {
                            if( !is_stdout_console( ) )
                               handle_progress_message( final_response );
@@ -1640,7 +1649,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   {
                      had_message = false;
 
-                     if( !has_option_no_progress( ) )
+                     if( !show_no_progress )
                      {
                         if( is_stdout_console( ) )
                         {
