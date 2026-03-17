@@ -240,6 +240,8 @@ class log_stream : public read_write_stream
    {
       if( p_file_name )
          init( p_file_name );
+
+      needs_sync = !use_sync;
    }
 
    ~log_stream( )
@@ -263,22 +265,27 @@ class log_stream : public read_write_stream
 
    void term( )
    {
-#ifndef ODS_DEBUG
       if( fd )
       {
-         _close( fd );
+         if( needs_sync )
+            sync( );
+
+         int rc = _close( fd );
+
+#ifndef ODS_DEBUG
+         ( void )rc;
+#else
+         if( rc != 0 ) )
+         {
+            ostringstream osstr;
+
+            osstr << "_close failed for fd in term (errno = " << errno << ')';
+
+            DEBUG_LOG( osstr.str( ) );
+         }
+#endif
          fd = 0;
       }
-#else
-      if( fd && ( _close( fd ) != 0 ) )
-      {
-         ostringstream osstr;
-
-         osstr << "_close failed for fd in term (errno = " << errno << ')';
-
-         DEBUG_LOG( osstr.str( ) );
-      }
-#endif
    }
 
    int64_t get_pos( ) const
@@ -312,19 +319,27 @@ class log_stream : public read_write_stream
          THROW_ODS_ERROR( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
 
       pos += len;
+
+      if( !use_sync )
+         needs_sync = true;
    }
 
    void sync( )
    {
-      if( fd && ( syncfs( fd ) != 0 ) )
+      if( fd )
       {
+         if( fsync( fd ) == 0 )
+            needs_sync = false;
+         else
+         {
 #ifdef ODS_DEBUG
-         ostringstream osstr;
+            ostringstream osstr;
 
-         osstr << "syncfs failed for fd in sync (errno = " << errno << ')';
+            osstr << "fynsc failed for fd in sync (errno = " << errno << ')';
 
-         DEBUG_LOG( osstr.str( ) );
+            DEBUG_LOG( osstr.str( ) );
 #endif
+         }
       }
    }
 
@@ -333,6 +348,7 @@ class log_stream : public read_write_stream
    int64_t pos;
 
    bool use_sync;
+   bool needs_sync;
 };
 
 struct log_info
@@ -3128,6 +3144,7 @@ void ods::rewind_transactions(
       else if( !tranlog_info.entry_offs )
       {
          logf.term( );
+
          THROW_ODS_ERROR( "cannot rewind the very first database transaction" );
       }
       else if( !entry_offsets.empty( ) )
@@ -3364,6 +3381,7 @@ void ods::rewind_transactions(
    else
    {
       logf.term( );
+
       THROW_ODS_ERROR( "cannot rewind with an empty transaction log" );
    }
 }
@@ -4043,9 +4061,6 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
          p_impl->rp_header_info->num_logs = tranlog_info.sequence;
 
          p_impl->force_write_header_file_info( );
-
-         if( !use_sync_write )
-            logf.sync( );
       }
 
       if( reset )
@@ -4202,8 +4217,6 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
          p_impl->rp_header_info->total_size_of_data = total_bytes;
 
          p_impl->force_write_header_file_info( );
-
-         logf.sync( );
 
          file_remove( sequence_file_name );
       }
