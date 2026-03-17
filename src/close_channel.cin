@@ -24,7 +24,10 @@ IDENTITY=$2
 ;
 .system_variable @error_$IDENTITY ""
 ;
+@ifneq "$STORAGE" "@dummy"
 .storage_init $STORAGE
+@endif
+;
 @ifdef $ERROR
 .system_variable @error_$IDENTITY "$ERROR"
 @else
@@ -44,7 +47,10 @@ OPENED_FILES=$OUTPUT
 @else
 .notifier -finish $OPENED_FILES/$IDENTITY
 @endif
+;
+@ifneq "$STORAGE" "@dummy"
 .storage_term
+@endif
 @endif
 ;
 @ifndef $ERROR
