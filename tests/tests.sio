@@ -770,7 +770,7 @@
      <kill>test_ods.tlg
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
@@ -802,7 +802,7 @@
      <kill>test_ods.tlg
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
@@ -824,7 +824,7 @@
      <description>Test DB compress operation.
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
@@ -850,13 +850,13 @@
      <kill>test_ods.tlg
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -test
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -test
       <input>true
       <output>generate
      </test_step>
@@ -884,7 +884,7 @@
      <kill>test_ods.tlg.2
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -902,7 +902,7 @@
      </test_step>
      <test_step/>
       <name>d
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -920,7 +920,7 @@
      </test_step>
      <test_step/>
       <name>g
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -932,7 +932,7 @@
      </test_step>
      <test_step/>
       <name>i
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -944,7 +944,7 @@
      </test_step>
      <test_step/>
       <name>k
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -956,7 +956,7 @@
      </test_step>
      <test_step/>
       <name>m
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -968,7 +968,7 @@
      </test_step>
      <test_step/>
       <name>o
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -986,7 +986,7 @@
      </test_step>
      <test_step/>
       <name>r
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1008,7 +1008,7 @@
      <kill>test_ods.tlg.2
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1026,7 +1026,7 @@
      </test_step>
      <test_step/>
       <name>d
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1044,7 +1044,7 @@
      </test_step>
      <test_step/>
       <name>g
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1062,7 +1062,7 @@
      </test_step>
      <test_step/>
       <name>j
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1080,7 +1080,7 @@
      </test_step>
      <test_step/>
       <name>m
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1098,7 +1098,7 @@
      </test_step>
      <test_step/>
       <name>p
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1116,7 +1116,7 @@
      </test_step>
      <test_step/>
       <name>s
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1132,7 +1132,7 @@
      <kill>test_ods.tlg.2
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1144,7 +1144,7 @@
      </test_step>
      <test_step/>
       <name>c
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync -reconstruct
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -reconstruct
       <input>false
       <output>none
      </test_step>
@@ -1162,7 +1162,7 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1174,7 +1174,7 @@
      </test_step>
      <test_step/>
       <name>h
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync -reconstruct
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -reconstruct
       <input>false
       <output>none
      </test_step>
@@ -1192,7 +1192,7 @@
      </test_step>
      <test_step/>
       <name>k
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1204,7 +1204,7 @@
      </test_step>
      <test_step/>
       <name>m
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync -reconstruct
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -reconstruct
       <input>false
       <output>none
      </test_step>
@@ -1222,7 +1222,7 @@
      </test_step>
      <test_step/>
       <name>p
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1234,7 +1234,7 @@
      </test_step>
      <test_step/>
       <name>r
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync -reconstruct
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -reconstruct
       <input>false
       <output>none
      </test_step>
@@ -1252,7 +1252,7 @@
      </test_step>
      <test_step/>
       <name>u
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1264,7 +1264,7 @@
      </test_step>
      <test_step/>
       <name>w
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -no_sync -reconstruct
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -reconstruct
       <input>false
       <output>none
      </test_step>
@@ -1289,7 +1289,7 @@
      <kill>ods_fsed.tlg
      <test_step/>
       <name>a
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
@@ -1301,7 +1301,7 @@
      </test_step>
      <test_step/>
       <name>c
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
@@ -1319,55 +1319,55 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>g
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>h
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>i
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>j
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>k
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>l
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>m
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>n
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
@@ -1381,7 +1381,7 @@
      <kill>ods_fsed.tlg
      <test_step/>
       <name>a
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
@@ -1393,13 +1393,13 @@
      </test_step>
      <test_step/>
       <name>c
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>d
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
@@ -1411,7 +1411,7 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
@@ -1423,19 +1423,19 @@
      </test_step>
      <test_step/>
       <name>h
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>i
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>j
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -test
       <input>true
       <output>generate
      </test_step>
@@ -1455,13 +1455,13 @@
      <kill>ods_fsed.tlg
      <test_step/>
       <name>a
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -test
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -test
       <input>true
       <output>generate
      </test_step>
@@ -1483,7 +1483,7 @@
      <kill>ods_fsed.tlg.2
      <test_step/>
       <name>a
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1495,7 +1495,7 @@
      </test_step>
      <test_step/>
       <name>c
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1507,7 +1507,7 @@
      </test_step>
      <test_step/>
       <name>e
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1519,7 +1519,7 @@
      </test_step>
      <test_step/>
       <name>g
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1531,7 +1531,7 @@
      </test_step>
      <test_step/>
       <name>i
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1543,7 +1543,7 @@
      </test_step>
      <test_step/>
       <name>k
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1561,7 +1561,7 @@
      </test_step>
      <test_step/>
       <name>n
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1579,7 +1579,7 @@
      </test_step>
      <test_step/>
       <name>q
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1601,7 +1601,7 @@
      <kill>ods_fsed.tlg.2
      <test_step/>
       <name>a
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1613,7 +1613,7 @@
      </test_step>
      <test_step/>
       <name>c
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1625,7 +1625,7 @@
      </test_step>
      <test_step/>
       <name>e
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1637,7 +1637,7 @@
      </test_step>
      <test_step/>
       <name>g
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1649,7 +1649,7 @@
      </test_step>
      <test_step/>
       <name>i
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1661,7 +1661,7 @@
      </test_step>
      <test_step/>
       <name>k
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1679,7 +1679,7 @@
      </test_step>
      <test_step/>
       <name>n
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
@@ -1697,7 +1697,7 @@
      </test_step>
      <test_step/>
       <name>q
-      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test -no_sync
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -no_progress -p -tlg -test
       <input>true
       <output>generate
      </test_step>
