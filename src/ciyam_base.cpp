@@ -1979,7 +1979,7 @@ unsigned int g_max_user_limit = c_default_max_user_limit;
 bool g_script_reconfig = false;
 
 bool g_ods_use_encrypted = true;
-bool g_ods_use_sync_write = true;
+bool g_ods_use_sync_write = false;
 
 set< string > g_checked_script_lock_files;
 
@@ -3939,7 +3939,7 @@ void read_server_configuration( )
 
       g_ods_use_encrypted = ( lower( reader.read_opt_attribute( c_attribute_ods_use_encrypted, c_true ) ) == c_true );
 
-      g_ods_use_sync_write = ( lower( reader.read_opt_attribute( c_attribute_ods_use_sync_write, c_true ) ) == c_true );
+      g_ods_use_sync_write = ( lower( reader.read_opt_attribute( c_attribute_ods_use_sync_write, c_false ) ) == c_true );
 
       g_max_storage_handlers = atoi( reader.read_opt_attribute(
        c_attribute_max_storage_handlers, to_string( c_max_storage_handlers_default ) ).c_str( ) ) + 1;

@@ -29,7 +29,7 @@
 # <protocol_handler>file://
 # <system_variables>
 # <ods_use_encrypted>true
-# <ods_use_sync_write>true
+# <ods_use_sync_write>false
 # <max_storage_handlers>10
 # <notifier_ignore_secs>2
 # <num_recv_stream_sessions>10

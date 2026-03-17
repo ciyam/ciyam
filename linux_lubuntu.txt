@@ -319,7 +319,6 @@ vi ciyam_server.sio
  <default_storage>Home
 ...
  <protocol_handler>sftp://@user@localhost:2222
- <ods_use_sync_write>false
 ...
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
