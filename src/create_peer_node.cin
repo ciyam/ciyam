@@ -37,7 +37,8 @@ PORT=12021
 STORAGE=$OUTPUT
 ;
 @ifeq "$STORAGE" ""
-#Error: No default storage found.
+ERROR=No default storage found.
+#Error: $ERROR
 @else
 .storage_init $STORAGE
 ;
@@ -52,7 +53,7 @@ USER_KEY=$OUTPUT
 ;
 @ifeq "$USER_KEY" "admin"
 ERROR=User name must not be 'admin'.
-#$ERROR
+#Error: $ERROR
 @endif
 ;
 @retain *
