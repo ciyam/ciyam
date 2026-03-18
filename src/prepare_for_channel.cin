@@ -29,7 +29,10 @@ HEIGHT=@$OUTPUT+1
 .system_variable @prepare_$IDENTITY $HEIGHT ""
 @ifeq $OUTPUT 1
 ;
+@ifneq "$STORAGE" "@dummy"
 .storage_init $STORAGE
+@endif
+;
 @ifdef $ERROR
 .system_variable @error_$IDENTITY "$ERROR"
 @else
@@ -75,7 +78,9 @@ ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 <generate_next_block.cin $BLOCKCHAIN @sid $BLOCKCHAIN.tree
 <block_tree_relegate.cin $BLOCKCHAIN $BLOCKCHAIN.tree
 @endif
+@ifneq "$STORAGE" "@dummy"
 .storage_term
+@endif
 @endif
 ;
 SUBMIT_MASK=ui_TARGET_submit

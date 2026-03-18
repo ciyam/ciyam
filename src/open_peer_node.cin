@@ -24,7 +24,8 @@ IDENTITY=$1
 STORAGE=$OUTPUT
 ;
 @ifeq "$STORAGE" ""
-#Error: No default storage found.
+ERROR=No default storage found.
+#Error: $ERROR
 @else
 .storage_init $STORAGE
 @ifndef $ERROR
