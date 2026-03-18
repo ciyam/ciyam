@@ -203,6 +203,7 @@ NEXT_NAME=$NAME_PREFIX$NAME_SUFFIX
 ;
 ; NOTE: The FILE_NAME environment variable is
 ; used by "ciyam_client" for progress output.
+@ifneq "$FILE_NAME" "@dummy"
 @ifdef $CIYAM_FILE_NAME_ONLY
 FILE_NAME=$NEXT_NAME
 @else
@@ -218,6 +219,7 @@ FILE_NAME=$1/$NEXT_PATH/$NEXT_NAME
 @endif
 @else
 FILE_NAME=$1/$SUB_DIRECTORY/$NEXT_PATH/$NEXT_NAME
+@endif
 @endif
 @endif
 ;
