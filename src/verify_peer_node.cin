@@ -17,6 +17,8 @@ ERROR=
 ;
 IDENTITY=$1
 ;
+CORRECT=
+;
 <check_system_identity.cin
 ;
 @ifdef $ERROR
@@ -26,7 +28,8 @@ IDENTITY=$1
 STORAGE=$OUTPUT
 ;
 @ifeq "$STORAGE" ""
-#Error: No default storage found.
+ERROR=No default storage found.
+#Error: $ERROR
 @else
 .storage_init $STORAGE
 @ifndef $ERROR
@@ -108,6 +111,13 @@ RECEIVE_CHECKSUM=%CHECKSUM_LINES:2%
 ;
 @endif
 .storage_term
+;
+@ifdef $CORRECT
+@ifndef $ERROR
+<fetch_from_peer_node.cin $IDENTITY
+@endif
+@endif
+;
 @endif
 @endif
 @endif

@@ -1,0 +1,92 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "1"
+#NOTE: This script requires a peer node identity.
+@else
+ERROR=
+;
+IDENTITY=$1
+;
+<check_system_identity.cin
+;
+@ifdef $ERROR
+#Error: $ERROR
+@else
+.system_variable @storage
+STORAGE=$OUTPUT
+;
+@ifeq "$STORAGE" ""
+ERROR=No default storage found.
+#Error: $ERROR
+@else
+;
+.system_variable @opened_$IDENTITY
+@ifdef "$OUTPUT"
+<close_peer_node.cin $IDENTITY
+@endif
+@ifndef $ERROR
+.storage_init $STORAGE
+@endif
+;
+@ifndef $ERROR
+;
+@retain *
+<$STORAGE.channel_information.vars.lst
+;
+.pf $STORAGE $CLASS_NAME $IDENTITY "$FLD_ACTIVE,$FLD_SHARED_SECRET,$FLD_VERIFIED_CHECKSUM,$FLD_CONNECT_INFORMATION"
+;
+@ifndef $ERROR
+PEER_INFO=$OUTPUT
+INFO_LINES=@repstr:,/\n:$PEER_INFO
+;
+PEER_IS_ACTIVE=%INFO_LINES:1%
+PEER_SHARED_SECRET=%INFO_LINES:2%
+PEER_VERIFIED_CHECKSUM=%INFO_LINES:3%
+PEER_CONNECT_INFORMATION=%INFO_LINES:4%
+;
+@ifeq "$PEER_IS_ACTIVE" "0"
+ERROR=Peer Node has been set to inactive.
+@else
+@ifeq "$PEER_VERIFIED_CHECKSUM" ""
+ERROR=Peer Node needs to first be verified.
+@endif
+@endif
+;
+@ifdef $ERROR
+#Error: $ERROR
+@else
+.system_variable @shared_secret_$IDENTITY "$PEER_SHARED_SECRET"
+;
+OLD_FILE_NAME=$FILE_NAME
+OLD_NO_PROGRESS=$CIYAM_NO_PROGRESS
+;
+FILE_NAME=@dummy
+CIYAM_NO_PROGRESS=1
+;
+<prepare_for_channel.cin @dummy $IDENTITY
+@ifndef $ERROR
+.system_variable @queue_peers $PEER_CONNECT_INFORMATION
+@endif
+;
+FILE_NAME=$OLD_FILE_NAME
+CIYAM_NO_PROGRESS=$OLD_NO_PROGRESS
+;
+@endif
+;
+@endif
+;
+.storage_term
+@endif
+@endif
+;
+@endif
+;
+@endif
