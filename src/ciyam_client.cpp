@@ -327,16 +327,20 @@ string ciyam_console_command_handler::get_additional_command( )
    if( !additional_commands.empty( ) )
    {
       cmd = additional_commands.front( );
+
       additional_commands.pop_front( );
 
-      if( !cmd.empty( ) && cmd[ 0 ] >= '0' && cmd[ 0 ] <= '9' )
+      if( !cmd.empty( )
+       && ( cmd[ 0 ] >= '0' ) && ( cmd[ 0 ] <= '9' ) )
       {
          total_chunks = atoi( cmd.c_str( ) );
+
          cmd.erase( );
 
          if( !additional_commands.empty( ) )
          {
             cmd = additional_commands.front( );
+
             additional_commands.pop_front( );
          }
       }
@@ -482,6 +486,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   if( put_source_file[ 0 ] == '?' )
                   {
                      was_list_prefix = true;
+
                      prefix = string( c_file_type_str_list );
 
                      put_source_file.erase( 0, 1 );
@@ -496,7 +501,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         write_file( put_source_file, buffer );
                      }
                   }
-                  else if( put_source_file[ 0 ] >= '1' && put_source_file[ 0 ] <= '9' )
+                  else if( ( put_source_file[ 0 ] >= '1' ) && ( put_source_file[ 0 ] <= '9' ) )
                   {
                      pos = put_source_file.find( '*' );
 
@@ -520,6 +525,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                            }
 
                            file_start = unformat_bytes( put_source_file.substr( spos + 1 ) );
+
                            put_source_file.erase( spos );
                         }
 
@@ -530,9 +536,11 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                            xpos -= pos;
 
                         extra.erase( );
+
                         file_list_data.erase( );
 
                         chunk_size = unformat_bytes( put_source_file.substr( 0, pos ) );
+
                         put_source_file.erase( 0, pos + 1 );
 
                         if( chunk_size <= 1 )
@@ -557,6 +565,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         else
                         {
                            file_strip_prefix = file_extra.substr( 0, pos );
+
                            file_extra.erase( 0, pos + 1 );
                         }
                      }
@@ -817,9 +826,8 @@ void ciyam_console_command_handler::preprocess_command_and_args(
           || ( str == c_session_cmd_quit )
           || ( str == c_session_cmd_session_terminate ) )
          {
-            clear_key( str );
+            clear_key( str, true );
 
-            str.erase( );
             set_finished( );
          }
          else
@@ -1259,6 +1267,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                                     string msg( ( const char* )buffer, n );
 
                                     string::size_type pos = msg.find( ':' );
+
                                     if( pos != string::npos )
                                     {
                                        string slot( msg.substr( 0, pos ) );
@@ -1266,11 +1275,13 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                                        if( slot == get_environment_variable( c_env_var_slot ) )
                                        {
                                           msg.erase( 0, pos + 1 );
+
                                           pos = msg.find( ':' );
 
                                           if( pos != string::npos )
                                           {
                                              string chunk = msg.substr( 0, pos );
+
                                              msg.erase( 0, pos + 1 );
 
                                              if( msg == put_file_hash )
@@ -1347,14 +1358,14 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   if( delete_after_put )
                   {
                      delete_after_put = false;
+
                      file_remove( put_source_file );
                   }
                }
             }
             catch( exception& x )
             {
-               clear_key( str );
-               str.erase( );
+               clear_key( str, true );
 
                if( !ignore_exception )
                {
@@ -1503,6 +1514,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   cerr << response;
 #endif
                   response.erase( );
+
                   continue;
                }
                else if( response == string( c_response_not_found ) )
@@ -1512,6 +1524,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      handle_command_response( response );
 
                      response.erase( );
+
                      continue;
                   }
 
@@ -1683,8 +1696,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                }
             }
 
-            clear_key( str );
-            str.erase( );
+            clear_key( str, true );
          }
       }
    }
@@ -1949,7 +1961,7 @@ int main( int argc, char* argv[ ] )
                processor.execute_command( g_quiet_cmd_prefix
                 + string( c_session_cmd_session_rpc_unlock ) + " \"" + g_rpc_password + "\"" );
 
-               clear_key( g_rpc_password );
+               clear_key( g_rpc_password, true );
             }
 
             if( !g_args_file.empty( ) )
