@@ -68,6 +68,8 @@ using namespace cache;
 namespace
 {
 
+const char* const c_tmp_prefix = "/tmp/";
+
 const char* const c_ops_file_name_ext = ".ops";
 const char* const c_data_file_name_ext = ".dat";
 const char* const c_index_file_name_ext = ".idx";
@@ -1849,7 +1851,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
 #endif
    }
 
-   void new_transaction( int64_t tran_id )
+   void new_transaction( const string& name, int64_t tran_id )
    {
 #ifdef ODS_DEBUG
       DEBUG_LOG( "in ods_trans_op_cache_buffer::new_transaction( )" );
@@ -1859,7 +1861,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
       ostringstream osstr;
       osstr << hex << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << tran_id;
 
-      file_name = osstr.str( ) + c_ops_file_name_ext;
+      file_name = c_tmp_prefix + name + '.' + osstr.str( ) + c_ops_file_name_ext;
 
       has_begun_trans = true;
    }
@@ -2007,7 +2009,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
 #endif
    }
 
-   void new_transaction( int64_t tran_id )
+   void new_transaction( const string& name, int64_t tran_id )
    {
 #ifdef ODS_DEBUG
       DEBUG_LOG( "in ods_trans_data_cache_buffer::new_transaction( )" );
@@ -2018,7 +2020,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
 
       osstr << hex << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << tran_id;
 
-      file_name = osstr.str( ) + c_data_file_name_ext;
+      file_name = c_tmp_prefix + name + '.' + osstr.str( ) + c_data_file_name_ext;
 
       has_begun_trans = true;
    }
@@ -5236,8 +5238,8 @@ void ods::transaction_start( const char* p_label )
                p_impl->rp_header_info->tranlog_offset = p_impl->tranlog_offset;
          }
 
-         p_impl->p_ods_trans_op_cache_buffer->new_transaction( p_impl->p_trans_buffer->tran_id );
-         p_impl->p_ods_trans_data_cache_buffer->new_transaction( p_impl->p_trans_buffer->tran_id );
+         p_impl->p_ods_trans_op_cache_buffer->new_transaction( p_impl->name, p_impl->p_trans_buffer->tran_id );
+         p_impl->p_ods_trans_data_cache_buffer->new_transaction( p_impl->name, p_impl->p_trans_buffer->tran_id );
 
          p_impl->total_trans_size = 0;
          p_impl->total_trans_op_count = 0;
