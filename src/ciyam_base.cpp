@@ -7649,7 +7649,7 @@ bool can_create_script_lock_file( const string& name )
       g_checked_script_lock_files.erase( name );
    else
    {
-      string pid( buffer_file( name ) );
+      string pid( buffer_file( name, 0, 0, 0, false ) );
 
       // NOTE: If the file is empty (rather than containing a PID)
       // then will delete the file (assuming it was left over from
