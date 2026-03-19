@@ -53,13 +53,18 @@ ERROR=Peer Node needs to first be verified.
 @retain *
 <$STORAGE.user_information.vars.lst
 ;
-.pf $STORAGE $CLASS_NAME $PEER_OWNER_KEY "$FLD_NAME" -min
+.pf $STORAGE $CLASS_NAME $PEER_OWNER_KEY "$FLD_NAME,$FLD_USERNAME" -min
 ;
 @ifndef $ERROR
 @ifndef $OUTPUT
 ERROR=Unable to obtain user information for record '$PEER_OWNER_KEY'.
 @else
-PEER_OWNER_NAME=$OUTPUT
+OWNER_INFO=$OUTPUT
+OWNER_LINES=@repstr:,/\n:$OWNER_INFO
+;
+PEER_OWNER_NAME=%OWNER_LINES:1%
+PEER_OWNER_USERNAME=%OWNER_LINES:2%
+;
 .system_variable @opened_files
 @ifndef $OUTPUT
 ERROR=Unexpected missing '@opened_files' system variable.
@@ -77,7 +82,7 @@ OPENED_FILES_PATH=$OUTPUT
 .system_variable @opening_$IDENTITY 1 ""
 ;
 @ifeq "$OUTPUT" "1"
-.system_variable @opening_user_$IDENTITY $PEER_OWNER_KEY
+.system_variable @opening_user_$IDENTITY $PEER_OWNER_USERNAME
 .system_variable @opened_user_name_$IDENTITY $PEER_OWNER_NAME
 <open_channel.cin @dummy $IDENTITY
 @ifndef $ERROR
