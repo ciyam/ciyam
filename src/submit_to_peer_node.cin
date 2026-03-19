@@ -63,7 +63,7 @@ ERROR=Peer Node needs to first be verified.
 @ifdef $ERROR
 #Error: $ERROR
 @else
-.system_variable @shared_secret_$IDENTITY "$PEER_SHARED_SECRET"
+.system_variable @shared_secret_$IDENTITY $PEER_SHARED_SECRET
 ;
 OLD_FILE_NAME=$FILE_NAME
 OLD_NO_PROGRESS=$CIYAM_NO_PROGRESS
