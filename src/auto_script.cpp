@@ -214,9 +214,11 @@ void read_script_info( )
 
             string cycle( reader.read_attribute( c_attribute_cycle ) );
 
-            if( !cycle.empty( ) && ( cycle[ cycle.size( ) - 1 ] == '*' ) )
+            if( !cycle.empty( )
+             && ( cycle[ cycle.size( ) - 1 ] == '*' ) )
             {
                info.allow_late_exec = true;
+
                cycle.erase( cycle.size( ) - 1 );
             }
 
@@ -621,6 +623,7 @@ void autoscript_session::on_start( )
             if( !repeated )
             {
                repeated = true;
+
                continue;
             }
 
@@ -722,7 +725,8 @@ void autoscript_session::on_start( )
                // dead process or unexpected application server termination) it is
                // being assumed that the script is either currently running or may
                // not be called (perhaps due to another script that is running).
-               if( !lock_filename.empty( ) && !can_create_script_lock_file( lock_filename ) )
+               if( !lock_filename.empty( )
+                && !can_create_script_lock_file( lock_filename ) )
                   okay = false;
 
                bool executed = false;
