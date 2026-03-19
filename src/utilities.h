@@ -1119,28 +1119,29 @@ void setup_arguments( int argc, const char* argv[ ],
  std::vector< std::string >& arguments, char esc = '\0', const char* p_specials = 0 );
 
 void buffer_file(
- std::string& buffer, const char* p_file_name, size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0 );
+ std::string& buffer, const char* p_file_name,
+ size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0, bool open_must_not_fail = true );
 
-inline void buffer_file( std::string& buffer,
- const std::string& file_name, size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0 )
+inline void buffer_file( std::string& buffer, const std::string& file_name,
+ size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0, bool open_must_not_fail = true )
 {
-   buffer_file( buffer, file_name.c_str( ), max_bytes, p_size, start_pos );
+   buffer_file( buffer, file_name.c_str( ), max_bytes, p_size, start_pos, open_must_not_fail );
 }
 
-inline std::string buffer_file(
- const char* p_file_name, size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0 )
+inline std::string buffer_file( const char* p_file_name,
+ size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0, bool open_must_not_fail = true )
 {
    std::string buffer;
 
-   buffer_file( buffer, p_file_name, max_bytes, p_size, start_pos );
+   buffer_file( buffer, p_file_name, max_bytes, p_size, start_pos, open_must_not_fail );
 
    return buffer;
 }
 
-inline std::string buffer_file(
- const std::string& file_name, size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0 )
+inline std::string buffer_file( const std::string& file_name,
+ size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0, bool open_must_not_fail = true )
 {
-   return buffer_file( file_name.c_str( ), max_bytes, p_size, start_pos );
+   return buffer_file( file_name.c_str( ), max_bytes, p_size, start_pos, open_must_not_fail );
 }
 
 void write_file( const char* p_file_name,

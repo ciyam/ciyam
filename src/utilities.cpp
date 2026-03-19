@@ -1067,7 +1067,8 @@ string::size_type boyer_moore::find( const string& text )
    {
       int pattern_i = ( int )( pattern.size( ) - 1 );
 
-      while( ( pattern_i >= 0 ) && ( text[ text_i ] == pattern[ pattern_i ] ) )
+      while( ( pattern_i >= 0 )
+       && ( text[ text_i ] == pattern[ pattern_i ] ) )
       {
          --text_i;
          --pattern_i;
@@ -2064,7 +2065,8 @@ void parse_host_and_or_port( const string& host_and_or_port, string& host, int& 
 {
    if( !host_and_or_port.empty( ) )
    {
-      // NOTE: Allow "[1000:2000:3000:4000::1]:<port>" or "[1000:2000:3000:4000::1]-<port>".
+      // NOTE: Allow "[1000:2000:3000:4000::1]:<port>"
+      // as well as "[1000:2000:3000:4000::1]-<port>".
       if( host_and_or_port[ 0 ] == '[' )
       {
          string::size_type pos = host_and_or_port.find( ']' );
@@ -2096,17 +2098,20 @@ void parse_host_and_or_port( const string& host_and_or_port, string& host, int& 
          else
          {
             host = host_and_or_port;
+
             string::size_type pos = host.find( ':' );
 
             // NOTE: If no ':' is found or the host is an IPV6 address then will allow
             // a '-' to instead be used as the port separator (as an alternative suffix
             // format that works with either an IPv4 or IPv6 address).
-            if( pos == string::npos || ( host.find( ':', pos + 1 ) != string::npos ) )
+            if( ( pos == string::npos )
+             || ( host.find( ':', pos + 1 ) != string::npos ) )
                pos = host.find( '-' );
 
             if( pos != string::npos )
             {
                port = atoi( host.substr( pos + 1 ).c_str( ) );
+
                host.erase( pos );
             }
          }
@@ -2140,7 +2145,7 @@ size_t setup_arguments( const char* p_input, vector< string >& arguments, char e
       }
       else if( *p_finish == esc )
       {
-         if( !in_quotes && p_start == p_finish )
+         if( !in_quotes && ( p_start == p_finish ) )
             began_without_quotes = true;
 
          had_escape = true;
@@ -2166,7 +2171,7 @@ size_t setup_arguments( const char* p_input, vector< string >& arguments, char e
       }
       else if( ( *p_finish == '\0' ) || isspace( static_cast< unsigned char >( *p_finish ) ) )
       {
-         if( in_quotes && *p_finish == '\0' )
+         if( in_quotes && ( *p_finish == '\0' ) )
             throw runtime_error( "missing expected end-quote in: " + string( p_input ) );
 
          if( in_quotes )
@@ -2213,6 +2218,7 @@ void setup_arguments( int argc, const char* argv[ ],
    for( int i = 1; i < argc; i++ )
    {
       string str( argv[ i ] );
+
       if( esc )
          unescape( str, p_specials, esc );
 
@@ -2220,47 +2226,50 @@ void setup_arguments( int argc, const char* argv[ ],
    }
 }
 
-void buffer_file( string& buffer, const char* p_file_name, size_t max_bytes, size_t* p_size, size_t start_pos )
+void buffer_file( string& buffer, const char* p_file_name,
+ size_t max_bytes, size_t* p_size, size_t start_pos, bool open_must_not_fail )
 {
    if( !p_file_name )
       throw runtime_error( "unexpected null pointer for p_file_name in buffer_file" );
 
    FILE* fp = fopen( p_file_name, "rb" );
 
-   if( !fp )
-      throw runtime_error( "unable to open file '" + string( p_file_name ) + "' for input in buffer_file" );
-
-   fseek( fp, 0, SEEK_END );
-
-   size_t size = ftell( fp );
-
-   if( p_size )
-      *p_size = size;
-
-   if( start_pos > size )
-      start_pos = size;
-
-   if( max_bytes && ( size - start_pos > max_bytes ) )
-      size = max_bytes;
-   else
-      size -= start_pos;
-
-   if( size > 0 )
+   if( fp )
    {
-      if( buffer.capacity( ) < size )
-         buffer.reserve( size );
+      fseek( fp, 0, SEEK_END );
 
-      buffer.resize( size );
+      size_t size = ftell( fp );
 
-      fseek( fp, start_pos, SEEK_SET );
+      if( p_size )
+         *p_size = size;
 
-      if( fread( &buffer[ 0 ], 1, ( size_t )size, fp ) != ( size_t )size )
-         throw runtime_error( "reading from input file '" + string( p_file_name ) + "'" );
+      if( start_pos > size )
+         start_pos = size;
+
+      if( max_bytes && ( size - start_pos > max_bytes ) )
+         size = max_bytes;
+      else
+         size -= start_pos;
+
+      if( size > 0 )
+      {
+         if( buffer.capacity( ) < size )
+            buffer.reserve( size );
+
+         buffer.resize( size );
+
+         fseek( fp, start_pos, SEEK_SET );
+
+         if( fread( &buffer[ 0 ], 1, ( size_t )size, fp ) != ( size_t )size )
+            throw runtime_error( "reading from input file '" + string( p_file_name ) + "'" );
+      }
+      else
+         buffer.resize( 0 );
+
+      fclose( fp );
    }
-   else
-      buffer.resize( 0 );
-
-   fclose( fp );
+   else if( open_must_not_fail )
+      throw runtime_error( "unable to open '" + string( p_file_name ) + "' for input in buffer_file" );
 }
 
 void write_file( const char* p_file_name, unsigned char* p_data, size_t length, bool append, size_t start_pos )
