@@ -47,10 +47,10 @@ copy_config_default( )
 
  if [ ! -f $CONFIG_PATH/$1.default ]; then
   cp ciyam/$1.default $CONFIG_PATH
-  chown $CIYAM_USER:$CIYAM_GROUP $CONFIG_PATH/$1.default
+  sudo chown $CIYAM_USER:$CIYAM_GROUP $CONFIG_PATH/$1.default
 
   cp $CONFIG_PATH/$1.default $CONFIG_PATH/$1
-  chown $CIYAM_USER:$CIYAM_GROUP $CONFIG_PATH/$1
+  sudo chown $CIYAM_USER:$CIYAM_GROUP $CONFIG_PATH/$1
  else
   cmp -s ciyam/$1.default $CONFIG_PATH/$1.default
 
@@ -64,7 +64,7 @@ copy_config_default( )
 
  if [ ! -L $INSTALL_PATH/$1 ]; then
   ln -s $CONFIG_PATH/$1 $INSTALL_PATH/$1
-  chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/$1
+  sudo chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/$1
  fi
 }
 
@@ -156,8 +156,8 @@ if [ "$CIYAM_USER" = "root" ]; then
 
   echo "admin ALL=(ALL) NOPASSWD:ALL" | (EDITOR="tee -a" visudo)
 
-  chmod g+w $WEBDIR
-  chown $HTTPD_USER:$HTTPD_GROUP $WEBDIR
+  sudo chmod g+w $WEBDIR
+  sudo chown $HTTPD_USER:$HTTPD_GROUP $WEBDIR
 
   CIYAM_USER=admin
   CIYAM_GROUP=ciyam
