@@ -68,8 +68,6 @@ using namespace cache;
 namespace
 {
 
-const char* const c_tmp_prefix = "/tmp/";
-
 const char* const c_ops_file_name_ext = ".ops";
 const char* const c_data_file_name_ext = ".dat";
 const char* const c_index_file_name_ext = ".idx";
@@ -230,6 +228,27 @@ stream_cipher determine_stream_cipher( int16_t version )
 
    return cipher;
 }
+
+// NOTE: This object will set "okay" to false unless
+// its "set_okay" member function is called (used in
+// functions such as "transaction_commit" from which
+// an exception would normally never be thrown).
+struct okay_failsafe
+{
+   okay_failsafe( bool& okay ) : okay( okay ), is_okay( false ) { }
+
+   ~okay_failsafe( )
+   {
+      if( !is_okay )
+         okay = false;
+   }
+
+   void set_okay( ) { is_okay = true; }
+
+   bool& okay;
+
+   bool is_okay;
+};
 
 class log_stream : public read_write_stream
 {
@@ -1861,7 +1880,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
       ostringstream osstr;
       osstr << hex << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << tran_id;
 
-      file_name = c_tmp_prefix + name + '.' + osstr.str( ) + c_ops_file_name_ext;
+      file_name = name + '.' + osstr.str( ) + c_ops_file_name_ext;
 
       has_begun_trans = true;
    }
@@ -2020,7 +2039,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
 
       osstr << hex << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << tran_id;
 
-      file_name = c_tmp_prefix + name + '.' + osstr.str( ) + c_data_file_name_ext;
+      file_name = name + '.' + osstr.str( ) + c_data_file_name_ext;
 
       has_begun_trans = true;
    }
@@ -4981,11 +5000,22 @@ ods::transaction::~transaction( )
 {
    if( !is_dummy && o.is_okay( ) )
    {
-      if( can_commit && !has_committed )
-         o.transaction_rollback( );
+      try
+      {
+         if( can_commit && !has_committed )
+            o.transaction_rollback( );
 
-      if( !o.p_impl->rp_bulk_level )
-         ods::stats stats( o );
+         if( !o.p_impl->rp_bulk_level )
+            ods::stats stats( o );
+      }
+      catch( ... )
+      {
+         // NOTE: Is ignoring any exceptions
+         // here to prevent a program crash.
+#ifdef ODS_DEBUG
+         DEBUG_LOG( "unexpected exception in ~transction( )" );
+#endif
+      }
    }
 }
 
@@ -4996,9 +5026,10 @@ void ods::transaction::commit( )
       if( !can_commit )
          THROW_ODS_ERROR( "attempt to commit an already processed transaction" );
 
+      can_commit = false;
+
       o.transaction_commit( );
 
-      can_commit = false;
       has_committed = true;
    }
 }
@@ -5010,9 +5041,9 @@ void ods::transaction::rollback( )
       if( !can_commit || has_committed )
          THROW_ODS_ERROR( "attempt to rollback an already processed transaction" );
 
-      o.transaction_rollback( );
-
       can_commit = false;
+
+      o.transaction_rollback( );
    }
 }
 
@@ -5334,6 +5365,8 @@ void ods::transaction_commit( )
    DEBUG_LOG( osstr.str( ) );
 #endif
 
+   okay_failsafe okay_guard( okay );
+
    if( p_impl->trans_level == 1 )
    {
       transaction_op op;
@@ -5342,6 +5375,7 @@ void ods::transaction_commit( )
       if( had_interim_trans_op_write )
       {
          trans_read_ops_buffer_num = -1;
+
          had_interim_trans_op_write = false;
       }
 
@@ -5349,6 +5383,7 @@ void ods::transaction_commit( )
       {
          trans_read_data_buffer_num = -1;
          trans_read_data_buffer_offs = 0;
+
          had_interim_trans_data_write = false;
 
          if( p_impl->is_encrypted )
@@ -5573,6 +5608,8 @@ void ods::transaction_commit( )
 
       transaction_completed( true );
    }
+
+   okay_guard.set_okay( );
 }
 
 void ods::transaction_rollback( )
@@ -5588,6 +5625,8 @@ void ods::transaction_rollback( )
 
    guard lock_impl( *p_impl->rp_impl_lock );
 
+   okay_failsafe okay_guard( okay );
+
    int64_t size = p_impl->p_trans_buffer->levels.top( ).size;
 
    int64_t op_count = p_impl->p_trans_buffer->levels.top( ).op_count;
@@ -5601,6 +5640,7 @@ void ods::transaction_rollback( )
    if( had_interim_trans_op_write )
    {
       trans_read_ops_buffer_num = -1;
+
       had_interim_trans_op_write = false;
    }
 
@@ -5608,6 +5648,7 @@ void ods::transaction_rollback( )
    {
       trans_read_data_buffer_num = -1;
       trans_read_data_buffer_offs = 0;
+
       had_interim_trans_data_write = false;
 
       if( p_impl->is_encrypted )
@@ -5720,6 +5761,8 @@ void ods::transaction_rollback( )
    p_impl->p_ods_trans_data_cache_buffer->clear_from( trans_write_data_buffer_num + 1 );
 
    transaction_completed( );
+
+   okay_guard.set_okay( );
 }
 
 void ods::transaction_completed( bool keep_buffered )
@@ -5739,6 +5782,8 @@ void ods::transaction_completed( bool keep_buffered )
 
    DEBUG_LOG( osstr.str( ) );
 #endif
+
+   okay_failsafe okay_guard( okay );
 
    if( !--p_impl->trans_level )
    {
@@ -5775,6 +5820,8 @@ void ods::transaction_completed( bool keep_buffered )
       if( p_impl->is_encrypted )
          memset( trans_read_buffer.data, '\0', c_trans_bytes_per_item );
    }
+
+   okay_guard.set_okay( );
 }
 
 void ods::lock_header_file( )
