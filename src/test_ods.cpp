@@ -22,9 +22,6 @@
 #define USE_CHAR_BUF
 
 #ifdef USE_CHAR_BUF
-#  ifndef _LP64
-#     define USE_SIZE_PADDING
-#  endif
 #  define MAX_DESC_LEN 100
 #endif
 
@@ -63,6 +60,8 @@ const char* const c_cmd_use_transaction_log = "tlg";
 const char* const c_cmd_use_sync_file_writing = "sync";
 const char* const c_cmd_use_for_regression_tests = "test";
 const char* const c_cmd_reconstruct_from_transaction_log = "reconstruct";
+
+const char* const c_env_var_ciyam_test_exception = "CIYAM_TEST_EXCEPTION";
 
 bool g_encrypted = false;
 bool g_read_only = false;
@@ -240,12 +239,6 @@ int64_t size_of( const outline_base& o )
 {
    int size_holder = sizeof( size_t );
 
-#ifdef USE_SIZE_PADDING
-   // KLUDGE: In order for regression test output to match under both
-   // 32 and 64 bit environments dummy padding is added under 32 bit.
-   size_holder += sizeof( size_t );
-#endif
-
    if( g_encrypted && ( g_needs_magic || o.get_id( ) == 0 ) )
       size_holder += sizeof( int32_t );
 
@@ -271,6 +264,7 @@ read_stream& operator >>( read_stream& rs, outline_base& o )
    if( g_encrypted && ( g_needs_magic || o.get_id( ) == 0 ) )
    {
       int32_t val;
+
       rs >> val;
 
       if( val != c_magic )
@@ -280,6 +274,7 @@ read_stream& operator >>( read_stream& rs, outline_base& o )
    }
 
    rs >> o.description;
+
    rs >> o.o_file;
 
    if( !o.do_not_read_children )
@@ -287,6 +282,7 @@ read_stream& operator >>( read_stream& rs, outline_base& o )
    else
    {
       byte_skip bs( 0 );
+
       rs >> bs;
    }
 
@@ -295,11 +291,16 @@ read_stream& operator >>( read_stream& rs, outline_base& o )
 
 write_stream& operator <<( write_stream& ws, const outline_base& o )
 {
-   if( g_encrypted && ( g_needs_magic || o.get_id( ) == 0 ) )
+   if( g_encrypted && ( g_needs_magic || ( o.get_id( ) == 0 ) ) )
       ws << c_magic;
 
    ws << o.description;
+
    ws << o.o_file;
+
+   if( g_use_for_regression_tests
+    && has_environment_variable( c_env_var_ciyam_test_exception ) )
+      throw runtime_error( "(test exception)" );
 
    if( !o.do_not_write_children )
       ws << o.children;
@@ -500,161 +501,247 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    console_command_handler& console_handler( dynamic_cast< console_command_handler& >( handler ) );
 
    string::size_type pos;
+
    outline temp_node;
 
    node.set_id( oid_stack.top( ) );
 
-   if( command == c_cmd_test_ods_abort )
-      exit( 1 );
-   else if( command == c_cmd_test_ods_list )
+   try
    {
-      bool sorted( has_parm_val( parameters, c_cmd_test_ods_list_sorted ) );
-
-      o >> node;
-
-      set< string > folders;
-      set< string > file_info;
-
-      temp_read_outline_description tmp_description( temp_node );
-
-      for( node.iter( ); node.more( ); node.next( ) )
+      if( command == c_cmd_test_ods_abort )
+         exit( 1 );
+      else if( command == c_cmd_test_ods_list )
       {
-         temp_node.set_id( node.child( ) );
-         o >> temp_node;
+         bool sorted( has_parm_val( parameters, c_cmd_test_ods_list_sorted ) );
 
-         if( temp_node.get_file( ).get_id( ).is_new( ) )
+         o >> node;
+
+         set< string > folders;
+         set< string > file_info;
+
+         temp_read_outline_description tmp_description( temp_node );
+
+         for( node.iter( ); node.more( ); node.next( ) )
          {
-            if( !sorted )
-               handler.issue_command_response( temp_node.get_description( ) );
+            temp_node.set_id( node.child( ) );
+
+            o >> temp_node;
+
+            if( temp_node.get_file( ).get_id( ).is_new( ) )
+            {
+               if( !sorted )
+                  handler.issue_command_response( temp_node.get_description( ) );
+               else
+                  folders.insert( temp_node.get_description( ) );
+            }
             else
-               folders.insert( temp_node.get_description( ) );
+            {
+               string name( temp_node.get_description( ) );
+
+               name += " (" + format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) + ')';
+
+               if( sorted )
+                  file_info.insert( name );
+               else
+                  handler.issue_command_response( name );
+            }
+         }
+
+         if( sorted )
+         {
+            for( set< string >::iterator i = folders.begin( ); i!= folders.end( ); ++i )
+               handler.issue_command_response( *i );
+
+            for( set< string >::iterator i = file_info.begin( ); i!= file_info.end( ); ++i )
+               handler.issue_command_response( *i );
+         }
+      }
+      else if( command == c_cmd_test_ods_in )
+      {
+         string name_or_path( get_parm_val( parameters, c_cmd_test_ods_in_name_or_path ) );
+
+         bool found = false;
+         bool had_error = false;
+
+         string error_name;
+
+         outline next_node( node );
+         outline next_child_node;
+
+         stack< oid, vector< oid > > old_oid_stack( oid_stack );
+         vector< pathchar_buffer > old_path_strings( path_strings );
+
+         if( !name_or_path.empty( ) && ( name_or_path[ 0 ] == '/' ) )
+         {
+            next_node.set_id( 0 );
+
+            error_name += name_or_path;
+            name_or_path.erase( 0, 1 );
+
+            while( oid_stack.size( ) > 1 )
+            {
+               oid_stack.pop( );
+               path_strings.pop_back( );
+            }
+
+            if( name_or_path.empty( ) )
+               found = true;
          }
          else
          {
-            string name( temp_node.get_description( ) );
-            name += " (" + format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) + ')';
+            for( size_t i = 0; i < path_strings.size( ); i++ )
+               error_name += path_strings[ i ].data( ) + '/';
 
-            if( !sorted )
-               handler.issue_command_response( name );
-            else
-               file_info.insert( name );
+            error_name += name_or_path;
+         }
+
+         vector< string > parts;
+         split( name_or_path, parts, '/' );
+
+         for( size_t i = 0; i < parts.size( ); i++ )
+         {
+            string next_name( parts[ i ] );
+
+            o >> next_node;
+
+            for( next_node.iter( ); next_node.more( ); next_node.next( ) )
+            {
+               next_child_node.set_id( next_node.child( ) );
+
+               o >> next_child_node;
+
+               if( next_child_node.get_description( ) == next_name )
+               {
+                  if( !next_child_node.get_file( ).get_id( ).is_new( ) )
+                  {
+                     handler.issue_command_response( "'" + error_name + "' is a file not a folder" );
+
+                     had_error = true;
+
+                     break;
+                  }
+
+                  next_node.set_id( next_child_node.get_id( ) );
+
+                  oid_stack.push( next_child_node.get_id( ) );
+                  path_strings.push_back( next_child_node.get_description( ) );
+
+                  found = true;
+
+                  break;
+               }
+            }
+
+            if( !found || had_error )
+               break;
+            else if( i < parts.size( ) - 1 )
+               found = false;
+         }
+
+         if( !found && !had_error )
+            handler.issue_command_response( "could not find folder: " + error_name );
+
+         if( !found || had_error )
+         {
+            oid_stack = old_oid_stack;
+            path_strings = old_path_strings;
          }
       }
-
-      if( sorted )
+      else if( command == c_cmd_test_ods_out )
       {
-         for( set< string >::iterator i = folders.begin( ); i!= folders.end( ); ++i )
-            handler.issue_command_response( *i );
-
-         for( set< string >::iterator i = file_info.begin( ); i!= file_info.end( ); ++i )
-            handler.issue_command_response( *i );
-      }
-   }
-   else if( command == c_cmd_test_ods_in )
-   {
-      string name_or_path( get_parm_val( parameters, c_cmd_test_ods_in_name_or_path ) );
-
-      bool found = false;
-      bool had_error = false;
-
-      string error_name;
-
-      outline next_node( node );
-      outline next_child_node;
-
-      stack< oid, vector< oid > > old_oid_stack( oid_stack );
-      vector< pathchar_buffer > old_path_strings( path_strings );
-
-      if( !name_or_path.empty( ) && name_or_path[ 0 ] == '/' )
-      {
-         next_node.set_id( 0 );
-
-         error_name += name_or_path;
-         name_or_path.erase( 0, 1 );
-
-         while( oid_stack.size( ) > 1 )
+         if( oid_stack.size( ) > 1 )
          {
             oid_stack.pop( );
             path_strings.pop_back( );
          }
-
-         if( name_or_path.empty( ) )
-            found = true;
       }
-      else
+      else if( command == c_cmd_test_ods_add )
       {
-         for( size_t i = 0; i < path_strings.size( ); i++ )
-            error_name += path_strings[ i ].data( ) + '/';
+         string name( get_parm_val( parameters, c_cmd_test_ods_add_name ) );
 
-         error_name += name_or_path;
-      }
-
-      vector< string > parts;
-      split( name_or_path, parts, '/' );
-
-      for( size_t i = 0; i < parts.size( ); i++ )
-      {
-         string next_name( parts[ i ] );
-
-         o >> next_node;
-
-         for( next_node.iter( ); next_node.more( ); next_node.next( ) )
+         if( name.find( '/' ) != string::npos )
+            handler.issue_command_response( "cannot use '"
+             + name + "' for a folder name (contains special characters)" );
+         else
          {
-            next_child_node.set_id( next_node.child( ) );
+            ods::bulk_write bulk( o );
 
-            o >> next_child_node;
+            o >> node;
 
-            if( next_child_node.get_description( ) == next_name )
+            unique_ptr< ods::transaction > up_ods_tx;
+
+            if( !o.is_in_transaction( ) )
+               up_ods_tx.reset( new ods::transaction( o ) );
+
+            int num = 1;
+
+            bool is_multi = false;
+
+            pos = name.find( '*' );
+
+            if( pos != string::npos )
             {
-               if( !next_child_node.get_file( ).get_id( ).is_new( ) )
-               {
-                  handler.issue_command_response( "'" + error_name + "' is a file not a folder" );
-                  had_error = true;
-                  break;
-               }
+               is_multi = true;
 
-               next_node.set_id( next_child_node.get_id( ) );
+               num = atoi( name.substr( pos + 1 ).c_str( ) );
 
-               oid_stack.push( next_child_node.get_id( ) );
-               path_strings.push_back( next_child_node.get_description( ) );
-               found = true;
-               break;
+               name = name.substr( 0, pos );
             }
+
+            console_progress progress;
+
+            console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+            date_time dtm( date_time::standard( ) );
+
+            for( int i = 0; i < num; i++ )
+            {
+               temp_node.set_new( );
+
+               if( is_multi )
+               {
+                  ostringstream str;
+
+                  str << name << "#" << i;
+
+                  temp_node.set_description( str.str( ) );
+               }
+               else
+                  temp_node.set_description( name );
+
+               o << temp_node;
+
+               node.add_child( temp_node );
+
+               date_time now( date_time::standard( ) );
+
+               uint64_t elapsed = seconds_between( dtm, now );
+
+               if( p_progress && ( elapsed >= 1 ) )
+               {
+                  dtm = now;
+
+                  p_progress->output_progress( "Adding items...", i, num );
+               }
+            }
+
+            o << node;
+
+            if( up_ods_tx.get( ) )
+               up_ods_tx->commit( );
          }
-
-         if( !found || had_error )
-            break;
-         else if( i < parts.size( ) - 1 )
-            found = false;
       }
-
-      if( !found && !had_error )
-         handler.issue_command_response( "could not find folder: " + error_name );
-
-      if( !found || had_error )
+      else if( command == c_cmd_test_ods_del )
       {
-         oid_stack = old_oid_stack;
-         path_strings = old_path_strings;
-      }
-   }
-   else if( command == c_cmd_test_ods_out )
-   {
-      if( oid_stack.size( ) > 1 )
-      {
-         oid_stack.pop( );
-         path_strings.pop_back( );
-      }
-   }
-   else if( command == c_cmd_test_ods_add )
-   {
-      string name( get_parm_val( parameters, c_cmd_test_ods_add_name ) );
+         string name( get_parm_val( parameters, c_cmd_test_ods_add_name ) );
 
-      if( name.find( '/' ) != string::npos )
-         handler.issue_command_response( "cannot use '"
-          + name + "' for a folder name (contains special characters)" );
-      else
-      {
-         ods::bulk_write bulk( o );
+         console_progress progress;
+
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+         bool found = false;
+
+         ods::bulk_write bulk( o, p_progress );
 
          o >> node;
 
@@ -665,6 +752,8 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
          int num = 1;
 
+         size_t index = 0;
+
          bool is_multi = false;
 
          pos = name.find( '*' );
@@ -672,401 +761,357 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          if( pos != string::npos )
          {
             is_multi = true;
+
             num = atoi( name.substr( pos + 1 ).c_str( ) );
+
             name = name.substr( 0, pos );
          }
 
-         console_progress progress;
-         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+         size_t start = 0;
+
+         long num_deleted = 0;
 
          date_time dtm( date_time::standard( ) );
 
-         for( int i = 0; i < num; i++ )
+         int val;
+
+         string str;
+
+         for( node.iter( ); node.more( ); node.next( ), ++index )
          {
-            temp_node.set_new( );
+            temp_node.set_id( node.child( ) );
+
+            o >> temp_node;
+
+            str = temp_node.get_description( );
 
             if( is_multi )
             {
-               ostringstream str;
-               str << name << "#" << i;
-               temp_node.set_description( str.str( ) );
+               pos = str.find( '#' );
+
+               if( pos != string::npos )
+               {
+                  val = atoi( str.substr( pos + 1 ).c_str( ) );
+                  str = str.substr( 0, pos );
+               }
+
+               if( str == name && val < num )
+               {
+                  if( !temp_node.has_children( ) )
+                  {
+                     found = true;
+
+                     ++num_deleted;
+
+                     if( !temp_node.get_file( ).get_id( ).is_new( ) )
+                        o.destroy( temp_node.get_file( ).get_id( ) );
+
+                     o.destroy( temp_node.get_id( ) );
+
+                     date_time now( date_time::standard( ) );
+
+                     uint64_t elapsed = seconds_between( dtm, now );
+
+                     if( p_progress && ( elapsed >= 1 ) )
+                     {
+                        dtm = now;
+                        p_progress->output_progress( "Deleting child items...", num_deleted, num );
+                     }
+                  }
+                  else if( num_deleted )
+                  {
+                     node.del_children( start, num_deleted );
+
+                     index -= num_deleted;
+
+                     num_deleted = 0;
+                     start = index + 1;
+                  }
+               }
+               else if( num_deleted )
+               {
+                  node.del_children( start, num_deleted );
+
+                  index -= num_deleted;
+
+                  num_deleted = 0;
+                  start = index + 1;
+               }
+               else
+                  start = index + 1;
             }
-            else
-               temp_node.set_description( name );
-
-            o << temp_node;
-
-            node.add_child( temp_node );
-
-            date_time now( date_time::standard( ) );
-
-            uint64_t elapsed = seconds_between( dtm, now );
-
-            if( p_progress && elapsed >= 1 )
+            else if( temp_node.get_description( ) == name )
             {
-               dtm = now;
-               p_progress->output_progress( "Adding items...", i, num );
+               found = true;
+
+               if( temp_node.has_children( ) )
+               {
+                  handler.issue_command_response( "cannot delete folder with children" );
+
+                  break;
+               }
+
+               node.del_child( index );
+
+               if( !temp_node.get_file( ).get_id( ).is_new( ) )
+                  o.destroy( temp_node.get_file( ).get_id( ) );
+
+               o.destroy( temp_node.get_id( ) );
+
+               o << node;
+
+               date_time now( date_time::standard( ) );
+
+               uint64_t elapsed = seconds_between( dtm, now );
+
+               break;
             }
          }
+
+         if( is_multi )
+         {
+            if( num_deleted )
+               node.del_children( start, num_deleted );
+
+            o << node;
+
+            if( !found )
+               handler.issue_command_response( "no folders deleted for: " + name );
+            else
+               o << node;
+         }
+         else
+         {
+            if( !found )
+               cout << "cannot find folder: " << name << endl;
+         }
+
+         if( up_ods_tx.get( ) )
+            up_ods_tx->commit( );
+      }
+      else if( command == c_cmd_test_ods_import )
+      {
+         string file_name( get_parm_val( parameters, c_cmd_test_ods_import_file_name ) );
+
+         console_progress progress;
+
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+         ods::bulk_write bulk( o, p_progress );
+
+         o >> node;
+
+         unique_ptr< ods::transaction > up_ods_tx;
+
+         if( !o.is_in_transaction( ) )
+            up_ods_tx.reset( new ods::transaction( o ) );
+
+         string::size_type pos = file_name.find_last_of( "/" );
+
+         temp_node.set_new( );
+
+         // NOTE: If a path was specified then don't store it.
+         if( pos == string::npos )
+            temp_node.set_description( file_name );
+         else
+            temp_node.set_description( file_name.substr( pos + 1 ) );
+
+         o << temp_node;
+
+         scoped_ods_instance so( o );
+
+         temp_node.get_file( new storable_file_extra( file_name, 0, p_progress ) ).store( );
+
+         o << temp_node;
+
+         node.add_child( temp_node );
 
          o << node;
 
          if( up_ods_tx.get( ) )
             up_ods_tx->commit( );
       }
-   }
-   else if( command == c_cmd_test_ods_del )
-   {
-      string name( get_parm_val( parameters, c_cmd_test_ods_add_name ) );
-
-      console_progress progress;
-      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
-
-      bool found = false;
-
-      ods::bulk_write bulk( o, p_progress );
-
-      o >> node;
-
-      unique_ptr< ods::transaction > up_ods_tx;
-
-      if( !o.is_in_transaction( ) )
-         up_ods_tx.reset( new ods::transaction( o ) );
-
-      int num = 1;
-      size_t index = 0;
-      bool is_multi = false;
-
-      pos = name.find( '*' );
-
-      if( pos != string::npos )
+      else if( command == c_cmd_test_ods_export )
       {
-         is_multi = true;
-         num = atoi( name.substr( pos + 1 ).c_str( ) );
-         name = name.substr( 0, pos );
-      }
+         string file_name( get_parm_val( parameters, c_cmd_test_ods_export_file_name ) );
+         string output_name( get_parm_val( parameters, c_cmd_test_ods_export_output_name ) );
 
-      size_t start = 0;
-      long num_deleted = 0;
+         if( output_name.empty( ) )
+            output_name = file_name;
 
-      date_time dtm( date_time::standard( ) );
+         console_progress progress;
 
-      int val;
-      string str;
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-      for( node.iter( ); node.more( ); node.next( ), ++index )
-      {
-         temp_node.set_id( node.child( ) );
+         ods::bulk_read bulk( o );
 
-         o >> temp_node;
-         str = temp_node.get_description( );
+         o >> node;
 
-         if( is_multi )
+         bool found = false;
+
+         string error_extra;
+
+         for( node.iter( ); node.more( ); node.next( ) )
          {
-            pos = str.find( '#' );
+            temp_node.set_id( node.child( ) );
+            o >> temp_node;
 
-            if( pos != string::npos )
+            if( temp_node.get_description( ) == file_name )
             {
-               val = atoi( str.substr( pos + 1 ).c_str( ) );
-               str = str.substr( 0, pos );
-            }
-
-            if( str == name && val < num )
-            {
-               if( !temp_node.has_children( ) )
+               if( temp_node.get_file( ).get_id( ).is_new( ) )
                {
+                  error_extra = " ('" + file_name + "' is a folder)";
+                  break;
+               }
+               else
+               {
+                  scoped_ods_instance so( o );
+
+                  *temp_node.get_file( new storable_file_extra( output_name, 0, p_progress ) );
+
+                  handler.issue_command_response( "saved " + output_name
+                   + " (" + format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) + ")" );
+
                   found = true;
-                  ++num_deleted;
-
-                  if( !temp_node.get_file( ).get_id( ).is_new( ) )
-                     o.destroy( temp_node.get_file( ).get_id( ) );
-
-                  o.destroy( temp_node.get_id( ) );
-
-                  date_time now( date_time::standard( ) );
-
-                  uint64_t elapsed = seconds_between( dtm, now );
-
-                  if( p_progress && elapsed >= 1 )
-                  {
-                     dtm = now;
-                     p_progress->output_progress( "Deleting child items...", num_deleted, num );
-                  }
-               }
-               else if( num_deleted )
-               {
-                  node.del_children( start, num_deleted );
-                  index -= num_deleted;
-
-                  num_deleted = 0;
-                  start = index + 1;
+                  break;
                }
             }
-            else if( num_deleted )
-            {
-               node.del_children( start, num_deleted );
-               index -= num_deleted;
-
-               num_deleted = 0;
-               start = index + 1;
-            }
-            else
-               start = index + 1;
          }
-         else if( temp_node.get_description( ) == name )
-         {
-            found = true;
-            if( temp_node.has_children( ) )
-            {
-               handler.issue_command_response( "cannot delete folder with children" );
-               break;
-            }
-
-            node.del_child( index );
-
-            if( !temp_node.get_file( ).get_id( ).is_new( ) )
-               o.destroy( temp_node.get_file( ).get_id( ) );
-
-            o.destroy( temp_node.get_id( ) );
-            o << node;
-
-            date_time now( date_time::standard( ) );
-
-            uint64_t elapsed = seconds_between( dtm, now );
-
-            break;
-         }
-      }
-
-      if( is_multi )
-      {
-         if( num_deleted )
-            node.del_children( start, num_deleted );
-         o << node;
 
          if( !found )
-            handler.issue_command_response( "no folders deleted for: " + name );
+            handler.issue_command_response( "file '" + file_name + "' not found" + error_extra );
+      }
+      else if( command == c_cmd_test_ods_trans )
+      {
+         string label( get_parm_val( parameters, c_cmd_test_ods_trans_label ) );
+
+         if( trans_level < c_max_trans_depth - 1 )
+         {
+            trans_stack_levels[ trans_level ] = oid_stack.size( );
+            trans_buffer[ trans_level++ ] = new ods::transaction( o, label );
+
+            handler.issue_command_response( "begin transaction (level = " + to_string( trans_level ) + ")" );
+         }
          else
-            o << node;
+            handler.issue_command_response( "cannot exceed max. transaction depth (" + to_string( c_max_trans_depth ) + ")" );
       }
-      else
+      else if( command == c_cmd_test_ods_commit )
       {
-         if( !found )
-            cout << "cannot find folder: " << name << endl;
-      }
-
-      if( up_ods_tx.get( ) )
-         up_ods_tx->commit( );
-   }
-   else if( command == c_cmd_test_ods_import )
-   {
-      string file_name( get_parm_val( parameters, c_cmd_test_ods_import_file_name ) );
-
-      console_progress progress;
-      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
-
-      ods::bulk_write bulk( o, p_progress );
-
-      o >> node;
-
-      unique_ptr< ods::transaction > up_ods_tx;
-
-      if( !o.is_in_transaction( ) )
-         up_ods_tx.reset( new ods::transaction( o ) );
-
-      string::size_type pos = file_name.find_last_of( "/" );
-
-      temp_node.set_new( );
-
-      // NOTE: If a path was specified then don't store it.
-      if( pos == string::npos )
-         temp_node.set_description( file_name );
-      else
-         temp_node.set_description( file_name.substr( pos + 1 ) );
-
-      o << temp_node;
-
-      scoped_ods_instance so( o );
-      temp_node.get_file( new storable_file_extra( file_name, 0, p_progress ) ).store( );
-
-      o << temp_node;
-
-      node.add_child( temp_node );
-
-      o << node;
-
-      if( up_ods_tx.get( ) )
-         up_ods_tx->commit( );
-   }
-   else if( command == c_cmd_test_ods_export )
-   {
-      string file_name( get_parm_val( parameters, c_cmd_test_ods_export_file_name ) );
-      string output_name( get_parm_val( parameters, c_cmd_test_ods_export_output_name ) );
-
-      if( output_name.empty( ) )
-         output_name = file_name;
-
-      console_progress progress;
-      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
-
-      ods::bulk_read bulk( o );
-
-      o >> node;
-
-      bool found = false;
-      string error_extra;
-      for( node.iter( ); node.more( ); node.next( ) )
-      {
-         temp_node.set_id( node.child( ) );
-         o >> temp_node;
-
-         if( temp_node.get_description( ) == file_name )
+         if( trans_level )
          {
-            if( temp_node.get_file( ).get_id( ).is_new( ) )
+            handler.issue_command_response( "commit transaction (level = " + to_string( trans_level ) + ")" );
+
+            console_progress progress;
+            console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+            ods::bulk_write bulk( o, p_progress );
+
+            trans_buffer[ trans_level - 1 ]->commit( );
+
+            delete trans_buffer[ --trans_level ];
+         }
+         else
+            handler.issue_command_response( "no transaction to commit" );
+      }
+      else if( command == c_cmd_test_ods_rollback )
+      {
+         if( trans_level )
+         {
+            handler.issue_command_response( "rollback transaction (level = " + to_string( trans_level ) + ")" );
+
+            while( oid_stack.size( ) > trans_stack_levels[ trans_level - 1 ] )
             {
-               error_extra = " ('" + file_name + "' is a folder)";
-               break;
+               oid_stack.pop( );
+               path_strings.pop_back( );
             }
-            else
-            {
-               scoped_ods_instance so( o );
 
-               *temp_node.get_file( new storable_file_extra( output_name, 0, p_progress ) );
+            delete trans_buffer[ --trans_level ];
+         }
+         else
+            handler.issue_command_response( "no transaction to rollback" );
+      }
+      else if( command == c_cmd_test_ods_trans_id )
+      {
+         if( !o.get_transaction_level( ) )
+            handler.issue_command_response( "0" );
+         else
+            handler.issue_command_response( to_string( o.get_transaction_id( ) ) );
+      }
+      else if( command == c_cmd_test_ods_trans_level )
+         handler.issue_command_response( to_string( o.get_transaction_level( ) ) );
+      else if( command == c_cmd_test_ods_rewind )
+      {
+         bool is_dtm( has_parm_val( parameters, c_cmd_test_ods_rewind_dtm ) );
+         bool is_last( has_parm_val( parameters, c_cmd_test_ods_rewind_last ) );
+         bool is_unix( has_parm_val( parameters, c_cmd_test_ods_rewind_unix ) );
+         string label_or_value( get_parm_val( parameters, c_cmd_test_ods_rewind_label_or_value ) );
 
-               handler.issue_command_response( "saved " + output_name
-                + " (" + format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) + ")" );
+         int64_t rewind_value = 0;
 
-               found = true;
-               break;
-            }
+         if( is_dtm )
+         {
+            date_time dtm( label_or_value );
+            rewind_value = unix_time( dtm );
+         }
+         else if( is_last )
+            rewind_value = from_string< int64_t >( label_or_value ) * -1;
+         else if( is_unix )
+            rewind_value = from_string< int64_t >( label_or_value );
+
+         if( is_dtm || is_last || is_unix )
+            label_or_value.erase( );
+
+         if( g_shared_write )
+            handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
+         else
+            o.rewind_transactions( label_or_value, rewind_value );
+      }
+      else if( command == c_cmd_test_ods_compress )
+      {
+         if( g_shared_write )
+            handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
+         else
+         {
+            console_progress progress;
+
+            console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+            o.move_free_data_to_end( p_progress );
          }
       }
-
-      if( !found )
-         handler.issue_command_response( "file '" + file_name + "' not found" + error_extra );
-   }
-   else if( command == c_cmd_test_ods_trans )
-   {
-      string label( get_parm_val( parameters, c_cmd_test_ods_trans_label ) );
-
-      if( trans_level < c_max_trans_depth - 1 )
+      else if( command == c_cmd_test_ods_truncate )
       {
-         trans_stack_levels[ trans_level ] = oid_stack.size( );
-         trans_buffer[ trans_level++ ] = new ods::transaction( o, label );
+         bool reset( has_parm_val( parameters, c_cmd_test_ods_truncate_reset ) );
 
-         handler.issue_command_response( "begin transaction (level = " + to_string( trans_level ) + ")" );
+         if( g_shared_write )
+            handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
+         else
+            o.truncate_log( "", reset );
       }
-      else
-         handler.issue_command_response( "cannot exceed max. transaction depth (" + to_string( c_max_trans_depth ) + ")" );
-   }
-   else if( command == c_cmd_test_ods_commit )
-   {
-      if( trans_level )
+      else if( command == c_cmd_test_ods_exit )
       {
-         handler.issue_command_response( "commit transaction (level = " + to_string( trans_level ) + ")" );
-
-         console_progress progress;
-         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
-
-         ods::bulk_write bulk( o, p_progress );
-
-         trans_buffer[ trans_level - 1 ]->commit( );
-
-         delete trans_buffer[ --trans_level ];
-      }
-      else
-         handler.issue_command_response( "no transaction to commit" );
-   }
-   else if( command == c_cmd_test_ods_rollback )
-   {
-      if( trans_level )
-      {
-         handler.issue_command_response( "rollback transaction (level = " + to_string( trans_level ) + ")" );
-
-         while( oid_stack.size( ) > trans_stack_levels[ trans_level - 1 ] )
+         while( trans_level )
          {
-            oid_stack.pop( );
-            path_strings.pop_back( );
+            handler.issue_command_response( "rollback transaction (level = " + to_string( trans_level ) + ")" );
+
+            delete trans_buffer[ --trans_level ];
          }
 
-         delete trans_buffer[ --trans_level ];
-      }
-      else
-         handler.issue_command_response( "no transaction to rollback" );
-   }
-   else if( command == c_cmd_test_ods_trans_id )
-   {
-      if( !o.get_transaction_level( ) )
-         handler.issue_command_response( "0" );
-      else
-         handler.issue_command_response( to_string( o.get_transaction_id( ) ) );
-   }
-   else if( command == c_cmd_test_ods_trans_level )
-      handler.issue_command_response( to_string( o.get_transaction_level( ) ) );
-   else if( command == c_cmd_test_ods_rewind )
-   {
-      bool is_dtm( has_parm_val( parameters, c_cmd_test_ods_rewind_dtm ) );
-      bool is_last( has_parm_val( parameters, c_cmd_test_ods_rewind_last ) );
-      bool is_unix( has_parm_val( parameters, c_cmd_test_ods_rewind_unix ) );
-      string label_or_value( get_parm_val( parameters, c_cmd_test_ods_rewind_label_or_value ) );
-
-      int64_t rewind_value = 0;
-
-      if( is_dtm )
-      {
-         date_time dtm( label_or_value );
-         rewind_value = unix_time( dtm );
-      }
-      else if( is_last )
-         rewind_value = from_string< int64_t >( label_or_value ) * -1;
-      else if( is_unix )
-         rewind_value = from_string< int64_t >( label_or_value );
-
-      if( is_dtm || is_last || is_unix )
-         label_or_value.erase( );
-
-      if( g_shared_write )
-         handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
-      else
-         o.rewind_transactions( label_or_value, rewind_value );
-   }
-   else if( command == c_cmd_test_ods_compress )
-   {
-      if( g_shared_write )
-         handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
-      else
-      {
-         console_progress progress;
-         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
-
-         o.move_free_data_to_end( p_progress );
+         test_handler.set_finished( );
       }
    }
-   else if( command == c_cmd_test_ods_truncate )
+   catch( exception& x )
    {
-      bool reset( has_parm_val( parameters, c_cmd_test_ods_truncate_reset ) );
-
-      if( g_shared_write )
-         handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
-      else
-         o.truncate_log( "", reset );
-   }
-   else if( command == c_cmd_test_ods_exit )
-   {
-      while( trans_level )
-      {
-         handler.issue_command_response( "rollback transaction (level = " + to_string( trans_level ) + ")" );
-         delete trans_buffer[ --trans_level ];
-      }
-
-      test_handler.set_finished( );
+      handler.issue_command_response( "error: " + string( x.what( ) ) );
    }
 
    pathchar_buffer path( "/" );
+
    for( vector< pathchar_buffer >::size_type i = 1; i < path_strings.size( ); i++ )
    {
       if( i > 1 )
          path += "/";
+
       path += path_strings[ i ];
    }
 
@@ -1169,6 +1214,7 @@ int main( int argc, char* argv[ ] )
           test_ods_command_functor_factory, ARRAY_PTR_AND_SIZE( test_ods_command_definitions ) );
 
          console_command_processor processor( cmd_handler );
+
          processor.process_commands( );
       }
 
@@ -1178,14 +1224,18 @@ int main( int argc, char* argv[ ] )
    {
       if( !g_application_title_called && !cmd_handler.has_option_quiet( ) )
          cout << application_title( e_app_info_request_title_and_version ) << endl;
+
       cerr << "error: " << x.what( ) << endl;
+
       return 1;
    }
    catch( ... )
    {
       if( !g_application_title_called && !cmd_handler.has_option_quiet( ) )
          cout << application_title( e_app_info_request_title_and_version ) << endl;
+
       cerr << "unexpected exception occurred..." << endl;
+
       return 2;
    }
 }
