@@ -5205,7 +5205,15 @@ void term_globals( )
    }
 
    term_system_ods( );
+
    term_files_area( );
+
+   string ext_ip_addr_file( "~" );
+
+   ext_ip_addr_file += c_check_ext_ip_addr;
+
+   if( file_exists( ext_ip_addr_file ) )
+      remove_file( ext_ip_addr_file );
 
    if( file_exists( c_at_term_script ) )
    {
@@ -5297,7 +5305,8 @@ int has_external_ip_address( )
    {
       if( file_exists( ext_ip_addr_file ) )
       {
-         string ext_ip_addr( buffer_file( ext_ip_addr_file ) );
+         // NOTE: Will also handle the async delete of the file after the above existence check.
+         string ext_ip_addr( buffer_file( ( const string& )ext_ip_addr_file, 0, 0, 0, false ) );
 
          string::size_type pos = ext_ip_addr.find( '\n' );
 
