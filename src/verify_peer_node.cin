@@ -73,7 +73,25 @@ ERROR=Found an existing session for '$IDENTITY' ($SUBMIT_IDENTITY).
 @else
 ;
 .system_variable @queue_peers $QUEUE_CONNECT
-.wait 2000
+;
+RECEIVE_IDENTITY=*!reverse?$SUBMIT_IDENTITY
+;
+.file_tags bc.$RECEIVE_IDENTITY.locked*
+@ifndef $OUTPUT
+.wait 50
+.session_list $SUBMIT_IDENTITY,$RECEIVE_IDENTITY
+@ifndef $OUTPUT
+.wait 100
+.session_list $SUBMIT_IDENTITY,$RECEIVE_IDENTITY
+@ifndef $OUTPUT
+.wait 100
+.session_list $SUBMIT_IDENTITY,$RECEIVE_IDENTITY
+@ifndef $OUTPUT
+.wait 250
+@endif
+@endif
+@endif
+@endif
 ;
 .system_variable @shared_secret_$IDENTITY $SHARED_SECRET
 ;
