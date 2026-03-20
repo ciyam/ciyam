@@ -1,0 +1,5 @@
+list
+CIYAM_TEST_EXCEPTION=1
+add 999
+list
+exit

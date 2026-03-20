@@ -996,6 +996,24 @@
       <input>false
       <output>generate
      </test_step>
+     <test_step/>
+      <name>t
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>u
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -tlg -test -reconstruct
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>v
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
     </test>
     <test/>
      <name>6
