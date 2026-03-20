@@ -57,6 +57,7 @@ ERROR=Peer Node needs to first be verified.
 .system_variable @closing_$IDENTITY 1 ""
 ;
 @ifeq "$OUTPUT" "1"
+CIYAM_USER=
 <close_channel.cin @dummy $IDENTITY
 @endif
 @endif

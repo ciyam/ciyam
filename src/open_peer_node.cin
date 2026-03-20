@@ -84,6 +84,7 @@ OPENED_FILES_PATH=$OUTPUT
 @ifeq "$OUTPUT" "1"
 .system_variable @opening_user_$IDENTITY $PEER_OWNER_USERNAME
 .system_variable @opened_user_name_$IDENTITY $PEER_OWNER_NAME
+CIYAM_USER=
 <open_channel.cin @dummy $IDENTITY
 @ifndef $ERROR
 #$OPENED_FILES_PATH/$IDENTITY
