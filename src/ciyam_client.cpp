@@ -1543,10 +1543,11 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                   size_t err_prefix_length( strlen( c_response_error_prefix ) );
 
-                  if( response.length( ) > err_prefix_length
-                   && response.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) )
+                  if( ( response.length( ) > err_prefix_length )
+                   && ( response.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) ) )
                   {
                      is_error = true;
+
                      start = err_prefix_length;
                   }
 
@@ -1554,10 +1555,11 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                   size_t msg_prefix_length( strlen( c_response_message_prefix ) );
 
-                  if( response.length( ) > msg_prefix_length
-                   && response.substr( 0, msg_prefix_length ) == string( c_response_message_prefix ) )
+                  if( ( response.length( ) > msg_prefix_length )
+                   && ( response.substr( 0, msg_prefix_length ) == string( c_response_message_prefix ) ) )
                   {
                      is_message = true;
+
                      start = msg_prefix_length;
                   }
 
@@ -1592,6 +1594,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                            if( had_chunk_progress && is_stdout_console( ) )
                            {
                               num_singles = 2;
+
                               progress.output_progress( final_response + final_response );
                            }
                         }
@@ -1619,6 +1622,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                               if( had_single_char_message )
                               {
                                  ++num_singles;
+
                                  progress.output_prefix.erase( );
                               }
 
