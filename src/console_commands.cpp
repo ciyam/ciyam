@@ -2688,6 +2688,8 @@ void console_command_handler::clear_progress_output( bool finished )
 
             p_std_out->flush( );
          }
+         else if( !finished )
+            *p_std_out << endl;
       }
 
       progress_output_count = 0;
@@ -4500,29 +4502,32 @@ void console_command_handler::handle_progress_message( const string& message )
 
    bool single_character_message = ( message.length( ) == 1 );
 
-   if( !single_character_message )
+   // NOTE: If single character message is a space then skips
+   // output and instead clears any existing progress output.
+   if( single_character_message && ( message[ 0 ] == ' ' ) )
       clear_progress_output( false );
-
-   if( has_option( c_cmd_monitor ) )
-      put_line( prefix + message, !single_character_message );
    else
    {
-      *p_std_out << prefix << message;
+      if( !single_character_message )
+         clear_progress_output( false );
 
-      if( !single_character_message
-       && ( !is_stdout_console( ) || is_redirected_output( ) ) )
-         *p_std_out << '\n';
+      if( has_option( c_cmd_monitor ) )
+         put_line( prefix + message, !single_character_message );
+      else
+      {
+         *p_std_out << prefix << message;
 
-      p_std_out->flush( );
+         p_std_out->flush( );
+      }
+
+      if( !prefix.empty( ) )
+         had_progress_prefix = true;
+
+      if( single_character_message )
+         ++progress_output_count;
+      else
+         progress_output_count = message.length( );
    }
-
-   if( !prefix.empty( ) )
-      had_progress_prefix = true;
-
-   if( single_character_message )
-      ++progress_output_count;
-   else
-      progress_output_count = message.length( );
 
    set_environment_variable( c_env_var_progress_prefix, "" );
 }
