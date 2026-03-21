@@ -5718,6 +5718,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool lock = has_parm_val( parameters, c_cmd_ciyam_session_session_wait_lock );
          bool no_progress = has_parm_val( parameters, c_cmd_ciyam_session_session_wait_no_progress );
          string milliseconds( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_milliseconds ) );
+         string message( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_message ) );
 
          int msecs = atoi( milliseconds.c_str( ) );
 
@@ -5728,6 +5729,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             msecs *= -1;
             use_dots = true;
          }
+
+         if( !message.empty( ) )
+            handler.output_progress( message );
 
          unique_ptr< guard > up_guard;
 
@@ -7052,6 +7056,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                file_remove( ltf_name );
 
             term_storage( handler );
+
+            handler.output_progress( " " );
 
             socket_handler.get_transformations( ).clear( );
 
