@@ -1540,6 +1540,10 @@ void Meta_Model::impl::impl_Generate( )
 
       string enum_key_info( to_string( Meta_Enum::static_get_field_id( Meta_Enum::e_field_id_Name ) ) + ' ' );
 
+      output_progress_message( "." );
+
+      date_time dtm( date_time::standard( ) );
+
       if( get_obj( ).Workgroup( ).child_Enum( ).iterate_forwards( enum_key_info ) )
       {
          do
@@ -1645,6 +1649,16 @@ void Meta_Model::impl::impl_Generate( )
 
          do
          {
+            date_time now( date_time::standard( ) );
+
+            uint64_t elapsed = seconds_between( dtm, now );
+
+            if( elapsed > 2 )
+            {
+               dtm = now;
+               output_progress_message( "." );
+            }
+
             vector< string > class_strings;
             class_ids.insert( make_pair( class_num++, get_obj( ).child_Class( ).Id( ) ) );
 
@@ -1781,6 +1795,16 @@ void Meta_Model::impl::impl_Generate( )
       {
          do
          {
+            date_time now( date_time::standard( ) );
+
+            uint64_t elapsed = seconds_between( dtm, now );
+
+            if( elapsed > 2 )
+            {
+               dtm = now;
+               output_progress_message( "." );
+            }
+
             // NOTE: As there could be one or more derived Specification classes a review
             // is being used to ensure that a dynamic instance will be used when required.
             get_obj( ).child_Specification( ).begin_review( get_obj( ).child_Specification( ).get_key( ) );
@@ -1885,6 +1909,16 @@ void Meta_Model::impl::impl_Generate( )
       {
          for( map< string, string >::iterator vi = view_records.begin( ); vi != view_records.end( ); ++vi )
          {
+            date_time now( date_time::standard( ) );
+
+            uint64_t elapsed = seconds_between( dtm, now );
+
+            if( elapsed > 2 )
+            {
+               dtm = now;
+               output_progress_message( "." );
+            }
+
             get_obj( ).child_View( ).perform_fetch( vi->second );
 
             string specification_name( get_obj( ).child_View( ).Class( ).Name( ) + '_' );
@@ -3630,6 +3664,16 @@ void Meta_Model::impl::impl_Generate( )
 
          for( map< string, string >::iterator li = list_records.begin( ); li != list_records.end( ); ++li )
          {
+            date_time now( date_time::standard( ) );
+
+            uint64_t elapsed = seconds_between( dtm, now );
+
+            if( elapsed > 2 )
+            {
+               dtm = now;
+               output_progress_message( "." );
+            }
+
             get_obj( ).child_List( ).perform_fetch( li->second );
 
             string specification_name( get_obj( ).child_List( ).Class( ).Name( ) + '_' );
@@ -6505,11 +6549,16 @@ void Meta_Model::impl::impl_Generate( )
       if( !get_obj( ).Created( ) )
          get_obj( ).Create_Module( );
 
+      output_progress_message( " " );
+
       set_system_variable( model_key, "" );
    }
    catch( ... )
    {
+      output_progress_message( " " );
+
       set_system_variable( model_key, "" );
+
       throw;
    }
    // [<finish Generate_impl>]
