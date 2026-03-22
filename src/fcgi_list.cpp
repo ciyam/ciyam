@@ -308,7 +308,7 @@ void setup_list_fields( list_source& list,
       if( !fld.pfield.empty( ) )
          value_id += "." + fld.pfield;
 
-      if( field_id != c_key_field && field_id != c_row_field )
+      if( ( field_id != c_key_field ) && ( field_id != c_row_field ) )
       {
          map< string, string > extra_data;
 
@@ -412,7 +412,7 @@ void setup_list_fields( list_source& list,
 
             // NOTE: If the first field was hidden and indexed then user selectable ordering will not
             // be permitted (as it is being assumed that this field is being used for fixed ordering).
-            if( i == 0 && fld.indexed && ( fld.index_count == 1 ) )
+            if( ( i == 0 ) && fld.indexed && ( fld.index_count == 1 ) )
                allow_sorting = false;
          }
 
@@ -421,6 +421,7 @@ void setup_list_fields( list_source& list,
             istringstream isstr( extra_data[ c_list_field_extra_pstate ] );
 
             uint64_t flag;
+
             isstr >> hex >> flag;
 
             list.pstate_fields.insert( make_pair( value_id, flag ) );
@@ -739,6 +740,7 @@ void output_list_form( ostream& os,
       istringstream isstr( extras.find( c_list_type_extra_cpstate )->second );
 
       uint64_t flag;
+
       isstr >> hex >> flag;
 
       if( !( parent_state & flag ) )
@@ -2783,7 +2785,8 @@ void output_list_form( ostream& os,
    bool display_row_numbers = false;
    bool display_dummy_checks = false;
 
-   if( list_type != c_list_type_home && !sess_info.is_read_only && !sess_info.user_id.empty( ) )
+   if( ( list_type != c_list_type_home )
+    && !sess_info.is_read_only && !sess_info.user_id.empty( ) )
    {
       if( !is_printable )
       {
@@ -2825,6 +2828,8 @@ void output_list_form( ostream& os,
    int total_display_cols = 0;
    int ignore_encrypted_col = -1;
 
+   string first_sort_id;
+
    map< string, string > display_names;
    vector< numeric > print_total_values;
    vector< size_t > print_total_col_nums;
@@ -2848,7 +2853,7 @@ void output_list_form( ostream& os,
       if( source.field_ids[ i ] == source.ignore_encrypted_field )
          ignore_encrypted_col = col_num;
 
-      if( source.field_ids[ i ] != c_key_field && source.field_ids[ i ] != c_row_field )
+      if( ( source.field_ids[ i ] != c_key_field ) && ( source.field_ids[ i ] != c_row_field ) )
          col_num++;
 
       if( source.hidden_fields.count( source.value_ids[ i ] ) )
@@ -2858,18 +2863,21 @@ void output_list_form( ostream& os,
        && !( parent_state & source.pstate_fields.find( source.value_ids[ i ] )->second ) )
       {
          display_offset++;
+
          continue;
       }
 
       if( is_printable && source.non_print_fields.count( source.value_ids[ i ] ) )
       {
          display_offset++;
+
          continue;
       }
 
       if( !is_printable && source.print_only_fields.count( source.value_ids[ i ] ) )
       {
          display_offset++;
+
          continue;
       }
 
@@ -2880,6 +2888,7 @@ void output_list_form( ostream& os,
          print_summary_value_ids.push_back( source.value_ids[ i ] );
 
          display_offset++;
+
          continue;
       }
 
@@ -2893,6 +2902,7 @@ void output_list_form( ostream& os,
       }
 
       string class_tag( "list" );
+
       if( source.force_right_fields.count( source.value_ids[ i ] ) )
          class_tag += " right";
       else if( source.force_center_fields.count( source.value_ids[ i ] ) )
@@ -2930,8 +2940,16 @@ void output_list_form( ostream& os,
 
       if( !is_printable && ( list_type != c_list_type_home ) )
       {
-         if( source.sort_fields.count( source.field_ids[ i ] ) )
+         // NOTE: If a hidden field is followed by a FK then any
+         // further FKs can also be mistaken as being "sortable"
+         // so remember the "first_sort_id" to prevent incorrect
+         // sort selects appearing.
+         if( ( first_sort_id != source.field_ids[ i ] )
+          && source.sort_fields.count( source.field_ids[ i ] ) )
          {
+            if( first_sort_id.empty( ) )
+               first_sort_id = source.field_ids[ i ];
+
             os << c_nbsp << "<a href=\"javascript:";
 
             if( use_url_checksum )
