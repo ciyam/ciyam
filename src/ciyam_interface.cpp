@@ -90,6 +90,7 @@ const int c_pid_timeout = 2500;
 const int c_pubkey_timeout = 1000;
 const int c_connect_timeout = 2500;
 const int c_greeting_timeout = 2500;
+const int c_connect_retry_timeout = 3500;
 
 const char* const c_unlock = "unlock";
 
@@ -183,6 +184,8 @@ ssl_socket g_socket;
 tcp_socket g_socket;
 #  endif
 #endif
+
+bool g_is_first = true;
 
 bool g_has_connected = false;
 
@@ -844,6 +847,7 @@ void timeout_handler::on_start( )
                if( t != mii->second->sio_mod )
                {
                   has_changed = true;
+
                   break;
                }
             }
@@ -1584,37 +1588,43 @@ void request_handler::process_request( )
 #ifdef FCGI_UI_LOG_CONNECTIONS
                   LOG_TRACE( "(connecting for " + raddr + ")" );
 #endif
+                  if( g_is_first )
+                  {
+                     msleep( 500 );
+
+                     g_is_first = false;
+                  }
 
                   bool has_connected = p_session_info->p_socket->connect( address, c_connect_timeout );
 
                   // NOTE: Will pause and then attempt to connect once again before reporting that
                   // the application server is unavailable (this is because the first connect will
                   // sometimes fail after a system restore due to the new server socket acceptor).
-                  // To prevent unnecessary delays initially only wait for 0.5s but if connect has
-                  // failed again will then wait for another 2.5s before a final retry (after that
+                  // To prevent unnecessary delays initially only wait for 1.5s but if connect has
+                  // failed again will then wait for another 3.5s before a final retry (after that
                   // the user will need to manually attempt to reconnect).
                   if( !has_connected )
                   {
                      p_session_info->p_socket->close( );
 
-                     msleep( 500 );
+                     msleep( 1500 );
 
                      DEBUG_TRACE( "[re-opening socket]" );
 
                      if( p_session_info->p_socket->open( ) )
                      {
-                        has_connected = p_session_info->p_socket->connect( address, c_connect_timeout );
+                        has_connected = p_session_info->p_socket->connect( address, c_connect_retry_timeout );
 
                         if( !has_connected )
                         {
                            p_session_info->p_socket->close( );
 
-                           msleep( 2500 );
+                           msleep( 3500 );
 
                            DEBUG_TRACE( "[re-opening socket again]" );
 
                            if( p_session_info->p_socket->open( ) )
-                              has_connected = p_session_info->p_socket->connect( address, c_connect_timeout );
+                              has_connected = p_session_info->p_socket->connect( address, c_connect_retry_timeout );
                         }
                      }
                   }
