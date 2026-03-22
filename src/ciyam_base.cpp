@@ -5545,6 +5545,7 @@ bool has_identity( bool* p_is_encrypted )
 void set_identity( const string& info, const char* p_encrypted_sid )
 {
    bool run_init_script = false;
+   bool has_unlocked_sid = false;
 
    // NOTE: Empty code block for scope purposes.
    {
@@ -5717,6 +5718,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
             set_sid( sid );
 
+            has_unlocked_sid = true;
+
             if( !p_encrypted_sid )
                g_encrypted_identity = false;
 
@@ -5743,7 +5746,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
       clear_key( sid );
 
-      if( p_encrypted_sid && g_encrypted_identity )
+      if( p_encrypted_sid && g_encrypted_identity && has_unlocked_sid )
       {
          string user( get_environment_variable( c_env_var_ciyam_user ) );
 
