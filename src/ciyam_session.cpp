@@ -7508,6 +7508,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool is_application = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_application );
          string application_name( get_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_application_name ) );
 
+         if( !is_script && !is_server )
+         {
+            if( application_name.empty( ) )
+               application_name = get_raw_session_variable( get_special_var_name( e_special_var_storage ) );
+
+            // NOTE: If no default storage is
+            // present then will assume Meta.
+            if( application_name.empty( ) )
+               application_name = c_meta_model_name;
+         }
+
          possibly_expected_error = true;
 
          unsigned int num = c_cmd_ciyam_session_system_log_tail_lines_default;
@@ -7523,28 +7534,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !log_file_name.empty( ) )
             log_file_name += '/';
 
-         if( is_script || is_server )
+         if( is_application )
+            log_file_name += application_name;
+         else if( is_script || is_server )
             log_file_name += ( is_script ? c_ciyam_script : c_ciyam_server );
-         else if( is_application )
-         {
-            if( !application_name.empty( ) )
-               log_file_name += application_name;
-            else
-               log_file_name += c_meta_model_name;
-         }
          else
          {
-            if( is_backup || is_restore || application_name.empty( ) )
-               log_file_name += c_meta_app_directory;
-            else
-               log_file_name += lower( application_name );
+            log_file_name += lower( application_name );
 
             log_file_name += '/';
 
-            if( is_backup || is_restore )
-               log_file_name += ( is_backup ? c_backup : c_restore );
-            else
+            if( !is_backup && !is_restore )
                log_file_name += c_ciyam_interface;
+            else
+               log_file_name += ( is_backup ? c_backup : c_restore );
          }
 
          log_file_name += c_log_file_ext;
@@ -7560,6 +7563,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             if( i > 0 )
                response += '\n';
+
             response += log_lines[ i ];
          }
       }
