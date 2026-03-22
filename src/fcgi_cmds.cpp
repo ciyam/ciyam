@@ -1736,7 +1736,7 @@ bool populate_list_info( list_source& list,
    {
       int sort_field = atoi( listsort.substr( 0, 1 ).c_str( ) );
 
-      if( sort_field > 0 && sort_field <= ( int )list.index_fields.size( ) )
+      if( ( sort_field > 0 ) && ( sort_field <= ( int )list.index_fields.size( ) ) )
       {
          if( listsort[ 1 ] == 'R' )
             is_reverse = true;
