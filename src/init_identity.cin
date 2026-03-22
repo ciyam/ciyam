@@ -23,10 +23,10 @@ MNEMONICS=$OUTPUT
 #Default Entropy: ($OUTPUT)\n$MNEMONICS
 #
 CIYAM_PWD_APPEND_LEN=32
-; IMPORTANT: Do not remove space.
-CIYAM_PASSWORD_APPEND= $MNEMONICS
+; IMPORTANT: Do not remove spaces.
+CIYAM_PASSWORD_APPEND=  $MNEMONICS
 ;
-DATA_AND_PUBKEY=@password:Enter Password and optional alternative Mnemonics\n(with two spaces as a separator if password has spaces):$EXT_PUBKEY
+DATA_AND_PUBKEY=@password:Enter password and optional alternative mnemonics\n(with two spaces as a separator if password has spaces):$EXT_PUBKEY
 ;
 ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
 .encrypt -harden_key -pwd_and_data $ARGS
@@ -39,6 +39,10 @@ LOCKED=%COMBINED:1%
 .identity $ARGS $ENCRYPTED
 COMBINED=@repstr:!/\n:$OUTPUT
 UNLOCKED=%COMBINED:1%
+@ifeq "$LOCKED" "$UNLOCKED"
+#
+#Error: Either password is missing or incorrect alternative mnemonics were provided.
+@else
 #
 #Identity: $UNLOCKED
 ;
@@ -54,5 +58,6 @@ APP_DIR=@lower:$STORAGE
 ~echo -n $LOCKED > $WEBDIR/$APP_DIR/encrypted.txt
 ~echo -n $UNLOCKED > $WEBDIR/$APP_DIR/identity.txt
 ;
+@endif
 @endif
 @endif
