@@ -94,7 +94,7 @@ void log_trace_message( const string& message )
 
    ofstream outf( c_log_file, ios::out | ios::app );
 
-   outf << '[' << date_time::local( ).as_string( e_time_format_hhmm, true ) << "] " << message << '\n';
+   outf << '[' << date_time::local( ).as_string( e_time_format_hhmmss, true ) << "] " << message << '\n';
 }
 
 void get_server_sid( string& sid )
