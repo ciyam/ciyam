@@ -1590,7 +1590,7 @@ void request_handler::process_request( )
 #endif
                   if( g_is_first )
                   {
-                     msleep( 500 );
+                     msleep( 250 );
 
                      g_is_first = false;
                   }
@@ -1601,8 +1601,8 @@ void request_handler::process_request( )
                   // the application server is unavailable (this is because the first connect will
                   // sometimes fail after a system restore due to the new server socket acceptor).
                   // To prevent unnecessary delays initially only wait for 1.5s but if connect has
-                  // failed again will then wait for another 3.5s before a final retry (after that
-                  // the user will need to manually attempt to reconnect).
+                  // failed again will then wait for another 3.5s with a final wait of 4.75s after
+                  // which the user will need to manually attempt to reconnect).
                   if( !has_connected )
                   {
                      p_session_info->p_socket->close( );
@@ -1625,6 +1625,18 @@ void request_handler::process_request( )
 
                            if( p_session_info->p_socket->open( ) )
                               has_connected = p_session_info->p_socket->connect( address, c_connect_retry_timeout );
+
+                           if( !has_connected )
+                           {
+                              p_session_info->p_socket->close( );
+
+                              msleep( 4750 );
+
+                              DEBUG_TRACE( "[re-opening socket final]" );
+
+                              if( p_session_info->p_socket->open( ) )
+                                 has_connected = p_session_info->p_socket->connect( address, c_connect_retry_timeout );
+                           }
                         }
                      }
                   }
