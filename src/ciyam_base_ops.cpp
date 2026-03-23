@@ -1080,10 +1080,10 @@ string construct_sql_select(
    if( row_limit )
       sql += " LIMIT " + to_string( row_limit );
 
-   // NOTE: If no query or text search info was supplied then the fixed and paging fields will be
+   // NOTE: If order fields, fixed field values or paging field values were provided then these are
    // checked against each table index to determine if an index covers all of them. If one is found
    // then force the query to use this index (to ensure the RDBMS optimiser does not get it wrong).
-   if( !use_index_fields.empty( ) )
+   if( !order_info.empty( ) || !use_index_fields.empty( ) )
    {
       vector< string > indexes;
 
