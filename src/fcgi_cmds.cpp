@@ -2145,6 +2145,17 @@ bool populate_list_info( list_source& list,
 
             for( size_t i = 0; i < ( list.lici->second )->parents.size( ); i++ )
             {
+               // NOTE: Skips any "no anon" parents if is user is "anon".
+               if( !( list.lici->second )->parents[ i ].extra.empty( ) )
+               {
+                  set< string > extras;
+
+                  split( ( list.lici->second )->parents[ i ].extra, extras, '+' );
+
+                  if( sess_info.user_key.empty( ) && extras.count( c_field_extra_no_anon ) )
+                     continue;
+               }
+
                data_container parent_row_data;
 
                if( !( list.lici->second )->parents[ i ].operations.count( c_operation_restricted ) )
@@ -2218,6 +2229,7 @@ bool populate_list_info( list_source& list,
                    &( list.lici->second )->parents[ i ].skey ) )
                   {
                      okay = false;
+
                      break;
                   }
                }
