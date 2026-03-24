@@ -1555,7 +1555,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                   size_t msg_prefix_length( strlen( c_response_message_prefix ) );
 
-                  if( ( response.length( ) > msg_prefix_length )
+                  if( ( response.length( ) >= msg_prefix_length )
                    && ( response.substr( 0, msg_prefix_length ) == string( c_response_message_prefix ) ) )
                   {
                      is_message = true;
