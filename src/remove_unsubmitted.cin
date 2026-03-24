@@ -57,6 +57,8 @@ SUBMIT_FILE=@files:$WEB_APP_PATH:ui_%IDENTITY%_submit
 ;
 @:FINISHED_LOG_FILES
 ;
+.session_variable @deque complete
+;
 @endif
 ;
 @endif
