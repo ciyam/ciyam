@@ -110,6 +110,7 @@ void export_data( ostream& outs,
             if( tests.find( class_id )->second.count( c_key_field ) )
             {
                next_value = key;
+
                test_expr = tests.find( class_id )->second.find( c_key_field )->second;
             }
             else if( tests.find( class_id )->second.count( all_field_data[ i ].id ) )
@@ -131,13 +132,13 @@ void export_data( ostream& outs,
 
                bool is_negative = false;
 
-               if( !test_expr.empty( ) && test_expr[ 0 ] == '!' )
+               if( !test_expr.empty( ) && ( test_expr[ 0 ] == '!' ) )
                {
                   is_negative = true;
                   test_expr.erase( 0, 1 );
                }
 
-               if( !test_expr.empty( ) && test_expr[ 0 ] == '=' )
+               if( !test_expr.empty( ) && ( test_expr[ 0 ] == '=' ) )
                {
                   test_expr.erase( 0, 1 );
 
@@ -236,6 +237,7 @@ void export_data( ostream& outs,
                }
 
                next_value.erase( );
+
                need_to_repeat = true;
             }
             else
@@ -254,12 +256,14 @@ void export_data( ostream& outs,
             if( !will_be_exported[ class_id ].count( key ) )
             {
                will_be_exported[ class_id ].insert( key );
+
                for( size_t i = 0; i < base_class_info.size( ); i++ )
                   will_be_exported[ base_class_info[ i ].first ].insert( key );
 
                next_pass.push_back( make_pair( class_id, key ) );
 
                partial_export[ class_id ].insert( key );
+
                for( size_t i = 0; i < base_class_info.size( ); i++ )
                   partial_export[ base_class_info[ i ].first ].insert( key );
             }
@@ -276,6 +280,7 @@ void export_data( ostream& outs,
                outs << "  <name>" << class_name << '\n';
 
                string field_info( "  <fields>" + to_string( c_key_field ) );
+
                for( size_t i = 0; i < all_field_data.size( ); i++ )
                {
                   if( all_field_data[ i ].transient )
@@ -300,13 +305,15 @@ void export_data( ostream& outs,
             if( !need_to_repeat )
             {
                exported_records[ class_id ].insert( key );
+
                for( size_t i = 0; i < base_class_info.size( ); i++ )
                   exported_records[ base_class_info[ i ].first ].insert( key );
             }
 
-            if( time( 0 ) - ts >= 10 )
+            if( ( time( 0 ) - ts ) >= 10 )
             {
                ts = time( 0 );
+
                // FUTURE: This message should be handled as a server string message.
                handler.output_progress( "Processed " + to_string( total ) + " records..." );
             }
@@ -517,12 +524,14 @@ void create_new_package_file( const string& module_id, const string& filename,
                      field_skip_values[ field_names[ i ] ] = ( *p_skip_fields )[ mclass ][ sfield ];
 
                   field_names.erase( field_names.begin( ) + i );
+
                   --i;
                }
             }
          }
 
          string output_fields( forced_field_list ? "!" : "" );
+
          output_fields += fields[ 0 ] + ',' + join( field_names );
 
          writer.write_attribute( c_attribute_fields, output_fields );
@@ -542,6 +551,7 @@ void create_new_package_file( const string& module_id, const string& filename,
             replace( next_record, "\1", "\\\\" );
 
             vector< string > field_values;
+
             split( next_record, field_values );
 
             if( field_values.size( ) != fields.size( ) )
@@ -595,10 +605,12 @@ void create_new_package_file( const string& module_id, const string& filename,
                   if( field_skip_values.count( field_names[ i ] ) && next_value == field_skip_values[ field_names[ i ] ] )
                   {
                      skip_record = true;
+
                      break;
                   }
 
                   output_values += ',';
+
                   output_values += escaped( next_value, ",\"", '\\', "rn\r\n" );
                }
 
@@ -681,6 +693,7 @@ string get_meta_class_field_list( const string& mclass )
       if( skip_fields.count( mclass ) && skip_fields[ mclass ].count( sfield ) )
       {
          field_names.erase( field_names.begin( ) + i );
+
          --i;
       }
       else
@@ -702,6 +715,7 @@ void export_package( const string& module, const string& mclass,
    string last_class_id;
 
    map< string, int > all_class_ids;
+
    deque< pair< string, string > > next_pass;
 
    map< string, set< string > > partial_export;
@@ -710,6 +724,7 @@ void export_package( const string& module, const string& mclass,
    map< string, set< string > > exported_children;
 
    string module_id( loaded_module_id( module ) );
+
    string class_id( get_class_id_for_id_or_name( module_id, mclass ) );
 
    map< string, map< string, string > > skip_fields;
@@ -823,6 +838,7 @@ void export_package( const string& module, const string& mclass,
          if( pos != string::npos )
          {
             field_info = cclass.substr( pos );
+
             cclass.erase( pos );
          }
 
@@ -830,7 +846,7 @@ void export_package( const string& module, const string& mclass,
          {
             cclass = resolve_class_id( module_id, cclass, xinfo );
 
-            if( !field_info.empty( ) && field_info[ 0 ] == '#' )
+            if( !field_info.empty( ) && ( field_info[ 0 ] == '#' ) )
             {
                pos = field_info.find( ';' );
 
@@ -909,6 +925,7 @@ void export_package( const string& module, const string& mclass,
       all_class_ids.insert( make_pair( get_class_id_for_id_or_name( module_id, classes[ i ] ), i ) );
 
    vector< string > all_keys;
+
    split( keys, all_keys );
 
    if( all_keys.empty( ) )
@@ -1004,6 +1021,7 @@ void import_package( const string& module,
       else
       {
          has_key_list_file = true;
+
          map_file_name = replace_info.substr( 1 ) + ".map";
 
          buffer_file_lines( replace_info.substr( 1 ), replace_items );
@@ -1049,6 +1067,7 @@ void import_package( const string& module,
             bool check_exists = ( replace_with[ 0 ] == '?' );
 
             string check_for( replace_with.substr( 1, pos - 1 ) );
+
             replace_with.erase( 0, pos + 1 );
 
             if( !search_replaces_map.count( check_for ) )
@@ -1113,6 +1132,7 @@ void import_package( const string& module,
    size_t transaction_id = next_transaction_id( ) + 1;
 
    set< string > keys_updating;
+
    map< string, string > keys_created;
    map< string, set< string > > prefixed_class_keys;
 
@@ -1140,6 +1160,7 @@ void import_package( const string& module,
          try
          {
             vector< string > fields;
+
             split( field_list, fields );
 
             // NOTE: Check that field names have not been repeated (apart from "ignore").
@@ -1165,6 +1186,7 @@ void import_package( const string& module,
                get_foreign_field_and_class_ids( handle, "", foreign_field_and_class_ids );
 
             vector< pair< string, string > > base_class_info;
+
             get_base_class_info( handle, "", base_class_info );
 
             if( base_class_info.empty( ) )
@@ -1174,7 +1196,7 @@ void import_package( const string& module,
 
             while( reader.has_read_attribute( c_attribute_record, next_record ) )
             {
-               if( time( 0 ) - ts >= 10 )
+               if( ( time( 0 ) - ts ) >= 10 )
                {
                   ts = time( 0 );
 
@@ -1202,6 +1224,7 @@ void import_package( const string& module,
                }
 
                vector< string > field_values;
+
                split( next_record, field_values, ',', '\\', false );
 
                if( field_values.size( ) != fields.size( ) )
@@ -1279,6 +1302,7 @@ void import_package( const string& module,
                      original_key.erase( 0, pos + 1 );
 
                      string prefix_replace;
+
                      if( pos > 1 )
                         prefix_replace = next_key.substr( 1, pos - 1 );
 
@@ -1328,6 +1352,7 @@ void import_package( const string& module,
                      if( rc != e_instance_fetch_rc_okay )
                      {
                         next_log_line = c_cmd_create;
+
                         op_instance_create( handle, "", key_value, false );
                      }
                      else if( new_only && !keys_created.count( key_value ) && !keys_updating.count( key_value ) )
@@ -1336,7 +1361,9 @@ void import_package( const string& module,
                      else
                      {
                         is_update = true;
+
                         next_log_line = c_cmd_update;
+
                         op_instance_update( handle, "", key_value, "", false );
                      }
 
@@ -1365,6 +1392,7 @@ void import_package( const string& module,
                                  if( skip_fields[ next_cid ][ fields[ i ] ].empty( ) )
                                  {
                                     skip_field = true;
+
                                     break;
                                  }
                               }
@@ -1383,6 +1411,7 @@ void import_package( const string& module,
                         if( !using_verbose_logging )
                         {
                            string method_name_and_args( "get " );
+
                            method_name_and_args += fields[ i ];
 
                            value = execute_object_command( handle, "", method_name_and_args );
@@ -1455,6 +1484,7 @@ void import_package( const string& module,
          catch( ... )
          {
             destroy_object_instance( handle );
+
             throw;
          }
       }
@@ -1476,10 +1506,12 @@ void import_package( const string& module,
    catch( ... )
    {
       transaction_rollback( );
+
       throw;
    }
 
    transaction_log_command( log_lines );
+
    transaction_commit( );
 
    if( has_key_list_file )
@@ -1493,6 +1525,7 @@ void import_package( const string& module,
       }
 
       string new_file_name( replace_info.substr( 1 ) + ".new" );
+
       ofstream outf( new_file_name.c_str( ) );
 
       for( map< string, string >::iterator i = keys_created.begin( ); i != keys_created.end( ); ++i )
@@ -1591,6 +1624,7 @@ void update_package( const string& name )
       string report_file( name + ".report.txt" );
 
       ofstream outf( report_file.c_str( ) );
+
       if( !outf )
          throw runtime_error( "unable to open file '" + report_file + "' for output in update_package" );
 
@@ -1619,8 +1653,9 @@ void update_package( const string& name )
             {
                if( first )
                {
-                  outf << "\nMissing Keys:" << endl;
                   first = false;
+
+                  outf << "\nMissing Keys:" << endl;
                }
 
                outf << key_value << endl;
