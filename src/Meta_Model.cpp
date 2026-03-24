@@ -4097,7 +4097,7 @@ void Meta_Model::impl::impl_Generate( )
 
             string type_key( get_obj( ).child_List( ).Type( ).get_key( ) );
 
-            if( type_key == "normal" || type_key == "additional" )
+            if( ( type_key == "normal" ) || ( type_key == "additional" ) )
             {
                specification_name += "list";
 
@@ -4135,6 +4135,7 @@ void Meta_Model::impl::impl_Generate( )
             else if( type_key == "admin" )
             {
                list_type = "admin";
+
                specification_name += "admin_list";
             }
             else if( type_key == "user" || type_key == "non_user" )
@@ -4142,11 +4143,13 @@ void Meta_Model::impl::impl_Generate( )
                if( type_key == "user" )
                {
                   list_type = "user";
+
                   specification_name += "user_list";
                }
                else
                {
                   list_type = "nonuser";
+
                   specification_name += "nonuser_list";
                }
 
@@ -4384,6 +4387,7 @@ void Meta_Model::impl::impl_Generate( )
                             make_pair( get_obj( ).child_List( ).Class( ).child_Field( ).Id( ), make_pair( false, false ) ) );
 
                            get_obj( ).child_List( ).Class( ).child_Field( ).iterate_stop( );
+
                            break;
                         }
                      } while( get_obj( ).child_List( ).Class( ).child_Field( ).iterate_next( ) );
@@ -6046,6 +6050,7 @@ void Meta_Model::impl::impl_Generate( )
             // NOTE: When looking for general filters if the class is aliased then need to
             // instead use the Source Class.
             Meta_Class* p_sclass( &get_obj( ).child_List( ).Class( ) );
+
             if( !is_null( p_sclass->Source_Class( ) ) )
                p_sclass = &p_sclass->Source_Class( );
 
@@ -6086,6 +6091,7 @@ void Meta_Model::impl::impl_Generate( )
             if( !is_null( get_obj( ).child_List( ).Class( ).Source_Model( ) ) )
             {
                list_binfo = get_obj( ).child_List( ).Class( ).Source_Model( ).Name( );
+
                list_binfo += ":" + get_obj( ).child_List( ).Class( ).Name( );
             }
 
@@ -6229,22 +6235,27 @@ void Meta_Model::impl::impl_Generate( )
                   if( !column_index_info.count( column_ids[ i ] ) )
                      continue;
 
+                  bool next_is_fk = false;
+
+                  if( ( i < ( column_ids.size( ) - 1 ) )
+                   && !column_index_info.count( column_ids[ i + 1 ] ) )
+                     next_is_fk = true;
+
                   string index_info( parent_field_id );
 
                   for( size_t j = 0; j < rfield_ids.size( ); j++ )
                   {
                      if( !index_info.empty( ) )
                         index_info += ",";
+
                      index_info += rfield_ids[ j ];
                   }
-
-                  bool is_unique = false;
-                  bool is_indexed = false;
 
                   for( size_t j = i; j < column_ids.size( ); j++ )
                   {
                      if( !index_info.empty( ) )
                         index_info += ",";
+
                      index_info += column_ids[ j ];
 
                      if( indexes.count( index_info ) )
@@ -6254,7 +6265,12 @@ void Meta_Model::impl::impl_Generate( )
 
                         column_index_fcount[ column_ids[ i ] ] = j - i + 1;
 
-                        if( indexes[ index_info ] )
+                        // NOTE: Stop if found a unique index or
+                        // if the next column is a FK (as for UI
+                        // purposes a FK value would not be very
+                        // useful even if it follows as the next
+                        // column in a unique index).
+                        if( next_is_fk || indexes[ index_info ] )
                            break;
                      }
                   }
@@ -6357,21 +6373,25 @@ void Meta_Model::impl::impl_Generate( )
       }
 
       string all_class_keys, all_class_names;
+
       get_obj( ).Get_Acyclic_Class_List( all_class_keys, all_class_names, false );
 
       string aname( get_obj( ).Name( ) + ".acyclic.lst" );
 
       ofstream outa( aname.c_str( ) );
+
       if( !outa )
          throw runtime_error( "unexpected error opening '" + aname + "' for output" );
 
       vector< string > class_name_list;
+
       split_string( all_class_names, class_name_list );
 
       for( size_t i = 0; i < class_name_list.size( ); i++ )
          outa << class_name_list[ i ] << '\n';
 
       outa.flush( );
+
       if( !outa.good( ) )
          throw runtime_error( "file output stream '" + aname + "' is bad" );
 
@@ -6404,14 +6424,17 @@ void Meta_Model::impl::impl_Generate( )
       }
 
       string init_class_keys, init_class_names;
+
       get_obj( ).Get_Acyclic_Class_List( init_class_keys, init_class_names, true );
 
       vector< string > class_key_list;
+
       split_string( init_class_keys, class_key_list );
 
       string lname( get_obj( ).Name( ) + ".init.lst" );
 
       ofstream outl( lname.c_str( ) );
+
       if( !outl )
          throw runtime_error( "unexpected error opening '" + lname + "' for output" );
 
@@ -6429,6 +6452,7 @@ void Meta_Model::impl::impl_Generate( )
             string columns( "@key," );
 
             bool first_row = true;
+
             vector< string > values;
 
             map< string, bool > mandatory_fk_fields;
@@ -6439,6 +6463,7 @@ void Meta_Model::impl::impl_Generate( )
                Meta_Initial_Record& initial_Record( get_obj( ).child_Class( ).child_Initial_Record( ) );
 
                string next_row( initial_Record.Key( ) + "," );
+
                if( initial_Record.child_Initial_Record_Value( ).iterate_forwards( ) )
                {
                   bool is_first_column = true;
@@ -6473,6 +6498,7 @@ void Meta_Model::impl::impl_Generate( )
                      if( ( next_value == c_admin_password ) || ( next_value == c_admin_user_hash ) )
                      {
                         Meta_User user;
+
                         user.perform_fetch( "admin" );
 
                         if( next_value == c_admin_password )
@@ -6490,6 +6516,7 @@ void Meta_Model::impl::impl_Generate( )
                         next_row += next_value;
                      else
                         next_row += "\"" + escaped_string( next_value, "\"", '"' ) + "\"";
+
                   } while( initial_Record.child_Initial_Record_Value( ).iterate_next( ) );
                }
 
@@ -6506,6 +6533,7 @@ void Meta_Model::impl::impl_Generate( )
                throw runtime_error( "unexpected error opening file '" + iname + "' for output" );
 
             vector< string > column_names;
+
             split( columns, column_names );
 
             // NOTE: A mandatory FK field could be provided with a value from a "default_fk_global"
@@ -6536,12 +6564,14 @@ void Meta_Model::impl::impl_Generate( )
                outi << values[ i ] << '\n';
 
             outi.flush( );
+
             if( !outi.good( ) )
                throw runtime_error( "file output stream '" + iname + "' is bad" );
          }
       }
 
       outl.flush( );
+
       if( !outl.good( ) )
          throw runtime_error( "file output stream '" + lname + "' is bad" );
 
