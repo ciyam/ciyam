@@ -4539,6 +4539,11 @@ bool perform_instance_iterate( class_base& instance,
          string order_field_name( instance.get_order_field_name( ) );
          string owner_field_name( instance.get_owner_field_name( ) );
 
+         // NOTE: If class has neither group or level security fields
+         // then the "C_Sec_" value will always be equal to "0".
+         if( group_field_name.empty( ) && level_field_name.empty( ) )
+            sec_marker = c_false_value;
+
          string sec( get_session_variable( get_special_var_name( e_special_var_sec ) ) );
          string uid( get_session_variable( get_special_var_name( e_special_var_uid ) ) );
 
@@ -4915,6 +4920,9 @@ bool perform_instance_iterate( class_base& instance,
 
             if( instance_accessor.p_sql_data( ) )
                delete instance_accessor.p_sql_data( );
+
+            if( sec_marker == c_false_value )
+               sec_marker.erase( );
 
             if( !sec_marker.empty( ) )
             {
