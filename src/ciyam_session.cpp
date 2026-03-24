@@ -5619,6 +5619,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string include_info( get_parm_val( parameters, c_cmd_ciyam_session_perform_package_export_include_info ) );
 
          export_package( module, mclass, keys, exclude_info, skip_field_info, test_info, include_info, filename );
+
+         handler.output_progress( " " );
       }
       else if( command == c_cmd_ciyam_session_perform_package_import )
       {
@@ -5638,10 +5640,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          try
          {
             import_package( module, uid, dtm, filename, key_prefix, replace_info, skip_field_info, new_only, for_remove );
+
+            handler.output_progress( " " );
          }
          catch( exception& )
          {
+            handler.output_progress( " " );
+
             possibly_expected_error = true;
+
             throw;
          }
       }
@@ -5650,6 +5657,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string name( get_parm_val( parameters, c_cmd_ciyam_session_perform_package_update_name ) );
 
          update_package( name );
+
+         handler.output_progress( " " );
       }
       else if( command == c_cmd_ciyam_session_session_kill )
       {
