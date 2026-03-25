@@ -1755,9 +1755,11 @@ bool populate_list_info( list_source& list,
       else
          throw runtime_error( "unexpected out of range sort field" );
    }
+   else if( listsort == "R" )
+      is_reverse = true;
    else
    {
-      // NOTE: If ordered then assume that the first indexed column has been used
+      // NOTE: If is ordered then assume that the first indexed column has been used
       // (if "ordered" then no index field information exists so just use the field).
       if( !list.first_index_field.empty( ) )
       {
@@ -2099,7 +2101,7 @@ bool populate_list_info( list_source& list,
          }
 
          if( sort_manually )
-            sort_row_data_manually( list.row_data );
+            sort_row_data_manually( list.row_data, false, is_reverse );
 
          if( !( list.lici->second )->dfield.empty( ) )
          {
