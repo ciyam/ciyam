@@ -2430,10 +2430,12 @@ void output_list_form( ostream& os,
                os << c_dbl_nbsp;
 
             string sel_id( source.id );
+
             sel_id += c_prnt_suffix;
             sel_id += ( '0' + i );
 
             bool is_checked = true;
+
             if( list_selections.count( sel_id ) && list_selections.find( sel_id )->second == c_false )
                is_checked = false;
 
@@ -2470,7 +2472,9 @@ void output_list_form( ostream& os,
              << sel_id << "', '' + document." << source.id << ".check" << i << ".checked );\">";
 
             string display_name;
+
             const data_container& parent_row_data = source.parent_lists[ i ];
+
             for( size_t j = 0; j < parent_row_data.size( ); j++ )
             {
                string key( parent_row_data[ j ].first );
@@ -2478,6 +2482,7 @@ void output_list_form( ostream& os,
 
                // NOTE: Remove parent version information as its not relevant for a checked operation.
                size_t pos = key.find( ' ' );
+
                if( pos != string::npos )
                   key.erase( pos );
 
@@ -2819,6 +2824,51 @@ void output_list_form( ostream& os,
          os << "  <th class=\"list\" width=\"30\" align=\"center\">#</th>\n";
    }
 
+   bool display_order_direction = false;
+
+   // NOTE: If there are no sort fields and is not a "sort no limit" style list
+   // (or using a fixed "order" field) will display (and allow changing) of the
+   // order direction (which can be useful for "key ordered" lists).
+   if( source.sort_fields.empty( )
+    && source.first_index_field.empty( )
+    && !( source.lici->second )->extras.count( c_list_type_extra_sort_no_limit ) )
+      display_order_direction = true;
+
+   if( display_order_direction )
+   {
+      os << " <th class=\"list\" width=\"20\" align=\"center\">";
+
+      os << c_nbsp << "<a href=\"javascript:";
+
+      if( use_url_checksum )
+      {
+         string checksum_values( ( is_child_list ? string( c_cmd_view )
+          : string( c_cmd_list ) ) + parent_key + ( pident.empty( ) ? oident : pident ) + user_select_key );
+
+         if( has_hashval || extras.count( c_list_type_extra_search ) )
+            checksum_values += c_hash_suffix;
+
+         string new_checksum_value( get_checksum( sess_info, checksum_values ) );
+
+         os << "query_update( '" << c_param_uselextra << "', '', true ); ";
+         os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
+
+         if( extras.count( c_list_type_extra_search ) )
+            append_hash_values_query_update( os, "", has_text_search,
+             source.id, "", list_selections, sess_info, &findinfo_and_listsrch );
+      }
+
+      os << "query_update( '" << source.id << c_info_suffix << "', "
+       "'', true ); query_update( '" << source.id << c_sort_suffix << "', '";
+
+      if( source.is_reverse )
+         os << "F' );\"><img src=\"sort_reverse.png\" border=\"0\"></a>";
+      else
+         os << "R' );\"><img src=\"sort_forward.png\" border=\"0\"></a>";
+
+      os << "</th>\n";
+   }
+
    int col_num = 0;
    int special_col = -1;
    int filename_col = -1;
@@ -3002,6 +3052,7 @@ void output_list_form( ostream& os,
    size_t row = 0, row_num = 0;
 
    string special_value;
+
    vector< string > final_subtotals;
 
    for( size_t i = 0; i < source.row_data.size( ); i++ )
@@ -3065,9 +3116,11 @@ void output_list_form( ostream& os,
          row_class_suffix = "highlight1";
 
       string checked;
+
       map< string, string >::const_iterator rci( source.row_errors.find( key ) );
 
       vector< string > columns;
+
       raw_split( source.row_data[ i ].second, columns );
 
       size_t column = 0;
@@ -3096,7 +3149,9 @@ void output_list_form( ostream& os,
          else if( source_field_id == c_row_field )
          {
             ostringstream osstr;
+
             osstr << ifmt( ( int )( log10( ( float )source.row_data.size( ) ) ) + 1 ) << ( i + 1 );
+
             cell_data = osstr.str( );
          }
          else
@@ -3207,6 +3262,9 @@ void output_list_form( ostream& os,
                      if( display_row_numbers )
                         osxs << "  <td class=\"list\" width=\"30\" align=\"center\">" << c_nbsp << "</td>\n";
 
+                     if( display_order_direction )
+                        osxs << " <td class=\"list\" width=\"20\" align=\"center\">" << c_nbsp << "</td>\n";
+
                      osxs << "  <td>";
 
                      // FUTURE: Rather than using the bold tag a different style tag should
@@ -3278,6 +3336,9 @@ void output_list_form( ostream& os,
 
                      if( display_row_numbers )
                         osx << "  <td class=\"list\" width=\"30\" align=\"center\">" << c_nbsp << "</td>\n";
+
+                     if( display_order_direction )
+                        osx << " <td class=\"list\" width=\"20\" align=\"center\">" << c_nbsp << "</td>\n";
 
                      // FUTURE: Rather than using the bold tag a different style tag should
                      // be used for each level (to support different appearances per level).
@@ -3356,6 +3417,9 @@ void output_list_form( ostream& os,
 
             if( display_row_numbers )
                os << "  <td class=\"list\" width=\"30\" align=\"center\">" << row << "</td>\n";
+
+            if( display_order_direction )
+               os << " <td class=\"list\" width=\"20\" align=\"center\">" << c_nbsp << "</td>\n";
          }
 
          if( is_printable && source.print_summary_fields.count( source_value_id ) )
