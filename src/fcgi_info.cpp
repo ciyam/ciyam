@@ -1292,9 +1292,10 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
       return false;
 }
 
-void sort_row_data_manually( data_container& row_data, bool remove_manual_links )
+void sort_row_data_manually( data_container& row_data, bool remove_manual_links, bool in_reverse )
 {
    map< string, pair< string, string > > sorted_items;
+
    for( size_t i = 0; i < row_data.size( ); i++ )
    {
       if( !remove_manual_links )
@@ -1310,6 +1311,11 @@ void sort_row_data_manually( data_container& row_data, bool remove_manual_links 
 
    for( map< string, pair< string, string > >::iterator i
     = sorted_items.begin( ), end = sorted_items.end( ); i != end; ++i )
-      row_data.push_back( make_pair( i->second.first, i->second.second ) );
+   {
+      if( !in_reverse )
+         row_data.push_back( make_pair( i->second.first, i->second.second ) );
+      else
+         row_data.push_front( make_pair( i->second.first, i->second.second ) );
+   }
 }
 
