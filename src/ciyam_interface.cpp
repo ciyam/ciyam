@@ -92,6 +92,8 @@ const int c_connect_timeout = 2500;
 const int c_greeting_timeout = 2500;
 const int c_connect_retry_timeout = 3500;
 
+const size_t c_default_connect_retries = 24;
+
 const char* const c_unlock = "unlock";
 
 const char* const c_stop_file = "ciyam_interface.stop";
@@ -319,6 +321,46 @@ void release_socket( tcp_socket* p_socket )
          break;
       }
    }
+}
+
+bool connect_socket( tcp_socket* p_socket,
+ const ip_address& address, size_t num_retries = c_default_connect_retries )
+{
+   bool rc = false;
+
+   size_t half_retries = ( num_retries / 2 );
+
+   DEBUG_TRACE( "[connecting socket]" );
+
+   if( p_socket && p_socket->open( ) )
+   {
+      rc = p_socket->connect( address, c_connect_timeout );
+
+      if( !rc )
+      {
+         // NOTE: If application server had just
+         // started up then it takes a while for
+         // its main listener to be opened.
+         for( size_t i = 0; i < num_retries; i++ )
+         {
+            p_socket->close( );
+
+            msleep( ( i < half_retries ) ? 500 : 1000 );
+
+            DEBUG_TRACE( "[reconnect attempt #" + to_string( i + 1 ) + "]" );
+
+            if( !p_socket->open( ) )
+               break;
+
+            rc = p_socket->connect( address, c_connect_retry_timeout );
+
+            if( rc )
+               break;
+         }
+      }
+   }
+
+   return rc;
 }
 
 void disconnect_socket( tcp_socket* p_socket )
@@ -1595,51 +1637,7 @@ void request_handler::process_request( )
                      g_is_first = false;
                   }
 
-                  bool has_connected = p_session_info->p_socket->connect( address, c_connect_timeout );
-
-                  // NOTE: Will pause and then attempt to connect once again before reporting that
-                  // the application server is unavailable (this is because the first connect will
-                  // sometimes fail after a system restore due to the new server socket acceptor).
-                  // To prevent unnecessary delays initially only wait for 1.5s but if connect has
-                  // failed again will then wait for another 3.5s with a final wait of 4.75s after
-                  // which the user will need to manually attempt to reconnect).
-                  if( !has_connected )
-                  {
-                     p_session_info->p_socket->close( );
-
-                     msleep( 1500 );
-
-                     DEBUG_TRACE( "[re-opening socket]" );
-
-                     if( p_session_info->p_socket->open( ) )
-                     {
-                        has_connected = p_session_info->p_socket->connect( address, c_connect_retry_timeout );
-
-                        if( !has_connected )
-                        {
-                           p_session_info->p_socket->close( );
-
-                           msleep( 3500 );
-
-                           DEBUG_TRACE( "[re-opening socket again]" );
-
-                           if( p_session_info->p_socket->open( ) )
-                              has_connected = p_session_info->p_socket->connect( address, c_connect_retry_timeout );
-
-                           if( !has_connected )
-                           {
-                              p_session_info->p_socket->close( );
-
-                              msleep( 4750 );
-
-                              DEBUG_TRACE( "[re-opening socket final]" );
-
-                              if( p_session_info->p_socket->open( ) )
-                                 has_connected = p_session_info->p_socket->connect( address, c_connect_retry_timeout );
-                           }
-                        }
-                     }
-                  }
+                  bool has_connected = connect_socket( p_session_info->p_socket, address );
 
                   if( !has_connected )
                      throw runtime_error( GDS( c_display_application_server_unavailable ) );
