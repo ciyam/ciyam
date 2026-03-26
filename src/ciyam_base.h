@@ -725,10 +725,10 @@ std::string get_udp_recv_file_chunk_info( size_t& chunk,
 void init_storage( const std::string& name,
  const std::string& directory, command_handler& cmd_handler, bool lock_for_admin );
 
+void link_storage( const std::string& name, command_handler& cmd_handler, bool lock_for_admin );
+
 void create_storage( const std::string& name,
  const std::string& directory, command_handler& cmd_handler, bool lock_for_admin );
-
-void attach_storage( const std::string& name, command_handler& cmd_handler, bool lock_for_admin );
 
 void backup_storage(
  command_handler& cmd_handler, int* p_truncation_count = 0, std::string* p_sav_db_file_names = 0 );

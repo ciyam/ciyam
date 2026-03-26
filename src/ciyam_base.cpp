@@ -2431,8 +2431,8 @@ storage_handler_index_container g_storage_handler_index;
 enum storage_op
 {
    e_storage_op_init,
-   e_storage_op_create,
-   e_storage_op_attach
+   e_storage_op_link,
+   e_storage_op_create
 };
 
 void perform_storage_op( storage_op op,
@@ -2491,7 +2491,7 @@ void perform_storage_op( storage_op op,
 
       ods::open_mode open_mode;
 
-      if( op == e_storage_op_attach )
+      if( op == e_storage_op_link )
          open_mode = ods::e_open_mode_exist;
       else if( op == e_storage_op_create )
          open_mode = ods::e_open_mode_not_exist;
@@ -10506,15 +10506,15 @@ void init_storage( const string& name,
    perform_storage_op( e_storage_op_init, name, directory, cmd_handler, lock_for_admin );
 }
 
+void link_storage( const string& name, command_handler& cmd_handler, bool lock_for_admin )
+{
+   perform_storage_op( e_storage_op_link, name, "", cmd_handler, lock_for_admin );
+}
+
 void create_storage( const string& name,
  const string& directory, command_handler& cmd_handler, bool lock_for_admin )
 {
    perform_storage_op( e_storage_op_create, name, directory, cmd_handler, lock_for_admin );
-}
-
-void attach_storage( const string& name, command_handler& cmd_handler, bool lock_for_admin )
-{
-   perform_storage_op( e_storage_op_attach, name, "", cmd_handler, lock_for_admin );
 }
 
 void backup_storage( command_handler& cmd_handler, int* p_truncation_count, string* p_sav_db_file_names )
@@ -10753,7 +10753,10 @@ bool export_storage( command_handler& cmd_handler )
 {
    bool has_exported_any = false;
 
-   if( ods::instance( ) && gtp_session->p_storage_handler->get_ods( ) )
+   if( !ods::instance( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   if( gtp_session->p_storage_handler->get_ods( ) )
    {
       if( ods::instance( )->get_transaction_level( ) )
          throw runtime_error( "cannot perform storage export whilst a transaction is active" );
@@ -11211,7 +11214,7 @@ size_t storage_cache_limit( size_t new_limit )
 
 void slice_storage_log( command_handler& cmd_handler, const string& name, const vector< string >& module_list )
 {
-   perform_storage_op( e_storage_op_attach, name, "", cmd_handler, true );
+   perform_storage_op( e_storage_op_link, name, "", cmd_handler, true );
 
    try
    {
@@ -11408,7 +11411,7 @@ void slice_storage_log( command_handler& cmd_handler, const string& name, const 
 
 void splice_storage_log( command_handler& cmd_handler, const string& name, const vector< string >& module_list )
 {
-   perform_storage_op( e_storage_op_attach, name, "", cmd_handler, true );
+   perform_storage_op( e_storage_op_link, name, "", cmd_handler, true );
 
    try
    {
@@ -11873,7 +11876,7 @@ bool storage_locked_for_admin( )
 ods& storage_ods_instance( )
 {
    if( !ods::instance( ) )
-      throw runtime_error( "storage has not been initialised" );
+      throw runtime_error( "no storage is currently linked" );
 
    return *ods::instance( );
 }
@@ -11885,7 +11888,7 @@ struct storage_ods_bulk_read::impl
       ods* p_ods = ods::instance( );
 
       if( !p_ods )
-         throw runtime_error( "unexpected null ods::instance( ) in storage_ods_bulk_read" );
+         throw runtime_error( "no storage is currently linked" );
 
       if( !p_ods->is_thread_bulk_locked( ) )
       {
@@ -11944,7 +11947,7 @@ struct storage_ods_bulk_write::impl
       ods* p_ods = ods::instance( );
 
       if( !p_ods )
-         throw runtime_error( "unexpected null ods::instance( ) in storage_ods_bulk_write" );
+         throw runtime_error( "no storage is currently linked" );
 
       if( !p_ods->is_thread_bulk_write_locked( ) )
       {
@@ -14903,7 +14906,7 @@ bool is_in_transaction( )
 void transaction_start( )
 {
    if( !ods::instance( ) )
-      throw runtime_error( "no storage is currently attached" );
+      throw runtime_error( "no storage is currently linked" );
 
    if( gtp_session->up_db.get( ) && gtp_session->transactions.empty( ) )
    {
