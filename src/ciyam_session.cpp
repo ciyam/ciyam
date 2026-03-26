@@ -5907,14 +5907,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          init_storage( name, directory, handler, admin );
       }
+      else if( command == c_cmd_ciyam_session_storage_link )
+      {
+         string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_link_name ) );
+
+         link_storage( name, handler, has_parm_val( parameters, c_cmd_ciyam_session_storage_link_admin ) );
+      }
       else if( command == c_cmd_ciyam_session_storage_term )
          term_storage( handler );
-      else if( command == c_cmd_ciyam_session_storage_attach )
-      {
-         string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_attach_name ) );
-
-         attach_storage( name, handler, has_parm_val( parameters, c_cmd_ciyam_session_storage_attach_admin ) );
-      }
       else if( command == c_cmd_ciyam_session_storage_backup )
       {
          string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_backup_name ) );
