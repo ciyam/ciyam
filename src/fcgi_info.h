@@ -426,6 +426,8 @@ struct module_info
    std::map< std::string, std::string > view_cids;
    std::map< std::string, std::string > view_classes;
 
+   std::string strings_hash;
+
    std::map< std::string, std::string > strings;
 
    void clear( );

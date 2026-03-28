@@ -19,7 +19,7 @@
 
 class tcp_socket;
 
-void read_module_strings( module_info& info, tcp_socket& socket );
+void read_module_strings( session_info& sess_info, module_info& info );
 
 bool simple_command( session_info& sess_info,
  const std::string& cmd, std::string* p_response = 0, bool is_optional = false );

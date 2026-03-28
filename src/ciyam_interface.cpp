@@ -2384,7 +2384,7 @@ void request_handler::process_request( )
                         {
                            module_info& mod_info( *mii->second );
 
-                           read_module_strings( mod_info, *p_session_info->p_socket );
+                           read_module_strings( *p_session_info, mod_info );
 
                            if( !simple_command( *p_session_info, mod_info.name + "_ver", &response ) )
                               throw runtime_error( "unable to get version information for module '" + mod_info.name + "'" );
@@ -2480,7 +2480,7 @@ void request_handler::process_request( )
             }
 
             if( connection_okay && mod_info.strings.empty( ) )
-               read_module_strings( mod_info, *p_session_info->p_socket );
+               read_module_strings( *p_session_info, mod_info );
 
             if( connection_okay
              && !has_output_form && ( cmd != c_cmd_open ) && p_session_info->user_id.empty( ) )

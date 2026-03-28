@@ -81,82 +81,99 @@ string get_uid_info( const session_info& sess_info, bool quote_if_has_space_in_n
    return uid_info;
 }
 
-void read_module_strings( module_info& info, tcp_socket& socket )
+void read_module_strings( session_info& sess_info, module_info& info )
 {
-   string strings_cmd( "module_strings_list " );
+   string hash_cmd( "module_strings_hash " );
 
-   strings_cmd += info.id;
+   hash_cmd += info.id;
 
-   if( socket.write_line( strings_cmd ) <= 0 )
-      throw runtime_error( "Unable to retrieve '" + info.name + "' module strings." );
+   string strings_hash;
 
-   info.strings.clear( );
+   if( !simple_command( sess_info, hash_cmd, &strings_hash ) )
+      throw runtime_error( "Unable to check '" + info.name + "' module strings." );
 
-   int timeout = c_initial_response_timeout;
-
-   // NOTE: Although only a single response is
-   // expected this approach also functions if
-   // the string pairs were returned in chunks
-   // (or each pair in its own response).
-   while( true )
+   // NOTE: If the strings hash is unchanged (and not empty) then the
+   // strings have not changed since they were last read (so can skip
+   // the "module_strings_list" command and its processing).
+   if( strings_hash.empty( ) || ( strings_hash != info.strings_hash ) )
    {
-      string response;
+      string strings_cmd( "module_strings_list " );
 
-      if( socket.read_line( response, timeout ) <= 0 )
+      strings_cmd += info.id;
+
+      if( sess_info.p_socket->write_line( strings_cmd ) <= 0 )
+         throw runtime_error( "Unable to retrieve '" + info.name + "' module strings." );
+
+      info.strings.clear( );
+
+      int timeout = c_initial_response_timeout;
+
+      // NOTE: Although only a single response is
+      // expected this approach also functions if
+      // the string pairs were returned in chunks
+      // (or each pair in its own response).
+      while( true )
       {
-         if( socket.had_timeout( ) )
-            throw runtime_error( "Timeout occurred reading module strings response." );
-         else
-            throw runtime_error( "Unexpected session closure during strings initialisation." );
-      }
+         string response;
 
-      if( response == c_response_okay )
-         break;
-
-      timeout = c_subsequent_response_timeout;
-
-      if( !response.empty( ) )
-      {
-         vector< string > all_strings;
-
-         split( response, all_strings, '\n' );
-
-         for( size_t i = 0; i < all_strings.size( ); i++ )
+         if( sess_info.p_socket->read_line( response, timeout ) <= 0 )
          {
-            string next_pair( all_strings[ i ] );
+            if( sess_info.p_socket->had_timeout( ) )
+               throw runtime_error( "Timeout occurred reading module strings response." );
+            else
+               throw runtime_error( "Unexpected session closure during strings initialisation." );
+         }
 
-            string::size_type pos = next_pair.find( ' ' );
+         if( response == c_response_okay )
+            break;
 
-            if( pos == string::npos )
-               throw runtime_error( "unexpected string pair '" + next_pair + "'" );
+         timeout = c_subsequent_response_timeout;
 
-            info.strings.insert( make_pair( next_pair.substr( 0, pos ), next_pair.substr( pos + 1 ) ) );
+         if( !response.empty( ) )
+         {
+            vector< string > all_strings;
+
+            split( response, all_strings, '\n' );
+
+            for( size_t i = 0; i < all_strings.size( ); i++ )
+            {
+               string next_pair( all_strings[ i ] );
+
+               string::size_type pos = next_pair.find( ' ' );
+
+               if( pos == string::npos )
+                  throw runtime_error( "unexpected string pair '" + next_pair + "'" );
+
+               info.strings.insert( make_pair( next_pair.substr( 0, pos ), next_pair.substr( pos + 1 ) ) );
+            }
          }
       }
-   }
 
-   // NOTE: The list menus container is only constructed here as the model strings
-   // will affect the order of the menu items.
-   info.list_info.clear( );
-   info.list_menus.clear( );
+      info.strings_hash = strings_hash;
 
-   for( size_t i = 0; i < info.lists.size( ); i++ )
-   {
-      info.lists[ i ].var_ids.clear( );
-      info.list_info.insert( make_pair( info.lists[ i ].id, &info.lists[ i ] ) );
+      // NOTE: The list menus container is only constructed here as
+      // the model strings will affect the order of the menu items.
+      info.list_info.clear( );
+      info.list_menus.clear( );
 
-      if( !info.lists[ i ].pid.empty( ) )
+      for( size_t i = 0; i < info.lists.size( ); i++ )
       {
-         if( !info.list_info.count( info.lists[ i ].pid ) )
-            throw runtime_error( "unexpected variation parent id '" + info.lists[ i ].pid + "' not found" );
+         info.lists[ i ].var_ids.clear( );
+         info.list_info.insert( make_pair( info.lists[ i ].id, &info.lists[ i ] ) );
 
-         info.list_info[ info.lists[ i ].pid ]->var_ids.push_back( info.lists[ i ].id );
+         if( !info.lists[ i ].pid.empty( ) )
+         {
+            if( !info.list_info.count( info.lists[ i ].pid ) )
+               throw runtime_error( "unexpected variation parent id '" + info.lists[ i ].pid + "' not found" );
+
+            info.list_info[ info.lists[ i ].pid ]->var_ids.push_back( info.lists[ i ].id );
+         }
+         else if( ( info.lists[ i ].type != c_list_type_home )
+          && ( info.lists[ i ].type != c_list_type_home_anon ) && ( info.lists[ i ].type != c_list_type_child )
+          && ( info.lists[ i ].type != c_list_type_user_child ) && ( info.lists[ i ].type != c_list_type_child_admin )
+          && ( info.lists[ i ].type != c_list_type_child_owner ) && ( info.lists[ i ].type != c_list_type_child_admin_owner ) )
+            info.list_menus.insert( make_pair( info.get_string( info.lists[ i ].name ), &info.lists[ i ] ) );
       }
-      else if( ( info.lists[ i ].type != c_list_type_home )
-       && ( info.lists[ i ].type != c_list_type_home_anon ) && ( info.lists[ i ].type != c_list_type_child )
-       && ( info.lists[ i ].type != c_list_type_user_child ) && ( info.lists[ i ].type != c_list_type_child_admin )
-       && ( info.lists[ i ].type != c_list_type_child_owner ) && ( info.lists[ i ].type != c_list_type_child_admin_owner ) )
-         info.list_menus.insert( make_pair( info.get_string( info.lists[ i ].name ), &info.lists[ i ] ) );
    }
 }
 
