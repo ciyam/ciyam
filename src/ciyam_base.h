@@ -996,6 +996,8 @@ std::string module_identity( const std::string& module );
 
 void module_class_list( const std::string& module, std::ostream& os, const char* p_pat = 0 );
 
+std::string module_strings_hash( const std::string& module );
+
 void module_strings_list( const std::string& module, std::ostream& os );
 
 void module_class_fields_list(

@@ -12730,6 +12730,32 @@ void module_class_list( const string& module, ostream& os, const char* p_pat )
       throw runtime_error( "unexpected module class list error #" + to_string( rc ) );
 }
 
+string module_strings_hash( const string& module )
+{
+   module_const_iterator mci = gtp_session->modules_by_id.find( module );
+
+   if( mci == gtp_session->modules_by_id.end( ) )
+   {
+      mci = gtp_session->modules_by_name.find( module );
+
+      if( mci == gtp_session->modules_by_name.end( ) )
+         throw runtime_error( get_string_message( GS( c_str_module_not_loaded ),
+          make_pair( c_str_module_not_loaded_module, module ) ) );
+   }
+
+   // NOTE: The module strings "hash" uses the empty key value.
+   string hash_key;
+
+   ostringstream osstr;
+
+   module_string_list_error rc = list_module_strings( module, osstr, &hash_key );
+
+   if( rc != e_module_string_list_error_none )
+      throw runtime_error( "unexpected module string list error #" + to_string( rc ) );
+
+   return osstr.str( );
+}
+
 void module_strings_list( const string& module, ostream& os )
 {
    module_const_iterator mci = gtp_session->modules_by_id.find( module );
