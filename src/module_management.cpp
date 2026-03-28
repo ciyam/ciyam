@@ -50,7 +50,9 @@ struct module_library_info
    }
 
    size_t ref_count;
+
    const module_details* p_details;
+
    dynamic_library* p_dynamic_library;
 
    fp_term_classes fp_term_classes_func;
@@ -437,7 +439,7 @@ void init_module_class_field_info( const string& module_id_or_name,
    }
 }
 
-module_string_list_error list_module_strings( const string& module_id_or_name, ostream& os )
+module_string_list_error list_module_strings( const string& module_id_or_name, ostream& os, const string* p_key )
 {
    guard g( g_mutex );
 
@@ -460,9 +462,21 @@ module_string_list_error list_module_strings( const string& module_id_or_name, o
 
    ( *obtain_module_strings_func )( p_module_strings );
 
-   for( module_strings_const_iterator
-    msci = p_module_strings->begin( ), end = p_module_strings->end( ); msci != end; ++msci )
-      os << msci->first << ' ' << msci->second << '\n';
+   if( p_key )
+   {
+      if( p_module_strings->count( *p_key ) )
+         os << p_module_strings->find( *p_key )->second;
+   }
+   else
+   {
+      for( module_strings_const_iterator
+       msci = p_module_strings->begin( ), end = p_module_strings->end( ); msci != end; ++msci )
+      {
+         // NOTE: Skip the hash value.
+         if( !msci->first.empty( ) )
+            os << msci->first << ' ' << msci->second << '\n';
+      }
+   }
 
    return e_module_string_list_error_none;
 }

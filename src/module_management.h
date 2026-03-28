@@ -74,7 +74,8 @@ module_class_list_error list_module_classes(
 module_class_list_error list_module_classes( const std::string& module_id_or_name,
  std::map< std::string, std::string >& class_map, bool key_by_id = false, int type = -1, const char* p_pat = 0 );
 
-module_string_list_error list_module_strings( const std::string& module_id_or_name, std::ostream& os );
+module_string_list_error list_module_strings(
+ const std::string& module_id_or_name, std::ostream& os, const std::string* p_key = 0 );
 
 module_class_field_list_error list_module_class_fields(
  const std::string& module_id_or_name, const std::string& class_id_or_name, std::ostream& os );
