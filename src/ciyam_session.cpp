@@ -3203,6 +3203,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = osstr.str( );
       }
+      else if( command == c_cmd_ciyam_session_module_strings_hash )
+      {
+         string module( get_parm_val( parameters, c_cmd_ciyam_session_module_strings_list_module ) );
+
+         response = module_strings_hash( module );
+      }
       else if( command == c_cmd_ciyam_session_module_strings_list )
       {
          string module( get_parm_val( parameters, c_cmd_ciyam_session_module_strings_list_module ) );
