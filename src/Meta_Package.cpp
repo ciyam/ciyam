@@ -1693,8 +1693,6 @@ void Meta_Package::impl::impl_Remove( )
                outf << ".utc_to_unix_time @now\n";
                outf << "SHOW_PROGRESS_TIME=@$OUTPUT+10\n";
                outf << ";\n";
-               outf << "session_variable @force_internal 1\n";
-               outf << ";\n";
 
                for( size_t i = 0; i < ordered.size( ); i++ )
                {
@@ -1705,7 +1703,7 @@ void Meta_Package::impl::impl_Remove( )
                      outf << "@ifndef $ERROR\n";
 
                      outf << ".pd " << get_uid( ) << " @now "
-                      << get_obj( ).get_module_id( ) << ' ' << next_cid << " -p -q " << class_keys[ next_cid ][ j ] << '\n';
+                      << get_obj( ).get_module_id( ) << ' ' << next_cid << " -f -p -q " << class_keys[ next_cid ][ j ] << '\n';
 
                      outf << "@ifdef $ERROR\n";
                      outf << "#(failed to delete " << ordered[ i ] << " record " << class_keys[ next_cid ][ j ] << ")\n";
