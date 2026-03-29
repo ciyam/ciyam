@@ -4947,6 +4947,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string grp( get_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_grp ) );
          string tz_name( get_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_tz_name ) );
          string set_values( get_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_set_values ) );
+         bool force = has_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_force );
          bool progress = has_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_progress );
          bool quiet = has_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_quiet );
          string key( get_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_key ) );
@@ -5027,10 +5028,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                op_destroy_rc rc;
 
-               bool force_internal = has_session_variable(
+               bool force_session = has_session_variable(
                 get_special_var_name( e_special_var_force_internal ) );
 
-               op_instance_destroy( handle, "", key, ver_info, force_internal, &rc );
+               op_instance_destroy( handle, "", key, ver_info, ( force || force_session ), &rc );
 
                if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                   check_instance_op_permission( module, handle, get_destroy_instance_info( handle, "" ) );
