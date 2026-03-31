@@ -3491,9 +3491,9 @@ void finish_instance_op( class_base& instance, bool apply_changes,
    {
       // NOTE: In order to make "minimal" updates as minimal as possible both the "to_store" trigger function
       // and validation is being skipped, so such updates must only be used in circumstances when it is known
-      // that they will not affect the record's validity (i.e. not to be used lightly).
-      if( op == class_base::e_op_type_create
-       || ( op == class_base::e_op_type_update && !instance.get_is_minimal_update( ) ) )
+      // that they will not affect the record's validity (i.e. if in any doubt at all then do not use them).
+      if( ( op == class_base::e_op_type_create )
+       || ( ( op == class_base::e_op_type_update ) && !instance.get_is_minimal_update( ) ) )
       {
          bool valid = true;
 
@@ -3505,9 +3505,11 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
          if( valid )
          {
-            instance_accessor.perform_to_store( op == class_base::e_op_type_create, internal_operation );
+            instance_accessor.perform_to_store(
+             ( op == class_base::e_op_type_create ), internal_operation );
 
-            if( !instance.get_is_for_peer( ) && !session_skip_validation( ) && !instance.is_valid( internal_operation ) )
+            if( !instance.get_is_for_peer( )
+             && !session_skip_validation( ) && !instance.is_valid( internal_operation ) )
                valid = false;
          }
 
@@ -3516,11 +3518,13 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             if( p_rc )
             {
                *p_rc = e_instance_op_rc_invalid;
+
                return;
             }
             else
             {
-               string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
+               string validation_error(
+                instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
 
                perform_op_cancel( instance, op );
 
@@ -3561,10 +3565,16 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             update_session_locks_for_transaction( );
 
          if( op == class_base::e_op_type_destroy )
-            instance_accessor.for_destroy( internal_operation );
-         else if( op == class_base::e_op_type_create
-          || ( op == class_base::e_op_type_update && !instance.get_is_minimal_update( ) ) )
          {
+            TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "for_destroy( ) [class: " + instance.get_class_name( ) + "]" );
+
+            instance_accessor.for_destroy( internal_operation );
+         }
+         else if( ( op == class_base::e_op_type_create )
+          || ( ( op == class_base::e_op_type_update ) && !instance.get_is_minimal_update( ) ) )
+         {
+            TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "for_store( ) [class: " + instance.get_class_name( ) + "]" );
+
             instance_accessor.for_store( op == class_base::e_op_type_create, internal_operation );
 
             // NOTE: As it's possible that "for_store" might inadvertantly have made the record invalid
@@ -3760,7 +3770,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                // number with the name "<security>-<index_data>". If index
                // is not unique then the instance key is appended (like an
                // additional field). Security digits are followed by field
-               // values which are separated by tab characters.
+               // values that are separated by tab (i.e. '\t') characters.
                size_t links_lock = 0;
 
                string class_id( instance.get_class_id( ) );
@@ -4111,12 +4121,20 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             transform_obtained_lock( instance_accessor.get_lock_handle( ), c_update_lock_name );
 
          if( op == class_base::e_op_type_destroy )
+         {
+            TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "after_destroy( ) [class: " + instance.get_class_name( ) + "]" );
+
             instance_accessor.after_destroy( internal_operation );
+         }
          // NOTE: Although "after_store" is normally skipped for "minimal" updates in the case of Meta
          // it must still be called so that "aliased" class artifacts will behave as would be expected.
          else if( ( op == class_base::e_op_type_create ) || !instance.get_is_minimal_update( )
           || ( ( op == class_base::e_op_type_update ) && ( app_name == c_meta_storage_name ) ) )
+         {
+            TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "after_store( ) [class: " + instance.get_class_name( ) + "]" );
+
             instance_accessor.after_store( ( op == class_base::e_op_type_create ), internal_operation );
+         }
 
          const string& key( instance.get_key( ) );
 
@@ -4928,11 +4946,13 @@ bool perform_instance_iterate( class_base& instance,
             {
                vector< string > sql_stmts;
 
+               TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, replaced( sql, sec_marker, "***" ) );
+
                for( size_t i = 0; i < sec_values.size( ); i++ )
                {
                   sql_stmts.push_back( replaced( sql, sec_marker, sec_values[ i ] ) );
 
-                  TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, sql_stmts.back( ) );
+                  TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES, sql_stmts.back( ) );
                }
 
                instance_accessor.p_sql_data( ) = new sql_dataset_group(
