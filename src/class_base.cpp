@@ -1019,7 +1019,7 @@ void class_base::prepare( bool for_create, bool call_to_store, bool starting_ite
 {
    bool is_create( op == e_op_type_create );
 
-   TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "prepare( ) [class: " + get_class_name( )
+   TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "prepare( ) [class: " + get_class_name( )
     + "] is_create = " + to_string( is_create ) + ", call_to_store = "
     + to_string( call_to_store ) + ", for_create = " + to_string( for_create )
     + ", starting_iteration = " + to_string( starting_iteration ) );
@@ -1045,21 +1045,34 @@ bool class_base::is_valid( bool is_internal, set< string >* p_fields_set )
 {
    validation_errors.clear( );
 
-   TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "is_valid( ) [class: "
-    + get_class_name( ) + " ] key = '" + key + "', is_internal = " + to_string( is_internal )
-    + " calling post_init( ) and then " + string( !p_fields_set ? "validate" : "validate_set_fields" ) + "( )" );
+   bool call_post_init = false;
 
-   post_init( );
+   string extra;
+
+   // NOTE: Skips the "post_init" call if is performing "secondary validation".
+   if( !has_variable( get_special_var_name( e_special_var_secondary_validation ) ) )
+   {
+      call_post_init = true;
+
+      extra = "post_init( ) and then ";
+   }
+
+   TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "is_valid( ) [class: "
+    + get_class_name( ) + " ] key = '" + key + "', is_internal = " + to_string( is_internal )
+    + " calling " + extra + string( !p_fields_set ? "validate" : "validate_set_fields" ) + "( )" );
+
+   if( call_post_init )
+      post_init( );
 
    if( !p_fields_set )
       validate( get_state( ), is_internal );
    else
       validate_set_fields( *p_fields_set );
 
-   IF_IS_TRACING( TRACE_INITIAL | TRACE_OBJECTS )
+   IF_IS_TRACING( TRACE_DETAILS | TRACE_OBJECTS )
    {
       for( validation_error_const_iterator veci = validation_errors.begin( ), end = validation_errors.end( ); veci != end; ++veci )
-         TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "[validation error] (" + veci->first + ") " + veci->second );
+         TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "[validation error] (" + veci->first + ") " + veci->second );
    }
 
    return validation_errors.empty( );
@@ -1964,7 +1977,7 @@ void class_base::destroy( )
 
       bool output_progress = false;
 
-      TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "=== begin cascade [class: "
+      TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "=== begin cascade [class: "
        + get_class_name( ) + " (" + get_class_id( ) + "), key = " + get_key( ) + "] ===" );
 
       if( !get_raw_variable( get_special_var_name( e_special_var_progress ) ).empty( ) )
@@ -1982,7 +1995,7 @@ void class_base::destroy( )
          else
             next_op = e_cascade_op_destroy;
 
-         TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "(cascade " + ( ( pass != 0 ) ? pass_unlink : pass_destroy ) + " pass)" );
+         TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "(cascade " + ( ( pass != 0 ) ? pass_unlink : pass_destroy ) + " pass)" );
 
          // NOTE: Due to the way that Meta model relationships
          // are ordered to prevent a number of possible issues
@@ -2059,7 +2072,7 @@ void class_base::destroy( )
          }
       }
 
-      TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "=== finish cascade [class: " + get_class_name( ) + ", key = " + get_key( ) + "] ===" );
+      TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "=== finish cascade [class: " + get_class_name( ) + ", key = " + get_key( ) + "] ===" );
    }
 }
 
@@ -2090,7 +2103,7 @@ void class_base::perform_after_fetch( bool is_minimal, bool is_for_prepare )
 {
    restorable< bool > tmp_is_fetching( is_fetching, true );
 
-   TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "perform_after_fetch( ) [class: " + get_class_name( )
+   TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "perform_after_fetch( ) [class: " + get_class_name( )
     + "] key = " + key + ", force_fetch = " + to_string( force_fetch ) + ", is_minimal = "
     + to_string( is_minimal ) + ", is_for_prepare = " + to_string( is_for_prepare )
     + ", is_being_cascaded = " + to_string( is_being_cascaded ) );
@@ -2114,7 +2127,7 @@ void class_base::perform_to_store( bool is_create, bool is_internal )
    p_impl->search_replacements.clear( );
    search_replace_has_opt_prefixing.clear( );
 
-   TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "perform_to_store( ) [class: " + get_class_name( ) + "]" );
+   TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "to_store( ) [class: " + get_class_name( ) + "]" );
 
    to_store( is_create, is_internal );
    perform_field_search_replacements( );
@@ -2134,7 +2147,7 @@ void class_base::destroy_dynamic_instance( )
 {
    if( p_dynamic_instance != this )
    {
-      TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "destroy dynamic instance for " + p_dynamic_instance->get_current_identity( ) );
+      TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "destroy dynamic instance for " + p_dynamic_instance->get_current_identity( ) );
 
       delete p_dynamic_instance;
       p_dynamic_instance = this;
@@ -2151,7 +2164,7 @@ void class_base::construct_dynamic_instance( )
       if( p_dynamic_instance != this )
          destroy_dynamic_instance( );
 
-      TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "constructing dynamic instance for '" + get_original_identity( ) + "'" );
+      TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "constructing dynamic instance for '" + get_original_identity( ) + "'" );
 
       string module_id, class_id;
 
@@ -5418,7 +5431,7 @@ void add_class_map( const string& class_id, const string& map_id, const string& 
 
       g_class_maps.insert( make_pair( map_name, make_pair( 1, new_map ) ) );
 
-      TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "[add_class_map] " + map_name + " " + file_name + ( !in_reverse ? "" : " (reverse)" ) );
+      TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "[add_class_map] " + map_name + " " + file_name + ( !in_reverse ? "" : " (reverse)" ) );
    }
 }
 
@@ -5445,7 +5458,7 @@ void remove_class_map( const string& class_id, const string& map_id )
       {
          g_class_maps.erase( map_name );
 
-         TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "[remove_class_map] " + map_name );
+         TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "[remove_class_map] " + map_name );
       }
    }
 }
