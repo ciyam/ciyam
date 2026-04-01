@@ -208,6 +208,7 @@ void split_key_info( const string& key_info,
       if( pos != string::npos )
       {
          num_fixed = atoi( fields.substr( pos + 1 ).c_str( ) );
+
          fields.erase( pos );
       }
 
@@ -242,7 +243,7 @@ void split_key_info( const string& key_info,
          if( all_values.size( ) < num_fixed )
             throw runtime_error( "specified # of fixed values were not provided" );
 
-         if( order_info.size( ) < all_values.size( ) + order_provided )
+         if( order_info.size( ) < ( all_values.size( ) + order_provided ) )
             throw runtime_error( "not enough order info for all provided values" );
 
          for( size_t i = 0; i < all_values.size( ); i++ )
@@ -299,7 +300,7 @@ string formatted_value( const string& value, const string& field_type )
 
    if( !formatted_value.empty( ) )
    {
-      if( field_type == "udate" || field_type == "tdate" )
+      if( ( field_type == "udate" ) || ( field_type == "tdate" ) )
       {
          udate today( udate::standard( ) );
 
@@ -310,15 +311,15 @@ string formatted_value( const string& value, const string& field_type )
 
          formatted_value = udate( formatted_value ).as_string( true );
       }
-      else if( field_type == "mtime" || field_type == "ttime" )
+      else if( ( field_type == "mtime" ) || ( field_type == "ttime" ) )
       {
          if( formatted_value == c_dtm_now )
             formatted_value = mtime::standard( ).as_string( );
 
          formatted_value = mtime( formatted_value ).as_string( true );
       }
-      else if( field_type == "datetime" || field_type == "tdatetime"
-       || field_type == "date_time" || field_type == "tdate_time" )
+      else if( ( field_type == "datetime" ) || ( field_type == "tdatetime" )
+       || ( field_type == "date_time" ) || ( field_type == "tdate_time" ) )
       {
          date_time now( date_time::standard( ) );
 
@@ -332,6 +333,7 @@ string formatted_value( const string& value, const string& field_type )
          else
          {
             string tz_name( get_tz_name( ) );
+
             if( tz_name.empty( ) )
                tz_name = get_timezone( );
 
@@ -881,8 +883,7 @@ string construct_sql_select(
 
          get_field_name( instance, next_field, &is_sql_numeric, &field_type );
 
-         if( query_info.empty( ) && text_search.empty( ) )
-            use_index_fields.push_back( "C_" + next_field );
+         use_index_fields.push_back( "C_" + next_field );
 
          bool invert = false;
          bool has_multiple_values = false;
@@ -1007,8 +1008,7 @@ string construct_sql_select(
 
          get_field_name( instance, next_field, &is_sql_numeric, &field_type );
 
-         if( query_info.empty( ) && text_search.empty( ) )
-            use_index_fields.push_back( "C_" + next_field );
+         use_index_fields.push_back( "C_" + next_field );
 
          if( !is_sql_numeric )
             next_value = sql_quote( formatted_value( next_value, field_type ) );
@@ -1066,6 +1066,9 @@ string construct_sql_select(
          sql += "C_" + next_field;
          index += "C_" + next_field;
 
+         if( i >= use_index_fields.size( ) )
+            use_index_fields.push_back( "C_" + next_field );
+
          if( p_order_columns )
          {
             if( has_all_fields || field_set.count( next_field ) )
@@ -1080,10 +1083,10 @@ string construct_sql_select(
    if( row_limit )
       sql += " LIMIT " + to_string( row_limit );
 
-   // NOTE: If order fields, fixed field values or paging field values were provided then these are
+   // NOTE: If fixed field values, paging field values or order fields were provided then these are
    // checked against each table index to determine if an index covers all of them. If one is found
    // then force the query to use this index (to ensure the RDBMS optimiser does not get it wrong).
-   if( !order_info.empty( ) || !use_index_fields.empty( ) )
+   if( !use_index_fields.empty( ) )
    {
       vector< string > indexes;
 
@@ -4796,7 +4799,21 @@ bool perform_instance_iterate( class_base& instance,
          if( pos != string::npos )
          {
             extra_key_info = keys.substr( pos );
+
             keys.erase( pos );
+         }
+
+         // NOTE: If the first key field is the same as
+         // the last paging field then will remove it.
+         string last_paging_field;
+
+         if( !paging_info.empty( ) )
+            last_paging_field = paging_info.back( ).first;
+
+         if( !last_paging_field.empty( ) )
+         {
+            if( keys.find( last_paging_field ) == 0 )
+               keys.erase( 0, last_paging_field.size( ) );
          }
 
          if( pos == string::npos )
@@ -4812,7 +4829,7 @@ bool perform_instance_iterate( class_base& instance,
 
                pos = extra_key_info.find( ' ' );
 
-               if( ( pos != string::npos ) && ( pos != extra_key_info.size( ) - 1 ) )
+               if( ( pos != string::npos ) && ( pos != ( extra_key_info.size( ) - 1 ) ) )
                {
                   split( extra_key_info.substr( pos + 1 ), extra_key_values );
 
@@ -4839,6 +4856,7 @@ bool perform_instance_iterate( class_base& instance,
                if( !transient_field_names.count( next ) )
                {
                   add_extra = true;
+
                   final_keys.push_back( next );
                }
                else
@@ -4946,7 +4964,7 @@ bool perform_instance_iterate( class_base& instance,
             {
                vector< string > sql_stmts;
 
-               TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, replaced( sql, sec_marker, "***" ) );
+               TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, replaced( sql, sec_marker, "???" ) );
 
                for( size_t i = 0; i < sec_values.size( ); i++ )
                {
