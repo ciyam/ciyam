@@ -10,7 +10,11 @@
 REBUILD=-rebuild
 ;
 @ifdef $CIYAM_STOP_REGEX
-REBUILD=-stop_regex="$CIYAM_STOP_REGEX" -rebuild
+REBUILD=-stop_regex="$CIYAM_STOP_REGEX" $REBUILD
+@endif
+;
+@ifdef $CIYAM_TRACE_INFO
+REBUILD=-trace=$CIYAM_TRACE_INFO $REBUILD
 @endif
 ;
 @ifneq "$CIYAM_STORAGE" "Meta"
