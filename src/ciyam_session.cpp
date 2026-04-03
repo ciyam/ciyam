@@ -6420,8 +6420,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                time_t ts = time( 0 );
 
-               int trace_flags = 0;
+               uint32_t trace_flags = 0;
+
+               uint32_t old_trace_flags = get_trace_flags( );
+
                size_t trace_start = 0;
+               size_t trace_finish = 0;
+
+               bool changed_trace_flags = false;
 
                if( !trace_info.empty( ) )
                {
@@ -6435,10 +6441,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   if( pos != string::npos )
                   {
-                     string start( trace_info.substr( pos + 1 ) );
+                     string start_and_finish( trace_info.substr( pos + 1 ) );
 
-                     istringstream isstr( start );
-                     isstr >> trace_start;
+                     pos = start_and_finish.find( '-' );
+
+                     trace_start = from_string< size_t >( start_and_finish.substr( 0, pos ) );
+
+                     if( pos != string::npos )
+                        trace_finish = from_string< size_t >( start_and_finish.substr( pos + 1 ) );
                   }
                }
 
@@ -6476,6 +6486,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      set_trace_flags( trace_flags );
 
                      trace_flags = 0;
+                     changed_trace_flags = true;
+                  }
+
+                  if( trace_finish && ( line >= trace_finish ) )
+                  {
+                     set_trace_flags( old_trace_flags );
+
+                     trace_finish = 0;
+                     changed_trace_flags = false;
                   }
 
                   // NOTE: As recovery can take a long time issue "progress" messages to ensure that
@@ -6701,6 +6720,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                          + "\nprocessing transaction log line #" + to_string( line ) + " with info ==> " + tran_info );
                   }
                }
+
+               if( changed_trace_flags )
+                  set_trace_flags( old_trace_flags );
 
                if( is_new )
                {
