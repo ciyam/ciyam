@@ -3083,24 +3083,27 @@ void request_handler::process_request( )
             map< string, string > user_field_info;
             map< string, string > extra_field_info;
 
-            if( !fieldlist.empty( ) && ( ( act == c_act_edit )
-             || ( act == c_act_cont ) || ( act == c_act_save ) || ( act == c_act_exec ) || ( act == c_act_view ) ) )
+            if( ( act == c_act_edit ) || ( act == c_act_cont )
+             || ( act == c_act_save ) || ( act == c_act_exec ) || ( act == c_act_view ) )
             {
-               vector< string > field_ids;
-               vector< string > field_values;
+               if( !fieldlist.empty( ) )
+               {
+                  vector< string > field_ids;
+                  vector< string > field_values;
 
-               split( fieldlist, field_ids );
+                  split( fieldlist, field_ids );
 
-               if( act != c_act_exec )
-                  raw_split( app, field_values );
-               else
-                  raw_split( extra, field_values );
+                  if( act != c_act_exec )
+                     raw_split( app, field_values );
+                  else
+                     raw_split( extra, field_values );
 
-               if( field_ids.size( ) != field_values.size( ) )
-                  throw runtime_error( "unexpected field_ids and field_values size mismatch" );
+                  if( field_ids.size( ) != field_values.size( ) )
+                     throw runtime_error( "unexpected field_ids and field_values size mismatch" );
 
-               for( size_t i = 0; i < field_ids.size( ); i++ )
-                  user_field_info.insert( make_pair( field_ids[ i ], field_values[ i ] ) );
+                  for( size_t i = 0; i < field_ids.size( ); i++ )
+                     user_field_info.insert( make_pair( field_ids[ i ], field_values[ i ] ) );
+               }
 
                if( !extrafields.empty( ) )
                {
@@ -3407,7 +3410,8 @@ void request_handler::process_request( )
                      {
                         set< string > fields;
 
-                        split( fieldlist, fields );
+                        if( !fieldlist.empty( ) )
+                           split( fieldlist, fields );
 
                         for( size_t i = 0; i < view.user_force_fields.size( ); i++ )
                         {
@@ -3418,7 +3422,7 @@ void request_handler::process_request( )
 
                               fieldlist += view.user_force_fields[ i ];
 
-                              if( !fieldlist.empty( ) )
+                              if( !extra.empty( ) )
                                  extra += ",";
 
                               extra += escaped( user_field_info[ view.user_force_fields[ i ] ], "," );
