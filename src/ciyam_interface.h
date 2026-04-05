@@ -710,7 +710,6 @@ const char* const c_display_see_attachment_for_details = "(see attachment for de
 const char* const c_display_upload_max_length_exceeded = "Maximum upload size ({@size}) exceeded.";
 const char* const c_display_upload_max_length_exceeded_parm_size = "{@size}";
 const char* const c_display_original_mnemonics_required = "Original mnemonics must be provided in order to reset the identity password.";
-const char* const c_display_system_is_under_maintenance = "Sorry - the system is currently under maintenance. Please try again later.";
 const char* const c_display_you_are_currently_logged_in = "You are already currently logged in.";
 const char* const c_display_provide_password_to_activate = "Please provide a password to activate and login to your account '{@id}'.";
 const char* const c_display_provide_password_to_activate_parm_id = "{@id}";

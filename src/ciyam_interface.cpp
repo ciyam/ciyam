@@ -92,7 +92,7 @@ const int c_connect_timeout = 2500;
 const int c_greeting_timeout = 2500;
 const int c_connect_retry_timeout = 3500;
 
-const size_t c_default_connect_retries = 24;
+const size_t c_default_connect_retries = 30;
 
 const char* const c_unlock = "unlock";
 
@@ -1640,7 +1640,12 @@ void request_handler::process_request( )
                   bool has_connected = connect_socket( p_session_info->p_socket, address );
 
                   if( !has_connected )
-                     throw runtime_error( GDS( c_display_application_server_unavailable ) );
+                  {
+                     if( !has_ui_stop_file( ) )
+                        throw runtime_error( GDS( c_display_application_server_unavailable ) );
+                     else
+                        throw runtime_error( GDS( c_display_under_maintenance_try_again_later ) );
+                  }
                   else
                   {
                      p_session_info->p_socket->set_no_delay( );
