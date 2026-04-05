@@ -431,7 +431,7 @@ Storage,M001C200F107
 Submit_File_Prefix,M001C200F108
 Submit_File_Suffix,M001C200F109
 Unique,M001C200F110
-Unix_Timestamp,M001C200F111
+Unix_Time_Stamp,M001C200F111
 User_Hash,M001C200F112
 Password,M001C200F113
 Password_Change_After,M001C200F114
@@ -794,7 +794,7 @@ filename,T121
 std_date,T132
 std_time,T133
 std_datetime,T134
-std_timestamp,T135
+std_time_stamp,T135
 std_numeric,T136
 std_percentage,T137
 std_money,T138
