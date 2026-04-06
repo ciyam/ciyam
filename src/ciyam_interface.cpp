@@ -3427,7 +3427,9 @@ void request_handler::process_request( )
 
                               fieldlist += view.user_force_fields[ i ];
 
-                              if( !extra.empty( ) )
+                              // NOTE: Is checking "fieldlist" here rather than
+                              // "extra" as any extra value could well be null.
+                              if( !fieldlist.empty( ) )
                                  extra += ",";
 
                               extra += escaped( user_field_info[ view.user_force_fields[ i ] ], "," );
