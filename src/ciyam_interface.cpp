@@ -2564,12 +2564,14 @@ void request_handler::process_request( )
                         throw runtime_error( "unexpected error occurred processing activation" );
 
                      temp_session = false;
+
                      file_remove( activation_file );
 
                      is_authorised = true;
                      using_anonymous = false;
 
                      password = activate_password;
+
                      p_session_info->user_id = user;
 
                      userhash = sha256( user + activate_password ).get_digest_as_string( );
@@ -2658,11 +2660,13 @@ void request_handler::process_request( )
                         class_id += ":_" + mod_info.user_select_cfield;
 
                      string key_info( p_session_info->user_key );
+
                      key_info += ':';
 
                      if( !mod_info.user_select_ofield.empty( ) )
                      {
                         key_info += mod_info.user_select_ofield;
+
                         key_info += ' ';
                      }
 
@@ -2675,11 +2679,13 @@ void request_handler::process_request( )
                      {
                         if( !field_list.empty( ) )
                            field_list += ",";
+
                         field_list += mod_info.user_select_sl_field;
                      }
 
                      if( !field_list.empty( ) )
                         field_list += ",";
+
                      field_list += mod_info.user_select_pfield;
 
                      if( !fetch_list_info( module_id,
@@ -2951,12 +2957,14 @@ void request_handler::process_request( )
                while( true )
                {
                   string::size_type pos = new_field_info.find( "," );
+
                   string next_field( new_field_info.substr( 0, pos ) );
 
                   if( pos != string::npos )
                      new_field_info.erase( 0, pos + 1 );
 
                   pos = new_value_info.find( "," );
+
                   string next_value( new_value_info.substr( 0, pos ) );
 
                   if( pos != string::npos )
@@ -3146,6 +3154,7 @@ void request_handler::process_request( )
             }
 
             set< string > menu_opts;
+
             if( !get_storage_info( ).menu_opts.empty( ) )
                split( get_storage_info( ).menu_opts, menu_opts, '+' );
 
@@ -3420,16 +3429,23 @@ void request_handler::process_request( )
 
                         for( size_t i = 0; i < view.user_force_fields.size( ); i++ )
                         {
-                           if( !fields.count( view.user_force_fields[ i ] ) && user_field_info.count( view.user_force_fields[ i ] ) )
+                           if( !fields.count( view.user_force_fields[ i ] )
+                            && user_field_info.count( view.user_force_fields[ i ] ) )
                            {
+                              bool is_first = true;
+
                               if( !fieldlist.empty( ) )
+                              {
+                                 is_first = false;
                                  fieldlist += ",";
+                              }
 
                               fieldlist += view.user_force_fields[ i ];
 
-                              // NOTE: Is checking "fieldlist" here rather than
-                              // "extra" as any extra value could well be null.
-                              if( !fieldlist.empty( ) )
+                              // NOTE: Is checking "is_first" here rather than
+                              // "extra" as any extra value (unlike field ids)
+                              // can be null.
+                              if( !is_first )
                                  extra += ",";
 
                               extra += escaped( user_field_info[ view.user_force_fields[ i ] ], "," );
@@ -3448,8 +3464,8 @@ void request_handler::process_request( )
 
                         // NOTE: If the output from an "exec" is in the form "{xxx}" then it used assumed that
                         // the "xxx" is the key of another same class record which becomes the current record.
-                        if( !is_in_edit && ( act == c_act_exec ) && error_message.size( ) > 2
-                         && error_message[ 0 ] == '{' && error_message[ error_message.size( ) - 1 ] == '}' )
+                        if( !is_in_edit && ( act == c_act_exec ) && ( error_message.size( ) > 2 )
+                         && ( error_message[ 0 ] == '{' ) && ( error_message[ error_message.size( ) - 1 ] == '}' ) )
                         {
                            string s( error_message.substr( 1, error_message.size( ) - 2 ) );
 
@@ -3496,7 +3512,7 @@ void request_handler::process_request( )
 
                // NOTE: Any action that performed on the "quick link" class will result in
                // the quick links being re-fetched (i.e. assume it's the user's own links).
-               if( ( cmd == c_cmd_view || cmd == c_cmd_list )
+               if( ( ( cmd == c_cmd_view ) || ( cmd == c_cmd_list ) )
                 && !mod_info.user_qlink_class_id.empty( ) && !p_session_info->quick_link_data.empty( ) )
                   fetch_user_quick_links( mod_info, *p_session_info );
             }
@@ -3551,6 +3567,7 @@ void request_handler::process_request( )
                       mod_info.user_hash_field_id, sha256( p_session_info->user_id + new_password ).get_digest_as_string( ) ) );
 
                      string user_crypt_key;
+
                      if( !mod_info.user_crypt_field_id.empty( ) )
                      {
                         if( p_session_info->user_crypt.empty( ) )
@@ -3589,13 +3606,12 @@ void request_handler::process_request( )
                   }
                }
             }
-            else if( cmd == c_cmd_join || cmd == c_cmd_open )
+            else if( ( cmd == c_cmd_join ) || ( cmd == c_cmd_open ) )
                server_command.erase( );
 
-            if( error_message.length( ) > strlen( c_response_error_prefix )
-             && error_message.substr( 0, strlen( c_response_error_prefix ) ) == c_response_error_prefix )
-               error_message = GDS( c_display_error ) + ": "
-                + error_message.substr( strlen( c_response_error_prefix ) );
+            if( ( error_message.length( ) > strlen( c_response_error_prefix ) )
+             && ( error_message.substr( 0, strlen( c_response_error_prefix ) ) == c_response_error_prefix ) )
+               error_message = GDS( c_display_error ) + ": " + error_message.substr( strlen( c_response_error_prefix ) );
 
             setup_gmt_and_dtm_offset( input_data, *p_session_info );
 
@@ -3671,11 +3687,11 @@ void request_handler::process_request( )
 
       // NOTE: Filter out some of the more "noisy" (and less serious) error messages.
       if( !g_seed_error.empty( )
-       || error == GDS( c_display_invalid_url )
-       || error == GDS( c_display_client_script_out_of_date )
-       || error == GDS( c_display_unknown_or_invalid_user_id )
-       || error == GDS( c_display_you_are_currently_logged_in )
-       || error == GDS( c_display_module_name_missing_or_invalid ) )
+       || ( error == GDS( c_display_invalid_url ) )
+       || ( error == GDS( c_display_client_script_out_of_date ) )
+       || ( error == GDS( c_display_unknown_or_invalid_user_id ) )
+       || ( error == GDS( c_display_you_are_currently_logged_in ) )
+       || ( error == GDS( c_display_module_name_missing_or_invalid ) ) )
          log_error = false;
 
       if( log_error )
@@ -3902,6 +3918,7 @@ void request_handler::process_request( )
    if( epos != string::npos )
    {
       output += interface_html.substr( cpos, epos - cpos );
+
       output += extra_content.str( );
 
       cpos = epos + strlen( c_extra_content_comment );
