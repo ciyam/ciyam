@@ -7933,10 +7933,14 @@ string session_ip_addr( size_t slot )
    return retval;
 }
 
-void session_is_using_tls( )
+void session_is_using_tls( socket_base& socket )
 {
    if( gtp_session )
+   {
       gtp_session->using_tls = true;
+
+      set_session_variable( get_special_var_name( e_special_var_tls_cipher ), socket.cipher( ) );
+   }
 }
 
 void session_inc_sql_count( )

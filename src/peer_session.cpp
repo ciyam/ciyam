@@ -6568,7 +6568,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket.ssl_accept( );
 
-         session_is_using_tls( );
+         session_is_using_tls( socket );
 #else
          throw runtime_error( "SSL support not available" );
 #endif
@@ -7611,7 +7611,7 @@ void peer_session::on_start( )
        &unprefixed_blockchain, from_string< int >( port ), is_for_support, false, reserved_sess_id );
 
       if( using_tls )
-         session_is_using_tls( );
+         session_is_using_tls( *up_socket.get( ) );
 
       bool has_session_secret = false;
 

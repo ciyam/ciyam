@@ -28,6 +28,7 @@ class ods;
 class sql_db;
 class date_time;
 class class_base;
+class socket_base;
 class command_handler;
 class ods_file_system;
 
@@ -450,7 +451,7 @@ std::string session_ip_addr( );
 
 std::string session_ip_addr( size_t slot );
 
-void session_is_using_tls( );
+void session_is_using_tls( socket_base& socket );
 
 void session_inc_sql_count( );
 

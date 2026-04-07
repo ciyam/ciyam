@@ -5888,7 +5888,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          socket.ssl_accept( );
 
-         session_is_using_tls( );
+         session_is_using_tls( socket );
 #else
          throw runtime_error( "SSL support not available" );
 #endif
@@ -8593,7 +8593,7 @@ void ciyam_session::on_start( )
       init_session( cmd_handler, false, &ip_addr );
 
       if( using_tls )
-         session_is_using_tls( );
+         session_is_using_tls( *up_socket.get( ) );
 
       if( needs_key_exchange )
       {
