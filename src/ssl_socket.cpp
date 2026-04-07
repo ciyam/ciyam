@@ -255,6 +255,16 @@ void ssl_socket::close( )
    p_ssl = SSL_new( p_ctx );
 }
 
+string ssl_socket::cipher( ) const
+{
+   string retval;
+
+   if( p_ssl )
+      retval = string( SSL_get_cipher( p_ssl ) );
+
+   return retval;
+}
+
 void ssl_socket::ssl_accept( size_t timeout, bool* p_rc )
 {
    if( secure )

@@ -40,6 +40,7 @@ class ip_address : public sockaddr_in
 class socket_base
 {
    typedef void ( socket_base::*bool_type )( ) const;
+
    void this_type_does_not_support_comparisons( ) const { }
 
    public:
@@ -52,6 +53,8 @@ class socket_base
 
    virtual bool open( ) = 0;
    virtual void close( );
+
+   virtual std::string cipher( ) const { return std::string( ); }
 
    bool bind( const ip_address& addr );
 
