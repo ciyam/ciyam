@@ -148,6 +148,7 @@ const char* const c_special_variable_session_id = "@session_id";
 const char* const c_special_variable_sid_locked = "@sid_locked";
 const char* const c_special_variable_sid_secure = "@sid_secure";
 const char* const c_special_variable_tag_prefix = "@tag_prefix";
+const char* const c_special_variable_tls_cipher = "@tls_cipher";
 const char* const c_special_variable_tree_count = "@tree_count";
 const char* const c_special_variable_tree_match = "@tree_match";
 const char* const c_special_variable_tree_total = "@tree_total";
@@ -488,6 +489,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_sid_locked );
       g_special_variable_names.push_back( c_special_variable_sid_secure );
       g_special_variable_names.push_back( c_special_variable_tag_prefix );
+      g_special_variable_names.push_back( c_special_variable_tls_cipher );
       g_special_variable_names.push_back( c_special_variable_tree_count );
       g_special_variable_names.push_back( c_special_variable_tree_match );
       g_special_variable_names.push_back( c_special_variable_tree_total );

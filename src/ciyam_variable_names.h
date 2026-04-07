@@ -115,6 +115,7 @@ enum special_var
    e_special_var_sid_locked,
    e_special_var_sid_secure,
    e_special_var_tag_prefix,
+   e_special_var_tls_cipher,
    e_special_var_tree_count,
    e_special_var_tree_match,
    e_special_var_tree_total,
