@@ -58,6 +58,7 @@ int password_cb( char* buf, int num, int rwflag, void* userdata )
 void print_cert_info( SSL* p_ssl )
 {
    X509* p_cert = 0;
+
    X509_NAME* p_sub = 0;
    X509_NAME* p_issuer = 0;
 
@@ -203,7 +204,7 @@ void init_ssl( const char* p_keyfile, const char* p_password, const char* p_CA_L
    if( p_CA_List && !( SSL_CTX_load_verify_locations( p_ctx, p_CA_List, 0 ) ) )
       throw runtime_error( "init_ssl: can't read CA list" );
 
-#if( OPENSSL_VERSION_NUMBER < 0x00905100L )
+#if OPENSSL_VERSION_NUMBER < 0x00905100L
    SSL_CTX_set_verify_depth( p_ctx, 1 );
 #endif
 
@@ -260,7 +261,13 @@ string ssl_socket::cipher( ) const
    string retval;
 
    if( p_ssl )
+   {
       retval = string( SSL_get_cipher( p_ssl ) );
+
+#if OPENSSL_VERSION_NUMBER >= 0x30200000L
+      retval += " (" + string( SSL_get0_group_name( p_ssl ) ) + ")";
+#endif
+   }
 
    return retval;
 }
