@@ -2158,7 +2158,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_dtm`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_from_dtm.spec.xrep section=after_fetch class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_unix=$specification_\0_unix`}\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field\ arg_unix=$specification_\0_unix`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_file`'`)
 `{`#transient_field_from_file.spec.xrep section=after_fetch class_name=$class_name\
@@ -2765,7 +2765,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'field_from_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_from_dtm.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield\
+ arg_not_peer=$specification_\0_not_peer arg_create_only=$specification_\0_create_only`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_enum_item_name`'`)
 `{`#field_from_enum_item_name.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
@@ -3153,7 +3154,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'field_from_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_dtm.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield\
+ arg_not_peer=$specification_\0_not_peer arg_create_only=$specification_\0_create_only`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_grp`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_grp.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\

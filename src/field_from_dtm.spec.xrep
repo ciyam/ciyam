@@ -6,7 +6,8 @@
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start field_from_dtm)] `{`$arg_id`}
-   if( !get_dtm( ).empty( ) `{`!`@eq`(`$arg_tfield`,`'`'`)&& get_obj( ).`{`$arg_tfield`}( ) `}&& !is_system_uid( ) )
+   if( !get_dtm( ).empty( )`{`@eq`(`$arg_create_only`,`'true`'`) && is_create`}`{`@eq`(`$arg_not_peer`,`'true`'`)
+    && !get_obj( ).get_is_for_peer( )`}`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} && !is_system_uid( ) )
       get_obj( ).`{`$arg_field`}( date_time( get_dtm( ) ) );
    // [(finish field_from_dtm)] `{`$arg_id`}
 `}
