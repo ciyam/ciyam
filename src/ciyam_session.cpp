@@ -279,6 +279,7 @@ void check_instance_op_permission( const string& module,
       if( pos != string::npos )
       {
          permission = permission_info.substr( pos + 2 );
+
          permission_info.erase( pos );
       }
 
@@ -319,6 +320,7 @@ void check_instance_op_permission( const string& module,
                if( !perms.empty( ) )
                {
                   set< string > all_perms;
+
                   split( perms, all_perms );
 
                   if( all_perms.count( permission ) )
@@ -339,6 +341,7 @@ void check_instance_field_permission( const string& module,
  size_t handle, bool is_create, const string& scope_and_perm_info )
 {
    string::size_type pos = scope_and_perm_info.find( ',' );
+
    if( pos == string::npos )
       throw runtime_error( "unexpected scope_and_perm_info '" + scope_and_perm_info + "'" );
 
@@ -347,9 +350,9 @@ void check_instance_field_permission( const string& module,
 
    bool okay = true;
 
-   if( scope == string( c_create ) && !is_create )
+   if( !is_create && ( scope == string( c_create ) ) )
       okay = false;
-   else if( scope == string( c_update ) && is_create )
+   else if( is_create && ( scope == string( c_update ) ) )
       okay = false;
 
    if( !okay )
@@ -789,6 +792,7 @@ struct summary_info
    int idx;
    int num;
    int child;
+
    string field;
    string value;
 };
@@ -800,11 +804,13 @@ void add_pdf_variables( size_t handle,
  const string& tz_name, bool is_single_record, size_t row_num, bool add_values = true )
 {
    map< string, int > all_contexts;
+
    for( size_t i = 0; i < field_list.size( ); i++ )
    {
       string next_field( field_list[ i ] );
 
       string::size_type pos = next_field.find( "." );
+
       if( pos != string::npos )
          next_field.erase( pos );
 
@@ -818,6 +824,7 @@ void add_pdf_variables( size_t handle,
       throw runtime_error( "cannot specify summary fields when fetching a single record" );
 
    map< string, int > all_summaries;
+
    for( size_t i = 0; i < summaries.size( ); i++ )
       all_summaries.insert( make_pair( summaries[ i ].field, i ) );
 
@@ -828,9 +835,11 @@ void add_pdf_variables( size_t handle,
    for( size_t i = 0; i < field_list.size( ); i++ )
    {
       string next_field( field_list[ i ] );
+
       size_t pos = next_field.find_last_of( "." );
 
       string field, field_context;
+
       if( pos != string::npos )
       {
          field = next_field.substr( pos + 1 );
@@ -840,6 +849,7 @@ void add_pdf_variables( size_t handle,
          field = next_field;
 
       string name = get_field_name_for_id( handle, parent_context, field, true );
+
       if( name.empty( ) )
       {
          size_t fpos = next_field.find( "." );
@@ -851,16 +861,19 @@ void add_pdf_variables( size_t handle,
       }
 
       string context( parent_context );
+
       if( !field_context.empty( ) )
       {
          if( !context.empty( ) )
             context += ".";
+
          context += field_context;
       }
 
       if( pos != string::npos )
       {
          string child_name = get_field_name_for_id( handle, context, field, true );
+
          if( child_name.empty( ) )
             child_name = next_field.substr( pos + 1 );
 
@@ -878,13 +891,14 @@ void add_pdf_variables( size_t handle,
 
          if( !value.empty( ) && !tz_name.empty( ) )
          {
-            if( type_name == "date_time" || type_name == "tdatetime" )
+            if( ( type_name == "date_time" ) || ( type_name == "tdatetime" ) )
                value = utc_to_local( date_time( value ), tz_name ).as_string( );
          }
 
          if( all_summaries.count( next_field ) )
          {
             int j = all_summaries[ next_field ];
+
             if( value != summaries[ j ].value )
             {
                summaries[ j ].child = 0;
@@ -894,10 +908,12 @@ void add_pdf_variables( size_t handle,
                   summaries[ k ].value = string( "\1" );
 
                string key( "!" );
+
                for( int k = 0; k <= j; k++ )
                   key += summaries[ k ].value + "\1";
 
                string sname( "summary" );
+
                if( all_summaries.size( ) > 1 )
                   sname += to_string( j + 1 );
 
@@ -917,6 +933,7 @@ void add_pdf_variables( size_t handle,
             if( !is_single_record )
             {
                ostringstream osstr;
+
                osstr << ifmt( 5 ) << row_num;
 
                // FUTURE: This variable should contain the record's state value.
@@ -945,6 +962,7 @@ void add_pdf_variables( size_t handle,
          pdf_variables.insert( make_pair( name, value ) );
 
          string uom_symbol( get_field_uom_symbol( handle, context, field ) );
+
          if( !uom_symbol.empty( ) )
             pdf_variables.insert( make_pair( name + "_(uom)", "(" + uom_symbol + ")" ) );
 
@@ -966,10 +984,12 @@ void add_pdf_variables( size_t handle,
       for( size_t i = 0; i < field_value_pairs.size( ); i++ )
       {
          string key( "!" );
+
          for( size_t j = 0; j < summaries.size( ); j++ )
             key += summaries[ j ].value + "\1";
 
          ostringstream osstr;
+
          osstr << ifmt( 5 ) << summaries[ summaries.size( ) - 1 ].child;
 
          key += "_" + osstr.str( );
@@ -993,6 +1013,7 @@ void add_final_pdf_variables( const map< string, string >& variables,
    for( map< string, string >::const_iterator i = variables.begin( ); i != variables.end( ); ++i )
    {
       string next( i->first );
+
       if( !next.empty( ) )
       {
          if( next[ 0 ] == '!' )
@@ -1000,20 +1021,23 @@ void add_final_pdf_variables( const map< string, string >& variables,
             next.erase( 0, 1 );
 
             vector< string > parts;
+
             split( next, parts, '\1', '\0', false );
 
-            if( parts.size( ) < 1 || parts.size( ) > summaries.size( ) + 1 )
+            if( ( parts.size( ) < 1 ) || ( parts.size( ) > summaries.size( ) + 1 ) )
                throw runtime_error( "unexpected pdf variable key format '" + next + "'" );
 
             bool has_changed = false;
+
             for( size_t j = 0; j < min( parts.size( ) - 1, summaries.size( ) ); j++ )
             {
-               if( has_changed || summaries[ j ].value != parts[ j ] )
+               if( has_changed || ( summaries[ j ].value != parts[ j ] ) )
                {
                   if( has_changed )
                      summaries[ j ].num = -1;
 
                   has_changed = true;
+
                   summaries[ j ].value = parts[ j ];
 
                   ++summaries[ j ].num;
@@ -1024,9 +1048,11 @@ void add_final_pdf_variables( const map< string, string >& variables,
                summaries[ j ].num = -1;
 
             string key;
+
             for( size_t j = 0; j < parts.size( ) - 1; j++ )
             {
                ostringstream osstr;
+
                osstr << setw( 5 ) << setfill( '0' ) << summaries[ j ].num;
 
                key += osstr.str( ) + "_";
@@ -1176,13 +1202,16 @@ struct query_data
 void expand_key_info( bool is_reverse,
  vector< query_data >& all_query_data, string key_template, vector< string >& all_key_info, size_t part = 0 )
 {
-   if( part < all_query_data.size( ) && all_query_data[ part ].is_indexed )
+   if( ( part < all_query_data.size( ) ) && all_query_data[ part ].is_indexed )
    {
       if( all_query_data[ part ].or_values.empty( ) )
       {
          string marker( "@" );
+
          marker += ( '0' + part );
+
          string::size_type pos = key_template.find( marker );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected missing marker '" + marker + "' in query key_template '" + key_template + "'" );
 
@@ -1195,10 +1224,13 @@ void expand_key_info( bool is_reverse,
          for( size_t i = 0; i < all_query_data[ part ].or_values.size( ); i++ )
          {
             string marker( "@" );
+
             marker += ( '0' + part );
 
             string key_template_copy( key_template );
+
             string::size_type pos = key_template_copy.find( marker );
+
             if( pos == string::npos )
                throw runtime_error( "unexpected missing marker '" + marker + "' in query key_template '" + key_template_copy + "'" );
 
@@ -1227,7 +1259,7 @@ void read_log_transformation_info( const string& file_name, map< string, string 
          if( next_line.empty( ) )
             continue;
 
-         if( next_line[ 0 ] == ';' ) // ignore comments...
+         if( next_line[ 0 ] == ';' ) // i.e. ignore comments...
             continue;
 
          size_t pos = next_line.find( ' ' );
@@ -1691,6 +1723,7 @@ class socket_command_handler : public command_handler
     restoring( false )
    {
       bool is_encrypted = false;
+
       bool has_system_id = has_identity( &is_encrypted );
 
       if( is_encrypted || !has_system_id )
@@ -1723,9 +1756,10 @@ class socket_command_handler : public command_handler
 
    void check_lock_expiry( )
    {
-      if( lock_expires && unix_time( ) > lock_expires )
+      if( lock_expires && ( unix_time( ) > lock_expires ) )
       {
          locked_rpc = true;
+
          lock_expires = 0;
       }
    }
@@ -1770,6 +1804,7 @@ class socket_command_handler : public command_handler
    void output_progress( const string& message, unsigned long num = 0, unsigned long total = 0 )
    {
       progress* p_progress = 0;
+
       trace_progress progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
       if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
@@ -1832,6 +1867,7 @@ class socket_command_handler : public command_handler
    string restore_error;
 
    string restricted_key;
+
    set< string > restricted_commands;
 
    map< string, string > transformations;
@@ -1899,6 +1935,7 @@ void socket_command_handler::postprocess_command_and_args( const string& cmd_and
 void socket_command_handler::handle_command_response( const string& response, bool is_special )
 {
    progress* p_progress = 0;
+
    trace_progress progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
    if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
@@ -1966,12 +2003,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    set_dtm( "" );
    set_grp( "" );
    set_uid( "" );
+
    set_tz_name( "" );
+
    set_tmp_directory( "" );
 
    clear_perms( );
 
    set_session_progress_message( "" );
+
    increment_session_commands_executed( );
 
    set_last_session_cmd( command );
@@ -2549,6 +2589,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string names( get_parm_val( parameters, c_cmd_ciyam_session_file_tag_names ) );
 
          vector< string > tag_names;
+
          split( names, tag_names );
 
          for( size_t i = 0; i < tag_names.size( ); i++ )
@@ -2832,6 +2873,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                else
                {
                   vector< string > pats;
+
                   split( includes, pats );
 
                   for( size_t i = 0; i < pats.size( ); i++ )
@@ -3823,6 +3865,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !extra_vars.empty( ) )
          {
             vector< string > extras;
+
             split( extra_vars, extras );
 
             for( size_t i = 0; i < extras.size( ); i++ )
@@ -4477,7 +4520,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      if( !i->second.empty( ) )
                      {
-                        if( type_name == "date_time" || type_name == "tdatetime" )
+                        if( ( type_name == "date_time" ) || ( type_name == "tdatetime" ) )
                         {
                            was_date_time = true;
 
@@ -4816,7 +4859,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      if( !i->second.empty( ) )
                      {
-                        if( type_name == "date_time" || type_name == "tdatetime" )
+                        if( ( type_name == "date_time" ) || ( type_name == "tdatetime" ) )
                         {
                            was_date_time = true;
 
@@ -5368,7 +5411,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         if( !j->second.empty( ) )
                         {
-                           if( type_name == "date_time" || type_name == "tdatetime" )
+                           if( ( type_name == "date_time" ) || ( type_name == "tdatetime" ) )
                            {
                               was_date_time = true;
 
@@ -5683,6 +5726,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else if( !sess_ids.empty( ) )
          {
             vector< string > session_ids;
+
             split( sess_ids, session_ids );
 
             for( size_t i = 0; i < session_ids.size( ); i++ )
@@ -5717,6 +5761,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else if( !sess_ids.empty( ) )
          {
             vector< string > session_ids;
+
             split( sess_ids, session_ids );
 
             for( size_t i = 0; i < session_ids.size( ); i++ )
@@ -7156,6 +7201,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string modules( get_parm_val( parameters, c_cmd_ciyam_session_storage_log_slice_modules ) );
 
          vector< string > module_list;
+
          if( !modules.empty( ) )
             split( modules, module_list );
 
@@ -7187,6 +7233,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string modules( get_parm_val( parameters, c_cmd_ciyam_session_storage_log_splice_modules ) );
 
          vector< string > module_list;
+
          if( !modules.empty( ) )
             split( modules, module_list );
 
@@ -7758,10 +7805,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             tz_name = get_timezone( );
 
          vector< string > all_file_names;
+
          if( !file_names.empty( ) )
             split( file_names, all_file_names );
 
          vector< string > all_image_names;
+
          if( !image_names.empty( ) )
             split( image_names, all_image_names );
 
@@ -7814,6 +7863,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool create_script = has_parm_val( parameters, c_cmd_ciyam_session_system_checkmail_create_script );
 
          vector< string > email_headers;
+
          if( !headers.empty( ) )
             split( headers, email_headers );
 
@@ -8415,6 +8465,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
    while( true )
    {
       progress* p_progress = 0;
+
       trace_progress progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
       if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
