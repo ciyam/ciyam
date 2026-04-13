@@ -106,7 +106,10 @@ along with the other twelve words for safe keeping.
 Identity and Mnemonic Passphrase Examples
 -----------------------------------------
 
-These are both sample blockchains that have been created purely for testing purposes:
+These are some sample blockchains that have been created purely for testing purposes:
+
+Identity: 6d0469dd5
+Mnemonics: carpet purpose exit uncover change ahead soft solve cram long jump ripple
 
 Identity: 6f2680b40
 Mnemonics: detect jazz kick ghost novel rifle scout mirror stairs craft outdoor crisp
