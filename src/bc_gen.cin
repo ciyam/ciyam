@@ -127,12 +127,19 @@ MULTIPLE=5
 TEST_CHAIN=1
 @else
 MULTIPLE=50
+; NOTE: Raw identity values need to be checked for demo
+; systems as the "@system_is_for_demo" variable is only
+; set after initial blockchain creation occurs.
 .identity -raw
 @ifeq "$OUTPUT" "17b4687afd135573a47f1e64ff43de0b4a3c53be"
 DEMO=1
 @endif
+@ifeq "$OUTPUT" "4ce419d8ed69ebb1806f3deb975d8ed8c50c5239"
+DEMO=1
+@else
 @ifeq "$OUTPUT" "c38bb12065f512ef119022f56c22dce665afe8a0"
 DEMO=1
+@endif
 @endif
 @endif
 ;
