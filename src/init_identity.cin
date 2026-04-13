@@ -45,6 +45,7 @@ UNLOCKED=%COMBINED:1%
 @else
 #
 #Identity: $UNLOCKED
+system_variable @system_identity
 ;
 .system_variable @storage
 STORAGE=$OUTPUT
