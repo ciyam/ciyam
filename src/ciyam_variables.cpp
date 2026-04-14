@@ -777,6 +777,7 @@ void check_system_variable_can_be_set( const string& var_name )
     || ( var_name == c_special_variable_opened_files )
     || ( var_name == c_special_variable_shared_files )
     || ( var_name == c_special_variable_system_identity )
+    || ( var_name == c_special_variable_system_is_for_demo )
     || ( var_name == c_special_variable_system_is_for_devt ) )
       okay = false;
 

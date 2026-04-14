@@ -4064,7 +4064,7 @@ void check_if_is_known_demo_identity( )
 
    if( g_demo_identities.count( get_raw_system_variable(
     get_special_var_name( e_special_var_system_identity ) ) ) )
-      set_system_variable( get_special_var_name( e_special_var_system_is_for_demo ), c_true_value );
+      set_system_variable( get_special_var_name( e_special_var_system_is_for_demo ), c_true_value, true );
 }
 
 void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch )
