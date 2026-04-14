@@ -178,6 +178,7 @@ else
   cp $main_module.txt $release_name/ciyam
   cp $main_module.map.new $release_name/ciyam
   cp $main_module.modules.lst $release_name/ciyam
+  cp $main_module.demo_keys.lst $release_name/ciyam
 
   cp $main_module*.cin $main_module*.csv $main_module.*.vars.lst $main_module.init.lst $release_name/ciyam
 
