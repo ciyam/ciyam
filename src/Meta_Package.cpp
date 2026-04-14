@@ -1410,7 +1410,7 @@ void Meta_Package::impl::impl_Install( )
           << " " << type_name << ".package.sio -new_only -s=@Meta_Class.skips.lst -r=@" << list_filename << "\n";
 
          outc << ".pe " << get_uid( ) << " @now " << get_obj( ).get_module_id( ) << " "
-          << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " 136430\n";
+          << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " 136430\n"; // i.e. Check_Install
 
          if( async )
             outc << ".session_lock -release -at_term " << session_id( ) << "\n"; // see NOTE below...
