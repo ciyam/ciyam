@@ -1,0 +1,56 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "1"
+#Usage: extract_datachain_release.cin <name> [<path>] [<height>]
+@else
+ERROR=
+;
+NAME=$1
+PATH=$2
+HEIGHT=$3
+;
+@ifndef $PATH
+PATH=.
+@endif
+;
+.system_variable @blockchain_identity_$NAME
+IDENTITY=$OUTPUT
+;
+@ifndef $IDENTITY
+ERROR=Unknown datachain for key name '$NAME'.
+#Error: $ERROR
+@else
+;
+@ifndef $HEIGHT
+.file_core -header bc.$IDENTITY.zenith h
+HEIGHT=$OUTPUT
+@endif
+;
+.system_variable @files_area_path
+FILES_AREA_DIR=$OUTPUT
+;
+.session_variable @blockchain_archive_path $FILES_AREA_DIR/$IDENTITY
+;
+<block_tree_hash.cin $IDENTITY $HEIGHT
+TREE_HASH=$OUTPUT
+;
+.file_info -content $TREE_HASH
+RELEASE_INFO=@repstr: /\n:%OUTPUT:2%
+RELEASE_NAME=%RELEASE_INFO:2%
+;
+<tree_list.cin $TREE_HASH 0 $RELEASE_NAME
+RELEASE_HASH=%OUTPUT:2%
+;
+<export_files.cin $RELEASE_HASH $PATH
+;
+@endif
+;
+@endif

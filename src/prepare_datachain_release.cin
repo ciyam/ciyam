@@ -1,0 +1,51 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "1"
+#Usage: prepare_datachain_release.cin <name> [<ver>]
+@else
+ERROR=
+;
+NAME=$1
+VERSION=$2
+;
+NAME_AND_VER=$NAME
+;
+@ifdef $VERSION
+NAME_AND_VER=$NAME_AND_VER.$VERSION
+@endif
+;
+.system_variable @blockchain_identity_$NAME
+IDENTITY=$OUTPUT
+;
+@ifndef $IDENTITY
+ERROR=Unknown datachain for key name '$NAME'.
+#Error: $ERROR
+@else
+;
+RELEASE_FILE_NAME=../$NAME_AND_VER.tar.gz
+CHECK_RELEASE_FILE=@files::$RELEASE_FILE_NAME
+;
+@ifndef $CHECK_RELEASE_FILE
+ERROR=File '$RELEASE_FILE_NAME' was not found.
+#Error: $ERROR
+@else
+;
+CIYAM_USE_IMPLICIT_STRIP=1
+<import_files.cin .. $IDENTITY.tree : $NAME_AND_VER.tar.gz
+;
+<generate_next_block.cin $IDENTITY dummy $IDENTITY.tree
+<block_tree_relegate.cin $IDENTITY $IDENTITY.tree
+;
+@endif
+;
+@endif
+;
+@endif
