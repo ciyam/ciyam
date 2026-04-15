@@ -111,6 +111,7 @@ const char* const c_env_var_ciyam_no_pause = "CIYAM_NO_PAUSE";
 const char* const c_env_var_progress_prefix = "PROGRESS_PREFIX";
 const char* const c_env_var_ciyam_no_progress = "CIYAM_NO_PROGRESS";
 const char* const c_env_var_ciyam_file_name_only = "CIYAM_FILE_NAME_ONLY";
+const char* const c_env_var_ciyam_use_implicit_strip = "CIYAM_USE_IMPLICIT_STRIP";
 
 const char* const c_udp_msg_cancel = "XXX";
 
@@ -443,7 +444,8 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
             regex expr( c_regex_hash_256, true, true );
 
-            if( was_chk && !was_chk_token && expr.search( data ) == string::npos )
+            if( was_chk && !was_chk_token
+             && ( expr.search( data ) == string::npos ) )
                was_chk_tag = true;
 
             // NOTE: For testing purposes if a local file exists with the name given then
@@ -451,6 +453,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
             if( was_chk_tag && file_exists( data ) )
             {
                str.erase( pos + 1 );
+
                data = buffer_file( data );
 
                str += sha256( prefix + data ).get_digest_as_string( ) + extra;
@@ -495,9 +498,10 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                      // NOTE: If the list had been constructed via a script it might have
                      // ended up with an invalid final trailing line feed (so remove it).
-                     if( !buffer.empty( ) && buffer[ buffer.length( ) - 1 ] == '\n' )
+                     if( !buffer.empty( ) && ( buffer[ buffer.length( ) - 1 ] == '\n' ) )
                      {
                         buffer.erase( buffer.length( ) - 1 );
+
                         write_file( put_source_file, buffer );
                      }
                   }
@@ -521,6 +525,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                            if( lpos != string::npos )
                            {
                               file_bytes = unformat_bytes( put_source_file.substr( lpos + 1 ) );
+
                               put_source_file.erase( lpos );
                            }
 
@@ -564,7 +569,14 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         }
                         else
                         {
-                           file_strip_prefix = file_extra.substr( 0, pos );
+                           // NOTE: If CIYAM_USE_IMPLICIT_STRIP has been set and "//" was found
+                           // in the name provided then uses the path before that for the strip
+                           // prefix rather than the explicit path provided.
+                           if( ( xpos != string::npos )
+                            && has_environment_variable( c_env_var_ciyam_use_implicit_strip ) )
+                              file_strip_prefix = file_name.substr( 0, xpos );
+                           else
+                              file_strip_prefix = file_extra.substr( 0, pos );
 
                            file_extra.erase( 0, pos + 1 );
                         }
