@@ -1,0 +1,109 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "1"
+#Usage: sync_datachain_release.cin <name> [<host_and_port>]
+@else
+ERROR=
+;
+NAME=$1
+HOST_AND_PORT=$2
+;
+.system_variable @blockchain_identity_$NAME
+IDENTITY=$OUTPUT
+;
+@ifndef $IDENTITY
+ERROR=Unknown release datachain '$NAME'.
+@else
+.system_variable @secret_hash_$IDENTITY
+@ifndef $OUTPUT
+ERROR=Unexpected missing '@secret_hash_$IDENTITY' system variable.
+@else
+@ifndef $HOST_AND_PORT
+.system_variable @release_peer_$NAME
+@ifdef $OUTPUT
+HOST_AND_PORT=$OUTPUT
+@else
+ERROR=Unexpected missing '@release_peer_$NAME' system variable.
+@endif
+@endif
+@endif
+@endif
+;
+@ifdef $ERROR
+#Error: $ERROR
+@else
+;
+CHAIN_HEIGHT=0
+.file_tags bc.79a268fc7.zenith*
+@ifdef $OUTPUT
+.file_core -header bc.79a268fc7.zenith h
+CHAIN_HEIGHT=$OUTPUT
+@endif
+;
+.peer_connect $IDENTITY $HOST_AND_PORT -data
+.wait 100
+.session_list $IDENTITY
+@ifndef $OUTPUT
+.wait 150
+.session_list $IDENTITY
+@endif
+;
+@ifndef $OUTPUT
+ERROR=Unable to connect to $HOST_AND_PORT
+@else
+;
+.system_variable #$IDENTITY
+@ifdef $OUTPUT
+ERROR=$OUTPUT
+@endif
+@endif
+;
+@ifdef $ERROR
+#Error: $ERROR
+@else
+@label NEXT
+;
+@:LOOP
+.session_list $IDENTITY
+@ifndef $OUTPUT
+@label END_LOOP
+@endif
+;
+@skip
+@:NEXT
+;
+.system_variable %%$IDENTITY
+@ifdef $OUTPUT
+##$OUTPUT
+@endif
+.wait 1000
+!!@:LOOP
+;
+@:END_LOOP
+;
+NEW_CHAIN_HEIGHT=0
+.file_tags bc.79a268fc7.zenith*
+@ifdef $OUTPUT
+.file_core -header bc.79a268fc7.zenith h
+NEW_CHAIN_HEIGHT=$OUTPUT
+@endif
+;
+@ifneq "$CHAIN_HEIGHT" "$NEW_CHAIN_HEIGHT"
+#New release of '$NAME' is now available.
+@else
+#No new release for '$NAME' is available.
+@endif
+;
+@endif
+;
+@endif
+;
+@endif
