@@ -600,11 +600,9 @@ void system_identity_progress_message( const string& identity, bool is_preparing
 
    string identity_progress_message;
 
-   bool has_backup_identity = has_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) );
-
-   // NOTE: If the peer does not have a backup identity (i.e. is just a hub) then will just
-   // set the progress to the "current zenith height" (as it is not being used for the UI).
-   if( !has_backup_identity )
+   // NOTE: If the peer is a hub then just sets the progress to the "current zenith height"
+   // (as it is not currently being used for the UI).
+   if( has_raw_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ) )
       identity_progress_message = get_current_height_prefix( ) + to_string( zenith_height );
    else
    {
@@ -627,11 +625,20 @@ void system_identity_progress_message( const string& identity, bool is_preparing
       {
          string::size_type pos = progress_message.find( c_percentage_separator );
 
-         if( pos != string::npos )
+         if( pos == string::npos )
+            pos = progress_message.rfind( c_ellipsis );
+         else
          {
-            prefix = progress_message.substr( 0, pos );
             percentage_value = progress_message.substr( pos + strlen( c_percentage_separator ) );
+
+            string::size_type ppos = percentage_value.find( '%' );
+
+            // NOTE: Removes anything after the '%' (such as an ellipsis).
+            if( ppos != string::npos )
+               percentage_value.erase( ppos + 1 );
          }
+
+         prefix = progress_message.substr( 0, pos );
       }
 
       bool paired_is_current = false;
@@ -735,6 +742,7 @@ void system_identity_progress_message( const string& identity, bool is_preparing
          if( !paired_other_height && ( paired_base_height > 1 ) )
          {
             paired_is_changing = true;
+
             identity_progress_message += "<" + to_string( paired_base_height );
          }
          else
@@ -744,6 +752,7 @@ void system_identity_progress_message( const string& identity, bool is_preparing
             if( paired_base_height > paired_other_height )
             {
                paired_is_changing = true;
+
                identity_progress_message += '/' + to_string( paired_base_height );
             }
          }
@@ -4837,11 +4846,15 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                progress_message += to_string( c_ellipsis );
 
                set_session_progress_message( progress_message );
+
+               system_identity_progress_message( identity );
             }
             else if( blockchain_height != blockchain_height_pending )
+            {
                is_preparing = true;
 
-            system_identity_progress_message( identity, is_preparing );
+               system_identity_progress_message( identity, is_preparing );
+            }
          }
 
          if( !has_raw_session_variable( get_special_var_name( e_special_var_paired_sync ) ) )
@@ -5998,6 +6011,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   set_session_progress_message( progress_message );
 
+                  system_identity_progress_message( identity );
+
                   set_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ), "" );
                }
             }
@@ -6408,6 +6423,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      progress_message += to_string( c_ellipsis );
 
                      set_session_progress_message( progress_message );
+
+                     system_identity_progress_message( identity );
                   }
                }
             }
