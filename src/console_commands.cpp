@@ -2639,6 +2639,8 @@ console_command_handler::console_command_handler( )
 
 console_command_handler::~console_command_handler( )
 {
+   clear_progress_output( true );
+
    delete p_impl;
 }
 
