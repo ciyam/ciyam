@@ -615,6 +615,8 @@ void system_identity_progress_message( const string& identity, bool is_preparing
       size_t paired_base_height = 0;
       size_t paired_other_height = 0;
 
+      bool empty_other_height = false;
+
       bool is_changing = ( progress_message.find( c_ellipsis ) != string::npos );
 
       string current_prefix( !is_preparing ? get_current_height_prefix( ) : get_preparing_height_prefix( ) );
@@ -674,7 +676,9 @@ void system_identity_progress_message( const string& identity, bool is_preparing
             string paired_height_other(
              get_raw_session_variable( blockchain_height_other_name, paired_session_id ) );
 
-            if( !paired_height_other.empty( ) )
+            if( paired_height_other.empty( ) )
+               empty_other_height = true;
+            else
                paired_other_height = from_string< size_t >( paired_height_other );
 
             // NOTE: If the paired session's progress is "changing" but is not "fetching" then
@@ -739,7 +743,7 @@ void system_identity_progress_message( const string& identity, bool is_preparing
       {
          identity_progress_message += " (";
 
-         if( !paired_other_height && ( paired_base_height > 1 ) )
+         if( empty_other_height && ( paired_base_height > 1 ) )
          {
             paired_is_changing = true;
 
@@ -847,9 +851,18 @@ void output_sync_progress_message( const string& identity,
       system_identity_progress_message( identity );
    }
    else
-      // NOTE: If no '@blockchain_zenith_height' session variable exists then
-      // assume that the call was from a listener rather than a peer session.
-      set_system_variable( c_progress_output_prefix + identity, progress_message );
+   {
+      // NOTE: If neither "@blockchain_zenith_height" nor "@blockchain_time_value"
+      // session variables are found then will assume that this function must have
+      // been called from a listener rather than a peer session.
+      if( has_session_variable(
+       get_special_var_name( e_special_var_blockchain_time_value ) ) )
+         system_identity_progress_message( identity );
+      else
+         set_system_variable( c_progress_output_prefix + identity, progress_message );
+   }
+
+   system_identity_progress_message( identity );
 }
 
 string get_hello_data( string& hello_hash )
@@ -4846,15 +4859,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                progress_message += to_string( c_ellipsis );
 
                set_session_progress_message( progress_message );
-
-               system_identity_progress_message( identity );
             }
             else if( blockchain_height != blockchain_height_pending )
-            {
                is_preparing = true;
 
-               system_identity_progress_message( identity, is_preparing );
-            }
+            system_identity_progress_message( identity, is_preparing );
          }
 
          if( !has_raw_session_variable( get_special_var_name( e_special_var_paired_sync ) ) )
@@ -6011,8 +6020,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   set_session_progress_message( progress_message );
 
-                  system_identity_progress_message( identity );
-
                   set_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ), "" );
                }
             }
@@ -6423,8 +6430,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      progress_message += to_string( c_ellipsis );
 
                      set_session_progress_message( progress_message );
-
-                     system_identity_progress_message( identity );
                   }
                }
             }
