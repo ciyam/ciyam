@@ -3548,6 +3548,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else if( type_shared )
             chain_type = e_peerchain_type_shared;
 
+         possibly_expected_error = true;
+
+         if( num_supporters && ( chain_type == e_peerchain_type_data ) )
+            throw runtime_error( "support sessions are not currently supported for data blockchains" );
+
          string paired_primary, paired_secondary;
 
          string secret_hash, secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
