@@ -42,9 +42,9 @@ ERROR=Unexpected missing '@release_peer_$NAME' system variable.
 @else
 ;
 CHAIN_HEIGHT=0
-.file_tags bc.79a268fc7.zenith*
+.file_tags bc.$IDENTITY.zenith*
 @ifdef $OUTPUT
-.file_core -header bc.79a268fc7.zenith h
+.file_core -header bc.$IDENTITY.zenith h
 CHAIN_HEIGHT=$OUTPUT
 @endif
 ;
@@ -90,16 +90,14 @@ ERROR=$OUTPUT
 @:END_LOOP
 ;
 NEW_CHAIN_HEIGHT=0
-.file_tags bc.79a268fc7.zenith*
+.file_tags bc.$IDENTITY.zenith*
 @ifdef $OUTPUT
-.file_core -header bc.79a268fc7.zenith h
+.file_core -header bc.$IDENTITY.zenith h
 NEW_CHAIN_HEIGHT=$OUTPUT
 @endif
 ;
 @ifneq "$CHAIN_HEIGHT" "$NEW_CHAIN_HEIGHT"
 #New release of '$NAME' is now available.
-@else
-#No new release for '$NAME' is available.
 @endif
 ;
 @endif
