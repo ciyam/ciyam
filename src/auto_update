@@ -14,24 +14,44 @@ else
  ./ciyam_script sync_datachain_release $NAME >~auto_update
 
  if grep -q "now available" ~auto_update; then
-  ./ciyam_script extract_datachain_release $NAME  >~auto_update
+  ./ciyam_script extract_datachain_release $NAME >~auto_update
 
-  if grep -q ".tar.gz" ~auto_update; then
+  update_output_file=auto_update.txt
 
-   tarball=$(<~auto_update)
+  echo "$(date) [started update]" > $update_output_file
 
-   folder=${tarball%"tar.gz"}
+  found=
 
-   tar -xvzf $tarball
+  num_files=$(wc -l < ~auto_update)
 
-   rm $tarball
+  if [ "$num_files" == "1" ]; then
+   if grep -q ".tar.gz" ~auto_update; then
 
-   pushd $folder > /dev/null
+    found=1
 
-   ./install
+    tarball=$(<~auto_update)
 
-   popd > /dev/null
+    folder=${tarball%".tar.gz"}
+
+    tar -xvzf $tarball
+
+    rm $tarball
+
+    pushd $folder > /dev/null
+
+    ./install >> ../$update_output_file
+
+    popd > /dev/null
+
+   fi
   fi
+
+  if [ "$found" != "1" ]; then
+   echo "Error: Found unexpected release information." >> $update_output_file
+   cat ~auto_update >> $update_output_file
+  fi
+
+  echo "$(date) [finished update]" >> $update_output_file
  fi
 
  rm -f ~auto_update
