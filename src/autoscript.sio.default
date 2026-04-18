@@ -37,6 +37,13 @@
 #  <filename>*script*
 #  <arguments>ciyam_ddns_ip_updates.cin
 # </script>
+# <script/>
+#  <name>auto_update
+#  <time>06:00:00
+#  <cycle>1d
+#  <filename>auto_update:~update
+#  <arguments>@auto_update
+# </script>
 ### [<start generated>]
 ### [<finish generated>]
 </sio>

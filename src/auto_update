@@ -1,0 +1,39 @@
+#!/bin/bash
+# Copyright (c) 2026 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 1 ]; then
+ echo "Usage: auto_update [name]"
+else
+ NAME=$1
+
+ export CIYAM_NO_PROGRESS=1
+
+ ./ciyam_script sync_datachain_release $NAME >~auto_update
+
+ if grep -q "now available" ~auto_update; then
+  ./ciyam_script extract_datachain_release $NAME  >~auto_update
+
+  if grep -q ".tar.gz" ~auto_update; then
+
+   tarball=$(<~auto_update)
+
+   folder=${tarball%"tar.gz"}
+
+   tar -xvzf $tarball
+
+   rm $tarball
+
+   pushd $folder > /dev/null
+
+   ./install
+
+   popd > /dev/null
+  fi
+ fi
+
+ rm -f ~auto_update
+
+fi
