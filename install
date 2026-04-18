@@ -116,9 +116,12 @@ if [ -d src ]; then
    fi
   fi
 
-  if [ "$name" = "" ]; then
-   name="*"
-  fi
+ fi
+fi
+
+if [ "$full_name" = "" ]; then
+ if [ "$name" = "" ]; then
+  name="*"
  fi
 fi
 
