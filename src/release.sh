@@ -141,7 +141,7 @@ else
 
  cp channel_readme.md mnemonics.txt ciyam_strings.txt module_strings.txt $release_name/ciyam
 
- cp add_user at_init at_term $release_name/ciyam
+ cp add_user at_init at_term auto_update $release_name/ciyam
  cp backup_check backup_export backup_import check_ext_ip_addr ciyam_backup ciyam_command ciyam_restore ciyam_script $release_name/ciyam
  cp construct create_ciyam_pem create_db drop_db export_files hub_check import_files init_identity kill_current_pid_for_user $release_name/ciyam
  cp prepare_for_import process_ciyam_logins resize_fs_img_files restore set_random_password shared_export shared_check shared_import system_variable $release_name/ciyam
@@ -215,6 +215,11 @@ else
   cat $main_module.log | tail -n +2 > $release_name/ciyam/$main_module.log.app
  fi
 
+ cp ../install $release_name
+
+ # NOTE: The existence of "env_vars.sh" is being used by the "install"
+ # bash script to determine if it is in the release directory. It must
+ # therefore not be removed or renamed without corresponding changes.
  echo "export CIYAM_APP_DIR=$app_dir_name" > $release_name/env_vars.sh
  echo "export CIYAM_APP_MOD=$main_module" >> $release_name/env_vars.sh
 
@@ -233,24 +238,9 @@ else
  # NOTE: Remove any symbolic links that were copied.
  find $release_name/$app_dir_name -type l -exec unlink {} \;
 
- had_install=
-
- # NOTE: Assuming was not already present will copy
- # the 'install' bash script (then remove it after)
- # in order to stop 'tar' complaining about needing
- # to remove a '../' prefix.
- if [ -f install ]; then
-  had_install=1
- else
-  cp ../install .
- fi
-
  rm -f ../$release_name.tar.gz
- tar -czvf ../$release_name.tar.gz install $release_name
 
- if [ "$had_install" = "" ]; then
-  rm -f install
- fi
+ tar -czvf ../$release_name.tar.gz $release_name
 
  rm -R $release_name
 fi
