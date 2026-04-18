@@ -70,6 +70,7 @@ const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
 
 const char* const c_env_var_ciyam_fissile = "CIYAM_FISSILE";
+const char* const c_env_var_ciyam_no_progress = "CIYAM_NO_PROGRESS";
 const char* const c_env_var_ciyam_use_default = "CIYAM_USE_DEFAULT";
 const char* const c_env_var_ciyam_nested_level = "CIYAM_NESTED_LEVEL";
 const char* const c_env_var_ciyam_pause_seconds = "CIYAM_PAUSE_SECONDS";
@@ -4500,38 +4501,41 @@ void console_command_handler::handle_command_response( const string& response, b
 
 void console_command_handler::handle_progress_message( const string& message )
 {
-   string prefix( get_environment_variable( c_env_var_progress_prefix ) );
-
-   bool single_character_message = ( message.length( ) == 1 );
-
-   // NOTE: If single character message is a space then skips
-   // output and instead clears any existing progress output.
-   if( single_character_message && ( message[ 0 ] == ' ' ) )
-      clear_progress_output( false );
-   else
+   if( !has_environment_variable( c_env_var_ciyam_no_progress ) )
    {
-      if( !single_character_message )
-         clear_progress_output( false );
+      string prefix( get_environment_variable( c_env_var_progress_prefix ) );
 
-      if( has_option( c_cmd_monitor ) )
-         put_line( prefix + message, !single_character_message );
+      bool single_character_message = ( message.length( ) == 1 );
+
+      // NOTE: If single character message is a space then skips
+      // output and instead clears any existing progress output.
+      if( single_character_message && ( message[ 0 ] == ' ' ) )
+         clear_progress_output( false );
       else
       {
-         *p_std_out << prefix << message;
+         if( !single_character_message )
+            clear_progress_output( false );
 
-         p_std_out->flush( );
+         if( has_option( c_cmd_monitor ) )
+            put_line( prefix + message, !single_character_message );
+         else
+         {
+            *p_std_out << prefix << message;
+
+            p_std_out->flush( );
+         }
+
+         if( !prefix.empty( ) )
+            had_progress_prefix = true;
+
+         if( single_character_message )
+            ++progress_output_count;
+         else
+            progress_output_count = message.length( );
       }
 
-      if( !prefix.empty( ) )
-         had_progress_prefix = true;
-
-      if( single_character_message )
-         ++progress_output_count;
-      else
-         progress_output_count = message.length( );
+      set_environment_variable( c_env_var_progress_prefix, "" );
    }
-
-   set_environment_variable( c_env_var_progress_prefix, "" );
 }
 
 void console_command_handler::handle_extraneous_custom_option( const string& option )
