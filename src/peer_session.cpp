@@ -852,17 +852,17 @@ void output_sync_progress_message( const string& identity,
    }
    else
    {
-      // NOTE: If neither "@blockchain_zenith_height" nor "@blockchain_time_value"
-      // session variables are found then will assume that this function must have
-      // been called from a listener rather than a peer session.
       if( has_session_variable(
        get_special_var_name( e_special_var_blockchain_time_value ) ) )
          system_identity_progress_message( identity );
       else
+      {
+         // NOTE: If neither "@blockchain_zenith_height" nor "@blockchain_time_value"
+         // session variables were found then will assume that this function has been
+         // called during startup.
          set_system_variable( c_progress_output_prefix + identity, progress_message );
+      }
    }
-
-   system_identity_progress_message( identity );
 }
 
 string get_hello_data( string& hello_hash )
