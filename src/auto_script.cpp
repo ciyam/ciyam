@@ -67,8 +67,8 @@ const char* const c_attribute_filename = "filename";
 const char* const c_attribute_arguments = "arguments";
 const char* const c_attribute_time_stamp = "time_stamp";
 
-const int c_min_cycle_seconds_for_logging = 300;
-const int c_min_cycle_seconds_for_errors_only = 3600;
+const int c_min_cycle_seconds_for_logging = 60;
+const int c_min_cycle_seconds_for_errors_only = 3000;
 
 // NOTE: This figure always allows an event that recurs every second to be rescheduled.
 const size_t c_max_reschedule_attempts = 86400;
@@ -157,7 +157,6 @@ void read_script_info( )
 
    try
    {
-
       if( !g_has_read )
          g_has_read = true;
       else
@@ -202,6 +201,7 @@ void read_script_info( )
             info.name = reader.read_attribute( c_attribute_name );
 
             string time_info( reader.read_attribute( c_attribute_time ) );
+
             string::size_type pos = time_info.find( '-' );
 
             if( pos == string::npos )
@@ -319,6 +319,7 @@ void read_script_info( )
             if( pos != string::npos )
             {
                info.lock_filename = info.filename.substr( pos + 1 );
+
                info.filename.erase( pos );
 
                if( !info.lock_filename.empty( ) )
@@ -894,5 +895,6 @@ void autoscript_session::on_start( )
 void init_auto_script( )
 {
    autoscript_session* p_autoscript_session = new autoscript_session;
+
    p_autoscript_session->start( );
 }
