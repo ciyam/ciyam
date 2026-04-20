@@ -154,6 +154,7 @@ const char* const c_special_variable_tree_match = "@tree_match";
 const char* const c_special_variable_tree_total = "@tree_total";
 const char* const c_special_variable_allow_async = "@allow_async";
 const char* const c_special_variable_application = "@application";
+const char* const c_special_variable_auto_update = "@auto_update";
 const char* const c_special_variable_errors_only = "@errors_only";
 const char* const c_special_variable_init_log_id = "@init_log_id";
 const char* const c_special_variable_ip_ext_addr = "@ip_ext_addr";
@@ -495,6 +496,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_tree_total );
       g_special_variable_names.push_back( c_special_variable_allow_async );
       g_special_variable_names.push_back( c_special_variable_application );
+      g_special_variable_names.push_back( c_special_variable_auto_update );
       g_special_variable_names.push_back( c_special_variable_errors_only );
       g_special_variable_names.push_back( c_special_variable_init_log_id );
       g_special_variable_names.push_back( c_special_variable_ip_ext_addr );
