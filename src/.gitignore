@@ -8,12 +8,16 @@ xxx
 xxxx
 x.cin
 x.cpp
+x.txt
 xx.cin
 xx.cpp
+xx.txt
 xxx.cin
 xxx.cpp
+xxx.txt
 xxxx.cin
 xxxx.cpp
+xxxx.txt
 
 # Ignore all .old, .sav and .tmp files.
 *.old
