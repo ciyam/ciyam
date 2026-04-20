@@ -4057,6 +4057,8 @@ class socket_command_handler : public command_handler
       }
 
       last_issued_was_put = !is_responder;
+
+      auto_update_var_name = get_special_var_name( e_special_var_auto_update );
    }
 
    ~socket_command_handler( )
@@ -4285,6 +4287,8 @@ class socket_command_handler : public command_handler
    string next_command;
 
    string prior_file_hash;
+
+   string auto_update_var_name;
 
    date_time dtm_last_get;
    date_time dtm_last_issued;
@@ -5124,6 +5128,21 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
             if( has_issued_chk )
             {
+               if( has_system_variable( auto_update_var_name ) )
+               {
+                  string auto_update_name( get_raw_system_variable( auto_update_var_name ) );
+
+                  string auto_update_identity( get_raw_system_variable(
+                   get_special_var_name( e_special_var_blockchain_identity ) + '_' + auto_update_name ) );
+
+                  // NOTE: If this is the "auto update" datachain
+                  // and has not yet reached the zenith height of
+                  // the other then will skip tree file fetching.
+                  if( ( identity == auto_update_identity )
+                   && ( blockchain_height + 1 < blockchain_height_other ) )
+                     has_tree_files = false;
+               }
+
                if( !has_tree_files )
                {
                   if( !has_raw_session_variable( get_special_var_name( e_special_var_paired_sync ) ) )
