@@ -42,11 +42,20 @@ ERROR=Unexpected missing '@release_peer_$NAME' system variable.
 @else
 ;
 CHAIN_HEIGHT=0
+NEW_CHAIN_HEIGHT=0
+;
+.system_variable @%NAME%_height
+@ifdef $OUTPUT
+CHAIN_HEIGHT=$OUTPUT
+@endif
+;
 .file_tags bc.$IDENTITY.zenith*
 @ifdef $OUTPUT
 .file_core -header bc.$IDENTITY.zenith h
-CHAIN_HEIGHT=$OUTPUT
+NEW_CHAIN_HEIGHT=$OUTPUT
 @endif
+;
+@ifeq "$CHAIN_HEIGHT" "$NEW_CHAIN_HEIGHT"
 ;
 .peer_connect $IDENTITY $HOST_AND_PORT -data
 .wait 100
@@ -96,10 +105,13 @@ NEW_CHAIN_HEIGHT=0
 NEW_CHAIN_HEIGHT=$OUTPUT
 @endif
 ;
-@ifneq "$CHAIN_HEIGHT" "$NEW_CHAIN_HEIGHT"
-#New release of '$NAME' is now available.
 @endif
 ;
+@endif
+;
+@ifneq "$CHAIN_HEIGHT" "$NEW_CHAIN_HEIGHT"
+#New release of '$NAME' is now available.
+.system_variable >@%NAME%_height $NEW_CHAIN_HEIGHT
 @endif
 ;
 @endif
