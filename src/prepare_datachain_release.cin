@@ -9,28 +9,49 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "1"
-#Usage: prepare_datachain_release.cin <name> [<ver>]
+#Usage: prepare_datachain_release.cin <name>
 @else
+;
 ERROR=
 ;
 NAME=$1
-VERSION=$2
 ;
-NAME_AND_VER=$NAME
+RELEASE=
+VERSION=
 ;
-@ifdef $VERSION
-NAME_AND_VER=$NAME_AND_VER.$VERSION
+.system_variable @release_$NAME
+@ifdef $OUTPUT
+RELEASE=$OUTPUT
+@else
+ERROR=Unknown release name '$NAME'.
+#Error: $ERROR
 @endif
 ;
-.system_variable @blockchain_identity_$NAME
+.storage_init Meta
+@ifndef $ERROR
+.pf Meta Application "" -q=Name=$NAME Version -min
+@ifndef $OUTPUT
+ERROR=Unexpected application '$NAME' was not found.
+#Error: $ERROR
+@else
+VERSION=$OUTPUT
+@endif
+.storage_term
+@endif
+;
+@ifndef $ERROR
+;
+RELEASE_AND_VER=$RELEASE.$VERSION
+;
+.system_variable @blockchain_identity_$RELEASE
 IDENTITY=$OUTPUT
 ;
 @ifndef $IDENTITY
-ERROR=Unknown datachain for key name '$NAME'.
+ERROR=Unknown datachain for application '$NAME'.
 #Error: $ERROR
 @else
 ;
-RELEASE_FILE_NAME=../$NAME_AND_VER.tar.gz
+RELEASE_FILE_NAME=../$RELEASE_AND_VER.tar.gz
 CHECK_RELEASE_FILE=@files::$RELEASE_FILE_NAME
 ;
 @ifndef $CHECK_RELEASE_FILE
@@ -39,10 +60,12 @@ ERROR=File '$RELEASE_FILE_NAME' was not found.
 @else
 ;
 CIYAM_USE_IMPLICIT_STRIP=1
-<import_files.cin .. $IDENTITY.tree : $NAME_AND_VER.tar.gz
+<import_files.cin .. $IDENTITY.tree : $RELEASE_AND_VER.tar.gz
 ;
 <generate_next_block.cin $IDENTITY dummy $IDENTITY.tree
 <block_tree_relegate.cin $IDENTITY $IDENTITY.tree
+;
+@endif
 ;
 @endif
 ;

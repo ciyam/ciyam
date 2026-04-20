@@ -1,0 +1,45 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "1"
+#Usage: create_datachain_release.cin <name> [<vendor>]
+@else
+;
+ERROR=
+;
+NAME=$1
+VENDOR=$2
+;
+@ifndef $VENDOR
+VENDOR=CIYAM
+@endif
+;
+.storage_init Meta
+@ifndef $ERROR
+.pf Meta Application "" -q=Name=$NAME Name -min
+@ifndef $OUTPUT
+ERROR=Application '$NAME' was not found.
+#Error: $ERROR
+@else
+;
+VENDOR_AND_NAME=%VENDOR%_%NAME%
+VENDOR_AND_NAME=@lower:$VENDOR_AND_NAME
+;
+<create_peerchain_data.cin $VENDOR_AND_NAME
+;
+@ifndef $ERROR
+.system_variable >@release_$NAME $VENDOR_AND_NAME
+@endif
+;
+@endif
+.storage_term
+@endif
+;
+@endif
