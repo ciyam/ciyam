@@ -21,20 +21,6 @@ IDENTITY=$OUTPUT
 ;
 @ifndef $IDENTITY
 ERROR=Unknown release datachain '$NAME'.
-@else
-.system_variable @secret_hash_$IDENTITY
-@ifndef $OUTPUT
-ERROR=Unexpected missing '@secret_hash_$IDENTITY' system variable.
-@else
-@ifndef $HOST_AND_PORT
-.system_variable @release_peer_$NAME
-@ifdef $OUTPUT
-HOST_AND_PORT=$OUTPUT
-@else
-ERROR=Unexpected missing '@release_peer_$NAME' system variable.
-@endif
-@endif
-@endif
 @endif
 ;
 @ifdef $ERROR
@@ -56,6 +42,21 @@ NEW_CHAIN_HEIGHT=$OUTPUT
 @endif
 ;
 @ifeq "$CHAIN_HEIGHT" "$NEW_CHAIN_HEIGHT"
+;
+CHECK_PEER=
+;
+.system_variable @release_peer_$NAME
+@ifdef $OUTPUT
+.system_variable @secret_hash_$IDENTITY
+@ifdef $OUTPUT
+CHECK_PEER=1
+@else
+ERROR=Unexpected missing '@secret_hash_$IDENTITY' system variable.
+#Error: $ERROR
+@endif
+@endif
+;
+@ifdef $CHECK_PEER
 ;
 .peer_connect $IDENTITY $HOST_AND_PORT -data
 .wait 100
@@ -103,6 +104,8 @@ NEW_CHAIN_HEIGHT=0
 @ifdef $OUTPUT
 .file_core -header bc.$IDENTITY.zenith h
 NEW_CHAIN_HEIGHT=$OUTPUT
+@endif
+;
 @endif
 ;
 @endif
