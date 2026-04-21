@@ -230,7 +230,7 @@ if [ "$release_dir" = "" ]; then
    release_dir=${release_file%.tar.gz}
 
    if [ ! -d $release_dir ]; then
-    tar -xvzf $release_file
+    tar -xvzf $release_file >/dev/null
    fi
   fi
  else
@@ -314,6 +314,9 @@ if [ ! -d $SYSTEM_LOG_PATH ]; then
 
  touch $SYSTEM_LOG_PATH/ciyam_server.log
  sudo chown $CIYAM_USER:$CIYAM_GROUP $SYSTEM_LOG_PATH/ciyam_server.log
+
+ touch $SYSTEM_LOG_PATH/ciyam_update.log
+ sudo chown $CIYAM_USER:$CIYAM_GROUP $SYSTEM_LOG_PATH/ciyam_update.log
 fi
 
 if [ ! -L $INSTALL_PATH/ciyam_script.log ]; then
@@ -324,6 +327,11 @@ fi
 if [ ! -L $INSTALL_PATH/ciyam_server.log ]; then
  ln -s $SYSTEM_LOG_PATH/ciyam_server.log $INSTALL_PATH/ciyam_server.log
  sudo chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/ciyam_server.log
+fi
+
+if [ ! -L $INSTALL_PATH/ciyam_update.log ]; then
+ ln -s $SYSTEM_LOG_PATH/ciyam_update.log $INSTALL_PATH/ciyam_update.log
+ sudo chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/ciyam_update.log
 fi
 
 service_path=/etc/systemd/system
@@ -450,7 +458,7 @@ else
  fi
 fi
 
-sudo cp -R ciyam/* $INSTALL_PATH
+sudo rsync -cr --info=name ciyam/ $INSTALL_PATH
 sudo chown -R $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
 
 if [ "$has_system" = "" ]; then
@@ -535,7 +543,7 @@ if [ ! -d $WEBDIR/$CIYAM_APP_DIR ]; then
  exit 1
 fi
 
-sudo cp -R $CIYAM_APP_DIR/* $WEBDIR/$CIYAM_APP_DIR
+sudo rsync -cr --info=name $CIYAM_APP_DIR/ $WEBDIR/$CIYAM_APP_DIR
 
 sudo chmod -R g+w $WEBDIR/$CIYAM_APP_DIR
 sudo chown -R $CIYAM_USER:$HTTPD_GROUP $WEBDIR/$CIYAM_APP_DIR
