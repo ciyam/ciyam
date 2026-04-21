@@ -739,7 +739,11 @@ void system_identity_progress_message( const string& identity, bool is_preparing
 
       identity_progress_message = prefix;
 
-      if( has_paired_session )
+      // NOTE: If is waiting for the hub chain to sync then do not append the paired height
+      // (although it would make sense for a percentage to be appended according to exactly
+      // how many blocks for the hub chain are remaining to be fetched).
+      if( has_paired_session
+       && !has_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ) ) )
       {
          identity_progress_message += " (";
 
