@@ -196,6 +196,10 @@ else
 
   mv $main_module $release_name/ciyam
 
+  rm -f $release_name/ciyam/x.cin
+  rm -f $release_name/ciyam/xx.cin
+  rm -f $release_name/ciyam/xxx.cin
+
   rm -f $release_name/ciyam/Meta.so
 
   rm -f $release_name/ciyam/getmeta.cin
