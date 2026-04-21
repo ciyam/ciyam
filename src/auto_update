@@ -16,9 +16,9 @@ else
  if grep -q "now available" ~auto_update; then
   ./ciyam_script extract_datachain_release $NAME >~auto_update
 
-  update_output_file=auto_update.txt
+  update_log_file=ciyam_update.log
 
-  echo "$(date) [started update]" > $update_output_file
+  echo "$(date) [started update]" >> $update_log_file
 
   found=
 
@@ -33,13 +33,13 @@ else
 
     folder=${tarball%".tar.gz"}
 
-    tar -xvzf $tarball
+    tar -xvzf $tarball > /dev/null
 
     rm $tarball
 
     pushd $folder > /dev/null
 
-    ./install >> ../$update_output_file
+    ./install >> ../$update_log_file
 
     popd > /dev/null
 
@@ -47,11 +47,11 @@ else
   fi
 
   if [ "$found" != "1" ]; then
-   echo "Error: Found unexpected release information." >> $update_output_file
-   cat ~auto_update >> $update_output_file
+   echo "Error: Found unexpected release information." >> $update_log_file
+   cat ~auto_update >> $update_log_file
   fi
 
-  echo "$(date) [finished update]" >> $update_output_file
+  echo "$(date) [finished update]" >> $update_log_file
  fi
 
  rm -f ~auto_update
