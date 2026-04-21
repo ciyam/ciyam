@@ -131,6 +131,7 @@ const char* const c_ciyam_pem = "ciyam.pem";
 
 const char* const c_ciyam_script = "ciyam_script";
 const char* const c_ciyam_server = "ciyam_server";
+const char* const c_ciyam_update = "ciyam_update";
 
 const char* const c_ciyam_interface = "ciyam_interface";
 

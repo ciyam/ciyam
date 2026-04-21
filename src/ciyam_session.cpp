@@ -7592,12 +7592,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool is_backup = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_backup );
          bool is_script = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_script );
          bool is_server = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_server );
+         bool is_update = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_update );
          bool is_restore = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_restore );
          bool is_interface = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_interface );
          bool is_application = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_application );
          string application_name( get_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_application_name ) );
 
-         if( !is_script && !is_server )
+         if( !is_script && !is_server && !is_update )
          {
             if( application_name.empty( ) )
                application_name = get_raw_session_variable( get_special_var_name( e_special_var_storage ) );
@@ -7625,8 +7626,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( is_application )
             log_file_name += application_name;
-         else if( is_script || is_server )
-            log_file_name += ( is_script ? c_ciyam_script : c_ciyam_server );
+         else if( is_script || is_server || is_update )
+         {
+            if( is_script )
+               log_file_name += c_ciyam_script;
+            else if( is_server )
+               log_file_name += c_ciyam_server;
+            else
+               log_file_name += c_ciyam_update;
+         }
          else
          {
             log_file_name += lower( application_name );
