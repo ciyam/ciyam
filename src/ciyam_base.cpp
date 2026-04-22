@@ -2372,13 +2372,10 @@ void init_system_ods( bool* p_restored = 0 )
 
       gup_ofs->list_files( variable_files );
 
+      // NOTE: Need to use "get_raw_system_variable" so that
+      // the "fetch_persistent" function is being called.
       for( size_t i = 0; i < variable_files.size( ); i++ )
-      {
-         string value;
-         gup_ofs->fetch_from_text_file( variable_files[ i ], value );
-
-         set_system_variable( variable_files[ i ], value, true );
-      }
+         get_raw_system_variable( "<" + variable_files[ i ], true );
    }
 }
 
