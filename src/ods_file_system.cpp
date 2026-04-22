@@ -293,12 +293,14 @@ write_stream& operator <<( write_stream& ws, const ofs_object& o )
       if( o.perm_val )
       {
          has_perm = true;
+
          size |= c_ofs_object_flag_type_perm;
       }
    }
    else
    {
       has_file = true;
+
       size |= c_ofs_object_flag_type_file;
 
       if( o.is_link )
@@ -307,6 +309,7 @@ write_stream& operator <<( write_stream& ws, const ofs_object& o )
       if( o.perm_val )
       {
          has_perm = true;
+
          size |= c_ofs_object_flag_type_perm;
       }
    }
@@ -340,6 +343,7 @@ write_stream& operator <<( write_stream& ws, const ofs_object& o )
 ostream& operator <<( ostream& outf, const ofs_object& o )
 {
    outf << o.val;
+
    return outf;
 }
 
@@ -577,6 +581,7 @@ ods_file_system::ods_file_system( ods& o, int64_t i, bool for_regression_tests )
    if( o.get_total_entries( ) > i )
    {
       bt.set_id( i );
+
       o >> bt;
 
       p_impl->next_transaction_id = o.get_next_transaction_id( );
@@ -637,7 +642,7 @@ void ods_file_system::set_root_folder( const string& new_folder, bool* p_rc )
    if( ch == c_folder )
       set_folder( new_folder, p_rc );
    else
-      set_folder( string( c_root_folder ) + new_folder, p_rc );
+      set_folder( c_root_folder + new_folder, p_rc );
 }
 
 string ods_file_system::determine_folder(
@@ -646,7 +651,7 @@ string ods_file_system::determine_folder(
    string new_folder( folder );
    string old_current_folder( current_folder );
 
-   if( new_folder == string( c_current_folder ) )
+   if( new_folder == c_current_folder )
       new_folder = current_folder;
    else if( new_folder.find( c_from_current_folder ) == 0 )
       new_folder.erase( 0, strlen( c_from_current_folder ) );
@@ -666,7 +671,8 @@ string ods_file_system::determine_folder(
    {
       string::size_type pos = new_folder.find( c_parent_folder );
 
-      if( pos != string::npos || ( !new_folder.empty( ) && new_folder[ 0 ] == c_folder ) )
+      if( ( pos != string::npos )
+       || ( !new_folder.empty( ) && ( new_folder[ 0 ] == c_folder ) ) )
          throw runtime_error( "invalid non-explicit or non-child folder" );
    }
 
@@ -678,17 +684,19 @@ string ods_file_system::determine_folder(
       {
          string::size_type dpos = old_current_folder.rfind( c_folder );
 
-         if( dpos != string::npos && old_current_folder != string( c_root_folder ) )
+         if( ( dpos != string::npos )
+          && ( old_current_folder != c_root_folder ) )
          {
             old_current_folder.erase( dpos );
 
             if( old_current_folder.empty( ) )
-               old_current_folder = string( c_root_folder );
+               old_current_folder = c_root_folder;
          }
 
          new_folder.erase( 0, 2 );
 
-         if( !new_folder.empty( ) && new_folder.substr( 0, 1 ) == string( c_root_folder ) )
+         if( !new_folder.empty( )
+          && ( new_folder.substr( 0, 1 ) == c_root_folder ) )
             new_folder.erase( 0, 1 );
 
          pos = new_folder.find( c_parent_folder );
@@ -698,15 +706,15 @@ string ods_file_system::determine_folder(
 
       if( pos != 0 )
       {
-         if( old_current_folder == string( c_root_folder ) )
+         if( old_current_folder == c_root_folder )
             new_folder = old_current_folder + new_folder;
          else if( new_folder.empty( ) )
             new_folder = old_current_folder;
          else
-            new_folder = old_current_folder + string( c_folder_separator ) + new_folder;
+            new_folder = old_current_folder + c_folder_separator + new_folder;
       }
 
-      if( new_folder != string( c_root_folder ) )
+      if( new_folder != c_root_folder )
       {
          unique_ptr< ods::bulk_read > up_bulk;
 
@@ -754,6 +762,7 @@ string ods_file_system::determine_strip_and_change_folder( string& name )
          original_folder = get_folder( );
 
          name.erase( 0, pos + 1 );
+
          set_folder( source_folder );
       }
    }
@@ -770,7 +779,8 @@ void ods_file_system::list_files( const string& expr, vector< string >& list,
 
    string file_list( osstr.str( ) );
 
-   if( !file_list.empty( ) && file_list[ file_list.length( ) - 1 ] == '\n' )
+   if( !file_list.empty( )
+    && ( file_list[ file_list.length( ) - 1 ] == '\n' ) )
       file_list = file_list.substr( 0, file_list.length( ) - 1 );
 
    if( !file_list.empty( ) )
@@ -869,7 +879,8 @@ void ods_file_system::list_folders( const string& expr,
 
    string folder_list( osstr.str( ) );
 
-   if( !folder_list.empty( ) && folder_list[ folder_list.length( ) - 1 ] == '\n' )
+   if( !folder_list.empty( )
+    && ( folder_list[ folder_list.length( ) - 1 ] == '\n' ) )
       folder_list = folder_list.substr( 0, folder_list.length( ) - 1 );
 
    if( !folder_list.empty( ) )
@@ -885,8 +896,9 @@ void ods_file_system::list_folders( const string& expr, ostream& os,
 
    expand_entity_expression( expr, entity_expr, has_wildcard ? "\0" : c_folder_separator );
 
-   if( expr.empty( ) && ( current_folder != string( c_root_folder ) ) )
-      entity_expr += string( c_folder_separator );
+   if( expr.empty( )
+    && ( current_folder != c_root_folder ) )
+      entity_expr += c_folder_separator;
 
    if( !entity_expr.empty( ) )
    {
@@ -976,7 +988,7 @@ void ods_file_system::branch_folders( const string& expr, ostream& os, branch_st
 
    if( ( prefix_1.size( ) > 1 )
     && ( prefix_1[ prefix_1.length( ) - 1 ] != c_folder ) )
-      prefix_1 += string( c_folder_separator );
+      prefix_1 += c_folder_separator;
 
    // NOTE: Unless a wildcard expression was provided need
    // to append "*" in order to match all branch items and
@@ -1045,7 +1057,7 @@ void ods_file_system::add_file( const string& name,
       btree_trans_type bt_tx( bt );
 
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
-      tmp_item.val = current_folder + string( c_folder_separator ) + name;
+      tmp_item.val = current_folder + c_folder_separator + name;
 
       tmp_iter = bt.find( tmp_item );
 
@@ -1296,7 +1308,7 @@ string ods_file_system::last_file_name_with_prefix( const string& prefix )
 
    replace( value, c_folder_separator, c_pipe_separator );
 
-   value += string( c_folder_separator );
+   value += c_folder_separator;
 
    size_t path_length = value.length( );
 
@@ -1449,7 +1461,7 @@ void ods_file_system::link_file( const string& name, const string& source )
       btree_trans_type bt_tx( bt );
 
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
-      tmp_item.val = current_folder + string( c_folder_separator ) + name;
+      tmp_item.val = current_folder + c_folder_separator + name;
 
       tmp_iter = bt.find( tmp_item );
 
@@ -2203,7 +2215,7 @@ void ods_file_system::store_as_text_file( const string& name, const string& val,
 {
    string value( val );
 
-   if( pad_to_len && value.length( ) < pad_to_len )
+   if( pad_to_len && ( value.length( ) < pad_to_len ) )
       value += string( pad_to_len - value.length( ), ' ' );
 
    istringstream isstr( value );
@@ -2214,6 +2226,7 @@ void ods_file_system::store_as_text_file( const string& name, const string& val,
 void ods_file_system::fetch_from_text_file( const string& name, int32_t& val )
 {
    ostringstream osstr;
+
    get_file( name, osstr );
 
    val = from_string< int32_t >( osstr.str( ) );
@@ -2222,6 +2235,7 @@ void ods_file_system::fetch_from_text_file( const string& name, int32_t& val )
 void ods_file_system::fetch_from_text_file( const string& name, int64_t& val )
 {
    ostringstream osstr;
+
    get_file( name, osstr );
 
    val = from_string< int64_t >( osstr.str( ) );
@@ -2251,6 +2265,7 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
    if( pos != string::npos )
    {
       up_temp_folder.reset( new temporary_set_folder( *this, folder_name.substr( 0, pos ) ) );
+
       folder_name.erase( 0, pos + 1 );
    }
 
@@ -2263,6 +2278,7 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
       else
       {
          *p_os << "*** invalid folder name '" << folder_name << "' ***" << endl;
+
          return;
       }
    }
@@ -2292,7 +2308,7 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
 
       bool okay = false;
 
-      if( current_folder == string( c_root_folder ) )
+      if( current_folder == c_root_folder )
       {
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
          tmp_item.val = c_pipe + folder_name;
@@ -2305,6 +2321,7 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
             else
             {
                *p_os << "*** a file with the name '" << folder_name << "' already exists ***" << endl;
+
                return;
             }
          }
@@ -2321,6 +2338,7 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
                else
                {
                   *p_os << "*** folder '" << folder_name << "' already exists ***" << endl;
+
                   return;
                }
             }
@@ -2338,6 +2356,7 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
                bt.insert( tmp_item );
 
                tmp_item.val = c_colon + tmp_item.val;
+
                bt.insert( tmp_item );
 
                okay = true;
@@ -2361,6 +2380,7 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
             else
             {
                *p_os << "*** a file with the name '" << folder_name << "' already exists ***" << endl;
+
                return;
             }
          }
@@ -2377,6 +2397,7 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
                else
                {
                   *p_os << "*** folder '" << folder_name << "' already exists ***" << endl;
+
                   return;
                }
             }
@@ -2394,6 +2415,7 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
                bt.insert( tmp_item );
 
                tmp_item.val = name_2;
+
                bt.insert( tmp_item );
 
                okay = true;
@@ -2437,7 +2459,7 @@ bool ods_file_system::has_folder( const string& name, string* p_perms, int64_t* 
          full_name = name;
       else
       {
-         if( current_folder == string( c_root_folder ) )
+         if( current_folder == c_root_folder )
             full_name += name;
          else
             full_name += c_folder + name;
@@ -2522,10 +2544,10 @@ void ods_file_system::move_folder( const string& name, const string& destination
 
    bool src_is_root = false;
 
-   if( current_folder == string( c_root_folder ) )
+   if( current_folder == c_root_folder )
       src_is_root = true;
    else
-      full_name += string( c_folder_separator );
+      full_name += c_folder_separator;
 
    full_name += name;
 
@@ -2542,6 +2564,7 @@ void ods_file_system::move_folder( const string& name, const string& destination
       else
       {
          *p_os << "*** folder '" << name << "' not found ***" << endl;
+
          return;
       }
    }
@@ -2560,6 +2583,7 @@ void ods_file_system::move_folder( const string& name, const string& destination
             else
             {
                *p_os << "*** folder '" << destination << "' does not exist ***" << endl;
+
                return;
             }
          }
@@ -2570,6 +2594,7 @@ void ods_file_system::move_folder( const string& name, const string& destination
             else
             {
                *p_os << "*** invalid folder name '" << destination << "' ***" << endl;
+
                return;
             }
          }
@@ -2578,14 +2603,14 @@ void ods_file_system::move_folder( const string& name, const string& destination
             string dest( destination );
 
             if( !src_is_root )
-               dest = current_folder + string( c_folder_separator ) + destination;
+               dest = current_folder + c_folder_separator + destination;
 
             okay = move_files_and_folders( full_name, dest, src_is_root, src_is_root, overwrite );
          }
       }
       else
       {
-         bool dest_is_root = ( dest_folder == string( c_root_folder ) );
+         bool dest_is_root = ( dest_folder == c_root_folder );
 
          if( dest_is_root )
             dest_folder.erase( );
@@ -2601,6 +2626,7 @@ void ods_file_system::move_folder( const string& name, const string& destination
             else
             {
                *p_os << "*** a folder cannot be moved below itself ***" << endl;
+
                return;
             }
          }
@@ -2666,6 +2692,7 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
          else
          {
             okay = false;
+
             *p_os << "*** cannot remove '" << name << "' as it has one or more child folders ***" << endl;
          }
       }
@@ -2682,6 +2709,7 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
             else
             {
                okay = false;
+
                *p_os << "*** cannot remove '" << name << "' as it has one or more files ***" << endl;
             }
          }
@@ -2744,7 +2772,7 @@ void ods_file_system::replace_folder( const string& name, ostream* p_os, string*
          full_name = name;
       else
       {
-         if( current_folder == string( c_root_folder ) )
+         if( current_folder == c_root_folder )
             full_name += name;
          else
             full_name += c_folder + name;
@@ -2764,6 +2792,7 @@ void ods_file_system::replace_folder( const string& name, ostream* p_os, string*
          else
          {
             *p_os << "*** cannot replace unknown folder '" << name << "' ***" << endl;
+
             return;
          }
       }
@@ -2868,7 +2897,7 @@ string ods_file_system::value_folder_and_file_name( const string& provided, stri
    if( pos == string::npos )
       folder = current_folder;
    else if( pos == 0 )
-      folder = string( c_root_folder );
+      folder = c_root_folder;
    else
       folder = determine_folder( provided.substr( 0, pos ) );
 
@@ -2952,6 +2981,7 @@ void ods_file_system::perform_match(
    if( p_range && !p_range->first.empty( ) )
    {
       btree_type::item_type tmp_item;
+
       tmp_item.val = p_range->first;
 
       match_iter = bt.lower_bound( tmp_item );
@@ -3244,7 +3274,7 @@ void ods_file_system::perform_match(
 
                      ++count;
 
-                     if( limit && count >= limit )
+                     if( limit && ( count >= limit ) )
                         break;
                   }
                }
@@ -3253,14 +3283,15 @@ void ods_file_system::perform_match(
 
          if( !in_reverse_order )
          {
-            if( ++match_iter == bt.end( ) || !compare_less( *match_iter, match_item ) )
+            if( ( ++match_iter == bt.end( ) ) || !compare_less( *match_iter, match_item ) )
                okay = false;
          }
          else
          {
-            if( match_iter == bt.begin( ) || !compare_less( match_item, *--match_iter ) )
+            if( ( match_iter == bt.begin( ) ) || !compare_less( match_item, *--match_iter ) )
                okay = false;
          }
+
       } while( okay );
    }
 
@@ -3342,21 +3373,21 @@ void ods_file_system::expand_entity_expression(
    if( !expr.empty( ) )
    {
       // NOTE: If a superflous final folder separator had been provided then remove it.
-      if( entity_expr.size( ) > 1
-       && ( entity_expr.substr( entity_expr.length( ) - 1 ) == string( c_folder_separator ) ) )
+      if( ( entity_expr.size( ) > 1 )
+       && ( entity_expr.substr( entity_expr.length( ) - 1 ) == c_folder_separator ) )
          entity_expr.erase( entity_expr.length( ) - 1 );
    }
 
    string::size_type pos = expr.rfind( c_folder );
 
-   if( ( pos != string::npos ) || ( expr == string( c_parent_folder ) ) )
+   if( ( pos != string::npos ) || ( expr == c_parent_folder ) )
    {
       if( pos == 0 )
       {
-         if( !has_wildcard || ( expr == string( c_folder_separator ) ) )
+         if( !has_wildcard || ( expr == c_folder_separator ) )
             entity_expr = expr;
          else
-            entity_expr = string( c_folder_separator ) + expr;
+            entity_expr = c_folder_separator + expr;
 
          if( p_suffix && ( entity_expr.size( ) > 1 ) )
             entity_expr += string( p_suffix );
@@ -3385,10 +3416,10 @@ void ods_file_system::expand_entity_expression(
    }
    else if( !expr.empty( ) )
    {
-      if( !has_wildcard && ( entity_expr == string( c_folder_separator ) ) )
+      if( !has_wildcard && ( entity_expr == c_folder_separator ) )
          entity_expr += expr;
       else
-         entity_expr += string( c_folder_separator ) + expr;
+         entity_expr += c_folder_separator + expr;
 
       if( p_suffix && !has_wildcard )
          entity_expr += string( p_suffix );
@@ -3406,8 +3437,8 @@ void ods_file_system::get_child_folders(
 
    expand_entity_expression( expr, folder_expr, has_wildcard ? "\0" : c_folder_separator );
 
-   if( expr.empty( ) && ( current_folder != string( c_root_folder ) ) )
-      folder_expr += string( c_folder_separator );
+   if( expr.empty( ) && ( current_folder != c_root_folder ) )
+      folder_expr += c_folder_separator;
 
    string::size_type pos = folder_expr.rfind( c_folder );
 
@@ -3456,6 +3487,7 @@ void ods_file_system::get_child_folders(
                if( tm_val )
                {
                   date_time dtm( tm_val );
+
                   extra += " " + dtm.as_string( e_time_format_hhmmss, true );
                }
             }
@@ -3484,7 +3516,7 @@ void ods_file_system::list_files_or_objects(
    if( !entity_expr.empty( ) )
    {
       bool is_folder = has_folder( entity_expr )
-       || ( entity_expr == string( c_root_folder ) );
+       || ( entity_expr == c_root_folder );
 
       bool has_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
@@ -3940,6 +3972,7 @@ bool ods_file_system::move_files_and_folders( const string& source,
    catch( exception& x )
    {
       cout << x.what( ) << endl;
+
       return false;
    }
 
@@ -4030,7 +4063,7 @@ bool ods_file_system::remove_items_for_file(
                tmp_iter = bt.lower_bound( tmp_item );
 
                // NOTE: If no other links exist then remove the special link object.
-               if( tmp_iter == bt.end( ) || tmp_iter->val.find( link_prefix ) != 0 )
+               if( ( tmp_iter == bt.end( ) ) || ( tmp_iter->val.find( link_prefix ) != 0 ) )
                {
                   string special_prefix( to_string( id.get_num( ) ) + c_special );
 
@@ -4127,12 +4160,13 @@ bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_n
       else
       {
          tmp_item.val = name_2;
+
          bt.erase( tmp_item );
       }
    }
    else
    {
-      if( current_folder == string( c_root_folder ) )
+      if( current_folder == c_root_folder )
       {
          tmp_item.val = current_folder + name;
 
@@ -4182,6 +4216,7 @@ bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_n
          else
          {
             tmp_item.val = name_2;
+
             bt.erase( tmp_item );
          }
       }
@@ -4242,7 +4277,7 @@ void export_objects( ods_file_system& ofs, const string& directory,
    {
       string folder( ofs.get_folder( ) );
 
-      if( folder != string( c_root_folder ) )
+      if( folder != c_root_folder )
          start_pos = folder.length( );
    }
 
@@ -4346,6 +4381,7 @@ void import_objects( ods_file_system& ofs, const string& directory,
    do
    {
       all_folders.push_back( dfsi.get_path_name( ) );
+
    } while( dfsi.has_next( ) );
 
    for( size_t i = 0; i < all_folders.size( ); i++ )
@@ -4376,6 +4412,7 @@ void import_objects( ods_file_system& ofs, const string& directory,
          next_folder.erase( 0, folders.back( ).length( ) + 1 );
 
          string old_perms;
+
          int64_t old_tm_val = 0;
 
          bool changed = false;
@@ -4385,11 +4422,13 @@ void import_objects( ods_file_system& ofs, const string& directory,
          if( !has_folder )
          {
             changed = true;
+
             ofs.add_folder( next_folder, 0, &perms, &tm_val );
          }
          else if( force_write || ( perms != old_perms ) || ( tm_val != old_tm_val ) )
          {
             changed = true;
+
             ofs.replace_folder( next_folder, 0, &perms, &tm_val );
          }
 
