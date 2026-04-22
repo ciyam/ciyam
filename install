@@ -445,13 +445,17 @@ rm env_vars.sh
 has_system=
 
 # NOTE: Remove the module DB export directory when not new
+# (along with other files that are only applicable if new)
 # and protect the OS user's password from being changed if
 # new when is a development environment.
 if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.modules.lst ]; then
  has_system=1
+
  rm -rf ciyam/$CIYAM_APP_MOD
+
  rm -f ciyam/$CIYAM_APP_MOD.log.app
  rm -f ciyam/$CIYAM_APP_MOD.backup.sql
+ rm -f ciyam/$CIYAM_APP_MOD.demo_keys.lst
 else
  if [ "$is_dev_env" = "1" ]; then
   touch $INSTALL_PATH/.${CIYAM_USER}_password_protected
