@@ -896,11 +896,25 @@ string get_raw_system_variable( const string& name, bool is_internal )
       if( var_name.empty( ) && had_persist_prefix )
          output_all_persistent_variables = true;
 
-      ods::bulk_write bulk_write( system_ods_instance( ) );
+      unique_ptr< ods::bulk_base > up_bulk_base;
+
+      if( !system_ods_instance( ).is_thread_bulk_locked( ) )
+      {
+         if( had_restore_prefix )
+            up_bulk_base.reset( new ods::bulk_read( system_ods_instance( ) ) );
+         else
+            up_bulk_base.reset( new ods::bulk_write( system_ods_instance( ) ) );
+      }
+
+      if( had_persist_prefix && !up_bulk_base.get( )
+       && system_ods_instance( ).is_thread_bulk_read_locked( ) )
+         throw runtime_error( "attempt to persist system variable '" + name + "' whilst bulk read locked" );
 
       scoped_ods_instance ods_instance( system_ods_instance( ) );
 
-      system_ods_file_system( ).set_root_folder( c_system_variables_folder );
+      ods_file_system& ods_fs( system_ods_file_system( ) );
+
+      ods_fs.set_root_folder( c_system_variables_folder );
 
       if( !var_name.empty( ) && had_persist_prefix
        && var_name.find_first_of( "?*" ) == string::npos )
@@ -912,11 +926,11 @@ string get_raw_system_variable( const string& name, bool is_internal )
 
          if( value.empty( ) )
          {
-            if( system_ods_file_system( ).has_file( var_name ) )
-               system_ods_file_system( ).remove_file( var_name );
+            if( ods_fs.has_file( var_name ) )
+               ods_fs.remove_file( var_name );
          }
          else
-            system_ods_file_system( ).store_as_text_file( var_name, value );
+            ods_fs.store_as_text_file( var_name, value );
       }
       else
       {
@@ -929,7 +943,7 @@ string get_raw_system_variable( const string& name, bool is_internal )
          else
             expr = var_name;
 
-         system_ods_file_system( ).list_files( expr, variable_files );
+         ods_fs.list_files( expr, variable_files );
 
          for( size_t i = 0; i < variable_files.size( ); i++ )
          {
@@ -939,7 +953,7 @@ string get_raw_system_variable( const string& name, bool is_internal )
 
             if( had_restore_prefix || output_all_persistent_variables )
             {
-               system_ods_file_system( ).fetch_from_text_file( next, value );
+               ods_fs.fetch_from_text_file( next, value );
 
                if( !var_name.empty( ) )
                   g_variables[ next ] = value;
@@ -968,9 +982,9 @@ string get_raw_system_variable( const string& name, bool is_internal )
                   value = g_variables[ next ];
 
                if( value.empty( ) )
-                  system_ods_file_system( ).remove_file( next );
+                  ods_fs.remove_file( next );
                else
-                  system_ods_file_system( ).store_as_text_file( next, value );
+                  ods_fs.store_as_text_file( next, value );
             }
          }
       }
@@ -1174,7 +1188,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
          val = buffer_file( tmp_file_name );
 
-         if( val.length( ) && val[ val.length( ) - 1 ] == '\n' )
+         if( val.length( ) && ( val[ val.length( ) - 1 ] == '\n' ) )
             val.erase( val.length( ) - 1 );
       }
 
@@ -1302,7 +1316,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
       bool persist = false;
 
-      if( !name.empty( ) && name[ 0 ] == c_persist_variable_prefix )
+      if( !name.empty( ) && ( name[ 0 ] == c_persist_variable_prefix ) )
          persist = true;
 
       if( !name.empty( ) )
