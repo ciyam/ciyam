@@ -17,6 +17,7 @@
 #include "ciyam_variables.h"
 
 #include "ods.h"
+#include "sha256.h"
 #include "threads.h"
 #include "date_time.h"
 #include "utilities.h"
@@ -39,6 +40,8 @@ const int c_max_lock_attempts = 20;
 const int c_lock_attempt_sleep_time = 100;
 
 const size_t c_secret_truncate_length = 9;
+
+const char* const c_secret_hash_suffix = "\t\1\t";
 
 const char* const c_variable_expression = "variable_expression";
 
@@ -787,6 +790,65 @@ void check_system_variable_can_be_set( const string& var_name )
       throw runtime_error( "invalid attempt to change system variable '" + var_name + "'" );
 }
 
+void fetch_persistent( ods_file_system& ods_fs, const string& var_name, string& value )
+{
+   ods_fs.fetch_from_text_file( var_name, value );
+
+   // NOTE: If is a "@secret_hash_<suffix>" variable
+   // then the value stored was XORed using the hash
+   // of the variable name (just to make it a little
+   // more difficult to easily discover this value).
+   if( var_name.find( g_secret_hash_prefix ) == 0 )
+   {
+      sha256 hash( var_name + c_secret_hash_suffix );
+
+      string xor_hash( hash.get_digest_as_string( ) );
+
+      size_t length = value.length( );
+
+      if( length != xor_hash.length( ) )
+         throw runtime_error( "unexpected length = "
+          + to_string( length ) + " for var_name '" + var_name + "' in fetch_persistent" );
+
+      for( size_t i = 0; i < length; i++ )
+      {
+         unsigned char val1 = hex_nibble( value[ i ] );
+         unsigned char val2 = hex_nibble( xor_hash[ i ] );
+
+         value[ i ] = ascii_digit( val1 ^ val2 );
+      }
+   }
+}
+
+void store_persistent( ods_file_system& ods_fs, const string& var_name, const string& value )
+{
+   string final_value( value );
+
+   // NOTE: See the note above.
+   if( var_name.find( g_secret_hash_prefix ) == 0 )
+   {
+      sha256 hash( var_name + c_secret_hash_suffix );
+
+      string xor_hash( hash.get_digest_as_string( ) );
+
+      size_t length = final_value.length( );
+
+      if( length != xor_hash.length( ) )
+         throw runtime_error( "unexpected length = "
+          + to_string( length ) + " for var_name '" + var_name + "' in store_persistent" );
+
+      for( size_t i = 0; i < length; i++ )
+      {
+         unsigned char val1 = hex_nibble( value[ i ] );
+         unsigned char val2 = hex_nibble( xor_hash[ i ] );
+
+         final_value[ i ] = ascii_digit( val1 ^ val2 );
+      }
+   }
+
+   ods_fs.store_as_text_file( var_name, final_value );
+}
+
 }
 
 string get_special_var_name( special_var var )
@@ -930,7 +992,7 @@ string get_raw_system_variable( const string& name, bool is_internal )
                ods_fs.remove_file( var_name );
          }
          else
-            ods_fs.store_as_text_file( var_name, value );
+            store_persistent( ods_fs, var_name, value );
       }
       else
       {
@@ -953,7 +1015,7 @@ string get_raw_system_variable( const string& name, bool is_internal )
 
             if( had_restore_prefix || output_all_persistent_variables )
             {
-               ods_fs.fetch_from_text_file( next, value );
+               fetch_persistent( ods_fs, next, value );
 
                if( !var_name.empty( ) )
                   g_variables[ next ] = value;
@@ -984,7 +1046,7 @@ string get_raw_system_variable( const string& name, bool is_internal )
                if( value.empty( ) )
                   ods_fs.remove_file( next );
                else
-                  ods_fs.store_as_text_file( next, value );
+                  store_persistent( ods_fs, next, value );
             }
          }
       }
@@ -1472,7 +1534,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          system_ods_file_system( ).set_root_folder( c_system_variables_folder );
 
          if( !val.empty( ) )
-            system_ods_file_system( ).store_as_text_file( var_name, val );
+            store_persistent( system_ods_file_system( ), var_name, val );
          else if( system_ods_file_system( ).has_file( var_name ) )
             system_ods_file_system( ).remove_file( var_name );
       }
@@ -1563,7 +1625,8 @@ void rename_system_variable( const string& old_name, const string& new_name )
          ods::transaction ods_tx( system_ods_instance( ) );
 
          system_ods_file_system( ).remove_file( old_name );
-         system_ods_file_system( ).store_as_text_file( new_name, value );
+
+         store_persistent( system_ods_file_system( ), new_name, value );
 
          ods_tx.commit( );
       }
