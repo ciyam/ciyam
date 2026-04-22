@@ -7618,7 +7618,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string log_file_name;
 
-         if( !is_script && !is_server && !is_application )
+         if( !is_script && !is_server && !is_update && !is_application )
             log_file_name = get_web_root( );
 
          if( !log_file_name.empty( ) )
