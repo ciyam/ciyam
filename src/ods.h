@@ -654,17 +654,18 @@ class ods
       friend struct bulk_read;
       friend struct bulk_write;
 
+      virtual ~bulk_base( );
+
       void pause( );
 
       private:
       bulk_base( ods& o, progress* p_progress );
 
-      ~bulk_base( );
-
       protected:
       ods& o;
 
       progress* p_old_progress;
+
       bool was_preventing_lazy_write;
    };
 
@@ -709,6 +710,7 @@ class ods
 
       private:
       ods& o;
+
       bool is_dummy;
       bool can_commit;
       bool has_committed;

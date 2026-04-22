@@ -4724,8 +4724,14 @@ ods::stats::~stats( )
 {
    guard lock_stats( o.stats_lock );
 
-   o.data_ratio = o.p_impl->rp_ods_data_cache_buffer->get_item_hit_ratio( ) * 100.0;
-   o.index_ratio = o.p_impl->rp_ods_index_cache_buffer->get_item_hit_ratio( ) * 100.0;
+   o.data_ratio = ( o.p_impl->rp_ods_data_cache_buffer->get_item_hit_ratio( ) * 100.0 );
+   o.index_ratio = ( o.p_impl->rp_ods_index_cache_buffer->get_item_hit_ratio( ) * 100.0 );
+}
+
+ods::bulk_base::~bulk_base( )
+{
+   o.p_progress = p_old_progress;
+   o.prevent_lazy_write = was_preventing_lazy_write;
 }
 
 void ods::bulk_base::pause( )
@@ -4750,12 +4756,6 @@ ods::bulk_base::bulk_base( ods& o, progress* p_progress )
       o.p_progress = p_progress;
       o.prevent_lazy_write = true;
    }
-}
-
-ods::bulk_base::~bulk_base( )
-{
-   o.p_progress = p_old_progress;
-   o.prevent_lazy_write = was_preventing_lazy_write;
 }
 
 ods::bulk_dump::bulk_dump( ods& o, progress* p_progress )
