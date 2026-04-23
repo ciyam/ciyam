@@ -47,6 +47,7 @@ CHECK_PEER=
 ;
 .system_variable @release_peer_$NAME
 @ifdef $OUTPUT
+HOST_AND_PORT=$OUTPUT
 .system_variable @secret_hash_$IDENTITY
 @ifdef $OUTPUT
 CHECK_PEER=1
