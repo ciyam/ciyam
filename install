@@ -462,6 +462,21 @@ else
  fi
 fi
 
+# NOTE: If is an existing installation then will
+# remove "<main>.map.new" from the install files
+# if is identical to the current "<main>.map".
+if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.map ]; then
+ if [ -f ciyam/$CIYAM_APP_MOD.map.new ]; then
+
+  cmp -s $INSTALL_PATH/$CIYAM_APP_MOD.map ciyam/$CIYAM_APP_MOD.map.new
+
+  if [ $? -eq 0 ]; then
+   rm -f ciyam/$CIYAM_APP_MOD.map.new
+  fi
+
+ fi
+fi
+
 sudo rsync -cr --info=name ciyam/ $INSTALL_PATH
 sudo chown -R $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
 
@@ -504,17 +519,12 @@ fi
 
 needs_restore=
 
-# NOTE: If there is a <main>.map and now <main>.map.new
-# then the DB will need to be restored (due to required
-# transformations) unless the files are identical.
+# NOTE: If both "<main>.map" and "<main>.map.new" files
+# are present then application data needs to be updated
+# (for transformations) by performing a "restore".
 if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.map ]; then
  if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.map.new ]; then
-  cmp -s $INSTALL_PATH/$CIYAM_APP_MOD.map $INSTALL_PATH/$CIYAM_APP_MOD.map.new
-  if [ $? -eq 0 ]; then
-   rm -f $INSTALL_PATH/$CIYAM_APP_MOD.map.new
-  else
    needs_restore=1
-  fi
  fi
 else
  if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.map.new ]; then
