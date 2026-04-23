@@ -378,6 +378,12 @@ void truncate_value_for_secret_hash_prefixed_name( const string& name, string& v
 
 vector< string > g_special_variable_names;
 
+void set_system_is_for_devt( )
+{
+   if( file_exists( "config.info" ) )
+      g_variables[ c_special_variable_system_is_for_devt ] = c_true_value;
+}
+
 void init_special_variable_names( )
 {
    guard g( g_mutex );
@@ -686,6 +692,8 @@ void init_special_variable_names( )
       // NOTE: This must always be pushed last.
       g_special_variable_names.push_back( c_dummy );
    }
+
+   set_system_is_for_devt( );
 }
 
 void touch_or_remove( const string& var_name, bool remove )
@@ -738,12 +746,6 @@ void set_generate_hub_block( bool check = true )
    set_file_var_name( var_name );
 }
 
-void set_system_is_for_devt( )
-{
-   if( file_exists( "config.info" ) )
-      g_variables[ c_special_variable_system_is_for_devt ] = c_true_value;
-}
-
 void set_ods_cache_hit_ratios( )
 {
    g_variables[ c_special_variable_ods_cache_hit_ratios ] = system_ods_instance( ).get_cache_hit_ratios( );
@@ -785,6 +787,16 @@ void check_system_variable_can_be_set( const string& var_name )
     || ( var_name == c_special_variable_system_is_for_demo )
     || ( var_name == c_special_variable_system_is_for_devt ) )
       okay = false;
+   else
+   {
+      // NOTE: The following are more nuanced checks that are
+      // expected to involve checking other system variables.
+      if( var_name == c_special_variable_blockchain_force_skip )
+      {
+         if( !g_variables.count( c_special_variable_system_is_for_devt ) )
+            okay = false;
+      }
+   }
 
    if( !okay )
       throw runtime_error( "invalid attempt to change system variable '" + var_name + "'" );
@@ -1087,9 +1099,6 @@ string get_raw_system_variable( const string& name, bool is_internal )
             g_variables[ c_special_variable_trace_session_ids ] = trace_session_ids;
       }
 
-      if( wildcard_match( var_name, c_special_variable_system_is_for_devt ) )
-         set_system_is_for_devt( );
-
       if( wildcard_match( var_name, c_special_variable_ods_cache_hit_ratios ) )
          set_ods_cache_hit_ratios( );
 
@@ -1162,9 +1171,6 @@ string get_raw_system_variable( const string& name, bool is_internal )
          else
             g_variables[ c_special_variable_trace_session_ids ] = trace_session_ids;
       }
-
-      if( var_name == c_special_variable_system_is_for_devt )
-         set_system_is_for_devt( );
 
       if( var_name == c_special_variable_ods_cache_hit_ratios )
          set_ods_cache_hit_ratios( );
