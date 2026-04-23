@@ -739,11 +739,7 @@ void system_identity_progress_message( const string& identity, bool is_preparing
 
       identity_progress_message = prefix;
 
-      // NOTE: If is waiting for the hub chain to sync then do not append the paired height
-      // (although it would make sense for a percentage to be appended according to exactly
-      // how many blocks for the hub chain are remaining to be fetched).
-      if( has_paired_session
-       && !has_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ) ) )
+      if( has_paired_session )
       {
          identity_progress_message += " (";
 
@@ -1857,7 +1853,7 @@ void check_for_missing_other_sessions( const date_time& now )
       if( !session_id_owner.empty( ) )
       {
          if( !has_session_variable(
-          get_special_var_name( e_special_var_session_id ), &session_id_owner ) )
+          get_special_var_name( e_special_var_session_id ), from_string< size_t >( session_id_owner ) ) )
          {
             condemn_this_session( );
 
@@ -5061,7 +5057,22 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                   {
                      peerchain_type type = get_blockchain_type( blockchain );
 
-                     if( ( type == e_peerchain_type_backup )
+                     bool is_release_datachain = false;
+
+                     string auto_update( get_raw_system_variable(
+                      get_special_var_name( e_special_var_auto_update ) ) );
+
+                     if( !auto_update.empty( ) )
+                     {
+                        string auto_update_identity( get_raw_system_variable(
+                         get_special_var_name( e_special_var_blockchain_identity ) + '_' + auto_update ) );
+
+                        if( identity == auto_update_identity )
+                           is_release_datachain = true;
+                     }
+
+                     if( is_release_datachain
+                      || ( type == e_peerchain_type_backup )
                       || ( type == e_peerchain_type_shared ) )
                         set_session_variable( force_skip_name, c_true_value );
 
@@ -5071,9 +5082,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                   // NOTE: If either the session or system variable "@blockchain_force_skip"
                   // is set then will skip to the next modulus (or squared) when possible in
                   // order to dramatically reduce the syncing time and support chain pruning
-                  // (currently only intended for usage with backup/shared type chains). The
+                  // (currently only intended to apply to backup/shared/release chains). The
                   // system variable "@blockchain_force_skip" is available to force skipping
-                  // to occur for any chain type and is intended for testing purposes only.
+                  // to occur for any chain type and is restricted for development use only.
                   if( ( blockchain_height_other > blockchain_height )
                    && ( has_session_variable( force_skip_name )
                    || has_system_variable( force_skip_name ) ) )
