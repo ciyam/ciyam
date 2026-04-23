@@ -9168,16 +9168,14 @@ void set_default_session_variables( int port )
 
 bool has_raw_session_variable( const string& name, size_t sess_id )
 {
+   guard g( g_session_mutex );
+
    bool retval = false;
 
-   unique_ptr< guard > up_guard;
    unique_ptr< restorable< session* > > up_temp_session;
 
    if( sess_id )
-   {
-      up_guard.reset( new guard( g_session_mutex, "has_raw_session_variable" ) );
       up_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
-   }
 
    if( gtp_session )
       retval = gtp_session->variables.count( name );
@@ -9187,18 +9185,16 @@ bool has_raw_session_variable( const string& name, size_t sess_id )
 
 string get_raw_session_variable( const string& name, size_t sess_id )
 {
+   guard g( g_session_mutex );
+
    string retval;
 
    bool found = false;
 
-   unique_ptr< guard > up_guard;
    unique_ptr< restorable< session* > > up_temp_session;
 
    if( sess_id )
-   {
-      up_guard.reset( new guard( g_session_mutex, "get_raw_session_variable" ) );
       up_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
-   }
 
    if( gtp_session )
    {
@@ -9454,11 +9450,6 @@ struct raw_session_variable_getter : variable_getter
    size_t sess_id;
 };
 
-bool has_session_variable( const string& name_or_expr, const string* p_sess_id )
-{
-   return !get_session_variable( name_or_expr, p_sess_id ).empty( );
-}
-
 string get_session_variable( const string& name, size_t slot )
 {
    guard g( g_session_mutex, "get_session_variable" );
@@ -9591,19 +9582,17 @@ bool has_mismatched_variables_for_matching_blockchains(
 void set_session_variable( const string& name, const string& value,
  bool* p_set_special_temporary, command_handler* p_command_handler, const string* p_sess_id )
 {
+   guard g( g_session_mutex );
+
    size_t sess_id = 0;
 
    if( p_sess_id )
       sess_id = from_string< size_t >( *p_sess_id );
 
-   unique_ptr< guard > up_guard;
    unique_ptr< restorable< session* > > up_temp_session;
 
    if( sess_id )
-   {
-      up_guard.reset( new guard( g_session_mutex, "set_session_variable" ) );
       up_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
-   }
 
    if( gtp_session )
    {
@@ -13055,11 +13044,8 @@ void module_load( const string& module_name,
 
    if( !class_list.empty( ) )
    {
-      gtp_session->variables.insert( make_pair(
-       string( "@" + module_name + c_user_class_suffix ), class_list[ 0 ] ) );
-
-      gtp_session->variables.insert( make_pair(
-       string( "@" + get_module_id( module_name ) + c_user_class_suffix ), class_list[ 0 ] ) );
+      set_session_variable( string( "@" + module_name + c_user_class_suffix ), class_list[ 0 ] );
+      set_session_variable( string( "@" + get_module_id( module_name ) + c_user_class_suffix ), class_list[ 0 ] );
    }
 
    gtp_session->modules_by_id.insert( module_value_type( get_module_id( module_name ), module_name ) );

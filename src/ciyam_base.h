@@ -615,7 +615,10 @@ bool has_raw_session_variable( const std::string& name, size_t sess_id = 0 );
 
 std::string get_raw_session_variable( const std::string& name, size_t sess_id = 0 );
 
-bool has_session_variable( const std::string& name_or_expr, const std::string* p_sess_id = 0 );
+inline bool has_session_variable( const std::string& name, size_t sess_id = 0 )
+{
+   return has_raw_session_variable( name, sess_id );
+}
 
 std::string get_session_variable( const std::string& name, size_t slot );
 std::string get_session_variable( const std::string& name_or_expr, const std::string* p_sess_id = 0 );
