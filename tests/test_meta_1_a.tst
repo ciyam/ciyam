@@ -449,9 +449,9 @@ Has_Changed_Handle,M001C200F125
 Has_Password,M001C200F126
 Hide_Email_Address,M001C200F127
 Is_In_Restore,M001C200F128
-Is_Initial_Record,M001C200F129
+Initial_Or_For_Peer,M001C200F129
 Not_Is_In_Restore,M001C200F130
-Not_Is_Initial_Record,M001C200F131
+Not_Initial_Or_For_Peer,M001C200F131
 Ntfy_Topic_Name,M001C200F132
 Unix_Now,M001C200F133
 Permissions,M001C200F134
