@@ -477,7 +477,7 @@ if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.map ]; then
  fi
 fi
 
-sudo rsync -cr --info=name ciyam/ $INSTALL_PATH
+sudo rsync -cr --info=name ciyam/ $INSTALL_PATH | xargs -I {} echo $INSTALL_PATH/{}
 sudo chown -R $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
 
 if [ "$has_system" = "" ]; then
@@ -557,7 +557,7 @@ if [ ! -d $WEBDIR/$CIYAM_APP_DIR ]; then
  exit 1
 fi
 
-sudo rsync -cr --info=name $CIYAM_APP_DIR/ $WEBDIR/$CIYAM_APP_DIR
+sudo rsync -cr --info=name $CIYAM_APP_DIR/ $WEBDIR/$CIYAM_APP_DIR | xargs -I {} echo $WEBDIR/$CIYAM_APP_DIR/{}
 
 sudo chmod -R g+w $WEBDIR/$CIYAM_APP_DIR
 sudo chown -R $CIYAM_USER:$HTTPD_GROUP $WEBDIR/$CIYAM_APP_DIR
