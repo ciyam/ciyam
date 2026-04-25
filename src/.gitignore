@@ -80,6 +80,10 @@ xvars
 # Ignore '.app_name' file.
 .app_name
 
+# Ignore release and version files.
+.ciyam_*_release
+.ciyam_*_version
+
 # Ignore locally generated config.
 config.h
 config.info
