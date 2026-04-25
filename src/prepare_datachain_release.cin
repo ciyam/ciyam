@@ -62,8 +62,16 @@ ERROR=File '$RELEASE_FILE_NAME' was not found.
 CIYAM_USE_IMPLICIT_STRIP=1
 <import_files.cin .. $IDENTITY.tree : $RELEASE_AND_VER.tar.gz
 ;
+@ifndef $ERROR
 <generate_next_block.cin $IDENTITY dummy $IDENTITY.tree
 <block_tree_relegate.cin $IDENTITY $IDENTITY.tree
+;
+.file_core -header bc.$IDENTITY.zenith h
+@ifndef $ERROR
+~echo -n "$OUTPUT" >.%RELEASE%_release
+@endif
+;
+@endif
 ;
 @endif
 ;
