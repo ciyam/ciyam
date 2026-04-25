@@ -609,8 +609,9 @@ void system_identity_progress_message( const string& identity, bool is_preparing
       size_t other_height = from_string< size_t >(
        get_raw_session_variable( blockchain_height_other_name ) );
 
-      string percentage_value( get_raw_session_variable( progress_value_name ) );
       string progress_message( get_raw_session_variable( progress_message_name ) );
+
+      string percentage_value;
 
       size_t paired_base_height = 0;
       size_t paired_other_height = 0;
@@ -767,10 +768,7 @@ void system_identity_progress_message( const string& identity, bool is_preparing
       if( is_changing || paired_is_changing )
       {
          if( !percentage_value.empty( ) )
-         {
-            identity_progress_message += c_percentage_separator;
-            identity_progress_message += percentage_value;
-         }
+            identity_progress_message += ( c_percentage_separator + percentage_value );
 
          identity_progress_message += c_ellipsis;
       }
