@@ -127,6 +127,19 @@ else
   fi
  fi
 
+ echo -n "$app_version" > .ciyam_${app_dir_name}_version
+
+ cp .ciyam_${app_dir_name}_version $release_name/ciyam/.version
+
+ release=0
+
+ if [ -f .ciyam_${app_dir_name}_release ]; then
+  release=$(<.ciyam_${app_dir_name}_release)
+  ((release++))
+ fi
+
+ echo -n "$release" > $release_name/ciyam/.release
+
  cp [l-t]*.sh $release_name/ciyam
 
  cp [a-z]*.cin $release_name/ciyam
