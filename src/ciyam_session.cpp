@@ -7528,7 +7528,32 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          response = osstr.str( );
       }
       else if( command == c_cmd_ciyam_session_system_version )
-         response = c_protocol_version;
+      {
+         bool install = has_parm_val( parameters, c_cmd_ciyam_session_system_version_install );
+         bool release = has_parm_val( parameters, c_cmd_ciyam_session_system_version_release );
+         bool protocol = has_parm_val( parameters, c_cmd_ciyam_session_system_version_protocol );
+
+         if( protocol )
+            response = c_protocol_version;
+         else
+         {
+            string install_release( "0" );
+            string install_version( "0" );
+
+            buffer_file( install_release, ".release", 0, 0, 0, false );
+            buffer_file( install_version, ".version", 0, 0, 0, false );
+
+            if( install )
+               response = install_version;
+            else if( release )
+               response = install_release;
+            else
+               response = install_version + '.' + install_release;
+
+            if( !install && !release )
+               response += " (" + string( c_protocol_version ) + ")";
+         }
+      }
       else if( command == c_cmd_ciyam_session_system_identity )
       {
          bool is_raw = has_parm_val( parameters, c_cmd_ciyam_session_system_identity_raw );

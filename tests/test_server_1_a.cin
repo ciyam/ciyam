@@ -1,4 +1,4 @@
-version
+version -protocol
 #$MAX_FILE_SIZE
 session_list -min
 trace_levels

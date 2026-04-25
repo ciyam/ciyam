@@ -1,4 +1,4 @@
-version
+version -protocol
 0.1
 1MB
 session_list -min

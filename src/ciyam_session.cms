@@ -123,7 +123,7 @@ system_trace|trace "get/set system trace flags" [<val//new_flags>]
 system_gen_key|gen_key "generate one or more key values" [<val/-num=/num_keys>]
 system_mutexes|mutexes "list system mutexes and their session lock ids"
 system_strings|strings "list all system message strings"
-system_version|version "display protocol version"
+system_version|version "display install/release/protocol version information" [<opt/-install/install>|<opt/-release/release>|<opt/-protocol/protocol>]
 system_identity|identity "get/set system identity information" [<opt/-raw/raw>][<val/-k=/pubkey>][<val//info>][<val//encrypted>]
 system_log_tail|log_tail "view the tail of one of the system/application log files" [<val/-n=10/lines>]<opt/script>|<opt/server>|<opt/update>|{<opt/backup>|<opt/restore>|<opt/interface>|<opt/application>[<val//application_name>]}
 system_notifier|notifier "starts/finishes/suspends/unsuspends a system file/directory notifier" <opt/-start/start>|<opt/-finish/finish>|<opt/-suspend/suspend>|<opt/-unsuspend/unsuspend><val//file_or_directory>
