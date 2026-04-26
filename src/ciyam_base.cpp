@@ -137,6 +137,8 @@ const char* const c_str_unknown = "unknown";
 
 const char* const c_script_arg_opt = "opt";
 
+const char* const c_tmp_key_prefix = "/tmp/ciyam.";
+
 const char* const c_dummy_host_name = "ciyam.peer";
 
 const char* const c_at_init_script = "./at_init";
@@ -5634,6 +5636,9 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          {
             key_file_name = key.substr( c_unlock_file_name_start, c_unlock_file_name_length ) + c_key_suffix;
 
+            if( !file_exists( key_file_name ) )
+               key_file_name = c_tmp_key_prefix + key_file_name;
+
             if( file_exists( key_file_name ) )
             {
                was_key_unlocked = true;
@@ -5818,7 +5823,7 @@ bool unlock_create_allowed( )
    return retval;
 }
 
-string create_unlock_sid_hash_key( bool for_web_ui )
+string create_unlock_sid_hash_key( bool for_web_ui, bool is_temporary )
 {
    guard g( g_mutex );
 
@@ -5842,6 +5847,9 @@ string create_unlock_sid_hash_key( bool for_web_ui )
    // having access to the file system does not make reversing the identity hash straight
    // forward (assuming that the relevant key value is not known).
    string key_file_name( key.substr( c_unlock_file_name_start, c_unlock_file_name_length ) + c_key_suffix );
+
+   if( is_temporary )
+      key_file_name = c_tmp_key_prefix + key_file_name;
 
    string sid_hash;
    sid_hash.reserve( c_key_reserve_size );

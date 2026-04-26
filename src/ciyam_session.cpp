@@ -114,6 +114,9 @@ const char* const c_meta_module_id = "100";
 
 const char* const c_passtotp_prefix = "passtotp.";
 
+const char* const c_release_file_name = ".release";
+const char* const c_version_file_name = ".version";
+
 const char* const c_unexpected_unknown_exception = "unexpected unknown exception caught";
 
 const char* const c_log_transformation_scope_any_perform_op = "any_perform_op";
@@ -7540,8 +7543,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             string install_release( "0" );
             string install_version( "0" );
 
-            buffer_file( install_release, ".release", 0, 0, 0, false );
-            buffer_file( install_version, ".version", 0, 0, 0, false );
+            buffer_file( install_release, c_release_file_name, 0, 0, 0, false );
+            buffer_file( install_version, c_version_file_name, 0, 0, 0, false );
 
             if( install )
                response = install_version;
@@ -7549,9 +7552,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                response = install_release;
             else
                response = install_version + '.' + install_release;
-
-            if( !install && !release )
-               response += " (" + string( c_protocol_version ) + ")";
          }
       }
       else if( command == c_cmd_ciyam_session_system_identity )
@@ -8007,7 +8007,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             replace( response, own_tz + ' ', "*" + own_tz + ' ' );
       }
       else if( command == c_cmd_ciyam_session_system_unlock_key )
-         response = create_unlock_sid_hash_key( false );
+      {
+         bool temporary = has_parm_val( parameters, c_cmd_ciyam_session_system_unlock_key_temporary );
+
+         response = create_unlock_sid_hash_key( false, temporary );
+      }
       else if( command == c_cmd_ciyam_session_system_export_repo )
       {
          // NOTE: To make sure the console client doesn't time out issue a progress message.

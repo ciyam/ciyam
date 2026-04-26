@@ -250,7 +250,7 @@ void set_identity( const std::string& info, const char* p_encrypted_sid = 0 );
 
 bool unlock_create_allowed( );
 
-std::string create_unlock_sid_hash_key( bool for_web_ui = true );
+std::string create_unlock_sid_hash_key( bool for_web_ui = true, bool is_temporary = false );
 
 std::string get_checksum( const std::string& data );
 

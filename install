@@ -383,7 +383,7 @@ if [ "$has_service" = "1" ]; then
 
     if [ $? -eq 0 ]; then
      if [ "$is_locked" = "" ]; then
-      unlock_key=$(./ciyam_command system_unlock_key)
+      unlock_key=$(./ciyam_command "system_unlock_key -tmp")
 
       if [ $? -ne 0 ]; then
        unlock_key=
