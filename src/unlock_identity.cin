@@ -26,7 +26,7 @@ EXT_PUBKEY=$OUTPUT
 @ifdef $1
 ARGS="$*"
 @else
-DATA_AND_PUBKEY=@password:Enter password to unlock identity:$EXT_PUBKEY
+DATA_AND_PUBKEY=@password:Enter unlock key or password to unlock the system identity:$EXT_PUBKEY
 ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
 @endif
 ;
