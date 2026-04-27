@@ -219,7 +219,7 @@ void check_key_has_suffix( const string& key, const string& suffix )
          }
          else
          {
-            string last_suffixed_key( get_raw_session_variable( last_suffix_key_var_name ) );
+            string last_suffixed_key( get_session_variable( last_suffix_key_var_name ) );
 
             if( !last_suffixed_key.empty( ) && ( key.find( last_suffixed_key ) == 0 ) )
                has_suffix = true;
@@ -233,9 +233,9 @@ void check_key_has_suffix( const string& key, const string& suffix )
 
 void check_non_blockchain_or_script( const string& cmd )
 {
-   if( has_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ) )
+   if( has_system_variable( e_special_var_blockchain_backup_identity ) )
    {
-      if( !has_session_variable( get_special_var_name( e_special_var_args_file ) ) )
+      if( !has_session_variable( e_special_var_args_file ) )
          throw runtime_error( "command '" + cmd + "' can only be used via script execution" );
    }
 }
@@ -251,12 +251,11 @@ void check_not_possible_protocol_response( const string& value )
 void set_script_error_if_applicable( const string& error_message )
 {
    // NOTE: The "run_script" function contains a detailed note about this.
-   string args_file( get_raw_session_variable(
-    get_special_var_name( e_special_var_args_file ) ) );
+   string args_file( get_session_variable( e_special_var_args_file ) );
 
    if( !args_file.empty( ) )
    {
-      string args_file_value = get_raw_system_variable( args_file );
+      string args_file_value = get_system_variable( args_file );
 
       if( args_file_value == string( c_true_value ) )
          set_system_variable( args_file, error_message );
@@ -306,7 +305,7 @@ void check_instance_op_permission( const string& module,
 
       if( !okay && !permission.empty( ) )
       {
-         string uclass( get_raw_session_variable( "@" + module + c_user_class_suffix ) );
+         string uclass( get_session_variable( "@" + module + c_user_class_suffix ) );
 
          if( !uclass.empty( ) )
          {
@@ -377,7 +376,7 @@ void append_datachain_as_variable_if_found( size_t handle, string& field_values_
 {
    string datachain_var_name( get_special_var_name( e_special_var_datachain ) );
 
-   string datachain( get_raw_session_variable( datachain_var_name ) );
+   string datachain( get_session_variable( datachain_var_name ) );
 
    // NOTE: Initially this will be a session variable but for restoring
    // will be an instance variable (having been added here for logging).
@@ -2072,7 +2071,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      okay = false;
                   else
                   {
-                     string args_file( get_raw_session_variable( args_file_name ) );
+                     string args_file( get_session_variable( args_file_name ) );
 
                      if( args_file.empty( )
                       || !has_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) )
@@ -3563,16 +3562,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string::size_type pos = blockchain.find( ':' );
 
          if( pos == string::npos )
-            secret_hash = get_raw_system_variable( secret_hash_name + '_' + blockchain );
+            secret_hash = get_system_variable( secret_hash_name + '_' + blockchain );
          else
          {
             paired_primary = blockchain.substr( 0, pos );
             paired_secondary = blockchain.substr( pos + 1 );
 
-            secret_hash = get_raw_system_variable( secret_hash_name + '_' + paired_primary );
+            secret_hash = get_system_variable( secret_hash_name + '_' + paired_primary );
 
             if( secret_hash.empty( ) )
-               secret_hash = get_raw_system_variable( secret_hash_name + '_' + paired_secondary );
+               secret_hash = get_system_variable( secret_hash_name + '_' + paired_secondary );
          }
 
          if( type_hub && !paired_primary.empty( ) )
@@ -3668,7 +3667,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          bool single_string_response = false;
 
-         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
+         if( has_session_variable( e_special_var_single_string_response ) )
             single_string_response = true;
 
 #ifndef HPDF_SUPPORT
@@ -4264,8 +4263,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string field_values( get_parm_val( parameters, c_cmd_ciyam_session_perform_create_field_values ) );
          string method( get_parm_val( parameters, c_cmd_ciyam_session_perform_create_method ) );
 
-         bool peer_limited_arguments = !get_raw_session_variable(
-          get_special_var_name( e_special_var_peer_limited_arguments ) ).empty( );
+         bool peer_limited_arguments = !get_session_variable( e_special_var_peer_limited_arguments ).empty( );
 
          if( peer_limited_arguments )
          {
@@ -4291,7 +4289,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          // NOTE: Use of the session variable '@key_suffix' will check a provided key value while the key_suffix
          // argument is used when generating a new key (by providing this value as a temporary identity suffix).
-         string check_key_suffix( get_raw_session_variable( get_special_var_name( e_special_var_key_suffix ) ) );
+         string check_key_suffix( get_session_variable( e_special_var_key_suffix ) );
 
          if( !check_key_suffix.empty( ) )
             check_key_has_suffix( key, check_key_suffix );
@@ -4308,10 +4306,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             // NOTE: If the system identity had been recognised as a "demo" one then (if located) will
             // replace the generated key with the first matching entry found in a module specific file.
-            if( has_raw_system_variable( get_special_var_name( e_special_var_system_is_for_demo ) ) )
+            if( has_system_variable( e_special_var_system_is_for_demo ) )
             {
-               string identity( get_raw_system_variable(
-                get_special_var_name( e_special_var_system_identity ) ) );
+               string identity( get_system_variable( e_special_var_system_identity ) );
 
                string module_name( get_module_name_for_id_or_name( module ) );
 
@@ -4501,7 +4498,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_name, true );
 
-               if( get_raw_session_variable( get_special_var_name( e_special_var_skip_set_vars ) ).empty( ) )
+               if( get_session_variable( e_special_var_skip_set_vars ).empty( ) )
                {
                   for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                   {
@@ -4594,7 +4591,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                   check_instance_op_permission( module, handle, get_create_instance_info( handle, "" ) );
 
-               string uid_check( get_raw_session_variable( get_special_var_name( e_special_var_uid_check ) ) );
+               string uid_check( get_session_variable( e_special_var_uid_check ) );
 
                if( !uid_check.empty( ) && ( get_uid( ) != uid_check ) )
                   throw runtime_error( "unexpected uid found '" + get_uid( ) + "' but needs to be '" + uid_check + "'" );
@@ -4668,8 +4665,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string method( get_parm_val( parameters, c_cmd_ciyam_session_perform_update_method ) );
          string check_values( get_parm_val( parameters, c_cmd_ciyam_session_perform_update_check_values ) );
 
-         bool peer_limited_arguments = !get_raw_session_variable(
-          get_special_var_name( e_special_var_peer_limited_arguments ) ).empty( );
+         bool peer_limited_arguments = !get_session_variable( e_special_var_peer_limited_arguments ).empty( );
 
          if( peer_limited_arguments )
          {
@@ -4811,7 +4807,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                string update_fields;
 
-               bool skip_set_vars = !get_raw_session_variable( get_special_var_name( e_special_var_skip_set_vars ) ).empty( );
+               bool skip_set_vars = !get_session_variable( e_special_var_skip_set_vars ).empty( );
 
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
@@ -4933,7 +4929,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                remove_uid_extra_from_log_command( next_command );
 
-               string uid_check( get_raw_session_variable( get_special_var_name( e_special_var_uid_check ) ) );
+               string uid_check( get_session_variable( e_special_var_uid_check ) );
 
                if( !uid_check.empty( ) && ( get_uid( ) != uid_check ) )
                   throw runtime_error( "unexpected uid found '" + get_uid( ) + "' but needs to be '" + uid_check + "'" );
@@ -5079,8 +5075,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                op_destroy_rc rc;
 
-               bool force_session = has_session_variable(
-                get_special_var_name( e_special_var_force_internal ) );
+               bool force_session = has_session_variable( e_special_var_force_internal );
 
                op_instance_destroy( handle, "", key, ver_info, ( force || force_session ), &rc );
 
@@ -5570,7 +5565,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   transaction_commit( );
 
-                  string sess_retval( get_raw_session_variable( get_special_var_name( e_special_var_return ) ) );
+                  string sess_retval( get_session_variable( e_special_var_return ) );
 
                   if( !sess_retval.empty( ) )
                   {
@@ -5854,16 +5849,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_session_variable )
       {
-         string sess_id( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_sess_id ) );
+         string session_id( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_session_id ) );
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_name_or_expr ) );
          bool num_found = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_num_found );
          bool has_new_val = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_new_value );
          string new_value( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_new_value ) );
 
-         string* p_sess_id = 0;
+         size_t sess_id = 0;
 
-         if( !sess_id.empty( ) )
-            p_sess_id = &sess_id;
+         if( !session_id.empty( ) )
+            sess_id = from_string< size_t >( session_id );
 
          bool needs_response = false;
 
@@ -5893,12 +5888,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                check_not_possible_protocol_response( new_value );
 
-               set_session_variable( name_or_expr, new_value, &needs_response, &handler, p_sess_id );
+               set_session_variable( name_or_expr, new_value, &needs_response, &handler, sess_id );
             }
 
             if( needs_response )
             {
-               response = get_session_variable( name_or_expr, p_sess_id );
+               if( !variable_expression::is_possible_expression( name_or_expr ) )
+                  response = get_session_variable( name_or_expr, false );
+               else
+                  response = get_session_variable( expression( name_or_expr ), false );
 
                check_not_possible_protocol_response( response );
             }
@@ -5958,10 +5956,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string directory( get_parm_val( parameters, c_cmd_ciyam_session_storage_init_directory ) );
          bool admin = has_parm_val( parameters, c_cmd_ciyam_session_storage_init_admin );
 
-         if( !admin && has_system_variable( get_special_var_name( e_special_var_preparing_backup ) ) )
+         if( !admin && has_system_variable( e_special_var_preparing_backup ) )
             throw runtime_error( GS( c_str_storage_backup_underway ) );
 
-         if( !admin && has_system_variable( get_special_var_name( e_special_var_preparing_restore ) ) )
+         if( !admin && has_system_variable( e_special_var_preparing_restore ) )
             throw runtime_error( GS( c_str_storage_restore_underway ) );
 
          init_storage( name, directory, handler, admin );
@@ -5986,7 +5984,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          init_storage( name, "", handler, true );
 
-         bool is_default_storage = ( name == get_raw_system_variable( get_special_var_name( e_special_var_storage ) ) );
+         bool is_default_storage = ( name == get_system_variable( e_special_var_storage ) );
 
          backup_storage( handler, ( truncate_log ? &truncation_count : 0 ), &sav_db_file_names );
 
@@ -6279,7 +6277,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          bool is_meta = ( name == c_meta_model_name );
 
-         bool is_default_storage = ( name == get_raw_system_variable( get_special_var_name( e_special_var_storage ) ) );
+         bool is_default_storage = ( name == get_system_variable( e_special_var_storage ) );
 
          string db_file_names( ods_file_names( name, ' ' ) );
 
@@ -7626,7 +7624,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !is_script && !is_server && !is_update )
          {
             if( application_name.empty( ) )
-               application_name = get_raw_session_variable( get_special_var_name( e_special_var_storage ) );
+               application_name = get_session_variable( e_special_var_storage );
 
             // NOTE: If no default storage is
             // present then will assume Meta.
@@ -7701,12 +7699,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             string var_name( c_notifier_prefix + file_or_directory );
 
-            if( !has_raw_system_variable( var_name ) )
+            if( !has_system_variable( var_name ) )
                var_name += '/';
 
             // NOTE: As a notifier can delete itself will just
             // do nothing if no system variable is found.
-            if( has_raw_system_variable( var_name ) )
+            if( has_system_variable( var_name ) )
             {
                set_system_variable( var_name, c_finishing, c_watching );
                set_system_variable( var_name, c_finishing, c_suspended );
@@ -7717,7 +7715,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   msleep( c_notifer_check_wait );
 
-                  if( !has_raw_system_variable( var_name ) )
+                  if( !has_system_variable( var_name ) )
                   {
                      okay = true;
                      break;
@@ -7732,20 +7730,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             string var_name( c_notifier_prefix + file_or_directory );
 
-            if( !has_raw_system_variable( var_name ) )
+            if( !has_system_variable( var_name ) )
                var_name += '/';
 
-            if( get_raw_system_variable( var_name ) == c_watching )
+            if( get_system_variable( var_name ) == c_watching )
                set_system_variable( var_name, c_suspended );
          }
          else if( is_unsuspend )
          {
             string var_name( c_notifier_prefix + file_or_directory );
 
-            if( !has_raw_system_variable( var_name ) )
+            if( !has_system_variable( var_name ) )
                var_name += '/';
 
-            if( get_raw_system_variable( var_name ) == c_suspended )
+            if( get_system_variable( var_name ) == c_suspended )
                set_system_variable( var_name, c_watching );
          }
          else
@@ -7753,8 +7751,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             string file( file_or_directory );
             string directory( file_or_directory + '/' );
 
-            if( has_raw_system_variable( file )
-             || has_raw_system_variable( directory ) )
+            if( has_system_variable( file )
+             || has_system_variable( directory ) )
                throw runtime_error( "detected conflicting system variable for '" + file_or_directory + "'" );
 
             ciyam_notifier* p_notifier = new ciyam_notifier( file_or_directory );
@@ -7767,8 +7765,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             {
                msleep( c_notifer_check_wait );
 
-               if( has_raw_system_variable( c_notifier_prefix + file )
-                || has_raw_system_variable( c_notifier_prefix + directory ) )
+               if( has_system_variable( c_notifier_prefix + file )
+                || has_system_variable( c_notifier_prefix + directory ) )
                {
                   okay = true;
                   break;
@@ -7890,7 +7888,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
          else
          {
-            response = get_system_variable( name_or_expr, false );
+            if( !variable_expression::is_possible_expression( name_or_expr ) )
+               response = get_system_variable( name_or_expr, false );
+            else
+               response = get_system_variable( expression( name_or_expr ), false );
 
             check_not_possible_protocol_response( response );
          }

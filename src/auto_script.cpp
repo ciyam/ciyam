@@ -577,9 +577,10 @@ void autoscript_session::on_start( )
          if( g_server_shutdown )
             break;
 
-         // NOTE: Skip processing if currently preparing or completing a system backup.
-         if( has_system_variable( get_special_var_name( e_special_var_prepare_system ) )
-          || has_system_variable( get_special_var_name( e_special_var_restore_system ) ) )
+         // NOTE: Simply skip if is currently either
+         // preparing or completing a system backup.
+         if( has_system_variable( e_special_var_prepare_system )
+          || has_system_variable( e_special_var_restore_system ) )
             continue;
 
          guard g( g_mutex );
@@ -604,7 +605,7 @@ void autoscript_session::on_start( )
             continue;
          }
 
-         if( has_raw_system_variable( autoscript_reload_name ) )
+         if( has_system_variable( autoscript_reload_name ) )
          {
             changed = true;
             set_system_variable( autoscript_reload_name, "" );
@@ -769,7 +770,7 @@ void autoscript_session::on_start( )
 
                      logging_type logging = g_scripts[ j->second ].logging;
 
-                     if( has_raw_system_variable( log_all_scripts_name ) )
+                     if( has_system_variable( log_all_scripts_name ) )
                         logging = e_logging_type_always;
                      else
                      {

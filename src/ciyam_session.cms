@@ -83,7 +83,7 @@ session_lock "capture/release one or more sessions" {<opt/-capture/capture>|{<op
 session_wait|wait "wait for a number of milliseconds" [<opt/-lock/lock>][<opt/-no_progress/no_progress>]<val//milliseconds>[<val//message>]
 session_timeout "get/set server session timeout" [<val//seconds>]
 session_restrict "set/clear restricted protocol command list" <val//key>[<olist//commands>]
-session_variable|var "get/set a session variable" [<val/-id=/sess_id>|<opt/-num_found/num_found>]<val//name_or_expr>[<oval//new_value>]
+session_variable|var "get/set a session variable" [<val/-id=/session_id>|<opt/-num_found/num_found>]<val//name_or_expr>[<oval//new_value>]
 session_terminate|quit "terminate session"
 session_rpc_unlock "unlock full RPC access for a session" <val//password>[<val//seconds>]
 starttls|tls "start TLS session"

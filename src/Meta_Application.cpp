@@ -1903,8 +1903,7 @@ void Meta_Application::impl::impl_Generate( )
    else
       throw runtime_error( "Generate requires at least one Module." );
 
-   string generate_log_file( get_raw_session_variable(
-    get_special_var_name( e_special_var_generate_log_file ) ) );
+   string generate_log_file( get_session_variable( e_special_var_generate_log_file ) );
 
    bool skip_exec = !generate_log_file.empty( );
 
@@ -3874,7 +3873,7 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
 //nyi
    bool skip_create_db = storage_locked_for_admin( );
 
-   if( has_session_variable( get_special_var_name( e_special_var_force_db_create ) ) )
+   if( has_session_variable( e_special_var_force_db_create ) )
    {
       string names( get_session_variable( get_special_var_name( e_special_var_force_db_create ) ) );
 

@@ -225,7 +225,7 @@ channel_lock::channel_lock( const class_base& cb, const string& identity )
    if( set_system_variable( get_special_var_name(
     e_special_var_opening ) + '_' + identity, c_true_value, string( "" ) ) )
    {
-      if( has_raw_system_variable(
+      if( has_system_variable(
        get_special_var_name( e_special_var_opened ) + '_' + identity ) )
       {
          set_system_variable(
@@ -253,7 +253,7 @@ int64_t channel_height_fetched( const string& identity )
 
 void storage_channel_document_submit( const string& file_path )
 {
-   string notifier_value( get_raw_system_variable( file_path ) );
+   string notifier_value( get_system_variable( file_path ) );
 
    if( !notifier_value.empty( ) )
    {
@@ -281,7 +281,7 @@ void storage_channel_document_submit( const string& file_path )
 
 void storage_channel_document_unsubmit( const string& file_path )
 {
-   string notifier_value( get_raw_system_variable( file_path ) );
+   string notifier_value( get_system_variable( file_path ) );
 
    if( !notifier_value.empty( ) )
    {
@@ -361,7 +361,7 @@ void storage_channel_document_restore( const string& identity_path )
 
       ofs.set_folder( ".." );
 
-      string notifier_value( get_raw_system_variable( destination ) );
+      string notifier_value( get_system_variable( destination ) );
 
       int64_t num_bytes = 0;
 
@@ -440,7 +440,7 @@ void storage_channel_document_restore( const string& identity_path )
                   // NOTE: Wait for the notifier to add its watch for each directory.
                   for( int i = 0; i < c_max_notifer_checks; i++ )
                   {
-                     string notifier_value( get_raw_system_variable( directory_path + '/' ) );
+                     string notifier_value( get_system_variable( directory_path + '/' ) );
 
                      if( notifier_value.find( c_notifier_deleted ) == string::npos )
                         break;
@@ -462,7 +462,7 @@ bool storage_channel_document_ignoring( const string& file_path )
 {
    bool retval = false;
 
-   string notifier_value( get_raw_system_variable( file_path ) );
+   string notifier_value( get_system_variable( file_path ) );
 
    if( !notifier_value.empty( ) )
    {
@@ -487,7 +487,7 @@ bool storage_channel_document_submitting( const string& file_path )
 {
    bool retval = false;
 
-   string notifier_value( get_raw_system_variable( file_path ) );
+   string notifier_value( get_system_variable( file_path ) );
 
    if( !notifier_value.empty( ) )
    {
@@ -714,12 +714,10 @@ string storage_channel_documents( const string& identity, bool get_height, bool 
 
          temporary_include_hidden include_hidden( ofs, false );
 
-         if( !get_raw_session_variable(
-          get_special_var_name( e_special_var_style_brief ) ).empty( ) )
+         if( !get_session_variable( e_special_var_style_brief ).empty( ) )
             style = ods_file_system::e_branch_style_brief;
 
-         if( !get_raw_session_variable(
-          get_special_var_name( e_special_var_style_full_blown ) ).empty( ) )
+         if( !get_session_variable( e_special_var_style_full_blown ).empty( ) )
             style = ods_file_system::e_branch_style_full_blown;
 
          ofs.branch_objects( "*", ss, style );
@@ -926,7 +924,7 @@ void storage_channel_documents_close( const char* p_identity )
 
    ods::transaction ods_tx( ods_db );
 
-   string prefix( get_raw_system_variable(
+   string prefix( get_system_variable(
     get_special_var_name( e_special_var_opened_files ) ) + '/' + identity + '/' );
 
    ofs.set_folder( c_channel_folder_ciyam );
@@ -961,7 +959,7 @@ void storage_channel_documents_close( const char* p_identity )
 
    string all_selected;
 
-   string all_file_lines( get_raw_system_variable( prefix + "?*" ) );
+   string all_file_lines( get_system_variable( prefix + "?*" ) );
 
    vector< string > file_lines;
 
@@ -1102,14 +1100,14 @@ bool storage_channel_documents_marked( const string& identity )
 
       string opened_variable_name( get_special_var_name( e_special_var_opened ) + '_' + identity );
 
-      if( has_raw_system_variable( opened_variable_name ) )
+      if( has_system_variable( opened_variable_name ) )
       {
-         string prefix( get_raw_system_variable(
+         string prefix( get_system_variable(
           get_special_var_name( e_special_var_opened_files ) ) + '/' + identity + '/' );
 
          string all_selected;
 
-         string all_file_lines( get_raw_system_variable( prefix + "?*" ) );
+         string all_file_lines( get_system_variable( prefix + "?*" ) );
 
          vector< string > file_lines;
 
@@ -1171,12 +1169,11 @@ bool storage_channel_documents_opened( const string& identity )
       string opened_variable_name( get_special_var_name( e_special_var_opened ) + '_' + identity );
       string opening_variable_name( get_special_var_name( e_special_var_opening ) + '_' + identity );
 
-      if( has_raw_system_variable( opened_variable_name ) )
+      if( has_system_variable( opened_variable_name ) )
          retval = true;
-      else if( !has_raw_system_variable( opening_variable_name ) )
+      else if( !has_system_variable( opening_variable_name ) )
       {
-         string opened_files_directory( get_raw_system_variable(
-          get_special_var_name( e_special_var_opened_files ) ) );
+         string opened_files_directory( get_system_variable( e_special_var_opened_files ) );
 
          if( !opened_files_directory.empty( ) )
          {
@@ -1269,7 +1266,7 @@ bool storage_channel_documents_opened( const string& identity )
                {
                   msleep( c_notifer_check_wait );
 
-                  if( has_raw_system_variable( c_notifier_prefix + identity_directory + '/' ) )
+                  if( has_system_variable( c_notifier_prefix + identity_directory + '/' ) )
                   {
                      has_notifier_variables = true;
                      break;
@@ -1307,7 +1304,7 @@ string storage_channel_documents_update( const string& identity, bool submitted 
 
    string retval;
 
-   string blockchain_identity( get_raw_system_variable( '$' + identity + "_identity" ) );
+   string blockchain_identity( get_system_variable( '$' + identity + "_identity" ) );
 
    if( blockchain_identity.empty( ) )
       throw runtime_error( "blockchain identity for '"
@@ -1614,7 +1611,7 @@ string storage_channel_documents_prepare( const string& identity )
 
    string retval;
 
-   string blockchain_identity( get_raw_system_variable( '$' + identity + "_identity" ) );
+   string blockchain_identity( get_system_variable( '$' + identity + "_identity" ) );
 
    if( blockchain_identity.empty( ) )
       throw runtime_error( "blockchain identity for '"
@@ -1823,7 +1820,7 @@ void storage_channel_documents_cancel_pending( const char* p_identity )
       throw runtime_error( "invalid non-peerchain storage '"
        + name + "' for storage_channel_documents_cancel_pending" );
 
-   string blockchain_identity( get_raw_system_variable( '$' + identity + "_identity" ) );
+   string blockchain_identity( get_system_variable( '$' + identity + "_identity" ) );
 
    if( blockchain_identity.empty( ) )
       throw runtime_error( "blockchain identity for '"

@@ -1621,8 +1621,7 @@ void Meta_Package::impl::impl_Remove( )
          // a bash script (such as "reconstruct_meta") as standard
          // output is captured and standard error would not appear
          // when running as a daemon.
-         string progress_pipe( get_raw_session_variable(
-          get_special_var_name( e_special_var_progress_pipe ) ) );
+         string progress_pipe( get_session_variable( e_special_var_progress_pipe ) );
 
          // NOTE: Empty code block for scope purposes.
          {

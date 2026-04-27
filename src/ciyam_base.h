@@ -34,6 +34,9 @@ class ods_file_system;
 
 struct progress;
 
+struct var_name;
+struct expression;
+
 #  define TRACE_GENERAL 0x00000000U
 #  define TRACE_LOCKING 0x00000001U
 #  define TRACE_OBJECTS 0x00000002U
@@ -58,11 +61,12 @@ if( ( get_trace_flags( ) & ( flags ) ) == ( flags ) )
 if( !( ( get_trace_flags( ) & ( flags ) ) == ( flags ) ) )
 
 // NOTE: Braces are used in the following macro to prevent
-// immediately following it with an "else" (as it does not
-// work as it might be expected to). The compilation error
-// that does occur if such an "else" was coded should lead
-// to reading this comment. Try using IF_IS (or IF_NOT_IS)
-// or placing the TRACE_LOG *after* an else (which works).
+// immediately following it with an "else" (as it will not
+// work as might be hoped). The compiler error that occurs
+// if such an "else" was coded should lead to finding this
+// comment. Either move the TRACE_LOG to after the else or
+// try using an IF_IS_TRACING (or IF_NOT_IS_TRACING) macro
+// instead.
 
 #  define TRACE_LOG( flags, message )\
 if( ( flags ) && ( ( get_trace_flags( ) & ( flags ) ) == ( flags ) ) ) { log_trace_message( flags, message ); }
@@ -611,17 +615,13 @@ void clear_all_peer_mapped_hashes( const std::string& key );
 
 void set_default_session_variables( int port = 0 );
 
-bool has_raw_session_variable( const std::string& name, size_t sess_id = 0 );
+bool has_session_variable( const var_name& var, size_t sess_id = 0 );
 
-std::string get_raw_session_variable( const std::string& name, size_t sess_id = 0 );
+std::string get_session_variable_for_slot( const std::string& name, size_t slot );
 
-inline bool has_session_variable( const std::string& name, size_t sess_id = 0 )
-{
-   return has_raw_session_variable( name, sess_id );
-}
+std::string get_session_variable( const var_name& var, size_t sess_id = 0 );
 
-std::string get_session_variable( const std::string& name, size_t slot );
-std::string get_session_variable( const std::string& name_or_expr, const std::string* p_sess_id = 0 );
+std::string get_session_variable( const expression& expr, size_t sess_id = 0 );
 
 std::string get_session_variable_from_matching_blockchain( const std::string& name,
  const std::string& check_name, const std::string& check_value, bool matching_own_ip_address = false );
@@ -629,12 +629,11 @@ std::string get_session_variable_from_matching_blockchain( const std::string& na
 bool has_mismatched_variables_for_matching_blockchains( const std::string& name,
  const std::string& value, const std::string* p_name = 0, const std::string* p_value = 0 );
 
-void set_session_variable(
- const std::string& name, const std::string& value,
- bool* p_set_special_temporary = 0, command_handler* p_command_handler = 0, const std::string* p_sess_id = 0 );
+void set_session_variable( const var_name& var, const std::string& value,
+ bool* p_set_special_temporary = 0, command_handler* p_command_handler = 0, size_t sess_id = 0 );
 
-bool set_session_variable(
- const std::string& name, const std::string& value, const std::string& current );
+bool set_session_variable( const var_name& var,
+ const std::string& value, const std::string& current, const char* p_name = 0 );
 
 void set_session_variable_for_matching_blockchains( const std::string& name,
  const std::string& value, const std::string& check_name, const std::string& check_value, bool matching_own_ip_address = false );
@@ -649,40 +648,28 @@ bool has_any_session_variable( const std::string& name );
 bool has_any_session_variable( const std::string& name, const std::string& value );
 
 size_t num_have_session_variable(
- const std::string& name, bool matching_own_ip_address = false,
+ const var_name& var, bool matching_own_ip_address = false,
  bool include_condemned = true, size_t check_session_id_less_than = 0 );
 
-size_t num_have_session_variable( const std::string& name,
+size_t num_have_session_variable( const var_name& var,
  const std::string& value, std::vector< std::string >* p_identities = 0,
  bool matching_own_ip_address = false, bool include_condemned = true );
 
-bool is_first_using_session_variable( const std::string& name );
-bool is_first_using_session_variable( const std::string& name, const std::string& value );
+bool is_first_using_session_variable( const var_name& var );
+
+bool is_first_using_session_variable( const var_name& var, const std::string& value );
 
 struct temporary_session_variable
 {
-   temporary_session_variable( const std::string& name )
-    :
-    name( name )
-   {
-      original_value = get_raw_session_variable( name );
-   }
+   temporary_session_variable( const var_name& var );
 
-   temporary_session_variable( const std::string& name, const std::string& value )
-    :
-    name( name )
-   {
-      original_value = get_raw_session_variable( name );
-      set_session_variable( name, value );
-   }
+   temporary_session_variable( const var_name& var, const std::string& value );
 
-   ~temporary_session_variable( )
-   {
-      set_session_variable( name, original_value );
-   }
+   ~temporary_session_variable( );
 
-   std::string name;
-   std::string original_value;
+   struct impl;
+
+   impl* p_impl;
 };
 
 void copy_session_variables( std::map< std::string, std::string >& variables );
@@ -792,12 +779,13 @@ std::string storage_module_directory( );
 
 bool storage_supports_sql_undo( );
 
-bool has_storage_variable( const std::string& name_or_expr );
+bool has_storage_variable( const var_name& var );
 
-std::string get_storage_variable( const std::string& name_or_expr );
-std::string get_raw_storage_variable( const std::string& var_name );
+std::string get_storage_variable( const var_name& var );
 
-void set_storage_variable( const std::string& var_name, const std::string& new_value );
+std::string get_storage_variable( const expression& expr );
+
+void set_storage_variable( const var_name& var, const std::string& value );
 
 std::string storage_web_root( bool expand, bool check_is_linked = false );
 

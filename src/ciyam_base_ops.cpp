@@ -1528,7 +1528,7 @@ void fetch_keys_from_system_variables( class_base& instance,
 
    if( persistence_extra == get_special_var_name( e_special_var_notifier ) )
    {
-      persistence_extra = get_system_variable( get_special_var_name( e_special_var_opened_files ) );
+      persistence_extra = get_system_variable( e_special_var_opened_files );
 
       if( !parent_key_value.empty( ) )
          persistence_extra += '/' + parent_key_value;
@@ -1545,7 +1545,7 @@ void fetch_keys_from_system_variables( class_base& instance,
    if( in_reverse_order )
       sys_var_name += '*';
 
-   string sys_vars( get_raw_system_variable( sys_var_name ) );
+   string sys_vars( get_system_variable( sys_var_name ) );
 
    if( !sys_vars.empty( ) )
    {
@@ -2084,8 +2084,7 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
    {
       is_indirect_key = true;
 
-      persistence_extra = string( c_notifier_prefix )
-       + get_system_variable( get_special_var_name( e_special_var_opened_files ) );
+      persistence_extra = string( c_notifier_prefix ) + get_system_variable( e_special_var_opened_files );
 
       if( !parent_key_value.empty( ) )
          persistence_extra += '/' + parent_key_value;
@@ -2095,11 +2094,11 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
 
    string key_value( persistence_extra + key );
 
-   string row_data( get_raw_system_variable( key_value ) );
+   string row_data( get_system_variable( key_value ) );
 
    if( is_indirect_key )
    {
-      string indirect_row_data( get_raw_system_variable( row_data ) );
+      string indirect_row_data( get_system_variable( row_data ) );
 
       string prefix( '[' + key + ']' );
 
@@ -2454,11 +2453,9 @@ string exec_bulk_ops( const string& module,
 
          string last_suffixed_key;
 
-         string key_suffix( get_raw_session_variable(
-          get_special_var_name( e_special_var_key_suffix ) ) );
+         string key_suffix( get_session_variable( e_special_var_key_suffix ) );
 
-         if( !get_raw_session_variable(
-          get_special_var_name( e_special_var_key_prefix_is_first ) ).empty( ) )
+         if( !get_session_variable( e_special_var_key_prefix_is_first ).empty( ) )
             key_prefix_is_first = true;
 
          while( getline( inpf, next ) )
@@ -3026,8 +3023,7 @@ void begin_instance_op( instance_op op, class_base& instance,
 
    if( is_condemned_session( ) )
    {
-      string stop_condemned( get_raw_system_variable(
-       get_special_var_name( e_special_var_stop_condemned ) ) );
+      string stop_condemned( get_system_variable( e_special_var_stop_condemned ) );
 
       if( ( stop_condemned == c_all )
        || ( stop_condemned == to_string( session_id( ) ) ) )
@@ -3531,7 +3527,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                perform_op_cancel( instance, op );
 
-               set_session_variable( get_special_var_name( e_special_var_val_error ), validation_error );
+               set_session_variable( e_special_var_val_error, validation_error );
 
                throw runtime_error( validation_error );
             }
@@ -3595,7 +3591,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                perform_op_cancel( instance, op );
 
-               set_session_variable( get_special_var_name( e_special_var_val_error ), validation_error );
+               set_session_variable( e_special_var_val_error, validation_error );
 
                throw runtime_error( validation_error );
             }
@@ -3648,11 +3644,11 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
             append_peerchain_log_command( identity, log_command );
 
-            set_session_variable( get_special_var_name( e_special_var_peer_data_created ), c_true_value );
+            set_session_variable( e_special_var_peer_data_created, c_true_value );
 
-            if( get_session_variable( get_special_var_name( e_special_var_skip_submit_file ) ).empty( ) )
+            if( get_session_variable( e_special_var_skip_submit_file ).empty( ) )
             {
-               string submit_type( get_session_variable( get_special_var_name( e_special_var_submit_type ) ) );
+               string submit_type( get_session_variable( e_special_var_submit_type ) );
 
                if( submit_type.empty( ) )
                   submit_type = c_ui_submit_type_peer;
@@ -4097,8 +4093,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in finish_instance_op" );
          }
 
-         string blockchain_backup_height( get_system_variable(
-          get_special_var_name( e_special_var_blockchain_backup_height ) ) );
+         string blockchain_backup_height( get_system_variable( e_special_var_blockchain_backup_height ) );
 
          if( !is_special_storage
           && !storage_locked_for_admin( )
@@ -4472,8 +4467,7 @@ bool perform_instance_iterate( class_base& instance,
 
    if( is_condemned_session( ) )
    {
-      string stop_condemned( get_raw_system_variable(
-       get_special_var_name( e_special_var_stop_condemned ) ) );
+      string stop_condemned( get_system_variable( e_special_var_stop_condemned ) );
 
       if( ( stop_condemned == c_all )
        || ( stop_condemned == to_string( session_id( ) ) ) )
@@ -4565,8 +4559,8 @@ bool perform_instance_iterate( class_base& instance,
          if( group_field_name.empty( ) && level_field_name.empty( ) )
             sec_marker = c_false_value;
 
-         string sec( get_session_variable( get_special_var_name( e_special_var_sec ) ) );
-         string uid( get_session_variable( get_special_var_name( e_special_var_uid ) ) );
+         string sec( get_session_variable( e_special_var_sec ) );
+         string uid( get_session_variable( e_special_var_uid ) );
 
          string gids;
 
@@ -4590,7 +4584,7 @@ bool perform_instance_iterate( class_base& instance,
                   if( !sec.empty( ) )
                      sec_level = ( 10 - sec.length( ) );
 
-                  gids = get_session_variable( get_special_var_name( e_special_var_gids ) );
+                  gids = get_session_variable( e_special_var_gids );
                }
 
                if( gids.empty( ) && !group_field_name.empty( ) )
@@ -5051,8 +5045,7 @@ bool perform_instance_iterate( class_base& instance,
 
       size_t row_cache_limit = c_iteration_row_cache_limit;
 
-      string row_cache_limit_value(
-       get_session_variable( get_special_var_name( e_special_var_row_cache_limit ) ) );
+      string row_cache_limit_value( get_session_variable( e_special_var_row_cache_limit ) );
 
       if( !row_cache_limit_value.empty( ) )
          row_cache_limit = from_string< size_t >( row_cache_limit_value );

@@ -947,18 +947,17 @@ void output_repository_progress( progress* p_progress,
       set_session_variable( get_special_var_name( e_special_var_progress_count ), to_string( num ) );
       set_session_variable( get_special_var_name( e_special_var_progress_total ), to_string( total ) );
 
-      value = get_raw_session_variable( get_special_var_name( e_special_var_progress_value ) );
+      value = get_session_variable( e_special_var_progress_value );
    }
 
-   extra = get_raw_session_variable( get_special_var_name( e_special_var_blockchain_height_processing ) );
+   extra = get_session_variable( e_special_var_blockchain_height_processing );
 
    if( extra.empty( ) )
-      extra = get_raw_session_variable( get_special_var_name( e_special_var_blockchain_zenith_height ) );
+      extra = get_session_variable( e_special_var_blockchain_zenith_height );
 
    if( !extra.empty( ) )
    {
-      string other( get_raw_session_variable(
-       get_special_var_name( e_special_var_blockchain_height_other ) ) );
+      string other( get_session_variable( e_special_var_blockchain_height_other ) );
 
       if( !other.empty( ) && ( other != extra ) )
          extra += '/' + other;
@@ -5908,7 +5907,7 @@ size_t count_total_repository_entries(
    session_progress_settings( num_seconds, p_progress );
 
    if( p_progress )
-      get_raw_session_variable( get_special_var_name( e_special_var_progress_clear ) );
+      get_session_variable( e_special_var_progress_clear );
 
    while( true )
    {
@@ -5994,7 +5993,7 @@ size_t remove_all_repository_entries( const string& repository,
    session_progress_settings( num_seconds, p_progress );
 
    if( p_progress )
-      get_raw_session_variable( get_special_var_name( e_special_var_progress_clear ) );
+      get_session_variable( e_special_var_progress_clear );
 
    while( true )
    {
@@ -6113,7 +6112,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
    session_progress_settings( num_seconds, p_progress );
 
    if( p_progress )
-      get_raw_session_variable( get_special_var_name( e_special_var_progress_clear ) );
+      get_session_variable( e_special_var_progress_clear );
 
    while( true )
    {

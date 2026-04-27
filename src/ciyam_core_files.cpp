@@ -196,8 +196,7 @@ void verify_block( const string& content, bool check_dependents )
    string blockchain_identity( get_session_blockchain( ) );
 
    if( blockchain_identity.empty( ) )
-      blockchain_identity = get_raw_session_variable(
-       get_special_var_name( e_special_var_blockchain_identity ) );
+      blockchain_identity = get_session_variable( e_special_var_blockchain_identity );
 
    if( blockchain_identity.empty( ) )
       throw runtime_error( "unexpected empty 'blockchain_identity' in verify_block" );

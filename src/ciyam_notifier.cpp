@@ -92,7 +92,7 @@ string get_value_and_unique( const string& raw_value, string* p_unique = 0 )
 
 inline string get_value_from_system_variable( const string& var_name, string* p_unique = 0 )
 {
-   return get_value_and_unique( get_raw_system_variable( var_name ), p_unique );
+   return get_value_and_unique( get_system_variable( var_name ), p_unique );
 }
 
 }
@@ -256,7 +256,7 @@ void ciyam_notifier::on_start( )
             else
             {
                // NOTE: An alternative to "initial_selections".
-               extra_prefix = get_raw_system_variable( path );
+               extra_prefix = get_system_variable( path );
 
                if( has_existing && !path.empty( ) )
                {
@@ -320,7 +320,7 @@ void ciyam_notifier::on_start( )
 
                         directory_path += next_directory + '/';
 
-                        if( !has_raw_system_variable( directory_path ) )
+                        if( !has_system_variable( directory_path ) )
                         {
                            string unique( get_next_unique( ) );
 
@@ -447,7 +447,7 @@ void ciyam_notifier::on_start( )
 
                         if( !file_name.empty( ) && ( file_name[ file_name.length( ) - 1 ] != '/' ) )
                         {
-                           string viewed_files( get_raw_system_variable(
+                           string viewed_files( get_system_variable(
                             watch_variable_name + c_notifier_viewed_suffix ) );
 
                            set< string > file_names;
@@ -645,7 +645,7 @@ void ciyam_notifier::on_start( )
                                     tagged_extra = c_notifier_selection;
                                  else
                                  {
-                                    string all_prefixed_variables( get_raw_system_variable( original_name + "*" ) );
+                                    string all_prefixed_variables( get_system_variable( original_name + "*" ) );
 
                                     if( !all_prefixed_variables.empty( ) )
                                     {
@@ -787,7 +787,7 @@ void ciyam_notifier::on_start( )
                            // name had been created then will handle as a modification.
                            if( has_system_variable( var_name ) )
                            {
-                              string prior_value( get_raw_system_variable( var_name ) );
+                              string prior_value( get_system_variable( var_name ) );
 
                               string prior_unique;
                               get_value_and_unique( prior_value, &prior_unique );
@@ -877,7 +877,7 @@ void ciyam_notifier::on_start( )
          {
             msleep( c_wait_sleep_time );
 
-            if( get_raw_system_variable( watch_variable_name ) == c_finishing )
+            if( get_system_variable( watch_variable_name ) == c_finishing )
                break;
          }
       }

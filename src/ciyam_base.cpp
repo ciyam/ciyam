@@ -1296,8 +1296,7 @@ void storage_handler::dump_locks( ostream& os ) const
 
    lock_index_const_iterator lici;
 
-   bool minimal_output = !get_raw_session_variable(
-    get_special_var_name( e_special_var_dump_minimal ) ).empty( );
+   bool minimal_output = !get_session_variable( e_special_var_dump_minimal ).empty( );
 
    if( minimal_output )
    {
@@ -2374,10 +2373,10 @@ void init_system_ods( bool* p_restored = 0 )
 
       gup_ofs->list_files( variable_files );
 
-      // NOTE: Need to use "get_raw_system_variable" so that
-      // the "fetch_persistent" function is being called.
+      // NOTE: Need to use "get_system_variable" so that
+      // the "fetch_persistent" function will be called.
       for( size_t i = 0; i < variable_files.size( ); i++ )
-         get_raw_system_variable( "<" + variable_files[ i ], true );
+         get_system_variable( "<" + variable_files[ i ], true );
    }
 }
 
@@ -2580,8 +2579,7 @@ void perform_storage_op( storage_op op,
 
             up_handler->get_root( ).module_directory = directory;
 
-            string blockchain( get_raw_system_variable(
-             get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+            string blockchain( get_system_variable( e_special_var_blockchain_backup_identity ) );
 
             bool is_peerchain_application = false;
 
@@ -2773,10 +2771,9 @@ void perform_storage_op( storage_op op,
             exec_algos_action( "load", algos_file, "" );
          }
 
-         set_session_variable( get_special_var_name( e_special_var_prior_storage ),
-          get_raw_session_variable( get_special_var_name( e_special_var_storage ) ) );
+         set_session_variable( e_special_var_prior_storage, get_session_variable( e_special_var_storage ) );
 
-         set_session_variable( get_special_var_name( e_special_var_storage ), gtp_session->p_storage_handler->get_name( ) );
+         set_session_variable( e_special_var_storage, gtp_session->p_storage_handler->get_name( ) );
       }
       catch( ... )
       {
@@ -3552,7 +3549,7 @@ void append_transaction_log_command( storage_handler& handler,
 
       bool use_init_tx_id = false;
 
-      string init_log_id( get_raw_session_variable( get_special_var_name( e_special_var_init_log_id ) ) );
+      string init_log_id( get_session_variable( e_special_var_init_log_id ) );
 
       if( ( init_log_id == c_true ) || ( init_log_id == c_true_value ) )
          use_init_tx_id = true;
@@ -3624,7 +3621,7 @@ void append_transaction_log_command( storage_handler& handler,
 
       bool is_restoring = handler.get_is_locked_for_admin( );
 
-      if( !get_session_variable( get_special_var_name( e_special_var_package_install_extra ) ).empty( ) )
+      if( !get_session_variable( e_special_var_package_install_extra ).empty( ) )
          is_restoring = true;
 
       log_file.flush( );
@@ -3897,6 +3894,7 @@ void read_server_configuration( )
        e_special_var_shared_files ), user_prefix + c_server_folder_shared, true );
 
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage, c_meta_storage_name );
+
       set_system_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
 
       string peer_ips_permit( reader.read_opt_attribute( c_attribute_peer_ips_permit ) );
@@ -4038,7 +4036,7 @@ void read_server_configuration( )
       string files_area_path( reader.read_opt_attribute( c_attribute_path ) );
 
       // NOTE: Don't override if was provided as a startup option.
-      if( !has_system_variable( get_special_var_name( e_special_var_files_area_path ) ) )
+      if( !has_system_variable( e_special_var_files_area_path ) )
          set_files_area_path( files_area_path );
 
       g_files_area_item_max_size = ( size_t )unformat_bytes( reader.read_opt_attribute(
@@ -4061,9 +4059,8 @@ void check_if_is_known_demo_identity( )
    if( g_demo_identities.empty( ) )
       buffer_file_lines( c_server_demo_identities_list, g_demo_identities );
 
-   if( g_demo_identities.count( get_raw_system_variable(
-    get_special_var_name( e_special_var_system_identity ) ) ) )
-      set_system_variable( get_special_var_name( e_special_var_system_is_for_demo ), c_true_value, true );
+   if( g_demo_identities.count( get_system_variable( e_special_var_system_identity ) ) )
+      set_system_variable( e_special_var_system_is_for_demo, c_true_value, true );
 }
 
 void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch )
@@ -4985,10 +4982,10 @@ void init_globals( const char* p_sid, int* p_use_udp )
          g_secure_identity = g_encrypted_identity;
 
       if( g_secure_identity )
-         set_system_variable( get_special_var_name( e_special_var_sid_secure ), c_true_value, true );
+         set_system_variable( e_special_var_sid_secure, c_true_value, true );
 
       if( g_encrypted_identity )
-         set_system_variable( get_special_var_name( e_special_var_sid_locked ), c_true_value, true );
+         set_system_variable( e_special_var_sid_locked, c_true_value, true );
 
       read_server_configuration( );
 
@@ -5055,8 +5052,7 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
          while( true )
          {
-            string next_info( get_raw_system_variable(
-             get_special_var_name( e_special_var_queue_archive_info_for_resize ) ) );
+            string next_info( get_system_variable( e_special_var_queue_archive_info_for_resize ) );
 
             if( next_info.empty( ) )
                break;
@@ -5087,22 +5083,20 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       check_timezone_info( );
 
-      set_system_variable( get_special_var_name( e_special_var_os ), "Linux", true );
+      set_system_variable( e_special_var_os, "Linux", true );
 
-      set_system_variable(
-       get_special_var_name( e_special_var_peer_port ), to_string( c_default_ciyam_peer_port ), true );
+      set_system_variable( e_special_var_peer_port, to_string( c_default_ciyam_peer_port ), true );
 
       string identity( c_str_unknown );
 
-      string blockchain_backup_identity( get_raw_system_variable(
-       get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+      string blockchain_backup_identity( get_system_variable( e_special_var_blockchain_backup_identity ) );
 
       if( !blockchain_backup_identity.empty( ) )
          identity = g_identity_suffix = blockchain_backup_identity;
       else if( !g_sid.empty( ) && !g_encrypted_identity )
          identity = get_identity( ).substr( 0, c_identity_length );
 
-      set_system_variable( get_special_var_name( e_special_var_system_identity ), identity, true );
+      set_system_variable( e_special_var_system_identity, identity, true );
 
       check_if_is_known_demo_identity( );
 
@@ -5571,8 +5565,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             g_hardened_identity = false;
             g_encrypted_identity = true;
 
-            set_system_variable( get_special_var_name( e_special_var_sid_locked ), c_true_value, true );
-            set_system_variable( get_special_var_name( e_special_var_sid_secure ), c_true_value, true );
+            set_system_variable( e_special_var_sid_locked, c_true_value, true );
+            set_system_variable( e_special_var_sid_secure, c_true_value, true );
          }
          else if( is_encrypted && p_encrypted_sid )
          {
@@ -5586,10 +5580,10 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
             hash_sid_val( sid );
 
-            set_system_variable( get_special_var_name( e_special_var_sid_locked ), "", true );
-            set_system_variable( get_special_var_name( e_special_var_sid_secure ), "", true );
+            set_system_variable( e_special_var_sid_locked, "", true );
+            set_system_variable( e_special_var_sid_secure, "", true );
 
-            if( get_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
+            if( get_system_variable( e_special_var_blockchain_backup_identity ).empty( ) )
                run_init_script = true;
          }
 
@@ -5725,16 +5719,15 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             if( !p_encrypted_sid )
                g_encrypted_identity = false;
 
-            set_system_variable( get_special_var_name( e_special_var_sid_locked ), "", true );
+            set_system_variable( e_special_var_sid_locked, "", true );
 
-            if( get_raw_system_variable(
-             get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
+            if( get_system_variable( e_special_var_blockchain_backup_identity ).empty( ) )
             {
                string identity( get_identity( ) );
 
                g_identity_suffix = identity.substr( 0, c_bc_identity_length );
 
-               set_system_variable( get_special_var_name( e_special_var_system_identity ), g_identity_suffix, true );
+               set_system_variable( e_special_var_system_identity, g_identity_suffix, true );
             }
          }
       }
@@ -5783,9 +5776,9 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          g_encrypted_identity = false;
 
-         set_system_variable( get_special_var_name( e_special_var_sid_secure ), c_true_value, true );
+         set_system_variable( e_special_var_sid_secure, c_true_value, true );
 
-         if( get_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
+         if( get_system_variable( e_special_var_blockchain_backup_identity ).empty( ) )
             run_init_script = true;
       }
    }
@@ -5794,15 +5787,13 @@ void set_identity( const string& info, const char* p_encrypted_sid )
    {
       run_script( "init_ciyam", false );
 
-      string blockchain_backup_identity( get_raw_system_variable(
-       get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+      string blockchain_backup_identity( get_system_variable( e_special_var_blockchain_backup_identity ) );
 
       if( !blockchain_backup_identity.empty( ) )
       {
          g_identity_suffix = blockchain_backup_identity;
 
-         set_system_variable( get_special_var_name(
-          e_special_var_system_identity ), blockchain_backup_identity, true );
+         set_system_variable( e_special_var_system_identity, blockchain_backup_identity, true );
       }
 
       check_if_is_known_demo_identity( );
@@ -5830,7 +5821,7 @@ string create_unlock_sid_hash_key( bool for_web_ui, bool is_temporary )
    if( !unlock_create_allowed( ) )
       throw runtime_error( "*** attempt to create another unlock key too quickly ***" );
 
-   if( !has_system_variable( get_special_var_name( e_special_var_sid_secure ) ) )
+   if( !has_system_variable( e_special_var_sid_secure ) )
       throw runtime_error( "invalid attempt to create unlock key for unencrypted identity" );
 
    string unlock_key( random_characters( c_unlock_key_length, 0, e_printable_type_alpha_numeric ) );
@@ -5930,7 +5921,7 @@ bool get_is_accepted_ip_addr( const string& ip_addr )
 {
    guard g( g_mutex );
 
-   if( has_raw_system_variable( get_special_var_name( e_special_var_disallow_connections ) ) )
+   if( has_system_variable( e_special_var_disallow_connections ) )
       return false;
 
    return ( g_rejected_ip_addrs.empty( ) || g_rejected_ip_addrs.count( ip_addr ) == 0 )
@@ -5941,7 +5932,7 @@ bool get_is_accepted_peer_ip_addr( const string& ip_addr )
 {
    guard g( g_mutex );
 
-   if( has_raw_system_variable( get_special_var_name( e_special_var_disallow_connections ) ) )
+   if( has_system_variable( e_special_var_disallow_connections ) )
       return false;
 
    return ( g_rejected_peer_ip_addrs.empty( ) || g_rejected_peer_ip_addrs.count( ip_addr ) == 0 )
@@ -6118,7 +6109,7 @@ void create_peerchain(
 
    parse_host_and_or_port( host_and_port, host_name, port );
 
-   string peer_port( get_raw_system_variable( get_special_var_name( e_special_var_peer_port ) ) );
+   string peer_port( get_system_variable( e_special_var_peer_port ) );
 
    if( peer_port.empty( ) )
       throw runtime_error( "unexpect missing 'peer_port' system variable" );
@@ -6331,14 +6322,12 @@ void destroy_peerchain( const string& identity, progress* p_progress )
 
    gup_ofs->set_root_folder( c_system_peerchain_folder );
 
-   string backup_identity( get_raw_system_variable(
-    get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+   string backup_identity( get_system_variable( e_special_var_blockchain_backup_identity ) );
 
    if( identity == backup_identity )
       throw runtime_error( "invalid attempt to destroy system backup identity" );
 
-   string peer_hub_identity( get_raw_system_variable(
-    get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
+   string peer_hub_identity( get_system_variable( e_special_var_blockchain_peer_hub_identity ) );
 
    if( identity == peer_hub_identity )
       throw runtime_error( "invalid attempt to destroy system peer hub identity" );
@@ -6402,7 +6391,7 @@ void destroy_peerchain( const string& identity, progress* p_progress )
 
       if( has_system_variable( hub_hash_variable ) )
       {
-         string all_tags( get_hash_tags( get_raw_system_variable( hub_hash_variable ) ) );
+         string all_tags( get_hash_tags( get_system_variable( hub_hash_variable ) ) );
 
          if( !all_tags.empty( ) )
          {
@@ -6816,7 +6805,7 @@ void set_files_area_path( const char* p_files_area_path )
    }
 
    if( was_first )
-      set_system_variable( get_special_var_name( e_special_var_files_area_path ), g_files_area_path, true );
+      set_system_variable( e_special_var_files_area_path, g_files_area_path, true );
 }
 
 size_t get_notifier_ignore_secs( )
@@ -7114,7 +7103,7 @@ string totp_secret_key( const string& unique )
 
    key.reserve( c_key_reserve_size );
 
-   string crypt_key( get_raw_session_variable( get_special_var_name( e_special_var_crypt_key ) ) );
+   string crypt_key( get_session_variable( e_special_var_crypt_key ) );
 
    if( crypt_key.empty( ) )
       get_sid( key );
@@ -7143,8 +7132,7 @@ int exec_system( const string& cmd, bool async, bool delay, bool* p_delayed )
    if( pos != string::npos )
       throw runtime_error( "disallowed characters found in cmd: " + cmd );
 
-   string append_file( get_raw_session_variable(
-    get_special_var_name( e_special_var_exec_system_append ) ) );
+   string append_file( get_session_variable( e_special_var_exec_system_append ) );
 
    if( !append_file.empty( ) )
    {
@@ -7162,7 +7150,7 @@ int exec_system( const string& cmd, bool async, bool delay, bool* p_delayed )
     && ( gtp_session->p_storage_handler->get_name( ) != c_default_storage_name ) )
       throw runtime_error( "invalid exec_system: " + exec_cmd );
 
-   string async_var( get_raw_session_variable( get_special_var_name( e_special_var_allow_async ) ) );
+   string async_var( get_session_variable( e_special_var_allow_async ) );
 
    // NOTE: The session variable @allow_async can be used to force non-async execution.
    if( ( async_var == c_false ) || ( async_var == c_false_value ) )
@@ -7199,14 +7187,13 @@ int exec_system( const string& cmd, bool async, bool delay, bool* p_delayed )
 
    if( gtp_session && !gtp_session->script_temp_args_file.empty( ) )
    {
-      error_message = get_raw_system_variable( gtp_session->script_temp_args_file );
+      error_message = get_system_variable( gtp_session->script_temp_args_file );
 
       set_system_variable( gtp_session->script_temp_args_file, "" );
    }
 
    // NOTE: If the script had an error and the caller should throw an exception then do so.
-   string check_script_error(
-    get_raw_session_variable( get_special_var_name( e_special_var_check_script_error ) ) );
+   string check_script_error( get_session_variable( e_special_var_check_script_error ) );
 
    if( ( check_script_error == c_true ) || ( check_script_error == c_true_value ) )
    {
@@ -7215,7 +7202,7 @@ int exec_system( const string& cmd, bool async, bool delay, bool* p_delayed )
          // NOTE: If the error starts with '@' then assume that it is actually
          // intended to be an execute "return" message rather than an error.
          if( error_message[ 0 ] == '@' )
-            set_session_variable( get_special_var_name( e_special_var_return ), error_message.substr( 1 ) );
+            set_session_variable( e_special_var_return, error_message.substr( 1 ) );
          else
             throw runtime_error( error_message );
       }
@@ -7305,8 +7292,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
          {
             gtp_session->script_temp_args_file = args_file;
 
-            string check_script_error(
-             get_raw_session_variable( get_special_var_name( e_special_var_check_script_error ) ) );
+            string check_script_error( get_session_variable( e_special_var_check_script_error ) );
 
             // NOTE: If the script is intended to be synchronous and the "no_logging" argument is true
             // then the first error to occur in an external script (or scripts if the "delay" argument
@@ -7323,14 +7309,13 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
             {
                set_system_variable( args_file, c_true_value );
 
-               set_session_variable( get_special_var_name(
-                e_special_var_check_script_error ), c_true_value );
+               set_session_variable( e_special_var_check_script_error, c_true_value );
             }
          }
 
          string script_args( args_file );
 
-         if( !has_raw_system_variable( get_special_var_name( e_special_var_log_all_scripts ) ) )
+         if( !has_system_variable( e_special_var_log_all_scripts ) )
          {
             // NOTE: If the "no_logging" argument is set true then make sure that "script" execution
             // won't be logged (even in the case of an error). For synchronous scripts an error will
@@ -7343,8 +7328,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
                script_args = "-do_not_log " + script_args;
             else
             {
-               string errors_only( get_raw_session_variable(
-                get_special_var_name( e_special_var_errors_only ) ) );
+               string errors_only( get_session_variable( e_special_var_errors_only ) );
 
                if( ( errors_only == c_true ) || ( errors_only == c_true_value ) )
                   script_args = "-log_on_error " + script_args;
@@ -7354,7 +7338,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
          // NOTE: For cases where one script may end up calling numerous others (i.e.
          // such as a scan across records) this special session variable is available
          // to prevent excess log entries appearing in the script log file.
-         string quiet( get_raw_session_variable( get_special_var_name( e_special_var_quiet ) ) );
+         string quiet( get_session_variable( e_special_var_quiet ) );
 
          // NOTE: If making any change to "script_args" then it likely will also need
          // to be done in "auto_script.cpp" (as it also executes the 'script' script).
@@ -7396,8 +7380,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
             if( !was_delayed )
                msleep( c_sleep_after_script_time );
             else
-               set_session_variable( get_special_var_name(
-                e_special_var_sleep_after ), to_string( c_sleep_after_script_time ) );
+               set_session_variable( e_special_var_sleep_after, to_string( c_sleep_after_script_time ) );
          }
       }
    }
@@ -7496,18 +7479,18 @@ string process_script_args( const string& raw_args, bool use_system_variables )
                ++adjust;
 
             if( use_system_variables )
-               next_arg = get_raw_system_variable( next_arg );
+               next_arg = get_system_variable( next_arg );
             else
             {
                // NOTE: Always use "@argX" value if found otherwise will use the value
                // of the session variable that matches the name of the script argument.
                string arg_value(
-                get_raw_session_variable( "@arg" + to_string( i + adjust - skipped ) ) );
+                get_session_variable( "@arg" + to_string( i + adjust - skipped ) ) );
 
                if( !arg_value.empty( ) )
                   next_arg = arg_value;
                else
-                  next_arg = get_raw_session_variable( next_arg );
+                  next_arg = get_session_variable( next_arg );
             }
          }
 
@@ -7944,7 +7927,7 @@ void session_is_using_tls( socket_base& socket )
    {
       gtp_session->using_tls = true;
 
-      set_session_variable( get_special_var_name( e_special_var_tls_cipher ), socket.cipher( ) );
+      set_session_variable( e_special_var_tls_cipher, socket.cipher( ) );
    }
 }
 
@@ -8160,6 +8143,7 @@ void list_all_sessions( ostream& os, bool inc_dtms,
          if( include_progress )
          {
             string progress_message;
+
             string progress_message_name( get_special_var_name( e_special_var_progress_message ) );
 
             if( g_sessions[ i ]->variables.count( progress_message_name ) )
@@ -8259,11 +8243,13 @@ void session_file_buffer_access::copy_to_string( string& str, size_t offset, siz
    if( length )
    {
       str.resize( length );
+
       memcpy( &str[ 0 ], p_buffer + offset, length );
    }
    else
    {
       str.resize( size - offset );
+
       memcpy( &str[ 0 ], p_buffer + offset, size - offset );
    }
 }
@@ -8288,6 +8274,7 @@ void increment_peer_files_uploaded( int64_t bytes )
    if( gtp_session )
    {
       ++gtp_session->peer_files_uploaded;
+
       gtp_session->peer_bytes_uploaded += bytes;
    }
 }
@@ -8297,6 +8284,7 @@ void increment_peer_files_downloaded( int64_t bytes )
    if( gtp_session )
    {
       ++gtp_session->peer_files_downloaded;
+
       gtp_session->peer_bytes_downloaded += bytes;
    }
 }
@@ -8317,7 +8305,7 @@ void set_slowest_if_applicable( )
 
       uint64_t elapsed = seconds_between( gtp_session->dtm_last_cmd, now );
 
-      string previous( get_session_variable( get_special_var_name( e_special_var_slowest ) ) );
+      string previous( get_session_variable( e_special_var_slowest ) );
 
       uint64_t prev_secs = 0;
 
@@ -8325,7 +8313,7 @@ void set_slowest_if_applicable( )
          prev_secs = from_string< uint64_t >( previous );
 
       if( elapsed > prev_secs )
-         set_session_variable( get_special_var_name( e_special_var_slowest ), to_string( elapsed ) );
+         set_session_variable( e_special_var_slowest, to_string( elapsed ) );
    }
 }
 
@@ -8369,6 +8357,7 @@ void set_last_session_cmd( const string& cmd )
    if( gtp_session )
    {
       gtp_session->last_cmd = cmd;
+
       gtp_session->dtm_last_cmd = date_time::local( );
    }
 }
@@ -8520,8 +8509,8 @@ bool is_condemned_session( )
 
    return gtp_session
     && ( ( g_condemned_sessions.count( gtp_session->id )
-    && g_condemned_sessions[ gtp_session->id ] <= date_time::local( ) )
-    || ( g_session_timeout && ( date_time::local( ) - gtp_session->dtm_last_cmd ) > g_session_timeout ) );
+    && ( g_condemned_sessions[ gtp_session->id ] <= date_time::local( ) ) )
+    || ( g_session_timeout && ( ( date_time::local( ) - gtp_session->dtm_last_cmd ) > g_session_timeout ) ) );
 }
 
 void capture_session( size_t sess_id )
@@ -8533,7 +8522,8 @@ void capture_session( size_t sess_id )
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
-      if( g_sessions[ i ] && ( g_sessions[ i ]->id == sess_id ) )
+      if( g_sessions[ i ]
+       && ( g_sessions[ i ]->id == sess_id ) )
       {
          g_sessions[ i ]->is_captured = true;
 
@@ -9169,16 +9159,18 @@ void set_default_session_variables( int port )
    guard g( g_session_mutex );
 
    if( port )
-      set_session_variable( get_special_var_name( e_special_var_port ), to_string( port ) );
+      set_session_variable( e_special_var_port, to_string( port ) );
 
-   set_session_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
+   set_session_variable( e_special_var_storage, g_default_storage );
 }
 
-bool has_raw_session_variable( const string& name, size_t sess_id )
+bool has_session_variable( const var_name& var, size_t sess_id )
 {
    guard g( g_session_mutex );
 
    bool retval = false;
+
+   string name( var.name );
 
    unique_ptr< restorable< session* > > up_temp_session;
 
@@ -9191,13 +9183,30 @@ bool has_raw_session_variable( const string& name, size_t sess_id )
    return retval;
 }
 
-string get_raw_session_variable( const string& name, size_t sess_id )
+string get_session_variable_for_slot( const string& name, size_t slot )
+{
+   guard g( g_session_mutex );
+
+   string retval;
+
+   if( ( slot < g_max_sessions ) && g_sessions[ slot ] )
+   {
+      if( g_sessions[ slot ]->variables.count( name ) )
+         retval = g_sessions[ slot ]->variables[ name ];
+   }
+
+   return retval;
+}
+
+string get_session_variable( const var_name& var, size_t sess_id )
 {
    guard g( g_session_mutex );
 
    string retval;
 
    bool found = false;
+
+   string name( var.name );
 
    unique_ptr< restorable< session* > > up_temp_session;
 
@@ -9297,6 +9306,7 @@ string get_raw_session_variable( const string& name, size_t sess_id )
                {
                   if( !retval.empty( ) )
                      retval += '\n';
+
                   retval += ci->first + ' ' + ci->second;
                }
             }
@@ -9422,10 +9432,13 @@ string get_raw_session_variable( const string& name, size_t sess_id )
          if( gtp_session )
          {
             guard g( g_mutex );
+
             temporary_algo_prefix tmp_algo_prefix( gtp_session->p_storage_handler->get_name( ) );
 
             ostringstream osstr;
+
             output_algos( osstr );
+
             retval = osstr.str( );
          }
       }
@@ -9449,41 +9462,22 @@ string get_raw_session_variable( const string& name, size_t sess_id )
    return retval;
 }
 
-struct raw_session_variable_getter : variable_getter
+struct session_variable_getter : variable_getter
 {
-   raw_session_variable_getter( size_t sess_id ) : sess_id( sess_id ) { }
-    
-   string get_value( const string& name ) const { return get_raw_session_variable( name, sess_id ); }
+   session_variable_getter( size_t sess_id ) : sess_id( sess_id ) { }
+
+   string get_value( const string& name ) const { return get_session_variable( name, sess_id ); }
 
    size_t sess_id;
 };
 
-string get_session_variable( const string& name, size_t slot )
+string get_session_variable( const expression& expr, size_t sess_id )
 {
-   guard g( g_session_mutex, "get_session_variable" );
+   session_variable_getter getter( sess_id );
 
-   string retval;
+   variable_expression var_expr( expr.expr, getter );
 
-   if( ( slot < g_max_sessions ) && g_sessions[ slot ] )
-   {
-      if( g_sessions[ slot ]->variables.count( name ) )
-         retval = g_sessions[ slot ]->variables[ name ];
-   }
-
-   return retval;
-}
-
-string get_session_variable( const string& name_or_expr, const string* p_sess_id )
-{
-   size_t sess_id = 0;
-
-   if( p_sess_id )
-      sess_id = from_string< size_t >( *p_sess_id );
-
-   raw_session_variable_getter raw_getter( sess_id );
-   variable_expression expr( name_or_expr, raw_getter );
-
-   return expr.get_value( );
+   return var_expr.get_value( );
 }
 
 string get_session_variable_from_matching_blockchain( const string& name,
@@ -9522,6 +9516,7 @@ string get_session_variable_from_matching_blockchain( const string& name,
          }
 
          retval = g_sessions[ i ]->variables[ name ];
+
          break;
       }
    }
@@ -9587,15 +9582,12 @@ bool has_mismatched_variables_for_matching_blockchains(
    return retval;
 }
 
-void set_session_variable( const string& name, const string& value,
- bool* p_set_special_temporary, command_handler* p_command_handler, const string* p_sess_id )
+void set_session_variable( const var_name& var, const string& value,
+ bool* p_set_special_temporary, command_handler* p_command_handler, size_t sess_id )
 {
    guard g( g_session_mutex );
 
-   size_t sess_id = 0;
-
-   if( p_sess_id )
-      sess_id = from_string< size_t >( *p_sess_id );
+   string name( var.name );
 
    unique_ptr< restorable< session* > > up_temp_session;
 
@@ -10130,7 +10122,7 @@ void set_session_variable( const string& name, const string& value,
       {
          skip_standard_variable = true;
 
-         get_raw_session_variable( get_special_var_name( e_special_var_progress_clear ) );
+         get_session_variable( e_special_var_progress_clear );
       }
       else if( g_read_only_var_names.count( name ) )
          skip_standard_variable = true;
@@ -10153,11 +10145,13 @@ void set_session_variable( const string& name, const string& value,
    }
 }
 
-bool set_session_variable( const string& name, const string& value, const string& current )
+bool set_session_variable( const var_name& var, const string& value, const string& current )
 {
    guard g( g_session_mutex );
 
    bool retval = false;
+
+   string name( var.name );
 
    if( gtp_session && ( value != current ) )
    {
@@ -10261,10 +10255,12 @@ bool has_any_session_variable( const string& name, const string& value )
 }
 
 size_t num_have_session_variable(
- const string& name, bool matching_own_ip_address,
+ const var_name& var, bool matching_own_ip_address,
  bool include_condemned, size_t check_session_id_less_than )
 {
    guard g( g_session_mutex );
+
+   string name( var.name );
 
    string own_ip_addr;
 
@@ -10291,10 +10287,12 @@ size_t num_have_session_variable(
    return total;
 }
 
-size_t num_have_session_variable( const string& name, const string& value,
+size_t num_have_session_variable( const var_name& var, const string& value,
  vector< string >* p_identities, bool matching_own_ip_address, bool include_condemned )
 {
    guard g( g_session_mutex );
+
+   string name( var.name );
 
    string own_ip_addr;
 
@@ -10322,9 +10320,11 @@ size_t num_have_session_variable( const string& name, const string& value,
    return total;
 }
 
-bool is_first_using_session_variable( const string& name )
+bool is_first_using_session_variable( const var_name& var )
 {
    guard g( g_session_mutex );
+
+   string name( var.name );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -10336,9 +10336,11 @@ bool is_first_using_session_variable( const string& name )
    return false;
 }
 
-bool is_first_using_session_variable( const string& name, const string& value )
+bool is_first_using_session_variable( const var_name& var, const string& value )
 {
    guard g( g_session_mutex );
+
+   string name( var.name );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -10349,6 +10351,51 @@ bool is_first_using_session_variable( const string& name, const string& value )
    }
 
    return false;
+}
+
+struct temporary_session_variable::impl
+{
+   impl( const var_name& var )
+    :
+    var( var )
+   {
+      original_value = get_session_variable( var );
+   }
+
+   impl( const var_name& var, const string& value )
+    :
+    var( var )
+   {
+      guard g( g_session_mutex );
+
+      original_value = get_session_variable( var );
+
+      set_session_variable( var, value );
+   }
+
+   ~impl( )
+   {
+      set_session_variable( var, original_value );
+   }
+
+   var_name var;
+
+   string original_value;
+};
+
+temporary_session_variable::temporary_session_variable( const var_name& var )
+{
+   p_impl = new impl( var );
+}
+
+temporary_session_variable::temporary_session_variable( const var_name& var, const string& value )
+{
+   p_impl = new impl( var, value );
+}
+
+temporary_session_variable::~temporary_session_variable( )
+{
+   delete p_impl;
 }
 
 void copy_session_variables( map< string, string >& variables )
@@ -10905,8 +10952,7 @@ void term_storage( command_handler& cmd_handler )
          delete gtp_session->p_storage_handler;
       }
 
-      set_session_variable( get_special_var_name( e_special_var_storage ),
-       get_raw_session_variable( get_special_var_name( e_special_var_prior_storage ) ) );
+      set_session_variable( e_special_var_storage, get_session_variable( e_special_var_prior_storage ) );
 
       gtp_session->p_storage_handler = g_storage_handlers[ 0 ];
    }
@@ -10978,7 +11024,7 @@ void storage_comment( const string& comment )
 
       bool use_init_tx_id = false;
 
-      string init_log_id( get_raw_session_variable( get_special_var_name( e_special_var_init_log_id ) ) );
+      string init_log_id( get_session_variable( e_special_var_init_log_id ) );
 
       if( ( init_log_id == c_true ) || ( init_log_id == c_true_value ) )
          use_init_tx_id = true;
@@ -11704,32 +11750,37 @@ bool storage_supports_sql_undo( )
    return gtp_session->p_storage_handler->supports_sql_undo( );
 }
 
-struct raw_storage_variable_getter : variable_getter
+struct storage_variable_getter : variable_getter
 {
-   string get_value( const string& name ) const { return get_raw_storage_variable( name ); }
+   string get_value( const string& name ) const { return get_storage_variable( name ); }
 };
 
-bool has_storage_variable( const string& name_or_expr )
+bool has_storage_variable( const var_name& var )
 {
-   return !get_storage_variable( name_or_expr ).empty( );
+   return !get_storage_variable( var ).empty( );
 }
 
-string get_storage_variable( const string& name_or_expr )
+string get_storage_variable( const var_name& var )
 {
-   raw_storage_variable_getter raw_getter;
-   variable_expression expr( name_or_expr, raw_getter );
+   string name( var.name );
 
-   return expr.get_value( );
+   return gtp_session->p_storage_handler->get_variable( name );
 }
 
-string get_raw_storage_variable( const string& var_name )
+string get_storage_variable( const expression& expr )
 {
-   return gtp_session->p_storage_handler->get_variable( var_name );
+   storage_variable_getter raw_getter;
+
+   variable_expression var_expr( expr.expr, raw_getter );
+
+   return var_expr.get_value( );
 }
 
-void set_storage_variable( const string& var_name, const string& new_value )
+void set_storage_variable( const var_name& var, const string& value )
 {
-   gtp_session->p_storage_handler->set_variable( var_name, new_value );
+   string name( var.name );
+
+   gtp_session->p_storage_handler->set_variable( name, value );
 }
 
 string storage_web_root( bool expand, bool check_is_linked )
@@ -12243,7 +12294,7 @@ void set_uid( const string& uid, bool do_not_erase_sec )
    {
       gtp_session->sec.erase( );
 
-      set_session_variable( get_special_var_name( e_special_var_sec ), "" );
+      set_session_variable( e_special_var_sec, "" );
    }
 
    if( spos != string::npos )
@@ -12254,7 +12305,7 @@ void set_uid( const string& uid, bool do_not_erase_sec )
 
          gtp_session->sec = sec;
 
-         set_session_variable( get_special_var_name( e_special_var_sec ), sec );
+         set_session_variable( e_special_var_sec, sec );
 
          s = uid.substr( 0, spos );
 
@@ -12271,16 +12322,16 @@ void set_uid( const string& uid, bool do_not_erase_sec )
    {
       gtp_session->uid.erase( );
 
-      set_session_variable( get_special_var_name( e_special_var_uid ), "" );
+      set_session_variable( e_special_var_uid, "" );
    }
    else
    {
       gtp_session->uid = s;
 
-      set_session_variable( get_special_var_name( e_special_var_uid ), user_key );
+      set_session_variable( e_special_var_uid, user_key );
 
       if( pos != string::npos )
-         set_session_variable( get_special_var_name( e_special_var_user ), s.substr( pos + 1 ) );
+         set_session_variable( e_special_var_user, s.substr( pos + 1 ) );
    }
 }
 
@@ -12389,7 +12440,7 @@ void set_grp( const string& grp )
 
       gtp_session->grp = grp.substr( 0, pos );
 
-      set_session_variable( get_special_var_name( e_special_var_grp ), grp.substr( 0, pos ) );
+      set_session_variable( e_special_var_grp, grp.substr( 0, pos ) );
 
       gtp_session->gid = convert_group_keys_to_numbers( gtp_session->grp );
 
@@ -12398,7 +12449,7 @@ void set_grp( const string& grp )
       if( pos != string::npos )
          gids = convert_group_keys_to_numbers( grp.substr( pos + 1 ) );
 
-      set_session_variable( get_special_var_name( e_special_var_gids ), gids );
+      set_session_variable( e_special_var_gids, gids );
    }
 }
 
@@ -12414,7 +12465,7 @@ void set_dtm( const string& dtm )
 {
    gtp_session->dtm = dtm;
 
-   set_session_variable( get_special_var_name( e_special_var_dtm ), dtm );
+   set_session_variable( e_special_var_dtm, dtm );
 }
 
 string get_gid( )
@@ -12434,12 +12485,12 @@ sql_db& get_sql_db( )
 
 void set_class( const string& mclass )
 {
-   set_session_variable( get_special_var_name( e_special_var_class ), mclass );
+   set_session_variable( e_special_var_class, mclass );
 }
 
 void set_module( const string& module )
 {
-   set_session_variable( get_special_var_name( e_special_var_module ), module );
+   set_session_variable( e_special_var_module, module );
 }
 
 string get_tz_name( )
@@ -12456,7 +12507,7 @@ void set_tz_name( const string& tz_name )
 
    gtp_session->tz_name = tz;
 
-   set_session_variable( get_special_var_name( e_special_var_tz_name ), tz );
+   set_session_variable( e_special_var_tz_name, tz );
 }
 
 void clear_perms( )
@@ -13279,8 +13330,11 @@ void validate_object_instance( size_t handle, const string& context )
 
    if( !instance.is_valid( false ) )
    {
-      string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
-      set_session_variable( get_special_var_name( e_special_var_val_error ), validation_error );
+      string validation_error(
+       instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
+
+      set_session_variable( e_special_var_val_error, validation_error );
+
       throw runtime_error( validation_error );
    }
 }
@@ -14490,7 +14544,7 @@ void get_instance_sql_stmts( class_base& instance,
       throw runtime_error( "unexpected get_sql_stmts failure" );
 }
 
-void append_undo_sql_stmts( const std::vector< std::string >& sql_undo_stmts )
+void append_undo_sql_stmts( const vector< string >& sql_undo_stmts )
 {
    gtp_session->sql_undo_statements.insert(
     gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
@@ -14515,8 +14569,8 @@ string instance_key_info( size_t handle, const string& context, bool key_only )
 
       // NOTE: In order to prevent potential issues during a "generate" in Meta
       // a "system variable" is being used to prevent editing/deleting records.
-      if( gtp_session->p_storage_handler->get_name( ) == c_meta_storage_name
-       && !get_raw_system_variable( "@Meta_protect" ).empty( ) )
+      if( ( gtp_session->p_storage_handler->get_name( ) == c_meta_storage_name )
+       && !get_system_variable( "@Meta_protect" ).empty( ) )
       {
          state |= c_state_uneditable;
          state |= c_state_undeletable;
@@ -14980,7 +15034,7 @@ void transaction_commit( )
 
          append_transaction_log_command( handler );
 
-         set_session_variable( get_special_var_name( e_special_var_skip_persistence ), "" );
+         set_session_variable( e_special_var_skip_persistence, "" );
 
          if( gtp_session->up_db.get( ) )
          {
@@ -15014,16 +15068,14 @@ void transaction_commit( )
          ( void )rc;
       }
 
-      string sleep_after_var_name( get_special_var_name( e_special_var_sleep_after ) );
-
       // NOTE: The "@sleep_after" session variable is set by "run_script" to ensure that
       // an msleep will occur only after script "system" command has occurred (otherwise
       // the msleep would actually occur prior to execution).
-      if( has_session_variable( sleep_after_var_name ) )
+      if( has_session_variable( e_special_var_sleep_after ) )
       {
-         msleep( from_string< unsigned long >( get_raw_session_variable( sleep_after_var_name ) ) );
+         msleep( from_string< unsigned long >( get_session_variable( e_special_var_sleep_after ) ) );
 
-         set_session_variable( sleep_after_var_name, "" );
+         set_session_variable( e_special_var_sleep_after, "" );
       }
 
       // NOTE: If the "args_file" session variable exists and a system variable with a name matching
@@ -15033,8 +15085,7 @@ void transaction_commit( )
       // transaction commit has completed and the command for this session has already been logged).
       string script_error;
 
-      string check_script_error(
-       get_raw_session_variable( get_special_var_name( e_special_var_check_script_error ) ) );
+      string check_script_error( get_session_variable( e_special_var_check_script_error ) );
 
       for( size_t i = 0; i < gtp_session->async_or_delayed_args_files.size( ); i++ )
       {
@@ -15043,7 +15094,7 @@ void transaction_commit( )
          if( script_error.empty( )
           && ( check_script_error == c_true || check_script_error == c_true_value ) )
          {
-            string value( get_raw_system_variable( next ) );
+            string value( get_system_variable( next ) );
 
             if( !value.empty( ) && value != c_true_value )
                script_error = value;
@@ -15055,14 +15106,14 @@ void transaction_commit( )
       gtp_session->async_or_delayed_args_files.clear( );
       gtp_session->async_or_delayed_system_commands.clear( );
 
-      set_session_variable( get_special_var_name( e_special_var_check_script_error ), "" );
+      set_session_variable( e_special_var_check_script_error, "" );
 
       if( !script_error.empty( ) )
       {
          // NOTE: If the error starts with '@' then assume that it is actually
          // intended to be an execute "return" message rather than an error.
          if( script_error[ 0 ] == '@' )
-            set_session_variable( get_special_var_name( e_special_var_return ), script_error.substr( 1 ) );
+            set_session_variable( e_special_var_return, script_error.substr( 1 ) );
          else
             throw runtime_error( script_error );
       }
@@ -15114,8 +15165,8 @@ void transaction_rollback( )
          gtp_session->async_or_delayed_args_files.clear( );
          gtp_session->async_or_delayed_system_commands.clear( );
 
-         set_session_variable( get_special_var_name( e_special_var_skip_persistence ), "" );
-         set_session_variable( get_special_var_name( e_special_var_check_script_error ), "" );
+         set_session_variable( e_special_var_skip_persistence, "" );
+         set_session_variable( e_special_var_check_script_error, "" );
       }
    }
 }

@@ -1532,7 +1532,7 @@ string get_app_file( const string& module_name )
 
 string class_base::get_attached_file_path( const string& file_name ) const
 {
-   string path( get_raw_session_variable( attached_file_path_var_name( ) ) );
+   string path( get_session_variable( attached_file_path_var_name( ) ) );
 
    if( path.empty( ) )
    {
@@ -3303,10 +3303,10 @@ string get_soundex( const string& str, bool skip_prefix_specials )
 
 string get_notifier_files_viewed( const string& watch_root )
 {
-   string watch_path( get_raw_system_variable(
+   string watch_path( get_system_variable(
     get_special_var_name( e_special_var_opened_files ) ) + '/' + watch_root + '/' );
 
-   string files_viewed( get_raw_system_variable(
+   string files_viewed( get_system_variable(
     c_notifier_prefix + watch_path + c_notifier_viewed_suffix ) );
 
    replace( files_viewed, "|", "\n" );
@@ -4367,13 +4367,10 @@ string check_with_regex( const string& r, const string& s,
 
    string::size_type pos = up_regex->search( s, &length, &refs );
 
-   string regex_serach_expense_var_name(
-    get_special_var_name( e_special_var_regex_search_expense ) );
-
    // NOTE: If interested to know the regex "search expense"
    // then will need to have first set the session variable.
-   if( has_session_variable( regex_serach_expense_var_name ) )
-      set_session_variable( regex_serach_expense_var_name, to_string( up_regex->get_search_expense( ) ) );
+   if( has_session_variable( e_special_var_regex_search_expense ) )
+      set_session_variable( e_special_var_regex_search_expense, to_string( up_regex->get_search_expense( ) ) );
 
    if( pos == string::npos )
    {
@@ -4541,8 +4538,7 @@ string shared_secret( const string& identity_for_peer,
    else
       secret.insert( 0, other_secret );
 
-   string shared_secret( get_raw_session_variable(
-    get_special_var_name( e_special_var_shared_secret ) ) );
+   string shared_secret( get_session_variable( e_special_var_shared_secret ) );
 
    if( !shared_secret.empty( ) )
    {
@@ -4655,16 +4651,14 @@ string private_identity( const string& s )
 
 string masked_identity_key( const string& s )
 {
-   string retval( replaced( s, get_raw_system_variable(
-    get_special_var_name( e_special_var_blockchain_backup_identity ) ), c_dummy_identity ) );
+   string retval( replaced( s, get_system_variable( e_special_var_blockchain_backup_identity ), c_dummy_identity ) );
 
    return retval;
 }
 
 string unmasked_identity_key( const string& s )
 {
-   string retval( replaced( s, c_dummy_identity, get_raw_system_variable(
-    get_special_var_name( e_special_var_blockchain_backup_identity ) ) ) );
+   string retval( replaced( s, c_dummy_identity, get_system_variable( e_special_var_blockchain_backup_identity ) ) );
 
    return retval;
 }
@@ -5497,8 +5491,7 @@ string ntfy_topic( const string& user_key )
    // provided with a topic value.
    if( user_key != c_admin )
    {
-      string identity( get_raw_system_variable(
-       get_special_var_name( e_special_var_system_identity ) ) );
+      string identity( get_system_variable( e_special_var_system_identity ) );
 
       string topic_seed( user_key );
 
@@ -5611,7 +5604,7 @@ void send_email_message(
 
    string to( recipient );
    if( !to.empty( ) && to[ 0 ] == '@' )
-      to = get_raw_session_variable( to );
+      to = get_session_variable( to );
 
    recipients.push_back( to );
 
@@ -6697,8 +6690,7 @@ string crypto_secret_for_sid( const string& suffix, const string& other_pubkey )
 
    own_key.construct_shared( secret, other_key );
 
-   string shared_secret( get_raw_session_variable(
-    get_special_var_name( e_special_var_shared_secret ) ) );
+   string shared_secret( get_session_variable( e_special_var_shared_secret ) );
 
    if( !shared_secret.empty( ) )
    {
@@ -7401,7 +7393,7 @@ bool is_synchronising_peerchain( const string& identity )
 {
    string progress_variable( '%' + identity );
 
-   string progress( get_raw_system_variable( progress_variable ) );
+   string progress( get_system_variable( progress_variable ) );
 
    return ( progress.find( c_ellipsis ) != string::npos );
 }
