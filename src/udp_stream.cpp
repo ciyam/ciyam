@@ -218,7 +218,7 @@ void udp_stream_session::on_start( )
                               {
                                  if( !existing_files.count( hash ) )
                                  {
-                                    string slotx( get_session_variable( get_special_var_name( e_special_var_slotx ), slot ) );
+                                    string slotx( get_session_variable_for_slot( get_special_var_name( e_special_var_slotx ), slot ) );
 
                                     string data( slotx + ":XXX:" + hash );
 
