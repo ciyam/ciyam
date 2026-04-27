@@ -628,6 +628,22 @@ session_variable test xxx
 session_variable test
 session_variable test @null
 session_variable test
+;
+session_variable test_x 1
+session_variable test_z 1
+session_variable ?test_x
+session_variable !test_x
+session_variable ?test_y
+session_variable !test_y
+session_variable ?test_z
+session_variable !test_z
+session_variable test_x&test_y
+session_variable test_x&test_z
+session_variable test_y&test_z
+session_variable test_x|test_y
+session_variable test_x|test_z
+session_variable test_y|test_z
+;
 session_variable @set aaa
 session_variable @set aaa
 session_variable @set bbb
