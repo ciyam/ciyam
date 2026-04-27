@@ -872,10 +872,10 @@ string get_special_var_name( special_var var )
 
    size_t offset = ( size_t )var;
 
-   if( offset >= g_special_variable_names.size( ) )
+   if( ( offset == 0 ) || ( offset > g_special_variable_names.size( ) ) )
       throw runtime_error( "unexpected special var offset " + to_string( offset ) );
 
-   s = g_special_variable_names[ offset ];
+   s = g_special_variable_names[ offset - 1 ];
 
    return s;
 }
@@ -929,9 +929,20 @@ system_variable_lock::~system_variable_lock( )
    set_system_variable( name, "" );
 }
 
-string get_raw_system_variable( const string& name, bool is_internal )
+bool has_system_variable( const var_name& var )
 {
    guard g( g_mutex );
+
+   string name( var.name );
+
+   return g_variables.count( name );
+}
+
+string get_system_variable( const var_name& var, bool is_internal )
+{
+   guard g( g_mutex );
+
+   string name( var.name );
 
    string retval;
    string var_name( name );
@@ -1211,40 +1222,34 @@ string get_raw_system_variable( const string& name, bool is_internal )
    return retval;
 }
 
-struct raw_system_variable_getter : variable_getter
+struct system_variable_getter : variable_getter
 {
-   raw_system_variable_getter( bool is_internal ) : is_internal( is_internal ) { }
+   system_variable_getter( bool is_internal ) : is_internal( is_internal ) { }
 
-   string get_value( const string& name ) const { return get_raw_system_variable( name, is_internal ); }
+   string get_value( const string& name ) const { return get_system_variable( name, is_internal ); }
 
    bool is_internal;
 };
 
-string get_system_variable( const string& name_or_expr, bool is_internal )
+string get_system_variable( const expression& expr, bool is_internal )
 {
-   raw_system_variable_getter raw_getter( is_internal );
+   system_variable_getter getter( is_internal );
 
-   variable_expression expr( name_or_expr, raw_getter );
+   variable_expression var_expr( expr.expr, getter );
 
-   return expr.get_value( );
+   return var_expr.get_value( );
 }
 
-bool has_raw_system_variable( const string& name )
+void set_system_variable( const var_name& var,
+ const string& value, bool is_init, progress* p_progress )
 {
-   return g_variables.count( name );
-}
+   string name( var.name );
 
-bool has_system_variable( const string& name_or_expr )
-{
-   return !get_system_variable( name_or_expr ).empty( );
-}
-
-void set_system_variable( const string& name, const string& value, bool is_init, progress* p_progress )
-{
    // NOTE: The special variable "@command" is used to run and hold the results of a "ciyam_command".
    if( name == c_special_variable_command )
    {
       string val( value );
+
       string tmp_file_name( "~" + uuid( ).as_string( ) );
 
       if( !val.empty( ) )
@@ -1259,6 +1264,10 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          if( val.length( ) && ( val[ val.length( ) - 1 ] == '\n' ) )
             val.erase( val.length( ) - 1 );
       }
+
+      // NOTE: Issue the system
+      // before thread locking.
+      guard g( g_mutex );
 
       if( val.empty( ) )
       {
@@ -1547,12 +1556,14 @@ void set_system_variable( const string& name, const string& value, bool is_init,
    }
 }
 
-bool set_system_variable( const string& name, const string& value,
+bool set_system_variable( const var_name& var, const string& value,
  const string& current, progress* p_progress, const char append_separator )
 {
    guard g( g_mutex );
 
    bool retval = false;
+
+   string name( var.name );
 
    if( name.find_first_of( c_invalid_name_chars ) != string::npos )
       throw runtime_error( "invalid system variable name '" + name + "'" );
@@ -1599,15 +1610,18 @@ bool set_system_variable( const string& name, const string& value,
    return retval;
 }
 
-void rename_system_variable( const string& old_name, const string& new_name )
+void rename_system_variable( const var_name& old_var, const var_name& new_var )
 {
-   guard g( g_mutex );
+   string old_name( old_var.name );
+   string new_name( new_var.name );
 
    if( old_name.empty( ) )
       throw runtime_error( "incorrect empty 'old_name' for rename_system_variable" );
 
    if( new_name.empty( ) )
       throw runtime_error( "incorrect empty 'new_name' for rename_system_variable" );
+
+   guard g( g_mutex );
 
    check_system_variable_can_be_set( old_name );
    check_system_variable_can_be_set( new_name );
@@ -1648,13 +1662,13 @@ bool set_variable_checker::can_set( ) const
    bool retval = false;
 
    if( check_type == e_variable_check_type_no_session_has )
-      retval = !has_any_session_variable( variable_name );
+      retval = !has_any_session_variable( var.name );
    else if( check_type == e_variable_check_type_any_session_has )
-      retval = has_any_session_variable( variable_name );
+      retval = has_any_session_variable( var.name );
    else if( check_type == e_variable_check_type_has_other_system )
-      retval = has_raw_system_variable( variable_name );
+      retval = has_system_variable( var.name );
    else if( check_type == e_variable_check_type_not_has_other_system )
-      retval = !has_raw_system_variable( variable_name );
+      retval = !has_system_variable( var.name );
 
    if( retval && p_additional_check )
       retval = p_additional_check->can_set( );
@@ -1662,13 +1676,15 @@ bool set_variable_checker::can_set( ) const
    return retval;
 }
 
-bool set_system_variable( const string& name,
- const string& value, set_variable_checker& checker, bool is_init, progress* p_progress )
+bool set_system_variable( const var_name& var, const string& value,
+ set_variable_checker& checker, bool is_init, progress* p_progress )
 {
    guard g( g_mutex );
 
    if( !checker.can_set( ) )
       return false;
+
+   string name( var.name );
 
    if( name != c_special_variable_none )
       set_system_variable( name, value, is_init, p_progress );
@@ -1676,30 +1692,49 @@ bool set_system_variable( const string& name,
    return true;
 }
 
-void system_variable_expression( const string& expr )
+struct temporary_system_variable::impl
 {
-   string expression( expr );
-
-   string::size_type pos = expression.find( ' ' );
-
-   if( pos != string::npos )
+   impl( const var_name& var )
+    :
+    var( var )
    {
-      string name( expression.substr( 0, pos ) );
-      string value( expression.substr( pos + 1 ) );
-
-      if( value == get_special_var_name( e_special_var_none ) )
-         value.erase( );
-
-      expression.erase( pos );
-
-      set_system_variable( name, value );
+      original_value = get_system_variable( var );
    }
 
-   if( !expression.empty( )
-    && ( ( expression[ 0 ] == '<' ) || ( expression[ 0 ] == '>' ) ) )
-      expression.erase( 0, 1 );
+   impl( const var_name& var, const string& value )
+    :
+    var( var )
+   {
+      guard g( g_mutex );
 
-   set_session_variable( c_variable_expression, expression );
+      original_value = get_system_variable( var );
+
+      set_system_variable( var, value );
+   }
+
+   ~impl( )
+   {
+      set_system_variable( var, original_value );
+   }
+
+   var_name var;
+
+   string original_value;
+};
+
+temporary_system_variable::temporary_system_variable( const var_name& var )
+{
+   p_impl = new impl( var );
+}
+
+temporary_system_variable::temporary_system_variable( const var_name& var, const string& value )
+{
+   p_impl = new impl( var, value );
+}
+
+temporary_system_variable::~temporary_system_variable( )
+{
+   delete p_impl;
 }
 
 string variable_name_from_name_and_value( const string& name_and_value, string* p_value )

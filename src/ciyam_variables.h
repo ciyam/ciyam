@@ -34,21 +34,50 @@ class system_variable_lock
    void acquire_lock( const std::string& name, const char* p_display_name_str = 0 );
 };
 
-std::string get_raw_system_variable( const std::string& name, bool is_internal = true );
-std::string get_system_variable( const std::string& name_or_expr, bool is_internal = true );
+struct var_name
+{
+   var_name( size_t num )
+   {
+      name = get_special_var_name( ( special_var )num );
+   }
 
-bool has_raw_system_variable( const std::string& name );
-bool has_system_variable( const std::string& name_or_expr );
+   var_name( const char* p_name )
+    :
+    name( p_name )
+   {
+   }
 
-void set_system_variable( const std::string& name,
- const std::string& value, bool is_init = false, progress* p_progress = 0 );
+   var_name( const std::string& name )
+    :
+    name( name )
+   {
+   }
 
-bool set_system_variable(
- const std::string& name, const std::string& value,
- const std::string& current, progress* p_progress = 0, const char append_separator = '\0' );
+   std::string name;
+};
 
-void rename_system_variable(
- const std::string& old_name, const std::string& new_name );
+bool has_system_variable( const var_name& var );
+
+std::string get_system_variable( const var_name& var, bool is_internal = true );
+
+struct expression
+{
+   explicit expression( const std::string& expr ) : expr( expr ) { }
+
+   std::string expr;
+};
+
+std::string get_system_variable( const expression& expr, bool is_internal = true );
+
+void set_system_variable(
+ const var_name& var, const std::string& value,
+ bool is_init = false, progress* p_progress = 0 );
+
+bool set_system_variable( const var_name& var,
+ const std::string& value, const std::string& current,
+ progress* p_progress = 0, const char append_separator = '\0' );
+
+void rename_system_variable( const var_name& old_var, const var_name& new_var );
 
 enum variable_check_type
 {
@@ -61,60 +90,54 @@ enum variable_check_type
 struct set_variable_checker
 {
    set_variable_checker( variable_check_type check_type,
-    const std::string& variable_name, set_variable_checker* p_additional_check = 0 )
+    const var_name& var, set_variable_checker* p_additional_check = 0 )
     :
+    var( var ),
     check_type( check_type ),
-    variable_name( variable_name ),
     p_additional_check( p_additional_check )
    {
    }
 
    bool can_set( ) const;
 
-   std::string variable_name;
+   var_name var;
+
    variable_check_type check_type;
+
    set_variable_checker* p_additional_check;
 };
 
 bool set_system_variable(
- const std::string& name, const std::string& value,
+ const var_name& var, const std::string& value,
  set_variable_checker& checker, bool is_init = false, progress* p_progress = 0 );
-
-void system_variable_expression( const std::string& expr );
 
 struct system_variable_eraser
 {
-   system_variable_eraser( const std::string& name )
+   system_variable_eraser( const var_name& var )
     :
-    name( name )
+    var( var )
    {
    }
 
    ~system_variable_eraser( )
    {
-      set_system_variable( name, "" );
+      set_system_variable( var, "" );
    }
 
-   std::string name;
+   var_name var;
 };
 
 struct temporary_system_variable
 {
-   temporary_system_variable( const std::string& name, const std::string& value )
-    :
-    name( name )
-   {
-      original_value = get_system_variable( name );
-      set_system_variable( name, value );
-   }
+   temporary_system_variable( const var_name& var );
 
-   ~temporary_system_variable( )
-   {
-      set_system_variable( name, original_value );
-   }
+   temporary_system_variable( const var_name& var, const std::string& value );
 
-   std::string name;
-   std::string original_value;
+   ~temporary_system_variable( );
+
+   struct impl;
+
+   impl* p_impl;
 };
 
 std::string variable_name_from_name_and_value( const std::string& name_and_value, std::string* p_value = 0 );
