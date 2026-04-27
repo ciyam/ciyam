@@ -788,6 +788,11 @@ struct class_variable_getter : variable_getter
 
 struct variable_expression
 {
+   static bool is_possible_expression( const std::string& expr )
+   {
+      return expr.find_first_of( "?!&|" ) != std::string::npos;
+   }
+
    variable_expression( const std::string& expr, const variable_getter& getter )
     :
     getter( getter ),
@@ -817,6 +822,7 @@ struct variable_expression
             invert_1 = true;
 
          var1.erase( 0, 1 );
+
          is_logical_expression = true;
       }
 
@@ -826,6 +832,7 @@ struct variable_expression
             invert_2 = true;
 
          var2.erase( 0, 1 );
+
          is_logical_expression = true;
       }
    }
