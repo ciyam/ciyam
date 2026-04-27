@@ -9,6 +9,7 @@
 
 enum special_var
 {
+   e_special_var_NOTE_DUMMY_DO_NOT_USE,
    e_special_var_id,
    e_special_var_os,
    e_special_var_dtm,
