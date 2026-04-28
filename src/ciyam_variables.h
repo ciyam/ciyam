@@ -140,6 +140,8 @@ struct temporary_system_variable
    impl* p_impl;
 };
 
+void system_variable_expression( const std::string& expr );
+
 std::string variable_name_from_name_and_value( const std::string& name_and_value, std::string* p_value = 0 );
 
 class mutex;

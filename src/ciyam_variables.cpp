@@ -43,6 +43,7 @@ const size_t c_secret_truncate_length = 9;
 
 const char* const c_secret_hash_suffix = "\t\1\t";
 
+const char* const c_executed_expression = "executed_expression";
 const char* const c_variable_expression = "variable_expression";
 
 const char* const c_special_variable_id = "@id";
@@ -356,6 +357,7 @@ inline string quote_if_contains_white_space( const string& name )
    return retval;
 }
 
+string g_command_variable;
 string g_secret_hash_prefix;
 
 // NOTE: System variable names that begin with "@secret_hash_" will have their values
@@ -387,6 +389,8 @@ void set_system_is_for_devt( )
 void init_special_variable_names( )
 {
    guard g( g_mutex );
+
+   g_command_variable = string( c_special_variable_command );
 
    g_secret_hash_prefix = string( c_special_variable_secret_hash ) + "_";
 
@@ -1210,7 +1214,11 @@ string get_system_variable( const var_name& var, bool is_internal )
       {
          retval = g_variables[ var_name ];
 
-         if( !is_internal )
+         // NOTE: After fetching "@command" will erase its value (as this is
+         // not intended to be visible like other standard system variables).
+         if( var_name == g_command_variable )
+            g_variables.erase( g_command_variable );
+         else if( !is_internal )
             truncate_value_for_secret_hash_prefixed_name( var_name, retval );
       }
       else if( name == get_special_var_name( e_special_var_none ) )
@@ -1246,7 +1254,7 @@ void set_system_variable( const var_name& var,
    string name( var.name );
 
    // NOTE: The special variable "@command" is used to run and hold the results of a "ciyam_command".
-   if( name == c_special_variable_command )
+   if( name == g_command_variable )
    {
       string val( value );
 
@@ -1735,6 +1743,33 @@ temporary_system_variable::temporary_system_variable( const var_name& var, const
 temporary_system_variable::~temporary_system_variable( )
 {
    delete p_impl;
+}
+
+void system_variable_expression( const string& expr )
+{
+   string expression( expr );
+
+   string::size_type pos = expression.find( ' ' );
+
+   if( pos != string::npos )
+   {
+      string name( expression.substr( 0, pos ) );
+      string value( expression.substr( pos + 1 ) );
+
+      if( value == get_special_var_name( e_special_var_none ) )
+         value.erase( );
+
+      expression.erase( pos );
+
+      set_system_variable( name, value );
+   }
+
+   if( !expression.empty( )
+    && ( ( expression[ 0 ] == '<' ) || ( expression[ 0 ] == '>' ) ) )
+      expression.erase( 0, 1 );
+
+   set_session_variable( c_executed_expression, expr );
+   set_session_variable( c_variable_expression, expression );
 }
 
 string variable_name_from_name_and_value( const string& name_and_value, string* p_value )
