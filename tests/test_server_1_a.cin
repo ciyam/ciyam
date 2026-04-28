@@ -629,6 +629,22 @@ session_variable test
 session_variable test @null
 session_variable test
 ;
+session_variable test 111 ""
+session_variable test 222 ""
+session_variable test 333 ""
+session_variable test
+session_variable test 222 111
+session_variable test 333 111
+session_variable test
+session_variable test 333 222
+session_variable test
+session_variable test "" 111
+session_variable test
+session_variable test "" 222
+session_variable test
+session_variable test "" 333
+session_variable test
+;
 session_variable test_x 1
 session_variable test_z 1
 session_variable ?test_x

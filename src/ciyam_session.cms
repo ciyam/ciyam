@@ -52,7 +52,7 @@ object_destroy "destroy an existing object instance" <val//handle>
 object_execute "execute a method for an existing object instance" <val//handle>[<val/./context>]<val//method>[<val//args>]
 object_op_apply "apply op for a persistent instance" <val//handle>[<val/./context>]
 object_validate "validate an existing object instance" <val//handle>[<val/./context>]
-object_variable "get/set an object instance variable" <val//handle>[<val/./context>]<val//name_or_expr>[<oval//new_value>]
+object_variable "get/set an object instance variable" <val//handle>[<val/./context>]<val//name_or_expr>[<oval//value>]
 object_op_cancel "cancel op for a persistent instance" <val//handle>[<val/./context>]
 object_op_create "begin a create op on a persistent instance" <val//handle>[<val/./context>][<val//key>]
 object_op_update "begin an update op on a persistent instance" <val//handle>[<val/./context>][<val//key>][<val/=/ver_info>]
@@ -83,7 +83,7 @@ session_lock "capture/release one or more sessions" {<opt/-capture/capture>|{<op
 session_wait|wait "wait for a number of milliseconds" [<opt/-lock/lock>][<opt/-no_progress/no_progress>]<val//milliseconds>[<val//message>]
 session_timeout "get/set server session timeout" [<val//seconds>]
 session_restrict "set/clear restricted protocol command list" <val//key>[<olist//commands>]
-session_variable|var "get/set a session variable" [<val/-id=/session_id>|<opt/-num_found/num_found>]<val//name_or_expr>[<oval//new_value>]
+session_variable|var "get/set a session variable" [<val/-id=/session_id>|<opt/-num_found/num_found>]<val//name_or_expr>[<oval//value>][<oval//current>]
 session_terminate|quit "terminate session"
 session_rpc_unlock "unlock full RPC access for a session" <val//password>[<val//seconds>]
 starttls|tls "start TLS session"
@@ -95,7 +95,7 @@ storage_backup "create a storage backup" [<opt/-init/initial>|<opt/-trunc/trunca
 storage_create "link to a newly created storage" [<opt/-admin/admin>][<val/-directory=/directory>]<val//name>
 storage_comment "append a comment to the storage log" <val//text>
 storage_restore "perform storage restore" [<val/-trace=/trace_info>][<val/-stop_regex=/stop_regex>|<val/-stop_at_tx=/stop_at_tx>][<opt/-rebuild/rebuild>|<opt/-partial/partial>][<opt/-quicker/quicker>][<val/-directory=/directory>]<val//name>
-storage_variable "get/set a storage variable" <val//name>[<oval//new_value>]
+storage_variable "get/set a storage variable" <val//name>[<oval//value>]
 storage_web_root "get/set web root path of currently linked storage" [<opt/-expand/expand>][<oval//new_root>]
 storage_log_slice "slice a storage log into individual module logs" <val//name>[<list//modules>]
 storage_bulk_start "obtain bulk storage lock" <opt/read/read>|<opt/write/write>
@@ -131,7 +131,7 @@ system_passtotp|passtotp "retrieve a TOTP system password" <val//secret>
 system_password|password "retrieve an encrypted system password" <val//name>
 system_schedule|schedule "display system autoscript schedule" [<opt/-reload/reload>][<opt/-from_now/from_now>]
 system_sendmail|sendmail "send a simple test system email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_name>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
-system_variable|variable "get/set a system variable" <val//name_or_expr>[<oval//new_value>][<oval//check_value>]
+system_variable|variable "get/set a system variable" <val//name_or_expr>[<oval//value>][<oval//current>]
 system_checkmail|checkmail "check for incoming email or process system email script calls" [<opt/-script/create_script>|<list//headers>]
 system_externals|externals "display a list of system external services"
 system_listeners|listeners "display a list of all current system listeners"

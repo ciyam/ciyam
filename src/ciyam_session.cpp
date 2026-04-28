@@ -3359,16 +3359,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_variable_handle ) );
          string context( get_parm_val( parameters, c_cmd_ciyam_session_object_variable_context ) );
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_object_variable_name_or_expr ) );
-         bool has_new_val = has_parm_val( parameters, c_cmd_ciyam_session_object_variable_new_value );
-         string new_value( get_parm_val( parameters, c_cmd_ciyam_session_object_variable_new_value ) );
+         bool has_value = has_parm_val( parameters, c_cmd_ciyam_session_object_variable_value );
+         string value( get_parm_val( parameters, c_cmd_ciyam_session_object_variable_value ) );
 
          possibly_expected_error = true;
 
-         if( has_new_val )
+         if( has_value )
          {
-            check_not_possible_protocol_response( new_value );
+            check_not_possible_protocol_response( value );
 
-            instance_set_variable( atoi( handle.c_str( ) ), context, name_or_expr, new_value );
+            instance_set_variable( atoi( handle.c_str( ) ), context, name_or_expr, value );
          }
          else
          {
@@ -5852,8 +5852,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string session_id( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_session_id ) );
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_name_or_expr ) );
          bool num_found = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_num_found );
-         bool has_new_val = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_new_value );
-         string new_value( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_new_value ) );
+         bool has_val = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_value );
+         string value( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_value ) );
+         bool has_current = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_current );
+         string current( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_current ) );
 
          size_t sess_id = 0;
 
@@ -5866,29 +5868,35 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( num_found )
          {
+            if( has_current )
+               throw runtime_error( "num_found and current are incompatible options" );
+
             size_t num = 0;
 
-            if( !has_new_val )
+            if( !has_val )
                num = num_have_session_variable( name_or_expr );
             else
-               num = num_have_session_variable( name_or_expr, new_value );
+               num = num_have_session_variable( name_or_expr, value );
 
             response = to_string( num );
          }
          else
          {
-            if( !has_new_val )
+            if( !has_val )
                needs_response = true;
             else
             {
                string null_value( get_special_var_name( e_special_var_null ) );
 
-               if( new_value == null_value )
-                  new_value.erase( );
+               if( value == null_value )
+                  value.erase( );
 
-               check_not_possible_protocol_response( new_value );
+               check_not_possible_protocol_response( value );
 
-               set_session_variable( name_or_expr, new_value, &needs_response, &handler, sess_id );
+               if( has_current )
+                  set_session_variable( name_or_expr, value, current );
+               else
+                  set_session_variable( name_or_expr, value, &needs_response, &handler, sess_id );
             }
 
             if( needs_response )
@@ -7176,16 +7184,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_storage_variable )
       {
          string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_variable_name ) );
-         bool has_new_val = has_parm_val( parameters, c_cmd_ciyam_session_storage_variable_new_value );
-         string new_value( get_parm_val( parameters, c_cmd_ciyam_session_storage_variable_new_value ) );
+         bool has_value = has_parm_val( parameters, c_cmd_ciyam_session_storage_variable_value );
+         string value( get_parm_val( parameters, c_cmd_ciyam_session_storage_variable_value ) );
 
          possibly_expected_error = true;
 
-         if( has_new_val )
+         if( has_value )
          {
-            check_not_possible_protocol_response( new_value );
+            check_not_possible_protocol_response( value );
 
-            set_storage_variable( name, new_value );
+            set_storage_variable( name, value );
          }
          else
             response = get_storage_variable( name );
@@ -7862,29 +7870,29 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_system_variable )
       {
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) );
-         bool has_new_val = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value );
-         string new_value( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value ) );
-         bool has_check_val = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_check_value );
-         string check_value( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_check_value ) );
+         bool has_value = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_value );
+         string value( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_value ) );
+         bool has_current = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_current );
+         string current( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_current ) );
 
          possibly_expected_error = true;
 
-         if( has_new_val )
+         if( has_value )
          {
             string null_value( get_special_var_name( e_special_var_null ) );
 
-            if( new_value == null_value )
-               new_value.erase( );
+            if( value == null_value )
+               value.erase( );
 
-            if( check_value == null_value )
-               check_value.erase( );
+            if( current == null_value )
+               current.erase( );
 
-            check_not_possible_protocol_response( new_value );
+            check_not_possible_protocol_response( value );
 
-            if( !has_check_val )
-               set_system_variable( name_or_expr, new_value, false, &handler );
+            if( !has_current )
+               set_system_variable( name_or_expr, value, false, &handler );
             else
-               response = to_string( set_system_variable( name_or_expr, new_value, check_value ) );
+               response = to_string( set_system_variable( name_or_expr, value, current ) );
          }
          else
          {
