@@ -2,8 +2,7 @@
    // [(start for_destroy_clone_peer)] `{`$arg_id`}
    if( !storage_locked_for_admin( ) )
    {
-      temporary_identity_suffix tmp_identity_suffix(
-       get_raw_session_variable( get_special_var_name( e_special_var_peer_identity_alias ) ) );
+      temporary_identity_suffix tmp_identity_suffix( get_session_variable( e_special_var_peer_identity_alias ) );
 
       string key( replaced( get_obj( ).get_key( ),
        tmp_identity_suffix.original_suffix, tmp_identity_suffix.current_suffix ) );
@@ -11,8 +10,7 @@
       class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
 
 `{`!`@eq`(`$arg_submit_type`,`'`'`)\
-      temporary_session_variable tmp_session_submit_type(
-       get_special_var_name( e_special_var_submit_type ), "`{`$arg_submit_type`}" );
+      temporary_session_variable tmp_session_submit_type( e_special_var_submit_type, "`{`$arg_submit_type`}" );
 
 `}\
       cp_source->set_is_for_peer( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) );

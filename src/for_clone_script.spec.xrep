@@ -6,8 +6,7 @@
    get_obj( ).begin_review( );
 
    temporary_session_variable tmp_session_key_info(
-    get_special_var_name( e_special_var_key_info ),
-    get_obj( ).get_key( ) + "`{`$suffix`} " + get_obj( ).get_key( ) );
+    e_special_var_key_info, get_obj( ).get_key( ) + "`{`$suffix`} " + get_obj( ).get_key( ) );
 
    get_obj( ).`{`$arg_fldval`}( to_string( c_field_id_`{`$arg_field`} ) + "=" + to_string( `{`$arg_value`} ) );
 `{`!`@eq`(`$arg_tfield`,`'`'`)\

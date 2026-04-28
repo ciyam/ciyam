@@ -15,8 +15,8 @@
       if( !exists_file( path + "/" + file )
        && has_files_area_file( get_obj( ).`{`$arg_ofield`}( ) ) )
       {
-         set_session_variable( get_special_var_name( e_special_var_list_hash ), get_obj( ).`{`$arg_ofield`}( ) );
-         set_session_variable( get_special_var_name( e_special_var_app_directory ), lower( storage_name( ) ) );
+         set_session_variable( e_special_var_list_hash, get_obj( ).`{`$arg_ofield`}( ) );
+         set_session_variable( e_special_var_app_directory, lower( storage_name( ) ) );
 
          run_script( "export_app_file", false );
       }
@@ -45,30 +45,27 @@
        && has_files_area_tag( c_ciyam_tag, e_file_type_list )
        && get_obj( ).has_field_changed( c_field_id_`{`$arg_field`} ) )
       {
-         set_session_variable( get_special_var_name( e_special_var_tag ), c_ciyam_tag );
-         set_session_variable( get_special_var_name( e_special_var_type ), c_web_files_branch );
+         set_session_variable( e_special_var_tag, c_ciyam_tag );
+         set_session_variable( e_special_var_type, c_web_files_branch );
 
-         set_session_variable(
-          get_special_var_name( e_special_var_branch ), get_obj( ).get_module_name( ) + "*" );
+         set_session_variable( e_special_var_branch, get_obj( ).get_module_name( ) + "*" );
 
-         set_session_variable(
-          get_special_var_name( e_special_var_sub_directory ),
+         set_session_variable( e_special_var_sub_directory,
           get_obj( ).get_module_id( ) + "/" + get_obj( ).get_class_id( ) );
 
-         set_session_variable( get_special_var_name( e_special_var_name ), file );
+         set_session_variable( e_special_var_name, file );
 
-         set_session_variable(
-          get_special_var_name( e_special_var_path ),
+         set_session_variable( e_special_var_path,
           storage_web_root( true ) + "/" + string( c_files_directory ) );
 
-         set_session_variable( get_special_var_name( e_special_var_tag_prefix ), storage_name( ) + "." );
+         set_session_variable( e_special_var_tag_prefix, storage_name( ) + "." );
 
          run_script( "tree_insert_file", false );
 
          get_obj( ).`{`$arg_ofield`}( get_files_area_hash_for_tag( storage_name( )
           + "." + get_obj( ).get_module_id( ) + "." + get_obj( ).get_class_id( ) + "." + file ) );
 
-         set_session_variable( get_special_var_name( e_special_var_extra_field_values ),
+         set_session_variable( e_special_var_extra_field_values,
           string( c_field_id_`{`$arg_ofield`} ) + "=" + get_obj( ).`{`$arg_ofield`}( ) );
 
          remove_files_area_tag( storage_name( )

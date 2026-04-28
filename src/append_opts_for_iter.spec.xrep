@@ -41,7 +41,7 @@
 `}\
       {
 `{`!`@eq`(`$arg_pfield`,`'`'`)`&`@eq`(`$arg_check_child_fk_security`,`'true`'`)\
-         string sec_level( get_session_variable( get_special_var_name( e_special_var_sec ) ) );
+         string sec_level( get_session_variable( e_special_var_sec ) );
 
 `}\
          do

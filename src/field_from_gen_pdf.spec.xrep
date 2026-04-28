@@ -14,10 +14,10 @@
 `{`$i`}   {
 `{`$i`}      string pdf_file( get_obj( ).get_attached_file_path( name ) );
 
-`{`$i`}      set_session_variable( get_special_var_name( e_special_var_key ), get_obj( ).get_key( ) );
+`{`$i`}      set_session_variable( e_special_var_key, get_obj( ).get_key( ) );
 
-`{`$i`}      set_session_variable( get_special_var_name( e_special_var_file ), pdf_file );
-`{`$i`}      set_session_variable( get_special_var_name( e_special_var_title ), get_obj( ).`{`$arg_title`}( ) );
+`{`$i`}      set_session_variable( e_special_var_file, pdf_file );
+`{`$i`}      set_session_variable( e_special_var_title, get_obj( ).`{`$arg_title`}( ) );
 
 `{`$i`}      run_script( "`{`$module_name`}_`{`$class_name`}_`{`$arg_procedure`}", false );
 `{`$i`}   }

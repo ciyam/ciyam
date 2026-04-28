@@ -11,8 +11,7 @@
       if( !get_obj( ).get_variable(
        get_special_var_name( e_special_var_datachain ) ).empty( ) )
       {
-         string system_identity( get_raw_system_variable(
-          get_special_var_name( e_special_var_system_identity ) ) );
+         string system_identity( get_system_variable( e_special_var_system_identity ) );
 
          if( parent_key.length( ) > system_identity.length( ) )
          {

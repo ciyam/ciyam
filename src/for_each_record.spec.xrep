@@ -13,7 +13,7 @@
 `{`$i`}`{`$j`}   size_t total( 0 );
 `{`$i`}`{`$j`}   procedure_progress progress;
 `{`!`@eq`(`$arg_quiet`,`'`'`)\
-`{`$i`}`{`$j`}   temporary_session_variable tmp_quiet( get_special_var_name( e_special_var_quiet ), "1" );
+`{`$i`}`{`$j`}   temporary_session_variable tmp_quiet( e_special_var_quiet, "1" );
 `}`{`!`@eq`(`$arg_var`,`'`'`)
 `{`$i`}`{`$j`}   get_obj( ).set_variable( "`{`$arg_var`}", "true" );
 `}

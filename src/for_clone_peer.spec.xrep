@@ -15,13 +15,12 @@
          up_channel_lock.reset(
           new channel_lock( get_obj( ), get_obj( ).`{`$arg_tfield`}( ) ) );
 
-         up_temp_skip_submit_file.reset( new temporary_session_variable(
-          get_special_var_name( e_special_var_skip_submit_file ), c_true_value ) );
+         up_temp_skip_submit_file.reset(
+          new temporary_session_variable( e_special_var_skip_submit_file, c_true_value ) );
       }
 
 `}\
-      temporary_identity_suffix tmp_identity_suffix(
-       get_raw_session_variable( get_special_var_name( e_special_var_peer_identity_alias ) ) );
+      temporary_identity_suffix tmp_identity_suffix( get_session_variable( e_special_var_peer_identity_alias ) );
 
 `{`@eq`(`$arg_key_transform`,`'`'`)\
       string new_key( gen_key( ) );
@@ -32,15 +31,13 @@
       string key_info( new_key + string( " " ) + get_obj( ).get_key( ) );
 
 `{`@eq`(`$arg_key_transform`,`'`'`)\
-      temporary_session_variable tmp_peer_clone_key(
-       get_special_var_name( e_special_var_peer_clone_key ), new_key );
+      temporary_session_variable tmp_peer_clone_key( e_special_var_peer_clone_key, new_key );
 
 `}\
       class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
 
 `{`!`@eq`(`$arg_submit_type`,`'`'`)\
-      temporary_session_variable tmp_session_submit_type(
-       get_special_var_name( e_special_var_submit_type ), "`{`$arg_submit_type`}" );
+      temporary_session_variable tmp_session_submit_type( e_special_var_submit_type, "`{`$arg_submit_type`}" );
 
 `}\
       cp_source->op_create( key_info );
@@ -57,8 +54,7 @@
       temporary_grp_and_uid tmp_grp_and_uid( c_watchers, c_admin, true );
 
 `}`{`!`@eq`(`$arg_key_transform`,`'`'`)\
-      temporary_session_variable tmp_peer_clone_key(
-       get_special_var_name( e_special_var_peer_clone_key ), cp_source->get_peer_identity( ) );
+      temporary_session_variable tmp_peer_clone_key( e_special_var_peer_clone_key, cp_source->get_peer_identity( ) );
 
 `}\
       cp_source->op_apply( );

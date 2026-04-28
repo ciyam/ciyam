@@ -31,12 +31,10 @@
 `{`$i`}    && `}state & c_modifier_`{`$arg_modifier`}`} )
 `{`$i`}   {
 `}`{`!`@eq`(`$arg_sfield`,`'`'`)\
-`{`$j`}   temporary_session_variable tmp_session_source_field(
-`{`$j`}    get_special_var_name( e_special_var_source ), get_obj( ).`{`$arg_sfield`}( ) );
+`{`$j`}   temporary_session_variable tmp_session_source_field( e_special_var_source, get_obj( ).`{`$arg_sfield`}( ) );
 
 `}`{`!`@eq`(`$arg_skip_submit_file`,`'`'`)\
-`{`$j`}   temporary_session_variable tmp_session_skip_submit_file(
-`{`$j`}    get_special_var_name( e_special_var_skip_submit_file ), c_true_value );
+`{`$j`}   temporary_session_variable tmp_session_skip_submit_file( e_special_var_skip_submit_file, c_true_value );
 
 `}`{`!`@eq`(`$arg_unique_var`,`'`'`)\
 `{`$j`}   unique_items_object_variable unique_items( get_obj( ), "`{`$arg_unique_var`}" );
