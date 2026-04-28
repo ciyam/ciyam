@@ -944,8 +944,8 @@ void output_repository_progress( progress* p_progress,
       if( num > total )
          total = num;
 
-      set_session_variable( get_special_var_name( e_special_var_progress_count ), to_string( num ) );
-      set_session_variable( get_special_var_name( e_special_var_progress_total ), to_string( total ) );
+      set_session_variable( e_special_var_progress_count, to_string( num ) );
+      set_session_variable( e_special_var_progress_total, to_string( total ) );
 
       value = get_session_variable( e_special_var_progress_value );
    }
@@ -1370,7 +1370,7 @@ string current_time_stamp_tag( bool truncated, size_t days_ahead )
    {
       retval += dummy_time_stamp;
 
-      set_session_variable( get_special_var_name( e_special_var_dummy_time_stamp ), "" );
+      set_session_variable( e_special_var_dummy_time_stamp, "" );
    }
    else
    {
@@ -1822,7 +1822,7 @@ string file_type_info( const string& tag_or_hash,
    string final_data( data );
 
 #ifdef ZLIB_SUPPORT
-   if( !is_encrypted && is_compressed && final_data.size( ) > 1 )
+   if( !is_encrypted && is_compressed && ( final_data.size( ) > 1 ) )
    {
       session_file_buffer_access file_buffer;
 
@@ -1845,7 +1845,7 @@ string file_type_info( const string& tag_or_hash,
    // without the use of additional function arguments (that default to keeping the format as is).
    if( expansion != e_file_expansion_recursive_hashes )
    {
-      if( !output_last_only || depth == indent + 1 )
+      if( !output_last_only || ( depth == ( indent + 1 ) ) )
       {
          if( !output_last_only )
             retval += string( indent, ' ' );
@@ -1866,7 +1866,7 @@ string file_type_info( const string& tag_or_hash,
 
    if( is_encrypted || ( expansion == e_file_expansion_none ) )
    {
-      if( !output_last_only || depth == indent + 1 )
+      if( !output_last_only || ( depth == ( indent + 1 ) ) )
       {
          if( expansion == e_file_expansion_recursive_hashes )
             retval += lower( hash );
@@ -1897,7 +1897,7 @@ string file_type_info( const string& tag_or_hash,
    {
       if( file_type == c_file_type_val_blob )
       {
-         if( !output_last_only || ( depth == indent + 1 ) )
+         if( !output_last_only || ( depth == ( indent + 1 ) ) )
          {
             if( expansion == e_file_expansion_recursive_hashes )
                retval += lower( hash );
@@ -1944,7 +1944,7 @@ string file_type_info( const string& tag_or_hash,
 
          split_list_items( final_data.substr( 1 ), list_items );
 
-         if( !output_last_only || ( depth == indent + 1 ) )
+         if( !output_last_only || ( depth == ( indent + 1 ) ) )
          {
             if( expansion == e_file_expansion_recursive_hashes )
                retval += lower( hash );
@@ -1982,7 +1982,7 @@ string file_type_info( const string& tag_or_hash,
 
             if( expansion == e_file_expansion_content )
             {
-               if( !output_last_only || depth == indent + 1 )
+               if( !output_last_only || ( depth == ( indent + 1 ) ) )
                {
                   if( output_last_only )
                      retval += "\n" + item_num + ' ' + next + size;
@@ -1993,7 +1993,7 @@ string file_type_info( const string& tag_or_hash,
             else if( depth && indent >= depth
              && expansion != e_file_expansion_recursive_hashes )
             {
-               if( i == 0 && ( !output_last_only || depth == indent + 1 ) )
+               if( ( i == 0 ) && ( !output_last_only || ( depth == ( indent + 1 ) ) ) )
                {
                   if( output_last_only )
                      retval += "\n...";
@@ -2004,8 +2004,8 @@ string file_type_info( const string& tag_or_hash,
             else
             {
                if( prefix.empty( )
-                || ( is_inverted_prefix && !is_wildcard_prefix && prefix.find( next_name ) != 0 )
-                || ( !is_inverted_prefix && !is_wildcard_prefix && prefix.find( next_name ) == 0 )
+                || ( is_inverted_prefix && !is_wildcard_prefix && ( prefix.find( next_name ) != 0 ) )
+                || ( !is_inverted_prefix && !is_wildcard_prefix && ( prefix.find( next_name ) == 0 ) )
                 || ( is_inverted_prefix && is_wildcard_prefix && !wildcard_match( prefix, next_name ) )
                 || ( !is_inverted_prefix && is_wildcard_prefix && wildcard_match( prefix, next_name ) ) )
                {
@@ -2133,6 +2133,7 @@ void file_list_item_pos(
             string::size_type pos = next_item.find( ' ' );
 
             string next_hash( next_item.substr( 0, pos ) );
+
             string next_name;
 
             if( pos != string::npos )
@@ -2211,8 +2212,8 @@ void file_list_item_pos(
                {
                   has_set_missing = true;
 
-                  set_session_variable( get_special_var_name(
-                   e_special_var_repo_entry_missing ), next_hash, "" );
+                  // NOTE: Ensures that only the first missing entry is being set here.
+                  set_session_variable( e_special_var_repo_entry_missing, next_hash, "" );
                }
             }
 
@@ -3035,14 +3036,10 @@ void touch_file( const string& hash,
    {
       string archive_path;
 
-      old_archive_path = get_session_variable(
-       get_special_var_name( e_special_var_blockchain_archive_path ) );
+      old_archive_path = get_session_variable( e_special_var_blockchain_archive_path );
 
       if( has_file_archive( archive, &archive_path ) )
-      {
-         set_session_variable( get_special_var_name(
-          e_special_var_blockchain_archive_path ), archive_path );
-      }
+         set_session_variable( e_special_var_blockchain_archive_path, archive_path );
    }
 
    bool is_in_archive = false;
@@ -3072,8 +3069,7 @@ void touch_file( const string& hash,
       *p_has_updated_archive = true;
 
    if( set_archive_path )
-      set_session_variable( get_special_var_name(
-       e_special_var_blockchain_archive_path ), old_archive_path );
+      set_session_variable( e_special_var_blockchain_archive_path, old_archive_path );
 }
 
 string get_hash( const string& prefix )
