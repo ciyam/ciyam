@@ -7303,7 +7303,7 @@ void allow_peerchain( const string& identity, int peer_type, bool no_delay )
       identities += ',' + reversed;
    }
 
-   set_system_variable( get_special_var_name( e_special_var_queue_peers ), '@' + identities );
+   set_system_variable( e_special_var_queue_peers, '@' + identities );
 
    if( !no_delay )
       msleep( c_peer_sleep_time * ( is_single ? 2 : 4 ) );
@@ -7359,12 +7359,13 @@ void connect_peerchain( const string& connect_info, bool no_delay )
       set_variable_checker check_not_has_either(
        e_variable_check_type_not_has_other_system, '~' + identity, &check_not_has );
 
-      if( set_system_variable( get_special_var_name(
-       e_special_var_queue_peers ), connect_info, check_not_has_either ) )
+      if( set_system_variable( e_special_var_queue_peers, connect_info, check_not_has_either ) )
       {
+         string auto_identity_name( get_special_var_name( e_special_var_auto ) + '_' + identity );
+
          // NOTE: If has "@auto_<identity>" then set it to "1" (in order to reset reconnect attempts).
-         if( has_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity ) )
-            set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, c_true_value );
+         if( has_system_variable( auto_identity_name ) )
+            set_system_variable( auto_identity_name, c_true_value );
 
          if( !no_delay )
             msleep( c_peer_sleep_time * ( is_peer_node ? 3 : 5 ) );
