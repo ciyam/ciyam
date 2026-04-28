@@ -884,19 +884,19 @@ string get_special_var_name( special_var var )
 
 system_variable_lock::system_variable_lock( const string& name )
  :
- name( name )
+ var( name )
 {
-   acquire_lock( name );
+   acquire_lock( );
 }
 
 system_variable_lock::system_variable_lock( const string& name, const string& display )
  :
- name( name )
+ var( name )
 {
-   acquire_lock( name, display.c_str( ) );
+   acquire_lock( display.c_str( ) );
 }
 
-void system_variable_lock::acquire_lock( const string& name, const char* p_display_name_str )
+void system_variable_lock::acquire_lock( const char* p_display_name_str )
 {
    bool acquired = false;
 
@@ -906,9 +906,10 @@ void system_variable_lock::acquire_lock( const string& name, const char* p_displ
       {
          guard g( g_mutex );
 
-         if( set_system_variable( name, c_true_value, string( "" ) ) )
+         if( set_system_variable( var, c_true_value, string( "" ) ) )
          {
             acquired = true;
+
             break;
          }
       }
@@ -922,13 +923,13 @@ void system_variable_lock::acquire_lock( const string& name, const char* p_displ
          throw runtime_error( get_string_message( GS( c_str_class_is_locked ),
           make_pair( c_str_class_is_locked_class, p_display_name_str ) ) );
       else
-         throw runtime_error( "unable to acquire lock for system variable '" + name + "'" );
+         throw runtime_error( "unable to acquire lock for system variable '" + var.name + "'" );
    }
 }
 
 system_variable_lock::~system_variable_lock( )
 {
-   set_system_variable( name, "" );
+   set_system_variable( var, "" );
 }
 
 bool has_system_variable( const var_name& var )
@@ -1690,10 +1691,8 @@ bool set_system_variable( const var_name& var, const string& value,
    if( !checker.can_set( ) )
       return false;
 
-   string name( var.name );
-
-   if( name != c_special_variable_none )
-      set_system_variable( name, value, is_init, p_progress );
+   if( var.name != c_special_variable_none )
+      set_system_variable( var, value, is_init, p_progress );
 
    return true;
 }
@@ -1776,7 +1775,7 @@ string variable_name_from_name_and_value( const string& name_and_value, string* 
 
    string::size_type from = 0;
 
-   if( !name_and_value.empty( ) && name_and_value[ 0 ] == '"' )
+   if( !name_and_value.empty( ) && ( name_and_value[ 0 ] == '"' ) )
       from = name_and_value.find( '"', 1 );
 
    string::size_type pos = name_and_value.find( ' ', from );

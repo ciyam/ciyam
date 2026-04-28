@@ -19,21 +19,6 @@ struct progress;
 
 std::string get_special_var_name( special_var var );
 
-class system_variable_lock
-{
-   public:
-   system_variable_lock( const std::string& name );
-   system_variable_lock( const std::string& name, const std::string& display );
-
-   ~system_variable_lock( );
-
-   private:
-   std::string name;
-
-   protected:
-   void acquire_lock( const std::string& name, const char* p_display_name_str = 0 );
-};
-
 struct var_name
 {
    var_name( size_t num )
@@ -54,6 +39,21 @@ struct var_name
    }
 
    std::string name;
+};
+
+class system_variable_lock
+{
+   public:
+   system_variable_lock( const std::string& name );
+   system_variable_lock( const std::string& name, const std::string& display );
+
+   ~system_variable_lock( );
+
+   private:
+   var_name var;
+
+   protected:
+   void acquire_lock( const char* p_display_name_str = 0 );
 };
 
 bool has_system_variable( const var_name& var );
