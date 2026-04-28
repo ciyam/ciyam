@@ -43,11 +43,9 @@ const size_t c_secret_truncate_length = 9;
 
 const char* const c_secret_hash_suffix = "\t\1\t";
 
-const char* const c_executed_expression = "executed_expression";
-const char* const c_variable_expression = "variable_expression";
-
 const char* const c_special_variable_id = "@id";
 const char* const c_special_variable_os = "@os";
+const char* const c_special_variable_cmd = "@cmd";
 const char* const c_special_variable_dtm = "@dtm";
 const char* const c_special_variable_grp = "@grp";
 const char* const c_special_variable_hub = "@hub";
@@ -101,7 +99,6 @@ const char* const c_special_variable_pubkey = "@pubkey";
 const char* const c_special_variable_return = "@return";
 const char* const c_special_variable_script = "@script";
 const char* const c_special_variable_source = "@source";
-const char* const c_special_variable_command = "@command";
 const char* const c_special_variable_do_exec = "@do_exec";
 const char* const c_special_variable_ip_addr = "@ip_addr";
 const char* const c_special_variable_is_last = "@is_last";
@@ -279,6 +276,8 @@ const char* const c_special_variable_no_support_sessions = "@no_support_sessions
 const char* const c_special_variable_peer_identity_alias = "@peer_identity_alias";
 const char* const c_special_variable_repo_crypt_password = "@repo_crypt_password";
 const char* const c_special_variable_skip_parent_updates = "@skip_parent_updates";
+const char* const c_special_variable_supplied_expression = "@supplied_expression";
+const char* const c_special_variable_variable_expression = "@variable_expression";
 const char* const c_special_variable_blockchain_hind_hash = "@blockchain_hind_hash";
 const char* const c_special_variable_blockchain_unix_time = "@blockchain_unix_time";
 const char* const c_special_variable_disallow_connections = "@disallow_connections";
@@ -357,7 +356,6 @@ inline string quote_if_contains_white_space( const string& name )
    return retval;
 }
 
-string g_command_variable;
 string g_secret_hash_prefix;
 
 // NOTE: System variable names that begin with "@secret_hash_" will have their values
@@ -390,8 +388,6 @@ void init_special_variable_names( )
 {
    guard g( g_mutex );
 
-   g_command_variable = string( c_special_variable_command );
-
    g_secret_hash_prefix = string( c_special_variable_secret_hash ) + "_";
 
    // NOTE: These must align with the enums in "ciyam_variable_names.h".
@@ -399,6 +395,7 @@ void init_special_variable_names( )
    {
       g_special_variable_names.push_back( c_special_variable_id );
       g_special_variable_names.push_back( c_special_variable_os );
+      g_special_variable_names.push_back( c_special_variable_cmd );
       g_special_variable_names.push_back( c_special_variable_dtm );
       g_special_variable_names.push_back( c_special_variable_grp );
       g_special_variable_names.push_back( c_special_variable_hub );
@@ -452,7 +449,6 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_return );
       g_special_variable_names.push_back( c_special_variable_script );
       g_special_variable_names.push_back( c_special_variable_source );
-      g_special_variable_names.push_back( c_special_variable_command );
       g_special_variable_names.push_back( c_special_variable_do_exec );
       g_special_variable_names.push_back( c_special_variable_ip_addr );
       g_special_variable_names.push_back( c_special_variable_is_last );
@@ -630,6 +626,8 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_peer_identity_alias );
       g_special_variable_names.push_back( c_special_variable_repo_crypt_password );
       g_special_variable_names.push_back( c_special_variable_skip_parent_updates );
+      g_special_variable_names.push_back( c_special_variable_supplied_expression );
+      g_special_variable_names.push_back( c_special_variable_variable_expression );
       g_special_variable_names.push_back( c_special_variable_blockchain_hind_hash );
       g_special_variable_names.push_back( c_special_variable_blockchain_unix_time );
       g_special_variable_names.push_back( c_special_variable_disallow_connections );
@@ -1216,12 +1214,12 @@ string get_system_variable( const var_name& var, bool is_internal )
 
          // NOTE: After fetching "@command" will erase its value (as this is
          // not intended to be visible like other standard system variables).
-         if( var_name == g_command_variable )
-            g_variables.erase( g_command_variable );
+         if( var_name == c_special_variable_cmd )
+            g_variables.erase( c_special_variable_cmd );
          else if( !is_internal )
             truncate_value_for_secret_hash_prefixed_name( var_name, retval );
       }
-      else if( name == get_special_var_name( e_special_var_none ) )
+      else if( name == c_special_variable_none )
          retval = " ";
       else if( var_name == c_special_variable_files_area_path )
          retval = c_ciyam_files_directory;
@@ -1253,8 +1251,8 @@ void set_system_variable( const var_name& var,
 {
    string name( var.name );
 
-   // NOTE: The special variable "@command" is used to run and hold the results of a "ciyam_command".
-   if( name == g_command_variable )
+   // NOTE: The special variable "@cmd" is used to run and hold the results of a "ciyam_command".
+   if( name == c_special_variable_cmd )
    {
       string val( value );
 
@@ -1756,7 +1754,7 @@ void system_variable_expression( const string& expr )
       string name( expression.substr( 0, pos ) );
       string value( expression.substr( pos + 1 ) );
 
-      if( value == get_special_var_name( e_special_var_none ) )
+      if( value == c_special_variable_none )
          value.erase( );
 
       expression.erase( pos );
@@ -1768,8 +1766,8 @@ void system_variable_expression( const string& expr )
     && ( ( expression[ 0 ] == '<' ) || ( expression[ 0 ] == '>' ) ) )
       expression.erase( 0, 1 );
 
-   set_session_variable( c_executed_expression, expr );
-   set_session_variable( c_variable_expression, expression );
+   set_session_variable( c_special_variable_supplied_expression, expr );
+   set_session_variable( c_special_variable_variable_expression, expression );
 }
 
 string variable_name_from_name_and_value( const string& name_and_value, string* p_value )
