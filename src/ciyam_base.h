@@ -633,7 +633,7 @@ void set_session_variable( const var_name& var, const std::string& value,
  bool* p_set_special_temporary = 0, command_handler* p_command_handler = 0, size_t sess_id = 0 );
 
 bool set_session_variable( const var_name& var,
- const std::string& value, const std::string& current, const char* p_name = 0 );
+ const std::string& value, const std::string& current );
 
 void set_session_variable_for_matching_blockchains( const std::string& name,
  const std::string& value, const std::string& check_name, const std::string& check_value, bool matching_own_ip_address = false );
