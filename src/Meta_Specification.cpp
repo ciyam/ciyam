@@ -4205,7 +4205,7 @@ void Meta_Specification::impl::impl_Add_Arg_1( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210a' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210a' if generated code is required here.
 
    // [<start Add_Arg_1_impl>]
    // [<finish Add_Arg_1_impl>]
@@ -4216,7 +4216,7 @@ void Meta_Specification::impl::impl_Add_Arg_2( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210b' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210b' if generated code is required here.
 
    // [<start Add_Arg_2_impl>]
    // [<finish Add_Arg_2_impl>]
@@ -4227,7 +4227,7 @@ void Meta_Specification::impl::impl_Add_Child_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210c' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210c' if generated code is required here.
 
    // [<start Add_Child_Info_impl>]
    // [<finish Add_Child_Info_impl>]
@@ -4238,7 +4238,7 @@ void Meta_Specification::impl::impl_Add_Destination_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210d' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210d' if generated code is required here.
 
    // [<start Add_Destination_Info_impl>]
    // [<finish Add_Destination_Info_impl>]
@@ -4249,7 +4249,7 @@ void Meta_Specification::impl::impl_Add_Extra_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210e' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210e' if generated code is required here.
 
    // [<start Add_Extra_Info_impl>]
    // [<finish Add_Extra_Info_impl>]
@@ -4260,7 +4260,7 @@ void Meta_Specification::impl::impl_Add_Field( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210f' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210f' if generated code is required here.
 
    // [<start Add_Field_impl>]
    // [<finish Add_Field_impl>]
@@ -4271,7 +4271,7 @@ void Meta_Specification::impl::impl_Add_Field_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210g' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210g' if generated code is required here.
 
    // [<start Add_Field_Info_impl>]
    // [<finish Add_Field_Info_impl>]
@@ -4282,7 +4282,7 @@ void Meta_Specification::impl::impl_Add_Field_Pair( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210h' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210h' if generated code is required here.
 
    // [<start Add_Field_Pair_impl>]
    // [<finish Add_Field_Pair_impl>]
@@ -4293,7 +4293,7 @@ void Meta_Specification::impl::impl_Add_Grandchild_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210i' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210i' if generated code is required here.
 
    // [<start Add_Grandchild_Info_impl>]
    // [<finish Add_Grandchild_Info_impl>]
@@ -4304,7 +4304,7 @@ void Meta_Specification::impl::impl_Add_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210j' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210j' if generated code is required here.
 
    // [<start Add_Info_impl>]
    // [<finish Add_Info_impl>]
@@ -4315,7 +4315,7 @@ void Meta_Specification::impl::impl_Add_Next( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210k' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210k' if generated code is required here.
 
    // [<start Add_Next_impl>]
    // [<finish Add_Next_impl>]
@@ -4326,7 +4326,7 @@ void Meta_Specification::impl::impl_Add_Opt_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210l' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210l' if generated code is required here.
 
    // [<start Add_Opt_Info_impl>]
    // [<finish Add_Opt_Info_impl>]
@@ -4337,7 +4337,7 @@ void Meta_Specification::impl::impl_Add_Other_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210m' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210m' if generated code is required here.
 
    // [<start Add_Other_Info_impl>]
    // [<finish Add_Other_Info_impl>]
@@ -4348,7 +4348,7 @@ void Meta_Specification::impl::impl_Add_Secondary( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210n' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210n' if generated code is required here.
 
    // [<start Add_Secondary_impl>]
    // [<finish Add_Secondary_impl>]
@@ -4359,7 +4359,7 @@ void Meta_Specification::impl::impl_Add_Source_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210o' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210o' if generated code is required here.
 
    // [<start Add_Source_Info_impl>]
    // [<finish Add_Source_Info_impl>]
@@ -4370,7 +4370,7 @@ void Meta_Specification::impl::impl_Add_Stats_1( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210p' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210p' if generated code is required here.
 
    // [<start Add_Stats_1_impl>]
    // [<finish Add_Stats_1_impl>]
@@ -4381,7 +4381,7 @@ void Meta_Specification::impl::impl_Add_Stats_2( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210q' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210q' if generated code is required here.
 
    // [<start Add_Stats_2_impl>]
    // [<finish Add_Stats_2_impl>]
@@ -4392,7 +4392,7 @@ void Meta_Specification::impl::impl_Add_Stats_Info( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210r' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210r' if generated code is required here.
 
    // [<start Add_Stats_Info_impl>]
    // [<finish Add_Stats_Info_impl>]
@@ -4403,7 +4403,7 @@ void Meta_Specification::impl::impl_Generate_All_Strings( string& All_Strings, c
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210s' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210s' if generated code is required here.
 
    // [<start Generate_All_Strings_impl>]
 //nyi
@@ -4471,7 +4471,7 @@ void Meta_Specification::impl::impl_Generate_All_Vars( string& All_Vars, const s
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // NOTE: Need to remove '600210t' spec if needing any generated code for this procedure.
+   // NOTE: Need to remove dummy specification '600210t' if generated code is required here.
 
    // [<start Generate_All_Vars_impl>]
 //nyi
@@ -12777,12 +12777,12 @@ string Meta_Specification::get_display_name( bool plural ) const
    return get_module_string( key );
 }
 
-string Meta_Specification::get_raw_variable( const std::string& name ) const
+string Meta_Specification::get_func_variable( const std::string& name ) const
 {
    if( name == g_state_names_variable )
       return p_impl->get_state_names( );
    else
-      return class_base::get_raw_variable( name );
+      return class_base::get_func_variable( name );
 }
 
 string Meta_Specification::get_create_instance_info( ) const

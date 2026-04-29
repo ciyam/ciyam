@@ -138,7 +138,7 @@ class Meta_Specification_Field_Action : public Meta_Specification
 
    std::string get_persistence_extra( ) const { return static_persistence_extra( ); }
 
-   std::string get_raw_variable( const std::string& name ) const;
+   std::string get_func_variable( const std::string& name ) const;
 
    std::string get_create_instance_info( ) const;
    std::string get_update_instance_info( ) const;

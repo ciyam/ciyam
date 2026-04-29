@@ -2071,12 +2071,12 @@ string Meta_Enum_Item::get_display_name( bool plural ) const
    return get_module_string( key );
 }
 
-string Meta_Enum_Item::get_raw_variable( const std::string& name ) const
+string Meta_Enum_Item::get_func_variable( const std::string& name ) const
 {
    if( name == g_state_names_variable )
       return p_impl->get_state_names( );
    else
-      return class_base::get_raw_variable( name );
+      return class_base::get_func_variable( name );
 }
 
 string Meta_Enum_Item::get_create_instance_info( ) const
