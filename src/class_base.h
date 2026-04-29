@@ -29,8 +29,6 @@ class numeric;
 class date_time;
 class class_base;
 
-struct sql_data;
-
 const char* const c_key_field = "@key";
 
 const char* const c_group_field = "@group";
@@ -43,6 +41,11 @@ const char* const c_date_today = "@today";
 const char* const c_date_tomorrow = "@tomorrow";
 
 const char* const c_object_variable_skip_fk_handling = "@skip_fk_handling";
+
+struct sql_data;
+
+struct var_name;
+struct expression;
 
 struct class_cascade;
 struct class_pointer_base;
@@ -179,6 +182,8 @@ struct class_cascade
    struct impl;
    impl* p_impl;
 };
+
+void init_class_base( );
 
 class class_base
 {
@@ -371,11 +376,15 @@ class class_base
 
    inline const std::string& get_graph_parent_fk_field( ) const { return graph_parent_fk_field; }
 
-   virtual std::string get_raw_variable( const std::string& name ) const;
-
    bool has_variable( const std::string& name ) const;
 
-   std::string get_variable( const std::string& name_or_expr ) const;
+   std::string get_variable( const var_name& var ) const;
+   std::string get_variable( const expression& expr ) const;
+
+   inline std::string get_raw_variable( const std::string& ) const { return std::string( ); }
+
+   virtual std::string get_func_variable( const std::string& name ) const;
+
    void set_variable( const std::string& name, const std::string& value );
 
    bool has_field_changed( int field ) const;
@@ -781,7 +790,7 @@ struct class_variable_getter : variable_getter
 {
    class_variable_getter( const class_base& cb ) : cb( cb ) { }
 
-   std::string get_value( const std::string& name ) const { return cb.get_raw_variable( name ); }
+   std::string get_value( const std::string& name ) const;
 
    const class_base& cb;
 };
@@ -892,19 +901,9 @@ struct variable_expression
 
 struct temporary_object_variable
 {
-   temporary_object_variable( class_base& cb, const std::string& name, const std::string& value )
-    :
-    cb( cb ),
-    name( name )
-   {
-      original_value = cb.get_raw_variable( name );
-      cb.set_variable( name, value );
-   }
+   temporary_object_variable( class_base& cb, const std::string& name, const std::string& value );
 
-   ~temporary_object_variable( )
-   {
-      cb.set_variable( name, original_value );
-   }
+   ~temporary_object_variable( );
 
    class_base& cb;
 

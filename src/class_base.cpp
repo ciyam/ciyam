@@ -177,6 +177,8 @@ map< string, string > g_daylight_names;
 
 trace_mutex g_mutex;
 
+set< string > g_func_only_names;
+
 map< string, pair< int, map< string, string > > > g_class_maps;
 
 void keep_first_or_final_num_chars( string& s, int num_chars )
@@ -734,6 +736,11 @@ void class_base::impl::release_fk_locks( )
 void perform_lazy_fetch( class_base* p_class_base )
 {
    p_class_base->perform_lazy_fetch( );
+}
+
+void init_class_base( )
+{
+   g_func_only_names.insert( get_special_var_name( e_special_var_state_names ) );
 }
 
 class_base::class_base( )
@@ -1647,26 +1654,55 @@ bool class_base::has_field_changed( int field ) const
    return has_changed;
 }
 
-string class_base::get_raw_variable( const string& name ) const
-{
-   return p_impl->variables[ name ];
-}
-
 bool class_base::has_variable( const string& name ) const
 {
    return p_impl->variables.count( name );
 }
 
-string class_base::get_variable( const string& name_or_expr ) const
+string class_base::get_variable( const var_name& var ) const
+{
+   string name( var.name );
+
+   string retval;
+
+   if( !name.empty( ) )
+   {
+      // NOTE: Use the "get_func_variable"
+      // virtual function only if the name
+      // is found in "g_func_only_names".
+      if( g_func_only_names.count( name ) )
+         retval = get_func_variable( name );
+      else
+         retval = p_impl->variables[ name ];
+   }
+
+   return retval;
+}
+
+string class_base::get_variable( const expression& expr ) const
 {
    class_variable_getter class_getter( *this );
-   variable_expression expr( name_or_expr, class_getter );
 
-   return expr.get_value( );
+   variable_expression var_expr( expr.expr, class_getter );
+
+   return var_expr.get_value( );
+}
+
+string class_base::get_func_variable( const string& name ) const
+{
+   string retval;
+
+   if( p_impl->variables.count( name ) )
+      retval = p_impl->variables[ name ];
+
+   return retval;
 }
 
 void class_base::set_variable( const string& name, const string& value )
 {
+   if( g_func_only_names.count( name ) )
+      throw runtime_error( "invalid attempt to set func only variable '" + name + "'" );
+
    if( value.empty( ) )
    {
       if( p_impl->variables.count( name ) )
@@ -1980,7 +2016,7 @@ void class_base::destroy( )
       TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "=== begin cascade [class: "
        + get_class_name( ) + " (" + get_class_id( ) + "), key = " + get_key( ) + "] ===" );
 
-      if( !get_raw_variable( get_special_var_name( e_special_var_progress ) ).empty( ) )
+      if( !get_variable( e_special_var_progress ).empty( ) )
          output_progress = true;
 
       string pass_unlink( "unlink" );
@@ -2690,7 +2726,7 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
    // is created in the "after_store" function needs to be linked to the creating
    // parent's record. The variable is immediately cleared to ensure that it will
    // not accidently be left set (so needs to be set before each such usage).
-   if( !get_raw_variable( c_object_variable_skip_fk_handling ).empty( ) )
+   if( !get_variable( c_object_variable_skip_fk_handling ).empty( ) )
    {
       skip_fk_handling = true;
 
@@ -2818,6 +2854,26 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
 
    if( rc == e_instance_check_rc_okay )
       key = new_key_value;
+}
+
+string class_variable_getter::get_value( const string& name ) const
+{
+   return cb.get_variable( name );
+}
+
+temporary_object_variable::temporary_object_variable( class_base& cb, const std::string& name, const std::string& value )
+ :
+ cb( cb ),
+ name( name )
+{
+   original_value = cb.get_variable( name );
+
+   cb.set_variable( name, value );
+}
+
+temporary_object_variable::~temporary_object_variable( )
+{
+   cb.set_variable( name, original_value );
 }
 
 struct unique_items_object_variable::impl
