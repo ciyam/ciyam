@@ -5081,6 +5081,8 @@ void init_globals( const char* p_sid, int* p_use_udp )
          }
       }
 
+      init_class_base( );
+
       check_timezone_info( );
 
       set_system_variable( e_special_var_os, "Linux", true );
@@ -14429,8 +14431,7 @@ bool fetch_instance_from_db( class_base& instance,
 
             instance_accessor.after_fetch_from_db( );
 
-            string skip_after_fetch_var(
-             instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
+            string skip_after_fetch_var( instance.get_variable( e_special_var_skip_after_fetch ) );
 
             if( ( skip_after_fetch_var == c_true ) || ( skip_after_fetch_var == c_true_value ) )
                ; // i.e. do nothing
@@ -14523,8 +14524,7 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
 
    if( found && !sys_only_fields )
    {
-      string skip_after_fetch_var(
-       instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
+      string skip_after_fetch_var( instance.get_variable( e_special_var_skip_after_fetch ) );
 
       if( skip_after_fetch_var == c_true || skip_after_fetch_var == c_true_value )
          ; // i.e. do nothing

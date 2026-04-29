@@ -5037,8 +5037,7 @@ bool perform_instance_iterate( class_base& instance,
 
       bool skip_after_fetch = false;
 
-      string skip_after_fetch_var(
-       instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
+      string skip_after_fetch_var( instance.get_variable( e_special_var_skip_after_fetch ) );
 
       if( ( skip_after_fetch_var == c_true ) || ( skip_after_fetch_var == c_true_value ) )
          skip_after_fetch = true;
@@ -5351,8 +5350,7 @@ bool perform_instance_iterate_next( class_base& instance )
 
          bool skip_after_fetch = false;
 
-         string skip_after_fetch_var(
-          instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
+         string skip_after_fetch_var( instance.get_variable( e_special_var_skip_after_fetch ) );
 
          if( ( skip_after_fetch_var == c_true ) || ( skip_after_fetch_var == c_true_value ) )
             skip_after_fetch = true;
@@ -5363,7 +5361,7 @@ bool perform_instance_iterate_next( class_base& instance )
 
    string loop_var_name( get_special_var_name( e_special_var_loop ) );
 
-   int loop_num = atoi( instance.get_raw_variable( loop_var_name ).c_str( ) );
+   int loop_num = atoi( instance.get_variable( loop_var_name ).c_str( ) );
 
    instance.set_variable( loop_var_name, to_comparable_string( ++loop_num, false, c_loop_variable_digits ) );
 
