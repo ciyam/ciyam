@@ -152,6 +152,13 @@ system_variable xxx "" yyy
 system_variable xxx
 system_variable xxx "" zzz
 system_variable xxx
+system_variable xxx -has
+system_variable xxx yyy
+system_variable xxx -has
+system_variable xxx
+system_variable xxx ""
+system_variable xxx -has
+system_variable xxx
 session_restrict abc "session_variable"
 system_variable xxx
 session_variable xxx

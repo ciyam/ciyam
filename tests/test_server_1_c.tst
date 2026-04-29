@@ -275,6 +275,17 @@ zzz
 system_variable xxx "" zzz
 1
 system_variable xxx
+system_variable xxx -has
+0
+system_variable xxx yyy
+system_variable xxx -has
+1
+system_variable xxx
+yyy
+system_variable xxx ""
+system_variable xxx -has
+0
+system_variable xxx
 session_restrict abc "session_variable"
 system_variable xxx
 Error: command 'system_variable' is not currently permitted

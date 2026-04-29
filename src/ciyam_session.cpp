@@ -7870,6 +7870,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_system_variable )
       {
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) );
+         bool has_found = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_found );
          bool has_value = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_value );
          string value( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_value ) );
          bool has_current = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_current );
@@ -7877,7 +7878,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          possibly_expected_error = true;
 
-         if( has_value )
+         if( has_found )
+         {
+            if( has_system_variable( name_or_expr ) )
+               response = c_true_value;
+            else
+               response = c_false_value;
+         }
+         else if( has_value )
          {
             string null_value( get_special_var_name( e_special_var_null ) );
 

@@ -83,7 +83,7 @@ session_lock "capture/release one or more sessions" {<opt/-capture/capture>|{<op
 session_wait|wait "wait for a number of milliseconds" [<opt/-lock/lock>][<opt/-no_progress/no_progress>]<val//milliseconds>[<val//message>]
 session_timeout "get/set server session timeout" [<val//seconds>]
 session_restrict "set/clear restricted protocol command list" <val//key>[<olist//commands>]
-session_variable|var "get/set a session variable" [<val/-id=/session_id>|<opt/-num_found/num_found>]<val//name_or_expr>[<oval//value>][<oval//current>]
+session_variable|var "get/set a session variable or num matching sessions" [<val/-id=/session_id>|<opt/-num_found/num_found>]<val//name_or_expr>[<oval//value>][<oval//current>]
 session_terminate|quit "terminate session"
 session_rpc_unlock "unlock full RPC access for a session" <val//password>[<val//seconds>]
 starttls|tls "start TLS session"
@@ -131,7 +131,7 @@ system_passtotp|passtotp "retrieve a TOTP system password" <val//secret>
 system_password|password "retrieve an encrypted system password" <val//name>
 system_schedule|schedule "display system autoscript schedule" [<opt/-reload/reload>][<opt/-from_now/from_now>]
 system_sendmail|sendmail "send a simple test system email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_name>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
-system_variable|variable "get/set a system variable" <val//name_or_expr>[<oval//value>][<oval//current>]
+system_variable|variable "get/has/set a system variable" <val//name_or_expr>[<opt/-has/found>|{<oval//value>[<oval//current>]}]
 system_checkmail|checkmail "check for incoming email or process system email script calls" [<opt/-script/create_script>|<list//headers>]
 system_externals|externals "display a list of system external services"
 system_listeners|listeners "display a list of all current system listeners"
