@@ -698,9 +698,9 @@ void init_special_variable_names( )
    set_system_is_for_devt( );
 }
 
-void touch_or_remove( const string& var_name, bool remove )
+void touch_or_remove( const string& variable, bool remove )
 {
-   string file_name( c_hidden_file_prefix + var_name.substr( 1 ) );
+   string file_name( c_hidden_file_prefix + variable.substr( 1 ) );
 
    if( remove )
       file_remove( file_name );
@@ -708,44 +708,44 @@ void touch_or_remove( const string& var_name, bool remove )
       file_touch( file_name, 0, true );
 }
 
-void set_file_var_name( const string& var_name )
+void set_file_variable( const string& variable )
 {
-   string file_name( c_hidden_file_prefix + var_name.substr( 1 ) );
+   string file_name( c_hidden_file_prefix + variable.substr( 1 ) );
 
    if( file_exists( file_name ) )
-      g_variables[ var_name ] = c_true_value;
-   else if( g_variables.count( var_name ) )
-      g_variables.erase( var_name );
+      g_variables[ variable ] = c_true_value;
+   else if( g_variables.count( variable ) )
+      g_variables.erase( variable );
 }
 
 void set_backup_needed( bool check = true )
 {
-   string var_name( c_special_variable_backup_needed );
+   string variable( c_special_variable_backup_needed );
 
    if( !check )
-      touch_or_remove( var_name, true );
+      touch_or_remove( variable, true );
 
-   set_file_var_name( var_name );
+   set_file_variable( variable );
 }
 
 void set_restore_needed( bool check = true )
 {
-   string var_name( c_special_variable_restore_needed );
+   string variable( c_special_variable_restore_needed );
 
    if( !check )
-      touch_or_remove( var_name, true );
+      touch_or_remove( variable, true );
 
-   set_file_var_name( var_name );
+   set_file_variable( variable );
 }
 
 void set_generate_hub_block( bool check = true )
 {
-   string var_name( c_special_variable_generate_hub_block );
+   string variable( c_special_variable_generate_hub_block );
 
    if( !check )
-      touch_or_remove( var_name, true );
+      touch_or_remove( variable, true );
 
-   set_file_var_name( var_name );
+   set_file_variable( variable );
 }
 
 void set_ods_cache_hit_ratios( )
@@ -755,45 +755,45 @@ void set_ods_cache_hit_ratios( )
 
 void set_prepare_backup_needed( bool check = true )
 {
-   string var_name( c_special_variable_prepare_backup_needed );
+   string variable( c_special_variable_prepare_backup_needed );
 
    if( !check )
-      touch_or_remove( var_name, true );
+      touch_or_remove( variable, true );
 
-   set_file_var_name( var_name );
+   set_file_variable( variable );
 }
 
 void set_complete_restore_needed( bool check = true )
 {
-   string var_name( c_special_variable_complete_restore_needed );
+   string variable( c_special_variable_complete_restore_needed );
 
    if( !check )
-      touch_or_remove( var_name, true );
+      touch_or_remove( variable, true );
 
-   set_file_var_name( var_name );
+   set_file_variable( variable );
 }
 
-void check_system_variable_can_be_set( const string& var_name )
+void check_system_variable_can_be_set( const string& variable )
 {
    bool okay = true;
 
-   if( ( var_name == c_special_variable_os )
-    || ( var_name == c_special_variable_peer_port )
-    || ( var_name == c_special_variable_sid_locked )
-    || ( var_name == c_special_variable_sid_secure )
-    || ( var_name == c_special_variable_ip_ext_addr )
-    || ( var_name == c_special_variable_backup_files )
-    || ( var_name == c_special_variable_opened_files )
-    || ( var_name == c_special_variable_shared_files )
-    || ( var_name == c_special_variable_system_identity )
-    || ( var_name == c_special_variable_system_is_for_demo )
-    || ( var_name == c_special_variable_system_is_for_devt ) )
+   if( ( variable == c_special_variable_os )
+    || ( variable == c_special_variable_peer_port )
+    || ( variable == c_special_variable_sid_locked )
+    || ( variable == c_special_variable_sid_secure )
+    || ( variable == c_special_variable_ip_ext_addr )
+    || ( variable == c_special_variable_backup_files )
+    || ( variable == c_special_variable_opened_files )
+    || ( variable == c_special_variable_shared_files )
+    || ( variable == c_special_variable_system_identity )
+    || ( variable == c_special_variable_system_is_for_demo )
+    || ( variable == c_special_variable_system_is_for_devt ) )
       okay = false;
    else
    {
       // NOTE: The following are more nuanced checks that are
       // expected to involve checking other system variables.
-      if( var_name == c_special_variable_blockchain_force_skip )
+      if( variable == c_special_variable_blockchain_force_skip )
       {
          if( !g_variables.count( c_special_variable_system_is_for_devt ) )
             okay = false;
@@ -801,20 +801,20 @@ void check_system_variable_can_be_set( const string& var_name )
    }
 
    if( !okay )
-      throw runtime_error( "invalid attempt to change system variable '" + var_name + "'" );
+      throw runtime_error( "invalid attempt to change system variable '" + variable + "'" );
 }
 
-void fetch_persistent( ods_file_system& ods_fs, const string& var_name, string& value )
+void fetch_persistent( ods_file_system& ods_fs, const string& variable, string& value )
 {
-   ods_fs.fetch_from_text_file( var_name, value );
+   ods_fs.fetch_from_text_file( variable, value );
 
    // NOTE: If is a "@secret_hash_<suffix>" variable
    // then the value stored was XORed using the hash
    // of the variable name (just to make it a little
    // more difficult to easily discover this value).
-   if( var_name.find( g_secret_hash_prefix ) == 0 )
+   if( variable.find( g_secret_hash_prefix ) == 0 )
    {
-      sha256 hash( var_name + c_secret_hash_suffix );
+      sha256 hash( variable + c_secret_hash_suffix );
 
       string xor_hash( hash.get_digest_as_string( ) );
 
@@ -822,7 +822,7 @@ void fetch_persistent( ods_file_system& ods_fs, const string& var_name, string& 
 
       if( length != xor_hash.length( ) )
          throw runtime_error( "unexpected length = "
-          + to_string( length ) + " for var_name '" + var_name + "' in fetch_persistent" );
+          + to_string( length ) + " for variable '" + variable + "' in fetch_persistent" );
 
       for( size_t i = 0; i < length; i++ )
       {
@@ -834,14 +834,14 @@ void fetch_persistent( ods_file_system& ods_fs, const string& var_name, string& 
    }
 }
 
-void store_persistent( ods_file_system& ods_fs, const string& var_name, const string& value )
+void store_persistent( ods_file_system& ods_fs, const string& variable, const string& value )
 {
    string final_value( value );
 
    // NOTE: See the note above.
-   if( var_name.find( g_secret_hash_prefix ) == 0 )
+   if( variable.find( g_secret_hash_prefix ) == 0 )
    {
-      sha256 hash( var_name + c_secret_hash_suffix );
+      sha256 hash( variable + c_secret_hash_suffix );
 
       string xor_hash( hash.get_digest_as_string( ) );
 
@@ -849,7 +849,7 @@ void store_persistent( ods_file_system& ods_fs, const string& var_name, const st
 
       if( length != xor_hash.length( ) )
          throw runtime_error( "unexpected length = "
-          + to_string( length ) + " for var_name '" + var_name + "' in store_persistent" );
+          + to_string( length ) + " for variable '" + variable + "' in store_persistent" );
 
       for( size_t i = 0; i < length; i++ )
       {
@@ -860,7 +860,7 @@ void store_persistent( ods_file_system& ods_fs, const string& var_name, const st
       }
    }
 
-   ods_fs.store_as_text_file( var_name, final_value );
+   ods_fs.store_as_text_file( variable, final_value );
 }
 
 }
@@ -938,6 +938,17 @@ bool has_system_variable( const var_name& var )
 
    string name( var.name );
 
+   if( name == c_special_variable_backup_needed )
+      set_backup_needed( );
+   else if( name == c_special_variable_restore_needed )
+      set_restore_needed( );
+   else if( name == c_special_variable_generate_hub_block )
+      set_generate_hub_block( );
+   else if( name == c_special_variable_prepare_backup_needed )
+      set_prepare_backup_needed( );
+   else if( name == c_special_variable_complete_restore_needed )
+      set_complete_restore_needed( );
+
    return g_variables.count( name );
 }
 
@@ -948,12 +959,13 @@ string get_system_variable( const var_name& var, bool is_internal )
    string name( var.name );
 
    string retval;
-   string var_name( name );
+
+   string variable( name );
 
    bool had_persist_prefix = false;
    bool had_restore_prefix = false;
 
-   if( !var_name.empty( ) )
+   if( !variable.empty( ) )
    {
       if( name[ 0 ] == c_persist_variable_prefix )
          had_persist_prefix = true;
@@ -961,7 +973,7 @@ string get_system_variable( const var_name& var, bool is_internal )
          had_restore_prefix = true;
 
       if( had_persist_prefix || had_restore_prefix )
-         var_name.erase( 0, 1 );
+         variable.erase( 0, 1 );
    }
 
    // NOTE: The special system variable prefix is only intended for
@@ -981,7 +993,7 @@ string get_system_variable( const var_name& var, bool is_internal )
    {
       bool output_all_persistent_variables = false;
 
-      if( var_name.empty( ) && had_persist_prefix )
+      if( variable.empty( ) && had_persist_prefix )
          output_all_persistent_variables = true;
 
       unique_ptr< ods::bulk_base > up_bulk_base;
@@ -1004,21 +1016,21 @@ string get_system_variable( const var_name& var, bool is_internal )
 
       ods_fs.set_root_folder( c_system_variables_folder );
 
-      if( !var_name.empty( ) && had_persist_prefix
-       && var_name.find_first_of( "?*" ) == string::npos )
+      if( !variable.empty( ) && had_persist_prefix
+       && variable.find_first_of( "?*" ) == string::npos )
       {
          string value;
 
-         if( g_variables.count( var_name ) )
-            value = g_variables[ var_name ];
+         if( g_variables.count( variable ) )
+            value = g_variables[ variable ];
 
          if( value.empty( ) )
          {
-            if( ods_fs.has_file( var_name ) )
-               ods_fs.remove_file( var_name );
+            if( ods_fs.has_file( variable ) )
+               ods_fs.remove_file( variable );
          }
          else
-            store_persistent( ods_fs, var_name, value );
+            store_persistent( ods_fs, variable, value );
       }
       else
       {
@@ -1026,10 +1038,10 @@ string get_system_variable( const var_name& var, bool is_internal )
 
          string expr( sys_var_prefix );
 
-         if( var_name.empty( ) || ( var_name == "*" ) )
+         if( variable.empty( ) || ( variable == "*" ) )
             expr += "*";
          else
-            expr = var_name;
+            expr = variable;
 
          ods_fs.list_files( expr, variable_files );
 
@@ -1043,7 +1055,7 @@ string get_system_variable( const var_name& var, bool is_internal )
             {
                fetch_persistent( ods_fs, next, value );
 
-               if( !var_name.empty( ) )
+               if( !variable.empty( ) )
                   g_variables[ next ] = value;
                else
                {
@@ -1077,17 +1089,17 @@ string get_system_variable( const var_name& var, bool is_internal )
          }
       }
    }
-   else if( var_name.find_first_of( "?*" ) != string::npos )
+   else if( variable.find_first_of( "?*" ) != string::npos )
    {
-      if( var_name == "*" )
-         var_name = sys_var_prefix + var_name;
+      if( variable == "*" )
+         variable = sys_var_prefix + variable;
 
       map< string, string >::const_iterator ci;
 
-      if( wildcard_match( var_name, c_special_variable_backup_needed ) )
+      if( wildcard_match( variable, c_special_variable_backup_needed ) )
          set_backup_needed( );
 
-      if( wildcard_match( var_name, c_special_variable_trace_filters ) )
+      if( wildcard_match( variable, c_special_variable_trace_filters ) )
       {
          string trace_filters( get_trace_filters( ) );
 
@@ -1097,13 +1109,13 @@ string get_system_variable( const var_name& var, bool is_internal )
             g_variables[ c_special_variable_trace_filters ] = trace_filters;
       }
 
-      if( wildcard_match( var_name, c_special_variable_restore_needed ) )
+      if( wildcard_match( variable, c_special_variable_restore_needed ) )
          set_restore_needed( );
 
-      if( wildcard_match( var_name, c_special_variable_generate_hub_block ) )
+      if( wildcard_match( variable, c_special_variable_generate_hub_block ) )
          set_generate_hub_block( );
 
-      if( wildcard_match( var_name, c_special_variable_trace_session_ids ) )
+      if( wildcard_match( variable, c_special_variable_trace_session_ids ) )
       {
          string trace_session_ids( get_trace_session_ids( ) );
 
@@ -1113,18 +1125,18 @@ string get_system_variable( const var_name& var, bool is_internal )
             g_variables[ c_special_variable_trace_session_ids ] = trace_session_ids;
       }
 
-      if( wildcard_match( var_name, c_special_variable_ods_cache_hit_ratios ) )
+      if( wildcard_match( variable, c_special_variable_ods_cache_hit_ratios ) )
          set_ods_cache_hit_ratios( );
 
-      if( wildcard_match( var_name, c_special_variable_prepare_backup_needed ) )
+      if( wildcard_match( variable, c_special_variable_prepare_backup_needed ) )
          set_prepare_backup_needed( );
 
-      if( wildcard_match( var_name, c_special_variable_complete_restore_needed ) )
+      if( wildcard_match( variable, c_special_variable_complete_restore_needed ) )
          set_complete_restore_needed( );
 
       for( ci = g_variables.begin( ); ci != g_variables.end( ); ++ci )
       {
-         if( wildcard_match( var_name, ci->first ) )
+         if( wildcard_match( variable, ci->first ) )
          {
             if( !retval.empty( ) )
                retval += "\n";
@@ -1143,7 +1155,7 @@ string get_system_variable( const var_name& var, bool is_internal )
 
       for( dci = g_deque_variables.begin( ); dci != g_deque_variables.end( ); ++dci )
       {
-         if( wildcard_match( var_name, dci->first ) )
+         if( wildcard_match( variable, dci->first ) )
          {
             if( !retval.empty( ) )
                retval += "\n";
@@ -1157,10 +1169,10 @@ string get_system_variable( const var_name& var, bool is_internal )
    }
    else
    {
-      if( var_name == c_special_variable_backup_needed )
+      if( variable == c_special_variable_backup_needed )
          set_backup_needed( );
 
-      if( var_name == c_special_variable_trace_filters )
+      if( variable == c_special_variable_trace_filters )
       {
          string trace_filters( get_trace_filters( ) );
 
@@ -1170,13 +1182,13 @@ string get_system_variable( const var_name& var, bool is_internal )
             g_variables[ c_special_variable_trace_filters ] = trace_filters;
       }
 
-      if( var_name == c_special_variable_restore_needed )
+      if( variable == c_special_variable_restore_needed )
          set_restore_needed( );
 
-      if( var_name == c_special_variable_generate_hub_block )
+      if( variable == c_special_variable_generate_hub_block )
          set_generate_hub_block( );
 
-      if( var_name == c_special_variable_trace_session_ids )
+      if( variable == c_special_variable_trace_session_ids )
       {
          string trace_session_ids( get_trace_session_ids( ) );
 
@@ -1186,43 +1198,43 @@ string get_system_variable( const var_name& var, bool is_internal )
             g_variables[ c_special_variable_trace_session_ids ] = trace_session_ids;
       }
 
-      if( var_name == c_special_variable_ods_cache_hit_ratios )
+      if( variable == c_special_variable_ods_cache_hit_ratios )
          set_ods_cache_hit_ratios( );
 
-      if( var_name == c_special_variable_prepare_backup_needed )
+      if( variable == c_special_variable_prepare_backup_needed )
          set_prepare_backup_needed( );
 
-      if( var_name == c_special_variable_complete_restore_needed )
+      if( variable == c_special_variable_complete_restore_needed )
          set_complete_restore_needed( );
 
-      if( var_name.find( c_special_variable_queue_prefix ) == 0 )
+      if( variable.find( c_special_variable_queue_prefix ) == 0 )
       {
-         if( g_deque_variables.count( var_name ) )
+         if( g_deque_variables.count( variable ) )
          {
-            if( g_deque_variables[ var_name ].size( ) )
+            if( g_deque_variables[ variable ].size( ) )
             {
-               retval = g_deque_variables[ var_name ].front( );
-               g_deque_variables[ var_name ].pop_front( );
+               retval = g_deque_variables[ variable ].front( );
+               g_deque_variables[ variable ].pop_front( );
             }
 
-            if( !g_deque_variables[ var_name ].size( ) )
-               g_deque_variables.erase( var_name );
+            if( !g_deque_variables[ variable ].size( ) )
+               g_deque_variables.erase( variable );
          }
       }
-      else if( g_variables.count( var_name ) )
+      else if( g_variables.count( variable ) )
       {
-         retval = g_variables[ var_name ];
+         retval = g_variables[ variable ];
 
          // NOTE: After fetching "@command" will erase its value (as this is
          // not intended to be visible like other standard system variables).
-         if( var_name == c_special_variable_cmd )
+         if( variable == c_special_variable_cmd )
             g_variables.erase( c_special_variable_cmd );
          else if( !is_internal )
-            truncate_value_for_secret_hash_prefixed_name( var_name, retval );
+            truncate_value_for_secret_hash_prefixed_name( variable, retval );
       }
       else if( name == c_special_variable_none )
          retval = " ";
-      else if( var_name == c_special_variable_files_area_path )
+      else if( variable == c_special_variable_files_area_path )
          retval = c_ciyam_files_directory;
    }
 
@@ -1414,13 +1426,13 @@ void set_system_variable( const var_name& var,
             throw runtime_error( "invalid system variable name '" + name.substr( from ) + "'" );
       }
 
-      string var_name( !persist ? name : name.substr( 1 ) );
+      string variable( !persist ? name : name.substr( 1 ) );
 
       if( val == string( c_special_variable_increment )
        || val == string( c_special_variable_decrement ) )
       {
-         int num_value = !g_variables.count( var_name )
-          ? 0 : from_string< int >( g_variables[ var_name ] );
+         int num_value = !g_variables.count( variable )
+          ? 0 : from_string< int >( g_variables[ variable ] );
 
          if( val == string( c_special_variable_increment ) )
             ++num_value;
@@ -1433,43 +1445,43 @@ void set_system_variable( const var_name& var,
             val = to_string( num_value );
       }
 
-      string::size_type pos = var_name.find_first_of( "?*" );
+      string::size_type pos = variable.find_first_of( "?*" );
 
       // NOTE: All "@queue_" prefixed variables are handled with
       // deques and their values cannot currently be persisted.
-      if( var_name.find( c_special_variable_queue_prefix ) == 0 )
+      if( variable.find( c_special_variable_queue_prefix ) == 0 )
       {
          if( persist )
             throw runtime_error( "cannot persist '" + string( c_special_variable_queue_prefix ) + "' prefixed variables" );
 
          if( val.empty( ) )
-            g_deque_variables.erase( var_name );
+            g_deque_variables.erase( variable );
          else
-            g_deque_variables[ var_name ].push_back( val );
+            g_deque_variables[ variable ].push_back( val );
       }
       else if( persist
-       && ( ( var_name == c_special_variable_os )
-       || ( var_name == c_special_variable_peer_port )
-       || ( var_name == c_special_variable_sid_locked )
-       || ( var_name == c_special_variable_sid_secure )
-       || ( var_name == c_special_variable_ip_ext_addr )
-       || ( var_name == c_special_variable_trace_filters )
-       || ( var_name == c_special_variable_log_files_path )
-       || ( var_name == c_special_variable_files_area_path )
-       || ( var_name == c_special_variable_trace_session_ids )
-       || ( var_name == c_special_variable_generate_hub_block )
-       || ( var_name == c_special_variable_disallow_connections )
-       || ( var_name == c_special_variable_ods_cache_hit_ratios )
-       || ( var_name == c_special_variable_complete_restore_needed ) ) )
-         throw runtime_error( "cannot persist variable '" + var_name + "'" );
+       && ( ( variable == c_special_variable_os )
+       || ( variable == c_special_variable_peer_port )
+       || ( variable == c_special_variable_sid_locked )
+       || ( variable == c_special_variable_sid_secure )
+       || ( variable == c_special_variable_ip_ext_addr )
+       || ( variable == c_special_variable_trace_filters )
+       || ( variable == c_special_variable_log_files_path )
+       || ( variable == c_special_variable_files_area_path )
+       || ( variable == c_special_variable_trace_session_ids )
+       || ( variable == c_special_variable_generate_hub_block )
+       || ( variable == c_special_variable_disallow_connections )
+       || ( variable == c_special_variable_ods_cache_hit_ratios )
+       || ( variable == c_special_variable_complete_restore_needed ) ) )
+         throw runtime_error( "cannot persist variable '" + variable + "'" );
       else if( pos != string::npos )
       {
          if( persist )
-            throw runtime_error( "cannot persist wildcard variables for '" + var_name + "'" );
+            throw runtime_error( "cannot persist wildcard variables for '" + variable + "'" );
 
          vector< string > vars_to_change;
 
-         string prefix( var_name.substr( 0, pos ) );
+         string prefix( variable.substr( 0, pos ) );
 
          map< string, string >::iterator vi = g_variables.begin( );
 
@@ -1478,7 +1490,7 @@ void set_system_variable( const var_name& var,
 
          for( ; vi != g_variables.end( ); ++vi )
          {
-            if( wildcard_match( var_name, vi->first ) )
+            if( wildcard_match( variable, vi->first ) )
             {
                vars_to_change.push_back( vi->first );
 
@@ -1501,27 +1513,27 @@ void set_system_variable( const var_name& var,
       }
       else
       {
-         if( val.empty( ) && ( var_name == string( c_special_variable_files_area_path ) ) )
+         if( val.empty( ) && ( variable == string( c_special_variable_files_area_path ) ) )
             val = string( c_ciyam_files_directory );
 
          if( !is_init )
-            check_system_variable_can_be_set( var_name );
+            check_system_variable_can_be_set( variable );
 
          if( !val.empty( ) )
-            g_variables[ var_name ] = val;
+            g_variables[ variable ] = val;
          else
          {
-            if( g_variables.count( var_name ) )
-               g_variables.erase( var_name );
+            if( g_variables.count( variable ) )
+               g_variables.erase( variable );
          }
       }
 
-      if( var_name == string( c_special_variable_log_files_path ) )
+      if( variable == string( c_special_variable_log_files_path ) )
       {
          if( !is_init )
             set_log_files_path( val );
       }
-      else if( var_name == string( c_special_variable_files_area_path ) )
+      else if( variable == string( c_special_variable_files_area_path ) )
       {
          if( !is_init )
          {
@@ -1544,7 +1556,7 @@ void set_system_variable( const var_name& var,
             TRACE_LOG( TRACE_MINIMAL, "*** switched files area over from '" + from + "' to '" + val + "' ***" );
          }
       }
-      else if( var_name == string( c_special_variable_ods_cache_hit_ratios ) )
+      else if( variable == string( c_special_variable_ods_cache_hit_ratios ) )
          system_ods_instance( ).clear_cache_statistics( );
 
       if( persist )
@@ -1556,9 +1568,9 @@ void set_system_variable( const var_name& var,
          system_ods_file_system( ).set_root_folder( c_system_variables_folder );
 
          if( !val.empty( ) )
-            store_persistent( system_ods_file_system( ), var_name, val );
-         else if( system_ods_file_system( ).has_file( var_name ) )
-            system_ods_file_system( ).remove_file( var_name );
+            store_persistent( system_ods_file_system( ), variable, val );
+         else if( system_ods_file_system( ).has_file( variable ) )
+            system_ods_file_system( ).remove_file( variable );
       }
    }
 }
