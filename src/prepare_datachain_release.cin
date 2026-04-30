@@ -68,7 +68,9 @@ CIYAM_USE_IMPLICIT_STRIP=1
 ;
 .file_core -header bc.$IDENTITY.zenith h
 @ifndef $ERROR
-~echo -n "$OUTPUT" >.%RELEASE%_release
+HEIGHT=$OUTPUT
+#New height for datachain $IDENTITY ($RELEASE) is $HEIGHT.
+~echo -n "$HEIGHT" >.%RELEASE%_release
 @endif
 ;
 @endif

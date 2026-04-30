@@ -646,7 +646,7 @@ else
 fi
 
 if [ "$show_restore_message" = "1" ]; then
- echo "NOTE: Unlock the system identity and restore the $CIYAM_APP_MOD application."
+ echo "NOTE: Restart the CIYAM service then unlock its system identity and restore the $CIYAM_APP_MOD application."
 fi
 
 cd ..
