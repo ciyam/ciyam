@@ -179,6 +179,8 @@ trace_mutex g_mutex;
 
 set< string > g_func_only_names;
 
+string g_attached_file_name_path;
+
 map< string, pair< int, map< string, string > > > g_class_maps;
 
 void keep_first_or_final_num_chars( string& s, int num_chars )
@@ -200,8 +202,7 @@ void keep_first_or_final_num_chars( string& s, int num_chars )
 
 const string& attached_file_path_var_name( )
 {
-   static string s( get_special_var_name( e_special_var_attached_file_path ) );
-   return s;
+   return g_attached_file_name_path;
 }
 
 void deconstruct_original_identity( class_base& cb, string& module_id, string& class_id )
@@ -284,6 +285,7 @@ string get_mask( int numeric_digits, int numeric_decimals,
       while( pos > 3 )
       {
          mask.insert( pos - 2, "," );
+
          pos -= 3;
       }
    }
@@ -365,6 +367,7 @@ string decode_text( const string& encoding, const string& charset, const string&
    else if( ( encoding == "b" ) || ( encoding == "base64" ) )
    {
       vector< string > lines;
+
       raw_split( data, lines, '\n' );
 
       decoded = base64::decode( raw_join( lines ) );
@@ -741,6 +744,8 @@ void perform_lazy_fetch( class_base* p_class_base )
 void init_class_base( )
 {
    g_func_only_names.insert( get_special_var_name( e_special_var_state_names ) );
+
+   g_attached_file_name_path = get_special_var_name( e_special_var_attached_file_path );
 }
 
 class_base::class_base( )
@@ -855,6 +860,7 @@ void class_base::op_update( const string& key, const string& fields, op_update_r
          if( rc == e_instance_fetch_rc_not_found )
          {
             *p_rc = e_op_update_rc_not_found;
+
             return;
          }
       }
@@ -933,6 +939,7 @@ void class_base::op_destroy( const string& key, op_destroy_rc* p_rc, bool is_int
          if( rc == e_instance_fetch_rc_not_found )
          {
             *p_rc = e_op_destroy_rc_not_found;
+
             return;
          }
       }
@@ -1056,8 +1063,8 @@ bool class_base::is_valid( bool is_internal, set< string >* p_fields_set )
 
    string extra;
 
-   // NOTE: Skips the "post_init" call if is performing "secondary validation".
-   if( !has_variable( get_special_var_name( e_special_var_secondary_validation ) ) )
+   // NOTE: Skips "post_init" if performing "secondary validation".
+   if( !has_variable( e_special_var_secondary_validation ) )
    {
       call_post_init = true;
 
@@ -1142,6 +1149,7 @@ void class_base::begin_review( const string& key, begin_review_rc* p_rc )
          if( rc == e_instance_fetch_rc_not_found )
          {
             *p_rc = e_begin_review_rc_not_found;
+
             return;
          }
       }
@@ -1349,58 +1357,58 @@ void class_base::set_instance( const string& key )
 
 bool class_base::get_is_for_peer( ) const
 {
-   return get_graph_root( )->has_variable( get_special_var_name( e_special_var_identity ) );
+   return get_graph_root( )->has_variable( e_special_var_identity );
 }
 
 string class_base::get_peer_identity( ) const
 {
-   return get_graph_root( )->get_variable( get_special_var_name( e_special_var_identity ) );
+   return get_graph_root( )->get_variable( e_special_var_identity );
 }
 
 string class_base::get_local_folder( ) const
 {
-   return get_variable( get_special_var_name( e_special_var_local_folder ) );
+   return get_variable( e_special_var_local_folder );
 }
 
 string class_base::get_local_origin( ) const
 {
-   return get_variable( get_special_var_name( e_special_var_local_origin ) );
+   return get_variable( e_special_var_local_origin );
 }
 
 string class_base::get_local_prefix( ) const
 {
-   return get_variable( get_special_var_name( e_special_var_local_prefix ) );
+   return get_variable( e_special_var_local_prefix );
 }
 
 void class_base::set_is_for_peer( const string& identity )
 {
-   get_graph_root( )->set_variable( get_special_var_name( e_special_var_identity ), identity );
+   get_graph_root( )->set_variable( e_special_var_identity, identity );
 
-   // NOTE: Set object variables to prevent operations that would require reading other peer records.
-   set_variable( get_special_var_name( e_special_var_skip_parent_updates ), c_true_value );
-   set_variable( get_special_var_name( e_special_var_skip_total_child_field_in_parent ), c_true_value );
+   // NOTE: Prevent operations that would require reading other records.
+   set_variable( e_special_var_skip_parent_updates, c_true_value );
+   set_variable( e_special_var_skip_total_child_field_in_parent, c_true_value );
 }
 
 void class_base::set_local_info( const string& folder, const string& origin, const string& prefix )
 {
-   set_variable( get_special_var_name( e_special_var_local_folder ), folder );
-   set_variable( get_special_var_name( e_special_var_local_origin ), origin );
-   set_variable( get_special_var_name( e_special_var_local_prefix ), prefix );
+   set_variable( e_special_var_local_folder, folder );
+   set_variable( e_special_var_local_origin, origin );
+   set_variable( e_special_var_local_prefix, prefix );
 }
 
 void class_base::set_local_folder( const std::string& folder )
 {
-   set_variable( get_special_var_name( e_special_var_local_folder ), folder );
+   set_variable( e_special_var_local_folder, folder );
 }
 
 void class_base::set_local_origin( const std::string& origin )
 {
-   set_variable( get_special_var_name( e_special_var_local_origin ), origin );
+   set_variable( e_special_var_local_origin, origin );
 }
 
 void class_base::set_local_prefix( const std::string& prefix )
 {
-   set_variable( get_special_var_name( e_special_var_local_prefix ), prefix );
+   set_variable( e_special_var_local_prefix, prefix );
 }
 
 void class_base::copy_all_field_values( const class_base& src )
@@ -1415,7 +1423,7 @@ void class_base::copy_all_field_values( const class_base& src )
    {
       // NOTE: If either the source or destination is in a "minimal update" then only copy
       // those fields that have been fetched (otherwise fields can incorrectly be changed).
-      if( ( op != e_op_type_update
+      if( ( ( op != e_op_type_update )
        || ( utype != e_update_type_minimal )
        || fetch_field_names.count( get_field_name( i ) ) )
        && ( ( src.op != e_op_type_update )
@@ -1474,6 +1482,7 @@ string class_base::get_validation_errors( validation_errors_type type )
    {
       if( !retval.empty( ) )
          retval += '\n';
+
       retval += vei->second;
 
       if( type == e_validation_errors_type_first_only )
@@ -1610,6 +1619,7 @@ int class_base::get_graph_depth( ) const
    while( p_next )
    {
       ++depth;
+
       p_next = p_next->p_graph_parent;
    }
 
@@ -1624,6 +1634,7 @@ class_base* class_base::get_graph_root( )
    while( p_next )
    {
       p_last = p_next;
+
       p_next = p_next->p_graph_parent;
    }
 
@@ -1638,6 +1649,7 @@ const class_base* class_base::get_graph_root( ) const
    while( p_next )
    {
       p_last = p_next;
+
       p_next = p_next->p_graph_parent;
    }
 
@@ -1648,15 +1660,16 @@ bool class_base::has_field_changed( int field ) const
 {
    bool has_changed = true;
 
-   if( field < original_values.size( ) && original_values[ field ] == get_field_value( field ) )
+   if( ( field < original_values.size( ) )
+    && ( original_values[ field ] == get_field_value( field ) ) )
       has_changed = false;
 
    return has_changed;
 }
 
-bool class_base::has_variable( const string& name ) const
+bool class_base::has_variable( const var_name& var ) const
 {
-   return p_impl->variables.count( name );
+   return p_impl->variables.count( var.name );
 }
 
 string class_base::get_variable( const var_name& var ) const
@@ -1670,7 +1683,8 @@ string class_base::get_variable( const var_name& var ) const
       // NOTE: Use the "get_func_variable"
       // virtual function only if the name
       // is found in "g_func_only_names".
-      if( g_func_only_names.count( name ) )
+      if( ( name[ 0 ] == '@' )
+       && g_func_only_names.count( name ) )
          retval = get_func_variable( name );
       else
          retval = p_impl->variables[ name ];
@@ -1688,18 +1702,13 @@ string class_base::get_variable( const expression& expr ) const
    return var_expr.get_value( );
 }
 
-string class_base::get_func_variable( const string& name ) const
+void class_base::set_variable( const var_name& var, const string& value )
 {
-   string retval;
+   string name( var.name );
 
-   if( p_impl->variables.count( name ) )
-      retval = p_impl->variables[ name ];
+   if( name.empty( ) )
+      throw runtime_error( "unexpected empty name found in class_base::set_variable" );
 
-   return retval;
-}
-
-void class_base::set_variable( const string& name, const string& value )
-{
    if( g_func_only_names.count( name ) )
       throw runtime_error( "invalid attempt to set func only variable '" + name + "'" );
 
@@ -1715,6 +1724,16 @@ void class_base::set_variable( const string& name, const string& value )
       else
          p_impl->variables.insert( make_pair( name, value ) );
    }
+}
+
+string class_base::get_func_variable( const string& name ) const
+{
+   string retval;
+
+   if( p_impl->variables.count( name ) )
+      retval = p_impl->variables[ name ];
+
+   return retval;
 }
 
 bool class_base::needs_field_value( const string& field_name ) const
@@ -1784,7 +1803,7 @@ string class_base::get_fields_and_values( field_label_type label_type,
           + to_string( p_initial_field_values->size( ) ) + " but needs to be " + to_string( num_fields ) );
    }
 
-   string identity_suffix( get_system_variable( get_special_var_name( e_special_var_system_identity ) ) );
+   string identity_suffix( get_system_variable( e_special_var_system_identity ) );
 
    bool include_modified = ( include_type == e_field_include_type_modified );
    bool include_everything = ( include_type == e_field_include_type_exhaustive );
@@ -2267,7 +2286,7 @@ void class_base::set_is_executing( bool executing )
    else
       is_executing = false;
 
-   set_variable( get_special_var_name( e_special_var_executing ), value );
+   set_variable( e_special_var_executing, value );
 }
 
 void class_base::set_is_after_store( bool after_store )
@@ -2736,8 +2755,7 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
    // NOTE: Records being created for peers also will bypass FK existence checking
    // if the FK record was marked as a peer targeted record (as it will not exist).
    if( get_is_for_peer( )
-    && ( new_key_value == get_session_variable(
-    get_special_var_name( e_special_var_peer_clone_key ) ) ) )
+    && ( new_key_value == get_session_variable( e_special_var_peer_clone_key ) ) )
    {
       skip_fk_handling = true;
 
@@ -3360,7 +3378,7 @@ string get_soundex( const string& str, bool skip_prefix_specials )
 string get_notifier_files_viewed( const string& watch_root )
 {
    string watch_path( get_system_variable(
-    get_special_var_name( e_special_var_opened_files ) ) + '/' + watch_root + '/' );
+    e_special_var_opened_files ) + '/' + watch_root + '/' );
 
    string files_viewed( get_system_variable(
     c_notifier_prefix + watch_path + c_notifier_viewed_suffix ) );
@@ -3734,7 +3752,7 @@ void touch_web_file( const char* p_file_name, bool only_if_exists )
    if( p_file_name )
       file_name = string( p_file_name );
    else
-      file_name = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+      file_name = get_session_variable( e_special_var_arg1 );
 
    if( file_name.empty( ) )
       throw runtime_error( "unexpected missing file name in touch_web_file" );
@@ -3753,7 +3771,7 @@ void remove_web_file( const char* p_file_name )
    if( p_file_name )
       file_name = string( p_file_name );
    else
-      file_name = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+      file_name = get_session_variable( e_special_var_arg1 );
 
    if( file_name.empty( ) )
       throw runtime_error( "unexpected missing file name in remove_web_file" );
@@ -3837,7 +3855,7 @@ void add_user( const string* p_user_id )
    if( p_user_id )
       user_id = *p_user_id;
    else
-      user_id = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+      user_id = get_session_variable( e_special_var_arg1 );
 
    if( !user.empty( ) )
    {
@@ -4608,7 +4626,7 @@ string shared_secret( const string& identity_for_peer,
 
       clear_key( shared_secret );
 
-      set_session_variable( get_special_var_name( e_special_var_shared_secret ), "" );
+      set_session_variable( e_special_var_shared_secret, "" );
    }
 
    sha256 hash( secret );
@@ -4634,7 +4652,8 @@ bool is_own_identity( const string& identity )
 {
    bool retval = false;
 
-   string blockchain_backup_identity_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
+   string blockchain_backup_identity_name(
+    get_special_var_name( e_special_var_blockchain_backup_identity ) );
 
    string backup_identity( get_system_variable( blockchain_backup_identity_name ) );
 
@@ -4660,7 +4679,8 @@ bool is_own_identity( const string& identity )
 
       if( !retval )
       {
-         string blockchain_shared_identity_name( get_special_var_name( e_special_var_blockchain_shared_identity ) );
+         string blockchain_shared_identity_name(
+          get_special_var_name( e_special_var_blockchain_shared_identity ) );
 
          string shared_identity( get_system_variable( blockchain_shared_identity_name ) );
 
@@ -4675,7 +4695,8 @@ bool is_own_identity( const string& identity )
 
             for( size_t i = 1; i <= c_max_extras; i++ )
             {
-               string extra_identity( get_system_variable( blockchain_shared_prefix + to_string( i ) + blockchain_shared_suffix ) );
+               string extra_identity( get_system_variable(
+                blockchain_shared_prefix + to_string( i ) + blockchain_shared_suffix ) );
 
                if( identity == extra_identity )
                   retval = true;
@@ -6505,7 +6526,8 @@ bool any_session_backup_blockchains( )
 {
    bool retval = false;
 
-   string blockchain_backup_identity_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
+   string blockchain_backup_identity_name(
+    get_special_var_name( e_special_var_blockchain_backup_identity ) );
 
    string backup_identity( get_system_variable( blockchain_backup_identity_name ) );
 
@@ -6520,7 +6542,8 @@ bool any_session_backup_blockchains( )
 
       for( size_t i = 1; i <= c_max_extras; i++ )
       {
-         string extra_identity( get_system_variable( blockchain_backup_prefix + to_string( i ) + blockchain_backup_suffix ) );
+         string extra_identity( get_system_variable(
+          blockchain_backup_prefix + to_string( i ) + blockchain_backup_suffix ) );
 
          if( extra_identity.empty( ) )
             break;
@@ -6538,7 +6561,8 @@ bool any_session_backup_blockchains( )
 
 string local_backup_blockchain_status( )
 {
-   string blockchain_backup_identity_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
+   string blockchain_backup_identity_name(
+    get_special_var_name( e_special_var_blockchain_backup_identity ) );
 
    string backup_identity( get_system_variable( blockchain_backup_identity_name ) );
 
@@ -6563,8 +6587,8 @@ string local_backup_blockchain_status( )
 
          if( extra_status.find( c_ellipsis ) != string::npos )
          {
-            size_t next_backup_height = from_string< size_t >( get_system_variable(
-             get_special_var_name( e_special_var_blockchain_backup_height ) ) ) + 1;
+            size_t next_backup_height = from_string< size_t >(
+             get_system_variable( e_special_var_blockchain_backup_height ) ) + 1;
 
             // NOTE: Only set the backup sync status if an extra block exists (otherwise is just peer syncing).
             if( has_tag( c_bc_prefix + extra_identity + '.' + to_string( next_backup_height ) + c_blk_suffix ) )
@@ -6772,7 +6796,7 @@ string crypto_secret_for_sid( const string& suffix, const string& other_pubkey )
 
       clear_key( shared_secret );
 
-      set_session_variable( get_special_var_name( e_special_var_shared_secret ), "" );
+      set_session_variable( e_special_var_shared_secret, "" );
    }
 
    encrypt_data( secret, secret );

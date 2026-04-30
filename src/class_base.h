@@ -376,16 +376,14 @@ class class_base
 
    inline const std::string& get_graph_parent_fk_field( ) const { return graph_parent_fk_field; }
 
-   bool has_variable( const std::string& name ) const;
+   bool has_variable( const var_name& var ) const;
 
    std::string get_variable( const var_name& var ) const;
    std::string get_variable( const expression& expr ) const;
 
-   inline std::string get_raw_variable( const std::string& ) const { return std::string( ); }
+   void set_variable( const var_name& var, const std::string& value );
 
    virtual std::string get_func_variable( const std::string& name ) const;
-
-   void set_variable( const std::string& name, const std::string& value );
 
    bool has_field_changed( int field ) const;
 
