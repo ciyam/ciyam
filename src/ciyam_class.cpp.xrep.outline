@@ -2308,11 +2308,9 @@ void `{`$full_class_name`}::impl::completed_fetch( bool skip_set_original )
    ( void )state;
 
 `{`(`?`$permission_field`)`&`!`@eq`(`$permission_field`,`'`'`)\
-   get_obj( ).set_variable(
-    get_special_var_name( e_special_var_permission ), get_obj( ).`{`$permission_field`}( ) );
+   get_obj( ).set_variable( e_special_var_permission, get_obj( ).`{`$permission_field`}( ) );
 `}`{`(`?`$permissions_field`)`&`!`@eq`(`$permissions_field`,`'`'`)\
-   get_obj( ).set_variable(
-    get_special_var_name( e_special_var_permissions ), get_obj( ).`{`$permissions_field`}( ) );
+   get_obj( ).set_variable( e_special_var_permissions, get_obj( ).`{`$permissions_field`}( ) );
 `}`{`?`$all_completed_fetch_specifications`[`$all_completed_fetch_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'append_opts_for_iter`'`)`&`@eq`(`$specification_\0_completed_fetch`,`'true`'`)\
 `{`#append_opts_for_iter.spec.xrep section=completed_fetch class_name=$class_name module_name=$module_name\

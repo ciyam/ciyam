@@ -765,8 +765,7 @@ void system_identity_progress_message( const string& identity, bool is_preparing
          identity_progress_message += c_ellipsis;
       }
 
-      string time_value( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_time_value ) ) );
+      string time_value( get_session_variable( e_special_var_blockchain_time_value ) );
 
       // NOTE: Display a "checking" message if likely
       // to still be reading the initial peer status.
@@ -1364,7 +1363,7 @@ void set_hub_system_variable_if_required( const string& identity, const string& 
       if( !hub_genesis_hash.empty( ) )
          set_system_variable( ">@" + identity, hub_genesis_hash );
       else
-         set_system_variable( get_special_var_name( e_special_var_queue_hub_users ), identity );
+         set_system_variable( e_special_var_queue_hub_users, identity );
    }
 }
 

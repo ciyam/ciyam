@@ -106,8 +106,7 @@ void verify_block( const string& content, bool check_dependents )
                num_tree_items = from_string< size_t >(
                 next_attribute.substr( strlen( c_file_type_core_block_header_num_items_prefix ) ) );
 
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_num_tree_items ), to_string( num_tree_items ) );
+               set_session_variable( e_special_var_blockchain_num_tree_items, to_string( num_tree_items ) );
 
                continue;
             }
@@ -117,7 +116,7 @@ void verify_block( const string& content, bool check_dependents )
 
                stream_cipher = next_attribute.substr( strlen( c_file_type_core_block_header_stream_cipher_prefix ) );
 
-               set_session_variable( get_special_var_name( e_special_var_blockchain_stream_cipher ), stream_cipher );
+               set_session_variable( e_special_var_blockchain_stream_cipher, stream_cipher );
 
                continue;
             }
@@ -127,7 +126,7 @@ void verify_block( const string& content, bool check_dependents )
 
                targeted_identity = next_attribute.substr( strlen( c_file_type_core_block_header_targeted_ident_prefix ) );
 
-               set_session_variable( get_special_var_name( e_special_var_blockchain_targeted_identity ), targeted_identity );
+               set_session_variable( e_special_var_blockchain_targeted_identity, targeted_identity );
 
                continue;
             }
@@ -149,7 +148,7 @@ void verify_block( const string& content, bool check_dependents )
 
             block_height = from_string< uint64_t >( value );
 
-            set_session_variable( get_special_var_name( e_special_var_blockchain_height ), value );
+            set_session_variable( e_special_var_blockchain_height, value );
          }
          else if( !has_identity )
          {
@@ -176,9 +175,9 @@ void verify_block( const string& content, bool check_dependents )
       if( !has_stream_cipher )
       {
          if( !block_height )
-            set_session_variable( get_special_var_name( e_special_var_blockchain_stream_cipher ), "" );
+            set_session_variable( e_special_var_blockchain_stream_cipher, "" );
          else
-            set_session_variable( get_special_var_name( e_special_var_blockchain_stream_cipher ), stream_cipher_string( ) );
+            set_session_variable( e_special_var_blockchain_stream_cipher, stream_cipher_string( ) );
       }
 
       if( identity.length( ) != c_bc_identity_length )
@@ -259,8 +258,7 @@ void verify_block( const string& content, bool check_dependents )
 
             string primary_pubkey_hash( hex_encode( base64::decode( next_attribute.substr( 0, pos ) ) ) );
 
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), primary_pubkey_hash );
+            set_session_variable( e_special_var_blockchain_primary_pubkey_hash, primary_pubkey_hash );
 
             if( pos != string::npos )
             {
@@ -272,8 +270,7 @@ void verify_block( const string& content, bool check_dependents )
 
                string secondary_pubkey_hash( hex_encode( base64::decode( next_attribute.substr( 0, pos ) ) ) );
 
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
+               set_session_variable( e_special_var_blockchain_secondary_pubkey_hash, secondary_pubkey_hash );
 
                if( pos != string::npos )
                {
@@ -283,8 +280,7 @@ void verify_block( const string& content, bool check_dependents )
 
                   string tertiary_pubkey_hash( hex_encode( base64::decode( next_attribute ) ) );
 
-                  set_session_variable(
-                   get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ), tertiary_pubkey_hash );
+                  set_session_variable( e_special_var_blockchain_tertiary_pubkey_hash, tertiary_pubkey_hash );
                }
             }
          }
@@ -306,8 +302,7 @@ void verify_block( const string& content, bool check_dependents )
 
                hind_hash = hex_encode( base64::decode( next_attribute ) );
 
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_hind_hash ), hind_hash );
+               set_session_variable( e_special_var_blockchain_hind_hash, hind_hash );
 
                continue;
             }
@@ -329,8 +324,7 @@ void verify_block( const string& content, bool check_dependents )
                if( check_dependents && !has_file( op_list_hash ) )
                   throw runtime_error( "op list file '" + op_list_hash + "' not found" );
 
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_op_list_hash ), op_list_hash );
+               set_session_variable( e_special_var_blockchain_op_list_hash, op_list_hash );
 
                continue;
             }
@@ -352,8 +346,7 @@ void verify_block( const string& content, bool check_dependents )
                if( check_dependents && !has_file( tree_root_hash ) )
                   throw runtime_error( "tree root file '" + tree_root_hash + "' not found" );
 
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_tree_root_hash ), tree_root_hash );
+               set_session_variable( e_special_var_blockchain_tree_root_hash, tree_root_hash );
 
                continue;
             }
@@ -459,22 +452,19 @@ void verify_block( const string& content, bool check_dependents )
             if( check_dependents && !has_file( public_key_hash ) )
                throw runtime_error( "public key file '" + public_key_hash + "' not found" );
 
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), public_key_hash );
+            set_session_variable( e_special_var_blockchain_primary_pubkey_hash, public_key_hash );
 
             if( public_key_hashes.size( ) > 1 )
             {
                string secondary_pubkey_hash( hex_encode( base64::decode( public_key_hashes[ 1 ] ) ) );
 
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
+               set_session_variable( e_special_var_blockchain_secondary_pubkey_hash, secondary_pubkey_hash );
 
                if( public_key_hashes.size( ) > 2 )
                {
                   string tertiary_pubkey_hash( hex_encode( base64::decode( public_key_hashes[ 2 ] ) ) );
 
-                  set_session_variable(
-                   get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ), tertiary_pubkey_hash );
+                  set_session_variable( e_special_var_blockchain_tertiary_pubkey_hash, tertiary_pubkey_hash );
                }
             }
          }
@@ -493,8 +483,7 @@ void verify_block( const string& content, bool check_dependents )
                throw runtime_error( "unexpected unix time value less than prior '"
                 + blockchain_identity + "' value at height " + to_string( block_height - 1 ) );
 
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_unix_time ), next_attribute );
+            set_session_variable( e_special_var_blockchain_unix_time, next_attribute );
          }
          else
             throw runtime_error( "unexpected extraneous block attribute '" + next_attribute + "'" );
@@ -855,8 +844,7 @@ void decrypt_pulled_peer_file( const string& dest_hash,
          file_data = extract_file( src_hash, "", 0, 0, &type_and_extra, &is_encrypted, true );
    }
 
-   string stream_cipher( get_session_variable(
-    get_special_var_name( e_special_var_blockchain_stream_cipher ) ) );
+   string stream_cipher( get_session_variable( e_special_var_blockchain_stream_cipher ) );
 
    if( stream_cipher.empty( ) )
    {

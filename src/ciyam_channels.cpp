@@ -322,7 +322,7 @@ void storage_channel_document_restore( const string& identity_path )
       if( is_standard )
          throw runtime_error( "invalid non-peerchain storage '" + name + "' for storage_channel_document_restore" );
 
-      string opened_files_path( get_system_variable( get_special_var_name( e_special_var_opened_files ) ) );
+      string opened_files_path( get_system_variable( e_special_var_opened_files ) );
 
       if( identity_path.find( opened_files_path ) != 0 )
          throw runtime_error( "unexpected identity_path '" + identity_path + "' in storage_channel_document_restore" );
@@ -544,10 +544,10 @@ void storage_channel_create( const char* p_identity, const char* p_channel_infor
       identity = string( p_identity );
    else
    {
-      identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+      identity = get_session_variable( e_special_var_arg1 );
 
       if( identity.empty( ) )
-         identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+         identity = get_session_variable( e_special_var_identity );
    }
 
    if( identity.empty( ) )
@@ -576,7 +576,7 @@ void storage_channel_create( const char* p_identity, const char* p_channel_infor
    if( p_channel_information && ( *p_channel_information != 0 ) )
       channel_information = *p_channel_information;
    else
-      channel_information = get_session_variable( get_special_var_name( e_special_var_arg2 ) );
+      channel_information = get_session_variable( e_special_var_arg2 );
 
    if( channel_information.empty( ) )
       throw runtime_error( "channel information not found for 'storage_channel_create'" );
@@ -607,10 +607,10 @@ void storage_channel_destroy( const char* p_identity )
       identity = string( p_identity );
    else
    {
-      identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+      identity = get_session_variable( e_special_var_arg1 );
 
       if( identity.empty( ) )
-         identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+         identity = get_session_variable( e_special_var_identity );
    }
 
    if( identity.empty( ) )
@@ -644,10 +644,10 @@ void storage_channel_update( const char* p_identity, const char* p_channel_infor
       identity = string( p_identity );
    else
    {
-      identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+      identity = get_session_variable( e_special_var_arg1 );
 
       if( identity.empty( ) )
-         identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+         identity = get_session_variable( e_special_var_identity );
    }
 
    if( identity.empty( ) )
@@ -658,7 +658,7 @@ void storage_channel_update( const char* p_identity, const char* p_channel_infor
    if( p_channel_information && ( *p_channel_information != 0 ) )
       channel_information = *p_channel_information;
    else
-      channel_information = get_session_variable( get_special_var_name( e_special_var_arg2 ) );
+      channel_information = get_session_variable( e_special_var_arg2 );
 
    if( channel_information.empty( ) )
       throw runtime_error( "channel information not found for 'storage_channel_update'" );
@@ -767,10 +767,10 @@ void storage_channel_documents_open( const char* p_identity )
       identity = string( p_identity );
    else
    {
-      identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+      identity = get_session_variable( e_special_var_arg1 );
 
       if( identity.empty( ) )
-         identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+         identity = get_session_variable( e_special_var_identity );
    }
 
    if( identity.empty( ) )
@@ -905,10 +905,10 @@ void storage_channel_documents_close( const char* p_identity )
       identity = string( p_identity );
    else
    {
-      identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+      identity = get_session_variable( e_special_var_arg1 );
 
       if( identity.empty( ) )
-         identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+         identity = get_session_variable( e_special_var_identity );
    }
 
    if( identity.empty( ) )
@@ -919,13 +919,11 @@ void storage_channel_documents_close( const char* p_identity )
 
    ofs.set_folder( identity );
 
-   string path( get_system_variable(
-    get_special_var_name( e_special_var_opened_files ) ) + '/' + identity );
+   string path( get_system_variable( e_special_var_opened_files ) + '/' + identity );
 
    ods::transaction ods_tx( ods_db );
 
-   string prefix( get_system_variable(
-    get_special_var_name( e_special_var_opened_files ) ) + '/' + identity + '/' );
+   string prefix( get_system_variable( e_special_var_opened_files ) + '/' + identity + '/' );
 
    ofs.set_folder( c_channel_folder_ciyam );
 
@@ -1102,8 +1100,7 @@ bool storage_channel_documents_marked( const string& identity )
 
       if( has_system_variable( opened_variable_name ) )
       {
-         string prefix( get_system_variable(
-          get_special_var_name( e_special_var_opened_files ) ) + '/' + identity + '/' );
+         string prefix( get_system_variable( e_special_var_opened_files ) + '/' + identity + '/' );
 
          string all_selected;
 
@@ -1189,8 +1186,7 @@ bool storage_channel_documents_opened( const string& identity )
                set_system_variable( get_special_var_name(
                 e_special_var_opened_user ) + '_' + identity, user );
 
-               temporary_session_variable tmp_style_full_blown(
-                get_special_var_name( e_special_var_style_full_blown ), c_true_value );
+               temporary_session_variable tmp_style_full_blown( e_special_var_style_full_blown, c_true_value );
 
                set_system_variable( prefix + c_channel_readme_file, string( 1, c_notifier_ignore_char ) );
 
@@ -1803,10 +1799,10 @@ void storage_channel_documents_cancel_pending( const char* p_identity )
       identity = string( p_identity );
    else
    {
-      identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+      identity = get_session_variable( e_special_var_arg1 );
 
       if( identity.empty( ) )
-         identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+         identity = get_session_variable( e_special_var_identity );
    }
 
    if( identity.empty( ) )
@@ -1853,10 +1849,10 @@ void storage_channel_documents_reject_waiting( const char* p_identity, const cha
       identity = string( p_identity );
    else
    {
-      identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+      identity = get_session_variable( e_special_var_arg1 );
 
       if( identity.empty( ) )
-         identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+         identity = get_session_variable( e_special_var_identity );
    }
 
    if( identity.empty( ) )
@@ -1868,10 +1864,10 @@ void storage_channel_documents_reject_waiting( const char* p_identity, const cha
       file_list_for_rejection = string( p_file_list_for_rejection );
    else
    {
-      file_list_for_rejection = get_session_variable( get_special_var_name( e_special_var_arg2 ) );
+      file_list_for_rejection = get_session_variable( e_special_var_arg2 );
 
       if( file_list_for_rejection.empty( ) )
-         file_list_for_rejection = get_session_variable( get_special_var_name( e_special_var_file_list ) );
+         file_list_for_rejection = get_session_variable( e_special_var_file_list );
    }
 
    if( file_list_for_rejection.empty( ) )
@@ -1967,10 +1963,10 @@ void storage_channel_documents_reject_reviewing( const char* p_identity, const c
       identity = string( p_identity );
    else
    {
-      identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+      identity = get_session_variable( e_special_var_arg1 );
 
       if( identity.empty( ) )
-         identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+         identity = get_session_variable( e_special_var_identity );
    }
 
    if( identity.empty( ) )
@@ -1982,10 +1978,10 @@ void storage_channel_documents_reject_reviewing( const char* p_identity, const c
       file_list_for_rejection = string( p_file_list_for_rejection );
    else
    {
-      file_list_for_rejection = get_session_variable( get_special_var_name( e_special_var_arg2 ) );
+      file_list_for_rejection = get_session_variable( e_special_var_arg2 );
 
       if( file_list_for_rejection.empty( ) )
-         file_list_for_rejection = get_session_variable( get_special_var_name( e_special_var_file_list ) );
+         file_list_for_rejection = get_session_variable( e_special_var_file_list );
    }
 
    if( file_list_for_rejection.empty( ) )
@@ -2089,10 +2085,10 @@ void storage_channel_documents_approve_waiting( const char* p_identity, const ch
       identity = string( p_identity );
    else
    {
-      identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+      identity = get_session_variable( e_special_var_arg1 );
 
       if( identity.empty( ) )
-         identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+         identity = get_session_variable( e_special_var_identity );
    }
 
    if( identity.empty( ) )
@@ -2104,10 +2100,10 @@ void storage_channel_documents_approve_waiting( const char* p_identity, const ch
       file_list_for_approval = string( p_file_list_for_approval );
    else
    {
-      file_list_for_approval = get_session_variable( get_special_var_name( e_special_var_arg2 ) );
+      file_list_for_approval = get_session_variable( e_special_var_arg2 );
 
       if( file_list_for_approval.empty( ) )
-         file_list_for_approval = get_session_variable( get_special_var_name( e_special_var_file_list ) );
+         file_list_for_approval = get_session_variable( e_special_var_file_list );
    }
 
    if( file_list_for_approval.empty( ) )
@@ -2211,10 +2207,10 @@ void storage_channel_documents_approve_reviewing( const char* p_identity, const 
       identity = string( p_identity );
    else
    {
-      identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+      identity = get_session_variable( e_special_var_arg1 );
 
       if( identity.empty( ) )
-         identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+         identity = get_session_variable( e_special_var_identity );
    }
 
    if( identity.empty( ) )
@@ -2226,10 +2222,10 @@ void storage_channel_documents_approve_reviewing( const char* p_identity, const 
       file_list_for_approval = string( p_file_list_for_approval );
    else
    {
-      file_list_for_approval = get_session_variable( get_special_var_name( e_special_var_arg2 ) );
+      file_list_for_approval = get_session_variable( e_special_var_arg2 );
 
       if( file_list_for_approval.empty( ) )
-         file_list_for_approval = get_session_variable( get_special_var_name( e_special_var_file_list ) );
+         file_list_for_approval = get_session_variable( e_special_var_file_list );
    }
 
    if( file_list_for_approval.empty( ) )

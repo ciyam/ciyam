@@ -1445,8 +1445,7 @@ void fetch_keys_from_local_storage( class_base& instance,
    if( !origin.empty( ) )
       start_from = expr + origin;
 
-   string suffix( instance.get_variable(
-    get_special_var_name( e_special_var_local_suffix ) ) );
+   string suffix( instance.get_variable( e_special_var_local_suffix ) );
 
    if( suffix.empty( ) )
       expr += "*";
@@ -2298,7 +2297,7 @@ string exec_bulk_ops( const string& module,
          {
             class_base& instance( get_class_base_from_handle( handle, "" ) );
 
-            instance.set_variable( get_special_var_name( e_special_var_fixed_field_values ), fixed_field_values );
+            instance.set_variable( e_special_var_fixed_field_values, fixed_field_values );
          }
 
          if( export_fields == "*" )
@@ -4100,7 +4099,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
           && !blockchain_backup_height.empty( ) )
          {
             if( ( blockchain_backup_height != c_false_value )
-             || is_null( instance.get_variable( get_special_var_name( e_special_var_can_omit_prepare ) ) ) )
+             || is_null( instance.get_variable( e_special_var_can_omit_prepare ) ) )
             {
                string prepare_var_name( get_special_var_name( e_special_var_prepare_backup_needed ) );
 
@@ -4255,8 +4254,8 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             string names;
             string values;
 
-            if( !second.empty( ) && !instance.get_variable(
-             get_special_var_name( e_special_var_display_last_two_for_duplicate ) ).empty( ) )
+            if( !second.empty( )
+             && !instance.get_variable( e_special_var_display_last_two_for_duplicate ).empty( ) )
             {
                values += instance.get_field_value( instance.get_field_num( second ) );
                values += ',';
@@ -4745,8 +4744,7 @@ bool perform_instance_iterate( class_base& instance,
 
          // NOTE: Fixed info can be provided either through an object variable
          // or by the "add_extra_field_info" virtual function in "class_base".
-         string fixed_field_values( instance.get_variable(
-          get_special_var_name( e_special_var_fixed_field_values ) ) );
+         string fixed_field_values( instance.get_variable( e_special_var_fixed_field_values ) );
 
          string extra_order_field;
 
@@ -5065,8 +5063,7 @@ bool perform_instance_iterate( class_base& instance,
          {
             if( !instance.get_is_iterating( ) )
             {
-               instance.set_variable(
-                get_special_var_name( e_special_var_loop ),
+               instance.set_variable( e_special_var_loop,
                 to_comparable_string( 0, false, c_loop_variable_digits ) );
 
                instance_accessor.set_is_in_iteration( true, ( direction == e_iter_direction_forwards ) );

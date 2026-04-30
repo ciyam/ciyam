@@ -372,7 +372,7 @@ void ciyam_notifier::on_start( )
 
          // NOTE: Supports event testing via a special system variable.
          if( events.empty( ) )
-            events = get_system_variable( get_special_var_name( e_special_var_notifier_events ) );
+            events = get_system_variable( e_special_var_notifier_events );
 
          if( !events.empty( ) || n.has_new_events( ) )
          {
@@ -384,7 +384,7 @@ void ciyam_notifier::on_start( )
                events = ss.str( );
             }
             else
-               set_system_variable( get_special_var_name( e_special_var_notifier_events ), "" );
+               set_system_variable( e_special_var_notifier_events, "" );
 
             vector< string > all_events;
 

@@ -3863,7 +3863,7 @@ void read_server_configuration( )
       if( g_log_files_path.empty( ) )
          set_log_files_path( log_files_path );
 
-      set_system_variable( get_special_var_name( e_special_var_log_files_path ), g_log_files_path, true );
+      set_system_variable( e_special_var_log_files_path, g_log_files_path, true );
 
       int test_peer_port = atoi( reader.read_opt_attribute( c_attribute_test_peer_port, c_false_value ).c_str( ) );
 
@@ -3895,7 +3895,7 @@ void read_server_configuration( )
 
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage, c_meta_storage_name );
 
-      set_system_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
+      set_system_variable( e_special_var_storage, g_default_storage );
 
       string peer_ips_permit( reader.read_opt_attribute( c_attribute_peer_ips_permit ) );
 
@@ -3913,7 +3913,7 @@ void read_server_configuration( )
 
       string protocol_handler( reader.read_opt_attribute( c_attribute_protocol_handler, c_default_protocol_handler ) );
 
-      set_system_variable( get_special_var_name( e_special_var_protocol_handler ), protocol_handler );
+      set_system_variable( e_special_var_protocol_handler, protocol_handler );
 
       string system_variables( reader.read_opt_attribute( c_attribute_system_variables ) );
 
@@ -14903,7 +14903,7 @@ bool instance_uid_filtered( size_t handle, const string& context )
 
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
-   if( !get_session_variable( get_special_var_name( e_special_var_uid ) ).empty( )
+   if( !get_session_variable( e_special_var_uid ).empty( )
     && ( instance.get_key( ) == c_admin ) && ( instance.get_class_type( ) == 1 ) ) // i.e. user
       retval = true;
 

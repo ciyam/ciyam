@@ -555,8 +555,7 @@ void encrypt_file_buffer( const string& hash, const string& repository,
    string file_data;
    file_buffer.copy_to_string( file_data, offset, length );
 
-   string stream_cipher( get_session_variable(
-    get_special_var_name( e_special_var_stream_cipher ) ) );
+   string stream_cipher( get_session_variable( e_special_var_stream_cipher ) );
 
    stringstream ss( file_data.substr( 1 ) );
 
@@ -605,8 +604,7 @@ string transform_shared_list_info( const string& repository,
 
    split_list_items( list_data.substr( 1 ), list_items );
 
-   string archive_path( get_session_variable(
-    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+   string archive_path( get_session_variable( e_special_var_blockchain_archive_path ) );
 
    date_time dtm( date_time::standard( ) );
 
@@ -715,8 +713,7 @@ string create_repository_lists(
 
    split_list_items( file_data.substr( 1 ), list_items );
 
-   string archive_path( get_session_variable(
-    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+   string archive_path( get_session_variable( e_special_var_blockchain_archive_path ) );
 
    date_time dtm( date_time::standard( ) );
 
@@ -1070,7 +1067,7 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
 {
    string cwd( get_cwd( ) );
 
-   string files_area_path( get_system_variable( get_special_var_name( e_special_var_files_area_path ) ) );
+   string files_area_path( get_system_variable( e_special_var_files_area_path ) );
 
    set_files_area_path( files_area_path );
 
@@ -1364,7 +1361,7 @@ string current_time_stamp_tag( bool truncated, size_t days_ahead )
 
    string retval( c_time_stamp_tag_prefix );
 
-   string dummy_time_stamp( get_session_variable( get_special_var_name( e_special_var_dummy_time_stamp ) ) );
+   string dummy_time_stamp( get_session_variable( e_special_var_dummy_time_stamp ) );
 
    if( !dummy_time_stamp.empty( ) )
    {
@@ -1434,8 +1431,7 @@ bool has_file( const string& hash, bool check_is_hash, bool* p_is_in_archive )
 
    if( !hash.empty( ) )
    {
-      string archive_path( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+      string archive_path( get_session_variable( e_special_var_blockchain_archive_path ) );
 
       string file_name( construct_file_name_from_hash(
        hash, false, check_is_hash, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
@@ -1460,8 +1456,7 @@ bool is_core_file( const string& hash )
 
    multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
 
-   string archive_path( get_session_variable(
-    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+   string archive_path( get_session_variable( e_special_var_blockchain_archive_path ) );
 
    string file_name( construct_file_name_from_hash(
     hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
@@ -1486,8 +1481,7 @@ bool is_list_file( const string& hash, bool* p_is_encrypted )
 
    multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
 
-   string archive_path( get_session_variable(
-    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+   string archive_path( get_session_variable( e_special_var_blockchain_archive_path ) );
 
    string file_name( construct_file_name_from_hash(
     hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
@@ -1510,8 +1504,7 @@ bool is_encrypted_file( const string& hash, bool* p_is_list )
 
    multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
 
-   string archive_path( get_session_variable(
-    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+   string archive_path( get_session_variable( e_special_var_blockchain_archive_path ) );
 
    string file_name( construct_file_name_from_hash(
     hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
@@ -1531,8 +1524,7 @@ int64_t file_bytes( const string& hash, bool blobs_for_lists )
 {
    guard g( g_mutex );
 
-   string archive_path( get_session_variable(
-    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+   string archive_path( get_session_variable( e_special_var_blockchain_archive_path ) );
 
    string file_name( construct_file_name_from_hash(
     hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
@@ -1673,8 +1665,7 @@ string file_type_info( const string& tag_or_hash,
 
    bool rc = false;
 
-   string archive_path( get_session_variable(
-    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+   string archive_path( get_session_variable( e_special_var_blockchain_archive_path ) );
 
    hash = tag_file_hash( use_tag_or_hash, &rc );
 
@@ -2091,8 +2082,7 @@ void file_list_item_pos(
    string::size_type wpos = item_hash.find_first_of( "?*" );
 
    if( is_top_level && !repository.empty( ) )
-      set_session_variable(
-       get_special_var_name( e_special_var_repo_entry_missing ), "" );
+      set_session_variable( e_special_var_repo_entry_missing, "" );
 
    if( is_list_file( hash ) )
    {
@@ -2152,8 +2142,8 @@ void file_list_item_pos(
 
             // NOTE: If a top-level list item name begins with a '.' then any blobs below it
             // will be excluded as "hidden" if the session variable has been set accordingly.
-            if( is_top_level && !get_session_variable(
-             get_special_var_name( e_special_var_totals_exclude_hidden_blobs ) ).empty( ) )
+            if( is_top_level
+             && !get_session_variable( e_special_var_totals_exclude_hidden_blobs ).empty( ) )
             {
                if( !next_name.empty( ) && next_name[ 0 ] == '.' )
                   is_hidden = true;
@@ -2377,8 +2367,8 @@ string create_raw_file( const string& data, bool compress,
 
    bool skip_tagging = false;
 
-   if( was_existing && !get_session_variable(
-    get_special_var_name( e_special_var_skip_tagging_if_exists ) ).empty( ) )
+   if( was_existing
+    && !get_session_variable( e_special_var_skip_tagging_if_exists ).empty( ) )
       skip_tagging = true;
 
    if( !skip_tagging )
@@ -3541,8 +3531,7 @@ void crypt_file( const string& repository,
    if( has_tag( tag_or_hash ) )
       hash = tag_file_hash( tag_or_hash );
 
-   string archive_path( get_session_variable(
-    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+   string archive_path( get_session_variable( e_special_var_blockchain_archive_path ) );
 
    string file_name( construct_file_name_from_hash(
     hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
@@ -3796,8 +3785,7 @@ void crypt_file( const string& repository,
 
 void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progress, unsigned char* p_file_type )
 {
-   string archive_path( get_session_variable(
-    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+   string archive_path( get_session_variable( e_special_var_blockchain_archive_path ) );
 
    string file_name( construct_file_name_from_hash(
     hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
@@ -3828,13 +3816,11 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
 
       bool is_encrypted_password = false;
 
-      string crypt_password( get_session_variable(
-       get_special_var_name( e_special_var_repo_crypt_password ) ) );
+      string crypt_password( get_session_variable( e_special_var_repo_crypt_password ) );
 
       if( crypt_password.empty( ) )
       {
-         crypt_password = get_session_variable(
-          get_special_var_name( e_special_var_encrypted_password ) );
+         crypt_password = get_session_variable( e_special_var_encrypted_password );
 
          if( !crypt_password.empty( ) )
             is_encrypted_password = true;
@@ -3847,8 +3833,7 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
          else if( crypt_password == get_special_var_name( e_special_var_sid ) )
             get_identity( crypt_password, false, true );
 
-         string stream_cipher( get_session_variable(
-          get_special_var_name( e_special_var_stream_cipher ) ) );
+         string stream_cipher( get_session_variable( e_special_var_stream_cipher ) );
 
          stringstream ss( content.substr( 1 ) );
 
@@ -3929,8 +3914,7 @@ bool store_file( const string& hash,
 
    string archive;
 
-   string archive_path( !tag_name.empty( ) ? string( )
-    : get_session_variable( get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+   string archive_path( !tag_name.empty( ) ? string( ) : get_session_variable( e_special_var_blockchain_archive_path ) );
 
    if( !archive_path.empty( ) )
    {
@@ -4132,8 +4116,7 @@ bool store_file( const string& hash,
 
             if( !is_existing && !is_in_blacklist )
             {
-               string repository( get_system_variable(
-                get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+               string repository( get_system_variable( e_special_var_blockchain_backup_identity ) );
 
                string crypt_password;
 
@@ -4141,20 +4124,17 @@ bool store_file( const string& hash,
 
                if( !repository.empty( ) )
                {
-                  crypt_password = get_session_variable(
-                   get_special_var_name( e_special_var_repo_crypt_password ) );
+                  crypt_password = get_session_variable( e_special_var_repo_crypt_password );
 
                   if( crypt_password == get_special_var_name( e_special_var_sid ) )
                      get_identity( crypt_password, false, true );
                }
 
-               string shared_identity( get_system_variable(
-                get_special_var_name( e_special_var_blockchain_shared_identity ) ) );
+               string shared_identity( get_system_variable( e_special_var_blockchain_shared_identity ) );
 
                if( crypt_password.empty( ) && !shared_identity.empty( ) )
                {
-                  crypt_password = get_session_variable(
-                   get_special_var_name( e_special_var_encrypted_password ) );
+                  crypt_password = get_session_variable( e_special_var_encrypted_password );
 
                   if( !crypt_password.empty( ) )
                   {
@@ -4512,8 +4492,7 @@ string extract_file( const string& hash,
 {
    guard g( g_mutex );
 
-   string archive_path( get_session_variable(
-    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+   string archive_path( get_session_variable( e_special_var_blockchain_archive_path ) );
 
    string file_name( construct_file_name_from_hash(
     hash, false, archive_path.empty( ), ( archive_path.empty( ) ? 0 : &archive_path ) ) );
@@ -5211,8 +5190,7 @@ void create_raw_file_in_archive( const string& archive,
 
       // NOTE: If "@blockchain_archive_path" has been set then can avoid
       // calling "list_file_archives".
-      string archive_path( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+      string archive_path( get_session_variable( e_special_var_blockchain_archive_path ) );
 
       if( !archive_path.empty( ) )
       {
@@ -5566,8 +5544,7 @@ bool touch_file_in_archive( const string& hash, const string& archive )
    {
       // NOTE: If "@blockchain_archive_path" has been set then can avoid
       // calling "list_file_archives".
-      string archive_path( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+      string archive_path( get_session_variable( e_special_var_blockchain_archive_path ) );
 
       if( !archive_path.empty( ) )
       {
@@ -5971,8 +5948,7 @@ size_t remove_all_repository_entries( const string& repository,
    unique_ptr< temporary_session_variable > up_temp_archive_path;
 
    if( !archive_path.empty( ) )
-      up_temp_archive_path.reset( new temporary_session_variable(
-       get_special_var_name( e_special_var_blockchain_archive_path ), archive_path ) );
+      up_temp_archive_path.reset( new temporary_session_variable( e_special_var_blockchain_archive_path, archive_path ) );
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -6090,8 +6066,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
    unique_ptr< temporary_session_variable > up_temp_archive_path;
 
    if( !archive_path.empty( ) )
-      up_temp_archive_path.reset( new temporary_session_variable(
-       get_special_var_name( e_special_var_blockchain_archive_path ), archive_path ) );
+      up_temp_archive_path.reset( new temporary_session_variable( e_special_var_blockchain_archive_path, archive_path ) );
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
