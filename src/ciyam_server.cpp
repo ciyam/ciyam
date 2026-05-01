@@ -125,6 +125,7 @@ const char* const c_update_signal_file = "ciyam_base.update";
 const char* const c_restore_signal_file = "ciyam_base.restore";
 const char* const c_shutdown_signal_file = "ciyam_server.stop";
 
+const char* const c_ciyam_base = "ciyam_base";
 const char* const c_ciyam_base_lib = "ciyam_base.so";
 const char* const c_ciyam_base_lib_new = "ciyam_base.so.new";
 
@@ -376,7 +377,17 @@ int main( int argc, char* argv[ ] )
       {
          g_server_shutdown = 0;
 
-         up_dynamic_library.reset( new dynamic_library( c_ciyam_base_lib, "ciyam_base" ) );
+         // NOTE: Replace base with a new version.
+         // Need to do this here in case a restart
+         // occurs instead of an explicit update.
+         if( file_exists( c_ciyam_base_lib_new ) )
+         {
+            file_remove( c_ciyam_base_lib );
+
+            file_rename( c_ciyam_base_lib_new, c_ciyam_base_lib );
+         }
+
+         up_dynamic_library.reset( new dynamic_library( c_ciyam_base_lib, c_ciyam_base ) );
 
          fp_trace_flags fp_trace_flags_func;
          fp_trace_flags_func = ( fp_trace_flags )up_dynamic_library->bind_to_function( c_trace_flags_func_name );
@@ -738,14 +749,6 @@ int main( int argc, char* argv[ ] )
          was_restore = false;
 
          g_has_external_ip_address = false;
-
-         // NOTE: Replace base with a new version.
-         if( file_exists( c_ciyam_base_lib_new ) )
-         {
-            file_remove( c_ciyam_base_lib );
-
-            file_rename( c_ciyam_base_lib_new, c_ciyam_base_lib );
-         }
       }
    }
    catch( exception& x )
