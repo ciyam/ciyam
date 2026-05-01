@@ -667,8 +667,8 @@ struct temporary_session_variable
 
    ~temporary_session_variable( );
 
+   private:
    struct impl;
-
    impl* p_impl;
 };
 

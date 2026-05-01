@@ -2879,20 +2879,52 @@ string class_variable_getter::get_value( const string& name ) const
    return cb.get_variable( name );
 }
 
-temporary_object_variable::temporary_object_variable( class_base& cb, const std::string& name, const std::string& value )
- :
- cb( cb ),
- name( name )
+struct temporary_object_variable::impl
 {
-   original_value = cb.get_variable( name );
+   impl( class_base& cb, const var_name& var )
+    :
+    cb( cb ),
+    name( var.name )
+   {
+      original_value = cb.get_variable( name );
+   }
 
-   cb.set_variable( name, value );
+   impl( class_base& cb, const var_name& var, const string& value )
+    :
+    cb( cb ),
+    name( var.name )
+   {
+      original_value = cb.get_variable( name );
+
+      cb.set_variable( name, value );
+   }
+
+   ~impl( )
+   {
+      cb.set_variable( name, original_value );
+   }
+
+   class_base& cb;
+
+   std::string name;
+   std::string original_value;
+};
+
+temporary_object_variable::temporary_object_variable( class_base& cb, const var_name& var )
+{
+   p_impl = new impl( cb, var );
+}
+
+temporary_object_variable::temporary_object_variable( class_base& cb, const var_name& var, const std::string& value )
+{
+   p_impl = new impl( cb, var, value );
 }
 
 temporary_object_variable::~temporary_object_variable( )
 {
-   cb.set_variable( name, original_value );
+   delete p_impl;
 }
+
 
 struct unique_items_object_variable::impl
 {

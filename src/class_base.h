@@ -104,6 +104,7 @@ struct field_info
    std::string change;
 
    bool mandatory;
+
    bool is_owner_fk;
    bool is_encrypted;
    bool is_transient;
@@ -177,6 +178,7 @@ typedef search_replace_container::value_type search_replace_value_type;
 struct class_cascade
 {
    class_cascade( class_base& cb );
+
    ~class_cascade( );
 
    struct impl;
@@ -899,25 +901,27 @@ struct variable_expression
 
 struct temporary_object_variable
 {
-   temporary_object_variable( class_base& cb, const std::string& name, const std::string& value );
+   temporary_object_variable( class_base& cb, const var_name& var );
+   temporary_object_variable( class_base& cb, const var_name& var, const std::string& value );
 
    ~temporary_object_variable( );
 
-   class_base& cb;
-
-   std::string name;
-   std::string original_value;
+   private:
+   struct impl;
+   impl* p_impl;
 };
 
 struct unique_items_object_variable
 {
    unique_items_object_variable( class_base& cb, const std::string& name );
+
    ~unique_items_object_variable( );
 
    void check_unique( );
 
    bool is_unique( ) const;
 
+   private:
    struct impl;
    impl* p_impl;
 };
@@ -925,6 +929,7 @@ struct unique_items_object_variable
 struct procedure_progress
 {
    procedure_progress( size_t seconds = 10 );
+
    ~procedure_progress( );
 
    void check_progress( size_t amount );

@@ -3582,7 +3582,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             // field might have needed to be a certain value in "to_store" but has been changed by code
             // that was executed in "for_store").
             temporary_object_variable tmp_object_secondary_validation(
-             instance_accessor.get_obj( ), get_special_var_name( e_special_var_secondary_validation ), c_true_value );
+             instance_accessor.get_obj( ), e_special_var_secondary_validation, c_true_value );
 
             if( !instance.get_is_for_peer( ) && !session_skip_validation( ) && !instance.is_valid( internal_operation ) )
             {
@@ -3656,7 +3656,8 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                if( submit_type != get_special_var_name( e_special_var_none ) )
                {
-                  string submit_file( replaced( c_ui_type_submit_file, c_ui_type_repl_name, submit_type.c_str( ) ) );
+                  string submit_file( replaced(
+                   c_ui_type_submit_file, c_ui_type_repl_name, submit_type.c_str( ) ) );
 
                   file_touch( get_web_root( ) + '/' + app_dir_name + '/' + submit_file, 0, true );
                }
@@ -3679,7 +3680,8 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                   {
                      if( !group_field_name.empty( ) )
                      {
-                        string group_key_value( instance.get_field_value( instance.get_field_num( group_field_name ) ) );
+                        string group_key_value(
+                         instance.get_field_value( instance.get_field_num( group_field_name ) ) );
 
                         if( !group_key_value.empty( ) )
                            security_value = group_security_value( group_key_value );

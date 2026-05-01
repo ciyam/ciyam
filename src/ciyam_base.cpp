@@ -14707,10 +14707,9 @@ bool is_destroy_locked( class_base& instance, bool include_cascades )
 bool is_create_locked_by_own_session(
  class_base& instance, const char* p_key, bool copy_field_values, bool also_check_tx_lock_type )
 {
-   op_lock lock;
    bool rc = false;
 
-   lock = gtp_session->p_storage_handler->get_lock_info(
+   op_lock lock = gtp_session->p_storage_handler->get_lock_info(
     instance.get_lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
 
    bool is_create_locked = ( lock.type == op_lock::e_lock_type_create );
@@ -14741,10 +14740,9 @@ bool was_create_locked_by_own_session( class_base& instance, const char* p_key, 
 
 bool is_update_locked_by_own_session( class_base& instance, const char* p_key )
 {
-   op_lock lock;
    bool rc = false;
 
-   lock = gtp_session->p_storage_handler->get_lock_info(
+   op_lock lock = gtp_session->p_storage_handler->get_lock_info(
     instance.get_lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
 
    return ( lock.p_session == gtp_session ) && ( lock.type == op_lock::e_lock_type_update );
@@ -14752,10 +14750,9 @@ bool is_update_locked_by_own_session( class_base& instance, const char* p_key )
 
 bool is_destroy_locked_by_own_session( class_base& instance, const char* p_key )
 {
-   op_lock lock;
    bool rc = false;
 
-   lock = gtp_session->p_storage_handler->get_lock_info(
+   op_lock lock = gtp_session->p_storage_handler->get_lock_info(
     instance.get_lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
 
    return ( lock.p_session == gtp_session )
@@ -14764,10 +14761,9 @@ bool is_destroy_locked_by_own_session( class_base& instance, const char* p_key )
 
 bool is_update_or_destroy_locked_by_own_session( class_base& instance, const char* p_key )
 {
-   op_lock lock;
    bool rc = false;
 
-   lock = gtp_session->p_storage_handler->get_lock_info(
+   op_lock lock = gtp_session->p_storage_handler->get_lock_info(
     instance.get_lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
 
    return ( lock.p_session == gtp_session ) && ( ( lock.type == op_lock::e_lock_type_update )
@@ -14802,8 +14798,8 @@ void instance_prepare_execute( size_t handle,
       unique_ptr< temporary_object_variable > up_tmp_skip_after_fetch;
 
       if( skip_after_fetch )
-         up_tmp_skip_after_fetch.reset( new temporary_object_variable(
-          instance, get_special_var_name( e_special_var_skip_after_fetch ), c_true_value ) );
+         up_tmp_skip_after_fetch.reset(
+          new temporary_object_variable( instance, e_special_var_skip_after_fetch, c_true_value ) );
 
       instance.perform_fetch( key );
 
