@@ -15,8 +15,8 @@
     && get_obj( ).`{`$arg_fkfield`}( ).child_`{`$fk_child_name`}( ).iterate_forwards( ) )
    {
 `{`@eq`(`$arg_skip_child_updates`,`'true`'`)\
-      temporary_object_variable tmp_skip_update( get_obj( ),
-       get_special_var_name( e_special_var_skip_update ), c_true_value );
+      temporary_object_variable tmp_skip_update(
+       get_obj( ), e_special_var_skip_update, c_true_value );
 
 `}`{`@eq`(`$arg_combine_keys`,`'`'`)\
       int child_num = 0;

@@ -13,8 +13,8 @@
     && `{`@eq`(`$arg_tfistexttype`,`'1`'`)!is_null( `}get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}`} )
    {
 `{`@eq`(`$arg_skip_child_updates`,`'true`'`)\
-      temporary_object_variable tmp_skip_update( get_obj( ),
-       get_special_var_name( e_special_var_skip_update ), c_true_value );
+      temporary_object_variable tmp_skip_update(
+       get_obj( ), e_special_var_skip_update, c_true_value );
 
 `}`{`@eq`(`$arg_key_suffix`,`'`'`)\
 `{`@eq`(`$arg_tfield`,`'`'`)`|`@eq`(`$arg_use_test_field_as_suffix`,`'`'`)\

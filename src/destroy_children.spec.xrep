@@ -6,8 +6,8 @@
     && `}get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( ) )
    {
 `{`@eq`(`$arg_skip_child_updates`,`'true`'`)\
-      temporary_object_variable tmp_skip_update( get_obj( ),
-       get_special_var_name( e_special_var_skip_update ), c_true_value );
+      temporary_object_variable tmp_skip_update(
+       get_obj( ), e_special_var_skip_update, c_true_value );
 
 `}\
       do
@@ -21,8 +21,8 @@
    if( !is_null( get_obj( ).`{`$arg_tfield`}( ) ) )
    {
 `{`@eq`(`$arg_skip_child_updates`,`'true`'`)\
-      temporary_object_variable tmp_skip_update( get_obj( ),
-       get_special_var_name( e_special_var_skip_update ), c_true_value );
+      temporary_object_variable tmp_skip_update(
+       get_obj( ), e_special_var_skip_update, c_true_value );
 
 `}\
       get_obj( ).child_`{`$arg_child`}( ).op_destroy( get_obj( ).get_key( ) + "`{`$arg_separator`}" + get_obj( ).`{`$arg_tfield`}( ).get_key( ) );
