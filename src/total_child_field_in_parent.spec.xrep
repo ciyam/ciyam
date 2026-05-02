@@ -10,11 +10,11 @@
     && is_null( get_obj( ).`{`$arg_tfield`}( ) )
 `}\
 `{`@eq`(`$arg_ignore_parent_skip_updates`,`'true`'`)\
-    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_total_child_field_in_parent ) ).empty( ) )
+    && get_obj( ).get_variable( e_special_var_skip_total_child_field_in_parent ).empty( ) )
 `,\
-    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_total_child_field_in_parent ) ).empty( )
+    && get_obj( ).get_variable( e_special_var_skip_total_child_field_in_parent ).empty( )
     && ( !get_obj( ).get_graph_parent( )
-    || get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )
+    || get_obj( ).get_graph_parent( )->get_variable( e_special_var_skip_update ).empty( ) ) )
 `}\
    {
       class_base* p_parent = get_obj( ).get_graph_parent( );
@@ -101,11 +101,11 @@
 `}\
     && is_null( get_obj( ).`{`$arg_pfield`}( ) ) && get_obj( ).`{`$arg_pfield`}( ).has_changed( )
 `{`@eq`(`$arg_ignore_parent_skip_updates`,`'true`'`)\
-    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_total_child_field_in_parent ) ).empty( ) )
+    && get_obj( ).get_variable( e_special_var_skip_total_child_field_in_parent ).empty( ) )
 `,\
-    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_total_child_field_in_parent ) ).empty( )
+    && get_obj( ).get_variable( e_special_var_skip_total_child_field_in_parent ).empty( )
     && ( !get_obj( ).get_graph_parent( )
-    || get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )
+    || get_obj( ).get_graph_parent( )->get_variable( e_special_var_skip_update ).empty( ) ) )
 `}\
    {
       `{`$module_name`}_`{`$class_name`} original;
@@ -143,11 +143,11 @@
     && is_null( get_obj( ).`{`$arg_tfield`}( ) )
 `}\
 `{`@eq`(`$arg_ignore_parent_skip_updates`,`'true`'`)\
-    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_total_child_field_in_parent ) ).empty( ) )
+    && get_obj( ).get_variable( e_special_var_skip_total_child_field_in_parent ).empty( ) )
 `,\
-    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_total_child_field_in_parent ) ).empty( )
+    && get_obj( ).get_variable( e_special_var_skip_total_child_field_in_parent ).empty( )
     && ( !get_obj( ).get_graph_parent( )
-    || get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )
+    || get_obj( ).get_graph_parent( )->get_variable( e_special_var_skip_update ).empty( ) ) )
 `}\
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );

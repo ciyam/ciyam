@@ -65,7 +65,7 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}(
 `,\
    if( `{`!`@eq`(`$arg_internal_only`,`'`'`)is_internal\
 `{`!`@eq`(`$create_or_non_trigger_or_chk_or_new_or_mod_or_check_or_tfield`,`'`'`) && `}`}`{`!`@eq`(`$arg_non_trigger`,`'`'`)`{`!`@eq`(`$arg_internal_only`,`'`'`)
-    `}is_null( get_obj( ).get_variable( get_special_var_name( e_special_var_trigger ) ) )`{`!`@eq`(`$create_or_chk_or_new_or_mod_or_check_or_tfield`,`'`'`)
+    `}is_null( get_obj( ).get_variable( e_special_var_trigger ) )`{`!`@eq`(`$create_or_chk_or_new_or_mod_or_check_or_tfield`,`'`'`)
     && `}`}\
 `{`!`@eq`(`$arg_create_only`,`'`'`)is_create`{`!`@eq`(`$arg_include_clones`,`'true`'`)
     && get_obj( ).get_clone_key( ).empty( )`}`}\

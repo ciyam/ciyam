@@ -30,7 +30,7 @@
 `}`,\
       string child_key( construct_key_from_int( get_obj( ).get_key( ), get_obj( ).`{`$arg_key_suffix`}( ) ) );
 `}`{`@eq`(`$arg_append_loopval`,`'true`'`)
-      child_key += get_obj( ).get_variable( get_special_var_name( e_special_var_loop ) );
+      child_key += get_obj( ).get_variable( e_special_var_loop );
 `}`{`@eq`(`$arg_is_clone`,`'true`'`)
       child_key += " " + get_obj( ).get_key( );
 `}`{`!`@eq`(`$arg_clone_field`,`'`'`)

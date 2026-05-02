@@ -9,6 +9,7 @@
       {
 `}\
 `{`$i`}      vector< string > all;
+
 `{`$i`}      split_string( get_obj( ).`{`$arg_field`}( ), all, "`{`$arg_separator`}" );
 
 `{`!`@eq`(`$arg_clear_var`,`'`'`)\
@@ -24,8 +25,7 @@
 `{`$i`}         get_obj( ).set_variable( "`{`$arg_item_var`}", next );
 
 `}`{`@eq`(`$arg_use_loopvar`,`'true`'`)\
-`{`$i`}         get_obj( ).set_variable( get_special_var_name(
-`{`$i`}          e_special_var_loop ), construct_key_from_int( "", i + 1 ) );
+`{`$i`}         get_obj( ).set_variable( e_special_var_loop, construct_key_from_int( "", i + 1 ) );
 
 `}`}\
 `{`!`@eq`(`$arg_item_var`,`'`'`)\

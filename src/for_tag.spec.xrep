@@ -15,7 +15,7 @@
 
       get_obj( ).child_`{`$arg_tags`}( ).op_apply( );
 
-      get_obj( ).set_variable( get_special_var_name( e_special_var_return ), "{@no_send}" );
+      get_obj( ).set_variable( e_special_var_return, "{@no_send}" );
    }
    // [(finish for_tag)] `{`$arg_id`}
 `}
@@ -26,7 +26,7 @@
       get_obj( ).child_`{`$arg_tags`}( ).op_destroy( get_obj( ).`{`$arg_untag_key`}( ) );
       get_obj( ).child_`{`$arg_tags`}( ).op_apply( );
 
-      get_obj( ).set_variable( get_special_var_name( e_special_var_return ), "{@no_send}" );
+      get_obj( ).set_variable( e_special_var_return, "{@no_send}" );
    }
    // [(finish for_tag)] `{`$arg_id`}
 `}

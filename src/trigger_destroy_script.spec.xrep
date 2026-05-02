@@ -13,11 +13,9 @@
    // NOTE: Empty code block for scope purposes.
 `}\
    {
-      temporary_session_variable tmp_session_key_var(
-       get_special_var_name( e_special_var_key ), get_obj( ).get_key( ) );
+      temporary_session_variable tmp_session_key_var( e_special_var_key, get_obj( ).get_key( ) );
 `{`@eq`(`$arg_logging_errors`,`'true`'`)
-      temporary_session_variable tmp_session_errors_only(
-       get_special_var_name( e_special_var_errors_only ), c_true_value );
+      temporary_session_variable tmp_session_errors_only( e_special_var_errors_only, c_true_value );
 `}`{`!`@eq`(`$arg_field`,`'`'`)
       temporary_session_variable tmp_session_arg1_var( "`{`$script_arg1`}", get_obj( ).`{`$arg_field`}( ) );
 `}`{`!`@eq`(`$arg_ofield`,`'`'`)\

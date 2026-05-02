@@ -6,14 +6,11 @@
    // NOTE: Empty code block for scope purposes.
 `}\
    {
-      temporary_session_variable tmp_session_key_var(
-       get_special_var_name( e_special_var_key ), get_obj( ).get_key( ) );
+      temporary_session_variable tmp_session_key_var( e_special_var_key, get_obj( ).get_key( ) );
 
-      temporary_session_variable tmp_session_class_var(
-       get_special_var_name( e_special_var_class ), get_obj( ).get_class_id( ) );
+      temporary_session_variable tmp_session_class_var( e_special_var_class, get_obj( ).get_class_id( ) );
 `{`@eq`(`$arg_logging_errors`,`'true`'`)
-      temporary_session_variable tmp_session_errors_only(
-       get_special_var_name( e_special_var_errors_only ), c_true_value );
+      temporary_session_variable tmp_session_errors_only( e_special_var_errors_only, c_true_value );
 `}
 `{`@eq`(`$arg_ui_class_changing`,`'true`'`)\
       string ui_class_name( lower( get_obj( ).get_class_name( ) );

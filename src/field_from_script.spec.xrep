@@ -35,7 +35,7 @@
          if( !s.empty( ) )
             throw runtime_error( s );
       }
-      else if( get_obj( ).get_variable( get_special_var_name( e_special_var_check_if_changed ) ).empty( )
+      else if( get_obj( ).get_variable( e_special_var_check_if_changed ).empty( )
        || from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( s ) != get_obj( ).`{`$arg_field`}( ) )
       {
          temporary_session_variable tmp_session_key_var( e_special_var_key, get_obj( ).get_key( ) );

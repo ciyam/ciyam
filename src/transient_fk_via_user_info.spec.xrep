@@ -2,7 +2,7 @@
    // [(start transient_fk_via_user_info)] `{`$arg_id`}
    // NOTE: Empty code block for scope purposes.
    {
-      string user_id( get_session_variable( get_special_var_name( e_special_var_uid ) ) );
+      string user_id( get_session_variable( e_special_var_uid ) );
 
       if( !user_id.empty( ) )
       {

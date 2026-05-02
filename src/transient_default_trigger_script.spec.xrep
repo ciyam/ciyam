@@ -4,8 +4,7 @@
     && ( get_obj( ).`{`$arg_field`}( ) != g_default_`{`$arg_field`} ) )
    {
 `{`@eq`(`$arg_logging_errors`,`'true`'`)\
-      temporary_session_variable tmp_session_errors_only(
-       get_special_var_name( e_special_var_errors_only ), c_true_value );
+      temporary_session_variable tmp_session_errors_only( e_special_var_errors_only, c_true_value );
 
 `}\
       run_script( "`{`$arg_script`}", false, false, `{`@eq`(`$arg_logging_none`,`'`'`)false`,true`} );

@@ -2,7 +2,7 @@
    // [(start permit_update_always)] `{`$arg_id`}
    if( get_obj( ).get_is_updating( ) )
    {
-      string update_fields( get_obj( ).get_variable( get_special_var_name( e_special_var_update_fields ) ) );
+      string update_fields( get_obj( ).get_variable( e_special_var_update_fields ) );
 
       if( !update_fields.empty( ) )
       {

@@ -4,7 +4,7 @@
     && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
     && `}get_obj( ).has_field_changed( c_field_id_`{`$arg_field`} )`{`@eq`(`$arg_primary_only`,`'`'`) )`}
 `{`!`@eq`(`$arg_primary_only`,`'`'`)\
-    && get_obj( ).get_variable( get_special_var_name( e_special_var_secondary_validation ) ).empty( ) )
+    && get_obj( ).get_variable( e_special_var_secondary_validation ).empty( ) )
 `}\
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_`{`$arg_field`},
 `{`@eq`(`$arg_tfield`,`'`'`)\
