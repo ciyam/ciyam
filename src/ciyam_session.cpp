@@ -114,9 +114,6 @@ const char* const c_meta_module_id = "100";
 
 const char* const c_passtotp_prefix = "passtotp.";
 
-const char* const c_release_file_name = ".release";
-const char* const c_version_file_name = ".version";
-
 const char* const c_unexpected_unknown_exception = "unexpected unknown exception caught";
 
 const char* const c_log_transformation_scope_any_perform_op = "any_perform_op";
@@ -7549,8 +7546,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             string install_release( "0" );
             string install_version( "0" );
 
-            buffer_file( install_release, c_release_file_name, 0, 0, 0, false );
-            buffer_file( install_version, c_version_file_name, 0, 0, 0, false );
+            string version( get_system_variable( e_special_var_version ) );
+
+            string::size_type lpos = version.find( '.' );
+            string::size_type rpos = version.rfind( '.' );
+
+            if( lpos == rpos )
+               install_version = version;
+            else if( lpos != string::npos )
+            {
+               install_release = version.substr( rpos + 1 );
+               install_version = version.substr( 0, rpos );
+            }
 
             if( install )
                response = install_version;

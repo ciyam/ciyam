@@ -80,6 +80,7 @@ enum special_var
    e_special_var_timeout,
    e_special_var_tz_name,
    e_special_var_trigger,
+   e_special_var_version,
    e_special_var_waiting,
    e_special_var_executed,
    e_special_var_identity,

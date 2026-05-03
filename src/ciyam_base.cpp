@@ -149,6 +149,9 @@ const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
+const char* const c_release_file_name = ".release";
+const char* const c_version_file_name = ".version";
+
 const char* const c_skip_compress_file = ".skip_compress";
 
 const char* const c_check_ext_ip_addr = "check_ext_ip_addr";
@@ -4987,9 +4990,17 @@ void init_globals( const char* p_sid, int* p_use_udp )
       if( g_encrypted_identity )
          set_system_variable( e_special_var_sid_locked, c_true_value, true );
 
+      string install_release( "0" );
+      string install_version( "0.0" );
+
+      buffer_file( install_release, c_release_file_name, 0, 0, 0, false );
+      buffer_file( install_version, c_version_file_name, 0, 0, 0, false );
+
+      set_system_variable( e_special_var_version, install_version + '.' + install_release, true );
+
       read_server_configuration( );
 
-      // NOTE: Remember special read only variable names for later checks.
+      // NOTE: Remember special read only session variable names for later checks.
       g_read_only_var_names.insert( get_special_var_name( e_special_var_tls ) );
       g_read_only_var_names.insert( get_special_var_name( e_special_var_slot ) );
       g_read_only_var_names.insert( get_special_var_name( e_special_var_uuid ) );

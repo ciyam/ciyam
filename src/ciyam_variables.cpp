@@ -113,6 +113,7 @@ const char* const c_special_variable_storage = "@storage";
 const char* const c_special_variable_timeout = "@timeout";
 const char* const c_special_variable_tz_name = "@tz_name";
 const char* const c_special_variable_trigger = "@trigger";
+const char* const c_special_variable_version = "@version";
 const char* const c_special_variable_waiting = "@waiting";
 const char* const c_special_variable_executed = "@executed";
 const char* const c_special_variable_identity = "@identity";
@@ -343,6 +344,8 @@ const char* const c_special_variable_skip_total_child_field_in_parent = "@skip_t
 
 trace_mutex g_mutex;
 
+set< string > g_read_only_variables;
+
 map< string, string > g_variables;
 map< string, deque< string > > g_deque_variables;
 
@@ -463,6 +466,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_timeout );
       g_special_variable_names.push_back( c_special_variable_tz_name );
       g_special_variable_names.push_back( c_special_variable_trigger );
+      g_special_variable_names.push_back( c_special_variable_version );
       g_special_variable_names.push_back( c_special_variable_waiting );
       g_special_variable_names.push_back( c_special_variable_executed );
       g_special_variable_names.push_back( c_special_variable_identity );
@@ -695,6 +699,19 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_dummy );
    }
 
+   g_read_only_variables.insert( c_special_variable_os );
+   g_read_only_variables.insert( c_special_variable_version );
+   g_read_only_variables.insert( c_special_variable_peer_port );
+   g_read_only_variables.insert( c_special_variable_sid_locked );
+   g_read_only_variables.insert( c_special_variable_sid_secure );
+   g_read_only_variables.insert( c_special_variable_ip_ext_addr );
+   g_read_only_variables.insert( c_special_variable_backup_files );
+   g_read_only_variables.insert( c_special_variable_opened_files );
+   g_read_only_variables.insert( c_special_variable_shared_files );
+   g_read_only_variables.insert( c_special_variable_system_identity );
+   g_read_only_variables.insert( c_special_variable_system_is_for_demo );
+   g_read_only_variables.insert( c_special_variable_system_is_for_devt );
+
    set_system_is_for_devt( );
 }
 
@@ -777,17 +794,7 @@ void check_system_variable_can_be_set( const string& variable )
 {
    bool okay = true;
 
-   if( ( variable == c_special_variable_os )
-    || ( variable == c_special_variable_peer_port )
-    || ( variable == c_special_variable_sid_locked )
-    || ( variable == c_special_variable_sid_secure )
-    || ( variable == c_special_variable_ip_ext_addr )
-    || ( variable == c_special_variable_backup_files )
-    || ( variable == c_special_variable_opened_files )
-    || ( variable == c_special_variable_shared_files )
-    || ( variable == c_special_variable_system_identity )
-    || ( variable == c_special_variable_system_is_for_demo )
-    || ( variable == c_special_variable_system_is_for_devt ) )
+   if( g_read_only_variables.count( variable ) )
       okay = false;
    else
    {
@@ -801,7 +808,8 @@ void check_system_variable_can_be_set( const string& variable )
    }
 
    if( !okay )
-      throw runtime_error( "invalid attempt to change system variable '" + variable + "'" );
+      // FUTURE: This should be a module string.
+      throw runtime_error( "Invalid attempt to change read-only system variable '" + variable + "'." );
 }
 
 void fetch_persistent( ods_file_system& ods_fs, const string& variable, string& value )
