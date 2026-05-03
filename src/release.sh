@@ -209,10 +209,6 @@ else
 
   mv $main_module $release_name/ciyam
 
-  rm -f $release_name/ciyam/x.cin
-  rm -f $release_name/ciyam/xx.cin
-  rm -f $release_name/ciyam/xxx.cin
-
   rm -f $release_name/ciyam/Meta.so
 
   rm -f $release_name/ciyam/getmeta.cin
@@ -231,6 +227,12 @@ else
 
   cat $main_module.log | tail -n +2 > $release_name/ciyam/$main_module.log.app
  fi
+
+ rm -f $release_name/ciyam/x.cin
+ rm -f $release_name/ciyam/xx.cin
+ rm -f $release_name/ciyam/xxx.cin
+
+ rm -f $release_name/ciyam/create_demo_*_application.cin
 
  cp ../install $release_name
 
