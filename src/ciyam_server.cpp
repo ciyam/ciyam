@@ -127,7 +127,6 @@ const char* const c_shutdown_signal_file = "ciyam_server.stop";
 
 const char* const c_ciyam_base = "ciyam_base";
 const char* const c_ciyam_base_lib = "ciyam_base.so";
-const char* const c_ciyam_base_lib_new = "ciyam_base.so.new";
 
 const char* const c_trace_flags_func_name = "trace_flags";
 const char* const c_init_globals_func_name = "init_globals";
@@ -376,16 +375,6 @@ int main( int argc, char* argv[ ] )
       while( true )
       {
          g_server_shutdown = 0;
-
-         // NOTE: Replace base with a new version.
-         // Need to do this here in case a restart
-         // occurs instead of an explicit update.
-         if( file_exists( c_ciyam_base_lib_new ) )
-         {
-            file_remove( c_ciyam_base_lib );
-
-            file_rename( c_ciyam_base_lib_new, c_ciyam_base_lib );
-         }
 
          up_dynamic_library.reset( new dynamic_library( c_ciyam_base_lib, c_ciyam_base ) );
 

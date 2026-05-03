@@ -369,8 +369,6 @@ if [ "$has_service" = "1" ]; then
 
   if [ $? -eq 0 ]; then
    rm -f ciyam/ciyam_base.so
-  else
-   mv ciyam/ciyam_base.so ciyam/ciyam_base.so.new
   fi
  else
   sudo systemctl is-active ciyam >/dev/null
@@ -397,7 +395,7 @@ if [ "$has_service" = "1" ]; then
    sudo systemctl stop ciyam
   fi
 
-  for i in {1..20}
+  for i in {1..60}
   do
    sudo systemctl is-active ciyam >/dev/null
 
