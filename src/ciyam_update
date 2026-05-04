@@ -1,0 +1,59 @@
+#!/bin/bash
+# Copyright (c) 2026 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 1 ]; then
+ echo "Usage: ciyam_update [name]"
+else
+ NAME=$1
+
+ export CIYAM_NO_PROGRESS=1
+
+ ./ciyam_script sync_datachain_release $NAME >~ciyam_update
+
+ if grep -q "now available" ~ciyam_update; then
+  ./ciyam_script extract_datachain_release $NAME >~ciyam_update
+
+  update_log_file=ciyam_update.log
+
+  echo "$(date) [started update]" >> $update_log_file
+
+  found=
+
+  num_files=$(wc -l < ~ciyam_update)
+
+  if [ "$num_files" == "1" ]; then
+   if grep -q ".tar.gz" ~ciyam_update; then
+
+    found=1
+
+    tarball=$(<~ciyam_update)
+
+    folder=${tarball%".tar.gz"}
+
+    tar -xvzf $tarball > /dev/null
+
+    rm $tarball
+
+    pushd $folder > /dev/null
+
+    ./install >> ../$update_log_file
+
+    popd > /dev/null
+
+   fi
+  fi
+
+  if [ "$found" != "1" ]; then
+   echo "Error: Found unexpected release information." >> $update_log_file
+   cat ~ciyam_update >> $update_log_file
+  fi
+
+  echo "$(date) [finished update]" >> $update_log_file
+ fi
+
+ rm -f ~ciyam_update
+
+fi

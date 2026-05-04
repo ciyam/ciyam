@@ -4,56 +4,17 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-if [ $# -lt 1 ]; then
- echo "Usage: auto_update [name]"
-else
- NAME=$1
+if [ "$1" != "" ]; then
+ sudo systemctl is-active ciyam >/dev/null
 
- export CIYAM_NO_PROGRESS=1
+ if [ $? -eq 0 ]; then
+  locked=$(./system_variable get @sid_locked)
 
- ./ciyam_script sync_datachain_release $NAME >~auto_update
-
- if grep -q "now available" ~auto_update; then
-  ./ciyam_script extract_datachain_release $NAME >~auto_update
-
-  update_log_file=ciyam_update.log
-
-  echo "$(date) [started update]" >> $update_log_file
-
-  found=
-
-  num_files=$(wc -l < ~auto_update)
-
-  if [ "$num_files" == "1" ]; then
-   if grep -q ".tar.gz" ~auto_update; then
-
-    found=1
-
-    tarball=$(<~auto_update)
-
-    folder=${tarball%".tar.gz"}
-
-    tar -xvzf $tarball > /dev/null
-
-    rm $tarball
-
-    pushd $folder > /dev/null
-
-    ./install >> ../$update_log_file
-
-    popd > /dev/null
-
+  if [ $? -eq 0 ]; then
+   if [ "$locked" = "" ]; then
+    sudo systemd-run --property=WorkingDirectory=$PWD ./ciyam_update $1
    fi
   fi
-
-  if [ "$found" != "1" ]; then
-   echo "Error: Found unexpected release information." >> $update_log_file
-   cat ~auto_update >> $update_log_file
-  fi
-
-  echo "$(date) [finished update]" >> $update_log_file
  fi
-
- rm -f ~auto_update
 
 fi
