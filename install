@@ -523,6 +523,7 @@ needs_restore=
 if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.map ]; then
  if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.map.new ]; then
    needs_restore=1
+   export CIYAM_LOG_RESTORE=1
  fi
 else
  if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.map.new ]; then
