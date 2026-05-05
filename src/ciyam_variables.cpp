@@ -160,6 +160,7 @@ const char* const c_special_variable_auto_update = "@auto_update";
 const char* const c_special_variable_errors_only = "@errors_only";
 const char* const c_special_variable_init_log_id = "@init_log_id";
 const char* const c_special_variable_ip_ext_addr = "@ip_ext_addr";
+const char* const c_special_variable_log_restore = "@log_restore";
 const char* const c_special_variable_opened_user = "@opened_user";
 const char* const c_special_variable_output_file = "@output_file";
 const char* const c_special_variable_paired_sync = "@paired_sync";
@@ -513,6 +514,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_errors_only );
       g_special_variable_names.push_back( c_special_variable_init_log_id );
       g_special_variable_names.push_back( c_special_variable_ip_ext_addr );
+      g_special_variable_names.push_back( c_special_variable_log_restore );
       g_special_variable_names.push_back( c_special_variable_opened_user );
       g_special_variable_names.push_back( c_special_variable_output_file );
       g_special_variable_names.push_back( c_special_variable_paired_sync );
