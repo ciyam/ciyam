@@ -43,6 +43,10 @@ storage_export_data
 ;
 @ifndef $ERROR
 ;
+@ifdef $CIYAM_LOG_RESTORE
+.system_variable @log_restore 1
+@endif
+;
 @ifndef $1
 @ifdef $CIYAM_OUTPUT_COMMANDS
 #storage_restore $REBUILD $CIYAM_STORAGE
@@ -53,6 +57,10 @@ storage_export_data
 #storage_restore $REBUILD $1 $CIYAM_STORAGE
 @endif
 .storage_restore $REBUILD $1 $CIYAM_STORAGE
+@endif
+;
+@ifdef $CIYAM_LOG_RESTORE
+.system_variable @log_restore ""
 @endif
 ;
 @endif
