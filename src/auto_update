@@ -5,6 +5,10 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ "$1" != "" ]; then
+ if [ "$CIYAM_USER" = "" ]; then
+  CIYAM_USER=$USER
+ fi
+
  sudo systemctl is-active ciyam >/dev/null
 
  if [ $? -eq 0 ]; then
@@ -12,7 +16,7 @@ if [ "$1" != "" ]; then
 
   if [ $? -eq 0 ]; then
    if [ "$locked" = "" ]; then
-    sudo systemd-run --property=WorkingDirectory=$PWD ./ciyam_update $1
+    sudo systemd-run --property=WorkingDirectory=$PWD --property=Environment="USER=$CIYAM_USER" ./ciyam_update $1
    fi
   fi
  fi
