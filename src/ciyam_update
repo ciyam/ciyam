@@ -9,6 +9,10 @@ if [ $# -lt 1 ]; then
 else
  NAME=$1
 
+ if [ "$CIYAM_USER" = "" ]; then
+  CIYAM_USER=$USER
+ fi
+
  export CIYAM_NO_PROGRESS=1
 
  ./ciyam_script sync_datachain_release $NAME >~ciyam_update
