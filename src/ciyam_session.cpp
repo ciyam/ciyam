@@ -6733,7 +6733,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      session_skip_fk_fetches( old_skip_fetches );
                   }
 
-                  // NOTE: Any operation whose transaction id is less than standard is skipped during a restore.
+                  // NOTE: Any operation whose transaction id is less than
+                  // the first "standard" one is skipped during a restore.
                   if( !tran_info.empty( ) && ( tran_id >= c_tx_id_standard ) )
                   {
                      if( first_op )
@@ -6748,7 +6749,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      last_tran_id = tran_id;
 
-                     if( !is_new && tran_info[ 0 ] == ';' )
+                     if( !is_new && ( tran_info[ 0 ] == ';' ) )
                         storage_comment( tran_info.substr( 1 ) );
 
                      if( ( tran_info[ 0 ] != ';' ) && ( is_new || ( tran_id >= start_tran_id ) ) )
@@ -6782,6 +6783,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                if( is_new )
                {
+                  // NOTE: If the system variable "@log_restore" was set
+                  // then will append an "updated" log comment which has
+                  // the current system version.
+                  if( has_system_variable( e_special_var_log_restore ) )
+                     new_logf << '[' << last_tran_id << ']' << ";updated ("
+                      << get_system_variable( e_special_var_version ) << ")\n";
+
                   new_logf.flush( );
 
                   if( !new_logf.good( ) )
