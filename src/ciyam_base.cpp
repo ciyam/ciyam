@@ -11042,14 +11042,14 @@ void storage_comment( const string& comment )
       if( ( init_log_id == c_true ) || ( init_log_id == c_true_value ) )
          use_init_tx_id = true;
 
-      // NOTE: During a "restore" the comment does not need to be logged unless it follows or is a part of
-      // the initial data records (such comments prior are appended by the "storage restore" code itself).
+      // NOTE: Unless explicitly using the initial tx id will always use the the "current tx id + 1"
+      // (to prevent the use of an invalid tx when called prior to any actual standard transaction).
       if( use_init_tx_id || !storage_locked_for_admin( ) || ( identity.next_id >= c_tx_id_initial ) )
       {
          if( use_init_tx_id || ( identity.next_id == c_tx_id_initial ) )
             append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, c_tx_id_initial );
          else
-            append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id );
+            append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id + 1 );
       }
 
       if( handler.supports_sql_undo( ) )
