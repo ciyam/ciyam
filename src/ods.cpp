@@ -75,7 +75,6 @@ const char* const c_header_file_name_ext = ".hdr";
 const char* const c_tranlog_file_name_ext = ".tlg";
 
 const char* const c_sav_file_name_ext = ".sav";
-const char* const c_lock_file_name_ext = ".lck";
 
 const int c_review_max_attempts = 50;
 const int c_review_attempt_sleep_time = 100;
@@ -296,7 +295,7 @@ class log_stream : public read_write_stream
 #ifndef ODS_DEBUG
          ( void )rc;
 #else
-         if( rc != 0 ) )
+         if( rc != 0 )
          {
             ostringstream osstr;
 
@@ -1172,17 +1171,12 @@ class header_file
    bool lock( );
    void unlock( );
 
-   int get_offset( ) const { return offset; }
-
    bool is_locked_for_exclusive( ) const { return is_exclusive; }
 
    private:
    int handle;
-   int offset;
 
-   int lock_handle;
-   string lock_file_name;
-
+   bool file_locked;
    bool is_exclusive;
    bool use_sync_write;
 
@@ -1195,28 +1189,20 @@ class header_file
 header_file::header_file( const char* p_file_name, ods::write_mode w_mode, bool use_sync_write )
  :
  handle( 0 ),
- offset( -1 ),
- lock_handle( 0 ),
- lock_file_name( p_file_name ),
+ file_locked( false ),
  is_exclusive( w_mode == ods::e_write_mode_exclusive ),
  use_sync_write( use_sync_write )
 {
-   lock_file_name += c_lock_file_name_ext;
-
-   bool okay = false;
-
-#ifdef __GNUG__
-   if( w_mode == ods::e_write_mode_none )
-      okay = true;
+   if( !use_sync_write )
+      handle = _open( p_file_name, O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
    else
-   {
-      if( !use_sync_write )
-         lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
-      else
-         lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC, ODS_DEFAULT_PERMS );
+      handle = _open( p_file_name, O_RDWR | O_CREAT | O_SYNC, ODS_DEFAULT_PERMS );
 
-      if( lock_handle > 0 )
+   if( handle )
+   {
+      if( w_mode != ods::e_write_mode_none )
       {
+#ifdef __GNUG__
          if( !is_exclusive )
             file_lock.l_type = F_RDLCK;
          else
@@ -1226,76 +1212,41 @@ header_file::header_file( const char* p_file_name, ods::write_mode w_mode, bool 
          file_lock.l_start = 0;
          file_lock.l_whence = SEEK_SET;
 
-         if( fcntl( lock_handle, F_SETLK, &file_lock ) == 0 )
-            okay = true;
+         if( fcntl( handle, F_SETLK, &file_lock ) == 0 )
+            file_locked = true;
          else
          {
-            _close( lock_handle );
-            lock_handle = 0;
+            _close( handle );
+
+            handle = 0;
          }
+#else
+         throw runtime_error( "no ODS locking code for this environment has been implemented" );
+#endif
       }
    }
 
-   if( okay )
-   {
-      offset = 0;
-
-      if( !use_sync_write )
-         handle = _open( p_file_name, O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
-      else
-         handle = _open( p_file_name, O_RDWR | O_CREAT | O_SYNC, ODS_DEFAULT_PERMS );
-   }
-#endif
-
 #ifdef ODS_DEBUG
    ostringstream osstr;
-   osstr << "handle = " << handle << ", offset = " << offset << ", lock_handle = " << lock_handle;
+   osstr << "handle = " << handle << ", offset = " << offset;
    DEBUG_LOG( osstr.str( ) );
 #endif
 }
 
 header_file::~header_file( )
 {
-   if( lock_handle > 0 )
-   {
-#ifdef __GNUG__
-      file_lock.l_type = F_UNLCK;
-
-      if( fcntl( lock_handle, F_SETLK, &file_lock ) != 0 )
-         DEBUG_LOG( "unexpected fcntl failure occurred at " STRINGIZE( __LINE__ ) );
-#endif
-
-#ifndef ODS_DEBUG
-      _close( lock_handle );
-#else
-      if( _close( lock_handle ) != 0 )
-      {
-         ostringstream osstr;
-
-         osstr << "_close lock failed in ~header_file (errno = " << errno << ')';
-
-         DEBUG_LOG( osstr.str( ) );
-      }
-      else
-         DEBUG_LOG( "closed header lock file" );
-#endif
-
-      // NOTE: If was using exclusive access then can now remove all lock files.
-      if( is_exclusive )
-      {
-         file_remove( lock_file_name );
-
-         size_t ext_len = strlen( c_header_file_name_ext ) + strlen( c_lock_file_name_ext );
-
-         string file_name( lock_file_name.substr( 0, lock_file_name.length( ) - ext_len ) );
-
-         file_remove( file_name + c_data_file_name_ext + c_lock_file_name_ext );
-         file_remove( file_name + c_index_file_name_ext + c_lock_file_name_ext );
-      }
-   }
-
    if( handle > 0 )
    {
+      if( file_locked )
+      {
+#ifdef __GNUG__
+         file_lock.l_type = F_UNLCK;
+
+         if( fcntl( handle, F_SETLK, &file_lock ) != 0 )
+            DEBUG_LOG( "unexpected fcntl failure occurred at " STRINGIZE( __LINE__ ) );
+#endif
+      }
+
 #ifndef ODS_DEBUG
       _close( handle );
 #else
@@ -1322,7 +1273,7 @@ bool header_file::lock( )
 #ifdef __GNUG__
       header_lock.l_len = 1;
       header_lock.l_type = F_WRLCK;
-      header_lock.l_start = 0;
+      header_lock.l_start = 1;
       header_lock.l_whence = SEEK_SET;
 
       if( fcntl( handle, F_SETLK, &header_lock ) == 0 )
@@ -1365,13 +1316,12 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
     fname( fname ),
     read_data_handle( 0 ),
     write_data_handle( 0 ),
-    write_lock_handle( 0 ),
     use_sync_file_writes( use_sync_file_writes )
    {
 #ifdef __GNUG__
       int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( ods_data_entry_buffer ) );
 
-      if( rc != 0 || !p_data )
+      if( !p_data || ( rc != 0 ) )
          THROW_ODS_ERROR( "unexpected failure for posix_memalign" );
 #endif
    }
@@ -1387,9 +1337,6 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
 
       if( write_data_handle )
          _close( write_data_handle );
-
-      if( write_lock_handle )
-         _close( write_lock_handle );
 #else
       if( read_data_handle && _close( read_data_handle ) != 0 )
       {
@@ -1408,15 +1355,6 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
 
          DEBUG_LOG( osstr.str( ) );
       }
-
-      if( write_lock_handle && _close( write_lock_handle ) != 0 )
-      {
-         ostringstream osstr;
-
-         osstr << "_close failed for locking handle in ~ods_data_cache_buffer (errno = " << errno << ')';
-
-         DEBUG_LOG( osstr.str( ) );
-      }
 #endif
    }
 
@@ -1432,16 +1370,17 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       bool retval = false;
       guard lock_data( data_lock );
 
-      if( !write_lock_handle )
+      if( !write_data_handle )
       {
-         string lock_file_name( fname );
-         lock_file_name += c_lock_file_name_ext;
 #ifdef __GNUG__
-         write_lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+         if( !use_sync_file_writes )
+            write_data_handle = _open( fname.c_str( ), O_WRONLY | O_CREAT | O_DIRECT, ODS_DEFAULT_PERMS );
+         else
+            write_data_handle = _open( fname.c_str( ), O_WRONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
-         write_lock_handle = _sopen( lock_file_name.c_str( ), O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
+         write_data_handle = _sopen( fname.c_str( ), O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
-         if( write_lock_handle <= 0 )
+         if( write_data_handle <= 0 )
             THROW_ODS_ERROR( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
       }
 
@@ -1451,7 +1390,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       lock.l_start = start;
       lock.l_whence = SEEK_SET;
 
-      if( fcntl( write_lock_handle, F_SETLK, &lock ) == 0 )
+      if( fcntl( write_data_handle, F_SETLK, &lock ) == 0 )
          retval = true;
 #endif
 
@@ -1475,7 +1414,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
 
       lock.l_type = F_UNLCK;
 
-      if( fcntl( write_lock_handle, F_SETLK, &lock ) != 0 )
+      if( fcntl( write_data_handle, F_SETLK, &lock ) != 0 )
          THROW_ODS_ERROR( "unexpected fcntl at " STRINGIZE( __LINE__ ) " failed" );
 #endif
    }
@@ -1489,7 +1428,6 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
 
    int read_data_handle;
    int write_data_handle;
-   int write_lock_handle;
 
    bool use_sync_file_writes;
 
@@ -1525,6 +1463,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       }
 
       int64_t pos;
+
       if( ( pos = _lseek( read_data_handle, ( num * sizeof( ods_data_entry_buffer ) ), SEEK_SET ) ) < 0 )
          THROW_ODS_ERROR( "unexpected _lseek at " STRINGIZE( __LINE__ ) " failed" );
 
@@ -1595,15 +1534,13 @@ struct ods_index_entry_buffer
 class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 {
    public:
-   ods_index_cache_buffer( const string& file_name, int lock_offset,
+   ods_index_cache_buffer( const string& file_name,
     unsigned max_cache_items, unsigned items_per_region, unsigned regions_in_cache = 1,
     bool use_placement_new = true, bool allow_lazy_writes = true, bool use_sync_file_writes = false )
     :
     cache_base< ods_index_entry_buffer >( max_cache_items,
      items_per_region, regions_in_cache, use_placement_new, allow_lazy_writes ),
     file_name( file_name ),
-    lock_offset( lock_offset ),
-    lock_index_handle( 0 ),
     read_index_handle( 0 ),
     write_index_handle( 0 ),
     use_sync_file_writes( use_sync_file_writes )
@@ -1622,24 +1559,12 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       free( p_data );
 #endif
 #ifndef ODS_DEBUG
-      if( lock_index_handle )
-         _close( lock_index_handle );
-
       if( read_index_handle )
          _close( read_index_handle );
 
       if( write_index_handle )
          _close( write_index_handle );
 #else
-      if( lock_index_handle && _close( lock_index_handle ) != 0 )
-      {
-         ostringstream osstr;
-
-         osstr << "_close failed for lock handle in ~ods_index_cache_buffer (errno = " << errno << ')';
-
-         DEBUG_LOG( osstr.str( ) );
-      }
-
       if( read_index_handle && _close( read_index_handle ) != 0 )
       {
          ostringstream osstr;
@@ -1695,16 +1620,31 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 #endif
       guard lock_index( index_lock );
 
-      if( !lock_index_handle )
+      if( !is_write && !read_index_handle )
       {
-         string lock_file_name( file_name + c_lock_file_name_ext );
-
 #ifdef __GNUG__
-         lock_index_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+         if( !use_sync_file_writes )
+            read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_CREAT | O_DIRECT, ODS_DEFAULT_PERMS );
+         else
+            read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
-         lock_index_handle = _sopen( lock_file_name.c_str( ), O_BINARY | O_RDWR | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
+         read_index_handle = _sopen( file_name.c_str( ), O_BINARY | O_RDONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
-         if( lock_index_handle <= 0 )
+         if( read_index_handle <= 0 )
+            THROW_ODS_ERROR( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
+      }
+
+      if( is_write && !write_index_handle )
+      {
+#ifdef __GNUG__
+         if( !use_sync_file_writes )
+            write_index_handle = _open( file_name.c_str( ), O_WRONLY | O_CREAT | O_DIRECT, ODS_DEFAULT_PERMS );
+         else
+            write_index_handle = _open( file_name.c_str( ), O_WRONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+#else
+         write_index_handle = _sopen( file_name.c_str( ), O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
+#endif
+         if( write_index_handle <= 0 )
             THROW_ODS_ERROR( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
       }
 
@@ -1714,7 +1654,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       lock.l_start = entry_num;
       lock.l_whence = SEEK_SET;
 
-      return fcntl( lock_index_handle, F_SETLK, &lock ) == 0;
+      return fcntl( !is_write ? read_index_handle : write_index_handle, F_SETLK, &lock ) == 0;
 #endif
    }
 
@@ -1730,12 +1670,11 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       guard lock_index( index_lock );
 
 #ifdef __GNUG__
-      ( void )is_write;
       ( void )entry_num;
 
       lock.l_type = F_UNLCK;
 
-      if( fcntl( lock_index_handle, F_SETLK, &lock ) != 0 )
+      if( fcntl( !is_write ? read_index_handle : write_index_handle, F_SETLK, &lock ) != 0 )
          DEBUG_LOG( "unexpected fcntl failure occurred at " STRINGIZE( __LINE__ ) );
 #endif
    }
@@ -1744,9 +1683,6 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
    mutex index_lock;
 
    string file_name;
-
-   int lock_offset;
-   int lock_index_handle;
 
    int read_index_handle;
    int write_index_handle;
@@ -2582,9 +2518,6 @@ ods::ods(
    if( *p_impl->rp_header_file <= 0 )
       THROW_ODS_ERROR( "unable to open database header file (locked?)" );
 
-   if( p_impl->rp_header_file->get_offset( ) < 0 )
-      THROW_ODS_ERROR( "unable to acquire valid offset (max. concurrent processes active?)" );
-
    if( w_mode == e_write_mode_none )
       p_impl->is_read_only = true;
 
@@ -2770,8 +2703,8 @@ ods::ods(
     c_data_items_per_region, c_data_num_cache_regions, true, true, ( !using_tranlog && use_sync_write ) );
 
    p_impl->rp_ods_index_cache_buffer = new ods_index_cache_buffer(
-    p_impl->index_file_name, p_impl->rp_header_file->get_offset( ), c_index_max_cache_items,
-    c_index_items_per_region, c_index_num_cache_regions, true, true, ( !using_tranlog && use_sync_write ) );
+    p_impl->index_file_name, c_index_max_cache_items, c_index_items_per_region,
+    c_index_num_cache_regions, true, true, ( !using_tranlog && use_sync_write ) );
 
    unique_ptr< transaction_buffer > up_trans_buffer( new transaction_buffer );
 
