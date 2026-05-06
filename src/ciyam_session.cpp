@@ -6518,6 +6518,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                size_t new_tran_id = start_tran_id;
                size_t last_tran_id = start_tran_id;
 
+               size_t last_new_tran_id = 0;
+
                size_t tline = 0;
 
                bool is_first = true;
@@ -6754,6 +6756,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      if( ( tran_info[ 0 ] != ';' ) && ( is_new || ( tran_id >= start_tran_id ) ) )
                      {
+                        last_new_tran_id = new_tran_id;
+
                         set_transaction_id( new_tran_id );
 
                         handler.execute_command( tran_info );
@@ -6765,7 +6769,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         // may have been transformed (due to an ".ltf" file) they need to be
                         // obtained from "transaction log command" (which is then cleared).
                         if( tran_info[ 0 ] == ';' )
-                           new_logf << '[' << tran_id << ']' << tran_info << '\n';
+                           new_logf << '[' << new_tran_id << ']' << tran_info << '\n';
                         else
                            new_logf << '[' << new_tran_id << ']' << transaction_log_command( ) << '\n';
 
@@ -6783,11 +6787,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                if( is_new )
                {
+                  size_t comment_tran_id = new_tran_id;
+
+                  // NOTE: If equal to the last "used"
+                  // tx id then increment for comment.
+                  if( comment_tran_id == last_new_tran_id )
+                     ++comment_tran_id;
+
                   // NOTE: If the system variable "@log_restore" was set
                   // then will append an "updated" log comment which has
                   // the current system version.
                   if( has_system_variable( e_special_var_log_restore ) )
-                     new_logf << '[' << last_tran_id << ']' << ";updated ("
+                     new_logf << '[' << comment_tran_id << ']' << ";updated ("
                       << get_system_variable( e_special_var_version ) << ")\n";
 
                   new_logf.flush( );
