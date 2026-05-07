@@ -1171,6 +1171,8 @@ class header_file
    bool lock( );
    void unlock( );
 
+   bool is_file_locked( ) const;
+
    bool is_locked_for_exclusive( ) const { return is_exclusive; }
 
    private:
@@ -1295,6 +1297,38 @@ void header_file::unlock( )
          THROW_ODS_ERROR( "unexpected fcntl at " STRINGIZE( __LINE__ ) " failed" );
 #endif
    }
+}
+
+bool header_file::is_file_locked( ) const
+{
+   bool retval = false;
+
+   if( handle )
+   {
+#ifdef __GNUG__
+      flock tmp_lock;
+
+      tmp_lock.l_type = F_WRLCK;
+
+      tmp_lock.l_len = 1;
+      tmp_lock.l_start = 0;
+      tmp_lock.l_whence = SEEK_SET;
+
+      // NOTE: Using F_GETLK with a file lock of type
+      // F_WRLCK replaces this lock type with F_UNLCK
+      // if it would be possible to obtain this lock.
+      // Therefore if any active locks exist (read or
+      // write) then F_UNLCK will not be found (which
+      // proves that the header file is locked).
+      if( fcntl( handle, F_GETLK, &tmp_lock ) == 0 )
+      {
+         if( tmp_lock.l_type != F_UNLCK )
+            retval = true;
+      }
+#endif
+   }
+
+   return retval;
 }
 
 struct ods_data_entry_buffer
@@ -4267,7 +4301,14 @@ void ods::dump_file_info( ostream& os, bool omit_dtms ) const
 
    if( *p_impl->rp_bulk_level
     && ( p_impl->rp_header_info->num_trans || p_impl->rp_header_info->num_writers ) )
-      extra += " *** possibly corrupted file detected ***";
+   {
+      // NOTE: If there are no file locks active then
+      // a process has not closed this ODS DB cleanly
+      // (so output this message as an indicator that
+      // a repair needs to be performed).
+      if( !p_impl->rp_header_file->is_file_locked( ) )
+         extra += " *** corruption detected ***";
+   }
 
    os << "Version: " << format_version( p_impl->rp_header_info->version ) << extra
     << "\nNum Logs = " << p_impl->rp_header_info->num_logs
@@ -4463,14 +4504,15 @@ void ods::dump_transaction_log( ostream& os, bool omit_dtms,
          {
             entries.erase( 0, 1 );
 
-            if( entries.empty( ) || entries == "*" || entries == "all" )
+            if( entries.empty( ) || ( entries == "*" ) || ( entries == "all" ) )
                entries = "1+0";
 
             bool is_from_end = false;
 
-            if( !entries.empty( ) && entries[ 0 ] == '-' )
+            if( !entries.empty( ) && ( entries[ 0 ] == '-' ) )
             {
                is_from_end = true;
+
                entries.erase( 0, 1 );
             }
 
@@ -4570,6 +4612,7 @@ void ods::dump_transaction_log( ostream& os, bool omit_dtms,
             int64_t offs = fs.tellg( );
 
             log_entry_item tranlog_item;
+
             tranlog_item.read( fs );
 
             bool dump_item = true;
@@ -4591,10 +4634,12 @@ void ods::dump_transaction_log( ostream& os, bool omit_dtms,
                if( first_item )
                {
                   first_item = false;
+
                   os << osstr.str( );
                }
 
                os << '\n';
+
                tranlog_item.dump( os, offs );
             }
 
@@ -4624,6 +4669,7 @@ void ods::dump_transaction_log( ostream& os, bool omit_dtms,
                         os << string( ( 16 - chunk ) * 3, ' ' );
 
                      os << ' ';
+
                      for( int j = 0; j < chunk; j++ )
                      {
                         if( !is_print( buffer[ j ] ) )
