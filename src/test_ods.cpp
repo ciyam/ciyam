@@ -61,6 +61,7 @@ const char* const c_cmd_use_sync_file_writing = "sync";
 const char* const c_cmd_use_for_regression_tests = "test";
 const char* const c_cmd_reconstruct_from_transaction_log = "reconstruct";
 
+const char* const c_env_var_ciyam_test_msleep = "CIYAM_TEST_MSLEEP";
 const char* const c_env_var_ciyam_test_exception = "CIYAM_TEST_EXCEPTION";
 
 bool g_encrypted = false;
@@ -69,10 +70,13 @@ bool g_needs_magic = false;
 bool g_shared_write = false;
 bool g_use_transaction_log = false;
 bool g_use_sync_file_writing = false;
-bool g_use_for_regression_tests = false;
 bool g_reconstruct_from_transaction_log = false;
 
 bool g_application_title_called = false;
+
+size_t g_test_msleep_value = 0;
+
+bool g_use_for_regression_tests = false;
 
 string application_title( app_info_request request )
 {
@@ -85,6 +89,7 @@ string application_title( app_info_request request )
    else if( request == e_app_info_request_title_and_version )
    {
       string title( c_app_title );
+
       title += " v";
       title += string( c_app_version );
 
@@ -93,7 +98,9 @@ string application_title( app_info_request request )
    else
    {
       ostringstream osstr;
+
       osstr << "unknown app_info_request: " << request;
+
       throw runtime_error( osstr.str( ) );
    }
 }
@@ -298,9 +305,13 @@ write_stream& operator <<( write_stream& ws, const outline_base& o )
 
    ws << o.o_file;
 
-   if( g_use_for_regression_tests
-    && has_environment_variable( c_env_var_ciyam_test_exception ) )
-      throw runtime_error( "(test exception)" );
+   // NOTE: Code that is specific to
+   // testing can be triggered here.
+   if( g_use_for_regression_tests )
+   {
+      if( has_environment_variable( c_env_var_ciyam_test_exception ) )
+         throw runtime_error( "(test exception)" );
+   }
 
    if( !o.do_not_write_children )
       ws << o.children;
@@ -314,6 +325,7 @@ struct temp_read_outline_description
     : node( node )
    {
       val = node.do_not_read_children;
+
       node.do_not_read_children = true;
    }
 
@@ -324,6 +336,7 @@ struct temp_read_outline_description
 
    private:
    bool val;
+
    outline& node;
 };
 
@@ -342,8 +355,11 @@ struct pathchar_buffer : public char_buffer
 pathchar_buffer operator +( const char* s, pathchar_buffer& c )
 {
    pathchar_buffer buf;
+
    buf.operator =( s );
+
    buf.operator +=( c );
+
    return buf;
 }
 
@@ -410,10 +426,13 @@ class test_ods_command_handler : public console_command_handler
    unique_ptr< ods > up_ods;
 
    outline node;
+
    stack< oid, vector< oid > > oid_stack;
+
    vector< pathchar_buffer > path_strings;
 
    size_t trans_level;
+
    size_t trans_stack_levels[ c_max_trans_depth ];
 
    ods::transaction* trans_buffer[ c_max_trans_depth ];
@@ -422,6 +441,7 @@ class test_ods_command_handler : public console_command_handler
 void test_ods_command_handler::init_ods( const char* p_file_name )
 {
    string password;
+
    bool not_found = false;
 
    if( g_encrypted )
@@ -483,14 +503,17 @@ class test_ods_command_functor : public command_functor
 
    private:
    ods& o;
+
    outline& node;
 
    size_t& trans_level;
+
    ods::transaction** trans_buffer;
 
    size_t* trans_stack_levels;
 
    stack< oid, vector< oid > >& oid_stack;
+
    vector< pathchar_buffer >& path_strings;
 
    test_ods_command_handler& test_handler;
@@ -569,6 +592,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          outline next_child_node;
 
          stack< oid, vector< oid > > old_oid_stack( oid_stack );
+
          vector< pathchar_buffer > old_path_strings( path_strings );
 
          if( !name_or_path.empty( ) && ( name_or_path[ 0 ] == '/' ) )
@@ -596,6 +620,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          }
 
          vector< string > parts;
+
          split( name_or_path, parts, '/' );
 
          for( size_t i = 0; i < parts.size( ); i++ )
@@ -634,7 +659,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
             if( !found || had_error )
                break;
-            else if( i < parts.size( ) - 1 )
+            else if( i < ( parts.size( ) - 1 ) )
                found = false;
          }
 
@@ -694,6 +719,9 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
             date_time dtm( date_time::standard( ) );
 
+            g_test_msleep_value = from_string< size_t >(
+             get_environment_variable( c_env_var_ciyam_test_msleep ) );
+
             for( int i = 0; i < num; i++ )
             {
                temp_node.set_new( );
@@ -715,13 +743,16 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
                date_time now( date_time::standard( ) );
 
+               if( g_test_msleep_value )
+                  msleep( g_test_msleep_value );
+
                uint64_t elapsed = seconds_between( dtm, now );
 
                if( p_progress && ( elapsed >= 1 ) )
                {
                   dtm = now;
 
-                  p_progress->output_progress( "Adding items...", i, num );
+                  p_progress->output_progress( "Adding items... ", i, num );
                }
             }
 
@@ -773,6 +804,9 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
          date_time dtm( date_time::standard( ) );
 
+         g_test_msleep_value = from_string< size_t >(
+          get_environment_variable( c_env_var_ciyam_test_msleep ) );
+
          int val;
 
          string str;
@@ -785,6 +819,9 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
             str = temp_node.get_description( );
 
+            if( g_test_msleep_value )
+               msleep( g_test_msleep_value );
+
             if( is_multi )
             {
                pos = str.find( '#' );
@@ -792,10 +829,11 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
                if( pos != string::npos )
                {
                   val = atoi( str.substr( pos + 1 ).c_str( ) );
+
                   str = str.substr( 0, pos );
                }
 
-               if( str == name && val < num )
+               if( ( str == name ) && ( val < num ) )
                {
                   if( !temp_node.has_children( ) )
                   {
@@ -815,7 +853,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
                      if( p_progress && ( elapsed >= 1 ) )
                      {
                         dtm = now;
-                        p_progress->output_progress( "Deleting child items...", num_deleted, num );
+                        p_progress->output_progress( "Deleting child items... ", num_deleted, num );
                      }
                   }
                   else if( num_deleted )
@@ -835,6 +873,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
                   index -= num_deleted;
 
                   num_deleted = 0;
+
                   start = index + 1;
                }
                else
@@ -954,6 +993,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          for( node.iter( ); node.more( ); node.next( ) )
          {
             temp_node.set_id( node.child( ) );
+
             o >> temp_node;
 
             if( temp_node.get_description( ) == file_name )
@@ -961,6 +1001,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
                if( temp_node.get_file( ).get_id( ).is_new( ) )
                {
                   error_extra = " ('" + file_name + "' is a folder)";
+
                   break;
                }
                else
@@ -973,6 +1014,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
                    + " (" + format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) + ")" );
 
                   found = true;
+
                   break;
                }
             }
@@ -1129,7 +1171,7 @@ int main( int argc, char* argv[ ] )
 
    try
    {
-      // NOTE: Use block scope for startup command processor object...
+      // NOTE: Use block scope for startup command processor object.
       {
          startup_command_processor processor( cmd_handler, application_title, 0, argc, argv );
 
@@ -1185,6 +1227,7 @@ int main( int argc, char* argv[ ] )
          if( g_reconstruct_from_transaction_log )
          {
             cmd_handler.get_ods( ).reconstruct_database( );
+
             was_reconstructed = true;
          }
          else
@@ -1234,7 +1277,7 @@ int main( int argc, char* argv[ ] )
       if( !g_application_title_called && !cmd_handler.has_option_quiet( ) )
          cout << application_title( e_app_info_request_title_and_version ) << endl;
 
-      cerr << "unexpected exception occurred..." << endl;
+      cerr << "unexpected exception occurred" << endl;
 
       return 2;
    }
