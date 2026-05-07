@@ -601,21 +601,29 @@ if [ "$force_reload" = "" ]; then
  sudo systemctl start ciyam
 else
  touch $INSTALL_PATH/ciyam_base.update
+
+ # NOTE: Need to wait at least one second
+ # for the server to detect the ".update"
+ # file and reload the shared library.
+ sleep 1
+ touch $INSTALL_PATH/ciyam_server.cmd
 fi
 
 show_restore_message=$needs_restore
 
-if [ "$unlock_key" != "" ]; then
- pushd $INSTALL_PATH >/dev/null
-
+if [ -f $INSTALL_PATH/ciyam_server.cmd ]; then
  for i in {1..60}
  do
-  if [ ! -f ciyam_server.cmd ]; then
+  if [ ! -f $INSTALL_PATH/ciyam_server.cmd ]; then
    break;
   fi
 
   sleep 0.5
  done
+fi
+
+if [ "$unlock_key" != "" ]; then
+ pushd $INSTALL_PATH >/dev/null
 
  if [ ! -f ciyam_server.cmd ]; then
   ./unlock_identity "$unlock_key"
@@ -628,16 +636,21 @@ if [ "$unlock_key" != "" ]; then
    fi
   fi
  fi
+
  popd >/dev/null
 else
  if [ "$force_reload" = "1" ]; then
   pushd $INSTALL_PATH >/dev/null
-  if [ "$needs_restore" = "1" ]; then
-   ./restore $CIYAM_APP_MOD
-   if [ $? -eq 0 ]; then
-    show_restore_message=
+
+  if [ ! -f ciyam_server.cmd ]; then
+   if [ "$needs_restore" = "1" ]; then
+    ./restore $CIYAM_APP_MOD
+    if [ $? -eq 0 ]; then
+     show_restore_message=
+    fi
    fi
   fi
+
   popd >/dev/null
  else
   sudo systemctl --no-pager -l status ciyam
