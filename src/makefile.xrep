@@ -26,11 +26,11 @@
 ##  <target>   is:                  to:
 ##
 ## Specials
-##             all                  make all standard
-##             dtm                  create 'make.dtm'
-##             list                 create 'make.lst'
-##             clean                clean standard targets
-##             strip                strip executable targets
+##             all                  makes standard targets
+##             dtm                  create 'make.dtm' file
+##             list                 create 'make.lst' file
+##             clean                purges standard targets
+##             strip                strips applicable targets
 ##             usage                outputs usage information
 ##             release              creates a release archive
 ##
