@@ -65,10 +65,10 @@ ERROR=Peer Node needs to first be verified.
 @else
 .system_variable @shared_secret_$IDENTITY $PEER_SHARED_SECRET
 ;
-OLD_FILE_NAME=$FILE_NAME
+OLD_FILE_NAME=$CIYAM_FILE_NAME
 OLD_NO_PROGRESS=$CIYAM_NO_PROGRESS
 ;
-FILE_NAME=@dummy
+CIYAM_FILE_NAME=@dummy
 CIYAM_NO_PROGRESS=1
 ;
 <prepare_for_channel.cin @dummy $IDENTITY
@@ -76,7 +76,7 @@ CIYAM_NO_PROGRESS=1
 .system_variable @queue_peers $PEER_CONNECT_INFORMATION
 @endif
 ;
-FILE_NAME=$OLD_FILE_NAME
+CIYAM_FILE_NAME=$OLD_FILE_NAME
 CIYAM_NO_PROGRESS=$OLD_NO_PROGRESS
 ;
 @endif

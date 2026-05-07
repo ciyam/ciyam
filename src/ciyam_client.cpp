@@ -102,12 +102,12 @@ const char* const c_env_var_output = "OUTPUT";
 const char* const c_env_var_webdir = "WEBDIR";
 const char* const c_env_var_pub_key = "PUB_KEY";
 const char* const c_env_var_pub_keyx = "PUB_KEYX";
-const char* const c_env_var_file_name = "FILE_NAME";
 const char* const c_env_var_local_udp = "LOCAL_UDP";
 const char* const c_env_var_rpc_password = "RPC_PASSWORD";
 const char* const c_env_var_ciyam_seconds = "CIYAM_SECONDS";
 const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
 const char* const c_env_var_ciyam_no_pause = "CIYAM_NO_PAUSE";
+const char* const c_env_var_ciyam_file_name = "CIYAM_FILE_NAME";
 const char* const c_env_var_progress_prefix = "PROGRESS_PREFIX";
 const char* const c_env_var_ciyam_no_progress = "CIYAM_NO_PROGRESS";
 const char* const c_env_var_ciyam_file_name_only = "CIYAM_FILE_NAME_ONLY";
@@ -615,7 +615,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                   if( !show_no_progress && put_file_error.empty( ) )
                   {
-                     string file_name( get_environment_variable( c_env_var_file_name ) );
+                     string file_name( get_environment_variable( c_env_var_ciyam_file_name ) );
 
                      if( !file_name.empty( ) )
                      {
@@ -892,7 +892,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                            if( !show_no_progress )
                            {
-                              string file_name( get_environment_variable( c_env_var_file_name ) );
+                              string file_name( get_environment_variable( c_env_var_ciyam_file_name ) );
 
                               if( !file_name.empty( ) )
                               {
@@ -1055,7 +1055,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         file_append( filename, append_filename );
                      else
                      {
-                        string file_name( get_environment_variable( c_env_var_file_name ) );
+                        string file_name( get_environment_variable( c_env_var_ciyam_file_name ) );
 
                         // NOTE: It is assumed that a file chunk number is a final file extension.
                         pos = append_filename.rfind( '.' );
