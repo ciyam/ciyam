@@ -85,7 +85,8 @@ session_timeout "get/set server session timeout" [<val//seconds>]
 session_restrict "set/clear restricted protocol command list" <val//key>[<olist//commands>]
 session_variable|var "get/set a session variable or num matching sessions" [<val/-id=/session_id>|<opt/-num_found/num_found>]<val//name_or_expr>[<oval//value>][<oval//current>]
 session_terminate|quit "terminate session"
-session_rpc_unlock "unlock full RPC access for a session" <val//password>[<val//seconds>]
+session_rpc_unlock|unlock "unlock full RPC access for the current session" <val//password>[<val//seconds>]
+session_rpc_password|lock "locks full RPC access for the current session with a specific password" <val//password>
 starttls|tls "start TLS session"
 storage_info "name and other information about the currently linked storage"
 storage_init "link to an existing or newly created storage" [<opt/-admin/admin>][<val/-directory=/directory>]<val//name>

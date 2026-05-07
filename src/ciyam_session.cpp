@@ -1730,7 +1730,9 @@ class socket_command_handler : public command_handler
       else
          locked_identity = false;
 
-      locked_rpc = !get_rpc_password( ).empty( );
+      lock_password = get_rpc_password( );
+
+      locked_rpc = !lock_password.empty( );
    }
 
 #ifdef SSL_SUPPORT
@@ -1748,9 +1750,20 @@ class socket_command_handler : public command_handler
    void unlock_rpc( ) { locked_rpc = false; }
    void unlock_identity( ) { locked_identity = false; }
 
-   void set_lock_expires( unsigned int seconds )
+   void set_lock_expires( int seconds )
    {
       lock_expires = unix_time( ) + seconds;
+   }
+
+   void set_lock_password( const string& new_password )
+   {
+      lock_password = new_password;
+   }
+
+   void check_lock_password( const string& password )
+   {
+      if( !lock_password.empty( ) && password != lock_password )
+         throw runtime_error( "incorrect RPC unlock password" );
    }
 
    void check_lock_expiry( )
@@ -1864,6 +1877,8 @@ class socket_command_handler : public command_handler
 
    string next_command;
    string restore_error;
+
+   string lock_password;
 
    string restricted_key;
 
@@ -5899,9 +5914,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( needs_response )
             {
                if( !variable_expression::is_possible_expression( name_or_expr ) )
-                  response = get_session_variable( name_or_expr, false );
+                  response = get_session_variable( name_or_expr, sess_id );
                else
-                  response = get_session_variable( expression( name_or_expr ), false );
+                  response = get_session_variable( expression( name_or_expr ), sess_id );
 
                check_not_possible_protocol_response( response );
             }
@@ -5921,15 +5936,28 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string password( get_parm_val( parameters, c_cmd_ciyam_session_session_rpc_unlock_password ) );
          string seconds( get_parm_val( parameters, c_cmd_ciyam_session_session_rpc_unlock_seconds ) );
 
-         if( password == get_rpc_password( ) )
-            socket_handler.unlock_rpc( );
+         possibly_expected_error = true;
+
+         socket_handler.check_lock_password( password );
+
+         socket_handler.unlock_rpc( );
 
          unsigned int val;
+
          if( !seconds.empty( ) )
          {
             val = atoi( seconds.c_str( ) );
             socket_handler.set_lock_expires( val );
          }
+      }
+      else if( command == c_cmd_ciyam_session_session_rpc_password )
+      {
+         string password( get_parm_val( parameters, c_cmd_ciyam_session_session_rpc_password_password ) );
+
+         // NOTE: Ensure immediate relocking.
+         socket_handler.set_lock_expires( -1 );
+
+         socket_handler.set_lock_password( password );
       }
       else if( command == c_cmd_ciyam_session_starttls )
       {
@@ -5952,6 +5980,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_storage_info )
       {
          response = "Name: " + storage_name( ) + '\n';
+
          response += "Identity: " + storage_identity( ) + '\n';
          response += "Directory: " + storage_module_directory( );
       }

@@ -886,6 +886,26 @@ soundex -skip sycolagee
 S242
 soundex -skip psychology
 S242
+session_variable test1 xxx
+session_variable test2 yyy
+session_variable test3 yyy
+session_rpc_unlock xxx
+session_variable test?
+test1 xxx
+test2 yyy
+test3 yyy
+session_rpc_password yyy
+session_variable test?
+Error: Session RPC access denied.
+session_rpc_unlock xxx
+Error: incorrect RPC unlock password
+session_variable test?
+Error: Session RPC access denied.
+session_rpc_unlock yyy
+session_variable test?
+test1 xxx
+test2 yyy
+test3 yyy
 session_variable test (okay)
 Error: invalid value '(okay)' (could be confused with a protocol response)
 session_variable test

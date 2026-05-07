@@ -610,6 +610,18 @@ soundex -skip mnemonics
 soundex -skip sycolagee
 soundex -skip psychology
 ;
+session_variable test1 xxx
+session_variable test2 yyy
+session_variable test3 yyy
+session_rpc_unlock xxx
+session_variable test?
+session_rpc_password yyy
+session_variable test?
+session_rpc_unlock xxx
+session_variable test?
+session_rpc_unlock yyy
+session_variable test?
+;
 session_variable test (okay)
 session_variable test
 session_variable test @increment
