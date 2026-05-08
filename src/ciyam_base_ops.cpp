@@ -1333,7 +1333,7 @@ bool fetch_instance_from_db( class_base& instance,
 
          int fnum( fields.find( columns[ i - c_num_sys_field_names ] )->second );
 
-         TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES,
+         TRACE_LOG( TRACE_VERBOSE | TRACE_OBJECTS,
           "setting field #" + to_string( fnum + 1 ) + " to " + sd.as_string( i ) );
 
          instance.set_field_value( fnum, sd.as_string( i ) );
@@ -1642,7 +1642,7 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch,
 
          int fnum = fields.find( columns[ i - c_num_sys_field_names ] )->second;
 
-         TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES,
+         TRACE_LOG( TRACE_VERBOSE | TRACE_OBJECTS,
           "setting field #" + to_string( fnum + 1 ) + " to " + instance_accessor.row_cache( )[ 0 ][ i ] );
 
          instance.set_field_value( fnum, instance_accessor.row_cache( )[ 0 ][ i ] );
