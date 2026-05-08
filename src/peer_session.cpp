@@ -4771,6 +4771,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       is_waiting_for_hub = false;
 
       set_session_variable( e_special_var_blockchain_waiting_for_hub, "" );
+
+      output_sync_progress_message( identity, blockchain_height, blockchain_height_other );
    }
 
    bool set_new_zenith = false;
