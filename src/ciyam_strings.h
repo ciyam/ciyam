@@ -79,6 +79,7 @@ const char* const c_str_checking_at_height_prefix = "Checking at height ";
 const char* const c_str_mapping_for_height_prefix = "Mapping for height ";
 const char* const c_str_session_rpc_access_denied = "Session RPC access denied.";
 const char* const c_str_syncing_for_height_prefix = "Syncing for height ";
+const char* const c_str_system_identity_is_locked = "System identity needs to be unlocked.";
 const char* const c_str_unable_to_start_peerchain = "Unable to start peerchain using port number @port.";
 const char* const c_str_unable_to_start_peerchain_port = "@port";
 const char* const c_str_waiting_for_peer_hub_sync = "Waiting for peer hub sync";

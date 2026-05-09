@@ -136,6 +136,7 @@ subtotal Subtotal
 syncing Syncing
 syncing_at_height_prefix Syncing at height 
 syncing_for_height_prefix Syncing for height 
+system_identity_is_locked System identity needs to be unlocked.
 timed_out_connecting_to_peer Timed out trying to connect to '@host' using port number @port.
 timed_out_waiting_for_verification Timed out waiting for peer verification.
 timeout_connecting_to_peer Timeout occurred trying to connect to peer.
