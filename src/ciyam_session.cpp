@@ -1752,6 +1752,8 @@ class socket_command_handler : public command_handler
 
    bool is_locked( ) const { return ( locked_rpc || locked_identity ); }
 
+   bool is_rpc_locked( ) const { return locked_rpc; }
+
    bool is_restoring( ) const { return restoring; }
 
    void unlock_rpc( ) { locked_rpc = false; }
@@ -1769,7 +1771,7 @@ class socket_command_handler : public command_handler
 
    void check_lock_password( const string& password )
    {
-      if( !lock_password.empty( ) && password != lock_password )
+      if( !lock_password.empty( ) && ( password != lock_password ) )
          throw runtime_error( "incorrect RPC unlock password" );
    }
 
@@ -2132,7 +2134,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             possibly_expected_error = true;
 
-            throw runtime_error( GS( c_str_session_rpc_access_denied ) );
+            if( socket_handler.is_rpc_locked( ) )
+               throw runtime_error( GS( c_str_session_rpc_access_denied ) );
+            else
+               throw runtime_error( GS( c_str_system_identity_is_locked ) );
          }
       }
 
@@ -5761,10 +5766,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_session_list )
       {
          bool minimal = has_parm_val( parameters, c_cmd_ciyam_session_session_list_minimal );
-         string blockchains( get_parm_val( parameters, c_cmd_ciyam_session_session_list_blockchains ) );
-         bool has_blockchains = has_parm_val( parameters, c_cmd_ciyam_session_session_list_blockchains );
+         string identifiers( get_parm_val( parameters, c_cmd_ciyam_session_session_list_identifiers ) );
+         bool has_identifiers = has_parm_val( parameters, c_cmd_ciyam_session_session_list_identifiers );
 
-         list_sessions( osstr, !minimal, !minimal, ( !has_blockchains ? 0 : &blockchains ) );
+         list_sessions( osstr, !minimal, !minimal, !minimal, ( !has_identifiers ? 0 : &identifiers ) );
 
          response = osstr.str( );
       }
@@ -8860,15 +8865,34 @@ void init_ciyam_session( ssl_socket* p_socket, const char* p_address )
 void init_ciyam_session( tcp_socket* p_socket, const char* p_address )
 #endif
 {
-   ciyam_session* p_session = new ciyam_session( p_socket, p_address );
+   try
+   {
+      ciyam_session* p_session = new ciyam_session( p_socket, p_address );
 
-   // NOTE: Even if the server is being shut down will still start sessions
-   // that were initiated by the server itself (so that operations that use
-   // a separate session for completion are correctly performed). Therefore
-   // non-essential scripts should not be executed by the server if already
-   // shutting down.
-   if( g_server_shutdown && !p_session->is_own_pid( ) )
-      delete p_session;
-   else
-      p_session->start( );
+      // NOTE: Even if the server is being shut down will still start sessions
+      // that were initiated by the server itself (so that operations that use
+      // a separate session for completion are correctly performed). Therefore
+      // non-essential scripts should not be executed by the server if already
+      // shutting down.
+      if( g_server_shutdown && !p_session->is_own_pid( ) )
+         delete p_session;
+      else
+         p_session->start( );
+   }
+   catch( exception& x )
+   {
+#ifdef DEBUG
+      cerr << "init_ciyam_session: " << x.what( ) << endl;
+#else
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, string( "init_ciyam_session: " ) + x.what( ) );
+#endif
+   }
+   catch( ... )
+   {
+#ifdef DEBUG
+      cerr << "init_ciyam_session: unexpected exception occurred" << endl;
+#else
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, string( "init_ciyam_session: unexpected exception occurred" ) );
+#endif
+   }
 }
