@@ -8057,26 +8057,64 @@ string get_random_same_port_peer_ip_addr( const string& empty_value )
 }
 
 void list_all_sessions( ostream& os, bool inc_dtms,
- bool include_progress, const string* p_blockchains = 0 )
+ bool include_progress, bool include_supports, const string* p_session_identifiers = 0 )
 {
    guard g( g_session_mutex );
 
-   map< size_t, string > sessions;
+   set< size_t > session_ids;
 
    set< string > blockchains;
+   set< string > ip_addresses;
 
-   if( p_blockchains )
-      split( *p_blockchains, blockchains );
+   vector< string > identifiers;
+
+   // NOTE: Each session identifier can be either a
+   // session id, blockchain identity or IP address.
+   if( p_session_identifiers )
+   {
+      split( *p_session_identifiers, identifiers );
+
+      for( size_t i = 0; i < identifiers.size( ); i++ )
+      {
+         string next_identifier( identifiers[ i ] );
+
+         if( next_identifier.length( )
+          && ( next_identifier.length( ) < c_bc_identity_length )
+          && ( next_identifier.find_first_not_of( "0123456789" ) == string::npos ) )
+            session_ids.insert( from_string< size_t >( next_identifier ) );
+         else if( next_identifier.find_first_of( ".:" ) == string::npos )
+            blockchains.insert( next_identifier );
+         else
+            ip_addresses.insert( next_identifier );
+      }
+   }
+
+   map< size_t, string > sessions;
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
       if( g_sessions[ i ] )
       {
-         if( blockchains.size( ) )
+         if( !session_ids.empty( ) )
+         {
+            if( !session_ids.count( g_sessions[ i ]->id ) )
+               continue;
+         }
+
+         if( !blockchains.empty( ) )
          {
             if( !blockchains.count( g_sessions[ i ]->blockchain ) )
                continue;
          }
+
+         if( !ip_addresses.empty( ) )
+         {
+            if( !ip_addresses.count( g_sessions[ i ]->ip_addr ) )
+               continue;
+         }
+
+         if( !include_supports && g_sessions[ i ]->is_support_session )
+            continue;
 
          stringstream ss;
 
@@ -8176,11 +8214,11 @@ void list_all_sessions( ostream& os, bool inc_dtms,
 }
 
 void list_sessions( ostream& os, bool inc_dtms,
- bool include_progress, const string* p_blockchains )
+ bool include_progress, bool include_supporters, const string* p_session_identifiers )
 {
    guard g( g_session_mutex, "list_sessions" );
 
-   list_all_sessions( os, inc_dtms, include_progress, p_blockchains );
+   list_all_sessions( os, inc_dtms, include_progress, include_supporters, p_session_identifiers );
 }
 
 command_handler& get_session_command_handler( )
@@ -8208,7 +8246,7 @@ void server_command( const char* p_cmd )
    {
       cerr << "[sessions]" << endl;
 
-      list_all_sessions( cerr, true, true );
+      list_all_sessions( cerr, true, true, true );
    }
    else
       cerr << "available commands: " << c_server_command_mutexes << " and " << c_server_command_sessions << endl;
