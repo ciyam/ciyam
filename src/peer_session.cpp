@@ -265,14 +265,14 @@ string special_connection_message( const string& id, bool has_timed_out = false 
    return msg;
 }
 
-string get_hub_identity( const string& own_identity, bool force_extra_match )
+string get_hub_identity( const string& own_identity )
 {
    string hub_identity_var_name( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) );
    string backup_identity_var_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
 
    if( own_identity != get_system_variable( backup_identity_var_name ) )
    {
-      string extra( get_identity_variable_extra( backup_identity_var_name, own_identity, force_extra_match ) );
+      string extra( get_identity_variable_extra( backup_identity_var_name, own_identity ) );
 
       if( !extra.empty( ) )
       {
@@ -571,6 +571,7 @@ void set_waiting_for_hub_progress( const string& identity )
 
 void system_identity_progress_message( const string& identity, bool is_preparing = false )
 {
+   bool is_initiator = has_session_variable( e_special_var_peer_initiator );
    bool is_blockchain_owner = has_session_variable( e_special_var_blockchain_is_owner );
 
    string blockchain_height_other_name(
@@ -765,18 +766,24 @@ void system_identity_progress_message( const string& identity, bool is_preparing
          identity_progress_message += c_ellipsis;
       }
 
-      string time_value( get_session_variable( e_special_var_blockchain_time_value ) );
-
-      // NOTE: Display a "checking" message if likely
-      // to still be reading the initial peer status.
-      if( !time_value.empty( ) )
+      // NOTE: Only set the status as "checking" if is an initiator.
+      // If also set for responders then would need to ensure that a
+      // later call will occur to "overwrite it".
+      if( is_initiator )
       {
-         int64_t current = unix_time( );
+         string time_value( get_session_variable( e_special_var_blockchain_time_value ) );
 
-         int64_t check_time = from_string< int64_t >( time_value );
+         // NOTE: Display a "checking" message if likely
+         // to still be reading the initial peer status.
+         if( !time_value.empty( ) )
+         {
+            int64_t current = unix_time( );
 
-         if( current < check_time )
-            identity_progress_message = GS( c_str_checking_peer_status );
+            int64_t check_time = from_string< int64_t >( time_value );
+
+            if( current < check_time )
+               identity_progress_message = GS( c_str_checking_peer_status );
+         }
       }
    }
 
@@ -7050,7 +7057,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
                if( !is_owner && ( chain_type == e_peerchain_type_backup ) )
                {
-                  string hub_identity( get_hub_identity( unprefixed_blockchain, true ) );
+                  string hub_identity( get_hub_identity( unprefixed_blockchain ) );
 
                   if( !hub_identity.empty( ) )
                      pid += '&' + hub_identity;
@@ -7468,7 +7475,7 @@ void peer_session::on_start( )
 
          if( !is_owner && ( chain_type == e_peerchain_type_backup ) )
          {
-            string hub_identity( get_hub_identity( identity, true ) );
+            string hub_identity( get_hub_identity( identity ) );
 
             if( !hub_identity.empty( ) )
                extra += '&' + hub_identity;
