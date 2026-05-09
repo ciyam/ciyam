@@ -69,6 +69,8 @@
 
 //#define DEBUG
 
+//#define LOCAL_REQUESTS_ONLY
+
 using namespace std;
 
 extern size_t g_active_sessions;
@@ -85,14 +87,16 @@ mutex g_mutex;
 
 #include "trace_progress.cpp"
 
+#ifdef LOCAL_REQUESTS_ONLY
 const size_t c_request_timeout = 500; // i.e. 1/2 sec
+#else
+const size_t c_request_timeout = 5000; // i.e. 5 secs
+#endif
 
 const size_t c_udp_wait_timeout = 50; // i.e. 1/20 sec
-
-const size_t c_listen_wait_timeout = 50; // i.e. 1/20 sec
-
 const size_t c_udp_wait_repeats = 10;
 
+const size_t c_listen_wait_timeout = 50; // i.e. 1/20 sec
 const size_t c_listen_wait_repeats = 20;
 
 const int c_pdf_default_limit = 10000;
@@ -488,6 +492,7 @@ void replace_field_values_to_log( string& next_command,
             if( next_command[ i ] == '=' )
             {
                okay = true;
+
                break;
             }
          }
@@ -552,6 +557,7 @@ string& remove_uid_extra_from_log_command( string& log_command )
       if( log_command.size( ) > pos && log_command[ pos + 1 ] == '"' )
       {
          npos = log_command.find( '"', ++pos + 1 );
+
          if( npos != string::npos )
             ++npos;
       }
@@ -778,6 +784,7 @@ string resolve_method_name(
          if( pici->second.name == method )
          {
             *p_method_id = pici->first;
+
             break;
          }
       }
@@ -2506,6 +2513,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( ( data[ i ] < '0' ) || ( data[ i ] > '9' ) )
                {
                   is_size = false;
+
                   break;
                }
             }
@@ -2928,6 +2936,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( has_udp_recv_file_chunk_info( ) )
                {
                   has_any = true;
+
                   break;
                }
 
@@ -3513,6 +3522,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !has_system_variable( var_name ) )
                {
                   okay = true;
+
                   break;
                }
             }
@@ -7781,6 +7791,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   if( !has_system_variable( var_name ) )
                   {
                      okay = true;
+
                      break;
                   }
                }
@@ -7832,6 +7843,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                 || has_system_variable( c_notifier_prefix + directory ) )
                {
                   okay = true;
+
                   break;
                }
             }
@@ -8451,6 +8463,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( ( response[ i ] < ' ' ) || ( response[ i ] > '~' ) )
                {
                   invalid = true;
+
                   break;
                }
             }
@@ -8593,6 +8606,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
             // NOTE: If the session is not captured and it has either been condemned or
             // the server is shutting down, or its socket has died then force a "quit".
             cmd_and_args = c_cmd_ciyam_session_session_terminate;
+
             break;
          }
 
@@ -8601,6 +8615,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          if( is_captured_session( ) && !socket.had_timeout( ) )
          {
             msleep( c_request_timeout );
+
             continue;
          }
 
