@@ -184,8 +184,6 @@ const char* const c_attribute_sender = "sender";
 const char* const c_attribute_suffix = "suffix";
 const char* const c_attribute_use_udp = "use_udp";
 const char* const c_attribute_filename = "filename";
-const char* const c_attribute_ip_addrs = "ip_addrs";
-const char* const c_attribute_na_addrs = "na_addrs";
 const char* const c_attribute_password = "password";
 const char* const c_attribute_security = "security";
 const char* const c_attribute_timezone = "timezone";
@@ -193,6 +191,7 @@ const char* const c_attribute_username = "username";
 const char* const c_attribute_web_root = "web_root";
 const char* const c_attribute_arguments = "arguments";
 const char* const c_attribute_max_peers = "max_peers";
+const char* const c_attribute_rpc_addrs = "rpc_addrs";
 const char* const c_attribute_use_https = "use_https";
 const char* const c_attribute_ntfy_server = "ntfy_server";
 const char* const c_attribute_trace_flags = "trace_flags";
@@ -1987,8 +1986,7 @@ bool g_ods_use_sync_write = false;
 
 set< string > g_checked_script_lock_files;
 
-set< string > g_accepted_ip_addrs;
-set< string > g_rejected_ip_addrs;
+set< string > g_rpc_approved_ip_addrs;
 
 set< string > g_accepted_peer_ip_addrs;
 set< string > g_rejected_peer_ip_addrs;
@@ -3802,16 +3800,6 @@ void read_server_configuration( )
 
       g_use_udp = ( lower( reader.read_opt_attribute( c_attribute_use_udp, c_false ) ) == c_true );
 
-      string ip_addrs( reader.read_opt_attribute( c_attribute_ip_addrs ) );
-
-      if( !ip_addrs.empty( ) )
-         split( ip_addrs, g_accepted_ip_addrs, ' ' );
-
-      string na_addrs( reader.read_opt_attribute( c_attribute_na_addrs ) );
-
-      if( !na_addrs.empty( ) )
-         split( na_addrs, g_rejected_ip_addrs, ' ' );
-
       g_timezone = upper( reader.read_opt_attribute( c_attribute_timezone ) );
 
       g_web_root = reader.read_attribute( c_attribute_web_root );
@@ -3824,6 +3812,13 @@ void read_server_configuration( )
 
       g_max_peers = atoi( reader.read_opt_attribute(
        c_attribute_max_peers, to_string( c_default_max_peers ) ).c_str( ) );
+
+      string rpc_addrs( reader.read_opt_attribute( c_attribute_rpc_addrs ) );
+
+      g_rpc_approved_ip_addrs.insert( c_local_ip_addr );
+
+      if( !rpc_addrs.empty( ) )
+         split( rpc_addrs, g_rpc_approved_ip_addrs, ' ' );
 
       g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, c_true ) ) == c_true );
 
@@ -5930,15 +5925,14 @@ string get_ntfy_server( )
    return g_ntfy_server;
 }
 
-bool get_is_accepted_ip_addr( const string& ip_addr )
+bool get_is_rpc_approved_ip_addr( const string& ip_addr )
 {
    guard g( g_mutex );
 
    if( has_system_variable( e_special_var_disallow_connections ) )
       return false;
 
-   return ( g_rejected_ip_addrs.empty( ) || g_rejected_ip_addrs.count( ip_addr ) == 0 )
-    && ( g_accepted_ip_addrs.empty( ) || ( g_accepted_ip_addrs.count( ip_addr ) > 0 ) );
+   return ( g_rpc_approved_ip_addrs.empty( ) || ( g_rpc_approved_ip_addrs.count( ip_addr ) > 0 ) );
 }
 
 bool get_is_accepted_peer_ip_addr( const string& ip_addr )
@@ -5948,13 +5942,8 @@ bool get_is_accepted_peer_ip_addr( const string& ip_addr )
    if( has_system_variable( e_special_var_disallow_connections ) )
       return false;
 
-   return ( g_rejected_peer_ip_addrs.empty( ) || g_rejected_peer_ip_addrs.count( ip_addr ) == 0 )
-    && ( g_accepted_peer_ip_addrs.empty( ) || ( g_accepted_peer_ip_addrs.count( ip_addr ) > 0 ) );
-}
-
-int is_accepted_ip_addr( const char* p_addr )
-{
-   return get_is_accepted_ip_addr( p_addr );
+   return ( ( g_rejected_peer_ip_addrs.count( ip_addr ) == 0 )
+    && ( g_accepted_peer_ip_addrs.empty( ) || ( g_accepted_peer_ip_addrs.count( ip_addr ) > 0 ) ) );
 }
 
 void add_peer_ip_addr_for_rejection( const string& ip_addr )
@@ -7286,11 +7275,6 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
             if( !outf )
                throw runtime_error( "unable to open '" + args_file + "' for output" );
-
-            string rpc_password( get_rpc_password( ) );
-
-            if( !rpc_password.empty( ) )
-               outf << ".session_rpc_unlock " << rpc_password << endl;
 
             // NOTE: Underbar prefix is used in case arguments contain '$' characters.
             outf << "_<<" << arguments << endl;

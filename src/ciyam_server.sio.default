@@ -5,11 +5,10 @@
 <sio/>
 # <domain>name.org
 # <use_udp>false
-# <ip_addrs>127.0.0.1
-# <na_addrs>
  <timezone>UTC
  <web_root>$WEBDIR
 # <max_peers>100
+# <rpc_addrs>127.0.0.1
 # <use_https>true
 # <ntfy_server>ntfy.name.org
 # <trace_flags>10000

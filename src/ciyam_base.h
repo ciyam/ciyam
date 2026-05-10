@@ -263,12 +263,9 @@ std::string get_web_root( );
 
 std::string get_ntfy_server( );
 
-bool get_is_accepted_ip_addr( const std::string& ip_addr );
+bool get_is_rpc_approved_ip_addr( const std::string& ip_addr );
+
 bool get_is_accepted_peer_ip_addr( const std::string& ip_addr );
-
-extern "C" int is_accepted_ip_addr( const char* p_addr );
-
-typedef int ( *fp_is_accepted_ip_addr )( const char* );
 
 void add_peer_ip_addr_for_rejection( const std::string& ip_addr );
 void remove_peer_ip_addr_from_rejection( const std::string& ip_addr );
