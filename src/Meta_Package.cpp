@@ -1200,11 +1200,6 @@ void Meta_Package::impl::impl_Install( )
 
       string standard_client_args( "-quiet -no_prompt" );
 
-      string rpc_password( get_rpc_password( ) );
-
-      if( !rpc_password.empty( ) )
-         standard_client_args += " -rpc_unlock=" + rpc_password;
-
       bool async = true;
 
       if( get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "0"
@@ -1584,11 +1579,6 @@ void Meta_Package::impl::impl_Remove( )
          get_obj( ).op_update( );
 
       string standard_client_args( "-quiet -no_prompt" );
-
-      string rpc_password( get_rpc_password( ) );
-
-      if( !rpc_password.empty( ) )
-         standard_client_args += " -rpc_unlock=" + rpc_password;
 
       string new_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".new" ) );
 
