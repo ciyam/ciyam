@@ -1727,7 +1727,8 @@ class socket_command_handler : public command_handler
     :
     socket( socket ),
     lock_expires( 0 ),
-    restoring( false )
+    restoring( false ),
+    locked_rpc( false )
    {
       bool is_encrypted = false;
 
