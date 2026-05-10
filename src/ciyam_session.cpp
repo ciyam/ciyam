@@ -36,6 +36,7 @@
 #include "base64.h"
 #include "config.h"
 #include "format.h"
+#include "sha256.h"
 #ifdef HPDF_SUPPORT
 #  include "pdf_gen.h"
 #endif
@@ -1719,9 +1720,9 @@ class socket_command_handler : public command_handler
 {
    public:
 #ifdef SSL_SUPPORT
-   socket_command_handler( ssl_socket& socket )
+   socket_command_handler( ssl_socket& socket, bool is_approved_for_rpc )
 #else
-   socket_command_handler( tcp_socket& socket )
+   socket_command_handler( tcp_socket& socket, bool is_approved_for_rpc )
 #endif
     :
     socket( socket ),
@@ -1737,9 +1738,23 @@ class socket_command_handler : public command_handler
       else
          locked_identity = false;
 
-      lock_password = get_rpc_password( );
+      // NOTE: An RPC password is only needed
+      // if the IP address is not an approved
+      // one (should always allow "127.0.0.1"
+      // otherwise scripts will fail).
+      if( !is_approved_for_rpc )
+      {
+         string rpc_password( get_rpc_password( ) );
 
-      locked_rpc = !lock_password.empty( );
+         scoped_clear_key clear_rpc_password( rpc_password );
+
+         if( !rpc_password.empty( ) )
+         {
+            locked_rpc = true;
+
+            lock_password_hash = sha256( rpc_password ).get_digest_as_string( );
+         }
+      }
    }
 
 #ifdef SSL_SUPPORT
@@ -1766,12 +1781,13 @@ class socket_command_handler : public command_handler
 
    void set_lock_password( const string& new_password )
    {
-      lock_password = new_password;
+      lock_password_hash = sha256( new_password ).get_digest_as_string( );
    }
 
    void check_lock_password( const string& password )
    {
-      if( !lock_password.empty( ) && ( password != lock_password ) )
+      if( !lock_password_hash.empty( )
+       && ( lock_password_hash != sha256( password ).get_digest_as_string( ) ) )
          throw runtime_error( "incorrect RPC unlock password" );
    }
 
@@ -1884,10 +1900,10 @@ class socket_command_handler : public command_handler
 
    int64_t lock_expires;
 
+   string lock_password_hash;
+
    string next_command;
    string restore_error;
-
-   string lock_password;
 
    string restricted_key;
 
@@ -5953,6 +5969,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          possibly_expected_error = true;
 
+         scoped_clear_key clear_password( password );
+
          socket_handler.check_lock_password( password );
 
          socket_handler.unlock_rpc( );
@@ -5968,6 +5986,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_session_rpc_password )
       {
          string password( get_parm_val( parameters, c_cmd_ciyam_session_session_rpc_password_password ) );
+
+         scoped_clear_key clear_password( password );
 
          // NOTE: Ensure immediate relocking.
          socket_handler.set_lock_expires( -1 );
@@ -8676,7 +8696,8 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
    if( !( *up_socket ) )
       throw runtime_error( "unexpected invalid socket in ciyam_session::ciyam_session" );
 
-   if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
+   if( ( ip_addr == c_local_ip_addr )
+    || ( ip_addr == c_local_ip_addr_for_ipv6 ) )
       is_local = true;
 
 #ifdef SSL_SUPPORT
@@ -8699,59 +8720,14 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
       needs_key_exchange = true;
    }
 
-   if( is_local && pid == to_string( get_pid( ) ) )
-      pid_is_self = true;
-
-   increment_session_count( );
-
-   // NOTE: Call "run_script" with "@none" to reload "manuscript.sio" if has changed.
-   run_script( get_special_var_name( e_special_var_none ) );
-}
-
-#ifdef SSL_SUPPORT
-ciyam_session::ciyam_session( unique_ptr< ssl_socket >& up_socket, const string& ip_addr )
-#else
-ciyam_session::ciyam_session( unique_ptr< tcp_socket >& up_socket, const string& ip_addr )
-#endif
- :
- is_local( false ),
- using_tls( false ),
- pid_is_self( false ),
- needs_key_exchange( false ),
- ip_addr( ip_addr ),
- up_socket( move( up_socket ) )
-{
-   if( !( *this->up_socket ) )
-      throw runtime_error( "unexpected invalid socket in ciyam_session::ciyam_session" );
-
-   if( ( ip_addr == c_local_ip_addr ) || ( ip_addr == c_local_ip_addr_for_ipv6 ) )
-      is_local = true;
-
-#ifdef SSL_SUPPORT
-   if( this->up_socket->is_tls_handshake( ) )
-   {
-      this->up_socket->ssl_accept( );
-
-      using_tls = true;
-   }
-#endif
-
-   string pid;
-
-   this->up_socket->read_line( pid, c_request_timeout );
-
-   string::size_type pos = pid.find( c_key_exchange_suffix );
-
-   if( pos != string::npos )
-   {
-      pid.erase( pos );
-      needs_key_exchange = true;
-   }
-
    if( is_local && ( pid == to_string( get_pid( ) ) ) )
       pid_is_self = true;
 
    increment_session_count( );
+
+   // NOTE: Call "run_script" with "@none" in order
+   // to reload "manuscript.sio" if it has changed.
+   run_script( get_special_var_name( e_special_var_none ) );
 }
 
 ciyam_session::~ciyam_session( )
@@ -8766,7 +8742,24 @@ void ciyam_session::on_start( )
 #endif
    try
    {
-      socket_command_handler cmd_handler( *up_socket );
+#ifdef SSL_SUPPORT
+      if( !is_local && !using_tls )
+         throw runtime_error( "non-local connections are not supported without using TLS" );
+#endif
+
+      bool is_approved_for_rpc = get_is_rpc_approved_ip_addr( ip_addr );
+
+      if( !is_approved_for_rpc )
+      {
+         string rpc_password( get_rpc_password( ) );
+
+         scoped_clear_key clear_rpc_password( rpc_password );
+
+         if( rpc_password.empty( ) )
+            throw runtime_error( "non-local IP addresses must be approved without a valid RPC password" );
+      }
+
+      socket_command_handler cmd_handler( *up_socket, is_approved_for_rpc );
 
       cmd_handler.add_commands( 0,
        ciyam_session_command_functor_factory, ARRAY_PTR_AND_SIZE( ciyam_session_command_definitions ) );
@@ -8786,10 +8779,12 @@ void ciyam_session::on_start( )
 
          slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
 
-         // NOTE: After handshake exchange public keys then commence application protocol.
+         // NOTE: After initial handshake exchange public
+         // keys before running the application protocol.
          up_socket->write_line( slot_and_pubkey );
 
          string slotx, pubkeyx, slotx_and_pubkeyx;
+
          up_socket->read_line( slotx_and_pubkeyx, c_request_timeout );
 
          string::size_type pos = slotx_and_pubkeyx.find( '-' );

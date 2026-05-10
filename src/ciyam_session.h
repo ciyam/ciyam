@@ -24,10 +24,8 @@ class ciyam_session : public thread
    public:
 #  ifdef SSL_SUPPORT
    ciyam_session( ssl_socket* p_socket, const std::string& ip_addr );
-   ciyam_session( std::unique_ptr< ssl_socket >& up_socket, const std::string& ip_addr );
 #  else
    ciyam_session( tcp_socket* p_socket, const std::string& ip_addr );
-   ciyam_session( std::unique_ptr< tcp_socket >& up_socket, const std::string& ip_addr );
 #  endif
 
    ~ciyam_session( );
