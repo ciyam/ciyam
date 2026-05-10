@@ -2014,11 +2014,6 @@ void Meta_Application::impl::impl_Generate( )
 
       string standard_client_args( "-tls -quiet -no_prompt" );
 
-      string rpc_password( get_rpc_password( ) );
-
-      if( !rpc_password.empty( ) )
-         standard_client_args += " -rpc_unlock=" + rpc_password;
-
       outs << "touch $WEBDIR/" << app_dir << "/ciyam_interface.stop\n";
 
       outv << "\x60{\x60$year_created\x60=\x60'" << get_obj( ).Year_Created( ) << "\x60'\x60}\n";
@@ -2121,7 +2116,7 @@ void Meta_Application::impl::impl_Generate( )
       outv << "\x60{\x60$embed_images\x60=\x60'" << embed_images << "\x60'\x60}\n";
       outv << "\x60{\x60$encrypt_data\x60=\x60'" << encrypt_data << "\x60'\x60}\n";
 
-      outv << "\x60{\x60$rpc_password\x60=\x60'" << rpc_password << "\x60'\x60}\n";
+      outv << "\x60{\x60$rpc_password\x60=\x60'\x60'\x60}\n";
 
       outv << "\x60{\x60$checkbox_bools\x60=\x60'" << checkbox_bools << "\x60'\x60}\n";
 
