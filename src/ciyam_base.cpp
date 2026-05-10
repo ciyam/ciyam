@@ -6384,12 +6384,7 @@ void destroy_peerchain( const string& identity, progress* p_progress )
       string extra_identity( get_extra_identity_variable(
        get_special_var_name( e_special_var_blockchain_backup_identity ), extra_value ) );
 
-      string hub_hash_variable;
-
-      if( auto_start == c_true_value )
-         hub_hash_variable = "@" + extra_identity;
-      else
-         hub_hash_variable = get_special_var_name( e_special_var_hub ) + '_' + identity;
+      string hub_hash_variable( "@" + extra_identity );
 
       if( has_system_variable( hub_hash_variable ) )
       {

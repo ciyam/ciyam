@@ -267,25 +267,48 @@ string special_connection_message( const string& id, bool has_timed_out = false 
 
 string get_hub_identity( const string& own_identity )
 {
-   string hub_identity_var_name( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) );
-   string backup_identity_var_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
+   string hub_var_name( get_special_var_name( e_special_var_hub ) + '_' + own_identity );
 
-   if( own_identity != get_system_variable( backup_identity_var_name ) )
+   string hub_identity( get_system_variable( hub_var_name ) );
+
+   if( hub_identity.empty( ) )
    {
-      string extra( get_identity_variable_extra( backup_identity_var_name, own_identity ) );
+      string hub_identity_var_name( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) );
+      string backup_identity_var_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
 
-      if( !extra.empty( ) )
+      bool was_forced = false;
+
+      if( own_identity != get_system_variable( backup_identity_var_name ) )
       {
-         string hub_identity_name_prefix, hub_identity_name_suffix;
+         string extra( get_identity_variable_extra( backup_identity_var_name, own_identity ) );
 
-         identity_variable_name_prefix_and_suffix(
-          hub_identity_var_name, hub_identity_name_prefix, hub_identity_name_suffix );
+         if( extra.empty( ) )
+         {
+            extra = get_identity_variable_extra( backup_identity_var_name, own_identity, true );
 
-         hub_identity_var_name = hub_identity_name_prefix + extra + hub_identity_name_suffix;
+            if( !extra.empty( ) )
+               was_forced = true;
+         }
+
+         if( !extra.empty( ) )
+         {
+            string hub_identity_name_prefix, hub_identity_name_suffix;
+
+            identity_variable_name_prefix_and_suffix(
+             hub_identity_var_name, hub_identity_name_prefix, hub_identity_name_suffix );
+
+            hub_identity_var_name = hub_identity_name_prefix + extra + hub_identity_name_suffix;
+         }
+
       }
+
+      hub_identity = get_system_variable( hub_identity_var_name );
+
+      if( was_forced && !hub_identity.empty( ) )
+         set_system_variable( ">" + hub_var_name, hub_identity );
    }
 
-   return get_system_variable( hub_identity_var_name );
+   return hub_identity;
 }
 
 string get_own_identity( bool is_shared, const string* p_extra )
