@@ -8049,12 +8049,12 @@ void list_all_sessions( ostream& os, bool inc_dtms,
 {
    guard g( g_session_mutex );
 
-   set< size_t > session_ids;
-
    set< string > blockchains;
    set< string > ip_addresses;
 
    vector< string > identifiers;
+
+   map< size_t, size_t > session_ids;
 
    // NOTE: Each session identifier can be either a
    // session id, blockchain identity or IP address.
@@ -8068,8 +8068,21 @@ void list_all_sessions( ostream& os, bool inc_dtms,
 
          if( next_identifier.length( )
           && ( next_identifier.length( ) < c_bc_identity_length )
-          && ( next_identifier.find_first_not_of( "0123456789" ) == string::npos ) )
-            session_ids.insert( from_string< size_t >( next_identifier ) );
+          && ( next_identifier.find_first_not_of( "0123456789-" ) == string::npos ) )
+         {
+            string::size_type pos = next_identifier.find( '-' );
+
+            pair< size_t, size_t > range;
+
+            range.first = from_string< size_t >( next_identifier.substr( 0, pos ) );
+
+            if( pos == string::npos )
+               range.second = range.first;
+            else
+               range.second = from_string< size_t >( next_identifier.substr( pos + 1 ) );
+
+            session_ids.insert( range );
+         }
          else if( next_identifier.find_first_of( ".:" ) == string::npos )
             blockchains.insert( next_identifier );
          else
@@ -8085,7 +8098,26 @@ void list_all_sessions( ostream& os, bool inc_dtms,
       {
          if( !session_ids.empty( ) )
          {
-            if( !session_ids.count( g_sessions[ i ]->id ) )
+            map< size_t, size_t >::const_iterator ci;
+
+            ci = session_ids.lower_bound( g_sessions[ i ]->id );
+
+            if( ( ci == session_ids.end( ) )
+             || ( ( ci != session_ids.begin( ) )
+             && ( ci->first > g_sessions[ i ]->id ) ) )
+               --ci;
+
+            bool okay = true;
+
+            if( ci->first > g_sessions[ i ]->id )
+               okay = false;
+            else
+            {
+               if( ci->second < g_sessions[ i ]->id )
+                  okay = false;
+            }
+
+            if( !okay )
                continue;
          }
 
