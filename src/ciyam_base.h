@@ -519,7 +519,7 @@ void condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wai
 
 bool is_condemned_session( );
 
-void capture_session( size_t sess_id );
+void capture_session( size_t sess_id = 0 );
 
 void capture_all_other_sessions( );
 
@@ -530,7 +530,7 @@ bool has_any_matching_session( bool support_only = true );
 inline bool has_any_support_session( ) { return has_any_matching_session( true ); }
 inline bool has_matching_peer_session( ) { return has_any_matching_session( false ); }
 
-void release_session( size_t sess_id, bool wait_until_term );
+void release_session( size_t sess_id = 0, bool wait_until_term = false );
 
 void release_all_other_sessions( bool wait_until_term );
 

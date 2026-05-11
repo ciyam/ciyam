@@ -7731,12 +7731,19 @@ void init_session(
          {
             session* p_next_session = g_sessions[ i ];
 
+            // NOTE: If finds an existing "main" session using the same
+            // IP address and blockchain then ensures the "is_captured"
+            // variable has been cleared along with immediately forcing
+            // it to be condemned.
             if( p_next_session && !p_next_session->is_support_session )
             {
                if( ( ip_addr == p_next_session->ip_addr )
-                && ( blockchain == p_next_session->blockchain )
-                && ( !g_condemned_sessions.count( p_next_session->id ) ) )
-                  g_condemned_sessions.insert( make_pair( p_next_session->id, date_time::local( ) ) );
+                && ( blockchain == p_next_session->blockchain ) )
+               {
+                  p_next_session->is_captured = false;
+
+                  g_condemned_sessions[ p_next_session->id ] = date_time::local( );
+               }
             }
          }
       }
@@ -7790,6 +7797,7 @@ void term_session( )
                for( size_t i = 0; i < num_to_get; i++ )
                {
                   other_supporters[ supporter ]->file_hashes_to_get.push_back( gtp_session->file_hashes_to_get.front( ) );
+
                   gtp_session->file_hashes_to_get.pop_front( );
 
                   if( ++supporter >= other_supporters.size( ) )
@@ -7806,6 +7814,7 @@ void term_session( )
                for( size_t i = 0; i < num_to_put; i++ )
                {
                   other_supporters[ supporter ]->file_hashes_to_put.push_back( gtp_session->file_hashes_to_put.front( ) );
+
                   gtp_session->file_hashes_to_put.pop_front( );
 
                   if( ++supporter >= other_supporters.size( ) )
@@ -8168,7 +8177,7 @@ void list_all_sessions( ostream& os, bool inc_dtms,
          ss << g_sessions[ i ]->session_commands_executed;
 
          if( g_sessions[ i ]->is_captured )
-            ss << '*';
+            ss << '!';
 
          if( include_progress )
          {
@@ -8537,10 +8546,10 @@ bool is_condemned_session( )
 {
    guard g( g_session_mutex );
 
-   return gtp_session
+   return ( gtp_session
     && ( ( g_condemned_sessions.count( gtp_session->id )
     && ( g_condemned_sessions[ gtp_session->id ] <= date_time::local( ) ) )
-    || ( g_session_timeout && ( ( date_time::local( ) - gtp_session->dtm_last_cmd ) > g_session_timeout ) ) );
+    || ( g_session_timeout && ( ( date_time::local( ) - gtp_session->dtm_last_cmd ) > g_session_timeout ) ) ) );
 }
 
 void capture_session( size_t sess_id )
