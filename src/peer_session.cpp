@@ -1067,9 +1067,13 @@ bool terminate_peer_session( bool is_for_support, const string& identity )
 
       string paired_identity( get_session_variable( e_special_var_paired_identity ) );
 
+      capture_session( );
+
       // NOTE: If is not a support session then will only terminate
       // after support sessions have terminated and if is the owner
       // then will also wait for its "paired session" to terminate.
+      // Also stops waiting if a server shutdown is taking place or
+      // the session "capture" is explicitly released.
       while( true )
       {
          bool has_dependent = false;
@@ -1084,11 +1088,16 @@ bool terminate_peer_session( bool is_for_support, const string& identity )
                has_dependent = true;
          }
 
-         if( !has_dependent || g_server_shutdown )
+         if( !has_dependent )
             break;
 
          msleep( c_wait_sleep_time );
+
+         if( g_server_shutdown || !is_captured_session( ) )
+            break;
       }
+
+      release_session( );
 
       remove_from_hub_queue_if_present( identity );
 
