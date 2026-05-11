@@ -1427,7 +1427,7 @@ void Meta_Package::impl::impl_Install( )
       // big troubles due to resource inheritance so the session is captured prior
       // to the async request and will be released at the end of the script.
       if( async )
-         capture_session( session_id( ) );
+         capture_session( );
 
       chmod( script_filename.c_str( ), 0770 );
 
@@ -1791,7 +1791,7 @@ void Meta_Package::impl::impl_Remove( )
             // to client deciding to finish its session) then this can potentially cause
             // big troubles due to resource inheritance so the session is captured prior
             // to the async request and will be released at the end of the script.
-            capture_session( session_id( ) );
+            capture_session( );
 
             chmod( script_filename.c_str( ), 0770 );
             exec_system( "./run_temp " + script_filename, true );

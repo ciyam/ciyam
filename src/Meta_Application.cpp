@@ -2498,7 +2498,7 @@ void Meta_Application::impl::impl_Generate( )
    // big troubles due to resource inheritance so the session is captured prior
    // to the async request and will be released at the end of the script.
    if( async && !skip_exec )
-      capture_session( session_id( ) );
+      capture_session( );
 
    chmod( generate_script.c_str( ), 0777 );
 

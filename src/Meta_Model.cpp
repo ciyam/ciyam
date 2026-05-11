@@ -6859,7 +6859,7 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
          // big troubles due to resource inheritance so the session is captured prior
          // to the async request and will be released at the end of the script.
          if( async )
-            capture_session( session_id( ) );
+            capture_session( );
 
          chmod( script_filename.c_str( ), 0770 );
          exec_system( "./run_temp " + script_filename, async );
