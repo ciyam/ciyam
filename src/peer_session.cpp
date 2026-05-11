@@ -1067,29 +1067,38 @@ bool terminate_peer_session( bool is_for_support, const string& identity )
 
       string paired_identity( get_session_variable( e_special_var_paired_identity ) );
 
-      capture_session( );
+      bool was_captured = is_captured_session( );
+
+      if( !was_captured )
+         capture_session( );
 
       // NOTE: If is not a support session then will only terminate
       // after support sessions have terminated and if is the owner
       // then will also wait for its "paired session" to terminate.
       // Also stops waiting if a server shutdown is taking place or
-      // the session "capture" is explicitly released.
+      // the session "capture" is explicitly released. If was found
+      // to have already been captured explicitly (which would most
+      // likely be for debugging purposes) skip over the dependency
+      // checking.
       while( true )
       {
-         bool has_dependent = false;
-
-         if( has_any_support_session( ) )
-            has_dependent = true;
-         else if( !peer.empty( )
-          && !paired_identity.empty( ) && ( paired_identity != unprefixed_peer ) )
+         if( !was_captured )
          {
-            if( !has_system_variable( "~" + paired_identity )
-             && ( num_have_session_variable( paired_identity, true ) > 1 ) )
-               has_dependent = true;
-         }
+            bool has_dependent = false;
 
-         if( !has_dependent )
-            break;
+            if( has_any_support_session( ) )
+               has_dependent = true;
+            else if( !peer.empty( )
+             && !paired_identity.empty( ) && ( paired_identity != unprefixed_peer ) )
+            {
+               if( !has_system_variable( "~" + paired_identity )
+                && ( num_have_session_variable( paired_identity, true ) > 1 ) )
+                  has_dependent = true;
+            }
+
+            if( !has_dependent )
+               break;
+         }
 
          msleep( c_wait_sleep_time );
 
@@ -1097,7 +1106,8 @@ bool terminate_peer_session( bool is_for_support, const string& identity )
             break;
       }
 
-      release_session( );
+      if( !was_captured )
+         release_session( );
 
       remove_from_hub_queue_if_present( identity );
 
