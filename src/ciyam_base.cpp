@@ -7572,10 +7572,8 @@ void generate_new_script_sio( bool for_autoscript )
                      // NOTE: Remove comment prefixes for console script files.
                      if( next.find( "#;" ) == 0 )
                         next.erase( 0, 1 );
-                     else if( next.find( "REM;" ) == 0 )
-                        next.erase( 0, 3 );
 
-                     if( next.empty( ) || next[ 0 ] != ';' )
+                     if( next.empty( ) || ( next[ 0 ] != ';' ) )
                      {
                         if( is_script )
                            break;
@@ -7831,6 +7829,7 @@ void term_session( )
                for( size_t i = 0; i < num_to_get; i++ )
                {
                   p_main_session->file_hashes_to_get.push_back( gtp_session->file_hashes_to_get.front( ) );
+
                   gtp_session->file_hashes_to_get.pop_front( );
                }
             }
@@ -7842,6 +7841,7 @@ void term_session( )
                for( size_t i = 0; i < num_to_put; i++ )
                {
                   p_main_session->file_hashes_to_put.push_back( gtp_session->file_hashes_to_put.front( ) );
+
                   gtp_session->file_hashes_to_put.pop_front( );
                }
             }
@@ -8026,10 +8026,11 @@ string get_random_same_port_peer_ip_addr( const string& empty_value )
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
-      if( g_sessions[ i ] && gtp_session != g_sessions[ i ]
+      if( g_sessions[ i ]
+       && ( gtp_session != g_sessions[ i ] )
        && g_sessions[ i ]->variables.count( peer_var_name )
        && g_sessions[ i ]->variables.count( port_var_name )
-       && port == g_sessions[ i ]->variables[ port_var_name ] )
+       && ( port == g_sessions[ i ]->variables[ port_var_name ] ) )
          peer_ip_addresses.push_back( g_sessions[ i ]->ip_addr );
    }
 
@@ -8044,7 +8045,7 @@ string get_random_same_port_peer_ip_addr( const string& empty_value )
    return retval;
 }
 
-void list_all_sessions( ostream& os, bool inc_dtms,
+void list_all_sessions( ostream& os, bool inc_own, bool inc_dtms,
  bool include_progress, bool include_supports, const string* p_session_identifiers = 0 )
 {
    guard g( g_session_mutex );
@@ -8087,6 +8088,9 @@ void list_all_sessions( ostream& os, bool inc_dtms,
    {
       if( g_sessions[ i ] )
       {
+         if( !inc_own && ( gtp_session == g_sessions[ i ] ) )
+            continue;
+
          if( !session_ids.empty( ) )
          {
             if( !is_in_range( session_ids, g_sessions[ i ]->id ) )
@@ -8205,12 +8209,12 @@ void list_all_sessions( ostream& os, bool inc_dtms,
       os << i->second << '\n';
 }
 
-void list_sessions( ostream& os, bool inc_dtms,
+void list_sessions( ostream& os, bool inc_own, bool inc_dtms,
  bool include_progress, bool include_supporters, const string* p_session_identifiers )
 {
    guard g( g_session_mutex, "list_sessions" );
 
-   list_all_sessions( os, inc_dtms, include_progress, include_supporters, p_session_identifiers );
+   list_all_sessions( os, inc_own, inc_dtms, include_progress, include_supporters, p_session_identifiers );
 }
 
 command_handler& get_session_command_handler( )
@@ -8238,7 +8242,7 @@ void server_command( const char* p_cmd )
    {
       cerr << "[sessions]" << endl;
 
-      list_all_sessions( cerr, true, true, true );
+      list_all_sessions( cerr, true, true, true, true );
    }
    else
       cerr << "available commands: " << c_server_command_mutexes << " and " << c_server_command_sessions << endl;
