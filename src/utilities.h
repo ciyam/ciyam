@@ -92,14 +92,18 @@ inline void to_lower( std::string& s )
 inline std::string upper( const std::string& s )
 {
    std::string ss( s );
+
    to_upper( ss );
+
    return ss;
 }
 
 inline std::string lower( const std::string& s )
 {
    std::string ss( s );
+
    to_lower( ss );
+
    return ss;
 }
 
@@ -116,6 +120,7 @@ inline void clear_key( std::string& key, bool erase = false )
 struct scoped_clear_key
 {
    inline scoped_clear_key( std::string& key, bool erase = false ) : key( key ), erase( erase ) { }
+
    inline ~scoped_clear_key( ) { clear_key( key, erase ); }
 
    bool erase;
@@ -144,6 +149,7 @@ struct combined_clear_key
 inline double round( double x, int n )
 {
    double p = std::pow( 10.0, n );
+
    return std::floor( 0.5 + p * x ) / p;
 }
 
@@ -968,11 +974,34 @@ inline void remove_utf8_bom( std::string& s ) { remove_utf8_bom_impl( s ); }
 inline void remove_trailing_cr_from_text_file_line( std::string& s, bool also_remove_uft8_bom = false )
 {
    // NOTE: If a text file had been treated as binary during an FTP remove trailing CR.
-   if( s.size( ) && s[ s.size( ) - 1 ] == '\r' )
+   if( s.size( ) && ( s[ s.size( ) - 1 ] == '\r' ) )
       s.erase( s.size( ) - 1 );
 
    if( also_remove_uft8_bom )
       remove_utf8_bom_impl( s );
+}
+
+// NOTE: Template function used for determining if an item is in a map of "range pairs"
+// where for every entry the "first" value must be less than or equal to the "second".
+template< typename T > inline bool is_in_range( const std::map< T, T >& c, const T& t )
+{
+   bool retval = true;
+
+   typename std::map< T, T >::const_iterator ci = c.lower_bound( t );
+
+   if( ( ci == c.end( ) )
+    || ( ( ci != c.begin( ) ) && ( ci->first > t ) ) )
+      --ci;
+
+   if( ci->first > t )
+      retval = false;
+   else
+   {
+      if( ci->second < t )
+         retval = false;
+   }
+
+   return retval;
 }
 
 // NOTE: For a map that is a collection of "range pairs" (such as 0-3,1-4) this function condenses
@@ -988,29 +1017,31 @@ template< typename N > void condense_range_pairs( std::map< N, N >& range_pairs,
          break;
 
       N first = i->first;
+
       typename std::map< N, N >::iterator oi = i;
 
       if( num_items && first >= num_items )
       {
          range_pairs.erase( first );
+
          i = range_pairs.lower_bound( first );
 
          continue;
       }
 
-      if( num_items && i->second >= num_items )
-         i->second = num_items - 1;
+      if( num_items && ( i->second >= num_items ) )
+         i->second = ( num_items - 1 );
 
       N second = i->second;
 
       if( ++i == range_pairs.end( ) )
          break;
 
-      while( i->first <= second + 1 )
+      while( i->first <= ( second + 1 ) )
       {
          first = i->first;
 
-         if( num_items && i->second >= num_items )
+         if( num_items && ( i->second >= num_items ) )
             i->second = num_items - 1;
 
          if( oi->second < i->second )
@@ -1047,13 +1078,16 @@ template< typename N > void split_range_pairs(
          if( range.empty( ) )
             continue;
 
-         if( ( num_items != start_from ) && ( range == "*" || range == "all" ) )
+         if( ( num_items != start_from )
+          && ( ( range == "*" ) || ( range == "all" ) ) )
          {
             range_pairs[ start_from ] = ( num_items - 1 );
+
             break;
          }
 
          std::string lhs, rhs;
+
          std::string::size_type pos = range.find( '-' );
 
          lhs = range.substr( 0, pos );
@@ -1072,7 +1106,7 @@ template< typename N > void split_range_pairs(
          if( first < start_from )
             first = start_from;
 
-         if( num_items != start_from && second >= num_items )
+         if( ( num_items != start_from ) && ( second >= num_items ) )
             second = num_items - 1;
 
          if( !range_pairs.count( first ) )
@@ -1087,6 +1121,7 @@ template< typename N > void split_and_condense_range_pairs(
  const std::string& all_ranges, std::map< N, N >& range_pairs, N num_items = 0 )
 {
    split_range_pairs( all_ranges, range_pairs, num_items );
+
    condense_range_pairs( range_pairs, num_items );
 }
 
