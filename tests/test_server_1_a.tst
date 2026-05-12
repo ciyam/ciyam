@@ -1,7 +1,7 @@
 version -protocol
 0.1
 1MB
-session_list -min
+session_list -min *
 1* session_list <none> 127.0.0.1 0:0 0:0 =2
 trace_levels
 10000 minimal

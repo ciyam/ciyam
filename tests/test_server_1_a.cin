@@ -1,6 +1,6 @@
 version -protocol
 #$MAX_FILE_SIZE
-session_list -min
+session_list -min *
 trace_levels
 trace_flags -list
 strings
