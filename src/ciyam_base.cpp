@@ -8057,7 +8057,8 @@ void list_all_sessions( ostream& os, bool inc_dtms,
    map< size_t, size_t > session_ids;
 
    // NOTE: Each session identifier can be either a
-   // session id, blockchain identity or IP address.
+   // session id (or range), a blockchain identity,
+   // or an IP address.
    if( p_session_identifiers )
    {
       split( *p_session_identifiers, identifiers );
@@ -8069,25 +8070,15 @@ void list_all_sessions( ostream& os, bool inc_dtms,
          if( next_identifier.length( )
           && ( next_identifier.length( ) < c_bc_identity_length )
           && ( next_identifier.find_first_not_of( "0123456789-" ) == string::npos ) )
-         {
-            string::size_type pos = next_identifier.find( '-' );
-
-            pair< size_t, size_t > range;
-
-            range.first = from_string< size_t >( next_identifier.substr( 0, pos ) );
-
-            if( pos == string::npos )
-               range.second = range.first;
-            else
-               range.second = from_string< size_t >( next_identifier.substr( pos + 1 ) );
-
-            session_ids.insert( range );
-         }
+            split_range_pairs( next_identifier, session_ids );
          else if( next_identifier.find_first_of( ".:" ) == string::npos )
             blockchains.insert( next_identifier );
          else
             ip_addresses.insert( next_identifier );
       }
+
+      if( !session_ids.empty( ) )
+         condense_range_pairs( session_ids );
    }
 
    map< size_t, string > sessions;
@@ -8098,26 +8089,7 @@ void list_all_sessions( ostream& os, bool inc_dtms,
       {
          if( !session_ids.empty( ) )
          {
-            map< size_t, size_t >::const_iterator ci;
-
-            ci = session_ids.lower_bound( g_sessions[ i ]->id );
-
-            if( ( ci == session_ids.end( ) )
-             || ( ( ci != session_ids.begin( ) )
-             && ( ci->first > g_sessions[ i ]->id ) ) )
-               --ci;
-
-            bool okay = true;
-
-            if( ci->first > g_sessions[ i ]->id )
-               okay = false;
-            else
-            {
-               if( ci->second < g_sessions[ i ]->id )
-                  okay = false;
-            }
-
-            if( !okay )
+            if( !is_in_range( session_ids, g_sessions[ i ]->id ) )
                continue;
          }
 
