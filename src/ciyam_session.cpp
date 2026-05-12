@@ -89,9 +89,9 @@ mutex g_mutex;
 #include "trace_progress.cpp"
 
 #ifdef LOCAL_REQUESTS_ONLY
-const size_t c_request_timeout = 500; // i.e. 1/2 sec
+const size_t c_request_timeout = 1000; // i.e. 1 sec
 #else
-const size_t c_request_timeout = 5000; // i.e. 5 secs
+const size_t c_request_timeout = 10000; // i.e. 10 secs
 #endif
 
 const size_t c_udp_wait_timeout = 50; // i.e. 1/20 sec
@@ -101,7 +101,6 @@ const size_t c_listen_wait_timeout = 50; // i.e. 1/20 sec
 const size_t c_listen_wait_repeats = 20;
 
 const int c_pdf_default_limit = 10000;
-
 const int c_max_pdf_or_single_limit = 100000;
 
 const size_t c_response_reserve_size = 1024;
@@ -5786,7 +5785,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string identifiers( get_parm_val( parameters, c_cmd_ciyam_session_session_list_identifiers ) );
          bool has_identifiers = has_parm_val( parameters, c_cmd_ciyam_session_session_list_identifiers );
 
-         list_sessions( osstr, !minimal, !minimal, !minimal, ( !has_identifiers ? 0 : &identifiers ) );
+         bool include_own_session = !minimal;
+
+         if( has_identifiers && ( identifiers == "*" ) )
+         {
+            identifiers.erase( );
+
+            has_identifiers = false;
+            include_own_session = true;
+         }
+
+         list_sessions( osstr, include_own_session, !minimal, !minimal, !minimal, ( !has_identifiers ? 0 : &identifiers ) );
 
          response = osstr.str( );
       }
@@ -8571,7 +8580,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else
       {
          send_okay_response = false;
+
          transaction_log_command( "" );
+
          response = string( c_response_error_prefix ) + c_unexpected_unknown_exception;
       }
    }
@@ -8612,6 +8623,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
    if( is_first_command )
    {
       is_first_command = false;
+
       TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "started session (tid = " + to_string( current_thread_id( ) ) + ")" );
    }
 
@@ -8741,11 +8753,17 @@ void ciyam_session::on_start( )
 #ifdef DEBUG
    cerr << "started session..." << endl;
 #endif
+   bool possibly_expected_error = false;
+
    try
    {
 #ifdef SSL_SUPPORT
       if( !is_local && !using_tls )
+      {
+         possibly_expected_error = true;
+
          throw runtime_error( "non-local connections are not supported without using TLS" );
+      }
 #endif
 
       bool is_approved_for_rpc = get_is_rpc_approved_ip_addr( ip_addr );
@@ -8757,7 +8775,11 @@ void ciyam_session::on_start( )
          scoped_clear_key clear_rpc_password( rpc_password );
 
          if( rpc_password.empty( ) )
+         {
+            possibly_expected_error = true;
+
             throw runtime_error( "non-local IP addresses must be approved without a valid RPC password" );
+         }
       }
 
       socket_command_handler cmd_handler( *up_socket, is_approved_for_rpc );
@@ -8807,20 +8829,26 @@ void ciyam_session::on_start( )
       }
 
       socket_command_processor processor( *up_socket, cmd_handler );
+
       processor.process_commands( );
 
       up_socket->close( );
 
       term_storage( cmd_handler );
+
       module_unload_all( cmd_handler );
 
       term_session( );
    }
    catch( exception& x )
    {
-      issue_error( x.what( ) );
+      if( !possibly_expected_error )
+         issue_error( x.what( ) );
+      else
+         issue_warning( x.what( ) );
 
       up_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
+
       up_socket->close( );
 
       term_session( );
@@ -8830,6 +8858,7 @@ void ciyam_session::on_start( )
       issue_error( "unexpected unknown exception occurred" );
 
       up_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred", c_request_timeout );
+
       up_socket->close( );
 
       term_session( );
