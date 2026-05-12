@@ -4594,6 +4594,7 @@ void ods::dump_transaction_log( ostream& os, bool omit_dtms,
          }
 
          bool first_item = true;
+
          ostringstream osstr;
 
          if( first_entry )
@@ -4617,17 +4618,9 @@ void ods::dump_transaction_log( ostream& os, bool omit_dtms,
 
             bool dump_item = true;
 
-            if( !range_pairs.empty( ) )
-            {
-               map< int64_t, int64_t >::iterator i = range_pairs.lower_bound( tranlog_item.index_entry_id );
-
-               if( i == range_pairs.end( )
-                || ( i != range_pairs.begin( ) && i->first > tranlog_item.index_entry_id ) )
-                  --i;
-
-               if( !( tranlog_item.index_entry_id >= i->first && tranlog_item.index_entry_id <= i->second ) )
-                  dump_item = false;
-            }
+            if( !range_pairs.empty( )
+             && !is_in_range( range_pairs, tranlog_item.index_entry_id ) )
+               dump_item = false;
 
             if( dump_item )
             {
