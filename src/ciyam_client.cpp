@@ -122,9 +122,9 @@ const char* const c_dummy_file_name = "@dummy";
 const char* const c_not_found_output = "Not Found";
 const char* const c_error_output_prefix = "Error: ";
 
-const size_t c_pid_timeout = 5000; // i.e. 5 secs
-const size_t c_tls_timeout = 5000; // i.e. 5 secs
-const size_t c_pubkey_timeout = 5000; // i.e. 5 secs
+const size_t c_pid_timeout = 10000; // i.e. 10 secs
+const size_t c_tls_timeout = 10000; // i.e. 10 secs
+const size_t c_pubkey_timeout = 10000; // i.e. 10 secs
 const size_t c_command_timeout = 60000; // i.e. 60 secs
 const size_t c_connect_timeout = 10000; // i.e. 10 secs
 const size_t c_greeting_timeout = 10000; // i.e. 10 secs
