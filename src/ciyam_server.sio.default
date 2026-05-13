@@ -13,10 +13,10 @@
 # <ntfy_server>ntfy.name.org
 # <trace_flags>10000
 # <max_sessions>100
-# <gpg_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
-# <pem_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
-# <rpc_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
-# <sql_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
+# <gpg_password>#c0973cd7a39b8150bda74c09b270faa6:SUW+A1PnYxxX0D16b2C6uA==
+# <pem_password>#c0973cd7a39b8150bda74c09b270faa6:SUW+A1PnYxxX0D16b2C6uA==
+# <rpc_password>#c0973cd7a39b8150bda74c09b270faa6:SUW+A1PnYxxX0D16b2C6uA==
+# <sql_password>#c0973cd7a39b8150bda74c09b270faa6:SUW+A1PnYxxX0D16b2C6uA==
 # <log_files_path>
 # <test_peer_port>0
  <user_home_path>/home/$USER
@@ -38,7 +38,7 @@
 #   <server>name.org:995
 #   <suffix>name.org
 #   <username>user
-#   <password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
+#   <password>#c0973cd7a39b8150bda74c09b270faa6:SUW+A1PnYxxX0D16b2C6uA==
 #   <security>SSL
 #  </pop3>
 #  <smtp/>
@@ -46,7 +46,7 @@
 #   <sender>"Organisation Name" <user@name.org>
 #   <suffix>name.org
 #   <username>user
-#   <password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
+#   <password>#c0973cd7a39b8150bda74c09b270faa6:SUW+A1PnYxxX0D16b2C6uA==
 #   <security>SSL LOGIN
 #   <max_send_attempts>3
 #   <max_attached_data>100kB
