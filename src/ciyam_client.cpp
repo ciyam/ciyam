@@ -1969,15 +1969,20 @@ int main( int argc, char* argv[ ] )
 
             if( g_rpc_password.empty( ) )
                g_rpc_password = get_environment_variable( c_env_var_rpc_password );
+
             if( !g_rpc_password.empty( ) )
             {
+#ifdef SSL_SUPPORT
+               if( !g_use_tls )
+                  throw runtime_error( "RPC access unlock requires a TLS connection" );
+#endif
                if( g_rpc_password == "?" )
                   g_rpc_password = get_password( "RPC Password: " );
 
+               scoped_clear_key clear_password( g_rpc_password );
+
                processor.execute_command( g_quiet_cmd_prefix
                 + string( c_session_cmd_session_rpc_unlock ) + " \"" + g_rpc_password + "\"" );
-
-               clear_key( g_rpc_password, true );
             }
 
             if( !g_args_file.empty( ) )
