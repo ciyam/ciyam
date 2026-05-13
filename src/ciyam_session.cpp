@@ -100,6 +100,8 @@ const size_t c_udp_wait_repeats = 10;
 const size_t c_listen_wait_timeout = 50; // i.e. 1/20 sec
 const size_t c_listen_wait_repeats = 20;
 
+const size_t c_rpc_retry_unlock_timeout = 2000; // i.e. 2 secs
+
 const int c_pdf_default_limit = 10000;
 const int c_max_pdf_or_single_limit = 100000;
 
@@ -1788,7 +1790,11 @@ class socket_command_handler : public command_handler
    {
       if( !lock_password_hash.empty( )
        && ( lock_password_hash != sha256( password ).get_digest_as_string( ) ) )
+      {
+         msleep( c_rpc_retry_unlock_timeout );
+
          throw runtime_error( "incorrect RPC unlock password" );
+      }
    }
 
    void check_lock_expiry( )
@@ -8511,6 +8517,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool no_ssl = has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_no_ssl );
          bool no_salt = has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_no_salt );
+         bool internal = has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_internal );
          bool harden_key = has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_harden_key );
          bool pwd_and_data = has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_pwd_and_data );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_data ) );
@@ -8524,7 +8531,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          scoped_clear_key clear_data( data );
 
-         encrypt_data( response, data, no_ssl, false, no_salt, harden_key, pwd_and_data );
+         encrypt_data( response, data, no_ssl, internal, no_salt, harden_key, pwd_and_data );
       }
       else if( command == c_cmd_ciyam_session_utils_entropy )
       {

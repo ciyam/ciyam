@@ -86,7 +86,7 @@ session_restrict "set/clear restricted protocol command list" <val//key>[<olist/
 session_variable|var "get/set a session variable or num matching sessions" [<val/-id=/session_id>|<opt/-num_found/num_found>]<val//name_or_expr>[<oval//value>][<oval//current>]
 session_terminate|quit "terminate session"
 session_rpc_unlock|unlock "unlock full RPC access for the current session" <val//password>[<val//seconds>]
-session_rpc_password|lock "locks full RPC access for the current session with a specific password" <val//password>
+session_rpc_password|lock "locks full RPC access for the current session with a temporary password" <val//password>
 starttls|tls "start TLS session"
 storage_info "name and other information about the currently linked storage"
 storage_init "link to an existing or newly created storage" [<opt/-admin/admin>][<val/-directory=/directory>]<val//name>
@@ -163,6 +163,6 @@ utils_regex|regex "check regex with text" [<opt/-chain/chain>][<opt/-refs/refs>|
 utils_decode|decode "decode base64 to hex" [<opt/-url/url>][<opt/-text/text>]<val//data>
 utils_encode|encode "encode hex to base64" [<opt/-url/url>][<opt/-text/text>]<val//data>
 utils_decrypt|decrypt "decrypt key/data/password" [<opt/-harden_key/harden_key>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]
-utils_encrypt|encrypt "encrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-harden_key/harden_key>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]
+utils_encrypt|encrypt "encrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-internal/internal>][<opt/-harden_key/harden_key>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]
 utils_entropy|entropy "output random characters" [<val/-x=/max_extra>][<opt/-numeric/numeric>|<opt/-alpha_lower/alpha_lower>]<val//minimum_chars>
 utils_soundex|soundex "output soundex value for a word/phonic" [<opt/-skip/skip_prefix_specials>]<val//word_or_phonic_letters>
