@@ -260,27 +260,43 @@ char get_char( const char* p_prompt, bool flush_input )
 void get_line( string& str, const char* p_prompt, bool use_cin )
 {
 #ifdef __GNUG__
-   // NOTE: If standard input is not a terminal (such as is the case with redirected input)
+   // NOTE: If standard input is not a terminal (such as when using redirected input)
    // then don't use "readline" (as it does not behave as one might expect it would).
 #  ifdef RDLINE_SUPPORT
    if( isatty( STDIN_FILENO ) )
    {
+      // NOTE: Forces the ECHO flag to be
+      // set before calling "readline" as
+      // otherwise (such as occurs if was
+      // started in the background) might
+      // not echo the text being input.
+      struct termios systerm;
+
+      tcgetattr( STDIN_FILENO, &systerm );
+
+      systerm.c_lflag |= ( ICANON | ECHO );
+
+      tcsetattr( STDIN_FILENO, TCSANOW, &systerm );
+
       char* p = readline( p_prompt );
+
       if( p )
       {
          size_t len = strlen( p );
 
          str.resize( len );
+
          memcpy( &str[ 0 ], p, len );
 
          memset( p, '\0', len );
+
          free( p );
       }
    }
    else
 #  endif
    {
-      if( p_prompt && p_prompt[ 0 ] != 0 )
+      if( p_prompt && ( p_prompt[ 0 ] != 0 ) )
          cout << p_prompt;
 
       if( use_cin )
@@ -305,6 +321,7 @@ string get_password( const char* p_prompt, char* p_buf, size_t buflen )
    string str;
 
    char* p = getpass( p_prompt );
+
    size_t len = strlen( p );
 
    if( p_buf && buflen )
@@ -328,13 +345,14 @@ void put_line( const char* p_chars, size_t len, bool append_lf )
 {
   int outfd = STDOUT_FILENO;
 
-   // NOTE: If standard output is not a terminal (such as is the case with redirected output) then
-   // instead attempt to open the TTY device directly.
+   // NOTE: If standard output is not a terminal (such as if is using
+   // redirected output) then is attempting to open the TTY directly.
    if( !isatty( outfd ) )
    {
       if( ( outfd = open( _PATH_TTY, O_RDWR ) ) == -1 )
       {
          cerr << "fatal: unable to open terminal device" << endl;
+
          exit( 1 );
       }
    }
