@@ -4166,6 +4166,12 @@ set< string > g_trace_filters;
 
 set< size_t > g_trace_session_ids;
 
+void modify_for_internal( string& key )
+{
+   for( size_t i = 0; i < key.length( ); i++ )
+      key[ i ] ^= 0xaa;
+}
+
 // IMPORTANT: Any changes made to this function could
 // prevent the "admin" account from using the FCGI UI
 // (so will need to carefully check before changing).
@@ -5159,7 +5165,13 @@ void init_globals( const char* p_sid, int* p_use_udp )
          if( g_pem_password.empty( ) )
             init_ssl( c_ciyam_pem, 0, 0, true );
          else
-            init_ssl( c_ciyam_pem, g_pem_password.c_str( ), 0, true );
+         {
+            string pem_password( decrypt_data( g_pem_password, true ) );
+
+            scoped_clear_key clear_password( pem_password );
+
+            init_ssl( c_ciyam_pem, pem_password.c_str( ), 0, true );
+         }
 
          g_using_ssl = true;
       }
@@ -6857,7 +6869,7 @@ string get_pop3_username( )
 
 string get_pop3_password( )
 {
-   return decrypt_data( g_pop3_password );
+   return decrypt_data( g_pop3_password, true );
 }
 
 string get_pop3_security( )
@@ -6897,7 +6909,7 @@ string get_smtp_username( )
 
 string get_smtp_password( )
 {
-   return decrypt_data( g_smtp_password );
+   return decrypt_data( g_smtp_password, true );
 }
 
 string get_smtp_security( )
@@ -6967,7 +6979,7 @@ void verify_active_external_service( const string& ext_key )
 }
 
 void decrypt_data( string& s, const string& data,
- bool empty_key, bool harden_key, bool is_pwd_and_data )
+ bool internal, bool harden_key, bool is_pwd_and_data )
 {
    string key;
    string str( data );
@@ -7001,10 +7013,13 @@ void decrypt_data( string& s, const string& data,
       }
    }
 
-   // NOTE: If "empty_key" was specified then an empty key is used (so
-   // should only set "true" when performing simple regression tests).
-   if( !empty_key && ( pos == 0 ) )
+   if( pos == 0 )
+   {
       get_sid( key );
+
+      if( internal )
+         modify_for_internal( key );
+   }
 
    if( harden_key )
       harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
@@ -7016,7 +7031,7 @@ void decrypt_data( string& s, const string& data,
 }
 
 void encrypt_data( string& s, const string& data,
- bool no_ssl, bool empty_key, bool use_sid_only, bool harden_key, bool is_pwd_and_data )
+ bool no_ssl, bool internal, bool use_sid_only, bool harden_key, bool is_pwd_and_data )
 {
    string key;
 
@@ -7082,13 +7097,18 @@ void encrypt_data( string& s, const string& data,
    }
 
    // NOTE: (refer to "decrypt_data")
-   if( !empty_key && !is_pwd_and_data )
+   if( !is_pwd_and_data )
+   {
       get_sid( key );
+
+      if( internal )
+         modify_for_internal( key );
+   }
 
    if( harden_key )
       harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
 
-   data_encrypt( s, str, key, !no_ssl, ( !empty_key && !use_sid_only ) );
+   data_encrypt( s, str, key, !no_ssl, !use_sid_only );
 
    clear_key( key );
    clear_key( str );
@@ -8725,7 +8745,7 @@ string get_gpg_password( )
    if( g_gpg_password.length( ) < c_minimum_encrypted_password_size )
       return g_gpg_password;
    else
-      return decrypt_data( g_gpg_password );
+      return decrypt_data( g_gpg_password, true );
 }
 
 string get_rpc_password( )
@@ -8733,7 +8753,7 @@ string get_rpc_password( )
    if( g_rpc_password.length( ) < c_minimum_encrypted_password_size )
       return g_rpc_password;
    else
-      return decrypt_data( g_rpc_password );
+      return decrypt_data( g_rpc_password, true );
 }
 
 string get_sql_password( )
@@ -8748,7 +8768,7 @@ string get_sql_password( )
       else if( g_sql_password.length( ) < c_minimum_encrypted_password_size )
          pwd = g_sql_password;
       else
-         pwd = decrypt_data( g_sql_password );
+         pwd = decrypt_data( g_sql_password, true );
    }
 
    return pwd;
