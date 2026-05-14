@@ -287,6 +287,10 @@ system_variable xxx -has
 0
 system_variable xxx
 session_restrict abc "session_variable"
+help *variable*
+commands: *variable*
+=========
+session_variable|var [-id=<session_id>|-num_found] <name_or_expr> [<[value]>] [<[current]>] (get/set a session variable or num matching sessions)
 system_variable xxx
 Error: command 'system_variable' is not currently permitted
 session_variable xxx
@@ -295,6 +299,14 @@ Error: incorrect restriction key value
 system_variable xxx
 Error: command 'system_variable' is not currently permitted
 session_variable xxx
+session_restrict abc "system_variable"
+help *variable*
+commands: *variable*
+=========
+system_variable|variable <name_or_expr> [-has|{<[value]> [<[current]>]}] (get/has/set a system variable)
+system_variable xxx
+session_variable xxx
+Error: command 'session_variable' is not currently permitted
 session_restrict abc ""
 session_variable xxx
 system_variable xxx

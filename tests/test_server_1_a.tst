@@ -898,6 +898,12 @@ test3 yyy
 session_rpc_password yyy
 session_variable test?
 Error: Session RPC access denied.
+help *variable*
+commands: *variable*
+=========
+session_variable|var [-id=<session_id>|-num_found] <name_or_expr> [<[value]>] [<[current]>] (get/set a session variable or num matching sessions)
+
+system_variable|variable <name_or_expr> [-has|{<[value]> [<[current]>]}] (get/has/set a system variable)
 session_rpc_unlock xxx
 Error: incorrect RPC unlock password
 session_variable test?

@@ -160,9 +160,14 @@ system_variable xxx ""
 system_variable xxx -has
 system_variable xxx
 session_restrict abc "session_variable"
+help *variable*
 system_variable xxx
 session_variable xxx
 session_restrict def ""
+system_variable xxx
+session_variable xxx
+session_restrict abc "system_variable"
+help *variable*
 system_variable xxx
 session_variable xxx
 session_restrict abc ""
