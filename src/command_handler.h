@@ -179,6 +179,8 @@ class command_handler : public progress
 
    std::map< std::string, std::string > options;
 
+   virtual bool is_available_command( const std::string& /*command*/ ) const { return true; }
+
    virtual void perform_after_command_changes( ) { }
 
    virtual std::string format_usage_output( const std::string& command,

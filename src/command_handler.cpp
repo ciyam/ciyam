@@ -366,6 +366,9 @@ string command_handler::get_usage_for_all_commands( const string& wildcard_match
             continue;
       }
 
+      if( !is_available_command( command_items[ i ].dispatch_name ) )
+         continue;
+
       if( !last_prefix.empty( ) )
       {
          if( next_dispatch_name.find( last_prefix ) == string::npos )
