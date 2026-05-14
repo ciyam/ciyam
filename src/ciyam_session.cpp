@@ -1801,10 +1801,30 @@ class socket_command_handler : public command_handler
    {
       if( lock_expires && ( unix_time( ) > lock_expires ) )
       {
-         locked_rpc = true;
-
          lock_expires = 0;
+
+         locked_rpc = true;
       }
+   }
+
+   bool is_locked_command( const string& command, bool include_variables = false ) const
+   {
+      bool retval = false;
+
+      if( ( command == c_cmd_ciyam_session_starttls )
+       || ( command == c_cmd_ciyam_session_crypto_seed )
+       || ( command == c_cmd_ciyam_session_utils_encrypt )
+       || ( command == c_cmd_ciyam_session_system_identity )
+       || ( command == c_cmd_ciyam_session_session_terminate )
+       || ( command == c_cmd_ciyam_session_session_rpc_unlock ) )
+         retval = true;
+
+      if( include_variables
+       && ( ( command == c_cmd_ciyam_session_system_variable )
+       || ( command == c_cmd_ciyam_session_session_variable ) ) )
+         retval = true;
+
+      return retval;
    }
 
    bool has_restricted_commands( ) const
@@ -1826,13 +1846,14 @@ class socket_command_handler : public command_handler
       if( !restricted_key.empty( ) && ( key != restricted_key ) )
          throw runtime_error( "incorrect restriction key value" );
 
-      if( restricted_key.empty( ) )
+      restricted_key.erase( );
+
+      restricted_commands.clear( );
+
+      if( !cmds.empty( ) )
+      {
          restricted_key = key;
 
-      if( cmds.empty( ) )
-         restricted_commands.clear( );
-      else
-      {
          split( cmds, restricted_commands );
 
          // NOTE: Always allow the restrict command itself (to unlock) and
@@ -1869,11 +1890,30 @@ class socket_command_handler : public command_handler
    }
 
    const string& get_restore_error( ) const { return restore_error; }
+
    void set_restore_error( const string& new_error ) { restore_error = new_error; }
 
-   unique_ptr< restorable< bool > > set_restoring( ) { return unique_ptr< restorable< bool > >( new restorable< bool >( restoring, true ) ); }
+   unique_ptr< restorable< bool > > set_restoring( )
+   {
+      return unique_ptr< restorable< bool > >( new restorable< bool >( restoring, true ) );
+   }
 
    private:
+   bool is_available_command( const string& command ) const
+   {
+      if( command == c_cmd_ciyam_session_starttls )
+      {
+#ifdef SSL_SUPPORT
+         return true;
+#else
+         return false;
+#endif
+      }
+      else
+         return ( ( !is_locked( ) || is_locked_command( command, true ) )
+          && ( restricted_commands.empty( ) || restricted_commands.count( command ) ) );
+   }
+
    void preprocess_command_and_args( string& str, const string& cmd_and_args, bool /*skip_command_usage*/ );
 
    void postprocess_command_and_args( const string& cmd_and_args );
@@ -2084,12 +2124,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       socket_handler.check_lock_expiry( );
 
       if( socket_handler.is_locked( )
-       && command != c_cmd_ciyam_session_starttls
-       && command != c_cmd_ciyam_session_crypto_seed
-       && command != c_cmd_ciyam_session_utils_encrypt
-       && command != c_cmd_ciyam_session_system_identity
-       && command != c_cmd_ciyam_session_session_terminate
-       && command != c_cmd_ciyam_session_session_rpc_unlock )
+       && !socket_handler.is_locked_command( command ) )
       {
          bool okay = true;
 
@@ -6005,10 +6040,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          scoped_clear_key clear_password( password );
 
-         // NOTE: Ensure immediate relocking.
+         socket_handler.set_lock_password( password );
+
+         // NOTE: Ensures immediate locking.
          socket_handler.set_lock_expires( -1 );
 
-         socket_handler.set_lock_password( password );
+         socket_handler.check_lock_expiry( );
       }
       else if( command == c_cmd_ciyam_session_starttls )
       {
