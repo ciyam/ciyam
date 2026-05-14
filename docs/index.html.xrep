@@ -17,11 +17,18 @@
    <h3 class="right-top">Documentation Index</h3>
 </div>
 
+`{`[`$sections`,`{`$s\#_info`=`'\$`'`}`]`}
+`{`[`$sections`,`{`[`$s\#_info`%=`,`{`$s\#_name`=`'\\0`'`}\
+`{`$s\#_title`=`'\\1`'`}`{`$s\#_title`=`$s\#_title`/_`/ `/&`/&amp;`}\
+`{`$s\#_documents`=`#\\0.lst`}`{`$s\#_documents`=`$s\#_documents`/\n`/ `}`]`}`]`}
 <div id="main">
-<div id="text">
-`{`[`$docs`,`{`$d\#_text`=`#\$`}`{`[`$d\#_text`*\n`,`{`$d\#_line\\#`=`'\\$`'`}`]`}`]`}
-`{`[`$docs`,<p><a href="`{`$x`=`'\$`'`}`{`$x`/.txt`/.html`}">`{`$d\#_line0`}</a></p>`+\n`]`}
+`{`[`$sections`,`{`$docs`=`$s\#_documents`}
+<div id="section_\#"><h4>`{`$s\#_title`}</h4>
+<div id="documents_\#">`{`[`$docs`,`{`$d\\#_text`=`#\\$`}`{`[`$d\\#_text`*\n`,`{`$d\\#_line\\\\#`=`'\\\\$`'`}`]`}`]`}
+`{`[`$docs`,<p><a href="`{`$x`=`'\\$`'`}`{`$x`/.txt`/.html`}">`{`$d\\#_line0`}</a></p>`+\n`]`}
 </div>
+</div>
+`]`}
 </div>
 
 <div style="visibility: visible;" id="footer">
