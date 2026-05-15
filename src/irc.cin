@@ -1,0 +1,155 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifdef $1
+USER=$1
+@endif
+;
+@ifndef $USER
+USER=anon
+@endif
+;
+; FUTURE: Need to be using a
+; lock around this variable.
+;
+.system_variable @irc_users
+ALL_USERS=$OUTPUT
+;
+NOT_SELF=@repstr:@$USER/:$ALL_USERS
+;
+NOT_TO_SELF=
+;
+@ifeq "$ALL_USERS" "$NOT_SELF"
+.system_variable @irc_users $ALL_USERS@$USER
+@ifdef $ALL_USERS
+NOT_TO_SELF=1
+MESSAGE=(joined)
+@endif
+@endif
+;
+CHECK_PRIOR=1
+;
+CIYAM_PAUSE_SECONDS=1
+CIYAM_KEY_WAS_PRESSED=
+;
+@label NEXT
+;
+@:LOOP
+;
+@ifndef $CHECK_PRIOR
+^[hit 'q' to quit or any other key to type]
+;
+@ifdef $CIYAM_KEY_WAS_PRESSED
+;
+QUIT=
+@ifeq "$CIYAM_KEY_WAS_PRESSED" "q"
+QUIT=1
+@endif
+@ifeq "$CIYAM_KEY_WAS_PRESSED" "Q"
+QUIT=1
+@endif
+;
+@ifdef $QUIT
+@label END_LOOP
+@else
+&:MESSAGE=
+@endif
+;
+@endif
+;
+@endif
+;
+@ifdef $MESSAGE
+.system_variable @irc_users
+IRC_USERS=$OUTPUT
+;
+@ifdef $NOT_TO_SELF
+IRC_USERS=@repstr:@$USER/:$IRC_USERS
+@endif
+;
+USER_LINES=@repstr:@/\n:$IRC_USERS
+USER_LINES=%USER_LINES:-1%
+;
+; FUTURE: Need to be using a nested loop here instead as
+; currently only the first eight IRC users are included.
+;
+.utc_now
+UTC_NOW=[$OUTPUT]
+;
+USER_NAME=%USER_LINES:1%
+@ifdef $USER_NAME
+.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
+@endif
+;
+USER_NAME=%USER_LINES:2%
+@ifdef $USER_NAME
+.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
+@endif
+;
+USER_NAME=%USER_LINES:3%
+@ifdef $USER_NAME
+.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
+@endif
+;
+USER_NAME=%USER_LINES:4%
+@ifdef $USER_NAME
+.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
+@endif
+;
+USER_NAME=%USER_LINES:5%
+@ifdef $USER_NAME
+.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
+@endif
+;
+USER_NAME=%USER_LINES:6%
+@ifdef $USER_NAME
+.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
+@endif
+;
+USER_NAME=%USER_LINES:7%
+@ifdef $USER_NAME
+.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
+@endif
+;
+USER_NAME=%USER_LINES:8%
+@ifdef $USER_NAME
+.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
+@endif
+;
+USER_NAME=%USER_LINES:9%
+@ifdef $USER_NAME
+.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
+@endif
+;
+@endif
+;
+.system_variable @queue_irc_$USER
+@ifdef $OUTPUT
+NEXT_MESSAGE=$OUTPUT
+;
+PREFIX=
+;
+@ifdef $MESSAGE
+@ifndef $NOT_TO_SELF
+PREFIX=^^
+@endif
+@endif
+;
+#$PREFIX$NEXT_MESSAGE
+;
+@else
+CHECK_PRIOR=
+@endif
+;
+@skip
+;
+@:NEXT
+;
+MESSAGE=
+NOT_TO_SELF=
+;
+!!@:LOOP
+;
+@:END_LOOP
