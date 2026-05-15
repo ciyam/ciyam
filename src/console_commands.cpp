@@ -64,6 +64,11 @@ const char c_option_prefix = '-';
 
 const char* const c_help_command = "help";
 
+const size_t c_up_one_prefix_len = 2;
+
+const char* const c_up_one_prefix = "^^";
+const char* const c_esc_up_one_line = "\033[1A";
+
 const char* const c_retain_all = "*";
 
 const char* const c_env_var_error = "ERROR";
@@ -4359,12 +4364,14 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                         --num_seconds;
 
-                        if( has_any_key( true, 1000 ) )
+                        char ch;
+
+                        if( has_any_key( true, 1000, &ch ) )
                         {
                            num_seconds = 0;
 
                            // NOTE: Set CIYAM_KEY_WAS_PRESSED for usage in application protocol scripts.
-                           set_environment_variable( c_env_var_ciyam_key_was_pressed, to_string( true ) );
+                           set_environment_variable( c_env_var_ciyam_key_was_pressed, string( 1, ch ) );
                         }
 
                         if( num_was_explicit )
@@ -4493,7 +4500,10 @@ void console_command_handler::handle_command_response( const string& response, b
    {
       clear_progress_output( true );
 
-      *p_std_out << response << endl;
+      if( response.find( c_up_one_prefix ) != 0 )
+         *p_std_out << response << endl;
+      else
+         *p_std_out << c_esc_up_one_line << response.substr( c_up_one_prefix_len ) << endl;
    }
    else
       *p_std_err << response << endl;
