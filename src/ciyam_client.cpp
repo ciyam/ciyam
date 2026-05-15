@@ -50,6 +50,8 @@
 
 #define USE_NO_DELAY
 
+//#define LOCAL_REQUESTS_ONLY
+
 using namespace std;
 
 namespace
@@ -122,12 +124,18 @@ const char* const c_dummy_file_name = "@dummy";
 const char* const c_not_found_output = "Not Found";
 const char* const c_error_output_prefix = "Error: ";
 
-const size_t c_pid_timeout = 10000; // i.e. 10 secs
-const size_t c_tls_timeout = 10000; // i.e. 10 secs
-const size_t c_pubkey_timeout = 10000; // i.e. 10 secs
+// NOTE: Slow commands should use progress but is using
+// a large timeout value in case the application server
+// is simply too busy to respond in a timely manner (is
+// also helpful for identifying a command that requires
+// but is not currently outputting progress messages).
 const size_t c_command_timeout = 60000; // i.e. 60 secs
-const size_t c_connect_timeout = 10000; // i.e. 10 secs
-const size_t c_greeting_timeout = 10000; // i.e. 10 secs
+
+#ifdef LOCAL_REQUESTS_ONLY
+const size_t c_standard_timeout = 1000; // i.e. 1 sec
+#else
+const size_t c_standard_timeout = 10000; // i.e. 10 secs
+#endif
 
 const size_t c_recv_datagram_timeout = 10; // i.e. 1/100 sec
 const size_t c_send_datagram_timeout = 50; // i.e. 1/20 sec
@@ -832,7 +840,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 #ifdef SSL_SUPPORT
          if( !socket.is_secure( )
           && ( ( str == c_session_cmd_tls ) || str == c_session_cmd_starttls ) )
-            socket.ssl_connect( c_tls_timeout );
+            socket.ssl_connect( c_standard_timeout );
 #endif
          if( ( str == c_session_cmd_bye )
           || ( str == c_session_cmd_quit )
@@ -1812,7 +1820,7 @@ int main( int argc, char* argv[ ] )
          if( string( cmd_handler.get_host( ) ) == c_default_ciyam_host )
             is_default = true;
 
-         bool okay = socket.connect( address, c_connect_timeout );
+         bool okay = socket.connect( address, c_standard_timeout );
 
          // NOTE: The "connect_retries" option can be useful where the
          // application server is started (in the background) prior to
@@ -1828,7 +1836,7 @@ int main( int argc, char* argv[ ] )
             msleep( 250 );
 
             if( socket.open( ) )
-               okay = socket.connect( address, c_connect_timeout );
+               okay = socket.connect( address, c_standard_timeout );
          }
 
          if( okay )
@@ -1842,10 +1850,10 @@ int main( int argc, char* argv[ ] )
 
 #ifdef SSL_SUPPORT
             if( g_use_tls )
-               socket.ssl_connect( c_tls_timeout );
+               socket.ssl_connect( c_standard_timeout );
 #endif
 
-            if( socket.write_line( to_string( g_pid ) + c_key_exchange_suffix, c_pid_timeout ) <= 0 )
+            if( socket.write_line( to_string( g_pid ) + c_key_exchange_suffix, c_standard_timeout ) <= 0 )
             {
                string error;
 
@@ -1862,7 +1870,7 @@ int main( int argc, char* argv[ ] )
 
             string greeting;
 
-            if( socket.read_line( greeting, c_greeting_timeout ) <= 0 )
+            if( socket.read_line( greeting, c_standard_timeout ) <= 0 )
             {
                string error;
 
@@ -1936,7 +1944,8 @@ int main( int argc, char* argv[ ] )
                set_environment_variable( c_env_var_pub_key, pubkey );
 
             string slotx, pubkeyx, slotx_and_pubkeyx;
-            socket.read_line( slotx_and_pubkeyx, c_pubkey_timeout );
+
+            socket.read_line( slotx_and_pubkeyx, c_standard_timeout );
 
             string::size_type pos = slotx_and_pubkeyx.find( '-' );
 
@@ -1963,9 +1972,11 @@ int main( int argc, char* argv[ ] )
 
             string slot_and_pubkey( slot + '-' + pubkey );
 
-            socket.write_line( slot_and_pubkey, c_pubkey_timeout );
+            socket.write_line( slot_and_pubkey, c_standard_timeout );
 
             console_command_processor processor( cmd_handler );
+
+            set_environment_variable( c_env_var_error, "" );
 
             if( g_rpc_password.empty( ) )
                g_rpc_password = get_environment_variable( c_env_var_rpc_password );
@@ -1985,14 +1996,17 @@ int main( int argc, char* argv[ ] )
                 + string( c_session_cmd_session_rpc_unlock ) + " \"" + g_rpc_password + "\"" );
             }
 
-            if( !g_args_file.empty( ) )
-               processor.execute_command( g_quiet_cmd_prefix
-                + string( c_session_cmd_session_variable ) + " @args_file \"" + g_args_file + "\"" );
+            if( !has_environment_variable( c_env_var_error ) )
+            {
+               if( !g_args_file.empty( ) )
+                  processor.execute_command( g_quiet_cmd_prefix
+                   + string( c_session_cmd_session_variable ) + " @args_file \"" + g_args_file + "\"" );
 
-            if( g_exec_cmd.empty( ) )
-               processor.process_commands( );
-            else
-               processor.execute_command( g_exec_cmd );
+               if( g_exec_cmd.empty( ) )
+                  processor.process_commands( );
+               else
+                  processor.execute_command( g_exec_cmd );
+            }
          }
          else
          {
