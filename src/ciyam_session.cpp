@@ -2082,7 +2082,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    tcp_socket& socket( socket_handler.get_socket( ) );
 #endif
 
-   if( !socket_handler.is_restoring( ) && command != c_cmd_ciyam_session_session_terminate )
+   if( !socket_handler.is_restoring( )
+    && ( command != c_cmd_ciyam_session_session_terminate ) )
       socket.set_delay( );
 
    set_dtm( "" );
@@ -2116,6 +2117,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
    if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_sock_progress = &sock_progress;
+
+   if( socket_handler.is_locked( )
+    && ( session_ip_addr( ) != c_local_ip_addr )
+    && ( command != c_cmd_ciyam_session_session_rpc_unlock ) )
+   {
+      if( !is_captured_session( ) )
+         handler.set_finished( );
+      else if( !is_condemned_session( ) )
+         condemn_this_session( );
+
+      return;
+   }
 
    try
    {
@@ -6058,7 +6071,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !get_using_ssl( ) )
             throw runtime_error( "SSL has not been initialised" );
 
-         socket.ssl_accept( );
+         socket.ssl_accept( c_request_timeout );
 
          session_is_using_tls( socket );
 #else
@@ -8760,7 +8773,7 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
 #ifdef SSL_SUPPORT
    if( this->up_socket->is_tls_handshake( ) )
    {
-      this->up_socket->ssl_accept( );
+      this->up_socket->ssl_accept( c_request_timeout );
 
       using_tls = true;
    }
