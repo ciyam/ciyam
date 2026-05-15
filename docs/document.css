@@ -134,7 +134,8 @@ pre
 
 #header
 {
-   width: 990px;
+   width: 90%;
+   max-width: 990px;
    height: 90px;
    margin: 0px auto;
    background: url(name_small.png) center left no-repeat;
