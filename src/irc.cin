@@ -76,8 +76,8 @@ IRC_USERS=@repstr:@$USER/:$IRC_USERS
 ;
 IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
 ;
-.utc_now
-UTC_NOW=[$OUTPUT]
+UTC_NOW=@date:yyyy-mm-dd hh:mm:ss
+UTC_NOW=[$UTC_NOW]
 ;
 @ifdef $IRC_USER_SUFFIXES
 .system_variable @queue_irc_$IRC_USER_SUFFIXES "$UTC_NOW $USER: $MESSAGE"
