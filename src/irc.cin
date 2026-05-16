@@ -11,8 +11,11 @@ USER=$1
 USER=anon
 @endif
 ;
-; FUTURE: Need to be using a
-; lock around this variable.
+.system_variable @irc_lock 1 "" 100
+;
+@ifeq "$OUTPUT" "0"
+#IRC lock not obtained.
+@else
 ;
 .system_variable @irc_users
 ALL_USERS=$OUTPUT
@@ -28,6 +31,8 @@ NOT_TO_SELF=1
 MESSAGE=(joined)
 @endif
 @endif
+;
+.system_variable @irc_lock ""
 ;
 CHECK_PRIOR=1
 ;
@@ -69,63 +74,18 @@ IRC_USERS=$OUTPUT
 IRC_USERS=@repstr:@$USER/:$IRC_USERS
 @endif
 ;
-USER_LINES=@repstr:@/\n:$IRC_USERS
-USER_LINES=%USER_LINES:-1%
-;
-; FUTURE: Need to be using a nested loop here instead as
-; currently only the first eight IRC users are included.
+IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
 ;
 .utc_now
 UTC_NOW=[$OUTPUT]
 ;
-USER_NAME=%USER_LINES:1%
-@ifdef $USER_NAME
-.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
-@endif
-;
-USER_NAME=%USER_LINES:2%
-@ifdef $USER_NAME
-.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
-@endif
-;
-USER_NAME=%USER_LINES:3%
-@ifdef $USER_NAME
-.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
-@endif
-;
-USER_NAME=%USER_LINES:4%
-@ifdef $USER_NAME
-.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
-@endif
-;
-USER_NAME=%USER_LINES:5%
-@ifdef $USER_NAME
-.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
-@endif
-;
-USER_NAME=%USER_LINES:6%
-@ifdef $USER_NAME
-.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
-@endif
-;
-USER_NAME=%USER_LINES:7%
-@ifdef $USER_NAME
-.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
-@endif
-;
-USER_NAME=%USER_LINES:8%
-@ifdef $USER_NAME
-.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
-@endif
-;
-USER_NAME=%USER_LINES:9%
-@ifdef $USER_NAME
-.system_variable @queue_irc_$USER_NAME "$UTC_NOW $USER: $MESSAGE"
+@ifdef $IRC_USER_SUFFIXES
+.system_variable @queue_irc_$IRC_USER_SUFFIXES "$UTC_NOW $USER: $MESSAGE"
 @endif
 ;
 @endif
 ;
-.system_variable @queue_irc_$USER
+.system_variable @queue_irc_$USER *
 @ifdef $OUTPUT
 NEXT_MESSAGE=$OUTPUT
 ;
@@ -153,3 +113,5 @@ NOT_TO_SELF=
 !!@:LOOP
 ;
 @:END_LOOP
+;
+@endif
