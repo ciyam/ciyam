@@ -84,6 +84,18 @@ session_variable @queue_test
 session_variable @queue_test
 session_variable @queue_test
 session_variable @queue_test
+system_variable @queue_|
+system_variable @queue_|test1 xxx
+system_variable @queue_|test2|test3 xxx
+system_variable @queue_|test1|test2|test3 yyy
+system_variable @queue_|test1|test2|test3 zzz
+system_variable @queue_*
+system_variable @queue_test1
+system_variable @queue_test2
+system_variable @queue_test3
+system_variable @queue_test1 *
+system_variable @queue_test2 *
+system_variable @queue_test3 *
 system_variable @sys_var_prefix test
 system_variable >test_a aaa
 system_variable >test_b bbb

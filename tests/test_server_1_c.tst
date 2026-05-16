@@ -134,6 +134,30 @@ def
 session_variable @queue_test
 ghi
 session_variable @queue_test
+system_variable @queue_|
+system_variable @queue_|test1 xxx
+system_variable @queue_|test2|test3 xxx
+system_variable @queue_|test1|test2|test3 yyy
+system_variable @queue_|test1|test2|test3 zzz
+system_variable @queue_*
+@queue_test1 xxx (+2)
+@queue_test2 xxx (+2)
+@queue_test3 xxx (+2)
+system_variable @queue_test1
+xxx
+system_variable @queue_test2
+xxx
+system_variable @queue_test3
+xxx
+system_variable @queue_test1 *
+yyy
+zzz
+system_variable @queue_test2 *
+yyy
+zzz
+system_variable @queue_test3 *
+yyy
+zzz
 system_variable @sys_var_prefix test
 system_variable >test_a aaa
 system_variable >test_b bbb
@@ -303,7 +327,7 @@ session_restrict abc "system_variable"
 help *variable*
 commands: *variable*
 =========
-system_variable|variable <name_or_expr> [-has|{<[value]> [<[current]>]}] (get/has/set a system variable)
+system_variable|variable <name_or_expr> [-has|{<[value]> [<[current]>] [<retries>]}] (get/has/set a system variable)
 system_variable xxx
 session_variable xxx
 Error: command 'session_variable' is not currently permitted
