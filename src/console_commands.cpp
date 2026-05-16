@@ -108,7 +108,10 @@ const char* const c_env_var_progress_prefix = "PROGRESS_PREFIX";
 
 const char* const c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 
+const char* const c_date_time = "date";
 const char* const c_unix_time = "unix";
+
+size_t c_date_time_len = 4;
 
 const char* const c_function_file = "file";
 const char* const c_function_files = "files";
@@ -3032,6 +3035,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          //
          if( !assign_env_var_name.empty( ) )
          {
+            bool handled = false;
             bool not_replaced = false;
 
             if( !str.empty( ) && ( str[ 0 ] == '@' ) )
@@ -3053,11 +3057,29 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   {
                      // NOTE: Avoid creating a temporary string.
                      lhs.resize( pos );
+
                      memcpy( &lhs[ 0 ], &str[ 0 ], pos );
                   }
 
+                  if( lhs == string( c_date_time ) )
+                  {
+                     handled = true;
+
+                     pos = string::npos;
+
+                     if( str.length( ) <= c_date_time_len + 1 )
+                        str = date_time::standard( ).as_string( );
+                     else
+                        str = format_date_time(
+                         date_time::standard( ), str.substr( c_date_time_len + 1 ) );
+                  }
+
                   if( lhs == string( c_unix_time ) )
+                  {
                      val = unix_time( );
+
+                     pos = string::npos;
+                  }
 
                   if( pos != string::npos )
                   {
@@ -3531,7 +3553,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   }
                   else if( val )
                      str = to_string( val );
-                  else
+                  else if( !handled )
                      not_replaced = true;
                }
                else
