@@ -2309,7 +2309,7 @@ void init_system_ods( bool* p_restored = 0 )
          gup_ods->compress_and_reset_tx_log( &progress );
       }
       else
-         TRACE_LOG( TRACE_MINIMAL, "(restart recommended for compress)" );
+         TRACE_LOG( TRACE_MINIMAL, "(reload is needed for DB compress)" );
    }
 
    if( skip_compress )
