@@ -781,6 +781,7 @@ int64_t seconds_between( const date_time& lhs, const date_time& rhs );
 std::string format_udate( const udate& ud, const std::string& mask );
 std::string format_mtime( const mtime& mt, const std::string& mask );
 
+std::string format_date_time( const date_time& dt, const std::string& mask );
 std::string format_date_time( const date_time& dt, const std::string& dmask, const std::string& tmask );
 
 #endif

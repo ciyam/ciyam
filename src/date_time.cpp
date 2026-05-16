@@ -491,7 +491,8 @@ bool determine_sun_rise_or_set( year yr, month mh, day dy,
     - ( sinDec * sin( deg2rad( latitude ) ) ) ) / ( cosDec * cos( deg2rad( latitude ) ) );
 
    // NOTE: Finish calculating H and convert into hours.
-   double H;
+   double H = 0;
+
    if( sunrise )
    {
       if( cosH > 1.0 )
@@ -592,13 +593,13 @@ inline void daynum_to_calendar( daynum dn, year& yr, month& mo, day& dy )
 
       if( dn <= 30 )
       {
-         mo = e_month_january;
          dy = dn + 1;
+         mo = e_month_january;
       }
       else
       {
-         mo = e_month_february;
          dy = dn - 30;
+         mo = e_month_february;
       }
    }
    else
@@ -3681,6 +3682,24 @@ string format_mtime( const mtime& mt, const string& mask )
    }
 
    return s;
+}
+
+string format_date_time( const date_time& dt, const string& mask )
+{
+   string::size_type pos = mask.find_first_not_of( "-:ymdhmst" );
+
+   if( pos == string::npos )
+   {
+      pos = mask.find_first_not_of( "-ymd" );
+
+      if( ( pos == 0 ) || ( pos == string::npos ) )
+         throw runtime_error( "unexpected mask '" + mask + "' in format_date_time" );
+      else
+         return format_date_time( dt, mask.substr( 0, pos ), mask.substr( pos ) );
+   }
+   else
+      return format_udate( dt.get_date( ), mask.substr( 0, pos ) )
+       + mask[ pos ] + format_mtime( dt.get_time( ), mask.substr( pos + 1 ) );
 }
 
 string format_date_time( const date_time& dt, const string& dmask, const string& tmask )
