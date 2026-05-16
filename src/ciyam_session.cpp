@@ -100,12 +100,16 @@ const size_t c_udp_wait_repeats = 10;
 const size_t c_listen_wait_timeout = 50; // i.e. 1/20 sec
 const size_t c_listen_wait_repeats = 20;
 
+const size_t c_var_check_wait_timeout = 100; // i.e. 1/10 sec
+
 const size_t c_rpc_retry_unlock_timeout = 2000; // i.e. 2 secs
 
 const int c_pdf_default_limit = 10000;
 const int c_max_pdf_or_single_limit = 100000;
 
 const size_t c_response_reserve_size = 1024;
+
+const size_t c_var_max_check_retries = 100;
 
 const size_t c_max_key_append_chars = 7;
 
@@ -8033,6 +8037,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string value( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_value ) );
          bool has_current = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_current );
          string current( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_current ) );
+         string retries( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_retries ) );
+
+         bool get_all_queue_items = false;
+
+         // NOTE: If "*" is used as <value> for a "@queue_"
+         // prefixed variable then return all queued items.
+         if( ( value == "*" )
+          && ( name_or_expr.find( c_special_variable_queue_prefix ) == 0 ) )
+         {
+            has_value = false;
+
+            get_all_queue_items = true;
+         }
 
          possibly_expected_error = true;
 
@@ -8056,14 +8073,81 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             check_not_possible_protocol_response( value );
 
             if( !has_current )
-               set_system_variable( name_or_expr, value, false, &handler );
+            {
+               string::size_type pos = name_or_expr.find( '|' );
+
+               if( pos == string::npos )
+                  set_system_variable( name_or_expr, value, false, &handler );
+               else
+               {
+                  string prefix( name_or_expr.substr( 0, pos ) );
+
+                  name_or_expr.erase( 0, pos + 1 );
+
+                  if( !name_or_expr.empty( ) )
+                  {
+                     vector< string > suffixes;
+
+                     split( name_or_expr, suffixes, '|' );
+
+                     // NOTE: Uses "|" for multiple variable name suffixes:
+                     // "system_variable prefix_|suffix_1|suffix_2 <value>"
+                     //
+                     // which effectively becomes the following:
+                     //
+                     // "system_variable prefix_suffix_1 <value>"
+                     // "system_variable prefix_suffix_2 <value>"
+                     for( size_t i = 0; i < suffixes.size( ); i++ )
+                        set_system_variable( prefix + suffixes[ i ], value );
+                  }
+               }
+            }
             else
-               response = to_string( set_system_variable( name_or_expr, value, current ) );
+            {
+               size_t num_retries = from_string< size_t >( retries );
+
+               if( num_retries > c_var_max_check_retries )
+                  throw runtime_error( "max. retries is " + to_string( c_var_max_check_retries ) );
+
+               bool retval = false;
+
+               while( true )
+               {
+                  retval = set_system_variable( name_or_expr, value, current );
+
+                  if( retval || !num_retries )
+                     break;
+
+                  --num_retries;
+
+                  msleep( c_var_check_wait_timeout );
+               }
+
+               response = to_string( retval );
+            }
          }
          else
          {
             if( !variable_expression::is_possible_expression( name_or_expr ) )
-               response = get_system_variable( name_or_expr, false );
+            {
+               if( !get_all_queue_items )
+                  response = get_system_variable( name_or_expr, false );
+               else
+               {
+                  while( true )
+                  {
+                     if( !response.empty( ) )
+                        response += '\n';
+
+                     string next( get_system_variable( name_or_expr, false ) );
+
+                     if( next.empty( ) )
+                        break;
+
+                     response += next;
+                  }
+               }
+            }
             else
                response = get_system_variable( expression( name_or_expr ), false );
 

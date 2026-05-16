@@ -132,7 +132,7 @@ system_passtotp|passtotp "retrieve a TOTP system password" <val//secret>
 system_password|password "retrieve an encrypted system password" <val//name>
 system_schedule|schedule "display system autoscript schedule" [<opt/-reload/reload>][<opt/-from_now/from_now>]
 system_sendmail|sendmail "send a simple test system email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_name>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
-system_variable|variable "get/has/set a system variable" <val//name_or_expr>[<opt/-has/found>|{<oval//value>[<oval//current>]}]
+system_variable|variable "get/has/set a system variable" <val//name_or_expr>[<opt/-has/found>|{<oval//value>[<oval//current>][<val//retries>]}]
 system_checkmail|checkmail "check for incoming email or process system email script calls" [<opt/-script/create_script>|<list//headers>]
 system_externals|externals "display a list of system external services"
 system_listeners|listeners "display a list of all current system listeners"
