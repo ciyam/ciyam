@@ -6928,18 +6928,31 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
 void socket_command_processor::output_command_usage( const string& wildcard_match_expr ) const
 {
+   string prefix;
+
+   bool is_minimal = false;
+
+   if( !wildcard_match_expr.empty( )
+    && ( wildcard_match_expr[ 0 ] == '!' ) )
+      is_minimal = true;
+
+   if( !is_minimal )
+   {
+      string cmds( "\ncommands:" );
+
+      if( !wildcard_match_expr.empty( ) )
+         cmds += ' ' + wildcard_match_expr;
+
+      prefix = cmds + "\n=========\n";
+   }
+
    socket.set_delay( );
 
-   string cmds( "commands:" );
-   if( !wildcard_match_expr.empty( ) )
-      cmds += ' ' + wildcard_match_expr;
-
-   socket.write_line( cmds, c_request_timeout );
-   socket.write_line( "=========", c_request_timeout );
-
-   socket.write_line( get_usage_for_commands( wildcard_match_expr ), c_request_timeout );
+   socket.write_line( prefix
+    + get_usage_for_commands( wildcard_match_expr ), c_request_timeout );
 
    socket.set_no_delay( );
+
    socket.write_line( c_response_okay, c_request_timeout );
 }
 

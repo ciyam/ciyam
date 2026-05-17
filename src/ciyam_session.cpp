@@ -8098,7 +8098,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      // "system_variable prefix_suffix_1 <value>"
                      // "system_variable prefix_suffix_2 <value>"
                      for( size_t i = 0; i < suffixes.size( ); i++ )
-                        set_system_variable( prefix + suffixes[ i ], value );
+                     {
+                        string suffix( suffixes[ i ] );
+
+                        if( !suffix.empty( ) )
+                           set_system_variable( prefix + suffix, value );
+                     }
                   }
                }
             }
@@ -8813,21 +8818,34 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 void socket_command_processor::output_command_usage( const string& wildcard_match_expr ) const
 {
 #ifdef DEBUG
-   cerr << "<processing usage request>" << endl;
+   cerr << "<processing help request>" << endl;
 #endif
+
+   string prefix;
+
+   bool is_minimal = false;
+
+   if( !wildcard_match_expr.empty( )
+    && ( wildcard_match_expr[ 0 ] == '!' ) )
+      is_minimal = true;
+
+   if( !is_minimal )
+   {
+      string cmds( "\ncommands:" );
+
+      if( !wildcard_match_expr.empty( ) )
+         cmds += ' ' + wildcard_match_expr;
+
+      prefix = cmds + "\n=========\n";
+   }
 
    socket.set_delay( );
 
-   string cmds( "commands:" );
-   if( !wildcard_match_expr.empty( ) )
-      cmds += ' ' + wildcard_match_expr;
-
-   socket.write_line( cmds, c_request_timeout );
-   socket.write_line( "=========", c_request_timeout );
-
-   socket.write_line( get_usage_for_commands( wildcard_match_expr ), c_request_timeout );
+   socket.write_line( prefix
+    + get_usage_for_commands( wildcard_match_expr ), c_request_timeout );
 
    socket.set_no_delay( );
+
    socket.write_line( c_response_okay, c_request_timeout );
 }
 

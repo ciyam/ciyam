@@ -351,18 +351,29 @@ string command_handler::get_usage_for_all_commands( const string& wildcard_match
    string last_prefix;
 
    bool is_first = true;
+   bool is_minimal = false;
    bool check_prefix = true;
 
    size_t last_group_num = 0;
+
+   string wildcard_expression( wildcard_match_expr );
+
+   if( !wildcard_expression.empty( )
+    && ( wildcard_expression[ 0 ] == '!' ) )
+   {
+      is_minimal = true;
+
+      wildcard_expression.erase( 0, 1 );
+   }
 
    for( vector< command_item >::size_type i = 0; i < command_items.size( ); i++ )
    {
       string next_dispatch_name( command_items[ i ].dispatch_name );
 
-      if( !wildcard_match_expr.empty( ) )
+      if( !wildcard_expression.empty( ) )
       {
-         if( !wildcard_match( wildcard_match_expr.c_str( ), next_dispatch_name.c_str( ) )
-          && !wildcard_match( wildcard_match_expr.c_str( ), command_items[ i ].short_name.c_str( ) ) )
+         if( !wildcard_match( wildcard_expression.c_str( ), next_dispatch_name.c_str( ) )
+          && !wildcard_match( wildcard_expression.c_str( ), command_items[ i ].short_name.c_str( ) ) )
             continue;
       }
 
@@ -383,30 +394,35 @@ string command_handler::get_usage_for_all_commands( const string& wildcard_match
          }
       }
 
-      string usage;
-
-      command_dispatcher_const_iterator ci = command_dispatchers.find( next_dispatch_name );
-
-      if( ci != command_dispatchers.end( ) )
-         usage = ci->second.p_parser->get_usage( );
-
-      if( is_first )
-         is_first = false;
+      if( is_minimal )
+         osstr << next_dispatch_name << '\n';
       else
       {
-         if( last_group_num != command_items[ i ].group_num )
-            osstr << '\n';
+         string usage;
+
+         command_dispatcher_const_iterator ci = command_dispatchers.find( next_dispatch_name );
+
+         if( ci != command_dispatchers.end( ) )
+            usage = ci->second.p_parser->get_usage( );
+
+         if( is_first )
+            is_first = false;
+         else
+         {
+            if( last_group_num != command_items[ i ].group_num )
+               osstr << '\n';
+         }
+
+         last_group_num = command_items[ i ].group_num;
+
+         osstr << format_usage_output(
+          next_dispatch_name, cmd_arg_separator, usage, command_items[ i ].description ) << '\n';
       }
-
-      last_group_num = command_items[ i ].group_num;
-
-      osstr << format_usage_output(
-       next_dispatch_name, cmd_arg_separator, usage, command_items[ i ].description ) << '\n';
 
       // NOTE: If not using group number can still separate
       // commands into groups through the usage of prefixes
       // (if not already using "empty" separator commands).
-      if( check_prefix )
+      if( !is_minimal && check_prefix )
       {
          string::size_type pos = next_dispatch_name.find( '_' );
 
