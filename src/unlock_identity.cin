@@ -10,7 +10,9 @@
 COMBINED=@repstr:!/\n:$OUTPUT
 IDENT=%COMBINED:1%
 ;
+@ifndef $CIYAM_QUIET
 #Locked Identity: $IDENT
+@endif
 ;
 .session_variable @pubkey
 EXT_PUBKEY=$OUTPUT
@@ -35,7 +37,9 @@ COMBINED=@repstr:!/\n:$OUTPUT
 NEW_IDENT=%COMBINED:1%
 ;
 @ifneq "$IDENT" "$NEW_IDENT"
+@ifndef $CIYAM_QUIET
 #Unlocked identity: $NEW_IDENT
+@endif
 ;
 ~rm -f .unlock_failed
 ;
@@ -68,7 +72,9 @@ Retry=
 @else
 ;
 @ifndef $1
+@ifndef $CIYAM_QUIET
 #Identity is not currently locked.
+@endif
 @endif
 ;
 @endif

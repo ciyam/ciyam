@@ -622,12 +622,16 @@ if [ -f $INSTALL_PATH/ciyam_server.cmd ]; then
  done
 fi
 
+has_unlocked=
+
 if [ "$unlock_key" != "" ]; then
  pushd $INSTALL_PATH >/dev/null
 
  if [ ! -f ciyam_server.cmd ]; then
-  ./unlock_identity "$unlock_key"
+  env CIYAM_QUIET=1 ./unlock_identity "$unlock_key"
   if [ $? -eq 0 ]; then
+   has_unlocked=1
+   echo "(service was restarted and unlocked)"
    if [ "$needs_restore" = "1" ]; then
     ./restore $CIYAM_APP_MOD
     if [ $? -eq 0 ]; then
@@ -643,6 +647,7 @@ else
   pushd $INSTALL_PATH >/dev/null
 
   if [ ! -f ciyam_server.cmd ]; then
+   has_unlocked=1
    if [ "$needs_restore" = "1" ]; then
     ./restore $CIYAM_APP_MOD
     if [ $? -eq 0 ]; then
@@ -658,7 +663,11 @@ else
 fi
 
 if [ "$show_restore_message" = "1" ]; then
- echo "NOTE: Restart the CIYAM service then unlock its system identity and restore the $CIYAM_APP_MOD application."
+ if [ "$has_unlocked" = "" ]; then
+  echo "NOTE: Will need to restore the $CIYAM_APP_MOD application."
+ else
+  echo "NOTE: Restart the CIYAM service then unlock its system identity and restore the $CIYAM_APP_MOD application."
+ fi
 fi
 
 cd ..
