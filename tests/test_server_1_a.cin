@@ -618,6 +618,7 @@ session_variable test?
 session_rpc_password yyy
 session_variable test?
 help *variable*
+help !*variable*
 session_rpc_unlock xxx
 session_variable test?
 session_rpc_unlock yyy

@@ -14,18 +14,25 @@ USER=anon
 .system_variable @irc_lock 1 "" 100
 ;
 @ifeq "$OUTPUT" "0"
-#IRC lock not obtained.
+#IRC lock was not obtained.
 @else
 ;
 .system_variable @irc_users
 ALL_USERS=$OUTPUT
 ;
-NOT_SELF=@repstr:@$USER/:$ALL_USERS
+ALL_USERS_CHECK=
+;
+@ifdef $ALL_USERS
+ALL_USERS_CHECK=%ALL_USERS%@
+@endif
+;
+NOT_SELF_CHECK=@repstr:@$USER@/@:$ALL_USERS_CHECK
 ;
 NOT_TO_SELF=
 ;
-@ifeq "$ALL_USERS" "$NOT_SELF"
+@ifeq "$ALL_USERS_CHECK" "$NOT_SELF_CHECK"
 .system_variable @irc_users $ALL_USERS@$USER
+#(joined as $USER)
 @ifdef $ALL_USERS
 NOT_TO_SELF=1
 MESSAGE=(joined)
@@ -37,29 +44,34 @@ MESSAGE=(joined)
 CHECK_PRIOR=1
 ;
 CIYAM_PAUSE_SECONDS=1
-CIYAM_KEY_WAS_PRESSED=
 ;
 @label NEXT
 ;
 @:LOOP
 ;
 @ifndef $CHECK_PRIOR
-^[hit 'q' to quit or any other key to type]
+^[hit 'q' to quit 's/v' to scan/view a QR Code or space to type]
 ;
-@ifdef $CIYAM_KEY_WAS_PRESSED
+@ifdef $CIYAM_KEY_PRESSED
 ;
-QUIT=
-@ifeq "$CIYAM_KEY_WAS_PRESSED" "q"
-QUIT=1
-@endif
-@ifeq "$CIYAM_KEY_WAS_PRESSED" "Q"
-QUIT=1
-@endif
-;
-@ifdef $QUIT
+@ifeq "$CIYAM_KEY_PRESSED" "q"
 @label END_LOOP
 @else
+@ifeq "$CIYAM_KEY_PRESSED" "v"
+&Enter QR Code: :QR_CODE=
+#^^Entered QR Code: $QR_CODE
+~qrencode -tANSI $QR_CODE
+@else
+@ifeq "$CIYAM_KEY_PRESSED" "s"
+#Scan QR_CODE:
+QR_CODE=@file:~zbarcam -1 -q --raw
+#^^Scanned QR Code: $QR_CODE
+@else
+@ifeq "$CIYAM_KEY_PRESSED" " "
 &:MESSAGE=
+@endif
+@endif
+@endif
 @endif
 ;
 @endif
@@ -71,7 +83,7 @@ QUIT=1
 IRC_USERS=$OUTPUT
 ;
 @ifdef $NOT_TO_SELF
-IRC_USERS=@repstr:@$USER/:$IRC_USERS
+IRC_USERS=@repstr:@%USER%@/@:%IRC_USERS%@
 @endif
 ;
 IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS

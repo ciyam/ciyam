@@ -75,13 +75,13 @@ const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
 
 const char* const c_env_var_ciyam_fissile = "CIYAM_FISSILE";
+const char* const c_env_var_ciyam_key_pressed = "CIYAM_KEY_PRESSED";
 const char* const c_env_var_ciyam_no_progress = "CIYAM_NO_PROGRESS";
 const char* const c_env_var_ciyam_use_default = "CIYAM_USE_DEFAULT";
 const char* const c_env_var_ciyam_nested_level = "CIYAM_NESTED_LEVEL";
 const char* const c_env_var_ciyam_pause_seconds = "CIYAM_PAUSE_SECONDS";
 const char* const c_env_var_ciyam_pwd_append_len = "CIYAM_PWD_APPEND_LEN";
 const char* const c_env_var_ciyam_default_seconds = "CIYAM_DEFAULT_SECONDS";
-const char* const c_env_var_ciyam_key_was_pressed = "CIYAM_KEY_WAS_PRESSED";
 const char* const c_env_var_ciyam_password_append = "CIYAM_PASSWORD_APPEND";
 
 const char* const c_default_value_prompt = "VALUE=";
@@ -2811,6 +2811,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
       string str_for_history( str );
 
+      // NOTE: Special case for "$VAR" which will replace the line
+      // with the environment variable before processing which can
+      // be used in order to modify prompted input whilst looping.
+      if( !str.empty( )
+       && ( str[ 0 ] == c_environment_variable_marker_1 ) )
+         str = get_environment_variable( str.substr( 1 ) );
+
       // NOTE: The history line is stored before prompted input to
       // prevent accidental infinite looping so for something like
       // "Yes, No, All or Quit" the "All" assignment would require
@@ -4370,7 +4377,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                      if( !num_was_explicit )
                         cout.flush( );
 
-                     set_environment_variable( c_env_var_ciyam_key_was_pressed, "" );
+                     set_environment_variable( c_env_var_ciyam_key_pressed, "" );
 
                      while( num_seconds )
                      {
@@ -4392,8 +4399,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         {
                            num_seconds = 0;
 
-                           // NOTE: Set CIYAM_KEY_WAS_PRESSED for usage in application protocol scripts.
-                           set_environment_variable( c_env_var_ciyam_key_was_pressed, string( 1, ch ) );
+                           // NOTE: Set CIYAM_KEY_PRESSED for usage in application protocol scripts.
+                           set_environment_variable( c_env_var_ciyam_key_pressed, string( 1, ch ) );
                         }
 
                         if( num_was_explicit )
@@ -4599,13 +4606,21 @@ void console_command_processor::get_cmd_and_args( string& cmd_and_args )
 
 void console_command_processor::output_command_usage( const string& wildcard_match_expr ) const
 {
-   cout << '\n';
-   cout << "Commands:";
+   bool is_minimal = false;
 
-   if( !wildcard_match_expr.empty( ) )
-      cout << " " << wildcard_match_expr;
+   if( !wildcard_match_expr.empty( )
+    && ( wildcard_match_expr[ 0 ] == '!' ) )
+      is_minimal = true;
 
-   cout << "\n=========\n";
+   if( !is_minimal )
+   {
+      cout << "\ncommands:";
+
+      if( !wildcard_match_expr.empty( ) )
+         cout << " " << wildcard_match_expr;
+
+      cout << "\n=========\n";
+   }
 
    cout << get_usage_for_commands( wildcard_match_expr );
 }
