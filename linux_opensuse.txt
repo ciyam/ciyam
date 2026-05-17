@@ -66,12 +66,14 @@ Install all required packages for CIYAM Software Manufacturing
 --------------------------------------------------------------
 
 sudo zypper -n install make
+sudo zypper -n install zbar
 sudo zypper -n install gcc-c++
 sudo zypper -n install git-core
 sudo zypper -n install qrencode
 sudo zypper -n install png++-devel
 sudo zypper -n install libharu-devel
 sudo zypper -n install readline-devel
+sudo zypper -n install libopenssl-devel
 sudo zypper -n install mariadb libmariadb-devel
 sudo zypper -n install apache2 apache2-mod_fcgid
 

@@ -104,6 +104,9 @@ sudo apt install git -y
 sudo apt install qrencode -y
 (this is likely to already be installed)
 
+sudo apt install zbar-tools -y
+(only install if wanting to scan QR codes)
+
 sudo apt install libpng-dev -y
 sudo apt install libhpdf-dev -y
 
