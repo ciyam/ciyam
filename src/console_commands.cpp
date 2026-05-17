@@ -488,6 +488,10 @@ bool is_choice_input( const string& input )
 // CONT=1
 //
 // (or CONT= if 'n' or 'N' was pressed)
+//
+// To select each item with a digit in 1,2,3,4,5,6,7,8,9 or 0 use the following:
+//
+// &Continue? [CONT#Yes==1!YES|No=!NO] (choose one)
 
 string get_input_from_choices( const string& input )
 {
@@ -508,16 +512,23 @@ string get_input_from_choices( const string& input )
 
          str.erase( pos, rpos - pos + 1 );
 
-         string::size_type vpos = choice_info.find( ':' );
+         string::size_type vpos = choice_info.find_first_of( ":#" );
+
+         bool use_numeric = false;
 
          if( vpos != string::npos )
          {
+            if( choice_info[ vpos ] == '#' )
+               use_numeric = true;
+
             var = choice_info.substr( 0, vpos );
 
             choice_info.erase( 0, vpos + 1 );
          }
 
          bool had_default = false;
+
+         size_t choice_num = 0;
 
          while( true )
          {
@@ -564,36 +575,62 @@ string get_input_from_choices( const string& input )
 
             bool found = false;
 
-            for( size_t i = 0; i < next.length( ); i++ )
+            if( use_numeric )
             {
-               ch = next[ i ];
-
                if( !has_output )
-                  next_choice.output += ch;
+                  next_choice.output = next;
 
-               bool okay = true;
+               if( choice_num > 9 )
+                  throw runtime_error( "too many choices provided for numeric selection" );
 
-               for( size_t j = 0; j < choices.size( ); j++ )
-               {
-                  if( choices[ j ].ch == ch )
-                  {
-                     okay = false;
-                     break;
-                  }
-               }
-
-               if( found || !okay )
-                  next_choice.show += ch;
+               if( choice_num == 9 )
+                  next_choice.ch = '0';
                else
+                  next_choice.ch = '1' + choice_num;
+
+               ++choice_num;
+
+               if( !next_choice.is_def )
+                  next_choice.show = '[' + string( 1, next_choice.ch ) + ']';
+               else
+                  next_choice.show = "<[" + string( 1, next_choice.ch ) + "]>";
+
+               next_choice.show += next;
+            }
+            else
+            {
+               for( size_t i = 0; i < next.length( ); i++ )
                {
-                  found = true;
+                  ch = next[ i ];
 
-                  next_choice.ch = ch;
+                  if( !has_output )
+                     next_choice.output += ch;
 
-                  if( !next_choice.is_def )
-                     next_choice.show += '[' + string( 1, ch ) + ']';
+                  bool okay = true;
+
+                  for( size_t j = 0; j < choices.size( ); j++ )
+                  {
+                     if( choices[ j ].ch == ch )
+                     {
+                        okay = false;
+
+                        break;
+                     }
+                  }
+
+                  if( found || !okay )
+                     next_choice.show += ch;
                   else
-                     next_choice.show += "<[" + string( 1, ch ) + "]>";
+                  {
+                     found = true;
+
+                     next_choice.ch = ch;
+
+                     if( !next_choice.is_def )
+                        next_choice.show += '[' + string( 1, ch ) + ']';
+                     else
+                        next_choice.show += "<[" + string( 1, ch ) + "]>";
+                  }
                }
             }
 
@@ -664,6 +701,7 @@ string get_input_from_choices( const string& input )
                   string secs( to_string( default_seconds ) + 's' );
 
                   cout << secs;
+
                   cout.flush( );
 
                   --default_seconds;
@@ -677,6 +715,7 @@ string get_input_from_choices( const string& input )
                   string secs_bs( secs.length( ), '\b' );
 
                   cout << secs_bs << string( secs.length( ), ' ' ) << secs_bs;
+
                   cout.flush( );
 
                   if( ch == '\0' )
@@ -720,6 +759,7 @@ string get_input_from_choices( const string& input )
                      output = choices[ i ].output;
 
                      found = true;
+
                      break;
                   }
                }
@@ -735,6 +775,9 @@ string get_input_from_choices( const string& input )
           << string( num_to_erase, ' ' ) << string( num_to_erase, '\b' ) << output << endl;
 
          pos = str.find_first_of( "#$%=:?" );
+
+         if( pos == string::npos )
+            pos = str.find( ' ' );
 
          if( pos != string::npos )
          {
@@ -1074,6 +1117,7 @@ class fissile_string
                if( data[ i ] != '.' )
                {
                   can_compress = false;
+
                   break;
                }
             }
@@ -1232,6 +1276,7 @@ bool compare_fissile_values( char op, const fissile_string& lhs, const fissile_s
                if( lhs[ i ] != rhs[ i ] && rhs[ i ] != '.' )
                {
                   rc = false;
+
                   break;
                }
             }
@@ -1253,6 +1298,7 @@ bool compare_fissile_values( char op, const fissile_string& lhs, const fissile_s
                if( ( lhs[ i ] < rhs[ i ] ) && ( rhs[ i ] != '.' ) )
                {
                   rc = true;
+
                   break;
                }
             }
@@ -1274,6 +1320,7 @@ bool compare_fissile_values( char op, const fissile_string& lhs, const fissile_s
                if( ( lhs[ i ] > rhs[ i ] ) && ( rhs[ i ] != '.' ) )
                {
                   rc = true;
+
                   break;
                }
             }
@@ -2002,7 +2049,7 @@ void process_fissile_commands(
             {
                bool optional = false;
 
-               if( next.size( ) > 2 && ( next[ 1 ] == '?' ) )
+               if( ( next.size( ) > 2 ) && ( next[ 1 ] == '?' ) )
                {
                   optional = true;
                   next.erase( 1, 1 );
@@ -2087,12 +2134,14 @@ void process_fissile_commands(
       else if( ( next.length( ) > 2 ) && ( next.substr( 0, 2 ) == "--" ) )
       {
          next.erase( 0, 2 );
+
          string::size_type pos = next.find( ',' );
 
          string lhs_var( get_fissile_name( fissile_values, next.substr( 0, pos ) ) );
          string item_set( get_fissile_value( fissile_values, lhs_var, fissile_data, last_fissile_output ) );
 
          string item;
+
          if( pos == string::npos )
             item = fissile_data;
          else
@@ -2136,6 +2185,7 @@ void process_fissile_commands(
          string item_set( get_fissile_value( fissile_values, lhs_var, fissile_data, last_fissile_output ) );
 
          string item;
+
          if( pos == string::npos )
             item = fissile_data;
          else
@@ -2158,12 +2208,12 @@ void process_fissile_commands(
       else if( ( next[ 0 ] == '<' ) || ( next[ 0 ] == '>' ) )
       {
          char separator = ',';
+
+         bool is_item = false;
          bool is_right = false;
 
          if( next[ 0 ] == '>' )
             is_right = true;
-
-         bool is_item = false;
 
          if( ( next.size( ) > 1 ) && ( next[ 0 ] == next[ 1 ] ) )
          {
@@ -2558,17 +2608,15 @@ void process_fissile_commands(
          throw runtime_error( "unknown or invalid fissile command: " + next );
 
       if( cmds_allowed && ( --cmds_allowed == 0 ) && !cmds.empty( ) )
-      {
          throw runtime_error( "fissile maximum command limit exceeded" );
-         break;
-      }
    }
 
    while( true )
    {
       map< string, fissile_string >::iterator i = fissile_values.lower_bound( "^" );
 
-      if( i == fissile_values.end( ) || i->first.empty( ) || i->first[ 0 ] != '^' )
+      if( ( i == fissile_values.end( ) )
+       || i->first.empty( ) || ( i->first[ 0 ] != '^' ) )
          break;
 
       fissile_values.erase( i->first );
@@ -2811,22 +2859,22 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
       string str_for_history( str );
 
-      // NOTE: Special case for "$VAR" which will replace the line
-      // with the environment variable before processing which can
-      // be used in order to modify prompted input whilst looping.
-      if( !str.empty( )
-       && ( str[ 0 ] == c_environment_variable_marker_1 ) )
-         str = get_environment_variable( str.substr( 1 ) );
-
       // NOTE: The history line is stored before prompted input to
       // prevent accidental infinite looping so for something like
       // "Yes, No, All or Quit" the "All" assignment would require
       // being in a conditional to prevent all further prompts.
-      if( !is_skipping_to_label
+      if( !str.empty( )
+       && !is_skipping_to_label
        && dummy_conditions.empty( )
        && ( conditions.empty( ) || conditions.back( ) ) )
       {
-         if( !str.empty( ) && ( str[ 0 ] == c_prompted_input_prefix ) )
+         // NOTE: Special case for "$VAR" which will replace the line
+         // with the environment variable before processing which can
+         // be used in order to modify prompted input whilst looping.
+         if( str[ 0 ] == c_environment_variable_marker_1 )
+            str = get_environment_variable( str.substr( 1 ) );
+
+         if( str[ 0 ] == c_prompted_input_prefix )
          {
             string msg( c_default_value_prompt );
 
