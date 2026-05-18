@@ -9,12 +9,15 @@ xxxx
 x.cin
 x.cpp
 x.txt
+x.xrep
 xx.cin
 xx.cpp
 xx.txt
+xx.xrep
 xxx.cin
 xxx.cpp
 xxx.txt
+xxx.xrep
 
 # Ignore all .old, .sav and .tmp files.
 *.old
