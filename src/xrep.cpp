@@ -203,7 +203,7 @@ any_char                      ::= any printable character
 using namespace std;
 
 const char c_escape = '`';
-const char c_hidden_escape = '\1'; // NOTE: For MBCS '\0' might be best (but might end up with C style string issues).
+const char c_hidden_escape = '\1';
 
 const char c_variable = '$';
 const char c_optional = '?';
@@ -244,6 +244,20 @@ const char* const c_left_bracket = "`[";
 const char* const c_right_bracket = "`]";
 const char* const c_left_parenthesis = "`(";
 const char* const c_right_parenthesis = "`)";
+
+const char* const c_escaped_level_0 = "`0";
+
+// NOTE: Although not explicitly used these
+// are implicitly being used for templates.
+const char* const c_escaped_level_1 = "`1";
+const char* const c_escaped_level_2 = "`2";
+const char* const c_escaped_level_3 = "`3";
+const char* const c_escaped_level_4 = "`4";
+const char* const c_escaped_level_5 = "`5";
+const char* const c_escaped_level_6 = "`6";
+const char* const c_escaped_level_7 = "`7";
+const char* const c_escaped_level_8 = "`8";
+const char* const c_escaped_level_9 = "`9";
 
 const char* const c_escaped_special = "``";
 const char* const c_variable_prefix = "`$";
@@ -1565,9 +1579,13 @@ string template_expression::evaluate( xrep_info& xi )
       {
          if( xi.get_version( ) && ( rhs[ j ] == c_escape ) )
          {
-            can_escape = true;
+            if( ( j >= rhs.size( ) - 1 )
+             || ( ( rhs[ j + 1 ] < '0' ) || rhs[ j + 1 ] > '9' ) )
+            {
+               can_escape = true;
 
-            continue;
+               continue;
+            }
          }
 
          if( was_escaped )
@@ -2207,22 +2225,38 @@ unique_ptr< expression_base > parse_literal_text(
    {
       string s( xl.read_next_token( ) );
 
-      if( s.size( ) && s[ 0 ] == c_escape )
+      if( s.size( ) && ( s[ 0 ] == c_escape ) )
       {
+         bool check_level = false;
+
          if( xl.get_version( ) )
          {
             if( ( s.length( ) > 1 ) && ( s[ 1 ] == c_template_escape ) )
             {
                literal_text += s;
+
                continue;
             }
+
+            if( s != c_escaped_level_0 )
+               check_level = true;
+            else
+               s = c_escaped_special;
          }
 
          if( s == c_escaped_special )
             literal_text += c_escape;
+         else if( check_level && ( s.size( ) > 1 )
+          && ( s[ 1 ] >= '1' ) && ( s[ 1 ] <= '9' ) )
+         {
+             s[ 1 ] = s[ 1 ] - 1;
+
+            literal_text += s;
+         }
          else
          {
             xl.write_back_token( s );
+
             break;
          }
       }
@@ -3642,7 +3676,7 @@ string process_expression( const string& input, xrep_info& xi, int line_number )
    return retval;
 }
 
-void pre_process_expr( string& expr )
+void pre_process_expr( string& expr, size_t version )
 {
    int expr_level = 0;
 
@@ -3659,7 +3693,7 @@ void pre_process_expr( string& expr )
             if( ++expr_level > 1 )
                expr[ i - 1 ] = c_hidden_escape;
          }
-         else if( expr_level && expr[ i ] == c_right_brace[ 1 ] )
+         else if( expr_level && ( expr[ i ] == c_right_brace[ 1 ] ) )
          {
             if( !--expr_level )
                expr[ i - 1 ] = c_escape;
@@ -3670,7 +3704,30 @@ void pre_process_expr( string& expr )
          was_escape = true;
 
          if( expr_level > 1 )
-            expr[ i ] = c_hidden_escape;
+         {
+            bool skip_replace = false;
+
+            if( version )
+            {
+               if( ( i < expr.size( ) - 1 )
+                && ( expr[ i + 1 ] == '`' ) )
+                  was_escape = false;
+
+               if( ( i < expr.size( ) - 1 )
+                && ( ( expr[ i + 1 ] == '\\' )
+                || ( ( expr[ i + 1 ] >= '0' ) && ( expr[ i + 1 ] <= '9' ) ) ) )
+               {
+                  was_escape = false;
+
+                  if( ( i == 0 )
+                   || ( expr[ i - 1 ] != c_hidden_escape ) )
+                     skip_replace = true;
+               }
+            }
+
+            if( !skip_replace )
+               expr[ i ] = c_hidden_escape;
+         }
       }
    }
 }
@@ -3726,7 +3783,7 @@ bool process_next( const string& line, string& result,
                cout << "[[[ expr:\n" << expr << "\n]]]" << endl;
 #endif
 
-               pre_process_expr( expr );
+               pre_process_expr( expr, xi.get_version( ) );
 
                result += process_expression( expr, xi, line_number );
 
@@ -3735,8 +3792,8 @@ bool process_next( const string& line, string& result,
                // NOTE: If an include has been processed at the end of the input
                // line then signal this to the caller (refer to "process_input").
                // This also applies if include content is followed by a single LF.
-               if( xi.had_handled_include( ) && ( i == line.size( ) - 1
-                || ( i == line.size( ) - 2 && line[ line.size( ) - 1 ] == '\n' ) ) )
+               if( xi.had_handled_include( ) && ( ( i == line.size( ) - 1 )
+                || ( ( i == line.size( ) - 2 ) && ( line[ line.size( ) - 1 ] == '\n' ) ) ) )
                   include_appended = true;
 
                end = i + 1;
@@ -3941,6 +3998,7 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
             next += last;
 
             last.erase( );
+
             has_expression = true;
          }
          else
@@ -4020,29 +4078,33 @@ int main( int argc, char* argv[ ] )
       {
          string arg( argv[ i ] );
 
-         if( i == 1 && !arg.empty( ) )
+         if( ( i == 1 ) && !arg.empty( ) )
          {
-            if( arg == string( "?" ) || arg == string( "-?" ) || arg == string( "/?" ) )
+            if( ( arg == "?" ) || ( arg == "-?" ) || ( arg == "--help" ) )
             {
-               cout << "xrep v0.1v\n";
+               cout << "xrep v0.1\n";
                cout << "Usage: xrep [-x] [@<filename>] [var1=<value> [var2=<value> [...]]]\n\n";
 
                cout << "Notes: If the @<filename> is not provided then input is read from std::cin.\n";
                cout << "       If the -x option is used then each line is executed as a system command.\n";
                cout << "       Each <value> can also be expressed as @<filename> (useful for large values).\n";
+
                return 0;
             }
          }
 
-         if( input_filename.empty( ) && !arg.empty( ) && arg[ 0 ] == '@' )
+         if( input_filename.empty( )
+          && !arg.empty( ) && ( arg[ 0 ] == '@' ) )
          {
             input_filename = arg.substr( 1 );
+
             continue;
          }
 
-         if( !g_exec_system && arg == "-x" )
+         if( !g_exec_system && ( arg == "-x" ) )
          {
             g_exec_system = true;
+
             continue;
          }
 
@@ -4060,6 +4122,7 @@ int main( int argc, char* argv[ ] )
             if( value[ 0 ] == '@' )
             {
                ifstream inpf( value.substr( 1 ).c_str( ) );
+
                if( !inpf )
                   throw runtime_error( "unable to open file '" + value.substr( 1 ) + "' for input" );
 
@@ -4074,6 +4137,7 @@ int main( int argc, char* argv[ ] )
 
                   if( !value.empty( ) )
                      value += ' ';
+
                   value += next;
                }
             }
@@ -4103,10 +4167,12 @@ int main( int argc, char* argv[ ] )
    catch( exception& x )
    {
       rc = 1;
+
       stringstream ss;
+
       ss << x.what( );
 
-      // NOTE: Switching between writing to and reading from a stream requires a seek.
+      // NOTE: Reset the stream position for reading.
       ss.seekg( 0 );
 
       string next, first;
@@ -4133,6 +4199,7 @@ int main( int argc, char* argv[ ] )
    catch( ... )
    {
       rc = 2;
+
       cerr << "error: unexpected exception was caught" << endl;
    }
 
