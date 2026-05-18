@@ -1580,7 +1580,7 @@ string template_expression::evaluate( xrep_info& xi )
          if( xi.get_version( ) && ( rhs[ j ] == c_escape ) )
          {
             if( ( j >= rhs.size( ) - 1 )
-             || ( ( rhs[ j + 1 ] < '0' ) || rhs[ j + 1 ] > '9' ) )
+             || ( ( rhs[ j + 1 ] < '1' ) || rhs[ j + 1 ] > '9' ) )
             {
                can_escape = true;
 
@@ -1627,7 +1627,8 @@ string template_expression::evaluate( xrep_info& xi )
             else
                retval += rhs[ j ];
          }
-         else if( rhs[ j ] == c_template_escape )
+         else if( ( rhs[ j ] == c_template_escape )
+          || ( xi.get_version( ) && can_escape && ( rhs[ j ] == '0' ) ) )
          {
             was_escaped = can_escape;
 
@@ -2241,7 +2242,11 @@ unique_ptr< expression_base > parse_literal_text(
             if( s != c_escaped_level_0 )
                check_level = true;
             else
-               s = c_escaped_special;
+            {
+               literal_text += c_ver_1_cont;
+
+               continue;
+            }
          }
 
          if( s == c_escaped_special )
@@ -3679,6 +3684,9 @@ string process_expression( const string& input, xrep_info& xi, int line_number )
 void pre_process_expr( string& expr, size_t version )
 {
    int expr_level = 0;
+   int tmpl_level = 0;
+
+   int before_prefix = 1;
 
    bool was_escape = false;
 
@@ -3697,6 +3705,24 @@ void pre_process_expr( string& expr, size_t version )
          {
             if( !--expr_level )
                expr[ i - 1 ] = c_escape;
+         }
+
+         if( version )
+         {
+            if( expr[ i ] == c_left_bracket[ 1 ] )
+            {
+               ++tmpl_level;
+
+               before_prefix = 1;
+            }
+            else if( tmpl_level && ( expr[ i ] == c_right_bracket[ 1 ] ) )
+               --tmpl_level;
+
+            // NOTE: Will reduce the automatically replaced "escape level"
+            // by one until the template prefix has been reached (to allow
+            // variable names that include template specials when nested).
+            if( tmpl_level && ( expr[ i ] == ',' ) || ( expr[ i ] == '\'' ) )
+               before_prefix = 0;
          }
       }
       else if( expr[ i ] == c_escape )
@@ -3721,7 +3747,18 @@ void pre_process_expr( string& expr, size_t version )
 
                   if( ( i == 0 )
                    || ( expr[ i - 1 ] != c_hidden_escape ) )
+                  {
+                     // NOTE: Rather than requiring the escape level to be
+                     // explicitly provided can automatically determine it
+                     // according to the template level (taking the prefix
+                     // into account). If needing to do replacements using
+                     // a prior template level then currently must use the
+                     // explicit level number of the prior template.
+                     if( ( tmpl_level > 1 ) && ( expr[ i + 1 ] == '\\' ) )
+                        expr[ i + 1 ] = '0' + tmpl_level - before_prefix;
+
                      skip_replace = true;
+                  }
                }
             }
 
