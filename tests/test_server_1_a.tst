@@ -557,6 +557,12 @@ test1.jpg
 test2.jpg
 [test.jpg]
 test.jpg
+xxx
+XXX
+xxx
+......xxx
+xxxabcyyy
+xxxabc   yyyzzz
 encode -text a
 YQ==
 decode -text $OUTPUT

@@ -403,6 +403,20 @@ FILES=@files::test1.jpg,test2.jpg
 FILES=@files::test.jpg
 #$FILES
 ;
+TEST=xxx
+#$TEST
+TEST=@upper:$TEST
+#$TEST
+TEST=@lower:$TEST
+#$TEST
+TEST=@padlen:9,.:$TEST
+#$TEST
+;
+TEST=abc
+ERASER=@eraser:$TEST
+#xxx%TEST%yyy
+#xxx$TEST%ERASER%yyyzzz
+;
 encode -text a
 decode -text $OUTPUT
 encode -text ab

@@ -1,0 +1,113 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NAMES=$1
+;
+@ifndef $NAMES
+#Usage: names.cin [name1[,name2[,..]]
+@else
+TEST=&Name: [NAME#::=
+;
+CIYAM_CHOICE_OUTPUT_REPLACE=1
+;
+.session_variable @set commence
+.session_variable @deque commence
+;
+; NOTE: Input is either:
+; name1[,name2[,..]] or
+; @name1[@name2[@..]]
+;
+NAME_INFO=~$NAMES
+;
+; NOTE: If using the '@' format
+; then needs to strip the first
+; '@' character.
+NAME_INFO=@repstr:~@/:$NAME_INFO
+NAME_INFO=@repstr:~/:$NAME_INFO
+;
+NAME_LINES=@repstr:,/\n:$NAME_INFO
+;
+@ifeq "$NAME_INFO" "$NAME_LINES"
+NAME_LINES=@repstr:@/\n:$NAME_INFO
+@endif
+;
+.session_variable @set "~$NAME_LINES"
+.session_variable @deque @set
+;
+@label INIT_NEXT
+;
+@:INIT_LOOP
+;
+.session_variable @deque front
+NEXT_NAME=$OUTPUT
+;
+@ifndef $NEXT_NAME
+@label END_INIT_LOOP
+@endif
+;
+@skip
+;
+@:INIT_NEXT
+;
+TEST=$TEST|$NEXT_NAME=$NEXT_NAME
+;
+.session_variable @deque pop_front
+;
+!!@:INIT_LOOP
+;
+@:END_INIT_LOOP
+TEST=$TEST]
+;
+NAMES=
+PREFIX=Selected Names
+;
+.session_variable @set ""
+;
+@label NEXT_NAME
+;
+@ifndef $NAMES
+#(0 to end)
+@else
+#$PREFIX:
+@endif
+@:NAME_LOOP
+$TEST
+@ifeq "$NAME" ""
+@label END_NAME_LOOP
+@endif
+;
+@skip
+;
+@:NEXT_NAME
+.session_variable @set
+OLD_NAMES=@repstr:\n/,:$OUTPUT
+;
+.session_variable @set $NAME
+;
+.session_variable @set
+NAMES=@repstr:\n/,:$OUTPUT
+;
+EXTRA=
+@ifeq "$NAMES" "$OLD_NAMES"
+.session_variable @set !$NAME
+EXTRA=@eraser:,$NAME
+EXTRA=$NAME,$EXTRA
+@endif
+;
+.session_variable @set
+NAMES=@repstr:\n/,:$OUTPUT
+;
+#^^$PREFIX: $NAMES$EXTRA
+!!@:NAME_LOOP
+;
+@:END_NAME_LOOP
+;
+@ifndef $NAMES
+#^^(nothing selected)
+@endif
+.session_variable @set complete
+.session_variable @deque complete
+;
+@endif
