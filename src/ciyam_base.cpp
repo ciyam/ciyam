@@ -9709,6 +9709,8 @@ void set_session_variable( const var_name& var, const string& value,
             }
             else if( val[ 0 ] == '~' )
                split( val.substr( 1 ), gtp_session->set_items, '\n' );
+            else if( val[ 0 ] == '!' )
+               gtp_session->set_items.erase( val.substr( 1 ) );
             else if( val[ 0 ] == '?' )
             {
                vector< string > check_items;
