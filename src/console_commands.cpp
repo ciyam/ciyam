@@ -83,6 +83,7 @@ const char* const c_env_var_ciyam_pause_seconds = "CIYAM_PAUSE_SECONDS";
 const char* const c_env_var_ciyam_pwd_append_len = "CIYAM_PWD_APPEND_LEN";
 const char* const c_env_var_ciyam_default_seconds = "CIYAM_DEFAULT_SECONDS";
 const char* const c_env_var_ciyam_password_append = "CIYAM_PASSWORD_APPEND";
+const char* const c_env_var_ciyam_choice_output_replace = "CIYAM_CHOICE_OUTPUT_REPLACE";
 
 const char* const c_default_value_prompt = "VALUE=";
 
@@ -120,6 +121,7 @@ const char* const c_function_paths = "paths";
 const char* const c_function_upper = "upper";
 const char* const c_function_aschex = "aschex";
 const char* const c_function_dechex = "dechex";
+const char* const c_function_eraser = "eraser";
 const char* const c_function_hexasc = "hexasc";
 const char* const c_function_hexbig = "hexbig";
 const char* const c_function_hexdec = "hexdec";
@@ -489,7 +491,7 @@ bool is_choice_input( const string& input )
 //
 // (or CONT= if 'n' or 'N' was pressed)
 //
-// To select each item with a digit in 1,2,3,4,5,6,7,8,9 or 0 use the following:
+// To select each item with a digit in the range 0-9 use the following:
 //
 // &Continue? [CONT#Yes==1!YES|No=!NO] (choose one)
 
@@ -583,10 +585,7 @@ string get_input_from_choices( const string& input )
                if( choice_num > 9 )
                   throw runtime_error( "too many choices provided for numeric selection" );
 
-               if( choice_num == 9 )
-                  next_choice.ch = '0';
-               else
-                  next_choice.ch = '1' + choice_num;
+               next_choice.ch = '0' + choice_num;
 
                ++choice_num;
 
@@ -655,6 +654,7 @@ string get_input_from_choices( const string& input )
          str.insert( pos, choice_info );
 
          cout << str;
+
          cout.flush( );
 
          string value, output;
@@ -795,6 +795,9 @@ string get_input_from_choices( const string& input )
          str += value;
       }
    }
+
+   if( has_environment_variable( c_env_var_ciyam_choice_output_replace ) )
+      cout << c_esc_up_one_line;
 
    return str;
 }
@@ -3345,6 +3348,16 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               ss << hex << val;
 
                               str = ss.str( );
+                           }
+                           else if( lhs == c_function_eraser )
+                           {
+                              str.erase( 0, pos + 1 );
+
+                              size_t len = str.length( );
+
+                              str = string( len, '\b' );
+                              str += string( len, ' ' );
+                              str += string( len, '\b' );
                            }
                            else if( lhs == c_function_hexasc )
                               str = hex_decode( str.substr( pos + 1 ) );
