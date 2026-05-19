@@ -8,12 +8,12 @@ export WEBDIR=/srv/www/htdocs
 (or another path such as /var/www/html depending upon which Linux distro is being used)
 
 After cloning the repository run "config" in order to configure the system for 3rd party dependencies (and to
-set the default server port) then issue a "make all" to build all of project targets then next run "do_tests"
-to test that all core functionality is working:
+set the default server port) then issue a "make all" to build all of project targets then next run "tests" to
+test that all core functionality is working:
 
 ./config
 make all
-./dotests
+./tests
 
 The next step is to make sure that MySQL is installed and operating. The following steps will create a DB for
 testing the system, populate this DB with tables and data and verify that all is functioning as expected (and

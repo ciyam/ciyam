@@ -235,7 +235,7 @@ sudo systemctl restart sshd
 
 make all
 
-./dotests
+./tests
 
 To ensure that the Meta application will operate correctly:
 
