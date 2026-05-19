@@ -38,7 +38,7 @@ git checkout -b task_branch_name
 
 ./config
 make all
-./dotests
+./tests
 
 (if any errors then these will need to be resolved before continuing)
 

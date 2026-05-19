@@ -52,7 +52,7 @@ Name              Role/Description
 ---------------   --------------------------------------------------------
 config            Generates config.h from config.h.xrep (and config.info).
 create_db         Creates an empty DB.
-dotests           Runs basic tool and system regression tests.
+tests             Runs basic tool and system regression tests.
 drop_db           Drops an existing DB.
 genmake           Generates the project makefile.
 genmodule         Used explicitly to generate the Meta model.
