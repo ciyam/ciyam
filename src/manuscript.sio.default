@@ -5,24 +5,35 @@
 <sio/>
  <script/>
   <name>test
+  <logging>never
   <filename>*script*
   <arguments>test.cin @one @two opt @opt1 @opt2
  </script>
  <script/>
   <name>test1
+  <logging>never
   <filename>test1.sh:~test.sh
  </script>
  <script/>
   <name>test2
+  <logging>never
   <filename>test2.sh:~test.sh
  </script>
  <script/>
   <name>test3
+  <logging>never
   <filename>test3.sh:?~test.sh
  </script>
  <script/>
   <name>test4
+  <logging>never
   <filename>test4.sh
+ </script>
+ <script/>
+  <name>irc_join
+  <logging>never
+  <filename>*script*
+  <arguments>irc_join.cin @name
  </script>
  <script/>
   <name>init_ciyam

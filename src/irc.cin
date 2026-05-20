@@ -11,35 +11,30 @@ USER=$1
 USER=anon
 @endif
 ;
-.system_variable @irc_lock 1 "" 100
-;
-@ifeq "$OUTPUT" "0"
-#IRC lock was not obtained.
-@else
-;
-.system_variable @irc_users
-ALL_USERS=$OUTPUT
-;
-ALL_USERS_CHECK=
-;
-@ifdef $ALL_USERS
-ALL_USERS_CHECK=%ALL_USERS%@
-@endif
-;
-NOT_SELF_CHECK=@repstr:@$USER@/@:$ALL_USERS_CHECK
-;
+QUIT=
+ERROR=
+MESSAGE=
 NOT_TO_SELF=
 ;
-@ifeq "$ALL_USERS_CHECK" "$NOT_SELF_CHECK"
-.system_variable @irc_users $ALL_USERS@$USER
-#(joined as $USER)
-@ifdef $ALL_USERS
-NOT_TO_SELF=1
-MESSAGE=(joined)
-@endif
-@endif
+; NOTE: Reduce protocol commands by
+; running "irc_join" on the server.
+.run_script !irc_join "@name=$USER"
 ;
-.system_variable @irc_lock ""
+@ifndef $ERROR
+;
+@ifdef $OUTPUT
+LINES=@repstr:|/\n:$OUTPUT
+;
+LOCAL=%LINES:1%
+REMOTE=%LINES:2%
+;
+#$LOCAL
+;
+@ifdef $REMOTE
+NOT_TO_SELF=1
+MESSAGE=$REMOTE
+@endif
+@endif
 ;
 CHECK_PRIOR=1
 ;
@@ -55,6 +50,7 @@ CIYAM_PAUSE_SECONDS=1
 @ifdef $CIYAM_KEY_PRESSED
 ;
 @ifeq "$CIYAM_KEY_PRESSED" "q"
+QUIT=1
 @label END_LOOP
 @else
 @ifeq "$CIYAM_KEY_PRESSED" "v"
@@ -75,7 +71,6 @@ QR_CODE=@file:~zbarcam -1 -q --raw
 @endif
 ;
 @endif
-;
 @endif
 ;
 @ifdef $MESSAGE
@@ -97,6 +92,8 @@ UTC_NOW=[$UTC_NOW]
 ;
 @endif
 ;
+@ifndef $QUIT
+;
 .system_variable @queue_irc_$USER *
 @ifdef $OUTPUT
 NEXT_MESSAGE=$OUTPUT
@@ -113,6 +110,8 @@ PREFIX=^^
 ;
 @else
 CHECK_PRIOR=
+@endif
+;
 @endif
 ;
 @skip

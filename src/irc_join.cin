@@ -1,0 +1,66 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+ERROR=User name is required for "irc_join".
+#$ERROR
+@else
+;
+USER=$1
+;
+; NOTE: Only accept names that are between three and twelve characters long
+; starting with 'a-z' and ending with 'a-z' or '0-9'. Underbars are allowed
+; but only between the start and ending characters and may not be repeated.
+; The regex "chain" handles all of these conditions excepting the final one
+; which is provided using the "@repstr" environment variable function.
+;
+.regex -chain "^[a-z][_a-z0-9]+$$&&^.*[a-z0-9]$$&&^[_a-z0-9]{3,12}$$" "$USER"
+USER_CHECK=$OUTPUT
+@ifdef $USER_CHECK
+USER_CHECK=@repstr:__/_:$USER_CHECK
+@endif
+;
+@ifneq "$USER" "$USER_CHECK"
+ERROR=Invalid user name '$USER'.
+@else
+;
+.system_variable @irc_lock 1 "" 100
+;
+@ifeq "$OUTPUT" "0"
+ERROR=Unable to obtain the system IRC lock (try again later).
+#$ERROR
+@else
+;
+.system_variable @irc_users
+ALL_USERS=$OUTPUT
+;
+ALL_USERS_CHECK=
+;
+@ifdef $ALL_USERS
+ALL_USERS_CHECK=%ALL_USERS%@
+@endif
+;
+NOT_SELF_CHECK=@repstr:@$USER@/@:$ALL_USERS_CHECK
+;
+@ifeq "$ALL_USERS_CHECK" "$NOT_SELF_CHECK"
+.system_variable @irc_users $ALL_USERS@$USER
+ERROR=@[joined as $USER]
+@ifdef $ALL_USERS
+ERROR=$ERROR|[joined]
+@endif
+@endif
+;
+.system_variable @irc_lock ""
+;
+@endif
+;
+@endif
+;
+@ifdef $ERROR
+.session_variable @args_file
+@ifdef $OUTPUT
+.system_variable $OUTPUT "$ERROR"
+@endif
+@endif
