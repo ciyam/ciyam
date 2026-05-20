@@ -47,11 +47,6 @@ const size_t c_max_execs = 99999;
 
 const size_t c_max_tolerance = 60;
 
-const char* const c_logging_never = "never";
-const char* const c_logging_always = "always";
-const char* const c_logging_errors = "errors";
-const char* const c_logging_standard = "standard";
-
 const char* const c_script_dummy_filename = "*script*";
 
 const char* const c_section_script = "script";
@@ -85,14 +80,6 @@ enum exclude_type
    e_exclude_type_sundays,
    e_exclude_type_weekdays,
    e_exclude_type_weekends
-};
-
-enum logging_type
-{
-   e_logging_type_never,
-   e_logging_type_always,
-   e_logging_type_errors,
-   e_logging_type_standard
 };
 
 struct script_info

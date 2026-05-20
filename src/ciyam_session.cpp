@@ -8207,7 +8207,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !script_name.empty( ) && ( script_name[ 0 ] == '!' ) )
          {
             async = false;
+
             script_name.erase( 0, 1 );
+
+            set_session_variable( e_special_var_return, "" );
          }
 
          if( script_name.find_first_of( "?*" ) == string::npos )
@@ -8240,12 +8243,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( rc < 0 )
                throw runtime_error( "failed to execute script '" + script_name + "'" );
+            else if( !async )
+            {
+               response = get_session_variable( e_special_var_return );
+
+               check_not_possible_protocol_response( response );
+            }
          }
          else
          {
             ostringstream osstr;
 
             list_scripts( script_name, osstr );
+
             response = osstr.str( );
          }
       }

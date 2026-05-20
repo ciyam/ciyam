@@ -182,6 +182,7 @@ const char* const c_attribute_domain = "domain";
 const char* const c_attribute_server = "server";
 const char* const c_attribute_sender = "sender";
 const char* const c_attribute_suffix = "suffix";
+const char* const c_attribute_logging = "logging";
 const char* const c_attribute_use_udp = "use_udp";
 const char* const c_attribute_filename = "filename";
 const char* const c_attribute_password = "password";
@@ -3664,13 +3665,21 @@ void restore_saved_and_keep_as_older( const string& file_name )
 
 struct script_info
 {
-   script_info( ) : check_lock_only( false ) { }
+   script_info( )
+    :
+    check_lock_only( false ),
+    logging( e_logging_type_standard )
+   {
+   }
 
    string filename;
    string arguments;
 
    string lock_filename;
+
    bool check_lock_only;
+
+   logging_type logging;
 };
 
 time_t g_scripts_mod;
@@ -3712,7 +3721,21 @@ void read_script_info( )
          {
             script_info info;
 
-            string name = reader.read_attribute( c_attribute_name );
+            string name( reader.read_attribute( c_attribute_name ) );
+
+            string logging( reader.read_opt_attribute( c_attribute_logging, c_logging_standard ) );
+
+            if( logging == c_logging_never )
+               info.logging = e_logging_type_never;
+            else if( logging == c_logging_always )
+               info.logging = e_logging_type_always;
+            else if( logging == c_logging_errors )
+               info.logging = e_logging_type_errors;
+            else if( logging == c_logging_standard )
+               info.logging = e_logging_type_standard;
+            else
+               throw runtime_error( "invalid logging value '"
+                + logging + "' provided for '" + name + "'" );
 
             info.filename = reader.read_attribute( c_attribute_filename );
 
@@ -7253,6 +7276,13 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
    bool is_script = ( filename == c_script_dummy_filename );
 
+   logging_type log_type = g_scripts[ script_name ].logging;
+
+   // NOTE: If was set in "manuscript.sio"
+   // then override the supplied argument.
+   if( log_type == e_logging_type_never )
+      no_logging = true;
+
    bool is_busy = false;
 
    string lock_filename( g_scripts[ script_name ].lock_filename );
@@ -7327,7 +7357,12 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
          string script_args( args_file );
 
-         if( !has_system_variable( e_special_var_log_all_scripts ) )
+         // NOTE: If was set in "manuscript.sio" or if is forcing
+         // all scripts to be logged using the "@log_all_scripts"
+         // system variable then will ignore function argument or
+         // session variable for logging.
+         if( ( log_type != e_logging_type_always )
+          && !has_system_variable( e_special_var_log_all_scripts ) )
          {
             // NOTE: If the "no_logging" argument is set true then make sure that "script" execution
             // won't be logged (even in the case of an error). For synchronous scripts an error will
@@ -7340,20 +7375,28 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
                script_args = "-do_not_log " + script_args;
             else
             {
-               string errors_only( get_session_variable( e_special_var_errors_only ) );
+               bool log_on_error = ( log_type == e_logging_type_errors );
 
-               if( ( errors_only == c_true ) || ( errors_only == c_true_value ) )
+               if( !log_on_error )
+               {
+                  string errors_only( get_session_variable( e_special_var_errors_only ) );
+
+                  if( ( errors_only == c_true ) || ( errors_only == c_true_value ) )
+                     log_on_error = true;
+               }
+
+               if( log_on_error )
                   script_args = "-log_on_error " + script_args;
             }
          }
 
          // NOTE: For cases where one script may end up calling numerous others (i.e.
          // such as a scan across records) this special session variable is available
-         // to prevent excess log entries appearing in the script log file.
+         // to prevent excessive log entries appearing in the script log file.
          string quiet( get_session_variable( e_special_var_quiet ) );
 
          // NOTE: If making any change to "script_args" then it likely will also need
-         // to be done in "auto_script.cpp" (as it also executes the 'script' script).
+         // to be done in "auto_script.cpp" (as it also executes the "script" script).
          if( ( quiet != c_true ) && ( quiet != c_true_value ) )
             script_args += " " + script_name;
 
@@ -15155,11 +15198,12 @@ void transaction_commit( )
          string next( gtp_session->async_or_delayed_args_files[ i ] );
 
          if( script_error.empty( )
-          && ( check_script_error == c_true || check_script_error == c_true_value ) )
+          && ( ( check_script_error == c_true )
+          || ( check_script_error == c_true_value ) ) )
          {
             string value( get_system_variable( next ) );
 
-            if( !value.empty( ) && value != c_true_value )
+            if( !value.empty( ) && ( value != c_true_value ) )
                script_error = value;
          }
 
@@ -15175,10 +15219,10 @@ void transaction_commit( )
       {
          // NOTE: If the error starts with '@' then assume that it is actually
          // intended to be an execute "return" message rather than an error.
-         if( script_error[ 0 ] == '@' )
-            set_session_variable( e_special_var_return, script_error.substr( 1 ) );
-         else
+         if( script_error[ 0 ] != '@' )
             throw runtime_error( script_error );
+         else
+            set_session_variable( e_special_var_return, script_error.substr( 1 ) );
       }
    }
 }

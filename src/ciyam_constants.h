@@ -6,6 +6,14 @@
 #ifndef CIYAM_CONSTANTS_H
 #  define CIYAM_CONSTANTS_H
 
+enum logging_type
+{
+   e_logging_type_never,
+   e_logging_type_always,
+   e_logging_type_errors,
+   e_logging_type_standard
+};
+
 const int c_tx_id_module = 1;
 const int c_tx_id_initial = 2;
 const int c_tx_id_standard = 5;
@@ -128,6 +136,11 @@ const char* const c_old_file_ext = ".old";
 const char* const c_sav_file_ext = ".sav";
 
 const char* const c_ciyam_pem = "ciyam.pem";
+
+const char* const c_logging_never = "never";
+const char* const c_logging_always = "always";
+const char* const c_logging_errors = "errors";
+const char* const c_logging_standard = "standard";
 
 const char* const c_ciyam_script = "ciyam_script";
 const char* const c_ciyam_server = "ciyam_server";
