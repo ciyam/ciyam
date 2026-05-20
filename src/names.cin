@@ -8,40 +8,48 @@ NAMES=$1
 @ifndef $NAMES
 #Usage: names.cin [name1[,name2[,..]]
 @else
-TEST=&Name: [NAME#::=
+CHOICES=&Name: [NAME# (exit)=
 ;
 CIYAM_CHOICE_OUTPUT_REPLACE=1
 ;
-.session_variable @set commence
-.session_variable @deque commence
+; NOTE: Names provided must be formatted as
+; name1[,name2[,..]] or @name1[@name2[@..]]
+; (but are not required to be ordered). The
+; next steps are necessary to transform the
+; latter into the former. And can be viewed
+; as follows:
 ;
-; NOTE: Input is either:
-; name1[,name2[,..]] or
-; @name1[@name2[@..]]
+; @def@ghi@abc@def
+;
+; 1. ~@def@ghi@abc@def
+; 2. def@ghi@abc@def
+; 3. def,ghi,abc,def
+;
+; Next the names are sorted with duplicates
+; (if any were found) having being removed:
+;
+; abc,def,ghi
 ;
 NAME_INFO=~$NAMES
 ;
-; NOTE: If using the '@' format
-; then needs to strip the first
-; '@' character.
 NAME_INFO=@repstr:~@/:$NAME_INFO
 NAME_INFO=@repstr:~/:$NAME_INFO
 ;
+NAME_INFO=@repstr:@/,:$NAME_INFO
+;
+; NOTE: Now sorts the comma separated list
+; (removing duplicates if they are found).
+; The "head" command removes a final comma
+; the appears due to an LF being appended.
+NAME_INFO=@file:~echo "$NAME_INFO" | tr "," "\n" | sort | uniq | tr "\n" "," | head -c-1
+;
 NAME_LINES=@repstr:,/\n:$NAME_INFO
-;
-@ifeq "$NAME_INFO" "$NAME_LINES"
-NAME_LINES=@repstr:@/\n:$NAME_INFO
-@endif
-;
-.session_variable @set "~$NAME_LINES"
-.session_variable @deque @set
 ;
 @label INIT_NEXT
 ;
 @:INIT_LOOP
 ;
-.session_variable @deque front
-NEXT_NAME=$OUTPUT
+NEXT_NAME=%NAME_LINES:1%
 ;
 @ifndef $NEXT_NAME
 @label END_INIT_LOOP
@@ -51,29 +59,29 @@ NEXT_NAME=$OUTPUT
 ;
 @:INIT_NEXT
 ;
-TEST=$TEST|$NEXT_NAME=$NEXT_NAME
+CHOICES=$CHOICES|$NEXT_NAME=$NEXT_NAME
 ;
-.session_variable @deque pop_front
+NAME_LINES=%NAME_LINES:-1%
 ;
 !!@:INIT_LOOP
 ;
 @:END_INIT_LOOP
-TEST=$TEST]
+CHOICES=$CHOICES]
 ;
-NAMES=
+DUMMY= <none>
 PREFIX=Selected Names
 ;
-.session_variable @set ""
+NAMES=
+SELECTED_NAMES=
 ;
 @label NEXT_NAME
 ;
-@ifndef $NAMES
-#(0 to end)
-@else
-#$PREFIX:
-@endif
+#$PREFIX:$DUMMY
+;
 @:NAME_LOOP
-$TEST
+;
+$CHOICES
+;
 @ifeq "$NAME" ""
 @label END_NAME_LOOP
 @endif
@@ -81,33 +89,47 @@ $TEST
 @skip
 ;
 @:NEXT_NAME
-.session_variable @set
-OLD_NAMES=@repstr:\n/,:$OUTPUT
 ;
-.session_variable @set $NAME
+ERASER=
 ;
-.session_variable @set
-NAMES=@repstr:\n/,:$OUTPUT
+@ifndef $SELECTED_NAMES
+@ifdef $DUMMY
+ERASER=@eraser:$DUMMY
+ERASER=$DUMMY,$ERASER
+DUMMY=
+@endif
+SELECTED_NAMES=[$NAME]
+@else
+CHECK_SELECTED=@repstr:[$NAME]/:$SELECTED_NAMES
 ;
-EXTRA=
-@ifeq "$NAMES" "$OLD_NAMES"
-.session_variable @set !$NAME
-EXTRA=@eraser:,$NAME
-EXTRA=$NAME,$EXTRA
+@ifneq "$CHECK_SELECTED" "$SELECTED_NAMES"
+ERASER=@eraser:$NAME,
+ERASER=$NAME,$ERASER
+SELECTED_NAMES=$CHECK_SELECTED
+@else
+SELECTED_NAMES=$SELECTED_NAMES[$NAME]
 @endif
 ;
-.session_variable @set
-NAMES=@repstr:\n/,:$OUTPUT
+@endif
 ;
-#^^$PREFIX: $NAMES$EXTRA
+@ifndef $SELECTED_NAMES
+NAMES=
+@else
+NAMES=@repstr:][/,:$SELECTED_NAMES
+NAMES=@repstr:[/:$NAMES
+NAMES=@repstr:]/:$NAMES
+;
+NAMES=@file:~echo -n "$NAMES" | tr "," "\n" | sort | tr "\n" "," | head -c-1
+@endif
+;
+#^^$PREFIX: $NAMES$ERASER
+;
 !!@:NAME_LOOP
 ;
 @:END_NAME_LOOP
 ;
 @ifndef $NAMES
-#^^(nothing selected)
+#^^(no names selected)
 @endif
-.session_variable @set complete
-.session_variable @deque complete
 ;
 @endif
