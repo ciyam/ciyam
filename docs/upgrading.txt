@@ -32,13 +32,13 @@ Attention should be paid to the output of this in order to determine what to do 
 Assuming "ciyam_server" was re-linked then the application server is going to need to be restarted.
 
 If either the "upload" or "ciyam_interface" applications were re-linked by the "make" then the web server will
-need to be restarted and then depending upon which of them was rebuilt one of the following batch/script files
-will need to be executed:
+need to be restarted and then depending upon which of them was rebuilt one of the following bash scripts needs
+to be executed:
 
 ./install_fcgi upload <app dir>
 ./install_fcgi ciyam_interface <app dir>
 
-For the second of these batch/script files there may be other files required to be included after "<app dir>".
+With the second of these bash script files there may be other files required to be included after "<app dir>".
 One possibility is that the file "ciyam_interface.txt" has changed (check the repository changes record) while
 others are any ".htms" files that have changed. An example with a few of these is as follows:
 
@@ -132,7 +132,7 @@ following:
 
 ./reconstruct_meta
 
-It should be noted (the batch/script issues a warning) that this destroys all existing applications along with
+It should be noted (which the bash script warns about) that this destroys all existing applications along with
 their model artifacts (i.e. you'll need to re-create your applications from scratch).
 
 If changes were made to "Meta.fcgi.sio" then these will be also applied when "reconstruct_meta" is executed.

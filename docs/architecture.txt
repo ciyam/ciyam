@@ -13,6 +13,7 @@ ciyam_client      Single-threaded console client.
 ciyam_interface   Multi-threaded FCGI CIYAM client.
 ciyam_server      Multi-threaded application server.
 upload            Multi-threaded FCGI file uploader.
+xrep              Expression replacement tool for expanding templates.
 
 The following components are optional for production but are required for development:
 
@@ -43,21 +44,20 @@ test_numeric      Testbed for the numeric class.
 test_ods          Testbed for the Object Data Storage system.
 test_parser       Testbed for the (RPC) command parser.
 test_sql          Test tool for issuing SQL queries.
-xrep              Expression replacement tool for expanding templates.
 xvars             Tool used by the make system.
 
-The following batch/script files are required for development installations:
+The following bash script files are required for development installations:
 
 Name              Role/Description
 ---------------   --------------------------------------------------------
 config            Generates config.h from config.h.xrep (and config.info).
 create_db         Creates an empty DB.
-tests             Runs basic tool and system regression tests.
 drop_db           Drops an existing DB.
 genmake           Generates the project makefile.
 genmodule         Used explicitly to generate the Meta model.
+tests             Runs basic tool and system regression tests.
 
-Various other batch/script files that are used internally by development installations are not listed here.
+Various other bash script files that are used internally by development installations are not listed here.
 
 Module and Storage Concepts
 ---------------------------
@@ -113,9 +113,9 @@ Uploaded and Rules Created Files
 
 Files that application users upload are not kept in the storage (only there existence is) so another key part
 of backing up is to ensure all of the application files have been periodically backed up. The provided backup
-batch/script files can be used to include these external files, however, this is not advisable for situations
+bash script files can be used to include these external files, however, this is not recommended in situations
 where the amount or size of these files is expected to be significant (for such applications it would instead
-be recommended to use specialised backup software).
+be recommended to use a more specialised backup implementation).
 
 All such storage files are kept in subdirecties below the WEBROOT/<storage>/files directory and so any backup
 software needs to be configured to backup that directory branch (excluding WEBROOT/<storage>/files/tmp branch
