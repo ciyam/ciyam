@@ -16,11 +16,13 @@ ERROR=
 MESSAGE=
 NOT_TO_SELF=
 ;
-; NOTE: Reduce protocol commands by
-; running "irc_join" on the server.
 .run_script !irc_join "@name=$USER"
 ;
-@ifndef $ERROR
+@ifdef $ERROR
+@label END_LOOP
+@endif
+;
+@skip
 ;
 @ifdef $OUTPUT
 LINES=@repstr:|/\n:$OUTPUT
@@ -40,8 +42,6 @@ CHECK_PRIOR=1
 ;
 CIYAM_PAUSE_SECONDS=1
 ;
-@label NEXT
-;
 @:LOOP
 ;
 @ifndef $CHECK_PRIOR
@@ -51,7 +51,6 @@ CIYAM_PAUSE_SECONDS=1
 ;
 @ifeq "$CIYAM_KEY_PRESSED" "q"
 QUIT=1
-@label END_LOOP
 @else
 @ifeq "$CIYAM_KEY_PRESSED" "v"
 &Enter QR Code: :QR_CODE=
@@ -74,29 +73,46 @@ QR_CODE=@file:~zbarcam -1 -q --raw
 @endif
 ;
 @ifdef $MESSAGE
-.system_variable @irc_users
-IRC_USERS=$OUTPUT
 ;
+TYPE=all
 @ifdef $NOT_TO_SELF
-IRC_USERS=@repstr:@%USER%@/@:%IRC_USERS%@
+TYPE=others
 @endif
 ;
-IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
+ENCODED=@base64:@$MESSAGE
 ;
-UTC_NOW=@date:yyyy-mm-dd hh:mm:ss
-UTC_NOW=[$UTC_NOW]
-;
-@ifdef $IRC_USER_SUFFIXES
-.system_variable @queue_irc_$IRC_USER_SUFFIXES "$UTC_NOW $USER: $MESSAGE"
-@endif
+.run_script !irc_send_message "@type=$TYPE,@user=$USER,@message=$ENCODED"
 ;
 @endif
 ;
-@ifndef $QUIT
-;
+@ifdef $QUIT
+OUTPUT=
+@else
 .system_variable @queue_irc_$USER *
+@endif
+;
 @ifdef $OUTPUT
-NEXT_MESSAGE=$OUTPUT
+MESSAGES=$OUTPUT
+;
+@label MSG_NEXT
+;
+@:MSG_LOOP
+NEXT_MESSAGE=%MESSAGES:1%
+;
+@ifndef $NEXT_MESSAGE
+@label END_MSG_LOOP
+@endif
+;
+@skip
+;
+@:MSG_NEXT
+;
+NEXT_MSG_PARTS=@repstr:\: /\n:$NEXT_MESSAGE
+;
+WHEN_AND_USER=%NEXT_MSG_PARTS:1%
+DECODED_MESSAGE=@base64:%NEXT_MSG_PARTS:2%
+;
+NEXT_MESSAGE=$WHEN_AND_USER: $DECODED_MESSAGE
 ;
 PREFIX=
 ;
@@ -108,10 +124,22 @@ PREFIX=^^
 ;
 #$PREFIX$NEXT_MESSAGE
 ;
-@else
-CHECK_PRIOR=
+NOT_TO_SELF=
+;
+MESSAGES=%MESSAGES:-1%
+;
+!!@:MSG_LOOP
+;
+@:END_MSG_LOOP
+;
 @endif
 ;
+CHECK_PRIOR=
+;
+@label NEXT
+;
+@ifdef $QUIT
+@label END_LOOP
 @endif
 ;
 @skip
@@ -119,10 +147,7 @@ CHECK_PRIOR=
 @:NEXT
 ;
 MESSAGE=
-NOT_TO_SELF=
 ;
 !!@:LOOP
 ;
 @:END_LOOP
-;
-@endif

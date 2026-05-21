@@ -1,0 +1,56 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "3"
+#Usage: irc_send_message.cin all|others <user> <message>
+@else
+;
+TYPE=$1
+USER=$2
+MESSAGE=$3
+;
+.regex "^([_0-9a-zA-Z]+)$$" "$MESSAGE"
+;
+@ifeq "$MESSAGE" "$OUTPUT"
+;
+.system_variable @irc_users
+IRC_USERS=$OUTPUT
+;
+@ifdef $IRC_USERS
+;
+@ifeq "$TYPE" "others"
+IRC_USERS=@repstr:@%USER%@/@:%IRC_USERS%@
+@endif
+;
+IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
+;
+UTC_NOW=@date:yyyy-mm-dd hh:mm:ss
+UTC_NOW=[$UTC_NOW]
+;
+@ifdef $IRC_USER_SUFFIXES
+.system_variable @queue_irc_$IRC_USER_SUFFIXES "$UTC_NOW $USER: $MESSAGE"
+@endif
+;
+@endif
+;
+@ifdef $ERROR
+.session_variable @args_file
+@ifdef $OUTPUT
+.system_variable $OUTPUT "$ERROR"
+@endif
+@endif
+;
+@endif
