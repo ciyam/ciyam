@@ -45,6 +45,7 @@ CIYAM_PAUSE_SECONDS=1
 @:LOOP
 ;
 @ifndef $CHECK_PRIOR
+NOT_TO_SELF=
 ^[hit 'q' to quit 's/v' to scan/view a QR Code or space to type]
 ;
 @ifdef $CIYAM_KEY_PRESSED
@@ -63,7 +64,10 @@ QR_CODE=@file:~zbarcam -1 -q --raw
 #^^Scanned QR Code: $QR_CODE
 @else
 @ifeq "$CIYAM_KEY_PRESSED" " "
-&:MESSAGE=
+&:MESSAGE=_
+@ifeq "$MESSAGE" "_"
+MESSAGE=
+@endif
 @endif
 @endif
 @endif
@@ -88,7 +92,7 @@ ENCODED=@base64:@$MESSAGE
 @ifdef $QUIT
 OUTPUT=
 @else
-.system_variable @queue_irc_$USER *
+.run_script !irc_fetch_messages @user=$USER
 @endif
 ;
 @ifdef $OUTPUT
@@ -111,6 +115,7 @@ NEXT_MSG_PARTS=@repstr:\: /\n:$NEXT_MESSAGE
 ;
 WHEN_AND_USER=%NEXT_MSG_PARTS:1%
 DECODED_MESSAGE=@base64:%NEXT_MSG_PARTS:2%
+DECODED_MESSAGE=@substr:1,0:$DECODED_MESSAGE
 ;
 NEXT_MESSAGE=$WHEN_AND_USER: $DECODED_MESSAGE
 ;
@@ -123,8 +128,6 @@ PREFIX=^^
 @endif
 ;
 #$PREFIX$NEXT_MESSAGE
-;
-NOT_TO_SELF=
 ;
 MESSAGES=%MESSAGES:-1%
 ;

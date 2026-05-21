@@ -1,0 +1,34 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+ERROR=User name is required for "irc_fetch_messages".
+#$ERROR
+@else
+;
+USER=$1
+;
+.session_variable @uuid
+UUID=$OUTPUT
+;
+.system_variable @queue_irc_$USER *
+;
+@ifndef $ERROR
+@ifdef $OUTPUT
+>~$UUID
+#$OUTPUT
+>
+ERROR=@@~$UUID
+@endif
+@endif
+;
+@endif
+;
+@ifdef $ERROR
+.session_variable @args_file
+@ifdef $OUTPUT
+.system_variable $OUTPUT "$ERROR"
+@endif
+@endif

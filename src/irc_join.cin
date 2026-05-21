@@ -48,7 +48,7 @@ NOT_SELF_CHECK=@repstr:@$USER@/@:$ALL_USERS_CHECK
 .system_variable @irc_users $ALL_USERS@$USER
 ERROR=@[joined as $USER]
 @ifdef $ALL_USERS
-ERROR=$ERROR|[joined]
+ERROR=$ERROR|_[joined]
 @endif
 @endif
 ;
