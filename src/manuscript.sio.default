@@ -162,6 +162,12 @@
   <arguments>complete_restore.cin @storage
  </script>
  <script/>
+  <name>irc_send_message
+  <logging>never
+  <filename>*script*
+  <arguments>irc_send_message.cin @type @user @message
+ </script>
+ <script/>
   <name>prepare_channels
   <filename>*script*
   <arguments>prepare_channels.cin @storage
