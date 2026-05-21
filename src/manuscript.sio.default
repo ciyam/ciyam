@@ -183,6 +183,12 @@
   <arguments>fetch_from_channel.cin @storage @identity
  </script>
  <script/>
+  <name>irc_fetch_messages
+  <logging>never
+  <filename>*script*
+  <arguments>irc_fetch_messages.cin @user
+ </script>
+ <script/>
   <name>remove_unsubmitted
   <filename>*script*
   <arguments>remove_unsubmitted.cin @storage
