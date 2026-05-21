@@ -229,6 +229,10 @@ abcXXX
 @abc
 Meta
 Meta
+a\nb
+X2FcXG5i
+_a\nb
+a\nb
 abcdefghi
 abcdefghi
 defghi
@@ -928,7 +932,7 @@ test1 xxx
 test2 yyy
 test3 yyy
 session_variable test (okay)
-Error: invalid value '(okay)' (could be confused with a protocol response)
+Error: invalid response '(okay)' (could be confused with a protocol response)
 session_variable test
 session_variable test @increment
 session_variable test

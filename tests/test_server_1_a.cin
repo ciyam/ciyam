@@ -75,6 +75,14 @@ TEST=@file:modules.lst.default
 #$TEST
 TEST=@file:~cat modules.lst.default
 #$TEST
+TEST=a\\nb
+#$TEST
+TEST=@base64:@_$TEST
+#$TEST
+TEST=@base64:$TEST
+#$TEST
+TEST=@substr:1,0:$TEST
+#$TEST
 TEST=abcdefghi
 #$TEST
 X=@substr:-9:$TEST
