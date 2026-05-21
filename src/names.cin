@@ -8,8 +8,11 @@ NAMES=$1
 @ifndef $NAMES
 #Usage: names.cin [name1[,name2[,..]]
 @else
-CHOICES=&Name: [NAME# (exit)=
+ENTER=_==
+CHOICES=&Name: [NAME:$ENTER
 ;
+CIYAM_CHOICE_LOT_NUM=0
+CIYAM_CHOICE_LOT_LIMIT=10
 CIYAM_CHOICE_OUTPUT_REPLACE=1
 ;
 ; NOTE: Names provided must be formatted as
@@ -37,13 +40,14 @@ NAME_INFO=@repstr:~/:$NAME_INFO
 ;
 NAME_INFO=@repstr:@/,:$NAME_INFO
 ;
-; NOTE: Now sorts the comma separated list
-; (removing duplicates if they are found).
-; The "head" command removes a final comma
-; the appears due to an LF being appended.
+; NOTE: After sorting (and removing duplicates)
+; The "head" command removes the trailing comma
+; that appears due to an LF being appended.
 NAME_INFO=@file:~echo "$NAME_INFO" | tr "," "\n" | sort | uniq | tr "\n" "," | head -c-1
 ;
 NAME_LINES=@repstr:,/\n:$NAME_INFO
+;
+NUM=0
 ;
 @label INIT_NEXT
 ;
@@ -58,6 +62,17 @@ NEXT_NAME=%NAME_LINES:1%
 @skip
 ;
 @:INIT_NEXT
+;
+NUM=@$NUM+1
+;
+; NOTE: The ENTER default is not being
+; included in the choice count (due to
+; using the underbar prefix). So needs
+; to check 11 (rather than 10) here.
+@ifeq "$NUM" "11"
+NUM=0
+CHOICES=$CHOICES|$ENTER
+@endif
 ;
 CHOICES=$CHOICES|$NEXT_NAME=$NEXT_NAME
 ;
@@ -129,7 +144,7 @@ NAMES=@file:~echo -n "$NAMES" | tr "," "\n" | sort | tr "\n" "," | head -c-1
 @:END_NAME_LOOP
 ;
 @ifndef $NAMES
-#^^(no names selected)
+#^^(no names were selected)
 @endif
 ;
 @endif
