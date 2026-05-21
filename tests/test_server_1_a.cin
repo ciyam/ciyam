@@ -105,6 +105,11 @@ TEST=$TEST\n$NEXT
 NEXT=ghi
 TEST=$TEST\n$NEXT
 #$TEST
+TEST=abc\ndef\ng\\h
+TEST=@base64:@$TEST
+#$TEST
+TEST=@base64:$TEST
+#$TEST
 HEX=fe
 DEC=@hexdec:$HEX
 #$DEC

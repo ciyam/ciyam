@@ -244,6 +244,10 @@ def
 abc
 def
 ghi
+YWJjCmRlZgpnXFxo
+abc
+def
+g\h
 254
 fe
 255
