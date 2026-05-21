@@ -3532,6 +3532,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  char pad = '0';
 
                                  str.erase( pos );
+
                                  pos = str.find( ',' );
 
                                  if( pos != string::npos )
@@ -3587,8 +3588,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     int len = atoi( str.substr( pos + 1 ).c_str( ) );
 
                                     // NOTE: Use of a negative value for "len" will treat the
-                                    // value as being that much less than the size of "rhs".
-                                    if( len < 0 )
+                                    // value as being that number less than the size of "rhs"
+                                    // while 0 will keep all remaining characters.
+                                    if( len <= 0 )
                                     {
                                        len *= -1;
 
@@ -3598,7 +3600,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                           len = rhs.size( ) - len;
                                     }
 
-                                    if( rhs.size( ) > rval + len )
+                                    if( rhs.size( ) > ( rval + len ) )
                                        str = rhs.substr( rval, len );
                                     else if( rhs.size( ) > rval )
                                        str = rhs.substr( rval );
@@ -3626,6 +3628,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                           str.erase( );
                                     }
                                  }
+
+                                 unescape( str );
                               }
                            }
                            else if( lhs == c_function_base64 )
