@@ -24,6 +24,7 @@
 
 #include "console_commands.h"
 
+#include "base64.h"
 #include "config.h"
 #include "format.h"
 #include "macros.h"
@@ -137,6 +138,7 @@ const char* const c_function_padlen = "padlen";
 const char* const c_function_repstr = "repstr";
 const char* const c_function_sha256 = "sha256";
 const char* const c_function_substr = "substr";
+const char* const c_function_base64 = "base64";
 const char* const c_function_fullpath = "fullpath";
 const char* const c_function_password = "password";
 
@@ -3623,6 +3625,26 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                        else
                                           str.erase( );
                                     }
+                                 }
+                              }
+                           }
+                           else if( lhs == c_function_base64 )
+                           {
+                              string rhs( str.substr( pos + 1 ) );
+
+                              if( !rhs.empty( ) )
+                              {
+                                 // NOTE: Need to use '@' as a prefix for
+                                 // unencoded characters (otherwise would
+                                 // be potentially ambiguous). The use of
+                                 // unescape is required as escaping will
+                                 // have taken place when encoded.
+                                 if( rhs[ 0 ] == '@' )
+                                    str = base64::encode( rhs.substr( 1 ), true );
+                                 else
+                                 {
+                                    if( base64::valid_characters( rhs, true ) )
+                                       str = unescaped( base64::decode( rhs, true ) );
                                  }
                               }
                            }
