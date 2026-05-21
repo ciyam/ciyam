@@ -107,6 +107,7 @@ const size_t c_rpc_retry_unlock_timeout = 2000; // i.e. 2 secs
 const int c_pdf_default_limit = 10000;
 const int c_max_pdf_or_single_limit = 100000;
 
+const size_t c_response_small_size = 256;
 const size_t c_response_reserve_size = 1024;
 
 const size_t c_var_max_check_retries = 100;
@@ -247,12 +248,17 @@ void check_non_blockchain_or_script( const string& cmd )
    }
 }
 
-void check_not_possible_protocol_response( const string& value )
+void check_is_valid_command_response( const string& response, bool* p_rc = 0 )
 {
-   string response( c_response_okay );
+   string check_response( c_response_okay );
 
-   if( !value.empty( ) && ( value[ 0 ] == response[ 0 ] ) )
-      throw runtime_error( "invalid value '" + value + "' (could be confused with a protocol response)" );
+   if( !response.empty( ) && ( response[ 0 ] == check_response[ 0 ] ) )
+   {
+      if( p_rc )
+         *p_rc = false;
+      else
+         throw runtime_error( "invalid response '" + response + "' (could be confused with a protocol response)" );
+   }
 }
 
 void set_script_error_if_applicable( const string& error_message )
@@ -2541,7 +2547,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string filename( get_parm_val( parameters, c_cmd_ciyam_session_file_put_filename ) );
          string tag( get_parm_val( parameters, c_cmd_ciyam_session_file_put_tag ) );
 
-         check_not_possible_protocol_response( tag );
+         check_is_valid_command_response( tag );
 
          bool is_new = false;
 
@@ -2612,7 +2618,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
          }
 
-         check_not_possible_protocol_response( tag );
+         check_is_valid_command_response( tag );
 
          // NOTE: A list can be constructed with a comma separated list of existing tags.
          if( is_list )
@@ -2697,7 +2703,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             string next( tag_names[ i ] );
 
-            check_not_possible_protocol_response( next );
+            check_is_valid_command_response( next );
 
             if( is_remove || is_unlink )
                tag_del( next, is_unlink );
@@ -3466,7 +3472,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( has_value )
          {
-            check_not_possible_protocol_response( value );
+            check_is_valid_command_response( value );
 
             instance_set_variable( atoi( handle.c_str( ) ), context, name_or_expr, value );
          }
@@ -3474,7 +3480,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             response = instance_get_variable( atoi( handle.c_str( ) ), context, name_or_expr );
 
-            check_not_possible_protocol_response( response );
+            check_is_valid_command_response( response );
          }
       }
       else if( command == c_cmd_ciyam_session_object_op_cancel )
@@ -6002,7 +6008,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( value == null_value )
                   value.erase( );
 
-               check_not_possible_protocol_response( value );
+               check_is_valid_command_response( value );
 
                if( has_current )
                   set_session_variable( name_or_expr, value, current );
@@ -6017,7 +6023,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                else
                   response = get_session_variable( expression( name_or_expr ), sess_id );
 
-               check_not_possible_protocol_response( response );
+               check_is_valid_command_response( response );
             }
          }
       }
@@ -7341,7 +7347,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( has_value )
          {
-            check_not_possible_protocol_response( value );
+            check_is_valid_command_response( value );
 
             set_storage_variable( name, value );
          }
@@ -7847,6 +7853,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          buffer_file_tail( log_file_name, log_lines, num );
 
+         // NOTE: In the unlikely situation that the first log line could
+         // be confused with a protocol response then outputs a LF first.
+         if( !log_lines.empty( ) )
+         {
+            bool rc = true;
+
+            check_is_valid_command_response( log_lines[ 0 ], &rc );
+
+            if( rc == false )
+               response += '\n';
+         }
+
          for( size_t i = 0; i < log_lines.size( ); i++ )
          {
             if( i > 0 )
@@ -8070,7 +8088,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( current == null_value )
                current.erase( );
 
-            check_not_possible_protocol_response( value );
+            check_is_valid_command_response( value );
 
             if( !has_current )
             {
@@ -8156,7 +8174,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             else
                response = get_system_variable( expression( name_or_expr ), false );
 
-            check_not_possible_protocol_response( response );
+            check_is_valid_command_response( response );
          }
       }
       else if( command == c_cmd_ciyam_session_system_checkmail )
@@ -8243,11 +8261,37 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( rc < 0 )
                throw runtime_error( "failed to execute script '" + script_name + "'" );
-            else if( !async )
+
+            if( !async )
             {
                response = get_session_variable( e_special_var_return );
 
-               check_not_possible_protocol_response( response );
+               // NOTE: If a "small" response starts with "@<file>"
+               // and a file named "<file>" exists then will buffer
+               // its content as the response and remove the file.
+               if( !response.empty( )
+                && ( response[ 0 ] == '@' )
+                && ( response.length( ) <= c_response_small_size ) )
+               {
+                  string file_name( response.substr( 1 ) );
+
+                  if( file_exists( file_name ) )
+                  {
+                     response = buffer_file( file_name );
+
+                     file_remove( file_name );
+                  }
+               }
+
+               bool rc = true;
+
+               // NOTE: Prefixes the response with a backspace if is
+               // possible it could be confused with normal protocol
+               // responses.
+               check_is_valid_command_response( response, &rc );
+
+               if( rc == false )
+                  response.insert( 0, 1, '\b' );
             }
          }
          else
