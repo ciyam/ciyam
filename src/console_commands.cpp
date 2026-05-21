@@ -67,9 +67,14 @@ const char* const c_help_command = "help";
 const size_t c_up_one_prefix_len = 2;
 
 const char* const c_up_one_prefix = "^^";
-const char* const c_esc_up_one_line = "\033[1A";
+
+const char* const c_ansi_normal = "\033[0m";
+const char* const c_ansi_white_bold = "\033[37;1m";
+const char* const c_ansi_esc_up_one_line = "\033[1A";
 
 const char* const c_retain_all = "*";
+
+const char* const c_env_var_term = "TERM";
 
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
@@ -80,9 +85,11 @@ const char* const c_env_var_ciyam_no_progress = "CIYAM_NO_PROGRESS";
 const char* const c_env_var_ciyam_use_default = "CIYAM_USE_DEFAULT";
 const char* const c_env_var_ciyam_nested_level = "CIYAM_NESTED_LEVEL";
 const char* const c_env_var_ciyam_pause_seconds = "CIYAM_PAUSE_SECONDS";
+const char* const c_env_var_ciyam_choice_lot_num = "CIYAM_CHOICE_LOT_NUM";
 const char* const c_env_var_ciyam_pwd_append_len = "CIYAM_PWD_APPEND_LEN";
 const char* const c_env_var_ciyam_default_seconds = "CIYAM_DEFAULT_SECONDS";
 const char* const c_env_var_ciyam_password_append = "CIYAM_PASSWORD_APPEND";
+const char* const c_env_var_ciyam_choice_lot_limit = "CIYAM_CHOICE_LOT_LIMIT";
 const char* const c_env_var_ciyam_choice_output_replace = "CIYAM_CHOICE_OUTPUT_REPLACE";
 
 const char* const c_default_value_prompt = "VALUE=";
@@ -437,11 +444,28 @@ command_functor* startup_command_functor_factory( const string& /*name*/, comman
    return new startup_command_functor( handler );
 }
 
+bool ansi_console_support( )
+{
+   bool retval = false;
+
+   if( is_stdout_console( ) )
+   {
+      string term( get_environment_variable( c_env_var_term ) );
+
+      if( term.find( "xterm" ) == 0 )
+         retval = true;
+   }
+
+   return retval;
+}
+
 struct choice
 {
-   choice( ) : is_def( false ) { }
+   choice( ) : is_def( false ), lot( 0 ) { }
 
    char ch;
+
+   size_t lot;
 
    bool is_def;
 
@@ -460,17 +484,91 @@ bool is_choice_input( const string& input )
       return false;
 }
 
+void determine_choice( choice& next_choice,
+ const vector< choice >& choices, const string& next, bool has_output, size_t lot_num = 0 )
+{
+   bool found = false;
+
+   char ch = '\0';
+
+   bool has_ansi_support = ansi_console_support( );
+
+   for( size_t i = 0; i < next.length( ); i++ )
+   {
+      ch = next[ i ];
+
+      // NOTE: Uses an underbar prefix to
+      // not assign a selection character
+      // (useful for a default which does
+      // "nothing").
+      if( ( i == 0 ) && ( ch == '_' ) )
+         ch = '\0';
+
+      if( !has_output )
+         next_choice.output += ch;
+
+      bool okay = true;
+
+      if( ch != '\0' )
+      {
+         for( size_t j = 0; j < choices.size( ); j++ )
+         {
+            if( choices[ j ].lot < lot_num )
+               continue;
+
+            if( choices[ j ].lot > lot_num )
+               break;
+
+            if( ch == choices[ j ].ch )
+            {
+               okay = false;
+
+               break;
+            }
+         }
+      }
+
+      if( found || !okay )
+         next_choice.show += ch;
+      else
+      {
+         found = true;
+
+         next_choice.ch = ch;
+
+         if( !has_ansi_support )
+         {
+            if( !next_choice.is_def )
+               next_choice.show += '(' + string( 1, ch ) + ')';
+            else
+               next_choice.show += '[' + string( 1, ch ) + ']';
+         }
+         else
+         {
+            if( next_choice.is_def )
+               next_choice.show += '[';
+
+            if( ch != '\0' )
+               next_choice.show += c_ansi_white_bold + string( 1, ch ) + c_ansi_normal;
+
+            if( next_choice.is_def )
+               next_choice.show += ']';
+         }
+      }
+   }
+}
+
 // Supports single key selection of one of a simple set choices for special input.
 //
 // If you used the following:
 //
 // &Continue? [Yes==1|No=] (choose one)
 //
-// then it will output:
+// then it will output (assuming non-ANSI):
 //
-// Continue? <[Y]>es, [N]o (choose one)
+// Continue? [Y]es, (N)o (choose one)
 //
-// and assuming you keyed in 'y' (or 'Y' or just Enter) then it would then output:
+// and assuming you keyed in 'y' (or 'Y' or just Enter) then it would replace with:
 //
 // Continue? Yes
 //
@@ -489,11 +587,7 @@ bool is_choice_input( const string& input )
 //
 // CONT=1
 //
-// (or CONT= if 'n' or 'N' was pressed)
-//
-// To select each item with a digit in the range 0-9 use the following:
-//
-// &Continue? [CONT#Yes==1!YES|No=!NO] (choose one)
+// (or would output "NO" with the return string "CONT=" if 'n' or 'N' was pressed)
 
 string get_input_from_choices( const string& input )
 {
@@ -514,23 +608,29 @@ string get_input_from_choices( const string& input )
 
          str.erase( pos, rpos - pos + 1 );
 
-         string::size_type vpos = choice_info.find_first_of( ":#" );
-
-         bool use_numeric = false;
+         string::size_type vpos = choice_info.find( ':' );
 
          if( vpos != string::npos )
          {
-            if( choice_info[ vpos ] == '#' )
-               use_numeric = true;
-
             var = choice_info.substr( 0, vpos );
 
             choice_info.erase( 0, vpos + 1 );
          }
 
+         size_t lot_num = 0;
+         size_t choice_num = 0;
+
          bool had_default = false;
 
-         size_t choice_num = 0;
+         // NOTE: For a situation where a lot of choices might be expected
+         // (e.g. runtime choice generation) use CIYAM_CHOICE_LOT_LIMIT in
+         // order to separate the choices into different "lots" with SPACE
+         // being used to switch over to the next (or when is at the final
+         // back to the first) lot.
+         size_t lot_limit = from_string< size_t >(
+          get_environment_variable( c_env_var_ciyam_choice_lot_limit ) );
+
+         bool use_limited = ( lot_limit > 0 );
 
          while( true )
          {
@@ -560,6 +660,10 @@ string get_input_from_choices( const string& input )
 
             next_choice.value = next.substr( epos + 1 );
 
+            // NOTE: Each "lot" can have a default.
+            if( use_limited && ( choice_num >= lot_limit ) )
+               had_default = false;
+
             if( ( next_choice.value.size( ) >= 1 )
              && ( next_choice.value[ 0 ] == '=' ) )
             {
@@ -575,63 +679,30 @@ string get_input_from_choices( const string& input )
 
             char ch = '\0';
 
-            bool found = false;
-
-            if( use_numeric )
+            if( use_limited )
             {
-               if( !has_output )
-                  next_choice.output = next;
+               // NOTE: For limited choices
+               // will commence a new "lot"
+               // after all the options for
+               // the current lot are full.
+               if( choice_num >= lot_limit )
+               {
+                  ++lot_num;
 
-               if( choice_num > 9 )
-                  throw runtime_error( "too many choices provided for numeric selection" );
+                  choice_num = 0;
+               }
 
-               next_choice.ch = '0' + choice_num;
-
-               ++choice_num;
+               next_choice.lot = lot_num;
 
                if( !next_choice.is_def )
-                  next_choice.show = '[' + string( 1, next_choice.ch ) + ']';
+                  ++choice_num;
                else
-                  next_choice.show = "<[" + string( 1, next_choice.ch ) + "]>";
+                  next_choice.ch = '\0';
 
-               next_choice.show += next;
+               determine_choice( next_choice, choices, next, has_output, lot_num );
             }
             else
-            {
-               for( size_t i = 0; i < next.length( ); i++ )
-               {
-                  ch = next[ i ];
-
-                  if( !has_output )
-                     next_choice.output += ch;
-
-                  bool okay = true;
-
-                  for( size_t j = 0; j < choices.size( ); j++ )
-                  {
-                     if( choices[ j ].ch == ch )
-                     {
-                        okay = false;
-
-                        break;
-                     }
-                  }
-
-                  if( found || !okay )
-                     next_choice.show += ch;
-                  else
-                  {
-                     found = true;
-
-                     next_choice.ch = ch;
-
-                     if( !next_choice.is_def )
-                        next_choice.show += '[' + string( 1, ch ) + ']';
-                     else
-                        next_choice.show += "<[" + string( 1, ch ) + "]>";
-                  }
-               }
-            }
+               determine_choice( next_choice, choices, next, has_output );
 
             choices.push_back( next_choice );
 
@@ -643,13 +714,28 @@ string get_input_from_choices( const string& input )
 
          choice_info.erase( );
 
+         size_t last_lot = lot_num;
+
+         lot_num = from_string< size_t >( get_environment_variable( c_env_var_ciyam_choice_lot_num ) );
+
          for( size_t i = 0; i < choices.size( ); i++ )
          {
-            if( i > 0 )
+            if( choices[ i ].lot < lot_num )
+               continue;
+
+            if( choices[ i ].lot > lot_num )
+               break;
+
+            if( !choice_info.empty( ) )
                choice_info += ", ";
 
             choice_info += choices[ i ].show;
          }
+
+         string outline( str );
+
+         if( last_lot )
+            choice_info += " ...";
 
          str.insert( pos, choice_info );
 
@@ -726,6 +812,46 @@ string get_input_from_choices( const string& input )
                   ch = get_char( );
             }
 
+            // NOTE: If there are more than one
+            // lot of limited choices then uses
+            // a space to switch between lots.
+            if( last_lot && ( ch == ' ' ) )
+            {
+               if( ++lot_num > last_lot )
+                  lot_num = 0;
+
+               if( has_environment_variable( c_env_var_ciyam_choice_lot_num ) )
+                  set_environment_variable( c_env_var_ciyam_choice_lot_num, to_string( lot_num ) );
+
+               cout << '\r' << string( str.length( ), ' ' ) << '\r';
+
+               str = outline;
+
+               choice_info.erase( );
+
+               for( size_t i = 0; i < choices.size( ); i++ )
+               {
+                  if( choices[ i ].lot < lot_num )
+                     continue;
+
+                  if( choices[ i ].lot > lot_num )
+                     break;
+
+                  if( !choice_info.empty( ) )
+                     choice_info += ", ";
+
+                  choice_info += choices[ i ].show;
+               }
+
+               choice_info += " ...";
+
+               str.insert( pos, choice_info );
+
+               cout << str;
+
+               cout.flush( );
+            }
+
             // NOTE: If no case sensitive
             // match was found then check
             // again using reversed case.
@@ -752,10 +878,17 @@ string get_input_from_choices( const string& input )
 
                for( size_t i = 0; i < choices.size( ); i++ )
                {
+                  if( choices[ i ].lot < lot_num )
+                     continue;
+
+                  if( choices[ i ].lot > lot_num )
+                     break;
+
                   if( ( ch == choices[ i ].ch )
                    || ( ( ch == '\n' ) && choices[ i ].is_def ) )
                   {
                      value = choices[ i ].value;
+
                      output = choices[ i ].output;
 
                      found = true;
@@ -769,10 +902,14 @@ string get_input_from_choices( const string& input )
             }
          }
 
-         size_t num_to_erase = str.length( ) - pos;
+         // NOTE: If 'str' contains ANSI codes then
+         // the overwrite size is greater than what
+         // is visible and so this requires another
+         // CR and the choice prefix before output.
+         string overwrite( str.length( ), ' ' );
 
-         cout << string( num_to_erase, '\b' )
-          << string( num_to_erase, ' ' ) << string( num_to_erase, '\b' ) << output << endl;
+         cout << '\r' << overwrite
+          << '\r' << str.substr( 0, pos ) << output << endl;
 
          pos = str.find_first_of( "#$%=:?" );
 
@@ -796,8 +933,9 @@ string get_input_from_choices( const string& input )
       }
    }
 
-   if( has_environment_variable( c_env_var_ciyam_choice_output_replace ) )
-      cout << c_esc_up_one_line;
+   if( ansi_console_support( )
+    && has_environment_variable( c_env_var_ciyam_choice_output_replace ) )
+      cout << c_ansi_esc_up_one_line;
 
    return str;
 }
@@ -4593,7 +4731,14 @@ void console_command_handler::handle_command_response( const string& response, b
       if( response.find( c_up_one_prefix ) != 0 )
          *p_std_out << response << endl;
       else
-         *p_std_out << c_esc_up_one_line << response.substr( c_up_one_prefix_len ) << endl;
+      {
+         string extra;
+
+         if( ansi_console_support( ) )
+            extra = c_ansi_esc_up_one_line;
+
+         *p_std_out << extra << response.substr( c_up_one_prefix_len ) << endl;
+      }
    }
    else
       *p_std_err << response << endl;
