@@ -1,17 +1,26 @@
 session_variable @errors_only 1
 run_script !test "@one=aaa"
-Error: Script 'test' missing argument '@two'.
+Error: Script 'test' is missing argument '@two'.
+run_script !test "@one=aaa,@xxx=bbb"
+Error: argument '@xxx' is not valid for usage with 'test'
+run_script test "@one=aaa,@two=bbb"
+Error: async running of 'test' is not permitted
 run_script !test "@one=aaa,@two=bbb"
 system_variable @test
 aaa bbb
+run_script !test "@one=aaa,@two=bbb,@xxx=bbb"
+Error: argument '@xxx' is not valid for usage with 'test'
 run_script !test "@one=aaa,@two=bbb,@opt1=ccc"
 system_variable @test
 aaa bbb ccc
+run_script !test "@one=aaa,@two=bbb,@opt2=ddd"
+system_variable @test
+aaa bbb ddd
 run_script !test "@one=aaa,@two=bbb,@opt1=ccc,@opt2=ddd"
 system_variable @test
 aaa bbb ccc ddd
 run_script !test "@arg1=aaa"
-Error: Script 'test' missing argument '@two'.
+Error: Script 'test' is missing argument '@two'.
 run_script !test "@arg1=aaa,@arg2=bbb"
 system_variable @test
 aaa bbb
@@ -39,13 +48,19 @@ aaa bbb ccc ddd
 run_script !test "@arg1=aaa,@two=bbb,@arg3=ccc,@opt2=ddd"
 system_variable @test
 aaa bbb ccc ddd
+session_variable @test "==> "
+run_script !test "@arg1=aaa,@two=bbb,@arg3=ccc,@opt2=ddd"
+system_variable @test
+==> aaa bbb ccc ddd
+system_variable @test ""
+system_variable @test
 system_variable @test xxx
 system_variable @test
 xxx
 system_variable @test @null
 system_variable @test
 run_script test*
-test @one @two opt @opt1 @opt2
+test @one @two [@opt1] [@opt2]
 test1 [ *** busy *** ]
 test2 [ *** busy *** ]
 test3 [ *** busy *** ]

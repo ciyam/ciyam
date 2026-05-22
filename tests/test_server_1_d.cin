@@ -1,9 +1,14 @@
 .system_variable @test ""
 session_variable @errors_only 1
 run_script !test "@one=aaa"
+run_script !test "@one=aaa,@xxx=bbb"
+run_script test "@one=aaa,@two=bbb"
 run_script !test "@one=aaa,@two=bbb"
 system_variable @test
+run_script !test "@one=aaa,@two=bbb,@xxx=bbb"
 run_script !test "@one=aaa,@two=bbb,@opt1=ccc"
+system_variable @test
+run_script !test "@one=aaa,@two=bbb,@opt2=ddd"
 system_variable @test
 run_script !test "@one=aaa,@two=bbb,@opt1=ccc,@opt2=ddd"
 system_variable @test
@@ -26,7 +31,11 @@ run_script !test "@one=aaa,@arg2=bbb,@opt1=ccc,@arg4=ddd"
 system_variable @test
 run_script !test "@arg1=aaa,@two=bbb,@arg3=ccc,@opt2=ddd"
 system_variable @test
-.system_variable @test ""
+session_variable @test "==> "
+run_script !test "@arg1=aaa,@two=bbb,@arg3=ccc,@opt2=ddd"
+system_variable @test
+system_variable @test ""
+system_variable @test
 system_variable @test xxx
 system_variable @test
 system_variable @test @null

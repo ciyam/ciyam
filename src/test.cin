@@ -11,14 +11,19 @@ ONE=$1
 TWO=$2
 OPT1=$3
 OPT2=$4
+TEST=$5
 ;
 @ifndef $OPT1
-.system_variable @test "$ONE $TWO"
+@ifndef $OPT2
+.system_variable @test "$TEST$ONE $TWO"
+@else
+.system_variable @test "$TEST$ONE $TWO $OPT2"
+@endif
 @else
 @ifndef $OPT2
-.system_variable @test "$ONE $TWO $OPT1"
+.system_variable @test "$TEST$ONE $TWO $OPT1"
 @else
-.system_variable @test "$ONE $TWO $OPT1 $OPT2"
+.system_variable @test "$TEST$ONE $TWO $OPT1 $OPT2"
 @endif
 @endif
 ;
