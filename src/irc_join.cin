@@ -3,12 +3,21 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-@ifndef $1
-ERROR=User name is required for "irc_join".
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "2"
+ERROR=User name and session id are required for "irc_join".
 #$ERROR
 @else
 ;
 USER=$1
+SESSION=$2
 ;
 ; NOTE: Only accept names that are between three and twelve characters long
 ; starting with 'a-z' and ending with 'a-z' or '0-9'. Underbars are allowed
@@ -24,6 +33,11 @@ USER_CHECK=@repstr:__/_:$USER_CHECK
 ;
 @ifneq "$USER" "$USER_CHECK"
 ERROR=Invalid user name '$USER'.
+@else
+;
+.session_variable -id=$SESSION @irc
+@ifdef $OUTPUT
+ERROR=Invalid repeated attempt to join IRC.
 @else
 ;
 .system_variable @irc_lock 1 "" 100
@@ -52,7 +66,12 @@ ERROR=$ERROR|_[joined]
 @endif
 @endif
 ;
+.session_variable -id=$SESSION @irc 1
+.session_variable -id=$SESSION @irc_user $USER
+;
 .system_variable @irc_lock ""
+;
+@endif
 ;
 @endif
 ;

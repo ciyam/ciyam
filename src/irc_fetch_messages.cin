@@ -8,12 +8,12 @@ ERROR=User name is required for "irc_fetch_messages".
 #$ERROR
 @else
 ;
-USER=$1
+USER_NAME=$1
 ;
 .session_variable @uuid
 UUID=$OUTPUT
 ;
-.system_variable @queue_irc_$USER *
+.system_variable @queue_irc_$USER_NAME *
 ;
 @ifndef $ERROR
 @ifdef $OUTPUT

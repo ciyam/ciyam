@@ -15,12 +15,13 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "3"
-#Usage: irc_send_message.cin all|others <user> <message>
+ERROR=Scope, message and user name are required for "irc_join".
+#$ERROR
 @else
 ;
-TYPE=$1
-USER=$2
-MESSAGE=$3
+SCOPE=$1
+MESSAGE=$2
+USER_NAME=$3
 ;
 .regex "^([_0-9a-zA-Z]+)$$" "$MESSAGE"
 ;
@@ -31,8 +32,8 @@ IRC_USERS=$OUTPUT
 ;
 @ifdef $IRC_USERS
 ;
-@ifeq "$TYPE" "others"
-IRC_USERS=@repstr:@%USER%@/@:%IRC_USERS%@
+@ifeq "$SCOPE" "others"
+IRC_USERS=@repstr:@%USER_NAME%@/@:%IRC_USERS%@
 @endif
 ;
 IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
@@ -41,7 +42,7 @@ UTC_NOW=@date:yyyy-mm-dd hh:mm:ss
 UTC_NOW=[$UTC_NOW]
 ;
 @ifdef $IRC_USER_SUFFIXES
-.system_variable @queue_irc_$IRC_USER_SUFFIXES "$UTC_NOW $USER: $MESSAGE"
+.system_variable @queue_irc_$IRC_USER_SUFFIXES "$UTC_NOW $USER_NAME: $MESSAGE"
 @endif
 ;
 @endif

@@ -78,21 +78,21 @@ MESSAGE=
 ;
 @ifdef $MESSAGE
 ;
-TYPE=all
+SCOPE=all
 @ifdef $NOT_TO_SELF
-TYPE=others
+SCOPE=others
 @endif
 ;
 ENCODED=@base64:@$MESSAGE
 ;
-.run_script !irc_send_message "@type=$TYPE,@user=$USER,@message=$ENCODED"
+.run_script !irc_send_message "@scope=$SCOPE,@message=$ENCODED"
 ;
 @endif
 ;
 @ifdef $QUIT
 OUTPUT=
 @else
-.run_script !irc_fetch_messages @user=$USER
+.run_script !irc_fetch_messages
 @endif
 ;
 @ifdef $OUTPUT
