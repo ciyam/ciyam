@@ -426,7 +426,8 @@ int run_script( const std::string& script_name,
 
 void list_scripts( const std::string& pattern, std::ostream& os );
 
-void check_script_args( const std::string& script_name, bool* p_rc = 0 );
+void check_script_args( const std::string& script_name,
+ bool* p_rc = 0, std::set< std::string >* p_args_available = 0, std::set< std::string >* p_args_non_temporary = 0 );
 
 std::string process_script_args(
  const std::string& raw_args, bool use_system_variables = false );

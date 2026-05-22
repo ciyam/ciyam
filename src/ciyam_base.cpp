@@ -136,6 +136,7 @@ const char* const c_str_peer = "(peer)";
 const char* const c_str_unknown = "unknown";
 
 const char* const c_script_arg_opt = "opt";
+const char* const c_script_arg_set = "set";
 
 const char* const c_tmp_key_prefix = "/tmp/ciyam.";
 
@@ -3786,6 +3787,9 @@ void output_script_info( const string& pat, ostream& os )
 
       string args( i->second.arguments );
 
+      if( !args.empty( ) && ( args[ 0 ] == '!' ) )
+         args.erase( 0, 1 );
+
       if( i->second.filename == c_script_dummy_filename )
       {
          string script_name( i->first + ".cin" );
@@ -3793,12 +3797,55 @@ void output_script_info( const string& pat, ostream& os )
          if( args.find( script_name ) == 0 )
             args.erase( 0, script_name.length( ) );
 
-         if( !args.empty( ) && args[ 0 ] == ' ' )
+         if( !args.empty( ) && ( args[ 0 ] == ' ' ) )
             args.erase( 0, 1 );
       }
 
       if( !args.empty( ) )
-         os << ' ' << args;
+      {
+         string args_for_usage;
+
+         vector< string > all_args;
+
+         split( args, all_args, ' ' );
+
+         bool optional = false;
+
+         for( size_t i = 0; i < all_args.size( ); i++ )
+         {
+            string next_arg( all_args[ i ] );
+
+            if( next_arg == c_script_arg_opt )
+            {
+               optional = true;
+
+               continue;
+            }
+
+            if( next_arg == c_script_arg_set )
+               break;
+
+            if( !next_arg.empty( ) && ( next_arg[ 0 ] == '!' ) )
+               next_arg.erase( 0, 1 );
+
+            if( !next_arg.empty( ) )
+            {
+               if( !args_for_usage.empty( ) )
+                  args_for_usage += ' ';
+
+               if( optional )
+                  args_for_usage += '[';
+
+               args_for_usage += next_arg;
+
+               if( optional )
+                  args_for_usage += ']';
+            }
+         }
+
+         if( !args_for_usage.empty( ) )
+            os << ' ' << args_for_usage;
+      }
 
       string lock_filename( i->second.lock_filename );
 
@@ -7299,6 +7346,16 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
       string arguments( process_script_args( g_scripts[ script_name ].arguments ) );
 
+      // NOTE: If a '!' is the first character of arguments
+      // then async execution of the script is not allowed.
+      if( !arguments.empty( ) && ( arguments[ 0 ] == '!' ) )
+      {
+         if( async )
+            throw runtime_error( "async running of '" + script_name + "' is not permitted" );
+
+         arguments.erase( 0, 1 );
+      }
+
       unique_ptr< restorable< bool > > up_running_script;
 
       if( gtp_session )
@@ -7452,7 +7509,8 @@ void list_scripts( const string& pattern, ostream& os )
    output_script_info( pattern, os );
 }
 
-void check_script_args( const string& script_name, bool* p_rc )
+void check_script_args( const string& script_name,
+ bool* p_rc, set< string >* p_args_available, set< string >* p_args_non_temporary )
 {
    if( !g_scripts.count( script_name ) )
       // FUTURE: This message should be handled as a server string message.
@@ -7463,53 +7521,11 @@ void check_script_args( const string& script_name, bool* p_rc )
 
    string arguments( g_scripts[ script_name ].arguments );
 
-   vector< string > all_args;
-
    if( !arguments.empty( ) )
    {
-      split( arguments, all_args, ' ' );
-
-      size_t adjust = 0;
-
-      for( size_t i = 0; i < all_args.size( ); i++ )
-      {
-         string next_arg( all_args[ i ] );
-
-         if( next_arg == c_script_arg_opt )
-            break;
-
-         if( !next_arg.empty( ) && ( next_arg[ 0 ] == '@' ) )
-         {
-            if( i == 0 )
-               ++adjust;
-
-            string next_argx( "@arg" + to_string( i + adjust ) );
-
-            if( !has_session_variable( next_arg ) && !has_session_variable( next_argx ) )
-            {
-               if( !p_rc )
-                  // FUTURE: This message should be handled as a server string message.
-                  throw runtime_error( "Script '" + script_name + "' missing argument '" + next_arg + "'." );
-               else
-               {
-                  *p_rc = false;
-
-                  break;
-               }
-            }
-         }
-      }
-   }
-}
-
-string process_script_args( const string& raw_args, bool use_system_variables )
-{
-   string retval;
-
-   if( !raw_args.empty( ) )
-   {
       vector< string > all_args;
-      split( raw_args, all_args, ' ' );
+
+      split( arguments, all_args, ' ' );
 
       size_t adjust = 0;
       size_t skipped = 0;
@@ -7525,11 +7541,101 @@ string process_script_args( const string& raw_args, bool use_system_variables )
             continue;
          }
 
-         if( !next_arg.empty( ) && next_arg[ 0 ] == '@' )
+         if( next_arg == c_script_arg_set )
+            break;
+
+         bool non_temporary = false;
+
+         if( ( i > 0 ) && !next_arg.empty( ) && ( next_arg[ 0 ] == '!' ) )
+         {
+            non_temporary = true;
+
+            next_arg.erase( 0, 1 );
+         }
+
+         if( !next_arg.empty( ) && ( next_arg[ 0 ] == '@' ) )
+         {
+            // NOTE: See notes in "process_script_args".
+            if( i == 0 )
+               ++adjust;
+
+            string next_argx( "@arg" + to_string( i + adjust - skipped ) );
+
+            if( p_args_available )
+            {
+               p_args_available->insert( next_arg );
+               p_args_available->insert( next_argx );
+            }
+
+            if( non_temporary && p_args_non_temporary )
+               p_args_non_temporary->insert( next_arg );
+
+            if( !skipped
+             && !has_session_variable( next_arg )
+             && !has_session_variable( next_argx ) )
+            {
+               if( !p_rc )
+                  // FUTURE: This message should be handled as a server string message.
+                  throw runtime_error( "Script '" + script_name + "' is missing argument '" + next_arg + "'." );
+               else
+               {
+                  *p_rc = false;
+
+                  if( !p_args_available )
+                     break;
+               }
+            }
+         }
+      }
+   }
+}
+
+string process_script_args( const string& raw_args, bool use_system_variables )
+{
+   string retval;
+
+   bool no_async = false;
+
+   if( !raw_args.empty( ) )
+   {
+      vector< string > all_args;
+      split( raw_args, all_args, ' ' );
+
+      size_t adjust = 0;
+      size_t skipped = 0;
+
+      bool can_override = true;
+
+      for( size_t i = 0; i < all_args.size( ); i++ )
+      {
+         string next_arg( all_args[ i ] );
+
+         if( next_arg == c_script_arg_opt )
+         {
+            ++skipped;
+
+            continue;
+         }
+
+         if( next_arg == c_script_arg_set )
+         {
+            can_override = false;
+
+            continue;
+         }
+
+         if( ( i == 0 ) && !next_arg.empty( ) && ( next_arg[ 0 ] == '!' ) )
+         {
+            no_async = true;
+
+            next_arg.erase( 0, 1 );
+         }
+
+         if( !next_arg.empty( ) && ( next_arg[ 0 ] == '@' ) )
          {
             // NOTE: For application protocol scripts the first argument is expected
             // to be the script name (and thus not start with a '@' character) so if
-            // the first argument does begin with an '@' then adjust the numbering.
+            // the first argument does begin with an '@' then adjusts the numbering.
             if( i == 0 )
                ++adjust;
 
@@ -7539,7 +7645,8 @@ string process_script_args( const string& raw_args, bool use_system_variables )
             {
                // NOTE: Always use "@argX" value if found otherwise will use the value
                // of the session variable that matches the name of the script argument.
-               string arg_value(
+               // For any arguments after a "set" will always ignore the "@argX" value.
+               string arg_value( !can_override ? string( ) :
                 get_session_variable( "@arg" + to_string( i + adjust - skipped ) ) );
 
                if( !arg_value.empty( ) )
@@ -7562,6 +7669,9 @@ string process_script_args( const string& raw_args, bool use_system_variables )
          retval += next_arg;
       }
    }
+
+   if( no_async )
+      retval.insert( 0, 1, '!' );
 
    if( !use_system_variables )
    {
