@@ -8233,6 +8233,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( script_name.find_first_of( "?*" ) == string::npos )
          {
+            bool dummy = false;
+
+            set< string > args_available;
+            set< string > args_non_temporary;
+
+            check_script_args( script_name, &dummy, &args_available, &args_non_temporary );
+
             vector< ref_count_ptr< temporary_session_variable > > temporary_session_variables;
 
             if( !arg_val_pairs.empty( ) )
@@ -8244,14 +8251,25 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                for( size_t i = 0; i < pairs.size( ); i++ )
                {
                   string next( pairs[ i ] );
+
                   string::size_type pos = next.find( '=' );
 
                   if( pos == string::npos )
                      throw runtime_error( "invalid arg and value pair format '" + next + "'" );
 
-                  temporary_session_variables.push_back(
-                   ref_count_ptr< temporary_session_variable >(
-                   new temporary_session_variable( next.substr( 0, pos ), next.substr( pos + 1 ) ) ) );
+                  string arg_name( next.substr( 0, pos ) );
+                  string arg_value( next.substr( pos + 1 ) );
+
+                  if( !args_available.count( arg_name ) )
+                     throw runtime_error( "argument '" + arg_name
+                      + "' is not valid for usage with '" + script_name + "'" );
+
+                  if( args_non_temporary.count( arg_name ) )
+                     set_session_variable( arg_name, arg_value );
+                  else
+                     temporary_session_variables.push_back(
+                      ref_count_ptr< temporary_session_variable >(
+                      new temporary_session_variable( arg_name, arg_value ) ) );
                }
             }
 
