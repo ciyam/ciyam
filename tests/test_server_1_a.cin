@@ -424,6 +424,8 @@ TEST=@lower:$TEST
 #$TEST
 TEST=@padlen:9,.:$TEST
 #$TEST
+TEST=@padlen:-15,.:$TEST
+#$TEST
 ;
 TEST=abc
 ERASER=@eraser:$TEST
