@@ -1740,6 +1740,8 @@ int main( int argc, char* argv[ ] )
 {
    int rc = 0;
 
+   tzset( );
+
 #ifdef SSL_SUPPORT
    if( file_exists( c_ciyam_pem ) )
       init_ssl( c_ciyam_pem );
