@@ -5181,6 +5181,7 @@ void setup_time_zones( )
       throw runtime_error( "unable to open file 'timezones.sio' for input" );
 
    sio_reader reader( inpf );
+
    reader.start_section( c_section_timezones );
 
    g_timezones.clear( );
@@ -5309,6 +5310,7 @@ void setup_time_zones( )
    }
 
    reader.finish_section( c_section_timezones );
+
    reader.verify_finished_sections( );
 }
 
@@ -5330,17 +5332,35 @@ string list_time_zones( )
    return retval;
 }
 
-string get_tz_desc( const string& tz_name )
+string get_tz_desc( const string& tz_name, bool* p_rc )
 {
    string name( tz_name );
-   if( !name.empty( ) && name[ name.length( ) - 1 ] == '+' )
+
+   if( name == c_tz_loc )
+      name = get_timezone( );
+
+   if( !name.empty( ) && ( name[ name.length( ) - 1 ] == '+' ) )
       name.erase( name.length( ) - 1 );
 
    if( name.empty( ) )
       name = get_timezone( );
       
    if( !g_timezones.count( name ) )
-      throw runtime_error( "unable to find timezone information for '" + name + "'" );
+   {
+      if( p_rc )
+      {
+         *p_rc = false;
+
+         return string( );
+      }
+      else
+         throw runtime_error( "unable to find timezone information for '" + name + "'" );
+   }
+   else
+   {
+      if( p_rc )
+         *p_rc = true;
+   }
 
    return g_timezones[ name ].description;
 }
@@ -5348,6 +5368,10 @@ string get_tz_desc( const string& tz_name )
 void get_tz_info( const date_time& dt, string& tz_name, float& offset )
 {
    string tz( tz_name );
+
+   if( tz == c_tz_loc )
+      tz = get_timezone( );
+
    bool is_daylight = false;
    bool use_daylight = false;
 
@@ -5355,10 +5379,11 @@ void get_tz_info( const date_time& dt, string& tz_name, float& offset )
    {
       is_daylight = true;
       use_daylight = true;
+
       tz = g_daylight_names[ tz ];
    }
 
-   if( !tz.empty( ) && tz[ tz.length( ) - 1 ] == '+' )
+   if( !tz.empty( ) && ( tz[ tz.length( ) - 1 ] == '+' ) )
    {
       use_daylight = true;
       tz.erase( tz.length( ) - 1 );
@@ -5388,17 +5413,23 @@ date_time utc_to_local( const date_time& dt )
 date_time utc_to_local( const date_time& dt, string& tz_name )
 {
    string tz( tz_name );
+
+   if( tz == c_tz_loc )
+      tz = get_timezone( );
+
    bool use_daylight = false;
 
    if( g_daylight_names.count( tz ) )
    {
       use_daylight = true;
+
       tz = g_daylight_names[ tz ];
    }
 
-   if( !tz.empty( ) && tz[ tz.length( ) - 1 ] == '+' )
+   if( !tz.empty( ) && ( tz[ tz.length( ) - 1 ] == '+' ) )
    {
       use_daylight = true;
+
       tz.erase( tz.length( ) - 1 );
    }
 
@@ -5445,6 +5476,10 @@ date_time utc_to_local( const date_time& dt, const string& tz_name )
 date_time local_to_utc( const date_time& dt, const string& tz_name )
 {
    string tz( tz_name );
+
+   if( tz == c_tz_loc )
+      tz = get_timezone( );
+
    bool is_daylight = false;
    bool use_daylight = false;
 
@@ -5452,12 +5487,14 @@ date_time local_to_utc( const date_time& dt, const string& tz_name )
    {
       is_daylight = true;
       use_daylight = true;
+
       tz = g_daylight_names[ tz ];
    }
 
-   if( !tz.empty( ) && tz[ tz.length( ) - 1 ] == '+' )
+   if( !tz.empty( ) && ( tz[ tz.length( ) - 1 ] == '+' ) )
    {
       use_daylight = true;
+
       tz.erase( tz.length( ) - 1 );
    }
 

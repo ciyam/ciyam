@@ -29,19 +29,6 @@ class numeric;
 class date_time;
 class class_base;
 
-const char* const c_key_field = "@key";
-
-const char* const c_group_field = "@group";
-const char* const c_level_field = "@level";
-const char* const c_order_field = "@order";
-const char* const c_owner_field = "@owner";
-
-const char* const c_dtm_now = "@now";
-const char* const c_date_today = "@today";
-const char* const c_date_tomorrow = "@tomorrow";
-
-const char* const c_object_variable_skip_fk_handling = "@skip_fk_handling";
-
 struct sql_data;
 
 struct var_name;
@@ -1608,7 +1595,8 @@ void setup_time_zones( );
 
 std::string list_time_zones( );
 
-std::string get_tz_desc( const std::string& tz_name );
+std::string get_tz_desc( const std::string& tz_name, bool* p_rc = 0 );
+
 void get_tz_info( const date_time& dt, std::string& tz_name, float& offset );
 
 date_time utc_to_local( const date_time& dt );
@@ -1958,4 +1946,3 @@ class mutex;
 mutex& get_mutex_for_class_base( );
 
 #endif
-

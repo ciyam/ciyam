@@ -81,6 +81,22 @@ const char c_hidden_file_prefix = '.';
 
 const char c_key_exchange_suffix = '*';
 
+const char* const c_key_field = "@key";
+
+const char* const c_group_field = "@group";
+const char* const c_level_field = "@level";
+const char* const c_order_field = "@order";
+const char* const c_owner_field = "@owner";
+
+const char* const c_tz_loc = "@loc";
+
+const char* const c_dtm_now = "@now";
+
+const char* const c_date_today = "@today";
+const char* const c_date_tomorrow = "@tomorrow";
+
+const char* const c_object_variable_skip_fk_handling = "@skip_fk_handling";
+
 const char c_notifier_ignore_char = '!';
 const char c_notifier_select_char = '#';
 const char c_notifier_unselect_char = '=';
