@@ -23,6 +23,8 @@ SCOPE=$1
 MESSAGE=$2
 USER_NAME=$3
 ;
+; NOTE: Checks all MESSAGE characters
+; provided are in the base64 URL set.
 .regex "^([_0-9a-zA-Z]+)$$" "$MESSAGE"
 ;
 @ifeq "$MESSAGE" "$OUTPUT"
@@ -38,11 +40,10 @@ IRC_USERS=@repstr:@%USER_NAME%@/@:%IRC_USERS%@
 ;
 IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
 ;
-UTC_NOW=@date:yyyy-mm-dd hh:mm:ss
-UTC_NOW=[$UTC_NOW]
+UNIX_NOW=@unix:
 ;
 @ifdef $IRC_USER_SUFFIXES
-.system_variable @queue_irc_$IRC_USER_SUFFIXES "$UTC_NOW $USER_NAME: $MESSAGE"
+.system_variable @queue_irc_$IRC_USER_SUFFIXES "$UNIX_NOW $USER_NAME: $MESSAGE"
 @endif
 ;
 @endif

@@ -24,6 +24,46 @@ NOT_TO_SELF=
 ;
 @skip
 ;
+; NOTE: Colors and other ANSI
+; escape codes can be handled
+; as per these examples:
+;
+; This is %R%red text%N%.
+; This is %U%underlined%N%.
+; This word is %A%azure%N%.
+; This word is %BW%bolder%N%.
+; This word uses %I%italics%N%.
+; This word was %S%struck out%N%.
+;
+A=@file:~echo -e "\e[34m"
+C=@file:~echo -e "\e[36m"
+G=@file:~echo -e "\e[32m"
+O=@file:~echo -e "\e[33m"
+R=@file:~echo -e "\e[31m"
+W=@file:~echo -e "\e[37m"
+;
+B=@file:~echo -e "\e[1m"
+;
+I=@file:~echo -e "\e[3m"
+S=@file:~echo -e "\e[9m"
+U=@file:~echo -e "\e[4m"
+;
+; NOTE: Reset to normal.
+N=@file:~echo -e "\e[0m"
+;
+; NOTE: Bold works best
+; if it is paired along
+; with a color so these
+; can be used for that.
+BA=$B$A
+BC=$B$C
+BG=$B$G
+BO=$B$O
+BR=$B$R
+BW=$B$W
+;
+BI=$B$I
+;
 @ifdef $OUTPUT
 LINES=@repstr:|/\n:$OUTPUT
 ;
@@ -117,7 +157,13 @@ WHEN_AND_USER=%NEXT_MSG_PARTS:1%
 DECODED_MESSAGE=@base64:%NEXT_MSG_PARTS:2%
 DECODED_MESSAGE=@substr:1,0:$DECODED_MESSAGE
 ;
-NEXT_MESSAGE=$WHEN_AND_USER: $DECODED_MESSAGE
+WHEN_AND_USER_LINES=@repstr: /\n:$WHEN_AND_USER
+LOCAL=@date:%WHEN_AND_USER_LINES:1%:yyyy-mm-dd hh:mm:ss
+;
+USER_NAME=%WHEN_AND_USER_LINES:2%
+USER_NAME=@padlen:-13, :$USER_NAME:
+;
+NEXT_MESSAGE=[$LOCAL] $USER_NAME $DECODED_MESSAGE
 ;
 PREFIX=
 ;
