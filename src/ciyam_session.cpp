@@ -8595,6 +8595,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string tz_name( get_parm_val( parameters, c_cmd_ciyam_session_utc_offset_tz_name ) );
          string local_time( get_parm_val( parameters, c_cmd_ciyam_session_utc_offset_local_time ) );
 
+         if( local_time == c_dtm_now )
+            local_time = date_time::local( ).as_string( e_time_format_hhmmss, true );
+
          float offset;
          get_tz_info( date_time( local_time ), tz_name, offset );
 
@@ -8605,18 +8608,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string tz_name( get_parm_val( parameters, c_cmd_ciyam_session_utc_to_local_tz_name ) );
          string utc_time( get_parm_val( parameters, c_cmd_ciyam_session_utc_to_local_utc_time ) );
 
+         if( utc_time == c_dtm_now )
+            utc_time = date_time::standard( ).as_string( e_time_format_hhmmss, true );
+
          date_time local( utc_to_local( date_time( utc_time ), tz_name ) );
 
-         response = local.as_string( e_time_format_hhmm, true ) + " " + tz_name;
+         response = local.as_string( e_time_format_hhmmss, true ) + " " + tz_name;
       }
       else if( command == c_cmd_ciyam_session_utc_from_local )
       {
          string tz_name( get_parm_val( parameters, c_cmd_ciyam_session_utc_from_local_tz_name ) );
          string local_time( get_parm_val( parameters, c_cmd_ciyam_session_utc_from_local_local_time ) );
 
+         if( local_time == c_dtm_now )
+            local_time = date_time::local( ).as_string( e_time_format_hhmmss, true );
+
          date_time utc( local_to_utc( date_time( local_time ), tz_name ) );
 
-         response = utc.as_string( e_time_format_hhmm, true );
+         response = utc.as_string( e_time_format_hhmmss, true );
       }
       else if( command == c_cmd_ciyam_session_utc_to_unix_time )
       {
@@ -8627,7 +8636,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( utc_time != c_dtm_now )
             utc = date_time( utc_time );
          else
-            utc = date_time::standard( );
+            utc = date_time::standard( ).as_string( e_time_format_hhmmss, true );
 
          response = to_string( unix_time( utc ) );
       }
