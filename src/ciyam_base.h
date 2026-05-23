@@ -202,10 +202,6 @@ typedef int ( *fp_has_external_ip_address )( );
 
 void resync_system_ods( progress* p_progress );
 
-extern "C" void check_timezone_info( );
-
-typedef void ( *fp_check_timezone_info )( );
-
 void list_strings( std::ostream& os );
 
 std::string get_string( const std::string& key, const char* p_default = 0 );

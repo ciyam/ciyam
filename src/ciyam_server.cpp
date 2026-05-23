@@ -143,7 +143,6 @@ const char* const c_init_ciyam_session_func_name = "init_ciyam_session";
 const char* const c_init_peer_sessions_func_name = "init_peer_sessions";
 const char* const c_set_log_files_path_func_name = "set_log_files_path";
 const char* const c_set_test_peer_port_func_name = "set_test_peer_port";
-const char* const c_check_timezone_info_func_name = "check_timezone_info";
 const char* const c_set_files_area_path_func_name = "set_files_area_path";
 const char* const c_unregister_listener_func_name = "unregister_listener";
 const char* const c_has_external_ip_address_func_name = "has_external_ip_address";
@@ -422,9 +421,6 @@ int main( int argc, char* argv[ ] )
          fp_set_test_peer_port fp_set_test_peer_port_func;
          fp_set_test_peer_port_func = ( fp_set_test_peer_port )up_dynamic_library->bind_to_function( c_set_test_peer_port_func_name );
 
-         fp_check_timezone_info fp_check_timezone_info_func;
-         fp_check_timezone_info_func = ( fp_check_timezone_info )up_dynamic_library->bind_to_function( c_check_timezone_info_func_name );
-
          fp_set_files_area_path fp_set_files_area_path_func;
          fp_set_files_area_path_func = ( fp_set_files_area_path )up_dynamic_library->bind_to_function( c_set_files_area_path_func_name );
 
@@ -609,11 +605,6 @@ int main( int argc, char* argv[ ] )
                      else
                         msleep( c_accept_timeout );
                   }
-
-                  // NOTE: If there are no active sessions (apart from auto-started sessions) and is not
-                  // shutting down then check and update the timezone information if it has been changed.
-                  if( !g_server_shutdown && ( g_active_sessions <= min_active_sessions ) )
-                     ( *fp_check_timezone_info_func )( );
 
                   // NOTE: Check for accepts and create new sessions.
                   if( !g_server_shutdown )

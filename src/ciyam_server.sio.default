@@ -5,7 +5,7 @@
 <sio/>
 # <domain>name.org
 # <use_udp>false
- <timezone>UTC
+# <timezone>LOCAL
  <web_root>$WEBDIR
 # <max_peers>100
 # <rpc_addrs>127.0.0.1

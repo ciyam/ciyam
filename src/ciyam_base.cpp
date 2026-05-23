@@ -130,6 +130,9 @@ const int c_max_file_buffer_expansion = 2;
 const char c_module_prefix_separator = '_';
 const char c_module_order_prefix_separator = '.';
 
+const char* const c_UTC = "UTC";
+const char* const c_LOCAL = "LOCAL";
+
 const char* const c_str_none = "(none)";
 const char* const c_str_peer = "(peer)";
 
@@ -3870,7 +3873,21 @@ void read_server_configuration( )
 
       g_use_udp = ( lower( reader.read_opt_attribute( c_attribute_use_udp, c_false ) ) == c_true );
 
-      g_timezone = upper( reader.read_opt_attribute( c_attribute_timezone ) );
+      g_timezone = upper( reader.read_opt_attribute( c_attribute_timezone, c_LOCAL ) );
+
+      // NOTE: If no explicit timezone was provided is using
+      // "tzname" to try and determine it (which still might
+      // be defaulted to UTC if no matching entry is located
+      // in the list of known time zones later).
+      if( g_timezone == c_LOCAL )
+      {
+         string tz_non_daylight( tzname[ 0 ] );
+
+         if( tz_non_daylight.empty( ) )
+            g_timezone = c_UTC;
+         else
+            g_timezone = tz_non_daylight;
+      }
 
       g_web_root = reader.read_attribute( c_attribute_web_root );
 
@@ -4202,25 +4219,6 @@ string hex_level( uint32_t level )
    osstr << setw( 5 ) << setfill( '0' ) << hex << level;
 
    return osstr.str( );
-}
-
-time_t g_timezones_mod;
-
-bool timezones_file_has_changed( )
-{
-   bool changed = false;
-
-   time_t t = 0;
-
-   if( file_exists( c_timezones_file ) )
-      t = last_modification_time( c_timezones_file );
-
-   if( t != g_timezones_mod )
-      changed = true;
-
-   g_timezones_mod = t;
-
-   return changed;
 }
 
 uint64_t g_log_num_messages = 0;
@@ -5002,6 +5000,12 @@ void init_globals( const char* p_sid, int* p_use_udp )
 {
    guard g( g_mutex );
 
+   // NOTE: Calls "tzset" here so a "reload"
+   // might be enough to determine a changed
+   // system timezone (this will not work if
+   // the TZ environment variable was used).
+   tzset( );
+
    // NOTE: Forces special variables to be populated then verify that final name is "dummy" as would be expected.
    if( get_special_var_name( e_special_var_NOTE_THIS_MUST_ALWAYS_BE_THE_LAST_ENUM_FOR_VERIFICATION ) != c_dummy )
       throw runtime_error( "unexpected special variable names have not been correctly populated" );
@@ -5163,9 +5167,23 @@ void init_globals( const char* p_sid, int* p_use_udp )
          }
       }
 
-      init_class_base( );
+      setup_time_zones( );
 
-      check_timezone_info( );
+      if( !g_timezone.empty( ) )
+      {
+         bool rc = true;
+
+         // NOTE: If time timezone which
+         // had been set is not found in
+         // the list will revert back to
+         // UTC instead.
+         get_tz_desc( g_timezone, &rc );
+
+         if( !rc )
+            g_timezone = c_UTC;
+      }
+
+      init_class_base( );
 
       set_system_variable( e_special_var_os, "Linux", true );
 
@@ -5427,12 +5445,6 @@ void resync_system_ods( progress* p_progress )
    init_system_ods( );
 }
 
-void check_timezone_info( )
-{
-   if( timezones_file_has_changed( ) )
-      setup_time_zones( );
-}
-
 void list_strings( ostream& os )
 {
    for( string_const_iterator sci = g_strings.begin( ); sci != g_strings.end( ); ++sci )
@@ -5638,7 +5650,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
       string sid;
       sid.reserve( c_key_reserve_size );
- 
+
       get_sid( sid );
 
       if( sid.find( ':' ) != string::npos )
@@ -5990,9 +6002,6 @@ string get_checksum( const string& data )
 string get_timezone( )
 {
    string tz_name( g_timezone );
-
-   if( tz_name.empty( ) )
-      tz_name = "UTC";
 
    return g_timezone;
 }
