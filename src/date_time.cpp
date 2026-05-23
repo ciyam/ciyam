@@ -3686,20 +3686,23 @@ string format_mtime( const mtime& mt, const string& mask )
 
 string format_date_time( const date_time& dt, const string& mask )
 {
-   string::size_type pos = mask.find_first_not_of( "-:ymdhmst" );
+   string::size_type pos = mask.find_first_not_of( " _-:ymdhmst" );
 
-   if( pos == string::npos )
+   // NOTE: This function is intended to
+   // handle only simple ISO 2014 masks.
+   if( pos != string::npos )
+      throw runtime_error( "unexpected mask '" + mask + "' in format_date_time" );
+   else
    {
       pos = mask.find_first_not_of( "-ymd" );
 
-      if( ( pos == 0 ) || ( pos == string::npos ) )
-         throw runtime_error( "unexpected mask '" + mask + "' in format_date_time" );
+      if( pos == 0 )
+         return format_mtime( dt.get_time( ), mask );
+      else if( pos == string::npos )
+         return format_udate( dt.get_date( ), mask );
       else
          return format_date_time( dt, mask.substr( 0, pos ), mask.substr( pos ) );
    }
-   else
-      return format_udate( dt.get_date( ), mask.substr( 0, pos ) )
-       + mask[ pos ] + format_mtime( dt.get_time( ), mask.substr( pos + 1 ) );
 }
 
 string format_date_time( const date_time& dt, const string& dmask, const string& tmask )
