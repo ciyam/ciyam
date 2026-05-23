@@ -117,11 +117,11 @@ const char* const c_env_var_progress_prefix = "PROGRESS_PREFIX";
 
 const char* const c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 
-const char* const c_date_time = "date";
 const char* const c_unix_time = "unix";
 
 size_t c_date_time_len = 4;
 
+const char* const c_function_date = "date";
 const char* const c_function_file = "file";
 const char* const c_function_files = "files";
 const char* const c_function_lower = "lower";
@@ -3253,31 +3253,14 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                   if( pos != string::npos )
                   {
-                     // NOTE: Avoid creating a temporary string.
+                     // NOTE: Avoid a temporary string.
                      lhs.resize( pos );
 
                      memcpy( &lhs[ 0 ], &str[ 0 ], pos );
                   }
 
-                  if( lhs == string( c_date_time ) )
-                  {
-                     handled = true;
-
-                     pos = string::npos;
-
-                     if( str.length( ) <= c_date_time_len + 1 )
-                        str = date_time::standard( ).as_string( );
-                     else
-                        str = format_date_time(
-                         date_time::standard( ), str.substr( c_date_time_len + 1 ) );
-                  }
-
                   if( lhs == string( c_unix_time ) )
-                  {
                      val = unix_time( );
-
-                     pos = string::npos;
-                  }
 
                   if( pos != string::npos )
                   {
@@ -3296,11 +3279,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            if( ch == '=' )
                            {
                               or_equal = true;
+
                               continue;
                            }
                            else if( ch == '-' )
                            {
                               is_negative = true;
+
                               continue;
                            }
                         }
@@ -3323,7 +3308,34 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         {
                            was_transform = true;
 
-                           if( lhs == c_function_file )
+                           if( lhs == c_function_date )
+                           {
+                              string rhs( str.substr( pos + 1 ) );
+
+                              string mask;
+
+                              string::size_type mpos = rhs.find( ':' );
+
+                              if( mpos != string::npos )
+                              {
+                                 mask = rhs.substr( mpos + 1 );
+
+                                 rhs.erase( mpos );
+                              }
+
+                              if( rhs == c_unix_time )
+                                 val = unix_time( );
+                              else
+                                 val = from_string< int64_t >( rhs );
+
+                              date_time local( val + timezone );
+
+                              if( !mask.empty( ) )
+                                 str = format_date_time( local, mask );
+                              else
+                                 str = local.as_string( e_time_format_hhmmss, true );
+                           }
+                           else if( lhs == c_function_file )
                            {
                               string rhs( str.substr( pos + 1 ) );
 
@@ -3538,8 +3550,16 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  if( pos != string::npos )
                                     pad = str[ pos + 1 ];
 
+                                 bool right = false;
+
+                                 if( rval < 0 )
+                                 {
+                                    rval *= -1;
+                                    right = true;
+                                 }
+
                                  while( rhs.length( ) < rval )
-                                    rhs = pad + rhs;
+                                    rhs = ( right ? rhs + pad : pad + rhs );
 
                                  str = rhs;
                               }
