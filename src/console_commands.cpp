@@ -4765,6 +4765,9 @@ void console_command_handler::handle_unknown_command( const string& command, con
 
 void console_command_handler::handle_invalid_command( const command_parser&, const string& cmd_and_args )
 {
+   if( handling_startup_options )
+      throw runtime_error( "invalid option usage '" + cmd_and_args + "'" );
+
    cout << "invalid command usage '" << cmd_and_args << "'" << endl;
 }
 
