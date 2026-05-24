@@ -74,6 +74,9 @@ const char* const c_cmd_vars_env_pairs = "env_pairs";
 const char* const c_cmd_args_file = "args_file";
 const char* const c_cmd_args_file_name = "name";
 
+const char* const c_cmd_rpc_group = "rpc_group";
+const char* const c_cmd_rpc_group_name = "name";
+
 const char* const c_cmd_rpc_unlock = "rpc_unlock";
 const char* const c_cmd_rpc_unlock_password = "password";
 
@@ -97,6 +100,7 @@ const char* const c_session_cmd_session_rpc_unlock = "session_rpc_unlock";
 const char* const c_env_var_pid = "PID";
 const char* const c_env_var_port = "PORT";
 const char* const c_env_var_slot = "SLOT";
+const char* const c_env_var_user = "USER";
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_slotx = "SLOTX";
 const char* const c_env_var_no_udp = "NO_UDP";
@@ -121,8 +125,15 @@ const char* const c_file_test_cmd = "file_test";
 
 const char* const c_dummy_file_name = "@dummy";
 
+const char* const c_username = "Username";
+
+const char* const c_password_prefix = "Password: ";
+const char* const c_username_prefix = "Username: ";
+
 const char* const c_not_found_output = "Not Found";
 const char* const c_error_output_prefix = "Error: ";
+
+size_t c_pwd_buffer_reserve = 256;
 
 // NOTE: Slow commands should use progress but is using
 // a large timeout value in case the application server
@@ -133,8 +144,10 @@ const size_t c_command_timeout = 60000; // i.e. 60 secs
 
 #ifdef LOCAL_REQUESTS_ONLY
 const size_t c_standard_timeout = 1000; // i.e. 1 sec
+const size_t c_ssl_connect_timeout = 1000; // i.e. 1 sec
 #else
 const size_t c_standard_timeout = 10000; // i.e. 10 secs
+const size_t c_ssl_connect_timeout = 20000; // i.e. 20 secs
 #endif
 
 const size_t c_recv_datagram_timeout = 10; // i.e. 1/100 sec
@@ -162,7 +175,9 @@ string application_title( app_info_request request )
    else
    {
       ostringstream osstr;
+
       osstr << "unknown app_info_request: " << request;
+
       throw runtime_error( osstr.str( ) );
    }
 }
@@ -180,7 +195,9 @@ size_t g_connect_retries = 0;
 
 string g_exec_cmd;
 string g_args_file;
+
 string g_rpc_password;
+string g_rpc_group_name;
 
 string g_quiet_cmd_prefix( " ." );
 
@@ -231,6 +248,8 @@ class ciyam_console_startup_functor : public command_functor
       }
       else if( command == c_cmd_args_file )
          g_args_file = get_parm_val( parameters, c_cmd_args_file_name );
+      else if( command == c_cmd_rpc_group )
+         g_rpc_group_name = get_parm_val( parameters, c_cmd_rpc_group_name );
       else if( command == c_cmd_rpc_unlock )
          g_rpc_password = get_parm_val( parameters, c_cmd_rpc_unlock_password );
       else if( command == c_cmd_connect_retries )
@@ -840,7 +859,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 #ifdef SSL_SUPPORT
          if( !socket.is_secure( )
           && ( ( str == c_session_cmd_tls ) || str == c_session_cmd_starttls ) )
-            socket.ssl_connect( c_standard_timeout );
+            socket.ssl_connect( c_ssl_connect_timeout );
 #endif
          if( ( str == c_session_cmd_bye )
           || ( str == c_session_cmd_quit )
@@ -1757,6 +1776,8 @@ int main( int argc, char* argv[ ] )
 
    udp_socket usocket;
 
+   g_rpc_password.reserve( c_pwd_buffer_reserve );
+
    ciyam_console_command_handler cmd_handler( socket, usocket );
 
    try
@@ -1782,11 +1803,14 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_args_file, 4,
           "<val//name>", "name of console args file", new ciyam_console_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_rpc_unlock, 4,
+         cmd_handler.add_command( c_cmd_rpc_group, 5,
+          "<val//name>", "RPC access group name[:user]", new ciyam_console_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_rpc_unlock, 5,
           "<val//password>", "RPC access unlock password", new ciyam_console_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_connect_retries, 5,
-          "<val//max_attempts>", "server connection retries", new ciyam_console_startup_functor( cmd_handler ) );
+         cmd_handler.add_command( c_cmd_connect_retries, 6,
+          "<val//max_attempts>", "server connection retry attempts", new ciyam_console_startup_functor( cmd_handler ) );
 
          processor.process_commands( );
 
@@ -1852,7 +1876,7 @@ int main( int argc, char* argv[ ] )
 
 #ifdef SSL_SUPPORT
             if( g_use_tls )
-               socket.ssl_connect( c_standard_timeout );
+               socket.ssl_connect( c_ssl_connect_timeout );
 #endif
 
             if( socket.write_line( to_string( g_pid ) + c_key_exchange_suffix, c_standard_timeout ) <= 0 )
@@ -1983,6 +2007,52 @@ int main( int argc, char* argv[ ] )
             if( g_rpc_password.empty( ) )
                g_rpc_password = get_environment_variable( c_env_var_rpc_password );
 
+            if( !g_rpc_group_name.empty( ) )
+            {
+               string user;
+
+               string::size_type pos = g_rpc_group_name.find( ':' );
+
+               // NOTE: Allows for either of the following:
+               //
+               // -rpc_group=<name>
+               // -rpc_group=<name>:<user>
+
+               if( ( pos != 0 ) && ( pos != string::npos ) )
+               {
+                  user = g_rpc_group_name.substr( pos + 1 );
+
+                  g_rpc_group_name.erase( pos );
+               }
+
+               if( !user.empty( ) )
+                  cout << c_username_prefix << user << endl;
+               else
+               {
+                  string prompt( c_username );
+
+                  string user_default( get_environment_variable( c_env_var_user ) );
+
+                  if( !user_default.empty( ) )
+                     prompt += " [" + user_default + ']';
+
+                  prompt += ':';
+
+                  user = get_line( prompt.c_str( ) );
+
+                  if( user.empty( ) )
+                     user = user_default;
+               }
+
+               if( user.empty( ) )
+                  throw runtime_error( "RPC scripts usage requires user credentials" );
+
+               set_environment_variable( c_env_var_user, user );
+
+               if( g_rpc_password.empty( ) )
+                  g_rpc_password = "?";
+            }
+
             if( !g_rpc_password.empty( ) )
             {
 #ifdef SSL_SUPPORT
@@ -1990,9 +2060,18 @@ int main( int argc, char* argv[ ] )
                   throw runtime_error( "RPC access unlock requires a TLS connection" );
 #endif
                if( g_rpc_password == "?" )
-                  g_rpc_password = get_password( "RPC Password: " );
+                  g_rpc_password = get_password( c_password_prefix );
 
                scoped_clear_key clear_password( g_rpc_password );
+
+               if( !g_rpc_group_name.empty( ) )
+               {
+                  string prefix( g_rpc_group_name );
+
+                  prefix += '-' + get_environment_variable( c_env_var_user ) + '\t';
+
+                  g_rpc_password.insert( 0, prefix );
+               }
 
                processor.execute_command( g_quiet_cmd_prefix
                 + string( c_session_cmd_session_rpc_unlock ) + " \"" + g_rpc_password + "\"" );
