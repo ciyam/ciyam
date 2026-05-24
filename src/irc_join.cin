@@ -32,7 +32,18 @@ USER_CHECK=@repstr:__/_:$USER_CHECK
 @endif
 ;
 @ifneq "$USER" "$USER_CHECK"
-ERROR=Invalid user name '$USER'.
+ERROR=Invalid username '$USER'.
+@else
+;
+.session_variable -id=$SESSION @irc_user
+USER_EXPECTED=$OUTPUT
+;
+@ifndef $USER_EXPECTED
+USER_EXPECTED=$USER
+@endif
+;
+@ifneq "$USER" "$USER_EXPECTED"
+ERROR=Unexpected alias or username '$USER'.
 @else
 ;
 .session_variable -id=$SESSION @irc
@@ -70,6 +81,8 @@ ERROR=$ERROR|_[joined]
 .session_variable -id=$SESSION @irc_user $USER
 ;
 .system_variable @irc_lock ""
+;
+@endif
 ;
 @endif
 ;

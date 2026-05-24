@@ -39,11 +39,11 @@ A=@file:~echo -e "\e[34m"
 C=@file:~echo -e "\e[36m"
 G=@file:~echo -e "\e[32m"
 O=@file:~echo -e "\e[33m"
+P=@file:~echo -e "\e[35m"
 R=@file:~echo -e "\e[31m"
 W=@file:~echo -e "\e[37m"
 ;
 B=@file:~echo -e "\e[1m"
-;
 I=@file:~echo -e "\e[3m"
 S=@file:~echo -e "\e[9m"
 U=@file:~echo -e "\e[4m"
