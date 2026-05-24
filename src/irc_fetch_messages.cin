@@ -3,9 +3,11 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+ERROR=
+RETURN=
+;
 @ifndef $1
 ERROR=User name is required for "irc_fetch_messages".
-#$ERROR
 @else
 ;
 USER_NAME=$1
@@ -20,15 +22,29 @@ UUID=$OUTPUT
 >~$UUID
 #$OUTPUT
 >
-ERROR=@@~$UUID
+RETURN=@~$UUID
 @endif
 @endif
 ;
 @endif
+;
+PREFIX=
+ERROR_OR_RETURN=
 ;
 @ifdef $ERROR
+PREFIX=Error:$SP
+ERROR_OR_RETURN=$ERROR
+@else
+@ifdef $RETURN
+ERROR_OR_RETURN=@$RETURN
+@endif
+@endif
+;
+@ifdef $ERROR_OR_RETURN
 .session_variable @args_file
-@ifdef $OUTPUT
-.system_variable $OUTPUT "$ERROR"
+@ifndef $OUTPUT
+#$PREFIX$ERROR_OR_RETURN
+@else
+.system_variable $OUTPUT "$ERROR_OR_RETURN"
 @endif
 @endif

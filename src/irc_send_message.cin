@@ -14,9 +14,10 @@ NUM_ARGS=@$NUM_ARGS+1
 NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
+ERROR=
+;
 @ifneq "$NUM_ARGS" "3"
 ERROR=Scope, message and user name are required for "irc_join".
-#$ERROR
 @else
 ;
 SCOPE=$1
@@ -27,7 +28,9 @@ USER_NAME=$3
 ; provided are in the base64 URL set.
 .regex "^([_0-9a-zA-Z]+)$$" "$MESSAGE"
 ;
-@ifeq "$MESSAGE" "$OUTPUT"
+@ifneq "$MESSAGE" "$OUTPUT"
+ERROR=Invalid message format (needs to be base64).
+@else
 ;
 .system_variable @irc_users
 IRC_USERS=$OUTPUT
@@ -48,11 +51,15 @@ UNIX_NOW=@unix:
 ;
 @endif
 ;
-@ifdef $ERROR
-.session_variable @args_file
-@ifdef $OUTPUT
-.system_variable $OUTPUT "$ERROR"
-@endif
 @endif
 ;
+@endif
+;
+@ifdef $ERROR
+.session_variable @args_file
+@ifndef $OUTPUT
+#Error: $ERROR
+@else
+.system_variable $OUTPUT "$ERROR"
+@endif
 @endif

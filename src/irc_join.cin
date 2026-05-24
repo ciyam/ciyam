@@ -11,9 +11,11 @@ NUM_ARGS=@$NUM_ARGS+1
 NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
+ERROR=
+RETURN=
+;
 @ifneq "$NUM_ARGS" "2"
 ERROR=User name and session id are required for "irc_join".
-#$ERROR
 @else
 ;
 USER=$1
@@ -43,7 +45,7 @@ USER_EXPECTED=$USER
 @endif
 ;
 @ifneq "$USER" "$USER_EXPECTED"
-ERROR=Unexpected alias or username '$USER'.
+ERROR=Unexpected alias '$USER' for username '$USER_EXPECTED'.
 @else
 ;
 .session_variable -id=$SESSION @irc
@@ -55,7 +57,6 @@ ERROR=Invalid repeated attempt to join IRC.
 ;
 @ifeq "$OUTPUT" "0"
 ERROR=Unable to obtain the system IRC lock (try again later).
-#$ERROR
 @else
 ;
 .system_variable @irc_users
@@ -71,9 +72,9 @@ NOT_SELF_CHECK=@repstr:@$USER@/@:$ALL_USERS_CHECK
 ;
 @ifeq "$ALL_USERS_CHECK" "$NOT_SELF_CHECK"
 .system_variable @irc_users $ALL_USERS@$USER
-ERROR=@[joined as $USER]
+RETURN=[joined as $USER]
 @ifdef $ALL_USERS
-ERROR=$ERROR|_[joined]
+RETURN=$RETURN|_[joined]
 @endif
 @endif
 ;
@@ -90,9 +91,25 @@ ERROR=$ERROR|_[joined]
 ;
 @endif
 ;
+@endif
+;
+PREFIX=
+ERROR_OR_RETURN=
+;
 @ifdef $ERROR
+PREFIX=Error:$SP
+ERROR_OR_RETURN=$ERROR
+@else
+@ifdef $RETURN
+ERROR_OR_RETURN=@$RETURN
+@endif
+@endif
+;
+@ifdef $ERROR_OR_RETURN
 .session_variable @args_file
-@ifdef $OUTPUT
-.system_variable $OUTPUT "$ERROR"
+@ifndef $OUTPUT
+#$PREFIX$ERROR_OR_RETURN
+@else
+.system_variable $OUTPUT "$ERROR_OR_RETURN"
 @endif
 @endif
