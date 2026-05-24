@@ -54,6 +54,7 @@ const char* const c_str_permission_denied = "Permission denied.";
 const char* const c_str_processing_prefix = "Processing: ";
 const char* const c_str_field_is_incorrect = "@field is incorrect.";
 const char* const c_str_field_is_incorrect_field = "@field";
+const char* const c_str_incorrect_password = "Incorrect password.";
 const char* const c_str_record_constrained = "This record cannot be destroyed as it is being used by one or more @class records.";
 const char* const c_str_record_constrained_class = "@class";
 const char* const c_str_session_terminated = "Session was terminated by server.";

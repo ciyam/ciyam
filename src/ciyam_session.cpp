@@ -90,8 +90,10 @@ mutex g_mutex;
 
 #ifdef LOCAL_REQUESTS_ONLY
 const size_t c_request_timeout = 1000; // i.e. 1 sec
+const size_t c_ssl_accept_timeout = 1000; // i.e. 1 sec
 #else
 const size_t c_request_timeout = 10000; // i.e. 10 secs
+const size_t c_ssl_accept_timeout = 20000; // i.e. 20 secs
 #endif
 
 const size_t c_udp_wait_timeout = 50; // i.e. 1/20 sec
@@ -107,7 +109,7 @@ const size_t c_rpc_retry_unlock_timeout = 2000; // i.e. 2 secs
 const int c_pdf_default_limit = 10000;
 const int c_max_pdf_or_single_limit = 100000;
 
-const size_t c_response_small_size = 256;
+const size_t c_response_length_small = 256;
 const size_t c_response_reserve_size = 1024;
 
 const size_t c_var_max_check_retries = 100;
@@ -115,6 +117,8 @@ const size_t c_var_max_check_retries = 100;
 const size_t c_max_key_append_chars = 7;
 
 const char* const c_str_prefix = "c_str_";
+
+const char* const c_user_suffix = "_user";
 
 const char* const c_ltf_extension = ".ltf";
 const char* const c_map_extension = ".map";
@@ -1798,12 +1802,110 @@ class socket_command_handler : public command_handler
 
    void check_lock_password( const string& password )
    {
-      if( !lock_password_hash.empty( )
-       && ( lock_password_hash != sha256( password ).get_digest_as_string( ) ) )
+      if( !lock_password_hash.empty( ) )
       {
-         msleep( c_rpc_retry_unlock_timeout );
+         bool found = false;
 
-         throw runtime_error( "incorrect RPC unlock password" );
+         string check_password( password );
+
+         scoped_clear_key clear_password( check_password );
+
+         string rpc_group_name(
+          get_special_var_name( e_special_var_rpc_script_group ) );
+
+         string script_user, script_pwd_hash_vars;
+
+         // NOTE: If the password is provided in the form:
+         //
+         // <group>-<user>\t<password>
+         //
+         // then it is being assumed to be for an RPC group
+         // script and will be then checked accordingly.
+         string::size_type pos = check_password.find( '\t' );
+
+         // NOTE: Support for "group" restricted script RPC
+         // access requires matching a system variable that
+         // follows one of the following two formats:
+         //
+         // @rpc_script_group_<name> <password_hash>
+         // @rpc_script_group_<name>-<user> <password_hash>
+         //
+         // where both formats (assuming matching password)
+         // will restrict commands to just "run_script" and
+         // set the session variable "@rpc_script_group" to
+         // the value "<name>" along with "@<name>_user" to
+         // the value "<user>".
+         if( pos != string::npos )
+         {
+            string::size_type npos = check_password.find( '-' );
+
+            if( npos < pos )
+               script_user = check_password.substr( npos + 1, pos - npos - 1 );
+
+            string name_and_user( rpc_group_name + '_' + check_password.substr( 0, pos ) );
+
+            script_pwd_hash_vars = get_system_variable( name_and_user );
+
+            if( !script_pwd_hash_vars.empty( ) )
+               script_pwd_hash_vars = name_and_user + ' ' + script_pwd_hash_vars;
+            else if( npos != string::npos )
+               script_pwd_hash_vars = get_system_variable(
+                expression( name_and_user.substr( 0, npos ) + "*" ), false );
+
+            check_password.erase( 0, pos + 1 );
+         }
+
+         string password_hash(
+          sha256( check_password ).get_digest_as_string( ) );
+
+         if( !script_pwd_hash_vars.empty( ) )
+         {
+            vector< string > all_pwd_hashes;
+
+            split( script_pwd_hash_vars, all_pwd_hashes, '\n' );
+
+            for( size_t i = 0; i < all_pwd_hashes.size( ); i++ )
+            {
+               string next_pwd_line( all_pwd_hashes[ i ] );
+
+               string::size_type pos = next_pwd_line.find( ' ' );
+
+               if( pos != string::npos )
+               {
+                  string next_grp_name( next_pwd_line.substr( 0, pos ) );
+                  string next_pwd_hash( next_pwd_line.substr( pos + 1 ) );
+
+                  if( next_pwd_hash == password_hash )
+                  {
+                     found = true;
+
+                     string group( next_grp_name.substr(
+                      rpc_group_name.length( ) + 1 ) );
+
+                     string::size_type npos = group.find( '-' );
+
+                     if( npos != string::npos )
+                        group.erase( npos );
+
+                     set_session_variable( rpc_group_name, group );
+
+                     set_session_variable( "@" + group + c_user_suffix, script_user );
+
+                     set_restricted_commands(
+                      uuid( ).as_string( ), c_cmd_ciyam_session_system_run_script, false );
+
+                     break;
+                  }
+               }
+            }
+         }
+
+         if( !found && ( password_hash != lock_password_hash ) )
+         {
+            msleep( c_rpc_retry_unlock_timeout );
+
+            throw runtime_error( GS( c_str_incorrect_password ) );
+         }
       }
    }
 
@@ -1848,7 +1950,7 @@ class socket_command_handler : public command_handler
          throw runtime_error( "command '" + cmd + "' is not currently permitted" );
    }
 
-   void set_restricted_commands( const string& key, const string& cmds )
+   void set_restricted_commands( const string& key, const string& cmds, bool allow_unlocking )
    {
       if( key.empty( ) )
          throw runtime_error( "restriction key value required" );
@@ -1866,9 +1968,11 @@ class socket_command_handler : public command_handler
 
          split( cmds, restricted_commands );
 
-         // NOTE: Always allow the restrict command itself (to unlock) and
+         // NOTE: Conditionally allow the restrict command (to unlock) and
          // also ensure that "session_terminate" will always be permitted.
-         restricted_commands.insert( c_cmd_ciyam_session_session_restrict );
+         if( allow_unlocking )
+            restricted_commands.insert( c_cmd_ciyam_session_session_restrict );
+
          restricted_commands.insert( c_cmd_ciyam_session_session_terminate );
       }
    }
@@ -1914,10 +2018,14 @@ class socket_command_handler : public command_handler
       if( command == c_cmd_ciyam_session_starttls )
       {
 #ifdef SSL_SUPPORT
-         return true;
+         bool retval = true;
 #else
-         return false;
+         bool retval = false;
 #endif
+         if( has_session_variable( e_special_var_tls ) )
+            retval = false;
+
+         return retval;
       }
       else
          return ( ( !is_locked( ) || is_locked_command( command, true ) )
@@ -5962,7 +6070,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          possibly_expected_error = true;
 
-         socket_handler.set_restricted_commands( key, commands );
+         socket_handler.set_restricted_commands( key, commands, true );
       }
       else if( command == c_cmd_ciyam_session_session_variable )
       {
@@ -6081,7 +6189,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !get_using_ssl( ) )
             throw runtime_error( "SSL has not been initialised" );
 
-         socket.ssl_accept( c_request_timeout );
+         socket.ssl_accept( c_ssl_accept_timeout );
 
          session_is_using_tls( socket );
 #else
@@ -8231,6 +8339,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             set_session_variable( e_special_var_return, "" );
          }
 
+         string script_group( get_session_variable( e_special_var_rpc_script_group ) );
+
+         if( !script_group.empty( ) )
+         {
+            if( script_name == "*" )
+               script_name = script_group + "_*";
+            else if( ( script_name.find( script_group ) != 0 )
+             || ( script_name.length( ) <= script_group.length( ) ) )
+               throw runtime_error( "invalid incorrect script group prefix" );
+         }
+
          if( script_name.find_first_of( "?*" ) == string::npos )
          {
             bool dummy = false;
@@ -8289,7 +8408,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                // its content as the response and remove the file.
                if( !response.empty( )
                 && ( response[ 0 ] == '@' )
-                && ( response.length( ) <= c_response_small_size ) )
+                && ( response.length( ) <= c_response_length_small ) )
                {
                   string file_name( response.substr( 1 ) );
 
@@ -8314,7 +8433,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
          else
          {
+            string script_help_extra( script_name );
+
+            if( !script_group.empty( )
+             && ( script_help_extra.find( script_group ) == 0 )
+             && ( script_help_extra.length( ) > script_group.length( ) ) )
+               script_help_extra.erase( 0, script_group.length( ) + 1 );
+
+            if( script_help_extra == "*" )
+               script_help_extra.erase( );
+
             ostringstream osstr;
+
+            osstr << "\nscript details:";
+
+            if( !script_help_extra.empty( ) )
+               osstr << ' ' << script_help_extra;
+
+            osstr << "\n===============\n";
 
             list_scripts( script_name, osstr );
 
@@ -8956,7 +9092,7 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
 #ifdef SSL_SUPPORT
    if( this->up_socket->is_tls_handshake( ) )
    {
-      this->up_socket->ssl_accept( c_request_timeout );
+      this->up_socket->ssl_accept( c_ssl_accept_timeout );
 
       using_tls = true;
    }
