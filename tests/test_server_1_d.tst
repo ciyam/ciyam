@@ -60,6 +60,9 @@ xxx
 system_variable @test @null
 system_variable @test
 run_script test*
+
+script details: test*
+===============
 test @one @two [@opt1] [@opt2]
 test1 [ *** busy *** ]
 test2 [ *** busy *** ]

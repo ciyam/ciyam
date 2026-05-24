@@ -83,6 +83,7 @@ incorrect_numeric_format must have no more than @wholes whole number(s) and no m
 incorrect_numeric_fraction_2 must only have .0 or .5 as a fraction (i.e. round to the nearest half).
 incorrect_numeric_fraction_4 must only have .0, .25, .5 or .75 as a fraction (i.e. round to the nearest quarter).
 incorrect_or_unsupported_peer_type Incorrect or unsupported Peer Type.
+incorrect_password Incorrect password.
 incorrect_shared_secret Found invalid/corrupt peer data (incorrect shared secret?).
 index_duplicate This @field [val: @value] is already being used by another @class record.
 invalid Invalid @field.
@@ -924,7 +925,7 @@ help !*variable*
 session_variable
 system_variable
 session_rpc_unlock xxx
-Error: incorrect RPC unlock password
+Error: Incorrect password.
 session_variable test?
 Error: Session RPC access denied.
 session_rpc_unlock yyy
