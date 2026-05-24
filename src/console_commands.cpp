@@ -75,6 +75,8 @@ const char* const c_ansi_esc_up_one_line = "\033[1A";
 
 const char* const c_retain_all = "*";
 
+const char* const c_env_var_sp = "SP";
+
 const char* const c_env_var_term = "TERM";
 
 const char* const c_env_var_error = "ERROR";
@@ -2833,6 +2835,18 @@ console_command_handler::console_command_handler( )
 
    for( size_t i = 0; i < sizeof( g_default_fissile_pairs ) / sizeof( g_default_fissile_pairs[ 0 ] ); i++ )
       p_impl->fissile_values.insert( make_pair( g_default_fissile_pairs[ i ].p_key, g_default_fissile_pairs[ i ].p_data ) );
+
+   // NOTE: Add SP for appending a space.
+   //
+   // Example:
+   //
+   // ERROR=Invalid name.
+   //
+   // PREFIX=Error:$SP
+   //
+   // #$PREFIX$ERROR
+   //
+   set_environment_variable( c_env_var_sp, " " );
 
    set_environment_variable( c_env_var_ciyam_nested_level, "" );
 }
