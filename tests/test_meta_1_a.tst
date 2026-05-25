@@ -327,6 +327,21 @@ object_execute 1 get Workgroup
 guests
 object_op_cancel 1
 object_destroy 1
+pf Meta Enum_Item "" Label,Enum.Name,Enum.Id
+[guests_primitive00001 =1.0 259 100:104100] string,primitive,E000
+[guests_primitive00002 =1.0 259 100:104100] datetime,primitive,E000
+[guests_primitive00003 =1.0 259 100:104100] date,primitive,E000
+[guests_primitive00004 =1.0 259 100:104100] time,primitive,E000
+[guests_primitive00005 =1.0 259 100:104100] numeric,primitive,E000
+[guests_primitive00006 =1.0 259 100:104100] int,primitive,E000
+[guests_primitive00007 =1.0 259 100:104100] bool,primitive,E000
+[primitive00001 =1.0 259 100:104100] string,primitive,E000
+[primitive00002 =1.0 259 100:104100] datetime,primitive,E000
+[primitive00003 =1.0 259 100:104100] date,primitive,E000
+[primitive00004 =1.0 259 100:104100] time,primitive,E000
+[primitive00005 =1.0 259 100:104100] numeric,primitive,E000
+[primitive00006 =1.0 259 100:104100] int,primitive,E000
+[primitive00007 =1.0 259 100:104100] bool,primitive,E000
 pf Meta Enum_Item "" Label,@order,@level,Enum,Enum.Name,Enum.@group,@owner
 [guests_primitive00001 =1.0 259 100:104100] string,guests_primitive00001,,guests_primitive,primitive,guests,
 [guests_primitive00002 =1.0 259 100:104100] datetime,guests_primitive00002,,guests_primitive,primitive,guests,

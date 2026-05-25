@@ -4638,6 +4638,7 @@ bool perform_instance_iterate( class_base& instance,
 
          if( !fields.empty( ) && ( fields != c_key_field ) )
          {
+            set< string > fk_field_names;
             set< string > fetch_field_names;
 
             vector< string > tmp_field_info;
@@ -4646,19 +4647,26 @@ bool perform_instance_iterate( class_base& instance,
 
             for( size_t i = 0; i < tmp_field_info.size( ); i++ )
             {
-               if( tmp_field_info[ i ].find( '.' ) == string::npos )
+               string next( tmp_field_info[ i ] );
+
+               string::size_type pos = next.find( '.' );
+
+               if( pos != string::npos )
                {
-                  string next( tmp_field_info[ i ] );
+                  next.erase( pos );
 
-                  if( next != c_ignore_field )
-                  {
-                     get_field_name( instance, next );
+                  get_field_name( instance, next );
 
-                     fetch_field_names.insert( next );
+                  fk_field_names.insert( next );
+               }
+               else if( next != c_ignore_field )
+               {
+                  get_field_name( instance, next );
 
-                     if( !transient_field_names.count( next ) )
-                        field_info.push_back( tmp_field_info[ i ] );
-                  }
+                  fetch_field_names.insert( next );
+
+                  if( !transient_field_names.count( next ) )
+                     field_info.push_back( next );
                }
             }
 
@@ -4666,7 +4674,11 @@ bool perform_instance_iterate( class_base& instance,
 
             // NOTE: If there are fields that are required in order to determine
             // state correctly then these fields are appended to the field list.
-            set< string > required_fields;
+            // For any fields that had dot separators will need to make sure that
+            // all relevant FK fields have been included (so they are inserted in
+            // the constructor for "required_fields").
+            set< string > required_fields( fk_field_names.begin( ), fk_field_names.end( ) );
+
             set< string > field_dependents;
 
             // NOTE: Any special fields found are treated as required fields.
