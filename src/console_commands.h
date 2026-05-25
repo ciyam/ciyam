@@ -88,6 +88,8 @@ class console_command_handler : public command_handler
 
    std::vector< bool > completed;
    std::vector< bool > conditions;
+   std::vector< bool > has_matched;
+
    std::vector< bool > dummy_conditions;
 
    std::vector< size_t > lines_for_conditions;
