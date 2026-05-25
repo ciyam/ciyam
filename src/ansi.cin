@@ -1,0 +1,64 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $CIYAM_ANSI
+CIYAM_ANSI=1
+;
+; NOTE: Colors and other ANSI
+; escape codes can be handled
+; as per these examples:
+;
+; This is %OR%on red%N%.
+; This is %R%red text%N%.
+; This is %U%underlined%N%.
+; This word is %A%azure%N%.
+; This word is %BW%bolder%N%.
+; This word uses %I%italics%N%.
+; This word uses %S%strikeout%N%.
+; This word is a $I$K%OA%combination%N%.
+; These words are %BW%%OR%bold on red%N%.
+; These words are %O%%I%orange italics%N%.
+; These words are %K%%OG%black on green%N%.
+;
+A=@file:~echo -e "\e[34m"
+C=@file:~echo -e "\e[36m"
+G=@file:~echo -e "\e[32m"
+K=@file:~echo -e "\e[30m"
+O=@file:~echo -e "\e[33m"
+P=@file:~echo -e "\e[35m"
+R=@file:~echo -e "\e[31m"
+W=@file:~echo -e "\e[37m"
+;
+OA=@file:~echo -e "\e[44m"
+OC=@file:~echo -e "\e[46m"
+OG=@file:~echo -e "\e[42m"
+OK=@file:~echo -e "\e[40m"
+OO=@file:~echo -e "\e[43m"
+OP=@file:~echo -e "\e[45m"
+OR=@file:~echo -e "\e[41m"
+OW=@file:~echo -e "\e[47m"
+;
+B=@file:~echo -e "\e[1m"
+I=@file:~echo -e "\e[3m"
+S=@file:~echo -e "\e[9m"
+U=@file:~echo -e "\e[4m"
+;
+; NOTE: Reset to normal.
+N=@file:~echo -e "\e[0m"
+;
+; NOTE: Bold works best if it
+; is paired with a color - so
+; these are combinations.
+BA=$B$A
+BC=$B$C
+BG=$B$G
+BK=$B$K
+BO=$B$O
+BR=$B$R
+BW=$B$W
+;
+BI=$B$I
+;
+@endif

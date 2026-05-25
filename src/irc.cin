@@ -3,6 +3,9 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+@retain *
+<ansi.cin
+;
 @ifdef $1
 USER=$1
 @endif
@@ -23,46 +26,6 @@ NOT_TO_SELF=
 @endif
 ;
 @skip
-;
-; NOTE: Colors and other ANSI
-; escape codes can be handled
-; as per these examples:
-;
-; This is %R%red text%N%.
-; This is %U%underlined%N%.
-; This word is %A%azure%N%.
-; This word is %BW%bolder%N%.
-; This word uses %I%italics%N%.
-; This word was %S%struck out%N%.
-;
-A=@file:~echo -e "\e[34m"
-C=@file:~echo -e "\e[36m"
-G=@file:~echo -e "\e[32m"
-O=@file:~echo -e "\e[33m"
-P=@file:~echo -e "\e[35m"
-R=@file:~echo -e "\e[31m"
-W=@file:~echo -e "\e[37m"
-;
-B=@file:~echo -e "\e[1m"
-I=@file:~echo -e "\e[3m"
-S=@file:~echo -e "\e[9m"
-U=@file:~echo -e "\e[4m"
-;
-; NOTE: Reset to normal.
-N=@file:~echo -e "\e[0m"
-;
-; NOTE: Bold works best
-; if it is paired along
-; with a color so these
-; can be used for that.
-BA=$B$A
-BC=$B$C
-BG=$B$G
-BO=$B$O
-BR=$B$R
-BW=$B$W
-;
-BI=$B$I
 ;
 @ifdef $OUTPUT
 LINES=@repstr:|/\n:$OUTPUT
@@ -86,10 +49,15 @@ CIYAM_PAUSE_SECONDS=1
 ;
 @ifndef $CHECK_PRIOR
 NOT_TO_SELF=
-^[hit 'q' to quit 's/v' to scan/view a QR Code or space to type]
+^[hit 'a' for ANSI help, 'q' to quit 's/v' to scan/view a QR Code or space to type]
 ;
 @ifdef $CIYAM_KEY_PRESSED
 ;
+@ifeq "$CIYAM_KEY_PRESSED" "a"
+#ANSI escape examples:
+#=====================
+~grep -o "; Th.*" ansi.cin | cut -c 3-
+@else
 @ifeq "$CIYAM_KEY_PRESSED" "q"
 QUIT=1
 @else
@@ -107,6 +75,7 @@ QR_CODE=@file:~zbarcam -1 -q --raw
 &:MESSAGE=_
 @ifeq "$MESSAGE" "_"
 MESSAGE=
+@endif
 @endif
 @endif
 @endif
