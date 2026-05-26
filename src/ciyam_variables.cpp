@@ -113,6 +113,7 @@ const char* const c_special_variable_storage = "@storage";
 const char* const c_special_variable_timeout = "@timeout";
 const char* const c_special_variable_tz_name = "@tz_name";
 const char* const c_special_variable_trigger = "@trigger";
+const char* const c_special_variable_updates = "@updates";
 const char* const c_special_variable_version = "@version";
 const char* const c_special_variable_waiting = "@waiting";
 const char* const c_special_variable_executed = "@executed";
@@ -187,6 +188,7 @@ const char* const c_special_variable_local_suffix = "@local_suffix";
 const char* const c_special_variable_opened_files = "@opened_files";
 const char* const c_special_variable_peer_map_key = "@peer_map_key";
 const char* const c_special_variable_shared_files = "@shared_files";
+const char* const c_special_variable_utm_at_start = "@utm_at_start";
 const char* const c_special_variable_app_directory = "@app_directory";
 const char* const c_special_variable_backup_needed = "@backup_needed";
 const char* const c_special_variable_export_needed = "@export_needed";
@@ -204,6 +206,7 @@ const char* const c_special_variable_stream_cipher = "@stream_cipher";
 const char* const c_special_variable_sub_directory = "@sub_directory";
 const char* const c_special_variable_trace_filters = "@trace_filters";
 const char* const c_special_variable_update_fields = "@update_fields";
+const char* const c_special_variable_utm_init_base = "@utm_init_base";
 const char* const c_special_variable_cmd_delay_wait = "@cmd_delay_wait";
 const char* const c_special_variable_force_internal = "@force_internal";
 const char* const c_special_variable_log_files_path = "@log_files_path";
@@ -468,6 +471,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_timeout );
       g_special_variable_names.push_back( c_special_variable_tz_name );
       g_special_variable_names.push_back( c_special_variable_trigger );
+      g_special_variable_names.push_back( c_special_variable_updates );
       g_special_variable_names.push_back( c_special_variable_version );
       g_special_variable_names.push_back( c_special_variable_waiting );
       g_special_variable_names.push_back( c_special_variable_executed );
@@ -542,6 +546,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_opened_files );
       g_special_variable_names.push_back( c_special_variable_peer_map_key );
       g_special_variable_names.push_back( c_special_variable_shared_files );
+      g_special_variable_names.push_back( c_special_variable_utm_at_start );
       g_special_variable_names.push_back( c_special_variable_app_directory );
       g_special_variable_names.push_back( c_special_variable_backup_needed );
       g_special_variable_names.push_back( c_special_variable_export_needed );
@@ -559,6 +564,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_sub_directory );
       g_special_variable_names.push_back( c_special_variable_trace_filters );
       g_special_variable_names.push_back( c_special_variable_update_fields );
+      g_special_variable_names.push_back( c_special_variable_utm_init_base );
       g_special_variable_names.push_back( c_special_variable_cmd_delay_wait );
       g_special_variable_names.push_back( c_special_variable_force_internal );
       g_special_variable_names.push_back( c_special_variable_log_files_path );
@@ -704,6 +710,7 @@ void init_special_variable_names( )
    }
 
    g_read_only_variables.insert( c_special_variable_os );
+   g_read_only_variables.insert( c_special_variable_updates );
    g_read_only_variables.insert( c_special_variable_version );
    g_read_only_variables.insert( c_special_variable_peer_port );
    g_read_only_variables.insert( c_special_variable_sid_locked );
@@ -712,6 +719,8 @@ void init_special_variable_names( )
    g_read_only_variables.insert( c_special_variable_backup_files );
    g_read_only_variables.insert( c_special_variable_opened_files );
    g_read_only_variables.insert( c_special_variable_shared_files );
+   g_read_only_variables.insert( c_special_variable_utm_at_start );
+   g_read_only_variables.insert( c_special_variable_utm_init_base );
    g_read_only_variables.insert( c_special_variable_system_identity );
    g_read_only_variables.insert( c_special_variable_system_is_for_demo );
    g_read_only_variables.insert( c_special_variable_system_is_for_devt );
