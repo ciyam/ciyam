@@ -63,6 +63,15 @@ const size_t c_max_pwd_size = 128;
 
 const char c_option_prefix = '-';
 
+const char* const c_op_eq = "=";
+const char* const c_op_gt = ">";
+const char* const c_op_lt = "<";
+const char* const c_op_or = "|";
+const char* const c_op_and = "&";
+const char* const c_op_neq = "!=";
+const char* const c_op_gteq = ">=";
+const char* const c_op_lteq = "<=";
+
 const char* const c_help_command = "help";
 
 const size_t c_up_one_prefix_len = 2;
@@ -144,6 +153,8 @@ const char* const c_function_base64 = "base64";
 const char* const c_function_fullpath = "fullpath";
 const char* const c_function_password = "password";
 
+const char* const c_envcond_command_if = "if";
+const char* const c_envcond_command_elif = "elif";
 const char* const c_envcond_command_else = "else";
 const char* const c_envcond_command_ifeq = "ifeq";
 const char* const c_envcond_command_skip = "skip";
@@ -152,12 +163,8 @@ const char* const c_envcond_command_endif = "endif";
 const char* const c_envcond_command_ifdef = "ifdef";
 const char* const c_envcond_command_ifneq = "ifneq";
 const char* const c_envcond_command_label = "label";
-const char* const c_envcond_command_elifeq = "elifeq";
 const char* const c_envcond_command_ifndef = "ifndef";
 const char* const c_envcond_command_retain = "retain";
-const char* const c_envcond_command_elifdef = "elifdef";
-const char* const c_envcond_command_elifneq = "elifneq";
-const char* const c_envcond_command_elifndef = "elifndef";
 
 const char* const c_cmd_echo = "echo";
 const char* const c_cmd_quiet = "quiet";
@@ -4407,14 +4414,86 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   // one in order for skipping to label to operate as expected.
                   if( !token.empty( ) && ( token[ 0 ] == ':' ) )
                   {
-                     if( is_skipping_to_label && token.substr( 1 ) == label )
+                     if( is_skipping_to_label
+                      && ( token.substr( 1 ) == label ) )
                      {
                         label.erase( );
+
                         is_skipping_to_label = false;
                      }
                   }
                   else if( token.empty( ) || is_skipping_to_label )
                      ; // i.e. do nothing
+                  else if( token == c_envcond_command_if )
+                  {
+                     if( !conditions.empty( ) && !conditions.back( ) )
+                        dummy_conditions.push_back( 0 );
+                     else
+                     {
+                        vector< string > cond_args;
+
+                        size_t num_args = setup_arguments( symbol, cond_args );
+
+                        if( num_args != 3 )
+                           throw runtime_error( "unexpected num_args != 3 for 'if' expression" + error_context );
+
+                        string op( cond_args[ 1 ] );
+                        string lhs( cond_args[ 0 ] );
+                        string rhs( cond_args[ 2 ] );
+
+                        bool val = false;
+                        bool numeric = false;
+
+                        int64_t lhs_num = 0;
+                        int64_t rhs_num = 0;
+
+                        // NOTE: Numeric ops are prefixed with "#"
+                        // with the values being treated as signed
+                        // integers.
+                        if( !op.empty( ) && ( op[ 0 ] == '#' ) )
+                        {
+                           numeric = true;
+                           op.erase( 0, 1 );
+
+                           lhs_num = from_string< int64_t >( lhs );
+                           rhs_num = from_string< int64_t >( rhs );
+                        }
+
+                        // NOTE: For logical operations with strings
+                        // is "false" only when the string is empty.
+                        if( !numeric )
+                        {
+                           lhs_num = !lhs.empty( );
+                           rhs_num = !rhs.empty( );
+                        }
+
+                        if( op == c_op_eq )
+                           val = ( !numeric ? ( lhs == rhs ) : ( lhs_num == rhs_num ) );
+                        else if( op == c_op_gt )
+                           val = ( !numeric ? ( lhs > rhs ) : ( lhs_num > rhs_num ) );
+                        else if( op == c_op_lt )
+                           val = ( !numeric ? ( lhs < rhs ) : ( lhs_num < rhs_num ) );
+                        else if( op == c_op_or )
+                           val = ( lhs_num || rhs_num );
+                        else if( op == c_op_and )
+                           val = ( lhs_num && rhs_num );
+                        else if( op == c_op_neq )
+                           val = ( !numeric ? ( lhs != rhs ) : ( lhs_num != rhs_num ) );
+                        else if( op == c_op_gteq )
+                           val = ( !numeric ? ( lhs >= rhs ) : ( lhs_num >= rhs_num ) );
+                        else if( op == c_op_lteq )
+                           val = ( !numeric ? ( lhs <= rhs ) : ( lhs_num <= rhs_num ) );
+                        else
+                           throw runtime_error( "unknown op '" + op + " for 'if' expression" + error_context );
+
+                        completed.push_back( false );
+
+                        conditions.push_back( val );
+                        has_matched.push_back( val );
+
+                        lines_for_conditions.push_back( line_number );
+                     }
+                  }
                   else if( token == c_envcond_command_ifeq )
                   {
                      if( !conditions.empty( ) && !conditions.back( ) )
@@ -4436,6 +4515,136 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         has_matched.push_back( val );
 
                         lines_for_conditions.push_back( line_number );
+                     }
+                  }
+                  else if( token == c_envcond_command_elif )
+                  {
+                     if( dummy_conditions.empty( ) )
+                     {
+                        if( conditions.empty( ) || completed.back( ) )
+                           throw runtime_error( "no matching 'if' found for 'elif' expression" + error_context );
+
+                        if( conditions.back( ) )
+                        {
+                           conditions.pop_back( );
+                           conditions.push_back( false );
+                        }
+                        else if( !has_matched.back( ) )
+                        {
+                           vector< string > cond_args;
+
+                           size_t num_args = setup_arguments( symbol, cond_args );
+
+                           if( num_args != 3 )
+                              throw runtime_error( "unexpected num_args != 3 for 'elif' expression" + error_context );
+
+                           string op( cond_args[ 1 ] );
+                           string lhs( cond_args[ 0 ] );
+                           string rhs( cond_args[ 2 ] );
+
+                           bool val = false;
+                           bool numeric = false;
+
+                           int64_t lhs_num = 0;
+                           int64_t rhs_num = 0;
+
+                           if( !op.empty( ) && ( op[ 0 ] == '#' ) )
+                           {
+                              numeric = true;
+                              op.erase( 0, 1 );
+
+                              lhs_num = from_string< int64_t >( lhs );
+                              rhs_num = from_string< int64_t >( rhs );
+                           }
+
+                           // NOTE: For logical operations with strings
+                           // is "false" only when the string is empty.
+                           if( !numeric )
+                           {
+                              lhs_num = !lhs.empty( );
+                              rhs_num = !rhs.empty( );
+                           }
+
+                           if( op == c_op_eq )
+                              val = ( !numeric ? ( lhs == rhs ) : ( lhs_num == rhs_num ) );
+                           else if( op == c_op_gt )
+                              val = ( !numeric ? ( lhs > rhs ) : ( lhs_num > rhs_num ) );
+                           else if( op == c_op_lt )
+                              val = ( !numeric ? ( lhs < rhs ) : ( lhs_num < rhs_num ) );
+                           else if( op == c_op_or )
+                              val = ( lhs_num || rhs_num );
+                           else if( op == c_op_and )
+                              val = ( lhs_num && rhs_num );
+                           else if( op == c_op_neq )
+                              val = ( !numeric ? ( lhs != rhs ) : ( lhs_num != rhs_num ) );
+                           else if( op == c_op_gteq )
+                              val = ( !numeric ? ( lhs >= rhs ) : ( lhs_num >= rhs_num ) );
+                           else if( op == c_op_lteq )
+                              val = ( !numeric ? ( lhs <= rhs ) : ( lhs_num <= rhs_num ) );
+                           else
+                           throw runtime_error( "unknown op '" + op + " for 'elif' expression" + error_context );
+
+                           conditions.pop_back( );
+                           conditions.push_back( val );
+
+                           has_matched.pop_back( );
+                           has_matched.push_back( val );
+                        }
+                     }
+                  }
+                  else if( token == c_envcond_command_else )
+                  {
+                     if( !symbol.empty( ) )
+                        throw runtime_error( "invalid 'else' expression" + error_context );
+
+                     if( dummy_conditions.empty( ) )
+                     {
+                        if( conditions.empty( ) || completed.back( ) )
+                           throw runtime_error( "no matching 'if' found for 'else' expression" + error_context );
+
+                        bool val = ( conditions.back( ) || has_matched.back( ) );
+
+                        completed.back( ) = true;
+
+                        conditions.pop_back( );
+                        conditions.push_back( !val );
+                     }
+                  }
+                  else if( token == c_envcond_command_skip )
+                  {
+                     if( !label.empty( ) )
+                        is_skipping_to_label = true;
+                  }
+                  else if( token == c_envcond_command_depth )
+                  {
+                     cout << "depth is " << conditions.size( ) << " at line #" << line_number;
+
+                     if( !symbol.empty( ) )
+                        cout << ' ' << symbol;
+
+                     cout << endl;
+                  }
+                  else if( token == c_envcond_command_endif )
+                  {
+                     bool pop_cond = true;
+
+                     if( !dummy_conditions.empty( ) )
+                     {
+                        pop_cond = false;
+                        dummy_conditions.pop_back( );
+                     }
+
+                     if( pop_cond )
+                     {
+                        if( conditions.empty( ) )
+                           throw runtime_error( "no matching 'if' found for 'endif' expression" + error_context );
+
+                        completed.pop_back( );
+
+                        conditions.pop_back( );
+                        has_matched.pop_back( );
+
+                        lines_for_conditions.pop_back( );
                      }
                   }
                   else if( token == c_envcond_command_ifdef )
@@ -4477,6 +4686,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         lines_for_conditions.push_back( line_number );
                      }
                   }
+                  else if( token == c_envcond_command_label )
+                  {
+                     if( !symbol.empty( ) )
+                        label = symbol;
+                     else
+                        cout << label << '\n';
+                  }
                   else if( token == c_envcond_command_ifndef )
                   {
                      if( !conditions.empty( ) && !conditions.back( ) )
@@ -4492,178 +4708,6 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                         lines_for_conditions.push_back( line_number );
                      }
-                  }
-                  else if( token == c_envcond_command_elifeq )
-                  {
-                     if( dummy_conditions.empty( ) )
-                     {
-                        if( conditions.empty( ) || completed.back( ) )
-                           throw runtime_error( "no matching 'if' found for 'elifeq' expression" + error_context );
-
-                        if( conditions.back( ) )
-                        {
-                           conditions.pop_back( );
-                           conditions.push_back( false );
-                        }
-                        else if( !has_matched.back( ) )
-                        {
-                           vector< string > cond_args;
-
-                           size_t num_args = setup_arguments( symbol, cond_args );
-
-                           if( num_args != 2 )
-                              throw runtime_error( "unexpected num_args != 2 for 'elifeq' expression" + error_context );
-
-                           bool val = ( cond_args[ 0 ] == cond_args[ 1 ] );
-
-                           conditions.pop_back( );
-                           conditions.push_back( val );
-
-                           has_matched.pop_back( );
-                           has_matched.push_back( val );
-                        }
-                     }
-                  }
-                  else if( token == c_envcond_command_elifdef )
-                  {
-                     if( dummy_conditions.empty( ) )
-                     {
-                        if( conditions.empty( ) || completed.back( ) )
-                           throw runtime_error( "no matching 'if' found for 'elifdef' expression" + error_context );
-
-                        if( conditions.back( ) )
-                        {
-                           conditions.pop_back( );
-                           conditions.push_back( false );
-                        }
-                        else if( !has_matched.back( ) )
-                        {
-                           bool val = !symbol.empty( );
-
-                           conditions.pop_back( );
-                           conditions.push_back( val );
-
-                           has_matched.pop_back( );
-                           has_matched.push_back( val );
-                        }
-                     }
-                  }
-                  else if( token == c_envcond_command_elifneq )
-                  {
-                     if( dummy_conditions.empty( ) )
-                     {
-                        if( conditions.empty( ) || completed.back( ) )
-                           throw runtime_error( "no matching 'if' found for 'elifneq' expression" + error_context );
-
-                        if( conditions.back( ) )
-                        {
-                           conditions.pop_back( );
-                           conditions.push_back( false );
-                        }
-                        else if( !has_matched.back( ) )
-                        {
-                           vector< string > cond_args;
-
-                           size_t num_args = setup_arguments( symbol, cond_args );
-
-                           if( num_args != 2 )
-                              throw runtime_error( "unexpected num_args != 2 for 'elifneq' expression" + error_context );
-
-                           bool val = ( cond_args[ 0 ] != cond_args[ 1 ] );
-
-                           conditions.pop_back( );
-                           conditions.push_back( val );
-
-                           has_matched.pop_back( );
-                           has_matched.push_back( val );
-                        }
-                     }
-                  }
-                  else if( token == c_envcond_command_elifndef )
-                  {
-                     if( dummy_conditions.empty( ) )
-                     {
-                        if( conditions.empty( ) || completed.back( ) )
-                           throw runtime_error( "no matching 'if' found for 'elifndef' expression" + error_context );
-
-                        if( conditions.back( ) )
-                        {
-                           conditions.pop_back( );
-                           conditions.push_back( false );
-                        }
-                        else if( !has_matched.back( ) )
-                        {
-                           bool val = symbol.empty( );
-
-                           conditions.pop_back( );
-                           conditions.push_back( val );
-
-                           has_matched.pop_back( );
-                           has_matched.push_back( val );
-                        }
-                     }
-                  }
-                  else if( token == c_envcond_command_else )
-                  {
-                     if( !symbol.empty( ) )
-                        throw runtime_error( "invalid 'else' expression" + error_context );
-
-                     if( dummy_conditions.empty( ) )
-                     {
-                        if( conditions.empty( ) || completed.back( ) )
-                           throw runtime_error( "no matching 'if' found for 'else' expression" + error_context );
-
-                        bool val = ( conditions.back( ) || has_matched.back( ) );
-
-                        completed.back( ) = true;
-
-                        conditions.pop_back( );
-                        conditions.push_back( !val );
-                     }
-                  }
-                  else if( token == c_envcond_command_depth )
-                  {
-                     cout << "depth is " << conditions.size( ) << " at line #" << line_number;
-
-                     if( !symbol.empty( ) )
-                        cout << ' ' << symbol;
-
-                     cout << endl;
-                  }
-                  else if( token == c_envcond_command_endif )
-                  {
-                     bool pop_cond = true;
-
-                     if( !dummy_conditions.empty( ) )
-                     {
-                        pop_cond = false;
-                        dummy_conditions.pop_back( );
-                     }
-
-                     if( pop_cond )
-                     {
-                        if( conditions.empty( ) )
-                           throw runtime_error( "no matching 'if' found for 'endif' expression" + error_context );
-
-                        completed.pop_back( );
-
-                        conditions.pop_back( );
-                        has_matched.pop_back( );
-
-                        lines_for_conditions.pop_back( );
-                     }
-                  }
-                  else if( token == c_envcond_command_skip )
-                  {
-                     if( !label.empty( ) )
-                        is_skipping_to_label = true;
-                  }
-                  else if( token == c_envcond_command_label )
-                  {
-                     if( !symbol.empty( ) )
-                        label = symbol;
-                     else
-                        cout << label << '\n';
                   }
                   else if( token == c_envcond_command_retain )
                   {
