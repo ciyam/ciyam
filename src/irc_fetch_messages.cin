@@ -34,10 +34,8 @@ ERROR_OR_RETURN=
 @ifdef $ERROR
 PREFIX=Error:$SP
 ERROR_OR_RETURN=$ERROR
-@else
-@ifdef $RETURN
+@elif "$RETURN" != ""
 ERROR_OR_RETURN=@$RETURN
-@endif
 @endif
 ;
 @ifdef $ERROR_OR_RETURN

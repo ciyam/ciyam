@@ -57,28 +57,20 @@ NOT_TO_SELF=
 #ANSI escape examples:
 #=====================
 ~grep -o "; Th.*" ansi.cin | cut -c 3-
-@else
-@ifeq "$CIYAM_KEY_PRESSED" "q"
+@elif "$CIYAM_KEY_PRESSED" = "q"
 QUIT=1
-@else
-@ifeq "$CIYAM_KEY_PRESSED" "v"
+@elif "$CIYAM_KEY_PRESSED" = "v"
 &Enter QR Code: :QR_CODE=
 #^^Entered QR Code: $QR_CODE
 ~qrencode -tANSI $QR_CODE
-@else
-@ifeq "$CIYAM_KEY_PRESSED" "s"
+@elif "$CIYAM_KEY_PRESSED" = "s"
 #Scan QR_CODE:
 QR_CODE=@file:~zbarcam -1 -q --raw
 #^^Scanned QR Code: $QR_CODE
-@else
-@ifeq "$CIYAM_KEY_PRESSED" " "
+@elif "$CIYAM_KEY_PRESSED" = " "
 &:MESSAGE=_
 @ifeq "$MESSAGE" "_"
 MESSAGE=
-@endif
-@endif
-@endif
-@endif
 @endif
 @endif
 ;
