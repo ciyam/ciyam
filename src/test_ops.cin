@@ -1,0 +1,122 @@
+TEST=$1
+;
+#TEST=$TEST
+;
+@if "$TEST" #< 5
+XXX0=$2
+XXX1=$3
+XXX2=$4
+XXX3=$5
+;
+@if "$TEST" = 1
+#is one
+@elif "$TEST" = 2
+#is two
+@elif "$TEST" = 3
+#is three
+@else
+#===> $TEST
+@endif
+;
+@ifdef "$XXX0"
+#found XXX0
+@elif "$XXX1" != ""
+#found XXX1
+@elif "$XXX2" != ""
+#found XXX2
+@elif "$XXX3" != ""
+#found XXX3
+@else
+#found no XXXs
+@endif
+;
+@elif "$TEST" #< 10
+YYY0=$2
+YYY1=$3
+YYY2=$4
+YYY3=$5
+;
+@if "$YYY0" = ""
+#not found YYY0
+@elif "$YYY1" = ""
+#not found YYY1
+@elif "$YYY2" = ""
+#not found YYY2
+@elif "$YYY3" = ""
+#not found YYY3
+@else
+#found all YYYs
+@endif
+;
+@else
+LHS=$2
+RHS=$3
+;
+SHOW_LHS=$LHS
+SHOW_RHS=$RHS
+;
+@ifndef $SHOW_LHS
+SHOW_LHS=null
+@endif
+;
+@ifndef $SHOW_RHS
+SHOW_RHS=null
+@endif
+;
+@if "$LHS" > "$RHS"
+#$SHOW_LHS > $SHOW_RHS
+@elif "$LHS" < "$RHS"
+#$SHOW_LHS < $SHOW_RHS
+@else
+#$SHOW_LHS = $SHOW_RHS
+@endif
+;
+@if "$LHS" >= "$RHS"
+#$SHOW_LHS >= $SHOW_RHS
+@elif "$LHS" <= "$RHS"
+#$SHOW_LHS <= $SHOW_RHS
+@else
+#(unexpected not >= or <=)
+@endif
+;
+@if "$LHS" #> "$RHS"
+#$SHOW_LHS #> $SHOW_RHS
+@elif "$LHS" #< "$RHS"
+#$SHOW_LHS #< $SHOW_RHS
+@else
+#$SHOW_LHS #= $SHOW_RHS
+@endif
+;
+@if "$LHS" | "$RHS"
+#$SHOW_LHS | $SHOW_RHS
+@endif
+;
+@if "$LHS" & "$RHS"
+#$SHOW_LHS & $SHOW_RHS
+@endif
+;
+@if "$LHS" #| "$RHS"
+#$SHOW_LHS #| $SHOW_RHS
+@endif
+;
+@if "$LHS" #& "$RHS"
+#$SHOW_LHS #& $SHOW_RHS
+@endif
+;
+@if "$LHS" = "$RHS"
+#($SHOW_LHS and $SHOW_RHS are == strings)
+@endif
+;
+@if "$LHS" != "$RHS"
+#($SHOW_LHS and $SHOW_RHS are != strings)
+@endif
+;
+@if "$LHS" #= "$RHS"
+#($SHOW_LHS and $SHOW_RHS are == numerics)
+@endif
+;
+@if "$LHS" #!= "$RHS"
+#($SHOW_LHS and $SHOW_RHS are != numerics)
+@endif
+;
+@endif

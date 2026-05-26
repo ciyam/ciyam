@@ -809,6 +809,29 @@ session_variable @mapped_test:ghi
 _#Test $0...
 _<test_args.cin $1 $2 $3
 ;
+<test_ops.cin 0 1
+<test_ops.cin 1 "" 1
+<test_ops.cin 2 "" "" 1
+<test_ops.cin 3 "" "" "" 1
+<test_ops.cin 4
+;
+<test_ops.cin 5 1 1 1 1
+<test_ops.cin 6 1 1 1
+<test_ops.cin 7 1 1
+<test_ops.cin 8 1
+<test_ops.cin 9
+;
+<test_ops.cin 10 000 0000
+<test_ops.cin 11 0000 000
+<test_ops.cin 12 0000 0000
+<test_ops.cin 13 01 2
+<test_ops.cin 13 02 1
+<test_ops.cin 14 1 02
+<test_ops.cin 14 2 01
+<test_ops.cin 15 01 02
+<test_ops.cin 15 02 01
+<test_ops.cin 16
+;
 utc_to_local AEST "2013-10-05 15:00"
 utc_to_local AEST+ "2013-10-05 15:00"
 utc_from_local AEST "2013-10-06 01:00"

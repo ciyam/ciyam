@@ -1259,6 +1259,121 @@ ARG0 is: "test_args.cin"
 ARG1 is: "$1"
 ARG2 is: "$2"
 ARG3 is: "$3"
+TEST=0
+===> 0
+found XXX0
+TEST=1
+is one
+found XXX1
+TEST=2
+is two
+found XXX2
+TEST=3
+is three
+found XXX3
+TEST=4
+===> 4
+found no XXXs
+TEST=5
+found all YYYs
+TEST=6
+not found YYY3
+TEST=7
+not found YYY2
+TEST=8
+not found YYY1
+TEST=9
+not found YYY0
+TEST=10
+000 < 0000
+000 <= 0000
+000 #= 0000
+000 | 0000
+000 & 0000
+(000 and 0000 are != strings)
+(000 and 0000 are == numerics)
+TEST=11
+0000 > 000
+0000 >= 000
+0000 #= 000
+0000 | 000
+0000 & 000
+(0000 and 000 are != strings)
+(0000 and 000 are == numerics)
+TEST=12
+0000 = 0000
+0000 >= 0000
+0000 #= 0000
+0000 | 0000
+0000 & 0000
+(0000 and 0000 are == strings)
+(0000 and 0000 are == numerics)
+TEST=13
+01 < 2
+01 <= 2
+01 #< 2
+01 | 2
+01 & 2
+01 #| 2
+01 #& 2
+(01 and 2 are != strings)
+(01 and 2 are != numerics)
+TEST=13
+02 < 1
+02 <= 1
+02 #> 1
+02 | 1
+02 & 1
+02 #| 1
+02 #& 1
+(02 and 1 are != strings)
+(02 and 1 are != numerics)
+TEST=14
+1 > 02
+1 >= 02
+1 #< 02
+1 | 02
+1 & 02
+1 #| 02
+1 #& 02
+(1 and 02 are != strings)
+(1 and 02 are != numerics)
+TEST=14
+2 > 01
+2 >= 01
+2 #> 01
+2 | 01
+2 & 01
+2 #| 01
+2 #& 01
+(2 and 01 are != strings)
+(2 and 01 are != numerics)
+TEST=15
+01 < 02
+01 <= 02
+01 #< 02
+01 | 02
+01 & 02
+01 #| 02
+01 #& 02
+(01 and 02 are != strings)
+(01 and 02 are != numerics)
+TEST=15
+02 > 01
+02 >= 01
+02 #> 01
+02 | 01
+02 & 01
+02 #| 01
+02 #& 01
+(02 and 01 are != strings)
+(02 and 01 are != numerics)
+TEST=16
+null = null
+null >= null
+null #= null
+(null and null are == strings)
+(null and null are == numerics)
 utc_to_local AEST "2013-10-05 15:00"
 2013-10-06 01:00:00 AEST
 utc_to_local AEST+ "2013-10-05 15:00"
