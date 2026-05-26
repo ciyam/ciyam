@@ -272,10 +272,54 @@ These can be particularly useful for handling errors such as is being done in th
 [x.cin]
 storage_init Sample
 @ifndef $ERROR
-#Found Sample storage!
+#(init Sample)
 @endif
 
 It should be noted that CIYAM script conditional statements can be nested.
+
+For comparison tests and to create a "ladder" of conditions "@if" and "@elif" can also be used as follows:
+
+@ifdef $ARG
+@if "$ARG" = "a"
+#(is "a")
+@elif "$ARG" = "b"
+#(is "b")
+@elif "$ARG" > "x"
+#(is > "x")
+@else
+#(is <= "x")
+@endif
+@endif
+
+For numerical comparison tests each operator needs to be prefixed with a "#" character as per the following:
+
+@ifdef $ARG
+@if "$ARG" #= 0
+#(is 0)
+@elif "$ARG" #= 1
+#(is 1)
+@elif "$ARG" #< 0
+#(is < 0)
+@elif "$ARG" #> 5
+#(is > 5)
+@else
+#(is <= 5)
+@endif
+@endif
+
+Basic logical operators are also supported as follows (where non-numerics are only false if string is empty):
+
+@if "$ARG1" & "$ARG2"
+#(both ARG1 and ARG2)
+@elif "$ARG1" | "$ARG2"
+#(either ARG1 or ARG2)
+@endif
+
+@if "$ARG1" #& "$ARG2"
+#(both ARG1 and ARG2 non-zero)
+@elif "$ARG1" #| "$ARG2"
+#(either ARG1 or ARG2 non-zero)
+@endif
 
 Labels and Looping
 ------------------
