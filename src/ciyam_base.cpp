@@ -72,6 +72,10 @@
 
 using namespace std;
 
+extern size_t g_updates;
+
+extern int64_t g_started;
+
 namespace
 {
 
@@ -5070,6 +5074,13 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       buffer_file( install_release, c_release_file_name, 0, 0, 0, false );
       buffer_file( install_version, c_version_file_name, 0, 0, 0, false );
+
+      if( g_updates )
+         set_system_variable( e_special_var_updates, to_string( g_updates ), true );
+
+      set_system_variable( e_special_var_utm_at_start, to_string( g_started ), true );
+
+      set_system_variable( e_special_var_utm_init_base, to_string( unix_time( ) ), true );
 
       set_system_variable( e_special_var_version, install_version + '.' + install_release, true );
 
