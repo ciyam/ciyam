@@ -43,10 +43,14 @@ using namespace std;
 
 sigset_t sig_set;
 
+size_t g_updates = 0;
+
 size_t g_active_sessions = 0;
 size_t g_active_listeners = 0;
 
 volatile sig_atomic_t g_server_shutdown = 0;
+
+int64_t g_started = 0;
 
 namespace
 {
@@ -353,6 +357,8 @@ int main( int argc, char* argv[ ] )
       pthread_create( &tid, 0, signal_handler, ( void* )1 );
 
       srand( time( 0 ) );
+
+      g_started = unix_time( );
 
       string pid( to_string( get_pid( ) ) );
 
@@ -721,6 +727,8 @@ int main( int argc, char* argv[ ] )
 
          // NOTE: Force the dynamic library to be unloaded.
          up_dynamic_library.reset( 0 );
+
+         ++g_updates;
 
          was_restore = false;
 
