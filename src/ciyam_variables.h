@@ -79,6 +79,9 @@ bool set_system_variable( const var_name& var,
 
 void rename_system_variable( const var_name& old_var, const var_name& new_var );
 
+void copy_queue_system_variable(
+ const std::string& var, std::deque< std::string >& dest_queue );
+
 enum variable_check_type
 {
    e_variable_check_type_no_session_has,

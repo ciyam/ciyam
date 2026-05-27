@@ -12,6 +12,7 @@
 #  include <map>
 #  include <deque>
 #  include <iostream>
+#  include <algorithm>
 #endif
 
 #include "ciyam_variables.h"
@@ -99,6 +100,7 @@ const char* const c_special_variable_pubkey = "@pubkey";
 const char* const c_special_variable_return = "@return";
 const char* const c_special_variable_script = "@script";
 const char* const c_special_variable_source = "@source";
+const char* const c_special_variable_system = "@system";
 const char* const c_special_variable_do_exec = "@do_exec";
 const char* const c_special_variable_ip_addr = "@ip_addr";
 const char* const c_special_variable_is_last = "@is_last";
@@ -457,6 +459,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_return );
       g_special_variable_names.push_back( c_special_variable_script );
       g_special_variable_names.push_back( c_special_variable_source );
+      g_special_variable_names.push_back( c_special_variable_system );
       g_special_variable_names.push_back( c_special_variable_do_exec );
       g_special_variable_names.push_back( c_special_variable_ip_addr );
       g_special_variable_names.push_back( c_special_variable_is_last );
@@ -1696,6 +1699,18 @@ void rename_system_variable( const var_name& old_var, const var_name& new_var )
       g_variables[ new_name ] = value;
    }
 }
+
+void copy_queue_system_variable( const string& var, deque< string >& dest_queue )
+{
+   if( var.find( c_special_variable_queue_prefix ) != 0 )
+      throw runtime_error( "invalid queue name '" + var + "' for copy_queue_system_variable" );
+
+   guard g( g_mutex );
+
+   if( g_deque_variables.count( var ) )
+      copy( g_deque_variables[ var ].begin( ), g_deque_variables[ var ].end( ), back_inserter( dest_queue ) );
+}
+
 
 bool set_variable_checker::can_set( ) const
 {
