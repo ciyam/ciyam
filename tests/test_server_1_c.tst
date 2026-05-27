@@ -124,6 +124,28 @@ def
 system_variable @queue_test
 ghi
 system_variable @queue_test
+system_variable @queue_test aaa
+system_variable @queue_test bbb
+system_variable @queue_test ccc
+system_variable @queue_test*
+@queue_test aaa (+2)
+session_variable @queue_test @system
+session_variable @queue_test*
+@queue_test aaa (+2)
+session_variable @queue_test @system
+session_variable @queue_test*
+@queue_test aaa (+5)
+system_variable @queue_test *
+aaa
+bbb
+ccc
+session_variable @queue_test *
+aaa
+bbb
+ccc
+aaa
+bbb
+ccc
 session_variable @queue_test abc
 session_variable @queue_test def
 session_variable @queue_test ghi

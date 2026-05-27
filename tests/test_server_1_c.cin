@@ -77,6 +77,20 @@ system_variable @queue_test
 system_variable @queue_test
 system_variable @queue_test
 system_variable @queue_test
+;
+system_variable @queue_test aaa
+system_variable @queue_test bbb
+system_variable @queue_test ccc
+system_variable @queue_test*
+;
+session_variable @queue_test @system
+session_variable @queue_test*
+session_variable @queue_test @system
+session_variable @queue_test*
+;
+system_variable @queue_test *
+session_variable @queue_test *
+;
 session_variable @queue_test abc
 session_variable @queue_test def
 session_variable @queue_test ghi
