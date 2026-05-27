@@ -6082,6 +6082,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool has_current = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_current );
          string current( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_current ) );
 
+         bool get_all_queue_items = false;
+
+         // NOTE: If "*" is used as <value> for a "@queue_"
+         // prefixed variable then return all queued items.
+         if( ( value == "*" )
+          && ( name_or_expr.find( c_special_variable_queue_prefix ) == 0 ) )
+         {
+            has_val = false;
+
+            get_all_queue_items = true;
+         }
+
          size_t sess_id = 0;
 
          if( !session_id.empty( ) )
@@ -6094,7 +6106,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( num_found )
          {
             if( has_current )
-               throw runtime_error( "num_found and current are incompatible options" );
+               throw runtime_error( "'num_found' and 'current' are incompatible options" );
 
             size_t num = 0;
 
@@ -6127,7 +6139,25 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( needs_response )
             {
                if( !variable_expression::is_possible_expression( name_or_expr ) )
-                  response = get_session_variable( name_or_expr, sess_id );
+               {
+                  if( !get_all_queue_items )
+                     response = get_session_variable( name_or_expr, sess_id );
+                  else
+                  {
+                     while( true )
+                     {
+                        string next( get_session_variable( name_or_expr, sess_id ) );
+
+                        if( next.empty( ) )
+                           break;
+
+                        if( !response.empty( ) )
+                           response += '\n';
+
+                        response += next;
+                     }
+                  }
+               }
                else
                   response = get_session_variable( expression( name_or_expr ), sess_id );
 
