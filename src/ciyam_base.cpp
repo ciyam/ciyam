@@ -350,6 +350,11 @@ int64_t g_key_unlock_tm_val;
 
 int64_t g_ext_ip_check_tm_val;
 
+string g_system_name;
+
+string g_decrement_name;
+string g_increment_name;
+
 string g_identity_suffix;
 
 bool g_secure_identity;
@@ -5063,6 +5068,11 @@ void init_globals( const char* p_sid, int* p_use_udp )
       else
          g_secure_identity = g_encrypted_identity;
 
+      g_system_name = get_special_var_name( e_special_var_system );
+
+      g_decrement_name = get_special_var_name( e_special_var_decrement );
+      g_increment_name = get_special_var_name( e_special_var_increment );
+
       if( g_secure_identity )
          set_system_variable( e_special_var_sid_secure, c_true_value, true );
 
@@ -9514,7 +9524,57 @@ string get_session_variable( const var_name& var, size_t sess_id )
          }
       }
 
-      if( name.find( c_special_variable_queue_prefix ) == 0 )
+      if( name.find_first_of( "?*" ) != string::npos )
+      {
+         found = true;
+
+         map< string, string >::const_iterator ci;
+
+         for( ci = gtp_session->variables.begin( ); ci != gtp_session->variables.end( ); ++ci )
+         {
+            if( wildcard_match( name, ci->first ) )
+            {
+               // NOTE: Prevents access to "@shared_secret" value if is not the owning session.
+               if( !sess_id || ( ci->first != get_special_var_name( e_special_var_shared_secret ) ) )
+               {
+                  if( !retval.empty( ) )
+                     retval += "\n";
+
+                  retval += ci->first + ' ' + ci->second;
+               }
+            }
+         }
+
+         map< string, deque< string > >::const_iterator dci;
+
+         for( dci = gtp_session->deque_variables.begin( ); dci != gtp_session->deque_variables.end( ); ++dci )
+         {
+            if( wildcard_match( name, dci->first ) )
+            {
+               if( !retval.empty( ) )
+                  retval += "\n";
+
+               retval += dci->first + ' ' + dci->second.front( );
+
+               if( dci->second.size( ) > 1 )
+                  retval += " (+" + to_string( dci->second.size( ) - 1 ) + ")";
+            }
+         }
+
+         map< string, map< string, string > >::const_iterator mci;
+
+         for( mci = gtp_session->mapped_variables.begin( ); mci != gtp_session->mapped_variables.end( ); ++mci )
+         {
+            if( wildcard_match( name, mci->first ) )
+            {
+               if( !retval.empty( ) )
+                  retval += "\n";
+
+               retval += mci->first + " (" + to_string( mci->second.size( ) ) + ")";
+            }
+         }
+      }
+      else if( name.find( c_special_variable_queue_prefix ) == 0 )
       {
          if( gtp_session->deque_variables.count( name ) )
          {
@@ -9564,56 +9624,6 @@ string get_session_variable( const var_name& var, size_t sess_id )
          // NOTE: Prevents access to "@shared_secret" value if is not the owning session.
          if( !sess_id || ( name != get_special_var_name( e_special_var_shared_secret ) ) )
             retval = gtp_session->variables[ name ];
-      }
-      else if( name.find_first_of( "?*" ) != string::npos )
-      {
-         found = true;
-
-         map< string, string >::const_iterator ci;
-
-         for( ci = gtp_session->variables.begin( ); ci != gtp_session->variables.end( ); ++ci )
-         {
-            if( wildcard_match( name, ci->first ) )
-            {
-               // NOTE: Prevents access to "@shared_secret" value if is not the owning session.
-               if( !sess_id || ( ci->first != get_special_var_name( e_special_var_shared_secret ) ) )
-               {
-                  if( !retval.empty( ) )
-                     retval += "\n";
-
-                  retval += ci->first + ' ' + ci->second;
-               }
-            }
-         }
-
-         map< string, deque< string > >::const_iterator dci;
-
-         for( dci = gtp_session->deque_variables.begin( ); dci != gtp_session->deque_variables.end( ); ++dci )
-         {
-            if( wildcard_match( name, dci->first ) )
-            {
-               if( !retval.empty( ) )
-                  retval += "\n";
-
-               retval += dci->first + ' ' + dci->second.front( );
-
-               if( dci->second.size( ) > 1 )
-                  retval += " (+" + to_string( dci->second.size( ) - 1 ) + ")";
-            }
-         }
-
-         map< string, map< string, string > >::const_iterator mci;
-
-         for( mci = gtp_session->mapped_variables.begin( ); mci != gtp_session->mapped_variables.end( ); ++mci )
-         {
-            if( wildcard_match( name, mci->first ) )
-            {
-               if( !retval.empty( ) )
-                  retval += "\n";
-
-               retval += mci->first + " (" + to_string( mci->second.size( ) ) + ")";
-            }
-         }
       }
    }
 
@@ -9843,13 +9853,12 @@ void set_session_variable( const var_name& var, const string& value,
       if( gtp_session->variables.count( name ) )
          old_val = gtp_session->variables[ name ];
 
-      if( val == get_special_var_name( e_special_var_increment )
-       || val == get_special_var_name( e_special_var_decrement ) )
+      if( ( val == g_decrement_name ) || ( val == g_increment_name ) )
       {
          int num_value = !gtp_session->variables.count( name )
           ? 0 : from_string< int >( gtp_session->variables[ name ] );
 
-         if( val == get_special_var_name( e_special_var_increment ) )
+         if( val == g_increment_name )
             ++num_value;
          else if( num_value > 0 )
             --num_value;
@@ -10248,7 +10257,7 @@ void set_session_variable( const var_name& var, const string& value,
                if( !val.empty( ) && p_set_special_temporary )
                   *p_set_special_temporary = true;
             }
-            else if( pos != string::npos && val.substr( 0, pos ) == "remove" )
+            else if( ( pos != string::npos ) && ( val.substr( 0, pos ) == "remove" ) )
             {
                string search( val.substr( pos + 1 ) );
 
@@ -10270,7 +10279,7 @@ void set_session_variable( const var_name& var, const string& value,
                   gtp_session->deque_items = new_deque_items;
                }
             }
-            else if( pos != string::npos && val.substr( 0, pos ) == "retain" )
+            else if( ( pos != string::npos ) && ( val.substr( 0, pos ) == "retain" ) )
             {
                string search( val.substr( pos + 1 ) );
 
@@ -10324,9 +10333,9 @@ void set_session_variable( const var_name& var, const string& value,
                if( !gtp_session->deque_items.empty( ) )
                   gtp_session->deque_items.pop_front( );
             }
-            else if( pos != string::npos && val.substr( 0, pos ) == "push_back" )
+            else if( ( pos != string::npos ) && ( val.substr( 0, pos ) == "push_back" ) )
                gtp_session->deque_items.push_back( val.substr( pos + 1 ) );
-            else if( pos != string::npos && val.substr( 0, pos ) == "push_front" )
+            else if( ( pos != string::npos ) && ( val.substr( 0, pos ) == "push_front" ) )
                gtp_session->deque_items.push_front( val.substr( pos + 1 ) );
          }
       }
@@ -10336,8 +10345,19 @@ void set_session_variable( const var_name& var, const string& value,
 
          if( val.empty( ) )
             gtp_session->deque_variables.erase( name );
-         else
+         else if( val != g_system_name )
             gtp_session->deque_variables[ name ].push_back( val );
+         else
+         {
+            copy_queue_system_variable( name, gtp_session->deque_variables[ name ] );
+
+            // NOTE: Even if the deque did not exist before and
+            // no items were copied using its reference results
+            // in its creation so if found to be empty then can
+            // remove it in order to reduce memory usage.
+            if( gtp_session->deque_variables[ name ].empty( ) )
+               gtp_session->deque_variables.erase( name );
+         }
       }
       else if( name.find( c_special_variable_mapped_prefix ) == 0 )
       {
