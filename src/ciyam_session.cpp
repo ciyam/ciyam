@@ -909,7 +909,7 @@ void add_pdf_variables( size_t handle,
          bool is_encrypted = false;
          bool is_transient = false;
 
-         string type_name( get_field_type_name( handle, "", field, &is_encrypted, &is_transient ) );
+         string type_name( get_field_type_name( handle, context, field, &is_encrypted, &is_transient ) );
 
          if( !value.empty( ) && !tz_name.empty( ) )
          {
