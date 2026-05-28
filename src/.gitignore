@@ -1,21 +1,24 @@
 # If present ignore a 'tmp' file or directory.
 tmp
 
-# Ignore typical prototype scripts or programs.
+# Ignore these to be used for testing.
 x
 xx
 xxx
 xxxx
 x.cin
 x.cpp
+x.pdf
 x.txt
 x.xrep
 xx.cin
 xx.cpp
+xx.pdf
 xx.txt
 xx.xrep
 xxx.cin
 xxx.cpp
+xxx.pdf
 xxx.txt
 xxx.xrep
 
@@ -42,7 +45,6 @@ ciyam_interface
 ciyam_server
 construct
 crypt
-czip
 diff
 diffp
 extract
