@@ -210,6 +210,12 @@ system_variable *needed*
 @complete_restore_needed 1
 system_variable @complete_restore_needed ""
 system_variable *needed*
+system_variable >@os
+Error: Invalid attempt to store read-only system variable '@os'.
+system_variable @os test
+Error: Invalid attempt to change read-only system variable '@os'.
+system_variable >@os test
+Error: Invalid attempt to change read-only system variable '@os'.
 system_peerchain_info -list
 system_peerchain_create -auto=0 abc111cba 111.domain.com "Peerchain 1"
 system_peerchain_info -list
