@@ -806,7 +806,7 @@ void set_complete_restore_needed( bool check = true )
    set_file_variable( variable );
 }
 
-void check_system_variable_can_be_set( const string& variable )
+void check_system_variable_can_be_set( const string& variable, bool to_persist = false )
 {
    bool okay = true;
 
@@ -818,14 +818,19 @@ void check_system_variable_can_be_set( const string& variable )
       // expected to involve checking other system variables.
       if( variable == c_special_variable_blockchain_force_skip )
       {
-         if( !g_variables.count( c_special_variable_system_is_for_devt ) )
+         if( to_persist || !g_variables.count( c_special_variable_system_is_for_devt ) )
             okay = false;
       }
    }
 
    if( !okay )
-      // FUTURE: This should be a module string.
-      throw runtime_error( "Invalid attempt to change read-only system variable '" + variable + "'." );
+   {
+      // FUTURE: These should both be module strings.
+      if( to_persist )
+         throw runtime_error( "Invalid attempt to store read-only system variable '" + variable + "'." );
+      else
+         throw runtime_error( "Invalid attempt to change read-only system variable '" + variable + "'." );
+   }
 }
 
 void fetch_persistent( ods_file_system& ods_fs, const string& variable, string& value )
@@ -1032,7 +1037,7 @@ string get_system_variable( const var_name& var, bool is_internal )
 
       if( had_persist_prefix && !up_bulk_base.get( )
        && system_ods_instance( ).is_thread_bulk_read_locked( ) )
-         throw runtime_error( "attempt to persist system variable '" + name + "' whilst bulk read locked" );
+         throw runtime_error( "attempt to store system variable '" + variable + "' whilst bulk read locked" );
 
       scoped_ods_instance ods_instance( system_ods_instance( ) );
 
@@ -1043,6 +1048,8 @@ string get_system_variable( const var_name& var, bool is_internal )
       if( !variable.empty( ) && had_persist_prefix
        && variable.find_first_of( "?*" ) == string::npos )
       {
+         check_system_variable_can_be_set( variable, true );
+
          string value;
 
          if( g_variables.count( variable ) )
@@ -1102,6 +1109,8 @@ string get_system_variable( const var_name& var, bool is_internal )
             }
             else
             {
+               check_system_variable_can_be_set( next, true );
+
                if( g_variables.count( next ) )
                   value = g_variables[ next ];
 
@@ -1484,20 +1493,20 @@ void set_system_variable( const var_name& var,
             g_deque_variables[ variable ].push_back( val );
       }
       else if( persist
-       && ( ( variable == c_special_variable_os )
-       || ( variable == c_special_variable_peer_port )
-       || ( variable == c_special_variable_sid_locked )
-       || ( variable == c_special_variable_sid_secure )
-       || ( variable == c_special_variable_ip_ext_addr )
+       && ( ( variable == c_special_variable_args_file )
        || ( variable == c_special_variable_trace_filters )
+       || ( variable == c_special_variable_backup_needed )
        || ( variable == c_special_variable_log_files_path )
+       || ( variable == c_special_variable_restore_needed )
        || ( variable == c_special_variable_files_area_path )
        || ( variable == c_special_variable_trace_session_ids )
        || ( variable == c_special_variable_generate_hub_block )
        || ( variable == c_special_variable_disallow_connections )
        || ( variable == c_special_variable_ods_cache_hit_ratios )
+       || ( variable == c_special_variable_prepare_backup_needed )
        || ( variable == c_special_variable_complete_restore_needed ) ) )
-         throw runtime_error( "cannot persist variable '" + variable + "'" );
+         // FUTURE: This should be a module string.
+         throw runtime_error( "Invalid attempt to store dynamic system variable '" + variable + "'." );
       else if( pos != string::npos )
       {
          if( persist )
@@ -1585,16 +1594,20 @@ void set_system_variable( const var_name& var,
 
       if( persist )
       {
+         check_system_variable_can_be_set( variable, true );
+
          ods::bulk_write bulk_write( system_ods_instance( ) );
 
          scoped_ods_instance ods_instance( system_ods_instance( ) );
 
-         system_ods_file_system( ).set_root_folder( c_system_variables_folder );
+         ods_file_system& ods_fs( system_ods_file_system( ) );
+
+         ods_fs.set_root_folder( c_system_variables_folder );
 
          if( !val.empty( ) )
-            store_persistent( system_ods_file_system( ), variable, val );
-         else if( system_ods_file_system( ).has_file( variable ) )
-            system_ods_file_system( ).remove_file( variable );
+            store_persistent( ods_fs, variable, val );
+         else if( ods_fs.has_file( variable ) )
+            ods_fs.remove_file( variable );
       }
    }
 }
@@ -1666,8 +1679,8 @@ void rename_system_variable( const var_name& old_var, const var_name& new_var )
 
    guard g( g_mutex );
 
-   check_system_variable_can_be_set( old_name );
-   check_system_variable_can_be_set( new_name );
+   check_system_variable_can_be_set( old_name, true );
+   check_system_variable_can_be_set( new_name, true );
 
    if( g_variables.count( old_name ) )
    {
@@ -1681,15 +1694,17 @@ void rename_system_variable( const var_name& old_var, const var_name& new_var )
 
       scoped_ods_instance ods_instance( system_ods_instance( ) );
 
-      system_ods_file_system( ).set_root_folder( c_system_variables_folder );
+      ods_file_system& ods_fs( system_ods_file_system( ) );
 
-      if( system_ods_file_system( ).has_file( old_name ) )
+      ods_fs.set_root_folder( c_system_variables_folder );
+
+      if( ods_fs.has_file( old_name ) )
       {
          ods::transaction ods_tx( system_ods_instance( ) );
 
-         system_ods_file_system( ).remove_file( old_name );
+         ods_fs.remove_file( old_name );
 
-         store_persistent( system_ods_file_system( ), new_name, value );
+         store_persistent( ods_fs, new_name, value );
 
          ods_tx.commit( );
       }
