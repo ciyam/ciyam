@@ -50,6 +50,8 @@ const size_t c_auto_script_msleep = 1000; // i.e. 1 sec
 const char c_persist_variable_prefix = '>';
 const char c_restore_variable_prefix = '<';
 
+const char* const c_UTC = "UTC";
+
 const char* const c_none = "none";
 const char* const c_okay = "okay";
 

@@ -42,8 +42,6 @@ const int c_subsequent_response_timeout = 10000;
 
 const char* const c_order_reverse = "reverse";
 
-}
-
 string get_uid_info( const session_info& sess_info, bool quote_if_has_space_in_name = true )
 {
    string uid_info( sess_info.user_key );
@@ -62,11 +60,12 @@ string get_uid_info( const session_info& sess_info, bool quote_if_has_space_in_n
          // just changed (if escaping was to be used then it would require
          // rework in the server code for session command handling).
          string user_name( sess_info.user_name );
+
          replace( user_name, "\"", "'" );
 
          string::size_type pos = user_name.find( ' ' );
 
-         if( pos == string::npos || !quote_if_has_space_in_name )
+         if( ( pos == string::npos ) || !quote_if_has_space_in_name )
             uid_info += ":" + user_name;
          else
             uid_info = "\"" + uid_info + ":" + user_name + "\"";
@@ -75,10 +74,13 @@ string get_uid_info( const session_info& sess_info, bool quote_if_has_space_in_n
    else
    {
       uid_info = "anon!";
+
       uid_info += c_default_security_level;
    }
 
    return uid_info;
+}
+
 }
 
 void read_module_strings( session_info& sess_info, module_info& info )
@@ -159,6 +161,7 @@ void read_module_strings( session_info& sess_info, module_info& info )
       for( size_t i = 0; i < info.lists.size( ); i++ )
       {
          info.lists[ i ].var_ids.clear( );
+
          info.list_info.insert( make_pair( info.lists[ i ].id, &info.lists[ i ] ) );
 
          if( !info.lists[ i ].pid.empty( ) )
@@ -284,8 +287,12 @@ bool perform_update( const string& module, const string& class_id,
    if( !sess_info.user_group.empty( ) )
       cmd += " -g=" + sess_info.user_group;
 
+   string tz( c_UTC );
+
    if( !sess_info.tz_name.empty( ) )
-      cmd += " -tz=" + sess_info.tz_name;
+      tz = sess_info.tz_name;
+
+   cmd += " -tz=" + tz;
 
    cmd += " " + key + " \"" + fields_and_values + "\"";
 
@@ -433,14 +440,17 @@ bool perform_action( const string& module_name,
    if( !exec_info.empty( ) && ( exec_info[ 0 ] == '!' ) )
    {
       is_versioned = false;
+
       exec_info.erase( 0, 1 );
    }
 
-   // NOTE: If the method name has (also) been prefixed with a '^' then instance execution order will be reversed.
    bool is_reversed = false;
+
+   // NOTE: If the method name has (also) been prefixed with a '^' then instance execution order will be reversed.
    if( !exec_info.empty( ) && ( exec_info[ 0 ] == '^' ) )
    {
       is_reversed = true;
+
       exec_info.erase( 0, 1 );
    }
 
@@ -464,6 +474,7 @@ bool perform_action( const string& module_name,
          for( size_t i = 0; i < code_and_versions.size( ); i++ )
          {
             string next_key( code_and_versions[ i ] );
+
             string next_ver;
 
             string::size_type pos = next_key.find( ' ' );
@@ -471,6 +482,7 @@ bool perform_action( const string& module_name,
             if( pos != string::npos )
             {
                next_ver = next_key.substr( pos + 2 ); // NOTE: Skip the '=' prefix.
+
                next_key.erase( pos );
             }
 
@@ -503,6 +515,11 @@ bool perform_action( const string& module_name,
       else
          throw runtime_error( "Unknown list action '" + act + "'." );
 
+      string tz( c_UTC );
+
+      if( !sess_info.tz_name.empty( ) )
+         tz = sess_info.tz_name;
+
       if( !key_list.empty( ) )
       {
          act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + mod_info.id + " " + class_id;
@@ -510,8 +527,7 @@ bool perform_action( const string& module_name,
          if( !sess_info.user_group.empty( ) )
             act_cmd += " -g=" + sess_info.user_group;
 
-         if( !sess_info.tz_name.empty( ) )
-            act_cmd += " -tz=" + sess_info.tz_name;
+         act_cmd += " -tz=" + tz;
 
          if( !fieldlist.empty( ) && ( act == c_act_exec ) )
             act_cmd += " \"-v=" + fields_and_values + "\"";
@@ -530,8 +546,7 @@ bool perform_action( const string& module_name,
             if( !sess_info.user_group.empty( ) )
                act_cmd += " -g=" + sess_info.user_group;
 
-            if( !sess_info.tz_name.empty( ) )
-               act_cmd += " -tz=" + sess_info.tz_name;
+            act_cmd += " -tz=" + tz;
 
             if( !fieldlist.empty( ) && ( act == c_act_exec ) )
                act_cmd += " \"-v=" + fields_and_values + "\"";
@@ -552,8 +567,7 @@ bool perform_action( const string& module_name,
             if( !sess_info.user_group.empty( ) )
                act_cmd += " -g=" + sess_info.user_group;
 
-            if( !sess_info.tz_name.empty( ) )
-               act_cmd += " -tz=" + sess_info.tz_name;
+            act_cmd += " -tz=" + tz;
 
             if( !fieldlist.empty( ) )
                act_cmd += " \"-v=" + fields_and_values + "\"";
@@ -638,8 +652,17 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    if( !sess_info.user_id.empty( ) )
       fetch_cmd += " -td=tmp/" + sess_info.session_id;
 
+   // NOTE: If no explicit timezone was provided
+   // then will just assume that the application
+   // server's default value (via configuration)
+   // will be correct for PDF generation.
+   string tz( p_pdf_spec_name ? "" : c_UTC );
+
    if( !sess_info.tz_name.empty( ) )
-      fetch_cmd += " -tz=" + sess_info.tz_name;
+      tz = sess_info.tz_name;
+
+   if( !tz.empty( ) )
+      fetch_cmd += " -tz=" + tz;
 
    // NOTE: If key is empty and "@verify" will be set then just
    // assumes that record filtering is used to choose a record.
@@ -656,6 +679,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    {
       if( !perms.empty( ) )
          perms += ",";
+
       perms = "@owner";
    }
 
@@ -665,6 +689,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    {
       if( !perms.empty( ) )
          perms += ",";
+
       perms += i->first;
    }
 
@@ -720,8 +745,8 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
       if( link_file_name.empty( ) )
          link_file_name = uuid( ).as_string( );
 
-      string path( string( c_files_directory )
-       + "/" + string( c_tmp_directory ) + "/" + sess_info.session_id + "/" + link_file_name + ".pdf" );
+      string path( string( c_files_directory ) + "/"
+       + string( c_tmp_directory ) + "/" + sess_info.session_id + "/" + link_file_name + ".pdf" );
 
       if( p_pdf_view_file_name )
          *p_pdf_view_file_name = path;
@@ -756,10 +781,11 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
          if( sess_info.p_socket->read_line( response, timeout ) <= 0 )
          {
             okay = false;
+
             break;
          }
 
-         if( !response.empty( ) && response[ 0 ] != '(' )
+         if( !response.empty( ) && ( response[ 0 ] != '(' ) )
          {
             size_t pos = response.find( "]" ); //i.e. skip over key and version information
 
@@ -769,7 +795,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
             string key_ver_rev_state_and_type_info = response.substr( 1, pos - 1 );
 
             item_info = make_pair( key_ver_rev_state_and_type_info,
-             ( pos + 2 >= response.length( ) ) ? string( ) : response.substr( pos + 2 ) );
+             ( ( pos + 2 ) >= response.length( ) ) ? string( ) : response.substr( pos + 2 ) );
          }
          else if( response != c_response_okay )
             throw runtime_error( "unexpected server response: " + response );
@@ -821,8 +847,17 @@ bool fetch_list_info( const string& module,
    if( !sess_info.user_id.empty( ) )
       fetch_cmd += " -td=tmp/" + sess_info.session_id;
 
+   // NOTE: If no explicit timezone was provided
+   // then will just assume that the application
+   // server's default value (via configuration)
+   // will be correct for PDF generation.
+   string tz( p_pdf_spec_name ? "" : c_UTC );
+
    if( !sess_info.tz_name.empty( ) )
-      fetch_cmd += " -tz=" + sess_info.tz_name;
+      tz = sess_info.tz_name;
+
+   if( !tz.empty( ) )
+      fetch_cmd += " -tz=" + tz;
 
    if( !filters.empty( ) )
       fetch_cmd += " -f=" + filters;
@@ -2806,8 +2841,12 @@ void save_record( const string& module_id,
    if( !sess_info.user_group.empty( ) )
       act_cmd += " -g=" + sess_info.user_group;
 
+   string tz( c_UTC );
+
    if( !sess_info.tz_name.empty( ) )
-      act_cmd += " -tz=" + sess_info.tz_name;
+      tz = sess_info.tz_name;
+
+   act_cmd += " -tz=" + tz;
 
    vector< string > values;
 

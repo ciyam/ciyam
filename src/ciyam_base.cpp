@@ -134,7 +134,6 @@ const int c_max_file_buffer_expansion = 2;
 const char c_module_prefix_separator = '_';
 const char c_module_order_prefix_separator = '.';
 
-const char* const c_UTC = "UTC";
 const char* const c_LOCAL = "LOCAL";
 
 const char* const c_str_none = "(none)";
