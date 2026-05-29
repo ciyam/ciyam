@@ -79,6 +79,8 @@ namespace
 
 const string g_null_string;
 
+const char c_use_DST = '*';
+
 const int c_max_graph_depth = 50;
 
 const int c_max_email_text_line = 8192;
@@ -331,7 +333,7 @@ date_time local_utc_conv( const date_time& dt, int utc_offset,
             date_time dt_finish( finish );
 
             if( !to_local && is_daylight )
-               dt_finish += ( seconds )yici->second.bias;
+               dt_begin += ( seconds )yici->second.bias;
 
             if( dt_begin < dt_finish )
             {
@@ -345,6 +347,18 @@ date_time local_utc_conv( const date_time& dt, int utc_offset,
             }
          }
       }
+   }
+
+   if( !bias && is_daylight )
+   {
+      time_format tf = e_time_format_hhmm;
+
+      // NOTE: Only includes seconds when non-zero.
+      if( dt.get_second( ) )
+         tf = e_time_format_hhmmss;
+
+      throw runtime_error( "invalid DST '"
+       + dt.as_string( tf, true ) + "' for UTC conversion" );
    }
 
    if( p_offset )
@@ -5339,7 +5353,8 @@ string get_tz_desc( const string& tz_name, bool* p_rc )
    if( name == c_tz_loc )
       name = get_timezone( );
 
-   if( !name.empty( ) && ( name[ name.length( ) - 1 ] == '+' ) )
+   if( !name.empty( )
+    && ( name[ name.length( ) - 1 ] == c_use_DST ) )
       name.erase( name.length( ) - 1 );
 
    if( name.empty( ) )
@@ -5383,9 +5398,11 @@ void get_tz_info( const date_time& dt, string& tz_name, float& offset )
       tz = g_daylight_names[ tz ];
    }
 
-   if( !tz.empty( ) && ( tz[ tz.length( ) - 1 ] == '+' ) )
+   if( !tz.empty( )
+    && ( tz[ tz.length( ) - 1 ] == c_use_DST ) )
    {
       use_daylight = true;
+
       tz.erase( tz.length( ) - 1 );
    }
 
@@ -5426,7 +5443,8 @@ date_time utc_to_local( const date_time& dt, string& tz_name )
       tz = g_daylight_names[ tz ];
    }
 
-   if( !tz.empty( ) && ( tz[ tz.length( ) - 1 ] == '+' ) )
+   if( !tz.empty( )
+    && ( tz[ tz.length( ) - 1 ] == c_use_DST ) )
    {
       use_daylight = true;
 
@@ -5452,17 +5470,21 @@ date_time utc_to_local( const date_time& dt, string& tz_name )
 date_time utc_to_local( const date_time& dt, const string& tz_name )
 {
    string tz( tz_name );
+
    bool use_daylight = false;
 
    if( g_daylight_names.count( tz ) )
    {
       use_daylight = true;
+
       tz = g_daylight_names[ tz ];
    }
 
-   if( !tz.empty( ) && tz[ tz.length( ) - 1 ] == '+' )
+   if( !tz.empty( )
+    && ( tz[ tz.length( ) - 1 ] == c_use_DST ) )
    {
       use_daylight = true;
+
       tz.erase( tz.length( ) - 1 );
    }
 
@@ -5491,7 +5513,8 @@ date_time local_to_utc( const date_time& dt, const string& tz_name )
       tz = g_daylight_names[ tz ];
    }
 
-   if( !tz.empty( ) && ( tz[ tz.length( ) - 1 ] == '+' ) )
+   if( !tz.empty( )
+    && ( tz[ tz.length( ) - 1 ] == c_use_DST ) )
    {
       use_daylight = true;
 
