@@ -197,6 +197,23 @@ inline string convert_local_to_utc( const string& local, const string& tz_name )
    return s;
 }
 
+time_format get_time_format( const string& tm_val )
+{
+   time_format tf = e_time_format_hhmmss;
+
+   string::size_type pos = tm_val.find( ':' );
+
+   if( pos != string::npos )
+   {
+      pos = tm_val.find( ':', pos + 1 );
+
+      if( pos == string::npos )
+         tf = e_time_format_hhmm;
+   }
+
+   return tf;
+}
+
 void get_parm_and_value( const string& parm_and_value, string& parm, string& value )
 {
    if( !parm_and_value.empty( ) )
@@ -8774,28 +8791,38 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string tz_name( get_parm_val( parameters, c_cmd_ciyam_session_utc_to_local_tz_name ) );
          string utc_time( get_parm_val( parameters, c_cmd_ciyam_session_utc_to_local_utc_time ) );
 
+         possibly_expected_error = true;
+
          if( utc_time == c_dtm_now )
             utc_time = date_time::standard( ).as_string( e_time_format_hhmmss, true );
 
          date_time local( utc_to_local( date_time( utc_time ), tz_name ) );
 
-         response = local.as_string( e_time_format_hhmmss, true ) + " " + tz_name;
+         time_format tf = get_time_format( utc_time );
+
+         response = local.as_string( tf, true ) + " " + tz_name;
       }
       else if( command == c_cmd_ciyam_session_utc_from_local )
       {
          string tz_name( get_parm_val( parameters, c_cmd_ciyam_session_utc_from_local_tz_name ) );
          string local_time( get_parm_val( parameters, c_cmd_ciyam_session_utc_from_local_local_time ) );
 
+         possibly_expected_error = true;
+
          if( local_time == c_dtm_now )
             local_time = date_time::local( ).as_string( e_time_format_hhmmss, true );
 
          date_time utc( local_to_utc( date_time( local_time ), tz_name ) );
 
-         response = utc.as_string( e_time_format_hhmmss, true );
+         time_format tf = get_time_format( local_time );
+
+         response = utc.as_string( tf, true );
       }
       else if( command == c_cmd_ciyam_session_utc_to_unix_time )
       {
          string utc_time( get_parm_val( parameters, c_cmd_ciyam_session_utc_to_unix_time_utc_time ) );
+
+         possibly_expected_error = true;
 
          date_time utc;
 
