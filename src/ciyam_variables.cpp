@@ -124,6 +124,7 @@ const char* const c_special_variable_key_info = "@key_info";
 const char* const c_special_variable_notifier = "@notifier";
 const char* const c_special_variable_peer_hub = "@peer_hub";
 const char* const c_special_variable_progress = "@progress";
+const char* const c_special_variable_timezone = "@timezone";
 const char* const c_special_variable_unlocked = "@unlocked";
 const char* const c_special_variable_updating = "@updating";
 const char* const c_special_variable_args_file = "@args_file";
@@ -483,6 +484,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_notifier );
       g_special_variable_names.push_back( c_special_variable_peer_hub );
       g_special_variable_names.push_back( c_special_variable_progress );
+      g_special_variable_names.push_back( c_special_variable_timezone );
       g_special_variable_names.push_back( c_special_variable_unlocked );
       g_special_variable_names.push_back( c_special_variable_updating );
       g_special_variable_names.push_back( c_special_variable_args_file );
@@ -715,6 +717,7 @@ void init_special_variable_names( )
    g_read_only_variables.insert( c_special_variable_os );
    g_read_only_variables.insert( c_special_variable_updates );
    g_read_only_variables.insert( c_special_variable_version );
+   g_read_only_variables.insert( c_special_variable_timezone );
    g_read_only_variables.insert( c_special_variable_peer_port );
    g_read_only_variables.insert( c_special_variable_sid_locked );
    g_read_only_variables.insert( c_special_variable_sid_secure );
