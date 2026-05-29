@@ -1375,33 +1375,53 @@ null #= null
 (null and null are == strings)
 (null and null are == numerics)
 utc_to_local AEST "2013-10-05 15:00"
-2013-10-06 01:00:00 AEST
-utc_to_local AEST+ "2013-10-05 15:00"
-2013-10-06 01:00:00 AEST
+2013-10-06 01:00 AEST
+utc_to_local AEST* "2013-10-05 15:00"
+2013-10-06 01:00 AEST
 utc_from_local AEST "2013-10-06 01:00"
-2013-10-05 15:00:00
+2013-10-05 15:00
+utc_from_local AEDT "2013-10-06 02:59"
+Error: invalid DST '2013-10-06 02:59' for UTC conversion
+utc_from_local AEDT "2013-10-06 03:00"
+2013-10-05 16:00
 utc_to_local AEST "2013-10-06 16:00"
-2013-10-07 02:00:00 AEST
-utc_to_local AEST+ "2013-10-06 16:00"
-2013-10-07 03:00:00 AEDT
+2013-10-07 02:00 AEST
+utc_to_local AEST* "2013-10-06 16:00"
+2013-10-07 03:00 AEDT
 utc_from_local AEST "2013-10-07 03:00"
-2013-10-06 17:00:00
+2013-10-06 17:00
 utc_from_local AEDT "2013-10-07 03:00"
-2013-10-06 16:00:00
+2013-10-06 16:00
+utc_to_local GMT "2014-03-30 01:00"
+2014-03-30 01:00 GMT
+utc_to_local GMT* "2014-03-30 01:00"
+2014-03-30 02:00 BSST
+utc_from_local BSST "2014-03-30 01:59"
+Error: invalid DST '2014-03-30 01:59' for UTC conversion
+utc_from_local BSST "2014-03-30 02:00"
+2014-03-30 01:00
 utc_to_local AEST "2014-04-05 15:00"
-2014-04-06 01:00:00 AEST
-utc_to_local AEST+ "2014-04-05 15:00"
-2014-04-06 02:00:00 AEDT
+2014-04-06 01:00 AEST
+utc_to_local AEST* "2014-04-05 15:00"
+2014-04-06 02:00 AEDT
 utc_from_local AEST "2014-04-06 02:00"
-2014-04-05 16:00:00
+2014-04-05 16:00
+utc_from_local AEDT "2014-04-06 01:59"
+2014-04-05 14:59
 utc_from_local AEDT "2014-04-06 02:00"
-2014-04-05 15:00:00
+Error: invalid DST '2014-04-06 02:00' for UTC conversion
 utc_to_local AEST "2014-04-05 16:00"
-2014-04-06 02:00:00 AEST
-utc_to_local AEST+ "2014-04-05 16:00"
-2014-04-06 02:00:00 AEST
-utc_from_local AEST "2014-04-06 02:00"
-2014-04-05 16:00:00
+2014-04-06 02:00 AEST
+utc_to_local AEST* "2014-04-05 16:00"
+2014-04-06 02:00 AEST
+utc_to_local GMT "2014-10-25 11:59"
+2014-10-25 11:59 GMT
+utc_to_local GMT* "2014-10-25 11:59"
+2014-10-25 12:59 BSST
+utc_from_local BSST "2014-10-25 12:59"
+2014-10-25 11:59
+utc_from_local BSST "2014-10-26 01:00"
+Error: invalid DST '2014-10-26 01:00' for UTC conversion
 utc_from_unix_time 0
 1970-01-01 00:00:00
 utc_to_unix_time "1970-01-01 00:00:00"
