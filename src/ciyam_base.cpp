@@ -5095,6 +5095,8 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       read_server_configuration( );
 
+      set_system_variable( e_special_var_timezone, g_timezone, true );
+
       // NOTE: Remember special read only session variable names for later checks.
       g_read_only_var_names.insert( get_special_var_name( e_special_var_tls ) );
       g_read_only_var_names.insert( get_special_var_name( e_special_var_slot ) );
