@@ -71,8 +71,10 @@ session_variable @progress_*
 session_variable @progress_clear
 session_variable @progress_*
 system_variable @queue_test abc
+system_variable @queue_test*
 system_variable @queue_test def
 system_variable @queue_test ghi
+system_variable @queue_test*
 system_variable @queue_test
 system_variable @queue_test
 system_variable @queue_test

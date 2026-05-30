@@ -720,6 +720,10 @@ crypto_lamport -verify xxx.pub:xxx.key
 file_kill xxx.key
 file_kill xxx.pub
 file_kill xxx.sig
+regex .* (test)
+Error: invalid response '(test)' (could be confused with a protocol response)
+regex -prefix=X .* (test)
+X(test)
 regex "^[@]?[a-b][a-b]+$$" "@"
 regex "^[@]?[a-b][a-b]+$$" "a"
 regex "^[@]?[a-b][a-b]+$$" "@@"

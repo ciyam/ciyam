@@ -519,6 +519,9 @@ file_kill xxx.pub
 file_kill xxx.sig
 ~rm xxx.key xxx.pub xxx.sig xxx.src
 ;
+regex .* (test)
+regex -prefix=X .* (test)
+;
 regex "^[@]?[a-b][a-b]+$$" "@"
 regex "^[@]?[a-b][a-b]+$$" "a"
 regex "^[@]?[a-b][a-b]+$$" "@@"

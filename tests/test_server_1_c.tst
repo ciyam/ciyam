@@ -115,8 +115,12 @@ session_variable @progress_*
 @progress_total 0
 @progress_value 100%
 system_variable @queue_test abc
+system_variable @queue_test*
+@queue_test abc [+0]
 system_variable @queue_test def
 system_variable @queue_test ghi
+system_variable @queue_test*
+@queue_test abc [+2]
 system_variable @queue_test
 abc
 system_variable @queue_test
@@ -128,13 +132,13 @@ system_variable @queue_test aaa
 system_variable @queue_test bbb
 system_variable @queue_test ccc
 system_variable @queue_test*
-@queue_test aaa (+2)
+@queue_test aaa [+2]
 session_variable @queue_test @system
 session_variable @queue_test*
-@queue_test aaa (+2)
+@queue_test aaa [+2]
 session_variable @queue_test @system
 session_variable @queue_test*
-@queue_test aaa (+5)
+@queue_test aaa [+5]
 system_variable @queue_test *
 aaa
 bbb
@@ -162,9 +166,9 @@ system_variable @queue_|test2|test3 xxx
 system_variable @queue_|test1|test2|test3 yyy
 system_variable @queue_|test1|test2|test3 zzz
 system_variable @queue_*
-@queue_test1 xxx (+2)
-@queue_test2 xxx (+2)
-@queue_test3 xxx (+2)
+@queue_test1 xxx [+2]
+@queue_test2 xxx [+2]
+@queue_test3 xxx [+2]
 system_variable @queue_test1
 xxx
 system_variable @queue_test2
