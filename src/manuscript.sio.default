@@ -186,7 +186,7 @@
   <name>irc_fetch_messages
   <logging>never
   <filename>*script*
-  <arguments>!irc_fetch_messages.cin set @irc_user
+  <arguments>!irc_fetch_messages.cin set @irc_user @session_id
  </script>
  <script/>
   <name>remove_unsubmitted
