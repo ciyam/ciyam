@@ -8314,13 +8314,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   while( true )
                   {
-                     if( !response.empty( ) )
-                        response += '\n';
-
                      string next( get_system_variable( name_or_expr, false ) );
 
                      if( next.empty( ) )
                         break;
+
+                     if( !response.empty( ) )
+                        response += '\n';
 
                      response += next;
                   }
@@ -8845,6 +8845,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string expr( get_parm_val( parameters, c_cmd_ciyam_session_utils_regex_expr_or_name ) );
          string text( get_parm_val( parameters, c_cmd_ciyam_session_utils_regex_text_to_check ) );
+         string prefix( get_parm_val( parameters, c_cmd_ciyam_session_utils_regex_output_prefix ) );
          bool chain = has_parm_val( parameters, c_cmd_ciyam_session_utils_regex_chain );
          bool refs = has_parm_val( parameters, c_cmd_ciyam_session_utils_regex_refs );
          bool input = has_parm_val( parameters, c_cmd_ciyam_session_utils_regex_input );
@@ -8864,7 +8865,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string found( check_with_regex( expr, text, &rc, output_type, chain ) );
 
          if( rc )
-            response = found;
+         {
+            response = prefix + found;
+
+            possibly_expected_error = true;
+
+            check_is_valid_command_response( response );
+         }
       }
       else if( command == c_cmd_ciyam_session_utils_decode )
       {
