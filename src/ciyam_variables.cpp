@@ -110,6 +110,7 @@ const char* const c_special_variable_package = "@package";
 const char* const c_special_variable_pending = "@pending";
 const char* const c_special_variable_pubkeyx = "@pubkeyx";
 const char* const c_special_variable_restore = "@restore";
+const char* const c_special_variable_session = "@session";
 const char* const c_special_variable_slowest = "@slowest";
 const char* const c_special_variable_storage = "@storage";
 const char* const c_special_variable_timeout = "@timeout";
@@ -355,6 +356,7 @@ trace_mutex g_mutex;
 set< string > g_read_only_variables;
 
 map< string, string > g_variables;
+
 map< string, deque< string > > g_deque_variables;
 
 inline string quote_if_contains_white_space( const string& name )
@@ -470,6 +472,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_pending );
       g_special_variable_names.push_back( c_special_variable_pubkeyx );
       g_special_variable_names.push_back( c_special_variable_restore );
+      g_special_variable_names.push_back( c_special_variable_session );
       g_special_variable_names.push_back( c_special_variable_slowest );
       g_special_variable_names.push_back( c_special_variable_storage );
       g_special_variable_names.push_back( c_special_variable_timeout );
@@ -968,6 +971,8 @@ bool has_system_variable( const var_name& var )
 {
    guard g( g_mutex );
 
+   bool retval = false;
+
    string name( var.name );
 
    if( name == c_special_variable_backup_needed )
@@ -981,7 +986,12 @@ bool has_system_variable( const var_name& var )
    else if( name == c_special_variable_complete_restore_needed )
       set_complete_restore_needed( );
 
-   return g_variables.count( name );
+   if( g_variables.count( name ) )
+      retval = true;
+   else if( name.find( c_special_variable_queue_prefix ) == 0 )
+      retval = g_deque_variables.count( name );
+
+   return retval;
 }
 
 string get_system_variable( const var_name& var, bool is_internal )
@@ -1198,8 +1208,7 @@ string get_system_variable( const var_name& var, bool is_internal )
 
             retval += quote_if_contains_white_space( dci->first ) + ' ' + dci->second.front( );
 
-            if( dci->second.size( ) > 1 )
-               retval += " (+" + to_string( dci->second.size( ) - 1 ) + ")";
+            retval += " [+" + to_string( dci->second.size( ) - 1 ) + "]";
          }
       }
    }
@@ -1250,6 +1259,7 @@ string get_system_variable( const var_name& var, bool is_internal )
             if( g_deque_variables[ variable ].size( ) )
             {
                retval = g_deque_variables[ variable ].front( );
+
                g_deque_variables[ variable ].pop_front( );
             }
 
@@ -1483,17 +1493,23 @@ void set_system_variable( const var_name& var,
 
       string::size_type pos = variable.find_first_of( "?*" );
 
-      // NOTE: All "@queue_" prefixed variables are handled with
-      // deques and their values cannot currently be persisted.
       if( variable.find( c_special_variable_queue_prefix ) == 0 )
       {
          if( persist )
-            throw runtime_error( "cannot persist '" + string( c_special_variable_queue_prefix ) + "' prefixed variables" );
+            throw runtime_error( "cannot persist '"
+             + string( c_special_variable_queue_prefix ) + "' prefixed variables" );
 
          if( val.empty( ) )
             g_deque_variables.erase( variable );
          else
+         {
             g_deque_variables[ variable ].push_back( val );
+
+            // NOTE: If a system variable "@session_<variable>" is found then will also add
+            // the item to sessions where a "@system_<variable>" session variable is found.
+            if( g_variables.count( string( c_special_variable_session ) + '_' + variable ) )
+               add_queue_item_for_linked_sessions( variable, val );
+         }
       }
       else if( persist
        && ( ( variable == c_special_variable_args_file )
