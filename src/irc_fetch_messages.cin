@@ -3,19 +3,28 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
 ERROR=
 RETURN=
 ;
-@ifndef $1
-ERROR=User name is required for "irc_fetch_messages".
+@ifneq "$NUM_ARGS" "2"
+ERROR=User name and session id are required for "irc_fetch_messages".
 @else
 ;
-USER_NAME=$1
+USER=$1
+SESSION=$2
 ;
 .session_variable @uuid
 UUID=$OUTPUT
 ;
-.system_variable @queue_irc_$USER_NAME *
+.session_variable -id=$SESSION @queue_irc_$USER *
 ;
 @ifndef $ERROR
 @ifdef $OUTPUT
@@ -35,7 +44,7 @@ ERROR_OR_RETURN=
 PREFIX=Error:$SP
 ERROR_OR_RETURN=$ERROR
 @elif "$RETURN" != ""
-ERROR_OR_RETURN=@$RETURN
+ERROR_OR_RETURN=:$RETURN
 @endif
 ;
 @ifdef $ERROR_OR_RETURN

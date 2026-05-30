@@ -81,6 +81,12 @@ RETURN=$RETURN|_[joined]
 .session_variable -id=$SESSION @irc 1
 .session_variable -id=$SESSION @irc_user $USER
 ;
+.system_variable @queue_irc_$USER -has
+@ifeq "$OUTPUT" "0"
+.system_variable @session_@queue_irc_$USER 1
+@endif
+.session_variable -id=$SESSION @queue_irc_$USER @system
+;
 .system_variable @irc_lock ""
 ;
 @endif
@@ -100,7 +106,7 @@ ERROR_OR_RETURN=
 PREFIX=Error:$SP
 ERROR_OR_RETURN=$ERROR
 @elif "$RETURN" != ""
-ERROR_OR_RETURN=@$RETURN
+ERROR_OR_RETURN=:$RETURN
 @endif
 ;
 @ifdef $ERROR_OR_RETURN

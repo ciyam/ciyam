@@ -54,9 +54,11 @@ NOT_TO_SELF=
 @ifdef $CIYAM_KEY_PRESSED
 ;
 @ifeq "$CIYAM_KEY_PRESSED" "a"
+#
 #ANSI escape examples:
 #=====================
 ~grep -o "; Th.*" ansi.cin | cut -c 3-
+#
 @elif "$CIYAM_KEY_PRESSED" = "q"
 QUIT=1
 @elif "$CIYAM_KEY_PRESSED" = "v"
@@ -87,6 +89,9 @@ SCOPE=others
 ENCODED=@base64:@$MESSAGE
 ;
 .run_script !irc_send_message "@scope=$SCOPE,@message=$ENCODED"
+@ifdef $OUTPUT
+#$OUTPUT
+@endif
 ;
 @endif
 ;

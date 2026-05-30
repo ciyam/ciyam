@@ -15,6 +15,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 ERROR=
+RETURN=
 ;
 @ifneq "$NUM_ARGS" "3"
 ERROR=Scope, message and user name are required for "irc_join".
@@ -32,6 +33,25 @@ USER_NAME=$3
 ERROR=Invalid message format (needs to be base64).
 @else
 ;
+; NOTE: This is for "_/?".
+@ifeq "$MESSAGE" "Xy8_"
+PREFIX=Xy9
+@else
+PREFIX=@substr:0,3:$MESSAGE
+@endif
+;
+; NOTE: Prefix being "_/".
+@ifeq "$PREFIX" "Xy9"
+@ifeq "$MESSAGE" "Xy9jbGVhcg"
+RETURN=History for '$USER_NAME' cleared.
+.system_variable @queue_irc_$USER_NAME ""
+@else
+RETURN=Available commands are:\n
+RETURN=$RETURN\nhelp (this output)
+RETURN=$RETURN\nclear (clears history)
+RETURN=$RETURN\n \b
+@endif
+@else
 .system_variable @irc_users
 IRC_USERS=$OUTPUT
 ;
@@ -55,11 +75,23 @@ UNIX_NOW=@unix:
 ;
 @endif
 ;
+@endif
+;
+PREFIX=
+ERROR_OR_RETURN=
+;
 @ifdef $ERROR
+PREFIX=Error:$SP
+ERROR_OR_RETURN=$ERROR
+@elif "$RETURN" != ""
+ERROR_OR_RETURN=:$RETURN
+@endif
+;
+@ifdef $ERROR_OR_RETURN
 .session_variable @args_file
 @ifndef $OUTPUT
-#Error: $ERROR
+#$PREFIX$ERROR_OR_RETURN
 @else
-.system_variable $OUTPUT "$ERROR"
+.system_variable $OUTPUT "$ERROR_OR_RETURN"
 @endif
 @endif
