@@ -630,6 +630,8 @@ void set_session_variable( const var_name& var, const std::string& value,
 bool set_session_variable( const var_name& var,
  const std::string& value, const std::string& current );
 
+void add_queue_item_for_linked_sessions( const std::string& name, const std::string& value );
+
 void set_session_variable_for_matching_blockchains( const std::string& name,
  const std::string& value, const std::string& check_name, const std::string& check_value, bool matching_own_ip_address = false );
 

@@ -7301,28 +7301,30 @@ int exec_system( const string& cmd, bool async, bool delay, bool* p_delayed )
 
    rc = system( async ? async_cmd.c_str( ) : exec_cmd.c_str( ) );
 
-   string error_message;
+   string error_or_message;
 
    if( gtp_session && !gtp_session->script_temp_args_file.empty( ) )
    {
-      error_message = get_system_variable( gtp_session->script_temp_args_file );
+      error_or_message = get_system_variable( gtp_session->script_temp_args_file );
 
       set_system_variable( gtp_session->script_temp_args_file, "" );
    }
 
-   // NOTE: If the script had an error and the caller should throw an exception then do so.
+   // NOTE: If the script had an error and the caller should throw this then do so now.
    string check_script_error( get_session_variable( e_special_var_check_script_error ) );
 
-   if( ( check_script_error == c_true ) || ( check_script_error == c_true_value ) )
+   if( ( check_script_error == c_true )
+    || ( check_script_error == c_true_value ) )
    {
-      if( !error_message.empty( ) && ( error_message != c_true_value ) )
+      if( !error_or_message.empty( ) && ( error_or_message != c_true_value ) )
       {
-         // NOTE: If the error starts with '@' then assume that it is actually
+         // NOTE: If the error starts with ':' or '@' then assumes that it is
          // intended to be an execute "return" message rather than an error.
-         if( error_message[ 0 ] == '@' )
-            set_session_variable( e_special_var_return, error_message.substr( 1 ) );
+         if( ( error_or_message[ 0 ] != ':' )
+          && ( error_or_message[ 0 ] != '@' ) )
+            throw runtime_error( error_or_message );
          else
-            throw runtime_error( error_message );
+            set_session_variable( e_special_var_return, error_or_message.substr( 1 ) );
       }
    }
 
@@ -9557,8 +9559,7 @@ string get_session_variable( const var_name& var, size_t sess_id )
 
                retval += dci->first + ' ' + dci->second.front( );
 
-               if( dci->second.size( ) > 1 )
-                  retval += " (+" + to_string( dci->second.size( ) - 1 ) + ")";
+               retval += " [+" + to_string( dci->second.size( ) - 1 ) + "]";
             }
          }
 
@@ -9584,6 +9585,7 @@ string get_session_variable( const var_name& var, size_t sess_id )
             if( gtp_session->deque_variables[ name ].size( ) )
             {
                retval = gtp_session->deque_variables[ name ].front( );
+
                gtp_session->deque_variables[ name ].pop_front( );
             }
 
@@ -10350,14 +10352,12 @@ void set_session_variable( const var_name& var, const string& value,
             gtp_session->deque_variables[ name ].push_back( val );
          else
          {
-            copy_queue_system_variable( name, gtp_session->deque_variables[ name ] );
+            // NOTE: This '@system_' prefixed session variable is used to tie
+            // subsequent queue "additions" to the system variable which uses
+            // the same name (via "add_queue_item_for_linked_sessions").
+            gtp_session->variables[ g_system_name + '_' + name ] = c_true_value;
 
-            // NOTE: Even if the deque did not exist before and
-            // no items were copied using its reference results
-            // in its creation so if found to be empty then can
-            // remove it in order to reduce memory usage.
-            if( gtp_session->deque_variables[ name ].empty( ) )
-               gtp_session->deque_variables.erase( name );
+            copy_queue_system_variable( name, gtp_session->deque_variables[ name ] );
          }
       }
       else if( name.find( c_special_variable_mapped_prefix ) == 0 )
@@ -10444,6 +10444,20 @@ bool set_session_variable( const var_name& var, const string& value, const strin
    }
 
    return retval;
+}
+
+void add_queue_item_for_linked_sessions( const string& name, const string& value )
+{
+   guard g( g_session_mutex );
+
+   string session_link_name( g_system_name + '_' + name );
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ]
+       && g_sessions[ i ]->variables.count( session_link_name ) )
+         g_sessions[ i ]->deque_variables[ name ].push_back( value );
+   }
 }
 
 void set_session_variable_for_matching_blockchains( const string& name,
@@ -15340,7 +15354,7 @@ void transaction_commit( )
       // in the executed script will have replaced its value (initially set to "c_true_value"). When
       // such an error message is found it will be thrown as an exception from here (even though the
       // transaction commit has completed and the command for this session has already been logged).
-      string script_error;
+      string script_error_or_return;
 
       string check_script_error( get_session_variable( e_special_var_check_script_error ) );
 
@@ -15348,14 +15362,14 @@ void transaction_commit( )
       {
          string next( gtp_session->async_or_delayed_args_files[ i ] );
 
-         if( script_error.empty( )
+         if( script_error_or_return.empty( )
           && ( ( check_script_error == c_true )
           || ( check_script_error == c_true_value ) ) )
          {
             string value( get_system_variable( next ) );
 
             if( !value.empty( ) && ( value != c_true_value ) )
-               script_error = value;
+               script_error_or_return = value;
          }
 
          set_system_variable( next, "" );
@@ -15366,14 +15380,15 @@ void transaction_commit( )
 
       set_session_variable( e_special_var_check_script_error, "" );
 
-      if( !script_error.empty( ) )
+      if( !script_error_or_return.empty( ) )
       {
-         // NOTE: If the error starts with '@' then assume that it is actually
+         // NOTE: If the error starts with ':' or '@' then assume that it is
          // intended to be an execute "return" message rather than an error.
-         if( script_error[ 0 ] != '@' )
-            throw runtime_error( script_error );
+         if( ( script_error_or_return[ 0 ] != ':' )
+          && ( script_error_or_return[ 0 ] != '@' ) )
+            throw runtime_error( script_error_or_return );
          else
-            set_session_variable( e_special_var_return, script_error.substr( 1 ) );
+            set_session_variable( e_special_var_return, script_error_or_return.substr( 1 ) );
       }
    }
 }
