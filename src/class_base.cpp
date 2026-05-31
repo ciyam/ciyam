@@ -5206,6 +5206,7 @@ void setup_time_zones( )
 
       string abbr = reader.read_attribute( c_attribute_abbr );
       string name = reader.read_opt_attribute( c_attribute_name );
+
       tz_data.tz_info = reader.read_opt_attribute( c_attribute_tz_info );
 
       tz_data.utc_offset = ( int )( atof( reader.read_attribute( c_attribute_utc_offset ).c_str( ) ) * 3600.0 );
@@ -5312,12 +5313,15 @@ void setup_time_zones( )
 
       g_timezone_abbrs[ name.empty( ) ? abbr : name ] = abbr;
 
-      if( !tz_data.daylight_abbr.empty( ) )
+      // NOTE: Only add a daylight name
+      // value if abbreviations differ.
+      if( !tz_data.daylight_abbr.empty( )
+       && ( abbr != tz_data.daylight_abbr ) )
       {
-         if( name.empty( ) )
-            g_daylight_names[ tz_data.daylight_abbr ] = abbr;
-         else
+         if( !name.empty( ) )
             g_daylight_names[ name + "_DST" ] = name;
+         else
+            g_daylight_names[ tz_data.daylight_abbr ] = abbr;
       }
 
       reader.finish_section( c_section_timezone );
