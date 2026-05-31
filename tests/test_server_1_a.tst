@@ -1386,6 +1386,8 @@ null >= null
 null #= null
 (null and null are == strings)
 (null and null are == numerics)
+utc_from_local UTC "2012-11-11 21:02"
+2012-11-11 21:02
 utc_to_local AEST "2013-10-05 15:00"
 2013-10-06 01:00 AEST
 utc_to_local AEST* "2013-10-05 15:00"

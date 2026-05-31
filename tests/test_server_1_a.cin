@@ -840,6 +840,8 @@ _<test_args.cin $1 $2 $3
 <test_ops.cin 15 02 01
 <test_ops.cin 16
 ;
+utc_from_local UTC "2012-11-11 21:02"
+;
 utc_to_local AEST "2013-10-05 15:00"
 utc_to_local AEST* "2013-10-05 15:00"
 utc_from_local AEST "2013-10-06 01:00"
@@ -864,6 +866,7 @@ utc_to_local GMT "2014-10-25 11:59"
 utc_to_local GMT* "2014-10-25 11:59"
 utc_from_local BSST "2014-10-25 12:59"
 utc_from_local BSST "2014-10-26 01:00"
+;
 utc_from_unix_time 0
 utc_to_unix_time "1970-01-01 00:00:00"
 utc_from_unix_time 631152000
