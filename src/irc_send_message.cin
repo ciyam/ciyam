@@ -18,12 +18,30 @@ ERROR=
 RETURN=
 ;
 @ifneq "$NUM_ARGS" "3"
-ERROR=Scope, message and user name are required for "irc_join".
+ERROR=Names, message and sender are required for "irc_send_message".
 @else
 ;
-SCOPE=$1
+NAMES=$1
 MESSAGE=$2
 USER_NAME=$3
+;
+USER_MESSAGE=
+;
+NAMES_CHECK=@repstr:./*:$NAMES
+;
+; NOTE: For multiple names use
+; a dot separator and if found
+; replaces as the following is
+; illustrating:
+;
+; xxx.yyy
+; @xxx@yyy
+;
+LIST=@repstr:./,:$NAMES
+;
+@ifneq "$NAMES" "$NAMES_CHECK"
+NAMES=@repstr:./@:.$NAMES
+@endif
 ;
 ; NOTE: Checks all MESSAGE characters
 ; provided are in the base64 URL set.
@@ -57,8 +75,13 @@ IRC_USERS=$OUTPUT
 ;
 @ifdef $IRC_USERS
 ;
-@ifeq "$SCOPE" "others"
+@ifeq "$NAMES" "OTHERS"
 IRC_USERS=@repstr:@%USER_NAME%@/@:%IRC_USERS%@
+@elif "$NAMES" != "ALL"
+;FUTURE: Need to remove any names not in IRC_USERS.
+IRC_USERS=$NAMES
+USER_MESSAGE=_(message sent to $LIST)
+USER_MESSAGE=@base64:@$USER_MESSAGE
 @endif
 ;
 IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
@@ -67,6 +90,10 @@ UNIX_NOW=@unix:
 ;
 @ifdef $IRC_USER_SUFFIXES
 .system_variable @queue_irc_$IRC_USER_SUFFIXES "$UNIX_NOW $USER_NAME: $MESSAGE"
+@endif
+;
+@ifdef $USER_MESSAGE
+.system_variable @queue_irc_$USER_NAME "$UNIX_NOW $USER_NAME: $USER_MESSAGE"
 @endif
 ;
 @endif

@@ -17,6 +17,7 @@ USER=anon
 QUIT=
 ERROR=
 MESSAGE=
+RESTRICT=
 NOT_TO_SELF=
 ;
 .run_script !irc_join "@name=$USER"
@@ -32,8 +33,17 @@ LINES=@repstr:|/\n:$OUTPUT
 ;
 LOCAL=%LINES:1%
 REMOTE=%LINES:2%
+ALL_USERS=%LINES:3%
 ;
+@ifeq "$LOCAL" "dummy"
+LOCAL=
+@else
 #$LOCAL
+@endif
+;
+@ifeq "$REMOTE" "dummy"
+REMOTE=
+@endif
 ;
 @ifdef $REMOTE
 NOT_TO_SELF=1
@@ -49,7 +59,7 @@ CIYAM_PAUSE_SECONDS=1
 ;
 @ifndef $CHECK_PRIOR
 NOT_TO_SELF=
-^[hit 'a' for ANSI help, 'q' to quit 's/v' to scan/view a QR Code or space to type]
+^[hit 'a' for ANSI help, 'q' to quit, 'r' to restrict, 's/v' to scan/view a QR Code or space to type]
 ;
 @ifdef $CIYAM_KEY_PRESSED
 ;
@@ -61,6 +71,10 @@ NOT_TO_SELF=
 #
 @elif "$CIYAM_KEY_PRESSED" = "q"
 QUIT=1
+@elif "$CIYAM_KEY_PRESSED" = "r"
+@retain NAMES
+<names.cin $ALL_USERS
+RESTRICT=@repstr:,/.:$NAMES
 @elif "$CIYAM_KEY_PRESSED" = "v"
 &Enter QR Code: :QR_CODE=
 #^^Entered QR Code: $QR_CODE
@@ -81,14 +95,19 @@ MESSAGE=
 ;
 @ifdef $MESSAGE
 ;
-SCOPE=all
+NAMES=ALL
 @ifdef $NOT_TO_SELF
-SCOPE=others
+NAMES=OTHERS
+@endif
+;
+@ifdef $RESTRICT
+NAMES=$RESTRICT
+RESTRICT=
 @endif
 ;
 ENCODED=@base64:@$MESSAGE
 ;
-.run_script !irc_send_message "@scope=$SCOPE,@message=$ENCODED"
+.run_script !irc_send_message "@names=$NAMES,@message=$ENCODED"
 @ifdef $OUTPUT
 #$OUTPUT
 @endif
