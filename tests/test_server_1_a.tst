@@ -724,6 +724,14 @@ regex .* (test)
 Error: invalid response '(test)' (could be confused with a protocol response)
 regex -prefix=X .* (test)
 X(test)
+regex "(\\[\\+[0-9]+\\])$$" "aaa [+0]"
+[+0]
+regex "(\\[\\+[0-9]+\\])$$" "aaa [+10]"
+[+10]
+regex "(\\[\\+[0-9]+\\])$$" "aaa [+100]"
+[+100]
+regex "(\\[\\+[0-9]+\\])$$" "aaa [+1000]"
+[+1000]
 regex "^[@]?[a-b][a-b]+$$" "@"
 regex "^[@]?[a-b][a-b]+$$" "a"
 regex "^[@]?[a-b][a-b]+$$" "@@"

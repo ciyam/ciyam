@@ -522,6 +522,11 @@ file_kill xxx.sig
 regex .* (test)
 regex -prefix=X .* (test)
 ;
+regex "(\\[\\+[0-9]+\\])$$" "aaa [+0]"
+regex "(\\[\\+[0-9]+\\])$$" "aaa [+10]"
+regex "(\\[\\+[0-9]+\\])$$" "aaa [+100]"
+regex "(\\[\\+[0-9]+\\])$$" "aaa [+1000]"
+;
 regex "^[@]?[a-b][a-b]+$$" "@"
 regex "^[@]?[a-b][a-b]+$$" "a"
 regex "^[@]?[a-b][a-b]+$$" "@@"

@@ -447,6 +447,7 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
             if( s.is_range )
             {
                s.had_range = true;
+
                next_part.matches.push_back( make_pair( s.last_ch, s.last_ch ) );
             }
             else if( is_special_set( s.ch ) )
@@ -590,8 +591,10 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
             if( s.is_in_set )
                throw runtime_error( "invalid set start in: " + expr );
 
-            if( ( i != start ) && ( s.last_ch != '*' ) && ( s.last_ch != '+' )
-             && ( s.last_ch != '?' ) && ( s.last_ch != '(' ) && ( s.last_ch != ')' ) )
+            if( ( i != start ) && ( ( ( s.last_ch != '*' )
+             && ( s.last_ch != '+' ) && ( s.last_ch != '?' )
+             && ( s.last_ch != '(' ) && ( s.last_ch != ')' ) )
+             || !next_part.literal.empty( ) ) )
             {
 #ifdef DEBUG
                dump_state( "at 4", s, parts.size( ) );
@@ -991,6 +994,7 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
             if( s.ch != '.' )
             {
                s.ch_used = true;
+
                next_part.literal += s.ch;
             }
          }
@@ -2438,15 +2442,20 @@ void regex_chain::cleanup( )
 }
 
 #ifdef COMPILE_TESTBED_MAIN
-int main( )
+int main( int argc, char* argv[ ] )
 {
    try
    {
       string input;
 
-      cout << "input regex: ";
+      if( argc > 1 )
+         input = argv[ 1 ];
+      else
+      {
+         cout << "input regex: ";
 
-      cin >> input;
+         cin >> input;
+      }
 
       regex expr( input );
 
@@ -2455,9 +2464,14 @@ int main( )
       cout << "min_size = " << expr.get_min_size( ) << endl;
       cout << "max_size = " << expr.get_max_size( ) << endl;
 
-      cout << "\ninput text to match: ";
+      if( argc > 2 )
+         input = argv[ 2 ];
+      else
+      {
+         cout << "\ninput text to match: ";
 
-      cin >> input;
+         cin >> input;
+      }
 
       cout << "\nregex is: " << expr.get_expr( )
        << "\nsearching: " << input << "\n\n";
