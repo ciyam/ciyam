@@ -5384,21 +5384,21 @@ void get_tz_info( const date_time& dt, string& tz_name, float& offset )
 {
    string tz( tz_name );
 
-   if( tz == c_tz_loc )
-      tz = get_timezone( );
-
-   bool is_daylight = false;
    bool use_daylight = false;
 
-   if( g_daylight_names.count( tz ) )
+   if( tz == c_tz_loc )
    {
-      is_daylight = true;
+      use_daylight = true;
+
+      tz = get_timezone( );
+   }
+   else if( g_daylight_names.count( tz ) )
+   {
       use_daylight = true;
 
       tz = g_daylight_names[ tz ];
    }
-
-   if( !tz.empty( )
+   else if( !tz.empty( )
     && ( tz[ tz.length( ) - 1 ] == c_use_DST ) )
    {
       use_daylight = true;
@@ -5412,7 +5412,7 @@ void get_tz_info( const date_time& dt, string& tz_name, float& offset )
    int utc_offset;
 
    local_utc_conv( dt, g_timezones[ tz ].utc_offset,
-    ( use_daylight ? &g_timezones[ tz ].daylight_savings : 0 ), false, &utc_offset, is_daylight );
+    ( use_daylight ? &g_timezones[ tz ].daylight_savings : 0 ), true, &utc_offset );
 
    offset = ( float )utc_offset / 3600.0;
 
@@ -5431,19 +5431,21 @@ date_time utc_to_local( const date_time& dt, string& tz_name )
 {
    string tz( tz_name );
 
-   if( tz == c_tz_loc )
-      tz = get_timezone( );
-
    bool use_daylight = false;
 
-   if( g_daylight_names.count( tz ) )
+   if( tz == c_tz_loc )
+   {
+      use_daylight = true;
+
+      tz = get_timezone( );
+   }
+   else if( g_daylight_names.count( tz ) )
    {
       use_daylight = true;
 
       tz = g_daylight_names[ tz ];
    }
-
-   if( !tz.empty( )
+   else if( !tz.empty( )
     && ( tz[ tz.length( ) - 1 ] == c_use_DST ) )
    {
       use_daylight = true;
@@ -5479,8 +5481,7 @@ date_time utc_to_local( const date_time& dt, const string& tz_name )
 
       tz = g_daylight_names[ tz ];
    }
-
-   if( !tz.empty( )
+   else if( !tz.empty( )
     && ( tz[ tz.length( ) - 1 ] == c_use_DST ) )
    {
       use_daylight = true;
@@ -5823,6 +5824,7 @@ void send_email_message( const user_account& account,
    if( p_tz_name && !p_tz_name->empty( ) )
    {
       tz_name = *p_tz_name;
+
       get_tz_info( dt, tz_name, utc_offset );
 
       dt += minutes( ( int32_t )( utc_offset * 60.0 ) );
