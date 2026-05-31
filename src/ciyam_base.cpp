@@ -5233,7 +5233,8 @@ void init_globals( const char* p_sid, int* p_use_udp )
       if( scripts_file_has_changed( ) )
          read_script_info( );
 
-      // NOTE: This "get_tz_info" call is performed to verify that the server timezone is valid.
+      // NOTE: This "get_tz_info" call is performed only
+      // to verify that the specified timezone is valid.
       float offset = 0.0;
 
       string tz_name( get_timezone( ) );

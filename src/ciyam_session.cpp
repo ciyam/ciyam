@@ -8776,13 +8776,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_utc_offset )
       {
          string tz_name( get_parm_val( parameters, c_cmd_ciyam_session_utc_offset_tz_name ) );
-         string local_time( get_parm_val( parameters, c_cmd_ciyam_session_utc_offset_local_time ) );
+         string utc_time( get_parm_val( parameters, c_cmd_ciyam_session_utc_offset_utc_time ) );
 
-         if( local_time == c_dtm_now )
-            local_time = date_time::local( ).as_string( e_time_format_hhmmss, true );
+         if( utc_time == c_dtm_now )
+            utc_time = date_time::standard( ).as_string( e_time_format_hhmmss, true );
 
-         float offset;
-         get_tz_info( date_time( local_time ), tz_name, offset );
+         float offset = 0;
+
+         get_tz_info( date_time( utc_time ), tz_name, offset );
 
          response = tz_name + " " + to_string( offset );
       }
@@ -8809,6 +8810,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          possibly_expected_error = true;
 
+         // NOTE: If the "tz_name" is not the same as the actual local timezone then
+         // using the "local" current time here is not likely going to result in any
+         // useful response and if not using the DST name should append a "*" (which
+         // indicates that DST should be assumed if valid).
          if( local_time == c_dtm_now )
             local_time = date_time::local( ).as_string( e_time_format_hhmmss, true );
 
