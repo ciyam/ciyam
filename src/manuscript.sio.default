@@ -165,7 +165,7 @@
   <name>irc_send_message
   <logging>never
   <filename>*script*
-  <arguments>!irc_send_message.cin @scope @message set @irc_user
+  <arguments>!irc_send_message.cin @names @message set @irc_user
  </script>
  <script/>
   <name>prepare_channels
