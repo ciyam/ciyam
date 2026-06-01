@@ -19,6 +19,7 @@ ERROR=
 MESSAGE=
 RESTRICT=
 NOT_TO_SELF=
+FOUND_JOINED=
 ;
 .run_script !irc_join "@name=$USER"
 ;
@@ -148,6 +149,10 @@ LOCAL=@date:%WHEN_AND_USER_LINES:1%:yyyy-mm-dd hh:mm:ss
 USER_NAME=%WHEN_AND_USER_LINES:2%
 USER_NAME=@padlen:-13, :$USER_NAME:
 ;
+@ifeq "$DECODED_MESSAGE" "[joined]"
+FOUND_JOINED=1
+@endif
+;
 NEXT_MESSAGE=[$LOCAL] $USER_NAME $DECODED_MESSAGE
 ;
 PREFIX=
@@ -166,6 +171,16 @@ MESSAGES=%MESSAGES:-1%
 ;
 @:END_MSG_LOOP
 ;
+@endif
+;
+@ifndef $CHECK_PRIOR
+@ifdef $FOUND_JOINED
+FOUND_JOINED=
+.run_script !irc_join "@name=$USER"
+@ifdef $OUTPUT
+ALL_USERS=$OUTPUT
+@endif
+@endif
 @endif
 ;
 CHECK_PRIOR=
