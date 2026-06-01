@@ -1456,3 +1456,34 @@ utc_from_unix_time 1320195610
 2011-11-02 01:00:10
 utc_to_unix_time "2011-11-02 01:00:10"
 1320195610
+LIST_ITEMS is: ddd,ccc,bbb,aaa
+TEST_ITEMS is: 
+TEST_ALL_IN is: 
+TEST_NOT_IN is: 
+TEST_ITEMS is: aaa
+TEST_ALL_IN is: aaa
+TEST_NOT_IN is: 
+TEST_ITEMS is: xxx,aaa
+TEST_ALL_IN is: aaa
+TEST_NOT_IN is: xxx
+TEST_ITEMS is: aaa,ddd
+TEST_ALL_IN is: aaa,ddd
+TEST_NOT_IN is: 
+TEST_ITEMS is: aaa,xxx,ddd
+TEST_ALL_IN is: aaa,ddd
+TEST_NOT_IN is: xxx
+TEST_ITEMS is: www,xxx,yyy,zzz
+TEST_ALL_IN is: 
+TEST_NOT_IN is: www,xxx,yyy,zzz
+TEST_ITEMS is: aaa,ddd,yyy,xxx
+TEST_ALL_IN is: aaa,ddd
+TEST_NOT_IN is: yyy,xxx
+TEST_ITEMS is: xxx,ddd,yyy,aaa
+TEST_ALL_IN is: ddd,aaa
+TEST_NOT_IN is: xxx,yyy
+TEST_ITEMS is: ddd,ccc,bbb,aaa
+TEST_ALL_IN is: ddd,ccc,bbb,aaa
+TEST_NOT_IN is: 
+TEST_ITEMS is: aaa,bbb,ccc,ddd,xxx
+TEST_ALL_IN is: aaa,bbb,ccc,ddd
+TEST_NOT_IN is: xxx
