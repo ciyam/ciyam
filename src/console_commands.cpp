@@ -152,6 +152,8 @@ const char* const c_function_substr = "substr";
 const char* const c_function_base64 = "base64";
 const char* const c_function_fullpath = "fullpath";
 const char* const c_function_password = "password";
+const char* const c_function_set_all_in = "set_all_in";
+const char* const c_function_set_not_in = "set_not_in";
 
 const char* const c_envcond_command_if = "if";
 const char* const c_envcond_command_elif = "elif";
@@ -3694,6 +3696,71 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  {
                                     if( base64::valid_characters( rhs, true ) )
                                        str = unescaped( base64::decode( rhs, true ) );
+                                 }
+                              }
+                           }
+                           else if( ( lhs == c_function_set_all_in )
+                            || ( lhs == c_function_set_not_in ) )
+                           {
+                              string rhs( str.substr( pos + 1 ) );
+
+                              bool exclude = false;
+
+                              // NOTE: Simple function which takes
+                              // two lists and returns all the LHS
+                              // items (not) found in the RHS set.
+                              if( lhs == c_function_set_not_in )
+                                 exclude = true;
+
+                              if( !rhs.empty( ) )
+                              {
+                                 string sep( "," );
+
+                                 pos = rhs.find( ':' );
+
+                                 if( pos != string::npos )
+                                 {
+                                    sep = rhs.substr( 0, pos );
+
+                                    rhs.erase( 0, pos + 1 );
+                                 }
+
+                                 pos = rhs.find( ' ' );
+
+                                 str = rhs.substr( 0, pos );
+
+                                 vector< string > lhs_items;
+
+                                 split( rhs.substr( 0, pos ), lhs_items, sep );
+
+                                 if( pos != string::npos )
+                                 {
+                                    str.erase( );
+
+                                    set< string > rhs_items;
+
+                                    split( rhs.substr( pos + 1 ), rhs_items, sep );
+
+                                    for( size_t i = 0; i < lhs_items.size( ); i++ )
+                                    {
+                                       string next( lhs_items[ i ] );
+
+                                       if( next.empty( ) )
+                                          continue;
+
+                                       bool check = rhs_items.count( next );
+
+                                       if( exclude )
+                                          check = !check;
+
+                                       if( check )
+                                       {
+                                          if( !str.empty( ) )
+                                             str += sep;
+
+                                          str += next;
+                                       }
+                                    }
                                  }
                               }
                            }
