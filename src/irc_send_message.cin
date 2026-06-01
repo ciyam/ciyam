@@ -27,7 +27,7 @@ USER_NAME=$3
 ;
 USER_MESSAGE=
 ;
-NAMES_CHECK=@repstr:./*:$NAMES
+NAMES_CHECK=@repstr:./_:$NAMES
 ;
 ; NOTE: For multiple names use
 ; a dot separator and if found
@@ -37,9 +37,8 @@ NAMES_CHECK=@repstr:./*:$NAMES
 ; xxx.yyy
 ; @xxx@yyy
 ;
-LIST=@repstr:./,:$NAMES
-;
 @ifneq "$NAMES" "$NAMES_CHECK"
+NAMES=.$NAMES
 NAMES=@repstr:./@:.$NAMES
 @endif
 ;
@@ -78,8 +77,12 @@ IRC_USERS=$OUTPUT
 @ifeq "$NAMES" "OTHERS"
 IRC_USERS=@repstr:@%USER_NAME%@/@:%IRC_USERS%@
 @elif "$NAMES" != "ALL"
-;FUTURE: Need to remove any names not in IRC_USERS.
-IRC_USERS=$NAMES
+IRC_USERS=@set_all_in:@:$NAMES $IRC_USERS
+;
+LIST=@repstr:@/,:$IRC_USERS
+IRC_USERS=,$LIST
+IRC_USERS=@repstr:,/@:$IRC_USERS
+;
 USER_MESSAGE=_(message sent to $LIST)
 USER_MESSAGE=@base64:@$USER_MESSAGE
 @endif
