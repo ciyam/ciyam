@@ -1219,11 +1219,11 @@ void buffer_file_items( const std::string& file_name,
 
 void absolute_path( const std::string& relative_path, std::string& absolute_path, bool* p_rc = 0 );
 
-inline std::string absolute_path( const std::string& relative_path )
+inline std::string absolute_path( const std::string& relative_path, bool* p_rc = 0 )
 {
    std::string retval;
 
-   absolute_path( relative_path, retval );
+   absolute_path( relative_path, retval, p_rc );
 
    return retval;
 }
