@@ -196,6 +196,7 @@ const char* const c_attribute_password = "password";
 const char* const c_attribute_security = "security";
 const char* const c_attribute_timezone = "timezone";
 const char* const c_attribute_username = "username";
+const char* const c_attribute_web_port = "web_port";
 const char* const c_attribute_web_root = "web_root";
 const char* const c_attribute_arguments = "arguments";
 const char* const c_attribute_max_peers = "max_peers";
@@ -1965,6 +1966,8 @@ unique_ptr< ods_file_system > gup_ofs;
 
 string g_domain;
 string g_timezone;
+
+int g_web_port;
 
 string g_web_root;
 
@@ -3897,6 +3900,8 @@ void read_server_configuration( )
             g_timezone = tz_non_daylight;
       }
 
+      g_web_port = from_string< int >( reader.read_opt_attribute( c_attribute_web_port ) );
+
       g_web_root = reader.read_attribute( c_attribute_web_root );
 
       if( !g_web_root.empty( ) )
@@ -3905,8 +3910,8 @@ void read_server_configuration( )
          replace_unquoted_environment_variables( g_web_root );
       }
 
-      g_max_peers = atoi( reader.read_opt_attribute(
-       c_attribute_max_peers, to_string( c_default_max_peers ) ).c_str( ) );
+      g_max_peers = from_string< int >( reader.read_opt_attribute(
+       c_attribute_max_peers, to_string( c_default_max_peers ) ) );
 
       string rpc_addrs( reader.read_opt_attribute( c_attribute_rpc_addrs ) );
 
@@ -5004,7 +5009,7 @@ void list_listeners( ostream& os )
    }
 }
 
-void init_globals( const char* p_sid, int* p_use_udp )
+void init_globals( const char* p_sid, int* p_use_udp, int* p_web_port )
 {
    guard g( g_mutex );
 
@@ -5107,6 +5112,9 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       if( p_use_udp )
          *p_use_udp = g_use_udp;
+
+      if( p_web_port )
+         *p_web_port = g_web_port;
 
       if( file_exists( c_at_init_script ) )
       {
@@ -6027,6 +6035,11 @@ string get_timezone( )
    string tz_name( g_timezone );
 
    return g_timezone;
+}
+
+int get_web_port( )
+{
+   return g_web_port;
 }
 
 string get_web_root( )

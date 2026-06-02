@@ -186,10 +186,10 @@ bool has_registered_listener_id( const std::string& id, unsigned int* p_port = 0
 
 void list_listeners( std::ostream& os );
 
-extern "C" void init_globals( const char* p_sid = 0, int* p_use_udp = 0 );
+extern "C" void init_globals( const char* p_sid = 0, int* p_use_udp = 0, int* p_web_port = 0 );
 extern "C" void term_globals( );
 
-typedef void ( *fp_init_globals )( const char*, int* );
+typedef void ( *fp_init_globals )( const char*, int*, int* );
 typedef void ( *fp_term_globals )( );
 
 extern "C" int get_sid_value( char* p_sid, int max_size );
@@ -255,6 +255,9 @@ std::string create_unlock_sid_hash_key( bool for_web_ui = true, bool is_temporar
 std::string get_checksum( const std::string& data );
 
 std::string get_timezone( );
+
+int get_web_port( );
+
 std::string get_web_root( );
 
 std::string get_ntfy_server( );
