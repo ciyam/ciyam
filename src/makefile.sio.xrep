@@ -101,6 +101,7 @@
      <filename>class_base.cpp
      <filename>commands_date_time.cpp
      <filename>commands_numeric.cpp
+     <filename>http_handler.cpp
      <filename>mail_source.cpp
      <filename>module_management.cpp
      <filename>peer_session.cpp
