@@ -146,176 +146,212 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
       p_socket->set_no_delay( );
       p_socket->set_no_linger( );
 
-      while( true )
+      try
       {
-#ifdef DEBUG
-         cerr << "\n" << date_time::local( ).as_string( e_time_format_hhmmssth, true ) << '\n' << endl;
-#endif
-         string request;
-
-         vector< string > headers;
-
-         bool had_empty = false;
-
-         int retries = c_num_retries;
-
          while( true )
          {
-            string next_line;
+#ifdef DEBUG
+            cerr << "\n" << date_time::local( ).as_string( e_time_format_hhmmssth, true ) << '\n' << endl;
+#endif
+            string request;
 
-            if( p_socket->read_line( next_line,
-             ( first ? c_initial_timeout : c_subsequent_timeout ) ) <= 0 )
+            vector< string > headers;
+
+            bool had_empty = false;
+
+            int retries = c_num_retries;
+
+            while( true )
             {
-               if( !( *p_socket ) || !retries-- )
+               string next_line;
+
+               if( p_socket->read_line( next_line,
+                ( first ? c_initial_timeout : c_subsequent_timeout ) ) <= 0 )
+               {
+                  if( !( *p_socket ) || !retries-- )
+                     break;
+               }
+
+               first = false;
+
+               if( p_socket->had_blank_line( ) )
+               {
+                  had_empty = true;
+
                   break;
+               }
+
+               if( request.empty( ) )
+                  request = next_line;
+               else
+                  headers.push_back( next_line );
             }
 
-            first = false;
-
-            if( next_line.empty( ) )
+            if( !had_empty || request.empty( ) )
             {
-               had_empty = true;
-
+#ifdef DEBUG
+               cerr << "(empty or incomplete request)\n" << endl;
+#endif
                break;
             }
 
-            if( request.empty( ) )
-               request = next_line;
-            else
-               headers.push_back( next_line );
-         }
-
-         if( !had_empty || request.empty( ) )
-         {
 #ifdef DEBUG
-            cerr << "(empty or incomplete request)\n" << endl;
+            cerr << "[Request]\n" << request << endl;
 #endif
-            break;
-         }
-
+            for( size_t i = 0; i < headers.size( ); i++ )
+            {
 #ifdef DEBUG
-         cerr << "[Request]\n" << request << endl;
+               if( i == 0 )
+                  cerr << "[Headers]" << endl;
+               cerr << headers[ i ] << endl;
 #endif
-         for( size_t i = 0; i < headers.size( ); i++ )
-         {
-#ifdef DEBUG
-            if( i == 0 )
-               cerr << "[Headers]" << endl;
-            cerr << headers[ i ] << endl;
-#endif
-         }
+            }
 
-         string document, protocol;
+            string document, protocol, qry_info;
 
-         string::size_type pos = request.find( ' ' );
-
-         if( pos != string::npos )
-         {
-            document = request.substr( pos + 1 );
-
-            request.erase( pos );
-
-            pos = document.find( ' ' );
+            string::size_type pos = request.find( ' ' );
 
             if( pos != string::npos )
             {
-               protocol = document.substr( pos + 1 );
+               document = request.substr( pos + 1 );
 
-               document.erase( pos );
+               request.erase( pos );
+
+               pos = document.find( ' ' );
+
+               if( pos != string::npos )
+               {
+                  protocol = document.substr( pos + 1 );
+
+                  document.erase( pos );
+               }
+
+               pos = document.find( '?' );
+
+               if( pos != string::npos )
+               {
+                  qry_info = document.substr( pos + 1 );
+
+                  document.erase( pos );
+               }
             }
-         }
 
 #ifdef DEBUG
-         cerr << "\nrequest ==> " << request << endl;
-         cerr << "document ==> " << document << endl;
-         cerr << "protocol ==> " << protocol << endl;
+            cerr << "\nrequest ==> " << request << endl;
+            cerr << "document ==> " << document << endl;
+            cerr << "protocol ==> " << protocol << endl;
+
+            if( !qry_info.empty( ) )
+               cerr << "qry_info ==> " << qry_info << endl;
 #endif
 
-         bool found = false;
+            bool found = false;
 
-         ostringstream osstr;
+            ostringstream osstr;
 
-         string header, response;
+            string header, response;
 
-         if( !document.empty( ) && ( document[ 0 ] == '/' ) )
-            document.erase( 0, 1 );
+            if( !document.empty( ) && ( document[ 0 ] == '/' ) )
+               document.erase( 0, 1 );
 
-         if( document.empty( ) )
-            document = c_index_html;
+            if( document.empty( ) )
+               document = c_index_html;
 
-         string path( get_web_root( ) + "/" );
+            string path( get_web_root( ) + "/" );
 
-         if( file_exists( path + document ) )
-         {
-            found = true;
+            bool rc = true;
 
-            string extension;
+            // NOTE: Do a sanity check to make sure that the document
+            // being requested is not outside of the "web root" path.
+            string check_path( absolute_path( path + document, &rc ) );
+
+            if( rc && ( check_path.find( path ) == 0 ) )
+            {
+               found = true;
+
+               string extension;
 
 #ifdef DEBUG
-            cerr << "\n(found '" << document << "')" << endl;
+               cerr << "\n(found '" << document << "')" << endl;
 #endif
-            string::size_type ext_pos = document.rfind( '.' );
+               string::size_type ext_pos = document.rfind( '.' );
 
-            if( ext_pos != string::npos )
-               extension = document.substr( ext_pos + 1 );
+               if( ext_pos != string::npos )
+                  extension = document.substr( ext_pos + 1 );
 
-            date_time now( date_time::standard( ) );
+               date_time now( date_time::standard( ) );
 
-            string formatted_dtm( format_date_time( now ) );
+               string formatted_dtm( format_date_time( now ) );
 
-            date_time doc_modified( last_modification_time( path + document ) );
+               date_time doc_modified( last_modification_time( path + document ) );
 
-            string formatted_document_dtm( format_date_time( doc_modified ) );
+               string formatted_document_dtm( format_date_time( doc_modified ) );
 
-            osstr << c_http_1_1 << ' ' << c_http_200_OK
-             << '\n' << c_http_date_prefix << formatted_dtm
-             << '\n' << c_http_modified_prefix << formatted_document_dtm
-             << '\n' << c_http_connection_header << '\n' << c_http_keep_alive_header << '\n';
+               osstr << c_http_1_1 << ' ' << c_http_200_OK
+                << '\n' << c_http_date_prefix << formatted_dtm
+                << '\n' << c_http_modified_prefix << formatted_document_dtm
+                << '\n' << c_http_connection_header << '\n' << c_http_keep_alive_header << '\n';
 
-            if( extension == c_ext_css )
-               osstr << c_http_content_type_text_css << '\n';
-            else if( extension == c_ext_gif )
-               osstr << c_http_content_type_image_gif << '\n';
-            else if( extension == c_ext_jpg )
-               osstr << c_http_content_type_image_jpg << '\n';
-            else if( extension == c_ext_png )
-               osstr << c_http_content_type_image_png << '\n';
-            else if( extension == c_ext_ttf )
-               osstr << c_http_content_type_font_ttf << '\n';
+               if( extension == c_ext_css )
+                  osstr << c_http_content_type_text_css << '\n';
+               else if( extension == c_ext_gif )
+                  osstr << c_http_content_type_image_gif << '\n';
+               else if( extension == c_ext_jpg )
+                  osstr << c_http_content_type_image_jpg << '\n';
+               else if( extension == c_ext_png )
+                  osstr << c_http_content_type_image_png << '\n';
+               else if( extension == c_ext_ttf )
+                  osstr << c_http_content_type_font_ttf << '\n';
+               else
+                  osstr << c_http_content_type_text_html << '\n';
+
+               response = buffer_file( path + document );
+            }
+
+            if( found )
+            {
+               if( response.empty( ) )
+                  response = c_test_html_response;
+
+               osstr << c_http_content_length_header_prefix
+                << to_string( response.length( ) + 1 ) << "\n\n" << response;
+            }
             else
-               osstr << c_http_content_type_text_html << '\n';
+            {
+               response = c_not_found_html_response;
 
-            response = buffer_file( path + document );
+               replace( response, c_replace_document_marker, document );
+
+               osstr << c_http_1_1
+                << ' ' << c_http_404_Not_Found
+                << '\n' << c_http_content_type_text_html
+                << '\n' << c_http_content_length_header_prefix
+                << to_string( response.length( ) + 1 ) << "\n\n" << response;
+            }
+
+            p_socket->write_line( osstr.str( ), c_response_timeout );
          }
-
-         if( found )
-         {
-            if( response.empty( ) )
-               response = c_test_html_response;
-
-            osstr << c_http_content_length_header_prefix
-             << to_string( response.length( ) + 1 ) << "\n\n" << response;
-         }
-         else
-         {
-            response = c_not_found_html_response;
-
-            replace( response, c_replace_document_marker, document );
-
-            osstr << c_http_1_1
-             << ' ' << c_http_404_Not_Found
-             << '\n' << c_http_content_type_text_html
-             << '\n' << c_http_content_length_header_prefix
-             << to_string( response.length( ) + 1 ) << "\n\n" << response;
-         }
-
-         p_socket->write_line( osstr.str( ), c_response_timeout );
+      }
+      catch( exception& x )
+      {
+#ifdef DEBUG
+         cerr << "http_request error: " << x.what( ) << endl;
+#endif
+         TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
+          string( "http_request error: " ) + x.what( ) );
+      }
+      catch( ... )
+      {
+#ifdef DEBUG
+         cerr << "unexpected http_request exception" << endl;
+#endif
+         TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
+          string( "http_request error: unexpected exception" ) );
       }
 
 #ifdef DEBUG
       cerr << "*** finished request/response ***" << endl;
 #endif
-
       p_socket->close( );
 
       delete p_socket;
