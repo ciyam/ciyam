@@ -26,6 +26,8 @@
 
 //#define DEBUG
 
+//#define LOCAL_REQUESTS_ONLY
+
 using namespace std;
 
 extern size_t g_active_listeners;
@@ -55,7 +57,16 @@ const char* const c_http_200_OK = "200 OK";
 
 const char* const c_http_404_Not_Found = "404 Not Found";
 
-const char* const c_http_connection_info = "Connection: keep-alive";
+const char* const c_http_date_prefix = "Date: ";
+const char* const c_http_modified_prefix = "Last-Modified: ";
+
+const char* const c_http_connection_header = "Connection: keep-alive";
+
+#ifdef LOCAL_REQUESTS_ONLY
+const char* const c_http_keep_alive_header = "Keep-Alive: timeout=1, max=100";
+#else
+const char* const c_http_keep_alive_header = "Keep-Alive: timeout=10, max=100";
+#endif
 
 const char* const c_http_content_type_font_ttf = "Content-Type: font/ttf";
 
@@ -74,12 +85,47 @@ const char* const c_not_found_html_response = "<html>\n<head><title>Document Not
 
 const char* const c_replace_document_marker = "DOCUMENT";
 
+const int c_num_retries = 5;
+
+#ifdef LOCAL_REQUESTS_ONLY
+const int c_accept_timeout = 500;
+
+const int c_initial_timeout = 100;
+const int c_subsequent_timeout = 20;
+
+const int c_response_timeout = 200;
+#else
 const int c_accept_timeout = 1000;
 
-const int c_initial_timeout = 1000;
-const int c_subsequent_timeout = 250;
+const int c_initial_timeout = 2000;
+const int c_subsequent_timeout = 100;
 
-const int c_response_timeout = 250;
+const int c_response_timeout = 1000;
+#endif
+
+string format_date_time( const date_time& dtm )
+{
+   string formatted_date_time( dtm.weekday_name( true ) );
+
+   formatted_date_time += ", ";
+
+   day d = dtm.get_day( );
+
+   if( d < 10 )
+      formatted_date_time += '0';
+
+   formatted_date_time += to_string( ( int )d ) + ' ';
+
+   formatted_date_time += dtm.month_name( true ) + ' ';
+
+   formatted_date_time += to_string( dtm.get_year( ) ) + ' ';
+
+   formatted_date_time += dtm.get_time( ).as_string( e_time_format_hhmmss, true );
+
+   formatted_date_time += " GMT";
+
+   return formatted_date_time;
+}
 
 }
 
@@ -97,6 +143,9 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
       cerr << "\n*** start request/response ***" << endl;
 #endif
 
+      p_socket->set_no_delay( );
+      p_socket->set_no_linger( );
+
       while( true )
       {
 #ifdef DEBUG
@@ -106,16 +155,29 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
          vector< string > headers;
 
+         bool had_empty = false;
+
+         int retries = c_num_retries;
+
          while( true )
          {
             string next_line;
 
-            p_socket->read_line( next_line, ( first ? c_initial_timeout : c_subsequent_timeout ) );
+            if( p_socket->read_line( next_line,
+             ( first ? c_initial_timeout : c_subsequent_timeout ) ) <= 0 )
+            {
+               if( !( *p_socket ) || !retries-- )
+                  break;
+            }
 
             first = false;
 
             if( next_line.empty( ) )
+            {
+               had_empty = true;
+
                break;
+            }
 
             if( request.empty( ) )
                request = next_line;
@@ -123,10 +185,10 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                headers.push_back( next_line );
          }
 
-         if( request.empty( ) )
+         if( !had_empty || request.empty( ) )
          {
 #ifdef DEBUG
-            cerr << "(empty request)\n" << endl;
+            cerr << "(empty or incomplete request)\n" << endl;
 #endif
             break;
          }
@@ -197,8 +259,18 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
             if( ext_pos != string::npos )
                extension = document.substr( ext_pos + 1 );
 
+            date_time now( date_time::standard( ) );
+
+            string formatted_dtm( format_date_time( now ) );
+
+            date_time doc_modified( last_modification_time( path + document ) );
+
+            string formatted_document_dtm( format_date_time( doc_modified ) );
+
             osstr << c_http_1_1 << ' ' << c_http_200_OK
-             << '\n' << c_http_connection_info << '\n';
+             << '\n' << c_http_date_prefix << formatted_dtm
+             << '\n' << c_http_modified_prefix << formatted_document_dtm
+             << '\n' << c_http_connection_header << '\n' << c_http_keep_alive_header << '\n';
 
             if( extension == c_ext_css )
                osstr << c_http_content_type_text_css << '\n';
