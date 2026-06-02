@@ -34,6 +34,7 @@
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"
 #endif
+#include "http_handler.h"
 #include "peer_session.h"
 #include "ciyam_session.h"
 #include "dynamic_library.h"
@@ -141,6 +142,7 @@ const char* const c_set_server_port_func_name = "set_server_port";
 const char* const c_init_auto_script_func_name = "init_auto_script";
 const char* const c_init_udp_streams_func_name = "init_udp_streams";
 const char* const c_log_trace_string_func_name = "log_trace_string";
+const char* const c_init_http_handler_func_name = "init_http_handler";
 const char* const c_register_listener_func_name = "register_listener";
 const char* const c_set_stream_socket_func_name = "set_stream_socket";
 const char* const c_init_ciyam_session_func_name = "init_ciyam_session";
@@ -409,6 +411,9 @@ int main( int argc, char* argv[ ] )
          fp_log_trace_string fp_log_trace_string_func;
          fp_log_trace_string_func = ( fp_log_trace_string )up_dynamic_library->bind_to_function( c_log_trace_string_func_name );
 
+         fp_init_http_handler fp_init_http_handler_func;
+         fp_init_http_handler_func = ( fp_init_http_handler )up_dynamic_library->bind_to_function( c_init_http_handler_func_name );
+
          fp_register_listener fp_register_listener_func;
          fp_register_listener_func = ( fp_register_listener )up_dynamic_library->bind_to_function( c_register_listener_func_name );
 
@@ -452,7 +457,9 @@ int main( int argc, char* argv[ ] )
 
          int use_udp = 0;
 
-         ( *fp_init_globals_func )( g_entropy.empty( ) ? 0 : g_entropy.c_str( ), &use_udp );
+         int web_port = 0;
+
+         ( *fp_init_globals_func )( g_entropy.empty( ) ? 0 : g_entropy.c_str( ), &use_udp, &web_port );
 
          if( !entropy_provided )
             clear_key( g_entropy );
@@ -477,7 +484,7 @@ int main( int argc, char* argv[ ] )
             if( !s.set_reuse_addr( ) && !g_is_quiet )
                cout << "warning: set_reuse_addr failed (for tcp)..." << endl;
 
-            ( *fp_register_listener_func )( g_port, "main", "" );
+            ( *fp_register_listener_func )( g_port, "core", "" );
 
             if( !is_update )
             {
@@ -496,7 +503,7 @@ int main( int argc, char* argv[ ] )
                if( !is_update && !g_is_quiet )
                   cout << "server now listening on tcp port " << g_port << "..." << endl;
 
-               string start_message( "main listener started on tcp port " + to_string( g_port ) );
+               string start_message( "core listener started on tcp port " + to_string( g_port ) );
 
                ( *fp_log_trace_string_func )( TRACE_MINIMAL, start_message.c_str( ) );
 
@@ -521,7 +528,7 @@ int main( int argc, char* argv[ ] )
                      if( !is_update && !g_is_quiet )
                         cout << "server now available on udp port " << g_port << "..." << endl;
 
-                     string start_message( "main streamer started on udp port " + to_string( g_port ) );
+                     string start_message( "core streamer started on udp port " + to_string( g_port ) );
 
                      ( *fp_log_trace_string_func )( TRACE_MINIMAL, start_message.c_str( ) );
                   }
@@ -563,6 +570,9 @@ int main( int argc, char* argv[ ] )
                bool reported_shutdown = false;
 
                int min_active_sessions = g_active_sessions;
+
+               if( web_port )
+                  ( *fp_init_http_handler_func )( web_port );
 
                if( g_start_peer_sessions )
                   ( *fp_init_peer_sessions_func )( true );
@@ -673,12 +683,12 @@ int main( int argc, char* argv[ ] )
 
                if( has_udp )
                {
-                  finish_message = "main streamer finished (udp port " + to_string( g_port ) + ")";
+                  finish_message = "core streamer finished (udp port " + to_string( g_port ) + ")";
 
                   ( *fp_log_trace_string_func )( TRACE_MINIMAL, finish_message.c_str( ) );
                }
 
-               finish_message = "main listener finished (tcp port " + to_string( g_port ) + ")";
+               finish_message = "core listener finished (tcp port " + to_string( g_port ) + ")";
 
                ( *fp_log_trace_string_func )( TRACE_MINIMAL, finish_message.c_str( ) );
 
