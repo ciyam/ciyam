@@ -728,7 +728,8 @@ bool locks_can_coexist( op_lock::lock_type lhs, op_lock::lock_type rhs )
       { 1, 0, 0, 0, 0, 0, 0 }, // D
    };
 
-   if( lhs == op_lock::e_lock_type_none || rhs == op_lock::e_lock_type_none )
+   if( ( lhs == op_lock::e_lock_type_none )
+    || ( rhs == op_lock::e_lock_type_none ) )
       return true;
 
    return g_locks_can_coexist[ lhs - 1 ].values[ rhs - 1 ];
@@ -1071,7 +1072,8 @@ string storage_handler::get_variable( const string& var_name )
 
             ofs.list_files( expr, variable_files );
 
-            if( variable_files.empty( ) && ( name.find_first_of( "?*" ) == string::npos ) )
+            if( variable_files.empty( )
+             && ( name.find_first_of( "?*" ) == string::npos ) )
             {
                if( variables.count( name ) )
                {
@@ -1103,6 +1105,7 @@ string storage_handler::get_variable( const string& var_name )
                         if( value != variables[ next ] )
                         {
                            output = true;
+
                            value = variables[ next ];
 
                            ofs.store_as_text_file( next, value );
@@ -1221,9 +1224,11 @@ void storage_handler::set_variable( const string& var_name, const string& new_va
 
    bool persist = false;
 
-   if( !name.empty( ) && ( name[ 0 ] == c_persist_variable_prefix ) )
+   if( !name.empty( )
+    && ( name[ 0 ] == c_persist_variable_prefix ) )
    {
       persist = true;
+
       name.erase( 0, 1 );
    }
 
@@ -1290,6 +1295,7 @@ void storage_handler::dump_cache( ostream& os ) const
       os << '\n';
 
       time_t t = ci->first;
+
       struct tm* p_t = localtime( &t );
 
       date_time dt( p_t->tm_year + 1900, ( month )( p_t->tm_mon + 1 ),
@@ -1373,7 +1379,9 @@ bool storage_handler::obtain_lock( size_t& handle,
          ods* p_ods( ods::instance( ) );
 
          string key( lock_class );
+
          key += ':';
+
          key += lock_instance;
 
          lock_iterator li( locks.lower_bound( lock_class ) );
@@ -1490,6 +1498,7 @@ bool storage_handler::obtain_lock( size_t& handle,
             if( check_handle )
             {
                found = true;
+
                break;
             }
 
@@ -1502,6 +1511,7 @@ bool storage_handler::obtain_lock( size_t& handle,
             lock_index.insert( lock_index_value_type( next_lock_handle, li ) );
 
             handle = next_lock_handle;
+
             found = true;
 
             break;
@@ -1515,6 +1525,7 @@ bool storage_handler::obtain_lock( size_t& handle,
    IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
+
       dump_locks( osstr );
 
       TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dumping locks]\n" + osstr.str( ) );
@@ -1563,6 +1574,7 @@ void storage_handler::transform_lock( size_t handle,
    IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
+
       dump_locks( osstr );
 
       TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
@@ -1591,6 +1603,7 @@ void storage_handler::release_lock( size_t handle, bool force_removal )
          else
          {
             lock_index.erase( lii );
+
             locks.erase( li );
          }
       }
@@ -1599,6 +1612,7 @@ void storage_handler::release_lock( size_t handle, bool force_removal )
    IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
+
       dump_locks( osstr );
 
       TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
@@ -1634,7 +1648,9 @@ op_lock storage_handler::get_lock_info( const string& lock_class, const string& 
    guard g( lock_mutex );
 
    string key( lock_class );
+
    key += ':';
+
    key += lock_instance;
 
    op_lock lock;
@@ -1659,7 +1675,9 @@ op_lock storage_handler::get_lock_info_for_owner( const string& lock_class, cons
    guard g( lock_mutex );
 
    string key( lock_class );
+
    key += ':';
+
    key += lock_instance;
 
    op_lock lock;
@@ -1672,6 +1690,7 @@ op_lock storage_handler::get_lock_info_for_owner( const string& lock_class, cons
       if( lci->second.p_root_class == &owner )
       {
          lock = lci->second;
+
          break;
       }
    }
@@ -1708,6 +1727,7 @@ void storage_handler::update_session_locks_for_transaction( session* p_session )
    IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
+
       dump_locks( osstr );
 
       TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
@@ -1731,12 +1751,14 @@ void storage_handler::release_locks_for_owner( class_base& owner, bool force_rem
       {
          if( !force_removal && ( next_lock.transaction_level > 0 ) )
          {
-            next_lock.type = op_lock::e_lock_type_none;
             next_lock.p_root_class = 0;
+
+            next_lock.type = op_lock::e_lock_type_none;
          }
          else
          {
             locks.erase( lii->second );
+
             lock_index.erase( lii++ );
          }
       }
@@ -1747,6 +1769,7 @@ void storage_handler::release_locks_for_owner( class_base& owner, bool force_rem
    IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
+
       dump_locks( osstr );
 
       TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
@@ -1772,8 +1795,9 @@ void storage_handler::release_locks_for_commit( session* p_session )
       {
          if( p_ods->get_transaction_level( ) > 1 )
          {
-            next_lock.transaction_level = p_ods->get_transaction_level( ) - 1;
             next_lock.type = op_lock::e_lock_type_none;
+
+            next_lock.transaction_level = p_ods->get_transaction_level( ) - 1;
 
             ++lii;
          }
@@ -1795,6 +1819,7 @@ void storage_handler::release_locks_for_commit( session* p_session )
    IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
+
       dump_locks( osstr );
 
       TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
@@ -1820,6 +1845,7 @@ void storage_handler::release_locks_for_rollback( session* p_session )
        && ( next_lock.transaction_level >= p_ods->get_transaction_level( ) ) )
       {
          locks.erase( lii->second );
+
          lock_index.erase( lii++ );
       }
       else
@@ -1829,6 +1855,7 @@ void storage_handler::release_locks_for_rollback( session* p_session )
    IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
+
       dump_locks( osstr );
 
       TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
@@ -1850,6 +1877,7 @@ void storage_handler::release_all_locks_for_session( session* p_session )
       if( next_lock.p_session == p_session )
       {
          locks.erase( lii->second );
+
          lock_index.erase( lii++ );
       }
       else
@@ -1859,6 +1887,7 @@ void storage_handler::release_all_locks_for_session( session* p_session )
    IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
+
       dump_locks( osstr );
 
       TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
@@ -10776,16 +10805,16 @@ size_t elapsed_since_last_recv( const date_time& dtm, const date_time* p_dtm )
       int64_t secs_1 = unix_time( dtm );
       int64_t secs_2 = unix_time( p_dtm ? *p_dtm : gtp_session->dtm_last_recv );
 
-      millisecond ms1 = dtm.get_millisecond( );
-      millisecond ms2 = ( p_dtm ? p_dtm->get_millisecond( ) : gtp_session->dtm_last_recv.get_millisecond( ) );
+      millisecond ms_1 = dtm.get_millisecond( );
+      millisecond ms_2 = ( p_dtm ? p_dtm->get_millisecond( ) : gtp_session->dtm_last_recv.get_millisecond( ) );
 
-      int64_t total_ms1 = ( secs_1 * 1000 ) + ms1;
-      int64_t total_ms2 = ( secs_2 * 1000 ) + ms2;
+      int64_t total_ms_1 = ( secs_1 * 1000 ) + ms_1;
+      int64_t total_ms_2 = ( secs_2 * 1000 ) + ms_2;
 
-      if( total_ms1 > total_ms2 )
-         retval = ( total_ms1 - total_ms2 );
+      if( total_ms_1 > total_ms_2 )
+         retval = ( total_ms_1 - total_ms_2 );
       else
-         retval = ( total_ms2 - total_ms1 );
+         retval = ( total_ms_2 - total_ms_1 );
    }
 
    return retval;
