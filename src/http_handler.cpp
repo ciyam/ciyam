@@ -102,12 +102,14 @@ const char* const c_replace_document_marker = "DOCUMENT";
 
 const int c_num_retries = 5;
 
+const int c_minimum_timeout = 25;
+
 #ifdef LOCAL_REQUESTS_ONLY
 const int c_accept_timeout = 500;
 const int c_ssl_accept_timeout = 1000;
 
 const int c_initial_timeout = 100;
-const int c_subsequent_timeout = 20;
+const int c_subsequent_timeout = 50;
 
 const int c_response_timeout = 200;
 #else
@@ -115,7 +117,7 @@ const int c_accept_timeout = 5000;
 const int c_ssl_accept_timeout = 10000;
 
 const int c_initial_timeout = 1000;
-const int c_subsequent_timeout = 200;
+const int c_subsequent_timeout = 500;
 
 const int c_response_timeout = 2000;
 #endif
@@ -157,6 +159,7 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
    if( p_socket )
    {
       bool first = true;
+      bool checked = false;
       bool using_tls = false;
       bool had_request = false;
 
@@ -169,6 +172,8 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
       try
       {
+         date_time dtm_1( date_time::standard( ) );
+
 #ifdef SSL_SUPPORT
          if( p_socket->is_tls_handshake( ) )
          {
@@ -182,9 +187,42 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
          }
 #endif
+         int initial_timeout = c_initial_timeout;
+         int subsequent_timeout = c_subsequent_timeout;
 
          while( true )
          {
+            // NOTE: Multiple requests can be handled using one socket
+            // but whether requests are handled this way is decided by
+            // the software making the requests so these timing checks
+            // and timeout adjustments are being made here in order to
+            // try and maximise the request throughput (which might be
+            // otherwise slowed down when requests are made locally).
+            if( !first && !checked )
+            {
+               checked = true;
+
+               date_time dtm_2( date_time::standard( ) );
+
+               int64_t secs_1 = unix_time( dtm_1 );
+               int64_t secs_2 = unix_time( dtm_2 );
+
+               millisecond ms_1 = dtm_1.get_millisecond( );
+               millisecond ms_2 = dtm_2.get_millisecond( );
+
+               int64_t total_ms_1 = ( secs_1 * 1000 ) + ms_1;
+               int64_t total_ms_2 = ( secs_2 * 1000 ) + ms_2;
+
+               int64_t difference = 0;
+
+               if( total_ms_1 > total_ms_2 )
+                  difference = ( total_ms_1 - total_ms_2 );
+               else
+                  difference = ( total_ms_2 - total_ms_1 );
+
+               if( difference <= c_minimum_timeout )
+                  subsequent_timeout = c_minimum_timeout;
+            }
 #ifdef DEBUG
             cerr << "\n" << date_time::local( ).as_string( e_time_format_hhmmssth, true ) << '\n' << endl;
 #endif
@@ -203,7 +241,7 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                string next_line;
 
                if( p_socket->read_line( next_line,
-                ( first ? c_initial_timeout : c_subsequent_timeout ) ) <= 0 )
+                ( first ? initial_timeout : subsequent_timeout ) ) <= 0 )
                {
                   if( p_socket->had_blank_line( ) )
                   {
