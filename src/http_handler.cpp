@@ -9,6 +9,7 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <map>
 #  include <memory>
 #  include <string>
 #  include <cstring>
@@ -22,6 +23,7 @@
 #include "date_time.h"
 #include "utilities.h"
 #include "ciyam_base.h"
+#include "ssl_socket.h"
 #include "ciyam_session.h"
 
 //#define DEBUG
@@ -46,42 +48,55 @@ const char* const c_ext_png = "png";
 const char* const c_ext_ttf = "ttf";
 
 const char* const c_get_request = "GET ";
+const char* const c_post_request = "POST ";
 
 const char* const c_index_html = "index.html";
 
-const char* const c_host_request_param = "Host: ";
+const char* const c_echo_endpoint = "echo";
+
+const char* const c_req_param_host = "Host:";
+
+const char* const c_req_param_if_modified = "If-Modified-Since:";
 
 const char* const c_http_1_1 = "HTTP/1.1";
 
 const char* const c_http_200_OK = "200 OK";
 
 const char* const c_http_404_Not_Found = "404 Not Found";
+const char* const c_http_304_Not_Modified = "304 Not Modified";
 
 const char* const c_http_date_prefix = "Date: ";
 const char* const c_http_modified_prefix = "Last-Modified: ";
+const char* const c_http_content_type_prefix = "Content-Type: ";
+const char* const c_http_content_length_prefix = "Content-Length: ";
 
-const char* const c_http_connection_header = "Connection: keep-alive";
+const char* const c_http_content_type_header = "Content-Type";
+const char* const c_http_content_length_header = "Content-Length";
+
+const char* const c_http_connection_header_info = "Connection: keep-alive";
 
 #ifdef LOCAL_REQUESTS_ONLY
-const char* const c_http_keep_alive_header = "Keep-Alive: timeout=1, max=100";
+const char* const c_http_keep_alive_header_info = "Keep-Alive: timeout=1, max=100";
 #else
-const char* const c_http_keep_alive_header = "Keep-Alive: timeout=10, max=100";
+const char* const c_http_keep_alive_header_info = "Keep-Alive: timeout=10, max=100";
 #endif
 
-const char* const c_http_content_type_font_ttf = "Content-Type: font/ttf";
+const char* const c_http_content_type_font_ttf = "font/ttf";
 
-const char* const c_http_content_type_text_css = "Content-Type: text/css; charset=UTF-8";
-const char* const c_http_content_type_text_html = "Content-Type: text/html; charset=UTF-8";
+const char* const c_http_content_type_text_csv = "text/csv";
+const char* const c_http_content_type_text_plain = "text/plain";
+const char* const c_http_content_type_text_css_utf8 = "text/css; charset=UTF-8";
+const char* const c_http_content_type_text_html_utf8 = "text/html; charset=UTF-8";
 
-const char* const c_http_content_type_image_gif = "Content-Type: image/gif";
-const char* const c_http_content_type_image_jpg = "Content-Type: image/jpg";
-const char* const c_http_content_type_image_png = "Content-Type: image/png";
+const char* const c_http_content_type_image_gif = "image/gif";
+const char* const c_http_content_type_image_jpg = "image/jpg";
+const char* const c_http_content_type_image_png = "image/png";
 
-const char* const c_http_content_length_header_prefix = "Content-Length: ";
+const char* const c_http_content_type_application_form = "application/x-www-form-urlencoded";
 
-const char* const c_test_html_response = "<html>\n<head><title>Test HTML Page</title></head>\n<body><p>This is a HTML response for test purposes.</p></body>\n</html>\n";
+const char* const c_html_test_response = "<html>\n<head><title>Test HTML Page</title></head>\n<body><p>This is a HTML response for test purposes.</p></body>\n</html>";
 
-const char* const c_not_found_html_response = "<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find 'DOCUMENT' (incorrect URL?).</p></body>\n</html>\n";
+const char* const c_not_found_html_response = "<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find 'DOCUMENT' (incorrect URL?).</p></body>\n</html>";
 
 const char* const c_replace_document_marker = "DOCUMENT";
 
@@ -89,19 +104,23 @@ const int c_num_retries = 5;
 
 #ifdef LOCAL_REQUESTS_ONLY
 const int c_accept_timeout = 500;
+const int c_ssl_accept_timeout = 1000;
 
 const int c_initial_timeout = 100;
 const int c_subsequent_timeout = 20;
 
 const int c_response_timeout = 200;
 #else
-const int c_accept_timeout = 1000;
+const int c_accept_timeout = 5000;
+const int c_ssl_accept_timeout = 10000;
 
-const int c_initial_timeout = 2000;
-const int c_subsequent_timeout = 100;
+const int c_initial_timeout = 1000;
+const int c_subsequent_timeout = 200;
 
-const int c_response_timeout = 1000;
+const int c_response_timeout = 2000;
 #endif
+
+const size_t c_max_data_for_post = 100000;
 
 string format_date_time( const date_time& dtm )
 {
@@ -138,6 +157,8 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
    if( p_socket )
    {
       bool first = true;
+      bool using_tls = false;
+      bool had_request = false;
 
 #ifdef DEBUG
       cerr << "\n*** start request/response ***" << endl;
@@ -148,6 +169,20 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
       try
       {
+#ifdef SSL_SUPPORT
+         if( p_socket->is_tls_handshake( ) )
+         {
+            p_socket->ssl_accept( c_ssl_accept_timeout );
+
+            using_tls = true;
+
+#  ifdef DEBUG
+            cerr << "(has accepted a TLS request)" << endl;
+#  endif
+
+         }
+#endif
+
          while( true )
          {
 #ifdef DEBUG
@@ -155,7 +190,9 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 #endif
             string request;
 
-            vector< string > headers;
+            vector< string > header_lines;
+
+            map< string, string > header_info;
 
             bool had_empty = false;
 
@@ -168,23 +205,25 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                if( p_socket->read_line( next_line,
                 ( first ? c_initial_timeout : c_subsequent_timeout ) ) <= 0 )
                {
-                  if( !( *p_socket ) || !retries-- )
+                  if( p_socket->had_blank_line( ) )
+                  {
+                     had_empty = true;
+
                      break;
+                  }
+
+                  if( !( *p_socket ) || had_request || !retries-- )
+                     break;
+                  else
+                     continue;
                }
 
                first = false;
 
-               if( p_socket->had_blank_line( ) )
-               {
-                  had_empty = true;
-
-                  break;
-               }
-
                if( request.empty( ) )
                   request = next_line;
                else
-                  headers.push_back( next_line );
+                  header_lines.push_back( next_line );
             }
 
             if( !had_empty || request.empty( ) )
@@ -195,15 +234,30 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                break;
             }
 
+            had_request = true;
+
 #ifdef DEBUG
             cerr << "[Request]\n" << request << endl;
 #endif
-            for( size_t i = 0; i < headers.size( ); i++ )
+            for( size_t i = 0; i < header_lines.size( ); i++ )
             {
+               string name, data;
+
+               string next( header_lines[ i ] );
+
+               string::size_type pos = next.find( ": " );
+
+               name = next.substr( 0, pos );
+
+               if( pos != string::npos )
+                  data = next.substr( pos + 2 );
+
+               header_info[ name ] = data;
 #ifdef DEBUG
                if( i == 0 )
-                  cerr << "[Headers]" << endl;
-               cerr << headers[ i ] << endl;
+                  cerr << "[header_lines]" << endl;
+
+               cerr << header_lines[ i ] << endl;
 #endif
             }
 
@@ -249,7 +303,7 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
             ostringstream osstr;
 
-            string header, response;
+            string data, header, response;
 
             if( !document.empty( ) && ( document[ 0 ] == '/' ) )
                document.erase( 0, 1 );
@@ -257,64 +311,135 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
             if( document.empty( ) )
                document = c_index_html;
 
-            string path( get_web_root( ) + "/" );
-
-            bool rc = true;
-
-            // NOTE: Do a sanity check to make sure that the document
-            // being requested is not outside of the "web root" path.
-            string check_path( absolute_path( path + document, &rc ) );
-
-            if( rc && ( check_path.find( path ) == 0 ) )
+            if( header_info.count( c_http_content_length_header ) )
             {
-               found = true;
+               size_t data_length = from_string< size_t >( header_info[ c_http_content_length_header ] );
 
-               string extension;
+               if( data_length <= c_max_data_for_post )
+               {
+                  data = string( data_length, '\0' );
+
+                  int received = p_socket->recv_n( ( unsigned char* )data.data( ), data_length, c_subsequent_timeout );
+
+                  if( received < data_length )
+                     data.erase( received );
+#ifdef DEBUG
+                  cerr << "rcv_data ==> " << data << endl;
+#endif
+               }
+            }
+
+            bool unchanged = false;
+
+            date_time now( date_time::standard( ) );
+
+            string formatted_dtm( format_date_time( now ) );
+
+            if( !data.empty( ) )
+            {
+               if( document == c_echo_endpoint )
+               {
+                  found = true;
+
+                  osstr << c_http_1_1 << ' ' << c_http_200_OK
+                   << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+
+                  if( !header_info.count( c_http_content_type_header ) )
+                     header_info[ c_http_content_type_header ] = c_http_content_type_text_plain;
+
+                  osstr << c_http_content_type_prefix << header_info[ c_http_content_type_header ] << '\n';
+
+                  response = data;
+               }
+            }
+
+            if( response.empty( ) )
+            {
+               string path( get_web_root( ) + "/" );
+
+               bool rc = true;
+
+               // NOTE: Do a sanity check to make sure that the document
+               // being requested is not outside of the "web root" path.
+               string check_path( absolute_path( path + document, &rc ) );
+
+               if( rc && ( check_path.find( path ) == 0 ) )
+               {
+                  found = true;
+
+                  string extension;
 
 #ifdef DEBUG
-               cerr << "\n(found '" << document << "')" << endl;
+                  cerr << "\n(found '" << document << "')" << endl;
 #endif
-               string::size_type ext_pos = document.rfind( '.' );
+                  string::size_type ext_pos = document.rfind( '.' );
 
-               if( ext_pos != string::npos )
-                  extension = document.substr( ext_pos + 1 );
+                  if( ext_pos != string::npos )
+                     extension = document.substr( ext_pos + 1 );
 
-               date_time now( date_time::standard( ) );
+                  date_time doc_modified( last_modification_time( path + document ) );
 
-               string formatted_dtm( format_date_time( now ) );
+                  if( header_info.count( c_req_param_if_modified ) )
+                  {
+                     string gmt_date_time( header_info[ c_req_param_if_modified ] );
 
-               date_time doc_modified( last_modification_time( path + document ) );
+                     try
+                     {
+                        date_time doc_last_modified( gmt_date_time );
 
-               string formatted_document_dtm( format_date_time( doc_modified ) );
+                        if( doc_modified == doc_last_modified )
+                        {
+                           unchanged = true;
 
-               osstr << c_http_1_1 << ' ' << c_http_200_OK
-                << '\n' << c_http_date_prefix << formatted_dtm
-                << '\n' << c_http_modified_prefix << formatted_document_dtm
-                << '\n' << c_http_connection_header << '\n' << c_http_keep_alive_header << '\n';
+                           osstr << c_http_1_1 << ' ' << c_http_304_Not_Modified << "\n\n";
+                        }
+                     }
+                     catch( exception& x )
+                     {
+                        // NOTE: If format is invalid then just ignores it.
+#ifdef DEBUG
+                        cerr << "http_request error: " << x.what( ) << endl;
+#endif
+                     }
+                  }
 
-               if( extension == c_ext_css )
-                  osstr << c_http_content_type_text_css << '\n';
-               else if( extension == c_ext_gif )
-                  osstr << c_http_content_type_image_gif << '\n';
-               else if( extension == c_ext_jpg )
-                  osstr << c_http_content_type_image_jpg << '\n';
-               else if( extension == c_ext_png )
-                  osstr << c_http_content_type_image_png << '\n';
-               else if( extension == c_ext_ttf )
-                  osstr << c_http_content_type_font_ttf << '\n';
-               else
-                  osstr << c_http_content_type_text_html << '\n';
+                  if( !unchanged )
+                  {
+                     string formatted_document_dtm( format_date_time( doc_modified ) );
 
-               response = buffer_file( path + document );
+                     osstr << c_http_1_1 << ' ' << c_http_200_OK
+                      << '\n' << c_http_date_prefix << formatted_dtm
+                      << '\n' << c_http_modified_prefix << formatted_document_dtm
+                      << '\n' << c_http_connection_header_info << '\n' << c_http_keep_alive_header_info << '\n';
+
+                     osstr << c_http_content_type_prefix;
+
+                     if( extension == c_ext_css )
+                        osstr << c_http_content_type_text_css_utf8 << '\n';
+                     else if( extension == c_ext_gif )
+                        osstr << c_http_content_type_image_gif << '\n';
+                     else if( extension == c_ext_jpg )
+                        osstr << c_http_content_type_image_jpg << '\n';
+                     else if( extension == c_ext_png )
+                        osstr << c_http_content_type_image_png << '\n';
+                     else if( extension == c_ext_ttf )
+                        osstr << c_http_content_type_font_ttf << '\n';
+                     else
+                        osstr << c_http_content_type_text_html_utf8 << '\n';
+
+                     response = buffer_file( path + document );
+                  }
+               }
             }
 
             if( found )
             {
-               if( response.empty( ) )
-                  response = c_test_html_response;
+               if( !unchanged && response.empty( ) )
+                  response = c_html_test_response;
 
-               osstr << c_http_content_length_header_prefix
-                << to_string( response.length( ) + 1 ) << "\n\n" << response;
+               if( !response.empty( ) )
+                  osstr << c_http_content_length_prefix
+                   << to_string( response.length( ) ) << "\n\n" << response;
             }
             else
             {
@@ -322,14 +447,13 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
                replace( response, c_replace_document_marker, document );
 
-               osstr << c_http_1_1
-                << ' ' << c_http_404_Not_Found
-                << '\n' << c_http_content_type_text_html
-                << '\n' << c_http_content_length_header_prefix
-                << to_string( response.length( ) + 1 ) << "\n\n" << response;
+               osstr << c_http_1_1 << ' ' << c_http_404_Not_Found << '\n' << c_http_content_type_text_html_utf8
+                << '\n' << c_http_content_length_prefix << to_string( response.length( ) ) << "\n\n" << response;
             }
 
-            p_socket->write_line( osstr.str( ), c_response_timeout );
+            response = osstr.str( );
+
+            p_socket->send_n( ( unsigned char* )response.data( ), response.length( ), c_response_timeout );
          }
       }
       catch( exception& x )
