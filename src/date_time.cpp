@@ -2640,36 +2640,117 @@ void date_time::construct_from_julian( julian j )
 
 date_time::date_time( const string& s )
 {
-   if( s == "local" )
+   // NOTE: Specialised handling for GMT
+   // format specified by RFC 5322 (e.g.
+   // "Mon, 01 Jan 1970 00:00:00 GMT").
+   if( s.length( ) == 29 )
    {
-      ud = udate::local( );
-      mt = mtime::local( );
-   }
-   else if( s == "system" )
-   {
-      ud = udate::standard( );
-      mt = mtime::standard( );
+      bool okay = false;
+
+      string::size_type pos = s.find( " GMT" );
+
+      if( pos != string::npos )
+      {
+         // NOTE: Strips trailing " GMT"
+         // and leading "Day, " strings.
+         string gmt( s.substr( 0, pos ) );
+
+         pos = gmt.find( ' ' );
+
+         if( pos != string::npos )
+            gmt.erase( 0, pos + 1 );
+
+         // NOTE: The last space
+         // should be separating
+         // the date and time.
+         pos = gmt.rfind( ' ' );
+
+         if( pos != string::npos )
+         {
+            mt = mtime( gmt.substr( pos + 1 ) );
+
+            gmt.erase( pos );
+
+            pos = gmt.rfind( ' ' );
+
+            string gmt_date;
+
+            if( pos != string::npos )
+            {
+               gmt_date = gmt.substr( pos + 1 );
+
+               gmt.erase( pos );
+
+               pos = gmt.find( ' ' );
+
+               if( pos != string::npos )
+               {
+                  string month_name( gmt.substr( pos + 1 ) );
+
+                  for( size_t i = 0; i < 12; i++ )
+                  {
+                     string next_month( month_full_names[ i ].p_str );
+
+                     if( next_month.find( month_name ) == 0 )
+                     {
+                        if( i < 9 )
+                           gmt_date += '0';
+
+                        gmt_date += to_string( i + 1 );
+
+                        okay = true;
+                     }
+                  }
+
+                  if( okay )
+                  {
+                     gmt.erase( pos );
+
+                     gmt_date += gmt;
+
+                     ud = udate( gmt_date );
+                  }
+               }
+            }
+         }
+      }
+
+      if( !okay )
+         throw runtime_error( "unexpected date_time value '" + s + "'" );
    }
    else
    {
-      if( ( s.length( ) != 8 ) && ( s.length( ) != 10 )
-       && ( ( s.length( ) < 12 ) || ( s.length( ) > 23 ) ) )
-         throw runtime_error( "invalid format for date_time (given '"
-          + s + "' but expecting 'yyyymmdd[hhmm[ss[t[h[t]]]]]' or 'yyyy-mm-dd[ hh:mm[:ss[.t[h[t]]]]]')" );
-
-      if( isdigit( s[ 4 ] ) )
+      if( s == "local" )
       {
-         ud = udate( s.substr( 0, 8 ) );
-
-         if( s.length( ) > 8 )
-            mt = mtime( s.substr( 8 ) );
+         ud = udate::local( );
+         mt = mtime::local( );
+      }
+      else if( s == "system" )
+      {
+         ud = udate::standard( );
+         mt = mtime::standard( );
       }
       else
       {
-         ud = udate( s.substr( 0, 10 ) );
+         if( ( s.length( ) != 8 ) && ( s.length( ) != 10 )
+          && ( ( s.length( ) < 12 ) || ( s.length( ) > 23 ) ) )
+            throw runtime_error( "invalid format for date_time (given '"
+             + s + "' but expecting 'yyyymmdd[hhmm[ss[t[h[t]]]]]' or 'yyyy-mm-dd[ hh:mm[:ss[.t[h[t]]]]]')" );
 
-         if( s.length( ) > 11 )
-            mt = mtime( s.substr( 11 ) );
+         if( isdigit( s[ 4 ] ) )
+         {
+            ud = udate( s.substr( 0, 8 ) );
+
+            if( s.length( ) > 8 )
+               mt = mtime( s.substr( 8 ) );
+         }
+         else
+         {
+            ud = udate( s.substr( 0, 10 ) );
+
+            if( s.length( ) > 11 )
+               mt = mtime( s.substr( 11 ) );
+         }
       }
    }
 }
