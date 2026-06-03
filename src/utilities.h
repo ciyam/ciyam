@@ -923,7 +923,7 @@ inline std::string replace_unquoted_environment_variables(
    return s;
 }
 
-std::string trim( const std::string& s, bool leading_only = false, bool trailing_only = false );
+std::string trim( const std::string& s, bool leading_only = false, bool trailing_only = false, const char* p_chars = 0 );
 
 size_t split( const std::string& s, std::set< std::string >& c, char sep = c_sep, char esc = c_esc, bool unescape = true );
 size_t split( const std::string& s, std::deque< std::string >& c, char sep = c_sep, char esc = c_esc, bool unescape = true );

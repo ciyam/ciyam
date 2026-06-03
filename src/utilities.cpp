@@ -1775,13 +1775,13 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
    }
 }
 
-string trim( const string& s, bool leading_only, bool trailing_only )
+string trim( const string& s, bool leading_only, bool trailing_only, const char* p_chars )
 {
    string t;
 
    if( s.length( ) )
    {
-      string ws( c_whitespace_chars );
+      string chars( p_chars ? p_chars : c_whitespace_chars );
 
       string::size_type start = 0;
       string::size_type finish = s.length( );
@@ -1790,7 +1790,7 @@ string trim( const string& s, bool leading_only, bool trailing_only )
       {
          for( string::size_type i = 0; i < s.length( ); i++ )
          {
-            if( ws.find( s[ i ] ) == string::npos )
+            if( chars.find( s[ i ] ) == string::npos )
                break;
 
             ++start;
@@ -1803,7 +1803,7 @@ string trim( const string& s, bool leading_only, bool trailing_only )
          {
             for( string::size_type i = s.length( ) - 1; ; i-- )
             {
-               if( ws.find( s[ i ] ) == string::npos )
+               if( chars.find( s[ i ] ) == string::npos )
                   break;
 
                --finish;
