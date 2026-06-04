@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+   <title>Test Upload</title>
+   <style>
+   .progress-container
+   {
+      width: 100%;
+      background: #e0e0e0;
+      border-radius: 4px;
+      margin: 10px 0;
+   }
+
+   .progress-bar
+   {
+      height: 20px;
+      background: #4CAF50;
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s;
+   }
+   </style>
+</head>
+
+<body>
+   <input type="file" id="fileInput">
+
+   <button onclick="uploadFile( )">Upload</button>
+
+   <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+   </div>
+
+   <p id="status"></p>
+
+   <script>
+   function uploadFile( )
+   {
+      const file = document.getElementById( 'fileInput' ).files[ 0 ];
+
+      if( !file )
+         return alert( 'Please select a file' );
+
+      const status = document.getElementById( 'status' );
+      const progressBar = document.getElementById( 'progressBar' );
+
+      const xhr = new XMLHttpRequest( );
+
+      xhr.upload.addEventListener( 'progress', ( e ) =>
+      {
+         if( e.lengthComputable )
+         {
+            const percent = Math.round(( e.loaded / e.total ) * 100 );
+
+            progressBar.style.width = percent + '%';
+
+            status.textContent = `${percent}% uploaded`;
+         }
+      } );
+
+      xhr.addEventListener( 'load', () =>
+      {
+         if( status.textContent == '' )
+            status.textContent = 'Upload complete!';
+      } );
+
+      xhr.addEventListener( 'error', () =>
+      {
+         status.textContent = 'Upload failed!';
+      } );
+
+      xhr.onreadystatechange = () =>
+      {
+         if( xhr.readyState === 4 )
+            status.textContent = xhr.response;
+      };
+
+      xhr.open( 'POST', '/upload' );
+
+      const formData = new FormData( );
+
+      formData.append( 'file', file );
+
+      status.textContent = '';
+
+      xhr.send( formData );
+   }
+   </script>
+</body>
+
+</html>
