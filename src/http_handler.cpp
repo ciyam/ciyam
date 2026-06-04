@@ -14,12 +14,14 @@
 #  include <string>
 #  include <cstring>
 #  include <csignal>
+#  include <fstream>
 #  include <sstream>
 #  include <stdexcept>
 #endif
 
 #include "http_handler.h"
 
+#include "mime.h"
 #include "date_time.h"
 #include "utilities.h"
 #include "ciyam_base.h"
@@ -47,12 +49,22 @@ const char* const c_ext_png = "png";
 
 const char* const c_ext_ttf = "ttf";
 
+const char* const c_data_text = "text";
+const char* const c_data_image = "image";
+const char* const c_data_filename = "filename";
+const char* const c_data_application = "application";
+
+const char* const c_data_separator = "\r\n\r\n";
+
 const char* const c_get_request = "GET ";
 const char* const c_post_request = "POST ";
 
 const char* const c_index_html = "index.html";
 
 const char* const c_echo_endpoint = "echo";
+const char* const c_upload_endpoint = "upload";
+
+const char* const c_boundary_prefix = "boundary=";
 
 const char* const c_req_param_host = "Host:";
 
@@ -62,8 +74,9 @@ const char* const c_http_1_1 = "HTTP/1.1";
 
 const char* const c_http_200_OK = "200 OK";
 
+const char* const c_http_304_Not_Mod = "304 Not Modified";
+const char* const c_http_400_Bad_Req = "400 Bad Request";
 const char* const c_http_404_Not_Found = "404 Not Found";
-const char* const c_http_304_Not_Modified = "304 Not Modified";
 
 const char* const c_http_date_prefix = "Date: ";
 const char* const c_http_modified_prefix = "Last-Modified: ";
@@ -72,6 +85,7 @@ const char* const c_http_content_length_prefix = "Content-Length: ";
 
 const char* const c_http_content_type_header = "Content-Type";
 const char* const c_http_content_length_header = "Content-Length";
+const char* const c_http_content_disposition_header = "Content-Disposition";
 
 const char* const c_http_connection_header_info = "Connection: keep-alive";
 
@@ -94,6 +108,10 @@ const char* const c_http_content_type_image_png = "image/png";
 
 const char* const c_http_content_type_application_form = "application/x-www-form-urlencoded";
 
+const char* const c_http_content_type_multipart_form_data = "multipart/form-data";
+
+const char* const c_http_content_disposition_form_data = "form-data";
+
 const char* const c_html_test_response = "<html>\n<head><title>Test HTML Page</title></head>\n<body><p>This is a HTML response for test purposes.</p></body>\n</html>";
 
 const char* const c_not_found_html_response = "<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find 'DOCUMENT' (incorrect URL?).</p></body>\n</html>";
@@ -108,16 +126,16 @@ const int c_minimum_timeout = 25;
 const int c_accept_timeout = 500;
 const int c_ssl_accept_timeout = 1000;
 
-const int c_initial_timeout = 100;
-const int c_subsequent_timeout = 50;
+const int c_initial_timeout = 500;
+const int c_subsequent_timeout = 100;
 
 const int c_response_timeout = 200;
 #else
 const int c_accept_timeout = 5000;
 const int c_ssl_accept_timeout = 10000;
 
-const int c_initial_timeout = 1000;
-const int c_subsequent_timeout = 500;
+const int c_initial_timeout = 5000;
+const int c_subsequent_timeout = 1000;
 
 const int c_response_timeout = 2000;
 #endif
@@ -164,7 +182,7 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
       bool had_request = false;
 
 #ifdef DEBUG
-      cerr << "\n*** start request/response ***" << endl;
+      cerr << "\n*** started request/response ***" << endl;
 #endif
 
       p_socket->set_no_delay( );
@@ -267,7 +285,7 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
             if( !had_empty || request.empty( ) )
             {
 #ifdef DEBUG
-               cerr << "(empty or incomplete request)\n" << endl;
+               cerr << "(empty or incomplete request)" << endl;
 #endif
                break;
             }
@@ -293,7 +311,7 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                header_info[ name ] = data;
 #ifdef DEBUG
                if( i == 0 )
-                  cerr << "[header_lines]" << endl;
+                  cerr << "\n[Header Info]" << endl;
 
                cerr << header_lines[ i ] << endl;
 #endif
@@ -338,10 +356,11 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 #endif
 
             bool found = false;
+            bool was_endpoint = false;
 
             ostringstream osstr;
 
-            string data, header, response;
+            string data, error, header, response;
 
             if( !document.empty( ) && ( document[ 0 ] == '/' ) )
                document.erase( 0, 1 );
@@ -361,10 +380,9 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
                   if( received < data_length )
                      data.erase( received );
-#ifdef DEBUG
-                  cerr << "rcv_data ==> " << data << endl;
-#endif
                }
+               else
+                  error = "Post data is too large (maximum size is " + to_string( c_max_data_for_post ) + " bytes).\n";
             }
 
             bool unchanged = false;
@@ -379,6 +397,8 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                {
                   found = true;
 
+                  was_endpoint = true;
+
                   osstr << c_http_1_1 << ' ' << c_http_200_OK
                    << '\n' << c_http_date_prefix << formatted_dtm << '\n';
 
@@ -388,6 +408,137 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                   osstr << c_http_content_type_prefix << header_info[ c_http_content_type_header ] << '\n';
 
                   response = data;
+               }
+               else if( document == c_upload_endpoint )
+               {
+                  found = true;
+
+                  was_endpoint = true;
+
+                  string boundary, filename, local_filename;
+
+                  osstr << c_http_1_1 << ' ' << c_http_200_OK
+                   << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+
+                  size_t uploaded_size = data.length( );
+
+                  if( header_info.count( c_http_content_type_header ) )
+                  {
+                     vector< string > parts;
+
+                     split( header_info[ c_http_content_type_header ], parts, "; " );
+
+                     if( parts.size( ) && ( parts[ 0 ] == c_http_content_type_multipart_form_data ) )
+                     {
+                        if( parts.size( ) > 1 )
+                        {
+                           string info( parts[ 1 ] );
+
+                           if( info.find( c_boundary_prefix ) == 0 )
+                              boundary = info.substr( strlen( c_boundary_prefix ) );
+                        }
+                     }
+                  }
+
+                  osstr << c_http_content_type_prefix << header_info[ c_http_content_type_header ] << '\n';
+
+                  if( !boundary.empty( ) )
+                  {
+                     mime_decoder decoder( c_http_content_type_prefix + header_info[ c_http_content_type_header ] );
+
+                     string type( decoder.get_type( ) );
+                     string subtype( decoder.get_subtype( ) );
+                     string boundary( decoder.get_boundary( ) );
+#ifdef DEBUG
+                     cerr << "\n(decoder) type = " << type << endl;
+                     cerr << "(decoder) subtype = " << subtype << endl;
+#endif
+                     string extra;
+
+                     if( type == "multipart" )
+                        extra = "\r\n";
+
+                     string::size_type pos = data.find( boundary + extra );
+
+                     if( pos == 0 )
+                     {
+                        data.erase( 0, boundary.size( ) + extra.size( ) );
+
+                        string final_boundary( extra );
+
+                        final_boundary += boundary + "--" + extra;
+
+                        pos = data.rfind( final_boundary );
+
+                        if( pos != string::npos )
+                           data.erase( pos );
+
+                        pos = data.find( c_data_separator );
+
+                        // NOTE: For multipart the data will
+                        // contain header lines separated by
+                        // CRLFs. The header lines are taken
+                        // from the data with CRLFs replaced
+                        // with just LFs and then decoded.
+                        if( pos != string::npos )
+                        {
+                           string prefix( data.substr( 0, pos + strlen( c_data_separator ) ) );
+
+                           data.erase( 0, pos + strlen( c_data_separator ) );
+
+                           replace( prefix, "\r\n", "\n" );
+
+                           mime_decoder data_decoder( prefix );
+
+#ifdef DEBUG
+                           cerr << "\ndata_decoder.get_type( ) = " << data_decoder.get_type( ) << endl;
+                           cerr << "data_decoder.get_subtype( ) = " << data_decoder.get_subtype( ) << endl;
+#endif
+                           string form_data( data_decoder.get_form_data( ) );
+
+                           if( !form_data.empty( ) )
+                           {
+                              vector< string > lines;
+
+                              split( form_data, lines, '\n' );
+
+                              for( size_t i = 0; i < lines.size( ); i++ )
+                              {
+                                 string next_line( lines[ i ] );
+
+                                 string::size_type pos = next_line.find( '=' );
+
+                                 string name( next_line.substr( 0, pos ) );
+
+                                 string value;
+
+                                 if( pos != string::npos )
+                                    value = next_line.substr( pos + 1 );
+
+                                 if( name == c_data_filename )
+                                 {
+                                    filename = value;
+#ifdef DEBUG
+                                    cerr << "\n==> filename uploaded \"" << filename << "\"" << endl;
+#endif
+                                 }
+                              }
+                           }
+
+#ifdef DEBUG
+                           local_filename = "x";
+#else
+                           local_filename = uuid( ).as_string( );
+#endif
+
+                           ofstream outf( local_filename );
+
+                           outf << data;
+                        }
+                     }
+                  }
+
+                  response = "Uploaded as \"" + local_filename + "\" (" + to_string( uploaded_size ) + " bytes).\n";
                }
             }
 
@@ -429,7 +580,7 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                         {
                            unchanged = true;
 
-                           osstr << c_http_1_1 << ' ' << c_http_304_Not_Modified << "\n\n";
+                           osstr << c_http_1_1 << ' ' << c_http_304_Not_Mod << "\n\n";
                         }
                      }
                      catch( exception& x )
@@ -479,25 +630,35 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                   osstr << c_http_content_length_prefix
                    << to_string( response.length( ) ) << "\n\n" << response;
             }
+            else if( !error.empty( ) )
+            {
+               osstr << c_http_1_1 << ' ' << c_http_400_Bad_Req << '\n'
+                << c_http_content_type_prefix << c_http_content_type_text_html_utf8
+                << '\n' << c_http_content_length_prefix << to_string( error.length( ) ) << "\n\n" << error;
+            }
             else
             {
                response = c_not_found_html_response;
 
                replace( response, c_replace_document_marker, document );
 
-               osstr << c_http_1_1 << ' ' << c_http_404_Not_Found << '\n' << c_http_content_type_text_html_utf8
+               osstr << c_http_1_1 << ' ' << c_http_404_Not_Found << '\n'
+                << c_http_content_type_prefix << c_http_content_type_text_html_utf8
                 << '\n' << c_http_content_length_prefix << to_string( response.length( ) ) << "\n\n" << response;
             }
 
             response = osstr.str( );
 
             p_socket->send_n( ( unsigned char* )response.data( ), response.length( ), c_response_timeout );
+
+            if( was_endpoint )
+               break;
          }
       }
       catch( exception& x )
       {
 #ifdef DEBUG
-         cerr << "http_request error: " << x.what( ) << endl;
+         cerr << "\nhttp_request error: " << x.what( ) << endl;
 #endif
          TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
           string( "http_request error: " ) + x.what( ) );
@@ -505,14 +666,14 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
       catch( ... )
       {
 #ifdef DEBUG
-         cerr << "unexpected http_request exception" << endl;
+         cerr << "\nunexpected http_request exception" << endl;
 #endif
          TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
           string( "http_request error: unexpected exception" ) );
       }
 
 #ifdef DEBUG
-      cerr << "*** finished request/response ***" << endl;
+      cerr << "\n*** finished request/response ***" << endl;
 #endif
       p_socket->close( );
 
