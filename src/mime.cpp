@@ -47,9 +47,10 @@ string escape_fullstops_if_required( const string& src )
    // a full stop are escaped by adding an extra full stop (these should be automatically removed by the
    // message receiver).
    bool is_start_of_line = true;
+
    for( size_t i = 0; i < src.length( ); i++ )
    {
-      if( is_start_of_line && src[ i ] == '.' )
+      if( is_start_of_line && ( src[ i ] == '.' ) )
          str += ".";
 
       str += src[ i ];
@@ -67,14 +68,16 @@ string split_input_into_lines( const string& input, size_t chars_per_line )
 
    while( true )
    {
-      if( input.length( ) - pos > chars_per_line )
+      if( ( input.length( ) - pos ) > chars_per_line )
       {
          str += input.substr( pos, chars_per_line ) + g_new_line;
+
          pos += chars_per_line;
       }
       else
       {
          str += input.substr( pos ) + g_new_line;
+
          break;
       }
    }
@@ -87,9 +90,10 @@ string clean_whitespace( const string& input )
    string s;
 
    bool had_whitespace = false;
+
    for( size_t i = 0; i < input.size( ); i++ )
    {
-      if( input[ i ] == 9 || input[ i ] == 32 )
+      if( ( input[ i ] == 9 ) || ( input[ i ] == 32 ) )
       {
          if( !had_whitespace )
             s += ' ';
@@ -99,6 +103,7 @@ string clean_whitespace( const string& input )
       else
       {
          had_whitespace = false;
+
          s += input[ i ];
       }
    }
@@ -109,7 +114,9 @@ string clean_whitespace( const string& input )
 void get_attributes( const string& input, vector< string >& attributes )
 {
    string next;
+
    bool in_quotes = false;
+
    for( size_t i = 0; i < input.size( ); i++ )
    {
       if( input[ i ] == '"' )
@@ -119,6 +126,7 @@ void get_attributes( const string& input, vector< string >& attributes )
          if( input[ i ] == ' ' )
          {
             attributes.push_back( next );
+
             next.erase( );
          }
          else
@@ -137,18 +145,20 @@ string process_header( const string& input, vector< string >& attributes )
    string s( clean_whitespace( input ) );
 
    string::size_type pos = s.find( ':' );
+
    if( pos == string::npos )
       throw runtime_error( "unexpected MIME header format '" + input + "'" );
 
    string name( s.substr( 0, pos ) );
 
-   if( pos < s.length( ) - 2 )
+   if( pos < ( s.length( ) - 2 ) )
    {
       get_attributes( s.substr( pos + 2 ), attributes );
 
       for( size_t i = 0; i < attributes.size( ); i++ )
       {
-         if( attributes[ i ].length( ) && attributes[ i ][ attributes[ i ].length( ) - 1 ] == ';' )
+         if( attributes[ i ].length( )
+          && ( attributes[ i ][ attributes[ i ].length( ) - 1 ] == ';' ) )
             attributes[ i ].erase( attributes[ i ].length( ) - 1 );
       }
    }
@@ -165,6 +175,7 @@ bool is_multipart_content( const vector< string >& attributes )
       string attr( attributes[ 0 ] );
 
       string::size_type pos = attr.find( '/' );
+
       if( pos == string::npos )
          throw runtime_error( "unexpected initial MIME Content-Type attribute '" + attr + "'" );
 
@@ -190,12 +201,13 @@ string process_content_type( const vector< string >& attributes, string& type, s
    {
       string attr( attributes[ i ] );
 
-      if( attr.length( ) && attr[ attr.length( ) - 1 ] == ';' )
+      if( attr.length( ) && ( attr[ attr.length( ) - 1 ] == ';' ) )
          attr.erase( attr.length( ) - 1 );
 
       if( i == 0 )
       {
          string::size_type pos = attr.find( '/' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected initial MIME Content-Type attribute '" + attr + "'" );
 
@@ -214,25 +226,27 @@ string process_content_type( const vector< string >& attributes, string& type, s
       else
       {
          string::size_type pos = attr.find( '=' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected subsequent MIME Content-Type attribute '" + attr + "'" );
 
          string name( attr.substr( 0, pos ) );
 
          string value( attr.substr( pos + 1 ) );
-         if( value.length( ) > 2 && value[ 0 ] == '"' )
+
+         if( ( value.length( ) > 2 ) && ( value[ 0 ] == '"' ) )
             value = value.substr( 1, value.length( ) - 2 );
 
-         if( is_text && name == "charset" )
+         if( is_text && ( name == "charset" ) )
             retval = value;
 
-         if( is_image && name == "name" )
+         if( is_image && ( name == "name" ) )
             retval = value;
 
          if( is_multipart && name == "boundary" )
             retval = value;
 
-         if( is_application && name == "name" )
+         if( is_application && ( name == "name" ) )
             retval = value;
       }
    }
@@ -247,13 +261,15 @@ string process_boundary( const string& input )
    for( size_t i = 0; i < input.size( ); i++ )
    {
       bool ignore = false;
-      if( i == 0 && input[ i ] == '"' )
+
+      if( ( i == 0 ) && ( input[ i ] == '"' ) )
          ignore = true;
 
-      if( i == input.length( ) - 2 && input[ i ] == '"' )
+      if( ( i == ( input.length( ) - 2 ) ) && ( input[ i ] == '"' ) )
          ignore = true;
 
-      if( i == input.length( ) - 1 && ( input[ i ] == ';' || input[ i ] == '"' ) )
+      if( ( i == ( input.length( ) - 1 ) )
+       && ( ( input[ i ] == ';' ) || ( input[ i ] == '"' ) ) )
          ignore = true;
 
       if( !ignore )
@@ -283,6 +299,7 @@ struct mime_decoder::impl
 
    string attribute;
 
+   string form_data;
    string text_data;
 
    bool is_child;
@@ -295,22 +312,25 @@ struct mime_decoder::impl
 void mime_decoder::impl::process_data( )
 {
    vector< string > lines;
+
    split( data, lines, '\n' );
 
    string last_line, next_id, next_data;
    string next_type, next_subtype, next_value, next_encoding, next_charset;
 
    bool needs_boundary = true;
+
    bool processing_data = false;
    bool finished_headers = false;
+
    for( size_t i = 0; i < lines.size( ); i++ )
    {
       last_line = lines[ i ];
 
       if( !last_line.empty( ) && !finished_headers )
       {
-         while( i < lines.size( ) - 1 && lines[ i + 1 ].length( )
-          && ( lines[ i + 1 ][ 0 ] == 9 || lines[ i + 1 ][ 0 ] == 32 ) )
+         while( ( i < ( lines.size( ) - 1 ) ) && lines[ i + 1 ].length( )
+          && ( ( ( lines[ i + 1 ][ 0 ] ) == 9 ) || ( lines[ i + 1 ][ 0 ] == 32 ) ) )
             last_line += lines[ ++i ];
       }
 
@@ -330,6 +350,7 @@ void mime_decoder::impl::process_data( )
          if( !lines[ i ].length( ) )
          {
             finished_headers = true;
+
             if( next_type != "multipart" )
                next_data.erase( );
 
@@ -340,6 +361,7 @@ void mime_decoder::impl::process_data( )
          if( !last_line.empty( ) )
          {
             vector< string > attributes;
+
             string header( process_header( last_line, attributes ) );
 
             if( lower( header ) == "content-id" )
@@ -347,7 +369,8 @@ void mime_decoder::impl::process_data( )
                if( !attributes.empty( ) )
                {
                   next_id = attributes[ 0 ];
-                  if( next_id.length( ) > 2 && next_id[ 0 ] == '<' )
+
+                  if( ( next_id.length( ) > 2 ) && ( next_id[ 0 ] == '<' ) )
                      next_id = next_id.substr( 1, next_id.length( ) - 2 );
                }
             }
@@ -360,9 +383,35 @@ void mime_decoder::impl::process_data( )
                   boundary = "--" + process_content_type( attributes, type, subtype );
                else
                {
-                  next_value = process_content_type( attributes, next_type, next_subtype );
+                  if( type.empty( ) )
+                     next_value = process_content_type( attributes, type, subtype );
+                  else
+                     next_value = process_content_type( attributes, next_type, next_subtype );
+
                   if( type == "text" )
                      attribute = next_value;
+               }
+            }
+            else if( lower( header ) == "content-disposition" )
+            {
+               if( !attributes.empty( ) )
+               {
+                  bool is_form_data = false;
+
+                  for( size_t i = 0; i < attributes.size( ); i++ )
+                  {
+                     string next_attribute( attributes[ i ] );
+
+                     if( is_form_data )
+                     {
+                        if( !form_data.empty( ) )
+                           form_data += '\n';
+
+                        form_data += next_attribute;
+                     }
+                     else if( next_attribute == "form-data" )
+                        is_form_data = true;
+                  }
                }
             }
             else if( lower( header ) == "content-transfer-encoding" )
@@ -370,6 +419,7 @@ void mime_decoder::impl::process_data( )
                if( !attributes.empty( ) )
                {
                   next_encoding = attributes[ 0 ];
+
                   if( type == "text" )
                      encoding = next_encoding;
                }
@@ -384,7 +434,7 @@ void mime_decoder::impl::process_data( )
          text_data += last_line;
       }
 
-      if( !boundary.empty( ) && last_line.find( boundary ) == 0 )
+      if( !boundary.empty( ) && ( last_line.find( boundary ) == 0 ) )
       {
          if( processing_data )
          {
@@ -465,6 +515,7 @@ mime_decoder::~mime_decoder( )
       delete p_impl->parts[ i ];
 
    delete p_impl;
+
    p_impl = 0;
 }
 
@@ -478,6 +529,11 @@ string mime_decoder::get_subtype( ) const
    return p_impl->subtype;
 }
 
+string mime_decoder::get_boundary( ) const
+{
+   return p_impl->boundary;
+}
+
 string mime_decoder::get_encoding( ) const
 {
    return p_impl->encoding;
@@ -488,9 +544,19 @@ string mime_decoder::get_attribute( ) const
    return p_impl->attribute;
 }
 
+string mime_decoder::get_form_data( ) const
+{
+   return p_impl->form_data;
+}
+
 string mime_decoder::get_text_data( ) const
 {
    return p_impl->text_data;
+}
+
+size_t mime_decoder::get_text_size( ) const
+{
+   return p_impl->text_data.size( );
 }
 
 bool mime_decoder::has_child( )
@@ -535,6 +601,7 @@ struct mime_encoder::impl
       multi_part_subtype = "mixed";
 
       mime_boundary = string( "MIME-Boundary-" );
+
       mime_boundary += guid.as_string( );
    }
 
@@ -569,6 +636,7 @@ mime_encoder::mime_encoder( const char* p_multi_part_subtype,
 mime_encoder::~mime_encoder( )
 {
    delete p_impl;
+
    p_impl = 0;
 }
 
@@ -581,10 +649,12 @@ void mime_encoder::add_text( const string& text,
    ++p_impl->num_parts;
 
    string charset( "us-ascii" );
+
    if( p_charset )
       charset = string( p_charset );
 
    string encoding( "7bit" );
+
    if( p_encoding )
       encoding = string( p_encoding );
 
@@ -625,10 +695,12 @@ void mime_encoder::add_html( const string& html,
    ++p_impl->num_parts;
 
    string charset( "iso-8859-1" );
+
    if( p_charset )
       charset = string( p_charset );
 
    string encoding( "quoted-printable" );
+
    if( p_encoding )
       encoding = string( p_encoding );
 
@@ -679,6 +751,7 @@ void mime_encoder::add_file( const string& file_name, const char* p_encoding )
    }
 
    pos = file.find_last_of( "." );
+
    if( pos != string::npos )
    {
       string ext( file.substr( pos ) );
@@ -689,6 +762,7 @@ void mime_encoder::add_file( const string& file_name, const char* p_encoding )
    }
 
    string encoding( "base64" );
+
    if( p_encoding )
       encoding = string( p_encoding );
 
@@ -700,6 +774,7 @@ void mime_encoder::add_file( const string& file_name, const char* p_encoding )
    p_impl->data += string( "Content-Transfer-Encoding: " ) + encoding + g_new_line + g_new_line;
 
    string file_data = buffer_file( file );
+
    if( encoding == "base64" )
    {
       file_data = base64::encode( file_data );
@@ -730,6 +805,7 @@ void mime_encoder::add_image( const string& file_name, const char* p_path_prefix
    }
 
    string path_prefix;
+
    if( p_path_prefix )
       path_prefix = string( p_path_prefix );
 
@@ -744,12 +820,14 @@ void mime_encoder::add_image( const string& file_name, const char* p_path_prefix
    }
 
    pos = file.find_last_of( "." );
+
    if( pos == string::npos )
       throw runtime_error( "mime_encoder::add_image no file extension in '" + file + "'" );
 
    string file_type( lower( file.substr( pos + 1 ) ) );
 
    pos = name.find( "." );
+
    if( pos == string::npos )
       name += "." + file_type;
 
@@ -757,6 +835,7 @@ void mime_encoder::add_image( const string& file_name, const char* p_path_prefix
       file_type = "jpeg";
 
    string encoding( "base64" );
+
    if( p_encoding )
       encoding = string( p_encoding );
 
@@ -768,6 +847,7 @@ void mime_encoder::add_image( const string& file_name, const char* p_path_prefix
    p_impl->data += string( "Content-Transfer-Encoding: " ) + encoding + g_new_line + g_new_line;
 
    string file_data = buffer_file( full_path );
+
    if( encoding == "base64" )
    {
       file_data = base64::encode( file_data );
@@ -814,8 +894,10 @@ string mime_encoder::get_data( )
       if( is_multi )
       {
          final_data += "Content-Type: multipart/" + p_impl->multi_part_subtype + ";";
+
          if( !p_impl->multi_part_extra_subtype.empty( ) )
             final_data += " type=\"multipart/" + p_impl->multi_part_extra_subtype + "\";";
+
          final_data += string( " boundary=\"" ) + p_impl->mime_boundary + "\"" + g_new_line + g_new_line;
 
          if( !p_impl->is_child )
@@ -838,4 +920,3 @@ string mime_encoder::get_data( )
 
    return p_impl->data;
 }
-

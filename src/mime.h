@@ -27,15 +27,25 @@ class mime_decoder
 {
    public:
    mime_decoder( const std::string& mime_data );
+
    ~mime_decoder( );
 
    std::string get_type( ) const;
    std::string get_subtype( ) const;
+
+   std::string get_boundary( ) const;
+
    std::string get_encoding( ) const;
+
    std::string get_attribute( ) const;
+
+   std::string get_form_data( ) const;
    std::string get_text_data( ) const;
 
+   size_t get_text_size( ) const;
+
    bool has_child( );
+
    mime_decoder& get_child( );
 
    size_t num_parts( ) const;
@@ -83,4 +93,3 @@ class mime_encoder
 };
 
 #endif
-
