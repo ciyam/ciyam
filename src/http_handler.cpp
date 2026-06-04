@@ -27,6 +27,7 @@
 #include "ciyam_base.h"
 #include "ssl_socket.h"
 #include "ciyam_session.h"
+#include "ciyam_variables.h"
 
 //#define DEBUG
 
@@ -63,6 +64,7 @@ const char* const c_index_html = "index.html";
 
 const char* const c_echo_endpoint = "echo";
 const char* const c_upload_endpoint = "upload";
+const char* const c_version_endpoint = "version";
 
 const char* const c_boundary_prefix = "boundary=";
 
@@ -107,6 +109,7 @@ const char* const c_http_content_type_image_jpg = "image/jpg";
 const char* const c_http_content_type_image_png = "image/png";
 
 const char* const c_http_content_type_application_form = "application/x-www-form-urlencoded";
+const char* const c_http_content_type_application_json = "application/json";
 
 const char* const c_http_content_type_multipart_form_data = "multipart/form-data";
 
@@ -118,9 +121,16 @@ const char* const c_not_found_html_response = "<html>\n<head><title>Document Not
 
 const char* const c_replace_document_marker = "DOCUMENT";
 
+const char* const c_query_param_name_format = "format";
+
+const char* const c_query_param_value_json = "json";
+const char* const c_query_param_value_text = "text";
+
 const int c_num_retries = 5;
 
 const int c_minimum_timeout = 25;
+
+const int c_max_empty_chunks = 10;
 
 #ifdef LOCAL_REQUESTS_ONLY
 const int c_accept_timeout = 500;
@@ -140,7 +150,7 @@ const int c_subsequent_timeout = 1000;
 const int c_response_timeout = 2000;
 #endif
 
-const size_t c_max_data_for_post = 100000;
+const size_t c_max_data_for_post = 5000000;
 
 string format_date_time( const date_time& dtm )
 {
@@ -164,6 +174,46 @@ string format_date_time( const date_time& dtm )
    formatted_date_time += " GMT";
 
    return formatted_date_time;
+}
+
+bool parse_query_params( const string& qry_info, map< string, string >& params )
+{
+   bool retval = true;
+
+   if( !qry_info.empty( ) )
+   {
+      vector< string > pairs;
+
+      split( qry_info, pairs, '&' );
+
+      for( size_t i = 0; i < pairs.size( ); i++ )
+      {
+         string next_pair( pairs[ i ] );
+
+         string::size_type pos = next_pair.find( '=' );
+
+         if( pos == string::npos )
+         {
+            retval = false;
+
+            break;
+         }
+
+         string name( next_pair.substr( 0, pos ) );
+         string value( next_pair.substr( pos + 1 ) );
+
+         if( params.count( name ) )
+         {
+            retval = false;
+
+            break;
+         }
+
+         params[ name ] = value;
+      }
+   }
+
+   return retval;
 }
 
 }
@@ -357,6 +407,7 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
             bool found = false;
             bool was_endpoint = false;
+            bool is_json_output = false;
 
             ostringstream osstr;
 
@@ -368,7 +419,26 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
             if( document.empty( ) )
                document = c_index_html;
 
-            if( header_info.count( c_http_content_length_header ) )
+            map< string, string > params;
+
+            if( !qry_info.empty( ) )
+            {
+               if( !parse_query_params( qry_info, params ) )
+                  error = "Invalid query parameters '" + qry_info + ".\n";
+               else
+               {
+                  if( params.count( c_query_param_name_format ) )
+                  {
+                     if( params[ c_query_param_name_format ] == c_query_param_value_json )
+                        is_json_output = true;
+                     else if( params[ c_query_param_name_format ] != c_query_param_value_text )
+                        error = "Invalid query parameter value in '" + qry_info + "' for version.\n";
+                  }
+               }
+            }
+
+            if( error.empty( )
+             && header_info.count( c_http_content_length_header ) )
             {
                size_t data_length = from_string< size_t >( header_info[ c_http_content_length_header ] );
 
@@ -378,14 +448,65 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
                   int received = p_socket->recv_n( ( unsigned char* )data.data( ), data_length, c_subsequent_timeout );
 
-                  if( received < data_length )
-                     data.erase( received );
+                  if( received < 0 )
+                  {
+                     data.erase( );
+
+                     error = "Unexpected error occurred reading post data.\n";
+                  }
+                  else
+                  {
+                     if( received < data_length )
+                     {
+                        size_t remaining = ( data_length - received );
+
+                        bool had_error = false;
+
+                        size_t empty_chunks = 0;
+
+                        while( remaining )
+                        {
+#ifdef DEBUG
+                           cerr << "received = " << received << endl;
+                           cerr << "remaining = " << remaining << endl;
+#endif
+                           int next_chunk = p_socket->recv_n(
+                            ( unsigned char* )data.data( ) + received, remaining, c_subsequent_timeout );
+#ifdef DEBUG
+                           cerr << "next_chunk = " << next_chunk << '\n' << endl;
+#endif
+                           if( next_chunk < 0 )
+                              had_error = true;
+                           else if( next_chunk == 0 )
+                           {
+                              if( ++empty_chunks > c_max_empty_chunks )
+                                 had_error = true;
+                           }
+                           else
+                           {
+                              received += next_chunk;
+                              remaining -= next_chunk;
+                           }
+
+                           if( had_error )
+                           {
+                              data.erase( );
+
+                              error = "Unexpected error occurred reading post data.\n";
+
+                              break;
+                           }
+                        }
+                     }
+                  }
                }
                else
                   error = "Post data is too large (maximum size is " + to_string( c_max_data_for_post ) + " bytes).\n";
             }
 
             bool unchanged = false;
+
+            bool has_content_type = false;
 
             date_time now( date_time::standard( ) );
 
@@ -399,15 +520,21 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
                   was_endpoint = true;
 
-                  osstr << c_http_1_1 << ' ' << c_http_200_OK
-                   << '\n' << c_http_date_prefix << formatted_dtm << '\n';
-
                   if( !header_info.count( c_http_content_type_header ) )
                      header_info[ c_http_content_type_header ] = c_http_content_type_text_plain;
 
+                  has_content_type = true;
+
+                  osstr << c_http_1_1 << ' ' << c_http_200_OK
+                   << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+
                   osstr << c_http_content_type_prefix << header_info[ c_http_content_type_header ] << '\n';
 
-                  response = data;
+                  if( !is_json_output )
+                     response = data + '\n';
+                  else
+                     response = "{\"data\":\"" + data + "\"}";
+
                }
                else if( document == c_upload_endpoint )
                {
@@ -416,6 +543,8 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                   was_endpoint = true;
 
                   string boundary, filename, local_filename;
+
+                  has_content_type = true;
 
                   osstr << c_http_1_1 << ' ' << c_http_200_OK
                    << '\n' << c_http_date_prefix << formatted_dtm << '\n';
@@ -541,6 +670,19 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                   response = "Uploaded as \"" + local_filename + "\" (" + to_string( uploaded_size ) + " bytes).\n";
                }
             }
+            else if( error.empty( ) && ( document == c_version_endpoint ) )
+            {
+               found = true;
+
+               was_endpoint = true;
+
+               string version( get_system_variable( e_special_var_version ) );
+
+               if( !is_json_output )
+                  response = version + '\n';
+               else
+                  response = "{\"version\":\"" + version + "\"}";
+            }
 
             if( response.empty( ) )
             {
@@ -580,6 +722,8 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                         {
                            unchanged = true;
 
+                           has_content_type = true;
+
                            osstr << c_http_1_1 << ' ' << c_http_304_Not_Mod << "\n\n";
                         }
                      }
@@ -595,6 +739,8 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                   if( !unchanged )
                   {
                      string formatted_document_dtm( format_date_time( doc_modified ) );
+
+                     has_content_type = true;
 
                      osstr << c_http_1_1 << ' ' << c_http_200_OK
                       << '\n' << c_http_date_prefix << formatted_dtm
@@ -623,6 +769,21 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
             if( found )
             {
+               if( !has_content_type )
+               {
+                  osstr << c_http_1_1 << ' ' << c_http_200_OK
+                   << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+
+                  osstr << c_http_content_type_prefix;
+
+                  if( !is_json_output )
+                     osstr << c_http_content_type_text_plain;
+                  else
+                     osstr << c_http_content_type_application_json;
+
+                  osstr << '\n';
+               }
+
                if( !unchanged && response.empty( ) )
                   response = c_html_test_response;
 
@@ -642,9 +803,15 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
                replace( response, c_replace_document_marker, document );
 
-               osstr << c_http_1_1 << ' ' << c_http_404_Not_Found << '\n'
-                << c_http_content_type_prefix << c_http_content_type_text_html_utf8
-                << '\n' << c_http_content_length_prefix << to_string( response.length( ) ) << "\n\n" << response;
+               osstr << c_http_1_1 << ' '
+                << c_http_404_Not_Found << '\n' << c_http_content_type_prefix;
+
+               if( !is_json_output )
+                  osstr << c_http_content_type_text_plain;
+               else
+                  osstr << c_http_content_type_application_json;
+
+               osstr << '\n' << c_http_content_length_prefix << to_string( response.length( ) ) << "\n\n" << response;
             }
 
             response = osstr.str( );
