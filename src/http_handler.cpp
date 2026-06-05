@@ -42,20 +42,26 @@ extern volatile sig_atomic_t g_server_shutdown;
 namespace
 {
 
-const char* const c_ext_css = "css";
+#include "ciyam_constants.h"
 
+const char* const c_ext_css = "css";
 const char* const c_ext_gif = "gif";
+const char* const c_ext_htm = "htm";
 const char* const c_ext_jpg = "jpg";
 const char* const c_ext_png = "png";
-
 const char* const c_ext_ttf = "ttf";
+const char* const c_ext_html = "html";
 
 const char* const c_data_text = "text";
 const char* const c_data_image = "image";
 const char* const c_data_filename = "filename";
 const char* const c_data_application = "application";
 
+const char* const c_all_specials = " !\"#$%&'()*+,-./<=>?@[\\]^`{|}~";
+
 const char* const c_data_separator = "\r\n\r\n";
+
+const char* const c_json_escape_specials = "bfnrt\b\f\n\r\t";
 
 const char* const c_get_request = "GET ";
 const char* const c_post_request = "POST ";
@@ -64,6 +70,7 @@ const char* const c_index_html = "index.html";
 
 const char* const c_echo_endpoint = "echo";
 const char* const c_upload_endpoint = "upload";
+const char* const c_ip_addr_endpoint = "ip_addr";
 const char* const c_version_endpoint = "version";
 
 const char* const c_boundary_prefix = "boundary=";
@@ -81,6 +88,7 @@ const char* const c_http_400_Bad_Req = "400 Bad Request";
 const char* const c_http_404_Not_Found = "404 Not Found";
 
 const char* const c_http_date_prefix = "Date: ";
+const char* const c_http_server_prefix = "Server: ";
 const char* const c_http_modified_prefix = "Last-Modified: ";
 const char* const c_http_content_type_prefix = "Content-Type: ";
 const char* const c_http_content_length_prefix = "Content-Length: ";
@@ -101,8 +109,10 @@ const char* const c_http_content_type_font_ttf = "font/ttf";
 
 const char* const c_http_content_type_text_csv = "text/csv";
 const char* const c_http_content_type_text_plain = "text/plain";
+
 const char* const c_http_content_type_text_css_utf8 = "text/css; charset=UTF-8";
 const char* const c_http_content_type_text_html_utf8 = "text/html; charset=UTF-8";
+const char* const c_http_content_type_text_plain_utf8 = "text/plain; charset=UTF-8";
 
 const char* const c_http_content_type_image_gif = "image/gif";
 const char* const c_http_content_type_image_jpg = "image/jpg";
@@ -151,6 +161,38 @@ const int c_response_timeout = 2000;
 #endif
 
 const size_t c_max_data_for_post = 5000000;
+
+inline string escaped_json( const string& s )
+{
+   return escaped( s, "/\"", '\\', c_json_escape_specials );
+}
+
+void restore_specials( string& str )
+{
+   string specials( c_all_specials );
+
+   vector< string > hex_specials;
+
+   for( size_t i = 0; i < specials.size( ); i++ )
+   {
+      string special;
+
+      hex_encode( special, ( const unsigned char* )&specials[ i ], 1 );
+
+      special = "%" + special;
+
+      string::size_type pos = str.find( special );
+
+      while( pos != string::npos )
+      {
+         str.erase( pos, special.size( ) );
+
+         str.insert( pos, 1, specials[ i ] );
+
+         pos = str.find( special );
+      }
+   }
+}
 
 string format_date_time( const date_time& dtm )
 {
@@ -219,9 +261,9 @@ bool parse_query_params( const string& qry_info, map< string, string >& params )
 }
 
 #ifdef SSL_SUPPORT
-void handle_http_request( ssl_socket* p_socket, const string& address )
+void handle_http_request( ssl_socket* p_socket, const string& ip_addr )
 #else
-void handle_http_request( tcp_socket* p_socket, const string& address )
+void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
 #endif
 {
    if( p_socket )
@@ -406,6 +448,7 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 #endif
 
             bool found = false;
+
             bool was_endpoint = false;
             bool is_json_output = false;
 
@@ -521,20 +564,19 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                   was_endpoint = true;
 
                   if( !header_info.count( c_http_content_type_header ) )
-                     header_info[ c_http_content_type_header ] = c_http_content_type_text_plain;
+                     header_info[ c_http_content_type_header ] = c_http_content_type_text_plain_utf8;
 
                   has_content_type = true;
 
-                  osstr << c_http_1_1 << ' ' << c_http_200_OK
-                   << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+                  osstr << c_http_1_1 << ' ' << c_http_200_OK << '\n'
+                   << c_http_server_prefix << c_CIYAM << '\n' << c_http_date_prefix << formatted_dtm << '\n';
 
                   osstr << c_http_content_type_prefix << header_info[ c_http_content_type_header ] << '\n';
 
                   if( !is_json_output )
                      response = data + '\n';
                   else
-                     response = "{\"data\":\"" + data + "\"}";
-
+                     response = "{\"data\":\"" + escaped_json( data ) + "\"}";
                }
                else if( document == c_upload_endpoint )
                {
@@ -546,8 +588,8 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
                   has_content_type = true;
 
-                  osstr << c_http_1_1 << ' ' << c_http_200_OK
-                   << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+                  osstr << c_http_1_1 << ' ' << c_http_200_OK << '\n'
+                   << c_http_server_prefix << c_CIYAM << '\n' << c_http_date_prefix << formatted_dtm << '\n';
 
                   size_t uploaded_size = data.length( );
 
@@ -569,7 +611,7 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                      }
                   }
 
-                  osstr << c_http_content_type_prefix << header_info[ c_http_content_type_header ] << '\n';
+                  osstr << c_http_content_type_prefix << c_http_content_type_text_plain_utf8 << '\n';
 
                   if( !boundary.empty( ) )
                   {
@@ -647,6 +689,8 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                                  if( name == c_data_filename )
                                  {
                                     filename = value;
+
+                                    restore_specials( filename );
 #ifdef DEBUG
                                     cerr << "\n==> filename uploaded \"" << filename << "\"" << endl;
 #endif
@@ -670,18 +714,32 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                   response = "Uploaded as \"" + local_filename + "\" (" + to_string( uploaded_size ) + " bytes).\n";
                }
             }
-            else if( error.empty( ) && ( document == c_version_endpoint ) )
+            else if( error.empty( ) )
             {
-               found = true;
+               if( document == c_ip_addr_endpoint )
+               {
+                  found = true;
 
-               was_endpoint = true;
+                  was_endpoint = true;
 
-               string version( get_system_variable( e_special_var_version ) );
+                  if( !is_json_output )
+                     response = ip_addr + '\n';
+                  else
+                     response = "{\"ip_addr\":\"" + escaped_json( ip_addr ) + "\"}";
+               }
+               else if( document == c_version_endpoint )
+               {
+                  found = true;
 
-               if( !is_json_output )
-                  response = version + '\n';
-               else
-                  response = "{\"version\":\"" + version + "\"}";
+                  was_endpoint = true;
+
+                  string version( get_system_variable( e_special_var_version ) );
+
+                  if( !is_json_output )
+                     response = version + '\n';
+                  else
+                     response = "{\"version\":\"" + version + "\"}";
+               }
             }
 
             if( response.empty( ) )
@@ -743,6 +801,7 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                      has_content_type = true;
 
                      osstr << c_http_1_1 << ' ' << c_http_200_OK
+                      << '\n' << c_http_server_prefix << c_CIYAM
                       << '\n' << c_http_date_prefix << formatted_dtm
                       << '\n' << c_http_modified_prefix << formatted_document_dtm
                       << '\n' << c_http_connection_header_info << '\n' << c_http_keep_alive_header_info << '\n';
@@ -750,17 +809,21 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                      osstr << c_http_content_type_prefix;
 
                      if( extension == c_ext_css )
-                        osstr << c_http_content_type_text_css_utf8 << '\n';
+                        osstr << c_http_content_type_text_css_utf8;
                      else if( extension == c_ext_gif )
-                        osstr << c_http_content_type_image_gif << '\n';
+                        osstr << c_http_content_type_image_gif;
                      else if( extension == c_ext_jpg )
-                        osstr << c_http_content_type_image_jpg << '\n';
+                        osstr << c_http_content_type_image_jpg;
                      else if( extension == c_ext_png )
-                        osstr << c_http_content_type_image_png << '\n';
+                        osstr << c_http_content_type_image_png;
                      else if( extension == c_ext_ttf )
-                        osstr << c_http_content_type_font_ttf << '\n';
+                        osstr << c_http_content_type_font_ttf;
+                     else if( ( extension == c_ext_htm ) || ( extension == c_ext_html ) )
+                        osstr << c_http_content_type_text_html_utf8;
                      else
-                        osstr << c_http_content_type_text_html_utf8 << '\n';
+                        osstr << c_http_content_type_text_plain_utf8;
+
+                     osstr << '\n';
 
                      response = buffer_file( path + document );
                   }
@@ -771,15 +834,19 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
             {
                if( !has_content_type )
                {
-                  osstr << c_http_1_1 << ' ' << c_http_200_OK
-                   << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+                  osstr << c_http_1_1 << ' ' << c_http_200_OK << '\n'
+                   << c_http_server_prefix << c_CIYAM << '\n' << c_http_date_prefix << formatted_dtm << '\n';
 
                   osstr << c_http_content_type_prefix;
 
                   if( !is_json_output )
-                     osstr << c_http_content_type_text_plain;
+                     osstr << c_http_content_type_text_plain_utf8;
                   else
+                  {
                      osstr << c_http_content_type_application_json;
+
+                     response = response;
+                  }
 
                   osstr << '\n';
                }
@@ -788,13 +855,12 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
                   response = c_html_test_response;
 
                if( !response.empty( ) )
-                  osstr << c_http_content_length_prefix
-                   << to_string( response.length( ) ) << "\n\n" << response;
+                  osstr << c_http_content_length_prefix << to_string( response.length( ) ) << "\n\n" << response;
             }
             else if( !error.empty( ) )
             {
                osstr << c_http_1_1 << ' ' << c_http_400_Bad_Req << '\n'
-                << c_http_content_type_prefix << c_http_content_type_text_html_utf8
+                << c_http_content_type_prefix << c_http_content_type_text_plain_utf8
                 << '\n' << c_http_content_length_prefix << to_string( error.length( ) ) << "\n\n" << error;
             }
             else
@@ -803,15 +869,10 @@ void handle_http_request( tcp_socket* p_socket, const string& address )
 
                replace( response, c_replace_document_marker, document );
 
-               osstr << c_http_1_1 << ' '
-                << c_http_404_Not_Found << '\n' << c_http_content_type_prefix;
+               osstr << c_http_1_1 << ' ' << c_http_404_Not_Found << '\n'
+                << c_http_content_type_prefix << c_http_content_type_text_plain_utf8 << '\n';
 
-               if( !is_json_output )
-                  osstr << c_http_content_type_text_plain;
-               else
-                  osstr << c_http_content_type_application_json;
-
-               osstr << '\n' << c_http_content_length_prefix << to_string( response.length( ) ) << "\n\n" << response;
+               osstr << c_http_content_length_prefix << to_string( response.length( ) ) << "\n\n" << response;
             }
 
             response = osstr.str( );
