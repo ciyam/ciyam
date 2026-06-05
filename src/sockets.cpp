@@ -83,11 +83,13 @@ struct scoped_empty_file_delete
 
 ip_address::ip_address( int port )
 {
-   memset( this, 0, sizeof( sockaddr_in ) );
+   memset( this, 0, sizeof( sockaddr_in6 ) );
 
-   sin_family = AF_INET;
-   sin_addr.s_addr = htonl( INADDR_ANY );
-   sin_port = htons( ( u_short )port );
+   sin6_family = AF_INET6;
+
+   sin6_addr = in6addr_any;
+
+   sin6_port = htons( port );
 }
 
 ip_address::ip_address( const char* p_address, int port )
@@ -98,38 +100,36 @@ ip_address::ip_address( const char* p_address, int port )
 ip_address& ip_address::operator =( const char* p_address )
 {
    resolve( p_address );
+
    return *this;
 }
 
 void ip_address::resolve( const char* p_address, int port )
 {
-   memset( this, 0, sizeof( sockaddr_in ) );
+   memset( this, 0, sizeof( sockaddr_in6 ) );
 
-   sin_family = AF_INET;
-   sin_addr.s_addr = inet_addr( p_address );
+   sin6_family = AF_INET6;
 
-   if( sin_addr.s_addr == INADDR_NONE && strcmp( p_address, "255.255.255.255" ) != 0 )
-   {
-      HOSTENT* p_host = ::gethostbyname( p_address );
+   hostent* p_host = ::gethostbyname2( p_address, AF_INET6 );
 
-      if( p_host )
-         sin_addr.s_addr = ( ( IN_ADDR* )p_host->h_addr )->s_addr;
-      else
-         sin_addr.s_addr = INADDR_ANY;
-   }
+   if( !p_host )
+      sin6_addr = in6addr_any;
+   else
+      memcpy( &sin6_addr, p_host->h_addr_list[ 0 ], sizeof( sin6_addr ) );
 
-   sin_port = htons( ( u_short )port );
+   sin6_port = htons( port );
 }
 
 string ip_address::get_addr_string( ) const
 {
 #ifdef __GNUG__
-   char buf[ 64 ];
+   char buf[ INET6_ADDRSTRLEN ] = "";
 
-   ::inet_ntop( AF_INET, &( sin_addr ), buf, sizeof( buf ) ); // NOTE: use AF_INET ==> AF_INET6 for ipv6
+   ::inet_ntop( AF_INET6, &( sin6_addr ), buf, sizeof( buf ) );
 #else
 #  error get_addr_string not implemented for this platform
 #endif
+
    return string( buf );
 }
 
@@ -168,7 +168,7 @@ void socket_base::close( )
 
 bool socket_base::bind( const ip_address& addr )
 {
-   return ::bind( socket, ( const sockaddr* )&addr, sizeof( sockaddr ) ) != SOCKET_ERROR;
+   return ::bind( socket, ( const sockaddr* )&addr, sizeof( addr ) ) != SOCKET_ERROR;
 }
 
 SOCKET socket_base::accept( ip_address& addr, size_t timeout ) const
@@ -182,7 +182,7 @@ SOCKET socket_base::accept( ip_address& addr, size_t timeout ) const
       return INVALID_SOCKET;
    else
    {
-      socklen_t len = sizeof( sockaddr );
+      socklen_t len = sizeof( addr );
 
       return ::accept( socket, ( sockaddr* )&addr, &len );
    }
@@ -196,10 +196,11 @@ bool socket_base::connect( const ip_address& addr, size_t timeout )
 
       if( set_non_blocking( ) )
       {
-         ::connect( socket, ( const sockaddr* )&addr, sizeof( sockaddr ) );
+         ::connect( socket, ( const sockaddr* )&addr, sizeof( addr ) );
 
-         struct sockaddr_in peeraddr;
-         socklen_t peeraddrlen;
+         struct sockaddr_in6 peer_addr;
+
+         socklen_t peer_addr_len;
 
          fd_set fdset;
          struct timeval tv;
@@ -213,9 +214,10 @@ bool socket_base::connect( const ip_address& addr, size_t timeout )
          if( ::select( socket + 1, 0, &fdset, 0, &tv ) == 1 )
          {
             // NOTE: The "getpeername" call is used to detect connection when non-blocking.
-            if( ::getpeername( socket, ( struct sockaddr* )&peeraddr, &peeraddrlen ) == 0 )
+            if( ::getpeername( socket, ( struct sockaddr* )&peer_addr, &peer_addr_len ) == 0 )
             {
                int so_error = 1;
+
                socklen_t len = sizeof( so_error );
 
                ::getsockopt( socket, SOL_SOCKET, SO_ERROR, ( char* )&so_error, &len );
@@ -223,6 +225,7 @@ bool socket_base::connect( const ip_address& addr, size_t timeout )
                if( !so_error )
                {
                   set_blocking( );
+
                   connected = true;
                }
             }
@@ -232,7 +235,7 @@ bool socket_base::connect( const ip_address& addr, size_t timeout )
       return connected;
    }
    else
-      return ::connect( socket, ( const sockaddr* )&addr, sizeof( sockaddr ) ) != SOCKET_ERROR;
+      return ::connect( socket, ( const sockaddr* )&addr, sizeof( addr ) ) != SOCKET_ERROR;
 }
 
 bool socket_base::listen( )
@@ -493,7 +496,7 @@ bool tcp_socket::open( )
    ::setsockopt( socket, SOL_SOCKET, SO_SNDTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
 
    if( socket == INVALID_SOCKET )
-      socket = ::socket( AF_INET, SOCK_STREAM, 0 );
+      socket = ::socket( AF_INET6, SOCK_STREAM, 0 );
 
    return ( socket != INVALID_SOCKET );
 }
@@ -684,7 +687,7 @@ udp_socket::udp_socket( SOCKET socket )
 bool udp_socket::open( )
 {
    if( socket == INVALID_SOCKET )
-      socket = ::socket( AF_INET, SOCK_DGRAM, 0 );
+      socket = ::socket( AF_INET6, SOCK_DGRAM, 0 );
 
    return ( socket != INVALID_SOCKET );
 }

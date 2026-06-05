@@ -23,7 +23,7 @@ struct progress;
 const size_t c_default_accept_timeout = 30000;
 const size_t c_default_connect_timeout = 30000;
 
-class ip_address : public sockaddr_in
+class ip_address : public sockaddr_in6
 {
    public:
    ip_address( int port = 0 );
