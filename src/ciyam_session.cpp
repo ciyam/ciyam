@@ -9154,8 +9154,7 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
    if( !( *up_socket ) )
       throw runtime_error( "unexpected invalid socket in ciyam_session::ciyam_session" );
 
-   if( ( ip_addr == c_local_ip_addr )
-    || ( ip_addr == c_local_ip_addr_for_ipv6 ) )
+   if( ip_addr == c_local_ip_addr )
       is_local = true;
 
 #ifdef SSL_SUPPORT

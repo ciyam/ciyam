@@ -1496,8 +1496,6 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                }
                else
                {
-                  // FUTURE: Support for HTTPS should be an option and if not being used then Sign In/Up
-                  // should not be menus but just direct links to the "client crypto" implementations.
                   extra_content << "<div id=\"sign\"><ul><li><a href=\"#\">" << GDS( c_display_sign_in ) << "</a>";
 
                   extra_content << "<div id=\"sign_in_up\"><ul>";
@@ -1526,7 +1524,6 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      testers.insert( "10.0.0.1" );
 
                      testers.insert( c_local_ip_addr );
-                     testers.insert( c_local_ip_addr_for_ipv6 );
 
                      buffer_file_lines( c_sign_up_testers_file, testers );
                   }
