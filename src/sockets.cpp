@@ -55,6 +55,13 @@ const char c_extra_separator = '#';
 const char* const c_bye = "bye";
 const char* const c_base64_format = ".b64";
 
+const char* const c_ipv6_local = "::1";
+const char* const c_ipv4_local = "127.0.0.1";
+
+const char* const c_ipv4_prefix = "::ffff:";
+
+const size_t c_ipv4_prefix_len = 7;
+
 const char* const c_local_host = "localhost";
 
 const char* const c_env_var_name_slotx = "SLOTX";
@@ -81,9 +88,14 @@ struct scoped_empty_file_delete
 #  define SOCKET_ERROR -1
 #endif
 
+bool is_local_address( const string& ip_addr )
+{
+   return ( ( ip_addr == c_ipv4_local ) || ( ip_addr == c_ipv6_local ) );
+}
+
 ip_address::ip_address( int port )
 {
-   memset( this, 0, sizeof( sockaddr_in6 ) );
+   memset( this, 0, sizeof( ip_address ) );
 
    sin6_family = AF_INET6;
 
@@ -106,11 +118,11 @@ ip_address& ip_address::operator =( const char* p_address )
 
 void ip_address::resolve( const char* p_address, int port )
 {
-   memset( this, 0, sizeof( sockaddr_in6 ) );
+   memset( this, 0, sizeof( ip_address ) );
 
    sin6_family = AF_INET6;
 
-   hostent* p_host = ::gethostbyname2( p_address, AF_INET6 );
+   HOSTENT* p_host = ::gethostbyname2( p_address, AF_INET6 );
 
    if( !p_host )
       sin6_addr = in6addr_any;
@@ -130,7 +142,17 @@ string ip_address::get_addr_string( ) const
 #  error get_addr_string not implemented for this platform
 #endif
 
-   return string( buf );
+   string addr( buf );
+
+   string::size_type pos = addr.find( c_ipv4_prefix );
+
+   // NOTE: If is a mapped IPv4 address then removes
+   // the prefix (so IPv4 address names will match).
+   if( ( pos == 0 )
+    && ( addr.length( ) >= ( c_ipv4_prefix_len * 2 ) ) )
+      addr.erase( 0, c_ipv4_prefix_len );
+
+   return addr;
 }
 
 socket_base::socket_base( )
@@ -151,7 +173,7 @@ socket_base::socket_base( SOCKET socket, bool close_in_dtor )
 
 socket_base::~socket_base( )
 {
-   if( close_in_dtor && socket != INVALID_SOCKET )
+   if( close_in_dtor && ( socket != INVALID_SOCKET ) )
       close( );
 }
 
@@ -159,7 +181,8 @@ void socket_base::close( )
 {
    if( socket != INVALID_SOCKET )
    {
-      ::shutdown( socket, 2 );
+      ::shutdown( socket, SHUT_RDWR );
+
       ::close( socket );
    }
 
@@ -209,6 +232,7 @@ bool socket_base::connect( const ip_address& addr, size_t timeout )
          tv.tv_usec = ( timeout % 1000 ) * 1000;
 
          FD_ZERO( &fdset );
+
          FD_SET( socket, &fdset );
 
          if( ::select( socket + 1, 0, &fdset, 0, &tv ) == 1 )
@@ -299,12 +323,14 @@ bool socket_base::has_input( size_t timeout ) const
    if( socket != INVALID_SOCKET )
    {
       fd_set rfds;
+
       struct timeval tv;
 
       tv.tv_sec = timeout / 1000;
       tv.tv_usec = ( timeout % 1000 ) * 1000;
 
       FD_ZERO( &rfds );
+
       FD_SET( socket, &rfds );
 
       // NOTE: This function will indicate success even if the "select" return code has
@@ -324,12 +350,14 @@ bool socket_base::can_output( size_t timeout ) const
    if( socket != INVALID_SOCKET )
    {
       fd_set wfds;
+
       struct timeval tv;
 
       tv.tv_sec = timeout / 1000;
       tv.tv_usec = ( timeout % 1000 ) * 1000;
 
       FD_ZERO( &wfds );
+
       FD_SET( socket, &wfds );
 
       // NOTE: This function will indicate success even if the "select" return code has
@@ -401,7 +429,7 @@ int socket_base::send( const unsigned char* p_buf, int buflen, size_t timeout )
 
 int socket_base::recv_n( unsigned char* p_buf, int buflen, size_t timeout, progress* p_progress )
 {
-   int n;
+   int n = 0;
    int rcvd = 0;
 
    while( rcvd != buflen )
@@ -414,7 +442,7 @@ int socket_base::recv_n( unsigned char* p_buf, int buflen, size_t timeout, progr
       rcvd += n;
    }
 
-   if( p_progress && rcvd )
+   if( rcvd && p_progress )
    {
       string suffix;
 
@@ -429,7 +457,7 @@ int socket_base::recv_n( unsigned char* p_buf, int buflen, size_t timeout, progr
 
 int socket_base::send_n( const unsigned char* p_buf, int buflen, size_t timeout, progress* p_progress )
 {
-   int n;
+   int n = 0;
    int sent = 0;
 
    while( sent != buflen )
@@ -442,7 +470,7 @@ int socket_base::send_n( const unsigned char* p_buf, int buflen, size_t timeout,
       sent += n;
    }
 
-   if( p_progress && sent )
+   if( sent && p_progress )
    {
       string suffix;
       string write_string( "<W< " );
@@ -490,6 +518,7 @@ bool tcp_socket::open( )
    // NOTE: In order to stop connections from taking too long a 20 second timeout is specified
    // (other later operations such as sends and receives can have specific timeouts provided).
    struct timeval tv;
+
    tv.tv_sec = 20; // i.e. 20 seconds
 
    ::setsockopt( socket, SOL_SOCKET, SO_RCVTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
@@ -498,12 +527,22 @@ bool tcp_socket::open( )
    if( socket == INVALID_SOCKET )
       socket = ::socket( AF_INET6, SOCK_STREAM, 0 );
 
+   // NOTE: Need to switch off the IPV6_ONLY option
+   // in order to allow both IPv6 and IPv4 to work.
+   if( socket != INVALID_SOCKET )
+   {
+      int v6_only = 0;
+
+      ::setsockopt( socket, IPPROTO_IPV6, IPV6_V6ONLY, &v6_only, sizeof( v6_only ) );
+   }
+
    return ( socket != INVALID_SOCKET );
 }
 
 bool tcp_socket::get_delay( )
 {
    int val = 0;
+
    socklen_t len = sizeof( val );
 
    get_option( IPPROTO_TCP, TCP_NODELAY, ( char* )&val, len );
@@ -544,6 +583,7 @@ int tcp_socket::read_line( string& str, size_t timeout, int max_chars, progress*
 int tcp_socket::read_line( char* p_data, size_t timeout, int max_chars, progress* p_progress, string* p_str )
 {
    int n = 0, o = 0;
+
    unsigned char b, lb = '\0';
 
    blank_line = false;
@@ -586,7 +626,7 @@ int tcp_socket::read_line( char* p_data, size_t timeout, int max_chars, progress
       lb = b;
    }
 
-   if( p_progress && o )
+   if( o && p_progress )
    {
       if( p_str )
          p_progress->output_progress( ">R> " + to_comparable_string( num_read_lines, false, 9 ) + ' ' + *p_str );
@@ -606,9 +646,9 @@ int tcp_socket::write_line( const string& str, size_t timeout, progress* p_progr
 
    string::size_type len( str.length( ) );
 
-   if( len >= 1 && str[ len - 1 ] == '\n' )
+   if( ( len >= 1 ) && ( str[ len - 1 ] == '\n' ) )
    {
-      if( len < 2 || str[ len - 2 ] != '\r' )
+      if( ( len < 2 ) || ( str[ len - 2 ] != '\r' ) )
          truncate = true;
       else
          terminated = true;
@@ -618,7 +658,7 @@ int tcp_socket::write_line( const string& str, size_t timeout, progress* p_progr
 
    const char* p_data( 0 );
 
-   if( len == 0 || ( truncate && len == 1 ) || ( terminated && len == 2 ) )
+   if( ( len == 0 ) || ( truncate && len == 1 ) || ( terminated && len == 2 ) )
       n = 0;
    else
    {
@@ -633,7 +673,8 @@ int tcp_socket::write_line( const string& str, size_t timeout, progress* p_progr
 
          s += "\r\n";
 
-         len += 2 - truncate;
+         len += ( 2 - truncate );
+
          p_data = s.c_str( );
       }
    }
@@ -650,7 +691,8 @@ int tcp_socket::write_line( int len, const char* p_data, size_t timeout, progres
 
    if( len )
    {
-      if( len < 2 || !( p_data[ len - 2 ] == '\r' && p_data[ len - 1 ] == '\n' ) )
+      if( ( len < 2 )
+       || !( ( p_data[ len - 2 ] == '\r' ) && ( p_data[ len - 1 ] == '\n' ) ) )
          throw runtime_error( "write_line data must have CRLF termination" );
 
       if( p_progress )
@@ -714,7 +756,7 @@ int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, size_t timeou
    else
       n = ::recvfrom( socket, p_buffer, buflen, 0, 0, 0 );
 
-   if( n > 0 && p_progress )
+   if( ( n > 0 ) && p_progress )
    {
       string suffix;
 
@@ -737,6 +779,7 @@ int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, ip_address& a
       okay = has_input( timeout );
 
    int n = 0;
+
    socklen_t addrlen;
 
    if( !okay )
@@ -773,7 +816,7 @@ int udp_socket::send_to( const unsigned char* p_buffer, size_t buflen, const ip_
    else
       n = ::sendto( socket, p_buffer, buflen, 0, ( const struct sockaddr* )&addr, ( socklen_t )sizeof( addr ) );
 
-   if( n > 0 && p_progress )
+   if( ( n > 0 ) && p_progress )
    {
       string suffix;
       string write_string( "<W<~" );
@@ -1110,15 +1153,17 @@ size_t file_transfer( const string& name, tcp_socket& s,
                   throw runtime_error( next );
 
                s.write_line( "error: invalid file transfer header line", line_timeout, p_progress );
+
                throw runtime_error( "invalid file transfer header line for recv" );
             }
 
-            // FUTURE: A ".raw" format should be added to support binary file transfers.
+            // FUTURE: A ".bin" format should be added to support binary file transfers.
             string::size_type fpos = next.find( c_base64_format );
 
             if( ( fpos == string::npos ) || ( fpos < pos ) )
             {
                s.write_line( "error: invalid file transfer header (unknown format)", line_timeout, p_progress );
+
                throw runtime_error( "invalid file transfer header (unknown format) for recv" );
             }
 
@@ -1217,6 +1262,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
              || ( chunk_size > max_line_size ) )
             {
                s.write_line( "error: invalid file transfer size info", line_timeout, p_progress );
+
                throw runtime_error( "invalid file transfer size info for recv" );
             }
 
@@ -1284,6 +1330,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
          }
 
          decoded.resize( max_line_size );
+
          size_t len = base64::decode( next, ( unsigned char* )&decoded[ 0 ], max_line_size );
 
          decoded.erase( len );
@@ -1293,6 +1340,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
          if( is_first && p_ft_extra && p_ft_extra->p_prefix_char )
          {
             offset = 1;
+
             --total_size;
 
             *p_ft_extra->p_prefix_char = decoded[ 0 ];
@@ -1305,6 +1353,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
          if( ( written + decoded_size ) > max_size )
          {
             max_size_exceeded = true;
+
             break;
          }
 
@@ -1316,6 +1365,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
          if( use_recv_buffer )
          {
             memcpy( p_buffer, &decoded[ offset ], decoded_size );
+
             p_buffer += decoded_size;
          }
 

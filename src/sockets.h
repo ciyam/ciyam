@@ -23,6 +23,8 @@ struct progress;
 const size_t c_default_accept_timeout = 30000;
 const size_t c_default_connect_timeout = 30000;
 
+bool is_local_address( const std::string& ip_addr );
+
 class ip_address : public sockaddr_in6
 {
    public:
