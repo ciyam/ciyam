@@ -53,11 +53,12 @@ const char c_udp_suffix = '~';
 const char c_extra_separator = '#';
 
 const char* const c_bye = "bye";
+
 const char* const c_base64_format = ".b64";
 
 const char* const c_ipv6_local = "::1";
-const char* const c_ipv4_local = "127.0.0.1";
 
+const char* const c_ipv4_local = "127.0.0.1";
 const char* const c_ipv4_prefix = "::ffff:";
 
 const size_t c_ipv4_prefix_len = 7;
@@ -97,11 +98,15 @@ ip_address::ip_address( int port )
 {
    memset( this, 0, sizeof( ip_address ) );
 
-   sin6_family = AF_INET6;
+   is_ipv6 = true;
 
-   sin6_addr = in6addr_any;
+   in.sin_family = AF_INET;
+   in.sin_addr.s_addr = htonl( INADDR_ANY );
+   in.sin_port = htons( port );
 
-   sin6_port = htons( port );
+   in6.sin6_family = AF_INET6;
+   in6.sin6_addr = in6addr_any;
+   in6.sin6_port = htons( port );
 }
 
 ip_address::ip_address( const char* p_address, int port )
@@ -120,16 +125,58 @@ void ip_address::resolve( const char* p_address, int port )
 {
    memset( this, 0, sizeof( ip_address ) );
 
-   sin6_family = AF_INET6;
+   is_ipv6 = false;
 
-   HOSTENT* p_host = ::gethostbyname2( p_address, AF_INET6 );
+   in.sin_family = AF_INET;
+
+   in.sin_addr.s_addr = inet_addr( p_address );
+
+   HOSTENT* p_host = ::gethostbyname( p_address );
 
    if( !p_host )
-      sin6_addr = in6addr_any;
+      in.sin_addr.s_addr = INADDR_ANY;
    else
-      memcpy( &sin6_addr, p_host->h_addr_list[ 0 ], sizeof( sin6_addr ) );
+      in.sin_addr.s_addr = ( ( IN_ADDR* )p_host->h_addr )->s_addr;
 
-   sin6_port = htons( port );
+   in.sin_port = htons( port );
+
+   string check_address( p_address );
+
+   // NOTE: If the IPv4 version was explicitly specified
+   // (and resolved) then is not attempting to use IPv6.
+   if( !p_host || ( check_address != get_addr_string( ) ) )
+   {
+      in6.sin6_family = AF_INET6;
+
+      p_host = ::gethostbyname2( p_address, AF_INET6 );
+
+      if( !p_host )
+         in6.sin6_addr = in6addr_any;
+      else
+      {
+         is_ipv6 = true;
+
+         memcpy( &in6.sin6_addr, p_host->h_addr_list[ 0 ], sizeof( in6.sin6_addr ) );
+      }
+
+      in6.sin6_port = htons( port );
+   }
+}
+
+sockaddr* ip_address::get_sock_addr( ) const
+{
+   if( !is_ipv6 )
+      return ( sockaddr* )&in;
+   else
+      return ( sockaddr* )&in6;
+}
+
+size_t ip_address::get_sock_addr_size( ) const
+{
+   if( !is_ipv6 )
+      return sizeof( in );
+   else
+      return sizeof( in6 );
 }
 
 string ip_address::get_addr_string( ) const
@@ -137,26 +184,33 @@ string ip_address::get_addr_string( ) const
 #ifdef __GNUG__
    char buf[ INET6_ADDRSTRLEN ] = "";
 
-   ::inet_ntop( AF_INET6, &( sin6_addr ), buf, sizeof( buf ) );
+   if( !is_ipv6 )
+      ::inet_ntop( AF_INET, &( in.sin_addr ), buf, sizeof( buf ) );
+   else
+      ::inet_ntop( AF_INET6, &( in6.sin6_addr ), buf, sizeof( buf ) );
 #else
 #  error get_addr_string not implemented for this platform
 #endif
 
    string addr( buf );
 
-   string::size_type pos = addr.find( c_ipv4_prefix );
+   if( is_ipv6 )
+   {
+      string::size_type pos = addr.find( c_ipv4_prefix );
 
-   // NOTE: If is a mapped IPv4 address then removes
-   // the prefix (so IPv4 address names will match).
-   if( ( pos == 0 )
-    && ( addr.length( ) >= ( c_ipv4_prefix_len * 2 ) ) )
-      addr.erase( 0, c_ipv4_prefix_len );
+      // NOTE: If is a mapped IPv4 address then removes
+      // the prefix (so IPv4 address names will match).
+      if( ( pos == 0 )
+       && ( addr.length( ) >= ( c_ipv4_prefix_len * 2 ) ) )
+         addr.erase( 0, c_ipv4_prefix_len );
+   }
 
    return addr;
 }
 
 socket_base::socket_base( )
  :
+ is_ipv6( true ),
  timed_out( false ),
  close_in_dtor( true ),
  socket( INVALID_SOCKET )
@@ -165,6 +219,7 @@ socket_base::socket_base( )
 
 socket_base::socket_base( SOCKET socket, bool close_in_dtor )
  :
+ is_ipv6( true ),
  timed_out( false ),
  close_in_dtor( close_in_dtor ),
  socket( socket )
@@ -191,7 +246,7 @@ void socket_base::close( )
 
 bool socket_base::bind( const ip_address& addr )
 {
-   return ::bind( socket, ( const sockaddr* )&addr, sizeof( addr ) ) != SOCKET_ERROR;
+   return ::bind( socket, addr.get_sock_addr( ), addr.get_sock_addr_size( ) ) != SOCKET_ERROR;
 }
 
 SOCKET socket_base::accept( ip_address& addr, size_t timeout ) const
@@ -205,23 +260,32 @@ SOCKET socket_base::accept( ip_address& addr, size_t timeout ) const
       return INVALID_SOCKET;
    else
    {
-      socklen_t len = sizeof( addr );
+      socklen_t len = addr.get_sock_addr_size( );
 
-      return ::accept( socket, ( sockaddr* )&addr, &len );
+      return ::accept( socket, addr.get_sock_addr( ), &len );
    }
 }
 
 bool socket_base::connect( const ip_address& addr, size_t timeout )
 {
+   // NOTE: Is closing and re-opening
+   // if socket types are mismatched.
+   if( is_ipv6 != addr.get_is_ipv6( ) )
+   {
+      close( );
+
+      open( is_ipv6 = addr.get_is_ipv6( ) );
+   }
+
    if( timeout )
    {
       bool connected = false;
 
       if( set_non_blocking( ) )
       {
-         ::connect( socket, ( const sockaddr* )&addr, sizeof( addr ) );
+         ::connect( socket, ( const sockaddr* )addr.get_sock_addr( ), addr.get_sock_addr_size( ) );
 
-         struct sockaddr_in6 peer_addr;
+         struct sockaddr peer_addr;
 
          socklen_t peer_addr_len;
 
@@ -513,8 +577,11 @@ tcp_socket::tcp_socket( SOCKET socket )
 {
 }
 
-bool tcp_socket::open( )
+bool tcp_socket::open( bool use_ipv6 )
 {
+   if( socket != INVALID_SOCKET )
+      close( );
+
    // NOTE: In order to stop connections from taking too long a 20 second timeout is specified
    // (other later operations such as sends and receives can have specific timeouts provided).
    struct timeval tv;
@@ -524,12 +591,23 @@ bool tcp_socket::open( )
    ::setsockopt( socket, SOL_SOCKET, SO_RCVTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
    ::setsockopt( socket, SOL_SOCKET, SO_SNDTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
 
-   if( socket == INVALID_SOCKET )
+   if( use_ipv6 )
+   {
+      is_ipv6 = true;
+
       socket = ::socket( AF_INET6, SOCK_STREAM, 0 );
+   }
+
+   if( socket == INVALID_SOCKET )
+   {
+      is_ipv6 = false;
+
+      socket = ::socket( AF_INET, SOCK_STREAM, 0 );
+   }
 
    // NOTE: Need to switch off the IPV6_ONLY option
    // in order to allow both IPv6 and IPv4 to work.
-   if( socket != INVALID_SOCKET )
+   if( is_ipv6 && ( socket != INVALID_SOCKET ) )
    {
       int v6_only = 0;
 
@@ -595,7 +673,7 @@ int tcp_socket::read_line( char* p_data, size_t timeout, int max_chars, progress
    {
       n++;
 
-      if( b == '\n' && lb == '\r' )
+      if( ( b == '\n' ) && ( lb == '\r' ) )
       {
          n -= 2;
 
@@ -609,7 +687,7 @@ int tcp_socket::read_line( char* p_data, size_t timeout, int max_chars, progress
 
       if( lb != '\0' )
       {
-         if( !max_chars || o < max_chars )
+         if( !max_chars || ( o < max_chars ) )
          {
             if( p_str )
                *p_str += lb;
@@ -726,10 +804,25 @@ udp_socket::udp_socket( SOCKET socket )
 {
 }
 
-bool udp_socket::open( )
+bool udp_socket::open( bool use_ipv6 )
 {
    if( socket == INVALID_SOCKET )
-      socket = ::socket( AF_INET6, SOCK_DGRAM, 0 );
+   {
+      if( use_ipv6 )
+      {
+         socket = ::socket( AF_INET6, SOCK_DGRAM, 0 );
+
+         if( socket != INVALID_SOCKET )
+            is_ipv6 = true;
+      }
+
+      if( socket == INVALID_SOCKET )
+      {
+         is_ipv6 = false;
+
+         socket = ::socket( AF_INET, SOCK_DGRAM, 0 );
+      }
+   }
 
    return ( socket != INVALID_SOCKET );
 }
@@ -749,6 +842,7 @@ int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, size_t timeou
       okay = has_input( timeout );
 
    int n = 0;
+
    socklen_t addrlen;
 
    if( !okay )
@@ -819,6 +913,7 @@ int udp_socket::send_to( const unsigned char* p_buffer, size_t buflen, const ip_
    if( ( n > 0 ) && p_progress )
    {
       string suffix;
+
       string write_string( "<W<~" );
 
       if( n > c_max_progress_output_bytes )
@@ -951,6 +1046,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
          if( !p_istream )
          {
             p_istream = &ss;
+
             ss << string( ( const char* )p_buffer, buffer_size );
          }
 
@@ -1006,7 +1102,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
 
             string::size_type pos = next.find( ':' );
 
-            if( pos != string::npos && next.find( ack_message_str ) == 0 )
+            if( ( pos != string::npos ) && ( next.find( ack_message_str ) == 0 ) )
             {
                extra = next.substr( pos + 1 );
                next.erase( pos );
@@ -1036,6 +1132,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
                if( p_udp_helper && total_size )
                {
                   p_udp_helper->had_recv_help = true;
+
                   p_udp_helper->recv_percent = ( ( float )start_offset / ( float )total_size ) * 100.0;
                }
 
@@ -1060,6 +1157,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
          if( is_first && has_prefix_char )
          {
             ++offset;
+
             *( up_buf1.get( ) ) = *p_ft_extra->p_prefix_char;
          }
 
@@ -1239,6 +1337,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
             if( next[ next.length( ) - 1 ] == c_udp_suffix )
             {
                had_sent_udp = true;
+
                next.erase( next.length( ) - 1 );
             }
 
@@ -1270,11 +1369,13 @@ size_t file_transfer( const string& name, tcp_socket& s,
             delete_empty_file.file_name.erase( );
 
             max_line_size = chunk_size;
+
             next.resize( max_line_size );
 
             size_t start_offset = 0;
 
-            if( had_sent_udp && p_udp_helper && use_recv_buffer && ( ack_message_str != ack_message_skip ) )
+            if( had_sent_udp && p_udp_helper
+             && use_recv_buffer && ( ack_message_str != ack_message_skip ) )
             {
                p_udp_helper->recv_data( p_buffer, buffer_size, start_offset );
 

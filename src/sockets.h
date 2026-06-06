@@ -25,13 +25,26 @@ const size_t c_default_connect_timeout = 30000;
 
 bool is_local_address( const std::string& ip_addr );
 
-class ip_address : public sockaddr_in6
+class ip_address
 {
+   bool is_ipv6;
+
+   sockaddr_in in;
+   sockaddr_in6 in6;
+
    public:
    ip_address( int port = 0 );
    ip_address( const char* p_address, int port = 0 );
 
    ip_address& operator =( const char* p_address );
+
+   sockaddr* get_sock_addr( ) const;
+
+   size_t get_sock_addr_size( ) const;
+
+   bool get_is_ipv6( ) const { return is_ipv6; }
+
+   void force_ipv4( ) { is_ipv6 = false; }
 
    std::string get_addr_string( ) const;
 
@@ -53,7 +66,8 @@ class socket_base
 
    virtual bool get_delay( ) { return false; }
 
-   virtual bool open( ) = 0;
+   virtual bool open( bool use_ipv6 ) = 0;
+
    virtual void close( );
 
    virtual std::string cipher( ) const { return std::string( ); }
@@ -118,6 +132,8 @@ class socket_base
    protected:
    SOCKET socket;
 
+   bool is_ipv6;
+
    bool timed_out;
    bool close_in_dtor;
 
@@ -132,7 +148,7 @@ class tcp_socket : public socket_base
    tcp_socket( );
    tcp_socket( SOCKET );
 
-   bool open( );
+   bool open( bool use_ipv6 = true );
 
    bool get_delay( );
 
@@ -166,7 +182,7 @@ class udp_socket : public socket_base
    udp_socket( );
    udp_socket( SOCKET );
 
-   bool open( );
+   bool open( bool use_ipv6 = true );
 
    void on_bind( );
 
