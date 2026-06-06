@@ -1810,7 +1810,7 @@
      </test_step>
      <test_step/>
       <name>b
-      <exec>!ciyam_client -echo -quiet -no_prompt -no_stderr -no_progress
+      <exec>!ciyam_client -echo -quiet -no_prompt -no_stderr -no_progress 127.0.0.1
       <input>true
       <output>generate
      </test_step>
