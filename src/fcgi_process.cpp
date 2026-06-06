@@ -3376,7 +3376,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                is_blockchain_application = true;
 
             if( !is_blockchain_application
-             && ( p_session_info->ip_addr == string( c_local_ip_addr ) ) )
+             && is_local_address( p_session_info->ip_addr ) )
                seconds = to_string( c_auto_refresh_seconds_local );
             else
                seconds = to_string( c_auto_refresh_seconds_remote );

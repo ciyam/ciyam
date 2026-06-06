@@ -142,9 +142,11 @@ void udp_stream_session::on_start( )
             if( len > 0 )
             {
                addr_data_pairs[ 0 ].first = *up_addr;
+
                memcpy( &addr_data_pairs[ 0 ].second[ 0 ], buffer, len );
 
                int num = 1;
+
                for( size_t i = 1; i < c_max_buffers; i++ )
                {
                   len = recv_from( *up_sock, *up_addr, buffer, sizeof( buffer ), ( c_timeout / 10 ), p_progress );
@@ -155,6 +157,7 @@ void udp_stream_session::on_start( )
                   num++;
 
                   addr_data_pairs[ i ].first = *up_addr;
+
                   memcpy( &addr_data_pairs[ i ].second[ 0 ], buffer, len );
                }
 

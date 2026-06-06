@@ -7047,7 +7047,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
       else if( chain_type == e_peerchain_type_user )
          is_user = true;
 
-      if( ip_addr == c_local_ip_addr )
+      if( is_local_address( ip_addr ) )
          is_local = true;
 
       bool use_insecure = has_system_variable( e_special_var_use_insecure_peer_protocol );
