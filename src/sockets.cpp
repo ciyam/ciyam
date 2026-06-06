@@ -98,30 +98,23 @@ ip_address::ip_address( int port )
 {
    memset( this, 0, sizeof( ip_address ) );
 
-   is_ipv6 = true;
-
    in.sin_family = AF_INET;
    in.sin_addr.s_addr = htonl( INADDR_ANY );
    in.sin_port = htons( port );
+
+   is_ipv6 = true;
 
    in6.sin6_family = AF_INET6;
    in6.sin6_addr = in6addr_any;
    in6.sin6_port = htons( port );
 }
 
-ip_address::ip_address( const char* p_address, int port )
+ip_address::ip_address( const char* p_address, int port, bool ipv4_only )
 {
-   resolve( p_address, port );
+   resolve( p_address, port, ipv4_only );
 }
 
-ip_address& ip_address::operator =( const char* p_address )
-{
-   resolve( p_address );
-
-   return *this;
-}
-
-void ip_address::resolve( const char* p_address, int port )
+void ip_address::resolve( const char* p_address, int port, bool ipv4_only )
 {
    memset( this, 0, sizeof( ip_address ) );
 
@@ -140,26 +133,29 @@ void ip_address::resolve( const char* p_address, int port )
 
    in.sin_port = htons( port );
 
-   string check_address( p_address );
-
-   // NOTE: If the IPv4 version was explicitly specified
-   // (and resolved) then is not attempting to use IPv6.
-   if( !p_host || ( check_address != get_addr_string( ) ) )
+   if( !ipv4_only )
    {
-      in6.sin6_family = AF_INET6;
+      string check_address( p_address );
 
-      p_host = ::gethostbyname2( p_address, AF_INET6 );
-
-      if( !p_host )
-         in6.sin6_addr = in6addr_any;
-      else
+      // NOTE: If the IPv4 version was explicitly specified
+      // (and resolved) then is not attempting to use IPv6.
+      if( !p_host || ( check_address != get_addr_string( ) ) )
       {
-         is_ipv6 = true;
+         in6.sin6_family = AF_INET6;
 
-         memcpy( &in6.sin6_addr, p_host->h_addr_list[ 0 ], sizeof( in6.sin6_addr ) );
+         p_host = ::gethostbyname2( p_address, AF_INET6 );
+
+         if( !p_host )
+            in6.sin6_addr = in6addr_any;
+         else
+         {
+            is_ipv6 = true;
+
+            memcpy( &in6.sin6_addr, p_host->h_addr_list[ 0 ], sizeof( in6.sin6_addr ) );
+         }
+
+         in6.sin6_port = htons( port );
       }
-
-      in6.sin6_port = htons( port );
    }
 }
 
@@ -274,7 +270,9 @@ bool socket_base::connect( const ip_address& addr, size_t timeout )
    {
       close( );
 
-      open( is_ipv6 = addr.get_is_ipv6( ) );
+      is_ipv6 = addr.get_is_ipv6( );
+
+      open( !is_ipv6 );
    }
 
    if( timeout )
@@ -283,7 +281,7 @@ bool socket_base::connect( const ip_address& addr, size_t timeout )
 
       if( set_non_blocking( ) )
       {
-         ::connect( socket, ( const sockaddr* )addr.get_sock_addr( ), addr.get_sock_addr_size( ) );
+         ::connect( socket, addr.get_sock_addr( ), addr.get_sock_addr_size( ) );
 
          struct sockaddr peer_addr;
 
@@ -323,7 +321,7 @@ bool socket_base::connect( const ip_address& addr, size_t timeout )
       return connected;
    }
    else
-      return ::connect( socket, ( const sockaddr* )&addr, sizeof( addr ) ) != SOCKET_ERROR;
+      return ::connect( socket, addr.get_sock_addr( ), addr.get_sock_addr_size( ) ) != SOCKET_ERROR;
 }
 
 bool socket_base::listen( )
@@ -577,7 +575,7 @@ tcp_socket::tcp_socket( SOCKET socket )
 {
 }
 
-bool tcp_socket::open( bool use_ipv6 )
+bool tcp_socket::open( bool ipv4_only )
 {
    if( socket != INVALID_SOCKET )
       close( );
@@ -591,7 +589,7 @@ bool tcp_socket::open( bool use_ipv6 )
    ::setsockopt( socket, SOL_SOCKET, SO_RCVTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
    ::setsockopt( socket, SOL_SOCKET, SO_SNDTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
 
-   if( use_ipv6 )
+   if( !ipv4_only )
    {
       is_ipv6 = true;
 
@@ -804,16 +802,15 @@ udp_socket::udp_socket( SOCKET socket )
 {
 }
 
-bool udp_socket::open( bool use_ipv6 )
+bool udp_socket::open( bool ipv4_only )
 {
    if( socket == INVALID_SOCKET )
    {
-      if( use_ipv6 )
+      if( !ipv4_only )
       {
-         socket = ::socket( AF_INET6, SOCK_DGRAM, 0 );
+         is_ipv6 = true;
 
-         if( socket != INVALID_SOCKET )
-            is_ipv6 = true;
+         socket = ::socket( AF_INET6, SOCK_DGRAM, 0 );
       }
 
       if( socket == INVALID_SOCKET )

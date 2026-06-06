@@ -34,9 +34,8 @@ class ip_address
 
    public:
    ip_address( int port = 0 );
-   ip_address( const char* p_address, int port = 0 );
 
-   ip_address& operator =( const char* p_address );
+   ip_address( const char* p_address, int port, bool ipv4_only = false );
 
    sockaddr* get_sock_addr( ) const;
 
@@ -49,7 +48,7 @@ class ip_address
    std::string get_addr_string( ) const;
 
    protected:
-   void resolve( const char* p_address, int port = 0 );
+   void resolve( const char* p_address, int port, bool ipv4_only );
 };
 
 class socket_base
@@ -66,7 +65,7 @@ class socket_base
 
    virtual bool get_delay( ) { return false; }
 
-   virtual bool open( bool use_ipv6 ) = 0;
+   virtual bool open( bool ipv4_only ) = 0;
 
    virtual void close( );
 
@@ -148,7 +147,7 @@ class tcp_socket : public socket_base
    tcp_socket( );
    tcp_socket( SOCKET );
 
-   bool open( bool use_ipv6 = true );
+   bool open( bool ipv4_only = false );
 
    bool get_delay( );
 
@@ -182,7 +181,7 @@ class udp_socket : public socket_base
    udp_socket( );
    udp_socket( SOCKET );
 
-   bool open( bool use_ipv6 = true );
+   bool open( bool ipv4_only = false );
 
    void on_bind( );
 
