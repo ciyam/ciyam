@@ -843,7 +843,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 #ifdef DEBUG
          cerr << "sending command: " << str << endl;
 #endif
-         socket.write_line( str );
+         socket.write_line( str, c_standard_timeout );
 
          if( has_sent_datagrams )
          {
@@ -1432,7 +1432,8 @@ void ciyam_console_command_handler::preprocess_command_and_args(
             bool had_not_found = false;
             bool is_in_progress = false;
 
-            while( response.empty( ) || response[ 0 ] != '(' )
+            while( response.empty( )
+             || ( response[ 0 ] != '(' ) )
             {
                response.erase( );
 
@@ -1519,7 +1520,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         string hash_val( temp_hash.get_digest_as_string( ) );
                         handle_command_response( hash_val );
 
-                        socket.write_line( hash_val );
+                        socket.write_line( hash_val, c_standard_timeout );
 
                         response.erase( );
                         socket.read_line( response );
@@ -1528,7 +1529,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      {
                         handle_command_response( response );
 
-                        socket.write_line( response.substr( pos + 1 ) );
+                        socket.write_line( response.substr( pos + 1 ), c_standard_timeout );
 
                         response.erase( );
                         socket.read_line( response );
