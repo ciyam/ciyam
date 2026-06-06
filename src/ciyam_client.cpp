@@ -1844,10 +1844,22 @@ int main( int argc, char* argv[ ] )
 
          bool is_default = false;
 
-         if( string( cmd_handler.get_host( ) ) == c_default_ciyam_host )
+         if( cmd_handler.get_host( ) == string( c_default_ciyam_host ) )
             is_default = true;
 
          bool okay = socket.connect( address, c_standard_timeout );
+
+         // NOTE: If is unable to connect to "localhost"
+         // using IPv6 (and not expecting to retry) then
+         // will instead try forcing an IPv4 connection.
+         if( !okay
+          && !g_connect_retries && address.get_is_ipv6( )
+          && ( cmd_handler.get_host( ) == string( c_local_host ) ) )
+         {
+            address.force_ipv4( );
+
+            okay = socket.connect( address, c_standard_timeout );
+         }
 
          // NOTE: The "connect_retries" option can be useful where the
          // application server is started (in the background) prior to
