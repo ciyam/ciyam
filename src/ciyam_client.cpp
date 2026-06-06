@@ -68,6 +68,8 @@ const char* const c_cmd_exec = "exec";
 const char* const c_cmd_exec_command = "command";
 const char* const c_cmd_exec_arguments = "arguments";
 
+const char* const c_cmd_ip4 = "ip4";
+
 const char* const c_cmd_vars = "vars";
 const char* const c_cmd_vars_env_pairs = "env_pairs";
 
@@ -186,6 +188,7 @@ int g_pid = get_pid( );
 
 bool g_use_tls = false;
 bool g_had_quit = false;
+bool g_use_ipv4 = false;
 
 size_t g_seconds = 1;
 
@@ -226,6 +229,8 @@ class ciyam_console_startup_functor : public command_functor
          if( !arguments.empty( ) )
             g_exec_cmd += " " + arguments;
       }
+      else if( command == c_cmd_ip4 )
+         g_use_ipv4 = true;
       else if( command == c_cmd_vars )
       {
          string env_pairs( get_parm_val( parameters, c_cmd_vars_env_pairs ) );
@@ -1787,30 +1792,31 @@ int main( int argc, char* argv[ ] )
       {
          startup_command_processor processor( cmd_handler, application_title, 0, argc, argv );
 
+         cmd_handler.add_command( c_cmd_ip4, 1,
+          "", "will force the use of an IPv4 connection", new ciyam_console_startup_functor( cmd_handler ) );
 #ifdef SSL_SUPPORT
-         cmd_handler.add_command( c_cmd_tls, 1,
+         cmd_handler.add_command( c_cmd_tls, 2,
           "", "will start TLS after connecting to server", new ciyam_console_startup_functor( cmd_handler ) );
 #else
-         cmd_handler.add_command( c_cmd_tls, 1,
+         cmd_handler.add_command( c_cmd_tls, 2,
           "", "dummy option due to *missing* SSL support", new ciyam_console_startup_functor( cmd_handler ) );
 #endif
-
-         cmd_handler.add_command( c_cmd_exec, 2,
+         cmd_handler.add_command( c_cmd_exec, 3,
           "<val//command>[<olist//arguments// >]", "single command to execute", new ciyam_console_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_vars, 3,
+         cmd_handler.add_command( c_cmd_vars, 4,
           "<list//env_pairs//,>", "set environment variables", new ciyam_console_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_args_file, 4,
+         cmd_handler.add_command( c_cmd_args_file, 5,
           "<val//name>", "name of console args file", new ciyam_console_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_rpc_group, 5,
+         cmd_handler.add_command( c_cmd_rpc_group, 6,
           "<val//name>", "RPC access group name[:user]", new ciyam_console_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_rpc_unlock, 5,
+         cmd_handler.add_command( c_cmd_rpc_unlock, 6,
           "<val//password>", "RPC access unlock password", new ciyam_console_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_connect_retries, 6,
+         cmd_handler.add_command( c_cmd_connect_retries, 7,
           "<val//max_attempts>", "server connection retry attempts", new ciyam_console_startup_functor( cmd_handler ) );
 
          processor.process_commands( );
@@ -1838,9 +1844,10 @@ int main( int argc, char* argv[ ] )
       bool no_udp = has_environment_variable( c_env_var_no_udp );
       bool local_udp = has_environment_variable( c_env_var_local_udp );
 
-      if( socket.open( ) )
+      if( socket.open( g_use_ipv4 ) )
       {
-         ip_address address( cmd_handler.get_host( ), cmd_handler.get_port( ) );
+         ip_address address(
+          cmd_handler.get_host( ), cmd_handler.get_port( ), g_use_ipv4 );
 
          bool is_default = false;
 
@@ -1849,12 +1856,11 @@ int main( int argc, char* argv[ ] )
 
          bool okay = socket.connect( address, c_standard_timeout );
 
-         // NOTE: If is unable to connect to "localhost"
-         // using IPv6 (and not expecting to retry) then
-         // will instead try forcing an IPv4 connection.
-         if( !okay
-          && !g_connect_retries && address.get_is_ipv6( )
-          && ( cmd_handler.get_host( ) == string( c_local_host ) ) )
+         // NOTE: If had failed using an IPv6 connection
+         // (and "connect retries" was not set) then now
+         // attempts to force an IPv4 connection.
+         if( !okay && !g_use_ipv4
+          && !g_connect_retries && address.get_is_ipv6( ) )
          {
             address.force_ipv4( );
 
@@ -1874,7 +1880,7 @@ int main( int argc, char* argv[ ] )
 
             msleep( 250 );
 
-            if( socket.open( ) )
+            if( socket.open( g_use_ipv4 ) )
                okay = socket.connect( address, c_standard_timeout );
          }
 
