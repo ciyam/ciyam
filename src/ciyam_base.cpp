@@ -3938,9 +3938,7 @@ void read_server_configuration( )
       g_max_peers = from_string< int >( reader.read_opt_attribute(
        c_attribute_max_peers, to_string( c_default_max_peers ) ) );
 
-      string rpc_addrs( reader.read_opt_attribute( c_attribute_rpc_addrs ) );
-
-      g_rpc_approved_ip_addrs.insert( c_local_ip_addr );
+      string rpc_addrs( reader.read_opt_attribute( c_attribute_rpc_addrs, c_local_ip_addrs ) );
 
       if( !rpc_addrs.empty( ) )
          split( rpc_addrs, g_rpc_approved_ip_addrs, ' ' );

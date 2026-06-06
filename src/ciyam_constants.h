@@ -216,6 +216,8 @@ const char* const c_local_host = "localhost";
 const char* const c_null_ip_addr = "::";
 const char* const c_local_ip_addr = "::1";
 
+const char* const c_local_ip_addrs = "::1 127.0.0.1";
+
 const char* const c_timezones_file = "timezones.sio";
 
 const char* const c_autoscript_file = "autoscript.sio";
