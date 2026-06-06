@@ -1760,7 +1760,8 @@ class socket_command_handler : public command_handler
     socket( socket ),
     lock_expires( 0 ),
     restoring( false ),
-    locked_rpc( false )
+    locked_rpc( false ),
+    local_session( false )
    {
       bool is_encrypted = false;
 
@@ -1806,6 +1807,10 @@ class socket_command_handler : public command_handler
 
    void unlock_rpc( ) { locked_rpc = false; }
    void unlock_identity( ) { locked_identity = false; }
+
+   bool is_local_session( ) const { return local_session; }
+
+   void set_local_session( ) { local_session = true; }
 
    void set_lock_expires( int seconds )
    {
@@ -2079,6 +2084,8 @@ class socket_command_handler : public command_handler
    bool locked_rpc;
    bool locked_identity;
 
+   bool local_session;
+
    int64_t lock_expires;
 
    string lock_password_hash;
@@ -2254,9 +2261,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       p_sock_progress = &sock_progress;
 
    if( socket_handler.is_locked( )
-    && ( session_ip_addr( ) != c_local_ip_addr )
+    && !socket_handler.is_local_session( )
     && ( command != c_cmd_ciyam_session_session_rpc_unlock ) )
    {
+      issue_warning( "unexpected missing 'rpc_unlock' command" );
+
       if( !is_captured_session( ) )
          handler.set_finished( );
       else if( !is_condemned_session( ) )
@@ -3138,7 +3147,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( num )
          {
-            if( session_ip_addr( ) == c_local_ip_addr )
+            if( socket_handler.is_local_session( ) )
                msleep( c_udp_wait_timeout );
 
             for( size_t i = 0; i < c_udp_wait_repeats; i++ )
@@ -8997,7 +9006,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else
       {
          send_okay_response = false;
+
          transaction_log_command( "" );
+
          response = string( c_response_error_prefix ) + x.what( );
       }
    }
@@ -9154,7 +9165,11 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
    if( !( *up_socket ) )
       throw runtime_error( "unexpected invalid socket in ciyam_session::ciyam_session" );
 
-   if( ip_addr == c_local_ip_addr )
+   date_time dtm( date_time::standard( ) );
+
+   // NOTE: This will be changed if
+   // the first read is very slow.
+   if( is_local_address( ip_addr ) )
       is_local = true;
 
 #ifdef SSL_SUPPORT
@@ -9167,6 +9182,7 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
 #endif
 
    string pid;
+
    up_socket->read_line( pid, c_request_timeout );
 
    string::size_type pos = pid.find( c_key_exchange_suffix );
@@ -9174,8 +9190,17 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
    if( pos != string::npos )
    {
       pid.erase( pos );
+
       needs_key_exchange = true;
    }
+
+   date_time now( date_time::standard( ) );
+
+   // NOTE: Is performing a "timing" check just in
+   // case a remote connection appears to be local
+   // (such as when using I2P with IPv6).
+   if( seconds_between( dtm, now ) > 0 )
+      is_local = false;
 
    if( is_local && ( pid == to_string( get_pid( ) ) ) )
       pid_is_self = true;
@@ -9227,6 +9252,9 @@ void ciyam_session::on_start( )
       }
 
       socket_command_handler cmd_handler( *up_socket, is_approved_for_rpc );
+
+      if( is_local )
+         cmd_handler.set_local_session( );
 
       cmd_handler.add_commands( 0,
        ciyam_session_command_functor_factory, ARRAY_PTR_AND_SIZE( ciyam_session_command_definitions ) );
