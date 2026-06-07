@@ -69,11 +69,14 @@ const char* const c_post_request = "POST ";
 const char* const c_index_html = "index.html";
 
 const char* const c_echo_endpoint = "echo";
+const char* const c_test_endpoint = "test";
 const char* const c_upload_endpoint = "upload";
 const char* const c_ip_addr_endpoint = "ip_addr";
 const char* const c_version_endpoint = "version";
 
 const char* const c_boundary_prefix = "boundary=";
+
+const char* const c_web_session_prefix = "web_session.";
 
 const char* const c_req_param_host = "Host:";
 
@@ -131,6 +134,7 @@ const char* const c_not_found_html_response = "<html>\n<head><title>Document Not
 
 const char* const c_replace_document_marker = "DOCUMENT";
 
+const char* const c_query_param_name_token = "token";
 const char* const c_query_param_name_format = "format";
 
 const char* const c_query_param_value_json = "json";
@@ -716,7 +720,72 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
             }
             else if( error.empty( ) )
             {
-               if( document == c_ip_addr_endpoint )
+               if( document == c_test_endpoint )
+               {
+                  was_endpoint = true;
+
+                  string prefix( c_web_session_prefix );
+
+                  string token;
+
+                  if( params.count( c_query_param_name_token ) )
+                     token = params[ c_query_param_name_token ];
+
+                  if( token.empty( ) )
+                     error = "Need a valid token to use a test session.\n";
+                  else if( !file_exists( prefix + "token." + token ) )
+                     error = "Test session token '" + token + "' is invalid.\n";
+                  else
+                  {
+                     string in_suffix( token + ".in" );
+                     string out_suffix( token + ".out" );
+                     string run_suffix( token + ".run" );
+
+                     string in_name( prefix + in_suffix );
+                     string out_name( prefix + out_suffix );
+                     string run_name( prefix + run_suffix );
+
+                     string script_name( prefix + "cin" );
+
+                     bool running = file_exists( run_name );
+
+                     if( !running )
+                     {
+                        string cmd( "./ciyam_client -quiet -no_prompt -exec=\"<"
+                         + script_name + ' ' + in_suffix + ' ' + out_suffix + ' ' + run_suffix + "\" &" );
+
+                        system( cmd.c_str( ) );
+
+                        msleep( 200 );
+                     }
+
+                     running = file_exists( run_name );
+
+                     if( !running )
+                        error = "Was unable to start a test session with token '" + token + "'.\n";
+                     else
+                     {
+                        found = true;
+
+                        if( true )
+                        {
+                           ofstream outf( in_name );
+
+                           outf << "var *" << endl;
+                        }
+
+                        msleep( 100 );
+
+                        if( file_exists( out_name ) )
+                        {
+                           response = buffer_file( out_name );
+
+                           file_remove( out_name );
+                        }
+                     }
+                  }
+               }
+               else if( document == c_ip_addr_endpoint )
                {
                   found = true;
 
@@ -915,7 +984,7 @@ http_listener::http_listener( int port )
 {
    ++g_active_listeners;
 
-   register_listener( port, "http" );
+   register_listener( port, "web_rest" );
 }
 
 http_listener::~http_listener( )
@@ -950,7 +1019,7 @@ void http_listener::on_start( )
       if( !okay )
          throw runtime_error( "unable to start listening on port #" + to_string( port ) );
 
-      TRACE_LOG( TRACE_MINIMAL, "http listener started on tcp port " + to_string( port ) );
+      TRACE_LOG( TRACE_MINIMAL, "web_rest listener started on tcp port " + to_string( port ) );
 
       while( true )
       {
@@ -982,7 +1051,7 @@ void http_listener::on_start( )
       TRACE_LOG( TRACE_MINIMAL, "http_listener error: unexpected unknown exception caught" );
    }
 
-   TRACE_LOG( TRACE_MINIMAL, "http listener finished (tcp port " + to_string( port ) + ")" );
+   TRACE_LOG( TRACE_MINIMAL, "web_rest listener finished (tcp port " + to_string( port ) + ")" );
 
    delete this;
 }
