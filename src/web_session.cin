@@ -1,0 +1,73 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "3"
+ERROR=Need input, output and running file names.
+@else
+;
+IN_FILE=web_session.$1
+OUT_FILE=web_session.$2
+RUN_FILE=web_session.$3
+;
+I=0
+;
+MAX_ITERATIONS=600
+;
+LAST_ITERATION=@$MAX_ITERATIONS-1
+;
+~touch $RUN_FILE
+;
+@label NEXT
+;
+@:LOOP
+;
+@ifeq "$I" "$LAST_ITERATION"
+~rm -f $RUN_FILE
+@endif
+;
+INPUT=@files::$IN_FILE
+;
+@ifdef $INPUT
+COMMAND=@file:$IN_FILE
+;
+~rm $IN_FILE
+;
+>$OUT_FILE
+$COMMAND
+>
+;
+I=0
+@endif
+;
+@ifeq "$I" "$MAX_ITERATIONS"
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+;
+I=@$I+1
+;
+.wait 100
+;
+!!@:LOOP
+;
+@:END_LOOP
+;
+~rm -f $RUN_FILE
+;
+@endif
