@@ -8187,7 +8187,7 @@ void peer_listener::on_start( )
       {
          s.set_reuse_addr( );
 
-         string listener_name( "peer" );
+         string listener_name( "rpc_peer" );
 
          string unprefixed_blockchains( blockchains );
          replace( unprefixed_blockchains, c_bc_prefix, "" );
@@ -8201,7 +8201,7 @@ void peer_listener::on_start( )
 
          if( okay )
          {
-            TRACE_LOG( TRACE_MINIMAL, "peer listener started on tcp port " + to_string( port ) );
+            TRACE_LOG( TRACE_MINIMAL, "rpc_peer listener started on tcp port " + to_string( port ) );
 
             size_t num_iterations = 0;
 
@@ -8377,7 +8377,7 @@ void peer_listener::on_start( )
       issue_error( "unexpected unknown exception occurred" );
    }
 
-   TRACE_LOG( TRACE_MINIMAL, "peer listener finished (tcp port " + to_string( port ) + ")" );
+   TRACE_LOG( TRACE_MINIMAL, "rpc_peer listener finished (tcp port " + to_string( port ) + ")" );
 
    decrement_active_listeners( );
 
