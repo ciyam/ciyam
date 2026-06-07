@@ -20,7 +20,7 @@ object_permissions yyy "rw-r--r--"
 object_permissions yyy
 rw-r--r--
 branch objects
-xxx (325 B)
+xxx (348 B)
 yyy (13.1 kB)
 file_get yyy test_ods_fsed_5_c.tmp
 exit

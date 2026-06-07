@@ -2,6 +2,6 @@ cd
 /
 branch objects
 aaa/
-xxx (325 B)
+xxx (348 B)
 truncate
 exit

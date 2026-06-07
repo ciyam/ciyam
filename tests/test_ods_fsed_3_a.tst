@@ -7,18 +7,18 @@ file_get xxx test_ods_fsed_3_a.tmp
 branch objects
 aaa/
 bbb/
-xxx (325 B)
+xxx (348 B)
 file_add yyy mnemonics.txt
 file_get yyy test_ods_fsed_3_a.tmp
 branch objects
 aaa/
 bbb/
-xxx (325 B)
+xxx (348 B)
 yyy (13.1 kB)
 compress
 branch objects
 aaa/
 bbb/
-xxx (325 B)
+xxx (348 B)
 yyy (13.1 kB)
 exit

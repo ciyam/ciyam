@@ -1,7 +1,7 @@
 cd
 /
 branch objects
-xxx (325 B)
+xxx (348 B)
 truncate
 folder_add aaa
 exit
