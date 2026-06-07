@@ -20,6 +20,7 @@
 
 const int c_default_ciyam_port = `{`$port`};
 const int c_default_ciyam_peer_port = `{`$pport`};
+const int c_default_ciyam_web_rest_port = `{`$wport`};
 
 const char* const c_default_ciyam_host = "localhost";
 
