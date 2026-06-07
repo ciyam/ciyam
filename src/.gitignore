@@ -25,6 +25,9 @@ xxx.png
 xxx.txt
 xxx.xrep
 
+# Ignore any web session test token files.
+web_session.token.*
+
 # Ignore all .old, .sav and .tmp files.
 *.old
 *.sav
