@@ -106,7 +106,7 @@ const char* const c_cmd_daemon = "daemon";
 bool g_is_daemon = false;
 #endif
 
-unsigned int g_port = c_default_ciyam_port;
+unsigned int g_port = 0;
 
 string g_entropy;
 
@@ -366,7 +366,7 @@ int main( int argc, char* argv[ ] )
 
       set_environment_variable( "PID", pid.c_str( ) );
 
-      if( g_port != c_default_ciyam_port )
+      if( g_port )
          set_environment_variable( "PORT", to_string( g_port ) );
 
       string shutdown_reason( "due to interrupt" );
@@ -455,11 +455,16 @@ int main( int argc, char* argv[ ] )
          if( g_test_peer_port )
             ( *fp_set_test_peer_port_func )( g_test_peer_port );
 
+         int port = 0;
+
          int use_udp = 0;
 
          int web_port = 0;
 
-         ( *fp_init_globals_func )( g_entropy.empty( ) ? 0 : g_entropy.c_str( ), &use_udp, &web_port );
+         ( *fp_init_globals_func )( g_entropy.empty( ) ? 0 : g_entropy.c_str( ), &port, &use_udp, &web_port );
+
+         if( !g_port )
+            g_port = port;
 
          if( !entropy_provided )
             clear_key( g_entropy );
@@ -484,7 +489,7 @@ int main( int argc, char* argv[ ] )
             if( !s.set_reuse_addr( ) && !g_is_quiet )
                cout << "warning: set_reuse_addr failed (for tcp)..." << endl;
 
-            ( *fp_register_listener_func )( g_port, "core", "" );
+            ( *fp_register_listener_func )( g_port, "rpc_main", "" );
 
             if( !is_update )
             {
@@ -503,7 +508,7 @@ int main( int argc, char* argv[ ] )
                if( !is_update && !g_is_quiet )
                   cout << "server now listening on tcp port " << g_port << "..." << endl;
 
-               string start_message( "core listener started on tcp port " + to_string( g_port ) );
+               string start_message( "rpc_main listener started on tcp port " + to_string( g_port ) );
 
                ( *fp_log_trace_string_func )( TRACE_MINIMAL, start_message.c_str( ) );
 
@@ -528,7 +533,7 @@ int main( int argc, char* argv[ ] )
                      if( !is_update && !g_is_quiet )
                         cout << "server now available on udp port " << g_port << "..." << endl;
 
-                     string start_message( "core streamer started on udp port " + to_string( g_port ) );
+                     string start_message( "rpc_main streamer started on udp port " + to_string( g_port ) );
 
                      ( *fp_log_trace_string_func )( TRACE_MINIMAL, start_message.c_str( ) );
                   }
@@ -571,11 +576,11 @@ int main( int argc, char* argv[ ] )
 
                int min_active_sessions = g_active_sessions;
 
-               if( web_port )
-                  ( *fp_init_http_handler_func )( web_port );
-
                if( g_start_peer_sessions )
                   ( *fp_init_peer_sessions_func )( true );
+
+               if( web_port )
+                  ( *fp_init_http_handler_func )( web_port );
 
                int64_t utm = unix_time( );
 
@@ -683,12 +688,12 @@ int main( int argc, char* argv[ ] )
 
                if( has_udp )
                {
-                  finish_message = "core streamer finished (udp port " + to_string( g_port ) + ")";
+                  finish_message = "rpc_main streamer finished (udp port " + to_string( g_port ) + ")";
 
                   ( *fp_log_trace_string_func )( TRACE_MINIMAL, finish_message.c_str( ) );
                }
 
-               finish_message = "core listener finished (tcp port " + to_string( g_port ) + ")";
+               finish_message = "rpc_main listener finished (tcp port " + to_string( g_port ) + ")";
 
                ( *fp_log_trace_string_func )( TRACE_MINIMAL, finish_message.c_str( ) );
 

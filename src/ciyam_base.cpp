@@ -185,6 +185,8 @@ const char* const c_section_files_area = "files_area";
 
 const char* const c_attribute_name = "name";
 const char* const c_attribute_path = "path";
+const char* const c_attribute_port = "port";
+const char* const c_attribute_label = "label";
 const char* const c_attribute_domain = "domain";
 const char* const c_attribute_server = "server";
 const char* const c_attribute_sender = "sender";
@@ -192,7 +194,9 @@ const char* const c_attribute_suffix = "suffix";
 const char* const c_attribute_logging = "logging";
 const char* const c_attribute_use_udp = "use_udp";
 const char* const c_attribute_filename = "filename";
+const char* const c_attribute_is_local = "is_local";
 const char* const c_attribute_password = "password";
+const char* const c_attribute_protocol = "protocol";
 const char* const c_attribute_security = "security";
 const char* const c_attribute_timezone = "timezone";
 const char* const c_attribute_username = "username";
@@ -202,8 +206,10 @@ const char* const c_attribute_arguments = "arguments";
 const char* const c_attribute_max_peers = "max_peers";
 const char* const c_attribute_rpc_addrs = "rpc_addrs";
 const char* const c_attribute_use_https = "use_https";
+const char* const c_attribute_extra_info = "extra_info";
 const char* const c_attribute_ntfy_server = "ntfy_server";
 const char* const c_attribute_trace_flags = "trace_flags";
+const char* const c_attribute_script_name = "script_name";
 const char* const c_attribute_gpg_password = "gpg_password";
 const char* const c_attribute_max_sessions = "max_sessions";
 const char* const c_attribute_pem_password = "pem_password";
@@ -229,13 +235,6 @@ const char* const c_attribute_max_storage_handlers = "max_storage_handlers";
 const char* const c_attribute_notifier_ignore_secs = "notifier_ignore_secs";
 const char* const c_attribute_num_recv_stream_sessions = "num_recv_stream_sessions";
 const char* const c_attribute_num_send_stream_sessions = "num_send_stream_sessions";
-
-const char* const c_attribute_port = "port";
-const char* const c_attribute_label = "label";
-const char* const c_attribute_is_local = "is_local";
-const char* const c_attribute_protocol = "protocol";
-const char* const c_attribute_extra_info = "extra_info";
-const char* const c_attribute_script_name = "script_name";
 
 const char* const c_peerchain_attribute_auto_start = "auto_start";
 const char* const c_peerchain_attribute_description = "description";
@@ -1988,6 +1987,8 @@ const char* const c_default_storage_identity = "<default>";
 unique_ptr< ods > gup_ods;
 
 unique_ptr< ods_file_system > gup_ofs;
+
+int g_port;
 
 string g_domain;
 string g_timezone;
@@ -3905,6 +3906,9 @@ void read_server_configuration( )
    {
       sio_reader reader( inpf );
 
+      g_port = from_string< int >( reader.read_opt_attribute(
+       c_attribute_port, to_string( c_default_ciyam_port ) ) );
+
       g_domain = reader.read_opt_attribute( c_attribute_domain, c_local_host );
 
       g_use_udp = ( lower( reader.read_opt_attribute( c_attribute_use_udp, c_false ) ) == c_true );
@@ -3925,7 +3929,8 @@ void read_server_configuration( )
             g_timezone = tz_non_daylight;
       }
 
-      g_web_port = from_string< int >( reader.read_opt_attribute( c_attribute_web_port ) );
+      g_web_port = from_string< int >( reader.read_opt_attribute(
+       c_attribute_web_port, to_string( c_default_ciyam_web_rest_port ) ) );
 
       g_web_root = reader.read_attribute( c_attribute_web_root );
 
@@ -5032,7 +5037,7 @@ void list_listeners( ostream& os )
    }
 }
 
-void init_globals( const char* p_sid, int* p_use_udp, int* p_web_port )
+void init_globals( const char* p_sid, int* p_port, int* p_use_udp, int* p_web_port )
 {
    guard g( g_mutex );
 
@@ -5132,6 +5137,9 @@ void init_globals( const char* p_sid, int* p_use_udp, int* p_web_port )
       g_read_only_var_names.insert( get_special_var_name( e_special_var_pubkey ) );
       g_read_only_var_names.insert( get_special_var_name( e_special_var_ip_addr ) );
       g_read_only_var_names.insert( get_special_var_name( e_special_var_session_id ) );
+
+      if( p_port )
+         *p_port = g_port;
 
       if( p_use_udp )
          *p_use_udp = g_use_udp;
