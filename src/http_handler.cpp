@@ -22,6 +22,7 @@
 #include "http_handler.h"
 
 #include "mime.h"
+#include "sha256.h"
 #include "date_time.h"
 #include "utilities.h"
 #include "ciyam_base.h"
@@ -68,8 +69,8 @@ const char* const c_post_request = "POST ";
 
 const char* const c_index_html = "index.html";
 
+const char* const c_cws_endpoint = "cws";
 const char* const c_echo_endpoint = "echo";
-const char* const c_test_endpoint = "test";
 const char* const c_upload_endpoint = "upload";
 const char* const c_ip_addr_endpoint = "ip_addr";
 const char* const c_version_endpoint = "version";
@@ -77,6 +78,12 @@ const char* const c_version_endpoint = "version";
 const char* const c_boundary_prefix = "boundary=";
 
 const char* const c_web_session_prefix = "web_session.";
+
+const char* const c_web_lock_suffix = ".lock";
+const char* const c_web_command_suffix = ".command";
+const char* const c_web_message_suffix = ".message";
+const char* const c_web_session_suffix = ".session";
+const char* const c_web_started_suffix = ".started";
 
 const char* const c_req_param_host = "Host:";
 
@@ -128,21 +135,27 @@ const char* const c_http_content_type_multipart_form_data = "multipart/form-data
 
 const char* const c_http_content_disposition_form_data = "form-data";
 
-const char* const c_html_test_response = "<html>\n<head><title>Test HTML Page</title></head>\n<body><p>This is a HTML response for test purposes.</p></body>\n</html>";
+const char* const c_html_test_response = "<html>\n<head><title>Test HTML Page</title></head>\n<body><p>This is a HTML response for test purposes.</p></body>\n</html>\n";
 
-const char* const c_not_found_html_response = "<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find 'DOCUMENT' (incorrect URL?).</p></body>\n</html>";
+const char* const c_not_found_html_response = "<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find 'DOCUMENT' (incorrect URL?).</p></body>\n</html>\n";
 
 const char* const c_replace_document_marker = "DOCUMENT";
 
 const char* const c_query_param_name_token = "token";
+const char* const c_query_param_name_device = "device";
 const char* const c_query_param_name_format = "format";
+const char* const c_query_param_name_session = "session";
+const char* const c_query_param_name_verbose = "verbose";
+const char* const c_query_param_name_function = "function";
 
 const char* const c_query_param_value_json = "json";
 const char* const c_query_param_value_text = "text";
 
+const char* const c_cws_function_terminate = "terminate";
+
 const int c_num_retries = 5;
 
-const int c_minimum_timeout = 25;
+const int c_minimum_timeout = 30;
 
 const int c_max_empty_chunks = 10;
 
@@ -163,6 +176,8 @@ const int c_subsequent_timeout = 1000;
 
 const int c_response_timeout = 2000;
 #endif
+
+const int c_error_response_delay = 250;
 
 const size_t c_max_data_for_post = 5000000;
 
@@ -453,6 +468,8 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
 
             bool found = false;
 
+            bool is_verbose = false;
+
             bool was_endpoint = false;
             bool is_json_output = false;
 
@@ -471,7 +488,7 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
             if( !qry_info.empty( ) )
             {
                if( !parse_query_params( qry_info, params ) )
-                  error = "Invalid query parameters '" + qry_info + ".\n";
+                  error = "Invalid query parameters '" + qry_info + ".";
                else
                {
                   if( params.count( c_query_param_name_format ) )
@@ -479,8 +496,11 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                      if( params[ c_query_param_name_format ] == c_query_param_value_json )
                         is_json_output = true;
                      else if( params[ c_query_param_name_format ] != c_query_param_value_text )
-                        error = "Invalid query parameter value in '" + qry_info + "' for version.\n";
+                        error = "Invalid query parameter value in '" + qry_info + "' for version.";
                   }
+
+                  if( params.count( c_query_param_name_verbose ) )
+                     is_verbose = true;
                }
             }
 
@@ -499,7 +519,7 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                   {
                      data.erase( );
 
-                     error = "Unexpected error occurred reading post data.\n";
+                     error = "Unexpected error occurred reading post data.";
                   }
                   else
                   {
@@ -539,7 +559,7 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                            {
                               data.erase( );
 
-                              error = "Unexpected error occurred reading post data.\n";
+                              error = "Unexpected error occurred reading post data.";
 
                               break;
                            }
@@ -548,7 +568,7 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                   }
                }
                else
-                  error = "Post data is too large (maximum size is " + to_string( c_max_data_for_post ) + " bytes).\n";
+                  error = "Post data is too large (maximum size is " + to_string( c_max_data_for_post ) + " bytes).";
             }
 
             bool unchanged = false;
@@ -578,9 +598,11 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                   osstr << c_http_content_type_prefix << header_info[ c_http_content_type_header ] << '\n';
 
                   if( !is_json_output )
-                     response = data + '\n';
+                     response = data;
                   else
                      response = "{\"data\":\"" + escaped_json( data ) + "\"}";
+
+                  response += '\n';
                }
                else if( document == c_upload_endpoint )
                {
@@ -715,72 +737,180 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                      }
                   }
 
-                  response = "Uploaded as \"" + local_filename + "\" (" + to_string( uploaded_size ) + " bytes).\n";
+                  if( !is_verbose )
+                     response = local_filename;
+                  else
+                     response = "Uploaded as \"" + local_filename + "\" (" + to_string( uploaded_size ) + " bytes).";
+
+                  response += '\n';
                }
             }
             else if( error.empty( ) )
             {
-               if( document == c_test_endpoint )
+               if( document == c_cws_endpoint )
                {
                   was_endpoint = true;
 
                   string prefix( c_web_session_prefix );
 
-                  string token;
+                  string token, device, session;
 
                   if( params.count( c_query_param_name_token ) )
                      token = params[ c_query_param_name_token ];
 
-                  if( token.empty( ) )
-                     error = "Need a valid token to use a test session.\n";
-                  else if( !file_exists( prefix + "token." + token ) )
-                     error = "Test session token '" + token + "' is invalid.\n";
+                  if( params.count( c_query_param_name_device ) )
+                     device = params[ c_query_param_name_device ];
+
+                  if( params.count( c_query_param_name_session ) )
+                     session = params[ c_query_param_name_session ];
+
+                  string token_file( '.' + prefix + token ); // i.e. ".web_session.<token>"
+
+                  if( token.empty( ) || device.empty( ) )
+                     error = "Need token and device parameters to use a web session.";
+                  else if( !file_exists( token_file ) )
+                     error = "Provided web session token '" + token + "' is invalid.";
                   else
                   {
-                     string in_suffix( token + ".in" );
-                     string out_suffix( token + ".out" );
-                     string run_suffix( token + ".run" );
+                     string var_prefix( get_special_var_name( e_special_var_web ) + '.' );
 
-                     string in_name( prefix + in_suffix );
-                     string out_name( prefix + out_suffix );
-                     string run_name( prefix + run_suffix );
+                     string output_file_name( "/tmp/ciyam." + var_prefix.substr( 1 ) + token + '.' + device );
 
-                     string script_name( prefix + "cin" );
+                     string web_lock_name( var_prefix + token + '.' + device + c_web_lock_suffix );
 
-                     bool running = file_exists( run_name );
+                     string web_command_name( var_prefix + token + '.' + device + c_web_command_suffix );
+                     string web_message_name( var_prefix + token + '.' + device + c_web_message_suffix );
+                     string web_session_name( var_prefix + token + '.' + device + c_web_session_suffix );
+                     string web_started_name( var_prefix + token + '.' + device + c_web_started_suffix );
 
-                     if( !running )
+                     if( session.empty( ) )
                      {
-                        string cmd( "./ciyam_client -quiet -no_prompt -exec=\"<"
-                         + script_name + ' ' + in_suffix + ' ' + out_suffix + ' ' + run_suffix + "\" &" );
+                        string token_value( buffer_file( token_file ) );
 
-                        system( cmd.c_str( ) );
+                        string unique( uuid( ).as_string( ) );
 
-                        msleep( 200 );
-                     }
+                        if( !is_json_output )
+                           response = unique;
+                        else
+                           response = "{\"unique\":\"" + unique + "\"}";
 
-                     running = file_exists( run_name );
+                        int64_t now = unix_time( );
 
-                     if( !running )
-                        error = "Was unable to start a test session with token '" + token + "'.\n";
-                     else
-                     {
-                        found = true;
-
-                        if( true )
+                        if( !set_system_variable( web_lock_name, to_string( now ), string( "" ) ) )
                         {
-                           ofstream outf( in_name );
+                           int64_t was = from_string< int64_t >( get_system_variable( web_lock_name ) );
 
-                           outf << "var *" << endl;
+                           if( now < was + 10 )
+                              error = "Web session is currently busy (try again shortly).";
+                           else
+                              set_system_variable( web_lock_name, to_string( now ) );
                         }
 
-                        msleep( 100 );
-
-                        if( file_exists( out_name ) )
+                        // NOTE: If is not currently handling another session
+                        // request for the same device then the session value
+                        // is obtained from the leading ten characters of the
+                        // SHA256 digest obtained using the token value along
+                        // with the unique value.
+                        if( error.empty( ) )
                         {
-                           response = buffer_file( out_name );
+                           found = true;
 
-                           file_remove( out_name );
+                           sha256 hash( token_value + unique );
+
+                           string digest( hash.get_digest_as_string( ) );
+
+                           set_system_variable( web_session_name, digest.substr( 0, 10 ) );
+                        }
+                     }
+                     else
+                     {
+                        if( session != get_system_variable( web_session_name ) )
+                           error = "This web session is not valid (or has expired).";
+                        else
+                        {
+                           string function;
+
+                           if( params.count( c_query_param_name_function ) )
+                              function = params[ c_query_param_name_function ];
+
+                           if( has_system_variable( web_lock_name ) )
+                           {
+                              string when_locked( get_system_variable( web_lock_name ) );
+
+                              set_system_variable( web_lock_name, "" );
+                              set_system_variable( web_message_name, "" );
+
+                              set_system_variable( web_started_name, when_locked );
+                           }
+
+                           if( function == c_cws_function_terminate )
+                           {
+                              found = true;
+
+                              if( !is_json_output )
+                                 response = "Session terminated.";
+                              else
+                                 response = "{\"message\":\"Session terminated.\"}\n";
+
+                              set_system_variable( web_message_name, "" );
+                              set_system_variable( web_session_name, "" );
+                              set_system_variable( web_started_name, "" );
+                           }
+                           else
+                           {
+                              string script_name( prefix + "cin" );
+
+                              bool running = has_system_variable( web_message_name );
+
+                              if( !running )
+                              {
+                                 string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<"
+                                  + script_name + ' ' + token + ' ' + device + ' ' + session + "\" > /dev/null &" );
+
+                                 system( cmd.c_str( ) );
+
+                                 msleep( 200 );
+                              }
+
+                              // NOTE: Allows for a couple of
+                              // seconds to start the session
+                              // script (which will result in
+                              // an error if is not found).
+                              for( size_t i = 0; i < 9; i++ )
+                              {
+                                 running = has_system_variable( web_message_name );
+
+                                 if( running )
+                                    break;
+
+                                 msleep( 200 );
+                              }
+
+                              if( !running )
+                              {
+                                 set_system_variable( web_session_name, "" );
+                                 set_system_variable( web_started_name, "" );
+
+                                 error = "Was unable to start a web session with token '" + token + "'.";
+                              }
+                              else
+                              {
+                                 found = true;
+
+                                 set_system_variable( web_command_name, "variable " + web_message_name );
+
+                                 msleep( 150 );
+
+                                 if( file_exists( output_file_name ) )
+                                 {
+                                    response = buffer_file( output_file_name );
+
+                                    response = trim( response, false, true, "\n" );
+
+                                    file_remove( output_file_name );
+                                 }
+                              }
+                           }
                         }
                      }
                   }
@@ -792,7 +922,7 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                   was_endpoint = true;
 
                   if( !is_json_output )
-                     response = ip_addr + '\n';
+                     response = ip_addr;
                   else
                      response = "{\"ip_addr\":\"" + escaped_json( ip_addr ) + "\"}";
                }
@@ -805,7 +935,7 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                   string version( get_system_variable( e_special_var_version ) );
 
                   if( !is_json_output )
-                     response = version + '\n';
+                     response = version;
                   else
                      response = "{\"version\":\"" + version + "\"}";
                }
@@ -911,13 +1041,12 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                   if( !is_json_output )
                      osstr << c_http_content_type_text_plain_utf8;
                   else
-                  {
                      osstr << c_http_content_type_application_json;
 
-                     response = response;
-                  }
-
                   osstr << '\n';
+
+                  if( !response.empty( ) )
+                     response += '\n';
                }
 
                if( !unchanged && response.empty( ) )
@@ -928,6 +1057,13 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
             }
             else if( !error.empty( ) )
             {
+               msleep( c_error_response_delay );
+
+               if( is_json_output )
+                  error = "{\"error\":\"" + escaped_json( error ) + "\"}";
+
+               error += '\n';
+
                osstr << c_http_1_1 << ' ' << c_http_400_Bad_Req << '\n'
                 << c_http_content_type_prefix << c_http_content_type_text_plain_utf8
                 << '\n' << c_http_content_length_prefix << to_string( error.length( ) ) << "\n\n" << error;
