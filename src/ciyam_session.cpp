@@ -2260,6 +2260,33 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_sock_progress = &sock_progress;
 
+   // NOTE: If a session has been
+   // condemned then unless it is
+   // captured set it to finished
+   // (and ignores the command in
+   // either case).
+   if( is_condemned_session( ) )
+   {
+      if( !is_captured_session( ) )
+         handler.set_finished( );
+
+      return;
+   }
+
+   // NOTE: If a shutdown is now
+   // underway then will condemn
+   // and (if not captured) will
+   // finish the session now.
+   if( g_server_shutdown )
+   {
+      if( !is_captured_session( ) )
+         handler.set_finished( );
+      else if( !is_condemned_session( ) )
+         condemn_this_session( );
+
+      return;
+   }
+
    if( socket_handler.is_locked( )
     && !socket_handler.is_local_session( )
     && ( command != c_cmd_ciyam_session_session_rpc_unlock ) )
