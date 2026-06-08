@@ -15,12 +15,14 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "3"
-ERROR=Need input, output and running file names.
+ERROR=Need token, device and session values.
 @else
 ;
-IN_FILE=web_session.$1
-OUT_FILE=web_session.$2
-RUN_FILE=web_session.$3
+TOKEN=$1
+DEVICE=$2
+SESSION=$3
+;
+OUTPUT_FILE=/tmp/ciyam.web.$TOKEN.$DEVICE
 ;
 I=0
 ;
@@ -28,28 +30,15 @@ MAX_ITERATIONS=600
 ;
 LAST_ITERATION=@$MAX_ITERATIONS-1
 ;
-~touch $RUN_FILE
+~rm -f $OUTPUT_FILE
+.system_variable @web.$TOKEN.$DEVICE.message "[running]"
 ;
 @label NEXT
 ;
 @:LOOP
 ;
 @ifeq "$I" "$LAST_ITERATION"
-~rm -f $RUN_FILE
-@endif
-;
-INPUT=@files::$IN_FILE
-;
-@ifdef $INPUT
-COMMAND=@file:$IN_FILE
-;
-~rm $IN_FILE
-;
->$OUT_FILE
-$COMMAND
->
-;
-I=0
+.system_variable @web.$TOKEN.$DEVICE.message ""
 @endif
 ;
 @ifeq "$I" "$MAX_ITERATIONS"
@@ -60,9 +49,32 @@ I=0
 ;
 @:NEXT
 ;
-I=@$I+1
+.system_variable @web.$TOKEN.$DEVICE.command
+;
+@ifdef $OUTPUT
+COMMAND=$OUTPUT
+.system_variable @web.$TOKEN.$DEVICE.command ""
+;
+>$OUTPUT_FILE
+$COMMAND
+>
+;
+I=0
+@endif
 ;
 .wait 100
+;
+.system_variable @web.$TOKEN.$DEVICE.session
+@ifneq "$OUTPUT" "$SESSION"
+ERROR=Session has been terminated.
+@endif
+;
+@ifndef $ERROR
+I=@$I+1
+@else
+~rm -f $RUN_FILE
+I=$MAX_ITERATIONS
+@endif
 ;
 !!@:LOOP
 ;
