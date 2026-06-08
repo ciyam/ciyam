@@ -22,6 +22,7 @@ enum special_var
    e_special_var_tag,
    e_special_var_tls,
    e_special_var_uid,
+   e_special_var_web,
    e_special_var_sid,
    e_special_var_arg1,
    e_special_var_arg2,

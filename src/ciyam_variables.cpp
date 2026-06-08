@@ -56,6 +56,7 @@ const char* const c_special_variable_set = "@set";
 const char* const c_special_variable_tag = "@tag";
 const char* const c_special_variable_tls = "@tls";
 const char* const c_special_variable_uid = "@uid";
+const char* const c_special_variable_web = "@web";
 const char* const c_special_variable_sid = "@sid";
 const char* const c_special_variable_arg1 = "@arg1";
 const char* const c_special_variable_arg2 = "@arg2";
@@ -418,6 +419,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_tag );
       g_special_variable_names.push_back( c_special_variable_tls );
       g_special_variable_names.push_back( c_special_variable_uid );
+      g_special_variable_names.push_back( c_special_variable_web );
       g_special_variable_names.push_back( c_special_variable_sid );
       g_special_variable_names.push_back( c_special_variable_arg1 );
       g_special_variable_names.push_back( c_special_variable_arg2 );
