@@ -52,9 +52,9 @@ The exec attribute contains the name of an external program to run (which by def
 directory). One or more special "prefix" characters can also be prepended (if more than one then they must be
 ordered as follows).
 
-! - this prefix identifies that the program being executed is expected to have a non-zero return code
 * - this program will be started asyncronously
-$ - this program is not local (so under Linux will not be run with ./ prefixed)
+$ - this program is not local (so will not be ./ prefixed)
+! - this program is expected to have a non-zero return code
 
 In certain cases a single program exec might create more than one new test result (test result files are text
 and are named using <group>_<test>_<step>.tst and new test results <group>_<test>_<step>.new). For these type
