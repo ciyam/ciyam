@@ -26,7 +26,7 @@ xxx.txt
 xxx.xrep
 
 # Ignore any web session test token files.
-web_session.token.*
+.web_session.*
 
 # Ignore all .old, .sav and .tmp files.
 *.old
