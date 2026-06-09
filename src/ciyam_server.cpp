@@ -120,7 +120,8 @@ string g_files_area_path;
 
 unsigned int g_test_peer_port = 0;
 
-const int c_accept_timeout = 500;
+const int c_accept_timeout = 250;
+
 const int c_active_start_delay = 250;
 
 const int c_max_wait_attempts = 20;
@@ -584,7 +585,7 @@ int main( int argc, char* argv[ ] )
 
                int64_t utm = unix_time( );
 
-               while( !g_server_shutdown || g_active_sessions )
+               while( !g_server_shutdown || g_active_sessions || g_active_listeners )
                {
                   if( !s && !g_server_shutdown )
                   {
@@ -621,7 +622,7 @@ int main( int argc, char* argv[ ] )
 
                   if( g_server_shutdown ) 
                   {
-                     if( !g_active_sessions )
+                     if( !g_active_sessions && !g_active_listeners )
                         break;
                      else
                         msleep( c_accept_timeout );
