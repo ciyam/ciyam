@@ -19,9 +19,10 @@ check the "Use Host I/O Cache" option (for a huge difference to DB performance).
 Port Forwarding to access the VM from its Host
 ----------------------------------------------
 (Network -> Advanced -> Port Forwarding)
-CIYAM    TCP   127.0.0.1   12021    10.0.2.15   12021
-HTTP     TCP   127.0.0.1   8888     10.0.2.15   80
-SSH      TCP   127.0.0.1   2222     10.0.2.15   22
+CIYAM       TCP   127.0.0.1   12021    10.0.2.15   12021
+CIYAM WEB   TCP   127.0.0.1   13031    10.0.2.15   13031
+HTTP        TCP   127.0.0.1   8888     10.0.2.15   80
+SSH         TCP   127.0.0.1   2222     10.0.2.15   22
 
 It should be noted the "localhost" port numbers (other than CIYAM) have been set to
 values that are different to the standard ones and can be changed if they are being
@@ -384,7 +385,8 @@ Port #  Label     Local Port Protocol
   7881  LVKT SRTC     7881        TCP
  10001  SSH          10001        TCP
  12021  CIYAM        12021    TCP/UDP
- 13031  SYNC         13031    TCP/UDP
+ 13031  CIYAM WEB    13031        TCP
+ 15051  SYNC         15051    TCP/UDP
  40000               40000
 -44999  LVKT RTC    -44999        UDP
  45000               45000
