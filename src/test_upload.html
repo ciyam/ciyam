@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
    <title>Test Upload</title>
+
    <style>
    .progress-container
    {
@@ -25,9 +28,9 @@
 </head>
 
 <body>
-   <input type="file" id="fileInput">
+   <input type="file" id="file_input">
 
-   <button onclick="uploadFile( )">Upload</button>
+   <button onclick="upload_file( )">Upload</button>
 
    <div class="progress-container">
       <div class="progress-bar" id="progressBar"></div>
@@ -36,9 +39,9 @@
    <p id="status"></p>
 
    <script>
-   function uploadFile( )
+   function upload_file( )
    {
-      const file = document.getElementById( 'fileInput' ).files[ 0 ];
+      const file = document.getElementById( 'file_input' ).files[ 0 ];
 
       if( !file )
          return alert( 'Please select a file' );
@@ -77,7 +80,7 @@
             status.textContent = xhr.response;
       };
 
-      xhr.open( 'POST', '/upload' );
+      xhr.open( 'POST', '/upload?verbose=1' );
 
       const formData = new FormData( );
 

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+   <title>Test Fetch</title>
+</head>
+
+<body>
+   <h1>Fetch Tester</h1>
+
+   <form id="test_form" onsubmit="do_fetch( ); return false;">
+      <label>Command: &nbsp; <input type="text" id="user_input" size="20" placeholder="(e.g. version)" autofocus></label>
+      <br/><br/>
+      <input type="checkbox" id="use_json" name="use_json">Use JSON
+      <br/><br/>
+      <label>Parameters: &nbsp; <input type="text" id="parameters" size="100" placeholder="(e.g. name1=value1&name2=value2)"></label>
+      <br/><br/>
+      <button type="submit">Click or Enter to Submit</button>
+   </form>
+
+   <p>&nbsp;</p>
+
+   <div id="data"></div>
+
+   <script>
+   function do_fetch( event )
+   {
+      var request = "http://localhost:13031/" + document.getElementById( "user_input" ).value;
+
+      var use_json = document.getElementById( "use_json" ).checked;
+
+      var parameters = document.getElementById( "parameters" ).value;
+
+      var qry_data = parameters;
+
+      if( use_json )
+      {
+         if( qry_data != "" )
+            qry_data += "&";
+
+         qry_data += "format=json";
+      }
+
+      if( qry_data != "" )
+         request += "?" + qry_data;
+
+      fetch( request )
+      .then( response => use_json ? response.json( ) : response.text( ) )
+      .then( data => document.getElementById( "data" ).innerText = !use_json ? data : JSON.stringify( data ) )
+      .catch( error => console.error( "Error fetching data: ", error ) );
+   }
+   </script>
+</body>
+
+</html>
