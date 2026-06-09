@@ -43,19 +43,19 @@
 
 using namespace std;
 
-sigset_t sig_set;
+size_t g_updates;
 
-size_t g_updates = 0;
+int64_t g_started;
 
-atomic< size_t > g_active_sessions = 0;
-atomic< size_t > g_active_listeners = 0;
+atomic< size_t > g_active_sessions;
+atomic< size_t > g_active_listeners;
 
-volatile sig_atomic_t g_server_shutdown = 0;
-
-int64_t g_started = 0;
+volatile sig_atomic_t g_server_shutdown;
 
 namespace
 {
+
+sigset_t sig_set;
 
 bool g_start_auto_script = true;
 bool g_start_udp_streams = true;
