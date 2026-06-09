@@ -14,6 +14,7 @@
 #  include <cstdlib>
 #  include <set>
 #  include <deque>
+#  include <atomic>
 #  include <memory>
 #  include <iomanip>
 #  include <sstream>
@@ -55,7 +56,7 @@
 
 using namespace std;
 
-extern size_t g_active_listeners;
+extern atomic< size_t > g_active_listeners;
 
 extern volatile sig_atomic_t g_server_shutdown;
 
@@ -215,15 +216,11 @@ string g_test_shared_blockchain = string( c_bc_prefix ) + string( c_test_shared_
 
 void increment_active_listeners( )
 {
-   guard g( g_mutex );
-
    ++g_active_listeners;
 }
 
 void decrement_active_listeners( )
 {
-   guard g( g_mutex );
-
    --g_active_listeners;
 }
 

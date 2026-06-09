@@ -9,12 +9,13 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
-#  include <map>
-#  include <set>
-#  include <memory>
-#  include <string>
 #  include <cstring>
 #  include <csignal>
+#  include <map>
+#  include <set>
+#  include <atomic>
+#  include <memory>
+#  include <string>
 #  include <fstream>
 #  include <sstream>
 #  include <stdexcept>
@@ -37,7 +38,7 @@
 
 using namespace std;
 
-extern size_t g_active_listeners;
+extern atomic< size_t > g_active_listeners;
 
 extern volatile sig_atomic_t g_server_shutdown;
 

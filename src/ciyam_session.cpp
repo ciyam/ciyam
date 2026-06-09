@@ -17,6 +17,7 @@
 #  include <set>
 #  include <map>
 #  include <deque>
+#  include <atomic>
 #  include <memory>
 #  include <vector>
 #  include <string>
@@ -74,7 +75,8 @@
 
 using namespace std;
 
-extern size_t g_active_sessions;
+extern atomic< size_t > g_active_sessions;
+
 extern volatile sig_atomic_t g_server_shutdown;
 
 namespace
@@ -9371,15 +9373,11 @@ void ciyam_session::on_start( )
 
 void ciyam_session::increment_session_count( )
 {
-   guard g( g_mutex );
-
    ++g_active_sessions;
 }
 
 void ciyam_session::decrement_session_count( )
 {
-   guard g( g_mutex );
-
    --g_active_sessions;
 }
 

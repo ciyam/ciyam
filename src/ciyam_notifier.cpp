@@ -12,6 +12,7 @@
 #  include <csignal>
 #  include <stdexcept>
 #  include <set>
+#  include <atomic>
 #  include <vector>
 #  include <sstream>
 #endif
@@ -27,7 +28,7 @@
 
 using namespace std;
 
-extern size_t g_active_listeners;
+extern atomic< size_t > g_active_listeners;
 
 extern volatile sig_atomic_t g_server_shutdown;
 
@@ -55,15 +56,11 @@ inline void issue_warning( const string& message )
 
 void increment_active_listeners( )
 {
-   guard g( g_mutex );
-
    ++g_active_listeners;
 }
 
 void decrement_active_listeners( )
 {
-   guard g( g_mutex );
-
    --g_active_listeners;
 }
 
