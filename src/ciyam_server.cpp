@@ -12,6 +12,7 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <csignal>
 #  include <cstdlib>
+#  include <atomic>
 #  include <memory>
 #  include <sstream>
 #  include <iomanip>
@@ -46,8 +47,8 @@ sigset_t sig_set;
 
 size_t g_updates = 0;
 
-size_t g_active_sessions = 0;
-size_t g_active_listeners = 0;
+atomic< size_t > g_active_sessions = 0;
+atomic< size_t > g_active_listeners = 0;
 
 volatile sig_atomic_t g_server_shutdown = 0;
 
