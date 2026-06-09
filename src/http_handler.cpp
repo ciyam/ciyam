@@ -10,6 +10,7 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <map>
+#  include <set>
 #  include <memory>
 #  include <string>
 #  include <cstring>
@@ -73,7 +74,9 @@ const char* const c_cws_endpoint = "cws";
 const char* const c_echo_endpoint = "echo";
 const char* const c_upload_endpoint = "upload";
 const char* const c_ip_addr_endpoint = "ip_addr";
+const char* const c_storage_endpoint = "storage";
 const char* const c_version_endpoint = "version";
+const char* const c_unix_now_endpoint = "unix_now";
 
 const char* const c_boundary_prefix = "boundary=";
 
@@ -106,6 +109,8 @@ const char* const c_http_content_length_prefix = "Content-Length: ";
 const char* const c_http_content_type_header = "Content-Type";
 const char* const c_http_content_length_header = "Content-Length";
 const char* const c_http_content_disposition_header = "Content-Disposition";
+
+const char* const c_http_access_control_allow_origin_all = "Access-Control-Allow-Origin: *";
 
 const char* const c_http_connection_header_info = "Connection: keep-alive";
 
@@ -159,8 +164,11 @@ const int c_minimum_timeout = 30;
 
 const int c_max_empty_chunks = 10;
 
+const int c_accept_timeout = 250;
+
+const int c_shutdown_timeout = 150;
+
 #ifdef LOCAL_REQUESTS_ONLY
-const int c_accept_timeout = 500;
 const int c_ssl_accept_timeout = 1000;
 
 const int c_initial_timeout = 500;
@@ -168,7 +176,6 @@ const int c_subsequent_timeout = 100;
 
 const int c_response_timeout = 200;
 #else
-const int c_accept_timeout = 5000;
 const int c_ssl_accept_timeout = 10000;
 
 const int c_initial_timeout = 5000;
@@ -277,6 +284,30 @@ bool parse_query_params( const string& qry_info, map< string, string >& params )
    return retval;
 }
 
+mutex g_mutex;
+
+size_t g_active_handlers = 0;
+
+const size_t c_cws_max_devices = 10;
+
+set< string > g_cws_tokens;
+
+map< string, set< string > > g_cws_devices;
+
+void increment_handlers( )
+{
+   guard g( g_mutex );
+
+   ++g_active_handlers;
+}
+
+void deccrement_handlers( )
+{
+   guard g( g_mutex );
+
+   --g_active_handlers;
+}
+
 }
 
 #ifdef SSL_SUPPORT
@@ -292,15 +323,17 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
       bool using_tls = false;
       bool had_request = false;
 
+      increment_handlers( );
+
 #ifdef DEBUG
       cerr << "\n*** started request/response ***" << endl;
 #endif
 
-      p_socket->set_no_delay( );
-      p_socket->set_no_linger( );
-
       try
       {
+         p_socket->set_no_delay( );
+         p_socket->set_no_linger( );
+
          date_time dtm_1( date_time::standard( ) );
 
 #ifdef SSL_SUPPORT
@@ -488,7 +521,7 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
             if( !qry_info.empty( ) )
             {
                if( !parse_query_params( qry_info, params ) )
-                  error = "Invalid query parameters '" + qry_info + ".";
+                  error = "Invalid format for query parameters '" + qry_info + "'.";
                else
                {
                   if( params.count( c_query_param_name_format ) )
@@ -766,10 +799,35 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
 
                   string token_file( '.' + prefix + token ); // i.e. ".web_session.<token>"
 
-                  if( token.empty( ) || device.empty( ) )
-                     error = "Need token and device parameters to use a web session.";
-                  else if( !file_exists( token_file ) )
+                  if( !g_cws_tokens.count( token ) && file_exists( token_file ) )
+                     g_cws_tokens.insert( token );
+
+                  if( token.empty( ) )
+                     error = "Need a valid token to use a web session.";
+                  else if( !g_cws_tokens.count( token ) )
                      error = "Provided web session token '" + token + "' is invalid.";
+                  else if( device.empty( ) )
+                  {
+                     size_t num_devices = ( !g_cws_devices.count( token ) ? 0 : g_cws_devices[ token ].size( ) );
+
+                     if( num_devices >= c_cws_max_devices )
+                        error = "Maximum devices have been created for web session token '" + token + "'.";
+                     else
+                     {
+                        found = true;
+
+                        string new_device( uuid( ).as_string( ).substr( 0, 10 ) );
+
+                        if( !is_json_output )
+                           response = new_device;
+                        else
+                           response = "{\"new_device\":\"" + new_device + "\"}";
+
+                        g_cws_devices[ token ].insert( new_device );
+                     }
+                  }
+                  else if( !g_cws_devices[ token ].count( device ) )
+                     error = "Provided web session device '" + device + "' is invalid.";
                   else
                   {
                      string var_prefix( get_special_var_name( e_special_var_web ) + '.' );
@@ -915,6 +973,19 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                      }
                   }
                }
+               else if( document == c_echo_endpoint )
+               {
+                  found = true;
+
+                  was_endpoint = true;
+
+                  string echo( qry_info.empty( ) ? "(empty parameters)" : qry_info );
+
+                  if( !is_json_output )
+                     response = echo;
+                  else
+                     response = "{\"parameters\":\"" + escaped_json( echo ) + "\"}";
+               }
                else if( document == c_ip_addr_endpoint )
                {
                   found = true;
@@ -925,6 +996,19 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                      response = ip_addr;
                   else
                      response = "{\"ip_addr\":\"" + escaped_json( ip_addr ) + "\"}";
+               }
+               else if( document == c_storage_endpoint )
+               {
+                  found = true;
+
+                  was_endpoint = true;
+
+                  string storage( get_system_variable( e_special_var_storage ) );
+
+                  if( !is_json_output )
+                     response = storage;
+                  else
+                     response = "{\"storage\":\"" + storage + "\"}";
                }
                else if( document == c_version_endpoint )
                {
@@ -938,6 +1022,19 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                      response = version;
                   else
                      response = "{\"version\":\"" + version + "\"}";
+               }
+               else if( document == c_unix_now_endpoint )
+               {
+                  found = true;
+
+                  was_endpoint = true;
+
+                  string unix_now( to_string( unix_time( ) ) );
+
+                  if( !is_json_output )
+                     response = unix_now;
+                  else
+                     response = "{\"unix_now\":\"" + escaped_json( unix_now ) + "\"}";
                }
             }
 
@@ -1036,6 +1133,8 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                   osstr << c_http_1_1 << ' ' << c_http_200_OK << '\n'
                    << c_http_server_prefix << c_CIYAM << '\n' << c_http_date_prefix << formatted_dtm << '\n';
 
+                  osstr << c_http_access_control_allow_origin_all << '\n';
+
                   osstr << c_http_content_type_prefix;
 
                   if( !is_json_output )
@@ -1111,6 +1210,8 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
       p_socket->close( );
 
       delete p_socket;
+
+      deccrement_handlers( );
    }
 }
 
@@ -1160,7 +1261,14 @@ void http_listener::on_start( )
       while( true )
       {
          if( g_server_shutdown )
-            break;
+         {
+            guard g( g_mutex );
+
+            if( !g_active_handlers )
+               break;
+            else
+               msleep( c_shutdown_timeout );
+         }
 
 #ifdef SSL_SUPPORT
          unique_ptr< ssl_socket > up_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
