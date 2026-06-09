@@ -8,6 +8,7 @@ Invalid query parameter value in 'format=none' for version.
 0.0.0
 testing...
 {"data":"testing..."}
+Provided web session device 'bad_device' is invalid.
 [running]
 This web session is not valid (or has expired).
 [running]

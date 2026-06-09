@@ -21,12 +21,14 @@ diff test.png $filename
 rm -f $filename
 
 # Basic web session API tests.
-echo -n "pwd_hash" > .web_session.test
-unique=$(curl -s "localhost:13031/cws?token=test&device=dummy")
-session=$(echo -n "pwd_hash$unique" | sha256sum | head -c 10)
-curl -s "localhost:13031/cws?token=test&device=dummy&session=$session"
-curl -s "localhost:13031/cws?token=test&device=dummy&session=bad_$session"
-curl -s "localhost:13031/cws?token=test&device=dummy&session=$session"
-curl -s "localhost:13031/cws?token=test&device=dummy&session=$session&function=terminate"
-curl -s "localhost:13031/cws?token=test&device=dummy&session=$session"
+echo -n "pwd_hash_value" > .web_session.test
+device=$(curl -s "localhost:13031/cws?token=test")
+unique=$(curl -s "localhost:13031/cws?token=test&device=$device")
+session=$(echo -n "pwd_hash_value$unique" | sha256sum | head -c 10)
+curl -s "localhost:13031/cws?token=test&device=bad_device&session=$session"
+curl -s "localhost:13031/cws?token=test&device=$device&session=$session"
+curl -s "localhost:13031/cws?token=test&device=$device&session=bad_session"
+curl -s "localhost:13031/cws?token=test&device=$device&session=$session"
+curl -s "localhost:13031/cws?token=test&device=$device&session=$session&function=terminate"
+curl -s "localhost:13031/cws?token=test&device=$device&session=$session"
 rm -f .web_session.test
