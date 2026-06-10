@@ -59,6 +59,7 @@ sigset_t sig_set;
 
 bool g_start_auto_script = true;
 bool g_start_udp_streams = true;
+bool g_start_http_listener = true;
 bool g_start_peer_sessions = true;
 
 bool g_has_external_ip_address = false;
@@ -93,12 +94,14 @@ const char* const c_cmd_files_area_path = "path";
 
 const char* const c_cmd_no_udp = "no_udp";
 const char* const c_cmd_no_auto = "no_auto";
+const char* const c_cmd_no_http = "no_http";
 const char* const c_cmd_no_peers = "no_peers";
 
 const char* const c_cmd_test_peer_port = "test_peer_port";
 const char* const c_cmd_test_peer_port_port = "port";
 
 bool g_is_quiet = false;
+
 bool g_had_exiting_command = false;
 
 #ifdef __GNUG__
@@ -234,6 +237,8 @@ class ciyam_server_startup_functor : public command_functor
          g_start_udp_streams = false;
       else if( command == c_cmd_no_auto )
          g_start_auto_script = false;
+      else if( command == c_cmd_no_http )
+         g_start_http_listener = false;
       else if( command == c_cmd_no_peers )
          g_start_peer_sessions = false;
       else if( command == c_cmd_log_files )
@@ -293,6 +298,9 @@ int main( int argc, char* argv[ ] )
 
          cmd_handler.add_command( c_cmd_no_auto, 4,
           "", "do not start the autoscript thread", new ciyam_server_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_no_http, 4,
+          "", "do not start the http listener thread", new ciyam_server_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_no_peers, 4,
           "", "do not start the peer sessions thread", new ciyam_server_startup_functor( cmd_handler ) );
@@ -491,7 +499,7 @@ int main( int argc, char* argv[ ] )
             if( !s.set_reuse_addr( ) && !g_is_quiet )
                cout << "warning: set_reuse_addr failed (for tcp)..." << endl;
 
-            ( *fp_register_listener_func )( g_port, "rpc_main", "" );
+            ( *fp_register_listener_func )( g_port, "core", "" );
 
             if( !is_update )
             {
@@ -510,7 +518,7 @@ int main( int argc, char* argv[ ] )
                if( !is_update && !g_is_quiet )
                   cout << "server now listening on tcp port " << g_port << "..." << endl;
 
-               string start_message( "rpc_main listener started on tcp port " + to_string( g_port ) );
+               string start_message( "core listener started on tcp port " + to_string( g_port ) );
 
                ( *fp_log_trace_string_func )( TRACE_MINIMAL, start_message.c_str( ) );
 
@@ -535,7 +543,7 @@ int main( int argc, char* argv[ ] )
                      if( !is_update && !g_is_quiet )
                         cout << "server now available on udp port " << g_port << "..." << endl;
 
-                     string start_message( "rpc_main streamer started on udp port " + to_string( g_port ) );
+                     string start_message( "core streamer started on udp port " + to_string( g_port ) );
 
                      ( *fp_log_trace_string_func )( TRACE_MINIMAL, start_message.c_str( ) );
                   }
@@ -574,15 +582,15 @@ int main( int argc, char* argv[ ] )
                   }
                }
 
-               bool reported_shutdown = false;
+               if( web_port && g_start_http_listener )
+                  ( *fp_init_http_handler_func )( web_port );
 
                if( g_start_peer_sessions )
                   ( *fp_init_peer_sessions_func )( true );
 
-               if( web_port )
-                  ( *fp_init_http_handler_func )( web_port );
-
                int64_t utm = unix_time( );
+
+               bool reported_shutdown = false;
 
                while( !g_server_shutdown || g_active_sessions || g_active_listeners )
                {
@@ -688,12 +696,12 @@ int main( int argc, char* argv[ ] )
 
                if( has_udp )
                {
-                  finish_message = "rpc_main streamer finished (udp port " + to_string( g_port ) + ")";
+                  finish_message = "core streamer finished (udp port " + to_string( g_port ) + ")";
 
                   ( *fp_log_trace_string_func )( TRACE_MINIMAL, finish_message.c_str( ) );
                }
 
-               finish_message = "rpc_main listener finished (tcp port " + to_string( g_port ) + ")";
+               finish_message = "core listener finished (tcp port " + to_string( g_port ) + ")";
 
                ( *fp_log_trace_string_func )( TRACE_MINIMAL, finish_message.c_str( ) );
 
