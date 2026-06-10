@@ -8184,7 +8184,7 @@ void peer_listener::on_start( )
       {
          s.set_reuse_addr( );
 
-         string listener_name( "rpc_peer" );
+         string listener_name( "peer" );
 
          string unprefixed_blockchains( blockchains );
          replace( unprefixed_blockchains, c_bc_prefix, "" );
@@ -8198,7 +8198,7 @@ void peer_listener::on_start( )
 
          if( okay )
          {
-            TRACE_LOG( TRACE_MINIMAL, "rpc_peer listener started on tcp port " + to_string( port ) );
+            TRACE_LOG( TRACE_MINIMAL, "peer listener started on tcp port " + to_string( port ) );
 
             size_t num_iterations = 0;
 
@@ -8374,7 +8374,7 @@ void peer_listener::on_start( )
       issue_error( "unexpected unknown exception occurred" );
    }
 
-   TRACE_LOG( TRACE_MINIMAL, "rpc_peer listener finished (tcp port " + to_string( port ) + ")" );
+   TRACE_LOG( TRACE_MINIMAL, "peer listener finished (tcp port " + to_string( port ) + ")" );
 
    decrement_active_listeners( );
 
@@ -8539,7 +8539,29 @@ peer_session* create_peer_initiator( const string& blockchain,
       replace( explicit_paired_identity, c_bc_prefix, "" );
    }
 
-   ip_address address( host.c_str( ), port );
+   bool use_ip_v4 = true;
+
+   // NOTE: Will assume IPv4 unless finds that "@ip_ext_addr"
+   // has been set to an IPv6 address (if no value found then
+   // will re-check it a number of times with a small delay).
+   for( size_t i = 0; i < 10; i++ )
+   {
+      string ip_ext_addr( get_system_variable( e_special_var_ip_ext_addr ) );
+
+      if( ip_ext_addr.empty( ) )
+         msleep( 250 );
+      else
+      {
+         if( ip_ext_addr.find( ':' ) != string::npos )
+         {
+            use_ip_v4 = false;
+
+            break;
+         }
+      }
+   }
+
+   ip_address address( host.c_str( ), port, use_ip_v4 );
 
    string ip_addr( address.get_addr_string( ) );
 
