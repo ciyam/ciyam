@@ -11,6 +11,7 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <map>
 #  include <deque>
+#  include <atomic>
 #  include <iostream>
 #  include <algorithm>
 #endif
@@ -29,7 +30,7 @@
 
 using namespace std;
 
-extern size_t g_active_sessions;
+extern atomic< size_t > g_active_sessions;
 
 namespace
 {
