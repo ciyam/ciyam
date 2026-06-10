@@ -1228,7 +1228,7 @@ http_listener::http_listener( int port )
 {
    ++g_active_listeners;
 
-   register_listener( port, "web_rest" );
+   register_listener( port, "http" );
 }
 
 http_listener::~http_listener( )
@@ -1263,7 +1263,7 @@ void http_listener::on_start( )
       if( !okay )
          throw runtime_error( "unable to start listening on port #" + to_string( port ) );
 
-      TRACE_LOG( TRACE_MINIMAL, "web_rest listener started on tcp port " + to_string( port ) );
+      TRACE_LOG( TRACE_MINIMAL, "http listener started on tcp port " + to_string( port ) );
 
       while( true )
       {
@@ -1302,7 +1302,7 @@ void http_listener::on_start( )
       TRACE_LOG( TRACE_MINIMAL, "http_listener error: unexpected unknown exception caught" );
    }
 
-   TRACE_LOG( TRACE_MINIMAL, "web_rest listener finished (tcp port " + to_string( port ) + ")" );
+   TRACE_LOG( TRACE_MINIMAL, "http listener finished (tcp port " + to_string( port ) + ")" );
 
    delete this;
 }
