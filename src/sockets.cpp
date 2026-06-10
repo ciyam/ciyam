@@ -56,8 +56,10 @@ const char* const c_bye = "bye";
 
 const char* const c_base64_format = ".b64";
 
+const char* const c_ipv6_any = "::";
 const char* const c_ipv6_local = "::1";
 
+const char* const c_ipv4_any = "0.0.0.0";
 const char* const c_ipv4_local = "127.0.0.1";
 const char* const c_ipv4_prefix = "::ffff:";
 
@@ -118,32 +120,56 @@ void ip_address::resolve( const char* p_address, int port, bool ipv4_only )
 {
    memset( this, 0, sizeof( ip_address ) );
 
+   string checked_address( p_address );
+
+   string::size_type len = checked_address.length( );
+
+   bool ipv4_preferred = false;
+
+   // NOTE: If the address has been suffixed with
+   // with "+4" or "+6" then prefer IPv4 or IPv6.
+   if( ( len > 6 )
+    && ( checked_address[ len - 2 ] == '+' ) )
+   {
+      bool strip = false;
+
+      if( checked_address[ len - 1 ] == '4' )
+      {
+         strip = true;
+
+         ipv4_preferred = true;
+      }
+      else if( checked_address[ len - 1 ] == '6' )
+         strip = true;
+
+      if( strip )
+         checked_address.erase( len - 2 );
+   }
+
    is_ipv6 = false;
 
    in.sin_family = AF_INET;
 
-   in.sin_addr.s_addr = inet_addr( p_address );
+   in.sin_addr.s_addr = inet_addr( checked_address.c_str( ) );
 
-   HOSTENT* p_host = ::gethostbyname( p_address );
+   HOSTENT* p_host = ::gethostbyname( checked_address.c_str( ) );
 
    if( !p_host )
-      in.sin_addr.s_addr = INADDR_ANY;
+      in.sin_addr.s_addr = htonl( INADDR_ANY );
    else
       in.sin_addr.s_addr = ( ( IN_ADDR* )p_host->h_addr )->s_addr;
 
    in.sin_port = htons( port );
 
-   if( !ipv4_only )
+   if( !ipv4_only && ( !p_host || !ipv4_preferred ) )
    {
-      string check_address( p_address );
-
       // NOTE: If the IPv4 version was explicitly specified
       // (and resolved) then is not attempting to use IPv6.
-      if( !p_host || ( check_address != get_addr_string( ) ) )
+      if( !p_host || ( checked_address != get_addr_string( ) ) )
       {
          in6.sin6_family = AF_INET6;
 
-         p_host = ::gethostbyname2( p_address, AF_INET6 );
+         p_host = ::gethostbyname2( checked_address.c_str( ), AF_INET6 );
 
          if( !p_host )
             in6.sin6_addr = in6addr_any;
@@ -200,6 +226,8 @@ string ip_address::get_addr_string( ) const
        && ( addr.length( ) >= ( c_ipv4_prefix_len * 2 ) ) )
          addr.erase( 0, c_ipv4_prefix_len );
    }
+   else if( addr == c_ipv4_any )
+      addr = c_ipv6_any;
 
    return addr;
 }
