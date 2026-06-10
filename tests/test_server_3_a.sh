@@ -24,7 +24,8 @@ rm -f $filename
 echo -n "pwd_hash_value" > .web_session.test
 device=$(curl -s "localhost:13031/cws?token=test")
 unique=$(curl -s "localhost:13031/cws?token=test&device=$device")
-session=$(echo -n "pwd_hash_value$unique" | sha256sum | head -c 10)
+checked=$(echo -n "pwd_hash_value$device" | sha256sum | head -c 64)
+session=$(echo -n "$checked$unique" | sha256sum | head -c 10)
 curl -s "localhost:13031/cws?token=test&device=bad_device&session=$session"
 curl -s "localhost:13031/cws?token=test&device=$device&session=$session"
 curl -s "localhost:13031/cws?token=test&device=$device&session=bad_session"

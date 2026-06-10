@@ -859,7 +859,7 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                         {
                            int64_t was = from_string< int64_t >( get_system_variable( web_lock_name ) );
 
-                           if( now < was + 10 )
+                           if( now < ( was + 10 ) )
                               error = "Web session is currently busy (try again shortly).";
                            else
                               set_system_variable( web_lock_name, to_string( now ) );
@@ -867,16 +867,20 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
 
                         // NOTE: If is not currently handling another session
                         // request for the same device then the session value
-                        // is obtained from the leading ten characters of the
-                        // SHA256 digest obtained using the token value along
-                        // with the unique value.
+                        // is obtained from the leading characters of a hash.
+                        // The hash is itself obtained using a "checked" hash
+                        // (being the "token_value" and "device" strings) and
+                        // then combining its digest with the "unqiue" string
+                        // to determine a "combined" hash.
                         if( error.empty( ) )
                         {
                            found = true;
 
-                           sha256 hash( token_value + unique );
+                           sha256 hash_checked( token_value + device );
 
-                           string digest( hash.get_digest_as_string( ) );
+                           sha256 hash_combined( hash_checked.get_digest_as_string( ) + unique );
+
+                           string digest( hash_combined.get_digest_as_string( ) );
 
                            set_system_variable( web_session_name, digest.substr( 0, 10 ) );
                         }
@@ -926,7 +930,9 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                                  string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<"
                                   + script_name + ' ' + token + ' ' + device + ' ' + session + "\" > /dev/null &" );
 
-                                 system( cmd.c_str( ) );
+                                 int rc = system( cmd.c_str( ) );
+
+                                 ( void )rc;
 
                                  msleep( 200 );
                               }
