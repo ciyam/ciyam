@@ -404,6 +404,7 @@ struct session
     p_tx_helper( 0 ),
     using_tls( false ),
     is_captured( false ),
+    self_captured( false ),
     running_script( false ),
     skip_fk_fetches( false ),
     skip_validation( false ),
@@ -493,6 +494,7 @@ struct session
 
    bool using_tls;
    bool is_captured;
+   bool self_captured;
    bool running_script;
 
    bool is_peer_session;
@@ -7990,6 +7992,7 @@ void init_session(
                 && ( blockchain == p_next_session->blockchain ) )
                {
                   p_next_session->is_captured = false;
+                  p_next_session->self_captured = false;
 
                   g_condemned_sessions[ p_next_session->id ] = date_time::local( );
                }
@@ -8436,7 +8439,12 @@ void list_all_sessions( ostream& os, bool inc_own, bool inc_dtms,
          ss << g_sessions[ i ]->session_commands_executed;
 
          if( g_sessions[ i ]->is_captured )
-            ss << '!';
+         {
+            if( g_sessions[ i ]->self_captured )
+               ss << '*';
+            else
+               ss << '!';
+         }
 
          if( include_progress )
          {
@@ -8730,7 +8738,10 @@ void condemn_session( size_t sess_id, int num_seconds, bool force_uncapture, boo
       if( g_sessions[ i ] && ( g_sessions[ i ]->id == sess_id ) )
       {
          if( force_uncapture )
+         {
             g_sessions[ i ]->is_captured = false;
+            g_sessions[ i ]->self_captured = false;
+         }
 
          if( !wait_until_term )
             g_condemned_sessions.insert( make_pair( g_sessions[ i ]->id, dtm ) );
@@ -8791,7 +8802,10 @@ void condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wai
       if( g_sessions[ i ] && ( g_sessions[ i ]->id != sess_id ) )
       {
          if( force_uncapture )
+         {
             g_sessions[ i ]->is_captured = false;
+            g_sessions[ i ]->self_captured = false;
+         }
 
          if( !wait_until_term )
             g_condemned_sessions.insert( make_pair( g_sessions[ i ]->id, dtm ) );
@@ -8815,8 +8829,16 @@ void capture_session( size_t sess_id )
 {
    guard g( g_session_mutex );
 
-   if( gtp_session && !sess_id )
-      sess_id = gtp_session->id;
+   bool is_own_sess_id = false;
+
+   if( gtp_session )
+   {
+      if( !sess_id )
+         sess_id = gtp_session->id;
+
+      if( sess_id == gtp_session->id )
+         is_own_sess_id = true;
+   }
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -8824,6 +8846,8 @@ void capture_session( size_t sess_id )
        && ( g_sessions[ i ]->id == sess_id ) )
       {
          g_sessions[ i ]->is_captured = true;
+
+         g_sessions[ i ]->self_captured = is_own_sess_id;
 
          break;
       }
@@ -8849,6 +8873,11 @@ void capture_all_other_sessions( )
 bool is_captured_session( )
 {
    return ( gtp_session && gtp_session->is_captured );
+}
+
+bool is_self_captured_session( )
+{
+   return ( gtp_session && gtp_session->self_captured );
 }
 
 bool has_any_matching_session( bool support_only )

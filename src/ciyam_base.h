@@ -527,6 +527,8 @@ void capture_all_other_sessions( );
 
 bool is_captured_session( );
 
+bool is_self_captured_session( );
+
 bool has_any_matching_session( bool support_only = true );
 
 inline bool has_any_support_session( ) { return has_any_matching_session( true ); }
