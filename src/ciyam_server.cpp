@@ -576,8 +576,6 @@ int main( int argc, char* argv[ ] )
 
                bool reported_shutdown = false;
 
-               int min_active_sessions = g_active_sessions;
-
                if( g_start_peer_sessions )
                   ( *fp_init_peer_sessions_func )( true );
 
