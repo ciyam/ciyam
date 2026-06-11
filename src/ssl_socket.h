@@ -30,6 +30,9 @@ struct ssl_init
    inline ~ssl_init( ) { term_ssl( ); }
 };
 
+std::string own_cert_issuer( );
+std::string own_cert_subject( );
+
 class ssl_socket : public tcp_socket
 {
    public:
@@ -41,7 +44,7 @@ class ssl_socket : public tcp_socket
 
    void close( );
 
-   std::string cipher( ) const;
+   std::string crypto_cipher( ) const;
 
    void ssl_accept( size_t timeout = c_default_ssl_accept_timeout, bool* p_rc = 0 );
 

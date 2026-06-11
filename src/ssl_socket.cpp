@@ -35,6 +35,9 @@ const char* p_pass = 0;
 
 const size_t c_attempt_milliseconds = 25;
 
+string g_issuer;
+string g_subject;
+
 #ifdef __GNUG__
 void sigpipe_handle( int x ) { }
 #endif
@@ -210,6 +213,25 @@ void init_ssl( const char* p_keyfile, const char* p_password, const char* p_CA_L
 
    SSL_CTX_set_session_id_context( p_ctx,
     ( const unsigned char* )&g_server_session_id_context, sizeof( g_server_session_id_context ) );
+
+   SSL* p_ssl = SSL_new( p_ctx );
+
+   // NOTE: Obtain issuer and subject information.
+   if( p_ssl )
+   {
+      X509* p_cert = SSL_get_certificate( p_ssl );
+
+      if( p_cert )
+      {
+         X509_NAME* p_issuer_name = X509_get_issuer_name( p_cert );
+         X509_NAME* p_subject_name = X509_get_subject_name( p_cert );
+
+         g_issuer = X509_NAME_oneline( p_issuer_name, nullptr, 0 );
+         g_subject = X509_NAME_oneline( p_subject_name, nullptr, 0 );
+      }
+
+      SSL_free( p_ssl );
+   }
 }
 
 void term_ssl( )
@@ -220,6 +242,16 @@ void term_ssl( )
    SSL_CTX_free( p_ctx );
 
    p_ctx = 0;
+}
+
+string own_cert_issuer( )
+{
+   return g_issuer;
+}
+
+string own_cert_subject( )
+{
+   return g_subject;
 }
 
 ssl_socket::ssl_socket( )
@@ -256,7 +288,7 @@ void ssl_socket::close( )
    p_ssl = SSL_new( p_ctx );
 }
 
-string ssl_socket::cipher( ) const
+string ssl_socket::crypto_cipher( ) const
 {
    string retval;
 
