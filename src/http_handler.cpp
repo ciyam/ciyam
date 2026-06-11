@@ -141,9 +141,9 @@ const char* const c_http_content_type_multipart_form_data = "multipart/form-data
 
 const char* const c_http_content_disposition_form_data = "form-data";
 
-const char* const c_html_test_response = "<html>\n<head><title>Test HTML Page</title></head>\n<body><p>This is a HTML response for test purposes.</p></body>\n</html>\n";
+const char* const c_html_test_response = "<!doctype html>\n<html>\n<head><title>Test HTML Page</title></head>\n<body><p>This is a HTML response for test purposes.</p></body>\n</html>\n";
 
-const char* const c_not_found_html_response = "<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find 'DOCUMENT' (incorrect URL?).</p></body>\n</html>\n";
+const char* const c_not_found_html_response = "<!doctype html>\n<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find 'DOCUMENT' (incorrect endpoint?).</p></body>\n</html>\n";
 
 const char* const c_replace_document_marker = "DOCUMENT";
 
@@ -285,27 +285,21 @@ bool parse_query_params( const string& qry_info, map< string, string >& params )
    return retval;
 }
 
-mutex g_mutex;
-
-size_t g_active_handlers = 0;
-
 const size_t c_cws_max_devices = 10;
 
 set< string > g_cws_tokens;
 
 map< string, set< string > > g_cws_devices;
 
-void increment_handlers( )
-{
-   guard g( g_mutex );
+atomic< size_t > g_active_handlers;
 
+inline void increment_handlers( )
+{
    ++g_active_handlers;
 }
 
-void deccrement_handlers( )
+inline void deccrement_handlers( )
 {
-   guard g( g_mutex );
-
    --g_active_handlers;
 }
 
@@ -1135,6 +1129,11 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
 
             if( found )
             {
+               bool empty_but_not_unchanged = false;
+
+               if( !unchanged && response.empty( ) )
+                  empty_but_not_unchanged = true;
+
                if( !has_content_type )
                {
                   osstr << c_http_1_1 << ' ' << c_http_200_OK << '\n'
@@ -1144,10 +1143,15 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
 
                   osstr << c_http_content_type_prefix;
 
-                  if( !is_json_output )
-                     osstr << c_http_content_type_text_plain_utf8;
+                  if( empty_but_not_unchanged )
+                     osstr << c_http_content_type_text_html_utf8;
                   else
-                     osstr << c_http_content_type_application_json;
+                  {
+                     if( !is_json_output )
+                        osstr << c_http_content_type_text_plain_utf8;
+                     else
+                        osstr << c_http_content_type_application_json;
+                  }
 
                   osstr << '\n';
 
@@ -1155,7 +1159,7 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                      response += '\n';
                }
 
-               if( !unchanged && response.empty( ) )
+               if( empty_but_not_unchanged )
                   response = c_html_test_response;
 
                if( !response.empty( ) )
@@ -1181,7 +1185,9 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
                replace( response, c_replace_document_marker, document );
 
                osstr << c_http_1_1 << ' ' << c_http_404_Not_Found << '\n'
-                << c_http_content_type_prefix << c_http_content_type_text_plain_utf8 << '\n';
+                << c_http_server_prefix << c_CIYAM << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+
+               osstr << c_http_content_type_prefix << c_http_content_type_text_html_utf8 << '\n';
 
                osstr << c_http_content_length_prefix << to_string( response.length( ) ) << "\n\n" << response;
             }
@@ -1269,8 +1275,6 @@ void http_listener::on_start( )
       {
          if( g_server_shutdown )
          {
-            guard g( g_mutex );
-
             if( !g_active_handlers )
                break;
             else
