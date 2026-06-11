@@ -5326,6 +5326,9 @@ void init_globals( const char* p_sid, int* p_port, int* p_use_udp, int* p_web_po
          }
 
          g_using_ssl = true;
+
+         set_system_variable( e_special_var_ssl_cert_issuer, own_cert_issuer( ), true );
+         set_system_variable( e_special_var_ssl_cert_subject, own_cert_subject( ), true );
       }
 #endif
 
@@ -8182,7 +8185,7 @@ void session_is_using_tls( socket_base& socket )
    {
       gtp_session->using_tls = true;
 
-      set_session_variable( e_special_var_tls_cipher, socket.cipher( ) );
+      set_session_variable( e_special_var_tls_cipher, socket.crypto_cipher( ) );
    }
 }
 
