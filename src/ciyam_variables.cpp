@@ -241,6 +241,7 @@ const char* const c_special_variable_notifier_events = "@notifier_events";
 const char* const c_special_variable_paired_identity = "@paired_identity";
 const char* const c_special_variable_queue_hub_users = "@queue_hub_users";
 const char* const c_special_variable_row_cache_limit = "@row_cache_limit";
+const char* const c_special_variable_ssl_cert_issuer = "@ssl_cert_issuer";
 const char* const c_special_variable_system_identity = "@system_identity";
 const char* const c_special_variable_total_put_files = "@total_put_files";
 const char* const c_special_variable_can_omit_prepare = "@can_omit_prepare";
@@ -255,6 +256,7 @@ const char* const c_special_variable_session_id_owner = "@session_id_owner";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_skip_persistence = "@skip_persistence";
 const char* const c_special_variable_skip_submit_file = "@skip_submit_file";
+const char* const c_special_variable_ssl_cert_subject = "@ssl_cert_subject";
 const char* const c_special_variable_style_full_blown = "@style_full_blown";
 const char* const c_special_variable_trigger_variable = "@trigger_variable";
 const char* const c_special_variable_autoscript_reload = "@autoscript_reload";
@@ -604,6 +606,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_paired_identity );
       g_special_variable_names.push_back( c_special_variable_queue_hub_users );
       g_special_variable_names.push_back( c_special_variable_row_cache_limit );
+      g_special_variable_names.push_back( c_special_variable_ssl_cert_issuer );
       g_special_variable_names.push_back( c_special_variable_system_identity );
       g_special_variable_names.push_back( c_special_variable_total_put_files );
       g_special_variable_names.push_back( c_special_variable_can_omit_prepare );
@@ -618,6 +621,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_skip_after_fetch );
       g_special_variable_names.push_back( c_special_variable_skip_persistence );
       g_special_variable_names.push_back( c_special_variable_skip_submit_file );
+      g_special_variable_names.push_back( c_special_variable_ssl_cert_subject );
       g_special_variable_names.push_back( c_special_variable_style_full_blown );
       g_special_variable_names.push_back( c_special_variable_trigger_variable );
       g_special_variable_names.push_back( c_special_variable_autoscript_reload );
@@ -733,7 +737,9 @@ void init_special_variable_names( )
    g_read_only_variables.insert( c_special_variable_shared_files );
    g_read_only_variables.insert( c_special_variable_utm_at_start );
    g_read_only_variables.insert( c_special_variable_utm_init_base );
+   g_read_only_variables.insert( c_special_variable_ssl_cert_issuer );
    g_read_only_variables.insert( c_special_variable_system_identity );
+   g_read_only_variables.insert( c_special_variable_ssl_cert_subject );
    g_read_only_variables.insert( c_special_variable_system_is_for_demo );
    g_read_only_variables.insert( c_special_variable_system_is_for_devt );
 
