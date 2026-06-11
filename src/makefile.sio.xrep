@@ -14,7 +14,6 @@
      <filename>base64.cpp
      <filename>chacha20.cpp
      <filename>char_array.cpp
-     <filename>clz.cpp
      <filename>console.cpp
      <filename>console_commands.cpp
      <filename>command_parser.cpp
