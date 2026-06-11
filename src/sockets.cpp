@@ -127,9 +127,9 @@ void ip_address::resolve( const char* p_address, int port, bool ipv4_only )
    bool ipv4_preferred = false;
 
    // NOTE: If the address has been suffixed with
-   // with "+4" or "+6" then prefer IPv4 or IPv6.
+   // with "#4" or "#6" then prefer IPv4 or IPv6.
    if( ( len > 6 )
-    && ( checked_address[ len - 2 ] == '+' ) )
+    && ( checked_address[ len - 2 ] == '#' ) )
    {
       bool strip = false;
 
@@ -293,7 +293,7 @@ SOCKET socket_base::accept( ip_address& addr, size_t timeout ) const
 bool socket_base::connect( const ip_address& addr, size_t timeout )
 {
    // NOTE: Is closing and re-opening
-   // if socket types are mismatched.
+   // if mismatched socket families.
    if( is_ipv6 != addr.get_is_ipv6( ) )
    {
       close( );
@@ -1611,7 +1611,7 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
          throw runtime_error( "unable to send a UDP datagram to " + host_name );
 
       // NOTE: This ten millisecond sleep is provided in order to help prevent packet loss.
-      if( i % pause == 0 )
+      if( ( i % pause ) == 0 )
          msleep( 10 );
    }
 }
