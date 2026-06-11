@@ -69,7 +69,7 @@ class socket_base
 
    virtual void close( );
 
-   virtual std::string cipher( ) const { return std::string( ); }
+   virtual std::string crypto_cipher( ) const { return std::string( ); }
 
    bool bind( const ip_address& addr );
 
