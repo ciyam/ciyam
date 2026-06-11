@@ -14,7 +14,9 @@
    <form id="test_form" onsubmit="do_fetch( ); return false;">
       <label>Command: &nbsp; <input type="text" id="user_input" size="20" placeholder="(e.g. version)" autofocus></label>
       <br/><br/>
-      <input type="checkbox" id="use_json" name="use_json">Use JSON
+      <input type="checkbox" id="use_json" name="use_json" onclick="json_clicked( )" >Use JSON
+      <br/><br/>
+      <input type="checkbox" id="use_pretty" name="use_pretty" disabled>Pretty JSON
       <br/><br/>
       <label>Parameters: &nbsp; <input type="text" id="parameters" size="100" placeholder="(e.g. name1=value1&name2=value2)"></label>
       <br/><br/>
@@ -26,11 +28,24 @@
    <div id="data"></div>
 
    <script>
+   function json_clicked( )
+   {
+      if( !document.getElementById( "use_json" ).checked )
+         document.getElementById( "use_pretty" ).disabled = true;
+      else
+         document.getElementById( "use_pretty" ).disabled = false;
+   }
+
    function do_fetch( event )
    {
       var request = "http://localhost:13031/" + document.getElementById( "user_input" ).value;
 
       var use_json = document.getElementById( "use_json" ).checked;
+
+      var spaces = 0;
+
+      if( document.getElementById( "use_pretty" ).checked )
+         spaces = 3;
 
       var parameters = document.getElementById( "parameters" ).value;
 
@@ -49,7 +64,7 @@
 
       fetch( request )
       .then( response => use_json ? response.json( ) : response.text( ) )
-      .then( data => document.getElementById( "data" ).innerText = !use_json ? data : JSON.stringify( data ) )
+      .then( data => document.getElementById( "data" ).innerText = !use_json ? data : JSON.stringify( data, null, spaces ) )
       .catch( error => console.error( "Error fetching data: ", error ) );
    }
    </script>
