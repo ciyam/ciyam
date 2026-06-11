@@ -2091,9 +2091,9 @@ void parse_host_and_or_port( const string& host_and_or_port, string& host, int& 
       }
       else
       {
-         if( host_and_or_port.find( '.' ) == string::npos
-          && host_and_or_port.find( ':' ) == string::npos
-          && host_and_or_port[ 0 ] >= '0' && host_and_or_port[ 0 ] <= '9' )
+         if( ( host_and_or_port.find( '.' ) == string::npos )
+          && ( host_and_or_port.find( ':' ) == string::npos )
+          && ( ( host_and_or_port[ 0 ] >= '0' ) && ( host_and_or_port[ 0 ] <= '9' ) ) )
             port = atoi( host_and_or_port.c_str( ) );
          else
          {
@@ -2101,14 +2101,20 @@ void parse_host_and_or_port( const string& host_and_or_port, string& host, int& 
 
             string::size_type pos = host.find( ':' );
 
-            // NOTE: If no ':' is found or the host is an IPV6 address then will allow
-            // a '-' to instead be used as the port separator (as an alternative suffix
-            // format that works with either an IPv4 or IPv6 address).
+            // NOTE: For IPv4 ':' can be used as a port separator
+            // (as occurs with standard utilities such as "curl")
+            // but as colons are needed for IPv6 addresses unless
+            // you use the "[<addr>]:<port>" it would be invalid.
+            // To make it easier a '-' is also being supported as
+            // a port separator as although hyphens are permitted
+            // to be used in domain names they are not allowed in
+            // a TLD (so uses 'rfind' and checks no dot follows).
             if( ( pos == string::npos )
              || ( host.find( ':', pos + 1 ) != string::npos ) )
-               pos = host.find( '-' );
+               pos = host.rfind( '-' );
 
-            if( pos != string::npos )
+            if( ( pos != string::npos )
+             && ( host.find( '.', pos + 1 ) == string::npos ) )
             {
                port = atoi( host.substr( pos + 1 ).c_str( ) );
 
