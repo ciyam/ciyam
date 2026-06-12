@@ -43,6 +43,14 @@ const int c_lock_attempt_sleep_time = 100;
 
 const size_t c_secret_truncate_length = 9;
 
+const size_t c_default_max_deque_item_size = 1000;
+
+const size_t c_default_max_deque_size_limit = 10000;
+
+const char* const c_qs_max_chars_prefix = "@qs_mc_";
+const char* const c_qs_num_items_prefix = "@qs_ni_";
+const char* const c_qs_pop_front_prefix = "@qs_pf_";
+
 const char* const c_secret_hash_suffix = "\t\1\t";
 
 const char* const c_special_variable_id = "@id";
@@ -375,6 +383,8 @@ inline string quote_if_contains_white_space( const string& name )
 
 string g_secret_hash_prefix;
 
+size_t g_queue_prefix_length = 0;
+
 // NOTE: System variable names that begin with "@secret_hash_" will have their values
 // truncated to the first five characters with an ellipsis appended when they are not
 // retrieved internally (i.e. via the "system_variable" protocol command). Whilst not
@@ -406,6 +416,8 @@ void init_special_variable_names( )
    guard g( g_mutex );
 
    g_secret_hash_prefix = string( c_special_variable_secret_hash ) + "_";
+
+   g_queue_prefix_length = strlen( c_special_variable_queue_prefix );
 
    // NOTE: These must align with the enums in "ciyam_variable_names.h".
    if( g_special_variable_names.empty( ) )
@@ -1512,12 +1524,50 @@ void set_system_variable( const var_name& var,
             g_deque_variables.erase( variable );
          else
          {
+            string suffix( variable.substr( g_queue_prefix_length ) );
+
+            size_t max_item_size = c_default_max_deque_item_size;
+
+            string max_item_size_var_name( c_qs_max_chars_prefix + suffix );
+
+            if( g_variables.count( max_item_size_var_name ) )
+               max_item_size = from_string< size_t >( g_variables[ max_item_size_var_name ] );
+
+            if( max_item_size && ( val.size( ) > max_item_size ) )
+               // FUTURE: This should be a module string.
+               throw runtime_error( "Maximum size for '" + suffix + "' items may not be exceeded." );
+
+            size_t max_items = c_default_max_deque_size_limit;
+
+            string max_items_var_name( c_qs_num_items_prefix + suffix );
+
+            if( g_variables.count( max_items_var_name ) )
+               max_items = from_string< size_t >( g_variables[ max_items_var_name ] );
+
+            // NOTE: If there is a maximum number of items then if the
+            // "@qs_pf_<name>" variable has been set (and has the max.
+            // number of items currently) will pop the front item from
+            // the deque before pushing back the new item.
+            if( max_items )
+            {
+               if( g_variables.count( c_qs_pop_front_prefix + suffix ) )
+               {
+                  if( g_deque_variables.count( variable )
+                   && ( g_deque_variables[ variable ].size( ) == max_items ) )
+                     g_deque_variables[ variable ].pop_front( );
+               }
+            }
+
+            if( max_items && ( g_deque_variables[ variable ].size( ) >= max_items ) )
+               // FUTURE: This should be a module string.
+               throw runtime_error( "Maximum number of items for '" + suffix + "' are already queued." );
+
             g_deque_variables[ variable ].push_back( val );
 
             // NOTE: If a system variable "@session_<variable>" is found then will also add
             // the item to sessions where a "@system_<variable>" session variable is found.
             if( g_variables.count( string( c_special_variable_session ) + '_' + variable ) )
-               add_queue_item_for_linked_sessions( variable, val );
+               add_queue_item_for_linked_sessions( variable, val, max_items );
          }
       }
       else if( persist
