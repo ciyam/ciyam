@@ -71,13 +71,15 @@ const char* const c_post_request = "POST ";
 
 const char* const c_index_html = "index.html";
 
-const char* const c_cws_endpoint = "cws";
-const char* const c_echo_endpoint = "echo";
-const char* const c_upload_endpoint = "upload";
-const char* const c_ip_addr_endpoint = "ip_addr";
-const char* const c_storage_endpoint = "storage";
-const char* const c_version_endpoint = "version";
-const char* const c_unix_now_endpoint = "unix_now";
+const char* const c_api_prefix = "/api.";
+
+const char* const c_cws_endpoint = "/api.cws";
+const char* const c_echo_endpoint = "/api.echo";
+const char* const c_upload_endpoint = "/api.upload";
+const char* const c_ip_addr_endpoint = "/api.ip_addr";
+const char* const c_storage_endpoint = "/api.storage";
+const char* const c_version_endpoint = "/api.version";
+const char* const c_unix_now_endpoint = "/api.unix_now";
 
 const char* const c_boundary_prefix = "boundary=";
 
@@ -505,11 +507,26 @@ void handle_http_request( tcp_socket* p_socket, const string& ip_addr )
 
             string data, error, header, response;
 
-            if( !document.empty( ) && ( document[ 0 ] == '/' ) )
-               document.erase( 0, 1 );
+            // NOTE: If no file extension was provided
+            // then assumes it is a directory name and
+            // will append "/index.html" (or will just
+            // append "index.html" if "/" was found to
+            // be the last character).
+            if( document.find( c_api_prefix ) != 0 )
+            {
+               string::size_type pos = document.rfind( '/' );
 
-            if( document.empty( ) )
-               document = c_index_html;
+               if( pos != string::npos )
+               {
+                  string::size_type dpos = document.find( '.', pos + 1 );
+
+                  if( ( dpos == string::npos ) && ( pos != document.length( ) - 1 ) )
+                     document += '/';
+
+                  if( dpos == string::npos )
+                     document += c_index_html;
+               }
+            }
 
             map< string, string > params;
 
