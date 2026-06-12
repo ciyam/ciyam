@@ -395,6 +395,7 @@ set -e
 for domain in $RENEWED_DOMAINS; do
  case $domain in
  ***domain_name***)
+#  daemon_cert_root=/opt/ciyam
   daemon_cert_root=/home/admin/ciyam/src
 
   umask 077
@@ -404,7 +405,7 @@ for domain in $RENEWED_DOMAINS; do
   chown admin "$daemon_cert_root/ciyam.pem"
   chmod 400 "$daemon_cert_root/ciyam.pem"
 
-  systemctl restart ciyam >/dev/null
+  touch "$daemon_cert_root/ciyam_base.update"
   ;;
  esac
 done
