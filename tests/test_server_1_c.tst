@@ -150,6 +150,45 @@ ccc
 aaa
 bbb
 ccc
+system_variable @qs_mc_test 1
+system_variable @queue_test a
+system_variable @queue_test aa
+Error: Maximum size for 'test' items may not be exceeded.
+system_variable @queue_test aaa
+Error: Maximum size for 'test' items may not be exceeded.
+system_variable @qs_mc_test 2
+system_variable @queue_test aa
+system_variable @queue_test aaa
+Error: Maximum size for 'test' items may not be exceeded.
+system_variable @qs_mc_test 3
+system_variable @queue_test aaa
+system_variable @queue_test *
+a
+aa
+aaa
+system_variable @session_@queue_test 1
+system_variable @queue_test aaa
+system_variable @queue_test bbb
+system_variable @queue_test ccc
+system_variable @qs_mc_test 2
+system_variable @queue_test ddd
+Error: Maximum size for 'test' items may not be exceeded.
+system_variable @qs_mc_test ""
+system_variable @qs_ni_test 3
+system_variable @queue_test ddd
+Error: Maximum number of items for 'test' are already queued.
+system_variable @qs_pf_test 1
+system_variable @queue_test ddd
+system_variable @queue_test eee
+system_variable @queue_test *
+ccc
+ddd
+eee
+session_variable @queue_test *
+ccc
+ddd
+eee
+system_variable @session_@queue_test ""
 session_variable @queue_test abc
 session_variable @queue_test def
 session_variable @queue_test ghi
