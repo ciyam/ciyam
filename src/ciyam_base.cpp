@@ -10523,7 +10523,8 @@ bool set_session_variable( const var_name& var, const string& value, const strin
    return retval;
 }
 
-void add_queue_item_for_linked_sessions( const string& name, const string& value )
+void add_queue_item_for_linked_sessions(
+ const string& name, const string& value, size_t max_items )
 {
    guard g( g_session_mutex );
 
@@ -10533,7 +10534,14 @@ void add_queue_item_for_linked_sessions( const string& name, const string& value
    {
       if( g_sessions[ i ]
        && g_sessions[ i ]->variables.count( session_link_name ) )
+      {
+         if( max_items
+          && g_sessions[ i ]->deque_variables.count( name )
+          && ( g_sessions[ i ]->deque_variables[ name ].size( ) >= max_items ) )
+            g_sessions[ i ]->deque_variables[ name ].pop_front( );
+
          g_sessions[ i ]->deque_variables[ name ].push_back( value );
+      }
    }
 }
 
