@@ -1956,7 +1956,7 @@ const size_t c_max_storage_handlers_default = 10;
 
 const size_t c_notifier_ignore_secs_default = 2;
 
-const size_t c_max_http_post_allowed_default = 100000; // i.e. 100 MB
+const size_t c_max_http_post_allowed_default = 100000000; // i.e. 100 MB
 
 const size_t c_num_recv_stream_sessions_default = 10;
 const size_t c_num_send_stream_sessions_default = 1;

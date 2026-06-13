@@ -810,7 +810,7 @@ void http_request_handler::on_start( )
                if( !is_verbose )
                   response = local_filename;
                else
-                  response = "Uploaded as \"" + local_filename + "\" (" + to_string( uploaded_size ) + " bytes).";
+                  response = "Uploaded as \"" + local_filename + "\" (" + format_bytes( uploaded_size ) + ").";
 
                response += '\n';
             }
