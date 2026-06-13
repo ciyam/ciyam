@@ -941,6 +941,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                          && append_filename[ append_filename.length( ) - 1 ] == '/' )
                         {
                            appending_below = true;
+
                            append_filename.erase( append_filename.length( ) - 1 );
                         }
 
@@ -954,22 +955,10 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         }
                         else if( !append_filename.empty( ) )
                         {
-                           if( !file_exists( append_filename ) )
+                           if( !dir_exists( append_filename ) )
                               append_chunks = false;
                            else
-                           {
-                              string path( get_cwd( ) );
-
-                              bool okay = true;
-                              set_cwd( append_filename, &okay );
-
-                              if( !okay )
-                                 append_chunks = false;
-                              else
-                                 filename = "~" + uuid( ).as_string( );
-
-                              set_cwd( path );
-                           }
+                              filename = "~" + uuid( ).as_string( );
                         }
                      }
                   }
@@ -1020,6 +1009,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   if( ( prefix & c_file_type_char_compressed ) && !( prefix & c_file_type_char_encrypted ) )
                   {
                      string data( buffer_file( filename ) );
+
                      string expanded_data( g_max_file_size, '\0' );
 
                      size_t usize = g_max_file_size;
@@ -1065,6 +1055,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         for( size_t i = 0; i < chunks.size( ); i++ )
                         {
                            string next( chunks[ i ] );
+
                            string::size_type pos = next.find( ' ' );
 
                            if( next.find( ':' ) != string::npos )
