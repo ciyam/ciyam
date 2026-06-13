@@ -24,6 +24,7 @@
 #include "http_handler.h"
 
 #include "mime.h"
+#include "format.h"
 #include "sha256.h"
 #include "threads.h"
 #include "date_time.h"
@@ -45,6 +46,10 @@ extern volatile sig_atomic_t g_server_shutdown;
 
 namespace
 {
+
+const int c_max_line_length = 2000;
+
+const int c_max_request_lines = 100;
 
 #include "ciyam_constants.h"
 
@@ -81,6 +86,7 @@ const char* const c_ip_addr_endpoint = "/api.ip_addr";
 const char* const c_storage_endpoint = "/api.storage";
 const char* const c_version_endpoint = "/api.version";
 const char* const c_unix_now_endpoint = "/api.unix_now";
+const char* const c_post_limit_endpoint = "/api.post_limit";
 
 const char* const c_boundary_prefix = "boundary=";
 
@@ -103,6 +109,7 @@ const char* const c_http_200_OK = "200 OK";
 const char* const c_http_304_Not_Mod = "304 Not Modified";
 const char* const c_http_400_Bad_Req = "400 Bad Request";
 const char* const c_http_404_Not_Found = "404 Not Found";
+const char* const c_http_414_URI_Too_Long = "414 URI Too Long";
 
 const char* const c_http_date_prefix = "Date: ";
 const char* const c_http_server_prefix = "Server: ";
@@ -189,8 +196,6 @@ const int c_response_timeout = 2000;
 #endif
 
 const int c_error_response_delay = 250;
-
-const size_t c_max_data_for_post = 5000000;
 
 inline string escaped_json( const string& s )
 {
@@ -298,6 +303,8 @@ atomic< size_t > g_active_handlers;
 
 atomic< size_t > g_request_handler;
 
+size_t g_max_post_data_allowed = 0;
+
 inline void increment_handlers( )
 {
    ++g_active_handlers;
@@ -372,56 +379,18 @@ http_request_handler::~http_request_handler( )
 void http_request_handler::on_start( )
 {
    bool first = true;
-   bool checked = false;
    bool using_tls = false;
    bool had_request = false;
+
+   size_t handler = ++g_request_handler;
 
 #ifdef DEBUG
    cerr << "\n*** started request/response ***" << endl;
 #endif
-
-   size_t handler = ++g_request_handler;
-
    try
    {
-      date_time dtm_1( date_time::standard( ) );
-
-      int initial_timeout = c_initial_timeout;
-      int subsequent_timeout = c_subsequent_timeout;
-
       while( true )
       {
-         // NOTE: Multiple requests can be handled using one socket
-         // but whether requests are handled this way is decided by
-         // the software making the requests so these timing checks
-         // and timeout adjustments are being made here in order to
-         // try and maximise the request throughput (which might be
-         // otherwise slowed down when requests are made locally).
-         if( !first && !checked )
-         {
-            checked = true;
-
-            date_time dtm_2( date_time::standard( ) );
-
-            int64_t secs_1 = unix_time( dtm_1 );
-            int64_t secs_2 = unix_time( dtm_2 );
-
-            millisecond ms_1 = dtm_1.get_millisecond( );
-            millisecond ms_2 = dtm_2.get_millisecond( );
-
-            int64_t total_ms_1 = ( secs_1 * 1000 ) + ms_1;
-            int64_t total_ms_2 = ( secs_2 * 1000 ) + ms_2;
-
-            int64_t difference = 0;
-
-            if( total_ms_1 > total_ms_2 )
-               difference = ( total_ms_1 - total_ms_2 );
-            else
-               difference = ( total_ms_2 - total_ms_1 );
-
-            if( difference <= c_minimum_timeout )
-               subsequent_timeout = c_minimum_timeout;
-         }
 #ifdef DEBUG
          cerr << "\n" << date_time::local( ).as_string( e_time_format_hhmmssth, true ) << '\n' << endl;
 #endif
@@ -440,7 +409,7 @@ void http_request_handler::on_start( )
             string next_line;
 
             if( up_socket->read_line( next_line,
-             ( first ? initial_timeout : subsequent_timeout ) ) <= 0 )
+             ( first ? c_initial_timeout : c_subsequent_timeout ), c_max_line_length ) <= 0 )
             {
                if( up_socket->had_blank_line( ) )
                {
@@ -461,6 +430,19 @@ void http_request_handler::on_start( )
                request = next_line;
             else
                header_lines.push_back( next_line );
+
+            if( header_lines.size( ) >= c_max_request_lines )
+            {
+               ostringstream osstr;
+
+               osstr << c_http_1_1 << ' ' << c_http_414_URI_Too_Long << "\n\n";
+
+               string response( osstr.str( ) );
+
+               up_socket->send_n( ( unsigned char* )response.data( ), response.length( ), c_response_timeout );
+
+               throw runtime_error( "max. allowed request lines was exceeded" );
+            }
          }
 
          if( !had_empty || request.empty( ) )
@@ -477,7 +459,7 @@ void http_request_handler::on_start( )
           to_comparable_string( handler, false, 8 ) + " - " + request );
 
 #ifdef DEBUG
-         cerr << "[Request]\n" << request << endl;
+         cerr << "handler #" << handler << "\n[Request]\n" << request << endl;
 #endif
          for( size_t i = 0; i < header_lines.size( ); i++ )
          {
@@ -597,7 +579,7 @@ void http_request_handler::on_start( )
          {
             size_t data_length = from_string< size_t >( header_info[ c_http_content_length_header ] );
 
-            if( data_length <= c_max_data_for_post )
+            if( !g_max_post_data_allowed || ( data_length <= g_max_post_data_allowed ) )
             {
                data = string( data_length, '\0' );
 
@@ -656,7 +638,7 @@ void http_request_handler::on_start( )
                }
             }
             else
-               error = "Post data is too large (maximum size is " + to_string( c_max_data_for_post ) + " bytes).";
+               error = "Post data was too large (maximum allowed is " + format_bytes( g_max_post_data_allowed ) + ").";
          }
 
          bool unchanged = false;
@@ -1097,6 +1079,21 @@ void http_request_handler::on_start( )
                else
                   response = "{\"unix_now\":\"" + escaped_json( unix_now ) + "\"}";
             }
+            else if( document == c_post_limit_endpoint )
+            {
+               found = true;
+
+               was_endpoint = true;
+
+               size_t val = g_max_post_data_allowed;
+
+               string post_limit( !is_verbose ? to_string( val ) : format_bytes( val ) );
+
+               if( !is_json_output )
+                  response = post_limit;
+               else
+                  response = "{\"post_limit\":\"" + escaped_json( post_limit ) + "\"}";
+            }
          }
 
          if( response.empty( ) )
@@ -1361,6 +1358,8 @@ void http_listener::on_start( )
          throw runtime_error( "unable to start listening on port #" + to_string( port ) );
 
       TRACE_LOG( TRACE_MINIMAL, "http listener started on tcp port " + to_string( port ) );
+
+      g_max_post_data_allowed = get_max_http_post_allowed( );
 
       while( true )
       {
