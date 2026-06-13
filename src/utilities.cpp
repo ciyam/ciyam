@@ -32,20 +32,6 @@
 #  endif
 #endif
 
-#ifdef __GNUG__
-#  define _open open
-#  define _chmod chmod
-#  define _close close
-#  define _chdir chdir
-#  define _mkdir mkdir
-#  define _rmdir rmdir
-#  define _utime utime
-#  define _getcwd getcwd
-#  define _putenv putenv
-#  define _utimbuf utimbuf
-#  define _MAX_PATH PATH_MAX
-#endif
-
 #include "utilities.h"
 
 //#define DEBUG
@@ -136,12 +122,14 @@ bool are_hex_nibbles( const char* p_str )
 
       if( ( ch < '0' ) || ( ch > '9' ) )
       {
-         if( ( ch != 'a' ) && ( ch != 'A' )
-          && ( ch != 'b' ) && ( ch != 'B' )
-          && ( ch != 'c' ) && ( ch != 'C' )
-          && ( ch != 'd' ) && ( ch != 'D' )
-          && ( ch != 'e' ) && ( ch != 'E' )
-          && ( ch != 'f' ) && ( ch != 'F' ) )
+         bool ch_is_a_to_f = false;
+
+         if( ( ch >= 'a' ) && ( ch <= 'f' ) )
+            ch_is_a_to_f = true;
+         else if( ( ch >= 'A' ) && ( ch <= 'F' ) )
+            ch_is_a_to_f = true;
+
+         if( !ch_is_a_to_f )
          {
             retval = false;
 
@@ -379,6 +367,7 @@ string random_characters( size_t minimum, size_t max_extra, printable_type type 
 void msleep( unsigned long amt )
 {
    timeval t;
+
    t.tv_sec = amt / 1000;
    t.tv_usec = ( amt % 1000 ) * 1000;
 
@@ -406,12 +395,13 @@ int vmem_used( )
       {
          string remainder( next.substr( pos + 7 ) );
 
-         while( !remainder.empty( ) && ( remainder[ 0 ] == ' ' || remainder[ 0 ] == '\t' ) )
+         while( !remainder.empty( )
+          && ( ( remainder[ 0 ] == ' ' ) || ( remainder[ 0 ] == '\t' ) ) )
             remainder.erase( 0, 1 );
 
          for( size_t i = 0; i < remainder.size( ); i++ )
          {
-            if( remainder[ i ] >= '0' && remainder[ i ] <= '9' )
+            if( ( remainder[ i ] >= '0' ) && ( remainder[ i ] <= '9' ) )
                size_kb = ( size_kb * 10 ) + ( remainder[ i ] - '0' );
             else
                break;
@@ -426,17 +416,17 @@ int vmem_used( )
 
 string get_cwd( )
 {
-   char buf[ _MAX_PATH ];
+   char buf[ PATH_MAX ];
 
-   if( !_getcwd( buf, _MAX_PATH ) )
-      throw runtime_error( "unexpected error occurred calling _getcwd" );
+   if( !getcwd( buf, PATH_MAX ) )
+      throw runtime_error( "unexpected error occurred calling getcwd" );
 
    return buf;
 }
 
 void set_cwd( const char* p_name, bool* p_rc )
 {
-   if( _chdir( p_name ) != 0 )
+   if( chdir( p_name ) != 0 )
    {
       if( p_rc )
          *p_rc = false;
@@ -486,7 +476,7 @@ void create_dir( const char* p_name, bool* p_rc, dir_perms perms, int um )
       break;
    }
 
-   if( _mkdir( p_name, pval ) )
+   if( mkdir( p_name, pval ) )
    {
       if( p_rc )
          *p_rc = false;
@@ -528,7 +518,7 @@ bool dir_exists( const char* p_name, bool check_link_target )
 
 void remove_dir( const char* p_name, bool* p_rc )
 {
-   if( _rmdir( p_name ) != 0 )
+   if( rmdir( p_name ) != 0 )
    {
       if( p_rc )
          *p_rc = false;
@@ -539,8 +529,8 @@ void remove_dir( const char* p_name, bool* p_rc )
 
 bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists, bool force_sync )
 {
-   struct _utimbuf ut;
-   struct _utimbuf* p_ut = 0;
+   struct utimbuf ut;
+   struct utimbuf* p_ut = 0;
 
    if( p_tm )
    {
@@ -550,7 +540,7 @@ bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists, bo
       p_ut = &ut;
    }
 
-   int rc = _utime( p_name, p_ut );
+   int rc = utime( p_name, p_ut );
 
    if( ( rc != 0 ) && create_if_not_exists )
    {
@@ -582,25 +572,32 @@ bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists, bo
 
 bool file_exists( const char* p_name, bool check_link_target )
 {
-   int rc;
+   bool rc = false;
+
    struct stat statbuf;
 
    if( check_link_target )
-      rc = stat( p_name, &statbuf );
+   {
+      if( ( stat( p_name, &statbuf ) == 0 ) && !S_ISDIR( statbuf.st_mode ) )
+         rc = true;
+   }
    else
-      rc = lstat( p_name, &statbuf );
+   {
+      if( ( lstat( p_name, &statbuf ) == 0 ) && !S_ISDIR( statbuf.st_mode ) )
+         rc = true;
+   }
 
-   return rc == 0;
+   return rc;
 }
 
 bool file_remove( const char* p_name )
 {
-   return ::remove( p_name ) == 0;
+   return ( ::remove( p_name ) == 0 );
 }
 
 bool file_rename( const char* p_old_name, const char* p_new_name )
 {
-   return ::rename( p_old_name, p_new_name ) == 0;
+   return ( ::rename( p_old_name, p_new_name ) == 0 );
 }
 
 int64_t file_size( const char* p_name, unsigned char* p_hdr, size_t hdr_size )
@@ -609,7 +606,7 @@ int64_t file_size( const char* p_name, unsigned char* p_hdr, size_t hdr_size )
 
    if( p_hdr && hdr_size )
    {
-      int fd = _open( p_name, O_RDONLY );
+      int fd = open( p_name, O_RDONLY );
 
       if( fd <= 0 )
          throw runtime_error( "unable to open file '" + string( p_name ) + "' for input in file_size" );
@@ -621,11 +618,12 @@ int64_t file_size( const char* p_name, unsigned char* p_hdr, size_t hdr_size )
 
       if( retval < 0 )
       {
-         _close( fd );
+         close( fd );
+
          throw runtime_error( "unexpected lseek64 error in file_size for file '" + string( p_name ) + "'" );
       }
 
-      _close( fd );
+      close( fd );
    }
    else
    {
@@ -641,14 +639,14 @@ int64_t file_size( const char* p_name, unsigned char* p_hdr, size_t hdr_size )
       // open and fsync before repeating the stat command.
       if( !retval && hdr_size )
       {
-         int fd = _open( p_name, O_RDONLY );
+         int fd = open( p_name, O_RDONLY );
 
          if( fd <= 0 )
             throw runtime_error( "unable to open file '" + string( p_name ) + "' for input in file_size" );
 
          fsync( fd );
 
-         _close( fd );
+         close( fd );
 
          if( stat( p_name, &statbuf ) < 0 )
             throw runtime_error( "unable to access '" + to_string( p_name ) + "'" );
@@ -847,8 +845,8 @@ void file_perms( const string& name, const string& rwx_perms )
    if( invalid )
       throw runtime_error( "invalid rwx_perms string '" + rwx_perms + "' for '" + name + "'" );
 
-   if( _chmod( name.c_str( ), mode ) != 0 )
-      throw runtime_error( "_chmod call failed for '" + name + "'" );
+   if( chmod( name.c_str( ), mode ) != 0 )
+      throw runtime_error( "chmod call failed for '" + name + "'" );
 }
 
 void file_link( const char* p_target, const char* p_name )
@@ -893,7 +891,7 @@ string file_target( const char* p_name )
 
    string target;
 
-   char buf[ _MAX_PATH ];
+   char buf[ PATH_MAX ];
 
    ssize_t length = readlink( p_name, buf, sizeof( buf ) - 1 );
 
@@ -1036,6 +1034,7 @@ boyer_moore::boyer_moore( const string& pattern )
       while( ( match < psize ) && ( pattern[ curr ] != pattern[ match ] ) )
       {
          jump[ match ] = min( jump[ match ], psize - curr - 1 );
+
          match = matches[ match ];
       }
 
@@ -1091,13 +1090,13 @@ bool wildcard_match( const char* p_expr, const char* p_data )
       return !p_data[ 0 ];
 
       case '*':
-      return wildcard_match( p_expr + 1, p_data ) || p_data[ 0 ] && wildcard_match( p_expr, p_data + 1 );
+      return ( wildcard_match( p_expr + 1, p_data ) || ( p_data[ 0 ] && wildcard_match( p_expr, p_data + 1 ) ) );
 
       case '?':
-      return p_data[ 0 ] && wildcard_match( p_expr + 1, p_data + 1 );
+      return ( p_data[ 0 ] && wildcard_match( p_expr + 1, p_data + 1 ) );
 
       default:
-      return p_expr[ 0 ] == p_data[ 0 ] && wildcard_match( p_expr + 1, p_data + 1 );
+      return ( ( p_expr[ 0 ] == p_data[ 0 ] ) && wildcard_match( p_expr + 1, p_data + 1 ) );
    }
 }
 
@@ -1126,6 +1125,7 @@ string& replace( string& s, const char* p_findstr, const char* p_replstr, bool f
          from = pos + strlen( p_replstr );
 
          pos += strlen( p_findstr );
+
          str += s.substr( pos );
 
          s = str;
@@ -1142,6 +1142,7 @@ string& escape( string& s, const char* p_chars,
  char esc, const char* p_specials, bool double_escape_specials )
 {
    char esc_char( esc );
+
    if( esc == '\0' )
       esc_char = c_esc;
 
@@ -1181,6 +1182,7 @@ string escaped( const string& s, const char* p_chars,
    string str;
 
    char esc_char( esc );
+
    if( esc == '\0' )
       esc_char = c_esc;
 
@@ -1226,7 +1228,7 @@ string unescaped( const char* p_start, size_t len, const char* p_specials, char 
 
    size_t n = 0;
 
-  bool was_escape = false;
+   bool was_escape = false;
 
    for( size_t i = 0; i < len; i++ )
    {
@@ -1482,6 +1484,7 @@ string& utf8_truncate( string& utf8, int trunc_limit,
                else if( ( utf8[ pos ] == '\r' ) || ( utf8[ pos ] == '\n' ) )
                {
                   tpos = pos;
+
                   break;
                }
             }
@@ -1613,6 +1616,7 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
        || ( ( s[ pos + 1 ] >= '0' ) && ( s[ pos + 1 ] <= '9' ) ) ) )
       {
          pos = s.find( c, pos + 2 );
+
          continue;
       }
 
@@ -1645,6 +1649,7 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
          if( env_var_name[ 0 ] == '~' )
          {
             env_var_name.erase( 0, 1 );
+
             env_vars_to_overwrite.push_back( env_var_name );
          }
 
@@ -1690,6 +1695,7 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
          }
 
          string env_var_value;
+
          char* p_env_var = getenv( env_var_name.c_str( ) );
 
          if( p_env_var )
@@ -2538,7 +2544,7 @@ void absolute_path( const string& relative_path, string& absolute_path, bool* p_
 {
    bool found = false;
 
-   char path[ _MAX_PATH ] = { 0 };
+   char path[ PATH_MAX ] = { 0 };
 
    found = realpath( relative_path.c_str( ), &path[ 0 ] );
 
@@ -2709,7 +2715,7 @@ void hex_decode( const string& src, unsigned char* p_dest, size_t len )
       {
          unsigned char val = hex_nibble( src[ i ] );
 
-        val <<= 4;
+         val <<= 4;
 
          val |= hex_nibble( src[ i + 1 ] );
 
@@ -2788,6 +2794,7 @@ string decode_quoted_printable( const string& data )
          }
 
          s += ( hex_nibble( data[ i + 1 ] ) << 4 ) | hex_nibble( data[ i + 2 ] );
+
          i += 2;
       }
    }
@@ -2822,7 +2829,9 @@ string encode_quoted_printable( const string& data, int max_chars_per_line )
        && ( ( data[ i ] == 9 ) || ( data[ i ] == 32 ) ) )
       {
          s += data[ i ];
+
          s += "=";
+
          s += "\r\n";
 
          num_chars = 0;
@@ -3023,6 +3032,7 @@ string extract_text_from_html( const string& html )
                      for( size_t j = 1; j < special.size( ); j++ )
                      {
                         ch = ch * 10;
+
                         ch += special[ j ] - '0';
                      }
 
