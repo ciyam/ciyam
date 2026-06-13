@@ -9,6 +9,8 @@
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <stddef.h>
+#     include <string>
+#     include <vector>
 #     include <iostream>
 #  endif
 
