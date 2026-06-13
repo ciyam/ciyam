@@ -106,6 +106,7 @@ const char* const c_http_1_1 = "HTTP/1.1";
 
 const char* const c_http_200_OK = "200 OK";
 
+const char* const c_http_301_Moved = "301 Moved Permanently";
 const char* const c_http_304_Not_Mod = "304 Not Modified";
 const char* const c_http_400_Bad_Req = "400 Bad Request";
 const char* const c_http_404_Not_Found = "404 Not Found";
@@ -113,9 +114,12 @@ const char* const c_http_414_URI_Too_Long = "414 URI Too Long";
 
 const char* const c_http_date_prefix = "Date: ";
 const char* const c_http_server_prefix = "Server: ";
+const char* const c_http_location_prefix = "Location: ";
 const char* const c_http_modified_prefix = "Last-Modified: ";
 const char* const c_http_content_type_prefix = "Content-Type: ";
 const char* const c_http_content_length_prefix = "Content-Length: ";
+
+const char* const c_http_host_header = "Host";
 
 const char* const c_http_content_type_header = "Content-Type";
 const char* const c_http_content_length_header = "Content-Length";
@@ -153,7 +157,8 @@ const char* const c_http_content_disposition_form_data = "form-data";
 
 const char* const c_html_test_response = "<!doctype html>\n<html>\n<head><title>Test HTML Page</title></head>\n<body><p>This is a HTML response for test purposes.</p></body>\n</html>\n";
 
-const char* const c_not_found_html_response = "<!doctype html>\n<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find 'DOCUMENT' (incorrect endpoint?).</p></body>\n</html>\n";
+const char* const c_has_moved_html_response = "<!doctype html>\n<html>\n<head><title>Document Has Moved</title></head>\n<body><p>Document has moved <a href=\"DOCUMENT\">here</a>.</p></body>\n</html>\n";
+const char* const c_not_found_html_response = "<!doctype html>\n<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find document 'DOCUMENT' (incorrect endpoint?).</p></body>\n</html>\n";
 
 const char* const c_replace_document_marker = "DOCUMENT";
 
@@ -295,6 +300,10 @@ bool parse_query_params( const string& qry_info, map< string, string >& params )
 
 const size_t c_cws_max_devices = 10;
 
+string g_server_id;
+
+string g_version_string;
+
 set< string > g_cws_tokens;
 
 map< string, set< string > > g_cws_devices;
@@ -379,8 +388,11 @@ http_request_handler::~http_request_handler( )
 void http_request_handler::on_start( )
 {
    bool first = true;
-   bool using_tls = false;
    bool had_request = false;
+
+   string protocol_prefix( !using_tls ? "http" : "https" );
+
+   protocol_prefix += "://";
 
    size_t handler = ++g_request_handler;
 
@@ -530,27 +542,17 @@ void http_request_handler::on_start( )
 
          ostringstream osstr;
 
-         string data, error, header, response;
+         string data, error, header, response, moved_document;
 
-         // NOTE: If no file extension was provided
-         // then assumes it is a directory name and
-         // will append "/index.html" (or will just
-         // append "index.html" if "/" was found to
-         // be the last character).
+         // NOTE: If document ends in '/' then will
+         // automatically append "index.html".
          if( document.find( c_api_prefix ) != 0 )
          {
             string::size_type pos = document.rfind( '/' );
 
-            if( pos != string::npos )
-            {
-               string::size_type dpos = document.find( '.', pos + 1 );
-
-               if( ( dpos == string::npos ) && ( pos != document.length( ) - 1 ) )
-                  document += '/';
-
-               if( dpos == string::npos )
-                  document += c_index_html;
-            }
+            if( ( pos != string::npos )
+             && ( pos == ( document.length( ) - 1 ) ) )
+               document += c_index_html;
          }
 
          map< string, string > params;
@@ -663,7 +665,7 @@ void http_request_handler::on_start( )
                has_content_type = true;
 
                osstr << c_http_1_1 << ' ' << c_http_200_OK << '\n'
-                << c_http_server_prefix << c_CIYAM << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+                << c_http_server_prefix << g_server_id << '\n' << c_http_date_prefix << formatted_dtm << '\n';
 
                osstr << c_http_content_type_prefix << header_info[ c_http_content_type_header ] << '\n';
 
@@ -685,7 +687,7 @@ void http_request_handler::on_start( )
                has_content_type = true;
 
                osstr << c_http_1_1 << ' ' << c_http_200_OK << '\n'
-                << c_http_server_prefix << c_CIYAM << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+                << c_http_server_prefix << g_server_id << '\n' << c_http_date_prefix << formatted_dtm << '\n';
 
                size_t uploaded_size = data.length( );
 
@@ -1098,7 +1100,10 @@ void http_request_handler::on_start( )
 
          if( response.empty( ) )
          {
-            string path( get_web_root( ) + "/" );
+            string path( get_web_root( ) );
+
+            if( !document.empty( ) && ( document[ 0 ] != '/' ) )
+               path += '/';
 
             bool rc = true;
 
@@ -1108,78 +1113,86 @@ void http_request_handler::on_start( )
 
             if( rc && ( check_path.find( path ) == 0 ) )
             {
-               found = true;
+               if( file_exists( path + document ) )
+               {
+                  found = true;
 
-               string extension;
+                  string extension;
 
 #ifdef DEBUG
-               cerr << "\n(found '" << document << "')" << endl;
+                  cerr << "\n(found '" << document << "')" << endl;
 #endif
-               string::size_type ext_pos = document.rfind( '.' );
+                  string::size_type ext_pos = document.rfind( '.' );
 
-               if( ext_pos != string::npos )
-                  extension = document.substr( ext_pos + 1 );
+                  if( ext_pos != string::npos )
+                     extension = document.substr( ext_pos + 1 );
 
-               date_time doc_modified( last_modification_time( path + document ) );
+                  date_time doc_modified( last_modification_time( path + document ) );
 
-               if( header_info.count( c_req_param_if_modified ) )
-               {
-                  string gmt_date_time( header_info[ c_req_param_if_modified ] );
-
-                  try
+                  if( header_info.count( c_req_param_if_modified ) )
                   {
-                     date_time doc_last_modified( gmt_date_time );
+                     string gmt_date_time( header_info[ c_req_param_if_modified ] );
 
-                     if( doc_modified == doc_last_modified )
+                     try
                      {
-                        unchanged = true;
+                        date_time doc_last_modified( gmt_date_time );
 
-                        has_content_type = true;
+                        if( doc_modified == doc_last_modified )
+                        {
+                           unchanged = true;
 
-                        osstr << c_http_1_1 << ' ' << c_http_304_Not_Mod << "\n\n";
+                           has_content_type = true;
+
+                           osstr << c_http_1_1 << ' ' << c_http_304_Not_Mod << "\n\n";
+                        }
+                     }
+                     catch( exception& x )
+                     {
+                        // NOTE: If format is invalid then just ignores it.
+#ifdef DEBUG
+                        cerr << "http_request error: " << x.what( ) << endl;
+#endif
                      }
                   }
-                  catch( exception& x )
+
+                  if( !unchanged )
                   {
-                     // NOTE: If format is invalid then just ignores it.
-#ifdef DEBUG
-                     cerr << "http_request error: " << x.what( ) << endl;
-#endif
+                     string formatted_document_dtm( format_date_time( doc_modified ) );
+
+                     has_content_type = true;
+
+                     osstr << c_http_1_1 << ' ' << c_http_200_OK
+                      << '\n' << c_http_server_prefix << g_server_id
+                      << '\n' << c_http_date_prefix << formatted_dtm
+                      << '\n' << c_http_modified_prefix << formatted_document_dtm
+                      << '\n' << c_http_connection_header_info << '\n' << c_http_keep_alive_header_info << '\n';
+
+                     osstr << c_http_content_type_prefix;
+
+                     if( extension == c_ext_css )
+                        osstr << c_http_content_type_text_css_utf8;
+                     else if( extension == c_ext_gif )
+                        osstr << c_http_content_type_image_gif;
+                     else if( extension == c_ext_jpg )
+                        osstr << c_http_content_type_image_jpg;
+                     else if( extension == c_ext_png )
+                        osstr << c_http_content_type_image_png;
+                     else if( extension == c_ext_ttf )
+                        osstr << c_http_content_type_font_ttf;
+                     else if( ( extension == c_ext_htm ) || ( extension == c_ext_html ) )
+                        osstr << c_http_content_type_text_html_utf8;
+                     else
+                        osstr << c_http_content_type_text_plain_utf8;
+
+                     osstr << '\n';
+
+                     response = buffer_file( path + document );
                   }
                }
-
-               if( !unchanged )
+               else if( dir_exists( path + document ) )
                {
-                  string formatted_document_dtm( format_date_time( doc_modified ) );
-
-                  has_content_type = true;
-
-                  osstr << c_http_1_1 << ' ' << c_http_200_OK
-                   << '\n' << c_http_server_prefix << c_CIYAM
-                   << '\n' << c_http_date_prefix << formatted_dtm
-                   << '\n' << c_http_modified_prefix << formatted_document_dtm
-                   << '\n' << c_http_connection_header_info << '\n' << c_http_keep_alive_header_info << '\n';
-
-                  osstr << c_http_content_type_prefix;
-
-                  if( extension == c_ext_css )
-                     osstr << c_http_content_type_text_css_utf8;
-                  else if( extension == c_ext_gif )
-                     osstr << c_http_content_type_image_gif;
-                  else if( extension == c_ext_jpg )
-                     osstr << c_http_content_type_image_jpg;
-                  else if( extension == c_ext_png )
-                     osstr << c_http_content_type_image_png;
-                  else if( extension == c_ext_ttf )
-                     osstr << c_http_content_type_font_ttf;
-                  else if( ( extension == c_ext_htm ) || ( extension == c_ext_html ) )
-                     osstr << c_http_content_type_text_html_utf8;
-                  else
-                     osstr << c_http_content_type_text_plain_utf8;
-
-                  osstr << '\n';
-
-                  response = buffer_file( path + document );
+                  if( file_exists( path + document + "/index.html" ) )
+                     moved_document = document + '/';
                }
             }
          }
@@ -1194,7 +1207,7 @@ void http_request_handler::on_start( )
             if( !has_content_type )
             {
                osstr << c_http_1_1 << ' ' << c_http_200_OK << '\n'
-                << c_http_server_prefix << c_CIYAM << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+                << c_http_server_prefix << g_server_id << '\n' << c_http_date_prefix << formatted_dtm << '\n';
 
                osstr << c_http_access_control_allow_origin_all << '\n';
 
@@ -1237,12 +1250,30 @@ void http_request_handler::on_start( )
          }
          else
          {
-            response = c_not_found_html_response;
+            bool has_moved = !moved_document.empty( );
 
-            replace( response, c_replace_document_marker, document );
+            string moved_document_url;
 
-            osstr << c_http_1_1 << ' ' << c_http_404_Not_Found << '\n'
-             << c_http_server_prefix << c_CIYAM << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+            if( !has_moved )
+            {
+               response = c_not_found_html_response;
+               replace( response, c_replace_document_marker, document );
+            }
+            else
+            {
+               moved_document_url = protocol_prefix
+                + header_info[ c_http_host_header ] + moved_document;
+
+               response = c_has_moved_html_response;
+               replace( response, c_replace_document_marker, moved_document_url );
+            }
+
+            osstr << c_http_1_1 << ' '
+             << ( has_moved ? c_http_301_Moved : c_http_404_Not_Found ) << '\n'
+             << c_http_server_prefix << g_server_id << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+
+            if( has_moved )
+               osstr << c_http_location_prefix << moved_document_url << '\n';
 
             osstr << c_http_content_type_prefix << c_http_content_type_text_html_utf8 << '\n';
 
@@ -1358,6 +1389,13 @@ void http_listener::on_start( )
          throw runtime_error( "unable to start listening on port #" + to_string( port ) );
 
       TRACE_LOG( TRACE_MINIMAL, "http listener started on tcp port " + to_string( port ) );
+
+      g_server_id = string( c_CIYAM );
+
+      g_version_string = get_system_variable( e_special_var_version );
+
+      if( !g_version_string.empty( ) )
+         g_server_id += " (" + g_version_string + ")";
 
       g_max_post_data_allowed = get_max_http_post_allowed( );
 
