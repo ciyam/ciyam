@@ -227,6 +227,8 @@ unsigned int get_max_peers( );
 unsigned int get_max_user_limit( );
 void set_max_user_limit( unsigned int new_limit );
 
+size_t get_max_http_post_allowed( );
+
 std::string get_prefix( );
 std::string get_domain( );
 

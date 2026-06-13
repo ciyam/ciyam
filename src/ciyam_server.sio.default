@@ -33,6 +33,7 @@
 # <ods_use_sync_write>false
 # <max_storage_handlers>10
 # <notifier_ignore_secs>2
+# <max_http_post_allowed>100MB
 # <num_recv_stream_sessions>10
 # <num_send_stream_sessions>1
  <email/>

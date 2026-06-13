@@ -233,6 +233,7 @@ const char* const c_attribute_ods_use_encrypted = "ods_use_encrypted";
 const char* const c_attribute_ods_use_sync_write = "ods_use_sync_write";
 const char* const c_attribute_max_storage_handlers = "max_storage_handlers";
 const char* const c_attribute_notifier_ignore_secs = "notifier_ignore_secs";
+const char* const c_attribute_max_http_post_allowed = "max_http_post_allowed";
 const char* const c_attribute_num_recv_stream_sessions = "num_recv_stream_sessions";
 const char* const c_attribute_num_send_stream_sessions = "num_send_stream_sessions";
 
@@ -1955,6 +1956,8 @@ const size_t c_max_storage_handlers_default = 10;
 
 const size_t c_notifier_ignore_secs_default = 2;
 
+const size_t c_max_http_post_allowed_default = 100000; // i.e. 100 MB
+
 const size_t c_num_recv_stream_sessions_default = 10;
 const size_t c_num_send_stream_sessions_default = 1;
 
@@ -1971,6 +1974,8 @@ size_t g_max_sessions = c_max_sessions_default;
 size_t g_max_storage_handlers = c_max_storage_handlers_default + 1; // i.e. extra for <none>
 
 size_t g_notifier_ignore_secs = c_notifier_ignore_secs_default;
+
+size_t g_max_http_post_allowed = c_max_http_post_allowed_default;
 
 string g_log_files_path;
 
@@ -4080,6 +4085,11 @@ void read_server_configuration( )
       g_notifier_ignore_secs = atoi( reader.read_opt_attribute(
        c_attribute_notifier_ignore_secs, to_string( c_notifier_ignore_secs_default ) ).c_str( ) );
 
+      string max_http_post_allowed( reader.read_opt_attribute( c_attribute_max_http_post_allowed ) );
+
+      if( !max_http_post_allowed.empty( ) )
+         g_max_http_post_allowed = unformat_bytes( max_http_post_allowed );
+
       g_num_recv_stream_sessions = from_string< size_t >( reader.read_opt_attribute(
        c_attribute_num_recv_stream_sessions, to_string( c_num_recv_stream_sessions_default ) ) );
 
@@ -5597,6 +5607,11 @@ void set_max_user_limit( unsigned int new_limit )
    guard g( g_mutex );
 
    g_max_user_limit = new_limit;
+}
+
+size_t get_max_http_post_allowed( )
+{
+   return g_max_http_post_allowed;
 }
 
 string get_prefix( )
