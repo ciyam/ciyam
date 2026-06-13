@@ -41,20 +41,24 @@
    <script>
    function upload_file( )
    {
-      const file = document.getElementById( 'file_input' ).files[ 0 ];
+      const file = document.getElementById( "file_input" ).files[ 0 ];
 
       if( !file )
-         return alert( 'Please select a file' );
+         return alert( "Please select a file." );
 
-      const status = document.getElementById( 'status' );
-      const progressBar = document.getElementById( 'progressBar' );
+      const status = document.getElementById( "status" );
+      const progressBar = document.getElementById( "progressBar" );
 
       const xhr = new XMLHttpRequest( );
 
-      xhr.upload.addEventListener( 'progress', ( e ) =>
+      var total_size = 0;
+
+      xhr.upload.addEventListener( "progress", ( e ) =>
       {
          if( e.lengthComputable )
          {
+            total_size = e.total;
+
             const percent = Math.round(( e.loaded / e.total ) * 100 );
 
             progressBar.style.width = percent + '%';
@@ -63,32 +67,39 @@
          }
       } );
 
-      xhr.addEventListener( 'load', () =>
+      xhr.addEventListener( "load", ( ) =>
       {
          if( status.textContent == '' )
-            status.textContent = 'Upload complete!';
+            status.textContent = "Upload complete.";
       } );
 
-      xhr.addEventListener( 'error', () =>
+      xhr.addEventListener( "error", ( ) =>
       {
-         status.textContent = 'Upload failed!';
+         var error = "Upload failed";
+
+         if( total_size > 100000 )
+             error += " (file too large?)";
+
+         error += ".";
+
+         status.textContent = error;
       } );
 
-      xhr.onreadystatechange = () =>
+      xhr.onreadystatechange = ( ) =>
       {
          if( xhr.readyState === 4 )
             status.textContent = xhr.response;
       };
 
-      xhr.open( 'POST', '/api.upload?verbose=1' );
+      xhr.open( "POST", "/api.upload?verbose=1" );
 
-      const formData = new FormData( );
+      const form_data = new FormData( );
 
-      formData.append( 'file', file );
+      form_data.append( "file", file );
 
       status.textContent = '';
 
-      xhr.send( formData );
+      xhr.send( form_data );
    }
    </script>
 </body>

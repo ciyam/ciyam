@@ -18,6 +18,8 @@
       <br/><br/>
       <input type="checkbox" id="use_pretty" name="use_pretty" disabled>Pretty JSON
       <br/><br/>
+      <input type="checkbox" id="use_verbose" name="use_verbose">Use verbose
+      <br/><br/>
       <label>Parameters: &nbsp; <input type="text" id="parameters" size="100" placeholder="(e.g. name1=value1&name2=value2)"></label>
       <br/><br/>
       <button type="submit">Click or Enter to Submit</button>
@@ -47,6 +49,8 @@
       if( document.getElementById( "use_pretty" ).checked )
          spaces = 3;
 
+      var use_verbose = document.getElementById( "use_verbose" ).checked;
+
       var parameters = document.getElementById( "parameters" ).value;
 
       var qry_data = parameters;
@@ -57,6 +61,14 @@
             qry_data += "&";
 
          qry_data += "format=json";
+      }
+
+      if( use_verbose )
+      {
+         if( qry_data != "" )
+            qry_data += "&";
+
+         qry_data += "verbose=true";
       }
 
       if( qry_data != "" )
