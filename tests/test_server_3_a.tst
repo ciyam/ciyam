@@ -11,7 +11,7 @@ Error: Invalid query parameter value in 'format=none' for version.
 {"post_limit":"100.0 MB"}
 testing...
 {"data":"testing..."}
-Error: This web session is not valid (or has expired).
+Error: Invalid device identity 'bad_device'.
 [running]
 Error: This web session is not valid (or has expired).
 [running]
