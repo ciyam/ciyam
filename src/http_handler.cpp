@@ -53,6 +53,7 @@ const int c_max_request_lines = 100;
 
 #include "ciyam_constants.h"
 
+const char* const c_ext_js = "js";
 const char* const c_ext_css = "css";
 const char* const c_ext_gif = "gif";
 const char* const c_ext_htm = "htm";
@@ -139,6 +140,8 @@ const char* const c_http_content_type_font_ttf = "font/ttf";
 
 const char* const c_http_content_type_text_csv = "text/csv";
 const char* const c_http_content_type_text_plain = "text/plain";
+
+const char* const c_http_content_type_text_javascript = "text/javascript";
 
 const char* const c_http_content_type_text_css_utf8 = "text/css; charset=UTF-8";
 const char* const c_http_content_type_text_html_utf8 = "text/html; charset=UTF-8";
@@ -896,152 +899,163 @@ void http_request_handler::on_start( )
                      g_cws_devices[ token ].insert( new_device );
                   }
                }
-               else if( !g_cws_devices[ token ].count( device ) )
-                  error = "Provided web session device '" + device + "' is invalid.";
                else
                {
-                  string var_prefix( get_special_var_name( e_special_var_web ) + '.' );
-
-                  string output_file_name( "/tmp/ciyam." + var_prefix.substr( 1 ) + token + '.' + device );
-
-                  string web_lock_name( var_prefix + token + '.' + device + c_web_lock_suffix );
-
-                  string web_command_name( var_prefix + token + '.' + device + c_web_command_suffix );
-                  string web_message_name( var_prefix + token + '.' + device + c_web_message_suffix );
-                  string web_session_name( var_prefix + token + '.' + device + c_web_session_suffix );
-                  string web_started_name( var_prefix + token + '.' + device + c_web_started_suffix );
-
-                  if( session.empty( ) )
+                  if( !g_cws_devices[ token ].count( device ) )
                   {
-                     string token_value( buffer_file( token_file ) );
+                     size_t num_devices = ( !g_cws_devices.count( token ) ? 0 : g_cws_devices[ token ].size( ) );
 
-                     string unique( uuid( ).as_string( ) );
-
-                     if( !is_json_output )
-                        response = unique;
+                     if( num_devices < c_cws_max_devices )
+                        g_cws_devices[ token ].insert( device );
                      else
-                        response = "{\"unique\":\"" + unique + "\"}";
-
-                     int64_t now = unix_time( );
-
-                     if( !set_system_variable( web_lock_name, to_string( now ), string( "" ) ) )
-                     {
-                        int64_t was = from_string< int64_t >( get_system_variable( web_lock_name ) );
-
-                        if( now < ( was + 10 ) )
-                           error = "Web session is currently busy (try again shortly).";
-                        else
-                           set_system_variable( web_lock_name, to_string( now ) );
-                     }
-
-                     // NOTE: If is not currently handling another session
-                     // request for the same device then the session value
-                     // is obtained from the leading characters of a hash.
-                     // The hash is itself obtained using a "checked" hash
-                     // (being the "token_value" and "device" strings) and
-                     // then combining its digest with the "unqiue" string
-                     // to determine a "combined" hash.
-                     if( error.empty( ) )
-                     {
-                        found = true;
-
-                        sha256 hash_checked( token_value + device );
-
-                        sha256 hash_combined( hash_checked.get_digest_as_string( ) + unique );
-
-                        string digest( hash_combined.get_digest_as_string( ) );
-
-                        set_system_variable( web_session_name, digest.substr( 0, 10 ) );
-                     }
+                        error = "Maximum devices have been created for web session token '" + token + "'.";
                   }
-                  else
+
+                  if( error.empty( ) )
                   {
-                     if( session != get_system_variable( web_session_name ) )
-                        error = "This web session is not valid (or has expired).";
-                     else
+                     string var_prefix( get_special_var_name( e_special_var_web ) + '.' );
+
+                     string output_file_name( "/tmp/ciyam." + var_prefix.substr( 1 ) + token + '.' + device );
+
+                     string web_lock_name( var_prefix + token + '.' + device + c_web_lock_suffix );
+
+                     string web_command_name( var_prefix + token + '.' + device + c_web_command_suffix );
+                     string web_message_name( var_prefix + token + '.' + device + c_web_message_suffix );
+                     string web_session_name( var_prefix + token + '.' + device + c_web_session_suffix );
+                     string web_started_name( var_prefix + token + '.' + device + c_web_started_suffix );
+
+                     if( session.empty( ) )
                      {
-                        string function;
+                        string token_value( buffer_file( token_file ) );
 
-                        if( params.count( c_query_param_name_function ) )
-                           function = params[ c_query_param_name_function ];
+                        string unique( uuid( ).as_string( ) );
 
-                        if( has_system_variable( web_lock_name ) )
+                        if( !is_json_output )
+                           response = unique;
+                        else
+                           response = "{\"unique\":\"" + unique + "\"}";
+
+                        int64_t now = unix_time( );
+
+                        if( !set_system_variable( web_lock_name, to_string( now ), string( "" ) ) )
                         {
-                           string when_locked( get_system_variable( web_lock_name ) );
+                           int64_t was = from_string< int64_t >( get_system_variable( web_lock_name ) );
 
-                           set_system_variable( web_lock_name, "" );
-                           set_system_variable( web_message_name, "" );
-
-                           set_system_variable( web_started_name, when_locked );
+                           if( now < ( was + 10 ) )
+                              error = "Web session is currently busy (try again shortly).";
+                           else
+                              set_system_variable( web_lock_name, to_string( now ) );
                         }
 
-                        if( function == c_cws_function_terminate )
+                        // NOTE: If is not currently handling another session
+                        // request for the same device then the session value
+                        // is obtained from the leading characters of a hash.
+                        // The hash is itself obtained using a "checked" hash
+                        // (being the "token_value" and "device" strings) and
+                        // then combining its digest with the "unqiue" string
+                        // to determine a "combined" hash.
+                        if( error.empty( ) )
                         {
                            found = true;
 
-                           if( !is_json_output )
-                              response = "Session terminated.";
-                           else
-                              response = "{\"message\":\"Session terminated.\"}\n";
+                           sha256 hash_checked( token_value + device );
 
-                           set_system_variable( web_message_name, "" );
-                           set_system_variable( web_session_name, "" );
-                           set_system_variable( web_started_name, "" );
+                           sha256 hash_combined( hash_checked.get_digest_as_string( ) + unique );
+
+                           string digest( hash_combined.get_digest_as_string( ) );
+
+                           set_system_variable( web_session_name, digest.substr( 0, 10 ) );
                         }
+                     }
+                     else
+                     {
+                        if( session != get_system_variable( web_session_name ) )
+                           error = "This web session is not valid (or has expired).";
                         else
                         {
-                           string script_name( prefix + "cin" );
+                           string function;
 
-                           bool running = has_system_variable( web_message_name );
+                           if( params.count( c_query_param_name_function ) )
+                              function = params[ c_query_param_name_function ];
 
-                           if( !running )
+                           if( has_system_variable( web_lock_name ) )
                            {
-                              string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<"
-                               + script_name + ' ' + token + ' ' + device + ' ' + session + "\" > /dev/null &" );
+                              string when_locked( get_system_variable( web_lock_name ) );
 
-                              int rc = system( cmd.c_str( ) );
+                              set_system_variable( web_lock_name, "" );
+                              set_system_variable( web_message_name, "" );
 
-                              ( void )rc;
-
-                              msleep( 200 );
+                              set_system_variable( web_started_name, when_locked );
                            }
 
-                           // NOTE: Allows for a couple of
-                           // seconds to start the session
-                           // script (which will result in
-                           // an error if is not found).
-                           for( size_t i = 0; i < 9; i++ )
-                           {
-                              running = has_system_variable( web_message_name );
-
-                              if( running )
-                                 break;
-
-                              msleep( 200 );
-                           }
-
-                           if( !running )
-                           {
-                              set_system_variable( web_session_name, "" );
-                              set_system_variable( web_started_name, "" );
-
-                              error = "Was unable to start a web session with token '" + token + "'.";
-                           }
-                           else
+                           if( function == c_cws_function_terminate )
                            {
                               found = true;
 
-                              set_system_variable( web_command_name, "variable " + web_message_name );
+                              if( !is_json_output )
+                                 response = "Session terminated.";
+                              else
+                                 response = "{\"message\":\"Session terminated.\"}\n";
 
-                              msleep( 150 );
+                              set_system_variable( web_message_name, "" );
+                              set_system_variable( web_session_name, "" );
+                              set_system_variable( web_started_name, "" );
+                           }
+                           else
+                           {
+                              string script_name( prefix + "cin" );
 
-                              if( file_exists( output_file_name ) )
+                              bool running = has_system_variable( web_message_name );
+
+                              if( !running )
                               {
-                                 response = buffer_file( output_file_name );
+                                 string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<"
+                                  + script_name + ' ' + token + ' ' + device + ' ' + session + "\" > /dev/null &" );
 
-                                 response = trim( response, false, true, "\n" );
+                                 int rc = system( cmd.c_str( ) );
 
-                                 file_remove( output_file_name );
+                                 ( void )rc;
+
+                                 msleep( 200 );
+                              }
+
+                              // NOTE: Allows for a couple of
+                              // seconds to start the session
+                              // script (which will result in
+                              // an error if is not found).
+                              for( size_t i = 0; i < 9; i++ )
+                              {
+                                 running = has_system_variable( web_message_name );
+
+                                 if( running )
+                                    break;
+
+                                 msleep( 200 );
+                              }
+
+                              if( !running )
+                              {
+                                 set_system_variable( web_session_name, "" );
+                                 set_system_variable( web_started_name, "" );
+
+                                 error = "Was unable to start a web session with token '" + token + "'.";
+                              }
+                              else
+                              {
+                                 found = true;
+
+                                 set_system_variable( web_command_name, "variable " + web_message_name );
+
+                                 msleep( 150 );
+
+                                 if( file_exists( output_file_name ) )
+                                 {
+                                    response = buffer_file( output_file_name );
+
+                                    response = trim( response, false, true, "\n" );
+
+                                    file_remove( output_file_name );
+                                 }
                               }
                            }
                         }
@@ -1200,7 +1214,9 @@ void http_request_handler::on_start( )
 
                      osstr << c_http_content_type_prefix;
 
-                     if( extension == c_ext_css )
+                     if( extension == c_ext_js )
+                        osstr << c_http_content_type_text_javascript;
+                     else if( extension == c_ext_css )
                         osstr << c_http_content_type_text_css_utf8;
                      else if( extension == c_ext_gif )
                         osstr << c_http_content_type_image_gif;
@@ -1270,7 +1286,9 @@ void http_request_handler::on_start( )
          {
             msleep( c_error_response_delay );
 
-            if( is_json_output )
+            if( !is_json_output )
+               error = "Error: " + error;
+            else
                error = "{\"error\":\"" + escaped_json( error ) + "\"}";
 
             error += '\n';
