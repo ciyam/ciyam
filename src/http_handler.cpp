@@ -168,6 +168,7 @@ const char* const c_query_param_name_format = "format";
 const char* const c_query_param_name_session = "session";
 const char* const c_query_param_name_verbose = "verbose";
 const char* const c_query_param_name_function = "function";
+const char* const c_query_param_name_pwd_hash = "pwd_hash";
 
 const char* const c_query_param_value_json = "json";
 const char* const c_query_param_value_text = "text";
@@ -300,6 +301,8 @@ bool parse_query_params( const string& qry_info, map< string, string >& params )
 
 const size_t c_cws_max_devices = 10;
 
+mutex g_mutex;
+
 string g_server_id;
 
 string g_version_string;
@@ -322,6 +325,29 @@ inline void increment_handlers( )
 inline void deccrement_handlers( )
 {
    --g_active_handlers;
+}
+
+bool has_web_session_token( const string& token, const string& token_file, const string& pwd_hash )
+{
+   guard g( g_mutex );
+
+   bool retval = false;
+
+   if( file_exists( token_file ) )
+      retval = true;
+   else if( ( token == c_admin ) && !pwd_hash.empty( ) )
+   {
+      ofstream outf( token_file.c_str( ), ios::out );
+
+      outf << pwd_hash;
+
+      outf.close( );
+
+      if( outf.good( ) )
+         retval = true;
+   }
+
+   return retval;
 }
 
 }
@@ -825,7 +851,7 @@ void http_request_handler::on_start( )
 
                string prefix( c_web_session_prefix );
 
-               string token, device, session;
+               string token, device, session, pwd_hash;
 
                if( params.count( c_query_param_name_token ) )
                   token = params[ c_query_param_name_token ];
@@ -836,9 +862,14 @@ void http_request_handler::on_start( )
                if( params.count( c_query_param_name_session ) )
                   session = params[ c_query_param_name_session ];
 
+               if( params.count( c_query_param_name_pwd_hash ) )
+                  pwd_hash = params[ c_query_param_name_pwd_hash ];
+
                string token_file( '.' + prefix + token ); // i.e. ".web_session.<token>"
 
-               if( !g_cws_tokens.count( token ) && file_exists( token_file ) )
+               bool has_token_file = has_web_session_token( token, token_file, pwd_hash );
+
+               if( has_token_file && !g_cws_tokens.count( token ) )
                   g_cws_tokens.insert( token );
 
                if( token.empty( ) )
