@@ -153,30 +153,46 @@ inline double round( double x, int n )
    return std::floor( 0.5 + p * x ) / p;
 }
 
-bool are_hex_nibbles( const char* p_str );
+bool are_hex_nibbles( const char* p_str, bool include_upper = true );
 
-inline bool are_hex_nibbles( const std::string& s ) { return are_hex_nibbles( s.c_str( ) ); }
+inline bool are_hex_nibbles( const std::string& s, bool include_upper = true ) { return are_hex_nibbles( s.c_str( ), include_upper ); }
 
-inline unsigned char hex_nibble( unsigned char ch )
+inline unsigned char hex_nibble( unsigned char ch, bool include_upper = true )
 {
    unsigned char retval = 0;
 
-   if( ch >= '0' && ch <= '9' )
-      retval = ch - '0';
+   if( ( ch >= '0' ) && ( ch <= '9' ) )
+      retval = ( ch - '0' );
    else
    {
-      if( ch == 'a' || ch == 'A' )
+      if( ch == 'a' )
          retval = 0x0a;
-      else if( ch == 'b' || ch == 'B' )
+      else if( ch == 'b' )
          retval = 0x0b;
-      else if( ch == 'c' || ch == 'C' )
+      else if( ch == 'c' )
          retval = 0x0c;
-      else if( ch == 'd' || ch == 'D' )
+      else if( ch == 'd' )
          retval = 0x0d;
-      else if( ch == 'e' || ch == 'E' )
+      else if( ch == 'e' )
          retval = 0x0e;
-      else if( ch == 'f' || ch == 'F' )
+      else if( ch == 'f' )
          retval = 0x0f;
+
+      if( !retval && include_upper )
+      {
+         if( ch == 'A' )
+            retval = 0x0a;
+         else if( ch == 'B' )
+            retval = 0x0b;
+         else if( ch == 'C' )
+            retval = 0x0c;
+         else if( ch == 'D' )
+            retval = 0x0d;
+         else if( ch == 'E' )
+            retval = 0x0e;
+         else if( ch == 'F' )
+            retval = 0x0f;
+      }
    }
 
    return retval;

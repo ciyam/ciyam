@@ -110,7 +110,7 @@ string quote( const string& s, char quote_char, char escape_char )
    return qs;
 }
 
-bool are_hex_nibbles( const char* p_str )
+bool are_hex_nibbles( const char* p_str, bool include_upper )
 {
    bool retval = false;
 
@@ -126,7 +126,7 @@ bool are_hex_nibbles( const char* p_str )
 
          if( ( ch >= 'a' ) && ( ch <= 'f' ) )
             ch_is_a_to_f = true;
-         else if( ( ch >= 'A' ) && ( ch <= 'F' ) )
+         else if( include_upper && ( ch >= 'A' ) && ( ch <= 'F' ) )
             ch_is_a_to_f = true;
 
          if( !ch_is_a_to_f )
