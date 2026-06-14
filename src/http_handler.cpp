@@ -47,6 +47,8 @@ extern volatile sig_atomic_t g_server_shutdown;
 namespace
 {
 
+const int c_device_length = 10;
+
 const int c_max_line_length = 2000;
 
 const int c_max_request_lines = 100;
@@ -889,7 +891,7 @@ void http_request_handler::on_start( )
                   {
                      found = true;
 
-                     string new_device( uuid( ).as_string( ).substr( 0, 10 ) );
+                     string new_device( uuid( ).as_string( ).substr( 0, c_device_length ) );
 
                      if( !is_json_output )
                         response = new_device;
@@ -901,7 +903,9 @@ void http_request_handler::on_start( )
                }
                else
                {
-                  if( !g_cws_devices[ token ].count( device ) )
+                  if( !are_hex_nibbles( device, false ) || ( device.length( ) != c_device_length ) )
+                     error = "Invalid device identity '" + device + "'.";
+                  else if( !g_cws_devices[ token ].count( device ) )
                   {
                      size_t num_devices = ( !g_cws_devices.count( token ) ? 0 : g_cws_devices[ token ].size( ) );
 
