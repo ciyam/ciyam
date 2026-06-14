@@ -551,6 +551,7 @@ docs
 pics
 src
 tests
+webui
 [test*.jpg]
 test.jpg
 test1.jpg

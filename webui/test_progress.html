@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<script type="text/javascript" src="sha2.js"></script>
+</head>
+
+<body>
+   <h1>Progress Tester</h1>
+
+   <p>Output is an SHA256 digest for Input (hardened using one million additional rounds).</p>
+
+   <canvas id="progress_canvas" width="200" height="200"></canvas>
+
+   <br/><br/>
+
+   <form id="test_form" onsubmit="do_hash_rounds( ); return false;">
+      <label>Input: &nbsp; <input type="text" id="user_input" size="20" placeholder="(e.g. test)" autofocus></label>
+      <br/><br/>
+      <button type="submit">Click or Enter to Start</button>
+   </form>
+
+   <br/>
+
+   <div id="command"></div>
+
+   <br/>
+
+   <div id="response"></div>
+
+<script>
+
+const canvas = document.getElementById( "progress_canvas" );
+
+const ctx = canvas.getContext( "2d" );
+
+function draw_progress_circle( )
+{
+   const radius = 90;
+   const center_X = ( canvas.width / 2 );
+   const center_Y = ( canvas.height / 2 );
+
+   const start_angle = ( -0.5 * Math.PI );
+   const finish_angle = ( ( percentage / 100 ) * 2 * Math.PI - 0.5 * Math.PI );
+
+   // NOTE: Draw the background circle.
+   ctx.beginPath( );
+   ctx.arc( center_X, center_Y, radius, 0, ( 2 * Math.PI ) );
+   ctx.fillStyle = "#e0e0e0";
+   ctx.fill( );
+
+   // NOTE: Draw the progress arc.
+   ctx.beginPath( );
+   ctx.arc( center_X, center_Y, radius, start_angle, finish_angle );
+   ctx.lineWidth = 15;
+   ctx.strokeStyle = "#76c7c0";
+   ctx.stroke();
+
+   // NOTE: Display percentage in the center.
+   ctx.fillStyle = "#000";
+   ctx.font = "20px Arial";
+   ctx.textAlign = "center";
+   ctx.textBaseline = "middle";
+   ctx.fillText( `${ percentage }%`, center_X, center_Y );
+}
+
+var s = "";
+var os = "";
+
+var round = 0;
+var chunk = 10000;
+var total = 1000000;
+
+var delay = 100;
+var percentage = 0.0;
+
+draw_progress_circle( );
+
+function round_to_two_decimals( num )
+{
+  return Math.round( num * 100 ) / 100;
+}
+
+function hash_rounds( )
+{
+   var num = Math.min( chunk, total - round );
+
+   // NOTE: Start with an initial hash.
+   if( round == 0 )
+      s = hex_sha256( os );
+
+   // NOTE: Perform "num" additional rounds.
+   for( var i = 0; i < num; i++ )
+      s = hex_sha256( s + os ).toLowerCase( );
+
+   round += num;
+
+   percentage = round_to_two_decimals( ( round / total ) * 100 );
+
+   draw_progress_circle( );
+
+   if( round < total )
+      setTimeout( hash_rounds, delay );
+   else
+      document.getElementById( "response" ).innerText = "Output: " + s;
+}
+
+function do_hash_rounds( )
+{
+   s = "";
+
+   round = 0;
+   percentage = 0.0;
+
+   draw_progress_circle( );
+
+   os = document.getElementById( "user_input" ).value;
+
+   document.getElementById( "response" ).innerText = "";
+
+   document.getElementById( "command" ).innerText = "./ciyam_command crypto_hash -x=" + total + " \"" + os + "\"";
+
+   setTimeout( hash_rounds, delay );
+}
+
+</script>
+
+</body>
+
+</html>
