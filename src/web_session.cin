@@ -22,6 +22,8 @@ TOKEN=$1
 DEVICE=$2
 SESSION=$3
 ;
+IS_ADMIN=
+;
 OUTPUT_FILE=/tmp/ciyam.web.$TOKEN.$DEVICE
 ;
 I=0
@@ -31,7 +33,15 @@ MAX_ITERATIONS=600
 LAST_ITERATION=@$MAX_ITERATIONS-1
 ;
 ~rm -f $OUTPUT_FILE
+;
+ADMIN_TOKEN=@file:.web_session.admin
+;
+@ifneq "$TOKEN" "$ADMIN_TOKEN"
 .system_variable @web.$TOKEN.$DEVICE.message "[running]"
+@else
+IS_ADMIN=1
+.system_variable @web.$TOKEN.$DEVICE.message "[running as admin]"
+@endif
 ;
 @label NEXT
 ;
