@@ -14,15 +14,21 @@
    <h1>CWS API Tester</h1>
 
    <form id="test_form" onsubmit="do_fetch( ); return false;">
-      <label>User: &nbsp; <input type="text" id="user_token" size="20" placeholder="(e.g. admin)" autofocus></label>
+      <label>Username: &nbsp; <input type="text" id="user_access" size="20" placeholder="(e.g. admin)" autofocus></label>
       <br/><br/>
-      <label>Password: &nbsp; <input type="text" id="password" size="20" placeholder="(e.g. password)"></label>
+      <label>Unique: &nbsp; <input type="text" id="user_unique" size="40" readonly></label>
       <br/><br/>
-      <label>Device: &nbsp; <input type="text" id="user_device" size="20" readonly></label>
+      <label>Password: &nbsp; <input type="text" id="user_password" size="20"></label>
       <br/><br/>
       <label>Session: &nbsp; <input type="text" id="user_session" size="20" readonly></label>
       <br/><br/>
-      <label>Unique: &nbsp; <input type="text" id="user_unique" size="40" readonly></label>
+      <label>Command: &nbsp; <input type="text" id="user_command" size="30" placeholder="(e.g. terminate)"></label>
+      <br/><br/>
+      <label>Device: &nbsp; <input type="text" id="user_device" size="20" readonly></label>
+      <br/><br/>
+      <input type="checkbox" id="user_retain" name="user_retain" onclick="do_retain( )" >Retain Credentials
+      <br/><br/>
+      <input type="checkbox" id="user_remove" name="user_remove" onclick="do_remove( )" >Remove Credentials
       <br/><br/>
       <button type="submit">Click or Enter to Submit</button>
    </form>
@@ -32,27 +38,51 @@
    <div id="data"></div>
 
    <script>
-   var checked = "";
+   var hashed = "";
 
    function load( )
    {
-      if( localStorage.getItem( "token" ) != null )
-         document.getElementById( "user_token" ).value = localStorage.getItem( "token" );
+      if( localStorage.getItem( "access" ) != null )
+      {
+         document.getElementById( "user_access" ).value = localStorage.getItem( "access" );
+
+         document.getElementById( "user_access" ).disabled = true;
+
+         document.getElementById( "user_retain" ).checked = true;
+         document.getElementById( "user_device" ).focus( );
+      }
 
       if( localStorage.getItem( "device" ) != null )
+      {
          document.getElementById( "user_device" ).value = localStorage.getItem( "device" );
 
-      if( localStorage.getItem( "checked" ) != null )
-         checked = localStorage.getItem( "checked" );
+         document.getElementById( "user_device" ).disabled = true;
+
+         document.getElementById( "user_retain" ).checked = true;
+         document.getElementById( "user_unique" ).focus( );
+      }
+
+      if( localStorage.getItem( "hashed" ) != null )
+      {
+         hashed = localStorage.getItem( "hashed" );
+
+         document.getElementById( "user_retain" ).checked = true;
+      }
+
+      document.getElementById( "user_retain" ).disabled = true;
+      document.getElementById( "user_remove" ).disabled = true;
+
+      document.getElementById( "user_command" ).disabled = true;
+      document.getElementById( "user_password" ).disabled = true;
    }
 
-   function do_fetch( event )
+   function do_fetch( )
    {
       var request = "http://localhost:13031/api.cws";
 
-      var token = document.getElementById( "user_token" ).value;
+      var access = document.getElementById( "user_access" ).value;
 
-      var qry_data = "token=" + token;
+      var qry_data = "access=" + access;
 
       var device = document.getElementById( "user_device" ).value;
 
@@ -62,7 +92,7 @@
       if( device != "" )
          qry_data += "&device=" + device;
 
-      var password = hex_sha256( document.getElementById( "password" ).value );
+      var password = hex_sha256( document.getElementById( "user_password" ).value );
 
       if( device == "" )
          qry_data += "&pwd_hash=" + password;
@@ -76,20 +106,33 @@
 
             if( session == "" )
             {
-               if( checked == "" )
-                  checked = hex_sha256( password + device );
+               if( hashed == "" )
+                  hashed = hex_sha256( password + device );
 
-               var session = hex_sha256( checked + unique ).substr( 0, 10 );
+               var session = hex_sha256( hashed + unique ).substr( 0, 10 );
 
                document.getElementById( "user_session" ).value = session;
+
+               document.getElementById( "user_remove" ).disabled = false;
+
+               document.getElementById( "user_command" ).disabled = false;
+               document.getElementById( "user_command" ).focus( );
+
+               document.getElementById( "user_password" ).value = "";
+               document.getElementById( "user_password" ).disabled = true;
             }
 
             qry_data += "&session=" + session;
          }
       }
 
+      var command = document.getElementById( "user_command" ).value;
+
+      if( command != "" )
+         qry_data += "&function=" + command;
+
       if( qry_data != "" )
-         request += "?" + qry_data;
+         request += "?" + qry_data + "&format=text";
 
       fetch( request )
       .then( response => response.text( ) )
@@ -97,33 +140,135 @@
       .catch( error => console.error( "Error fetching data: ", error ) );
    }
 
+   function do_retain( )
+   {
+      var access = document.getElementById( "user_access" ).value;
+
+      if( access != "" )
+      {
+         var scope = "partially";
+
+         localStorage.setItem( "access", access );
+
+         var device = document.getElementById( "user_device" ).value;
+
+         if( device != "" )
+         {
+            localStorage.setItem( "device", device );
+
+            if( hashed != "" )
+            {
+               var check = confirm( "User and device inforation stored.\nAlso retain the hashed password information?" );
+
+               if( check )
+               {
+                  scope = "completely";
+
+                  localStorage.setItem( "hashed", hashed );
+               }
+            }
+         }
+
+         document.getElementById( "user_retain" ).disabled = true;
+         document.getElementById( "user_remove" ).disabled = false;
+
+         document.getElementById( "user_password" ).value = "";
+         document.getElementById( "user_password" ).disabled = true;
+
+         document.getElementById( "user_command" ).focus( );
+
+         document.getElementById( "data" ).innerText = "(retained credentials " + scope + ")";
+      }
+   }
+
+   function do_remove( )
+   {
+      var scope = "partially";
+
+      if( localStorage.getItem( "hashed" ) != null )
+         localStorage.removeItem( "hashed" );
+
+      var check = confirm( "Hashed password has now been removed.\nAlso remove user and device information?" );
+
+      if( check )
+      {
+         scope = "completely";
+
+         if( localStorage.getItem( "access" ) != null )
+            localStorage.removeItem( "access" );
+
+         if( localStorage.getItem( "device" ) != null )
+            localStorage.removeItem( "device" );
+
+         document.getElementById( "user_remove" ).disabled = true;
+
+         document.getElementById( "user_retain" ).checked = false;
+         document.getElementById( "user_retain" ).disabled = false;
+      }
+
+      document.getElementById( "user_remove" ).checked = false;
+
+      document.getElementById( "user_command" ).focus( );
+
+      document.getElementById( "data" ).innerText = "(removed credentials " + scope + ")";
+   }
+
    function handle_response( data )
    {
-      if( data.charAt( data.length - 1 ) == "\n" )
-         data = data.slice( 0, -1 );
-
       if( data.startsWith( "Error: " ) )
+      {
          document.getElementById( "data" ).innerText = data;
+
+         document.getElementById( "user_unique" ).value = "";
+         document.getElementById( "user_session" ).value = "";
+      }
       else
       {
-         if( localStorage.getItem( "token" ) == null )
-            localStorage.setItem( "token", document.getElementById( "user_token" ).value );
-
          if( document.getElementById( "user_device" ).value == "" )
          {
-            localStorage.setItem( "device", data );
             document.getElementById( "user_device" ).value = data;
+
+            document.getElementById( "user_access" ).disabled = true;
+
+            document.getElementById( "user_unique" ).focus( );
          }
          else if( document.getElementById( "user_unique" ).value == "" )
+         {
             document.getElementById( "user_unique" ).value = data;
+
+            document.getElementById( "user_access" ).disabled = true;
+            document.getElementById( "user_device" ).disabled = true;
+
+            if( localStorage.getItem( "hashed" ) != null )
+               document.getElementById( "user_session" ).focus( );
+            else
+            {
+               document.getElementById( "user_password" ).disabled = false;
+               document.getElementById( "user_password" ).focus( );
+            }
+         }
          else
          {
-            if( ( checked != "" ) && ( localStorage.getItem( "checked" ) == null ) )
-               localStorage.setItem( "checked", checked );
-
             document.getElementById( "data" ).innerText = data;
+
+            if( document.getElementById( "user_command" ).value == "terminate" )
+            {
+               document.getElementById( "user_unique" ).value = "";
+               document.getElementById( "user_unique" ).focus( );
+
+               document.getElementById( "user_command" ).value = "";
+               document.getElementById( "user_session" ).value = "";
+
+               document.getElementById( "user_retain" ).disabled = true;
+
+               document.getElementById( "user_command" ).disabled = true;
+            }
+            else if( document.getElementById( "user_retain" ).checked == false )
+               document.getElementById( "user_retain" ).disabled = false;
          }
       }
+
+      document.getElementById( "user_command" ).value = "";
    }
    </script>
 </body>
