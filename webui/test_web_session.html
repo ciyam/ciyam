@@ -22,7 +22,7 @@
       <br/><br/>
       <label>Session: &nbsp; <input type="text" id="user_session" size="20" readonly></label>
       <br/><br/>
-      <label>Command: &nbsp; <input type="text" id="user_command" size="30" placeholder="(e.g. terminate)"></label>
+      <label>Command: &nbsp; <input type="text" id="user_command" size="100" placeholder="(e.g. terminate)"></label>
       <br/><br/>
       <label>Device: &nbsp; <input type="text" id="user_device" size="20" readonly></label>
       <br/><br/>
@@ -92,10 +92,13 @@
       if( device != "" )
          qry_data += "&device=" + device;
 
-      var password = hex_sha256( document.getElementById( "user_password" ).value );
+      var password = "";
 
-      if( device == "" )
-         qry_data += "&pwd_hash=" + password;
+      if( document.getElementById( "user_password" ).value != "" )
+         password = document.getElementById( "user_password" ).value;
+
+      if( ( device == "" ) && ( password != "" ) )
+         qry_data += "&password=" + encodeURIComponent( password );
       else
       {
          var unique = document.getElementById( "user_unique" ).value;
@@ -107,7 +110,7 @@
             if( session == "" )
             {
                if( hashed == "" )
-                  hashed = hex_sha256( password + device );
+                  hashed = hex_sha256( hex_sha256( password ) + device );
 
                var session = hex_sha256( hashed + unique ).substr( 0, 10 );
 
@@ -129,10 +132,12 @@
       var command = document.getElementById( "user_command" ).value;
 
       if( command != "" )
-         qry_data += "&function=" + command;
+         qry_data += "&function=" + encodeURIComponent( command );
 
       if( qry_data != "" )
          request += "?" + qry_data + "&format=text";
+
+      console.log( request );
 
       fetch( request )
       .then( response => response.text( ) )
@@ -226,11 +231,24 @@
       {
          if( document.getElementById( "user_device" ).value == "" )
          {
-            document.getElementById( "user_device" ).value = data;
+            // NOTE: If is a PIN then need to provide password hash.
+            if( data.length == 5 )
+            {
+               document.getElementById( "user_access" ).value = data;
 
-            document.getElementById( "user_access" ).disabled = true;
+               document.getElementById( "user_access" ).disabled = true;
 
-            document.getElementById( "user_unique" ).focus( );
+               document.getElementById( "user_password" ).disabled = false;
+               document.getElementById( "user_password" ).focus( );
+            }
+            else
+            {
+               document.getElementById( "user_device" ).value = data;
+
+               document.getElementById( "user_access" ).disabled = true;
+
+               document.getElementById( "user_unique" ).focus( );
+            }
          }
          else if( document.getElementById( "user_unique" ).value == "" )
          {
