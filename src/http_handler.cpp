@@ -173,7 +173,7 @@ const char* const c_query_param_name_format = "format";
 const char* const c_query_param_name_session = "session";
 const char* const c_query_param_name_verbose = "verbose";
 const char* const c_query_param_name_function = "function";
-const char* const c_query_param_name_pwd_hash = "pwd_hash";
+const char* const c_query_param_name_password = "password";
 
 const char* const c_query_param_value_json = "json";
 const char* const c_query_param_value_text = "text";
@@ -240,6 +240,29 @@ void restore_specials( string& str )
    }
 }
 
+string& url_decode( string& str )
+{
+   for( size_t i = 0; i < str.size( ); i++ )
+   {
+      if( str[ i ] == '%' )
+      {
+         if( i < ( str.size( ) - 2 ) )
+         {
+            char ch = hex_nibble( str[ i + 1 ], true );
+
+            ch <<= 4;
+
+            ch |= hex_nibble( str[ i + 2 ], true );
+
+            str.erase( i, 3 );
+            str.insert( i, 1, ch );
+         }
+      }
+   }
+
+   return str;
+}
+
 string format_date_time( const date_time& dtm )
 {
    string formatted_date_time( dtm.weekday_name( true ) );
@@ -297,7 +320,7 @@ bool parse_query_params( const string& qry_info, map< string, string >& params )
             break;
          }
 
-         params[ name ] = value;
+         params[ name ] = url_decode( value );
       }
    }
 
@@ -337,24 +360,50 @@ inline void deccrement_handlers( )
    --g_active_handlers;
 }
 
-bool has_web_session_access_token( const string& token, const string& token_file, const string& pwd_hash )
+bool has_web_session_access_token( const string& token,
+ const string& token_file, const string& password, string& pin )
 {
    guard g( g_mutex );
 
    bool retval = false;
 
-   if( file_exists( token_file ) )
-      retval = true;
-   else if( ( token == c_admin ) && !pwd_hash.empty( ) )
+   if( token == c_admin )
    {
-      ofstream outf( token_file.c_str( ), ios::out );
+      if( !file_exists( token_file ) )
+      {
+         pin = random_characters( 5, 0, e_printable_type_numeric );
 
-      outf << pwd_hash;
+         ofstream outf( token_file.c_str( ), ios::out );
 
-      outf.close( );
+         outf << pin;
 
-      if( outf.good( ) )
+         outf.close( );
+
+         if( outf.good( ) )
+         {
+            retval = true;
+
+            string token_pin_file( token_file.substr( 0, token_file.rfind( '.' ) ) + '.' + pin );
+
+            file_touch( token_pin_file, 0, true );
+         }
+      }
+   }
+   else
+   {
+      if( file_exists( token_file ) && file_size( token_file ) )
          retval = true;
+      else
+      {
+         ofstream outf( token_file.c_str( ), ios::out );
+
+         outf << sha256( password ).get_digest_as_string( );
+
+         outf.close( );
+
+         if( outf.good( ) )
+            retval = true;
+      }
    }
 
    return retval;
@@ -442,7 +491,10 @@ void http_request_handler::on_start( )
 #ifdef DEBUG
          cerr << "\n" << date_time::local( ).as_string( e_time_format_hhmmssth, true ) << '\n' << endl;
 #endif
-         string request;
+         string request, next_line;
+
+         request.reserve( c_max_line_length );
+         next_line.reserve( c_max_line_length );
 
          vector< string > header_lines;
 
@@ -454,8 +506,6 @@ void http_request_handler::on_start( )
 
          while( true )
          {
-            string next_line;
-
             if( up_socket->read_line( next_line,
              ( first ? c_initial_timeout : c_subsequent_timeout ), c_max_line_length ) <= 0 )
             {
@@ -475,9 +525,17 @@ void http_request_handler::on_start( )
             first = false;
 
             if( request.empty( ) )
+            {
                request = next_line;
+
+               clear_key( next_line, true );
+            }
             else
+            {
                header_lines.push_back( next_line );
+
+               next_line.erase( );
+            }
 
             if( header_lines.size( ) >= c_max_request_lines )
             {
@@ -874,7 +932,7 @@ void http_request_handler::on_start( )
 
                string prefix( c_web_session_prefix );
 
-               string access, device, session, pwd_hash;
+               string access, device, session, password;
 
                if( params.count( c_query_param_name_access ) )
                   access = params[ c_query_param_name_access ];
@@ -885,18 +943,29 @@ void http_request_handler::on_start( )
                if( params.count( c_query_param_name_session ) )
                   session = params[ c_query_param_name_session ];
 
-               if( params.count( c_query_param_name_pwd_hash ) )
-                  pwd_hash = params[ c_query_param_name_pwd_hash ];
+               if( params.count( c_query_param_name_password ) )
+                  password = params[ c_query_param_name_password ];
 
                string access_file( '.' + prefix + access ); // i.e. ".web_session.<access>"
 
-               bool has_access_file = has_web_session_access_token( access, access_file, pwd_hash );
+               string pin;
 
-               if( has_access_file && !g_cws_access_tokens.count( access ) )
+               bool has_access_file = has_web_session_access_token( access, access_file, password, pin );
+
+               if( has_access_file && pin.empty( ) && !g_cws_access_tokens.count( access ) )
                   g_cws_access_tokens.insert( access );
 
                if( access.empty( ) )
                   error = "Need a valid access token to use a web session.";
+               else if( !pin.empty( ) )
+               {
+                  found = true;
+
+                  if( !is_json_output )
+                     response = pin;
+                  else
+                     response = "{\"pin\":\"" + pin + "\"}";
+               }
                else if( !g_cws_access_tokens.count( access ) )
                   error = "Provided web session access token '" + access + "' is invalid.";
                else if( device.empty( ) )
@@ -1066,18 +1135,29 @@ void http_request_handler::on_start( )
                               {
                                  found = true;
 
-                                 set_system_variable( web_command_name, "variable " + web_message_name );
+                                 if( !function.empty( ) )
+                                    set_system_variable( web_command_name, function );
+                                 else
+                                    set_system_variable( web_command_name, "variable " + web_message_name );
 
-                                 msleep( 150 );
-
-                                 if( file_exists( output_file_name ) )
+                                 for( size_t i = 0; i < 10; i++ )
                                  {
-                                    response = buffer_file( output_file_name );
+                                    msleep( 150 );
 
-                                    response = trim( response, false, true, "\n" );
+                                    if( file_exists( output_file_name ) )
+                                    {
+                                       response = buffer_file( output_file_name );
 
-                                    file_remove( output_file_name );
+                                       response = trim( response, false, true, "\n" );
+
+                                       file_remove( output_file_name );
+
+                                       break;
+                                    }
                                  }
+
+                                 if( response.empty( ) )
+                                    response = "[no response provided]";
                               }
                            }
                         }
