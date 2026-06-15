@@ -167,7 +167,7 @@ const char* const c_not_found_html_response = "<!doctype html>\n<html>\n<head><t
 
 const char* const c_replace_document_marker = "DOCUMENT";
 
-const char* const c_query_param_name_token = "token";
+const char* const c_query_param_name_access = "access";
 const char* const c_query_param_name_device = "device";
 const char* const c_query_param_name_format = "format";
 const char* const c_query_param_name_session = "session";
@@ -312,9 +312,14 @@ string g_server_id;
 
 string g_version_string;
 
-set< string > g_cws_tokens;
+set< string > g_cws_access_tokens;
 
-map< string, set< string > > g_cws_devices;
+map< string, set< string > > g_cws_access_devices;
+
+inline size_t get_num_access_devices( const string& token )
+{
+   return ( !g_cws_access_devices.count( token ) ? 0 : g_cws_access_devices[ token ].size( ) );
+}
 
 atomic< size_t > g_active_handlers;
 
@@ -332,7 +337,7 @@ inline void deccrement_handlers( )
    --g_active_handlers;
 }
 
-bool has_web_session_token( const string& token, const string& token_file, const string& pwd_hash )
+bool has_web_session_access_token( const string& token, const string& token_file, const string& pwd_hash )
 {
    guard g( g_mutex );
 
@@ -569,7 +574,11 @@ void http_request_handler::on_start( )
          bool is_verbose = false;
 
          bool was_endpoint = false;
+
          bool is_json_output = false;
+         bool is_text_output = true;
+
+         bool has_format_parameter = false;
 
          ostringstream osstr;
 
@@ -598,8 +607,13 @@ void http_request_handler::on_start( )
                {
                   if( params[ c_query_param_name_format ] == c_query_param_value_json )
                      is_json_output = true;
-                  else if( params[ c_query_param_name_format ] != c_query_param_value_text )
-                     error = "Invalid query parameter value in '" + qry_info + "' for version.";
+                  else if( params[ c_query_param_name_format ] == c_query_param_value_text )
+                     is_text_output = true;
+                  else
+                     error = "Invalid format value '" + params[ c_query_param_name_format ] + "'.";
+
+                  if( error.empty( ) )
+                     has_format_parameter = true;
                }
 
                if( params.count( c_query_param_name_verbose ) )
@@ -701,11 +715,14 @@ void http_request_handler::on_start( )
                osstr << c_http_content_type_prefix << header_info[ c_http_content_type_header ] << '\n';
 
                if( !is_json_output )
+               {
                   response = data;
+
+                  if( !has_format_parameter )
+                     response += '\n';
+               }
                else
                   response = "{\"data\":\"" + escaped_json( data ) + "\"}";
-
-               response += '\n';
             }
             else if( document == c_upload_endpoint )
             {
@@ -845,7 +862,8 @@ void http_request_handler::on_start( )
                else
                   response = "Uploaded as \"" + local_filename + "\" (" + format_bytes( uploaded_size ) + ").";
 
-               response += '\n';
+               if( !has_format_parameter )
+                  response += '\n';
             }
          }
          else if( error.empty( ) )
@@ -856,10 +874,10 @@ void http_request_handler::on_start( )
 
                string prefix( c_web_session_prefix );
 
-               string token, device, session, pwd_hash;
+               string access, device, session, pwd_hash;
 
-               if( params.count( c_query_param_name_token ) )
-                  token = params[ c_query_param_name_token ];
+               if( params.count( c_query_param_name_access ) )
+                  access = params[ c_query_param_name_access ];
 
                if( params.count( c_query_param_name_device ) )
                   device = params[ c_query_param_name_device ];
@@ -870,23 +888,23 @@ void http_request_handler::on_start( )
                if( params.count( c_query_param_name_pwd_hash ) )
                   pwd_hash = params[ c_query_param_name_pwd_hash ];
 
-               string token_file( '.' + prefix + token ); // i.e. ".web_session.<token>"
+               string access_file( '.' + prefix + access ); // i.e. ".web_session.<access>"
 
-               bool has_token_file = has_web_session_token( token, token_file, pwd_hash );
+               bool has_access_file = has_web_session_access_token( access, access_file, pwd_hash );
 
-               if( has_token_file && !g_cws_tokens.count( token ) )
-                  g_cws_tokens.insert( token );
+               if( has_access_file && !g_cws_access_tokens.count( access ) )
+                  g_cws_access_tokens.insert( access );
 
-               if( token.empty( ) )
-                  error = "Need a valid token to use a web session.";
-               else if( !g_cws_tokens.count( token ) )
-                  error = "Provided web session token '" + token + "' is invalid.";
+               if( access.empty( ) )
+                  error = "Need a valid access token to use a web session.";
+               else if( !g_cws_access_tokens.count( access ) )
+                  error = "Provided web session access token '" + access + "' is invalid.";
                else if( device.empty( ) )
                {
-                  size_t num_devices = ( !g_cws_devices.count( token ) ? 0 : g_cws_devices[ token ].size( ) );
+                  size_t num_devices = get_num_access_devices( access );
 
                   if( num_devices >= c_cws_max_devices )
-                     error = "Maximum devices have been created for web session token '" + token + "'.";
+                     error = "Maximum devices have been created for web session access token '" + access + "'.";
                   else
                   {
                      found = true;
@@ -898,39 +916,39 @@ void http_request_handler::on_start( )
                      else
                         response = "{\"new_device\":\"" + new_device + "\"}";
 
-                     g_cws_devices[ token ].insert( new_device );
+                     g_cws_access_devices[ access ].insert( new_device );
                   }
                }
                else
                {
                   if( !are_hex_nibbles( device, false ) || ( device.length( ) != c_device_length ) )
                      error = "Invalid device identity '" + device + "'.";
-                  else if( !g_cws_devices[ token ].count( device ) )
+                  else if( !g_cws_access_devices[ access ].count( device ) )
                   {
-                     size_t num_devices = ( !g_cws_devices.count( token ) ? 0 : g_cws_devices[ token ].size( ) );
+                     size_t num_devices = get_num_access_devices( access );
 
                      if( num_devices < c_cws_max_devices )
-                        g_cws_devices[ token ].insert( device );
+                        g_cws_access_devices[ access ].insert( device );
                      else
-                        error = "Maximum devices have been created for web session token '" + token + "'.";
+                        error = "Maximum devices have been created for web session access token '" + access + "'.";
                   }
 
                   if( error.empty( ) )
                   {
                      string var_prefix( get_special_var_name( e_special_var_web ) + '.' );
 
-                     string output_file_name( "/tmp/ciyam." + var_prefix.substr( 1 ) + token + '.' + device );
+                     string output_file_name( "/tmp/ciyam." + var_prefix.substr( 1 ) + access + '.' + device );
 
-                     string web_lock_name( var_prefix + token + '.' + device + c_web_lock_suffix );
+                     string web_lock_name( var_prefix + access + '.' + device + c_web_lock_suffix );
 
-                     string web_command_name( var_prefix + token + '.' + device + c_web_command_suffix );
-                     string web_message_name( var_prefix + token + '.' + device + c_web_message_suffix );
-                     string web_session_name( var_prefix + token + '.' + device + c_web_session_suffix );
-                     string web_started_name( var_prefix + token + '.' + device + c_web_started_suffix );
+                     string web_command_name( var_prefix + access + '.' + device + c_web_command_suffix );
+                     string web_message_name( var_prefix + access + '.' + device + c_web_message_suffix );
+                     string web_session_name( var_prefix + access + '.' + device + c_web_session_suffix );
+                     string web_started_name( var_prefix + access + '.' + device + c_web_started_suffix );
 
                      if( session.empty( ) )
                      {
-                        string token_value( buffer_file( token_file ) );
+                        string access_token( buffer_file( access_file ) );
 
                         string unique( uuid( ).as_string( ) );
 
@@ -955,14 +973,14 @@ void http_request_handler::on_start( )
                         // request for the same device then the session value
                         // is obtained from the leading characters of a hash.
                         // The hash is itself obtained using a "checked" hash
-                        // (being the "token_value" and "device" strings) and
+                        // (being the "access_token" and "device" values) and
                         // then combining its digest with the "unqiue" string
                         // to determine a "combined" hash.
                         if( error.empty( ) )
                         {
                            found = true;
 
-                           sha256 hash_checked( token_value + device );
+                           sha256 hash_checked( access_token + device );
 
                            sha256 hash_combined( hash_checked.get_digest_as_string( ) + unique );
 
@@ -1014,7 +1032,7 @@ void http_request_handler::on_start( )
                               if( !running )
                               {
                                  string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<"
-                                  + script_name + ' ' + token + ' ' + device + ' ' + session + "\" > /dev/null &" );
+                                  + script_name + ' ' + access + ' ' + device + ' ' + session + "\" > /dev/null &" );
 
                                  int rc = system( cmd.c_str( ) );
 
@@ -1042,7 +1060,7 @@ void http_request_handler::on_start( )
                                  set_system_variable( web_session_name, "" );
                                  set_system_variable( web_started_name, "" );
 
-                                 error = "Was unable to start a web session with token '" + token + "'.";
+                                 error = "Was unable to start a web session with access token '" + access + "'.";
                               }
                               else
                               {
@@ -1276,7 +1294,7 @@ void http_request_handler::on_start( )
 
                osstr << '\n';
 
-               if( !response.empty( ) )
+               if( !response.empty( ) && !has_format_parameter )
                   response += '\n';
             }
 
