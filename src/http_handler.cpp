@@ -30,7 +30,9 @@
 #include "date_time.h"
 #include "utilities.h"
 #include "ciyam_base.h"
+#include "class_base.h"
 #include "ssl_socket.h"
+#include "crypt_stream.h"
 #include "ciyam_session.h"
 #include "ciyam_variables.h"
 
@@ -170,15 +172,15 @@ const char* const c_replace_document_marker = "DOCUMENT";
 const char* const c_query_param_name_access = "access";
 const char* const c_query_param_name_device = "device";
 const char* const c_query_param_name_format = "format";
+const char* const c_query_param_name_request = "request";
 const char* const c_query_param_name_session = "session";
 const char* const c_query_param_name_verbose = "verbose";
-const char* const c_query_param_name_function = "function";
 const char* const c_query_param_name_password = "password";
 
 const char* const c_query_param_value_json = "json";
 const char* const c_query_param_value_text = "text";
 
-const char* const c_cws_function_terminate = "terminate";
+const char* const c_cws_request_terminate = "terminate";
 
 const int c_num_retries = 5;
 
@@ -326,6 +328,8 @@ bool parse_query_params( const string& qry_info, map< string, string >& params )
 
    return retval;
 }
+
+const size_t c_seed_reserve = 120;
 
 const size_t c_cws_max_devices = 10;
 
@@ -491,10 +495,10 @@ void http_request_handler::on_start( )
 #ifdef DEBUG
          cerr << "\n" << date_time::local( ).as_string( e_time_format_hhmmssth, true ) << '\n' << endl;
 #endif
-         string request, next_line;
+         string next_line, http_request;
 
-         request.reserve( c_max_line_length );
          next_line.reserve( c_max_line_length );
+         http_request.reserve( c_max_line_length );
 
          vector< string > header_lines;
 
@@ -524,9 +528,9 @@ void http_request_handler::on_start( )
 
             first = false;
 
-            if( request.empty( ) )
+            if( http_request.empty( ) )
             {
-               request = next_line;
+               http_request = next_line;
 
                clear_key( next_line, true );
             }
@@ -551,7 +555,7 @@ void http_request_handler::on_start( )
             }
          }
 
-         if( !had_empty || request.empty( ) )
+         if( !had_empty || http_request.empty( ) )
          {
 #ifdef DEBUG
             cerr << "(empty or incomplete request)" << endl;
@@ -562,10 +566,10 @@ void http_request_handler::on_start( )
          had_request = true;
 
          TRACE_LOG( TRACE_DETAILS | TRACE_SESSION,
-          to_comparable_string( handler, false, 8 ) + " - " + request );
+          to_comparable_string( handler, false, 8 ) + " - " + http_request );
 
 #ifdef DEBUG
-         cerr << "handler #" << handler << "\n[Request]\n" << request << endl;
+         cerr << "handler #" << handler << "\n[Request]\n" << http_request << endl;
 #endif
          for( size_t i = 0; i < header_lines.size( ); i++ )
          {
@@ -589,42 +593,42 @@ void http_request_handler::on_start( )
 #endif
          }
 
-         string document, protocol, qry_info;
+         string http_document, http_protocol, http_qry_info;
 
-         string::size_type pos = request.find( ' ' );
+         string::size_type pos = http_request.find( ' ' );
 
          if( pos != string::npos )
          {
-            document = request.substr( pos + 1 );
+            http_document = http_request.substr( pos + 1 );
 
-            request.erase( pos );
+            http_request.erase( pos );
 
-            pos = document.find( ' ' );
+            pos = http_document.find( ' ' );
 
             if( pos != string::npos )
             {
-               protocol = document.substr( pos + 1 );
+               http_protocol = http_document.substr( pos + 1 );
 
-               document.erase( pos );
+               http_document.erase( pos );
             }
 
-            pos = document.find( '?' );
+            pos = http_document.find( '?' );
 
             if( pos != string::npos )
             {
-               qry_info = document.substr( pos + 1 );
+               http_qry_info = http_document.substr( pos + 1 );
 
-               document.erase( pos );
+               http_document.erase( pos );
             }
          }
 
 #ifdef DEBUG
-         cerr << "\nrequest ==> " << request << endl;
-         cerr << "document ==> " << document << endl;
-         cerr << "protocol ==> " << protocol << endl;
+         cerr << "\nrequest ==> " << http_request << endl;
+         cerr << "document ==> " << http_document << endl;
+         cerr << "protocol ==> " << http_protocol << endl;
 
-         if( !qry_info.empty( ) )
-            cerr << "qry_info ==> " << qry_info << endl;
+         if( !http_qry_info.empty( ) )
+            cerr << "qry_info ==> " << http_qry_info << endl;
 #endif
 
          bool found = false;
@@ -644,21 +648,21 @@ void http_request_handler::on_start( )
 
          // NOTE: If document ends in '/' then will
          // automatically append "index.html".
-         if( document.find( c_api_prefix ) != 0 )
+         if( http_document.find( c_api_prefix ) != 0 )
          {
-            string::size_type pos = document.rfind( '/' );
+            string::size_type pos = http_document.rfind( '/' );
 
             if( ( pos != string::npos )
-             && ( pos == ( document.length( ) - 1 ) ) )
-               document += c_index_html;
+             && ( pos == ( http_document.length( ) - 1 ) ) )
+               http_document += c_index_html;
          }
 
          map< string, string > params;
 
-         if( !qry_info.empty( ) )
+         if( !http_qry_info.empty( ) )
          {
-            if( !parse_query_params( qry_info, params ) )
-               error = "Invalid format for query parameters '" + qry_info + "'.";
+            if( !parse_query_params( http_qry_info, params ) )
+               error = "Invalid format for query parameters '" + http_qry_info + "'.";
             else
             {
                if( params.count( c_query_param_name_format ) )
@@ -756,7 +760,7 @@ void http_request_handler::on_start( )
 
          if( !data.empty( ) )
          {
-            if( document == c_echo_endpoint )
+            if( http_document == c_echo_endpoint )
             {
                found = true;
 
@@ -782,7 +786,7 @@ void http_request_handler::on_start( )
                else
                   response = "{\"data\":\"" + escaped_json( data ) + "\"}";
             }
-            else if( document == c_upload_endpoint )
+            else if( http_document == c_upload_endpoint )
             {
                found = true;
 
@@ -926,19 +930,22 @@ void http_request_handler::on_start( )
          }
          else if( error.empty( ) )
          {
-            if( document == c_cws_endpoint )
+            if( http_document == c_cws_endpoint )
             {
                was_endpoint = true;
 
                string prefix( c_web_session_prefix );
 
-               string access, device, session, password;
+               string access, device, request, session, password;
 
                if( params.count( c_query_param_name_access ) )
                   access = params[ c_query_param_name_access ];
 
                if( params.count( c_query_param_name_device ) )
                   device = params[ c_query_param_name_device ];
+
+               if( params.count( c_query_param_name_request ) )
+                  request = params[ c_query_param_name_request ];
 
                if( params.count( c_query_param_name_session ) )
                   session = params[ c_query_param_name_session ];
@@ -955,16 +962,53 @@ void http_request_handler::on_start( )
                if( has_access_file && pin.empty( ) && !g_cws_access_tokens.count( access ) )
                   g_cws_access_tokens.insert( access );
 
+               // NOTE: If the system identity is "unknown" and the access
+               // token matches the "admin" PIN then will set the identity
+               // (after first hardening the password that is then used to
+               // encrypt the entropy provided in the "request").
+               if( !request.empty( ) && !password.empty( ) )
+               {
+                  string admin_pin( buffer_file( '.' + prefix + c_admin ) );
+
+                  if( ( access == admin_pin )
+                   && ( get_system_variable( e_special_var_system_identity ) == c_unknown ) )
+                  {
+                     string hardened( password );
+
+                     harden_key_with_hash_rounds( hardened, hardened, hardened, c_key_rounds_multiplier );
+
+                     data_encrypt( request, request, hardened );
+
+                     set_identity( request );
+                     set_identity( password, request.c_str( ) );
+
+                     clear_key( hardened );
+                  }
+
+                  clear_key( request );
+               }
+
+               clear_key( password );
+
                if( access.empty( ) )
                   error = "Need a valid access token to use a web session.";
                else if( !pin.empty( ) )
                {
+                  string seed;
+
+                  seed.reserve( c_seed_reserve );
+
+                  get_mnemonics_or_hex_seed( seed, "" );
+                  get_mnemonics_or_hex_seed( seed, seed );
+
                   found = true;
 
                   if( !is_json_output )
-                     response = pin;
+                     response = pin + ' ' + seed;
                   else
-                     response = "{\"pin\":\"" + pin + "\"}";
+                     response = "{\"pin\":\"" + pin + "\", \"seed\":\"" + seed + "\"}";
+
+                  clear_key( seed );
                }
                else if( !g_cws_access_tokens.count( access ) )
                   error = "Provided web session access token '" + access + "' is invalid.";
@@ -1064,11 +1108,6 @@ void http_request_handler::on_start( )
                            error = "This web session is not valid (or has expired).";
                         else
                         {
-                           string function;
-
-                           if( params.count( c_query_param_name_function ) )
-                              function = params[ c_query_param_name_function ];
-
                            if( has_system_variable( web_lock_name ) )
                            {
                               string when_locked( get_system_variable( web_lock_name ) );
@@ -1079,7 +1118,7 @@ void http_request_handler::on_start( )
                               set_system_variable( web_started_name, when_locked );
                            }
 
-                           if( function == c_cws_function_terminate )
+                           if( request == c_cws_request_terminate )
                            {
                               found = true;
 
@@ -1100,7 +1139,11 @@ void http_request_handler::on_start( )
 
                               if( !running )
                               {
+#ifndef SSL_SUPPORT
                                  string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<"
+#else
+                                 string cmd( "./ciyam_client -tls -quiet -no_prompt -no_stderr -exec=\"<"
+#endif
                                   + script_name + ' ' + access + ' ' + device + ' ' + session + "\" > /dev/null &" );
 
                                  int rc = system( cmd.c_str( ) );
@@ -1135,8 +1178,8 @@ void http_request_handler::on_start( )
                               {
                                  found = true;
 
-                                 if( !function.empty( ) )
-                                    set_system_variable( web_command_name, function );
+                                 if( !request.empty( ) )
+                                    set_system_variable( web_command_name, request );
                                  else
                                     set_system_variable( web_command_name, "variable " + web_message_name );
 
@@ -1165,20 +1208,20 @@ void http_request_handler::on_start( )
                   }
                }
             }
-            else if( document == c_echo_endpoint )
+            else if( http_document == c_echo_endpoint )
             {
                found = true;
 
                was_endpoint = true;
 
-               string echo( qry_info.empty( ) ? "(empty parameters)" : qry_info );
+               string echo( http_qry_info.empty( ) ? "(empty parameters)" : http_qry_info );
 
                if( !is_json_output )
                   response = echo;
                else
                   response = "{\"parameters\":\"" + escaped_json( echo ) + "\"}";
             }
-            else if( document == c_ip_addr_endpoint )
+            else if( http_document == c_ip_addr_endpoint )
             {
                found = true;
 
@@ -1189,7 +1232,7 @@ void http_request_handler::on_start( )
                else
                   response = "{\"ip_addr\":\"" + escaped_json( ip_addr ) + "\"}";
             }
-            else if( document == c_storage_endpoint )
+            else if( http_document == c_storage_endpoint )
             {
                found = true;
 
@@ -1202,7 +1245,7 @@ void http_request_handler::on_start( )
                else
                   response = "{\"storage\":\"" + storage + "\"}";
             }
-            else if( document == c_version_endpoint )
+            else if( http_document == c_version_endpoint )
             {
                found = true;
 
@@ -1215,7 +1258,7 @@ void http_request_handler::on_start( )
                else
                   response = "{\"version\":\"" + version + "\"}";
             }
-            else if( document == c_unix_now_endpoint )
+            else if( http_document == c_unix_now_endpoint )
             {
                found = true;
 
@@ -1228,7 +1271,7 @@ void http_request_handler::on_start( )
                else
                   response = "{\"unix_now\":\"" + escaped_json( unix_now ) + "\"}";
             }
-            else if( document == c_post_limit_endpoint )
+            else if( http_document == c_post_limit_endpoint )
             {
                found = true;
 
@@ -1249,32 +1292,32 @@ void http_request_handler::on_start( )
          {
             string path( get_web_root( ) );
 
-            if( !document.empty( ) && ( document[ 0 ] != '/' ) )
+            if( !http_document.empty( ) && ( http_document[ 0 ] != '/' ) )
                path += '/';
 
             bool rc = true;
 
             // NOTE: Do a sanity check to make sure that the document
             // being requested is not outside of the "web root" path.
-            string check_path( absolute_path( path + document, &rc ) );
+            string check_path( absolute_path( path + http_document, &rc ) );
 
             if( rc && ( check_path.find( path ) == 0 ) )
             {
-               if( file_exists( path + document ) )
+               if( file_exists( path + http_document ) )
                {
                   found = true;
 
                   string extension;
 
 #ifdef DEBUG
-                  cerr << "\n(found '" << document << "')" << endl;
+                  cerr << "\n(found '" << http_document << "')" << endl;
 #endif
-                  string::size_type ext_pos = document.rfind( '.' );
+                  string::size_type ext_pos = http_document.rfind( '.' );
 
                   if( ext_pos != string::npos )
-                     extension = document.substr( ext_pos + 1 );
+                     extension = http_document.substr( ext_pos + 1 );
 
-                  date_time doc_modified( last_modification_time( path + document ) );
+                  date_time doc_modified( last_modification_time( path + http_document ) );
 
                   if( header_info.count( c_req_param_if_modified ) )
                   {
@@ -1335,13 +1378,13 @@ void http_request_handler::on_start( )
 
                      osstr << '\n';
 
-                     response = buffer_file( path + document );
+                     response = buffer_file( path + http_document );
                   }
                }
-               else if( dir_exists( path + document ) )
+               else if( dir_exists( path + http_document ) )
                {
-                  if( file_exists( path + document + "/index.html" ) )
-                     moved_document = document + '/';
+                  if( file_exists( path + http_document + "/index.html" ) )
+                     moved_document = http_document + '/';
                }
             }
          }
@@ -1408,7 +1451,8 @@ void http_request_handler::on_start( )
             if( !has_moved )
             {
                response = c_not_found_html_response;
-               replace( response, c_replace_document_marker, document );
+
+               replace( response, c_replace_document_marker, http_document );
             }
             else
             {
@@ -1416,6 +1460,7 @@ void http_request_handler::on_start( )
                 + header_info[ c_http_host_header ] + moved_document;
 
                response = c_has_moved_html_response;
+
                replace( response, c_replace_document_marker, moved_document_url );
             }
 
