@@ -70,6 +70,8 @@ $COMMAND
 >
 ;
 I=0
+ERROR=
+;
 @endif
 ;
 .wait 100
