@@ -8,9 +8,5 @@ Error: Invalid format value 'xxxx'.
 [running]
 Error: This web session is not valid (or has expired).
 [running]
-
-commands: test
-=========
-test [<[arg_1]>] [<[arg_2]>] [<[arg_3]>] (test command for prototyping)
 Session terminated.
 Error: This web session is not valid (or has expired).
