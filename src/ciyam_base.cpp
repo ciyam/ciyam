@@ -139,8 +139,6 @@ const char* const c_LOCAL = "LOCAL";
 const char* const c_str_none = "(none)";
 const char* const c_str_peer = "(peer)";
 
-const char* const c_str_unknown = "unknown";
-
 const char* const c_script_arg_opt = "opt";
 const char* const c_script_arg_set = "set";
 
@@ -5262,7 +5260,7 @@ void init_globals( const char* p_sid, int* p_port, int* p_use_udp, int* p_web_po
 
       set_system_variable( e_special_var_peer_port, to_string( c_default_ciyam_peer_port ), true );
 
-      string identity( c_str_unknown );
+      string identity( c_unknown );
 
       string blockchain_backup_identity( get_system_variable( e_special_var_blockchain_backup_identity ) );
 

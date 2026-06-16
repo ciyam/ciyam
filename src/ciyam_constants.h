@@ -370,6 +370,8 @@ const char* const c_init = "init";
 const char* const c_peer = "peer";
 const char* const c_admin = "admin";
 
+const char* const c_unknown = "unknown";
+
 const char* const c_everyone = "everyone";
 const char* const c_visitors = "visitors";
 const char* const c_watchers = "watchers";
