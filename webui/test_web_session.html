@@ -16,15 +16,15 @@
    <form id="test_form" onsubmit="do_fetch( ); return false;">
       <label>Username: &nbsp; <input type="text" id="user_access" size="20" placeholder="(e.g. admin)" autofocus></label>
       <br/><br/>
-      <label>Unique: &nbsp; <input type="text" id="user_unique" size="40" readonly></label>
-      <br/><br/>
       <label>Password: &nbsp; <input type="text" id="user_password" size="20"></label>
+      <br/><br/>
+      <label>Request: &nbsp; <input type="text" id="user_request" size="60" placeholder="(e.g. terminate)"></label>
+      <br/><br/>
+      <label>Device: &nbsp; <input type="text" id="user_device" size="20" readonly></label>
       <br/><br/>
       <label>Session: &nbsp; <input type="text" id="user_session" size="20" readonly></label>
       <br/><br/>
-      <label>Command: &nbsp; <input type="text" id="user_command" size="100" placeholder="(e.g. terminate)"></label>
-      <br/><br/>
-      <label>Device: &nbsp; <input type="text" id="user_device" size="20" readonly></label>
+      <label>Unique: &nbsp; <input type="text" id="user_unique" size="40" readonly></label>
       <br/><br/>
       <input type="checkbox" id="user_retain" name="user_retain" onclick="do_retain( )" >Retain Credentials
       <br/><br/>
@@ -39,6 +39,9 @@
 
    <script>
    var hashed = "";
+
+   var has_seed = false;
+   var is_running = false;
 
    function load( )
    {
@@ -72,13 +75,13 @@
       document.getElementById( "user_retain" ).disabled = true;
       document.getElementById( "user_remove" ).disabled = true;
 
-      document.getElementById( "user_command" ).disabled = true;
+      document.getElementById( "user_request" ).disabled = true;
       document.getElementById( "user_password" ).disabled = true;
    }
 
    function do_fetch( )
    {
-      var request = "http://localhost:13031/api.cws";
+      var url = "http://localhost:13031/api.cws";
 
       var access = document.getElementById( "user_access" ).value;
 
@@ -92,13 +95,30 @@
       if( device != "" )
          qry_data += "&device=" + device;
 
+      qry_data += "&format=text";
+
       var password = "";
 
       if( document.getElementById( "user_password" ).value != "" )
          password = document.getElementById( "user_password" ).value;
 
+      var request = document.getElementById( "user_request" ).value;
+
+      if( request != "" )
+         qry_data += "&request=" + encodeURIComponent( request );
+
       if( ( device == "" ) && ( password != "" ) )
+      {
+         if( has_seed )
+         {
+            has_seed = false;
+
+            document.getElementById( "user_request" ).value = "";
+            document.getElementById( "user_request" ).disabled = true;
+         }
+
          qry_data += "&password=" + encodeURIComponent( password );
+      }
       else
       {
          var unique = document.getElementById( "user_unique" ).value;
@@ -118,8 +138,8 @@
 
                document.getElementById( "user_remove" ).disabled = false;
 
-               document.getElementById( "user_command" ).disabled = false;
-               document.getElementById( "user_command" ).focus( );
+               document.getElementById( "user_request" ).disabled = false;
+               document.getElementById( "user_request" ).focus( );
 
                document.getElementById( "user_password" ).value = "";
                document.getElementById( "user_password" ).disabled = true;
@@ -129,17 +149,12 @@
          }
       }
 
-      var command = document.getElementById( "user_command" ).value;
-
-      if( command != "" )
-         qry_data += "&function=" + encodeURIComponent( command );
-
       if( qry_data != "" )
-         request += "?" + qry_data + "&format=text";
+         url += "?" + qry_data;
 
-      console.log( request );
+      console.log( url );
 
-      fetch( request )
+      fetch( url )
       .then( response => response.text( ) )
       .then( data => handle_response( data ) )
       .catch( error => console.error( "Error fetching data: ", error ) );
@@ -180,7 +195,7 @@
          document.getElementById( "user_password" ).value = "";
          document.getElementById( "user_password" ).disabled = true;
 
-         document.getElementById( "user_command" ).focus( );
+         document.getElementById( "user_request" ).focus( );
 
          document.getElementById( "data" ).innerText = "(retained credentials " + scope + ")";
       }
@@ -213,7 +228,7 @@
 
       document.getElementById( "user_remove" ).checked = false;
 
-      document.getElementById( "user_command" ).focus( );
+      document.getElementById( "user_request" ).focus( );
 
       document.getElementById( "data" ).innerText = "(removed credentials " + scope + ")";
    }
@@ -224,19 +239,29 @@
       {
          document.getElementById( "data" ).innerText = data;
 
-         document.getElementById( "user_unique" ).value = "";
-         document.getElementById( "user_session" ).value = "";
+         if( !is_running )
+         {
+            document.getElementById( "user_unique" ).value = "";
+            document.getElementById( "user_session" ).value = "";
+         }
       }
       else
       {
          if( document.getElementById( "user_device" ).value == "" )
          {
+            var pos = data.indexOf( " " );
+
             // NOTE: If is a PIN then need to provide password hash.
-            if( data.length == 5 )
+            if( pos == 5 )
             {
-               document.getElementById( "user_access" ).value = data;
+               has_seed = true;
+
+               document.getElementById( "user_access" ).value = data.substr( 0, pos );
 
                document.getElementById( "user_access" ).disabled = true;
+
+               document.getElementById( "user_request" ).disabled = false;
+               document.getElementById( "user_request" ).value = data.substr( pos + 1 );
 
                document.getElementById( "user_password" ).disabled = false;
                document.getElementById( "user_password" ).focus( );
@@ -269,24 +294,30 @@
          {
             document.getElementById( "data" ).innerText = data;
 
-            if( document.getElementById( "user_command" ).value == "terminate" )
+            if( ( data == "[running]" ) || ( data == "[running as admin]" ) )
+               is_running = true;
+
+            if( document.getElementById( "user_request" ).value == "terminate" )
             {
+               is_running = false;
+
                document.getElementById( "user_unique" ).value = "";
                document.getElementById( "user_unique" ).focus( );
 
-               document.getElementById( "user_command" ).value = "";
+               document.getElementById( "user_request" ).value = "";
                document.getElementById( "user_session" ).value = "";
 
                document.getElementById( "user_retain" ).disabled = true;
 
-               document.getElementById( "user_command" ).disabled = true;
+               document.getElementById( "user_request" ).disabled = true;
             }
             else if( document.getElementById( "user_retain" ).checked == false )
                document.getElementById( "user_retain" ).disabled = false;
          }
       }
 
-      document.getElementById( "user_command" ).value = "";
+      if( !has_seed )
+         document.getElementById( "user_request" ).value = "";
    }
    </script>
 </body>
