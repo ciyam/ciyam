@@ -1949,6 +1949,7 @@ class socket_command_handler : public command_handler
 
       if( ( command == c_cmd_ciyam_session_starttls )
        || ( command == c_cmd_ciyam_session_crypto_seed )
+       || ( command == c_cmd_ciyam_session_session_wait )
        || ( command == c_cmd_ciyam_session_utils_encrypt )
        || ( command == c_cmd_ciyam_session_system_identity )
        || ( command == c_cmd_ciyam_session_session_terminate )
@@ -2312,7 +2313,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             // value to be set (required so that special application protocol
             // scripts can be executed even if locked). All system or session
             // variables can be viewed (as long as wildcards are not used) so
-            // that the "unlock_identity" script can be supported.
+            // that the "unlock_identity" script can be supported and "@web."
+            // prefixed system variables can be set so that "web_session.cin"
+            // will function even when locked.
             if( parameters.size( ) > 2 )
             {
                string args_file_name( get_special_var_name( e_special_var_args_file ) );
@@ -2325,12 +2328,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   {
                      string args_file( get_session_variable( args_file_name ) );
 
-                     if( args_file.empty( )
-                      || !has_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) )
+                     string name_or_expr( get_parm_val( parameters,
+                      c_cmd_ciyam_session_system_variable_name_or_expr ) );
+
+                     if( name_or_expr.empty( ) )
                         okay = false;
-                     else if( args_file
-                      != ( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) ) )
-                        okay = false;
+                     else
+                     {
+                        string web_prefix( get_special_var_name( e_special_var_web ) + '.' );
+
+                        if( ( args_file != name_or_expr ) && ( name_or_expr.find( web_prefix ) != 0 ) )
+                           okay = false;
+                     }
                   }
                }
                else
