@@ -14,9 +14,9 @@
    <h1>CWS API Tester</h1>
 
    <form id="test_form" onsubmit="do_fetch( ); return false;">
-      <label>Username: &nbsp; <input type="text" id="user_access" size="20" placeholder="(e.g. admin)" autofocus></label>
+      <label>Username: &nbsp; <input type="text" id="user_access" size="30" placeholder="(e.g. admin)" autofocus></label>
       <br/><br/>
-      <label>Password: &nbsp; <input type="text" id="user_password" size="20"></label>
+      <label>Password: &nbsp; <input type="text" id="user_password" size="30"></label>
       <br/><br/>
       <label>Request: &nbsp; <input type="text" id="user_request" size="60" placeholder="(e.g. quit)"></label>
       <br/><br/>
@@ -102,6 +102,9 @@
       if( document.getElementById( "user_password" ).value != "" )
          password = document.getElementById( "user_password" ).value;
 
+      if( ( device == "" ) && ( password != "" ) )
+         qry_data += "&passwd=" + encodeURIComponent( password );
+
       var request = document.getElementById( "user_request" ).value;
 
       if( request != "" )
@@ -116,8 +119,6 @@
             document.getElementById( "user_request" ).value = "";
             document.getElementById( "user_request" ).disabled = true;
          }
-
-         qry_data += "&password=" + encodeURIComponent( password );
       }
       else
       {
@@ -235,6 +236,8 @@
 
    function handle_response( data )
    {
+      console.log( data );
+
       if( data.startsWith( "Error: " ) )
       {
          document.getElementById( "data" ).innerText = data;
