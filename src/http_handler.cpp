@@ -174,10 +174,10 @@ const char* const c_replace_document_marker = "DOCUMENT";
 const char* const c_query_param_name_access = "access";
 const char* const c_query_param_name_device = "device";
 const char* const c_query_param_name_format = "format";
+const char* const c_query_param_name_passwd = "passwd";
 const char* const c_query_param_name_request = "request";
 const char* const c_query_param_name_session = "session";
 const char* const c_query_param_name_verbose = "verbose";
-const char* const c_query_param_name_password = "password";
 
 const char* const c_query_param_value_json = "json";
 const char* const c_query_param_value_text = "text";
@@ -337,6 +337,8 @@ const size_t c_seed_reserve = 120;
 
 const size_t c_cws_max_devices = 10;
 
+const size_t c_cws_access_length = 5;
+
 mutex g_mutex;
 
 string g_server_id;
@@ -421,6 +423,29 @@ bool has_web_session_access_token( const string& token,
    }
 
    return retval;
+}
+
+void remove_sid_data_and_web_access( const string& token, const string& token_file )
+{
+   guard g( g_mutex );
+
+   if( token == c_admin )
+   {
+      if( file_exists( token_file ) && file_size( token_file ) )
+      {
+         string old_token( buffer_file( token_file ) );
+
+         file_remove( token_file );
+
+         string old_token_file( token_file );
+
+         replace( old_token_file, token, old_token );
+
+         file_remove( old_token_file );
+
+         file_remove( c_ciyam_server_sid_file );
+      }
+   }
 }
 
 }
@@ -946,7 +971,7 @@ void http_request_handler::on_start( )
 
                string prefix( c_web_session_prefix );
 
-               string access, device, request, session, password;
+               string access, device, passwd, request, session;
 
                if( params.count( c_query_param_name_access ) )
                   access = params[ c_query_param_name_access ];
@@ -954,14 +979,14 @@ void http_request_handler::on_start( )
                if( params.count( c_query_param_name_device ) )
                   device = params[ c_query_param_name_device ];
 
+               if( params.count( c_query_param_name_passwd ) )
+                  passwd = params[ c_query_param_name_passwd ];
+
                if( params.count( c_query_param_name_request ) )
                   request = params[ c_query_param_name_request ];
 
                if( params.count( c_query_param_name_session ) )
                   session = params[ c_query_param_name_session ];
-
-               if( params.count( c_query_param_name_password ) )
-                  password = params[ c_query_param_name_password ];
 
                string request_args;
 
@@ -978,7 +1003,31 @@ void http_request_handler::on_start( )
 
                string pin;
 
-               bool has_access_file = has_web_session_access_token( access, access_file, password, pin );
+               string access_seed;
+
+               access_seed.reserve( c_seed_reserve );
+
+               if( ( access.length( ) > c_cws_access_length )
+                && file_exists( c_ciyam_server_sid_chk_file ) )
+               {
+                  string sid_chk_data( buffer_file( c_ciyam_server_sid_chk_file ) );
+
+                  sha256 hash( access );
+
+                  hash.update( hash.get_digest_as_string( ) );
+
+                  if( hash.get_digest_as_string( ) == sid_chk_data )
+                  {
+                     access_seed = access;
+
+                     access = c_admin;
+                     access_file = '.' + prefix + access;
+
+                     remove_sid_data_and_web_access( access, access_file );
+                  }
+               }
+
+               bool has_access_file = has_web_session_access_token( access, access_file, passwd, pin );
 
                if( has_access_file && pin.empty( ) && !g_cws_access_tokens.count( access ) )
                   g_cws_access_tokens.insert( access );
@@ -987,21 +1036,21 @@ void http_request_handler::on_start( )
                // token matches the "admin" PIN then will set the identity
                // (after first hardening the password that is then used to
                // encrypt the entropy provided in the "request").
-               if( !request.empty( ) && !password.empty( ) )
+               if( !request.empty( ) && !passwd.empty( ) )
                {
                   string admin_pin( buffer_file( '.' + prefix + c_admin ) );
 
                   if( ( access == admin_pin )
                    && ( get_system_variable( e_special_var_system_identity ) == c_unknown ) )
                   {
-                     string hardened( password );
+                     string hardened( passwd );
 
                      harden_key_with_hash_rounds( hardened, hardened, hardened, c_key_rounds_multiplier );
 
                      data_encrypt( request, request, hardened );
 
                      set_identity( request );
-                     set_identity( password, request.c_str( ) );
+                     set_identity( passwd, request.c_str( ) );
 
                      clear_key( hardened );
                   }
@@ -1009,7 +1058,7 @@ void http_request_handler::on_start( )
                   clear_key( request );
                }
 
-               clear_key( password );
+               clear_key( passwd );
 
                string request_and_args;
 
@@ -1029,8 +1078,13 @@ void http_request_handler::on_start( )
 
                   seed.reserve( c_seed_reserve );
 
-                  get_mnemonics_or_hex_seed( seed, "" );
-                  get_mnemonics_or_hex_seed( seed, seed );
+                  if( !access_seed.empty( ) )
+                     seed = access_seed;
+                  else
+                  {
+                     get_mnemonics_or_hex_seed( seed, "" );
+                     get_mnemonics_or_hex_seed( seed, seed );
+                  }
 
                   found = true;
 
@@ -1040,6 +1094,7 @@ void http_request_handler::on_start( )
                      response = "{\"pin\":\"" + pin + "\", \"seed\":\"" + seed + "\"}";
 
                   clear_key( seed );
+                  clear_key( access_seed );
                }
                else if( !g_cws_access_tokens.count( access ) )
                   error = "Provided web session access token '" + access + "' is invalid.";
