@@ -103,6 +103,8 @@ const char* const c_web_message_suffix = ".message";
 const char* const c_web_session_suffix = ".session";
 const char* const c_web_started_suffix = ".started";
 
+const char* const c_web_session_okay_response = "[okay]";
+
 const char* const c_req_param_host = "Host:";
 
 const char* const c_req_param_if_modified = "If-Modified-Since:";
@@ -180,7 +182,9 @@ const char* const c_query_param_name_password = "password";
 const char* const c_query_param_value_json = "json";
 const char* const c_query_param_value_text = "text";
 
-const char* const c_cws_request_terminate = "terminate";
+const char* const c_cws_request_quit = "quit";
+const char* const c_cws_request_unlock_key = "unlock_key";
+const char* const c_cws_request_unlock_with = "unlock_with";
 
 const int c_num_retries = 5;
 
@@ -339,6 +343,8 @@ string g_server_id;
 
 string g_version_string;
 
+string g_cws_admin_token;
+
 set< string > g_cws_access_tokens;
 
 map< string, set< string > > g_cws_access_devices;
@@ -347,6 +353,8 @@ inline size_t get_num_access_devices( const string& token )
 {
    return ( !g_cws_access_devices.count( token ) ? 0 : g_cws_access_devices[ token ].size( ) );
 }
+
+bool g_is_devt_system = false;
 
 atomic< size_t > g_active_handlers;
 
@@ -386,6 +394,8 @@ bool has_web_session_access_token( const string& token,
          if( outf.good( ) )
          {
             retval = true;
+
+            g_cws_admin_token = pin;
 
             string token_pin_file( token_file.substr( 0, token_file.rfind( '.' ) ) + '.' + pin );
 
@@ -953,6 +963,17 @@ void http_request_handler::on_start( )
                if( params.count( c_query_param_name_password ) )
                   password = params[ c_query_param_name_password ];
 
+               string request_args;
+
+               string::size_type pos = request.find( ' ' );
+
+               if( pos != string::npos )
+               {
+                  request_args = request.substr( pos + 1 );
+
+                  request.erase( pos );
+               }
+
                string access_file( '.' + prefix + access ); // i.e. ".web_session.<access>"
 
                string pin;
@@ -989,6 +1010,16 @@ void http_request_handler::on_start( )
                }
 
                clear_key( password );
+
+               string request_and_args;
+
+               if( !request.empty( ) )
+               {
+                  request_and_args = request;
+
+                  if( !request_args.empty( ) )
+                     request_and_args += ' ' + request_args;
+               }
 
                if( access.empty( ) )
                   error = "Need a valid access token to use a web session.";
@@ -1118,7 +1149,7 @@ void http_request_handler::on_start( )
                               set_system_variable( web_started_name, when_locked );
                            }
 
-                           if( request == c_cws_request_terminate )
+                           if( request == c_cws_request_quit )
                            {
                               found = true;
 
@@ -1130,6 +1161,30 @@ void http_request_handler::on_start( )
                               set_system_variable( web_message_name, "" );
                               set_system_variable( web_session_name, "" );
                               set_system_variable( web_started_name, "" );
+                           }
+                           else if( request == c_cws_request_unlock_key )
+                           {
+                              found = true;
+
+                              string unlock_key( create_unlock_sid_hash_key( false, false ) );
+
+                              if( !is_json_output )
+                                 response = unlock_key;
+                              else
+                                 response = "{\"unlock_key\":\"" + unlock_key + "\"}\n";
+                           }
+                           else if( request == c_cws_request_unlock_with )
+                           {
+                              found = true;
+
+                              try
+                              {
+                                 set_identity( request_args );
+                              }
+                              catch( exception& x )
+                              {
+                                 error = x.what( );
+                              }
                            }
                            else
                            {
@@ -1178,30 +1233,58 @@ void http_request_handler::on_start( )
                               {
                                  found = true;
 
+                                 bool allowed_command = true;
+
                                  if( !request.empty( ) )
-                                    set_system_variable( web_command_name, request );
-                                 else
-                                    set_system_variable( web_command_name, "variable " + web_message_name );
-
-                                 for( size_t i = 0; i < 10; i++ )
                                  {
-                                    msleep( 150 );
-
-                                    if( file_exists( output_file_name ) )
+                                    if( !g_is_devt_system || ( access != g_cws_admin_token ) )
+                                       allowed_command = false;
+                                    else
                                     {
-                                       response = buffer_file( output_file_name );
-
-                                       response = trim( response, false, true, "\n" );
-
-                                       file_remove( output_file_name );
-
-                                       break;
+                                       if( ( request[ 0 ] < 'a' ) || ( request[ 0 ] > 'z' ) )
+                                          allowed_command = false;
                                     }
                                  }
 
-                                 if( response.empty( ) )
-                                    response = "[no response provided]";
+                                 if( !allowed_command )
+                                    response = "[bad request]";
+                                 else
+                                 {
+                                    if( !request.empty( ) )
+                                       set_system_variable( web_command_name, request_and_args );
+                                    else
+                                       set_system_variable( web_command_name, "variable " + web_message_name );
+
+                                    for( size_t i = 0; i < 10; i++ )
+                                    {
+                                       msleep( 150 );
+
+                                       if( file_exists( output_file_name ) )
+                                       {
+                                          response = buffer_file( output_file_name );
+
+                                          response = trim( response, false, true, "\n" );
+
+                                          file_remove( output_file_name );
+
+                                          break;
+                                       }
+                                    }
+
+                                    if( response.empty( ) )
+                                       response = "[empty response]";
+                                 }
                               }
+                           }
+
+                           if( found && response.empty( ) )
+                           {
+                              string okay_reponse( c_web_session_okay_response );
+
+                              if( !is_json_output )
+                                 response = okay_reponse;
+                              else
+                                 response = "{\"response\":\"" + okay_reponse + "\"}\n";
                            }
                         }
                      }
@@ -1594,6 +1677,15 @@ void http_listener::on_start( )
          g_server_id += " (" + g_version_string + ")";
 
       g_max_post_data_allowed = get_max_http_post_allowed( );
+
+      string admin_web_session_file( c_web_session_prefix );
+
+      admin_web_session_file = "." + admin_web_session_file + c_admin;
+
+      if( file_exists( admin_web_session_file ) && file_size( admin_web_session_file ) )
+         g_cws_admin_token = buffer_file( admin_web_session_file );
+
+      g_is_devt_system = has_system_variable( e_special_var_system_is_for_devt );
 
       while( true )
       {

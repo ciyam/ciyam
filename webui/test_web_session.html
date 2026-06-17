@@ -18,7 +18,7 @@
       <br/><br/>
       <label>Password: &nbsp; <input type="text" id="user_password" size="20"></label>
       <br/><br/>
-      <label>Request: &nbsp; <input type="text" id="user_request" size="60" placeholder="(e.g. terminate)"></label>
+      <label>Request: &nbsp; <input type="text" id="user_request" size="60" placeholder="(e.g. quit)"></label>
       <br/><br/>
       <label>Device: &nbsp; <input type="text" id="user_device" size="20" readonly></label>
       <br/><br/>
@@ -297,8 +297,10 @@
             if( ( data == "[running]" ) || ( data == "[running as admin]" ) )
                is_running = true;
 
-            if( document.getElementById( "user_request" ).value == "terminate" )
+            if( document.getElementById( "user_request" ).value == "quit" )
             {
+               hashed = "";
+
                is_running = false;
 
                document.getElementById( "user_unique" ).value = "";
