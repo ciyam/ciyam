@@ -1777,7 +1777,7 @@ class socket_command_handler : public command_handler
       // NOTE: An RPC password is only needed
       // if the IP address is not an approved
       // one (should always allow "127.0.0.1"
-      // otherwise scripts will fail).
+      // and "::1" or all scripts will fail).
       if( !is_approved_for_rpc )
       {
          string rpc_password( get_rpc_password( ) );
@@ -2276,6 +2276,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
       if( !is_self_captured_session( ) )
          return;
+   }
+
+   // NOTE: If a session is locked due to
+   // the system identity then will check
+   // if it has been unlocked externally.
+   if( socket_handler.is_locked( )
+    && !socket_handler.is_rpc_locked( ) )
+   {
+      if( has_identity( ) )
+         socket_handler.unlock_identity( );
    }
 
    if( socket_handler.is_locked( )
