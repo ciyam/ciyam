@@ -150,8 +150,9 @@ const char* const c_at_init_script = "./at_init";
 const char* const c_at_term_script = "./at_term";
 
 const char* const c_server_log_file = "ciyam_server.log";
-const char* const c_server_sid_file = "ciyam_server.sid";
+
 const char* const c_server_config_file = "ciyam_server.sio";
+
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
 const char* const c_release_file_name = ".release";
@@ -5068,8 +5069,8 @@ void init_globals( const char* p_sid, int* p_port, int* p_use_udp, int* p_web_po
 
       if( p_sid && strlen( p_sid ) )
          sid = string( p_sid );
-      else if( file_exists( c_server_sid_file ) )
-         buffer_file( sid, c_server_sid_file );
+      else if( file_exists( c_ciyam_server_sid_file ) )
+         buffer_file( sid, c_ciyam_server_sid_file );
 
       g_sid.reserve( c_key_reserve_size );
 
@@ -5727,6 +5728,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
       guard g( g_mutex );
 
       bool is_encrypted = false;
+      bool was_self_encrypted = false;
 
       string sid;
       sid.reserve( c_key_reserve_size );
@@ -5736,8 +5738,11 @@ void set_identity( const string& info, const char* p_encrypted_sid )
       if( sid.find( ':' ) != string::npos )
          is_encrypted = true;
 
+      string dbl_hash;
+      dbl_hash.reserve( c_key_reserve_size );
+
       // NOTE: Checks for an encrypted identity.
-      if( info.length( ) >= c_encrypted_length )
+      if( info.length( ) >= ( c_encrypted_length * 3 ) )
       {
          sid = info;
 
@@ -5750,24 +5755,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             set_system_variable( e_special_var_sid_locked, c_true_value, true );
             set_system_variable( e_special_var_sid_secure, c_true_value, true );
          }
-         else if( is_encrypted && p_encrypted_sid )
-         {
-            g_secure_identity = false;
-            g_hardened_identity = false;
-            g_encrypted_identity = false;
-
-            temp_umask tum( 077 );
-
-            write_file( c_server_sid_file, ( unsigned char* )info.c_str( ), info.length( ) );
-
-            hash_sid_val( sid );
-
-            set_system_variable( e_special_var_sid_locked, "", true );
-            set_system_variable( e_special_var_sid_secure, "", true );
-
-            if( get_system_variable( e_special_var_blockchain_backup_identity ).empty( ) )
-               run_init_script = true;
-         }
+         else
+            throw runtime_error( "invalid encrypted identity or password size limit exceeded" );
 
          set_sid( sid );
       }
@@ -5868,6 +5857,11 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          if( are_hex_nibbles( sid ) )
          {
+            if( info == sid )
+               was_self_encrypted = true;
+
+            bool was_hardened = false;
+
             // NOTE: Either now simply store the hash of the entropy or if any extra
             // entropy had been supplied then use this in order to harden the value.
             if( extra.empty( ) )
@@ -5889,14 +5883,27 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             }
             else
             {
-               g_hardened_identity = true;
+               was_hardened = true;
 
                harden_key_with_hash_rounds( sid, info, extra, c_key_rounds_multiplier );
+            }
+
+            dbl_hash = sha256( sid ).get_digest_as_string( );
+
+            if( file_exists( c_ciyam_server_sid_chk_file ) )
+            {
+               string dbl_hash_check( buffer_file( c_ciyam_server_sid_chk_file ) );
+
+               if( dbl_hash != dbl_hash_check )
+                  throw runtime_error( "sid check mismatch was found" );
             }
 
             set_sid( sid );
 
             has_unlocked_sid = true;
+
+            if( was_hardened )
+               g_hardened_identity = true;
 
             if( !p_encrypted_sid )
                g_encrypted_identity = false;
@@ -5937,7 +5944,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             // is also found in the "set_password" bash script.
             if( file_exists( "." + user + "_password_protected" ) )
             {
-               if( !file_exists( c_server_sid_file ) )
+               if( !file_exists( c_ciyam_server_sid_file ) && !file_exists( c_ciyam_server_sid_chk_file ) )
                   cmd = "./resize_fs_img_files " + extra + "\"" + user + "\"";
             }
             else
@@ -5954,7 +5961,15 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             }
          }
 
-         write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
+         if( was_self_encrypted )
+            write_file( c_ciyam_server_sid_file, ( unsigned char* )info.c_str( ), info.length( ) );
+         else
+         {
+            write_file( c_ciyam_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
+
+            if( !dbl_hash.empty( ) )
+               write_file( c_ciyam_server_sid_chk_file, ( unsigned char* )dbl_hash.c_str( ), dbl_hash.length( ) );
+         }
 
          g_encrypted_identity = false;
 

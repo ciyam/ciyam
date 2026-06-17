@@ -179,6 +179,9 @@ const char* const c_ui_group_changing = "ui_GROUP_changing";
 
 const char* const c_ciyam_ui_stop_file = "ciyam_interface.stop";
 
+const char* const c_ciyam_server_sid_file = "ciyam_server.sid";
+const char* const c_ciyam_server_sid_chk_file = "ciyam_server.sid.chk";
+
 const char* const c_test_backup_identity = "e3733d121";
 const char* const c_test_shared_identity = "121d3373e";
 
