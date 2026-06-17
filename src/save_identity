@@ -18,6 +18,10 @@ else
    cp ciyam_server.sid ciyam_server.sid.sav
   fi
 
+  if [ -f ciyam_server.sid.chk ]; then
+   cp ciyam_server.sid ciyam_server.sid.chk.sav
+  fi
+
   if [ -f $WEBDIR/meta/identity.txt ]; then
    cp $WEBDIR/meta/identity.txt $WEBDIR/meta/identity.txt.sav
   fi

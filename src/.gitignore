@@ -78,9 +78,8 @@ xvars
 # Ignore generated header files.
 *.cmh
 
-# Ignore all log and lock files.
+# Ignore all .log files.
 *.log
-*.lck
 
 # Except dummy log file template.
 !app.log
@@ -198,6 +197,7 @@ packages.lst
 ciyam_ddns_info
 ciyam_server.sid
 ciyam_server.sio
+ciyam_server.sid.chk
 
 # Ignore storage backup files.
 *.backup.bun.gz

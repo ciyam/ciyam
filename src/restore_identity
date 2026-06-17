@@ -15,7 +15,15 @@ else
  if [ -f ciyam_server.sid.sav ]; then
   restored_any=1
 
+  rm -f ciyam_server.sid.chk
+
   mv ciyam_server.sid.sav ciyam_server.sid
+ fi
+
+ if [ -f ciyam_server.sid.chk.sav ]; then
+  restored_any=1
+
+  mv ciyam_server.sid.chk.sav ciyam_server.sid.chk
  fi
 
  if [ -f $WEBDIR/meta/identity.txt.sav ]; then

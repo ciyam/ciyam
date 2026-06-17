@@ -15,6 +15,8 @@ else
   exit 1
  else
   rm -f ciyam_server.sid
+  rm -f ciyam_server.sid.chk
+
   rm -f $WEBDIR/meta/identity.txt
   rm -f $WEBDIR/meta/encrypted.txt
 
