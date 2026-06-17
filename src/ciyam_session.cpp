@@ -2284,8 +2284,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    if( socket_handler.is_locked( )
     && !socket_handler.is_rpc_locked( ) )
    {
-      if( has_identity( ) )
-         socket_handler.unlock_identity( );
+      bool is_encrypted = true;
+
+      if( has_identity( &is_encrypted ) )
+      {
+         if( !is_encrypted )
+            socket_handler.unlock_identity( );
+      }
    }
 
    if( socket_handler.is_locked( )
