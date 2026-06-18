@@ -1808,6 +1808,8 @@ class socket_command_handler : public command_handler
    bool is_restoring( ) const { return restoring; }
 
    void unlock_rpc( ) { locked_rpc = false; }
+
+   void lock_identity( ) { locked_identity = true; }
    void unlock_identity( ) { locked_identity = false; }
 
    bool is_local_session( ) const { return local_session; }
@@ -2278,9 +2280,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          return;
    }
 
-   // NOTE: If a session is locked due to
-   // the system identity then will check
-   // if it has been unlocked externally.
+   // NOTE: Needs to update the identity
+   // lock status before each command as
+   // it might have been changed.
    if( socket_handler.is_locked( )
     && !socket_handler.is_rpc_locked( ) )
    {
@@ -2288,7 +2290,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
       if( has_identity( &is_encrypted ) )
       {
-         if( !is_encrypted )
+         if( is_encrypted )
+            socket_handler.lock_identity( );
+         else
             socket_handler.unlock_identity( );
       }
    }
