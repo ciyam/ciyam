@@ -97,6 +97,10 @@ const char* const c_boundary_prefix = "boundary=";
 
 const char* const c_web_session_prefix = "web_session.";
 
+const char* const c_web_demo_pin_1 = "10101";
+const char* const c_web_demo_pin_2 = "10201";
+const char* const c_web_demo_pin_3 = "10301";
+
 const char* const c_web_lock_suffix = ".lock";
 const char* const c_web_command_suffix = ".command";
 const char* const c_web_message_suffix = ".message";
@@ -333,9 +337,9 @@ bool parse_query_params( const string& qry_info, map< string, string >& params )
    return retval;
 }
 
-const size_t c_seed_reserve = 120;
-
 const size_t c_cws_max_devices = 10;
+
+const size_t c_cws_seed_reserve = 120;
 
 const size_t c_cws_access_length = 5;
 
@@ -344,6 +348,8 @@ mutex g_mutex;
 string g_server_id;
 
 string g_version_string;
+
+bool g_cws_admin_locked = false;
 
 string g_cws_admin_token;
 
@@ -374,6 +380,32 @@ inline void deccrement_handlers( )
    --g_active_handlers;
 }
 
+void remove_web_access( const string& token,
+ const string& token_file, bool& has_admin_locked )
+{
+   guard g( g_mutex );
+
+   if( !g_cws_admin_locked || ( token != c_admin ) )
+   {
+      if( file_exists( token_file ) && file_size( token_file ) )
+      {
+         g_cws_admin_locked = true;
+
+         has_admin_locked = true;
+
+         string old_token( buffer_file( token_file ) );
+
+         file_remove( token_file );
+
+         string old_token_file( token_file );
+
+         replace( old_token_file, token, old_token );
+
+         file_remove( old_token_file );
+      }
+   }
+}
+
 bool has_web_session_access_token( const string& token,
  const string& token_file, const string& password, string& pin )
 {
@@ -385,7 +417,8 @@ bool has_web_session_access_token( const string& token,
    {
       if( !file_exists( token_file ) )
       {
-         pin = random_characters( 5, 0, e_printable_type_numeric );
+         if( pin.empty( ) )
+            pin = random_characters( 5, 0, e_printable_type_numeric );
 
          ofstream outf( token_file.c_str( ), ios::out );
 
@@ -423,29 +456,6 @@ bool has_web_session_access_token( const string& token,
    }
 
    return retval;
-}
-
-void remove_sid_data_and_web_access( const string& token, const string& token_file )
-{
-   guard g( g_mutex );
-
-   if( token == c_admin )
-   {
-      if( file_exists( token_file ) && file_size( token_file ) )
-      {
-         string old_token( buffer_file( token_file ) );
-
-         file_remove( token_file );
-
-         string old_token_file( token_file );
-
-         replace( old_token_file, token, old_token );
-
-         file_remove( old_token_file );
-
-         file_remove( c_ciyam_server_sid_file );
-      }
-   }
 }
 
 }
@@ -1005,64 +1015,131 @@ void http_request_handler::on_start( )
 
                string access_seed;
 
-               access_seed.reserve( c_seed_reserve );
+               access_seed.reserve( c_cws_seed_reserve );
 
-               if( ( access.length( ) > c_cws_access_length )
-                && file_exists( c_ciyam_server_sid_chk_file ) )
+               bool is_encrypted = false;
+
+               bool is_identity_none = !has_identity( &is_encrypted );
+
+               bool is_identity_reset = ( access.length( ) > c_cws_access_length );
+
+               // NOTE: Does not allow an "identity reset" to occur unless
+               // either the system identity has not been created or if it
+               // has not already been unlocked.
+               if( !is_encrypted && is_identity_reset && !is_identity_none )
+                  error = "System identity is currently unlocked.";
+
+               bool has_admin_locked = false;
+
+               // NOTE: An "identity reset" can be used
+               // to either change the "admin password"
+               // or create the system identity.
+               if( error.empty( ) && is_identity_reset )
                {
-                  string sid_chk_data( buffer_file( c_ciyam_server_sid_chk_file ) );
+                  string demo_pin;
 
-                  sha256 hash( access );
+                  if( access == c_demo_entropy_1 )
+                     demo_pin = c_web_demo_pin_1;
+                  else if( access == c_demo_entropy_2 )
+                     demo_pin = c_web_demo_pin_2;
+                  else if( access == c_demo_entropy_3 )
+                     demo_pin = c_web_demo_pin_3;
 
-                  hash.update( hash.get_digest_as_string( ) );
-
-                  if( hash.get_digest_as_string( ) == sid_chk_data )
+                  if( is_identity_none )
                   {
                      access_seed = access;
 
                      access = c_admin;
                      access_file = '.' + prefix + access;
-
-                     remove_sid_data_and_web_access( access, access_file );
                   }
+                  else if( file_exists( c_ciyam_server_sid_chk_file ) )
+                  {
+                     string sid_chk_data( buffer_file( c_ciyam_server_sid_chk_file ) );
+
+                     sha256 hash( access );
+
+                     hash.update( hash.get_digest_as_string( ) );
+
+                     if( hash.get_digest_as_string( ) == sid_chk_data )
+                     {
+                        access_seed = access;
+
+                        access = c_admin;
+                        access_file = '.' + prefix + access;
+
+                        remove_web_access( access, access_file, has_admin_locked );
+                     }
+                     else
+                        error = "System identity mismatch (incorrect mnemonics?).";
+                  }
+
+                  if( access == c_admin )
+                     pin = demo_pin;
                }
 
-               bool has_access_file = has_web_session_access_token( access, access_file, passwd, pin );
-
-               if( has_access_file && pin.empty( ) && !g_cws_access_tokens.count( access ) )
-                  g_cws_access_tokens.insert( access );
-
-               // NOTE: If the system identity is "unknown" and the access
-               // token matches the "admin" PIN then will set the identity
-               // (after first hardening the password that is then used to
-               // encrypt the entropy provided in the "request").
-               if( !request.empty( ) && !passwd.empty( ) )
+               // NOTE: Only allow an admin password "reset"
+               // to occur if has the right "admin" access.
+               if( !has_admin_locked && !is_identity_none )
                {
-                  string admin_pin( buffer_file( '.' + prefix + c_admin ) );
+                  guard g( g_mutex );
 
-                  if( ( access == admin_pin )
-                   && ( get_system_variable( e_special_var_system_identity ) == c_unknown ) )
+                  string admin_pin( buffer_file( '.' + prefix + c_admin, 0, 0, 0, false ) );
+
+                  if( g_cws_admin_locked && ( access != admin_pin ) )
+                     error = "System is currently locked for administration.";
+               }
+
+               if( error.empty( ) )
+               {
+                  bool has_access_file = has_web_session_access_token( access, access_file, passwd, pin );
+
+                  if( has_access_file && pin.empty( ) && !g_cws_access_tokens.count( access ) )
+                     g_cws_access_tokens.insert( access );
+
+                  // NOTE: If is "admin locked" or the system identity is "unknown"
+                  // and the access token matches the "admin" PIN then will set the
+                  // identity (after first hardening the password that is then used
+                  // to encrypt the entropy provided in the "request").
+                  if( has_access_file && !request.empty( )
+                   && !passwd.empty( ) && ( is_identity_none || g_cws_admin_locked ) )
                   {
-                     string hardened( passwd );
+                     string admin_pin( buffer_file( '.' + prefix + c_admin ) );
 
-                     harden_key_with_hash_rounds( hardened, hardened, hardened, c_key_rounds_multiplier );
+                     if( access == admin_pin )
+                     {
+                        guard g( g_mutex );
 
-                     data_encrypt( request, request, hardened );
+                        string hardened( passwd );
 
-                     set_identity( request );
-                     set_identity( passwd, request.c_str( ) );
+                        harden_key_with_hash_rounds( hardened, hardened, hardened, c_key_rounds_multiplier );
 
-                     clear_key( hardened );
+                        data_encrypt( request, request, hardened );
+
+                        try
+                        {
+                           set_identity( request );
+
+                           set_identity( passwd, request.c_str( ) );
+                        }
+                        catch( exception& x )
+                        {
+                           error = x.what( );
+                        }
+
+                        clear_key( hardened );
+
+                        g_cws_admin_locked = false;
+                     }
+
+                     clear_key( request );
                   }
-
-                  clear_key( request );
                }
 
                clear_key( passwd );
 
                string request_and_args;
 
-               if( !request.empty( ) )
+               if( error.empty( ) && !request.empty( ) )
                {
                   request_and_args = request;
 
@@ -1070,13 +1147,16 @@ void http_request_handler::on_start( )
                      request_and_args += ' ' + request_args;
                }
 
-               if( access.empty( ) )
-                  error = "Need a valid access token to use a web session.";
+               if( !error.empty( ) || access.empty( ) )
+               {
+                  if( error.empty( ) )
+                     error = "Need a valid access token to use a web session.";
+               }
                else if( !pin.empty( ) )
                {
                   string seed;
 
-                  seed.reserve( c_seed_reserve );
+                  seed.reserve( c_cws_seed_reserve );
 
                   if( !access_seed.empty( ) )
                      seed = access_seed;
