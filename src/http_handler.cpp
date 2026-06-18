@@ -123,6 +123,7 @@ const char* const c_http_304_Not_Mod = "304 Not Modified";
 const char* const c_http_400_Bad_Req = "400 Bad Request";
 const char* const c_http_404_Not_Found = "404 Not Found";
 const char* const c_http_414_URI_Too_Long = "414 URI Too Long";
+const char* const c_http_500_Internal_Error = "500 Internal Server Error";
 
 const char* const c_http_date_prefix = "Date: ";
 const char* const c_http_server_prefix = "Server: ";
@@ -528,6 +529,8 @@ void http_request_handler::on_start( )
    string protocol_prefix( !using_tls ? "http" : "https" );
 
    protocol_prefix += "://";
+
+   string handler_error;
 
    size_t handler = ++g_request_handler;
 
@@ -1004,11 +1007,17 @@ void http_request_handler::on_start( )
 
                if( !passwd.empty( ) )
                {
-                  if( !base64::valid_characters( passwd, true ) )
-                     // FUTURE: This message should be handled as a server string message.
-                     error = "Invalid Base64 URL format in '" + passwd + "'.";
-                  else
+                  if( base64::valid_characters( passwd, true ) )
                      passwd = base64::decode( passwd, true );
+                  else
+                  {
+                     string name_and_value( c_query_param_name_passwd );
+
+                     name_and_value += '=' + passwd;
+
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Invalid Base64 URL format in query parameter '" + name_and_value + "'.";
+                  }
                }
 
                string request_args;
@@ -1729,19 +1738,42 @@ void http_request_handler::on_start( )
    }
    catch( exception& x )
    {
+      handler_error = x.what( );
+
 #ifdef DEBUG
-      cerr << "\nhttp_request error: " << x.what( ) << endl;
+      cerr << "\nhttp_request error: " << handler_error << endl;
 #endif
+
       TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
-       string( "http_request error: " ) + x.what( ) );
+       string( "http_request error: " ) + handler_error );
    }
    catch( ... )
    {
+      handler_error = "unexpected exception";
+
 #ifdef DEBUG
-      cerr << "\nunexpected http_request exception" << endl;
+      cerr << "\nhttp_request error: " << handler_error << endl;
 #endif
+
       TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
-       string( "http_request error: unexpected exception" ) );
+       string( "http_request error: " + handler_error ) );
+   }
+
+   if( *up_socket && !handler_error.empty( ) )
+   {
+      msleep( c_error_response_delay );
+
+      handler_error = "Error: " + handler_error + "\n";
+
+      ostringstream osstr;
+
+      osstr << c_http_1_1 << ' ' << c_http_500_Internal_Error << '\n'
+       << c_http_content_type_prefix << c_http_content_type_text_plain_utf8
+       << '\n' << c_http_content_length_prefix << to_string( handler_error.length( ) ) << "\n\n" << handler_error;
+
+      string response( osstr.str( ) );
+
+      up_socket->send_n( ( unsigned char* )response.data( ), response.length( ), c_response_timeout );
    }
 
    up_socket->close( );
