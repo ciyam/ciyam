@@ -43,6 +43,23 @@
    var has_seed = false;
    var is_running = false;
 
+   function encode_base64( str )
+   {
+      const bytes = new TextEncoder( ).encode( str );
+
+      var binary = '';
+
+      for( var i = 0; i < bytes.length; i++ )
+         binary += String.fromCharCode( bytes[ i ] );
+
+      return btoa( binary );
+   }
+
+   function encode_base64_url( str )
+   {
+      return encode_base64( str ).replace( /\+/g, "-" ).replace( /\//g, "_" ).replace( /=+$/, "" );
+   }
+
    function load( )
    {
       if( localStorage.getItem( "access" ) != null )
@@ -102,8 +119,9 @@
       if( document.getElementById( "user_password" ).value != "" )
          password = document.getElementById( "user_password" ).value;
 
+      // NOTE: Uses Base64 URL encoding so is not plain text.
       if( ( device == "" ) && ( password != "" ) )
-         qry_data += "&passwd=" + encodeURIComponent( password );
+         qry_data += "&passwd=" + encode_base64_url( password );
 
       var request = document.getElementById( "user_request" ).value;
 
