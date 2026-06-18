@@ -1382,7 +1382,7 @@ string storage_channel_documents_update( const string& identity, bool submitted 
                // FUTURE: This message should be handled as a server string message.
                throw runtime_error( "Found invalid/corrupt peer data (incorrect shared secret?)." );
             else
-               throw runtime_error( !error_output.empty( ) ? error_output.c_str( ) : "unexpected unknonwn error" );
+               throw runtime_error( !error_output.empty( ) ? error_output.c_str( ) : "unexpected unknown error" );
          }
       }
 
