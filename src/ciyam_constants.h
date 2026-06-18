@@ -230,6 +230,10 @@ const char* const c_password_info_file = "password.info";
 
 const char* const c_unlocked_with_key_file = ".unlocked_with_key";
 
+const char* const c_demo_entropy_1 = "22d5cd3ff652620a739677323079e3dd";
+const char* const c_demo_entropy_2 = "3c6eede8b0c9717370546cd446427499";
+const char* const c_demo_entropy_3 = "de604cee0755a3d81944ea96aed12681";
+
 const char* const c_env_var_ciyam_user = "CIYAM_USER";
 
 const char* const c_notifier_none = "none";
