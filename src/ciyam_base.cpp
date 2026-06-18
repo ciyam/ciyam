@@ -5895,7 +5895,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
                string dbl_hash_check( buffer_file( c_ciyam_server_sid_chk_file ) );
 
                if( dbl_hash != dbl_hash_check )
-                  throw runtime_error( "sid check mismatch was found" );
+                  // FUTURE: This message should be handled as a server string message.
+                  throw runtime_error( "Invalid attempt to change the system identity." );
             }
 
             set_sid( sid );
@@ -5965,6 +5966,9 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             write_file( c_ciyam_server_sid_file, ( unsigned char* )info.c_str( ), info.length( ) );
          else
          {
+            if( file_exists( c_ciyam_server_sid_file ) )
+               TRACE_LOG( TRACE_MINIMAL, "(system identity was updated)" );
+
             write_file( c_ciyam_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
 
             if( !dbl_hash.empty( ) )
