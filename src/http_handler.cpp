@@ -24,6 +24,7 @@
 #include "http_handler.h"
 
 #include "mime.h"
+#include "base64.h"
 #include "format.h"
 #include "sha256.h"
 #include "threads.h"
@@ -707,6 +708,7 @@ void http_request_handler::on_start( )
          if( !http_qry_info.empty( ) )
          {
             if( !parse_query_params( http_qry_info, params ) )
+               // FUTURE: This message should be handled as a server string message.
                error = "Invalid format for query parameters '" + http_qry_info + "'.";
             else
             {
@@ -717,6 +719,7 @@ void http_request_handler::on_start( )
                   else if( params[ c_query_param_name_format ] == c_query_param_value_text )
                      is_text_output = true;
                   else
+                     // FUTURE: This message should be handled as a server string message.
                      error = "Invalid format value '" + params[ c_query_param_name_format ] + "'.";
 
                   if( error.empty( ) )
@@ -743,7 +746,7 @@ void http_request_handler::on_start( )
                {
                   data.erase( );
 
-                  error = "Unexpected error occurred reading post data.";
+                  error = "unexpected error occurred reading post data";
                }
                else
                {
@@ -783,7 +786,7 @@ void http_request_handler::on_start( )
                         {
                            data.erase( );
 
-                           error = "Unexpected error occurred reading post data.";
+                           error = "unexpected error occurred reading post data";
 
                            break;
                         }
@@ -792,6 +795,7 @@ void http_request_handler::on_start( )
                }
             }
             else
+               // FUTURE: This message should be handled as a server string message.
                error = "Post data was too large (maximum allowed is " + format_bytes( g_max_post_data_allowed ) + ").";
          }
 
@@ -998,6 +1002,15 @@ void http_request_handler::on_start( )
                if( params.count( c_query_param_name_session ) )
                   session = params[ c_query_param_name_session ];
 
+               if( !passwd.empty( ) )
+               {
+                  if( !base64::valid_characters( passwd, true ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Invalid Base64 URL format in '" + passwd + "'.";
+                  else
+                     passwd = base64::decode( passwd, true );
+               }
+
                string request_args;
 
                string::size_type pos = request.find( ' ' );
@@ -1023,11 +1036,13 @@ void http_request_handler::on_start( )
 
                bool is_identity_reset = ( access.length( ) > c_cws_access_length );
 
-               // NOTE: Does not allow an "identity reset" to occur unless
-               // either the system identity has not been created or if it
-               // has not already been unlocked.
-               if( !is_encrypted && is_identity_reset && !is_identity_none )
-                  error = "System identity is currently unlocked.";
+               // NOTE: Only permits an "identity reset" to occur
+               // if the system identity has not yet been created
+               // or if it is currently locked.
+               if( error.empty( ) && is_identity_reset
+                && !is_encrypted && !is_identity_none )
+                  // FUTURE: This message should be handled as a server string message.
+                  error = "System identity is not currently locked.";
 
                bool has_admin_locked = false;
 
@@ -1070,6 +1085,7 @@ void http_request_handler::on_start( )
                         remove_web_access( access, access_file, has_admin_locked );
                      }
                      else
+                        // FUTURE: This message should be handled as a server string message.
                         error = "System identity mismatch (incorrect mnemonics?).";
                   }
 
@@ -1086,10 +1102,11 @@ void http_request_handler::on_start( )
                   string admin_pin( buffer_file( '.' + prefix + c_admin, 0, 0, 0, false ) );
 
                   if( g_cws_admin_locked && ( access != admin_pin ) )
+                     // FUTURE: This message should be handled as a server string message.
                      error = "System is currently locked for administration.";
                }
 
-               if( error.empty( ) )
+               if( error.empty( ) && !access.empty( ) )
                {
                   bool has_access_file = has_web_session_access_token( access, access_file, passwd, pin );
 
@@ -1150,6 +1167,7 @@ void http_request_handler::on_start( )
                if( !error.empty( ) || access.empty( ) )
                {
                   if( error.empty( ) )
+                     // FUTURE: This message should be handled as a server string message.
                      error = "Need a valid access token to use a web session.";
                }
                else if( !pin.empty( ) )
@@ -1177,12 +1195,14 @@ void http_request_handler::on_start( )
                   clear_key( access_seed );
                }
                else if( !g_cws_access_tokens.count( access ) )
+                  // FUTURE: This message should be handled as a server string message.
                   error = "Provided web session access token '" + access + "' is invalid.";
                else if( device.empty( ) )
                {
                   size_t num_devices = get_num_access_devices( access );
 
                   if( num_devices >= c_cws_max_devices )
+                     // FUTURE: This message should be handled as a server string message.
                      error = "Maximum devices have been created for web session access token '" + access + "'.";
                   else
                   {
@@ -1201,6 +1221,7 @@ void http_request_handler::on_start( )
                else
                {
                   if( !are_hex_nibbles( device, false ) || ( device.length( ) != c_device_length ) )
+                     // FUTURE: This message should be handled as a server string message.
                      error = "Invalid device identity '" + device + "'.";
                   else if( !g_cws_access_devices[ access ].count( device ) )
                   {
@@ -1209,6 +1230,7 @@ void http_request_handler::on_start( )
                      if( num_devices < c_cws_max_devices )
                         g_cws_access_devices[ access ].insert( device );
                      else
+                        // FUTURE: This message should be handled as a server string message.
                         error = "Maximum devices have been created for web session access token '" + access + "'.";
                   }
 
@@ -1243,6 +1265,7 @@ void http_request_handler::on_start( )
                            int64_t was = from_string< int64_t >( get_system_variable( web_lock_name ) );
 
                            if( now < ( was + 10 ) )
+                              // FUTURE: This message should be handled as a server string message.
                               error = "Web session is currently busy (try again shortly).";
                            else
                               set_system_variable( web_lock_name, to_string( now ) );
@@ -1271,6 +1294,7 @@ void http_request_handler::on_start( )
                      else
                      {
                         if( session != get_system_variable( web_session_name ) )
+                           // FUTURE: This message should be handled as a server string message.
                            error = "This web session is not valid (or has expired).";
                         else
                         {
@@ -1362,6 +1386,7 @@ void http_request_handler::on_start( )
                                  set_system_variable( web_session_name, "" );
                                  set_system_variable( web_started_name, "" );
 
+                                 // FUTURE: This message should be handled as a server string message.
                                  error = "Was unable to start a web session with access token '" + access + "'.";
                               }
                               else
