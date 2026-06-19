@@ -157,6 +157,7 @@ const char* const c_special_variable_uid_check = "@uid_check";
 const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_blockchain = "@blockchain";
 const char* const c_special_variable_chain_type = "@chain_type";
+const char* const c_special_variable_cws_styles = "@cws_styles";
 const char* const c_special_variable_extra_info = "@extra_info";
 const char* const c_special_variable_key_suffix = "@key_suffix";
 const char* const c_special_variable_permission = "@permission";
@@ -526,6 +527,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_val_error );
       g_special_variable_names.push_back( c_special_variable_blockchain );
       g_special_variable_names.push_back( c_special_variable_chain_type );
+      g_special_variable_names.push_back( c_special_variable_cws_styles );
       g_special_variable_names.push_back( c_special_variable_extra_info );
       g_special_variable_names.push_back( c_special_variable_key_suffix );
       g_special_variable_names.push_back( c_special_variable_permission );
