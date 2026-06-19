@@ -33,6 +33,7 @@
 #include "ciyam_base.h"
 #include "class_base.h"
 #include "ssl_socket.h"
+#include "fs_iterator.h"
 #include "crypt_stream.h"
 #include "ciyam_session.h"
 #include "ciyam_variables.h"
@@ -191,6 +192,7 @@ const char* const c_query_param_value_text = "text";
 const char* const c_cws_request_quit = "quit";
 const char* const c_cws_request_unlock_key = "unlock_key";
 const char* const c_cws_request_unlock_with = "unlock_with";
+const char* const c_cws_request_list_all_styles = "list_all_styles";
 
 const int c_num_retries = 5;
 
@@ -348,6 +350,8 @@ const size_t c_cws_access_length = 5;
 mutex g_mutex;
 
 string g_server_id;
+
+string g_css_suffix;
 
 string g_version_string;
 
@@ -1173,6 +1177,10 @@ void http_request_handler::on_start( )
                      request_and_args += ' ' + request_args;
                }
 
+               // NOTE: A seed will only be needed when
+               // no existing system identity is found.
+               bool is_seed_needed = is_identity_none;
+
                if( !error.empty( ) || access.empty( ) )
                {
                   if( error.empty( ) )
@@ -1187,6 +1195,8 @@ void http_request_handler::on_start( )
 
                   if( !access_seed.empty( ) )
                      seed = access_seed;
+                  else if( !is_seed_needed )
+                     seed = c_none;
                   else
                   {
                      get_mnemonics_or_hex_seed( seed, "" );
@@ -1353,6 +1363,53 @@ void http_request_handler::on_start( )
                               {
                                  error = x.what( );
                               }
+                           }
+                           else if( request == c_cws_request_list_all_styles )
+                           {
+                              found = true;
+
+                              file_filter ff;
+
+                              fs_iterator fs( get_web_root( ), &ff );
+
+                              string all_styles( c_none );
+
+                              bool has_cached_styles = has_system_variable( e_special_var_cws_styles );
+
+                              if( !has_cached_styles )
+                                 all_styles = c_none;
+                              else
+                                 all_styles = get_system_variable( e_special_var_cws_styles );
+
+                              if( !has_cached_styles )
+                              {
+                                 set< string > css_files;
+
+                                 size_t suffix_length = g_css_suffix.length( );
+
+                                 while( fs.has_next( ) )
+                                 {
+                                    string next( fs.get_name( ) );
+
+                                    if( next.size( ) > suffix_length )
+                                    {
+                                       string::size_type pos = next.rfind( g_css_suffix );
+
+                                       if( pos == ( next.length( ) - suffix_length ) )
+                                          css_files.insert( next );
+                                    }
+                                 }
+
+                                 for( set< string >::iterator i = css_files.begin( ); i!= css_files.end( ); ++i )
+                                    all_styles += ' ' + *i;
+
+                                 set_system_variable( e_special_var_cws_styles, all_styles );
+                              }
+
+                              if( !is_json_output )
+                                 response = all_styles;
+                              else
+                                 response = "{\"all_styles\":\"" + all_styles + "\"}\n";
                            }
                            else
                            {
@@ -1862,6 +1919,8 @@ void http_listener::on_start( )
       TRACE_LOG( TRACE_MINIMAL, "http listener started on tcp port " + to_string( port ) );
 
       g_server_id = string( c_CIYAM );
+
+      g_css_suffix = '.' + string( c_ext_css );
 
       g_version_string = get_system_variable( e_special_var_version );
 
