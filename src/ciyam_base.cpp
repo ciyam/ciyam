@@ -5125,8 +5125,8 @@ void init_globals( const char* p_sid, int* p_port, int* p_use_udp, int* p_web_po
       string install_release( "0" );
       string install_version( "0.0" );
 
-      buffer_file( install_release, c_release_file_name, 0, 0, 0, false );
-      buffer_file( install_version, c_version_file_name, 0, 0, 0, false );
+      opt_buffer_file( install_release, c_release_file_name );
+      opt_buffer_file( install_version, c_version_file_name );
 
       if( g_updates )
          set_system_variable( e_special_var_updates, to_string( g_updates ), true );

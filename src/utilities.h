@@ -1195,6 +1195,28 @@ inline std::string buffer_file( const std::string& file_name,
    return buffer_file( file_name.c_str( ), max_bytes, p_size, start_pos, open_must_not_fail );
 }
 
+inline void opt_buffer_file( std::string& buffer, const std::string& file_name,
+ size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0 )
+{
+   buffer_file( buffer, file_name.c_str( ), max_bytes, p_size, start_pos, false );
+}
+
+inline std::string opt_buffer_file( const char* p_file_name,
+ size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0 )
+{
+   std::string buffer;
+
+   buffer_file( buffer, p_file_name, max_bytes, p_size, start_pos, false );
+
+   return buffer;
+}
+
+inline std::string opt_buffer_file( const std::string& file_name,
+ size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0 )
+{
+   return buffer_file( file_name.c_str( ), max_bytes, p_size, start_pos, false );
+}
+
 void write_file( const char* p_file_name,
  unsigned char* p_data, size_t length, bool append = false, size_t start_pos = 0 );
 
