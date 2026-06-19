@@ -53,7 +53,7 @@ namespace
 
 const int c_device_length = 10;
 
-const int c_max_line_length = 2000;
+const int c_max_line_length = 10000;
 
 const int c_max_request_lines = 100;
 
@@ -182,6 +182,7 @@ const char* const c_query_param_name_access = "access";
 const char* const c_query_param_name_device = "device";
 const char* const c_query_param_name_format = "format";
 const char* const c_query_param_name_passwd = "passwd";
+const char* const c_query_param_name_payload = "payload";
 const char* const c_query_param_name_request = "request";
 const char* const c_query_param_name_session = "session";
 const char* const c_query_param_name_verbose = "verbose";
@@ -190,9 +191,10 @@ const char* const c_query_param_value_json = "json";
 const char* const c_query_param_value_text = "text";
 
 const char* const c_cws_request_quit = "quit";
-const char* const c_cws_request_unlock_key = "unlock_key";
-const char* const c_cws_request_unlock_with = "unlock_with";
-const char* const c_cws_request_list_all_styles = "list_all_styles";
+const char* const c_cws_request_unlock = "unlock";
+const char* const c_cws_request_save_style = "save_style";
+const char* const c_cws_request_view_style = "view_style";
+const char* const c_cws_request_list_styles = "list_styles";
 
 const int c_num_retries = 5;
 
@@ -220,6 +222,7 @@ const int c_subsequent_timeout = 1000;
 const int c_response_timeout = 2000;
 #endif
 
+const int c_save_data_delay = 500;
 const int c_error_response_delay = 250;
 
 inline string escaped_json( const string& s )
@@ -351,6 +354,8 @@ const size_t c_admin_lock_attempts = 10;
 const size_t c_admin_retry_timeout = 100;
 
 mutex g_mutex;
+
+string g_none;
 
 string g_server_id;
 
@@ -1023,7 +1028,7 @@ void http_request_handler::on_start( )
 
                string prefix( c_web_session_prefix );
 
-               string access, device, passwd, request, session;
+               string access, device, passwd, payload, request, session;
 
                if( params.count( c_query_param_name_access ) )
                   access = params[ c_query_param_name_access ];
@@ -1033,6 +1038,9 @@ void http_request_handler::on_start( )
 
                if( params.count( c_query_param_name_passwd ) )
                   passwd = params[ c_query_param_name_passwd ];
+
+               if( params.count( c_query_param_name_payload ) )
+                  payload = params[ c_query_param_name_payload ];
 
                if( params.count( c_query_param_name_request ) )
                   request = params[ c_query_param_name_request ];
@@ -1238,7 +1246,7 @@ void http_request_handler::on_start( )
                   if( !access_seed.empty( ) )
                      seed = access_seed;
                   else if( !is_seed_needed )
-                     seed = c_none;
+                     seed = g_none;
                   else
                   {
                      get_mnemonics_or_hex_seed( seed, "" );
@@ -1382,31 +1390,66 @@ void http_request_handler::on_start( )
                               set_system_variable( web_session_name, "" );
                               set_system_variable( web_started_name, "" );
                            }
-                           else if( request == c_cws_request_unlock_key )
+                           else if( request == c_cws_request_unlock )
                            {
                               found = true;
 
-                              string unlock_key( create_unlock_sid_hash_key( false, false ) );
+                              if( request_args == g_none )
+                              {
+                                 string unlock_key( create_unlock_sid_hash_key( false, false ) );
+
+                                 if( !is_json_output )
+                                    response = unlock_key;
+                                 else
+                                    response = "{\"unlock_key\":\"" + escaped_json( unlock_key ) + "\"}\n";
+                              }
+                              else
+                              {
+                                 try
+                                 {
+                                    set_identity( request_args );
+                                 }
+                                 catch( exception& x )
+                                 {
+                                    error = x.what( );
+                                 }
+                              }
+                           }
+                           else if( request == c_cws_request_save_style )
+                           {
+                              found = true;
+
+                              if( payload.empty( ) )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Stylesheet data was not provided.";
+                              else
+                              {
+                                 string file_name( get_web_root( ) + '/' + access + g_css_suffix );
+
+                                 write_file( file_name, payload );
+
+                                 // NOTE: This delay is used to reduce possible I/O overloading.
+                                 msleep( c_save_data_delay );
+                              }
+                           }
+                           else if( request == c_cws_request_view_style )
+                           {
+                              found = true;
+
+                              string file_name( get_web_root( ) + '/' + request_args + g_css_suffix );
+
+                              if( !file_exists( file_name ) )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Stylesheet '" + file_name + "' was not found.";
+
+                              string style_data( opt_buffer_file( file_name ) );
 
                               if( !is_json_output )
-                                 response = unlock_key;
+                                 response = style_data;
                               else
-                                 response = "{\"unlock_key\":\"" + unlock_key + "\"}\n";
+                                 response = "{\"style_data\":\"" + escaped_json( style_data ) + "\"}\n";
                            }
-                           else if( request == c_cws_request_unlock_with )
-                           {
-                              found = true;
-
-                              try
-                              {
-                                 set_identity( request_args );
-                              }
-                              catch( exception& x )
-                              {
-                                 error = x.what( );
-                              }
-                           }
-                           else if( request == c_cws_request_list_all_styles )
+                           else if( request == c_cws_request_list_styles )
                            {
                               found = true;
 
@@ -1414,12 +1457,12 @@ void http_request_handler::on_start( )
 
                               fs_iterator fs( get_web_root( ), &ff );
 
-                              string all_styles( c_none );
+                              string all_styles( g_none );
 
                               bool has_cached_styles = has_system_variable( e_special_var_cws_styles );
 
                               if( !has_cached_styles )
-                                 all_styles = c_none;
+                                 all_styles = g_none;
                               else
                                  all_styles = get_system_variable( e_special_var_cws_styles );
 
@@ -1438,7 +1481,7 @@ void http_request_handler::on_start( )
                                        string::size_type pos = next.rfind( g_css_suffix );
 
                                        if( pos == ( next.length( ) - suffix_length ) )
-                                          css_files.insert( next );
+                                          css_files.insert( next.substr( 0, pos ) );
                                     }
                                  }
 
@@ -1448,10 +1491,15 @@ void http_request_handler::on_start( )
                                  set_system_variable( e_special_var_cws_styles, all_styles );
                               }
 
+                              string::size_type pos = all_styles.find( ' ' );
+
+                              if( pos != string::npos )
+                                 all_styles.erase( 0, pos + 1 );
+
                               if( !is_json_output )
                                  response = all_styles;
                               else
-                                 response = "{\"all_styles\":\"" + all_styles + "\"}\n";
+                                 response = "{\"all_styles\":\"" + escaped_json( all_styles ) + "\"}\n";
                            }
                            else
                            {
@@ -1620,7 +1668,7 @@ void http_request_handler::on_start( )
                if( !is_json_output )
                   response = unix_now;
                else
-                  response = "{\"unix_now\":\"" + escaped_json( unix_now ) + "\"}";
+                  response = "{\"unix_now\":\"" + unix_now + "\"}";
             }
             else if( http_document == c_post_limit_endpoint )
             {
@@ -1959,6 +2007,8 @@ void http_listener::on_start( )
          throw runtime_error( "unable to start listening on port #" + to_string( port ) );
 
       TRACE_LOG( TRACE_MINIMAL, "http listener started on tcp port " + to_string( port ) );
+
+      g_none = get_special_var_name( e_special_var_none );
 
       g_server_id = string( c_CIYAM );
 
