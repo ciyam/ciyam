@@ -18,7 +18,9 @@
       <br/><br/>
       <label>Password: &nbsp; <input type="text" id="user_password" size="30"></label>
       <br/><br/>
-      <label>Request: &nbsp; <input type="text" id="user_request" size="60" placeholder="(e.g. quit)"></label>
+      <label>Request: &nbsp;&nbsp;&nbsp; <input type="text" id="user_request" size="60" placeholder="(e.g. quit)"></label>
+      <br/><br/>
+      <textarea id="user_arbitrary" name="user_arbitrary" rows="20" cols="80"></textarea>
       <br/><br/>
       <label>Device: &nbsp; <input type="text" id="user_device" size="20" readonly></label>
       <br/><br/>
@@ -44,7 +46,9 @@
    var has_seed = false;
    var is_running = false;
 
-   const load_style_prefix = "load_style ";
+   const load_style_name = "load_style";
+
+   const load_style_prefix = load_style_name + " ";
 
    function encode_base64( str )
    {
@@ -99,7 +103,7 @@
       document.getElementById( "user_password" ).disabled = true;
    }
 
-   function load_style( new_page_style )
+   function load_style( new_page_style, raw_style_information )
    {
       if( page_style != "" )
       {
@@ -109,15 +113,29 @@
             old_link.remove( );
       }
 
-      if( ( new_page_style != "" ) && ( new_page_style != "none" ) )
+      if( raw_style_information != null )
       {
-         var new_link = document.createElement( "link" );
+         var new_style = document.createElement( "style" );
 
-         new_link.rel = "stylesheet";
-         new_link.href = new_page_style;
-         new_link.setAttribute( "id", "css_main" );
+         new_style.textContent = raw_style_information;
 
-         document.head.appendChild( new_link );
+         new_style.setAttribute( "id", "css_main" );
+
+         document.head.appendChild( new_style );
+      }
+      else
+      {
+         if( ( new_page_style != "" ) && ( new_page_style != "none" ) )
+         {
+            var new_link = document.createElement( "link" );
+
+            new_link.rel = "stylesheet";
+            new_link.href = new_page_style;
+
+            new_link.setAttribute( "id", "css_main" );
+
+            document.head.appendChild( new_link );
+         }
       }
 
       page_style = new_page_style;
@@ -127,7 +145,9 @@
    {
       var request = document.getElementById( "user_request" ).value;
 
-      if( request.startsWith( load_style_prefix ) )
+      if( request == load_style_name )
+         load_style( "dummy", document.getElementById( "user_arbitrary" ).value );
+      else if( request.startsWith( load_style_prefix ) )
       {
          var style = request.substr( load_style_prefix.length );
 
@@ -354,7 +374,8 @@
          }
          else
          {
-            document.getElementById( "data" ).innerText = data;
+            document.getElementById( "data" ).innerText = "";
+            document.getElementById( "user_arbitrary" ).value = data;
 
             if( ( data == "[running]" ) || ( data == "[running as admin]" ) )
             {
