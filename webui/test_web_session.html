@@ -47,6 +47,7 @@
    var is_running = false;
 
    const load_style_name = "load_style";
+   const save_style_name = "save_style";
 
    const load_style_prefix = load_style_name + " ";
 
@@ -125,7 +126,7 @@
       }
       else
       {
-         if( ( new_page_style != "" ) && ( new_page_style != "none" ) )
+         if( ( new_page_style != "" ) && ( new_page_style != "@none" ) )
          {
             var new_link = document.createElement( "link" );
 
@@ -151,7 +152,7 @@
       {
          var style = request.substr( load_style_prefix.length );
 
-         load_style( style );
+         load_style( style + ".css" );
       }
       else
       {
@@ -179,6 +180,14 @@
          // NOTE: Uses Base64 URL encoding so is not plain text.
          if( ( device == "" ) && ( password != "" ) )
             qry_data += "&passwd=" + encode_base64_url( password );
+
+         var arbitrary = "";
+
+         if( document.getElementById( "user_arbitrary" ).value != "" )
+            arbitrary = document.getElementById( "user_arbitrary" ).value;
+
+         if( ( arbitrary != "" ) && ( request == save_style_name ) )
+            qry_data += "&payload=" + encodeURIComponent( arbitrary );
 
          if( request != "" )
             qry_data += "&request=" + encodeURIComponent( request );
@@ -339,7 +348,7 @@
 
                var entropy = data.substr( pos + 1 );
 
-               if( entropy != "none" )
+               if( entropy != "@none" )
                {
                   document.getElementById( "user_request" ).disabled = false;
                   document.getElementById( "user_request" ).value = entropy;
