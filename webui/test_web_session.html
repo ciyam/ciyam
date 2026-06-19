@@ -11,7 +11,7 @@
 </head>
 
 <body onload="load( )">
-   <h1>CWS API Tester</h1>
+   <h1>Test Web Session</h1>
 
    <form id="test_form" onsubmit="do_fetch( ); return false;">
       <label>Username: &nbsp; <input type="text" id="user_access" size="30" placeholder="(e.g. admin)" autofocus></label>
@@ -39,9 +39,12 @@
 
    <script>
    var hashed = "";
+   var page_style = "";
 
    var has_seed = false;
    var is_running = false;
+
+   const load_style_prefix = "load_style ";
 
    function encode_base64( str )
    {
@@ -96,87 +99,120 @@
       document.getElementById( "user_password" ).disabled = true;
    }
 
+   function load_style( new_page_style )
+   {
+      if( page_style != "" )
+      {
+         const old_link = document.getElementById( "css_main" );
+
+         if( old_link != null )
+            old_link.remove( );
+      }
+
+      if( ( new_page_style != "" ) && ( new_page_style != "none" ) )
+      {
+         var new_link = document.createElement( "link" );
+
+         new_link.rel = "stylesheet";
+         new_link.href = new_page_style;
+         new_link.setAttribute( "id", "css_main" );
+
+         document.head.appendChild( new_link );
+      }
+
+      page_style = new_page_style;
+   }
+
    function do_fetch( )
    {
-      var url = "http://localhost:13031/api.cws";
-
-      var access = document.getElementById( "user_access" ).value;
-
-      var qry_data = "access=" + access;
-
-      var device = document.getElementById( "user_device" ).value;
-
-      if( ( device == "" ) && ( localStorage.getItem( "device" ) != null ) )
-         device = localStorage.getItem( "device" );
-
-      if( device != "" )
-         qry_data += "&device=" + device;
-
-      qry_data += "&format=text";
-
-      var password = "";
-
-      if( document.getElementById( "user_password" ).value != "" )
-         password = document.getElementById( "user_password" ).value;
-
-      // NOTE: Uses Base64 URL encoding so is not plain text.
-      if( ( device == "" ) && ( password != "" ) )
-         qry_data += "&passwd=" + encode_base64_url( password );
-
       var request = document.getElementById( "user_request" ).value;
 
-      if( request != "" )
-         qry_data += "&request=" + encodeURIComponent( request );
-
-      if( ( device == "" ) && ( password != "" ) )
+      if( request.startsWith( load_style_prefix ) )
       {
-         if( has_seed )
-         {
-            has_seed = false;
+         var style = request.substr( load_style_prefix.length );
 
-            document.getElementById( "user_request" ).value = "";
-            document.getElementById( "user_request" ).disabled = true;
-         }
+         load_style( style );
       }
       else
       {
-         var unique = document.getElementById( "user_unique" ).value;
+         var url = "http://localhost:13031/api.cws";
 
-         if( unique != "" )
+         var access = document.getElementById( "user_access" ).value;
+
+         var qry_data = "access=" + access;
+
+         var device = document.getElementById( "user_device" ).value;
+
+         if( ( device == "" ) && ( localStorage.getItem( "device" ) != null ) )
+            device = localStorage.getItem( "device" );
+
+         if( device != "" )
+            qry_data += "&device=" + device;
+
+         qry_data += "&format=text";
+
+         var password = "";
+
+         if( document.getElementById( "user_password" ).value != "" )
+            password = document.getElementById( "user_password" ).value;
+
+         // NOTE: Uses Base64 URL encoding so is not plain text.
+         if( ( device == "" ) && ( password != "" ) )
+            qry_data += "&passwd=" + encode_base64_url( password );
+
+         if( request != "" )
+            qry_data += "&request=" + encodeURIComponent( request );
+
+         if( ( device == "" ) && ( password != "" ) )
          {
-            var session = document.getElementById( "user_session" ).value;
-
-            if( session == "" )
+            if( has_seed )
             {
-               if( hashed == "" )
-                  hashed = hex_sha256( hex_sha256( password ) + device );
+               has_seed = false;
 
-               var session = hex_sha256( hashed + unique ).substr( 0, 10 );
-
-               document.getElementById( "user_session" ).value = session;
-
-               document.getElementById( "user_remove" ).disabled = false;
-
-               document.getElementById( "user_request" ).disabled = false;
-               document.getElementById( "user_request" ).focus( );
-
-               document.getElementById( "user_password" ).value = "";
-               document.getElementById( "user_password" ).disabled = true;
+               document.getElementById( "user_request" ).value = "";
+               document.getElementById( "user_request" ).disabled = true;
             }
-
-            qry_data += "&session=" + session;
          }
+         else
+         {
+            var unique = document.getElementById( "user_unique" ).value;
+
+            if( unique != "" )
+            {
+               var session = document.getElementById( "user_session" ).value;
+
+               if( session == "" )
+               {
+                  if( hashed == "" )
+                     hashed = hex_sha256( hex_sha256( password ) + device );
+
+                  var session = hex_sha256( hashed + unique ).substr( 0, 10 );
+
+                  document.getElementById( "user_session" ).value = session;
+
+                  document.getElementById( "user_remove" ).disabled = false;
+
+                  document.getElementById( "user_request" ).disabled = false;
+                  document.getElementById( "user_request" ).focus( );
+
+                  document.getElementById( "user_password" ).value = "";
+                  document.getElementById( "user_password" ).disabled = true;
+               }
+
+               qry_data += "&session=" + session;
+            }
+         }
+
+         if( qry_data != "" )
+            url += "?" + qry_data;
+
+         console.log( url );
+
+         fetch( url )
+         .then( response => response.text( ) )
+         .then( data => handle_response( data ) )
+         .catch( error => console.error( "Error fetching data: ", error ) );
       }
-
-      if( qry_data != "" )
-         url += "?" + qry_data;
-
-      console.log( url );
-
-      fetch( url )
-      .then( response => response.text( ) )
-      .then( data => handle_response( data ) )
-      .catch( error => console.error( "Error fetching data: ", error ) );
    }
 
    function do_retain( )
@@ -281,8 +317,13 @@
 
                document.getElementById( "user_access" ).disabled = true;
 
-               document.getElementById( "user_request" ).disabled = false;
-               document.getElementById( "user_request" ).value = data.substr( pos + 1 );
+               var entropy = data.substr( pos + 1 );
+
+               if( entropy != "none" )
+               {
+                  document.getElementById( "user_request" ).disabled = false;
+                  document.getElementById( "user_request" ).value = entropy;
+               }
 
                document.getElementById( "user_password" ).disabled = false;
                document.getElementById( "user_password" ).focus( );
@@ -316,7 +357,11 @@
             document.getElementById( "data" ).innerText = data;
 
             if( ( data == "[running]" ) || ( data == "[running as admin]" ) )
+            {
                is_running = true;
+
+               document.getElementById( "user_request" ).disabled = false;
+            }
 
             if( document.getElementById( "user_request" ).value == "quit" )
             {
