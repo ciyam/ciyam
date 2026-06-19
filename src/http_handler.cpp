@@ -347,6 +347,9 @@ const size_t c_cws_seed_reserve = 120;
 
 const size_t c_cws_access_length = 5;
 
+const size_t c_admin_lock_attempts = 10;
+const size_t c_admin_retry_timeout = 100;
+
 mutex g_mutex;
 
 string g_server_id;
@@ -372,7 +375,9 @@ bool g_is_devt_system = false;
 
 atomic< size_t > g_active_handlers;
 
-atomic< size_t > g_request_handler;
+atomic< size_t > g_cws_active_commands;
+
+atomic< size_t > g_num_request_handler;
 
 size_t g_max_post_data_allowed = 0;
 
@@ -386,23 +391,49 @@ inline void deccrement_handlers( )
    --g_active_handlers;
 }
 
-void remove_web_access( const string& token,
- const string& token_file, bool& has_admin_locked )
+struct cws_active_command
+{
+   cws_active_command( bool lock_for_administration )
+   {
+      guard g( g_mutex );
+
+      if( lock_for_administration )
+      {
+         for( size_t i = 0; i < c_admin_lock_attempts; i++ )
+         {
+            if( !g_cws_active_commands )
+               break;
+
+            msleep( c_admin_retry_timeout );
+         }
+
+         if( g_cws_active_commands )
+            throw runtime_error( "timed out trying to lock for adminstration" );
+
+         g_cws_admin_locked = true;
+      }
+
+      ++g_cws_active_commands;
+   }
+
+   ~cws_active_command( )
+   {
+      --g_cws_active_commands;
+   }
+};
+
+void remove_web_access( const string& token, const string& token_file )
 {
    guard g( g_mutex );
 
-   if( !g_cws_admin_locked || ( token != c_admin ) )
+   if( file_exists( token_file ) && file_size( token_file ) )
    {
-      if( file_exists( token_file ) && file_size( token_file ) )
+      string old_token( opt_buffer_file( token_file ) );
+
+      file_remove( token_file );
+
+      if( !old_token.empty( ) )
       {
-         g_cws_admin_locked = true;
-
-         has_admin_locked = true;
-
-         string old_token( buffer_file( token_file ) );
-
-         file_remove( token_file );
-
          string old_token_file( token_file );
 
          replace( old_token_file, token, old_token );
@@ -536,7 +567,7 @@ void http_request_handler::on_start( )
 
    string handler_error;
 
-   size_t handler = ++g_request_handler;
+   size_t handler = ++g_num_request_handler;
 
 #ifdef DEBUG
    cerr << "\n*** started request/response ***" << endl;
@@ -1057,7 +1088,10 @@ void http_request_handler::on_start( )
                   // FUTURE: This message should be handled as a server string message.
                   error = "System identity is not currently locked.";
 
-               bool has_admin_locked = false;
+               bool lock_for_administration = ( error.empty( )
+                && ( access != c_admin ) && ( is_identity_none || is_identity_reset ) );
+
+               cws_active_command active_command( lock_for_administration );
 
                // NOTE: An "identity reset" can be used
                // to either change the "admin password"
@@ -1095,7 +1129,7 @@ void http_request_handler::on_start( )
                         access = c_admin;
                         access_file = '.' + prefix + access;
 
-                        remove_web_access( access, access_file, has_admin_locked );
+                        remove_web_access( access, access_file );
                      }
                      else
                         // FUTURE: This message should be handled as a server string message.
@@ -1106,15 +1140,23 @@ void http_request_handler::on_start( )
                      pin = demo_pin;
                }
 
-               // NOTE: Only allow an admin password "reset"
-               // to occur if has the right "admin" access.
-               if( !has_admin_locked && !is_identity_none )
+               // NOTE: Only allow administration to occur
+               // if using the correct "admin" access PIN.
+               if( g_cws_admin_locked && ( access != c_admin ) )
                {
-                  guard g( g_mutex );
+                  bool okay = true;
 
-                  string admin_pin( buffer_file( '.' + prefix + c_admin, 0, 0, 0, false ) );
+                  if( g_cws_active_commands > 1 )
+                     okay = false;
+                  else
+                  {
+                     string admin_pin( opt_buffer_file( '.' + prefix + c_admin ) );
 
-                  if( g_cws_admin_locked && ( access != admin_pin ) )
+                     if( access != admin_pin )
+                        okay = false;
+                  }
+
+                  if( !okay )
                      // FUTURE: This message should be handled as a server string message.
                      error = "System is currently locked for administration.";
                }
