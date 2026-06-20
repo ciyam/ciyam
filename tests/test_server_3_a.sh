@@ -34,6 +34,8 @@ curl -s "localhost:13031/api.cws?access=test&device=bad_device&session=$session"
 curl -s "localhost:13031/api.cws?access=test&device=$device&session=$session"
 curl -s "localhost:13031/api.cws?access=test&device=$device&session=bad_session"
 curl -s "localhost:13031/api.cws?access=test&device=$device&session=$session"
+curl -s "localhost:13031/api.cws?access=test&device=$device&request=unlock&session=$session"
+curl -s "localhost:13031/api.cws?access=test&device=$device&request=access_token&session=$session"
 curl -s "localhost:13031/api.cws?access=test&device=$device&request=quit&session=$session"
 curl -s "localhost:13031/api.cws?access=test&device=$device&session=$session"
 rm -f .web_session.test
