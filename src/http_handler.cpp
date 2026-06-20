@@ -458,6 +458,8 @@ bool has_web_session_access_token( const string& token,
 
    bool retval = false;
 
+   temp_umask tum( 077 );
+
    if( token == c_admin )
    {
       if( !file_exists( token_file ) )
@@ -1573,6 +1575,8 @@ void http_request_handler::on_start( )
 
                                  if( access_token == c_admin )
                                     throw runtime_error( "unexpected invalid random access token 'admin'" );
+
+                                 temp_umask tum( 077 );
 
                                  file_touch( '.' + prefix + access_token, 0, true );
 
