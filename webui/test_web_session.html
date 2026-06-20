@@ -126,7 +126,7 @@
       }
       else
       {
-         if( ( new_page_style != "" ) && ( new_page_style != "@none" ) )
+         if( ( new_page_style != "" ) && ( new_page_style != "null" ) )
          {
             var new_link = document.createElement( "link" );
 
@@ -156,7 +156,7 @@
       }
       else
       {
-         var url = "http://localhost:13031/api.cws";
+         var url = window.location.protocol + '//' + window.location.host + "/api.cws"
 
          var access = document.getElementById( "user_access" ).value;
 
