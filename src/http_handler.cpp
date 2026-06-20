@@ -195,6 +195,7 @@ const char* const c_cws_request_unlock = "unlock";
 const char* const c_cws_request_save_style = "save_style";
 const char* const c_cws_request_view_style = "view_style";
 const char* const c_cws_request_list_styles = "list_styles";
+const char* const c_cws_request_access_token = "access_token";
 
 const int c_num_retries = 5;
 
@@ -222,8 +223,8 @@ const int c_subsequent_timeout = 1000;
 const int c_response_timeout = 2000;
 #endif
 
-const int c_save_data_delay = 500;
-const int c_error_response_delay = 250;
+const size_t c_save_data_delay = 500;
+const size_t c_error_response_delay = 250;
 
 inline string escaped_json( const string& s )
 {
@@ -353,6 +354,8 @@ const size_t c_cws_access_length = 5;
 const size_t c_admin_lock_attempts = 10;
 const size_t c_admin_retry_timeout = 100;
 
+const size_t c_max_pin_create_attempts = 10;
+
 mutex g_mutex;
 
 string g_none;
@@ -431,7 +434,7 @@ void remove_web_access( const string& token, const string& token_file )
 {
    guard g( g_mutex );
 
-   if( file_exists( token_file ) && file_size( token_file ) )
+   if( file_exists( token_file ) )
    {
       string old_token( opt_buffer_file( token_file ) );
 
@@ -486,14 +489,58 @@ bool has_web_session_access_token( const string& token,
          retval = true;
       else
       {
-         ofstream outf( token_file.c_str( ), ios::out );
+         bool is_pin_token = true;
 
-         outf << sha256( password ).get_digest_as_string( );
+         for( size_t i = 0; i < token.length( ); i++ )
+         {
+            if( ( token[ i ] < '0' ) || ( token[ i ] > '9' ) )
+            {
+               is_pin_token = false;
 
-         outf.close( );
+               break;
+            }
+         }
 
-         if( outf.good( ) )
-            retval = true;
+         // NOTE: It is expected that an "access_token"
+         // command will have been processed previously
+         // with the matching file used to create a new
+         // access PIN.
+         if( !is_pin_token )
+         {
+            bool okay = false;
+
+            for( size_t i = 0; i < c_max_pin_create_attempts; i++ )
+            {
+               pin = random_characters( 5, 0, e_printable_type_numeric );
+
+               string token_pin_file( token_file.substr( 0, token_file.rfind( '.' ) ) + '.' + pin );
+
+               if( file_exists( token_pin_file ) )
+                  continue;
+
+               okay = true;
+
+               file_touch( token_pin_file, 0, true );
+
+               break;
+            }
+
+            if( !okay )
+               throw runtime_error( "was unable to create an access PIN" );
+
+            file_remove( token_file );
+         }
+         else
+         {
+            ofstream outf( token_file.c_str( ), ios::out );
+
+            outf << sha256( password ).get_digest_as_string( );
+
+            outf.close( );
+
+            if( outf.good( ) )
+               retval = true;
+         }
       }
    }
 
@@ -1392,22 +1439,30 @@ void http_request_handler::on_start( )
                            }
                            else if( request == c_cws_request_unlock )
                            {
-                              found = true;
-
-                              if( request_args == g_none )
+                              if( request_args.empty( ) )
                               {
-                                 string unlock_key( create_unlock_sid_hash_key( false, false ) );
-
-                                 if( !is_json_output )
-                                    response = unlock_key;
+                                 if( access != g_cws_admin_token )
+                                    // FUTURE: This message should be handled as a server string message.
+                                    error = "Unlock tokens can only be created by the administrator.";
                                  else
-                                    response = "{\"unlock_key\":\"" + escaped_json( unlock_key ) + "\"}\n";
+                                 {
+                                    found = true;
+
+                                    string unlock_key( create_unlock_sid_hash_key( false, false ) );
+
+                                    if( !is_json_output )
+                                       response = unlock_key;
+                                    else
+                                       response = "{\"unlock_key\":\"" + escaped_json( unlock_key ) + "\"}\n";
+                                 }
                               }
                               else
                               {
                                  try
                                  {
                                     set_identity( request_args );
+
+                                    found = true;
                                  }
                                  catch( exception& x )
                                  {
@@ -1417,16 +1472,18 @@ void http_request_handler::on_start( )
                            }
                            else if( request == c_cws_request_save_style )
                            {
-                              found = true;
-
                               if( payload.empty( ) )
                                  // FUTURE: This message should be handled as a server string message.
                                  error = "Stylesheet data was not provided.";
                               else
                               {
+                                 found = true;
+
                                  string file_name( get_web_root( ) + '/' + access + g_css_suffix );
 
                                  write_file( file_name, payload );
+
+                                 set_system_variable( e_special_var_cws_styles, "" );
 
                                  // NOTE: This delay is used to reduce possible I/O overloading.
                                  msleep( c_save_data_delay );
@@ -1434,20 +1491,22 @@ void http_request_handler::on_start( )
                            }
                            else if( request == c_cws_request_view_style )
                            {
-                              found = true;
-
                               string file_name( get_web_root( ) + '/' + request_args + g_css_suffix );
 
                               if( !file_exists( file_name ) )
                                  // FUTURE: This message should be handled as a server string message.
                                  error = "Stylesheet '" + file_name + "' was not found.";
-
-                              string style_data( opt_buffer_file( file_name ) );
-
-                              if( !is_json_output )
-                                 response = style_data;
                               else
-                                 response = "{\"style_data\":\"" + escaped_json( style_data ) + "\"}\n";
+                              {
+                                 found = true;
+
+                                 string style_data( opt_buffer_file( file_name ) );
+
+                                 if( !is_json_output )
+                                    response = style_data;
+                                 else
+                                    response = "{\"style_data\":\"" + escaped_json( style_data ) + "\"}\n";
+                              }
                            }
                            else if( request == c_cws_request_list_styles )
                            {
@@ -1500,6 +1559,28 @@ void http_request_handler::on_start( )
                                  response = all_styles;
                               else
                                  response = "{\"all_styles\":\"" + escaped_json( all_styles ) + "\"}\n";
+                           }
+                           else if( request == c_cws_request_access_token )
+                           {
+                              if( access != g_cws_admin_token )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Access tokens can only be created by the administrator.";
+                              else
+                              {
+                                 found = true;
+
+                                 string access_token( random_characters( 5, 0, e_printable_type_alpha_mixed ) );
+
+                                 if( access_token == c_admin )
+                                    throw runtime_error( "unexpected invalid random access token 'admin'" );
+
+                                 file_touch( '.' + prefix + access_token, 0, true );
+
+                                 if( !is_json_output )
+                                    response = access_token;
+                                 else
+                                    response = "{\"access_token\":\"" + access_token + "\"}\n";
+                              }
                            }
                            else
                            {
@@ -2025,8 +2106,8 @@ void http_listener::on_start( )
 
       admin_web_session_file = "." + admin_web_session_file + c_admin;
 
-      if( file_exists( admin_web_session_file ) && file_size( admin_web_session_file ) )
-         g_cws_admin_token = buffer_file( admin_web_session_file );
+      if( file_exists( admin_web_session_file ) )
+         g_cws_admin_token = opt_buffer_file( admin_web_session_file );
 
       g_is_devt_system = has_system_variable( e_special_var_system_is_for_devt );
 
