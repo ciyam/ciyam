@@ -11,7 +11,7 @@
 </head>
 
 <body onload="load( )">
-   <h1>Test Web Session</h1>
+   <a id="test_href" href=""><h1>Test Web Session</h1></a>
 
    <form id="test_form" onsubmit="do_fetch( ); return false;">
       <label>Username: &nbsp; <input type="text" id="user_access" size="30" placeholder="(e.g. admin)" autofocus></label>
@@ -46,10 +46,126 @@
    var has_seed = false;
    var is_running = false;
 
+   var self = 0;
+   var owner = 0;
+
    const load_style_name = "load_style";
    const save_style_name = "save_style";
 
    const load_style_prefix = load_style_name + " ";
+
+   const test_web_channel = new BroadcastChannel( "test_web_channel" );
+
+   test_web_channel.addEventListener( "message", ( event ) =>
+   {
+      var data = event.data;
+
+      console.log( "channel message ==> " + data );
+
+      var pos = data.indexOf( ":" );
+
+      if( pos >= 0 )
+      {
+         var target = data.substr( 0, pos );
+         var viewer = data.substr( pos + 1 );
+
+         var is_for_self = false;
+
+         if( self == target )
+         {
+            is_for_self = true;
+            target = "*** self ***";
+         }
+
+         console.log( "target = " + target );
+         console.log( "viewer = " + viewer );
+
+         if( is_for_self )
+         {
+            if( is_running )
+            {
+               test_web_channel.postMessage( viewer + "-" + self );
+
+               var user_access = document.getElementById( "user_access" ).value;
+               var user_device = document.getElementById( "user_device" ).value;
+               var user_unique = document.getElementById( "user_unique" ).value;
+               var user_session = document.getElementById( "user_session" ).value;
+
+               if( user_session != "" )
+                  test_web_channel.postMessage( viewer + "=" + user_access
+                   + "," + user_device + "," + user_unique + "," + user_session + "," + hashed );
+            }
+         }
+      }
+      else
+      {
+         pos = data.indexOf( "-" );
+
+         if( pos >= 0 )
+         {
+            var viewer = data.substr( 0, pos );
+            var shared = data.substr( pos + 1 );
+
+            if( self == viewer )
+            {
+               owner = shared;
+               console.log( "owner = " + owner );
+
+               var href_url = new URL( window.location.href );
+
+               href_url.searchParams.set( "source", owner );
+
+               document.getElementById( "test_href" ).href = href_url;
+            }
+         }
+         else
+         {
+            pos = data.indexOf( "=" );
+
+            if( pos >= 0 )
+            {
+               var viewer = data.substr( 0, pos );
+               var shared = data.substr( pos + 1 );
+
+               if( !is_running && ( self == viewer ) )
+               {
+                  var user_data = shared.split( "," );
+
+                  document.getElementById( "user_access" ).value = user_data[ 0 ];
+                  document.getElementById( "user_device" ).value = user_data[ 1 ];
+                  document.getElementById( "user_unique" ).value = user_data[ 2 ];
+                  document.getElementById( "user_session" ).value = user_data[ 3 ];
+
+                  hashed = user_data[ 4 ];
+
+                  document.getElementById( "user_access" ).disabled = true;
+                  document.getElementById( "user_device" ).disabled = true;
+
+                  document.getElementById( "user_request" ).disabled = false;
+                  document.getElementById( "user_request" ).focus( );
+               }
+            }
+            else if( ( data == self ) || ( data == owner ) )
+            {
+               hashed = "";
+
+               is_running = false;
+
+               document.getElementById( "user_unique" ).value = "";
+               document.getElementById( "user_unique" ).focus( );
+
+               document.getElementById( "user_request" ).value = "";
+               document.getElementById( "user_session" ).value = "";
+
+               document.getElementById( "user_retain" ).disabled = true;
+
+               document.getElementById( "user_request" ).disabled = true;
+
+               document.getElementById( "user_arbitrary" ).value = "Session terminated.";
+            }
+         }
+      }
+   } );
 
    function encode_base64( str )
    {
@@ -70,6 +186,30 @@
 
    function load( )
    {
+      self = Date.now( );
+
+      if( sessionStorage.getItem( "self" ) != null )
+         self = sessionStorage.getItem( "self" );
+      else
+         sessionStorage.setItem( "self", self );
+
+      console.log( "self: " + self );
+
+      var href_url = new URL( window.location.href );
+
+      const source = href_url.searchParams.get( "source" );
+
+      if( source != null )
+      {
+         console.log( "source: " + source );
+
+         test_web_channel.postMessage( source + ':' + self );
+      }
+
+      href_url.searchParams.set( "source", self );
+
+      document.getElementById( "test_href" ).href = href_url;
+
       if( localStorage.getItem( "access" ) != null )
       {
          document.getElementById( "user_access" ).value = localStorage.getItem( "access" );
@@ -408,6 +548,13 @@
                document.getElementById( "user_retain" ).disabled = true;
 
                document.getElementById( "user_request" ).disabled = true;
+
+               var target = owner;
+
+               if( target == 0 )
+                  target = self;
+
+               test_web_channel.postMessage( String( target ) );
             }
             else if( document.getElementById( "user_retain" ).checked == false )
                document.getElementById( "user_retain" ).disabled = false;
