@@ -270,11 +270,16 @@
       }
       else
       {
-         if( ( new_page_style != "null.css" ) && ( new_page_style != "none.css" ) )
+         if( ( new_page_style != "null.css" )
+          && ( new_page_style != "none.css" ) )
          {
             var new_link = document.createElement( "link" );
 
             new_link.rel = "stylesheet";
+
+            // NOTE: A dummy "unique" query string is added so
+            // the browser does not use a cached version (this
+            // is still required despite the meta cache tags).
             new_link.href = new_page_style + "?" + Date.now( );
 
             new_link.setAttribute( "id", "css_main" );
