@@ -558,13 +558,19 @@ bool has_web_session_access_token( const string& token,
          {
             string prefix( token_file.substr( 0, token_file.rfind( '.' ) ) );
 
-            // NOTE: It is expected that an "access_token"
-            // command with the "secret" option was issued
-            // previously so will now create an access PIN
-            // file.
+            // NOTE: It is expected that an "access_token" command using the
+            // "secret" option had been issued previously so will now create
+            // an empty access PIN file (and also set a system variable with
+            // the name "@cws_token_<token>" to the PIN so that applications
+            // can find it assuming they had been given the "token" before).
             pin = create_empty_token_file( prefix, e_printable_type_numeric );
 
             file_remove( token_file );
+
+            string cws_token_var_name(
+             get_special_var_name( e_special_var_cws_token ) );
+
+            set_system_variable( cws_token_var_name + '_' + token, pin );
          }
          else
          {
