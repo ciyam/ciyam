@@ -18,7 +18,13 @@
    <a id="test_href" href=""><h1>Test Web Session</h1></a>
 
    <form id="test_form" onsubmit="do_fetch( ); return false;">
-      <label>Username: &nbsp; <input type="text" id="user_access" size="30" placeholder="(e.g. admin)" autofocus></label>
+      <label>Key or PIN: &nbsp; <input type="text" id="user_access" size="30" placeholder="(e.g. admin)" autofocus></label>
+      <br/><br/>
+      <label for="access_droplist">Prior PINs: &nbsp;</label>
+      <select id="access_droplist" name="access_droplist" onchange="select_access( )">
+      <option value="" disabled selected>Select PIN</option>
+      <option value="create">Create</option>
+      </select>
       <br/><br/>
       <label>Password: &nbsp;&nbsp; <input type="text" id="user_password" size="30"></label>
       <br/><br/>
@@ -188,6 +194,103 @@
       return encode_base64( str ).replace( /\+/g, "-" ).replace( /\//g, "_" ).replace( /=+$/, "" );
    }
 
+   function binary_search( array, item )
+   {
+      var left = 0;
+
+      var right = array.length - 1;
+
+      while( left <= right )
+      {
+         const mid = Math.floor( ( left + right ) / 2 );
+
+         if( array[ mid ] == item )
+            return true;
+         else if( array[ mid ] < item )
+            left = mid + 1;
+         else
+            right = mid - 1;
+      }
+
+      return false;
+   }
+
+   function select_access( )
+   {
+      var access = document.getElementById( "access_droplist" ).value;
+
+      if( access == "create" )
+      {
+         document.getElementById( "user_access" ).value = "";
+         document.getElementById( "user_device" ).value = "";
+
+         document.getElementById( "user_retain" ).checked = false;
+         document.getElementById( "user_retain" ).disabled = false;
+
+         document.getElementById( "user_access" ).disabled = false;
+         document.getElementById( "user_access" ).focus( );
+      }
+      else
+      {
+         document.getElementById( "user_access" ).value = access;
+
+         var device = "";
+
+         if( localStorage.getItem( "device_" + access ) != null )
+            device = localStorage.getItem( "device_" + access );
+
+         var new_hashed = "";
+
+         if( localStorage.getItem( "hashed_" + access ) != null )
+            new_hashed = localStorage.getItem( "hashed_" + access );
+
+         hashed = new_hashed;
+
+         if( hashed == "" )
+            document.getElementById( "user_password" ).disabled = false;
+         else
+         {
+            document.getElementById( "user_password" ).value = "***";
+            document.getElementById( "user_password" ).disabled = true;
+         }
+
+         document.getElementById( "user_device" ).value = device;
+
+         document.getElementById( "user_retain" ).checked = true;
+         document.getElementById( "user_retain" ).disabled = true;
+
+         document.getElementById( "user_remove" ).disabled = false;
+         document.getElementById( "user_unique" ).focus( );
+      }
+   }
+
+   function populate_access( )
+   {
+      var access_droplist = document.getElementById( "access_droplist" )
+
+      var i, l = access_droplist.options.length - 1;
+
+      for( i = l; i >= 2; i-- )
+         access_droplist.remove( i );
+
+      if( localStorage.getItem( "access" ) != null )
+      {
+         var prior_access = localStorage.getItem( "access" );
+
+         var access_entries = prior_access.split( "," );
+
+         var access = "";
+
+         for( var i = 0, l = access_entries.length; i < l; i++ )
+         {
+            var option = access_entries[ i ];
+
+            access_droplist.options.add( new Option( option, option, false ) );
+         }
+      }
+   }
+
+
    function load( )
    {
       self = Date.now( );
@@ -216,33 +319,57 @@
 
       if( localStorage.getItem( "access" ) != null )
       {
-         document.getElementById( "user_access" ).value = localStorage.getItem( "access" );
+         var prior_access = localStorage.getItem( "access" );
+
+         var access_entries = prior_access.split( "," );
+
+         var access_droplist = document.getElementById( "access_droplist" );
+
+         var access = "";
+
+         for( var i = 0, l = access_entries.length; i < l; i++ )
+         {
+            if( ( i == 0 ) && ( access_entries.length == 1 ) )
+               access = access_entries[ i ];
+
+            var option = access_entries[ i ];
+
+            access_droplist.options.add( new Option( option, option, false ) );
+         }
+
+         document.getElementById( "user_access" ).value = access;
 
          document.getElementById( "user_access" ).disabled = true;
 
-         document.getElementById( "user_retain" ).checked = true;
-         document.getElementById( "user_device" ).focus( );
-      }
+         if( access != "" )
+         {
+            document.getElementById( "user_retain" ).checked = true;
 
-      if( localStorage.getItem( "device" ) != null )
-      {
-         document.getElementById( "user_device" ).value = localStorage.getItem( "device" );
+            document.getElementById( "user_device" ).focus( );
 
-         document.getElementById( "user_device" ).disabled = true;
+            if( localStorage.getItem( "device_" + access ) != null )
+            {
+               document.getElementById( "user_device" ).value = localStorage.getItem( "device_" + access );
 
-         document.getElementById( "user_retain" ).checked = true;
-         document.getElementById( "user_unique" ).focus( );
-      }
+               document.getElementById( "user_device" ).disabled = true;
 
-      if( localStorage.getItem( "hashed" ) != null )
-      {
-         hashed = localStorage.getItem( "hashed" );
+               document.getElementById( "user_retain" ).checked = true;
+               document.getElementById( "user_unique" ).focus( );
+            }
 
-         document.getElementById( "user_retain" ).checked = true;
+            if( localStorage.getItem( "hashed_" + access ) != null )
+            {
+               hashed = localStorage.getItem( "hashed_" + access );
+
+               document.getElementById( "user_retain" ).checked = true;
+            }
+         }
       }
 
       document.getElementById( "user_retain" ).disabled = true;
-      document.getElementById( "user_remove" ).disabled = true;
+
+      if( document.getElementById( "user_access" ).value == "" )
+         document.getElementById( "user_remove" ).disabled = true;
 
       document.getElementById( "user_request" ).disabled = true;
       document.getElementById( "user_password" ).disabled = true;
@@ -330,6 +457,9 @@
             password = document.getElementById( "user_password" ).value;
 
          // NOTE: Uses Base64 URL encoding so is not plain text.
+         // Although not intended to provided real security uses
+         // this encoding (rather than just URI) to help prevent
+         // simplistic "over the shoulder" type observation.
          if( ( device == "" ) && ( password != "" ) )
             qry_data += "&passwd=" + encode_base64_url( password );
 
@@ -404,13 +534,29 @@
       {
          var scope = "partially";
 
-         localStorage.setItem( "access", access );
+         var prior_access = localStorage.getItem( "access" );
+
+         if( prior_access == null )
+            localStorage.setItem( "access", access );
+         else
+         {
+            var access_entries = prior_access.split( "," );
+
+            if( !binary_search( access_entries, access ) )
+            {
+               access_entries.push( access );
+
+               access_entries.sort( );
+
+               localStorage.setItem( "access", access_entries.join( "," ) );
+            }
+         }
 
          var device = document.getElementById( "user_device" ).value;
 
          if( device != "" )
          {
-            localStorage.setItem( "device", device );
+            localStorage.setItem( "device_" + access, device );
 
             if( hashed != "" )
             {
@@ -420,10 +566,12 @@
                {
                   scope = "completely";
 
-                  localStorage.setItem( "hashed", hashed );
+                  localStorage.setItem( "hashed_" + access, hashed );
                }
             }
          }
+
+         populate_access( );
 
          document.getElementById( "user_retain" ).disabled = true;
          document.getElementById( "user_remove" ).disabled = false;
@@ -441,8 +589,10 @@
    {
       var scope = "partially";
 
-      if( localStorage.getItem( "hashed" ) != null )
-         localStorage.removeItem( "hashed" );
+      var access = document.getElementById( "user_access" ).value;
+
+      if( localStorage.getItem( "hashed_" + access ) != null )
+         localStorage.removeItem( "hashed_" + access );
 
       var check = confirm( "Hashed password has now been removed.\nAlso remove user and device information?" );
 
@@ -450,17 +600,32 @@
       {
          scope = "completely";
 
-         if( localStorage.getItem( "access" ) != null )
-            localStorage.removeItem( "access" );
+         if( localStorage.getItem( "device_" + access ) != null )
+            localStorage.removeItem( "device_" + access );
 
-         if( localStorage.getItem( "device" ) != null )
-            localStorage.removeItem( "device" );
+         if( localStorage.getItem( "access" ) != null )
+         {
+            var prior_access = localStorage.getItem( "access" );
+
+            var access_entries = prior_access.split( "," );
+
+            if( access_entries.length == 1 )
+               localStorage.removeItem( "access" );
+            else
+            {
+               var new_access_entries = access_entries.filter( ( item ) => item != access );
+
+               localStorage.setItem( "access", new_access_entries.join( "," ) );
+            }
+         }
 
          document.getElementById( "user_remove" ).disabled = true;
 
          document.getElementById( "user_retain" ).checked = false;
          document.getElementById( "user_retain" ).disabled = false;
       }
+
+      populate_access( );
 
       document.getElementById( "user_remove" ).checked = false;
 
@@ -525,7 +690,9 @@
             document.getElementById( "user_access" ).disabled = true;
             document.getElementById( "user_device" ).disabled = true;
 
-            if( localStorage.getItem( "hashed" ) != null )
+            document.getElementById( "access_droplist" ).disabled = true;
+
+            if( hashed != "" )
                document.getElementById( "user_session" ).focus( );
             else
             {
@@ -560,6 +727,8 @@
                document.getElementById( "user_retain" ).disabled = true;
 
                document.getElementById( "user_request" ).disabled = true;
+
+               document.getElementById( "access_droplist" ).disabled = false;
 
                var target = owner;
 
