@@ -3,7 +3,11 @@
 
 <head>
    <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+   <meta http-equiv="Expires" content="0"/>
+   <meta http-equiv="Pragma" content="no-cache"/>
+   <meta http-equiv="Cache-Control" content="no-cache"/>
+   <meta http-equiv="Cache-Control" content="no-store"/>
 
    <script type="text/javascript" src="sha2.js"></script>
 
@@ -16,17 +20,17 @@
    <form id="test_form" onsubmit="do_fetch( ); return false;">
       <label>Username: &nbsp; <input type="text" id="user_access" size="30" placeholder="(e.g. admin)" autofocus></label>
       <br/><br/>
-      <label>Password: &nbsp; <input type="text" id="user_password" size="30"></label>
+      <label>Password: &nbsp;&nbsp; <input type="text" id="user_password" size="30"></label>
+      <br/><br/>
+      <label>Device: &nbsp;&nbsp;&nbsp; <input type="text" id="user_device" size="20" readonly></label>
+      <br/><br/>
+      <label>Session: &nbsp; <input type="text" id="user_session" size="20" readonly></label>
+      <br/><br/>
+      <label>Unique: &nbsp;&nbsp; <input type="text" id="user_unique" size="30" readonly></label>
       <br/><br/>
       <label>Request: &nbsp;&nbsp;&nbsp; <input type="text" id="user_request" size="60" placeholder="(e.g. quit)"></label>
       <br/><br/>
       <textarea id="user_arbitrary" name="user_arbitrary" rows="20" cols="80"></textarea>
-      <br/><br/>
-      <label>Device: &nbsp; <input type="text" id="user_device" size="20" readonly></label>
-      <br/><br/>
-      <label>Session: &nbsp; <input type="text" id="user_session" size="20" readonly></label>
-      <br/><br/>
-      <label>Unique: &nbsp; <input type="text" id="user_unique" size="40" readonly></label>
       <br/><br/>
       <input type="checkbox" id="user_retain" name="user_retain" onclick="do_retain( )" >Retain Credentials
       <br/><br/>
@@ -49,10 +53,10 @@
    var self = 0;
    var owner = 0;
 
-   const load_style_name = "load_style";
-   const save_style_name = "save_style";
+   const style_load_name = "style_load";
+   const style_save_name = "style_save";
 
-   const load_style_prefix = load_style_name + " ";
+   const style_load_prefix = style_load_name + " ";
 
    const test_web_channel = new BroadcastChannel( "test_web_channel" );
 
@@ -266,12 +270,12 @@
       }
       else
       {
-         if( ( new_page_style != "" ) && ( new_page_style != "null" ) )
+         if( ( new_page_style != "null.css" ) && ( new_page_style != "none.css" ) )
          {
             var new_link = document.createElement( "link" );
 
             new_link.rel = "stylesheet";
-            new_link.href = new_page_style;
+            new_link.href = new_page_style + "?" + Date.now( );
 
             new_link.setAttribute( "id", "css_main" );
 
@@ -286,11 +290,14 @@
    {
       var request = document.getElementById( "user_request" ).value;
 
-      if( request == load_style_name )
+      if( request == style_load_name )
          load_style( "dummy", document.getElementById( "user_arbitrary" ).value );
-      else if( request.startsWith( load_style_prefix ) )
+      else if( request.startsWith( style_load_prefix ) )
       {
-         var style = request.substr( load_style_prefix.length );
+         var style = request.substr( style_load_prefix.length );
+
+         if( style == "***" )
+            style = document.getElementById( "user_access" ).value;
 
          load_style( style + ".css" );
       }
@@ -326,7 +333,7 @@
          if( document.getElementById( "user_arbitrary" ).value != "" )
             arbitrary = document.getElementById( "user_arbitrary" ).value;
 
-         if( ( arbitrary != "" ) && ( request == save_style_name ) )
+         if( ( arbitrary != "" ) && ( request == style_save_name ) )
             qry_data += "&payload=" + encodeURIComponent( arbitrary );
 
          if( request != "" )
