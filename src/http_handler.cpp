@@ -192,10 +192,13 @@ const char* const c_query_param_value_text = "text";
 
 const char* const c_cws_request_quit = "quit";
 const char* const c_cws_request_unlock = "unlock";
-const char* const c_cws_request_save_style = "save_style";
-const char* const c_cws_request_view_style = "view_style";
-const char* const c_cws_request_list_styles = "list_styles";
+const char* const c_cws_request_style_list = "style_list";
+const char* const c_cws_request_style_save = "style_save";
+const char* const c_cws_request_style_view = "style_view";
+const char* const c_cws_request_style_erase = "style_erase";
 const char* const c_cws_request_access_token = "access_token";
+
+const char* const c_cws_request_access_token_arg_secret = "secret";
 
 const int c_num_retries = 5;
 
@@ -354,7 +357,7 @@ const size_t c_cws_access_length = 5;
 const size_t c_admin_lock_attempts = 10;
 const size_t c_admin_retry_timeout = 100;
 
-const size_t c_max_pin_create_attempts = 10;
+const size_t c_max_token_create_attempts = 10;
 
 mutex g_mutex;
 
@@ -430,6 +433,62 @@ struct cws_active_command
    }
 };
 
+bool is_pin_token( const string& token )
+{
+   bool rc = true;
+
+   for( size_t i = 0; i < token.length( ); i++ )
+   {
+      if( ( token[ i ] < '0' ) || ( token[ i ] > '9' ) )
+      {
+         rc = false;
+
+         break;
+      }
+   }
+
+   return rc;
+}
+
+string create_empty_token_file( const string& file_prefix, printable_type ptype )
+{
+   bool okay = false;
+
+   string suffix;
+
+   string token_file_prefix( file_prefix );
+
+   if( token_file_prefix.empty( ) )
+      throw runtime_error( "unexpected empty file prefix" );
+
+   if( token_file_prefix[ token_file_prefix.length( ) - 1 ] != '.' )
+      token_file_prefix += '.';
+
+   for( size_t i = 0; i < c_max_token_create_attempts; i++ )
+   {
+      suffix = random_characters( 5, 0, ptype );
+
+      if( suffix == c_admin )
+         continue;
+
+      string token_file( token_file_prefix + suffix );
+
+      if( file_exists( token_file ) )
+         continue;
+
+      okay = true;
+
+      file_touch( token_file, 0, true );
+
+      break;
+   }
+
+   if( !okay )
+      throw runtime_error( "was unable to create a token file" );
+
+   return suffix;
+}
+
 void remove_web_access( const string& token, const string& token_file )
 {
    guard g( g_mutex );
@@ -440,7 +499,8 @@ void remove_web_access( const string& token, const string& token_file )
 
       file_remove( token_file );
 
-      if( !old_token.empty( ) )
+      if( !old_token.empty( )
+       && ( old_token.length( ) < ( c_sha256_digest_size * 2 ) ) )
       {
          string old_token_file( token_file );
 
@@ -487,61 +547,44 @@ bool has_web_session_access_token( const string& token,
    }
    else
    {
-      if( file_exists( token_file ) && file_size( token_file ) )
+      if( file_exists( token_file )
+       && ( file_size( token_file ) == ( c_sha256_digest_size * 2 ) ) )
          retval = true;
-      else
+      else if( file_exists( token_file ) )
       {
-         bool is_pin_token = true;
+         bool is_pin = is_pin_token( token );
 
-         for( size_t i = 0; i < token.length( ); i++ )
+         if( !is_pin )
          {
-            if( ( token[ i ] < '0' ) || ( token[ i ] > '9' ) )
-            {
-               is_pin_token = false;
+            string prefix( token_file.substr( 0, token_file.rfind( '.' ) ) );
 
-               break;
-            }
-         }
-
-         // NOTE: It is expected that an "access_token"
-         // command will have been processed previously
-         // with the matching file used to create a new
-         // access PIN.
-         if( !is_pin_token )
-         {
-            bool okay = false;
-
-            for( size_t i = 0; i < c_max_pin_create_attempts; i++ )
-            {
-               pin = random_characters( 5, 0, e_printable_type_numeric );
-
-               string token_pin_file( token_file.substr( 0, token_file.rfind( '.' ) ) + '.' + pin );
-
-               if( file_exists( token_pin_file ) )
-                  continue;
-
-               okay = true;
-
-               file_touch( token_pin_file, 0, true );
-
-               break;
-            }
-
-            if( !okay )
-               throw runtime_error( "was unable to create an access PIN" );
+            // NOTE: It is expected that an "access_token"
+            // command with the "secret" option was issued
+            // previously so will now create an access PIN
+            // file.
+            pin = create_empty_token_file( prefix, e_printable_type_numeric );
 
             file_remove( token_file );
          }
          else
          {
-            ofstream outf( token_file.c_str( ), ios::out );
+            if( password.empty( ) )
+            {
+               pin = token;
 
-            outf << sha256( password ).get_digest_as_string( );
-
-            outf.close( );
-
-            if( outf.good( ) )
                retval = true;
+            }
+            else
+            {
+               ofstream outf( token_file.c_str( ), ios::out );
+
+               outf << sha256( password ).get_digest_as_string( );
+
+               outf.close( );
+
+               if( outf.good( ) )
+                  retval = true;
+            }
          }
       }
    }
@@ -1472,45 +1515,7 @@ void http_request_handler::on_start( )
                                  }
                               }
                            }
-                           else if( request == c_cws_request_save_style )
-                           {
-                              if( payload.empty( ) )
-                                 // FUTURE: This message should be handled as a server string message.
-                                 error = "Stylesheet data was not provided.";
-                              else
-                              {
-                                 found = true;
-
-                                 string file_name( get_web_root( ) + '/' + access + g_css_suffix );
-
-                                 write_file( file_name, payload );
-
-                                 set_system_variable( e_special_var_cws_styles, "" );
-
-                                 // NOTE: This delay is used to reduce possible I/O overloading.
-                                 msleep( c_save_data_delay );
-                              }
-                           }
-                           else if( request == c_cws_request_view_style )
-                           {
-                              string file_name( get_web_root( ) + '/' + request_args + g_css_suffix );
-
-                              if( !file_exists( file_name ) )
-                                 // FUTURE: This message should be handled as a server string message.
-                                 error = "Stylesheet '" + file_name + "' was not found.";
-                              else
-                              {
-                                 found = true;
-
-                                 string style_data( opt_buffer_file( file_name ) );
-
-                                 if( !is_json_output )
-                                    response = style_data;
-                                 else
-                                    response = "{\"style_data\":\"" + escaped_json( style_data ) + "\"}\n";
-                              }
-                           }
-                           else if( request == c_cws_request_list_styles )
+                           else if( request == c_cws_request_style_list )
                            {
                               found = true;
 
@@ -1557,10 +1562,96 @@ void http_request_handler::on_start( )
                               if( pos != string::npos )
                                  all_styles.erase( 0, pos + 1 );
 
+                              if( !all_styles.empty( ) )
+                              {
+                                 vector< string > styles;
+
+                                 split( all_styles, styles, ' ' );
+
+                                 string allowed_styles;
+
+                                 bool is_admin = ( access == g_cws_admin_token );
+
+                                 // NOTE: Replace "own" style with "***" and
+                                 // filter other access PIN stylesheets from
+                                 // appearing (unless is the administrator).
+                                 for( size_t i = 0; i < styles.size( ); i++ )
+                                 {
+                                    string next( styles[ i ] );
+
+                                    if( next == access )
+                                       next = "***";
+
+                                    if( !is_admin && is_pin_token( next ) )
+                                       continue;
+
+                                    if( !allowed_styles.empty( ) )
+                                       allowed_styles += ' ';
+
+                                    allowed_styles += next;
+                                 }
+
+                                 all_styles = allowed_styles;
+                              }
+
                               if( !is_json_output )
                                  response = all_styles;
                               else
                                  response = "{\"all_styles\":\"" + escaped_json( all_styles ) + "\"}\n";
+                           }
+                           else if( request == c_cws_request_style_save )
+                           {
+                              string file_name( get_web_root( ) + '/' + access + g_css_suffix );
+
+                              if( payload.empty( ) )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Stylesheet data was not provided.";
+                              else
+                              {
+                                 found = true;
+
+                                 write_file( file_name, payload );
+
+                                 set_system_variable( e_special_var_cws_styles, "" );
+
+                                 // NOTE: This delay is used to reduce possible I/O overloading.
+                                 msleep( c_save_data_delay );
+                              }
+                           }
+                           else if( request == c_cws_request_style_view )
+                           {
+                              string file_name( get_web_root( ) + '/' + request_args + g_css_suffix );
+
+                              if( !file_exists( file_name ) )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Stylesheet '" + file_name + "' was not found.";
+                              else
+                              {
+                                 found = true;
+
+                                 string style_data( opt_buffer_file( file_name ) );
+
+                                 if( !is_json_output )
+                                    response = style_data;
+                                 else
+                                    response = "{\"style_data\":\"" + escaped_json( style_data ) + "\"}\n";
+                              }
+                           }
+                           else if( request == c_cws_request_style_erase )
+                           {
+                              string file_name( get_web_root( ) + '/' + access + g_css_suffix );
+
+                              file_remove( file_name );
+
+                              if( !file_exists( file_name ) )
+                              {
+                                 found = true;
+
+                                 set_system_variable( e_special_var_cws_styles, "" );
+                              }
+                              else
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Stylesheet could not be erased (tell the administrator).";
                            }
                            else if( request == c_cws_request_access_token )
                            {
@@ -1569,21 +1660,28 @@ void http_request_handler::on_start( )
                                  error = "Access tokens can only be created by the administrator.";
                               else
                               {
-                                 found = true;
+                                 bool is_secret = false;
 
-                                 string access_token( random_characters( 5, 0, e_printable_type_alpha_mixed ) );
+                                 if( request_args == c_cws_request_access_token_arg_secret )
+                                    is_secret = true;
 
-                                 if( access_token == c_admin )
-                                    throw runtime_error( "unexpected invalid random access token 'admin'" );
-
-                                 temp_umask tum( 077 );
-
-                                 file_touch( '.' + prefix + access_token, 0, true );
-
-                                 if( !is_json_output )
-                                    response = access_token;
+                                 if( !is_secret && !request_args.empty( ) )
+                                    // FUTURE: This message should be handled as a server string message.
+                                    error = "Invalid argument(s) '" + request_args + "' for access token creation.";
                                  else
-                                    response = "{\"access_token\":\"" + access_token + "\"}\n";
+                                 {
+                                    found = true;
+
+                                    temp_umask tum( 077 );
+
+                                    string access_token( create_empty_token_file( '.' + prefix,
+                                     ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_mixed ) ) );
+
+                                    if( !is_json_output )
+                                       response = access_token;
+                                    else
+                                       response = "{\"access_token\":\"" + access_token + "\"}\n";
+                                 }
                               }
                            }
                            else
