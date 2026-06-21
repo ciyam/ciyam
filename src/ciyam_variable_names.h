@@ -98,6 +98,7 @@ enum special_var
    e_special_var_args_file,
    e_special_var_cmd_delay,
    e_special_var_crypt_key,
+   e_special_var_cws_token,
    e_special_var_datachain,
    e_special_var_decrement,
    e_special_var_executing,

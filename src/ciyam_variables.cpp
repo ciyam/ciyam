@@ -141,6 +141,7 @@ const char* const c_special_variable_updating = "@updating";
 const char* const c_special_variable_args_file = "@args_file";
 const char* const c_special_variable_cmd_delay = "@cmd_delay";
 const char* const c_special_variable_crypt_key = "@crypt_key";
+const char* const c_special_variable_cws_token = "@cws_token";
 const char* const c_special_variable_datachain = "@datachain";
 const char* const c_special_variable_decrement = "@decrement";
 const char* const c_special_variable_executing = "@executing";
@@ -511,6 +512,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_args_file );
       g_special_variable_names.push_back( c_special_variable_cmd_delay );
       g_special_variable_names.push_back( c_special_variable_crypt_key );
+      g_special_variable_names.push_back( c_special_variable_cws_token );
       g_special_variable_names.push_back( c_special_variable_datachain );
       g_special_variable_names.push_back( c_special_variable_decrement );
       g_special_variable_names.push_back( c_special_variable_executing );
