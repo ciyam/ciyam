@@ -247,7 +247,10 @@
          hashed = new_hashed;
 
          if( hashed == "" )
+         {
+            document.getElementById( "user_password" ).value = "";
             document.getElementById( "user_password" ).disabled = false;
+         }
          else
          {
             document.getElementById( "user_password" ).value = "***";
@@ -714,7 +717,15 @@
 
             if( document.getElementById( "user_request" ).value == "quit" )
             {
-               hashed = "";
+               var access = document.getElementById( "user_access" ).value;
+
+               if( localStorage.getItem( "hashed_" + access ) == null )
+                  hashed = "";
+               else
+               {
+                  document.getElementById( "user_password" ).value = "***";
+                  document.getElementById( "user_password" ).disabled = true;
+               }
 
                is_running = false;
 
