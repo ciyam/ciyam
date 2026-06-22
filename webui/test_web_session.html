@@ -20,8 +20,8 @@
    <form id="test_form" onsubmit="do_fetch( ); return false;">
       <label>Key or PIN: &nbsp; <input type="text" id="user_access" size="30" placeholder="(e.g. admin)" autofocus></label>
       <br/><br/>
-      <label for="access_droplist">Prior PINs: &nbsp;</label>
-      <select id="access_droplist" name="access_droplist" onchange="select_access( )">
+      <label for="user_droplist">Prior PINs: &nbsp;</label>
+      <select id="user_droplist" name="user_droplist" onchange="select_access( )">
       <option value="" disabled selected>Select PIN</option>
       <option value="create">Create</option>
       </select>
@@ -103,9 +103,11 @@
                var user_unique = document.getElementById( "user_unique" ).value;
                var user_session = document.getElementById( "user_session" ).value;
 
+               var user_retain = document.getElementById( "user_retain" ).checked;
+
                if( user_session != "" )
-                  test_web_channel.postMessage( viewer + "=" + user_access
-                   + "," + user_device + "," + user_unique + "," + user_session + "," + hashed );
+                  test_web_channel.postMessage( viewer + "=" + user_access + "," + user_device
+                   + "," + user_unique + "," + user_session + "," + hashed + "," + user_retain );
             }
          }
       }
@@ -121,6 +123,7 @@
             if( self == viewer )
             {
                owner = shared;
+
                console.log( "owner = " + owner );
 
                var href_url = new URL( window.location.href );
@@ -139,7 +142,7 @@
                var viewer = data.substr( 0, pos );
                var shared = data.substr( pos + 1 );
 
-               if( !is_running && ( self == viewer ) )
+               if( !is_running && ( ( self == viewer ) || ( owner == viewer ) ) )
                {
                   var user_data = shared.split( "," );
 
@@ -148,25 +151,40 @@
                   document.getElementById( "user_unique" ).value = user_data[ 2 ];
                   document.getElementById( "user_session" ).value = user_data[ 3 ];
 
+                  document.getElementById( "user_password" ).value = "";
+
                   hashed = user_data[ 4 ];
+
+                  document.getElementById( "user_retain" ).checked = user_data[ 5 ];
 
                   document.getElementById( "user_access" ).disabled = true;
                   document.getElementById( "user_device" ).disabled = true;
 
+                  document.getElementById( "user_retain" ).disabled = true;
                   document.getElementById( "user_request" ).disabled = false;
+
+                  document.getElementById( "user_remove" ).disabled = !document.getElementById( "user_retain" ).checked;
+
+                  document.getElementById( "data" ).innerText = "";
+
                   document.getElementById( "user_request" ).focus( );
+                  document.getElementById( "user_droplist" ).disabled = true;
+
+                  document.getElementById( "user_arbitrary" ).value = "(session cloned)";
                }
             }
             else if( ( data == self ) || ( data == owner ) )
             {
-               hashed = "";
-
                is_running = false;
 
-               document.getElementById( "user_device" ).value = "";
+               owner = 0;
+
+               if( localStorage.getItem( "cws.hashed_" + document.getElementById( "user_access" ).value ) == null )
+                  document.getElementById( "user_password" ).value = "";
+               else
+                  document.getElementById( "user_password" ).value = "***";
 
                document.getElementById( "user_unique" ).value = "";
-               document.getElementById( "user_unique" ).focus( );
 
                document.getElementById( "user_request" ).value = "";
                document.getElementById( "user_session" ).value = "";
@@ -175,7 +193,12 @@
 
                document.getElementById( "user_request" ).disabled = true;
 
-               document.getElementById( "user_arbitrary" ).value = "Session terminated.";
+               document.getElementById( "data" ).innerText = "";
+
+               document.getElementById( "user_unique" ).focus( );
+               document.getElementById( "user_droplist" ).disabled = false;
+
+               document.getElementById( "user_arbitrary" ).value = "(session terminated)";
             }
          }
       }
@@ -221,10 +244,12 @@
 
    function select_access( )
    {
-      var access = document.getElementById( "access_droplist" ).value;
+      var access = document.getElementById( "user_droplist" ).value;
 
       if( access == "create" )
       {
+         hashed = "";
+
          document.getElementById( "user_access" ).value = "";
          document.getElementById( "user_device" ).value = "";
 
@@ -267,17 +292,17 @@
          document.getElementById( "user_unique" ).focus( );
       }
 
-      document.getElementById( "access_droplist" ).value = "";
+      document.getElementById( "user_droplist" ).value = "";
    }
 
    function populate_access( )
    {
-      var access_droplist = document.getElementById( "access_droplist" )
+      var user_droplist = document.getElementById( "user_droplist" )
 
-      var i, l = access_droplist.options.length - 1;
+      var i, l = user_droplist.options.length - 1;
 
       for( i = l; i >= 2; i-- )
-         access_droplist.remove( i );
+         user_droplist.remove( i );
 
       if( localStorage.getItem( "cws.access" ) != null )
       {
@@ -291,7 +316,7 @@
          {
             var option = access_entries[ i ];
 
-            access_droplist.options.add( new Option( option, option, false ) );
+            user_droplist.options.add( new Option( option, option, false ) );
          }
       }
    }
@@ -310,7 +335,7 @@
 
       var href_url = new URL( window.location.href );
 
-      const source = href_url.searchParams.get( "source" );
+      var source = href_url.searchParams.get( "source" );
 
       if( source != null )
       {
@@ -332,7 +357,7 @@
 
          var access_entries = prior_access.split( "," );
 
-         var access_droplist = document.getElementById( "access_droplist" );
+         var user_droplist = document.getElementById( "user_droplist" );
 
          var access = "";
 
@@ -343,7 +368,7 @@
 
             var option = access_entries[ i ];
 
-            access_droplist.options.add( new Option( option, option, false ) );
+            user_droplist.options.add( new Option( option, option, false ) );
          }
 
          document.getElementById( "user_access" ).value = access;
@@ -591,10 +616,23 @@
 
       var access = document.getElementById( "user_access" ).value;
 
-      if( localStorage.getItem( "cws.hashed_" + access ) != null )
-         localStorage.removeItem( "cws.hashed_" + access );
+      var removed_hash = false;
 
-      var check = confirm( "Hashed password has now been removed.\nAlso remove all user identity information?" );
+      if( localStorage.getItem( "cws.hashed_" + access ) != null )
+      {
+         removed_hash =  true;
+
+         localStorage.removeItem( "cws.hashed_" + access );
+      }
+
+      var remove_prompt = "";
+
+      if( !removed_hash )
+         remove_prompt = "Remove all user identity information?"
+      else
+         remove_prompt = "Hashed password has now been removed.\nAlso remove all user identity information?";
+
+      var check = confirm( remove_prompt );
 
       if( check )
       {
@@ -649,13 +687,15 @@
             document.getElementById( "user_request" ).value = "";
             document.getElementById( "user_request" ).disabled = true;
 
-            document.getElementById( "access_droplist" ).disabled = false;
+            document.getElementById( "user_droplist" ).disabled = false;
 
             document.getElementById( "user_unique" ).focus( );
          }
       }
       else
       {
+         document.getElementById( "data" ).innerText = "";
+
          if( document.getElementById( "user_device" ).value == "" )
          {
             var pos = data.indexOf( " " );
@@ -699,7 +739,7 @@
             document.getElementById( "user_access" ).disabled = true;
             document.getElementById( "user_device" ).disabled = true;
 
-            document.getElementById( "access_droplist" ).disabled = true;
+            document.getElementById( "user_droplist" ).disabled = true;
 
             if( hashed != "" )
                document.getElementById( "user_session" ).focus( );
@@ -717,6 +757,26 @@
             if( ( data == "[running]" ) || ( data == "[running as admin]" ) )
             {
                is_running = true;
+
+               var target = owner;
+
+               if( target == 0 )
+                  target = self;
+
+               if( target != 0 )
+               {
+                  console.log( "target: " + target );
+
+                  var user_access = document.getElementById( "user_access" ).value;
+                  var user_device = document.getElementById( "user_device" ).value;
+                  var user_unique = document.getElementById( "user_unique" ).value;
+                  var user_session = document.getElementById( "user_session" ).value;
+
+                  var user_retained = document.getElementById( "user_retain" ).checked;
+
+                  test_web_channel.postMessage( target + "=" + user_access + "," + user_device
+                   + "," + user_unique + "," + user_session + "," + hashed + "," + user_retained );
+               }
 
                document.getElementById( "user_request" ).disabled = false;
             }
@@ -745,7 +805,7 @@
 
                document.getElementById( "user_request" ).disabled = true;
 
-               document.getElementById( "access_droplist" ).disabled = false;
+               document.getElementById( "user_droplist" ).disabled = false;
 
                var target = owner;
 
@@ -753,6 +813,8 @@
                   target = self;
 
                test_web_channel.postMessage( String( target ) );
+
+               owner = 0;
             }
             else if( document.getElementById( "user_retain" ).checked == false )
                document.getElementById( "user_retain" ).disabled = false;
