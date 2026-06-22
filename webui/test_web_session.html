@@ -66,6 +66,16 @@
 
    const style_load_prefix = style_load_name + " ";
 
+   window.onfocus = function ( )
+   {
+      if( self )
+      {
+         populate_access( );
+
+         document.getElementById( "data" ).innerText = "";
+      }
+   }
+
    const test_web_channel = new BroadcastChannel( "test_web_channel" );
 
    test_web_channel.addEventListener( "message", ( event ) =>
@@ -103,11 +113,9 @@
                var user_unique = document.getElementById( "user_unique" ).value;
                var user_session = document.getElementById( "user_session" ).value;
 
-               var user_retain = document.getElementById( "user_retain" ).checked;
-
                if( user_session != "" )
-                  test_web_channel.postMessage( viewer + "=" + user_access + "," + user_device
-                   + "," + user_unique + "," + user_session + "," + hashed + "," + user_retain );
+                  test_web_channel.postMessage( viewer + "=" + user_access + ","
+                   + user_device + "," + user_unique + "," + user_session + "," + hashed );
             }
          }
       }
@@ -155,41 +163,32 @@
 
                   hashed = user_data[ 4 ];
 
-                  document.getElementById( "user_retain" ).checked = user_data[ 5 ];
-
                   document.getElementById( "user_access" ).disabled = true;
                   document.getElementById( "user_device" ).disabled = true;
 
-                  document.getElementById( "user_retain" ).disabled = true;
                   document.getElementById( "user_request" ).disabled = false;
-
-                  document.getElementById( "user_remove" ).disabled = !document.getElementById( "user_retain" ).checked;
 
                   document.getElementById( "data" ).innerText = "";
 
                   document.getElementById( "user_request" ).focus( );
                   document.getElementById( "user_droplist" ).disabled = true;
 
-                  document.getElementById( "user_arbitrary" ).value = "(session cloned)";
+                  document.getElementById( "user_arbitrary" ).value = "(session linked)";
                }
             }
             else if( ( data == self ) || ( data == owner ) )
             {
-               is_running = false;
-
                owner = 0;
 
-               if( localStorage.getItem( "cws.hashed_" + document.getElementById( "user_access" ).value ) == null )
-                  document.getElementById( "user_password" ).value = "";
-               else
-                  document.getElementById( "user_password" ).value = "***";
+               is_running = false;
+
+               document.getElementById( "user_access" ).value = "";
+               document.getElementById( "user_password" ).value = "";
 
                document.getElementById( "user_unique" ).value = "";
 
                document.getElementById( "user_request" ).value = "";
                document.getElementById( "user_session" ).value = "";
-
-               document.getElementById( "user_retain" ).disabled = true;
 
                document.getElementById( "user_request" ).disabled = true;
 
@@ -198,7 +197,7 @@
                document.getElementById( "user_unique" ).focus( );
                document.getElementById( "user_droplist" ).disabled = false;
 
-               document.getElementById( "user_arbitrary" ).value = "(session terminated)";
+               document.getElementById( "user_arbitrary" ).value = "(session unlinked)";
             }
          }
       }
@@ -285,10 +284,11 @@
 
          document.getElementById( "user_device" ).value = cws_device;
 
+         document.getElementById( "user_remove" ).disabled = false;
+
          document.getElementById( "user_retain" ).checked = true;
          document.getElementById( "user_retain" ).disabled = true;
 
-         document.getElementById( "user_remove" ).disabled = false;
          document.getElementById( "user_unique" ).focus( );
       }
 
@@ -304,23 +304,42 @@
       for( i = l; i >= 2; i-- )
          user_droplist.remove( i );
 
+      var access = document.getElementById( "user_access" ).value;
+
+      var is_retained = false;
+
       if( localStorage.getItem( "cws.access" ) != null )
       {
-         var prior_access = localStorage.getItem( "cws.access" );
+         var access_array = localStorage.getItem( "cws.access" );
 
-         var access_entries = prior_access.split( "," );
-
-         var access = "";
+         var access_entries = access_array.split( "," );
 
          for( var i = 0, l = access_entries.length; i < l; i++ )
          {
             var option = access_entries[ i ];
 
+            if( option == access )
+               is_retained = true;
+
             user_droplist.options.add( new Option( option, option, false ) );
          }
       }
-   }
 
+      if( is_retained )
+      {
+         document.getElementById( "user_remove" ).disabled = false;
+
+         document.getElementById( "user_retain" ).checked = true;
+         document.getElementById( "user_retain" ).disabled = true;
+      }
+      else
+      {
+         document.getElementById( "user_remove" ).disabled = true;
+
+         document.getElementById( "user_retain" ).checked = false;
+         document.getElementById( "user_retain" ).disabled = false;
+      }
+   }
 
    function load( )
    {
@@ -353,9 +372,9 @@
 
       if( localStorage.getItem( "cws.access" ) != null )
       {
-         var prior_access = localStorage.getItem( "cws.access" );
+         var access_array = localStorage.getItem( "cws.access" );
 
-         var access_entries = prior_access.split( "," );
+         var access_entries = access_array.split( "," );
 
          var user_droplist = document.getElementById( "user_droplist" );
 
@@ -395,7 +414,9 @@
       if( document.getElementById( "user_access" ).value == "" )
       {
          document.getElementById( "user_device" ).value = "";
+
          document.getElementById( "user_remove" ).disabled = true;
+         document.getElementById( "user_retain" ).disabled = true;
       }
 
       document.getElementById( "user_request" ).disabled = true;
@@ -525,8 +546,6 @@
 
                   document.getElementById( "user_session" ).value = session;
 
-                  document.getElementById( "user_remove" ).disabled = false;
-
                   document.getElementById( "user_request" ).disabled = false;
                   document.getElementById( "user_request" ).focus( );
 
@@ -558,13 +577,13 @@
       {
          var scope = "partially";
 
-         var prior_access = localStorage.getItem( "cws.access" );
+         var access_array = localStorage.getItem( "cws.access" );
 
-         if( prior_access == null )
+         if( access_array == null )
             localStorage.setItem( "cws.access", access );
          else
          {
-            var access_entries = prior_access.split( "," );
+            var access_entries = access_array.split( "," );
 
             if( !binary_search( access_entries, access ) )
             {
@@ -640,9 +659,9 @@
 
          if( localStorage.getItem( "cws.access" ) != null )
          {
-            var prior_access = localStorage.getItem( "cws.access" );
+            var access_array = localStorage.getItem( "cws.access" );
 
-            var access_entries = prior_access.split( "," );
+            var access_entries = access_array.split( "," );
 
             if( access_entries.length == 1 )
                localStorage.removeItem( "cws.access" );
@@ -661,6 +680,8 @@
       }
 
       populate_access( );
+
+      document.getElementById( "user_password" ).value = "";
 
       document.getElementById( "user_remove" ).checked = false;
 
@@ -772,10 +793,8 @@
                   var user_unique = document.getElementById( "user_unique" ).value;
                   var user_session = document.getElementById( "user_session" ).value;
 
-                  var user_retained = document.getElementById( "user_retain" ).checked;
-
-                  test_web_channel.postMessage( target + "=" + user_access + "," + user_device
-                   + "," + user_unique + "," + user_session + "," + hashed + "," + user_retained );
+                  test_web_channel.postMessage( target + "=" + user_access + ","
+                   + user_device + "," + user_unique + "," + user_session + "," + hashed );
                }
 
                document.getElementById( "user_request" ).disabled = false;
