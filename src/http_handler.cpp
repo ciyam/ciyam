@@ -357,6 +357,8 @@ const size_t c_cws_access_length = 5;
 const size_t c_admin_lock_attempts = 10;
 const size_t c_admin_retry_timeout = 100;
 
+const size_t c_min_passwd_retry_seconds = 3;
+
 const size_t c_max_token_create_attempts = 10;
 
 mutex g_mutex;
@@ -1427,11 +1429,12 @@ void http_request_handler::on_start( )
 
                         int64_t now = unix_time( );
 
+                        // NOTE: Force authentication retry attempts to be very slow.
                         if( !set_system_variable( web_lock_name, to_string( now ), string( "" ) ) )
                         {
                            int64_t was = from_string< int64_t >( get_system_variable( web_lock_name ) );
 
-                           if( now < ( was + 10 ) )
+                           if( now < ( was + c_min_passwd_retry_seconds ) )
                               // FUTURE: This message should be handled as a server string message.
                               error = "Web session is currently busy (try again shortly).";
                            else
