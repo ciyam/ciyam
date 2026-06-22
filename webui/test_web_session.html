@@ -53,6 +53,8 @@
    var hashed = "";
    var page_style = "";
 
+   var cws_device = "";
+
    var has_seed = false;
    var is_running = false;
 
@@ -161,6 +163,8 @@
 
                is_running = false;
 
+               document.getElementById( "user_device" ).value = "";
+
                document.getElementById( "user_unique" ).value = "";
                document.getElementById( "user_unique" ).focus( );
 
@@ -229,15 +233,12 @@
 
          document.getElementById( "user_access" ).disabled = false;
          document.getElementById( "user_access" ).focus( );
+
+         document.getElementById( "user_password" ).value = "";
       }
       else
       {
          document.getElementById( "user_access" ).value = access;
-
-         var device = "";
-
-         if( localStorage.getItem( "device_" + access ) != null )
-            device = localStorage.getItem( "device_" + access );
 
          var new_hashed = "";
 
@@ -257,7 +258,7 @@
             document.getElementById( "user_password" ).disabled = true;
          }
 
-         document.getElementById( "user_device" ).value = device;
+         document.getElementById( "user_device" ).value = cws_device;
 
          document.getElementById( "user_retain" ).checked = true;
          document.getElementById( "user_retain" ).disabled = true;
@@ -265,6 +266,8 @@
          document.getElementById( "user_remove" ).disabled = false;
          document.getElementById( "user_unique" ).focus( );
       }
+
+      document.getElementById( "access_droplist" ).value = "";
    }
 
    function populate_access( )
@@ -320,6 +323,9 @@
 
       document.getElementById( "test_href" ).href = href_url;
 
+      if( localStorage.getItem( "cws.device" ) != null )
+         cws_device = localStorage.getItem( "cws.device" );
+
       if( localStorage.getItem( "access" ) != null )
       {
          var prior_access = localStorage.getItem( "access" );
@@ -350,16 +356,6 @@
 
             document.getElementById( "user_device" ).focus( );
 
-            if( localStorage.getItem( "device_" + access ) != null )
-            {
-               document.getElementById( "user_device" ).value = localStorage.getItem( "device_" + access );
-
-               document.getElementById( "user_device" ).disabled = true;
-
-               document.getElementById( "user_retain" ).checked = true;
-               document.getElementById( "user_unique" ).focus( );
-            }
-
             if( localStorage.getItem( "hashed_" + access ) != null )
             {
                hashed = localStorage.getItem( "hashed_" + access );
@@ -372,7 +368,10 @@
       document.getElementById( "user_retain" ).disabled = true;
 
       if( document.getElementById( "user_access" ).value == "" )
+      {
+         document.getElementById( "user_device" ).value = "";
          document.getElementById( "user_remove" ).disabled = true;
+      }
 
       document.getElementById( "user_request" ).disabled = true;
       document.getElementById( "user_password" ).disabled = true;
@@ -446,11 +445,8 @@
 
          var device = document.getElementById( "user_device" ).value;
 
-         if( ( device == "" ) && ( localStorage.getItem( "device" ) != null ) )
-            device = localStorage.getItem( "device" );
-
-         if( device != "" )
-            qry_data += "&device=" + device;
+         if( ( device != "" ) && ( cws_device != "" ) )
+            qry_data += "&device=" + cws_device;
 
          qry_data += "&format=text";
 
@@ -559,11 +555,12 @@
 
          if( device != "" )
          {
-            localStorage.setItem( "device_" + access, device );
+            if( localStorage.getItem( "cws.device" ) == null )
+               localStorage.setItem( "cws.device", device );
 
             if( hashed != "" )
             {
-               var check = confirm( "User and device inforation stored.\nAlso retain the hashed password information?" );
+               var check = confirm( "User identity information has now been stored.\nAlso retain the hashed password information?" );
 
                if( check )
                {
@@ -597,7 +594,7 @@
       if( localStorage.getItem( "hashed_" + access ) != null )
          localStorage.removeItem( "hashed_" + access );
 
-      var check = confirm( "Hashed password has now been removed.\nAlso remove user and device information?" );
+      var check = confirm( "Hashed password has now been removed.\nAlso remove all user identity information?" );
 
       if( check )
       {
@@ -647,8 +644,17 @@
 
          if( !is_running )
          {
+            hashed = "";
+
             document.getElementById( "user_unique" ).value = "";
             document.getElementById( "user_session" ).value = "";
+
+            document.getElementById( "user_request" ).value = "";
+            document.getElementById( "user_request" ).disabled = true;
+
+            document.getElementById( "access_droplist" ).disabled = false;
+
+            document.getElementById( "user_unique" ).focus( );
          }
       }
       else
@@ -679,7 +685,10 @@
             }
             else
             {
-               document.getElementById( "user_device" ).value = data;
+               if( cws_device == "" )
+                  cws_device = data;
+
+               document.getElementById( "user_device" ).value = cws_device;
 
                document.getElementById( "user_access" ).disabled = true;
 
