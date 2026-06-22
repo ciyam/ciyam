@@ -242,8 +242,8 @@
 
          var new_hashed = "";
 
-         if( localStorage.getItem( "hashed_" + access ) != null )
-            new_hashed = localStorage.getItem( "hashed_" + access );
+         if( localStorage.getItem( "cws.hashed_" + access ) != null )
+            new_hashed = localStorage.getItem( "cws.hashed_" + access );
 
          hashed = new_hashed;
 
@@ -279,9 +279,9 @@
       for( i = l; i >= 2; i-- )
          access_droplist.remove( i );
 
-      if( localStorage.getItem( "access" ) != null )
+      if( localStorage.getItem( "cws.access" ) != null )
       {
-         var prior_access = localStorage.getItem( "access" );
+         var prior_access = localStorage.getItem( "cws.access" );
 
          var access_entries = prior_access.split( "," );
 
@@ -326,9 +326,9 @@
       if( localStorage.getItem( "cws.device" ) != null )
          cws_device = localStorage.getItem( "cws.device" );
 
-      if( localStorage.getItem( "access" ) != null )
+      if( localStorage.getItem( "cws.access" ) != null )
       {
-         var prior_access = localStorage.getItem( "access" );
+         var prior_access = localStorage.getItem( "cws.access" );
 
          var access_entries = prior_access.split( "," );
 
@@ -356,9 +356,9 @@
 
             document.getElementById( "user_device" ).focus( );
 
-            if( localStorage.getItem( "hashed_" + access ) != null )
+            if( localStorage.getItem( "cws.hashed_" + access ) != null )
             {
-               hashed = localStorage.getItem( "hashed_" + access );
+               hashed = localStorage.getItem( "cws.hashed_" + access );
 
                document.getElementById( "user_retain" ).checked = true;
             }
@@ -533,10 +533,10 @@
       {
          var scope = "partially";
 
-         var prior_access = localStorage.getItem( "access" );
+         var prior_access = localStorage.getItem( "cws.access" );
 
          if( prior_access == null )
-            localStorage.setItem( "access", access );
+            localStorage.setItem( "cws.access", access );
          else
          {
             var access_entries = prior_access.split( "," );
@@ -547,7 +547,7 @@
 
                access_entries.sort( );
 
-               localStorage.setItem( "access", access_entries.join( "," ) );
+               localStorage.setItem( "cws.access", access_entries.join( "," ) );
             }
          }
 
@@ -566,7 +566,7 @@
                {
                   scope = "completely";
 
-                  localStorage.setItem( "hashed_" + access, hashed );
+                  localStorage.setItem( "cws.hashed_" + access, hashed );
                }
             }
          }
@@ -591,8 +591,8 @@
 
       var access = document.getElementById( "user_access" ).value;
 
-      if( localStorage.getItem( "hashed_" + access ) != null )
-         localStorage.removeItem( "hashed_" + access );
+      if( localStorage.getItem( "cws.hashed_" + access ) != null )
+         localStorage.removeItem( "cws.hashed_" + access );
 
       var check = confirm( "Hashed password has now been removed.\nAlso remove all user identity information?" );
 
@@ -600,22 +600,19 @@
       {
          scope = "completely";
 
-         if( localStorage.getItem( "device_" + access ) != null )
-            localStorage.removeItem( "device_" + access );
-
-         if( localStorage.getItem( "access" ) != null )
+         if( localStorage.getItem( "cws.access" ) != null )
          {
-            var prior_access = localStorage.getItem( "access" );
+            var prior_access = localStorage.getItem( "cws.access" );
 
             var access_entries = prior_access.split( "," );
 
             if( access_entries.length == 1 )
-               localStorage.removeItem( "access" );
+               localStorage.removeItem( "cws.access" );
             else
             {
                var new_access_entries = access_entries.filter( ( item ) => item != access );
 
-               localStorage.setItem( "access", new_access_entries.join( "," ) );
+               localStorage.setItem( "cws.access", new_access_entries.join( "," ) );
             }
          }
 
@@ -728,7 +725,7 @@
             {
                var access = document.getElementById( "user_access" ).value;
 
-               if( localStorage.getItem( "hashed_" + access ) == null )
+               if( localStorage.getItem( "cws.hashed_" + access ) == null )
                   hashed = "";
                else
                {
