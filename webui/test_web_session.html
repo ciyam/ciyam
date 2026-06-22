@@ -43,6 +43,7 @@
       <input type="checkbox" id="user_remove" name="user_remove" onclick="do_remove( )" >Remove Credentials
       <br/><br/>
       <button type="submit">Click or Enter to Submit</button>
+      <button type="button" id="reset_storage">Clear Local Storage and Reload</button>
    </form>
 
    <br/>
@@ -73,6 +74,18 @@
          populate_access( );
 
          document.getElementById( "data" ).innerText = "";
+      }
+   }
+
+   const button_clear = document.getElementById( "reset_storage" );
+
+   button_clear.onclick = function ( )
+   {
+      if( confirm( "Remove all local storage information?" ) )
+      {
+         localStorage.clear( );
+
+         location.reload( true );
       }
    }
 
@@ -172,6 +185,7 @@
 
                   document.getElementById( "user_request" ).focus( );
                   document.getElementById( "user_droplist" ).disabled = true;
+                  document.getElementById( "reset_storage" ).disabled = true;
 
                   document.getElementById( "user_arbitrary" ).value = "(session linked)";
                }
@@ -196,6 +210,7 @@
 
                document.getElementById( "user_unique" ).focus( );
                document.getElementById( "user_droplist" ).disabled = false;
+               document.getElementById( "reset_storage" ).disabled = false;
 
                document.getElementById( "user_arbitrary" ).value = "(session unlinked)";
             }
@@ -504,7 +519,9 @@
          // NOTE: Uses Base64 URL encoding so is not plain text.
          // Although not intended to provided real security uses
          // this encoding (rather than just URI) to help prevent
-         // simplistic "over the shoulder" type observation.
+         // simplistic "over the shoulder" type observation. For
+         // non-test usage the password should first be hardened
+         // (but will need to be Base64 encoded regardless).
          if( ( device == "" ) && ( password != "" ) )
             qry_data += "&passwd=" + encode_base64_url( password );
 
@@ -551,6 +568,8 @@
 
                   document.getElementById( "user_password" ).value = "";
                   document.getElementById( "user_password" ).disabled = true;
+
+                  document.getElementById( "reset_storage" ).disabled = true;
                }
 
                qry_data += "&session=" + session;
@@ -709,6 +728,7 @@
             document.getElementById( "user_request" ).disabled = true;
 
             document.getElementById( "user_droplist" ).disabled = false;
+            document.getElementById( "reset_storage" ).disabled = false;
 
             document.getElementById( "user_unique" ).focus( );
          }
@@ -744,7 +764,12 @@
             else
             {
                if( cws_device == "" )
+               {
                   cws_device = data;
+
+                  if( localStorage.getItem( "cws.device" ) == null )
+                     localStorage.setItem( "cws.device", cws_device );
+               }
 
                document.getElementById( "user_device" ).value = cws_device;
 
@@ -825,6 +850,7 @@
                document.getElementById( "user_request" ).disabled = true;
 
                document.getElementById( "user_droplist" ).disabled = false;
+               document.getElementById( "reset_storage" ).disabled = false;
 
                var target = owner;
 
