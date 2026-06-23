@@ -51,11 +51,9 @@ extern volatile sig_atomic_t g_server_shutdown;
 namespace
 {
 
-const int c_device_length = 10;
+const size_t c_max_line_length = 10000;
 
-const int c_max_line_length = 10000;
-
-const int c_max_request_lines = 100;
+const size_t c_max_request_lines = 100;
 
 #include "ciyam_constants.h"
 
@@ -97,7 +95,13 @@ const char* const c_post_limit_endpoint = "/api.post_limit";
 
 const char* const c_boundary_prefix = "boundary=";
 
-const char* const c_web_session_prefix = "web_session.";
+const char* const c_web_access_prefix = ".web_access_";
+
+const char* const c_web_session_script = "web_session.cin";
+
+const char* const c_web_device_name_admin = ".web_device_admin";
+
+const char* const c_web_access_test_dummy = ".web_access_dummy";
 
 const char* const c_web_demo_pin_1 = "10101";
 const char* const c_web_demo_pin_2 = "10201";
@@ -354,6 +358,11 @@ const size_t c_cws_seed_reserve = 120;
 
 const size_t c_cws_access_length = 5;
 
+const size_t c_cws_device_length = 15;
+const size_t c_cws_device_replen = 7;
+
+const size_t c_cws_session_length = 20;
+
 const size_t c_admin_lock_attempts = 10;
 const size_t c_admin_retry_timeout = 100;
 
@@ -374,6 +383,8 @@ string g_version_string;
 bool g_cws_admin_locked = false;
 
 string g_cws_admin_token;
+
+string g_cws_admin_device;
 
 set< string > g_cws_access_tokens;
 
@@ -452,6 +463,66 @@ bool is_pin_token( const string& token )
    return rc;
 }
 
+string create_or_check_device( const string* p_device = 0 )
+{
+   string device( p_device ? *p_device : uuid( ).as_string( ).substr( 0, c_cws_device_length ) );
+
+   // NOTE: Creates the "admin" device file if not present (which should only
+   // occur before the system identity is created) unless a dummy test access
+   // file exists (which should be present when running regression tests).
+   if( g_cws_admin_device.empty( ) && !file_exists( c_web_access_test_dummy ) )
+   {
+      if( p_device )
+         throw runtime_error( "unexpected 'create_or_check_device' call without admin device" );
+
+      temp_umask tum( 077 );
+
+      write_file( c_web_device_name_admin, device );
+
+      g_cws_admin_device = device;
+   }
+   else
+   {
+      // NOTE: First removes a number of characters from the end
+      // of the device string and then hashes the smaller string
+      // with the system identity string in order to append back
+      // the identical number of characters from the hash digest
+      // (which ensures that this device string is verifiable by
+      // repeating the same process).
+      device.erase( c_cws_device_length - c_cws_device_replen );
+
+      string identity;
+
+      get_identity( identity );
+
+      sha256 hash( device + identity );
+
+      device += hash.get_digest_as_string( ).substr( 0, c_cws_device_replen );
+   }
+
+   return device;
+}
+
+bool verify_whether_device_is_valid( const string& device )
+{
+   bool retval = false;
+
+   if( device.length( ) == c_cws_device_length )
+   {
+      if( device == g_cws_admin_device )
+         retval = true;
+      else
+      {
+         string check( create_or_check_device( &device ) );
+
+         if( check == device )
+            retval = true;
+      }
+   }
+
+   return retval;
+}
+
 string create_empty_token_file( const string& file_prefix, printable_type ptype )
 {
    bool okay = false;
@@ -463,8 +534,8 @@ string create_empty_token_file( const string& file_prefix, printable_type ptype 
    if( token_file_prefix.empty( ) )
       throw runtime_error( "unexpected empty file prefix" );
 
-   if( token_file_prefix[ token_file_prefix.length( ) - 1 ] != '.' )
-      token_file_prefix += '.';
+   if( token_file_prefix[ token_file_prefix.length( ) - 1 ] != '_' )
+      token_file_prefix += '_';
 
    for( size_t i = 0; i < c_max_token_create_attempts; i++ )
    {
@@ -541,7 +612,7 @@ bool has_web_session_access_token( const string& token,
 
             g_cws_admin_token = pin;
 
-            string token_pin_file( token_file.substr( 0, token_file.rfind( '.' ) ) + '.' + pin );
+            string token_pin_file( token_file.substr( 0, token_file.rfind( '_' ) ) + '_' + pin );
 
             file_touch( token_pin_file, 0, true );
          }
@@ -558,7 +629,7 @@ bool has_web_session_access_token( const string& token,
 
          if( !is_pin )
          {
-            string prefix( token_file.substr( 0, token_file.rfind( '.' ) ) );
+            string prefix( token_file.substr( 0, token_file.rfind( '_' ) ) );
 
             // NOTE: It is expected that an "access_token" command using the
             // "secret" option had been issued previously so will now create
@@ -1126,7 +1197,7 @@ void http_request_handler::on_start( )
             {
                was_endpoint = true;
 
-               string prefix( c_web_session_prefix );
+               string prefix( c_web_access_prefix );
 
                string access, device, passwd, payload, request, session;
 
@@ -1174,7 +1245,7 @@ void http_request_handler::on_start( )
                   request.erase( pos );
                }
 
-               string access_file( '.' + prefix + access ); // i.e. ".web_session.<access>"
+               string access_file( prefix + access ); // i.e. ".web_access.<access>"
 
                string pin;
 
@@ -1220,7 +1291,7 @@ void http_request_handler::on_start( )
                      access_seed = access;
 
                      access = c_admin;
-                     access_file = '.' + prefix + access;
+                     access_file = prefix + access;
                   }
                   else if( file_exists( c_ciyam_server_sid_chk_file ) )
                   {
@@ -1235,7 +1306,7 @@ void http_request_handler::on_start( )
                         access_seed = access;
 
                         access = c_admin;
-                        access_file = '.' + prefix + access;
+                        access_file = prefix + access;
 
                         remove_web_access( access, access_file );
                      }
@@ -1258,7 +1329,7 @@ void http_request_handler::on_start( )
                      okay = false;
                   else
                   {
-                     string admin_pin( opt_buffer_file( '.' + prefix + c_admin ) );
+                     string admin_pin( opt_buffer_file( prefix + c_admin ) );
 
                      if( access != admin_pin )
                         okay = false;
@@ -1283,7 +1354,7 @@ void http_request_handler::on_start( )
                   if( has_access_file && !request.empty( )
                    && !passwd.empty( ) && ( is_identity_none || g_cws_admin_locked ) )
                   {
-                     string admin_pin( buffer_file( '.' + prefix + c_admin ) );
+                     string admin_pin( buffer_file( prefix + c_admin ) );
 
                      if( access == admin_pin )
                      {
@@ -1377,7 +1448,7 @@ void http_request_handler::on_start( )
                   {
                      found = true;
 
-                     string new_device( uuid( ).as_string( ).substr( 0, c_device_length ) );
+                     string new_device( create_or_check_device( ) );
 
                      if( !is_json_output )
                         response = new_device;
@@ -1389,18 +1460,24 @@ void http_request_handler::on_start( )
                }
                else
                {
-                  if( !are_hex_nibbles( device, false ) || ( device.length( ) != c_device_length ) )
+                  if( !are_hex_nibbles( device, false ) || ( device.length( ) != c_cws_device_length ) )
                      // FUTURE: This message should be handled as a server string message.
                      error = "Invalid device identity '" + device + "'.";
                   else if( !g_cws_access_devices[ access ].count( device ) )
                   {
-                     size_t num_devices = get_num_access_devices( access );
-
-                     if( num_devices < c_cws_max_devices )
-                        g_cws_access_devices[ access ].insert( device );
-                     else
+                     if( !verify_whether_device_is_valid( device ) )
                         // FUTURE: This message should be handled as a server string message.
-                        error = "Maximum devices have been created for web session access token '" + access + "'.";
+                        error = "Invalid device identity '" + device + "'.";
+                     else
+                     {
+                        size_t num_devices = get_num_access_devices( access );
+
+                        if( num_devices < c_cws_max_devices )
+                           g_cws_access_devices[ access ].insert( device );
+                        else
+                           // FUTURE: This message should be handled as a server string message.
+                           error = "Maximum devices have been created for web session access token '" + access + "'.";
+                     }
                   }
 
                   if( error.empty( ) )
@@ -1458,7 +1535,7 @@ void http_request_handler::on_start( )
 
                            string digest( hash_combined.get_digest_as_string( ) );
 
-                           set_system_variable( web_session_name, digest.substr( 0, 10 ) );
+                           set_system_variable( web_session_name, digest.substr( 0, c_cws_session_length ) );
                         }
                      }
                      else
@@ -1683,7 +1760,7 @@ void http_request_handler::on_start( )
 
                                     temp_umask tum( 077 );
 
-                                    string access_token( create_empty_token_file( '.' + prefix,
+                                    string access_token( create_empty_token_file( prefix,
                                      ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_mixed ) ) );
 
                                     if( !is_json_output )
@@ -1695,7 +1772,7 @@ void http_request_handler::on_start( )
                            }
                            else
                            {
-                              string script_name( prefix + "cin" );
+                              string script_name( c_web_session_script );
 
                               bool running = has_system_variable( web_message_name );
 
@@ -2211,16 +2288,18 @@ void http_listener::on_start( )
       if( !g_version_string.empty( ) )
          g_server_id += " (" + g_version_string + ")";
 
+      g_is_devt_system = has_system_variable( e_special_var_system_is_for_devt );
+
       g_max_post_data_allowed = get_max_http_post_allowed( );
 
-      string admin_web_session_file( c_web_session_prefix );
+      string admin_web_session_file( c_web_access_prefix );
 
-      admin_web_session_file = "." + admin_web_session_file + c_admin;
+      admin_web_session_file += c_admin;
 
       if( file_exists( admin_web_session_file ) )
          g_cws_admin_token = opt_buffer_file( admin_web_session_file );
 
-      g_is_devt_system = has_system_variable( e_special_var_system_is_for_devt );
+      g_cws_admin_device = opt_buffer_file( c_web_device_name_admin );
 
       while( true )
       {
