@@ -30,7 +30,7 @@
       <br/><br/>
       <label>Device: &nbsp;&nbsp;&nbsp; <input type="text" id="user_device" size="20" readonly></label>
       <br/><br/>
-      <label>Session: &nbsp; <input type="text" id="user_session" size="20" readonly></label>
+      <label>Session: &nbsp; <input type="text" id="user_session" size="25" readonly></label>
       <br/><br/>
       <label>Unique: &nbsp;&nbsp; <input type="text" id="user_unique" size="30" readonly></label>
       <br/><br/>
@@ -559,7 +559,7 @@
                   if( hashed == "" )
                      hashed = hex_sha256( hex_sha256( password ) + device );
 
-                  var session = hex_sha256( hashed + unique ).substr( 0, 10 );
+                  var session = hex_sha256( hashed + unique ).substr( 0, 20 );
 
                   document.getElementById( "user_session" ).value = session;
 
@@ -623,7 +623,7 @@
 
             if( hashed != "" )
             {
-               var check = confirm( "User identity information has now been stored.\nAlso retain the hashed password information?" );
+               var check = confirm( "User access information has now been stored.\nAlso retain the hashed password information?" );
 
                if( check )
                {
@@ -666,9 +666,9 @@
       var remove_prompt = "";
 
       if( !removed_hash )
-         remove_prompt = "Remove all user identity information?"
+         remove_prompt = "Remove all user access information?"
       else
-         remove_prompt = "Hashed password has now been removed.\nAlso remove all user identity information?";
+         remove_prompt = "Hashed password has now been removed.\nAlso remove all user access information?";
 
       var check = confirm( remove_prompt );
 
