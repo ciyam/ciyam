@@ -249,6 +249,7 @@ const char* const c_system_archives_folder = "arch";
 const char* const c_system_blacklist_folder = "blst";
 const char* const c_system_datachain_folder = "data";
 const char* const c_system_peerchain_folder = "peer";
+const char* const c_system_user_info_folder = "user";
 const char* const c_system_variables_folder = "vars";
 const char* const c_system_repository_folder = "repo";
 

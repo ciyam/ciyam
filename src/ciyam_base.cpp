@@ -2374,6 +2374,7 @@ void init_system_ods( bool* p_restored = 0 )
     || !gup_ofs->has_folder( c_system_blacklist_folder )
     || !gup_ofs->has_folder( c_system_datachain_folder )
     || !gup_ofs->has_folder( c_system_peerchain_folder )
+    || !gup_ofs->has_folder( c_system_user_info_folder )
     || !gup_ofs->has_folder( c_system_variables_folder )
     || !gup_ofs->has_folder( c_system_repository_folder ) )
       up_tx.reset( new ods::transaction( *gup_ods ) );
@@ -2389,6 +2390,9 @@ void init_system_ods( bool* p_restored = 0 )
 
    if( !gup_ofs->has_folder( c_system_peerchain_folder ) )
       gup_ofs->add_folder( c_system_peerchain_folder );
+
+   if( !gup_ofs->has_folder( c_system_user_info_folder ) )
+      gup_ofs->add_folder( c_system_user_info_folder );
 
    if( !gup_ofs->has_folder( c_system_variables_folder ) )
       gup_ofs->add_folder( c_system_variables_folder );
