@@ -26,7 +26,7 @@
       <option value="create">Create</option>
       </select>
       <br/><br/>
-      <label>Password: &nbsp;&nbsp; <input type="text" id="user_password" size="30"></label>
+      <label>Password: &nbsp;&nbsp; <input type="password" id="user_password" size="30"></label>
       <br/><br/>
       <label>Device: &nbsp;&nbsp;&nbsp; <input type="text" id="user_device" size="20" readonly></label>
       <br/><br/>
@@ -420,6 +420,8 @@
                hashed = localStorage.getItem( "cws.hashed_" + access );
 
                document.getElementById( "user_retain" ).checked = true;
+
+               document.getElementById( "user_password" ).value = "***";
             }
          }
       }
