@@ -34,7 +34,7 @@ LAST_ITERATION=@$MAX_ITERATIONS-1
 ;
 ~rm -f $OUTPUT_FILE
 ;
-ADMIN_TOKEN=@file:.web_session.admin
+ADMIN_TOKEN=@file:.web_access_admin
 ;
 @ifneq "$TOKEN" "$ADMIN_TOKEN"
 .system_variable @web.$TOKEN.$DEVICE.message "[running]"

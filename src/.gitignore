@@ -25,8 +25,9 @@ xxx.png
 xxx.txt
 xxx.xrep
 
-# Ignore any web session test token files.
-.web_session.*
+# Ignore any web access or admin device token files.
+.web_access_*
+.web_device_admin
 
 # Ignore all .old, .sav and .tmp files.
 *.old
