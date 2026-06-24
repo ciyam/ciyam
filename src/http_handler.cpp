@@ -419,11 +419,11 @@ inline void deccrement_handlers( )
 
 struct cws_active_command
 {
-   cws_active_command( bool lock_for_administration )
+   cws_active_command( bool lock_for_admin )
    {
       guard g( g_mutex );
 
-      if( lock_for_administration )
+      if( lock_for_admin )
       {
          for( size_t i = 0; i < c_admin_lock_attempts; i++ )
          {
@@ -465,7 +465,7 @@ bool is_pin_token( const string& token )
    return rc;
 }
 
-string create_or_check_device( const string* p_device = 0 )
+string create_or_check_device( const string* p_device = 0, bool* p_locked = 0 )
 {
    string device( p_device ? *p_device : uuid( ).as_string( ).substr( 0, c_cws_device_length ) );
 
@@ -493,9 +493,15 @@ string create_or_check_device( const string* p_device = 0 )
       // repeating the same process).
       device.erase( c_cws_device_length - c_cws_device_replen );
 
-      string identity;
+      string identity( get_check_identity( ) );
 
-      get_identity( identity );
+      if( identity.empty( ) )
+      {
+         if( p_locked )
+            *p_locked = true;
+         else
+            throw runtime_error( "system identity is not available" );
+      }
 
       sha256 hash( device + identity );
 
@@ -515,9 +521,16 @@ bool verify_whether_device_is_valid( const string& device )
          retval = true;
       else
       {
-         string check( create_or_check_device( &device ) );
+         bool locked = false;
 
-         if( check == device )
+         // NOTE: If the system identity is locked (and no identity
+         // check file exists) will just have to assume any devices
+         // are valid (which should not matter as very few commands
+         // other than "unlock" will be able to be performed whilst
+         // the system remains locked).
+         string check( create_or_check_device( &device, &locked ) );
+
+         if( locked || ( check == device ) )
             retval = true;
       }
    }
@@ -1255,24 +1268,24 @@ void http_request_handler::on_start( )
 
                access_seed.reserve( c_cws_seed_reserve );
 
-               bool is_encrypted = false;
+               bool is_locked = false;
 
-               bool is_identity_none = !has_identity( &is_encrypted );
+               bool is_identity_none = !has_identity( &is_locked );
 
                bool is_identity_reset = ( access.length( ) > c_cws_access_length );
 
                // NOTE: Only permits an "identity reset" to occur
                // if the system identity has not yet been created
                // or if it is currently locked.
-               if( error.empty( ) && is_identity_reset
-                && !is_encrypted && !is_identity_none )
+               if( error.empty( ) && !is_locked
+                && is_identity_reset && !is_identity_none )
                   // FUTURE: This message should be handled as a server string message.
                   error = "System identity is not currently locked.";
 
-               bool lock_for_administration = ( error.empty( )
+               bool lock_for_admin = ( error.empty( )
                 && ( access != c_admin ) && ( is_identity_none || is_identity_reset ) );
 
-               cws_active_command active_command( lock_for_administration );
+               cws_active_command active_command( lock_for_admin );
 
                // NOTE: An "identity reset" can be used
                // to either change the "admin password"
@@ -1341,6 +1354,10 @@ void http_request_handler::on_start( )
                      // FUTURE: This message should be handled as a server string message.
                      error = "System is currently locked for administration.";
                }
+
+               if( is_locked && !passwd.empty( ) )
+                  // FUTURE: This message should be handled as a server string message.
+                  error = "System is currently locked for administration.";
 
                if( error.empty( ) && !access.empty( ) )
                {
@@ -1582,6 +1599,9 @@ void http_request_handler::on_start( )
                                  if( access != g_cws_admin_token )
                                     // FUTURE: This message should be handled as a server string message.
                                     error = "Unlock tokens can only be created by the administrator.";
+                                 else if( is_locked )
+                                    // FUTURE: This message should be handled as a server string message.
+                                    error = "Unlock tokens are not able to be created whilst currently locked.";
                                  else
                                  {
                                     found = true;
@@ -1699,6 +1719,9 @@ void http_request_handler::on_start( )
                               if( payload.empty( ) )
                                  // FUTURE: This message should be handled as a server string message.
                                  error = "Stylesheet data was not provided.";
+                              else if( is_locked )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Stylesheet data cannot be saved whilst system is locked.";
                               else
                               {
                                  found = true;
@@ -1732,19 +1755,25 @@ void http_request_handler::on_start( )
                            }
                            else if( request == c_cws_request_style_erase )
                            {
-                              string file_name( get_web_root( ) + '/' + access + g_css_suffix );
-
-                              file_remove( file_name );
-
-                              if( !file_exists( file_name ) )
-                              {
-                                 found = true;
-
-                                 set_system_variable( e_special_var_cws_styles, "" );
-                              }
-                              else
+                              if( is_locked )
                                  // FUTURE: This message should be handled as a server string message.
-                                 error = "Stylesheet could not be erased (tell the administrator).";
+                                 error = "Stylesheet data cannot be erased whilst the system is locked.";
+                              else
+                              {
+                                 string file_name( get_web_root( ) + '/' + access + g_css_suffix );
+
+                                 file_remove( file_name );
+
+                                 if( !file_exists( file_name ) )
+                                 {
+                                    found = true;
+
+                                    set_system_variable( e_special_var_cws_styles, "" );
+                                 }
+                                 else
+                                    // FUTURE: This message should be handled as a server string message.
+                                    error = "Stylesheet could not be erased (contact the administrator).";
+                              }
                            }
                            else if( request == c_cws_request_access_token )
                            {
