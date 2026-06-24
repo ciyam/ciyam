@@ -26,12 +26,6 @@ IS_ADMIN=
 ;
 OUTPUT_FILE=/tmp/ciyam.web.$TOKEN.$DEVICE
 ;
-I=0
-;
-MAX_ITERATIONS=600
-;
-LAST_ITERATION=@$MAX_ITERATIONS-1
-;
 ~rm -f $OUTPUT_FILE
 ;
 ADMIN_TOKEN=@file:.web_access_admin
@@ -47,51 +41,43 @@ IS_ADMIN=1
 ;
 @:LOOP
 ;
-@ifeq "$I" "$LAST_ITERATION"
-.system_variable @web.$TOKEN.$DEVICE.message ""
-@endif
-;
-@ifeq "$I" "$MAX_ITERATIONS"
-@label END_LOOP
-@endif
-;
 @skip
 ;
 @:NEXT
 ;
-.system_variable @web.$TOKEN.$DEVICE.command
+.wait -variable=@web.$TOKEN.$DEVICE.command -no_progress 60000 web_session
 ;
-@ifdef $OUTPUT
+.system_variable @web.$TOKEN.$DEVICE.command
 COMMAND=$OUTPUT
+;
+@ifndef $COMMAND
+@label END_LOOP
+.system_variable @web.$TOKEN.$DEVICE.message ""
+@else
 .system_variable @web.$TOKEN.$DEVICE.command ""
 ;
+@ifneq "$COMMAND" "@web_session_check"
 >$OUTPUT_FILE
 $COMMAND
 >
 ;
-I=0
 ERROR=
 ;
 @endif
-;
-.wait 100
+@endif
 ;
 .system_variable @web.$TOKEN.$DEVICE.session
+;
 @ifneq "$OUTPUT" "$SESSION"
 ERROR=Session has been terminated.
 @endif
 ;
-@ifndef $ERROR
-I=@$I+1
-@else
-~rm -f $RUN_FILE
-I=$MAX_ITERATIONS
+@ifdef $ERROR
+@label END_LOOP
 @endif
 ;
 !!@:LOOP
 ;
 @:END_LOOP
-;
-~rm -f $RUN_FILE
 ;
 @endif
