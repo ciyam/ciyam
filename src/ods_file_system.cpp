@@ -1601,11 +1601,13 @@ void ods_file_system::move_file( const string& source, const string& destination
          tmp_item = *tmp_iter;
 
          bool is_link = tmp_item.get_is_link( );
+
          oid id( tmp_item.get_file( ).get_id( ) );
 
          if( !dest_folder.empty( ) )
          {
             tmp_item.val = dest_value;
+
             tmp_item.get_file( ).set_id( id );
 
             if( is_link )
@@ -1703,25 +1705,30 @@ bool ods_file_system::store_file( const string& name,
    bool changed = false;
 
    string perms;
+
    int64_t tm_val = 0;
 
    if( !p_is && file_exists( file_name ) )
    {
       perms = file_perms( file_name );
+
       tm_val = last_modification_time( file_name );
    }
 
    string old_perms;
+
    int64_t old_tm_val = 0;
 
    if( !has_file( name, false, 0, &old_perms, &old_tm_val ) )
    {
       changed = true;
+
       add_file( name, source, p_os, p_is, p_progress );
    }
    else if( p_is || !tm_val || force_write || ( perms != old_perms ) || ( tm_val != old_tm_val ) )
    {
       changed = true;
+
       replace_file( name, source, p_os, p_is, p_progress, force_write );
    }
 
@@ -1826,15 +1833,18 @@ void ods_file_system::replace_file( const string& name,
          bool changed = false;
 
          string perms;
+
          int64_t tm_val = 0;
 
          if( file_name != "*" )
          {
             perms = file_perms( file_name );
+
             tm_val = last_modification_time( file_name );
          }
 
          string old_perms( tmp_iter->get_perms( ) );
+
          int64_t old_tm_val = tmp_iter->get_time( );
 
          if( ( perms != old_perms ) || ( tm_val != old_tm_val ) )
@@ -1857,6 +1867,7 @@ void ods_file_system::replace_file( const string& name,
             if( id.get_num( ) )
             {
                changed = true;
+
                o.destroy( id );
             }
 
@@ -1869,6 +1880,7 @@ void ods_file_system::replace_file( const string& name,
                changed = true;
 
                id.set_new( );
+
                tmp_item.get_file( ).set_id( id );
             }
 
@@ -1908,8 +1920,25 @@ void ods_file_system::replace_file( const string& name,
 
          istringstream isstr( content );
 
+         bool changed = false;
+
+         if( !id.get_num( ) )
+         {
+            changed = true;
+
+            id.set_new( );
+
+            tmp_item.get_file( ).set_id( id );
+         }
+
          tmp_item.get_file( new storable_file_extra(
           file_name, isstr, content.size( ), p_progress ) ).store( e_oid_pointer_opt_force_write_skip_read );
+
+         if( changed )
+         {
+            bt.erase( tmp_iter );
+            bt.insert( tmp_item );
+         }
       }
 
       bt_tx.commit( );
@@ -2801,11 +2830,13 @@ void ods_file_system::replace_folder( const string& name, ostream* p_os, string*
          if( !p_perms )
          {
             tmp_item.set_perms( "" );
+
             tmp_item.set_time( 0 );
          }
          else
          {
             tmp_item.set_perms( *p_perms );
+
             tmp_item.set_time( p_tm_val ? *p_tm_val : 0 );
          }
 
@@ -4344,6 +4375,7 @@ void export_objects( ods_file_system& ofs, const string& directory,
       ofs.set_folder( folder );
 
       string perms;
+
       int64_t tm_val = 0;
 
       ofs.has_folder( next, &perms, &tm_val );

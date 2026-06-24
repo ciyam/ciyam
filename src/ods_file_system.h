@@ -206,6 +206,21 @@ class ods_file_system
    bool has_file( const std::string& name, bool is_prefix = false,
     std::string* p_suffix = 0, std::string* p_perms = 0, int64_t* p_tm_val = 0, int64_t* p_num_bytes = 0 );
 
+   inline bool has_empty_file( const std::string& name )
+   {
+      bool retval = false;
+
+      int64_t num_bytes = 0;
+
+      if( has_file( name, false, 0, 0, 0, &num_bytes ) )
+      {
+         if( num_bytes == 0 )
+            retval = true;
+      }
+
+      return true;
+   }
+
    std::string last_file_name_with_prefix( const std::string& prefix );
 
    std::string link_source( const std::string& name );
