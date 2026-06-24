@@ -5699,6 +5699,23 @@ void get_identity( string& s,
    clear_key( sid );
 }
 
+string get_check_identity( )
+{
+   guard g( g_mutex );
+
+   string check_identity( opt_buffer_file( c_ciyam_server_sid_chk_file ) );
+
+   if( check_identity.empty( ) )
+   {
+      bool encrypted = false;
+
+      if( has_identity( &encrypted ) && !encrypted )
+         check_identity = buffer_file( c_ciyam_server_sid_file );
+   }
+
+   return check_identity;
+}
+
 bool has_identity( bool* p_is_encrypted )
 {
    guard g( g_mutex );

@@ -248,6 +248,8 @@ inline std::string get_identity(
    return s;
 }
 
+std::string get_check_identity( );
+
 bool has_identity( bool* p_is_encrypted = 0 );
 
 void set_identity( const std::string& info, const char* p_encrypted_sid = 0 );
