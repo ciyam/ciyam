@@ -280,6 +280,7 @@ const char* const c_special_variable_peer_data_created = "@peer_data_created";
 const char* const c_special_variable_peer_is_dependent = "@peer_is_dependent";
 const char* const c_special_variable_preparing_restore = "@preparing_restore";
 const char* const c_special_variable_trace_session_ids = "@trace_session_ids";
+const char* const c_special_variable_web_session_check = "@web_session_check";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
 const char* const c_special_variable_check_script_error = "@check_script_error";
 const char* const c_special_variable_encrypted_password = "@encrypted_password";
@@ -651,6 +652,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_peer_is_dependent );
       g_special_variable_names.push_back( c_special_variable_preparing_restore );
       g_special_variable_names.push_back( c_special_variable_trace_session_ids );
+      g_special_variable_names.push_back( c_special_variable_web_session_check );
       g_special_variable_names.push_back( c_special_variable_attached_file_path );
       g_special_variable_names.push_back( c_special_variable_check_script_error );
       g_special_variable_names.push_back( c_special_variable_encrypted_password );
