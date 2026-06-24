@@ -471,7 +471,7 @@ string create_or_check_device( const string* p_device = 0, bool* p_locked = 0 )
 
    // NOTE: Creates the "admin" device file if not present (which should only
    // occur before the system identity is created) unless a dummy test access
-   // file exists (which should be present when running regression tests).
+   // file exists (which should only be found when running regression tests).
    if( g_cws_admin_device.empty( ) && !file_exists( c_web_access_test_dummy ) )
    {
       if( p_device )
@@ -694,19 +694,22 @@ bool has_web_session_access_token( const string& token,
             }
             else
             {
-               string::size_type pos = password.find( '=' );
+               string::size_type pos = password.find( ':' );
 
-               string user_hash, user_name;
+               string user_pwd, user_name;
 
                if( pos == string::npos )
-                  user_hash = password;
+               {
+                  user_pwd = password;
+                  user_name = c_unknown;
+               }
                else
                {
-                  user_hash = password.substr( pos + 1 );
+                  user_pwd = password.substr( pos + 1 );
                   user_name = password.substr( 0, pos );
                }
 
-               user_hash = sha256( user_hash ).get_digest_as_string( );
+               string user_hash( sha256( user_pwd ).get_digest_as_string( ) );
 
                set_new_user_info( token, user_name, user_hash );
 
@@ -1547,7 +1550,10 @@ void http_request_handler::on_start( )
 
                      if( session.empty( ) )
                      {
-                        string access_token( buffer_file( access_file ) );
+                        string access_token( opt_buffer_file( access_file ) );
+
+                        if( access_token.empty( ) )
+                           access_token = get_user_pwd_hash( access );
 
                         string unique( uuid( ).as_string( ) );
 
