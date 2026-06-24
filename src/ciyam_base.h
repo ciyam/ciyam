@@ -841,6 +841,13 @@ ods_file_system& system_ods_file_system( );
 
 void export_repository_entries( );
 
+bool has_user_info( const std::string& pin, bool* p_is_not_empty = 0 );
+
+void add_new_user_info( const std::string& pin );
+
+void set_new_user_info( const std::string& pin,
+ const std::string& name, const std::string& pwd_hash );
+
 class system_ods_bulk_read
 {
    public:

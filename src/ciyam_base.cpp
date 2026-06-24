@@ -2251,6 +2251,44 @@ struct reconstruct_trace_progress : progress
    size_t num_chars_to_cout;
 };
 
+map< string, pair< string, string > > g_user_data_info;
+
+void read_all_user_info( )
+{
+   system_ods_fs_guard ods_fs_guard;
+
+   system_ods_bulk_read ods_bulk_read;
+
+   gup_ofs->set_root_folder( c_system_user_info_folder );
+
+   vector< string > user_files;
+
+   gup_ofs->list_files( user_files );
+
+   for( size_t i = 0; i < user_files.size( ); i++ )
+   {
+      string next_pin( user_files[ i ] );
+
+      pair< string, string > name_and_pwd_hash;
+
+      if( !gup_ofs->has_empty_file( next_pin ) )
+      {
+         string user_info;
+
+         gup_ofs->fetch_from_text_file( next_pin, user_info, true );
+
+         string::size_type pos = user_info.find( ' ' );
+
+         name_and_pwd_hash.first = user_info.substr( 0, pos );
+
+         if( pos != string::npos )
+            name_and_pwd_hash.second = user_info.substr( pos + 1 );
+      }
+
+      g_user_data_info.insert( make_pair( next_pin, name_and_pwd_hash ) );
+   }
+}
+
 void init_system_ods( bool* p_restored = 0 )
 {
    string ods_db_name( get_files_area_path( ) );
@@ -2430,6 +2468,8 @@ void init_system_ods( bool* p_restored = 0 )
       // the "fetch_persistent" function will be called.
       for( size_t i = 0; i < variable_files.size( ); i++ )
          get_system_variable( "<" + variable_files[ i ], true );
+
+      read_all_user_info( );
    }
 }
 
@@ -12483,6 +12523,64 @@ void export_repository_entries( )
    gup_ofs->set_root_folder( c_system_repository_folder );
 
    export_objects( *gup_ofs, c_system_repository_folder );
+}
+
+bool has_user_info( const string& pin, bool* p_is_not_empty )
+{
+   bool retval = false;
+
+   system_ods_fs_guard ods_fs_guard;
+
+   retval = g_user_data_info.count( pin );
+
+   if( retval && p_is_not_empty
+    && !g_user_data_info[ pin ].first.empty( ) )
+      *p_is_not_empty = true;
+
+   return retval;
+}
+
+void add_new_user_info( const string& pin )
+{
+   system_ods_fs_guard ods_fs_guard;
+
+   system_ods_bulk_write ods_bulk_write;
+
+   gup_ofs->set_root_folder( c_system_user_info_folder );
+
+   if( gup_ofs->has_file( pin ) )
+      throw runtime_error( "unexpected pin '" + pin + "' already exists" );
+   else
+   {
+      // NOTE: Stores zero length file.
+      gup_ofs->store_file( pin, "*" );
+
+      g_user_data_info.insert( make_pair( pin, make_pair( "", "" ) ) );
+   }
+}
+
+void set_new_user_info( const string& pin,
+ const string& name, const string& pwd_hash )
+{
+   system_ods_fs_guard ods_fs_guard;
+
+   system_ods_bulk_write ods_bulk_write;
+
+   gup_ofs->set_root_folder( c_system_user_info_folder );
+
+   bool is_not_empty = false;
+
+   if( !has_user_info( pin, &is_not_empty ) )
+      throw runtime_error( "pin '" + pin + "' does not exist" );
+   else
+   {
+      if( is_not_empty )
+         throw runtime_error( "pin '" + pin + "' has already been assigned" );
+
+      gup_ofs->store_as_text_file( pin, name + ' ' + pwd_hash );
+
+      g_user_data_info[ pin ] = make_pair( name, pwd_hash );
+   }
 }
 
 struct system_ods_bulk_read::impl
