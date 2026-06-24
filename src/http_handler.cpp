@@ -386,6 +386,8 @@ string g_cws_admin_token;
 
 string g_cws_admin_device;
 
+string g_web_session_check;
+
 set< string > g_cws_access_tokens;
 
 map< string, set< string > > g_cws_access_devices;
@@ -1506,7 +1508,7 @@ void http_request_handler::on_start( )
 
                         int64_t now = unix_time( );
 
-                        // NOTE: Force authentication retry attempts to be very slow.
+                        // NOTE: Force authentication retry attempts to be slow.
                         if( !set_system_variable( web_lock_name, to_string( now ), string( "" ) ) )
                         {
                            int64_t was = from_string< int64_t >( get_system_variable( web_lock_name ) );
@@ -1536,6 +1538,11 @@ void http_request_handler::on_start( )
                            string digest( hash_combined.get_digest_as_string( ) );
 
                            set_system_variable( web_session_name, digest.substr( 0, c_cws_session_length ) );
+
+                           // NOTE: This "command" will force the web session script to
+                           // check that the session identity it was given when started
+                           // matches what has just been set (and to terminate if not).
+                           set_system_variable( web_command_name, g_web_session_check );
                         }
                      }
                      else
@@ -2300,6 +2307,8 @@ void http_listener::on_start( )
          g_cws_admin_token = opt_buffer_file( admin_web_session_file );
 
       g_cws_admin_device = opt_buffer_file( c_web_device_name_admin );
+
+      g_web_session_check = get_special_var_name( e_special_var_web_session_check );
 
       while( true )
       {
