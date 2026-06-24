@@ -6075,6 +6075,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_session_wait )
       {
          bool lock = has_parm_val( parameters, c_cmd_ciyam_session_session_wait_lock );
+         string variable( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_variable ) );
          bool no_progress = has_parm_val( parameters, c_cmd_ciyam_session_session_wait_no_progress );
          string milliseconds( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_milliseconds ) );
          string message( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_message ) );
@@ -6089,6 +6090,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             use_dots = true;
          }
 
+         bool var_no_progress = false;
+
+         if( no_progress && !variable.empty( ) )
+         {
+            no_progress = false;
+            var_no_progress = true;
+         }
+
          if( !message.empty( ) )
             handler.output_progress( message );
 
@@ -6101,22 +6110,53 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             msleep( msecs );
          else
          {
+            bool found_variable = false;
+
             while( true )
             {
-               if( use_dots )
-                  handler.output_progress( "." );
+               if( !var_no_progress )
+               {
+                  if( use_dots )
+                     handler.output_progress( "." );
+                  else
+                     handler.output_progress( "(wait " + format_duration( msecs / 1000, true ) + ")" );
+               }
+
+               if( g_server_shutdown || is_condemned_session( ) )
+                  break;
+
+               if( variable.empty( ) )
+                  msleep( min( 1000, msecs ) );
                else
-                  handler.output_progress( "(wait " + format_duration( msecs / 1000, true ) + ")" );
+               {
+                  int chunk = min( 1000, msecs );
 
-               msleep( min( 1000, msecs ) );
+                  for( size_t i = 0; i < 5; i++ )
+                  {
+                     if( has_system_variable( variable ) )
+                     {
+                        found_variable = true;
 
-               if( msecs <= 1000 )
+                        break;
+                     }
+
+                     msleep( min( 200, chunk ) );
+
+                     chunk -= min( 200, msecs );
+
+                     if( !chunk )
+                        break;
+                  }
+               }
+
+               if( found_variable || ( msecs <= 1000 ) )
                   break;
 
                msecs -= 1000;
             }
 
-            handler.output_progress( " " );
+            if( !var_no_progress || !message.empty( ) )
+               handler.output_progress( " " );
          }
       }
       else if( command == c_cmd_ciyam_session_session_timeout )
