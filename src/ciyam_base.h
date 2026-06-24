@@ -845,6 +845,26 @@ bool has_user_info( const std::string& pin, bool* p_is_not_empty = 0 );
 
 void add_new_user_info( const std::string& pin );
 
+void get_user_info( const std::string& pin, std::string& name, std::string& pwd_hash );
+
+inline std::string get_user_name( const std::string& pin )
+{
+   std::string name, pwd_hash;
+
+   get_user_info( pin, name, pwd_hash );
+
+   return name;
+}
+
+inline std::string get_user_pwd_hash( const std::string& pin )
+{
+   std::string name, pwd_hash;
+
+   get_user_info( pin, name, pwd_hash );
+
+   return pwd_hash;
+}
+
 void set_new_user_info( const std::string& pin,
  const std::string& name, const std::string& pwd_hash );
 

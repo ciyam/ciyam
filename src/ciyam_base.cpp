@@ -12549,7 +12549,7 @@ void add_new_user_info( const string& pin )
    gup_ofs->set_root_folder( c_system_user_info_folder );
 
    if( gup_ofs->has_file( pin ) )
-      throw runtime_error( "unexpected pin '" + pin + "' already exists" );
+      throw runtime_error( "unexpected user info pin '" + pin + "' already exists" );
    else
    {
       // NOTE: Stores zero length file.
@@ -12557,6 +12557,18 @@ void add_new_user_info( const string& pin )
 
       g_user_data_info.insert( make_pair( pin, make_pair( "", "" ) ) );
    }
+}
+
+void get_user_info( const string& pin, string& name, string& pwd_hash )
+{
+   system_ods_fs_guard ods_fs_guard;
+
+   if( !g_user_data_info.count( pin ) )
+      throw runtime_error( "user info pin '" + pin + "' was not found" );
+
+   name = g_user_data_info[ pin ].first;
+
+   pwd_hash = g_user_data_info[ pin ].second;
 }
 
 void set_new_user_info( const string& pin,
@@ -12571,11 +12583,11 @@ void set_new_user_info( const string& pin,
    bool is_not_empty = false;
 
    if( !has_user_info( pin, &is_not_empty ) )
-      throw runtime_error( "pin '" + pin + "' does not exist" );
+      throw runtime_error( "user info for '" + pin + "' does not exist" );
    else
    {
       if( is_not_empty )
-         throw runtime_error( "pin '" + pin + "' has already been assigned" );
+         throw runtime_error( "user info pin '" + pin + "' has already been assigned" );
 
       gup_ofs->store_as_text_file( pin, name + ' ' + pwd_hash );
 
