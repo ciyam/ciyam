@@ -540,6 +540,8 @@ bool verify_whether_device_is_valid( const string& device )
 
 string create_empty_token_file( const string& file_prefix, printable_type ptype )
 {
+   guard g( g_mutex );
+
    bool okay = false;
 
    string suffix;
@@ -559,14 +561,26 @@ string create_empty_token_file( const string& file_prefix, printable_type ptype 
       if( suffix == c_admin )
          continue;
 
-      string token_file( token_file_prefix + suffix );
+      if( ptype == e_printable_type_numeric )
+      {
+         if( has_user_info( suffix ) )
+            continue;
 
-      if( file_exists( token_file ) )
-         continue;
+         okay = true;
 
-      okay = true;
+         add_new_user_info( suffix );
+      }
+      else
+      {
+         string token_file( token_file_prefix + suffix );
 
-      file_touch( token_file, 0, true );
+         if( file_exists( token_file ) )
+            continue;
+
+         okay = true;
+
+         file_touch( token_file, 0, true );
+      }
 
       break;
    }
@@ -635,13 +649,23 @@ bool has_web_session_access_token( const string& token,
    }
    else
    {
-      if( file_exists( token_file )
-       && ( file_size( token_file ) == ( c_sha256_digest_size * 2 ) ) )
-         retval = true;
-      else if( file_exists( token_file ) )
-      {
-         bool is_pin = is_pin_token( token );
+      bool has_token = false;
+      bool is_not_empty = false;
 
+      bool is_pin = is_pin_token( token );
+
+      has_token = file_exists( token_file );
+
+      if( has_token )
+         is_not_empty = file_size( token_file );
+
+      if( is_pin && !has_token )
+         has_token = has_user_info( token, &is_not_empty );
+
+      if( is_not_empty )
+         retval = true;
+      else
+      {
          if( !is_pin )
          {
             string prefix( token_file.substr( 0, token_file.rfind( '_' ) ) );
@@ -670,14 +694,23 @@ bool has_web_session_access_token( const string& token,
             }
             else
             {
-               ofstream outf( token_file.c_str( ), ios::out );
+               string::size_type pos = password.find( '=' );
 
-               outf << sha256( password ).get_digest_as_string( );
+               string user_hash, user_name;
 
-               outf.close( );
+               if( pos == string::npos )
+                  user_hash = password;
+               else
+               {
+                  user_hash = password.substr( pos + 1 );
+                  user_name = password.substr( 0, pos );
+               }
 
-               if( outf.good( ) )
-                  retval = true;
+               user_hash = sha256( user_hash ).get_digest_as_string( );
+
+               set_new_user_info( token, user_name, user_hash );
+
+               retval = true;
             }
          }
       }
