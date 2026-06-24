@@ -218,7 +218,7 @@ class ods_file_system
             retval = true;
       }
 
-      return true;
+      return retval;
    }
 
    std::string last_file_name_with_prefix( const std::string& prefix );

@@ -1173,6 +1173,7 @@ void ods_file_system::get_file( const string& name,
       else
       {
          *p_os << "*** file '" << name << "' not found ***" << endl;
+
          return;
       }
    }
@@ -1817,6 +1818,7 @@ void ods_file_system::replace_file( const string& name,
       else
       {
          *p_os << "*** file '" << name << "' not found ***" << endl;
+
          return;
       }
    }
@@ -1998,6 +2000,7 @@ void ods_file_system::get_time_stamp( const string& name, ostream* p_os )
       else
       {
          *p_os << "*** object '" << name << "' not found ***" << endl;
+
          return;
       }
    }
@@ -2044,6 +2047,7 @@ void ods_file_system::set_time_stamp( const string& name, int64_t tm_val, ostrea
       else
       {
          *p_os << "*** object '" << name << "' not found ***" << endl;
+
          return;
       }
    }
@@ -2118,6 +2122,7 @@ void ods_file_system::get_permissions( const string& name, ostream* p_os )
       else
       {
          *p_os << "*** object '" << name << "' not found ***" << endl;
+
          return;
       }
    }
@@ -2143,6 +2148,7 @@ void ods_file_system::set_permissions( const string& name, const string& perms, 
       else
       {
          *p_os << "*** invalid file permissions '" << perms << "' ***" << endl;
+
          return;
       }
    }
@@ -2186,6 +2192,7 @@ void ods_file_system::set_permissions( const string& name, const string& perms, 
       else
       {
          *p_os << "*** object '" << name << "' not found ***" << endl;
+
          return;
       }
    }
