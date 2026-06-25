@@ -40,6 +40,7 @@ struct storable_file_extra : public storable_extra
    }
 
    std::string file_name;
+
    std::istream* p_istream;
    std::ostream* p_ostream;
 
@@ -86,6 +87,7 @@ class storable_file : public storable_base
 
    private:
    std::string file_name;
+
    std::istream* p_istream;
    std::ostream* p_ostream;
 

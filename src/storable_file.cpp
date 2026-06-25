@@ -31,6 +31,7 @@ void storable_file::set_extra( storable_extra* p_extra )
    if( p_file_extra )
    {
       file_name = p_file_extra->file_name;
+
       p_istream = p_file_extra->p_istream;
       p_ostream = p_file_extra->p_ostream;
 
@@ -79,9 +80,6 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
    if( sf.file_name.empty( ) )
       throw runtime_error( "unexpected missing file_name for storable_file" );
 
-   // NOTE: If the OID has been set to zero then instead treat it as a zero length file.
-   int64_t size = !sf.get_id( ).get_num( ) ? 0 : sf.get_ods( )->get_size( sf.get_id( ) );
-
    unique_ptr< ofstream > up_outf;
 
    if( !sf.p_ostream )
@@ -97,6 +95,9 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
    unsigned char data[ c_ods_page_size ];
 
    date_time dtm( date_time::standard( ) );
+
+   // NOTE: If the OID has been set to zero then instead treat it as a zero length file.
+   int64_t size = !sf.get_id( ).get_num( ) ? 0 : sf.get_ods( )->get_size( sf.get_id( ) );
 
    while( size )
    {
@@ -122,6 +123,7 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
          if( elapsed >= 1 )
          {
             dtm = now;
+
             sf.p_progress->output_progress( "." );
          }
       }
@@ -135,7 +137,8 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
 
 write_stream& operator <<( write_stream& ws, const storable_file& sf )
 {
-   int64_t size = size_of( sf );
+   if( !sf.get_id( ).get_num( ) )
+      throw runtime_error( "object 0 is not valid for a 'storable_file' write" );
 
    unique_ptr< ifstream > up_inpf;
 
@@ -152,6 +155,8 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
    unsigned char data[ c_ods_page_size ];
 
    date_time dtm( date_time::standard( ) );
+
+   int64_t size = size_of( sf );
 
    while( size )
    {
@@ -183,6 +188,7 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
          if( elapsed >= 1 )
          {
             dtm = now;
+
             sf.p_progress->output_progress( "." );
          }
       }
