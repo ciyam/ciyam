@@ -6,18 +6,18 @@ Num Writers = 0
 Init Tranlog = 0
 Total Entries = 6
 Tranlog Offset = 0
-Transaction Id = 22
+Transaction Id = 26
 Index Free List = 5
 Total Size of Data = 29196
-Data Transformation Id = 20
-Index Transformation Id = 63
+Data Transformation Id = 24
+Index Transformation Id = 75
 
 ** Entry Info for: all
 num: 0000000000000000          pos: 0000000000000000          len: 0000000000000100
-txn: 0000000000000011          txo: 0000000000000000               flags: lk=0 tx=0
+txn: 0000000000000019          txo: 0000000000000000               flags: lk=0 tx=0
 
 num: 0000000000000001          pos: 0000000000000100          len: 0000000000000400
-txn: 0000000000000015          txo: 0000000000000000               flags: lk=0 tx=0
+txn: 0000000000000019          txo: 0000000000000000               flags: lk=0 tx=0
 
 num: 0000000000000002          pos: 00000000000041a4          len: 0000000000001a34
 txn: 0000000000000014          txo: 0000000000000000               flags: lk=0 tx=0
@@ -29,7 +29,7 @@ num: 0000000000000004          pos: 0000000000003568          len: 0000000000000
 txn: 0000000000000007          txo: 0000000000000000               flags: lk=0 tx=0
 
 num: 0000000000000005          pos: 0000000000000000          len: 0000000000000000
-txn: 0000000000000008          txo: 0000000000000000               flags: lk=0 tx=3
+txn: 0000000000000018          txo: 0000000000000000               flags: lk=0 tx=3
 (freelist entry) link: <at end>
 
 ** Freelist Info

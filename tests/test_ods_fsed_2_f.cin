@@ -3,4 +3,16 @@ branch objects
 file_replace yyy test1.jpg
 branch objects
 dump
+~touch ~test.dummy
+file_add zzzzz ~test.dummy
+list zzzz*
+file_get zzzzz -c
+file_replace zzzzz modules.lst.default
+list zzzz*
+file_get zzzzz -c
+file_replace zzzzz ~test.dummy
+list zzzz*
+file_get zzzzz -c
+file_remove zzzzz
+~rm -f ~test.dummy
 exit

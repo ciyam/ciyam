@@ -58,4 +58,21 @@ Item #20, data = |/iii, link = -1
 Item #21, data = |/xxx, link = -1
 Item #22, data = |/yyy, link = -1
 Item #23, data = |/zzz, link = -1
+file_add zzzzz ~test.dummy
+list zzzz*
+zzzzz (0 B)
+file_get zzzzz -c
+
+file_replace zzzzz modules.lst.default
+list zzzz*
+zzzzz (5 B)
+file_get zzzzz -c
+Meta
+
+file_replace zzzzz ~test.dummy
+list zzzz*
+zzzzz (0 B)
+file_get zzzzz -c
+
+file_remove zzzzz
 exit
