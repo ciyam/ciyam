@@ -25,7 +25,12 @@
       <option value="" disabled selected>Select PIN</option>
       <option value="create">Create</option>
       </select>
-      <br/><br/>
+      <br/>
+      <div id="name_div">
+      <br/>
+      <label>Username: &nbsp <input type="text" id="user_name" size="30"></label>
+      </div>
+      <br/>
       <label>Password: &nbsp;&nbsp; <input type="password" id="user_password" size="30"></label>
       <br/><br/>
       <label>Device: &nbsp;&nbsp;&nbsp; <input type="text" id="user_device" size="20" readonly></label>
@@ -70,11 +75,7 @@
    window.onfocus = function ( )
    {
       if( self )
-      {
          populate_access( );
-
-         document.getElementById( "data" ).innerText = "";
-      }
    }
 
    const button_clear = document.getElementById( "reset_storage" );
@@ -260,6 +261,10 @@
    {
       var access = document.getElementById( "user_droplist" ).value;
 
+      document.getElementById( "user_name" ).value = "";
+
+      document.getElementById( "name_div" ).style.display = "none";
+
       if( access == "create" )
       {
          hashed = "";
@@ -366,6 +371,8 @@
          sessionStorage.setItem( "self", self );
 
       console.log( "self: " + self );
+
+      document.getElementById( "name_div" ).style.display = "none";
 
       var href_url = new URL( window.location.href );
 
@@ -513,19 +520,34 @@
 
          qry_data += "&format=text";
 
+         var username = "";
+
+         if( document.getElementById( "user_name" ).value != "" )
+            username = document.getElementById( "user_name" ).value;
+
          var password = "";
 
          if( document.getElementById( "user_password" ).value != "" )
             password = document.getElementById( "user_password" ).value;
 
-         // NOTE: Uses Base64 URL encoding so is not plain text.
+         var credentials = "";
+
+         if( password != "" )
+         {
+            if( username != "" )
+               credentials = username + ":";
+
+            credentials += password;
+         }
+
+         // NOTE: Uses base64 URL encoding so is not plain text.
          // Although not intended to provided real security uses
          // this encoding (rather than just URI) to help prevent
          // simplistic "over the shoulder" type observation. For
          // non-test usage the password should first be hardened
-         // (but will need to be Base64 encoded regardless).
+         // (but will need to be base64 encoded regardless).
          if( ( device == "" ) && ( password != "" ) )
-            qry_data += "&passwd=" + encode_base64_url( password );
+            qry_data += "&passwd=" + encode_base64_url( credentials );
 
          var arbitrary = "";
 
@@ -751,17 +773,28 @@
                document.getElementById( "user_access" ).value = data.substr( 0, pos );
 
                document.getElementById( "user_access" ).disabled = true;
+               document.getElementById( "user_password" ).disabled = false;
 
                var entropy = data.substr( pos + 1 );
 
-               if( entropy != "@none" )
+               if( entropy == "@none" )
                {
-                  document.getElementById( "user_request" ).disabled = false;
-                  document.getElementById( "user_request" ).value = entropy;
-               }
+                  document.getElementById( "name_div" ).style.display = "block";
 
-               document.getElementById( "user_password" ).disabled = false;
-               document.getElementById( "user_password" ).focus( );
+                  document.getElementById( "user_name" ).focus( );
+               }
+               else
+               {
+                  document.getElementById( "user_name" ).value = "admin";
+
+                  if( entropy != "admin" )
+                  {
+                     document.getElementById( "user_request" ).disabled = false;
+                     document.getElementById( "user_request" ).value = entropy;
+                  }
+
+                  document.getElementById( "user_password" ).focus( );
+               }
             }
             else
             {
@@ -776,6 +809,10 @@
                document.getElementById( "user_device" ).value = cws_device;
 
                document.getElementById( "user_access" ).disabled = true;
+
+               document.getElementById( "user_name" ).value = "";
+
+               document.getElementById( "name_div" ).style.display = "none";
 
                document.getElementById( "user_unique" ).focus( );
             }
