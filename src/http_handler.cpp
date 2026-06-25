@@ -614,7 +614,7 @@ void remove_web_access( const string& token, const string& token_file )
 }
 
 bool has_web_session_access_token( const string& token,
- const string& token_file, const string& password, string& pin )
+ const string& token_file, const string& credentials, string& pin )
 {
    guard g( g_mutex );
 
@@ -686,7 +686,7 @@ bool has_web_session_access_token( const string& token,
          }
          else
          {
-            if( password.empty( ) )
+            if( credentials.empty( ) )
             {
                pin = token;
 
@@ -694,24 +694,29 @@ bool has_web_session_access_token( const string& token,
             }
             else
             {
-               string::size_type pos = password.find( ':' );
-
-               string user_pwd, user_name;
+               string::size_type pos = credentials.find( ':' );
 
                if( pos == string::npos )
-               {
-                  user_pwd = password;
-                  user_name = c_unknown;
-               }
+                  throw runtime_error( "requires 'passwd=<user>:<password>' (in base64) for credentials" );
+
+               string name, password;
+
+               name = credentials.substr( 0, pos );
+               password = credentials.substr( pos + 1 );
+
+               if( ( name != c_admin ) && has_user_name( name ) )
+                  throw runtime_error( "user name '" + name + "' has been taken" );
+
+               string pwd_hash( sha256( password ).get_digest_as_string( ) );
+
+               if( name != c_admin )
+                  set_new_user_info( token, name, pwd_hash );
                else
                {
-                  user_pwd = password.substr( pos + 1 );
-                  user_name = password.substr( 0, pos );
+                  ofstream outf( token_file );
+
+                  outf << pwd_hash;
                }
-
-               string user_hash( sha256( user_pwd ).get_digest_as_string( ) );
-
-               set_new_user_info( token, user_name, user_hash );
 
                retval = true;
             }
@@ -1273,7 +1278,40 @@ void http_request_handler::on_start( )
                if( !passwd.empty( ) )
                {
                   if( base64::valid_characters( passwd, true ) )
+                  {
+                     bool bad_credentials = false;
+
                      passwd = base64::decode( passwd, true );
+
+                     string::size_type pos = passwd.find( ':' );
+
+                     // NOTE: Only report a username being "taken" if
+                     // has a user info record with no password hash.
+                     if( pos != string::npos )
+                     {
+                        string name( passwd.substr( 0, pos ) );
+
+                        if( name == c_admin )
+                        {
+                           if( access != g_cws_admin_token )
+                              bad_credentials = true;
+                        }
+                        else
+                        {
+                           if( !has_empty_user_hash( access ) )
+                              bad_credentials = true;
+                           else if( has_user_name( name ) )
+                              // FUTURE: This message should be handled as a server string message.
+                              error = "Username '" + name + "' has already been taken.";
+                        }
+                     }
+                     else if( !has_user_info( access ) )
+                        bad_credentials = true;
+
+                     if( bad_credentials )
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "User credentials are either invalid or incorrect.";
+                  }
                   else
                   {
                      string name_and_value( c_query_param_name_passwd );
@@ -1472,7 +1510,12 @@ void http_request_handler::on_start( )
                   if( !access_seed.empty( ) )
                      seed = access_seed;
                   else if( !is_seed_needed )
-                     seed = g_none;
+                  {
+                     if( access != c_admin )
+                        seed = g_none;
+                     else
+                        seed = c_admin;
+                  }
                   else
                   {
                      get_mnemonics_or_hex_seed( seed, "" );
@@ -1491,7 +1534,7 @@ void http_request_handler::on_start( )
                }
                else if( !g_cws_access_tokens.count( access ) )
                   // FUTURE: This message should be handled as a server string message.
-                  error = "Provided web session access token '" + access + "' is invalid.";
+                  error = "Web session access token '" + access + "' is invalid.";
                else if( device.empty( ) )
                {
                   size_t num_devices = get_num_access_devices( access );
