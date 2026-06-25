@@ -2251,7 +2251,10 @@ struct reconstruct_trace_progress : progress
    size_t num_chars_to_cout;
 };
 
-map< string, pair< string, string > > g_user_data_info;
+map< string, string > g_user_name_pins;
+map< string, string > g_user_pin_names;
+
+map< string, string > g_user_pwd_hashes;
 
 void read_all_user_info( )
 {
@@ -2269,7 +2272,7 @@ void read_all_user_info( )
    {
       string next_pin( user_files[ i ] );
 
-      pair< string, string > name_and_pwd_hash;
+      string name, pwd_hash;
 
       if( !gup_ofs->has_empty_file( next_pin ) )
       {
@@ -2279,13 +2282,24 @@ void read_all_user_info( )
 
          string::size_type pos = user_info.find( ' ' );
 
-         name_and_pwd_hash.first = user_info.substr( 0, pos );
+         if( pos == string::npos )
+            throw runtime_error( "invalid format '" + user_info + "' in read_all_user_info" );
 
-         if( pos != string::npos )
-            name_and_pwd_hash.second = user_info.substr( pos + 1 );
+         name = user_info.substr( 0, pos );
+
+         pwd_hash = user_info.substr( pos + 1 );
       }
 
-      g_user_data_info.insert( make_pair( next_pin, name_and_pwd_hash ) );
+      if( !name.empty( ) )
+      {
+         if( g_user_name_pins.count( name ) )
+            throw runtime_error( "unexpected duplicate name '" + name + "' found in read_all_user_info" );
+
+         g_user_name_pins[ name ] = next_pin;
+         g_user_pin_names[ next_pin ] = name;
+      }
+
+      g_user_pwd_hashes[ next_pin ] = pwd_hash;
    }
 }
 
@@ -12531,13 +12545,24 @@ bool has_user_info( const string& pin, bool* p_is_not_empty )
 
    system_ods_fs_guard ods_fs_guard;
 
-   retval = g_user_data_info.count( pin );
+   retval = g_user_pwd_hashes.count( pin );
 
-   if( retval && p_is_not_empty
-    && !g_user_data_info[ pin ].first.empty( ) )
-      *p_is_not_empty = true;
+   if( retval && p_is_not_empty )
+   {
+      if( !g_user_pwd_hashes[ pin ].empty( ) )
+         *p_is_not_empty = true;
+      else
+         *p_is_not_empty = false;
+   }
 
    return retval;
+}
+
+bool has_user_name( const string& name )
+{
+   system_ods_fs_guard ods_fs_guard;
+
+   return g_user_name_pins.count( name );
 }
 
 void add_new_user_info( const string& pin )
@@ -12555,7 +12580,7 @@ void add_new_user_info( const string& pin )
       // NOTE: Stores zero length file.
       gup_ofs->store_file( pin, "*" );
 
-      g_user_data_info.insert( make_pair( pin, make_pair( "", "" ) ) );
+      g_user_pwd_hashes.insert( make_pair( pin, "" ) );
    }
 }
 
@@ -12563,12 +12588,13 @@ void get_user_info( const string& pin, string& name, string& pwd_hash )
 {
    system_ods_fs_guard ods_fs_guard;
 
-   if( !g_user_data_info.count( pin ) )
+   if( !g_user_pwd_hashes.count( pin ) )
       throw runtime_error( "user info pin '" + pin + "' was not found" );
 
-   name = g_user_data_info[ pin ].first;
+   if( g_user_pin_names.count( pin ) )
+      name = g_user_pin_names[ pin ];
 
-   pwd_hash = g_user_data_info[ pin ].second;
+   pwd_hash = g_user_pwd_hashes[ pin ];
 }
 
 void set_new_user_info( const string& pin,
@@ -12587,11 +12613,17 @@ void set_new_user_info( const string& pin,
    else
    {
       if( is_not_empty )
-         throw runtime_error( "user info pin '" + pin + "' has already been assigned" );
+         throw runtime_error( "user pin '" + pin + "' was already assigned" );
+
+      if( g_user_name_pins.count( name ) )
+         throw runtime_error( "user name '" + name + "' has already been used" );
 
       gup_ofs->store_as_text_file( pin, name + ' ' + pwd_hash );
 
-      g_user_data_info[ pin ] = make_pair( name, pwd_hash );
+      g_user_name_pins[ name ] = pin;
+      g_user_pin_names[ pin ] = name;
+
+      g_user_pwd_hashes[ pin ] = pwd_hash;
    }
 }
 

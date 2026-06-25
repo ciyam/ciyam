@@ -843,6 +843,17 @@ void export_repository_entries( );
 
 bool has_user_info( const std::string& pin, bool* p_is_not_empty = 0 );
 
+inline bool has_empty_user_hash( const std::string& pin )
+{
+   bool is_not_empty = true;
+
+   has_user_info( pin, &is_not_empty );
+
+   return !is_not_empty;
+}
+
+bool has_user_name( const std::string& name );
+
 void add_new_user_info( const std::string& pin );
 
 void get_user_info( const std::string& pin, std::string& name, std::string& pwd_hash );
