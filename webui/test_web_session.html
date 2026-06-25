@@ -26,13 +26,16 @@
       <option value="create">Create</option>
       </select>
       <br/>
-      <div id="name_div">
+      <div id="user_id_div">
       <br/>
-      <label>Username: &nbsp <input type="text" id="user_name" size="30"></label>
+      <label>Username: &nbsp <input type="text" id="user_name" size="30" maxlength="30"></label>
       </div>
+      <div id="password_div">
       <br/>
       <label>Password: &nbsp;&nbsp; <input type="password" id="user_password" size="30"></label>
-      <br/><br/>
+      <br/>
+      </div>
+      <br/>
       <label>Device: &nbsp;&nbsp;&nbsp; <input type="text" id="user_device" size="20" readonly></label>
       <br/><br/>
       <label>Session: &nbsp; <input type="text" id="user_session" size="25" readonly></label>
@@ -263,7 +266,7 @@
 
       document.getElementById( "user_name" ).value = "";
 
-      document.getElementById( "name_div" ).style.display = "none";
+      document.getElementById( "user_id_div" ).style.display = "none";
 
       if( access == "create" )
       {
@@ -372,7 +375,7 @@
 
       console.log( "self: " + self );
 
-      document.getElementById( "name_div" ).style.display = "none";
+      document.getElementById( "user_id_div" ).style.display = "none";
 
       var href_url = new URL( window.location.href );
 
@@ -779,7 +782,7 @@
 
                if( entropy == "@none" )
                {
-                  document.getElementById( "name_div" ).style.display = "block";
+                  document.getElementById( "user_id_div" ).style.display = "block";
 
                   document.getElementById( "user_name" ).focus( );
                }
@@ -812,7 +815,7 @@
 
                document.getElementById( "user_name" ).value = "";
 
-               document.getElementById( "name_div" ).style.display = "none";
+               document.getElementById( "user_id_div" ).style.display = "none";
 
                document.getElementById( "user_unique" ).focus( );
             }
