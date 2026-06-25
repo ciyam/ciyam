@@ -24,6 +24,7 @@
 #include "http_handler.h"
 
 #include "mime.h"
+#include "regex.h"
 #include "base64.h"
 #include "format.h"
 #include "sha256.h"
@@ -1303,6 +1304,14 @@ void http_request_handler::on_start( )
                            else if( has_user_name( name ) )
                               // FUTURE: This message should be handled as a server string message.
                               error = "Username '" + name + "' has already been taken.";
+                           else
+                           {
+                              regex_chain expr( "^[a-z][-a-z0-9]{2,29}$&&^.*[^-]$&!^.*--.*$" );
+
+                              if( expr.search( name ) != 0 )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Username must start with 'a-z' followed by 'a-z' or '0-9' characters (optionally use '-' for separators).";
+                           }
                         }
                      }
                      else if( !has_user_info( access ) )
