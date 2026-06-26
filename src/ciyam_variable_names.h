@@ -213,6 +213,7 @@ enum special_var
    e_special_var_total_put_files,
    e_special_var_can_omit_prepare,
    e_special_var_check_if_changed,
+   e_special_var_cws_username_for,
    e_special_var_dummy_time_stamp,
    e_special_var_preparing_backup,
    e_special_var_progress_message,
