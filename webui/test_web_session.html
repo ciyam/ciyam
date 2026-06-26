@@ -42,7 +42,7 @@
       <br/><br/>
       <label>Unique: &nbsp;&nbsp; <input type="text" id="user_unique" size="30" readonly></label>
       <br/><br/>
-      <label>Request: &nbsp;&nbsp;&nbsp; <input type="text" id="user_request" size="60" placeholder="(e.g. quit)"></label>
+      <label>Request: &nbsp;&nbsp;&nbsp; <input type="text" id="user_request" size="60" placeholder="quit" onkeydown="return input_key( event )"></label>
       <br/><br/>
       <textarea id="user_arbitrary" name="user_arbitrary" rows="20" cols="80"></textarea>
       <br/><br/>
@@ -70,10 +70,11 @@
    var self = 0;
    var owner = 0;
 
-   const style_load_name = "style_load";
    const style_save_name = "style_save";
 
-   const style_load_prefix = style_load_name + " ";
+   const save_name = "save";
+   const erase_name = "erase";
+   const style_load_name = "style_load";
 
    window.onfocus = function ( )
    {
@@ -222,6 +223,21 @@
       }
    } );
 
+   function input_key( event )
+   {
+      // NOTE: Up arrow sets the value from the placeholder
+      // (which acts as a "recall the last request" to then
+      // be optionally edited for repeating).
+      if( event.keyCode == 38 )
+      {
+         event.target.value = event.target.placeholder;
+
+         return false;
+      }
+      else
+         return true;
+   }
+
    function encode_base64( str )
    {
       const bytes = new TextEncoder( ).encode( str );
@@ -260,6 +276,11 @@
       return false;
    }
 
+   function harden_passwd( access, password )
+   {
+      return hex_sha256( access + password );
+   }
+
    function select_access( )
    {
       var access = document.getElementById( "user_droplist" ).value;
@@ -267,6 +288,7 @@
       document.getElementById( "user_name" ).value = "";
 
       document.getElementById( "user_id_div" ).style.display = "none";
+      document.getElementById( "password_div" ).style.display = "block";
 
       if( access == "create" )
       {
@@ -376,6 +398,7 @@
       console.log( "self: " + self );
 
       document.getElementById( "user_id_div" ).style.display = "none";
+      document.getElementById( "password_div" ).style.display = "block";
 
       var href_url = new URL( window.location.href );
 
@@ -493,21 +516,42 @@
       page_style = new_page_style;
    }
 
-   function do_fetch( )
+   function do_local_request( request )
    {
-      var request = document.getElementById( "user_request" ).value;
-
-      if( request == style_load_name )
+      if( request == save_name )
+         do_retain( true );
+      else if( request.startsWith( save_name ) )
+         do_retain( false );
+      else if( request == erase_name )
+         do_remove( true );
+      else if( request.startsWith( erase_name ) )
+         do_remove( false );
+      else if( request == style_load_name )
          load_style( "dummy", document.getElementById( "user_arbitrary" ).value );
-      else if( request.startsWith( style_load_prefix ) )
+      else if( request.startsWith( style_load_name ) )
       {
-         var style = request.substr( style_load_prefix.length );
+         var style = request.substr( style_load_name.length + 1 );
 
          if( style == "***" )
             style = document.getElementById( "user_access" ).value;
 
          load_style( style + ".css" );
       }
+
+      document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
+      document.getElementById( "user_request" ).value = "";
+   }
+
+   function do_fetch( )
+   {
+      var request = document.getElementById( "user_request" ).value;
+
+      if( request.startsWith( save_name ) )
+         do_local_request( request );
+      else if( request.startsWith( erase_name ) )
+         do_local_request( request );
+      else if( request.startsWith( style_load_name ) )
+         do_local_request( request );
       else
       {
          var url = window.location.protocol + '//' + window.location.host + "/api.cws"
@@ -533,23 +577,29 @@
          if( document.getElementById( "user_password" ).value != "" )
             password = document.getElementById( "user_password" ).value;
 
-         var credentials = "";
+         var hardened = "";
 
          if( password != "" )
+            hardened = harden_passwd( access + password );
+         else if( username != "" )
+         {
+            hardened = harden_passwd( access + username );
+
+            document.getElementById( "user_password" ).value = username;
+         }
+
+         var credentials = "";
+
+         if( hardened != "" )
          {
             if( username != "" )
                credentials = username + ":";
 
-            credentials += password;
+            credentials += hardened;
          }
 
-         // NOTE: Uses base64 URL encoding so is not plain text.
-         // Although not intended to provided real security uses
-         // this encoding (rather than just URI) to help prevent
-         // simplistic "over the shoulder" type observation. For
-         // non-test usage the password should first be hardened
-         // (but will need to be base64 encoded regardless).
-         if( ( device == "" ) && ( password != "" ) )
+         // NOTE: Credentials must be base64 encoded.
+         if( ( device == "" ) && ( credentials != "" ) )
             qry_data += "&passwd=" + encode_base64_url( credentials );
 
          var arbitrary = "";
@@ -584,7 +634,7 @@
                if( session == "" )
                {
                   if( hashed == "" )
-                     hashed = hex_sha256( hex_sha256( password ) + device );
+                     hashed = hex_sha256( hex_sha256( harden_passwd( access + password ) ) + device );
 
                   var session = hex_sha256( hashed + unique ).substr( 0, 20 );
 
@@ -615,7 +665,7 @@
       }
    }
 
-   function do_retain( )
+   function do_retain( force_full )
    {
       var access = document.getElementById( "user_access" ).value;
 
@@ -650,7 +700,10 @@
 
             if( hashed != "" )
             {
-               var check = confirm( "User access information has now been stored.\nAlso retain the hashed password information?" );
+               var check = force_full;
+
+               if( check == null )
+                  check = confirm( "User access information has now been stored.\nAlso retain the hashed password information?" );
 
                if( check )
                {
@@ -675,7 +728,7 @@
       }
    }
 
-   function do_remove( )
+   function do_remove( force_full )
    {
       var scope = "partially";
 
@@ -697,7 +750,10 @@
       else
          remove_prompt = "Hashed password has now been removed.\nAlso remove all user access information?";
 
-      var check = confirm( remove_prompt );
+      var check = force_full;
+
+      if( check == null )
+         check = confirm( remove_prompt );
 
       if( check )
       {
@@ -740,6 +796,10 @@
    {
       console.log( data );
 
+      // NOTE: Changes the placeholder to the request just issued (making it clear that a response was received).
+      if( document.getElementById( "user_request" ).value != "" )
+         document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
+
       if( data.startsWith( "Error: " ) )
       {
          document.getElementById( "data" ).innerText = data;
@@ -751,7 +811,6 @@
             document.getElementById( "user_unique" ).value = "";
             document.getElementById( "user_session" ).value = "";
 
-            document.getElementById( "user_request" ).value = "";
             document.getElementById( "user_request" ).disabled = true;
 
             document.getElementById( "user_droplist" ).disabled = false;
@@ -783,6 +842,7 @@
                if( entropy == "@none" )
                {
                   document.getElementById( "user_id_div" ).style.display = "block";
+                  document.getElementById( "password_div" ).style.display = "none";
 
                   document.getElementById( "user_name" ).focus( );
                }
@@ -816,6 +876,7 @@
                document.getElementById( "user_name" ).value = "";
 
                document.getElementById( "user_id_div" ).style.display = "none";
+               document.getElementById( "password_div" ).style.display = "block";
 
                document.getElementById( "user_unique" ).focus( );
             }
