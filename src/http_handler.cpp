@@ -102,8 +102,6 @@ const char* const c_web_session_script = "web_session.cin";
 
 const char* const c_web_device_name_admin = ".web_device_admin";
 
-const char* const c_web_access_test_dummy = ".web_access_dummy";
-
 const char* const c_web_demo_pin_1 = "10101";
 const char* const c_web_demo_pin_2 = "10201";
 const char* const c_web_demo_pin_3 = "10301";
@@ -203,7 +201,9 @@ const char* const c_cws_request_style_view = "style_view";
 const char* const c_cws_request_style_erase = "style_erase";
 const char* const c_cws_request_access_token = "access_token";
 
-const char* const c_cws_request_access_token_arg_secret = "secret";
+const char* const c_cws_request_access_token_opt_secret = "-secret";
+const char* const c_cws_request_access_token_opt_remove_prefix = "-remove=";
+const char* const c_cws_request_access_token_opt_username_prefix = "-username=";
 
 const int c_num_retries = 5;
 
@@ -371,6 +371,8 @@ const size_t c_min_passwd_retry_seconds = 3;
 
 const size_t c_max_token_create_attempts = 10;
 
+const char* const c_cws_force_admin_update = "cws_force_admin_update";
+
 mutex g_mutex;
 
 string g_none;
@@ -388,6 +390,8 @@ string g_cws_admin_token;
 string g_cws_admin_device;
 
 string g_web_session_check;
+
+string g_cws_username_for_prefix;
 
 set< string > g_cws_access_tokens;
 
@@ -470,10 +474,11 @@ string create_or_check_device( const string* p_device = 0, bool* p_locked = 0 )
 {
    string device( p_device ? *p_device : uuid( ).as_string( ).substr( 0, c_cws_device_length ) );
 
-   // NOTE: Creates the "admin" device file if not present (which should only
-   // occur before the system identity is created) unless a dummy test access
-   // file exists (which should only be found when running regression tests).
-   if( g_cws_admin_device.empty( ) && !file_exists( c_web_access_test_dummy ) )
+   // NOTE: Creates the "admin" device file
+   // if is not already found (which should
+   // only occur before the system identity
+   // has been created).
+   if( g_cws_admin_device.empty( ) )
    {
       if( p_device )
          throw runtime_error( "unexpected 'create_or_check_device' call without admin device" );
@@ -1520,10 +1525,21 @@ void http_request_handler::on_start( )
                      seed = access_seed;
                   else if( !is_seed_needed )
                   {
-                     if( access != c_admin )
-                        seed = g_none;
-                     else
+                     if( access == c_admin )
                         seed = c_admin;
+                     else
+                     {
+                        seed = g_none;
+
+                        string suggestion( get_system_variable( g_cws_username_for_prefix + pin ) );
+
+                        if( !suggestion.empty( ) )
+                        {
+                           seed += ' ' + suggestion;
+
+                           set_system_variable( g_cws_username_for_prefix + access, "" );
+                        }
+                     }
                   }
                   else
                   {
@@ -1870,30 +1886,63 @@ void http_request_handler::on_start( )
                            {
                               if( access != g_cws_admin_token )
                                  // FUTURE: This message should be handled as a server string message.
-                                 error = "Access tokens can only be created by the administrator.";
+                                 error = "Access tokens can only be maintained by the administrator.";
                               else
                               {
                                  bool is_secret = false;
 
-                                 if( request_args == c_cws_request_access_token_arg_secret )
+                                 string suggested_username;
+
+                                 if( request_args == c_cws_request_access_token_opt_secret )
                                     is_secret = true;
 
-                                 if( !is_secret && !request_args.empty( ) )
-                                    // FUTURE: This message should be handled as a server string message.
-                                    error = "Invalid argument(s) '" + request_args + "' for access token creation.";
+                                 if( ( request_args.find( c_cws_request_access_token_opt_remove_prefix ) == 0 )
+                                  && ( request_args.length( ) > strlen( c_cws_request_access_token_opt_remove_prefix ) + 1 ) )
+                                 {
+                                    request_args.erase( 0, strlen( c_cws_request_access_token_opt_remove_prefix ) );
+
+                                    if( !has_user_info( request_args ) )
+                                       // FUTURE: This message should be handled as a server string message.
+                                       error = "Unkknown access token '" + request_args + "' for removal.";
+                                    else
+                                    {
+                                       found = true;
+
+                                       remove_user_info_from_storage( request_args );
+                                    }
+                                 }
                                  else
                                  {
-                                    found = true;
+                                    if( ( request_args.find( c_cws_request_access_token_opt_username_prefix ) == 0 )
+                                     && ( request_args.length( ) > ( strlen( c_cws_request_access_token_opt_username_prefix ) + 2 ) ) )
+                                    {
+                                       request_args.erase( 0, strlen( c_cws_request_access_token_opt_username_prefix ) );
 
-                                    temp_umask tum( 077 );
+                                       suggested_username = request_args;
 
-                                    string access_token( create_empty_token_file( prefix,
-                                     ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_mixed ) ) );
+                                       request_args.erase( );
+                                    }
 
-                                    if( !is_json_output )
-                                       response = access_token;
+                                    if( !is_secret && !request_args.empty( ) )
+                                       // FUTURE: This message should be handled as a server string message.
+                                       error = "Invalid argument(s) '" + request_args + "' for access token creation.";
                                     else
-                                       response = "{\"access_token\":\"" + access_token + "\"}\n";
+                                    {
+                                       found = true;
+
+                                       temp_umask tum( 077 );
+
+                                       string access_token( create_empty_token_file( prefix,
+                                        ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_mixed ) ) );
+
+                                       if( !suggested_username.empty( ) )
+                                          set_system_variable( g_cws_username_for_prefix + access_token, suggested_username );
+
+                                       if( !is_json_output )
+                                          response = access_token;
+                                       else
+                                          response = "{\"access_token\":\"" + access_token + "\"}\n";
+                                    }
                                  }
                               }
                            }
@@ -2419,16 +2468,17 @@ void http_listener::on_start( )
 
       g_max_post_data_allowed = get_max_http_post_allowed( );
 
-      string admin_web_session_file( c_web_access_prefix );
+      string admin_web_access_file( c_web_access_prefix );
 
-      admin_web_session_file += c_admin;
+      admin_web_access_file += c_admin;
 
-      if( file_exists( admin_web_session_file ) )
-         g_cws_admin_token = opt_buffer_file( admin_web_session_file );
+      g_cws_admin_token = opt_buffer_file( admin_web_access_file );
 
       g_cws_admin_device = opt_buffer_file( c_web_device_name_admin );
 
       g_web_session_check = get_special_var_name( e_special_var_web_session_check );
+
+      g_cws_username_for_prefix = get_special_var_name( e_special_var_cws_username_for ) + '_';
 
       while( true )
       {
@@ -2447,7 +2497,17 @@ void http_listener::on_start( )
 #endif
 
          if( *up_socket )
+         {
+            if( file_exists( c_cws_force_admin_update ) )
+            {
+               g_cws_admin_token = opt_buffer_file( admin_web_access_file );
+               g_cws_admin_device = opt_buffer_file( c_web_device_name_admin );
+
+               file_remove( c_cws_force_admin_update );
+            }
+
             init_http_handler( up_socket.release( ), address.get_addr_string( ) );
+         }
       }
    }
    catch( exception& x )
