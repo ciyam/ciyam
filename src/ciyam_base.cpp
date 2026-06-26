@@ -12627,6 +12627,25 @@ void set_new_user_info( const string& pin,
    }
 }
 
+void remove_user_info_from_storage( const string& pin )
+{
+   system_ods_fs_guard ods_fs_guard;
+
+   system_ods_bulk_write ods_bulk_write;
+
+   gup_ofs->set_root_folder( c_system_user_info_folder );
+
+   if( !has_user_info( pin ) )
+      throw runtime_error( "user info for '" + pin + "' does not exist" );
+
+   gup_ofs->remove_file( pin );
+
+   g_user_name_pins.erase( g_user_pin_names[ pin ] );
+   g_user_pin_names.erase( pin );
+
+   g_user_pwd_hashes.erase( pin );
+}
+
 struct system_ods_bulk_read::impl
 {
    impl( )
