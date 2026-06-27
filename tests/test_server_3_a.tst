@@ -15,6 +15,15 @@ Prepare to activate the newly reserved access token.
 Attempt to use 'test_1' rather than 'test-1' username.
 Error: Username must start with 'a-z' followed by 'a-z' or '0-9' characters (optionally use '-' for separators).
 Activates the access token using the suggested 'test-1' username.
+Error: This web session is not valid (or has expired).
+quit
+unlock [<key>]
+style_list
+style_save
+style_view [<name>]
+style_erase
+access_token [-secret|-remove=<pin>|-username=<username>]
+Session terminated.
 Now removes the previously activated new user access token.
 [okay]
 Session terminated.
