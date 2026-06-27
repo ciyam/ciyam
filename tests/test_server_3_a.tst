@@ -5,13 +5,13 @@ Error: Invalid format value 'xxxx'.
 0.0.0100000000
 {"post_limit":"100000000"}{"post_limit":"100.0 MB"}testing...
 {"data":"testing..."}Error: Invalid device identity 'bad_device'.
-[running as admin]
+[admin]
 Error: This web session is not valid (or has expired).
-[running as admin]
+[admin]
 Error: invalid attempt to create unlock key for unencrypted identity
 Reserve a new access token and suggest the username 'test-1'.
 Prepare to activate the newly reserved access token.
-@none test-1
+88888 @none test-1
 Attempt to use 'test_1' rather than 'test-1' username.
 Error: Username must start with 'a-z' followed by 'a-z' or '0-9' characters (optionally use '-' for separators).
 Activates the access token using the suggested 'test-1' username.
@@ -22,9 +22,10 @@ style_list
 style_save
 style_view [<name>]
 style_erase
-access_token [-secret|-remove=<pin>|-username=<username>]
+access_token [-list|-secret|-remove=<pin>|-user_info=[<pin>:]<username>]
 Session terminated.
-Now removes the previously activated new user access token.
+Now will list all standard access tokens and then remove the previously activated new user access token.
+88888
 [okay]
 Session terminated.
 Error: This web session is not valid (or has expired).

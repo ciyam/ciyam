@@ -39,11 +39,9 @@ curl -s "localhost:13031/api.cws?access=12345&device=$device&session=bad_session
 curl -s "localhost:13031/api.cws?access=12345&device=$device&session=$session"
 curl -s "localhost:13031/api.cws?access=12345&device=$device&request=unlock&session=$session"
 echo "Reserve a new access token and suggest the username 'test-1'."
-new_access=$(curl -s "localhost:13031/api.cws?access=12345&device=$device&request=access_token%20-username%3dtest-1&session=$session")
+new_access=$(curl -s "localhost:13031/api.cws?access=12345&device=$device&request=access_token%20-user_info%3d88888%3atest-1&session=$session")
 echo "Prepare to activate the newly reserved access token."
-new_inform=$(curl -s "localhost:13031/api.cws?access=$new_access")
-new_suffix=${new_inform#* }
-echo $new_suffix
+curl -s "localhost:13031/api.cws?access=$new_access"
 echo "Attempt to use 'test_1' rather than 'test-1' username."
 new_passwd=$(echo -n "test_1:password" | base64)
 curl -s "localhost:13031/api.cws?access=$new_access&passwd=$new_passwd"
@@ -56,7 +54,8 @@ new_session=$(echo -n "$new_checked$new_unique" | sha256sum | head -c 20)
 curl -s "localhost:13031/api.cws?access=$new_access&device=$new_device&request=help&session=bad_session"
 curl -s "localhost:13031/api.cws?access=$new_access&device=$new_device&request=help&session=$new_session"
 curl -s "localhost:13031/api.cws?access=$new_access&device=$new_device&request=quit&session=$new_session"
-echo "Now removes the previously activated new user access token."
+echo "Now will list all standard access tokens and then remove the previously activated new user access token."
+curl -s "localhost:13031/api.cws?access=12345&device=$device&request=access_token%20-list&session=$session"
 curl -s "localhost:13031/api.cws?access=12345&device=$device&request=access_token%20-remove%3d$new_access&session=$session"
 curl -s "localhost:13031/api.cws?access=12345&device=$device&request=quit&session=$session"
 curl -s "localhost:13031/api.cws?access=12345&device=$device&session=$session"
