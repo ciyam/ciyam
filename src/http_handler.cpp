@@ -193,6 +193,7 @@ const char* const c_query_param_name_verbose = "verbose";
 const char* const c_query_param_value_json = "json";
 const char* const c_query_param_value_text = "text";
 
+const char* const c_cws_request_help = "help";
 const char* const c_cws_request_quit = "quit";
 const char* const c_cws_request_unlock = "unlock";
 const char* const c_cws_request_style_list = "style_list";
@@ -204,6 +205,8 @@ const char* const c_cws_request_access_token = "access_token";
 const char* const c_cws_request_access_token_opt_secret = "-secret";
 const char* const c_cws_request_access_token_opt_remove_prefix = "-remove=";
 const char* const c_cws_request_access_token_opt_username_prefix = "-username=";
+
+const char* const c_cws_help_request_output = "quit\nunlock [<key>]\nstyle_list\nstyle_save\nstyle_view [<name>]\nstyle_erase\naccess_token [-secret|-remove=<pin>|-username=<username>]";
 
 const int c_num_retries = 5;
 
@@ -370,6 +373,8 @@ const size_t c_admin_retry_timeout = 100;
 const size_t c_min_passwd_retry_seconds = 3;
 
 const size_t c_max_token_create_attempts = 10;
+
+const char* const c_cws_own = "***";
 
 const char* const c_cws_force_admin_update = "cws_force_admin_update";
 
@@ -1577,8 +1582,6 @@ void http_request_handler::on_start( )
                         response = new_device;
                      else
                         response = "{\"new_device\":\"" + new_device + "\"}";
-
-                     g_cws_access_devices[ access ].insert( new_device );
                   }
                }
                else
@@ -1686,7 +1689,19 @@ void http_request_handler::on_start( )
                               set_system_variable( web_started_name, when_locked );
                            }
 
-                           if( request == c_cws_request_quit )
+                           // NOTE: As the "admin" is currently permitted to directly issue
+                           // application protocol commands will only use CWS help if there
+                           // were no arguments provided with the request.
+                           if( ( request == c_cws_request_help ) && request_args.empty( ) )
+                           {
+                              found = true;
+
+                              if( !is_json_output )
+                                 response = c_cws_help_request_output;
+                              else
+                                 response = "{\"commands\":\"" + escaped_json( c_cws_help_request_output ) + "\"}\n";
+                           }
+                           else if( request == c_cws_request_quit )
                            {
                               found = true;
 
@@ -1698,6 +1713,12 @@ void http_request_handler::on_start( )
                               set_system_variable( web_message_name, "" );
                               set_system_variable( web_session_name, "" );
                               set_system_variable( web_started_name, "" );
+
+                              // NOTE: In case the access device was a temporary
+                              // one will remove it now (so it is important that
+                              // CWS clients use a "quit" request).
+                              if( g_cws_access_devices.count( access ) )
+                                 g_cws_access_devices[ access ].erase( device );
                            }
                            else if( request == c_cws_request_unlock )
                            {
@@ -1800,7 +1821,7 @@ void http_request_handler::on_start( )
                                     string next( styles[ i ] );
 
                                     if( next == access )
-                                       next = "***";
+                                       next = c_cws_own;
 
                                     if( !is_admin && is_pin_token( next ) )
                                        continue;
@@ -1843,7 +1864,12 @@ void http_request_handler::on_start( )
                            }
                            else if( request == c_cws_request_style_view )
                            {
-                              string file_name( get_web_root( ) + '/' + request_args + g_css_suffix );
+                              string name( request_args );
+
+                              if( name.empty( ) || ( name == c_cws_own ) )
+                                 name = access;
+
+                              string file_name( get_web_root( ) + '/' + name + g_css_suffix );
 
                               if( !file_exists( file_name ) )
                                  // FUTURE: This message should be handled as a server string message.
@@ -2008,7 +2034,7 @@ void http_request_handler::on_start( )
                                  }
 
                                  if( !allowed_command )
-                                    response = "[bad request]";
+                                    response = "[bad]";
                                  else
                                  {
                                     if( !request.empty( ) )
@@ -2024,7 +2050,7 @@ void http_request_handler::on_start( )
                                        {
                                           response = buffer_file( output_file_name );
 
-                                          response = trim( response, false, true, "\n" );
+                                          response = trim( response, false, false, "\n" );
 
                                           file_remove( output_file_name );
 
@@ -2033,7 +2059,7 @@ void http_request_handler::on_start( )
                                     }
 
                                     if( response.empty( ) )
-                                       response = "[empty response]";
+                                       response = "[none]";
                                  }
                               }
                            }
