@@ -259,6 +259,35 @@
       return encode_base64( str ).replace( /\+/g, "-" ).replace( /\//g, "_" ).replace( /=+$/, "" );
    }
 
+   function word_length_compare( lhs, rhs )
+   {
+      var pos = lhs.indexOf( " " );
+
+      if( pos > 0 )
+         lhs = lhs.substring( 0, pos );
+
+      pos = rhs.indexOf( " " );
+
+      if( pos > 0 )
+         rhs = rhs.substring( 0, pos );
+
+      var retval = 0;
+
+      if( lhs.length < rhs.length )
+         retval = -1;
+      else if( lhs.length > rhs.length )
+         retval = 1;
+      else
+      {
+         if( lhs < rhs )
+            retval = -1;
+         else if( lhs > rhs )
+            retval = 1;
+      }
+
+      return retval;
+   }
+
    function binary_search( array, item )
    {
       var left = 0;
@@ -952,6 +981,21 @@
          else
          {
             document.getElementById( "data" ).innerText = "";
+
+            // NOTE: Add local commands to the help output.
+            if( document.getElementById( "user_request" ).value == "help" )
+            {
+               var lines = data.split( "\n" );
+
+               lines.push( "save" );
+               lines.push( "erase [<pin>]" );
+               lines.push( "style_load [<name> or none]" );
+
+               lines.sort( word_length_compare );
+
+               data = lines.join( "\n" );
+            }
+
             document.getElementById( "user_arbitrary" ).value = data;
 
             if( ( data == "[running]" ) || ( data == "[running as admin]" ) )
@@ -1020,8 +1064,7 @@
          }
       }
 
-      if( !has_seed )
-         document.getElementById( "user_request" ).value = "";
+      document.getElementById( "user_request" ).value = "";
    }
    </script>
 </body>
