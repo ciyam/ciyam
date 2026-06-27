@@ -112,6 +112,7 @@ const char* const c_web_message_suffix = ".message";
 const char* const c_web_session_suffix = ".session";
 const char* const c_web_started_suffix = ".started";
 
+const char* const c_web_session_none_response = "[none]";
 const char* const c_web_session_okay_response = "[okay]";
 
 const char* const c_req_param_host = "Host:";
@@ -202,11 +203,12 @@ const char* const c_cws_request_style_view = "style_view";
 const char* const c_cws_request_style_erase = "style_erase";
 const char* const c_cws_request_access_token = "access_token";
 
+const char* const c_cws_request_access_token_opt_list = "-list";
 const char* const c_cws_request_access_token_opt_secret = "-secret";
 const char* const c_cws_request_access_token_opt_remove_prefix = "-remove=";
-const char* const c_cws_request_access_token_opt_username_prefix = "-username=";
+const char* const c_cws_request_access_token_opt_user_info_prefix = "-user_info=";
 
-const char* const c_cws_help_request_output = "quit\nunlock [<key>]\nstyle_list\nstyle_save\nstyle_view [<name>]\nstyle_erase\naccess_token [-secret|-remove=<pin>|-username=<username>]";
+const char* const c_cws_help_request_output = "quit\nunlock [<key>]\nstyle_list\nstyle_save\nstyle_view [<name>]\nstyle_erase\naccess_token [-list|-secret|-remove=<pin>|-user_info=[<pin>:]<username>]";
 
 const int c_num_retries = 5;
 
@@ -549,13 +551,13 @@ bool verify_whether_device_is_valid( const string& device )
    return retval;
 }
 
-string create_empty_token_file( const string& file_prefix, printable_type ptype )
+string create_empty_token_file( const string& file_prefix, printable_type ptype, const string* p_suffix = 0 )
 {
    guard g( g_mutex );
 
    bool okay = false;
 
-   string suffix;
+   string suffix( p_suffix ? *p_suffix : string( ) );
 
    string token_file_prefix( file_prefix );
 
@@ -565,9 +567,12 @@ string create_empty_token_file( const string& file_prefix, printable_type ptype 
    if( token_file_prefix[ token_file_prefix.length( ) - 1 ] != '_' )
       token_file_prefix += '_';
 
+   bool suffix_supplied = !suffix.empty( );
+
    for( size_t i = 0; i < c_max_token_create_attempts; i++ )
    {
-      suffix = random_characters( 5, 0, ptype );
+      if( !suffix_supplied )
+         suffix = random_characters( 5, 0, ptype );
 
       if( suffix == c_admin )
          continue;
@@ -1342,6 +1347,8 @@ void http_request_handler::on_start( )
                   }
                }
 
+               bool use_none_response = false;
+
                string request_args;
 
                string::size_type pos = request.find( ' ' );
@@ -1835,10 +1842,15 @@ void http_request_handler::on_start( )
                                  all_styles = allowed_styles;
                               }
 
-                              if( !is_json_output )
-                                 response = all_styles;
+                              if( all_styles.empty( ) )
+                                 use_none_response = true;
                               else
-                                 response = "{\"all_styles\":\"" + escaped_json( all_styles ) + "\"}\n";
+                              {
+                                 if( !is_json_output )
+                                    response = all_styles;
+                                 else
+                                    response = "{\"all_styles\":\"" + escaped_json( all_styles ) + "\"}\n";
+                              }
                            }
                            else if( request == c_cws_request_style_save )
                            {
@@ -1917,12 +1929,28 @@ void http_request_handler::on_start( )
                               {
                                  bool is_secret = false;
 
-                                 string suggested_username;
+                                 string pin, suggested_username;
 
                                  if( request_args == c_cws_request_access_token_opt_secret )
                                     is_secret = true;
 
-                                 if( ( request_args.find( c_cws_request_access_token_opt_remove_prefix ) == 0 )
+                                 if( request_args == c_cws_request_access_token_opt_list )
+                                 {
+                                    found = true;
+
+                                    string all_user_info( get_all_user_pins( ) );
+
+                                    if( all_user_info.empty( ) )
+                                       use_none_response = true;
+                                    else
+                                    {
+                                       if( !is_json_output )
+                                          response = all_user_info;
+                                       else
+                                          response = "{\"access_tokens\":\"" + escaped_json( all_user_info ) + "\"}\n";
+                                    }
+                                 }
+                                 else if( ( request_args.find( c_cws_request_access_token_opt_remove_prefix ) == 0 )
                                   && ( request_args.length( ) > strlen( c_cws_request_access_token_opt_remove_prefix ) + 1 ) )
                                  {
                                     request_args.erase( 0, strlen( c_cws_request_access_token_opt_remove_prefix ) );
@@ -1939,10 +1967,19 @@ void http_request_handler::on_start( )
                                  }
                                  else
                                  {
-                                    if( ( request_args.find( c_cws_request_access_token_opt_username_prefix ) == 0 )
-                                     && ( request_args.length( ) > ( strlen( c_cws_request_access_token_opt_username_prefix ) + 2 ) ) )
+                                    if( ( request_args.find( c_cws_request_access_token_opt_user_info_prefix ) == 0 )
+                                     && ( request_args.length( ) > ( strlen( c_cws_request_access_token_opt_user_info_prefix ) + 2 ) ) )
                                     {
-                                       request_args.erase( 0, strlen( c_cws_request_access_token_opt_username_prefix ) );
+                                       request_args.erase( 0, strlen( c_cws_request_access_token_opt_user_info_prefix ) );
+
+                                       string::size_type pos = request_args.find( ':' );
+
+                                       if( pos != string::npos )
+                                       {
+                                          pin = request_args.substr( 0, pos );
+
+                                          request_args.erase( 0, pos + 1 );
+                                       }
 
                                        suggested_username = request_args;
 
@@ -1959,7 +1996,7 @@ void http_request_handler::on_start( )
                                        temp_umask tum( 077 );
 
                                        string access_token( create_empty_token_file( prefix,
-                                        ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_mixed ) ) );
+                                        ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_mixed ), &pin ) );
 
                                        if( !suggested_username.empty( ) )
                                           set_system_variable( g_cws_username_for_prefix + access_token, suggested_username );
@@ -1997,7 +2034,7 @@ void http_request_handler::on_start( )
                               // NOTE: Allows for a couple of
                               // seconds to start the session
                               // script (which will result in
-                              // an error if is not found).
+                              // an error if it's not found).
                               for( size_t i = 0; i < 9; i++ )
                               {
                                  running = has_system_variable( web_message_name );
@@ -2057,16 +2094,13 @@ void http_request_handler::on_start( )
                                           break;
                                        }
                                     }
-
-                                    if( response.empty( ) )
-                                       response = "[none]";
                                  }
                               }
                            }
 
                            if( found && response.empty( ) )
                            {
-                              string okay_reponse( c_web_session_okay_response );
+                              string okay_reponse( use_none_response ? c_web_session_none_response : c_web_session_okay_response );
 
                               if( !is_json_output )
                                  response = okay_reponse;
