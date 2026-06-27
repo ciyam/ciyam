@@ -477,9 +477,11 @@
 
          if( access != "" )
          {
+            document.getElementById( "user_device" ).value = cws_device;
+
             document.getElementById( "user_retain" ).checked = true;
 
-            document.getElementById( "user_device" ).focus( );
+            document.getElementById( "user_unique" ).focus( );
 
             if( localStorage.getItem( "cws.hashed_" + access ) != null )
             {
@@ -998,7 +1000,7 @@
 
             document.getElementById( "user_arbitrary" ).value = data;
 
-            if( ( data == "[running]" ) || ( data == "[running as admin]" ) )
+            if( ( data == "[admin]" ) || ( data == "[standard]" ) )
             {
                is_running = true;
 
