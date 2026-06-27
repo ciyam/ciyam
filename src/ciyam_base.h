@@ -876,6 +876,8 @@ inline std::string get_user_pwd_hash( const std::string& pin )
    return pwd_hash;
 }
 
+std::string get_all_user_pins( );
+
 void set_new_user_info( const std::string& pin,
  const std::string& name, const std::string& pwd_hash );
 

@@ -12597,6 +12597,23 @@ void get_user_info( const string& pin, string& name, string& pwd_hash )
    pwd_hash = g_user_pwd_hashes[ pin ];
 }
 
+string get_all_user_pins( )
+{
+   system_ods_fs_guard ods_fs_guard;
+
+   string retval;
+
+   for( map< string, string >::const_iterator ci = g_user_pwd_hashes.begin( ); ci != g_user_pwd_hashes.end( ); ++ci )
+   {
+      if( !retval.empty( ) )
+         retval += '\n';
+
+      retval += ci->first;
+   }
+
+   return retval;
+}
+
 void set_new_user_info( const string& pin,
  const string& name, const string& pwd_hash )
 {
