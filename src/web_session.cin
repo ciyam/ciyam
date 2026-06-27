@@ -30,11 +30,11 @@ OUTPUT_FILE=/tmp/ciyam.web.$TOKEN.$DEVICE
 ;
 ADMIN_TOKEN=@file:.web_access_admin
 ;
-@ifneq "$TOKEN" "$ADMIN_TOKEN"
-.system_variable @web.$TOKEN.$DEVICE.message "[running]"
+@ifeq "$TOKEN" "$ADMIN_TOKEN"
+.system_variable @web.$TOKEN.$DEVICE.message "[admin]"
 @else
 IS_ADMIN=1
-.system_variable @web.$TOKEN.$DEVICE.message "[running as admin]"
+.system_variable @web.$TOKEN.$DEVICE.message "[standard]"
 @endif
 ;
 @label NEXT
