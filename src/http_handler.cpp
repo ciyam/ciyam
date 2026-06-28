@@ -52,6 +52,14 @@ extern volatile sig_atomic_t g_server_shutdown;
 namespace
 {
 
+enum http_request_type
+{
+   e_http_request_type_get,
+   e_http_request_type_put,
+   e_http_request_type_post,
+   e_http_request_type_delete
+};
+
 const size_t c_max_line_length = 10000;
 
 const size_t c_max_request_lines = 100;
@@ -79,7 +87,9 @@ const char* const c_data_separator = "\r\n\r\n";
 const char* const c_json_escape_specials = "bfnrt\b\f\n\r\t";
 
 const char* const c_get_request = "GET ";
+const char* const c_put_request = "PUT ";
 const char* const c_post_request = "POST ";
+const char* const c_delete_request = "DELETE ";
 
 const char* const c_index_html = "index.html";
 
@@ -201,14 +211,15 @@ const char* const c_cws_request_style_list = "style_list";
 const char* const c_cws_request_style_save = "style_save";
 const char* const c_cws_request_style_view = "style_view";
 const char* const c_cws_request_style_erase = "style_erase";
-const char* const c_cws_request_access_token = "access_token";
+const char* const c_cws_request_access_create = "access_create";
+const char* const c_cws_request_access_remove = "access_remove";
+const char* const c_cws_request_access_tokens = "access_tokens";
 
-const char* const c_cws_request_access_token_opt_list = "-list";
-const char* const c_cws_request_access_token_opt_secret = "-secret";
-const char* const c_cws_request_access_token_opt_remove_prefix = "-remove=";
-const char* const c_cws_request_access_token_opt_user_info_prefix = "-user_info=";
+const char* const c_cws_request_access_create_op_secret = "-secret";
+const char* const c_cws_request_access_create_opt_user_info_prefix = "-user_info=";
 
-const char* const c_cws_help_request_output = "quit\nunlock [<key>]\nstyle_list\nstyle_save\nstyle_view [<name>]\nstyle_erase\naccess_token [-list|-secret|-remove=<pin>|-user_info=[<pin>:]<username>]";
+const char* const c_cws_help_request_output = "quit POST\nunlock [<key>] POST\nstyle_list\nstyle_save PUT\nstyle_view [<name>]\n"
+ "style_erase DELETE\naccess_create [-secret|-user_info=[<pin>:]<username>] POST\naccess_remove <pin> DELETE\naccess_tokens";
 
 const int c_num_retries = 5;
 
@@ -1920,7 +1931,7 @@ void http_request_handler::on_start( )
                                     error = "Stylesheet could not be erased (contact the administrator).";
                               }
                            }
-                           else if( request == c_cws_request_access_token )
+                           else if( request == c_cws_request_access_create )
                            {
                               if( access != g_cws_admin_token )
                                  // FUTURE: This message should be handled as a server string message.
@@ -1931,81 +1942,90 @@ void http_request_handler::on_start( )
 
                                  string pin, suggested_username;
 
-                                 if( request_args == c_cws_request_access_token_opt_secret )
+                                 if( request_args == c_cws_request_access_create_op_secret )
                                     is_secret = true;
 
-                                 if( request_args == c_cws_request_access_token_opt_list )
+                                 if( ( request_args.find( c_cws_request_access_create_opt_user_info_prefix ) == 0 )
+                                  && ( request_args.length( ) > ( strlen( c_cws_request_access_create_opt_user_info_prefix ) + 2 ) ) )
+                                 {
+                                    request_args.erase( 0, strlen( c_cws_request_access_create_opt_user_info_prefix ) );
+
+                                    string::size_type pos = request_args.find( ':' );
+
+                                    if( pos != string::npos )
+                                    {
+                                       pin = request_args.substr( 0, pos );
+
+                                       request_args.erase( 0, pos + 1 );
+                                    }
+
+                                    suggested_username = request_args;
+
+                                    request_args.erase( );
+                                 }
+
+                                 if( !is_secret && !request_args.empty( ) )
+                                    // FUTURE: This message should be handled as a server string message.
+                                    error = "Invalid argument(s) '" + request_args + "' for access token creation.";
+                                 else
                                  {
                                     found = true;
 
-                                    string all_user_info( get_all_user_pins( ) );
+                                    temp_umask tum( 077 );
 
-                                    if( all_user_info.empty( ) )
-                                       use_none_response = true;
+                                    string access_token( create_empty_token_file( prefix,
+                                     ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_mixed ), &pin ) );
+
+                                    if( !suggested_username.empty( ) )
+                                       set_system_variable( g_cws_username_for_prefix + access_token, suggested_username );
+
+                                    if( !is_json_output )
+                                       response = access_token;
                                     else
-                                    {
-                                       if( !is_json_output )
-                                          response = all_user_info;
-                                       else
-                                          response = "{\"access_tokens\":\"" + escaped_json( all_user_info ) + "\"}\n";
-                                    }
+                                       response = "{\"access_token\":\"" + access_token + "\"}\n";
                                  }
-                                 else if( ( request_args.find( c_cws_request_access_token_opt_remove_prefix ) == 0 )
-                                  && ( request_args.length( ) > strlen( c_cws_request_access_token_opt_remove_prefix ) + 1 ) )
-                                 {
-                                    request_args.erase( 0, strlen( c_cws_request_access_token_opt_remove_prefix ) );
-
-                                    if( !has_user_info( request_args ) )
-                                       // FUTURE: This message should be handled as a server string message.
-                                       error = "Unkknown access token '" + request_args + "' for removal.";
-                                    else
-                                    {
-                                       found = true;
-
-                                       remove_user_info_from_storage( request_args );
-                                    }
-                                 }
+                              }
+                           }
+                           else if( request == c_cws_request_access_remove )
+                           {
+                              if( access != g_cws_admin_token )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Access tokens can only be maintained by the administrator.";
+                              else if( request_args.empty( ) )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Access token PIN is required in order to perform a remove.";
+                              else
+                              {
+                                 if( !has_user_info( request_args ) )
+                                    // FUTURE: This message should be handled as a server string message.
+                                    error = "Unkknown access token '" + request_args + "' for removal.";
                                  else
                                  {
-                                    if( ( request_args.find( c_cws_request_access_token_opt_user_info_prefix ) == 0 )
-                                     && ( request_args.length( ) > ( strlen( c_cws_request_access_token_opt_user_info_prefix ) + 2 ) ) )
-                                    {
-                                       request_args.erase( 0, strlen( c_cws_request_access_token_opt_user_info_prefix ) );
+                                    found = true;
 
-                                       string::size_type pos = request_args.find( ':' );
+                                    remove_user_info_from_storage( request_args );
+                                 }
+                              }
+                           }
+                           else if( request == c_cws_request_access_tokens )
+                           {
+                              if( access != g_cws_admin_token )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Access tokens can only be maintained by the administrator.";
+                              else
+                              {
+                                 found = true;
 
-                                       if( pos != string::npos )
-                                       {
-                                          pin = request_args.substr( 0, pos );
+                                 string all_user_info( get_all_user_pins( ) );
 
-                                          request_args.erase( 0, pos + 1 );
-                                       }
-
-                                       suggested_username = request_args;
-
-                                       request_args.erase( );
-                                    }
-
-                                    if( !is_secret && !request_args.empty( ) )
-                                       // FUTURE: This message should be handled as a server string message.
-                                       error = "Invalid argument(s) '" + request_args + "' for access token creation.";
+                                 if( all_user_info.empty( ) )
+                                    use_none_response = true;
+                                 else
+                                 {
+                                    if( !is_json_output )
+                                       response = all_user_info;
                                     else
-                                    {
-                                       found = true;
-
-                                       temp_umask tum( 077 );
-
-                                       string access_token( create_empty_token_file( prefix,
-                                        ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_mixed ), &pin ) );
-
-                                       if( !suggested_username.empty( ) )
-                                          set_system_variable( g_cws_username_for_prefix + access_token, suggested_username );
-
-                                       if( !is_json_output )
-                                          response = access_token;
-                                       else
-                                          response = "{\"access_token\":\"" + access_token + "\"}\n";
-                                    }
+                                       response = "{\"access_tokens\":\"" + escaped_json( all_user_info ) + "\"}\n";
                                  }
                               }
                            }
