@@ -94,7 +94,8 @@ string compress( const string& json )
             is_in_quotes = !is_in_quotes;
 
          if( !is_in_quotes
-          && ( ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' || ch == '\v' || ch == '\f' ) )
+          && ( ( ch == ' ' ) || ( ch == '\t' ) || ( ch == '\n' )
+          || ( ch == '\r' ) || ( ch == '\v' ) || ( ch == '\f' ) ) )
             skip = true;
       }
 
@@ -109,10 +110,11 @@ string extract_value( string& json )
 {
    string value;
 
-   if( json.empty( ) || json[ 0 ] != '"' )
+   if( json.empty( ) || ( json[ 0 ] != '"' ) )
       throw runtime_error( "unexpected json value '" + json + "'" );
 
    bool in_escape = false;
+
    for( size_t i = 1; i < json.size( ); i++ )
    {
       char ch = json[ i ];
@@ -129,6 +131,7 @@ string extract_value( string& json )
          if( ch == '"' )
          {
             json.erase( 0, i + 1 );
+
             return value;
          }
          else
@@ -139,7 +142,7 @@ string extract_value( string& json )
    throw runtime_error( "unexpected json value '" + json + "'" );
 }
 
-void process_sio( const section_node& node, ostream& outs, json_format format )
+void process_sio( const section_node& node, ostream& outs, json_format format, size_t depth_start = 0 )
 {
    string ws, sep, indent;
 
@@ -148,7 +151,7 @@ void process_sio( const section_node& node, ostream& outs, json_format format )
       case e_json_format_multi:
       ws = '\n';
       sep = ' ';
-      indent = string( node.get_child_depth( ), ' ' );
+      indent = string( node.get_child_depth( ) - depth_start, ' ' );
       break;
 
       case e_json_format_single:
@@ -163,6 +166,7 @@ void process_sio( const section_node& node, ostream& outs, json_format format )
       outs << indent << "{" << sep << "\"" << node.get_name( ) << "\":" << ws << indent << "[" << ws;
 
    size_t num_attributes = node.get_num_attributes( );
+
    for( size_t i = 0; i < num_attributes; i++ )
    {
       if( i > 0 )
@@ -184,7 +188,8 @@ void process_sio( const section_node& node, ostream& outs, json_format format )
    {
       if( i > 0 )
          outs << "," << ws;
-      process_sio( node.get_child_node( i ), outs, format );
+
+      process_sio( node.get_child_node( i ), outs, format, depth_start );
    }
 
    if( num_attributes || num_children )
@@ -214,18 +219,19 @@ bool process_json( string& json, sio_writer& sio, size_t depth = 0 )
       json.erase( 0, 2 );
 
       string::size_type pos = json.find( '"' );
+
       if( pos == string::npos )
          return false;
 
       name = json.substr( 0, pos );
       json.erase( 0, pos + 1 );
 
-      if( json.empty( ) || json[ 0 ] != ':' )
+      if( json.empty( ) || ( json[ 0 ] != ':' ) )
          return false;
 
       json.erase( 0, 1 );
 
-      if( json.empty( ) || ( json[ 0 ] != '"' && json[ 0 ] != '[' ) )
+      if( json.empty( ) || ( ( json[ 0 ] != '"' ) && ( json[ 0 ] != '[' ) ) )
          return false;
 
       if( json[ 0 ] == '[' )
@@ -234,13 +240,13 @@ bool process_json( string& json, sio_writer& sio, size_t depth = 0 )
 
          json.erase( 0, 1 );
 
-         if( !json.empty( ) && json[ 0 ] != ']' )
+         if( !json.empty( ) && ( json[ 0 ] != ']' ) )
          {
             if( !process_json( json, sio, depth + 1 ) )
                return false;
          }
 
-         if( !json.empty( ) && json[ 0 ] == ']' )
+         if( !json.empty( ) && ( json[ 0 ] == ']' ) )
             json.erase( 0, 1 );
 
          bool is_complete = false;
@@ -276,7 +282,7 @@ bool process_json( string& json, sio_writer& sio, size_t depth = 0 )
 
          json.erase( 0, 1 );
 
-         if( json.empty( ) || ( json[ 0 ] != ',' && json[ 0 ] != ']' ) )
+         if( json.empty( ) || ( ( json[ 0 ] != ',' ) && ( json[ 0 ] != ']' ) ) )
             return false;
 
          if( json[ 0 ] == ']' )
@@ -291,7 +297,8 @@ bool process_json( string& json, sio_writer& sio, size_t depth = 0 )
 
 }
 
-sio_reader::sio_reader( istream& is, bool include_comments, vector< string >* p_initial_comments )
+sio_reader::sio_reader( istream& is,
+ bool include_comments, vector< string >* p_initial_comments )
  :
  is( is ),
  last_num( 0 ),
@@ -350,6 +357,7 @@ void sio_reader::finish_section( const string& name )
 string sio_reader::read_attribute( const string& name )
 {
    string str;
+
    if( !has_read_attribute( name, str ) )
       throw runtime_error( "attribute '" + name + "' was not found at line #" + to_string( line_num ) );
 
@@ -359,6 +367,7 @@ string sio_reader::read_attribute( const string& name )
 string sio_reader::read_opt_attribute( const string& name, const string& default_value )
 {
    string str( default_value );
+
    if( !has_read_attribute( name, str ) )
       str = default_value;
 
@@ -369,9 +378,10 @@ bool sio_reader::has_read_comment( string& comment )
 {
    string::size_type pos = line.find_first_not_of( " \t" );
 
-   if( pos != string::npos && line[ pos ] == '#' ) // i.e. is a comment
+   if( ( pos != string::npos ) && ( line[ pos ] == '#' ) ) // i.e. is a comment
    {
       comment = line;
+
       read_line( );
 
       return true;
@@ -389,6 +399,7 @@ bool sio_reader::has_started_section( string& name )
       name = line.substr( start_pos, finish_pos - start_pos + 1 );
 
    read_line( );
+
    sections.push( name );
 
    return true;
@@ -397,6 +408,7 @@ bool sio_reader::has_started_section( string& name )
 bool sio_reader::has_started_section( const string& name )
 {
    string str( name );
+
    return has_started_section( str );
 }
 
@@ -412,6 +424,7 @@ bool sio_reader::has_finished_section( string& name )
       name = sections.top( );
 
    read_line( );
+
    sections.pop( );
 
    return true;
@@ -420,6 +433,7 @@ bool sio_reader::has_finished_section( string& name )
 bool sio_reader::has_finished_section( const string& name )
 {
    string str( name );
+
    return has_finished_section( str );
 }
 
@@ -432,6 +446,7 @@ bool sio_reader::has_read_attribute( string& name, string& value )
       name = line.substr( start_pos, finish_pos - start_pos + 1 );
 
    value = line.substr( value_pos );
+
    read_line( );
 
    return true;
@@ -440,6 +455,7 @@ bool sio_reader::has_read_attribute( string& name, string& value )
 bool sio_reader::has_read_attribute( const string& name, string& value )
 {
    string str( name );
+
    return has_read_attribute( str, value );
 }
 
@@ -455,7 +471,7 @@ string sio_reader::get_current_section( ) const
 
 bool sio_reader::is_root_section( ) const
 {
-   if( !sections.empty( ) && sections.top( ) == c_root_section )
+   if( !sections.empty( ) && ( sections.top( ) == c_root_section ) )
       return true;
    else
       return false;
@@ -483,10 +499,12 @@ void sio_reader::read_line( )
       if( getline( is, line ) && line.empty( ) )
          throw runtime_error( "unexpected empty line #" + to_string( line_num ) );
 
-      remove_trailing_cr_from_text_file_line( line, line_num == 1 );
+      remove_trailing_cr_from_text_file_line( line, ( line_num == 1 ) );
 
       string::size_type pos = line.find_first_not_of( " \t" );
-      if( is.eof( ) || include_comments || ( pos != string::npos && line[ pos ] != '#' ) ) // i.e. continue if is a comment
+
+      if( is.eof( ) || include_comments
+       || ( ( pos != string::npos ) && ( line[ pos ] != '#' ) ) ) // i.e. continue if is a comment
          break;
    }
 }
@@ -494,6 +512,7 @@ void sio_reader::read_line( )
 string sio_reader::get_line( )
 {
    read_line( );
+
    return line;
 }
 
@@ -505,32 +524,37 @@ bool sio_reader::is_sio_identifier( const string& name, extra_type xtype ) const
       return false;
 
    spos = line.find( c_basic_prefix );
-   if( line.size( ) - spos < c_min_size_for_section )
+
+   if( ( line.size( ) - spos ) < c_min_size_for_section )
       return false;
 
    fpos = line.find( c_basic_suffix, spos + 1 );
-   if( fpos - spos < c_min_size_for_section_name )
+
+   if( ( fpos - spos ) < c_min_size_for_section_name )
       return false;
 
    for( string::size_type i = 0; i < spos; i++ )
    {
-      if( line[ i ] != ' ' && line[ i ] != '\t' )
+      if( ( line[ i ] != ' ' ) && ( line[ i ] != '\t' ) )
          return false;
    }
 
    int extra = 0;
+
    if( line[ spos + 1 ] == c_extra_modifier )
    {
-      if( xtype == e_extra_type_start || xtype == e_extra_type_neither )
+      if( ( xtype == e_extra_type_start ) || ( xtype == e_extra_type_neither ) )
          return false;
+
       ++spos;
       ++extra;
    }
 
    if( line[ fpos - 1 ] == c_extra_modifier )
    {
-      if( xtype == e_extra_type_finish || xtype == e_extra_type_neither )
+      if( ( xtype == e_extra_type_finish ) || ( xtype == e_extra_type_neither ) )
          return false;
+
       --fpos;
       ++extra;
    }
@@ -550,13 +574,13 @@ bool sio_reader::is_sio_identifier( const string& name, extra_type xtype ) const
       {
          char ch( line[ i ] );
 
-         if( ch >= '0' && ch <= '9' )
+         if( ( ch >= '0' ) && ( ch <= '9' ) )
             continue;
 
-         if( ch >= 'A' && ch <= 'Z' )
+         if( ( ch >= 'A' ) && ( ch <= 'Z' ) )
             continue;
 
-         if( ch >= 'a' && ch <= 'z' )
+         if( ( ch >= 'a' ) && ( ch <= 'z' ) )
             continue;
 
          if( ch == '_' )
@@ -594,10 +618,12 @@ void dump_sio_file( const string& filename, ostream* p_ostream )
       p_ostream = &cout;
 
    ifstream inpf( filename.c_str( ) );
+
    if( !inpf )
       throw runtime_error( "unable to open file '" + filename + "' for input in dump_sio_file" );
 
    sio_reader reader( inpf );
+
    dump_sio( reader, p_ostream );
 }
 
@@ -605,6 +631,7 @@ void write_graph( const sio_graph& graph, ostream* p_ostream )
 {
    if( !p_ostream )
       p_ostream = &cout;
+
    sio_writer( *p_ostream, graph );
 }
 
@@ -641,7 +668,9 @@ sio_writer::sio_writer( ostream& os, const sio_graph& graph )
       throw runtime_error( "unexpected empty graph" );
 
    start_section( c_root_section );
+
    write_section_attributes( *this, graph.get_root_node( ) );
+
    finish_sections( );
 }
 
@@ -650,7 +679,8 @@ void sio_writer::write_comment( const std::string& comment )
    string s( comment );
 
    string::size_type pos = s.find_first_not_of( " \t" );
-   if( pos != string::npos && s[ pos ] != '#' )
+
+   if( ( pos != string::npos ) && ( s[ pos ] != '#' ) )
       s = '#' + s;
 
    os << s << '\n';
@@ -670,6 +700,7 @@ void sio_writer::start_section( const string& name )
    sections.push( name );
 
    section = name;
+
    can_write_attribute = true;
 }
 
@@ -724,6 +755,7 @@ void sio_writer::finish_sections( )
       finish_section( c_root_section );
 
    os.flush( );
+
    if( !os.good( ) )
       throw runtime_error( "unexpected bad output stream" );
 
@@ -733,7 +765,7 @@ void sio_writer::finish_sections( )
 
 bool sio_writer::is_root_section( ) const
 {
-   return section == c_root_section;
+   return ( section == c_root_section );
 }
 
 void sio_writer::put_line( const string& line )
@@ -744,11 +776,13 @@ void sio_writer::put_line( const string& line )
 bool section_node::has_attribute( const string& name ) const
 {
    bool retval( false );
+
    for( vector< attribute >::size_type i = 0; i < attributes.size( ); i++ )
    {
       if( attributes[ i ].get_name( ) == name )
       {
          retval = true;
+
          break;
       }
    }
@@ -759,6 +793,7 @@ bool section_node::has_attribute( const string& name ) const
 const attribute& section_node::get_attribute( const string& name ) const
 {
    vector< attribute >::size_type i;
+
    for( i = 0; i < attributes.size( ); i++ )
    {
       if( attributes[ i ].get_name( ) == name )
@@ -779,6 +814,7 @@ const string& section_node::get_attribute_value( const string& name ) const
 size_t section_node::get_child_depth( ) const
 {
    size_t depth = 0;
+
    const section_node* p_node( this );
 
    while( true )
@@ -787,10 +823,153 @@ size_t section_node::get_child_depth( ) const
          break;
 
       ++depth;
+
       p_node = p_node->get_parent_node( );
    }
 
    return depth;
+}
+
+const section_node* section_node::get_child_node( const std::string& name ) const
+{
+   const section_node* p_child_node = 0;
+
+   for( size_t i = 0; i < child_nodes.size( ); i++ )
+   {
+      if( name == child_nodes[ i ]->get_name( ) )
+      {
+         p_child_node = child_nodes[ i ];
+         break;
+      }
+   }
+
+   return p_child_node;
+}
+
+const section_node* get_section_node_from_path(
+ const section_node& root_node, const string& path, bool no_throw )
+{
+   const section_node* p_section_node = &root_node;
+
+   if( !path.empty( ) )
+   {
+      string part( path );
+
+      string::size_type pos = part.find( '.' );
+
+      // NOTE: Format can be "<name>[.<name>[.<name>]]" but also can
+      // be "<offset>[.<offsetr>[.<offset>]]" or can use an attribute
+      // match such as "<attr>=<value>" or by using a combination of
+      // each such as "<name>.<offset>.<attr>=<value>".
+      while( true )
+      {
+         string next( part.substr( 0, pos ) );
+
+         if( next.find_first_not_of( "0123456789" ) == string::npos )
+         {
+            size_t num = from_string< size_t >( next );
+
+            if( num >= p_section_node->get_num_child_nodes( ) )
+            {
+               if( no_throw )
+               {
+                  p_section_node = 0;
+
+                  break;
+               }
+               else
+                  throw runtime_error( "path '" + path + "' is invalid" );
+            }
+            else
+               p_section_node = &p_section_node->get_child_node( num );
+         }
+         else
+         {
+            string::size_type apos = next.find( '=' );
+
+            if( apos == string::npos )
+               p_section_node = p_section_node->get_child_node( next );
+            else
+            {
+               string attribute( next.substr( 0, apos ) );
+
+               next.erase( 0, apos + 1 );
+
+               size_t num = p_section_node->get_num_child_nodes( );
+
+               for( size_t i = 0; i < num; i++ )
+               {
+                  const section_node& next_node( p_section_node->get_child_node( i ) );
+
+                  if( next_node.has_attribute( attribute )
+                   && ( next_node.get_attribute( attribute ).get_value( ) == next ) )
+                  {
+                     p_section_node = &next_node;
+
+                     break;
+                  }
+               }
+            }
+         }
+
+         if( !p_section_node || ( pos == string::npos ) )
+            break;
+
+         part.erase( 0, pos + 1 );
+
+         pos = part.find( '.' );
+      }
+   }
+
+   return p_section_node;
+}
+
+string get_node_attributes( const section_node& node, const string& attribute_list )
+{
+   string retval;
+
+   vector< string > all_attributes;
+
+   bool is_all = false;
+
+   if( attribute_list == "*" )
+   {
+      is_all = true;
+
+      size_t num = node.get_num_attributes( );
+
+      for( size_t i = 0; i < num; i++ )
+         all_attributes.push_back( node.get_attribute( i ).get_name( ) );
+   }
+
+   if( !attribute_list.empty( ) )
+   {
+      if( !is_all )
+         split( attribute_list, all_attributes );
+
+      bool is_multi = ( all_attributes.size( ) > 1 );
+
+      for( size_t i = 0; i < all_attributes.size( ); i++ )
+      {
+         string next( all_attributes[ i ] );
+
+         if( next.empty( ) )
+            break;
+
+         if( is_multi )
+         {
+            if( i > 0 )
+               retval += ',';
+
+            retval += ( next + '=' );
+         }
+
+         if( node.has_attribute( next ) )
+            retval += node.get_attribute_value( next );
+      }
+   }
+
+   return retval;
 }
 
 sio_graph::sio_graph( sio_reader& reader )
@@ -798,11 +977,13 @@ sio_graph::sio_graph( sio_reader& reader )
  p_root_node( 0 )
 {
    stack< section_node* > nodes;
+
    nodes.push( new section_node( "" ) );
 
    while( reader )
    {
       string name, value;
+
       while( reader.has_started_section( name ) )
       {
 #ifdef DEBUG
@@ -810,8 +991,11 @@ sio_graph::sio_graph( sio_reader& reader )
 #endif
          section_node* p_new_node
           = new section_node( name, nodes.top( )->get_num_child_nodes( ), nodes.top( ) );
+
          nodes.top( )->add_child_node( p_new_node );
+
          nodes.push( p_new_node );
+
          name.erase( );
       }
 
@@ -821,6 +1005,7 @@ sio_graph::sio_graph( sio_reader& reader )
          cout << "==> process attribute: " << name << " value = " << value << endl;
 #endif
          nodes.top( )->add_attribute( attribute( name, value ) );
+
          name.erase( );
       }
 
@@ -831,6 +1016,7 @@ sio_graph::sio_graph( sio_reader& reader )
 #endif
          if( nodes.size( ) > 1 )
             nodes.pop( );
+
          name.erase( );
       }
    }
@@ -844,6 +1030,7 @@ sio_graph::~sio_graph( )
    if( p_root_node )
    {
       destroy_nodes( p_root_node );
+
       delete p_root_node;
    }
 }
@@ -864,6 +1051,11 @@ void convert_sio_to_json( const sio_graph& sio, ostream& outs, json_format forma
    process_sio( sio.get_root_node( ), outs, format );
 }
 
+void convert_sio_to_json( const section_node& node, ostream& outs, json_format format )
+{
+   process_sio( node, outs, format, node.get_child_depth( ) );
+}
+
 void convert_json_to_sio( const string& json, ostream& outs )
 {
    string compressed( compress( json ) );
@@ -875,7 +1067,7 @@ void convert_json_to_sio( const string& json, ostream& outs )
       if( compressed.size( ) < 2 )
          throw runtime_error( "invalid json '" + json + "'" );
 
-      if( compressed[ 0 ] != '[' || compressed[ compressed.size( ) - 1 ] != ']' )
+      if( ( compressed[ 0 ] != '[' ) || ( compressed[ compressed.size( ) - 1 ] != ']' ) )
          throw runtime_error( "invalid json '" + json + "'" );
 
       compressed.erase( 0, 1 );

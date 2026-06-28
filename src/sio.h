@@ -23,22 +23,27 @@ class sio_reader
    friend class sio_writer;
 
    typedef void ( sio_reader::*bool_type )( ) const;
+
    void this_type_does_not_support_comparisons( ) const { }
 
    public:
-   sio_reader( std::istream& is, bool include_comments = false, std::vector< std::string >* p_initial_comments = 0 );
+   sio_reader( std::istream& is,
+    bool include_comments = false,
+    std::vector< std::string >* p_initial_comments = 0 );
 
    operator bool_type( ) const;
 
    template< typename T > bool operator ==( const T& rhs ) const
    {
       this_type_does_not_support_comparisons( );
+
       return false;
    }
 
    template< typename T > bool operator !=( const T& rhs ) const
    {
       this_type_does_not_support_comparisons( );
+
       return false;
    }
 
@@ -92,6 +97,7 @@ class sio_reader
    size_t line_num;
 
    std::string line;
+
    std::stack< std::string > sections;
 
    mutable size_t value_pos, start_pos, finish_pos;
@@ -134,7 +140,9 @@ class sio_writer
    void put_line( const std::string& line );
 
    std::ostream& os;
+
    std::string section;
+
    bool can_write_attribute;
 
    std::stack< std::string > sections;
@@ -176,14 +184,17 @@ class section_node
    bool is_root_node( ) const { return p_parent_node == 0; }
 
    const std::string& get_name( ) const { return name; }
+
    size_t get_child_num( ) const { return child_num; }
 
    bool has_attribute( const std::string& name ) const;
 
    const attribute& get_attribute( const std::string& name ) const;
+
    const std::string& get_attribute_value( const std::string& name ) const;
 
    size_t get_num_attributes( ) const { return attributes.size( ); }
+
    const attribute& get_attribute( size_t num ) const { return attributes.at( num ); }
 
    const section_node* get_parent_node( ) const { return p_parent_node; }
@@ -191,6 +202,9 @@ class section_node
    size_t get_child_depth( ) const;
 
    size_t get_num_child_nodes( ) const { return child_nodes.size( ); }
+
+   const section_node* get_child_node( const std::string& name ) const;
+
    const section_node& get_child_node( size_t num ) const { return *child_nodes.at( num ); }
 
    void add_attribute( const attribute& attr ) { attributes.push_back( attr ); }
@@ -199,23 +213,32 @@ class section_node
 
    private:
    std::string name;
+
    std::vector< attribute > attributes;
 
    size_t child_num;
 
    const section_node* p_parent_node;
+
    std::vector< section_node* > child_nodes;
 
    friend class sio_graph;
 };
 
+const section_node* get_section_node_from_path(
+ const section_node& root_node, const std::string& path, bool no_throw = false );
+
+std::string get_node_attributes( const section_node& node, const std::string& attribute_list );
+
 class sio_graph
 {
    public:
    sio_graph( sio_reader& reader );
+
    ~sio_graph( );
 
    section_node& get_root_node( ) { return *p_root_node; }
+
    const section_node& get_root_node( ) const { return *p_root_node; }
 
    bool empty( ) const { return p_root_node == 0; }
@@ -233,9 +256,12 @@ enum json_format
    e_json_format_compressed
 };
 
-void convert_sio_to_json( const sio_graph& sio, std::ostream& outs, json_format format = e_json_format_multi );
+void convert_sio_to_json( const sio_graph& sio,
+ std::ostream& outs, json_format format = e_json_format_multi );
+
+void convert_sio_to_json( const section_node& node,
+ std::ostream& outs, json_format format = e_json_format_multi );
 
 void convert_json_to_sio( const std::string& json, std::ostream& outs );
 
 #endif
-
