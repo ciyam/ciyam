@@ -4,8 +4,17 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-if [ $# -eq 1 ]; then
- ./test -q -f=files -t=../tests tests.sio test_$1
+touch ciyam_server.cmd
+sleep 0.5
+
+if [ ! -f ciyam_server.cmd ]; then
+ echo "Error: Application server is currently operating."
 else
- ./test -q -f=files -t=../tests tests.sio
+ rm -f ciyam_server.cmd
+
+ if [ $# -eq 0 ]; then
+  ./test -q -f=files -t=../tests tests.sio
+ else
+  ./test -q -f=files -t=../tests tests.sio test_$1
+ fi
 fi
