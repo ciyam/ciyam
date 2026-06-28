@@ -69,6 +69,7 @@ test_numeric
 test_ods
 test_parser
 test_pdf_gen
+test_sio
 test_sql
 timezone
 unbundle
