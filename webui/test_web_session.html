@@ -72,11 +72,15 @@
 
    const pin_length = 5;
 
-   const style_save_name = "style_save";
-
+   const quit_name = "quit";
    const save_name = "save";
    const erase_name = "erase";
+   const unlock_name = "unlock";
    const style_load_name = "style_load";
+   const style_save_name = "style_save";
+   const style_erase_name = "style_erase";
+   const access_create_name = "access_create";
+   const access_remove_name = "access_remove";
 
    const error_prefix = "Error: ";
 
@@ -591,6 +595,23 @@
       {
          var url = window.location.protocol + '//' + window.location.host + "/api.cws"
 
+         var cmd = request;
+
+         var pos = request.indexOf( " " );
+
+         if( pos > 0 )
+            var cmd = request.substring( 0, pos );
+
+         var request_type = "GET";
+
+         if( cmd == style_save_name )
+            request_type = "PUT";
+         else if( ( cmd == "" ) || ( cmd == quit_name )
+          || ( cmd == unlock_name ) || ( cmd == access_create_name ) )
+            request_type = "POST";
+         else if( ( cmd == style_erase_name ) || ( cmd == access_remove_name ) )
+            request_type = "DELETE";
+
          var access = document.getElementById( "user_access" ).value;
 
          var qry_data = "access=" + access;
@@ -635,7 +656,11 @@
 
          // NOTE: Credentials must be base64 encoded.
          if( ( device == "" ) && ( credentials != "" ) )
+         {
+            request_type = "POST";
+
             qry_data += "&passwd=" + encode_base64_url( credentials );
+         }
 
          var arbitrary = "";
 
@@ -691,9 +716,9 @@
          if( qry_data != "" )
             url += "?" + qry_data;
 
-         console.log( url );
+         console.log( request_type + " " + url );
 
-         fetch( url )
+         fetch( url, { method: request_type } )
          .then( response => response.text( ) )
          .then( data => handle_response( data ) )
          .catch( error => console.error( "Error fetching data: ", error ) );
@@ -1025,7 +1050,7 @@
                document.getElementById( "user_request" ).disabled = false;
             }
 
-            if( document.getElementById( "user_request" ).value == "quit" )
+            if( document.getElementById( "user_request" ).value == quit_name )
             {
                var access = document.getElementById( "user_access" ).value;
 
