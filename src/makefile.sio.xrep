@@ -97,6 +97,7 @@
      <filename>ciyam_packages.cpp
      <filename>ciyam_session.cpp
      <filename>ciyam_variables.cpp
+     <filename>ciyam_web_session.cpp
      <filename>class_base.cpp
      <filename>commands_date_time.cpp
      <filename>commands_numeric.cpp

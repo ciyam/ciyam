@@ -177,6 +177,8 @@ const char* const c_ui_group_marker = "GROUP";
 const char* const c_ui_class_changing = "ui_CLASS_changing";
 const char* const c_ui_group_changing = "ui_GROUP_changing";
 
+const char* const c_json_escape_specials = "bfnrt\b\f\n\r\t";
+
 const char* const c_ciyam_ui_stop_file = "ciyam_interface.stop";
 
 const char* const c_ciyam_server_sid_file = "ciyam_server.sid";
@@ -187,6 +189,17 @@ const char* const c_test_shared_identity = "121d3373e";
 
 const char* const c_variables_branch = "Variables";
 const char* const c_web_files_branch = "Web_Files";
+
+const char* const c_query_param_name_access = "access";
+const char* const c_query_param_name_device = "device";
+const char* const c_query_param_name_passwd = "passwd";
+const char* const c_query_param_name_payload = "payload";
+const char* const c_query_param_name_request = "request";
+const char* const c_query_param_name_session = "session";
+
+const char* const c_web_access_prefix = ".web_access_";
+
+const char* const c_web_device_name_admin = ".web_device_admin";
 
 const char* const c_invalid_name_chars = "<>\"|&\\";
 
