@@ -79,32 +79,29 @@ const char* const c_web_demo_pin_2 = "10201";
 const char* const c_web_demo_pin_3 = "10301";
 
 const char* const c_web_lock_suffix = ".lock";
+
 const char* const c_web_command_suffix = ".command";
 const char* const c_web_message_suffix = ".message";
 const char* const c_web_session_suffix = ".session";
 const char* const c_web_started_suffix = ".started";
 
-const char* const c_cws_request_quit = "quit";
-const char* const c_cws_request_unlock = "unlock";
-const char* const c_cws_request_style_list = "style_list";
-const char* const c_cws_request_style_save = "style_save";
-const char* const c_cws_request_style_view = "style_view";
-const char* const c_cws_request_style_erase = "style_erase";
-const char* const c_cws_request_access_create = "access_create";
-const char* const c_cws_request_access_remove = "access_remove";
-const char* const c_cws_request_access_tokens = "access_tokens";
-
 const char* const c_cws_uri_suffix_help = "help";
+const char* const c_cws_uri_suffix_access = "access";
+const char* const c_cws_uri_suffix_ssheet = "ssheet";
+const char* const c_cws_uri_suffix_unlock = "unlock";
 const char* const c_cws_uri_suffix_devices = "devices";
 const char* const c_cws_uri_suffix_sessions = "sessions";
 
+const char* const c_cws_uri_suffix_access_prefix = "access/";
+const char* const c_cws_uri_suffix_ssheet_prefix = "ssheet/";
+const char* const c_cws_uri_suffix_unlock_prefix = "unlock/";
 const char* const c_cws_uri_suffix_sessions_prefix = "sessions/";
 
 const char* const c_cws_request_access_create_op_secret = "-secret";
-const char* const c_cws_request_access_create_opt_user_info_prefix = "-user_info=";
+const char* const c_cws_request_access_create_opt_user_info_prefix = "-user-info=";
 
-const char* const c_cws_help_request_output = "quit POST\nunlock [<key>] POST\nstyle_list\nstyle_save PUT\nstyle_view [<name>]\n"
- "style_erase DELETE\naccess_create [-secret|-user_info=[<pin>:]<username>] POST\naccess_remove <pin> DELETE\naccess_tokens";
+const char* const c_cws_help_request_output = "quit\nssheet_delete\nssheet_retain\nssheet_review [<name>]\n"
+ "access_create [-secret|-user-info=[<pin>:]<username>]\naccess_delete <pin>\naccess_review\nunlock_create\nunlock_employ <key>";
 
 const char* const c_web_session_script = "web_session.cin";
 
@@ -466,15 +463,25 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
    bool is_json_output = cws_params.is_json_output;
 
+   bool is_get_request = ( request_type == e_http_request_type_get );
+   bool is_put_request = ( request_type == e_http_request_type_put );
+   bool is_post_request = ( request_type == e_http_request_type_post );
+   bool is_delete_request = ( request_type == e_http_request_type_delete );
+
    string request_args;
 
-   string::size_type pos = request.find( ' ' );
-
-   if( pos != string::npos )
+   if( !request.empty( ) && ( request[ 0 ] == '-' ) )
+      request_args = request;
+   else
    {
-      request_args = request.substr( pos + 1 );
+      string::size_type pos = request.find( ' ' );
 
-      request.erase( pos );
+      if( pos != string::npos )
+      {
+         request_args = request.substr( pos + 1 );
+
+         request.erase( pos );
+      }
    }
 
    string access_file( prefix + access ); // i.e. ".web_access.<access>"
@@ -745,7 +752,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          string web_session_name( var_prefix + access + '.' + device + c_web_session_suffix );
          string web_started_name( var_prefix + access + '.' + device + c_web_started_suffix );
 
-         if( ( uri_suffix == c_cws_uri_suffix_sessions ) && ( request_type == e_http_request_type_post ) )
+         if( is_post_request && ( uri_suffix == c_cws_uri_suffix_sessions ) )
          {
             string access_token( opt_buffer_file( access_file ) );
 
@@ -824,8 +831,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   else
                      response = "{\"commands\":\"" + escaped_json( c_cws_help_request_output ) + "\"}\n";
                }
-               else if( ( request_type == e_http_request_type_delete )
-                && ( uri_suffix.find( c_cws_uri_suffix_sessions_prefix ) == 0 ) )
+               else if( is_delete_request && ( uri_suffix.find( c_cws_uri_suffix_sessions_prefix ) == 0 ) )
                {
                   found = true;
 
@@ -844,33 +850,39 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   if( g_cws_access_devices.count( access ) )
                      g_cws_access_devices[ access ].erase( device );
                }
-               else if( request == c_cws_request_unlock )
+               else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_unlock ) )
                {
-                  if( request_args.empty( ) )
+                  if( access != g_cws_admin_token )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Unlock keys can only be created by the administrator.";
+                  else if( is_locked )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Unlock keys are not able to be created whilst currently locked.";
+                  else
                   {
-                     if( access != g_cws_admin_token )
-                        // FUTURE: This message should be handled as a server string message.
-                        error = "Unlock tokens can only be created by the administrator.";
-                     else if( is_locked )
-                        // FUTURE: This message should be handled as a server string message.
-                        error = "Unlock tokens are not able to be created whilst currently locked.";
+                     found = true;
+
+                     string unlock_key( create_unlock_sid_hash_key( false, false ) );
+
+                     if( !is_json_output )
+                        response = unlock_key;
                      else
-                     {
-                        found = true;
-
-                        string unlock_key( create_unlock_sid_hash_key( false, false ) );
-
-                        if( !is_json_output )
-                           response = unlock_key;
-                        else
-                           response = "{\"unlock_key\":\"" + escaped_json( unlock_key ) + "\"}\n";
-                     }
+                        response = "{\"unlock_key\":\"" + escaped_json( unlock_key ) + "\"}\n";
                   }
+               }
+               else if( is_post_request
+                && ( uri_suffix.find( c_cws_uri_suffix_unlock_prefix ) == 0 ) )
+               {
+                  string key( uri_suffix.substr( strlen( c_cws_uri_suffix_unlock_prefix ) ) );
+
+                  if( !has_system_variable( e_special_var_sid_locked ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Unlock key is not usuable when the system is not currently locked.";
                   else
                   {
                      try
                      {
-                        set_identity( request_args );
+                        set_identity( key );
 
                         found = true;
                      }
@@ -880,7 +892,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
                   }
                }
-               else if( request == c_cws_request_style_list )
+               else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_ssheet ) )
                {
                   found = true;
 
@@ -888,16 +900,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   fs_iterator fs( get_web_root( ), &ff );
 
-                  string all_styles( g_none );
+                  string all_ssheets( g_none );
 
-                  bool has_cached_styles = has_system_variable( e_special_var_cws_styles );
+                  bool has_cached_ssheets = has_system_variable( e_special_var_cws_styles );
 
-                  if( !has_cached_styles )
-                     all_styles = g_none;
+                  if( !has_cached_ssheets )
+                     all_ssheets = g_none;
                   else
-                     all_styles = get_system_variable( e_special_var_cws_styles );
+                     all_ssheets = get_system_variable( e_special_var_cws_styles );
 
-                  if( !has_cached_styles )
+                  if( !has_cached_ssheets )
                   {
                      set< string > css_files;
 
@@ -917,23 +929,23 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
 
                      for( set< string >::iterator i = css_files.begin( ); i!= css_files.end( ); ++i )
-                        all_styles += ' ' + *i;
+                        all_ssheets += ' ' + *i;
 
-                     set_system_variable( e_special_var_cws_styles, all_styles );
+                     set_system_variable( e_special_var_cws_styles, all_ssheets );
                   }
 
-                  string::size_type pos = all_styles.find( ' ' );
+                  string::size_type pos = all_ssheets.find( ' ' );
 
                   if( pos != string::npos )
-                     all_styles.erase( 0, pos + 1 );
+                     all_ssheets.erase( 0, pos + 1 );
 
-                  if( !all_styles.empty( ) )
+                  if( !all_ssheets.empty( ) )
                   {
                      vector< string > styles;
 
-                     split( all_styles, styles, ' ' );
+                     split( all_ssheets, styles, ' ' );
 
-                     string allowed_styles;
+                     string allowed_ssheets;
 
                      bool is_admin = ( access == g_cws_admin_token );
 
@@ -950,26 +962,26 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         if( !is_admin && is_pin_token( next ) )
                            continue;
 
-                        if( !allowed_styles.empty( ) )
-                           allowed_styles += ' ';
+                        if( !allowed_ssheets.empty( ) )
+                           allowed_ssheets += ' ';
 
-                        allowed_styles += next;
+                        allowed_ssheets += next;
                      }
 
-                     all_styles = allowed_styles;
+                     all_ssheets = allowed_ssheets;
                   }
 
-                  if( all_styles.empty( ) )
+                  if( all_ssheets.empty( ) )
                      use_none_response = true;
                   else
                   {
                      if( !is_json_output )
-                        response = all_styles;
+                        response = all_ssheets;
                      else
-                        response = "{\"all_styles\":\"" + escaped_json( all_styles ) + "\"}\n";
+                        response = "{\"all_ssheets\":\"" + escaped_json( all_ssheets ) + "\"}\n";
                   }
                }
-               else if( request == c_cws_request_style_save )
+               else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_ssheet ) )
                {
                   string file_name( get_web_root( ) + '/' + access + g_css_suffix );
 
@@ -991,12 +1003,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      msleep( c_save_data_delay );
                   }
                }
-               else if( request == c_cws_request_style_view )
+               else if( is_get_request && ( uri_suffix.find( c_cws_uri_suffix_ssheet_prefix ) == 0 ) )
                {
-                  string name( request_args );
-
-                  if( name.empty( ) || ( name == c_cws_own ) )
-                     name = access;
+                  string name( uri_suffix.substr( strlen( c_cws_uri_suffix_ssheet_prefix ) ) );
 
                   string file_name( get_web_root( ) + '/' + name + g_css_suffix );
 
@@ -1015,7 +1024,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         response = "{\"style_data\":\"" + escaped_json( style_data ) + "\"}\n";
                   }
                }
-               else if( request == c_cws_request_style_erase )
+               else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_ssheet ) )
                {
                   if( is_locked )
                      // FUTURE: This message should be handled as a server string message.
@@ -1037,7 +1046,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         error = "Stylesheet could not be erased (contact the administrator).";
                   }
                }
-               else if( request == c_cws_request_access_create )
+               else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_access ) )
                {
                   if( access != g_cws_admin_token )
                      // FUTURE: This message should be handled as a server string message.
@@ -1092,28 +1101,27 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
                   }
                }
-               else if( request == c_cws_request_access_remove )
+               else if( is_delete_request && ( uri_suffix.find( c_cws_uri_suffix_access_prefix ) == 0 ) )
                {
                   if( access != g_cws_admin_token )
                      // FUTURE: This message should be handled as a server string message.
                      error = "Access tokens can only be maintained by the administrator.";
-                  else if( request_args.empty( ) )
-                     // FUTURE: This message should be handled as a server string message.
-                     error = "Access token PIN is required in order to perform a remove.";
                   else
                   {
-                     if( !has_user_info( request_args ) )
+                     string pin( uri_suffix.substr( strlen( c_cws_uri_suffix_access_prefix ) ) );
+
+                     if( !has_user_info( pin ) )
                         // FUTURE: This message should be handled as a server string message.
-                        error = "Unkknown access token '" + request_args + "' for removal.";
+                        error = "Unkknown access token '" + pin + "' for removal.";
                      else
                      {
                         found = true;
 
-                        remove_user_info_from_storage( request_args );
+                        remove_user_info_from_storage( pin );
                      }
                   }
                }
-               else if( request == c_cws_request_access_tokens )
+               else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_access ) )
                {
                   if( access != g_cws_admin_token )
                      // FUTURE: This message should be handled as a server string message.
