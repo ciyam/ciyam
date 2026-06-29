@@ -16,15 +16,15 @@ Attempt to use 'test_1' rather than 'test-1' username.
 Error: Username must start with 'a-z' followed by 'a-z' or '0-9' characters (optionally use '-' for separators).
 Activates the access token using the suggested 'test-1' username.
 Error: This web session is not valid (or has expired).
-quit POST
-unlock [<key>] POST
-style_list
-style_save PUT
-style_view [<name>]
-style_erase DELETE
-access_create [-secret|-user_info=[<pin>:]<username>] POST
-access_remove <pin> DELETE
-access_tokens
+quit
+ssheet_delete
+ssheet_retain
+ssheet_review [<name>]
+access_create [-secret|-user-info=[<pin>:]<username>]
+access_delete <pin>
+access_review
+unlock_create
+unlock_employ <key>
 Session terminated.
 Now will list all standard access tokens and then remove the previously activated new user access token.
 88888

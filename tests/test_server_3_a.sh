@@ -37,9 +37,9 @@ curl -s -X GET "localhost:13031/cws/status?access=12345&device=bad_device&sessio
 curl -s -X GET "localhost:13031/cws/status?access=12345&device=$device&session=$session"
 curl -s -X GET "localhost:13031/cws/status?access=12345&device=$device&session=bad_session"
 curl -s -X GET "localhost:13031/cws/status?access=12345&device=$device&session=$session"
-curl -s -X POST "localhost:13031/cws?access=12345&device=$device&request=unlock&session=$session"
+curl -s -X POST "localhost:13031/cws/unlock?access=12345&device=$device&session=$session"
 echo "Reserve a new access token and suggest the username 'test-1'."
-new_access=$(curl -s -X POST "localhost:13031/cws?access=12345&device=$device&request=access_create%20-user_info%3d88888%3atest-1&session=$session")
+new_access=$(curl -s -X POST "localhost:13031/cws/access?access=12345&device=$device&request=-user-info%3d88888%3atest-1&session=$session")
 echo "Prepare to activate the newly reserved access token."
 curl -s -X POST "localhost:13031/cws?access=$new_access"
 echo "Attempt to use 'test_1' rather than 'test-1' username."
@@ -55,8 +55,8 @@ curl -s "localhost:13031/cws/help?access=$new_access&device=$new_device&session=
 curl -s "localhost:13031/cws/help?access=$new_access&device=$new_device&session=$new_session"
 curl -s -X DELETE "localhost:13031/cws/sessions/$new_session?access=$new_access&device=$new_device"
 echo "Now will list all standard access tokens and then remove the previously activated new user access token."
-curl -s "localhost:13031/cws?access=12345&device=$device&request=access_tokens&session=$session"
-curl -s -X DELETE "localhost:13031/cws?access=12345&device=$device&request=access_remove%20$new_access&session=$session"
+curl -s "localhost:13031/cws/access?access=12345&device=$device&session=$session"
+curl -s -X DELETE "localhost:13031/cws/access/$new_access?access=12345&device=$device&session=$session"
 curl -s -X DELETE "localhost:13031/cws/sessions/$session?access=12345&device=$device"
 curl -s -X GET "localhost:13031/cws/status?access=12345&device=$device&session=$session"
 rm -f .web_access_12345 .web_access_admin .web_device_admin
