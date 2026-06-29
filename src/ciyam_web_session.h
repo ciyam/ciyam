@@ -11,9 +11,21 @@
 #     include <string>
 #  endif
 
-struct api_cws_params
+enum http_request_type
 {
-   api_cws_params( ) : is_json_output( false ) { }
+   e_http_request_type_get,
+   e_http_request_type_put,
+   e_http_request_type_head,
+   e_http_request_type_post,
+   e_http_request_type_trace,
+   e_http_request_type_delete,
+   e_http_request_type_options,
+   e_http_request_type_unknown
+};
+
+struct cws_paramaters
+{
+   cws_paramaters( ) : is_json_output( false ) { }
 
    std::string access;
    std::string device;
@@ -25,7 +37,7 @@ struct api_cws_params
    bool is_json_output;
 };
 
-bool process_api_cws_request( const std::string& uri,
- const api_cws_params& cws_params, bool& use_none_response, std::string& response, std::string& error );
+bool process_cws_request( http_request_type request_type, const std::string& uri_suffix,
+ const cws_paramaters& cws_params, bool& use_none_response, std::string& response, std::string& error );
 
 #endif

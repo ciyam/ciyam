@@ -84,7 +84,6 @@ const char* const c_web_message_suffix = ".message";
 const char* const c_web_session_suffix = ".session";
 const char* const c_web_started_suffix = ".started";
 
-const char* const c_cws_request_help = "help";
 const char* const c_cws_request_quit = "quit";
 const char* const c_cws_request_unlock = "unlock";
 const char* const c_cws_request_style_list = "style_list";
@@ -94,6 +93,12 @@ const char* const c_cws_request_style_erase = "style_erase";
 const char* const c_cws_request_access_create = "access_create";
 const char* const c_cws_request_access_remove = "access_remove";
 const char* const c_cws_request_access_tokens = "access_tokens";
+
+const char* const c_cws_uri_suffix_help = "help";
+const char* const c_cws_uri_suffix_devices = "devices";
+const char* const c_cws_uri_suffix_sessions = "sessions";
+
+const char* const c_cws_uri_suffix_sessions_prefix = "sessions/";
 
 const char* const c_cws_request_access_create_op_secret = "-secret";
 const char* const c_cws_request_access_create_opt_user_info_prefix = "-user_info=";
@@ -442,8 +447,8 @@ bool has_web_session_access_token( const string& token,
 
 }
 
-bool process_api_cws_request( const string& uri,
- const api_cws_params& cws_params, bool& use_none_response, string& response, string& error )
+bool process_cws_request( http_request_type request_type, const string& uri_suffix,
+ const cws_paramaters& cws_params, bool& use_none_response, string& response, string& error )
 {
    bool found = false;
 
@@ -455,6 +460,9 @@ bool process_api_cws_request( const string& uri,
    string payload( cws_params.payload );
    string request( cws_params.request );
    string session( cws_params.session );
+
+   if( uri_suffix.find( c_cws_uri_suffix_sessions_prefix ) == 0 )
+      session = uri_suffix.substr( strlen( c_cws_uri_suffix_sessions_prefix ) );
 
    bool is_json_output = cws_params.is_json_output;
 
@@ -683,7 +691,7 @@ bool process_api_cws_request( const string& uri,
    else if( !g_cws_access_tokens.count( access ) )
       // FUTURE: This message should be handled as a server string message.
       error = "Web session access token '" + access + "' is invalid.";
-   else if( device.empty( ) )
+   else if( uri_suffix == c_cws_uri_suffix_devices )
    {
       size_t num_devices = get_num_access_devices( access );
 
@@ -737,7 +745,7 @@ bool process_api_cws_request( const string& uri,
          string web_session_name( var_prefix + access + '.' + device + c_web_session_suffix );
          string web_started_name( var_prefix + access + '.' + device + c_web_started_suffix );
 
-         if( session.empty( ) )
+         if( ( uri_suffix == c_cws_uri_suffix_sessions ) && ( request_type == e_http_request_type_post ) )
          {
             string access_token( opt_buffer_file( access_file ) );
 
@@ -807,10 +815,7 @@ bool process_api_cws_request( const string& uri,
                   set_system_variable( web_started_name, when_locked );
                }
 
-               // NOTE: As the "admin" is currently permitted to directly issue
-               // application protocol commands will only use CWS help if there
-               // were no arguments provided with the request.
-               if( ( request == c_cws_request_help ) && request_args.empty( ) )
+               if( uri_suffix == c_cws_uri_suffix_help )
                {
                   found = true;
 
@@ -819,7 +824,8 @@ bool process_api_cws_request( const string& uri,
                   else
                      response = "{\"commands\":\"" + escaped_json( c_cws_help_request_output ) + "\"}\n";
                }
-               else if( request == c_cws_request_quit )
+               else if( ( request_type == e_http_request_type_delete )
+                && ( uri_suffix.find( c_cws_uri_suffix_sessions_prefix ) == 0 ) )
                {
                   found = true;
 
@@ -833,8 +839,8 @@ bool process_api_cws_request( const string& uri,
                   set_system_variable( web_started_name, "" );
 
                   // NOTE: In case the access device was a temporary
-                  // one will remove it now (so it is important that
-                  // CWS clients use a "quit" request).
+                  // one will remove it now (so it is recommended to
+                  // always terminate each session explicitly).
                   if( g_cws_access_devices.count( access ) )
                      g_cws_access_devices[ access ].erase( device );
                }
