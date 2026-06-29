@@ -63,17 +63,6 @@ extern volatile sig_atomic_t g_server_shutdown;
 namespace
 {
 
-enum http_request_type
-{
-   e_http_request_type_get,
-   e_http_request_type_put,
-   e_http_request_type_head,
-   e_http_request_type_post,
-   e_http_request_type_trace,
-   e_http_request_type_delete,
-   e_http_request_type_options
-};
-
 const size_t c_max_line_length = 10000;
 
 const size_t c_max_request_lines = 100;
@@ -98,26 +87,26 @@ const char* const c_all_specials = " !\"#$%&'()*+,-./<=>?@[\\]^`{|}~";
 
 const char* const c_data_separator = "\r\n\r\n";
 
-const char* const c_get_request = "GET ";
-const char* const c_put_request = "PUT ";
-const char* const c_head_request = "HEAD ";
-const char* const c_post_request = "POST ";
-const char* const c_trace_request = "TRACE ";
-const char* const c_delete_request = "DELETE ";
-const char* const c_options_request = "OPTIONS ";
+const char* const c_get_request = "GET";
+const char* const c_put_request = "PUT";
+const char* const c_head_request = "HEAD";
+const char* const c_post_request = "POST";
+const char* const c_trace_request = "TRACE";
+const char* const c_delete_request = "DELETE";
+const char* const c_options_request = "OPTIONS";
 
 const char* const c_index_html = "index.html";
 
-const char* const c_api_prefix = "/api.";
+const char* const c_echo_endpoint = "/echo";
+const char* const c_upload_endpoint = "/upload";
+const char* const c_ip_addr_endpoint = "/ip-addr";
+const char* const c_storage_endpoint = "/storage";
+const char* const c_version_endpoint = "/version";
+const char* const c_unix_now_endpoint = "/unix-now";
+const char* const c_post_limit_endpoint = "/post-limit";
 
-const char* const c_cws_endpoint = "/api.cws";
-const char* const c_echo_endpoint = "/api.echo";
-const char* const c_upload_endpoint = "/api.upload";
-const char* const c_ip_addr_endpoint = "/api.ip_addr";
-const char* const c_storage_endpoint = "/api.storage";
-const char* const c_version_endpoint = "/api.version";
-const char* const c_unix_now_endpoint = "/api.unix_now";
-const char* const c_post_limit_endpoint = "/api.post_limit";
+const char* const c_cws_endpoint = "/cws";
+const char* const c_cws_endpoint_prefix = "/cws/";
 
 const char* const c_boundary_prefix = "boundary=";
 
@@ -350,6 +339,8 @@ string g_server_id;
 
 string g_version_string;
 
+string g_cws_endpoint_prefix;
+
 atomic< size_t > g_active_handlers;
 
 atomic< size_t > g_num_request_handler;
@@ -548,9 +539,28 @@ void http_request_handler::on_start( )
 #endif
          }
 
-         string http_document, http_protocol, http_qry_info;
+         string http_verb, http_document, http_protocol, http_qry_info;
 
          string::size_type pos = http_request.find( ' ' );
+
+         http_verb = http_request.substr( 0, pos );
+
+         http_request_type request_type = e_http_request_type_unknown;
+
+         if( http_verb == c_get_request )
+            request_type = e_http_request_type_get;
+         else if( http_verb == c_put_request )
+            request_type = e_http_request_type_put;
+         else if( http_verb == c_head_request )
+            request_type = e_http_request_type_head;
+         else if( http_verb == c_post_request )
+            request_type = e_http_request_type_post;
+         else if( http_verb == c_trace_request )
+            request_type = e_http_request_type_trace;
+         else if( http_verb == c_delete_request )
+            request_type = e_http_request_type_delete;
+         else if( http_verb == c_options_request )
+            request_type = e_http_request_type_options;
 
          if( pos != string::npos )
          {
@@ -603,7 +613,7 @@ void http_request_handler::on_start( )
 
          // NOTE: If document ends in '/' then will
          // automatically append "index.html".
-         if( http_document.find( c_api_prefix ) != 0 )
+         if( !http_document.empty( ) )
          {
             string::size_type pos = http_document.rfind( '/' );
 
@@ -888,13 +898,14 @@ void http_request_handler::on_start( )
          }
          else if( error.empty( ) )
          {
-            if( http_document == c_cws_endpoint )
+            if( ( http_document == c_cws_endpoint )
+             || ( http_document.find( g_cws_endpoint_prefix ) == 0 ) )
             {
                was_endpoint = true;
 
                string prefix( c_web_access_prefix );
 
-               api_cws_params cws_params;
+               cws_paramaters cws_params;
 
                cws_params.is_json_output = is_json_output;
 
@@ -915,6 +926,11 @@ void http_request_handler::on_start( )
 
                if( params.count( c_query_param_name_session ) )
                   cws_params.session = params[ c_query_param_name_session ];
+
+               string endpoint_suffix;
+
+               if( http_document.find( g_cws_endpoint_prefix ) == 0 )
+                  endpoint_suffix = http_document.substr( g_cws_endpoint_prefix.length( ) );
 
                if( !cws_params.passwd.empty( ) )
                {
@@ -974,7 +990,8 @@ void http_request_handler::on_start( )
 
                bool use_none_response = false;
 
-               found = process_api_cws_request( http_document, cws_params, use_none_response, response, error );
+               found = process_cws_request( request_type,
+                endpoint_suffix, cws_params, use_none_response, response, error );
             }
             else if( http_document == c_echo_endpoint )
             {
@@ -1401,6 +1418,8 @@ void http_listener::on_start( )
       g_cws_admin_device = opt_buffer_file( c_web_device_name_admin );
 
       g_web_session_check = get_special_var_name( e_special_var_web_session_check );
+
+      g_cws_endpoint_prefix = string( c_cws_endpoint ) + '/';
 
       g_cws_username_for_prefix = get_special_var_name( e_special_var_cws_username_for ) + '_';
 
