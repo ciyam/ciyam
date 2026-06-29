@@ -84,13 +84,13 @@
    const access_delete_name = "access_delete";
    const access_review_name = "access_review";
 
-   const ssheet_delete_name = "ssheet_delete";
-   const ssheet_reload_name = "ssheet_reload";
-   const ssheet_retain_name = "ssheet_retain";
-   const ssheet_review_name = "ssheet_review";
-
    const unlock_create_name = "unlock_create";
    const unlock_employ_name = "unlock_employ";
+
+   const stylesheets_delete_name = "stylesheets_delete";
+   const stylesheets_reload_name = "stylesheets_reload";
+   const stylesheets_retain_name = "stylesheets_retain";
+   const stylesheets_review_name = "stylesheets_review";
 
    const error_prefix = "Error: ";
 
@@ -575,11 +575,11 @@
          do_remove( true );
       else if( request.startsWith( remove_name ) )
          do_remove( request.substr( remove_name.length + 1 ) );
-      else if( request == ssheet_reload_name )
+      else if( request == stylesheets_reload_name )
          load_style( "dummy", document.getElementById( "user_arbitrary" ).value );
-      else if( request.startsWith( ssheet_reload_name ) )
+      else if( request.startsWith( stylesheets_reload_name ) )
       {
-         var style = request.substr( ssheet_reload_name.length + 1 );
+         var style = request.substr( stylesheets_reload_name.length + 1 );
 
          if( style == own_name )
             style = document.getElementById( "user_access" ).value;
@@ -599,7 +599,7 @@
          do_local_request( request );
       else if( request.startsWith( remove_name ) )
          do_local_request( request );
-      else if( request.startsWith( ssheet_reload_name ) )
+      else if( request.startsWith( stylesheets_reload_name ) )
          do_local_request( request );
       else
       {
@@ -614,12 +614,12 @@
 
          var request_type = "GET";
 
-         if( cmd == ssheet_retain_name )
+         if( cmd == stylesheets_retain_name )
             request_type = "PUT";
          else if( ( cmd == "" ) || ( cmd == access_create_name )
           || ( cmd == unlock_create_name ) || ( cmd == unlock_employ_name ) )
             request_type = "POST";
-         else if( ( cmd == ssheet_delete_name ) || ( cmd == access_delete_name ) )
+         else if( ( cmd == access_delete_name ) || ( cmd == stylesheets_delete_name ) )
             request_type = "DELETE";
 
          var has_cmd_options = false;
@@ -632,18 +632,18 @@
 
          if( request == help_name )
             cmd_is_url_suffix = true;
-         else if( ( request == access_review_name ) || ( request == ssheet_delete_name )
-          || ( request == ssheet_retain_name ) || ( cmd == unlock_create_name ) )
+         else if( ( request == access_review_name ) || ( cmd == unlock_create_name )
+          || ( request == stylesheets_delete_name ) || ( request == stylesheets_retain_name ) )
          {
             cmd_is_url_suffix = true;
             cmd_needs_truncating = true;
 
-            if( request == ssheet_retain_name )
+            if( request == stylesheets_retain_name )
                need_to_include_payload = true;
          }
 
-         if( ( cmd == access_create_name ) || ( cmd == ssheet_review_name )
-          || ( cmd == access_delete_name ) || ( cmd == unlock_employ_name ) )
+         if( ( cmd == access_create_name ) || ( cmd == access_delete_name )
+          || ( cmd == unlock_employ_name ) || ( cmd == stylesheets_review_name ) )
          {
             if( cmd == access_create_name )
                has_cmd_options = true;
@@ -1010,10 +1010,21 @@
 
    function handle_response( data )
    {
-      console.log( data );
+      var lines = data.split( "\n" );
+
+      if( lines.length < 10 )
+         console.log( data );
+      else
+      {
+         var head = lines.slice( 0, 10 );
+
+         console.log( head.join( "\n" ) );
+         console.log( "... (+" + ( lines.length - 10 ) + " further lines)" );
+      }
 
       // NOTE: Changes the placeholder to the request just issued (making it clear that a response was received).
-      if( document.getElementById( "user_request" ).value != "" )
+      if( ( document.getElementById( "user_unique" ).value != "" )
+       && ( document.getElementById( "user_request" ).value != "" ) )
          document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
 
       if( data.startsWith( error_prefix ) )
@@ -1124,7 +1135,8 @@
 
                lines.push( remove_name + " [<pin>]" );
                lines.push( retain_name );
-               lines.push( ssheet_reload_name + " [<name> or none]" );
+
+               lines.push( stylesheets_reload_name + " [<name> or none]" );
 
                lines.sort( word_length_compare );
 
@@ -1199,7 +1211,8 @@
          }
       }
 
-      document.getElementById( "user_request" ).value = "";
+      if( document.getElementById( "user_unique" ).value != "" )
+         document.getElementById( "user_request" ).value = "";
    }
    </script>
 </body>
