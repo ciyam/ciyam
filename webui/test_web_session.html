@@ -72,16 +72,25 @@
 
    const pin_length = 5;
 
+   const own_name = "***";
+
    const help_name = "help";
    const quit_name = "quit";
-   const save_name = "save";
-   const erase_name = "erase";
-   const unlock_name = "unlock";
-   const style_load_name = "style_load";
-   const style_save_name = "style_save";
-   const style_erase_name = "style_erase";
+
+   const remove_name = "remove";
+   const retain_name = "retain";
+
    const access_create_name = "access_create";
-   const access_remove_name = "access_remove";
+   const access_delete_name = "access_delete";
+   const access_review_name = "access_review";
+
+   const ssheet_delete_name = "ssheet_delete";
+   const ssheet_reload_name = "ssheet_reload";
+   const ssheet_retain_name = "ssheet_retain";
+   const ssheet_review_name = "ssheet_review";
+
+   const unlock_create_name = "unlock_create";
+   const unlock_employ_name = "unlock_employ";
 
    const error_prefix = "Error: ";
 
@@ -558,21 +567,21 @@
 
    function do_local_request( request )
    {
-      if( request == save_name )
+      if( request == retain_name )
          do_retain( true );
-      else if( request.startsWith( save_name ) )
+      else if( request.startsWith( retain_name ) )
          do_retain( false );
-      else if( request == erase_name )
+      else if( request == remove_name )
          do_remove( true );
-      else if( request.startsWith( erase_name ) )
-         do_remove( request.substr( erase_name.length + 1 ) );
-      else if( request == style_load_name )
+      else if( request.startsWith( remove_name ) )
+         do_remove( request.substr( remove_name.length + 1 ) );
+      else if( request == ssheet_reload_name )
          load_style( "dummy", document.getElementById( "user_arbitrary" ).value );
-      else if( request.startsWith( style_load_name ) )
+      else if( request.startsWith( ssheet_reload_name ) )
       {
-         var style = request.substr( style_load_name.length + 1 );
+         var style = request.substr( ssheet_reload_name.length + 1 );
 
-         if( style == "***" )
+         if( style == own_name )
             style = document.getElementById( "user_access" ).value;
 
          load_style( style + ".css" );
@@ -586,11 +595,11 @@
    {
       var request = document.getElementById( "user_request" ).value;
 
-      if( request.startsWith( save_name ) )
+      if( request.startsWith( retain_name ) )
          do_local_request( request );
-      else if( request.startsWith( erase_name ) )
+      else if( request.startsWith( remove_name ) )
          do_local_request( request );
-      else if( request.startsWith( style_load_name ) )
+      else if( request.startsWith( ssheet_reload_name ) )
          do_local_request( request );
       else
       {
@@ -605,30 +614,86 @@
 
          var request_type = "GET";
 
-         if( cmd == style_save_name )
+         if( cmd == ssheet_retain_name )
             request_type = "PUT";
-         else if( ( cmd == "" )
-          || ( cmd == unlock_name ) || ( cmd == access_create_name ) )
+         else if( ( cmd == "" ) || ( cmd == access_create_name )
+          || ( cmd == unlock_create_name ) || ( cmd == unlock_employ_name ) )
             request_type = "POST";
-         else if( ( cmd == style_erase_name ) || ( cmd == access_remove_name ) )
+         else if( ( cmd == ssheet_delete_name ) || ( cmd == access_delete_name ) )
             request_type = "DELETE";
 
+         var has_cmd_options = false;
+         var has_name_suffix = false;
+
          var cmd_is_url_suffix = false;
+         var cmd_needs_truncating = false;
+
+         var need_to_include_payload = false;
 
          if( request == help_name )
             cmd_is_url_suffix = true;
+         else if( ( request == access_review_name ) || ( request == ssheet_delete_name )
+          || ( request == ssheet_retain_name ) || ( cmd == unlock_create_name ) )
+         {
+            cmd_is_url_suffix = true;
+            cmd_needs_truncating = true;
+
+            if( request == ssheet_retain_name )
+               need_to_include_payload = true;
+         }
+
+         if( ( cmd == access_create_name ) || ( cmd == ssheet_review_name )
+          || ( cmd == access_delete_name ) || ( cmd == unlock_employ_name ) )
+         {
+            if( cmd == access_create_name )
+               has_cmd_options = true;
+            else
+               has_name_suffix = true;
+
+            cmd_is_url_suffix = true;
+            cmd_needs_truncating = true;
+         }
+
+         if( cmd_needs_truncating )
+         {
+            var tpos = cmd.indexOf( "_" );
+
+            if( tpos > 0 )
+               cmd = cmd.substring( 0, tpos );
+         }
+
+         var access = document.getElementById( "user_access" ).value;
 
          if( cmd_is_url_suffix )
          {
-            request = "";
+            var name = "";
+
+            if( has_name_suffix && ( pos > 0 ) )
+            {
+               name = request.substring( pos + 1 );
+
+               if( name == own_name )
+                  name = access;
+            }
+
+            if( !has_cmd_options )
+               request = "";
+            else
+            {
+               var opos = request.indexOf( " " );
+
+               if( opos > 0 )
+                  request = request.substr( opos + 1 );
+            }
 
             url += "/" + cmd;
+
+            if( name != "" )
+               url += "/" + name;
          }
 
          if( cmd == quit_name )
             request = "";
-
-         var access = document.getElementById( "user_access" ).value;
 
          var qry_data = "access=" + access;
 
@@ -685,7 +750,7 @@
          if( document.getElementById( "user_arbitrary" ).value != "" )
             arbitrary = document.getElementById( "user_arbitrary" ).value;
 
-         if( ( arbitrary != "" ) && ( request == style_save_name ) )
+         if( ( arbitrary != "" ) && need_to_include_payload )
             qry_data += "&payload=" + encodeURIComponent( arbitrary );
 
          if( request != "" )
@@ -1057,9 +1122,9 @@
             {
                var lines = data.split( "\n" );
 
-               lines.push( "save" );
-               lines.push( "erase [<pin>]" );
-               lines.push( "style_load [<name> or none]" );
+               lines.push( remove_name + " [<pin>]" );
+               lines.push( retain_name );
+               lines.push( ssheet_reload_name + " [<name> or none]" );
 
                lines.sort( word_length_compare );
 
