@@ -87,21 +87,21 @@ const char* const c_web_started_suffix = ".started";
 
 const char* const c_cws_uri_suffix_help = "help";
 const char* const c_cws_uri_suffix_access = "access";
-const char* const c_cws_uri_suffix_ssheet = "ssheet";
 const char* const c_cws_uri_suffix_unlock = "unlock";
 const char* const c_cws_uri_suffix_devices = "devices";
 const char* const c_cws_uri_suffix_sessions = "sessions";
+const char* const c_cws_uri_suffix_stylesheets = "stylesheets";
 
 const char* const c_cws_uri_suffix_access_prefix = "access/";
-const char* const c_cws_uri_suffix_ssheet_prefix = "ssheet/";
 const char* const c_cws_uri_suffix_unlock_prefix = "unlock/";
 const char* const c_cws_uri_suffix_sessions_prefix = "sessions/";
+const char* const c_cws_uri_suffix_stylesheets_prefix = "stylesheets/";
 
 const char* const c_cws_request_access_create_op_secret = "-secret";
 const char* const c_cws_request_access_create_opt_user_info_prefix = "-user-info=";
 
-const char* const c_cws_help_request_output = "quit\nssheet_delete\nssheet_retain\nssheet_review [<name>]\n"
- "access_create [-secret|-user-info=[<pin>:]<username>]\naccess_delete <pin>\naccess_review\nunlock_create\nunlock_employ <key>";
+const char* const c_cws_help_request_output = "quit\naccess_create [-secret|-user-info=[<pin>:]<username>]\n"
+ "access_delete <pin>\naccess_review\nunlock_create\nunlock_employ <key>\nstylesheets_delete\nstylesheets_retain\nstylesheets_review [<name>]";
 
 const char* const c_web_session_script = "web_session.cin";
 
@@ -864,6 +864,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      string unlock_key( create_unlock_sid_hash_key( false, false ) );
 
+                     replace( unlock_key, " ", "-" );
+
                      if( !is_json_output )
                         response = unlock_key;
                      else
@@ -882,7 +884,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   {
                      try
                      {
-                        set_identity( key );
+                        set_identity( replaced( key, "-", " " ) );
 
                         found = true;
                      }
@@ -892,7 +894,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
                   }
                }
-               else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_ssheet ) )
+               else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_stylesheets ) )
                {
                   found = true;
 
@@ -900,16 +902,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   fs_iterator fs( get_web_root( ), &ff );
 
-                  string all_ssheets( g_none );
+                  string all_stylesheets( g_none );
 
-                  bool has_cached_ssheets = has_system_variable( e_special_var_cws_styles );
+                  bool has_cached_stylesheets = has_system_variable( e_special_var_cws_styles );
 
-                  if( !has_cached_ssheets )
-                     all_ssheets = g_none;
+                  if( !has_cached_stylesheets )
+                     all_stylesheets = g_none;
                   else
-                     all_ssheets = get_system_variable( e_special_var_cws_styles );
+                     all_stylesheets = get_system_variable( e_special_var_cws_styles );
 
-                  if( !has_cached_ssheets )
+                  if( !has_cached_stylesheets )
                   {
                      set< string > css_files;
 
@@ -929,23 +931,23 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
 
                      for( set< string >::iterator i = css_files.begin( ); i!= css_files.end( ); ++i )
-                        all_ssheets += ' ' + *i;
+                        all_stylesheets += ' ' + *i;
 
-                     set_system_variable( e_special_var_cws_styles, all_ssheets );
+                     set_system_variable( e_special_var_cws_styles, all_stylesheets );
                   }
 
-                  string::size_type pos = all_ssheets.find( ' ' );
+                  string::size_type pos = all_stylesheets.find( ' ' );
 
                   if( pos != string::npos )
-                     all_ssheets.erase( 0, pos + 1 );
+                     all_stylesheets.erase( 0, pos + 1 );
 
-                  if( !all_ssheets.empty( ) )
+                  if( !all_stylesheets.empty( ) )
                   {
                      vector< string > styles;
 
-                     split( all_ssheets, styles, ' ' );
+                     split( all_stylesheets, styles, ' ' );
 
-                     string allowed_ssheets;
+                     string allowed_stylesheets;
 
                      bool is_admin = ( access == g_cws_admin_token );
 
@@ -962,26 +964,26 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         if( !is_admin && is_pin_token( next ) )
                            continue;
 
-                        if( !allowed_ssheets.empty( ) )
-                           allowed_ssheets += ' ';
+                        if( !allowed_stylesheets.empty( ) )
+                           allowed_stylesheets += ' ';
 
-                        allowed_ssheets += next;
+                        allowed_stylesheets += next;
                      }
 
-                     all_ssheets = allowed_ssheets;
+                     all_stylesheets = allowed_stylesheets;
                   }
 
-                  if( all_ssheets.empty( ) )
+                  if( all_stylesheets.empty( ) )
                      use_none_response = true;
                   else
                   {
                      if( !is_json_output )
-                        response = all_ssheets;
+                        response = all_stylesheets;
                      else
-                        response = "{\"all_ssheets\":\"" + escaped_json( all_ssheets ) + "\"}\n";
+                        response = "{\"all_stylesheets\":\"" + escaped_json( all_stylesheets ) + "\"}\n";
                   }
                }
-               else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_ssheet ) )
+               else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_stylesheets ) )
                {
                   string file_name( get_web_root( ) + '/' + access + g_css_suffix );
 
@@ -1003,9 +1005,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      msleep( c_save_data_delay );
                   }
                }
-               else if( is_get_request && ( uri_suffix.find( c_cws_uri_suffix_ssheet_prefix ) == 0 ) )
+               else if( is_get_request && ( uri_suffix.find( c_cws_uri_suffix_stylesheets_prefix ) == 0 ) )
                {
-                  string name( uri_suffix.substr( strlen( c_cws_uri_suffix_ssheet_prefix ) ) );
+                  string name( uri_suffix.substr( strlen( c_cws_uri_suffix_stylesheets_prefix ) ) );
 
                   string file_name( get_web_root( ) + '/' + name + g_css_suffix );
 
@@ -1024,7 +1026,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         response = "{\"style_data\":\"" + escaped_json( style_data ) + "\"}\n";
                   }
                }
-               else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_ssheet ) )
+               else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_stylesheets ) )
                {
                   if( is_locked )
                      // FUTURE: This message should be handled as a server string message.
