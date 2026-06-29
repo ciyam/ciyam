@@ -72,6 +72,7 @@
 
    const pin_length = 5;
 
+   const help_name = "help";
    const quit_name = "quit";
    const save_name = "save";
    const erase_name = "erase";
@@ -593,7 +594,7 @@
          do_local_request( request );
       else
       {
-         var url = window.location.protocol + '//' + window.location.host + "/api.cws"
+         var url = window.location.protocol + '//' + window.location.host + "/cws"
 
          var cmd = request;
 
@@ -606,11 +607,26 @@
 
          if( cmd == style_save_name )
             request_type = "PUT";
-         else if( ( cmd == "" ) || ( cmd == quit_name )
+         else if( ( cmd == "" )
           || ( cmd == unlock_name ) || ( cmd == access_create_name ) )
             request_type = "POST";
          else if( ( cmd == style_erase_name ) || ( cmd == access_remove_name ) )
             request_type = "DELETE";
+
+         var cmd_is_url_suffix = false;
+
+         if( request == help_name )
+            cmd_is_url_suffix = true;
+
+         if( cmd_is_url_suffix )
+         {
+            request = "";
+
+            url += "/" + cmd;
+         }
+
+         if( cmd == quit_name )
+            request = "";
 
          var access = document.getElementById( "user_access" ).value;
 
@@ -659,6 +675,8 @@
          {
             request_type = "POST";
 
+            url += "/devices";
+
             qry_data += "&passwd=" + encode_base64_url( credentials );
          }
 
@@ -687,7 +705,16 @@
          {
             var unique = document.getElementById( "user_unique" ).value;
 
-            if( unique != "" )
+            if( unique == "" )
+            {
+               if( device != "" )
+               {
+                  request_type = "POST";
+
+                  url += "/sessions";
+               }
+            }
+            else
             {
                var session = document.getElementById( "user_session" ).value;
 
@@ -709,7 +736,23 @@
                   document.getElementById( "reset_storage" ).disabled = true;
                }
 
-               qry_data += "&session=" + session;
+               if( cmd != quit_name )
+               {
+                  if( cmd == "" )
+                  {
+                     url += "/status";
+
+                     request_type = "GET";
+                  }
+
+                  qry_data += "&session=" + session;
+               }
+               else
+               {
+                  request_type = "DELETE";
+
+                  url += "/sessions/" + session;
+               }
             }
          }
 
@@ -1010,7 +1053,7 @@
             document.getElementById( "data" ).innerText = "";
 
             // NOTE: Add local commands to the help output.
-            if( document.getElementById( "user_request" ).value == "help" )
+            if( document.getElementById( "user_request" ).value == help_name )
             {
                var lines = data.split( "\n" );
 
