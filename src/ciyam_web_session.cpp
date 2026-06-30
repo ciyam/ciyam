@@ -63,7 +63,7 @@ const size_t c_cws_device_replen = 7;
 
 const size_t c_cws_session_length = 20;
 
-const size_t c_save_data_delay = 500;
+const size_t c_save_data_delay = 250;
 
 const size_t c_admin_lock_attempts = 10;
 const size_t c_admin_retry_timeout = 100;
