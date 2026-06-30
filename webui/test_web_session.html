@@ -84,21 +84,20 @@
 
    const stylesheets_reload_help = "reload stylesheet";
 
-   const pin_remove_name = "pin_remove";
+   const pin_remove_cmd = "pin|remove";
+   const pin_retain_cmd = "pin|retain";
 
-   const pin_retain_name = "pin_retain";
+   const users_create_cmd = "users|create";
+   const users_delete_cmd = "users|delete";
+   const users_review_cmd = "users|review";
 
-   const users_create_name = "users_create";
-   const users_delete_name = "users_delete";
-   const users_review_name = "users_review";
+   const stylesheets_delete_cmd = "stylesheets|delete";
+   const stylesheets_reload_cmd = "stylesheets|reload";
+   const stylesheets_retain_cmd = "stylesheets|retain";
+   const stylesheets_review_cmd = "stylesheets|review";
 
-   const stylesheets_delete_name = "stylesheets_delete";
-   const stylesheets_reload_name = "stylesheets_reload";
-   const stylesheets_retain_name = "stylesheets_retain";
-   const stylesheets_review_name = "stylesheets_review";
-
-   const unlock_keys_create_name = "unlock-keys_create";
-   const unlock_keys_employ_name = "unlock-keys_employ";
+   const unlock_keys_create_cmd = "unlock-keys|create";
+   const unlock_keys_employ_cmd = "unlock-keys|employ";
 
    const error_prefix = "Error: ";
 
@@ -573,7 +572,7 @@
       page_style = new_page_style;
    }
 
-   function restructured( request )
+   function reformatted( request )
    {
       var org = request;
 
@@ -592,28 +591,28 @@
          {
             if( ( first == "load" )
              || ( first == "reload" ) )
-               suffix = "_reload";
+               suffix = "|reload";
             else if( ( first == "get" )
              || ( first == "read" )
              || ( first == "view" )
              || ( first == "review" ) )
-               suffix = "_review";
+               suffix = "|review";
             else if( ( first == "new" )
              || ( first == "create" ) )
-               suffix = "_create";
+               suffix = "|create";
             else if( first == "employ" )
-               suffix = "_employ";
+               suffix = "|employ";
             else if( ( first == "save" )
              || ( first == "store" )
              || ( first == "retain" ) )
-               suffix = "_retain";
+               suffix = "|retain";
             else if( ( first == "del" )
              || ( first == "kill" )
              || ( first == "erase" )
              || ( first == "delete" )
              || ( first == "remove" )
              || ( first == "destroy" ) )
-               suffix = "_delete";
+               suffix = "|delete";
          }
 
          if( suffix != "" )
@@ -624,8 +623,8 @@
 
             request = second + suffix;
 
-            if( request == "pin_delete" )
-               request = pin_remove_name;
+            if( request == "pin|delete" )
+               request = pin_remove_cmd;
 
             if( parts.length > 2 )
             {
@@ -637,26 +636,26 @@
       }
 
       if( org != request )
-         console.log( "restructured request [" + request + "]" );
+         console.log( "reformatted = '" + request + "'" );
 
       return request;
    }
 
    function do_local_request( request )
    {
-      if( request == pin_retain_name )
+      if( request == pin_retain_cmd )
          do_retain( true );
-      else if( request.startsWith( pin_retain_name ) )
+      else if( request.startsWith( pin_retain_cmd ) )
          do_retain( false );
-      else if( request == pin_remove_name )
+      else if( request == pin_remove_cmd )
          do_remove( true );
-      else if( request.startsWith( pin_remove_name ) )
-         do_remove( request.substr( pin_remove_name.length + 1 ) );
-      else if( request == stylesheets_reload_name )
+      else if( request.startsWith( pin_remove_cmd ) )
+         do_remove( request.substr( pin_remove_cmd.length + 1 ) );
+      else if( request == stylesheets_reload_cmd )
          load_style( "dummy", document.getElementById( "user_arbitrary" ).value );
-      else if( request.startsWith( stylesheets_reload_name ) )
+      else if( request.startsWith( stylesheets_reload_cmd ) )
       {
-         var style = request.substr( stylesheets_reload_name.length + 1 );
+         var style = request.substr( stylesheets_reload_cmd.length + 1 );
 
          if( style == own_name )
             style = document.getElementById( "user_access" ).value;
@@ -672,13 +671,15 @@
    {
       var request = document.getElementById( "user_request" ).value;
 
-      request = restructured( request );
+      console.log( "request = '" + request + "'" );
 
-      if( request.startsWith( pin_retain_name ) )
+      request = reformatted( request );
+
+      if( request.startsWith( pin_retain_cmd ) )
          do_local_request( request );
-      else if( request.startsWith( pin_remove_name ) )
+      else if( request.startsWith( pin_remove_cmd ) )
          do_local_request( request );
-      else if( request.startsWith( stylesheets_reload_name ) )
+      else if( request.startsWith( stylesheets_reload_cmd ) )
          do_local_request( request );
       else
       {
@@ -693,12 +694,12 @@
 
          var request_type = "GET";
 
-         if( cmd == stylesheets_retain_name )
+         if( cmd == stylesheets_retain_cmd )
             request_type = "PUT";
-         else if( ( cmd == "" ) || ( cmd == users_create_name )
-          || ( cmd == unlock_keys_create_name ) || ( cmd == unlock_keys_employ_name ) )
+         else if( ( cmd == "" ) || ( cmd == users_create_cmd )
+          || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd ) )
             request_type = "POST";
-         else if( ( cmd == users_delete_name ) || ( cmd == stylesheets_delete_name ) )
+         else if( ( cmd == users_delete_cmd ) || ( cmd == stylesheets_delete_cmd ) )
             request_type = "DELETE";
 
          var has_cmd_options = false;
@@ -711,20 +712,20 @@
 
          if( request == help_name )
             cmd_is_url_suffix = true;
-         else if( ( request == users_review_name ) || ( cmd == unlock_keys_create_name )
-          || ( request == stylesheets_delete_name ) || ( request == stylesheets_retain_name ) )
+         else if( ( request == users_review_cmd ) || ( cmd == unlock_keys_create_cmd )
+          || ( request == stylesheets_delete_cmd ) || ( request == stylesheets_retain_cmd ) )
          {
             cmd_is_url_suffix = true;
             cmd_needs_truncating = true;
 
-            if( request == stylesheets_retain_name )
+            if( request == stylesheets_retain_cmd )
                need_to_include_payload = true;
          }
 
-         if( ( cmd == users_create_name ) || ( cmd == users_delete_name )
-          || ( cmd == unlock_keys_employ_name ) || ( cmd == stylesheets_review_name ) )
+         if( ( cmd == users_create_cmd ) || ( cmd == users_delete_cmd )
+          || ( cmd == unlock_keys_employ_cmd ) || ( cmd == stylesheets_review_cmd ) )
          {
-            if( cmd == users_create_name )
+            if( cmd == users_create_cmd )
                has_cmd_options = true;
             else
                has_name_suffix = true;
@@ -735,7 +736,7 @@
 
          if( cmd_needs_truncating )
          {
-            var tpos = cmd.indexOf( "_" );
+            var tpos = cmd.indexOf( "|" );
 
             if( tpos > 0 )
                cmd = cmd.substring( 0, tpos );
