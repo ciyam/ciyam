@@ -27,7 +27,7 @@ review users
 review stylesheet[s] [<name>]
 Session terminated.
 Now will list all standard access tokens and then remove the previously activated new user access token.
-88888
+88888 test-1
 [okay]
 Session terminated.
 Error: This web session is not valid (or has expired).
