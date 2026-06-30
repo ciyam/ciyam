@@ -1025,7 +1025,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      if( !is_json_output )
                         response = style_data;
                      else
-                        response = "{\"style_data\":\"" + escaped_json( style_data ) + "\"}\n";
+                        response = "{\"stylesheet\":\"" + escaped_json( style_data ) + "\"}\n";
                   }
                }
                else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_stylesheets ) )
@@ -1134,16 +1134,44 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   {
                      found = true;
 
-                     string all_user_info( get_all_user_pins( ) );
+                     string all_user_pins( get_all_user_pins( ) );
 
-                     if( all_user_info.empty( ) )
+                     if( all_user_pins.empty( ) )
                         use_none_response = true;
                      else
                      {
+                        vector< string > all_pins;
+
+                        split( all_user_pins, all_pins, '\n' );
+
+                        string all_user_info;
+
+                        for( size_t i = 0; i < all_pins.size( ); i++ )
+                        {
+                           string next_pin( all_pins[ i ] );
+
+                           string next_name( get_user_name( next_pin ) );
+
+                           if( !is_json_output )
+                           {
+                              if( !all_user_info.empty( ) )
+                                 all_user_info += '\n';
+
+                              all_user_info += next_pin + ' ' + next_name;
+                           }
+                           else
+                           {
+                              if( !all_user_info.empty( ) )
+                                 all_user_info += ",";
+
+                              all_user_info += "{\"user\":[{\"pin\":\"" + next_pin + "\"},{\"name\":\"" + next_name + "\"}]}";
+                           }
+                        }
+
                         if( !is_json_output )
                            response = all_user_info;
                         else
-                           response = "{\"all_users\":\"" + escaped_json( all_user_info ) + "\"}\n";
+                           response = "{\"all_users\":[" + all_user_info + "]}\n";
                      }
                   }
                }
