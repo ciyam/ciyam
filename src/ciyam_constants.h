@@ -193,6 +193,7 @@ const char* const c_web_files_branch = "Web_Files";
 const char* const c_query_param_name_access = "access";
 const char* const c_query_param_name_device = "device";
 const char* const c_query_param_name_passwd = "passwd";
+const char* const c_query_param_name_options = "options";
 const char* const c_query_param_name_payload = "payload";
 const char* const c_query_param_name_request = "request";
 const char* const c_query_param_name_session = "session";
