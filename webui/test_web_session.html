@@ -77,20 +77,28 @@
    const help_name = "help";
    const quit_name = "quit";
 
-   const remove_name = "remove";
-   const retain_name = "retain";
+   const users_name = "users";
 
-   const access_create_name = "access_create";
-   const access_delete_name = "access_delete";
-   const access_review_name = "access_review";
+   const pin_remove_help = "remove pin";
+   const pin_retain_help = "retain pin";
 
-   const unlock_create_name = "unlock_create";
-   const unlock_employ_name = "unlock_employ";
+   const stylesheets_reload_help = "reload stylesheet";
+
+   const pin_remove_name = "pin_remove";
+
+   const pin_retain_name = "pin_retain";
+
+   const users_create_name = "users_create";
+   const users_delete_name = "users_delete";
+   const users_review_name = "users_review";
 
    const stylesheets_delete_name = "stylesheets_delete";
    const stylesheets_reload_name = "stylesheets_reload";
    const stylesheets_retain_name = "stylesheets_retain";
    const stylesheets_review_name = "stylesheets_review";
+
+   const unlock_keys_create_name = "unlock-keys_create";
+   const unlock_keys_employ_name = "unlock-keys_employ";
 
    const error_prefix = "Error: ";
 
@@ -565,16 +573,85 @@
       page_style = new_page_style;
    }
 
+   function restructured( request )
+   {
+      var org = request;
+
+      var parts = request.split( " " );
+
+      if( parts.length > 1 )
+      {
+         var first = parts[ 0 ];
+         var second = parts[ 1 ];
+
+         var suffix = "";
+
+         var pos = first.indexOf( '_' );
+
+         if( pos < 0 )
+         {
+            if( ( first == "load" )
+             || ( first == "reload" ) )
+               suffix = "_reload";
+            else if( ( first == "get" )
+             || ( first == "read" )
+             || ( first == "view" )
+             || ( first == "review" ) )
+               suffix = "_review";
+            else if( ( first == "new" )
+             || ( first == "create" ) )
+               suffix = "_create";
+            else if( first == "employ" )
+               suffix = "_employ";
+            else if( ( first == "save" )
+             || ( first == "store" )
+             || ( first == "retain" ) )
+               suffix = "_retain";
+            else if( ( first == "del" )
+             || ( first == "kill" )
+             || ( first == "erase" )
+             || ( first == "delete" )
+             || ( first == "remove" )
+             || ( first == "destroy" ) )
+               suffix = "_delete";
+         }
+
+         if( suffix != "" )
+         {
+            if( ( second.length > 3 )
+             && ( second.slice( -1 ) != "s" ) )
+               second += "s";
+
+            request = second + suffix;
+
+            if( request == "pin_delete" )
+               request = pin_remove_name;
+
+            if( parts.length > 2 )
+            {
+               var tail = parts.slice( 2 );
+
+               request += " " + tail.join( " " );
+            }
+         }
+      }
+
+      if( org != request )
+         console.log( "restructured request [" + request + "]" );
+
+      return request;
+   }
+
    function do_local_request( request )
    {
-      if( request == retain_name )
+      if( request == pin_retain_name )
          do_retain( true );
-      else if( request.startsWith( retain_name ) )
+      else if( request.startsWith( pin_retain_name ) )
          do_retain( false );
-      else if( request == remove_name )
+      else if( request == pin_remove_name )
          do_remove( true );
-      else if( request.startsWith( remove_name ) )
-         do_remove( request.substr( remove_name.length + 1 ) );
+      else if( request.startsWith( pin_remove_name ) )
+         do_remove( request.substr( pin_remove_name.length + 1 ) );
       else if( request == stylesheets_reload_name )
          load_style( "dummy", document.getElementById( "user_arbitrary" ).value );
       else if( request.startsWith( stylesheets_reload_name ) )
@@ -595,9 +672,11 @@
    {
       var request = document.getElementById( "user_request" ).value;
 
-      if( request.startsWith( retain_name ) )
+      request = restructured( request );
+
+      if( request.startsWith( pin_retain_name ) )
          do_local_request( request );
-      else if( request.startsWith( remove_name ) )
+      else if( request.startsWith( pin_remove_name ) )
          do_local_request( request );
       else if( request.startsWith( stylesheets_reload_name ) )
          do_local_request( request );
@@ -616,10 +695,10 @@
 
          if( cmd == stylesheets_retain_name )
             request_type = "PUT";
-         else if( ( cmd == "" ) || ( cmd == access_create_name )
-          || ( cmd == unlock_create_name ) || ( cmd == unlock_employ_name ) )
+         else if( ( cmd == "" ) || ( cmd == users_create_name )
+          || ( cmd == unlock_keys_create_name ) || ( cmd == unlock_keys_employ_name ) )
             request_type = "POST";
-         else if( ( cmd == access_delete_name ) || ( cmd == stylesheets_delete_name ) )
+         else if( ( cmd == users_delete_name ) || ( cmd == stylesheets_delete_name ) )
             request_type = "DELETE";
 
          var has_cmd_options = false;
@@ -632,7 +711,7 @@
 
          if( request == help_name )
             cmd_is_url_suffix = true;
-         else if( ( request == access_review_name ) || ( cmd == unlock_create_name )
+         else if( ( request == users_review_name ) || ( cmd == unlock_keys_create_name )
           || ( request == stylesheets_delete_name ) || ( request == stylesheets_retain_name ) )
          {
             cmd_is_url_suffix = true;
@@ -642,10 +721,10 @@
                need_to_include_payload = true;
          }
 
-         if( ( cmd == access_create_name ) || ( cmd == access_delete_name )
-          || ( cmd == unlock_employ_name ) || ( cmd == stylesheets_review_name ) )
+         if( ( cmd == users_create_name ) || ( cmd == users_delete_name )
+          || ( cmd == unlock_keys_employ_name ) || ( cmd == stylesheets_review_name ) )
          {
-            if( cmd == access_create_name )
+            if( cmd == users_create_name )
                has_cmd_options = true;
             else
                has_name_suffix = true;
@@ -754,7 +833,12 @@
             qry_data += "&payload=" + encodeURIComponent( arbitrary );
 
          if( request != "" )
-            qry_data += "&request=" + encodeURIComponent( request );
+         {
+            if( cmd == users_name )
+               qry_data += "&options=" + encodeURIComponent( request );
+            else
+               qry_data += "&request=" + encodeURIComponent( request );
+         }
 
          if( ( device == "" ) && ( password != "" ) )
          {
@@ -857,6 +941,11 @@
 
                localStorage.setItem( "cws.access", access_entries.join( "," ) );
             }
+
+            // NOTE: In case was previously retained remove the 'hashed'
+            // password value (so it will not remain when is 'partial').
+            if( localStorage.getItem( "cws.hashed_" + access ) != null )
+               localStorage.removeItem( "cws.hashed_" + access );
          }
 
          var device = document.getElementById( "user_device" ).value;
@@ -1133,10 +1222,10 @@
             {
                var lines = data.split( "\n" );
 
-               lines.push( remove_name + " [<pin>]" );
-               lines.push( retain_name );
+               lines.push( pin_remove_help + " [<code>]" );
+               lines.push( pin_retain_help + " [partial]" );
 
-               lines.push( stylesheets_reload_name + " [<name> or none]" );
+               lines.push( stylesheets_reload_help + " [<name> or none]" );
 
                lines.sort( word_length_compare );
 
@@ -1211,7 +1300,7 @@
          }
       }
 
-      if( document.getElementById( "user_unique" ).value != "" )
+      if( document.getElementById( "user_session" ).value != "" )
          document.getElementById( "user_request" ).value = "";
    }
    </script>
