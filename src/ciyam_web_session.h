@@ -30,6 +30,7 @@ struct cws_paramaters
    std::string access;
    std::string device;
    std::string passwd;
+   std::string options;
    std::string payload;
    std::string request;
    std::string session;

@@ -86,22 +86,23 @@ const char* const c_web_session_suffix = ".session";
 const char* const c_web_started_suffix = ".started";
 
 const char* const c_cws_uri_suffix_help = "help";
-const char* const c_cws_uri_suffix_access = "access";
-const char* const c_cws_uri_suffix_unlock = "unlock";
+const char* const c_cws_uri_suffix_users = "users";
 const char* const c_cws_uri_suffix_devices = "devices";
 const char* const c_cws_uri_suffix_sessions = "sessions";
 const char* const c_cws_uri_suffix_stylesheets = "stylesheets";
+const char* const c_cws_uri_suffix_unlock_keys = "unlock-keys";
 
-const char* const c_cws_uri_suffix_access_prefix = "access/";
-const char* const c_cws_uri_suffix_unlock_prefix = "unlock/";
+const char* const c_cws_uri_suffix_users_prefix = "users/";
 const char* const c_cws_uri_suffix_sessions_prefix = "sessions/";
 const char* const c_cws_uri_suffix_stylesheets_prefix = "stylesheets/";
+const char* const c_cws_uri_suffix_unlock_keys_prefix = "unlock-keys/";
 
-const char* const c_cws_request_access_create_op_secret = "-secret";
-const char* const c_cws_request_access_create_opt_user_info_prefix = "-user-info=";
+const char* const c_cws_request_users_create_op_secret = "secret";
+const char* const c_cws_request_users_create_opt_suggested_prefix = "suggested=";
 
-const char* const c_cws_help_request_output = "quit\naccess_create [-secret|-user-info=[<pin>:]<username>]\n"
- "access_delete <pin>\naccess_review\nunlock_create\nunlock_employ <key>\nstylesheets_delete\nstylesheets_retain\nstylesheets_review [<name>]";
+// NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax.
+const char* const c_cws_help_request_output = "quit\ncreate user [secret|suggested=[<pin>:][<username>]]\ncreate unlock-key\n"
+ "delete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview users\nreview stylesheet[s] [<name>]";
 
 const char* const c_web_session_script = "web_session.cin";
 
@@ -454,6 +455,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    string access( cws_params.access );
    string device( cws_params.device );
    string passwd( cws_params.passwd );
+   string options( cws_params.options );
    string payload( cws_params.payload );
    string request( cws_params.request );
    string session( cws_params.session );
@@ -850,7 +852,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   if( g_cws_access_devices.count( access ) )
                      g_cws_access_devices[ access ].erase( device );
                }
-               else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_unlock ) )
+               else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_unlock_keys ) )
                {
                   if( access != g_cws_admin_token )
                      // FUTURE: This message should be handled as a server string message.
@@ -873,9 +875,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   }
                }
                else if( is_post_request
-                && ( uri_suffix.find( c_cws_uri_suffix_unlock_prefix ) == 0 ) )
+                && ( uri_suffix.find( c_cws_uri_suffix_unlock_keys_prefix ) == 0 ) )
                {
-                  string key( uri_suffix.substr( strlen( c_cws_uri_suffix_unlock_prefix ) ) );
+                  string key( uri_suffix.substr( strlen( c_cws_uri_suffix_unlock_keys_prefix ) ) );
 
                   if( !has_system_variable( e_special_var_sid_locked ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -1048,42 +1050,42 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         error = "Stylesheet could not be erased (contact the administrator).";
                   }
                }
-               else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_access ) )
+               else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_users ) )
                {
                   if( access != g_cws_admin_token )
                      // FUTURE: This message should be handled as a server string message.
-                     error = "Access tokens can only be maintained by the administrator.";
+                     error = "Users can only be maintained by the administrator.";
                   else
                   {
                      bool is_secret = false;
 
                      string pin, suggested_username;
 
-                     if( request_args == c_cws_request_access_create_op_secret )
+                     if( options == c_cws_request_users_create_op_secret )
                         is_secret = true;
 
-                     if( ( request_args.find( c_cws_request_access_create_opt_user_info_prefix ) == 0 )
-                      && ( request_args.length( ) > ( strlen( c_cws_request_access_create_opt_user_info_prefix ) + 2 ) ) )
+                     if( ( options.find( c_cws_request_users_create_opt_suggested_prefix ) == 0 )
+                      && ( options.length( ) > ( strlen( c_cws_request_users_create_opt_suggested_prefix ) + 2 ) ) )
                      {
-                        request_args.erase( 0, strlen( c_cws_request_access_create_opt_user_info_prefix ) );
+                        options.erase( 0, strlen( c_cws_request_users_create_opt_suggested_prefix ) );
 
-                        string::size_type pos = request_args.find( ':' );
+                        string::size_type pos = options.find( ':' );
 
                         if( pos != string::npos )
                         {
-                           pin = request_args.substr( 0, pos );
+                           pin = options.substr( 0, pos );
 
-                           request_args.erase( 0, pos + 1 );
+                           options.erase( 0, pos + 1 );
                         }
 
-                        suggested_username = request_args;
+                        suggested_username = options;
 
-                        request_args.erase( );
+                        options.erase( );
                      }
 
-                     if( !is_secret && !request_args.empty( ) )
+                     if( !is_secret && !options.empty( ) )
                         // FUTURE: This message should be handled as a server string message.
-                        error = "Invalid argument(s) '" + request_args + "' for access token creation.";
+                        error = "Invalid options value '" + options + "' for user creation.";
                      else
                      {
                         found = true;
@@ -1103,18 +1105,18 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
                   }
                }
-               else if( is_delete_request && ( uri_suffix.find( c_cws_uri_suffix_access_prefix ) == 0 ) )
+               else if( is_delete_request && ( uri_suffix.find( c_cws_uri_suffix_users_prefix ) == 0 ) )
                {
                   if( access != g_cws_admin_token )
                      // FUTURE: This message should be handled as a server string message.
-                     error = "Access tokens can only be maintained by the administrator.";
+                     error = "Users can only be maintained by the administrator.";
                   else
                   {
-                     string pin( uri_suffix.substr( strlen( c_cws_uri_suffix_access_prefix ) ) );
+                     string pin( uri_suffix.substr( strlen( c_cws_uri_suffix_users_prefix ) ) );
 
                      if( !has_user_info( pin ) )
                         // FUTURE: This message should be handled as a server string message.
-                        error = "Unkknown access token '" + pin + "' for removal.";
+                        error = "Unkknown user '" + pin + "' for removal.";
                      else
                      {
                         found = true;
@@ -1123,11 +1125,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
                   }
                }
-               else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_access ) )
+               else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_users ) )
                {
                   if( access != g_cws_admin_token )
                      // FUTURE: This message should be handled as a server string message.
-                     error = "Access tokens can only be maintained by the administrator.";
+                     error = "Users can only be maintained by the administrator.";
                   else
                   {
                      found = true;
@@ -1141,7 +1143,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         if( !is_json_output )
                            response = all_user_info;
                         else
-                           response = "{\"access_tokens\":\"" + escaped_json( all_user_info ) + "\"}\n";
+                           response = "{\"all_users\":\"" + escaped_json( all_user_info ) + "\"}\n";
                      }
                   }
                }

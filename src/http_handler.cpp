@@ -918,6 +918,9 @@ void http_request_handler::on_start( )
                if( params.count( c_query_param_name_passwd ) )
                   cws_params.passwd = params[ c_query_param_name_passwd ];
 
+               if( params.count( c_query_param_name_options ) )
+                  cws_params.options = params[ c_query_param_name_options ];
+
                if( params.count( c_query_param_name_payload ) )
                   cws_params.payload = params[ c_query_param_name_payload ];
 
