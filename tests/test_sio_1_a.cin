@@ -4,6 +4,10 @@ sections enums.enum
 attribute enums.enum.values.*.data,name
 output enums.enum.values
 output -json enums.enum.values
+output lists.id=602900
+output -json lists.id=602900
+output views.id=601020
+output -json views.id=601020
 attributes
 attribute enums.*.id,name
 attribute lists.*.id,name

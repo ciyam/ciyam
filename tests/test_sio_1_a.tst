@@ -62,6 +62,284 @@ data=3,name=enum_add_packages_standard_user_group
  }
 ]
 }
+> output lists.id=602900
+<id>602900
+<cid>127100
+<name>602900_name
+<type>group
+<extra>no_limit
+<actions>
+<modifiers>
+<view>602910
+<class>Application
+<bclass>
+<order>forward
+<pclass>101100
+<pfield>302220
+<module>Meta
+<columns/>
+ <column/>
+  <name>field_application_name
+  <field>127101
+  <ftype>string
+  <extra>max_size=30
+  <modifiers>
+  <unique>true
+  <indexed>true
+ </column>
+ <column/>
+  <name>field_application_version
+  <field>127102
+  <ftype>string
+  <extra>max_size=5
+  <modifiers>8000:protect
+  <unique>false
+  <indexed>false
+ </column>
+ <column/>
+  <name>field_application_generate_status
+  <field>127105
+  <ftype>string
+  <extra>
+  <modifiers>
+  <unique>false
+  <indexed>false
+ </column>
+</columns>
+<parents/>
+</parents>
+<restricts/>
+</restricts>
+
+> output -json lists.id=602900
+{ "list":
+[
+ { "id": "602900" },
+ { "cid": "127100" },
+ { "name": "602900_name" },
+ { "type": "group" },
+ { "extra": "no_limit" },
+ { "actions": "" },
+ { "modifiers": "" },
+ { "view": "602910" },
+ { "class": "Application" },
+ { "bclass": "" },
+ { "order": "forward" },
+ { "pclass": "101100" },
+ { "pfield": "302220" },
+ { "module": "Meta" },
+ { "columns":
+ [
+  { "column":
+  [
+   { "name": "field_application_name" },
+   { "field": "127101" },
+   { "ftype": "string" },
+   { "extra": "max_size=30" },
+   { "modifiers": "" },
+   { "unique": "true" },
+   { "indexed": "true" }
+  ]
+  },
+  { "column":
+  [
+   { "name": "field_application_version" },
+   { "field": "127102" },
+   { "ftype": "string" },
+   { "extra": "max_size=5" },
+   { "modifiers": "8000:protect" },
+   { "unique": "false" },
+   { "indexed": "false" }
+  ]
+  },
+  { "column":
+  [
+   { "name": "field_application_generate_status" },
+   { "field": "127105" },
+   { "ftype": "string" },
+   { "extra": "" },
+   { "modifiers": "" },
+   { "unique": "false" },
+   { "indexed": "false" }
+  ]
+  }
+ ]
+ },
+ { "parents":
+ [
+ ]
+ },
+ { "restricts":
+ [
+ ]
+ }
+]
+}
+> output views.id=601020
+<id>601020
+<cid>100100
+<name>601020_name
+<type>admin
+<extra>
+<modifiers>
+<class>User
+<bclass>
+<module>Meta
+<fields/>
+ <field/>
+  <name>field_user_username
+  <field>100101
+  <ftype>string
+  <extra>hpassword_salt+max_size=30
+  <mandatory>true
+  <modifiers>
+ </field>
+ <field/>
+  <name>field_user_active
+  <field>100102
+  <ftype>bool
+  <extra>
+  <mandatory>true
+  <modifiers>
+ </field>
+ <field/>
+  <name>field_user_password
+  <field>100103
+  <ftype>string
+  <extra>new_only+hpassword+encrypted+max_size=200
+  <mandatory>true
+  <modifiers>
+ </field>
+ <field/>
+  <name>field_user_new_password
+  <field>100109
+  <ftype>string
+  <extra>non_new+admin_only+hpassword+encrypted+max_size=200
+  <mandatory>false
+  <modifiers>100:relegate
+ </field>
+ <field/>
+  <name>field_user_description
+  <field>100104
+  <ftype>string
+  <extra>max_size=100
+  <mandatory>true
+  <modifiers>
+ </field>
+ <field/>
+  <name>field_user_email
+  <field>100105
+  <ftype>string
+  <extra>mailto
+  <mandatory>false
+  <modifiers>100:relegate
+ </field>
+ <field/>
+  <name>field_user_workgroup
+  <field>300100
+  <ftype>@class
+  <extra>max_size=100+user_group
+  <mandatory>false
+  <modifiers>
+  <pclass>101100
+  <pfield>101101
+  <pfname>field_workgroup_name
+  <pextra>
+ </field>
+</fields>
+
+> output -json views.id=601020
+{ "view":
+[
+ { "id": "601020" },
+ { "cid": "100100" },
+ { "name": "601020_name" },
+ { "type": "admin" },
+ { "extra": "" },
+ { "modifiers": "" },
+ { "class": "User" },
+ { "bclass": "" },
+ { "module": "Meta" },
+ { "fields":
+ [
+  { "field":
+  [
+   { "name": "field_user_username" },
+   { "field": "100101" },
+   { "ftype": "string" },
+   { "extra": "hpassword_salt+max_size=30" },
+   { "mandatory": "true" },
+   { "modifiers": "" }
+  ]
+  },
+  { "field":
+  [
+   { "name": "field_user_active" },
+   { "field": "100102" },
+   { "ftype": "bool" },
+   { "extra": "" },
+   { "mandatory": "true" },
+   { "modifiers": "" }
+  ]
+  },
+  { "field":
+  [
+   { "name": "field_user_password" },
+   { "field": "100103" },
+   { "ftype": "string" },
+   { "extra": "new_only+hpassword+encrypted+max_size=200" },
+   { "mandatory": "true" },
+   { "modifiers": "" }
+  ]
+  },
+  { "field":
+  [
+   { "name": "field_user_new_password" },
+   { "field": "100109" },
+   { "ftype": "string" },
+   { "extra": "non_new+admin_only+hpassword+encrypted+max_size=200" },
+   { "mandatory": "false" },
+   { "modifiers": "100:relegate" }
+  ]
+  },
+  { "field":
+  [
+   { "name": "field_user_description" },
+   { "field": "100104" },
+   { "ftype": "string" },
+   { "extra": "max_size=100" },
+   { "mandatory": "true" },
+   { "modifiers": "" }
+  ]
+  },
+  { "field":
+  [
+   { "name": "field_user_email" },
+   { "field": "100105" },
+   { "ftype": "string" },
+   { "extra": "mailto" },
+   { "mandatory": "false" },
+   { "modifiers": "100:relegate" }
+  ]
+  },
+  { "field":
+  [
+   { "name": "field_user_workgroup" },
+   { "field": "300100" },
+   { "ftype": "@class" },
+   { "extra": "max_size=100+user_group" },
+   { "mandatory": "false" },
+   { "modifiers": "" },
+   { "pclass": "101100" },
+   { "pfield": "101101" },
+   { "pfname": "field_workgroup_name" },
+   { "pextra": "" }
+  ]
+  }
+ ]
+ }
+]
+}
 > attributes
 id
 name
