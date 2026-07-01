@@ -15,7 +15,25 @@ data=1,name=enum_add_packages_standard
 data=2,name=enum_add_packages_standard_user
 data=3,name=enum_add_packages_standard_user_group
 
-> output_json enums.enum.values
+> output enums.enum.values
+<value/>
+ <data>0
+ <name>enum_add_packages_none
+</value>
+<value/>
+ <data>1
+ <name>enum_add_packages_standard
+</value>
+<value/>
+ <data>2
+ <name>enum_add_packages_standard_user
+</value>
+<value/>
+ <data>3
+ <name>enum_add_packages_standard_user_group
+</value>
+
+> output -json enums.enum.values
 { "values":
 [
  { "value":
