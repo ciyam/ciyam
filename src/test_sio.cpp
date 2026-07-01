@@ -124,6 +124,26 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
             }
          }
       }
+      else if( command == c_cmd_test_sio_output )
+      {
+         bool json = has_parm_val( parameters, c_cmd_test_sio_output_json );
+         string path( get_parm_val( parameters, c_cmd_test_sio_output_path ) );
+
+         if( up_sio_graph.get( ) )
+         {
+            if( !json )
+               write_graph( *up_sio_graph, 0, &path );
+            else
+            {
+               const section_node* p_section_node = get_section_node_from_path( up_sio_graph->get_root_node( ), path );
+
+               if( p_section_node )
+                  convert_sio_to_json( *p_section_node, cout );
+               else
+                  cerr << "unable to find section '" << path << "'" << endl;
+            }
+         }
+      }
       else if( command == c_cmd_test_sio_sections )
       {
          string path( get_parm_val( parameters, c_cmd_test_sio_sections_path ) );
@@ -225,20 +245,6 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
                for( size_t i = 0; i < num_attributes; i++ )
                   cout << p_section_node->get_attribute( i ).get_name( ) << '\n';
             }
-         }
-      }
-      else if( command == c_cmd_test_sio_output_json )
-      {
-         string path( get_parm_val( parameters, c_cmd_test_sio_output_json_path ) );
-
-         if( up_sio_graph.get( ) )
-         {
-            const section_node* p_section_node = get_section_node_from_path( up_sio_graph->get_root_node( ), path );
-
-            if( !p_section_node )
-               cerr << "unable to find section '" << path << "'" << endl;
-            else
-               convert_sio_to_json( *p_section_node, cout );
          }
       }
       else if( command == c_cmd_test_sio_exit )
