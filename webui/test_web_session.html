@@ -819,14 +819,15 @@
             credentials += hardened;
          }
 
-         // NOTE: Credentials must be base64 encoded.
-         if( ( device == "" ) && ( credentials != "" ) )
+         if( device == "" )
          {
             request_type = "POST";
 
             url += "/devices";
 
-            qry_data += "&passwd=" + encode_base64_url( credentials );
+            // NOTE: Credentials must be base64 encoded.
+            if( credentials != "" )
+               qry_data += "&passwd=" + encode_base64_url( credentials );
          }
 
          var arbitrary = "";
