@@ -79,13 +79,14 @@
 
    const users_name = "users";
 
-   const pin_remove_help = "remove pin";
-   const pin_retain_help = "retain pin";
+   const creds_remove_help = "remove creds";
+   const creds_retain_help = "retain creds";
 
    const stylesheets_reload_help = "reload stylesheet";
 
-   const pin_remove_cmd = "pin|remove";
-   const pin_retain_cmd = "pin|retain";
+   const creds_delete_cmd = "creds|delete";
+   const creds_remove_cmd = "creds|remove";
+   const creds_retain_cmd = "creds|retain";
 
    const users_create_cmd = "users|create";
    const users_delete_cmd = "users|delete";
@@ -623,8 +624,8 @@
 
             request = second + suffix;
 
-            if( request == "pin|delete" )
-               request = pin_remove_cmd;
+            if( request == creds_delete_cmd )
+               request = creds_remove_cmd;
 
             if( parts.length > 2 )
             {
@@ -643,14 +644,14 @@
 
    function do_local_request( request )
    {
-      if( request == pin_retain_cmd )
+      if( request == creds_retain_cmd )
          do_retain( true );
-      else if( request.startsWith( pin_retain_cmd ) )
+      else if( request.startsWith( creds_retain_cmd ) )
          do_retain( false );
-      else if( request == pin_remove_cmd )
+      else if( request == creds_remove_cmd )
          do_remove( true );
-      else if( request.startsWith( pin_remove_cmd ) )
-         do_remove( request.substr( pin_remove_cmd.length + 1 ) );
+      else if( request.startsWith( creds_remove_cmd ) )
+         do_remove( request.substr( creds_remove_cmd.length + 1 ) );
       else if( request == stylesheets_reload_cmd )
          load_style( "dummy", document.getElementById( "user_arbitrary" ).value );
       else if( request.startsWith( stylesheets_reload_cmd ) )
@@ -671,13 +672,14 @@
    {
       var request = document.getElementById( "user_request" ).value;
 
-      console.log( "request = '" + request + "'" );
+      if( request != "" )
+         console.log( "request = '" + request + "'" );
 
       request = reformatted( request );
 
-      if( request.startsWith( pin_retain_cmd ) )
+      if( request.startsWith( creds_retain_cmd ) )
          do_local_request( request );
-      else if( request.startsWith( pin_remove_cmd ) )
+      else if( request.startsWith( creds_remove_cmd ) )
          do_local_request( request );
       else if( request.startsWith( stylesheets_reload_cmd ) )
          do_local_request( request );
@@ -762,7 +764,9 @@
             {
                var opos = request.indexOf( " " );
 
-               if( opos > 0 )
+               if( opos < 0 )
+                  request = "";
+               else
                   request = request.substr( opos + 1 );
             }
 
@@ -1223,8 +1227,8 @@
             {
                var lines = data.split( "\n" );
 
-               lines.push( pin_remove_help + " [<code>]" );
-               lines.push( pin_retain_help + " [partial]" );
+               lines.push( creds_remove_help + " [<pin>]" );
+               lines.push( creds_retain_help + " [partial]" );
 
                lines.push( stylesheets_reload_help + " [<name> or none]" );
 
