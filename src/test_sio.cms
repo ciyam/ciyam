@@ -1,0 +1,7 @@
+load "load sio file" <val//name>
+save "save sio file" <val//name>
+sections "output node's child sections (for an optional path)" [<val//path>]
+attribute "output an (optionally path prefixed) node's attribute" <val//name>
+attributes "output all node attributes (for an optional path)" [<val//path>]
+output_json "output entire graph (starting at an optional path)" [<val//path>]
+exit "exit program"

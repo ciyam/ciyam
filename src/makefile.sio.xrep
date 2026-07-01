@@ -684,7 +684,7 @@
     <gen_ext>
     <threads>false
     <sockets>false
-    <openssl>false
+    <openssl>`{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)false`,true`}
     <libfcgi>false
     <libharu>false
     <libicnv>false
@@ -698,6 +698,7 @@
      <filename>test_sio.cpp
     </cpp_files>
     <cms_files/>
+     <filename>test_sio.cms
     </cms_files>
    </executable>
    <executable/>
