@@ -63,8 +63,11 @@ void write_section_attributes( sio_writer& writer, const section_node& node )
    for( size_t i = 0; i < node.get_num_child_nodes( ); i++ )
    {
       const section_node& child_node( node.get_child_node( i ) );
+
       writer.start_section( child_node.get_name( ) );
+
       write_section_attributes( writer, child_node );
+
       writer.finish_section( child_node.get_name( ) );
    }
 }
@@ -627,12 +630,12 @@ void dump_sio_file( const string& filename, ostream* p_ostream )
    dump_sio( reader, p_ostream );
 }
 
-void write_graph( const sio_graph& graph, ostream* p_ostream )
+void write_graph( const sio_graph& graph, ostream* p_ostream, string* p_path_to_section )
 {
    if( !p_ostream )
       p_ostream = &cout;
 
-   sio_writer( *p_ostream, graph );
+   sio_writer( *p_ostream, graph, p_path_to_section );
 }
 
 sio_writer::sio_writer( ostream& os, vector< string >* p_initial_comments )
@@ -660,18 +663,24 @@ sio_writer::sio_writer( ostream& os, sio_reader& reader )
       put_line( reader.get_line( ) );
 }
 
-sio_writer::sio_writer( ostream& os, const sio_graph& graph )
+sio_writer::sio_writer( ostream& os, const sio_graph& graph, string* p_path_to_section )
  :
  os( os )
 {
    if( graph.empty( ) )
       throw runtime_error( "unexpected empty graph" );
 
-   start_section( c_root_section );
+   if( !p_path_to_section || p_path_to_section->empty( ) )
+      start_section( c_root_section );
 
-   write_section_attributes( *this, graph.get_root_node( ) );
+   if( !p_path_to_section || p_path_to_section->empty( ) )
+      write_section_attributes( *this, graph.get_root_node( ) );
+   else
+      write_section_attributes( *this,
+       *get_section_node_from_path( graph.get_root_node( ), *p_path_to_section ) );
 
-   finish_sections( );
+   if( !p_path_to_section || p_path_to_section->empty( ) )
+      finish_sections( );
 }
 
 void sio_writer::write_comment( const std::string& comment )
@@ -839,6 +848,7 @@ const section_node* section_node::get_child_node( const std::string& name ) cons
       if( name == child_nodes[ i ]->get_name( ) )
       {
          p_child_node = child_nodes[ i ];
+
          break;
       }
    }
@@ -888,7 +898,12 @@ const section_node* get_section_node_from_path(
             string::size_type apos = next.find( '=' );
 
             if( apos == string::npos )
+            {
                p_section_node = p_section_node->get_child_node( next );
+
+               if( !no_throw && !p_section_node )
+                  throw runtime_error( "path '" + path + "' is invalid" );
+            }
             else
             {
                string attribute( next.substr( 0, apos ) );

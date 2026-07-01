@@ -48,9 +48,11 @@ class sio_reader
    }
 
    void start_section( const std::string& name );
+
    void finish_section( const std::string& name );
 
    std::string read_attribute( const std::string& name );
+
    std::string read_opt_attribute( const std::string& name, const std::string& default_value = "" );
 
    bool has_read_comment( std::string& comment );
@@ -108,13 +110,14 @@ void dump_sio_file( const std::string& filename, std::ostream* p_ostream = 0 );
 
 class sio_graph;
 
-void write_graph( const sio_graph& graph, std::ostream* p_ostream = 0 );
+void write_graph( const sio_graph& graph, std::ostream* p_ostream = 0, std::string* p_path_to_section = 0 );
 
 class sio_writer
 {
    friend void dump_sio( sio_reader& reader, std::ostream* p_ostream );
    friend void dump_sio_file( const std::string& filename, std::ostream* p_ostream );
-   friend void write_graph( const sio_graph& graph, std::ostream* p_ostream );
+
+   friend void write_graph( const sio_graph& graph, std::ostream* p_ostream, std::string* p_path_to_section );
 
    public:
    sio_writer( std::ostream& os, std::vector< std::string >* p_initial_comments = 0 );
@@ -122,9 +125,11 @@ class sio_writer
    void write_comment( const std::string& comment );
 
    void start_section( const std::string& name );
+
    void finish_section( const std::string& name );
 
    void write_attribute( const std::string& name, const std::string& value );
+
    void write_opt_attribute( const std::string& name, const std::string& value, const std::string& default_value = "" );
 
    std::string get_current_section( ) const { return section; }
@@ -135,7 +140,7 @@ class sio_writer
 
    private:
    sio_writer( std::ostream& os, sio_reader& reader );
-   sio_writer( std::ostream& os, const sio_graph& graph );
+   sio_writer( std::ostream& os, const sio_graph& graph, std::string* p_path_to_section );
 
    void put_line( const std::string& line );
 
