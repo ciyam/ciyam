@@ -1,0 +1,10 @@
+load Meta.fcgi.sio
+sections
+sections enums.enum
+attribute enums.enum.values.*.data,name
+output_json enums.enum.values
+attributes
+attribute enums.*.id,name
+attribute lists.*.id,name
+attribute views.*.id,name
+exit

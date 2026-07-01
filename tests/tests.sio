@@ -1834,6 +1834,21 @@
    </tests>
   </group>
   <group/>
+   <name>test_sio
+   <tests/>
+    <test/>
+     <name>1
+     <description>Basic structured I/O tests.
+     <test_step/>
+      <name>a
+      <exec>test_sio -quiet -echo -no_stderr -no_progress
+      <input>true
+      <output>generate
+     </test_step>
+    </test>
+   </tests>
+  </group>
+  <group/>
    <name>test_xrep
    <tests/>
     <test/>
