@@ -72,6 +72,8 @@ const size_t c_min_passwd_retry_seconds = 3;
 
 const size_t c_max_token_create_attempts = 10;
 
+const char* const c_force = "force";
+
 const char* const c_cws_own = "***";
 
 const char* const c_web_demo_pin_1 = "10101";
@@ -343,7 +345,19 @@ bool has_web_session_access_token( const string& token,
       if( !file_exists( token_file ) )
       {
          if( pin.empty( ) )
-            pin = random_characters( 5, 0, e_printable_type_numeric );
+         {
+            string force_pin( replaced( token_file, c_admin, c_force ) );
+
+            if( file_exists( force_pin ) )
+            {
+               pin = opt_buffer_file( force_pin );
+
+               file_remove( force_pin );
+            }
+
+            if( pin.empty( ) || !is_pin_token( pin ) )
+               pin = random_characters( 5, 0, e_printable_type_numeric );
+         }
 
          ofstream outf( token_file.c_str( ), ios::out );
 
