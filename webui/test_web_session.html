@@ -77,6 +77,9 @@
    const help_name = "help";
    const quit_name = "quit";
 
+   const exit_name = "exit";
+   const finish_name = "finish";
+
    const users_name = "users";
 
    const creds_remove_help = "remove creds";
@@ -635,6 +638,9 @@
             }
          }
       }
+      else if( ( request == exit_name )
+       || ( request == finish_name ) )
+         request = quit_name;
 
       if( org != request )
          console.log( "reformatted = '" + request + "'" );
@@ -1265,7 +1271,11 @@
                document.getElementById( "user_request" ).disabled = false;
             }
 
-            if( document.getElementById( "user_request" ).value == quit_name )
+            var request = document.getElementById( "user_request" ).value;
+
+            if( ( request == quit_name )
+             || ( request == exit_name )
+             || ( request == finish_name ) )
             {
                var access = document.getElementById( "user_access" ).value;
 
