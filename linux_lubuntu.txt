@@ -108,6 +108,8 @@ sudo apt install qrencode -y
 sudo apt install zbar-tools -y
 (only install if wanting to scan QR codes)
 
+sudo apt install pandoc
+
 sudo apt install libpng-dev -y
 sudo apt install libhpdf-dev -y
 

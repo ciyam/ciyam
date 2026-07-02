@@ -68,6 +68,7 @@ Install all required packages for CIYAM Software Manufacturing
 
 sudo zypper -n install make
 sudo zypper -n install zbar
+sudo zypper -n install pandoc
 sudo zypper -n install gcc-c++
 sudo zypper -n install git-core
 sudo zypper -n install qrencode
