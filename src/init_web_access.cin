@@ -1,0 +1,41 @@
+; Copyright (c) 2021-2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+ADMIN_ACCESS_FILE=@files::.web_access_admin
+;
+@ifdef $ADMIN_ACCESS_FILE
+#Error: Administration web access already exists.
+@else
+;
+SID_FILE=@files::ciyam_server.sid
+;
+@ifndef $SID_FILE
+#Error: System identity does not exist (use ./init_identity first).
+@else
+;
+PIN=$1
+;
+@ifndef $PIN
+.entropy -numeric 5
+PIN=$OUTPUT
+@endif
+;
+PASSWORD=@password:Enter web admin password:
+;
+.crypto_hash "$PIN$PASSWORD"
+HASHED=$OUTPUT
+;
+.crypto_hash "$~HASHED"
+DOUBLED=$OUTPUT
+;
+~echo -n $~DOUBLED > .web_access_$PIN
+~echo -n $PIN > .web_access_admin
+~touch ciyam_base.update
+;
+#Created admin web access for: $PIN
+;
+@endif
+;
+@endif
