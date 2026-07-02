@@ -217,7 +217,8 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
                {
                   string output( get_node_attributes( *p_section_node, name ) );
 
-                  cout << output << endl;
+                  if( !output.empty( ) )
+                     cout << output << '\n';
 
                   if( !is_range )
                      break;
@@ -225,6 +226,8 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
                   p_section_node = get_section_node_from_path(
                    *p_start_node, section + to_string( ++range_offset ), true );
                }
+
+               cout.flush( );
             }
          }
       }

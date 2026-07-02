@@ -971,6 +971,31 @@ string get_node_attributes( const section_node& node, const string& attribute_li
          if( next.empty( ) )
             break;
 
+         bool is_value_check = false;
+
+         string::size_type pos = next.find( '=' );
+
+         string check_value;
+
+         set< string > check_options;
+
+         // NOTE: Allow simple value checks for
+         // attributes (if any check fails will
+         // return an empty string).
+         if( pos != string::npos )
+         {
+            is_value_check = true;
+
+            check_value = next.substr( pos + 1 );
+
+            next.erase( pos );
+
+            pos = check_value.find( '|' );
+
+            if( pos != string::npos )
+               split( check_value, check_options, '|' );
+         }
+
          if( is_multi )
          {
             if( i > 0 )
@@ -980,7 +1005,29 @@ string get_node_attributes( const section_node& node, const string& attribute_li
          }
 
          if( node.has_attribute( next ) )
-            retval += node.get_attribute_value( next );
+         {
+            string value( node.get_attribute_value( next ) );
+
+            if( is_value_check )
+            {
+               bool okay = true;
+
+               if( check_options.empty( ) && ( value != check_value ) )
+                  okay = false;
+
+               if( !check_options.empty( ) && !check_options.count( value ) )
+                  okay = false;
+
+               if( !okay )
+               {
+                  retval.erase( );
+
+                  break;
+               }
+            }
+
+            retval += value;
+         }
       }
    }
 
