@@ -82,6 +82,8 @@
 
    const users_name = "users";
 
+   const admin_username = "admin";
+
    const creds_remove_help = "remove creds";
    const creds_retain_help = "retain creds";
 
@@ -806,13 +808,23 @@
 
          var hardened = "";
 
-         if( password != "" )
-            hardened = harden_passwd( access + password );
+         if( ( username == "" ) && ( password != "" ) )
+            hardened = harden_passwd( access, password );
          else if( username != "" )
          {
-            hardened = harden_passwd( access + username );
+            if( username == admin_username )
+               hardened = harden_passwd( access, password );
+            else
+            {
+               // NOTE: For testing purposes the password is
+               // just the "username" so to make it easy for
+               // this UI just copies the username across to
+               // the "password" input.
 
-            document.getElementById( "user_password" ).value = username;
+               hardened = harden_passwd( access, username );
+
+               document.getElementById( "user_password" ).value = username;
+            }
          }
 
          var credentials = "";
@@ -882,7 +894,7 @@
                if( session == "" )
                {
                   if( hashed == "" )
-                     hashed = hex_sha256( hex_sha256( harden_passwd( access + password ) ) + device );
+                     hashed = hex_sha256( hex_sha256( harden_passwd( access, password ) ) + device );
 
                   var session = hex_sha256( hashed + unique ).substr( 0, 20 );
 
@@ -1170,9 +1182,9 @@
                }
                else
                {
-                  document.getElementById( "user_name" ).value = "admin";
+                  document.getElementById( "user_name" ).value = admin_username;
 
-                  if( entropy != "admin" )
+                  if( entropy != admin_username )
                   {
                      document.getElementById( "user_request" ).disabled = false;
                      document.getElementById( "user_request" ).value = entropy;
