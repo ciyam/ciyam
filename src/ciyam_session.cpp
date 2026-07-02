@@ -1952,6 +1952,7 @@ class socket_command_handler : public command_handler
       if( ( command == c_cmd_ciyam_session_starttls )
        || ( command == c_cmd_ciyam_session_crypto_hash )
        || ( command == c_cmd_ciyam_session_crypto_seed )
+       || ( command == c_cmd_ciyam_session_utils_regex )
        || ( command == c_cmd_ciyam_session_session_wait )
        || ( command == c_cmd_ciyam_session_utils_encrypt )
        || ( command == c_cmd_ciyam_session_utils_entropy )
