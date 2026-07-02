@@ -1950,9 +1950,11 @@ class socket_command_handler : public command_handler
       bool retval = false;
 
       if( ( command == c_cmd_ciyam_session_starttls )
+       || ( command == c_cmd_ciyam_session_crypto_hash )
        || ( command == c_cmd_ciyam_session_crypto_seed )
        || ( command == c_cmd_ciyam_session_session_wait )
        || ( command == c_cmd_ciyam_session_utils_encrypt )
+       || ( command == c_cmd_ciyam_session_utils_entropy )
        || ( command == c_cmd_ciyam_session_system_identity )
        || ( command == c_cmd_ciyam_session_session_terminate )
        || ( command == c_cmd_ciyam_session_session_rpc_unlock ) )
