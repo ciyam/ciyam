@@ -51,8 +51,10 @@ TEST is: ABC
 When using the "ciyam_client" console the following environment variable names are used internally (which are
 essential for creating many useful CIYAM scripts):
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ERROR (the result of the first error returned by the server for the session)
 OUTPUT (the result of the last successfully executed session command which can of course be empty)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 An environment variable can be assigned to the content of an external file in the following manner:
 
@@ -109,7 +111,7 @@ Prefixes are a single character (surround by single quotes here) as follows:
 
 If the echo prefix is doubled (i.e. "##") then the echo will only occur if progress output is being permitted
 (it can be switched off for "ciyam_client" with the "-no_progress" option). The echo output is also unescaped
-so that "#\#123" would echo "#123" whether or not progress output is permitted.
+so that "#\\#123" would echo "#123" whether or not progress output is permitted.
 
 It should be noted that the '<' prefix can be doubled up (i.e. "<<") in order to place every script line read
 into history and the '>' prefix can be doubled up (i.e. ">>") in order to append command output to an already
