@@ -43,6 +43,7 @@ test_hash_chain   Testbed for the hash chain class.
 test_numeric      Testbed for the numeric class.
 test_ods          Testbed for the Object Data Storage system.
 test_parser       Testbed for the (RPC) command parser.
+test_sio          Testbed for Structured I/O files.
 test_sql          Test tool for issuing SQL queries.
 xvars             Tool used by the make system.
 
@@ -117,12 +118,11 @@ bash script files can be used to include these external files, however, this is 
 where the amount or size of these files is expected to be significant (for such applications it would instead
 be recommended to use a more specialised backup implementation).
 
-All such storage files are kept in subdirecties below the WEBROOT/<storage>/files directory and so any backup
-software needs to be configured to backup that directory branch (excluding WEBROOT/<storage>/files/tmp branch
+All such storage files are kept in subdirecties below the $WEBDIR/<storage>/files directory and so any backup
+software needs to be configured to backup that directory branch (excluding $WEBDIR/<storage>/files/tmp branch
 which is used for creating temporary links/files).
 
 Files can be created in this directory branch even for applications that do not allow end users to upload any
 files as they may be created via application rules. For example it is essential that Email applications store
 copies of the original emails that were fetched so that the application objects will be correctly constructed
 when a "restore" is in progress.
-
