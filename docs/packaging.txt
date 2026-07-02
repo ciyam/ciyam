@@ -54,6 +54,7 @@ be captured using a single Specification Type record so the approach to take is 
 The following illustrates how the tree could be created in four passes (each pass adds a new node above the
 existing nodes).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 First pass:
 
 [for_sample]
@@ -129,6 +130,7 @@ Other_Field: Start
 Other_Field_2: Finish
 Source_Parent: Address
 <Actions to have Add_Info to create for_sample_info>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Clearly there is no single solution to creating such a specification type tree and although in this example
 a number of available specification type fields were not used that could have been it is recommended to try
@@ -168,6 +170,7 @@ When naming the specification variables it is best to prefix names belonging to 
 node's class with the class name or an abbreviation thereof (e.g. addr_street and addr_unit for fields that
 belong to the Address class) to ensure that no duplicate variable names are accidentally created.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -----------------------------------------------------------------------------------------------------------
 Name: for_sample_sinfo
 Notes: Field is "street", Other Field is "number" and Other Field 2 is "unit".
@@ -277,6 +280,7 @@ Needs_Source_Parent: true
 [Advanced Options]
 Specification_Actions: 115441$115100.301405
 Child_Specification_Type: for_sample_info
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order for parent specifications to display "Add Info" (or Add Source Info or other) an "action" will need
 to be put into the Specification_Actions field. Although the complete action syntax has a lot of other parts
@@ -349,8 +353,10 @@ are optional are omitted.
 Using the console client issue a command similar to the following (if there are multiple specification types
 then replace ... with the comma separated list).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > storage_init Meta
 > perform_package_export Meta Specification_Type for_sample[,...] Sample.specs.sio -x=Specification_Type:*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If any of the specification types were in the form of a tree it is likely that the content of the .specs.sio
 file will contain repeated records due to the way that the package export works. This is nothing for concern
@@ -359,8 +365,10 @@ by a package user it is recommended that key values be replaced by each specific
 
 The following console client command can be used to determine the search/replace values:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > storage_init Meta
 > perform_fetch Meta Specification_Type -q=Name=for_sample* "" @key,Name -min
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Note that when performing the search/replaces there will be more than one occurrence of each key where specs
 form node trees.
@@ -374,9 +382,11 @@ related model artifacts when starting with a class key.
 Using the console client issue a command similar to the following (if package is to contain multiple classes
 then replace ... with the comma separated key list).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > storage_init Meta
 > perform_package_export Meta Class <class_key>[,...] Sample.package.sio -s=@Meta_Class.skips.lst
  -t=@Meta_Class.tests.lst -x=@Meta_Class.excludes.lst -i=@Meta_Class.includes.lst
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The initial export file will require a number of changes in order to become a usuable package with the major
 part of this process resulting in the creation of a key mapping file (e.g. Sample.keys.lst) which will later
@@ -384,6 +394,7 @@ be used when installing instances of the new package.
 
 An initial package key mapping file would look something like the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [Sample.keys.lst]
 ;This replace is for the group
 ;key_group=<group>
@@ -391,6 +402,7 @@ An initial package key mapping file would look something like the following:
 ;This replace is for the model
 ;key_model=<model>
 ;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Step 1. Replace group and model keys
 
@@ -413,6 +425,7 @@ their keys will have been used for other artifacts (such as Relationships or Spe
 external class key replacements is always "var_<package>_class" where <package> is the package name in lower
 case.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [Sample.package.sio]
 ...
  <class/>
@@ -423,6 +436,7 @@ case.
   <record>20120506183822750008,0,var_user_class,1,M100C100F101,20120506183822750008_C,0,key_model,User
  </class>
 ...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As well as Classes there may also be Fields and other artifacts belonging to external packages that may need
 key mapping entries. If such artifacts are not able to be identified at this stage then they will be readily
@@ -445,16 +459,19 @@ needs to be included in the .keys.lst file (note that these entries are not comm
 the "package type" name needs to be assigned to the option variable (and for boolean options just use "opt="
 or "opt=1" depending whether the package option should be omitted or present by default).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [Sample.keys.lst]
 ...
 ;Implementation options
 opt_sample_user=User
 ;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Note that if the new package has dependent packages that are "multi instance" then an "ext" mapping variable
 will be required for each such package. So if the new "sample" package required the "Event" package which is
 a multi-instance package then the .keys.lst would instead look like the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [Sample.keys.lst]
 ...
 ;Required external multi instance packages
@@ -463,6 +480,7 @@ ext_sample_event=Event
 ;Implementation options
 opt_sample_user=User
 ;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The usage of such options is only within the .keys.lst file itself so this step requires zero changes to the
 the .package.sio file.
@@ -483,11 +501,13 @@ a published interface). Therefore it is recommended to consider carefully which 
 to include and not to include others (if required a newer version of the package that exposes other mappings
 can always be created).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [Sample.keys.lst]
 ...
 var_sample_class=@key
 var_sample_name_field=@key
 ;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Step 7. Append all non-mapped package keys to the mapping key list
 
@@ -514,11 +534,13 @@ option is non-empty (for the ? version) or empty (for the ! version).
 Assuming that the key "20111102180000024000" is optional according to "opt_sample_user" then the key mapping
 "20111102180000024000=@key" would instead be replaced by the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [Sample.keys.lst]
 ...
 20111102180000024000=?opt_sample_user=@key
 20111102180000024000=!opt_sample_user=
 ...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 8) Create package source template file(s)
 
@@ -541,9 +563,11 @@ one installation of the same package type then this should be "multi" otherwise 
 Any following lines consist of a package type name and minimum version number for any packages that this new
 package has a dependency. Note that external packages that are "optional" should not be placed here.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [package.info]
 Sample Samples 1 multi
 Standard 1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once this file has been saved the package archive can then be created and will consist of this file, the key
 map and .package.sio file, any source template outlines and if it has any specifications then the .specs.sio
@@ -595,4 +619,3 @@ testing before it could be considered ready for general usage.
 
 When testing is completed (and any issues resolved) then after performing a storage restore the Package Type
 should be once again installed and then a new storage backup taken (which will now include the new package).
-

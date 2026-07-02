@@ -35,14 +35,18 @@ If either the "upload" or "ciyam_interface" applications were re-linked by the "
 need to be restarted and then depending upon which of them was rebuilt one of the following bash scripts needs
 to be executed:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ./install_fcgi upload <app dir>
 ./install_fcgi ciyam_interface <app dir>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 With the second of these bash script files there may be other files required to be included after "<app dir>".
 One possibility is that the file "ciyam_interface.txt" has changed (check the repository changes record) while
 others are any ".htms" files that have changed. An example with a few of these is as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ./install_fcgi ciyam_interface meta ciyam_interface.txt identity.htms ciyam_interface.htms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted that if the web server was restarted then any browser tabs for any application will need to
 be closed.
@@ -50,7 +54,9 @@ be closed.
 If the file "ciyam_interface.js.xrep" had been updated then run the "install_fcgi_js" script for each existing
 application. An example is as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ./install_fcgi_js Meta meta
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted that changes to the "ciyam_interface.js" will often require all end-users to perform a hard
 refresh of the browser for every application being used.
@@ -63,7 +69,9 @@ the repository changes record by looking for any "*.spec.xrep" or "ciyam_class.c
 
 Assuming such changes were found then the following script should be executed from the "src" directory:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ./construct @packages.lst ciyam_class.cpp.xrep
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted that assuming the above does indicate that it has changed "ciyam_class.cpp.xrep" then it is
 recommended that all existing applications should be "re-generated" (which is described later). The reason for
@@ -80,7 +88,9 @@ the standard specification types. Any such changes are identified in the reposit
 Assuming that this has occurred then the "Meta" application needs to be "restored" which can be performed with
 the following script (run again from the "src" directory).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ./restore Meta
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted that this script performs the "construct" step described above as well (so there is no need
 to explicitly issue the "construct" if running this one).
@@ -95,11 +105,15 @@ to be executed).
 To be certain that changes are not missed it is recommended to delete all of the applications ".sav" files and
 this can be done using the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rm <app name>*.sav
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 After removing the ".sav" files the following script (run from the "src" directory) perform the re-generate:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ./generate <app name>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 (repeat both of these commands for each application)
 
@@ -108,7 +122,9 @@ can be done with another "make all" (do after re-generating all applications).
 
 Each application that is re-linked should then also be "restored" such as the following example shows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ./restore Sample
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Reconstructing Meta
 -------------------
@@ -122,7 +138,9 @@ changes that alter the model artifacts that the package provides. For a legacy a
 notes have been provided then those instructions should be followed before issuing the following command which
 will update the package source templates and other details:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ./unbundle -q <name>.package
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If there are no "manual upgrade" notes then it would be best to simply not do the above as it is possible that
 an existing system might otherwise end up becoming unusable.
@@ -130,7 +148,9 @@ an existing system might otherwise end up becoming unusable.
 In the case of the applications being only "demo" ones (and can be discarded without any problem) then use the
 following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ./reconstruct_meta
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted (which the bash script warns about) that this destroys all existing applications along with
 their model artifacts (i.e. you'll need to re-create your applications from scratch).
@@ -142,4 +162,3 @@ when "reconstruct_meta" is executed as well.
 
 If changes were made to the "ciyam_server.sio.default" file then these will need to be manually applied (which
 should rarely occur and normally would be optional to apply anyway).
-

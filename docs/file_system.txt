@@ -17,7 +17,9 @@ could ever hope to remember "file tags" are used as labels for locating files.
 
 To see the list and usage of all the file system commands issue the following command from "ciyam_client":
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > ? file*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When starting "ciyam_server" the files area path can be modified using the "-files_area=<path>" option.
 
@@ -36,28 +38,34 @@ being themselves other List files.
 
 The following illustrates the type, full path and the content of the fundamental files types:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [blob - .files/cc/eeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef]
 ^Ahello
 
 [list - .files/02/9eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a]
 ^Bcceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef first
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted that the caret symbol is being used to indicate control characters in the above content so
 the actual values of the first character in each of the files above are 0x01 and 0x02 respectively. The above
 files can be created using the standard application server protocol with the following commands:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_raw -text blob hello
 > file_raw -text list "cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef first"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The "-text" option is used to prevent file compression which is useful for testing purposes (but not normally
 recommended). The "file_info" command can be used to examine the information about a file, and if the file is
 a List, to examine the information of referenced files as well.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_info -recurse -d=2 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a
 [list] 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a (71 B)
 first
  [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B) [utf8]
 hello
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The above shows the List that had been created contains a single "list item" with the name "first" which then
 points to a Blob that contains the text "hello". Considering that any of the "list items" can also themselves
@@ -71,23 +79,29 @@ The "file tags" enable linking of human readible file names to the file hashes i
 function in much the same way as "branch tags" in git work (under the hood). To show how these are useful the
 following command tags the List file that was created before.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_tag 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a start
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now we can see the same "file info" output we saw above with the following more user friendly command:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_info -recurse -d=2 start
 [list] 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a (71 B)
 first
  [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B) [utf8]
 hello
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A simplified version that doesn't expand the file item content is as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_info -recurse start
 [list] 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a (71 B)
 first
  [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B)
  ...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 So rather than trying to recall "029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a" it is only
 required to recall "start". So if the List represents a traditional "file name" then imagine that we now want
@@ -95,23 +109,31 @@ to rename the "file" named "first" to "greetings".
 
 Firstly we'd create a new List with the following command:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_raw -text list "cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef greetings"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Then secondly we would switch the "start" tag to the hash of the newly created List as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_tag 5a5df977b247df3c493deca2977ce81e7ea4b3451ce393c6cc85cd879864bc58 start
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should also be noted that the tag could have been included in the "file_raw" command with this usage:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_raw -text list "cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef greetings" start
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now we repeat our List recurse command as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_info -recurse start
 [list] 5a5df977b247df3c493deca2977ce81e7ea4b3451ce393c6cc85cd879864bc58 (75 B)
 greetings
  [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B) [utf8]
  ...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 What can be seen here is that the Blob in both the above and previous "list recurse" output is the same which
 also means that although we have two List files we actually only have a single file with the "hello" content.
@@ -122,25 +144,33 @@ If the appearance of "..." (rather than actual content) is not wanted and also t
 lists the value 999 should be used for the depth argument (also useful if the blob content is expected to be
 large as the content will not be retrieved for them making the command much faster if there are many blobs):
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_info -recurse -d=999 start
 [list] 5a5df977b247df3c493deca2977ce81e7ea4b3451ce393c6cc85cd879864bc58 (75 B)
 greetings
  [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Although only one file per hash exists each file can have multiple tags which can be particularly useful when
 identifying things by a specific version or simply as the latest version. To illustrate we'll add two version
 specific tags to the two List files we had previously created.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_tag 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a start1
 > file_tag 5a5df977b247df3c493deca2977ce81e7ea4b3451ce393c6cc85cd879864bc58 start2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To list all of the tags matching a wildcard pattern use the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_tags start*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 and to see the file hash for a specific tag use the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_hash start
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To remove file tags use the "file_tag" command with either the "-remove" or "-unlink" option. If "-unlink" is
 used then the file itself will be deleted if no other tags are linked to it whereas the "-remove" option will
@@ -156,18 +186,24 @@ Copying Files
 
 A simple way to copy a file into the file system from the current directory is illustrated as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_put mnemonics.txt xxx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This command copies the file "mnemonics.txt" into the file system along with creating a file tag "xxx" for it
 (which makes it easier to locate). If not wanting to use a file tag the hash can be determined from a session
 variable named "@last_file_put" as illustrated here:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > session_variable @last_file_put
 09bc435dd5710bc24064fbbaf1e1b4cffa1aad704a15a3c90fd6d98d64fcc89f
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to fetch this copy from the file system use the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_get xxx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted that the file content (originally sourced from "mnemonics.txt") will have been copied into
 a file called "xxx" in the current directory (to use a different filename add another argument to the command
@@ -176,7 +212,9 @@ such as "file_get xxx copy_of_mnemonics.txt").
 Because the file system imposes a maxiumum file size limit the "file_put" command (only when this command has
 been issued via "ciyam_client") can prefix the file name with a byte size followed by an asterisk as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_put 1K*test.jpg tst.jpg
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This will copy "test.jpg" into the file system as a number of "chunks" that are each no more than 1kB in size
 (which will be flagged to not be compressed). It will also create a "list" file that references each of these
@@ -185,6 +223,7 @@ can be found in the session variable "@last_file_put").
 
 The following command will output the content of the "tst.jpg" list file:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_info -content tst.jpg
 [list] 2d3c89f8f5301604234589e08a695e3ab0bdaa5f99ec21cf148b99d13020cb85 (307 B)
 8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d test.jpg.000000
@@ -194,6 +233,7 @@ e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 test.jpg.000002
 579ad8961e4dc03ebf3965de840ff2eac2b500fde9a144d4f8d67c77ae01e686 test.jpg.000004
 096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 test.jpg.000005
 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 test.jpg.000006
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted that the original "test.jpg" filename has been kept with each list item and a chunk number
 of six digits has been appended (so it might be a preferable idea to use the original file name as the tag to
@@ -203,22 +243,28 @@ will be used when extracting and recombining the file chunks next).
 The following command (only when issued by "ciyam_client") extracts the original "test.jpg" file to "xxx.jpg"
 by appending each of the chunks identified in the list that had been tagged with "tst.jpg" previously:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_get tst.jpg *xxx.jpg
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted that to keep the file's original name (such as "test.jpg") just "file_get tst.jpg *" could
 be used instead. Also if wanting to keep the original file's name but extract the file below another path the
 following could instead be used (assuming the directory "tmp" exists below the current directory):
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_get tst.jpg *tmp/
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When very large files are transferred (or a large number of file chunks are processed) a "progress indicator"
 (depending upon whether using a console and startup options) will appear. This indicator can be prefixed with
 the value of the environment variable FILE_NAME. The following is an example of how this can be utilised:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > FILE_NAME=xxx
 
 > file_put 1K*Meta.so $FILE_NAME
 xxx (66%)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 File Encryption
 ---------------
@@ -229,10 +275,12 @@ of "file_info". If the file is a "list" and the "-recurse" option is used then a
 encrypted (and child lists will cascade resulting in the entire tree of files being encrypted). If wanting to
 only encrypt the blobs (i.e. leaf nodes) then use additional optional '-blobs_only' argument.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_crypt tst.jpg password
 
 > file_info -content tst.jpg
 [list] 2d3c89f8f5301604234589e08a695e3ab0bdaa5f99ec21cf148b99d13020cb85 (305 B) [***]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To decrypt simply repeat the "file_crypt" command (with the matching "password"). It should be noted that any
 tags associated with an encrypted file will remain (only the file content itself is affected) and because the
@@ -244,12 +292,16 @@ Deleting Files
 
 For the "xxx" tag created previously the file could be deleted using the "file_tag" command as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_tag -unlink xxx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 But if any other tags are linked to the same file content then this command will not actually delete the file
 therefore to force file deletion the "file_kill" command would instead be used as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_kill xxx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted that any tags that were linked to this file will now have been removed but some care would
 be advised before deciding to use "file_kill" as this could effectively leave "list" content with now invalid
@@ -258,15 +310,19 @@ entries.
 For the case of the "tst.jpg" list (which contains the "test.jpg" file chunks) the list as well as each child
 list item (and any further descendant branch lists if they were present) can be removed with the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_kill -recurse tst.jpg
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 File System Statistics
 ----------------------
 
 The "file_stats" command can be used to see a summary of the file system usage:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_stats
 [3/100000]152 B/100.0 GB:4 tag(s)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The response says that 3 out of 100,000 possible files are currently being stored in the files area and these
 files are using 152 bytes of the maximum possible capacity of 100 GB being used with a total of 4 file tags.
@@ -274,11 +330,13 @@ files are using 152 bytes of the maximum possible capacity of 100 GB being used 
 There are three settings in "ciyam_server.sio" configuration file that are relevant to this file system which
 are as follows (uncomment and change then restart "ciyam_server" for the new settings to take effect):
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  <files_area/>
 #  <path>.files
 #  <max_file_size>1M
 #  <max_num_files>100K
  </files_area>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The files path is set to ".files" by default (being a hidden directory created below the application server's
 directory) and can be changed with the path attribute in the server's configuration file or by using a server
@@ -292,7 +350,9 @@ needs to be identical between peer connections.
 It is not recommended to make any changes to the ".files" directory directly but if this has occurred then it
 is possible to resync the application server with the following command:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > file_resync
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Note that this command's output mimics that of "file_stats" as a way to easily check if changes had occurred.
 It should also be noted that files that ought to be tags (but are either not tag files or are somehow invalid
@@ -333,17 +393,23 @@ is a "mount point".
 Assuming the path for the archive is "/mnt/a001", the name chosen for the archive is "001" and it is intended
 to hold up to 100GB of data the create command would be as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 file_archive -add /mnt/a001 100GB 001
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To see a list of archives that also displays their last known status use "file_archives". Assuming that there
 was no issue with the path (when adding it tests that it can access the path and write to it) then the output
 from the "file_archives" command would be as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 001 [okay      ] (0 B/100.0 GB) /mnt/a001
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If the path was not accessible then you would instead see the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 001 [bad access] (0 B/100.0 GB) /mnt/a001
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Assuming the issue with the path was then resolved use the "-status_update" option for "file_archives" for it
 to re-check that it can access and write to the path. It should be noted that the size that was specified for
@@ -369,11 +435,15 @@ Archiving Files
 Typically when a file is stored (that is not a "core file") it will be automatically tagged with a time stamp
 prefixed by "ts.". The following is a repeat of the earlier "file_put" but without providing a tag:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 file_put mnenomics.txt
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now if the command "file_tags ts.*" is issued the output would look something like this:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ts.202012300003210202
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As the tag is based upon the current time when multiple such tags are found they will be output in order from
 oldest to most recently added. This is then used to determine which files to automatically archive (or simply
@@ -384,7 +454,9 @@ Files can be manually archived using the "file_relegate" command. Assuming the f
 tag shown above then assuming an archive with available space exists the following command would archive this
 file:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 file_relegate -n=1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If more than one archive exists then the first archive (in order of the list of archives) that has sufficient
 space will be chosen. Normally if a file is found to have already been archived then it would just be removed
@@ -401,7 +473,9 @@ the file might stay in the files area longer than other time stamp tagged files.
 the command a specific tag for the file being retrieved which will effectively keep the file from being later
 archived. The following command will retrieve the file archived previously giving it the permanent tag "xxx":
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 file_retrieve 09bc435dd5710bc24064fbbaf1e1b4cffa1aad704a15a3c90fd6d98d64fcc89f xxx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If no tag is provided then a new "ts.<time stamp>" tag will be automatically supplied for the file.
 

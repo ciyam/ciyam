@@ -9,6 +9,7 @@ after the "to_store" call and the second call occurs immediately after the "for_
 is not explicitly documented below as this secondary validation is only intended as a failsafe mechanism (for
 unexpected bad code in "for_store").
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -------------------------------------------------------------------------------------------------------------
 1) Creating a new record:
 
@@ -67,12 +68,14 @@ after_store    Update        <none>       Assuming no error has occurred previou
                                           records, but also could include things like dealing with "external"
                                           files.
 -------------------------------------------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Passing " " as the key (to automatically create a key) should never be performed in rules code as a generated
 key will contain the current time stamp (for the protocol command " " is replaced prior to being logged). For
 record creation in rules keys should constructed from a known key with a suffix (e.g. <key>_X or <key>_000001
 where <key> already exists and with the latter pattern applicable when needing to create multiple records).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 2) Updating an existing record:
 
 Protocol: perform_update <uid> <dtm> <module> <mclass> <key> [=<ver_info>] field1=value1,field2=value2...
@@ -235,6 +238,7 @@ after_fetch    <none>        <none>       Locking is not involved (for maximum p
                                           and fields that are required to determine state and for inter-field
                                           dependencies. The hook is used as already mentioned.
 -------------------------------------------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted that when fetching multiple records via the protocol if the record "limit" is omitted then
 if is generating PDF a default limit will be used otherwise the number of records returned is unlimited. When

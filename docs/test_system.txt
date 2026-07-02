@@ -18,6 +18,7 @@ Test Structured I/O File Format
 
 The basic format for test structured I/O is as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 <sio/>
  <groups/>
   <group/>
@@ -25,9 +26,11 @@ The basic format for test structured I/O is as follows:
   </group>
  </groups>
 </sio>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following is a sample group:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 <group/>
  <name>test_parser
  <tests/>
@@ -43,6 +46,7 @@ The following is a sample group:
   </test>
  </tests>
 </group>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each group has one or more tests that each contain one or more test steps. Each and every test step must have
 name, exec, input and output attributes. By convention the name of each test step is one lower case letter as
@@ -52,9 +56,11 @@ The exec attribute contains the name of an external program to run (which by def
 directory). One or more special "prefix" characters can also be prepended (if more than one then they must be
 ordered as follows).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * - this program will be started asyncronously
 $ - this program is not local (so will not be ./ prefixed)
 ! - this program is expected to have a non-zero return code
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In certain cases a single program exec might create more than one new test result (test result files are text
 and are named using <group>_<test>_<step>.tst and new test results <group>_<test>_<step>.new). For these type

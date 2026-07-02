@@ -21,24 +21,32 @@ variables these can be used to pass information from the console session to exte
 
 Assuming we have a script file (called "x") that contains the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [x]
 echo "TEST is: $TEST"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 From a "console command handler" (such as ./test_numeric for example) you can execute this script with this:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > ~./x
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 assuming that "x" is in the CIYAM src directory (and has its execute permission set) you should see:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 TEST is:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 this can then be repeated after assigning the value ABC to TEST from the console as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > TEST=ABC
 
 > ~./x
 
 TEST is: ABC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When using the "ciyam_client" console the following environment variable names are used internally (which are
 essential for creating many useful CIYAM scripts):
@@ -48,21 +56,27 @@ OUTPUT (the result of the last successfully executed session command which can o
 
 An environment variable can be assigned to the content of an external file in the following manner:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > TEST=@file:modules.lst.default
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 and the value of an environment variable can be displayed using the '#' command (the console "echo" command):
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > #Now TEST is $TEST
 Now TEST is Meta
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Another feature of the "@file" environment variable assignment function is that if the first character of the
 file name is "~" then what follows will be executed as a system command whose output (both stdout and stderr)
 will be assigned to the variable.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > TEST=@file:~wc -l config.info.default
 
 > #$TEST
 12 config.info.default
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted that when using the '~' character to either directly (or indirectly via "@file:~") execute
 a system command the environment variable SYSTEM_RETVAL will be assigned to the exit code (or exit status) of
@@ -78,6 +92,7 @@ for usage only by "ciyam_client").
 
 Prefixes are a single character (surround by single quotes here) as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 '@' - Conditional command prefix (covered in the next section).
 '#' - Echo whatever characters that follow (after environment variable replacements).
 ';' - Ignore whatever characters that follow (i.e. this is simply used for comments).
@@ -90,6 +105,7 @@ Prefixes are a single character (surround by single quotes here) as follows:
 '>' - Use this prefix followed by a file name to redirect command output to that file (use no name to stop).
 '~' - Use this prefix to execute what follows as a "system" command (such as an external script or program).
 '*' - Use this prefix for executing a FISSILE command (being a functional programming interpreted language).
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If the echo prefix is doubled (i.e. "##") then the echo will only occur if progress output is being permitted
 (it can be switched off for "ciyam_client" with the "-no_progress" option). The echo output is also unescaped
@@ -103,8 +119,10 @@ Environment variables that are set in an input script will be restored after it 
 environment variable values are intended to be obtained from the input script then they need to be listed via
 the "@retain" command (other than ERROR and OUTPUT which are never restored).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @retain COMBINED,REVERSED
 <channel_identity.cin abc123def aaa121aaa
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 From within the input script (i.e. channel_identity.cin) the command "@retain" will output the variable names
 that will be retained for the "caller" and use "@retain *" from the caller for all set values to be retained.
@@ -117,8 +135,10 @@ normally be kept in the history in order to correctly behave in loops).
 
 The following prefixes are designed for use with interactive scripts:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 '^' - Use this for a simple pause that waits for a key to be pressed (suffix with a custom prompt).
 '&' - Use this for either single key selection of choices or a general user appended command input.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For '^' if the custom prompt begins with "X=" (such as "^10=") then pausing will automatically complete after
 X seconds when no key is pressed.
@@ -133,11 +153,15 @@ this can be detected with the CIYAM_KEY_WAS_PRESSED environment variable (which 
 
 For user input the following is a selection choice example (sets/clears the environment variable "CONT"):
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > &Continue? [CONT:Yes==1|No=!NO] (hit 'y', 'Y' or Enter else hit 'n' or 'N')
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 whilst this is a simpler user appended command input example to set the TEST variable to any arbitrary text):
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > &Test is (enter text value): :TEST=
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted that if the environment variable CIYAM_USE_DEFAULT is present then selection choices which
 include a default option (such as "Yes==1" in the above Continue example) will have the default option chosen
@@ -149,6 +173,7 @@ after a specific number of seconds (for this case a seconds "countdown" will app
 In order to better illustrate usage of pause and progress handling the following bash script is used for each
 of the "ciyam_client" executions (noting that the CIYAM application server must be running):
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 vi x
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 #!/bin/bash
@@ -176,10 +201,12 @@ Further "dots" on the third line will be output and (if no key is pressed) will 
 (Starting)
 ..........
 (Finished)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this example the "file_progress" application protocol script is using CIYAM_PAUSE_SECONDS and looping with
 each repeat clearing the terminal again and calling "cat xx".
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Example 2:
 (./x &) && ./ciyam_client -quiet -no_pause -exec="<file_progress.cin xx Finished"
 
@@ -191,10 +218,12 @@ Further "dots" after "[xx]" will appear until they are erased and the script fin
 (Starting)
 ..........
 (Finished)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this example CIYAM_NO_PAUSE is used to detect the "-no_pause" option in order to then output only progress
 "dots" (after "[xx]") until completion when the dots are erased and a (one off) "cat xx" occurs.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Example 3:
 (./x &) && ./ciyam_client -quiet -no_pause -no_progress -exec="<file_progress.cin xx Finished"
 
@@ -202,13 +231,16 @@ There is no output initially and even whilst processing but instead only the fol
 (Starting)
 ..........
 (Finished)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example is perhaps more likely what might be used when the output is to be redirected although the final
 example illustrates another approach for redirection.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Example 4:
 (./x &) && ./ciyam_client -quiet -monitor -no_pause\
  -exec="<file_progress.cin xx Finished" >xxx && echo "" && cat xxx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Output will appear to be identical to example 2 but the actual content of "xxx" is identical to example 3 (so
 the "-monitor" option outputs "[xx]" and the progress "dots" to the console). Thus the use of "-monitor" will
@@ -248,6 +280,7 @@ Conditional Command Handling
 One of the useful features of the console command handler are its special conditional tests (which start with
 the '@' character) which can be used to form "if .. else .. endif" statements such as the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [x.cin]
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
@@ -255,30 +288,36 @@ the '@' character) which can be used to form "if .. else .. endif" statements su
 @else
 #This is not a Linux OS
 @endif
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this case the OUTPUT environment variable is being set to the value of the system variable "@os" and which
 is then being checked using the "@ifeq" conditional statement (which tests two string values).
 
 Assuming that the CIYAM application server is running this could be run as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ./ciyam_client -quiet -no_prompt < x.cin
 This is a Linux OS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Along with "@ifeq" there is also "@ifneq" (which is an opposite conditional test) and there are also two more
 conditional tests "@ifdef" and "@ifndef" which test whether (or not) an environment variable has a value.
 
 These can be particularly useful for handling errors such as is being done in the following script:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [x.cin]
 storage_init Sample
 @ifndef $ERROR
 #(init Sample)
 @endif
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It should be noted that CIYAM script conditional statements can be nested.
 
 For comparison tests and to create a "ladder" of conditions "@if" and "@elif" can also be used as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @ifdef $ARG
 @if "$ARG" = "a"
 #(is "a")
@@ -290,9 +329,11 @@ For comparison tests and to create a "ladder" of conditions "@if" and "@elif" ca
 #(is <= "x")
 @endif
 @endif
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For numerical comparison tests each operator needs to be prefixed with a "#" character as per the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @ifdef $ARG
 @if "$ARG" #= 0
 #(is 0)
@@ -306,9 +347,11 @@ For numerical comparison tests each operator needs to be prefixed with a "#" cha
 #(is <= 5)
 @endif
 @endif
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Basic logical operators are also supported as follows (where non-numerics are only false if string is empty):
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @if "$ARG1" & "$ARG2"
 #(both ARG1 and ARG2)
 @elif "$ARG1" | "$ARG2"
@@ -320,6 +363,7 @@ Basic logical operators are also supported as follows (where non-numerics are on
 @elif "$ARG1" #| "$ARG2"
 #(either ARG1 or ARG2 non-zero)
 @endif
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Labels and Looping
 ------------------
@@ -330,6 +374,7 @@ this allows CIYAM scripts to perform looping (which can be nested).
 
 The following is an example of a simple loop that will output the numbers 0 to 9:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 I=0
 @label NEXT
 ;
@@ -347,6 +392,7 @@ I=@$I+1
 !!@:LOOP
 ;
 @:DONE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The "@label" command is what determines which commands are skipped over when the "@skip" command is executed.
 And the "!!@:LOOP" special history execute command will scan backwards for the "@:LOOP" label to then execute
@@ -356,6 +402,7 @@ conditionally executed causing the "@skip" to ignore the loop waiting for the "@
 
 Another simplistic looping approach that is suitable for small "list files" is as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @label NEXT
 MNEMONICS=@file:~grep "^un" mnemonics.txt
 ;
@@ -373,6 +420,7 @@ MNEMONICS=%MNEMONICS:-1%
 !!@:LOOP
 ;
 @:DONE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In the example above all mnemonics beginning with "un" are first read into the MNEMONICS environment variable
 and in the loop the first line of MNEMONICS is being output (i.e. #%MNEMONICS:1%) after which this same first
@@ -383,6 +431,7 @@ how it could be used to output all mnemonic words that contain "and". Usage of b
 is optional for this example but is necessary if needing to nest "@deque" usage (such as where a script calls
 another that is also using the "@deque" session variable).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @label NEXT
 .session_variable @deque commence
 .session_variable @deque "@mnemonics.txt"
@@ -410,3 +459,4 @@ TEST_LINE=@repstr:and/:$NEXT_LINE
 ;
 @:DONE
 .session_variable @deque complete
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

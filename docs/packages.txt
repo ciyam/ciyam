@@ -5,11 +5,13 @@ The following notes detail the available packages and their usage. Package names
 to their name are Package Type's that are installed by default. Package Types not installed by default can be
 used after being installed from their bundle (refer to "Installing Package Types" in "getting_started.txt").
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -------------------------------------------------------------------------------------------------------------
 Auto_Code (default)
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides an Auto_Code class which is used to automatically generate unique sequential codes that
 can be used by instances of any other Class.
@@ -38,6 +40,7 @@ An "auto incement mask" must contain one or more "#" or "?" characters that are 
 "next" auto increment value with digits and letters respectively. The following table of auto code masks with
 sample values illustrates how this works (note that generated letters are only upper case).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 AC####  ==>  AC0000,AC0001,AC0002,...,AC9999
 ??####  ==>  AA0000,AA0001,AA0002,...,ZZ9999
 XYZ#??  ==>  XYZ0AA,XYZ0AB,XYZ0AC,...,XYZ9ZZ
@@ -47,11 +50,13 @@ Blog
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides a Blog implementation that supports multiple blogs that each contain blog entries which
 are ordered by date. A blog entry remains private until it is published. After publication any blog entry can
 be removed or republished.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create demo blogs and blog entries.
@@ -86,6 +91,7 @@ Cube
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides a Rubik's Cube simulator in which each record is a virtual cube of either 2x2x2, 3x3x3,
 4x4x4 or 5x5x5 cubies per side (a cube having always six sides). After a Cube record has been created one can
@@ -100,6 +106,7 @@ appended to perform the operation twice (such as U2, M2, u2 or X2). Extended dou
 via: Uu Ll Ff Rr Bb Dd Uu' Ll' Ff' Rr' Bb' Dd' and turns which include all but one of the cubie layers are as
 follows: Uw Lw Fw Rw Bw Dw.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create demo 2x2x2, 3x3x3, 4x4x4 and 5x5x5 cubes.
@@ -109,11 +116,13 @@ Event
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides an Event implementation in which each record has a date and time (as well as optionally
 a duration) and a status. Such records can be treated like a list of public events, but also could be handled
 more like private appointments, reminders or tasks and as such can be generated from a Schedule.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create demo events.
@@ -134,11 +143,13 @@ Folder (generic)
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides a Folder implementation for a given "item class". This is perhaps easiest understood in
 the way that an OS will typically have "files" within "folders". The folders form an acyclical graph from the
 parent folder relationship.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create demo folders.
@@ -172,12 +183,14 @@ Forum
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides a Forum implementation that includes "boards" (with multiple levels of nested children)
 that contain "topics" which in turn contain "posts". The topics are ordered according to the most recent post
 with "pinned" topics always appearing first. If a topic is "locked" then posting (or post editing) below this
 topic is not permitted (except by "moderators" or the "admin" user).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create demo boards, topics and posts.
@@ -220,6 +233,7 @@ Group (default)
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides a "Group" class and implements the Relationship between a User and its Group. Although
 the Relationship is optional typically only the "admin" user would not belong to a Group.
@@ -228,6 +242,7 @@ The Group (or renamed as Department if preferred) is used as a simple means of s
 different users. Various other Packages will accept the Group Package as an option where it can make sense to
 be dividing records between different Groups.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create demo Groups (and demo Users belonging to them).
@@ -237,6 +252,7 @@ Holding
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides a simple implementation for recording a collection of Holding Items (where each item is
 a company share or other similar unit holding) which includes the ability to record all item acquisitions and
@@ -244,6 +260,7 @@ disposals as well as other potentially relevant events such as bonuses, splits a
 of holding items has a start and finish date which are intended to be the start and end of the financial year
 so that the PDF reports of current holdings and capital gains can be generated for accounting purposes.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create demo set of Holding Items for a sample financial year.
@@ -253,10 +270,12 @@ Itinerary
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard Event
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides a simple Itinerary implementation that supports generating "day by day" itineraries for
 events within a specified date range.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create a demo Itinerary.
@@ -275,12 +294,14 @@ Ledger
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides a basic General Ledger system. Each ledger is intended for a single financial year with
 every account being classified as either Assets, Equity, Expenses, Income or Liabilities (these can be nested
 to a maximum of three or four levels). Balance Sheet and Income Statement reports are easily generated in PDF
 format.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create a demo Ledger.
@@ -290,6 +311,7 @@ Photo
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides a Photo Album implementation that can be used to easily create and publish photos from
 a CIYAM application.
@@ -298,7 +320,9 @@ In order to be able to view "published" Photo Album web pages the open source ap
 be installed. A script to install Galleria (and a copy of Galleria itself) is included in the repository - so
 to install it simply run the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ./setup_galleria
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If the User package is not tied to the Photo package (via the "use_user" option below) then Photo Albums will
 be accessible to all users and will be published to the "webroot" directory. If the User package is linked in
@@ -306,6 +330,7 @@ then Photo Albums and Photos are only visible to the user that "owns" them. Phot
 visibility (and Photos likewise) are able to be "published" and the published Photo Albums will be visible to
 anyone having access to the server.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create one or more demo Photo Albums (depends upon User demo data).
@@ -324,11 +349,13 @@ Project
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides a project management system which breaks individual projects into individual tasks that
 are groups by areas (which can be nested). Task management "workflow" is added via the option "use_task_dibs"
 (this controls task allocation and completion in a strict step by step manner).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create a demo project.
@@ -361,11 +388,13 @@ Schedule
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard Event
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package allows for the scheduling of events in advance for a cycle (weekly, monthly or annually). Within
 the schedule one creates separate schedule items which will be used to create the specific events. The design
 is intended for scheduling cyclical tasks such as meetings or other recurring activity reminders.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create a demo schedule.
@@ -384,11 +413,13 @@ Tag (generic)
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides a Tag implementation for a given "item class". Such tags can either be "system wide" or
 "group wide" to be more useful for a "librarian" type situation or can instead be tied to individual users as
 a means for creating "personal tags". Tags are most useful when "searching" for items.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 group_package - Optional "group" package to tie tags to groups. *
@@ -422,21 +453,25 @@ Timezone
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides the ability to manage records for different timezones that can include daylight savings
 adjustments and historical changes for such. The "timezones.sio" file used by the application server can also
 be generated from the timezone records.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -------------------------------------------------------------------------------------------------------------
 Transaction
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides the ability to help users to construct "raw transactions" for Bitcoin or its clones. It
 can also be used in conjunction with the Project package to help in creating transactions for moving external
 funds between a Project and its Project Areas and Project Tasks.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 user_package - Optional "user" package to tie transactions to users.
@@ -446,6 +481,7 @@ User (default)
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides the User class which is required for an application to support "logging in". To be able
 to create the User instances an "admin" user is automatically created when an application is generated. To be
@@ -455,6 +491,7 @@ its password changed as well for production systems. Non-traditional (i.e. block
 the changing of passwords nor setting a user to inactive, however, as the "admin" and "guest" users cannot be
 used to create blocks or sign transactions they are of no security concern.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create one or more demo User records.
@@ -493,10 +530,12 @@ Wallet
 -------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard Transaction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This package provides a Bitcoin (and clone) Wallet implementation that supports multiple wallets which can be
 each either external and optionally watch-only or internal and optionally deterministic.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Package Options:
 
 @use_demo_data - Use this option to create a demo watch-only wallet.
@@ -504,3 +543,4 @@ Package Options:
 key_name (and key_plural) - Change these options from the default Key/Keys if desired.
 
 user_package - Optional "user" package to tie wallets to users.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

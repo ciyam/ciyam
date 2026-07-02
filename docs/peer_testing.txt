@@ -8,6 +8,7 @@ interactive 'ciyam_client' testing with the "test peer port").
 
 Firstly make sure you are in the ciyam/src directory (in your development environment):
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cd ~/ciyam/src
 
 #-----------------------------------------------------------------------------------------------------------#
@@ -806,3 +807,4 @@ quit
 vi $CDD/ciyam_server.log
 
 vi .files/ciyam_server.log
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -57,6 +57,7 @@ The application protocol command "system_trace" (or simply "trace") is available
 value but in order to view the names and hex values of both flags and levels (and to allow setting them using
 names rather than values) further "system_trace" prefixed commands are as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 system_trace_flags
 system_trace_level
 system_trace_levels
@@ -69,18 +70,21 @@ general
 
 > trace
 10000
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To view all available trace flags use "trace_flags -list" and the command "trace_levels" will list all of the
 available trace levels. If wanting to view trace "details" of both "session" commands and RDBMS "queries" the
 following commands will perform this along with showing the actual "trace flags" value (if needing this value
 for either the configuration file or command line option).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > trace_level details
 
 > trace_flags -set queries,session
 
 > trace
 7000c
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There is also a "system_trace_message" command available to log a customised message (which is very useful if
 needing to debug an application protocol script).
@@ -90,18 +94,24 @@ special server variables that can be set in order to limit this output. The firs
 this can be used to set the specific session ids for tracing (very useful to target main peer sessions whilst
 skipping logging for support sessions).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > system_variable @trace_session_ids 1,3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Using a "+" or "-" prefix will add or remove a session id from the set of session ids that tracing will apply
 to (use just "+" or "-" to add/remove the current session).
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > system_variable @trace_session_ids -3,+5
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The second system variable is "@trace_filters" which is a set of strings which every trace message is checked
 to contain. If any one of the filter strings is found then the trace message will be omitted. This example is
 a simplistic filter to prevent any "session_list" and "system_variable" commands from being logged.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > system_variable @trace_filters session_list,system_variable
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Finally some hard-coded constants and global variables are being used in order to prevent logging more than a
 fixed number of messages every few seconds (where a special "****** skipped excessive logging ******" message

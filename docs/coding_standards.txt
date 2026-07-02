@@ -11,6 +11,7 @@ git pre-commit trigger. Any 3rd party header files that are added to the reposit
 Format
 ------
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - 3 space indenting with no tab characters to be used
 - leading or trailing underscores in generated code only
 - no CAPITAL letters and underscores for identifiers (e.g. my_class)
@@ -27,12 +28,14 @@ thread         gt_         static TLS( session )* gtp_session;
 pointer        p_          char* p_ch;
 unique pointer up_         unique_ptr< char > up_char;
 ref count ptr  rp_         ref_count_ptr< private_key > rp_private_key;
- 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Operator Space Rules
 --------------------
 
 There must always be a space either side of an operator with the following exceptions:-
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   No space before or after
   ------------------------
   .  
@@ -64,6 +67,7 @@ There must always be a space either side of an operator with the following excep
   operators following the reserved word 'operator' ( e.g. char obj::operator =( char ch ) )
   < when opening an include ( e.g. #include <iostream> )
   # in non-indented macro ( e.g. #ifdef DEBUG )
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Blank Lines
 -----------
@@ -73,7 +77,7 @@ between non-blank lines (this applies to generated code also).
 
 Block Style
 -----------
-
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool function_name( int n )
 {
    int x = 0;
@@ -105,10 +109,11 @@ bool function_name( int n )
 
    return true;
 }
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Continuation
 ------------
-
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // NOTE: Line continuations indent by one space only (i.e. don't indent further for nesting).
 
 export_data( outs, module, all_field_data[ i ].class_id,
@@ -138,6 +143,7 @@ desirable,
 to slope,
 this,
 way
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Comments
 --------
@@ -148,14 +154,17 @@ of easily understandable names for classes and variables).
 At the top of source files, scripts and other files where applicable a copyright notice needs to appear which
 is in the following form using the type of file's applicable single line commenting character(s):
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Copyright (c) 2012-2026 CIYAM Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Apart from special cases in generated code comments should start with a "comment type" label (making it clear
 *why* the comment has been added) which must be one of the following:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // NOTE: Something to take note of (such as unusual flow control or empty scope).
 
 // KLUDGE: Something ugly that is necessary but really should be further investigated.
@@ -165,21 +174,27 @@ Apart from special cases in generated code comments should start with a "comment
 // IMPORTANT: Something that is of more critical importance (such as data integrity implications).
 
 // i.e. 10 seconds (clarification about a constant value or similar)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following special comment is available if needed to prevent a check_source error for initialisation:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //__Ignore_Block
 double values[ ] = { -2.6, -2.5, -2.4, -1.6, -1.5, -1.4,
  -0.6, -0.5, -0.4, 0.4, 0.5, 0.6, 1.4, 1.5, 1.6, 2.4, 2.5, 2.6 };
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following special comment is used to indicate manual code that should be replaced by generated code (this
 is especially used for the code in the Meta module):
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //nyi
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Macros
 ------
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #nospace
 #  twospaces
 #     fivespaces 
@@ -208,12 +223,14 @@ Macros
 
 #include "local_headers_next.h"
 #include "order_shortest_to_longest_and_then_alphabeticaly.h"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Class
 -----
 
 Member access order should be public, private then protected. Data declarations first and methods after.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class class_name
 {
    public:
@@ -242,6 +259,7 @@ class class_name
    ...
 */
 };
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Precedence
 ----------
@@ -249,16 +267,18 @@ Precedence
 Although the following are operationally identical to reduce possible confusion the latter (using parenthesis
 for explicit precedence) should always be used.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if( !value.empty( ) && value != c_true_value )
 
 ==>
 
 if( !value.empty( ) && ( value != c_true_value ) )
-
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Constructors
 ------------
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class_name::class_name( int x, int y )
  :
  x( x ), // NOTE: One space indentation, parameter and member names are the same.
@@ -268,6 +288,7 @@ class_name::class_name( int x, int y )
    if( ( x > 100 ) && ( y < 100 ) )
       this->x *= 10;
 }
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 SQL
 ---
@@ -278,6 +299,7 @@ Operator space rules for commas and parenthesis are different from the standard 
 
 Keywords are in uppercase and names use prefixing.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Prefix  Meaning
 ------  -------
 T_      table
@@ -307,3 +329,4 @@ string Meta_Workgroup::static_get_sql_columns( )
 
 SELECT C_Key_,C_Ver_,C_Rev_,C_Typ_,C_User_Id,C_Password,C_Permissions,C_Workgroup,C_Active
  FROM T_Meta_User USE INDEX (I_Meta_User_03) WHERE (C_User_Id >= 'guest') ORDER BY C_User_Id LIMIT 1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

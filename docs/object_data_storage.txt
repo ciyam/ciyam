@@ -22,15 +22,19 @@ you can even make a simple POD ("Plain Old Data") struct persistent.
 
 Consider the POD struct "sample":
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 struct sammple
 {
    int32_t value1;
    int32_t value2;
 };
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to support persistence for "sample" the first thing we do is create a "storable" template class:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 typedef storable< sample, 0, storable_base > storable_sample;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The type of the first "storable" template type is the class we are wanting to make persistent while the third
 template type will always be "storable_base". The second template type is an integer which is used to specify
@@ -44,6 +48,7 @@ the DB if it grows any bigger than its reserved size).
 After creating the "storable" template there are only 3 functions that need to be implemented for persistence
 and they are as follows:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int_t size_of( const sample& s )
 {
    return size_determiner( &s.value1 ) + size_determiner( &s.value2 );
@@ -60,6 +65,7 @@ write_stream& operator <<( write_stream& ws, const sample& s )
    ws << s.value1 << s.value2;
    return ws;
 }
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The first function is required in order to determine the size of the object (for storing only) then streaming
 operators for "read_stream" and "write_stream" are required in order to stream the actual data. The streaming
@@ -76,6 +82,7 @@ To see how the "size_determiner" templates as well as "read_stream" and "write_s
 persistence simple consider the following more complex example (which is a cut down version of "outline_base"
 from "test_ods.cpp"):
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class outline_base : public storable_base
 {
    public:
@@ -120,6 +127,7 @@ write_stream& operator <<( write_stream& ws, const outline_base& o )
 
    return ws;
 }
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this example the types of the member variables being "streamed" includes a string, an "oid_pointer" (which
 is another storable object itself) and a vector of object identities (aka OIDs).
@@ -134,6 +142,7 @@ is for the ODS index file, one for the ODS data file and one each for transactio
 In order to prevent an ODS DB from being cached by the OS file caching system specific sizes has been set for
 each of the four caches. Relevant constants in ods.cpp are:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 const int c_data_bytes_per_item = c_ods_page_size;
 ...
 const int c_index_items_per_item = 128;
@@ -142,6 +151,7 @@ and in ods.h:
 
 const int_t c_trans_ops_per_item = 64;
 const int_t c_trans_bytes_per_item = c_ods_page_size;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The "page" size being used here is 4K and an index entry takes 32 bytes (therefore c_index_items_per_item has
 been assigned 128). A transaction op entry requires 64 bytes thus c_trans_ops_per_item has been set to 64. If
