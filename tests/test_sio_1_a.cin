@@ -11,5 +11,6 @@ output -json views.id=601020
 attributes
 attribute enums.*.id,name
 attribute lists.*.id,name
+attribute lists.*.id,name,type=admin|group
 attribute views.*.id,name
 exit

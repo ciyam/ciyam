@@ -485,6 +485,21 @@ id=602620,name=602620_name
 id=602720,name=602720_name
 id=601100,name=601100_name
 
+> attribute lists.*.id,name,type=admin|group
+id=602900,name=602900_name,type=group
+id=601300,name=601300_name,type=group
+id=603800,name=603800_name,type=admin
+id=603900,name=603900_name,type=admin
+id=603960,name=603960_name,type=admin
+id=603980,name=603980_name,type=admin
+id=601500,name=601500_name,type=group
+id=603500,name=603500_name,type=admin
+id=602260,name=602260_name,type=group
+id=602410,name=602410_name,type=admin
+id=601220,name=601220_name,type=group
+id=601000,name=601000_name,type=admin
+id=601100,name=601100_name,type=admin
+
 > attribute views.*.id,name
 id=602910,name=602910_name
 id=601610,name=601610_name
