@@ -17,6 +17,16 @@ SID_FILE=@files::ciyam_server.sid
 ;
 PIN=$1
 ;
+@ifdef $PIN
+.regex "^[0-9]{5}$$" "$PIN"
+@ifneq "$PIN" "$OUTPUT"
+ERROR=Provided PIN "$PIN" is not valid.
+@endif
+@endif
+;
+@ifdef $ERROR
+#Error: $ERROR
+@else
 @ifndef $PIN
 .entropy -numeric 5
 PIN=$OUTPUT
@@ -36,6 +46,7 @@ DOUBLED=$OUTPUT
 ;
 #Created admin web access for: $PIN
 ;
+@endif
 @endif
 ;
 @endif
