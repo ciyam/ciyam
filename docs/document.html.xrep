@@ -1,4 +1,5 @@
-`{`$text`=`#$document`}`{`[`$text`*\n`,`{`$line\#`=`'\$`'`}`]`}
+`{`$doc_file_htm`=`$document`*`'.htm`'`}`{`$htms`=`#$doc_file_htm`}
+`{`$doc_file_txt`=`$document`*`'.txt`'`}`{`$text`=`#$doc_file_txt`}`{`[`$text`*\n`,`{`$line\#`=`'\$`'`}`]`}
 <!doctype html>
 
 <html>
@@ -18,11 +19,7 @@
 </div>
 
 <div id="main">
-<div id="text">
-<pre>
-`{`$text`/<`/&lt;`/>`/&gt;`}
-</pre>
-</div>
+`{`$htms`}
 </div>
 
 <div style="visibility: visible;" id="footer">
