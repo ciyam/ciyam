@@ -25,7 +25,7 @@
 `{`[`$sections`,`{`$docs`=`$s`\#_documents`}
 <div id="section_`\#"><h4>`{`$s`\#_title`}</h4>
 <div id="documents_`\#">`{`[`$docs`,`{`$d`\#_text`=`#`\$`}`{`[`$d`\#_text`*\n`,`{`$d`2#_line`\#`=`'`\$`'`}`]`}`]`}
-`{`[`$docs`,<p><a href="`{`$x`=`'`\$`'`}`{`$x`/.txt`/.html`}">`{`$d`\#_line0`}</a></p>`+\n`]`}
+`{`[`$docs`,<p><a href="`{`$x`=`'`\$`'`}`{`$x`/.md`/.html`}">`{`$d`\#_line0`}</a></p>`+\n`]`}
 </div>
 </div>
 `]`}

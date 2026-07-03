@@ -87,7 +87,7 @@ should never be found coded in any module (excluding DDL/SQL generated via the c
 Storage Log File
 ----------------
 
-An essential part of the storage approach is the log file named <storage>.log which is a transaction log that
+An essential part of the storage approach is the log file named &lt;storage&gt;.log which is a transaction log that
 contains every *write* operation performed with the storage. Immediately before a transaction is committed to
 the storage the log file is appended to with the relevant protocol command(s).
 
@@ -118,8 +118,8 @@ bash script files can be used to include these external files, however, this is 
 where the amount or size of these files is expected to be significant (for such applications it would instead
 be recommended to use a more specialised backup implementation).
 
-All such storage files are kept in subdirecties below the $WEBDIR/<storage>/files directory and so any backup
-software needs to be configured to backup that directory branch (excluding $WEBDIR/<storage>/files/tmp branch
+All such storage files are kept in subdirecties below the $WEBDIR/&lt;storage&gt;/files directory and so any backup
+software needs to be configured to backup that directory branch (excluding $WEBDIR/&lt;storage&gt;/files/tmp branch
 which is used for creating temporary links/files).
 
 Files can be created in this directory branch even for applications that do not allow end users to upload any

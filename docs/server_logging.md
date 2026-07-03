@@ -13,8 +13,8 @@ applicable CIYAM protocol (or other more general) scripts that have been invoked
 the automated scheduling sub-system.
 
 The log file names may not be changed but the directory that they are located in can be changed by either use
-of the "<log_files_path>" attribute in the application server's configuration file (i.e. ciyam_server.sio) or
-with the command line option "-log_dir=<directory>" (with the command line option always taking precedence).
+of the "&lt;log_files_path&gt;" attribute in the application server's configuration file (i.e. ciyam_server.sio) or
+with the command line option "-log_dir=&lt;directory&gt;" (with the command line option always taking precedence).
 
 The command line option is generally only intended for developers and is most useful when wanting to have two
 or more server instances running on the same machine (so each instance can have its own log files).
@@ -49,8 +49,8 @@ to avoid blowing out the size of the "normal" log file when using the verbose lo
 The "trace flags" value is shown (and needs to be provided) as a hexadecimal value. The value consists of two
 parts that are a maximum of four nibbles in size with the first four containing the log "level" value and the
 second four holding the log "flags" value. All leading zero digits can be omitted but it should be noted that
-if the level is zero then no logging will occur at all. Use server configuration attribute "<trace_flags>" or
-the command line option "-trace=<flags>" (with the command line option always taking precedence). If no value
+if the level is zero then no logging will occur at all. Use server configuration attribute "&lt;trace_flags&gt;" or
+the command line option "-trace=&lt;flags&gt;" (with the command line option always taking precedence). If no value
 is specified then the default is "10000" (which will result in only minimal general messages being logged).
 
 The application protocol command "system_trace" (or simply "trace") is available to get/set the "trace flags"

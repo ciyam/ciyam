@@ -6,15 +6,13 @@
 
 ../src/xrep @index.html.xrep sections=@sections.info>index.html
 
-for i in *.txt; do cp "$i" "${i%.txt}.md"; done
-
 # NOTE: Some SIO tags will get mistaken as HTML tags so need to escape them to avoid issues.
 for i in *.md; do sed -i -e "s/<storage>/\&lt;storage\&gt;/g" -e "s/<flags>/\&lt;flags\&gt;/g"\
  -e "s/<directory>/\&lt;directory\&gt;/g" -e "s/<trace_flags>/\&lt;trace_flags\&gt;/g" -e "s/<log_files_path>/\&lt;log_files_path\&gt;/g" "$i"; done
 
 for i in *.md; do p="${i%.*}" && echo "$p" && pandoc -i $p.md -o $p.htm; done
 
-ls -1 *.txt | sed -e "s/\.txt$//" >~genhtml.lst
+ls -1 *.md | sed -e "s/\.md$//" >~genhtml.lst
 
 ../src/xrep @gendocs.xrep prefix=../src/ docs=@~genhtml.lst>~genhtml
 
@@ -22,7 +20,6 @@ chmod a+x ~genhtml
 
 ./~genhtml
 
-rm *.md
 rm *.htm
 rm ~genhtml
 rm ~genhtml.lst

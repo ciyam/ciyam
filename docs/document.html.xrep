@@ -1,5 +1,5 @@
 `{`$doc_file_htm`=`$document`*`'.htm`'`}`{`$htms`=`#$doc_file_htm`}
-`{`$doc_file_txt`=`$document`*`'.txt`'`}`{`$text`=`#$doc_file_txt`}`{`[`$text`*\n`,`{`$line\#`=`'\$`'`}`]`}
+`{`$doc_file_md`=`$document`*`'.md`'`}`{`$text`=`#$doc_file_md`}`{`[`$text`*\n`,`{`$line\#`=`'\$`'`}`]`}
 <!doctype html>
 
 <html>
