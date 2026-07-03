@@ -6,6 +6,13 @@
 00001 views
 00002 lists
 
+> attribute user_info
+100100,User,100101,100103,100107
+
+> 
+> 
+> 
+> 
 > sections enums.enum
 00000 values
 
@@ -62,44 +69,54 @@ data=3,name=enum_add_packages_standard_user_group
  }
 ]
 }
-> output lists.id=602900
-<id>602900
-<cid>127100
-<name>602900_name
-<type>group
-<extra>no_limit
+> output lists.cid=$USER_CLASS_ID
+<id>601000
+<cid>100100
+<name>601000_name
+<type>admin
+<extra>no_erase
 <actions>
 <modifiers>
-<view>602910
-<class>Application
+<view>601020
+<class>User
 <bclass>
 <order>forward
-<pclass>101100
-<pfield>302220
 <module>Meta
 <columns/>
  <column/>
-  <name>field_application_name
-  <field>127101
+  <name>field_user_username
+  <field>100101
   <ftype>string
-  <extra>max_size=30
+  <extra>hpassword_salt+max_size=30
   <modifiers>
   <unique>true
   <indexed>true
  </column>
  <column/>
-  <name>field_application_version
-  <field>127102
+  <name>field_user_description
+  <field>100104
   <ftype>string
-  <extra>max_size=5
-  <modifiers>8000:protect
+  <extra>max_size=100
+  <modifiers>
+  <unique>false
+  <indexed>true
+ </column>
+ <column/>
+  <name>field_user_workgroup
+  <field>300100
+  <ftype>@class
+  <extra>max_size=100+user_group
+  <modifiers>
+  <pclass>101100
+  <pfield>101101
+  <pfname>field_workgroup_name
   <unique>false
   <indexed>false
  </column>
  <column/>
-  <name>field_application_generate_status
-  <field>127105
-  <ftype>string
+  <name>field_user_active
+  <field>100102
+  <ftype>bool
   <extra>
   <modifiers>
   <unique>false
@@ -109,33 +126,39 @@ data=3,name=enum_add_packages_standard_user_group
 <parents/>
 </parents>
 <restricts/>
+ <restrict/>
+  <name>field_user_active
+  <field>100102
+  <ftype>bool
+  <extra>
+  <mandatory>true
+  <operations>checked:1
+ </restrict>
 </restricts>
 
-> output -json lists.id=602900
+> output -json lists.cid=$USER_CLASS_ID
 { "list":
 [
- { "id": "602900" },
- { "cid": "127100" },
- { "name": "602900_name" },
- { "type": "group" },
- { "extra": "no_limit" },
+ { "id": "601000" },
+ { "cid": "100100" },
+ { "name": "601000_name" },
+ { "type": "admin" },
+ { "extra": "no_erase" },
  { "actions": "" },
  { "modifiers": "" },
- { "view": "602910" },
- { "class": "Application" },
+ { "view": "601020" },
+ { "class": "User" },
  { "bclass": "" },
  { "order": "forward" },
- { "pclass": "101100" },
- { "pfield": "302220" },
  { "module": "Meta" },
  { "columns":
  [
   { "column":
   [
-   { "name": "field_application_name" },
-   { "field": "127101" },
+   { "name": "field_user_username" },
+   { "field": "100101" },
    { "ftype": "string" },
-   { "extra": "max_size=30" },
+   { "extra": "hpassword_salt+max_size=30" },
    { "modifiers": "" },
    { "unique": "true" },
    { "indexed": "true" }
@@ -143,20 +166,34 @@ data=3,name=enum_add_packages_standard_user_group
   },
   { "column":
   [
-   { "name": "field_application_version" },
-   { "field": "127102" },
+   { "name": "field_user_description" },
+   { "field": "100104" },
    { "ftype": "string" },
-   { "extra": "max_size=5" },
-   { "modifiers": "8000:protect" },
+   { "extra": "max_size=100" },
+   { "modifiers": "" },
+   { "unique": "false" },
+   { "indexed": "true" }
+  ]
+  },
+  { "column":
+  [
+   { "name": "field_user_workgroup" },
+   { "field": "300100" },
+   { "ftype": "@class" },
+   { "extra": "max_size=100+user_group" },
+   { "modifiers": "" },
+   { "pclass": "101100" },
+   { "pfield": "101101" },
+   { "pfname": "field_workgroup_name" },
    { "unique": "false" },
    { "indexed": "false" }
   ]
   },
   { "column":
   [
-   { "name": "field_application_generate_status" },
-   { "field": "127105" },
-   { "ftype": "string" },
+   { "name": "field_user_active" },
+   { "field": "100102" },
+   { "ftype": "bool" },
    { "extra": "" },
    { "modifiers": "" },
    { "unique": "false" },
@@ -171,11 +208,25 @@ data=3,name=enum_add_packages_standard_user_group
  },
  { "restricts":
  [
+  { "restrict":
+  [
+   { "name": "field_user_active" },
+   { "field": "100102" },
+   { "ftype": "bool" },
+   { "extra": "" },
+   { "mandatory": "true" },
+   { "operations": "checked:1" }
+  ]
+  }
  ]
  }
 ]
 }
-> output views.id=601020
+> attribute views.*.id,!class=$USER_CLASS_NAME
+601020
+
+> 
+> output views.id=$VIEW_ID
 <id>601020
 <cid>100100
 <name>601020_name
@@ -248,7 +299,7 @@ data=3,name=enum_add_packages_standard_user_group
  </field>
 </fields>
 
-> output -json views.id=601020
+> output -json views.id=$VIEW_ID
 { "view":
 [
  { "id": "601020" },
@@ -485,20 +536,30 @@ id=602620,name=602620_name
 id=602720,name=602720_name
 id=601100,name=601100_name
 
-> attribute lists.*.id,name,type=admin|group
-id=602900,name=602900_name,type=group
-id=601300,name=601300_name,type=group
-id=603800,name=603800_name,type=admin
-id=603900,name=603900_name,type=admin
-id=603960,name=603960_name,type=admin
-id=603980,name=603980_name,type=admin
-id=601500,name=601500_name,type=group
-id=603500,name=603500_name,type=admin
-id=602260,name=602260_name,type=group
-id=602410,name=602410_name,type=admin
-id=601220,name=601220_name,type=group
-id=601000,name=601000_name,type=admin
-id=601100,name=601100_name,type=admin
+> attribute lists.*.id,!type=admin
+603800
+603900
+603960
+603980
+603500
+602410
+601000
+601100
+
+> attribute lists.*.id,name,!type=admin|group
+id=602900,name=602900_name
+id=601300,name=601300_name
+id=603800,name=603800_name
+id=603900,name=603900_name
+id=603960,name=603960_name
+id=603980,name=603980_name
+id=601500,name=601500_name
+id=603500,name=603500_name
+id=602260,name=602260_name
+id=602410,name=602410_name
+id=601220,name=601220_name
+id=601000,name=601000_name
+id=601100,name=601100_name
 
 > attribute views.*.id,name
 id=602910,name=602910_name

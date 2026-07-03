@@ -1,16 +1,24 @@
 load Meta.fcgi.sio
 sections
+attribute user_info
+USER_INFO=$OUTPUT
+USER_INFO_LINES=@repstr:,/\n:$USER_INFO
+USER_CLASS_ID=%USER_INFO_LINES:1%
+USER_CLASS_NAME=%USER_INFO_LINES:2%
 sections enums.enum
 attribute enums.enum.values.*.data,name
 output enums.enum.values
 output -json enums.enum.values
-output lists.id=602900
-output -json lists.id=602900
-output views.id=601020
-output -json views.id=601020
+output lists.cid=$USER_CLASS_ID
+output -json lists.cid=$USER_CLASS_ID
+attribute views.*.id,!class=$USER_CLASS_NAME
+VIEW_ID=$OUTPUT
+output views.id=$VIEW_ID
+output -json views.id=$VIEW_ID
 attributes
 attribute enums.*.id,name
 attribute lists.*.id,name
-attribute lists.*.id,name,type=admin|group
+attribute lists.*.id,!type=admin
+attribute lists.*.id,name,!type=admin|group
 attribute views.*.id,name
 exit
