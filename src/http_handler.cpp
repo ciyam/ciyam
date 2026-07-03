@@ -1076,6 +1076,8 @@ void http_request_handler::on_start( )
             }
          }
 
+         int64_t head_size = 0;
+
          if( response.empty( ) )
          {
             string path( get_web_root( ) );
@@ -1142,8 +1144,10 @@ void http_request_handler::on_start( )
                      osstr << c_http_1_1 << ' ' << c_http_200_OK
                       << '\n' << c_http_server_prefix << g_server_id
                       << '\n' << c_http_date_prefix << formatted_dtm
-                      << '\n' << c_http_modified_prefix << formatted_document_dtm
-                      << '\n' << c_http_connection_header_info << '\n' << c_http_keep_alive_header_info << '\n';
+                      << '\n' << c_http_modified_prefix << formatted_document_dtm << '\n';
+
+                     if( request_type != e_http_request_type_head )
+                        osstr << c_http_connection_header_info << '\n' << c_http_keep_alive_header_info << '\n';
 
                      osstr << c_http_content_type_prefix;
 
@@ -1166,7 +1170,17 @@ void http_request_handler::on_start( )
 
                      osstr << '\n';
 
-                     response = buffer_file( path + http_document );
+                     // NOTE: No need to buffer file content if the
+                     // request type is "HEAD" (but sets "response"
+                     // to "dummy" so checking if empty will work).
+                     if( request_type == e_http_request_type_head )
+                     {
+                        response = c_dummy;
+
+                        head_size = file_size( path + http_document );
+                     }
+                     else
+                        response = buffer_file( path + http_document );
                   }
                }
                else if( dir_exists( path + http_document ) )
@@ -1213,7 +1227,21 @@ void http_request_handler::on_start( )
                response = c_html_test_response;
 
             if( !response.empty( ) )
-               osstr << c_http_content_length_prefix << to_string( response.length( ) ) << "\n\n" << response;
+            {
+               osstr << c_http_content_length_prefix;
+
+               if( head_size )
+                  osstr << head_size;
+               else
+                  osstr << to_string( response.length( ) );
+
+               osstr << "\n\n";
+
+               // NOTE: If the handling a "HEAD" request then
+               // output the headers but no response content.
+               if( request_type != e_http_request_type_head )
+                  osstr << response;
+            }
          }
          else if( !error.empty( ) )
          {
