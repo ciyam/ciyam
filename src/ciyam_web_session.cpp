@@ -22,6 +22,7 @@
 
 #include "ciyam_web_session.h"
 
+#include "sio.h"
 #include "sha256.h"
 #include "threads.h"
 #include "date_time.h"
@@ -111,6 +112,8 @@ const char* const c_web_session_script = "web_session.cin";
 const char* const c_web_session_none_response = "[none]";
 const char* const c_web_session_okay_response = "[okay]";
 
+const char* const c_storage_attribute_user_info = "user_info";
+
 mutex g_mutex;
 
 bool g_cws_admin_locked = false;
@@ -120,6 +123,8 @@ atomic< size_t > g_cws_active_commands;
 set< string > g_cws_access_tokens;
 
 map< string, set< string > > g_cws_access_devices;
+
+map< string, unique_ptr< sio_graph > > g_application_meta_data;
 
 inline string escaped_json( const string& s )
 {
@@ -1239,7 +1244,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      bool allowed_command = true;
 
-                     if( !request.empty( ) )
+                     bool is_user_info_request = ( request == c_storage_attribute_user_info );
+
+                     if( !request.empty( ) && !is_user_info_request )
                      {
                         if( !g_is_devt_system || ( access != g_cws_admin_token ) )
                            allowed_command = false;
@@ -1255,13 +1262,76 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      else
                      {
                         if( !request.empty( ) )
+                        {
+                           if( is_user_info_request )
+                           {
+                              string username;
+
+                              if( access == g_cws_admin_token )
+                                 username = c_admin;
+                              else
+                                 username = get_user_name( access );
+
+                              string storage_name( get_system_variable( e_special_var_storage ) );
+
+                              if( !g_application_meta_data.count( storage_name ) )
+                              {
+                                 ifstream inpf( storage_name + ".fcgi.sio" );
+
+                                 sio_reader reader( inpf );
+
+                                 g_application_meta_data.insert( make_pair( storage_name, new sio_graph( reader ) ) );
+                              }
+
+                              const section_node& root_node(
+                               g_application_meta_data[ storage_name ]->get_root_node( ) );
+
+                              string storage_user_info(
+                               root_node.get_attribute_value( c_storage_attribute_user_info ) );
+
+                              if( storage_user_info.empty( ) )
+                                 throw runtime_error( "unexpected missing storage_user_info" );
+
+                              vector< string > all_storage_user_info;
+
+                              split( storage_user_info, all_storage_user_info );
+
+                              if( all_storage_user_info.size( ) < 3 )
+                                 throw runtime_error( "unexpected missing needed storage_user_info parts" );
+
+                              string user_class_id( all_storage_user_info[ 0 ] );
+
+                              string user_field_id_username( all_storage_user_info[ 2 ] );
+
+                              string::size_type pos = user_field_id_username.find( '+' );
+
+                              if( pos != string::npos )
+                                 user_field_id_username.erase( pos );
+
+                              string user_field_id_description( user_field_id_username );
+
+                              if( all_storage_user_info.size( ) > 5 )
+                              {
+                                 user_field_id_description = all_storage_user_info[ 5 ];
+
+                                 string::size_type pos = user_field_id_description.find( ';' );
+
+                                 if( pos != string::npos )
+                                    user_field_id_description.erase( pos );
+                              }
+
+                              request_and_args = "<web_session_user_fetch.cin " + user_class_id
+                               + ' ' + user_field_id_username + ' ' + username + ' ' + user_field_id_description;
+                           }
+
                            set_system_variable( web_command_name, request_and_args );
+                        }
                         else
                            set_system_variable( web_command_name, "variable " + web_message_name );
 
                         for( size_t i = 0; i < 10; i++ )
                         {
-                           msleep( 150 );
+                           msleep( 100 );
 
                            if( file_exists( output_file_name ) )
                            {
