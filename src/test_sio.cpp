@@ -187,81 +187,14 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
             cerr << "no sio content is available" << endl;
          else
          {
-            string section;
+            string output( get_attributes_for_name_query( up_sio_graph->get_root_node( ), name ) );
 
-            bool is_range = false;
+            string::size_type pos = output.find( '\n' );
 
-            size_t range_offset = 0;
+            set_environment_variable( c_env_var_output, output.substr( 0, pos ) );
 
-            const section_node* p_range_node = 0;
-
-            const section_node* p_start_node = &up_sio_graph->get_root_node( );
-
-            const section_node* p_section_node = p_start_node;
-
-            string::size_type pos = name.rfind( '.' );
-
-            if( pos != string::npos )
-            {
-               section = name.substr( 0, pos );
-
-               name.erase( 0, pos + 1 );
-
-               // NOTE: If section ends with a '*' then iterate through all children.
-               if( !section.empty( ) && ( section[ section.length( ) - 1 ] == '*' ) )
-               {
-                  is_range = true;
-
-                  section.erase( section.length( ) - 1 );
-
-                  p_range_node = get_section_node_from_path(
-                   *p_section_node, section.substr( 0, section.length( ) - 1 ) );
-
-                  if( p_range_node )
-                     p_section_node = get_section_node_from_path(
-                      *p_start_node, section + to_string( range_offset ) );
-               }
-               else
-                  p_section_node = get_section_node_from_path( *p_section_node, section );
-            }
-
-            if( !p_section_node || ( is_range && !p_range_node ) )
-               cerr << "unable to find section '" << section << "'" << endl;
-            else
-            {
-               bool first = true;
-
-               string output;
-
-               while( p_section_node )
-               {
-                  string next( get_node_attributes( *p_section_node, name ) );
-
-                  if( !next.empty( ) )
-                  {
-                     if( first )
-                     {
-                        first = false;
-
-                        set_environment_variable( c_env_var_output, next );
-                     }
-
-                     if( !output.empty( ) )
-                        output += '\n';
-
-                     output += next;
-                  }
-
-                  if( !is_range )
-                     break;
-
-                  p_section_node = get_section_node_from_path(
-                   *p_start_node, section + to_string( ++range_offset ), true );
-               }
-
-               if( !output.empty( ) )
-                  cout << output << endl;
-            }
+            if( !output.empty( ) )
+               cout << output << endl;
          }
       }
       else if( command == c_cmd_test_sio_attributes )
