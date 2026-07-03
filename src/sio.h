@@ -235,6 +235,8 @@ const section_node* get_section_node_from_path(
 
 std::string get_node_attributes( const section_node& node, const std::string& attribute_list );
 
+std::string get_attributes_for_name_query( const section_node& node, const std::string& name_info );
+
 class sio_graph
 {
    public:

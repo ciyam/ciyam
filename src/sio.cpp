@@ -683,7 +683,7 @@ sio_writer::sio_writer( ostream& os, const sio_graph& graph, string* p_path_to_s
       finish_sections( );
 }
 
-void sio_writer::write_comment( const std::string& comment )
+void sio_writer::write_comment( const string& comment )
 {
    string s( comment );
 
@@ -839,7 +839,7 @@ size_t section_node::get_child_depth( ) const
    return depth;
 }
 
-const section_node* section_node::get_child_node( const std::string& name ) const
+const section_node* section_node::get_child_node( const string& name ) const
 {
    const section_node* p_child_node = 0;
 
@@ -1051,6 +1051,75 @@ string get_node_attributes( const section_node& node, const string& attribute_li
    }
 
    return retval;
+}
+
+string get_attributes_for_name_query( const section_node& node, const string& name_info )
+{
+   string output, section;
+
+   string name( name_info );
+
+   bool is_range = false;
+
+   size_t range_offset = 0;
+
+   const section_node* p_range_node = 0;
+
+   const section_node* p_start_node = &node;
+
+   const section_node* p_section_node = p_start_node;
+
+   string::size_type pos = name.rfind( '.' );
+
+   if( pos != string::npos )
+   {
+      section = name.substr( 0, pos );
+
+      name.erase( 0, pos + 1 );
+
+      // NOTE: If section ends with a '*' then iterate through all children.
+      if( !section.empty( ) && ( section[ section.length( ) - 1 ] == '*' ) )
+      {
+         is_range = true;
+
+         section.erase( section.length( ) - 1 );
+
+         p_range_node = get_section_node_from_path(
+          *p_section_node, section.substr( 0, section.length( ) - 1 ) );
+
+         if( p_range_node )
+            p_section_node = get_section_node_from_path(
+             *p_start_node, section + to_string( range_offset ) );
+      }
+      else
+         p_section_node = get_section_node_from_path( *p_section_node, section );
+   }
+
+   if( !p_section_node || ( is_range && !p_range_node ) )
+      throw runtime_error( "unable to find section '" + section + "'" );
+   else
+   {
+      while( p_section_node )
+      {
+         string next( get_node_attributes( *p_section_node, name ) );
+
+         if( !next.empty( ) )
+         {
+            if( !output.empty( ) )
+               output += '\n';
+
+            output += next;
+         }
+
+         if( !is_range )
+            break;
+
+         p_section_node = get_section_node_from_path(
+          *p_start_node, section + to_string( ++range_offset ), true );
+      }
+   }
+
+   return output;
 }
 
 sio_graph::sio_graph( sio_reader& reader )
