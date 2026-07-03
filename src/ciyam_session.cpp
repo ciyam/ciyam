@@ -6342,10 +6342,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_storage_info )
       {
-         response = "Name: " + storage_name( ) + '\n';
+         bool name = has_parm_val( parameters, c_cmd_ciyam_session_storage_info_name );
+         bool identity = has_parm_val( parameters, c_cmd_ciyam_session_storage_info_identity );
+         bool directory = has_parm_val( parameters, c_cmd_ciyam_session_storage_info_directory );
 
-         response += "Identity: " + storage_identity( ) + '\n';
-         response += "Directory: " + storage_module_directory( );
+         if( name )
+            response = storage_name( );
+         else if( identity )
+            response = storage_identity( );
+         else if( directory )
+            response = storage_module_directory( );
+         else
+         {
+            response = "Name: " + storage_name( ) + '\n';
+            response += "Identity: " + storage_identity( ) + '\n';
+            response += "Directory: " + storage_module_directory( );
+         }
       }
       else if( command == c_cmd_ciyam_session_storage_init )
       {

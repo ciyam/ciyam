@@ -88,7 +88,7 @@ session_terminate|quit "terminate session"
 session_rpc_unlock|unlock "unlock full RPC access for the current session" <val//password>[<val//seconds>]
 session_rpc_password|lock "locks full RPC access for the current session with a temporary password" <val//password>
 starttls|tls "start TLS session"
-storage_info "name and other information about the currently linked storage"
+storage_info "name and other information about the currently linked storage" [<opt/-name/name>|<opt/-identity/identity>|<opt/-directory/directory>]
 storage_init "link to an existing or newly created storage" [<opt/-admin/admin>][<val/-directory=/directory>]<val//name>
 storage_link "link to an existing storage" [<opt/-admin/admin>]<val//name>
 storage_term "unlink from the currently linked storage"
