@@ -34,6 +34,8 @@ const char* const c_app_version = "0.1";
 
 const char* const c_error_prefix = "error: ";
 
+const char* const c_env_var_output = "OUTPUT";
+
 bool g_application_title_called = false;
 
 string application_title( app_info_request request )
@@ -152,6 +154,8 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
          {
             const section_node* p_section_node = get_section_node_from_path( up_sio_graph->get_root_node( ), path );
 
+            string output;
+
             if( !p_section_node )
                cerr << "unable to find starting section '" << path << "'" << endl;
             else
@@ -159,7 +163,19 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
                size_t num_children = p_section_node->get_num_child_nodes( );
 
                for( size_t i = 0; i < num_children; i++ )
-                  cout << to_comparable_string( i, false, 5 ) << ' ' << p_section_node->get_child_node( i ).get_name( ) << '\n';
+               {
+                  if( !output.empty( ) )
+                     output += '\n';
+
+                  output += to_comparable_string( i, false, 5 ) + ' ' + p_section_node->get_child_node( i ).get_name( );
+               }
+            }
+
+            if( !output.empty( ) )
+            {
+               cout << output << endl;
+
+               set_environment_variable( c_env_var_output, output );
             }
          }
       }
@@ -213,12 +229,28 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
                cerr << "unable to find section '" << section << "'" << endl;
             else
             {
+               bool first = true;
+
+               string output;
+
                while( p_section_node )
                {
-                  string output( get_node_attributes( *p_section_node, name ) );
+                  string next( get_node_attributes( *p_section_node, name ) );
 
-                  if( !output.empty( ) )
-                     cout << output << '\n';
+                  if( !next.empty( ) )
+                  {
+                     if( first )
+                     {
+                        first = false;
+
+                        set_environment_variable( c_env_var_output, next );
+                     }
+
+                     if( !output.empty( ) )
+                        output += '\n';
+
+                     output += next;
+                  }
 
                   if( !is_range )
                      break;
@@ -227,7 +259,8 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
                    *p_start_node, section + to_string( ++range_offset ), true );
                }
 
-               cout.flush( );
+               if( !output.empty( ) )
+                  cout << output << endl;
             }
          }
       }
@@ -243,10 +276,21 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
                cerr << "unable to find section '" << path << "'" << endl;
             else
             {
+               string output;
+
                size_t num_attributes = p_section_node->get_num_attributes( );
 
                for( size_t i = 0; i < num_attributes; i++ )
-                  cout << p_section_node->get_attribute( i ).get_name( ) << '\n';
+               {
+                  if( !output.empty( ) )
+                     output += '\n';
+
+                  output += p_section_node->get_attribute( i ).get_name( );
+               }
+
+               cout << output << endl;
+
+               set_environment_variable( c_env_var_output, output );
             }
          }
       }
