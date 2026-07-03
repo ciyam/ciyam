@@ -959,10 +959,28 @@ string get_node_attributes( const section_node& node, const string& attribute_li
 
    if( !attribute_list.empty( ) )
    {
+      set< size_t > hidden;
+
       if( !is_all )
+      {
          split( attribute_list, all_attributes );
 
-      bool is_multi = ( all_attributes.size( ) > 1 );
+         // NOTE: Use a '!' prefix for hidden attributes
+         // (to not be output but available for checks).
+         for( size_t i = 0; i < all_attributes.size( ); i++ )
+         {
+            string next( all_attributes[ i ] );
+
+            if( !next.empty( ) && ( next[ 0 ] == '!' ) )
+            {
+               hidden.insert( i );
+
+               all_attributes[ i ] = next.substr( 1 );
+            }
+         }
+      }
+
+      bool is_multi = ( ( all_attributes.size( ) - hidden.size( ) ) > 1 );
 
       for( size_t i = 0; i < all_attributes.size( ); i++ )
       {
@@ -996,7 +1014,7 @@ string get_node_attributes( const section_node& node, const string& attribute_li
                split( check_value, check_options, '|' );
          }
 
-         if( is_multi )
+         if( is_multi && !hidden.count( i ) )
          {
             if( i > 0 )
                retval += ',';
@@ -1026,7 +1044,8 @@ string get_node_attributes( const section_node& node, const string& attribute_li
                }
             }
 
-            retval += value;
+            if( !hidden.count( i ) )
+               retval += value;
          }
       }
    }
