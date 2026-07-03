@@ -24,6 +24,9 @@ SESSION=$3
 ;
 IS_ADMIN=
 ;
+.session_variable @uuid
+TEMP_FILE=/tmp/ciyam.tmp.$OUTPUT
+;
 OUTPUT_FILE=/tmp/ciyam.web.$TOKEN.$DEVICE
 ;
 ~rm -f $OUTPUT_FILE
@@ -57,9 +60,14 @@ COMMAND=$OUTPUT
 .system_variable @web.$TOKEN.$DEVICE.command ""
 ;
 @ifneq "$COMMAND" "@web_session_check"
->$OUTPUT_FILE
+>$TEMP_FILE
 $COMMAND
 >
+; NOTE: As the command might take some time
+; need to initially use a temporary file so
+; the web session code will only detect the
+; output file after completing the command.
+~mv "$TEMP_FILE" "$OUTPUT_FILE"
 ;
 ERROR=
 ;
