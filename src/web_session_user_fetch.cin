@@ -1,0 +1,46 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+ERROR=
+;
+@ifneq "$NUM_ARGS" "3"
+ERROR=Needs user class along with the username field and value.
+#Error: $ERROR
+@else
+;
+USER_CLASS=$1
+USERNAME_FLD=$2
+USERNAME_VAL=$3
+;
+FETCH_FIELD_NAMES=$4
+;
+@ifndef $FETCH_FIELD_NAMES
+FETCH_FIELD_NAMES=@none
+@endif
+;
+.session_variable @storage
+STORAGE=$OUTPUT
+;
+.storage_info -name
+@ifeq "$OUTPUT" "<none>"
+.storage_init $STORAGE
+@endif
+;
+@ifndef $ERROR
+perform_fetch $STORAGE $USER_CLASS "$USERNAME_FLD#1 $USERNAME_VAL" #1 "$FETCH_FIELD_NAMES"
+@endif
+;
+@endif
