@@ -40,6 +40,8 @@ IS_ADMIN=1
 .system_variable @web.$TOKEN.$DEVICE.message "[standard]"
 @endif
 ;
+.session_variable @storage_var_name @web.$TOKEN.$DEVICE.storage
+;
 @label NEXT
 ;
 @:LOOP

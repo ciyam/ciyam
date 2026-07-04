@@ -31,11 +31,23 @@ FETCH_FIELD_NAMES=$4
 FETCH_FIELD_NAMES=@none
 @endif
 ;
-.session_variable @storage
+.session_variable @storage_var_name
+STORAGE_VAR_NAME=$OUTPUT
+;
+; NOTE: If no specific storage provided
+; then instead uses the system default.
+@ifndef $STORAGE_VAR_NAME
+STORAGE_VAR_NAME=@storage
+@endif
+;
+.system_variable $STORAGE_VAR_NAME
 STORAGE=$OUTPUT
 ;
 .storage_info -name
-@ifeq "$OUTPUT" "<none>"
+@ifneq "$OUTPUT" "$STORAGE"
+@ifneq "$OUTPUT" "<none>"
+.storage_term
+@endif
 .storage_init $STORAGE
 @endif
 ;
