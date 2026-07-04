@@ -35,7 +35,8 @@
 
 using namespace std;
 
-extern string g_none;
+extern string g_none_tag;
+extern string g_none_var;
 
 extern string g_css_suffix;
 
@@ -126,6 +127,20 @@ map< string, set< string > > g_cws_access_devices;
 
 map< string, unique_ptr< sio_graph > > g_model_meta_data;
 
+struct session_info
+{
+   string access;
+   string device;
+
+   string user_key;
+   string username;
+
+   int64_t init_request;
+   int64_t last_request;
+};
+
+map< string, unique_ptr< session_info > > g_session_info;
+
 inline string escaped_json( const string& s )
 {
    return escaped( s, "/\"", '\\', c_json_escape_specials );
@@ -206,6 +221,46 @@ void remove_access_device_if_present( const string& access_token, const string& 
       g_cws_access_devices[ access_token ].erase( device_token );
 
       TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) removed device " + device_token + " for access " + access_token );
+   }
+}
+
+void init_session_info( const string& access, const string& device, const string& session, int64_t now )
+{
+   guard g( g_mutex );
+
+   g_session_info[ session ].reset( new session_info );
+
+   g_session_info[ session ]->access = access;
+   g_session_info[ session ]->device = device;
+
+   g_session_info[ session ]->init_request = now;
+   g_session_info[ session ]->last_request = now;
+}
+
+void remove_session_info( const string& session )
+{
+   guard g( g_mutex );
+
+   if( g_session_info.count( session ) )
+      g_session_info.erase( session );
+}
+
+void update_session_info( const string& session, int64_t now )
+{
+   guard g( g_mutex );
+
+   if( g_session_info.count( session ) )
+      g_session_info[ session ]->last_request = now;
+}
+
+void update_session_info( const string& session, const string& user_key, const string& username )
+{
+   guard g( g_mutex );
+
+   if( g_session_info.count( session ) )
+   {
+      g_session_info[ session ]->user_key = user_key;
+      g_session_info[ session ]->username = username;
    }
 }
 
@@ -551,6 +606,50 @@ const sio_graph& get_meta_data( const string& model_name )
    return *g_model_meta_data[ model_name ];
 }
 
+void process_user_info_response( const string& session, const string& response )
+{
+   if( !response.empty( ) && ( response[ 0 ] == '[' ) )
+   {
+      string::size_type pos = response.find( ']' );
+
+      if( pos != string::npos )
+      {
+         pos = response.find( ' ' );
+
+         string user_key;
+
+         if( pos != string::npos )
+            user_key = response.substr( 1, pos - 1 );
+
+         pos = response.rfind( ' ' );
+
+         if( pos != string::npos )
+         {
+            string username( response.substr( pos + 1 ) );
+
+            update_session_info( session, user_key, username );
+         }
+      }
+   }
+}
+
+}
+
+void dump_session_info( ostream& os )
+{
+   guard g( g_mutex );
+
+   if( !g_session_info.empty( ) )
+   {
+      os << "session              pin   device          init_request        last_request        username\n";
+      os << "-------------------- ----- --------------- ------------------- ------------------- ---------------\n";
+   }
+
+   for( auto i = g_session_info.begin( ); i != g_session_info.end( ); i++ )
+      os << i->first << ' ' << i->second->access << ' ' << i->second->device
+       << ' ' << date_time( i->second->init_request ).as_string( true, false )
+       << ' ' << date_time( i->second->last_request ).as_string( true, false )
+       << ' ' << ( i->second->username.empty( ) ? g_none_tag : i->second->username ) << '\n';
 }
 
 bool process_cws_request( http_request_type request_type, const string& uri_suffix,
@@ -777,7 +876,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
             seed = c_admin;
          else
          {
-            seed = g_none;
+            seed = g_none_var;
 
             string suggestion( get_system_variable( g_cws_username_for_prefix + pin ) );
 
@@ -858,6 +957,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          string web_session_name( var_prefix + access + '.' + device + c_web_session_suffix );
          string web_started_name( var_prefix + access + '.' + device + c_web_started_suffix );
 
+         int64_t now = unix_time( );
+
          if( is_post_request && ( uri_suffix == c_cws_uri_suffix_sessions ) )
          {
             string access_token( opt_buffer_file( access_file ) );
@@ -871,8 +972,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                response = unique;
             else
                response = "{\"unique\":\"" + unique + "\"}";
-
-            int64_t now = unix_time( );
 
             // NOTE: Force authentication retry attempts to be slow.
             if( !set_system_variable( web_lock_name, to_string( now ), string( "" ) ) )
@@ -903,7 +1002,21 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                string digest( hash_combined.get_digest_as_string( ) );
 
-               set_system_variable( web_session_name, digest.substr( 0, c_cws_session_length ) );
+               string new_session( digest.substr( 0, c_cws_session_length ) );
+
+               string old_session( get_system_variable( web_session_name ) );
+
+               if( !old_session.empty( ) && ( new_session != old_session ) )
+               {
+                  remove_session_info( old_session );
+
+                  TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) replacing "
+                   "session " + old_session + " with device " + device + " for access " + access );
+               }
+
+               set_system_variable( web_session_name, new_session );
+
+               init_session_info( access, device, new_session, now );
 
                // NOTE: This "command" will force the web session script to
                // check that the session identity it was given when started
@@ -952,6 +1065,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) finished "
                    "session " + session + " with device " + device + " for access " + access );
+
+                  remove_session_info( session );
 
                   // NOTE: In case the access device was a temporary
                   // one will remove it now (so it is recommended to
@@ -1010,12 +1125,12 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   fs_iterator fs( get_web_root( ), &ff );
 
-                  string all_stylesheets( g_none );
+                  string all_stylesheets( g_none_var );
 
                   bool has_cached_stylesheets = has_system_variable( e_special_var_cws_styles );
 
                   if( !has_cached_stylesheets )
-                     all_stylesheets = g_none;
+                     all_stylesheets = g_none_var;
                   else
                      all_stylesheets = get_system_variable( e_special_var_cws_styles );
 
@@ -1404,10 +1519,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                + ' ' + user_field_id_username + ' ' + username + ' ' + user_field_id_description;
                            }
 
+                           update_session_info( session, now );
+
                            set_system_variable( web_command_name, request_and_args );
                         }
                         else
+                        {
+                           update_session_info( session, now );
+
                            set_system_variable( web_command_name, "variable " + web_message_name );
+                        }
 
                         for( size_t i = 0; i < 10; i++ )
                         {
@@ -1420,6 +1541,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               response = trim( response, false, false, "\n" );
 
                               file_remove( output_file_name );
+
+                              if( is_user_info_request && !response.empty( ) )
+                                 process_user_info_response( session, response );
 
                               break;
                            }

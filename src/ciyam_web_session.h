@@ -8,6 +8,7 @@
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <map>
+#     include <iosfwd>
 #     include <string>
 #  endif
 
@@ -37,6 +38,8 @@ struct cws_paramaters
 
    bool is_json_output;
 };
+
+void dump_session_info( std::ostream& os );
 
 bool process_cws_request( http_request_type request_type, const std::string& uri_suffix,
  const cws_paramaters& cws_params, bool& use_none_response, std::string& response, std::string& error );
