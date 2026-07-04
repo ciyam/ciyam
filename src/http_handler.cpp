@@ -43,7 +43,8 @@
 
 using namespace std;
 
-string g_none;
+string g_none_tag;
+string g_none_var;
 
 string g_css_suffix;
 
@@ -1425,7 +1426,8 @@ void http_listener::on_start( )
 
       TRACE_LOG( TRACE_MINIMAL, "http listener started on tcp port " + to_string( port ) );
 
-      g_none = get_special_var_name( e_special_var_none );
+      g_none_tag = '<' + string( c_none ) + '>';
+      g_none_var = get_special_var_name( e_special_var_none );
 
       g_server_id = string( c_CIYAM );
 
