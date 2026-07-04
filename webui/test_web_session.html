@@ -97,6 +97,9 @@
    const users_delete_cmd = "users|delete";
    const users_review_cmd = "users|review";
 
+   const storages_access_cmd = "storages|access";
+   const storages_review_cmd = "storages|review";
+
    const stylesheets_delete_cmd = "stylesheets|delete";
    const stylesheets_reload_cmd = "stylesheets|reload";
    const stylesheets_retain_cmd = "stylesheets|retain";
@@ -599,6 +602,7 @@
              || ( first == "reload" ) )
                suffix = "|reload";
             else if( ( first == "get" )
+             || ( first == "list" )
              || ( first == "read" )
              || ( first == "view" )
              || ( first == "review" ) )
@@ -606,6 +610,8 @@
             else if( ( first == "new" )
              || ( first == "create" ) )
                suffix = "|create";
+            else if( first == "access" )
+               suffix = "|access";
             else if( first == "employ" )
                suffix = "|employ";
             else if( ( first == "save" )
@@ -733,6 +739,7 @@
          }
 
          if( ( cmd == users_create_cmd ) || ( cmd == users_delete_cmd )
+          || ( cmd == storages_access_cmd ) || ( cmd == storages_review_cmd )
           || ( cmd == unlock_keys_employ_cmd ) || ( cmd == stylesheets_review_cmd ) )
          {
             if( cmd == users_create_cmd )
