@@ -88,16 +88,19 @@ const char* const c_web_command_suffix = ".command";
 const char* const c_web_message_suffix = ".message";
 const char* const c_web_session_suffix = ".session";
 const char* const c_web_started_suffix = ".started";
+const char* const c_web_storage_suffix = ".storage";
 
 const char* const c_cws_uri_suffix_help = "help";
 const char* const c_cws_uri_suffix_users = "users";
 const char* const c_cws_uri_suffix_devices = "devices";
 const char* const c_cws_uri_suffix_sessions = "sessions";
+const char* const c_cws_uri_suffix_storages = "storages";
 const char* const c_cws_uri_suffix_stylesheets = "stylesheets";
 const char* const c_cws_uri_suffix_unlock_keys = "unlock-keys";
 
 const char* const c_cws_uri_suffix_users_prefix = "users/";
 const char* const c_cws_uri_suffix_sessions_prefix = "sessions/";
+const char* const c_cws_uri_suffix_storages_prefix = "storages/";
 const char* const c_cws_uri_suffix_stylesheets_prefix = "stylesheets/";
 const char* const c_cws_uri_suffix_unlock_keys_prefix = "unlock-keys/";
 
@@ -105,8 +108,8 @@ const char* const c_cws_request_users_create_op_secret = "secret";
 const char* const c_cws_request_users_create_opt_suggested_prefix = "suggested=";
 
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax.
-const char* const c_cws_help_request_output = "quit\ncreate user [secret|suggested=[<pin>:][<username>]]\ncreate unlock-key\n"
- "delete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview users\nreview stylesheet[s] [<name>]";
+const char* const c_cws_help_request_output = "quit\naccess storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
+ "create unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview users\nreview storages\nreview stylesheet[s] [<name>]";
 
 const char* const c_web_session_script = "web_session.cin";
 
@@ -233,6 +236,11 @@ void init_session_info( const string& access, const string& device, const string
    g_session_info[ session ]->access = access;
    g_session_info[ session ]->device = device;
 
+   if( access == g_cws_admin_token )
+      g_session_info[ session ]->username = c_admin;
+   else
+      g_session_info[ session ]->username = get_user_name( access );
+
    g_session_info[ session ]->init_request = now;
    g_session_info[ session ]->last_request = now;
 }
@@ -253,15 +261,12 @@ void update_session_info( const string& session, int64_t now )
       g_session_info[ session ]->last_request = now;
 }
 
-void update_session_info( const string& session, const string& user_key, const string& username )
+void update_session_info( const string& session, const string& user_key )
 {
    guard g( g_mutex );
 
    if( g_session_info.count( session ) )
-   {
       g_session_info[ session ]->user_key = user_key;
-      g_session_info[ session ]->username = username;
-   }
 }
 
 struct cws_active_command
@@ -596,7 +601,12 @@ const sio_graph& get_meta_data( const string& model_name )
 
    if( !g_model_meta_data.count( model_name ) )
    {
-      ifstream inpf( model_name + ".fcgi.sio" );
+      string model_sio_file( model_name + ".fcgi.sio" );
+
+      if( !file_exists( model_sio_file ) )
+         throw runtime_error( "structured I/O file '" + model_sio_file + "' was not found" );
+
+      ifstream inpf( model_sio_file.c_str( ) );
 
       sio_reader reader( inpf );
 
@@ -606,7 +616,7 @@ const sio_graph& get_meta_data( const string& model_name )
    return *g_model_meta_data[ model_name ];
 }
 
-void process_user_info_response( const string& session, const string& response )
+void process_user_info_response( const string& session, string& response )
 {
    if( !response.empty( ) && ( response[ 0 ] == '[' ) )
    {
@@ -627,7 +637,9 @@ void process_user_info_response( const string& session, const string& response )
          {
             string username( response.substr( pos + 1 ) );
 
-            update_session_info( session, user_key, username );
+            response = username;
+
+            update_session_info( session, user_key );
          }
       }
    }
@@ -956,6 +968,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          string web_message_name( var_prefix + access + '.' + device + c_web_message_suffix );
          string web_session_name( var_prefix + access + '.' + device + c_web_session_suffix );
          string web_started_name( var_prefix + access + '.' + device + c_web_started_suffix );
+         string web_storage_name( var_prefix + access + '.' + device + c_web_storage_suffix );
 
          int64_t now = unix_time( );
 
@@ -1062,6 +1075,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   set_system_variable( web_message_name, "" );
                   set_system_variable( web_session_name, "" );
                   set_system_variable( web_started_name, "" );
+                  set_system_variable( web_storage_name, "" );
 
                   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) finished "
                    "session " + session + " with device " + device + " for access " + access );
@@ -1396,6 +1410,18 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
                   }
                }
+               else if( uri_suffix == c_cws_uri_suffix_storages )
+               {
+                  found = true;
+
+                  // NOTE: Currently will only return the default system storage.
+                  string default_storage( lower( get_system_variable( e_special_var_storage ) ) );
+
+                  if( !is_json_output )
+                     response = default_storage;
+                  else
+                     response = "{\"storages\":[" + default_storage + "]}\n";
+               }
                else
                {
                   string script_name( c_web_session_script );
@@ -1449,7 +1475,21 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      bool allowed_command = true;
 
-                     bool is_user_info_request = ( request == c_storage_attribute_user_info );
+                     bool is_user_info_request = false;
+
+                     string storage_name;
+
+                     if( uri_suffix.find( c_cws_uri_suffix_storages_prefix ) == 0 )
+                     {
+                        is_user_info_request = true;
+
+                        storage_name = uri_suffix.substr( strlen( c_cws_uri_suffix_storages_prefix ) );
+
+                        // NOTE: Storage names begin with an upper case letter
+                        // (but by convention the URL will be all lower case).
+                        if( !storage_name.empty( ) )
+                           storage_name[ 0 ] = toupper( storage_name[ 0 ] );
+                     }
 
                      if( !request.empty( ) && !is_user_info_request )
                      {
@@ -1466,7 +1506,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         response = "[bad]";
                      else
                      {
-                        if( !request.empty( ) )
+                        if( !request.empty( ) || is_user_info_request )
                         {
                            if( is_user_info_request )
                            {
@@ -1477,7 +1517,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               else
                                  username = get_user_name( access );
 
-                              string storage_name( get_system_variable( e_special_var_storage ) );
+                              if( storage_name.empty( ) )
+                                 storage_name = get_system_variable( e_special_var_storage );
 
                               const section_node& root_node( get_meta_data( storage_name ).get_root_node( ) );
 
@@ -1515,8 +1556,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     user_field_id_description.erase( pos );
                               }
 
-                              request_and_args = "<web_session_user_fetch.cin " + user_class_id
-                               + ' ' + user_field_id_username + ' ' + username + ' ' + user_field_id_description;
+                              set_system_variable( web_storage_name, storage_name );
+
+                              request_and_args = "<web_session_user_fetch.cin " + user_class_id + ' '
+                               + user_field_id_username + ' ' + username + ' ' + user_field_id_description;
                            }
 
                            update_session_info( session, now );
@@ -1532,8 +1575,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                         for( size_t i = 0; i < 10; i++ )
                         {
-                           msleep( 100 );
-
                            if( file_exists( output_file_name ) )
                            {
                               response = buffer_file( output_file_name );
@@ -1547,6 +1588,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                               break;
                            }
+
+                           msleep( 100 );
                         }
                      }
                   }
