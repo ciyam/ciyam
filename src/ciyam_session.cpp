@@ -66,6 +66,7 @@
 #include "command_handler.h"
 #include "ciyam_core_files.h"
 #include "module_interface.h"
+#include "ciyam_web_session.h"
 #include "command_processor.h"
 #include "module_management.h"
 
@@ -8708,6 +8709,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             response += trace_level_names[ i ];
          }
+      }
+      else if( command == c_cmd_ciyam_session_system_web_sessions )
+      {
+         ostringstream osstr;
+
+         dump_session_info( osstr );
+
+         response = osstr.str( );
       }
       else if( command == c_cmd_ciyam_session_system_trace_message )
       {
