@@ -17,6 +17,7 @@ Error: Username must start with 'a-z' followed by 'a-z' or '0-9' characters (opt
 Activates the access token using the suggested 'test-1' username.
 Error: This web session is not valid (or has expired).
 quit
+access storage <name>
 create user [secret|suggested=[<pin>:][<username>]]
 create unlock-key
 delete user <pin>
@@ -24,6 +25,7 @@ delete stylesheet
 employ unlock-key <key>
 retain stylesheet
 review users
+review storages
 review stylesheet[s] [<name>]
 Session terminated.
 Now will list all standard access tokens and then remove the previously activated new user access token.
