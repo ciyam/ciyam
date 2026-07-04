@@ -124,16 +124,89 @@ set< string > g_cws_access_tokens;
 
 map< string, set< string > > g_cws_access_devices;
 
-map< string, unique_ptr< sio_graph > > g_application_meta_data;
+map< string, unique_ptr< sio_graph > > g_model_meta_data;
 
 inline string escaped_json( const string& s )
 {
    return escaped( s, "/\"", '\\', c_json_escape_specials );
 }
 
-inline size_t get_num_access_devices( const string& token )
+bool has_access_token( const string& access_token )
 {
-   return ( !g_cws_access_devices.count( token ) ? 0 : g_cws_access_devices[ token ].size( ) );
+   guard g( g_mutex );
+
+   return g_cws_access_tokens.count( access_token );
+}
+
+void add_access_token_if_new( const string& access_token )
+{
+   guard g( g_mutex );
+
+   if( !g_cws_access_tokens.count( access_token ) )
+   {
+      g_cws_access_tokens.insert( access_token );
+
+      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) added access " + access_token );
+   }
+}
+
+size_t get_num_access_devices( const string& access_token )
+{
+   guard g( g_mutex );
+
+   return ( !g_cws_access_devices.count( access_token ) ? 0 : g_cws_access_devices[ access_token ].size( ) );
+}
+
+bool has_access_device( const string& access_token, const string& device_token )
+{
+   guard g( g_mutex );
+
+   bool retval = false;
+
+   if( g_cws_access_devices.count( access_token ) )
+   {
+      if( g_cws_access_devices[ access_token ].count( device_token ) )
+         retval = true;
+   }
+
+   return retval;
+}
+
+bool has_added_access_device( const string& access_token, const string& device_token )
+{
+   guard g( g_mutex );
+
+   bool retval = false;
+
+   size_t num_devices = get_num_access_devices( access_token );
+
+   // NOTE: Need to check that the device has not already been added
+   // (in case concurrent threads called "has_access_device" and are
+   // now both calling this function to add the same device token).
+   if( ( num_devices < c_cws_max_devices )
+    && !g_cws_access_devices[ access_token ].count( device_token ) )
+   {
+      retval = true;
+
+      g_cws_access_devices[ access_token ].insert( device_token );
+
+      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) added device " + device_token + " for access " + access_token );
+   }
+
+   return retval;
+}
+
+void remove_access_device_if_present( const string& access_token, const string& device_token )
+{
+   guard g( g_mutex );
+
+   if( g_cws_access_devices.count( access_token )
+    && g_cws_access_devices[ access_token ].count( device_token ) )
+   {
+      g_cws_access_devices[ access_token ].erase( device_token );
+
+      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) removed device " + device_token + " for access " + access_token );
+   }
 }
 
 struct cws_active_command
@@ -462,6 +535,22 @@ bool has_web_session_access_token( const string& token,
    return retval;
 }
 
+const sio_graph& get_meta_data( const string& model_name )
+{
+   guard g( g_mutex );
+
+   if( !g_model_meta_data.count( model_name ) )
+   {
+      ifstream inpf( model_name + ".fcgi.sio" );
+
+      sio_reader reader( inpf );
+
+      g_model_meta_data.insert( make_pair( model_name, new sio_graph( reader ) ) );
+   }
+
+   return *g_model_meta_data[ model_name ];
+}
+
 }
 
 bool process_cws_request( http_request_type request_type, const string& uri_suffix,
@@ -610,8 +699,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    {
       bool has_access_file = has_web_session_access_token( access, access_file, passwd, pin );
 
-      if( has_access_file && pin.empty( ) && !g_cws_access_tokens.count( access ) )
-         g_cws_access_tokens.insert( access );
+      if( has_access_file && pin.empty( ) )
+         add_access_token_if_new( access );
 
       // NOTE: If is "admin locked" or the system identity is "unknown"
       // and the access token matches the "admin" PIN then will set the
@@ -716,7 +805,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       clear_key( seed );
       clear_key( access_seed );
    }
-   else if( !g_cws_access_tokens.count( access ) )
+   else if( !has_access_token( access ) )
       // FUTURE: This message should be handled as a server string message.
       error = "Web session access token '" + access + "' is invalid.";
    else if( uri_suffix == c_cws_uri_suffix_devices )
@@ -743,18 +832,14 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       if( !are_hex_nibbles( device, false ) || ( device.length( ) != c_cws_device_length ) )
          // FUTURE: This message should be handled as a server string message.
          error = "Invalid device identity '" + device + "'.";
-      else if( !g_cws_access_devices[ access ].count( device ) )
+      else if( !has_access_device( access, device ) )
       {
          if( !verify_whether_device_is_valid( device ) )
             // FUTURE: This message should be handled as a server string message.
             error = "Invalid device identity '" + device + "'.";
          else
          {
-            size_t num_devices = get_num_access_devices( access );
-
-            if( num_devices < c_cws_max_devices )
-               g_cws_access_devices[ access ].insert( device );
-            else
+            if( !has_added_access_device( access, device ) )
                // FUTURE: This message should be handled as a server string message.
                error = "Maximum devices have been created for web session access token '" + access + "'.";
          }
@@ -865,11 +950,13 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   set_system_variable( web_session_name, "" );
                   set_system_variable( web_started_name, "" );
 
+                  TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) finished "
+                   "session " + session + " with device " + device + " for access " + access );
+
                   // NOTE: In case the access device was a temporary
                   // one will remove it now (so it is recommended to
                   // always terminate each session explicitly).
-                  if( g_cws_access_devices.count( access ) )
-                     g_cws_access_devices[ access ].erase( device );
+                  remove_access_device_if_present( access, device );
                }
                else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_unlock_keys ) )
                {
@@ -1202,6 +1289,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   if( !running )
                   {
+                     TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) starting "
+                      "session " + session + " with device " + device + " for access " + access );
+
 #ifndef SSL_SUPPORT
                      string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<"
 #else
@@ -1274,17 +1364,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                               string storage_name( get_system_variable( e_special_var_storage ) );
 
-                              if( !g_application_meta_data.count( storage_name ) )
-                              {
-                                 ifstream inpf( storage_name + ".fcgi.sio" );
-
-                                 sio_reader reader( inpf );
-
-                                 g_application_meta_data.insert( make_pair( storage_name, new sio_graph( reader ) ) );
-                              }
-
-                              const section_node& root_node(
-                               g_application_meta_data[ storage_name ]->get_root_node( ) );
+                              const section_node& root_node( get_meta_data( storage_name ).get_root_node( ) );
 
                               string storage_user_info(
                                root_node.get_attribute_value( c_storage_attribute_user_info ) );
