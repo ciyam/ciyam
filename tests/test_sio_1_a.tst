@@ -6,7 +6,20 @@
 00001 views
 00002 lists
 
-> attribute user_info
+> sections -json
+[
+ {
+  "00000": "enums"
+ },
+ {
+  "00001": "views"
+ },
+ {
+  "00002": "lists"
+ }
+]
+
+> attributes user_info
 100100,User,100101,100103,100107
 
 > 
@@ -16,11 +29,31 @@
 > sections enums.enum
 00000 values
 
-> attribute enums.enum.values.*.data,name
+> attributes enums.enum.values.*.data,name
 data=0,name=enum_add_packages_none
 data=1,name=enum_add_packages_standard
 data=2,name=enum_add_packages_standard_user
 data=3,name=enum_add_packages_standard_user_group
+
+> attributes -json enums.enum.values.*.data,name
+[
+ {
+  "data": "0",
+  "name": "enum_add_packages_none"
+ },
+ {
+  "data": "1",
+  "name": "enum_add_packages_standard"
+ },
+ {
+  "data": "2",
+  "name": "enum_add_packages_standard_user"
+ },
+ {
+  "data": "3",
+  "name": "enum_add_packages_standard_user_group"
+ }
+]
 
 > output enums.enum.values
 <value/>
@@ -222,7 +255,7 @@ data=3,name=enum_add_packages_standard_user_group
  }
 ]
 }
-> attribute views.*.id,!class=$USER_CLASS_NAME
+> attributes views.*.id,!class=$USER_CLASS_NAME
 601020
 
 > 
@@ -391,7 +424,7 @@ data=3,name=enum_add_packages_standard_user_group
  }
 ]
 }
-> attributes
+> available
 id
 name
 perm
@@ -412,7 +445,30 @@ user_pin_value
 user_gpg_install
 home_info
 
-> attribute enums.*.id,name
+> available -json
+[
+ "id",
+ "name",
+ "perm",
+ "title",
+ "user_info",
+ "user_perm",
+ "user_extra",
+ "user_group",
+ "user_other",
+ "user_parent",
+ "user_active",
+ "user_select",
+ "user_slevel",
+ "user_unique",
+ "user_tz_name",
+ "user_has_auth",
+ "user_pin_value",
+ "user_gpg_install",
+ "home_info"
+]
+
+> attributes enums.*.id,name
 id=575,name=enum_add_packages
 id=906,name=enum_app_auto_days
 id=905,name=enum_app_generate_type
@@ -497,7 +553,7 @@ id=671,name=enum_view_field_trigger_option
 id=658,name=enum_view_pdf_view_type
 id=513,name=enum_zero_padding
 
-> attribute lists.*.id,name
+> attributes lists.*.id,name
 id=602900,name=602900_name
 id=601620,name=601620_name
 id=601300,name=601300_name
@@ -536,7 +592,7 @@ id=602620,name=602620_name
 id=602720,name=602720_name
 id=601100,name=601100_name
 
-> attribute lists.*.id,!type=admin
+> attributes lists.*.id,!type=admin
 603800
 603900
 603960
@@ -546,7 +602,7 @@ id=601100,name=601100_name
 601000
 601100
 
-> attribute lists.*.id,name,!type=admin|group
+> attributes lists.*.id,name,!type=admin|group
 id=602900,name=602900_name
 id=601300,name=601300_name
 id=603800,name=603800_name
@@ -561,7 +617,7 @@ id=601220,name=601220_name
 id=601000,name=601000_name
 id=601100,name=601100_name
 
-> attribute views.*.id,name
+> attributes views.*.id,name
 id=602910,name=602910_name
 id=601610,name=601610_name
 id=601310,name=601310_name
