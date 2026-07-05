@@ -1,0 +1,30 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+ERROR=
+;
+.session_variable @storage_var_name
+STORAGE_VAR_NAME=$OUTPUT
+;
+; NOTE: If no specific storage provided
+; then instead uses the system default.
+@ifndef $STORAGE_VAR_NAME
+STORAGE_VAR_NAME=@storage
+@endif
+;
+.system_variable $STORAGE_VAR_NAME
+STORAGE=$OUTPUT
+;
+.storage_info -name
+@ifneq "$OUTPUT" "$STORAGE"
+@ifneq "$OUTPUT" "<none>"
+.storage_term
+@endif
+.storage_init $STORAGE
+@endif
+;
+@ifndef $ERROR
+module_list
+@endif
