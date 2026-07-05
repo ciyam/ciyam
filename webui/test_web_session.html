@@ -97,7 +97,7 @@
    const users_delete_cmd = "users|delete";
    const users_review_cmd = "users|review";
 
-   const storages_access_cmd = "storages|access";
+   const storages_attach_cmd = "storages|attach";
    const storages_review_cmd = "storages|review";
 
    const stylesheets_delete_cmd = "stylesheets|delete";
@@ -107,6 +107,8 @@
 
    const unlock_keys_create_cmd = "unlock-keys|create";
    const unlock_keys_employ_cmd = "unlock-keys|employ";
+
+   const storage_modules_review_cmd = "storage-modules|review";
 
    const error_prefix = "Error: ";
 
@@ -610,8 +612,9 @@
             else if( ( first == "new" )
              || ( first == "create" ) )
                suffix = "|create";
-            else if( first == "access" )
-               suffix = "|access";
+            else if( ( first == "access" )
+             || ( first == "attach" ) )
+               suffix = "|attach";
             else if( first == "employ" )
                suffix = "|employ";
             else if( ( first == "save" )
@@ -706,13 +709,14 @@
          var pos = request.indexOf( " " );
 
          if( pos > 0 )
-            var cmd = request.substring( 0, pos );
+            cmd = request.substring( 0, pos );
 
          var request_type = "GET";
 
          if( cmd == stylesheets_retain_cmd )
             request_type = "PUT";
-         else if( ( cmd == "" ) || ( cmd == users_create_cmd )
+         else if( ( cmd == "" )
+          || ( cmd == users_create_cmd ) || ( cmd == storages_attach_cmd )
           || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd ) )
             request_type = "POST";
          else if( ( cmd == users_delete_cmd ) || ( cmd == stylesheets_delete_cmd ) )
@@ -739,8 +743,9 @@
          }
 
          if( ( cmd == users_create_cmd ) || ( cmd == users_delete_cmd )
-          || ( cmd == storages_access_cmd ) || ( cmd == storages_review_cmd )
-          || ( cmd == unlock_keys_employ_cmd ) || ( cmd == stylesheets_review_cmd ) )
+          || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
+          || ( cmd == unlock_keys_employ_cmd ) || ( cmd == stylesheets_review_cmd )
+          || ( cmd == storage_modules_review_cmd ) )
          {
             if( cmd == users_create_cmd )
                has_cmd_options = true;
