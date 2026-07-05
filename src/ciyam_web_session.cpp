@@ -97,26 +97,46 @@ const char* const c_cws_uri_suffix_sessions = "sessions";
 const char* const c_cws_uri_suffix_storages = "storages";
 const char* const c_cws_uri_suffix_stylesheets = "stylesheets";
 const char* const c_cws_uri_suffix_unlock_keys = "unlock-keys";
+const char* const c_cws_uri_suffix_storage_modules = "storage-modules";
 
 const char* const c_cws_uri_suffix_users_prefix = "users/";
 const char* const c_cws_uri_suffix_sessions_prefix = "sessions/";
 const char* const c_cws_uri_suffix_storages_prefix = "storages/";
 const char* const c_cws_uri_suffix_stylesheets_prefix = "stylesheets/";
 const char* const c_cws_uri_suffix_unlock_keys_prefix = "unlock-keys/";
+const char* const c_cws_uri_suffix_storage_modules_prefix = "storage-modules/";
+
+const char* const c_cws_uri_suffix_enums_extra = "/enums";
+const char* const c_cws_uri_suffix_lists_extra = "/lists";
+const char* const c_cws_uri_suffix_views_extra = "/views";
+
+const char* const c_cws_uri_suffix_enums_extra_prefix = "/enums/";
+const char* const c_cws_uri_suffix_lists_extra_prefix = "/lists/";
+const char* const c_cws_uri_suffix_views_extra_prefix = "/views/";
 
 const char* const c_cws_request_users_create_op_secret = "secret";
 const char* const c_cws_request_users_create_opt_suggested_prefix = "suggested=";
 
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax.
-const char* const c_cws_help_request_output = "quit\naccess storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
- "create unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview users\nreview storages\nreview stylesheet[s] [<name>]";
+const char* const c_cws_help_request_output = "quit\nattach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
+ "create unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview users\nreview storages\n"
+ "review stylesheet[s] [<name>]\nreview storage-modules [<id>/<items>[/<item_id>]]";
 
 const char* const c_web_session_script = "web_session.cin";
 
 const char* const c_web_session_none_response = "[none]";
 const char* const c_web_session_okay_response = "[okay]";
 
+const char* const c_storage_attribute_id = "id";
 const char* const c_storage_attribute_user_info = "user_info";
+
+const char* const c_storage_module_enums_id_prefix = "enums.id=";
+const char* const c_storage_module_lists_id_prefix = "lists.id=";
+const char* const c_storage_module_views_id_prefix = "views.id=";
+
+const char* const c_storage_module_enums_available_query = "enums.*.id,name";
+const char* const c_storage_module_lists_available_query = "lists.*.id,name,class";
+const char* const c_storage_module_views_available_query = "views.*.id,name,class";
 
 mutex g_mutex;
 
@@ -147,6 +167,23 @@ map< string, unique_ptr< session_info > > g_session_info;
 inline string escaped_json( const string& s )
 {
    return escaped( s, "/\"", '\\', c_json_escape_specials );
+}
+
+string as_json_array( const string& name, const vector< string >& array )
+{
+   string retval( "{\n \"" + name + "\":\n [\n" );
+
+   for( size_t i = 0; i < array.size( ); i++ )
+   {
+      if( i > 0 )
+         retval += ',';
+
+      retval += "  \"" + escaped_json( array[ i ] ) + '"';
+   }
+
+   retval += "\n ]\n}";
+
+   return retval;
 }
 
 bool has_access_token( const string& access_token )
@@ -964,11 +1001,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
          string web_lock_name( var_prefix + access + '.' + device + c_web_lock_suffix );
 
-         string web_command_name( var_prefix + access + '.' + device + c_web_command_suffix );
-         string web_message_name( var_prefix + access + '.' + device + c_web_message_suffix );
-         string web_session_name( var_prefix + access + '.' + device + c_web_session_suffix );
-         string web_started_name( var_prefix + access + '.' + device + c_web_started_suffix );
-         string web_storage_name( var_prefix + access + '.' + device + c_web_storage_suffix );
+         string web_command_var_name( var_prefix + access + '.' + device + c_web_command_suffix );
+         string web_message_var_name( var_prefix + access + '.' + device + c_web_message_suffix );
+         string web_session_var_name( var_prefix + access + '.' + device + c_web_session_suffix );
+         string web_started_var_name( var_prefix + access + '.' + device + c_web_started_suffix );
+         string web_storage_var_name( var_prefix + access + '.' + device + c_web_storage_suffix );
 
          int64_t now = unix_time( );
 
@@ -1017,7 +1054,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                string new_session( digest.substr( 0, c_cws_session_length ) );
 
-               string old_session( get_system_variable( web_session_name ) );
+               string old_session( get_system_variable( web_session_var_name ) );
 
                if( !old_session.empty( ) && ( new_session != old_session ) )
                {
@@ -1027,19 +1064,19 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                    "session " + old_session + " with device " + device + " for access " + access );
                }
 
-               set_system_variable( web_session_name, new_session );
+               set_system_variable( web_session_var_name, new_session );
 
                init_session_info( access, device, new_session, now );
 
                // NOTE: This "command" will force the web session script to
                // check that the session identity it was given when started
                // matches what has just been set (and to terminate if not).
-               set_system_variable( web_command_name, g_web_session_check );
+               set_system_variable( web_command_var_name, g_web_session_check );
             }
          }
          else
          {
-            if( session != get_system_variable( web_session_name ) )
+            if( session != get_system_variable( web_session_var_name ) )
                // FUTURE: This message should be handled as a server string message.
                error = "This web session is not valid (or has expired).";
             else
@@ -1049,9 +1086,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   string when_locked( get_system_variable( web_lock_name ) );
 
                   set_system_variable( web_lock_name, "" );
-                  set_system_variable( web_message_name, "" );
+                  set_system_variable( web_message_var_name, "" );
 
-                  set_system_variable( web_started_name, when_locked );
+                  set_system_variable( web_started_var_name, when_locked );
                }
 
                if( uri_suffix == c_cws_uri_suffix_help )
@@ -1072,10 +1109,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   else
                      response = "{\"message\":\"Session terminated.\"}\n";
 
-                  set_system_variable( web_message_name, "" );
-                  set_system_variable( web_session_name, "" );
-                  set_system_variable( web_started_name, "" );
-                  set_system_variable( web_storage_name, "" );
+                  set_system_variable( web_message_var_name, "" );
+                  set_system_variable( web_session_var_name, "" );
+                  set_system_variable( web_started_var_name, "" );
+                  set_system_variable( web_storage_var_name, "" );
 
                   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) finished "
                    "session " + session + " with device " + device + " for access " + access );
@@ -1107,6 +1144,121 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         response = unlock_key;
                      else
                         response = "{\"unlock_key\":\"" + escaped_json( unlock_key ) + "\"}\n";
+                  }
+               }
+               else if( is_get_request
+                && ( uri_suffix == c_cws_uri_suffix_storage_modules )
+                && get_system_variable( web_storage_var_name ).empty( ) )
+               {
+                  // FUTURE: This message should be handled as a server string message.
+                  error = "No storage is currently attached to this session.";
+               }
+               else if( is_get_request
+                && ( uri_suffix.find( c_cws_uri_suffix_storage_modules_prefix ) == 0 ) )
+               {
+                  string storage_name( get_system_variable( web_storage_var_name ) );
+
+                  if( storage_name.empty( ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "No storage is currently attached to this session.";
+                  else
+                  {
+                     string extra( uri_suffix.substr( strlen( c_cws_uri_suffix_storage_modules_prefix ) ) );
+
+                     string::size_type pos = extra.find( '/' );
+
+                     if( pos != string::npos )
+                     {
+                        string module_id( extra.substr( 0, pos ) );
+
+                        extra.erase( 0, pos );
+
+                        const sio_graph& graph( get_meta_data( storage_name ) );
+
+                        const section_node& root_node( graph.get_root_node( ) );
+
+                        string storage_module_id(
+                         root_node.get_attribute_value( c_storage_attribute_id ) );
+
+                        if( module_id != storage_module_id )
+                           // FUTURE: This message should be handled as a server string message.
+                           error = "Unknonwn module id '" + module_id + "' for storage '" + storage_name + "'.";
+                        else
+                        {
+                           if( extra == c_cws_uri_suffix_enums_extra )
+                              response = get_attributes_for_name_query(
+                               root_node, c_storage_module_enums_available_query, is_json_output );
+                           else if( extra.find( c_cws_uri_suffix_enums_extra_prefix ) == 0 )
+                           {
+                              extra = extra.substr( strlen( c_cws_uri_suffix_enums_extra_prefix ) );
+
+                              extra = c_storage_module_enums_id_prefix + extra;
+
+                              ostringstream osstr;
+
+                              if( !is_json_output )
+                                 write_graph( graph, &osstr, &extra );
+                              else
+                              {
+                                 const section_node* p_section_node
+                                  = get_section_node_from_path( root_node, extra );
+
+                                 convert_sio_to_json( *p_section_node, osstr );
+                              }
+
+                              response = osstr.str( );
+                           }
+                           else if( extra == c_cws_uri_suffix_lists_extra )
+                              response = get_attributes_for_name_query(
+                               root_node, c_storage_module_lists_available_query, is_json_output );
+                           else if( extra.find( c_cws_uri_suffix_lists_extra_prefix ) == 0 )
+                           {
+                              extra = extra.substr( strlen( c_cws_uri_suffix_lists_extra_prefix ) );
+
+                              extra = c_storage_module_lists_id_prefix + extra;
+
+                              ostringstream osstr;
+
+                              if( !is_json_output )
+                                 write_graph( graph, &osstr, &extra );
+                              else
+                              {
+                                 const section_node* p_section_node
+                                  = get_section_node_from_path( root_node, extra );
+
+                                 convert_sio_to_json( *p_section_node, osstr );
+                              }
+
+                              response = osstr.str( );
+                           }
+                           else if( extra == c_cws_uri_suffix_views_extra )
+                              response = get_attributes_for_name_query(
+                               root_node, c_storage_module_views_available_query, is_json_output );
+                           else if( extra.find( c_cws_uri_suffix_views_extra_prefix ) == 0 )
+                           {
+                              extra = extra.substr( strlen( c_cws_uri_suffix_views_extra_prefix ) );
+
+                              extra = c_storage_module_views_id_prefix + extra;
+
+                              ostringstream osstr;
+
+                              if( !is_json_output )
+                                 write_graph( graph, &osstr, &extra );
+                              else
+                              {
+                                 const section_node* p_section_node
+                                  = get_section_node_from_path( root_node, extra );
+
+                                 convert_sio_to_json( *p_section_node, osstr );
+                              }
+
+                              response = osstr.str( );
+                           }
+
+                           if( !response.empty( ) )
+                              found = true;
+                        }
+                     }
                   }
                }
                else if( is_post_request
@@ -1217,7 +1369,13 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      if( !is_json_output )
                         response = all_stylesheets;
                      else
-                        response = "{\"all_stylesheets\":\"" + escaped_json( all_stylesheets ) + "\"}\n";
+                     {
+                        vector< string > stylesheets;
+
+                        split( all_stylesheets, stylesheets, ' ' );
+
+                        response = as_json_array( "all_stylesheets", stylesheets );
+                     }
                   }
                }
                else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_stylesheets ) )
@@ -1426,7 +1584,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   string script_name( c_web_session_script );
 
-                  bool running = has_system_variable( web_message_name );
+                  bool running = has_system_variable( web_message_var_name );
 
                   if( !running )
                   {
@@ -1453,7 +1611,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   // an error if it's not found).
                   for( size_t i = 0; i < 9; i++ )
                   {
-                     running = has_system_variable( web_message_name );
+                     running = has_system_variable( web_message_var_name );
 
                      if( running )
                         break;
@@ -1463,8 +1621,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   if( !running )
                   {
-                     set_system_variable( web_session_name, "" );
-                     set_system_variable( web_started_name, "" );
+                     set_system_variable( web_session_var_name, "" );
+                     set_system_variable( web_started_var_name, "" );
 
                      // FUTURE: This message should be handled as a server string message.
                      error = "Was unable to start a web session with access token '" + access + "'.";
@@ -1476,6 +1634,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      bool allowed_command = true;
 
                      bool is_user_info_request = false;
+                     bool is_module_info_request = false;
 
                      string storage_name;
 
@@ -1489,6 +1648,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         // (but by convention the URL will be all lower case).
                         if( !storage_name.empty( ) )
                            storage_name[ 0 ] = toupper( storage_name[ 0 ] );
+                     }
+                     else if( uri_suffix == c_cws_uri_suffix_storage_modules )
+                     {
+                        is_module_info_request = true;
                      }
 
                      if( !request.empty( ) && !is_user_info_request )
@@ -1506,7 +1669,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         response = "[bad]";
                      else
                      {
-                        if( !request.empty( ) || is_user_info_request )
+                        if( !request.empty( ) || is_user_info_request || is_module_info_request )
                         {
                            if( is_user_info_request )
                            {
@@ -1556,21 +1719,23 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     user_field_id_description.erase( pos );
                               }
 
-                              set_system_variable( web_storage_name, storage_name );
+                              set_system_variable( web_storage_var_name, storage_name );
 
                               request_and_args = "<web_session_user_fetch.cin " + user_class_id + ' '
                                + user_field_id_username + ' ' + username + ' ' + user_field_id_description;
                            }
+                           else if( is_module_info_request )
+                              request_and_args = "<web_session_modules_fetch.cin";
 
                            update_session_info( session, now );
 
-                           set_system_variable( web_command_name, request_and_args );
+                           set_system_variable( web_command_var_name, request_and_args );
                         }
                         else
                         {
                            update_session_info( session, now );
 
-                           set_system_variable( web_command_name, "variable " + web_message_name );
+                           set_system_variable( web_command_var_name, "variable " + web_message_var_name );
                         }
 
                         for( size_t i = 0; i < 10; i++ )
@@ -1590,6 +1755,15 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            }
 
                            msleep( 100 );
+                        }
+
+                        if( !response.empty( ) && is_json_output && is_module_info_request )
+                        {
+                           vector< string > modules;
+
+                           split( response, modules, '\n' );
+
+                           response = as_json_array( "all_modules", modules );
                         }
                      }
                   }
