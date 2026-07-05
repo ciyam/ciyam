@@ -658,7 +658,8 @@ sio_writer::sio_writer( ostream& os, vector< string >* p_initial_comments )
 
 sio_writer::sio_writer( ostream& os, sio_reader& reader )
  :
- os( os )
+ os( os ),
+ can_write_attribute( false )
 {
    while( reader )
       put_line( reader.get_line( ) );
@@ -666,7 +667,8 @@ sio_writer::sio_writer( ostream& os, sio_reader& reader )
 
 sio_writer::sio_writer( ostream& os, const sio_graph& graph, string* p_path_to_section )
  :
- os( os )
+ os( os ),
+ can_write_attribute( false )
 {
    if( graph.empty( ) )
       throw runtime_error( "unexpected empty graph" );
@@ -677,8 +679,12 @@ sio_writer::sio_writer( ostream& os, const sio_graph& graph, string* p_path_to_s
    if( !p_path_to_section || p_path_to_section->empty( ) )
       write_section_attributes( *this, graph.get_root_node( ) );
    else
+   {
+      can_write_attribute = true;
+
       write_section_attributes( *this,
        *get_section_node_from_path( graph.get_root_node( ), *p_path_to_section ) );
+   }
 
    if( !p_path_to_section || p_path_to_section->empty( ) )
       finish_sections( );
