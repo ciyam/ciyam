@@ -48,6 +48,7 @@ It should be noted that comments are not permitted after </sio> (but can occur a
 
 const char c_basic_prefix = '<';
 const char c_basic_suffix = '>';
+
 const char c_extra_modifier = '/';
 
 const char* const c_root_section = "sio";
@@ -216,7 +217,7 @@ bool process_json( string& json, sio_writer& sio, size_t depth = 0 )
       if( json.length( ) < 5 )
          return false;
 
-      if( json[ 0 ] != '{' || json[ 1 ] != '"' )
+      if( ( json[ 0 ] != '{' ) || ( json[ 1 ] != '"' ) )
          return false;
 
       json.erase( 0, 2 );
@@ -278,7 +279,7 @@ bool process_json( string& json, sio_writer& sio, size_t depth = 0 )
       {
          value = extract_value( json );
 
-         if( json.empty( ) || json[ 0 ] != '}' )
+         if( json.empty( ) || ( json[ 0 ] != '}' ) )
             return false;
 
          sio.write_attribute( name, value );
@@ -939,7 +940,7 @@ const section_node* get_section_node_from_path(
    return p_section_node;
 }
 
-string get_node_attributes( const section_node& node, const string& attribute_list )
+string get_node_attributes( const section_node& node, const string& attribute_list, bool use_json )
 {
    string retval;
 
@@ -1014,12 +1015,25 @@ string get_node_attributes( const section_node& node, const string& attribute_li
                split( check_value, check_options, '|' );
          }
 
-         if( is_multi && !hidden.count( i ) )
+         if( ( is_multi || use_json ) && !hidden.count( i ) )
          {
             if( i > 0 )
+            {
                retval += ',';
 
-            retval += ( next + '=' );
+               if( use_json )
+                  retval += '\n';
+            }
+
+            if( use_json )
+               retval += "  \"";
+
+            retval += next;
+
+            if( !use_json )
+               retval += '=';
+            else
+               retval += "\": ";
          }
 
          if( node.has_attribute( next ) )
@@ -1045,7 +1059,15 @@ string get_node_attributes( const section_node& node, const string& attribute_li
             }
 
             if( !hidden.count( i ) )
+            {
+               if( use_json )
+                  retval += "\"";
+
                retval += value;
+
+               if( use_json )
+                  retval += "\"";
+            }
          }
       }
    }
@@ -1053,7 +1075,7 @@ string get_node_attributes( const section_node& node, const string& attribute_li
    return retval;
 }
 
-string get_attributes_for_name_query( const section_node& node, const string& name_info )
+string get_attributes_for_name_query( const section_node& node, const string& name_info, bool use_json )
 {
    string output, section;
 
@@ -1101,14 +1123,25 @@ string get_attributes_for_name_query( const section_node& node, const string& na
    {
       while( p_section_node )
       {
-         string next( get_node_attributes( *p_section_node, name ) );
+         string next( get_node_attributes( *p_section_node, name, use_json ) );
 
          if( !next.empty( ) )
          {
             if( !output.empty( ) )
+            {
+               if( use_json )
+                  output += ',';
+
                output += '\n';
+            }
+
+            if( use_json )
+               output += " {\n";
 
             output += next;
+
+            if( use_json )
+               output += "\n }";
          }
 
          if( !is_range )
@@ -1118,6 +1151,9 @@ string get_attributes_for_name_query( const section_node& node, const string& na
           *p_start_node, section + to_string( ++range_offset ), true );
       }
    }
+
+   if( use_json && !output.empty( ) )
+      output = "[\n" + output + "\n]";
 
    return output;
 }

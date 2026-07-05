@@ -233,9 +233,9 @@ class section_node
 const section_node* get_section_node_from_path(
  const section_node& root_node, const std::string& path, bool no_throw = false );
 
-std::string get_node_attributes( const section_node& node, const std::string& attribute_list );
+std::string get_node_attributes( const section_node& node, const std::string& attribute_list, bool use_json = false );
 
-std::string get_attributes_for_name_query( const section_node& node, const std::string& name_info );
+std::string get_attributes_for_name_query( const section_node& node, const std::string& name_info, bool use_json = false );
 
 class sio_graph
 {
