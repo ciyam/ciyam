@@ -1,7 +1,7 @@
 load "load sio file" <val//name>
 save "save sio file" <val//name>
-output "output graph (starting at an optional path)" [<opt/-json/json>][<val//path>]
-sections "output node's child sections (for an optional path)" [<val//path>]
-attribute "output an (optionally path prefixed) node's attribute" <val//name>
-attributes "output all node attributes (for an optional path)" [<val//path>]
+output "output graph starting at an optional path" [<opt/-json/json>][<val//path>]
+sections "output all child sections for an optional path" [<opt/-json/json>][<val//path>]
+available "output all available node attributes for an optional path" [<opt/-json/json>][<val//path>]
+attributes "output optionally path prefixed node attributes" [<opt/-json/json>]<list//names>
 exit "exit program"

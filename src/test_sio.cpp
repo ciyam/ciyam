@@ -148,6 +148,7 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_test_sio_sections )
       {
+         bool json = has_parm_val( parameters, c_cmd_test_sio_sections_json );
          string path( get_parm_val( parameters, c_cmd_test_sio_sections_path ) );
 
          if( up_sio_graph.get( ) )
@@ -162,13 +163,29 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
             {
                size_t num_children = p_section_node->get_num_child_nodes( );
 
+               if( json )
+                  output += "[\n";
+
                for( size_t i = 0; i < num_children; i++ )
                {
-                  if( !output.empty( ) )
-                     output += '\n';
+                  if( i > 0 )
+                  {
+                     if( json )
+                        output += ',';
 
-                  output += to_comparable_string( i, false, 5 ) + ' ' + p_section_node->get_child_node( i ).get_name( );
+                     output += '\n';
+                  }
+
+                  if( !json )
+                     output += to_comparable_string( i, false, 5 ) + ' ' + p_section_node->get_child_node( i ).get_name( );
+                  else
+                  {
+                     output += " {\n  \"" + to_comparable_string( i, false, 5 ) + "\": \"" + p_section_node->get_child_node( i ).get_name( ) + "\"\n }";
+                  }
                }
+
+               if( json )
+                  output += "\n]";
             }
 
             if( !output.empty( ) )
@@ -179,27 +196,10 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
             }
          }
       }
-      else if( command == c_cmd_test_sio_attribute )
+      else if( command == c_cmd_test_sio_available )
       {
-         string name( get_parm_val( parameters, c_cmd_test_sio_attribute_name ) );
-
-         if( !up_sio_graph.get( ) )
-            cerr << "no sio content is available" << endl;
-         else
-         {
-            string output( get_attributes_for_name_query( up_sio_graph->get_root_node( ), name ) );
-
-            string::size_type pos = output.find( '\n' );
-
-            set_environment_variable( c_env_var_output, output.substr( 0, pos ) );
-
-            if( !output.empty( ) )
-               cout << output << endl;
-         }
-      }
-      else if( command == c_cmd_test_sio_attributes )
-      {
-         string path( get_parm_val( parameters, c_cmd_test_sio_attributes_path ) );
+         bool json = has_parm_val( parameters, c_cmd_test_sio_available_json );
+         string path( get_parm_val( parameters, c_cmd_test_sio_available_path ) );
 
          if( up_sio_graph.get( ) )
          {
@@ -213,18 +213,54 @@ void test_sio_command_functor::operator ( )( const string& command, const parame
 
                size_t num_attributes = p_section_node->get_num_attributes( );
 
+               if( json )
+                  output = "[\n";
+
                for( size_t i = 0; i < num_attributes; i++ )
                {
-                  if( !output.empty( ) )
+                  if( i > 0 )
+                  {
+                     if( json )
+                        output += ',';
+
                      output += '\n';
+                  }
+
+                  if( json )
+                     output += " \"";
 
                   output += p_section_node->get_attribute( i ).get_name( );
+
+                  if( json )
+                     output += '"';
                }
+
+               if( json )
+                  output += "\n]";
 
                cout << output << endl;
 
                set_environment_variable( c_env_var_output, output );
             }
+         }
+      }
+      else if( command == c_cmd_test_sio_attributes )
+      {
+         bool json = has_parm_val( parameters, c_cmd_test_sio_attributes_json );
+         string names( get_parm_val( parameters, c_cmd_test_sio_attributes_names ) );
+
+         if( !up_sio_graph.get( ) )
+            cerr << "no sio content is available" << endl;
+         else
+         {
+            string output( get_attributes_for_name_query( up_sio_graph->get_root_node( ), names, json ) );
+
+            string::size_type pos = output.find( '\n' );
+
+            set_environment_variable( c_env_var_output, output.substr( 0, pos ) );
+
+            if( !output.empty( ) )
+               cout << output << endl;
          }
       }
       else if( command == c_cmd_test_sio_exit )
