@@ -134,9 +134,11 @@ const char* const c_storage_module_enums_id_prefix = "enums.id=";
 const char* const c_storage_module_lists_id_prefix = "lists.id=";
 const char* const c_storage_module_views_id_prefix = "views.id=";
 
-const char* const c_storage_module_enums_available_query = "enums.*.id,name";
-const char* const c_storage_module_lists_available_query = "lists.*.id,name,class";
-const char* const c_storage_module_views_available_query = "views.*.id,name,class";
+const char* const c_storage_module_enums_available_query = "enums.*.@id,name";
+const char* const c_storage_module_lists_available_admin_query = "lists.*.@id,name,class";
+const char* const c_storage_module_views_available_admin_query = "views.*.@id,name,class";
+const char* const c_storage_module_lists_available_non_admin_query = "lists.*.@id,name,class,~!type=admin";
+const char* const c_storage_module_views_available_non_admin_query = "views.*.@id,name,class,~!type=admin";
 
 mutex g_mutex;
 
@@ -1007,6 +1009,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          string web_started_var_name( var_prefix + access + '.' + device + c_web_started_suffix );
          string web_storage_var_name( var_prefix + access + '.' + device + c_web_storage_suffix );
 
+         bool is_admin = ( access == g_cws_admin_token );
+
          int64_t now = unix_time( );
 
          if( is_post_request && ( uri_suffix == c_cws_uri_suffix_sessions ) )
@@ -1209,8 +1213,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               response = osstr.str( );
                            }
                            else if( extra == c_cws_uri_suffix_lists_extra )
-                              response = get_attributes_for_name_query(
-                               root_node, c_storage_module_lists_available_query, is_json_output );
+                           {
+                              string query;
+
+                              if( is_admin )
+                                 query = c_storage_module_lists_available_admin_query;
+                              else
+                                 query = c_storage_module_lists_available_non_admin_query;
+
+                              response = get_attributes_for_name_query( root_node, query, is_json_output );
+                           }
                            else if( extra.find( c_cws_uri_suffix_lists_extra_prefix ) == 0 )
                            {
                               extra = extra.substr( strlen( c_cws_uri_suffix_lists_extra_prefix ) );
@@ -1232,8 +1244,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               response = osstr.str( );
                            }
                            else if( extra == c_cws_uri_suffix_views_extra )
-                              response = get_attributes_for_name_query(
-                               root_node, c_storage_module_views_available_query, is_json_output );
+                           {
+                              string query;
+
+                              if( is_admin )
+                                 query = c_storage_module_views_available_admin_query;
+                              else
+                                 query = c_storage_module_views_available_non_admin_query;
+
+                              response = get_attributes_for_name_query( root_node, query, is_json_output );
+                           }
                            else if( extra.find( c_cws_uri_suffix_views_extra_prefix ) == 0 )
                            {
                               extra = extra.substr( strlen( c_cws_uri_suffix_views_extra_prefix ) );
