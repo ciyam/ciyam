@@ -135,10 +135,10 @@ const char* const c_storage_module_lists_id_prefix = "lists.id=";
 const char* const c_storage_module_views_id_prefix = "views.id=";
 
 const char* const c_storage_module_enums_available_query = "enums.*.@id,name";
-const char* const c_storage_module_lists_available_admin_query = "lists.*.@id,name,class";
-const char* const c_storage_module_views_available_admin_query = "views.*.@id,name,class";
-const char* const c_storage_module_lists_available_non_admin_query = "lists.*.@id,name,class,~!type=admin";
-const char* const c_storage_module_views_available_non_admin_query = "views.*.@id,name,class,~!type=admin";
+const char* const c_storage_module_lists_available_admin_query = "lists.*.@id,@cid,name,class";
+const char* const c_storage_module_views_available_admin_query = "views.*.@id,@cid,name,class";
+const char* const c_storage_module_lists_available_non_admin_query = "lists.*.@id,@cid,name,class,~!type=admin";
+const char* const c_storage_module_views_available_non_admin_query = "views.*.@id,@cid,name,class,~!type=admin";
 
 mutex g_mutex;
 
