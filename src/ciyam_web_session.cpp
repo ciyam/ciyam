@@ -1180,7 +1180,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         string storage_module_id(
                          root_node.get_attribute_value( c_storage_attribute_id ) );
 
-                        if( module_id != storage_module_id )
+                        if( storage_module_id != upper( module_id ) )
                            // FUTURE: This message should be handled as a server string message.
                            error = "Unknonwn module id '" + module_id + "' for storage '" + storage_name + "'.";
                         else
@@ -1192,7 +1192,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            {
                               extra = extra.substr( strlen( c_cws_uri_suffix_enums_extra_prefix ) );
 
-                              extra = c_storage_module_enums_id_prefix + extra;
+                              extra = c_storage_module_enums_id_prefix + upper( extra );
 
                               ostringstream osstr;
 
@@ -1215,7 +1215,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            {
                               extra = extra.substr( strlen( c_cws_uri_suffix_lists_extra_prefix ) );
 
-                              extra = c_storage_module_lists_id_prefix + extra;
+                              extra = c_storage_module_lists_id_prefix + upper( extra );
 
                               ostringstream osstr;
 
@@ -1238,7 +1238,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            {
                               extra = extra.substr( strlen( c_cws_uri_suffix_views_extra_prefix ) );
 
-                              extra = c_storage_module_views_id_prefix + extra;
+                              extra = c_storage_module_views_id_prefix + upper( extra );
 
                               ostringstream osstr;
 
@@ -1650,9 +1650,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            storage_name[ 0 ] = toupper( storage_name[ 0 ] );
                      }
                      else if( uri_suffix == c_cws_uri_suffix_storage_modules )
-                     {
                         is_module_info_request = true;
-                     }
 
                      if( !request.empty( ) && !is_user_info_request )
                      {
