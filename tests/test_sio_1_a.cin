@@ -13,7 +13,7 @@ output enums.enum.values
 output -json enums.enum.values
 output lists.cid=$USER_CLASS_ID
 output -json lists.cid=$USER_CLASS_ID
-attributes views.*.id,!class=$USER_CLASS_NAME
+attributes views.*.id,~class=$USER_CLASS_NAME
 VIEW_ID=$OUTPUT
 output views.id=$VIEW_ID
 output -json views.id=$VIEW_ID
@@ -21,7 +21,11 @@ available
 available -json
 attributes enums.*.id,name
 attributes lists.*.id,name
-attributes lists.*.id,!type=admin
-attributes lists.*.id,name,!type=admin|group
+attributes lists.*.id,~type=admin
+attributes lists.*.id,~!type=admin
+attributes lists.*.id,name,~type=admin|group
+attributes lists.*.id,name,~!type=admin|group
 attributes views.*.id,name
+attributes views.*.id,name,class
+attributes views.*.id,name,@class
 exit

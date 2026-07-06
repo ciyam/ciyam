@@ -255,7 +255,7 @@ data=3,name=enum_add_packages_standard_user_group
  }
 ]
 }
-> attributes views.*.id,!class=$USER_CLASS_NAME
+> attributes views.*.id,~class=$USER_CLASS_NAME
 601020
 
 > 
@@ -592,7 +592,7 @@ id=602620,name=602620_name
 id=602720,name=602720_name
 id=601100,name=601100_name
 
-> attributes lists.*.id,!type=admin
+> attributes lists.*.id,~type=admin
 603800
 603900
 603960
@@ -602,7 +602,38 @@ id=601100,name=601100_name
 601000
 601100
 
-> attributes lists.*.id,name,!type=admin|group
+> attributes lists.*.id,~!type=admin
+602900
+601620
+601300
+601420
+601720
+601820
+603210
+603310
+602810
+602860
+601500
+601920
+602020
+602950
+601520
+601550
+602260
+602120
+602220
+602320
+602321
+602530
+602540
+602550
+602420
+601220
+601010
+602620
+602720
+
+> attributes lists.*.id,name,~type=admin|group
 id=602900,name=602900_name
 id=601300,name=601300_name
 id=603800,name=603800_name
@@ -616,6 +647,32 @@ id=602410,name=602410_name
 id=601220,name=601220_name
 id=601000,name=601000_name
 id=601100,name=601100_name
+
+> attributes lists.*.id,name,~!type=admin|group
+id=601620,name=601620_name
+id=601420,name=601420_name
+id=601720,name=601720_name
+id=601820,name=601820_name
+id=603210,name=603210_name
+id=603310,name=603310_name
+id=602810,name=602810_name
+id=602860,name=602860_name
+id=601920,name=601920_name
+id=602020,name=602020_name
+id=602950,name=602950_name
+id=601520,name=601520_name
+id=601550,name=601550_name
+id=602120,name=602120_name
+id=602220,name=602220_name
+id=602320,name=602320_name
+id=602321,name=602321_name
+id=602530,name=602530_name
+id=602540,name=602540_name
+id=602550,name=602550_name
+id=602420,name=602420_name
+id=601010,name=601010_name
+id=602620,name=602620_name
+id=602720,name=602720_name
 
 > attributes views.*.id,name
 id=602910,name=602910_name
@@ -651,5 +708,75 @@ id=601020,name=601020_name
 id=602610,name=602610_name
 id=602710,name=602710_name
 id=601110,name=601110_name
+
+> attributes views.*.id,name,class
+id=602910,name=602910_name,class=Application
+id=601610,name=601610_name,class=Class
+id=601310,name=601310_name,class=Enum
+id=601410,name=601410_name,class=Enum_Item
+id=601710,name=601710_name,class=Field
+id=603850,name=603850_name,class=Global_Archive
+id=603950,name=603950_name,class=Global_Blacklist_Entry
+id=603970,name=603970_name,class=Global_Peerchain_Entry
+id=603990,name=603990_name,class=Global_Repository_Entry
+id=601810,name=601810_name,class=Index
+id=603200,name=603200_name,class=Initial_Record
+id=603300,name=603300_name,class=Initial_Record_Value
+id=602800,name=602800_name,class=List
+id=602850,name=602850_name,class=List_Field
+id=601510,name=601510_name,class=Model
+id=601910,name=601910_name,class=Modifier
+id=602010,name=602010_name,class=Modifier_Affect
+id=602960,name=602960_name,class=Module
+id=601530,name=601530_name,class=Package
+id=601560,name=601560_name,class=Package_Option
+id=603550,name=603550_name,class=Package_Type
+id=602250,name=602250_name,class=Permission
+id=602100,name=602100_name,class=Procedure
+id=602200,name=602200_name,class=Procedure_Arg
+id=602300,name=602300_name,class=Relationship
+id=602500,name=602500_name,class=Specification
+id=603100,name=603100_name,class=Specification_Field_Action
+id=602400,name=602400_name,class=Specification_Type
+id=601210,name=601210_name,class=Type
+id=601020,name=601020_name,class=User
+id=602610,name=602610_name,class=View
+id=602710,name=602710_name,class=View_Field
+id=601110,name=601110_name,class=Workgroup
+
+> attributes views.*.id,name,@class
+id=602910,name=602910_name,class=application
+id=601610,name=601610_name,class=class
+id=601310,name=601310_name,class=enum
+id=601410,name=601410_name,class=enum_item
+id=601710,name=601710_name,class=field
+id=603850,name=603850_name,class=global_archive
+id=603950,name=603950_name,class=global_blacklist_entry
+id=603970,name=603970_name,class=global_peerchain_entry
+id=603990,name=603990_name,class=global_repository_entry
+id=601810,name=601810_name,class=index
+id=603200,name=603200_name,class=initial_record
+id=603300,name=603300_name,class=initial_record_value
+id=602800,name=602800_name,class=list
+id=602850,name=602850_name,class=list_field
+id=601510,name=601510_name,class=model
+id=601910,name=601910_name,class=modifier
+id=602010,name=602010_name,class=modifier_affect
+id=602960,name=602960_name,class=module
+id=601530,name=601530_name,class=package
+id=601560,name=601560_name,class=package_option
+id=603550,name=603550_name,class=package_type
+id=602250,name=602250_name,class=permission
+id=602100,name=602100_name,class=procedure
+id=602200,name=602200_name,class=procedure_arg
+id=602300,name=602300_name,class=relationship
+id=602500,name=602500_name,class=specification
+id=603100,name=603100_name,class=specification_field_action
+id=602400,name=602400_name,class=specification_type
+id=601210,name=601210_name,class=type
+id=601020,name=601020_name,class=user
+id=602610,name=602610_name,class=view
+id=602710,name=602710_name,class=view_field
+id=601110,name=601110_name,class=workgroup
 
 > exit
