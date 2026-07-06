@@ -26,5 +26,5 @@ STORAGE=$OUTPUT
 @endif
 ;
 @ifndef $ERROR
-module_list
+module_list -uri
 @endif
