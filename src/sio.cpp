@@ -972,13 +972,13 @@ string get_node_attributes( const section_node& node, const string& attribute_li
       {
          split( attribute_list, all_attributes );
 
-         // NOTE: Use a '!' prefix for hidden attributes
+         // NOTE: Use a '~' prefix for hidden attributes
          // (to not be output but available for checks).
          for( size_t i = 0; i < all_attributes.size( ); i++ )
          {
             string next( all_attributes[ i ] );
 
-            if( !next.empty( ) && ( next[ 0 ] == '!' ) )
+            if( !next.empty( ) && ( next[ 0 ] == '~' ) )
             {
                hidden.insert( i );
 
@@ -992,6 +992,20 @@ string get_node_attributes( const section_node& node, const string& attribute_li
       for( size_t i = 0; i < all_attributes.size( ); i++ )
       {
          string next( all_attributes[ i ] );
+
+         bool negate = false;
+         bool for_uri = false;
+
+         if( !next.empty( ) )
+         {
+            if( next[ 0 ] == '!' )
+               negate = true;
+            else if( next[ 0 ] == '@' )
+               for_uri = true;
+
+            if( negate || for_uri )
+               next.erase( 0, 1 );
+         }
 
          if( next.empty( ) )
             break;
@@ -1050,10 +1064,14 @@ string get_node_attributes( const section_node& node, const string& attribute_li
             {
                bool okay = true;
 
-               if( check_options.empty( ) && ( value != check_value ) )
+               if( check_options.empty( )
+                && ( ( negate && ( value == check_value ) )
+                || ( !negate && ( value != check_value ) ) ) )
                   okay = false;
 
-               if( !check_options.empty( ) && !check_options.count( value ) )
+               if( !check_options.empty( )
+                && ( ( negate && check_options.count( value ) )
+                || ( !negate && !check_options.count( value ) ) ) )
                   okay = false;
 
                if( !okay )
@@ -1069,7 +1087,10 @@ string get_node_attributes( const section_node& node, const string& attribute_li
                if( use_json )
                   retval += "\"";
 
-               retval += value;
+               if( !for_uri )
+                  retval += value;
+               else
+                  retval += lower( value );
 
                if( use_json )
                   retval += "\"";
