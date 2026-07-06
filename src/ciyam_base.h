@@ -1031,7 +1031,7 @@ void set_uid_data( const std::string& uid, const std::string& level, const std::
 
 size_t get_next_handle( );
 
-void module_list( std::ostream& os );
+void module_list( std::ostream& os, bool for_uri = false );
 
 size_t module_count( );
 

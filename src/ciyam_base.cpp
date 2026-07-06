@@ -13324,13 +13324,20 @@ size_t get_next_handle( )
    return ++gtp_session->next_handle;
 }
 
-void module_list( ostream& os )
+void module_list( ostream& os, bool for_uri )
 {
    module_const_iterator mci = gtp_session->modules_by_name.begin( );
    module_const_iterator end = gtp_session->modules_by_name.end( );
 
    for( ; mci != end; ++mci )
-      os << mci->second << ' ' << mci->first << '\n';
+   {
+      if( !for_uri )
+         os << mci->second;
+      else
+         os << lower( mci->second );
+
+      os << ' ' << mci->first << '\n';
+   }
 }
 
 size_t module_count( )
