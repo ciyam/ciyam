@@ -1737,10 +1737,18 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     user_field_id_description.erase( pos );
                               }
 
+                              // NOTE: Currently assumes that the
+                              // module name and storage name are
+                              // the same.
+                              string module( storage_name );
+
+                              string field_list( user_field_id_description );
+
                               set_system_variable( web_storage_var_name, storage_name );
 
-                              request_and_args = "<web_session_user_fetch.cin " + user_class_id + ' '
-                               + user_field_id_username + ' ' + username + ' ' + user_field_id_description;
+                              request_and_args = "<web_session_instance_fetch.cin "
+                               + module + ' ' + user_class_id + " 1 " + field_list
+                               + ' ' + user_field_id_username + '=' + username;
                            }
                            else if( is_module_info_request )
                               request_and_args = "<web_session_modules_fetch.cin";

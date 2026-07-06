@@ -1,0 +1,132 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+ERROR=
+;
+@ifneq "$NUM_ARGS" "2"
+ERROR=Requires module and class.
+#Error: $ERROR
+@else
+;
+MODULE=$1
+MCLASS=$2
+;
+NUM_LIMIT=$3
+FIELD_LIST=$4
+INDEX_INFO=$5
+EXTRA_INFO=$6
+;
+OPTS=
+;
+@ifndef $NUM_LIMIT
+NUM_LIMIT=0
+@elif "$NUM_LIMIT" = "-"
+OPTS=$OPTS -rev
+NUM_LIMIT=0
+@elif "$NUM_LIMIT" = "+"
+NUM_LIMIT=0
+@endif
+;
+@ifndef $FIELD_LIST
+FIELD_LIST=@none
+@endif
+;
+@ifdef $EXTRA_INFO
+APPEND_EXTRA= $EXTRA_INFO
+@endif
+;
+ORDERING=
+RESTRICTED=
+RESTRICTIONS=
+;
+@ifdef $INDEX_INFO
+INDEX_INFO_LINES=@repstr:,/\n:$INDEX_INFO
+;
+INDEX_INFO_LINE_1=%INDEX_INFO_LINES:1%
+INDEX_INFO_LINE_2=%INDEX_INFO_LINES:2%
+INDEX_INFO_LINE_3=%INDEX_INFO_LINES:3%
+;
+@ifdef $INDEX_INFO_LINE_1
+FIELD_AND_VALUE_LINES=@repstr:=/\n:$INDEX_INFO_LINE_1
+;
+FIELD_NAME=%FIELD_AND_VALUE_LINES:1%
+FIELD_VALUE=%FIELD_AND_VALUE_LINES:2%
+;
+ORDERING=$FIELD_NAME
+;
+@ifdef $FIELD_VALUE
+RESTRICTED=1
+RESTRICTIONS=$FIELD_VALUE
+@endif
+;
+@ifdef $INDEX_INFO_LINE_2
+FIELD_AND_VALUE_LINES=@repstr:=/\n:$INDEX_INFO_LINE_2
+;
+FIELD_NAME=%FIELD_AND_VALUE_LINES:1%
+FIELD_VALUE=%FIELD_AND_VALUE_LINES:2%
+;
+ORDERING=$ORDERING,$FIELD_NAME
+;
+@ifdef $FIELD_VALUE
+RESTRICTED=@$RESTRICTED+1
+RESTRICTIONS=$RESTRICTIONS,$FIELD_VALUE
+@endif
+;
+@ifdef $INDEX_INFO_LINE_3
+FIELD_AND_VALUE_LINES=@repstr:=/\n:$INDEX_INFO_LINE_3
+;
+FIELD_NAME=%FIELD_AND_VALUE_LINES:1%
+FIELD_VALUE=%FIELD_AND_VALUE_LINES:2%
+;
+ORDERING=$ORDERING,$FIELD_NAME
+;
+@ifdef $FIELD_VALUE
+RESTRICTED=@$RESTRICTED+1
+RESTRICTIONS=$RESTRICTIONS,$FIELD_VALUE
+@endif
+;
+@endif
+@endif
+@endif
+;
+@endif
+;
+@ifdef $RESTRICTED
+RESTRICTED=#$RESTRICTED
+@endif
+;
+.session_variable @storage_var_name
+STORAGE_VAR_NAME=$OUTPUT
+;
+; NOTE: If no specific storage provided
+; then instead uses the system default.
+@ifndef $STORAGE_VAR_NAME
+STORAGE_VAR_NAME=@storage
+@endif
+;
+.system_variable $STORAGE_VAR_NAME
+STORAGE=$OUTPUT
+;
+.storage_info -name
+@ifneq "$OUTPUT" "$STORAGE"
+@ifneq "$OUTPUT" "<none>"
+.storage_term
+@endif
+.storage_init $STORAGE
+@endif
+;
+@ifndef $ERROR
+perform_fetch $MODULE $MCLASS$OPTS "$ORDERING$RESTRICTED $RESTRICTIONS" #$NUM_LIMIT "$FIELD_LIST"$APPEND_EXTRA
+@endif
+;
+@endif
