@@ -105,6 +105,7 @@ const char* const c_cws_uri_suffix_storages_prefix = "storages/";
 const char* const c_cws_uri_suffix_stylesheets_prefix = "stylesheets/";
 const char* const c_cws_uri_suffix_unlock_keys_prefix = "unlock-keys/";
 const char* const c_cws_uri_suffix_storage_modules_prefix = "storage-modules/";
+const char* const c_cws_uri_suffix_storage_instances_prefix = "storage-instances/";
 
 const char* const c_cws_uri_suffix_enums_extra = "/enums";
 const char* const c_cws_uri_suffix_lists_extra = "/lists";
@@ -118,9 +119,12 @@ const char* const c_cws_request_users_create_op_secret = "secret";
 const char* const c_cws_request_users_create_opt_suggested_prefix = "suggested=";
 
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax.
-const char* const c_cws_help_request_output = "quit\nattach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
+const char* const c_cws_help_request_output = "quit\nattach storage <name>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview storages\n"
+ "review stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\nreview storage-instances <id>/<cid>[/<key>] [fields=<fld_1>[,<fld_2>[...]]]";
+
+const char* const c_cws_help_request_admin_output = "quit\nattach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
  "create unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview users\nreview storages\n"
- "review stylesheet[s] [<name>]\nreview storage-modules [<id>/<items>[/<item_id>]]";
+ "review stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\nreview storage-instances <id>/<cid>[/<key>] [fields=<fld_1>[,<fld_2>[...]]]";
 
 const char* const c_web_session_script = "web_session.cin";
 
@@ -139,6 +143,8 @@ const char* const c_storage_module_lists_available_admin_query = "lists.*.@id,@c
 const char* const c_storage_module_views_available_admin_query = "views.*.@id,@cid,name,class";
 const char* const c_storage_module_lists_available_non_admin_query = "lists.*.@id,@cid,name,class,~!type=admin";
 const char* const c_storage_module_views_available_non_admin_query = "views.*.@id,@cid,name,class,~!type=admin";
+
+const char* const c_storage_module_instance_options_fields_prefix = "fields=";
 
 mutex g_mutex;
 
@@ -173,7 +179,12 @@ inline string escaped_json( const string& s )
 
 string as_json_array( const string& name, const vector< string >& array )
 {
-   string retval( "{\n \"" + name + "\":\n [\n" );
+   string retval;
+
+   if( name.empty( ) )
+      retval = "   [\n   ";
+   else
+      retval = "{\n \"" + name + "\":\n [\n";
 
    for( size_t i = 0; i < array.size( ); i++ )
    {
@@ -183,7 +194,10 @@ string as_json_array( const string& name, const vector< string >& array )
       retval += "  \"" + escaped_json( array[ i ] ) + '"';
    }
 
-   retval += "\n ]\n}";
+   if( name.empty( ) )
+      retval += "\n   ]";
+   else
+      retval += "\n ]\n}";
 
    return retval;
 }
@@ -721,6 +735,33 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    if( uri_suffix.find( c_cws_uri_suffix_sessions_prefix ) == 0 )
       session = uri_suffix.substr( strlen( c_cws_uri_suffix_sessions_prefix ) );
 
+   string instance_module_id;
+   string instance_mclass_id;
+   string instance_record_key;
+
+   if( uri_suffix.find( c_cws_uri_suffix_storage_instances_prefix ) == 0 )
+   {
+      string instance_info( uri_suffix.substr( strlen( c_cws_uri_suffix_storage_instances_prefix ) ) );
+
+      string::size_type pos = instance_info.find( '/' );
+
+      instance_module_id = instance_info.substr( 0, pos );
+
+      if( pos != string::npos )
+      {
+         instance_mclass_id = instance_info.substr( pos + 1 );
+
+         pos = instance_mclass_id.find( '/' );
+
+         if( pos != string::npos )
+         {
+            instance_record_key = instance_mclass_id.substr( pos + 1 );
+
+            instance_mclass_id.erase( pos );
+         }
+      }
+   }
+
    bool is_json_output = cws_params.is_json_output;
 
    bool is_get_request = ( request_type == e_http_request_type_get );
@@ -1099,10 +1140,12 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   found = true;
 
+                  string help_output( !is_admin ? c_cws_help_request_output : c_cws_help_request_admin_output );
+
                   if( !is_json_output )
-                     response = c_cws_help_request_output;
+                     response = help_output;
                   else
-                     response = "{\"commands\":\"" + escaped_json( c_cws_help_request_output ) + "\"}\n";
+                     response = "{\"commands\":\"" + escaped_json( help_output ) + "\"}\n";
                }
                else if( is_delete_request && ( uri_suffix.find( c_cws_uri_suffix_sessions_prefix ) == 0 ) )
                {
@@ -1281,6 +1324,20 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
                   }
                }
+               else if( is_get_request
+                && get_system_variable( web_storage_var_name ).empty( )
+                && ( uri_suffix.find( c_cws_uri_suffix_storage_instances_prefix ) == 0 ) )
+               {
+                  // FUTURE: This message should be handled as a server string message.
+                  error = "No storage is currently attached to this session.";
+               }
+               else if( is_get_request
+                && ( instance_module_id.empty( ) || instance_mclass_id.empty( ) )
+                && ( uri_suffix.find( c_cws_uri_suffix_storage_instances_prefix ) == 0 ) )
+               {
+                  // FUTURE: This message should be handled as a server string message.
+                  error = "Instance request requires an endpoint with module and class ids.";
+               }
                else if( is_post_request
                 && ( uri_suffix.find( c_cws_uri_suffix_unlock_keys_prefix ) == 0 ) )
                {
@@ -1394,7 +1451,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                         split( all_stylesheets, stylesheets, ' ' );
 
-                        response = as_json_array( "all_stylesheets", stylesheets );
+                        response = as_json_array( ( !is_admin ? "stylesheets" : "all_stylesheets" ), stylesheets );
                      }
                   }
                }
@@ -1655,6 +1712,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      bool is_user_info_request = false;
                      bool is_module_info_request = false;
+                     bool is_instance_fetch_request = false;
 
                      string storage_name;
 
@@ -1671,6 +1729,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
                      else if( uri_suffix == c_cws_uri_suffix_storage_modules )
                         is_module_info_request = true;
+                     else if( uri_suffix.find( c_cws_uri_suffix_storage_instances_prefix ) == 0 )
+                        is_instance_fetch_request = true;
 
                      if( !request.empty( ) && !is_user_info_request )
                      {
@@ -1687,7 +1747,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         response = "[bad]";
                      else
                      {
-                        if( !request.empty( ) || is_user_info_request || is_module_info_request )
+                        if( !request.empty( ) || is_user_info_request
+                         || is_module_info_request || is_instance_fetch_request )
                         {
                            if( is_user_info_request )
                            {
@@ -1752,6 +1813,34 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            }
                            else if( is_module_info_request )
                               request_and_args = "<web_session_modules_fetch.cin";
+                           else if( is_instance_fetch_request )
+                           {
+                              request_and_args = "<web_session_instance_fetch.cin "
+                               + instance_module_id + ' ' + instance_mclass_id;
+
+                              if( instance_record_key.empty( ) )
+                              {
+                                 string fields( "_key" );
+
+                                 string::size_type pos = options.find( c_storage_module_instance_options_fields_prefix );
+
+                                 if( pos != string::npos )
+                                    fields = options.substr( strlen( c_storage_module_instance_options_fields_prefix ) );
+
+                                 request_and_args += " 0 " + fields;
+                              }
+                              else
+                              {
+                                 string fields( "_key" );
+
+                                 string::size_type pos = options.find( c_storage_module_instance_options_fields_prefix );
+
+                                 if( pos != string::npos )
+                                    fields = options.substr( strlen( c_storage_module_instance_options_fields_prefix ) );
+
+                                 request_and_args += " 1 " + fields + " _key=" + instance_record_key;
+                              }
+                           }
 
                            update_session_info( session, now );
 
@@ -1783,13 +1872,78 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            msleep( 100 );
                         }
 
-                        if( !response.empty( ) && is_json_output && is_module_info_request )
+                        if( !response.empty( ) && is_json_output )
                         {
-                           vector< string > modules;
+                           if( is_module_info_request )
+                           {
+                              vector< string > modules;
 
-                           split( response, modules, '\n' );
+                              split( response, modules, '\n' );
 
-                           response = as_json_array( "all_modules", modules );
+                              response = as_json_array( "all_modules", modules );
+                           }
+                           else if( is_instance_fetch_request )
+                           {
+                              if( response[ 0 ] == '[' )
+                              {
+                                 if( !instance_record_key.empty( ) )
+                                 {
+                                    string::size_type pos = response.find( ']' );
+
+                                    if( pos != string::npos )
+                                    {
+                                       vector< string > values;
+
+                                       values.push_back( response.substr( 1, pos - 2 ) );
+
+                                       response.erase( 0, pos + 1 );
+
+                                       split( response, values, ',' );
+
+                                       response = as_json_array( "values", values );
+                                    }
+                                 }
+                                 else
+                                 {
+                                    vector< string > records;
+
+                                    split( response, records, '\n' );
+
+                                    response = "{\n \"records\":\n  [\n";
+
+                                    for( size_t i = 0; i < records.size( ); i++ )
+                                    {
+                                       string next_record( records[ i ] );
+
+                                       if( !next_record.empty( ) && next_record[ 0 ] == '[' )
+                                       {
+                                          if( i > 0 )
+                                             response += ",\n";
+
+                                          string::size_type pos = next_record.find( ']' );
+
+                                          if( pos != string::npos )
+                                          {
+                                             vector< string > values;
+
+                                             values.push_back( next_record.substr( 1, pos - 2 ) );
+
+                                             next_record.erase( 0, pos + 1 );
+
+                                             if( !next_record.empty( ) && ( next_record[ 0 ] == ' ' ) )
+                                                next_record.erase( 0, 1 );
+
+                                             split( next_record, values, ',' );
+
+                                             response += as_json_array( "", values );
+                                          }
+                                       }
+                                    }
+
+                                    response += "\n ]\n}";
+                                 }
+                              }
+                           }
                         }
                      }
                   }
