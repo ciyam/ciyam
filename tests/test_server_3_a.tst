@@ -18,16 +18,13 @@ Activates the access token using the suggested 'test-1' username.
 Error: This web session is not valid (or has expired).
 quit
 attach storage <name>
-create user [secret|suggested=[<pin>:][<username>]]
-create unlock-key
-delete user <pin>
 delete stylesheet
 employ unlock-key <key>
 retain stylesheet
-review users
 review storages
 review stylesheet[s] [<name>]
-review storage-modules [<id>/<items>[/<item_id>]]
+review storage-modules [<id>/enums|lists|views[/<item_id>]]
+review storage-instances <id>/<cid>[/<key>] [fields=<fld_1>[,<fld_2>[...]]]
 Now will perform structured I/O queries for enums/lists and views after attaching to the Meta storage.
 [okay]
 id=575,name=enum_add_packages
@@ -174,6 +171,19 @@ Now will list all standard access tokens and then remove the previously activate
 [okay]
 admin
 Finally will perform admin structured I/O queries for enums/lists and views after attaching to the Meta storage.
+quit
+attach storage <name>
+create user [secret|suggested=[<pin>:][<username>]]
+create unlock-key
+delete user <pin>
+delete stylesheet
+employ unlock-key <key>
+retain stylesheet
+review users
+review storages
+review stylesheet[s] [<name>]
+review storage-modules [<id>/enums|lists|views[/<item_id>]]
+review storage-instances <id>/<cid>[/<key>] [fields=<fld_1>[,<fld_2>[...]]]
 100 Meta
 Error: Unknonwn module id '99' for storage 'Meta'.
 id=575,name=enum_add_packages
@@ -479,5 +489,8 @@ id=601110,cid=101100,name=601110_name,class=Workgroup
  </field>
 </fields>
 
+[admin =1.0 275 100:100100] admin,d82494f05d6917ba02f7aaa29689ccb444bb73f20380876cb05d1f37537b7892
+[guest =1.0 0 100:100100] guest,c42b78633724b8bb7da3bda18b87f3ff4802ca85af7c6418001d509cf220bc61
+[guest =1.0 0 100:100100] guest,c42b78633724b8bb7da3bda18b87f3ff4802ca85af7c6418001d509cf220bc61
 Session terminated.
 Error: This web session is not valid (or has expired).
