@@ -11,6 +11,7 @@ attributes enums.enum.values.*.data,name
 attributes -json enums.enum.values.*.data,name
 output enums.enum.values
 output -json enums.enum.values
+output lists.cid=bad_id
 output lists.cid=$USER_CLASS_ID
 output -json lists.cid=$USER_CLASS_ID
 attributes views.*.id,~class=$USER_CLASS_NAME

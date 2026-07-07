@@ -102,6 +102,9 @@ data=3,name=enum_add_packages_standard_user_group
  }
 ]
 }
+> output lists.cid=bad_id
+error: path 'lists.cid=bad_id' is invalid
+
 > output lists.cid=$USER_CLASS_ID
 <id>601000
 <cid>100100
