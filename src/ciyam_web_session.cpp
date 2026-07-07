@@ -74,77 +74,78 @@ const size_t c_min_passwd_retry_seconds = 3;
 
 const size_t c_max_token_create_attempts = 10;
 
-const char* const c_force = "force";
+constexpr const char* c_force = "force";
 
-const char* const c_cws_own = "***";
+constexpr const char* c_cws_own = "***";
 
-const char* const c_web_demo_pin_1 = "10101";
-const char* const c_web_demo_pin_2 = "10201";
-const char* const c_web_demo_pin_3 = "10301";
+constexpr const char* c_web_demo_pin_1 = "10101";
+constexpr const char* c_web_demo_pin_2 = "10201";
+constexpr const char* c_web_demo_pin_3 = "10301";
 
-const char* const c_web_lock_suffix = ".lock";
+constexpr const char* c_web_lock_suffix = ".lock";
 
-const char* const c_web_command_suffix = ".command";
-const char* const c_web_message_suffix = ".message";
-const char* const c_web_session_suffix = ".session";
-const char* const c_web_started_suffix = ".started";
-const char* const c_web_storage_suffix = ".storage";
+constexpr const char* c_web_command_suffix = ".command";
+constexpr const char* c_web_message_suffix = ".message";
+constexpr const char* c_web_session_suffix = ".session";
+constexpr const char* c_web_started_suffix = ".started";
+constexpr const char* c_web_storage_suffix = ".storage";
 
-const char* const c_cws_uri_suffix_help = "help";
-const char* const c_cws_uri_suffix_users = "users";
-const char* const c_cws_uri_suffix_devices = "devices";
-const char* const c_cws_uri_suffix_sessions = "sessions";
-const char* const c_cws_uri_suffix_storages = "storages";
-const char* const c_cws_uri_suffix_stylesheets = "stylesheets";
-const char* const c_cws_uri_suffix_unlock_keys = "unlock-keys";
-const char* const c_cws_uri_suffix_storage_modules = "storage-modules";
+constexpr const char* c_cws_uri_suffix_help = "help";
+constexpr const char* c_cws_uri_suffix_users = "users";
+constexpr const char* c_cws_uri_suffix_devices = "devices";
+constexpr const char* c_cws_uri_suffix_sessions = "sessions";
+constexpr const char* c_cws_uri_suffix_storages = "storages";
+constexpr const char* c_cws_uri_suffix_stylesheets = "stylesheets";
+constexpr const char* c_cws_uri_suffix_unlock_keys = "unlock-keys";
+constexpr const char* c_cws_uri_suffix_storage_modules = "storage-modules";
 
-const char* const c_cws_uri_suffix_users_prefix = "users/";
-const char* const c_cws_uri_suffix_sessions_prefix = "sessions/";
-const char* const c_cws_uri_suffix_storages_prefix = "storages/";
-const char* const c_cws_uri_suffix_stylesheets_prefix = "stylesheets/";
-const char* const c_cws_uri_suffix_unlock_keys_prefix = "unlock-keys/";
-const char* const c_cws_uri_suffix_storage_modules_prefix = "storage-modules/";
-const char* const c_cws_uri_suffix_storage_instances_prefix = "storage-instances/";
+constexpr const char* c_cws_uri_suffix_users_prefix = "users/";
+constexpr const char* c_cws_uri_suffix_sessions_prefix = "sessions/";
 
-const char* const c_cws_uri_suffix_enums_extra = "/enums";
-const char* const c_cws_uri_suffix_lists_extra = "/lists";
-const char* const c_cws_uri_suffix_views_extra = "/views";
+constexpr const char* c_cws_uri_suffix_storages_prefix = "storages/";
+constexpr const char* c_cws_uri_suffix_stylesheets_prefix = "stylesheets/";
+constexpr const char* c_cws_uri_suffix_unlock_keys_prefix = "unlock-keys/";
+constexpr const char* c_cws_uri_suffix_storage_modules_prefix = "storage-modules/";
+constexpr const char* c_cws_uri_suffix_storage_instances_prefix = "storage-instances/";
 
-const char* const c_cws_uri_suffix_enums_extra_prefix = "/enums/";
-const char* const c_cws_uri_suffix_lists_extra_prefix = "/lists/";
-const char* const c_cws_uri_suffix_views_extra_prefix = "/views/";
+constexpr const char* c_cws_uri_suffix_enums_extra = "/enums";
+constexpr const char* c_cws_uri_suffix_lists_extra = "/lists";
+constexpr const char* c_cws_uri_suffix_views_extra = "/views";
 
-const char* const c_cws_request_users_create_op_secret = "secret";
-const char* const c_cws_request_users_create_opt_suggested_prefix = "suggested=";
+constexpr const char* c_cws_uri_suffix_enums_extra_prefix = "/enums/";
+constexpr const char* c_cws_uri_suffix_lists_extra_prefix = "/lists/";
+constexpr const char* c_cws_uri_suffix_views_extra_prefix = "/views/";
+
+constexpr const char* c_cws_request_users_create_op_secret = "secret";
+constexpr const char* c_cws_request_users_create_opt_suggested_prefix = "suggested=";
 
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax.
-const char* const c_cws_help_request_output = "quit\nattach storage <name>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview storages\n"
+constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview storages\n"
  "review stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\nreview storage-instances <id>/<cid>[/<key>] [fields=<fld_1>[,<fld_2>[...]]]";
 
-const char* const c_cws_help_request_admin_output = "quit\nattach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
+constexpr const char* c_cws_help_request_admin_output = "quit\nattach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
  "create unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview users\nreview storages\n"
  "review stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\nreview storage-instances <id>/<cid>[/<key>] [fields=<fld_1>[,<fld_2>[...]]]";
 
-const char* const c_web_session_script = "web_session.cin";
+constexpr const char* c_web_session_script = "web_session.cin";
 
-const char* const c_web_session_none_response = "[none]";
-const char* const c_web_session_okay_response = "[okay]";
+constexpr const char* c_web_session_none_response = "[none]";
+constexpr const char* c_web_session_okay_response = "[okay]";
 
-const char* const c_storage_attribute_id = "id";
-const char* const c_storage_attribute_user_info = "user_info";
+constexpr const char* c_storage_attribute_id = "id";
+constexpr const char* c_storage_attribute_user_info = "user_info";
 
-const char* const c_storage_module_enums_id_prefix = "enums.id=";
-const char* const c_storage_module_lists_id_prefix = "lists.id=";
-const char* const c_storage_module_views_id_prefix = "views.id=";
+constexpr const char* c_storage_module_enums_id_prefix = "enums.id=";
+constexpr const char* c_storage_module_lists_id_prefix = "lists.id=";
+constexpr const char* c_storage_module_views_id_prefix = "views.id=";
 
-const char* const c_storage_module_enums_available_query = "enums.*.@id,name";
-const char* const c_storage_module_lists_available_admin_query = "lists.*.@id,@cid,name,class";
-const char* const c_storage_module_views_available_admin_query = "views.*.@id,@cid,name,class";
-const char* const c_storage_module_lists_available_non_admin_query = "lists.*.@id,@cid,name,class,~!type=admin";
-const char* const c_storage_module_views_available_non_admin_query = "views.*.@id,@cid,name,class,~!type=admin";
+constexpr const char* c_storage_module_enums_available_query = "enums.*.@id,name";
+constexpr const char* c_storage_module_lists_available_admin_query = "lists.*.@id,@cid,name,class";
+constexpr const char* c_storage_module_views_available_admin_query = "views.*.@id,@cid,name,class";
+constexpr const char* c_storage_module_lists_available_non_admin_query = "lists.*.@id,@cid,name,class,~!type=admin";
+constexpr const char* c_storage_module_views_available_non_admin_query = "views.*.@id,@cid,name,class,~!type=admin";
 
-const char* const c_storage_module_instance_options_fields_prefix = "fields=";
+constexpr const char* c_storage_module_instance_options_fields_prefix = "fields=";
 
 mutex g_mutex;
 
@@ -753,7 +754,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    string session( cws_params.session );
 
    if( uri_suffix.find( c_cws_uri_suffix_sessions_prefix ) == 0 )
-      session = uri_suffix.substr( strlen( c_cws_uri_suffix_sessions_prefix ) );
+      session = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_sessions_prefix ) );
 
    string instance_module_id;
    string instance_mclass_id;
@@ -761,7 +762,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
    if( uri_suffix.find( c_cws_uri_suffix_storage_instances_prefix ) == 0 )
    {
-      string instance_info( uri_suffix.substr( strlen( c_cws_uri_suffix_storage_instances_prefix ) ) );
+      string instance_info( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_storage_instances_prefix ) ) );
 
       string::size_type pos = instance_info.find( '/' );
 
@@ -1230,7 +1231,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      error = "No storage is currently attached to this session.";
                   else
                   {
-                     string extra( uri_suffix.substr( strlen( c_cws_uri_suffix_storage_modules_prefix ) ) );
+                     string extra( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_storage_modules_prefix ) ) );
 
                      string::size_type pos = extra.find( '/' );
 
@@ -1257,7 +1258,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                root_node, c_storage_module_enums_available_query, is_json_output );
                            else if( extra.find( c_cws_uri_suffix_enums_extra_prefix ) == 0 )
                            {
-                              extra = extra.substr( strlen( c_cws_uri_suffix_enums_extra_prefix ) );
+                              extra = extra.substr( CONST_LENGTH( c_cws_uri_suffix_enums_extra_prefix ) );
 
                               extra = c_storage_module_enums_id_prefix + upper( extra );
 
@@ -1288,7 +1289,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            }
                            else if( extra.find( c_cws_uri_suffix_lists_extra_prefix ) == 0 )
                            {
-                              extra = extra.substr( strlen( c_cws_uri_suffix_lists_extra_prefix ) );
+                              extra = extra.substr( CONST_LENGTH( c_cws_uri_suffix_lists_extra_prefix ) );
 
                               extra = c_storage_module_lists_id_prefix + upper( extra );
 
@@ -1319,7 +1320,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            }
                            else if( extra.find( c_cws_uri_suffix_views_extra_prefix ) == 0 )
                            {
-                              extra = extra.substr( strlen( c_cws_uri_suffix_views_extra_prefix ) );
+                              extra = extra.substr( CONST_LENGTH( c_cws_uri_suffix_views_extra_prefix ) );
 
                               extra = c_storage_module_views_id_prefix + upper( extra );
 
@@ -1361,7 +1362,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                else if( is_post_request
                 && ( uri_suffix.find( c_cws_uri_suffix_unlock_keys_prefix ) == 0 ) )
                {
-                  string key( uri_suffix.substr( strlen( c_cws_uri_suffix_unlock_keys_prefix ) ) );
+                  string key( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_unlock_keys_prefix ) ) );
 
                   if( !has_system_variable( e_special_var_sid_locked ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -1499,7 +1500,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                }
                else if( is_get_request && ( uri_suffix.find( c_cws_uri_suffix_stylesheets_prefix ) == 0 ) )
                {
-                  string name( uri_suffix.substr( strlen( c_cws_uri_suffix_stylesheets_prefix ) ) );
+                  string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_stylesheets_prefix ) ) );
 
                   string file_name( get_web_root( ) + '/' + name + g_css_suffix );
 
@@ -1555,9 +1556,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         is_secret = true;
 
                      if( ( options.find( c_cws_request_users_create_opt_suggested_prefix ) == 0 )
-                      && ( options.length( ) > ( strlen( c_cws_request_users_create_opt_suggested_prefix ) + 2 ) ) )
+                      && ( options.length( ) > ( CONST_LENGTH( c_cws_request_users_create_opt_suggested_prefix ) + 2 ) ) )
                      {
-                        options.erase( 0, strlen( c_cws_request_users_create_opt_suggested_prefix ) );
+                        options.erase( 0, CONST_LENGTH( c_cws_request_users_create_opt_suggested_prefix ) );
 
                         string::size_type pos = options.find( ':' );
 
@@ -1602,7 +1603,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      error = "Users can only be maintained by the administrator.";
                   else
                   {
-                     string pin( uri_suffix.substr( strlen( c_cws_uri_suffix_users_prefix ) ) );
+                     string pin( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_users_prefix ) ) );
 
                      if( !has_user_info( pin ) )
                         // FUTURE: This message should be handled as a server string message.
@@ -1740,7 +1741,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      {
                         is_user_info_request = true;
 
-                        storage_name = uri_suffix.substr( strlen( c_cws_uri_suffix_storages_prefix ) );
+                        storage_name = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_storages_prefix ) );
 
                         // NOTE: Storage names begin with an upper case letter
                         // (but by convention the URL will be all lower case).
@@ -1845,7 +1846,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  string::size_type pos = options.find( c_storage_module_instance_options_fields_prefix );
 
                                  if( pos != string::npos )
-                                    fields = options.substr( strlen( c_storage_module_instance_options_fields_prefix ) );
+                                    fields = options.substr( CONST_LENGTH( c_storage_module_instance_options_fields_prefix ) );
 
                                  request_and_args += " 0 " + fields;
                               }
@@ -1856,7 +1857,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  string::size_type pos = options.find( c_storage_module_instance_options_fields_prefix );
 
                                  if( pos != string::npos )
-                                    fields = options.substr( strlen( c_storage_module_instance_options_fields_prefix ) );
+                                    fields = options.substr( CONST_LENGTH( c_storage_module_instance_options_fields_prefix ) );
 
                                  request_and_args += " 1 " + fields + " _key=" + instance_record_key;
                               }
