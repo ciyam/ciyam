@@ -49,6 +49,18 @@ template< int B > struct power< 0, B >
    static const int result = 1;
 };
 
+inline constexpr size_t const_length( const char* p )
+{
+   return ( *p == 0 ) ? 0 : const_length( p + 1 ) + 1;
+}
+
+template< typename T, T V > struct static_eval
+{
+   static constexpr T value = V;
+};
+
+#define CONST_LENGTH( c ) static_eval< size_t, const_length( c )>::value
+
 // NOTE: This "typeof" implementation was written by Bill Gibbons.
 template< int N > struct typeof_class;
 template< class T > struct wrap_type { typedef T U; };
