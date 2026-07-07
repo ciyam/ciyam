@@ -698,6 +698,26 @@ void process_user_info_response( const string& session, string& response )
    }
 }
 
+void get_field_values( const string& output, vector< string >& values )
+{
+   string field_info( output );
+
+   string::size_type pos = field_info.find( ']' );
+
+   if( pos != string::npos )
+   {
+      values.push_back( field_info.substr( 1, pos - 2 ) );
+
+      field_info.erase( 0, pos + 1 );
+
+      if( !field_info.empty( ) && ( field_info[ 0 ] == ' ' ) )
+         field_info.erase( 0, 1 );
+
+      if( !field_info.empty( ) )
+         split( field_info, values, ',' );
+   }
+}
+
 }
 
 void dump_session_info( ostream& os )
@@ -1820,7 +1840,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                               if( instance_record_key.empty( ) )
                               {
-                                 string fields( "_key" );
+                                 string fields( "_none" );
 
                                  string::size_type pos = options.find( c_storage_module_instance_options_fields_prefix );
 
@@ -1831,7 +1851,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               }
                               else
                               {
-                                 string fields( "_key" );
+                                 string fields( "_none" );
 
                                  string::size_type pos = options.find( c_storage_module_instance_options_fields_prefix );
 
@@ -1888,20 +1908,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               {
                                  if( !instance_record_key.empty( ) )
                                  {
-                                    string::size_type pos = response.find( ']' );
+                                    vector< string > values;
 
-                                    if( pos != string::npos )
-                                    {
-                                       vector< string > values;
+                                    get_field_values( response, values );
 
-                                       values.push_back( response.substr( 1, pos - 2 ) );
-
-                                       response.erase( 0, pos + 1 );
-
-                                       split( response, values, ',' );
-
-                                       response = as_json_array( "values", values );
-                                    }
+                                    response = as_json_array( "values", values );
                                  }
                                  else
                                  {
@@ -1920,23 +1931,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                           if( i > 0 )
                                              response += ",\n";
 
-                                          string::size_type pos = next_record.find( ']' );
+                                          vector< string > values;
 
-                                          if( pos != string::npos )
-                                          {
-                                             vector< string > values;
+                                          get_field_values( next_record, values );
 
-                                             values.push_back( next_record.substr( 1, pos - 2 ) );
-
-                                             next_record.erase( 0, pos + 1 );
-
-                                             if( !next_record.empty( ) && ( next_record[ 0 ] == ' ' ) )
-                                                next_record.erase( 0, 1 );
-
-                                             split( next_record, values, ',' );
-
-                                             response += as_json_array( "", values );
-                                          }
+                                          response += as_json_array( "", values );
                                        }
                                     }
 
