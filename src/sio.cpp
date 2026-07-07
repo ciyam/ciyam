@@ -917,6 +917,8 @@ const section_node* get_section_node_from_path(
 
                next.erase( 0, apos + 1 );
 
+               bool found = false;
+
                size_t num = p_section_node->get_num_child_nodes( );
 
                for( size_t i = 0; i < num; i++ )
@@ -926,10 +928,20 @@ const section_node* get_section_node_from_path(
                   if( next_node.has_attribute( attribute )
                    && ( next_node.get_attribute( attribute ).get_value( ) == next ) )
                   {
+                     found = true;
+
                      p_section_node = &next_node;
 
                      break;
                   }
+               }
+
+               if( !found )
+               {
+                  if( no_throw )
+                     p_section_node = 0;
+                  else
+                     throw runtime_error( "path '" + path + "' is invalid" );
                }
             }
          }
