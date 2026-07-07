@@ -65,7 +65,9 @@
    var cws_device = "";
 
    var has_seed = false;
+
    var is_running = false;
+   var is_admin_session = false;
 
    var self = 0;
    var owner = 0;
@@ -83,6 +85,9 @@
    const users_name = "users";
 
    const admin_username = "admin";
+
+   const admin_session_name = "[admin]";
+   const standard_session_name = "[standard]";
 
    const creds_remove_help = "remove creds";
    const creds_retain_help = "retain creds";
@@ -109,6 +114,7 @@
    const unlock_keys_employ_cmd = "unlock-keys|employ";
 
    const storage_modules_review_cmd = "storage-modules|review";
+   const storage_instances_review_cmd = "storage-instances|review";
 
    const error_prefix = "Error: ";
 
@@ -236,6 +242,7 @@
                owner = 0;
 
                is_running = false;
+               is_admin_session = false;
 
                document.getElementById( "user_access" ).value = "";
                document.getElementById( "user_password" ).value = "";
@@ -745,12 +752,17 @@
          if( ( cmd == users_create_cmd ) || ( cmd == users_delete_cmd )
           || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
           || ( cmd == unlock_keys_employ_cmd ) || ( cmd == stylesheets_review_cmd )
-          || ( cmd == storage_modules_review_cmd ) )
+          || ( cmd == storage_modules_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
          {
             if( cmd == users_create_cmd )
                has_cmd_options = true;
             else
+            {
                has_name_suffix = true;
+
+               if( cmd == storage_instances_review_cmd )
+                  has_cmd_options = true;
+            }
 
             cmd_is_url_suffix = true;
             cmd_needs_truncating = true;
@@ -776,6 +788,14 @@
 
                if( name == own_name )
                   name = access;
+
+               pos = name.indexOf( " " );
+
+               if( pos >= 0 )
+               {
+                  request = name.substring( pos + 1 );
+                  name = name.substring( 0, pos );
+               }
             }
 
             if( !has_cmd_options )
@@ -784,10 +804,8 @@
             {
                var opos = request.indexOf( " " );
 
-               if( opos < 0 )
-                  request = "";
-               else
-                  request = request.substr( opos + 1 );
+               if( opos > 0 )
+                  request = request.substring( opos + 1 );
             }
 
             url += "/" + cmd;
@@ -870,7 +888,7 @@
 
          if( request != "" )
          {
-            if( cmd == users_name )
+            if( has_cmd_options )
                qry_data += "&options=" + encodeURIComponent( request );
             else
                qry_data += "&request=" + encodeURIComponent( request );
@@ -1258,7 +1276,11 @@
             {
                var lines = data.split( "\n" );
 
-               lines.push( creds_remove_help + " [<pin>]" );
+               if( !is_admin_session )
+                  lines.push( creds_remove_help );
+               else
+                  lines.push( creds_remove_help + " [<pin>]" );
+
                lines.push( creds_retain_help + " [partial]" );
 
                lines.push( stylesheets_reload_help + " [<name> or none]" );
@@ -1270,9 +1292,14 @@
 
             document.getElementById( "user_arbitrary" ).value = data;
 
-            if( ( data == "[admin]" ) || ( data == "[standard]" ) )
+            if( ( data == admin_session_name ) || ( data == standard_session_name ) )
             {
                is_running = true;
+
+               if( data == admin_session_name )
+                  is_admin_session = true;
+               else
+                  is_admin_session = false;
 
                var target = owner;
 
