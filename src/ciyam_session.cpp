@@ -3979,10 +3979,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             mclass.erase( pos );
          }
 
+         string module_name( get_module_name_for_id_or_name( module ) );
+
          mclass = get_class_id_for_id_or_name( module, mclass );
 
          // NOTE: For usage with "getmeta/getmetap" script.
-         if( ( module == c_meta_model_name ) && ( fields == "@all" ) )
+         if( ( module_name == c_meta_model_name ) && ( fields == "@all" ) )
             fields = get_meta_class_field_list( mclass );
 
          string parent_key;
