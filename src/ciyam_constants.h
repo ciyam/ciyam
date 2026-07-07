@@ -50,54 +50,54 @@ const size_t c_auto_script_msleep = 1000; // i.e. 1 sec
 const char c_persist_variable_prefix = '>';
 const char c_restore_variable_prefix = '<';
 
-const char* const c_UTC = "UTC";
+constexpr const char* c_UTC = "UTC";
 
-const char* const c_none = "none";
-const char* const c_okay = "okay";
+constexpr const char* c_none = "none";
+constexpr const char* c_okay = "okay";
 
-const char* const c_true = "true";
-const char* const c_false = "false";
+constexpr const char* c_true = "true";
+constexpr const char* c_false = "false";
 
-const char* const c_true_value = "1";
-const char* const c_false_value = "0";
+constexpr const char* c_true_value = "1";
+constexpr const char* c_false_value = "0";
 
-const char* const c_dummy = "dummy";
-const char* const c_error = "error";
+constexpr const char* c_dummy = "dummy";
+constexpr const char* c_error = "error";
 
-const char* const c_ellipsis = "...";
+constexpr const char* c_ellipsis = "...";
 
-const char* const c_watching = "[watching]";
-const char* const c_finishing = "[finishing]";
-const char* const c_suspended = "[suspended]";
+constexpr const char* c_watching = "[watching]";
+constexpr const char* c_finishing = "[finishing]";
+constexpr const char* c_suspended = "[suspended]";
 
-const char* const c_cmd_fetch = "pf";
-const char* const c_cmd_create = "pc";
-const char* const c_cmd_update = "pu";
-const char* const c_cmd_destroy = "pd";
-const char* const c_cmd_execute = "pe";
+constexpr const char* c_cmd_fetch = "pf";
+constexpr const char* c_cmd_create = "pc";
+constexpr const char* c_cmd_update = "pu";
+constexpr const char* c_cmd_destroy = "pd";
+constexpr const char* c_cmd_execute = "pe";
 
-const char* const c_perms_r_r = "r--r-----";
-const char* const c_perms_rw_rw_r = "rw-rw-r--";
+constexpr const char* c_perms_r_r = "r--r-----";
+constexpr const char* c_perms_rw_rw_r = "rw-rw-r--";
 
 const char c_hidden_file_prefix = '.';
 
 const char c_key_exchange_suffix = '*';
 
-const char* const c_key_field = "@key";
+constexpr const char* c_key_field = "@key";
 
-const char* const c_group_field = "@group";
-const char* const c_level_field = "@level";
-const char* const c_order_field = "@order";
-const char* const c_owner_field = "@owner";
+constexpr const char* c_group_field = "@group";
+constexpr const char* c_level_field = "@level";
+constexpr const char* c_order_field = "@order";
+constexpr const char* c_owner_field = "@owner";
 
-const char* const c_tz_loc = "@loc";
+constexpr const char* c_tz_loc = "@loc";
 
-const char* const c_dtm_now = "@now";
+constexpr const char* c_dtm_now = "@now";
 
-const char* const c_date_today = "@today";
-const char* const c_date_tomorrow = "@tomorrow";
+constexpr const char* c_date_today = "@today";
+constexpr const char* c_date_tomorrow = "@tomorrow";
 
-const char* const c_object_variable_skip_fk_handling = "@skip_fk_handling";
+constexpr const char* c_object_variable_skip_fk_handling = "@skip_fk_handling";
 
 const char c_notifier_ignore_char = '!';
 const char c_notifier_select_char = '#';
@@ -107,200 +107,200 @@ const char c_notifier_new_ignore_char = '-';
 const char c_notifier_mod_sel_ignore_char = '*';
 const char c_notifier_new_sel_ignore_char = '^';
 
-const char* const c_notifier_prefix = "@:";
-const char* const c_notifier_selection = "#";
+constexpr const char* c_notifier_prefix = "@:";
+constexpr const char* c_notifier_selection = "#";
 
-const char* const c_notifier_viewed_suffix = "viewed";
+constexpr const char* c_notifier_viewed_suffix = "viewed";
 
 const size_t c_notifer_check_wait = 50; // i.e. 1/20 sec
 const size_t c_max_notifer_checks = 100;
 
-const char* const c_CIYAM = "CIYAM";
+constexpr const char* c_CIYAM = "CIYAM";
 
-const char* const c_ciyam_tag = "ciyam";
+constexpr const char* c_ciyam_tag = "ciyam";
 
-const char* const c_bc_prefix = "bc.";
+constexpr const char* c_bc_prefix = "bc.";
 
-const char* const c_blk_suffix = ".blk";
-const char* const c_key_suffix = ".key";
-const char* const c_opl_suffix = ".opl";
-const char* const c_pub_suffix = ".pub";
-const char* const c_put_suffix = ".put";
-const char* const c_sig_suffix = ".sig";
+constexpr const char* c_blk_suffix = ".blk";
+constexpr const char* c_key_suffix = ".key";
+constexpr const char* c_opl_suffix = ".opl";
+constexpr const char* c_pub_suffix = ".pub";
+constexpr const char* c_put_suffix = ".put";
+constexpr const char* c_sig_suffix = ".sig";
 
-const char* const c_locked_suffix = ".locked";
-const char* const c_master_suffix = ".master";
-const char* const c_pinned_suffix = ".pinned";
-const char* const c_shared_suffix = ".shared";
-const char* const c_zenith_suffix = ".zenith";
+constexpr const char* c_locked_suffix = ".locked";
+constexpr const char* c_master_suffix = ".master";
+constexpr const char* c_pinned_suffix = ".pinned";
+constexpr const char* c_shared_suffix = ".shared";
+constexpr const char* c_zenith_suffix = ".zenith";
 
-const char* const c_genesis_suffix = ".0.blk";
+constexpr const char* c_genesis_suffix = ".0.blk";
 
-const char* const c_identity_suffix = "identity";
+constexpr const char* c_identity_suffix = "identity";
 
-const char* const c_dead_keys_suffix = ".dead_keys.lst";
-const char* const c_demo_keys_suffix = ".demo_keys.lst";
+constexpr const char* c_dead_keys_suffix = ".dead_keys.lst";
+constexpr const char* c_demo_keys_suffix = ".demo_keys.lst";
 
-const char* const c_repository_info_suffix = ".info";
+constexpr const char* c_repository_info_suffix = ".info";
 
-const char* const c_two_spaces = "  ";
+constexpr const char* c_two_spaces = "  ";
 
-const char* const c_backup = "backup";
-const char* const c_restore = "restore";
+constexpr const char* c_backup = "backup";
+constexpr const char* c_restore = "restore";
 
-const char* const c_files_ext = ".files";
+constexpr const char* c_files_ext = ".files";
 
-const char* const c_csv_file_ext = ".csv";
-const char* const c_log_file_ext = ".log";
-const char* const c_old_file_ext = ".old";
-const char* const c_sav_file_ext = ".sav";
+constexpr const char* c_csv_file_ext = ".csv";
+constexpr const char* c_log_file_ext = ".log";
+constexpr const char* c_old_file_ext = ".old";
+constexpr const char* c_sav_file_ext = ".sav";
 
-const char* const c_ciyam_pem = "ciyam.pem";
+constexpr const char* c_ciyam_pem = "ciyam.pem";
 
-const char* const c_logging_never = "never";
-const char* const c_logging_always = "always";
-const char* const c_logging_errors = "errors";
-const char* const c_logging_standard = "standard";
+constexpr const char* c_logging_never = "never";
+constexpr const char* c_logging_always = "always";
+constexpr const char* c_logging_errors = "errors";
+constexpr const char* c_logging_standard = "standard";
 
-const char* const c_ciyam_script = "ciyam_script";
-const char* const c_ciyam_server = "ciyam_server";
-const char* const c_ciyam_update = "ciyam_update";
+constexpr const char* c_ciyam_script = "ciyam_script";
+constexpr const char* c_ciyam_server = "ciyam_server";
+constexpr const char* c_ciyam_update = "ciyam_update";
 
-const char* const c_ciyam_interface = "ciyam_interface";
+constexpr const char* c_ciyam_interface = "ciyam_interface";
 
-const char* const c_ciyam_dummy_date = "20211202";
+constexpr const char* c_ciyam_dummy_date = "20211202";
 
-const char* const c_ciyam_dummy_unix_time = "9999999999";
+constexpr const char* c_ciyam_dummy_unix_time = "9999999999";
 
-const char* const c_ui_class_marker = "CLASS";
-const char* const c_ui_group_marker = "GROUP";
-const char* const c_ui_class_changing = "ui_CLASS_changing";
-const char* const c_ui_group_changing = "ui_GROUP_changing";
+constexpr const char* c_ui_class_marker = "CLASS";
+constexpr const char* c_ui_group_marker = "GROUP";
+constexpr const char* c_ui_class_changing = "ui_CLASS_changing";
+constexpr const char* c_ui_group_changing = "ui_GROUP_changing";
 
-const char* const c_json_escape_specials = "bfnrt\b\f\n\r\t";
+constexpr const char* c_json_escape_specials = "bfnrt\b\f\n\r\t";
 
-const char* const c_ciyam_ui_stop_file = "ciyam_interface.stop";
+constexpr const char* c_ciyam_ui_stop_file = "ciyam_interface.stop";
 
-const char* const c_ciyam_server_sid_file = "ciyam_server.sid";
-const char* const c_ciyam_server_sid_chk_file = "ciyam_server.sid.chk";
+constexpr const char* c_ciyam_server_sid_file = "ciyam_server.sid";
+constexpr const char* c_ciyam_server_sid_chk_file = "ciyam_server.sid.chk";
 
-const char* const c_test_backup_identity = "e3733d121";
-const char* const c_test_shared_identity = "121d3373e";
+constexpr const char* c_test_backup_identity = "e3733d121";
+constexpr const char* c_test_shared_identity = "121d3373e";
 
-const char* const c_variables_branch = "Variables";
-const char* const c_web_files_branch = "Web_Files";
+constexpr const char* c_variables_branch = "Variables";
+constexpr const char* c_web_files_branch = "Web_Files";
 
-const char* const c_query_param_name_access = "access";
-const char* const c_query_param_name_device = "device";
-const char* const c_query_param_name_passwd = "passwd";
-const char* const c_query_param_name_options = "options";
-const char* const c_query_param_name_payload = "payload";
-const char* const c_query_param_name_request = "request";
-const char* const c_query_param_name_session = "session";
+constexpr const char* c_query_param_name_access = "access";
+constexpr const char* c_query_param_name_device = "device";
+constexpr const char* c_query_param_name_passwd = "passwd";
+constexpr const char* c_query_param_name_options = "options";
+constexpr const char* c_query_param_name_payload = "payload";
+constexpr const char* c_query_param_name_request = "request";
+constexpr const char* c_query_param_name_session = "session";
 
-const char* const c_web_access_prefix = ".web_access_";
+constexpr const char* c_web_access_prefix = ".web_access_";
 
-const char* const c_web_device_name_admin = ".web_device_admin";
+constexpr const char* c_web_device_name_admin = ".web_device_admin";
 
-const char* const c_invalid_name_chars = "<>\"|&\\";
+constexpr const char* c_invalid_name_chars = "<>\"|&\\";
 
-const char* const c_key_field_name = "Key_";
-const char* const c_rev_field_name = "Rev_";
-const char* const c_sec_field_name = "Sec_";
-const char* const c_typ_field_name = "Typ_";
-const char* const c_ver_field_name = "Ver_";
+constexpr const char* c_key_field_name = "Key_";
+constexpr const char* c_rev_field_name = "Rev_";
+constexpr const char* c_sec_field_name = "Sec_";
+constexpr const char* c_typ_field_name = "Typ_";
+constexpr const char* c_ver_field_name = "Ver_";
 
-const char* const c_create_lock_name = "create";
-const char* const c_review_lock_name = "review";
-const char* const c_update_lock_name = "update";
-const char* const c_destroy_lock_name = "destroy";
+constexpr const char* c_create_lock_name = "create";
+constexpr const char* c_review_lock_name = "review";
+constexpr const char* c_update_lock_name = "update";
+constexpr const char* c_destroy_lock_name = "destroy";
 
-const char* const c_meta_model_name = "Meta";
+constexpr const char* c_meta_model_name = "Meta";
 
-const char* const c_meta_storage_name = "Meta";
-const char* const c_ciyam_storage_name = "ciyam";
+constexpr const char* c_meta_storage_name = "Meta";
+constexpr const char* c_ciyam_storage_name = "ciyam";
 
-const char* const c_meta_app_directory = "meta";
+constexpr const char* c_meta_app_directory = "meta";
 
-const char* const c_meta_class_name_class = "Class";
-const char* const c_meta_class_name_model = "Model";
-const char* const c_meta_class_name_application = "Application";
+constexpr const char* c_meta_class_name_class = "Class";
+constexpr const char* c_meta_class_name_model = "Model";
+constexpr const char* c_meta_class_name_application = "Application";
 
-const char* const c_ignore_field = "@ignore";
+constexpr const char* c_ignore_field = "@ignore";
 
-const char* const c_local_host = "localhost";
+constexpr const char* c_local_host = "localhost";
 
-const char* const c_null_ip_addr = "::";
-const char* const c_local_ip_addr = "::1";
+constexpr const char* c_null_ip_addr = "::";
+constexpr const char* c_local_ip_addr = "::1";
 
-const char* const c_local_ip_addrs = "::1 127.0.0.1";
+constexpr const char* c_local_ip_addrs = "::1 127.0.0.1";
 
-const char* const c_timezones_file = "timezones.sio";
+constexpr const char* c_timezones_file = "timezones.sio";
 
-const char* const c_autoscript_file = "autoscript.sio";
-const char* const c_manuscript_file = "manuscript.sio";
+constexpr const char* c_autoscript_file = "autoscript.sio";
+constexpr const char* c_manuscript_file = "manuscript.sio";
 
-const char* const c_password_info_file = "password.info";
+constexpr const char* c_password_info_file = "password.info";
 
-const char* const c_unlocked_with_key_file = ".unlocked_with_key";
+constexpr const char* c_unlocked_with_key_file = ".unlocked_with_key";
 
-const char* const c_demo_entropy_1 = "22d5cd3ff652620a739677323079e3dd";
-const char* const c_demo_entropy_2 = "3c6eede8b0c9717370546cd446427499";
-const char* const c_demo_entropy_3 = "de604cee0755a3d81944ea96aed12681";
+constexpr const char* c_demo_entropy_1 = "22d5cd3ff652620a739677323079e3dd";
+constexpr const char* c_demo_entropy_2 = "3c6eede8b0c9717370546cd446427499";
+constexpr const char* c_demo_entropy_3 = "de604cee0755a3d81944ea96aed12681";
 
-const char* const c_env_var_ciyam_user = "CIYAM_USER";
+constexpr const char* c_env_var_ciyam_user = "CIYAM_USER";
 
-const char* const c_notifier_none = "none";
-const char* const c_notifier_created = "created";
-const char* const c_notifier_deleted = "deleted";
-const char* const c_notifier_modified = "modified";
-const char* const c_notifier_moved_from = "moved_from";
-const char* const c_notifier_modified_from = "modified_from";
+constexpr const char* c_notifier_none = "none";
+constexpr const char* c_notifier_created = "created";
+constexpr const char* c_notifier_deleted = "deleted";
+constexpr const char* c_notifier_modified = "modified";
+constexpr const char* c_notifier_moved_from = "moved_from";
+constexpr const char* c_notifier_modified_from = "modified_from";
 
-const char* const c_file_zero_length = "*";
+constexpr const char* c_file_zero_length = "*";
 
-const char* const c_system_archives_folder = "arch";
-const char* const c_system_blacklist_folder = "blst";
-const char* const c_system_datachain_folder = "data";
-const char* const c_system_peerchain_folder = "peer";
-const char* const c_system_user_info_folder = "user";
-const char* const c_system_variables_folder = "vars";
-const char* const c_system_repository_folder = "repo";
+constexpr const char* c_system_archives_folder = "arch";
+constexpr const char* c_system_blacklist_folder = "blst";
+constexpr const char* c_system_datachain_folder = "data";
+constexpr const char* c_system_peerchain_folder = "peer";
+constexpr const char* c_system_user_info_folder = "user";
+constexpr const char* c_system_variables_folder = "vars";
+constexpr const char* c_system_repository_folder = "repo";
 
-const char* const c_storage_folder_name_dot_dat = ".dat";
-const char* const c_storage_folder_name_dot_idx = ".idx";
-const char* const c_storage_folder_name_modules = "modules";
-const char* const c_storage_folder_name_channels = "channels";
-const char* const c_storage_folder_name_gid_data = "gid_data";
-const char* const c_storage_folder_name_uid_data = "uid_data";
-const char* const c_storage_folder_name_variables = "variables";
-const char* const c_storage_folder_name_datachains = "datachains";
+constexpr const char* c_storage_folder_name_dot_dat = ".dat";
+constexpr const char* c_storage_folder_name_dot_idx = ".idx";
+constexpr const char* c_storage_folder_name_modules = "modules";
+constexpr const char* c_storage_folder_name_channels = "channels";
+constexpr const char* c_storage_folder_name_gid_data = "gid_data";
+constexpr const char* c_storage_folder_name_uid_data = "uid_data";
+constexpr const char* c_storage_folder_name_variables = "variables";
+constexpr const char* c_storage_folder_name_datachains = "datachains";
 
-const char* const c_special_regex_for_domain_name = "@domain_name";
-const char* const c_special_regex_for_email_address = "@email_address";
-const char* const c_special_regex_for_bitcoin_address = "@bitcoin_address";
-const char* const c_special_regex_for_peerchain_identity = "@peerchain_identity";
-const char* const c_special_regex_for_peerchain_description = "@peerchain_description";
+constexpr const char* c_special_regex_for_domain_name = "@domain_name";
+constexpr const char* c_special_regex_for_email_address = "@email_address";
+constexpr const char* c_special_regex_for_bitcoin_address = "@bitcoin_address";
+constexpr const char* c_special_regex_for_peerchain_identity = "@peerchain_identity";
+constexpr const char* c_special_regex_for_peerchain_description = "@peerchain_description";
 
-const char* const c_file_repository_meta_data_line_prefix = "md:";
-const char* const c_file_repository_public_key_line_prefix = "pk:";
-const char* const c_file_repository_source_hash_line_prefix = "sh:";
-const char* const c_file_repository_target_hash_line_prefix = "th:";
+constexpr const char* c_file_repository_meta_data_line_prefix = "md:";
+constexpr const char* c_file_repository_public_key_line_prefix = "pk:";
+constexpr const char* c_file_repository_source_hash_line_prefix = "sh:";
+constexpr const char* c_file_repository_target_hash_line_prefix = "th:";
 
-const char* const c_file_repository_meta_data_info_type_raw = "raw";
+constexpr const char* c_file_repository_meta_data_info_type_raw = "raw";
 
-const char* const c_file_repository_local_hash_attribute = "local_hash";
+constexpr const char* c_file_repository_local_hash_attribute = "local_hash";
 
-const char* const c_storage_identity_tx_id = "[0]";
+constexpr const char* c_storage_identity_tx_id = "[0]";
 
-const char* const c_label_prefix = "label";
+constexpr const char* c_label_prefix = "label";
 
-const char* const c_tmp_directory = "tmp";
-const char* const c_files_directory = "files";
+constexpr const char* c_tmp_directory = "tmp";
+constexpr const char* c_files_directory = "files";
 
-const char* const c_ciyam_files_directory = ".files";
+constexpr const char* c_ciyam_files_directory = ".files";
 
-const char* const c_application_script_prefix = "app_script:";
+constexpr const char* c_application_script_prefix = "app_script:";
 
 const size_t c_peer_sleep_time = 500; // i.e. 0.5 secs
 
@@ -351,75 +351,75 @@ const unsigned char c_file_type_char_core_list_compressed = '\x1a';
 
 const unsigned char c_file_type_char_mime_blob_compressed = '\x29';
 
-const char* const c_file_type_str_blob = "\x01";
-const char* const c_file_type_str_list = "\x02";
+constexpr const char* c_file_type_str_blob = "\x01";
+constexpr const char* c_file_type_str_list = "\x02";
 
-const char* const c_file_type_str_core_blob = "\x11";
-const char* const c_file_type_str_core_list = "\x12";
+constexpr const char* c_file_type_str_core_blob = "\x11";
+constexpr const char* c_file_type_str_core_list = "\x12";
 
-const char* const c_file_type_str_mime_blob = "\x21";
+constexpr const char* c_file_type_str_mime_blob = "\x21";
 
-const char* const c_file_type_str_blob_encrypted = "\x05";
-const char* const c_file_type_str_blob_no_compress = "\x81";
+constexpr const char* c_file_type_str_blob_encrypted = "\x05";
+constexpr const char* c_file_type_str_blob_no_compress = "\x81";
 
-const char* const c_file_type_core_block_object = "blk";
+constexpr const char* c_file_type_core_block_object = "blk";
 
-const char* const c_file_type_core_block_header_height = "h";
-const char* const c_file_type_core_block_header_identity = "i";
-const char* const c_file_type_core_block_header_num_items = "n";
-const char* const c_file_type_core_block_header_stream_cipher = "s";
-const char* const c_file_type_core_block_header_targeted_ident = "t";
-const char* const c_file_type_core_block_header_version_number = "v";
+constexpr const char* c_file_type_core_block_header_height = "h";
+constexpr const char* c_file_type_core_block_header_identity = "i";
+constexpr const char* c_file_type_core_block_header_num_items = "n";
+constexpr const char* c_file_type_core_block_header_stream_cipher = "s";
+constexpr const char* c_file_type_core_block_header_targeted_ident = "t";
+constexpr const char* c_file_type_core_block_header_version_number = "v";
 
-const char* const c_file_type_core_block_header_height_prefix = "h=";
-const char* const c_file_type_core_block_header_identity_prefix = "i=";
-const char* const c_file_type_core_block_header_num_items_prefix = "n=";
-const char* const c_file_type_core_block_header_stream_cipher_prefix = "s=";
-const char* const c_file_type_core_block_header_targeted_ident_prefix = "t=";
-const char* const c_file_type_core_block_header_version_number_prefix = "v=";
+constexpr const char* c_file_type_core_block_header_height_prefix = "h=";
+constexpr const char* c_file_type_core_block_header_identity_prefix = "i=";
+constexpr const char* c_file_type_core_block_header_num_items_prefix = "n=";
+constexpr const char* c_file_type_core_block_header_stream_cipher_prefix = "s=";
+constexpr const char* c_file_type_core_block_header_targeted_ident_prefix = "t=";
+constexpr const char* c_file_type_core_block_header_version_number_prefix = "v=";
 
-const char* const c_file_type_core_block_detail_hind_hash_prefix = "h:";
-const char* const c_file_type_core_block_detail_last_hashes_prefix = "l:";
-const char* const c_file_type_core_block_detail_op_list_hash_prefix = "o:";
-const char* const c_file_type_core_block_detail_pubkey_hashes_prefix = "p:";
-const char* const c_file_type_core_block_detail_tree_root_hash_prefix = "t:";
-const char* const c_file_type_core_block_detail_signature_file_hash_prefix = "s:";
-const char* const c_file_type_core_block_detail_unix_block_time_value_prefix = "u:";
+constexpr const char* c_file_type_core_block_detail_hind_hash_prefix = "h:";
+constexpr const char* c_file_type_core_block_detail_last_hashes_prefix = "l:";
+constexpr const char* c_file_type_core_block_detail_op_list_hash_prefix = "o:";
+constexpr const char* c_file_type_core_block_detail_pubkey_hashes_prefix = "p:";
+constexpr const char* c_file_type_core_block_detail_tree_root_hash_prefix = "t:";
+constexpr const char* c_file_type_core_block_detail_signature_file_hash_prefix = "s:";
+constexpr const char* c_file_type_core_block_detail_unix_block_time_value_prefix = "u:";
 
-const char* const c_sys = "sys";
-const char* const c_auto = "auto";
-const char* const c_init = "init";
-const char* const c_peer = "peer";
-const char* const c_admin = "admin";
+constexpr const char* c_sys = "sys";
+constexpr const char* c_auto = "auto";
+constexpr const char* c_init = "init";
+constexpr const char* c_peer = "peer";
+constexpr const char* c_admin = "admin";
 
-const char* const c_unknown = "unknown";
+constexpr const char* c_unknown = "unknown";
 
-const char* const c_everyone = "everyone";
-const char* const c_visitors = "visitors";
-const char* const c_watchers = "watchers";
+constexpr const char* c_everyone = "everyone";
+constexpr const char* c_visitors = "visitors";
+constexpr const char* c_watchers = "watchers";
 
-const char* const c_both = "both";
-const char* const c_create = "create";
-const char* const c_update = "update";
+constexpr const char* c_both = "both";
+constexpr const char* c_create = "create";
+constexpr const char* c_update = "update";
 
-const char* const c_anyone = "anyone";
-const char* const c_admin_only = "admin_only";
-const char* const c_owner_only = "owner_only";
-const char* const c_admin_owner = "admin_owner";
-const char* const c_denied_always = "denied_always";
+constexpr const char* c_anyone = "anyone";
+constexpr const char* c_admin_only = "admin_only";
+constexpr const char* c_owner_only = "owner_only";
+constexpr const char* c_admin_owner = "admin_owner";
+constexpr const char* c_denied_always = "denied_always";
 
-const char* const c_user_class_suffix = "_user_class";
+constexpr const char* c_user_class_suffix = "_user_class";
 
-const char* const c_response_okay = "(okay)";
-const char* const c_response_okay_more = "(okay more)";
-const char* const c_response_okay_skip = "(okay skip)";
+constexpr const char* c_response_okay = "(okay)";
+constexpr const char* c_response_okay_more = "(okay more)";
+constexpr const char* c_response_okay_skip = "(okay skip)";
 
-const char* const c_response_not_found = "(not found)";
+constexpr const char* c_response_not_found = "(not found)";
 
-const char* const c_response_error_prefix = "(error)";
-const char* const c_response_message_prefix = "(message)";
+constexpr const char* c_response_error_prefix = "(error)";
+constexpr const char* c_response_message_prefix = "(message)";
 
-const char* const c_special_variable_queue_prefix = "@queue_";
-const char* const c_special_variable_mapped_prefix = "@mapped_";
+constexpr const char* c_special_variable_queue_prefix = "@queue_";
+constexpr const char* c_special_variable_mapped_prefix = "@mapped_";
 
 #endif

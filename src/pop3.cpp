@@ -66,22 +66,22 @@ const size_t c_final_response_timeout = 500;
 // NOTE: The standard POP3 port is 110. For SSL it is usually 995 and for TLS it's usually 110.
 const int c_pop3_default_port = 110;
 
-const char* const c_prefix_ok = "+OK";
-const char* const c_prefix_err = "-ERR";
+constexpr const char* c_prefix_ok = "+OK";
+constexpr const char* c_prefix_err = "-ERR";
 
-const char* const c_request_top = "TOP";
-const char* const c_request_dele = "DELE";
-const char* const c_request_list = "LIST";
-const char* const c_request_pass = "PASS";
-const char* const c_request_quit = "QUIT";
-const char* const c_request_retr = "RETR";
-const char* const c_request_stat = "STAT";
-const char* const c_request_stls = "STLS";
-const char* const c_request_user = "USER";
+constexpr const char* c_request_top = "TOP";
+constexpr const char* c_request_dele = "DELE";
+constexpr const char* c_request_list = "LIST";
+constexpr const char* c_request_pass = "PASS";
+constexpr const char* c_request_quit = "QUIT";
+constexpr const char* c_request_retr = "RETR";
+constexpr const char* c_request_stat = "STAT";
+constexpr const char* c_request_stls = "STLS";
+constexpr const char* c_request_user = "USER";
 
-const char* const c_mime_header = "MIME-Version:";
+constexpr const char* c_mime_header = "MIME-Version:";
 
-const char* const c_response_multi_terminator = ".";
+constexpr const char* c_response_multi_terminator = ".";
 
 void send_simple_request( tcp_socket& socket, const string& request, progress* p_progress = 0 )
 {
@@ -95,6 +95,7 @@ void send_simple_request( tcp_socket& socket, const string& request, progress* p
 string get_simple_response( tcp_socket& socket, progress* p_progress = 0 )
 {
    string response_line;
+
    size_t timeout = c_initial_timeout;
 
    if( socket.read_line( response_line, timeout ) <= 0 )
@@ -104,11 +105,12 @@ string get_simple_response( tcp_socket& socket, progress* p_progress = 0 )
       p_progress->output_progress( response_line );
 
    string::size_type pos = response_line.find( c_prefix_err );
-   if( pos != string::npos )
-      throw runtime_error( response_line.substr( pos + strlen( c_prefix_err ) + 1 ) );
 
-   if( response_line.size( ) >= strlen( c_prefix_ok )
-    && response_line.substr( 0, strlen( c_prefix_ok ) ) != c_prefix_ok )
+   if( pos != string::npos )
+      throw runtime_error( response_line.substr( pos + CONST_LENGTH( c_prefix_err ) + 1 ) );
+
+   if( response_line.size( ) >= CONST_LENGTH( c_prefix_ok )
+    && response_line.substr( 0, CONST_LENGTH( c_prefix_ok ) ) != c_prefix_ok )
       throw runtime_error( response_line );
 
    return response_line;
@@ -123,6 +125,7 @@ void get_multi_line_response( tcp_socket& socket, ostream& os, bool* p_is_mime =
       *p_is_mime = false;
 
    bool finished_headers = false;
+
    while( true )
    {
       if( socket.read_line( next_response_line, timeout ) <= 0 )
@@ -131,7 +134,9 @@ void get_multi_line_response( tcp_socket& socket, ostream& os, bool* p_is_mime =
          if( socket.had_blank_line( ) )
          {
             finished_headers = true;
+
             os << '\n';
+
             continue;
          }
 
@@ -148,18 +153,20 @@ void get_multi_line_response( tcp_socket& socket, ostream& os, bool* p_is_mime =
          p_progress->output_progress( next_response_line );
 
       if( timeout == c_initial_timeout
-       && next_response_line.size( ) >= strlen( c_prefix_ok )
-       && next_response_line.substr( 0, strlen( c_prefix_ok ) ) == c_prefix_ok )
+       && next_response_line.size( ) >= CONST_LENGTH( c_prefix_ok )
+       && next_response_line.substr( 0, CONST_LENGTH( c_prefix_ok ) ) == c_prefix_ok )
       {
          timeout = c_subsequent_timeout;
+
          next_response_line.erase( );
+
          continue;
       }
 
       if( timeout == c_initial_timeout
-       && next_response_line.size( ) >= strlen( c_prefix_err )
-       && next_response_line.substr( 0, strlen( c_prefix_err ) ) == c_prefix_err )
-         throw runtime_error( next_response_line.substr( strlen( c_prefix_err ) + 1 ) );
+       && next_response_line.size( ) >= CONST_LENGTH( c_prefix_err )
+       && next_response_line.substr( 0, CONST_LENGTH( c_prefix_err ) ) == c_prefix_err )
+         throw runtime_error( next_response_line.substr( CONST_LENGTH( c_prefix_err ) + 1 ) );
 
       if( next_response_line == c_response_multi_terminator )
          break;
@@ -205,8 +212,8 @@ void get_multi_line_response( tcp_socket& socket,
          p_progress->output_progress( next_response_line );
 
       if( timeout == c_initial_timeout
-       && next_response_line.size( ) >= strlen( c_prefix_ok )
-       && next_response_line.substr( 0, strlen( c_prefix_ok ) ) == c_prefix_ok )
+       && next_response_line.size( ) >= CONST_LENGTH( c_prefix_ok )
+       && next_response_line.substr( 0, CONST_LENGTH( c_prefix_ok ) ) == c_prefix_ok )
       {
          timeout = c_subsequent_timeout;
          next_response_line.erase( );
@@ -214,9 +221,9 @@ void get_multi_line_response( tcp_socket& socket,
       }
 
       if( response_lines.empty( )
-       && next_response_line.size( ) >= strlen( c_prefix_err )
-       && next_response_line.substr( 0, strlen( c_prefix_err ) ) == c_prefix_err )
-         throw runtime_error( next_response_line.substr( strlen( c_prefix_err ) + 1 ) );
+       && next_response_line.size( ) >= CONST_LENGTH( c_prefix_err )
+       && next_response_line.substr( 0, CONST_LENGTH( c_prefix_err ) ) == c_prefix_err )
+         throw runtime_error( next_response_line.substr( CONST_LENGTH( c_prefix_err ) + 1 ) );
 
       if( next_response_line == c_response_multi_terminator )
          break;
@@ -229,15 +236,15 @@ void get_multi_line_response( tcp_socket& socket,
 
 int parse_stat_response( const string& response, long* p_octets )
 {
-   if( response.size( ) >= strlen( c_prefix_err )
-    && response.substr( 0, strlen( c_prefix_err ) ) == c_prefix_err )
-      throw runtime_error( "pop3 - " + response.substr( strlen( c_prefix_err ) + 1 ) );
+   if( response.size( ) >= CONST_LENGTH( c_prefix_err )
+    && response.substr( 0, CONST_LENGTH( c_prefix_err ) ) == c_prefix_err )
+      throw runtime_error( "pop3 - " + response.substr( CONST_LENGTH( c_prefix_err ) + 1 ) );
 
-   if( response.size( ) >= strlen( c_prefix_ok )
-    && response.substr( 0, strlen( c_prefix_ok ) ) != c_prefix_ok )
+   if( response.size( ) >= CONST_LENGTH( c_prefix_ok )
+    && response.substr( 0, CONST_LENGTH( c_prefix_ok ) ) != c_prefix_ok )
       throw runtime_error( "pop3 - unexpected STAT response '" + response + "'" );
 
-   string stat_details( response.substr( strlen( c_prefix_ok ) + 1 ) );
+   string stat_details( response.substr( CONST_LENGTH( c_prefix_ok ) + 1 ) );
 
    string::size_type pos = stat_details.find( ' ' );
    if( pos == string::npos )
@@ -255,13 +262,13 @@ void parse_list_response(
 {
    for( vector< string >::size_type i = 0; i < response_lines.size( ); i++ )
    {
-      if( response_lines[ i ].size( ) >= strlen( c_prefix_ok )
-       && response_lines[ i ].substr( 0, strlen( c_prefix_ok ) ) == c_prefix_ok )
+      if( response_lines[ i ].size( ) >= CONST_LENGTH( c_prefix_ok )
+       && response_lines[ i ].substr( 0, CONST_LENGTH( c_prefix_ok ) ) == c_prefix_ok )
          continue;
 
-      if( response_lines[ i ].size( ) >= strlen( c_prefix_err )
-       && response_lines[ i ].substr( 0, strlen( c_prefix_err ) ) == c_prefix_err )
-         throw runtime_error( response_lines[ i ].substr( strlen( c_prefix_err ) + 1 ) );
+      if( response_lines[ i ].size( ) >= CONST_LENGTH( c_prefix_err )
+       && response_lines[ i ].substr( 0, CONST_LENGTH( c_prefix_err ) ) == c_prefix_err )
+         throw runtime_error( response_lines[ i ].substr( CONST_LENGTH( c_prefix_err ) + 1 ) );
 
       string::size_type pos = response_lines[ i ].find( ' ' );
       if( pos == string::npos )

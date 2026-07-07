@@ -742,7 +742,7 @@ void Meta_Package_Type::impl::impl_Install( )
 
       if( next.find( c_application_script_prefix ) == 0 )
       {
-         application_scripts.push_back( next.substr( strlen( c_application_script_prefix ) ) );
+         application_scripts.push_back( next.substr( CONST_LENGTH( c_application_script_prefix ) ) );
 
          continue;
       }

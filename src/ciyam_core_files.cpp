@@ -104,7 +104,7 @@ void verify_block( const string& content, bool check_dependents )
                has_num_tree_items = true;
 
                num_tree_items = from_string< size_t >(
-                next_attribute.substr( strlen( c_file_type_core_block_header_num_items_prefix ) ) );
+                next_attribute.substr( CONST_LENGTH( c_file_type_core_block_header_num_items_prefix ) ) );
 
                set_session_variable( e_special_var_blockchain_num_tree_items, to_string( num_tree_items ) );
 
@@ -114,7 +114,7 @@ void verify_block( const string& content, bool check_dependents )
             {
                has_stream_cipher = true;
 
-               stream_cipher = next_attribute.substr( strlen( c_file_type_core_block_header_stream_cipher_prefix ) );
+               stream_cipher = next_attribute.substr( CONST_LENGTH( c_file_type_core_block_header_stream_cipher_prefix ) );
 
                set_session_variable( e_special_var_blockchain_stream_cipher, stream_cipher );
 
@@ -124,7 +124,7 @@ void verify_block( const string& content, bool check_dependents )
             {
                has_targeted_identity = true;
 
-               targeted_identity = next_attribute.substr( strlen( c_file_type_core_block_header_targeted_ident_prefix ) );
+               targeted_identity = next_attribute.substr( CONST_LENGTH( c_file_type_core_block_header_targeted_ident_prefix ) );
 
                set_session_variable( e_special_var_blockchain_targeted_identity, targeted_identity );
 
@@ -137,7 +137,7 @@ void verify_block( const string& content, bool check_dependents )
             if( next_attribute.find( c_file_type_core_block_header_height_prefix ) != 0 )
                throw runtime_error( "unexpected missing height attribute in block header '" + header + "'" );
 
-            string value( next_attribute.substr( strlen( c_file_type_core_block_header_height_prefix ) ) );
+            string value( next_attribute.substr( CONST_LENGTH( c_file_type_core_block_header_height_prefix ) ) );
 
             regex expr( c_regex_integer, true, true );
 
@@ -157,14 +157,14 @@ void verify_block( const string& content, bool check_dependents )
 
             has_identity = true;
 
-            identity = next_attribute.substr( strlen( c_file_type_core_block_header_identity_prefix ) );
+            identity = next_attribute.substr( CONST_LENGTH( c_file_type_core_block_header_identity_prefix ) );
          }
          else if( !version )
          {
             if( next_attribute.find( c_file_type_core_block_header_version_number_prefix ) != 0 )
                throw runtime_error( "unexpected missing version number attribute in block header '" + header + "'" );
 
-            string version_str( next_attribute.substr( strlen( c_file_type_core_block_header_version_number_prefix ) ) );
+            string version_str( next_attribute.substr( CONST_LENGTH( c_file_type_core_block_header_version_number_prefix ) ) );
 
             version = from_string< size_t >( version_str );
          }
@@ -245,7 +245,7 @@ void verify_block( const string& content, bool check_dependents )
       {
          if( !has_primary_pubkey )
          {
-            size_t len = strlen( c_file_type_core_block_detail_pubkey_hashes_prefix );
+            size_t len = CONST_LENGTH( c_file_type_core_block_detail_pubkey_hashes_prefix );
 
             if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_pubkey_hashes_prefix ) )
                throw runtime_error( "invalid genesis block public key hashes attribute '" + next_attribute + "'" );
@@ -354,7 +354,7 @@ void verify_block( const string& content, bool check_dependents )
 
          if( last_block_hash.empty( ) )
          {
-            size_t len = strlen( c_file_type_core_block_detail_last_hashes_prefix );
+            size_t len = CONST_LENGTH( c_file_type_core_block_detail_last_hashes_prefix );
 
             if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_last_hashes_prefix ) )
                throw runtime_error( "invalid block last block hashes attribute '" + next_attribute + "'" );
@@ -398,7 +398,7 @@ void verify_block( const string& content, bool check_dependents )
                       + blockchain_identity + "' block at height " + to_string( block_height - 1 ) );
 
                   last_unix_time_value = from_string< uint64_t >(
-                   last_block_final_attribute.substr( strlen( c_file_type_core_block_detail_unix_block_time_value_prefix ) ) );
+                   last_block_final_attribute.substr( CONST_LENGTH( c_file_type_core_block_detail_unix_block_time_value_prefix ) ) );
                }
             }
 
@@ -437,7 +437,7 @@ void verify_block( const string& content, bool check_dependents )
          }
          else if( public_key_hash.empty( ) )
          {
-            size_t len = strlen( c_file_type_core_block_detail_pubkey_hashes_prefix );
+            size_t len = CONST_LENGTH( c_file_type_core_block_detail_pubkey_hashes_prefix );
 
             if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_pubkey_hashes_prefix ) )
                throw runtime_error( "invalid data public key hashes attribute '" + next_attribute + "'" );
@@ -470,7 +470,7 @@ void verify_block( const string& content, bool check_dependents )
          }
          else if( !unix_time_value )
          {
-            size_t len = strlen( c_file_type_core_block_detail_unix_block_time_value_prefix );
+            size_t len = CONST_LENGTH( c_file_type_core_block_detail_unix_block_time_value_prefix );
 
             if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_unix_block_time_value_prefix ) )
                throw runtime_error( "invalid unix block time value attribute '" + next_attribute + "'" );

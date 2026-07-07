@@ -22,12 +22,12 @@
 
 using namespace std;
 
-const char* const c_comment_prefix = ";;;";
-const char* const c_section_prefix = "### ";
+constexpr const char* c_comment_prefix = ";;;";
+constexpr const char* c_section_prefix = "### ";
 
-const char* const c_outline_extension = ".outline";
+constexpr const char* c_outline_extension = ".outline";
 
-const char* const c_option_uncomment = "-uncomment";
+constexpr const char* c_option_uncomment = "-uncomment";
 
 int main( int argc, char* argv[ ] )
 {
@@ -46,7 +46,7 @@ int main( int argc, char* argv[ ] )
 
       bool uncomment = false;
 
-      size_t comment_prefix_length = strlen( c_comment_prefix );
+      size_t comment_prefix_length = CONST_LENGTH( c_comment_prefix );
 
       vector< string > packages;
 

@@ -46,19 +46,19 @@ const int c_loop_variable_digits = 8;
 
 const char c_security_suffix = '-';
 
-const char* const c_all = "all";
+constexpr const char* c_all = "all";
 
-const char* const c_ui_type_repl_name = "TYPE";
+constexpr const char* c_ui_type_repl_name = "TYPE";
 
-const char* const c_ui_type_submit_file = "ui_TYPE_submit";
+constexpr const char* c_ui_type_submit_file = "ui_TYPE_submit";
 
-const char* const c_ui_submit_type_peer = "peer";
+constexpr const char* c_ui_submit_type_peer = "peer";
 
-const char* const c_primary_key_name = "@pk";
+constexpr const char* c_primary_key_name = "@pk";
 
-const char* const c_links_instance_lock_key = "@links";
+constexpr const char* c_links_instance_lock_key = "@links";
 
-const char* const c_invalid_key_characters = "`~!@#$%^&*<>()[]{}/\\?|-+=.,;:'\"";
+constexpr const char* c_invalid_key_characters = "`~!@#$%^&*<>()[]{}/\\?|-+=.,;:'\"";
 
 const size_t c_sec_prefix_length = 6;
 
@@ -2114,7 +2114,7 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
          indirect_row_data.erase( 0, 1 );
 
       if( persistence_extra.find( c_notifier_prefix ) == 0 )
-         persistence_extra.erase( 0, strlen( c_notifier_prefix ) );
+         persistence_extra.erase( 0, CONST_LENGTH( c_notifier_prefix ) );
 
       if( !indirect_row_data.empty( ) )
          row_data += '|' + indirect_row_data;

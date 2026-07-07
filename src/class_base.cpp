@@ -98,70 +98,70 @@ const size_t c_cascade_progress_seconds = 10;
 
 const size_t c_lamport_key_size = ( 90 * 256 );
 
-const char* const c_ntfy_dummy_user = "ntfy";
-const char* const c_ntfy_topic_prefix = "up";
-const char* const c_ntfy_message_prefix = "[CIYAM]";
-const char* const c_ntfy_normal_reponse = "\"id\"";
+constexpr const char* c_ntfy_dummy_user = "ntfy";
+constexpr const char* c_ntfy_topic_prefix = "up";
+constexpr const char* c_ntfy_message_prefix = "[CIYAM]";
+constexpr const char* c_ntfy_normal_reponse = "\"id\"";
 
-const char* const c_unique_item_set_suffix = "_uis";
+constexpr const char* c_unique_item_set_suffix = "_uis";
 
-const char* const c_dummy_identity = "123456789";
+constexpr const char* c_dummy_identity = "123456789";
 
-const char* const c_lamport_key_ext = ".key";
-const char* const c_lamport_pub_ext = ".pub";
-const char* const c_lamport_sig_ext = ".sig";
-const char* const c_lamport_src_ext = ".src";
+constexpr const char* c_lamport_key_ext = ".key";
+constexpr const char* c_lamport_pub_ext = ".pub";
+constexpr const char* c_lamport_sig_ext = ".sig";
+constexpr const char* c_lamport_src_ext = ".src";
 
-const char* const c_protocol_bitcoin = "bitcoin";
-const char* const c_protocol_blockchain = "blockchain";
+constexpr const char* c_protocol_bitcoin = "bitcoin";
+constexpr const char* c_protocol_blockchain = "blockchain";
 
-const char* const c_error_message_prefix = "error message:";
+constexpr const char* c_error_message_prefix = "error message:";
 
-const char* const c_crypto_info_min_fee = "min_fee";
-const char* const c_crypto_info_testnet = "testnet";
-const char* const c_crypto_info_addr_prefix = "addr_prefix";
-const char* const c_crypto_info_p2sh_prefix = "p2sh_prefix";
-const char* const c_crypto_info_acct_min_fee = "acct_min_fee";
-const char* const c_crypto_info_acct_p2sh_fee = "acct_p2sh_fee";
+constexpr const char* c_crypto_info_min_fee = "min_fee";
+constexpr const char* c_crypto_info_testnet = "testnet";
+constexpr const char* c_crypto_info_addr_prefix = "addr_prefix";
+constexpr const char* c_crypto_info_p2sh_prefix = "p2sh_prefix";
+constexpr const char* c_crypto_info_acct_min_fee = "acct_min_fee";
+constexpr const char* c_crypto_info_acct_p2sh_fee = "acct_p2sh_fee";
 
-const char* const c_email_subject_script_marker = "[CIYAM]";
+constexpr const char* c_email_subject_script_marker = "[CIYAM]";
 
-const char* const c_section_timezone = "timezone";
-const char* const c_section_timezones = "timezones";
-const char* const c_section_daylight_saving_change = "daylight_saving_change";
-const char* const c_section_daylight_saving_changes = "daylight_saving_changes";
+constexpr const char* c_section_timezone = "timezone";
+constexpr const char* c_section_timezones = "timezones";
+constexpr const char* c_section_daylight_saving_change = "daylight_saving_change";
+constexpr const char* c_section_daylight_saving_changes = "daylight_saving_changes";
 
-const char* const c_attribute_abbr = "abbr";
-const char* const c_attribute_name = "name";
-const char* const c_attribute_tz_info = "tz_info";
-const char* const c_attribute_utc_offset = "utc_offset";
-const char* const c_attribute_description = "description";
-const char* const c_attribute_daylight_abbr = "daylight_abbr";
-const char* const c_attribute_daylight_year_start = "daylight_year_start";
-const char* const c_attribute_daylight_year_finish = "daylight_year_finish";
-const char* const c_attribute_daylight_start_month = "daylight_start_month";
-const char* const c_attribute_daylight_start_occurrence = "daylight_start_occurrence";
-const char* const c_attribute_daylight_start_day_of_week = "daylight_start_day_of_week";
-const char* const c_attribute_daylight_start_time = "daylight_start_time";
-const char* const c_attribute_daylight_finish_month = "daylight_finish_month";
-const char* const c_attribute_daylight_finish_occurrence = "daylight_finish_occurrence";
-const char* const c_attribute_daylight_finish_day_of_week = "daylight_finish_day_of_week";
-const char* const c_attribute_daylight_finish_time = "daylight_finish_time";
-const char* const c_attribute_daylight_utc_offset = "daylight_utc_offset";
-const char* const c_attribute_year_start = "year_start";
-const char* const c_attribute_year_finish = "year_finish";
-const char* const c_attribute_start_month = "start_month";
-const char* const c_attribute_start_occurrence = "start_occurrence";
-const char* const c_attribute_start_day_of_week = "start_day_of_week";
-const char* const c_attribute_start_time = "start_time";
-const char* const c_attribute_finish_month = "finish_month";
-const char* const c_attribute_finish_occurrence = "finish_occurrence";
-const char* const c_attribute_finish_day_of_week = "finish_day_of_week";
-const char* const c_attribute_finish_time = "finish_time";
+constexpr const char* c_attribute_abbr = "abbr";
+constexpr const char* c_attribute_name = "name";
+constexpr const char* c_attribute_tz_info = "tz_info";
+constexpr const char* c_attribute_utc_offset = "utc_offset";
+constexpr const char* c_attribute_description = "description";
+constexpr const char* c_attribute_daylight_abbr = "daylight_abbr";
+constexpr const char* c_attribute_daylight_year_start = "daylight_year_start";
+constexpr const char* c_attribute_daylight_year_finish = "daylight_year_finish";
+constexpr const char* c_attribute_daylight_start_month = "daylight_start_month";
+constexpr const char* c_attribute_daylight_start_occurrence = "daylight_start_occurrence";
+constexpr const char* c_attribute_daylight_start_day_of_week = "daylight_start_day_of_week";
+constexpr const char* c_attribute_daylight_start_time = "daylight_start_time";
+constexpr const char* c_attribute_daylight_finish_month = "daylight_finish_month";
+constexpr const char* c_attribute_daylight_finish_occurrence = "daylight_finish_occurrence";
+constexpr const char* c_attribute_daylight_finish_day_of_week = "daylight_finish_day_of_week";
+constexpr const char* c_attribute_daylight_finish_time = "daylight_finish_time";
+constexpr const char* c_attribute_daylight_utc_offset = "daylight_utc_offset";
+constexpr const char* c_attribute_year_start = "year_start";
+constexpr const char* c_attribute_year_finish = "year_finish";
+constexpr const char* c_attribute_start_month = "start_month";
+constexpr const char* c_attribute_start_occurrence = "start_occurrence";
+constexpr const char* c_attribute_start_day_of_week = "start_day_of_week";
+constexpr const char* c_attribute_start_time = "start_time";
+constexpr const char* c_attribute_finish_month = "finish_month";
+constexpr const char* c_attribute_finish_occurrence = "finish_occurrence";
+constexpr const char* c_attribute_finish_day_of_week = "finish_day_of_week";
+constexpr const char* c_attribute_finish_time = "finish_time";
 
-const char* const c_gpg_key_fingerprint_prefix = "Key fingerprint = ";
+constexpr const char* c_gpg_key_fingerprint_prefix = "Key fingerprint = ";
 
-const char* const c_crypto_checksum_zero_padded = "00000-00000-000000-000000-00000-00000";
+constexpr const char* c_crypto_checksum_zero_padded = "00000-00000-000000-000000-00000-00000";
 
 typedef map< string, size_t > foreign_key_lock_container;
 
@@ -4003,7 +4003,8 @@ void locate_gpg_key( const string& email, string& gpg_key_id, string& gpg_finger
             if( pos != string::npos )
             {
                gpg_key_id = key;
-               gpg_fingerprint = lines[ 1 ].substr( pos + strlen( c_gpg_key_fingerprint_prefix ) );
+
+               gpg_fingerprint = lines[ 1 ].substr( pos + CONST_LENGTH( c_gpg_key_fingerprint_prefix ) );
             }
          }
       }
@@ -4135,7 +4136,7 @@ void install_gpg_key( const string& key_file,
                               else
                               {
                                  gpg_key_id = key;
-                                 gpg_fingerprint = lines[ 1 ].substr( pos + strlen( c_gpg_key_fingerprint_prefix ) );
+                                 gpg_fingerprint = lines[ 1 ].substr( pos + CONST_LENGTH( c_gpg_key_fingerprint_prefix ) );
                               }
                            }
                         }
@@ -5997,7 +5998,8 @@ string check_email_headers( const vector< string >& headers, bool create_script_
 
                if( pos != string::npos )
                {
-                  script_name = email_headers[ j ].substr( pos + strlen( c_email_subject_script_marker ) );
+                  script_name = email_headers[ j ].substr( pos + CONST_LENGTH( c_email_subject_script_marker ) );
+
                   while( !script_name.empty( ) && script_name[ 0 ] == ' ' )
                      script_name.erase( 0, 1 );
                }
@@ -7690,9 +7692,10 @@ void get_external_balance( const string& ext_key, numeric& balance )
 
       string::size_type pos = content.find( c_error_message_prefix );
 
-      if( pos != string::npos && content.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
-         error = content.substr( pos + strlen( c_error_message_prefix ) + 1 );
-      else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
+      if( ( pos != string::npos )
+       && ( content.length( ) > ( pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) ) )
+         error = content.substr( pos + CONST_LENGTH( c_error_message_prefix ) + 1 );
+      else if( ( content.find( "error:" ) != string::npos ) || ( content.find( "Exception:" ) != string::npos ) )
          error = trim( replace( content, "error:", "", "Exception:", "" ) );
 
       file_remove( tmp_file_name );
@@ -7757,9 +7760,10 @@ string create_new_address( const string& ext_key, const string& label, bool igno
 
       string::size_type pos = content.find( c_error_message_prefix );
 
-      if( pos != string::npos && content.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
-         error = content.substr( pos + strlen( c_error_message_prefix ) + 1 );
-      else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
+      if( ( pos != string::npos )
+       && ( content.length( ) > pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) )
+         error = content.substr( pos + CONST_LENGTH( c_error_message_prefix ) + 1 );
+      else if( ( content.find( "error:" ) != string::npos ) || ( content.find( "Exception:" ) != string::npos ) )
          error = trim( replace( content, "error:", "", "Exception:", "" ) );
 
       file_remove( tmp_file_name );
@@ -7815,8 +7819,9 @@ string send_funds_to_address( const string& ext_key, const string& address, cons
 
       string::size_type pos = content.find( c_error_message_prefix );
 
-      if( pos != string::npos && content.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
-         error = content.substr( pos + strlen( c_error_message_prefix ) + 1 );
+      if( ( pos != string::npos )
+       && ( content.length( ) > pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) )
+         error = content.substr( pos + CONST_LENGTH( c_error_message_prefix ) + 1 );
       else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
          error = trim( replace( content, "error:", "", "Exception:", "" ) );
 
@@ -7882,9 +7887,10 @@ void import_address( const string& ext_key, const string& address, const string&
 
       if( content.find( "already contains" ) == string::npos ) // i.e. ignore if already known to the wallet
       {
-         if( pos != string::npos && content.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
-            error = content.substr( pos + strlen( c_error_message_prefix ) + 1 );
-         else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
+         if( ( pos != string::npos )
+          && ( content.length( ) > pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) )
+            error = content.substr( pos + CONST_LENGTH( c_error_message_prefix ) + 1 );
+         else if( ( content.find( "error:" ) != string::npos ) || ( content.find( "Exception:" ) != string::npos ) )
             error = trim( replace( content, "error:", "", "Exception:", "" ) );
       }
 
@@ -7930,8 +7936,9 @@ void load_address_information( const string& ext_key, const string& file_name )
 
       string::size_type pos = content.find( c_error_message_prefix );
 
-      if( pos != string::npos && content.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
-         error = content.substr( pos + strlen( c_error_message_prefix ) + 1 );
+      if( ( pos != string::npos )
+       && ( content.length( ) > pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) )
+         error = content.substr( pos + CONST_LENGTH( c_error_message_prefix ) + 1 );
       else if( content.empty( ) )
          error = "unexpected empty response from 'listaddressgroupings'";
       else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
@@ -8068,8 +8075,9 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
 
       string::size_type pos = content.find( c_error_message_prefix );
 
-      if( pos != string::npos && content.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
-         error = content.substr( pos + strlen( c_error_message_prefix ) + 1 );
+      if( ( pos != string::npos )
+       && ( content.length( ) > pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) )
+         error = content.substr( pos + CONST_LENGTH( c_error_message_prefix ) + 1 );
       else if( content.empty( ) )
          error = "unexpected empty response from 'listunspent'";
       else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
@@ -8160,8 +8168,9 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
 
             string::size_type pos = new_change_address.find( c_error_message_prefix );
 
-            if( pos != string::npos && new_change_address.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
-               throw runtime_error( new_change_address.substr( pos + strlen( c_error_message_prefix ) + 1 ) );
+            if( ( pos != string::npos )
+             && ( new_change_address.length( ) > pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) )
+               throw runtime_error( new_change_address.substr( pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) );
             else if( new_change_address.find( "error:" ) != string::npos )
                throw runtime_error( new_change_address );
 
@@ -8247,8 +8256,9 @@ string retreive_p2sh_redeem_extra_info(
 
          string::size_type pos = all_lines.find( c_error_message_prefix );
 
-         if( pos != string::npos && all_lines.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
-            throw runtime_error( all_lines.substr( pos + strlen( c_error_message_prefix ) + 1 ) );
+         if( ( pos != string::npos )
+          && ( all_lines.length( ) > pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) )
+            throw runtime_error( all_lines.substr( pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) );
 
          vector< string > lines;
          split( all_lines, lines, '\n' );
@@ -8314,8 +8324,9 @@ string retreive_p2sh_redeem_extra_info(
 
                string::size_type pos = raw_tx.find( c_error_message_prefix );
 
-               if( pos != string::npos && raw_tx.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
-                  throw runtime_error( raw_tx.substr( pos + strlen( c_error_message_prefix ) + 1 ) );
+               if( ( pos != string::npos )
+                && ( raw_tx.length( ) > pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) )
+                  throw runtime_error( raw_tx.substr( pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) );
                else if( raw_tx.find( "error:" ) != string::npos )
                   throw runtime_error( raw_tx );
 
@@ -8341,8 +8352,9 @@ string retreive_p2sh_redeem_extra_info(
 
                   string::size_type pos = raw_tx.find( c_error_message_prefix );
 
-                  if( pos != string::npos && all_lines.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
-                     throw runtime_error( all_lines.substr( pos + strlen( c_error_message_prefix ) + 1 ) );
+                  if( ( pos != string::npos )
+                   && ( all_lines.length( ) > pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) )
+                     throw runtime_error( all_lines.substr( pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) );
                   else if( all_lines.find( "error:" ) != string::npos )
                      throw runtime_error( all_lines );
 
@@ -8625,9 +8637,10 @@ string send_raw_transaction( const string& ext_key, const string& tx )
             string error;
             string::size_type pos = s.find( c_error_message_prefix );
 
-            if( pos != string::npos && s.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
-               error = s.substr( pos + strlen( c_error_message_prefix ) + 1 );
-            else if( s.find( "error:" ) != string::npos || s.find( "Exception:" ) != string::npos )
+            if( ( pos != string::npos )
+             && ( s.length( ) > pos + CONST_LENGTH( c_error_message_prefix ) + 1 ) )
+               error = s.substr( pos + CONST_LENGTH( c_error_message_prefix ) + 1 );
+            else if( ( s.find( "error:" ) != string::npos ) || ( s.find( "Exception:" ) != string::npos ) )
                error = trim( replace( s, "error:", "", "Exception:", "" ) );
 
             if( !error.empty( ) && lower( error ).find( "non-final" ) != string::npos )

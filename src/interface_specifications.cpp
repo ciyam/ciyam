@@ -25,152 +25,152 @@ namespace
 {
 
 // KLUDGE: Same constants are in "model.cpp"...
-const char* const c_field_extra_order = "order";
-const char* const c_class_extra_ordered = "ordered";
+constexpr const char* c_field_extra_order = "order";
+constexpr const char* c_class_extra_ordered = "ordered";
 
-const char* const c_field_extra_force_opt = "force_opt";
-const char* const c_field_extra_force_mand = "force_mand";
+constexpr const char* c_field_extra_force_opt = "force_opt";
+constexpr const char* c_field_extra_force_mand = "force_mand";
 
-const char* const c_field_extra_permission = "permission";
+constexpr const char* c_field_extra_permission = "permission";
 
-const char* const c_true = "true";
-const char* const c_false = "false";
+constexpr const char* c_true = "true";
+constexpr const char* c_false = "false";
 
-const char* const c_key_title = "key";
-const char* const c_key_field = "@key";
-const char* const c_tab_field = "@tab";
+constexpr const char* c_key_title = "key";
+constexpr const char* c_key_field = "@key";
+constexpr const char* c_tab_field = "@tab";
 
-const char* const c_row_title = "row";
-const char* const c_row_field = "@row";
+constexpr const char* c_row_title = "row";
+constexpr const char* c_row_field = "@row";
 
-const char* const c_tab_prefix = "tab";
-const char* const c_field_prefix = "field";
+constexpr const char* c_tab_prefix = "tab";
+constexpr const char* c_field_prefix = "field";
 
-const char* const c_arg_perm_prefix = "-perm=";
-const char* const c_arg_group_prefix = "-group=";
-const char* const c_arg_other_prefix = "-other=";
-const char* const c_arg_active_prefix = "-active=";
-const char* const c_arg_parent_prefix = "-parent=";
-const char* const c_arg_select_prefix = "-select=";
+constexpr const char* c_arg_perm_prefix = "-perm=";
+constexpr const char* c_arg_group_prefix = "-group=";
+constexpr const char* c_arg_other_prefix = "-other=";
+constexpr const char* c_arg_active_prefix = "-active=";
+constexpr const char* c_arg_parent_prefix = "-parent=";
+constexpr const char* c_arg_select_prefix = "-select=";
 
-const char* const c_attribute_name = "name";
-const char* const c_attribute_type = "type";
-const char* const c_attribute_extra = "extra";
-const char* const c_attribute_actions = "actions";
-const char* const c_attribute_command = "command";
-const char* const c_attribute_class_id = "class_id";
-const char* const c_attribute_ordering = "ordering";
-const char* const c_attribute_arguments = "arguments";
-const char* const c_attribute_active_id = "active_id";
-const char* const c_attribute_select_id = "select_id";
-const char* const c_attribute_gfield_id = "gfield_id";
-const char* const c_attribute_ofield_id = "ofield_id";
-const char* const c_attribute_pclass_id = "pclass_id";
-const char* const c_attribute_pfield_id = "pfield_id";
-const char* const c_attribute_uclass_id = "uclass_id";
-const char* const c_attribute_ufield_id = "ufield_id";
-const char* const c_attribute_field_info = "field_info";
-const char* const c_attribute_permission = "permission";
-const char* const c_attribute_bclass_info = "bclass_info";
-const char* const c_attribute_filter_info = "filter_info";
-const char* const c_attribute_parent_info = "parent_info";
-const char* const c_attribute_select_perm = "select_perm";
-const char* const c_attribute_uid_field_id = "uid_field_id";
-const char* const c_attribute_url_field_id = "url_field_id";
-const char* const c_attribute_pwd_field_id = "pwd_field_id";
-const char* const c_attribute_new_class_id = "new_class_id";
-const char* const c_attribute_new_field_id = "new_field_id";
-const char* const c_attribute_new_ext_info = "new_ext_info";
-const char* const c_attribute_dest_enum_id = "dest_enum_id";
-const char* const c_attribute_dest_field_id = "dest_field_id";
-const char* const c_attribute_hash_field_id = "hash_field_id";
-const char* const c_attribute_name_field_id = "name_field_id";
-const char* const c_attribute_perm_field_id = "perm_field_id";
-const char* const c_attribute_restrict_info = "restrict_info";
-const char* const c_attribute_order_field_id = "order_field_id";
-const char* const c_attribute_parent_field_id = "parent_field_id";
-const char* const c_attribute_dest_field_value = "dest_field_value";
-const char* const c_attribute_select_ofield_id = "select_ofield_id";
-const char* const c_attribute_select_pclass_id = "select_pclass_id";
-const char* const c_attribute_select_pfield_id = "select_pfield_id";
-const char* const c_attribute_select_pcfield_id = "select_pcfield_id";
-const char* const c_attribute_checksum_field_id = "checksum_field_id";
+constexpr const char* c_attribute_name = "name";
+constexpr const char* c_attribute_type = "type";
+constexpr const char* c_attribute_extra = "extra";
+constexpr const char* c_attribute_actions = "actions";
+constexpr const char* c_attribute_command = "command";
+constexpr const char* c_attribute_class_id = "class_id";
+constexpr const char* c_attribute_ordering = "ordering";
+constexpr const char* c_attribute_arguments = "arguments";
+constexpr const char* c_attribute_active_id = "active_id";
+constexpr const char* c_attribute_select_id = "select_id";
+constexpr const char* c_attribute_gfield_id = "gfield_id";
+constexpr const char* c_attribute_ofield_id = "ofield_id";
+constexpr const char* c_attribute_pclass_id = "pclass_id";
+constexpr const char* c_attribute_pfield_id = "pfield_id";
+constexpr const char* c_attribute_uclass_id = "uclass_id";
+constexpr const char* c_attribute_ufield_id = "ufield_id";
+constexpr const char* c_attribute_field_info = "field_info";
+constexpr const char* c_attribute_permission = "permission";
+constexpr const char* c_attribute_bclass_info = "bclass_info";
+constexpr const char* c_attribute_filter_info = "filter_info";
+constexpr const char* c_attribute_parent_info = "parent_info";
+constexpr const char* c_attribute_select_perm = "select_perm";
+constexpr const char* c_attribute_uid_field_id = "uid_field_id";
+constexpr const char* c_attribute_url_field_id = "url_field_id";
+constexpr const char* c_attribute_pwd_field_id = "pwd_field_id";
+constexpr const char* c_attribute_new_class_id = "new_class_id";
+constexpr const char* c_attribute_new_field_id = "new_field_id";
+constexpr const char* c_attribute_new_ext_info = "new_ext_info";
+constexpr const char* c_attribute_dest_enum_id = "dest_enum_id";
+constexpr const char* c_attribute_dest_field_id = "dest_field_id";
+constexpr const char* c_attribute_hash_field_id = "hash_field_id";
+constexpr const char* c_attribute_name_field_id = "name_field_id";
+constexpr const char* c_attribute_perm_field_id = "perm_field_id";
+constexpr const char* c_attribute_restrict_info = "restrict_info";
+constexpr const char* c_attribute_order_field_id = "order_field_id";
+constexpr const char* c_attribute_parent_field_id = "parent_field_id";
+constexpr const char* c_attribute_dest_field_value = "dest_field_value";
+constexpr const char* c_attribute_select_ofield_id = "select_ofield_id";
+constexpr const char* c_attribute_select_pclass_id = "select_pclass_id";
+constexpr const char* c_attribute_select_pfield_id = "select_pfield_id";
+constexpr const char* c_attribute_select_pcfield_id = "select_pcfield_id";
+constexpr const char* c_attribute_checksum_field_id = "checksum_field_id";
 
-const char* const c_data_cid = "cid";
-const char* const c_data_pwd = "pwd";
-const char* const c_data_uid = "uid";
-const char* const c_data_url = "url";
-const char* const c_data_acts = "acts";
-const char* const c_data_hash = "hash";
-const char* const c_data_mods = "mods";
-const char* const c_data_name = "name";
-const char* const c_data_perm = "perm";
-const char* const c_data_type = "type";
-const char* const c_data_binfo = "binfo";
-const char* const c_data_class = "class";
-const char* const c_data_extra = "extra";
-const char* const c_data_field = "field";
-const char* const c_data_fnums = "fnums";
-const char* const c_data_ftype = "ftype";
-const char* const c_data_group = "group";
-const char* const c_data_fmand = "fmand";
-const char* const c_data_fmods = "fmods";
-const char* const c_data_fname = "fname";
-const char* const c_data_order = "order";
-const char* const c_data_prcls = "prcls";
-const char* const c_data_prcnm = "prcnm";
-const char* const c_data_prfld = "prfld";
-const char* const c_data_prfnm = "prfnm";
-const char* const c_data_pdfld = "pdfld";
-const char* const c_data_prxtr = "prxtr";
-const char* const c_data_pridx = "pridx";
-const char* const c_data_other = "other";
-const char* const c_data_active = "active";
-const char* const c_data_column = "column";
-const char* const c_data_clname = "clname";
-const char* const c_data_cltype = "cltype";
-const char* const c_data_clxtra = "clxtra";
-const char* const c_data_clmods = "clmods";
-const char* const c_data_cluniq = "cluniq";
-const char* const c_data_cindex = "cindex";
-const char* const c_data_dfenum = "dfenum";
-const char* const c_data_dfield = "dfield";
-const char* const c_data_dextra = "dextra";
-const char* const c_data_dvalue = "dvalue";
-const char* const c_data_jfield = "jfield";
-const char* const c_data_ofield = "ofield";
-const char* const c_data_parent = "parent";
-const char* const c_data_pclass = "pclass";
-const char* const c_data_pclsnm = "pclsnm";
-const char* const c_data_pextra = "pextra";
-const char* const c_data_pfield = "pfield";
-const char* const c_data_pfldnm = "pfldnm";
-const char* const c_data_nclass = "nclass";
-const char* const c_data_nfield = "nfield";
-const char* const c_data_nindex = "nindex";
-const char* const c_data_nextra = "nextra";
-const char* const c_data_rfield = "rfield";
-const char* const c_data_rfldnm = "rfldnm";
-const char* const c_data_rftype = "rftype";
-const char* const c_data_rfxtra = "rfxtra";
-const char* const c_data_rfmand = "rfmand";
-const char* const c_data_sfield = "sfield";
-const char* const c_data_sclsnm = "sclsnm";
-const char* const c_data_slperm = "slperm";
-const char* const c_data_uclass = "uclass";
-const char* const c_data_uclsnm = "uclsnm";
-const char* const c_data_ufield = "ufield";
-const char* const c_data_ufldnm = "ufldnm";
-const char* const c_data_command = "command";
-const char* const c_data_filters = "filters";
-const char* const c_data_pcfield = "pcfield";
-const char* const c_data_rfldops = "rfldops";
-const char* const c_data_checksum = "checksum";
-const char* const c_data_pindexed = "pindexed";
-const char* const c_data_arguments = "arguments";
-const char* const c_data_mandatory = "mandatory";
-const char* const c_data_operations = "operations";
-const char* const c_data_permission = "permission";
+constexpr const char* c_data_cid = "cid";
+constexpr const char* c_data_pwd = "pwd";
+constexpr const char* c_data_uid = "uid";
+constexpr const char* c_data_url = "url";
+constexpr const char* c_data_acts = "acts";
+constexpr const char* c_data_hash = "hash";
+constexpr const char* c_data_mods = "mods";
+constexpr const char* c_data_name = "name";
+constexpr const char* c_data_perm = "perm";
+constexpr const char* c_data_type = "type";
+constexpr const char* c_data_binfo = "binfo";
+constexpr const char* c_data_class = "class";
+constexpr const char* c_data_extra = "extra";
+constexpr const char* c_data_field = "field";
+constexpr const char* c_data_fnums = "fnums";
+constexpr const char* c_data_ftype = "ftype";
+constexpr const char* c_data_group = "group";
+constexpr const char* c_data_fmand = "fmand";
+constexpr const char* c_data_fmods = "fmods";
+constexpr const char* c_data_fname = "fname";
+constexpr const char* c_data_order = "order";
+constexpr const char* c_data_prcls = "prcls";
+constexpr const char* c_data_prcnm = "prcnm";
+constexpr const char* c_data_prfld = "prfld";
+constexpr const char* c_data_prfnm = "prfnm";
+constexpr const char* c_data_pdfld = "pdfld";
+constexpr const char* c_data_prxtr = "prxtr";
+constexpr const char* c_data_pridx = "pridx";
+constexpr const char* c_data_other = "other";
+constexpr const char* c_data_active = "active";
+constexpr const char* c_data_column = "column";
+constexpr const char* c_data_clname = "clname";
+constexpr const char* c_data_cltype = "cltype";
+constexpr const char* c_data_clxtra = "clxtra";
+constexpr const char* c_data_clmods = "clmods";
+constexpr const char* c_data_cluniq = "cluniq";
+constexpr const char* c_data_cindex = "cindex";
+constexpr const char* c_data_dfenum = "dfenum";
+constexpr const char* c_data_dfield = "dfield";
+constexpr const char* c_data_dextra = "dextra";
+constexpr const char* c_data_dvalue = "dvalue";
+constexpr const char* c_data_jfield = "jfield";
+constexpr const char* c_data_ofield = "ofield";
+constexpr const char* c_data_parent = "parent";
+constexpr const char* c_data_pclass = "pclass";
+constexpr const char* c_data_pclsnm = "pclsnm";
+constexpr const char* c_data_pextra = "pextra";
+constexpr const char* c_data_pfield = "pfield";
+constexpr const char* c_data_pfldnm = "pfldnm";
+constexpr const char* c_data_nclass = "nclass";
+constexpr const char* c_data_nfield = "nfield";
+constexpr const char* c_data_nindex = "nindex";
+constexpr const char* c_data_nextra = "nextra";
+constexpr const char* c_data_rfield = "rfield";
+constexpr const char* c_data_rfldnm = "rfldnm";
+constexpr const char* c_data_rftype = "rftype";
+constexpr const char* c_data_rfxtra = "rfxtra";
+constexpr const char* c_data_rfmand = "rfmand";
+constexpr const char* c_data_sfield = "sfield";
+constexpr const char* c_data_sclsnm = "sclsnm";
+constexpr const char* c_data_slperm = "slperm";
+constexpr const char* c_data_uclass = "uclass";
+constexpr const char* c_data_uclsnm = "uclsnm";
+constexpr const char* c_data_ufield = "ufield";
+constexpr const char* c_data_ufldnm = "ufldnm";
+constexpr const char* c_data_command = "command";
+constexpr const char* c_data_filters = "filters";
+constexpr const char* c_data_pcfield = "pcfield";
+constexpr const char* c_data_rfldops = "rfldops";
+constexpr const char* c_data_checksum = "checksum";
+constexpr const char* c_data_pindexed = "pindexed";
+constexpr const char* c_data_arguments = "arguments";
+constexpr const char* c_data_mandatory = "mandatory";
+constexpr const char* c_data_operations = "operations";
+constexpr const char* c_data_permission = "permission";
 
 bool is_non_string_type( const string& field_type )
 {
@@ -1738,8 +1738,8 @@ void view_specification::add( model& m, const vector< string >& args, vector< sp
       bool is_external;
 
       if( spec_field_names[ i ] == c_key_field
-       || ( spec_field_names[ i ].length( ) > strlen( c_tab_field )
-       && spec_field_names[ i ].substr( 0, strlen( c_tab_field ) ) == string( c_tab_field ) ) )
+       || ( spec_field_names[ i ].length( ) > CONST_LENGTH( c_tab_field )
+       && spec_field_names[ i ].substr( 0, CONST_LENGTH( c_tab_field ) ) == string( c_tab_field ) ) )
          id = spec_field_names[ i ];
       else
       {
@@ -2198,8 +2198,8 @@ void view_specification::get_specification_strings( model& m, vector< pair< stri
 
    for( size_t i = 0; i < field_info.size( ); i++ )
    {
-      if( field_info[ i ].length( ) > strlen( c_tab_field )
-       && field_info[ i ].substr( 0, strlen( c_tab_field ) ) == string( c_tab_field ) )
+      if( field_info[ i ].length( ) > CONST_LENGTH( c_tab_field )
+       && field_info[ i ].substr( 0, CONST_LENGTH( c_tab_field ) ) == string( c_tab_field ) )
       {
          size_t pos = field_info[ i ].find( ':' );
          if( pos != string::npos )
@@ -2264,17 +2264,17 @@ void user_info_specification::add( model& m, const vector< string >& args, vecto
       string next_arg( args[ arg ] );
 
       if( next_arg.find( c_arg_perm_prefix ) == 0 )
-         arg_perm_field_name = next_arg.substr( strlen( c_arg_perm_prefix ) );
+         arg_perm_field_name = next_arg.substr( CONST_LENGTH( c_arg_perm_prefix ) );
       else if( next_arg.find( c_arg_group_prefix ) == 0 )
-         arg_group_field_name = next_arg.substr( strlen( c_arg_group_prefix ) );
+         arg_group_field_name = next_arg.substr( CONST_LENGTH( c_arg_group_prefix ) );
       else if( next_arg.find( c_arg_other_prefix ) == 0 )
-         arg_other_field_name = next_arg.substr( strlen( c_arg_other_prefix ) );
+         arg_other_field_name = next_arg.substr( CONST_LENGTH( c_arg_other_prefix ) );
       else if( next_arg.find( c_arg_active_prefix ) == 0 )
-         arg_active_field_name = next_arg.substr( strlen( c_arg_active_prefix ) );
+         arg_active_field_name = next_arg.substr( CONST_LENGTH( c_arg_active_prefix ) );
       else if( next_arg.find( c_arg_parent_prefix ) == 0 )
-         arg_parent_field_name = next_arg.substr( strlen( c_arg_parent_prefix ) );
+         arg_parent_field_name = next_arg.substr( CONST_LENGTH( c_arg_parent_prefix ) );
       else if( next_arg.find( c_arg_select_prefix ) == 0 )
-         arg_select_info = next_arg.substr( strlen( c_arg_select_prefix ) );
+         arg_select_info = next_arg.substr( CONST_LENGTH( c_arg_select_prefix ) );
       else
          throw runtime_error( "unexpected extra argument '" + next_arg + "' for user_info specification" );
    }

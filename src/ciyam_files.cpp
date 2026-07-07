@@ -69,23 +69,23 @@ const char c_crc32_separator = '#';
 
 const char c_prefix_wildcard_separator = ':';
 
-const char* const c_time_stamp_tag_prefix = "ts.";
+constexpr const char* c_time_stamp_tag_prefix = "ts.";
 
-const char* const c_time_stamp_unix_epoch = "19700101";
+constexpr const char* c_time_stamp_unix_epoch = "19700101";
 
-const char* const c_file_archive_path = "path";
-const char* const c_file_archive_size_avail = "size_avail";
-const char* const c_file_archive_size_limit = "size_limit";
-const char* const c_file_archive_status_info = "status_info";
+constexpr const char* c_file_archive_path = "path";
+constexpr const char* c_file_archive_size_avail = "size_avail";
+constexpr const char* c_file_archive_size_limit = "size_limit";
+constexpr const char* c_file_archive_status_info = "status_info";
 
-const char* const c_file_archive_status_is_full = "is full";
-const char* const c_file_archive_status_bad_write = "bad write";
-const char* const c_file_archive_status_bad_access = "bad access";
-const char* const c_file_archive_status_status_bad_create = "bad create";
+constexpr const char* c_file_archive_status_is_full = "is full";
+constexpr const char* c_file_archive_status_bad_write = "bad write";
+constexpr const char* c_file_archive_status_bad_access = "bad access";
+constexpr const char* c_file_archive_status_status_bad_create = "bad create";
 
-const char* const c_attribute_local_hash = "local_hash";
-const char* const c_attribute_local_public_key = "local_public_key";
-const char* const c_attribute_master_public_key = "master_public_key";
+constexpr const char* c_attribute_local_hash = "local_hash";
+constexpr const char* c_attribute_local_public_key = "local_public_key";
+constexpr const char* c_attribute_master_public_key = "master_public_key";
 
 #include "ciyam_constants.h"
 
@@ -2974,7 +2974,7 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
             else
             {
                date_time dtm( tag_name.substr(
-                strlen( c_time_stamp_tag_prefix ), c_yyyymmmddhhmmss_len ) );
+                CONST_LENGTH( c_time_stamp_tag_prefix ), c_yyyymmmddhhmmss_len ) );
 
                time_t tm;
                unix_time( dtm, &tm );

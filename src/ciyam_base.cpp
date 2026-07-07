@@ -134,156 +134,156 @@ const int c_max_file_buffer_expansion = 2;
 const char c_module_prefix_separator = '_';
 const char c_module_order_prefix_separator = '.';
 
-const char* const c_LOCAL = "LOCAL";
+constexpr const char* c_LOCAL = "LOCAL";
 
-const char* const c_str_none = "(none)";
-const char* const c_str_peer = "(peer)";
+constexpr const char* c_str_none = "(none)";
+constexpr const char* c_str_peer = "(peer)";
 
-const char* const c_script_arg_opt = "opt";
-const char* const c_script_arg_set = "set";
+constexpr const char* c_script_arg_opt = "opt";
+constexpr const char* c_script_arg_set = "set";
 
-const char* const c_tmp_key_prefix = "/tmp/ciyam.";
+constexpr const char* c_tmp_key_prefix = "/tmp/ciyam.";
 
-const char* const c_dummy_host_name = "ciyam.peer";
+constexpr const char* c_dummy_host_name = "ciyam.peer";
 
-const char* const c_at_init_script = "./at_init";
-const char* const c_at_term_script = "./at_term";
+constexpr const char* c_at_init_script = "./at_init";
+constexpr const char* c_at_term_script = "./at_term";
 
-const char* const c_server_log_file = "ciyam_server.log";
+constexpr const char* c_server_log_file = "ciyam_server.log";
 
-const char* const c_server_config_file = "ciyam_server.sio";
+constexpr const char* c_server_config_file = "ciyam_server.sio";
 
-const char* const c_server_tx_log_file = "ciyam_server.tlg";
+constexpr const char* c_server_tx_log_file = "ciyam_server.tlg";
 
-const char* const c_release_file_name = ".release";
-const char* const c_version_file_name = ".version";
+constexpr const char* c_release_file_name = ".release";
+constexpr const char* c_version_file_name = ".version";
 
-const char* const c_skip_compress_file = ".skip_compress";
+constexpr const char* c_skip_compress_file = ".skip_compress";
 
-const char* const c_check_ext_ip_addr = "check_ext_ip_addr";
+constexpr const char* c_check_ext_ip_addr = "check_ext_ip_addr";
 
-const char* const c_server_demo_identities_list = "ciyam_demo_identities.lst";
+constexpr const char* c_server_demo_identities_list = "ciyam_demo_identities.lst";
 
-const char* const c_default_trace_flags = "10000";
+constexpr const char* c_default_trace_flags = "10000";
 
-const char* const c_server_folder_backup = "backup";
-const char* const c_server_folder_opened = "opened";
-const char* const c_server_folder_shared = "shared";
+constexpr const char* c_server_folder_backup = "backup";
+constexpr const char* c_server_folder_opened = "opened";
+constexpr const char* c_server_folder_shared = "shared";
 
-const char* const c_server_command_mutexes = "mutexes";
-const char* const c_server_command_sessions = "sessions";
+constexpr const char* c_server_command_mutexes = "mutexes";
+constexpr const char* c_server_command_sessions = "sessions";
 
-const char* const c_section_mbox = "mbox";
-const char* const c_section_pop3 = "pop3";
-const char* const c_section_smtp = "smtp";
-const char* const c_section_email = "email";
-const char* const c_section_client = "client";
-const char* const c_section_extern = "extern";
-const char* const c_section_script = "script";
-const char* const c_section_files_area = "files_area";
+constexpr const char* c_section_mbox = "mbox";
+constexpr const char* c_section_pop3 = "pop3";
+constexpr const char* c_section_smtp = "smtp";
+constexpr const char* c_section_email = "email";
+constexpr const char* c_section_client = "client";
+constexpr const char* c_section_extern = "extern";
+constexpr const char* c_section_script = "script";
+constexpr const char* c_section_files_area = "files_area";
 
-const char* const c_attribute_name = "name";
-const char* const c_attribute_path = "path";
-const char* const c_attribute_port = "port";
-const char* const c_attribute_label = "label";
-const char* const c_attribute_domain = "domain";
-const char* const c_attribute_server = "server";
-const char* const c_attribute_sender = "sender";
-const char* const c_attribute_suffix = "suffix";
-const char* const c_attribute_logging = "logging";
-const char* const c_attribute_use_udp = "use_udp";
-const char* const c_attribute_filename = "filename";
-const char* const c_attribute_is_local = "is_local";
-const char* const c_attribute_password = "password";
-const char* const c_attribute_protocol = "protocol";
-const char* const c_attribute_security = "security";
-const char* const c_attribute_timezone = "timezone";
-const char* const c_attribute_username = "username";
-const char* const c_attribute_web_port = "web_port";
-const char* const c_attribute_web_root = "web_root";
-const char* const c_attribute_arguments = "arguments";
-const char* const c_attribute_max_peers = "max_peers";
-const char* const c_attribute_rpc_addrs = "rpc_addrs";
-const char* const c_attribute_use_https = "use_https";
-const char* const c_attribute_extra_info = "extra_info";
-const char* const c_attribute_ntfy_server = "ntfy_server";
-const char* const c_attribute_trace_flags = "trace_flags";
-const char* const c_attribute_script_name = "script_name";
-const char* const c_attribute_gpg_password = "gpg_password";
-const char* const c_attribute_max_sessions = "max_sessions";
-const char* const c_attribute_pem_password = "pem_password";
-const char* const c_attribute_rpc_password = "rpc_password";
-const char* const c_attribute_sql_password = "sql_password";
-const char* const c_attribute_max_file_size = "max_file_size";
-const char* const c_attribute_max_num_files = "max_num_files";
-const char* const c_attribute_log_files_path = "log_files_path";
-const char* const c_attribute_test_peer_port = "test_peer_port";
-const char* const c_attribute_user_home_path = "user_home_path";
-const char* const c_attribute_default_storage = "default_storage";
-const char* const c_attribute_peer_ips_permit = "peer_ips_permit";
-const char* const c_attribute_peer_ips_reject = "peer_ips_reject";
-const char* const c_attribute_script_reconfig = "script_reconfig";
-const char* const c_attribute_session_timeout = "session_timeout";
-const char* const c_attribute_protocol_handler = "protocol_handler";
-const char* const c_attribute_system_variables = "system_variables";
-const char* const c_attribute_max_send_attempts = "max_send_attempts";
-const char* const c_attribute_max_attached_data = "max_attached_data";
-const char* const c_attribute_ods_use_encrypted = "ods_use_encrypted";
-const char* const c_attribute_ods_use_sync_write = "ods_use_sync_write";
-const char* const c_attribute_max_storage_handlers = "max_storage_handlers";
-const char* const c_attribute_notifier_ignore_secs = "notifier_ignore_secs";
-const char* const c_attribute_max_http_post_allowed = "max_http_post_allowed";
-const char* const c_attribute_num_recv_stream_sessions = "num_recv_stream_sessions";
-const char* const c_attribute_num_send_stream_sessions = "num_send_stream_sessions";
+constexpr const char* c_attribute_name = "name";
+constexpr const char* c_attribute_path = "path";
+constexpr const char* c_attribute_port = "port";
+constexpr const char* c_attribute_label = "label";
+constexpr const char* c_attribute_domain = "domain";
+constexpr const char* c_attribute_server = "server";
+constexpr const char* c_attribute_sender = "sender";
+constexpr const char* c_attribute_suffix = "suffix";
+constexpr const char* c_attribute_logging = "logging";
+constexpr const char* c_attribute_use_udp = "use_udp";
+constexpr const char* c_attribute_filename = "filename";
+constexpr const char* c_attribute_is_local = "is_local";
+constexpr const char* c_attribute_password = "password";
+constexpr const char* c_attribute_protocol = "protocol";
+constexpr const char* c_attribute_security = "security";
+constexpr const char* c_attribute_timezone = "timezone";
+constexpr const char* c_attribute_username = "username";
+constexpr const char* c_attribute_web_port = "web_port";
+constexpr const char* c_attribute_web_root = "web_root";
+constexpr const char* c_attribute_arguments = "arguments";
+constexpr const char* c_attribute_max_peers = "max_peers";
+constexpr const char* c_attribute_rpc_addrs = "rpc_addrs";
+constexpr const char* c_attribute_use_https = "use_https";
+constexpr const char* c_attribute_extra_info = "extra_info";
+constexpr const char* c_attribute_ntfy_server = "ntfy_server";
+constexpr const char* c_attribute_trace_flags = "trace_flags";
+constexpr const char* c_attribute_script_name = "script_name";
+constexpr const char* c_attribute_gpg_password = "gpg_password";
+constexpr const char* c_attribute_max_sessions = "max_sessions";
+constexpr const char* c_attribute_pem_password = "pem_password";
+constexpr const char* c_attribute_rpc_password = "rpc_password";
+constexpr const char* c_attribute_sql_password = "sql_password";
+constexpr const char* c_attribute_max_file_size = "max_file_size";
+constexpr const char* c_attribute_max_num_files = "max_num_files";
+constexpr const char* c_attribute_log_files_path = "log_files_path";
+constexpr const char* c_attribute_test_peer_port = "test_peer_port";
+constexpr const char* c_attribute_user_home_path = "user_home_path";
+constexpr const char* c_attribute_default_storage = "default_storage";
+constexpr const char* c_attribute_peer_ips_permit = "peer_ips_permit";
+constexpr const char* c_attribute_peer_ips_reject = "peer_ips_reject";
+constexpr const char* c_attribute_script_reconfig = "script_reconfig";
+constexpr const char* c_attribute_session_timeout = "session_timeout";
+constexpr const char* c_attribute_protocol_handler = "protocol_handler";
+constexpr const char* c_attribute_system_variables = "system_variables";
+constexpr const char* c_attribute_max_send_attempts = "max_send_attempts";
+constexpr const char* c_attribute_max_attached_data = "max_attached_data";
+constexpr const char* c_attribute_ods_use_encrypted = "ods_use_encrypted";
+constexpr const char* c_attribute_ods_use_sync_write = "ods_use_sync_write";
+constexpr const char* c_attribute_max_storage_handlers = "max_storage_handlers";
+constexpr const char* c_attribute_notifier_ignore_secs = "notifier_ignore_secs";
+constexpr const char* c_attribute_max_http_post_allowed = "max_http_post_allowed";
+constexpr const char* c_attribute_num_recv_stream_sessions = "num_recv_stream_sessions";
+constexpr const char* c_attribute_num_send_stream_sessions = "num_send_stream_sessions";
 
-const char* const c_peerchain_attribute_auto_start = "auto_start";
-const char* const c_peerchain_attribute_description = "description";
-const char* const c_peerchain_attribute_extra_value = "extra_value";
-const char* const c_peerchain_attribute_host_name = "host_name";
-const char* const c_peerchain_attribute_host_port = "host_port";
-const char* const c_peerchain_attribute_local_port = "local_port";
-const char* const c_peerchain_attribute_num_helpers = "num_helpers";
-const char* const c_peerchain_attribute_peer_type = "peer_type";
-const char* const c_peerchain_attribute_shared_secret = "shared_secret";
+constexpr const char* c_peerchain_attribute_auto_start = "auto_start";
+constexpr const char* c_peerchain_attribute_description = "description";
+constexpr const char* c_peerchain_attribute_extra_value = "extra_value";
+constexpr const char* c_peerchain_attribute_host_name = "host_name";
+constexpr const char* c_peerchain_attribute_host_port = "host_port";
+constexpr const char* c_peerchain_attribute_local_port = "local_port";
+constexpr const char* c_peerchain_attribute_num_helpers = "num_helpers";
+constexpr const char* c_peerchain_attribute_peer_type = "peer_type";
+constexpr const char* c_peerchain_attribute_shared_secret = "shared_secret";
 
-const char* const c_default_web_root = "%root%/%store%";
+constexpr const char* c_default_web_root = "%root%/%store%";
 
-const char* const c_expand_root = "%root%";
-const char* const c_expand_store = "%store%";
+constexpr const char* c_expand_root = "%root%";
+constexpr const char* c_expand_store = "%store%";
 
-const char* const c_uid_anon = "anon";
-const char* const c_uid_unknown = "<unknown>";
+constexpr const char* c_uid_anon = "anon";
+constexpr const char* c_uid_unknown = "<unknown>";
 
-const char* const c_script_dummy_filename = "*script*";
+constexpr const char* c_script_dummy_filename = "*script*";
 
-const char* const c_default_protocol_handler = "file://";
+constexpr const char* c_default_protocol_handler = "file://";
 
-const char* const c_trace_level_minimal = "minimal";
-const char* const c_trace_level_initial = "initial";
-const char* const c_trace_level_details = "details";
-const char* const c_trace_level_verbose = "verbose";
+constexpr const char* c_trace_level_minimal = "minimal";
+constexpr const char* c_trace_level_initial = "initial";
+constexpr const char* c_trace_level_details = "details";
+constexpr const char* c_trace_level_verbose = "verbose";
 
-const char* const c_trace_flag_general = "general";
-const char* const c_trace_flag_locking = "locking";
-const char* const c_trace_flag_objects = "objects";
-const char* const c_trace_flag_queries = "queries";
-const char* const c_trace_flag_session = "session";
-const char* const c_trace_flag_sockets = "sockets";
-const char* const c_trace_flag_various = "various";
+constexpr const char* c_trace_flag_general = "general";
+constexpr const char* c_trace_flag_locking = "locking";
+constexpr const char* c_trace_flag_objects = "objects";
+constexpr const char* c_trace_flag_queries = "queries";
+constexpr const char* c_trace_flag_session = "session";
+constexpr const char* c_trace_flag_sockets = "sockets";
+constexpr const char* c_trace_flag_various = "various";
 
-const char* const c_storable_file_name_id = "id";
-const char* const c_storable_file_name_limit = "limit";
-const char* const c_storable_file_name_log_id = "log_id";
-const char* const c_storable_file_name_mod_dir = "mod_dir";
-const char* const c_storable_file_name_num_gid = "num_gid";
-const char* const c_storable_file_name_trunc_n = "trunc_n";
-const char* const c_storable_file_name_version = "version";
-const char* const c_storable_file_name_web_root = "web_root";
+constexpr const char* c_storable_file_name_id = "id";
+constexpr const char* c_storable_file_name_limit = "limit";
+constexpr const char* c_storable_file_name_log_id = "log_id";
+constexpr const char* c_storable_file_name_mod_dir = "mod_dir";
+constexpr const char* c_storable_file_name_num_gid = "num_gid";
+constexpr const char* c_storable_file_name_trunc_n = "trunc_n";
+constexpr const char* c_storable_file_name_version = "version";
+constexpr const char* c_storable_file_name_web_root = "web_root";
 
-const char* const c_temporary_special_variable_suffix = "_temporary";
+constexpr const char* c_temporary_special_variable_suffix = "_temporary";
 
-const char* const c_demo_sid_1 = "729c82d85a1da11074ea60a42ded01ece34928592aa8620a67c364d7fc70a3fb";
-const char* const c_demo_sid_2 = "b7560eb88fdbc58bd76a6b1a33e07dc39f22e1b834cf470398a0ecf0fc16ca78";
+constexpr const char* c_demo_sid_1 = "729c82d85a1da11074ea60a42ded01ece34928592aa8620a67c364d7fc70a3fb";
+constexpr const char* c_demo_sid_2 = "b7560eb88fdbc58bd76a6b1a33e07dc39f22e1b834cf470398a0ecf0fc16ca78";
 
 #include "sid.enc"
 
@@ -1987,8 +1987,8 @@ size_t g_files_area_item_max_size = c_files_area_item_max_size_default;
 size_t g_num_recv_stream_sessions = c_num_recv_stream_sessions_default;
 size_t g_num_send_stream_sessions = c_num_send_stream_sessions_default;
 
-const char* const c_default_storage_name = "<none>";
-const char* const c_default_storage_identity = "<default>";
+constexpr const char* c_default_storage_name = "<none>";
+constexpr const char* c_default_storage_identity = "<default>";
 
 unique_ptr< ods > gup_ods;
 
@@ -4462,7 +4462,7 @@ string get_trace_flag_names( )
 
 string get_trace_level( )
 {
-   string retval( strlen( c_trace_level_minimal ), '*' );
+   string retval( CONST_LENGTH( c_trace_level_minimal ), '*' );
 
    if( g_trace_flags & TRACE_VERBOSE )
       retval = c_trace_level_verbose;
@@ -5582,7 +5582,7 @@ void resync_system_ods( progress* p_progress )
 void list_strings( ostream& os )
 {
    for( string_const_iterator sci = g_strings.begin( ); sci != g_strings.end( ); ++sci )
-      os << sci->first.substr( strlen( "c_str_" ) ) << ' ' << sci->second << '\n';
+      os << sci->first.substr( CONST_LENGTH( "c_str_" ) ) << ' ' << sci->second << '\n';
 }
 
 string get_string( const string& key, const char* p_default )

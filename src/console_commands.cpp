@@ -63,48 +63,48 @@ const size_t c_max_pwd_size = 128;
 
 const char c_option_prefix = '-';
 
-const char* const c_op_eq = "=";
-const char* const c_op_gt = ">";
-const char* const c_op_lt = "<";
-const char* const c_op_or = "|";
-const char* const c_op_and = "&";
-const char* const c_op_neq = "!=";
-const char* const c_op_gteq = ">=";
-const char* const c_op_lteq = "<=";
+constexpr const char* c_op_eq = "=";
+constexpr const char* c_op_gt = ">";
+constexpr const char* c_op_lt = "<";
+constexpr const char* c_op_or = "|";
+constexpr const char* c_op_and = "&";
+constexpr const char* c_op_neq = "!=";
+constexpr const char* c_op_gteq = ">=";
+constexpr const char* c_op_lteq = "<=";
 
-const char* const c_help_command = "help";
+constexpr const char* c_help_command = "help";
 
 const size_t c_up_one_prefix_len = 2;
 
-const char* const c_up_one_prefix = "^^";
+constexpr const char* c_up_one_prefix = "^^";
 
-const char* const c_ansi_normal = "\033[0m";
-const char* const c_ansi_white_bold = "\033[37;1m";
-const char* const c_ansi_esc_up_one_line = "\033[1A";
+constexpr const char* c_ansi_normal = "\033[0m";
+constexpr const char* c_ansi_white_bold = "\033[37;1m";
+constexpr const char* c_ansi_esc_up_one_line = "\033[1A";
 
-const char* const c_retain_all = "*";
+constexpr const char* c_retain_all = "*";
 
-const char* const c_env_var_sp = "SP";
+constexpr const char* c_env_var_sp = "SP";
 
-const char* const c_env_var_term = "TERM";
+constexpr const char* c_env_var_term = "TERM";
 
-const char* const c_env_var_error = "ERROR";
-const char* const c_env_var_output = "OUTPUT";
+constexpr const char* c_env_var_error = "ERROR";
+constexpr const char* c_env_var_output = "OUTPUT";
 
-const char* const c_env_var_ciyam_fissile = "CIYAM_FISSILE";
-const char* const c_env_var_ciyam_key_pressed = "CIYAM_KEY_PRESSED";
-const char* const c_env_var_ciyam_no_progress = "CIYAM_NO_PROGRESS";
-const char* const c_env_var_ciyam_use_default = "CIYAM_USE_DEFAULT";
-const char* const c_env_var_ciyam_nested_level = "CIYAM_NESTED_LEVEL";
-const char* const c_env_var_ciyam_pause_seconds = "CIYAM_PAUSE_SECONDS";
-const char* const c_env_var_ciyam_choice_lot_num = "CIYAM_CHOICE_LOT_NUM";
-const char* const c_env_var_ciyam_pwd_append_len = "CIYAM_PWD_APPEND_LEN";
-const char* const c_env_var_ciyam_default_seconds = "CIYAM_DEFAULT_SECONDS";
-const char* const c_env_var_ciyam_password_append = "CIYAM_PASSWORD_APPEND";
-const char* const c_env_var_ciyam_choice_lot_limit = "CIYAM_CHOICE_LOT_LIMIT";
-const char* const c_env_var_ciyam_choice_output_replace = "CIYAM_CHOICE_OUTPUT_REPLACE";
+constexpr const char* c_env_var_ciyam_fissile = "CIYAM_FISSILE";
+constexpr const char* c_env_var_ciyam_key_pressed = "CIYAM_KEY_PRESSED";
+constexpr const char* c_env_var_ciyam_no_progress = "CIYAM_NO_PROGRESS";
+constexpr const char* c_env_var_ciyam_use_default = "CIYAM_USE_DEFAULT";
+constexpr const char* c_env_var_ciyam_nested_level = "CIYAM_NESTED_LEVEL";
+constexpr const char* c_env_var_ciyam_pause_seconds = "CIYAM_PAUSE_SECONDS";
+constexpr const char* c_env_var_ciyam_choice_lot_num = "CIYAM_CHOICE_LOT_NUM";
+constexpr const char* c_env_var_ciyam_pwd_append_len = "CIYAM_PWD_APPEND_LEN";
+constexpr const char* c_env_var_ciyam_default_seconds = "CIYAM_DEFAULT_SECONDS";
+constexpr const char* c_env_var_ciyam_password_append = "CIYAM_PASSWORD_APPEND";
+constexpr const char* c_env_var_ciyam_choice_lot_limit = "CIYAM_CHOICE_LOT_LIMIT";
+constexpr const char* c_env_var_ciyam_choice_output_replace = "CIYAM_CHOICE_OUTPUT_REPLACE";
 
-const char* const c_default_value_prompt = "VALUE=";
+constexpr const char* c_default_value_prompt = "VALUE=";
 
 const char c_read_input_prefix = '<';
 const char c_write_output_prefix = '>';
@@ -123,58 +123,58 @@ const char c_pause_message_command_prefix = '^';
 const char c_environment_variable_marker_1 = '$';
 const char c_environment_variable_marker_2 = '%';
 
-const char* const c_env_var_system_retval = "SYSTEM_RETVAL";
-const char* const c_env_var_progress_prefix = "PROGRESS_PREFIX";
+constexpr const char* c_env_var_system_retval = "SYSTEM_RETVAL";
+constexpr const char* c_env_var_progress_prefix = "PROGRESS_PREFIX";
 
-const char* const c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+constexpr const char* c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 
-const char* const c_unix_time = "unix";
+constexpr const char* c_unix_time = "unix";
 
 size_t c_date_time_len = 4;
 
-const char* const c_function_date = "date";
-const char* const c_function_file = "file";
-const char* const c_function_files = "files";
-const char* const c_function_lower = "lower";
-const char* const c_function_paths = "paths";
-const char* const c_function_upper = "upper";
-const char* const c_function_aschex = "aschex";
-const char* const c_function_dechex = "dechex";
-const char* const c_function_eraser = "eraser";
-const char* const c_function_hexasc = "hexasc";
-const char* const c_function_hexbig = "hexbig";
-const char* const c_function_hexdec = "hexdec";
-const char* const c_function_hexlit = "hexlit";
-const char* const c_function_padlen = "padlen";
-const char* const c_function_repstr = "repstr";
-const char* const c_function_sha256 = "sha256";
-const char* const c_function_substr = "substr";
-const char* const c_function_base64 = "base64";
-const char* const c_function_fullpath = "fullpath";
-const char* const c_function_password = "password";
-const char* const c_function_set_all_in = "set_all_in";
-const char* const c_function_set_not_in = "set_not_in";
+constexpr const char* c_function_date = "date";
+constexpr const char* c_function_file = "file";
+constexpr const char* c_function_files = "files";
+constexpr const char* c_function_lower = "lower";
+constexpr const char* c_function_paths = "paths";
+constexpr const char* c_function_upper = "upper";
+constexpr const char* c_function_aschex = "aschex";
+constexpr const char* c_function_dechex = "dechex";
+constexpr const char* c_function_eraser = "eraser";
+constexpr const char* c_function_hexasc = "hexasc";
+constexpr const char* c_function_hexbig = "hexbig";
+constexpr const char* c_function_hexdec = "hexdec";
+constexpr const char* c_function_hexlit = "hexlit";
+constexpr const char* c_function_padlen = "padlen";
+constexpr const char* c_function_repstr = "repstr";
+constexpr const char* c_function_sha256 = "sha256";
+constexpr const char* c_function_substr = "substr";
+constexpr const char* c_function_base64 = "base64";
+constexpr const char* c_function_fullpath = "fullpath";
+constexpr const char* c_function_password = "password";
+constexpr const char* c_function_set_all_in = "set_all_in";
+constexpr const char* c_function_set_not_in = "set_not_in";
 
-const char* const c_envcond_command_if = "if";
-const char* const c_envcond_command_elif = "elif";
-const char* const c_envcond_command_else = "else";
-const char* const c_envcond_command_ifeq = "ifeq";
-const char* const c_envcond_command_skip = "skip";
-const char* const c_envcond_command_depth = "depth";
-const char* const c_envcond_command_endif = "endif";
-const char* const c_envcond_command_ifdef = "ifdef";
-const char* const c_envcond_command_ifneq = "ifneq";
-const char* const c_envcond_command_label = "label";
-const char* const c_envcond_command_ifndef = "ifndef";
-const char* const c_envcond_command_retain = "retain";
+constexpr const char* c_envcond_command_if = "if";
+constexpr const char* c_envcond_command_elif = "elif";
+constexpr const char* c_envcond_command_else = "else";
+constexpr const char* c_envcond_command_ifeq = "ifeq";
+constexpr const char* c_envcond_command_skip = "skip";
+constexpr const char* c_envcond_command_depth = "depth";
+constexpr const char* c_envcond_command_endif = "endif";
+constexpr const char* c_envcond_command_ifdef = "ifdef";
+constexpr const char* c_envcond_command_ifneq = "ifneq";
+constexpr const char* c_envcond_command_label = "label";
+constexpr const char* c_envcond_command_ifndef = "ifndef";
+constexpr const char* c_envcond_command_retain = "retain";
 
-const char* const c_cmd_echo = "echo";
-const char* const c_cmd_quiet = "quiet";
-const char* const c_cmd_monitor = "monitor";
-const char* const c_cmd_no_pause = "no_pause";
-const char* const c_cmd_no_prompt = "no_prompt";
-const char* const c_cmd_no_stderr = "no_stderr";
-const char* const c_cmd_no_progress = "no_progress";
+constexpr const char* c_cmd_echo = "echo";
+constexpr const char* c_cmd_quiet = "quiet";
+constexpr const char* c_cmd_monitor = "monitor";
+constexpr const char* c_cmd_no_pause = "no_pause";
+constexpr const char* c_cmd_no_prompt = "no_prompt";
+constexpr const char* c_cmd_no_stderr = "no_stderr";
+constexpr const char* c_cmd_no_progress = "no_progress";
 
 command_definition startup_command_definitions[ ] =
 {
@@ -189,9 +189,9 @@ command_definition startup_command_definitions[ ] =
    { c_cmd_no_progress, "", "switch off outputting progress messages" }
 };
 
-const char* const c_command_prompt = "\n> ";
-const char* const c_message_press_any_key = "(press any key to continue)...";
-const char* const c_message_press_any_key_or_wait = "Press any key to continue or wait for";
+constexpr const char* c_command_prompt = "\n> ";
+constexpr const char* c_message_press_any_key = "(press any key to continue)...";
+constexpr const char* c_message_press_any_key_or_wait = "Press any key to continue or wait for";
 
 void system_command( const char* p_cmd )
 {
@@ -1015,12 +1015,12 @@ const size_t c_fissile_max_depth = 100;
 
 const size_t c_fissile_trunc_num_length = 100;
 
-const char* const c_fissile_tmp_special_char = "^@s";
+constexpr const char* c_fissile_tmp_special_char = "^@s";
 
-const char* const c_fissile_cmds_limit_variable = "*";
+constexpr const char* c_fissile_cmds_limit_variable = "*";
 
-const char* const c_fissile_compressed_prefix = "...[ ";
-const char* const c_fissile_compressed_suffix = " ]...";
+constexpr const char* c_fissile_compressed_prefix = "...[ ";
+constexpr const char* c_fissile_compressed_suffix = " ]...";
 
 struct fissile_pair
 {
@@ -1256,10 +1256,10 @@ class fissile_string
          {
             string::size_type spos = data.rfind( c_fissile_compressed_suffix );
 
-            if( spos == ( data.length( ) - strlen( c_fissile_compressed_suffix ) ) )
+            if( spos == ( data.length( ) - CONST_LENGTH( c_fissile_compressed_suffix ) ) )
             {
-               len = atoi( data.substr( strlen( c_fissile_compressed_prefix ),
-                data.length( ) - strlen( c_fissile_compressed_prefix ) - strlen( c_fissile_compressed_suffix ) ).c_str( ) );
+               len = atoi( data.substr( CONST_LENGTH( c_fissile_compressed_prefix ),
+                data.length( ) - CONST_LENGTH( c_fissile_compressed_prefix ) - CONST_LENGTH( c_fissile_compressed_suffix ) ).c_str( ) );
 
                compressed = true;
                data.erase( );
@@ -3605,7 +3605,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  string find, repl;
                                  find = str.substr( 0, pos );
 
-                                 find.erase( 0, strlen( c_function_repstr ) + 1 );
+                                 find.erase( 0, CONST_LENGTH( c_function_repstr ) + 1 );
 
                                  if( pos != string::npos )
                                     repl = str.substr( pos + 1 );
@@ -4914,7 +4914,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   }
 
                   cout << '\r' << string( msg.length( )
-                   + prompt_prefix.length( ) + strlen( c_command_prompt ), ' ' ) << '\r';
+                   + prompt_prefix.length( ) + CONST_LENGTH( c_command_prompt ), ' ' ) << '\r';
                }
                else
                   str.erase( );

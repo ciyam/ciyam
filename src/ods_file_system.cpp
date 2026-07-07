@@ -56,21 +56,21 @@ const char c_colon = ':';
 const char c_folder = '/';
 const char c_special = '!';
 
-const char* const c_root_folder = "/";
-const char* const c_parent_folder = "..";
-const char* const c_current_folder = ".";
+constexpr const char* c_root_folder = "/";
+constexpr const char* c_parent_folder = "..";
+constexpr const char* c_current_folder = ".";
 
-const char* const c_dummy_suffix = "\t";
+constexpr const char* c_dummy_suffix = "\t";
 
-const char* const c_pipe_separator = "|";
-const char* const c_colon_separator = ":";
-const char* const c_folder_separator = "/";
+constexpr const char* c_pipe_separator = "|";
+constexpr const char* c_colon_separator = ":";
+constexpr const char* c_folder_separator = "/";
 
-const char* const c_doubled_folder = "//";
-const char* const c_from_current_folder = "./";
-const char* const c_below_current_folder = "/./";
+constexpr const char* c_doubled_folder = "//";
+constexpr const char* c_from_current_folder = "./";
+constexpr const char* c_below_current_folder = "/./";
 
-const char* const c_unchanged_suffix = " *** unchanged ***";
+constexpr const char* c_unchanged_suffix = " *** unchanged ***";
 
 // NOTE: Although the number of items could be
 // set to 255 the average node size can end up
@@ -397,20 +397,20 @@ typedef storable_node_manager< ofs_object > btree_node_manager_type;
 
 typedef bt_transaction< ofs_object, less< ofs_object >, btree_node_type, btree_node_manager_type > btree_trans_type;
 
-const char* const c_rename_attribute_type_input = "input";
-const char* const c_rename_attribute_type_folder = "folder";
-const char* const c_rename_attribute_type_output = "output";
-const char* const c_rename_attribute_type_prefix = "prefix";
-const char* const c_rename_attribute_type_remove = "remove";
-const char* const c_rename_attribute_type_suffix = "suffix";
+constexpr const char* c_rename_attribute_type_input = "input";
+constexpr const char* c_rename_attribute_type_folder = "folder";
+constexpr const char* c_rename_attribute_type_output = "output";
+constexpr const char* c_rename_attribute_type_prefix = "prefix";
+constexpr const char* c_rename_attribute_type_remove = "remove";
+constexpr const char* c_rename_attribute_type_suffix = "suffix";
 
-const char* const c_rename_attribute_type_input_any = "@any";
-const char* const c_rename_attribute_type_input_hex = "@hex";
-const char* const c_rename_attribute_type_input_b64 = "@b64";
+constexpr const char* c_rename_attribute_type_input_any = "@any";
+constexpr const char* c_rename_attribute_type_input_hex = "@hex";
+constexpr const char* c_rename_attribute_type_input_b64 = "@b64";
 
-const char* const c_rename_attribute_type_output_any = "@any";
-const char* const c_rename_attribute_type_output_hex = "@hex";
-const char* const c_rename_attribute_type_output_b64 = "@b64";
+constexpr const char* c_rename_attribute_type_output_any = "@any";
+constexpr const char* c_rename_attribute_type_output_hex = "@hex";
+constexpr const char* c_rename_attribute_type_output_b64 = "@b64";
 
 string process_rename_expressions(
  vector< string >& rename_expressions, const string& folder, const string& input )
@@ -654,7 +654,7 @@ string ods_file_system::determine_folder(
    if( new_folder == c_current_folder )
       new_folder = current_folder;
    else if( new_folder.find( c_from_current_folder ) == 0 )
-      new_folder.erase( 0, strlen( c_from_current_folder ) );
+      new_folder.erase( 0, CONST_LENGTH( c_from_current_folder ) );
 
    // NOTE: Replaces "xxx/./yyy" with "xxx/yyy".
    replace( new_folder, c_below_current_folder, c_folder_separator );
@@ -3436,7 +3436,7 @@ void ods_file_system::expand_entity_expression(
          // that the trailing parent folder is included.
          if( ( pos != string::npos )
           && ( expr.find( c_parent_folder, pos + 1 ) == ( pos + 1 ) ) )
-            pos += strlen( c_parent_folder ) + 1;
+            pos += CONST_LENGTH( c_parent_folder ) + 1;
 
          entity_expr = determine_folder( expr.substr( 0, pos ), false, true );
 

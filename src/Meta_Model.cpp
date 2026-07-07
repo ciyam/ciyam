@@ -412,10 +412,10 @@ string get_enum_string_model_type( bool val )
 // [<start anonymous>]
 //nyi
 
-const char* const c_parent_extra_null = "@null";
+constexpr const char* c_parent_extra_null = "@null";
 
-const char* const c_admin_password = "@admin_password";
-const char* const c_admin_user_hash = "@admin_user_hash";
+constexpr const char* c_admin_password = "@admin_password";
+constexpr const char* c_admin_user_hash = "@admin_user_hash";
 
 string get_mapped_id( const string& model, const string& id )
 {
@@ -5447,7 +5447,7 @@ void Meta_Model::impl::impl_Generate( )
                         {
                            parent_mandatory = true;
 
-                           select_key_exclusions.erase( 0, strlen( c_parent_extra_null ) );
+                           select_key_exclusions.erase( 0, CONST_LENGTH( c_parent_extra_null ) );
 
                            if( !select_key_exclusions.empty( ) && ( select_key_exclusions[ 0 ] == ' ' ) )
                               select_key_exclusions.erase( 0, 1 );

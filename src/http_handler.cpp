@@ -46,8 +46,6 @@ using namespace std;
 string g_none_tag;
 string g_none_var;
 
-string g_css_suffix;
-
 string g_cws_admin_token;
 string g_cws_admin_device;
 
@@ -70,120 +68,120 @@ const size_t c_max_request_lines = 100;
 
 #include "ciyam_constants.h"
 
-const char* const c_ext_js = "js";
-const char* const c_ext_css = "css";
-const char* const c_ext_gif = "gif";
-const char* const c_ext_htm = "htm";
-const char* const c_ext_jpg = "jpg";
-const char* const c_ext_png = "png";
-const char* const c_ext_ttf = "ttf";
-const char* const c_ext_html = "html";
+constexpr const char* c_ext_js = "js";
+constexpr const char* c_ext_css = "css";
+constexpr const char* c_ext_gif = "gif";
+constexpr const char* c_ext_htm = "htm";
+constexpr const char* c_ext_jpg = "jpg";
+constexpr const char* c_ext_png = "png";
+constexpr const char* c_ext_ttf = "ttf";
+constexpr const char* c_ext_html = "html";
 
-const char* const c_data_text = "text";
-const char* const c_data_image = "image";
-const char* const c_data_filename = "filename";
-const char* const c_data_application = "application";
+constexpr const char* c_data_text = "text";
+constexpr const char* c_data_image = "image";
+constexpr const char* c_data_filename = "filename";
+constexpr const char* c_data_application = "application";
 
-const char* const c_all_specials = " !\"#$%&'()*+,-./<=>?@[\\]^`{|}~";
+constexpr const char* c_all_specials = " !\"#$%&'()*+,-./<=>?@[\\]^`{|}~";
 
-const char* const c_data_separator = "\r\n\r\n";
+constexpr const char* c_data_separator = "\r\n\r\n";
 
-const char* const c_get_request = "GET";
-const char* const c_put_request = "PUT";
-const char* const c_head_request = "HEAD";
-const char* const c_post_request = "POST";
-const char* const c_trace_request = "TRACE";
-const char* const c_delete_request = "DELETE";
-const char* const c_options_request = "OPTIONS";
+constexpr const char* c_get_request = "GET";
+constexpr const char* c_put_request = "PUT";
+constexpr const char* c_head_request = "HEAD";
+constexpr const char* c_post_request = "POST";
+constexpr const char* c_trace_request = "TRACE";
+constexpr const char* c_delete_request = "DELETE";
+constexpr const char* c_options_request = "OPTIONS";
 
-const char* const c_index_html = "index.html";
+constexpr const char* c_index_html = "index.html";
 
-const char* const c_echo_endpoint = "/echo";
-const char* const c_upload_endpoint = "/upload";
-const char* const c_ip_addr_endpoint = "/ip-addr";
-const char* const c_storage_endpoint = "/storage";
-const char* const c_version_endpoint = "/version";
-const char* const c_unix_now_endpoint = "/unix-now";
-const char* const c_post_limit_endpoint = "/post-limit";
+constexpr const char* c_echo_endpoint = "/echo";
+constexpr const char* c_upload_endpoint = "/upload";
+constexpr const char* c_ip_addr_endpoint = "/ip-addr";
+constexpr const char* c_storage_endpoint = "/storage";
+constexpr const char* c_version_endpoint = "/version";
+constexpr const char* c_unix_now_endpoint = "/unix-now";
+constexpr const char* c_post_limit_endpoint = "/post-limit";
 
-const char* const c_cws_endpoint = "/cws";
-const char* const c_cws_endpoint_prefix = "/cws/";
+constexpr const char* c_cws_endpoint = "/cws";
+constexpr const char* c_cws_endpoint_prefix = "/cws/";
 
-const char* const c_boundary_prefix = "boundary=";
+constexpr const char* c_boundary_prefix = "boundary=";
 
-const char* const c_req_param_host = "Host:";
+constexpr const char* c_req_param_host = "Host:";
 
-const char* const c_req_param_if_modified = "If-Modified-Since:";
+constexpr const char* c_req_param_if_modified = "If-Modified-Since:";
 
-const char* const c_http_1_1 = "HTTP/1.1";
+constexpr const char* c_http_1_1 = "HTTP/1.1";
 
-const char* const c_http_200_OK = "200 OK";
+constexpr const char* c_http_200_OK = "200 OK";
 
-const char* const c_http_301_Moved = "301 Moved Permanently";
-const char* const c_http_304_Not_Mod = "304 Not Modified";
-const char* const c_http_400_Bad_Req = "400 Bad Request";
-const char* const c_http_404_Not_Found = "404 Not Found";
-const char* const c_http_414_URI_Too_Long = "414 URI Too Long";
-const char* const c_http_500_Internal_Error = "500 Internal Server Error";
+constexpr const char* c_http_301_Moved = "301 Moved Permanently";
+constexpr const char* c_http_304_Not_Mod = "304 Not Modified";
+constexpr const char* c_http_400_Bad_Req = "400 Bad Request";
+constexpr const char* c_http_404_Not_Found = "404 Not Found";
+constexpr const char* c_http_414_URI_Too_Long = "414 URI Too Long";
+constexpr const char* c_http_500_Internal_Error = "500 Internal Server Error";
 
-const char* const c_http_date_prefix = "Date: ";
-const char* const c_http_server_prefix = "Server: ";
-const char* const c_http_location_prefix = "Location: ";
-const char* const c_http_modified_prefix = "Last-Modified: ";
-const char* const c_http_content_type_prefix = "Content-Type: ";
-const char* const c_http_content_length_prefix = "Content-Length: ";
+constexpr const char* c_http_date_prefix = "Date: ";
+constexpr const char* c_http_server_prefix = "Server: ";
+constexpr const char* c_http_location_prefix = "Location: ";
+constexpr const char* c_http_modified_prefix = "Last-Modified: ";
+constexpr const char* c_http_content_type_prefix = "Content-Type: ";
+constexpr const char* c_http_content_length_prefix = "Content-Length: ";
 
-const char* const c_http_host_header = "Host";
+constexpr const char* c_http_host_header = "Host";
 
-const char* const c_http_content_type_header = "Content-Type";
-const char* const c_http_content_length_header = "Content-Length";
-const char* const c_http_content_disposition_header = "Content-Disposition";
+constexpr const char* c_http_content_type_header = "Content-Type";
+constexpr const char* c_http_content_length_header = "Content-Length";
+constexpr const char* c_http_content_disposition_header = "Content-Disposition";
 
-const char* const c_http_access_control_allow_origin_all = "Access-Control-Allow-Origin: *";
+constexpr const char* c_http_access_control_allow_origin_all = "Access-Control-Allow-Origin: *";
 
-const char* const c_http_connection_header_info = "Connection: keep-alive";
+constexpr const char* c_http_connection_header_info = "Connection: keep-alive";
 
 #ifdef LOCAL_REQUESTS_ONLY
-const char* const c_http_keep_alive_header_info = "Keep-Alive: timeout=1, max=100";
+constexpr const char* c_http_keep_alive_header_info = "Keep-Alive: timeout=1, max=100";
 #else
-const char* const c_http_keep_alive_header_info = "Keep-Alive: timeout=10, max=100";
+constexpr const char* c_http_keep_alive_header_info = "Keep-Alive: timeout=10, max=100";
 #endif
 
-const char* const c_http_content_type_font_ttf = "font/ttf";
+constexpr const char* c_http_content_type_font_ttf = "font/ttf";
 
-const char* const c_http_content_type_text_csv = "text/csv";
-const char* const c_http_content_type_text_plain = "text/plain";
+constexpr const char* c_http_content_type_text_csv = "text/csv";
+constexpr const char* c_http_content_type_text_plain = "text/plain";
 
-const char* const c_http_content_type_text_javascript = "text/javascript";
+constexpr const char* c_http_content_type_text_javascript = "text/javascript";
 
-const char* const c_http_content_type_text_css_utf8 = "text/css; charset=UTF-8";
-const char* const c_http_content_type_text_html_utf8 = "text/html; charset=UTF-8";
-const char* const c_http_content_type_text_plain_utf8 = "text/plain; charset=UTF-8";
+constexpr const char* c_http_content_type_text_css_utf8 = "text/css; charset=UTF-8";
+constexpr const char* c_http_content_type_text_html_utf8 = "text/html; charset=UTF-8";
+constexpr const char* c_http_content_type_text_plain_utf8 = "text/plain; charset=UTF-8";
 
-const char* const c_http_content_type_image_gif = "image/gif";
-const char* const c_http_content_type_image_jpg = "image/jpg";
-const char* const c_http_content_type_image_png = "image/png";
+constexpr const char* c_http_content_type_image_gif = "image/gif";
+constexpr const char* c_http_content_type_image_jpg = "image/jpg";
+constexpr const char* c_http_content_type_image_png = "image/png";
 
-const char* const c_http_content_type_application_form = "application/x-www-form-urlencoded";
-const char* const c_http_content_type_application_json = "application/json";
+constexpr const char* c_http_content_type_application_form = "application/x-www-form-urlencoded";
+constexpr const char* c_http_content_type_application_json = "application/json";
 
-const char* const c_http_content_type_multipart_form_data = "multipart/form-data";
+constexpr const char* c_http_content_type_multipart_form_data = "multipart/form-data";
 
-const char* const c_http_content_disposition_form_data = "form-data";
+constexpr const char* c_http_content_disposition_form_data = "form-data";
 
-const char* const c_html_test_response = "<!doctype html>\n<html>\n<head><title>Test HTML Page</title></head>\n<body><p>This is a HTML response for test purposes.</p></body>\n</html>\n";
+constexpr const char* c_html_test_response = "<!doctype html>\n<html>\n<head><title>Test HTML Page</title></head>\n<body><p>This is a HTML response for test purposes.</p></body>\n</html>\n";
 
-const char* const c_has_moved_html_response = "<!doctype html>\n<html>\n<head><title>Document Has Moved</title></head>\n<body><p>Document has moved <a href=\"DOCUMENT\">here</a>.</p></body>\n</html>\n";
-const char* const c_not_found_html_response = "<!doctype html>\n<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find document 'DOCUMENT' (incorrect endpoint?).</p></body>\n</html>\n";
+constexpr const char* c_has_moved_html_response = "<!doctype html>\n<html>\n<head><title>Document Has Moved</title></head>\n<body><p>Document has moved <a href=\"DOCUMENT\">here</a>.</p></body>\n</html>\n";
+constexpr const char* c_not_found_html_response = "<!doctype html>\n<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find document 'DOCUMENT' (incorrect endpoint?).</p></body>\n</html>\n";
 
-const char* const c_replace_document_marker = "DOCUMENT";
+constexpr const char* c_replace_document_marker = "DOCUMENT";
 
-const char* const c_query_param_name_verbose = "verbose";
+constexpr const char* c_query_param_name_verbose = "verbose";
 
-const char* const c_query_param_value_json = "json";
-const char* const c_query_param_value_text = "text";
+constexpr const char* c_query_param_value_json = "json";
+constexpr const char* c_query_param_value_text = "text";
 
-const char* const c_query_param_name_format = "format";
+constexpr const char* c_query_param_name_format = "format";
 
 const int c_num_retries = 5;
 
@@ -332,7 +330,7 @@ bool parse_query_params( const string& qry_info, map< string, string >& params )
    return retval;
 }
 
-const char* const c_cws_force_admin_update = "cws_force_admin_update";
+constexpr const char* c_cws_force_admin_update = "cws_force_admin_update";
 
 mutex g_mutex;
 
@@ -783,7 +781,7 @@ void http_request_handler::on_start( )
                         string info( parts[ 1 ] );
 
                         if( info.find( c_boundary_prefix ) == 0 )
-                           boundary = info.substr( strlen( c_boundary_prefix ) );
+                           boundary = info.substr( CONST_LENGTH( c_boundary_prefix ) );
                      }
                   }
                }
@@ -830,9 +828,9 @@ void http_request_handler::on_start( )
                      // with just LFs and then decoded.
                      if( pos != string::npos )
                      {
-                        string prefix( data.substr( 0, pos + strlen( c_data_separator ) ) );
+                        string prefix( data.substr( 0, pos + CONST_LENGTH( c_data_separator ) ) );
 
-                        data.erase( 0, pos + strlen( c_data_separator ) );
+                        data.erase( 0, pos + CONST_LENGTH( c_data_separator ) );
 
                         replace( prefix, "\r\n", "\n" );
 
@@ -1430,8 +1428,6 @@ void http_listener::on_start( )
       g_none_var = get_special_var_name( e_special_var_none );
 
       g_server_id = string( c_CIYAM );
-
-      g_css_suffix = '.' + string( c_ext_css );
 
       g_version_string = get_system_variable( e_special_var_version );
 

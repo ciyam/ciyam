@@ -38,8 +38,6 @@ using namespace std;
 extern string g_none_tag;
 extern string g_none_var;
 
-extern string g_css_suffix;
-
 extern bool g_is_devt_system;
 
 extern string g_cws_admin_token;
@@ -77,6 +75,8 @@ const size_t c_max_token_create_attempts = 10;
 constexpr const char* c_force = "force";
 
 constexpr const char* c_cws_own = "***";
+
+constexpr const char* c_css_suffix = ".css";
 
 constexpr const char* c_web_demo_pin_1 = "10101";
 constexpr const char* c_web_demo_pin_2 = "10201";
@@ -1402,17 +1402,15 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   {
                      set< string > css_files;
 
-                     size_t suffix_length = g_css_suffix.length( );
-
                      while( fs.has_next( ) )
                      {
                         string next( fs.get_name( ) );
 
-                        if( next.size( ) > suffix_length )
+                        if( next.size( ) > CONST_LENGTH( c_css_suffix ) )
                         {
-                           string::size_type pos = next.rfind( g_css_suffix );
+                           string::size_type pos = next.rfind( c_css_suffix );
 
-                           if( pos == ( next.length( ) - suffix_length ) )
+                           if( pos == ( next.length( ) - CONST_LENGTH( c_css_suffix ) ) )
                               css_files.insert( next.substr( 0, pos ) );
                         }
                      }
@@ -1478,7 +1476,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                }
                else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_stylesheets ) )
                {
-                  string file_name( get_web_root( ) + '/' + access + g_css_suffix );
+                  string file_name( get_web_root( ) + '/' + access + c_css_suffix );
 
                   if( payload.empty( ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -1502,7 +1500,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_stylesheets_prefix ) ) );
 
-                  string file_name( get_web_root( ) + '/' + name + g_css_suffix );
+                  string file_name( get_web_root( ) + '/' + name + c_css_suffix );
 
                   if( !file_exists( file_name ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -1526,7 +1524,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      error = "Stylesheet data cannot be erased whilst the system is locked.";
                   else
                   {
-                     string file_name( get_web_root( ) + '/' + access + g_css_suffix );
+                     string file_name( get_web_root( ) + '/' + access + c_css_suffix );
 
                      file_remove( file_name );
 

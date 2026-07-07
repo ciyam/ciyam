@@ -91,7 +91,7 @@ const char* const c_dummy_support_tag = "support";
 
 const char* const c_dummy_message_data = "utf8:test";
 
-const char* const c_percentage_separator = " - ";
+constexpr const char* c_percentage_separator = " - ";
 
 const char* const c_special_message_0 = "@0";
 const char* const c_special_message_1 = "@1";
@@ -646,7 +646,7 @@ void system_identity_progress_message( const string& identity, bool is_preparing
             pos = progress_message.rfind( c_ellipsis );
          else
          {
-            percentage_value = progress_message.substr( pos + strlen( c_percentage_separator ) );
+            percentage_value = progress_message.substr( pos + CONST_LENGTH( c_percentage_separator ) );
 
             string::size_type ppos = percentage_value.find( '%' );
 
@@ -732,7 +732,7 @@ void system_identity_progress_message( const string& identity, bool is_preparing
                   {
                      prefix = paired_progress_message.substr( 0, pos );
 
-                     percentage_value = paired_progress_message.substr( pos + strlen( c_percentage_separator ) );
+                     percentage_value = paired_progress_message.substr( pos + CONST_LENGTH( c_percentage_separator ) );
 
                      pos = prefix.rfind( ' ' );
 
@@ -1503,7 +1503,7 @@ void process_core_file( const string& hash, const string& blockchain )
                   string identity( determine_identity(
                    primary_pubkey_hash + secondary_pubkey_hash + tertiary_pubkey_hash ) );
 
-                  if( identity.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
+                  if( identity.find( blockchain.substr( CONST_LENGTH( c_bc_prefix ) ) ) != 0 )
                      throw runtime_error( "invalid identity value '" + identity + "' for blockchain '" + blockchain + "'" );
                }
 
@@ -2304,7 +2304,7 @@ void process_put_file( const string& blockchain,
          if( pos == 0 )
          {
             string meta_data_info(
-             lines[ 0 ].substr( strlen( c_file_repository_meta_data_line_prefix ) ) );
+             lines[ 0 ].substr( CONST_LENGTH( c_file_repository_meta_data_line_prefix ) ) );
 
             if( meta_data_info == c_file_repository_meta_data_info_type_raw )
             {
@@ -2313,7 +2313,7 @@ void process_put_file( const string& blockchain,
                   string master_key;
 
                   string public_key(
-                   lines[ 1 ].substr( strlen( c_file_repository_public_key_line_prefix ) ) );
+                   lines[ 1 ].substr( CONST_LENGTH( c_file_repository_public_key_line_prefix ) ) );
 
                   pos = public_key.find( '-' );
 
@@ -2327,12 +2327,12 @@ void process_put_file( const string& blockchain,
                   if( lines[ 2 ].find( c_file_repository_source_hash_line_prefix ) == 0 )
                   {
                      string source_hash(
-                      lines[ 2 ].substr( strlen( c_file_repository_source_hash_line_prefix ) ) );
+                      lines[ 2 ].substr( CONST_LENGTH( c_file_repository_source_hash_line_prefix ) ) );
 
                      string target_hash;
 
                      if( ( lines.size( ) > 3 ) && ( lines[ 3 ].find( c_file_repository_target_hash_line_prefix ) == 0 ) )
-                        target_hash = lines[ 3 ].substr( strlen( c_file_repository_target_hash_line_prefix ) );
+                        target_hash = lines[ 3 ].substr( CONST_LENGTH( c_file_repository_target_hash_line_prefix ) );
                      else if( !is_test_session )
                         throw runtime_error( "unexpected missing target hash in put file info" );
 
@@ -3755,7 +3755,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 
             if( ( targeted_identity != get_special_var_name( e_special_var_peer_data ) )
              && ( targeted_identity != get_special_var_name( e_special_var_peer_user ) )
-             && ( identity.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 ) )
+             && ( identity.find( blockchain.substr( CONST_LENGTH( c_bc_prefix ) ) ) != 0 ) )
                throw runtime_error( "invalid identity value '" + identity + "' for blockchain '" + blockchain + "'" );
          }
 
@@ -4593,7 +4593,7 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
             }
          }
 
-         response.erase( 0, strlen( c_response_message_prefix ) );
+         response.erase( 0, CONST_LENGTH( c_response_message_prefix ) );
 
          response = process_message_response( socket, response );
 
@@ -4617,7 +4617,7 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
          if( response.find( c_response_error_prefix ) == 0 )
          {
             socket.close( );
-            response.erase( 0, strlen( c_response_error_prefix ) );
+            response.erase( 0, CONST_LENGTH( c_response_error_prefix ) );
 
             throw runtime_error( response );
          }
@@ -6827,7 +6827,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
             if( pos == 0 )
             {
-               response.erase( 0, strlen( c_response_message_prefix ) );
+               response.erase( 0, CONST_LENGTH( c_response_message_prefix ) );
 
                response = process_message_response( socket, response );
 
@@ -6903,7 +6903,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
                if( is_condemned_session( ) )
                   throw runtime_error( "peer session has been condemned" );
 
-               cmd_and_args.erase( 0, strlen( c_response_message_prefix ) );
+               cmd_and_args.erase( 0, CONST_LENGTH( c_response_message_prefix ) );
 
                cmd_and_args = process_message_response( socket, cmd_and_args );
 
@@ -7838,7 +7838,7 @@ void peer_session::on_start( )
                {
                   up_socket->close( );
 
-                  block_hash.erase( 0, strlen( c_response_error_prefix ) );
+                  block_hash.erase( 0, CONST_LENGTH( c_response_error_prefix ) );
 
                   throw runtime_error( block_hash );
                }
@@ -8054,7 +8054,7 @@ void peer_session::process_greeting( )
    {
       up_socket->close( );
 
-      greeting.erase( 0, strlen( c_response_error_prefix ) );
+      greeting.erase( 0, CONST_LENGTH( c_response_error_prefix ) );
 
       throw runtime_error( greeting );
    }

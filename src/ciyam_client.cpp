@@ -59,81 +59,81 @@ namespace
 
 #include "ciyam_constants.h"
 
-const char* const c_app_title = "ciyam_client";
-const char* const c_app_version = "0.1";
+constexpr const char* c_app_title = "ciyam_client";
+constexpr const char* c_app_version = "0.1";
 
-const char* const c_cmd_tls = "tls";
+constexpr const char* c_cmd_tls = "tls";
 
-const char* const c_cmd_exec = "exec";
-const char* const c_cmd_exec_command = "command";
-const char* const c_cmd_exec_arguments = "arguments";
+constexpr const char* c_cmd_exec = "exec";
+constexpr const char* c_cmd_exec_command = "command";
+constexpr const char* c_cmd_exec_arguments = "arguments";
 
-const char* const c_cmd_ip4 = "ip4";
+constexpr const char* c_cmd_ip4 = "ip4";
 
-const char* const c_cmd_vars = "vars";
-const char* const c_cmd_vars_env_pairs = "env_pairs";
+constexpr const char* c_cmd_vars = "vars";
+constexpr const char* c_cmd_vars_env_pairs = "env_pairs";
 
-const char* const c_cmd_args_file = "args_file";
-const char* const c_cmd_args_file_name = "name";
+constexpr const char* c_cmd_args_file = "args_file";
+constexpr const char* c_cmd_args_file_name = "name";
 
-const char* const c_cmd_rpc_group = "rpc_group";
-const char* const c_cmd_rpc_group_name = "name";
+constexpr const char* c_cmd_rpc_group = "rpc_group";
+constexpr const char* c_cmd_rpc_group_name = "name";
 
-const char* const c_cmd_rpc_unlock = "rpc_unlock";
-const char* const c_cmd_rpc_unlock_password = "password";
+constexpr const char* c_cmd_rpc_unlock = "rpc_unlock";
+constexpr const char* c_cmd_rpc_unlock_password = "password";
 
-const char* const c_cmd_connect_retries = "connect_retries";
-const char* const c_cmd_connect_retries_max_attempts = "max_attempts";
+constexpr const char* c_cmd_connect_retries = "connect_retries";
+constexpr const char* c_cmd_connect_retries_max_attempts = "max_attempts";
 
-const char* const c_session_cmd_bye = "bye";
-const char* const c_session_cmd_chk = "chk";
-const char* const c_session_cmd_get = "get";
-const char* const c_session_cmd_put = "put";
-const char* const c_session_cmd_tls = "tls";
-const char* const c_session_cmd_quit = "quit";
-const char* const c_session_cmd_file_get = "file_get";
-const char* const c_session_cmd_file_put = "file_put";
-const char* const c_session_cmd_starttls = "starttls";
-const char* const c_session_cmd_system_variable = "system_variable";
-const char* const c_session_cmd_session_variable = "session_variable";
-const char* const c_session_cmd_session_terminate = "session_terminate";
-const char* const c_session_cmd_session_rpc_unlock = "session_rpc_unlock";
+constexpr const char* c_session_cmd_bye = "bye";
+constexpr const char* c_session_cmd_chk = "chk";
+constexpr const char* c_session_cmd_get = "get";
+constexpr const char* c_session_cmd_put = "put";
+constexpr const char* c_session_cmd_tls = "tls";
+constexpr const char* c_session_cmd_quit = "quit";
+constexpr const char* c_session_cmd_file_get = "file_get";
+constexpr const char* c_session_cmd_file_put = "file_put";
+constexpr const char* c_session_cmd_starttls = "starttls";
+constexpr const char* c_session_cmd_system_variable = "system_variable";
+constexpr const char* c_session_cmd_session_variable = "session_variable";
+constexpr const char* c_session_cmd_session_terminate = "session_terminate";
+constexpr const char* c_session_cmd_session_rpc_unlock = "session_rpc_unlock";
 
-const char* const c_env_var_pid = "PID";
-const char* const c_env_var_port = "PORT";
-const char* const c_env_var_slot = "SLOT";
-const char* const c_env_var_user = "USER";
-const char* const c_env_var_error = "ERROR";
-const char* const c_env_var_slotx = "SLOTX";
-const char* const c_env_var_no_udp = "NO_UDP";
-const char* const c_env_var_output = "OUTPUT";
-const char* const c_env_var_webdir = "WEBDIR";
-const char* const c_env_var_pub_key = "PUB_KEY";
-const char* const c_env_var_pub_keyx = "PUB_KEYX";
-const char* const c_env_var_local_udp = "LOCAL_UDP";
-const char* const c_env_var_rpc_password = "RPC_PASSWORD";
-const char* const c_env_var_ciyam_seconds = "CIYAM_SECONDS";
-const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
-const char* const c_env_var_ciyam_no_pause = "CIYAM_NO_PAUSE";
-const char* const c_env_var_ciyam_file_name = "CIYAM_FILE_NAME";
-const char* const c_env_var_progress_prefix = "PROGRESS_PREFIX";
-const char* const c_env_var_ciyam_no_progress = "CIYAM_NO_PROGRESS";
-const char* const c_env_var_ciyam_file_name_only = "CIYAM_FILE_NAME_ONLY";
-const char* const c_env_var_ciyam_use_implicit_strip = "CIYAM_USE_IMPLICIT_STRIP";
+constexpr const char* c_env_var_pid = "PID";
+constexpr const char* c_env_var_port = "PORT";
+constexpr const char* c_env_var_slot = "SLOT";
+constexpr const char* c_env_var_user = "USER";
+constexpr const char* c_env_var_error = "ERROR";
+constexpr const char* c_env_var_slotx = "SLOTX";
+constexpr const char* c_env_var_no_udp = "NO_UDP";
+constexpr const char* c_env_var_output = "OUTPUT";
+constexpr const char* c_env_var_webdir = "WEBDIR";
+constexpr const char* c_env_var_pub_key = "PUB_KEY";
+constexpr const char* c_env_var_pub_keyx = "PUB_KEYX";
+constexpr const char* c_env_var_local_udp = "LOCAL_UDP";
+constexpr const char* c_env_var_rpc_password = "RPC_PASSWORD";
+constexpr const char* c_env_var_ciyam_seconds = "CIYAM_SECONDS";
+constexpr const char* c_env_var_max_file_size = "MAX_FILE_SIZE";
+constexpr const char* c_env_var_ciyam_no_pause = "CIYAM_NO_PAUSE";
+constexpr const char* c_env_var_ciyam_file_name = "CIYAM_FILE_NAME";
+constexpr const char* c_env_var_progress_prefix = "PROGRESS_PREFIX";
+constexpr const char* c_env_var_ciyam_no_progress = "CIYAM_NO_PROGRESS";
+constexpr const char* c_env_var_ciyam_file_name_only = "CIYAM_FILE_NAME_ONLY";
+constexpr const char* c_env_var_ciyam_use_implicit_strip = "CIYAM_USE_IMPLICIT_STRIP";
 
-const char* const c_udp_msg_cancel = "XXX";
+constexpr const char* c_udp_msg_cancel = "XXX";
 
-const char* const c_file_test_cmd = "file_test";
+constexpr const char* c_file_test_cmd = "file_test";
 
-const char* const c_dummy_file_name = "@dummy";
+constexpr const char* c_dummy_file_name = "@dummy";
 
-const char* const c_username = "Username";
+constexpr const char* c_username = "Username";
 
-const char* const c_password_prefix = "Password: ";
-const char* const c_username_prefix = "Username: ";
+constexpr const char* c_password_prefix = "Password: ";
+constexpr const char* c_username_prefix = "Username: ";
 
-const char* const c_not_found_output = "Not Found";
-const char* const c_error_output_prefix = "Error: ";
+constexpr const char* c_not_found_output = "Not Found";
+constexpr const char* c_error_output_prefix = "Error: ";
 
 size_t c_pwd_buffer_reserve = 256;
 
@@ -803,7 +803,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
          bool has_sent_datagrams = false;
 
          if( ( str.find( c_file_test_cmd ) == 0 ) 
-          && ( str.length( ) > strlen( c_file_test_cmd ) + 1 ) )
+          && ( str.length( ) > CONST_LENGTH( c_file_test_cmd ) + 1 ) )
          {
             string::size_type pos = str.rfind( ' ' );
 
@@ -1406,7 +1406,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                {
                   string s( x.what( ) );
 
-                  size_t err_prefix_length( strlen( c_response_error_prefix ) );
+                  size_t err_prefix_length( CONST_LENGTH( c_response_error_prefix ) );
 
                   if( s.length( ) > err_prefix_length
                    && s.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) )
@@ -1577,7 +1577,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                   bool is_error = false;
 
-                  size_t err_prefix_length( strlen( c_response_error_prefix ) );
+                  size_t err_prefix_length( CONST_LENGTH( c_response_error_prefix ) );
 
                   if( ( response.length( ) > err_prefix_length )
                    && ( response.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) ) )
@@ -1589,7 +1589,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                   bool is_message = false;
 
-                  size_t msg_prefix_length( strlen( c_response_message_prefix ) );
+                  size_t msg_prefix_length( CONST_LENGTH( c_response_message_prefix ) );
 
                   if( ( response.length( ) >= msg_prefix_length )
                    && ( response.substr( 0, msg_prefix_length ) == string( c_response_message_prefix ) ) )
@@ -1930,7 +1930,7 @@ int main( int argc, char* argv[ ] )
 
                size_t start = 0;
 
-               size_t err_prefix_length( strlen( c_response_error_prefix ) );
+               size_t err_prefix_length( CONST_LENGTH( c_response_error_prefix ) );
 
                if( greeting.length( ) > err_prefix_length
                 && greeting.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) )

@@ -119,36 +119,36 @@ const size_t c_var_max_check_retries = 100;
 
 const size_t c_max_key_append_chars = 7;
 
-const char* const c_str_prefix = "c_str_";
+constexpr const char* c_str_prefix = "c_str_";
 
-const char* const c_user_suffix = "_user";
+constexpr const char* c_user_suffix = "_user";
 
-const char* const c_ltf_extension = ".ltf";
-const char* const c_map_extension = ".map";
-const char* const c_new_extension = ".new";
-const char* const c_sav_extension = ".sav";
+constexpr const char* c_ltf_extension = ".ltf";
+constexpr const char* c_map_extension = ".map";
+constexpr const char* c_new_extension = ".new";
+constexpr const char* c_sav_extension = ".sav";
 
-const char* const c_meta_module_id = "100";
+constexpr const char* c_meta_module_id = "100";
 
-const char* const c_passtotp_prefix = "passtotp.";
+constexpr const char* c_passtotp_prefix = "passtotp.";
 
-const char* const c_unexpected_unknown_exception = "unexpected unknown exception caught";
+constexpr const char* c_unexpected_unknown_exception = "unexpected unknown exception caught";
 
-const char* const c_log_transformation_scope_any_perform_op = "any_perform_op";
-const char* const c_log_transformation_scope_method_execute = "method_execute";
-const char* const c_log_transformation_scope_create_update_only = "create_update_only";
-const char* const c_log_transformation_scope_create_update_destroy = "create_update_destroy";
+constexpr const char* c_log_transformation_scope_any_perform_op = "any_perform_op";
+constexpr const char* c_log_transformation_scope_method_execute = "method_execute";
+constexpr const char* c_log_transformation_scope_create_update_only = "create_update_only";
+constexpr const char* c_log_transformation_scope_create_update_destroy = "create_update_destroy";
 
-const char* const c_log_transformation_op_map_module = "map_module";
-const char* const c_log_transformation_op_ignore_field = "ignore_field";
-const char* const c_log_transformation_op_map_class_id = "map_class_id";
-const char* const c_log_transformation_op_map_field_id = "map_field_id";
-const char* const c_log_transformation_op_map_method_id = "map_method_id";
-const char* const c_log_transformation_op_no_args_append = "no_args_append";
-const char* const c_log_transformation_op_skip_operation = "skip_operation";
-const char* const c_log_transformation_op_change_field_value = "change_field_value";
-const char* const c_log_transformation_op_map_first_arg_field_ids = "map_first_arg_field_ids";
-const char* const c_log_transformation_op_instance_change_field_value = "instance_change_field_value";
+constexpr const char* c_log_transformation_op_map_module = "map_module";
+constexpr const char* c_log_transformation_op_ignore_field = "ignore_field";
+constexpr const char* c_log_transformation_op_map_class_id = "map_class_id";
+constexpr const char* c_log_transformation_op_map_field_id = "map_field_id";
+constexpr const char* c_log_transformation_op_map_method_id = "map_method_id";
+constexpr const char* c_log_transformation_op_no_args_append = "no_args_append";
+constexpr const char* c_log_transformation_op_skip_operation = "skip_operation";
+constexpr const char* c_log_transformation_op_change_field_value = "change_field_value";
+constexpr const char* c_log_transformation_op_map_first_arg_field_ids = "map_first_arg_field_ids";
+constexpr const char* c_log_transformation_op_instance_change_field_value = "instance_change_field_value";
 
 inline void issue_error( const string& message )
 {
@@ -179,7 +179,7 @@ inline void set_dtm_if_now( string& dtm, string& next_command )
       if( pos == string::npos )
          throw runtime_error( "unexpected @now not found in next_command '" + next_command + "'" );
 
-      next_command.erase( pos, strlen( c_dtm_now ) );
+      next_command.erase( pos, CONST_LENGTH( c_dtm_now ) );
       next_command.insert( pos, dtm );
    }
 }
@@ -4145,7 +4145,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   pos = data.find( "_class" );
 
-                  if( ( pos == string::npos ) || ( pos + strlen( "_class" ) != data.length( ) ) )
+                  if( ( pos == string::npos ) || ( pos + CONST_LENGTH( "_class" ) != data.length( ) ) )
                      continue;
                }
 
