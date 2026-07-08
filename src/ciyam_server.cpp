@@ -110,6 +110,9 @@ const char* const c_cmd_daemon = "daemon";
 bool g_is_daemon = false;
 #endif
 
+const char* const c_listener_rpc_core = "rpc_core";
+const char* const c_listener_rpc_data = "rpc_data";
+
 unsigned int g_port = 0;
 
 string g_entropy;
@@ -271,6 +274,9 @@ class ciyam_server_startup_functor : public command_functor
 int main( int argc, char* argv[ ] )
 {
    int rc = 0;
+
+   string listener_rpc_core( c_listener_rpc_core );
+   string listener_rpc_data( c_listener_rpc_data );
 
    try
    {
@@ -499,11 +505,16 @@ int main( int argc, char* argv[ ] )
             if( !s.set_reuse_addr( ) && !g_is_quiet )
                cout << "warning: set_reuse_addr failed (for tcp)..." << endl;
 
-            ( *fp_register_listener_func )( g_port, "core", "" );
+            ( *fp_register_listener_func )( g_port, listener_rpc_core.c_str( ), "" );
 
             if( !is_update )
             {
-               string init_message( "server started (pid = " + pid + ")" );
+               string fill;
+
+               if( pid.length( ) < 11 )
+                  fill = string( 11 - pid.length( ), ':' );
+
+               string init_message( "server starting (pid " + fill + ' ' + pid + ")" );
 
                ( *fp_log_trace_string_func )( TRACE_MINIMAL, init_message.c_str( ) );
             }
@@ -516,9 +527,9 @@ int main( int argc, char* argv[ ] )
             if( okay )
             {
                if( !is_update && !g_is_quiet )
-                  cout << "server now listening on tcp port " << g_port << "..." << endl;
+                  cout << "server listener started on tcp port " << g_port << "..." << endl;
 
-               string start_message( "core listener started on tcp port " + to_string( g_port ) );
+               string start_message( listener_rpc_core + " listener started on tcp port " + to_string( g_port ) );
 
                ( *fp_log_trace_string_func )( TRACE_MINIMAL, start_message.c_str( ) );
 
@@ -541,9 +552,9 @@ int main( int argc, char* argv[ ] )
                      ( *fp_set_stream_socket_func )( g_port, u.get_socket( ) );
 
                      if( !is_update && !g_is_quiet )
-                        cout << "server now available on udp port " << g_port << "..." << endl;
+                        cout << "server listener started on udp port " << g_port << "..." << endl;
 
-                     string start_message( "core streamer started on udp port " + to_string( g_port ) );
+                     string start_message( listener_rpc_data + " streamer started on udp port " + to_string( g_port ) );
 
                      ( *fp_log_trace_string_func )( TRACE_MINIMAL, start_message.c_str( ) );
                   }
@@ -582,11 +593,11 @@ int main( int argc, char* argv[ ] )
                   }
                }
 
-               if( web_port && g_start_http_listener )
-                  ( *fp_init_http_handler_func )( web_port );
-
                if( g_start_peer_sessions )
                   ( *fp_init_peer_sessions_func )( true );
+
+               if( web_port && g_start_http_listener )
+                  ( *fp_init_http_handler_func )( web_port );
 
                int64_t utm = unix_time( );
 
@@ -696,19 +707,19 @@ int main( int argc, char* argv[ ] )
 
                if( has_udp )
                {
-                  finish_message = "core streamer finished (udp port " + to_string( g_port ) + ")";
+                  finish_message = listener_rpc_data + " streamer finished (udp port " + to_string( g_port ) + ")";
 
                   ( *fp_log_trace_string_func )( TRACE_MINIMAL, finish_message.c_str( ) );
                }
 
-               finish_message = "core listener finished (tcp port " + to_string( g_port ) + ")";
+               finish_message = listener_rpc_core + " listener finished (tcp port " + to_string( g_port ) + ")";
 
                ( *fp_log_trace_string_func )( TRACE_MINIMAL, finish_message.c_str( ) );
 
                if( !is_update )
                {
                   if( !g_is_quiet )
-                     cout << "server shutdown (" << shutdown_reason << ") now completed..." << endl;
+                     cout << "server shutdown (" << shutdown_reason << ") now finished..." << endl;
 
                   string term_message( "server shutdown (" + shutdown_reason + ")" );
 
