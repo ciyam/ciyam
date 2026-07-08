@@ -702,6 +702,44 @@ void process_user_info_response( const string& session, string& response )
    }
 }
 
+string opt_prefix_uri( const string& key_ver_and_state )
+{
+   string opt_prefixed( key_ver_and_state );
+
+   string::size_type pos = opt_prefixed.find( ' ' );
+
+   if( pos != string::npos )
+   {
+      string key( opt_prefixed.substr( 0, pos ) );
+
+      // NOTE: As keys can include underbars and upper case letters will prefix
+      // with a URI version of the key with lower case and hyphens (followed by
+      // a colon and the actual key value).
+      if( key.find_first_of( "_ABCDEFGHIJKLMNOPQRSTUVWXYZ" ) != string::npos )
+      {
+         string uri_key;
+
+         uri_key.reserve( key.size( ) + 1 );
+
+         for( size_t i = 0; i < key.size( ); i++ )
+         {
+            char ch = key[ i ];
+
+            if( ch == '_' )
+               ch = '-';
+
+            uri_key += tolower( ch );
+         }
+
+         uri_key += ':';
+
+         opt_prefixed.insert( 0, uri_key );
+      }
+   }
+
+   return opt_prefixed;
+}
+
 void get_field_values( const string& output, vector< string >& values )
 {
    string field_info( output );
@@ -710,7 +748,11 @@ void get_field_values( const string& output, vector< string >& values )
 
    if( pos != string::npos )
    {
-      values.push_back( field_info.substr( 1, pos - 2 ) );
+      string key_ver_and_state( field_info.substr( 1, pos - 1 ) );
+
+      key_ver_and_state = opt_prefix_uri( key_ver_and_state );
+
+      values.push_back( key_ver_and_state );
 
       field_info.erase( 0, pos + 1 );
 
@@ -1962,6 +2004,46 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            }
 
                            msleep( 100 );
+                        }
+
+                        if( !response.empty( )
+                         && !is_json_output && is_instance_fetch_request )
+                        {
+                           vector< string > all_lines;
+
+                           split( response, all_lines, '\n' );
+
+                           response.erase( );
+
+                           for( size_t i = 0; i < all_lines.size( ); i++ )
+                           {
+                              string next_line( all_lines[ i ] );
+
+                              if( !response.empty( ) )
+                                 response += '\n';
+
+                              if( next_line[ 0 ] == '[' )
+                              {
+                                 string::size_type pos = next_line.find( ']' );
+
+                                 string remainder;
+
+                                 if( pos != string::npos )
+                                 {
+                                    remainder = next_line.substr( pos + 1 );
+
+                                    string key_ver_and_state( next_line.substr( 1, pos - 1 ) );
+
+                                    key_ver_and_state = opt_prefix_uri( key_ver_and_state );
+
+                                    next_line = '[' + key_ver_and_state + ']' + remainder;
+                                 }
+
+                                 response += next_line;
+                              }
+                              else
+                                 response += next_line;
+                           }
                         }
 
                         if( !response.empty( ) && is_json_output )
