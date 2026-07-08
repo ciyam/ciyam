@@ -116,21 +116,23 @@ constexpr const char* c_cws_uri_suffix_enums_extra_prefix = "/enums/";
 constexpr const char* c_cws_uri_suffix_lists_extra_prefix = "/lists/";
 constexpr const char* c_cws_uri_suffix_views_extra_prefix = "/views/";
 
-constexpr const char* c_cws_request_users_create_op_secret = "secret";
-constexpr const char* c_cws_request_users_create_opt_suggested_prefix = "suggested=";
+constexpr const char* c_cws_request_users_create_options_secret = "secret";
+constexpr const char* c_cws_request_users_create_options_suggested = "suggested";
 
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax.
 constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview storages\n"
- "review stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\nreview storage-instances <id>/<cid>[/<key>] [fields=<fld_1>[,<fld_2>[...]]]";
+ "review stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\nreview storage-instances <id>/<cid>[/<key>] [[key=<key>;fields=<fld_1>[,<fld_2>[...]]]";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\nattach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
  "create unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview users\nreview storages\n"
- "review stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\nreview storage-instances <id>/<cid>[/<key>] [fields=<fld_1>[,<fld_2>[...]]]";
+ "review stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\nreview storage-instances <id>/<cid>[/<key>] [[key=<key>;]fields=<fld_1>[,<fld_2>[...]]]";
 
 constexpr const char* c_web_session_script = "web_session.cin";
 
 constexpr const char* c_web_session_none_response = "[none]";
 constexpr const char* c_web_session_okay_response = "[okay]";
+
+constexpr const char* c_web_session_unknown_response = "[unknown]";
 
 constexpr const char* c_storage_attribute_id = "id";
 constexpr const char* c_storage_attribute_user_info = "user_info";
@@ -145,7 +147,8 @@ constexpr const char* c_storage_module_views_available_admin_query = "views.*.@i
 constexpr const char* c_storage_module_lists_available_non_admin_query = "lists.*.@id,@cid,name,class,~!type=admin";
 constexpr const char* c_storage_module_views_available_non_admin_query = "views.*.@id,@cid,name,class,~!type=admin";
 
-constexpr const char* c_storage_module_instance_options_fields_prefix = "fields=";
+constexpr const char* c_storage_module_instance_options_key = "key";
+constexpr const char* c_storage_module_instance_options_fields = "fields";
 
 mutex g_mutex;
 
@@ -743,6 +746,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 {
    bool found = false;
 
+   bool use_unknown_response = false;
+
    string prefix( c_web_access_prefix );
 
    string access( cws_params.access );
@@ -761,6 +766,29 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
    string instance_record_key;
 
+   map< string, string > option_parameters;
+
+   if( !options.empty( ) )
+   {
+      vector< string > all_options;
+
+      split( options, all_options, ';' );
+
+      for( size_t i = 0; i < all_options.size( ); i++ )
+      {
+         string next_option( all_options[ i ] );
+
+         string::size_type pos = next_option.find( '=' );
+
+         string value;
+
+         if( pos != string::npos )
+            value = next_option.substr( pos + 1 );
+
+         option_parameters[ next_option.substr( 0, pos ) ] = value;
+      }
+   }
+
    if( uri_suffix.find( c_cws_uri_suffix_storage_instances_prefix ) == 0 )
    {
       string instance_info( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_storage_instances_prefix ) ) );
@@ -778,6 +806,43 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          if( pos != string::npos )
          {
             instance_record_key = instance_mclass_id.substr( pos + 1 );
+
+            string key_replacement;
+
+            if( option_parameters.count( c_storage_module_instance_options_key ) )
+            {
+               key_replacement = option_parameters[ c_storage_module_instance_options_key ];
+
+               bool is_valid_key_replacement = true;
+
+               if( key_replacement.length( ) != instance_record_key.length( ) )
+                  is_valid_key_replacement = false;
+               else
+               {
+                  for( size_t i = 0; i < key_replacement.length( ); i++ )
+                  {
+                     char rep_ch = key_replacement[ i ];
+                     char src_ch = instance_record_key[ i ];
+
+                     rep_ch = tolower( rep_ch );
+
+                     if( rep_ch == '_' )
+                        rep_ch = '-';
+
+                     if( rep_ch != src_ch )
+                     {
+                        is_valid_key_replacement = false;
+
+                        break;
+                     }
+                  }
+               }
+
+               if( is_valid_key_replacement )
+                  instance_record_key = key_replacement;
+               else
+                  throw runtime_error( "invalid key replacement value '" + key_replacement + "'" );
+            }
 
             instance_mclass_id.erase( pos );
          }
@@ -1553,31 +1618,36 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      string pin, suggested_username;
 
-                     if( options == c_cws_request_users_create_op_secret )
-                        is_secret = true;
+                     size_t valid_options = 0;
 
-                     if( ( options.find( c_cws_request_users_create_opt_suggested_prefix ) == 0 )
-                      && ( options.length( ) > ( CONST_LENGTH( c_cws_request_users_create_opt_suggested_prefix ) + 2 ) ) )
+                     if( option_parameters.count( c_cws_request_users_create_options_secret ) )
                      {
-                        options.erase( 0, CONST_LENGTH( c_cws_request_users_create_opt_suggested_prefix ) );
+                        ++valid_options;
 
-                        string::size_type pos = options.find( ':' );
+                        is_secret = true;
+                     }
+
+                     if( option_parameters.count( c_cws_request_users_create_options_suggested ) )
+                     {
+                        ++valid_options;
+
+                        string value( option_parameters[ c_cws_request_users_create_options_suggested ] );
+
+                        string::size_type pos = value.find( ':' );
 
                         if( pos != string::npos )
                         {
-                           pin = options.substr( 0, pos );
+                           pin = value.substr( 0, pos );
 
-                           options.erase( 0, pos + 1 );
+                           value.erase( 0, pos + 1 );
                         }
 
-                        suggested_username = options;
-
-                        options.erase( );
+                        suggested_username = value;
                      }
 
-                     if( !is_secret && !options.empty( ) )
+                     if( option_parameters.size( ) > valid_options )
                         // FUTURE: This message should be handled as a server string message.
-                        error = "Invalid options value '" + options + "' for user creation.";
+                        error = "Invalid options '" + options + "' for user creation.";
                      else
                      {
                         found = true;
@@ -1844,10 +1914,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               {
                                  string fields( "_none" );
 
-                                 string::size_type pos = options.find( c_storage_module_instance_options_fields_prefix );
+                                 if( option_parameters.count( c_storage_module_instance_options_fields ) )
+                                    fields = option_parameters[ c_storage_module_instance_options_fields ];
 
-                                 if( pos != string::npos )
-                                    fields = options.substr( CONST_LENGTH( c_storage_module_instance_options_fields_prefix ) );
+                                 use_none_response = true;
 
                                  request_and_args += " 0 " + fields;
                               }
@@ -1855,10 +1925,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               {
                                  string fields( "_none" );
 
-                                 string::size_type pos = options.find( c_storage_module_instance_options_fields_prefix );
+                                 if( option_parameters.count( c_storage_module_instance_options_fields ) )
+                                    fields = option_parameters[ c_storage_module_instance_options_fields ];
 
-                                 if( pos != string::npos )
-                                    fields = options.substr( CONST_LENGTH( c_storage_module_instance_options_fields_prefix ) );
+                                 use_unknown_response = true;
 
                                  request_and_args += " 1 " + fields + " _key=" + instance_record_key;
                               }
@@ -1952,12 +2022,17 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                if( found && response.empty( ) )
                {
-                  string okay_reponse( use_none_response ? c_web_session_none_response : c_web_session_okay_response );
+                  string use_response( c_web_session_okay_response );
+
+                  if( use_none_response )
+                     use_response = c_web_session_none_response;
+                  else if( use_unknown_response )
+                     use_response = c_web_session_unknown_response;
 
                   if( !is_json_output )
-                     response = okay_reponse;
+                     response = use_response;
                   else
-                     response = "{\"response\":\"" + okay_reponse + "\"}\n";
+                     response = "{\"response\":\"" + use_response + "\"}\n";
                }
             }
          }
