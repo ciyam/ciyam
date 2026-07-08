@@ -758,6 +758,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
    string instance_module_id;
    string instance_mclass_id;
+
    string instance_record_key;
 
    if( uri_suffix.find( c_cws_uri_suffix_storage_instances_prefix ) == 0 )
@@ -766,7 +767,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
       string::size_type pos = instance_info.find( '/' );
 
-      instance_module_id = instance_info.substr( 0, pos );
+      instance_module_id = upper( instance_info.substr( 0, pos ) );
 
       if( pos != string::npos )
       {
@@ -780,6 +781,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
             instance_mclass_id.erase( pos );
          }
+
+         to_upper( instance_mclass_id );
       }
    }
 
