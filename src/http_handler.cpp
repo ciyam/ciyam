@@ -1386,19 +1386,19 @@ http_listener::http_listener( int port )
  port( port )
 {
    ++g_active_listeners;
-
-   register_listener( port, "http" );
 }
 
 http_listener::~http_listener( )
 {
-   unregister_listener( port );
-
    --g_active_listeners;
 }
 
 void http_listener::on_start( )
 {
+   bool started = false;
+
+   string listener_web_rest( "web_rest" );
+
    try
    {
       tcp_socket s;
@@ -1422,7 +1422,11 @@ void http_listener::on_start( )
       if( !okay )
          throw runtime_error( "unable to start listening on port #" + to_string( port ) );
 
-      TRACE_LOG( TRACE_MINIMAL, "http listener started on tcp port " + to_string( port ) );
+      listener_registration registration( port, listener_web_rest );
+
+      TRACE_LOG( TRACE_MINIMAL, listener_web_rest + " listener started on tcp port " + to_string( port ) );
+
+      started = true;
 
       g_none_tag = '<' + string( c_none ) + '>';
       g_none_var = get_special_var_name( e_special_var_none );
@@ -1497,7 +1501,8 @@ void http_listener::on_start( )
       TRACE_LOG( TRACE_MINIMAL, "http_listener error: unexpected unknown exception caught" );
    }
 
-   TRACE_LOG( TRACE_MINIMAL, "http listener finished (tcp port " + to_string( port ) + ")" );
+   if( started )
+      TRACE_LOG( TRACE_MINIMAL, listener_web_rest + " listener finished (tcp port " + to_string( port ) + ")" );
 
    delete this;
 }
