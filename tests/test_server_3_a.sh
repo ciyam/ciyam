@@ -75,6 +75,7 @@ curl -s -X GET "localhost:13031/cws/storage-modules/100/views?access=12345&devic
 curl -s -X GET "localhost:13031/cws/storage-modules/100/views/601020?access=12345&device=$device&session=$session"
 curl -s -X GET "localhost:13031/cws/storage-instances/100/100100?access=12345&device=$device&options=fields%3dUsername%2cUser_Hash&session=$session"
 curl -s -X GET "localhost:13031/cws/storage-instances/100/100100/guest?access=12345&device=$device&options=fields%3dUsername%2cUser_Hash&session=$session"
+curl -s -X GET "localhost:13031/cws/storage-instances/100/135100?access=12345&device=$device&session=$session"
 curl -s -X GET "localhost:13031/cws/storage-instances/100/135100/auto-code?access=12345&device=$device&session=$session"
 curl -s -X GET "localhost:13031/cws/storage-instances/100/135100/auto-code?access=12345&device=$device&options=key%3dAuto_Xode&session=$session"
 curl -s -X GET "localhost:13031/cws/storage-instances/100/135100/auto-code?access=12345&device=$device&options=key%3dAuto_Code&session=$session"

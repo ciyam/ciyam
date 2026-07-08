@@ -492,8 +492,17 @@ id=601110,cid=101100,name=601110_name,class=Workgroup
 [admin =1.0 275 100:100100] admin,d82494f05d6917ba02f7aaa29689ccb444bb73f20380876cb05d1f37537b7892
 [guest =1.0 0 100:100100] guest,c42b78633724b8bb7da3bda18b87f3ff4802ca85af7c6418001d509cf220bc61
 [guest =1.0 0 100:100100] guest,c42b78633724b8bb7da3bda18b87f3ff4802ca85af7c6418001d509cf220bc61
+[auto-code:Auto_Code =1.2 257 100:135100]
+[blog:Blog =1.2 257 100:135100]
+[folder:Folder =1.2 257 100:135100]
+[forum:Forum =1.2 257 100:135100]
+[group:Group =1.2 257 100:135100]
+[message:Message =1.2 257 100:135100]
+[standard:Standard =1.2 257 100:135100]
+[tag:Tag =1.2 257 100:135100]
+[user:User =1.2 257 100:135100]
 [unknown]
 Error: invalid key replacement value 'Auto_Xode'
-[Auto_Code =1.2 257 100:135100]
+[auto-code:Auto_Code =1.2 257 100:135100]
 Session terminated.
 Error: This web session is not valid (or has expired).
