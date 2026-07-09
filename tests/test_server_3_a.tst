@@ -24,7 +24,7 @@ retain stylesheet
 review storages
 review stylesheet[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
-review storage-instances <id>/<cid>[/<key>] [[key=<key>;fields=<fld_1>[,<fld_2>[...]]]
+review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][fields=<fields]]
 Now will perform structured I/O queries for enums/lists and views after attaching to the Meta storage.
 [okay]
 id=575,name=enum_add_packages
@@ -183,7 +183,7 @@ review users
 review storages
 review stylesheet[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
-review storage-instances <id>/<cid>[/<key>] [[key=<key>;]fields=<fld_1>[,<fld_2>[...]]]
+review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][fields=<fields]]
 100 Meta
 Error: Unknonwn module id '99' for storage 'Meta'.
 id=575,name=enum_add_packages
@@ -492,17 +492,32 @@ id=601110,cid=101100,name=601110_name,class=Workgroup
 [admin =1.0 275 100:100100] admin,d82494f05d6917ba02f7aaa29689ccb444bb73f20380876cb05d1f37537b7892
 [guest =1.0 0 100:100100] guest,c42b78633724b8bb7da3bda18b87f3ff4802ca85af7c6418001d509cf220bc61
 [guest =1.0 0 100:100100] guest,c42b78633724b8bb7da3bda18b87f3ff4802ca85af7c6418001d509cf220bc61
-[auto-code:Auto_Code =1.2 257 100:135100]
-[blog:Blog =1.2 257 100:135100]
-[folder:Folder =1.2 257 100:135100]
-[forum:Forum =1.2 257 100:135100]
-[group:Group =1.2 257 100:135100]
-[message:Message =1.2 257 100:135100]
-[standard:Standard =1.2 257 100:135100]
-[tag:Tag =1.2 257 100:135100]
-[user:User =1.2 257 100:135100]
+[bool =1.0 12547 100:102100]
+[date =1.0 12803 100:102100]
+[datetime =1.0 13315 100:102100]
+[foreign-key:foreign_key =1.0 143363 100:102100]
+[guests-bool:guests_bool =1.0 12547 100:102100]
+[guests-date:guests_date =1.0 12803 100:102100]
+[guests-datetime:guests_datetime =1.0 13315 100:102100]
+[guests-foreign-key:guests_foreign_key =1.0 143363 100:102100]
+[guests-int:guests_int =1.0 14339 100:102100]
+[guests-numeric:guests_numeric =1.0 77827 100:102100]
+[guests-string:guests_string =1.0 143363 100:102100]
+[guests-time:guests_time =1.0 274435 100:102100]
+[int =1.0 14339 100:102100]
+[numeric =1.0 77827 100:102100]
+[string =1.0 143363 100:102100]
+[time =1.0 274435 100:102100]
 [unknown]
-Error: invalid key replacement value 'Auto_Xode'
-[auto-code:Auto_Code =1.2 257 100:135100]
+Error: invalid key replacement value 'guests_xool'
+[guests-bool:guests_bool =1.0 12547 100:102100]
+[guests-int:guests_int =1.0 14339 100:102100] int,T005
+[guests-foreign-key:guests_foreign_key =1.0 143363 100:102100] foreign_key,T007
+[guests-datetime:guests_datetime =1.0 13315 100:102100] datetime,T001
+[guests-date:guests_date =1.0 12803 100:102100] date,T002
+[guests-int:guests_int =1.0 14339 100:102100] int,T005
+[guests-numeric:guests_numeric =1.0 77827 100:102100] numeric,T004
+[guests-string:guests_string =1.0 143363 100:102100] string,T000
+[guests-time:guests_time =1.0 274435 100:102100] time,T003
 Session terminated.
 Error: This web session is not valid (or has expired).
