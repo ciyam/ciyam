@@ -119,13 +119,14 @@ constexpr const char* c_cws_uri_suffix_views_extra_prefix = "/views/";
 constexpr const char* c_cws_request_users_create_options_secret = "secret";
 constexpr const char* c_cws_request_users_create_options_suggested = "suggested";
 
-// NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax.
-constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview storages\n"
- "review stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\nreview storage-instances <id>/<cid>[/<key>] [[key=<key>;fields=<fld_1>[,<fld_2>[...]]]";
+// NOTE: This help is only intended for the "test_web_session.html" page which will translate this more "user friendly" syntax.
+constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\n"
+ "delete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview storages\nreview stylesheet[s] [<name>]\n"
+ "review storage-modules [<id>/enums|lists|views[/<item_id>]]\nreview storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][fields=<fields]]";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\nattach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
- "create unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview users\nreview storages\n"
- "review stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\nreview storage-instances <id>/<cid>[/<key>] [[key=<key>;]fields=<fld_1>[,<fld_2>[...]]]";
+ "create unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview users\nreview storages\nreview stylesheet[s] [<name>]\n"
+ "review storage-modules [<id>/enums|lists|views[/<item_id>]]\nreview storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][fields=<fields]]";
 
 constexpr const char* c_web_session_script = "web_session.cin";
 
@@ -148,6 +149,8 @@ constexpr const char* c_storage_module_lists_available_non_admin_query = "lists.
 constexpr const char* c_storage_module_views_available_non_admin_query = "views.*.@id,@cid,name,class,~!type=admin";
 
 constexpr const char* c_storage_module_instance_options_key = "key";
+constexpr const char* c_storage_module_instance_options_num = "num";
+constexpr const char* c_storage_module_instance_options_path = "path";
 constexpr const char* c_storage_module_instance_options_fields = "fields";
 
 mutex g_mutex;
@@ -1972,14 +1975,25 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                               if( instance_record_key.empty( ) )
                               {
+                                 string num( "0" );
+                                 string path;
                                  string fields( "_none" );
+
+                                 if( option_parameters.count( c_storage_module_instance_options_num ) )
+                                    num = option_parameters[ c_storage_module_instance_options_num ];
+
+                                 if( option_parameters.count( c_storage_module_instance_options_path ) )
+                                    path = option_parameters[ c_storage_module_instance_options_path ];
 
                                  if( option_parameters.count( c_storage_module_instance_options_fields ) )
                                     fields = option_parameters[ c_storage_module_instance_options_fields ];
 
                                  use_none_response = true;
 
-                                 request_and_args += " 0 " + fields;
+                                 request_and_args += ' ' + num + ' ' + fields;
+
+                                 if( !path.empty( ) )
+                                    request_and_args += ' ' + path;
                               }
                               else
                               {
