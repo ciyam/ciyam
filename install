@@ -7,6 +7,8 @@
 CONFIG_PATH=/etc/ciyam
 INSTALL_PATH=/opt/ciyam
 SYSTEM_LOG_PATH=/var/log/ciyam
+APP_VARIABLE_PATH=/var/opt/ciyam
+DOCUMENTATION_PATH=/var/opt/ciyam/html
 
 create_fs_file( )
 {
@@ -305,6 +307,21 @@ if [ ! -d $INSTALL_PATH ]; then
  exit 1
 fi
 
+if [ ! -L $INSTALL_PATH/ciyam_script.log ]; then
+ ln -s $SYSTEM_LOG_PATH/ciyam_script.log $INSTALL_PATH/ciyam_script.log
+ sudo chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/ciyam_script.log
+fi
+
+if [ ! -L $INSTALL_PATH/ciyam_server.log ]; then
+ ln -s $SYSTEM_LOG_PATH/ciyam_server.log $INSTALL_PATH/ciyam_server.log
+ sudo chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/ciyam_server.log
+fi
+
+if [ ! -L $INSTALL_PATH/ciyam_update.log ]; then
+ ln -s $SYSTEM_LOG_PATH/ciyam_update.log $INSTALL_PATH/ciyam_update.log
+ sudo chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/ciyam_update.log
+fi
+
 if [ ! -d $SYSTEM_LOG_PATH ]; then
  sudo mkdir $SYSTEM_LOG_PATH
  sudo chown $CIYAM_USER:$CIYAM_GROUP $SYSTEM_LOG_PATH
@@ -319,19 +336,16 @@ if [ ! -d $SYSTEM_LOG_PATH ]; then
  sudo chown $CIYAM_USER:$CIYAM_GROUP $SYSTEM_LOG_PATH/ciyam_update.log
 fi
 
-if [ ! -L $INSTALL_PATH/ciyam_script.log ]; then
- ln -s $SYSTEM_LOG_PATH/ciyam_script.log $INSTALL_PATH/ciyam_script.log
- sudo chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/ciyam_script.log
+if [ ! -d $APP_VARIABLE_PATH ]; then
+ sudo mkdir $APP_VARIABLE_PATH
+ sudo chown $CIYAM_USER:$CIYAM_GROUP $APP_VARIABLE_PATH
 fi
 
-if [ ! -L $INSTALL_PATH/ciyam_server.log ]; then
- ln -s $SYSTEM_LOG_PATH/ciyam_server.log $INSTALL_PATH/ciyam_server.log
- sudo chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/ciyam_server.log
-fi
+if [ ! -d $DOCUMENTATION_PATH ]; then
+ sudo mkdir $DOCUMENTATION_PATH
+ sudo chown $CIYAM_USER:$CIYAM_GROUP $DOCUMENTATION_PATH
 
-if [ ! -L $INSTALL_PATH/ciyam_update.log ]; then
- ln -s $SYSTEM_LOG_PATH/ciyam_update.log $INSTALL_PATH/ciyam_update.log
- sudo chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/ciyam_update.log
+ ln -s $DOCUMENTATION_PATH $INSTALL_PATH/html
 fi
 
 service_path=/etc/systemd/system
@@ -478,6 +492,9 @@ fi
 sudo rsync -cr --info=name ciyam/ $INSTALL_PATH | xargs -I {} echo $INSTALL_PATH/{}
 sudo chown -R $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
 
+sudo rsync -cr --info=name html/ $DOCUMENTATION_PATH | xargs -I {} echo $DOCUMENTATION_PATH/{}
+sudo chown -R $CIYAM_USER:$CIYAM_GROUP $DOCUMENTATION_PATH
+
 if [ "$has_system" = "" ]; then
  if [ "$CIYAM_APP_MOD" = "Meta" ]; then
   # NOTE: Replace the exported "id" with a newly generated "<identity>".
@@ -542,6 +559,7 @@ fi
 
 sudo chown -R $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
 
+rm -r html
 rm -r ciyam
 
 if [ ! -d $WEBDIR/$CIYAM_APP_DIR ]; then
