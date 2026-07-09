@@ -119,6 +119,13 @@ else
    exit 1
   fi
 
+  mkdir $release_name/html
+  if [ ! -d $release_name/html ]; then
+   echo "Error: Unable to create '$release_name/html' directory (incorrect umask?)."
+
+   exit 1
+  fi
+
   mkdir $release_name/ciyam
   if [ ! -d $release_name/ciyam ]; then
    echo "Error: Unable to create '$release_name/ciyam' directory (incorrect umask?)."
@@ -163,6 +170,22 @@ else
  cp ext_request run_script run_temp script set_password $release_name/ciyam
 
  cp bundle unbundle ciyam_client ciyam_server ods_dump ods_fsed $all_modules $release_name/ciyam
+
+ pushd ../docs > /dev/null
+ ./genhtml
+ popd  > /dev/null
+
+ cp ../docs/*.html $release_name/html
+ cp ../docs/document.css $release_name/html
+
+ cp ../pics/name_small.png $release_name/html
+ cp ../pics/logo-gryscl-128.png $release_name/html
+ cp ../pics/background_texture.png $release_name/html
+
+ cp ../webui/*.js  $release_name/html
+ cp ../webui/*.html  $release_name/html
+
+ ./unbundle -qq fonts -d $release_name/html/fonts
 
  if [ "$main_module" = "Meta" ]; then
   ./ods_fsed -quiet "-exec=export $main_module" $main_module
