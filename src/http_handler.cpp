@@ -172,7 +172,9 @@ constexpr const char* c_http_content_disposition_form_data = "form-data";
 constexpr const char* c_html_test_response = "<!doctype html>\n<html>\n<head><title>Test HTML Page</title></head>\n<body><p>This is a HTML response for test purposes.</p></body>\n</html>\n";
 
 constexpr const char* c_has_moved_html_response = "<!doctype html>\n<html>\n<head><title>Document Has Moved</title></head>\n<body><p>Document has moved <a href=\"DOCUMENT\">here</a>.</p></body>\n</html>\n";
-constexpr const char* c_not_found_html_response = "<!doctype html>\n<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find document 'DOCUMENT' (incorrect endpoint?).</p></body>\n</html>\n";
+
+constexpr const char* c_not_found_html_response = "<!doctype html>\n<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find document 'DOCUMENT'.</p></body>\n</html>\n";
+constexpr const char* c_not_endpoint_html_response = "<!doctype html>\n<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find 'DOCUMENT' (incorrect endpoint?).</p></body>\n</html>\n";
 
 constexpr const char* c_replace_document_marker = "DOCUMENT";
 
@@ -1265,7 +1267,9 @@ void http_request_handler::on_start( )
 
             if( !has_moved )
             {
-               response = c_not_found_html_response;
+               bool has_file_extension = ( http_document.find( '.' ) != string::npos );
+
+               response = ( has_file_extension ? c_not_found_html_response : c_not_endpoint_html_response );
 
                replace( response, c_replace_document_marker, http_document );
             }
