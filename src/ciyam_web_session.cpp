@@ -326,6 +326,18 @@ void update_session_info( const string& session, const string& user_key )
       g_session_info[ session ]->user_key = user_key;
 }
 
+string get_session_info_user_key( const string& session )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   if( g_session_info.count( session ) )
+      retval = g_session_info[ session ]->user_key;
+
+   return retval;
+}
+
 struct cws_active_command
 {
    cws_active_command( bool lock_for_admin )
@@ -1684,13 +1696,17 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            value.erase( 0, pos + 1 );
                         }
 
-                        suggested_username = value;
+                        if( value == c_admin )
+                           // FUTURE: This message should be handled as a server string message.
+                           error = "Invalid attempt to create an 'admin' user.";
+                        else
+                           suggested_username = value;
                      }
 
                      if( option_parameters.size( ) > valid_options )
                         // FUTURE: This message should be handled as a server string message.
                         error = "Invalid options '" + options + "' for user creation.";
-                     else
+                     else if( error.empty( ) )
                      {
                         found = true;
 
@@ -1942,15 +1958,17 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               set_system_variable( web_storage_var_name, storage_name );
 
                               request_and_args = "<web_session_instance_fetch.cin "
-                               + module + ' ' + user_class_id + " 1 " + field_list
-                               + ' ' + user_field_id_username + '=' + username;
+                               + module + ' ' + user_class_id + " _none 1 "
+                               + field_list + ' ' + user_field_id_username + '=' + username;
                            }
                            else if( is_module_info_request )
                               request_and_args = "<web_session_modules_fetch.cin";
                            else if( is_instance_fetch_request )
                            {
+                              string user_key = get_session_info_user_key( session );
+
                               request_and_args = "<web_session_instance_fetch.cin "
-                               + instance_module_id + ' ' + instance_mclass_id;
+                               + instance_module_id + ' ' + instance_mclass_id + ' ' + user_key;
 
                               if( instance_record_key.empty( ) )
                               {
