@@ -37,12 +37,18 @@ HAS_KEY_VALUE=
 USER_KEY=
 @endif
 ;
-@ifndef $NUM_LIMIT
-NUM_LIMIT=0
-@elif "$NUM_LIMIT" = "-"
+@ifdef $NUM_LIMIT
+CHECK_LIMIT=@repstr:-/:$NUM_LIMIT
+@ifneq "$NUM_LIMIT" "$CHECK_LIMIT"
 OPTS=$OPTS -rev
-NUM_LIMIT=0
-@elif "$NUM_LIMIT" = "+"
+NUM_LIMIT=$CHECK_LIMIT
+@else
+CHECK_LIMIT=@repstr:+/:$NUM_LIMIT
+NUM_LIMIT=$CHECK_LIMIT
+@endif
+@endif
+;
+@ifndef $NUM_LIMIT
 NUM_LIMIT=0
 @endif
 ;
@@ -92,7 +98,7 @@ ORDERING=$FIELD_NAME
 @endif
 ;
 @ifdef $FIELD_VALUE
-RESTRICTED=1
+RESTRICTED=0
 RESTRICTIONS=$FIELD_VALUE
 @endif
 ;
