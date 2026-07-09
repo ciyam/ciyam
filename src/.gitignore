@@ -1,4 +1,4 @@
-# If present ignore a 'tmp' file or directory.
+# If present ignore 'tmp' file or directory.
 tmp
 
 # Ignore these to be used for testing.
@@ -27,6 +27,9 @@ xxx.png
 xxx.sio
 xxx.txt
 xxx.xrep
+
+# If preseent ignore 'html' file or directory.
+html
 
 # Ignore any web access or admin device token files.
 .web_access_*
