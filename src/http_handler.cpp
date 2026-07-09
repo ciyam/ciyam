@@ -68,6 +68,8 @@ const size_t c_max_request_lines = 100;
 
 #include "ciyam_constants.h"
 
+constexpr const char* c_html = "html";
+
 constexpr const char* c_ext_js = "js";
 constexpr const char* c_ext_css = "css";
 constexpr const char* c_ext_gif = "gif";
@@ -1081,7 +1083,13 @@ void http_request_handler::on_start( )
 
          if( response.empty( ) )
          {
-            string path( get_web_root( ) );
+            string path( c_html );
+
+            // NOTE: It is expected that "html"
+            // is most likely to be a soft-link
+            // so use "file_target" in order to
+            // determine the actual start path.
+            string start( file_target( path ) );
 
             if( !http_document.empty( ) && ( http_document[ 0 ] != '/' ) )
                path += '/';
@@ -1089,10 +1097,10 @@ void http_request_handler::on_start( )
             bool rc = true;
 
             // NOTE: Do a sanity check to make sure that the document
-            // being requested is not outside of the "web root" path.
+            // being requested is actually below the start directory.
             string check_path( absolute_path( path + http_document, &rc ) );
 
-            if( rc && ( check_path.find( path ) == 0 ) )
+            if( rc && ( check_path.find( start ) == 0 ) )
             {
                if( file_exists( path + http_document ) )
                {
