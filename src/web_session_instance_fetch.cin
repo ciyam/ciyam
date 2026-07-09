@@ -10,24 +10,32 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $2
 NUM_ARGS=@$NUM_ARGS+1
 @endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
 ;
 ERROR=
 ;
-@ifneq "$NUM_ARGS" "2"
-ERROR=Requires module and class.
+@ifneq "$NUM_ARGS" "3"
+ERROR=Requires module, class and user key.
 #Error: $ERROR
 @else
 ;
 MODULE=$1
 MCLASS=$2
+USER_KEY=$3
 ;
-NUM_LIMIT=$3
-FIELD_LIST=$4
-INDEX_INFO=$5
-EXTRA_INFO=$6
+NUM_LIMIT=$4
+FIELD_LIST=$5
+INDEX_INFO=$6
+EXTRA_INFO=$7
 ;
 OPTS=
 HAS_KEY_VALUE=
+;
+@ifeq "$USER_KEY" "_none"
+USER_KEY=
+@endif
 ;
 @ifndef $NUM_LIMIT
 NUM_LIMIT=0
@@ -36,6 +44,14 @@ OPTS=$OPTS -rev
 NUM_LIMIT=0
 @elif "$NUM_LIMIT" = "+"
 NUM_LIMIT=0
+@endif
+;
+@ifdef $USER_KEY
+@ifndef $OPTS
+OPTS= -u=$USER_KEY
+@else
+OPTS= $OPTS -u=$USER_KEY
+@endif
 @endif
 ;
 @ifndef $FIELD_LIST
