@@ -1304,10 +1304,19 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   else
                      response = "{\"message\":\"Session terminated.\"}\n";
 
-                  set_system_variable( web_message_var_name, "" );
                   set_system_variable( web_session_var_name, "" );
                   set_system_variable( web_started_var_name, "" );
                   set_system_variable( web_storage_var_name, "" );
+
+                  // NOTE: If it seems to be running then will force the
+                  // "web_session" application protocol script to finish
+                  // (as the command "@web_session_check" is harmless it
+                  // will not matter if the script had already stopped).
+                  if( has_system_variable( web_message_var_name ) )
+                     set_system_variable( web_command_var_name, g_web_session_check );
+
+                  // NOTE: If an uploaded file was not deleted then will do that now.
+                  file_remove( g_temporary_directory + '/' + session + c_tmp_file_ext );
 
                   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) finished "
                    "session " + session + " with device " + device + " for access " + access );
