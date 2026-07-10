@@ -32,8 +32,13 @@
 
    <button onclick="upload_file( )">Upload</button>
 
+   <div>
+   <br/>
+   <label>Extra Params: <input type="text" id="query_params" size="65" maxlength="65"></label>
+   </div>
+
    <div class="progress-container">
-      <div class="progress-bar" id="progressBar"></div>
+      <div class="progress-bar" id="progress_bar"></div>
    </div>
 
    <p id="status"></p>
@@ -47,7 +52,9 @@
          return alert( "Please select a file." );
 
       const status = document.getElementById( "status" );
-      const progressBar = document.getElementById( "progressBar" );
+      const progress_bar = document.getElementById( "progress_bar" );
+
+      const query_params = document.getElementById( "query_params" ).value;
 
       const xhr = new XMLHttpRequest( );
 
@@ -61,7 +68,7 @@
 
             const percent = Math.round(( e.loaded / e.total ) * 100 );
 
-            progressBar.style.width = percent + '%';
+            progress_bar.style.width = percent + '%';
 
             status.textContent = `${percent}% uploaded`;
          }
@@ -91,7 +98,14 @@
             status.textContent = xhr.response;
       };
 
-      xhr.open( "POST", "/upload?verbose=1" );
+      var query = "/upload?verbose=1";
+
+      if( query_params != "" )
+         query += "&" + query_params;
+
+      console.log( "POST " + query );
+
+      xhr.open( "POST", query );
 
       const form_data = new FormData( );
 
