@@ -34,6 +34,10 @@ if [ ! -f ciyam.pem ]; then
  ./create_ciyam_pem
 fi
 
+if [ ! -d /tmp/ciyam ]; then
+ mkdir /tmp/ciyam
+fi
+
 if [ ! -f xrep ]; then
  if [ ! -f makefile ]; then
   cp makefile.tools makefile
@@ -48,7 +52,9 @@ if [ ! -f xrep ]; then
 else
  if [ ! -f ciyam_server.sid ]; then
   ./xrep @ciyam_server.sid.sh.xrep >"~config.sh"
+
   chmod a+x ~config.sh
+
   "./~config.sh"
   rm "~config.sh"
 
