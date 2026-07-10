@@ -24,8 +24,8 @@ SESSION=$3
 ;
 IS_ADMIN=
 ;
-.session_variable @uuid
-TEMP_FILE=/tmp/ciyam/$OUTPUT
+~mkdir -p /tmp/ciyam/$SESSION
+TEMP_FILE=/tmp/ciyam/$SESSION/output.tmp
 ;
 OUTPUT_FILE=/tmp/ciyam/web.$TOKEN.$DEVICE
 ;
@@ -89,5 +89,7 @@ ERROR=Session has been terminated.
 !!@:LOOP
 ;
 @:END_LOOP
+;
+~rm -rf /tmp/ciyam/$SESSION
 ;
 @endif
