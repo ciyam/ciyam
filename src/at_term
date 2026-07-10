@@ -11,6 +11,10 @@ fi
 # NOTE: Modify the following if wanting to be notified when the CIYAM application server has been stopped.
 #curl -H "Title: CIYAM Stopped" -d  "CIYAM Application Server has stopped." https://ntfy.domain.org/up_admin
 
+# NOTE: Clean up temporary files that are not
+# intended to be kept around when terminated.
+rm -f /tmp/ciyam/*.tmp
+
 USER_PATH=/home/$CIYAM_USER
 
 BACKUP_PATH=$USER_PATH/backup
