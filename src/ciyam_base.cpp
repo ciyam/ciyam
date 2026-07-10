@@ -76,6 +76,8 @@ extern size_t g_updates;
 
 extern int64_t g_started;
 
+extern string g_temporary_directory;
+
 namespace
 {
 
@@ -5877,7 +5879,15 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             key_file_name = key.substr( c_unlock_file_name_start, c_unlock_file_name_length ) + c_key_suffix;
 
             if( !file_exists( key_file_name ) )
-               key_file_name = c_tmp_key_prefix + key_file_name;
+            {
+               string raw_key_file_name( key_file_name );
+
+               key_file_name = g_temporary_directory + '/' + key_file_name;
+
+               // NOTE: For legacy temp key files only.
+               if( !file_exists( key_file_name ) )
+                  key_file_name = c_tmp_key_prefix + raw_key_file_name;
+            }
 
             if( file_exists( key_file_name ) )
             {
@@ -6116,7 +6126,7 @@ string create_unlock_sid_hash_key( bool for_web_ui, bool is_temporary )
    string key_file_name( key.substr( c_unlock_file_name_start, c_unlock_file_name_length ) + c_key_suffix );
 
    if( is_temporary )
-      key_file_name = c_tmp_key_prefix + key_file_name;
+      key_file_name = g_temporary_directory + '/' + key_file_name;
 
    string sid_hash;
    sid_hash.reserve( c_key_reserve_size );
