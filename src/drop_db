@@ -7,7 +7,7 @@
 if [ $# -lt 1 ]; then
  echo "Usage: drop_db [db name] [[.]|[password]]"
 else
- tmp_file=$(mktemp --suffix ".tmp")
+ tmp_file=$(mktemp -p "/tmp/ciyam" --suffix ".tmp")
 
  echo "DROP USER $1@localhost;" >$tmp_file
  echo "DROP DATABASE IF EXISTS $1;" >>$tmp_file

@@ -20,7 +20,7 @@ else
  fi
 
  if [ ! "$3" = "" ]; then
-  tmp_file=$(mktemp --suffix ".tmp")
+  tmp_file=$(mktemp -p "/tmp/ciyam" --suffix ".tmp")
 
   ./test_sql $3 $3 "SHOW TABLES FROM $3 LIKE 'T_$1_%'" >$tmp_file
   ./xrep @remove_app_module.xrep tables=@$tmp_file >>$3.obsolete.sql

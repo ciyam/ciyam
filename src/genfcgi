@@ -30,7 +30,7 @@ else
 
     exit 1
    else
-    tmp_file=$(mktemp --suffix ".tmp")
+    tmp_file=$(mktemp -p "/tmp/ciyam" --suffix ".tmp")
 
     ./xrep @app.fcgi.sio.xrep include=$1.app.vars.xrep >$tmp_file
 

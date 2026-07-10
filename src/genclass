@@ -13,7 +13,7 @@ else
  full_name=$1_$2
  user_vars="user_vars=$full_name.vars.xrep"
 
- tmp_file=$(mktemp --suffix ".tmp")
+ tmp_file=$(mktemp -p "/tmp/ciyam" --suffix ".tmp")
 
  if [ ! "$1" = "-rdbms" ]; then
   echo model_load $1>$tmp_file

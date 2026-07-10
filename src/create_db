@@ -25,7 +25,7 @@ else
   fi
  fi
 
- tmp_file=$(mktemp --suffix ".tmp")
+ tmp_file=$(mktemp -p "/tmp/ciyam" --suffix ".tmp")
 
  echo "DROP DATABASE IF EXISTS $db_name;" >$tmp_file
 
