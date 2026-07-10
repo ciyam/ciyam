@@ -55,6 +55,8 @@ string g_cws_username_for_prefix;
 
 bool g_is_devt_system = false;
 
+extern string g_temporary_directory;
+
 extern atomic< size_t > g_active_listeners;
 
 extern volatile sig_atomic_t g_server_shutdown;
@@ -177,6 +179,8 @@ constexpr const char* c_has_moved_html_response = "<!doctype html>\n<html>\n<hea
 
 constexpr const char* c_not_found_html_response = "<!doctype html>\n<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find document 'DOCUMENT'.</p></body>\n</html>\n";
 constexpr const char* c_not_endpoint_html_response = "<!doctype html>\n<html>\n<head><title>Document Not Found</title></head>\n<body><p>Unable to find 'DOCUMENT' (incorrect endpoint?).</p></body>\n</html>\n";
+
+constexpr const char* c_upload_filename = "upload";
 
 constexpr const char* c_replace_document_marker = "DOCUMENT";
 
@@ -612,7 +616,7 @@ void http_request_handler::on_start( )
 
          ostringstream osstr;
 
-         string data, error, header, response, moved_document;
+         string data, error, header, access, device, response, session, moved_document;
 
          // NOTE: If document ends in '/' then will
          // automatically append "index.html".
@@ -647,6 +651,15 @@ void http_request_handler::on_start( )
                   if( error.empty( ) )
                      has_format_parameter = true;
                }
+
+               if( params.count( c_query_param_name_access ) )
+                  access = params[ c_query_param_name_access ];
+
+               if( params.count( c_query_param_name_device ) )
+                  device = params[ c_query_param_name_device ];
+
+               if( params.count( c_query_param_name_session ) )
+                  session = params[ c_query_param_name_session ];
 
                if( params.count( c_query_param_name_verbose ) )
                   is_verbose = true;
@@ -880,7 +893,36 @@ void http_request_handler::on_start( )
 #ifdef DEBUG
                         local_filename = "x";
 #else
-                        local_filename = uuid( ).as_string( );
+                        local_filename = g_temporary_directory + '/';
+
+                        bool has_valid_session = false;
+
+                        // NOTE: If the upload is part of a "web sesssion" then verify
+                        // that the system variable for the provided access and device
+                        // exists and that its value matches the provided "session" so
+                        // a filename in the form "<session>.tmp" is created.
+                        if( !access.empty( ) && !device.empty( ) && !session.empty( ) )
+                        {
+                           string var_prefix( get_special_var_name( e_special_var_web ) + '.' );
+
+                           string check_session( get_system_variable( var_prefix
+                            + access + '.' + device + '.' + string( c_query_param_name_session ) ) );
+
+                           if( session == check_session )
+                           {
+                              has_valid_session = true;
+                              local_filename += session;
+                           }
+                        }
+
+                        // NOTE: If not a "web session" upload
+                        // then just use the name "upload" (so
+                        // that testing will not inadvertantly
+                        // fill up the temporary file system).
+                        if( !has_valid_session )
+                           local_filename += c_upload_filename;
+
+                        local_filename += c_tmp_file_ext;
 #endif
 
                         ofstream outf( local_filename );
