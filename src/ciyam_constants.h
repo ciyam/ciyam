@@ -154,6 +154,7 @@ constexpr const char* c_csv_file_ext = ".csv";
 constexpr const char* c_log_file_ext = ".log";
 constexpr const char* c_old_file_ext = ".old";
 constexpr const char* c_sav_file_ext = ".sav";
+constexpr const char* c_tmp_file_ext = ".tmp";
 
 constexpr const char* c_ciyam_pem = "ciyam.pem";
 
