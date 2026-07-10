@@ -25,9 +25,9 @@ SESSION=$3
 IS_ADMIN=
 ;
 .session_variable @uuid
-TEMP_FILE=/tmp/ciyam.tmp.$OUTPUT
+TEMP_FILE=/tmp/ciyam/$OUTPUT
 ;
-OUTPUT_FILE=/tmp/ciyam.web.$TOKEN.$DEVICE
+OUTPUT_FILE=/tmp/ciyam/web.$TOKEN.$DEVICE
 ;
 ~rm -f $OUTPUT_FILE
 ;
