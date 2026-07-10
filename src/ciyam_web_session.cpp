@@ -45,6 +45,8 @@ extern string g_cws_admin_device;
 
 extern string g_web_session_check;
 
+extern string g_temporary_directory;
+
 extern string g_cws_username_for_prefix;
 
 namespace
@@ -1186,7 +1188,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       {
          string var_prefix( get_special_var_name( e_special_var_web ) + '.' );
 
-         string output_file_name( "/tmp/ciyam." + var_prefix.substr( 1 ) + access + '.' + device );
+         string output_file_name( g_temporary_directory + '/' + var_prefix.substr( 1 ) + access + '.' + device );
 
          string web_lock_name( var_prefix + access + '.' + device + c_web_lock_suffix );
 
