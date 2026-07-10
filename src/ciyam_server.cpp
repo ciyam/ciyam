@@ -14,6 +14,7 @@
 #  include <cstdlib>
 #  include <atomic>
 #  include <memory>
+#  include <fstream>
 #  include <sstream>
 #  include <iomanip>
 #  include <iostream>
@@ -46,6 +47,8 @@ using namespace std;
 size_t g_updates;
 
 int64_t g_started;
+
+string g_temporary_directory;
 
 atomic< size_t > g_active_sessions;
 atomic< size_t > g_active_listeners;
@@ -102,8 +105,6 @@ const char* const c_cmd_test_peer_port_port = "port";
 
 bool g_is_quiet = false;
 
-bool g_had_exiting_command = false;
-
 #ifdef __GNUG__
 const char* const c_cmd_daemon = "daemon";
 
@@ -112,6 +113,10 @@ bool g_is_daemon = false;
 
 const char* const c_listener_rpc_core = "rpc_core";
 const char* const c_listener_rpc_data = "rpc_data";
+
+const char* const c_tmp_ciyam_directory = "/tmp/ciyam";
+
+const char* const c_tmp_ciyam_directory_dummy_file = "/tmp/ciyam/dummy";
 
 unsigned int g_port = 0;
 
@@ -170,6 +175,7 @@ string application_title( app_info_request request )
    else if( request == e_app_info_request_title_and_version )
    {
       string title( c_app_title );
+
       title += " v";
       title += string( c_app_version );
 
@@ -178,7 +184,9 @@ string application_title( app_info_request request )
    else
    {
       ostringstream osstr;
+
       osstr << "unknown app_info_request: " << request;
+
       throw runtime_error( osstr.str( ) );
    }
 }
@@ -323,8 +331,27 @@ int main( int argc, char* argv[ ] )
          processor.process_commands( );
       }
 
-      if( g_had_exiting_command )
-         return 0;
+      if( !dir_exists( c_tmp_ciyam_directory ) )
+         create_dir( c_tmp_ciyam_directory );
+
+      // NOTE: Check that the temporary directory exists or was created and then
+      // will also check that files can be created and deleted in the directory.
+      if( !dir_exists( c_tmp_ciyam_directory ) )
+         throw runtime_error( "was unable to create " + string( c_tmp_ciyam_directory ) );
+      else
+      {
+         ofstream outf( c_tmp_ciyam_directory_dummy_file );
+
+         if( !outf )
+            throw runtime_error( "was unable to create " + string( c_tmp_ciyam_directory_dummy_file ) );
+      }
+
+      file_remove( c_tmp_ciyam_directory_dummy_file );
+
+      if( file_exists( c_tmp_ciyam_directory_dummy_file ) )
+         throw runtime_error( "was unable to remove " + string( c_tmp_ciyam_directory_dummy_file ) );
+
+      g_temporary_directory = c_tmp_ciyam_directory;
 
       umask( STANDARD_UMASK );
 
@@ -355,13 +382,13 @@ int main( int argc, char* argv[ ] )
          if( sid < 0 )
             exit( EXIT_FAILURE );
 
-         // FUTURE: Standard error should probably also be closed here (but
-         // is useful to help diagnose issues via simple "cerr" debugging).
+         // NOTE: Standard error is not being closed here so
+         // it can be used for very basic "cerr" debugging).
          close( STDOUT_FILENO );
-         // close( STDERR_FILENO );
       }
 
-      // NOTE: For a multi-threaded application need to create a thread to wait on the signal.
+      // NOTE: For a multi-threaded application
+      // create a thread to wait on the signal.
       pthread_t tid;
 
       sigemptyset( &sig_set );
