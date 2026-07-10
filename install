@@ -4,8 +4,8 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-CONFIG_PATH=/etc/ciyam
 INSTALL_PATH=/opt/ciyam
+CONFIGURE_PATH=/etc/opt/ciyam
 SYSTEM_LOG_PATH=/var/log/ciyam
 APP_VARIABLE_PATH=/var/opt/ciyam
 DOCUMENTATION_PATH=/var/opt/ciyam/html
@@ -47,25 +47,25 @@ copy_config_default( )
   exit 1
  fi
 
- if [ ! -f $CONFIG_PATH/$1.default ]; then
-  cp ciyam/$1.default $CONFIG_PATH
-  sudo chown $CIYAM_USER:$CIYAM_GROUP $CONFIG_PATH/$1.default
+ if [ ! -f $CONFIGURE_PATH/$1.default ]; then
+  cp ciyam/$1.default $CONFIGURE_PATH
+  sudo chown $CIYAM_USER:$CIYAM_GROUP $CONFIGURE_PATH/$1.default
 
-  cp $CONFIG_PATH/$1.default $CONFIG_PATH/$1
-  sudo chown $CIYAM_USER:$CIYAM_GROUP $CONFIG_PATH/$1
+  cp $CONFIGURE_PATH/$1.default $CONFIGURE_PATH/$1
+  sudo chown $CIYAM_USER:$CIYAM_GROUP $CONFIGURE_PATH/$1
  else
-  cmp -s ciyam/$1.default $CONFIG_PATH/$1.default
+  cmp -s ciyam/$1.default $CONFIGURE_PATH/$1.default
 
   if [ $? -eq 1 ]; then
    echo "Warning: The following changes for '$1.default' might need to be made to '$1'."
-   diff $CONFIG_PATH/$1.default ciyam/$1.default
+   diff $CONFIGURE_PATH/$1.default ciyam/$1.default
   fi
 
-  cp ciyam/$1.default $CONFIG_PATH
+  cp ciyam/$1.default $CONFIGURE_PATH
  fi
 
  if [ ! -L $INSTALL_PATH/$1 ]; then
-  ln -s $CONFIG_PATH/$1 $INSTALL_PATH/$1
+  ln -s $CONFIGURE_PATH/$1 $INSTALL_PATH/$1
   sudo chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/$1
  fi
 }
@@ -285,13 +285,13 @@ fi
 
 cd $release_dir
 
-if [ ! -d $CONFIG_PATH ]; then
- sudo mkdir $CONFIG_PATH
- sudo chown $CIYAM_USER:$CIYAM_GROUP $CONFIG_PATH
+if [ ! -d $CONFIGURE_PATH ]; then
+ sudo mkdir $CONFIGURE_PATH
+ sudo chown $CIYAM_USER:$CIYAM_GROUP $CONFIGURE_PATH
 fi
 
-if [ ! -d $CONFIG_PATH ]; then
- echo "Error: Unable to access/create $CONFIG_PATH directory (incorrect user?)."
+if [ ! -d $CONFIGURE_PATH ]; then
+ echo "Error: Unable to access/create $CONFIGURE_PATH directory (incorrect user?)."
 
  exit 1
 fi
@@ -432,7 +432,7 @@ fi
 
 is_new=
 
-if [ ! -f $CONFIG_PATH/autoscript.sio ]; then
+if [ ! -f $CONFIGURE_PATH/autoscript.sio ]; then
  is_new=1
 fi
 
@@ -442,7 +442,7 @@ copy_config_default autoscript.sio
 # then uncomment out all default "autoscript" entries.
 if [ "$is_new" = "1" ]; then
  if [ "$is_dev_env" = "" ]; then
-  sed -i '/<sio\/>/,/<\/sio>/{s/^# / /g}' $CONFIG_PATH/autoscript.sio
+  sed -i '/<sio\/>/,/<\/sio>/{s/^# / /g}' $CONFIGURE_PATH/autoscript.sio
  fi
 fi
 
@@ -517,19 +517,19 @@ if [ "$has_system" = "" ]; then
  rm -f $INSTALL_PATH/$CIYAM_APP_MOD.log.app
 
  if [ "$is_dev_env" = "1" ]; then
-  sed -i "s/# <protocol_handler>file:/ <protocol_handler>apt:/g" $CONFIG_PATH/ciyam_server.sio
+  sed -i "s/# <protocol_handler>file:/ <protocol_handler>apt:/g" $CONFIGURE_PATH/ciyam_server.sio
  elif [ "$is_git_env" = "1" ]; then
-  sed -i "s/# <protocol_handler>file:\/\// <protocol_handler>sftp:\/\/@user@localhost:2222/g" $CONFIG_PATH/ciyam_server.sio
+  sed -i "s/# <protocol_handler>file:\/\// <protocol_handler>sftp:\/\/@user@localhost:2222/g" $CONFIGURE_PATH/ciyam_server.sio
  fi
 
- sed -i "s/# <default_storage>Meta/ <default_storage>$CIYAM_APP_MOD/g" $CONFIG_PATH/ciyam_server.sio
+ sed -i "s/# <default_storage>Meta/ <default_storage>$CIYAM_APP_MOD/g" $CONFIGURE_PATH/ciyam_server.sio
 fi
 
 if [ -f $INSTALL_PATH/manuscript.sio.generated ]; then
- sed -n '/^# Copyright/,/^### .<start generated/p' $CONFIG_PATH/manuscript.sio > $CONFIG_PATH/manuscript.sio.new
- cat $INSTALL_PATH/manuscript.sio.generated >> $CONFIG_PATH/manuscript.sio.new
- cp $CONFIG_PATH/manuscript.sio $CONFIG_PATH/manuscript.sio.old
- $INSTALL_PATH/update $CONFIG_PATH/manuscript.sio $CONFIG_PATH/manuscript.sio.new > /dev/null
+ sed -n '/^# Copyright/,/^### .<start generated/p' $CONFIGURE_PATH/manuscript.sio > $CONFIGURE_PATH/manuscript.sio.new
+ cat $INSTALL_PATH/manuscript.sio.generated >> $CONFIGURE_PATH/manuscript.sio.new
+ cp $CONFIGURE_PATH/manuscript.sio $CONFIGURE_PATH/manuscript.sio.old
+ $INSTALL_PATH/update $CONFIGURE_PATH/manuscript.sio $CONFIGURE_PATH/manuscript.sio.new > /dev/null
 fi
 
 needs_restore=
