@@ -24,6 +24,11 @@ SESSION=$2
 .session_variable @uuid
 UUID=$OUTPUT
 ;
+.session_variable -id=$SESSION @irc_start_point
+@ifdef $OUTPUT
+.session_variable @gteq_session_queue $OUTPUT
+@endif
+;
 .session_variable -id=$SESSION @queue_irc_$USER *
 ;
 @ifndef $ERROR
