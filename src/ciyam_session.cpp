@@ -6263,6 +6263,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      response = get_session_variable( name_or_expr, sess_id );
                   else
                   {
+                     // NOTE: If is provided this session variable acts as a "gteq" filter.
+                     string gteq( get_session_variable( e_special_var_gteq_session_queue ) );
+
                      while( true )
                      {
                         string next( get_session_variable( name_or_expr, sess_id ) );
@@ -6270,11 +6273,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         if( next.empty( ) )
                            break;
 
+                        if( !gteq.empty( ) && ( next < gteq ) )
+                           continue;
+
                         if( !response.empty( ) )
                            response += '\n';
 
                         response += next;
                      }
+
+                     if( !gteq.empty( ) )
+                        set_session_variable( e_special_var_gteq_session_queue, "" );
                   }
                }
                else
@@ -8559,6 +8568,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( rc < 0 )
                throw runtime_error( "failed to execute script '" + script_name + "'" );
+            else if( !async )
+               set_session_variable( e_special_var_script_executed, script_name );
 
             if( !async )
             {
