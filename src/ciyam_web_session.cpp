@@ -88,6 +88,7 @@ constexpr const char* c_web_demo_pin_3 = "10301";
 constexpr const char* c_web_lock_suffix = ".lock";
 
 constexpr const char* c_web_command_suffix = ".command";
+constexpr const char* c_web_fetched_suffix = ".fetched";
 constexpr const char* c_web_message_suffix = ".message";
 constexpr const char* c_web_session_suffix = ".session";
 constexpr const char* c_web_started_suffix = ".started";
@@ -1238,6 +1239,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          string web_lock_name( var_prefix + access + '.' + device + c_web_lock_suffix );
 
          string web_command_var_name( var_prefix + access + '.' + device + c_web_command_suffix );
+         string web_fetched_var_name( var_prefix + access + '.' + device + c_web_fetched_suffix );
          string web_message_var_name( var_prefix + access + '.' + device + c_web_message_suffix );
          string web_session_var_name( var_prefix + access + '.' + device + c_web_session_suffix );
          string web_started_var_name( var_prefix + access + '.' + device + c_web_started_suffix );
@@ -1349,6 +1351,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   else
                      response = "{\"message\":\"Session terminated.\"}\n";
 
+                  set_system_variable( web_fetched_var_name, "" );
                   set_system_variable( web_session_var_name, "" );
                   set_system_variable( web_started_var_name, "" );
                   set_system_variable( web_storage_var_name, "" );
@@ -1358,7 +1361,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   // (as the command "@web_session_check" is harmless it
                   // will not matter if the script had already stopped).
                   if( has_system_variable( web_message_var_name ) )
+                  {
+                     set_system_variable( web_message_var_name, "" );
                      set_system_variable( web_command_var_name, g_web_session_check );
+                  }
 
                   // NOTE: If an uploaded file was not deleted then will do that now.
                   file_remove( g_temporary_directory + '/' + session + c_tmp_file_ext );
