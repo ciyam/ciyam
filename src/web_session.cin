@@ -42,6 +42,11 @@ ADMIN_TOKEN=@file:.web_access_admin
 .run_script !irc_join "@name=$USERNAME"
 @endif
 ;
+.system_variable @web.$TOKEN.$DEVICE.fetched
+@ifdef $OUTPUT
+.session_variable @irc_start_point $OUTPUT
+@endif
+;
 .session_variable @storage_var_name @web.$TOKEN.$DEVICE.storage
 ;
 @label NEXT
@@ -59,7 +64,6 @@ COMMAND=$OUTPUT
 ;
 @ifndef $COMMAND
 @label END_LOOP
-.system_variable @web.$TOKEN.$DEVICE.message ""
 @else
 .system_variable @web.$TOKEN.$DEVICE.command ""
 ;
@@ -88,6 +92,13 @@ ERROR=
 @endif
 @endif
 ;
+.session_variable @script_executed
+@ifeq "$OUTPUT" "irc_fetch_messages"
+.session_variable @script_executed ""
+UTIME=@unix:
+.system_variable @web.$TOKEN.$DEVICE.fetched $UTIME
+@endif
+;
 .system_variable @web.$TOKEN.$DEVICE.session
 ;
 @ifneq "$OUTPUT" "$SESSION"
@@ -103,5 +114,7 @@ ERROR=Session has been terminated.
 @:END_LOOP
 ;
 ~rm -rf /tmp/ciyam/$SESSION
+;
+.system_variable @web.$TOKEN.$DEVICE.message ""
 ;
 @endif
