@@ -23,6 +23,7 @@
 #include "ciyam_web_session.h"
 
 #include "sio.h"
+#include "base64.h"
 #include "sha256.h"
 #include "threads.h"
 #include "date_time.h"
@@ -95,6 +96,7 @@ constexpr const char* c_web_storage_suffix = ".storage";
 constexpr const char* c_cws_uri_suffix_help = "help";
 constexpr const char* c_cws_uri_suffix_users = "users";
 constexpr const char* c_cws_uri_suffix_devices = "devices";
+constexpr const char* c_cws_uri_suffix_messages = "messages";
 constexpr const char* c_cws_uri_suffix_sessions = "sessions";
 constexpr const char* c_cws_uri_suffix_storages = "storages";
 constexpr const char* c_cws_uri_suffix_stylesheets = "stylesheets";
@@ -121,16 +123,18 @@ constexpr const char* c_cws_uri_suffix_views_extra_prefix = "/views/";
 constexpr const char* c_cws_request_users_create_options_secret = "secret";
 constexpr const char* c_cws_request_users_create_options_suggested = "suggested";
 
+constexpr const char* c_cws_request_messages_create_options_text = "text";
+
 // NOTE: This help is only intended for the "test_web_session.html" page which will translate this more "user friendly" syntax.
-constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\n"
- "delete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview storages\n"
+constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\ncreate message text=<text>\n"
+ "delete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview messages\nreview storages\n"
  "review stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
- "attach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
- "create unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\n"
- "review users\nreview storages\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+ "attach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\ncreate message text=<text>\n"
+ "create unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview users\n"
+ "review messages\nreview storages\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
 
 constexpr const char* c_web_session_script = "web_session.cin";
@@ -692,6 +696,43 @@ const sio_graph& get_meta_data( const string& model_name )
    }
 
    return *g_model_meta_data[ model_name ];
+}
+
+void process_messages_response( string& response )
+{
+   vector< string > messages;
+
+   if( !response.empty( ) )
+   {
+      split( response, messages, '\n' );
+
+      for( size_t i = 0; i < messages.size( ); i++ )
+      {
+         string next( messages[ i ] );
+
+         string::size_type pos = next.rfind( ' ' );
+
+         if( pos != string::npos )
+         {
+            string content( next.substr( pos + 1 ) );
+
+            if( !content.empty( )
+             && base64::valid_characters( content, true ) )
+            {
+               string decoded( base64::decode( content, true ) );
+
+               next.erase( pos + 1 );
+
+               if( decoded.size( ) > 1 )
+                  next += decoded.substr( 1 );
+
+               messages[ i ] = next;
+            }
+         }
+      }
+
+      response = join( messages, '\n' );
+   }
 }
 
 void process_user_info_response( const string& session, string& response )
@@ -1833,6 +1874,13 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   if( !running )
                   {
+                     string username;
+
+                     if( access == g_cws_admin_token )
+                        username = c_admin;
+                     else
+                        username = get_user_name( access );
+
                      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) starting "
                       "session " + session + " with device " + device + " for access " + access );
 
@@ -1841,7 +1889,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 #else
                      string cmd( "./ciyam_client -tls -quiet -no_prompt -no_stderr -exec=\"<"
 #endif
-                      + script_name + ' ' + access + ' ' + device + ' ' + session + "\" > /dev/null &" );
+                      + script_name + ' ' + access + ' ' + device + ' ' + session + ' ' + username + "\" > /dev/null &" );
 
                      int rc = system( cmd.c_str( ) );
 
@@ -1878,6 +1926,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      bool allowed_command = true;
 
+                     bool is_messages_request = false;
                      bool is_user_info_request = false;
                      bool is_module_info_request = false;
                      bool is_instance_fetch_request = false;
@@ -1895,6 +1944,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         if( !storage_name.empty( ) )
                            storage_name[ 0 ] = toupper( storage_name[ 0 ] );
                      }
+                     else if( uri_suffix == c_cws_uri_suffix_messages )
+                        is_messages_request = true;
                      else if( uri_suffix == c_cws_uri_suffix_storage_modules )
                         is_module_info_request = true;
                      else if( uri_suffix.find( c_cws_uri_suffix_storage_instances_prefix ) == 0 )
@@ -1915,10 +1966,24 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         response = "[bad]";
                      else
                      {
-                        if( !request.empty( ) || is_user_info_request
+                        if( !request.empty( )
+                         || is_messages_request || is_user_info_request
                          || is_module_info_request || is_instance_fetch_request )
                         {
-                           if( is_user_info_request )
+                           if( is_messages_request )
+                           {
+                              use_none_response = true;
+
+                              if( is_post_request
+                               && option_parameters.count( c_cws_request_messages_create_options_text ) )
+                              {
+                                 request_and_args = "run_script !irc_send_message \"@names=ALL,@message="
+                                  + base64::encode( '_' + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
+                              }
+
+                              request_and_args += "run_script !irc_fetch_messages";
+                           }
+                           else if( is_user_info_request )
                            {
                               string username;
 
@@ -2053,6 +2118,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               response = trim( response, false, false, "\n" );
 
                               file_remove( output_file_name );
+
+                              if( is_messages_request && !response.empty( ) )
+                                 process_messages_response( response );
 
                               if( is_user_info_request && !response.empty( ) )
                                  process_user_info_response( session, response );
