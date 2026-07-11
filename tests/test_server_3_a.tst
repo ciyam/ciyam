@@ -24,7 +24,7 @@ retain stylesheet
 review storages
 review stylesheet[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
-review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][fields=<fields]]
+review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 Now will perform structured I/O queries for enums/lists and views after attaching to the Meta storage.
 [okay]
 id=575,name=enum_add_packages
@@ -183,7 +183,7 @@ review users
 review storages
 review stylesheet[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
-review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][fields=<fields]]
+review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 100 Meta
 Error: Unknonwn module id '99' for storage 'Meta'.
 id=575,name=enum_add_packages
@@ -518,6 +518,8 @@ Error: invalid key replacement value 'guests_xool'
 [guests-int:guests_int =1.0 14339 100:102100] int,T005
 [guests-numeric:guests_numeric =1.0 77827 100:102100] numeric,T004
 [guests-string:guests_string =1.0 143363 100:102100] string,T000
+[guests-time:guests_time =1.0 274435 100:102100] time,T003
+[guests-numeric:guests_numeric =1.0 77827 100:102100] numeric,T004
 [guests-time:guests_time =1.0 274435 100:102100] time,T003
 Session terminated.
 Error: This web session is not valid (or has expired).

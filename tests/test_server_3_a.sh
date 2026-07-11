@@ -81,6 +81,7 @@ curl -s -X GET "localhost:13031/cws/storage-instances/100/102100/guests-bool?acc
 curl -s -X GET "localhost:13031/cws/storage-instances/100/102100/guests-bool?access=12345&device=$device&options=key%3dguests_bool&session=$session"
 curl -s -X GET "localhost:13031/cws/storage-instances/100/102100?access=12345&device=$device&options=num%3D-4%3Bpath%3DWorkgroup%3Dguests%2CName%3Dint%3Bfields%3DName%2CId&session=$session"
 curl -s -X GET "localhost:13031/cws/storage-instances/100/102100?access=12345&device=$device&options=num%3D%2B4%3Bpath%3DWorkgroup%3Dguests%2CName%3Dint%3Bfields%3DName%2CId&session=$session"
+curl -s -X GET "localhost:13031/cws/storage-instances/100/102100?access=12345&device=$device&options=num%3D%2B4%3Bpath%3DWorkgroup%3Dguests%2CName%3Dint%3Bquery%3DName%3D*e*%3Bfields%3DName%2CId&session=$session"
 curl -s -X DELETE "localhost:13031/cws/sessions/$session?access=12345&device=$device"
 curl -s -X GET "localhost:13031/cws/status?access=12345&device=$device&session=$session"
 rm -f .web_access_12345 .web_access_admin .web_device_admin
