@@ -251,6 +251,7 @@ constexpr const char* c_special_variable_notifier_events = "@notifier_events";
 constexpr const char* c_special_variable_paired_identity = "@paired_identity";
 constexpr const char* c_special_variable_queue_hub_users = "@queue_hub_users";
 constexpr const char* c_special_variable_row_cache_limit = "@row_cache_limit";
+constexpr const char* c_special_variable_script_executed = "@script_executed";
 constexpr const char* c_special_variable_ssl_cert_issuer = "@ssl_cert_issuer";
 constexpr const char* c_special_variable_system_identity = "@system_identity";
 constexpr const char* c_special_variable_total_put_files = "@total_put_files";
@@ -290,6 +291,7 @@ constexpr const char* c_special_variable_extra_field_values = "@extra_field_valu
 constexpr const char* c_special_variable_file_info_buffered = "@file_info_buffered";
 constexpr const char* c_special_variable_fixed_field_values = "@fixed_field_values";
 constexpr const char* c_special_variable_generate_hub_block = "@generate_hub_block";
+constexpr const char* c_special_variable_gteq_session_queue = "@gteq_session_queue";
 constexpr const char* c_special_variable_repo_entry_missing = "@repo_entry_missing";
 constexpr const char* c_special_variable_system_is_for_demo = "@system_is_for_demo";
 constexpr const char* c_special_variable_system_is_for_devt = "@system_is_for_devt";
@@ -624,6 +626,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_paired_identity );
       g_special_variable_names.push_back( c_special_variable_queue_hub_users );
       g_special_variable_names.push_back( c_special_variable_row_cache_limit );
+      g_special_variable_names.push_back( c_special_variable_script_executed );
       g_special_variable_names.push_back( c_special_variable_ssl_cert_issuer );
       g_special_variable_names.push_back( c_special_variable_system_identity );
       g_special_variable_names.push_back( c_special_variable_total_put_files );
@@ -663,6 +666,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_file_info_buffered );
       g_special_variable_names.push_back( c_special_variable_fixed_field_values );
       g_special_variable_names.push_back( c_special_variable_generate_hub_block );
+      g_special_variable_names.push_back( c_special_variable_gteq_session_queue );
       g_special_variable_names.push_back( c_special_variable_repo_entry_missing );
       g_special_variable_names.push_back( c_special_variable_system_is_for_demo );
       g_special_variable_names.push_back( c_special_variable_system_is_for_devt );
