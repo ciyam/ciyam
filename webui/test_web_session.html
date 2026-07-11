@@ -82,8 +82,6 @@
    const exit_name = "exit";
    const finish_name = "finish";
 
-   const users_name = "users";
-
    const admin_username = "admin";
 
    const admin_session_name = "[admin]";
@@ -101,6 +99,9 @@
    const users_create_cmd = "users|create";
    const users_delete_cmd = "users|delete";
    const users_review_cmd = "users|review";
+
+   const messages_create_cmd = "messages|create";
+   const messages_review_cmd = "messages|review";
 
    const storages_attach_cmd = "storages|attach";
    const storages_review_cmd = "storages|review";
@@ -722,8 +723,8 @@
 
          if( cmd == stylesheets_retain_cmd )
             request_type = "PUT";
-         else if( ( cmd == "" )
-          || ( cmd == users_create_cmd ) || ( cmd == storages_attach_cmd )
+         else if( ( cmd == "" ) || ( cmd == users_create_cmd )
+          || ( cmd == messages_create_cmd ) || ( cmd == storages_attach_cmd )
           || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd ) )
             request_type = "POST";
          else if( ( cmd == users_delete_cmd ) || ( cmd == stylesheets_delete_cmd ) )
@@ -750,11 +751,12 @@
          }
 
          if( ( cmd == users_create_cmd ) || ( cmd == users_delete_cmd )
+          || ( cmd == messages_create_cmd ) || ( cmd == messages_review_cmd )
           || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
           || ( cmd == unlock_keys_employ_cmd ) || ( cmd == stylesheets_review_cmd )
           || ( cmd == storage_modules_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
          {
-            if( cmd == users_create_cmd )
+            if( ( cmd == users_create_cmd ) || ( cmd == messages_create_cmd ) )
                has_cmd_options = true;
             else
             {
