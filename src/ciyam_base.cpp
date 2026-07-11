@@ -144,8 +144,6 @@ constexpr const char* c_str_peer = "(peer)";
 constexpr const char* c_script_arg_opt = "opt";
 constexpr const char* c_script_arg_set = "set";
 
-constexpr const char* c_tmp_key_prefix = "/tmp/ciyam.";
-
 constexpr const char* c_dummy_host_name = "ciyam.peer";
 
 constexpr const char* c_at_init_script = "./at_init";
@@ -5879,15 +5877,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             key_file_name = key.substr( c_unlock_file_name_start, c_unlock_file_name_length ) + c_key_suffix;
 
             if( !file_exists( key_file_name ) )
-            {
-               string raw_key_file_name( key_file_name );
-
                key_file_name = g_temporary_directory + '/' + key_file_name;
-
-               // NOTE: For legacy temp key files only.
-               if( !file_exists( key_file_name ) )
-                  key_file_name = c_tmp_key_prefix + raw_key_file_name;
-            }
 
             if( file_exists( key_file_name ) )
             {
