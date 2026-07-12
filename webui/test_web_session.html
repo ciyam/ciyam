@@ -1294,11 +1294,19 @@
 
             document.getElementById( "user_arbitrary" ).value = data;
 
-            if( ( data == admin_session_name ) || ( data == standard_session_name ) )
+            var prefix = data;
+
+            var pos = data.indexOf( " " );
+
+            if( pos > 0 )
+               prefix = data.substring( 0, pos );
+
+            if( !is_running
+             && ( ( prefix == admin_session_name ) || ( prefix == standard_session_name ) ) )
             {
                is_running = true;
 
-               if( data == admin_session_name )
+               if( prefix == admin_session_name )
                   is_admin_session = true;
                else
                   is_admin_session = false;
