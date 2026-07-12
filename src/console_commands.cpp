@@ -146,6 +146,7 @@ constexpr const char* c_function_hexbig = "hexbig";
 constexpr const char* c_function_hexdec = "hexdec";
 constexpr const char* c_function_hexlit = "hexlit";
 constexpr const char* c_function_padlen = "padlen";
+constexpr const char* c_function_rawstr = "rawstr";
 constexpr const char* c_function_repstr = "repstr";
 constexpr const char* c_function_sha256 = "sha256";
 constexpr const char* c_function_substr = "substr";
@@ -3590,6 +3591,14 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                                  str = rhs;
                               }
+                           }
+                           else if( lhs == c_function_rawstr )
+                           {
+                              // NOTE: Although it might appear to do nothing
+                              // this "@rawstr" function is needed for values
+                              // that can start with a '@' (otherwise parsing
+                              // might treat them as a numerical function).
+                              str = str.substr( pos + 1 );
                            }
                            else if( lhs == c_function_repstr )
                            {
