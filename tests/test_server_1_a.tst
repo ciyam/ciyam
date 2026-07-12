@@ -228,6 +228,8 @@ PWD now: ***
 abcXXX
 ***XXX
 @abc
+-1
+@abc-1
 Meta
 Meta
 a\nb

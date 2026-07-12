@@ -71,6 +71,10 @@ PWD=abc
 #%PWD%XXX
 TEST=@abc
 #$TEST
+TEST=@abc-1
+#$TEST
+TEST=@rawstr:@abc-1
+#$TEST
 TEST=@file:modules.lst.default
 #$TEST
 TEST=@file:~cat modules.lst.default
