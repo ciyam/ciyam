@@ -71,7 +71,7 @@ RETURN=$RETURN\n \b
 @else
 ;
 .system_variable @irc_users
-IRC_USERS=@rawstr:$OUTPUT
+IRC_USERS=@strlit:$OUTPUT
 ;
 @ifdef $IRC_USERS
 ;

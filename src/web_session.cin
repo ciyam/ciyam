@@ -34,11 +34,11 @@ IRC_USERS=
 @ifdef $USERNAME
 .run_script !irc_join "@name=$USERNAME"
 JOIN_LINES=@repstr:|/\n:$OUTPUT
-IRC_USERS=@rawstr:%JOIN_LINES:3%
+IRC_USERS=@strlit:%JOIN_LINES:3%
 IRC_USERS=@repstr:@$USERNAME/:$IRC_USERS
 @ifdef $IRC_USERS
 IRC_USERS=@substr:1:$IRC_USERS
-IRC_USERS=@repstr:@/,:$IRC_USERS
+IRC_USERS=@repstr:@/ :$IRC_USERS
 IRC_USERS= $IRC_USERS
 @endif
 @endif
