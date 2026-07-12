@@ -144,13 +144,15 @@ constexpr const char* c_function_hexbig = "hexbig";
 constexpr const char* c_function_hexdec = "hexdec";
 constexpr const char* c_function_hexlit = "hexlit";
 constexpr const char* c_function_padlen = "padlen";
-constexpr const char* c_function_rawstr = "rawstr";
 constexpr const char* c_function_repstr = "repstr";
 constexpr const char* c_function_sha256 = "sha256";
+constexpr const char* c_function_strlen = "strlen";
+constexpr const char* c_function_strlit = "strlit";
 constexpr const char* c_function_substr = "substr";
 constexpr const char* c_function_base64 = "base64";
 constexpr const char* c_function_fullpath = "fullpath";
 constexpr const char* c_function_password = "password";
+constexpr const char* c_function_set_sort = "set_sort";
 constexpr const char* c_function_set_all_in = "set_all_in";
 constexpr const char* c_function_set_not_in = "set_not_in";
 
@@ -3601,14 +3603,6 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  str = rhs;
                               }
                            }
-                           else if( lhs == c_function_rawstr )
-                           {
-                              // NOTE: Although it might appear to do nothing
-                              // this "@rawstr" function is needed for values
-                              // that can start with a '@' (otherwise parsing
-                              // might treat them as a numerical operation).
-                              str = str.substr( pos + 1 );
-                           }
                            else if( lhs == c_function_repstr )
                            {
                               pos = find_non_escaped_char( str, op, pos + 1 );
@@ -3636,6 +3630,16 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            }
                            else if( lhs == c_function_sha256 )
                               str = sha256( str.substr( pos + 1 ) ).get_digest_as_string( );
+                           else if( lhs == c_function_strlen )
+                              str = to_string( str.length( ) - pos - 1 );
+                           else if( lhs == c_function_strlit )
+                           {
+                              // NOTE: Although it might appear to do nothing
+                              // this "@strlit" function is needed for values
+                              // that can start with a '@' (otherwise parsing
+                              // might treat them as a numerical operation).
+                              str = str.substr( pos + 1 );
+                           }
                            else if( lhs == c_function_substr )
                            {
                               pos = str.find( op, pos + 1 );
@@ -3715,6 +3719,50 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     if( base64::valid_characters( rhs, true ) )
                                        str = unescaped( base64::decode( rhs, true ) );
                                  }
+                              }
+                           }
+                           else if( lhs == c_function_set_sort )
+                           {
+                              pos = str.find( op, pos + 1 );
+
+                              if( pos != string::npos )
+                              {
+                                 string rhs( str.substr( pos + 1 ) );
+
+                                 str.erase( pos );
+
+                                 pos = str.find( op );
+
+                                 str = str.substr( pos + 1 );
+
+                                 string prefix;
+
+                                 // NOTE: Will retain a single separator prefix.
+                                 if( !rhs.empty( ) && ( rhs.find( str ) == 0 ) )
+                                 {
+                                    prefix += str;
+
+                                    rhs.erase( 0, str.length( ) );
+                                 }
+
+                                 if( !rhs.empty( ) )
+                                 {
+                                    set< string > items;
+
+                                    split( rhs, items, str );
+
+                                    rhs.erase( );
+
+                                    for( set< string >:: const_iterator ci = items.begin( ); ci != items.end( ); ++ci )
+                                    {
+                                       if( !rhs.empty( ) )
+                                          rhs += str;
+
+                                       rhs += *ci;
+                                    }
+                                 }
+
+                                 str = prefix + rhs;
                               }
                            }
                            else if( ( lhs == c_function_set_all_in )
