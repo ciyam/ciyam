@@ -69,8 +69,9 @@ RETURN=$RETURN\nclear (clears history)
 RETURN=$RETURN\n \b
 @endif
 @else
+;
 .system_variable @irc_users
-IRC_USERS=$OUTPUT
+IRC_USERS=@rawstr:$OUTPUT
 ;
 @ifdef $IRC_USERS
 ;
