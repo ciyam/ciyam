@@ -54,7 +54,9 @@ namespace
 {
 
 const int c_max_args = 10;
+
 const int c_max_history = 1000;
+
 const int c_max_usage_width = 84;
 
 const int c_bad_system_exit = 999;
@@ -73,8 +75,6 @@ constexpr const char* c_op_gteq = ">=";
 constexpr const char* c_op_lteq = "<=";
 
 constexpr const char* c_help_command = "help";
-
-const size_t c_up_one_prefix_len = 2;
 
 constexpr const char* c_up_one_prefix = "^^";
 
@@ -129,8 +129,6 @@ constexpr const char* c_env_var_progress_prefix = "PROGRESS_PREFIX";
 constexpr const char* c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 
 constexpr const char* c_unix_time = "unix";
-
-size_t c_date_time_len = 4;
 
 constexpr const char* c_function_date = "date";
 constexpr const char* c_function_file = "file";
@@ -191,6 +189,7 @@ command_definition startup_command_definitions[ ] =
 };
 
 constexpr const char* c_command_prompt = "\n> ";
+
 constexpr const char* c_message_press_any_key = "(press any key to continue)...";
 constexpr const char* c_message_press_any_key_or_wait = "Press any key to continue or wait for";
 
@@ -211,6 +210,7 @@ void split_all_extras( const string& all_extras, vector< string >& includes, vec
    if( !all_extras.empty( ) )
    {
       vector< string > extras;
+
       split( all_extras, extras );
 
       for( size_t i = 0; i < extras.size( ); i++ )
@@ -243,11 +243,13 @@ bool should_be_included( const string& name, const vector< string >& includes, c
          if( next == name )
          {
             found = true;
+
             break;
          }
          else if( wildcard_match( next, name ) )
          {
             found = true;
+
             break;
          }
       }
@@ -267,11 +269,13 @@ bool should_be_included( const string& name, const vector< string >& includes, c
          if( next == name )
          {
             found = true;
+
             break;
          }
          else if( wildcard_match( next, name ) )
          {
             found = true;
+
             break;
          }
       }
@@ -330,6 +334,7 @@ string::size_type find_non_escaped_char( const string& s, char ch, string::size_
       else if( s[ i ] == ch )
       {
          pos = i;
+
          break;
       }
    }
@@ -1633,6 +1638,7 @@ size_t total_in_fissile_range(
    map< string, fissile_string >::const_iterator ci = fissile_values.lower_bound( type );
 
    size_t total = 0;
+
    while( true )
    {
       ++total;
@@ -1964,6 +1970,7 @@ fissile_string get_fissile_value(
             if( !must_exist )
             {
                value.erase( );
+
                break;
             }
             else
@@ -2032,6 +2039,7 @@ void process_fissile_commands(
    size_t cmds_allowed = 0;
 
    deque< string > cmds;
+
    split_into_fissile_cmds( next_fissile_line, cmds );
 
    if( fissile_values.count( c_fissile_cmds_limit_variable ) )
@@ -3321,6 +3329,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         if( ch >= '0' && ch <= '9' )
                         {
                            rval *= 10;
+
                            rval += ( ch - '0' );
                         }
                         else
@@ -3597,7 +3606,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               // NOTE: Although it might appear to do nothing
                               // this "@rawstr" function is needed for values
                               // that can start with a '@' (otherwise parsing
-                              // might treat them as a numerical function).
+                              // might treat them as a numerical operation).
                               str = str.substr( pos + 1 );
                            }
                            else if( lhs == c_function_repstr )
@@ -4451,6 +4460,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   if( str[ i ] != ' ' )
                   {
                      pos = i;
+
                      break;
                   }
                }
@@ -5055,7 +5065,7 @@ void console_command_handler::handle_command_response( const string& response, b
          if( ansi_console_support( ) )
             extra = c_ansi_esc_up_one_line;
 
-         *p_std_out << extra << response.substr( c_up_one_prefix_len ) << endl;
+         *p_std_out << extra << response.substr( CONST_LENGTH( c_up_one_prefix ) ) << endl;
       }
    }
    else
