@@ -30,16 +30,25 @@ OUTPUT_FILE=/tmp/ciyam/web.$TOKEN.$DEVICE
 ;
 ~rm -f $OUTPUT_FILE
 ;
+IRC_USERS=
+@ifdef $USERNAME
+.run_script !irc_join "@name=$USERNAME"
+JOIN_LINES=@repstr:|/\n:$OUTPUT
+IRC_USERS=@rawstr:%JOIN_LINES:3%
+IRC_USERS=@repstr:@$USERNAME/:$IRC_USERS
+@ifdef $IRC_USERS
+IRC_USERS=@substr:1:$IRC_USERS
+IRC_USERS=@repstr:@/,:$IRC_USERS
+IRC_USERS= $IRC_USERS
+@endif
+@endif
+;
 ADMIN_TOKEN=@file:.web_access_admin
 ;
 @ifeq "$TOKEN" "$ADMIN_TOKEN"
-.system_variable @web.$TOKEN.$DEVICE.message "[admin]"
+.system_variable @web.$TOKEN.$DEVICE.message "[admin]$IRC_USERS"
 @else
-.system_variable @web.$TOKEN.$DEVICE.message "[standard]"
-@endif
-;
-@ifdef $USERNAME
-.run_script !irc_join "@name=$USERNAME"
+.system_variable @web.$TOKEN.$DEVICE.message "[standard]$IRC_USERS"
 @endif
 ;
 .system_variable @web.$TOKEN.$DEVICE.fetched
