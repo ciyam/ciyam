@@ -146,6 +146,8 @@ constexpr const char* c_web_session_okay_response = "[okay]";
 
 constexpr const char* c_web_session_unknown_response = "[unknown]";
 
+constexpr const char* c_web_session_public_message_room_prefix = "_[public]";
+
 constexpr const char* c_storage_attribute_id = "id";
 constexpr const char* c_storage_attribute_user_info = "user_info";
 
@@ -1996,8 +1998,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     replace( names, ",", "." );
                                  }
 
+                                 string prefix( c_web_session_public_message_room_prefix );
+
                                  request_and_args = "run_script !irc_send_message \"@names=" + names + ",@message="
-                                  + base64::encode( '_' + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
+                                  + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
                               }
 
                               request_and_args += "run_script !irc_fetch_messages";
