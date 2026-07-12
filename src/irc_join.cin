@@ -53,7 +53,7 @@ ERROR=Unexpected alias '$USER' for username '$USER_EXPECTED'.
 .session_variable -id=$SESSION @irc
 @ifdef $OUTPUT
 .system_variable @irc_users
-RETURN=@rawstr:$OUTPUT
+RETURN=@strlit:$OUTPUT
 @else
 ;
 .system_variable @irc_lock 1 "" 100
@@ -63,12 +63,12 @@ ERROR=Unable to obtain the system IRC lock (try again later).
 @else
 ;
 .system_variable @irc_users
-ALL_USERS=@rawstr:$OUTPUT
+ALL_USERS=@strlit:$OUTPUT
 ;
 ALL_USERS_CHECK=
 ;
 @ifdef $ALL_USERS
-ALL_USERS_CHECK=@rawstr:%ALL_USERS%@
+ALL_USERS_CHECK=@strlit:%ALL_USERS%@
 @endif
 ;
 NOT_SELF_CHECK=@repstr:@$USER@/@:$ALL_USERS_CHECK
@@ -76,11 +76,15 @@ NOT_SELF_CHECK=@repstr:@$USER@/@:$ALL_USERS_CHECK
 @ifneq "$ALL_USERS_CHECK" "$NOT_SELF_CHECK"
 RETURN=dummy|dummy|$ALL_USERS
 @else
+;
 EXTRA=dummy
-.system_variable @irc_users $ALL_USERS@$USER
 @ifdef $ALL_USERS
-EXTRA=_[joined]
+EXTRA=_[public][joined]
 @endif
+ALL_USERS=@strlit:$ALL_USERS@$USER
+ALL_USERS=@set_sort:@:$ALL_USERS
+;
+.system_variable @irc_users $ALL_USERS
 RETURN=[joined as $USER]|$EXTRA|$ALL_USERS
 @endif
 ;
