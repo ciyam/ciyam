@@ -124,16 +124,17 @@ constexpr const char* c_cws_uri_suffix_views_extra_prefix = "/views/";
 constexpr const char* c_cws_request_users_create_options_secret = "secret";
 constexpr const char* c_cws_request_users_create_options_suggested = "suggested";
 
+constexpr const char* c_cws_request_messages_create_options_for = "for";
 constexpr const char* c_cws_request_messages_create_options_text = "text";
 
 // NOTE: This help is only intended for the "test_web_session.html" page which will translate this more "user friendly" syntax.
-constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\ncreate message text=<text>\n"
+constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\ncreate message [for=<name,>;]text=<text>\n"
  "delete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview messages\nreview storages\n"
  "review stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
- "attach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\ncreate message text=<text>\n"
+ "attach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\ncreate message [for=<name,>;]text=<text>\n"
  "create unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview users\n"
  "review messages\nreview storages\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
@@ -1983,7 +1984,19 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               if( is_post_request
                                && option_parameters.count( c_cws_request_messages_create_options_text ) )
                               {
-                                 request_and_args = "run_script !irc_send_message \"@names=ALL,@message="
+                                 string names( "ALL" );
+
+                                 if( option_parameters.count( c_cws_request_messages_create_options_for ) )
+                                 {
+                                    names = option_parameters[ c_cws_request_messages_create_options_for ];
+
+                                    // NOTE: Names need to use a
+                                    // dot separator rather than
+                                    // a comma.
+                                    replace( names, ",", "." );
+                                 }
+
+                                 request_and_args = "run_script !irc_send_message \"@names=" + names + ",@message="
                                   + base64::encode( '_' + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
                               }
 
