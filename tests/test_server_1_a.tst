@@ -230,6 +230,11 @@ abcXXX
 @abc
 -1
 @abc-1
+6
+0
+1
+_a_c_y_z
+_a_c_y_z
 Meta
 Meta
 a\nb
