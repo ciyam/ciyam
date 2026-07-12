@@ -18,7 +18,7 @@ Activates the access token using the suggested 'test-1' username.
 Error: This web session is not valid (or has expired).
 quit
 attach storage <name>
-create message text=<text>
+create message [for=<name,>;]text=<text>
 delete stylesheet
 employ unlock-key <key>
 retain stylesheet
@@ -176,7 +176,7 @@ Finally will perform admin structured I/O queries for enums/lists and views afte
 quit
 attach storage <name>
 create user [secret|suggested=[<pin>:][<username>]]
-create message text=<text>
+create message [for=<name,>;]text=<text>
 create unlock-key
 delete user <pin>
 delete stylesheet
