@@ -1034,6 +1034,17 @@ session_variable @set bbb
 bbb
 session_variable @set ccc
 ccc
+session_variable @get aaa
+session_variable @set
+aaa
+session_variable @get ccc
+session_variable @set
+ccc
+session_variable @get abc
+session_variable @set
+bbb
+session_variable @get xxx
+session_variable @set
 session_variable @set
 aaa
 bbb
@@ -1119,6 +1130,41 @@ bbb
 ccc
 ddd
 eee
+session_variable @set ""
+session_variable @set aaa
+session_variable @set abc
+session_variable @set baa
+session_variable @set bab
+session_variable @set bac
+session_variable @set bba
+session_variable @set bbb
+session_variable @set caa
+session_variable @set cab
+session_variable @set cac
+session_variable @get a*
+session_variable @set
+aaa
+abc
+session_variable @get ba*
+session_variable @set
+baa
+bab
+bac
+session_variable @get b?b
+session_variable @set
+bab
+bbb
+session_variable @set
+aaa
+abc
+baa
+bab
+bac
+bba
+bbb
+caa
+cab
+cac
 session_variable @deque ""
 session_variable @deque "take 1"
 session_variable @deque "push_back aaa"
