@@ -10085,6 +10085,18 @@ void set_session_variable( const var_name& var, const string& value,
 
    string name( var.name );
 
+   bool is_flagged = false;
+
+   // NOTE: The '!' prefix is setting "flagged"
+   // which can optionally be used by a special
+   // variable for any purpose.
+   if( !name.empty( ) && ( name[ 0 ] == '!' ) )
+   {
+      is_flagged = true;
+
+      name.erase( 0, 1 );
+   }
+
    unique_ptr< restorable< session* > > up_temp_session;
 
    if( sess_id )
@@ -10602,6 +10614,9 @@ void set_session_variable( const var_name& var, const string& value,
             // subsequent queue "additions" to the system variable which uses
             // the same name (via "add_queue_item_for_linked_sessions").
             gtp_session->variables[ g_system_name + '_' + name ] = c_true_value;
+
+            if( is_flagged )
+               gtp_session->deque_variables[ name ].clear( );
 
             copy_queue_system_variable( name, gtp_session->deque_variables[ name ] );
          }
