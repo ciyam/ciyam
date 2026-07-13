@@ -53,7 +53,9 @@ ADMIN_TOKEN=@file:.web_access_admin
 ;
 .system_variable @web.$TOKEN.$DEVICE.fetched
 @ifdef $OUTPUT
-.session_variable @irc_start_point $OUTPUT
+START_POINT=$OUTPUT
+.session_variable @irc_start_point $START_POINT
+.session_variable @irc_start_prior $START_POINT
 @endif
 ;
 .session_variable @storage_var_name @web.$TOKEN.$DEVICE.storage
@@ -104,8 +106,19 @@ ERROR=
 .session_variable @script_executed
 @ifeq "$OUTPUT" "irc_fetch_messages"
 .session_variable @script_executed ""
+;
+.session_variable @irc_start_point
+START_POINT=$OUTPUT
+.session_variable @irc_start_prior
+START_PRIOR=$OUTPUT
+;
+@ifneq "$START_POINT" "$START_PRIOR"
 UTIME=@unix:
+.session_variable @irc_start_point $UTIME
+.session_variable @irc_start_prior $UTIME
 .system_variable @web.$TOKEN.$DEVICE.fetched $UTIME
+@endif
+;
 @endif
 ;
 .system_variable @web.$TOKEN.$DEVICE.session
