@@ -96,7 +96,7 @@ QR_CODE=@file:~zbarcam -1 -q --raw
 MESSAGE=
 @else
 MESSAGE=@substr:1:$MESSAGE
-MESSAGE=@strlit:_[public]$MESSAGE
+MESSAGE=@strlit:_[public] $MESSAGE
 @endif
 @endif
 ;
@@ -158,7 +158,7 @@ LOCAL=@date:%WHEN_AND_USER_LINES:1%:yyyy-mm-dd hh:mm:ss
 USER_NAME=%WHEN_AND_USER_LINES:2%
 USER_NAME=@padlen:-13, :$USER_NAME:
 ;
-@ifeq "$DECODED_MESSAGE" "[joined]"
+@ifeq "$DECODED_MESSAGE" "/joined"
 FOUND_JOINED=1
 @else
 MESSAGE_PARTS=@repstr:]/\n:$DECODED_MESSAGE
