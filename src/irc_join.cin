@@ -79,13 +79,13 @@ RETURN=dummy|dummy|$ALL_USERS
 ;
 EXTRA=dummy
 @ifdef $ALL_USERS
-EXTRA=_[public][joined]
+EXTRA=_[public]/joined
 @endif
 ALL_USERS=@strlit:$ALL_USERS@$USER
 ALL_USERS=@set_sort:@:$ALL_USERS
 ;
 .system_variable @irc_users $ALL_USERS
-RETURN=[joined as $USER]|$EXTRA|$ALL_USERS
+RETURN=/joined (as $USER)|$EXTRA|$ALL_USERS
 @endif
 ;
 .session_variable -id=$SESSION @irc 1
