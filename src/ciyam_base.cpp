@@ -349,6 +349,16 @@ int64_t g_key_unlock_tm_val;
 
 int64_t g_ext_ip_check_tm_val;
 
+string g_get_name;
+string g_set_name;
+
+string g_cube_name;
+string g_none_name;
+
+string g_algos_name;
+string g_array_name;
+string g_deque_name;
+
 string g_system_name;
 
 string g_decrement_name;
@@ -5169,6 +5179,16 @@ void init_globals( const char* p_sid, int* p_port, int* p_use_udp, int* p_web_po
       else
          g_secure_identity = g_encrypted_identity;
 
+      g_get_name = get_special_var_name( e_special_var_get );
+      g_set_name = get_special_var_name( e_special_var_set );
+
+      g_cube_name = get_special_var_name( e_special_var_cube );
+      g_none_name = get_special_var_name( e_special_var_none );
+
+      g_algos_name = get_special_var_name( e_special_var_algos );
+      g_array_name = get_special_var_name( e_special_var_array );
+      g_deque_name = get_special_var_name( e_special_var_deque );
+
       g_system_name = get_special_var_name( e_special_var_system );
 
       g_decrement_name = get_special_var_name( e_special_var_decrement );
@@ -7499,7 +7519,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
    }
 
    // NOTE: If the name '@none" is provided then just returns zero.
-   if( script_name == get_special_var_name( e_special_var_none ) )
+   if( script_name == g_none_name )
       return 0;
 
    if( !g_scripts.count( script_name ) )
@@ -9816,7 +9836,7 @@ string get_session_variable( const var_name& var, size_t sess_id )
 
    if( !found )
    {
-      if( name == get_special_var_name( e_special_var_set ) )
+      if( name == g_set_name )
       {
          if( gtp_session )
          {
@@ -9828,20 +9848,59 @@ string get_session_variable( const var_name& var, size_t sess_id )
             }
             else
             {
-               for( set< string >::const_iterator
-                ci = gtp_session->set_items.begin( ); ci != gtp_session->set_items.end( ); ++ci )
+               // NOTE: Use session variable "@get" to return
+               // either just the "lower bound" set item else
+               // all items from that point (if is a wildcard
+               // expression). In order to prevent accidental
+               // usage the variable is immediately cleared.
+               if( gtp_session->variables.count( g_get_name ) )
                {
-                  if( !retval.empty( ) )
-                     retval += '\n';
+                  string value( gtp_session->variables[ g_get_name ] );
 
-                  retval += *ci;
+                  gtp_session->variables.erase( g_get_name );
+
+                  string::size_type pos = value.find_first_of( "?*" );
+
+                  set< string >::const_iterator ci = gtp_session->set_items.lower_bound( value.substr( 0, pos ) );
+
+                  if( ci != gtp_session->set_items.end( ) )
+                  {
+                     if( pos == string::npos )
+                        retval = *ci;
+                     else
+                     {
+                        while( ci != gtp_session->set_items.end( ) )
+                        {
+                           if( wildcard_match( value, *ci ) )
+                           {
+                              if( !retval.empty( ) )
+                                 retval += '\n';
+
+                              retval += *ci;
+                           }
+
+                           ++ci;
+                        }
+                     }
+                  }
+               }
+               else
+               {
+                  for( set< string >::const_iterator
+                   ci = gtp_session->set_items.begin( ); ci != gtp_session->set_items.end( ); ++ci )
+                  {
+                     if( !retval.empty( ) )
+                        retval += '\n';
+
+                     retval += *ci;
+                  }
                }
             }
          }
       }
-      else if( name == get_special_var_name( e_special_var_none ) )
+      else if( name == g_none_name )
          retval = " ";
-      else if( name == get_special_var_name( e_special_var_deque ) )
+      else if( name == g_deque_name )
       {
          if( gtp_session )
          {
@@ -9864,7 +9923,7 @@ string get_session_variable( const var_name& var, size_t sess_id )
             }
          }
       }
-      else if( name == get_special_var_name( e_special_var_algos ) )
+      else if( name == g_algos_name )
       {
          if( gtp_session )
          {
@@ -10058,7 +10117,7 @@ void set_session_variable( const var_name& var, const string& value,
 
       bool skip_standard_variable = false;
 
-      if( name == get_special_var_name( e_special_var_set ) )
+      if( name == g_set_name )
       {
          skip_standard_variable = true;
 
@@ -10070,7 +10129,7 @@ void set_session_variable( const var_name& var, const string& value,
 
             if( val[ 0 ] == '@' )
             {
-               if( val != "@deque" )
+               if( val != g_deque_name )
                   buffer_file_lines( val.substr( 1 ), gtp_session->set_items );
                else
                   copy( gtp_session->deque_items.begin( ),
@@ -10093,6 +10152,7 @@ void set_session_variable( const var_name& var, const string& value,
                   if( !gtp_session->set_items.count( check_items[ i ] ) )
                   {
                      all_found = false;
+
                      break;
                   }
                }
@@ -10147,7 +10207,7 @@ void set_session_variable( const var_name& var, const string& value,
             }
          }
       }
-      else if( name == get_special_var_name( e_special_var_cube ) )
+      else if( name == g_cube_name )
       {
          temporary_algo_prefix tmp_algo_prefix( gtp_session->p_storage_handler->get_name( ) );
 
@@ -10159,7 +10219,9 @@ void set_session_variable( const var_name& var, const string& value,
           ( val.length( ) == 5 && val[ 0 ] >= '2' && val[ 0 ] <= '5' ) ) )
          {
             new_cube = true;
+
             cube tmp_cube( val );
+
             val = tmp_cube.get_state( );
          }
 
@@ -10292,7 +10354,7 @@ void set_session_variable( const var_name& var, const string& value,
                gtp_session->variables[ name + c_temporary_special_variable_suffix ] = old_val;
          }
       }
-      else if( name == get_special_var_name( e_special_var_algos ) )
+      else if( name == g_algos_name )
       {
          temporary_algo_prefix tmp_algo_prefix( gtp_session->p_storage_handler->get_name( ) );
 
@@ -10327,7 +10389,7 @@ void set_session_variable( const var_name& var, const string& value,
                exec_algos_action( args[ 0 ], args[ 1 ], args[ 2 ] );
          }
       }
-      else if( name == get_special_var_name( e_special_var_array ) )
+      else if( name == g_array_name )
       {
          bool new_array = false;
 
@@ -10375,7 +10437,7 @@ void set_session_variable( const var_name& var, const string& value,
                 gtp_session->variables[ name + c_temporary_special_variable_suffix ] = old_val;
          }
       }
-      else if( name == get_special_var_name( e_special_var_deque ) )
+      else if( name == g_deque_name )
       {
          skip_standard_variable = true;
 
