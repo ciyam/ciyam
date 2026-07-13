@@ -14,6 +14,7 @@ enum special_var
    e_special_var_os,
    e_special_var_cmd,
    e_special_var_dtm,
+   e_special_var_get,
    e_special_var_grp,
    e_special_var_hub,
    e_special_var_key,

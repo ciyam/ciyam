@@ -57,6 +57,7 @@ constexpr const char* c_special_variable_id = "@id";
 constexpr const char* c_special_variable_os = "@os";
 constexpr const char* c_special_variable_cmd = "@cmd";
 constexpr const char* c_special_variable_dtm = "@dtm";
+constexpr const char* c_special_variable_get = "@get";
 constexpr const char* c_special_variable_grp = "@grp";
 constexpr const char* c_special_variable_hub = "@hub";
 constexpr const char* c_special_variable_key = "@key";
@@ -432,6 +433,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_os );
       g_special_variable_names.push_back( c_special_variable_cmd );
       g_special_variable_names.push_back( c_special_variable_dtm );
+      g_special_variable_names.push_back( c_special_variable_get );
       g_special_variable_names.push_back( c_special_variable_grp );
       g_special_variable_names.push_back( c_special_variable_hub );
       g_special_variable_names.push_back( c_special_variable_key );
