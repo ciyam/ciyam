@@ -22,7 +22,7 @@ create message [for=<name,>;]text=<text>
 delete stylesheet
 employ unlock-key <key>
 retain stylesheet
-review messages
+review messages [from=<unix_time>]
 review storages
 review stylesheet[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
@@ -183,7 +183,7 @@ delete stylesheet
 employ unlock-key <key>
 retain stylesheet
 review users
-review messages
+review messages [from=<unix_time>]
 review storages
 review stylesheet[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
