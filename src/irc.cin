@@ -91,8 +91,11 @@ RESTRICT=@repstr:,/.:$NAMES
 QR_CODE=@file:~zbarcam -1 -q --raw
 #^^Scanned QR Code: $QR_CODE
 @elif "$CIYAM_KEY_PRESSED" = " "
-&:MESSAGE=
-@ifneq "$MESSAGE" ""
+&:MESSAGE=_
+@ifeq "$MESSAGE" "_"
+MESSAGE=
+@else
+MESSAGE=@substr:1:$MESSAGE
 MESSAGE=@strlit:_[public]$MESSAGE
 @endif
 @endif
