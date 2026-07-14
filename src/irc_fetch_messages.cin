@@ -10,34 +10,40 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $2
 NUM_ARGS=@$NUM_ARGS+1
 @endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
 ;
 ERROR=
 RETURN=
 ;
-@ifneq "$NUM_ARGS" "2"
-ERROR=User name and session id are required for "irc_fetch_messages".
+@ifneq "$NUM_ARGS" "3"
+ERROR=Room, user name and session id are required for "irc_fetch_messages".
 @else
 ;
-USER=$1
-SESSION=$2
+ROOM=$1
+USER=$2
+SESSION=$3
+;
+ROOM_AND_USER=%ROOM%_$USER
 ;
 .session_variable @uuid
 UUID=$OUTPUT
 ;
-.session_variable -id=$SESSION @irc_start_point
+.session_variable -id=$SESSION @irc_start_point_$ROOM
 START_POINT=$OUTPUT
-.session_variable -id=$SESSION @irc_start_prior
+.session_variable -id=$SESSION @irc_start_prior_$ROOM
 START_PRIOR=$OUTPUT
 @ifneq "$START_POINT" "$START_PRIOR"
-.session_variable -id=$SESSION !@queue_irc_$USER @system
+.session_variable -id=$SESSION !@queue_irc_$ROOM_AND_USER @system
 @endif
 ;
-.session_variable -id=$SESSION @irc_start_point
+.session_variable -id=$SESSION @irc_start_point_$ROOM
 @ifdef $OUTPUT
 .session_variable @gteq_session_queue $OUTPUT
 @endif
 ;
-.session_variable -id=$SESSION @queue_irc_$USER *
+.session_variable -id=$SESSION @queue_irc_$ROOM_AND_USER *
 ;
 @ifndef $ERROR
 @ifdef $OUTPUT
