@@ -807,7 +807,9 @@
             {
                var opos = request.indexOf( " " );
 
-               if( opos > 0 )
+               if( opos < 0 )
+                  request = "";
+               else
                   request = request.substring( opos + 1 );
             }
 
