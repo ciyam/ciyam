@@ -19,9 +19,10 @@ ERROR=
 MESSAGE=
 RESTRICT=
 NOT_TO_SELF=
-FOUND_JOINED=
 ;
-.run_script !irc_join "@name=$USER"
+ROOM=0000000
+;
+.run_script !irc_join "@name=$USER,@room=$ROOM"
 ;
 @ifdef $ERROR
 @label END_LOOP
@@ -96,7 +97,7 @@ QR_CODE=@file:~zbarcam -1 -q --raw
 MESSAGE=
 @else
 MESSAGE=@substr:1:$MESSAGE
-MESSAGE=@strlit:_[public] $MESSAGE
+MESSAGE=@strlit:_[$ROOM] $MESSAGE
 @endif
 @endif
 ;
@@ -117,7 +118,7 @@ RESTRICT=
 ;
 ENCODED=@base64:@$MESSAGE
 ;
-.run_script !irc_send_message "@names=$NAMES,@message=$ENCODED"
+.run_script !irc_send_message "@room=$ROOM,@names=$NAMES,@message=$ENCODED"
 @ifdef $OUTPUT
 #$OUTPUT
 @endif
@@ -127,7 +128,7 @@ ENCODED=@base64:@$MESSAGE
 @ifdef $QUIT
 OUTPUT=
 @else
-.run_script !irc_fetch_messages
+.run_script !irc_fetch_messages "@room=$ROOM"
 @endif
 ;
 @ifdef $OUTPUT
@@ -156,24 +157,27 @@ WHEN_AND_USER_LINES=@repstr: /\n:$WHEN_AND_USER
 LOCAL=@date:%WHEN_AND_USER_LINES:1%:yyyy-mm-dd hh:mm:ss
 ;
 USER_NAME=%WHEN_AND_USER_LINES:2%
-USER_NAME=@padlen:-13, :$USER_NAME:
 ;
-@ifeq "$DECODED_MESSAGE" "/joined"
-FOUND_JOINED=1
-@else
+USER_NAME_PADDED=@padlen:-13, :$USER_NAME:
+;
 MESSAGE_PARTS=@repstr:]/\n:$DECODED_MESSAGE
 ;
 MESSAGE_ROOM_NAME=@strlit:%MESSAGE_PARTS:1%]
 MESSAGE_ROOM_LENGTH=@strlen:$MESSAGE_ROOM_NAME
+;
+@ifndef $CHECK_PRIOR
+@ifeq "%MESSAGE_PARTS:2%" "/joined"
+ALL_USERS=@strlit:$ALL_USERS@$USER_NAME
+@endif
+@endif
 ;
 DECODED_MESSAGE=@substr:$MESSAGE_ROOM_LENGTH:$DECODED_MESSAGE
 ;
 MESSAGE_ROOM_NAME=@padlen:-20, :$MESSAGE_ROOM_NAME
 ;
 DECODED_MESSAGE=$MESSAGE_ROOM_NAME $DECODED_MESSAGE
-@endif
 ;
-NEXT_MESSAGE=[$LOCAL] $USER_NAME $DECODED_MESSAGE
+NEXT_MESSAGE=[$LOCAL] $USER_NAME_PADDED $DECODED_MESSAGE
 ;
 PREFIX=
 ;
@@ -193,13 +197,14 @@ MESSAGES=%MESSAGES:-1%
 ;
 @endif
 ;
-@ifndef $CHECK_PRIOR
-@ifdef $FOUND_JOINED
-FOUND_JOINED=
-.run_script !irc_join "@name=$USER"
+@ifdef $CHECK_PRIOR
+; NOTE: As new users may have joined during prior
+; message fetching another call to "irc_join" now
+; occurs to ensure that ALL_USERS is correct (any
+; further "joins" are detected as they occur).
+.run_script !irc_join "@name=$USER,@room=$ROOM"
 @ifdef $OUTPUT
 ALL_USERS=$OUTPUT
-@endif
 @endif
 @endif
 ;
