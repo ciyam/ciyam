@@ -30,9 +30,11 @@ OUTPUT_FILE=/tmp/ciyam/web.$TOKEN.$DEVICE
 ;
 ~rm -f $OUTPUT_FILE
 ;
+IRC_ROOM=0000000
 IRC_USERS=
+;
 @ifdef $USERNAME
-.run_script !irc_join "@name=$USERNAME"
+.run_script !irc_join "@name=$USERNAME,@room=$IRC_ROOM"
 JOIN_LINES=@repstr:|/\n:$OUTPUT
 IRC_USERS=@strlit:%JOIN_LINES:3%
 IRC_USERS=@repstr:@$USERNAME/:$IRC_USERS
@@ -51,11 +53,13 @@ ADMIN_TOKEN=@file:.web_access_admin
 .system_variable @web.$TOKEN.$DEVICE.message "[standard]$IRC_USERS"
 @endif
 ;
-.system_variable @web.$TOKEN.$DEVICE.fetched
+.system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM
 @ifdef $OUTPUT
 START_POINT=$OUTPUT
-.session_variable @irc_start_point $START_POINT
-.session_variable @irc_start_prior $START_POINT
+.session_variable @irc_start_point_$IRC_ROOM $START_POINT
+.session_variable @irc_start_prior_$IRC_ROOM $START_POINT
+@else
+.session_variable @irc_start_point_$IRC_ROOM 0
 @endif
 ;
 .session_variable @storage_var_name @web.$TOKEN.$DEVICE.storage
@@ -82,7 +86,9 @@ COMMAND=$OUTPUT
 COMMAND_1=%COMMAND:1%
 COMMAND_2=%COMMAND:2%
 COMMAND_3=%COMMAND:3%
-; NOTE: Supports up to three commands.
+COMMAND_4=%COMMAND:4%
+COMMAND_5=%COMMAND:5%
+; NOTE: Supports up to five commands.
 >$TEMP_FILE
 $COMMAND_1
 @ifdef $COMMAND_2
@@ -90,6 +96,12 @@ $COMMAND_2
 @endif
 @ifdef $COMMAND_3
 $COMMAND_3
+@endif
+@ifdef $COMMAND_4
+$COMMAND_4
+@endif
+@ifdef $COMMAND_5
+$COMMAND_5
 @endif
 >
 ; NOTE: As the command might take some time
@@ -107,17 +119,10 @@ ERROR=
 @ifeq "$OUTPUT" "irc_fetch_messages"
 .session_variable @script_executed ""
 ;
-.session_variable @irc_start_point
-START_POINT=$OUTPUT
-.session_variable @irc_start_prior
-START_PRIOR=$OUTPUT
-;
-@ifneq "$START_POINT" "$START_PRIOR"
 UTIME=@unix:
-.session_variable @irc_start_point $UTIME
-.session_variable @irc_start_prior $UTIME
-.system_variable @web.$TOKEN.$DEVICE.fetched $UTIME
-@endif
+.session_variable @irc_start_point_$IRC_ROOM $UTIME
+.session_variable @irc_start_prior_$IRC_ROOM $UTIME
+.system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM $UTIME
 ;
 @endif
 ;
