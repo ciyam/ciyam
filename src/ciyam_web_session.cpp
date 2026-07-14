@@ -88,7 +88,6 @@ constexpr const char* c_web_demo_pin_3 = "10301";
 constexpr const char* c_web_lock_suffix = ".lock";
 
 constexpr const char* c_web_command_suffix = ".command";
-constexpr const char* c_web_fetched_suffix = ".fetched";
 constexpr const char* c_web_message_suffix = ".message";
 constexpr const char* c_web_session_suffix = ".session";
 constexpr const char* c_web_started_suffix = ".started";
@@ -147,7 +146,8 @@ constexpr const char* c_web_session_okay_response = "[okay]";
 
 constexpr const char* c_web_session_unknown_response = "[unknown]";
 
-constexpr const char* c_web_session_public_message_room_prefix = "_[public] ";
+constexpr const char* c_web_session_default_room_number = "0000000";
+constexpr const char* c_web_session_default_message_room_prefix = "_[0000000] ";
 
 constexpr const char* c_storage_attribute_id = "id";
 constexpr const char* c_storage_attribute_user_info = "user_info";
@@ -1243,11 +1243,12 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          string web_lock_name( var_prefix + access + '.' + device + c_web_lock_suffix );
 
          string web_command_var_name( var_prefix + access + '.' + device + c_web_command_suffix );
-         string web_fetched_var_name( var_prefix + access + '.' + device + c_web_fetched_suffix );
          string web_message_var_name( var_prefix + access + '.' + device + c_web_message_suffix );
          string web_session_var_name( var_prefix + access + '.' + device + c_web_session_suffix );
          string web_started_var_name( var_prefix + access + '.' + device + c_web_started_suffix );
          string web_storage_var_name( var_prefix + access + '.' + device + c_web_storage_suffix );
+
+         string web_unix_time_var_prefix( var_prefix + access + '.' + device + '.' );
 
          bool is_admin = ( access == g_cws_admin_token );
 
@@ -1355,10 +1356,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   else
                      response = "{\"message\":\"Session terminated.\"}\n";
 
-                  set_system_variable( web_fetched_var_name, "" );
                   set_system_variable( web_session_var_name, "" );
                   set_system_variable( web_started_var_name, "" );
                   set_system_variable( web_storage_var_name, "" );
+
+                  set_system_variable( web_unix_time_var_prefix + "*", "" );
 
                   // NOTE: If it seems to be running then will force the
                   // "web_session" application protocol script to finish
@@ -1984,6 +1986,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            {
                               use_none_response = true;
 
+                              string room( c_web_session_default_room_number );
+
                               if( is_post_request
                                && option_parameters.count( c_cws_request_messages_create_options_text ) )
                               {
@@ -1999,17 +2003,17 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     replace( names, ",", "." );
                                  }
 
-                                 string prefix( c_web_session_public_message_room_prefix );
+                                 string prefix( c_web_session_default_message_room_prefix );
 
-                                 request_and_args = "run_script !irc_send_message \"@names=" + names + ",@message="
+                                 request_and_args = "run_script !irc_send_message \"@room=" + room + ",@names=" + names + ",@message="
                                   + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
                               }
 
                               if( option_parameters.count( c_cws_request_messages_review_options_from ) )
-                                 request_and_args += "session_variable @irc_start_point "
+                                 request_and_args += "session_variable @irc_start_point_" + room + ' '
                                   + option_parameters[ c_cws_request_messages_review_options_from ] + '\n';
 
-                              request_and_args += "run_script !irc_fetch_messages";
+                              request_and_args += "run_script !irc_fetch_messages \"@room=" + room + "\"";
                            }
                            else if( is_user_info_request )
                            {
