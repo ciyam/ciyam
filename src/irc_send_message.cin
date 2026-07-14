@@ -13,19 +13,25 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $3
 NUM_ARGS=@$NUM_ARGS+1
 @endif
+@ifdef $4
+NUM_ARGS=@$NUM_ARGS+1
+@endif
 ;
 ERROR=
 RETURN=
 ;
-@ifneq "$NUM_ARGS" "3"
-ERROR=Names, message and sender are required for "irc_send_message".
+@ifneq "$NUM_ARGS" "4"
+ERROR=Room, names, message and sender are required for "irc_send_message".
 @else
 ;
-NAMES=$1
-MESSAGE=$2
-USER_NAME=$3
+ROOM=$1
+NAMES=$2
+MESSAGE=$3
+USER_NAME=$4
 ;
 USER_MESSAGE=
+;
+ROOM_AND_USER=%ROOM%_$USER_NAME
 ;
 NAMES_CHECK=@repstr:./_:$NAMES
 ;
@@ -61,7 +67,7 @@ PREFIX=@substr:0,3:$MESSAGE
 @ifeq "$PREFIX" "Xy9"
 @ifeq "$MESSAGE" "Xy9jbGVhcg"
 RETURN=History for '$USER_NAME' cleared.
-.system_variable @queue_irc_$USER_NAME ""
+.system_variable @queue_irc_$ROOM_AND_USER ""
 @else
 RETURN=Available commands are:\n
 RETURN=$RETURN\nhelp (this output)
@@ -70,7 +76,7 @@ RETURN=$RETURN\n \b
 @endif
 @else
 ;
-.system_variable @irc_users
+.system_variable @irc_users_$ROOM
 IRC_USERS=@strlit:$OUTPUT
 ;
 @ifdef $IRC_USERS
@@ -93,11 +99,11 @@ IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
 UNIX_NOW=@unix:
 ;
 @ifdef $IRC_USER_SUFFIXES
-.system_variable @queue_irc_$IRC_USER_SUFFIXES "$UNIX_NOW $USER_NAME: $MESSAGE"
+.system_variable @queue_irc_%ROOM%_$IRC_USER_SUFFIXES "$UNIX_NOW $USER_NAME: $MESSAGE"
 @endif
 ;
 @ifdef $USER_MESSAGE
-.system_variable @queue_irc_$USER_NAME "$UNIX_NOW $USER_NAME: $USER_MESSAGE"
+.system_variable @queue_irc_$ROOM_AND_USER "$UNIX_NOW $USER_NAME: $USER_MESSAGE"
 @endif
 ;
 @endif
