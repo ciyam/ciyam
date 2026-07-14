@@ -68,6 +68,13 @@ RETURN=@strlit:$OUTPUT
 ERROR=Unable to obtain the system IRC lock (try again later).
 @else
 ;
+.system_variable @irc_rooms
+@ifndef $OUTPUT
+.system_variable @irc_names_0000000 Administration
+.system_variable @irc_owner_0000000 admin
+.system_variable @irc_rooms 0000001
+@endif
+;
 .system_variable @irc_users_$ROOM_NO
 ALL_USERS=@strlit:$OUTPUT
 ;
