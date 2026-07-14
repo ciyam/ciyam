@@ -10615,10 +10615,13 @@ void set_session_variable( const var_name& var, const string& value,
             // the same name (via "add_queue_item_for_linked_sessions").
             gtp_session->variables[ g_system_name + '_' + name ] = c_true_value;
 
-            if( is_flagged )
+            if( is_flagged && gtp_session->deque_variables.count( name ) )
                gtp_session->deque_variables[ name ].clear( );
 
             copy_queue_system_variable( name, gtp_session->deque_variables[ name ] );
+
+            if( gtp_session->deque_variables[ name ].empty( ) )
+               gtp_session->deque_variables.erase( name );
          }
       }
       else if( name.find( c_special_variable_mapped_prefix ) == 0 )
