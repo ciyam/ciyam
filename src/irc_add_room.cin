@@ -1,0 +1,126 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+ERROR=
+RETURN=
+;
+@ifneq "$NUM_ARGS" "2"
+ERROR=Room and User names are required for "irc_add_room".
+@else
+;
+NAME=$1
+USER=$2
+;
+; KLUDGE: Parentheses are not being correctly
+; handled so first checks that braces are not
+; included then is replacing parentheses with
+; braces (and swapping them back afterwards).
+NAME_CHECK=@repstr:{/:$NAME
+@ifeq "$NAME" "$NAME_CHECK"
+NAME_CHECK=@repstr:}/:$NAME
+@ifeq "$NAME" "$NAME_CHECK"
+NAME_CHECK=@repstr:(/{:$NAME_CHECK
+NAME_CHECK=@repstr:)/}:$NAME_CHECK
+;
+; NOTE: Room name must be between five and fifty characters including letters, numbers and some specials.
+.regex -chain "^[a-zA-Z][-+&{} a-zA-Z0-9]+$$&&^.*[}a-zA-Z0-9]$$&&^[-+&{} a-zA-Z0-9]{5,50}$$" "$NAME_CHECK"
+NAME_CHECK=$OUTPUT
+;
+@ifdef $NAME_CHECK
+NAME_CHECK=@repstr:{/(:$NAME_CHECK
+NAME_CHECK=@repstr:}/):$NAME_CHECK
+;
+; NOTE: Limits choice for repeating.
+NAME_CHECK=@repstr:&&/&:$NAME_CHECK
+NAME_CHECK=@repstr:()/(:$NAME_CHECK
+NAME_CHECK=@repstr:)(/):$NAME_CHECK
+NAME_CHECK=@repstr:((/(:$NAME_CHECK
+NAME_CHECK=@repstr:))/):$NAME_CHECK
+NAME_CHECK=@repstr:  / :$NAME_CHECK
+@endif
+@endif
+@endif
+;
+@ifneq "$NAME" "$NAME_CHECK"
+ERROR=Invalid room name '$NAME'.
+@else
+;
+.system_variable @irc_lock 1 "" 100
+;
+@ifeq "$OUTPUT" "0"
+ERROR=Unable to obtain the system IRC lock (try again later).
+@else
+;
+.session_variable @uuid
+TEMP_FILE=/tmp/ciyam/$OUTPUT
+;
+>$TEMP_FILE
+system_variable @irc_names_*
+>
+;
+; NOTE: Strip the variable name and space separator.
+~grep -o " .*$$" $TEMP_FILE | cut -c 2- >$TEMP_FILE.1
+;
+@ifndef $ERROR
+CHECK_NAME=@file:~grep "^$NAME$$" $TEMP_FILE.1
+;
+@ifeq "$NAME" "$CHECK_NAME"
+ERROR=Room '$NAME' already exists.
+@endif
+;
+@endif
+;
+~rm -f $TEMP_FILE*
+;
+@ifndef $ERROR
+.system_variable @irc_rooms
+NEXT_ROOM=$OUTPUT
+;
+.system_variable @irc_names_$NEXT_ROOM "$NAME"
+.system_variable @irc_owner_$NEXT_ROOM "$USER"
+.system_variable @irc_users_$NEXT_ROOM "@$USER"
+;
+LEN=@strlen:$NEXT_ROOM
+NEXT_ROOM=@$NEXT_ROOM+1
+;
+NEXT_ROOM=@padlen:$LEN,0:$NEXT_ROOM
+;
+.system_variable @irc_rooms $NEXT_ROOM
+@endif
+;
+.system_variable @irc_lock ""
+;
+@endif
+;
+@endif
+;
+@endif
+;
+PREFIX=
+ERROR_OR_RETURN=
+;
+@ifdef $ERROR
+PREFIX=Error:$SP
+ERROR_OR_RETURN=$ERROR
+@elif "$RETURN" != ""
+ERROR_OR_RETURN=:$RETURN
+@endif
+;
+@ifdef $ERROR_OR_RETURN
+.session_variable @args_file
+@ifndef $OUTPUT
+#$PREFIX$ERROR_OR_RETURN
+@else
+.system_variable $OUTPUT "$ERROR_OR_RETURN"
+@endif
+@endif
