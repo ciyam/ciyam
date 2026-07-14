@@ -33,7 +33,7 @@
   <name>irc_join
   <logging>never
   <filename>*script*
-  <arguments>!irc_join.cin @name set @session_id
+  <arguments>!irc_join.cin @name @room set @session_id
  </script>
  <script/>
   <name>init_ciyam
@@ -165,7 +165,7 @@
   <name>irc_send_message
   <logging>never
   <filename>*script*
-  <arguments>!irc_send_message.cin @names @message set @irc_user
+  <arguments>!irc_send_message.cin @room @names @message set @irc_user
  </script>
  <script/>
   <name>prepare_channels
@@ -186,7 +186,7 @@
   <name>irc_fetch_messages
   <logging>never
   <filename>*script*
-  <arguments>!irc_fetch_messages.cin set @irc_user @session_id
+  <arguments>!irc_fetch_messages.cin @room set @irc_user @session_id
  </script>
  <script/>
   <name>remove_unsubmitted
