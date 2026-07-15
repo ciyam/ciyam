@@ -148,6 +148,7 @@ constexpr const char* c_function_repstr = "repstr";
 constexpr const char* c_function_sha256 = "sha256";
 constexpr const char* c_function_strlen = "strlen";
 constexpr const char* c_function_strlit = "strlit";
+constexpr const char* c_function_strpos = "strpos";
 constexpr const char* c_function_substr = "substr";
 constexpr const char* c_function_base64 = "base64";
 constexpr const char* c_function_fullpath = "fullpath";
@@ -3639,6 +3640,28 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               // that can start with a '@' (otherwise parsing
                               // might treat them as a numerical operation).
                               str = str.substr( pos + 1 );
+                           }
+                           else if( lhs == c_function_strpos )
+                           {
+                              pos = str.find( op, pos + 1 );
+
+                              if( pos != string::npos )
+                              {
+                                 string rhs( str.substr( pos + 1 ) );
+
+                                 str.erase( pos );
+
+                                 pos = str.find( op );
+
+                                 str.erase( 0, pos + 1 );
+
+                                 pos = rhs.find( str );
+
+                                 if( pos == string::npos )
+                                    str.erase( );
+                                 else
+                                    str = to_string( pos );
+                              }
                            }
                            else if( lhs == c_function_substr )
                            {
