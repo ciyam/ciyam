@@ -47,6 +47,8 @@ const size_t c_default_max_deque_item_size = 1000;
 
 const size_t c_default_max_deque_size_limit = 10000;
 
+constexpr const char* c_double_asterisk = "**";
+
 constexpr const char* c_qs_max_chars_prefix = "@qs_mc_";
 constexpr const char* c_qs_num_items_prefix = "@qs_ni_";
 constexpr const char* c_qs_pop_front_prefix = "@qs_pf_";
@@ -1039,6 +1041,15 @@ string get_system_variable( const var_name& var, bool is_internal )
 
    string variable( name );
 
+   bool skip_name_output = false;
+
+   if( name.find( c_double_asterisk ) != string::npos )
+   {
+      skip_name_output = true;
+
+      replace( name, c_double_asterisk, "*" );
+   }
+
    bool had_persist_prefix = false;
    bool had_restore_prefix = false;
 
@@ -1151,7 +1162,10 @@ string get_system_variable( const var_name& var, bool is_internal )
                      if( !is_internal )
                         truncate_value_for_secret_hash_prefixed_name( next, value );
 
-                     retval += quote_if_contains_white_space( next ) + ' ' + value;
+                     if( skip_name_output )
+                        retval += value;
+                     else
+                        retval += quote_if_contains_white_space( next ) + ' ' + value;
                   }
                }
             }
@@ -1228,7 +1242,10 @@ string get_system_variable( const var_name& var, bool is_internal )
             if( !is_internal )
                truncate_value_for_secret_hash_prefixed_name( next, value );
 
-            retval += quote_if_contains_white_space( next ) + ' ' + value;
+            if( skip_name_output )
+               retval += value;
+            else
+               retval += quote_if_contains_white_space( next ) + ' ' + value;
          }
       }
 
@@ -1241,7 +1258,10 @@ string get_system_variable( const var_name& var, bool is_internal )
             if( !retval.empty( ) )
                retval += "\n";
 
-            retval += quote_if_contains_white_space( dci->first ) + ' ' + dci->second.front( );
+            if( skip_name_output )
+               retval += dci->second.front( );
+            else
+               retval += quote_if_contains_white_space( dci->first ) + ' ' + dci->second.front( );
 
             retval += " [+" + to_string( dci->second.size( ) - 1 ) + "]";
          }
