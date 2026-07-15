@@ -756,14 +756,14 @@
           || ( cmd == unlock_keys_employ_cmd ) || ( cmd == stylesheets_review_cmd )
           || ( cmd == storage_modules_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
          {
-            if( ( cmd == users_create_cmd )
-             || ( cmd == messages_create_cmd ) || ( cmd == messages_review_cmd ) )
+            if( cmd == users_create_cmd )
                has_cmd_options = true;
             else
             {
                has_name_suffix = true;
 
-               if( cmd == storage_instances_review_cmd )
+               if( ( cmd == messages_create_cmd )
+                || ( cmd == messages_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
                   has_cmd_options = true;
             }
 
@@ -785,6 +785,8 @@
          {
             var name = "";
 
+            var stripped_name = false;
+
             if( has_name_suffix && ( pos > 0 ) )
             {
                name = request.substring( pos + 1 );
@@ -797,6 +799,9 @@
                if( pos >= 0 )
                {
                   request = name.substring( pos + 1 );
+
+                  stripped_name = true;
+
                   name = name.substring( 0, pos );
                }
             }
@@ -808,7 +813,10 @@
                var opos = request.indexOf( " " );
 
                if( opos < 0 )
-                  request = "";
+               {
+                  if( !stripped_name )
+                     request = "";
+               }
                else
                   request = request.substring( opos + 1 );
             }
