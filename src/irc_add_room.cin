@@ -21,32 +21,40 @@ ERROR=Room and User names are required for "irc_add_room".
 NAME=$1
 USER=$2
 ;
-; KLUDGE: Parentheses are not being correctly
-; handled so first checks that braces are not
-; included then is replacing parentheses with
-; braces (and swapping them back afterwards).
-NAME_CHECK=@repstr:{/:$NAME
-@ifeq "$NAME" "$NAME_CHECK"
-NAME_CHECK=@repstr:}/:$NAME
-@ifeq "$NAME" "$NAME_CHECK"
-NAME_CHECK=@repstr:(/{:$NAME_CHECK
-NAME_CHECK=@repstr:)/}:$NAME_CHECK
-;
-; NOTE: Room name must be between five and fifty characters including letters, numbers and some specials.
-.regex -chain "^[a-zA-Z][-+&{} a-zA-Z0-9]+$$&&^.*[}a-zA-Z0-9]$$&&^[-+&{} a-zA-Z0-9]{5,50}$$" "$NAME_CHECK"
+; NOTE: Room name is between five and fifty characters including letters, numbers and some specials.
+.regex -chain "^[a-zA-Z][-+&() a-zA-Z0-9]+$$&&^.*[)a-zA-Z0-9]$$&&^[-+&() a-zA-Z0-9]{5,50}$$" "$NAME"
 NAME_CHECK=$OUTPUT
 ;
 @ifdef $NAME_CHECK
-NAME_CHECK=@repstr:{/(:$NAME_CHECK
-NAME_CHECK=@repstr:}/):$NAME_CHECK
-;
-; NOTE: Limits choice for repeating.
+; NOTE: Limit specials for repeats.
 NAME_CHECK=@repstr:&&/&:$NAME_CHECK
-NAME_CHECK=@repstr:()/(:$NAME_CHECK
-NAME_CHECK=@repstr:)(/):$NAME_CHECK
-NAME_CHECK=@repstr:((/(:$NAME_CHECK
-NAME_CHECK=@repstr:))/):$NAME_CHECK
+NAME_CHECK=@repstr:()/@:$NAME_CHECK
 NAME_CHECK=@repstr:  / :$NAME_CHECK
+;
+; NOTE: Only allow one pair of parentheses
+; (and checks that the left one was placed
+; before the right one).
+NAME_LEN=@strlen:$NAME
+ALLOWED_LEN=@$NAME_LEN-1
+LEFT_LEN_CHECK=@repstr:(/:$NAME
+LEFT_LEN_CHECK=@strlen:$LEFT_LEN_CHECK
+@if "$LEFT_LEN_CHECK" #< "$ALLOWED_LEN"
+NAME_CHECK=
+@else
+RIGHT_LEN_CHECK=@repstr:)/:$NAME
+RIGHT_LEN_CHECK=@strlen:$RIGHT_LEN_CHECK
+@if "$RIGHT_LEN_CHECK" #< "$ALLOWED_LEN"
+NAME_CHECK=
+@else
+@ifneq "$LEFT_LEN_CHECK" "$RIGHT_LEN_CHECK"
+NAME_CHECK=
+@else
+LPOS=@strpos:(:$NAME
+RPOS=@strpos:):$NAME
+@if "$RPOS" #< "$LPOS"
+NAME_CHECK=
+@endif
+@endif
 @endif
 @endif
 @endif
@@ -65,14 +73,11 @@ ERROR=Unable to obtain the system IRC lock (try again later).
 TEMP_FILE=/tmp/ciyam/$OUTPUT
 ;
 >$TEMP_FILE
-system_variable @irc_names_*
+system_variable @irc_names_**
 >
 ;
-; NOTE: Strip the variable name and space separator.
-~grep -o " .*$$" $TEMP_FILE | cut -c 2- >$TEMP_FILE.1
-;
 @ifndef $ERROR
-CHECK_NAME=@file:~grep "^$NAME$$" $TEMP_FILE.1
+CHECK_NAME=@file:~grep "^$NAME$$" $TEMP_FILE
 ;
 @ifeq "$NAME" "$CHECK_NAME"
 ERROR=Room '$NAME' already exists.
@@ -80,7 +85,7 @@ ERROR=Room '$NAME' already exists.
 ;
 @endif
 ;
-~rm -f $TEMP_FILE*
+~rm -f $TEMP_FILE
 ;
 @ifndef $ERROR
 .system_variable @irc_rooms
