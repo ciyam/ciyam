@@ -151,6 +151,9 @@ notifier -start test1/xxx
 system_variable *test1*
 @:test1/xxx [watching]
 test1/xxx none
+system_variable *test1**
+[watching]
+none
 ~touch test1/xxx
 system_variable *test1*
 @:test1/xxx [watching]

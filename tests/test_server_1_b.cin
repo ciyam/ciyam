@@ -55,6 +55,7 @@ TEST=@file:~./diff -q test1/xxx test1/yyy
 #$TEST
 notifier -start test1/xxx
 system_variable *test1*
+system_variable *test1**
 #~touch test1/xxx
 ~touch test1/xxx
 .wait 100
