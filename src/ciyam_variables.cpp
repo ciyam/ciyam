@@ -1043,11 +1043,11 @@ string get_system_variable( const var_name& var, bool is_internal )
 
    bool skip_name_output = false;
 
-   if( name.find( c_double_asterisk ) != string::npos )
+   if( variable.find( c_double_asterisk ) != string::npos )
    {
       skip_name_output = true;
 
-      replace( name, c_double_asterisk, "*" );
+      replace( variable, c_double_asterisk, "*" );
    }
 
    bool had_persist_prefix = false;
@@ -1055,9 +1055,9 @@ string get_system_variable( const var_name& var, bool is_internal )
 
    if( !variable.empty( ) )
    {
-      if( name[ 0 ] == c_persist_variable_prefix )
+      if( variable[ 0 ] == c_persist_variable_prefix )
          had_persist_prefix = true;
-      else if( name[ 0 ] == c_restore_variable_prefix )
+      else if( variable[ 0 ] == c_restore_variable_prefix )
          had_restore_prefix = true;
 
       if( had_persist_prefix || had_restore_prefix )
