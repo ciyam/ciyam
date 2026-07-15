@@ -104,6 +104,7 @@ constexpr const char* c_cws_uri_suffix_unlock_keys = "unlock-keys";
 constexpr const char* c_cws_uri_suffix_storage_modules = "storage-modules";
 
 constexpr const char* c_cws_uri_suffix_users_prefix = "users/";
+constexpr const char* c_cws_uri_suffix_messages_prefix = "messages/";
 constexpr const char* c_cws_uri_suffix_sessions_prefix = "sessions/";
 
 constexpr const char* c_cws_uri_suffix_storages_prefix = "storages/";
@@ -129,14 +130,15 @@ constexpr const char* c_cws_request_messages_create_options_text = "text";
 constexpr const char* c_cws_request_messages_review_options_from = "from";
 
 // NOTE: This help is only intended for the "test_web_session.html" page which will translate this more "user friendly" syntax.
-constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\ncreate message [for=<name,>;]text=<text>\n"
- "delete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview messages [from=<unix_time>]\n"
+constexpr const char* c_cws_help_request_output = "quit\n"
+ "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\n"
+ "delete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview messages <room> [from=<unix_time>]\n"
  "review storages\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\nattach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
- "create message [for=<name,>;]text=<text>\ncreate unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\n"
- "review users\nreview messages [from=<unix_time>]\nreview storages\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+ "create message <room> [for=<name,>;]text=<text>\ncreate unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\n"
+ "review users\nreview messages <room> [from=<unix_time>]\nreview storages\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
 
 constexpr const char* c_web_session_script = "web_session.cin";
@@ -147,7 +149,7 @@ constexpr const char* c_web_session_okay_response = "[okay]";
 constexpr const char* c_web_session_unknown_response = "[unknown]";
 
 constexpr const char* c_web_session_default_room_number = "0000000";
-constexpr const char* c_web_session_default_message_room_prefix = "_[0000000] ";
+constexpr const char* c_web_session_default_message_room_prefix = "_[0000001] ";
 
 constexpr const char* c_storage_attribute_id = "id";
 constexpr const char* c_storage_attribute_user_info = "user_info";
@@ -715,23 +717,34 @@ void process_messages_response( string& response )
       {
          string next( messages[ i ] );
 
-         string::size_type pos = next.rfind( ' ' );
+         string::size_type pos = next.find( ": " );
 
          if( pos != string::npos )
          {
-            string content( next.substr( pos + 1 ) );
+            string extra;
+
+            string content( next.substr( pos + 2 ) );
+
+            string::size_type xpos = content.find( ' ' );
+
+            if( xpos != string::npos )
+            {
+               extra = content.substr( xpos );
+
+               content.erase( xpos );
+            }
 
             if( !content.empty( )
              && base64::valid_characters( content, true ) )
             {
                string decoded( base64::decode( content, true ) );
 
-               next.erase( pos + 1 );
+               next.erase( pos + 2 );
 
                if( decoded.size( ) > 1 )
                   next += decoded.substr( 1 );
 
-               messages[ i ] = next;
+               messages[ i ] = next + extra;
             }
          }
       }
@@ -1248,7 +1261,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          string web_started_var_name( var_prefix + access + '.' + device + c_web_started_suffix );
          string web_storage_var_name( var_prefix + access + '.' + device + c_web_storage_suffix );
 
-         string web_unix_time_var_prefix( var_prefix + access + '.' + device + '.' );
+         // NOTE: In order for the rooms to be covered by a wildcard they must always
+         // start with a leading zero (otherwise when removed with the wildcard would
+         // inadvertantly remove all of the above variables as well).
+         string web_unix_time_var_wildcard( var_prefix + access + '.' + device + ".0*" );
 
          bool is_admin = ( access == g_cws_admin_token );
 
@@ -1360,7 +1376,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   set_system_variable( web_started_var_name, "" );
                   set_system_variable( web_storage_var_name, "" );
 
-                  set_system_variable( web_unix_time_var_prefix + "*", "" );
+                  set_system_variable( web_unix_time_var_wildcard, "" );
 
                   // NOTE: If it seems to be running then will force the
                   // "web_session" application protocol script to finish
@@ -1956,7 +1972,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         if( !storage_name.empty( ) )
                            storage_name[ 0 ] = toupper( storage_name[ 0 ] );
                      }
-                     else if( uri_suffix == c_cws_uri_suffix_messages )
+                     else if( ( uri_suffix == c_cws_uri_suffix_messages )
+                      || ( uri_suffix.find( c_cws_uri_suffix_messages_prefix ) == 0 ) )
                         is_messages_request = true;
                      else if( uri_suffix == c_cws_uri_suffix_storage_modules )
                         is_module_info_request = true;
@@ -1988,6 +2005,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                               string room( c_web_session_default_room_number );
 
+                              if( uri_suffix.find( c_cws_uri_suffix_messages_prefix ) == 0 )
+                                 room = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_messages_prefix ) );
+
                               if( is_post_request
                                && option_parameters.count( c_cws_request_messages_create_options_text ) )
                               {
@@ -2009,9 +2029,14 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                   + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
                               }
 
-                              if( option_parameters.count( c_cws_request_messages_review_options_from ) )
-                                 request_and_args += "session_variable @irc_start_point_" + room + ' '
-                                  + option_parameters[ c_cws_request_messages_review_options_from ] + '\n';
+                              if( room != c_web_session_default_room_number )
+                              {
+                                 request_and_args += "IRC_ROOM=" + room + '\n';
+
+                                 if( option_parameters.count( c_cws_request_messages_review_options_from ) )
+                                    request_and_args += "session_variable @irc_start_point_" + room + ' '
+                                     + option_parameters[ c_cws_request_messages_review_options_from ] + '\n';
+                              }
 
                               request_and_args += "run_script !irc_fetch_messages \"@room=" + room + "\"";
                            }
