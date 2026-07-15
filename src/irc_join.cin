@@ -25,6 +25,10 @@ USER=$1
 ROOM_NO=$2
 SESSION=$3
 ;
+@ifeq "$ROOM_NO" "0000000"
+ROOM_NO=0000001
+@endif
+;
 ROOM_AND_USER=%ROOM_NO%_$USER
 ;
 ; NOTE: Only accept names that are between three and twelve characters long
@@ -70,9 +74,9 @@ ERROR=Unable to obtain the system IRC lock (try again later).
 ;
 .system_variable @irc_rooms
 @ifndef $OUTPUT
-.system_variable @irc_names_0000000 Administration
-.system_variable @irc_owner_0000000 admin
-.system_variable @irc_rooms 0000001
+.system_variable @irc_names_0000001 Administration
+.system_variable @irc_owner_0000001 admin
+.system_variable @irc_rooms 0000002
 @endif
 ;
 .system_variable @irc_users_$ROOM_NO
