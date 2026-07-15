@@ -539,7 +539,7 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
             break;
          }
 
-         if( s.ch == '(' )
+         if( !s.is_in_set && ( s.ch == '(' ) )
          {
             if( s.is_in_ref )
                throw runtime_error( "invalid nested ref in: " + expr );
@@ -569,7 +569,7 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
 
             s.is_in_ref = next_part.start_ref = true;
          }
-         else if( s.ch == ')' )
+         else if( !s.is_in_set && ( s.ch == ')' ) )
          {
             if( !s.is_in_ref )
                throw runtime_error( "invalid finish ref in: " + expr );
