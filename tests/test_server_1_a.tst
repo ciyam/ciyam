@@ -230,6 +230,13 @@ abcXXX
 @abc
 -1
 @abc-1
+0
+1
+2
+3
+4
+5
+
 6
 0
 1
@@ -872,6 +879,13 @@ regex "([a-z]+)([-_.][a-z]+)" abc.-def
 regex "([a-z]+)([-_.][a-z]+)" abc._def
 regex "([a-z]+)([-_.][a-z]+)([-_.][a-z]+)" abc-def-ghi
 abc-def-ghi
+regex "([a-z]+)([_.()][a-z]+)([_.()][a-z]+)" abc(def)ghi
+abc(def)ghi
+regex "([a-z]+)([_.()][a-z]+)([_.()][a-z]+)" ab(cdefg)hi
+ab(cdefg)hi
+regex "([a-z]+)([_.()][a-z]+)([_.()][a-z]+)" a(bcdefgh)i
+a(bcdefgh)i
+regex "([a-z]+)([_.()][a-z]+)([_.()][a-z]+)" (abcdefghi)
 regex @peerchain_identity 012343210
 012343210
 regex @peerchain_identity abcdedbca
