@@ -30,6 +30,10 @@ ROOM_AND_USER=%ROOM%_$USER
 .session_variable @uuid
 UUID=$OUTPUT
 ;
+@ifeq "$ROOM" "0000000"
+.system_variable @queue_irc_**_$USER
+@else
+;
 .session_variable -id=$SESSION @irc_start_point_$ROOM
 START_POINT=$OUTPUT
 .session_variable -id=$SESSION @irc_start_prior_$ROOM
@@ -44,13 +48,14 @@ START_PRIOR=$OUTPUT
 @endif
 ;
 .session_variable -id=$SESSION @queue_irc_$ROOM_AND_USER *
+@endif
 ;
 @ifndef $ERROR
 @ifdef $OUTPUT
->~$UUID
+>/tmp/ciyam/$UUID
 #$OUTPUT
 >
-RETURN=@~$UUID
+RETURN=@strlit:@/tmp/ciyam/$UUID
 @endif
 @endif
 ;
