@@ -67,7 +67,7 @@ CIYAM_PAUSE_SECONDS=1
 ;
 @ifndef $CHECK_PRIOR
 NOT_TO_SELF=
-^[hit 'a' for ANSI help, 'q' to quit, 'r' to restrict, 's/v' to scan/view a QR Code or space to type]
+^[hit 'a' for ANSI help, 'q' to quit, 'r' for room, 'u' for users, 's/v' to scan/view a QR Code or space to type]
 ;
 @ifdef $CIYAM_KEY_PRESSED
 ;
@@ -80,6 +80,9 @@ NOT_TO_SELF=
 @elif "$CIYAM_KEY_PRESSED" = "q"
 QUIT=1
 @elif "$CIYAM_KEY_PRESSED" = "r"
+&Enter Room No: :ROOM=
+.run_script !irc_join "@name=$USER,@room=$ROOM"
+@elif "$CIYAM_KEY_PRESSED" = "u"
 @retain NAMES
 <names.cin $ALL_USERS
 RESTRICT=@repstr:,/.:$NAMES
@@ -119,6 +122,7 @@ RESTRICT=
 ENCODED=@base64:@$MESSAGE
 ;
 .run_script !irc_send_message "@room=$ROOM,@names=$NAMES,@message=$ENCODED"
+;
 @ifdef $OUTPUT
 #$OUTPUT
 @endif
@@ -149,9 +153,18 @@ NEXT_MESSAGE=%MESSAGES:1%
 ;
 NEXT_MSG_PARTS=@repstr:\: /\n:$NEXT_MESSAGE
 ;
+EXTRA_MESSAGE=
+ENCODED_MESSAGE=%NEXT_MSG_PARTS:2%
+;
+POS=@strpos: :$ENCODED_MESSAGE
+@ifdef $POS
+EXTRA_MESSAGE=@substr:$POS:$ENCODED_MESSAGE
+ENCODED_MESSAGE=@substr:0,$POS:$ENCODED_MESSAGE
+@endif
+;
 WHEN_AND_USER=%NEXT_MSG_PARTS:1%
-DECODED_MESSAGE=@base64:%NEXT_MSG_PARTS:2%
-DECODED_MESSAGE=@substr:1,0:$DECODED_MESSAGE
+DECODED_MESSAGE=@base64:$ENCODED_MESSAGE
+DECODED_MESSAGE=@substr:1,0:$DECODED_MESSAGE$EXTRA_MESSAGE
 ;
 WHEN_AND_USER_LINES=@repstr: /\n:$WHEN_AND_USER
 LOCAL=@date:%WHEN_AND_USER_LINES:1%:yyyy-mm-dd hh:mm:ss
@@ -162,20 +175,32 @@ USER_NAME_PADDED=@padlen:-13, :$USER_NAME:
 ;
 MESSAGE_PARTS=@repstr:]/\n:$DECODED_MESSAGE
 ;
-MESSAGE_ROOM_NAME=@strlit:%MESSAGE_PARTS:1%]
-MESSAGE_ROOM_LENGTH=@strlen:$MESSAGE_ROOM_NAME
+MESSAGE_ROOM_NUM=@strlit:%MESSAGE_PARTS:1%]
+MESSAGE_ROOM_LENGTH=@strlen:$MESSAGE_ROOM_NUM
 ;
-@ifndef $CHECK_PRIOR
 @ifeq "%MESSAGE_PARTS:2%" "/joined"
 ALL_USERS=@strlit:$ALL_USERS@$USER_NAME
-@endif
+ALL_USERS=@set_sort:@:$ALL_USERS
 @endif
 ;
 DECODED_MESSAGE=@substr:$MESSAGE_ROOM_LENGTH:$DECODED_MESSAGE
 ;
-MESSAGE_ROOM_NAME=@padlen:-20, :$MESSAGE_ROOM_NAME
+MESSAGE_ROOM_NUM=@padlen:-20, :$MESSAGE_ROOM_NUM
 ;
-DECODED_MESSAGE=$MESSAGE_ROOM_NAME $DECODED_MESSAGE
+SKIP_MESSAGE=
+@ifeq "$ROOM" "0000000"
+UNDECORATED=@substr:1,7:$MESSAGE_ROOM_NUM
+CHECK=LAST_CHECK=@strlit:$$LAST_$UNDECORATED
+$CHECK
+@ifneq "$LAST_CHECK" "$DECODED_MESSAGE"
+ASSIGN=LAST_$UNDECORATED=$DECODED_MESSAGE
+$ASSIGN
+@else
+SKIP_MESSAGE=1
+@endif
+@endif
+;
+DECODED_MESSAGE=$MESSAGE_ROOM_NUM $DECODED_MESSAGE
 ;
 NEXT_MESSAGE=[$LOCAL] $USER_NAME_PADDED $DECODED_MESSAGE
 ;
@@ -187,7 +212,9 @@ PREFIX=^^
 @endif
 @endif
 ;
+@ifndef $SKIP_MESSAGE
 #$PREFIX$NEXT_MESSAGE
+@endif
 ;
 MESSAGES=%MESSAGES:-1%
 ;
@@ -195,17 +222,6 @@ MESSAGES=%MESSAGES:-1%
 ;
 @:END_MSG_LOOP
 ;
-@endif
-;
-@ifdef $CHECK_PRIOR
-; NOTE: As new users may have joined during prior
-; message fetching another call to "irc_join" now
-; occurs to ensure that ALL_USERS is correct (any
-; further "joins" are detected as they occur).
-.run_script !irc_join "@name=$USER,@room=$ROOM"
-@ifdef $OUTPUT
-ALL_USERS=$OUTPUT
-@endif
 @endif
 ;
 CHECK_PRIOR=
