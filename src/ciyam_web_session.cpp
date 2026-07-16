@@ -149,7 +149,9 @@ constexpr const char* c_web_session_okay_response = "[okay]";
 constexpr const char* c_web_session_unknown_response = "[unknown]";
 
 constexpr const char* c_web_session_default_room_number = "0000000";
-constexpr const char* c_web_session_default_message_room_prefix = "_[0000001] ";
+
+constexpr const char* c_web_session_default_message_room_prefix = "_[";
+constexpr const char* c_web_session_default_message_room_suffix = "] ";
 
 constexpr const char* c_storage_attribute_id = "id";
 constexpr const char* c_storage_attribute_user_info = "user_info";
@@ -2025,6 +2027,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                  string prefix( c_web_session_default_message_room_prefix );
 
+                                 prefix += room + c_web_session_default_message_room_suffix;
+
                                  request_and_args = "run_script !irc_send_message \"@room=" + room + ",@names=" + names + ",@message="
                                   + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
                               }
@@ -2033,9 +2037,20 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               {
                                  request_and_args += "IRC_ROOM=" + room + '\n';
 
+                                 string from;
+
+                                 // NOTE: If has just created
+                                 // a message then set "from"
+                                 // to make sure that it will
+                                 // be fetched.
+                                 if( is_post_request )
+                                    from = to_string( now );
+
                                  if( option_parameters.count( c_cws_request_messages_review_options_from ) )
-                                    request_and_args += "session_variable @irc_start_point_" + room + ' '
-                                     + option_parameters[ c_cws_request_messages_review_options_from ] + '\n';
+                                    from = option_parameters[ c_cws_request_messages_review_options_from ];
+
+                                 if( !from.empty( ) )
+                                    request_and_args += "session_variable @irc_start_point_" + room + ' ' + from + '\n';
                               }
 
                               request_and_args += "run_script !irc_fetch_messages \"@room=" + room + "\"";
