@@ -55,7 +55,6 @@ REMOTE=
 @endif
 ;
 @ifdef $REMOTE
-NOT_TO_SELF=1
 MESSAGE=$REMOTE
 @endif
 @endif
@@ -85,7 +84,7 @@ QUIT=1
 .run_script !irc_add_room "@name=$NAME"
 @ifndef $ERROR
 ROOM=$OUTPUT
-MESSAGE=@strlit:_[$ROOM] [created] $NAME
+MESSAGE=@strlit:_[$ROOM]/[create] $NAME
 .run_script !irc_join "@name=$USER,@room=$ROOM"
 @endif
 @elif "$CIYAM_KEY_PRESSED" = "r"
@@ -203,7 +202,7 @@ MESSAGE_PARTS=@repstr:]/\n:$DECODED_MESSAGE
 MESSAGE_ROOM_NUM=@strlit:%MESSAGE_PARTS:1%]
 MESSAGE_ROOM_LENGTH=@strlen:$MESSAGE_ROOM_NUM
 ;
-@ifeq "%MESSAGE_PARTS:2%" "/joined"
+@ifeq "%MESSAGE_PARTS:2%" "/[joined]"
 ALL_USERS=@strlit:$ALL_USERS@$USER_NAME
 ALL_USERS=@set_sort:@:$ALL_USERS
 @endif
