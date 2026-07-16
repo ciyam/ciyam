@@ -84,6 +84,7 @@ ERROR=Invalid room number $ROOM_NO.
 @ifndef $OUTPUT
 .system_variable @irc_names_0000001 Administration
 .system_variable @irc_owner_0000001 admin
+.system_variable @irc_users_0000001 @admin
 .system_variable @irc_rooms 0000002
 @endif
 ;
@@ -102,12 +103,10 @@ NOT_SELF_CHECK=@repstr:@$USER@/@:$ALL_USERS_CHECK
 RETURN=dummy|dummy|$ALL_USERS
 @else
 ;
-EXTRA=dummy
-@ifdef $ALL_USERS
-EXTRA=_[$ROOM_NO]/joined
-@endif
 ALL_USERS=@strlit:$ALL_USERS@$USER
 ALL_USERS=@set_sort:@:$ALL_USERS
+;
+EXTRA=_[$ROOM_NO]/[joined]
 ;
 .system_variable @irc_users_$ROOM_NO $ALL_USERS
 RETURN=/joined (as $USER)|$EXTRA|$ALL_USERS
