@@ -392,8 +392,6 @@ inline string quote_if_contains_white_space( const string& name )
 
 string g_secret_hash_prefix;
 
-size_t g_queue_prefix_length = 0;
-
 // NOTE: System variable names that begin with "@secret_hash_" will have their values
 // truncated to the first five characters with an ellipsis appended when they are not
 // retrieved internally (i.e. via the "system_variable" protocol command). Whilst not
@@ -425,8 +423,6 @@ void init_special_variable_names( )
    guard g( g_mutex );
 
    g_secret_hash_prefix = string( c_special_variable_secret_hash ) + "_";
-
-   g_queue_prefix_length = CONST_LENGTH( c_special_variable_queue_prefix );
 
    // NOTE: These must align with the enums in "ciyam_variable_names.h".
    if( g_special_variable_names.empty( ) )
@@ -1558,7 +1554,7 @@ void set_system_variable( const var_name& var,
             g_deque_variables.erase( variable );
          else
          {
-            string suffix( variable.substr( g_queue_prefix_length ) );
+            string suffix( variable.substr( CONST_LENGTH( c_special_variable_queue_prefix ) ) );
 
             size_t max_item_size = c_default_max_deque_item_size;
 
