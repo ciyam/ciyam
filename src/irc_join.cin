@@ -70,7 +70,15 @@ RETURN=@strlit:$OUTPUT
 ;
 @ifeq "$OUTPUT" "0"
 ERROR=Unable to obtain the system IRC lock (try again later).
-@else
+@elif "$ROOM_NO" != "0000001"
+.system_variable @irc_users_$ROOM_NO
+@ifndef $OUTPUT
+.system_variable @irc_lock ""
+ERROR=Invalid room number $ROOM_NO.
+@endif
+@endif
+;
+@ifndef $ERROR
 ;
 .system_variable @irc_rooms
 @ifndef $OUTPUT
