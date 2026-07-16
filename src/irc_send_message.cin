@@ -70,7 +70,7 @@ PREFIX=@substr:0,3:$MESSAGE
 ; NOTE: Prefix being "_/".
 @ifeq "$PREFIX" "Xy9"
 @ifeq "$MESSAGE" "Xy9jbGVhcg"
-RETURN=History for '$USER_NAME' cleared.
+RETURN=History for '$USER_NAME' in $ROOM cleared.
 .system_variable @queue_irc_$ROOM_AND_USER ""
 @else
 RETURN=Available commands are:\n
