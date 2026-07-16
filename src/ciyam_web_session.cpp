@@ -1963,6 +1963,13 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      string storage_name;
 
+                     string username;
+
+                     if( access == g_cws_admin_token )
+                        username = c_admin;
+                     else
+                        username = get_user_name( access );
+
                      if( uri_suffix.find( c_cws_uri_suffix_storages_prefix ) == 0 )
                      {
                         is_user_info_request = true;
@@ -2037,6 +2044,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               {
                                  request_and_args += "IRC_ROOM=" + room + '\n';
 
+                                 request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"\n";
+
                                  string from;
 
                                  // NOTE: If has just created
@@ -2057,13 +2066,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            }
                            else if( is_user_info_request )
                            {
-                              string username;
-
-                              if( access == g_cws_admin_token )
-                                 username = c_admin;
-                              else
-                                 username = get_user_name( access );
-
                               if( storage_name.empty( ) )
                                  storage_name = get_system_variable( e_special_var_storage );
 
