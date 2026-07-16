@@ -25,6 +25,7 @@ ROOM=$1
 USER=$2
 SESSION=$3
 ;
+RELOAD=
 ROOM_AND_USER=%ROOM%_$USER
 ;
 .session_variable @uuid
@@ -38,7 +39,13 @@ UUID=$OUTPUT
 START_POINT=$OUTPUT
 .session_variable -id=$SESSION @irc_start_prior_$ROOM
 START_PRIOR=$OUTPUT
+;
 @ifneq "$START_POINT" "$START_PRIOR"
+RELOAD=1
+@endif
+;
+@ifdef $RELOAD
+.system_variable @session_@queue_irc_$ROOM_AND_USER 1
 .session_variable -id=$SESSION !@queue_irc_$ROOM_AND_USER @system
 @endif
 ;
