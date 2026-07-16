@@ -71,6 +71,12 @@
   <arguments>init_channel.cin @identity @shared_secret
  </script>
  <script/>
+  <name>irc_add_room
+  <logging>never
+  <filename>*script*
+  <arguments>irc_add_room.cin @name set @irc_user
+ </script>
+ <script/>
   <name>open_channel
   <filename>*script*
   <arguments>open_channel.cin @storage @identity
