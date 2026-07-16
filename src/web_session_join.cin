@@ -1,0 +1,36 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "2"
+ERROR=Need user and room number.
+@else
+;
+USERNAME=$1
+IRC_ROOM=$2
+;
+.run_script !irc_join "@name=$USERNAME,@room=$IRC_ROOM"
+JOIN_LINES=@repstr:|/\n:$OUTPUT
+JOIN_LINE=@strlit:%JOIN_LINES:2%
+IRC_USERS=@strlit:%JOIN_LINES:3%
+IRC_USERS=@repstr:@$USERNAME/:$IRC_USERS
+@ifdef $IRC_USERS
+@ifneq "$JOIN_LINE" "dummy"
+ENCODED=@base64:@$JOIN_LINE
+.run_script !irc_send_message "@room=$IRC_ROOM,@names=ALL,@message=$ENCODED"
+@endif
+IRC_USERS=@substr:1:$IRC_USERS
+IRC_USERS=@repstr:@/ :$IRC_USERS
+IRC_USERS= $IRC_USERS
+@endif
+;
+@endif

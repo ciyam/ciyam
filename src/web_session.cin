@@ -23,6 +23,8 @@ DEVICE=$2
 SESSION=$3
 USERNAME=$4
 ;
+ENTRANCE_ROOM=0000000
+;
 ~mkdir -p /tmp/ciyam/$SESSION
 TEMP_FILE=/tmp/ciyam/$SESSION/output.tmp
 ;
@@ -30,24 +32,13 @@ OUTPUT_FILE=/tmp/ciyam/web.$TOKEN.$DEVICE
 ;
 ~rm -f $OUTPUT_FILE
 ;
-IRC_ROOM=0000000
+IRC_ROOM=$ENTRANCE_ROOM
+;
 IRC_USERS=
 ;
 @ifdef $USERNAME
-.run_script !irc_join "@name=$USERNAME,@room=$IRC_ROOM"
-JOIN_LINES=@repstr:|/\n:$OUTPUT
-JOIN_LINE=@strlit:%JOIN_LINES:2%
-IRC_USERS=@strlit:%JOIN_LINES:3%
-IRC_USERS=@repstr:@$USERNAME/:$IRC_USERS
-@ifdef $IRC_USERS
-@ifneq "$JOIN_LINE" "dummy"
-ENCODED=@base64:@$JOIN_LINE
-.run_script !irc_send_message "@room=$IRC_ROOM,@names=OTHERS,@message=$ENCODED"
-@endif
-IRC_USERS=@substr:1:$IRC_USERS
-IRC_USERS=@repstr:@/ :$IRC_USERS
-IRC_USERS= $IRC_USERS
-@endif
+@retain IRC_USERS
+<web_session_join.cin "$USERNAME" "$IRC_ROOM"
 @endif
 ;
 ADMIN_TOKEN=@file:.web_access_admin
@@ -64,7 +55,7 @@ START_POINT=$OUTPUT
 .session_variable @irc_start_point_$IRC_ROOM $START_POINT
 .session_variable @irc_start_prior_$IRC_ROOM $START_POINT
 @else
-@ifneq "$IRC_ROOM" "0000000"
+@ifneq "$IRC_ROOM" "$ENTRANCE_ROOM"
 .session_variable @irc_start_point_$IRC_ROOM 0
 @endif
 @endif
@@ -126,7 +117,7 @@ ERROR=
 @ifeq "$OUTPUT" "irc_fetch_messages"
 .session_variable @script_executed ""
 ;
-@ifneq "$IRC_ROOM" "0000000"
+@ifneq "$IRC_ROOM" "$ENTRANCE_ROOM"
 UTIME=@unix:
 .session_variable @irc_start_point_$IRC_ROOM $UTIME
 .session_variable @irc_start_prior_$IRC_ROOM $UTIME
