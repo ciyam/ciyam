@@ -25,13 +25,15 @@ ROOM=$1
 USER=$2
 SESSION=$3
 ;
+ENTRANCE_ROOM=0000000
+;
 RELOAD=
 ROOM_AND_USER=%ROOM%_$USER
 ;
 .session_variable @uuid
 UUID=$OUTPUT
 ;
-@ifeq "$ROOM" "0000000"
+@ifeq "$ROOM" "$ENTRANCE_ROOM"
 .system_variable @queue_irc_**_$USER
 @else
 ;

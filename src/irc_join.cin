@@ -25,8 +25,11 @@ USER=$1
 ROOM_NO=$2
 SESSION=$3
 ;
-@ifeq "$ROOM_NO" "0000000"
-ROOM_NO=0000001
+ENTRANCE_ROOM=0000000
+STARTING_ROOM=0000001
+;
+@ifeq "$ROOM_NO" "$ENTRANCE_ROOM"
+ROOM_NO=$STARTING_ROOM
 @endif
 ;
 ROOM_AND_USER=%ROOM_NO%_$USER
@@ -70,7 +73,7 @@ RETURN=@strlit:$OUTPUT
 ;
 @ifeq "$OUTPUT" "0"
 ERROR=Unable to obtain the system IRC lock (try again later).
-@elif "$ROOM_NO" != "0000001"
+@elif "$ROOM_NO" != "$STARTING_ROOM"
 .system_variable @irc_users_$ROOM_NO
 @ifndef $OUTPUT
 .system_variable @irc_lock ""
@@ -82,9 +85,9 @@ ERROR=Invalid room number $ROOM_NO.
 ;
 .system_variable @irc_rooms
 @ifndef $OUTPUT
-.system_variable @irc_names_0000001 Administration
-.system_variable @irc_owner_0000001 admin
-.system_variable @irc_users_0000001 @admin
+.system_variable @irc_names_$STARTING_ROOM Administration
+.system_variable @irc_owner_$STARTING_ROOM admin
+.system_variable @irc_users_$STARTING_ROOM @admin
 .system_variable @irc_rooms 0000002
 @endif
 ;
