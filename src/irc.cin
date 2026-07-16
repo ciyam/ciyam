@@ -19,6 +19,7 @@ ERROR=
 MESSAGE=
 RESTRICT=
 NOT_TO_SELF=
+FORCE_OUTPUT=
 ;
 ROOM=0000000
 ;
@@ -67,7 +68,7 @@ CIYAM_PAUSE_SECONDS=1
 ;
 @ifndef $CHECK_PRIOR
 NOT_TO_SELF=
-^[hit 'a' for ANSI help, 'q' to quit, 'r' for room, 'u' for users, 's/v' to scan/view a QR Code or space to type]
+^[hit 'a' for ANSI help, 'q' to quit, 'n' for new room, 'r' to change room, 'u' for users, 's/v' to scan/view a QR Code or space to type]
 ;
 @ifdef $CIYAM_KEY_PRESSED
 ;
@@ -79,9 +80,24 @@ NOT_TO_SELF=
 #
 @elif "$CIYAM_KEY_PRESSED" = "q"
 QUIT=1
+@elif "$CIYAM_KEY_PRESSED" = "n"
+&Enter Room Name: :NAME=
+.run_script !irc_add_room "@name=$NAME"
+@ifndef $ERROR
+ROOM=$OUTPUT
+MESSAGE=@strlit:_[$ROOM] [created] $NAME
+.run_script !irc_join "@name=$USER,@room=$ROOM"
+@endif
 @elif "$CIYAM_KEY_PRESSED" = "r"
+OLD_ROOM=$ROOM
 &Enter Room No: :ROOM=
 .run_script !irc_join "@name=$USER,@room=$ROOM"
+@ifdef $ERROR
+ROOM=$OLD_ROOM
+@endif
+@ifeq "$ROOM" "0000000"
+FORCE_OUTPUT=1
+@endif
 @elif "$CIYAM_KEY_PRESSED" = "u"
 @retain NAMES
 <names.cin $ALL_USERS
@@ -99,8 +115,17 @@ QR_CODE=@file:~zbarcam -1 -q --raw
 @ifeq "$MESSAGE" "_"
 MESSAGE=
 @else
+CHECK=@substr:0,2:$MESSAGE
+@ifneq "$CHECK" "_/"
+@ifeq "$ROOM" "0000000"
+FORCE_OUTPUT=1
+#(need to enter a room to post)
+MESSAGE=
+@else
 MESSAGE=@substr:1:$MESSAGE
 MESSAGE=@strlit:_[$ROOM] $MESSAGE
+@endif
+@endif
 @endif
 @endif
 ;
@@ -192,7 +217,7 @@ SKIP_MESSAGE=
 UNDECORATED=@substr:1,7:$MESSAGE_ROOM_NUM
 CHECK=LAST_CHECK=@strlit:$$LAST_$UNDECORATED
 $CHECK
-@ifneq "$LAST_CHECK" "$DECODED_MESSAGE"
+@ifneq "$LAST_CHECK$FORCE_OUTPUT" "$DECODED_MESSAGE"
 ASSIGN=LAST_$UNDECORATED=$DECODED_MESSAGE
 $ASSIGN
 @else
@@ -225,6 +250,7 @@ MESSAGES=%MESSAGES:-1%
 @endif
 ;
 CHECK_PRIOR=
+FORCE_OUTPUT=
 ;
 @label NEXT
 ;
