@@ -804,19 +804,18 @@
 
                   name = name.substring( 0, pos );
                }
+               else
+                  request = "";
             }
 
             if( !has_cmd_options )
                request = "";
-            else
+            else if( !stripped_name )
             {
                var opos = request.indexOf( " " );
 
                if( opos < 0 )
-               {
-                  if( !stripped_name )
-                     request = "";
-               }
+                  request = "";
                else
                   request = request.substring( opos + 1 );
             }
