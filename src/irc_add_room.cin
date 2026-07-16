@@ -89,12 +89,15 @@ ERROR=Room '$NAME' already exists.
 ;
 @ifndef $ERROR
 .system_variable @irc_rooms
-NEXT_ROOM=$OUTPUT
+NEW_ROOM=$OUTPUT
 ;
-.system_variable @irc_names_$NEXT_ROOM "$NAME"
-.system_variable @irc_owner_$NEXT_ROOM "$USER"
-.system_variable @irc_users_$NEXT_ROOM "@$USER"
+RETURN=$NEW_ROOM
 ;
+.system_variable @irc_names_$NEW_ROOM "$NAME"
+.system_variable @irc_owner_$NEW_ROOM "$USER"
+.system_variable @irc_users_$NEW_ROOM "@$USER"
+;
+NEXT_ROOM=$NEW_ROOM
 LEN=@strlen:$NEXT_ROOM
 NEXT_ROOM=@$NEXT_ROOM+1
 ;
