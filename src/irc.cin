@@ -18,8 +18,10 @@ QUIT=
 ERROR=
 MESSAGE=
 RESTRICT=
+REREAD_ALL=!
 NOT_TO_SELF=
 FORCE_OUTPUT=
+SHOW_CHANGED=
 ;
 ENTRANCE_ROOM=0000000
 ;
@@ -63,7 +65,14 @@ MESSAGE=@strlit:_[$ROOM]/[create] $NAME
 @endif
 @elif "$CIYAM_KEY_PRESSED" = "r"
 OLD_ROOM=$ROOM
+SHOW_CHANGED=
 &Enter Room No: :ROOM=
+@ifndef $ROOM
+ROOM=$OLD_ROOM
+REREAD_ALL=!
+@elif "$ROOM" = "/"
+ROOM=$ENTRANCE_ROOM
+@endif
 .run_script !irc_join "@name=$USER,@room=$ROOM"
 @ifdef $ERROR
 ERROR=
@@ -86,6 +95,11 @@ RESTRICT=@repstr:,/.:$NAMES
 #Scan QR_CODE:
 QR_CODE=@file:~zbarcam -1 -q --raw
 #^^Scanned QR Code: $QR_CODE
+@elif "$CIYAM_KEY_PRESSED" = "/"
+&/:MESSAGE=_/
+@ifeq "$MESSAGE" "_/"
+MESSAGE=_/help
+@endif
 @elif "$CIYAM_KEY_PRESSED" = " "
 &:MESSAGE=_
 @ifeq "$MESSAGE" "_"
@@ -97,6 +111,7 @@ CHECK=@substr:0,2:$MESSAGE
 FORCE_OUTPUT=1
 #(need to enter a room to post)
 MESSAGE=
+SHOW_CHANGED=
 @else
 MESSAGE=@substr:1:$MESSAGE
 MESSAGE=@strlit:_[$ROOM] $MESSAGE
@@ -156,7 +171,6 @@ MESSAGE=$REMOTE
 @endif
 @endif
 @endif
-
 ;
 @ifdef $MESSAGE
 ;
@@ -183,7 +197,8 @@ ENCODED=@base64:@$MESSAGE
 @ifdef $QUIT
 OUTPUT=
 @else
-.run_script !irc_fetch_messages "@room=$ROOM"
+.run_script !irc_fetch_messages "@room=$REREAD_ALL$ROOM"
+REREAD_ALL=
 @endif
 ;
 @ifdef $OUTPUT
@@ -268,6 +283,10 @@ PREFIX=^^
 @endif
 ;
 @ifndef $SKIP_MESSAGE
+@ifdef $SHOW_CHANGED
+#(found new messages)
+SHOW_CHANGED=
+@endif
 #$PREFIX$NEXT_MESSAGE
 @endif
 ;
@@ -281,6 +300,7 @@ MESSAGES=%MESSAGES:-1%
 ;
 CHECK_PRIOR=
 FORCE_OUTPUT=
+SHOW_CHANGED=1
 ;
 @label NEXT
 ;
