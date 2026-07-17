@@ -49,17 +49,6 @@ ADMIN_TOKEN=@file:.web_access_admin
 .system_variable @web.$TOKEN.$DEVICE.message "[standard]$IRC_USERS"
 @endif
 ;
-.system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM
-@ifdef $OUTPUT
-START_POINT=$OUTPUT
-.session_variable @irc_start_point_$IRC_ROOM $START_POINT
-.session_variable @irc_start_prior_$IRC_ROOM $START_POINT
-@else
-@ifneq "$IRC_ROOM" "$ENTRANCE_ROOM"
-.session_variable @irc_start_point_$IRC_ROOM 0
-@endif
-@endif
-;
 .session_variable @storage_var_name @web.$TOKEN.$DEVICE.storage
 ;
 @label NEXT
