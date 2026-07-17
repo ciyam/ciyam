@@ -77,8 +77,8 @@ RETURN=History for '$USER_NAME' in $ROOM cleared.
 .system_variable @queue_irc_$ROOM_AND_USER ""
 @else
 RETURN=Available commands are:\n
-RETURN=$RETURN\nhelp (this output)
-RETURN=$RETURN\nclear (clears history)
+RETURN=$RETURN\nhelp (show this output)
+RETURN=$RETURN\nclear (clears room history)
 RETURN=$RETURN\n \b
 @endif
 @else
