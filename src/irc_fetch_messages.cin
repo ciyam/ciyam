@@ -25,6 +25,21 @@ ROOM=$1
 USER=$2
 SESSION=$3
 ;
+FORCED=
+START_POINT=
+;
+; NOTE: If the ROOM has a
+; '!' prefix then removes
+; it (setting START_POINT
+; so a RELOAD is forced).
+FIRST=@substr:0,1:$ROOM
+;
+@ifeq "$FIRST" "!"
+FORCED=1
+START_POINT=0
+ROOM=@substr:1:$ROOM
+@endif
+;
 ENTRANCE_ROOM=0000000
 ;
 RELOAD=
@@ -34,13 +49,85 @@ ROOM_AND_USER=%ROOM%_$USER
 UUID=$OUTPUT
 ;
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
-.system_variable @queue_irc_**_$USER
+.system_variable @session_@queue_irc_*_$USER
+INPUT_LINES=$OUTPUT
+;
+OUTPUT_LINES=
+@label NEXT
+;
+@:LOOP
+NEXT_LINE=%INPUT_LINES:1%
+;
+@ifeq "$NEXT_LINE" ""
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+ROOM_NO_AND_INFO=@repstr:@session_@queue_irc_:$NEXT_LINE
+ROOM_NO=@repstr:_$USER 1/:$ROOM_NO_AND_INFO
+;
+.system_variable @irc_names_$ROOM_NO
+ROOM_NAME=$OUTPUT
+;
+NUM_NEW_MESSAGES=0
+;
+; KLUDGE: The '?' is used to prevent removing
+; an item (but could match incorrect queues).
+QUEUE_NAME_WITH_WILDCARD=@strlit:@queue_i?c_%ROOM_NO%_$USER
+;
+.session_variable -id=$SESSION $QUEUE_NAME_WITH_WILDCARD
+@ifndef $OUTPUT
+@ifdef $FORCED
+.system_variable @session_@queue_irc_%ROOM_NO%_$USER 1
+;
+.session_variable -id=$SESSION @irc_$ROOM_NO 1
+.session_variable -id=$SESSION !@queue_irc_%ROOM_NO%_$USER @system
+;
+.session_variable -id=$SESSION $QUEUE_NAME_WITH_WILDCARD
+@endif
+@endif
+;
+@ifdef $OUTPUT
+POS=@strpos:+:$OUTPUT
+;
+@ifdef $POS
+UNREAD_MESSAGES=@substr:$POS:$OUTPUT
+UNREAD_MESSAGES=@repstr:]/:$UNREAD_MESSAGES
+;
+NUM_NEW_MESSAGES=@$UNREAD_MESSAGES+1
+@endif
+@endif
+;
+UNIX_NOW=@unix:
+NUM_NEW_MESSAGES=@padlen:-8, :$NUM_NEW_MESSAGES
+;
+MESSAGE=_[$ROOM_NO] $NUM_NEW_MESSAGES $ROOM_NAME
+;
+ENCODED=@base64:@$MESSAGE
+;
+@ifdef $OUTPUT_LINES
+OUTPUT_LINES=$OUTPUT_LINES\n
+@endif
+;
+OUTPUT_LINES=$OUTPUT_LINES$UNIX_NOW $USER: $ENCODED
+;
+INPUT_LINES=%INPUT_LINES:-1%
+!!@:LOOP
+;
+@:END_LOOP
+;
+OUTPUT=$OUTPUT_LINES
+;
 @else
 ;
+@ifndef $START_POINT
 .session_variable -id=$SESSION @irc_start_point_$ROOM
 START_POINT=$OUTPUT
 .session_variable -id=$SESSION @irc_start_prior_$ROOM
 START_PRIOR=$OUTPUT
+@endif
 ;
 @ifneq "$START_POINT" "$START_PRIOR"
 RELOAD=1
