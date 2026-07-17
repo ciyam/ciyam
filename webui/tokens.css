@@ -1,0 +1,256 @@
+/*
+   Copyright (c) 2026 CIYAM Developers
+
+   Distributed under the MIT/X11 software license, please refer to the file
+   license.txt in the root project directory or
+   http://www.opensource.org/licenses/mit-license.php.
+*/
+
+/*
+   Design tokens — shared custom properties for the BIP39 UI.
+   Inspired by Element X / Compound: minimal, rounded, high-contrast,
+   sidebar+content layout, light/dark mode.
+
+   Usage: link this file first, before any component CSS, then
+   consume the variables (e.g. background: var(--color-bg-canvas);).
+   Components should never hardcode raw colors/sizes — only tokens.
+*/
+
+:root
+{
+   /* ---- Type scale ---- */
+   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+   --font-family-mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+   --font-size-xs: 0.75rem;    /* 12px */
+   --font-size-sm: 0.875rem;   /* 14px */
+   --font-size-md: 1rem;       /* 16px */
+   --font-size-lg: 1.125rem;   /* 18px */
+   --font-size-xl: 1.25rem;    /* 20px */
+   --font-size-2xl: 1.5rem;    /* 24px */
+   --font-size-3xl: 1.875rem;  /* 30px */
+
+   --font-weight-regular: 400;
+   --font-weight-medium: 500;
+   --font-weight-bold: 700;
+
+   --line-height-tight: 1.25;
+   --line-height-normal: 1.5;
+   --line-height-relaxed: 1.75;
+
+   /* ---- Spacing scale (4px base unit) ---- */
+   --space-0: 0;
+   --space-1: 0.25rem;  /* 4px */
+   --space-2: 0.5rem;   /* 8px */
+   --space-3: 0.75rem;  /* 12px */
+   --space-4: 1rem;     /* 16px */
+   --space-5: 1.25rem;  /* 20px */
+   --space-6: 1.5rem;   /* 24px */
+   --space-8: 2rem;     /* 32px */
+   --space-10: 2.5rem;  /* 40px */
+   --space-12: 3rem;    /* 48px */
+   --space-16: 4rem;    /* 64px */
+
+   /* ---- Radii ---- */
+   --radius-xs: 4px;
+   --radius-sm: 8px;
+   --radius-md: 12px;
+   --radius-lg: 16px;
+   --radius-pill: 999px;
+   --radius-circle: 50%;
+
+   /* ---- Shadows (elevation) — light theme values ---- */
+   --shadow-sm: 0 1px 2px rgba(14, 15, 17, 0.08);
+   --shadow-md: 0 4px 8px rgba(14, 15, 17, 0.10);
+   --shadow-lg: 0 8px 24px rgba(14, 15, 17, 0.14);
+
+   /* ---- Motion ---- */
+   --duration-fast: 100ms;
+   --duration-medium: 200ms;
+   --duration-slow: 320ms;
+   --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+   --easing-entrance: cubic-bezier(0.1, 0.9, 0.2, 1);
+   --easing-exit: cubic-bezier(0.4, 0, 1, 1);
+
+   /* ---- Layout breakpoints (reference only — for use in media queries) ---- */
+   --breakpoint-sm: 360px;
+   --breakpoint-md: 768px;
+   --breakpoint-lg: 1024px;
+   --breakpoint-xl: 1440px;
+
+   /* ====================================================================
+      Color scale — neutral + accent + semantic ramps (light theme default)
+      Each ramp goes 100 (lightest) -> 1000 (darkest).
+      ==================================================================== */
+
+   --color-neutral-100: #ffffff;
+   --color-neutral-200: #f4f4f7;
+   --color-neutral-300: #e3e3e8;
+   --color-neutral-400: #c9cad1;
+   --color-neutral-500: #9b9ca5;
+   --color-neutral-600: #6f7077;
+   --color-neutral-700: #4d4e54;
+   --color-neutral-800: #34343a;
+   --color-neutral-900: #1d1d21;
+   --color-neutral-1000: #0e0f11;
+
+   --color-accent-100: #eef0ff;
+   --color-accent-300: #b3bcff;
+   --color-accent-500: #5b6cf6;
+   --color-accent-600: #4654d6;
+   --color-accent-700: #3640ab;
+
+   --color-success-500: #2ea043;
+   --color-success-700: #1f7a30;
+   --color-warning-500: #d4900c;
+   --color-warning-700: #a36c08;
+   --color-critical-500: #d92d3c;
+   --color-critical-700: #aa1f2c;
+
+   /* Brand gradient — built from the raw accent ramp (not theme-remapped
+      semantic tokens), so the logo mark stays visually constant across
+      light/dark mode, matching how a real brand mark behaves. */
+   --gradient-brand: linear-gradient(135deg, var(--color-accent-700), var(--color-accent-300));
+
+   /* Fixed dark semi-transparent overlay for modals and sidebar backdrop.
+      Not theme-remapped — a scrim is always dark regardless of theme. */
+   --color-scrim: rgba(14, 15, 17, 0.5);
+
+   /* Password strength "Moderate" level — sits between warning and success
+      on the strength bar; not an alias of an existing semantic token. */
+   --color-pwd-strength-moderate: #7ca832;
+
+   /* ---- Semantic tokens (what components should actually consume) ---- */
+   --color-bg-canvas: var(--color-neutral-100);
+   --color-bg-subtle: var(--color-neutral-200);
+   --color-bg-surface: var(--color-neutral-100);
+   --color-bg-surface-hover: var(--color-neutral-200);
+   --color-border-default: var(--color-neutral-300);
+   --color-border-strong: var(--color-neutral-400);
+
+   --color-text-primary: var(--color-neutral-900);
+   --color-text-secondary: var(--color-neutral-600);
+   --color-text-placeholder: var(--color-neutral-500);
+   --color-text-on-accent: var(--color-neutral-100);
+   --color-text-disabled: var(--color-neutral-400);
+
+   --color-accent-default: var(--color-accent-500);
+   --color-accent-hover: var(--color-accent-600);
+   --color-accent-pressed: var(--color-accent-700);
+   --color-accent-subtle-bg: var(--color-accent-100);
+   --color-accent-text: var(--color-accent-700);
+
+   --color-success: var(--color-success-500);
+   --color-success-bg: #e8f6ea;
+   --color-warning: var(--color-warning-500);
+   --color-warning-bg: #fdf3e1;
+   --color-critical: var(--color-critical-500);
+   --color-critical-bg: #fbe9eb;
+
+   --color-focus-ring: var(--color-accent-500);
+}
+
+/* ====================================================================
+   Dark theme overrides.
+   Applies automatically via prefers-color-scheme, or explicitly via
+   <html data-theme="dark"> / data-theme="light" for a manual toggle.
+   ==================================================================== */
+
+@media (prefers-color-scheme: dark)
+{
+   :root
+   {
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.40);
+      --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
+
+      --color-bg-canvas: var(--color-neutral-1000);
+      --color-bg-subtle: var(--color-neutral-900);
+      --color-bg-surface: var(--color-neutral-900);
+      --color-bg-surface-hover: var(--color-neutral-800);
+      --color-border-default: var(--color-neutral-800);
+      --color-border-strong: var(--color-neutral-700);
+
+      --color-text-primary: var(--color-neutral-100);
+      --color-text-secondary: var(--color-neutral-500);
+      --color-text-placeholder: var(--color-neutral-600);
+      --color-text-on-accent: var(--color-neutral-100);
+      --color-text-disabled: var(--color-neutral-700);
+
+      --color-accent-default: var(--color-accent-500);
+      --color-accent-hover: var(--color-accent-600);
+      --color-accent-pressed: var(--color-accent-700);
+      --color-accent-subtle-bg: #232651;
+      --color-accent-text: var(--color-accent-300);
+
+      --color-success-bg: #163420;
+      --color-warning-bg: #3a2c0c;
+      --color-critical-bg: #3a1418;
+
+      --color-focus-ring: var(--color-accent-300);
+   }
+}
+
+[data-theme="dark"]
+{
+   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.40);
+   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.45);
+   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
+
+   --color-bg-canvas: var(--color-neutral-1000);
+   --color-bg-subtle: var(--color-neutral-900);
+   --color-bg-surface: var(--color-neutral-900);
+   --color-bg-surface-hover: var(--color-neutral-800);
+   --color-border-default: var(--color-neutral-800);
+   --color-border-strong: var(--color-neutral-700);
+
+   --color-text-primary: var(--color-neutral-100);
+   --color-text-secondary: var(--color-neutral-500);
+   --color-text-placeholder: var(--color-neutral-600);
+   --color-text-on-accent: var(--color-neutral-100);
+   --color-text-disabled: var(--color-neutral-700);
+
+   --color-accent-default: var(--color-accent-500);
+   --color-accent-hover: var(--color-accent-600);
+   --color-accent-pressed: var(--color-accent-700);
+   --color-accent-subtle-bg: #232651;
+   --color-accent-text: var(--color-accent-300);
+
+   --color-success-bg: #163420;
+   --color-warning-bg: #3a2c0c;
+   --color-critical-bg: #3a1418;
+
+   --color-focus-ring: var(--color-accent-300);
+}
+
+[data-theme="light"]
+{
+   --shadow-sm: 0 1px 2px rgba(14, 15, 17, 0.08);
+   --shadow-md: 0 4px 8px rgba(14, 15, 17, 0.10);
+   --shadow-lg: 0 8px 24px rgba(14, 15, 17, 0.14);
+
+   --color-bg-canvas: var(--color-neutral-100);
+   --color-bg-subtle: var(--color-neutral-200);
+   --color-bg-surface: var(--color-neutral-100);
+   --color-bg-surface-hover: var(--color-neutral-200);
+   --color-border-default: var(--color-neutral-300);
+   --color-border-strong: var(--color-neutral-400);
+
+   --color-text-primary: var(--color-neutral-900);
+   --color-text-secondary: var(--color-neutral-600);
+   --color-text-placeholder: var(--color-neutral-500);
+   --color-text-on-accent: var(--color-neutral-100);
+   --color-text-disabled: var(--color-neutral-400);
+
+   --color-accent-default: var(--color-accent-500);
+   --color-accent-hover: var(--color-accent-600);
+   --color-accent-pressed: var(--color-accent-700);
+   --color-accent-subtle-bg: var(--color-accent-100);
+   --color-accent-text: var(--color-accent-700);
+
+   --color-success-bg: #e8f6ea;
+   --color-warning-bg: #fdf3e1;
+   --color-critical-bg: #fbe9eb;
+
+   --color-focus-ring: var(--color-accent-500);
+}

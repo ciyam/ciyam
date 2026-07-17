@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2026 CIYAM Developers
+
+Distributed under the MIT/X11 software license, please refer to the file
+license.txt in the root project directory or
+http://www.opensource.org/licenses/mit-license.php.
+-->
+<html lang="en">
+
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test BIP39</title>
+
+<meta http-equiv="Permissions-Policy" content="camera=self">
+
+<script>( function( ) { var t = localStorage.getItem( "theme" ); if( t ) document.documentElement.setAttribute( "data-theme", t ); } )( );</script>
+
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+
+<script type="text/javascript" src="sha2.min.js"></script>
+<script type="text/javascript" src="bip39.min.js"></script>
+<script type="text/javascript" src="qrcode.min.js"></script>
+<script type="text/javascript" src="html5-qrcode.min.js"></script>
+
+<script type="text/javascript" src="components.js"></script>
+
+<style>
+/* NOTE: Page-local layout for test_bip39.html only — shared component rules live in components.css. */
+.page-shell
+{
+   max-width: 900px;
+   margin: 0 auto;
+   padding: var(--space-6) var(--space-4) var(--space-12);
+   display: flex;
+   flex-direction: column;
+   gap: var(--space-6);
+}
+
+.page-header
+{
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: var(--space-3);
+   padding-bottom: var(--space-3);
+   border-bottom: 1px solid var(--color-border-default);
+}
+
+.page-header__actions
+{
+   display: flex;
+   align-items: center;
+   gap: var(--space-3);
+}
+
+.settings-wrap
+{
+   position: relative;
+}
+
+.settings-toggle-btn
+{
+   background: transparent;
+   border: none;
+   cursor: pointer;
+   color: var(--color-text-secondary);
+   font-size: var(--font-size-xl);
+   line-height: 1;
+   padding: var(--space-1);
+   border-radius: var(--radius-sm);
+}
+
+.settings-toggle-btn:hover
+{
+   color: var(--color-text-primary);
+   background: var(--color-bg-surface-hover);
+}
+
+.settings-menu
+{
+   position: absolute;
+   top: calc( 100% + var(--space-2) );
+   right: 0;
+   min-width: 220px;
+   background: var(--color-bg-surface);
+   border: 1px solid var(--color-border-default);
+   border-radius: var(--radius-md);
+   box-shadow: var(--shadow-lg);
+   z-index: 100;
+   display: none;
+   flex-direction: column;
+   padding: var(--space-1) 0;
+}
+
+.settings-menu.is-open
+{
+   display: flex;
+}
+
+.settings-item
+{
+   display: flex;
+   align-items: center;
+   width: 100%;
+   padding: var(--space-2) var(--space-4);
+   background: transparent;
+   border: none;
+   text-align: left;
+   font-size: var(--font-size-sm);
+   font-family: inherit;
+   color: var(--color-text-primary);
+   cursor: pointer;
+   text-decoration: none;
+}
+
+.settings-item:hover:not(:disabled)
+{
+   background: var(--color-bg-surface-hover);
+}
+
+.settings-item:disabled
+{
+   color: var(--color-text-disabled);
+   cursor: not-allowed;
+}
+
+.settings-divider
+{
+   height: 1px;
+   background: var(--color-border-default);
+   margin: var(--space-1) 0;
+}
+
+.field-row
+{
+   display: flex;
+   flex-wrap: wrap;
+   gap: var(--space-2);
+   align-items: center;
+}
+
+.field-row .c-input
+{
+   flex: 1 1 160px;
+}
+
+.overlay-field-wrap
+{
+   position: relative;
+   flex: 1 1 160px;
+}
+
+.overlay-field-ghost,
+.overlay-field-input
+{
+   box-sizing: border-box;
+   margin: 0;
+   font: inherit;
+   font-size: var(--font-size-sm);
+   letter-spacing: normal;
+   text-indent: 0;
+}
+
+.overlay-field-ghost
+{
+   position: absolute;
+   inset: 0;
+   width: 100%;
+   display: flex;
+   align-items: center;
+   pointer-events: none;
+   white-space: pre;
+   overflow-x: hidden;
+   overflow-y: visible;
+}
+
+#word_entry_ghost_typed
+{
+   color: inherit;
+}
+
+#word_entry_ghost_suggestion
+{
+   color: var(--color-text-placeholder);
+}
+
+#word_entry
+{
+   color: transparent;
+   caret-color: var(--color-text-primary);
+   height: auto;
+   resize: none;
+   padding: var(--space-2) var(--space-3);
+   line-height: var(--line-height-normal);
+}
+
+#word_entry_ghost
+{
+   display: block;
+   height: auto;
+   white-space: pre-wrap;
+   overflow-wrap: break-word;
+   overflow: hidden;
+   padding: var(--space-2) var(--space-3);
+   line-height: var(--line-height-normal);
+}
+
+.overlay-field-input
+{
+   position: relative;
+   z-index: 1;
+   width: 100%;
+   background: transparent;
+   border-color: transparent;
+   appearance: none;
+}
+
+#password,
+#repeated,
+#password_mask,
+#repeated_mask
+{
+   font-family: var(--font-family-mono);
+}
+
+.overlay-field-input--masked
+{
+   color: transparent;
+   caret-color: var(--color-text-primary);
+}
+
+.c-checkbox-row
+{
+   display: flex;
+   align-items: center;
+   gap: var(--space-2);
+   font-size: var(--font-size-sm);
+   color: var(--color-text-secondary);
+}
+
+.words-display
+{
+   font-family: var(--font-family-mono);
+   font-size: var(--font-size-sm);
+   line-height: var(--line-height-relaxed);
+   word-break: break-word;
+   min-height: 1.5em;
+   color: var(--color-text-secondary);
+}
+
+.result-row
+{
+   font-family: var(--font-family-mono);
+   font-size: var(--font-size-sm);
+   word-break: break-all;
+}
+
+#qrcode_reader
+{
+   max-width: 400px;
+   margin: 0 auto;
+}
+
+#qrcode_row
+{
+   justify-content: center;
+}
+
+.pwd-strength-track
+{
+   height: 4px;
+   border-radius: var(--radius-pill);
+   background: var(--color-border-default);
+   overflow: hidden;
+   margin-bottom: var(--space-1);
+}
+
+.pwd-strength-bar
+{
+   height: 100%;
+   width: 0%;
+   border-radius: var(--radius-pill);
+   transition: width var(--duration-medium) var(--easing-standard),
+    background var(--duration-medium) var(--easing-standard);
+}
+
+.pwd-strength-label
+{
+   font-size: var(--font-size-xs);
+   font-weight: var(--font-weight-medium);
+}
+
+#message_info
+{
+   height: auto;
+   padding-top: var(--space-2);
+   padding-bottom: var(--space-2);
+   resize: vertical;
+}
+
+</style>
+
+<script>
+var secs = 0;
+
+var prefix = "01020304";
+var entropy = localStorage.getItem( "secret" );
+
+var hash_rounds = 250000;
+
+var wordlist = BIP39.DEFAULT_WORDLIST;
+
+function pad( value, length )
+{
+   return ( value.toString( ).length < length ) ? pad( "0" + value, length ) : value;
+}
+
+function show_alert( message, title )
+{
+   document.getElementById( "alert_modal_title" ).textContent = title;
+   document.getElementById( "alert_modal_message" ).textContent = message;
+
+   open_modal( "alert_modal" );
+
+   document.getElementById( "alert_modal_ok" ).focus( );
+}
+
+function update_words_display( )
+{
+   var has_words = document.getElementById( "words" ).textContent.length > 0;
+
+   document.getElementById( "words_display" ).style.display = has_words ? "" : "none";
+}
+
+var password_mask_timers = {};
+
+function update_password_mask( input_id, mask_id )
+{
+   var value = document.getElementById( input_id ).value;
+
+   var masked = value.length <= 1 ? value : ( '•'.repeat( value.length - 1 ) + value.charAt( value.length - 1 ) );
+
+   document.getElementById( mask_id ).textContent = masked;
+
+   clearTimeout( password_mask_timers[ input_id ] );
+
+   // NOTE: Using type="password" masks every character as it's being typed
+   // (with no native way to change that). To show the just-typed character
+   // briefly (a common mobile-keyboard pattern), the real input remains as
+   // type="password" with its text being made transparent, and this custom
+   // overlay renders the masked dots plus the real last character instead,
+   // reverting to being fully masked shortly after.
+   password_mask_timers[ input_id ] = setTimeout( function( )
+   {
+      document.getElementById( mask_id ).textContent = '•'.repeat( value.length );
+   }, 700 );
+}
+
+window.onload = function( )
+{
+   document.getElementById( "settings-clear" ).disabled = ( localStorage.getItem( "secret" ) == null );
+
+   document.getElementById( "word_entry" ).style.visibility = "hidden";
+
+   if( entropy == null )
+   {
+      document.getElementById( "unlock" ).style.visibility = "hidden";
+      document.getElementById( "password" ).style.visibility = "hidden";
+      document.getElementById( "unlock_label" ).style.visibility = "hidden";
+
+      document.getElementById( "card_lock" ).style.display = "none";
+
+      document.getElementById( "op_words" ).focus( );
+   }
+   else
+   {
+      document.getElementById( "op_words" ).style.visibility = "hidden";
+      document.getElementById( "word_list" ).style.visibility = "hidden";
+
+      document.getElementById( "card_words" ).style.display = "none";
+
+      document.getElementById( "show_words_row" ).style.display = "";
+
+      document.getElementById( "password" ).focus( );
+   }
+
+   document.getElementById( "message" ).style.visibility = "hidden";
+   document.getElementById( "op_message" ).style.visibility = "hidden";
+
+   document.getElementById( "message_crypt" ).style.visibility = "hidden";
+
+   document.getElementById( "message_id" ).style.visibility = "hidden";
+   document.getElementById( "message_id_label" ).style.visibility = "hidden";
+
+   document.getElementById( "qrcode_reader" ).style.display = "none";
+
+   document.getElementById( "message_info" ).style.visibility = "hidden";
+   document.getElementById( "message_info_label" ).style.visibility = "hidden";
+
+   document.getElementById( "another_message" ).style.visibility = "hidden";
+
+   document.getElementById( "card_message" ).style.display = "none";
+}
+</script>
+
+</head>
+
+<body>
+
+<div class="page-shell">
+
+   <header class="page-header">
+      <span class="c-logo c-logo--sm">
+         <span class="c-logo__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 20">
+               <rect x="1.5" y="3" width="3" height="14" rx="1.5" fill="#ffffff"></rect>
+               <rect x="6" y="3" width="3" height="14" rx="1.5" fill="#ffffff"></rect>
+               <rect x="10.5" y="10" width="3" height="7" rx="1.5" fill="#ffffff" fill-opacity="0.45"></rect>
+               <rect x="15" y="3" width="3" height="14" rx="1.5" fill="#ffffff"></rect>
+               <rect x="19.5" y="3" width="3" height="14" rx="1.5" fill="#ffffff"></rect>
+            </svg>
+         </span>
+         <span class="c-logo__text">
+            <span class="c-logo__name">CIYAM</span>
+         </span>
+      </span>
+      <span class="page-header__actions">
+         <div class="settings-wrap">
+            <button type="button" class="settings-toggle-btn" id="settings-toggle"
+             aria-label="Settings" aria-expanded="false" aria-haspopup="true" onclick="toggle_settings( event )">&#9881;</button>
+            <div class="settings-menu" id="settings-menu" role="menu">
+               <button type="button" class="settings-item" onclick="settings_toggle_theme( )">Toggle Light / Dark</button>
+               <div class="settings-divider"></div>
+               <button type="button" class="settings-item" id="settings-clear" onclick="settings_clear_secret( )" disabled>Clear Secret and Start Over</button>
+               <div class="settings-divider"></div>
+               <button type="button" class="settings-item" onclick="settings_debug( )">Debug</button>
+            </div>
+         </div>
+      </span>
+   </header>
+
+   <section class="c-card" id="card_words">
+      <h2 class="c-card__title">Mnemonic Words</h2>
+      <p class="c-card__subtitle">Create a new recovery phrase, or restore an existing one.</p>
+
+      <div class="c-card__body">
+         <div class="field-row" id="word_list_row">
+            <select id="op_words" name="op_words" class="c-input"
+             onkeydown="if( event.key == 'Enter' ) { event.preventDefault( ); word_list( ); }">
+               <option value="create">Create</option>
+               <option value="restore">Restore</option>
+            </select>
+            <button type="button" class="c-btn c-btn--primary" id="word_list" onclick="word_list( )">Word List</button>
+         </div>
+
+         <div class="field-row" id="word_picker_row" style="margin-top: var(--space-3); display: none;">
+            <div class="overlay-field-wrap">
+               <div class="c-input overlay-field-ghost" id="word_entry_ghost" aria-hidden="true"><span id="word_entry_ghost_typed"></span><span id="word_entry_ghost_suggestion"></span></div>
+               <textarea id="word_entry" name="word_entry" rows="3" class="c-input overlay-field-input" autocomplete="off" spellcheck="false" autocapitalize="off"
+                placeholder="Type all 12 words&hellip;" onkeydown="on_word_entry_keydown( event )"
+                onchange="on_word_entry_change( )" onpaste="this.onchange( )" oninput="this.onchange( )"
+                onscroll="document.getElementById( 'word_entry_ghost' ).scrollLeft = this.scrollLeft; document.getElementById( 'word_entry_ghost' ).scrollTop = this.scrollTop;"
+                onclick="document.getElementById( 'word_entry_ghost' ).scrollLeft = this.scrollLeft; document.getElementById( 'word_entry_ghost' ).scrollTop = this.scrollTop;"
+                onkeyup="document.getElementById( 'word_entry_ghost' ).scrollLeft = this.scrollLeft; document.getElementById( 'word_entry_ghost' ).scrollTop = this.scrollTop;"></textarea>
+            </div>
+            <button type="button" class="c-btn c-btn--primary" id="validate_words" onclick="validate_words( )" disabled>Check If Valid</button>
+         </div>
+
+         <div class="words-display" id="words_display" style="margin-top: var(--space-4); display: none;">
+            <span id="words"></span>
+         </div>
+      </div>
+   </section>
+
+   <script>
+   function word_list( )
+   {
+      if( document.getElementById( "op_words" ).value == "create" )
+      {
+         document.getElementById( "words" ).innerHTML = BIP39.generateMnemonic( );
+
+         document.getElementById( "word_entry" ).style.visibility = "hidden";
+
+         document.getElementById( "password" ).style.visibility = "visible";
+         document.getElementById( "unlock_label" ).style.visibility = "visible";
+
+         document.getElementById( "card_lock" ).style.display = "";
+         document.getElementById( "repeated_field" ).style.display = "";
+
+         document.getElementById( "password" ).focus( );
+      }
+      else
+      {
+         document.getElementById( "words" ).innerHTML = "";
+
+         document.getElementById( "word_entry" ).value = "";
+         document.getElementById( "word_entry" ).style.visibility = "visible";
+
+         document.getElementById( "word_picker_row" ).style.display = "";
+
+         on_word_entry_change( );
+
+         document.getElementById( "word_entry" ).focus( );
+      }
+
+      update_words_display( );
+
+      document.getElementById( "op_words" ).style.visibility = "hidden";
+      document.getElementById( "word_list" ).style.visibility = "hidden";
+
+      document.getElementById( "word_list_row" ).style.display = "none";
+   }
+
+   function find_first_word_match( prefix )
+   {
+      if( prefix.length == 0 )
+         return null;
+
+      var lower = prefix.toLowerCase( );
+      var first = null;
+
+      for( var i = 0; i < wordlist.length; i++ )
+      {
+         if( wordlist[ i ].indexOf( lower ) == 0 )
+         {
+            // NOTE: If the typed text is itself an exact word (e.g. "act"
+            // when "action" also is available) preference an exact match.
+            if( wordlist[ i ] === lower )
+               return lower;
+
+            if( first == null )
+               first = wordlist[ i ];
+         }
+      }
+
+      return first;
+   }
+
+   function on_word_entry_keydown( event )
+   {
+      if( event.key == "Enter" )
+      {
+         event.preventDefault( );
+         if( !document.getElementById( "validate_words" ).disabled )
+            validate_words( );
+         return;
+      }
+
+      if( event.key != "Tab" && event.key != " " )
+         return;
+
+      var input = document.getElementById( "word_entry" );
+      var value = input.value;
+
+      var space_index = value.lastIndexOf( ' ' );
+      var head = space_index == -1 ? '' : value.substring( 0, space_index + 1 );
+      var current_word = space_index == -1 ? value : value.substring( space_index + 1 );
+
+      var match = find_first_word_match( current_word );
+
+      if( match == null )
+      {
+         if( event.key == " " )
+            event.preventDefault( );
+
+         return;
+      }
+
+      event.preventDefault( );
+
+      input.value = head + match + ' ';
+
+      on_word_entry_change( );
+   }
+
+   function update_word_entry_ghost( )
+   {
+      var input = document.getElementById( "word_entry" );
+      var value = input.value;
+
+      var space_index = value.lastIndexOf( ' ' );
+      var head = space_index == -1 ? '' : value.substring( 0, space_index + 1 );
+      var current_word = space_index == -1 ? value : value.substring( space_index + 1 );
+
+      // NOTE: Render committed words with per-word colour: red if not in the
+      // BIP39 wordlist (e.g. is a typo or pasting error), normal otherwise.
+      var typed_html = '';
+
+      if( head.length > 0 )
+      {
+         var head_words = head.trimEnd( ).split( ' ' );
+
+         typed_html = head_words.map( function( word )
+         {
+            var valid = wordlist.indexOf( word.toLowerCase( ) ) != -1;
+            var style = valid ? '' : 'text-decoration:underline wavy var(--color-critical);';
+
+            return '<span style="' + style + '">' + word + '</span>';
+         } ).join( ' ' ) + ' ';
+      }
+
+      var match = find_first_word_match( current_word );
+
+      if( current_word.length > 0 )
+      {
+         // NOTE: Show the current partial word with a wavy underline as soon
+         // as no wordlist word that starts with what has been typed so far.
+         var current_style = ( match != null ) ? '' : 'text-decoration:underline wavy var(--color-critical);';
+         var escaped = current_word.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' );
+
+         typed_html += '<span style="' + current_style + '">' + escaped + '</span>';
+      }
+
+      document.getElementById( "word_entry_ghost_typed" ).innerHTML = typed_html;
+
+      var suggestion = ( match != null && match.length > current_word.length ) ? match.substring( current_word.length ) : '';
+
+      document.getElementById( "word_entry_ghost_suggestion" ).textContent = suggestion;
+
+      // NOTE: The real input auto-scrolls horizontally to keep the cursor
+      // visible once the phrase overflows the field width; the ghost div
+      // doesn't, so it has to be kept in sync manually or the suggestion
+      // drifts out of alignment with the typed text once that happens.
+      document.getElementById( "word_entry_ghost" ).scrollLeft = input.scrollLeft;
+      document.getElementById( "word_entry_ghost" ).scrollTop = input.scrollTop;
+   }
+
+   function on_word_entry_change( )
+   {
+      var input = document.getElementById( "word_entry" );
+      var raw = input.value;
+
+      if( raw.indexOf( '\n' ) !== -1 ) { raw = raw.replace( /\n/g, ' ' ); input.value = raw; }
+
+      // NOTE: Mobile IME keyboards (e.g. Android virtual keyboard) often
+      // do not fire reliable keydown events — they dispatch only an input
+      // event after each character is inserted. Detect a space that the
+      // mobile keyboard inserted and autocomplete the preceding partial word
+      // in exactly the same way the keydown handler does on desktop.
+      if( raw.length >= 2 && raw.charAt( raw.length - 1 ) === ' ' )
+      {
+         var before_space = raw.trimEnd( );
+         var prev_space = before_space.lastIndexOf( ' ' );
+         var last_word = prev_space === -1 ? before_space : before_space.substring( prev_space + 1 );
+
+         if( last_word.length > 0 )
+         {
+            var match = find_first_word_match( last_word );
+
+            if( match != null && match !== last_word )
+            {
+               var head = prev_space === -1 ? '' : before_space.substring( 0, prev_space + 1 );
+               input.value = head + match + ' ';
+            }
+         }
+      }
+
+      var value = input.value.trim( );
+      var words = value.length == 0 ? [] : value.split( /\s+/ );
+
+      var all_valid = words.length >= 12 && words.every( function( word )
+      {
+         return wordlist.indexOf( word.toLowerCase( ) ) != -1;
+      } );
+
+      document.getElementById( "validate_words" ).disabled = !all_valid;
+
+      update_word_entry_ghost( );
+   }
+
+   function validate_words( )
+   {
+      var words = document.getElementById( "word_entry" ).value.trim( );
+
+      if( !BIP39.validateMnemonic( words ) )
+         show_alert( "Invalid Word List", "Error" );
+      else
+      {
+         document.getElementById( "words" ).innerHTML = words;
+         update_words_display( );
+
+         document.getElementById( "word_entry" ).style.visibility = "hidden";
+         document.getElementById( "validate_words" ).style.visibility = "hidden";
+
+         document.getElementById( "word_picker_row" ).style.display = "none";
+
+         document.getElementById( "password" ).style.visibility = "visible";
+         document.getElementById( "unlock_label" ).style.visibility = "visible";
+
+         document.getElementById( "card_lock" ).style.display = "";
+         document.getElementById( "repeated_field" ).style.display = "";
+
+         document.getElementById( "password" ).focus( );
+      }
+   }
+   </script>
+
+   <section class="c-card" id="card_lock">
+      <h2 class="c-card__title">Secure Your Secret</h2>
+      <p class="c-card__subtitle">Lock your mnemonic's entropy behind a password, or unlock a previously stored secret.</p>
+
+      <div class="c-card__body">
+         <span class="c-checkbox-row" id="show_words_row" style="display: none; margin-bottom: var(--space-3);">
+            <input type="checkbox" id="show_words" name="show_words">
+            <label for="show_words">Show Words</label>
+         </span>
+
+         <div class="c-field">
+            <label class="c-field__label" id="unlock_label" for="password">Unlock Password</label>
+            <div class="field-row">
+               <div style="flex: 1 1 160px; display: flex; flex-direction: column; gap: var(--space-2);">
+                  <div class="overlay-field-wrap" style="flex: none;">
+                     <div class="c-input overlay-field-ghost" id="password_mask" aria-hidden="true"></div>
+                     <input class="c-input overlay-field-input overlay-field-input--masked" type="password" id="password" name="password"
+                      onchange="on_pwd_change( )" onkeypress="this.onchange( )" onpaste="this.onchange( )" oninput="this.onchange( )"
+                      onkeydown="if( event.key == 'Enter' && document.getElementById( 'unlock' ).style.visibility != 'hidden' ) { event.preventDefault( ); unlock_secret( ); }">
+                  </div>
+                  <div id="pwd_strength_wrap" style="display: none;">
+                     <div class="pwd-strength-track">
+                        <div class="pwd-strength-bar" id="pwd_strength_bar"></div>
+                     </div>
+                     <span class="pwd-strength-label" id="pwd_strength_label"></span>
+                  </div>
+               </div>
+               <button type="button" class="c-btn c-btn--primary" id="unlock" name="unlock" onclick="unlock_secret( )">Unlock Secret</button>
+            </div>
+         </div>
+
+         <div class="c-field" id="repeated_field" style="margin-top: var(--space-3); display: none;">
+            <label class="c-field__label" id="repeated_label" for="repeated">Repeat Password</label>
+            <div class="field-row">
+               <div class="overlay-field-wrap">
+                  <div class="c-input overlay-field-ghost" id="repeated_mask" aria-hidden="true"></div>
+                  <input class="c-input overlay-field-input overlay-field-input--masked" type="password" id="repeated" name="repeated"
+                   onchange="on_rpt_change( )" onkeypress="this.onchange( )" onpaste="this.onchange( )" oninput="this.onchange( )"
+                   onkeydown="if( event.key == 'Enter' && !document.getElementById( 'lock' ).disabled ) { event.preventDefault( ); lock_in_secret( ); }">
+               </div>
+               <button type="button" class="c-btn c-btn--primary" id="lock" name="lock" onclick="lock_in_secret( )" disabled>Lock In Secret</button>
+            </div>
+         </div>
+
+         <div class="words-display" id="unlocked_words_display" style="margin-top: var(--space-3); display: none;">
+            <span id="unlocked_words"></span>
+         </div>
+
+         <div id="continue_row" style="margin-top: var(--space-3); display: none;">
+            <button type="button" class="c-btn c-btn--primary" id="continue_btn" onclick="continue_to_messaging( )">Continue</button>
+         </div>
+
+         <div id="hash_progress_wrap" style="display: none; margin-top: var(--space-4);">
+            <p class="c-field__label" style="margin-bottom: var(--space-1);">Deriving key from password&hellip;</p>
+            <div class="c-progress">
+               <div class="c-progress__bar" id="hash_progress_bar" style="width: 0%;"></div>
+            </div>
+         </div>
+      </div>
+   </section>
+
+   <script>
+   function update_pwd_strength( pwd )
+   {
+      var wrap = document.getElementById( "pwd_strength_wrap" );
+      var bar = document.getElementById( "pwd_strength_bar" );
+      var label = document.getElementById( "pwd_strength_label" );
+
+      if( document.getElementById( "repeated_field" ).style.display == "none" || pwd.length == 0 )
+      {
+         wrap.style.display = "none";
+         return;
+      }
+
+      wrap.style.display = "";
+
+      if( pwd.length < 7 )
+      {
+         bar.style.width = "20%";
+         bar.style.background = "var(--color-critical)";
+         label.textContent = "Unsatisfactory";
+         label.style.color = "var(--color-critical)";
+         return;
+      }
+
+      var has_digits  = /[0-9]/.test( pwd );
+      var has_lower   = /[a-z]/.test( pwd );
+      var has_upper   = /[A-Z]/.test( pwd );
+      var has_special = /[^A-Za-z0-9]/.test( pwd );
+
+      var type_count = ( has_digits ? 1 : 0 ) + ( has_lower ? 1 : 0 )
+                     + ( has_upper ? 1 : 0 ) + ( has_special ? 1 : 0 );
+
+      // NOTE: Multiplier reflects character diversity.
+      // 1 type: digits=1, non-digit=2.
+      // 2 types: includes digits=3, no digits=4.
+      // 3 types: includes digits=5, no digits=6.
+      // 4 types: 7.
+      var multiplier;
+
+      if( type_count == 1 )
+         multiplier = has_digits ? 1 : 2;
+      else if( type_count == 2 )
+         multiplier = has_digits ? 3 : 4;
+      else if( type_count == 3 )
+         multiplier = has_digits ? 5 : 6;
+      else
+         multiplier = 7;
+
+      var score = pwd.length * multiplier;
+
+      var ratings = [
+         { min: 0,  text: "Weak",        color: "var(--color-warning)",     width: "35%" },
+         { min: 24, text: "Moderate",    color: "var(--color-pwd-strength-moderate)", width: "55%" },
+         { min: 48, text: "Strong",      color: "var(--color-success)",     width: "75%" },
+         { min: 80, text: "Very Strong", color: "var(--color-success-700)", width: "100%" }
+      ];
+
+      var rating = ratings[ 0 ];
+
+      for( var i = 1; i < ratings.length; i++ )
+      {
+         if( score >= ratings[ i ].min )
+            rating = ratings[ i ];
+      }
+
+      bar.style.width = rating.width;
+      bar.style.background = rating.color;
+      label.textContent = rating.text;
+      label.style.color = rating.color;
+   }
+
+   function on_pwd_change( )
+   {
+      // NOTE: Clear the repeat field whenever the master password
+      // changes so that the user must re-confirm the new value.
+      document.getElementById( "repeated" ).value = "";
+      update_password_mask( "repeated", "repeated_mask" );
+
+      update_password_mask( "password", "password_mask" );
+
+      update_pwd_strength( document.getElementById( "password" ).value );
+
+      on_rpt_change( );
+   }
+
+   function on_rpt_change( )
+   {
+      var pwd = document.getElementById( "password" ).value;
+      var rpt = document.getElementById( "repeated" ).value;
+
+      document.getElementById( "lock" ).disabled = ( pwd.length == 0 || pwd != rpt );
+
+      update_password_mask( "repeated", "repeated_mask" );
+   }
+
+   function hash_value_async( s, n, on_progress, on_complete )
+   {
+      var os = s;
+      var i = 0;
+      var chunk_size = 5000;
+
+      function step( )
+      {
+         var end = Math.min( i + chunk_size, n );
+
+         for( ; i < end; i++ )
+            s = hex_sha256( s + os ).toLowerCase( );
+
+         on_progress( i / n );
+
+         if( i < n )
+            setTimeout( step, 0 );
+         else
+            on_complete( s );
+      }
+
+      step( );
+   }
+
+   function show_hash_progress( )
+   {
+      document.getElementById( "hash_progress_bar" ).style.width = "0%";
+      document.getElementById( "hash_progress_wrap" ).style.display = "";
+   }
+
+   function update_hash_progress( fraction )
+   {
+      document.getElementById( "hash_progress_bar" ).style.width = ( fraction * 100 ) + "%";
+   }
+
+   function hide_hash_progress( )
+   {
+      document.getElementById( "hash_progress_wrap" ).style.display = "none";
+   }
+
+   function xor_data_with_hex_pwd( data, hex_pwd )
+   {
+      var hex_secret = '';
+
+      if( hex_pwd.length < data.length )
+         show_alert( "unexpected hex_pwd.length < data.length", "Error" );
+      else
+      {
+         for( i = 0; i < data.length; i += 2 )
+         {
+            var ent_hex = data.charAt( i );
+            ent_hex += data.charAt( i + 1 );
+
+            var ent_val = parseInt( ent_hex, 16 );
+
+            var pwd_hex = hex_pwd.charAt( i );
+            pwd_hex += hex_pwd.charAt( i + 1 );
+
+            var pwd_val = parseInt( pwd_hex, 16 );
+
+            var new_val = ( ent_val ^ pwd_val );
+
+            if( new_val < 16 )
+               hex_secret += '0';
+
+            hex_secret += new_val.toString( 16 );
+         }
+      }
+
+      return hex_secret;
+   }
+
+   function lock_in_secret( )
+   {
+      var words = document.getElementById( "words" ).innerHTML;
+
+      document.getElementById( "lock" ).disabled = true;
+
+      show_hash_progress( );
+
+      hash_value_async( document.getElementById( "password" ).value, hash_rounds, update_hash_progress, function( pwd_hardened )
+      {
+         entropy = prefix + BIP39.mnemonicToEntropy( words );
+
+         var hex_secret = xor_data_with_hex_pwd( entropy, pwd_hardened );
+
+         localStorage.setItem( "secret", hex_secret );
+
+         hide_hash_progress( );
+
+         document.getElementById( "lock" ).disabled = false;
+
+         document.getElementById( "password" ).value = "";
+
+         update_password_mask( "password", "password_mask" );
+
+         update_pwd_strength( "" );
+
+         document.getElementById( "repeated" ).value = "";
+
+         update_password_mask( "repeated", "repeated_mask" );
+
+         document.getElementById( "words" ).innerHTML = "";
+
+         update_words_display( );
+
+         // NOTE: Strip the prefix so entropy is now ready for the
+         // messaging flow without needing a separate unlock step.
+         entropy = entropy.substring( 8 );
+
+         document.getElementById( "lock" ).disabled = true;
+         document.getElementById( "repeated_field" ).style.display = "none";
+
+         document.getElementById( "card_words" ).style.display = "none";
+         document.getElementById( "card_lock" ).style.display = "none";
+
+         document.getElementById( "message" ).style.visibility = "visible";
+         document.getElementById( "op_message" ).style.visibility = "visible";
+
+         document.getElementById( "card_message" ).style.display = "";
+
+         document.getElementById( "op_message" ).focus( );
+      } );
+   }
+
+   function unlock_secret( )
+   {
+      var secret = localStorage.getItem( "secret" );
+
+      document.getElementById( "unlock" ).disabled = true;
+
+      show_hash_progress( );
+
+      hash_value_async( document.getElementById( "password" ).value, hash_rounds, update_hash_progress, function( pwd_hardened )
+      {
+         entropy = xor_data_with_hex_pwd( secret, pwd_hardened );
+
+         hide_hash_progress( );
+
+         document.getElementById( "unlock" ).disabled = false;
+
+         if( entropy.substring( 0, 8 ) != prefix )
+            show_alert( "Invalid Password", "Error" );
+         else
+         {
+            entropy = entropy.substring( 8 );
+
+            document.getElementById( "unlock" ).style.visibility = "hidden";
+            document.getElementById( "password" ).style.visibility = "hidden";
+            document.getElementById( "unlock_label" ).style.visibility = "hidden";
+
+            if( document.getElementById( "show_words" ).checked )
+            {
+               document.getElementById( "unlocked_words" ).textContent = BIP39.entropyToMnemonic( entropy );
+               document.getElementById( "unlocked_words_display" ).style.display = "";
+
+               document.getElementById( "continue_row" ).style.display = "";
+
+               document.getElementById( "continue_btn" ).focus( );
+            }
+            else
+            {
+               document.getElementById( "card_lock" ).style.display = "none";
+
+               document.getElementById( "message" ).style.visibility = "visible";
+               document.getElementById( "op_message" ).style.visibility = "visible";
+
+               document.getElementById( "card_message" ).style.display = "";
+
+               document.getElementById( "op_message" ).focus( );
+            }
+         }
+
+         document.getElementById( "password" ).value = "";
+
+         update_password_mask( "password", "password_mask" );
+
+         update_pwd_strength( "" );
+      } );
+   }
+
+   function continue_to_messaging( )
+   {
+      document.getElementById( "unlocked_words" ).textContent = "";
+      document.getElementById( "unlocked_words_display" ).style.display = "none";
+
+      document.getElementById( "continue_row" ).style.display = "none";
+
+      document.getElementById( "show_words" ).checked = false;
+
+      document.getElementById( "message" ).style.visibility = "visible";
+      document.getElementById( "op_message" ).style.visibility = "visible";
+
+      document.getElementById( "card_lock" ).style.display = "none";
+      document.getElementById( "card_message" ).style.display = "";
+
+      document.getElementById( "op_message" ).focus( );
+   }
+   </script>
+
+   <section class="c-card" id="card_message">
+      <h2 class="c-card__title">Encrypted Messaging</h2>
+      <p class="c-card__subtitle">Exchange a short encrypted message, optionally via QR code.</p>
+
+      <div class="c-card__body">
+         <div class="field-row" id="message_op_row">
+            <select id="op_message" name="op_message" class="c-input"
+             onkeydown="if( event.key == 'Enter' ) { event.preventDefault( ); message( ); }">
+               <option value="create">Create</option>
+               <option value="restore">Restore</option>
+            </select>
+            <button type="button" class="c-btn c-btn--primary" id="message" onclick="message( )">Message</button>
+         </div>
+
+         <div class="c-field" id="message_id_field" style="margin-top: var(--space-3); display: none;">
+            <label class="c-field__label" id="message_id_label" for="message_id">Message Identity</label>
+            <input class="c-input" type="text" id="message_id" name="message_id" maxlength="10"
+             onchange="on_message_info_change( )" onkeypress="this.onchange( )" onpaste="this.onchange( )" oninput="this.onchange( )">
+         </div>
+
+         <div id="qrcode_reader" style="margin-top: var(--space-4); display: none;"></div>
+
+         <div class="c-field" id="message_info_field" style="margin-top: var(--space-4); display: none;">
+            <label class="c-field__label" id="message_info_label" for="message_info">Message Information</label>
+            <textarea class="c-input" id="message_info" name="message_info" rows="3" maxlength="64"
+             onchange="on_message_info_change( )" onkeypress="this.onchange( )" onpaste="this.onchange( )" oninput="this.onchange( )"></textarea>
+         </div>
+
+         <div class="field-row" id="message_crypt_row" style="margin-top: var(--space-4); display: none;">
+            <button type="button" class="c-btn c-btn--primary" id="message_crypt" onclick="message_crypt( )">Crypt Message Information</button>
+            <button type="button" class="c-btn c-btn--ghost" id="cancel_message" onclick="cancel_message( )">Cancel</button>
+         </div>
+
+         <div id="qrcode_row" style="margin-top: var(--space-4); display: none;">
+            <div id="qrcode"></div>
+         </div>
+
+         <div class="result-row" id="output_row" style="margin-top: var(--space-2); display: none;">
+            <span id="output"></span>
+         </div>
+
+         <div class="field-row" id="output_actions_row" style="margin-top: var(--space-2); display: none;">
+            <button type="button" class="c-btn c-btn--secondary c-btn--sm" id="copy_output" onclick="copy_output_to_clipboard( )">Copy</button>
+            <button type="button" class="c-btn c-btn--secondary" id="another_message" onclick="another_message( )">Another Message</button>
+         </div>
+      </div>
+   </section>
+
+   <script>
+   var scanner = null;
+
+   function message( )
+   {
+      if( document.getElementById( "op_message" ).value == "create" )
+      {
+         document.getElementById( "message_info" ).rows = 3;
+         document.getElementById( "message_info" ).maxLength = "64";
+
+         document.getElementById( "message_crypt" ).textContent = "Encrypt Message Information";
+      }
+      else
+      {
+         if( scanner == null )
+            scanner = new Html5QrcodeScanner( "qrcode_reader", { qrbox: { width: 400, height: 400 }, fps: 20 } );
+
+         document.getElementById( "qrcode_reader" ).style.display = "";
+
+         scanner.render( qrcode_reader_success, qrcode_reader_failure );
+
+         document.getElementById( "message_info" ).rows = 5;
+         document.getElementById( "message_info" ).maxLength = "128";
+
+         document.getElementById( "message_crypt" ).textContent = "Decrypt Message Information";
+      }
+
+      document.getElementById( "message" ).style.visibility = "hidden";
+      document.getElementById( "op_message" ).style.visibility = "hidden";
+
+      document.getElementById( "message_op_row" ).style.display = "none";
+
+      document.getElementById( "message_id" ).value = "";
+      document.getElementById( "message_id" ).style.visibility = "visible";
+      document.getElementById( "message_id_label" ).style.visibility = "visible";
+
+      document.getElementById( "message_id_field" ).style.display = "";
+
+      document.getElementById( "message_id" ).focus( );
+
+      document.getElementById( "message_info" ).value = "";
+      document.getElementById( "message_info" ).style.visibility = "visible";
+      document.getElementById( "message_info_label" ).style.visibility = "visible";
+
+      document.getElementById( "message_info_field" ).style.display = "";
+
+      document.getElementById( "message_crypt" ).style.visibility = "visible";
+      document.getElementById( "message_crypt" ).disabled = true;
+
+      document.getElementById( "message_crypt_row" ).style.display = "";
+   }
+
+   function cancel_message( )
+   {
+      stop_qrcode_scanner( );
+
+      document.getElementById( "message_id" ).value = "";
+      document.getElementById( "message_id" ).style.visibility = "hidden";
+      document.getElementById( "message_id_label" ).style.visibility = "hidden";
+
+      document.getElementById( "message_id_field" ).style.display = "none";
+
+      document.getElementById( "message_info" ).value = "";
+      document.getElementById( "message_info" ).style.visibility = "hidden";
+      document.getElementById( "message_info_label" ).style.visibility = "hidden";
+
+      document.getElementById( "message_info_field" ).style.display = "none";
+
+      document.getElementById( "message_crypt" ).style.visibility = "hidden";
+
+      document.getElementById( "message_crypt_row" ).style.display = "none";
+
+      document.getElementById( "message" ).style.visibility = "visible";
+      document.getElementById( "op_message" ).style.visibility = "visible";
+
+      document.getElementById( "message_op_row" ).style.display = "";
+
+      document.getElementById( "op_message" ).focus( );
+   }
+
+   function on_message_info_change( )
+   {
+      var has_id = document.getElementById( "message_id" ).value.length > 0;
+      var has_info = document.getElementById( "message_info" ).value.length > 0;
+
+      document.getElementById( "message_crypt" ).disabled = !( has_id && has_info );
+   }
+
+   function copy_output_to_clipboard( )
+   {
+      var button = document.getElementById( "copy_output" );
+      var text = document.getElementById( "output" ).textContent;
+
+      navigator.clipboard.writeText( text ).then( function( )
+      {
+         button.textContent = "Copied!";
+
+         setTimeout( function( )
+         {
+            button.textContent = "Copy";
+         }, 1500 );
+      } );
+   }
+
+   var camera_fix_interval = setInterval( function( )
+   {
+      var selectElement = document.getElementById( "html5-qrcode-select-camera" );
+
+      // NOTE: Remove the "front" cameras (if any are found).
+      if( selectElement )
+      {
+         document.querySelectorAll( "#html5-qrcode-select-camera option" ).forEach( function( option )
+         {
+            if( option.textContent.includes( "front" ) )
+               option.remove( );
+         } );
+
+         selectElement.selectedIndex = 0;
+
+         clearInterval( camera_fix_interval );
+      }
+   }, 1000 );
+
+   function stop_qrcode_scanner( )
+   {
+      if( scanner != null && document.getElementById( "qrcode_reader" ).style.display != "none" )
+      {
+         scanner.clear( );
+
+         document.getElementById( "qrcode_reader" ).style.display = "none";
+      }
+   }
+
+   function qrcode_reader_success( textval, result )
+   {
+      document.getElementById( "message_info" ).value = textval;
+
+      on_message_info_change( );
+
+      stop_qrcode_scanner( );
+   }
+
+   function qrcode_reader_failure( error )
+   {
+      console.warn( "Code scan error = " + error );
+   }
+
+   function pad_message_with_random_chars( message, len )
+   {
+      if( message.length < len )
+      {
+         message += '\1';
+
+         while( message.length < len )
+            message += String.fromCharCode( 97 + Math.floor( Math.random( ) * 26 ) );
+      }
+
+      return message;
+   }
+
+   function message_to_hex_chars( message )
+   {
+      var hex_message = '';
+
+      for( i = 0; i < message.length; i++ )
+         hex_message += pad( message.charCodeAt( i ).toString( 16 ), 2 );
+
+      return hex_message;
+   }
+
+   function hex_pwd_into_7bit_ascii( hex_pwd )
+   {
+      var new_hex_pwd = '';
+
+      for( i = 0; i < hex_pwd.length; i += 2 )
+      {
+         var hex = hex_pwd.charAt( i );
+
+         hex += hex_pwd.charAt( i + 1 );
+
+         var val = parseInt( hex, 16 );
+
+         if( val >= 128 )
+            val -= 128;
+
+         if( val < 16 )
+            new_hex_pwd += '0';
+
+         new_hex_pwd += val.toString( 16 );
+      }
+
+      return new_hex_pwd;
+   }
+
+   function xor_7bit_hex_msg_and_pwd( msg_7bit, pwd_7bit )
+   {
+      var new_hex_data = '';
+
+      if( msg_7bit.length != pwd_7bit.length )
+         show_alert( "incorrect non-matching msg and pwd lengths", "Error" );
+      else
+      {
+         for( i = 0; i < msg_7bit.length; i += 2 )
+         {
+            var msg_hex = msg_7bit.charAt( i );
+
+            msg_hex += msg_7bit.charAt( i + 1 );
+
+            var msg_val = parseInt( msg_hex, 16 );
+
+            var pwd_hex = pwd_7bit.charAt( i );
+
+            pwd_hex += pwd_7bit.charAt( i + 1 );
+
+            var pwd_val = parseInt( pwd_hex, 16 );
+
+            var new_val = ( msg_val ^ pwd_val );
+
+            if( new_val < 16 )
+               new_hex_data += '0';
+
+            new_hex_data += new_val.toString( 16 );
+         }
+      }
+
+      return new_hex_data;
+   }
+
+   function insert_salt_into_7bit_hex( salt, hex_data )
+   {
+      var new_hex_data = '';
+
+      if( ( salt.length * 2 ) != hex_data.length )
+         show_alert( "invalid salt/hex_data length", "Error" );
+      else
+      {
+         for( i = 0; i < hex_data.length; i += 2 )
+         {
+            var hex = hex_data.charAt( i );
+
+            hex += hex_data.charAt( i + 1 );
+
+            var val = parseInt( hex, 16 );
+
+            if( salt.charAt( i / 2 ) == '1' )
+               val += 128;
+
+            if( val < 16 )
+               new_hex_data += '0';
+
+            new_hex_data += val.toString( 16 );
+         }
+      }
+
+      return new_hex_data;
+   }
+
+   function extract_padded_bin_salt_and_hex_message( salted_hex_message )
+   {
+      var pair = { hex_message: '', padded_bin_salt: '' };
+
+      for( i = 0; i < salted_hex_message.length; i += 2 )
+      {
+         var hex = salted_hex_message.charAt( i );
+         hex += salted_hex_message.charAt( i + 1 );
+
+         var val = parseInt( hex, 16 );
+
+         if( val < 128 )
+            pair.padded_bin_salt += '0';
+         else
+         {
+            val -= 128;
+            pair.padded_bin_salt += '1';
+         }
+
+         var hex = '';
+
+         if( val < 16 )
+            hex += '0';
+
+         hex += val.toString( 16 );
+
+         pair.hex_message += hex;
+      }
+
+      return pair;
+   }
+
+   function secs_from_padded_bin_salt( padded_bin_salt )
+   {
+      var secs = 0;
+      var offset = 0;
+
+      for( offset = 0; offset < padded_bin_salt.length; offset++ )
+      {
+         if( padded_bin_salt.charAt( offset ) != '0' )
+            break;
+      }
+
+      var shortened = padded_bin_salt.substring( offset );
+
+      shortened = shortened.substring( shortened.length / 2 );
+
+      secs = parseInt( shortened, 2 );
+
+      return secs;
+   }
+
+   function message_from_hex_chars( hex_chars )
+   {
+      var message = '';
+
+      for( i = 0; i < hex_chars.length; i += 2 )
+      {
+         var hex = hex_chars.charAt( i );
+
+         hex += hex_chars.charAt( i + 1 );
+
+         var next = String.fromCharCode( parseInt( hex, 16 ) );
+
+         if( next == '\1' )
+            break;
+         else
+            message += next;
+      }
+
+      return message;
+   }
+
+   function message_crypt( )
+   {
+      var error = false;
+      var pepper = document.getElementById( "message_id" ).value;
+      var information = document.getElementById( "message_info" ).value;
+
+      // NOTE: If length > 64 then is encrypted hex data.
+      if( information.length > 64 )
+      {
+         stop_qrcode_scanner( );
+
+         if( information.length != 128 )
+         {
+            error = true;
+            show_alert( "Message Information length != 128", "Error" );
+         }
+         else
+         {
+            var pair = extract_padded_bin_salt_and_hex_message( information );
+
+            var hex_message = pair.hex_message;
+            var padded_bin_salt = pair.padded_bin_salt;
+
+            var secs = secs_from_padded_bin_salt( padded_bin_salt );
+
+            var salt = secs.toString( );
+
+            var hex_pwd = hex_sha256( salt + pepper + entropy ) + hex_sha256( entropy + pepper + salt );
+
+            var pwd_7bit = hex_pwd_into_7bit_ascii( hex_pwd );
+            var decrypted = xor_7bit_hex_msg_and_pwd( hex_message, pwd_7bit );
+
+            var message = message_from_hex_chars( decrypted );
+
+            document.getElementById( "output" ).innerHTML = message;
+         }
+      }
+      else
+      {
+         var secs = Math.floor( Date.now( ) / 1000 );
+
+         var salt = secs.toString( );
+
+         var bin_secs = secs.toString( 2 );
+         var bin_salt = ( bin_secs + bin_secs );
+
+         var padded_bin_salt = pad( bin_salt, 64 );
+
+         var hex_pwd = hex_sha256( salt + pepper + entropy ) + hex_sha256( entropy + pepper + salt );
+
+         var message = pad_message_with_random_chars( information, 64 );
+
+         var hex_message = message_to_hex_chars( message );
+
+         var pwd_7bit = hex_pwd_into_7bit_ascii( hex_pwd );
+         var encrypted = xor_7bit_hex_msg_and_pwd( hex_message, pwd_7bit );
+
+         var salted_hex_message = insert_salt_into_7bit_hex( padded_bin_salt, encrypted );
+
+         document.getElementById( "output" ).innerHTML = salted_hex_message;
+
+         document.getElementById( "qrcode" ).innerHTML = "";
+
+         new QRCode( document.getElementById( "qrcode" ), salted_hex_message );
+
+         document.getElementById( "qrcode_row" ).style.display = "flex";
+      }
+
+      if( !error )
+      {
+         // NOTE: Convert entropy to hex characters
+         // just to prevent trivial discovery (more
+         // could be done but is unlikely to really
+         // be of much use against someone that has
+         // access and coding skills).
+         entropy = message_to_hex_chars( entropy );
+
+         document.getElementById( "message_crypt" ).style.visibility = "hidden";
+         document.getElementById( "message_crypt_row" ).style.display = "none";
+
+         document.getElementById( "message_id" ).style.visibility = "hidden";
+         document.getElementById( "message_id_label" ).style.visibility = "hidden";
+
+         document.getElementById( "message_id_field" ).style.display = "none";
+
+         document.getElementById( "message_info" ).style.visibility = "hidden";
+         document.getElementById( "message_info_label" ).style.visibility = "hidden";
+
+         document.getElementById( "message_info_field" ).style.display = "none";
+
+         document.getElementById( "output" ).style.visibility = "visible";
+         document.getElementById( "output_row" ).style.display = "";
+
+         document.getElementById( "another_message" ).style.visibility = "visible";
+
+         document.getElementById( "output_actions_row" ).style.display = "";
+      }
+   }
+
+   function another_message( )
+   {
+      // NOTE: See above NOTE for this.
+      entropy = message_from_hex_chars( entropy );
+
+      document.getElementById( "message" ).style.visibility = "visible";
+      document.getElementById( "op_message" ).style.visibility = "visible";
+
+      document.getElementById( "message_op_row" ).style.display = "";
+
+      document.getElementById( "op_message" ).focus( );
+
+      document.getElementById( "qrcode_row" ).style.display = "none";
+
+      document.getElementById( "output" ).style.visibility = "hidden";
+      document.getElementById( "output_row" ).style.display = "none";
+
+      document.getElementById( "another_message" ).style.visibility = "hidden";
+
+      document.getElementById( "output_actions_row" ).style.display = "none";
+   }
+   </script>
+
+</div>
+
+<div class="c-modal-backdrop" id="confirm_clear_modal" data-open="false">
+   <div class="c-modal" role="dialog" aria-modal="true" aria-labelledby="confirm_clear_title" tabindex="-1">
+      <div class="c-modal__header">
+         <h3 class="c-modal__title" id="confirm_clear_title">Clear Secret?</h3>
+         <button type="button" class="c-modal__close" data-modal-close aria-label="Close">&times;</button>
+      </div>
+      <div class="c-modal__body">
+         This will permanently remove your stored secret from this browser.
+         You will need your recovery phrase to restore it. Are you sure?
+      </div>
+      <div class="c-modal__footer">
+         <button type="button" class="c-btn c-btn--ghost" data-modal-close>Cancel</button>
+         <button type="button" class="c-btn c-btn--destructive" onclick="confirm_clear_secret( )">Yes, Clear</button>
+      </div>
+   </div>
+</div>
+
+<div class="c-modal-backdrop" id="alert_modal" data-open="false">
+   <div class="c-modal" role="dialog" aria-modal="true" aria-labelledby="alert_modal_title" tabindex="-1">
+      <div class="c-modal__header">
+         <h3 class="c-modal__title" id="alert_modal_title">Notice</h3>
+         <button type="button" class="c-modal__close" data-modal-close aria-label="Close">&times;</button>
+      </div>
+      <div class="c-modal__body">
+         <span id="alert_modal_message"></span>
+      </div>
+      <div class="c-modal__footer">
+         <button type="button" class="c-btn c-btn--primary" id="alert_modal_ok" data-modal-close>OK</button>
+      </div>
+   </div>
+</div>
+
+<script>
+function close_settings( )
+{
+   document.getElementById( "settings-menu" ).classList.remove( "is-open" );
+   document.getElementById( "settings-toggle" ).setAttribute( "aria-expanded", "false" );
+}
+
+function toggle_settings( event )
+{
+   event.stopPropagation( );
+
+   var menu = document.getElementById( "settings-menu" );
+   var is_open = menu.classList.contains( "is-open" );
+
+   if( !is_open )
+      document.getElementById( "settings-clear" ).disabled = ( localStorage.getItem( "secret" ) == null );
+
+   menu.classList.toggle( "is-open" );
+
+   document.getElementById( "settings-toggle" ).setAttribute( "aria-expanded", String( !is_open ) );
+}
+
+function settings_toggle_theme( )
+{
+   var html = document.documentElement;
+   var next = html.getAttribute( "data-theme" ) == "dark" ? "light" : "dark";
+
+   html.setAttribute( "data-theme", next );
+   localStorage.setItem( "theme", next );
+
+   close_settings( );
+}
+
+function settings_clear_secret( )
+{
+   close_settings( );
+
+   open_modal( "confirm_clear_modal" );
+}
+
+function confirm_clear_secret( )
+{
+   localStorage.removeItem( "secret" );
+
+   window.location.reload( );
+}
+
+function settings_debug( )
+{
+   close_settings( );
+
+   var retval = prompt( 'Enter secret:', localStorage.getItem( 'secret' ) );
+
+   if( retval != null )
+   {
+      if( ( retval == 'null' ) || ( retval == 'none' ) )
+         localStorage.removeItem( 'secret' );
+      else
+         localStorage.setItem( 'secret', retval );
+   }
+
+   window.location.reload( );
+}
+
+document.addEventListener( "click", function( )
+{
+   close_settings( );
+} );
+</script>
+
+</body>
+
+</html>
