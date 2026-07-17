@@ -100,6 +100,8 @@ constexpr const char* c_options_request = "OPTIONS";
 
 constexpr const char* c_index_html = "index.html";
 
+constexpr const char* c_redirects_file = ".redirects";
+
 constexpr const char* c_echo_endpoint = "/echo";
 constexpr const char* c_upload_endpoint = "/upload";
 constexpr const char* c_ip_addr_endpoint = "/ip-addr";
@@ -1234,10 +1236,62 @@ void http_request_handler::on_start( )
                         response = buffer_file( path + http_document );
                   }
                }
-               else if( dir_exists( path + http_document ) )
+               else
                {
-                  if( file_exists( path + http_document + "/index.html" ) )
-                     moved_document = http_document + '/';
+                  map< string, string > redirects;
+
+                  string redirects_file( path + '/' + string( c_redirects_file ) );
+
+                  // NOTE: The ".redirects" file is an optional mapping
+                  // file where each line is in the following format:
+                  //
+                  // /src /dest
+                  //
+                  // Some examples are as follows:
+                  //
+                  // /old_dir /new_dir
+                  // /old_dir /new_page.html
+                  // /old_page.html /new_page.html
+                  //
+                  if( file_exists( redirects_file ) )
+                  {
+                     string redirect_info( buffer_file( redirects_file ) );
+
+                     vector< string > redirect_lines;
+
+                     if( !redirect_info.empty( ) )
+                     {
+                        split( redirect_info, redirect_lines, '\n' );
+
+                        for( size_t i = 0; i < redirect_lines.size( ); i++ )
+                        {
+                           string next_line( redirect_lines[ i ] );
+
+                           string::size_type pos = next_line.find( ' ' );
+
+                           if( pos != string::npos )
+                           {
+                              string src( next_line.substr( 0, pos ) );
+                              string dest( next_line.substr( pos + 1 ) );
+
+                              if( !dest.empty( ) )
+                                 redirects.insert( make_pair( src, dest ) );
+                           }
+                        }
+                     }
+                  }
+
+                  string possibly_expected( http_document + '/' + string( c_index_html ) );
+
+                  if( file_exists( path + possibly_expected ) )
+                     moved_document = possibly_expected;
+                  else
+                  {
+                     if( redirects.count( http_document ) )
+                        moved_document = redirects[ http_document ];
+                     else if( redirects.count( possibly_expected ) )
+                        moved_document = redirects[ possibly_expected ];
+                  }
                }
             }
          }
