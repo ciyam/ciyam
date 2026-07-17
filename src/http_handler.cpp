@@ -354,6 +354,10 @@ atomic< size_t > g_active_handlers;
 
 atomic< size_t > g_num_request_handler;
 
+atomic< time_t > g_redirects_file_mod = 0;
+
+map< string, string > g_redirects;
+
 size_t g_max_post_data_allowed = 0;
 
 inline void increment_handlers( )
@@ -364,6 +368,23 @@ inline void increment_handlers( )
 inline void deccrement_handlers( )
 {
    --g_active_handlers;
+}
+
+bool redirects_file_has_changed( const char* p_file_name )
+{
+   bool changed = false;
+
+   time_t t = 0;
+
+   if( p_file_name && file_exists( p_file_name ) )
+      t = last_modification_time( p_file_name );
+
+   if( t != g_redirects_file_mod )
+      changed = true;
+
+   g_redirects_file_mod = t;
+
+   return changed;
 }
 
 }
@@ -1142,9 +1163,12 @@ void http_request_handler::on_start( )
 
             // NOTE: Do a sanity check to make sure that the document
             // being requested is actually below the start directory.
+            // Although "rc" is not being checked after the call it's
+            // needed to prevent an exception from being thrown (when
+            // the path does not exist).
             string check_path( absolute_path( path + http_document, &rc ) );
 
-            if( rc && ( check_path.find( start ) == 0 ) )
+            if( check_path.find( start ) == 0 )
             {
                if( file_exists( path + http_document ) )
                {
@@ -1238,7 +1262,7 @@ void http_request_handler::on_start( )
                }
                else
                {
-                  map< string, string > redirects;
+                  guard g( g_mutex );
 
                   string redirects_file( path + '/' + string( c_redirects_file ) );
 
@@ -1253,29 +1277,34 @@ void http_request_handler::on_start( )
                   // /old_dir /new_page.html
                   // /old_page.html /new_page.html
                   //
-                  if( file_exists( redirects_file ) )
+                  if( redirects_file_has_changed( redirects_file.c_str( ) ) )
                   {
-                     string redirect_info( buffer_file( redirects_file ) );
+                     g_redirects.clear( );
 
-                     vector< string > redirect_lines;
-
-                     if( !redirect_info.empty( ) )
+                     if( file_exists( redirects_file ) )
                      {
-                        split( redirect_info, redirect_lines, '\n' );
+                        string redirect_info( buffer_file( redirects_file ) );
 
-                        for( size_t i = 0; i < redirect_lines.size( ); i++ )
+                        vector< string > redirect_lines;
+
+                        if( !redirect_info.empty( ) )
                         {
-                           string next_line( redirect_lines[ i ] );
+                           split( redirect_info, redirect_lines, '\n' );
 
-                           string::size_type pos = next_line.find( ' ' );
-
-                           if( pos != string::npos )
+                           for( size_t i = 0; i < redirect_lines.size( ); i++ )
                            {
-                              string src( next_line.substr( 0, pos ) );
-                              string dest( next_line.substr( pos + 1 ) );
+                              string next_line( redirect_lines[ i ] );
 
-                              if( !dest.empty( ) )
-                                 redirects.insert( make_pair( src, dest ) );
+                              string::size_type pos = next_line.find( ' ' );
+
+                              if( pos != string::npos )
+                              {
+                                 string src( next_line.substr( 0, pos ) );
+                                 string dest( next_line.substr( pos + 1 ) );
+
+                                 if( !dest.empty( ) )
+                                    g_redirects.insert( make_pair( src, dest ) );
+                              }
                            }
                         }
                      }
@@ -1287,10 +1316,23 @@ void http_request_handler::on_start( )
                      moved_document = possibly_expected;
                   else
                   {
-                     if( redirects.count( http_document ) )
-                        moved_document = redirects[ http_document ];
-                     else if( redirects.count( possibly_expected ) )
-                        moved_document = redirects[ possibly_expected ];
+                     string check_document( http_document );
+
+                     size_t len = check_document.length( );
+
+                     // NOTE: Allow for a trailing underbar to be used to test
+                     // a redirect while the original file is still available.
+                     if( ( len > 1 ) && ( check_document[ len - 1 ] == '_' ) )
+                     {
+                        check_document.erase( len - 1 );
+
+                        possibly_expected = check_document + '/' + string( c_index_html );
+                     }
+
+                     if( g_redirects.count( check_document ) )
+                        moved_document = g_redirects[ check_document ];
+                     else if( g_redirects.count( possibly_expected ) )
+                        moved_document = g_redirects[ possibly_expected ];
                   }
                }
             }
