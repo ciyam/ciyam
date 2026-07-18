@@ -1900,17 +1900,17 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   string script_name( c_web_session_script );
 
+                  string username;
+
+                  if( access == g_cws_admin_token )
+                     username = c_admin;
+                  else
+                     username = get_user_name( access );
+
                   bool running = has_system_variable( web_message_var_name );
 
                   if( !running )
                   {
-                     string username;
-
-                     if( access == g_cws_admin_token )
-                        username = c_admin;
-                     else
-                        username = get_user_name( access );
-
                      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) starting "
                       "session " + session + " with device " + device + " for access " + access );
 
@@ -1962,13 +1962,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      bool is_instance_fetch_request = false;
 
                      string storage_name;
-
-                     string username;
-
-                     if( access == g_cws_admin_token )
-                        username = c_admin;
-                     else
-                        username = get_user_name( access );
 
                      if( uri_suffix.find( c_cws_uri_suffix_storages_prefix ) == 0 )
                      {
@@ -2040,10 +2033,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                   + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
                               }
 
+                              request_and_args += "IRC_ROOM=" + room + '\n';
+
                               if( room != c_web_session_default_room_number )
                               {
-                                 request_and_args += "IRC_ROOM=" + room + '\n';
-
                                  request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"\n";
 
                                  string from;
