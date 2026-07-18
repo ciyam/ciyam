@@ -364,6 +364,8 @@ string g_system_name;
 string g_decrement_name;
 string g_increment_name;
 
+string g_gteq_session_queue_name;
+
 string g_identity_suffix;
 
 bool g_secure_identity;
@@ -5193,6 +5195,8 @@ void init_globals( const char* p_sid, int* p_port, int* p_use_udp, int* p_web_po
 
       g_decrement_name = get_special_var_name( e_special_var_decrement );
       g_increment_name = get_special_var_name( e_special_var_increment );
+
+      g_gteq_session_queue_name = get_special_var_name( e_special_var_gteq_session_queue );
 
       if( g_secure_identity )
          set_system_variable( e_special_var_sid_secure, c_true_value, true );
@@ -10619,6 +10623,29 @@ void set_session_variable( const var_name& var, const string& value,
                gtp_session->deque_variables[ name ].clear( );
 
             copy_queue_system_variable( name, gtp_session->deque_variables[ name ] );
+
+            string gteq_value;
+
+            if( gtp_session->variables.count( g_gteq_session_queue_name ) )
+            {
+               gteq_value = gtp_session->variables[ g_gteq_session_queue_name ];
+
+               gtp_session->variables.erase( g_gteq_session_queue_name );
+            }
+
+            // NOTE: If "@gteq_session_queue" has been set then
+            // will now remove all items that are less than it.
+            if( !gteq_value.empty( )
+             && !gtp_session->deque_variables[ name ].empty( ) )
+            {
+               while( !gtp_session->deque_variables[ name ].empty( ) )
+               {
+                  if( gtp_session->deque_variables[ name ].front( ) < gteq_value )
+                     gtp_session->deque_variables[ name ].pop_front( );
+                  else
+                     break;
+               }
+            }
 
             if( gtp_session->deque_variables[ name ].empty( ) )
                gtp_session->deque_variables.erase( name );
