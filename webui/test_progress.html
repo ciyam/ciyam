@@ -23,6 +23,9 @@ http://www.opensource.org/licenses/mit-license.php.
 
    <form id="test_form" onsubmit="do_hash_rounds( ); return false;">
       <label>Input: &nbsp; <input type="text" id="user_input" size="20" placeholder="(e.g. test)" autofocus></label>
+
+      <br/><br/>
+      <label>Using 'crypto.subtle' SHA256: <input type="checkbox" id="user_native" id="apple"></label>
       <br/><br/>
       <button type="submit">Click or Enter to Start</button>
    </form>
@@ -40,6 +43,19 @@ http://www.opensource.org/licenses/mit-license.php.
 const canvas = document.getElementById( "progress_canvas" );
 
 const ctx = canvas.getContext( "2d" );
+
+async function hash_string( message )
+{
+   const msg_buffer = new TextEncoder( ).encode( message );
+
+   const hash_buffer = await crypto.subtle.digest( "SHA-256", msg_buffer );
+
+   const hash_array = Array.from( new Uint8Array( hash_buffer ) );
+
+   const hash_hex = hash_array.map( b => ( "00" + b.toString( 16 ) ).slice( -2 ) ).join( "" );
+
+   return hash_hex.toLowerCase( );
+}
 
 function draw_progress_circle( )
 {
@@ -78,8 +94,13 @@ var round = 0;
 var chunk = 10000;
 var total = 1000000;
 
-var delay = 100;
+var start_time = 0;
+var finish_time = 0;
+
+var delay = 10;
 var percentage = 0.0;
+
+var use_native_version = false;
 
 draw_progress_circle( );
 
@@ -88,17 +109,29 @@ function round_to_two_decimals( num )
   return Math.round( num * 100 ) / 100;
 }
 
-function hash_rounds( )
+async function hash_rounds( )
 {
    var num = Math.min( chunk, total - round );
 
+   var use_async = use_native_version;
+
    // NOTE: Start with an initial hash.
    if( round == 0 )
-      s = hex_sha256( os );
+   {
+      if( use_async )
+         s = await hash_string( os );
+      else
+         s = hex_sha256( os ).toLowerCase( );
+   }
 
    // NOTE: Perform "num" additional rounds.
    for( var i = 0; i < num; i++ )
-      s = hex_sha256( s + os ).toLowerCase( );
+   {
+      if( use_async )
+         s = await hash_string( s + os );
+      else
+         s = hex_sha256( s + os ).toLowerCase( );
+   }
 
    round += num;
 
@@ -109,7 +142,13 @@ function hash_rounds( )
    if( round < total )
       setTimeout( hash_rounds, delay );
    else
-      document.getElementById( "response" ).innerText = "Output: " + s;
+   {
+      finish_time = performance.now( );
+
+      var seconds = ( finish_time - start_time ) / 1000.0;
+
+      document.getElementById( "response" ).innerText = "Output: " + s + "\n(" + seconds + " seconds)";
+   }
 }
 
 function do_hash_rounds( )
@@ -121,7 +160,11 @@ function do_hash_rounds( )
 
    draw_progress_circle( );
 
+   start_time = performance.now( );
+
    os = document.getElementById( "user_input" ).value;
+
+   use_native_version = document.getElementById( "user_native" ).checked;
 
    document.getElementById( "response" ).innerText = "";
 
