@@ -2035,21 +2035,24 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                               request_and_args += "IRC_ROOM=" + room + '\n';
 
-                              if( room != c_web_session_default_room_number )
+                              string from;
+
+                              if( option_parameters.count( c_cws_request_messages_review_options_from ) )
+                                 from = option_parameters[ c_cws_request_messages_review_options_from ];
+
+                              if( room == c_web_session_default_room_number )
+                              {
+                                 if( !from.empty( ) )
+                                    request_and_args += "session_variable @irc_start_points " + from + '\n';
+                              }
+                              else
                               {
                                  request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"\n";
 
-                                 string from;
-
-                                 // NOTE: If has just created
-                                 // a message then set "from"
-                                 // to make sure that it will
-                                 // be fetched.
+                                 // NOTE: If has just created a message then set
+                                 // "from" to make sure that it will be fetched.
                                  if( is_post_request )
                                     from = to_string( now );
-
-                                 if( option_parameters.count( c_cws_request_messages_review_options_from ) )
-                                    from = option_parameters[ c_cws_request_messages_review_options_from ];
 
                                  if( !from.empty( ) )
                                     request_and_args += "session_variable @irc_start_point_" + room + ' ' + from + '\n';
