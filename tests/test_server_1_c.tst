@@ -199,6 +199,30 @@ def
 session_variable @queue_test
 ghi
 session_variable @queue_test
+system_variable @qs_ni_test ""
+system_variable @qs_pf_test ""
+system_variable @queue_test aaa
+system_variable @queue_test bbb
+system_variable @queue_test ccc
+system_variable @queue_test ddd
+system_variable @queue_test eee
+session_variable !@queue_test @system
+session_variable @queue_*
+@queue_test aaa [+4]
+session_variable @gteq_session_queue ccc
+session_variable !@queue_test @system
+session_variable @queue_*
+@queue_test ccc [+2]
+system_variable @queue_test *
+aaa
+bbb
+ccc
+ddd
+eee
+session_variable @queue_test *
+ccc
+ddd
+eee
 system_variable @queue_|
 system_variable @queue_|test1 xxx
 system_variable @queue_|test2|test3 xxx

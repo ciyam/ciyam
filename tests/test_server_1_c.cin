@@ -129,6 +129,21 @@ session_variable @queue_test
 session_variable @queue_test
 session_variable @queue_test
 ;
+system_variable @qs_ni_test ""
+system_variable @qs_pf_test ""
+system_variable @queue_test aaa
+system_variable @queue_test bbb
+system_variable @queue_test ccc
+system_variable @queue_test ddd
+system_variable @queue_test eee
+session_variable !@queue_test @system
+session_variable @queue_*
+session_variable @gteq_session_queue ccc
+session_variable !@queue_test @system
+session_variable @queue_*
+system_variable @queue_test *
+session_variable @queue_test *
+;
 system_variable @queue_|
 system_variable @queue_|test1 xxx
 system_variable @queue_|test2|test3 xxx
