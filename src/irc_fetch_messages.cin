@@ -52,6 +52,15 @@ UUID=$OUTPUT
 .system_variable @session_@queue_irc_*_$USER
 INPUT_LINES=$OUTPUT
 ;
+.session_variable -id=$SESSION @irc_start_points
+START_POINTS=$OUTPUT
+;
+@ifdef $START_POINTS
+FORCED=1
+START_POINTS=,$START_POINTS
+.session_variable -id=$SESSION @irc_start_points ""
+@endif
+;
 OUTPUT_LINES=
 @label NEXT
 ;
@@ -77,16 +86,41 @@ NUM_NEW_MESSAGES=0
 ; an item (but could match incorrect queues).
 QUEUE_NAME_WITH_WILDCARD=@strlit:@queue_i?c_%ROOM_NO%_$USER
 ;
+FORCED_OR_UNCHECKED=
+;
+@ifdef $FORCED
+FORCED_OR_UNCHECKED=1
+@else
 .session_variable -id=$SESSION $QUEUE_NAME_WITH_WILDCARD
 @ifndef $OUTPUT
-@ifdef $FORCED
+.session_variable -id=$SESSION @irc_$ROOM_NO
+@ifndef $OUTPUT
+FORCED_OR_UNCHECKED=1
+@endif
+@endif
+@endif
+;
+@ifdef $FORCED_OR_UNCHECKED
 .system_variable @session_@queue_irc_%ROOM_NO%_$USER 1
+;
+@ifneq "$START_POINTS" ""
+RPOS=@strpos:,%ROOM_NO%=:$START_POINTS
+;
+@ifdef $RPOS
+ROOM_AND_START=@substr:$RPOS,19:$START_POINTS
+;
+SPOS=@strpos:=:$ROOM_AND_START
+SPOS=@$SPOS+1
+;
+START_POINT=@substr:$SPOS:$ROOM_AND_START
+.session_variable -id=$SESSION @gteq_session_queue $START_POINT
+@endif
+@endif
 ;
 .session_variable -id=$SESSION @irc_$ROOM_NO 1
 .session_variable -id=$SESSION !@queue_irc_%ROOM_NO%_$USER @system
 ;
 .session_variable -id=$SESSION $QUEUE_NAME_WITH_WILDCARD
-@endif
 @endif
 ;
 @ifdef $OUTPUT
