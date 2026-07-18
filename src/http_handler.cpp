@@ -352,9 +352,9 @@ string g_cws_endpoint_prefix;
 
 atomic< size_t > g_active_handlers;
 
-atomic< size_t > g_num_request_handler;
+atomic< time_t > g_redirects_file_mod;
 
-atomic< time_t > g_redirects_file_mod = 0;
+atomic< size_t > g_num_request_handler;
 
 map< string, string > g_redirects;
 
