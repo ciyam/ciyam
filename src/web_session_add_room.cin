@@ -1,0 +1,35 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "2"
+ERROR=Room and User names are required for "web_session_add_room".
+@else
+NAME=$1
+USER=$2
+;
+.run_script !irc_add_room "@name=$NAME"
+;
+@ifndef $ERROR
+NEW_ROOM=$OUTPUT
+MESSAGE=@strlit:_[$ROOM]/[create] $NAME
+.run_script !irc_join "@name=$USER,@room=$NEW_ROOM"
+;
+@ifndef $ERROR
+MESSAGE=@strlit:_[$NEW_ROOM]/[create] $NAME
+ENCODED=@base64:@$MESSAGE
+.run_script !irc_send_message "@room=$NEW_ROOM,@names=ALL,@message=$ENCODED"
+@endif
+;
+@endif
+;
+@endif
