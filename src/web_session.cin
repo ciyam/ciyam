@@ -74,24 +74,32 @@ COMMAND=$OUTPUT
 >$TEMP_FILE
 COMMAND_1=%COMMAND:1%
 $COMMAND_1
+@ifndef $ERROR
 @ifdef "%COMMAND:2%"
 COMMAND_2=%COMMAND:2%
 $COMMAND_2
 @endif
+@ifndef $ERROR
 @ifdef "%COMMAND:3%"
 COMMAND_3=%COMMAND:3%
 $COMMAND_3
 @endif
+@ifndef $ERROR
 @ifdef "%COMMAND:4%"
 COMMAND_4=%COMMAND:4%
 $COMMAND_4
 @endif
+@ifndef $ERROR
 @ifdef "%COMMAND:5%"
 COMMAND_5=%COMMAND:5%
 $COMMAND_5
 @endif
 @ifdef "%COMMAND:6%"
 #IGNORED: %COMMAND:6%
+@endif
+@endif
+@endif
+@endif
 @endif
 >
 ; NOTE: As the command might take some time
