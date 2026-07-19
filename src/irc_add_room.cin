@@ -70,7 +70,9 @@ ERROR=Unable to obtain the system IRC lock (try again later).
 @else
 ;
 .session_variable @uuid
-TEMP_FILE=/tmp/ciyam/$OUTPUT
+UUID=$OUTPUT
+;
+TEMP_FILE=/tmp/ciyam/$UUID
 ;
 >$TEMP_FILE
 system_variable @irc_names_**
@@ -91,11 +93,12 @@ ERROR=Room '$NAME' already exists.
 .system_variable @irc_rooms
 NEW_ROOM=$OUTPUT
 ;
-RETURN=$NEW_ROOM
+RETURN=$NEW_ROOM-$UUID
 ;
 .system_variable @irc_names_$NEW_ROOM "$NAME"
 .system_variable @irc_owner_$NEW_ROOM "$USER"
 .system_variable @irc_users_$NEW_ROOM "@$USER"
+.system_variable @irc_uuids_$UUID $NEW_ROOM
 ;
 NEXT_ROOM=$NEW_ROOM
 LEN=@strlen:$NEXT_ROOM
