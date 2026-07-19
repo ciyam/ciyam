@@ -93,6 +93,8 @@ constexpr const char* c_web_session_suffix = ".session";
 constexpr const char* c_web_started_suffix = ".started";
 constexpr const char* c_web_storage_suffix = ".storage";
 
+constexpr const char* c_error_output_prefix = "Error: ";
+
 constexpr const char* c_cws_uri_suffix_help = "help";
 constexpr const char* c_cws_uri_suffix_users = "users";
 constexpr const char* c_cws_uri_suffix_devices = "devices";
@@ -2025,12 +2027,18 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     replace( names, ",", "." );
                                  }
 
-                                 string prefix( c_web_session_default_message_room_prefix );
+                                 if( room == c_web_session_default_room_number )
+                                    request_and_args = "<web_session_add_room.cin \""
+                                     + option_parameters[ c_cws_request_messages_create_options_text ] + "\" \"" + username + "\"\n";
+                                 else
+                                 {
+                                    string prefix( c_web_session_default_message_room_prefix );
 
-                                 prefix += room + c_web_session_default_message_room_suffix;
+                                    prefix += room + c_web_session_default_message_room_suffix;
 
-                                 request_and_args = "run_script !irc_send_message \"@room=" + room + ",@names=" + names + ",@message="
-                                  + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
+                                    request_and_args = "run_script !irc_send_message \"@room=" + room + ",@names=" + names + ",@message="
+                                     + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
+                                 }
                               }
 
                               request_and_args += "IRC_ROOM=" + room + '\n';
@@ -2201,94 +2209,110 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            msleep( 100 );
                         }
 
-                        if( !response.empty( )
-                         && !is_json_output && is_instance_fetch_request )
+                        if( !response.empty( ) && response.find( c_error_output_prefix ) == 0 )
                         {
-                           vector< string > all_lines;
+                           found = false;
 
-                           split( response, all_lines, '\n' );
+                           error = response.substr( CONST_LENGTH( c_error_output_prefix ) );
+
+                           string::size_type pos = error.find( '\n' );
+
+                           if( pos && ( pos != string::npos ) )
+                              error.erase( pos );
 
                            response.erase( );
-
-                           for( size_t i = 0; i < all_lines.size( ); i++ )
-                           {
-                              string next_line( all_lines[ i ] );
-
-                              if( !response.empty( ) )
-                                 response += '\n';
-
-                              if( next_line[ 0 ] == '[' )
-                              {
-                                 string::size_type pos = next_line.find( ']' );
-
-                                 string remainder;
-
-                                 if( pos != string::npos )
-                                 {
-                                    remainder = next_line.substr( pos + 1 );
-
-                                    string key_ver_and_state( next_line.substr( 1, pos - 1 ) );
-
-                                    key_ver_and_state = opt_prefix_uri( key_ver_and_state );
-
-                                    next_line = '[' + key_ver_and_state + ']' + remainder;
-                                 }
-
-                                 response += next_line;
-                              }
-                              else
-                                 response += next_line;
-                           }
                         }
-
-                        if( !response.empty( ) && is_json_output )
+                        else
                         {
-                           if( is_module_info_request )
+                           if( !response.empty( )
+                            && !is_json_output && is_instance_fetch_request )
                            {
-                              vector< string > modules;
+                              vector< string > all_lines;
 
-                              split( response, modules, '\n' );
+                              split( response, all_lines, '\n' );
 
-                              response = as_json_array( "all_modules", modules );
-                           }
-                           else if( is_instance_fetch_request )
-                           {
-                              if( response[ 0 ] == '[' )
+                              response.erase( );
+
+                              for( size_t i = 0; i < all_lines.size( ); i++ )
                               {
-                                 if( !instance_record_key.empty( ) )
+                                 string next_line( all_lines[ i ] );
+
+                                 if( !response.empty( ) )
+                                    response += '\n';
+
+                                 if( next_line[ 0 ] == '[' )
                                  {
-                                    vector< string > values;
+                                    string::size_type pos = next_line.find( ']' );
 
-                                    get_field_values( response, values );
+                                    string remainder;
 
-                                    response = as_json_array( "values", values );
-                                 }
-                                 else
-                                 {
-                                    vector< string > records;
-
-                                    split( response, records, '\n' );
-
-                                    response = "{\n \"records\":\n  [\n";
-
-                                    for( size_t i = 0; i < records.size( ); i++ )
+                                    if( pos != string::npos )
                                     {
-                                       string next_record( records[ i ] );
+                                       remainder = next_line.substr( pos + 1 );
 
-                                       if( !next_record.empty( ) && next_record[ 0 ] == '[' )
-                                       {
-                                          if( i > 0 )
-                                             response += ",\n";
+                                       string key_ver_and_state( next_line.substr( 1, pos - 1 ) );
 
-                                          vector< string > values;
+                                       key_ver_and_state = opt_prefix_uri( key_ver_and_state );
 
-                                          get_field_values( next_record, values );
-
-                                          response += as_json_array( "", values );
-                                       }
+                                       next_line = '[' + key_ver_and_state + ']' + remainder;
                                     }
 
-                                    response += "\n ]\n}";
+                                    response += next_line;
+                                 }
+                                 else
+                                    response += next_line;
+                              }
+                           }
+
+                           if( !response.empty( ) && is_json_output )
+                           {
+                              if( is_module_info_request )
+                              {
+                                 vector< string > modules;
+
+                                 split( response, modules, '\n' );
+
+                                 response = as_json_array( "all_modules", modules );
+                              }
+                              else if( is_instance_fetch_request )
+                              {
+                                 if( response[ 0 ] == '[' )
+                                 {
+                                    if( !instance_record_key.empty( ) )
+                                    {
+                                       vector< string > values;
+
+                                       get_field_values( response, values );
+
+                                       response = as_json_array( "values", values );
+                                    }
+                                    else
+                                    {
+                                       vector< string > records;
+
+                                       split( response, records, '\n' );
+
+                                       response = "{\n \"records\":\n  [\n";
+
+                                       for( size_t i = 0; i < records.size( ); i++ )
+                                       {
+                                          string next_record( records[ i ] );
+
+                                          if( !next_record.empty( ) && next_record[ 0 ] == '[' )
+                                          {
+                                             if( i > 0 )
+                                                response += ",\n";
+
+                                             vector< string > values;
+
+                                             get_field_values( next_record, values );
+
+                                             response += as_json_array( "", values );
+                                          }
+                                       }
+
+                                       response += "\n ]\n}";
+                                    }
                                  }
                               }
                            }
