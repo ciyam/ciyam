@@ -12,13 +12,19 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "2"
-ERROR=Need user and room number.
+ERROR=Need user and room number (and an optional join token).
 @else
 ;
 USERNAME=$1
 IRC_ROOM=$2
+JOIN_TOKEN=$3
 ;
-.run_script !irc_join "@name=$USERNAME,@room=$IRC_ROOM"
+@ifdef $JOIN_TOKEN
+JOIN_TOKEN=-$JOIN_TOKEN
+@endif
+;
+.run_script !irc_join "@name=$USERNAME,@room=$IRC_ROOM$JOIN_TOKEN"
+@ifndef $ERROR
 JOIN_LINES=@repstr:|/\n:$OUTPUT
 JOIN_LINE=@strlit:%JOIN_LINES:2%
 IRC_USERS=@strlit:%JOIN_LINES:3%
@@ -31,6 +37,7 @@ ENCODED=@base64:@$JOIN_LINE
 IRC_USERS=@substr:1:$IRC_USERS
 IRC_USERS=@repstr:@/ :$IRC_USERS
 IRC_USERS= $IRC_USERS
+@endif
 @endif
 ;
 @endif
