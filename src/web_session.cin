@@ -70,25 +70,28 @@ COMMAND=$OUTPUT
 .system_variable @web.$TOKEN.$DEVICE.command ""
 ;
 @ifneq "$COMMAND" "@web_session_check"
-COMMAND_1=%COMMAND:1%
-COMMAND_2=%COMMAND:2%
-COMMAND_3=%COMMAND:3%
-COMMAND_4=%COMMAND:4%
-COMMAND_5=%COMMAND:5%
 ; NOTE: Supports up to five commands.
 >$TEMP_FILE
+COMMAND_1=%COMMAND:1%
 $COMMAND_1
-@ifdef $COMMAND_2
+@ifdef "%COMMAND:2%"
+COMMAND_2=%COMMAND:2%
 $COMMAND_2
 @endif
-@ifdef $COMMAND_3
+@ifdef "%COMMAND:3%"
+COMMAND_3=%COMMAND:3%
 $COMMAND_3
 @endif
-@ifdef $COMMAND_4
+@ifdef "%COMMAND:4%"
+COMMAND_4=%COMMAND:4%
 $COMMAND_4
 @endif
-@ifdef $COMMAND_5
+@ifdef "%COMMAND:5%"
+COMMAND_5=%COMMAND:5%
 $COMMAND_5
+@endif
+@ifdef "%COMMAND:6%"
+#IGNORED: %COMMAND:6%
 @endif
 >
 ; NOTE: As the command might take some time
