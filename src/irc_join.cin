@@ -18,7 +18,7 @@ ERROR=
 RETURN=
 ;
 @ifneq "$NUM_ARGS" "3"
-ERROR=User name, room number and session id are required for "irc_join".
+ERROR=User name, room identifier and session id are required for "irc_join".
 @else
 ;
 USER=$1
@@ -28,9 +28,36 @@ SESSION=$3
 ENTRANCE_ROOM=0000000
 STARTING_ROOM=0000001
 ;
+JOIN_TOKEN=
+POS=@strpos:-:$ROOM_NO
+;
+@ifdef $POS
+JPOS=@$POS+1
+JOIN_TOKEN=@substr:$JPOS:$ROOM_NO
+ROOM_NO=@substr:0,$POS:$ROOM_NO
+@endif
+;
 @ifeq "$ROOM_NO" "$ENTRANCE_ROOM"
 ROOM_NO=$STARTING_ROOM
 @endif
+;
+@ifneq "$ROOM_NO" "$STARTING_ROOM"
+.system_variable @irc_uuids_$JOIN_TOKEN
+@ifneq "$ROOM_NO" "$OUTPUT"
+.system_variable @irc_users_$ROOM_NO
+ALL_USERS=$OUTPUT@
+CHECK_USERS=@repstr:@$USER@/:$ALL_USERS
+@ifeq "$ALL_USERS" "$CHECK_USERS"
+@ifndef $JOIN_TOKEN
+ERROR=Unknown room '$ROOM_NO' (or not joined).
+@else
+ERROR=Unknown or invalid join token '$JOIN_TOKEN'.
+@endif
+@endif
+@endif
+@endif
+;
+@ifndef $ERROR
 ;
 ROOM_AND_USER=%ROOM_NO%_$USER
 ;
@@ -125,6 +152,8 @@ RETURN=/joined (as $USER)|$EXTRA|$ALL_USERS
 .session_variable -id=$SESSION @queue_irc_$ROOM_AND_USER @system
 ;
 .system_variable @irc_lock ""
+;
+@endif
 ;
 @endif
 ;
