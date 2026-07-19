@@ -21,11 +21,18 @@ run_script !irc_add_room "@name=$NAME"
 ;
 @ifndef $ERROR
 NEW_ROOM=$OUTPUT
-MESSAGE=@strlit:_[$ROOM]/[create] $NAME
+;
+POS=@strpos:-:$NEW_ROOM
+@ifdef $POS
+JPOS=@$POS+1
+JOIN_TOKEN=@substr:$JPOS:$NEW_ROOM
+NEW_ROOM=@substr:0,$POS:$NEW_ROOM
+@endif
+;
 .run_script !irc_join "@name=$USER,@room=$NEW_ROOM"
 ;
 @ifndef $ERROR
-MESSAGE=@strlit:_[$NEW_ROOM]/[create] $NAME
+MESSAGE=@strlit:_[$NEW_ROOM]/[create]$NEW_ROOM-$JOIN_TOKEN $NAME
 ENCODED=@base64:@$MESSAGE
 .run_script !irc_send_message "@room=$NEW_ROOM,@names=ALL,@message=$ENCODED"
 @endif
