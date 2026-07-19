@@ -205,6 +205,54 @@ inline string escaped_json( const string& s )
    return escaped( s, "/\"", '\\', c_json_escape_specials );
 }
 
+bool has_error_prefix( const string& s )
+{
+   bool retval = false;
+
+   const char* p = c_error_output_prefix;
+
+   size_t err_plen = CONST_LENGTH( c_error_output_prefix );
+
+   if( s.length( ) > err_plen )
+   {
+      size_t i = 0;
+
+      for( ; i < err_plen; i++ )
+      {
+         if( s[ i ] != *( p + i ) )
+            break;
+      }
+
+      if( i == err_plen )
+         retval = true;
+   }
+
+   return retval;
+}
+
+bool has_const_char_prefix( const string& s, const char* p, size_t plen )
+{
+   bool retval = false;
+
+   if( s.length( ) > plen )
+   {
+      size_t i = 0;
+
+      for( ; i < plen; i++ )
+      {
+         if( s[ i ] != *( p + i ) )
+            break;
+      }
+
+      if( i == plen )
+         retval = true;
+   }
+
+   return retval;
+}
+
+#define HAS_CONST_CHAR_PREFIX( s, p ) has_const_char_prefix( s, p, CONST_LENGTH( p ) )
+
 string as_json_array( const string& name, const vector< string >& array )
 {
    string retval;
@@ -884,7 +932,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    string request( cws_params.request );
    string session( cws_params.session );
 
-   if( uri_suffix.find( c_cws_uri_suffix_sessions_prefix ) == 0 )
+   if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_sessions_prefix ) )
       session = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_sessions_prefix ) );
 
    string instance_module_id;
@@ -915,7 +963,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       }
    }
 
-   if( uri_suffix.find( c_cws_uri_suffix_storage_instances_prefix ) == 0 )
+   if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storage_instances_prefix ) )
    {
       string instance_info( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_storage_instances_prefix ) ) );
 
@@ -1367,7 +1415,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   else
                      response = "{\"commands\":\"" + escaped_json( help_output ) + "\"}\n";
                }
-               else if( is_delete_request && ( uri_suffix.find( c_cws_uri_suffix_sessions_prefix ) == 0 ) )
+               else if( is_delete_request && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_sessions_prefix ) )
                {
                   found = true;
 
@@ -1435,7 +1483,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   error = "No storage is currently attached to this session.";
                }
                else if( is_get_request
-                && ( uri_suffix.find( c_cws_uri_suffix_storage_modules_prefix ) == 0 ) )
+                && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storage_modules_prefix ) )
                {
                   string storage_name( get_system_variable( web_storage_var_name ) );
 
@@ -1469,7 +1517,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            if( extra == c_cws_uri_suffix_enums_extra )
                               response = get_attributes_for_name_query(
                                root_node, c_storage_module_enums_available_query, is_json_output );
-                           else if( extra.find( c_cws_uri_suffix_enums_extra_prefix ) == 0 )
+                           else if( HAS_CONST_CHAR_PREFIX( extra, c_cws_uri_suffix_enums_extra_prefix ) )
                            {
                               extra = extra.substr( CONST_LENGTH( c_cws_uri_suffix_enums_extra_prefix ) );
 
@@ -1500,7 +1548,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                               response = get_attributes_for_name_query( root_node, query, is_json_output );
                            }
-                           else if( extra.find( c_cws_uri_suffix_lists_extra_prefix ) == 0 )
+                           else if( HAS_CONST_CHAR_PREFIX( extra, c_cws_uri_suffix_lists_extra_prefix ) )
                            {
                               extra = extra.substr( CONST_LENGTH( c_cws_uri_suffix_lists_extra_prefix ) );
 
@@ -1531,7 +1579,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                               response = get_attributes_for_name_query( root_node, query, is_json_output );
                            }
-                           else if( extra.find( c_cws_uri_suffix_views_extra_prefix ) == 0 )
+                           else if( HAS_CONST_CHAR_PREFIX( extra, c_cws_uri_suffix_views_extra_prefix ) )
                            {
                               extra = extra.substr( CONST_LENGTH( c_cws_uri_suffix_views_extra_prefix ) );
 
@@ -1560,20 +1608,20 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                }
                else if( is_get_request
                 && get_system_variable( web_storage_var_name ).empty( )
-                && ( uri_suffix.find( c_cws_uri_suffix_storage_instances_prefix ) == 0 ) )
+                && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storage_instances_prefix ) )
                {
                   // FUTURE: This message should be handled as a server string message.
                   error = "No storage is currently attached to this session.";
                }
                else if( is_get_request
                 && ( instance_module_id.empty( ) || instance_mclass_id.empty( ) )
-                && ( uri_suffix.find( c_cws_uri_suffix_storage_instances_prefix ) == 0 ) )
+                && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storage_instances_prefix ) )
                {
                   // FUTURE: This message should be handled as a server string message.
                   error = "Instance request requires an endpoint with module and class ids.";
                }
                else if( is_post_request
-                && ( uri_suffix.find( c_cws_uri_suffix_unlock_keys_prefix ) == 0 ) )
+                && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_unlock_keys_prefix ) )
                {
                   string key( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_unlock_keys_prefix ) ) );
 
@@ -1709,7 +1757,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      msleep( c_save_data_delay );
                   }
                }
-               else if( is_get_request && ( uri_suffix.find( c_cws_uri_suffix_stylesheets_prefix ) == 0 ) )
+               else if( is_get_request && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_stylesheets_prefix ) )
                {
                   string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_stylesheets_prefix ) ) );
 
@@ -1816,7 +1864,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
                   }
                }
-               else if( is_delete_request && ( uri_suffix.find( c_cws_uri_suffix_users_prefix ) == 0 ) )
+               else if( is_delete_request
+                && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_users_prefix ) )
                {
                   if( access != g_cws_admin_token )
                      // FUTURE: This message should be handled as a server string message.
@@ -1966,7 +2015,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      string storage_name;
 
-                     if( uri_suffix.find( c_cws_uri_suffix_storages_prefix ) == 0 )
+                     if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storages_prefix ) )
                      {
                         is_user_info_request = true;
 
@@ -1978,11 +2027,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            storage_name[ 0 ] = toupper( storage_name[ 0 ] );
                      }
                      else if( ( uri_suffix == c_cws_uri_suffix_messages )
-                      || ( uri_suffix.find( c_cws_uri_suffix_messages_prefix ) == 0 ) )
+                      || HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_messages_prefix ) )
                         is_messages_request = true;
                      else if( uri_suffix == c_cws_uri_suffix_storage_modules )
                         is_module_info_request = true;
-                     else if( uri_suffix.find( c_cws_uri_suffix_storage_instances_prefix ) == 0 )
+                     else if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storage_instances_prefix ) )
                         is_instance_fetch_request = true;
 
                      if( !request.empty( ) && !is_user_info_request )
@@ -2010,7 +2059,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                               string room( c_web_session_default_room_number );
 
-                              if( uri_suffix.find( c_cws_uri_suffix_messages_prefix ) == 0 )
+                              if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_messages_prefix ) )
                                  room = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_messages_prefix ) );
 
                               if( is_post_request
@@ -2062,7 +2111,22 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  }
                                  else
                                  {
-                                    request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"\n";
+                                    string join_token;
+
+                                    // NOTE: If "from" appears to be a UUID then will treat it is a "join token".
+                                    if( from.length( ) == 32 )
+                                    {
+                                       join_token = from;
+
+                                       from.erase( );
+                                    }
+
+                                    request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"";
+
+                                    if( !join_token.empty( ) )
+                                       request_and_args += "\"" + join_token + "\"";
+
+                                    request_and_args += '\n';
 
                                     // NOTE: If has just created a message then set
                                     // "from" to make sure that it will be fetched.
@@ -2205,11 +2269,13 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                               file_remove( output_file_name );
 
-                              if( is_messages_request && !is_adding_room && !response.empty( ) )
-                                 process_messages_response( response );
-
-                              if( is_user_info_request && !response.empty( ) )
-                                 process_user_info_response( session, response );
+                              if( !response.empty( ) && !has_error_prefix( response ) )
+                              {
+                                 if( is_user_info_request )
+                                    process_user_info_response( session, response );
+                                 else if( !is_adding_room && is_messages_request )
+                                    process_messages_response( response );
+                              }
 
                               break;
                            }
@@ -2217,7 +2283,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            msleep( 100 );
                         }
 
-                        if( !response.empty( ) && response.find( c_error_output_prefix ) == 0 )
+                        if( has_error_prefix( response ) )
                         {
                            found = false;
 
