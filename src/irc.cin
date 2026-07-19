@@ -25,7 +25,10 @@ SHOW_CHANGED=
 ;
 ENTRANCE_ROOM=0000000
 ;
+;
 ROOM=$ENTRANCE_ROOM
+;
+ROOM_LEN=@strlen:$ROOM
 ;
 .run_script !irc_join "@name=$USER,@room=$ROOM"
 ;
@@ -60,7 +63,13 @@ QUIT=1
 .run_script !irc_add_room "@name=$NAME"
 @ifndef $ERROR
 ROOM=$OUTPUT
-MESSAGE=@strlit:_[$ROOM]/[create] $NAME
+POS=@strpos:-:$ROOM
+@ifdef $POS
+JPOS=@$POS+1
+JOIN_TOKEN=@substr:$JPOS:$ROOM
+ROOM=@substr:0,$POS:$ROOM
+@endif
+MESSAGE=@strlit:_[$ROOM]/[create]$ROOM-$JOIN_TOKEN $NAME
 .run_script !irc_join "@name=$USER,@room=$ROOM"
 @endif
 @elif "$CIYAM_KEY_PRESSED" = "r"
@@ -73,12 +82,20 @@ REREAD_ALL=!
 @elif "$ROOM" = "/"
 ROOM=$ENTRANCE_ROOM
 @endif
+LEN=@strlen:$ROOM
+@if $LEN < $ROOM_LEN
+ROOM=@padlen:$ROOM_LEN,0:$ROOM
+@endif
 .run_script !irc_join "@name=$USER,@room=$ROOM"
 @ifdef $ERROR
 ERROR=
 ROOM=$OLD_ROOM
 @else
 CHECK_PRIOR=1
+POS=@strpos:-:$ROOM
+@ifdef $POS
+ROOM=@substr:0,$POS:$ROOM
+@endif
 @endif
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
 FORCE_OUTPUT=1
@@ -255,7 +272,7 @@ MESSAGE_ROOM_NUM=@padlen:-20, :$MESSAGE_ROOM_NUM
 ;
 SKIP_MESSAGE=
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
-UNDECORATED=@substr:1,7:$MESSAGE_ROOM_NUM
+UNDECORATED=@substr:1,$ROOM_LEN:$MESSAGE_ROOM_NUM
 CHECK=LAST_CHECK=@strlit:$$LAST_$UNDECORATED
 $CHECK
 @ifneq "$LAST_CHECK$FORCE_OUTPUT" "$DECODED_MESSAGE"
