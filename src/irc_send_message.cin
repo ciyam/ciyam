@@ -88,17 +88,19 @@ IRC_USERS=@strlit:$OUTPUT
 ;
 @ifdef $IRC_USERS
 ;
+@ifneq "$NAMES" "ALL"
 @ifeq "$NAMES" "OTHERS"
 IRC_USERS=@repstr:@%USER_NAME%@/@:%IRC_USERS%@
-@elif "$NAMES" != "ALL"
+@elif "$NAMES" != "$USER_NAME"
 IRC_USERS=@set_all_in:@:$NAMES $IRC_USERS
 ;
 LIST=@repstr:@/,:$IRC_USERS
 IRC_USERS=,$LIST
 IRC_USERS=@repstr:,/@:$IRC_USERS
 ;
-USER_MESSAGE=_(message sent to $LIST)
+USER_MESSAGE=_[$ROOM] (private message sent to $LIST)
 USER_MESSAGE=@base64:@$USER_MESSAGE
+@endif
 @endif
 ;
 IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
