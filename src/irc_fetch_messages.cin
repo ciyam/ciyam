@@ -43,14 +43,14 @@ ROOM=@substr:1:$ROOM
 ENTRANCE_ROOM=0000000
 ;
 RELOAD=
-ROOM_AND_USER=%ROOM%_$USER
+ROOM_AND_USER=@strlit:%ROOM%_$USER
 ;
 .session_variable @uuid
 UUID=$OUTPUT
 ;
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
 .system_variable @session_@queue_irc_*_$USER
-INPUT_LINES=$OUTPUT
+INPUT_LINES=@strlit:$OUTPUT
 ;
 .session_variable -id=$SESSION @irc_start_points
 START_POINTS=$OUTPUT
@@ -65,7 +65,7 @@ OUTPUT_LINES=
 @label NEXT
 ;
 @:LOOP
-NEXT_LINE=%INPUT_LINES:1%
+NEXT_LINE=@strlit:%INPUT_LINES:1%
 ;
 @ifeq "$NEXT_LINE" ""
 @label END_LOOP
@@ -78,7 +78,7 @@ ROOM_NO_AND_INFO=@repstr:@session_@queue_irc_:$NEXT_LINE
 ROOM_NO=@repstr:_$USER 1/:$ROOM_NO_AND_INFO
 ;
 .system_variable @irc_names_$ROOM_NO
-ROOM_NAME=$OUTPUT
+ROOM_NAME=@strlit:$OUTPUT
 ;
 NUM_NEW_MESSAGES=0
 ;
@@ -147,7 +147,7 @@ OUTPUT_LINES=$OUTPUT_LINES\n
 ;
 OUTPUT_LINES=$OUTPUT_LINES$UNIX_NOW $USER: $ENCODED
 ;
-INPUT_LINES=%INPUT_LINES:-1%
+INPUT_LINES=@strlit:%INPUT_LINES:-1%
 !!@:LOOP
 ;
 @:END_LOOP
