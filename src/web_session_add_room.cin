@@ -16,6 +16,9 @@ ERROR=Room and User names are required for "web_session_add_room".
 @else
 NAME=$1
 USER=$2
+NAMES=$3
+;
+STARTING_ROOM=0000001
 ;
 run_script !irc_add_room "@name=$NAME"
 ;
@@ -34,7 +37,12 @@ NEW_ROOM=@substr:0,$POS:$NEW_ROOM
 @ifndef $ERROR
 MESSAGE=@strlit:_[$NEW_ROOM]/[create]$NEW_ROOM-$JOIN_TOKEN $NAME
 ENCODED=@base64:@$MESSAGE
-.run_script !irc_send_message "@room=$NEW_ROOM,@names=ALL,@message=$ENCODED"
+.run_script !irc_send_message "@room=$NEW_ROOM,@names=$USER,@message=$ENCODED"
+@ifdef $NAMES
+MESSAGE=@strlit:_[$STARTING_ROOM]/[invite]$NEW_ROOM-$JOIN_TOKEN $NAME
+ENCODED=@base64:@$MESSAGE
+.run_script !irc_send_message "@room=$STARTING_ROOM,@names=$NAMES,@message=$ENCODED"
+@endif
 @endif
 ;
 @endif
