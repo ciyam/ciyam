@@ -63,7 +63,7 @@ echo ${room_info%-*}
 echo "Now check for messages as admin and join the room created by test-1."
 summary=$(curl -s "localhost:13031/cws/messages?access=12345&device=$device&session=$session")
 echo ${summary#* }
-curl -s "localhost:13031/cws/messages/0000001?access=12345&device=$device&session=$session" | cut -d " " -f 2-
+curl -s "localhost:13031/cws/messages/0000001?access=12345&device=$device&session=$session" | cut -d " " -f 2- | sed -E "s/\-[0-9a-f]{32}/-NEW-ROOM-UUID-VALUE/g"
 new_room_num=${room_info%-*}
 new_room_uuid=${room_info#*-}
 message=$(curl -s "localhost:13031/cws/messages/$new_room_num?access=12345&device=$device&options=from%3D$new_room_uuid&session=$session")
