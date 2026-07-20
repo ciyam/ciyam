@@ -81,6 +81,10 @@ constexpr const char* c_cws_own = "***";
 
 constexpr const char* c_css_suffix = ".css";
 
+constexpr const char* c_error_output_prefix = "Error: ";
+
+constexpr const char* c_ciyam_storages_file = ".ciyam_storages";
+
 constexpr const char* c_web_demo_pin_1 = "10101";
 constexpr const char* c_web_demo_pin_2 = "10201";
 constexpr const char* c_web_demo_pin_3 = "10301";
@@ -92,8 +96,6 @@ constexpr const char* c_web_message_suffix = ".message";
 constexpr const char* c_web_session_suffix = ".session";
 constexpr const char* c_web_started_suffix = ".started";
 constexpr const char* c_web_storage_suffix = ".storage";
-
-constexpr const char* c_error_output_prefix = "Error: ";
 
 constexpr const char* c_cws_uri_suffix_help = "help";
 constexpr const char* c_cws_uri_suffix_users = "users";
@@ -1939,13 +1941,23 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   found = true;
 
-                  // NOTE: Currently will only return the default system storage.
-                  string default_storage( lower( get_system_variable( e_special_var_storage ) ) );
+                  string storages( get_system_variable( e_special_var_storage ) );
+
+                  if( file_exists( c_ciyam_storages_file ) )
+                     storages = buffer_file( c_ciyam_storages_file );
+
+                  to_lower( storages );
 
                   if( !is_json_output )
-                     response = default_storage;
+                     response = storages;
                   else
-                     response = "{\"storages\":[" + default_storage + "]}\n";
+                  {
+                     vector< string > all_storages;
+
+                     split( storages, all_storages );
+
+                     as_json_array( "all_storages", all_storages );
+                  }
                }
                else
                {
