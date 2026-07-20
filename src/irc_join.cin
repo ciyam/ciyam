@@ -116,8 +116,6 @@ ERROR=Invalid room number $ROOM_NO.
 .system_variable @irc_owner_$STARTING_ROOM admin
 .system_variable @irc_users_$STARTING_ROOM @admin
 ;
-.system_variable @session_@queue_irc_%STARTING_ROOM%_admin 1
-;
 .system_variable @irc_rooms 0000002
 @endif
 ;
@@ -148,10 +146,8 @@ RETURN=/joined (as $USER)|$EXTRA|$ALL_USERS
 .session_variable -id=$SESSION @irc_$ROOM_NO 1
 .session_variable -id=$SESSION @irc_user $USER
 ;
-.system_variable @queue_irc_$ROOM_AND_USER -has
-@ifeq "$OUTPUT" "0"
 .system_variable @session_@queue_irc_$ROOM_AND_USER 1
-@endif
+;
 .session_variable -id=$SESSION @queue_irc_$ROOM_AND_USER @system
 ;
 .system_variable @irc_lock ""
