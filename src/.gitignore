@@ -98,6 +98,9 @@ xvars
 # Ignore '.app_name' file.
 .app_name
 
+# Ignore '.ciyam_storages' file.
+.ciyam_storages
+
 # Ignore release and version files.
 .ciyam_*_release
 .ciyam_*_version
