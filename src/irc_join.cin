@@ -45,7 +45,7 @@ ROOM_NO=$STARTING_ROOM
 .system_variable @irc_uuids_$JOIN_TOKEN
 @ifneq "$ROOM_NO" "$OUTPUT"
 .system_variable @irc_users_$ROOM_NO
-ALL_USERS=$OUTPUT@
+ALL_USERS=@strlit:$OUTPUT@
 CHECK_USERS=@repstr:@$USER@/:$ALL_USERS
 @ifeq "$ALL_USERS" "$CHECK_USERS"
 @ifndef $JOIN_TOKEN
@@ -59,7 +59,7 @@ ERROR=Unknown or invalid join token '$JOIN_TOKEN'.
 ;
 @ifndef $ERROR
 ;
-ROOM_AND_USER=%ROOM_NO%_$USER
+ROOM_AND_USER=@strlit:%ROOM_NO%_$USER
 ;
 ; NOTE: Only accept names that are between three and twelve characters long
 ; starting with 'a-z' and ending with 'a-z' or '0-9'. Hyphens are permitted
@@ -115,6 +115,9 @@ ERROR=Invalid room number $ROOM_NO.
 .system_variable @irc_names_$STARTING_ROOM Administration
 .system_variable @irc_owner_$STARTING_ROOM admin
 .system_variable @irc_users_$STARTING_ROOM @admin
+;
+.system_variable @session_@queue_irc_%STARTING_ROOM%_admin 1
+;
 .system_variable @irc_rooms 0000002
 @endif
 ;
