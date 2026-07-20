@@ -8,6 +8,8 @@ if [ "$CIYAM_USER" = "" ]; then
  CIYAM_USER=$USER
 fi
 
+ls -1 *.so | grep -v ciyam_base.so | cut -f1 -d'.' >.ciyam_storages
+
 # NOTE: Modify the following if wanting to be notified when the CIYAM application server has been started.
 #curl -H "Title: CIYAM Started" -d  "CIYAM Application Server has started." https://ntfy.domain.org/up_admin
 
