@@ -2083,6 +2083,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                     request_and_args = "<web_session_add_room.cin \""
                                      + option_parameters[ c_cws_request_messages_create_options_text ] + "\" \"" + username + "\"";
+
+                                    if( !names.empty( ) )
+                                       request_and_args += " \"" + names + "\"";
                                  }
                                  else
                                  {
