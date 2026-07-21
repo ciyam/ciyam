@@ -7941,17 +7941,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_system_gen_key )
       {
          string num_keys( get_parm_val( parameters, c_cmd_ciyam_session_system_gen_key_num_keys ) );
+         bool use_unix_unique = has_parm_val( parameters, c_cmd_ciyam_session_system_gen_key_unix_unique );
 
-         size_t num_val = 1;
+         size_t num_keys_val = 1;
 
          if( !num_keys.empty( ) )
-            num_val = from_string< size_t >( num_keys );
+            num_keys_val = from_string< size_t >( num_keys );
 
-         for( size_t i = 0; i < num_val; i++ )
+         for( size_t i = 0; i < num_keys_val; i++ )
          {
             if( i > 0 )
                response += '\n';
-            response += gen_key( );
+
+            if( !use_unix_unique )
+               response += gen_key( );
+            else
+               response += to_string( unix_unique( ) );
          }
       }
       else if( command == c_cmd_ciyam_session_system_mutexes )
