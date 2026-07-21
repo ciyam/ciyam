@@ -67,7 +67,9 @@ http://www.opensource.org/licenses/mit-license.php.
 
    <script>
    var hashed = "";
+
    var page_style = "";
+   var main_script = "";
 
    var cws_device = "";
 
@@ -97,6 +99,11 @@ http://www.opensource.org/licenses/mit-license.php.
    const creds_remove_help = "remove creds";
    const creds_retain_help = "retain creds";
 
+   const ciyam_script_prefix = "ciyam_script_";
+
+   const javascripts_employ_help = "employ javacript";
+   const javascripts_reload_help = "reload javacript";
+
    const stylesheets_reload_help = "reload stylesheet";
 
    const creds_delete_cmd = "creds|delete";
@@ -112,6 +119,10 @@ http://www.opensource.org/licenses/mit-license.php.
 
    const storages_attach_cmd = "storages|attach";
    const storages_review_cmd = "storages|review";
+
+   const javascripts_employ_cmd = "javascripts|employ";
+   const javascripts_reload_cmd = "javascripts|reload";
+   const javascripts_review_cmd = "javascripts|review";
 
    const stylesheets_delete_cmd = "stylesheets|delete";
    const stylesheets_reload_cmd = "stylesheets|reload";
@@ -555,6 +566,35 @@ http://www.opensource.org/licenses/mit-license.php.
       document.getElementById( "user_password" ).disabled = true;
    }
 
+   function load_js( new_script, raw_script_information )
+   {
+      const old_link = document.getElementById( new_script );
+
+      if( old_link != null )
+         old_link.remove( );
+
+      if( raw_script_information != null )
+      {
+         var new_script = document.createElement( "script" );
+
+         new_script.textContent = raw_script_information;
+
+         new_script.setAttribute( "id", new_script );
+
+         document.head.appendChild( new_script );
+      }
+      else
+      {
+         var new_link = document.createElement( "script" );
+
+         new_link.src = new_script + ".js?" + Date.now( );
+
+         new_link.setAttribute( "id", new_script );
+
+         document.head.appendChild( new_link );
+      }
+   }
+
    function load_style( new_page_style, raw_style_information )
    {
       if( page_style != "" )
@@ -684,6 +724,28 @@ http://www.opensource.org/licenses/mit-license.php.
          do_remove( true );
       else if( request.startsWith( creds_remove_cmd ) )
          do_remove( request.substr( creds_remove_cmd.length + 1 ) );
+      else if( request.startsWith( javascripts_employ_cmd ) )
+      {
+         var func_name = request.substr( javascripts_employ_cmd.length + 1 );
+
+         if( func_name != "" )
+            eval( ciyam_script_prefix + func_name + "_execute( )" );
+      }
+      else if( request == javascripts_reload_cmd )
+         load_js( "dummy", document.getElementById( "user_arbitrary" ).value );
+      else if( request.startsWith( javascripts_reload_cmd ) )
+      {
+         var script = request.substr( javascripts_reload_cmd.length + 1 );
+
+         if( script == own_name )
+            script = document.getElementById( "user_access" ).value;
+         else if( script != "" )
+         {
+            load_js( ciyam_script_prefix + script );
+
+            window.setTimeout( ciyam_script_prefix + script + "_at_load( )", 100 );
+         }
+      }
       else if( request == stylesheets_reload_cmd )
          load_style( "dummy", document.getElementById( "user_arbitrary" ).value );
       else if( request.startsWith( stylesheets_reload_cmd ) )
@@ -712,6 +774,10 @@ http://www.opensource.org/licenses/mit-license.php.
       if( request.startsWith( creds_retain_cmd ) )
          do_local_request( request );
       else if( request.startsWith( creds_remove_cmd ) )
+         do_local_request( request );
+      else if( request.startsWith( javascripts_employ_cmd ) )
+         do_local_request( request );
+      else if( request.startsWith( javascripts_reload_cmd ) )
          do_local_request( request );
       else if( request.startsWith( stylesheets_reload_cmd ) )
          do_local_request( request );
@@ -760,7 +826,8 @@ http://www.opensource.org/licenses/mit-license.php.
          if( ( cmd == users_create_cmd ) || ( cmd == users_delete_cmd )
           || ( cmd == messages_create_cmd ) || ( cmd == messages_review_cmd )
           || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
-          || ( cmd == unlock_keys_employ_cmd ) || ( cmd == stylesheets_review_cmd )
+          || ( cmd == unlock_keys_employ_cmd )
+          || ( cmd == javascripts_review_cmd ) || ( cmd == stylesheets_review_cmd )
           || ( cmd == storage_modules_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
          {
             if( cmd == users_create_cmd )
@@ -1301,6 +1368,9 @@ http://www.opensource.org/licenses/mit-license.php.
                   lines.push( creds_remove_help + " [<pin>]" );
 
                lines.push( creds_retain_help + " [partial]" );
+
+               lines.push( javascripts_employ_help + " <name> [<argument>]" );
+               lines.push( javascripts_reload_help + " <name>" );
 
                lines.push( stylesheets_reload_help + " [<name> or none]" );
 
