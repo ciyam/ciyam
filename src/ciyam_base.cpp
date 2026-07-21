@@ -12858,6 +12858,41 @@ system_ods_bulk_write::~system_ods_bulk_write( )
    delete p_impl;
 }
 
+int64_t unix_unique( )
+{
+   guard g( g_mutex );
+
+   while( true )
+   {
+      int64_t now = unix_time( );
+
+      // NOTE: This is the same
+      // implementation as used
+      // for "gen_key" but just
+      // uses an integer value.
+      if( now != g_key_tm_val )
+      {
+         g_key_count = 0;
+         g_key_tm_val = now;
+
+         break;
+      }
+      else
+      {
+         if( g_key_count >= 999 )
+            msleep( 10 );
+         else
+         {
+            ++g_key_count;
+
+            break;
+         }
+      }
+   }
+
+   return ( g_key_tm_val * 1000 ) + g_key_count;
+}
+
 string gen_key( const char* p_suffix, bool use_get_dtm )
 {
    string key( 20, '\0' );

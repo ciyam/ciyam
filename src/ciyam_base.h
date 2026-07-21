@@ -907,6 +907,8 @@ class system_ods_bulk_write
    impl* p_impl;
 };
 
+int64_t unix_unique( );
+
 std::string gen_key( const char* p_suffix = 0, bool use_get_dtm = false );
 
 std::string get_uid( bool remove_display_name = true );
