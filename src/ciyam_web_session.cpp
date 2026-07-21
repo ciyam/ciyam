@@ -79,9 +79,12 @@ constexpr const char* c_force = "force";
 
 constexpr const char* c_cws_own = "***";
 
+constexpr const char* c_js_suffix = ".js";
 constexpr const char* c_css_suffix = ".css";
 
 constexpr const char* c_error_output_prefix = "Error: ";
+
+constexpr const char* c_ciyam_script_prefix = "ciyam_script_";
 
 constexpr const char* c_ciyam_storages_file = ".ciyam_storages";
 
@@ -103,6 +106,7 @@ constexpr const char* c_cws_uri_suffix_devices = "devices";
 constexpr const char* c_cws_uri_suffix_messages = "messages";
 constexpr const char* c_cws_uri_suffix_sessions = "sessions";
 constexpr const char* c_cws_uri_suffix_storages = "storages";
+constexpr const char* c_cws_uri_suffix_javascripts = "javascripts";
 constexpr const char* c_cws_uri_suffix_stylesheets = "stylesheets";
 constexpr const char* c_cws_uri_suffix_unlock_keys = "unlock-keys";
 constexpr const char* c_cws_uri_suffix_storage_modules = "storage-modules";
@@ -112,6 +116,7 @@ constexpr const char* c_cws_uri_suffix_messages_prefix = "messages/";
 constexpr const char* c_cws_uri_suffix_sessions_prefix = "sessions/";
 
 constexpr const char* c_cws_uri_suffix_storages_prefix = "storages/";
+constexpr const char* c_cws_uri_suffix_javascripts_prefix = "javascripts/";
 constexpr const char* c_cws_uri_suffix_stylesheets_prefix = "stylesheets/";
 constexpr const char* c_cws_uri_suffix_unlock_keys_prefix = "unlock-keys/";
 constexpr const char* c_cws_uri_suffix_storage_modules_prefix = "storage-modules/";
@@ -137,12 +142,12 @@ constexpr const char* c_cws_request_messages_review_options_from = "from";
 constexpr const char* c_cws_help_request_output = "quit\n"
  "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\n"
  "delete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview messages <room> [from=<unix_time>]\n"
- "review storages\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+ "review storages\nreview javascripts\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\nattach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
  "create message <room> [for=<name,>;]text=<text>\ncreate unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\n"
- "review users\nreview messages <room> [from=<unix_time>]\nreview storages\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+ "review users\nreview messages <room> [from=<unix_time>]\nreview storages\nreview javascripts\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
 
 constexpr const char* c_web_session_script = "web_session.cin";
@@ -1641,6 +1646,93 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      catch( exception& x )
                      {
                         error = x.what( );
+                     }
+                  }
+               }
+               else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_javascripts ) )
+               {
+                  found = true;
+
+                  file_filter ff;
+
+                  fs_iterator fs( get_web_root( ), &ff );
+
+                  string all_scripts( g_none_var );
+
+                  set< string > js_files;
+
+                  while( fs.has_next( ) )
+                  {
+                     string next( fs.get_name( ) );
+
+                     if( next.find( c_ciyam_script_prefix ) == 0 )
+                     {
+                        string::size_type pos = next.rfind( c_js_suffix );
+
+                        if( pos == ( next.length( ) - CONST_LENGTH( c_js_suffix ) ) )
+                        {
+                           next.erase( pos );
+
+                           next.erase( 0, CONST_LENGTH( c_ciyam_script_prefix ) );
+
+                           js_files.insert( next );
+                        }
+                     }
+                  }
+
+                  for( set< string >::iterator i = js_files.begin( ); i!= js_files.end( ); ++i )
+                     all_scripts += ' ' + *i;
+
+                  string::size_type pos = all_scripts.find( ' ' );
+
+                  if( pos != string::npos )
+                     all_scripts.erase( 0, pos + 1 );
+
+                  if( !all_scripts.empty( ) )
+                  {
+                     vector< string > scripts;
+
+                     split( all_scripts, scripts, ' ' );
+
+                     string allowed_scripts;
+
+                     bool is_admin = ( access == g_cws_admin_token );
+
+                     // NOTE: Replace "own" style with "***" and
+                     // filter any other access PIN scripts from
+                     // appearing (unless is the administrator).
+                     for( size_t i = 0; i < scripts.size( ); i++ )
+                     {
+                        string next( scripts[ i ] );
+
+                        if( next == access )
+                           next = c_cws_own;
+
+                        if( !is_admin && is_pin_token( next ) )
+                           continue;
+
+                        if( !allowed_scripts.empty( ) )
+                           allowed_scripts += ' ';
+
+                        allowed_scripts += next;
+                     }
+
+                     all_scripts = allowed_scripts;
+                  }
+
+                  if( all_scripts.empty( ) )
+                     use_none_response = true;
+                  else
+                  {
+                     if( !is_json_output )
+                        response = all_scripts;
+                     else
+                     {
+                        vector< string > scripts;
+
+                        split( all_scripts, scripts, ' ' );
+
+                        response = as_json_array( ( !is_admin ? "scripts" : "all_scripts" ), scripts );
                      }
                   }
                }
