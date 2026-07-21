@@ -24,6 +24,7 @@ employ unlock-key <key>
 retain stylesheet
 review messages <room> [from=<unix_time>]
 review storages
+review javascripts
 review stylesheet[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
@@ -195,6 +196,7 @@ retain stylesheet
 review users
 review messages <room> [from=<unix_time>]
 review storages
+review javascripts
 review stylesheet[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
