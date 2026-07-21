@@ -105,14 +105,15 @@ USER_MESSAGE=@base64:@$USER_MESSAGE
 ;
 IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
 ;
-UNIX_NOW=@unix:
+.system_gen_key -unix_unique
+UNIX_UNIQUE=$OUTPUT
 ;
 @ifdef $IRC_USER_SUFFIXES
-.system_variable @queue_irc_%ROOM%_$IRC_USER_SUFFIXES "$UNIX_NOW $USER_NAME: $MESSAGE"
+.system_variable @queue_irc_%ROOM%_$IRC_USER_SUFFIXES "$UNIX_UNIQUE $USER_NAME: $MESSAGE"
 @endif
 ;
 @ifdef $USER_MESSAGE
-.system_variable @queue_irc_$ROOM_AND_USER "$UNIX_NOW $USER_NAME: $USER_MESSAGE"
+.system_variable @queue_irc_$ROOM_AND_USER "$UNIX_UNIQUE $USER_NAME: $USER_MESSAGE"
 @endif
 ;
 @endif
