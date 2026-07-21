@@ -3366,7 +3366,15 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               if( rhs == c_unix_time )
                                  val = unix_time( );
                               else
+                              {
                                  val = from_string< int64_t >( rhs );
+
+                                 // NOTE: For values that were obtained
+                                 // using "unix_unique" (or Javascript)
+                                 // need to divide by one thousand.
+                                 if( val >= 1000000000000 )
+                                    val /= 1000;
+                              }
 
                               date_time local( val + timezone );
 
