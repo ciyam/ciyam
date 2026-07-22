@@ -36,6 +36,8 @@
 
 using namespace std;
 
+extern string g_html_dir;
+
 extern string g_none_tag;
 extern string g_none_var;
 
@@ -1657,7 +1659,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   file_filter ff;
 
-                  fs_iterator fs( get_web_root( ), &ff );
+                  fs_iterator fs( g_html_dir, &ff );
 
                   string all_scripts( g_none_var );
 
@@ -1752,7 +1754,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                }
                else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_javascripts ) )
                {
-                  string file_name( get_web_root( ) + '/' + c_ciyam_script_prefix + access + c_js_suffix );
+                  string file_name( g_html_dir + '/' + c_ciyam_script_prefix + access + c_js_suffix );
 
                   if( payload.empty( ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -1776,7 +1778,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_javascripts_prefix ) ) );
 
-                  string file_name( get_web_root( ) + '/' + c_ciyam_script_prefix + name + c_js_suffix );
+                  string file_name( g_html_dir + '/' + c_ciyam_script_prefix + name + c_js_suffix );
 
                   if( !file_exists( file_name ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -1802,7 +1804,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      error = "Javascript data cannot be erased whilst the system is locked.";
                   else
                   {
-                     string file_name( get_web_root( ) + '/' + c_ciyam_script_prefix + access + c_js_suffix );
+                     string file_name( g_html_dir + '/' + c_ciyam_script_prefix + access + c_js_suffix );
 
                      file_remove( file_name );
 
@@ -1823,7 +1825,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   file_filter ff;
 
-                  fs_iterator fs( get_web_root( ), &ff );
+                  fs_iterator fs( g_html_dir, &ff );
 
                   string all_stylesheets( g_none_var );
 
@@ -1912,7 +1914,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                }
                else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_stylesheets ) )
                {
-                  string file_name( get_web_root( ) + '/' + access + c_css_suffix );
+                  string file_name( g_html_dir + '/' + access + c_css_suffix );
 
                   if( payload.empty( ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -1936,7 +1938,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_stylesheets_prefix ) ) );
 
-                  string file_name( get_web_root( ) + '/' + name + c_css_suffix );
+                  string file_name( g_html_dir + '/' + name + c_css_suffix );
 
                   if( !file_exists( file_name ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -1960,7 +1962,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      error = "Stylesheet data cannot be erased whilst the system is locked.";
                   else
                   {
-                     string file_name( get_web_root( ) + '/' + access + c_css_suffix );
+                     string file_name( g_html_dir + '/' + access + c_css_suffix );
 
                      file_remove( file_name );
 
