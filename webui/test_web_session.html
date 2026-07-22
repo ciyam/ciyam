@@ -82,7 +82,13 @@ http://www.opensource.org/licenses/mit-license.php.
 
    const pin_length = 5;
 
-   const load_delay = 250;
+   const load_delay = 50;
+
+   var load_attempts = 0;
+
+   var max_load_attempts = 100;
+
+   var load_script_function = "";
 
    const own_name = "***";
 
@@ -388,6 +394,19 @@ http://www.opensource.org/licenses/mit-license.php.
       document.getElementById( "user_arbitrary" ).value = value;
    }
 
+   function call_script_at_load( )
+   {
+      if( typeof window[ load_script_function ] === "function" )
+         eval( load_script_function + "( script_loaded )" );
+      else
+      {
+         if( ++load_attempts > max_load_attempts )
+            script_loaded( "(failed to load script)" );
+         else
+            window.setTimeout( call_script_at_load, load_delay );
+      }
+   }
+
    function select_access( )
    {
       var access = document.getElementById( "user_droplist" ).value;
@@ -623,7 +642,13 @@ http://www.opensource.org/licenses/mit-license.php.
       }
 
       if( new_page_script != "" )
-         window.setTimeout( new_page_script + "_at_load( script_loaded )", load_delay );
+      {
+         load_attempts = 0;
+
+         load_script_function = new_page_script + "_at_load";
+
+         window.setTimeout( call_script_at_load, load_delay );
+      }
    }
 
    function load_style( new_page_style, raw_style_information )
