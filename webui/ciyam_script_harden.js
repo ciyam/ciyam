@@ -1,8 +1,15 @@
 var ciyam_script_harden_result = null;
 
+var ciyam_script_harden_chunk = 0;
+
+var ciyam_script_harden_num_repeat = 0;
+var ciyam_script_harden_num_repeats = 0;
+
 var ciyam_script_harden_use_async = false;
 
 var ciyam_script_harden_string_to_hash = "";
+
+var ciyam_script_harden_result_callback = null;
 
 async function ciyam_script_harden_hash_string( message )
 {
@@ -83,9 +90,32 @@ async function ciyam_script_harden_at_load( callback )
       callback( "(using non-async version)" );
 }
 
+async function ciyam_script_harden_repeat( )
+{
+   if( ciyam_script_harden_num_repeat < ciyam_script_harden_num_repeats )
+   {
+      ++ciyam_script_harden_num_repeat;
+
+      ciyam_script_harden_result = await ciyam_script_harden_hash_rounds( ciyam_script_harden_chunk,
+       ciyam_script_harden_use_async, ciyam_script_harden_string_to_hash, ciyam_script_harden_result );
+
+      update_progress( ciyam_script_harden_num_repeat / ciyam_script_harden_num_repeats );
+
+      window.setTimeout( ciyam_script_harden_repeat, 10 );
+   }
+   else
+   {
+      hide_progress( );
+
+      ciyam_script_harden_result_callback( ciyam_script_harden_result );
+   }
+}
+
 async function ciyam_script_harden_execute( callback, input )
 {
    console.log( "ciyam_script_harden_execute" );
+
+   var has_repeats = false;
 
    if( ( input == null ) || ( input == "" ) )
       ciyam_script_harden_result = "(ready)";
@@ -97,8 +127,32 @@ async function ciyam_script_harden_execute( callback, input )
        0, ciyam_script_harden_use_async, ciyam_script_harden_string_to_hash );
    }
    else
-      ciyam_script_harden_result = await ciyam_script_harden_hash_rounds( input,
-       ciyam_script_harden_use_async, ciyam_script_harden_string_to_hash, ciyam_script_harden_result );
+   {
+      var pos = input.indexOf( ":" );
 
-   callback( ciyam_script_harden_result );
+      if( pos > 0 )
+      {
+         ciyam_script_harden_num_repeats = input.substring( pos + 1 );
+
+         input = input.substr( 0, pos );
+
+         ciyam_script_harden_chunk = input;
+
+         show_progress( );
+
+         has_repeats = true;
+
+         ciyam_script_harden_num_repeat = 0;
+
+         ciyam_script_harden_result_callback = callback;
+
+         window.setTimeout( ciyam_script_harden_repeat, 10 );
+      }
+      else
+         ciyam_script_harden_result = await ciyam_script_harden_hash_rounds( input,
+          ciyam_script_harden_use_async, ciyam_script_harden_string_to_hash, ciyam_script_harden_result );
+   }
+
+   if( !has_repeats )
+      callback( ciyam_script_harden_result );
 }

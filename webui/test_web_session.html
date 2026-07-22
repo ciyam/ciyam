@@ -19,6 +19,37 @@ http://www.opensource.org/licenses/mit-license.php.
    <script type="text/javascript" src="sha2.min.js"></script>
 
    <title>Test Web Session</title>
+
+   <style>
+   :root
+   {
+      --radius-pill: 999px;
+
+      --duration-medium: 200ms;
+
+      --color-accent-500: #5b6cf6;
+      --color-neutral-200: #f4f4f7;
+
+      --color-bg-subtle: var(--color-neutral-200);
+      --color-accent-default: var(--color-accent-500);
+   }
+
+   .progress
+   {
+      height: 10px;
+      border-radius: var(--radius-pill);
+      background: var(--color-bg-subtle);
+      overflow: hidden;
+   }
+
+   .progress_bar
+   {
+      height: 100%;
+      background: var(--color-accent-default);
+      transition: width var(--duration-medium);
+   }
+   </style>
+
 </head>
 
 <body onload="load( )">
@@ -62,6 +93,10 @@ http://www.opensource.org/licenses/mit-license.php.
    </form>
 
    <br/>
+
+   <div class="progress">
+      <div class="progress_bar" id="progress_bar" style="width: 0%;"></div>
+   </div>
 
    <div id="data"></div>
 
@@ -405,6 +440,22 @@ http://www.opensource.org/licenses/mit-license.php.
          else
             window.setTimeout( call_script_at_load, load_delay );
       }
+   }
+
+   function show_progress( )
+   {
+      document.getElementById( "progress_bar" ).style.width = "0%";
+      document.getElementById( "progress_bar" ).style.display = "";
+   }
+
+   function hide_progress( )
+   {
+      document.getElementById( "progress_bar" ).style.display = "none";
+   }
+
+   function update_progress( fraction )
+   {
+      document.getElementById( "progress_bar" ).style.width = ( fraction * 100 ) + "%";
    }
 
    function select_access( )
