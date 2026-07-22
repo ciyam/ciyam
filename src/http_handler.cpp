@@ -43,6 +43,8 @@
 
 using namespace std;
 
+string g_html_dir;
+
 string g_none_tag;
 string g_none_var;
 
@@ -1148,7 +1150,7 @@ void http_request_handler::on_start( )
 
          if( response.empty( ) )
          {
-            string path( c_html );
+            string path( g_html_dir );
 
             // NOTE: It is expected that "html"
             // is most likely to be a soft-link
@@ -1577,6 +1579,8 @@ void http_listener::on_start( )
       TRACE_LOG( TRACE_MINIMAL, listener_web_rest + " listener started on tcp port " + to_string( port ) );
 
       started = true;
+
+      g_html_dir = c_html;
 
       g_none_tag = '<' + string( c_none ) + '>';
       g_none_var = get_special_var_name( e_special_var_none );
