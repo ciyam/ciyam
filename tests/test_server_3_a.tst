@@ -19,12 +19,14 @@ Error: This web session is not valid (or has expired).
 quit
 attach storage <name>
 create message <room> [for=<name,>;]text=<text>
+delete javascript
 delete stylesheet
 employ unlock-key <key>
+retain javascript
 retain stylesheet
 review messages <room> [from=<unix_time>]
 review storages
-review javascripts
+review javascript[s] [<name>]
 review stylesheet[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
@@ -190,13 +192,15 @@ create user [secret|suggested=[<pin>:][<username>]]
 create message <room> [for=<name,>;]text=<text>
 create unlock-key
 delete user <pin>
+delete javascript
 delete stylesheet
 employ unlock-key <key>
+retain javascript
 retain stylesheet
 review users
 review messages <room> [from=<unix_time>]
 review storages
-review javascripts
+review javascript[s] [<name>]
 review stylesheet[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
