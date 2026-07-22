@@ -138,16 +138,18 @@ constexpr const char* c_cws_request_messages_create_options_text = "text";
 
 constexpr const char* c_cws_request_messages_review_options_from = "from";
 
-// NOTE: This help is only intended for the "test_web_session.html" page which will translate this more "user friendly" syntax.
+// NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax to HTTP requests.
 constexpr const char* c_cws_help_request_output = "quit\n"
- "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\n"
- "delete stylesheet\nemploy unlock-key <key>\nretain stylesheet\nreview messages <room> [from=<unix_time>]\n"
- "review storages\nreview javascripts\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+ "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete javascript\n"
+ "delete stylesheet\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nreview messages <room> [from=<unix_time>]\n"
+ "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
 
-constexpr const char* c_cws_help_request_admin_output = "quit\nattach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
- "create message <room> [for=<name,>;]text=<text>\ncreate unlock-key\ndelete user <pin>\ndelete stylesheet\nemploy unlock-key <key>\nretain stylesheet\n"
- "review users\nreview messages <room> [from=<unix_time>]\nreview storages\nreview javascripts\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+constexpr const char* c_cws_help_request_admin_output = "quit\n"
+ "attach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
+ "create message <room> [for=<name,>;]text=<text>\ncreate unlock-key\ndelete user <pin>\ndelete javascript\n"
+ "delete stylesheet\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nreview users\nreview messages <room> [from=<unix_time>]\n"
+ "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
 
 constexpr const char* c_web_session_script = "web_session.cin";
@@ -1659,29 +1661,41 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   string all_scripts( g_none_var );
 
-                  set< string > js_files;
+                  bool has_cached_scripts = has_system_variable( e_special_var_cws_scripts );
 
-                  while( fs.has_next( ) )
+                  if( !has_cached_scripts )
+                     all_scripts = g_none_var;
+                  else
+                     all_scripts = get_system_variable( e_special_var_cws_scripts );
+
+                  if( !has_cached_scripts )
                   {
-                     string next( fs.get_name( ) );
+                     set< string > js_files;
 
-                     if( next.find( c_ciyam_script_prefix ) == 0 )
+                     while( fs.has_next( ) )
                      {
-                        string::size_type pos = next.rfind( c_js_suffix );
+                        string next( fs.get_name( ) );
 
-                        if( pos == ( next.length( ) - CONST_LENGTH( c_js_suffix ) ) )
+                        if( next.find( c_ciyam_script_prefix ) == 0 )
                         {
-                           next.erase( pos );
+                           string::size_type pos = next.rfind( c_js_suffix );
 
-                           next.erase( 0, CONST_LENGTH( c_ciyam_script_prefix ) );
+                           if( pos == ( next.length( ) - CONST_LENGTH( c_js_suffix ) ) )
+                           {
+                              next.erase( pos );
 
-                           js_files.insert( next );
+                              next.erase( 0, CONST_LENGTH( c_ciyam_script_prefix ) );
+
+                              js_files.insert( next );
+                           }
                         }
                      }
-                  }
 
-                  for( set< string >::iterator i = js_files.begin( ); i!= js_files.end( ); ++i )
-                     all_scripts += ' ' + *i;
+                     for( set< string >::iterator i = js_files.begin( ); i!= js_files.end( ); ++i )
+                        all_scripts += ' ' + *i;
+
+                     set_system_variable( e_special_var_cws_scripts, all_scripts );
+                  }
 
                   string::size_type pos = all_scripts.find( ' ' );
 
@@ -1736,6 +1750,73 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
                   }
                }
+               else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_javascripts ) )
+               {
+                  string file_name( get_web_root( ) + '/' + c_ciyam_script_prefix + access + c_js_suffix );
+
+                  if( payload.empty( ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Javascript data was not provided.";
+                  else if( is_locked )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Javascript data cannot be saved whilst system is locked.";
+                  else
+                  {
+                     found = true;
+
+                     write_file( file_name, payload );
+
+                     set_system_variable( e_special_var_cws_scripts, "" );
+
+                     // NOTE: This delay is used to reduce possible I/O overloading.
+                     msleep( c_save_data_delay );
+                  }
+               }
+               else if( is_get_request && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_javascripts_prefix ) )
+               {
+                  string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_javascripts_prefix ) ) );
+
+                  string file_name( get_web_root( ) + '/' + c_ciyam_script_prefix + name + c_js_suffix );
+
+                  if( !file_exists( file_name ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Javascript '" + file_name + "' was not found.";
+                  else
+                  {
+                     found = true;
+
+                     string script_data( opt_buffer_file( file_name ) );
+
+                     replace( script_data, c_ciyam_script_prefix + name, c_ciyam_script_prefix + access );
+
+                     if( !is_json_output )
+                        response = script_data;
+                     else
+                        response = "{\"javascript\":\"" + escaped_json( script_data ) + "\"}\n";
+                  }
+               }
+               else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_javascripts ) )
+               {
+                  if( is_locked )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Javascript data cannot be erased whilst the system is locked.";
+                  else
+                  {
+                     string file_name( get_web_root( ) + '/' + c_ciyam_script_prefix + access + c_js_suffix );
+
+                     file_remove( file_name );
+
+                     if( !file_exists( file_name ) )
+                     {
+                        found = true;
+
+                        set_system_variable( e_special_var_cws_scripts, "" );
+                     }
+                     else
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "Javascript could not be erased (contact the administrator).";
+                  }
+               }
                else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_stylesheets ) )
                {
                   found = true;
@@ -1746,12 +1827,12 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   string all_stylesheets( g_none_var );
 
-                  bool has_cached_stylesheets = has_system_variable( e_special_var_cws_styles );
+                  bool has_cached_stylesheets = has_system_variable( e_special_var_cws_ssheets );
 
                   if( !has_cached_stylesheets )
                      all_stylesheets = g_none_var;
                   else
-                     all_stylesheets = get_system_variable( e_special_var_cws_styles );
+                     all_stylesheets = get_system_variable( e_special_var_cws_ssheets );
 
                   if( !has_cached_stylesheets )
                   {
@@ -1773,7 +1854,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      for( set< string >::iterator i = css_files.begin( ); i!= css_files.end( ); ++i )
                         all_stylesheets += ' ' + *i;
 
-                     set_system_variable( e_special_var_cws_styles, all_stylesheets );
+                     set_system_variable( e_special_var_cws_ssheets, all_stylesheets );
                   }
 
                   string::size_type pos = all_stylesheets.find( ' ' );
@@ -1845,7 +1926,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      write_file( file_name, payload );
 
-                     set_system_variable( e_special_var_cws_styles, "" );
+                     set_system_variable( e_special_var_cws_ssheets, "" );
 
                      // NOTE: This delay is used to reduce possible I/O overloading.
                      msleep( c_save_data_delay );
@@ -1887,7 +1968,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      {
                         found = true;
 
-                        set_system_variable( e_special_var_cws_styles, "" );
+                        set_system_variable( e_special_var_cws_ssheets, "" );
                      }
                      else
                         // FUTURE: This message should be handled as a server string message.
