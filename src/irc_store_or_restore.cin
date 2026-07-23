@@ -1,0 +1,67 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+.system_variable @irc_rooms
+;
+; NOTE: If no IRC rooms exist then will check
+; if they can be restored from a prior store.
+@ifndef $OUTPUT
+;
+IRC_VARIABLES=@files:/tmp/ciyam/:irc_variables.cin
+;
+@ifdef $IRC_VARIABLES
+</tmp/ciyam/irc_variables.cin
+@endif
+;
+@else
+;
+; NOTE: Creates "irc_variables.cin" which can
+; then later be used for restoring all of the
+; IRC system variables.
+;
+PREFIX=system_variable$SP
+;
+>/tmp/ciyam/irc_variables.cin
+system_variable "-p=$PREFIX" @irc_rooms*
+;
+system_variable "-p=$PREFIX" @irc_names_*
+system_variable "-p=$PREFIX" @irc_owner_*
+system_variable "-p=$PREFIX" @irc_users_*
+;
+system_variable "-p=$PREFIX" @session_@queue_irc_*
+;
+.system_variable @queue_irc_*
+ALL_MESSAGE_QUEUE_INFO=@strlit:$OUTPUT
+;
+@label NEXT
+;
+@:LOOP
+NEXT_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:1%
+;
+@ifndef $NEXT_MESSAGE_QUEUE_INFO
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+NEXT_MESSAGE_QUEUE_INFO_LINES=@repstr: /\n:$NEXT_MESSAGE_QUEUE_INFO
+;
+NEXT_MESSAGE_QUEUE_NAME=@strlit:%NEXT_MESSAGE_QUEUE_INFO_LINES:1%
+;
+PREFIX=system_variable $NEXT_MESSAGE_QUEUE_NAME ?
+;
+.session_variable $NEXT_MESSAGE_QUEUE_NAME @system
+;
+session_variable "-p=$PREFIX" $NEXT_MESSAGE_QUEUE_NAME *
+;
+ALL_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:-1%
+;
+!!@:LOOP
+;
+@:END_LOOP
+>
+;
+@endif
