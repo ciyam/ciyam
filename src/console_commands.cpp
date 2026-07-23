@@ -3376,7 +3376,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     val /= 1000;
                               }
 
-                              date_time local( val + timezone );
+                              date_time local( date_time::local( val ) );
 
                               if( !mask.empty( ) )
                                  str = format_date_time( local, mask );
