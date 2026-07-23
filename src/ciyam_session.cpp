@@ -6193,6 +6193,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_session_variable )
       {
+         string prefix( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_prefix ) );
          string session_id( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_session_id ) );
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_name_or_expr ) );
          bool num_found = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_num_found );
@@ -6259,8 +6260,31 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             {
                if( !variable_expression::is_possible_expression( name_or_expr ) )
                {
+                  bool add_quote = false;
+
+                  if( !prefix.empty( )
+                   && ( prefix[ prefix.length( ) - 1 ] == '?' ) )
+                  {
+                     add_quote = true;
+
+                     prefix[ prefix.length( ) - 1 ] = '"';
+                  }
+
                   if( !get_all_queue_items )
-                     response = get_session_variable( name_or_expr, sess_id );
+                  {
+                     response = prefix + get_session_variable( name_or_expr, sess_id );
+
+                     if( response == prefix )
+                        response.erase( );
+                     else if( !add_quote )
+                        replace( response, "\n", "\n" + prefix );
+                     else
+                     {
+                        replace( response, "\n", "\"\n" + prefix );
+
+                        response += '"';
+                     }
+                  }
                   else
                   {
                      // NOTE: If is provided this session variable acts as a "gteq" filter.
@@ -6279,7 +6303,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         if( !response.empty( ) )
                            response += '\n';
 
-                        response += next;
+                        response += prefix + next;
+
+                        if( add_quote )
+                           response += '"';
                      }
 
                      if( !gteq.empty( ) )
@@ -8332,6 +8359,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_system_variable )
       {
+         string prefix( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_prefix ) );
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) );
          bool has_found = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_found );
          bool has_value = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_value );
@@ -8436,8 +8464,31 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             if( !variable_expression::is_possible_expression( name_or_expr ) )
             {
+               bool add_quote = false;
+
+               if( !prefix.empty( )
+                && ( prefix[ prefix.length( ) - 1 ] == '?' ) )
+               {
+                  add_quote = true;
+
+                  prefix[ prefix.length( ) - 1 ] = '"';
+               }
+
                if( !get_all_queue_items )
-                  response = get_system_variable( name_or_expr, false );
+               {
+                  response = prefix + get_system_variable( name_or_expr, false );
+
+                  if( response == prefix )
+                     response.erase( );
+                  else if( !add_quote )
+                     replace( response, "\n", "\n" + prefix );
+                  else
+                  {
+                     replace( response, "\n", "\"\n" + prefix );
+
+                     response += '"';
+                  }
+               }
                else
                {
                   while( true )
@@ -8450,12 +8501,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( !response.empty( ) )
                         response += '\n';
 
-                     response += next;
+                     response += prefix + next;
+
+                     if( add_quote )
+                        response += '"';
                   }
                }
             }
             else
+            {
                response = get_system_variable( expression( name_or_expr ), false );
+
+               if( !prefix.empty( ) && !response.empty( ) )
+                  response = prefix + response;
+            }
 
             check_is_valid_command_response( response );
          }
