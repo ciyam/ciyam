@@ -1305,10 +1305,12 @@ void storage_handler::dump_cache( ostream& os ) const
 
       time_t t = ci->first;
 
-      struct tm* p_t = localtime( &t );
+      struct tm ltm;
 
-      date_time dt( p_t->tm_year + 1900, ( month )( p_t->tm_mon + 1 ),
-       p_t->tm_mday, p_t->tm_hour, p_t->tm_min, ( second )p_t->tm_sec );
+      localtime_r( &t, &ltm );
+
+      date_time dt( ltm.tm_year + 1900, ( month )( ltm.tm_mon + 1 ),
+       ltm.tm_mday, ltm.tm_hour, ltm.tm_min, ( second )ltm.tm_sec );
 
       os.setf( ios::left );
 
