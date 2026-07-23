@@ -164,6 +164,7 @@ struct locality
 
    static locality Australia_Melbourne_Standard( );
    static locality Australia_Melbourne_Daylight( );
+
    static locality China_Beijing( );
 
    int8_t tzadjust;
@@ -173,6 +174,7 @@ struct locality
 
 inline locality locality::Australia_Melbourne_Standard( ) { return locality( 10, -37.83, 144.97 ); }
 inline locality locality::Australia_Melbourne_Daylight( ) { return locality( 11, -37.83, 144.97 ); }
+
 inline locality locality::China_Beijing( ) { return locality( 8, 39.92, 116.43 ); }
 
 class date_time;
@@ -198,6 +200,7 @@ class mtime
    mtime( hour hr, minute mn, seconds s );
 
    mtime( const mtime& src );
+
    mtime& operator =( const mtime& src );
    mtime& operator =( const std::string& s );
 
@@ -225,13 +228,14 @@ class mtime
    hour get_hour( ) const;
    minute get_minute( ) const;
    second get_second( ) const;
+
    millisecond get_millisecond( ) const { return ms % 1000; }
 
    std::string as_string( time_format tf, bool use_separators = false ) const;
    std::string as_string( bool use_separators = false, bool include_milliseconds = true ) const;
 
-   static mtime local( );
-   static mtime standard( );
+   static mtime local( int64_t ut = 0 );
+   static mtime standard( int64_t ut = 0 );
 
    static mtime minimum( );
    static mtime maximum( );
@@ -320,6 +324,7 @@ class udate
    udate( year yr, day_of_significance dos );
 
    udate( const udate& src );
+
    udate& operator =( const udate& src );
    udate& operator =( const std::string& s );
 
@@ -377,8 +382,8 @@ class udate
 
    void print( std::ostream& os ) const;
 
-   static udate local( );
-   static udate standard( );
+   static udate local( int64_t ut = 0 );
+   static udate standard( int64_t ut = 0 );
 
    static udate minimum( );
    static udate maximum( );
@@ -523,6 +528,7 @@ class date_time
    date_time( year yr, month mo, day dy, hour hr, minute mn, seconds s );
 
    date_time( const date_time& src );
+
    date_time& operator =( const date_time& src );
    date_time& operator =( const std::string& s );
 
@@ -576,6 +582,7 @@ class date_time
    hour get_hour( ) const { return mt.get_hour( ); }
    minute get_minute( ) const { return mt.get_minute( ); }
    second get_second( ) const { return mt.get_second( ); }
+
    millisecond get_millisecond( ) const { return mt.get_millisecond( ); }
 
    std::string as_string( time_format tf, bool use_separators = false ) const;
@@ -599,8 +606,8 @@ class date_time
    double moon_phase( ) const;
    std::string moon_phase_description( ) const;
 
-   static date_time local( );
-   static date_time standard( );
+   static date_time local( int64_t ut = 0 );
+   static date_time standard( int64_t ut = 0 );
 
    static date_time minimum( );
    static date_time maximum( );

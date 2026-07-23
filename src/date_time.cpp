@@ -36,7 +36,7 @@ namespace
 //
 // The original start of the Gregorian calendar (i.e. in Italy) was actually on Friday 15th October 1582
 // (following Thursday 4th October 1582 in the Julian calendar), however, only a few other countries had
-// adopted the Gregorian calendar then.
+// adopted the Gregorian calendar back then.
 
 //#define USE_ORIGINAL_GREGORIAN_START_DATE
 
@@ -348,8 +348,8 @@ unsigned char chinese_new_years_month_and_day[ ] =
 
 void verify_time( hour hr, minute mn, second sc, tenth te = 0, hundredth hd = 0, thousandth th = 0 )
 {
-   if( hr > 23 || mn > 59 || sc > 59 || te > 9 || hd > 9 || th > 9 )
-      throw runtime_error( "invalid time" );
+   if( ( hr > 23 ) || ( mn > 59 ) || ( sc > 59 ) || ( te > 9 ) || ( hd > 9 ) || ( th > 9 ) )
+      throw runtime_error( "invalid time value" );
 }
 
 inline void seconds_to_components( seconds s, second& sc, tenth& te, hundredth& hd, thousandth& th )
@@ -357,13 +357,13 @@ inline void seconds_to_components( seconds s, second& sc, tenth& te, hundredth& 
    millisecond m = ( millisecond )( s * 1000.0 + 0.0005 );
 
    sc = ( second )( m / 1000 );
-   m -= sc * 1000;
+   m -= ( sc * 1000 );
 
    te = ( tenth )( m / 100 );
-   m -= te * 100;
+   m -= ( te * 100 );
 
    hd = ( hundredth )( m / 10 );
-   m -= hd * 10;
+   m -= ( hd * 10 );
 
    th = ( thousandth )m;
 }
@@ -371,31 +371,31 @@ inline void seconds_to_components( seconds s, second& sc, tenth& te, hundredth& 
 inline void millisecond_to_components( millisecond m, hour& hr, minute& mn, seconds& secs )
 {
    hr = ( hour )( m / c_milliseconds_per_hour );
-   m -= hr * c_milliseconds_per_hour;
+   m -= ( hr * c_milliseconds_per_hour );
 
    mn = ( minute )( m / c_milliseconds_per_minute );
-   m -= mn * c_milliseconds_per_minute;
+   m -= ( mn * c_milliseconds_per_minute );
 
-   secs = m / 1000.0;
+   secs = ( m / 1000.0 );
 }
 
 inline void millisecond_to_components(
  millisecond m, hour& hr, minute& mn, second& sc, tenth& te, hundredth& hd, thousandth& th )
 {
    hr = ( hour )( m / c_milliseconds_per_hour );
-   m -= hr * c_milliseconds_per_hour;
+   m -= ( hr * c_milliseconds_per_hour );
 
    mn = ( minute )( m / c_milliseconds_per_minute );
-   m -= mn * c_milliseconds_per_minute;
+   m -= ( mn * c_milliseconds_per_minute );
 
    sc = ( second )( m / 1000 );
-   m -= sc * 1000;
+   m -= ( sc * 1000 );
 
    te = ( tenth )( m / 100 );
-   m -= te * 100;
+   m -= ( te * 100 );
 
    hd = ( hundredth )( m / 10 );
-   m -= hd * 10;
+   m -= ( hd * 10 );
 
    th = ( thousandth )m;
 }
@@ -404,9 +404,9 @@ inline millisecond components_to_millisecond( second sc, tenth te, hundredth hd,
 {
    millisecond ms = 0;
 
-   ms += sc * 1000;
-   ms += te * 100;
-   ms += hd * 10;
+   ms += ( sc * 1000 );
+   ms += ( te * 100 );
+   ms += ( hd * 10 );
    ms += th;
 
    return ms;
@@ -440,7 +440,7 @@ double adjust_360( double deg )
 bool determine_sun_rise_or_set( year yr, month mh, day dy,
  hour& hr, minute& mn, bool sunrise, int tzadjust, double latitude, double longitude, double zenith )
 {
-   // First calculate the day of the year...
+   // First calculate the day of the year.
    int N1 = 275 * ( int )mh / 9;
    int N2 = ( ( int )mh + 9 ) / 12;
    int N3 = 1 + ( yr - 4 * yr / 4 + 2 ) / 3;
@@ -582,7 +582,7 @@ double calculate_moon_phase( double days )
 
 inline bool leap_year( year yr )
 {
-   return yr % 4 == 0 && ( yr % 100 != 0 || yr % 400 == 0 );
+   return ( ( yr % 4 ) == 0 ) && ( ( ( yr % 100 ) != 0 ) || ( ( yr % 400 ) == 0 ) );
 }
 
 inline void daynum_to_calendar( daynum dn, year& yr, month& mo, day& dy )
@@ -623,6 +623,7 @@ inline void daynum_to_calendar( daynum dn, year& yr, month& mo, day& dy )
       else
       {
          ++yr;
+
          mo = ( month )( mo - 9 );
       }
 
@@ -704,12 +705,13 @@ inline day day_in_year_for_easter_sunday( year yr )
    if( ( epakte == 24 ) || ( ( epakte == 25 ) && ( gz > 11 ) ) )
       ++epakte;
 
-   int n = 44 - epakte;
+   int n = ( 44 - epakte );
 
    if( n < 21 )
       n += 30;
 
    n += 7 - ( so + n ) % 7;
+
    n += leap_year( yr );
 
    return n + 59;
@@ -738,8 +740,8 @@ julian calendar_to_julian( year yr, month mo, day dy, hour hr, minute mn, second
    // by 400 (if the date is in the Julian calendar then there is no correction).
    if( is_date_gregorian( yr, mo, dy ) )
    {
-      a = y / 100;
-      b = 2 - a + int( a / 4 );
+      a = ( y / 100 );
+      b = ( 2 - a + int( a / 4 ) );
    }
    else
       b = 0;
@@ -942,17 +944,17 @@ mtime::mtime( hour hr, minute mn )
 {
    verify_time( hr, mn, 0 );
 
-   ms = hr * c_milliseconds_per_hour;
-   ms += mn * c_milliseconds_per_minute;
+   ms = ( hr * c_milliseconds_per_hour );
+   ms += ( mn * c_milliseconds_per_minute );
 }
 
 mtime::mtime( hour hr, minute mn, second sc )
 {
    verify_time( hr, mn, sc );
 
-   ms = hr * c_milliseconds_per_hour;
-   ms += mn * c_milliseconds_per_minute;
-   ms += sc * c_milliseconds_per_second;
+   ms = ( hr * c_milliseconds_per_hour );
+   ms += ( mn * c_milliseconds_per_minute );
+   ms += ( sc * c_milliseconds_per_second );
 }
 
 mtime::mtime( hour hr, minute mn, second sc, millisecond m )
@@ -964,17 +966,17 @@ mtime::mtime( hour hr, minute mn, second sc, millisecond m )
 
    verify_time( hr, mn, sc );
 
-   ms += hr * c_milliseconds_per_hour;
-   ms += mn * c_milliseconds_per_minute;
-   ms += sc * c_milliseconds_per_second;
+   ms += ( hr * c_milliseconds_per_hour );
+   ms += ( mn * c_milliseconds_per_minute );
+   ms += ( sc * c_milliseconds_per_second );
 }
 
 mtime::mtime( hour hr, minute mn, second sc, tenth te, hundredth hd, thousandth th )
 {
    verify_time( hr, mn, sc, te, hd, th );
 
-   ms = hr * c_milliseconds_per_hour;
-   ms += mn * c_milliseconds_per_minute;
+   ms = ( hr * c_milliseconds_per_hour );
+   ms += ( mn * c_milliseconds_per_minute );
    ms += components_to_millisecond( sc, te, hd, th );
 }
 
@@ -993,8 +995,8 @@ mtime::mtime( hour hr, minute mn, seconds s )
 
    verify_time( hr, mn, sc, te, hd, th );
 
-   ms = hr * c_milliseconds_per_hour;
-   ms += mn * c_milliseconds_per_minute;
+   ms = ( hr * c_milliseconds_per_hour );
+   ms += ( mn * c_milliseconds_per_minute );
    ms += components_to_millisecond( sc, te, hd, th );
 }
 
@@ -1102,8 +1104,8 @@ mtime& mtime::operator +=( milliseconds m )
 
       nms += m;
 
-      if( nms < ms || nms > ( milliseconds )c_max_millisecond )
-         throw runtime_error( "time out of range" );
+      if( ( nms < ms ) || ( nms > ( milliseconds )c_max_millisecond ) )
+         throw runtime_error( "time value is out of range" );
 
       ms = ( millisecond )nms;
 
@@ -1122,7 +1124,7 @@ mtime& mtime::operator -=( milliseconds m )
       nms -= m;
 
       if( nms > ms )
-         throw runtime_error( "time out of range" );
+         throw runtime_error( "time value is out of range" );
 
       ms = ( millisecond )nms;
 
@@ -1143,7 +1145,7 @@ minute mtime::get_minute( ) const
    millisecond m( ms );
 
    hr = ( hour )( m / c_milliseconds_per_hour );
-   m -= hr * c_milliseconds_per_hour;
+   m -= ( hr * c_milliseconds_per_hour );
 
    mn = ( minute )( m / c_milliseconds_per_minute );
 
@@ -1159,10 +1161,10 @@ second mtime::get_second( ) const
    millisecond m( ms );
 
    hr = ( hour )( m / c_milliseconds_per_hour );
-   m -= hr * c_milliseconds_per_hour;
+   m -= ( hr * c_milliseconds_per_hour );
 
    mn = ( minute )( m / c_milliseconds_per_minute );
-   m -= mn * c_milliseconds_per_minute;
+   m -= ( mn * c_milliseconds_per_minute );
 
    sc = ( second )( m / 1000 );
 
@@ -1247,46 +1249,50 @@ string mtime::as_string( bool use_separators, bool include_milliseconds ) const
    }
 }
 
-mtime mtime::local( )
+mtime mtime::local( int64_t ut )
 {
-   time_t t;
+   time_t t = ut;
+
+   struct tm ltm;
+
    millisecond m = 0;
+
+   if( !ut )
+      t = time( 0 );
 
 #ifdef __GNUG__
    struct timeval tv;
    ::gettimeofday( &tv, 0 );
 
-   t = tv.tv_sec;
    m = tv.tv_usec / 1000;
-#else
-   t = time( 0 );
 #endif
 
-   struct tm* p_t;
-   p_t = localtime( &t );
+   localtime_r( &t, &ltm );
 
-   return mtime( p_t->tm_hour, p_t->tm_min, p_t->tm_sec, m );
+   return mtime( ltm.tm_hour, ltm.tm_min, ltm.tm_sec, m );
 }
 
-mtime mtime::standard( )
+mtime mtime::standard( int64_t ut )
 {
-   time_t t;
+   time_t t = ut;
+
+   struct tm gtm;
+
    millisecond m = 0;
+
+   if( !ut )
+      t = time( 0 );
 
 #ifdef __GNUG__
    struct timeval tv;
    ::gettimeofday( &tv, 0 );
 
-   t = tv.tv_sec;
    m = tv.tv_usec / 1000;
-#else
-   t = time( 0 );
 #endif
 
-   struct tm* p_t;
-   p_t = gmtime( &t );
+   gmtime_r( &t, &gtm );
 
-   return mtime( p_t->tm_hour, p_t->tm_min, p_t->tm_sec, m );
+   return mtime( gtm.tm_hour, gtm.tm_min, gtm.tm_sec, m );
 }
 
 mtime mtime::minimum( )
@@ -2402,26 +2408,32 @@ void udate::print( ostream& os ) const
       os << ymd.yr << '-' << ( int )ymd.mo << '-' << ( int )ymd.dy;
 }
 
-udate udate::local( )
+udate udate::local( int64_t ut )
 {
-   time_t t;
-   struct tm* p_t;
+   time_t t = ut;
 
-   t = time( 0 );
-   p_t = localtime( &t );
+   struct tm ltm;
 
-   return udate( p_t->tm_year + 1900, ( month )( p_t->tm_mon + 1 ), p_t->tm_mday );
+   if( !ut )
+      t = time( 0 );
+
+   localtime_r( &t, &ltm );
+
+   return udate( ltm.tm_year + 1900, ( month )( ltm.tm_mon + 1 ), ltm.tm_mday );
 }
 
-udate udate::standard( )
+udate udate::standard( int64_t ut )
 {
-   time_t t;
-   struct tm* p_t;
+   time_t t = ut;
 
-   t = time( 0 );
-   p_t = gmtime( &t );
+   struct tm gtm;
 
-   return udate( p_t->tm_year + 1900, ( month )( p_t->tm_mon + 1 ), p_t->tm_mday );
+   if( !ut )
+      t = time( 0 );
+
+   gmtime_r( &t, &gtm );
+
+   return udate( gtm.tm_year + 1900, ( month )( gtm.tm_mon + 1 ), gtm.tm_mday );
 }
 
 udate udate::minimum( )
@@ -3252,18 +3264,18 @@ string date_time::moon_phase_description( ) const
    return str;
 }
 
-date_time date_time::local( )
+date_time date_time::local( int64_t ut )
 {
-   udate ud( udate::local( ) );
-   mtime mt( mtime::local( ) );
+   udate ud( udate::local( ut ) );
+   mtime mt( mtime::local( ut ) );
 
    return date_time( ud, mt );
 }
 
-date_time date_time::standard( )
+date_time date_time::standard( int64_t ut )
 {
-   udate ud( udate::standard( ) );
-   mtime mt( mtime::standard( ) );
+   udate ud( udate::standard( ut ) );
+   mtime mt( mtime::standard( ut ) );
 
    return date_time( ud, mt );
 }
