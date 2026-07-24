@@ -31,6 +31,13 @@
 #  <filename>process_ciyam_logins
 # </script>
 # <script/>
+#  <name>irc_store_or_restore
+#  <time>00:00:05
+#  <cycle>1m*
+#  <filename>*script*
+#  <arguments>irc_store_or_restore.cin
+# </script>
+# <script/>
 #  <name>*ciyam_ddns_ip_updates
 #  <time>00:00:30
 #  <cycle>1m
