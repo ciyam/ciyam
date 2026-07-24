@@ -6260,15 +6260,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( needs_response )
             {
-               if( quoted )
-                  prefix += '"';
-
                if( !variable_expression::is_possible_expression( name_or_expr ) )
                {
                   if( !get_all_queue_items )
                      response = get_session_variable( name_or_expr, sess_id );
                   else
                   {
+                     if( quoted )
+                        prefix += '"';
+
                      // NOTE: If is provided this session variable acts as a "gteq" filter.
                      string gteq( get_session_variable( e_special_var_gteq_session_queue ) );
 
@@ -6299,18 +6299,34 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   response = get_session_variable( expression( name_or_expr ), sess_id );
 
                if( !get_all_queue_items
-                && ( !prefix.empty( ) && !response.empty( ) ) )
+                && !response.empty( ) && ( quoted || !prefix.empty( ) ) )
                {
-                  response = prefix + response;
+                  vector< string > lines;
 
-                  if( !quoted )
-                     replace( response, "\n", "\n" + prefix );
-                  else
+                  split( response, lines, '\n' );
+
+                  string extra;
+
+                  if( quoted )
+                     extra = "\"";
+
+                  for( size_t i = 0; i < lines.size( ); i++ )
                   {
-                     replace( response, "\n", "\"\n" + prefix );
+                     string next_line( lines[ i ] );
 
-                     response += '"';
+                     string::size_type pos = next_line.find( ' ' );
+
+                     if( pos != string::npos )
+                     {
+                        string content( prefix
+                         + next_line.substr( 0, pos + 1 )
+                         + extra + next_line.substr( pos + 1 ) + extra );
+
+                        lines[ i ] = content;
+                     }
                   }
+
+                  response = join( lines, '\n' );
                }
 
                check_is_valid_command_response( response );
@@ -8460,15 +8476,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
          else
          {
-            if( quoted )
-               prefix += '"';
-
             if( !variable_expression::is_possible_expression( name_or_expr ) )
             {
                if( !get_all_queue_items )
                   response = get_system_variable( name_or_expr, false );
                else
                {
+                  if( quoted )
+                     prefix += '"';
+
                   while( true )
                   {
                      string next( get_system_variable( name_or_expr, false ) );
@@ -8495,18 +8511,34 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
 
             if( !get_all_queue_items
-             && ( !prefix.empty( ) && !response.empty( ) ) )
+             && !response.empty( ) && ( quoted || !prefix.empty( ) ) )
             {
-               response = prefix + response;
+               vector< string > lines;
 
-               if( !quoted )
-                  replace( response, "\n", "\n" + prefix );
-               else
+               split( response, lines, '\n' );
+
+               string extra;
+
+               if( quoted )
+                  extra = "\"";
+
+               for( size_t i = 0; i < lines.size( ); i++ )
                {
-                  replace( response, "\n", "\"\n" + prefix );
+                  string next_line( lines[ i ] );
 
-                  response += '"';
+                  string::size_type pos = next_line.find( ' ' );
+
+                  if( pos != string::npos )
+                  {
+                     string content( prefix
+                      + next_line.substr( 0, pos + 1 )
+                      + extra + next_line.substr( pos + 1 ) + extra );
+
+                     lines[ i ] = content;
+                  }
                }
+
+               response = join( lines, '\n' );
             }
 
             check_is_valid_command_response( response );

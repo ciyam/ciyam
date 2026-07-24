@@ -941,17 +941,17 @@ session_variable test1 xxx
 session_variable test2 yyy
 session_variable test3 yyy
 session_variable -quoted test?
-"test1 xxx"
-"test2 yyy"
-"test3 yyy"
+test1 "xxx"
+test2 "yyy"
+test3 "yyy"
 session_variable -p=-> test*
 ->test1 xxx
 ->test2 yyy
 ->test3 yyy
 session_variable "-p=-- " -quoted test*
--- "test1 xxx"
--- "test2 yyy"
--- "test3 yyy"
+-- test1 "xxx"
+-- test2 "yyy"
+-- test3 "yyy"
 session_rpc_unlock xxx
 session_variable test?
 test1 xxx
