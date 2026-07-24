@@ -100,6 +100,9 @@ const size_t c_lock_file_sleep_time = 100;
 const size_t c_max_lock_attempts = 20;
 const size_t c_lock_attempt_sleep_time = 200;
 
+const size_t c_max_script_group_sleep_time = 100;
+const size_t c_max_script_group_lock_attempts = 20;
+
 const size_t c_log_cycle_seconds = 5;
 
 const size_t c_log_num_excessive = 5000;
@@ -148,6 +151,11 @@ constexpr const char* c_dummy_host_name = "ciyam.peer";
 
 constexpr const char* c_at_init_script = "./at_init";
 constexpr const char* c_at_term_script = "./at_term";
+
+constexpr const char* c_run_script_var_name_prefix = "@run_script_prefix_";
+
+constexpr const char* c_run_script_var_lock_suffix = "_lock";
+constexpr const char* c_run_script_var_count_suffix = "_count";
 
 constexpr const char* c_server_log_file = "ciyam_server.log";
 
@@ -7521,6 +7529,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
    if( get_script_reconfig( ) && scripts_file_has_changed( ) )
    {
       read_script_info( );
+
       TRACE_LOG( TRACE_MINIMAL, "[manuscript.sio] updated" );
    }
 
@@ -7552,6 +7561,72 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
    if( !lock_filename.empty( ) && !can_create_script_lock_file( lock_filename ) )
       is_busy = true;
+
+   unique_ptr< system_variable_eraser > up_script_prefix_count_decrement;
+
+   // NOTE: If a script is '!' prefixed (i.e. must always be non-async)
+   // and the name has an underbar then the name prefix (e.g. "irc") is
+   // used as the suffix for a variable (e.g. "@run_script_prefix_irc")
+   // which can be locked to temporarily prevent execution (reported as
+   // being "busy" if is unable to obtain the lock in time here). If is
+   // not locked another variable (e.g. "@run_script_prefix_irc_count")
+   // is incremented and decremented after script execution is complete
+   // via the "eraser" object. This allows for concurrent execution but
+   // also provides a method to lock further scripts from being started
+   // and to check when currently executing scripts in the prefix group
+   // have all finished (i.e. no "count" variable).
+   if( !async && !is_busy )
+   {
+      string arguments( g_scripts[ script_name ].arguments );
+
+      if( !arguments.empty( ) && ( arguments[ 0 ] == '!' ) )
+      {
+         string::size_type pos = arguments.find( ' ' );
+
+         string prefix( arguments.substr( 0, pos ) );
+
+         prefix.erase( 0, 1 );
+
+         pos = prefix.find( ".cin" );
+
+         if( pos != string::npos )
+         {
+            prefix.erase( pos );
+
+            pos = prefix.find( '_' );
+
+            if( pos != string::npos )
+            {
+               prefix.erase( pos );
+
+               is_busy = true;
+
+               string run_prefix_name( c_run_script_var_name_prefix + prefix );
+
+               string run_prefix_lock_name( run_prefix_name + c_run_script_var_lock_suffix );
+               string run_prefix_count_name( run_prefix_name + c_run_script_var_count_suffix );
+
+               for( size_t i = 0; i < c_max_script_group_lock_attempts; i++ )
+               {
+                  if( set_system_variable( run_prefix_lock_name, c_true_value, g_empty_string ) )
+                  {
+                     is_busy = false;
+
+                     set_system_variable( run_prefix_count_name, g_increment_name );
+
+                     up_script_prefix_count_decrement.reset( new system_variable_eraser( run_prefix_count_name, g_decrement_name.c_str( ) ) );
+
+                     set_system_variable( run_prefix_lock_name, g_empty_string );
+
+                     break;
+                  }
+
+                  msleep( c_max_script_group_sleep_time );
+               }
+            }
+         }
+      }
+   }
 
    if( !is_busy )
    {
@@ -7715,7 +7790,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
    if( is_busy )
       // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "Script '" + script_name + "' appears to be busy." );
+      throw runtime_error( "Script '" + script_name + "' is busy or currently unavailable." );
 
    return rc;
 }
