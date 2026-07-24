@@ -116,18 +116,22 @@ bool set_system_variable(
 
 struct system_variable_eraser
 {
-   system_variable_eraser( const var_name& var )
+   system_variable_eraser( const var_name& var, const char* p_empty_value = 0 )
     :
     var( var )
    {
+      if( p_empty_value )
+         empty_value = p_empty_value;
    }
 
    ~system_variable_eraser( )
    {
-      set_system_variable( var, "" );
+      set_system_variable( var, empty_value );
    }
 
    var_name var;
+
+   std::string empty_value;
 };
 
 struct temporary_system_variable
