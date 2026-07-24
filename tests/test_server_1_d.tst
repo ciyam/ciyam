@@ -70,7 +70,7 @@ test3 [ *** busy *** ]
 test4
 run_script test1
 run_script test2
-Error: Script 'test2' appears to be busy.
+Error: Script 'test2' is busy or currently unavailable.
 wait 250
 run_script test3
 run_script test4
@@ -83,7 +83,7 @@ wait 250
 (finished test3)
 run_script test2
 run_script test1
-Error: Script 'test1' appears to be busy.
+Error: Script 'test1' is busy or currently unavailable.
 wait 250
 run_script test3
 run_script test4
@@ -101,7 +101,7 @@ wait 250
 (finished test4)
 (finished test3)
 run_script test3
-Error: Script 'test3' appears to be busy.
+Error: Script 'test3' is busy or currently unavailable.
 run_script test4
 wait 250
 (started test1)
