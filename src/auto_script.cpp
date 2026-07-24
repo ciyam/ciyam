@@ -738,6 +738,12 @@ void autoscript_session::on_start( )
                   if( !tsfilename.empty( ) )
                      g_scripts[ j->second ].last_mod = mod_time;
 
+                  // NOTE: This allows a script to be executed at
+                  // startup and is being set false now to ensure
+                  // subsequent executions are in accordance with
+                  // the specified cycle.
+                  g_scripts[ j->second ].allow_late_exec = false;
+
                   string cmd_and_args;
 
                   if( is_script )
