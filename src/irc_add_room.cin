@@ -21,6 +21,8 @@ ERROR=Room and User names are required for "irc_add_room".
 NAME=$1
 USER=$2
 ;
+CHANGED=
+;
 ; NOTE: Room name is between five and fifty characters including letters, numbers and some specials.
 .regex -chain "^[a-zA-Z][-+&() a-zA-Z0-9]+$$&&^.*[)a-zA-Z0-9]$$&&^[-+&() a-zA-Z0-9]{5,50}$$" "$NAME"
 NAME_CHECK=$OUTPUT
@@ -95,6 +97,7 @@ NEW_ROOM=$OUTPUT
 ;
 RETURN=$NEW_ROOM-$UUID
 ;
+CHANGED=1
 .system_variable @irc_names_$NEW_ROOM "$NAME"
 .system_variable @irc_owner_$NEW_ROOM "$USER"
 .system_variable @irc_users_$NEW_ROOM "@$USER"
@@ -119,6 +122,10 @@ NEXT_ROOM=@padlen:$LEN,0:$NEXT_ROOM
 ;
 PREFIX=
 ERROR_OR_RETURN=
+;
+@ifdef $CHANGED
+.system_variable @irc_alter 1
+@endif
 ;
 @ifdef $ERROR
 PREFIX=Error:$SP

@@ -29,6 +29,8 @@ NAMES=$2
 MESSAGE=$3
 USER_NAME=$4
 ;
+CHANGED=
+;
 ENTRANCE_ROOM=0000000
 STARTING_ROOM=0000001
 ;
@@ -74,6 +76,7 @@ PREFIX=@substr:0,3:$MESSAGE
 @ifeq "$PREFIX" "Xy9"
 @ifeq "$MESSAGE" "Xy9jbGVhcg"
 RETURN=History for '$USER_NAME' in $ROOM cleared.
+CHANGED=1
 .system_variable @queue_irc_$ROOM_AND_USER ""
 @else
 RETURN=Available commands are:\n
@@ -109,10 +112,12 @@ IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
 UNIX_UNIQUE=$OUTPUT
 ;
 @ifdef $IRC_USER_SUFFIXES
+CHANGED=1
 .system_variable @queue_irc_%ROOM%_$IRC_USER_SUFFIXES "$UNIX_UNIQUE $USER_NAME: $MESSAGE"
 @endif
 ;
 @ifdef $USER_MESSAGE
+CHANGED=1
 .system_variable @queue_irc_$ROOM_AND_USER "$UNIX_UNIQUE $USER_NAME: $USER_MESSAGE"
 @endif
 ;
@@ -126,6 +131,10 @@ UNIX_UNIQUE=$OUTPUT
 ;
 PREFIX=
 ERROR_OR_RETURN=
+;
+@ifdef $CHANGED
+.system_variable @irc_alter 1
+@endif
 ;
 @ifdef $ERROR
 PREFIX=Error:$SP

@@ -25,6 +25,8 @@ USER=$1
 ROOM_NO=$2
 SESSION=$3
 ;
+CHANGED=
+;
 ENTRANCE_ROOM=0000000
 STARTING_ROOM=0000001
 ;
@@ -112,6 +114,7 @@ ERROR=Invalid room number $ROOM_NO.
 ;
 .system_variable @irc_rooms
 @ifndef $OUTPUT
+CHANGED=1
 .system_variable @irc_names_$STARTING_ROOM Administration
 .system_variable @irc_owner_$STARTING_ROOM admin
 .system_variable @irc_users_$STARTING_ROOM @admin
@@ -146,7 +149,11 @@ RETURN=/joined (as $USER)|$EXTRA|$ALL_USERS
 .session_variable -id=$SESSION @irc_$ROOM_NO 1
 .session_variable -id=$SESSION @irc_user $USER
 ;
+.system_variable @session_@queue_irc_$ROOM_AND_USER
+@ifndef $OUTPUT
+CHANGED=1
 .system_variable @session_@queue_irc_$ROOM_AND_USER 1
+@endif
 ;
 .session_variable -id=$SESSION @queue_irc_$ROOM_AND_USER @system
 ;
@@ -167,6 +174,11 @@ RETURN=/joined (as $USER)|$EXTRA|$ALL_USERS
 PREFIX=
 ERROR_OR_RETURN=
 ;
+@ifdef $CHANGED
+.system_variable @irc_alter 1
+@endif
+;
+
 @ifdef $ERROR
 PREFIX=Error:$SP
 ERROR_OR_RETURN=$ERROR

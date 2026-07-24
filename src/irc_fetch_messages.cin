@@ -26,6 +26,7 @@ USER=$2
 SESSION=$3
 ;
 FORCED=
+CHANGED=
 START_POINT=
 ;
 ; NOTE: If the ROOM has a
@@ -101,7 +102,11 @@ FORCED_OR_UNCHECKED=1
 @endif
 ;
 @ifdef $FORCED_OR_UNCHECKED
+.system_variable @session_@queue_irc_%ROOM_NO%_$USER
+@ifndef $OUTPUT
+CHANGED=1
 .system_variable @session_@queue_irc_%ROOM_NO%_$USER 1
+@endif
 ;
 @ifneq "$START_POINTS" ""
 RPOS=@strpos:,%ROOM_NO%=:$START_POINTS
@@ -169,7 +174,11 @@ RELOAD=1
 @endif
 ;
 @ifdef $RELOAD
+.system_variable @session_@queue_irc_$ROOM_AND_USER
+@ifndef $OUTPUT
+CHANGED=1
 .system_variable @session_@queue_irc_$ROOM_AND_USER 1
+@endif
 .session_variable -id=$SESSION !@queue_irc_$ROOM_AND_USER @system
 @endif
 ;
@@ -194,6 +203,10 @@ RETURN=@strlit:@/tmp/ciyam/$UUID
 ;
 PREFIX=
 ERROR_OR_RETURN=
+;
+@ifdef $CHANGED
+.system_variable @irc_alter 1
+@endif
 ;
 @ifdef $ERROR
 PREFIX=Error:$SP
