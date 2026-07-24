@@ -2449,7 +2449,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            set_system_variable( web_command_var_name, "variable " + web_message_var_name );
                         }
 
-                        for( size_t i = 0; i < 10; i++ )
+                        for( size_t i = 0; i < 25; i++ )
                         {
                            if( file_exists( output_file_name ) )
                            {
