@@ -3,6 +3,34 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+; NOTE: Prevent all "irc_" prefixed scripts from
+; being executed whilst performing store/restore
+; operations.
+.system_variable @run_script_prefix_irc_lock 1 "" 100
+;
+@ifeq "$OUTPUT" "1"
+;
+; NOTE: Although "irc_" prefixed scripts are not
+; being started whilst holding this lock it must
+; next be checked that any executing scripts are
+; completed before proceeding (repeats the check
+; a few times with a "wait" between each check).
+.system_variable @run_script_prefix_irc_count
+@ifdef $OUTPUT
+.wait 250
+.system_variable @run_script_prefix_irc_count
+@ifdef $OUTPUT
+.wait 250
+.system_variable @run_script_prefix_irc_count
+@ifdef $OUTPUT
+.wait 250
+.system_variable @run_script_prefix_irc_count
+@endif
+@endif
+@endif
+;
+@ifndef $OUTPUT
+;
 .system_variable @irc_rooms
 ;
 ; NOTE: If no IRC rooms exist then will check
@@ -63,5 +91,11 @@ ALL_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:-1%
 ;
 @:END_LOOP
 >
+;
+@endif
+;
+@endif
+;
+system_variable @run_script_prefix_irc_lock ""
 ;
 @endif
