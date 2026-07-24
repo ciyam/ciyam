@@ -97,7 +97,7 @@ session_variable @queue_test *
 system_variable @queue_test aaa
 system_variable @queue_test bbb
 system_variable @queue_test ccc
-system_variable -p=? @queue_test *
+system_variable -quoted @queue_test *
 ;
 system_variable @queue_test aaa
 system_variable @queue_test bbb
@@ -107,7 +107,7 @@ system_variable -p=-- @queue_test *
 system_variable @queue_test aaa
 system_variable @queue_test bbb
 system_variable @queue_test ccc
-system_variable "-p=-- ?" @queue_test *
+system_variable "-p=-- " -quoted @queue_test *
 ;
 system_variable @qs_mc_test 1
 system_variable @queue_test a
