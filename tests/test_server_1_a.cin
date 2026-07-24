@@ -685,9 +685,9 @@ soundex -skip psychology
 session_variable test1 xxx
 session_variable test2 yyy
 session_variable test3 yyy
-session_variable -p=? test*
+session_variable -quoted test?
 session_variable -p=-> test*
-session_variable "-p=-- ?" test*
+session_variable "-p=-- " -quoted test*
 session_rpc_unlock xxx
 session_variable test?
 session_rpc_password yyy

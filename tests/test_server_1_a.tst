@@ -940,7 +940,7 @@ S242
 session_variable test1 xxx
 session_variable test2 yyy
 session_variable test3 yyy
-session_variable -p=? test*
+session_variable -quoted test?
 "test1 xxx"
 "test2 yyy"
 "test3 yyy"
@@ -948,7 +948,7 @@ session_variable -p=-> test*
 ->test1 xxx
 ->test2 yyy
 ->test3 yyy
-session_variable "-p=-- ?" test*
+session_variable "-p=-- " -quoted test*
 -- "test1 xxx"
 -- "test2 yyy"
 -- "test3 yyy"
@@ -964,9 +964,9 @@ help *variable*
 
 commands: *variable*
 =========
-session_variable|var [-p=<prefix>|-id=<session_id>|-num_found] <name_or_expr> [<[value]> [<[current]>]] (get/set a session variable or num matching sessions)
+session_variable|var [-p=<prefix>] [-quoted] [-id=<session_id>|-num_found] <name_or_expr> [<[value]> [<[current]>]] (get/set a session variable or num matching sessions)
 
-system_variable|variable [-p=<prefix>] <name_or_expr> [-has|{<[value]> [<[current]>] [<retries>]}] (get/has/set a system variable)
+system_variable|variable [-p=<prefix>] [-quoted] <name_or_expr> [-has|{<[value]> [<[current]>] [<retries>]}] (get/has/set a system variable)
 help !*variable*
 session_variable
 system_variable
