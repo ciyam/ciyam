@@ -45,6 +45,10 @@ IRC_VARIABLES=@files:/tmp/ciyam/:irc_variables.cin
 ;
 @else
 ;
+.system_variable @irc_alter
+@ifdef $OUTPUT
+.system_variable @irc_alter ""
+;
 ; NOTE: Creates "irc_variables.cin" which can
 ; then later be used for restoring all of the
 ; IRC system variables.
@@ -54,9 +58,10 @@ PREFIX=system_variable$SP
 >/tmp/ciyam/irc_variables.cin
 system_variable "-p=$PREFIX" @irc_rooms*
 ;
-system_variable "-p=$PREFIX" @irc_names_*
+system_variable "-p=$PREFIX" -quoted @irc_names_*
 system_variable "-p=$PREFIX" @irc_owner_*
 system_variable "-p=$PREFIX" @irc_users_*
+system_variable "-p=$PREFIX" @irc_uuids_*
 ;
 system_variable "-p=$PREFIX" @session_@queue_irc_*
 ;
@@ -91,6 +96,8 @@ ALL_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:-1%
 ;
 @:END_LOOP
 >
+;
+@endif
 ;
 @endif
 ;
