@@ -609,6 +609,7 @@ string& remove_uid_extra_from_log_command( string& log_command )
          if( xpos != string::npos )
          {
             string prefix = log_command.substr( 0, pos );
+
             if( prefix[ prefix.size( ) - 1 ] != ' ' )
                prefix += ' ';
 
@@ -6194,6 +6195,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_session_variable )
       {
          string prefix( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_prefix ) );
+         bool quoted = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_quoted );
          string session_id( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_session_id ) );
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_name_or_expr ) );
          bool num_found = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_num_found );
@@ -6258,33 +6260,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( needs_response )
             {
+               if( quoted )
+                  prefix += '"';
+
                if( !variable_expression::is_possible_expression( name_or_expr ) )
                {
-                  bool add_quote = false;
-
-                  if( !prefix.empty( )
-                   && ( prefix[ prefix.length( ) - 1 ] == '?' ) )
-                  {
-                     add_quote = true;
-
-                     prefix[ prefix.length( ) - 1 ] = '"';
-                  }
-
                   if( !get_all_queue_items )
-                  {
-                     response = prefix + get_session_variable( name_or_expr, sess_id );
-
-                     if( response == prefix )
-                        response.erase( );
-                     else if( !add_quote )
-                        replace( response, "\n", "\n" + prefix );
-                     else
-                     {
-                        replace( response, "\n", "\"\n" + prefix );
-
-                        response += '"';
-                     }
-                  }
+                     response = get_session_variable( name_or_expr, sess_id );
                   else
                   {
                      // NOTE: If is provided this session variable acts as a "gteq" filter.
@@ -6305,7 +6287,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         response += prefix + next;
 
-                        if( add_quote )
+                        if( quoted )
                            response += '"';
                      }
 
@@ -6315,6 +6297,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
                else
                   response = get_session_variable( expression( name_or_expr ), sess_id );
+
+               if( !get_all_queue_items
+                && ( !prefix.empty( ) && !response.empty( ) ) )
+               {
+                  response = prefix + response;
+
+                  if( !quoted )
+                     replace( response, "\n", "\n" + prefix );
+                  else
+                  {
+                     replace( response, "\n", "\"\n" + prefix );
+
+                     response += '"';
+                  }
+               }
 
                check_is_valid_command_response( response );
             }
@@ -8360,6 +8357,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_system_variable )
       {
          string prefix( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_prefix ) );
+         bool quoted = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_quoted );
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) );
          bool has_found = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_found );
          bool has_value = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_value );
@@ -8462,33 +8460,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
          else
          {
+            if( quoted )
+               prefix += '"';
+
             if( !variable_expression::is_possible_expression( name_or_expr ) )
             {
-               bool add_quote = false;
-
-               if( !prefix.empty( )
-                && ( prefix[ prefix.length( ) - 1 ] == '?' ) )
-               {
-                  add_quote = true;
-
-                  prefix[ prefix.length( ) - 1 ] = '"';
-               }
-
                if( !get_all_queue_items )
-               {
-                  response = prefix + get_system_variable( name_or_expr, false );
-
-                  if( response == prefix )
-                     response.erase( );
-                  else if( !add_quote )
-                     replace( response, "\n", "\n" + prefix );
-                  else
-                  {
-                     replace( response, "\n", "\"\n" + prefix );
-
-                     response += '"';
-                  }
-               }
+                  response = get_system_variable( name_or_expr, false );
                else
                {
                   while( true )
@@ -8503,7 +8481,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      response += prefix + next;
 
-                     if( add_quote )
+                     if( quoted )
                         response += '"';
                   }
                }
@@ -8514,6 +8492,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                if( !prefix.empty( ) && !response.empty( ) )
                   response = prefix + response;
+            }
+
+            if( !get_all_queue_items
+             && ( !prefix.empty( ) && !response.empty( ) ) )
+            {
+               response = prefix + response;
+
+               if( !quoted )
+                  replace( response, "\n", "\n" + prefix );
+               else
+               {
+                  replace( response, "\n", "\"\n" + prefix );
+
+                  response += '"';
+               }
             }
 
             check_is_valid_command_response( response );
