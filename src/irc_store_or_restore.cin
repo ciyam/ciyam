@@ -65,6 +65,8 @@ system_variable "-p=$PREFIX" @irc_uuids_*
 ;
 system_variable "-p=$PREFIX" @session_@queue_irc_*
 ;
+system_variable "-p=$PREFIX" @web.*.*.0*
+;
 .system_variable @queue_irc_*
 ALL_MESSAGE_QUEUE_INFO=@strlit:$OUTPUT
 ;
