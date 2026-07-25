@@ -138,7 +138,7 @@ ROOM=$OLD_ROOM
 REREAD_ALL=!
 @endif
 LEN=@strlen:$ROOM
-@if $LEN < $ROOM_LEN
+@if $LEN #< $ROOM_LEN
 ROOM=@padlen:$ROOM_LEN,0:$ROOM
 @endif
 .run_script !irc_join "@name=$USER,@room=$ROOM"
