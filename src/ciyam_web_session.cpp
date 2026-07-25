@@ -1324,11 +1324,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          string web_started_var_name( var_prefix + access + '.' + device + c_web_started_suffix );
          string web_storage_var_name( var_prefix + access + '.' + device + c_web_storage_suffix );
 
-         // NOTE: In order for the rooms to be covered by a wildcard they must always
-         // start with a leading zero (otherwise when removed with the wildcard would
-         // inadvertantly remove all of the above variables as well).
-         string web_unix_time_var_wildcard( var_prefix + access + '.' + device + ".0*" );
-
          bool is_admin = ( access == g_cws_admin_token );
 
          int64_t now = unix_time( );
@@ -1438,8 +1433,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   set_system_variable( web_session_var_name, "" );
                   set_system_variable( web_started_var_name, "" );
                   set_system_variable( web_storage_var_name, "" );
-
-                  set_system_variable( web_unix_time_var_wildcard, "" );
 
                   // NOTE: If it seems to be running then will force the
                   // "web_session" application protocol script to finish
