@@ -41,6 +41,16 @@ IRC_USERS=
 <web_session_join.cin "$USERNAME" "$IRC_ROOM"
 @endif
 ;
+.variable @web.$TOKEN.$DEVICE.0*
+@ifdef $OUTPUT
+ALL_START_POINTS=$OUTPUT
+ALL_START_POINTS=@repstr:@web.$TOKEN.$DEVICE./:$ALL_START_POINTS
+ALL_START_POINTS=@repstr: /=:$ALL_START_POINTS
+ALL_START_POINTS=@repstr:\n/,:$ALL_START_POINTS
+;
+session_variable @irc_start_points $ALL_START_POINTS
+@endif
+;
 ADMIN_TOKEN=@file:.web_access_admin
 ;
 @ifeq "$TOKEN" "$ADMIN_TOKEN"
@@ -69,7 +79,7 @@ COMMAND=$OUTPUT
 @else
 .system_variable @web.$TOKEN.$DEVICE.command ""
 ;
-@ifneq "$COMMAND" "@web_session_check"
+@ifneq "$COMMAND" ";@web_session_check"
 ; NOTE: Supports up to five commands.
 >$TEMP_FILE
 COMMAND_1=%COMMAND:1%
@@ -119,9 +129,12 @@ ERROR=
 ;
 @ifneq "$IRC_ROOM" "$ENTRANCE_ROOM"
 UTIME=@unix:
-.session_variable @irc_start_point_$IRC_ROOM $UTIME
-.session_variable @irc_start_prior_$IRC_ROOM $UTIME
-.system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM $UTIME
+EXTRA=000
+.session_variable @irc_start_point_$IRC_ROOM $UTIME$EXTRA
+.session_variable @irc_start_prior_$IRC_ROOM $UTIME$EXTRA
+;
+.system_variable @irc_alter 1
+.system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM $UTIME$EXTRA
 @endif
 ;
 @endif
