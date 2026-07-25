@@ -76,7 +76,9 @@ QUIT=1
 @elif "$CIYAM_KEY_PRESSED" = "n"
 &Enter Room Name: :NAME=
 .run_script !irc_add_room "@name=$NAME"
-@ifndef $ERROR
+@ifdef $ERROR
+ERROR=
+@else
 ROOM=$OUTPUT
 POS=@strpos:-:$ROOM
 NEW_ROOM_NAME=$NAME
@@ -86,7 +88,37 @@ JOIN_TOKEN=@substr:$JPOS:$ROOM
 ROOM=@substr:0,$POS:$ROOM
 #Select invitees
 @retain NAMES
-<names.cin $ALL_USERS
+OTHER_USERS=$ALL_USERS
+;
+CHECK_USER=@strlit:@$USER@
+CHECK_USERS=@strlit:$OTHER_USERS@
+;
+POS=@strpos:$CHECK_USER:$CHECK_USERS
+;
+@ifdef $POS
+USER_LENGTH=@strlen:@$USER
+CHECK_USER_LENGTH=@strlen:$CHECK_USER
+CHECK_USERS_LENGTH=@strlen:$CHECK_USERS
+;
+AFTER_POS=@$POS+$CHECK_USER_LENGTH
+;
+@ifeq "$AFTER_POS" "$CHECK_USERS_LENGTH"
+OTHER_USERS=@substr:0,$POS:$CHECK_USERS
+@elif "$POS" = "0"
+POS=@$POS+$USER_LENGTH
+OTHER_USERS=@substr:$POS:$ALL_USERS
+@else
+OTHER_USERS=@substr:0,$POS:$ALL_USERS
+;
+APPEND_POS=@$POS+$USER_LENGTH
+APPEND_USERS=@substr:$APPEND_POS:$ALL_USERS
+;
+OTHER_USERS=$OTHER_USERS$APPEND_USERS
+@endif
+;
+@endif
+;
+<names.cin $OTHER_USERS
 @ifdef $NAMES
 INVITATION_USERS=@repstr:,/.:$NAMES
 INVITATION_MESSAGE=@strlit:_[$STARTING_ROOM]/[invite]$ROOM-$JOIN_TOKEN $NEW_ROOM_NAME
