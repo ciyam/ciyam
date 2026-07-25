@@ -1604,7 +1604,8 @@ void http_listener::on_start( )
 
       g_cws_admin_device = opt_buffer_file( c_web_device_name_admin );
 
-      g_web_session_check = get_special_var_name( e_special_var_web_session_check );
+      // NOTE: Uses a ';' prefix to be treated as a comment if is accidentally executed.
+      g_web_session_check = ';' + get_special_var_name( e_special_var_web_session_check );
 
       g_cws_endpoint_prefix = string( c_cws_endpoint ) + '/';
 
