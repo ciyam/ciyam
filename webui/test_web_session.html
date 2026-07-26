@@ -17,6 +17,7 @@ http://www.opensource.org/licenses/mit-license.php.
    <meta http-equiv="Cache-Control" content="no-store"/>
 
    <script type="text/javascript" src="sha2.min.js"></script>
+   <script type="text/javascript" src="bip39.min.js"></script>
 
    <title>Test Web Session</title>
 
@@ -885,7 +886,22 @@ http://www.opensource.org/licenses/mit-license.php.
             if( script_arg == null )
                eval( ciyam_script_prefix + script + "_execute( script_executed, )" );
             else
+            {
+               if( script_arg.indexOf( "@output" ) == 0 )
+               {
+                  script_arg = document.getElementById( "user_arbitrary" ).value;
+
+                  if( script_arg == "@output_1" );
+                  {
+                     var pos = script_arg.indexOf( "\n" );
+
+                     if( pos > 0 )
+                        script_arg = script_arg.substr( 0, pos );
+                  }
+               }
+
                eval( ciyam_script_prefix + script + "_execute( script_executed, \"" + script_arg + "\" )" );
+            }
          }
       }
       else if( request == javascripts_reload_cmd )
