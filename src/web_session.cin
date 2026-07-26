@@ -105,7 +105,10 @@ COMMAND_5=%COMMAND:5%
 $COMMAND_5
 @endif
 @ifdef "%COMMAND:6%"
+POS=@strpos:;:%COMMAND:6%
+@ifneq "$POS" "0"
 #IGNORED: %COMMAND:6%
+@endif
 @endif
 @endif
 @endif
@@ -128,13 +131,19 @@ ERROR=
 .session_variable @script_executed ""
 ;
 @ifneq "$IRC_ROOM" "$ENTRANCE_ROOM"
-UTIME=@unix:
-EXTRA=000
-.session_variable @irc_start_point_$IRC_ROOM $UTIME$EXTRA
-.session_variable @irc_start_prior_$IRC_ROOM $UTIME$EXTRA
+.session_variable @irc_last_unique
+UNIX_UNIQUE=$OUTPUT
+;
+@ifdef $UNIX_UNIQUE
+.session_variable @irc_last_unique ""
+;
+UNIX_UNIQUE=@$UNIX_UNIQUE+1
+.session_variable @irc_start_point_$IRC_ROOM $UNIX_UNIQUE
+.session_variable @irc_start_prior_$IRC_ROOM $UNIX_UNIQUE
 ;
 .system_variable @irc_alter 1
-.system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM $UTIME$EXTRA
+.system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM $UNIX_UNIQUE
+@endif
 @endif
 ;
 @endif
