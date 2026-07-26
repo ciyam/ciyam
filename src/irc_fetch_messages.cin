@@ -28,6 +28,7 @@ SESSION=$3
 FORCED=
 CHANGED=
 START_POINT=
+WAS_ENTRANCE=
 ;
 ; NOTE: If the ROOM has a
 ; '!' prefix then removes
@@ -50,6 +51,8 @@ ROOM_AND_USER=@strlit:%ROOM%_$USER
 UUID=$OUTPUT
 ;
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
+WAS_ENTRANCE=1
+;
 .system_variable @session_@queue_irc_*_$USER
 INPUT_LINES=@strlit:$OUTPUT
 ;
@@ -126,7 +129,7 @@ CHANGED=1
 RPOS=@strpos:,%ROOM_NO%=:$START_POINTS
 ;
 @ifdef $RPOS
-ROOM_AND_START=@substr:$RPOS,19:$START_POINTS
+ROOM_AND_START=@substr:$RPOS,22:$START_POINTS
 ;
 SPOS=@strpos:=:$ROOM_AND_START
 SPOS=@$SPOS+1
@@ -210,6 +213,13 @@ CHANGED=1
 >/tmp/ciyam/$UUID
 #$OUTPUT
 >
+@ifndef $WAS_ENTRANCE
+LAST_LINE=%OUTPUT:^1%
+POS=@strpos: :$LAST_LINE
+LAST_UNIQUE=@substr:0,$POS:$LAST_LINE
+;
+.session_variable -id=$SESSION @irc_last_unique $LAST_UNIQUE
+@endif
 RETURN=@strlit:@/tmp/ciyam/$UUID
 @endif
 @endif
