@@ -1654,6 +1654,9 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
          }
 
          int line = 0;
+
+         size_t offset = 1;
+
          string prefix, suffix;
 
          if( as_quotes )
@@ -1665,7 +1668,9 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
             // to use >PREFIX<SUFFIX after <line> where an optional PREFIX
             // and SUFFIX will limit the assignment to only the text which
             // appears after the PREFIX or before the SUFFIX (assuming the
-            // PREFIX or SUFFIX is found).
+            // PREFIX or SUFFIX is found). Using a '^' prefix will reverse
+            // the ordering such that %<var_name>:^1% is the last line and
+            //  %<var_name>:^0% will be all lines in the reverse order.
             string::size_type lpos = env_var_name.find( ':' );
 
             if( lpos != string::npos )
@@ -1688,7 +1693,10 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
                   env_var_name.erase( epos );
                }
 
-               line = atoi( env_var_name.substr( lpos + 1 ).c_str( ) );
+               if( env_var_name[ lpos + 1 ] == '^' )
+                  ++offset;
+
+               line = atoi( env_var_name.substr( lpos + offset ).c_str( ) );
 
                env_var_name.erase( lpos );
             }
@@ -1702,27 +1710,62 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
          {
             string tmp_str( p_env_var );
 
-            if( line == 0 )
+            if( ( line == 0 ) && ( offset == 1 ) )
                env_var_value.swap( tmp_str );
             else
             {
                vector< string > lines;
 
+               // FUTURE: It would be more efficient to find
+               // the relevant positions than splitting into
+               // lines (using "find_nth_occurrence") except
+               // when is reversing all lines (which is done
+               // for %<var_name>:^-1% or similar).
                split( p_env_var, lines, '\n' );
 
-               if( line > 0 && line <= lines.size( ) )
-                  env_var_value = lines[ line - 1 ];
-               else if( line < 0 )
+               if( ( line > 0 ) && ( line <= lines.size( ) ) )
                {
-                  line *= -1;
-
-                  for( size_t i = 0; i < lines.size( ); i++ )
+                  if( offset == 1 )
+                     env_var_value = lines[ line - 1 ];
+                  else
+                     env_var_value = lines[ lines.size( ) - line ];
+               }
+               else if( line <= 0 )
+               {
+                  if( offset == 1 )
                   {
-                     if( !env_var_value.empty( ) )
-                        env_var_value += '\n';
+                     line *= -1;
 
-                     if( line != ( i + 1 ) )
-                        env_var_value += lines[ i ];
+                     for( size_t i = 0; i < lines.size( ); i++ )
+                     {
+                        if( line != ( i + 1 ) )
+                        {
+                           if( !env_var_value.empty( ) )
+                              env_var_value += '\n';
+
+                           env_var_value += lines[ i ];
+                        }
+                     }
+                  }
+                  else if( lines.size( ) )
+                  {
+                     line += lines.size( );
+
+                     size_t i = lines.size( ) - 1;
+
+                     while( true )
+                     {
+                        if( i != line )
+                        {
+                           if( !env_var_value.empty( ) )
+                              env_var_value += '\n';
+
+                           env_var_value += lines[ i ];
+                        }
+
+                        if( i-- == 0 )
+                           break;
+                     }
                   }
                }
             }
