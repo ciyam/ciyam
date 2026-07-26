@@ -1,3 +1,47 @@
+LINES=aaa\nbbb\nccc
+#$LINES
+TEST=%LINES:0%
+#abc
+#$TEST
+TEST=%LINES:^0%
+#cba
+#$TEST
+TEST=%LINES:1%
+#a==
+#$TEST
+TEST=%LINES:-1%
+#=bc
+#$TEST
+TEST=%LINES:^1%
+#==c
+#$TEST
+TEST=%LINES:^-1%
+#=ba
+#$TEST
+TEST=%LINES:2%
+#=b=
+#$TEST
+TEST=%LINES:-2%
+#a=c
+#$TEST
+TEST=%LINES:^-2%
+#c=a
+#$TEST
+TEST=%LINES:^2%
+#=b=
+#$TEST
+TEST=%LINES:3%
+#==c
+#$TEST
+TEST=%LINES:-3%
+#ab=
+#$TEST
+TEST=%LINES:^3%
+#==a
+#$TEST
+TEST=%LINES:^-3%
+#cb=
+#$TEST
 file_raw -text blob "Hello World!"
 file_raw -text blob "This is a test."
 file_raw -text list "2ccdb4c72e6c263e1dc3e5c6617bad479d267546ced55f88d6b6e4527d2e8da8 hello\n90a1a46903f42ddf0386a9c12fd67a6c109285bb8b3117ee83ed222fd0040ad3 test" root
