@@ -12,17 +12,17 @@
  <script/>
   <name>test1
   <logging>never
-  <filename>test1.sh:~test.sh
+  <filename>test1.sh:.lock_test
  </script>
  <script/>
   <name>test2
   <logging>never
-  <filename>test2.sh:~test.sh
+  <filename>test2.sh:.lock_test
  </script>
  <script/>
   <name>test3
   <logging>never
-  <filename>test3.sh:?~test.sh
+  <filename>test3.sh:?.lock_test
  </script>
  <script/>
   <name>test4
@@ -88,11 +88,11 @@
  </script>
  <script/>
   <name>backup_export
-  <filename>backup_export:~backup
+  <filename>backup_export:.lock_backup
  </script>
  <script/>
   <name>backup_import
-  <filename>backup_import:~backup
+  <filename>backup_import:.lock_backup
  </script>
  <script/>
   <name>bc_next_extra
@@ -111,11 +111,11 @@
  </script>
  <script/>
   <name>shared_export
-  <filename>shared_export:~shared
+  <filename>shared_export:.lock_shared
  </script>
  <script/>
   <name>shared_import
-  <filename>shared_import:~shared
+  <filename>shared_import:.lock_shared
  </script>
  <script/>
   <name>fetch_channels
