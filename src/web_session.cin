@@ -141,8 +141,11 @@ UNIX_UNIQUE=@$UNIX_UNIQUE+1
 .session_variable @irc_start_point_$IRC_ROOM $UNIX_UNIQUE
 .session_variable @irc_start_prior_$IRC_ROOM $UNIX_UNIQUE
 ;
+.system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM
+@ifneq "$OUTPUT" "$UNIX_UNIQUE"
 .system_variable @irc_alter 1
 .system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM $UNIX_UNIQUE
+@endif
 @endif
 @endif
 ;
