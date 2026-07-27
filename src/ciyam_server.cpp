@@ -1,4 +1,4 @@
-// // Copyright (c) 2006-2012 CIYAM Pty. Ltd. ACN 093 704 539
+// Copyright (c) 2006-2012 CIYAM Pty. Ltd. ACN 093 704 539
 // Copyright (c) 2012-2026 CIYAM Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
@@ -58,6 +58,8 @@ volatile sig_atomic_t g_server_shutdown;
 namespace
 {
 
+#include "ciyam_constants.h"
+
 sigset_t sig_set;
 
 bool g_start_auto_script = true;
@@ -114,8 +116,8 @@ bool g_is_daemon = false;
 const char* const c_listener_rpc_core = "rpc_core";
 const char* const c_listener_rpc_data = "rpc_data";
 
-const char* const c_tmp_ciyam_directory = "/tmp/ciyam";
 
+const char* const c_tmp_ciyam_directory_pid_file = "/tmp/ciyam/.pid";
 const char* const c_tmp_ciyam_directory_dummy_file = "/tmp/ciyam/dummy";
 
 unsigned int g_port = 0;
@@ -534,12 +536,16 @@ int main( int argc, char* argv[ ] )
 
             ( *fp_register_listener_func )( g_port, listener_rpc_core.c_str( ), "" );
 
-            if( !is_update )
+            if( is_update )
+               file_touch( c_tmp_ciyam_directory_pid_file );
+            else
             {
                string fill;
 
                if( pid.length( ) < 11 )
                   fill = string( 11 - pid.length( ), ':' );
+
+               write_file( c_tmp_ciyam_directory_pid_file, pid );
 
                string init_message( "server starting (pid " + fill + ' ' + pid + ")" );
 
@@ -808,6 +814,8 @@ int main( int argc, char* argv[ ] )
 
       cerr << "error: unexpected unknown exception caught" << endl;
    }
+
+   file_remove( c_tmp_ciyam_directory_pid_file );
 
    return rc;
 }
