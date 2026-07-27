@@ -110,7 +110,7 @@ struct script_info
 
    time_t last_mod;
 
-   string tsfilename;
+   string ts_filename;
    string lock_filename;
 
    exclude_type exclude;
@@ -299,7 +299,8 @@ void read_script_info( )
 
             info.filename = reader.read_attribute( c_attribute_filename );
             info.arguments = reader.read_opt_attribute( c_attribute_arguments );
-            info.tsfilename = reader.read_opt_attribute( c_attribute_time_stamp );
+
+            info.ts_filename = reader.read_opt_attribute( c_attribute_time_stamp );
 
             pos = info.filename.find( ':' );
 
@@ -316,11 +317,13 @@ void read_script_info( )
                      info.check_lock_only = true;
                      info.lock_filename.erase( 0, 1 );
                   }
+
+                  info.lock_filename = string( c_tmp_ciyam_directory ) + '/' + info.lock_filename;
                }
             }
 
-            if( file_exists( info.tsfilename ) )
-               info.last_mod = last_modification_time( info.tsfilename );
+            if( file_exists( info.ts_filename ) )
+               info.last_mod = last_modification_time( info.ts_filename );
 
             if( num_execs <= c_max_execs )
                g_script_exec_limit.insert( make_pair( info.name, num_execs ) );
@@ -514,8 +517,8 @@ void output_schedule( ostream& os, bool from_now )
 
       if( is_locked )
          os << " [ *** busy *** ]";
-      else if( !g_scripts[ ssci->second ].tsfilename.empty( ) )
-         os << " [" << g_scripts[ ssci->second ].tsfilename << "]";
+      else if( !g_scripts[ ssci->second ].ts_filename.empty( ) )
+         os << " [" << g_scripts[ ssci->second ].ts_filename << "]";
 
       if( g_script_exec_limit.count( name ) )
          os << " (+" << g_script_exec_limit[ name ] << ")";
@@ -687,17 +690,17 @@ void autoscript_session::on_start( )
                if( okay && locked && !special )
                   okay = false;
 
-               string tsfilename( g_scripts[ j->second ].tsfilename );
+               string ts_filename( g_scripts[ j->second ].ts_filename );
 
                // NOTE: If a script is dependent upon file modification then
                // check whether the file's modificaton time has been changed.
-               if( okay && !tsfilename.empty( ) )
+               if( okay && !ts_filename.empty( ) )
                {
-                  if( !file_exists( tsfilename ) )
+                  if( !file_exists( ts_filename ) )
                      okay = false;
                   else
                   {
-                     mod_time = last_modification_time( tsfilename );
+                     mod_time = last_modification_time( ts_filename );
 
                      if( mod_time == g_scripts[ j->second ].last_mod )
                         okay = false;
@@ -735,7 +738,7 @@ void autoscript_session::on_start( )
                {
                   string arguments( process_script_args( g_scripts[ j->second ].arguments, true ) );
 
-                  if( !tsfilename.empty( ) )
+                  if( !ts_filename.empty( ) )
                      g_scripts[ j->second ].last_mod = mod_time;
 
                   // NOTE: This allows a script to be executed at
