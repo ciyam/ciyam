@@ -529,18 +529,19 @@ void remove_dir( const char* p_name, bool* p_rc )
 
 bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists, bool force_sync )
 {
-   struct utimbuf ut;
-   struct utimbuf* p_ut = 0;
+   time_t tm;
 
    if( p_tm )
-   {
-      ut.actime = *p_tm;
-      ut.modtime = *p_tm;
+      tm = *p_tm;
+   else
+      tm = time( 0 );
 
-      p_ut = &ut;
-   }
+   struct utimbuf ut;
 
-   int rc = utime( p_name, p_ut );
+   ut.actime = tm;
+   ut.modtime = tm;
+
+   int rc = utime( p_name, &ut );
 
    if( ( rc != 0 ) && create_if_not_exists )
    {
@@ -549,6 +550,7 @@ bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists, bo
          if( !force_sync )
          {
             ofstream outf( p_name );
+
             outf.close( );
          }
          else
@@ -567,7 +569,7 @@ bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists, bo
       }
    }
 
-   return rc == 0;
+   return ( rc == 0 );
 }
 
 bool file_exists( const char* p_name, bool check_link_target )
