@@ -1,0 +1,52 @@
+#!/bin/bash
+# Copyright (c) 2026 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+TMP_CIYAM_DIR=/tmp/ciyam
+
+CIYAM_PID_FILE=$TMP_CIYAM_DIR/.pid
+
+CIYAM_IRC_ALTER_FILE=$TMP_CIYAM_DIR/.irc_alter
+
+if [ -f $CIYAM_PID_FILE ]; then
+ PID=$(<$CIYAM_PID_FILE)
+
+ OTIME=$(stat -c "%Y" $CIYAM_PID_FILE 2> /dev/null)
+
+ # NOTE: Forces the script to
+ # be run when first started.
+ touch $CIYAM_IRC_ALTER_FILE
+
+ while true; do
+
+  if ps -p $PID > /dev/null; then
+
+   if [ -f $CIYAM_IRC_ALTER_FILE ]; then
+    rm $CIYAM_IRC_ALTER_FILE
+    ./ciyam_script irc_store_or_restore > /dev/null 2>&1
+   fi
+
+  else
+   break;
+  fi
+
+  # NOTE: If an update occurs then although the PID
+  # will not change the CIYAM_PID_FILE is "touched"
+  # which can be detected in order to make sure the
+  # script will be run "initially" again.
+  NTIME=$(stat -c "%Y" $CIYAM_PID_FILE 2> /dev/null)
+
+  if [ "$NTIME" != "" ]; then
+   if [ "$NTIME" -gt "$OTIME" ]; then
+    OTIME=$NTIME
+    touch $CIYAM_IRC_ALTER_FILE
+   fi
+
+   sleep 1
+  fi
+
+ done
+
+fi
