@@ -3873,6 +3873,7 @@ void read_script_info( )
                if( pos != string::npos )
                {
                   info.lock_filename = info.filename.substr( pos + 1 );
+
                   info.filename.erase( pos );
 
                   if( !info.lock_filename.empty( ) )
@@ -3880,8 +3881,11 @@ void read_script_info( )
                      if( info.lock_filename[ 0 ] == '?' )
                      {
                         info.check_lock_only = true;
+
                         info.lock_filename.erase( 0, 1 );
                      }
+
+                     info.lock_filename = string( c_tmp_ciyam_directory ) + '/' + info.lock_filename;
                   }
                }
             }
