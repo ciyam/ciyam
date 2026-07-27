@@ -64,9 +64,9 @@ run_script test*
 script details: test*
 ===============
 test @one @two [@opt1] [@opt2]
-test1 [ *** busy *** ]
-test2 [ *** busy *** ]
-test3 [ *** busy *** ]
+test1
+test2
+test3
 test4
 run_script test1
 run_script test2
@@ -101,7 +101,6 @@ wait 250
 (finished test4)
 (finished test3)
 run_script test3
-Error: Script 'test3' is busy or currently unavailable.
 run_script test4
 wait 250
 (started test1)
@@ -116,8 +115,10 @@ wait 250
 (started test4)
 (finished test4)
 (finished test3)
+(started test3)
 (started test4)
 (finished test4)
+(finished test3)
 run_script test3
 run_script test4
 wait 250
@@ -133,8 +134,10 @@ wait 250
 (started test4)
 (finished test4)
 (finished test3)
+(started test3)
 (started test4)
 (finished test4)
+(finished test3)
 (started test3)
 (started test4)
 (finished test4)
