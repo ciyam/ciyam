@@ -9,20 +9,20 @@
 #  <name>hub_check
 #  <time>00:00:01
 #  <cycle>5s
-#  <filename>hub_check:~hub
+#  <filename>hub_check:.lock_as_hub
 # </script>
 # <script/>
 #  <name>backup_check
 #  <time>00:00:02
 #  <cycle>5s
-#  <filename>backup_check:?~backup
+#  <filename>backup_check:?.lock_backup
 #  <arguments>@blockchain_backup_height
 # </script>
 # <script/>
 #  <name>shared_check
 #  <time>00:00:03
 #  <cycle>5s
-#  <filename>shared_check:?~shared
+#  <filename>shared_check:?.lock_shared
 # </script>
 # <script/>
 #  <name>process_ciyam_logins
@@ -33,9 +33,8 @@
 # <script/>
 #  <name>irc_store_or_restore
 #  <time>00:00:05
-#  <cycle>1m*
-#  <filename>*script*
-#  <arguments>irc_store_or_restore.cin
+#  <cycle>10s*
+#  <filename>irc_store_or_restore:.lock_as_irc
 # </script>
 # <script/>
 #  <name>*ciyam_ddns_ip_updates
@@ -48,7 +47,7 @@
 #  <name>auto_update
 #  <time>06:00:00
 #  <cycle>1d
-#  <filename>auto_update:~update
+#  <filename>auto_update:.lock_update
 #  <arguments>@auto_update
 # </script>
 ### [<start generated>]
