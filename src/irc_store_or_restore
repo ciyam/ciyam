@@ -44,7 +44,7 @@ if [ -f $CIYAM_PID_FILE ]; then
     touch $CIYAM_IRC_ALTER_FILE
    fi
 
-   sleep 1
+   sleep 2
   fi
 
  done
