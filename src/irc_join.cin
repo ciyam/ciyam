@@ -140,10 +140,10 @@ RETURN=dummy|dummy|$ALL_USERS
 ALL_USERS=@strlit:$ALL_USERS@$USER
 ALL_USERS=@set_sort:@:$ALL_USERS
 ;
-EXTRA=_[$ROOM_NO]/[joined]
+EXTRA=_:joined
 ;
 .system_variable @irc_users_$ROOM_NO $ALL_USERS
-RETURN=/joined (as $USER)|$EXTRA|$ALL_USERS
+RETURN=:joined (as $USER)|$EXTRA|$ALL_USERS
 @endif
 ;
 .session_variable -id=$SESSION @irc_$ROOM_NO 1
