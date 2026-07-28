@@ -106,6 +106,7 @@ enum special_var
    e_special_var_file_list,
    e_special_var_image_dir,
    e_special_var_increment,
+   e_special_var_irc_alter,
    e_special_var_list_hash,
    e_special_var_peer_data,
    e_special_var_peer_port,

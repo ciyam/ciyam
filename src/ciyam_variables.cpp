@@ -151,6 +151,7 @@ constexpr const char* c_special_variable_executing = "@executing";
 constexpr const char* c_special_variable_file_list = "@file_list";
 constexpr const char* c_special_variable_image_dir = "@image_dir";
 constexpr const char* c_special_variable_increment = "@increment";
+constexpr const char* c_special_variable_irc_alter = "@irc_alter";
 constexpr const char* c_special_variable_list_hash = "@list_hash";
 constexpr const char* c_special_variable_peer_data = "@peer_data";
 constexpr const char* c_special_variable_peer_port = "@peer_port";
@@ -397,7 +398,7 @@ string g_secret_hash_prefix;
 // truncated to the first five characters with an ellipsis appended when they are not
 // retrieved internally (i.e. via the "system_variable" protocol command). Whilst not
 // a foolproof method to prevent discovery this should prevent simple access to these
-// from either an application protocol script or the FCGI UI.
+// from an application protocol script.
 void truncate_value_for_secret_hash_prefixed_name( const string& name, string& value )
 {
    if( name.find( g_secret_hash_prefix ) == 0 )
@@ -524,6 +525,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_file_list );
       g_special_variable_names.push_back( c_special_variable_image_dir );
       g_special_variable_names.push_back( c_special_variable_increment );
+      g_special_variable_names.push_back( c_special_variable_irc_alter );
       g_special_variable_names.push_back( c_special_variable_list_hash );
       g_special_variable_names.push_back( c_special_variable_peer_data );
       g_special_variable_names.push_back( c_special_variable_peer_port );
@@ -772,9 +774,17 @@ void init_special_variable_names( )
    set_system_is_for_devt( );
 }
 
-void touch_or_remove( const string& variable, bool remove )
+// NOTE: Special "file variables" are tied to a zero length file. If setting then the file
+// will be "touched" (which also supports checking of the file's unix time) or removed and
+// if "getting" will be either assigned to "1" or removed depending upon the external file
+// existing. If the variable is not intended to be persistent then the temporary directory
+// should be used.
+void touch_or_remove( const string& variable, bool remove, bool use_temp_directory = false )
 {
    string file_name( c_hidden_file_prefix + variable.substr( 1 ) );
+
+   if( use_temp_directory )
+      file_name = string( c_tmp_ciyam_directory ) + '/' + file_name;
 
    if( remove )
       file_remove( file_name );
@@ -782,9 +792,12 @@ void touch_or_remove( const string& variable, bool remove )
       file_touch( file_name, 0, true );
 }
 
-void set_file_variable( const string& variable )
+void set_file_variable( const string& variable, bool use_temp_directory = false )
 {
    string file_name( c_hidden_file_prefix + variable.substr( 1 ) );
+
+   if( use_temp_directory )
+      file_name = string( c_tmp_ciyam_directory ) + '/' + file_name;
 
    if( file_exists( file_name ) )
       g_variables[ variable ] = c_true_value;
@@ -792,32 +805,42 @@ void set_file_variable( const string& variable )
       g_variables.erase( variable );
 }
 
-void set_backup_needed( bool check = true )
+void set_irc_alter( bool change = false, bool remove = false )
+{
+   string variable( c_special_variable_irc_alter );
+
+   if( change )
+      touch_or_remove( variable, remove, true );
+
+   set_file_variable( variable, true );
+}
+
+void set_backup_needed( bool change = false, bool remove = false )
 {
    string variable( c_special_variable_backup_needed );
 
-   if( !check )
-      touch_or_remove( variable, true );
+   if( change )
+      touch_or_remove( variable, remove );
 
    set_file_variable( variable );
 }
 
-void set_restore_needed( bool check = true )
+void set_restore_needed( bool change = false, bool remove = false )
 {
    string variable( c_special_variable_restore_needed );
 
-   if( !check )
-      touch_or_remove( variable, true );
+   if( change )
+      touch_or_remove( variable, remove );
 
    set_file_variable( variable );
 }
 
-void set_generate_hub_block( bool check = true )
+void set_generate_hub_block( bool change = false, bool remove = false )
 {
    string variable( c_special_variable_generate_hub_block );
 
-   if( !check )
-      touch_or_remove( variable, true );
+   if( change )
+      touch_or_remove( variable, remove );
 
    set_file_variable( variable );
 }
@@ -827,22 +850,22 @@ void set_ods_cache_hit_ratios( )
    g_variables[ c_special_variable_ods_cache_hit_ratios ] = system_ods_instance( ).get_cache_hit_ratios( );
 }
 
-void set_prepare_backup_needed( bool check = true )
+void set_prepare_backup_needed( bool change = false, bool remove = false )
 {
    string variable( c_special_variable_prepare_backup_needed );
 
-   if( !check )
-      touch_or_remove( variable, true );
+   if( change )
+      touch_or_remove( variable, remove );
 
    set_file_variable( variable );
 }
 
-void set_complete_restore_needed( bool check = true )
+void set_complete_restore_needed( bool change = false, bool remove = false )
 {
    string variable( c_special_variable_complete_restore_needed );
 
-   if( !check )
-      touch_or_remove( variable, true );
+   if( change )
+      touch_or_remove( variable, remove );
 
    set_file_variable( variable );
 }
@@ -1010,7 +1033,9 @@ bool has_system_variable( const var_name& var )
 
    string name( var.name );
 
-   if( name == c_special_variable_backup_needed )
+   if( name == c_special_variable_irc_alter )
+      set_irc_alter( );
+   else if( name == c_special_variable_backup_needed )
       set_backup_needed( );
    else if( name == c_special_variable_restore_needed )
       set_restore_needed( );
@@ -1189,6 +1214,9 @@ string get_system_variable( const var_name& var, bool is_internal )
 
       map< string, string >::const_iterator ci;
 
+      if( wildcard_match( variable, c_special_variable_irc_alter ) )
+         set_irc_alter( );
+
       if( wildcard_match( variable, c_special_variable_backup_needed ) )
          set_backup_needed( );
 
@@ -1267,6 +1295,9 @@ string get_system_variable( const var_name& var, bool is_internal )
    }
    else
    {
+      if( variable == c_special_variable_irc_alter )
+         set_irc_alter( );
+
       if( variable == c_special_variable_backup_needed )
          set_backup_needed( );
 
@@ -1397,6 +1428,12 @@ void set_system_variable( const var_name& var,
 
       file_remove( tmp_file_name );
    }
+   else if( name == c_special_variable_irc_alter )
+   {
+      guard g( g_mutex );
+
+      set_irc_alter( true, value.empty( ) );
+   }
    else if( name == c_special_variable_backup_needed )
    {
       guard g( g_mutex );
@@ -1412,9 +1449,7 @@ void set_system_variable( const var_name& var,
        || g_variables.count( c_special_variable_complete_restore_needed ) )
          remove = true;
 
-      touch_or_remove( name, remove );
-
-      set_backup_needed( );
+      set_backup_needed( true, remove );
    }
    else if( name == c_special_variable_trace_filters )
       set_trace_filters( value );
@@ -1430,18 +1465,16 @@ void set_system_variable( const var_name& var,
       if( g_variables.count( c_special_variable_complete_restore_needed ) )
          remove = true;
 
-      touch_or_remove( name, remove );
-
       if( !remove )
       {
          if( g_variables.count( c_special_variable_backup_needed ) )
-            set_backup_needed( false );
+            set_backup_needed( true, true );
 
          if( g_variables.count( c_special_variable_prepare_backup_needed ) )
-            set_prepare_backup_needed( false );
+            set_prepare_backup_needed( true, true );
       }
 
-      set_restore_needed( );
+      set_restore_needed( true, remove );
    }
    else if( name == c_special_variable_trace_session_ids )
       set_trace_session_ids( value );
@@ -1449,11 +1482,7 @@ void set_system_variable( const var_name& var,
    {
       guard g( g_mutex );
 
-      string file_name( c_hidden_file_prefix + name.substr( 1 ) );
-
-      touch_or_remove( name, value.empty( ) );
-
-      set_generate_hub_block( );
+      set_generate_hub_block( true, value.empty( ) );
    }
    else if( name == c_special_variable_prepare_backup_needed )
    {
@@ -1469,14 +1498,12 @@ void set_system_variable( const var_name& var,
        || g_variables.count( c_special_variable_complete_restore_needed ) )
          remove = true;
 
-      touch_or_remove( name, remove );
-
-      set_prepare_backup_needed( );
+      set_prepare_backup_needed( true, remove );
 
       if( !remove )
       {
          if( g_variables.count( c_special_variable_backup_needed ) )
-            set_backup_needed( false );
+            set_backup_needed( true, true );
       }
    }
    else if( name == c_special_variable_complete_restore_needed )
@@ -1487,20 +1514,18 @@ void set_system_variable( const var_name& var,
       set_restore_needed( );
       set_prepare_backup_needed( );
 
-      touch_or_remove( name, value.empty( ) );
-
-      set_complete_restore_needed( );
+      set_complete_restore_needed( true, value.empty( ) );
 
       if( !value.empty( ) )
       {
          if( g_variables.count( c_special_variable_backup_needed ) )
-            set_backup_needed( false );
+            set_backup_needed( true, true );
 
          if( g_variables.count( c_special_variable_restore_needed ) )
-            set_restore_needed( false );
+            set_restore_needed( true, true );
 
          if( g_variables.count( c_special_variable_prepare_backup_needed ) )
-            set_prepare_backup_needed( false );
+            set_prepare_backup_needed( true, true );
       }
    }
    else
