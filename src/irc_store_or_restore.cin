@@ -45,10 +45,6 @@ IRC_VARIABLES=@files:/tmp/ciyam/:irc_variables.cin
 ;
 @else
 ;
-.system_variable @irc_alter
-@ifdef $OUTPUT
-.system_variable @irc_alter ""
-;
 ; NOTE: Creates "irc_variables.cin" which can
 ; then later be used for restoring all of the
 ; IRC system variables.
@@ -98,8 +94,6 @@ ALL_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:-1%
 ;
 @:END_LOOP
 >
-;
-@endif
 ;
 @endif
 ;
