@@ -75,14 +75,13 @@ PREFIX=@substr:0,3:$MESSAGE
 ; NOTE: Prefix being "_/".
 @ifeq "$PREFIX" "Xy9"
 @ifeq "$MESSAGE" "Xy9jbGVhcg"
-RETURN=History for '$USER_NAME' in $ROOM cleared.
 CHANGED=1
 .system_variable @queue_irc_$ROOM_AND_USER ""
+RETURN=History for '$USER_NAME' in $ROOM cleared.
 @else
 RETURN=Available commands are:\n
 RETURN=$RETURN\nhelp (show this output)
 RETURN=$RETURN\nclear (clears room history)
-RETURN=$RETURN\n \b
 @endif
 @else
 ;
@@ -101,7 +100,7 @@ LIST=@repstr:@/,:$IRC_USERS
 IRC_USERS=,$LIST
 IRC_USERS=@repstr:,/@:$IRC_USERS
 ;
-USER_MESSAGE=_[$ROOM] (private message sent to $LIST)
+USER_MESSAGE=_ (private message sent to $LIST)
 USER_MESSAGE=@base64:@$USER_MESSAGE
 @endif
 @endif
@@ -113,12 +112,12 @@ UNIX_UNIQUE=$OUTPUT
 ;
 @ifdef $IRC_USER_SUFFIXES
 CHANGED=1
-.system_variable @queue_irc_%ROOM%_$IRC_USER_SUFFIXES "$UNIX_UNIQUE $USER_NAME: $MESSAGE"
+.system_variable @queue_irc_%ROOM%_$IRC_USER_SUFFIXES "$UNIX_UNIQUE $USER_NAME $MESSAGE"
 @endif
 ;
 @ifdef $USER_MESSAGE
 CHANGED=1
-.system_variable @queue_irc_$ROOM_AND_USER "$UNIX_UNIQUE $USER_NAME: $USER_MESSAGE"
+.system_variable @queue_irc_$ROOM_AND_USER "$UNIX_UNIQUE $USER_NAME $USER_MESSAGE"
 @endif
 ;
 @endif
