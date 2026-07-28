@@ -161,10 +161,14 @@ constexpr const char* c_web_session_okay_response = "[okay]";
 
 constexpr const char* c_web_session_unknown_response = "[unknown]";
 
+constexpr const char* c_web_session_meta_message_name = "MM";
+constexpr const char* c_web_session_default_message_names = "ALL";
+
 constexpr const char* c_web_session_default_room_number = "0000000";
 
-constexpr const char* c_web_session_default_message_room_prefix = "_[";
-constexpr const char* c_web_session_default_message_room_suffix = "] ";
+constexpr const char* c_web_session_meta_message_prefix = "_/";
+
+constexpr const char* c_web_session_default_message_prefix = "_ ";
 
 constexpr const char* c_storage_attribute_id = "id";
 constexpr const char* c_storage_attribute_user_info = "user_info";
@@ -768,7 +772,7 @@ const sio_graph& get_meta_data( const string& model_name )
    return *g_model_meta_data[ model_name ];
 }
 
-void process_messages_response( string& response )
+void process_messages_response( string& response, bool needs_decoding )
 {
    vector< string > messages;
 
@@ -776,38 +780,44 @@ void process_messages_response( string& response )
    {
       split( response, messages, '\n' );
 
-      for( size_t i = 0; i < messages.size( ); i++ )
+      if( needs_decoding )
       {
-         string next( messages[ i ] );
-
-         string::size_type pos = next.find( ": " );
-
-         if( pos != string::npos )
+         for( size_t i = 0; i < messages.size( ); i++ )
          {
-            string extra;
+            string next( messages[ i ] );
 
-            string content( next.substr( pos + 2 ) );
-
-            string::size_type xpos = content.find( ' ' );
-
-            if( xpos != string::npos )
+            if( !next.empty( ) )
             {
-               extra = content.substr( xpos );
+               vector< string > parts;
 
-               content.erase( xpos );
-            }
+               split( next, parts, ' ' );
 
-            if( !content.empty( )
-             && base64::valid_characters( content, true ) )
-            {
-               string decoded( base64::decode( content, true ) );
+               string next_message( parts[ 0 ] );
 
-               next.erase( pos + 2 );
+               if( parts.size( ) > 1 )
+               {
+                  next_message += ' ' + parts[ 1 ];
 
-               if( decoded.size( ) > 1 )
-                  next += decoded.substr( 1 );
+                  if( parts.size( ) > 2 )
+                  {
+                     string content( parts[ 2 ] );
 
-               messages[ i ] = next + extra;
+                     if( !content.empty( ) )
+                     {
+                        if( base64::valid_characters( content, true ) )
+                        {
+                           string decoded( base64::decode( content, true ) );
+
+                           next_message += ' ' + decoded.substr( 1 );
+                        }
+                     }
+
+                     if( parts.size( ) > 3 )
+                        next_message += ' ' + parts[ 3 ];
+                  }
+               }
+
+               messages[ i ] = next_message;
             }
          }
       }
@@ -2188,6 +2198,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      bool allowed_command = true;
 
                      bool is_adding_room = false;
+                     bool is_meta_request = false;
                      bool is_messages_request = false;
                      bool is_user_info_request = false;
                      bool is_module_info_request = false;
@@ -2245,7 +2256,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               if( is_post_request
                                && option_parameters.count( c_cws_request_messages_create_options_text ) )
                               {
-                                 string names( "ALL" );
+                                 string names;
 
                                  if( option_parameters.count( c_cws_request_messages_create_options_for ) )
                                  {
@@ -2255,9 +2266,28 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     // dot separator rather than
                                     // a comma.
                                     replace( names, ",", "." );
+
+                                    string::size_type pos = names.find( '.' );
+
+                                    string first( names.substr( 0, pos ) );
+
+                                    if( first == c_web_session_meta_message_name )
+                                    {
+                                       is_meta_request = true;
+                                       use_none_response = false;
+
+                                       if( pos == string::npos )
+                                          names.erase( );
+                                       else
+                                          names.erase( 0, pos + 1 );
+                                    }
                                  }
 
-                                 if( room == c_web_session_default_room_number )
+                                 if( names.empty( ) )
+                                    names = c_web_session_default_message_names;
+
+                                 if( !is_meta_request
+                                  && ( room == c_web_session_default_room_number ) )
                                  {
                                     is_adding_room = true;
 
@@ -2269,16 +2299,14 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  }
                                  else
                                  {
-                                    string prefix( c_web_session_default_message_room_prefix );
-
-                                    prefix += room + c_web_session_default_message_room_suffix;
+                                    string prefix( is_meta_request ? c_web_session_meta_message_prefix : c_web_session_default_message_prefix );
 
                                     request_and_args = "run_script !irc_send_message \"@room=" + room + ",@names=" + names + ",@message="
                                      + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
                                  }
                               }
 
-                              if( !is_adding_room )
+                              if( !is_adding_room && !is_meta_request )
                               {
                                  request_and_args += "IRC_ROOM=" + room + '\n';
 
@@ -2457,7 +2485,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  if( is_user_info_request )
                                     process_user_info_response( session, response );
                                  else if( !is_adding_room && is_messages_request )
-                                    process_messages_response( response );
+                                    process_messages_response( response, !is_meta_request );
                               }
 
                               break;
