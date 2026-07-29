@@ -162,8 +162,8 @@ else
  cp channel_readme.md mnemonics.txt ciyam_strings.txt module_strings.txt $release_name/ciyam
 
  cp add_user at_init at_term auto_update backup_check backup_export backup_import $release_name/ciyam
- cp check_ext_ip_addr ciyam_backup ciyam_command ciyam_restore ciyam_script ciyam_update $release_name/ciyam
- cp construct create_ciyam_pem create_db drop_db export_files hub_check import_files init_identity init_web_access kill_current_pid_for_user $release_name/ciyam
+ cp check_ext_ip_addr ciyam_backup ciyam_command ciyam_restore ciyam_script ciyam_update construct create_ciyam_pem $release_name/ciyam
+ cp create_db drop_db export_files hub_check import_files init_identity init_web_access irc_store_or_restore kill_current_pid_for_user $release_name/ciyam
  cp prepare_for_import process_ciyam_logins resize_fs_img_files restore set_random_password shared_export shared_check shared_import system_variable $release_name/ciyam
  cp update unlock_identity $release_name/ciyam
 
