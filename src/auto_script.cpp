@@ -87,8 +87,11 @@ struct script_info
    script_info( )
     :
     last_mod( 0 ),
+    cycle_seconds( 0 ),
+    cycle_num_years( 0 ),
     allow_late_exec( false ),
     check_lock_only( false ),
+    external_cycles( false ),
     exclude( e_exclude_type_none ),
     logging( e_logging_type_standard )
    {
@@ -119,6 +122,7 @@ struct script_info
 
    bool allow_late_exec;
    bool check_lock_only;
+   bool external_cycles;
 };
 
 mutex g_mutex;
@@ -299,6 +303,13 @@ void read_script_info( )
 
             info.filename = reader.read_attribute( c_attribute_filename );
             info.arguments = reader.read_opt_attribute( c_attribute_arguments );
+
+            if( !info.arguments.empty( ) && ( info.arguments[ 0 ] == '*' ) )
+            {
+               info.arguments.erase( 0, 1 );
+
+               info.external_cycles = true;
+            }
 
             info.ts_filename = reader.read_opt_attribute( c_attribute_time_stamp );
 
@@ -508,6 +519,19 @@ void output_schedule( ostream& os, bool from_now )
 
       bool is_script = ( filename == c_script_dummy_filename );
 
+      int seconds = g_scripts[ ssci->second ].cycle_seconds;
+      int num_years = g_scripts[ ssci->second ].cycle_num_years;
+
+      if( !seconds )
+      {
+         if( !num_years )
+            os << " ---";
+         else
+            os << ' ' << num_years << 'y';
+      }
+      else
+         os << ' ' << format_duration( seconds, true );
+
       bool is_locked = false;
 
       string lock_filename( g_scripts[ ssci->second ].lock_filename );
@@ -516,7 +540,12 @@ void output_schedule( ostream& os, bool from_now )
          is_locked = true;
 
       if( is_locked )
-         os << " [ *** busy *** ]";
+      {
+         if( g_scripts[ ssci->second ].external_cycles )
+            os << " (running)";
+         else
+            os << " (waiting)";
+      }
       else if( !g_scripts[ ssci->second ].ts_filename.empty( ) )
          os << " [" << g_scripts[ ssci->second ].ts_filename << "]";
 
@@ -800,6 +829,9 @@ void autoscript_session::on_start( )
 
                      if( cmd_and_args.find( '/' ) == string::npos )
                         cmd_and_args = "./" + cmd_and_args;
+
+                     if( g_scripts[ j->second ].external_cycles )
+                        cmd_and_args += " " + to_string( cycle_seconds );
 
                      if( !arguments.empty( ) )
                         cmd_and_args += " " + arguments;
