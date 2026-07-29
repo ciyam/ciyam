@@ -31,11 +31,11 @@ review stylesheet[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 Check for messages and then create a test message and a new room.
-#0000001 1/1 Administration
+test-1 #0000001 1/1 Administration
 test-1 testing...
 0000002
 Now check for messages as admin and join the room created by test-1.
-#0000001 3/3 Administration
+admin #0000001 3/3 Administration
 test-1
 test-1 :joined
 test-1  testing...
