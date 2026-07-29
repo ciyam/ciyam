@@ -4,6 +4,12 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+SLEEP=$1
+
+if [ "$SLEEP" = "" ]; then
+ SLEEP=2
+fi
+
 TMP_CIYAM_DIR=/tmp/ciyam
 
 CIYAM_PID_FILE=$TMP_CIYAM_DIR/.pid
@@ -44,7 +50,7 @@ if [ -f $CIYAM_PID_FILE ]; then
     touch $CIYAM_IRC_ALTER_FILE
    fi
 
-   sleep 2
+   sleep $SLEEP
   fi
 
  done
