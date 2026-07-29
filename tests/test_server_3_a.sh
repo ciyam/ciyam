@@ -54,19 +54,19 @@ new_session=$(echo -n "$new_checked$new_unique" | sha256sum | head -c 20)
 curl -s "localhost:13031/cws/help?access=$new_access&device=$new_device&session=bad_session"
 curl -s "localhost:13031/cws/help?access=$new_access&device=$new_device&session=$new_session"
 echo "Check for messages and then create a test message and a new room."
-summary=$(curl -s "localhost:13031/cws/messages?access=$new_access&device=$new_device&session=$new_session")
+summary=$(curl -s "localhost:13031/cws/messages?access=$new_access&device=$new_device&session=$new_session" | cut -d " " -f 2-)
 echo ${summary#* }
 message=$(curl -s -X POST "localhost:13031/cws/messages/0000001?access=$new_access&device=$new_device&options=text%3Dtesting...&session=$new_session" | tail -n 1)
 echo ${message#* }
 room_info=$(curl -s -X POST "localhost:13031/cws/messages/0000000?access=$new_access&device=$new_device&options=text%3DTesting&session=$new_session")
 echo ${room_info%-*}
 echo "Now check for messages as admin and join the room created by test-1."
-summary=$(curl -s "localhost:13031/cws/messages?access=12345&device=$device&session=$session")
+summary=$(curl -s "localhost:13031/cws/messages?access=12345&device=$device&session=$session" | cut -d " " -f 2-)
 echo ${summary#* }
 curl -s "localhost:13031/cws/messages/0000001?access=12345&device=$device&session=$session" | cut -d " " -f 2- | sed -E "s/\-[0-9a-f]{32}/-NEW-ROOM-UUID-VALUE/g"
 new_room_num=${room_info%-*}
 new_room_uuid=${room_info#*-}
-message=$(curl -s "localhost:13031/cws/messages/$new_room_num?access=12345&device=$device&options=from%3D$new_room_uuid&session=$session")
+message=$(curl -s "localhost:13031/cws/messages/$new_room_num?access=12345&device=$device&options=from%3D$new_room_uuid&session=$session" | cut -d " " -f 2-)
 echo ${message#* }
 echo "Now will perform structured I/O queries for enums/lists and views after attaching to the Meta storage."
 curl -s -X POST "localhost:13031/cws/storages/meta?access=$new_access&device=$new_device&session=$new_session"
