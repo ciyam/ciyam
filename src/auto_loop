@@ -1,0 +1,37 @@
+#!/bin/bash
+# Copyright (c) 2026 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 2 ]; then
+ echo "Usage: auto_loop [sleep time] [script name] [[script arguments]]"
+else
+ SLEEP=$1
+ SCRIPT=$2
+
+ shift
+ shift
+
+ ARGUMENTS=$*
+
+ TMP_CIYAM_DIR=/tmp/ciyam
+
+ CIYAM_PID_FILE=$TMP_CIYAM_DIR/.pid
+
+ if [ -f $CIYAM_PID_FILE ]; then
+  PID=$(<$CIYAM_PID_FILE)
+
+  while true; do
+
+   if ps -p $PID > /dev/null; then
+    ./$SCRIPT $ARGUMENTS
+   else
+    break;
+   fi
+
+   sleep $SLEEP
+  done
+
+ fi
+fi
