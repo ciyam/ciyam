@@ -165,6 +165,7 @@ constexpr const char* c_web_session_meta_message_name = "MM";
 constexpr const char* c_web_session_default_message_names = "ALL";
 
 constexpr const char* c_web_session_default_room_number = "0000000";
+constexpr const char* c_web_session_initial_room_number = "0000001";
 
 constexpr const char* c_web_session_meta_message_prefix = "_/";
 
@@ -782,44 +783,70 @@ void process_messages_response( string& response, bool needs_decoding )
 
       if( needs_decoding )
       {
+         bool had_users = false;
+
          for( size_t i = 0; i < messages.size( ); i++ )
          {
             string next( messages[ i ] );
 
             if( !next.empty( ) )
             {
-               vector< string > parts;
+               string next_message( next );
 
-               split( next, parts, ' ' );
-
-               string next_message( parts[ 0 ] );
-
-               if( parts.size( ) > 1 )
+               // NOTE: It is expected that the first line is the "web_session_join"
+               // response which will include all of the current users for the room.
+               if( i == 0 )
                {
-                  next_message += ' ' + parts[ 1 ];
+                  string::size_type pos = next_message.rfind( '|' );
 
-                  if( parts.size( ) > 2 )
+                  if( pos != string::npos )
+                     next_message.erase( 0, pos + 1 );
+
+                  if( !next_message.empty( ) )
                   {
-                     string content( parts[ 2 ] );
+                     had_users = true;
 
-                     if( !content.empty( ) )
+                     next_message = replaced( next_message.substr( 1 ), "@", " " );
+                  }
+               }
+               else
+               {
+                  vector< string > parts;
+
+                  split( next, parts, ' ' );
+
+                  next_message = parts[ 0 ];
+
+                  if( parts.size( ) > 1 )
+                  {
+                     next_message += ' ' + parts[ 1 ];
+
+                     if( parts.size( ) > 2 )
                      {
-                        if( base64::valid_characters( content, true ) )
+                        string content( parts[ 2 ] );
+
+                        if( !content.empty( ) )
                         {
-                           string decoded( base64::decode( content, true ) );
+                           if( base64::valid_characters( content, true ) )
+                           {
+                              string decoded( base64::decode( content, true ) );
 
-                           next_message += ' ' + decoded.substr( 1 );
+                              next_message += ' ' + decoded.substr( 1 );
+                           }
                         }
-                     }
 
-                     if( parts.size( ) > 3 )
-                        next_message += ' ' + parts[ 3 ];
+                        if( parts.size( ) > 3 )
+                           next_message += ' ' + parts[ 3 ];
+                     }
                   }
                }
 
                messages[ i ] = next_message;
             }
          }
+
+         if( had_users && ( messages.size( ) == 1 ) )
+            messages.push_back( "(no new messages)" );
       }
 
       response = join( messages, '\n' );
@@ -2317,6 +2344,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                  if( room == c_web_session_default_room_number )
                                  {
+                                    request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"\n";
+
                                     if( !from.empty( ) )
                                        request_and_args += "session_variable @irc_start_points " + from + '\n';
                                  }
