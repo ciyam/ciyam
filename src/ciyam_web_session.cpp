@@ -773,7 +773,7 @@ const sio_graph& get_meta_data( const string& model_name )
    return *g_model_meta_data[ model_name ];
 }
 
-void process_messages_response( string& response, bool needs_decoding )
+void process_messages_response( string& response, bool needs_decoding, bool is_json_format )
 {
    vector< string > messages;
 
@@ -849,7 +849,10 @@ void process_messages_response( string& response, bool needs_decoding )
             messages.push_back( "(no new messages)" );
       }
 
-      response = join( messages, '\n' );
+      if( !is_json_format )
+         response = join( messages, '\n' );
+      else
+         response = as_json_array( "all_messages", messages );
    }
 }
 
@@ -2514,7 +2517,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  if( is_user_info_request )
                                     process_user_info_response( session, response );
                                  else if( !is_adding_room && is_messages_request )
-                                    process_messages_response( response, !is_meta_request );
+                                    process_messages_response( response, !is_meta_request, is_json_output );
                               }
 
                               break;
