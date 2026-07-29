@@ -23,7 +23,7 @@ JOIN_TOKEN=$3
 JOIN_TOKEN=-$JOIN_TOKEN
 @endif
 ;
-.run_script !irc_join "@name=$USERNAME,@room=$IRC_ROOM$JOIN_TOKEN"
+run_script !irc_join "@name=$USERNAME,@room=$IRC_ROOM$JOIN_TOKEN"
 @ifndef $ERROR
 JOIN_LINES=@repstr:|/\n:$OUTPUT
 JOIN_LINE=@strlit:%JOIN_LINES:2%
