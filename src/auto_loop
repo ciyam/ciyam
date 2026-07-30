@@ -4,33 +4,116 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+sleep_to_next_second( )
+{
+ osecs=$(date +%s)
+
+ sleep 0.85
+
+ # NOTE: By checking the time value
+ # in seconds and using microsecond
+ # sleeps to complete the "wait" it
+ # is intended that after returning
+ # the "next second" will have only
+ # just ticked over.
+ while true; do
+  nsecs=$(date +%s)
+
+  if [ "$osecs" != "$nsecs" ]; then
+   break;
+  fi
+
+  sleep 0.01
+ done
+}
+
 if [ $# -lt 2 ]; then
- echo "Usage: auto_loop [sleep time] [script name] [[script arguments]]"
+ echo "Usage: auto_loop [sleep secs[:init]] [script name] [[script arguments]]"
 else
  SLEEP=$1
+
+ SLEEP_STARTING=
+
+ # NOTE: If SLEEP was provided using
+ # "X:Y" treat X as the SLEEP_REPEAT
+ # and Y as the SLEEP_STARTING value
+ # (needed to support late execution
+ # that returns to normal schedule).
+ if [[ $SLEEP =~ '^[0-9]+$' ]]; then
+  SLEEP_REPEAT=$SLEEP
+ else
+  SLEEP_REPEAT="${SLEEP%:*}"
+  SLEEP_STARTING="${SLEEP#*:}"
+ fi
+
  SCRIPT=$2
+
+ # NOTE: Verify that the SLEEP_REPEAT value is >= 1.
+ if ! (( $SLEEP_REPEAT )) then
+   echo "Error: Invalid sleep value '$SLEEP_REPEAT'."
+   exit 1
+ fi
 
  shift
  shift
 
  ARGUMENTS=$*
 
+ COUNTER=0
+
  TMP_CIYAM_DIR=/tmp/ciyam
 
  CIYAM_PID_FILE=$TMP_CIYAM_DIR/.pid
 
+ export CIYAM_START_OR_RELOAD=1
+
  if [ -f $CIYAM_PID_FILE ]; then
   PID=$(<$CIYAM_PID_FILE)
+
+  OTIME=$(stat -c "%Y" $CIYAM_PID_FILE 2> /dev/null)
 
   while true; do
 
    if ps -p $PID > /dev/null; then
-    ./$SCRIPT $ARGUMENTS
+    if [ "$COUNTER" = "0" ]; then
+     ./$SCRIPT $ARGUMENTS
+    export CIYAM_START_OR_RELOAD=
+    fi
    else
+     break;
+   fi
+
+   NTIME=$(stat -c "%Y" $CIYAM_PID_FILE 2> /dev/null)
+
+   # NOTE: If empty then the server reload
+   # or shutdown has taken place (and will
+   # exit) but it is possible that the new
+   # PID already has been created in which
+   # case will set "CIYAM_START_OR_RELOAD"
+   # to signal this (which supports a loop
+   # that could continue across a reload).
+   if [ "$NTIME" = "" ]; then
     break;
    fi
 
-   sleep $SLEEP
+   if [ "$NTIME" -gt "$OTIME" ]; then
+    OTIME=$NTIME
+    export CIYAM_START_OR_RELOAD=1
+   fi
+
+   if [ ! "$COUNTER" = "0" ]; then
+    let COUNTER--
+    sleep_to_next_second
+   else
+    if [ "$SLEEP_STARTING" ]; then
+     COUNTER=$SLEEP_STARTING
+
+     SLEEP_STARTING=
+    else
+     COUNTER=$SLEEP_REPEAT
+    fi
+   fi
+
   done
 
  fi
