@@ -91,9 +91,9 @@ struct script_info
     last_mod( 0 ),
     cycle_seconds( 0 ),
     cycle_num_years( 0 ),
-    allow_late_exec( false ),
     check_lock_only( false ),
     external_cycles( false ),
+    force_immediate( false ),
     exclude( e_exclude_type_none ),
     logging( e_logging_type_standard )
    {
@@ -122,9 +122,9 @@ struct script_info
 
    logging_type logging;
 
-   bool allow_late_exec;
    bool check_lock_only;
    bool external_cycles;
+   bool force_immediate;
 };
 
 mutex g_mutex;
@@ -210,7 +210,7 @@ void read_script_info( )
             if( !cycle.empty( )
              && ( cycle[ cycle.size( ) - 1 ] == '*' ) )
             {
-               info.allow_late_exec = true;
+               info.force_immediate = true;
 
                cycle.erase( cycle.size( ) - 1 );
             }
@@ -594,8 +594,8 @@ void autoscript_session::on_start( )
          throw runtime_error( "'c_auto_script_msleep' must be a multiple of 1000" );
 
       // NOTE: Use "time" rather than
-      // using "unix_time" due to the
-      // latter performing rounding.
+      // using "unix_time" to prevent
+      // any unnecessary conversions.
       time_t time_prior = time( 0 );
 
       while( true )
@@ -644,6 +644,7 @@ void autoscript_session::on_start( )
             read_script_info( );
 
             dtm = now;
+
             changed = false;
             repeated = false;
          }
@@ -660,6 +661,7 @@ void autoscript_session::on_start( )
          if( has_system_variable( autoscript_reload_name ) )
          {
             changed = true;
+
             set_system_variable( autoscript_reload_name, "" );
 
             continue;
@@ -682,6 +684,7 @@ void autoscript_session::on_start( )
             }
 
             dtm = now;
+
             changed = true;
 
             char sign = '+';
@@ -691,7 +694,7 @@ void autoscript_session::on_start( )
 
             size_t mins = abs( secs_diff ) / 60;
 
-            size_t modulus = mins % 60;
+            size_t modulus = ( mins % 60 );
 
             // NOTE: Adjust up or down for most likely time zone changes.
             if( modulus == 1 )
@@ -796,7 +799,7 @@ void autoscript_session::on_start( )
                   okay = false;
 
                if( okay && !is_excluded( g_scripts[ j->second ], now )
-                && ( g_scripts[ j->second ].allow_late_exec || ( ( now - next ) <= 1.0 ) ) )
+                && ( g_scripts[ j->second ].force_immediate || ( ( now - next ) <= 1.0 ) ) )
                {
                   string arguments( process_script_args( g_scripts[ j->second ].arguments, true ) );
 
@@ -809,7 +812,7 @@ void autoscript_session::on_start( )
                   // startup and is being set false now to ensure
                   // subsequent executions are in accordance with
                   // the specified cycle.
-                  if( g_scripts[ j->second ].allow_late_exec )
+                  if( g_scripts[ j->second ].force_immediate )
                   {
                      time_t time_now = time( 0 );
 
@@ -817,7 +820,7 @@ void autoscript_session::on_start( )
 
                      first_cycle = ( cycle_seconds - offset );
 
-                     g_scripts[ j->second ].allow_late_exec = false;
+                     g_scripts[ j->second ].force_immediate = false;
                   }
 
                   string cmd_and_args;
@@ -875,7 +878,7 @@ void autoscript_session::on_start( )
                         cmd_and_args = "./" + cmd_and_args;
 
                      // NOTE: If is using "auto_loop" and the cycle
-                     // permits "late execution" (i.e. immediately)
+                     // attribute included a "force_immediate" flag
                      // then will pass the initial cycle seconds if
                      // that is not aligned (so subsequent executes
                      // will be aligned according to the schedule).
