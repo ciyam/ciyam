@@ -537,7 +537,7 @@ int main( int argc, char* argv[ ] )
             ( *fp_register_listener_func )( g_port, listener_rpc_core.c_str( ), "" );
 
             if( is_update )
-               file_touch( c_tmp_ciyam_directory_pid_file );
+               write_file( c_tmp_ciyam_directory_pid_file, pid );
             else
             {
                string fill;
@@ -667,8 +667,21 @@ int main( int argc, char* argv[ ] )
                   {
                      reported_shutdown = true;
 
+                     file_remove( c_tmp_ciyam_directory_pid_file );
+
                      if( !is_update && !g_is_quiet )
                         cout << "server shutdown (" << shutdown_reason << ") now underway..." << endl;
+
+                     // NOTE: Waits for an initial time
+                     // so "auto_loop" bash scripts can
+                     // exit before reloading (although
+                     // it is possible that they do not
+                     // detect the ".pid" file deletion
+                     // due to still executing which is
+                     // why "auto_loop" also will check
+                     // the ".pid" time stamp).
+                     if( g_start_auto_script )
+                        msleep( c_auto_script_msleep );
                   }
 
                   if( g_server_shutdown ) 
@@ -815,6 +828,9 @@ int main( int argc, char* argv[ ] )
       cerr << "error: unexpected unknown exception caught" << endl;
    }
 
+   // NOTE: Although normally this file will have
+   // already been removed removes it now just to
+   // be sure.
    file_remove( c_tmp_ciyam_directory_pid_file );
 
    return rc;
