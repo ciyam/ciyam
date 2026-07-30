@@ -47,6 +47,8 @@ const size_t c_max_execs = 99999;
 
 const size_t c_max_tolerance = 60;
 
+const char* const c_auto_loop_filename = "auto_loop";
+
 const char* const c_script_dummy_filename = "*script*";
 
 const char* const c_section_script = "script";
@@ -304,13 +306,6 @@ void read_script_info( )
             info.filename = reader.read_attribute( c_attribute_filename );
             info.arguments = reader.read_opt_attribute( c_attribute_arguments );
 
-            if( !info.arguments.empty( ) && ( info.arguments[ 0 ] == '*' ) )
-            {
-               info.arguments.erase( 0, 1 );
-
-               info.external_cycles = true;
-            }
-
             info.ts_filename = reader.read_opt_attribute( c_attribute_time_stamp );
 
             pos = info.filename.find( ':' );
@@ -332,6 +327,9 @@ void read_script_info( )
                   info.lock_filename = string( c_tmp_ciyam_directory ) + '/' + info.lock_filename;
                }
             }
+
+            if( info.filename == c_auto_loop_filename )
+               info.external_cycles = true;
 
             if( file_exists( info.ts_filename ) )
                info.last_mod = last_modification_time( info.ts_filename );
@@ -573,6 +571,7 @@ void autoscript_session::on_start( )
 #endif
    try
    {
+      bool aligned = false;
       bool changed = false;
       bool repeated = false;
 
@@ -589,9 +588,43 @@ void autoscript_session::on_start( )
 
       date_time dtm( date_time::local( ) );
 
+      size_t cycle_seconds = ( c_auto_script_msleep / 1000 );
+
+      if( !cycle_seconds || ( ( c_auto_script_msleep % 1000 ) != 0 ) )
+         throw runtime_error( "'c_auto_script_msleep' must be a multiple of 1000" );
+
+      // NOTE: Use "time" rather than
+      // using "unix_time" due to the
+      // latter performing rounding.
+      time_t time_prior = time( 0 );
+
       while( true )
       {
-         msleep( c_auto_script_msleep );
+         // NOTE: Attempts to align the unix time as
+         // closely to the "second" boundary without
+         // being too wasteful of CPU cycles.
+         while( !g_server_shutdown )
+         {
+            if( !aligned )
+               msleep( 10 );
+            else
+            {
+               aligned = false;
+
+               msleep( c_auto_script_msleep * 0.85 );
+            }
+
+            time_t time_now = time( 0 );
+
+            if( time_now >= ( time_prior + cycle_seconds ) )
+            {
+               time_prior = time_now;
+
+               break;
+            }
+         }
+
+         aligned = true;
 
          if( g_server_shutdown )
             break;
@@ -770,11 +803,22 @@ void autoscript_session::on_start( )
                   if( !ts_filename.empty( ) )
                      g_scripts[ j->second ].last_mod = mod_time;
 
+                  size_t first_cycle = 0;
+
                   // NOTE: This allows a script to be executed at
                   // startup and is being set false now to ensure
                   // subsequent executions are in accordance with
                   // the specified cycle.
-                  g_scripts[ j->second ].allow_late_exec = false;
+                  if( g_scripts[ j->second ].allow_late_exec )
+                  {
+                     time_t time_now = time( 0 );
+
+                     size_t offset = ( time_now % cycle_seconds );
+
+                     first_cycle = ( cycle_seconds - offset );
+
+                     g_scripts[ j->second ].allow_late_exec = false;
+                  }
 
                   string cmd_and_args;
 
@@ -830,8 +874,18 @@ void autoscript_session::on_start( )
                      if( cmd_and_args.find( '/' ) == string::npos )
                         cmd_and_args = "./" + cmd_and_args;
 
+                     // NOTE: If is using "auto_loop" and the cycle
+                     // permits "late execution" (i.e. immediately)
+                     // then will pass the initial cycle seconds if
+                     // that is not aligned (so subsequent executes
+                     // will be aligned according to the schedule).
                      if( g_scripts[ j->second ].external_cycles )
+                     {
                         cmd_and_args += " " + to_string( cycle_seconds );
+
+                        if( first_cycle )
+                           cmd_and_args += ':' + to_string( first_cycle );
+                     }
 
                      if( !arguments.empty( ) )
                         cmd_and_args += " " + arguments;
