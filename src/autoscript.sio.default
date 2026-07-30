@@ -10,7 +10,7 @@
 #  <time>00:00:01
 #  <cycle>5s
 #  <filename>auto_loop:.lock_as_hub
-#  <arguments>*hub_check
+#  <arguments>hub_check
 # </script>
 # <script/>
 #  <name>backup_check
@@ -34,9 +34,9 @@
 # <script/>
 #  <name>irc_store_or_restore
 #  <time>00:00:05
-#  <cycle>10s
-#  <filename>irc_store_or_restore:.lock_as_irc
-#  <arguments>*
+#  <cycle>10s*
+#  <filename>auto_loop:.lock_as_irc
+#  <arguments>irc_store_or_restore
 # </script>
 # <script/>
 #  <name>*ciyam_ddns_ip_updates
