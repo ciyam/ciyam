@@ -75,7 +75,7 @@ void* signal_handler( void* id )
 
    sigwait( &sig_set, &sig );
 
-   ++g_server_shutdown;
+   g_server_shutdown = 1;
 
    return id;
 }
@@ -618,7 +618,7 @@ int main( int argc, char* argv[ ] )
 
                   if( ++start_wait_attempts > c_max_wait_attempts )
                   {
-                     ++g_server_shutdown;
+                     g_server_shutdown = 1;
 
                      shutdown_reason = "max. wait attempts for system sessions";
 
@@ -640,14 +640,14 @@ int main( int argc, char* argv[ ] )
                {
                   if( !s && !g_server_shutdown )
                   {
-                     ++g_server_shutdown;
+                     g_server_shutdown = 1;
 
                      shutdown_reason = "bad listener";
                   }
 
                   if( !g_server_shutdown && file_exists( c_shutdown_signal_file ) )
                   {
-                     ++g_server_shutdown;
+                     g_server_shutdown = 1;
 
                      shutdown_reason = "due to stop file";
                   }
@@ -660,7 +660,7 @@ int main( int argc, char* argv[ ] )
                      if( file_exists( c_restore_signal_file ) )
                         was_restore = true;
 
-                     ++g_server_shutdown;
+                     g_server_shutdown = 1;
                   }
 
                   if( g_server_shutdown && !reported_shutdown )
