@@ -395,17 +395,19 @@ constexpr const char* c_init = "init";
 constexpr const char* c_peer = "peer";
 constexpr const char* c_admin = "admin";
 
-constexpr const char* c_unknown = "unknown";
-
 constexpr const char* c_everyone = "everyone";
 constexpr const char* c_visitors = "visitors";
 constexpr const char* c_watchers = "watchers";
 
 constexpr const char* c_both = "both";
-constexpr const char* c_create = "create";
-constexpr const char* c_update = "update";
 
 constexpr const char* c_anyone = "anyone";
+constexpr const char* c_unknown = "unknown";
+
+constexpr const char* c_create = "create";
+constexpr const char* c_delete = "delete";
+constexpr const char* c_update = "update";
+
 constexpr const char* c_admin_only = "admin_only";
 constexpr const char* c_owner_only = "owner_only";
 constexpr const char* c_admin_owner = "admin_owner";
