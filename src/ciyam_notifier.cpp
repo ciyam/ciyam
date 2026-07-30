@@ -44,6 +44,11 @@ const char c_unchanged = ':';
 
 const size_t c_wait_sleep_time = 10;
 
+const char* const c_attrib = "attrib";
+const char* const c_modify = "modify";
+const char* const c_moved_to = "moved_to";
+const char* const c_moved_from = "moved_from";
+
 inline void issue_error( const string& message, bool possibly_expected = false )
 {
    TRACE_LOG( ( possibly_expected ? TRACE_INITIAL | TRACE_SESSION : TRACE_MINIMAL ), string( "notifier error: " ) + message );
@@ -494,8 +499,9 @@ void ciyam_notifier::on_start( )
                   if( old_value == ignore )
                      is_ignoring = true;
 
-                  // NOTE: The extra string is all characters before the first 'a-z' character.
-                  if( !old_value.empty( ) && ( old_value[ 0 ] < 'a' || old_value[ 0 ] > 'z' ) )
+                  // NOTE: Sets extra to all characters before the first 'a-z' character.
+                  if( !old_value.empty( )
+                   && ( ( old_value[ 0 ] < 'a' ) || ( old_value[ 0 ] > 'z' ) ) )
                   {
                      string::size_type pos = old_value.find_first_of( "abcdefghijklmnopqrstuvwxyz" );
 
@@ -503,12 +509,14 @@ void ciyam_notifier::on_start( )
                         throw runtime_error( "unexpected old_value '" + old_value + "'" );
 
                      extra = old_value.substr( 0, pos );
+
                      old_value.erase( 0, pos );
                   }
 
                   if( pos != string::npos )
                   {
                      next_event.erase( 0, pos + 1 );
+
                      pos = next_event.find( '|' );
 
                      value = next_event.substr( 0, pos );
@@ -519,17 +527,19 @@ void ciyam_notifier::on_start( )
 
                         next_event.erase( 0, pos + 1 );
 
-                        if( is_ignoring && ( value == "moved_to" || value == "moved_from" ) )
+                        if( is_ignoring
+                         && ( ( value == c_moved_to ) || ( value == c_moved_from ) ) )
                         {
                            cookie_id = "0";
+
                            value = old_value;
                         }
 
                         if( cookie_id != "0" )
                         {
-                           if( value == "moved_to" )
+                           if( value == c_moved_to )
                               value = c_notifier_moved_from;
-                           else if( value == "moved_from" )
+                           else if( value == c_moved_from )
                               value.erase( );
 
                            if( cookie_id_original_names.find( cookie_id ) == cookie_id_original_names.end( ) )
@@ -684,11 +694,11 @@ void ciyam_notifier::on_start( )
 
                   if( old_value == c_notifier_created )
                   {
-                     if( value == "attrib" )
+                     if( value == c_attrib )
                         skip = true;
                      else
                      {
-                        if( value == "delete" )
+                        if( value == c_delete )
                            value = "";
                         else if( !value.empty( ) )
                         {
@@ -699,7 +709,7 @@ void ciyam_notifier::on_start( )
                         }
                      }
                   }
-                  else if( value == "attrib" )
+                  else if( value == c_attrib )
                   {
                      if( is_ignoring
                       || ( old_value.find( moved_from_prefix ) == 0 )
@@ -713,7 +723,7 @@ void ciyam_notifier::on_start( )
                            tagged_extra = c_notifier_selection;
                      }
                   }
-                  else if( value == "create" )
+                  else if( value == c_create )
                   {
                      if( ( extra == new_ignore_extra ) || ( extra == new_sel_ignore_extra ) )
                      {
@@ -739,7 +749,7 @@ void ciyam_notifier::on_start( )
                            tagged_extra = c_notifier_selection;
                      }
                   }
-                  else if( value == "modify" )
+                  else if( value == c_modify )
                   {
                      if( is_ignoring )
                         value = old_value;
@@ -759,7 +769,7 @@ void ciyam_notifier::on_start( )
                            tagged_extra = c_notifier_selection;
                      }
                   }
-                  else if( value == "delete" )
+                  else if( value == c_delete )
                   {
                      if( is_ignoring )
                         value = old_value;
