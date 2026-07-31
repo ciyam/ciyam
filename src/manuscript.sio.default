@@ -30,6 +30,12 @@
   <filename>test4.sh
  </script>
  <script/>
+  <name>shared
+  <logging>never
+  <filename>*script*
+  <arguments>shared.cin
+ </script>
+ <script/>
   <name>irc_join
   <logging>never
   <filename>*script*

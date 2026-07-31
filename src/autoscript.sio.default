@@ -6,6 +6,13 @@
 # NOTE: Any @name values used in arguments are system (rather than session) variables.
 <sio/>
 # <script/>
+#  <name>shared
+#  <time>00:00:00
+#  <cycle>0s*
+#  <filename>*script*
+#  <arguments>shared.cin
+# </script>
+# <script/>
 #  <name>hub_check
 #  <time>00:00:01
 #  <cycle>5s
@@ -18,12 +25,6 @@
 #  <cycle>5s
 #  <filename>backup_check:?.lock_backup
 #  <arguments>@blockchain_backup_height
-# </script>
-# <script/>
-#  <name>shared_check
-#  <time>00:00:03
-#  <cycle>5s
-#  <filename>shared_check:?.lock_shared
 # </script>
 # <script/>
 #  <name>process_ciyam_logins
