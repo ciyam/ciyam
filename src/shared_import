@@ -74,5 +74,9 @@ date >>$SHARED_DETAILS
 
 if [ -f $SHARED_IMAGE ]; then
  sudo mount $SHARED_IMAGE $SHARED_PATH
- echo $(date +%s) > $IMPORTED_TIME_FILE
+
+ if mountpoint -q $SHARED_PATH; then
+  echo $(date +%s) > $IMPORTED_TIME_FILE
+  ./ciyam_script shared
+ fi
 fi

@@ -61,7 +61,7 @@ if [ -d $SHARED_PATH ]; then
    date >$SHARED_DETAILS
    echo "NOTE: Shared files area is not currently available (please try again later)." >>$SHARED_DETAILS
    date >>$SHARED_DETAILS
-   exit
+   exit 0
   fi
  fi
 fi
@@ -93,13 +93,22 @@ SHARED_LIST=$(./ciyam_script tree_list $BLOCK_TREE 0 Shared | tail -n 1)
 
 sudo chown root:root $SHARED_IMAGE
 sudo mount $SHARED_IMAGE $SHARED_PATH
-sudo chown -R $USER:$GROUP $SHARED_PATH
-sudo chmod -R o-rx $SHARED_PATH
+
+SHARED_MOUNTED=
+if mountpoint -q $SHARED_PATH; then
+ SHARED_MOUNTED=1
+ sudo chown -R $USER:$GROUP $SHARED_PATH
+ sudo chmod -R o-rx $SHARED_PATH
+fi
 
 echo $(date +%s) > $IMPORTED_TIME_FILE
 
 echo "Finished export..." >>$SHARED_DETAILS
 date >>$SHARED_DETAILS
+
+if [ "$SHARED_MOUNTED" = "1" ]; then
+ ./ciyam_script shared
+fi
 
 ./system_variable set @shared_secret ""
 ./system_variable set @export_in_progress ""
