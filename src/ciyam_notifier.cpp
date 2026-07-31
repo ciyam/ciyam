@@ -111,12 +111,12 @@ ciyam_notifier::ciyam_notifier( const string& watch_root,
 
    if( pos != string::npos )
    {
-      system_variable = watch_root.substr( pos + 1 );
+      target_variable = watch_root.substr( pos + 1 );
 
       this->watch_root.erase( pos );
    }
 
-   if( !system_variable.empty( )
+   if( !target_variable.empty( )
     && ( p_initial_selections || p_paths_and_time_stamps ) )
       throw runtime_error( "system variable notifier does not support initial selections or paths and time stamps" );
 
@@ -255,7 +255,7 @@ void ciyam_notifier::on_start( )
             }
          } while( dfsi.has_next( ) );
 
-         if( system_variable.empty( ) )
+         if( target_variable.empty( ) )
          {
             // NOTE: Ensure items are ordered so that unique values are repeatable for testing.
             for( set< string >::const_iterator ci = names.begin( ); ci != names.end( ); ++ci )
@@ -310,7 +310,7 @@ void ciyam_notifier::on_start( )
             }
          }
 
-         if( system_variable.empty( ) && !existing_files.empty( ) )
+         if( target_variable.empty( ) && !existing_files.empty( ) )
          {
             for( map< string, string >::const_iterator ci = existing_files.begin( ); ci != existing_files.end( ); ++ci )
             {
@@ -436,7 +436,7 @@ void ciyam_notifier::on_start( )
                   {
                      reportable_event = false;
 
-                     if( system_variable.empty( ) )
+                     if( target_variable.empty( ) )
                      {
                         string::size_type pos = next_event.find( "|close_nowrite|" );
 
@@ -514,7 +514,7 @@ void ciyam_notifier::on_start( )
                    && ( var_name[ var_name.length( ) - 1 ] == '/' ) )
                      is_folder = true;
 
-                  if( system_variable.empty( ) )
+                  if( target_variable.empty( ) )
                      old_value = get_value_from_system_variable( var_name, &unique_value );
 
                   bool is_ignoring = false;
@@ -671,12 +671,12 @@ void ciyam_notifier::on_start( )
                                  // NOTE: Remove the original name's system variable and then
                                  // replace any other system variables that are found to have
                                  // been prefixed by the original name (if it is a folder).
-                                 if( system_variable.empty( ) )
+                                 if( target_variable.empty( ) )
                                     set_system_variable( original_name, "" );
 
                                  if( !is_folder )
                                     tagged_extra = c_notifier_selection;
-                                 else if( system_variable.empty( ) )
+                                 else if( target_variable.empty( ) )
                                  {
                                     string all_prefixed_variables( get_system_variable( original_name + "*" ) );
 
@@ -800,7 +800,7 @@ void ciyam_notifier::on_start( )
                   {
                      if( is_ignoring )
                         value = old_value;
-                     else if( system_variable.empty( ) )
+                     else if( target_variable.empty( ) )
                      {
                         string prefix;
 
@@ -853,8 +853,8 @@ void ciyam_notifier::on_start( )
 
                   if( !skip )
                   {
-                     if( !system_variable.empty( ) )
-                        set_system_variable( system_variable, c_true_value );
+                     if( !target_variable.empty( ) )
+                        set_system_variable( target_variable, c_true_value );
                      else
                      {
                         if( !recurse )
@@ -914,7 +914,14 @@ void ciyam_notifier::on_start( )
          }
          else
          {
-            msleep( c_wait_sleep_time );
+            int multiplier = 1;
+
+            // NOTE: If is minimal and has set the target variable will increase the
+            // wait time in order to reduce the CPU usage within this notifier loop.
+            if( !target_variable.empty( ) && has_system_variable( target_variable ) )
+               multiplier = 5;
+
+            msleep( c_wait_sleep_time * multiplier );
 
             if( get_system_variable( watch_variable_name ) == c_finishing )
                break;

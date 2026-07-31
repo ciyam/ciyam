@@ -35,7 +35,7 @@ class ciyam_notifier : public thread
    size_t num_ignore_secs;
 
    std::string watch_root;
-   std::string system_variable;
+   std::string target_variable;
    std::string initial_selections;
    std::string paths_and_time_stamps;
 };
