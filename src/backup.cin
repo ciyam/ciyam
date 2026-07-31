@@ -1,0 +1,9 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+.system_variable @backup_files
+@ifdef $OUTPUT
+.system_notifier -start $OUTPUT=@backup_needed
+@endif
