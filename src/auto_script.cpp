@@ -245,7 +245,7 @@ void read_script_info( )
                info.cycle_num_years = 0;
             }
 
-            if( !info.cycle_seconds && !info.cycle_num_years )
+            if( !info.cycle_seconds && !info.cycle_num_years && !info.force_immediate )
                throw runtime_error( "invalid zero cycle amount for '" + info.name + "'" );
 
             info.start_date = udate::local( );
@@ -814,11 +814,14 @@ void autoscript_session::on_start( )
                   // the specified cycle.
                   if( g_scripts[ j->second ].force_immediate )
                   {
-                     time_t time_now = time( 0 );
+                     if( cycle_seconds )
+                     {
+                        time_t time_now = time( 0 );
 
-                     size_t offset = ( time_now % cycle_seconds );
+                        size_t offset = ( time_now % cycle_seconds );
 
-                     first_cycle = ( cycle_seconds - offset );
+                        first_cycle = ( cycle_seconds - offset );
+                     }
 
                      g_scripts[ j->second ].force_immediate = false;
                   }
@@ -919,6 +922,9 @@ void autoscript_session::on_start( )
                   if( !g_script_exec_limit[ decorated_name ] )
                      continue;
                }
+
+               if( !cycle_seconds && !cycle_num_years )
+                  continue;
 
                if( ( g_scripts[ j->second ].finish_date != udate( ) )
                 && ( now.get_date( ) > g_scripts[ j->second ].finish_date ) )
