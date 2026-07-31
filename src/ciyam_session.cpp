@@ -8211,8 +8211,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( !has_system_variable( var_name ) )
                var_name += '/';
 
-            // NOTE: As a notifier can delete itself will just
-            // do nothing if no system variable is found.
+            // NOTE: As notifiers can delete themselves will just
+            // do nothing if no matching system variable exists.
             if( has_system_variable( var_name ) )
             {
                set_system_variable( var_name, c_finishing, c_watching );
@@ -8258,12 +8258,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
          else
          {
-            string file( file_or_directory );
-            string directory( file_or_directory + '/' );
+            string::size_type pos = file_or_directory.find( '=' );
 
-            if( has_system_variable( file )
-             || has_system_variable( directory ) )
-               throw runtime_error( "detected conflicting system variable for '" + file_or_directory + "'" );
+            // NOTE: If suffixed with "=<var_name>" then is a minimal
+            // notifier that will just set "var_name" to "1" when any
+            // modification is detected.
+            string unprefixed( file_or_directory.substr( 0, pos ) );
+
+            string file( unprefixed );
+            string directory( unprefixed + '/' );
+
+            if( has_system_variable( file ) || has_system_variable( directory ) )
+               throw runtime_error( "detected conflicting system variable for '" + unprefixed + "' notifier" );
 
             ciyam_notifier* p_notifier = new ciyam_notifier( file_or_directory );
 
@@ -8285,7 +8291,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
 
             if( !okay )
-               throw runtime_error( "system variable not found for '" + file_or_directory + "'" );
+               throw runtime_error( "system variable not found for '" + unprefixed + "' notifier" );
          }
       }
       else if( command == c_cmd_ciyam_session_system_passtotp )
