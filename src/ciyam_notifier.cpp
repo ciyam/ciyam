@@ -48,6 +48,7 @@ const char* const c_attrib = "attrib";
 const char* const c_modify = "modify";
 const char* const c_moved_to = "moved_to";
 const char* const c_moved_from = "moved_from";
+const char* const c_delete_self = "delete_self";
 
 inline void issue_error( const string& message, bool possibly_expected = false )
 {
@@ -106,6 +107,19 @@ ciyam_notifier::ciyam_notifier( const string& watch_root,
  has_existing( false ),
  watch_root( watch_root )
 {
+   string::size_type pos = watch_root.find( '=' );
+
+   if( pos != string::npos )
+   {
+      system_variable = watch_root.substr( pos + 1 );
+
+      this->watch_root.erase( pos );
+   }
+
+   if( !system_variable.empty( )
+    && ( p_initial_selections || p_paths_and_time_stamps ) )
+      throw runtime_error( "system variable notifier does not support initial selections or paths and time stamps" );
+
    if( p_initial_selections )
       initial_selections = *p_initial_selections;
 
@@ -241,59 +255,62 @@ void ciyam_notifier::on_start( )
             }
          } while( dfsi.has_next( ) );
 
-         // NOTE: Ensure items are ordered so that unique values are repeatable for testing.
-         for( set< string >::const_iterator ci = names.begin( ); ci != names.end( ); ++ci )
+         if( system_variable.empty( ) )
          {
-            string unique( get_next_unique( ) );
-
-            string prefix( '[' + unique + ']' );
-
-            string value( c_notifier_none );
-            string extra_prefix;
-
-            string path( *ci );
-
-            if( ignores.count( *ci ) )
-               value = string( 1, c_notifier_ignore_char );
-            else
+            // NOTE: Ensure items are ordered so that unique values are repeatable for testing.
+            for( set< string >::const_iterator ci = names.begin( ); ci != names.end( ); ++ci )
             {
-               // NOTE: An alternative to "initial_selections".
-               extra_prefix = get_system_variable( path );
+               string unique( get_next_unique( ) );
 
-               if( has_existing && !path.empty( ) )
+               string prefix( '[' + unique + ']' );
+
+               string value( c_notifier_none );
+               string extra_prefix;
+
+               string path( *ci );
+
+               if( ignores.count( *ci ) )
+                  value = string( 1, c_notifier_ignore_char );
+               else
                {
-                  if( existing_files.count( path ) )
+                  // NOTE: An alternative to "initial_selections".
+                  extra_prefix = get_system_variable( path );
+
+                  if( has_existing && !path.empty( ) )
                   {
-                     date_time dtm( existing_files[ path ] );
-
-                     int64_t tm_val = last_modification_time( path );
-                     int64_t tm_oval = unix_time( dtm );
-
-                     if( tm_val != tm_oval )
+                     if( existing_files.count( path ) )
                      {
-                        value = c_notifier_modified;
+                        date_time dtm( existing_files[ path ] );
+
+                        int64_t tm_val = last_modification_time( path );
+                        int64_t tm_oval = unix_time( dtm );
+
+                        if( tm_val != tm_oval )
+                        {
+                           value = c_notifier_modified;
+                           extra_prefix = c_notifier_selection;
+                        }
+
+                        existing_files.erase( path );
+                     }
+                     else if( path[ path.length( ) - 1 ] != '/' )
+                     {
+                        value = c_notifier_created;
                         extra_prefix = c_notifier_selection;
                      }
+                  }
 
-                     existing_files.erase( path );
-                  }
-                  else if( path[ path.length( ) - 1 ] != '/' )
-                  {
-                     value = c_notifier_created;
+                  if( path.length( ) > watch_root_name.length( )
+                   && selections.count( path.substr( watch_root_name.length( ) ) ) )
                      extra_prefix = c_notifier_selection;
-                  }
                }
 
-               if( path.length( ) > watch_root_name.length( )
-                && selections.count( path.substr( watch_root_name.length( ) ) ) )
-                  extra_prefix = c_notifier_selection;
+               set_system_variable( path, prefix + extra_prefix + value );
+               set_system_variable( watch_variable_name + unique, path );
             }
-
-            set_system_variable( path, prefix + extra_prefix + value );
-            set_system_variable( watch_variable_name + unique, path );
          }
 
-         if( !existing_files.empty( ) )
+         if( system_variable.empty( ) && !existing_files.empty( ) )
          {
             for( map< string, string >::const_iterator ci = existing_files.begin( ); ci != existing_files.end( ); ++ci )
             {
@@ -369,6 +386,7 @@ void ciyam_notifier::on_start( )
          if( g_server_shutdown )
          {
             issue_warning( "application server is being shutdown" );
+
             break;
          }
 
@@ -418,50 +436,54 @@ void ciyam_notifier::on_start( )
                   {
                      reportable_event = false;
 
-                     string::size_type pos = next_event.find( "|close_nowrite|" );
-
-                     // NOTE: Supports the tracking of "viewed files" via "close_nowrite" events.
-                     if( pos != string::npos )
+                     if( system_variable.empty( ) )
                      {
-                        string file_name( next_event.substr( 1, pos - 1 ) );
+                        string::size_type pos = next_event.find( "|close_nowrite|" );
 
-                        if( file_name.find( watch_root_name ) == 0 )
+                        // NOTE: Supports the tracking of "viewed files" via "close_nowrite" events.
+                        if( pos != string::npos )
                         {
-                           file_name.erase( 0, watch_root_name.length( ) );
+                           string file_name( next_event.substr( 1, pos - 1 ) );
 
-                           if( num_ignore_secs )
+                           if( file_name.find( watch_root_name ) == 0 )
                            {
-                              uint64_t now = unix_time( );
+                              file_name.erase( 0, watch_root_name.length( ) );
 
-                              // NOTE: If the current unix time is not at least
-                              // 'X' seconds after the last "close_nowrite" for
-                              // the watch root then simply ignore the file (as
-                              // it might just be included in an initial scan).
-                              if( file_name.empty( ) )
-                                 unix_watch = now;
-                              else if( now <= ( unix_watch + num_ignore_secs ) )
+                              if( num_ignore_secs )
                               {
-                                 file_name.erase( );
-                                 TRACE_LOG( TRACE_VERBOSE | TRACE_VARIOUS, "(ignoring possible initial scan)" );
+                                 uint64_t now = unix_time( );
+
+                                 // NOTE: If the current unix time is not at least
+                                 // 'X' seconds after the last "close_nowrite" for
+                                 // the watch root then simply ignore the file (as
+                                 // it might just be included in an initial scan).
+                                 if( file_name.empty( ) )
+                                    unix_watch = now;
+                                 else if( now <= ( unix_watch + num_ignore_secs ) )
+                                 {
+                                    file_name.erase( );
+
+                                    TRACE_LOG( TRACE_VERBOSE | TRACE_VARIOUS, "(ignoring possible initial scan)" );
+                                 }
                               }
                            }
-                        }
 
-                        if( !file_name.empty( ) && ( file_name[ file_name.length( ) - 1 ] != '/' ) )
-                        {
-                           string viewed_files( get_system_variable(
-                            watch_variable_name + c_notifier_viewed_suffix ) );
+                           if( !file_name.empty( ) && ( file_name[ file_name.length( ) - 1 ] != '/' ) )
+                           {
+                              string viewed_files( get_system_variable(
+                               watch_variable_name + c_notifier_viewed_suffix ) );
 
-                           set< string > file_names;
+                              set< string > file_names;
 
-                           if( !viewed_files.empty( ) )
-                              split( viewed_files, file_names, '|' );
+                              if( !viewed_files.empty( ) )
+                                 split( viewed_files, file_names, '|' );
 
-                           file_names.insert( file_name );
+                              file_names.insert( file_name );
 
-                           viewed_files = join( file_names, '|' );
+                              viewed_files = join( file_names, '|' );
 
-                           set_system_variable( watch_variable_name + c_notifier_viewed_suffix, viewed_files );
+                              set_system_variable( watch_variable_name + c_notifier_viewed_suffix, viewed_files );
+                           }
                         }
                      }
                   }
@@ -492,7 +514,8 @@ void ciyam_notifier::on_start( )
                    && ( var_name[ var_name.length( ) - 1 ] == '/' ) )
                      is_folder = true;
 
-                  old_value = get_value_from_system_variable( var_name, &unique_value );
+                  if( system_variable.empty( ) )
+                     old_value = get_value_from_system_variable( var_name, &unique_value );
 
                   bool is_ignoring = false;
 
@@ -602,6 +625,7 @@ void ciyam_notifier::on_start( )
                                  if( pos != string::npos )
                                  {
                                     extra = unique_value.substr( pos );
+
                                     unique_value.erase( pos );
                                  }
                               }
@@ -637,6 +661,7 @@ void ciyam_notifier::on_start( )
                                     if( original_name[ 0 ] == c_unchanged )
                                     {
                                        original_name.erase( 0, 1 );
+
                                        value = string( c_notifier_moved_from ) + '|' + original_name;
                                     }
                                     else
@@ -646,11 +671,12 @@ void ciyam_notifier::on_start( )
                                  // NOTE: Remove the original name's system variable and then
                                  // replace any other system variables that are found to have
                                  // been prefixed by the original name (if it is a folder).
-                                 set_system_variable( original_name, "" );
+                                 if( system_variable.empty( ) )
+                                    set_system_variable( original_name, "" );
 
                                  if( !is_folder )
                                     tagged_extra = c_notifier_selection;
-                                 else
+                                 else if( system_variable.empty( ) )
                                  {
                                     string all_prefixed_variables( get_system_variable( original_name + "*" ) );
 
@@ -731,6 +757,7 @@ void ciyam_notifier::on_start( )
                            tagged_extra = c_notifier_selection;
 
                         extra.erase( );
+
                         value = c_notifier_none;
                      }
                      else
@@ -773,7 +800,7 @@ void ciyam_notifier::on_start( )
                   {
                      if( is_ignoring )
                         value = old_value;
-                     else
+                     else if( system_variable.empty( ) )
                      {
                         string prefix;
 
@@ -811,7 +838,7 @@ void ciyam_notifier::on_start( )
                   if( extra.empty( ) )
                      extra = tagged_extra;
 
-                  if( value == "delete_self" )
+                  if( value == c_delete_self )
                   {
                      skip = true;
 
@@ -826,25 +853,30 @@ void ciyam_notifier::on_start( )
 
                   if( !skip )
                   {
-                     if( !recurse )
-                        set_system_variable( var_name, value );
+                     if( !system_variable.empty( ) )
+                        set_system_variable( system_variable, c_true_value );
                      else
                      {
-                        if( unique_value.empty( ) )
-                        {
-                           unique_value = get_next_unique( );
-                           set_system_variable( watch_variable_name + unique_value, var_name );
-                        }
-
-                        if( !value.empty( ) )
-                        {
-                           set_system_variable( watch_variable_name + unique_value, var_name );
-                           set_system_variable( var_name, '[' + unique_value + ']' + extra + value );
-                        }
+                        if( !recurse )
+                           set_system_variable( var_name, value );
                         else
                         {
-                           set_system_variable( var_name, "" );
-                           set_system_variable( watch_variable_name + unique_value, "" );
+                           if( unique_value.empty( ) )
+                           {
+                              unique_value = get_next_unique( );
+                              set_system_variable( watch_variable_name + unique_value, var_name );
+                           }
+
+                           if( !value.empty( ) )
+                           {
+                              set_system_variable( watch_variable_name + unique_value, var_name );
+                              set_system_variable( var_name, '[' + unique_value + ']' + extra + value );
+                           }
+                           else
+                           {
+                              set_system_variable( var_name, "" );
+                              set_system_variable( watch_variable_name + unique_value, "" );
+                           }
                         }
                      }
                   }
