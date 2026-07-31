@@ -84,11 +84,17 @@ else
  ./export_files $BACKUP_LIST $CIYAM_USER_PATH >>Backup.txt
 fi
 
+BACKUP_MOUNTED=
+
 if [ "$TARGET_FILE" = "" ]; then
  sudo chown root:root $BACKUP_IMAGE
  sudo mount $BACKUP_IMAGE $BACKUP_PATH
- sudo chown -R $USER:$GROUP $BACKUP_PATH
- sudo chmod -R o-rx $BACKUP_PATH
+
+ if mountpoint -q $BACKUP_PATH; then
+  BACKUP_MOUNTED=1
+  sudo chown -R $USER:$GROUP $BACKUP_PATH
+  sudo chmod -R o-rx $BACKUP_PATH
+ fi
 fi
 
 BLOCKCHAIN_HEIGHT=$(./system_variable get @blockchain_backup_height)
@@ -100,6 +106,10 @@ fi
 
 echo "Finished restore..." >>Backup.txt
 date >>Backup.txt
+
+if [ "$BACKUP_MOUNTED" = "1" ]; then
+ ./ciyam_script backup
+fi
 
 if [ -f $BACKUP_PATH/.ciyam/System_Files_And_Archives.tar ]; then
  touch .complete_restore_needed
