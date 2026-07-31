@@ -188,6 +188,30 @@ file_kill -recurse root
 0
 1
 error: unable to open file 'test1/yyy' for input
+notifier -start test1=@test1_changed
+system_variable *test1*
+@:test1/ [watching]
+~touch test1/xxx
+system_variable *test1*
+@:test1/ [watching]
+@test1_changed 1
+system_variable @test1_changed ""
+~touch test1/xxx
+system_variable *test1*
+@:test1/ [watching]
+@test1_changed 1
+system_variable @test1_changed ""
+~rm test1/xxx
+system_variable *test1*
+@:test1/ [watching]
+@test1_changed 1
+system_variable @test1_changed ""
+~touch test1/xxx
+system_variable *test1*
+@:test1/ [watching]
+@test1_changed 1
+notifier -finish test1
+system_variable @test1_changed ""
 notifier -start test1/xxx
 system_variable *test1*
 @:test1/xxx [watching]
