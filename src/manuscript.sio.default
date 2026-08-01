@@ -30,18 +30,6 @@
   <filename>test4.sh
  </script>
  <script/>
-  <name>backup
-  <logging>errors
-  <filename>*script*
-  <arguments>backup.cin
- </script>
- <script/>
-  <name>shared
-  <logging>errors
-  <filename>*script*
-  <arguments>shared.cin
- </script>
- <script/>
   <name>irc_join
   <logging>never
   <filename>*script*
