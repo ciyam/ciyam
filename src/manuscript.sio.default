@@ -31,13 +31,13 @@
  </script>
  <script/>
   <name>backup
-  <logging>never
+  <logging>errors
   <filename>*script*
   <arguments>backup.cin
  </script>
  <script/>
   <name>shared
-  <logging>never
+  <logging>errors
   <filename>*script*
   <arguments>shared.cin
  </script>
