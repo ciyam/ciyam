@@ -726,8 +726,13 @@ void autoscript_session::on_start( )
                bool locked = false;
                bool special = false;
 
+               bool no_id_or_locked = false;
+
                // NOTE: No script will run if no identity exists.
                bool okay = has_identity( &locked );
+
+               if( !okay || locked )
+                  no_id_or_locked = true;
 
                time_t mod_time = 0;
 
@@ -923,34 +928,44 @@ void autoscript_session::on_start( )
                      continue;
                }
 
-               if( !cycle_seconds && !cycle_num_years )
+               if( !cycle_seconds && !cycle_num_years
+                && !g_scripts[ j->second ].force_immediate )
                   continue;
 
                if( ( g_scripts[ j->second ].finish_date != udate( ) )
                 && ( now.get_date( ) > g_scripts[ j->second ].finish_date ) )
                   continue;
 
-               size_t count = 0;
-
-               while( ( next <= now ) || is_excluded( g_scripts[ j->second ], next ) )
+               // NOTE: If the script must be executed immediately but has not
+               // (due to either having no identity or being currently locked)
+               // then retain the item in order for it to be executed when the
+               // identity becomes available.
+               if( no_id_or_locked && g_scripts[ j->second ].force_immediate )
+                  erase_items.pop_back( );
+               else
                {
-                  if( ++count >= c_max_reschedule_attempts )
+                  size_t count = 0;
+
+                  while( ( next <= now ) || is_excluded( g_scripts[ j->second ], next ) )
                   {
-                     TRACE_LOG( TRACE_MINIMAL,
-                      "warning: unable to schedule autoscript '" + name + "'" );
+                     if( ++count >= c_max_reschedule_attempts )
+                     {
+                        TRACE_LOG( TRACE_MINIMAL,
+                         "warning: unable to schedule autoscript '" + name + "'" );
 
-                     next = date_time::maximum( );
+                        next = date_time::maximum( );
 
-                     break;
+                        break;
+                     }
+
+                     if( cycle_seconds )
+                        next += ( seconds )cycle_seconds;
+                     else
+                        next += ( years )cycle_num_years;
                   }
 
-                  if( cycle_seconds )
-                     next += ( seconds )cycle_seconds;
-                  else
-                     next += ( years )cycle_num_years;
+                  new_schedule_items.insert( make_pair( next, j->second ) );
                }
-
-               new_schedule_items.insert( make_pair( next, j->second ) );
             }
          }
 
