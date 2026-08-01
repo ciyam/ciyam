@@ -6,7 +6,7 @@
 
 sleep_to_next_second( )
 {
- osecs=$(date +%s)
+ osecs=$EPOCHSECONDS
 
  sleep 0.85
 
@@ -17,7 +17,7 @@ sleep_to_next_second( )
  # the "next second" will have only
  # just ticked over.
  while true; do
-  nsecs=$(date +%s)
+  nsecs=$EPOCHSECONDS
 
   if [ "$osecs" != "$nsecs" ]; then
    break;
@@ -32,13 +32,18 @@ if [ $# -lt 2 ]; then
 else
  SLEEP=$1
 
+ # NOTE: Will use the builtin sleep
+ # if available (to avoid a process
+ # being created for every sleep).
+ enable sleep 2> /dev/null
+
  SLEEP_STARTING=
 
  # NOTE: If SLEEP was provided using
  # "X:Y" treat X as the SLEEP_REPEAT
  # and Y as the SLEEP_STARTING value
- # (needed to support late execution
- # that returns to normal schedule).
+ # (required for immediate execution
+ # followed by a regular schedule).
  if [[ $SLEEP =~ '^[0-9]+$' ]]; then
   SLEEP_REPEAT=$SLEEP
  else
@@ -70,35 +75,19 @@ else
  if [ -f $CIYAM_PID_FILE ]; then
   PID=$(<$CIYAM_PID_FILE)
 
-  OTIME=$(stat -c "%Y" $CIYAM_PID_FILE 2> /dev/null)
+  if [ "$PID" = "" ]; then
+   PID=0
+  fi
 
   while true; do
 
-   if ps -p $PID > /dev/null; then
+   if [ -d /proc/$PID ]; then
     if [ "$COUNTER" = "0" ]; then
      ./$SCRIPT $ARGUMENTS
-    export CIYAM_START_OR_RELOAD=
+     export CIYAM_START_OR_RELOAD=
     fi
    else
      break;
-   fi
-
-   NTIME=$(stat -c "%Y" $CIYAM_PID_FILE 2> /dev/null)
-
-   # NOTE: If empty then the server reload
-   # or shutdown has taken place (and will
-   # exit) but it is possible that the new
-   # PID already has been created in which
-   # case will set "CIYAM_START_OR_RELOAD"
-   # to signal this (which supports a loop
-   # that could continue across a reload).
-   if [ "$NTIME" = "" ]; then
-    break;
-   fi
-
-   if [ "$NTIME" -gt "$OTIME" ]; then
-    OTIME=$NTIME
-    export CIYAM_START_OR_RELOAD=1
    fi
 
    if [ ! "$COUNTER" = "0" ]; then
