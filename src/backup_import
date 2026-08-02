@@ -105,19 +105,21 @@ date >>Backup.txt
 BLOCKCHAIN_HEIGHT=$(./system_variable get @blockchain_backup_height)
 
 if [ -f $BACKUP_IMAGE ]; then
- is_okay=1
+ is_okay=
 
- if [ "$TARGET_FILE" = "" ]; then
+ if [ "$TARGET_FILE" != "" ]; then
+  is_okay=1
+ else
   sudo mount $BACKUP_IMAGE $BACKUP_PATH
 
   if mountpoint -q $BACKUP_PATH; then
-   ./ciyam_script backup
-  else
-   is_okay=
+   is_okay=1
   fi
  fi
 
  if [ "$is_okay" = "1" ]; then
+  ./ciyam_script backup
+
   echo $(date +%s) > $IMPORTED_TIME_FILE
   echo $BLOCKCHAIN_HEIGHT > $BACKUP_HEIGHT_FILE
  fi
