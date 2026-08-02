@@ -25,16 +25,34 @@ USERNAME=$4
 ;
 ENTRANCE_ROOM=0000000
 ;
-~mkdir -p /tmp/ciyam/$SESSION
-TEMP_FILE=/tmp/ciyam/$SESSION/output.tmp
+CIYAM_TMP_DIR=/tmp/ciyam
 ;
-OUTPUT_FILE=/tmp/ciyam/web.$TOKEN.$DEVICE
+~mkdir -p $CIYAM_TMP_DIR/$SESSION
+TEMP_FILE=$CIYAM_TMP_DIR/$SESSION/output.tmp
+;
+OUTPUT_FILE=$CIYAM_TMP_DIR/web.$TOKEN.$DEVICE
 ;
 ~rm -f $OUTPUT_FILE
 ;
 IRC_ROOM=$ENTRANCE_ROOM
 ;
 IRC_USERS=
+;
+; NOTE: If a reload has just taken place then might
+; need to wait a little while for the "auto script"
+; to start and reload the IRC system variables.
+AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:.auto_script
+@ifndef $AUTO_SCRIPT_FILE
+.wait 250
+AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:.auto_script
+@ifndef $AUTO_SCRIPT_FILE
+.wait 500
+AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:.auto_script
+@ifndef $AUTO_SCRIPT_FILE
+.wait 750
+@endif
+@endif
+@endif
 ;
 @ifdef $USERNAME
 @retain IRC_USERS
@@ -165,7 +183,7 @@ ERROR=Session has been terminated.
 ;
 @:END_LOOP
 ;
-~rm -rf /tmp/ciyam/$SESSION
+~rm -rf $CIYAM_TMP_DIR/$SESSION
 ;
 .system_variable @web.$TOKEN.$DEVICE.message ""
 ;

@@ -4,9 +4,11 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-TMP_CIYAM_DIR=/tmp/ciyam
+if [ "$CIYAM_TMP_DIR" = "" ]; then
+ CIYAM_TMP_DIR=/tmp/ciyam
+fi
 
-CIYAM_IRC_ALTER_FILE=$TMP_CIYAM_DIR/.irc_alter
+CIYAM_IRC_ALTER_FILE=$CIYAM_TMP_DIR/.irc_alter
 
 if [ "$CIYAM_START_OR_RELOAD" = "1" ]; then
  # NOTE: Forces the script to
