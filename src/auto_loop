@@ -38,6 +38,7 @@ else
  enable sleep 2> /dev/null
 
  SLEEP_STARTING=
+ NEEDS_IMMEDIATE=
 
  # NOTE: If SLEEP was provided using
  # "X:Y" treat X as the SLEEP_REPEAT
@@ -47,8 +48,14 @@ else
  if [[ $SLEEP =~ '^[0-9]+$' ]]; then
   SLEEP_REPEAT=$SLEEP
  else
+  NEEDS_IMMEDIATE=1
+
   SLEEP_REPEAT="${SLEEP%:*}"
   SLEEP_STARTING="${SLEEP#*:}"
+
+  if [ "$SLEEP_STARTING" = "0" ]; then
+   SLEEP_STARTING=
+  fi
  fi
 
  SCRIPT=$2
@@ -66,11 +73,14 @@ else
 
  COUNTER=0
 
- TMP_CIYAM_DIR=/tmp/ciyam
+ IS_RELOADING=
+ WAS_RELOADING=
 
- CIYAM_PID_FILE=$TMP_CIYAM_DIR/.pid
+ CIYAM_TMP_DIR=/tmp/ciyam
 
- export CIYAM_START_OR_RELOAD=1
+ CIYAM_PID_FILE=$CIYAM_TMP_DIR/.pid
+
+ CIYAM_START_OR_RELOAD=1
 
  if [ -f $CIYAM_PID_FILE ]; then
   PID=$(<$CIYAM_PID_FILE)
@@ -81,20 +91,44 @@ else
 
   while true; do
 
+   if [ -f $CIYAM_TMP_DIR/.auto_script ]; then
+    IS_RELOADING=
+   else
+    IS_RELOADING=1
+    WAS_RELOADING=1
+   fi
+
    if [ -d /proc/$PID ]; then
-    if [ "$COUNTER" = "0" ]; then
-     ./$SCRIPT $ARGUMENTS
-     export CIYAM_START_OR_RELOAD=
+
+    if [ "$IS_RELOADING" = "" ] && [ "$WAS_RELOADING" = "1" ]; then
+     CIYAM_START_OR_RELOAD=1
+
+     # NOTE: If a "reload" has taken place then if needing to run
+     # immediately will force the COUNTER to zero after retaining
+     # the value it currently is as SLEEP_STARTING.
+     if [ "$COUNTER" != "0" ] && [ "$NEEDS_IMMEDIATE" = "1" ]; then
+       SLEEP_STARTING=$COUNTER
+
+       COUNTER=0
+     fi
+    fi
+
+    if [ "$COUNTER" = "0" ] && [ "$IS_RELOADING" = "" ]; then
+     source ./$SCRIPT $ARGUMENTS
+
+     WAS_RELOADING=
+     CIYAM_START_OR_RELOAD=
     fi
    else
      break;
    fi
 
+
    if [ ! "$COUNTER" = "0" ]; then
     let COUNTER--
     sleep_to_next_second
    else
-    if [ "$SLEEP_STARTING" ]; then
+    if [ "$SLEEP_STARTING" != "" ]; then
      COUNTER=$SLEEP_STARTING
 
      SLEEP_STARTING=
