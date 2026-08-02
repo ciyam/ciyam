@@ -117,8 +117,8 @@ const char* const c_listener_rpc_core = "rpc_core";
 const char* const c_listener_rpc_data = "rpc_data";
 
 
-const char* const c_tmp_ciyam_directory_pid_file = "/tmp/ciyam/.pid";
-const char* const c_tmp_ciyam_directory_dummy_file = "/tmp/ciyam/dummy";
+const char* const c_tmp_ciyam_file_pid = "/tmp/ciyam/.pid";
+const char* const c_tmp_ciyam_file_dummy = "/tmp/ciyam/dummy";
 
 unsigned int g_port = 0;
 
@@ -342,16 +342,16 @@ int main( int argc, char* argv[ ] )
          throw runtime_error( "was unable to create " + string( c_tmp_ciyam_directory ) );
       else
       {
-         ofstream outf( c_tmp_ciyam_directory_dummy_file );
+         ofstream outf( c_tmp_ciyam_file_dummy );
 
          if( !outf )
-            throw runtime_error( "was unable to create " + string( c_tmp_ciyam_directory_dummy_file ) );
+            throw runtime_error( "was unable to create " + string( c_tmp_ciyam_file_dummy ) );
       }
 
-      file_remove( c_tmp_ciyam_directory_dummy_file );
+      file_remove( c_tmp_ciyam_file_dummy );
 
-      if( file_exists( c_tmp_ciyam_directory_dummy_file ) )
-         throw runtime_error( "was unable to remove " + string( c_tmp_ciyam_directory_dummy_file ) );
+      if( file_exists( c_tmp_ciyam_file_dummy ) )
+         throw runtime_error( "was unable to remove " + string( c_tmp_ciyam_file_dummy ) );
 
       g_temporary_directory = c_tmp_ciyam_directory;
 
@@ -537,7 +537,7 @@ int main( int argc, char* argv[ ] )
             ( *fp_register_listener_func )( g_port, listener_rpc_core.c_str( ), "" );
 
             if( is_update )
-               write_file( c_tmp_ciyam_directory_pid_file, pid );
+               write_file( c_tmp_ciyam_file_pid, pid );
             else
             {
                string fill;
@@ -545,7 +545,7 @@ int main( int argc, char* argv[ ] )
                if( pid.length( ) < 11 )
                   fill = string( 11 - pid.length( ), ':' );
 
-               write_file( c_tmp_ciyam_directory_pid_file, pid );
+               write_file( c_tmp_ciyam_file_pid, pid );
 
                string init_message( "server starting (pid " + fill + ' ' + pid + ")" );
 
@@ -593,8 +593,7 @@ int main( int argc, char* argv[ ] )
                   }
                }
 
-               is_update = false;
-
+               int start_wait_attempts = 0;
                int expected_min_active = 0;
 
                if( g_start_auto_script )
@@ -607,7 +606,7 @@ int main( int argc, char* argv[ ] )
                if( has_udp && g_start_udp_streams )
                   ( *fp_init_udp_streams_func )( g_port, u.get_socket( ), 0, 0, &expected_min_active );
 
-               int start_wait_attempts = 0;
+               is_update = false;
 
                while( expected_min_active )
                {
@@ -667,19 +666,15 @@ int main( int argc, char* argv[ ] )
                   {
                      reported_shutdown = true;
 
-                     file_remove( c_tmp_ciyam_directory_pid_file );
+                     file_remove( c_tmp_ciyam_file_pid );
 
                      if( !is_update && !g_is_quiet )
                         cout << "server shutdown (" << shutdown_reason << ") now underway..." << endl;
 
-                     // NOTE: Waits for an initial time
+                     // NOTE: Wait for one script cycle
                      // so "auto_loop" bash scripts can
-                     // exit before reloading (although
-                     // it is possible that they do not
-                     // detect the ".pid" file deletion
-                     // due to still executing which is
-                     // why "auto_loop" also will check
-                     // the ".pid" time stamp).
+                     // detect that the ".pid" file has
+                     // been removed.
                      if( g_start_auto_script )
                         msleep( c_auto_script_msleep );
                   }
@@ -831,7 +826,7 @@ int main( int argc, char* argv[ ] )
    // NOTE: Although normally this file will have
    // already been removed removes it now just to
    // be sure.
-   file_remove( c_tmp_ciyam_directory_pid_file );
+   file_remove( c_tmp_ciyam_file_pid );
 
    return rc;
 }
