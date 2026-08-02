@@ -51,6 +51,8 @@ const char* const c_auto_loop_filename = "auto_loop";
 
 const char* const c_script_dummy_filename = "*script*";
 
+const char* const c_tmp_ciyam_file_auto_script = "/tmp/ciyam/.auto_script";
+
 const char* const c_section_script = "script";
 
 const char* const c_attribute_name = "name";
@@ -593,6 +595,8 @@ void autoscript_session::on_start( )
       if( !cycle_seconds || ( ( c_auto_script_msleep % 1000 ) != 0 ) )
          throw runtime_error( "'c_auto_script_msleep' must be a multiple of 1000" );
 
+      file_touch( c_tmp_ciyam_file_auto_script, 0, true );
+
       // NOTE: Use "time" rather than
       // using "unix_time" to prevent
       // any unnecessary conversions.
@@ -813,6 +817,8 @@ void autoscript_session::on_start( )
 
                   size_t first_cycle = 0;
 
+                  bool had_force_immediate = false;
+
                   // NOTE: This allows a script to be executed at
                   // startup and is being set false now to ensure
                   // subsequent executions are in accordance with
@@ -827,6 +833,8 @@ void autoscript_session::on_start( )
 
                         first_cycle = ( cycle_seconds - offset );
                      }
+
+                     had_force_immediate = true;
 
                      g_scripts[ j->second ].force_immediate = false;
                   }
@@ -887,14 +895,13 @@ void autoscript_session::on_start( )
 
                      // NOTE: If is using "auto_loop" and the cycle
                      // attribute included a "force_immediate" flag
-                     // then will pass the initial cycle seconds if
-                     // that is not aligned (so subsequent executes
-                     // will be aligned according to the schedule).
+                     // then append the initial cycle seconds value
+                     // (even if zero so reloads are also handled).
                      if( g_scripts[ j->second ].external_cycles )
                      {
-                        cmd_and_args += " " + to_string( cycle_seconds );
+                        cmd_and_args += ' ' + to_string( cycle_seconds );
 
-                        if( first_cycle )
+                        if( had_force_immediate )
                            cmd_and_args += ':' + to_string( first_cycle );
                      }
 
@@ -977,10 +984,14 @@ void autoscript_session::on_start( )
          dtm = date_time::local( );
       }
 
+      file_remove( c_tmp_ciyam_file_auto_script );
+
       TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "finished autoscript session" );
    }
    catch( exception& x )
    {
+      file_remove( c_tmp_ciyam_file_auto_script );
+
 #ifdef DEBUG
       cerr << "autoscript error: " << x.what( ) << endl;
 #endif
@@ -988,6 +999,8 @@ void autoscript_session::on_start( )
    }
    catch( ... )
    {
+      file_remove( c_tmp_ciyam_file_auto_script );
+
 #ifdef DEBUG
       cerr << "unexpected autoscript exception..." << endl;
 #endif
