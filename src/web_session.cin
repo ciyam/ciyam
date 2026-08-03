@@ -27,6 +27,7 @@ ENTRANCE_ROOM=0000000
 ;
 CIYAM_TMP_DIR=/tmp/ciyam
 ;
+;
 ~mkdir -p $CIYAM_TMP_DIR/$SESSION
 TEMP_FILE=$CIYAM_TMP_DIR/$SESSION/output.tmp
 ;
@@ -38,18 +39,35 @@ IRC_ROOM=$ENTRANCE_ROOM
 ;
 IRC_USERS=
 ;
-; NOTE: If a reload has just taken place then might
-; need to wait a little while for the "auto script"
-; to start and reload the IRC system variables.
-AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:.auto_script
+; NOTE: If just started (or a reload has just taken place)
+; then might need to wait a while for "auto script" thread
+; to start and load any stored IRC system variables.
+AUTO_SCRIPT_CHECK=.auto_script
+;
+AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:$AUTO_SCRIPT_CHECK
 @ifndef $AUTO_SCRIPT_FILE
 .wait 250
-AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:.auto_script
+AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:$AUTO_SCRIPT_CHECK
+@ifndef $AUTO_SCRIPT_FILE
+.wait 250
+AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:$AUTO_SCRIPT_CHECK
 @ifndef $AUTO_SCRIPT_FILE
 .wait 500
-AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:.auto_script
+@endif
+@endif
+@endif
+;
+AUTO_SCRIPT_CHECK=.irc_store_or_restore
+;
+AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:$AUTO_SCRIPT_CHECK
 @ifndef $AUTO_SCRIPT_FILE
-.wait 750
+.wait 250
+AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:$AUTO_SCRIPT_CHECK
+@ifndef $AUTO_SCRIPT_FILE
+.wait 250
+AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:$AUTO_SCRIPT_CHECK
+@ifndef $AUTO_SCRIPT_FILE
+.wait 500
 @endif
 @endif
 @endif
