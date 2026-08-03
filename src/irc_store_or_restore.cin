@@ -31,17 +31,28 @@
 ;
 @ifndef $OUTPUT
 ;
+.system_variable @irc_alter ""
+;
 .system_variable @irc_rooms
 ;
 ; NOTE: If no IRC rooms exist then will check
 ; if they can be restored from a prior store.
 @ifndef $OUTPUT
 ;
-IRC_VARIABLES=@files:/tmp/ciyam/:irc_variables.cin
+IRC_VARS_FILE=irc_variables.cin
+;
+@ifndef $CIYAM_TMP_DIR
+CIYAM_TMP_DIR=/tmp/ciyam
+@endif
+;
+IRC_VARIABLES=@files:$CIYAM_TMP_DIR:$IRC_VARS_FILE
 ;
 @ifdef $IRC_VARIABLES
-</tmp/ciyam/irc_variables.cin
+<$CIYAM_TMP_DIR/$IRC_VARIABLES
 @endif
+;
+~touch $CIYAM_TMP_DIR/.irc_store_or_restore
+~echo ".irc_store_or_restore" >> $CIYAM_TMP_DIR/.auto_script_removes
 ;
 @else
 ;
@@ -51,7 +62,7 @@ IRC_VARIABLES=@files:/tmp/ciyam/:irc_variables.cin
 ;
 PREFIX=system_variable$SP
 ;
->/tmp/ciyam/irc_variables.cin
+>$CIYAM_TMP_DIR/$IRC_VARS_FILE
 system_variable "-p=$PREFIX" @irc_rooms*
 ;
 system_variable "-p=$PREFIX" -quoted @irc_names_*
