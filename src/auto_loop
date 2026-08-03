@@ -32,13 +32,19 @@ if [ $# -lt 2 ]; then
 else
  SLEEP=$1
 
+ SLEEP_STARTING=
+ NEEDS_IMMEDIATE=
+
+ HAS_SLEEP_BUILTIN=
+
  # NOTE: Will use the builtin sleep
  # if available (to avoid a process
  # being created for every sleep).
  enable sleep 2> /dev/null
 
- SLEEP_STARTING=
- NEEDS_IMMEDIATE=
+ if [ $? -eq 0 ]; then
+  HAS_SLEEP_BUILTIN=1
+ fi
 
  # NOTE: If SLEEP was provided using
  # "X:Y" treat X as the SLEEP_REPEAT
@@ -123,10 +129,17 @@ else
      break;
    fi
 
-
    if [ ! "$COUNTER" = "0" ]; then
     let COUNTER--
-    sleep_to_next_second
+
+    # NOTE: If builtin sleep is unavailable
+    # then just calls sleep once as it will
+    # use a separate process for each call.
+    if [ "$HAS_SLEEP_BUILTIN" = "" ]; then
+     sleep 1
+    else
+     sleep_to_next_second
+    fi
    else
     if [ "$SLEEP_STARTING" != "" ]; then
      COUNTER=$SLEEP_STARTING
