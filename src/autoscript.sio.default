@@ -19,13 +19,12 @@
   <filename>*script*
   <arguments>shared.cin
  </script>
-# <script/>
-#  <name>hub_check
-#  <time>00:00:01
-#  <cycle>5s
-#  <filename>auto_loop:.lock_as_hub
-#  <arguments>hub_check
-# </script>
+ <script/>
+  <name>hub_check
+  <time>00:00:01
+  <cycle>5s @generate_hub_block
+  <filename>hub_check:.lock_as_hub
+ </script>
 # <script/>
 #  <name>process_ciyam_logins
 #  <time>00:00:02
@@ -36,9 +35,9 @@
 # <script/>
 #  <name>irc_store_or_restore
 #  <time>00:00:03
-#  <cycle>5s*
-#  <filename>auto_loop:.lock_as_irc
-#  <arguments>irc_store_or_restore
+#  <cycle>5s* @irc_alter
+#  <filename>*script*:.lock_as_irc
+#  <arguments>irc_store_or_restore.cin
 # </script>
 # <script/>
 #  <name>*ciyam_ddns_ip_updates
