@@ -2199,11 +2199,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      msleep( 200 );
                   }
 
-                  // NOTE: Allows for a couple of
+                  // NOTE: Allows for a number of
                   // seconds to start the session
                   // script (which will result in
                   // an error if it's not found).
-                  for( size_t i = 0; i < 9; i++ )
+                  for( size_t i = 0; i < 15; i++ )
                   {
                      running = has_system_variable( web_message_var_name );
 
