@@ -4,19 +4,20 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-if [ ! -f /home/admin/ciyam_logins ]; then
- touch /home/admin/ciyam_logins
- chmod a+w /home/admin/ciyam_logins
-elif [ -s /home/admin/ciyam_logins ]; then
- mv /home/admin/ciyam_logins /home/admin/ciyam_logins.new
+if [ ! "$CIYAM_USER" = "" ]; then
+ if [ ! -f /home/$CIYAM_USER/ciyam_logins ]; then
+  touch /home/$CIYAM_USER/ciyam_logins
+  chmod a+w /home/$CIYAM_USER/ciyam_logins
+ elif [ -s /home/$CIYAM_USER/ciyam_logins ]; then
+  mv /home/$CIYAM_USER/ciyam_logins /home/$CIYAM_USER/ciyam_logins.new
 
- touch /home/admin/ciyam_logins
- chmod a+w /home/admin/ciyam_logins
+  touch /home/$CIYAM_USER/ciyam_logins
+  chmod a+w /home/$CIYAM_USER/ciyam_logins
 
- # NOTE: Ensure that a login isn't missed due to file buffering.
- sync /home/admin/ciyam_logins.new
+  # NOTE: Ensure that a login isn't missed due to file buffering.
+  sync /home/$CIYAM_USER/ciyam_logins.new
 
- cat /home/admin/ciyam_logins.new | uniq | while read next; do ./set_random_password "$next"; done
- rm /home/admin/ciyam_logins.new
+  cat /home/$CIYAM_USER/ciyam_logins.new | uniq | while read next; do ./set_random_password "$next"; done
+  rm /home/$CIYAM_USER/ciyam_logins.new
+ fi
 fi
-
