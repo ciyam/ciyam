@@ -122,6 +122,22 @@ sudo apt install mariadb-server libmariadb-dev -y
 sudo apt-get install libreadline-dev -y
 sudo apt-get install libmysqlclient-dev -y
 
+Next get and build bash sleep builtin for "auto_loop" usage
+-----------------------------------------------------------
+
+curl -L https://ftp.gnu.org/gnu/bash/bash-5.2.21.tar.gz -o- | tar -xvz
+
+cd bash-5.2.21
+
+./configure
+make
+
+cd examples/loadables
+
+make sleep
+
+sudo mv sleep /usr/lib
+
 Next install and start/restart required services and extras
 -----------------------------------------------------------
 
