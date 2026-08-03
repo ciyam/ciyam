@@ -53,6 +53,8 @@ const char* const c_script_dummy_filename = "*script*";
 
 const char* const c_tmp_ciyam_file_auto_script = "/tmp/ciyam/.auto_script";
 
+const char* const c_tmp_ciyam_file_auto_script_removes = "/tmp/ciyam/.auto_script_removes";
+
 const char* const c_section_script = "script";
 
 const char* const c_attribute_name = "name";
@@ -119,6 +121,8 @@ struct script_info
 
    string ts_filename;
    string lock_filename;
+
+   string system_variable;
 
    exclude_type exclude;
 
@@ -208,6 +212,15 @@ void read_script_info( )
             }
 
             string cycle( reader.read_attribute( c_attribute_cycle ) );
+
+            pos = cycle.find( ' ' );
+
+            if( pos != string::npos )
+            {
+               info.system_variable = cycle.substr( pos + 1 );
+
+               cycle.erase( pos );
+            }
 
             if( !cycle.empty( )
              && ( cycle[ cycle.size( ) - 1 ] == '*' ) )
@@ -446,6 +459,31 @@ bool scripts_file_has_changed( )
    return changed;
 }
 
+void cleanup_auto_script_removes( )
+{
+   try
+   {
+      vector< string > auto_script_removes;
+
+      buffer_file_lines( c_tmp_ciyam_file_auto_script_removes, auto_script_removes );
+
+      string tmp_dir( c_tmp_ciyam_directory );
+
+      for( size_t i = 0; i < auto_script_removes.size( ); i++ )
+         file_remove( tmp_dir + '/' + auto_script_removes[ i ] );
+
+      file_remove( c_tmp_ciyam_file_auto_script_removes );
+   }
+   catch( exception& x )
+   {
+      TRACE_LOG( TRACE_MINIMAL, string( "autoscript error: " ) + x.what( ) );
+   }
+   catch( ... )
+   {
+      TRACE_LOG( TRACE_MINIMAL, "unexpected error in cleanup_auto_script_removes" );
+   }
+}
+
 }
 
 void output_schedule( ostream& os, bool from_now )
@@ -577,6 +615,8 @@ void autoscript_session::on_start( )
       bool changed = false;
       bool repeated = false;
 
+      bool is_first_pass = true;
+
       bool script_reconfig( get_script_reconfig( ) );
 
       if( !script_reconfig )
@@ -594,6 +634,11 @@ void autoscript_session::on_start( )
 
       if( !cycle_seconds || ( ( c_auto_script_msleep % 1000 ) != 0 ) )
          throw runtime_error( "'c_auto_script_msleep' must be a multiple of 1000" );
+
+      // NOTE: If did not stop cleanly then these could still
+      // exist from the last session so is removing them now.
+      if( file_exists( c_tmp_ciyam_file_auto_script_removes ) )
+         cleanup_auto_script_removes( );
 
       file_touch( c_tmp_ciyam_file_auto_script, 0, true );
 
@@ -791,7 +836,7 @@ void autoscript_session::on_start( )
                // dead process or unexpected application server termination) it is
                // being assumed that the script is either currently running or may
                // not be called (perhaps due to another script that is running).
-               if( !lock_filename.empty( )
+               if( okay && !lock_filename.empty( )
                 && !can_create_script_lock_file( lock_filename ) )
                   okay = false;
 
@@ -800,10 +845,22 @@ void autoscript_session::on_start( )
                int cycle_seconds = g_scripts[ j->second ].cycle_seconds;
                int cycle_num_years = g_scripts[ j->second ].cycle_num_years;
 
+               string system_variable( g_scripts[ j->second ].system_variable );
+
+               // NOTE: If a system variable should exist
+               // then will not execute the script unless
+               // "force_immediate" is set.
+               if( okay && !system_variable.empty( )
+                && !has_system_variable( system_variable ) )
+               {
+                  if( !g_scripts[ j->second ].force_immediate )
+                     okay = false;
+               }
+
                // NOTE: If a script is limited to a number of execs
                // then will not execute after that limit is reached
                // (even if still found in the schedule).
-               if( g_script_exec_limit.count( decorated_name )
+               if( okay && g_script_exec_limit.count( decorated_name )
                 && ( g_script_exec_limit[ decorated_name ] == 0 ) )
                   okay = false;
 
@@ -983,6 +1040,9 @@ void autoscript_session::on_start( )
 
          dtm = date_time::local( );
       }
+
+      if( file_exists( c_tmp_ciyam_file_auto_script_removes ) )
+         cleanup_auto_script_removes( );
 
       file_remove( c_tmp_ciyam_file_auto_script );
 
