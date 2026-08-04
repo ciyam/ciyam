@@ -51,8 +51,7 @@ IRC_VARIABLES=@files:$CIYAM_TMP_DIR:$IRC_VARS_FILE
 <$CIYAM_TMP_DIR/$IRC_VARIABLES
 @endif
 ;
-~touch $CIYAM_TMP_DIR/.irc_store_or_restore
-~echo ".irc_store_or_restore" >> $CIYAM_TMP_DIR/.auto_script_removes
+.system_variable @irc_allow 1
 ;
 @else
 ;
