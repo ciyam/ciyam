@@ -51,10 +51,6 @@ const char* const c_auto_loop_filename = "auto_loop";
 
 const char* const c_script_dummy_filename = "*script*";
 
-const char* const c_tmp_ciyam_file_auto_script = "/tmp/ciyam/.auto_script";
-
-const char* const c_tmp_ciyam_file_auto_script_removes = "/tmp/ciyam/.auto_script_removes";
-
 const char* const c_section_script = "script";
 
 const char* const c_attribute_name = "name";
@@ -459,31 +455,6 @@ bool scripts_file_has_changed( )
    return changed;
 }
 
-void cleanup_auto_script_removes( )
-{
-   try
-   {
-      vector< string > auto_script_removes;
-
-      buffer_file_lines( c_tmp_ciyam_file_auto_script_removes, auto_script_removes );
-
-      string tmp_dir( c_tmp_ciyam_directory );
-
-      for( size_t i = 0; i < auto_script_removes.size( ); i++ )
-         file_remove( tmp_dir + '/' + auto_script_removes[ i ] );
-
-      file_remove( c_tmp_ciyam_file_auto_script_removes );
-   }
-   catch( exception& x )
-   {
-      TRACE_LOG( TRACE_MINIMAL, string( "autoscript error: " ) + x.what( ) );
-   }
-   catch( ... )
-   {
-      TRACE_LOG( TRACE_MINIMAL, "unexpected error in cleanup_auto_script_removes" );
-   }
-}
-
 }
 
 void output_schedule( ostream& os, bool from_now )
@@ -622,6 +593,8 @@ void autoscript_session::on_start( )
       if( !script_reconfig )
          changed = true;
 
+      temporary_system_variable auto_script_variable( e_special_var_auto_script, c_true_value );
+
       TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
        "started autoscript session (tid = " + to_string( current_thread_id( ) ) + ")" );
 
@@ -634,13 +607,6 @@ void autoscript_session::on_start( )
 
       if( !cycle_seconds || ( ( c_auto_script_msleep % 1000 ) != 0 ) )
          throw runtime_error( "'c_auto_script_msleep' must be a multiple of 1000" );
-
-      // NOTE: If did not stop cleanly then these could still
-      // exist from the last session so is removing them now.
-      if( file_exists( c_tmp_ciyam_file_auto_script_removes ) )
-         cleanup_auto_script_removes( );
-
-      file_touch( c_tmp_ciyam_file_auto_script, 0, true );
 
       // NOTE: Use "time" rather than
       // using "unix_time" to prevent
@@ -1041,17 +1007,10 @@ void autoscript_session::on_start( )
          dtm = date_time::local( );
       }
 
-      if( file_exists( c_tmp_ciyam_file_auto_script_removes ) )
-         cleanup_auto_script_removes( );
-
-      file_remove( c_tmp_ciyam_file_auto_script );
-
       TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "finished autoscript session" );
    }
    catch( exception& x )
    {
-      file_remove( c_tmp_ciyam_file_auto_script );
-
 #ifdef DEBUG
       cerr << "autoscript error: " << x.what( ) << endl;
 #endif
@@ -1059,8 +1018,6 @@ void autoscript_session::on_start( )
    }
    catch( ... )
    {
-      file_remove( c_tmp_ciyam_file_auto_script );
-
 #ifdef DEBUG
       cerr << "unexpected autoscript exception..." << endl;
 #endif
