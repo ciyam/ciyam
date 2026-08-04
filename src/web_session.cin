@@ -27,7 +27,6 @@ ENTRANCE_ROOM=0000000
 ;
 CIYAM_TMP_DIR=/tmp/ciyam
 ;
-;
 ~mkdir -p $CIYAM_TMP_DIR/$SESSION
 TEMP_FILE=$CIYAM_TMP_DIR/$SESSION/output.tmp
 ;
@@ -38,45 +37,41 @@ OUTPUT_FILE=$CIYAM_TMP_DIR/web.$TOKEN.$DEVICE
 IRC_ROOM=$ENTRANCE_ROOM
 ;
 IRC_USERS=
+IRC_ALLOWED=
 ;
 ; NOTE: If just started (or a reload has just taken place)
-; then might need to wait a while for "auto script" thread
-; to start and load any stored IRC system variables.
-AUTO_SCRIPT_CHECK=.auto_script
-;
-AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:$AUTO_SCRIPT_CHECK
-@ifndef $AUTO_SCRIPT_FILE
-.wait 250
-AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:$AUTO_SCRIPT_CHECK
-@ifndef $AUTO_SCRIPT_FILE
-.wait 250
-AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:$AUTO_SCRIPT_CHECK
-@ifndef $AUTO_SCRIPT_FILE
+; then may need to wait for a second for the "auto script"
+; session to have executed "irc_store_or_restore".
+.system_variable @auto_script
+@ifdef $OUTPUT
+IRC_ALLOWED=1
+.system_variable @irc_allow
+@ifndef $OUTPUT
+.wait 200
+.system_variable @irc_allow
+@ifndef $OUTPUT
+.wait 300
+.system_variable @irc_allow
+@ifndef $OUTPUT
 .wait 500
+.system_variable @irc_allow
+@ifndef $OUTPUT
+IRC_ALLOWED=
+@endif
 @endif
 @endif
 @endif
 ;
-AUTO_SCRIPT_CHECK=.irc_store_or_restore
-;
-AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:$AUTO_SCRIPT_CHECK
-@ifndef $AUTO_SCRIPT_FILE
-.wait 250
-AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:$AUTO_SCRIPT_CHECK
-@ifndef $AUTO_SCRIPT_FILE
-.wait 250
-AUTO_SCRIPT_FILE=@files:$CIYAM_TMP_DIR:$AUTO_SCRIPT_CHECK
-@ifndef $AUTO_SCRIPT_FILE
-.wait 500
-@endif
-@endif
 @endif
 ;
 @ifdef $USERNAME
+@ifdef $IRC_ALLOWED
 @retain IRC_USERS
 <web_session_join.cin "$USERNAME" "$IRC_ROOM"
 @endif
+@endif
 ;
+@ifdef $IRC_ALLOWED
 .variable @web.$TOKEN.$DEVICE.0*
 @ifdef $OUTPUT
 ALL_START_POINTS=$OUTPUT
@@ -85,6 +80,7 @@ ALL_START_POINTS=@repstr: /=:$ALL_START_POINTS
 ALL_START_POINTS=@repstr:\n/,:$ALL_START_POINTS
 ;
 session_variable @irc_start_points $ALL_START_POINTS
+@endif
 @endif
 ;
 ADMIN_TOKEN=@file:.web_access_admin
