@@ -629,7 +629,7 @@ int main( int argc, char* argv[ ] )
                   ( *fp_init_peer_sessions_func )( true );
 
                if( web_port && g_start_http_listener )
-                  ( *fp_init_http_handler_func )( web_port );
+                  ( *fp_init_http_handler_func )( web_port, g_start_auto_script );
 
                int64_t utm = unix_time( );
 
