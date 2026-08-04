@@ -151,6 +151,7 @@ constexpr const char* c_special_variable_executing = "@executing";
 constexpr const char* c_special_variable_file_list = "@file_list";
 constexpr const char* c_special_variable_image_dir = "@image_dir";
 constexpr const char* c_special_variable_increment = "@increment";
+constexpr const char* c_special_variable_irc_allow = "@irc_allow";
 constexpr const char* c_special_variable_irc_alter = "@irc_alter";
 constexpr const char* c_special_variable_list_hash = "@list_hash";
 constexpr const char* c_special_variable_peer_data = "@peer_data";
@@ -176,6 +177,7 @@ constexpr const char* c_special_variable_tree_match = "@tree_match";
 constexpr const char* c_special_variable_tree_total = "@tree_total";
 constexpr const char* c_special_variable_allow_async = "@allow_async";
 constexpr const char* c_special_variable_application = "@application";
+constexpr const char* c_special_variable_auto_script = "@auto_script";
 constexpr const char* c_special_variable_auto_update = "@auto_update";
 constexpr const char* c_special_variable_cws_scripts = "@cws_scripts";
 constexpr const char* c_special_variable_cws_ssheets = "@cws_ssheets";
@@ -525,6 +527,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_file_list );
       g_special_variable_names.push_back( c_special_variable_image_dir );
       g_special_variable_names.push_back( c_special_variable_increment );
+      g_special_variable_names.push_back( c_special_variable_irc_allow );
       g_special_variable_names.push_back( c_special_variable_irc_alter );
       g_special_variable_names.push_back( c_special_variable_list_hash );
       g_special_variable_names.push_back( c_special_variable_peer_data );
@@ -550,6 +553,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_tree_total );
       g_special_variable_names.push_back( c_special_variable_allow_async );
       g_special_variable_names.push_back( c_special_variable_application );
+      g_special_variable_names.push_back( c_special_variable_auto_script );
       g_special_variable_names.push_back( c_special_variable_auto_update );
       g_special_variable_names.push_back( c_special_variable_cws_scripts );
       g_special_variable_names.push_back( c_special_variable_cws_ssheets );
@@ -805,9 +809,9 @@ void set_file_variable( const string& variable, bool use_temp_directory = false 
       g_variables.erase( variable );
 }
 
-void set_irc_alter( bool change = false, bool remove = false )
+void set_auto_script( bool change = false, bool remove = false )
 {
-   string variable( c_special_variable_irc_alter );
+   string variable( c_special_variable_auto_script );
 
    if( change )
       touch_or_remove( variable, remove, true );
@@ -1033,8 +1037,8 @@ bool has_system_variable( const var_name& var )
 
    string name( var.name );
 
-   if( name == c_special_variable_irc_alter )
-      set_irc_alter( );
+   if( name == c_special_variable_auto_script )
+      set_auto_script( );
    else if( name == c_special_variable_backup_needed )
       set_backup_needed( );
    else if( name == c_special_variable_restore_needed )
@@ -1214,8 +1218,8 @@ string get_system_variable( const var_name& var, bool is_internal )
 
       map< string, string >::const_iterator ci;
 
-      if( wildcard_match( variable, c_special_variable_irc_alter ) )
-         set_irc_alter( );
+      if( wildcard_match( variable, c_special_variable_auto_script ) )
+         set_auto_script( );
 
       if( wildcard_match( variable, c_special_variable_backup_needed ) )
          set_backup_needed( );
@@ -1295,8 +1299,8 @@ string get_system_variable( const var_name& var, bool is_internal )
    }
    else
    {
-      if( variable == c_special_variable_irc_alter )
-         set_irc_alter( );
+      if( variable == c_special_variable_auto_script )
+         set_auto_script( );
 
       if( variable == c_special_variable_backup_needed )
          set_backup_needed( );
@@ -1428,11 +1432,11 @@ void set_system_variable( const var_name& var,
 
       file_remove( tmp_file_name );
    }
-   else if( name == c_special_variable_irc_alter )
+   else if( name == c_special_variable_auto_script )
    {
       guard g( g_mutex );
 
-      set_irc_alter( true, value.empty( ) );
+      set_auto_script( true, value.empty( ) );
    }
    else if( name == c_special_variable_backup_needed )
    {
