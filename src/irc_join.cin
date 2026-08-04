@@ -43,6 +43,10 @@ ROOM_NO=@substr:0,$POS:$ROOM_NO
 ROOM_NO=$STARTING_ROOM
 @endif
 ;
+.system_variable @irc_allow
+@ifndef $OUTPUT
+ERROR=IRC usage is not currently available.
+@else
 @ifneq "$ROOM_NO" "$STARTING_ROOM"
 .system_variable @irc_uuids_$JOIN_TOKEN
 @ifneq "$ROOM_NO" "$OUTPUT"
@@ -54,6 +58,7 @@ CHECK_USERS=@repstr:@$USER@/:$ALL_USERS
 ERROR=Unknown room '$ROOM_NO' (or not joined).
 @else
 ERROR=Unknown or invalid join token '$JOIN_TOKEN'.
+@endif
 @endif
 @endif
 @endif
