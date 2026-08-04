@@ -31,6 +31,7 @@ review stylesheet[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 Check for messages and then create a test message and a new room.
+IRC has not been enabled for this application server.
 test-1 #0000001 1/1 Administration
 test-1 testing...
 0000002

@@ -56,6 +56,9 @@ curl -s "localhost:13031/cws/help?access=$new_access&device=$new_device&session=
 echo "Check for messages and then create a test message and a new room."
 summary=$(curl -s "localhost:13031/cws/messages?access=$new_access&device=$new_device&session=$new_session" | tail -n 1)
 echo ${summary#* }
+./system_variable set @irc_allow 1
+summary=$(curl -s "localhost:13031/cws/messages?access=$new_access&device=$new_device&session=$new_session" | tail -n 1)
+echo ${summary#* }
 message=$(curl -s -X POST "localhost:13031/cws/messages/0000001?access=$new_access&device=$new_device&options=text%3Dtesting...&session=$new_session" | tail -n 1)
 echo ${message#* }
 room_info=$(curl -s -X POST "localhost:13031/cws/messages/0000000?access=$new_access&device=$new_device&options=text%3DTesting&session=$new_session")
