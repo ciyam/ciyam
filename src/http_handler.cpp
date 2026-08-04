@@ -1500,9 +1500,9 @@ void http_request_handler::on_start( )
 }
 
 #ifdef SSL_SUPPORT
-void init_http_handler( ssl_socket* p_socket, const string& address )
+void init_request_handler( ssl_socket* p_socket, const string& address )
 #else
-void init_http_handler( tcp_socket* p_socket, const string& address )
+void init_request_handler( tcp_socket* p_socket, const string& address )
 #endif
 {
    try
@@ -1517,25 +1517,26 @@ void init_http_handler( tcp_socket* p_socket, const string& address )
    catch( exception& x )
    {
 #ifdef DEBUG
-      cerr << "init_http_handler: " << x.what( ) << endl;
+      cerr << "init_request_handler: " << x.what( ) << endl;
 #else
-      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, string( "init_http_handler: " ) + x.what( ) );
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, string( "init_request_handler: " ) + x.what( ) );
 #endif
    }
    catch( ... )
    {
 #ifdef DEBUG
-      cerr << "init_http_handler: unexpected exception occurred" << endl;
+      cerr << "init_request_handler: unexpected exception occurred" << endl;
 #else
-      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, string( "init_http_handler: unexpected exception occurred" ) );
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, string( "init_request_handler: unexpected exception occurred" ) );
 #endif
    }
 }
 
 
-http_listener::http_listener( int port )
+http_listener::http_listener( int port, bool has_auto )
  :
- port( port )
+ port( port ),
+ has_auto( has_auto )
 {
    ++g_active_listeners;
 }
@@ -1553,6 +1554,26 @@ void http_listener::on_start( )
 
    try
    {
+      if( has_auto )
+      {
+         bool found_auto_script = false;
+
+         for( size_t i = 0; i < 10; i++ )
+         {
+            if( has_system_variable( e_special_var_auto_script ) )
+            {
+               found_auto_script = true;
+
+               break;
+            }
+
+            msleep( 150 );
+         }
+
+         if( !found_auto_script )
+            throw runtime_error( "unexpected auto_script session was not found" );
+      }
+
       tcp_socket s;
 
       bool okay = s.open( );
@@ -1637,7 +1658,7 @@ void http_listener::on_start( )
                file_remove( c_cws_force_admin_update );
             }
 
-            init_http_handler( up_socket.release( ), address.get_addr_string( ) );
+            init_request_handler( up_socket.release( ), address.get_addr_string( ) );
          }
       }
    }
@@ -1662,9 +1683,9 @@ void http_listener::on_start( )
    delete this;
 }
 
-void init_http_handler( int port )
+void init_http_handler( int port, bool has_auto )
 {
-   http_listener* p_http_listener = new http_listener( port );
+   http_listener* p_http_listener = new http_listener( port, has_auto );
 
    p_http_listener->start( );
 }

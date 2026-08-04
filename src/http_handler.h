@@ -16,17 +16,19 @@
 class http_listener : public thread
 {
    public:
-   http_listener( int port );
+   http_listener( int port, bool has_auto );
 
    ~http_listener( );
 
    void on_start( );
 
    int port;
+
+   bool has_auto;
 };
 
-extern "C" void init_http_handler( int port );
+extern "C" void init_http_handler( int port, bool has_auto );
 
-typedef void ( *fp_init_http_handler )( int );
+typedef void ( *fp_init_http_handler )( int, bool );
 
 #endif
