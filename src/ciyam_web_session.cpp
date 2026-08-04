@@ -2249,7 +2249,17 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
                      else if( ( uri_suffix == c_cws_uri_suffix_messages )
                       || HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_messages_prefix ) )
-                        is_messages_request = true;
+                     {
+                        if( has_system_variable( e_special_var_irc_allow ) )
+                           is_messages_request = true;
+                        else
+                        {
+                           found = false;
+
+                           // FUTURE: This message should be handled as a server string message.
+                           error = "IRC usage is not currently available.";
+                        }
+                     }
                      else if( uri_suffix == c_cws_uri_suffix_storage_modules )
                         is_module_info_request = true;
                      else if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storage_instances_prefix ) )
