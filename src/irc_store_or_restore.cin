@@ -31,6 +31,12 @@
 ;
 @ifndef $OUTPUT
 ;
+@ifndef $CIYAM_TMP_DIR
+CIYAM_TMP_DIR=/tmp/ciyam
+@endif
+;
+IRC_VARS_FILE=irc_variables.cin
+;
 .system_variable @irc_alter ""
 ;
 .system_variable @irc_rooms
@@ -38,8 +44,6 @@
 ; NOTE: If no IRC rooms exist then will check
 ; if they can be restored from a prior store.
 @ifndef $OUTPUT
-;
-IRC_VARS_FILE=irc_variables.cin
 ;
 @ifndef $CIYAM_TMP_DIR
 CIYAM_TMP_DIR=/tmp/ciyam
