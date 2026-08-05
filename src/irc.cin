@@ -14,6 +14,7 @@ USER=$1
 USER=anon
 @endif
 ;
+UB=_
 QUIT=
 ERROR=
 MESSAGE=
@@ -22,6 +23,7 @@ REREAD_ALL=!
 NOT_TO_SELF=
 FORCE_OUTPUT=
 SHOW_CHANGED=
+LAST_MSG_UNIX=
 ;
 ENTRANCE_ROOM=0000000
 STARTING_ROOM=0000001
@@ -147,6 +149,16 @@ ERROR=
 ROOM=$OLD_ROOM
 @else
 CHECK_PRIOR=1
+;
+LAST_MSG_UNIX=
+LAST_START_POINT=@files:/tmp:.irc_%USER%_%ROOM%
+@ifdef $LAST_START_POINT
+START_POINT_INFO=@file:/tmp/.irc_%USER%_%ROOM%
+@ifdef $START_POINT_INFO
+START_POINT_INFO=@strlit:@$START_POINT_INFO
+@endif
+@endif
+;
 POS=@strpos:-:$ROOM
 @ifdef $POS
 ROOM=@substr:0,$POS:$ROOM
@@ -266,8 +278,20 @@ ENCODED=@base64:@$MESSAGE
 @ifdef $QUIT
 OUTPUT=
 @else
-.run_script !irc_fetch_messages "@room=$REREAD_ALL$ROOM"
+;
+@ifeq "$ROOM" "$ENTRANCE_ROOM"
+~rm -f /tmp/.irc_$USER
+~sep=''; for f in /tmp/.irc_$USER$UB0*; do echo -n "$$sep$${f##*_}=$$(cat "$$f")"; sep=';'; done > /tmp/.irc_$USER
+START_POINTS=@files:/tmp:.irc_$USER
+@ifdef $START_POINTS
+START_POINTS=@file:/tmp/.irc_$USER
+START_POINT_INFO=@strlit:@@$START_POINTS
+@endif
+@endif
+;
+.run_script !irc_fetch_messages "@room=$REREAD_ALL$ROOM$START_POINT_INFO"
 REREAD_ALL=
+START_POINT_INFO=
 @endif
 ;
 @ifdef $OUTPUT
@@ -291,23 +315,26 @@ NEXT_MSG_PARTS=@repstr: /\n:$NEXT_MESSAGE
 EXTRA_MESSAGE=@strlit:%NEXT_MSG_PARTS:4%
 ENCODED_MESSAGE=@strlit:%NEXT_MSG_PARTS:3%
 ;
-WHEN_AND_USER=%NEXT_MSG_PARTS:1% %NEXT_MSG_PARTS:2%
 DECODED_MESSAGE=@base64:$ENCODED_MESSAGE
 DECODED_MESSAGE=@substr:1,0:$DECODED_MESSAGE$EXTRA_MESSAGE
 ;
-WHEN_AND_USER_LINES=@repstr: /\n:$WHEN_AND_USER
-LOCAL=@date:%WHEN_AND_USER_LINES:1%:yyyy-mm-dd hh:mm:ss
+LAST_MSG_UNIX=%NEXT_MSG_PARTS:1%
 ;
-USER_NAME=@strlit:%WHEN_AND_USER_LINES:2%
+LOCAL=@date:%NEXT_MSG_PARTS:1%:yyyy-mm-dd hh:mm:ss
+;
+USER_NAME=@strlit:%NEXT_MSG_PARTS:2%
 ;
 USER_NAME_PADDED=@padlen:-13, :$USER_NAME
 ;
 @ifneq "$ROOM" "$ENTRANCE_ROOM"
 MESSAGE_ROOM_NUM=
 ;
+QPOS=@strpos:":$DECODED_MESSAGE
+@ifndef $QPOS
 @ifeq "$DECODED_MESSAGE" ":joined"
 ALL_USERS=@strlit:$ALL_USERS@$USER_NAME
 ALL_USERS=@set_sort:@:$ALL_USERS
+@endif
 @endif
 ;
 @else
@@ -365,6 +392,13 @@ MESSAGES=%MESSAGES:-1%
 !!@:MSG_LOOP
 ;
 @:END_MSG_LOOP
+;
+@ifdef $LAST_MSG_UNIX
+@ifneq "$ROOM" "$ENTRANCE_ROOM"
+NEW_START_POINT=@$LAST_MSG_UNIX+1
+~echo -n $NEW_START_POINT>/tmp/.irc_%USER%_%ROOM%
+@endif
+@endif
 ;
 @endif
 ;
