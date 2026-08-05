@@ -28,7 +28,27 @@ SESSION=$3
 FORCED=
 CHANGED=
 START_POINT=
+START_POINTS=
 WAS_ENTRANCE=
+;
+; NOTE: ROOM and START_POINT can be provided as '<room>@<start_point>'.
+POS=@strpos:@:$ROOM
+@ifdef $POS
+SPOS=@$POS+1
+START_POINT=@substr:$SPOS:$ROOM
+ROOM=@substr:0,$POS:$ROOM
+@endif
+;
+; NOTE: ROOM and START_POINTS can be provided as '<room>@@<start_point_1>[;<start_point_2[...]]'
+; (with semi-colon separators being necessary due to the 'run_script' command argument parsing).
+@ifdef $START_POINT
+FIRST=@substr:0,1:$START_POINT
+@ifeq "$FIRST" "@"
+START_POINTS=@substr:1:$START_POINT
+START_POINTS=@repstr:;/,:$START_POINTS
+START_POINT=
+@endif
+@endif
 ;
 ; NOTE: If the ROOM has a
 ; '!' prefix then removes
@@ -56,8 +76,10 @@ WAS_ENTRANCE=1
 .system_variable @session_@queue_irc_*_$USER
 INPUT_LINES=@strlit:$OUTPUT
 ;
+@ifndef $START_POINTS
 .session_variable -id=$SESSION @irc_start_points
 START_POINTS=$OUTPUT
+@endif
 ;
 @ifdef $START_POINTS
 FORCED=1
@@ -200,9 +222,8 @@ CHANGED=1
 .session_variable -id=$SESSION !@queue_irc_$ROOM_AND_USER @system
 @endif
 ;
-.session_variable -id=$SESSION @irc_start_point_$ROOM
-@ifdef $OUTPUT
-.session_variable @gteq_session_queue $OUTPUT
+@ifdef $START_POINT
+.session_variable @gteq_session_queue $START_POINT
 @endif
 ;
 .session_variable -id=$SESSION @queue_irc_$ROOM_AND_USER *
