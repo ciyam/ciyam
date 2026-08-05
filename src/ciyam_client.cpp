@@ -111,6 +111,7 @@ constexpr const char* c_env_var_webdir = "WEBDIR";
 constexpr const char* c_env_var_pub_key = "PUB_KEY";
 constexpr const char* c_env_var_pub_keyx = "PUB_KEYX";
 constexpr const char* c_env_var_local_udp = "LOCAL_UDP";
+constexpr const char* c_env_var_local_user = "LOCAL_USER";
 constexpr const char* c_env_var_rpc_password = "RPC_PASSWORD";
 constexpr const char* c_env_var_ciyam_seconds = "CIYAM_SECONDS";
 constexpr const char* c_env_var_max_file_size = "MAX_FILE_SIZE";
@@ -2035,13 +2036,14 @@ int main( int argc, char* argv[ ] )
                   g_rpc_group_name.erase( pos );
                }
 
+               string user_default( get_environment_variable( c_env_var_user ) );
+
                if( !user.empty( ) )
                   cout << c_username_prefix << user << endl;
                else
                {
                   string prompt( c_username );
 
-                  string user_default( get_environment_variable( c_env_var_user ) );
 
                   if( !user_default.empty( ) )
                      prompt += " [" + user_default + ']';
@@ -2058,6 +2060,11 @@ int main( int argc, char* argv[ ] )
                   throw runtime_error( "RPC scripts usage requires user credentials" );
 
                set_environment_variable( c_env_var_user, user );
+
+               // NOTE: If USER has been changed then set LOCAL_USER
+               // to the original value (so scripts can use either).
+               if( user != user_default )
+                  set_environment_variable( c_env_var_local_user, user_default );
 
                if( g_rpc_password.empty( ) )
                   g_rpc_password = "?";
