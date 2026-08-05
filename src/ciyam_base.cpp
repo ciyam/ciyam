@@ -4146,7 +4146,15 @@ void read_server_configuration( )
             string::size_type pos = next_pair.find( '=' );
 
             if( pos != string::npos )
-               set_system_variable( next_pair.substr( 0, pos ), next_pair.substr( pos + 1 ) );
+            {
+               string name( next_pair.substr( 0, pos ) );
+               string value( next_pair.substr( pos + 1 ) );
+
+               replace_quoted_environment_variables( value );
+               replace_unquoted_environment_variables( value );
+
+               set_system_variable( name, value );
+            }
          }
       }
 
