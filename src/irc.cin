@@ -329,8 +329,11 @@ USER_NAME_PADDED=@padlen:-13, :$USER_NAME
 @ifneq "$ROOM" "$ENTRANCE_ROOM"
 MESSAGE_ROOM_NUM=
 ;
-QPOS=@strpos:":$DECODED_MESSAGE
-@ifndef $QPOS
+; NOTE: As normal messages can be
+; expected to contain quotes only
+; check if is a special message.
+FIRST=@substr:0,1:$DECODED_MESSAGE
+@if "$FIRST" = ":"
 @ifeq "$DECODED_MESSAGE" ":joined"
 ALL_USERS=@strlit:$ALL_USERS@$USER_NAME
 ALL_USERS=@set_sort:@:$ALL_USERS
