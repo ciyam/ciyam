@@ -31,8 +31,14 @@
 ;
 @ifndef $OUTPUT
 ;
+.system_variable @irc_vars_dir
+IRC_VARS_DIR=$OUTPUT
+;
+@ifndef $IRC_VARS_DIR
 @ifndef $CIYAM_TMP_DIR
 CIYAM_TMP_DIR=/tmp/ciyam
+@endif
+IRC_VARS_DIR=$CIYAM_TMP_DIR
 @endif
 ;
 IRC_VARS_FILE=irc_variables.cin
@@ -45,14 +51,10 @@ IRC_VARS_FILE=irc_variables.cin
 ; if they can be restored from a prior store.
 @ifndef $OUTPUT
 ;
-@ifndef $CIYAM_TMP_DIR
-CIYAM_TMP_DIR=/tmp/ciyam
-@endif
+IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE
 ;
-IRC_VARIABLES=@files:$CIYAM_TMP_DIR:$IRC_VARS_FILE
-;
-@ifdef $IRC_VARIABLES
-<$CIYAM_TMP_DIR/$IRC_VARIABLES
+@ifdef $IRC_VARS_FILE
+<$IRC_VARS_DIR/$IRC_VARS_FILE
 @endif
 ;
 .system_variable @irc_allow 1
@@ -65,7 +67,7 @@ IRC_VARIABLES=@files:$CIYAM_TMP_DIR:$IRC_VARS_FILE
 ;
 PREFIX=system_variable$SP
 ;
->$CIYAM_TMP_DIR/$IRC_VARS_FILE
+>$IRC_VARS_DIR/$IRC_VARS_FILE
 system_variable "-p=$PREFIX" @irc_rooms*
 ;
 system_variable "-p=$PREFIX" -quoted @irc_names_*
