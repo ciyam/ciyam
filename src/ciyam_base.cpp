@@ -7664,7 +7664,9 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
       if( is_script )
       {
-         string args_file( "~" + uuid( ).as_string( ) );
+         string args_file( c_tmp_ciyam_directory );
+
+         args_file += '/' + uuid( ).as_string( );
 
          // NOTE: Empty code block for scope purposes.
          {
