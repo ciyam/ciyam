@@ -1189,11 +1189,14 @@ void Meta_Package::impl::impl_Install( )
          } while( get_obj( ).child_Package_Option( ).iterate_next( ) );
       }
 
-      string temp_name( "~" + get_uuid( ) );
-      string list_filename( temp_name + ".lst" );
+      string tmp_filename( c_tmp_ciyam_directory );
 
-      string script_filename( temp_name );
-      string commands_filename( temp_name + ".cin" );
+      tmp_filename += '/' + get_uuid( );
+
+      string list_filename( tmp_filename + ".lst" );
+
+      string script_filename( tmp_filename );
+      string commands_filename( tmp_filename + ".cin" );
 
       string type_name( get_obj( ).Package_Type( ).Name( ) );
       string keys_filename( type_name + ".keys.lst" );
@@ -1394,7 +1397,7 @@ void Meta_Package::impl::impl_Install( )
             throw runtime_error( "unable to open '" + commands_filename + "' for output" );
 
          outc << ".storage_init " << storage_name( ) << "\n";
-         outc << ".session_variable @package " << temp_name << "\n";
+         outc << ".session_variable @package " << tmp_filename << "\n";
 
          string attached_file_path_var( get_special_var_name( e_special_var_attached_file_path ) );
 

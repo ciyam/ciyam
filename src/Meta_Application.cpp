@@ -3883,7 +3883,10 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
    if( is_create && !skip_create_db && get_obj( ).Create_Database( ) )
    {
       string create_script( "./create_db" );
-      string tmp_filename( "~" + get_uuid( ) );
+
+      string tmp_filename( c_tmp_ciyam_directory );
+
+      tmp_filename += '/' + get_uuid( );
 
       string script( create_script + " "
        + get_obj( ).Name( ) + " " + get_sql_password( ) + " >" + tmp_filename + " 2>&1" );
