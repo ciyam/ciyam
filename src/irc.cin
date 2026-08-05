@@ -6,13 +6,28 @@
 @retain *
 <ansi.cin
 ;
+@ifndef $USER
+USER=anon
+@endif
+;
+@ifndef $LOCAL_USER
+LOCAL_USER=$USER
+@endif
+;
 @ifdef $1
 USER=$1
 @endif
 ;
-@ifndef $USER
-USER=anon
+@ifndef $CIYAM_HOST_NAME
+CIYAM_HOST_NAME=localhost
 @endif
+~mkdir -p /home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_NAME
+~touch /home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_NAME/.do_not_remove
+CHECK_LOCAL_SHARE_FILE=@files:/home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_NAME:.do_not_remove
+@ifndef $CHECK_LOCAL_SHARE_FILE
+#Error: Unable to access '/home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_NAME/.do_not_remove'.
+@else
+LOCAL_FILES_DIR=/home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_NAME
 ;
 UB=_
 QUIT=
@@ -151,9 +166,9 @@ ROOM=$OLD_ROOM
 CHECK_PRIOR=1
 ;
 LAST_MSG_UNIX=
-LAST_START_POINT=@files:/tmp:.irc_%USER%_%ROOM%
+LAST_START_POINT=@files:$LOCAL_FILES_DIR:.irc_%USER%_%ROOM%
 @ifdef $LAST_START_POINT
-START_POINT_INFO=@file:/tmp/.irc_%USER%_%ROOM%
+START_POINT_INFO=@file:$LOCAL_FILES_DIR/.irc_%USER%_%ROOM%
 @ifdef $START_POINT_INFO
 START_POINT_INFO=@strlit:@$START_POINT_INFO
 @endif
@@ -186,7 +201,8 @@ MESSAGE=_/help
 @endif
 @elif "$CIYAM_KEY_PRESSED" = " "
 &:MESSAGE=_
-@ifeq "$MESSAGE" "_"
+MLEN=@strlen:$MESSAGE
+@ifeq "$MLEN" "1"
 MESSAGE=
 @else
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
@@ -280,11 +296,17 @@ OUTPUT=
 @else
 ;
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
-~rm -f /tmp/.irc_$USER
-~sep=''; for f in /tmp/.irc_$USER$UB0*; do echo -n "$$sep$${f##*_}=$$(cat "$$f")"; sep=';'; done > /tmp/.irc_$USER
-START_POINTS=@files:/tmp:.irc_$USER
+~rm -f $LOCAL_FILES_DIR/.irc_$USER
+;
+USER_SP_FILES=%USER%$UB
+USER_SP_FILES=%USER_SP_FILES%0*
+;
+~sep=''; for f in $LOCAL_FILES_DIR/.irc_$USER_SP_FILES; do echo -n "$$sep$${f##*_}=$$(cat "$$f")"; sep=';'; done > $LOCAL_FILES_DIR/.irc_$USER
+;
+START_POINTS=@files:$LOCAL_FILES_DIR:.irc_$USER
+;
 @ifdef $START_POINTS
-START_POINTS=@file:/tmp/.irc_$USER
+START_POINTS=@file:$LOCAL_FILES_DIR/.irc_$USER
 START_POINT_INFO=@strlit:@@$START_POINTS
 @endif
 @endif
@@ -399,7 +421,7 @@ MESSAGES=%MESSAGES:-1%
 @ifdef $LAST_MSG_UNIX
 @ifneq "$ROOM" "$ENTRANCE_ROOM"
 NEW_START_POINT=@$LAST_MSG_UNIX+1
-~echo -n $NEW_START_POINT>/tmp/.irc_%USER%_%ROOM%
+~echo -n $NEW_START_POINT>$LOCAL_FILES_DIR/.irc_%USER%_%ROOM%
 @endif
 @endif
 ;
@@ -424,3 +446,5 @@ MESSAGE=
 !!@:LOOP
 ;
 @:END_LOOP
+;
+@endif
