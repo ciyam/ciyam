@@ -63,11 +63,13 @@ IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE
 ;
 ; NOTE: Creates "irc_variables.cin" which can
 ; then later be used for restoring all of the
-; IRC system variables.
+; IRC system variables. Uses "$C" rather than
+; "system_variable" in order to reduce space.
 ;
-PREFIX=system_variable$SP
+PREFIX=$$C$SP
 ;
 >$IRC_VARS_DIR/$IRC_VARS_FILE
+#C=system_variable
 system_variable "-p=$PREFIX" @irc_rooms*
 ;
 system_variable "-p=$PREFIX" -quoted @irc_names_*
@@ -98,7 +100,7 @@ NEXT_MESSAGE_QUEUE_INFO_LINES=@repstr: /\n:$NEXT_MESSAGE_QUEUE_INFO
 ;
 NEXT_MESSAGE_QUEUE_NAME=@strlit:%NEXT_MESSAGE_QUEUE_INFO_LINES:1%
 ;
-PREFIX=system_variable $NEXT_MESSAGE_QUEUE_NAME$SP
+PREFIX=$$C $NEXT_MESSAGE_QUEUE_NAME$SP
 ;
 .session_variable $NEXT_MESSAGE_QUEUE_NAME @system
 ;
