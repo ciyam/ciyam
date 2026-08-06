@@ -161,8 +161,8 @@ constexpr const char* c_web_session_okay_response = "[okay]";
 
 constexpr const char* c_web_session_unknown_response = "[unknown]";
 
-constexpr const char* c_web_session_meta_message_name = "MM";
-constexpr const char* c_web_session_default_message_names = "ALL";
+constexpr const char* c_web_session_default_message_for = "ALL";
+constexpr const char* c_web_session_special_message_for = "IRC";
 
 constexpr const char* c_web_session_default_room_number = "0000000";
 constexpr const char* c_web_session_initial_room_number = "0000001";
@@ -803,11 +803,7 @@ void process_messages_response( string& response, bool needs_decoding, bool is_j
                      next_message.erase( 0, pos + 1 );
 
                   if( !next_message.empty( ) )
-                  {
                      had_users = true;
-
-                     next_message = replaced( next_message.substr( 1 ), "@", " " );
-                  }
                }
                else
                {
@@ -2228,7 +2224,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      bool allowed_command = true;
 
                      bool is_adding_room = false;
-                     bool is_meta_request = false;
+                     bool is_special_request = false;
                      bool is_messages_request = false;
                      bool is_user_info_request = false;
                      bool is_module_info_request = false;
@@ -2311,10 +2307,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                     string first( names.substr( 0, pos ) );
 
-                                    if( first == c_web_session_meta_message_name )
+                                    if( first == c_web_session_special_message_for )
                                     {
-                                       is_meta_request = true;
                                        use_none_response = false;
+
+                                       is_special_request = true;
 
                                        if( pos == string::npos )
                                           names.erase( );
@@ -2324,9 +2321,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  }
 
                                  if( names.empty( ) )
-                                    names = c_web_session_default_message_names;
+                                    names = c_web_session_default_message_for;
 
-                                 if( !is_meta_request
+                                 if( !is_special_request
                                   && ( room == c_web_session_default_room_number ) )
                                  {
                                     is_adding_room = true;
@@ -2339,14 +2336,14 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  }
                                  else
                                  {
-                                    string prefix( is_meta_request ? c_web_session_meta_message_prefix : c_web_session_default_message_prefix );
+                                    string prefix( is_special_request ? c_web_session_meta_message_prefix : c_web_session_default_message_prefix );
 
                                     request_and_args = "run_script !irc_send_message \"@room=" + room + ",@names=" + names + ",@message="
                                      + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
                                  }
                               }
 
-                              if( !is_adding_room && !is_meta_request )
+                              if( !is_adding_room && !is_special_request )
                               {
                                  request_and_args += "IRC_ROOM=" + room + '\n';
 
@@ -2527,7 +2524,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  if( is_user_info_request )
                                     process_user_info_response( session, response );
                                  else if( !is_adding_room && is_messages_request )
-                                    process_messages_response( response, !is_meta_request, is_json_output );
+                                    process_messages_response( response, !is_special_request, is_json_output );
                               }
 
                               break;
