@@ -29,7 +29,6 @@ CHECK_LOCAL_SHARE_FILE=@files:/home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_N
 @else
 LOCAL_FILES_DIR=/home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_NAME
 ;
-UB=_
 QUIT=
 ERROR=
 MESSAGE=
@@ -227,36 +226,29 @@ LINES=@repstr:|/\n:$OUTPUT
 LOCAL=@strlit:%LINES:1%
 REMOTE=@strlit:%LINES:2%
 ALL_USERS=@strlit:%LINES:3%
+ALL_USERS_EXTRA=@strlit:%LINES:4%
 ;
 @ifndef $ALL_USERS
 ALL_USERS=@strlit:$LOCAL
-@if "$ROOM" = "$ENTRANCE_ROOM"
-LOCAL=
-@else
-LOCAL=Current users:
-@endif
+ALL_USERS_EXTRA=@strlit:$REMOTE
+LOCAL=:
+REMOTE=
 @endif
 ;
 DISPLAY_USERS=
 ;
 @ifeq "$LOCAL" "dummy"
-LOCAL=
-@else
-;
-@if "$ROOM" != "$ENTRANCE_ROOM"
-DISPLAY_USERS=@strlit:$ALL_USERS
-@ifdef $DISPLAY_USERS
-DISPLAY_USERS=@substr:1:$DISPLAY_USERS
-DISPLAY_USERS=@repstr:@/ :$DISPLAY_USERS
-DISPLAY_USERS= $DISPLAY_USERS
+LOCAL=:
 @endif
 ;
+DISPLAY_USERS=@strlit:$ALL_USERS_EXTRA
+;
+@ifdef $DISPLAY_USERS
+DISPLAY_USERS= $DISPLAY_USERS
 @endif
 ;
 @ifdef $LOCAL
 #$LOCAL$DISPLAY_USERS
-@endif
-;
 @endif
 ;
 @ifeq "$REMOTE" "dummy"
@@ -298,12 +290,16 @@ OUTPUT=
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
 ~rm -f $LOCAL_FILES_DIR/.irc_$USER
 ;
-USER_SP_FILES=%USER%$UB
+USER_SP_FILES=%USER%_
 USER_SP_FILES=%USER_SP_FILES%0*
 ;
+CHECK_SP_FILES=@files:$LOCAL_FILES_DIR:.irc_$USER_SP_FILES
+;
+@ifdef $CHECK_SP_FILES
 ~sep=''; for f in $LOCAL_FILES_DIR/.irc_$USER_SP_FILES; do echo -n "$$sep$${f##*_}=$$(cat "$$f")"; sep=';'; done > $LOCAL_FILES_DIR/.irc_$USER
 ;
 START_POINTS=@files:$LOCAL_FILES_DIR:.irc_$USER
+@endif
 ;
 @ifdef $START_POINTS
 START_POINTS=@file:$LOCAL_FILES_DIR/.irc_$USER
