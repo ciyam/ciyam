@@ -551,12 +551,14 @@ void output_schedule( ostream& os, bool from_now )
       if( is_locked )
       {
          if( g_scripts[ ssci->second ].external_cycles )
-            os << " (running)";
+            os << " [running]";
          else
-            os << " (waiting)";
+            os << " [waiting]";
       }
       else if( !g_scripts[ ssci->second ].ts_filename.empty( ) )
          os << " [" << g_scripts[ ssci->second ].ts_filename << "]";
+      else if( !g_scripts[ ssci->second ].system_variable.empty( ) )
+         os << " [" << g_scripts[ ssci->second ].system_variable << "]";
 
       if( g_script_exec_limit.count( name ) )
          os << " (+" << g_script_exec_limit[ name ] << ")";
