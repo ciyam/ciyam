@@ -6,7 +6,7 @@
 NAMES=$1
 ;
 @ifndef $NAMES
-#Usage: names.cin [name1[,name2[,..]]
+#Usage: names.cin [name-1[,name-2[,..]]
 @else
 ENTER=_==
 CHOICES=&Name: [NAME:$ENTER
@@ -16,7 +16,7 @@ CIYAM_CHOICE_LOT_LIMIT=10
 CIYAM_CHOICE_OUTPUT_REPLACE=1
 ;
 ; NOTE: Names provided must be formatted as
-; name1[,name2[,..]] or @name1[@name2[@..]]
+; nameX[,nameY[,..]] or @nameX[@nameY[@..]]
 ; (but are not required to be ordered). The
 ; next steps are necessary to transform the
 ; latter into the former. And can be viewed
