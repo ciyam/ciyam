@@ -38,8 +38,10 @@ system_variable @test ""
 system_variable @test
 system_variable @test xxx
 system_variable @test
-system_variable @test @null
-system_variable @test
+C=system_variable
+$C @test
+$C @test @null
+$C @test
 ~touch ~test.sh
 run_script test*
 ~rm -f ~test.txt

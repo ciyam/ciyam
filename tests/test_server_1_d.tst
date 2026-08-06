@@ -57,6 +57,8 @@ system_variable @test
 system_variable @test xxx
 system_variable @test
 xxx
+system_variable @test
+xxx
 system_variable @test @null
 system_variable @test
 run_script test*
