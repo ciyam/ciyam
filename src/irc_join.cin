@@ -100,7 +100,9 @@ ERROR=Unexpected alias '$USER' for username '$USER_EXPECTED'.
 .session_variable -id=$SESSION @irc_$ROOM_NO
 @ifdef $OUTPUT
 .system_variable @irc_users_$ROOM_NO
-RETURN=@strlit:$OUTPUT
+ALL_USERS=@strlit:$OUTPUT
+;
+RETURN=@strlit:$ALL_USERS
 @else
 ;
 .system_variable @irc_lock 1 "" 100
@@ -179,11 +181,47 @@ CHANGED=1
 PREFIX=
 ERROR_OR_RETURN=
 ;
+@ifdef $RETURN
+@ifdef $ALL_USERS
+IRC_USERS=@substr:1:$ALL_USERS
+IRC_USERS=@repstr:@/\n:$IRC_USERS
+@label NEXT
+CHECKED_USERS=
+;
+@:LOOP
+;
+NEXT_USER=%IRC_USERS:1%
+@ifndef $NEXT_USER
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+;
+SUFFIX=
+.session_variable -num_found @irc_user $NEXT_USER
+@ifndef $CHECKED_USERS
+CHECKED_USERS=$NEXT_USER+$OUTPUT
+@else
+CHECKED_USERS=$CHECKED_USERS $NEXT_USER+$OUTPUT
+@endif
+;
+IRC_USERS=%IRC_USERS:-1%
+!!@:LOOP
+;
+@:END_LOOP
+;
+IRC_USERS=$CHECKED_USERS
+;
+RETURN=@strlit:$RETURN|$IRC_USERS
+@endif
+@endif
+;
 @ifdef $CHANGED
 .system_variable @irc_alter 1
 @endif
 ;
-
 @ifdef $ERROR
 PREFIX=Error:$SP
 ERROR_OR_RETURN=$ERROR
