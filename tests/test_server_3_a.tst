@@ -35,9 +35,9 @@ IRC usage is not currently available.
 test-1 #0000001 1/1 Administration
 test-1 testing...
 0000002
-Now check for messages as admin and join the room created by test-1.
+Now check for messages as 'admin' and join the room created by 'test-1'.
 admin #0000001 3/3 Administration
-test-1
+test-1+1
 test-1 :joined
 test-1  testing...
 test-1 :invite 0000002-NEW-ROOM-UUID-VALUE Testing
