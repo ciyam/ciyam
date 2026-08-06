@@ -3054,7 +3054,20 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          // with the environment variable before processing which can
          // be used in order to modify prompted input whilst looping.
          if( str[ 0 ] == c_environment_variable_marker_1 )
-            str = get_environment_variable( str.substr( 1 ) );
+         {
+            string suffix;
+
+            string::size_type pos = str.find( ' ' );
+
+            if( pos != string::npos )
+            {
+               suffix = str.substr( pos );
+
+               str.erase( pos );
+            }
+
+            str = get_environment_variable( str.substr( 1 ) ) + suffix;
+         }
 
          if( str[ 0 ] == c_prompted_input_prefix )
          {
