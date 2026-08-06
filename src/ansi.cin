@@ -12,6 +12,7 @@ CIYAM_ANSI=1
 ;
 ; This is %OR%on red%N%.
 ; This is %R%red text%N%.
+; This is %LR%light red%N%.
 ; This is %U%underlined%N%.
 ; This word is %A%azure%N%.
 ; This word is %BW%bolder%N%.
@@ -30,6 +31,15 @@ O=@file:~echo -e "\e[33m"
 P=@file:~echo -e "\e[35m"
 R=@file:~echo -e "\e[31m"
 W=@file:~echo -e "\e[37m"
+;
+LA=@file:~echo -e "\e[94m"
+LC=@file:~echo -e "\e[96m"
+LG=@file:~echo -e "\e[92m"
+LK=@file:~echo -e "\e[90m"
+LO=@file:~echo -e "\e[93m"
+LP=@file:~echo -e "\e[95m"
+LR=@file:~echo -e "\e[91m"
+LW=@file:~echo -e "\e[97m"
 ;
 OA=@file:~echo -e "\e[44m"
 OC=@file:~echo -e "\e[46m"
