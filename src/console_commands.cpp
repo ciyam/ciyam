@@ -118,6 +118,8 @@ const char c_history_command_prefix = '!';
 const char c_comment_command_prefix = ';';
 const char c_envcond_command_prefix = '@';
 const char c_message_command_prefix = '#';
+const char c_env_assign_fissile_prefix = '*';
+const char c_env_assign_function_prefix = '@';
 const char c_environment_variable_assign = '=';
 const char c_pause_message_command_prefix = '^';
 const char c_environment_variable_marker_1 = '$';
@@ -3288,7 +3290,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             bool handled = false;
             bool not_replaced = false;
 
-            if( !str.empty( ) && ( str[ 0 ] == '@' ) )
+            if( !str.empty( ) && ( str[ 0 ] == c_env_assign_function_prefix ) )
             {
                str.erase( 0, 1 );
 
@@ -4015,9 +4017,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                // NOTE: If was not a known function or numeric op then put back the '@' prefix.
                if( not_replaced )
-                  str.insert( str.begin( ), '@' );
+                  str.insert( str.begin( ), c_env_assign_function_prefix );
             }
-            else if( !str.empty( ) && ( str[ 0 ] == '*' ) )
+            else if( ( str.length( ) > 1 ) && ( str[ 0 ] == c_env_assign_fissile_prefix ) )
             {
                ostringstream osstr;
 
