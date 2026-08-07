@@ -2076,8 +2076,35 @@ int main( int argc, char* argv[ ] )
                if( !g_use_tls )
                   throw runtime_error( "RPC access unlock requires a TLS connection" );
 #endif
+               // NOTE: Allows "-rpc_unlock=@<file>" in order to support providing the salt and
+               // hashed password value (with '\v' separator) from an external device (e.g. via
+               // a scanned QR code).
+               if( ( g_rpc_password.length( ) > 1 )
+                && ( g_rpc_password[ 0 ] == '@' ) && file_exists( g_rpc_password.substr( 1 ) ) )
+                  g_rpc_password = buffer_file( g_rpc_password.substr( 1 ) );
+
+               bool use_salted_and_hashed = false;
+
                if( g_rpc_password == "?" )
+               {
+                  use_salted_and_hashed = true;
+
                   g_rpc_password = get_password( c_password_prefix );
+               }
+
+               if( use_salted_and_hashed )
+               {
+                  string salt( to_string( time( 0 ) ) );
+
+                  string prefix( salt + '\v' );
+
+                  // NOTE: First hash the password (which is stored on the server)
+                  // and then prefix the hashed password with the "unix time" salt
+                  // and hash again.
+                  g_rpc_password = sha256( g_rpc_password ).get_digest_as_string( );
+
+                  g_rpc_password = prefix + sha256( salt + g_rpc_password ).get_digest_as_string( );
+               }
 
                scoped_clear_key clear_password( g_rpc_password );
 
