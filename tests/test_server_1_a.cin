@@ -69,6 +69,8 @@ PWD=abc
 PWD=abc
 #%~PWD%XXX
 #%PWD%XXX
+TEST=*
+#$TEST
 TEST=@abc
 #$TEST
 TEST=@abc-1

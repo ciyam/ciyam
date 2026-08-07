@@ -227,6 +227,7 @@ PWD is: abc
 PWD now: ***
 abcXXX
 ***XXX
+*
 @abc
 -1
 @abc-1
