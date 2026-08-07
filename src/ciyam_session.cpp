@@ -85,6 +85,8 @@ namespace
 
 mutex g_mutex;
 
+set< int64_t > g_unix_used;
+
 #include "ciyam_constants.h"
 
 #include "ciyam_session.cmh"
@@ -119,6 +121,8 @@ const size_t c_var_max_check_retries = 100;
 
 const size_t c_max_key_append_chars = 7;
 
+const int64_t c_max_rpc_seconds_difference = 60;
+
 constexpr const char* c_str_prefix = "c_str_";
 
 constexpr const char* c_user_suffix = "_user";
@@ -131,6 +135,8 @@ constexpr const char* c_sav_extension = ".sav";
 constexpr const char* c_meta_module_id = "100";
 
 constexpr const char* c_passtotp_prefix = "passtotp.";
+
+constexpr const char* c_rpc_password_hash_tmp_filename = "/tmp/ciyam/.rpc_password_hash";
 
 constexpr const char* c_unexpected_unknown_exception = "unexpected unknown exception caught";
 
@@ -1830,7 +1836,24 @@ class socket_command_handler : public command_handler
 
    void check_lock_password( const string& password )
    {
-      if( !lock_password_hash.empty( ) )
+      bool was_tmp_password_hash = false;
+
+      string rpc_lock_password_hash( lock_password_hash );
+
+      // NOTE: For testing purposes only (hence the check
+      // for being a development environment) an RPC lock
+      // can be stored in "/tmp/ciyam/.rpc_password_hash"
+      // (noting it will then be immediately removed).
+      if( file_exists( c_rpc_password_hash_tmp_filename )
+       && has_system_variable( e_special_var_system_is_for_devt ) )
+      {
+         rpc_lock_password_hash = buffer_file( c_rpc_password_hash_tmp_filename );
+
+         was_tmp_password_hash = true;
+         file_remove( c_rpc_password_hash_tmp_filename );
+      }
+
+      if( !rpc_lock_password_hash.empty( ) )
       {
          bool found = false;
 
@@ -1862,7 +1885,7 @@ class socket_command_handler : public command_handler
          // will restrict commands to just "run_script" and
          // set the session variable "@rpc_script_group" to
          // the value "<name>" along with "@<name>_user" to
-         // the value "<user>".
+         // the value "<user>" (if applicable).
          if( pos != string::npos )
          {
             string::size_type npos = check_password.find( '-' );
@@ -1883,8 +1906,46 @@ class socket_command_handler : public command_handler
             check_password.erase( 0, pos + 1 );
          }
 
-         string password_hash(
-          sha256( check_password ).get_digest_as_string( ) );
+         int64_t unix_tm_val = 0;
+
+         string password_hash;
+         string password_salt;
+
+         // NOTE: RPC password value can be optionally be
+         // provided as a "salt" and "password hash" with
+         // the following format:
+         //
+         // <unix_tm_val>\v<password_hash>
+         //
+         // The time value must be within a limited range
+         // of the current unix time and the hash must be
+         // SHA256( unix_time + password ) where the unix
+         // time is in text form.
+         pos = check_password.find( '\v' );
+
+         if( pos == string::npos )
+            password_hash = sha256( check_password ).get_digest_as_string( );
+         else
+         {
+            password_hash = check_password.substr( pos + 1 );
+
+            unix_tm_val = from_string< int64_t >( check_password.substr( 0, pos ) );
+
+            int64_t difference = ( unix_time( ) - unix_tm_val );
+
+            if( difference < 0 )
+               difference *= -1;
+
+            // NOTE: If the time difference is greater than the
+            // maxiumum allowed then set it to zero (which will
+            // cause a failure regardless of whether or not the
+            // hash might have been correct).
+            if( g_unix_used.count( unix_tm_val )
+             || ( difference > c_max_rpc_seconds_difference ) )
+               unix_tm_val = 0;
+            else
+               password_salt = to_string( unix_tm_val );
+         }
 
          if( !script_pwd_hash_vars.empty( ) )
          {
@@ -1903,12 +1964,15 @@ class socket_command_handler : public command_handler
                   string next_grp_name( next_pwd_line.substr( 0, pos ) );
                   string next_pwd_hash( next_pwd_line.substr( pos + 1 ) );
 
+                  if( unix_tm_val )
+                     next_pwd_hash = sha256( password_salt
+                      + next_pwd_hash ).get_digest_as_string( );
+
                   if( next_pwd_hash == password_hash )
                   {
                      found = true;
 
-                     string group( next_grp_name.substr(
-                      rpc_group_name.length( ) + 1 ) );
+                     string group( next_grp_name.substr( rpc_group_name.length( ) + 1 ) );
 
                      string::size_type npos = group.find( '-' );
 
@@ -1917,7 +1981,8 @@ class socket_command_handler : public command_handler
 
                      set_session_variable( rpc_group_name, group );
 
-                     set_session_variable( "@" + group + c_user_suffix, script_user );
+                     if( !script_user.empty( ) )
+                        set_session_variable( "@" + group + c_user_suffix, script_user );
 
                      set_restricted_commands(
                       uuid( ).as_string( ), c_cmd_ciyam_session_system_run_script, false );
@@ -1928,11 +1993,26 @@ class socket_command_handler : public command_handler
             }
          }
 
-         if( !found && ( password_hash != lock_password_hash ) )
+         string hash_to_check( rpc_lock_password_hash );
+
+         if( !found && unix_tm_val )
+            hash_to_check = sha256( password_salt
+             + rpc_lock_password_hash ).get_digest_as_string( );
+
+         if( !found && ( password_hash != hash_to_check ) )
          {
-            msleep( c_rpc_retry_unlock_timeout );
+            if( !was_tmp_password_hash )
+               msleep( c_rpc_retry_unlock_timeout );
 
             throw runtime_error( GS( c_str_incorrect_password ) );
+         }
+
+         if( unix_tm_val )
+         {
+            g_unix_used.insert( unix_tm_val );
+
+            if( g_unix_used.size( ) > ( c_max_rpc_seconds_difference * 2 ) )
+               g_unix_used.erase( *g_unix_used.begin( ) );
          }
       }
    }
