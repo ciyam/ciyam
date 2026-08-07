@@ -1,3 +1,19 @@
+Check usage of salted RPC password hash value.
+@system_is_for_devt 1
+Check repeated usage of salted RPC password hash value fails.
+Error: Incorrect or invalid password.
+Check usage of salted RPC password hash value for next second works.
+@system_is_for_devt 1
+Check usage of salted RPC password hash value for > one minute fails.
+Error: Incorrect or invalid password.
+Check usage of salted RPC password hash value prior ten seconds works.
+@system_is_for_devt 1
+Check repeated usage of salted RPC password hash value for prior ten seconds fails.
+Error: Incorrect or invalid password.
+Check usage of salted RPC password hash value for next prior second works.
+@system_is_for_devt 1
+Check usage of salted RPC password hash value for original time stamp used still fails.
+Error: Incorrect or invalid password.
 ::1
 0.0.0
 127.0.0.1{"ip_addr":"::1"}{"version":"0.0.0"}{"ip_addr":"127.0.0.1"}0.0.0
