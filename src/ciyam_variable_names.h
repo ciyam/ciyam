@@ -231,6 +231,7 @@ enum special_var
    e_special_var_skip_persistence,
    e_special_var_skip_submit_file,
    e_special_var_ssl_cert_subject,
+   e_special_var_storage_var_name,
    e_special_var_style_full_blown,
    e_special_var_trigger_variable,
    e_special_var_autoscript_reload,
