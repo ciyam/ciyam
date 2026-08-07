@@ -2339,7 +2339,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             // variables can be viewed (as long as wildcards are not used) so
             // that the "unlock_identity" script can be supported and "@web."
             // prefixed system variables can be set so that "web_session.cin"
-            // will function even when locked.
+            // will function even when locked as well as the session variable
+            // name "@storage_var_name".
             if( parameters.size( ) > 2 )
             {
                string args_file_name( get_special_var_name( e_special_var_args_file ) );
@@ -2372,10 +2373,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      okay = false;
                   else
                   {
+                     string name_or_expr( get_parm_val( parameters,
+                      c_cmd_ciyam_session_session_variable_name_or_expr ) );
+
+                     string storage_var_name( get_special_var_name( e_special_var_storage_var_name ) );
+
                      if( !has_parm_val( parameters, c_cmd_ciyam_session_session_variable_name_or_expr ) )
                         okay = false;
-                     else if( args_file_name
-                      != get_parm_val( parameters, c_cmd_ciyam_session_session_variable_name_or_expr ) )
+                     else if( ( name_or_expr != args_file_name ) && ( name_or_expr != storage_var_name ) )
                         okay = false;
                   }
                }
