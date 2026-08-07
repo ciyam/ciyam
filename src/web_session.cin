@@ -34,6 +34,13 @@ OUTPUT_FILE=$CIYAM_TMP_DIR/web.$TOKEN.$DEVICE
 ;
 ~rm -f $OUTPUT_FILE
 ;
+LOCKED=
+;
+.system_variable @sid_locked
+@ifdef $OUTPUT
+LOCKED=!
+@endif
+;
 IRC_ROOM=$ENTRANCE_ROOM
 ;
 IRC_USERS=
@@ -86,9 +93,9 @@ session_variable @irc_start_points $ALL_START_POINTS
 ADMIN_TOKEN=@file:.web_access_admin
 ;
 @ifeq "$TOKEN" "$ADMIN_TOKEN"
-.system_variable @web.$TOKEN.$DEVICE.message "[admin]$IRC_USERS"
+.system_variable @web.$TOKEN.$DEVICE.message "[admin]$LOCKED$IRC_USERS"
 @else
-.system_variable @web.$TOKEN.$DEVICE.message "[standard]$IRC_USERS"
+.system_variable @web.$TOKEN.$DEVICE.message "[standard]$LOCKED$IRC_USERS"
 @endif
 ;
 .session_variable @storage_var_name @web.$TOKEN.$DEVICE.storage
