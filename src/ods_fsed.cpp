@@ -298,7 +298,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       else if( command == c_cmd_ods_fsed_files )
       {
          bool brief( has_parm_val( parameters, c_cmd_ods_fsed_files_brief ) );
-         bool full_blown( has_parm_val( parameters, c_cmd_ods_fsed_files_full_blown ) );
+         bool full_paths( has_parm_val( parameters, c_cmd_ods_fsed_files_full_paths ) );
          bool unredacted( has_parm_val( parameters, c_cmd_ods_fsed_files_unredacted ) );
          string start( get_parm_val( parameters, c_cmd_ods_fsed_files_start ) );
          string expr( get_parm_val( parameters, c_cmd_ods_fsed_files_expr ) );
@@ -307,8 +307,8 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 
          if( brief )
             style = ods_file_system::e_list_style_brief;
-         else if( full_blown )
-            style = ods_file_system::e_list_style_full_blown;
+         else if( full_paths )
+            style = ods_file_system::e_list_style_full_paths;
 
          unique_ptr< temporary_include_hidden > up_tmp_include_hidden;
 
@@ -319,7 +319,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_ods_fsed_folders )
       {
-         bool full_blown( has_parm_val( parameters, c_cmd_ods_fsed_folders_full_blown ) );
+         bool full_paths( has_parm_val( parameters, c_cmd_ods_fsed_folders_full_paths ) );
          bool unredacted( has_parm_val( parameters, c_cmd_ods_fsed_folders_unredacted ) );
          string expr( get_parm_val( parameters, c_cmd_ods_fsed_folders_expr ) );
 
@@ -328,12 +328,12 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          if( unredacted )
             up_tmp_include_hidden.reset( new temporary_include_hidden( *up_ofs ) );
 
-         up_ofs->list_folders( expr, *ods_fsed_handler.get_std_out( ), full_blown );
+         up_ofs->list_folders( expr, *ods_fsed_handler.get_std_out( ), full_paths );
       }
       else if( command == c_cmd_ods_fsed_objects )
       {
          bool brief( has_parm_val( parameters, c_cmd_ods_fsed_objects_brief ) );
-         bool full_blown( has_parm_val( parameters, c_cmd_ods_fsed_objects_full_blown ) );
+         bool full_paths( has_parm_val( parameters, c_cmd_ods_fsed_objects_full_paths ) );
          bool unredacted( has_parm_val( parameters, c_cmd_ods_fsed_objects_unredacted ) );
          string start( get_parm_val( parameters, c_cmd_ods_fsed_objects_start ) );
          string expr( get_parm_val( parameters, c_cmd_ods_fsed_objects_expr ) );
@@ -342,8 +342,8 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 
          if( brief )
             style = ods_file_system::e_list_style_brief;
-         else if( full_blown )
-            style = ods_file_system::e_list_style_full_blown;
+         else if( full_paths )
+            style = ods_file_system::e_list_style_full_paths;
 
          unique_ptr< temporary_include_hidden > up_tmp_include_hidden;
 
@@ -355,7 +355,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       else if( command == c_cmd_ods_fsed_branch )
       {
          bool brief( has_parm_val( parameters, c_cmd_ods_fsed_branch_brief ) );
-         bool full_blown( has_parm_val( parameters, c_cmd_ods_fsed_branch_full_blown ) );
+         bool full_paths( has_parm_val( parameters, c_cmd_ods_fsed_branch_full_paths ) );
          bool unredacted( has_parm_val( parameters, c_cmd_ods_fsed_branch_unredacted ) );
          string expr( get_parm_val( parameters, c_cmd_ods_fsed_branch_expr ) );
 
@@ -363,8 +363,8 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 
          if( brief )
             style = ods_file_system::e_branch_style_brief;
-         else if( full_blown )
-            style = ods_file_system::e_branch_style_full_blown;
+         else if( full_paths )
+            style = ods_file_system::e_branch_style_full_paths;
 
          unique_ptr< temporary_include_hidden > up_tmp_include_hidden;
 
