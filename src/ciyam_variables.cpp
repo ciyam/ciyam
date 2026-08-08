@@ -277,7 +277,7 @@ constexpr const char* c_special_variable_skip_persistence = "@skip_persistence";
 constexpr const char* c_special_variable_skip_submit_file = "@skip_submit_file";
 constexpr const char* c_special_variable_ssl_cert_subject = "@ssl_cert_subject";
 constexpr const char* c_special_variable_storage_var_name = "@storage_var_name";
-constexpr const char* c_special_variable_style_full_blown = "@style_full_blown";
+constexpr const char* c_special_variable_style_full_paths = "@style_full_paths";
 constexpr const char* c_special_variable_trigger_variable = "@trigger_variable";
 constexpr const char* c_special_variable_autoscript_reload = "@autoscript_reload";
 constexpr const char* c_special_variable_blockchain_height = "@blockchain_height";
@@ -654,7 +654,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_skip_submit_file );
       g_special_variable_names.push_back( c_special_variable_ssl_cert_subject );
       g_special_variable_names.push_back( c_special_variable_storage_var_name );
-      g_special_variable_names.push_back( c_special_variable_style_full_blown );
+      g_special_variable_names.push_back( c_special_variable_style_full_paths );
       g_special_variable_names.push_back( c_special_variable_trigger_variable );
       g_special_variable_names.push_back( c_special_variable_autoscript_reload );
       g_special_variable_names.push_back( c_special_variable_blockchain_height );
