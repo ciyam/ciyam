@@ -50,7 +50,7 @@ class ods_file_system
    {
       e_list_style_brief,
       e_list_style_default,
-      e_list_style_full_blown
+      e_list_style_full_paths
    };
 
    inline void list_files( std::ostream& os, list_style style = e_list_style_default )
@@ -134,7 +134,7 @@ class ods_file_system
    {
       e_branch_style_brief,
       e_branch_style_default,
-      e_branch_style_full_blown
+      e_branch_style_full_paths
    };
 
    inline void branch_files( std::ostream& os, branch_style style = e_branch_style_default )
@@ -319,7 +319,7 @@ class ods_file_system
    void expand_entity_expression( const std::string& expr, std::string& entity_expr, const char* p_suffix = 0 );
 
    void get_child_folders( const std::string& expr,
-    bool full_blown, std::deque< std::string >& folders, bool append_separator = true );
+    bool full_paths, std::deque< std::string >& folders, bool append_separator = true );
 
    void list_files_or_objects( const std::string& expr,
     std::ostream& os, const std::string& start_from,

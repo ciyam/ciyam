@@ -957,7 +957,7 @@ void ods_file_system::branch_folders( const string& expr, vector< string >& fold
 void ods_file_system::branch_folders( const string& expr, ostream& os, branch_style style )
 {
    bool brief = ( style == e_branch_style_brief );
-   bool full_blown = ( style == e_branch_style_full_blown );
+   bool full_paths = ( style == e_branch_style_full_paths );
 
    string entity_expr( current_folder );
 
@@ -1005,7 +1005,7 @@ void ods_file_system::branch_folders( const string& expr, ostream& os, branch_st
    }
 
    perform_match( os, entity_expr, "", 0, &search_replaces,
-    ( full_blown ? 0 : prefix_1.c_str( ) ), ( full_blown ? 0 : prefix_2.c_str( ) ), '\0', e_file_size_output_type_none, "|/" );
+    ( full_paths ? 0 : prefix_1.c_str( ) ), ( full_paths ? 0 : prefix_2.c_str( ) ), '\0', e_file_size_output_type_none, "|/" );
 }
 
 void ods_file_system::add_file( const string& name,
@@ -3465,7 +3465,7 @@ void ods_file_system::expand_entity_expression(
 }
 
 void ods_file_system::get_child_folders(
- const string& expr, bool full_blown, deque< string >& folders, bool append_separator )
+ const string& expr, bool full_paths, deque< string >& folders, bool append_separator )
 {
    bool has_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
@@ -3494,14 +3494,14 @@ void ods_file_system::get_child_folders(
 
    ostringstream osstr;
 
-   perform_match( osstr, folder_expr, "", 0, &search_replaces, 0, 0, ( full_blown ? '\0' : c_folder ) );
+   perform_match( osstr, folder_expr, "", 0, &search_replaces, 0, 0, ( full_paths ? '\0' : c_folder ) );
 
    split( osstr.str( ), folders, '\n' );
 
    if( !folders.empty( ) && folders.back( ).empty( ) )
       folders.pop_back( );
 
-   if( full_blown || append_separator )
+   if( full_paths || append_separator )
    {
       for( size_t i = 0; i < folders.size( ); i++ )
       {
@@ -3510,7 +3510,7 @@ void ods_file_system::get_child_folders(
          if( append_separator )
             extra += c_folder_separator;
 
-         if( full_blown )
+         if( full_paths )
          {
             string perms;
 
@@ -3541,7 +3541,7 @@ void ods_file_system::list_files_or_objects(
  list_style style, bool inclusive, size_t limit, bool in_reverse_order, bool branch )
 {
    bool brief = ( style == e_list_style_brief );
-   bool full_blown = ( style == e_list_style_full_blown );
+   bool full_paths = ( style == e_list_style_full_paths );
 
    string entity_expr( current_folder );
 
@@ -3573,7 +3573,7 @@ void ods_file_system::list_files_or_objects(
       if( branch || objects )
       {
          if( !branch )
-            get_child_folders( expr, full_blown, extras );
+            get_child_folders( expr, full_paths, extras );
          else
          {
             string suffix( expr );
@@ -3602,7 +3602,7 @@ void ods_file_system::list_files_or_objects(
 
                // NOTE: If the full path will not be output
                // store the branch prefix for later removal.
-               if( !full_blown )
+               if( !full_paths )
                {
                   string branch_prefix( entity_expr );
 
@@ -3655,7 +3655,7 @@ void ods_file_system::list_files_or_objects(
 
                extra += child_folder + c_folder;
 
-               if( full_blown && !extra.empty( )
+               if( full_paths && !extra.empty( )
                 && ( extra[ 0 ] != c_folder ) )
                   extra = c_folder + extra;
 
@@ -3697,8 +3697,8 @@ void ods_file_system::list_files_or_objects(
       search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
 
       perform_match( os, entity_expr, "", 0, &search_replaces, 0, 0,
-       ( full_blown ? '\0' : c_folder ), ( brief ? e_file_size_output_type_none
-       : ( full_blown ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ) ),
+       ( full_paths ? '\0' : c_folder ), ( brief ? e_file_size_output_type_none
+       : ( full_paths ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ) ),
        0, &extras, &range, inclusive, limit, in_reverse_order );
    }
 }
