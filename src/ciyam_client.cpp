@@ -138,6 +138,8 @@ constexpr const char* c_error_output_prefix = "Error: ";
 
 size_t c_pwd_buffer_reserve = 256;
 
+size_t c_salt_and_pwd_hash_size = 75;
+
 // NOTE: Slow commands should use progress but is using
 // a large timeout value in case the application server
 // is simply too busy to respond in a timely manner (is
@@ -2081,7 +2083,16 @@ int main( int argc, char* argv[ ] )
                // a scanned QR code).
                if( ( g_rpc_password.length( ) > 1 )
                 && ( g_rpc_password[ 0 ] == '@' ) && file_exists( g_rpc_password.substr( 1 ) ) )
-                  g_rpc_password = buffer_file( g_rpc_password.substr( 1 ) );
+               {
+                  string salt_and_pwd_hash_filename( g_rpc_password.substr( 1 ) );
+
+                  if( file_size( salt_and_pwd_hash_filename ) > c_salt_and_pwd_hash_size )
+                     throw runtime_error(
+                      "unexpected file '" + salt_and_pwd_hash_filename
+                      + "' (for RPC unlock) size > " + to_string( c_salt_and_pwd_hash_size ) );
+
+                  g_rpc_password = buffer_file( salt_and_pwd_hash_filename );
+               }
 
                bool use_salted_and_hashed = false;
 
