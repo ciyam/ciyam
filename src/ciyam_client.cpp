@@ -2079,7 +2079,7 @@ int main( int argc, char* argv[ ] )
                   throw runtime_error( "RPC access unlock requires a TLS connection" );
 #endif
                // NOTE: Allows "-rpc_unlock=@<file>" in order to support providing the salt and
-               // hashed password value (with '\v' separator) from an external device (e.g. via
+               // hashed password value (using '-' separator) from an external device (e.g. via
                // a scanned QR code).
                if( ( g_rpc_password.length( ) > 1 )
                 && ( g_rpc_password[ 0 ] == '@' ) && file_exists( g_rpc_password.substr( 1 ) ) )
@@ -2107,7 +2107,7 @@ int main( int argc, char* argv[ ] )
                {
                   string salt( to_string( time( 0 ) ) );
 
-                  string prefix( salt + '\v' );
+                  string prefix( salt + '-' );
 
                   // NOTE: First hash the password (which is stored on the server)
                   // and then prefix the hashed password with the "unix time" salt
