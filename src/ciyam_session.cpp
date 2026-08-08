@@ -1915,15 +1915,29 @@ class socket_command_handler : public command_handler
          // provided as a "salt" and "password hash" with
          // the following format:
          //
-         // <unix_tm_val>\v<password_hash>
+         // <unix_tm_val>-<password_hash>
          //
          // The time value must be within a limited range
          // of the current unix time and the hash must be
          // SHA256( unix_time + password ) where the unix
-         // time is in text form.
-         pos = check_password.find( '\v' );
+         // time is in the form of ten decimal digits.
+         pos = check_password.find( '-' );
 
-         if( pos == string::npos )
+         bool is_salted_hashed_password = false;
+
+         // NOTE: To avoid mistaking a password with the special
+         // salted hashed password format first is verifying the
+         // '-' position and string size and then uses a "regex"
+         // to be sure it is a match.
+         if( ( pos == 10 ) && ( check_password.size( ) == 75 ) )
+         {
+            regex expr( "[0-9]{10}-[A-Fa-f0-9]{64}", true, true );
+
+            if( expr.search( check_password ) == 0 )
+               is_salted_hashed_password = true;
+         }
+
+         if( !is_salted_hashed_password )
             password_hash = sha256( check_password ).get_digest_as_string( );
          else
          {
