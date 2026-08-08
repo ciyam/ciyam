@@ -429,7 +429,7 @@ With the following assuming that ***domain_name*** is "example.com" then
 
 sudo hostnamectl set-hostname ***domain_name*** --static
 
-Installing Syncthing User Service
+Installing Syncthing user service
 ---------------------------------
 
 sudo apt-get install syncthing
@@ -490,6 +490,63 @@ sudo chmod 700 /etc/letsencrypt/renewal-hooks/deploy/ciyam-certbot-deploy.sh
 NOTE: If wanting to test this deploy hook execute the following:
 
 sudo certbot renew --dry-run --run-deploy-hooks
+
+Installing and configuring I2PD service for remote access to CIYAM RPC Core
+---------------------------------------------------------------------------
+
+sudo add-apt-repository ppa:purplei2p/i2pd
+sudo apt update
+sudo apt install i2pd
+
+sudo vi /etc/i2pd/tunnels.conf
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+[CIYAM Server]
+type = server
+host = 127.0.0.1
+port = 11011
+keys = ciyam-server.dat
+...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+head -c 32 /dev/random | sha256sum | cut -c -32
+***rpc_password***
+
+cd ~/ciyam/src
+./password
+(at the prompt copy and paste ***rpc_password*** then hit Enter)
+***encrypted_rpc_password***
+
+vi ~/ciyam/src/ciyam_server.sio
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+# <rpc_password>#c0973cd7a39b8150bda74c09b270faa6:SUW+A1PnYxxX0D16b2C6uA==
+ <rpc_password>***encrypted_rpc_password***
+...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo systemctl restart i2pd
+sudo systemctl restart ciyam
+
+curl -s "http://127.0.0.1:7070/?page=i2p_tunnels" | grep -o "[a-z0-9]*.b32.i2p:11011" | cut -d: -f1
+***i2p_destination***
+
+To access (assuming i2pd) these changes are for a remote machine (using port 6666):
+
+sudo vi /etc/i2pd/tunnels.conf
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+[CIYAM Client]
+type = client
+address = 127.0.0.1
+port = 6666
+destination = ***i2p_destination***
+destinationport = 11011
+keys = ciyam-client
+...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo systemctl restart i2pd
+
+./ciyam_client -tls -rpc_unlock=***rpc_password*** localhost:6666
 
 Installing and configuring Matrix-Synapse with PostgreSQL
 ---------------------------------------------------------
