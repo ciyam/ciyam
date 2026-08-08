@@ -9,7 +9,7 @@ pass_hash=$(echo -n "test" | sha256sum | head -c 64)
 echo -n $pass_hash >/tmp/ciyam/.rpc_password_hash
 
 salted_hash=$(echo -n "$secs$pass_hash" | sha256sum | head -c 64)
-printf "$secs\v$salted_hash" >/tmp/ciyam/rpc_password.tmp
+printf "$secs-$salted_hash" >/tmp/ciyam/rpc_password.tmp
 
 echo "Check usage of salted RPC password hash value."
 ./ciyam_client -tls -quiet -no_stderr -rpc_unlock=@/tmp/ciyam/rpc_password.tmp "-exec=variable *devt*"
@@ -20,7 +20,7 @@ echo -n $pass_hash >/tmp/ciyam/.rpc_password_hash
 
 secs=$((secs + 1))
 salted_hash=$(echo -n "$secs$pass_hash" | sha256sum | head -c 64)
-printf "$secs\v$salted_hash" >/tmp/ciyam/rpc_password.tmp
+printf "$secs-$salted_hash" >/tmp/ciyam/rpc_password.tmp
 
 echo "Check usage of salted RPC password hash value for next second works."
 echo -n $pass_hash >/tmp/ciyam/.rpc_password_hash
@@ -28,7 +28,7 @@ echo -n $pass_hash >/tmp/ciyam/.rpc_password_hash
 
 secs=$((secs + 64))
 salted_hash=$(echo -n "$secs$pass_hash" | sha256sum | head -c 64)
-printf "$secs\v$salted_hash" >/tmp/ciyam/rpc_password.tmp
+printf "$secs-$salted_hash" >/tmp/ciyam/rpc_password.tmp
 
 echo "Check usage of salted RPC password hash value for > one minute fails."
 echo -n $pass_hash >/tmp/ciyam/.rpc_password_hash
@@ -36,7 +36,7 @@ echo -n $pass_hash >/tmp/ciyam/.rpc_password_hash
 
 secs=$((secs - 75))
 salted_hash=$(echo -n "$secs$pass_hash" | sha256sum | head -c 64)
-printf "$secs\v$salted_hash" >/tmp/ciyam/rpc_password.tmp
+printf "$secs-$salted_hash" >/tmp/ciyam/rpc_password.tmp
 
 echo "Check usage of salted RPC password hash value prior ten seconds works."
 echo -n $pass_hash >/tmp/ciyam/.rpc_password_hash
@@ -48,7 +48,7 @@ echo -n $pass_hash >/tmp/ciyam/.rpc_password_hash
 
 secs=$((secs + 1))
 salted_hash=$(echo -n "$secs$pass_hash" | sha256sum | head -c 64)
-printf "$secs\v$salted_hash" >/tmp/ciyam/rpc_password.tmp
+printf "$secs-$salted_hash" >/tmp/ciyam/rpc_password.tmp
 
 echo "Check usage of salted RPC password hash value for next prior second works."
 echo -n $pass_hash >/tmp/ciyam/.rpc_password_hash
@@ -56,7 +56,7 @@ echo -n $pass_hash >/tmp/ciyam/.rpc_password_hash
 
 secs=$((secs + 9))
 salted_hash=$(echo -n "$secs$pass_hash" | sha256sum | head -c 64)
-printf "$secs\v$salted_hash" >/tmp/ciyam/rpc_password.tmp
+printf "$secs-$salted_hash" >/tmp/ciyam/rpc_password.tmp
 
 echo "Check usage of salted RPC password hash value for original time stamp used still fails."
 echo -n $pass_hash >/tmp/ciyam/.rpc_password_hash
