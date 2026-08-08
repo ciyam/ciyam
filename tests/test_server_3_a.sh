@@ -2,6 +2,8 @@
 
 #Test RPC password.
 secs=$EPOCHSECONDS
+secs=$((secs - 2))
+
 pass_hash=$(echo -n "test" | sha256sum | head -c 64)
 
 echo -n $pass_hash >/tmp/ciyam/.rpc_password_hash
@@ -59,6 +61,10 @@ printf "$secs\v$salted_hash" >/tmp/ciyam/rpc_password.tmp
 echo "Check usage of salted RPC password hash value for original time stamp used still fails."
 echo -n $pass_hash >/tmp/ciyam/.rpc_password_hash
 ./ciyam_client -tls -quiet -no_stderr -rpc_unlock=@/tmp/ciyam/rpc_password.tmp "-exec=variable *devt*"
+
+echo "Use the 'password' bash script to generate the password hash and salted password hash file."
+./password -- "test" >/tmp/ciyam/.rpc_password_hash
+./ciyam_client -tls -quiet -no_stderr -rpc_unlock=@/tmp/ciyam/pwd.tmp "-exec=variable *devt*"
 
 # Simple API tests.
 curl -s "localhost:13031/ip-addr"

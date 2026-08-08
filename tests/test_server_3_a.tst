@@ -14,6 +14,8 @@ Check usage of salted RPC password hash value for next prior second works.
 @system_is_for_devt 1
 Check usage of salted RPC password hash value for original time stamp used still fails.
 Error: Incorrect or invalid password.
+Use the 'password' bash script to generate the password hash and salted password hash file.
+@system_is_for_devt 1
 ::1
 0.0.0
 127.0.0.1{"ip_addr":"::1"}{"version":"0.0.0"}{"ip_addr":"127.0.0.1"}0.0.0
