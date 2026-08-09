@@ -150,6 +150,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
    const javascripts_employ_help = "employ javacript";
    const javascripts_reload_help = "reload javacript";
+   const javascripts_result_help = "result javacript";
    const javascripts_unload_help = "unload javacript";
 
    const stylesheets_reload_help = "reload stylesheet";
@@ -172,6 +173,7 @@ http://www.opensource.org/licenses/mit-license.php.
    const javascripts_delete_cmd = "javascripts|delete";
    const javascripts_employ_cmd = "javascripts|employ";
    const javascripts_reload_cmd = "javascripts|reload";
+   const javascripts_result_cmd = "javascripts|result";
    const javascripts_retain_cmd = "javascripts|retain";
    const javascripts_review_cmd = "javascripts|review";
    const javascripts_unload_cmd = "javascripts|unload";
@@ -782,6 +784,11 @@ http://www.opensource.org/licenses/mit-license.php.
          var first = parts[ 0 ];
          var second = parts[ 1 ];
 
+         if( ( second == "script" ) || ( second == "scripts" ) )
+            second = "javascripts";
+         else if( ( second == "style" ) || ( second == "styles" ) )
+            second = "stylesheets";
+
          var suffix = "";
 
          var pos = first.indexOf( '_' );
@@ -819,6 +826,8 @@ http://www.opensource.org/licenses/mit-license.php.
              || ( first == "remove" )
              || ( first == "destroy" ) )
                suffix = "|delete";
+            else if( first == "result" )
+               suffix = "|result";
             else if( first == "unload" )
                suffix = "|unload";
          }
@@ -917,6 +926,16 @@ http://www.opensource.org/licenses/mit-license.php.
          if( script != "" )
             load_js( ciyam_script_prefix + script );
       }
+      else if( request.startsWith( javascripts_result_cmd ) )
+      {
+         var script = request.substr( javascripts_reload_cmd.length + 1 );
+
+         if( ( script == "" ) || ( script == own_name ) )
+            script = access;
+
+         if( window[ ciyam_script_prefix + script + "_result" ] != null )
+            document.getElementById( "user_arbitrary" ).value = window[ ciyam_script_prefix + script + "_result" ];
+      }
       else if( request == javascripts_unload_cmd )
          unload_js( ciyam_script_prefix + access );
       else if( request.startsWith( javascripts_unload_cmd ) )
@@ -967,19 +986,15 @@ http://www.opensource.org/licenses/mit-license.php.
 
       request = reformatted( request );
 
-      if( request.startsWith( creds_retain_cmd ) )
-         do_local_request( request );
-      else if( request.startsWith( creds_remove_cmd ) )
-         do_local_request( request );
-      else if( request.startsWith( javascripts_employ_cmd ) )
-         do_local_request( request );
-      else if( request.startsWith( javascripts_reload_cmd ) )
-         do_local_request( request );
-      else if( request.startsWith( javascripts_unload_cmd ) )
-         do_local_request( request );
-      else if( request.startsWith( stylesheets_reload_cmd ) )
-         do_local_request( request );
-      else if( request.startsWith( stylesheets_unload_cmd ) )
+      if( request.startsWith( creds_retain_cmd )
+       || request.startsWith( creds_remove_cmd )
+       || request.startsWith( javascripts_employ_cmd )
+       || request.startsWith( javascripts_employ_cmd )
+       || request.startsWith( javascripts_reload_cmd )
+       || request.startsWith( javascripts_result_cmd )
+       || request.startsWith( javascripts_unload_cmd )
+       || request.startsWith( stylesheets_reload_cmd )
+       || request.startsWith( stylesheets_unload_cmd ) )
          do_local_request( request );
       else
       {
@@ -1573,6 +1588,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
                lines.push( javascripts_employ_help + " <name> [<argument>]" );
                lines.push( javascripts_reload_help + " [<name>]" );
+               lines.push( javascripts_result_help + " [<name>]" );
                lines.push( javascripts_unload_help + " [<name>]" );
 
                lines.push( stylesheets_reload_help + " [<name>]" );
