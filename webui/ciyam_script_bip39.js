@@ -22,7 +22,7 @@ async function ciyam_script_bip39_execute( callback, input )
 
    ciyam_script_bip39_result = input;
 
-   if( input == "" )
+   if( ( input == null ) || ( input == "" ) )
       ciyam_script_bip39_result = BIP39.generateMnemonic( );
    else
    {

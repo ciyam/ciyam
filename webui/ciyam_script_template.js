@@ -18,7 +18,7 @@ async function ciyam_script_template_at_load( callback )
 
       extra = extra.substr( 1, extra.length - 2 );
 
-      extra = extra.replace( "loaded", "testing" );
+      extra = extra.replace( "loaded", "test" );
 
       output += "\nemploy javascript " + extra;
    }
@@ -29,6 +29,9 @@ async function ciyam_script_template_at_load( callback )
 async function ciyam_script_template_execute( callback, input )
 {
    console.log( "ciyam_script_template_execute" );
+
+   if( input == null )
+      input = "";
 
    ciyam_script_template_result = input;
 
