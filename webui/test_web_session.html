@@ -909,6 +909,15 @@ http://www.opensource.org/licenses/mit-license.php.
                         script_arg = script_arg.substr( 0, pos );
                   }
                }
+               else if( script_arg.indexOf( "@" ) == 0 )
+               {
+                  var suffix = script_arg.substring( 1 );
+
+                  if( window[ ciyam_script_prefix + suffix ] == null )
+                     script_arg =  "";
+                  else
+                     script_arg = window[ ciyam_script_prefix + suffix ];
+               }
 
                eval( ciyam_script_prefix + script + "_execute( script_executed, \"" + script_arg + "\" )" );
             }
