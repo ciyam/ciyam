@@ -121,7 +121,11 @@ const size_t c_var_max_check_retries = 100;
 
 const size_t c_max_key_append_chars = 7;
 
+const size_t c_unix_now_secs_length = 10;
+const size_t c_salted_hashed_password_length = 75;
+
 const int64_t c_max_rpc_seconds_difference = 60;
+
 
 constexpr const char* c_str_prefix = "c_str_";
 
@@ -206,7 +210,7 @@ inline string convert_local_to_utc( const string& local, const string& tz_name )
    return s;
 }
 
-time_format get_time_format( const string& tm_val )
+inline time_format get_time_format( const string& tm_val )
 {
    time_format tf = e_time_format_hhmmss;
 
@@ -221,6 +225,30 @@ time_format get_time_format( const string& tm_val )
    }
 
    return tf;
+}
+
+inline bool is_unix_and_hash_digest( const string& str, char sep = '-' )
+{
+   bool retval = false;
+
+   if( ( str[ c_unix_now_secs_length ] == sep )
+    && ( str.length( ) == c_salted_hashed_password_length ) )
+   {
+      string unix_secs( str.substr( 0, c_unix_now_secs_length ) );
+      string hash_digest( str.substr( c_unix_now_secs_length + 1 ) );
+
+      string::size_type pos = unix_secs.find_first_not_of( "0123456789" );
+
+      if( ( pos == string::npos ) && ( unix_secs[ 0 ] != '0' ) )
+      {
+         pos = hash_digest.find_first_not_of( "0123456789abcdef" );
+
+         if( pos == string::npos )
+            retval = true;
+      }
+   }
+
+   return retval;
 }
 
 void get_parm_and_value( const string& parm_and_value, string& parm, string& value )
@@ -1925,17 +1953,8 @@ class socket_command_handler : public command_handler
 
          bool is_salted_hashed_password = false;
 
-         // NOTE: To avoid mistaking a password with the special
-         // salted hashed password format first is verifying the
-         // '-' position and string size and then uses a "regex"
-         // to be sure it is a match.
-         if( ( pos == 10 ) && ( check_password.size( ) == 75 ) )
-         {
-            regex expr( "[0-9]{10}-[A-Fa-f0-9]{64}", true, true );
-
-            if( expr.search( check_password ) == 0 )
-               is_salted_hashed_password = true;
-         }
+         if( is_unix_and_hash_digest( check_password ) )
+            is_salted_hashed_password = true;
 
          if( !is_salted_hashed_password )
             password_hash = sha256( check_password ).get_digest_as_string( );
