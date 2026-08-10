@@ -135,7 +135,11 @@ http://www.opensource.org/licenses/mit-license.php.
 
    var include_script_usage_hints = true;
 
+   var var_map = new Map( );
+
    const own_name = "***";
+
+   const var_name = "var";
 
    const echo_name = "echo";
 
@@ -441,6 +445,18 @@ http://www.opensource.org/licenses/mit-license.php.
       }
 
       return false;
+   }
+
+   function replace_vars( input )
+   {
+      var output = input;
+
+      var_map.forEach( function( value, key )
+      {
+         output = output.replace( "{" + key + "}", value );
+      } )
+
+      return output;
    }
 
    function harden_passwd( access, password )
@@ -1019,7 +1035,11 @@ http://www.opensource.org/licenses/mit-license.php.
       var was_exec = false;
 
       if( all_requests == "" )
+      {
          request = document.getElementById( "user_request" ).value;
+
+         request = replace_vars( request );
+      }
       else
       {
          was_exec = true;
@@ -1042,6 +1062,8 @@ http://www.opensource.org/licenses/mit-license.php.
          else
          {
             request = all_requests.substr( 0, pos );
+
+            request = replace_vars( request );
 
             all_requests = all_requests.substring( pos + 1 );
 
@@ -1140,6 +1162,45 @@ http://www.opensource.org/licenses/mit-license.php.
       else if( request == clear_name )
       {
          document.getElementById( "user_arbitrary" ).value = "";
+
+         if( !was_exec )
+         {
+            document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
+            document.getElementById( "user_request" ).value = "";
+         }
+      }
+      else if( request.startsWith( var_name ) )
+      {
+         pos = request.indexOf( " " );
+
+         if( pos > 0 )
+         {
+            var var_info = request.substring( pos + 1 );
+
+            pos = var_info.indexOf( " " );
+
+            if( pos < 0 )
+            {
+               if( var_map.has( var_info ) )
+               {
+                  var existing = document.getElementById( "user_arbitrary" ).value;
+
+                  if( existing != "" )
+                     existing += "\n";
+
+                  output = existing + var_map.get( var_info );
+
+                  document.getElementById( "user_arbitrary" ).value = output;
+               }
+            }
+            else
+            {
+               var key = var_info.substr( 0, pos );
+               var value = var_info.substring( pos + 1 );
+
+               var_map.set( key, value );
+            }
+         }
 
          if( !was_exec )
          {
@@ -1811,6 +1872,8 @@ http://www.opensource.org/licenses/mit-license.php.
             if( document.getElementById( "user_request" ).value == help_name )
             {
                var lines = data.split( "\n" );
+
+               lines.push( var_name + " <name> [<text>]" );
 
                lines.push( echo_name + " [<text>]" );
 
