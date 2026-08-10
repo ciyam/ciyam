@@ -2,6 +2,8 @@ var ciyam_script_harden_result = null;
 
 var ciyam_script_harden_chunk = 0;
 
+var ciyam_script_harden_reset = true;
+
 var ciyam_script_harden_num_repeat = 0;
 var ciyam_script_harden_num_repeats = 0;
 
@@ -104,7 +106,7 @@ async function ciyam_script_harden_at_load( callback )
       output = "(using non-async version)";
 
    if( include_script_usage_hints )
-      output += "\nemploy javascript harden";
+      output += "\nemploy javascript harden <input>";
 
    callback( output );
 }
@@ -138,14 +140,17 @@ async function ciyam_script_harden_execute( callback, input )
 
    if( ( input == null ) || ( input == "" ) )
    {
+      ciyam_script_harden_reset = true;
       ciyam_script_harden_result = "(ready)";
 
       if( include_script_usage_hints )
-         ciyam_script_harden_result += "\nemploy javascript harden <password>";
+         ciyam_script_harden_result += "\nemploy javascript harden <input>";
    }
-   else if( ciyam_script_harden_result.indexOf( "(ready)" ) == 0 )
+   else if( ciyam_script_harden_reset )
    {
       output_result = false;
+
+      ciyam_script_harden_reset = false;
 
       ciyam_script_harden_string_to_hash = input;
 
@@ -161,7 +166,14 @@ async function ciyam_script_harden_execute( callback, input )
    }
    else
    {
-      var pos = input.indexOf( ":" );
+      var pos = input.indexOf( "+" );
+
+      if( pos == 0 )
+         input = input.substring( 1 );
+      else
+         ciyam_script_harden_reset = true;
+
+      pos = input.indexOf( ":" );
 
       if( pos > 0 )
       {
