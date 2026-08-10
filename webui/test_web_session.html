@@ -107,6 +107,8 @@ http://www.opensource.org/licenses/mit-license.php.
 
    var cws_device = "";
 
+   var all_requests = "";
+
    var has_seed = false;
 
    var is_running = false;
@@ -129,8 +131,14 @@ http://www.opensource.org/licenses/mit-license.php.
 
    const own_name = "***";
 
+   const run_name = "run";
+
+   const echo_name = "echo";
+
    const help_name = "help";
    const quit_name = "quit";
+
+   const wait_name = "wait";
 
    const exit_name = "exit";
 
@@ -986,16 +994,92 @@ http://www.opensource.org/licenses/mit-license.php.
       document.getElementById( "user_request" ).value = "";
    }
 
-   function do_fetch( )
+   async function do_fetch( )
    {
-      var request = document.getElementById( "user_request" ).value;
+      var request = "";
+
+      if( all_requests == "" )
+         request = document.getElementById( "user_request" ).value;
+      else
+      {
+         var pos = all_requests.indexOf( "\n" );
+
+         while( pos == 0 )
+         {
+            all_requests = all_requests.substring( 1 );
+
+            pos = all_requests.indexOf( "\n" );
+         }
+
+         if( pos == null )
+         {
+            request = all_requests;
+
+            all_requests = "";
+         }
+         else
+         {
+            request = all_requests.substr( 0, pos );
+
+            all_requests = all_requests.substring( pos + 1 );
+
+            var msecs = 50;
+
+            if( request.indexOf( echo_name ) == 0 )
+            {
+               var output = "";
+
+               pos = request.indexOf( " " );
+
+               if( pos > 0 )
+                  output = request.substring( pos + 1 );
+
+               document.getElementById( "user_arbitrary" ).value = output;
+
+               console.log( "request = '" + request + "'" );
+
+               request = "";
+            }
+            else if( request.indexOf( wait_name ) == 0 )
+            {
+               msecs = 100;
+
+               pos = request.indexOf( " " );
+
+               if( pos > 0 )
+                  msecs = request.substring( pos + 1 );
+
+               console.log( "request = '" + request + "'" );
+
+               request = "";
+            }
+
+            pos = all_requests.indexOf( "\n" );
+
+            while( pos == 0 )
+            {
+               all_requests = all_requests.substring( 1 );
+
+               pos = all_requests.indexOf( "\n" );
+            }
+
+            if( all_requests != "" )
+               window.setTimeout( do_fetch, msecs );
+         }
+      }
 
       if( request != "" )
          console.log( "request = '" + request + "'" );
 
       request = reformatted( request );
 
-      if( request.startsWith( creds_retain_cmd )
+      if( request == run_name )
+      {
+         all_requests = document.getElementById( "user_arbitrary" ).value;
+
+         window.setTimeout( do_fetch, 100 );
+      }
+      else if( request.startsWith( creds_retain_cmd )
        || request.startsWith( creds_remove_cmd )
        || request.startsWith( javascripts_employ_cmd )
        || request.startsWith( javascripts_employ_cmd )
@@ -1005,7 +1089,7 @@ http://www.opensource.org/licenses/mit-license.php.
        || request.startsWith( stylesheets_reload_cmd )
        || request.startsWith( stylesheets_unload_cmd ) )
          do_local_request( request );
-      else
+      else if( ( request != "" ) || ( all_requests == "" ) )
       {
          var url = window.location.protocol + '//' + window.location.host + "/cws"
 
