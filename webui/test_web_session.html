@@ -125,15 +125,18 @@ http://www.opensource.org/licenses/mit-license.php.
 
    var max_load_attempts = 100;
 
+   var wait_bool_repeats = 0;
+
+   var max_wait_bool_repeats = 100;
+
    var load_script_function = "";
 
    var include_script_usage_hints = true;
 
    const own_name = "***";
 
-   const run_name = "run";
-
    const echo_name = "echo";
+   const exec_name = "exec";
 
    const help_name = "help";
    const quit_name = "quit";
@@ -998,10 +1001,14 @@ http://www.opensource.org/licenses/mit-license.php.
    {
       var request = "";
 
+      var was_exec = false;
+
       if( all_requests == "" )
          request = document.getElementById( "user_request" ).value;
       else
       {
+         was_exec = true;
+
          var pos = all_requests.indexOf( "\n" );
 
          while( pos == 0 )
@@ -1034,6 +1041,16 @@ http://www.opensource.org/licenses/mit-license.php.
                if( pos > 0 )
                   output = request.substring( pos + 1 );
 
+               if( ( output != "" ) && ( output.substr( 0, 1 ) == "+" ) )
+               {
+                  var existing = document.getElementById( "user_arbitrary" ).value;
+
+                  if( existing != "" )
+                     existing += "\n";
+
+                  output = existing + output.substring( 1 );
+               }
+
                document.getElementById( "user_arbitrary" ).value = output;
 
                console.log( "request = '" + request + "'" );
@@ -1047,7 +1064,40 @@ http://www.opensource.org/licenses/mit-license.php.
                pos = request.indexOf( " " );
 
                if( pos > 0 )
-                  msecs = request.substring( pos + 1 );
+               {
+                  var first = "";
+
+                  var argument = request.substring( pos + 1 );
+
+                  if( argument.length > 0 )
+                     first = argument.substr( 0, 1 );
+
+                  if( ( first >= "0" ) && ( first <= "9" ) )
+                     msecs = argument;
+                  else if( first != "" )
+                  {
+                     if( ( all_requests != "" )
+                      && ( ( window[ argument ] == null )
+                      || ( window[ argument ] == "" )
+                      || ( window[ argument ] == false ) ) )
+                     {
+                        ++wait_bool_repeats;
+
+                        if( wait_bool_repeats > max_wait_bool_repeats )
+                        {
+                           all_requests = "";
+
+                           wait_bool_repeats = 0;
+
+                           document.getElementById( "user_arbitrary" ).value += "\n(max wait repeats exceeded)";
+                        }
+                        else
+                           all_requests = request + "\n" + all_requests;
+                     }
+                     else
+                        wait_bool_repeats = 0;
+                  }
+               }
 
                console.log( "request = '" + request + "'" );
 
@@ -1073,8 +1123,10 @@ http://www.opensource.org/licenses/mit-license.php.
 
       request = reformatted( request );
 
-      if( request == run_name )
+      if( request == exec_name )
       {
+         include_script_usage_hints = false;
+
          all_requests = document.getElementById( "user_arbitrary" ).value;
 
          window.setTimeout( do_fetch, 100 );
@@ -1089,7 +1141,7 @@ http://www.opensource.org/licenses/mit-license.php.
        || request.startsWith( stylesheets_reload_cmd )
        || request.startsWith( stylesheets_unload_cmd ) )
          do_local_request( request );
-      else if( ( request != "" ) || ( all_requests == "" ) )
+      else if( !was_exec || ( request != "" ) )
       {
          var url = window.location.protocol + '//' + window.location.host + "/cws"
 
@@ -1671,6 +1723,8 @@ http://www.opensource.org/licenses/mit-license.php.
             if( document.getElementById( "user_request" ).value == help_name )
             {
                var lines = data.split( "\n" );
+
+               lines.push( exec_name );
 
                if( !is_admin_session )
                   lines.push( creds_remove_help );
