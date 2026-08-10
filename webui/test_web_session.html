@@ -139,11 +139,16 @@ http://www.opensource.org/licenses/mit-license.php.
    const exec_name = "exec";
 
    const help_name = "help";
+   const load_name = "load";
+
    const quit_name = "quit";
 
+   const save_name = "save";
    const wait_name = "wait";
 
    const exit_name = "exit";
+
+   const clear_name = "clear";
 
    const dummy_name = "dummy";
 
@@ -993,8 +998,11 @@ http://www.opensource.org/licenses/mit-license.php.
             unload_style( style );
       }
 
-      document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
-      document.getElementById( "user_request" ).value = "";
+      if( all_requests == "" )
+      {
+         document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
+         document.getElementById( "user_request" ).value = "";
+      }
    }
 
    async function do_fetch( )
@@ -1018,7 +1026,7 @@ http://www.opensource.org/licenses/mit-license.php.
             pos = all_requests.indexOf( "\n" );
          }
 
-         if( pos == null )
+         if( pos < 0 )
          {
             request = all_requests;
 
@@ -1032,29 +1040,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
             var msecs = 50;
 
-            if( request.indexOf( echo_name ) == 0 )
-            {
-               var output = "";
-
-               pos = request.indexOf( " " );
-
-               if( pos > 0 )
-                  output = request.substring( pos + 1 );
-
-               var existing = document.getElementById( "user_arbitrary" ).value;
-
-               if( existing != "" )
-                  existing += "\n";
-
-               output = existing + output;
-
-               document.getElementById( "user_arbitrary" ).value = output;
-
-               console.log( "request = '" + request + "'" );
-
-               request = "";
-            }
-            else if( request.indexOf( wait_name ) == 0 )
+            if( request.indexOf( wait_name ) == 0 )
             {
                msecs = 100;
 
@@ -1118,301 +1104,367 @@ http://www.opensource.org/licenses/mit-license.php.
       if( request != "" )
          console.log( "request = '" + request + "'" );
 
-      request = reformatted( request );
-
-      if( request == exec_name )
+      if( request == load_name )
       {
-         include_script_usage_hints = false;
-
-         all_requests = document.getElementById( "user_arbitrary" ).value;
-
-         window.setTimeout( do_fetch, 100 );
-      }
-      else if( request.startsWith( creds_retain_cmd )
-       || request.startsWith( creds_remove_cmd )
-       || request.startsWith( javascripts_employ_cmd )
-       || request.startsWith( javascripts_employ_cmd )
-       || request.startsWith( javascripts_reload_cmd )
-       || request.startsWith( javascripts_result_cmd )
-       || request.startsWith( javascripts_unload_cmd )
-       || request.startsWith( stylesheets_reload_cmd )
-       || request.startsWith( stylesheets_unload_cmd ) )
-         do_local_request( request );
-      else if( !was_exec || ( request != "" ) )
-      {
-         var url = window.location.protocol + '//' + window.location.host + "/cws"
-
-         var cmd = request;
-
-         var pos = request.indexOf( " " );
-
-         if( pos > 0 )
-            cmd = request.substring( 0, pos );
-
-         var request_type = "GET";
-
-         if( ( cmd == javascripts_retain_cmd ) || ( cmd == stylesheets_retain_cmd ) )
-            request_type = "PUT";
-         else if( ( cmd == "" ) || ( cmd == users_create_cmd )
-          || ( cmd == messages_create_cmd ) || ( cmd == storages_attach_cmd )
-          || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd ) )
-            request_type = "POST";
-         else if( ( cmd == users_delete_cmd )
-          || ( cmd == javascripts_delete_cmd ) || ( cmd == stylesheets_delete_cmd ) )
-            request_type = "DELETE";
-
-         var has_cmd_options = false;
-         var has_name_suffix = false;
-
-         var cmd_is_url_suffix = false;
-         var cmd_needs_truncating = false;
-
-         var need_to_include_payload = false;
-
-         if( request == help_name )
-            cmd_is_url_suffix = true;
-         else if( ( cmd == users_review_cmd ) || ( cmd == unlock_keys_create_cmd )
-          || ( cmd == javascripts_delete_cmd ) || ( cmd == stylesheets_delete_cmd )
-          || ( cmd == javascripts_retain_cmd ) || ( cmd == stylesheets_retain_cmd ) )
-         {
-            cmd_is_url_suffix = true;
-            cmd_needs_truncating = true;
-
-            if( ( request == javascripts_retain_cmd ) || ( request == stylesheets_retain_cmd ) )
-               need_to_include_payload = true;
-         }
-
-         if( ( cmd == users_create_cmd ) || ( cmd == users_delete_cmd )
-          || ( cmd == messages_create_cmd ) || ( cmd == messages_review_cmd )
-          || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
-          || ( cmd == unlock_keys_employ_cmd )
-          || ( cmd == javascripts_review_cmd ) || ( cmd == stylesheets_review_cmd )
-          || ( cmd == storage_modules_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
-         {
-            if( cmd == users_create_cmd )
-               has_cmd_options = true;
-            else
-            {
-               has_name_suffix = true;
-
-               if( ( cmd == messages_create_cmd )
-                || ( cmd == messages_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
-                  has_cmd_options = true;
-            }
-
-            cmd_is_url_suffix = true;
-            cmd_needs_truncating = true;
-         }
-
-         if( cmd_needs_truncating )
-         {
-            var tpos = cmd.indexOf( "|" );
-
-            if( tpos > 0 )
-               cmd = cmd.substring( 0, tpos );
-         }
-
          var access = document.getElementById( "user_access" ).value;
 
-         if( cmd_is_url_suffix )
+         if( ( access != "" ) && ( localStorage.getItem( "cws.arbitrary_" + access ) != null ) )
+            document.getElementById( "user_arbitrary" ).value = localStorage.getItem( "cws.arbitrary_" + access );
+
+         if( !was_exec )
          {
-            var name = "";
+            document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
+            document.getElementById( "user_request" ).value = "";
+         }
+      }
+      else if( request == save_name )
+      {
+         var access = document.getElementById( "user_access" ).value;
 
-            var stripped_name = false;
+         if( access != "" )
+            localStorage.setItem( "cws.arbitrary_" + access, document.getElementById( "user_arbitrary" ).value );
 
-            if( has_name_suffix && ( pos > 0 ) )
+         if( !was_exec )
+         {
+            document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
+            document.getElementById( "user_request" ).value = "";
+         }
+      }
+      else if( request == clear_name )
+      {
+         document.getElementById( "user_arbitrary" ).value = "";
+
+         if( !was_exec )
+         {
+            document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
+            document.getElementById( "user_request" ).value = "";
+         }
+      }
+      else if( request.startsWith( echo_name ) )
+      {
+         var output = "";
+
+         pos = request.indexOf( " " );
+
+         if( pos > 0 )
+            output = request.substring( pos + 1 );
+
+         var existing = document.getElementById( "user_arbitrary" ).value;
+
+         if( existing != "" )
+            existing += "\n";
+
+         output = existing + output;
+
+         document.getElementById( "user_arbitrary" ).value = output;
+
+         if( !was_exec )
+         {
+            document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
+            document.getElementById( "user_request" ).value = "";
+         }
+      }
+      else
+      {
+         request = reformatted( request );
+
+         if( request == exec_name )
+         {
+            include_script_usage_hints = false;
+
+            all_requests = document.getElementById( "user_arbitrary" ).value;
+
+            document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
+            document.getElementById( "user_request" ).value = "";
+
+            window.setTimeout( do_fetch, 100 );
+         }
+         else if( request.startsWith( creds_retain_cmd )
+          || request.startsWith( creds_remove_cmd )
+          || request.startsWith( javascripts_employ_cmd )
+          || request.startsWith( javascripts_employ_cmd )
+          || request.startsWith( javascripts_reload_cmd )
+          || request.startsWith( javascripts_result_cmd )
+          || request.startsWith( javascripts_unload_cmd )
+          || request.startsWith( stylesheets_reload_cmd )
+          || request.startsWith( stylesheets_unload_cmd ) )
+            do_local_request( request );
+         else if( !was_exec || ( request != "" ) )
+         {
+            var url = window.location.protocol + '//' + window.location.host + "/cws"
+
+            var cmd = request;
+
+            var pos = request.indexOf( " " );
+
+            if( pos > 0 )
+               cmd = request.substring( 0, pos );
+
+            var request_type = "GET";
+
+            if( ( cmd == javascripts_retain_cmd ) || ( cmd == stylesheets_retain_cmd ) )
+               request_type = "PUT";
+            else if( ( cmd == "" ) || ( cmd == users_create_cmd )
+             || ( cmd == messages_create_cmd ) || ( cmd == storages_attach_cmd )
+             || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd ) )
+               request_type = "POST";
+            else if( ( cmd == users_delete_cmd )
+             || ( cmd == javascripts_delete_cmd ) || ( cmd == stylesheets_delete_cmd ) )
+               request_type = "DELETE";
+
+            var has_cmd_options = false;
+            var has_name_suffix = false;
+
+            var cmd_is_url_suffix = false;
+            var cmd_needs_truncating = false;
+
+            var need_to_include_payload = false;
+
+            if( request == help_name )
+               cmd_is_url_suffix = true;
+            else if( ( cmd == users_review_cmd ) || ( cmd == unlock_keys_create_cmd )
+             || ( cmd == javascripts_delete_cmd ) || ( cmd == stylesheets_delete_cmd )
+             || ( cmd == javascripts_retain_cmd ) || ( cmd == stylesheets_retain_cmd ) )
             {
-               name = request.substring( pos + 1 );
+               cmd_is_url_suffix = true;
+               cmd_needs_truncating = true;
 
-               if( name == own_name )
-                  name = access;
+               if( ( request == javascripts_retain_cmd ) || ( request == stylesheets_retain_cmd ) )
+                  need_to_include_payload = true;
+            }
 
-               pos = name.indexOf( " " );
-
-               if( pos >= 0 )
-               {
-                  request = name.substring( pos + 1 );
-
-                  stripped_name = true;
-
-                  name = name.substring( 0, pos );
-               }
+            if( ( cmd == users_create_cmd ) || ( cmd == users_delete_cmd )
+             || ( cmd == messages_create_cmd ) || ( cmd == messages_review_cmd )
+             || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
+             || ( cmd == unlock_keys_employ_cmd )
+             || ( cmd == javascripts_review_cmd ) || ( cmd == stylesheets_review_cmd )
+             || ( cmd == storage_modules_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
+            {
+               if( cmd == users_create_cmd )
+                  has_cmd_options = true;
                else
-                  request = "";
-            }
-
-            if( !has_cmd_options )
-               request = "";
-            else if( !stripped_name )
-            {
-               var opos = request.indexOf( " " );
-
-               if( opos < 0 )
-                  request = "";
-               else
-                  request = request.substring( opos + 1 );
-            }
-
-            url += "/" + cmd;
-
-            if( name != "" )
-               url += "/" + name;
-         }
-
-         if( cmd == quit_name )
-            request = "";
-
-         var qry_data = "access=" + access;
-
-         var device = document.getElementById( "user_device" ).value;
-
-         if( ( device != "" ) && ( cws_device != "" ) )
-            qry_data += "&device=" + cws_device;
-
-         qry_data += "&format=text";
-
-         var username = "";
-
-         if( document.getElementById( "user_name" ).value != "" )
-            username = document.getElementById( "user_name" ).value;
-
-         var password = "";
-
-         if( document.getElementById( "user_password" ).value != "" )
-            password = document.getElementById( "user_password" ).value;
-
-         var hardened = "";
-
-         if( ( username == "" ) && ( password != "" ) )
-            hardened = harden_passwd( access, password );
-         else if( username != "" )
-         {
-            if( username == admin_username )
-               hardened = harden_passwd( access, password );
-            else
-            {
-               // NOTE: For testing purposes the password is
-               // just the "username" so to make it easy for
-               // this UI just copies the username across to
-               // the "password" input.
-
-               hardened = harden_passwd( access, username );
-
-               document.getElementById( "user_password" ).value = username;
-            }
-         }
-
-         var credentials = "";
-
-         if( hardened != "" )
-         {
-            if( username != "" )
-               credentials = username + ":";
-
-            credentials += hardened;
-         }
-
-         if( device == "" )
-         {
-            request_type = "POST";
-
-            url += "/devices";
-
-            // NOTE: Credentials must be base64 encoded.
-            if( credentials != "" )
-               qry_data += "&passwd=" + encode_base64_url( credentials );
-         }
-
-         var arbitrary = "";
-
-         if( document.getElementById( "user_arbitrary" ).value != "" )
-            arbitrary = document.getElementById( "user_arbitrary" ).value;
-
-         if( ( arbitrary != "" ) && need_to_include_payload )
-            qry_data += "&payload=" + encodeURIComponent( arbitrary );
-
-         if( request != "" )
-         {
-            if( has_cmd_options )
-               qry_data += "&options=" + encodeURIComponent( request );
-            else
-               qry_data += "&request=" + encodeURIComponent( request );
-         }
-
-         if( ( device == "" ) && ( password != "" ) )
-         {
-            if( has_seed )
-            {
-               has_seed = false;
-
-               document.getElementById( "user_request" ).value = "";
-               document.getElementById( "user_request" ).disabled = true;
-            }
-         }
-         else
-         {
-            var unique = document.getElementById( "user_unique" ).value;
-
-            if( unique == "" )
-            {
-               if( device != "" )
                {
-                  request_type = "POST";
+                  has_name_suffix = true;
 
-                  url += "/sessions";
-               }
-            }
-            else
-            {
-               var session = document.getElementById( "user_session" ).value;
-
-               if( session == "" )
-               {
-                  if( hashed == "" )
-                     hashed = hex_sha256( hex_sha256( harden_passwd( access, password ) ) + device );
-
-                  var session = hex_sha256( hashed + unique ).substr( 0, 20 );
-
-                  document.getElementById( "user_session" ).value = session;
-
-                  document.getElementById( "user_request" ).disabled = false;
-                  document.getElementById( "user_request" ).focus( );
-
-                  document.getElementById( "user_password" ).value = "";
-                  document.getElementById( "user_password" ).disabled = true;
-
-                  document.getElementById( "reset_storage" ).disabled = true;
+                  if( ( cmd == messages_create_cmd )
+                   || ( cmd == messages_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
+                     has_cmd_options = true;
                }
 
-               if( cmd != quit_name )
+               cmd_is_url_suffix = true;
+               cmd_needs_truncating = true;
+            }
+
+            if( cmd_needs_truncating )
+            {
+               var tpos = cmd.indexOf( "|" );
+
+               if( tpos > 0 )
+                  cmd = cmd.substring( 0, tpos );
+            }
+
+            var access = document.getElementById( "user_access" ).value;
+
+            if( cmd_is_url_suffix )
+            {
+               var name = "";
+
+               var stripped_name = false;
+
+               if( has_name_suffix && ( pos > 0 ) )
                {
-                  if( cmd == "" )
+                  name = request.substring( pos + 1 );
+
+                  if( name == own_name )
+                     name = access;
+
+                  pos = name.indexOf( " " );
+
+                  if( pos >= 0 )
                   {
-                     url += "/status";
+                     request = name.substring( pos + 1 );
 
-                     request_type = "GET";
+                     stripped_name = true;
+
+                     name = name.substring( 0, pos );
+                  }
+                  else
+                     request = "";
+               }
+
+               if( !has_cmd_options )
+                  request = "";
+               else if( !stripped_name )
+               {
+                  var opos = request.indexOf( " " );
+
+                  if( opos < 0 )
+                     request = "";
+                  else
+                     request = request.substring( opos + 1 );
+               }
+
+               url += "/" + cmd;
+
+               if( name != "" )
+                  url += "/" + name;
+            }
+
+            if( cmd == quit_name )
+               request = "";
+
+            var qry_data = "access=" + access;
+
+            var device = document.getElementById( "user_device" ).value;
+
+            if( ( device != "" ) && ( cws_device != "" ) )
+               qry_data += "&device=" + cws_device;
+
+            qry_data += "&format=text";
+
+            var username = "";
+
+            if( document.getElementById( "user_name" ).value != "" )
+               username = document.getElementById( "user_name" ).value;
+
+            var password = "";
+
+            if( document.getElementById( "user_password" ).value != "" )
+               password = document.getElementById( "user_password" ).value;
+
+            var hardened = "";
+
+            if( ( username == "" ) && ( password != "" ) )
+               hardened = harden_passwd( access, password );
+            else if( username != "" )
+            {
+               if( username == admin_username )
+                  hardened = harden_passwd( access, password );
+               else
+               {
+                  // NOTE: For testing purposes the password is
+                  // just the "username" so to make it easy for
+                  // this UI just copies the username across to
+                  // the "password" input.
+
+                  hardened = harden_passwd( access, username );
+
+                  document.getElementById( "user_password" ).value = username;
+               }
+            }
+
+            var credentials = "";
+
+            if( hardened != "" )
+            {
+               if( username != "" )
+                  credentials = username + ":";
+
+               credentials += hardened;
+            }
+
+            if( device == "" )
+            {
+               request_type = "POST";
+
+               url += "/devices";
+
+               // NOTE: Credentials must be base64 encoded.
+               if( credentials != "" )
+                  qry_data += "&passwd=" + encode_base64_url( credentials );
+            }
+
+            var arbitrary = "";
+
+            if( document.getElementById( "user_arbitrary" ).value != "" )
+               arbitrary = document.getElementById( "user_arbitrary" ).value;
+
+            if( ( arbitrary != "" ) && need_to_include_payload )
+               qry_data += "&payload=" + encodeURIComponent( arbitrary );
+
+            if( request != "" )
+            {
+               if( has_cmd_options )
+                  qry_data += "&options=" + encodeURIComponent( request );
+               else
+                  qry_data += "&request=" + encodeURIComponent( request );
+            }
+
+            if( ( device == "" ) && ( password != "" ) )
+            {
+               if( has_seed )
+               {
+                  has_seed = false;
+
+                  document.getElementById( "user_request" ).value = "";
+                  document.getElementById( "user_request" ).disabled = true;
+               }
+            }
+            else
+            {
+               var unique = document.getElementById( "user_unique" ).value;
+
+               if( unique == "" )
+               {
+                  if( device != "" )
+                  {
+                     request_type = "POST";
+
+                     url += "/sessions";
+                  }
+               }
+               else
+               {
+                  var session = document.getElementById( "user_session" ).value;
+
+                  if( session == "" )
+                  {
+                     if( hashed == "" )
+                        hashed = hex_sha256( hex_sha256( harden_passwd( access, password ) ) + device );
+
+                     var session = hex_sha256( hashed + unique ).substr( 0, 20 );
+
+                     document.getElementById( "user_session" ).value = session;
+
+                     document.getElementById( "user_request" ).disabled = false;
+                     document.getElementById( "user_request" ).focus( );
+
+                     document.getElementById( "user_password" ).value = "";
+                     document.getElementById( "user_password" ).disabled = true;
+
+                     document.getElementById( "reset_storage" ).disabled = true;
                   }
 
-                  qry_data += "&session=" + session;
-               }
-               else
-               {
-                  request_type = "DELETE";
+                  if( cmd != quit_name )
+                  {
+                     if( cmd == "" )
+                     {
+                        url += "/status";
 
-                  url += "/sessions/" + session;
+                        request_type = "GET";
+                     }
+
+                     qry_data += "&session=" + session;
+                  }
+                  else
+                  {
+                     request_type = "DELETE";
+
+                     url += "/sessions/" + session;
+                  }
                }
             }
+
+            if( qry_data != "" )
+               url += "?" + qry_data;
+
+            console.log( request_type + " " + url );
+
+            fetch( url, { method: request_type } )
+            .then( response => response.text( ) )
+            .then( data => handle_response( data ) )
+            .catch( error => console.error( "Error fetching data: ", error ) );
          }
-
-         if( qry_data != "" )
-            url += "?" + qry_data;
-
-         console.log( request_type + " " + url );
-
-         fetch( url, { method: request_type } )
-         .then( response => response.text( ) )
-         .then( data => handle_response( data ) )
-         .catch( error => console.error( "Error fetching data: ", error ) );
       }
    }
 
@@ -1721,7 +1773,14 @@ http://www.opensource.org/licenses/mit-license.php.
             {
                var lines = data.split( "\n" );
 
+               lines.push( echo_name + " [<text>]" );
+
                lines.push( exec_name );
+
+               lines.push( load_name );
+               lines.push( save_name );
+
+               lines.push( clear_name );
 
                if( !is_admin_session )
                   lines.push( creds_remove_help );
@@ -1831,7 +1890,7 @@ http://www.opensource.org/licenses/mit-license.php.
          }
       }
 
-      if( document.getElementById( "user_session" ).value != "" )
+      if( ( all_requests == "" ) && ( document.getElementById( "user_session" ).value != "" ) )
          document.getElementById( "user_request" ).value = "";
    }
    </script>
