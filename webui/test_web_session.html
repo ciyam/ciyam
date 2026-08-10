@@ -1041,15 +1041,12 @@ http://www.opensource.org/licenses/mit-license.php.
                if( pos > 0 )
                   output = request.substring( pos + 1 );
 
-               if( ( output != "" ) && ( output.substr( 0, 1 ) == "+" ) )
-               {
-                  var existing = document.getElementById( "user_arbitrary" ).value;
+               var existing = document.getElementById( "user_arbitrary" ).value;
 
-                  if( existing != "" )
-                     existing += "\n";
+               if( existing != "" )
+                  existing += "\n";
 
-                  output = existing + output.substring( 1 );
-               }
+               output = existing + output;
 
                document.getElementById( "user_arbitrary" ).value = output;
 
