@@ -181,6 +181,7 @@ constexpr const char* c_special_variable_auto_script = "@auto_script";
 constexpr const char* c_special_variable_auto_update = "@auto_update";
 constexpr const char* c_special_variable_cws_scripts = "@cws_scripts";
 constexpr const char* c_special_variable_cws_ssheets = "@cws_ssheets";
+constexpr const char* c_special_variable_cws_webcmds = "@cws_webcmds";
 constexpr const char* c_special_variable_errors_only = "@errors_only";
 constexpr const char* c_special_variable_init_log_id = "@init_log_id";
 constexpr const char* c_special_variable_ip_ext_addr = "@ip_ext_addr";
@@ -558,6 +559,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_auto_update );
       g_special_variable_names.push_back( c_special_variable_cws_scripts );
       g_special_variable_names.push_back( c_special_variable_cws_ssheets );
+      g_special_variable_names.push_back( c_special_variable_cws_webcmds );
       g_special_variable_names.push_back( c_special_variable_errors_only );
       g_special_variable_names.push_back( c_special_variable_init_log_id );
       g_special_variable_names.push_back( c_special_variable_ip_ext_addr );
