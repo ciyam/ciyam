@@ -39,13 +39,16 @@ attach storage <name>
 create message <room> [for=<name,>;]text=<text>
 delete javascript
 delete stylesheet
+delete webcmdlist
 employ unlock-key <key>
 retain javascript
 retain stylesheet
+retain webcmdlist
 review messages <room> [from=<unix_time>]
 review storages
 review javascript[s] [<name>]
 review stylesheet[s] [<name>]
+review webcmdlist[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 Check for messages and then create a test message and a new room.
@@ -214,14 +217,17 @@ create unlock-key
 delete user <pin>
 delete javascript
 delete stylesheet
+delete webcmdlist
 employ unlock-key <key>
 retain javascript
 retain stylesheet
+retain webcmdlist
 review users
 review messages <room> [from=<unix_time>]
 review storages
 review javascript[s] [<name>]
 review stylesheet[s] [<name>]
+review webcmdlist[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 100 Meta

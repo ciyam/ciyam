@@ -83,6 +83,7 @@ constexpr const char* c_cws_own = "***";
 
 constexpr const char* c_js_suffix = ".js";
 constexpr const char* c_css_suffix = ".css";
+constexpr const char* c_list_suffix = ".list";
 
 constexpr const char* c_error_output_prefix = "Error: ";
 
@@ -110,6 +111,7 @@ constexpr const char* c_cws_uri_suffix_sessions = "sessions";
 constexpr const char* c_cws_uri_suffix_storages = "storages";
 constexpr const char* c_cws_uri_suffix_javascripts = "javascripts";
 constexpr const char* c_cws_uri_suffix_stylesheets = "stylesheets";
+constexpr const char* c_cws_uri_suffix_webcmdlists = "webcmdlists";
 constexpr const char* c_cws_uri_suffix_unlock_keys = "unlock-keys";
 constexpr const char* c_cws_uri_suffix_storage_modules = "storage-modules";
 
@@ -120,6 +122,7 @@ constexpr const char* c_cws_uri_suffix_sessions_prefix = "sessions/";
 constexpr const char* c_cws_uri_suffix_storages_prefix = "storages/";
 constexpr const char* c_cws_uri_suffix_javascripts_prefix = "javascripts/";
 constexpr const char* c_cws_uri_suffix_stylesheets_prefix = "stylesheets/";
+constexpr const char* c_cws_uri_suffix_webcmdlists_prefix = "webcmdlists/";
 constexpr const char* c_cws_uri_suffix_unlock_keys_prefix = "unlock-keys/";
 constexpr const char* c_cws_uri_suffix_storage_modules_prefix = "storage-modules/";
 constexpr const char* c_cws_uri_suffix_storage_instances_prefix = "storage-instances/";
@@ -141,17 +144,16 @@ constexpr const char* c_cws_request_messages_create_options_text = "text";
 constexpr const char* c_cws_request_messages_review_options_from = "from";
 
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax to HTTP requests.
-constexpr const char* c_cws_help_request_output = "quit\n"
- "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete javascript\n"
- "delete stylesheet\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nreview messages <room> [from=<unix_time>]\n"
- "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete javascript\n"
+ "delete stylesheet\ndelete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview messages <room> [from=<unix_time>]\n"
+ "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
- "create message <room> [for=<name,>;]text=<text>\ncreate unlock-key\ndelete user <pin>\ndelete javascript\n"
- "delete stylesheet\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nreview users\nreview messages <room> [from=<unix_time>]\n"
- "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+ "create message <room> [for=<name,>;]text=<text>\ncreate unlock-key\ndelete user <pin>\ndelete javascript\ndelete stylesheet\n"
+ "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [from=<unix_time>]\n"
+ "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
 
 constexpr const char* c_web_session_script = "web_session.cin";
@@ -943,6 +945,125 @@ void get_field_values( const string& output, vector< string >& values )
    }
 }
 
+string get_files_for_endpoint(
+ const string& access, special_var files_var,
+ const char* p_file_prefix, const char* p_file_extension,
+ bool is_json_output, bool& use_none_response )
+{
+   string response;
+
+   bool is_admin = ( access == g_cws_admin_token );
+
+   string all_files( g_none_var );
+
+   size_t file_prefix_len = 0;
+
+   if( p_file_prefix )
+      file_prefix_len = strlen( p_file_prefix );
+
+   size_t file_extension_length = 0;
+
+   if( p_file_extension )
+      file_extension_length = strlen( p_file_extension );
+   else
+      throw runtime_error( "unexpected null file extension in 'get_files_for_endpoint'" );
+
+   bool has_cached_files = has_system_variable( files_var );
+
+   if( !has_cached_files )
+      all_files = g_none_var;
+   else
+      all_files = get_system_variable( files_var );
+
+   if( !has_cached_files )
+   {
+      set< string > files;
+
+      file_filter ff;
+
+      fs_iterator fs( g_html_dir, &ff );
+
+      while( fs.has_next( ) )
+      {
+         string next( fs.get_name( ) );
+
+         if( !p_file_prefix || ( next.find( p_file_prefix ) == 0 ) )
+         {
+            string::size_type pos = next.rfind( p_file_extension );
+
+            if( pos == ( next.length( ) - file_extension_length ) )
+            {
+               next.erase( pos );
+
+               if( file_prefix_len )
+                  next.erase( 0, file_prefix_len );
+
+               files.insert( next );
+            }
+         }
+      }
+
+      for( set< string >::iterator i = files.begin( ); i!= files.end( ); ++i )
+         all_files += ' ' + *i;
+
+      set_system_variable( files_var, all_files );
+   }
+
+   string::size_type pos = all_files.find( ' ' );
+
+   if( pos != string::npos )
+      all_files.erase( 0, pos + 1 );
+
+   if( !all_files.empty( ) )
+   {
+      vector< string > files;
+
+      split( all_files, files, ' ' );
+
+      string allowed_files;
+
+
+      // NOTE: Replace own file with "***" then
+      // filter any other access PIN files from
+      // appearing (unless is "admin").
+      for( size_t i = 0; i < files.size( ); i++ )
+      {
+         string next( files[ i ] );
+
+         if( next == access )
+            next = c_cws_own;
+
+         if( !is_admin && is_pin_token( next ) )
+            continue;
+
+         if( !allowed_files.empty( ) )
+            allowed_files += ' ';
+
+         allowed_files += next;
+      }
+
+      all_files = allowed_files;
+   }
+
+   if( all_files.empty( ) )
+      use_none_response = true;
+   else
+   {
+      if( !is_json_output )
+         response = all_files;
+      else
+      {
+         vector< string > files;
+
+         split( all_files, files, ' ' );
+
+         response = as_json_array( ( !is_admin ? "files" : "all_files" ), files );
+      }
+   }
+
+   return response;
+}
+
 }
 
 void dump_session_info( ostream& os )
@@ -1686,100 +1807,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   found = true;
 
-                  file_filter ff;
-
-                  fs_iterator fs( g_html_dir, &ff );
-
-                  string all_scripts( g_none_var );
-
-                  bool has_cached_scripts = has_system_variable( e_special_var_cws_scripts );
-
-                  if( !has_cached_scripts )
-                     all_scripts = g_none_var;
-                  else
-                     all_scripts = get_system_variable( e_special_var_cws_scripts );
-
-                  if( !has_cached_scripts )
-                  {
-                     set< string > js_files;
-
-                     while( fs.has_next( ) )
-                     {
-                        string next( fs.get_name( ) );
-
-                        if( next.find( c_ciyam_script_prefix ) == 0 )
-                        {
-                           string::size_type pos = next.rfind( c_js_suffix );
-
-                           if( pos == ( next.length( ) - CONST_LENGTH( c_js_suffix ) ) )
-                           {
-                              next.erase( pos );
-
-                              next.erase( 0, CONST_LENGTH( c_ciyam_script_prefix ) );
-
-                              js_files.insert( next );
-                           }
-                        }
-                     }
-
-                     for( set< string >::iterator i = js_files.begin( ); i!= js_files.end( ); ++i )
-                        all_scripts += ' ' + *i;
-
-                     set_system_variable( e_special_var_cws_scripts, all_scripts );
-                  }
-
-                  string::size_type pos = all_scripts.find( ' ' );
-
-                  if( pos != string::npos )
-                     all_scripts.erase( 0, pos + 1 );
-
-                  if( !all_scripts.empty( ) )
-                  {
-                     vector< string > scripts;
-
-                     split( all_scripts, scripts, ' ' );
-
-                     string allowed_scripts;
-
-                     bool is_admin = ( access == g_cws_admin_token );
-
-                     // NOTE: Replace "own" style with "***" and
-                     // filter any other access PIN scripts from
-                     // appearing (unless is the administrator).
-                     for( size_t i = 0; i < scripts.size( ); i++ )
-                     {
-                        string next( scripts[ i ] );
-
-                        if( next == access )
-                           next = c_cws_own;
-
-                        if( !is_admin && is_pin_token( next ) )
-                           continue;
-
-                        if( !allowed_scripts.empty( ) )
-                           allowed_scripts += ' ';
-
-                        allowed_scripts += next;
-                     }
-
-                     all_scripts = allowed_scripts;
-                  }
-
-                  if( all_scripts.empty( ) )
-                     use_none_response = true;
-                  else
-                  {
-                     if( !is_json_output )
-                        response = all_scripts;
-                     else
-                     {
-                        vector< string > scripts;
-
-                        split( all_scripts, scripts, ' ' );
-
-                        response = as_json_array( ( !is_admin ? "scripts" : "all_scripts" ), scripts );
-                     }
-                  }
+                  response = get_files_for_endpoint( access, e_special_var_cws_scripts,
+                   c_ciyam_script_prefix, c_js_suffix, is_json_output, use_none_response );
                }
                else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_javascripts ) )
                {
@@ -1852,94 +1881,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   found = true;
 
-                  file_filter ff;
-
-                  fs_iterator fs( g_html_dir, &ff );
-
-                  string all_stylesheets( g_none_var );
-
-                  bool has_cached_stylesheets = has_system_variable( e_special_var_cws_ssheets );
-
-                  if( !has_cached_stylesheets )
-                     all_stylesheets = g_none_var;
-                  else
-                     all_stylesheets = get_system_variable( e_special_var_cws_ssheets );
-
-                  if( !has_cached_stylesheets )
-                  {
-                     set< string > css_files;
-
-                     while( fs.has_next( ) )
-                     {
-                        string next( fs.get_name( ) );
-
-                        if( next.size( ) > CONST_LENGTH( c_css_suffix ) )
-                        {
-                           string::size_type pos = next.rfind( c_css_suffix );
-
-                           if( pos == ( next.length( ) - CONST_LENGTH( c_css_suffix ) ) )
-                              css_files.insert( next.substr( 0, pos ) );
-                        }
-                     }
-
-                     for( set< string >::iterator i = css_files.begin( ); i!= css_files.end( ); ++i )
-                        all_stylesheets += ' ' + *i;
-
-                     set_system_variable( e_special_var_cws_ssheets, all_stylesheets );
-                  }
-
-                  string::size_type pos = all_stylesheets.find( ' ' );
-
-                  if( pos != string::npos )
-                     all_stylesheets.erase( 0, pos + 1 );
-
-                  if( !all_stylesheets.empty( ) )
-                  {
-                     vector< string > styles;
-
-                     split( all_stylesheets, styles, ' ' );
-
-                     string allowed_stylesheets;
-
-                     bool is_admin = ( access == g_cws_admin_token );
-
-                     // NOTE: Replace "own" style with "***" and
-                     // filter other access PIN stylesheets from
-                     // appearing (unless is the administrator).
-                     for( size_t i = 0; i < styles.size( ); i++ )
-                     {
-                        string next( styles[ i ] );
-
-                        if( next == access )
-                           next = c_cws_own;
-
-                        if( !is_admin && is_pin_token( next ) )
-                           continue;
-
-                        if( !allowed_stylesheets.empty( ) )
-                           allowed_stylesheets += ' ';
-
-                        allowed_stylesheets += next;
-                     }
-
-                     all_stylesheets = allowed_stylesheets;
-                  }
-
-                  if( all_stylesheets.empty( ) )
-                     use_none_response = true;
-                  else
-                  {
-                     if( !is_json_output )
-                        response = all_stylesheets;
-                     else
-                     {
-                        vector< string > stylesheets;
-
-                        split( all_stylesheets, stylesheets, ' ' );
-
-                        response = as_json_array( ( !is_admin ? "stylesheets" : "all_stylesheets" ), stylesheets );
-                     }
-                  }
+                  response = get_files_for_endpoint( access,
+                   e_special_var_cws_ssheets, 0, c_css_suffix, is_json_output, use_none_response );
                }
                else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_stylesheets ) )
                {
@@ -2004,6 +1947,78 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      else
                         // FUTURE: This message should be handled as a server string message.
                         error = "Stylesheet could not be erased (contact the administrator).";
+                  }
+               }
+               else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_webcmdlists ) )
+               {
+                  found = true;
+
+                  response = get_files_for_endpoint( access,
+                   e_special_var_cws_webcmds, 0, c_list_suffix, is_json_output, use_none_response );
+               }
+               else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_webcmdlists ) )
+               {
+                  string file_name( g_html_dir + '/' + access + c_list_suffix );
+
+                  if( payload.empty( ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Commands list data was not provided.";
+                  else if( is_locked )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Commands list data cannot be saved whilst system is locked.";
+                  else
+                  {
+                     found = true;
+
+                     write_file( file_name, payload );
+
+                     set_system_variable( e_special_var_cws_webcmds, "" );
+
+                     // NOTE: This delay is used to reduce possible I/O overloading.
+                     msleep( c_save_data_delay );
+                  }
+               }
+               else if( is_get_request && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_webcmdlists_prefix ) )
+               {
+                  string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_webcmdlists_prefix ) ) );
+
+                  string file_name( g_html_dir + '/' + name + c_list_suffix );
+
+                  if( !file_exists( file_name ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Commands list '" + file_name + "' was not found.";
+                  else
+                  {
+                     found = true;
+
+                     string style_data( opt_buffer_file( file_name ) );
+
+                     if( !is_json_output )
+                        response = style_data;
+                     else
+                        response = "{\"webcmdlist\":\"" + escaped_json( style_data ) + "\"}\n";
+                  }
+               }
+               else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_webcmdlists ) )
+               {
+                  if( is_locked )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Commands list data cannot be erased whilst the system is locked.";
+                  else
+                  {
+                     string file_name( g_html_dir + '/' + access + c_list_suffix );
+
+                     file_remove( file_name );
+
+                     if( !file_exists( file_name ) )
+                     {
+                        found = true;
+
+                        set_system_variable( e_special_var_cws_webcmds, "" );
+                     }
+                     else
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "Commands list could not be erased (contact the administrator).";
                   }
                }
                else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_users ) )
