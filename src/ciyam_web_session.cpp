@@ -946,15 +946,14 @@ void get_field_values( const string& output, vector< string >& values )
 }
 
 string get_files_for_endpoint(
- const string& access, special_var files_var,
- const char* p_file_prefix, const char* p_file_extension,
- bool is_json_output, bool& use_none_response )
+ const string& access, special_var names_var, const char* p_file_prefix,
+ const char* p_file_extension, bool is_json_output, bool& use_none_response )
 {
    string response;
 
    bool is_admin = ( access == g_cws_admin_token );
 
-   string all_files( g_none_var );
+   string all_names( g_none_var );
 
    size_t file_prefix_len = 0;
 
@@ -968,16 +967,16 @@ string get_files_for_endpoint(
    else
       throw runtime_error( "unexpected null file extension in 'get_files_for_endpoint'" );
 
-   bool has_cached_files = has_system_variable( files_var );
+   bool has_cached_files = has_system_variable( names_var );
 
    if( !has_cached_files )
-      all_files = g_none_var;
+      all_names = g_none_var;
    else
-      all_files = get_system_variable( files_var );
+      all_names = get_system_variable( names_var );
 
    if( !has_cached_files )
    {
-      set< string > files;
+      set< string > names;
 
       file_filter ff;
 
@@ -998,37 +997,41 @@ string get_files_for_endpoint(
                if( file_prefix_len )
                   next.erase( 0, file_prefix_len );
 
-               files.insert( next );
+               names.insert( next );
             }
          }
       }
 
-      for( set< string >::iterator i = files.begin( ); i!= files.end( ); ++i )
-         all_files += ' ' + *i;
+      for( set< string >::iterator i = names.begin( ); i!= names.end( ); ++i )
+         all_names += ' ' + *i;
 
-      set_system_variable( files_var, all_files );
+      set_system_variable( names_var, all_names );
    }
 
-   string::size_type pos = all_files.find( ' ' );
+   string::size_type pos = all_names.find( ' ' );
 
+   // NOTE: Removes '@none' (which is
+   // either the first name or is the
+   // only name).
    if( pos != string::npos )
-      all_files.erase( 0, pos + 1 );
+      all_names.erase( 0, pos + 1 );
+   else if( all_names == g_none_var )
+      all_names.erase( );
 
-   if( !all_files.empty( ) )
+   if( !all_names.empty( ) )
    {
-      vector< string > files;
+      vector< string > names;
 
-      split( all_files, files, ' ' );
+      split( all_names, names, ' ' );
 
-      string allowed_files;
-
+      string allowed_names;
 
       // NOTE: Replace own file with "***" then
-      // filter any other access PIN files from
+      // filter any other access PIN names from
       // appearing (unless is "admin").
-      for( size_t i = 0; i < files.size( ); i++ )
+      for( size_t i = 0; i < names.size( ); i++ )
       {
-         string next( files[ i ] );
+         string next( names[ i ] );
 
          if( next == access )
             next = c_cws_own;
@@ -1036,28 +1039,28 @@ string get_files_for_endpoint(
          if( !is_admin && is_pin_token( next ) )
             continue;
 
-         if( !allowed_files.empty( ) )
-            allowed_files += ' ';
+         if( !allowed_names.empty( ) )
+            allowed_names += ' ';
 
-         allowed_files += next;
+         allowed_names += next;
       }
 
-      all_files = allowed_files;
+      all_names = allowed_names;
    }
 
-   if( all_files.empty( ) )
+   if( all_names.empty( ) )
       use_none_response = true;
    else
    {
       if( !is_json_output )
-         response = all_files;
+         response = all_names;
       else
       {
-         vector< string > files;
+         vector< string > names;
 
-         split( all_files, files, ' ' );
+         split( all_names, names, ' ' );
 
-         response = as_json_array( ( !is_admin ? "files" : "all_files" ), files );
+         response = as_json_array( ( !is_admin ? "files" : "all_files" ), names );
       }
    }
 
