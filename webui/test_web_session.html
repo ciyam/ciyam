@@ -138,6 +138,7 @@ http://www.opensource.org/licenses/mit-license.php.
    const own_name = "***";
 
    const var_name = "var";
+   const vars_name = "vars";
 
    const echo_name = "echo";
 
@@ -145,8 +146,8 @@ http://www.opensource.org/licenses/mit-license.php.
 
    const help_name = "help";
 
-   const load_name = "load";
    const save_name = "save";
+   const view_name = "view";
 
    const wait_name = "wait";
 
@@ -204,6 +205,10 @@ http://www.opensource.org/licenses/mit-license.php.
    const stylesheets_retain_cmd = "stylesheets|retain";
    const stylesheets_review_cmd = "stylesheets|review";
    const stylesheets_unload_cmd = "stylesheets|unload";
+
+   const webcmdlists_delete_cmd = "webcmdlists|delete";
+   const webcmdlists_retain_cmd = "webcmdlists|retain";
+   const webcmdlists_review_cmd = "webcmdlists|review";
 
    const unlock_keys_create_cmd = "unlock-keys|create";
    const unlock_keys_employ_cmd = "unlock-keys|employ";
@@ -450,6 +455,33 @@ http://www.opensource.org/licenses/mit-license.php.
       var_map.forEach( function( value, key )
       {
          output = output.replace( "{" + key + "}", value );
+      } )
+
+      if( output.indexOf( "{@output}" >= 0 ) )
+      {
+         var value = document.getElementById( "user_arbitrary" ).value;
+
+         var pos = value.indexOf( "\n" );
+
+         if( pos > 0 )
+            value = value.substr( 0, pos );
+
+         output = output.replace( "{@output}", value );
+      }
+
+      return output;
+   }
+
+   function get_all_var_info( )
+   {
+      var output = "";
+
+      var_map.forEach( function( value, key )
+      {
+         if( output != "" )
+            output += "\n";
+
+         output += key + " " + value;
       } )
 
       return output;
@@ -817,10 +849,12 @@ http://www.opensource.org/licenses/mit-license.php.
          var first = parts[ 0 ];
          var second = parts[ 1 ];
 
-         if( ( second == "script" ) || ( second == "scripts" ) )
-            second = "javascripts";
+         if( ( second == "list" ) || ( second == "lists" ) )
+            second = "webcmdlists";
          else if( ( second == "style" ) || ( second == "styles" ) )
             second = "stylesheets";
+         else if( ( second == "script" ) || ( second == "scripts" ) )
+            second = "javascripts";
 
          var suffix = "";
 
@@ -929,31 +963,7 @@ http://www.opensource.org/licenses/mit-license.php.
             if( script_arg == null )
                eval( ciyam_script_prefix + script + "_execute( script_executed, )" );
             else
-            {
-               if( script_arg.indexOf( "@output" ) == 0 )
-               {
-                  script_arg = document.getElementById( "user_arbitrary" ).value;
-
-                  if( script_arg == "@output:1" );
-                  {
-                     var pos = script_arg.indexOf( "\n" );
-
-                     if( pos > 0 )
-                        script_arg = script_arg.substr( 0, pos );
-                  }
-               }
-               else if( script_arg.indexOf( "@" ) == 0 )
-               {
-                  var suffix = script_arg.substring( 1 );
-
-                  if( window[ ciyam_script_prefix + suffix ] == null )
-                     script_arg = "";
-                  else
-                     script_arg = window[ ciyam_script_prefix + suffix ];
-               }
-
                eval( ciyam_script_prefix + script + "_execute( script_executed, \"" + script_arg + "\" )" );
-            }
          }
       }
       else if( request == javascripts_reload_cmd )
@@ -1127,7 +1137,29 @@ http://www.opensource.org/licenses/mit-license.php.
       if( request != "" )
          console.log( "request = '" + request + "'" );
 
-      if( request == load_name )
+      if( request == vars_name )
+      {
+         var output = get_all_var_info( );
+
+         if( output != "" )
+         {
+            var existing = document.getElementById( "user_arbitrary" ).value;
+
+            if( existing != "" )
+               existing += "\n";
+
+            output = existing + output;
+
+            document.getElementById( "user_arbitrary" ).value = output;
+         }
+
+         if( !was_exec )
+         {
+            document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
+            document.getElementById( "user_request" ).value = "";
+         }
+      }
+      else if( request == view_name )
       {
          var access = document.getElementById( "user_access" ).value;
 
@@ -1192,6 +1224,18 @@ http://www.opensource.org/licenses/mit-license.php.
                var name = var_info.substr( 0, pos );
                var value = var_info.substring( pos + 1 );
 
+               var skip_if_has = false;
+
+               // NOTE: If the name is prefixed
+               // with "!" then will not assign
+               // it a value unless it does not
+               // currently have one.
+               if( name.substr( 0, 1 ) == "!" )
+               {
+                  skip_if_has = true;
+                  name = name.substring( 1 );
+               }
+
                // NOTE: If name is prefixed with
                // "@" then assumes that value is
                // the name of an actual variable
@@ -1202,16 +1246,26 @@ http://www.opensource.org/licenses/mit-license.php.
                {
                   name = name.substring( 1 );
 
-                  if( window[ value ] == null )
+                  // NOTE: Use "var @name null" in
+                  // order to "delete" a variable.
+                  if( value == "null" )
                      value = "";
                   else
-                     value = window[ value ];
+                  {
+                     if( window[ value ] == null )
+                        value = "";
+                     else
+                        value = window[ value ];
+                  }
                }
 
-               if( value == "" )
-                  vap_map.delete( name );
-               else
-                  var_map.set( name, value );
+               if( !skip_if_has || !var_map.has( name ) )
+               {
+                  if( value == "" )
+                     var_map.delete( name );
+                  else
+                     var_map.set( name, value );
+               }
             }
          }
 
@@ -1283,14 +1337,15 @@ http://www.opensource.org/licenses/mit-license.php.
 
             var request_type = "GET";
 
-            if( ( cmd == javascripts_retain_cmd ) || ( cmd == stylesheets_retain_cmd ) )
+            if( ( cmd == javascripts_retain_cmd )
+             || ( cmd == stylesheets_retain_cmd ) || ( cmd == webcmdlists_retain_cmd ) )
                request_type = "PUT";
             else if( ( cmd == "" ) || ( cmd == users_create_cmd )
              || ( cmd == messages_create_cmd ) || ( cmd == storages_attach_cmd )
              || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd ) )
                request_type = "POST";
-            else if( ( cmd == users_delete_cmd )
-             || ( cmd == javascripts_delete_cmd ) || ( cmd == stylesheets_delete_cmd ) )
+            else if( ( cmd == users_delete_cmd ) || ( cmd == javascripts_delete_cmd )
+             || ( cmd == stylesheets_delete_cmd ) || ( cmd == webcmdlists_delete_cmd ) )
                request_type = "DELETE";
 
             var has_cmd_options = false;
@@ -1305,20 +1360,22 @@ http://www.opensource.org/licenses/mit-license.php.
                cmd_is_url_suffix = true;
             else if( ( cmd == users_review_cmd ) || ( cmd == unlock_keys_create_cmd )
              || ( cmd == javascripts_delete_cmd ) || ( cmd == stylesheets_delete_cmd )
-             || ( cmd == javascripts_retain_cmd ) || ( cmd == stylesheets_retain_cmd ) )
+             || ( cmd == javascripts_retain_cmd ) || ( cmd == stylesheets_retain_cmd )
+             || ( cmd == webcmdlists_delete_cmd ) || ( cmd == webcmdlists_retain_cmd ) )
             {
                cmd_is_url_suffix = true;
                cmd_needs_truncating = true;
 
-               if( ( request == javascripts_retain_cmd ) || ( request == stylesheets_retain_cmd ) )
+               if( ( request == javascripts_retain_cmd )
+                || ( request == stylesheets_retain_cmd ) || ( request == webcmdlists_retain_cmd ) )
                   need_to_include_payload = true;
             }
 
             if( ( cmd == users_create_cmd ) || ( cmd == users_delete_cmd )
              || ( cmd == messages_create_cmd ) || ( cmd == messages_review_cmd )
              || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
-             || ( cmd == unlock_keys_employ_cmd )
-             || ( cmd == javascripts_review_cmd ) || ( cmd == stylesheets_review_cmd )
+             || ( cmd == unlock_keys_employ_cmd ) || ( cmd == javascripts_review_cmd )
+             || ( cmd == stylesheets_review_cmd ) || ( cmd == webcmdlists_review_cmd )
              || ( cmd == storage_modules_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
             {
                if( cmd == users_create_cmd )
@@ -1855,13 +1912,14 @@ http://www.opensource.org/licenses/mit-license.php.
                var lines = data.split( "\n" );
 
                lines.push( var_name + " <name> [<text>]" );
+               lines.push( vars_name );
 
                lines.push( echo_name + " [<text>]" );
 
                lines.push( exec_name );
 
-               lines.push( load_name );
                lines.push( save_name );
+               lines.push( view_name );
 
                lines.push( clear_name );
 
