@@ -11,7 +11,7 @@ async function ciyam_script_bip39_at_load( callback )
    var output = ciyam_script_bip39_result;
 
    if( include_script_usage_hints )
-      output += "\nemploy javascript bip39 @output:1";
+      output += "\nemploy javascript bip39 {@output}";
 
    callback( output );
 }
