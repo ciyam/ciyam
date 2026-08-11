@@ -105,8 +105,6 @@ http://www.opensource.org/licenses/mit-license.php.
    <script>
    var hashed = "";
 
-   var text_val = "";
-
    var cws_device = "";
 
    var all_requests = "";
@@ -149,8 +147,6 @@ http://www.opensource.org/licenses/mit-license.php.
 
    const load_name = "load";
    const save_name = "save";
-
-   const text_name = "text";
 
    const wait_name = "wait";
 
@@ -934,9 +930,7 @@ http://www.opensource.org/licenses/mit-license.php.
                eval( ciyam_script_prefix + script + "_execute( script_executed, )" );
             else
             {
-               if( script_arg.indexOf( "@text" ) == 0 )
-                  script_arg = text_val;
-               else if( script_arg.indexOf( "@output" ) == 0 )
+               if( script_arg.indexOf( "@output" ) == 0 )
                {
                   script_arg = document.getElementById( "user_arbitrary" ).value;
 
@@ -1195,41 +1189,30 @@ http://www.opensource.org/licenses/mit-license.php.
             }
             else
             {
-               var key = var_info.substr( 0, pos );
+               var name = var_info.substr( 0, pos );
                var value = var_info.substring( pos + 1 );
 
-               var_map.set( key, value );
+               // NOTE: If name is prefixed with
+               // "@" then assumes that value is
+               // the name of an actual variable
+               // like "ciyam_script_xxx_result"
+               // with the variable's value then
+               // being used instead.
+               if( name.substr( 0, 1 ) == "@" )
+               {
+                  name = name.substring( 1 );
+
+                  if( window[ value ] == null )
+                     value = "";
+                  else
+                     value = window[ value ];
+               }
+
+               if( value == "" )
+                  vap_map.delete( name );
+               else
+                  var_map.set( name, value );
             }
-         }
-
-         if( !was_exec )
-         {
-            document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
-            document.getElementById( "user_request" ).value = "";
-         }
-      }
-      else if( request.startsWith( text_name ) )
-      {
-         pos = request.indexOf( " " );
-
-         if( pos > 0 )
-         {
-            var value = request.substring( pos + 1 );
-
-            value = value.replace( "{text}", text_val );
-
-            text_val = value;
-         }
-         else if( text_val != "" )
-         {
-            var existing = document.getElementById( "user_arbitrary" ).value;
-
-            if( existing != "" )
-               existing += "\n";
-
-            output = existing + text_val;
-
-            document.getElementById( "user_arbitrary" ).value = output;
          }
 
          if( !was_exec )
@@ -1251,8 +1234,6 @@ http://www.opensource.org/licenses/mit-license.php.
 
          if( existing != "" )
             existing += "\n";
-
-         output = output.replace( "{text}", text_val );
 
          output = existing + output;
 
@@ -1881,8 +1862,6 @@ http://www.opensource.org/licenses/mit-license.php.
 
                lines.push( load_name );
                lines.push( save_name );
-
-               lines.push( text_name + " [<text>]" );
 
                lines.push( clear_name );
 
