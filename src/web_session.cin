@@ -48,7 +48,11 @@ IRC_ALLOWED=
 ;
 ; NOTE: If just started (or a reload has just taken place)
 ; then may need to wait for a second for the "auto script"
-; session to have executed "irc_store_or_restore".
+; session to have executed "irc_store_or_restore" (use the
+; system variable "@no_irc" to skip if not using - it will
+; will be cleared if "irc_store_or_restore" is later run).
+.system_variable @no_irc
+@ifndef $OUTPUT
 .system_variable @auto_script
 @ifdef $OUTPUT
 IRC_ALLOWED=1
@@ -64,6 +68,7 @@ IRC_ALLOWED=1
 .system_variable @irc_allow
 @ifndef $OUTPUT
 IRC_ALLOWED=
+@endif
 @endif
 @endif
 @endif
