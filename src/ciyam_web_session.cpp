@@ -1053,7 +1053,7 @@ string get_files_for_endpoint(
    else
    {
       if( !is_json_output )
-         response = all_names;
+         response = replaced( all_names, " ", "\n" );
       else
       {
          vector< string > names;
@@ -2166,7 +2166,13 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   string storages( get_system_variable( e_special_var_storage ) );
 
                   if( file_exists( c_ciyam_storages_file ) )
+                  {
                      storages = buffer_file( c_ciyam_storages_file );
+
+                     // NOTE: Need to strip off the trailing LF (if exists).
+                     if( !storages.empty( ) && ( storages[ storages.size( ) - 1 ] == '\n' ) )
+                        storages.erase( storages.size( ) - 1 );
+                  }
 
                   to_lower( storages );
 
@@ -2176,9 +2182,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   {
                      vector< string > all_storages;
 
-                     split( storages, all_storages );
+                     split( storages, all_storages, '\n' );
 
-                     as_json_array( "all_storages", all_storages );
+                     response = as_json_array( "all_storages", all_storages );
                   }
                }
                else
@@ -2210,7 +2216,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      ( void )rc;
 
-                     msleep( 200 );
+                     msleep( 100 );
                   }
 
                   // NOTE: Allows for a number of
