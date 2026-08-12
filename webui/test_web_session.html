@@ -450,23 +450,57 @@ http://www.opensource.org/licenses/mit-license.php.
 
    function replace_vars( input )
    {
+      var skip = false;
       var output = input;
 
-      var_map.forEach( function( value, key )
+      if( output == null )
+         output = "";
+
+      // NOTE: If is in the form of "~<string>" then will remove the
+      // "~" and skip performing any string replacement processing.
+      if( ( output.length > 0 ) && ( output.substr( 0, 1 ) == "~" ) )
       {
-         output = output.replace( "{" + key + "}", value );
-      } )
+         skip = true;
+         output = output.substring( 1 );
+      }
 
-      if( output.indexOf( "{@output}" >= 0 ) )
+      if( output == "" )
+         skip = true;
+
+      if( !skip )
       {
-         var value = document.getElementById( "user_arbitrary" ).value;
+         var_map.forEach( function( value, key )
+         {
+            value = value.replaceAll( "{", "\1" );
+            value = value.replaceAll( "}", "\2" );
 
-         var pos = value.indexOf( "\n" );
+            output = output.replaceAll( "{" + key + "}", value );
+         } )
 
-         if( pos > 0 )
-            value = value.substr( 0, pos );
+         if( output.indexOf( "{@output}" >= 0 ) )
+         {
+            var value = document.getElementById( "user_arbitrary" ).value;
 
-         output = output.replace( "{@output}", value );
+            value = value.replaceAll( "{", "\1" );
+            value = value.replaceAll( "}", "\2" );
+
+            var pos = value.indexOf( "\n" );
+
+            if( pos > 0 )
+               value = value.substr( 0, pos );
+
+            output = output.replaceAll( "{@output}", value );
+         }
+
+         // NOTE: Any "{var}" expressions that had not been
+         // replaced are now removed.
+         output = output.replaceAll( / *\{[^\}]*\}*/g, "" );
+
+         // NOTE: Any "{var}" expressions that were provided
+         // by the variable values are now restored (so that
+         // they can used in a later pass).
+         output = output.replaceAll( "\1", "{" );
+         output = output.replaceAll( "\2", "}" );
       }
 
       return output;
@@ -1061,6 +1095,11 @@ http://www.opensource.org/licenses/mit-license.php.
          {
             request = all_requests;
 
+            request = replace_vars( request );
+
+            if( request.indexOf( "@" ) == 0 )
+               request = replace_vars( request.substring( 1 ) );
+
             all_requests = "";
          }
          else
@@ -1068,6 +1107,9 @@ http://www.opensource.org/licenses/mit-license.php.
             request = all_requests.substr( 0, pos );
 
             request = replace_vars( request );
+
+            if( request.indexOf( "@" ) == 0 )
+               request = replace_vars( request.substring( 1 ) );
 
             all_requests = all_requests.substring( pos + 1 );
 
@@ -1134,10 +1176,51 @@ http://www.opensource.org/licenses/mit-license.php.
          }
       }
 
+      // NOTE: If a request is prefixed
+      // with "?{var} " then will erase
+      // the request if "var" is empty.
+      if( request.indexOf( "?" ) == 0 )
+      {
+         var pos = request.indexOf( " " );
+
+         if( pos > 0 )
+         {
+            var check = request.substr( 0, pos );
+
+            if( check == "?" )
+               request = "";
+            else
+               request = request.substring( pos + 1 );
+         }
+      }
+
+      // NOTE: Works just like "?" but
+      // erases if "var" is not empty.
+      if( request.indexOf( "!" ) == 0 )
+      {
+         var pos = request.indexOf( " " );
+
+         if( pos > 0 )
+         {
+            var check = request.substr( 0, pos );
+
+            if( check != "!" )
+               request = "";
+            else
+               request = request.substring( pos + 1 );
+         }
+      }
+
       if( request != "" )
          console.log( "request = '" + request + "'" );
 
-      if( request == vars_name )
+      // NOTE: Use "@" to replace the request which can
+      // be used to create a command from a variable or
+      // variables (e.g. "@{cmd}" (only is expected for
+      // interactive input here).
+      if( request.indexOf( "@" ) == 0 )
+         document.getElementById( "user_request" ).value = request.substring( 1 );
+      else if( request == vars_name )
       {
          var output = get_all_var_info( );
 
@@ -1195,7 +1278,8 @@ http://www.opensource.org/licenses/mit-license.php.
             document.getElementById( "user_request" ).value = "";
          }
       }
-      else if( request.startsWith( var_name ) )
+      else if( ( request != "var *" )
+       && ( request.startsWith( var_name + " " ) ) )
       {
          pos = request.indexOf( " " );
 
