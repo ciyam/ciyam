@@ -456,9 +456,9 @@ http://www.opensource.org/licenses/mit-license.php.
       if( output == null )
          output = "";
 
-      // NOTE: If is in the form of "~<string>" then will remove the
-      // "~" and skip performing any string replacement processing.
-      if( ( output.length > 0 ) && ( output.substr( 0, 1 ) == "~" ) )
+      // NOTE: If is in the form of ".<string>" then will remove the
+      // "." and skip performing any string replacement processing.
+      if( ( output.length > 0 ) && ( output.substr( 0, 1 ) == "." ) )
       {
          skip = true;
          output = output.substring( 1 );
@@ -1278,8 +1278,7 @@ http://www.opensource.org/licenses/mit-license.php.
             document.getElementById( "user_request" ).value = "";
          }
       }
-      else if( ( request != "var *" )
-       && ( request.startsWith( var_name + " " ) ) )
+      else if( request.startsWith( var_name ) )
       {
          pos = request.indexOf( " " );
 
@@ -1385,6 +1384,9 @@ http://www.opensource.org/licenses/mit-license.php.
       }
       else
       {
+         if( request.indexOf( "~" ) == 0 )
+            request = request.substring( 1 );
+
          request = reformatted( request );
 
          if( request == exec_name )
