@@ -57,6 +57,7 @@ IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE
 <$IRC_VARS_DIR/$IRC_VARS_FILE
 @endif
 ;
+.system_variable @no_irc ""
 .system_variable @irc_allow 1
 ;
 @else
