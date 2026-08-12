@@ -467,7 +467,7 @@ http://www.opensource.org/licenses/mit-license.php.
       if( output == "" )
          skip = true;
 
-      if( !skip )
+      if( !skip && ( output.length > 0 ) )
       {
          var_map.forEach( function( value, key )
          {
@@ -477,19 +477,31 @@ http://www.opensource.org/licenses/mit-license.php.
             output = output.replaceAll( "{" + key + "}", value );
          } )
 
-         if( output.indexOf( "{@output}" >= 0 ) )
+         if( output.indexOf( "{@" ) >= 0 )
          {
             var value = document.getElementById( "user_arbitrary" ).value;
 
-            value = value.replaceAll( "{", "\1" );
-            value = value.replaceAll( "}", "\2" );
+            value_array = value.split( "\n" );
 
-            var pos = value.indexOf( "\n" );
+            output.replaceAll( "{@0}", "{@}" );
 
-            if( pos > 0 )
-               value = value.substr( 0, pos );
+            if( output.indexOf( "{@}" ) >= 0 )
+            {
+               value = value.replaceAll( "{", "\1" );
+               value = value.replaceAll( "}", "\2" );
 
-            output = output.replaceAll( "{@output}", value );
+               output = output.replaceAll( "{@}", value );
+            }
+
+            for( i = 0; i < value_array.length; i++ )
+            {
+               var value = value_array[ i ];
+
+               value = value.replaceAll( "{", "\1" );
+               value = value.replaceAll( "}", "\2" );
+
+               output = output.replaceAll( "{@" + ( i + 1 ) + "}", value );
+            }
          }
 
          // NOTE: Any "{var}" expressions that had not been
