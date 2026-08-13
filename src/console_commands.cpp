@@ -3753,12 +3753,12 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                               if( !rhs.empty( ) )
                               {
-                                 // NOTE: Need to use '@' as a prefix for
+                                 // NOTE: Need to use ':' as a prefix for
                                  // unencoded characters (otherwise would
                                  // be potentially ambiguous). The use of
                                  // unescape is required as escaping will
                                  // have taken place when encoded.
-                                 if( rhs[ 0 ] == '@' )
+                                 if( rhs[ 0 ] == op )
                                     str = base64::encode( rhs.substr( 1 ), true );
                                  else
                                  {
