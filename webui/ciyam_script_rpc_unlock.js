@@ -6,24 +6,25 @@ async function ciyam_script_rpc_unlock_at_load( callback )
 {
    console.log( "ciyam_script_rpc_unlock_at_load" );
 
-   ciyam_script_rpc_unlock_result = "(ciyam_script_rpc_unlock loaded)";
-
-   ciyam_script_rpc_unlock_result = ciyam_script_rpc_unlock_result.replace( "ciyam_script_", "" );
-
-   var output = ciyam_script_rpc_unlock_result;
-
-   if( include_script_usage_hints )
+   if( init_script_value != null )
+      ciyam_script_rpc_unlock_execute( callback, init_script_value );
+   else
    {
-      var extra = output;
+      var output = "(rpc_unlock loaded)";
 
-      extra = extra.substr( 1, extra.length - 2 );
+      if( include_script_usage_hints )
+      {
+         var extra = output;
 
-      extra = extra.replace( "loaded", "test" );
+         extra = extra.substr( 1, extra.length - 2 );
 
-      output += "\nemploy javascript " + extra;
+         extra = extra.replace( "loaded", "test" );
+
+         output += "\nemploy javascript " + extra;
+      }
+
+      callback( output );
    }
-
-   callback( output );
 }
 
 async function ciyam_script_rpc_unlock_execute( callback, input )

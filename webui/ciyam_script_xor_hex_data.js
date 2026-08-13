@@ -51,26 +51,31 @@ async function ciyam_script_xor_hex_data_at_load( callback )
 {
    console.log( "ciyam_script_xor_hex_data_at_load" );
 
-   ciyam_script_xor_hex_data_result = "(ciyam_script_xor_hex_data loaded)";
-
-   ciyam_script_xor_hex_data_result = ciyam_script_xor_hex_data_result.replace( "ciyam_script_", "" );
-
-   var output = ciyam_script_xor_hex_data_result;
-
-   if( include_script_usage_hints )
-   {
-      var extra = output;
-
-      extra = extra.substr( 1, extra.length - 2 );
-
-      extra = extra.replace( "loaded", "01020304" );
-
-      output += "\nemploy javascript " + extra;
-   }
-
    ciyam_script_xor_hex_data_result = null;
 
-   callback( output );
+   if( init_script_value != null )
+   {
+      ciyam_script_xor_hex_data_result = null;
+
+      ciyam_script_xor_hex_data_execute( callback, init_script_value );
+   }
+   else
+   {
+      var output = "(xor_hex_data loaded)";
+
+      if( include_script_usage_hints )
+      {
+         var extra = output;
+
+         extra = extra.substr( 1, extra.length - 2 );
+
+         extra = extra.replace( "loaded", "01020304" );
+
+         output += "\nemploy javascript " + extra;
+      }
+
+      callback( output );
+   }
 }
 
 async function ciyam_script_xor_hex_data_execute( callback, input )

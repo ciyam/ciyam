@@ -99,19 +99,28 @@ async function ciyam_script_harden_at_load( callback )
        + ", non_async_time = " + non_async_time + "\n./ciyam_command crypto_hash -x=10000 test\n" + result );
    }
 
-   var output = "";
+   if( init_script_value != null )
+   {
+      ciyam_script_harden_reset = true;
 
-   if( ciyam_script_harden_use_async )
-      output = "(using async version)";
+      ciyam_script_harden_execute( callback, init_script_value );
+   }
    else
-      output = "(using non-async version)";
+   {
+      var output = "";
 
-   if( include_script_usage_hints )
-      output += "\nemploy javascript harden <input>";
+      if( ciyam_script_harden_use_async )
+         output = "(using async version)";
+      else
+         output = "(using non-async version)";
 
-   callback( output );
+      if( include_script_usage_hints )
+         output += "\nemploy javascript harden <input>";
 
-   ciyam_script_harden_reset = true;
+      callback( output );
+
+      ciyam_script_harden_reset = true;
+   }
 }
 
 async function ciyam_script_harden_repeat( )

@@ -7,11 +7,7 @@ async function ciyam_script_bip39_at_load( callback )
    console.log( "ciyam_script_bip39_at_load" );
 
    if( init_script_value != null )
-   {
-      ciyam_script_bip39_result = null;
-
       ciyam_script_bip39_execute( callback, init_script_value );
-   }
    else
    {
       ciyam_script_bip39_result = BIP39.generateMnemonic( );
@@ -31,8 +27,7 @@ async function ciyam_script_bip39_at_load( callback )
 
 async function ciyam_script_bip39_execute( callback, input )
 {
-   if( ciyam_script_bip39_result != null )
-      console.log( "ciyam_script_bip39_execute" );
+   console.log( "ciyam_script_bip39_execute" );
 
    ciyam_script_bip39_result = input;
 
