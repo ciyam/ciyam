@@ -6,24 +6,20 @@ async function ciyam_script_template_at_load( callback )
 {
    console.log( "ciyam_script_template_at_load" );
 
-   ciyam_script_template_result = "(ciyam_script_template loaded)";
-
-   ciyam_script_template_result = ciyam_script_template_result.replace( "ciyam_script_", "" );
-
-   var output = ciyam_script_template_result;
-
-   if( include_script_usage_hints )
+   if( init_script_value != null )
+      ciyam_script_template_execute( callback, init_script_value );
+   else
    {
-      var extra = output;
+      var output = "(ciyam_script_template loaded)";
 
-      extra = extra.substr( 1, extra.length - 2 );
+      // NOTE: This should be simplified.
+      if( include_script_usage_hints )
+         output += "\nemploy javascript ciyam_script_template test";
 
-      extra = extra.replace( "loaded", "test" );
+      output = output.replaceAll( "ciyam_script_", "" );
 
-      output += "\nemploy javascript " + extra;
+      callback( output );
    }
-
-   callback( output );
 }
 
 async function ciyam_script_template_execute( callback, input )

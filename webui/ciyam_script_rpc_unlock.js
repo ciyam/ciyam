@@ -13,15 +13,7 @@ async function ciyam_script_rpc_unlock_at_load( callback )
       var output = "(rpc_unlock loaded)";
 
       if( include_script_usage_hints )
-      {
-         var extra = output;
-
-         extra = extra.substr( 1, extra.length - 2 );
-
-         extra = extra.replace( "loaded", "test" );
-
-         output += "\nemploy javascript " + extra;
-      }
+         output += "\nemploy javascript rpc_unlock test";
 
       callback( output );
    }

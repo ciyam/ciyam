@@ -51,28 +51,14 @@ async function ciyam_script_xor_hex_data_at_load( callback )
 {
    console.log( "ciyam_script_xor_hex_data_at_load" );
 
-   ciyam_script_xor_hex_data_result = null;
-
    if( init_script_value != null )
-   {
-      ciyam_script_xor_hex_data_result = null;
-
       ciyam_script_xor_hex_data_execute( callback, init_script_value );
-   }
    else
    {
       var output = "(xor_hex_data loaded)";
 
       if( include_script_usage_hints )
-      {
-         var extra = output;
-
-         extra = extra.substr( 1, extra.length - 2 );
-
-         extra = extra.replace( "loaded", "01020304" );
-
-         output += "\nemploy javascript " + extra;
-      }
+         output += "\nemploy javascript xor_hex_data 01020304";
 
       callback( output );
    }
