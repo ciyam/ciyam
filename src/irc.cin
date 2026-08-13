@@ -275,7 +275,7 @@ NAMES=$RESTRICT
 RESTRICT=
 @endif
 ;
-ENCODED=@base64:@$MESSAGE
+ENCODED=@base64::$MESSAGE
 ;
 .run_script !irc_send_message "@room=$ROOM,@names=$NAMES,@message=$ENCODED"
 ;

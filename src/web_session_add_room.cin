@@ -36,11 +36,11 @@ NEW_ROOM=@substr:0,$POS:$NEW_ROOM
 ;
 @ifndef $ERROR
 MESSAGE=@strlit:_:create $NEW_ROOM-$JOIN_TOKEN $NAME
-ENCODED=@base64:@$MESSAGE
+ENCODED=@base64::$MESSAGE
 .run_script !irc_send_message "@room=$NEW_ROOM,@names=$USER,@message=$ENCODED"
 @ifdef $NAMES
 MESSAGE=@strlit:_:invite $NEW_ROOM-$JOIN_TOKEN $NAME
-ENCODED=@base64:@$MESSAGE
+ENCODED=@base64::$MESSAGE
 .run_script !irc_send_message "@room=$STARTING_ROOM,@names=$NAMES,@message=$ENCODED"
 @endif
 @endif

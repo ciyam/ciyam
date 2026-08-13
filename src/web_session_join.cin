@@ -37,7 +37,7 @@ JOIN_LINE=dummy
 ;
 @ifdef $IRC_USERS
 @ifneq "$JOIN_LINE" "dummy"
-ENCODED=@base64:@$JOIN_LINE
+ENCODED=@base64::$JOIN_LINE
 .run_script !irc_send_message "@room=$IRC_ROOM,@names=ALL,@message=$ENCODED"
 @endif
 ;

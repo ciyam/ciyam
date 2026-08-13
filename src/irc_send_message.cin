@@ -101,7 +101,7 @@ IRC_USERS=,$LIST
 IRC_USERS=@repstr:,/@:$IRC_USERS
 ;
 USER_MESSAGE=_ (private message sent to $LIST)
-USER_MESSAGE=@base64:@$USER_MESSAGE
+USER_MESSAGE=@base64::$USER_MESSAGE
 @endif
 @endif
 ;
