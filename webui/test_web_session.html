@@ -165,6 +165,11 @@ http://www.opensource.org/licenses/mit-license.php.
    const admin_session_name = "[admin]";
    const standard_session_name = "[standard]";
 
+   const var_name_access = "ACCESS";
+   const var_name_device = "DEVICE";
+   const var_name_sessid = "SESSID";
+   const var_name_unique = "UNIQUE";
+
    const creds_remove_help = "remove creds";
    const creds_retain_help = "retain creds";
 
@@ -522,7 +527,14 @@ http://www.opensource.org/licenses/mit-license.php.
    {
       var output = "";
 
-      var_map.forEach( function( value, key )
+      // NOTE: Copy then sort for output.
+      const array = Array.from( var_map );
+
+      const sorted = array.sort( ( a, b ) => a[ 0 ] > b[ 0 ] );
+
+      const sorted_map = new Map( sorted );
+
+      sorted_map.forEach( function( value, key )
       {
          if( output != "" )
             output += "\n";
@@ -1086,7 +1098,26 @@ http://www.opensource.org/licenses/mit-license.php.
 
       if( all_requests == "" )
       {
+         document.getElementById( "data" ).innerText = "";
+
          request = document.getElementById( "user_request" ).value;
+
+         if( !var_map.has( var_name_access )
+          && ( document.getElementById( "user_access" ).value != "" )
+          && ( document.getElementById( "user_access" ).value != admin_username ) )
+            var_map.set( var_name_access, document.getElementById( "user_access" ).value );
+
+         if( !var_map.has( var_name_device )
+          && ( document.getElementById( "user_device" ).value != "" ) )
+            var_map.set( var_name_device, document.getElementById( "user_device" ).value );
+
+         if( !var_map.has( var_name_sessid )
+          && ( document.getElementById( "user_session" ).value != "" ) )
+            var_map.set( var_name_sessid, document.getElementById( "user_session" ).value );
+
+         if( !var_map.has( var_name_unique )
+          && ( document.getElementById( "user_unique" ).value != "" ) )
+            var_map.set( var_name_unique, document.getElementById( "user_unique" ).value );
 
          request = replace_vars( request );
       }
@@ -1356,10 +1387,43 @@ http://www.opensource.org/licenses/mit-license.php.
 
                if( !skip_if_has || !var_map.has( name ) )
                {
-                  if( value == "" )
-                     var_map.delete( name );
+                  var had_lower = false;
+                  var had_upper = false;
+                  var had_numeric = false;
+
+                  var valid_user_var_name = true;
+
+                  for( i = 0; i < name.length; i++ )
+                  {
+                     var next = name.substr( i, 1 );
+
+                     if( ( next >= "a" ) && ( next <= "z" ) )
+                        had_lower = true;
+                     else if( ( next >= "A" ) && ( next <= "Z" ) )
+                        had_upper = true;
+                     else if( i == 0 )
+                        valid_user_var_name = false;
+                     else if( ( next >= '0' ) && ( next <= '9' ) )
+                        had_numeric = true;
+                     else
+                        valid_user_var_name = false;
+
+                     if( !valid_user_var_name )
+                        break;
+                  }
+
+                  if( !had_lower && !had_numeric )
+                     valid_user_var_name = false;
+
+                  if( !valid_user_var_name )
+                     handle_error( "Invalid user variable name '" + name + "'.", true );
                   else
-                     var_map.set( name, value );
+                  {
+                     if( value == "" )
+                        var_map.delete( name );
+                     else
+                        var_map.set( name, value );
+                  }
                }
             }
          }
@@ -1859,7 +1923,7 @@ http://www.opensource.org/licenses/mit-license.php.
          document.getElementById( "data" ).innerText = "(removed credentials " + scope + " for " + access + ")";
    }
 
-   function handle_error( error )
+   function handle_error( error, keep_request )
    {
       if( !error.startsWith( error_prefix ) )
          error = error_prefix + error;
@@ -1881,7 +1945,8 @@ http://www.opensource.org/licenses/mit-license.php.
          document.getElementById( "user_unique" ).focus( );
       }
 
-      document.getElementById( "user_request" ).value = "";
+      if( ( keep_request == null ) || ( keep_request != true ) )
+         document.getElementById( "user_request" ).value = "";
    }
 
    function handle_response( data )
@@ -2101,6 +2166,18 @@ http://www.opensource.org/licenses/mit-license.php.
                }
 
                is_running = false;
+
+               if( var_map.has( var_name_access ) )
+                  var_map.delete( var_name_access );
+
+               if( var_map.has( var_name_device ) )
+                  var_map.delete( var_name_device );
+
+               if( var_map.has( var_name_sessid ) )
+                  var_map.delete( var_name_sessid );
+
+               if( var_map.has( var_name_unique ) )
+                  var_map.delete( var_name_unique );
 
                document.getElementById( "user_unique" ).value = "";
                document.getElementById( "user_unique" ).focus( );
