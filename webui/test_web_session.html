@@ -1413,6 +1413,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   var had_lower = false;
                   var had_upper = false;
                   var had_numeric = false;
+                  var had_underbar = false;
 
                   var valid_user_var_name = true;
 
@@ -1428,6 +1429,8 @@ http://www.opensource.org/licenses/mit-license.php.
                         valid_user_var_name = false;
                      else if( ( next >= '0' ) && ( next <= '9' ) )
                         had_numeric = true;
+                     else if( next == "_" )
+                        had_underbar = true;
                      else
                         valid_user_var_name = false;
 
@@ -1435,7 +1438,9 @@ http://www.opensource.org/licenses/mit-license.php.
                         break;
                   }
 
-                  if( !had_lower && !had_numeric )
+                  // NOTE: All upper case are reserved for "special"
+                  // variable names (such as "ACCESS" and "DEVICE").
+                  if( !had_lower && !had_numeric && !had_underbar )
                      valid_user_var_name = false;
 
                   if( !valid_user_var_name )
