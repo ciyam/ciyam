@@ -109,7 +109,7 @@ TEST=@file:~cat modules.lst.default
 #$TEST
 TEST=a\\nb
 #$TEST
-TEST=@base64:@_$TEST
+TEST=@base64::_$TEST
 #$TEST
 TEST=@base64:$TEST
 #$TEST
@@ -146,7 +146,7 @@ NEXT=ghi
 TEST=$TEST\n$NEXT
 #$TEST
 TEST=abc\ndef\ng\\h
-TEST=@base64:@$TEST
+TEST=@base64::$TEST
 #$TEST
 TEST=@base64:$TEST
 #$TEST
