@@ -7,7 +7,11 @@ async function ciyam_script_rpc_unlock_at_load( callback )
    console.log( "ciyam_script_rpc_unlock_at_load" );
 
    if( init_script_value != null )
+   {
+      ciyam_script_rpc_unlock_result = null;
+
       ciyam_script_rpc_unlock_execute( callback, init_script_value );
+   }
    else
    {
       var output = "(rpc_unlock loaded)";

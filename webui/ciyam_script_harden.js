@@ -103,6 +103,8 @@ async function ciyam_script_harden_at_load( callback )
    {
       ciyam_script_harden_reset = true;
 
+      ciyam_script_harden_result = null;
+
       ciyam_script_harden_execute( callback, init_script_value );
    }
    else

@@ -7,7 +7,11 @@ async function ciyam_script_template_at_load( callback )
    console.log( "ciyam_script_template_at_load" );
 
    if( init_script_value != null )
+   {
+      ciyam_script_template_result = null;
+
       ciyam_script_template_execute( callback, init_script_value );
+   }
    else
    {
       var output = "(ciyam_script_template loaded)";
