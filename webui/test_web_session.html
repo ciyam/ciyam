@@ -1373,6 +1373,7 @@ http://www.opensource.org/licenses/mit-license.php.
                var name = var_info.substr( 0, pos );
                var value = var_info.substring( pos + 1 );
 
+               var is_func = false;
                var skip_if_has = false;
 
                // NOTE: If the name is prefixed
@@ -1382,6 +1383,12 @@ http://www.opensource.org/licenses/mit-license.php.
                if( name.substr( 0, 1 ) == "!" )
                {
                   skip_if_has = true;
+                  name = name.substring( 1 );
+               }
+
+               if( name.substr( 0, 1 ) == "#" )
+               {
+                  is_func = true;
                   name = name.substring( 1 );
                }
 
@@ -1408,7 +1415,56 @@ http://www.opensource.org/licenses/mit-license.php.
                   }
                }
 
-               if( !skip_if_has || !var_map.has( name ) )
+               if( is_func )
+               {
+                  var pos = value.indexOf( ":" );
+
+                  var okay = true;
+
+                  if( pos > 0 )
+                  {
+                     var func_name = value.substr( 0, pos );
+                     var func_info = value.substring( pos + 1 )
+
+                     if( func_name == "substr" )
+                     {
+                        var length = null;
+
+                        pos = func_info.indexOf( "," );
+
+                        if( pos > 0 )
+                        {
+                           length = func_info.substring( pos + 1 );
+                           func_info = func_info.substr( 0, pos );
+                        }
+
+                        if( ( func_info != "" ) && ( var_map.has( name ) ) )
+                        {
+                           var existing = document.getElementById( "user_arbitrary" ).value;
+
+                           if( existing != "" )
+                              existing += "\n";
+
+                           var value = var_map.get( name );
+
+                           if( length == null )
+                              output = existing + value.substring( func_info );
+                           else
+                              output = existing + value.substr( func_info, length );
+
+                           document.getElementById( "user_arbitrary" ).value = output;
+                        }
+                     }
+                     else
+                        okay = false;
+                  }
+                  else
+                     okay = false;
+
+                  if( okay == false )
+                     handle_error( "Invalid or unknown variable function information '" + value + "'", true );
+               }
+               else if( !skip_if_has || !var_map.has( name ) )
                {
                   var had_lower = false;
                   var had_upper = false;
@@ -1962,6 +2018,8 @@ http://www.opensource.org/licenses/mit-license.php.
       {
          hashed = "";
 
+         var_map.clear( );
+
          document.getElementById( "user_unique" ).value = "";
          document.getElementById( "user_session" ).value = "";
 
@@ -2193,19 +2251,9 @@ http://www.opensource.org/licenses/mit-license.php.
                   document.getElementById( "user_password" ).disabled = true;
                }
 
+               var_map.clear( );
+
                is_running = false;
-
-               if( var_map.has( var_name_access ) )
-                  var_map.delete( var_name_access );
-
-               if( var_map.has( var_name_device ) )
-                  var_map.delete( var_name_device );
-
-               if( var_map.has( var_name_sessid ) )
-                  var_map.delete( var_name_sessid );
-
-               if( var_map.has( var_name_unique ) )
-                  var_map.delete( var_name_unique );
 
                document.getElementById( "user_unique" ).value = "";
                document.getElementById( "user_unique" ).focus( );
