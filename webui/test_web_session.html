@@ -167,6 +167,8 @@ http://www.opensource.org/licenses/mit-license.php.
    const admin_session_name = "[admin]";
    const standard_session_name = "[standard]";
 
+   const var_func_substr = "substr";
+
    const var_name_access = "ACCESS";
    const var_name_device = "DEVICE";
    const var_name_sessid = "SESSID";
@@ -787,10 +789,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
    function load_js( new_page_script, raw_script_information )
    {
-      const old_page_script = document.getElementById( new_page_script );
-
-      if( old_page_script != null )
-         old_page_script.remove( );
+      unload_js( new_page_script );
 
       if( raw_script_information != null )
       {
@@ -1426,7 +1425,7 @@ http://www.opensource.org/licenses/mit-license.php.
                      var func_name = value.substr( 0, pos );
                      var func_info = value.substring( pos + 1 )
 
-                     if( func_name == "substr" )
+                     if( func_name == var_func_substr )
                      {
                         var length = null;
 
