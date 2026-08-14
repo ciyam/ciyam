@@ -51,12 +51,10 @@ async function ciyam_script_xor_hex_data_at_load( callback )
 {
    console.log( "ciyam_script_xor_hex_data_at_load" );
 
-   if( init_script_value != null )
-   {
-      ciyam_script_xor_hex_data_result = null;
+   ciyam_script_xor_hex_data_result = null;
 
+   if( init_script_value != null )
       ciyam_script_xor_hex_data_execute( callback, init_script_value );
-   }
    else
    {
       var output = "(xor_hex_data loaded)";

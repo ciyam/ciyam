@@ -63,6 +63,8 @@ async function ciyam_script_harden_at_load( callback )
 {
    console.log( "ciyam_script_harden_at_load" );
 
+   ciyam_script_harden_result = null;
+
    const has_crypto_subtle = ( typeof window.crypto !== "undefined" ) && ( typeof window.crypto.subtle !== "undefined" );
 
    if( !has_crypto_subtle )
@@ -102,8 +104,6 @@ async function ciyam_script_harden_at_load( callback )
    if( init_script_value != null )
    {
       ciyam_script_harden_reset = true;
-
-      ciyam_script_harden_result = null;
 
       ciyam_script_harden_execute( callback, init_script_value );
    }
