@@ -1619,11 +1619,11 @@ http://www.opensource.org/licenses/mit-license.php.
             if( ( cmd == users_create_cmd ) || ( cmd == users_delete_cmd )
              || ( cmd == messages_create_cmd ) || ( cmd == messages_review_cmd )
              || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
-             || ( cmd == unlock_keys_employ_cmd ) || ( cmd == javascripts_review_cmd )
-             || ( cmd == stylesheets_review_cmd ) || ( cmd == webcmdlists_review_cmd )
-             || ( cmd == storage_modules_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
+             || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd )
+             || ( cmd == javascripts_review_cmd ) || ( cmd == stylesheets_review_cmd )
+             || ( cmd == webcmdlists_review_cmd ) || ( cmd == storage_modules_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
             {
-               if( cmd == users_create_cmd )
+               if( ( cmd == users_create_cmd ) || ( cmd == unlock_keys_create_cmd ) )
                   has_cmd_options = true;
                else
                {
