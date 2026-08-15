@@ -75,6 +75,8 @@ const size_t c_admin_retry_timeout = 100;
 
 const size_t c_min_passwd_retry_seconds = 3;
 
+const size_t c_unlock_key_file_name_len = 8;
+
 const size_t c_max_token_create_attempts = 10;
 
 constexpr const char* c_force = "force";
@@ -90,6 +92,8 @@ constexpr const char* c_error_output_prefix = "Error: ";
 constexpr const char* c_ciyam_script_prefix = "ciyam_script_";
 
 constexpr const char* c_ciyam_storages_file = ".ciyam_storages";
+
+constexpr const char* c_ext_unlock_iterations = "33333";
 
 constexpr const char* c_web_demo_pin_1 = "10101";
 constexpr const char* c_web_demo_pin_2 = "10201";
@@ -143,6 +147,8 @@ constexpr const char* c_cws_request_messages_create_options_text = "text";
 
 constexpr const char* c_cws_request_messages_review_options_from = "from";
 
+constexpr const char* c_cws_request_unlock_keys_create_options_encrypted = "encrypted";
+
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax to HTTP requests.
 constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete javascript\n"
  "delete stylesheet\ndelete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview messages <room> [from=<unix_time>]\n"
@@ -151,7 +157,7 @@ constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\n
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
- "create message <room> [for=<name,>;]text=<text>\ncreate unlock-key\ndelete user <pin>\ndelete javascript\ndelete stylesheet\n"
+ "create message <room> [for=<name,>;]text=<text>\ncreate unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete javascript\ndelete stylesheet\n"
  "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [from=<unix_time>]\n"
  "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
@@ -1340,17 +1346,30 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          {
             guard g( g_mutex );
 
+            string dbl_hash;
             string hardened( passwd );
 
-            harden_key_with_hash_rounds( hardened, hardened, hardened, c_key_rounds_multiplier );
+            if( request.length( ) == 136 )
+            {
+               dbl_hash = request.substr( 72 );
 
-            data_encrypt( request, request, hardened );
+               request = "**************************:" + request.substr( 0, 72 );
+            }
+            else
+            {
+               harden_key_with_hash_rounds( hardened, hardened, hardened, c_key_rounds_multiplier );
+
+               data_encrypt( request, request, hardened );
+            }
 
             try
             {
                set_identity( request );
 
-               set_identity( passwd, request.c_str( ) );
+               if( passwd != hardened )
+                  set_identity( passwd, request.c_str( ) );
+               else
+                  set_external_identity( request, dbl_hash );
             }
             catch( exception& x )
             {
@@ -1619,24 +1638,67 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                }
                else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_unlock_keys ) )
                {
-                  if( access != g_cws_admin_token )
+                  size_t valid_options = 0;
+
+                  string encrypted_key_name;
+                  string encrypted_sid_hash;
+
+                  if( option_parameters.count( c_cws_request_unlock_keys_create_options_encrypted ) )
+                  {
+                     ++valid_options;
+
+                     string value( option_parameters[ c_cws_request_unlock_keys_create_options_encrypted ] );
+
+                     string::size_type pos = value.find( '-' );
+
+                     if( pos != c_unlock_key_file_name_len )
+                        --valid_options;
+                     else
+                     {
+                        encrypted_key_name = value.substr( 0, c_unlock_key_file_name_len );
+                        encrypted_sid_hash = value.substr( c_unlock_key_file_name_len + 1 );
+                     }
+                  }
+
+                  if( option_parameters.size( ) > valid_options )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Invalid options '" + options + "' for unlock-key creation.";
+                  else if( access != g_cws_admin_token )
                      // FUTURE: This message should be handled as a server string message.
                      error = "Unlock keys can only be created by the administrator.";
-                  else if( is_locked )
+                  else if( is_locked && !valid_options )
                      // FUTURE: This message should be handled as a server string message.
-                     error = "Unlock keys are not able to be created whilst currently locked.";
+                     error = "Unlock keys are not able to be generated whilst currently locked.";
                   else
                   {
-                     found = true;
+                     if( valid_options )
+                     {
+                        string file_name( encrypted_key_name + c_key_suffix );
 
-                     string unlock_key( create_unlock_sid_hash_key( false, false ) );
+                        ofstream outf( file_name.c_str( ) );
 
-                     replace( unlock_key, " ", "-" );
+                        outf << encrypted_sid_hash;
 
-                     if( !is_json_output )
-                        response = unlock_key;
+                        outf.close( );
+
+                        if( !outf.good( ) )
+                           throw runtime_error( "unexpected error creating unlock key file '" + file_name + "'" );
+
+                        found = true;
+                     }
                      else
-                        response = "{\"unlock_key\":\"" + escaped_json( unlock_key ) + "\"}\n";
+                     {
+                        string unlock_key( create_unlock_sid_hash_key( false, false ) );
+
+                        replace( unlock_key, " ", "-" );
+
+                        found = true;
+
+                        if( !is_json_output )
+                           response = unlock_key;
+                        else
+                           response = "{\"unlock_key\":\"" + escaped_json( unlock_key ) + "\"}\n";
+                     }
                   }
                }
                else if( is_get_request
@@ -1796,7 +1858,19 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   {
                      try
                      {
-                        set_identity( replaced( key, "-", " " ) );
+                        if( key.find( "-" ) != string::npos )
+                           set_identity( replaced( key, "-", " " ) );
+                        else
+                        {
+                           string encrypted;
+
+                           string prefix( c_ext_unlock_iterations );
+
+                           if( get_system_variable( e_special_var_blockchain_backup_identity ).empty( ) )
+                              encrypted = buffer_file( c_ciyam_server_sid_file );
+
+                           set_identity( prefix + " " + key, encrypted.empty( ) ? 0 : encrypted.c_str( ) );
+                        }
 
                         found = true;
                      }
