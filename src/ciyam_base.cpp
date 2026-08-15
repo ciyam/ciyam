@@ -5849,6 +5849,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
       guard g( g_mutex );
 
       bool is_encrypted = false;
+      bool is_external_sid = false;
       bool was_self_encrypted = false;
 
       string sid;
@@ -5895,6 +5896,9 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          string key_file_name;
 
+         if( sid.find( "***" ) == 0 )
+            is_external_sid = true;
+
          // NOTE: Unlock keys are expected to be base64 URL
          // characters in three groups of five (using space
          // separators).
@@ -5915,8 +5919,19 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             }
          }
 
-         harden_key_with_hash_rounds( key, key, key,
-          c_key_rounds_multiplier * ( !possible_unlock_key ? 1 : c_unlock_key_multiplier ) );
+         string::size_type apos = key.find( ' ' );
+
+         if( is_external_sid && ( apos != string::npos ) )
+         {
+            size_t rounds = from_string< size_t >( key.substr( 0, apos ) );
+
+            key.erase( 0, apos + 1 );
+
+            key = crypto_digest( key, false, false, rounds * c_key_rounds_multiplier );
+         }
+         else
+            harden_key_with_hash_rounds( key, key, key,
+             c_key_rounds_multiplier * ( !possible_unlock_key ? 1 : c_unlock_key_multiplier ) );
 
          if( possible_unlock_key )
          {
@@ -5940,7 +5955,64 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             }
          }
 
-         data_decrypt( sid, sid, key );
+         if( !is_external_sid )
+            data_decrypt( sid, sid, key );
+         else
+         {
+            apos = sid.find( ':' );
+
+            if( apos != string::npos )
+            {
+               sid.erase( 0, apos + 1 );
+
+               string prefix( sid.substr( 0, 8 ) );
+
+               string ext_key_file;
+
+               bool found = false;
+
+               // NOTE: First checks that the decryption prefix matches and
+               // if okay then XORs this key with the remaining hex digits.
+               if( key.find( prefix ) == 0 )
+                  found = true;
+               else
+               {
+                  ext_key_file = key.substr( 0, 8 ) + c_key_suffix;
+
+                  if( !file_exists( ext_key_file ) )
+                     ext_key_file.erase( );
+                  else
+                  {
+                     found = true;
+
+                     sid = buffer_file( ext_key_file );
+                  }
+               }
+
+               if( found )
+               {
+                  // NOTE: If was loaded using an external key
+                  // file then will be the correct size but if
+                  // using the master password then is larger.
+                  if( sid.length( ) > 64 )
+                     sid.erase( 0, 8 );
+
+                  unsigned char buffer_1[ 32 ];
+                  unsigned char buffer_2[ 32 ];
+
+                  hex_decode( key, buffer_1, sizeof( buffer_1 ) );
+                  hex_decode( sid, buffer_2, sizeof( buffer_2 ) );
+
+                  for( size_t i = 0; i < 32; i++ )
+                     buffer_1[ i ] ^= buffer_2[ i ];
+
+                  sid = hex_encode( buffer_1, sizeof( buffer_1 ) );
+
+                  if( !ext_key_file.empty( ) )
+                     file_remove( ext_key_file );
+               }
+            }
+         }
 
          size_t num_spaces = count( sid.begin( ), sid.end( ), ' ' );
 
@@ -5988,7 +6060,12 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             if( extra.empty( ) )
             {
                if( !was_key_unlocked )
-                  hash_sid_val( sid );
+               {
+                  if( is_external_sid )
+                     set_sid( sid );
+                  else
+                     hash_sid_val( sid );
+               }
                else
                {
                   file_remove( key_file_name );
@@ -6085,7 +6162,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          if( was_self_encrypted )
             write_file( c_ciyam_server_sid_file, ( unsigned char* )info.c_str( ), info.length( ) );
-         else
+         else if( !is_external_sid )
          {
             if( file_exists( c_ciyam_server_sid_file ) )
                TRACE_LOG( TRACE_MINIMAL, "*** system identity change occurred ***" );
@@ -6120,6 +6197,18 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
       check_if_is_known_demo_identity( );
    }
+}
+
+void set_external_identity( const string& info, const string& info_check )
+{
+   guard g( g_mutex );
+
+   temp_umask tum( 077 );
+
+   write_file( c_ciyam_server_sid_file, info.c_str( ), info.length( ) );
+
+   if( info_check.length( ) )
+      write_file( c_ciyam_server_sid_chk_file, info_check.c_str( ), info_check.length( ) );
 }
 
 bool unlock_create_allowed( )

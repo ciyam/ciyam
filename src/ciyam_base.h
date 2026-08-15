@@ -254,6 +254,8 @@ bool has_identity( bool* p_is_encrypted = 0 );
 
 void set_identity( const std::string& info, const char* p_encrypted_sid = 0 );
 
+void set_external_identity( const std::string& info, const std::string& info_check );
+
 bool unlock_create_allowed( );
 
 std::string create_unlock_sid_hash_key( bool for_web_ui = true, bool is_temporary = false );
