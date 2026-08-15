@@ -213,7 +213,7 @@ quit
 attach storage <name>
 create user [secret|suggested=[<pin>:][<username>]]
 create message <room> [for=<name,>;]text=<text>
-create unlock-key
+create unlock-key [encrypted=<prefix>-<xor_hash>]
 delete user <pin>
 delete javascript
 delete stylesheet
