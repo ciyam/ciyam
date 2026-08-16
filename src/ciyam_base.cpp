@@ -376,9 +376,10 @@ string g_gteq_session_queue_name;
 
 string g_identity_suffix;
 
+bool g_locked_identity;
 bool g_secure_identity;
+
 bool g_hardened_identity;
-bool g_encrypted_identity;
 
 string g_storage_name_lock;
 
@@ -5196,12 +5197,14 @@ void init_globals( const char* p_sid, int* p_port, int* p_use_udp, int* p_web_po
       set_sid( sid );
       clear_key( sid );
 
-      has_identity( &g_encrypted_identity );
+      bool is_external = false;
+
+      has_identity( &g_locked_identity, &is_external );
 
       if( force_secure )
          g_secure_identity = true;
       else
-         g_secure_identity = g_encrypted_identity;
+         g_secure_identity = g_locked_identity;
 
       g_get_name = get_special_var_name( e_special_var_get );
       g_set_name = get_special_var_name( e_special_var_set );
@@ -5220,11 +5223,14 @@ void init_globals( const char* p_sid, int* p_port, int* p_use_udp, int* p_web_po
 
       g_gteq_session_queue_name = get_special_var_name( e_special_var_gteq_session_queue );
 
+      if( is_external )
+         set_system_variable( e_special_var_sid_extern, c_true_value, true );
+
+      if( g_locked_identity )
+         set_system_variable( e_special_var_sid_locked, c_true_value, true );
+
       if( g_secure_identity )
          set_system_variable( e_special_var_sid_secure, c_true_value, true );
-
-      if( g_encrypted_identity )
-         set_system_variable( e_special_var_sid_locked, c_true_value, true );
 
       string install_release( "0" );
       string install_version( "0.0" );
@@ -5371,7 +5377,7 @@ void init_globals( const char* p_sid, int* p_port, int* p_use_udp, int* p_web_po
 
       if( !blockchain_backup_identity.empty( ) )
          identity = g_identity_suffix = blockchain_backup_identity;
-      else if( !g_sid.empty( ) && !g_encrypted_identity )
+      else if( !g_sid.empty( ) && !g_locked_identity )
          identity = get_identity( ).substr( 0, c_identity_length );
 
       set_system_variable( e_special_var_system_identity, identity, true );
@@ -5517,7 +5523,7 @@ void term_globals( )
 
 int get_sid_value( char* p_sid, int max_size )
 {
-   if( !g_secure_identity || g_encrypted_identity )
+   if( g_locked_identity || !g_secure_identity )
       return 0;
 
    string sid;
@@ -5816,7 +5822,7 @@ string get_check_identity( )
    return check_identity;
 }
 
-bool has_identity( bool* p_is_encrypted )
+bool has_identity( bool* p_is_locked, bool* p_is_external )
 {
    guard g( g_mutex );
 
@@ -5826,12 +5832,20 @@ bool has_identity( bool* p_is_encrypted )
 
    bool retval = !sid.empty( );
 
-   if( p_is_encrypted )
+   if( p_is_locked )
    {
       if( sid.find( ':' ) != string::npos )
-         *p_is_encrypted = true;
+         *p_is_locked = true;
       else
-         *p_is_encrypted = false;
+         *p_is_locked = false;
+   }
+
+   if( p_is_external )
+   {
+      if( sid.find( c_ciyam_sid_external ) == 0 )
+         *p_is_external = true;
+      else
+         *p_is_external = false;
    }
 
    clear_key( sid );
@@ -5870,9 +5884,13 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          if( info.find( ':' ) != string::npos )
          {
+            g_locked_identity = true;
             g_secure_identity = true;
+
             g_hardened_identity = false;
-            g_encrypted_identity = true;
+
+            if( sid.find( c_ciyam_sid_external ) == 0 )
+               set_system_variable( e_special_var_sid_extern, c_true_value, true );
 
             set_system_variable( e_special_var_sid_locked, c_true_value, true );
             set_system_variable( e_special_var_sid_secure, c_true_value, true );
@@ -5896,7 +5914,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          string key_file_name;
 
-         if( sid.find( "***" ) == 0 )
+         if( sid.find( c_ciyam_sid_external ) == 0 )
             is_external_sid = true;
 
          // NOTE: Unlock keys are expected to be base64 URL
@@ -6101,11 +6119,11 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
             has_unlocked_sid = true;
 
+            if( !p_encrypted_sid )
+               g_locked_identity = false;
+
             if( was_hardened )
                g_hardened_identity = true;
-
-            if( !p_encrypted_sid )
-               g_encrypted_identity = false;
 
             set_system_variable( e_special_var_sid_locked, "", true );
 
@@ -6129,7 +6147,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
       clear_key( sid );
 
-      if( p_encrypted_sid && g_encrypted_identity && has_unlocked_sid )
+      if( p_encrypted_sid && g_locked_identity && has_unlocked_sid )
       {
          string user( get_environment_variable( c_env_var_ciyam_user ) );
 
@@ -6173,7 +6191,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
                write_file( c_ciyam_server_sid_chk_file, ( unsigned char* )dbl_hash.c_str( ), dbl_hash.length( ) );
          }
 
-         g_encrypted_identity = false;
+         g_locked_identity = false;
 
          set_system_variable( e_special_var_sid_secure, c_true_value, true );
 

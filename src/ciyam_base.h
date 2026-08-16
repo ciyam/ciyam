@@ -250,7 +250,7 @@ inline std::string get_identity(
 
 std::string get_check_identity( );
 
-bool has_identity( bool* p_is_encrypted = 0 );
+bool has_identity( bool* p_is_locked = 0, bool* p_is_external = 0 );
 
 void set_identity( const std::string& info, const char* p_encrypted_sid = 0 );
 
