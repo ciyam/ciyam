@@ -5998,6 +5998,9 @@ void set_identity( const string& info, const char* p_encrypted_sid )
                   ext_key_file = key.substr( 0, 8 ) + c_key_suffix;
 
                   if( !file_exists( ext_key_file ) )
+                     ext_key_file = g_temporary_directory + '/' + ext_key_file;
+
+                  if( !file_exists( ext_key_file ) )
                      ext_key_file.erase( );
                   else
                   {
@@ -6036,8 +6039,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          string extra;
 
-         // If there are additional spaces then treat all additional words
-         // as being additional entropy (rather than validated mnemonics).
+         // NOTE: If extra spaces are found then treat all additional
+         // words as being "extra entropy" (not validated mnemonics).
          if( num_spaces > 11 )
          {
             string::size_type pos = 0;
