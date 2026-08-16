@@ -1353,7 +1353,13 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
             {
                dbl_hash = request.substr( 72 );
 
-               request = "**************************:" + request.substr( 0, 72 );
+               string unique( uuid( ).as_string( ) );
+
+               string prefix( c_ciyam_sid_external );
+
+               prefix += unique.substr( 0, 25 - CONST_LENGTH( c_ciyam_sid_external ) );
+
+               request = prefix + ':' + request.substr( 0, 72 );
             }
             else
             {
@@ -1673,18 +1679,26 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   {
                      if( valid_options )
                      {
-                        string file_name( encrypted_key_name + c_key_suffix );
+                        if( !has_system_variable( e_special_var_sid_extern ) )
+                           // FUTURE: This message should be handled as a server string message.
+                           error = "External unlock keys are not usable for an internally generated identity.";
+                        else
+                        {
+                           temp_umask tum( 077 );
 
-                        ofstream outf( file_name.c_str( ) );
+                           string file_name( encrypted_key_name + c_key_suffix );
 
-                        outf << encrypted_sid_hash;
+                           ofstream outf( file_name.c_str( ) );
 
-                        outf.close( );
+                           outf << encrypted_sid_hash;
 
-                        if( !outf.good( ) )
-                           throw runtime_error( "unexpected error creating unlock key file '" + file_name + "'" );
+                           outf.close( );
 
-                        found = true;
+                           if( !outf.good( ) )
+                              throw runtime_error( "unexpected error creating unlock key file '" + file_name + "'" );
+
+                           found = true;
+                        }
                      }
                      else
                      {
@@ -1866,10 +1880,15 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                            string prefix( c_ext_unlock_iterations );
 
+                           if( has_system_variable( e_special_var_sid_extern ) )
+                              prefix += " ";
+                           else
+                              prefix.erase( );
+
                            if( get_system_variable( e_special_var_blockchain_backup_identity ).empty( ) )
                               encrypted = buffer_file( c_ciyam_server_sid_file );
 
-                           set_identity( prefix + " " + key, encrypted.empty( ) ? 0 : encrypted.c_str( ) );
+                           set_identity( prefix + key, encrypted.empty( ) ? 0 : encrypted.c_str( ) );
                         }
 
                         found = true;
