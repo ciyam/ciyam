@@ -1688,6 +1688,12 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                            string file_name( encrypted_key_name + c_key_suffix );
 
+                           // NOTE: If is currently locked then will store the key
+                           // in the temporary directory (providing an approach to
+                           // ensure that unlock keys are not permanently stored).
+                           if( is_locked )
+                              file_name = g_temporary_directory + '/' + file_name;
+
                            ofstream outf( file_name.c_str( ) );
 
                            outf << encrypted_sid_hash;
