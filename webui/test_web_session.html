@@ -110,8 +110,9 @@ http://www.opensource.org/licenses/mit-license.php.
    var all_requests = "";
 
    var has_seed = false;
+   var was_exec = false;
 
-   var is_running = false;
+   var started_session = false;
    var is_admin_session = false;
 
    var self = 0;
@@ -273,7 +274,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
          if( is_for_self )
          {
-            if( is_running )
+            if( started_session )
             {
                test_web_channel.postMessage( viewer + "-" + self );
 
@@ -319,7 +320,7 @@ http://www.opensource.org/licenses/mit-license.php.
                var viewer = data.substr( 0, pos );
                var shared = data.substr( pos + 1 );
 
-               if( !is_running && ( ( self == viewer ) || ( owner == viewer ) ) )
+               if( !started_session && ( ( self == viewer ) || ( owner == viewer ) ) )
                {
                   var user_data = shared.split( "," );
 
@@ -350,7 +351,7 @@ http://www.opensource.org/licenses/mit-license.php.
             {
                owner = 0;
 
-               is_running = false;
+               started_session = false;
                is_admin_session = false;
 
                document.getElementById( "user_access" ).value = "";
@@ -1031,7 +1032,7 @@ http://www.opensource.org/licenses/mit-license.php.
       {
          init_script_value = null;
 
-         include_script_usage_hints = true;
+         include_script_usage_hints = !was_exec;
 
          var script = request.substr( javascripts_reload_cmd.length + 1 );
 
@@ -1116,7 +1117,7 @@ http://www.opensource.org/licenses/mit-license.php.
    {
       var request = "";
 
-      var was_exec = false;
+      was_exec = false;
 
       if( all_requests == "" )
       {
@@ -1212,7 +1213,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
                            wait_bool_repeats = 0;
 
-                           document.getElementById( "user_arbitrary" ).value += "\n(max wait repeats exceeded)";
+                           document.getElementById( "user_arbitrary" ).value += "\n(timed out waiting for '" + argument + "')";
                         }
                         else
                            all_requests = request + "\n" + all_requests;
@@ -1553,6 +1554,8 @@ http://www.opensource.org/licenses/mit-license.php.
             include_script_usage_hints = false;
 
             all_requests = document.getElementById( "user_arbitrary" ).value;
+
+            document.getElementById( "user_arbitrary" ).value = "";
 
             document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
             document.getElementById( "user_request" ).value = "";
@@ -2013,7 +2016,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
       document.getElementById( "data" ).innerText = error;
 
-      if( !is_running )
+      if( !started_session )
       {
          hashed = "";
 
@@ -2200,10 +2203,10 @@ http://www.opensource.org/licenses/mit-license.php.
             if( pos > 0 )
                prefix = data.substring( 0, pos );
 
-            if( !is_running
+            if( !started_session
              && ( ( prefix == admin_session_name ) || ( prefix == standard_session_name ) ) )
             {
-               is_running = true;
+               started_session = true;
 
                if( prefix == admin_session_name )
                   is_admin_session = true;
@@ -2252,7 +2255,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
                var_map.clear( );
 
-               is_running = false;
+               started_session = false;
 
                document.getElementById( "user_unique" ).value = "";
                document.getElementById( "user_unique" ).focus( );
