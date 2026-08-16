@@ -168,6 +168,7 @@ constexpr const char* c_special_variable_key_suffix = "@key_suffix";
 constexpr const char* c_special_variable_permission = "@permission";
 constexpr const char* c_special_variable_queue_puts = "@queue_puts";
 constexpr const char* c_special_variable_session_id = "@session_id";
+constexpr const char* c_special_variable_sid_extern = "@sid_extern";
 constexpr const char* c_special_variable_sid_locked = "@sid_locked";
 constexpr const char* c_special_variable_sid_secure = "@sid_secure";
 constexpr const char* c_special_variable_tag_prefix = "@tag_prefix";
@@ -546,6 +547,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_permission );
       g_special_variable_names.push_back( c_special_variable_queue_puts );
       g_special_variable_names.push_back( c_special_variable_session_id );
+      g_special_variable_names.push_back( c_special_variable_sid_extern );
       g_special_variable_names.push_back( c_special_variable_sid_locked );
       g_special_variable_names.push_back( c_special_variable_sid_secure );
       g_special_variable_names.push_back( c_special_variable_tag_prefix );
@@ -765,6 +767,7 @@ void init_special_variable_names( )
    g_read_only_variables.insert( c_special_variable_version );
    g_read_only_variables.insert( c_special_variable_timezone );
    g_read_only_variables.insert( c_special_variable_peer_port );
+   g_read_only_variables.insert( c_special_variable_sid_extern );
    g_read_only_variables.insert( c_special_variable_sid_locked );
    g_read_only_variables.insert( c_special_variable_sid_secure );
    g_read_only_variables.insert( c_special_variable_ip_ext_addr );

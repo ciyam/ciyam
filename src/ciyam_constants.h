@@ -141,6 +141,8 @@ constexpr const char* c_identity_suffix = "identity";
 constexpr const char* c_dead_keys_suffix = ".dead_keys.lst";
 constexpr const char* c_demo_keys_suffix = ".demo_keys.lst";
 
+constexpr const char* c_ciyam_sid_external = "#51d5eedceded";
+
 constexpr const char* c_repository_info_suffix = ".info";
 
 constexpr const char* c_two_spaces = "  ";

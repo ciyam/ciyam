@@ -123,6 +123,7 @@ enum special_var
    e_special_var_permission,
    e_special_var_queue_puts,
    e_special_var_session_id,
+   e_special_var_sid_extern,
    e_special_var_sid_locked,
    e_special_var_sid_secure,
    e_special_var_tag_prefix,
