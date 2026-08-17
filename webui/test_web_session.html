@@ -2204,7 +2204,7 @@ http://www.opensource.org/licenses/mit-license.php.
                prefix = data.substring( 0, pos );
 
             if( !started_session
-             && ( ( prefix == admin_session_name ) || ( prefix == standard_session_name ) ) )
+             && ( prefix.startsWith( admin_session_name ) || prefix.startsWith( standard_session_name ) ) )
             {
                started_session = true;
 
