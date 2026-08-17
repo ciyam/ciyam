@@ -7,22 +7,22 @@
 if [ -f ciyam.pem ]; then
  echo "Found existing 'ciyam.pem' (remove if wanting to re-create it)."
 else
- openssl req -batch -new -newkey rsa:4096 -nodes -keyout ciyam.key -out ciyam.csr > ~create_ciyam_pem 2>&1
+ openssl req -batch -new -newkey rsa:4096 -nodes -keyout /tmp/ciyam/ciyam.key -out /tmp/ciyam/ciyam.csr &> /tmp/ciyam/create_ciyam_pem
 
- if [ -f ciyam.key ] && [ -f ciyam.csr ]; then
-  openssl x509 -req -sha256 -days 3650 -in ciyam.csr -signkey ciyam.key -out ciyam.crt > ~create_ciyam_pem 2>&1
+ if [ -f /tmp/ciyam/ciyam.key ] && [ -f /tmp/ciyam/ciyam.csr ]; then
+  openssl x509 -req -sha256 -days 3650 -in /tmp/ciyam/ciyam.csr -signkey /tmp/ciyam/ciyam.key -out /tmp/ciyam/ciyam.crt &> /tmp/ciyam/create_ciyam_pem
 
-  if [ -f ciyam.crt ]; then
-   cat ciyam.key ciyam.crt > ciyam.pem
+  if [ -f /tmp/ciyam/ciyam.crt ]; then
+   cat /tmp/ciyam/ciyam.key /tmp/ciyam/ciyam.crt > ciyam.pem
    chmod o-r ciyam.pem
-   rm ciyam.crt ciyam.csr ciyam.key
+   rm /tmp/ciyam/ciyam.crt /tmp/ciyam/ciyam.csr /tmp/ciyam/ciyam.key
   else
-   cat ~create_ciyam_pem
+   cat /tmp/ciyam/create_ciyam_pem
   fi
  else
-  cat ~create_ciyam_pem
+  cat /tmp/ciyam/create_ciyam_pem
  fi
 
- rm -f ~create_ciyam_pem
+ rm -f /tmp/ciyam/create_ciyam_pem
 
 fi

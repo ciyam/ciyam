@@ -5553,9 +5553,9 @@ int has_external_ip_address( )
 
    int64_t now = unix_time( );
 
-   string ext_ip_addr_file( "~" );
+   string ext_ip_addr_file( c_tmp_ciyam_directory );
 
-   ext_ip_addr_file += c_check_ext_ip_addr;
+   ext_ip_addr_file += '/' + string( c_check_ext_ip_addr ) + c_tmp_file_ext;
 
    // NOTE: If being called for the first time
    // then will ensure that the output file is
