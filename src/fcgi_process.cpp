@@ -2391,7 +2391,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             {
                string key, email_addr;
 
-               string file_name( "~" + uuid( ).as_string( ) );
+               string file_name( "/tmp/" + uuid( ).as_string( ) );
 
                string gpg_file_name( file_name + ".gpg" );
                string tmp_file_name( file_name + ".tmp" );

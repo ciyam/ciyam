@@ -2194,7 +2194,7 @@ void request_handler::process_request( )
 
                         if( !password.empty( ) && g_register_error.empty( ) )
                         {
-                           string tmp_file_name( "~" + uuid( ).as_string( ) );
+                           string tmp_file_name( "/tmp/" + uuid( ).as_string( ) );
 
                            string prefix( "curl -s -H \"Content-Type: application/json\" -X " );
 
@@ -2253,7 +2253,7 @@ void request_handler::process_request( )
 
                                     string command( prefix + "POST -d " );
 
-                                    string register_data_file( "~" + uuid( ).as_string( ) );
+                                    string register_data_file( "/tmp/" + uuid( ).as_string( ) );
 
                                     command += "'@" + register_data_file + "' \""
                                      + homeserver + "/_matrix/client/v3/register\" > " + tmp_file_name;
