@@ -954,14 +954,14 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                             && !is_additional_command( ) && file_exists( append_filename ) )
                               append_chunks = false;
                            else
-                              filename = "~" + uuid( ).as_string( );
+                              filename = "/tmp/" + uuid( ).as_string( );
                         }
                         else if( !append_filename.empty( ) )
                         {
                            if( !dir_exists( append_filename ) )
                               append_chunks = false;
                            else
-                              filename = "~" + uuid( ).as_string( );
+                              filename = "/tmp/" + uuid( ).as_string( );
                         }
                      }
                   }
@@ -993,7 +993,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      ignore_exception = true;
                      delete_after_transfer = true;
 
-                     filename = "~" + uuid( ).as_string( );
+                     filename = "/tmp/" + uuid( ).as_string( );
                   }
 
 #ifdef DEBUG
@@ -1764,6 +1764,12 @@ int main( int argc, char* argv[ ] )
 #ifdef SSL_SUPPORT
    if( file_exists( c_ciyam_pem ) )
       init_ssl( c_ciyam_pem );
+   else
+   {
+      cerr << "error: unexpected missing '" << c_ciyam_pem << "' file (application server not running?)" << endl;
+
+      return 2;
+   }
 #endif
 
 #ifdef SSL_SUPPORT
