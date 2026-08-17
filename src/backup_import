@@ -92,9 +92,9 @@ if [ -f $BACKUP_IMAGE ] || [ -f $BACKUP_PATH/$TARGET_FILE ]; then
   ./import_files $CIYAM_USER_PATH Backup : $IMAGE_NAME >>Backup.txt
  fi
 
- ./ciyam_script tree_insert_trunks backup Backup,.Backup >>Backup.txt 2>&1
- ./ciyam_script generate_next_block -backup @sid backup >>Backup.txt 2>&1
- ./ciyam_script block_tree_relegate -backup backup >>Backup.txt 2>&1
+ ./ciyam_script tree_insert_trunks backup Backup,.Backup &>>Backup.txt
+ ./ciyam_script generate_next_block -backup @sid backup &>>Backup.txt
+ ./ciyam_script block_tree_relegate -backup backup &>>Backup.txt
 else
  echo "(no backup image or target found)" >>Backup.txt
 fi

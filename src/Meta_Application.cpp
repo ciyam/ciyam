@@ -2240,10 +2240,10 @@ void Meta_Application::impl::impl_Generate( )
 
             if( !active_modules.count( modules[ i ] ) )
                outs << "./genmodule -rdbms " << modules[ i ]
-                << " " << app_dir << " >>" << generate_log_file << " 2>&1\n";
+                << " " << app_dir << " &>>" << generate_log_file << "\n";
             else
                outs << "./genmodule -rdbms " << modules[ i ]
-                << " " << app_dir << " " << lower( module_alias ) << " >>" << generate_log_file << " 2>&1\n";
+                << " " << app_dir << " " << lower( module_alias ) << " &>>" << generate_log_file << "\n";
          }
       }
 
@@ -2320,7 +2320,7 @@ void Meta_Application::impl::impl_Generate( )
          outs << " rm make.dtm\n";
          outs << "fi\n";
 
-         outs << "make " << all_modules << " dtm >>" << generate_log_file << " 2>&1\n";
+         outs << "make " << all_modules << " dtm &>>" << generate_log_file << "\n";
          outs << "echo \"Finished Make\" >>" << generate_log_file << "\n\n";
 
          outs << "if [ -f make.dtm ]; then\n";
@@ -3906,6 +3906,7 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
              + get_obj( ).Name( ) + " " + get_sql_password( ) + " >" + tmp_filename + " 2>&1" );
 
             exec_system( script, false );
+
             output = load_file( tmp_filename );
          }
 
