@@ -2764,7 +2764,7 @@ bool process_group(
           && !group_text_overflows.count( group_field_col_key )
           && data.size( ) > 4 && data.substr( 0, 4 ) == "http" )
          {
-            string temp_file_name( "~" + uuid( ).as_string( ) );
+            string temp_file_name( "/tmp/" + uuid( ).as_string( ) );
 
             string cmd( "curl -s \"" + data + "\" >" + temp_file_name );
 
@@ -3118,7 +3118,8 @@ bool process_group(
                      p_image = images[ data ].get( );
                   else
                   {
-                     string temp_file_name = "~" + uuid( ).as_string( );
+                     string temp_file_name( "/tmp/" + uuid( ).as_string( ) );
+
                      if( format.fields[ j ].is_png )
                         temp_file_name += ".png";
                      else if( format.fields[ j ].is_jpg )

@@ -3405,7 +3405,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               if( !rhs.empty( )
                                && ( rhs[ 0 ] == c_system_command_prefix ) )
                               {
-                                 string tmp_name( "~" + uuid( ).as_string( ) );
+                                 string tmp_name( "/tmp/" + uuid( ).as_string( ) );
 
                                  rhs += " >" + tmp_name + " 2>&1";
 
