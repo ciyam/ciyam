@@ -36,6 +36,8 @@
 
 using namespace std;
 
+extern string g_temporary_directory;
+
 namespace
 {
 
@@ -1350,7 +1352,7 @@ string storage_channel_documents_update( const string& identity, bool submitted 
 
       string cmd( "./unbundle" );
 
-      string temp_file( "~" + uuid( ).as_string( ) );
+      string temp_file( g_temporary_directory + '/' + uuid( ).as_string( ) );
 
       cmd += " -qq " + bundle_file_name + " -d " + blockchain_identity + " 2>" + temp_file;
 

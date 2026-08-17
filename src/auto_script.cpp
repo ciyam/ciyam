@@ -36,6 +36,8 @@
 
 using namespace std;
 
+extern string g_temporary_directory;
+
 extern volatile sig_atomic_t g_server_shutdown;
 
 namespace
@@ -868,7 +870,7 @@ void autoscript_session::on_start( )
 
                   if( is_script )
                   {
-                     string script_args( "~" + uuid( ).as_string( ) );
+                     string script_args( g_temporary_directory + '/' + uuid( ).as_string( ) );
 
                      ofstream outf( script_args.c_str( ) );
 

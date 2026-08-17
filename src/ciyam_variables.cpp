@@ -30,6 +30,8 @@
 
 using namespace std;
 
+extern string g_temporary_directory;
+
 extern atomic< size_t > g_active_sessions;
 
 namespace
@@ -1410,7 +1412,7 @@ void set_system_variable( const var_name& var,
    {
       string val( value );
 
-      string tmp_file_name( "~" + uuid( ).as_string( ) );
+      string tmp_file_name( g_temporary_directory + '/' + uuid( ).as_string( ) );
 
       if( !val.empty( ) )
       {

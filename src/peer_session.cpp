@@ -56,6 +56,8 @@
 
 using namespace std;
 
+extern string g_temporary_directory;
+
 extern atomic< size_t > g_active_listeners;
 
 extern volatile sig_atomic_t g_server_shutdown;
@@ -4265,7 +4267,7 @@ void socket_command_handler::get_hello( )
    if( !has_file( hello_hash ) )
       create_raw_file( data, false );
 
-   string temp_file_name( "~" + uuid( ).as_string( ) );
+   string temp_file_name( g_temporary_directory + '/' + uuid( ).as_string( ) );
 
    string hash_info_for_get( hello_hash );
 
@@ -6027,7 +6029,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   socket.set_delay( );
                   fetch_file( hello_hash, socket, p_sock_progress );
 
-                  string temp_file_name( "~" + uuid( ).as_string( ) );
+                  string temp_file_name( g_temporary_directory + '/' + uuid( ).as_string( ) );
 
                   try
                   {
