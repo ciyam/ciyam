@@ -1708,16 +1708,21 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      }
                      else
                      {
-                        string unlock_key( create_unlock_sid_hash_key( false, false ) );
+                        try
+                        {
+                           string unlock_key( create_unlock_sid_hash_key( false, false ) );
 
-                        replace( unlock_key, " ", "-" );
+                           found = true;
 
-                        found = true;
-
-                        if( !is_json_output )
-                           response = unlock_key;
-                        else
-                           response = "{\"unlock_key\":\"" + escaped_json( unlock_key ) + "\"}\n";
+                           if( !is_json_output )
+                              response = unlock_key;
+                           else
+                              response = "{\"unlock_key\":\"" + escaped_json( unlock_key ) + "\"}\n";
+                        }
+                        catch( exception& x )
+                        {
+                           error = x.what( );
+                        }
                      }
                   }
                }
@@ -1878,24 +1883,19 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   {
                      try
                      {
-                        if( key.find( "-" ) != string::npos )
-                           set_identity( replaced( key, "-", " " ) );
+                        string encrypted;
+
+                        string prefix( c_ext_unlock_iterations );
+
+                        if( has_system_variable( e_special_var_sid_extern ) )
+                           prefix += " ";
                         else
-                        {
-                           string encrypted;
+                           prefix.erase( );
 
-                           string prefix( c_ext_unlock_iterations );
+                        if( get_system_variable( e_special_var_blockchain_backup_identity ).empty( ) )
+                           encrypted = buffer_file( c_ciyam_server_sid_file );
 
-                           if( has_system_variable( e_special_var_sid_extern ) )
-                              prefix += " ";
-                           else
-                              prefix.erase( );
-
-                           if( get_system_variable( e_special_var_blockchain_backup_identity ).empty( ) )
-                              encrypted = buffer_file( c_ciyam_server_sid_file );
-
-                           set_identity( prefix + key, encrypted.empty( ) ? 0 : encrypted.c_str( ) );
-                        }
+                        set_identity( prefix + key, encrypted.empty( ) ? 0 : encrypted.c_str( ) );
 
                         found = true;
                      }
