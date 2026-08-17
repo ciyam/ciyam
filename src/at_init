@@ -8,7 +8,21 @@ if [ "$CIYAM_USER" = "" ]; then
  CIYAM_USER=$USER
 fi
 
-ls -1 *.so | grep -v ciyam_base.so | cut -f1 -d'.' >.ciyam_storages
+ls -1 *.so | grep -v ciyam_base.so | cut -f1 -d'.' >/tmp/ciyam/ciyam_storages.tmp
+
+if [ -f /tmp/ciyam/ciyam_storages.tmp ]; then
+ copy_storage_names=
+
+ if [ ! -f .ciyam_storages ]; then
+  copy_storage_names=1
+ elif ! cmp -s /tmp/ciyam/ciyam_storages.tmp .ciyam_storages &> /dev/null; then
+  copy_storage_names=1
+ fi
+
+ if [ "$copy_storage_names" = "1" ]; then
+  cp /tmp/ciyam/ciyam_storages.tmp .ciyam_storages
+ fi
+fi
 
 # NOTE: Modify the following if wanting to be notified when the CIYAM application server has been started.
 #curl -H "Title: CIYAM Started" -d  "CIYAM Application Server has started." https://ntfy.domain.org/up_admin
