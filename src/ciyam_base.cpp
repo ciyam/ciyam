@@ -5921,7 +5921,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          // characters in three groups of five (using space
          // separators).
          if( ( key.length( ) == c_unlock_ext_key_length )
-           && ( ( key[ 5 ] == ' ' ) && ( key[ 11 ] == ' ' ) ) )
+           && ( ( key[ 5 ] == '-' ) && ( key[ 11 ] == '-' ) ) )
          {
             possible_unlock_key = true;
 
@@ -5937,13 +5937,13 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             }
          }
 
-         string::size_type apos = key.find( ' ' );
+         string::size_type epos = key.find( ' ' );
 
-         if( is_external_sid && ( apos != string::npos ) )
+         if( is_external_sid && ( epos != string::npos ) )
          {
-            size_t rounds = from_string< size_t >( key.substr( 0, apos ) );
+            size_t rounds = from_string< size_t >( key.substr( 0, epos ) );
 
-            key.erase( 0, apos + 1 );
+            key.erase( 0, epos + 1 );
 
             key = crypto_digest( key, false, false, rounds * c_key_rounds_multiplier );
          }
@@ -5977,11 +5977,11 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             data_decrypt( sid, sid, key );
          else
          {
-            apos = sid.find( ':' );
+            epos = sid.find( ':' );
 
-            if( apos != string::npos )
+            if( epos != string::npos )
             {
-               sid.erase( 0, apos + 1 );
+               sid.erase( 0, epos + 1 );
 
                string prefix( sid.substr( 0, 8 ) );
 
@@ -6253,6 +6253,9 @@ string create_unlock_sid_hash_key( bool for_web_ui, bool is_temporary )
    if( !unlock_create_allowed( ) )
       throw runtime_error( "*** attempt to create another unlock key too quickly ***" );
 
+   if( has_system_variable( e_special_var_sid_extern ) )
+      throw runtime_error( "unlock keys for this system must be created externally" );
+
    if( !has_system_variable( e_special_var_sid_secure ) )
       throw runtime_error( "invalid attempt to create unlock key for unencrypted identity" );
 
@@ -6301,7 +6304,7 @@ string create_unlock_sid_hash_key( bool for_web_ui, bool is_temporary )
    if( unlock_key.size( ) != 15 )
       throw runtime_error( "unexpected b64 encoded unlock key size != 15" );
 
-   unlock_key = unlock_key.substr( 0, 5 ) + ' ' + unlock_key.substr( 5, 5 ) + ' ' + unlock_key.substr( 10 );
+   unlock_key = unlock_key.substr( 0, 5 ) + '-' + unlock_key.substr( 5, 5 ) + '-' + unlock_key.substr( 10 );
 
    if( !for_web_ui )
       return unlock_key;
