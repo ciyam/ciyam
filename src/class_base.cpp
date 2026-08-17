@@ -3947,7 +3947,8 @@ void remove_gpg_key( const string& gpg_key_id, bool ignore_error )
 {
    guard g( g_mutex );
 
-   string tmp( "~" + uuid( ).as_string( ) );
+   string tmp( "/tmp/" + uuid( ).as_string( ) );
+
    string cmd( "gpg --yes --batch --delete-key " + gpg_key_id + ">" + tmp + " 2>&1" );
 
    TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, cmd );
@@ -3971,7 +3972,7 @@ void locate_gpg_key( const string& email, string& gpg_key_id, string& gpg_finger
 {
    guard g( g_mutex );
 
-   string tmp( "~" + uuid( ).as_string( ) );
+   string tmp( "/tmp/" + uuid( ).as_string( ) );
 
    string cmd( "gpg --fingerprint " + email + ">" + tmp + " 2>&1" );
 
@@ -4018,7 +4019,8 @@ void install_gpg_key( const string& key_file,
 
    for( size_t i = 0; i < 2; i++ )
    {
-      string tmp( "~" + uuid( ).as_string( ) );
+      string tmp( "/tmp/" + uuid( ).as_string( ) );
+
       string cmd( "gpg --batch --import " );
 
       if( i == 0 )
@@ -5720,7 +5722,7 @@ void send_ntfy_message( const string& user_key, const string& message, bool thro
    }
    else
    {
-      string tmp_file_name( "~" + uuid( ).as_string( ) );
+      string tmp_file_name( "/tmp/" + uuid( ).as_string( ) );
 
       string prefix( c_ntfy_message_prefix );
 
@@ -7593,7 +7595,7 @@ bool active_external_service( const string& ext_key )
    string cmd;
    bool okay = false;
 
-   string tmp_file_name( "~" + uuid( ).as_string( ) );
+   string tmp_file_name( "/tmp/" + uuid( ).as_string( ) );
 
    if( client_info.protocol == c_protocol_bitcoin )
    {
@@ -7666,8 +7668,7 @@ void get_external_balance( const string& ext_key, numeric& balance )
    external_client client_info;
    get_external_client_info( ext_key, client_info );
 
-   string cmd;
-   string tmp_file_name( "~" + uuid( ).as_string( ) );
+   string cmd, tmp_file_name( "/tmp/" + uuid( ).as_string( ) );
 
    if( client_info.is_local && client_info.protocol == c_protocol_bitcoin )
    {
@@ -7731,8 +7732,7 @@ string create_new_address( const string& ext_key, const string& label, bool igno
    external_client client_info;
    get_external_client_info( ext_key, client_info );
 
-   string cmd;
-   string tmp_file_name( "~" + uuid( ).as_string( ) );
+   string cmd, tmp_file_name( "/tmp/" + uuid( ).as_string( ) );
 
    if( client_info.is_local && client_info.protocol == c_protocol_bitcoin )
    {
@@ -7793,8 +7793,7 @@ string send_funds_to_address( const string& ext_key, const string& address, cons
    external_client client_info;
    get_external_client_info( ext_key, client_info );
 
-   string cmd;
-   string tmp_file_name( "~" + uuid( ).as_string( ) );
+   string cmd, tmp_file_name( "/tmp/" + uuid( ).as_string( ) );
 
    if( client_info.is_local && client_info.protocol == c_protocol_bitcoin )
    {
@@ -7853,8 +7852,7 @@ void import_address( const string& ext_key, const string& address, const string&
    external_client client_info;
    get_external_client_info( ext_key, client_info );
 
-   string cmd;
-   string tmp_file_name( "~" + uuid( ).as_string( ) );
+   string cmd, tmp_file_name( "/tmp/" + uuid( ).as_string( ) );
 
    if( client_info.is_local && client_info.protocol == c_protocol_bitcoin )
    {
@@ -8143,7 +8141,7 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
 
    if( !change_address.empty( ) && needs_new_address_for_change )
    {
-      string cmd, tmp( "~" + uuid( ).as_string( ) );
+      string cmd, tmp( "/tmp/" + uuid( ).as_string( ) );
 
       if( client_info.protocol == c_protocol_bitcoin )
       {
@@ -8231,7 +8229,8 @@ string retreive_p2sh_redeem_extra_info(
    get_external_client_info( ext_key, client_info );
 
    string cmd, retval;
-   string tmp( "~" + uuid( ).as_string( ) );
+
+   string tmp( "/tmp/" + uuid( ).as_string( ) );
 
    if( client_info.protocol == c_protocol_bitcoin )
    {
@@ -8485,7 +8484,8 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
 #endif
 
    string cmd, retval;
-   string tmp( "~" + uuid( ).as_string( ) );
+
+   string tmp( "/tmp/" + uuid( ).as_string( ) );
 
    if( client_info.protocol == c_protocol_bitcoin )
    {
@@ -8616,7 +8616,7 @@ string send_raw_transaction( const string& ext_key, const string& tx )
 
       if( client_info.protocol == c_protocol_bitcoin )
       {
-         string tmp( "~" + uuid( ).as_string( ) );
+         string tmp( "/tmp/" + uuid( ).as_string( ) );
 
          string cmd( expanded_script_name( client_info.script_name ) + " " );
 
@@ -8661,7 +8661,7 @@ string send_raw_transaction( const string& ext_key, const string& tx )
       }
       else if( client_info.protocol == c_protocol_blockchain )
       {
-         string tmp( "~" + uuid( ).as_string( ) );
+         string tmp( "/tmp/" + uuid( ).as_string( ) );
 
          // NOTE: In order to get the transaction id need to use "decode-tx" (do this first).
          string cmd( "curl -s --data tx=" + tx + " https://blockchain.info/decode-tx >" + tmp + " 2>&1" );
