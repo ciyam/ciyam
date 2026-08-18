@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ ! -f .web_access_admin ]; then
+ echo "Error: Web access has not been enabled."
+else
+ prefix=$(<.web_access_admin)
+
+ echo -n "Password: "
+ read -s password
+ echo ""
+
+ hashed=$(echo -n "$prefix$password" | sha256sum | head -c 64)
+
+ ./unlock_identity $hashed
+fi
