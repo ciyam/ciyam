@@ -1322,7 +1322,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          error = "System is currently locked for administration.";
    }
 
-   if( is_locked && !passwd.empty( ) )
+   if( is_locked && !passwd.empty( ) && !g_cws_admin_locked )
       // FUTURE: This message should be handled as a server string message.
       error = "System is currently locked for administration.";
 
@@ -1345,6 +1345,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          if( access == admin_pin )
          {
             guard g( g_mutex );
+
+            string::size_type pos = passwd.find( ':' );
+
+            if( pos != string::npos )
+               passwd.erase( 0, pos + 1 );
 
             string dbl_hash;
             string hardened( passwd );
