@@ -1642,6 +1642,8 @@ http://www.opensource.org/licenses/mit-license.php.
             if( pos > 0 )
                cmd = request.substring( 0, pos );
 
+            var cmd_initial = cmd;
+
             var request_type = "GET";
 
             if( ( cmd == javascripts_retain_cmd )
@@ -1728,7 +1730,6 @@ http://www.opensource.org/licenses/mit-license.php.
                   if( pos >= 0 )
                   {
                      request = name.substring( pos + 1 );
-
                      stripped_name = true;
 
                      name = name.substring( 0, pos );
@@ -1752,7 +1753,18 @@ http://www.opensource.org/licenses/mit-license.php.
                url += "/" + cmd;
 
                if( name != "" )
+               {
+                  if( cmd_initial == unlock_keys_employ_cmd )
+                  {
+                     // NOTE: To simplify testing will harden
+                     // a "raw" password (determined as being
+                     // anything smaller than an unlock key).
+                     if( name.length < 17 )
+                        name = harden_passwd( access, name );
+                  }
+
                   url += "/" + name;
+               }
             }
 
             if( cmd == quit_name )
