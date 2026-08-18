@@ -5973,7 +5973,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             }
          }
 
-         if( !is_external_sid )
+         if( !is_external_sid || was_key_unlocked )
             data_decrypt( sid, sid, key );
          else
          {
@@ -6253,7 +6253,10 @@ string create_unlock_sid_hash_key( bool for_web_ui, bool is_temporary )
    if( !unlock_create_allowed( ) )
       throw runtime_error( "*** attempt to create another unlock key too quickly ***" );
 
-   if( has_system_variable( e_special_var_sid_extern ) )
+   // NOTE: Temporary internal unlock keys are permitted even when using
+   // an externally generated system identity in order for updates to be
+   // able to automatically restart and unlock the service.
+   if( !is_temporary && has_system_variable( e_special_var_sid_extern ) )
       throw runtime_error( "unlock keys for this system must be created externally" );
 
    if( !has_system_variable( e_special_var_sid_secure ) )
