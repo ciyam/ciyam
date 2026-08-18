@@ -232,7 +232,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
    const error_prefix = "Error: ";
 
-   const entropy_chars = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+   const ascii_visible = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
    window.onfocus = function ( )
    {
@@ -1557,16 +1557,16 @@ http://www.opensource.org/licenses/mit-license.php.
          if( pos > 0 )
             num = request.substring( pos + 1 );
 
-         var len = entropy_chars.length - 1;
+         var len = ascii_visible.length - 1;
 
          var output = "";
 
          for( i = 0; i < num; i++ )
-            output += entropy_chars.substr( Math.floor( Math.random( ) * len ), 1 );
+            output += ascii_visible.substr( Math.floor( Math.random( ) * len ), 1 );
 
          // NOTE: Swaps "?" and "~" with specials
          // to ensure that '-' and '_' characters
-         // are not being used.
+         // are not included in the output value.
          output = output.replaceAll( "?", "\t" );
          output = output.replaceAll( "~", "\v" );
 
@@ -1576,6 +1576,9 @@ http://www.opensource.org/licenses/mit-license.php.
 
          const char = "-";
 
+         // NOTE: Put a hypen separator between every
+         // group of five characters (and removes the
+         // final character if it is a hyphen).
          output = output.replace( regex, `$1${char}` );
 
          if( output.slice( -1 ) == "-" )
@@ -2226,7 +2229,7 @@ http://www.opensource.org/licenses/mit-license.php.
                lines.push( exec_name );
 
                lines.push( save_name );
-               lines.push( seed_name );
+               lines.push( seed_name + " [<rand_chars:11>]" );
                lines.push( view_name );
 
                lines.push( clear_name );
