@@ -147,15 +147,19 @@ http://www.opensource.org/licenses/mit-license.php.
 
    const exec_name = "exec";
 
+   const exit_name = "exit";
+
    const help_name = "help";
 
+   const quit_name = "quit";
+
    const save_name = "save";
+
+   const seed_name = "seed";
+
    const view_name = "view";
 
    const wait_name = "wait";
-
-   const quit_name = "quit";
-   const exit_name = "exit";
 
    const clear_name = "clear";
 
@@ -227,6 +231,8 @@ http://www.opensource.org/licenses/mit-license.php.
    const storage_instances_review_cmd = "storage-instances|review";
 
    const error_prefix = "Error: ";
+
+   const entropy_chars = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
    window.onfocus = function ( )
    {
@@ -1542,6 +1548,56 @@ http://www.opensource.org/licenses/mit-license.php.
             document.getElementById( "user_request" ).value = "";
          }
       }
+      else if( request.startsWith( seed_name ) )
+      {
+         var pos = request.indexOf( " " );
+
+         var num = 11;
+
+         if( pos > 0 )
+            num = request.substring( pos + 1 );
+
+         var len = entropy_chars.length - 1;
+
+         var output = "";
+
+         for( i = 0; i < num; i++ )
+            output += entropy_chars.substr( Math.floor( Math.random( ) * len ), 1 );
+
+         // NOTE: Swaps "?" and "~" with specials
+         // to ensure that '-' and '_' characters
+         // are not being used.
+         output = output.replaceAll( "?", "\t" );
+         output = output.replaceAll( "~", "\v" );
+
+         output = encode_base64_url( output );
+
+         const regex = new RegExp( `(.{${5}})`, "g" );
+
+         const char = "-";
+
+         output = output.replace( regex, `$1${char}` );
+
+         if( output.slice( -1 ) == "-" )
+            output = output.slice( 0, -1 );
+
+         request = "";
+
+         var existing = document.getElementById( "user_arbitrary" ).value;
+
+         if( existing != "" )
+            existing += "\n";
+
+         output = existing + output;
+
+         document.getElementById( "user_arbitrary" ).value = output;
+
+         if( !was_exec )
+         {
+            document.getElementById( "user_request" ).placeholder = document.getElementById( "user_request" ).value;
+            document.getElementById( "user_request" ).value = "";
+         }
+      }
       else
       {
          if( request.indexOf( "~" ) == 0 )
@@ -2170,6 +2226,7 @@ http://www.opensource.org/licenses/mit-license.php.
                lines.push( exec_name );
 
                lines.push( save_name );
+               lines.push( seed_name );
                lines.push( view_name );
 
                lines.push( clear_name );
