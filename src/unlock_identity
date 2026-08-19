@@ -4,4 +4,39 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-./ciyam_client -tls -quiet -no_prompt -no_stderr -exec="<unlock_identity.cin \"$*\""
+has_called_self=
+
+# NOTE: If the system identity was created using the Web UI then the password
+# needs to be prefixed with the admin access PIN and this combination hashed.
+if [ "$1" = "" ] && [ -f .web_access_admin ]; then
+
+ need_password=
+
+ if [ -f .web_extern_admin ]; then
+  need_password=1
+ elif [ -f .web_locked_admin ]; then
+  need_password=1
+ fi
+
+ if [ "$need_password" = "1" ]; then
+  echo -n "Password: "
+  read -s password
+  echo ""
+
+  if [ -f .web_extern_admin ]; then
+   prefix=33333
+   combined=$(echo "$prefix $password")
+  else
+   prefix=$(<.web_access_admin)
+   combined=$(echo -n "$prefix$password" | sha256sum | head -c 64)
+  fi
+
+  has_called_self=1
+
+  ./unlock_identity $combined
+ fi
+fi
+
+if [ "$has_called_self" = "" ]; then
+ ./ciyam_client -tls -quiet -no_prompt -no_stderr -exec="<unlock_identity.cin \"$*\""
+fi

@@ -37,8 +37,10 @@ COMBINED=@repstr:!/\n:$OUTPUT
 NEW_IDENT=%COMBINED:1%
 ;
 @ifneq "$IDENT" "$NEW_IDENT"
+@ifndef $ERROR
 @ifndef $CIYAM_QUIET
 #Unlocked identity: $NEW_IDENT
+@endif
 @endif
 ;
 ~rm -f .unlock_failed
