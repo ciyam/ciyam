@@ -6230,10 +6230,10 @@ void set_external_identity( const string& info, const string& info_check )
 
    temp_umask tum( 077 );
 
-   write_file( c_ciyam_server_sid_file, info.c_str( ), info.length( ) );
+   write_file( c_ciyam_server_sid_file, ( unsigned char* )info.c_str( ), info.length( ) );
 
    if( info_check.length( ) )
-      write_file( c_ciyam_server_sid_chk_file, info_check.c_str( ), info_check.length( ) );
+      write_file( c_ciyam_server_sid_chk_file, ( unsigned char* )info_check.c_str( ), info_check.length( ) );
 }
 
 bool unlock_create_allowed( )
