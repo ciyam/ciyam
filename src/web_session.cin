@@ -38,7 +38,17 @@ LOCKED=
 ;
 .system_variable @sid_locked
 @ifdef $OUTPUT
-LOCKED=!
+EXTEND=@files::.web_extend_admin
+@ifdef $EXTEND
+LOCKED=-1
+@else
+EXTERN=@files::.web_extern_admin
+@ifdef $EXTERN
+LOCKED=-2
+@else
+LOCKED=-0
+@endif
+@endif
 @endif
 ;
 IRC_ROOM=$ENTRANCE_ROOM
@@ -100,6 +110,9 @@ ADMIN_TOKEN=@file:.web_access_admin
 @ifeq "$TOKEN" "$ADMIN_TOKEN"
 .system_variable @web.$TOKEN.$DEVICE.message "[admin]$LOCKED$IRC_USERS"
 @else
+@ifdef $LOCKED
+LOCKED=?
+@endif
 .system_variable @web.$TOKEN.$DEVICE.message "[standard]$LOCKED$IRC_USERS"
 @endif
 ;
