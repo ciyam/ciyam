@@ -6082,9 +6082,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             {
                if( !was_key_unlocked )
                {
-                  if( is_external_sid )
-                     set_sid( sid );
-                  else
+                  if( !is_external_sid )
                      hash_sid_val( sid );
                }
                else
@@ -6114,8 +6112,13 @@ void set_identity( const string& info, const char* p_encrypted_sid )
                string dbl_hash_check( buffer_file( c_ciyam_server_sid_chk_file ) );
 
                if( dbl_hash != dbl_hash_check )
-                  // FUTURE: This message should be handled as a server string message.
-                  throw runtime_error( "Invalid attempt to change the system identity." );
+               {
+                  if( !p_encrypted_sid )
+                     throw runtime_error( GS( c_str_incorrect_password ) );
+                  else
+                     // FUTURE: This message should be handled as a server string message.
+                     throw runtime_error( "Invalid attempt to change the system identity." );
+               }
             }
 
             set_sid( sid );
@@ -6141,7 +6144,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          }
       }
       else
-         throw runtime_error( "cannot change existing identity" );
+         // FUTURE: This message should be handled as a server string message.
+         throw runtime_error( "Invalid attempt to change the system identity." );
 
       string extra;
 
