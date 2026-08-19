@@ -556,7 +556,7 @@ http://www.opensource.org/licenses/mit-license.php.
       return output;
    }
 
-   function harden_passwd( access, password )
+   function hash_combined( access, password )
    {
       return hex_sha256( access + password );
    }
@@ -1756,11 +1756,18 @@ http://www.opensource.org/licenses/mit-license.php.
                {
                   if( cmd_initial == unlock_keys_employ_cmd )
                   {
-                     // NOTE: To simplify testing will harden
-                     // a "raw" password (determined as being
-                     // anything smaller than an unlock key).
+                     // NOTE: For testing combine and hash a
+                     // simple password (determined as being
+                     // anything smaller than an unlock key)
+                     // or if "!" prefixed then just removes
+                     // the prefix.
                      if( name.length < 17 )
-                        name = harden_passwd( access, name );
+                     {
+                        if( name.substr( 0, 1 ) == "!" )
+                           name = name.substring( 1 );
+                        else
+                           name = hash_combined( access, name );
+                     }
                   }
 
                   url += "/" + name;
@@ -1789,22 +1796,21 @@ http://www.opensource.org/licenses/mit-license.php.
             if( document.getElementById( "user_password" ).value != "" )
                password = document.getElementById( "user_password" ).value;
 
-            var hardened = "";
+            var combined = "";
 
             if( ( username == "" ) && ( password != "" ) )
-               hardened = harden_passwd( access, password );
+               combined = hash_combined( access, password );
             else if( username != "" )
             {
                if( username == admin_username )
-                  hardened = harden_passwd( access, password );
+                  combined = hash_combined( access, password );
                else
                {
                   // NOTE: For testing purposes the password is
                   // just the "username" so to make it easy for
                   // this UI just copies the username across to
                   // the "password" input.
-
-                  hardened = harden_passwd( access, username );
+                  combined = hash_combined( access, username );
 
                   document.getElementById( "user_password" ).value = username;
                }
@@ -1812,12 +1818,12 @@ http://www.opensource.org/licenses/mit-license.php.
 
             var credentials = "";
 
-            if( hardened != "" )
+            if( combined != "" )
             {
                if( username != "" )
                   credentials = username + ":";
 
-               credentials += hardened;
+               credentials += combined;
             }
 
             if( device == "" )
@@ -1877,7 +1883,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   if( session == "" )
                   {
                      if( hashed == "" )
-                        hashed = hex_sha256( hex_sha256( harden_passwd( access, password ) ) + device );
+                        hashed = hex_sha256( hex_sha256( hash_combined( access, password ) ) + device );
 
                      var session = hex_sha256( hashed + unique ).substr( 0, 20 );
 
