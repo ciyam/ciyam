@@ -206,8 +206,9 @@ constexpr const char* c_query_param_name_session = "session";
 constexpr const char* c_web_access_prefix = ".web_access_";
 
 constexpr const char* c_web_device_name_admin = ".web_device_admin";
-constexpr const char* c_web_extern_name_admin = ".web_extern_admin";
-constexpr const char* c_web_locked_name_admin = ".web_locked_admin";
+
+constexpr const char* c_web_extend_pass_admin = ".web_extend_admin";
+constexpr const char* c_web_extern_pass_admin = ".web_extern_admin";
 
 constexpr const char* c_invalid_name_chars = "<>\"|&\\";
 

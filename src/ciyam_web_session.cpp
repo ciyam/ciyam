@@ -1381,13 +1381,13 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   set_identity( passwd, request.c_str( ) );
 
-                  file_touch( c_web_locked_name_admin, 0, true );
+                  file_touch( c_web_extend_pass_admin, 0, true );
                }
                else
                {
                   set_external_identity( request, dbl_hash );
 
-                  file_touch( c_web_extern_name_admin, 0, true );
+                  file_touch( c_web_extern_pass_admin, 0, true );
                }
             }
             catch( exception& x )
