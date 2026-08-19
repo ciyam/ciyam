@@ -1375,19 +1375,29 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
             try
             {
-               set_identity( request );
-
-               if( passwd != hardened )
+               // NOTE: External identities are unchangeable.
+               if( !file_exists( c_web_extern_pass_admin ) )
                {
-                  set_identity( passwd, request.c_str( ) );
+                  set_identity( request );
 
-                  file_touch( c_web_extend_pass_admin, 0, true );
-               }
-               else
-               {
-                  set_external_identity( request, dbl_hash );
+                  if( passwd != hardened )
+                  {
+                     set_identity( passwd, request.c_str( ) );
 
-                  file_touch( c_web_extern_pass_admin, 0, true );
+                     file_touch( c_web_extend_pass_admin, 0, true );
+                  }
+                  else
+                  {
+                     set_external_identity( request, dbl_hash );
+
+                     // NOTE: An external identity can replace
+                     // an existing internal one (which may be
+                     // useful if the application server is to
+                     // be moved to a less trusted location).
+                     file_remove( c_web_extend_pass_admin );
+
+                     file_touch( c_web_extern_pass_admin, 0, true );
+                  }
                }
             }
             catch( exception& x )
