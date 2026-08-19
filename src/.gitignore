@@ -34,8 +34,8 @@ html
 # Ignore web access and "admin" files.
 .web_access_*
 .web_device_admin
+.web_extend_admin
 .web_extern_admin
-.web_locked_admin
 
 # Ignore all .old, .sav and .tmp files.
 *.old

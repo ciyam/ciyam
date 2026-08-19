@@ -12,9 +12,9 @@ if [ "$1" = "" ] && [ -f .web_access_admin ]; then
 
  need_password=
 
- if [ -f .web_extern_admin ]; then
+ if [ -f .web_extend_admin ]; then
   need_password=1
- elif [ -f .web_locked_admin ]; then
+ elif [ -f .web_extern_admin ]; then
   need_password=1
  fi
 
