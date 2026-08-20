@@ -1336,7 +1336,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       // NOTE: If is "admin locked" or the system identity is "unknown"
       // and the access token matches the "admin" PIN then will set the
       // identity (after first hardening the password that is then used
-      // to encrypt the entropy provided in the "request").
+      // to encrypt the entropy provided in the "request" if internal).
       if( has_access_file && !request.empty( )
        && !passwd.empty( ) && ( is_identity_none || g_cws_admin_locked ) )
       {
@@ -1375,29 +1375,27 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
             try
             {
-               // NOTE: External identities are unchangeable.
-               if( !file_exists( c_web_extern_pass_admin ) )
+               set_identity( request );
+
+               // NOTE: Need to remove either the "extern"
+               // or "extend" password type indicator file
+               // to prevent ambiguity which can occcur if
+               // swtiching between internal and external.
+               if( passwd != hardened )
                {
-                  set_identity( request );
+                  set_identity( passwd, request.c_str( ) );
 
-                  if( passwd != hardened )
-                  {
-                     set_identity( passwd, request.c_str( ) );
+                  file_remove( c_web_extern_pass_admin );
 
-                     file_touch( c_web_extend_pass_admin, 0, true );
-                  }
-                  else
-                  {
-                     set_external_identity( request, dbl_hash );
+                  file_touch( c_web_extend_pass_admin, 0, true );
+               }
+               else
+               {
+                  set_external_identity( request, dbl_hash );
 
-                     // NOTE: An external identity can replace
-                     // an existing internal one (which may be
-                     // useful if the application server is to
-                     // be moved to a less trusted location).
-                     file_remove( c_web_extend_pass_admin );
+                  file_remove( c_web_extend_pass_admin );
 
-                     file_touch( c_web_extern_pass_admin, 0, true );
-                  }
+                  file_touch( c_web_extern_pass_admin, 0, true );
                }
             }
             catch( exception& x )
