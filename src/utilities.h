@@ -1230,18 +1230,20 @@ inline std::string opt_buffer_file( const std::string& file_name,
 }
 
 void write_file( const char* p_file_name,
- unsigned char* p_data, size_t length, bool append = false, size_t start_pos = 0 );
+ unsigned char* p_data, size_t length, size_t start_pos = 0 );
 
 inline void write_file( const std::string& file_name,
- unsigned char* p_data, size_t length, bool append = false, size_t start_pos = 0 )
+ unsigned char* p_data, size_t length, size_t start_pos = 0 )
 {
-   write_file( file_name.c_str( ), p_data, length, append, start_pos );
+   write_file( file_name.c_str( ), p_data, length, start_pos );
 }
 
 inline void write_file( const std::string& file_name,
- const std::string& file_buffer, bool append = false, size_t start_pos = 0 )
+ const std::string& file_data, size_t length = 0, size_t start_pos = 0 )
 {
-   write_file( file_name.c_str( ), ( unsigned char* )file_buffer.data( ), file_buffer.length( ), append, start_pos );
+   write_file( file_name.c_str( ),
+    ( unsigned char* )file_data.data( ),
+    ( length ? length : file_data.length( ) ), start_pos );
 }
 
 void write_file_lines( const std::string& file_name, const std::set< std::string >& lines );

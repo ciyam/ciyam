@@ -2329,21 +2329,21 @@ void buffer_file( string& buffer, const char* p_file_name,
       throw runtime_error( "unable to open '" + string( p_file_name ) + "' for input in buffer_file" );
 }
 
-void write_file( const char* p_file_name, unsigned char* p_data, size_t length, bool append, size_t start_pos )
+void write_file( const char* p_file_name, unsigned char* p_data, size_t length, size_t start_pos )
 {
    if( !p_file_name )
       throw runtime_error( "unexpected null pointer for p_file_name in write_file" );
 
-   FILE* fp = fopen( p_file_name, ( append ? "ab" : "wb" ) );
+   FILE* fp = fopen( p_file_name, ( ( start_pos == string::npos ) ? "ab" : "wb" ) );
 
    if( !fp )
       throw runtime_error( "unable to open file '" + string( p_file_name ) + "' for output in write_file" );
 
-   if( !append && start_pos )
+   if( start_pos && ( start_pos != string::npos ) )
       fseek( fp, start_pos, SEEK_SET );
 
-   if( length && fwrite( p_data, 1, length, fp ) != length )
-      throw runtime_error( "writing to output file '" + string( p_file_name ) + "'" );
+   if( length && ( fwrite( p_data, 1, length, fp ) != length ) )
+      throw runtime_error( "write failed for file '" + string( p_file_name ) + "' in write_file" );
 
    fclose( fp );
 }
