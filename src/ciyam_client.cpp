@@ -1022,7 +1022,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                      expanded_data.erase( usize );
 
-                     write_file( filename, expanded_data, false, start_pos );
+                     write_file( filename, expanded_data, 0, start_pos );
                   }
 #endif
 
