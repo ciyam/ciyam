@@ -6186,7 +6186,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          }
 
          if( was_self_encrypted )
-            write_file( c_ciyam_server_sid_file, ( unsigned char* )info.c_str( ), info.length( ) );
+            write_file( c_ciyam_server_sid_file, info );
          else if( !is_external_sid )
          {
             if( file_exists( c_ciyam_server_sid_file ) )
@@ -6195,7 +6195,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             write_file( c_ciyam_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
 
             if( !dbl_hash.empty( ) )
-               write_file( c_ciyam_server_sid_chk_file, ( unsigned char* )dbl_hash.c_str( ), dbl_hash.length( ) );
+               write_file( c_ciyam_server_sid_chk_file, dbl_hash );
          }
 
          g_locked_identity = false;
@@ -6230,10 +6230,10 @@ void set_external_identity( const string& info, const string& info_check )
 
    temp_umask tum( 077 );
 
-   write_file( c_ciyam_server_sid_file, ( unsigned char* )info.c_str( ), info.length( ) );
+   write_file( c_ciyam_server_sid_file, info );
 
    if( info_check.length( ) )
-      write_file( c_ciyam_server_sid_chk_file, ( unsigned char* )info_check.c_str( ), info_check.length( ) );
+      write_file( c_ciyam_server_sid_chk_file, info_check );
 }
 
 bool unlock_create_allowed( )

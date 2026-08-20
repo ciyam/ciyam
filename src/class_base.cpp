@@ -3619,10 +3619,12 @@ int64_t last_mod_time( const string& filename )
 void copy_file( const string& source, const string& destination )
 {
    ifstream inpf( source.c_str( ), ios::in | ios::binary );
+
    if( !inpf )
       throw runtime_error( "unable to open file '" + source + "' for input" );
 
    ofstream outf( destination.c_str( ), ios::out | ios::binary );
+
    if( !outf )
       throw runtime_error( "unable to open file '" + destination + "' for output" );
 
@@ -3632,10 +3634,12 @@ void copy_file( const string& source, const string& destination )
 void append_file( const string& source, const string& destination )
 {
    ifstream inpf( source.c_str( ), ios::in | ios::binary );
+
    if( !inpf )
       throw runtime_error( "unable to open file '" + source + "' for input" );
 
    ofstream outf( destination.c_str( ), ios::out | ios::app | ios::binary );
+
    if( !outf )
       throw runtime_error( "unable to open file '" + destination + "' for append" );
 
