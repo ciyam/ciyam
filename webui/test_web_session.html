@@ -16,6 +16,8 @@ http://www.opensource.org/licenses/mit-license.php.
    <meta http-equiv="Cache-Control" content="no-cache"/>
    <meta http-equiv="Cache-Control" content="no-store"/>
 
+   <script type="text/javascript" src="ciyam.js"></script>
+
    <script type="text/javascript" src="sha2.min.js"></script>
    <script type="text/javascript" src="bip39.min.js"></script>
    <script type="text/javascript" src="qrcode.min.js"></script>
@@ -136,7 +138,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
    var include_script_usage_hints = true;
 
-   var var_map = new Map( );
+   var ciyam = new CIYAM( );
 
    const own_name = "***";
 
@@ -231,8 +233,6 @@ http://www.opensource.org/licenses/mit-license.php.
    const storage_instances_review_cmd = "storage-instances|review";
 
    const error_prefix = "Error: ";
-
-   const ascii_visible = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
    window.onfocus = function ( )
    {
@@ -397,23 +397,6 @@ http://www.opensource.org/licenses/mit-license.php.
          return true;
    }
 
-   function encode_base64( str )
-   {
-      const bytes = new TextEncoder( ).encode( str );
-
-      var binary = '';
-
-      for( var i = 0; i < bytes.length; i++ )
-         binary += String.fromCharCode( bytes[ i ] );
-
-      return btoa( binary );
-   }
-
-   function encode_base64_url( str )
-   {
-      return encode_base64( str ).replace( /\+/g, "-" ).replace( /\//g, "_" ).replace( /=+$/, "" );
-   }
-
    function word_length_compare( lhs, rhs )
    {
       var pos = lhs.indexOf( " " );
@@ -462,98 +445,6 @@ http://www.opensource.org/licenses/mit-license.php.
       }
 
       return false;
-   }
-
-   function replace_vars( input )
-   {
-      var skip = false;
-      var output = input;
-
-      if( output == null )
-         output = "";
-
-      // NOTE: If is in the form of ".<string>" then will remove the
-      // "." and skip performing any string replacement processing.
-      if( ( output.length > 0 ) && ( output.substr( 0, 1 ) == "." ) )
-      {
-         skip = true;
-         output = output.substring( 1 );
-      }
-
-      if( output == "" )
-         skip = true;
-
-      if( !skip && ( output.length > 0 ) )
-      {
-         var_map.forEach( function( value, key )
-         {
-            value = value.replaceAll( "{", "\1" );
-            value = value.replaceAll( "}", "\2" );
-
-            output = output.replaceAll( "{" + key + "}", value );
-         } )
-
-         if( output.indexOf( "{@" ) >= 0 )
-         {
-            var value = document.getElementById( "user_arbitrary" ).value;
-
-            value_array = value.split( "\n" );
-
-            output.replaceAll( "{@0}", "{@}" );
-
-            if( output.indexOf( "{@}" ) >= 0 )
-            {
-               value = value.replaceAll( "{", "\1" );
-               value = value.replaceAll( "}", "\2" );
-
-               output = output.replaceAll( "{@}", value );
-            }
-
-            for( i = 0; i < value_array.length; i++ )
-            {
-               var value = value_array[ i ];
-
-               value = value.replaceAll( "{", "\1" );
-               value = value.replaceAll( "}", "\2" );
-
-               output = output.replaceAll( "{@" + ( i + 1 ) + "}", value );
-            }
-         }
-
-         // NOTE: Any "{var}" expressions that had not been
-         // replaced are now removed.
-         output = output.replaceAll( / *\{[^\}]*\}*/g, "" );
-
-         // NOTE: Any "{var}" expressions that were provided
-         // by the variable values are now restored (so that
-         // they can used in a later pass).
-         output = output.replaceAll( "\1", "{" );
-         output = output.replaceAll( "\2", "}" );
-      }
-
-      return output;
-   }
-
-   function get_all_var_info( )
-   {
-      var output = "";
-
-      // NOTE: Copy then sort for output.
-      const array = Array.from( var_map );
-
-      const sorted = array.sort( ( a, b ) => a[ 0 ] > b[ 0 ] );
-
-      const sorted_map = new Map( sorted );
-
-      sorted_map.forEach( function( value, key )
-      {
-         if( output != "" )
-            output += "\n";
-
-         output += key + " " + value;
-      } )
-
-      return output;
    }
 
    function hash_combined( access, password )
@@ -1131,24 +1022,24 @@ http://www.opensource.org/licenses/mit-license.php.
 
          request = document.getElementById( "user_request" ).value;
 
-         if( !var_map.has( var_name_access )
+         if( !ciyam.var_map.has( var_name_access )
           && ( document.getElementById( "user_access" ).value != "" )
           && ( document.getElementById( "user_access" ).value != admin_username ) )
-            var_map.set( var_name_access, document.getElementById( "user_access" ).value );
+            ciyam.var_map.set( var_name_access, document.getElementById( "user_access" ).value );
 
-         if( !var_map.has( var_name_device )
+         if( !ciyam.var_map.has( var_name_device )
           && ( document.getElementById( "user_device" ).value != "" ) )
-            var_map.set( var_name_device, document.getElementById( "user_device" ).value );
+            ciyam.var_map.set( var_name_device, document.getElementById( "user_device" ).value );
 
-         if( !var_map.has( var_name_sessid )
+         if( !ciyam.var_map.has( var_name_sessid )
           && ( document.getElementById( "user_session" ).value != "" ) )
-            var_map.set( var_name_sessid, document.getElementById( "user_session" ).value );
+            ciyam.var_map.set( var_name_sessid, document.getElementById( "user_session" ).value );
 
-         if( !var_map.has( var_name_unique )
+         if( !ciyam.var_map.has( var_name_unique )
           && ( document.getElementById( "user_unique" ).value != "" ) )
-            var_map.set( var_name_unique, document.getElementById( "user_unique" ).value );
+            ciyam.var_map.set( var_name_unique, document.getElementById( "user_unique" ).value );
 
-         request = replace_vars( request );
+         request = ciyam.replace_vars( request, document.getElementById( "user_arbitrary" ).value );
       }
       else
       {
@@ -1167,10 +1058,10 @@ http://www.opensource.org/licenses/mit-license.php.
          {
             request = all_requests;
 
-            request = replace_vars( request );
+            request = ciyam.replace_vars( request, document.getElementById( "user_arbitrary" ).value );
 
             if( request.indexOf( "@" ) == 0 )
-               request = replace_vars( request.substring( 1 ) );
+               request = ciyam.replace_vars( request.substring( 1 ), document.getElementById( "user_arbitrary" ).value );
 
             all_requests = "";
          }
@@ -1178,10 +1069,10 @@ http://www.opensource.org/licenses/mit-license.php.
          {
             request = all_requests.substr( 0, pos );
 
-            request = replace_vars( request );
+            request = ciyam.replace_vars( request, document.getElementById( "user_arbitrary" ).value );
 
             if( request.indexOf( "@" ) == 0 )
-               request = replace_vars( request.substring( 1 ) );
+               request = ciyam.replace_vars( request.substring( 1 ), document.getElementById( "user_arbitrary" ).value );
 
             all_requests = all_requests.substring( pos + 1 );
 
@@ -1294,7 +1185,7 @@ http://www.opensource.org/licenses/mit-license.php.
          document.getElementById( "user_request" ).value = request.substring( 1 );
       else if( request == vars_name )
       {
-         var output = get_all_var_info( );
+         var output = ciyam.get_all_var_info( );
 
          if( output != "" )
          {
@@ -1362,14 +1253,14 @@ http://www.opensource.org/licenses/mit-license.php.
 
             if( pos < 0 )
             {
-               if( var_map.has( var_info ) )
+               if( ciyam.var_map.has( var_info ) )
                {
                   var existing = document.getElementById( "user_arbitrary" ).value;
 
                   if( existing != "" )
                      existing += "\n";
 
-                  output = existing + var_map.get( var_info );
+                  output = existing + ciyam.var_map.get( var_info );
 
                   document.getElementById( "user_arbitrary" ).value = output;
                }
@@ -1444,14 +1335,14 @@ http://www.opensource.org/licenses/mit-license.php.
                            func_info = func_info.substr( 0, pos );
                         }
 
-                        if( ( func_info != "" ) && ( var_map.has( name ) ) )
+                        if( ( func_info != "" ) && ( ciyam.var_map.has( name ) ) )
                         {
                            var existing = document.getElementById( "user_arbitrary" ).value;
 
                            if( existing != "" )
                               existing += "\n";
 
-                           var value = var_map.get( name );
+                           var value = ciyam.var_map.get( name );
 
                            if( length == null )
                               output = existing + value.substring( func_info );
@@ -1470,7 +1361,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   if( okay == false )
                      handle_error( "Invalid or unknown variable function information '" + value + "'", true );
                }
-               else if( !skip_if_has || !var_map.has( name ) )
+               else if( !skip_if_has || !ciyam.var_map.has( name ) )
                {
                   var had_lower = false;
                   var had_upper = false;
@@ -1510,9 +1401,9 @@ http://www.opensource.org/licenses/mit-license.php.
                   else
                   {
                      if( value == "" )
-                        var_map.delete( name );
+                        ciyam.var_map.delete( name );
                      else
-                        var_map.set( name, value );
+                        ciyam.var_map.set( name, value );
                   }
                }
             }
@@ -1557,32 +1448,7 @@ http://www.opensource.org/licenses/mit-license.php.
          if( pos > 0 )
             num = request.substring( pos + 1 );
 
-         var len = ascii_visible.length - 1;
-
-         var output = "";
-
-         for( i = 0; i < num; i++ )
-            output += ascii_visible.substr( Math.floor( Math.random( ) * len ), 1 );
-
-         // NOTE: Swaps "?" and "~" with specials
-         // to ensure that '-' and '_' characters
-         // are not included in the output value.
-         output = output.replaceAll( "?", "\t" );
-         output = output.replaceAll( "~", "\v" );
-
-         output = encode_base64_url( output );
-
-         const regex = new RegExp( `(.{${5}})`, "g" );
-
-         const char = "-";
-
-         // NOTE: Put a hypen separator between every
-         // group of five characters (and removes the
-         // final character if it is a hyphen).
-         output = output.replace( regex, `$1${char}` );
-
-         if( output.slice( -1 ) == "-" )
-            output = output.slice( 0, -1 );
+         var output = CIYAM.generate_base64_key( num );
 
          request = "";
 
@@ -1834,7 +1700,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
                // NOTE: Credentials must be base64 encoded.
                if( credentials != "" )
-                  qry_data += "&passwd=" + encode_base64_url( credentials );
+                  qry_data += "&passwd=" + CIYAM.encode_base64_url( credentials );
             }
 
             var arbitrary = "";
@@ -2097,7 +1963,7 @@ http://www.opensource.org/licenses/mit-license.php.
       {
          hashed = "";
 
-         var_map.clear( );
+         ciyam.var_map.clear( );
 
          document.getElementById( "user_unique" ).value = "";
          document.getElementById( "user_session" ).value = "";
@@ -2331,7 +2197,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   document.getElementById( "user_password" ).disabled = true;
                }
 
-               var_map.clear( );
+               ciyam.var_map.clear( );
 
                started_session = false;
 
