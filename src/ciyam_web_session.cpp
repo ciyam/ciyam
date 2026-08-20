@@ -87,9 +87,9 @@ constexpr const char* c_js_suffix = ".js";
 constexpr const char* c_css_suffix = ".css";
 constexpr const char* c_list_suffix = ".list";
 
-constexpr const char* c_error_output_prefix = "Error: ";
+constexpr const char* c_ciyam_prefix = "ciyam_";
 
-constexpr const char* c_ciyam_script_prefix = "ciyam_script_";
+constexpr const char* c_error_output_prefix = "Error: ";
 
 constexpr const char* c_ciyam_storages_file = ".ciyam_storages";
 
@@ -1931,11 +1931,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   found = true;
 
                   response = get_files_for_endpoint( access, e_special_var_cws_scripts,
-                   c_ciyam_script_prefix, c_js_suffix, is_json_output, use_none_response );
+                   c_ciyam_prefix, c_js_suffix, is_json_output, use_none_response );
                }
                else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_javascripts ) )
                {
-                  string file_name( g_html_dir + '/' + c_ciyam_script_prefix + access + c_js_suffix );
+                  string file_name( g_html_dir + '/' + c_ciyam_prefix + access + c_js_suffix );
 
                   if( payload.empty( ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -1959,7 +1959,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_javascripts_prefix ) ) );
 
-                  string file_name( g_html_dir + '/' + c_ciyam_script_prefix + name + c_js_suffix );
+                  string file_name( g_html_dir + '/' + c_ciyam_prefix + name + c_js_suffix );
 
                   if( !file_exists( file_name ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -1970,7 +1970,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      string script_data( opt_buffer_file( file_name ) );
 
-                     replace( script_data, c_ciyam_script_prefix + name, c_ciyam_script_prefix + access );
+                     replace( script_data, c_ciyam_prefix + name, c_ciyam_prefix + access );
 
                      if( !is_json_output )
                         response = script_data;
@@ -1985,7 +1985,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      error = "Javascript data cannot be erased whilst the system is locked.";
                   else
                   {
-                     string file_name( g_html_dir + '/' + c_ciyam_script_prefix + access + c_js_suffix );
+                     string file_name( g_html_dir + '/' + c_ciyam_prefix + access + c_js_suffix );
 
                      file_remove( file_name );
 
