@@ -1,24 +1,24 @@
-var ciyam_script_bip39_result = null;
+var ciyam_bip39_result = null;
 
-var ciyam_script_bip39_has_shown_hints = false;
+var ciyam_bip39_has_shown_hints = false;
 
-async function ciyam_script_bip39_at_load( callback )
+async function ciyam_bip39_at_load( callback )
 {
-   console.log( "ciyam_script_bip39_at_load" );
+   console.log( "ciyam_bip39_at_load" );
 
-   ciyam_script_bip39_result = null;
+   ciyam_bip39_result = null;
 
    if( init_script_value != null )
-      ciyam_script_bip39_execute( callback, init_script_value );
+      ciyam_bip39_execute( callback, init_script_value );
    else
    {
-      ciyam_script_bip39_result = BIP39.generateMnemonic( );
+      ciyam_bip39_result = BIP39.generateMnemonic( );
 
-      var output = ciyam_script_bip39_result;
+      var output = ciyam_bip39_result;
 
       if( include_script_usage_hints )
       {
-         ciyam_script_bip39_has_shown_hints = true;
+         ciyam_bip39_has_shown_hints = true;
 
          output += "\nemploy javascript bip39 {@1}";
       }
@@ -27,14 +27,14 @@ async function ciyam_script_bip39_at_load( callback )
    }
 }
 
-async function ciyam_script_bip39_execute( callback, input )
+async function ciyam_bip39_execute( callback, input )
 {
-   console.log( "ciyam_script_bip39_execute" );
+   console.log( "ciyam_bip39_execute" );
 
-   ciyam_script_bip39_result = input;
+   ciyam_bip39_result = input;
 
    if( ( input == null ) || ( input == "" ) )
-      ciyam_script_bip39_result = BIP39.generateMnemonic( );
+      ciyam_bip39_result = BIP39.generateMnemonic( );
    else
    {
       var pos = input.indexOf( " " );
@@ -42,9 +42,9 @@ async function ciyam_script_bip39_execute( callback, input )
       if( pos > 0 )
       {
          if( !BIP39.validateMnemonic( input ) )
-            ciyam_script_bip39_result = input + "\n(incorrect mnemonics)";
+            ciyam_bip39_result = input + "\n(incorrect mnemonics)";
          else
-            ciyam_script_bip39_result = BIP39.mnemonicToEntropy( input );
+            ciyam_bip39_result = BIP39.mnemonicToEntropy( input );
       }
       else
       {
@@ -70,11 +70,11 @@ async function ciyam_script_bip39_execute( callback, input )
          }
 
          if( !is_valid_entropy )
-            ciyam_script_bip39_result = input + "\n(invalid entropy)";
+            ciyam_bip39_result = input + "\n(invalid entropy)";
          else
-            ciyam_script_bip39_result = BIP39.entropyToMnemonic( input );
+            ciyam_bip39_result = BIP39.entropyToMnemonic( input );
       }
    }
 
-   callback( ciyam_script_bip39_result );
+   callback( ciyam_bip39_result );
 }

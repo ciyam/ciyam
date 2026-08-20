@@ -1,12 +1,12 @@
-var ciyam_script_xor_hex_data_result = null;
+var ciyam_xor_hex_data_result = null;
 
-var ciyam_script_xor_hex_data_has_shown_hints = false;
+var ciyam_xor_hex_data_has_shown_hints = false;
 
-function ciyam_script_xor_hex_data_xor_next( input )
+function ciyam_xor_hex_data_xor_next( input )
 {
    var hex_result = '';
 
-   var hex_current = ciyam_script_xor_hex_data_result;
+   var hex_current = ciyam_xor_hex_data_result;
    var hex_implant = input;
 
    if( ( hex_current == null ) || ( hex_current == "" ) )
@@ -47,14 +47,14 @@ function ciyam_script_xor_hex_data_xor_next( input )
    return hex_result;
 }
 
-async function ciyam_script_xor_hex_data_at_load( callback )
+async function ciyam_xor_hex_data_at_load( callback )
 {
-   console.log( "ciyam_script_xor_hex_data_at_load" );
+   console.log( "ciyam_xor_hex_data_at_load" );
 
-   ciyam_script_xor_hex_data_result = null;
+   ciyam_xor_hex_data_result = null;
 
    if( init_script_value != null )
-      ciyam_script_xor_hex_data_execute( callback, init_script_value );
+      ciyam_xor_hex_data_execute( callback, init_script_value );
    else
    {
       var output = "(xor_hex_data loaded)";
@@ -66,17 +66,17 @@ async function ciyam_script_xor_hex_data_at_load( callback )
    }
 }
 
-async function ciyam_script_xor_hex_data_execute( callback, input )
+async function ciyam_xor_hex_data_execute( callback, input )
 {
-   console.log( "ciyam_script_xor_hex_data_execute" );
+   console.log( "ciyam_xor_hex_data_execute" );
 
-   var output = ciyam_script_xor_hex_data_xor_next( input );
+   var output = ciyam_xor_hex_data_xor_next( input );
 
-   ciyam_script_xor_hex_data_result = output;
+   ciyam_xor_hex_data_result = output;
 
-   if( include_script_usage_hints && !ciyam_script_xor_hex_data_has_shown_hints )
+   if( include_script_usage_hints && !ciyam_xor_hex_data_has_shown_hints )
    {
-      ciyam_script_xor_hex_data_has_shown_hints = true;
+      ciyam_xor_hex_data_has_shown_hints = true;
 
       output += "\n(i.e. XORs the prior result with hex input)"
    }

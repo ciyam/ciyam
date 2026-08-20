@@ -1,0 +1,224 @@
+var ciyam_harden_result = null;
+
+var ciyam_harden_chunk = 0;
+
+var ciyam_harden_reset = false;
+var ciyam_harden_need_reset = false
+
+var ciyam_harden_num_repeat = 0;
+var ciyam_harden_num_repeats = 0;
+
+var ciyam_harden_use_async = false;
+
+var ciyam_harden_string_to_hash = "";
+
+var ciyam_harden_result_callback = null;
+
+async function ciyam_harden_hash_string( message )
+{
+   const msg_buffer = new TextEncoder( ).encode( message );
+
+   const hash_buffer = await crypto.subtle.digest( "SHA-256", msg_buffer );
+
+   const hash_array = Array.from( new Uint8Array( hash_buffer ) );
+
+   const hash_hex = hash_array.map( b => ( "00" + b.toString( 16 ) ).slice( -2 ) ).join( "" );
+
+   return hash_hex.toLowerCase( );
+}
+
+async function ciyam_harden_hash_rounds( num, use_async, input, initial )
+{
+   var s = input;
+
+   if( initial != null )
+      s = initial;
+
+   // NOTE: If "num" rounds
+   // is zero then performs
+   // a single hash.
+   if( num == 0 )
+   {
+      if( !use_async )
+         s = hex_sha256( input ).toLowerCase( );
+      else
+         s = await ciyam_harden_hash_string( input );
+   }
+
+   // NOTE: Perform "num" rounds
+   // (additional to the initial
+   // hash when "num" was zero).
+   for( var i = 0; i < num; i++ )
+   {
+      if( !use_async )
+         s = hex_sha256( s + input ).toLowerCase( );
+      else
+         s = await ciyam_harden_hash_string( s + input );
+   }
+
+   return s;
+}
+
+async function ciyam_harden_at_load( callback )
+{
+   console.log( "ciyam_harden_at_load" );
+
+   ciyam_harden_result = null;
+
+   const has_crypto_subtle = ( typeof window.crypto !== "undefined" ) && ( typeof window.crypto.subtle !== "undefined" );
+
+   if( !has_crypto_subtle )
+      console.log( "window.crypto or window.crypto.subtle undefined" );
+   else
+   {
+      var start_time = performance.now( );
+
+      var initial_hash = hex_sha256( "test" ).toLowerCase( );
+
+      var async_result = await ciyam_harden_hash_rounds( 10000, true, "test", initial_hash );
+
+      var finish_time = performance.now( );
+
+      var async_time = ( finish_time - start_time );
+
+      start_time = performance.now( );
+
+      var non_async_result = await ciyam_harden_hash_rounds( 10000, false, "test", initial_hash );
+
+      finish_time = performance.now( );
+
+      var non_async_time = ( finish_time - start_time );
+
+      var result = async_result;
+
+      if( result != non_async_result )
+         result += " and " + non_async_result;
+
+      if( async_time < non_async_time )
+         ciyam_harden_use_async = true;
+
+      console.log( "async_time = " + async_time
+       + ", non_async_time = " + non_async_time + "\n./ciyam_command crypto_hash -x=10000 test\n" + result );
+   }
+
+   if( init_script_value != null )
+   {
+      ciyam_harden_reset = true;
+
+      ciyam_harden_execute( callback, init_script_value );
+   }
+   else
+   {
+      var output = "";
+
+      if( ciyam_harden_use_async )
+         output = "(using async version)";
+      else
+         output = "(using non-async version)";
+
+      if( include_script_usage_hints )
+         output += "\nemploy javascript harden <input>";
+
+      callback( output );
+
+      ciyam_harden_reset = true;
+   }
+}
+
+async function ciyam_harden_repeat( )
+{
+   if( ciyam_harden_num_repeat < ciyam_harden_num_repeats )
+   {
+      ++ciyam_harden_num_repeat;
+
+      ciyam_harden_result = await ciyam_harden_hash_rounds( ciyam_harden_chunk,
+       ciyam_harden_use_async, ciyam_harden_string_to_hash, ciyam_harden_result );
+
+      update_progress( ciyam_harden_num_repeat / ciyam_harden_num_repeats );
+
+      window.setTimeout( ciyam_harden_repeat, 10 );
+   }
+   else
+   {
+      hide_progress( );
+
+      ciyam_harden_reset = ciyam_harden_need_reset;
+
+      ciyam_harden_result_callback( ciyam_harden_result );
+   }
+}
+
+async function ciyam_harden_execute( callback, input )
+{
+   console.log( "ciyam_harden_execute" );
+
+   var output_result = true;
+
+   if( ( input == null ) || ( input == "" ) )
+   {
+      output_result = false;
+
+      ciyam_harden_reset = true;
+      ciyam_harden_need_reset = false;
+
+      var output = "(ready)";
+
+      if( include_script_usage_hints )
+         output += "\nemploy javascript harden <input>";
+
+      callback( output );
+   }
+   else if( ciyam_harden_reset )
+   {
+      output_result = false;
+
+      ciyam_harden_reset = false;
+      ciyam_harden_need_reset = false;
+
+      ciyam_harden_string_to_hash = input;
+
+      ciyam_harden_result = await ciyam_harden_hash_rounds(
+       0, ciyam_harden_use_async, ciyam_harden_string_to_hash );
+
+      var output = "(hash primed)";
+
+      if( include_script_usage_hints )
+         output += "\nemploy javascript harden <rounds>[:<repeats>])"
+
+      callback( output );
+   }
+   else
+   {
+      var pos = input.indexOf( "+" );
+
+      if( pos == 0 )
+         input = input.substring( 1 );
+      else
+         ciyam_harden_need_reset = true;
+
+      pos = input.indexOf( ":" );
+
+      if( pos > 0 )
+      {
+         ciyam_harden_chunk = input.substr( 0, pos );
+
+         ciyam_harden_num_repeats = input.substring( pos + 1 );
+
+         output_result = false;
+
+         ciyam_harden_num_repeat = 0;
+
+         ciyam_harden_result_callback = callback;
+
+         show_progress( );
+
+         window.setTimeout( ciyam_harden_repeat, 10 );
+      }
+      else
+         ciyam_harden_result = await ciyam_harden_hash_rounds( input,
+          ciyam_harden_use_async, ciyam_harden_string_to_hash, ciyam_harden_result );
+   }
+
+   if( output_result )
+      callback( ciyam_harden_result );
+}
