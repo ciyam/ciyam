@@ -134,7 +134,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
    var include_script_usage_hints = true;
 
-   var ciyam = new CIYAM( );
+   var ciyam = new CIYAM( window.location.protocol + '//' + window.location.host );
 
    const own_name = "***";
 
@@ -142,26 +142,16 @@ http://www.opensource.org/licenses/mit-license.php.
    const vars_name = "vars";
 
    const echo_name = "echo";
-
    const exec_name = "exec";
-
    const exit_name = "exit";
-
    const help_name = "help";
-
    const quit_name = "quit";
-
    const save_name = "save";
-
    const seed_name = "seed";
-
    const view_name = "view";
-
    const wait_name = "wait";
 
    const clear_name = "clear";
-
-   const dummy_name = "dummy";
 
    const finish_name = "finish";
 
@@ -502,7 +492,6 @@ http://www.opensource.org/licenses/mit-license.php.
       if( access == "create" )
       {
          ciyam.access = "";
-         ciyam.device = "";
          ciyam.hashed = "";
 
          document.getElementById( "user_access" ).value = ciyam.access;
@@ -661,8 +650,6 @@ http://www.opensource.org/licenses/mit-license.php.
 
          if( ciyam.access != "" )
          {
-            document.getElementById( "user_device" ).value = ciyam.device;
-
             document.getElementById( "user_retain" ).checked = true;
 
             document.getElementById( "user_unique" ).focus( );
@@ -680,12 +667,10 @@ http://www.opensource.org/licenses/mit-license.php.
 
       document.getElementById( "user_retain" ).disabled = true;
 
+      document.getElementById( "user_device" ).value = ciyam.device;
+
       if( document.getElementById( "user_access" ).value == "" )
       {
-         ciyam.device = "";
-
-         document.getElementById( "user_device" ).value = ciyam.device;
-
          document.getElementById( "user_remove" ).disabled = true;
          document.getElementById( "user_retain" ).disabled = true;
       }
@@ -1487,7 +1472,7 @@ http://www.opensource.org/licenses/mit-license.php.
             do_local_request( request, !was_exec );
          else if( !was_exec || ( request != "" ) )
          {
-            var url = window.location.protocol + '//' + window.location.host + "/cws"
+            var url = ciyam.get_cws_url( );
 
             var cmd = request;
 
@@ -1629,7 +1614,16 @@ http://www.opensource.org/licenses/mit-license.php.
             if( cmd == quit_name )
                request = "";
 
-            var qry_data = "access=" + ciyam.access;
+            var access = ciyam.access;
+
+            if( access == "" )
+               access = document.getElementById( "user_access" ).value;
+
+            if( ( ciyam.access == "" )
+             && ( access.length == pin_length ) && ( access != admin_username ) )
+               ciyam.access = access;
+
+            var qry_data = "access=" + access;
 
             if( ciyam.device != "" )
                qry_data += "&device=" + ciyam.device;
@@ -1729,7 +1723,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   if( ciyam.sessid == "" )
                   {
                      if( ciyam.hashed == "" )
-                        ciyam.hashed = hex_sha256( hex_sha256( hash_combined( ciyam.access, password ) ) + ciyam.device );
+                        ciyam.hashed = hex_sha256( hex_sha256( hash_combined( access, password ) ) + ciyam.device );
 
                      ciyam.sessid = hex_sha256( ciyam.hashed + ciyam.unique ).substr( 0, 20 );
 
@@ -1932,9 +1926,9 @@ http://www.opensource.org/licenses/mit-license.php.
 
       if( !started_session )
       {
-         ciyam.hashed = "";
+         ciyam.unique = "";
 
-         ciyam.var_map.clear( );
+         ciyam.remove_all_variables( );
 
          document.getElementById( "user_unique" ).value = "";
          document.getElementById( "user_session" ).value = "";
@@ -2165,7 +2159,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   document.getElementById( "user_password" ).disabled = true;
                }
 
-               ciyam.var_map.clear( );
+               ciyam.remove_all_variables( );
 
                started_session = false;
 
