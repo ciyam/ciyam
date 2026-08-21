@@ -15,9 +15,9 @@ const c_visible_ascii_chars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNO
 
 class CIYAM
 {
-   constructor( )
+   constructor( host_info )
    {
-      console.log( "CIYAM (ctor)" );
+      console.log( "CIYAM [" + host_info + "]" );
 
       this.access = "";
       this.device = "";
@@ -26,6 +26,8 @@ class CIYAM
       this.unique = "";
 
       this.var_map = new Map( );
+
+      this.host_info = host_info;
    }
 
    static encode_base64( str )
@@ -79,6 +81,46 @@ class CIYAM
          output = output.slice( 0, -1 );
 
       return output;
+   }
+
+   get_cws_url( )
+   {
+      return this.host_info + "/cws";
+   }
+
+   get_echo_url( )
+   {
+      return this.host_info + "/echo";
+   }
+
+   get_upload_url( )
+   {
+      return this.host_info + "/upload";
+   }
+
+   get_ip_addr_url( )
+   {
+      return this.host_info + "/ip-addr";
+   }
+
+   get_storage_url( )
+   {
+      return this.host_info + "/storage";
+   }
+
+   get_version_url( )
+   {
+      return this.host_info + "/version";
+   }
+
+   get_unix_now_url( )
+   {
+      return this.host_info + "/unix-now";
+   }
+
+   get_post_limit_url( )
+   {
+      return this.host_info + "/post-limit";
    }
 
    has_variable( name )
@@ -177,6 +219,11 @@ class CIYAM
       return output;
    }
 
+   remove_all_variables( )
+   {
+      this.var_map.clear( );
+   }
+
    get_all_variables( )
    {
       var output = "";
@@ -204,7 +251,7 @@ class CIYAM
          if( output != "" )
             output += "\n";
 
-         output += c_var_name_hashed + " " + this.hashed;
+         output += c_var_name_hashed + " " + this.hashed.substr( 0, 15 ) + "...";
       }
 
       if( this.sessid != "" )
