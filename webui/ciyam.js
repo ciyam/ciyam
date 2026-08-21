@@ -4,6 +4,7 @@
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 const c_def_key_len = 11;
+const c_sess_id_len = 20;
 
 const c_var_name_access = "ACCESS";
 const c_var_name_device = "DEVICE";
@@ -15,7 +16,7 @@ const c_visible_ascii_chars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNO
 
 class CIYAM
 {
-   constructor( host_info )
+   constructor( host_info, use_json )
    {
       console.log( "CIYAM [" + host_info + "]" );
 
@@ -28,6 +29,11 @@ class CIYAM
       this.var_map = new Map( );
 
       this.host_info = host_info;
+
+      if( use_json == true )
+         this.format_type = "json";
+      else
+         this.format_type = "text";
    }
 
    static encode_base64( str )
@@ -136,6 +142,23 @@ class CIYAM
    set_variable( name, value )
    {
       this.var_map.set( name, value );
+   }
+
+   hash_combined( password )
+   {
+      return hex_sha256( this.access + password );
+   }
+
+   determine_hashed( password )
+   {
+      const combined = this.hash_combined( password );
+
+      this.hashed = hex_sha256( hex_sha256( combined ) + this.device );
+   }
+
+   determine_sess_id( )
+   {
+      this.sessid = hex_sha256( this.hashed + this.unique ).substr( 0, c_sess_id_len );
    }
 
    remove_variable( name )
@@ -286,8 +309,17 @@ class CIYAM
       console.log( request_type + " " + url );
 
       fetch( url, { method: request_type } )
-      .then( response => response.text( ) )
-      .then( data => callback( data ) )
-      .catch( error => console.error( "Error fetching data: ", error ) );
+       .then( response => response.text( ) )
+       .then( data => callback( data ) )
+       .catch( error => console.error( "Error fetching data: ", error ) );
+   }
+
+   async disconnect( callback )
+   {
+      var url = this.get_cws_url( )
+       + "/sessions/" + this.sessid + "?access=" + this.access
+       + "&device=" + this.device + "&format=" + this.format_type;
+
+      this.fetch( url, "DELETE", callback );
    }
 }
