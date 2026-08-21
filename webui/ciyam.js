@@ -5,12 +5,26 @@
 
 const c_def_key_len = 11;
 
-const c_ascii_visible = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+const c_var_name_access = "ACCESS";
+const c_var_name_device = "DEVICE";
+const c_var_name_hashed = "HASHED";
+const c_var_name_sessid = "SESSID";
+const c_var_name_unique = "UNIQUE";
+
+const c_visible_ascii_chars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
 class CIYAM
 {
    constructor( )
    {
+      console.log( "CIYAM (ctor)" );
+
+      this.access = "";
+      this.device = "";
+      this.hashed = "";
+      this.sessid = "";
+      this.unique = "";
+
       this.var_map = new Map( );
    }
 
@@ -36,12 +50,12 @@ class CIYAM
       if( num == null )
          num = c_def_key_len;
 
-      var len = c_ascii_visible.length - 1;
+      var len = c_visible_ascii_chars.length - 1;
 
       var output = "";
 
       for( var i = 0; i < num; i++ )
-         output += c_ascii_visible.substr( Math.floor( Math.random( ) * len ), 1 );
+         output += c_visible_ascii_chars.substr( Math.floor( Math.random( ) * len ), 1 );
 
       // NOTE: Swap some specials with control
       // characters to ensure that '-' and '_'
@@ -67,7 +81,27 @@ class CIYAM
       return output;
    }
 
-   replace_vars( input, arbitrary )
+   has_variable( name )
+   {
+      return this.var_map.has( name );
+   }
+
+   get_variable( name )
+   {
+      return this.var_map.get( name );
+   }
+
+   set_variable( name, value )
+   {
+      this.var_map.set( name, value );
+   }
+
+   remove_variable( name )
+   {
+      this.var_map.delete( name );
+   }
+
+   replace_variables( input, arbitrary )
    {
       var skip = false;
       var output = input;
@@ -95,6 +129,12 @@ class CIYAM
 
             output = output.replaceAll( "{" + key + "}", value );
          } )
+
+         output = output.replaceAll( "{" + c_var_name_access + "}", this.access );
+         output = output.replaceAll( "{" + c_var_name_device + "}", this.device );
+         output = output.replaceAll( "{" + c_var_name_hashed + "}", this.hashed );
+         output = output.replaceAll( "{" + c_var_name_sessid + "}", this.sessid );
+         output = output.replaceAll( "{" + c_var_name_unique + "}", this.unique );
 
          if( ( arbitrary != null ) && ( output.indexOf( "{@" ) >= 0 ) )
          {
@@ -137,7 +177,7 @@ class CIYAM
       return output;
    }
 
-   get_all_var_info( )
+   get_all_variables( )
    {
       var output = "";
 
@@ -148,6 +188,41 @@ class CIYAM
 
       const sorted_map = new Map( sorted );
 
+      if( this.access != "" )
+         output = c_var_name_access + " " + this.access;
+
+      if( this.device != "" )
+      {
+         if( output != "" )
+            output += "\n";
+
+         output += c_var_name_device + " " + this.device;
+      }
+
+      if( this.hashed != "" )
+      {
+         if( output != "" )
+            output += "\n";
+
+         output += c_var_name_hashed + " " + this.hashed;
+      }
+
+      if( this.sessid != "" )
+      {
+         if( output != "" )
+            output += "\n";
+
+         output += c_var_name_sessid + " " + this.sessid;
+      }
+
+      if( this.unique != "" )
+      {
+         if( output != "" )
+            output += "\n";
+
+         output += c_var_name_unique + " " + this.unique;
+      }
+
       sorted_map.forEach( function( value, key )
       {
          if( output != "" )
@@ -157,5 +232,15 @@ class CIYAM
       } )
 
       return output;
+   }
+
+   async fetch( url, request_type, callback )
+   {
+      console.log( request_type + " " + url );
+
+      fetch( url, { method: request_type } )
+      .then( response => response.text( ) )
+      .then( data => callback( data ) )
+      .catch( error => console.error( "Error fetching data: ", error ) );
    }
 }
