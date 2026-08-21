@@ -436,11 +436,6 @@ http://www.opensource.org/licenses/mit-license.php.
       return false;
    }
 
-   function hash_combined( access, password )
-   {
-      return hex_sha256( access + password );
-   }
-
    function script_loaded( value )
    {
       document.getElementById( "user_arbitrary" ).value = value;
@@ -1460,6 +1455,8 @@ http://www.opensource.org/licenses/mit-license.php.
 
             window.setTimeout( do_fetch, 100 );
          }
+         else if( request == quit_name )
+            ciyam.disconnect( handle_response );
          else if( request.startsWith( creds_retain_cmd )
           || request.startsWith( creds_remove_cmd )
           || request.startsWith( javascripts_employ_cmd )
@@ -1603,7 +1600,7 @@ http://www.opensource.org/licenses/mit-license.php.
                         if( name.substr( 0, 1 ) == "!" )
                            name = name.substring( 1 );
                         else
-                           name = hash_combined( ciyam.access, name );
+                           name = ciyam.hash_combined( name );
                      }
                   }
 
@@ -1643,18 +1640,18 @@ http://www.opensource.org/licenses/mit-license.php.
             var combined = "";
 
             if( ( username == "" ) && ( password != "" ) )
-               combined = hash_combined( ciyam.access, password );
+               combined = ciyam.hash_combined( password );
             else if( username != "" )
             {
                if( username == admin_username )
-                  combined = hash_combined( ciyam.access, password );
+                  combined = ciyam.hash_combined( password );
                else
                {
                   // NOTE: For testing purposes the password is
                   // just the "username" so to make it easy for
                   // this UI just copies the username across to
                   // the "password" input.
-                  combined = hash_combined( ciyam.access, username );
+                  combined = ciyam.hash_combined( username );
 
                   document.getElementById( "user_password" ).value = username;
                }
@@ -1723,9 +1720,9 @@ http://www.opensource.org/licenses/mit-license.php.
                   if( ciyam.sessid == "" )
                   {
                      if( ciyam.hashed == "" )
-                        ciyam.hashed = hex_sha256( hex_sha256( hash_combined( access, password ) ) + ciyam.device );
+                        ciyam.determine_hashed( password );
 
-                     ciyam.sessid = hex_sha256( ciyam.hashed + ciyam.unique ).substr( 0, 20 );
+                     ciyam.determine_sess_id( );
 
                      document.getElementById( "user_session" ).value = ciyam.sessid;
 
