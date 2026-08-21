@@ -105,10 +105,6 @@ http://www.opensource.org/licenses/mit-license.php.
    <div id="data"></div>
 
    <script>
-   var hashed = "";
-
-   var cws_device = "";
-
    var all_requests = "";
 
    var has_seed = false;
@@ -177,11 +173,6 @@ http://www.opensource.org/licenses/mit-license.php.
    const ciyam_prefix = "ciyam_";
 
    const var_func_substr = "substr";
-
-   const var_name_access = "ACCESS";
-   const var_name_device = "DEVICE";
-   const var_name_sessid = "SESSID";
-   const var_name_unique = "UNIQUE";
 
    const creds_remove_help = "remove creds";
    const creds_retain_help = "retain creds";
@@ -284,14 +275,9 @@ http://www.opensource.org/licenses/mit-license.php.
             {
                test_web_channel.postMessage( viewer + "-" + self );
 
-               var user_access = document.getElementById( "user_access" ).value;
-               var user_device = document.getElementById( "user_device" ).value;
-               var user_unique = document.getElementById( "user_unique" ).value;
-               var user_session = document.getElementById( "user_session" ).value;
-
-               if( user_session != "" )
-                  test_web_channel.postMessage( viewer + "=" + user_access + ","
-                   + user_device + "," + user_unique + "," + user_session + "," + hashed );
+               if( ciyam.sessid != "" )
+                  test_web_channel.postMessage( viewer + "=" + ciyam.access + ","
+                   + ciyam.device + "," + ciyam.hashed + "," + ciyam.sessid + "," + ciyam.unique );
             }
          }
       }
@@ -330,14 +316,19 @@ http://www.opensource.org/licenses/mit-license.php.
                {
                   var user_data = shared.split( "," );
 
-                  document.getElementById( "user_access" ).value = user_data[ 0 ];
-                  document.getElementById( "user_device" ).value = user_data[ 1 ];
-                  document.getElementById( "user_unique" ).value = user_data[ 2 ];
-                  document.getElementById( "user_session" ).value = user_data[ 3 ];
+                  ciyam.access = user_data[ 0 ];
+                  ciyam.device = user_data[ 1 ];
+                  ciyam.hashed = user_data[ 2 ];
+                  ciyam.sessid = user_data[ 3 ];
+                  ciyam.unique = user_data[ 4 ];
+
+                  document.getElementById( "user_access" ).value = ciyam.access;
+                  document.getElementById( "user_device" ).value = ciyam.device;
+                  document.getElementById( "user_unique" ).value = ciyam.unique;
+
+                  document.getElementById( "user_session" ).value = ciyam.sessid;
 
                   document.getElementById( "user_password" ).value = "";
-
-                  hashed = user_data[ 4 ];
 
                   document.getElementById( "user_access" ).disabled = true;
                   document.getElementById( "user_device" ).disabled = true;
@@ -360,13 +351,21 @@ http://www.opensource.org/licenses/mit-license.php.
                started_session = false;
                is_admin_session = false;
 
-               document.getElementById( "user_access" ).value = "";
+               ciyam.access = "";
+               ciyam.device = "";
+               ciyam.hashed = "";
+               ciyam.sessid = "";
+               ciyam.unique = "";
+
+               document.getElementById( "user_access" ).value = ciyam.access;
+               document.getElementById( "user_device" ).value = ciyam.device;
+               document.getElementById( "user_unique" ).value = ciyam.unique;
+
+               document.getElementById( "user_session" ).value = ciyam.sessid;
+
                document.getElementById( "user_password" ).value = "";
 
-               document.getElementById( "user_unique" ).value = "";
-
                document.getElementById( "user_request" ).value = "";
-               document.getElementById( "user_session" ).value = "";
 
                document.getElementById( "user_request" ).disabled = true;
 
@@ -502,10 +501,12 @@ http://www.opensource.org/licenses/mit-license.php.
 
       if( access == "create" )
       {
-         hashed = "";
+         ciyam.access = "";
+         ciyam.device = "";
+         ciyam.hashed = "";
 
-         document.getElementById( "user_access" ).value = "";
-         document.getElementById( "user_device" ).value = "";
+         document.getElementById( "user_access" ).value = ciyam.access;
+         document.getElementById( "user_device" ).value = ciyam.device;
 
          document.getElementById( "user_retain" ).checked = false;
          document.getElementById( "user_retain" ).disabled = false;
@@ -517,16 +518,18 @@ http://www.opensource.org/licenses/mit-license.php.
       }
       else
       {
-         document.getElementById( "user_access" ).value = access;
+         ciyam.access = access;
+
+         document.getElementById( "user_access" ).value = ciyam.access;
 
          var new_hashed = "";
 
-         if( localStorage.getItem( "cws.hashed_" + access ) != null )
+         if( localStorage.getItem( "cws.hashed_" + ciyam.access ) != null )
             new_hashed = localStorage.getItem( "cws.hashed_" + access );
 
-         hashed = new_hashed;
+         ciyam.hashed = new_hashed;
 
-         if( hashed == "" )
+         if( ciyam.hashed == "" )
          {
             document.getElementById( "user_password" ).value = "";
             document.getElementById( "user_password" ).disabled = false;
@@ -537,7 +540,7 @@ http://www.opensource.org/licenses/mit-license.php.
             document.getElementById( "user_password" ).disabled = true;
          }
 
-         document.getElementById( "user_device" ).value = cws_device;
+         document.getElementById( "user_device" ).value = ciyam.device;
 
          document.getElementById( "user_remove" ).disabled = false;
 
@@ -560,6 +563,8 @@ http://www.opensource.org/licenses/mit-license.php.
          user_droplist.remove( i );
 
       var access = document.getElementById( "user_access" ).value;
+
+      ciyam.access = access;
 
       var is_retained = false;
 
@@ -626,7 +631,7 @@ http://www.opensource.org/licenses/mit-license.php.
       document.getElementById( "test_href" ).href = href_url;
 
       if( localStorage.getItem( "cws.device" ) != null )
-         cws_device = localStorage.getItem( "cws.device" );
+         ciyam.device = localStorage.getItem( "cws.device" );
 
       if( localStorage.getItem( "cws.access" ) != null )
       {
@@ -648,21 +653,23 @@ http://www.opensource.org/licenses/mit-license.php.
             user_droplist.options.add( new Option( option, option, false ) );
          }
 
-         document.getElementById( "user_access" ).value = access;
+         ciyam.access = access;
+
+         document.getElementById( "user_access" ).value = ciyam.access;
 
          document.getElementById( "user_access" ).disabled = true;
 
-         if( access != "" )
+         if( ciyam.access != "" )
          {
-            document.getElementById( "user_device" ).value = cws_device;
+            document.getElementById( "user_device" ).value = ciyam.device;
 
             document.getElementById( "user_retain" ).checked = true;
 
             document.getElementById( "user_unique" ).focus( );
 
-            if( localStorage.getItem( "cws.hashed_" + access ) != null )
+            if( localStorage.getItem( "cws.hashed_" + ciyam.access ) != null )
             {
-               hashed = localStorage.getItem( "cws.hashed_" + access );
+               ciyam.hashed = localStorage.getItem( "cws.hashed_" + ciyam.access );
 
                document.getElementById( "user_retain" ).checked = true;
 
@@ -675,7 +682,9 @@ http://www.opensource.org/licenses/mit-license.php.
 
       if( document.getElementById( "user_access" ).value == "" )
       {
-         document.getElementById( "user_device" ).value = "";
+         ciyam.device = "";
+
+         document.getElementById( "user_device" ).value = ciyam.device;
 
          document.getElementById( "user_remove" ).disabled = true;
          document.getElementById( "user_retain" ).disabled = true;
@@ -887,7 +896,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
    function do_local_request( request, interactive )
    {
-      const access = document.getElementById( "user_access" ).value;
+      const access = ciyam.access;
 
       if( request == creds_retain_cmd )
          do_retain( true );
@@ -1022,24 +1031,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
          request = document.getElementById( "user_request" ).value;
 
-         if( !ciyam.var_map.has( var_name_access )
-          && ( document.getElementById( "user_access" ).value != "" )
-          && ( document.getElementById( "user_access" ).value != admin_username ) )
-            ciyam.var_map.set( var_name_access, document.getElementById( "user_access" ).value );
-
-         if( !ciyam.var_map.has( var_name_device )
-          && ( document.getElementById( "user_device" ).value != "" ) )
-            ciyam.var_map.set( var_name_device, document.getElementById( "user_device" ).value );
-
-         if( !ciyam.var_map.has( var_name_sessid )
-          && ( document.getElementById( "user_session" ).value != "" ) )
-            ciyam.var_map.set( var_name_sessid, document.getElementById( "user_session" ).value );
-
-         if( !ciyam.var_map.has( var_name_unique )
-          && ( document.getElementById( "user_unique" ).value != "" ) )
-            ciyam.var_map.set( var_name_unique, document.getElementById( "user_unique" ).value );
-
-         request = ciyam.replace_vars( request, document.getElementById( "user_arbitrary" ).value );
+         request = ciyam.replace_variables( request, document.getElementById( "user_arbitrary" ).value );
       }
       else
       {
@@ -1058,10 +1050,10 @@ http://www.opensource.org/licenses/mit-license.php.
          {
             request = all_requests;
 
-            request = ciyam.replace_vars( request, document.getElementById( "user_arbitrary" ).value );
+            request = ciyam.replace_variables( request, document.getElementById( "user_arbitrary" ).value );
 
             if( request.indexOf( "@" ) == 0 )
-               request = ciyam.replace_vars( request.substring( 1 ), document.getElementById( "user_arbitrary" ).value );
+               request = ciyam.replace_variables( request.substring( 1 ), document.getElementById( "user_arbitrary" ).value );
 
             all_requests = "";
          }
@@ -1069,10 +1061,10 @@ http://www.opensource.org/licenses/mit-license.php.
          {
             request = all_requests.substr( 0, pos );
 
-            request = ciyam.replace_vars( request, document.getElementById( "user_arbitrary" ).value );
+            request = ciyam.replace_variables( request, document.getElementById( "user_arbitrary" ).value );
 
             if( request.indexOf( "@" ) == 0 )
-               request = ciyam.replace_vars( request.substring( 1 ), document.getElementById( "user_arbitrary" ).value );
+               request = ciyam.replace_variables( request.substring( 1 ), document.getElementById( "user_arbitrary" ).value );
 
             all_requests = all_requests.substring( pos + 1 );
 
@@ -1185,7 +1177,7 @@ http://www.opensource.org/licenses/mit-license.php.
          document.getElementById( "user_request" ).value = request.substring( 1 );
       else if( request == vars_name )
       {
-         var output = ciyam.get_all_var_info( );
+         var output = ciyam.get_all_variables( );
 
          if( output != "" )
          {
@@ -1207,9 +1199,7 @@ http://www.opensource.org/licenses/mit-license.php.
       }
       else if( request == view_name )
       {
-         var access = document.getElementById( "user_access" ).value;
-
-         if( ( access != "" ) && ( localStorage.getItem( "cws.arbitrary_" + access ) != null ) )
+         if( ( ciyam.access != "" ) && ( localStorage.getItem( "cws.arbitrary_" + ciyam.access ) != null ) )
             document.getElementById( "user_arbitrary" ).value = localStorage.getItem( "cws.arbitrary_" + access );
 
          if( !was_exec )
@@ -1220,10 +1210,8 @@ http://www.opensource.org/licenses/mit-license.php.
       }
       else if( request == save_name )
       {
-         var access = document.getElementById( "user_access" ).value;
-
-         if( access != "" )
-            localStorage.setItem( "cws.arbitrary_" + access, document.getElementById( "user_arbitrary" ).value );
+         if( ciyam.access != "" )
+            localStorage.setItem( "cws.arbitrary_" + ciyam.access, document.getElementById( "user_arbitrary" ).value );
 
          if( !was_exec )
          {
@@ -1253,14 +1241,14 @@ http://www.opensource.org/licenses/mit-license.php.
 
             if( pos < 0 )
             {
-               if( ciyam.var_map.has( var_info ) )
+               if( ciyam.has_variable( var_info ) )
                {
                   var existing = document.getElementById( "user_arbitrary" ).value;
 
                   if( existing != "" )
                      existing += "\n";
 
-                  output = existing + ciyam.var_map.get( var_info );
+                  output = existing + ciyam.get_variable( var_info );
 
                   document.getElementById( "user_arbitrary" ).value = output;
                }
@@ -1335,14 +1323,14 @@ http://www.opensource.org/licenses/mit-license.php.
                            func_info = func_info.substr( 0, pos );
                         }
 
-                        if( ( func_info != "" ) && ( ciyam.var_map.has( name ) ) )
+                        if( ( func_info != "" ) && ( ciyam.has_variable( name ) ) )
                         {
                            var existing = document.getElementById( "user_arbitrary" ).value;
 
                            if( existing != "" )
                               existing += "\n";
 
-                           var value = ciyam.var_map.get( name );
+                           var value = ciyam.get_variable( name );
 
                            if( length == null )
                               output = existing + value.substring( func_info );
@@ -1361,7 +1349,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   if( okay == false )
                      handle_error( "Invalid or unknown variable function information '" + value + "'", true );
                }
-               else if( !skip_if_has || !ciyam.var_map.has( name ) )
+               else if( !skip_if_has || !ciyam.has_variable( name ) )
                {
                   var had_lower = false;
                   var had_upper = false;
@@ -1401,9 +1389,9 @@ http://www.opensource.org/licenses/mit-license.php.
                   else
                   {
                      if( value == "" )
-                        ciyam.var_map.delete( name );
+                        ciyam.remove_variable( name );
                      else
-                        ciyam.var_map.set( name, value );
+                        ciyam.set_variable( name, value );
                   }
                }
             }
@@ -1576,8 +1564,6 @@ http://www.opensource.org/licenses/mit-license.php.
                   cmd = cmd.substring( 0, tpos );
             }
 
-            var access = document.getElementById( "user_access" ).value;
-
             if( cmd_is_url_suffix )
             {
                var name = "";
@@ -1589,7 +1575,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   name = request.substring( pos + 1 );
 
                   if( name == own_name )
-                     name = access;
+                     name = ciyam.access;
 
                   pos = name.indexOf( " " );
 
@@ -1632,7 +1618,7 @@ http://www.opensource.org/licenses/mit-license.php.
                         if( name.substr( 0, 1 ) == "!" )
                            name = name.substring( 1 );
                         else
-                           name = hash_combined( access, name );
+                           name = hash_combined( ciyam.access, name );
                      }
                   }
 
@@ -1643,12 +1629,10 @@ http://www.opensource.org/licenses/mit-license.php.
             if( cmd == quit_name )
                request = "";
 
-            var qry_data = "access=" + access;
+            var qry_data = "access=" + ciyam.access;
 
-            var device = document.getElementById( "user_device" ).value;
-
-            if( ( device != "" ) && ( cws_device != "" ) )
-               qry_data += "&device=" + cws_device;
+            if( ciyam.device != "" )
+               qry_data += "&device=" + ciyam.device;
 
             qry_data += "&format=text";
 
@@ -1665,18 +1649,18 @@ http://www.opensource.org/licenses/mit-license.php.
             var combined = "";
 
             if( ( username == "" ) && ( password != "" ) )
-               combined = hash_combined( access, password );
+               combined = hash_combined( ciyam.access, password );
             else if( username != "" )
             {
                if( username == admin_username )
-                  combined = hash_combined( access, password );
+                  combined = hash_combined( ciyam.access, password );
                else
                {
                   // NOTE: For testing purposes the password is
                   // just the "username" so to make it easy for
                   // this UI just copies the username across to
                   // the "password" input.
-                  combined = hash_combined( access, username );
+                  combined = hash_combined( ciyam.access, username );
 
                   document.getElementById( "user_password" ).value = username;
                }
@@ -1692,7 +1676,7 @@ http://www.opensource.org/licenses/mit-license.php.
                credentials += combined;
             }
 
-            if( device == "" )
+            if( ciyam.device == "" )
             {
                request_type = "POST";
 
@@ -1719,7 +1703,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   qry_data += "&request=" + encodeURIComponent( request );
             }
 
-            if( ( device == "" ) && ( password != "" ) )
+            if( ( ciyam.device == "" ) && ( password != "" ) )
             {
                if( has_seed )
                {
@@ -1731,11 +1715,9 @@ http://www.opensource.org/licenses/mit-license.php.
             }
             else
             {
-               var unique = document.getElementById( "user_unique" ).value;
-
-               if( unique == "" )
+               if( ciyam.unique == "" )
                {
-                  if( device != "" )
+                  if( ciyam.device != "" )
                   {
                      request_type = "POST";
 
@@ -1744,16 +1726,14 @@ http://www.opensource.org/licenses/mit-license.php.
                }
                else
                {
-                  var session = document.getElementById( "user_session" ).value;
-
-                  if( session == "" )
+                  if( ciyam.sessid == "" )
                   {
-                     if( hashed == "" )
-                        hashed = hex_sha256( hex_sha256( hash_combined( access, password ) ) + device );
+                     if( ciyam.hashed == "" )
+                        ciyam.hashed = hex_sha256( hex_sha256( hash_combined( ciyam.access, password ) ) + ciyam.device );
 
-                     var session = hex_sha256( hashed + unique ).substr( 0, 20 );
+                     ciyam.sessid = hex_sha256( ciyam.hashed + ciyam.unique ).substr( 0, 20 );
 
-                     document.getElementById( "user_session" ).value = session;
+                     document.getElementById( "user_session" ).value = ciyam.sessid;
 
                      document.getElementById( "user_request" ).disabled = false;
                      document.getElementById( "user_request" ).focus( );
@@ -1773,13 +1753,13 @@ http://www.opensource.org/licenses/mit-license.php.
                         request_type = "GET";
                      }
 
-                     qry_data += "&session=" + session;
+                     qry_data += "&session=" + ciyam.sessid;
                   }
                   else
                   {
                      request_type = "DELETE";
 
-                     url += "/sessions/" + session;
+                     url += "/sessions/" + ciyam.sessid;
                   }
                }
             }
@@ -1787,35 +1767,28 @@ http://www.opensource.org/licenses/mit-license.php.
             if( qry_data != "" )
                url += "?" + qry_data;
 
-            console.log( request_type + " " + url );
-
-            fetch( url, { method: request_type } )
-            .then( response => response.text( ) )
-            .then( data => handle_response( data ) )
-            .catch( error => console.error( "Error fetching data: ", error ) );
+            ciyam.fetch( url, request_type, handle_response );
          }
       }
    }
 
    function do_retain( force_full )
    {
-      var access = document.getElementById( "user_access" ).value;
-
-      if( access != "" )
+      if( ciyam.access != "" )
       {
          var scope = "partially";
 
          var access_array = localStorage.getItem( "cws.access" );
 
          if( access_array == null )
-            localStorage.setItem( "cws.access", access );
+            localStorage.setItem( "cws.access", ciyam.access );
          else
          {
             var access_entries = access_array.split( "," );
 
-            if( !binary_search( access_entries, access ) )
+            if( !binary_search( access_entries, ciyam.access ) )
             {
-               access_entries.push( access );
+               access_entries.push( ciyam.access );
 
                access_entries.sort( );
 
@@ -1824,18 +1797,16 @@ http://www.opensource.org/licenses/mit-license.php.
 
             // NOTE: In case was previously retained remove the 'hashed'
             // password value (so it will not remain when is 'partial').
-            if( localStorage.getItem( "cws.hashed_" + access ) != null )
-               localStorage.removeItem( "cws.hashed_" + access );
+            if( localStorage.getItem( "cws.hashed_" + ciyam.access ) != null )
+               localStorage.removeItem( "cws.hashed_" + ciyam.access );
          }
 
-         var device = document.getElementById( "user_device" ).value;
-
-         if( device != "" )
+         if( ciyam.device != "" )
          {
             if( localStorage.getItem( "cws.device" ) == null )
-               localStorage.setItem( "cws.device", device );
+               localStorage.setItem( "cws.device", ciyam.device );
 
-            if( hashed != "" )
+            if( ciyam.hashed != "" )
             {
                var check = force_full;
 
@@ -1846,7 +1817,7 @@ http://www.opensource.org/licenses/mit-license.php.
                {
                   scope = "completely";
 
-                  localStorage.setItem( "cws.hashed_" + access, hashed );
+                  localStorage.setItem( "cws.hashed_" + ciyam.access, ciyam.hashed );
                }
             }
          }
@@ -1884,7 +1855,7 @@ http://www.opensource.org/licenses/mit-license.php.
       }
 
       if( access == "" )
-         access = document.getElementById( "user_access" ).value;
+         access = ciyam.access;
 
       var removed_hash = false;
 
@@ -1961,7 +1932,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
       if( !started_session )
       {
-         hashed = "";
+         ciyam.hashed = "";
 
          ciyam.var_map.clear( );
 
@@ -2005,7 +1976,7 @@ http://www.opensource.org/licenses/mit-license.php.
       {
          document.getElementById( "data" ).innerText = "";
 
-         if( document.getElementById( "user_device" ).value == "" )
+         if( ciyam.device == "" )
          {
             var pos = data.indexOf( " " );
 
@@ -2016,7 +1987,9 @@ http://www.opensource.org/licenses/mit-license.php.
 
                has_seed = true;
 
-               document.getElementById( "user_access" ).value = data.substr( 0, pos );
+               ciyam.access = data.substr( 0, pos );
+
+               document.getElementById( "user_access" ).value = ciyam.access;
 
                document.getElementById( "user_access" ).disabled = true;
                document.getElementById( "user_password" ).disabled = false;
@@ -2054,15 +2027,15 @@ http://www.opensource.org/licenses/mit-license.php.
             }
             else
             {
-               if( cws_device == "" )
+               if( ciyam.device == "" )
                {
-                  cws_device = data;
+                  ciyam.device = data;
 
                   if( localStorage.getItem( "cws.device" ) == null )
-                     localStorage.setItem( "cws.device", cws_device );
+                     localStorage.setItem( "cws.device", ciyam.device );
                }
 
-               document.getElementById( "user_device" ).value = cws_device;
+               document.getElementById( "user_device" ).value = ciyam.device;
 
                document.getElementById( "user_access" ).disabled = true;
 
@@ -2074,20 +2047,22 @@ http://www.opensource.org/licenses/mit-license.php.
                document.getElementById( "user_unique" ).focus( );
             }
          }
-         else if( document.getElementById( "user_unique" ).value == "" )
+         else if( ciyam.unique == "" )
          {
             if( data.indexOf( " " ) >= 0 )
                handle_error( "User does not appear to exist." );
             else
             {
-               document.getElementById( "user_unique" ).value = data;
+               ciyam.unique = data;
+
+               document.getElementById( "user_unique" ).value = ciyam.unique;
 
                document.getElementById( "user_access" ).disabled = true;
                document.getElementById( "user_device" ).disabled = true;
 
                document.getElementById( "user_droplist" ).disabled = true;
 
-               if( hashed != "" )
+               if( ciyam.hashed != "" )
                   document.getElementById( "user_session" ).focus( );
                else
                {
@@ -2166,13 +2141,8 @@ http://www.opensource.org/licenses/mit-license.php.
                {
                   console.log( "target: " + target );
 
-                  var user_access = document.getElementById( "user_access" ).value;
-                  var user_device = document.getElementById( "user_device" ).value;
-                  var user_unique = document.getElementById( "user_unique" ).value;
-                  var user_session = document.getElementById( "user_session" ).value;
-
-                  test_web_channel.postMessage( target + "=" + user_access + ","
-                   + user_device + "," + user_unique + "," + user_session + "," + hashed );
+                  test_web_channel.postMessage( target + "=" + ciyam.access + ","
+                   + ciyam.device + "," + ciyam.hashed + "," + ciyam.sessid + "," + ciyam.unique );
                }
 
                document.getElementById( "user_request" ).disabled = false;
@@ -2187,10 +2157,8 @@ http://www.opensource.org/licenses/mit-license.php.
                if( document.getElementById( "test_image" ).innerHTML != null )
                   document.getElementById( "test_image" ).innerHTML = "";
 
-               var access = document.getElementById( "user_access" ).value;
-
-               if( localStorage.getItem( "cws.hashed_" + access ) == null )
-                  hashed = "";
+               if( localStorage.getItem( "cws.hashed_" + ciyam.access ) == null )
+                  ciyam.hashed = "";
                else
                {
                   document.getElementById( "user_password" ).value = "***";
@@ -2200,6 +2168,9 @@ http://www.opensource.org/licenses/mit-license.php.
                ciyam.var_map.clear( );
 
                started_session = false;
+
+               ciyam.sessid = "";
+               ciyam.unique = "";
 
                document.getElementById( "user_unique" ).value = "";
                document.getElementById( "user_unique" ).focus( );
@@ -2228,7 +2199,7 @@ http://www.opensource.org/licenses/mit-license.php.
          }
       }
 
-      if( ( all_requests == "" ) && ( document.getElementById( "user_session" ).value != "" ) )
+      if( ( all_requests == "" ) && ( ciyam.sessid != "" ) )
          document.getElementById( "user_request" ).value = "";
    }
    </script>
