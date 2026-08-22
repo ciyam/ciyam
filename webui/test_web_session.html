@@ -1457,6 +1457,22 @@ http://www.opensource.org/licenses/mit-license.php.
          }
          else if( request == quit_name )
             ciyam.disconnect( handle_response );
+         else if( ( request == "" ) && ( ciyam.unique == "" )
+          && ( document.getElementById( "user_password" ).value != "" ) )
+         {
+            await ciyam.connect( ciyam.access, ciyam.device, ciyam.hashed,
+             document.getElementById( "user_password" ).value, handle_response );
+
+            if( ciyam.sessid != "" )
+            {
+               document.getElementById( "user_session" ).value = ciyam.sessid;
+               document.getElementById( "user_unique" ).value = ciyam.unique;
+
+               document.getElementById( "user_password" ).value = "";
+
+               document.getElementById( "user_request" ).focus( );
+            }
+         }
          else if( request.startsWith( creds_retain_cmd )
           || request.startsWith( creds_remove_cmd )
           || request.startsWith( javascripts_employ_cmd )
