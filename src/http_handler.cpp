@@ -72,6 +72,8 @@ const size_t c_max_request_lines = 100;
 
 #include "ciyam_constants.h"
 
+constexpr const char* c_crlf = "\r\n";
+
 constexpr const char* c_html = "html";
 
 constexpr const char* c_ext_js = "js";
@@ -139,13 +141,13 @@ constexpr const char* c_http_modified_prefix = "Last-Modified: ";
 constexpr const char* c_http_content_type_prefix = "Content-Type: ";
 constexpr const char* c_http_content_length_prefix = "Content-Length: ";
 
-constexpr const char* c_http_host_header = "Host";
-
-constexpr const char* c_http_content_type_header = "Content-Type";
-constexpr const char* c_http_content_length_header = "Content-Length";
-constexpr const char* c_http_content_disposition_header = "Content-Disposition";
-
 constexpr const char* c_http_access_control_allow_origin_all = "Access-Control-Allow-Origin: *";
+
+constexpr const char* c_http_host_header = "host";
+
+constexpr const char* c_http_content_type_header = "content-type";
+constexpr const char* c_http_content_length_header = "content-length";
+constexpr const char* c_http_content_disposition_header = "content-disposition";
 
 constexpr const char* c_http_connection_header_info = "Connection: keep-alive";
 
@@ -523,7 +525,7 @@ void http_request_handler::on_start( )
             {
                ostringstream osstr;
 
-               osstr << c_http_1_1 << ' ' << c_http_414_URI_Too_Long << "\n\n";
+               osstr << c_http_1_1 << ' ' << c_http_414_URI_Too_Long << c_crlf << c_crlf;
 
                string response( osstr.str( ) );
 
@@ -551,13 +553,13 @@ void http_request_handler::on_start( )
 #endif
          for( size_t i = 0; i < header_lines.size( ); i++ )
          {
-            string name, data;
-
             string next( header_lines[ i ] );
 
             string::size_type pos = next.find( ": " );
 
-            name = next.substr( 0, pos );
+            string name( lower( next.substr( 0, pos ) ) );
+
+            string data;
 
             if( pos != string::npos )
                data = next.substr( pos + 2 );
@@ -780,18 +782,13 @@ void http_request_handler::on_start( )
 
                has_content_type = true;
 
-               osstr << c_http_1_1 << ' ' << c_http_200_OK << '\n'
-                << c_http_server_prefix << g_server_id << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+               osstr << c_http_1_1 << ' ' << c_http_200_OK << c_crlf
+                << c_http_server_prefix << g_server_id << c_crlf << c_http_date_prefix << formatted_dtm << c_crlf;
 
-               osstr << c_http_content_type_prefix << header_info[ c_http_content_type_header ] << '\n';
+               osstr << c_http_content_type_prefix << header_info[ c_http_content_type_header ] << c_crlf;
 
                if( !is_json_output )
-               {
                   response = data;
-
-                  if( !has_format_parameter )
-                     response += '\n';
-               }
                else
                   response = "{\"data\":\"" + escaped_json( data ) + "\"}";
             }
@@ -805,8 +802,8 @@ void http_request_handler::on_start( )
 
                has_content_type = true;
 
-               osstr << c_http_1_1 << ' ' << c_http_200_OK << '\n'
-                << c_http_server_prefix << g_server_id << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+               osstr << c_http_1_1 << ' ' << c_http_200_OK << c_crlf
+                << c_http_server_prefix << g_server_id << c_crlf << c_http_date_prefix << formatted_dtm << c_crlf;
 
                size_t uploaded_size = data.length( );
 
@@ -828,7 +825,7 @@ void http_request_handler::on_start( )
                   }
                }
 
-               osstr << c_http_content_type_prefix << c_http_content_type_text_plain_utf8 << '\n';
+               osstr << c_http_content_type_prefix << c_http_content_type_text_plain_utf8 << c_crlf;
 
                if( !boundary.empty( ) )
                {
@@ -961,9 +958,6 @@ void http_request_handler::on_start( )
                   response = local_filename;
                else
                   response = "Uploaded as \"" + local_filename + "\" (" + format_bytes( uploaded_size ) + ").";
-
-               if( !has_format_parameter )
-                  response += '\n';
             }
          }
          else if( error.empty( ) )
@@ -1202,7 +1196,7 @@ void http_request_handler::on_start( )
 
                            has_content_type = true;
 
-                           osstr << c_http_1_1 << ' ' << c_http_304_Not_Mod << "\n\n";
+                           osstr << c_http_1_1 << ' ' << c_http_304_Not_Mod << c_crlf << c_crlf;
                         }
                      }
                      catch( exception& x )
@@ -1221,12 +1215,12 @@ void http_request_handler::on_start( )
                      has_content_type = true;
 
                      osstr << c_http_1_1 << ' ' << c_http_200_OK
-                      << '\n' << c_http_server_prefix << g_server_id
-                      << '\n' << c_http_date_prefix << formatted_dtm
-                      << '\n' << c_http_modified_prefix << formatted_document_dtm << '\n';
+                      << c_crlf << c_http_server_prefix << g_server_id
+                      << c_crlf << c_http_date_prefix << formatted_dtm
+                      << c_crlf << c_http_modified_prefix << formatted_document_dtm << c_crlf;
 
                      if( request_type != e_http_request_type_head )
-                        osstr << c_http_connection_header_info << '\n' << c_http_keep_alive_header_info << '\n';
+                        osstr << c_http_connection_header_info << c_crlf << c_http_keep_alive_header_info << c_crlf;
 
                      osstr << c_http_content_type_prefix;
 
@@ -1247,7 +1241,7 @@ void http_request_handler::on_start( )
                      else
                         osstr << c_http_content_type_text_plain_utf8;
 
-                     osstr << '\n';
+                     osstr << c_crlf;
 
                      // NOTE: No need to buffer file content if the
                      // request type is "HEAD" (but sets "response"
@@ -1349,10 +1343,10 @@ void http_request_handler::on_start( )
 
             if( !has_content_type )
             {
-               osstr << c_http_1_1 << ' ' << c_http_200_OK << '\n'
-                << c_http_server_prefix << g_server_id << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+               osstr << c_http_1_1 << ' ' << c_http_200_OK << c_crlf
+                << c_http_server_prefix << g_server_id << c_crlf << c_http_date_prefix << formatted_dtm << c_crlf;
 
-               osstr << c_http_access_control_allow_origin_all << '\n';
+               osstr << c_http_access_control_allow_origin_all << c_crlf;
 
                osstr << c_http_content_type_prefix;
 
@@ -1366,14 +1360,13 @@ void http_request_handler::on_start( )
                      osstr << c_http_content_type_application_json;
                }
 
-               osstr << '\n';
-
-               if( !response.empty( ) && !has_format_parameter )
-                  response += '\n';
+               osstr << c_crlf;
             }
 
             if( empty_but_not_unchanged )
                response = c_html_test_response;
+            else if( !response.empty( ) && !has_format_parameter )
+                  response += '\n';
 
             if( !response.empty( ) )
             {
@@ -1384,7 +1377,7 @@ void http_request_handler::on_start( )
                else
                   osstr << to_string( response.length( ) );
 
-               osstr << "\n\n";
+               osstr << c_crlf << c_crlf;
 
                // NOTE: If the handling a "HEAD" request then
                // output the headers but no response content.
@@ -1401,11 +1394,12 @@ void http_request_handler::on_start( )
             else
                error = "{\"error\":\"" + escaped_json( error ) + "\"}";
 
-            error += '\n';
+            if( !has_format_parameter )
+               error += "\n";
 
-            osstr << c_http_1_1 << ' ' << c_http_400_Bad_Req << '\n'
-             << c_http_content_type_prefix << c_http_content_type_text_plain_utf8
-             << '\n' << c_http_content_length_prefix << to_string( error.length( ) ) << "\n\n" << error;
+            osstr << c_http_1_1 << ' ' << c_http_400_Bad_Req << c_crlf
+             << c_http_content_type_prefix << c_http_content_type_text_plain_utf8 << c_crlf
+             << c_http_content_length_prefix << to_string( error.length( ) ) << c_crlf << c_crlf << error;
          }
          else
          {
@@ -1431,16 +1425,19 @@ void http_request_handler::on_start( )
                replace( response, c_replace_document_marker, moved_document_url );
             }
 
+            if( !has_format_parameter )
+               response += "\n";
+
             osstr << c_http_1_1 << ' '
-             << ( has_moved ? c_http_301_Moved : c_http_404_Not_Found ) << '\n'
-             << c_http_server_prefix << g_server_id << '\n' << c_http_date_prefix << formatted_dtm << '\n';
+             << ( has_moved ? c_http_301_Moved : c_http_404_Not_Found ) << c_crlf
+             << c_http_server_prefix << g_server_id << c_crlf << c_http_date_prefix << formatted_dtm << c_crlf;
 
             if( has_moved )
-               osstr << c_http_location_prefix << moved_document_url << '\n';
+               osstr << c_http_location_prefix << moved_document_url << c_crlf;
 
-            osstr << c_http_content_type_prefix << c_http_content_type_text_html_utf8 << '\n';
+            osstr << c_http_content_type_prefix << c_http_content_type_text_html_utf8 << c_crlf;
 
-            osstr << c_http_content_length_prefix << to_string( response.length( ) ) << "\n\n" << response;
+            osstr << c_http_content_length_prefix << to_string( response.length( ) ) << c_crlf << c_crlf << response;
          }
 
          response = osstr.str( );
@@ -1482,9 +1479,9 @@ void http_request_handler::on_start( )
 
       ostringstream osstr;
 
-      osstr << c_http_1_1 << ' ' << c_http_500_Internal_Error << '\n'
-       << c_http_content_type_prefix << c_http_content_type_text_plain_utf8
-       << '\n' << c_http_content_length_prefix << to_string( handler_error.length( ) ) << "\n\n" << handler_error;
+      osstr << c_http_1_1 << ' ' << c_http_500_Internal_Error << c_crlf
+       << c_http_content_type_prefix << c_http_content_type_text_plain_utf8 << c_crlf
+       << c_http_content_length_prefix << to_string( handler_error.length( ) ) << c_crlf << c_crlf << handler_error;
 
       string response( osstr.str( ) );
 
