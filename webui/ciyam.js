@@ -379,27 +379,47 @@ class CIYAM
 
    at_connect( response )
    {
-      const obj = JSON.parse( response );
-
-      if( obj.error == null )
+      if( this.format_type == c_format_type_text )
       {
-         if( this.device == "" )
-            this.device = obj.new_device;
-         else if( this.unique == "" )
-            this.unique = obj.unique;
+         if( ( response.indexOf( "[" ) != 0 )
+          && ( response.indexOf( "Error: " ) != 0 ) )
+         {
+            if( this.device == "" )
+               this.device = response;
+            else if( this.unique == "" )
+               this.unique = response;
+         }
+      }
+      else
+      {
+         if( ( response.indexOf( "[" ) != 0 )
+          && ( response.indexOf( "Error: " ) != 0 ) )
+         {
+            const obj = JSON.parse( response );
+
+            if( obj.error == null )
+            {
+               if( this.device == "" )
+                  this.device = obj.new_device;
+               else if( this.unique == "" )
+                  this.unique = obj.unique;
+            }
+         }
       }
 
       if( this.user_callback != null )
          this.user_callback( response );
    }
 
-   async connect( access, password, callback )
+   async connect( access, device, hashed, passwd, callback )
    {
       if( this.sessid != "" )
          callback( "Error: Current session still exists." );
       else
       {
          this.access = access;
+         this.device = device;
+         this.hashed = hashed;
 
          this.user_callback = callback;
 
@@ -423,7 +443,8 @@ class CIYAM
 
          if( this.unique != "" )
          {
-            this.determine_hashed( password );
+            if( this.hashed == "" )
+               this.determine_hashed( passwd );
 
             this.determine_sess_id( );
 
@@ -466,11 +487,11 @@ class CIYAM
    }
 }
 
-async function ciyam_test( params )
+async function ciyam_node( host, access, device, hashed, passwd )
 {
-   console.log( "ciyam_test" );
+   console.log( "ciyam_node" );
 
-   var ciyam = new CIYAM( "http://localhost:13031", true );
+   var ciyam = new CIYAM( host, true );
 
    console.log( ciyam.get_cws_url( ) );
 
@@ -478,14 +499,42 @@ async function ciyam_test( params )
 
    await ciyam.post( ciyam.get_echo_url( ) + ciyam.get_query_parameters( ), "testing...", console.log );
 
-   await ciyam.connect( "11111", "none", console.log );
+   if( ( access != "" ) && ( ( hashed != "" ) || ( passwd != "" ) ) )
+   {
+      await ciyam.connect( access, device, hashed, passwd, console.log );
 
-   await ciyam.disconnect( console.log );
+      console.log( "hashed: " + ciyam.hashed );
+
+      await ciyam.disconnect( console.log );
+   }
 }
 
 if( typeof process !== "undefined" )
 {
+   if( process.argv[ 2 ] != null )
+   {
+      var host = "http://localhost:13031";
 
-   if( process.argv[ 2 ] === "test" )
-      ciyam_test( "" );
+      if( process.argv[ 2 ] != "" )
+         host = process.argv[ 2 ];
+
+      var access = "";
+      var device = "";
+      var hashed = "";
+      var passwd = "";
+
+      if( process.argv[ 3 ] != null )
+         access = process.argv[ 3 ];
+
+      if( process.argv[ 4 ] != null )
+         device = process.argv[ 4 ];
+
+      if( process.argv[ 5 ] != null )
+         hashed = process.argv[ 5 ];
+
+      if( process.argv[ 6 ] != null )
+         passwd = process.argv[ 6 ];
+
+      ciyam_node( host, access, device, hashed, passwd );
+   }
 }
