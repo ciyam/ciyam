@@ -12,6 +12,9 @@ const c_var_name_hashed = "HASHED";
 const c_var_name_sessid = "SESSID";
 const c_var_name_unique = "UNIQUE";
 
+const c_format_type_json = "json";
+const c_format_type_text = "text";
+
 const c_visible_ascii_chars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
 class CIYAM
@@ -31,9 +34,9 @@ class CIYAM
       this.host_info = host_info;
 
       if( use_json == true )
-         this.format_type = "json";
+         this.format_type = c_format_type_json;
       else
-         this.format_type = "text";
+         this.format_type = c_format_type_text;
    }
 
    static encode_base64( str )
@@ -127,6 +130,11 @@ class CIYAM
    get_post_limit_url( )
    {
       return this.host_info + "/post-limit";
+   }
+
+   get_query_parameters( )
+   {
+      return "?format=" + this.format_type;
    }
 
    has_variable( name )
@@ -304,11 +312,27 @@ class CIYAM
       return output;
    }
 
+   async post( url, text, callback )
+   {
+      console.log( "POST " + url + " ==> " + text );
+
+      if( this.format_type != c_format_type_json )
+         await fetch( url, { method: "POST", headers: { "Content-Type": "text/plain" }, body: text } )
+          .then( response => response.text( ) )
+          .then( data => callback( data ) )
+          .catch( error => console.error( "Error fetching data: ", error ) );
+      else
+         await fetch( url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify( text ) } )
+          .then( response => response.text( ) )
+          .then( data => callback( data ) )
+          .catch( error => console.error( "Error fetching data: ", error ) );
+   }
+
    async fetch( url, request_type, callback )
    {
       console.log( request_type + " " + url );
 
-      fetch( url, { method: request_type } )
+      await fetch( url, { method: request_type } )
        .then( response => response.text( ) )
        .then( data => callback( data ) )
        .catch( error => console.error( "Error fetching data: ", error ) );
@@ -320,6 +344,25 @@ class CIYAM
        + "/sessions/" + this.sessid + "?access=" + this.access
        + "&device=" + this.device + "&format=" + this.format_type;
 
-      this.fetch( url, "DELETE", callback );
+      await this.fetch( url, "DELETE", callback );
    }
+}
+
+async function ciyam_test( params )
+{
+   console.log( "ciyam_test" );
+
+   var ciyam = new CIYAM( "http://localhost:13031", true );
+
+   console.log( ciyam.get_cws_url( ) );
+
+   await ciyam.fetch( ciyam.get_version_url( ) + ciyam.get_query_parameters( ), "GET", console.log );
+
+   await ciyam.post( ciyam.get_echo_url( ) + ciyam.get_query_parameters( ), "testing...", console.log );
+}
+
+if( typeof process !== "undefined" )
+{
+   if( process.argv[ 2 ] === "test" )
+      ciyam_test( "" );
 }
