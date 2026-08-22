@@ -37,6 +37,8 @@ class CIYAM
          this.format_type = c_format_type_json;
       else
          this.format_type = c_format_type_text;
+
+      this.user_callback = null;
    }
 
    static encode_base64( str )
@@ -154,19 +156,56 @@ class CIYAM
 
    hash_combined( password )
    {
-      return hex_sha256( this.access + password );
+      if( typeof hex_sha256 !== "undefined" )
+         return hex_sha256( this.access + password );
+      else
+      {
+         const crypto = require( "crypto" );
+
+         const hash = crypto.createHash( "sha256" );
+
+         hash.update( this.access + password );
+
+         return hash.digest( "hex" );
+      }
    }
 
    determine_hashed( password )
    {
       const combined = this.hash_combined( password );
 
-      this.hashed = hex_sha256( hex_sha256( combined ) + this.device );
+      if( typeof hex_sha256 !== "undefined" )
+         this.hashed = hex_sha256( hex_sha256( combined ) + this.device );
+      else
+      {
+         const crypto = require( "crypto" );
+
+         const hash_1 = crypto.createHash( "sha256" );
+
+         hash_1.update( combined );
+
+         const hash_2 = crypto.createHash( "sha256" );
+
+         hash_2.update( hash_1.digest( "hex" ) + this.device );
+
+         this.hashed = hash_2.digest( "hex" );
+      }
    }
 
    determine_sess_id( )
    {
-      this.sessid = hex_sha256( this.hashed + this.unique ).substr( 0, c_sess_id_len );
+      if( typeof hex_sha256 !== "undefined" )
+         this.sessid = hex_sha256( this.hashed + this.unique ).substr( 0, c_sess_id_len );
+      else
+      {
+         const crypto = require( "crypto" );
+
+         const hash = crypto.createHash( "sha256" );
+
+         hash.update( this.hashed + this.unique );
+
+         this.sessid = hash.digest( "hex" ).substr( 0, c_sess_id_len );
+      }
    }
 
    remove_variable( name )
@@ -338,13 +377,92 @@ class CIYAM
        .catch( error => console.error( "Error fetching data: ", error ) );
    }
 
+   at_connect( response )
+   {
+      const obj = JSON.parse( response );
+
+      if( obj.error == null )
+      {
+         if( this.device == "" )
+            this.device = obj.new_device;
+         else if( this.unique == "" )
+            this.unique = obj.unique;
+      }
+
+      if( this.user_callback != null )
+         this.user_callback( response );
+   }
+
+   async connect( access, password, callback )
+   {
+      if( this.sessid != "" )
+         callback( "Error: Current session still exists." );
+      else
+      {
+         this.access = access;
+
+         this.user_callback = callback;
+
+         var url = "";
+
+         if( this.device == "" )
+         {
+            url = this.get_cws_url( )
+             + "/devices?access=" + this.access + "&format=" + this.format_type;
+
+            await this.fetch( url, "POST", this.at_connect.bind( this ) );
+         }
+
+         if( this.unique == "" )
+         {
+            url = this.get_cws_url( )
+             + "/sessions?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type;
+
+            await this.fetch( url, "POST", this.at_connect.bind( this ) );
+         }
+
+         if( this.unique != "" )
+         {
+            this.determine_hashed( password );
+
+            this.determine_sess_id( );
+
+            url = this.get_cws_url( )
+             + "/status?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type + "&session=" + this.sessid;
+
+           await this.fetch( url, "GET", callback );
+         }
+      }
+   }
+
+   at_disconnect( response )
+   {
+      if( this.user_callback != null )
+         this.user_callback( response );
+
+      if( response.indexOf( "Error:" ) != 0 )
+      {
+         this.sessid = "";
+         this.unique = "";
+
+         this.remove_all_variables( );
+      }
+   }
+
    async disconnect( callback )
    {
-      var url = this.get_cws_url( )
-       + "/sessions/" + this.sessid + "?access=" + this.access
-       + "&device=" + this.device + "&format=" + this.format_type;
+      if( this.sessid == "" )
+         callback( "Error: No current session exists." );
+      else
+      {
+         this.user_callback = callback;
 
-      await this.fetch( url, "DELETE", callback );
+         var url = this.get_cws_url( )
+          + "/sessions/" + this.sessid + "?access=" + this.access
+          + "&device=" + this.device + "&format=" + this.format_type;
+
+         await this.fetch( url, "DELETE", this.at_disconnect.bind( this ) );
+      }
    }
 }
 
@@ -359,10 +477,15 @@ async function ciyam_test( params )
    await ciyam.fetch( ciyam.get_version_url( ) + ciyam.get_query_parameters( ), "GET", console.log );
 
    await ciyam.post( ciyam.get_echo_url( ) + ciyam.get_query_parameters( ), "testing...", console.log );
+
+   await ciyam.connect( "11111", "none", console.log );
+
+   await ciyam.disconnect( console.log );
 }
 
 if( typeof process !== "undefined" )
 {
+
    if( process.argv[ 2 ] === "test" )
       ciyam_test( "" );
 }
