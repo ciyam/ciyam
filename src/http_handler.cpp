@@ -107,10 +107,9 @@ constexpr const char* c_index_html = "index.html";
 constexpr const char* c_redirects_file = ".redirects";
 
 constexpr const char* c_echo_endpoint = "/echo";
+constexpr const char* c_system_endpoint = "/system";
 constexpr const char* c_upload_endpoint = "/upload";
 constexpr const char* c_ip_addr_endpoint = "/ip-addr";
-constexpr const char* c_storage_endpoint = "/storage";
-constexpr const char* c_version_endpoint = "/version";
 constexpr const char* c_unix_now_endpoint = "/unix-now";
 constexpr const char* c_post_limit_endpoint = "/post-limit";
 
@@ -1073,6 +1072,24 @@ void http_request_handler::on_start( )
                else
                   response = "{\"parameters\":\"" + escaped_json( echo ) + "\"}";
             }
+            else if( http_document == c_system_endpoint )
+            {
+               found = true;
+
+               was_endpoint = true;
+
+               string name( c_CIYAM );
+
+               if( !has_identity( ) )
+                  name = '*' + name + '*';
+
+               string version( get_system_variable( e_special_var_version ) );
+
+               if( !is_json_output )
+                  response = name + ' ' + version;
+               else
+                  response = "{\"name\":\"" + name + "\", \"version\":\"" + version + "\"}";
+            }
             else if( http_document == c_ip_addr_endpoint )
             {
                found = true;
@@ -1083,32 +1100,6 @@ void http_request_handler::on_start( )
                   response = ip_addr;
                else
                   response = "{\"ip_addr\":\"" + escaped_json( ip_addr ) + "\"}";
-            }
-            else if( http_document == c_storage_endpoint )
-            {
-               found = true;
-
-               was_endpoint = true;
-
-               string storage( get_system_variable( e_special_var_storage ) );
-
-               if( !is_json_output )
-                  response = storage;
-               else
-                  response = "{\"storage\":\"" + storage + "\"}";
-            }
-            else if( http_document == c_version_endpoint )
-            {
-               found = true;
-
-               was_endpoint = true;
-
-               string version( get_system_variable( e_special_var_version ) );
-
-               if( !is_json_output )
-                  response = version;
-               else
-                  response = "{\"version\":\"" + version + "\"}";
             }
             else if( http_document == c_unix_now_endpoint )
             {
