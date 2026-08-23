@@ -647,15 +647,22 @@ http://www.opensource.org/licenses/mit-license.php.
          {
             document.getElementById( "user_retain" ).checked = true;
 
-            document.getElementById( "user_unique" ).focus( );
+            if( localStorage.getItem( "cws.hashed_" + ciyam.access ) == null )
+            {
+               document.getElementById( "user_password" ).disabled = false;
 
-            if( localStorage.getItem( "cws.hashed_" + ciyam.access ) != null )
+               document.getElementById( "user_password" ).focus( );
+            }
+            else
             {
                ciyam.hashed = localStorage.getItem( "cws.hashed_" + ciyam.access );
 
                document.getElementById( "user_retain" ).checked = true;
 
                document.getElementById( "user_password" ).value = "***";
+               document.getElementById( "user_password" ).disabled = true;
+
+               document.getElementById( "user_unique" ).focus( );
             }
          }
       }
@@ -671,7 +678,6 @@ http://www.opensource.org/licenses/mit-license.php.
       }
 
       document.getElementById( "user_request" ).disabled = true;
-      document.getElementById( "user_password" ).disabled = true;
    }
 
    function load_js( new_page_script, raw_script_information )
@@ -1456,7 +1462,23 @@ http://www.opensource.org/licenses/mit-license.php.
             window.setTimeout( do_fetch, 100 );
          }
          else if( request == quit_name )
+         {
             ciyam.disconnect( handle_response );
+
+            if( localStorage.getItem( "cws.hashed_" + ciyam.access ) == null )
+            {
+               document.getElementById( "user_password" ).disabled = false;
+
+               document.getElementById( "user_password" ).focus( );
+            }
+            else
+            {
+               document.getElementById( "user_password" ).value = "***";
+               document.getElementById( "user_password" ).disabled = true;
+
+               document.getElementById( "user_unique" ).focus( );
+            }
+         }
          else if( ( request == "" ) && ( ciyam.unique == "" )
           && ( document.getElementById( "user_password" ).value != "" ) )
          {
@@ -2175,7 +2197,6 @@ http://www.opensource.org/licenses/mit-license.php.
                started_session = false;
 
                document.getElementById( "user_unique" ).value = "";
-               document.getElementById( "user_unique" ).focus( );
 
                document.getElementById( "user_request" ).value = "";
                document.getElementById( "user_session" ).value = "";
