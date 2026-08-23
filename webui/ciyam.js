@@ -110,6 +110,11 @@ class CIYAM
       return this.host_info + "/echo";
    }
 
+   get_system_url( )
+   {
+      return this.host_info + "/system";
+   }
+
    get_upload_url( )
    {
       return this.host_info + "/upload";
@@ -118,16 +123,6 @@ class CIYAM
    get_ip_addr_url( )
    {
       return this.host_info + "/ip-addr";
-   }
-
-   get_storage_url( )
-   {
-      return this.host_info + "/storage";
-   }
-
-   get_version_url( )
-   {
-      return this.host_info + "/version";
    }
 
    get_unix_now_url( )
@@ -528,7 +523,7 @@ async function ciyam_node( host, access, device, hashed, passwd )
 
    console.log( ciyam.get_cws_url( ) );
 
-   await ciyam.fetch( ciyam.get_version_url( ) + ciyam.get_query_parameters( ), "GET", console.log );
+   await ciyam.fetch( ciyam.get_system_url( ) + ciyam.get_query_parameters( ), "GET", console.log );
 
    await ciyam.post( ciyam.get_echo_url( ) + ciyam.get_query_parameters( ), "testing...", console.log );
 
