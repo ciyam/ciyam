@@ -38,6 +38,8 @@ class CIYAM
       else
          this.format_type = c_format_type_text;
 
+      this.node_crypto = null;
+
       this.user_callback = null;
    }
 
@@ -160,9 +162,7 @@ class CIYAM
          return hex_sha256( this.access + password );
       else
       {
-         const crypto = require( "crypto" );
-
-         const hash = crypto.createHash( "sha256" );
+         const hash = this.node_crypto.createHash( "sha256" );
 
          hash.update( this.access + password );
 
@@ -178,13 +178,11 @@ class CIYAM
          this.hashed = hex_sha256( hex_sha256( combined ) + this.device );
       else
       {
-         const crypto = require( "crypto" );
-
-         const hash_1 = crypto.createHash( "sha256" );
+         const hash_1 = this.node_crypto.createHash( "sha256" );
 
          hash_1.update( combined );
 
-         const hash_2 = crypto.createHash( "sha256" );
+         const hash_2 = this.node_crypto.createHash( "sha256" );
 
          hash_2.update( hash_1.digest( "hex" ) + this.device );
 
@@ -198,9 +196,7 @@ class CIYAM
          this.sessid = hex_sha256( this.hashed + this.unique ).substr( 0, c_sess_id_len );
       else
       {
-         const crypto = require( "crypto" );
-
-         const hash = crypto.createHash( "sha256" );
+         const hash = this.node_crypto.createHash( "sha256" );
 
          hash.update( this.hashed + this.unique );
 
@@ -392,15 +388,14 @@ class CIYAM
       }
       else
       {
-         if( ( response.indexOf( "[" ) != 0 )
-          && ( response.indexOf( "Error: " ) != 0 ) )
+         if( response.indexOf( "Error: " ) != 0 )
          {
             const obj = JSON.parse( response );
 
             if( obj.error == null )
             {
                if( this.device == "" )
-                  this.device = obj.new_device;
+                  this.device = obj.device;
                else if( this.unique == "" )
                   this.unique = obj.unique;
             }
@@ -492,6 +487,8 @@ async function ciyam_node( host, access, device, hashed, passwd )
    console.log( "ciyam_node" );
 
    var ciyam = new CIYAM( host, true );
+
+   ciyam.node_crypto = require( "crypto" );
 
    console.log( ciyam.get_cws_url( ) );
 
