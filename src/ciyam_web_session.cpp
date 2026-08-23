@@ -1495,7 +1495,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          if( !is_json_output )
             response = new_device;
          else
-            response = "{\"new_device\":\"" + new_device + "\"}";
+            response = "{\"device\":\"" + new_device + "\"}";
       }
    }
    else
@@ -2782,6 +2782,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                        response += "\n ]\n}";
                                     }
                                  }
+                              }
+                              else if( response[ 0 ] == '[' )
+                              {
+                                 // NOTE: Is assuming that this is a status response.
+                                 response = "{\"status\":\"" + escaped_json( response ) + "\"}";
                               }
                            }
                         }
