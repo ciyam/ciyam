@@ -3,6 +3,8 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+const c_admin = "admin";
+
 const c_def_key_len = 11;
 const c_sess_id_len = 20;
 
@@ -22,6 +24,8 @@ class CIYAM
    constructor( host_info, use_json )
    {
       console.log( "CIYAM [" + host_info + "]" );
+
+      this.seed = "";
 
       this.access = "";
       this.device = "";
@@ -156,15 +160,18 @@ class CIYAM
       this.var_map.set( name, value );
    }
 
-   hash_combined( password )
+   hash_combined( password, access )
    {
+      if( access == null )
+         access = this.access;
+
       if( typeof hex_sha256 !== "undefined" )
-         return hex_sha256( this.access + password );
+         return hex_sha256( access + password );
       else
       {
          const hash = this.node_crypto.createHash( "sha256" );
 
-         hash.update( this.access + password );
+         hash.update( access + password );
 
          return hash.digest( "hex" );
       }
@@ -394,7 +401,14 @@ class CIYAM
 
             if( obj.error == null )
             {
-               if( this.device == "" )
+               if( this.access == c_admin )
+               {
+                  this.access = obj.pin;
+
+                  if( this.seed == "" )
+                     this.seed = obj.seed;
+               }
+               else if( this.device == "" )
                   this.device = obj.device;
                else if( this.unique == "" )
                   this.unique = obj.unique;
@@ -413,7 +427,13 @@ class CIYAM
       else
       {
          this.access = access;
-         this.device = device;
+
+         // NOTE: (see NOTE below)
+         if( device.length >= 32 )
+            this.seed = device;
+         else
+            this.device = device;
+
          this.hashed = hashed;
 
          this.user_callback = callback;
@@ -426,6 +446,22 @@ class CIYAM
              + "/devices?access=" + this.access + "&format=" + this.format_type;
 
             await this.fetch( url, "POST", this.at_connect.bind( this ) );
+
+            // NOTE: If "admin" was provided then will assume that this
+            // is a new system and will provide the "admin" credentials
+            // along with the (optionally external) "seed" entropy.
+            if( ( access == c_admin ) && ( access != this.access ) )
+            {
+               var credentials = access + ":" + this.hash_combined( passwd );
+
+               url = this.get_cws_url( )
+                + "/devices?access=" + this.access + "&format=" + this.format_type
+                + "&passwd=" + CIYAM.encode_base64_url( credentials ) + "&request=" + this.seed;
+
+               this.seed = "";
+
+               await this.fetch( url, "POST", this.at_connect.bind( this ) );
+            }
          }
 
          if( this.unique == "" )
