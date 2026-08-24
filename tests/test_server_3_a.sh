@@ -1,4 +1,8 @@
 #!/bin/bash
+# Copyright (c) 2026 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 #Test RPC password.
 secs=$EPOCHSECONDS
