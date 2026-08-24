@@ -1163,19 +1163,7 @@ http://www.opensource.org/licenses/mit-license.php.
          document.getElementById( "user_request" ).value = request.substring( 1 );
       else if( request == vars_name )
       {
-         var output = ciyam.get_all_variables( );
-
-         if( output != "" )
-         {
-            var existing = document.getElementById( "user_arbitrary" ).value;
-
-            if( existing != "" )
-               existing += "\n";
-
-            output = existing + output;
-
-            document.getElementById( "user_arbitrary" ).value = output;
-         }
+         document.getElementById( "user_arbitrary" ).value = ciyam.get_all_variables( );
 
          if( !was_exec )
          {
@@ -1463,7 +1451,11 @@ http://www.opensource.org/licenses/mit-license.php.
          }
          else if( request == quit_name )
          {
+            ciyam.debug = true;
+
             ciyam.disconnect( handle_response );
+
+            ciyam.debug = false;
 
             if( localStorage.getItem( "cws.hashed_" + ciyam.access ) == null )
             {
@@ -1482,8 +1474,15 @@ http://www.opensource.org/licenses/mit-license.php.
          else if( ( request == "" ) && ( ciyam.unique == "" )
           && ( document.getElementById( "user_password" ).value != "" ) )
          {
-            await ciyam.connect( ciyam.access, ciyam.device, ciyam.hashed,
+            if( ciyam.access == "" )
+               ciyam.access = document.getElementById( "user_access" ).value;
+
+            ciyam.debug = true;
+
+            await ciyam.connect( ciyam.access, ciyam.device, "",
              document.getElementById( "user_password" ).value, handle_response );
+
+            ciyam.debug = false;
 
             if( ciyam.sessid != "" )
             {
@@ -1984,14 +1983,17 @@ http://www.opensource.org/licenses/mit-license.php.
    {
       var lines = data.split( "\n" );
 
-      if( lines.length < 10 )
-         console.log( data );
-      else
+      if( ciyam.debug == false )
       {
-         var head = lines.slice( 0, 10 );
+         if( lines.length < 10 )
+            console.log( data );
+         else
+         {
+            var head = lines.slice( 0, 10 );
 
-         console.log( head.join( "\n" ) );
-         console.log( "... (+" + ( lines.length - 10 ) + " further lines)" );
+            console.log( head.join( "\n" ) );
+            console.log( "... (+" + ( lines.length - 10 ) + " further lines)" );
+         }
       }
 
       // NOTE: Changes the placeholder to the request just issued (making it clear that a response was received).
@@ -2160,6 +2162,8 @@ http://www.opensource.org/licenses/mit-license.php.
                   is_admin_session = true;
                else
                   is_admin_session = false;
+
+               document.getElementById( "user_device" ).value = ciyam.device;
 
                var target = owner;
 
