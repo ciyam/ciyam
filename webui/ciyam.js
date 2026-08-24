@@ -390,8 +390,9 @@ class CIYAM
 
       if( this.format_type == c_format_type_text )
       {
-         if( ( response.indexOf( "[" ) != 0 )
-          && ( response.indexOf( "Error: " ) != 0 ) )
+         if( response.indexOf( "[" ) == 0 )
+            this.connect_status = response;
+         else( response.indexOf( "Error: " ) != 0 )
          {
             if( this.device == "" )
                this.device = response;
@@ -500,10 +501,12 @@ class CIYAM
             url = this.get_cws_url( )
              + "/status?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type + "&session=" + this.sessid;
 
-            if( !all_callbacks && ( this.node_crypto == null ) )
-               await this.fetch( url, "GET", callback );
-            else
-               await this.fetch( url, "GET", this.at_connect.bind( this ) );
+            await this.fetch( url, "GET", this.at_connect.bind( this ) );
+
+            // NOTE: If the supplied callback has not been called (and this function was
+            // not called via Node.js) then will call it now with the "connect_status".
+            if( !all_callbacks && ( callback != null ) && ( this.node_crypto == null ) )
+               callback( this.connect_status );
 
             if( this.error != "" )
             {
