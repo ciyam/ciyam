@@ -2336,21 +2336,21 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      ( void )rc;
 
-                     msleep( 100 );
+                     msleep( 50 );
                   }
 
                   // NOTE: Allows for a number of
                   // seconds to start the session
                   // script (which will result in
                   // an error if it's not found).
-                  for( size_t i = 0; i < 15; i++ )
+                  for( size_t i = 0; i < 25; i++ )
                   {
                      running = has_system_variable( web_message_var_name );
 
                      if( running )
                         break;
 
-                     msleep( 200 );
+                     msleep( ( i < 3 ) ? 50 : 100 );
                   }
 
                   if( !running )
