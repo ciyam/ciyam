@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sleep 0.5
+sleep 1
 
 ./save_identity
 ./erase_identity >/dev/null
@@ -9,4 +9,4 @@ sleep 0.5
 
 ./ciyam_server -quiet -no_udp -no_auto -no_peers &
 
-sleep 0.5
+sleep 1
