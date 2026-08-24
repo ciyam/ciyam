@@ -27,6 +27,10 @@ class CIYAM
 
       this.seed = "";
 
+      this.debug = false;
+
+      this.error = "";
+
       this.access = "";
       this.device = "";
       this.hashed = "";
@@ -45,6 +49,8 @@ class CIYAM
       this.node_crypto = null;
 
       this.user_callback = null;
+
+      this.connect_status = "";
    }
 
    static encode_base64( str )
@@ -351,7 +357,8 @@ class CIYAM
 
    async post( url, text, callback )
    {
-      console.log( "POST " + url + " ==> " + text );
+      if( this.debug )
+         console.log( "POST " + url + " ==> " + text );
 
       if( this.format_type != c_format_type_json )
          await fetch( url, { method: "POST", headers: { "Content-Type": "text/plain" }, body: text } )
@@ -367,7 +374,8 @@ class CIYAM
 
    async fetch( url, request_type, callback )
    {
-      console.log( request_type + " " + url );
+      if( this.debug )
+         console.log( request_type + " " + url );
 
       await fetch( url, { method: request_type } )
        .then( response => response.text( ) )
@@ -377,6 +385,9 @@ class CIYAM
 
    at_connect( response )
    {
+      if( this.debug )
+         console.log( response );
+
       if( this.format_type == c_format_type_text )
       {
          if( ( response.indexOf( "[" ) != 0 )
@@ -390,37 +401,40 @@ class CIYAM
       }
       else
       {
-         if( response.indexOf( "Error: " ) != 0 )
+         const obj = JSON.parse( response );
+
+         if( obj.error == null )
          {
-            const obj = JSON.parse( response );
-
-            if( obj.error == null )
+            if( obj.pin != null )
             {
-               if( this.access == c_admin )
-               {
-                  this.access = obj.pin;
+               this.access = obj.pin;
 
-                  if( this.seed == "" )
-                     this.seed = obj.seed;
-               }
-               else if( this.device == "" )
-                  this.device = obj.device;
-               else if( this.unique == "" )
-                  this.unique = obj.unique;
+               if( this.seed == "" )
+                  this.seed = obj.seed;
             }
+            else if( this.device == "" )
+               this.device = obj.device;
+            else if( this.unique == "" )
+               this.unique = obj.unique;
+            else if( obj.status != null )
+               this.connect_status = obj.status;
          }
+         else
+            this.error = obj.error;
       }
 
       if( this.user_callback != null )
          this.user_callback( response );
    }
 
-   async connect( access, device, hashed, passwd, callback )
+   async connect( access, device, hashed, passwd, callback, all_callbacks )
    {
       if( this.sessid != "" )
          callback( "Error: Current session still exists." );
       else
       {
+         this.error = "";
+
          this.access = access;
 
          // NOTE: (see NOTE below)
@@ -431,7 +445,11 @@ class CIYAM
 
          this.hashed = hashed;
 
-         this.user_callback = callback;
+         if( all_callbacks == null )
+            all_callbacks = false;
+
+         if( all_callbacks )
+            this.user_callback = callback;
 
          var url = "";
 
@@ -442,11 +460,16 @@ class CIYAM
 
             await this.fetch( url, "POST", this.at_connect.bind( this ) );
 
-            // NOTE: If "admin" was provided then will assume that this
-            // is a new system and will provide the "admin" credentials
+            // NOTE: If "admin" or a seed is provided as "access" then
+            // assumes that this is either a new system or the "admin"
+            // password is being reset so provides "admin" credentials
             // along with the (optionally external) "seed" entropy.
-            if( ( access == c_admin ) && ( access != this.access ) )
+            if( ( this.error == "" )
+             && ( this.seed != "" ) && ( access != this.access ) )
             {
+               if( access.length > 5 )
+                  access = c_admin;
+
                var credentials = access + ":" + this.hash_combined( passwd );
 
                url = this.get_cws_url( )
@@ -459,7 +482,7 @@ class CIYAM
             }
          }
 
-         if( this.unique == "" )
+         if( ( this.error == "" ) && ( this.unique == "" ) )
          {
             url = this.get_cws_url( )
              + "/sessions?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type;
@@ -467,7 +490,7 @@ class CIYAM
             await this.fetch( url, "POST", this.at_connect.bind( this ) );
          }
 
-         if( this.unique != "" )
+         if( ( this.error == "" ) && ( this.unique != "" ) )
          {
             if( this.hashed == "" )
                this.determine_hashed( passwd );
@@ -477,7 +500,16 @@ class CIYAM
             url = this.get_cws_url( )
              + "/status?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type + "&session=" + this.sessid;
 
-           await this.fetch( url, "GET", callback );
+            if( !all_callbacks && ( this.node_crypto == null ) )
+               await this.fetch( url, "GET", callback );
+            else
+               await this.fetch( url, "GET", this.at_connect.bind( this ) );
+
+            if( this.error != "" )
+            {
+               this.hashed = "";
+               this.sessid = "";
+            }
          }
       }
    }
@@ -491,6 +523,8 @@ class CIYAM
       {
          this.sessid = "";
          this.unique = "";
+
+         this.connect_status = "";
 
          this.remove_all_variables( );
       }
@@ -513,27 +547,38 @@ class CIYAM
    }
 }
 
-async function ciyam_node( host, access, device, hashed, passwd )
+async function ciyam_node( host, access, device, hashed, passwd, debug )
 {
-   console.log( "ciyam_node" );
+   if( debug )
+      console.log( "ciyam_node" );
 
    var ciyam = new CIYAM( host, true );
 
    ciyam.node_crypto = require( "crypto" );
 
-   console.log( ciyam.get_cws_url( ) );
+   if( debug )
+   {
+      ciyam.debug = debug;
+
+      console.log( ciyam.get_cws_url( ) );
+   }
 
    await ciyam.fetch( ciyam.get_system_url( ) + ciyam.get_query_parameters( ), "GET", console.log );
 
-   await ciyam.post( ciyam.get_echo_url( ) + ciyam.get_query_parameters( ), "testing...", console.log );
+   if( access == "" )
+      await ciyam.post( ciyam.get_echo_url( ) + ciyam.get_query_parameters( ), "testing...", console.log );
 
    if( ( access != "" ) && ( ( hashed != "" ) || ( passwd != "" ) ) )
    {
-      await ciyam.connect( access, device, hashed, passwd, console.log );
+      await ciyam.connect( access, device, hashed, passwd, console.log, debug );
 
-      console.log( "hashed: " + ciyam.hashed );
+      if( ciyam.connect_status != "" )
+         console.log( ciyam.connect_status );
 
-      await ciyam.disconnect( console.log );
+      if( ciyam.error != "" )
+         console.log( "Error: " + ciyam.error );
+      else
+         await ciyam.disconnect( console.log );
    }
 }
 
@@ -551,6 +596,8 @@ if( typeof process !== "undefined" )
       var hashed = "";
       var passwd = "";
 
+      var use_debug = false;
+
       if( process.argv[ 3 ] != null )
          access = process.argv[ 3 ];
 
@@ -563,6 +610,9 @@ if( typeof process !== "undefined" )
       if( process.argv[ 6 ] != null )
          passwd = process.argv[ 6 ];
 
-      ciyam_node( host, access, device, hashed, passwd );
+      if( process.argv[ 7 ] != null )
+         use_debug = process.argv[ 7 ];
+
+      ciyam_node( host, access, device, hashed, passwd, use_debug );
    }
 }
