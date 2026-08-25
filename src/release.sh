@@ -183,6 +183,7 @@ else
  cp ../pics/background_texture.png $release_name/html
 
  cp ../webui/*.js  $release_name/html
+ cp ../webui/*.form  $release_name/html
  cp ../webui/*.html  $release_name/html
 
  ./unbundle -qq fonts -d $release_name/html/fonts
