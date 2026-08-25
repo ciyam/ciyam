@@ -1479,8 +1479,12 @@ http://www.opensource.org/licenses/mit-license.php.
 
             ciyam.debug = true;
 
-            await ciyam.connect( ciyam.access, ciyam.device, "",
-             document.getElementById( "user_password" ).value, handle_response );
+            if( ciyam.hashed != "" )
+               await ciyam.connect( ciyam.access,
+                ciyam.device, ciyam.hashed, "", handle_response );
+            else
+               await ciyam.connect( ciyam.access, ciyam.device, "",
+                document.getElementById( "user_password" ).value, handle_response );
 
             ciyam.debug = false;
 
