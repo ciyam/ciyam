@@ -61,40 +61,13 @@ http://www.opensource.org/licenses/mit-license.php.
 
    <div id="test_image" style="left: 34%; margin-top: -50px; position: absolute;"></div>
 
-   <form id="test_form" onsubmit="do_fetch( ); return false;">
-      <select id="user_droplist" name="user_droplist" onchange="select_access( )">
-      <option value="" disabled selected>PIN Opts</option>
-      <option value="create">Create</option>
-      </select>
-      <input type="text" id="user_access" size="30" placeholder="(e.g. admin)" autofocus>
-      <br/>
-      <div id="user_id_div">
-      <br/>
-      <label>Username: <input type="text" id="user_name" size="30" maxlength="30"></label>
-      </div>
-      <div id="password_div">
-      <br/>
-      <label>Password: &nbsp; <input type="password" id="user_password" size="30"></label>
-      <br/>
-      </div>
-      <br/>
-      <label>Device: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="text" id="user_device" size="20" readonly></label>
-      <br/><br/>
-      <label>Session: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="text" id="user_session" size="25" readonly></label>
-      <br/><br/>
-      <label>Unique: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="text" id="user_unique" size="30" readonly></label>
-      <br/><br/>
-      <label>Request: &nbsp;&nbsp;&nbsp;&nbsp; <input type="text" id="user_request" size="100" placeholder="quit" onkeydown="return input_key( event )"></label>
-      <br/><br/>
-      <textarea id="user_arbitrary" name="user_arbitrary" rows="20" cols="125"></textarea>
-      <br/><br/>
-      <input type="checkbox" id="user_retain" name="user_retain" onclick="do_retain( )" >Retain Credentials
-      <br/><br/>
-      <input type="checkbox" id="user_remove" name="user_remove" onclick="do_remove( )" >Remove Credentials
-      <br/><br/>
-      <button type="submit">Click or Enter to Submit</button>
-      <button type="button" id="reset_storage">Clear Local Storage and Reload</button>
-   </form>
+   <!--
+   NOTE: This DIV is used
+   for loading the "form"
+   content dynamically.
+   -->
+   <div id="test_content">
+   </div>
 
    <br/>
 
@@ -102,7 +75,7 @@ http://www.opensource.org/licenses/mit-license.php.
       <div class="progress_bar" id="progress_bar" style="width: 0%;"></div>
    </div>
 
-   <div id="data"></div>
+   <div id="test_special"></div>
 
    <script>
    var all_requests = "";
@@ -221,9 +194,7 @@ http://www.opensource.org/licenses/mit-license.php.
          populate_access( );
    }
 
-   const button_clear = document.getElementById( "reset_storage" );
-
-   button_clear.onclick = function ( )
+   function clear_storage_and_reload( )
    {
       if( confirm( "Remove all local storage information?" ) )
       {
@@ -325,7 +296,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
                   document.getElementById( "user_request" ).disabled = false;
 
-                  document.getElementById( "data" ).innerText = "";
+                  document.getElementById( "test_special" ).innerText = "";
 
                   document.getElementById( "user_request" ).focus( );
                   document.getElementById( "user_droplist" ).disabled = true;
@@ -359,7 +330,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
                document.getElementById( "user_request" ).disabled = true;
 
-               document.getElementById( "data" ).innerText = "";
+               document.getElementById( "test_special" ).innerText = "";
 
                document.getElementById( "user_unique" ).focus( );
                document.getElementById( "user_droplist" ).disabled = false;
@@ -587,6 +558,13 @@ http://www.opensource.org/licenses/mit-license.php.
 
    function load( )
    {
+      load_form( "test_web_session" );
+
+      setTimeout( load_2, 250 );
+   }
+
+   function load_2( )
+   {
       self = Date.now( );
 
       if( sessionStorage.getItem( "self" ) != null )
@@ -746,6 +724,28 @@ http://www.opensource.org/licenses/mit-license.php.
          delete window[ page_script + "_execute" ];
          window[ page_script + "_execute" ] = undefined;
       }
+   }
+
+   function load_form( new_page_form, raw_form_information )
+   {
+      const old_page_form = document.getElementById( new_page_form );
+
+      if( old_page_form != null )
+         old_page_form.remove( );
+
+      if( raw_form_information != null )
+         document.getElementById( "test_content" ).innerHTML = raw_form_information;
+      else
+      {
+         fetch( new_page_form + ".form" )
+          .then( response => response.text( ) )
+          .then( data => { document.getElementById( "test_content" ).innerHTML = data; } );
+      }
+   }
+
+   function unload_form( page_form )
+   {
+      document.getElementById( "test_content" ).innerHTML = "";
    }
 
    function load_style( new_page_style, raw_style_information )
@@ -1013,7 +1013,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
       if( all_requests == "" )
       {
-         document.getElementById( "data" ).innerText = "";
+         document.getElementById( "test_special" ).innerText = "";
 
          request = document.getElementById( "user_request" ).value;
 
@@ -1860,7 +1860,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
          document.getElementById( "user_request" ).focus( );
 
-         document.getElementById( "data" ).innerText = "(retained credentials " + scope + ")";
+         document.getElementById( "test_special" ).innerText = "(retained credentials " + scope + ")";
       }
    }
 
@@ -1946,9 +1946,9 @@ http://www.opensource.org/licenses/mit-license.php.
       document.getElementById( "user_request" ).focus( );
 
       if( error != "" )
-         document.getElementById( "data" ).innerText = error;
+         document.getElementById( "test_special" ).innerText = error;
       else
-         document.getElementById( "data" ).innerText = "(removed credentials " + scope + " for " + access + ")";
+         document.getElementById( "test_special" ).innerText = "(removed credentials " + scope + " for " + access + ")";
    }
 
    function handle_error( error, keep_request )
@@ -1956,7 +1956,7 @@ http://www.opensource.org/licenses/mit-license.php.
       if( !error.startsWith( error_prefix ) )
          error = error_prefix + error;
 
-      document.getElementById( "data" ).innerText = error;
+      document.getElementById( "test_special" ).innerText = error;
 
       if( !started_session )
       {
@@ -2003,9 +2003,11 @@ http://www.opensource.org/licenses/mit-license.php.
 
       if( data.startsWith( error_prefix ) )
          handle_error( data );
+      else if( ciyam.error != "" )
+         handle_error( ciyam.error );
       else
       {
-         document.getElementById( "data" ).innerText = "";
+         document.getElementById( "test_special" ).innerText = "";
 
          if( ciyam.device == "" )
          {
@@ -2104,7 +2106,7 @@ http://www.opensource.org/licenses/mit-license.php.
          }
          else
          {
-            document.getElementById( "data" ).innerText = "";
+            document.getElementById( "test_special" ).innerText = "";
 
             // NOTE: Add local commands to the help output.
             if( document.getElementById( "user_request" ).value == help_name )

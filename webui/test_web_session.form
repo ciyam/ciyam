@@ -1,0 +1,52 @@
+<!--
+Copyright (c) 2026 CIYAM Developers
+
+Distributed under the MIT/X11 software license, please refer to the file
+license.txt in the root project directory or
+http://www.opensource.org/licenses/mit-license.php.
+-->
+<form id="test_form" onsubmit="do_fetch( ); return false;">
+   <select id="user_droplist" name="user_droplist" onchange="select_access( )">
+   <option value="" disabled selected>PIN Opts</option>
+   <option value="create">Create</option>
+   </select>
+
+   <input type="text" id="user_access" size="30" placeholder="(e.g. admin)" autofocus>
+   <br/>
+
+   <div id="user_id_div">
+   <br/>
+   <label>Username: <input type="text" id="user_name" size="30" maxlength="30"></label>
+   </div>
+
+   <div id="password_div">
+   <br/>
+   <label>Password: &nbsp; <input type="password" id="user_password" size="30"></label>
+   <br/>
+   </div>
+
+   <br/>
+   <label>Device: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="text" id="user_device" size="20" readonly></label>
+
+   <br/><br/>
+   <label>Session: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="text" id="user_session" size="25" readonly></label>
+   <br/><br/>
+
+   <label>Unique: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="text" id="user_unique" size="30" readonly></label>
+   <br/><br/>
+
+   <label>Request: &nbsp;&nbsp;&nbsp;&nbsp; <input type="text" id="user_request" size="100" placeholder="quit" onkeydown="return input_key( event )"></label>
+   <br/><br/>
+   <textarea id="user_arbitrary" name="user_arbitrary" rows="20" cols="125"></textarea>
+
+   <br/><br/>
+   <input type="checkbox" id="user_retain" name="user_retain" onclick="do_retain( )" >Retain Credentials
+
+   <br/><br/>
+   <input type="checkbox" id="user_remove" name="user_remove" onclick="do_remove( )" >Remove Credentials
+
+   <br/><br/>
+   <button type="submit">Click or Enter to Submit</button>
+   <button type="button" id="reset_storage" onclick="clear_storage_and_reload( )">Clear Local Storage and Reload</button>
+</form>
+
