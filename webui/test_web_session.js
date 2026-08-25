@@ -163,6 +163,166 @@ function test_web_session( )
    document.getElementById( "user_request" ).disabled = true;
 }
 
+function link_session( )
+{
+   document.getElementById( "user_access" ).value = ciyam.access;
+   document.getElementById( "user_device" ).value = ciyam.device;
+   document.getElementById( "user_unique" ).value = ciyam.unique;
+
+   document.getElementById( "user_session" ).value = ciyam.sessid;
+
+   document.getElementById( "user_password" ).value = "";
+
+   document.getElementById( "user_access" ).disabled = true;
+   document.getElementById( "user_device" ).disabled = true;
+
+   document.getElementById( "user_request" ).disabled = false;
+
+   document.getElementById( "test_special" ).innerText = "";
+
+   document.getElementById( "user_request" ).focus( );
+   document.getElementById( "user_droplist" ).disabled = true;
+   document.getElementById( "reset_storage" ).disabled = true;
+
+   document.getElementById( "user_arbitrary" ).value = "(session linked)";
+}
+
+function unlink_session( )
+{
+   document.getElementById( "user_access" ).value = ciyam.access;
+   document.getElementById( "user_device" ).value = ciyam.device;
+   document.getElementById( "user_unique" ).value = ciyam.unique;
+
+   document.getElementById( "user_session" ).value = ciyam.sessid;
+
+   document.getElementById( "user_password" ).value = "";
+
+   document.getElementById( "user_request" ).value = "";
+
+   document.getElementById( "user_request" ).disabled = true;
+
+   document.getElementById( "test_special" ).innerText = "";
+
+   document.getElementById( "user_unique" ).focus( );
+   document.getElementById( "user_droplist" ).disabled = false;
+   document.getElementById( "reset_storage" ).disabled = false;
+
+   document.getElementById( "user_arbitrary" ).value = "(session unlinked)";
+}
+
+function select_access( )
+{
+   var access = document.getElementById( "user_droplist" ).value;
+
+   document.getElementById( "user_name" ).value = "";
+
+   document.getElementById( "user_id_div" ).style.display = "none";
+   document.getElementById( "password_div" ).style.display = "block";
+
+   if( access == "create" )
+   {
+      ciyam.access = "";
+      ciyam.hashed = "";
+
+      document.getElementById( "user_access" ).value = ciyam.access;
+      document.getElementById( "user_device" ).value = ciyam.device;
+
+      document.getElementById( "user_retain" ).checked = false;
+      document.getElementById( "user_retain" ).disabled = false;
+
+      document.getElementById( "user_access" ).disabled = false;
+      document.getElementById( "user_access" ).focus( );
+
+      document.getElementById( "user_password" ).value = "";
+   }
+   else
+   {
+      ciyam.access = access;
+
+      document.getElementById( "user_access" ).value = ciyam.access;
+
+      var new_hashed = "";
+
+      if( localStorage.getItem( "cws.hashed_" + ciyam.access ) != null )
+         new_hashed = localStorage.getItem( "cws.hashed_" + access );
+
+      ciyam.hashed = new_hashed;
+
+      if( ciyam.hashed == "" )
+      {
+         document.getElementById( "user_password" ).value = "";
+         document.getElementById( "user_password" ).disabled = false;
+      }
+      else
+      {
+         document.getElementById( "user_password" ).value = "***";
+         document.getElementById( "user_password" ).disabled = true;
+      }
+
+      document.getElementById( "user_device" ).value = ciyam.device;
+
+      document.getElementById( "user_remove" ).disabled = false;
+
+      document.getElementById( "user_retain" ).checked = true;
+      document.getElementById( "user_retain" ).disabled = true;
+
+      if( ciyam.hashed != "" )
+         document.getElementById( "user_unique" ).focus( );
+      else
+         document.getElementById( "user_password" ).focus( );
+   }
+
+   document.getElementById( "user_droplist" ).value = "";
+}
+
+function populate_access( )
+{
+   var user_droplist = document.getElementById( "user_droplist" )
+
+   var i, l = user_droplist.options.length - 1;
+
+   for( i = l; i >= 2; i-- )
+      user_droplist.remove( i );
+
+   var access = document.getElementById( "user_access" ).value;
+
+   ciyam.access = access;
+
+   var is_retained = false;
+
+   if( localStorage.getItem( "cws.access" ) != null )
+   {
+      var access_array = localStorage.getItem( "cws.access" );
+
+      var access_entries = access_array.split( "," );
+
+      for( var i = 0, l = access_entries.length; i < l; i++ )
+      {
+         var option = access_entries[ i ];
+
+         if( option == access )
+            is_retained = true;
+
+         user_droplist.options.add( new Option( option, option, false ) );
+      }
+   }
+
+   if( is_retained )
+   {
+      document.getElementById( "user_remove" ).disabled = false;
+
+      document.getElementById( "user_retain" ).checked = true;
+      document.getElementById( "user_retain" ).disabled = true;
+   }
+   else
+   {
+      document.getElementById( "user_remove" ).disabled = true;
+
+      document.getElementById( "user_retain" ).checked = false;
+      document.getElementById( "user_retain" ).disabled = false;
+   }
+}
+
 function reformatted( request )
 {
    var org = request;
@@ -1053,6 +1213,8 @@ async function do_fetch( )
 
          var combined = "";
 
+         var is_new_user = false;
+
          if( ( username == "" ) && ( password != "" ) )
             combined = ciyam.hash_combined( password );
          else if( username != "" )
@@ -1061,6 +1223,8 @@ async function do_fetch( )
                combined = ciyam.hash_combined( password );
             else
             {
+               is_new_user = true;
+
                // NOTE: For testing purposes the password is
                // just the "username" so to make it easy for
                // this UI just copies the username across to
@@ -1081,7 +1245,7 @@ async function do_fetch( )
             credentials += combined;
          }
 
-         if( ciyam.device == "" )
+         if( is_new_user || ( ciyam.device == "" ) )
          {
             request_type = "POST";
 
@@ -1118,7 +1282,7 @@ async function do_fetch( )
                document.getElementById( "user_request" ).disabled = true;
             }
          }
-         else
+         else if( !is_new_user )
          {
             if( ciyam.unique == "" )
             {
@@ -1172,7 +1336,11 @@ async function do_fetch( )
          if( qry_data != "" )
             url += "?" + qry_data;
 
+         ciyam.debug = true;
+
          ciyam.fetch( url, request_type, handle_response );
+
+         ciyam.debug = false;
       }
    }
 }
@@ -1333,6 +1501,9 @@ function handle_error( error, keep_request )
    if( !error.startsWith( error_prefix ) )
       error = error_prefix + error;
 
+   if( ciyam.debug == false )
+      console.log( error );
+
    document.getElementById( "test_special" ).innerText = error;
 
    if( !started_session )
@@ -1360,19 +1531,6 @@ function handle_response( data )
 {
    var lines = data.split( "\n" );
 
-   if( ciyam.debug == false )
-   {
-      if( lines.length < 10 )
-         console.log( data );
-      else
-      {
-         var head = lines.slice( 0, 10 );
-
-         console.log( head.join( "\n" ) );
-         console.log( "... (+" + ( lines.length - 10 ) + " further lines)" );
-      }
-   }
-
    // NOTE: Changes the placeholder to the request just issued (making it clear that a response was received).
    if( ( document.getElementById( "user_unique" ).value != "" )
     && ( document.getElementById( "user_request" ).value != "" ) )
@@ -1384,9 +1542,22 @@ function handle_response( data )
       handle_error( ciyam.error );
    else
    {
+      if( ciyam.debug == false )
+      {
+         if( lines.length < 10 )
+            console.log( data );
+         else
+         {
+            var head = lines.slice( 0, 10 );
+
+            console.log( head.join( "\n" ) );
+            console.log( "... (+" + ( lines.length - 10 ) + " further lines)" );
+         }
+      }
+
       document.getElementById( "test_special" ).innerText = "";
 
-      if( ciyam.device == "" )
+      if( ciyam.hashed == "" )
       {
          var pos = data.indexOf( " " );
 

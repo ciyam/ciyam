@@ -192,26 +192,8 @@ http://www.opensource.org/licenses/mit-license.php.
                   ciyam.sessid = user_data[ 3 ];
                   ciyam.unique = user_data[ 4 ];
 
-                  document.getElementById( "user_access" ).value = ciyam.access;
-                  document.getElementById( "user_device" ).value = ciyam.device;
-                  document.getElementById( "user_unique" ).value = ciyam.unique;
-
-                  document.getElementById( "user_session" ).value = ciyam.sessid;
-
-                  document.getElementById( "user_password" ).value = "";
-
-                  document.getElementById( "user_access" ).disabled = true;
-                  document.getElementById( "user_device" ).disabled = true;
-
-                  document.getElementById( "user_request" ).disabled = false;
-
-                  document.getElementById( "test_special" ).innerText = "";
-
-                  document.getElementById( "user_request" ).focus( );
-                  document.getElementById( "user_droplist" ).disabled = true;
-                  document.getElementById( "reset_storage" ).disabled = true;
-
-                  document.getElementById( "user_arbitrary" ).value = "(session linked)";
+                  if( link_session != null )
+                     link_session( );
                }
             }
             else if( ( data == self ) || ( data == owner ) )
@@ -227,25 +209,8 @@ http://www.opensource.org/licenses/mit-license.php.
                ciyam.sessid = "";
                ciyam.unique = "";
 
-               document.getElementById( "user_access" ).value = ciyam.access;
-               document.getElementById( "user_device" ).value = ciyam.device;
-               document.getElementById( "user_unique" ).value = ciyam.unique;
-
-               document.getElementById( "user_session" ).value = ciyam.sessid;
-
-               document.getElementById( "user_password" ).value = "";
-
-               document.getElementById( "user_request" ).value = "";
-
-               document.getElementById( "user_request" ).disabled = true;
-
-               document.getElementById( "test_special" ).innerText = "";
-
-               document.getElementById( "user_unique" ).focus( );
-               document.getElementById( "user_droplist" ).disabled = false;
-               document.getElementById( "reset_storage" ).disabled = false;
-
-               document.getElementById( "user_arbitrary" ).value = "(session unlinked)";
+               if( unlink_session != null )
+                  unlink_session( );
             }
          }
       }
@@ -353,116 +318,6 @@ http://www.opensource.org/licenses/mit-license.php.
    function update_progress( fraction )
    {
       document.getElementById( "progress_bar" ).style.width = ( fraction * 100 ) + "%";
-   }
-
-   function select_access( )
-   {
-      var access = document.getElementById( "user_droplist" ).value;
-
-      document.getElementById( "user_name" ).value = "";
-
-      document.getElementById( "user_id_div" ).style.display = "none";
-      document.getElementById( "password_div" ).style.display = "block";
-
-      if( access == "create" )
-      {
-         ciyam.access = "";
-         ciyam.hashed = "";
-
-         document.getElementById( "user_access" ).value = ciyam.access;
-         document.getElementById( "user_device" ).value = ciyam.device;
-
-         document.getElementById( "user_retain" ).checked = false;
-         document.getElementById( "user_retain" ).disabled = false;
-
-         document.getElementById( "user_access" ).disabled = false;
-         document.getElementById( "user_access" ).focus( );
-
-         document.getElementById( "user_password" ).value = "";
-      }
-      else
-      {
-         ciyam.access = access;
-
-         document.getElementById( "user_access" ).value = ciyam.access;
-
-         var new_hashed = "";
-
-         if( localStorage.getItem( "cws.hashed_" + ciyam.access ) != null )
-            new_hashed = localStorage.getItem( "cws.hashed_" + access );
-
-         ciyam.hashed = new_hashed;
-
-         if( ciyam.hashed == "" )
-         {
-            document.getElementById( "user_password" ).value = "";
-            document.getElementById( "user_password" ).disabled = false;
-         }
-         else
-         {
-            document.getElementById( "user_password" ).value = "***";
-            document.getElementById( "user_password" ).disabled = true;
-         }
-
-         document.getElementById( "user_device" ).value = ciyam.device;
-
-         document.getElementById( "user_remove" ).disabled = false;
-
-         document.getElementById( "user_retain" ).checked = true;
-         document.getElementById( "user_retain" ).disabled = true;
-
-         document.getElementById( "user_unique" ).focus( );
-      }
-
-      document.getElementById( "user_droplist" ).value = "";
-   }
-
-   function populate_access( )
-   {
-      var user_droplist = document.getElementById( "user_droplist" )
-
-      var i, l = user_droplist.options.length - 1;
-
-      for( i = l; i >= 2; i-- )
-         user_droplist.remove( i );
-
-      var access = document.getElementById( "user_access" ).value;
-
-      ciyam.access = access;
-
-      var is_retained = false;
-
-      if( localStorage.getItem( "cws.access" ) != null )
-      {
-         var access_array = localStorage.getItem( "cws.access" );
-
-         var access_entries = access_array.split( "," );
-
-         for( var i = 0, l = access_entries.length; i < l; i++ )
-         {
-            var option = access_entries[ i ];
-
-            if( option == access )
-               is_retained = true;
-
-            user_droplist.options.add( new Option( option, option, false ) );
-         }
-      }
-
-      if( is_retained )
-      {
-         document.getElementById( "user_remove" ).disabled = false;
-
-         document.getElementById( "user_retain" ).checked = true;
-         document.getElementById( "user_retain" ).disabled = true;
-      }
-      else
-      {
-         document.getElementById( "user_remove" ).disabled = true;
-
-         document.getElementById( "user_retain" ).checked = false;
-         document.getElementById( "user_retain" ).disabled = false;
-      }
    }
 
    function load_js( new_page_script, raw_script_information )
@@ -597,7 +452,7 @@ http://www.opensource.org/licenses/mit-license.php.
          old_page_style.remove( );
    }
 
-   function load_main_js( new_main_script )
+   function load_main_js( new_main_script, source )
    {
       unload_main_js( new_main_script );
 
@@ -605,7 +460,7 @@ http://www.opensource.org/licenses/mit-license.php.
       {
          var new_script = document.createElement( "script" );
 
-         new_script.src = new_main_script + ".js?" + Date.now( );
+         new_script.src = new_main_script + ".js?" + source;
 
          new_script.setAttribute( "id", new_main_script );
 
@@ -634,10 +489,10 @@ http://www.opensource.org/licenses/mit-license.php.
    {
       load_form( "test_web_session" );
 
-      setTimeout( load_2, 100 );
+      setTimeout( load_main, 100 );
    }
 
-   function load_2( )
+   function load_main( )
    {
       self = Date.now( );
 
@@ -648,12 +503,22 @@ http://www.opensource.org/licenses/mit-license.php.
 
       console.log( "self: " + self );
 
-      load_main_js( "test_web_session" );
+      var href_url = new URL( window.location.href );
 
-      setTimeout( load_3, 100 );
+      var source = href_url.searchParams.get( "source" );
+
+      if( source == null )
+         source = self;
+
+      // NOTE: Ensures that linked tabs can use
+      // a cached main js that is loaded by the
+      // initial tab (or "source").
+      load_main_js( "test_web_session", source );
+
+      setTimeout( load_complete, 100 );
    }
 
-   function load_3( )
+   function load_complete( )
    {
       var href_url = new URL( window.location.href );
 
@@ -665,10 +530,12 @@ http://www.opensource.org/licenses/mit-license.php.
 
          test_web_channel.postMessage( source + ':' + self );
       }
+      else
+      {
+         href_url.searchParams.set( "source", self );
 
-      href_url.searchParams.set( "source", self );
-
-      document.getElementById( "test_href" ).href = href_url;
+         document.getElementById( "test_href" ).href = href_url;
+      }
    }
    </script>
 </body>
