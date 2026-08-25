@@ -49,4 +49,3 @@ http://www.opensource.org/licenses/mit-license.php.
    <button type="submit">Click or Enter to Submit</button>
    <button type="button" id="reset_storage" onclick="clear_storage_and_reload( )">Clear Local Storage and Reload</button>
 </form>
-
