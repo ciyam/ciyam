@@ -392,7 +392,9 @@ class CIYAM
       {
          if( response.indexOf( "[" ) == 0 )
             this.connect_status = response;
-         else( response.indexOf( "Error: " ) != 0 )
+         else if( response.indexOf( "Error: " ) == 0 )
+            this.error = response;
+         else
          {
             if( this.device == "" )
                this.device = response;
@@ -522,15 +524,12 @@ class CIYAM
       if( this.user_callback != null )
          this.user_callback( response );
 
-      if( response.indexOf( "Error:" ) != 0 )
-      {
-         this.sessid = "";
-         this.unique = "";
+      this.sessid = "";
+      this.unique = "";
 
-         this.connect_status = "";
+      this.connect_status = "";
 
-         this.remove_all_variables( );
-      }
+      this.remove_all_variables( );
    }
 
    async disconnect( callback )
