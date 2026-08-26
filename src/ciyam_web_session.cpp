@@ -721,9 +721,12 @@ bool has_web_session_access_token( const string& token,
          {
             if( credentials.empty( ) )
             {
-               pin = token;
+               if( has_token )
+               {
+                  pin = token;
 
-               retval = true;
+                  retval = true;
+               }
             }
             else
             {
@@ -1478,7 +1481,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    }
    else if( !has_access_token( access ) )
       // FUTURE: This message should be handled as a server string message.
-      error = "Web session access token '" + access + "' is invalid.";
+      error = "This web session is not valid (or has expired).";
    else if( uri_suffix == c_cws_uri_suffix_devices )
    {
       size_t num_devices = get_num_access_devices( access );
@@ -1625,7 +1628,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   if( !is_json_output )
                      response = help_output;
                   else
-                     response = "{\"commands\":\"" + escaped_json( help_output ) + "\"}\n";
+                     response = "{\"commands\":\"" + escaped_json( help_output ) + "\"}";
                }
                else if( is_delete_request && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_sessions_prefix ) )
                {
@@ -1634,7 +1637,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   if( !is_json_output )
                      response = "Session terminated.";
                   else
-                     response = "{\"message\":\"Session terminated.\"}\n";
+                     response = "{\"message\":\"Session terminated.\"}";
 
                   set_system_variable( web_session_var_name, "" );
                   set_system_variable( web_started_var_name, "" );
@@ -1738,7 +1741,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            if( !is_json_output )
                               response = unlock_key;
                            else
-                              response = "{\"unlock_key\":\"" + escaped_json( unlock_key ) + "\"}\n";
+                              response = "{\"unlock_key\":\"" + escaped_json( unlock_key ) + "\"}";
                         }
                         catch( exception& x )
                         {
@@ -1975,7 +1978,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      if( !is_json_output )
                         response = script_data;
                      else
-                        response = "{\"javascript\":\"" + escaped_json( script_data ) + "\"}\n";
+                        response = "{\"javascript\":\"" + escaped_json( script_data ) + "\"}";
                   }
                }
                else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_javascripts ) )
@@ -2047,7 +2050,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      if( !is_json_output )
                         response = style_data;
                      else
-                        response = "{\"stylesheet\":\"" + escaped_json( style_data ) + "\"}\n";
+                        response = "{\"stylesheet\":\"" + escaped_json( style_data ) + "\"}";
                   }
                }
                else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_stylesheets ) )
@@ -2119,7 +2122,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      if( !is_json_output )
                         response = style_data;
                      else
-                        response = "{\"webcmdlist\":\"" + escaped_json( style_data ) + "\"}\n";
+                        response = "{\"webcmdlist\":\"" + escaped_json( style_data ) + "\"}";
                   }
                }
                else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_webcmdlists ) )
@@ -2191,20 +2194,30 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         error = "Invalid options '" + options + "' for user creation.";
                      else if( error.empty( ) )
                      {
-                        found = true;
+                        if( !pin.empty( ) )
+                        {
+                           if( has_user_info( pin ) )
+                              // FUTURE: This message should be handled as a server string message.
+                              error = "Access token '" + pin + "' has already been allocated.";
+                        }
 
-                        temp_umask tum( 077 );
+                        if( error.empty( ) )
+                        {
+                           found = true;
 
-                        string access_token( create_empty_token_file( prefix,
-                         ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_mixed ), &pin ) );
+                           temp_umask tum( 077 );
 
-                        if( !suggested_username.empty( ) )
-                           set_system_variable( g_cws_username_for_prefix + access_token, suggested_username );
+                           string access_token( create_empty_token_file( prefix,
+                            ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_mixed ), &pin ) );
 
-                        if( !is_json_output )
-                           response = access_token;
-                        else
-                           response = "{\"access_token\":\"" + access_token + "\"}\n";
+                           if( !suggested_username.empty( ) )
+                              set_system_variable( g_cws_username_for_prefix + access_token, suggested_username );
+
+                           if( !is_json_output )
+                              response = access_token;
+                           else
+                              response = "{\"access_token\":\"" + access_token + "\"}";
+                        }
                      }
                   }
                }
@@ -2220,7 +2233,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      if( !has_user_info( pin ) )
                         // FUTURE: This message should be handled as a server string message.
-                        error = "Unkknown user '" + pin + "' for removal.";
+                        error = "Unkknown user access '" + pin + "' for removal.";
                      else
                      {
                         found = true;
@@ -2275,7 +2288,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         if( !is_json_output )
                            response = all_user_info;
                         else
-                           response = "{\"all_users\":[" + all_user_info + "]}\n";
+                           response = "{\"all_users\":[" + all_user_info + "]}";
                      }
                   }
                }
@@ -2806,7 +2819,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   if( !is_json_output )
                      response = use_response;
                   else
-                     response = "{\"response\":\"" + use_response + "\"}\n";
+                     response = "{\"response\":\"" + use_response + "\"}";
                }
             }
          }
