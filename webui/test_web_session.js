@@ -1004,7 +1004,8 @@ async function do_fetch( )
             document.getElementById( "user_unique" ).focus( );
          }
       }
-      else if( ( request == "" ) && ( ciyam.unique == "" )
+      else if( ( request == "" )
+       && ( ciyam.device != "" ) && ( ciyam.unique == "" )
        && ( document.getElementById( "user_password" ).value != "" ) )
       {
          if( ciyam.access == "" )
@@ -1215,16 +1216,14 @@ async function do_fetch( )
 
          var is_new_user = false;
 
-         if( ( username == "" ) && ( password != "" ) )
-            combined = ciyam.hash_combined( password );
-         else if( username != "" )
+         if( username != "" )
          {
+            is_new_user = true;
+
             if( username == admin_username )
                combined = ciyam.hash_combined( password );
             else
             {
-               is_new_user = true;
-
                // NOTE: For testing purposes the password is
                // just the "username" so to make it easy for
                // this UI just copies the username across to
@@ -1625,7 +1624,7 @@ function handle_response( data )
             document.getElementById( "user_id_div" ).style.display = "none";
             document.getElementById( "password_div" ).style.display = "block";
 
-            document.getElementById( "user_unique" ).focus( );
+            document.getElementById( "user_password" ).focus( );
          }
       }
       else if( ciyam.unique == "" )
