@@ -11,7 +11,7 @@ else
  node ../webui/ciyam.js "" admin de604cee0755a3d81944ea96aed12681 "" none
 
  touch ciyam_base.restore
- sleep 0.5
+ sleep 1
 
  echo ""
  echo "Update 'admin' access password to 'test' (after restore)."
@@ -38,7 +38,7 @@ else
  node ../webui/ciyam.js -quiet "" de604cee0755a3d81944ea96aed12681 "" "" none
 
  touch ciyam_base.restore
- sleep 0.5
+ sleep 1
 
  echo ""
  echo "Update 'admin' access password to 'none' (after restore)."
@@ -75,14 +75,46 @@ else
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
 
  echo ""
+ echo "Connect using 11111 with 'none'."
+ node ../webui/ciyam.js "" 11111 "" "" none
+
+ echo ""
+ echo "Attempt to connect using 11111 with 'test'."
+ node ../webui/ciyam.js -quiet "" 11111 "" "" test
+
+ echo ""
  echo "Create a user with access pin '22222' then list users."
- env CIYAM_NODE_COMMAND="users create suggested=22222:test-2" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND="users create suggested=22222:?test-2" node ../webui/ciyam.js -quiet "" 10301 "" "" none
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
 
  echo ""
+ echo "Attempt to connect using 22222:test with 'test'."
+ node ../webui/ciyam.js -quiet "" 22222:test "" "" test
+
+ echo ""
+ echo "Connect using 22222:test with 'test' (after suggestion)."
+ node ../webui/ciyam.js "" 22222:test "" "" test
+
+ echo ""
  echo "Create a user with access pin '33333' then list users."
- env CIYAM_NODE_COMMAND="users create suggested=33333:test-3" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND="users create suggested=33333:?test-3" node ../webui/ciyam.js -quiet "" 10301 "" "" none
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
+
+ echo ""
+ echo "Attempt to connect using 33333:test with 'test'."
+ node ../webui/ciyam.js -quiet "" 33333:test "" "" test
+
+ echo ""
+ echo "Attempt to connect using 33333:test with 'test' (after suggestion)."
+ node ../webui/ciyam.js -quiet "" 33333:test "" "" test
+
+ echo ""
+ echo "Connect using 33333:testing with 'test'."
+ node ../webui/ciyam.js "" 33333:testing "" "" test
+
+ echo ""
+ echo "Attempt to connect using 33333 with 'none'."
+ node ../webui/ciyam.js -quiet "" 33333 "" "" none
 
  echo ""
  echo "Delete user with access pin '11111' then list users."
