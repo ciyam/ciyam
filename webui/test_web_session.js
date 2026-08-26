@@ -1589,8 +1589,24 @@ function handle_response( data )
                document.getElementById( "user_id_div" ).style.display = "block";
                document.getElementById( "password_div" ).style.display = "none";
 
+               var can_change = true;
+
+               if( extra.indexOf( "?" ) == 0 )
+                  extra = extra.substring( 1 );
+               else if( extra != "" )
+                  can_change = false;
+
                document.getElementById( "user_name" ).value = extra;
-               document.getElementById( "user_name" ).focus( );
+
+               if( !can_change )
+                  document.getElementById( "user_name" ).disabled = true;
+               else
+                  document.getElementById( "user_name" ).disabled = false;
+
+               if( can_change )
+                  document.getElementById( "user_name" ).focus( );
+               else
+                  document.getElementById( "user_device" ).focus( );
             }
             else
             {
