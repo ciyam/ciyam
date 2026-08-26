@@ -385,7 +385,7 @@ class CIYAM
 
    at_connect( response )
    {
-      if( this.debug )
+      if( this.debug && ( this.node_crypto == null ) )
          console.log( response );
 
       if( this.format_type == c_format_type_text )
