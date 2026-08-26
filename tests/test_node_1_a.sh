@@ -13,26 +13,29 @@ else
  touch ciyam_base.restore
  sleep 0.5
 
+ echo ""
  echo "Update 'admin' access password to 'test' (after restore)."
  node ../webui/ciyam.js "" de604cee0755a3d81944ea96aed12681 "" "" test
 
+ echo ""
  echo "Attempt to connect using 10101 with 'test'."
- node ../webui/ciyam.js "" 10101 "" "" test
+ node ../webui/ciyam.js -quiet "" 10101 "" "" test
 
  echo ""
  echo "Attempt to connect using 10201 with 'test'."
- node ../webui/ciyam.js "" 10201 "" "" test
+ node ../webui/ciyam.js -quiet "" 10201 "" "" test
 
  echo ""
  echo "Attempt to connect using 10301 with 'none'."
- node ../webui/ciyam.js "" 10301 "" "" none
+ node ../webui/ciyam.js -quiet "" 10301 "" "" none
 
  echo ""
  echo "Connect using 10301 with 'test'."
  node ../webui/ciyam.js "" 10301 "" "" test
 
+ echo ""
  echo "Attempt to update 'admin' access password to 'none' while locked."
- node ../webui/ciyam.js "" de604cee0755a3d81944ea96aed12681 "" "" none
+ node ../webui/ciyam.js -quiet "" de604cee0755a3d81944ea96aed12681 "" "" none
 
  touch ciyam_base.restore
  sleep 0.5
@@ -41,18 +44,63 @@ else
  echo "Update 'admin' access password to 'none' (after restore)."
  node ../webui/ciyam.js "" de604cee0755a3d81944ea96aed12681 "" "" none
 
+ echo ""
  echo "Attempt to connect using 10101 with 'none'."
- node ../webui/ciyam.js "" 10101 "" "" none
+ node ../webui/ciyam.js -quiet "" 10101 "" "" none
 
  echo ""
  echo "Attempt to connect using 10201 with 'none'."
- node ../webui/ciyam.js "" 10201 "" "" none
+ node ../webui/ciyam.js -quiet "" 10201 "" "" none
 
  echo ""
  echo "Attempt to connect using 10201 with 'test'."
- node ../webui/ciyam.js "" 10301 "" "" test
+ node ../webui/ciyam.js -quiet "" 10301 "" "" test
 
  echo ""
- echo "Connect using 10201 with 'none'."
+ echo "Connect using 10301 with 'none'."
  node ../webui/ciyam.js "" 10301 "" "" none
+
+ echo ""
+ echo "Fetch the list of non-admin users."
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
+
+ echo ""
+ echo "Create a user with access pin '11111' then list users."
+ env CIYAM_NODE_COMMAND="users create suggested=11111:test-1" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
+
+ echo ""
+ echo "Attempt to create another user with access pin '11111' then list users."
+ env CIYAM_NODE_COMMAND="users create suggested=11111:test-1" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
+
+ echo ""
+ echo "Create a user with access pin '22222' then list users."
+ env CIYAM_NODE_COMMAND="users create suggested=22222:test-2" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
+
+ echo ""
+ echo "Create a user with access pin '33333' then list users."
+ env CIYAM_NODE_COMMAND="users create suggested=33333:test-3" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
+
+ echo ""
+ echo "Delete user with access pin '11111' then list users."
+ env CIYAM_NODE_COMMAND="users delete 11111" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
+
+ echo ""
+ echo "Attempt to delete user with access pin '11111' again then list users."
+ env CIYAM_NODE_COMMAND="users delete 11111" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
+
+ echo ""
+ echo "Delete user with access pin '22222' then list users."
+ env CIYAM_NODE_COMMAND="users delete 22222" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
+
+ echo ""
+ echo "Delete user with access pin '33333' then list users."
+ env CIYAM_NODE_COMMAND="users delete 33333" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
 fi
