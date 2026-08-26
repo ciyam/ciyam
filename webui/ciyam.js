@@ -442,7 +442,17 @@ class CIYAM
          callback( "Error: Current session still exists." );
       else
       {
+         var extra = "";
+
          this.error = "";
+
+         var pos = access.indexOf( ":" );
+
+         if( pos > 0 )
+         {
+            extra = access.substr( pos + 1 );
+            access = access.substr( 0, pos );
+         }
 
          this.access = access;
 
@@ -474,20 +484,53 @@ class CIYAM
             // password is being reset so provides "admin" credentials
             // along with the (optionally external) "seed" entropy.
             if( ( this.error == "" )
-             && ( this.seed != "" ) && ( access != this.access ) )
+             && ( ( this.seed != "" ) || ( access != this.access ) ) )
             {
                if( access.length > 5 )
                   access = c_admin;
+               else if( ( access != c_admin ) && ( this.seed != "" ) )
+               {
+                  var seed = this.seed;
 
-               var credentials = access + ":" + this.hash_combined( passwd );
+                  // NOTE: For "non-admin" users a
+                  // seed value is used to provide
+                  // a "suggested" username (or is
+                  // just "@none" for no suggested
+                  // value). If no suggested value
+                  // is supplied then "access" can
+                  // provide a "username" by using
+                  // "<pin>:<username>".
+                  var pos = seed.indexOf( " " );
 
-               url = this.get_cws_url( )
-                + "/devices?access=" + this.access + "&format=" + this.format_type
-                + "&passwd=" + CIYAM.encode_base64_url( credentials ) + "&request=" + this.seed;
+                  if( pos > 0 )
+                     access = seed.substring( pos + 1 );
+                  else if( extra != "" )
+                     access = extra;
 
-               this.seed = "";
+                  this.seed = "";
+               }
 
-               await this.fetch( url, "POST", this.at_connect.bind( this ) );
+               // NOTE: If suggested "username"
+               // is prefixed with "?" then set
+               // as an error (which the caller
+               // could check so the suggestion
+               // can be displayed as such).
+               if( access.indexOf( "?" ) == 0 )
+                  this.error = access;
+               else
+               {
+                  var credentials = access + ":" + this.hash_combined( passwd );
+
+                  url = this.get_cws_url( ) + "/devices?access=" + this.access
+                   + "&format=" + this.format_type + "&passwd=" + CIYAM.encode_base64_url( credentials );
+
+                  if( this.seed != "" )
+                     url += "&request=" + this.seed;
+
+                  this.seed = "";
+
+                  await this.fetch( url, "POST", this.at_connect.bind( this ) );
+               }
             }
          }
 
