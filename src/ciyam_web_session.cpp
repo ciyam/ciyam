@@ -556,7 +556,8 @@ bool verify_whether_device_is_valid( const string& device )
    return retval;
 }
 
-string create_empty_token_file( const string& file_prefix, printable_type ptype, const string* p_suffix = 0 )
+string create_access_token(
+ const string& file_prefix, printable_type ptype, const string* p_suffix = 0 )
 {
    guard g( g_mutex );
 
@@ -607,7 +608,7 @@ string create_empty_token_file( const string& file_prefix, printable_type ptype,
    }
 
    if( !okay )
-      throw runtime_error( "was unable to create a token file" );
+      throw runtime_error( "was unable to create an access token" );
 
    return suffix;
 }
@@ -695,7 +696,7 @@ bool has_web_session_access_token( const string& token,
       if( is_pin && !has_token )
          has_token = has_user_info( token, &is_not_empty );
 
-      if( is_not_empty )
+      if( is_pin && is_not_empty )
          retval = true;
       else
       {
@@ -703,12 +704,17 @@ bool has_web_session_access_token( const string& token,
          {
             string prefix( token_file.substr( 0, token_file.rfind( '_' ) ) );
 
-            // NOTE: It is expected that an "access_token" command using the
-            // "secret" option had been issued previously so will now create
-            // an empty access PIN file (and also set a system variable with
-            // the name "@cws_token_<token>" to the PIN so that applications
-            // can find it assuming they had been given the "token" before).
-            pin = create_empty_token_file( prefix, e_printable_type_numeric );
+            string suffix;
+
+            if( is_not_empty )
+               suffix = buffer_file( token_file );
+
+            // NOTE: It is expected that a "create user" command (using the
+            // "secret" option) had been issued previously so now create an
+            // nameless access "PIN" (and also sets a system variable using
+            // the name "@cws_token_<token>" to the PIN so any applications
+            // can find it assuming they had recorded the "token" before).
+            pin = create_access_token( prefix, e_printable_type_numeric, &suffix );
 
             file_remove( token_file );
 
@@ -716,6 +722,8 @@ bool has_web_session_access_token( const string& token,
              get_special_var_name( e_special_var_cws_token ) );
 
             set_system_variable( cws_token_var_name + '_' + token, pin );
+
+            retval = true;
          }
          else
          {
@@ -1228,7 +1236,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       }
    }
 
-   string access_file( prefix + access ); // i.e. ".web_access.<access>"
+   string access_file( prefix + access ); // i.e. ".web_access_<token>"
 
    string pin;
 
@@ -1333,7 +1341,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    {
       bool has_access_file = has_web_session_access_token( access, access_file, passwd, pin );
 
-      if( has_access_file && pin.empty( ) )
+      if( !has_access_file )
+         access.erase( );
+      else if( pin.empty( ) )
          add_access_token_if_new( access );
 
       // NOTE: If is "admin locked" or the system identity is "unknown"
@@ -1435,7 +1445,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    {
       if( error.empty( ) )
          // FUTURE: This message should be handled as a server string message.
-         error = "Need a valid access token to use a web session.";
+         error = "This web session is not valid (or has expired).";
    }
    else if( !pin.empty( ) )
    {
@@ -1567,7 +1577,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
             // request for the same device then the session value
             // is obtained from the leading characters of a hash.
             // The hash is itself obtained using a "checked" hash
-            // (being the "access_token" and "device" values) and
+            // (being the "access" token and "device" values) and
             // then combining its digest with the "unqiue" string
             // to determine a "combined" hash.
             if( error.empty( ) )
@@ -2207,7 +2217,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                            temp_umask tum( 077 );
 
-                           string access_token( create_empty_token_file( prefix,
+                           string access_token( create_access_token( prefix,
                             ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_mixed ), &pin ) );
 
                            if( !suggested_username.empty( ) )
@@ -2216,7 +2226,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            if( !is_json_output )
                               response = access_token;
                            else
-                              response = "{\"access_token\":\"" + access_token + "\"}";
+                              response = "{\"token\":\"" + access_token + "\"}";
                         }
                      }
                   }
