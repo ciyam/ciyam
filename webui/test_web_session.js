@@ -51,6 +51,7 @@ const creds_retain_cmd = "creds|retain";
 const users_create_cmd = "users|create";
 const users_delete_cmd = "users|delete";
 const users_review_cmd = "users|review";
+const users_update_cmd = "users|update";
 
 const messages_create_cmd = "messages|create";
 const messages_review_cmd = "messages|review";
@@ -382,6 +383,8 @@ function reformatted( request )
             suffix = "|result";
          else if( first == "unload" )
             suffix = "|unload";
+         else if( first == "update" )
+            suffix = "|update";
       }
 
       if( suffix != "" )
@@ -1057,7 +1060,7 @@ async function do_fetch( )
 
          var request_type = "GET";
 
-         if( ( cmd == javascripts_retain_cmd )
+         if( ( cmd == users_update_cmd ) || ( cmd == javascripts_retain_cmd )
           || ( cmd == stylesheets_retain_cmd ) || ( cmd == webcmdlists_retain_cmd ) )
             request_type = "PUT";
          else if( ( cmd == "" ) || ( cmd == users_create_cmd )
@@ -1091,7 +1094,8 @@ async function do_fetch( )
                need_to_include_payload = true;
          }
 
-         if( ( cmd == users_create_cmd ) || ( cmd == users_delete_cmd )
+         if( ( cmd == users_create_cmd )
+          || ( cmd == users_delete_cmd ) || ( cmd == users_update_cmd )
           || ( cmd == messages_create_cmd ) || ( cmd == messages_review_cmd )
           || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
           || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd )
@@ -1104,7 +1108,7 @@ async function do_fetch( )
             {
                has_name_suffix = true;
 
-               if( ( cmd == messages_create_cmd )
+               if( ( cmd == users_update_cmd ) || ( cmd == messages_create_cmd )
                 || ( cmd == messages_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
                   has_cmd_options = true;
             }
@@ -1121,27 +1125,28 @@ async function do_fetch( )
                cmd = cmd.substring( 0, tpos );
          }
 
+         var name_suffix = "";
+
          if( cmd_is_url_suffix )
          {
-            var name = "";
-
             var stripped_name = false;
 
             if( has_name_suffix && ( pos > 0 ) )
             {
-               name = request.substring( pos + 1 );
+               name_suffix = request.substring( pos + 1 );
 
-               if( name == own_name )
-                  name = ciyam.access;
+               if( name_suffix == own_name )
+                  name_suffix = ciyam.access;
 
-               pos = name.indexOf( " " );
+               pos = name_suffix.indexOf( " " );
 
                if( pos >= 0 )
                {
-                  request = name.substring( pos + 1 );
+                  request = name_suffix.substring( pos + 1 );
+
                   stripped_name = true;
 
-                  name = name.substring( 0, pos );
+                  name_suffix = name_suffix.substring( 0, pos );
                }
                else
                   request = "";
@@ -1161,7 +1166,7 @@ async function do_fetch( )
 
             url += "/" + cmd;
 
-            if( name != "" )
+            if( name_suffix != "" )
             {
                if( cmd_initial == unlock_keys_employ_cmd )
                {
@@ -1170,16 +1175,19 @@ async function do_fetch( )
                   // anything smaller than an unlock key)
                   // or if "!" prefixed then just removes
                   // the prefix.
-                  if( name.length < 17 )
+                  if( name_suffix.length < 17 )
                   {
-                     if( name.substr( 0, 1 ) == "!" )
-                        name = name.substring( 1 );
+                     if( name_suffix.substr( 0, 1 ) == "!" )
+                        name_suffix = name_suffix.substring( 1 );
                      else
-                        name = ciyam.hash_combined( name );
+                        name_suffix = ciyam.hash_combined( name_suffix );
                   }
                }
 
-               url += "/" + name;
+               if( name_suffix == own_name )
+                  name_suffix = ciyam.access;
+
+               url += "/" + name_suffix;
             }
          }
 
@@ -1266,7 +1274,23 @@ async function do_fetch( )
          if( request != "" )
          {
             if( has_cmd_options )
+            {
+               if( cmd_initial == users_update_cmd )
+               {
+                  var pos = request.indexOf( "=" );
+
+                  if( pos > 0 )
+                  {
+                     var password = request.substring( pos + 1 );
+
+                     request = request.substr( 0, pos + 1 );
+
+                     request += ciyam.hash_combined( password, name_suffix );
+                  }
+               }
+
                qry_data += "&options=" + encodeURIComponent( request );
+            }
             else
                qry_data += "&request=" + encodeURIComponent( request );
          }
