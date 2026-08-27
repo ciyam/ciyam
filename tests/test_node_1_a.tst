@@ -53,7 +53,7 @@ Fetch the list of non-admin users.
 {"response":"[none]"}
 
 Create a user with access pin '11111' then list users.
-{"access_token":"11111"}
+{"token":"11111"}
 {"all_users":[{"user":[{"pin":"11111"},{"name":""}]}]}
 
 Attempt to create another user with access pin '11111' then list users.
@@ -70,7 +70,7 @@ Attempt to connect using 11111 with 'test'.
 Error: This web session is not valid (or has expired).
 
 Create a user with access pin '22222' then list users.
-{"access_token":"22222"}
+{"token":"22222"}
 {"all_users":[{"user":[{"pin":"11111"},{"name":"test-1"}]},{"user":[{"pin":"22222"},{"name":""}]}]}
 
 Attempt to connect using 22222:test with 'test'.
@@ -83,7 +83,7 @@ CIYAM [http://localhost:13031]
 {"message":"Session terminated."}
 
 Create a user with access pin '33333' then list users.
-{"access_token":"33333"}
+{"token":"33333"}
 {"all_users":[{"user":[{"pin":"11111"},{"name":"test-1"}]},{"user":[{"pin":"22222"},{"name":"test"}]},{"user":[{"pin":"33333"},{"name":""}]}]}
 
 Attempt to connect using 33333:test with 'test'.
@@ -109,10 +109,26 @@ Attempt to delete user with access pin '11111' again then list users.
 {"error":"Unkknown user access '11111' for removal."}
 {"all_users":[{"user":[{"pin":"22222"},{"name":"test"}]},{"user":[{"pin":"33333"},{"name":"testing"}]}]}
 
+Attempt to connect using 11111 with 'none'.
+Error: This web session is not valid (or has expired).
+
+Create 'xxxxx' token for pin '12345'.
+
+Connect using xxxxx:test-x with 'test' then list users.
+CIYAM [http://localhost:13031]
+{"name":"CIYAM", "version":"0.0.0"}
+[standard]
+{"message":"Session terminated."}
+{"all_users":[{"user":[{"pin":"12345"},{"name":"test-x"}]},{"user":[{"pin":"22222"},{"name":"test"}]},{"user":[{"pin":"33333"},{"name":"testing"}]}]}
+
 Delete user with access pin '22222' then list users.
 {"response":"[okay]"}
-{"all_users":[{"user":[{"pin":"33333"},{"name":"testing"}]}]}
+{"all_users":[{"user":[{"pin":"12345"},{"name":"test-x"}]},{"user":[{"pin":"33333"},{"name":"testing"}]}]}
 
 Delete user with access pin '33333' then list users.
+{"response":"[okay]"}
+{"all_users":[{"user":[{"pin":"12345"},{"name":"test-x"}]}]}
+
+Delete user with access pin '12345' then list users.
 {"response":"[okay]"}
 {"response":"[none]"}

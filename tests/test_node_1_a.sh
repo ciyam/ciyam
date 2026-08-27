@@ -127,6 +127,19 @@ else
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
 
  echo ""
+ echo "Attempt to connect using 11111 with 'none'."
+ node ../webui/ciyam.js -quiet "" 11111 "" "" none
+
+ echo ""
+ echo "Create 'xxxxx' token for pin '12345'."
+ echo -n "12345" > .web_access_xxxxx
+
+ echo ""
+ echo "Connect using xxxxx:test-x with 'test' then list users."
+ node ../webui/ciyam.js "" xxxxx:test-x "" "" test
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
+
+ echo ""
  echo "Delete user with access pin '22222' then list users."
  env CIYAM_NODE_COMMAND="users delete 22222" node ../webui/ciyam.js -quiet "" 10301 "" "" none
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
@@ -134,5 +147,10 @@ else
  echo ""
  echo "Delete user with access pin '33333' then list users."
  env CIYAM_NODE_COMMAND="users delete 33333" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
+
+ echo ""
+ echo "Delete user with access pin '12345' then list users."
+ env CIYAM_NODE_COMMAND="users delete 12345" node ../webui/ciyam.js -quiet "" 10301 "" "" none
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
 fi
