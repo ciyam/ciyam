@@ -142,6 +142,8 @@ constexpr const char* c_cws_uri_suffix_views_extra_prefix = "/views/";
 constexpr const char* c_cws_request_users_create_options_secret = "secret";
 constexpr const char* c_cws_request_users_create_options_suggested = "suggested";
 
+constexpr const char* c_cws_request_users_update_options_password = "password";
+
 constexpr const char* c_cws_request_messages_create_options_for = "for";
 constexpr const char* c_cws_request_messages_create_options_text = "text";
 
@@ -153,14 +155,14 @@ constexpr const char* c_cws_request_unlock_keys_create_options_encrypted = "encr
 constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete javascript\n"
  "delete stylesheet\ndelete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview messages <room> [from=<unix_time>]\n"
  "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
- "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
+ "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user *** password=<password>";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
  "create message <room> [for=<name,>;]text=<text>\ncreate unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete javascript\ndelete stylesheet\n"
  "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [from=<unix_time>]\n"
  "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
- "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]";
+ "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user <pin> password=<password>";
 
 constexpr const char* c_web_session_script = "web_session.cin";
 
@@ -2228,6 +2230,43 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            else
                               response = "{\"token\":\"" + access_token + "\"}";
                         }
+                     }
+                  }
+               }
+               else if( is_put_request
+                && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_users_prefix ) )
+               {
+                  string pin( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_users_prefix ) ) );
+
+                  if( ( pin != access ) && ( access != g_cws_admin_token ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Users can only be maintained by the administrator.";
+                  else
+                  {
+                     string password;
+
+                     size_t valid_options = 0;
+
+                     if( option_parameters.count( c_cws_request_users_update_options_password ) )
+                     {
+                        ++valid_options;
+
+                        password = option_parameters[ c_cws_request_users_update_options_password ];
+                     }
+
+                     if( !has_user_info( pin ) )
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "Unkknown access pin '" + pin + "' for user update.";
+                     else if( !valid_options || ( option_parameters.size( ) > valid_options ) )
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "Invalid options '" + options + "' for user upddate.";
+                     else
+                     {
+                        found = true;
+
+                        string pwd_hash( sha256( password ).get_digest_as_string( ) );
+
+                        replace_user_pwd_hash( pin, pwd_hash );
                      }
                   }
                }
