@@ -2289,16 +2289,21 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            else
                            {
                               if( !all_user_info.empty( ) )
-                                 all_user_info += ",";
+                                 all_user_info += ",\n";
 
-                              all_user_info += "{\"user\":[{\"pin\":\"" + next_pin + "\"},{\"name\":\"" + next_name + "\"}]}";
+                              vector< string > values;
+
+                              values.push_back( next_pin );
+                              values.push_back( next_name );
+
+                              all_user_info += as_json_array( "", values );
                            }
                         }
 
                         if( !is_json_output )
                            response = all_user_info;
                         else
-                           response = "{\"all_users\":[" + all_user_info + "]}";
+                           response = "{\n \"all_users\":\n  [\n" + all_user_info + "\n ]\n}";
                      }
                   }
                }

@@ -54,11 +54,25 @@ Fetch the list of non-admin users.
 
 Create a user with access pin '11111' then list users.
 {"token":"11111"}
-{"all_users":[{"user":[{"pin":"11111"},{"name":""}]}]}
+{
+ "all_users":
+  [
+   [
+     "11111",  ""
+   ]
+ ]
+}
 
 Attempt to create another user with access pin '11111' then list users.
 {"error":"Access token '11111' has already been allocated."}
-{"all_users":[{"user":[{"pin":"11111"},{"name":""}]}]}
+{
+ "all_users":
+  [
+   [
+     "11111",  ""
+   ]
+ ]
+}
 
 Connect using 11111 with 'none'.
 CIYAM [http://localhost:13031]
@@ -71,7 +85,17 @@ Error: This web session is not valid (or has expired).
 
 Create a user with access pin '22222' then list users.
 {"token":"22222"}
-{"all_users":[{"user":[{"pin":"11111"},{"name":"test-1"}]},{"user":[{"pin":"22222"},{"name":""}]}]}
+{
+ "all_users":
+  [
+   [
+     "11111",  "test-1"
+   ],
+   [
+     "22222",  ""
+   ]
+ ]
+}
 
 Attempt to connect using 22222:test with 'test'.
 Error: ?test-2
@@ -84,7 +108,20 @@ CIYAM [http://localhost:13031]
 
 Create a user with access pin '33333' then list users.
 {"token":"33333"}
-{"all_users":[{"user":[{"pin":"11111"},{"name":"test-1"}]},{"user":[{"pin":"22222"},{"name":"test"}]},{"user":[{"pin":"33333"},{"name":""}]}]}
+{
+ "all_users":
+  [
+   [
+     "11111",  "test-1"
+   ],
+   [
+     "22222",  "test"
+   ],
+   [
+     "33333",  ""
+   ]
+ ]
+}
 
 Attempt to connect using 33333:test with 'test'.
 Error: ?test-3
@@ -103,11 +140,31 @@ Error: This web session is not valid (or has expired).
 
 Delete user with access pin '11111' then list users.
 {"response":"[okay]"}
-{"all_users":[{"user":[{"pin":"22222"},{"name":"test"}]},{"user":[{"pin":"33333"},{"name":"testing"}]}]}
+{
+ "all_users":
+  [
+   [
+     "22222",  "test"
+   ],
+   [
+     "33333",  "testing"
+   ]
+ ]
+}
 
 Attempt to delete user with access pin '11111' again then list users.
 {"error":"Unkknown user access '11111' for removal."}
-{"all_users":[{"user":[{"pin":"22222"},{"name":"test"}]},{"user":[{"pin":"33333"},{"name":"testing"}]}]}
+{
+ "all_users":
+  [
+   [
+     "22222",  "test"
+   ],
+   [
+     "33333",  "testing"
+   ]
+ ]
+}
 
 Attempt to connect using 11111 with 'none'.
 Error: This web session is not valid (or has expired).
@@ -119,15 +176,45 @@ CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [standard]
 {"message":"Session terminated."}
-{"all_users":[{"user":[{"pin":"12345"},{"name":"test-x"}]},{"user":[{"pin":"22222"},{"name":"test"}]},{"user":[{"pin":"33333"},{"name":"testing"}]}]}
+{
+ "all_users":
+  [
+   [
+     "12345",  "test-x"
+   ],
+   [
+     "22222",  "test"
+   ],
+   [
+     "33333",  "testing"
+   ]
+ ]
+}
 
 Delete user with access pin '22222' then list users.
 {"response":"[okay]"}
-{"all_users":[{"user":[{"pin":"12345"},{"name":"test-x"}]},{"user":[{"pin":"33333"},{"name":"testing"}]}]}
+{
+ "all_users":
+  [
+   [
+     "12345",  "test-x"
+   ],
+   [
+     "33333",  "testing"
+   ]
+ ]
+}
 
 Delete user with access pin '33333' then list users.
 {"response":"[okay]"}
-{"all_users":[{"user":[{"pin":"12345"},{"name":"test-x"}]}]}
+{
+ "all_users":
+  [
+   [
+     "12345",  "test-x"
+   ]
+ ]
+}
 
 Delete user with access pin '12345' then list users.
 {"response":"[okay]"}
