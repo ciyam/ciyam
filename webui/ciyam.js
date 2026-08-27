@@ -12,6 +12,7 @@ const c_node_cmd_users = "users";
 
 const c_cmd_verb_create = "create";
 const c_cmd_verb_delete = "delete";
+const c_cmd_verb_update = "update";
 
 const c_var_name_access = "ACCESS";
 const c_var_name_device = "DEVICE";
@@ -646,6 +647,37 @@ class CIYAM
          await this.fetch( url, "DELETE", callback )
       }
    }
+
+   async update_user( access_pin, options, callback )
+   {
+      if( this.sessid == "" )
+         callback( "Error: No current session exists." );
+      else
+      {
+         var url = this.get_cws_url( ) + "/users/" + access_pin
+          + "?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type;
+
+         if( ( options != null ) && ( options != "" ) )
+         {
+            var pos = options.indexOf( "=" );
+
+            if( pos > 0 )
+            {
+               var passwd = options.substring( pos + 1 );
+
+               options = options.substr( 0, pos + 1 );
+
+               options += this.hash_combined( passwd, access_pin );
+            }
+
+            url += "&options=" + encodeURIComponent( options );
+         }
+
+         url += "&session=" + this.sessid;
+
+         await this.fetch( url, "PUT", callback )
+      }
+   }
 }
 
 async function ciyam_node( host, access, device, hashed, passwd, debug, quiet )
@@ -694,6 +726,7 @@ async function ciyam_node( host, access, device, hashed, passwd, debug, quiet )
                   await ciyam.fetch_users( console.log );
                else if( command.indexOf( c_node_cmd_users + " " ) == 0 )
                {
+                  var record = "";
                   var cmd_args = "";
 
                   command = command.replace( c_node_cmd_users + " ", "" );
@@ -704,12 +737,22 @@ async function ciyam_node( host, access, device, hashed, passwd, debug, quiet )
                   {
                      cmd_args = command.substring( pos + 1 );
                      command = command.substr( 0, pos );
+
+                     pos = cmd_args.indexOf( " " );
+
+                     if( pos > 0 )
+                     {
+                        record = cmd_args.substr( 0, pos );
+                        cmd_args = cmd_args.substring( pos + 1 );
+                     }
                   }
 
                   if( command == c_cmd_verb_create )
                      await ciyam.create_user( cmd_args, console.log );
-                  else if( command = c_cmd_verb_delete )
+                  else if( command == c_cmd_verb_delete )
                      await ciyam.delete_user( cmd_args, console.log );
+                  else if( command == c_cmd_verb_update )
+                     await ciyam.update_user( record, cmd_args, console.log );
                }
             }
          }
