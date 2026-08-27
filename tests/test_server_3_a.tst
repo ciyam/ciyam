@@ -51,6 +51,7 @@ review stylesheet[s] [<name>]
 review webcmdlist[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
+update user *** password=<password>
 Check for messages and then create a test message and a new room.
 IRC usage is not currently available.
 test-1 #0000001 1/1 Administration
@@ -230,6 +231,7 @@ review stylesheet[s] [<name>]
 review webcmdlist[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
+update user <pin> password=<password>
 100 Meta
 Error: Unknonwn module id '99' for storage 'Meta'.
 id=575,name=enum_add_packages
