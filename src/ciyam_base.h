@@ -883,6 +883,9 @@ std::string get_all_user_pins( );
 void set_new_user_info( const std::string& pin,
  const std::string& name, const std::string& pwd_hash );
 
+void replace_user_pwd_hash(
+ const std::string& pin, const std::string& pwd_hash );
+
 void remove_user_info_from_storage( const std::string& pin );
 
 class system_ods_bulk_read

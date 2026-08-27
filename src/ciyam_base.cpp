@@ -12962,6 +12962,40 @@ void set_new_user_info( const string& pin,
    }
 }
 
+void replace_user_pwd_hash( const string& pin, const string& pwd_hash )
+{
+   system_ods_fs_guard ods_fs_guard;
+
+   system_ods_bulk_write ods_bulk_write;
+
+   gup_ofs->set_root_folder( c_system_user_info_folder );
+
+   bool has_been_assigned = false;
+
+   if( !has_user_info( pin, &has_been_assigned ) )
+      throw runtime_error( "user info for '" + pin + "' does not exist" );
+   else
+   {
+      if( !has_been_assigned )
+         throw runtime_error( "user pin '" + pin + "' has not been assigned" );
+
+      string user_info;
+
+      gup_ofs->fetch_from_text_file( pin, user_info, true );
+
+      string::size_type pos = user_info.find( ' ' );
+
+      if( pos == string::npos )
+         throw runtime_error( "invalid format '" + user_info + "' in reset_user_hash" );
+
+      user_info.erase( pos + 1 );
+
+      gup_ofs->store_as_text_file( pin, user_info + pwd_hash );
+
+      g_user_pwd_hashes[ pin ] = pwd_hash;
+   }
+}
+
 void remove_user_info_from_storage( const string& pin )
 {
    system_ods_fs_guard ods_fs_guard;
