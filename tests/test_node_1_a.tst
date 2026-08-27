@@ -83,6 +83,24 @@ CIYAM [http://localhost:13031]
 Attempt to connect using 11111 with 'test'.
 Error: This web session is not valid (or has expired).
 
+Update own password for 11111 from 'none' to 'test'.
+{"response":"[okay]"}
+
+Connect using 11111 with 'test'.
+CIYAM [http://localhost:13031]
+{"name":"CIYAM", "version":"0.0.0"}
+[standard]
+{"message":"Session terminated."}
+
+Update password for 11111 to 'none' as admin.
+{"response":"[okay]"}
+
+Connect using 11111 with 'none'.
+CIYAM [http://localhost:13031]
+{"name":"CIYAM", "version":"0.0.0"}
+[standard]
+{"message":"Session terminated."}
+
 Create a user with access pin '22222' then list users.
 {"token":"22222"}
 {
@@ -105,6 +123,9 @@ CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [standard]
 {"message":"Session terminated."}
+
+Attempt to update password for 11111 to 'test' as 22222.
+{"error":"Users can only be maintained by the administrator."}
 
 Create a user with access pin '33333' then list users.
 {"token":"33333"}

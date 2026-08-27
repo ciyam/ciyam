@@ -83,6 +83,22 @@ else
  node ../webui/ciyam.js -quiet "" 11111 "" "" test
 
  echo ""
+ echo "Update own password for 11111 from 'none' to 'test'."
+ env CIYAM_NODE_COMMAND="users update 11111 password=test" node ../webui/ciyam.js -quiet "" 11111 "" "" none
+
+ echo ""
+ echo "Connect using 11111 with 'test'."
+ node ../webui/ciyam.js "" 11111 "" "" test
+
+ echo ""
+ echo "Update password for 11111 to 'none' as admin."
+ env CIYAM_NODE_COMMAND="users update 11111 password=none" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+
+ echo ""
+ echo "Connect using 11111 with 'none'."
+ node ../webui/ciyam.js "" 11111 "" "" none
+
+ echo ""
  echo "Create a user with access pin '22222' then list users."
  env CIYAM_NODE_COMMAND="users create suggested=22222:?test-2" node ../webui/ciyam.js -quiet "" 10301 "" "" none
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
@@ -94,6 +110,10 @@ else
  echo ""
  echo "Connect using 22222:test with 'test' (after suggestion)."
  node ../webui/ciyam.js "" 22222:test "" "" test
+
+ echo ""
+ echo "Attempt to update password for 11111 to 'test' as 22222."
+ env CIYAM_NODE_COMMAND="users update 11111 password=test" node ../webui/ciyam.js -quiet "" 22222 "" "" test
 
  echo ""
  echo "Create a user with access pin '33333' then list users."
