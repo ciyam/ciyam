@@ -12,7 +12,7 @@
 ;
 ; NOTE: Although "irc_" prefixed scripts are not
 ; being started whilst holding this lock it must
-; next be checked that any executing scripts are
+; next be verified that any running scripts have
 ; completed before proceeding (repeats the check
 ; a few times with a "wait" between each check).
 .system_variable @run_script_prefix_irc_count
