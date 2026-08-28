@@ -152,9 +152,11 @@ constexpr const char* c_cws_request_messages_review_options_from = "from";
 constexpr const char* c_cws_request_unlock_keys_create_options_encrypted = "encrypted";
 
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax to HTTP requests.
-constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete javascript\n"
- "delete stylesheet\ndelete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview messages <room> [from=<unix_time>]\n"
- "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+constexpr const char* c_cws_help_request_output = "quit\n"
+ "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\n"
+ "delete javascript\ndelete stylesheet\ndelete webcmdlist\nemploy unlock-key <key>\nretain javascript\n"
+ "retain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [from=<unix_time>]\nreview storages\n"
+ "review javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user *** password=<password>";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
@@ -2298,60 +2300,61 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                }
                else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_users ) )
                {
+                  found = true;
+
+                  string all_user_pins;
+
+                  // NOTE: If "non-admin" access will
+                  // only retrieve "own" information.
                   if( access != g_cws_admin_token )
-                     // FUTURE: This message should be handled as a server string message.
-                     error = "Users can only be maintained by the administrator.";
+                     all_user_pins = access;
+                  else
+                     all_user_pins = get_all_user_pins( );
+
+                  if( all_user_pins.empty( ) )
+                     use_none_response = true;
                   else
                   {
-                     found = true;
+                     vector< string > values;
 
-                     string all_user_pins( get_all_user_pins( ) );
+                     values.push_back( "" );
+                     values.push_back( "" );
 
-                     if( all_user_pins.empty( ) )
-                        use_none_response = true;
-                     else
+                     vector< string > all_pins;
+
+                     split( all_user_pins, all_pins, '\n' );
+
+                     string all_user_info;
+
+                     for( size_t i = 0; i < all_pins.size( ); i++ )
                      {
-                        vector< string > values;
+                        string next_pin( all_pins[ i ] );
 
-                        values.push_back( "" );
-                        values.push_back( "" );
-
-                        vector< string > all_pins;
-
-                        split( all_user_pins, all_pins, '\n' );
-
-                        string all_user_info;
-
-                        for( size_t i = 0; i < all_pins.size( ); i++ )
-                        {
-                           string next_pin( all_pins[ i ] );
-
-                           string next_name( get_user_name( next_pin ) );
-
-                           if( !is_json_output )
-                           {
-                              if( !all_user_info.empty( ) )
-                                 all_user_info += '\n';
-
-                              all_user_info += next_pin + ' ' + next_name;
-                           }
-                           else
-                           {
-                              if( !all_user_info.empty( ) )
-                                 all_user_info += ",\n";
-
-                              values[ 0 ] = next_pin;
-                              values[ 1 ] = next_name;
-
-                              all_user_info += as_json_array( "", values );
-                           }
-                        }
+                        string next_name( get_user_name( next_pin ) );
 
                         if( !is_json_output )
-                           response = all_user_info;
+                        {
+                           if( !all_user_info.empty( ) )
+                              all_user_info += '\n';
+
+                           all_user_info += next_pin + ' ' + next_name;
+                        }
                         else
-                           response = "{\n \"all_users\":\n  [\n" + all_user_info + "\n ]\n}";
+                        {
+                           if( !all_user_info.empty( ) )
+                              all_user_info += ",\n";
+
+                           values[ 0 ] = next_pin;
+                           values[ 1 ] = next_name;
+
+                           all_user_info += as_json_array( "", values );
+                        }
                      }
+
+                     if( !is_json_output )
+                        response = all_user_info;
+                     else
+                        response = "{\n \"all_users\":\n  [\n" + all_user_info + "\n ]\n}";
                   }
                }
                else if( uri_suffix == c_cws_uri_suffix_storages )
@@ -2609,7 +2612,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                           request_and_args += "session_variable @irc_start_point_" + room + ' ' + from + '\n';
                                     }
 
-                                    request_and_args += "run_script !irc_fetch_messages \"@room=" + room + "\"";
+                                    // NOTE: Uses an underbar prefix for the "room" to prevent any padding being
+                                    // added (as this would only be wanted for console usage such as "irc.cin").
+                                    request_and_args += "run_script !irc_fetch_messages \"@room=_" + room + "\"";
                                  }
                               }
                               else if( is_user_info_request )
