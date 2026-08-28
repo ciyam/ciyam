@@ -32,7 +32,7 @@ Prepare to activate the newly reserved access token.
 88888 @none test-1
 Attempt to use 'test_1' rather than 'test-1' username.
 Error: Username must start with 'a-z' followed by 'a-z' or '0-9' characters (optionally use '-' for separators).
-Activates the access token using the suggested 'test-1' username.
+Activates the access token using the nominated 'test-1' username.
 Error: This web session is not valid (or has expired).
 quit
 attach storage <name>
@@ -212,7 +212,7 @@ admin
 Finally will perform admin structured I/O queries for enums/lists and views after attaching to the Meta storage.
 quit
 attach storage <name>
-create user [secret|suggested=[<pin>:][<username>]]
+create user [secret|nominated=[<pin>:][<username>]]
 create message <room> [for=<name,>;]text=<text>
 create unlock-key [encrypted=<prefix>-<xor_hash>]
 delete user <pin>
