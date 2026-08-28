@@ -66,12 +66,12 @@ else
 
  echo ""
  echo "Create a user with access pin '11111' then list users."
- env CIYAM_NODE_COMMAND="users create suggested=11111:test-1" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND="users create nominated=11111:test-1" node ../webui/ciyam.js -quiet "" 10301 "" "" none
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
 
  echo ""
  echo "Attempt to create another user with access pin '11111' then list users."
- env CIYAM_NODE_COMMAND="users create suggested=11111:test-1" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND="users create nominated=11111:test-1" node ../webui/ciyam.js -quiet "" 10301 "" "" none
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
 
  echo ""
@@ -100,7 +100,7 @@ else
 
  echo ""
  echo "Create a user with access pin '22222' then list users."
- env CIYAM_NODE_COMMAND="users create suggested=22222:?test-2" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND="users create nominated=22222:?test-2" node ../webui/ciyam.js -quiet "" 10301 "" "" none
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
 
  echo ""
@@ -117,7 +117,7 @@ else
 
  echo ""
  echo "Create a user with access pin '33333' then list users."
- env CIYAM_NODE_COMMAND="users create suggested=33333:?test-3" node ../webui/ciyam.js -quiet "" 10301 "" "" none
+ env CIYAM_NODE_COMMAND="users create nominated=33333:?test-3" node ../webui/ciyam.js -quiet "" 10301 "" "" none
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
 
  echo ""
