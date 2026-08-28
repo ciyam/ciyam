@@ -109,6 +109,7 @@ constexpr const char* c_web_storage_suffix = ".storage";
 
 constexpr const char* c_cws_uri_suffix_help = "help";
 constexpr const char* c_cws_uri_suffix_users = "users";
+constexpr const char* c_cws_uri_suffix_status = "status";
 constexpr const char* c_cws_uri_suffix_devices = "devices";
 constexpr const char* c_cws_uri_suffix_messages = "messages";
 constexpr const char* c_cws_uri_suffix_sessions = "sessions";
@@ -122,7 +123,6 @@ constexpr const char* c_cws_uri_suffix_storage_modules = "storage-modules";
 constexpr const char* c_cws_uri_suffix_users_prefix = "users/";
 constexpr const char* c_cws_uri_suffix_messages_prefix = "messages/";
 constexpr const char* c_cws_uri_suffix_sessions_prefix = "sessions/";
-
 constexpr const char* c_cws_uri_suffix_storages_prefix = "storages/";
 constexpr const char* c_cws_uri_suffix_javascripts_prefix = "javascripts/";
 constexpr const char* c_cws_uri_suffix_stylesheets_prefix = "stylesheets/";
@@ -140,7 +140,7 @@ constexpr const char* c_cws_uri_suffix_lists_extra_prefix = "/lists/";
 constexpr const char* c_cws_uri_suffix_views_extra_prefix = "/views/";
 
 constexpr const char* c_cws_request_users_create_options_secret = "secret";
-constexpr const char* c_cws_request_users_create_options_suggested = "suggested";
+constexpr const char* c_cws_request_users_create_options_nomimated = "nominated";
 
 constexpr const char* c_cws_request_users_update_options_password = "password";
 
@@ -158,7 +158,7 @@ constexpr const char* c_cws_help_request_output = "quit\nattach storage <name>\n
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user *** password=<password>";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
- "attach storage <name>\ncreate user [secret|suggested=[<pin>:][<username>]]\n"
+ "attach storage <name>\ncreate user [secret|nominated=[<pin>:][<username>]]\n"
  "create message <room> [for=<name,>;]text=<text>\ncreate unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete javascript\ndelete stylesheet\n"
  "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [from=<unix_time>]\n"
  "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
@@ -279,7 +279,7 @@ bool has_const_char_prefix( const string& s, const char* p, size_t plen )
 
 #define HAS_CONST_CHAR_PREFIX( s, p ) has_const_char_prefix( s, p, CONST_LENGTH( p ) )
 
-string as_json_array( const string& name, const vector< string >& array )
+string as_json_array( const string& name, const vector< string >& array, bool multiline = false )
 {
    string retval;
 
@@ -291,7 +291,12 @@ string as_json_array( const string& name, const vector< string >& array )
    for( size_t i = 0; i < array.size( ); i++ )
    {
       if( i > 0 )
-         retval += ',';
+      {
+         if( !multiline )
+            retval += ',';
+         else
+            retval += ",\n";
+      }
 
       retval += "  \"" + escaped_json( array[ i ] ) + '"';
    }
@@ -869,7 +874,7 @@ void process_messages_response( string& response, bool needs_decoding, bool is_j
       if( !is_json_format )
          response = join( messages, '\n' );
       else
-         response = as_json_array( "all_messages", messages );
+         response = as_json_array( "all_messages", messages, true );
    }
 }
 
@@ -2168,7 +2173,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   {
                      bool is_secret = false;
 
-                     string pin, suggested_username;
+                     string pin, nominated_username;
 
                      size_t valid_options = 0;
 
@@ -2179,11 +2184,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         is_secret = true;
                      }
 
-                     if( option_parameters.count( c_cws_request_users_create_options_suggested ) )
+                     if( option_parameters.count( c_cws_request_users_create_options_nomimated ) )
                      {
                         ++valid_options;
 
-                        string value( option_parameters[ c_cws_request_users_create_options_suggested ] );
+                        string value( option_parameters[ c_cws_request_users_create_options_nomimated ] );
 
                         string::size_type pos = value.find( ':' );
 
@@ -2198,7 +2203,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            // FUTURE: This message should be handled as a server string message.
                            error = "Invalid attempt to create an 'admin' user.";
                         else
-                           suggested_username = value;
+                           nominated_username = value;
                      }
 
                      if( option_parameters.size( ) > valid_options )
@@ -2220,10 +2225,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            temp_umask tum( 077 );
 
                            string access_token( create_access_token( prefix,
-                            ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_mixed ), &pin ) );
+                            ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_lower ), &pin ) );
 
-                           if( !suggested_username.empty( ) )
-                              set_system_variable( g_cws_username_for_prefix + access_token, suggested_username );
+                           if( !nominated_username.empty( ) )
+                              set_system_variable( g_cws_username_for_prefix + access_token, nominated_username );
 
                            if( !is_json_output )
                               response = access_token;
@@ -2306,6 +2311,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         use_none_response = true;
                      else
                      {
+                        vector< string > values;
+
+                        values.push_back( "" );
+                        values.push_back( "" );
+
                         vector< string > all_pins;
 
                         split( all_user_pins, all_pins, '\n' );
@@ -2330,10 +2340,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               if( !all_user_info.empty( ) )
                                  all_user_info += ",\n";
 
-                              vector< string > values;
-
-                              values.push_back( next_pin );
-                              values.push_back( next_name );
+                              values[ 0 ] = next_pin;
+                              values[ 1 ] = next_name;
 
                               all_user_info += as_json_array( "", values );
                            }
@@ -2376,484 +2384,488 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                }
                else
                {
-                  string script_name( c_web_session_script );
+                  bool is_messages_request = false;
+                  bool is_user_info_request = false;
+                  bool is_module_info_request = false;
+                  bool is_instance_fetch_request = false;
 
-                  string username;
-
-                  if( access == g_cws_admin_token )
-                     username = c_admin;
-                  else
-                     username = get_user_name( access );
-
-                  bool running = has_system_variable( web_message_var_name );
-
-                  if( !running )
+                  if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storages_prefix ) )
+                     is_user_info_request = true;
+                  else if( ( uri_suffix == c_cws_uri_suffix_messages )
+                   || HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_messages_prefix ) )
                   {
-                     TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) starting "
-                      "session " + session + " with device " + device + " for access " + access );
+                     if( has_system_variable( e_special_var_irc_allow ) )
+                        is_messages_request = true;
+                     else
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "IRC usage is not currently available.";
+                  }
+                  else if( uri_suffix == c_cws_uri_suffix_storage_modules )
+                     is_module_info_request = true;
+                  else if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storage_instances_prefix ) )
+                     is_instance_fetch_request = true;
+                  else if( !uri_suffix.empty( ) && ( uri_suffix != c_cws_uri_suffix_status ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "invalid CWS endpoint suffix '" + uri_suffix + "'";
+
+                  if( error.empty( ) )
+                  {
+                     string script_name( c_web_session_script );
+
+                     string username;
+
+                     if( access == g_cws_admin_token )
+                        username = c_admin;
+                     else
+                        username = get_user_name( access );
+
+                     bool running = has_system_variable( web_message_var_name );
+
+                     if( !running )
+                     {
+                        TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) starting "
+                         "session " + session + " with device " + device + " for access " + access );
 
 #ifndef SSL_SUPPORT
-                     string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<"
+                        string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<"
 #else
-                     string cmd( "./ciyam_client -tls -quiet -no_prompt -no_stderr -exec=\"<"
+                        string cmd( "./ciyam_client -tls -quiet -no_prompt -no_stderr -exec=\"<"
 #endif
-                      + script_name + ' ' + access + ' ' + device + ' ' + session + ' ' + username + "\" > /dev/null &" );
+                         + script_name + ' ' + access + ' ' + device + ' ' + session + ' ' + username + "\" > /dev/null &" );
 
-                     int rc = system( cmd.c_str( ) );
+                        int rc = system( cmd.c_str( ) );
 
-                     ( void )rc;
+                        ( void )rc;
 
-                     msleep( 50 );
-                  }
-
-                  // NOTE: Allows for a number of
-                  // seconds to start the session
-                  // script (which will result in
-                  // an error if it's not found).
-                  for( size_t i = 0; i < 25; i++ )
-                  {
-                     running = has_system_variable( web_message_var_name );
-
-                     if( running )
-                        break;
-
-                     msleep( ( i < 3 ) ? 50 : 100 );
-                  }
-
-                  if( !running )
-                  {
-                     set_system_variable( web_session_var_name, "" );
-                     set_system_variable( web_started_var_name, "" );
-
-                     // FUTURE: This message should be handled as a server string message.
-                     error = "Was unable to start a web session with access token '" + access + "'.";
-                  }
-                  else
-                  {
-                     found = true;
-
-                     bool allowed_command = true;
-
-                     bool is_adding_room = false;
-                     bool is_special_request = false;
-                     bool is_messages_request = false;
-                     bool is_user_info_request = false;
-                     bool is_module_info_request = false;
-                     bool is_instance_fetch_request = false;
-
-                     string storage_name;
-
-                     if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storages_prefix ) )
-                     {
-                        is_user_info_request = true;
-
-                        storage_name = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_storages_prefix ) );
-
-                        // NOTE: Storage names begin with an upper case letter
-                        // (but by convention the URL will be all lower case).
-                        if( !storage_name.empty( ) )
-                           storage_name[ 0 ] = toupper( storage_name[ 0 ] );
-                     }
-                     else if( ( uri_suffix == c_cws_uri_suffix_messages )
-                      || HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_messages_prefix ) )
-                     {
-                        if( has_system_variable( e_special_var_irc_allow ) )
-                           is_messages_request = true;
-                        else
-                        {
-                           found = false;
-
-                           // FUTURE: This message should be handled as a server string message.
-                           error = "IRC usage is not currently available.";
-                        }
-                     }
-                     else if( uri_suffix == c_cws_uri_suffix_storage_modules )
-                        is_module_info_request = true;
-                     else if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storage_instances_prefix ) )
-                        is_instance_fetch_request = true;
-
-                     if( !request.empty( ) && !is_user_info_request )
-                     {
-                        if( !g_is_devt_system || ( access != g_cws_admin_token ) )
-                           allowed_command = false;
-                        else
-                        {
-                           if( ( request[ 0 ] < 'a' ) || ( request[ 0 ] > 'z' ) )
-                              allowed_command = false;
-                        }
+                        msleep( 50 );
                      }
 
-                     if( !allowed_command )
-                        response = "[bad]";
+                     // NOTE: Allows for a number of
+                     // seconds to start the session
+                     // script (which will result in
+                     // an error if it's not found).
+                     for( size_t i = 0; i < 25; i++ )
+                     {
+                        running = has_system_variable( web_message_var_name );
+
+                        if( running )
+                           break;
+
+                        msleep( ( i < 3 ) ? 50 : 100 );
+                     }
+
+                     if( !running )
+                     {
+                        set_system_variable( web_session_var_name, "" );
+                        set_system_variable( web_started_var_name, "" );
+
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "Was unable to start a web session with access token '" + access + "'.";
+                     }
                      else
                      {
-                        if( !request.empty( )
-                         || is_messages_request || is_user_info_request
-                         || is_module_info_request || is_instance_fetch_request )
+                        found = true;
+
+                        bool allowed_command = true;
+
+                        bool is_adding_room = false;
+                        bool is_special_request = false;
+
+                        string storage_name;
+
+                        if( is_user_info_request )
                         {
-                           if( is_messages_request )
+                           storage_name = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_storages_prefix ) );
+
+                           // NOTE: Storage names begin with an upper case letter
+                           // (but by convention the URL will be all lower case).
+                           if( !storage_name.empty( ) )
+                              storage_name[ 0 ] = toupper( storage_name[ 0 ] );
+                        }
+
+                        if( !request.empty( ) && !is_user_info_request )
+                        {
+                           if( !g_is_devt_system || ( access != g_cws_admin_token ) )
+                              allowed_command = false;
+                           else
                            {
-                              use_none_response = true;
-
-                              string room( c_web_session_default_room_number );
-
-                              if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_messages_prefix ) )
-                                 room = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_messages_prefix ) );
-
-                              if( is_post_request
-                               && option_parameters.count( c_cws_request_messages_create_options_text ) )
-                              {
-                                 string names;
-
-                                 if( option_parameters.count( c_cws_request_messages_create_options_for ) )
-                                 {
-                                    names = option_parameters[ c_cws_request_messages_create_options_for ];
-
-                                    // NOTE: Names need to use a
-                                    // dot separator rather than
-                                    // a comma.
-                                    replace( names, ",", "." );
-
-                                    string::size_type pos = names.find( '.' );
-
-                                    string first( names.substr( 0, pos ) );
-
-                                    if( first == c_web_session_special_message_for )
-                                    {
-                                       use_none_response = false;
-
-                                       is_special_request = true;
-
-                                       if( pos == string::npos )
-                                          names.erase( );
-                                       else
-                                          names.erase( 0, pos + 1 );
-                                    }
-                                 }
-
-                                 if( names.empty( ) )
-                                    names = c_web_session_default_message_for;
-
-                                 if( !is_special_request
-                                  && ( room == c_web_session_default_room_number ) )
-                                 {
-                                    is_adding_room = true;
-
-                                    request_and_args = "<web_session_add_room.cin \""
-                                     + option_parameters[ c_cws_request_messages_create_options_text ] + "\" \"" + username + "\"";
-
-                                    if( !names.empty( ) )
-                                       request_and_args += " \"" + names + "\"";
-                                 }
-                                 else
-                                 {
-                                    string prefix( is_special_request ? c_web_session_meta_message_prefix : c_web_session_default_message_prefix );
-
-                                    request_and_args = "run_script !irc_send_message \"@room=" + room + ",@names=" + names + ",@message="
-                                     + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
-                                 }
-                              }
-
-                              if( !is_adding_room && !is_special_request )
-                              {
-                                 request_and_args += "IRC_ROOM=" + room + '\n';
-
-                                 string from;
-
-                                 if( option_parameters.count( c_cws_request_messages_review_options_from ) )
-                                    from = option_parameters[ c_cws_request_messages_review_options_from ];
-
-                                 if( room == c_web_session_default_room_number )
-                                 {
-                                    request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"\n";
-
-                                    if( !from.empty( ) )
-                                       request_and_args += "session_variable @irc_start_points " + from + '\n';
-                                 }
-                                 else
-                                 {
-                                    string join_token;
-
-                                    // NOTE: If "from" appears to be a UUID then will treat it is a "join token".
-                                    if( from.length( ) == 32 )
-                                    {
-                                       join_token = from;
-
-                                       from.erase( );
-                                    }
-
-                                    request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"";
-
-                                    if( !join_token.empty( ) )
-                                       request_and_args += "\"" + join_token + "\"";
-
-                                    request_and_args += '\n';
-
-                                    // NOTE: If has just created a message then set
-                                    // "from" to make sure that it will be fetched.
-                                    if( is_post_request )
-                                       from = to_string( now );
-
-                                    if( !from.empty( ) )
-                                       request_and_args += "session_variable @irc_start_point_" + room + ' ' + from + '\n';
-                                 }
-
-                                 request_and_args += "run_script !irc_fetch_messages \"@room=" + room + "\"";
-                              }
+                              if( ( request[ 0 ] < 'a' ) || ( request[ 0 ] > 'z' ) )
+                                 allowed_command = false;
                            }
-                           else if( is_user_info_request )
+                        }
+
+                        if( !allowed_command )
+                           response = "[bad]";
+                        else
+                        {
+                           if( !request.empty( )
+                            || is_messages_request || is_user_info_request
+                            || is_module_info_request || is_instance_fetch_request )
                            {
-                              if( storage_name.empty( ) )
-                                 storage_name = get_system_variable( e_special_var_storage );
-
-                              const section_node& root_node( get_meta_data( storage_name ).get_root_node( ) );
-
-                              string storage_user_info(
-                               root_node.get_attribute_value( c_storage_attribute_user_info ) );
-
-                              if( storage_user_info.empty( ) )
-                                 throw runtime_error( "unexpected missing storage_user_info" );
-
-                              vector< string > all_storage_user_info;
-
-                              split( storage_user_info, all_storage_user_info );
-
-                              if( all_storage_user_info.size( ) < 3 )
-                                 throw runtime_error( "unexpected missing needed storage_user_info parts" );
-
-                              string user_class_id( all_storage_user_info[ 0 ] );
-
-                              string user_field_id_username( all_storage_user_info[ 2 ] );
-
-                              string::size_type pos = user_field_id_username.find( '+' );
-
-                              if( pos != string::npos )
-                                 user_field_id_username.erase( pos );
-
-                              string user_field_id_description( user_field_id_username );
-
-                              if( all_storage_user_info.size( ) > 5 )
+                              if( is_messages_request )
                               {
-                                 user_field_id_description = all_storage_user_info[ 5 ];
-
-                                 string::size_type pos = user_field_id_description.find( ';' );
-
-                                 if( pos != string::npos )
-                                    user_field_id_description.erase( pos );
-                              }
-
-                              // NOTE: Currently assumes that the
-                              // module name and storage name are
-                              // the same.
-                              string module( storage_name );
-
-                              string field_list( user_field_id_description );
-
-                              set_system_variable( web_storage_var_name, storage_name );
-
-                              request_and_args = "<web_session_instance_fetch.cin "
-                               + module + ' ' + user_class_id + " _none 1 "
-                               + field_list + ' ' + user_field_id_username + '=' + username;
-                           }
-                           else if( is_module_info_request )
-                              request_and_args = "<web_session_modules_fetch.cin";
-                           else if( is_instance_fetch_request )
-                           {
-                              string user_key = get_session_info_user_key( session );
-
-                              request_and_args = "<web_session_instance_fetch.cin "
-                               + instance_module_id + ' ' + instance_mclass_id + ' ' + user_key;
-
-                              if( instance_record_key.empty( ) )
-                              {
-                                 string num( "0" );
-                                 string path, query;
-                                 string fields( "_none" );
-
-                                 if( option_parameters.count( c_storage_module_instance_options_num ) )
-                                    num = option_parameters[ c_storage_module_instance_options_num ];
-
-                                 if( option_parameters.count( c_storage_module_instance_options_path ) )
-                                    path = option_parameters[ c_storage_module_instance_options_path ];
-
-                                 if( option_parameters.count( c_storage_module_instance_options_query ) )
-                                    query = option_parameters[ c_storage_module_instance_options_query ];
-
-                                 if( option_parameters.count( c_storage_module_instance_options_fields ) )
-                                    fields = option_parameters[ c_storage_module_instance_options_fields ];
-
                                  use_none_response = true;
 
-                                 request_and_args += ' ' + num + ' ' + fields;
+                                 string room( c_web_session_default_room_number );
 
-                                 if( !path.empty( ) )
+                                 if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_messages_prefix ) )
+                                    room = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_messages_prefix ) );
+
+                                 if( is_post_request
+                                  && option_parameters.count( c_cws_request_messages_create_options_text ) )
                                  {
-                                    request_and_args += ' ' + path;
+                                    string names;
 
-                                    if( !query.empty( ) )
-                                       request_and_args += " \"" + query + "\"";
-                                 }
-                                 else if( !query.empty( ) )
-                                    request_and_args += " \"\" \"" + query + "\"";
-                              }
-                              else
-                              {
-                                 string fields( "_none" );
-
-                                 if( option_parameters.count( c_storage_module_instance_options_fields ) )
-                                    fields = option_parameters[ c_storage_module_instance_options_fields ];
-
-                                 use_unknown_response = true;
-
-                                 request_and_args += " 1 " + fields + " _key=" + instance_record_key;
-                              }
-                           }
-
-                           update_session_info( session, now );
-
-                           set_system_variable( web_command_var_name, request_and_args );
-                        }
-                        else
-                        {
-                           update_session_info( session, now );
-
-                           set_system_variable( web_command_var_name, "variable " + web_message_var_name );
-                        }
-
-                        for( size_t i = 0; i < 25; i++ )
-                        {
-                           if( file_exists( output_file_name ) )
-                           {
-                              response = buffer_file( output_file_name );
-
-                              response = trim( response, false, false, "\n" );
-
-                              file_remove( output_file_name );
-
-                              if( !response.empty( ) && !has_error_prefix( response ) )
-                              {
-                                 if( is_user_info_request )
-                                    process_user_info_response( session, response );
-                                 else if( !is_adding_room && is_messages_request )
-                                    process_messages_response( response, !is_special_request, is_json_output );
-                              }
-
-                              break;
-                           }
-
-                           msleep( 100 );
-                        }
-
-                        if( has_error_prefix( response ) )
-                        {
-                           found = false;
-
-                           error = response.substr( CONST_LENGTH( c_error_output_prefix ) );
-
-                           string::size_type pos = error.find( '\n' );
-
-                           if( pos && ( pos != string::npos ) )
-                              error.erase( pos );
-
-                           response.erase( );
-                        }
-                        else
-                        {
-                           if( !response.empty( )
-                            && !is_json_output && is_instance_fetch_request )
-                           {
-                              vector< string > all_lines;
-
-                              split( response, all_lines, '\n' );
-
-                              response.erase( );
-
-                              for( size_t i = 0; i < all_lines.size( ); i++ )
-                              {
-                                 string next_line( all_lines[ i ] );
-
-                                 if( !response.empty( ) )
-                                    response += '\n';
-
-                                 if( next_line[ 0 ] == '[' )
-                                 {
-                                    string::size_type pos = next_line.find( ']' );
-
-                                    string remainder;
-
-                                    if( pos != string::npos )
+                                    if( option_parameters.count( c_cws_request_messages_create_options_for ) )
                                     {
-                                       remainder = next_line.substr( pos + 1 );
+                                       names = option_parameters[ c_cws_request_messages_create_options_for ];
 
-                                       string key_ver_and_state( next_line.substr( 1, pos - 1 ) );
+                                       // NOTE: Names need to use a
+                                       // dot separator rather than
+                                       // a comma.
+                                       replace( names, ",", "." );
 
-                                       key_ver_and_state = opt_prefix_uri( key_ver_and_state );
+                                       string::size_type pos = names.find( '.' );
 
-                                       next_line = '[' + key_ver_and_state + ']' + remainder;
+                                       string first( names.substr( 0, pos ) );
+
+                                       if( first == c_web_session_special_message_for )
+                                       {
+                                          use_none_response = false;
+
+                                          is_special_request = true;
+
+                                          if( pos == string::npos )
+                                             names.erase( );
+                                          else
+                                             names.erase( 0, pos + 1 );
+                                       }
                                     }
 
-                                    response += next_line;
-                                 }
-                                 else
-                                    response += next_line;
-                              }
-                           }
+                                    if( names.empty( ) )
+                                       names = c_web_session_default_message_for;
 
-                           if( !response.empty( ) && is_json_output )
-                           {
-                              if( is_module_info_request )
-                              {
-                                 vector< string > modules;
-
-                                 split( response, modules, '\n' );
-
-                                 response = as_json_array( "all_modules", modules );
-                              }
-                              else if( is_instance_fetch_request )
-                              {
-                                 if( response[ 0 ] == '[' )
-                                 {
-                                    if( !instance_record_key.empty( ) )
+                                    if( !is_special_request
+                                     && ( room == c_web_session_default_room_number ) )
                                     {
-                                       vector< string > values;
+                                       is_adding_room = true;
 
-                                       get_field_values( response, values );
+                                       request_and_args = "<web_session_add_room.cin \""
+                                        + option_parameters[ c_cws_request_messages_create_options_text ] + "\" \"" + username + "\"";
 
-                                       response = as_json_array( "values", values );
+                                       if( !names.empty( ) )
+                                          request_and_args += " \"" + names + "\"";
                                     }
                                     else
                                     {
-                                       vector< string > records;
+                                       string prefix( is_special_request ? c_web_session_meta_message_prefix : c_web_session_default_message_prefix );
 
-                                       split( response, records, '\n' );
-
-                                       response = "{\n \"records\":\n  [\n";
-
-                                       for( size_t i = 0; i < records.size( ); i++ )
-                                       {
-                                          string next_record( records[ i ] );
-
-                                          if( !next_record.empty( ) && next_record[ 0 ] == '[' )
-                                          {
-                                             if( i > 0 )
-                                                response += ",\n";
-
-                                             vector< string > values;
-
-                                             get_field_values( next_record, values );
-
-                                             response += as_json_array( "", values );
-                                          }
-                                       }
-
-                                       response += "\n ]\n}";
+                                       request_and_args = "run_script !irc_send_message \"@room=" + room + ",@names=" + names + ",@message="
+                                        + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
                                     }
                                  }
+
+                                 if( !is_adding_room && !is_special_request )
+                                 {
+                                    request_and_args += "IRC_ROOM=" + room + '\n';
+
+                                    string from;
+
+                                    if( option_parameters.count( c_cws_request_messages_review_options_from ) )
+                                       from = option_parameters[ c_cws_request_messages_review_options_from ];
+
+                                    if( room == c_web_session_default_room_number )
+                                    {
+                                       request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"\n";
+
+                                       if( !from.empty( ) )
+                                          request_and_args += "session_variable @irc_start_points " + from + '\n';
+                                    }
+                                    else
+                                    {
+                                       string join_token;
+
+                                       // NOTE: If "from" appears to be a UUID then will treat it is a "join token".
+                                       if( from.length( ) == 32 )
+                                       {
+                                          join_token = from;
+
+                                          from.erase( );
+                                       }
+
+                                       request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"";
+
+                                       if( !join_token.empty( ) )
+                                          request_and_args += "\"" + join_token + "\"";
+
+                                       request_and_args += '\n';
+
+                                       // NOTE: If has just created a message then set
+                                       // "from" to make sure that it will be fetched.
+                                       if( is_post_request )
+                                          from = to_string( now );
+
+                                       if( !from.empty( ) )
+                                          request_and_args += "session_variable @irc_start_point_" + room + ' ' + from + '\n';
+                                    }
+
+                                    request_and_args += "run_script !irc_fetch_messages \"@room=" + room + "\"";
+                                 }
                               }
-                              else if( response[ 0 ] == '[' )
+                              else if( is_user_info_request )
                               {
-                                 // NOTE: Is assuming that this is a status response.
-                                 response = "{\"status\":\"" + escaped_json( response ) + "\"}";
+                                 if( storage_name.empty( ) )
+                                    storage_name = get_system_variable( e_special_var_storage );
+
+                                 const section_node& root_node( get_meta_data( storage_name ).get_root_node( ) );
+
+                                 string storage_user_info(
+                                  root_node.get_attribute_value( c_storage_attribute_user_info ) );
+
+                                 if( storage_user_info.empty( ) )
+                                    throw runtime_error( "unexpected missing storage_user_info" );
+
+                                 vector< string > all_storage_user_info;
+
+                                 split( storage_user_info, all_storage_user_info );
+
+                                 if( all_storage_user_info.size( ) < 3 )
+                                    throw runtime_error( "unexpected missing needed storage_user_info parts" );
+
+                                 string user_class_id( all_storage_user_info[ 0 ] );
+
+                                 string user_field_id_username( all_storage_user_info[ 2 ] );
+
+                                 string::size_type pos = user_field_id_username.find( '+' );
+
+                                 if( pos != string::npos )
+                                    user_field_id_username.erase( pos );
+
+                                 string user_field_id_description( user_field_id_username );
+
+                                 if( all_storage_user_info.size( ) > 5 )
+                                 {
+                                    user_field_id_description = all_storage_user_info[ 5 ];
+
+                                    string::size_type pos = user_field_id_description.find( ';' );
+
+                                    if( pos != string::npos )
+                                       user_field_id_description.erase( pos );
+                                 }
+
+                                 // NOTE: Currently assumes that the
+                                 // module name and storage name are
+                                 // the same.
+                                 string module( storage_name );
+
+                                 string field_list( user_field_id_description );
+
+                                 set_system_variable( web_storage_var_name, storage_name );
+
+                                 request_and_args = "<web_session_instance_fetch.cin "
+                                  + module + ' ' + user_class_id + " _none 1 "
+                                  + field_list + ' ' + user_field_id_username + '=' + username;
+                              }
+                              else if( is_module_info_request )
+                                 request_and_args = "<web_session_modules_fetch.cin";
+                              else if( is_instance_fetch_request )
+                              {
+                                 string user_key = get_session_info_user_key( session );
+
+                                 request_and_args = "<web_session_instance_fetch.cin "
+                                  + instance_module_id + ' ' + instance_mclass_id + ' ' + user_key;
+
+                                 if( instance_record_key.empty( ) )
+                                 {
+                                    string num( "0" );
+                                    string path, query;
+                                    string fields( "_none" );
+
+                                    if( option_parameters.count( c_storage_module_instance_options_num ) )
+                                       num = option_parameters[ c_storage_module_instance_options_num ];
+
+                                    if( option_parameters.count( c_storage_module_instance_options_path ) )
+                                       path = option_parameters[ c_storage_module_instance_options_path ];
+
+                                    if( option_parameters.count( c_storage_module_instance_options_query ) )
+                                       query = option_parameters[ c_storage_module_instance_options_query ];
+
+                                    if( option_parameters.count( c_storage_module_instance_options_fields ) )
+                                       fields = option_parameters[ c_storage_module_instance_options_fields ];
+
+                                    use_none_response = true;
+
+                                    request_and_args += ' ' + num + ' ' + fields;
+
+                                    if( !path.empty( ) )
+                                    {
+                                       request_and_args += ' ' + path;
+
+                                       if( !query.empty( ) )
+                                          request_and_args += " \"" + query + "\"";
+                                    }
+                                    else if( !query.empty( ) )
+                                       request_and_args += " \"\" \"" + query + "\"";
+                                 }
+                                 else
+                                 {
+                                    string fields( "_none" );
+
+                                    if( option_parameters.count( c_storage_module_instance_options_fields ) )
+                                       fields = option_parameters[ c_storage_module_instance_options_fields ];
+
+                                    use_unknown_response = true;
+
+                                    request_and_args += " 1 " + fields + " _key=" + instance_record_key;
+                                 }
+                              }
+
+                              update_session_info( session, now );
+
+                              set_system_variable( web_command_var_name, request_and_args );
+                           }
+                           else
+                           {
+                              update_session_info( session, now );
+
+                              set_system_variable( web_command_var_name, "variable " + web_message_var_name );
+                           }
+
+                           for( size_t i = 0; i < 25; i++ )
+                           {
+                              if( file_exists( output_file_name ) )
+                              {
+                                 response = buffer_file( output_file_name );
+
+                                 response = trim( response, false, false, "\n" );
+
+                                 file_remove( output_file_name );
+
+                                 if( !response.empty( ) && !has_error_prefix( response ) )
+                                 {
+                                    if( is_user_info_request )
+                                       process_user_info_response( session, response );
+                                    else if( !is_adding_room && is_messages_request )
+                                       process_messages_response( response, !is_special_request, is_json_output );
+                                 }
+
+                                 break;
+                              }
+
+                              msleep( 100 );
+                           }
+
+                           if( has_error_prefix( response ) )
+                           {
+                              found = false;
+
+                              error = response.substr( CONST_LENGTH( c_error_output_prefix ) );
+
+                              string::size_type pos = error.find( '\n' );
+
+                              if( pos && ( pos != string::npos ) )
+                                 error.erase( pos );
+
+                              response.erase( );
+                           }
+                           else
+                           {
+                              if( !response.empty( )
+                               && !is_json_output && is_instance_fetch_request )
+                              {
+                                 vector< string > all_lines;
+
+                                 split( response, all_lines, '\n' );
+
+                                 response.erase( );
+
+                                 for( size_t i = 0; i < all_lines.size( ); i++ )
+                                 {
+                                    string next_line( all_lines[ i ] );
+
+                                    if( !response.empty( ) )
+                                       response += '\n';
+
+                                    if( next_line[ 0 ] == '[' )
+                                    {
+                                       string::size_type pos = next_line.find( ']' );
+
+                                       string remainder;
+
+                                       if( pos != string::npos )
+                                       {
+                                          remainder = next_line.substr( pos + 1 );
+
+                                          string key_ver_and_state( next_line.substr( 1, pos - 1 ) );
+
+                                          key_ver_and_state = opt_prefix_uri( key_ver_and_state );
+
+                                          next_line = '[' + key_ver_and_state + ']' + remainder;
+                                       }
+
+                                       response += next_line;
+                                    }
+                                    else
+                                       response += next_line;
+                                 }
+                              }
+
+                              if( !response.empty( ) && is_json_output )
+                              {
+                                 if( is_module_info_request )
+                                 {
+                                    vector< string > modules;
+
+                                    split( response, modules, '\n' );
+
+                                    response = as_json_array( "all_modules", modules );
+                                 }
+                                 else if( is_instance_fetch_request )
+                                 {
+                                    if( response[ 0 ] == '[' )
+                                    {
+                                       if( !instance_record_key.empty( ) )
+                                       {
+                                          vector< string > values;
+
+                                          get_field_values( response, values );
+
+                                          response = as_json_array( "values", values );
+                                       }
+                                       else
+                                       {
+                                          vector< string > records;
+
+                                          split( response, records, '\n' );
+
+                                          response = "{\n \"records\":\n  [\n";
+
+                                          for( size_t i = 0; i < records.size( ); i++ )
+                                          {
+                                             string next_record( records[ i ] );
+
+                                             if( !next_record.empty( ) && next_record[ 0 ] == '[' )
+                                             {
+                                                if( i > 0 )
+                                                   response += ",\n";
+
+                                                vector< string > values;
+
+                                                get_field_values( next_record, values );
+
+                                                response += as_json_array( "", values );
+                                             }
+                                          }
+
+                                          response += "\n ]\n}";
+                                       }
+                                    }
+                                 }
+                                 else if( response[ 0 ] == '[' )
+                                 {
+                                    // NOTE: Is assuming that this is a status response.
+                                    response = "{\"status\":\"" + escaped_json( response ) + "\"}";
+                                 }
                               }
                            }
                         }
