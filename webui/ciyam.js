@@ -495,9 +495,9 @@ class CIYAM
 
                   // NOTE: For "non-admin" users a
                   // seed value is used to provide
-                  // a "suggested" username (or is
-                  // just "@none" for no suggested
-                  // value). If no suggested value
+                  // a "nominated" username (or is
+                  // just "@none" for no nominated
+                  // value). If no nominated value
                   // is supplied then "access" can
                   // provide a "username" by using
                   // "<pin>:<username>".
@@ -511,11 +511,12 @@ class CIYAM
                   this.seed = "";
                }
 
-               // NOTE: If suggested "username"
+               // NOTE: If nominated "username"
                // is prefixed with "?" then set
                // as an error (which the caller
-               // could check so the suggestion
-               // can be displayed as such).
+               // could check so the nominated
+               // username can be then handled
+               // as a suggestion).
                if( access.indexOf( "?" ) == 0 )
                   this.error = access;
                else
