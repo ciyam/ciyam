@@ -75,8 +75,9 @@ else
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 "" "" none
 
  echo ""
- echo "Connect using 11111 with 'none'."
+ echo "Connect using 11111 with 'none' and list users."
  node ../webui/ciyam.js "" 11111 "" "" none
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 11111 "" "" none
 
  echo ""
  echo "Attempt to connect using 11111 with 'test'."
@@ -129,8 +130,9 @@ else
  node ../webui/ciyam.js -quiet "" 33333:test "" "" test
 
  echo ""
- echo "Connect using 33333:testing with 'test'."
+ echo "Connect using 33333:testing with 'test' and list users"
  node ../webui/ciyam.js "" 33333:testing "" "" test
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 33333 "" "" test
 
  echo ""
  echo "Attempt to connect using 33333 with 'none'."

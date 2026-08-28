@@ -70,11 +70,17 @@ Attempt to create another user with access pin '11111' then list users.
   }
 ]
 
-Connect using 11111 with 'none'.
+Connect using 11111 with 'none' and list users.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [standard]
 {"message":"Session terminated."}
+[
+  {
+    "pin": "11111",
+    "name": "test-1"
+  }
+]
 
 Attempt to connect using 11111 with 'test'.
 Error: This web session is not valid (or has expired).
@@ -145,11 +151,17 @@ Error: ?test-3
 Attempt to connect using 33333:test with 'test' (after suggestion).
 Error: Username 'test' has already been taken.
 
-Connect using 33333:testing with 'test'.
+Connect using 33333:testing with 'test' and list users
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [standard]
 {"message":"Session terminated."}
+[
+  {
+    "pin": "33333",
+    "name": "testing"
+  }
+]
 
 Attempt to connect using 33333 with 'none'.
 Error: This web session is not valid (or has expired).
