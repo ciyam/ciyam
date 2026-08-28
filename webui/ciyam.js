@@ -58,6 +58,8 @@ class CIYAM
       this.user_callback = null;
 
       this.connect_status = "";
+
+      this.users = [ ];
    }
 
    static encode_base64( str )
@@ -602,17 +604,50 @@ class CIYAM
       }
    }
 
+   at_fetch_users( response )
+   {
+      if( this.format_type == c_format_type_text )
+      {
+         if( this.user_callback != null )
+            this.user_callback( response );
+      }
+      else
+      {
+         const obj = JSON.parse( response );
+
+         if( obj.error == null )
+         {
+            this.users.length = 0;
+
+            // NOTE: Expands the simple array of arrays response into
+            // a "users" array with explicit "pin" and "name" values.
+            if( obj.all_users != null )
+            {
+               for( var i = 0; i < obj.all_users.length; i++ )
+                  this.users.push( { pin: obj.all_users[ i ][ 0 ], name: obj.all_users[ i ][ 1 ] } );
+            }
+
+            if( this.user_callback != null )
+               this.user_callback( JSON.stringify( this.users, null, 2 ) );
+         }
+         else
+            this.error = obj.error;
+      }
+   }
+
    async fetch_users( callback )
    {
       if( this.sessid == "" )
          callback( "Error: No current session exists." );
       else
       {
+         this.user_callback = callback;
+
          var url = this.get_cws_url( )
           + "/users?access=" + this.access + "&device=" + this.device
           + "&format=" + this.format_type + "&session=" + this.sessid;
 
-         await this.fetch( url, "GET", callback )
+         await this.fetch( url, "GET", this.at_fetch_users.bind( this ) )
       }
    }
 
