@@ -44,6 +44,7 @@ employ unlock-key <key>
 retain javascript
 retain stylesheet
 retain webcmdlist
+review users
 review messages <room> [from=<unix_time>]
 review storages
 review javascript[s] [<name>]
