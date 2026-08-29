@@ -37,7 +37,7 @@ ciyam.is_locked = false
 Attempt to update 'admin' access password to 'none' while not locked.
 Error: System identity is not currently locked.
 
-Connect using 10301 with 'test'.
+Connect using 10301 with 'test' (after restore).
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [adm]-1@admin
@@ -65,7 +65,7 @@ Error: This web session is not valid (or has expired).
 Attempt to connect using 10201 with 'test'.
 Error: This web session is not valid (or has expired).
 
-Connect using 10301 with 'none'.
+Connect using 10301 with 'none' and create an unlock key.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [adm]@admin
@@ -73,6 +73,9 @@ ciyam.username = admin
 ciyam.is_admin = true
 ciyam.is_locked = false
 {"message":"Session terminated."}
+
+Employ the previously created unlock key (after restore).
+{"response":"[okay]"}
 
 Fetch the list of non-admin users.
 []

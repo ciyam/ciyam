@@ -41,7 +41,7 @@ else
  sleep 1
 
  echo ""
- echo "Connect using 10301 with 'test'."
+ echo "Connect using 10301 with 'test' (after restore)."
  node ../webui/ciyam.js "" 10301 "" "" test
 
  echo ""
@@ -61,8 +61,16 @@ else
  node ../webui/ciyam.js -quiet "" 10301 "" "" test
 
  echo ""
- echo "Connect using 10301 with 'none'."
+ echo "Connect using 10301 with 'none' and create an unlock key."
  node ../webui/ciyam.js "" 10301 "" "" none
+ unlock_key=$(env CIYAM_NODE_COMMAND="unlock-keys create" node ../webui/ciyam.js -quiet "" 10301 "" "" none)
+
+ touch ciyam_base.restore
+ sleep 1
+
+ echo ""
+ echo "Employ the previously created unlock key (after restore)."
+ env CIYAM_NODE_COMMAND="unlock-keys employ $unlock_key" node ../webui/ciyam.js -quiet "" 10301 "" "" none
 
  echo ""
  echo "Fetch the list of non-admin users."
