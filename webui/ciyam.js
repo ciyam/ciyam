@@ -23,6 +23,9 @@ const c_var_name_unique = "UNIQUE";
 const c_format_type_json = "json";
 const c_format_type_text = "text";
 
+const c_session_type_admin = "[adm]";
+const c_session_type_standard = "[std]";
+
 const c_visible_ascii_chars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
 class CIYAM
@@ -46,12 +49,19 @@ class CIYAM
 
       this.var_map = new Map( );
 
+      this.username = "";
+
       this.host_info = host_info;
 
       if( use_json == true )
          this.format_type = c_format_type_json;
       else
          this.format_type = c_format_type_text;
+
+      this.is_admin = false;
+      this.is_locked = false;
+
+      this.lock_source = 0;
 
       this.node_crypto = null;
 
@@ -563,6 +573,44 @@ class CIYAM
             if( !all_callbacks && ( callback != null ) && ( this.node_crypto == null ) )
                callback( this.connect_status );
 
+            if( this.connect_status != "" )
+            {
+               var session_info = this.connect_status;
+
+               var pos = session_info.indexOf( "]" );
+
+               if( pos > 0 )
+               {
+                  var session_type = session_info.substr( 0, pos + 1 );
+
+                  if( session_type == c_session_type_admin )
+                     this.is_admin = true;
+                  else
+                     this.is_admin = false;
+
+                  session_info = session_info.substring( pos + 1 );
+
+                  this.is_locked = false;
+                  this.lock_source = 0;
+
+                  if( session_info.length )
+                  {
+                     if( session_info.substr( 0, 1 ) == "-" )
+                     {
+                        this.is_locked = true;
+                        this.lock_source = session_info.substr( 1, 1 );
+                     }
+
+                     pos = session_info.indexOf( "@" );
+
+                     this.username = "";
+
+                     if( pos >= 0 )
+                        this.username = session_info.substring( pos + 1 );
+                  }
+               }
+            }
+
             if( this.error != "" )
             {
                this.hashed = "";
@@ -743,7 +791,16 @@ async function ciyam_node( host, access, device, hashed, passwd, debug, quiet )
       await ciyam.connect( access, device, hashed, passwd, console.log, debug );
 
       if( !quiet && ( ciyam.connect_status != "" ) )
+      {
          console.log( ciyam.connect_status );
+
+         console.log( "ciyam.username = " + ciyam.username );
+         console.log( "ciyam.is_admin = " + ciyam.is_admin );
+         console.log( "ciyam.is_locked = " + ciyam.is_locked );
+
+         if( ciyam.is_locked )
+            console.log( "ciyam.lock_source => " + ciyam.lock_source );
+      }
 
       if( ciyam.error != "" )
          console.log( "Error: " + ciyam.error );
