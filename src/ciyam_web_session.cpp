@@ -89,6 +89,8 @@ constexpr const char* c_list_suffix = ".list";
 
 constexpr const char* c_ciyam_prefix = "ciyam_";
 
+constexpr const char* c_username_suffix = "@";
+
 constexpr const char* c_error_output_prefix = "Error: ";
 
 constexpr const char* c_ciyam_storages_file = ".ciyam_storages";
@@ -2392,6 +2394,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   bool is_module_info_request = false;
                   bool is_instance_fetch_request = false;
 
+                  string response_suffix;
+
                   if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storages_prefix ) )
                      is_user_info_request = true;
                   else if( ( uri_suffix == c_cws_uri_suffix_messages )
@@ -2407,9 +2411,14 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      is_module_info_request = true;
                   else if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storage_instances_prefix ) )
                      is_instance_fetch_request = true;
-                  else if( !uri_suffix.empty( ) && ( uri_suffix != c_cws_uri_suffix_status ) )
-                     // FUTURE: This message should be handled as a server string message.
-                     error = "invalid CWS endpoint suffix '" + uri_suffix + "'";
+                  else if( !uri_suffix.empty( ) )
+                  {
+                     if( uri_suffix == c_cws_uri_suffix_status )
+                        response_suffix = c_username_suffix;
+                     else
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "invalid CWS endpoint suffix '" + uri_suffix + "'";
+                  }
 
                   if( error.empty( ) )
                   {
@@ -2421,6 +2430,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         username = c_admin;
                      else
                         username = get_user_name( access );
+
+                     if( response_suffix == c_username_suffix )
+                        response_suffix += username;
 
                      bool running = has_system_variable( web_message_var_name );
 
@@ -2748,6 +2760,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                  if( !response.empty( ) && !has_error_prefix( response ) )
                                  {
+                                    response += response_suffix;
+
                                     if( is_user_info_request )
                                        process_user_info_response( session, response );
                                     else if( !is_adding_room && is_messages_request )
