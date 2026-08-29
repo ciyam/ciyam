@@ -26,8 +26,8 @@ const finish_name = "finish";
 
 const admin_username = "admin";
 
-const admin_session_name = "[admin]";
-const standard_session_name = "[standard]";
+const admin_session_name = "[adm]";
+const standard_session_name = "[std]";
 
 const ciyam_prefix = "ciyam_";
 

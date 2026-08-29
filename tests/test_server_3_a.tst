@@ -23,9 +23,9 @@ Error: Invalid format value 'xxxx'.
 100000000
 {"post_limit":"100000000"}{"post_limit":"100.0 MB"}testing...
 {"data":"testing..."}Error: Invalid device identity 'bad_device'.
-[admin]
+[adm]@admin
 Error: This web session is not valid (or has expired).
-[admin]
+[adm]@admin
 Error: invalid attempt to create unlock key for unencrypted identity
 Reserve a new access token and suggest the username 'test-1'.
 Prepare to activate the newly reserved access token.

@@ -53,7 +53,6 @@ LOCKED=-0
 ;
 IRC_ROOM=$ENTRANCE_ROOM
 ;
-IRC_USERS=
 IRC_ALLOWED=
 ;
 ; NOTE: If just started (or a reload has just taken place)
@@ -108,12 +107,12 @@ session_variable @irc_start_points $ALL_START_POINTS
 ADMIN_TOKEN=@file:.web_access_admin
 ;
 @ifeq "$TOKEN" "$ADMIN_TOKEN"
-.system_variable @web.$TOKEN.$DEVICE.message "[admin]$LOCKED$IRC_USERS"
+.system_variable @web.$TOKEN.$DEVICE.message "[adm]$LOCKED"
 @else
 @ifdef $LOCKED
 LOCKED=?
 @endif
-.system_variable @web.$TOKEN.$DEVICE.message "[standard]$LOCKED$IRC_USERS"
+.system_variable @web.$TOKEN.$DEVICE.message "[std]$LOCKED"
 @endif
 ;
 .session_variable @storage_var_name @web.$TOKEN.$DEVICE.storage

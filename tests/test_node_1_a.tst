@@ -1,13 +1,13 @@
 Create system identity and 'admin' access with 'none'.
 CIYAM [http://localhost:13031]
 {"name":"*CIYAM*", "version":"0.0.0"}
-[admin]
+[adm]@admin
 {"message":"Session terminated."}
 
 Update 'admin' access password to 'test' (after restore).
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
-[admin]
+[adm]@admin
 {"message":"Session terminated."}
 
 Attempt to connect using 10101 with 'test'.
@@ -22,7 +22,7 @@ Error: This web session is not valid (or has expired).
 Connect using 10301 with 'test'.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
-[admin]
+[adm]@admin
 {"message":"Session terminated."}
 
 Attempt to update 'admin' access password to 'none' while locked.
@@ -31,7 +31,7 @@ Error: System identity is not currently locked.
 Update 'admin' access password to 'none' (after restore).
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
-[admin]
+[adm]@admin
 {"message":"Session terminated."}
 
 Attempt to connect using 10101 with 'none'.
@@ -46,7 +46,7 @@ Error: This web session is not valid (or has expired).
 Connect using 10301 with 'none'.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
-[admin]
+[adm]@admin
 {"message":"Session terminated."}
 
 Fetch the list of non-admin users.
@@ -73,7 +73,7 @@ Attempt to create another user with access pin '11111' then list users.
 Connect using 11111 with 'none' and list users.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
-[standard]
+[std]@test-1
 {"message":"Session terminated."}
 [
   {
@@ -91,7 +91,7 @@ Update own password for 11111 from 'none' to 'test'.
 Connect using 11111 with 'test'.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
-[standard]
+[std]@test-1
 {"message":"Session terminated."}
 
 Update password for 11111 to 'none' as admin.
@@ -100,7 +100,7 @@ Update password for 11111 to 'none' as admin.
 Connect using 11111 with 'none'.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
-[standard]
+[std]@test-1
 {"message":"Session terminated."}
 
 Create a user with access pin '22222' then list users.
@@ -122,7 +122,7 @@ Error: ?test-2
 Connect using 22222:test with 'test' (after suggestion).
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
-[standard]
+[std]@test
 {"message":"Session terminated."}
 
 Attempt to update password for 11111 to 'test' as 22222.
@@ -154,7 +154,7 @@ Error: Username 'test' has already been taken.
 Connect using 33333:testing with 'test' and list users
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
-[standard]
+[std]@testing
 {"message":"Session terminated."}
 [
   {
@@ -200,7 +200,7 @@ Create 'xxxxx' token for pin '12345'.
 Connect using xxxxx:test-x with 'test' then list users.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
-[standard]
+[std]@test-x
 {"message":"Session terminated."}
 [
   {
