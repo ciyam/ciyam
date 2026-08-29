@@ -9,9 +9,11 @@ const c_def_key_len = 11;
 const c_sess_id_len = 20;
 
 const c_node_cmd_users = "users";
+const c_node_cmd_unlock_keys = "unlock-keys";
 
 const c_cmd_verb_create = "create";
 const c_cmd_verb_delete = "delete";
+const c_cmd_verb_employ = "employ";
 const c_cmd_verb_update = "update";
 
 const c_var_name_access = "ACCESS";
@@ -762,6 +764,90 @@ class CIYAM
          await this.fetch( url, "PUT", callback )
       }
    }
+
+   at_create_unlock_key( response )
+   {
+      if( this.format_type == c_format_type_text )
+      {
+         if( this.user_callback != null )
+            this.user_callback( response );
+      }
+      else
+      {
+         const obj = JSON.parse( response );
+
+         if( obj.error == null )
+         {
+            if( this.user_callback != null )
+               this.user_callback( obj.unlock_key );
+         }
+         else
+            this.error = obj.error;
+      }
+   }
+
+   async create_unlock_key( options, callback )
+   {
+      if( this.sessid == "" )
+         callback( "Error: No current session exists." );
+      else
+      {
+         this.user_callback = callback;
+
+         var url = this.get_cws_url( ) + "/unlock-keys"
+          + "?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type;
+
+         if( ( options != null ) && ( options != "" ) )
+            url += "&options=" + encodeURIComponent( options );
+
+         url += "&session=" + this.sessid;
+
+         await this.fetch( url, "POST", this.at_create_unlock_key.bind( this ) )
+      }
+   }
+
+   async employ_unlock_key( key, callback )
+   {
+      if( this.sessid == "" )
+         callback( "Error: No current session exists." );
+      else
+      {
+         var url = this.get_cws_url( ) + "/unlock-keys/" + key
+          + "?access=" + this.access + "&device=" + this.device
+          + "&format=" + this.format_type + "&session=" + this.sessid;
+
+         await this.fetch( url, "POST", callback );
+      }
+   }
+}
+
+function ciyam_node_parse_command( info, command, cmd_info )
+{
+   info = info.replace( command + " ", "" );
+
+   var pos = info.indexOf( " " );
+
+   if( pos <= 0 )
+      cmd_info.cmd = info;
+   else
+   {
+      cmd_info.cmd = info.substr( 0, pos );
+      cmd_info.args = info.substring( pos + 1 );
+
+      pos = cmd_info.args.indexOf( " " );
+
+      if( pos > 0 )
+      {
+         cmd_info.key = cmd_info.args.substr( 0, pos );
+         cmd_info.args = cmd_info.args.substring( pos + 1 );
+      }
+      else if( cmd_info.args.indexOf( "=" ) <= 0 )
+      {
+         cmd_info.key = cmd_info.args;
+
+         cmd_info.args = "";
+      }
+   }
 }
 
 async function ciyam_node( host, access, device, hashed, passwd, debug, quiet )
@@ -815,37 +901,29 @@ async function ciyam_node( host, access, device, hashed, passwd, debug, quiet )
                if( debug )
                   console.log( "cmd: " + command );
 
+               var cmd_info = { cmd: command, key: "", args: "" };
+
                if( command == c_node_cmd_users )
                   await ciyam.fetch_users( console.log );
                else if( command.indexOf( c_node_cmd_users + " " ) == 0 )
                {
-                  var record = "";
-                  var cmd_args = "";
+                  ciyam_node_parse_command( command, c_node_cmd_users, cmd_info );
 
-                  command = command.replace( c_node_cmd_users + " ", "" );
+                  if( cmd_info.cmd == c_cmd_verb_create )
+                     await ciyam.create_user( cmd_info.args, console.log );
+                  else if( cmd_info.cmd == c_cmd_verb_delete )
+                     await ciyam.delete_user( cmd_info.key, console.log );
+                  else if( cmd_info.cmd == c_cmd_verb_update )
+                     await ciyam.update_user( cmd_info.key, cmd_info.args, console.log );
+               }
+               else if( command.indexOf( c_node_cmd_unlock_keys + " " ) == 0 )
+               {
+                  ciyam_node_parse_command( command, c_node_cmd_unlock_keys, cmd_info );
 
-                  var pos = command.indexOf( " " );
-
-                  if( pos > 0 )
-                  {
-                     cmd_args = command.substring( pos + 1 );
-                     command = command.substr( 0, pos );
-
-                     pos = cmd_args.indexOf( " " );
-
-                     if( pos > 0 )
-                     {
-                        record = cmd_args.substr( 0, pos );
-                        cmd_args = cmd_args.substring( pos + 1 );
-                     }
-                  }
-
-                  if( command == c_cmd_verb_create )
-                     await ciyam.create_user( cmd_args, console.log );
-                  else if( command == c_cmd_verb_delete )
-                     await ciyam.delete_user( cmd_args, console.log );
-                  else if( command == c_cmd_verb_update )
-                     await ciyam.update_user( record, cmd_args, console.log );
+                  if( cmd_info.cmd == c_cmd_verb_create )
+                     await ciyam.create_unlock_key( cmd_info.args, console.log );
+                  else if( cmd_info.cmd == c_cmd_verb_employ )
+                     await ciyam.employ_unlock_key( cmd_info.key, console.log );
                }
             }
          }
