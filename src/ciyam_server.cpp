@@ -645,24 +645,24 @@ int main( int argc, char* argv[ ] )
                   }
 
                   // NOTE: Checks the update and restore signal files before
-                  // checking the shutdown file in order to allow that to be
-                  // used for checking when the listener has been restarted.
+                  // falling back to a server "stop" so that the stop signal
+                  // file's absence can indicate the listener has restarted.
                   if( !is_update && !g_server_shutdown
-                   && ( file_exists( c_update_signal_file ) || file_exists( c_restore_signal_file ) ) )
+                   && ( file_exists( c_shutdown_signal_file )
+                   || file_exists( c_update_signal_file ) || file_exists( c_restore_signal_file ) ) )
                   {
                      is_update = true;
 
                      if( file_exists( c_restore_signal_file ) )
                         was_restore = true;
+                     else if( !file_exists( c_update_signal_file ) )
+                     {
+                        is_update = false;
+
+                        shutdown_reason = "due to stop file";
+                     }
 
                      g_server_shutdown = 1;
-                  }
-
-                  if( !g_server_shutdown && file_exists( c_shutdown_signal_file ) )
-                  {
-                     g_server_shutdown = 1;
-
-                     shutdown_reason = "due to stop file";
                   }
 
                   if( g_server_shutdown && !reported_shutdown )
