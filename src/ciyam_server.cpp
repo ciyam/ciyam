@@ -644,13 +644,9 @@ int main( int argc, char* argv[ ] )
                      shutdown_reason = "bad listener";
                   }
 
-                  if( !g_server_shutdown && file_exists( c_shutdown_signal_file ) )
-                  {
-                     g_server_shutdown = 1;
-
-                     shutdown_reason = "due to stop file";
-                  }
-
+                  // NOTE: Checks the update and restore signal files before
+                  // checking the shutdown file in order to allow that to be
+                  // used for checking when the listener has been restarted.
                   if( !is_update && !g_server_shutdown
                    && ( file_exists( c_update_signal_file ) || file_exists( c_restore_signal_file ) ) )
                   {
@@ -660,6 +656,13 @@ int main( int argc, char* argv[ ] )
                         was_restore = true;
 
                      g_server_shutdown = 1;
+                  }
+
+                  if( !g_server_shutdown && file_exists( c_shutdown_signal_file ) )
+                  {
+                     g_server_shutdown = 1;
+
+                     shutdown_reason = "due to stop file";
                   }
 
                   if( g_server_shutdown && !reported_shutdown )
@@ -742,7 +745,8 @@ int main( int argc, char* argv[ ] )
                s.close( );
                u.close( );
 
-               file_remove( c_shutdown_signal_file );
+               if( !is_update )
+                  file_remove( c_shutdown_signal_file );
 
                string finish_message;
 
