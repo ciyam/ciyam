@@ -34,11 +34,15 @@ else
  node ../webui/ciyam.js "" 10301 "" "" test
 
  echo ""
- echo "Attempt to update 'admin' access password to 'none' while locked."
+ echo "Attempt to update 'admin' access password to 'none' while not locked."
  node ../webui/ciyam.js -quiet "" de604cee0755a3d81944ea96aed12681 "" "" none
 
  touch ciyam_base.restore
  sleep 1
+
+ echo ""
+ echo "Connect using 10301 with 'test'."
+ node ../webui/ciyam.js "" 10301 "" "" test
 
  echo ""
  echo "Update 'admin' access password to 'none' (after restore)."

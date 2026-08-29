@@ -2,12 +2,18 @@ Create system identity and 'admin' access with 'none'.
 CIYAM [http://localhost:13031]
 {"name":"*CIYAM*", "version":"0.0.0"}
 [adm]@admin
+ciyam.username = admin
+ciyam.is_admin = true
+ciyam.is_locked = false
 {"message":"Session terminated."}
 
 Update 'admin' access password to 'test' (after restore).
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [adm]@admin
+ciyam.username = admin
+ciyam.is_admin = true
+ciyam.is_locked = false
 {"message":"Session terminated."}
 
 Attempt to connect using 10101 with 'test'.
@@ -23,15 +29,31 @@ Connect using 10301 with 'test'.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [adm]@admin
+ciyam.username = admin
+ciyam.is_admin = true
+ciyam.is_locked = false
 {"message":"Session terminated."}
 
-Attempt to update 'admin' access password to 'none' while locked.
+Attempt to update 'admin' access password to 'none' while not locked.
 Error: System identity is not currently locked.
+
+Connect using 10301 with 'test'.
+CIYAM [http://localhost:13031]
+{"name":"CIYAM", "version":"0.0.0"}
+[adm]-1@admin
+ciyam.username = admin
+ciyam.is_admin = true
+ciyam.is_locked = true
+ciyam.lock_source => 1
+{"message":"Session terminated."}
 
 Update 'admin' access password to 'none' (after restore).
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [adm]@admin
+ciyam.username = admin
+ciyam.is_admin = true
+ciyam.is_locked = false
 {"message":"Session terminated."}
 
 Attempt to connect using 10101 with 'none'.
@@ -47,6 +69,9 @@ Connect using 10301 with 'none'.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [adm]@admin
+ciyam.username = admin
+ciyam.is_admin = true
+ciyam.is_locked = false
 {"message":"Session terminated."}
 
 Fetch the list of non-admin users.
@@ -74,6 +99,9 @@ Connect using 11111 with 'none' and list users.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [std]@test-1
+ciyam.username = test-1
+ciyam.is_admin = false
+ciyam.is_locked = false
 {"message":"Session terminated."}
 [
   {
@@ -92,6 +120,9 @@ Connect using 11111 with 'test'.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [std]@test-1
+ciyam.username = test-1
+ciyam.is_admin = false
+ciyam.is_locked = false
 {"message":"Session terminated."}
 
 Update password for 11111 to 'none' as admin.
@@ -101,6 +132,9 @@ Connect using 11111 with 'none'.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [std]@test-1
+ciyam.username = test-1
+ciyam.is_admin = false
+ciyam.is_locked = false
 {"message":"Session terminated."}
 
 Create a user with access pin '22222' then list users.
@@ -123,6 +157,9 @@ Connect using 22222:test with 'test' (after suggestion).
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [std]@test
+ciyam.username = test
+ciyam.is_admin = false
+ciyam.is_locked = false
 {"message":"Session terminated."}
 
 Attempt to update password for 11111 to 'test' as 22222.
@@ -155,6 +192,9 @@ Connect using 33333:testing with 'test' and list users
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [std]@testing
+ciyam.username = testing
+ciyam.is_admin = false
+ciyam.is_locked = false
 {"message":"Session terminated."}
 [
   {
@@ -201,6 +241,9 @@ Connect using xxxxx:test-x with 'test' then list users.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [std]@test-x
+ciyam.username = test-x
+ciyam.is_admin = false
+ciyam.is_locked = false
 {"message":"Session terminated."}
 [
   {
