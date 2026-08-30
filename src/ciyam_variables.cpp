@@ -237,6 +237,7 @@ constexpr const char* c_special_variable_utm_init_base = "@utm_init_base";
 constexpr const char* c_special_variable_cmd_delay_wait = "@cmd_delay_wait";
 constexpr const char* c_special_variable_force_internal = "@force_internal";
 constexpr const char* c_special_variable_log_files_path = "@log_files_path";
+constexpr const char* c_special_variable_no_http_delays = "@no_http_delays";
 constexpr const char* c_special_variable_peer_clone_key = "@peer_clone_key";
 constexpr const char* c_special_variable_peer_initiator = "@peer_initiator";
 constexpr const char* c_special_variable_peer_responder = "@peer_responder";
@@ -616,6 +617,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_cmd_delay_wait );
       g_special_variable_names.push_back( c_special_variable_force_internal );
       g_special_variable_names.push_back( c_special_variable_log_files_path );
+      g_special_variable_names.push_back( c_special_variable_no_http_delays );
       g_special_variable_names.push_back( c_special_variable_peer_clone_key );
       g_special_variable_names.push_back( c_special_variable_peer_initiator );
       g_special_variable_names.push_back( c_special_variable_peer_responder );
