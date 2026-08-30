@@ -494,27 +494,36 @@ class CIYAM
 
          var url = "";
 
-         if( ( this.device == "" ) || ( access.length > 5 ) )
+         var secret_access = false;
+
+         if( ( access.substr( 0, 1 ) <= '0' ) || ( access.substr( 0, 1 ) >= '9' ) )
+            secret_access = true;
+
+         if( ( this.device == "" ) || ( extra != "" ) || ( access.length > 5 ) )
          {
-            url = this.get_cws_url( ) + "/devices?access=" + this.access;
+            if( secret_access || ( this.device == "" ) || ( extra == "" ) )
+            {
+               url = this.get_cws_url( ) + "/devices?access=" + this.access;
 
-            if( this.device != "" )
-               url += "&device=" + this.device;
+               if( this.device != "" )
+                  url += "&device=" + this.device;
 
-            url += "&format=" + this.format_type;
+               url += "&format=" + this.format_type;
 
-            await this.fetch( url, "POST", this.at_connect.bind( this ) );
+               await this.fetch( url, "POST", this.at_connect.bind( this ) );
+            }
 
             // NOTE: If "admin" or a seed is provided as "access" then
             // assumes that this is either a new system or the "admin"
             // password is being reset so provides "admin" credentials
             // along with the (optionally external) "seed" entropy.
             if( ( this.error == "" )
-             && ( ( this.seed != "" ) || ( access != this.access ) ) )
+             && ( ( extra != "" ) || ( this.seed != "" ) || ( access != this.access ) ) )
             {
                if( access.length > 5 )
                   access = c_admin;
-               else if( ( access != c_admin ) && ( this.seed != "" ) )
+               else if( ( access != c_admin )
+                && ( ( this.seed != "" ) || ( extra != "" ) ) )
                {
                   var seed = this.seed;
 
@@ -530,7 +539,9 @@ class CIYAM
 
                   if( pos > 0 )
                      access = seed.substring( pos + 1 );
-                  else if( extra != "" )
+
+                  if( ( extra != "" )
+                   && ( access.substr( 0, 1 ) != "?" ) )
                      access = extra;
 
                   this.seed = "";
