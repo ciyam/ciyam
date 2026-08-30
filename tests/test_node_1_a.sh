@@ -137,7 +137,7 @@ else
 
  echo ""
  echo "Connect using 22222:test with 'test' (after suggestion)."
- node ../webui/ciyam.js "" 22222:test "" "" test
+ node ../webui/ciyam.js "" 22222:test $device "" test
 
  echo ""
  echo "Attempt to update password for 11111 to 'test' as 22222."
@@ -158,7 +158,7 @@ else
 
  echo ""
  echo "Connect using 33333:testing with 'test' and list users"
- node ../webui/ciyam.js "" 33333:testing "" "" test
+ node ../webui/ciyam.js "" 33333:testing $device "" test
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 33333 $device "" test
 
  echo ""
@@ -185,7 +185,7 @@ else
 
  echo ""
  echo "Connect using xxxxx:test-x with 'test' then list users."
- node ../webui/ciyam.js "" xxxxx:test-x "" "" test
+ node ../webui/ciyam.js "" xxxxx:test-x $device "" test
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
 
  echo ""
