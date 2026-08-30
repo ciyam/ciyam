@@ -1094,6 +1094,9 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
                else if( cmd_info.cmd == c_cmd_verb_employ )
                   await ciyam.employ_unlock_key( cmd_info.key, console.log );
             }
+
+            if( ciyam.error != "" )
+               console.log( "Error: " + ciyam.error );
          }
       }
 
