@@ -1378,7 +1378,10 @@ void http_request_handler::on_start( )
          }
          else if( !error.empty( ) )
          {
-            msleep( c_error_response_delay );
+            // NOTE: For regression tests setting the system variable
+            // "@no_http_delays" is used for skipping "error delays".
+            if( !has_system_variable( e_special_var_no_http_delays ) )
+               msleep( c_error_response_delay );
 
             if( !is_json_output )
                error = "Error: " + error;
