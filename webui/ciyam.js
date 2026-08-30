@@ -8,12 +8,16 @@ const c_admin = "admin";
 const c_def_key_len = 11;
 const c_sess_id_len = 20;
 
+const c_home_room = "0000000";
+
 const c_node_cmd_users = "users";
+const c_node_cmd_messages = "messages";
 const c_node_cmd_unlock_keys = "unlock-keys";
 
 const c_cmd_verb_create = "create";
 const c_cmd_verb_delete = "delete";
 const c_cmd_verb_employ = "employ";
+const c_cmd_verb_review = "review";
 const c_cmd_verb_update = "update";
 
 const c_var_name_access = "ACCESS";
@@ -37,8 +41,10 @@ class CIYAM
       if( is_quiet != true )
          console.log( "CIYAM [" + host_info + "]" );
 
+      this.room = "";
       this.seed = "";
 
+      this.test = false;
       this.debug = false;
 
       this.error = "";
@@ -72,6 +78,7 @@ class CIYAM
       this.connect_status = "";
 
       this.users = [ ];
+      this.messages = [ ];
    }
 
    static encode_base64( str )
@@ -487,10 +494,14 @@ class CIYAM
 
          var url = "";
 
-         if( this.device == "" )
+         if( ( this.device == "" ) || ( access.length > 5 ) )
          {
-            url = this.get_cws_url( )
-             + "/devices?access=" + this.access + "&format=" + this.format_type;
+            url = this.get_cws_url( ) + "/devices?access=" + this.access;
+
+            if( this.device != "" )
+               url += "&device=" + this.device;
+
+            url += "&format=" + this.format_type;
 
             await this.fetch( url, "POST", this.at_connect.bind( this ) );
 
@@ -537,8 +548,12 @@ class CIYAM
                {
                   var credentials = access + ":" + this.hash_combined( passwd );
 
-                  url = this.get_cws_url( ) + "/devices?access=" + this.access
-                   + "&format=" + this.format_type + "&passwd=" + CIYAM.encode_base64_url( credentials );
+                  if( this.device == "" )
+                     url = this.get_cws_url( ) + "/devices?access=" + this.access;
+                  else
+                     url = this.get_cws_url( ) + "/sessions?access=" + this.access + "&device=" + this.device;
+
+                  url +="&format=" + this.format_type + "&passwd=" + CIYAM.encode_base64_url( credentials );
 
                   if( this.seed != "" )
                      url += "&request=" + this.seed;
@@ -701,6 +716,104 @@ class CIYAM
       }
    }
 
+   at_fetch_messages( response )
+   {
+      if( this.format_type == c_format_type_text )
+      {
+         if( this.user_callback != null )
+            this.user_callback( response );
+      }
+      else
+      {
+         const obj = JSON.parse( response );
+
+         if( obj.error == null )
+         {
+            if( obj.all_messages != null )
+            {
+               this.users.length = 0;
+               this.messages.length = 0;
+
+               for( var i = 0; i < obj.all_messages.length; i++ )
+               {
+                  if( i == 0 )
+                  {
+                     var all_users = obj.all_messages[ i ];
+
+                     var user_entries = all_users.split( " " );
+
+                     for( var j = 0; j < user_entries.length; j++ )
+                     {
+                        var user_info = user_entries[ j ];
+
+                        var pos = user_info.indexOf( "+" );
+
+                        if( pos > 0 )
+                        {
+                           var name = user_info.substr( 0, pos );
+                           var count = user_info.substr( pos + 1 );
+
+                           this.users.push( { name: name, count: count } );
+                        }
+                     }
+                  }
+                  else
+                  {
+                     var message = obj.all_messages[ i ];
+
+                     var pos = message.indexOf( " " );
+
+                     if( pos > 0 )
+                     {
+                        var when = message.substr( 0, pos );
+                        var payload = message.substr( pos + 1 );
+
+                        // NOTE: For test purposes just pad the array offset
+                        // (so that output can be used in regression tests).
+                        if( this.test )
+                           when = String( i ).padStart( 13, "0" );
+
+                        this.messages.push( { when: when, payload: payload } );
+                     }
+                  }
+               }
+
+               if( this.user_callback != null )
+               {
+                  this.user_callback( "{\"room\":\"" + this.room + "\"}" );
+                  this.user_callback( JSON.stringify( this.users, null, 2 ) );
+                  this.user_callback( JSON.stringify( this.messages, null, 2 ) );
+               }
+            }
+         }
+         else
+            this.error = obj.error;
+      }
+   }
+
+   async fetch_messages( room, callback )
+   {
+      if( this.sessid == "" )
+         callback( "Error: No current session exists." );
+      else
+      {
+         this.user_callback = callback;
+
+         var url = this.get_cws_url( ) + "/messages/" + room
+          + "?access=" + this.access + "&device=" + this.device
+          + "&format=" + this.format_type + "&session=" + this.sessid;
+
+         var old_room = this.room;
+
+         this.room = room;
+
+         await this.fetch( url, "GET", this.at_fetch_messages.bind( this ) )
+
+         if( this.error != null )
+            this.room = old_room;
+      }
+   }
+
    async create_user( options, callback )
    {
       if( this.sessid == "" )
@@ -850,14 +963,17 @@ function ciyam_node_parse_command( info, command, cmd_info )
    }
 }
 
-async function ciyam_node( host, access, device, hashed, passwd, debug, quiet )
+async function ciyam_node( host, access, device, hashed, passwd, test, debug, quiet )
 {
    if( debug )
       console.log( "ciyam_node" );
 
-   var ciyam = new CIYAM( host, true, quiet );
+   var ciyam = new CIYAM( host, true, ( test || quiet ) );
 
    ciyam.node_crypto = require( "crypto" );
+
+   if( test )
+      ciyam.test = true;
 
    if( debug )
    {
@@ -866,7 +982,7 @@ async function ciyam_node( host, access, device, hashed, passwd, debug, quiet )
       console.log( ciyam.get_cws_url( ) );
    }
 
-   if( !quiet )
+   if( !test && !quiet )
       await ciyam.fetch( ciyam.get_system_url( ) + ciyam.get_query_parameters( ), "GET", console.log );
 
    if( access == "" )
@@ -876,7 +992,10 @@ async function ciyam_node( host, access, device, hashed, passwd, debug, quiet )
    {
       await ciyam.connect( access, device, hashed, passwd, console.log, debug );
 
-      if( !quiet && ( ciyam.connect_status != "" ) )
+      if( test && ( device != ciyam.device ) )
+         console.log( ciyam.device );
+
+      if( !test && !quiet && ( ciyam.connect_status != "" ) )
       {
          console.log( ciyam.connect_status );
 
@@ -916,6 +1035,15 @@ async function ciyam_node( host, access, device, hashed, passwd, debug, quiet )
                   else if( cmd_info.cmd == c_cmd_verb_update )
                      await ciyam.update_user( cmd_info.key, cmd_info.args, console.log );
                }
+               else if( command == c_node_cmd_messages )
+                  await ciyam.fetch_messages( c_home_room, console.log );
+               else if( command.indexOf( c_node_cmd_messages + " " ) == 0 )
+               {
+                  ciyam_node_parse_command( command, c_node_cmd_messages, cmd_info );
+
+                  if( cmd_info.cmd == c_cmd_verb_review )
+                     await ciyam.fetch_messages( cmd_info.key, console.log );
+               }
                else if( command.indexOf( c_node_cmd_unlock_keys + " " ) == 0 )
                {
                   ciyam_node_parse_command( command, c_node_cmd_unlock_keys, cmd_info );
@@ -927,8 +1055,11 @@ async function ciyam_node( host, access, device, hashed, passwd, debug, quiet )
                }
             }
          }
+      }
 
-         if( quiet )
+      if( ciyam.sessid != "" )
+      {
+         if( test || quiet )
             await ciyam.disconnect( );
          else
             await ciyam.disconnect( console.log );
@@ -943,6 +1074,14 @@ if( typeof process !== "undefined" )
    if( process.argv[ offset ] != null )
    {
       var host = "http://localhost:13031";
+
+      var test = false;
+
+      if( process.argv[ offset ] == "-test" )
+      {
+         ++offset;
+         test = true;
+      }
 
       var debug = false;
 
@@ -980,6 +1119,6 @@ if( typeof process !== "undefined" )
       if( process.argv[ offset + 4 ] != null )
          passwd = process.argv[ offset + 4 ];
 
-      ciyam_node( host, access, device, hashed, passwd, debug, quiet );
+      ciyam_node( host, access, device, hashed, passwd, test, debug, quiet );
    }
 }
