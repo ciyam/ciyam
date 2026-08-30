@@ -1,11 +1,5 @@
 Create system identity and 'admin' access with 'none'.
-CIYAM [http://localhost:13031]
-{"name":"*CIYAM*", "version":"0.0.0"}
-[adm]@admin
-ciyam.username = admin
-ciyam.is_admin = true
-ciyam.is_locked = false
-{"message":"Session terminated."}
+(created device - length is 15)
 
 Update 'admin' access password to 'test' (after restore).
 CIYAM [http://localhost:13031]
