@@ -499,6 +499,22 @@ class CIYAM
          if( ( access.substr( 0, 1 ) <= '0' ) || ( access.substr( 0, 1 ) >= '9' ) )
             secret_access = true;
 
+         if( !secret_access && ( this.seed == "" )
+          && ( this.device != "" ) && ( access.length == 5 ) )
+         {
+            url = this.get_cws_url( )
+             + "/sessions?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type;
+
+            await this.fetch( url, "POST", this.at_connect.bind( this ) );
+
+            var seed = this.seed;
+
+            var pos = seed.indexOf( " " );
+
+            if( pos > 0 )
+               extra = seed.substring( pos + 1 );
+         }
+
          if( ( this.device == "" ) || ( extra != "" ) || ( access.length > 5 ) )
          {
             if( secret_access || ( this.device == "" ) || ( extra == "" ) )
