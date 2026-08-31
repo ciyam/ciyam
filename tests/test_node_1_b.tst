@@ -53,7 +53,7 @@ Review messages in room 0000001.
 [
   {
     "when": "0000000000001",
-    "payload": "admin  testing..."
+    "payload": "(no new messages)"
   }
 ]
 Create a new user '11111' named 'test-1'.
@@ -81,6 +81,24 @@ ciyam.is_locked = false
   {
     "when": "0000000000001",
     "payload": "test-1 #0000001 1/1 Administration"
+  }
+]
+Review messages in room 0000001 for 'test-1'.
+{"room":"0000001"}
+[
+  {
+    "name": "admin",
+    "count": "0"
+  },
+  {
+    "name": "test-1",
+    "count": "1"
+  }
+]
+[
+  {
+    "when": "0000000000001",
+    "payload": "test-1 :joined"
   }
 ]
 Create an initial message for 'test-1' and output entrance room details.
@@ -133,11 +151,7 @@ Review messages in room 0000001 for 'test-1'.
 [
   {
     "when": "0000000000001",
-    "payload": "test-1 :joined"
-  },
-  {
-    "when": "0000000000002",
-    "payload": "test-1  test-1 here..."
+    "payload": "(no new messages)"
   }
 ]
 Output the entrance room details for 'admin'.
@@ -173,14 +187,10 @@ Review messages in room 0000001 for 'admin'.
 [
   {
     "when": "0000000000001",
-    "payload": "admin  testing..."
-  },
-  {
-    "when": "0000000000002",
     "payload": "test-1 :joined"
   },
   {
-    "when": "0000000000003",
+    "when": "0000000000002",
     "payload": "test-1  test-1 here..."
   }
 ]
@@ -213,6 +223,28 @@ ciyam.is_locked = false
   {
     "when": "0000000000001",
     "payload": "test-2 #0000001 1/1 Administration"
+  }
+]
+Review messages in room 0000001 for 'test-2'.
+{"room":"0000001"}
+[
+  {
+    "name": "admin",
+    "count": "0"
+  },
+  {
+    "name": "test-1",
+    "count": "0"
+  },
+  {
+    "name": "test-2",
+    "count": "1"
+  }
+]
+[
+  {
+    "when": "0000000000001",
+    "payload": "test-2 :joined"
   }
 ]
 Create an initial message for 'test-2' and output entrance room details.
@@ -277,11 +309,7 @@ Review messages in room 0000001 for 'test-2'.
 [
   {
     "when": "0000000000001",
-    "payload": "test-2 :joined"
-  },
-  {
-    "when": "0000000000002",
-    "payload": "test-2  test-2 here..."
+    "payload": "(no new messages)"
   }
 ]
 Output entrance room details for 'admin'.
@@ -325,22 +353,10 @@ Review messages in room 0000001 for 'admin'.
 [
   {
     "when": "0000000000001",
-    "payload": "admin  testing..."
-  },
-  {
-    "when": "0000000000002",
-    "payload": "test-1 :joined"
-  },
-  {
-    "when": "0000000000003",
-    "payload": "test-1  test-1 here..."
-  },
-  {
-    "when": "0000000000004",
     "payload": "test-2 :joined"
   },
   {
-    "when": "0000000000005",
+    "when": "0000000000002",
     "payload": "test-2  test-2 here..."
   }
 ]

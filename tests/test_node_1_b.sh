@@ -34,6 +34,9 @@ else
  node ../webui/ciyam.js "" 11111 $device "" none
  env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 11111 $device "" none
 
+ echo "Review messages in room 0000001 for 'test-1'."
+ env CIYAM_NODE_COMMAND="messages review 0000001" node ../webui/ciyam.js -test "" 11111 $device "" none
+
  echo "Create an initial message for 'test-1' and output entrance room details."
  env CIYAM_NODE_COMMAND="messages create 0000001 text=test-1 here..." node ../webui/ciyam.js -test "" 11111 $device "" none
  env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 11111 $device "" none
@@ -53,6 +56,9 @@ else
  echo "Connect using 22222 with 'none' and output entrance room details."
  node ../webui/ciyam.js "" 22222 $device "" none
  env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 22222 $device "" none
+
+ echo "Review messages in room 0000001 for 'test-2'."
+ env CIYAM_NODE_COMMAND="messages review 0000001" node ../webui/ciyam.js -test "" 22222 $device "" none
 
  echo "Create an initial message for 'test-2' and output entrance room details."
  env CIYAM_NODE_COMMAND="messages create 0000001 text=test-2 here..." node ../webui/ciyam.js -test "" 22222 $device "" none
