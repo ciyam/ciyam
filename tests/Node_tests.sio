@@ -23,6 +23,12 @@
       <output>generate
      </test_step>
      <test_step/>
+      <name>b
+      <exec>$$TESTS_DIR/test_node_1_b.sh
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
       <name>*term*
       <exec>$$TESTS_DIR/test_node_term.sh
       <input>false
