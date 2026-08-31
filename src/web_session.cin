@@ -55,6 +55,10 @@ IRC_ROOM=$ENTRANCE_ROOM
 ;
 IRC_ALLOWED=
 ;
+.system_variable @irc_test
+@ifdef $OUTPUT
+IRC_ALLOWED=1
+@else
 ; NOTE: If just started (or a reload has just taken place)
 ; then may need to wait for a second for the "auto script"
 ; session to have executed "irc_store_or_restore" (use the
@@ -81,6 +85,8 @@ IRC_ALLOWED=
 @endif
 @endif
 @endif
+@endif
+;
 @endif
 ;
 @endif
