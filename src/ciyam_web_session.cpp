@@ -803,7 +803,7 @@ const sio_graph& get_meta_data( const string& model_name )
    return *g_model_meta_data[ model_name ];
 }
 
-void process_messages_response( string& response, bool needs_decoding, bool is_json_format )
+void process_messages_response( string& response, bool needs_decoding, bool is_json_format, const string& room_from )
 {
    vector< string > messages;
 
@@ -872,7 +872,7 @@ void process_messages_response( string& response, bool needs_decoding, bool is_j
          }
 
          if( had_users && ( messages.size( ) == 1 ) )
-            messages.push_back( "(no new messages)" );
+            messages.push_back( room_from + " (no new messages)" );
       }
 
       if( !is_json_format )
@@ -2481,6 +2481,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      {
                         found = true;
 
+                        string room_from;
+
                         bool allowed_command = true;
 
                         bool is_adding_room = false;
@@ -2620,8 +2622,15 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                        if( is_post_request )
                                           from = to_string( now );
 
+                                       if( from.empty( ) )
+                                          from = get_system_variable( var_prefix + access + "." + device + "." + room );
+
                                        if( !from.empty( ) )
+                                       {
+                                          room_from = from;
+
                                           request_and_args += "session_variable @irc_start_point_" + room + ' ' + from + '\n';
+                                       }
                                     }
 
                                     // NOTE: Uses an underbar prefix for the "room" to prevent any padding being
@@ -2765,7 +2774,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     if( is_user_info_request )
                                        process_user_info_response( session, response );
                                     else if( !is_adding_room && is_messages_request )
-                                       process_messages_response( response, !is_special_request, is_json_output );
+                                       process_messages_response( response, !is_special_request, is_json_output, room_from );
                                  }
 
                                  break;
