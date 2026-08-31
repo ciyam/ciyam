@@ -872,7 +872,14 @@ void process_messages_response( string& response, bool needs_decoding, bool is_j
          }
 
          if( had_users && ( messages.size( ) == 1 ) )
-            messages.push_back( room_from + " (no new messages)" );
+         {
+            string time_str( room_from );
+
+            if( time_str.empty( ) )
+               time_str = string( 13, '0' );
+
+            messages.push_back( time_str + " (no new messages)" );
+         }
       }
 
       if( !is_json_format )
@@ -2594,6 +2601,36 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     if( room == c_web_session_default_room_number )
                                     {
                                        request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"\n";
+
+                                       // NOTE: If no "from" has been specified will instead use the relevant system variable values.
+                                       if( from.empty( ) )
+                                       {
+                                          string all_start_point_vars( get_system_variable( var_prefix + access + "." + device + ".0*" ) );
+
+                                          if( !all_start_point_vars.empty( ) )
+                                          {
+                                             vector< string > start_point_vars;
+
+                                             split( all_start_point_vars, start_point_vars, '\n' );
+
+                                             for( size_t i = 0; i < start_point_vars.size( ); i++ )
+                                             {
+                                                string next( start_point_vars[ i ] );
+
+                                                string::size_type pos = next.find( ' ' );
+
+                                                string name( next.substr( 0, pos ) );
+                                                string tval( next.substr( pos + 1 ) );
+
+                                                pos = name.rfind( '.' );
+
+                                                if( !from.empty( ) )
+                                                   from += ',';
+
+                                                from += name.substr( pos + 1 ) + '=' + tval;
+                                             }
+                                          }
+                                       }
 
                                        if( !from.empty( ) )
                                           request_and_args += "session_variable @irc_start_points " + from + '\n';
