@@ -103,7 +103,7 @@ else
 
  echo ""
  echo "Connect using 11111 with 'none' and list users."
- node ../webui/ciyam.js "" 11111 "" "" none
+ node ../webui/ciyam.js "" 11111 $device "" none
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 11111 $device "" none
 
  echo ""
