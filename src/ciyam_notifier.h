@@ -36,6 +36,7 @@ class ciyam_notifier : public thread
 
    std::string watch_root;
    std::string target_variable;
+   std::string target_file_name;
    std::string initial_selections;
    std::string paths_and_time_stamps;
 };

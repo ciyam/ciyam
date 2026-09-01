@@ -114,6 +114,15 @@ ciyam_notifier::ciyam_notifier( const string& watch_root,
       target_variable = watch_root.substr( pos + 1 );
 
       this->watch_root.erase( pos );
+
+      pos = target_variable.find( ':' );
+
+      if( pos != string::npos )
+      {
+         target_file_name = this->watch_root + '/' + target_variable.substr( pos + 1 );
+
+         target_variable.erase( pos );
+      }
    }
 
    if( !target_variable.empty( )
@@ -854,7 +863,20 @@ void ciyam_notifier::on_start( )
                   if( !skip )
                   {
                      if( !target_variable.empty( ) )
-                        set_system_variable( target_variable, c_true_value );
+                     {
+                        bool ignore = false;
+
+                        if( !target_file_name.empty( ) )
+                        {
+                           if( ( value == c_attrib )
+                            || ( value == c_delete ) || ( var_name != target_file_name )
+                            || !file_exists( target_file_name ) || !file_size( target_file_name ) )
+                              ignore = true;
+                        }
+
+                        if( !ignore )
+                           set_system_variable( target_variable, c_true_value );
+                     }
                      else
                      {
                         if( !recurse )
