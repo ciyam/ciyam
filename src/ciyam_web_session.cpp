@@ -2877,7 +2877,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                               if( !response.empty( ) && is_json_output )
                               {
-                                 if( is_module_info_request )
+                                 if( is_adding_room )
+                                    response = "{\"new_room\":\"" + escaped_json( response ) + "\"}";
+                                 else if( is_module_info_request )
                                  {
                                     vector< string > modules;
 
