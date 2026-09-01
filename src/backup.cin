@@ -3,16 +3,17 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-BACKUP_DIR_OR_FILE=
+FILE_SUFFIX=
+BACKUP_DIRECTORY=
 ;
 .system_variable @backup_files
 @ifdef $OUTPUT
-BACKUP_DIR_OR_FILE=$OUTPUT
+BACKUP_DIRECTORY=$OUTPUT
 ;
 .system_variable @backup_target_file
 @ifdef $OUTPUT
-BACKUP_DIR_OR_FILE=$BACKUP_DIR_OR_FILE/$OUTPUT
+FILE_SUFFIX=:$OUTPUT
 @endif
 ;
-.system_notifier -start $BACKUP_DIR_OR_FILE=@backup_needed
+.system_notifier -start $BACKUP_DIRECTORY=@backup_needed$FILE_SUFFIX
 @endif
