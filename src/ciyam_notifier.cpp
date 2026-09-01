@@ -495,6 +495,12 @@ void ciyam_notifier::on_start( )
                            }
                         }
                      }
+                     else
+                     {
+                        if( !target_file_name.empty( )
+                         && ( next_event.find( "|close_write|" ) != string::npos ) )
+                           reportable_event = true;
+                     }
                   }
                   else if( next_event[ 0 ] == '*' )
                   {
@@ -868,8 +874,8 @@ void ciyam_notifier::on_start( )
 
                         if( !target_file_name.empty( ) )
                         {
-                           if( ( value == c_attrib )
-                            || ( value == c_delete ) || ( var_name != target_file_name )
+                           if( ( value == c_attrib ) || ( value == c_delete )
+                            || ( value == c_notifier_modified ) || ( var_name != target_file_name )
                             || !file_exists( target_file_name ) || !file_size( target_file_name ) )
                               ignore = true;
                         }
