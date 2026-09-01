@@ -57,6 +57,7 @@ class CIYAM
 
       this.var_map = new Map( );
 
+      this.new_room = "";
       this.username = "";
 
       this.host_info = host_info;
@@ -820,7 +821,9 @@ class CIYAM
 
          if( obj.error == null )
          {
-            if( obj.all_messages != null )
+            if( obj.new_room != null )
+               this.new_room = obj.new_room;
+            else if( obj.all_messages != null )
             {
                this.users.length = 0;
                this.messages.length = 0;
@@ -920,6 +923,8 @@ class CIYAM
             url += "&options=" + encodeURIComponent( options );
 
          url += "&session=" + this.sessid;
+
+         this.new_room = "";
 
          var old_room = this.room;
 
@@ -1097,7 +1102,12 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
                ciyam_node_parse_command( command, c_node_cmd_messages, cmd_info );
 
                if( cmd_info.cmd == c_cmd_verb_create )
+               {
                   await ciyam.create_message( cmd_info.key, cmd_info.args, console.log );
+
+                  if( test && ( ciyam.new_room != "" ) )
+                     console.log( ciyam.new_room );
+               }
                else if( cmd_info.cmd == c_cmd_verb_review )
                   await ciyam.fetch_messages( cmd_info.key, console.log );
             }
