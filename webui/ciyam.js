@@ -74,6 +74,8 @@ class CIYAM
       this.is_admin = false;
       this.is_locked = false;
 
+      this.user_token = "";
+
       this.lock_source = 0;
 
       this.node_crypto = null;
@@ -751,12 +753,37 @@ class CIYAM
       }
    }
 
+   at_create_user( response )
+   {
+      if( this.format_type == c_format_type_text )
+      {
+         if( this.user_callback != null )
+            this.user_callback( response );
+      }
+      else
+      {
+         const obj = JSON.parse( response );
+
+         if( obj.error == null )
+         {
+            if( obj.token != null )
+               this.user_token = obj.token;
+         }
+         else
+            this.error = obj.error;
+      }
+   }
+
    async create_user( options, callback )
    {
       if( this.sessid == "" )
          callback( "Error: No current session exists." );
       else
       {
+         this.user_callback = callback;
+
+         this.user_token = "";
+
          var url = this.get_cws_url( ) + "/users?access=" + this.access
           + "&device=" + this.device + "&format=" + this.format_type;
 
@@ -765,7 +792,7 @@ class CIYAM
 
          url += "&session=" + this.sessid;
 
-         await this.fetch( url, "POST", callback )
+         await this.fetch( url, "POST", this.at_create_user.bind( this ) )
       }
    }
 
@@ -1096,7 +1123,12 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
                ciyam_node_parse_command( command, c_node_cmd_users, cmd_info );
 
                if( cmd_info.cmd == c_cmd_verb_create )
+               {
                   await ciyam.create_user( cmd_info.args, console.log );
+
+                  if( test && ( ciyam.user_token != "" ) )
+                     console.log( ciyam.user_token );
+               }
                else if( cmd_info.cmd == c_cmd_verb_delete )
                   await ciyam.delete_user( cmd_info.key, console.log );
                else if( cmd_info.cmd == c_cmd_verb_update )
