@@ -789,7 +789,12 @@ void http_request_handler::on_start( )
                if( !is_json_output )
                   response = data;
                else
-                  response = "{\"data\":\"" + escaped_json( data ) + "\"}";
+               {
+                  if( header_info[ c_http_content_type_header ] == c_http_content_type_application_json )
+                     response = "{\"data\":" + data + "}";
+                  else
+                     response = "{\"data\":\"" + escaped_json( data ) + "\"}";
+               }
             }
             else if( http_document == c_upload_endpoint )
             {
