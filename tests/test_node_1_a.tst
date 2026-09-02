@@ -1,7 +1,29 @@
-Create system identity and 'admin' access with 'none'.
+Create external system identity and 'admin' access with 'none'.
 (created device - length is 15)
 
-Update 'admin' access password to 'test' (after restore).
+Connect using ADMIN with 'none'.
+CIYAM [http://localhost:13031]
+{"name":"CIYAM", "version":"0.0.0"}
+[adm]-2@admin
+ciyam.username = admin
+ciyam.is_admin = true
+ciyam.is_locked = true
+ciyam.lock_source => 2
+{"message":"Session terminated."}
+
+Employ master password as an unlock key.
+{"response":"[okay]"}
+
+Connect using ADMIN with 'none'.
+CIYAM [http://localhost:13031]
+{"name":"CIYAM", "version":"0.0.0"}
+[adm]@admin
+ciyam.username = admin
+ciyam.is_admin = true
+ciyam.is_locked = false
+{"message":"Session terminated."}
+
+Update 'admin' access password to 'test' and change identity to internal (after restore).
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [adm]@admin
@@ -232,9 +254,9 @@ Attempt to delete user with access pin '11111' again then list users.
 Attempt to connect using 11111 with 'none'.
 Error: This web session is not valid (or has expired).
 
-Create 'xxxxx' token for pin '12345'.
+Create 'xxx-xxxx-xxx' token for pin '12345'.
 
-Connect using xxxxx:test-x with 'test' then list users.
+Connect using xxx-xxxx-xxx:test-x with 'test' then list users.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [std]@test-x

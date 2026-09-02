@@ -18,16 +18,30 @@ check_if_started( )
 if [ ! -f /tmp/ciyam/.test_node ]; then
  echo "Error: Did not find '/tmp/ciyam/.test_node' (testing was skipped)."
 else
- echo "Create system identity and 'admin' access with 'none'."
- device=$(node ../webui/ciyam.js -test "" admin de604cee0755a3d81944ea96aed12681 "" none)
+ echo "Create external system identity and 'admin' access with 'none'."
+ device=$(node ../webui/ciyam.js -test "" admin df4b24aeadd7a6762a12d1f29dcd0eaccf8b2496189ee6ea1304704862822d52873c0e69ed11f90d90487e9c32d8fce7e54e96d59f2a8f3abd10e76c11c6202e686190cd "" none)
  echo "(created device - length is ${#device})"
+
+ ADMIN=$(<.web_access_admin)
+
+ echo ""
+ echo "Connect using ADMIN with 'none'."
+ node ../webui/ciyam.js "" $ADMIN $device "" none
+
+ echo ""
+ echo "Employ master password as an unlock key."
+ env CIYAM_NODE_COMMAND="unlock-keys employ need_to_use_a_very_good_password" node ../webui/ciyam.js -quiet "" $ADMIN $device "" none
+
+ echo ""
+ echo "Connect using ADMIN with 'none'."
+ node ../webui/ciyam.js "" $ADMIN $device "" none
 
  touch ciyam_base.restore ciyam_server.stop
 
  check_if_started
 
  echo ""
- echo "Update 'admin' access password to 'test' (after restore)."
+ echo "Update 'admin' access password to 'test' and change identity to internal (after restore)."
  node ../webui/ciyam.js "" de604cee0755a3d81944ea96aed12681 $device "" test
 
  echo ""
@@ -180,12 +194,12 @@ else
  node ../webui/ciyam.js -quiet "" 11111 "" "" none
 
  echo ""
- echo "Create 'xxxxx' token for pin '12345'."
- echo -n "12345" > .web_access_xxxxx
+ echo "Create 'xxx-xxxx-xxx' token for pin '12345'."
+ echo -n "12345" > .web_xxx-xxxx-xxx
 
  echo ""
- echo "Connect using xxxxx:test-x with 'test' then list users."
- node ../webui/ciyam.js "" xxxxx:test-x $device "" test
+ echo "Connect using xxx-xxxx-xxx:test-x with 'test' then list users."
+ node ../webui/ciyam.js "" xxx-xxxx-xxx:test-x $device "" test
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
 
  echo ""
