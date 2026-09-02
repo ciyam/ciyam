@@ -62,6 +62,7 @@ const size_t c_cws_max_devices = 10;
 const size_t c_cws_seed_reserve = 120;
 
 const size_t c_cws_access_length = 5;
+const size_t c_cws_secret_length = 12;
 
 const size_t c_cws_device_length = 15;
 const size_t c_cws_device_replen = 7;
@@ -586,10 +587,20 @@ string create_access_token(
 
    bool suffix_supplied = !suffix.empty( );
 
+   size_t len = ( ptype == e_printable_type_numeric ) ? c_cws_access_length : c_cws_secret_length;
+
    for( size_t i = 0; i < c_max_token_create_attempts; i++ )
    {
       if( !suffix_supplied )
-         suffix = random_characters( 5, 0, ptype );
+      {
+         suffix = random_characters( len, 0, ptype );
+
+         if( suffix.length( ) == c_cws_secret_length )
+         {
+            suffix[ 3 ] = '-';
+            suffix[ 8 ] = '-';
+         }
+      }
 
       if( suffix == c_admin )
          continue;
@@ -713,7 +724,7 @@ bool has_web_session_access_token( const string& token,
       {
          if( !is_pin )
          {
-            string prefix( token_file.substr( 0, token_file.rfind( '_' ) ) );
+            string prefix( c_web_access_prefix );
 
             string suffix;
 
@@ -1256,6 +1267,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
    string access_file( prefix + access ); // i.e. ".web_access_<token>"
 
+   if( access.length( ) == c_cws_secret_length )
+      access_file = prefix.substr( 0, 5 ) + access; // i.e. ".web_<secret>"
+
    string pin;
 
    string access_seed;
@@ -1266,7 +1280,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
    bool is_identity_none = !has_identity( &is_locked );
 
-   bool is_identity_reset = ( access.length( ) > c_cws_access_length );
+   bool is_identity_reset = ( access.length( ) > c_cws_secret_length );
 
    // NOTE: Only permits an "identity reset" to occur
    // if the system identity has not yet been created
@@ -2235,7 +2249,12 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                            temp_umask tum( 077 );
 
-                           string access_token( create_access_token( prefix,
+                           string token_prefix( prefix );
+
+                           if( is_secret )
+                              token_prefix.erase( c_cws_access_length );
+
+                           string access_token( create_access_token( token_prefix,
                             ( !is_secret ? e_printable_type_numeric : e_printable_type_alpha_lower ), &pin ) );
 
                            if( !nominated_username.empty( ) )
