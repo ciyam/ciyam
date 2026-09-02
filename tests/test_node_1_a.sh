@@ -18,6 +18,9 @@ check_if_started( )
 if [ ! -f /tmp/ciyam/.test_node ]; then
  echo "Error: Did not find '/tmp/ciyam/.test_node' (testing was skipped)."
 else
+ echo "Initial basic check for node and 'ciyam.js'."
+ node ../webui/ciyam.js ""
+
  echo "Create external system identity and 'admin' access with 'none'."
  device=$(node ../webui/ciyam.js -test "" admin df4b24aeadd7a6762a12d1f29dcd0eaccf8b2496189ee6ea1304704862822d52873c0e69ed11f90d90487e9c32d8fce7e54e96d59f2a8f3abd10e76c11c6202e686190cd "" none)
  echo "(created device - length is ${#device})"

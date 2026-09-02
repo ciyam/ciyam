@@ -1,3 +1,7 @@
+Initial basic check for node and 'ciyam.js'.
+CIYAM [http://localhost:13031]
+{"name":"*CIYAM*", "version":"0.0.0"}
+{"data":"testing..."}
 Create external system identity and 'admin' access with 'none'.
 (created device - length is 15)
 
