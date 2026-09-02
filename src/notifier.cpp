@@ -288,8 +288,8 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
             else if( !file_name.empty( ) )
                remove_watch( p_impl->wd_watches[ wd ] + '/' + file_name );
          }
-         else if( !( mask & IN_ACCESS ) && !( mask & IN_OPEN )
-          && !( mask & IN_CLOSE_WRITE ) && !( mask & IN_CLOSE_NOWRITE ) )
+         else if( !( mask & IN_OPEN ) && !( mask & IN_ACCESS )
+          && !( mask & IN_MODIFY ) && !( mask & IN_CLOSE_NOWRITE ) )
             reportable_event = true;
 
          if( cookie && is_moved_dir_from )
