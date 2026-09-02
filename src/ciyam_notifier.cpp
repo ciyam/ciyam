@@ -48,6 +48,7 @@ const char* const c_attrib = "attrib";
 const char* const c_modify = "modify";
 const char* const c_moved_to = "moved_to";
 const char* const c_moved_from = "moved_from";
+const char* const c_close_write = "close_write";
 const char* const c_delete_self = "delete_self";
 
 inline void issue_error( const string& message, bool possibly_expected = false )
@@ -495,12 +496,6 @@ void ciyam_notifier::on_start( )
                            }
                         }
                      }
-                     else
-                     {
-                        if( !target_file_name.empty( )
-                         && ( next_event.find( "|close_write|" ) != string::npos ) )
-                           reportable_event = true;
-                     }
                   }
                   else if( next_event[ 0 ] == '*' )
                   {
@@ -849,6 +844,8 @@ void ciyam_notifier::on_start( )
                         }
                      }
                   }
+                  else if( value == c_close_write )
+                     value = c_notifier_modified;
 
                   if( extra.empty( ) )
                      extra = tagged_extra;
@@ -874,8 +871,8 @@ void ciyam_notifier::on_start( )
 
                         if( !target_file_name.empty( ) )
                         {
-                           if( ( value == c_attrib ) || ( value == c_delete )
-                            || ( value == c_notifier_modified ) || ( var_name != target_file_name )
+                           if( ( value == c_attrib ) || ( value == c_create )
+                            || ( value == c_delete ) || ( var_name != target_file_name )
                             || !file_exists( target_file_name ) || !file_size( target_file_name ) )
                               ignore = true;
                         }
