@@ -5,8 +5,12 @@
 
 const c_admin = "admin";
 
-const c_def_key_len = 11;
 const c_sess_id_len = 20;
+
+const c_pin_access_len = 5;
+
+const c_unlock_key_len = 11;
+const c_secret_access_len = 12;
 
 const c_home_room = "0000000";
 
@@ -102,7 +106,7 @@ class CIYAM
    static generate_base64_key( num )
    {
       if( num == null )
-         num = c_def_key_len;
+         num = c_unlock_key_len;
 
       var len = c_visible_ascii_chars.length - 1;
 
@@ -497,11 +501,11 @@ class CIYAM
 
          var secret_access = false;
 
-         if( ( access.substr( 0, 1 ) <= '0' ) || ( access.substr( 0, 1 ) >= '9' ) )
+         if( access.length == c_secret_access_len )
             secret_access = true;
 
          if( !secret_access && ( this.seed == "" )
-          && ( this.device != "" ) && ( access.length == 5 ) )
+          && ( this.device != "" ) && ( access.length == c_pin_access_len ) )
          {
             url = this.get_cws_url( )
              + "/sessions?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type;
@@ -516,7 +520,7 @@ class CIYAM
                extra = seed.substring( pos + 1 );
          }
 
-         if( ( this.device == "" ) || ( extra != "" ) || ( access.length > 5 ) )
+         if( ( this.device == "" ) || ( extra != "" ) || ( access.length > c_pin_access_len ) )
          {
             if( secret_access || ( this.device == "" ) || ( extra == "" ) )
             {
@@ -528,6 +532,9 @@ class CIYAM
                url += "&format=" + this.format_type;
 
                await this.fetch( url, "POST", this.at_connect.bind( this ) );
+
+               if( secret_access )
+                  access = this.access;
             }
 
             // NOTE: If "admin" or a seed is provided as "access" then
@@ -537,7 +544,7 @@ class CIYAM
             if( ( this.error == "" )
              && ( ( extra != "" ) || ( this.seed != "" ) || ( access != this.access ) ) )
             {
-               if( access.length > 5 )
+               if( access.length > c_pin_access_len )
                   access = c_admin;
                else if( ( access != c_admin )
                 && ( ( this.seed != "" ) || ( extra != "" ) ) )
