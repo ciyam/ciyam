@@ -97,7 +97,6 @@ Fetch the list of non-admin users.
 []
 
 Create a user with access pin '11111' then list users.
-{"token":"11111"}
 [
   {
     "pin": "11111",
@@ -106,7 +105,7 @@ Create a user with access pin '11111' then list users.
 ]
 
 Attempt to create another user with access pin '11111' then list users.
-{"error":"Access token '11111' has already been allocated."}
+Error: Access token '11111' has already been allocated.
 [
   {
     "pin": "11111",
@@ -157,7 +156,6 @@ ciyam.is_locked = false
 {"message":"Session terminated."}
 
 Create a user with access pin '22222' then list users.
-{"token":"22222"}
 [
   {
     "pin": "11111",
@@ -185,7 +183,6 @@ Attempt to update password for 11111 to 'test' as 22222.
 {"error":"Users can only be maintained by the administrator."}
 
 Create a user with access pin '33333' then list users.
-{"token":"33333"}
 [
   {
     "pin": "11111",
@@ -254,9 +251,11 @@ Attempt to delete user with access pin '11111' again then list users.
 Attempt to connect using 11111 with 'none'.
 Error: This web session is not valid (or has expired).
 
-Create 'xxx-xxxx-xxx' token for pin '12345'.
+Create a secret token using 10301.
 
-Connect using xxx-xxxx-xxx:test-x with 'test' then list users.
+Force 'the <secret>' token to be for pin '12345'.
+
+Connect using <secret>:test-x with 'test' then list users.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
 [std]@test-x
