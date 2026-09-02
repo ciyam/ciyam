@@ -194,12 +194,16 @@ else
  node ../webui/ciyam.js -quiet "" 11111 "" "" none
 
  echo ""
- echo "Create 'xxx-xxxx-xxx' token for pin '12345'."
- echo -n "12345" > .web_xxx-xxxx-xxx
+ echo "Create a secret token using 10301."
+ secret=$(env CIYAM_NODE_COMMAND="users create '' secret" node ../webui/ciyam.js -test "" 10301 "" "" none)
 
  echo ""
- echo "Connect using xxx-xxxx-xxx:test-x with 'test' then list users."
- node ../webui/ciyam.js "" xxx-xxxx-xxx:test-x $device "" test
+ echo "Force 'the <secret>' token to be for pin '12345'."
+ echo -n "12345" > .web_$secret
+
+ echo ""
+ echo "Connect using <secret>:test-x with 'test' then list users."
+ node ../webui/ciyam.js "" $secret:test-x $device "" test
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
 
  echo ""
