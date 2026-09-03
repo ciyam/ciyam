@@ -1348,12 +1348,18 @@ void import_package( const string& module,
                         instance_fetch( handle, "", key_value, &rc );
 
                      bool is_update = false;
+                     bool ignore_remove = false;
 
                      if( rc != e_instance_fetch_rc_okay )
                      {
-                        next_log_line = c_cmd_create;
+                        if( is_remove_op )
+                           ignore_remove = true;
+                        else
+                        {
+                           next_log_line = c_cmd_create;
 
-                        op_instance_create( handle, "", key_value, false );
+                           op_instance_create( handle, "", key_value, false );
+                        }
                      }
                      else if( new_only && !keys_created.count( key_value ) && !keys_updating.count( key_value ) )
                         // FUTURE: This message should be handled as a server string message.
@@ -1367,99 +1373,102 @@ void import_package( const string& module,
                         op_instance_update( handle, "", key_value, "", false );
                      }
 
-                     string class_id_to_log( mclass );
-
-                     if( !using_verbose_logging && ( class_id_to_log.find( module_id ) == 0 ) )
-                        class_id_to_log.erase( 0, module_id.length( ) );
-
-                     next_log_line += " " + uid + " " + dtm + " "
-                      + module_id + " " + class_id_to_log + " " + key_value + " \"";
-
-                     string log_field_value_pairs;
-
-                     for( size_t i = 1; i < fields.size( ); i++ )
+                     if( !ignore_remove )
                      {
-                        bool skip_field = false;
+                        string class_id_to_log( mclass );
 
-                        if( !ignore_skips )
+                        if( !using_verbose_logging && ( class_id_to_log.find( module_id ) == 0 ) )
+                           class_id_to_log.erase( 0, module_id.length( ) );
+
+                        next_log_line += " " + uid + " " + dtm + " "
+                         + module_id + " " + class_id_to_log + " " + key_value + " \"";
+
+                        string log_field_value_pairs;
+
+                        for( size_t i = 1; i < fields.size( ); i++ )
                         {
-                           for( size_t j = 0; j < base_class_info.size( ); j++ )
+                           bool skip_field = false;
+
+                           if( !ignore_skips )
                            {
-                              string next_cid = base_class_info[ j ].first;
-
-                              if( skip_fields.count( next_cid ) && skip_fields[ next_cid ].count( fields[ i ] ) )
+                              for( size_t j = 0; j < base_class_info.size( ); j++ )
                               {
-                                 if( skip_fields[ next_cid ][ fields[ i ] ].empty( ) )
-                                 {
-                                    skip_field = true;
+                                 string next_cid = base_class_info[ j ].first;
 
-                                    break;
+                                 if( skip_fields.count( next_cid ) && skip_fields[ next_cid ].count( fields[ i ] ) )
+                                 {
+                                    if( skip_fields[ next_cid ][ fields[ i ] ].empty( ) )
+                                    {
+                                       skip_field = true;
+
+                                       break;
+                                    }
                                  }
                               }
                            }
-                        }
 
-                        if( skip_field || ( fields[ i ] == c_ignore_field ) )
-                           continue;
+                           if( skip_field || ( fields[ i ] == c_ignore_field ) )
+                              continue;
 
-                        if( foreign_field_and_class_ids.count( fields[ i ] )
-                         && prefixed_class_keys[ foreign_field_and_class_ids[ fields[ i ] ] ].count( field_values[ i ] ) )
-                           field_values[ i ] = key_prefix + field_values[ i ];
+                           if( foreign_field_and_class_ids.count( fields[ i ] )
+                            && prefixed_class_keys[ foreign_field_and_class_ids[ fields[ i ] ] ].count( field_values[ i ] ) )
+                              field_values[ i ] = key_prefix + field_values[ i ];
 
-                        string value;
+                           string value;
 
-                        if( !using_verbose_logging )
-                        {
-                           string method_name_and_args( "get " );
-
-                           method_name_and_args += fields[ i ];
-
-                           value = execute_object_command( handle, "", method_name_and_args );
-                        }
-
-                        if( using_verbose_logging || value != field_values[ i ] )
-                        {
-                           string method_name_and_args( "set " );
-
-                           method_name_and_args += fields[ i ] + " ";
-
-                           method_name_and_args += "\"" + escaped( unescaped( field_values[ i ], "rn\r\n" ), "\"" ) + "\"";
-
-                           if( !log_field_value_pairs.empty( ) )
-                              log_field_value_pairs += ",";
-
-                           string field_id_to_log( fields[ i ] );
-
-                           if( !using_verbose_logging && field_id_to_log.find( module_id ) == 0 )
+                           if( !using_verbose_logging )
                            {
-                              field_id_to_log.erase( 0, module_id.length( ) );
+                              string method_name_and_args( "get " );
 
-                              if( field_id_to_log.find( class_id_to_log ) == 0 )
-                                 field_id_to_log.erase( 0, class_id_to_log.length( ) );
+                              method_name_and_args += fields[ i ];
+
+                              value = execute_object_command( handle, "", method_name_and_args );
                            }
 
-                           log_field_value_pairs += field_id_to_log
-                            + "=" + search_replace( field_values[ i ], "\\\\", "\\\\\\\\", ",", "\\\\," );
+                           if( using_verbose_logging || value != field_values[ i ] )
+                           {
+                              string method_name_and_args( "set " );
 
-                           execute_object_command( handle, "", method_name_and_args );
+                              method_name_and_args += fields[ i ] + " ";
+
+                              method_name_and_args += "\"" + escaped( unescaped( field_values[ i ], "rn\r\n" ), "\"" ) + "\"";
+
+                              if( !log_field_value_pairs.empty( ) )
+                                 log_field_value_pairs += ",";
+
+                              string field_id_to_log( fields[ i ] );
+
+                              if( !using_verbose_logging && field_id_to_log.find( module_id ) == 0 )
+                              {
+                                 field_id_to_log.erase( 0, module_id.length( ) );
+
+                                 if( field_id_to_log.find( class_id_to_log ) == 0 )
+                                    field_id_to_log.erase( 0, class_id_to_log.length( ) );
+                              }
+
+                              log_field_value_pairs += field_id_to_log
+                               + "=" + search_replace( field_values[ i ], "\\\\", "\\\\\\\\", ",", "\\\\," );
+
+                              execute_object_command( handle, "", method_name_and_args );
+                           }
                         }
-                     }
 
-                     next_log_line += log_field_value_pairs + "\"";
+                        next_log_line += log_field_value_pairs + "\"";
 
-                     if( !log_lines.empty( ) )
-                        log_lines += "\n";
+                        if( !log_lines.empty( ) )
+                           log_lines += "\n";
 
-                     log_lines += next_log_line;
+                        log_lines += next_log_line;
 
-                     op_instance_apply( handle, "", false );
+                        op_instance_apply( handle, "", false );
 
-                     if( !is_update && !for_remove )
-                     {
-                        keys_created.insert( make_pair( key_value, mclass ) );
+                        if( !is_update && !for_remove )
+                        {
+                           keys_created.insert( make_pair( key_value, mclass ) );
 
-                        if( ( original_key != key_value ) && search_replaces_used.count( original_key ) )
-                           map_appends.push_back( search_replaces_used[ original_key ] + "=" + key_value );
+                           if( ( original_key != key_value ) && search_replaces_used.count( original_key ) )
+                              map_appends.push_back( search_replaces_used[ original_key ] + "=" + key_value );
+                        }
                      }
                   }
 
