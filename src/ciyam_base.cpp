@@ -2863,7 +2863,11 @@ void perform_storage_op( storage_op op,
       {
 #ifndef USE_ODS_DB_FOR_META
          gtp_session->up_db.reset( new sql_db( p_new_handler->get_name( ), p_new_handler->get_name( ) ) );
+#else
+         if( p_new_handler->get_name( ) != c_meta_storage_name )
+            gtp_session->up_db.reset( new sql_db( p_new_handler->get_name( ), p_new_handler->get_name( ) ) );
 #endif
+
          ods::instance( new ods( *p_new_handler->get_ods( ) ) );
 
          created_ods_instance = true;
@@ -11875,10 +11879,12 @@ void storage_process_rewind( const string& label, map< string, string >& file_in
    if( okay && gtp_session->up_db.get( ) )
    {
       ifstream inpf( undo_sql.c_str( ) );
+
       if( !inpf )
          throw runtime_error( "unable to open file '" + undo_sql + "' for input in storage_process_rewind" );
 
       ofstream outf( new_undo_sql.c_str( ) );
+
       if( !outf )
          throw runtime_error( "unable to open file '" + new_undo_sql + "' for output in storage_process_rewind" );
 
@@ -11887,11 +11893,13 @@ void storage_process_rewind( const string& label, map< string, string >& file_in
       string block_marker( "#" + string( c_label_prefix ) + " " );
 
       string next;
+
       bool found_rewind_point = false;
 
       while( getline( inpf, next ) )
       {
          string::size_type pos = next.find( block_marker );
+
          if( pos == 0 )
          {
             if( !found_rewind_point )
