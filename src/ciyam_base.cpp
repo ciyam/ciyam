@@ -2861,8 +2861,9 @@ void perform_storage_op( storage_op op,
 
       try
       {
+#ifndef USE_ODS_DB_FOR_META
          gtp_session->up_db.reset( new sql_db( p_new_handler->get_name( ), p_new_handler->get_name( ) ) );
-
+#endif
          ods::instance( new ods( *p_new_handler->get_ods( ) ) );
 
          created_ods_instance = true;
@@ -12643,7 +12644,8 @@ void storage_bulk_finish( )
 
 void storage_lock_all_tables( )
 {
-   if( ods::instance( ) && gtp_session->p_storage_handler->get_ods( ) )
+   if( ods::instance( ) && gtp_session->up_db
+    && gtp_session->p_storage_handler->get_ods( ) )
    {
       if( ods::instance( )->get_transaction_level( ) )
          throw runtime_error( "cannot lock tables whilst a transaction is active" );
@@ -12700,7 +12702,8 @@ void storage_lock_all_tables( )
 
 void storage_unlock_all_tables( )
 {
-   if( ods::instance( ) && gtp_session->p_storage_handler->get_ods( ) )
+   if( ods::instance( ) && gtp_session->up_db
+    && gtp_session->p_storage_handler->get_ods( ) )
       exec_sql( *gtp_session->up_db, "UNLOCK TABLES" );
 }
 
@@ -14025,6 +14028,7 @@ void module_load( const string& module_name,
                      // NOTE: Restore the storage state (otherwise a SQL error can be lost
                      // due to the fact that the storage is left in an inconsistent state).
                      ods_file_system ofs( *p_ods );
+
                      handler.get_root( ).fetch_from_text_files( ofs );
 
                      throw;
@@ -14077,6 +14081,7 @@ void module_load( const string& module_name,
          catch( ... )
          {
             unload_module( module_name );
+
             throw;
          }
       }
