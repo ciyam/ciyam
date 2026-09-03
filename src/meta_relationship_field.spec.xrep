@@ -12,7 +12,9 @@
 
       string field_key( get_obj( ).get_key( ) + "_C" );
 
-      if( !is_destroy_locked_by_own_session( rel_field, field_key.c_str( ) ) )
+      if( !is_destroy_locked_by_own_session( get_obj( ).Child_Class( ) )
+       && !is_destroy_locked_by_own_session( get_obj( ).Parent_Class( ) )
+       && !is_destroy_locked_by_own_session( rel_field, field_key.c_str( ) ) )
       {
          if( is_create )
             rel_field.op_create( field_key );
