@@ -354,6 +354,43 @@ class ciyam_console_command_handler : public console_command_handler
    void preprocess_command_and_args( string& str, const string& cmd_and_args, bool /*skip_command_usage*/ );
 
    void process_custom_startup_option( size_t num, const string& option );
+
+   void handle_command_response( const std::string& response, bool is_special = false )
+   {
+      if( had_single_char_message )
+      {
+         if( !is_stdout_console( ) )
+            cout << endl;
+         else
+            progress.output_progress( "" );
+
+         had_single_char_message = false;
+      }
+
+      console_command_handler::handle_command_response( response, is_special );
+   }
+
+   void handle_progress_message( const string& message )
+   {
+      if( !is_stdout_console( ) )
+      {
+         if( message.length( ) )
+         {
+            cout << message;
+
+            if( message.length( ) != 1 )
+               cout << endl;
+         }
+         else if( had_single_char_message )
+         {
+            cout << endl;
+
+            had_single_char_message = false;
+         }
+      }
+      else
+         progress.output_progress( message );
+   }
 };
 
 string ciyam_console_command_handler::get_additional_command( )
@@ -1453,7 +1490,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                }
 
                // NOTE: If the response has no output then clear the OUTPUT environment variable.
-               if( is_first && response == string( c_response_okay ) )
+               if( is_first && ( response == string( c_response_okay ) ) )
                   set_environment_variable( c_env_var_output, "" );
 
                is_first = false;
@@ -1611,12 +1648,15 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   {
                      had_message = false;
 
-                     if( is_stdout_console( ) )
-                        progress.output_progress( "" );
-                     else if( had_single_char_message )
-                        handle_progress_message( "" );
+                     if( !get_is_quiet_command( ) )
+                     {
+                        if( is_stdout_console( ) )
+                           progress.output_progress( "" );
+                        else if( had_single_char_message )
+                           handle_progress_message( "" );
 
-                     had_single_char_message = false;
+                        had_single_char_message = false;
+                     }
                   }
 
                   if( is_message )
@@ -1699,7 +1739,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   if( had_not_found )
                      break;
                }
-               else
+               else if( !get_is_quiet_command( ) )
                {
                   if( had_message )
                   {
