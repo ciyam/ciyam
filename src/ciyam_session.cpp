@@ -140,6 +140,8 @@ constexpr const char* c_meta_module_id = "100";
 
 constexpr const char* c_passtotp_prefix = "passtotp.";
 
+constexpr const char* c_progress_prefix = "progress:";
+
 constexpr const char* c_rpc_password_hash_tmp_filename = "/tmp/ciyam/.rpc_password_hash";
 
 constexpr const char* c_unexpected_unknown_exception = "unexpected unknown exception caught";
@@ -9113,6 +9115,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string arg_1( get_parm_val( parameters, c_cmd_ciyam_session_test_arg_1 ) );
          string arg_2( get_parm_val( parameters, c_cmd_ciyam_session_test_arg_2 ) );
          string arg_3( get_parm_val( parameters, c_cmd_ciyam_session_test_arg_3 ) );
+
+         if( arg_1.find( c_progress_prefix ) == 0 )
+         {
+            arg_1.erase( 0, CONST_LENGTH( c_progress_prefix ) );
+
+            handler.output_progress( arg_1 );
+
+            if( arg_1.length( ) == 1 )
+               response.erase( );
+         }
 
          // NOTE: Dummy command for testing or prototyping.
          response = "arg_1 = " + arg_1 + "\narg_2 = " + arg_2 + "\narg_3 = " + arg_3;
