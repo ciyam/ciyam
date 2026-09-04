@@ -330,6 +330,8 @@ class ciyam_console_command_handler : public console_command_handler
    string append_prefix;
    string append_last_name;
 
+   string prior_progress;
+
    console_progress progress;
 
    deque< string > additional_commands;
@@ -357,7 +359,7 @@ class ciyam_console_command_handler : public console_command_handler
 
    void handle_command_response( const std::string& response, bool is_special = false )
    {
-      if( had_single_char_message )
+      if( !prior_progress.empty( ) || had_single_char_message )
       {
          if( !is_stdout_console( ) )
             cout << endl;
@@ -366,6 +368,8 @@ class ciyam_console_command_handler : public console_command_handler
 
          had_single_char_message = false;
       }
+
+      prior_progress.erase( );
 
       console_command_handler::handle_command_response( response, is_special );
    }
@@ -376,17 +380,19 @@ class ciyam_console_command_handler : public console_command_handler
       {
          if( message.length( ) )
          {
-            cout << message;
-
-            if( message.length( ) != 1 )
+            if( !prior_progress.empty( ) && ( message.length( ) > 1 ) )
                cout << endl;
+
+            cout << message;
          }
-         else if( had_single_char_message )
+         else if( !prior_progress.empty( ) || had_single_char_message )
          {
             cout << endl;
 
             had_single_char_message = false;
          }
+
+         prior_progress = message;
       }
       else
          progress.output_progress( message );
