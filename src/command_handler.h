@@ -179,6 +179,13 @@ class command_handler : public progress
 
    std::map< std::string, std::string > options;
 
+   protected:
+   void set_quiet_command( bool new_val ) { quiet_command = new_val; }
+
+   size_t get_num_commands( ) const { return command_dispatchers.size( ); }
+
+   const std::string& get_command_name( size_t num ) const { return command_items[ num ].dispatch_name; }
+
    virtual bool is_available_command( const std::string& /*command*/ ) const { return true; }
 
    virtual void perform_after_command_changes( ) { }
@@ -187,31 +194,22 @@ class command_handler : public progress
     char cmd_arg_separator, const std::string& usage, const std::string& description ) const;
 
    virtual void preprocess_command_and_args( std::string& str,
-    const std::string& cmd_and_args, bool skip_command_usage = false )
-   {
-      str = cmd_and_args;
-   }
+    const std::string& cmd_and_args, bool skip_command_usage = false ) { str = cmd_and_args; }
 
-   virtual void postprocess_command_and_args( const std::string& /*cmd_and_args*/ ) { }
+   virtual void postprocess_command_and_args( const std::string& cmd_and_args ) { }
 
    virtual bool is_special_command( const std::string& /*cmd_and_args*/ ) { return false; }
 
-   virtual void handle_special_command( const std::string& /*cmd_and_args*/ ) { }
+   virtual void handle_special_command( const std::string& cmd_and_args ) { }
 
    virtual void handle_unknown_command( const std::string& command, const std::string& cmd_and_args ) = 0;
    virtual void handle_invalid_command( const command_parser& parser, const std::string& cmd_and_args ) = 0;
 
    virtual void handle_command_response( const std::string& response, bool is_special = false ) { }
 
-   protected:
+   virtual void handle_progress_message( const std::string& message ) { output_progress( message ); }
+
    virtual std::string get_additional_command( ) { return std::string( ); }
-
-   void set_quiet_command( bool new_val ) { quiet_command = new_val; }
-
-   size_t get_num_commands( ) const { return command_dispatchers.size( ); }
-
-   const std::string& get_command_name( size_t num ) const { return command_items[ num ].dispatch_name; }
 };
 
 #endif
-
