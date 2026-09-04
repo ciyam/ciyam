@@ -7134,7 +7134,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   }
 
                   // NOTE: As recovery can take a long time issue "progress" messages to ensure that
-                  // client applications do not end up "timing out" waiting until the final response.
+                  // client applications do not end up "timed out" waiting until the final response.
                   if( ( time( 0 ) - ts ) >= 5 )
                   {
                      ts = time( 0 );
@@ -7239,6 +7239,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         handler.output_progress( GS( c_str_restoring_std_meta_records ) );
 
+                        in_trans = true;
+
+                        transaction_start( );
+
                         while( getline( std_inpf, std_next ) )
                         {
                            if( std_next.empty( ) )
@@ -7277,6 +7281,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                                   + "\nprocessing transaction log line #" + to_string( line ) + " with extra ==> " + extra_next );
                            }
                         }
+
+                        transaction_commit( );
+
+                        in_trans = false;
                      }
                      else
                      {
