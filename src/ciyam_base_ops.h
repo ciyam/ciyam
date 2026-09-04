@@ -14,7 +14,7 @@
 #  include "ptypes.h"
 #  include "ciyam_core.h"
 
-//#define USE_ODS_DB_FOR_META
+//#define USE_ODS_DB_FOR_META_STORAGE
 
 class class_base;
 class command_handler;

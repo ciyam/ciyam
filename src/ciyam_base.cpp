@@ -2861,7 +2861,7 @@ void perform_storage_op( storage_op op,
 
       try
       {
-#ifndef USE_ODS_DB_FOR_META
+#ifndef USE_ODS_DB_FOR_META_STORAGE
          gtp_session->up_db.reset( new sql_db( p_new_handler->get_name( ), p_new_handler->get_name( ) ) );
 #else
          if( p_new_handler->get_name( ) != c_meta_storage_name )

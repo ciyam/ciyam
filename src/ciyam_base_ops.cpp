@@ -3076,7 +3076,7 @@ void begin_instance_op( instance_op op, class_base& instance,
 
    int persistence_type = instance.get_persistence_type( );
 
-#ifdef USE_ODS_DB_FOR_META
+#ifdef USE_ODS_DB_FOR_META_STORAGE
    string app_name( storage_name( ) );
 
    if( app_name == c_meta_storage_name )
@@ -3474,7 +3474,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
    int persistence_type = instance.get_persistence_type( );
 
-#ifdef USE_ODS_DB_FOR_META
+#ifdef USE_ODS_DB_FOR_META_STORAGE
    string app_name( storage_name( ) );
 
    if( app_name == c_meta_storage_name )
@@ -4294,7 +4294,7 @@ bool perform_instance_check( class_base& instance, const string& key )
 
    int persistence_type = instance.get_persistence_type( );
 
-#ifdef USE_ODS_DB_FOR_META
+#ifdef USE_ODS_DB_FOR_META_STORAGE
    string app_name( storage_name( ) );
 
    if( app_name == c_meta_storage_name )
@@ -4338,7 +4338,7 @@ void perform_instance_fetch( class_base& instance,
 
    int persistence_type = instance.get_persistence_type( );
 
-#ifdef USE_ODS_DB_FOR_META
+#ifdef USE_ODS_DB_FOR_META_STORAGE
    string app_name( storage_name( ) );
 
    if( app_name == c_meta_storage_name )
@@ -4514,7 +4514,7 @@ bool perform_instance_iterate( class_base& instance,
 
    int persistence_type = instance.get_persistence_type( );
 
-#ifdef USE_ODS_DB_FOR_META
+#ifdef USE_ODS_DB_FOR_META_STORAGE
    string app_name( storage_name( ) );
 
    if( app_name == c_meta_storage_name )
@@ -5336,7 +5336,7 @@ bool perform_instance_iterate_next( class_base& instance )
 
    int persistence_type = instance.get_persistence_type( );
 
-#ifdef USE_ODS_DB_FOR_META
+#ifdef USE_ODS_DB_FOR_META_STORAGE
    string app_name( storage_name( ) );
 
    if( app_name == c_meta_storage_name )
