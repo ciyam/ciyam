@@ -1776,7 +1776,7 @@
      </test_step>
      <test_step/>
       <name>a
-      <exec>!ciyam_client -echo -quiet -no_prompt -no_stderr -no_progress -connect_retries=10
+      <exec>!ciyam_client -echo -quiet -no_prompt -no_stderr -connect_retries=10
       <input>true
       <output>generate
      </test_step>
