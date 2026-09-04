@@ -3,6 +3,7 @@ version -protocol
 session_list -min *
 trace_levels
 trace_flags -list
+test progress:test...
 strings
 string_message total
 string_message processed_items @num=999

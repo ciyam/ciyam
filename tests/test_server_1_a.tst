@@ -16,6 +16,11 @@ trace_flags -list
 00008 session
 00010 sockets
 00020 various
+test progress:test...
+test...
+arg_1 = test...
+arg_2 = 
+arg_3 = 
 strings
 and and
 at_height_suffix  at height
