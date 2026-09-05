@@ -37,7 +37,7 @@ extern atomic< size_t > g_active_sessions;
 namespace
 {
 
-#include "module_strings.h"
+#include "ciyam_strings.h"
 #include "ciyam_constants.h"
 
 const int c_max_lock_attempts = 20;
@@ -904,11 +904,12 @@ void check_system_variable_can_be_set( const string& variable, bool to_persist =
 
    if( !okay )
    {
-      // FUTURE: These should both be module strings.
       if( to_persist )
-         throw runtime_error( "Invalid attempt to store read-only system variable '" + variable + "'." );
+         throw runtime_error( get_string_message( GS( c_str_invalid_read_only_var_store ),
+          make_pair( c_str_invalid_read_only_var_store_variable, variable ) ) );
       else
-         throw runtime_error( "Invalid attempt to change read-only system variable '" + variable + "'." );
+         throw runtime_error( get_string_message( GS( c_str_invalid_read_only_var_write ),
+          make_pair( c_str_invalid_read_only_var_write_variable, variable ) ) );
    }
 }
 
@@ -1606,8 +1607,9 @@ void set_system_variable( const var_name& var,
                max_item_size = from_string< size_t >( g_variables[ max_item_size_var_name ] );
 
             if( max_item_size && ( val.size( ) > max_item_size ) )
-               // FUTURE: This should be a module string.
-               throw runtime_error( "Maximum size for '" + suffix + "' items may not be exceeded." );
+               throw runtime_error(
+                get_string_message( GS( c_str_maximum_items_exceeded ),
+                make_pair( c_str_maximum_items_exceeded_name, suffix ) ) );
 
             size_t max_items = c_default_max_deque_size_limit;
 
@@ -1631,8 +1633,9 @@ void set_system_variable( const var_name& var,
             }
 
             if( max_items && ( g_deque_variables[ variable ].size( ) >= max_items ) )
-               // FUTURE: This should be a module string.
-               throw runtime_error( "Maximum number of items for '" + suffix + "' are already queued." );
+               throw runtime_error(
+                get_string_message( GS( c_str_maximum_items_are_queued ),
+                make_pair( c_str_maximum_items_are_queued_name, suffix ) ) );
 
             g_deque_variables[ variable ].push_back( val );
 
@@ -1655,8 +1658,9 @@ void set_system_variable( const var_name& var,
        || ( variable == c_special_variable_ods_cache_hit_ratios )
        || ( variable == c_special_variable_prepare_backup_needed )
        || ( variable == c_special_variable_complete_restore_needed ) ) )
-         // FUTURE: This should be a module string.
-         throw runtime_error( "Invalid attempt to store dynamic system variable '" + variable + "'." );
+         throw runtime_error(
+          get_string_message( GS( c_str_invalid_dynamic_var_store ),
+          make_pair( c_str_invalid_dynamic_var_store_name, variable ) ) );
       else if( pos != string::npos )
       {
          if( persist )
@@ -1835,8 +1839,9 @@ void rename_system_variable( const var_name& old_var, const var_name& new_var )
    if( g_variables.count( old_name ) )
    {
       if( g_variables.count( new_name ) )
-         // FUTURE: This should be a module string.
-         throw runtime_error( "System variable '" + new_name + "' is already in use." );
+         throw runtime_error(
+          get_string_message( GS( c_str_sytem_variable_is_in_use ),
+          make_pair( c_str_sytem_variable_is_in_use_name, new_name ) ) );
 
       string value( g_variables[ old_name ] );
 
