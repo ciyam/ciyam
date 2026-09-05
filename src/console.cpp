@@ -377,19 +377,28 @@ void console_progress::output_progress( const string& message, unsigned long num
    int new_length = 0;
 
    bool is_space = false;
+   bool is_single = false;
 
-   if( message == string( " " ) )
+   if( message.length( ) == 1 )
+      is_single = true;
+
+   if( is_single && ( message[ 0 ] == ' ' ) )
       is_space = true;
-
-   if( is_space || message.length( ) != 1 )
-      new_length = message.length( );
    else
-      new_length = output_length + 1;
+   {
+      if( !is_single )
+         new_length = message.length( );
+      else
+         new_length = output_length + 1;
+   }
 
-   if( is_space || ( message.length( ) != 1 ) )
+   if( is_space || !is_single )
       cout << '\r';
 
-   cout << output_prefix << message;
+   cout << output_prefix;
+
+   if( new_length )
+      cout << message;
 
    string formatted;
 
