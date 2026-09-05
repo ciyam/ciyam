@@ -95,11 +95,14 @@ invalid Invalid @field.
 invalid_day_type @field1 is not valid for this @field2.
 invalid_dom_for_yearly @field is not valid for this month.
 invalid_duplicate_field_value @field must not contain duplicates.
+invalid_dynamic_var_store Invalid attempt to store dynamic system variable '@name'.
 invalid_filename is not a valid filename (cannot use '"', ':', '?', '*', '<', '>', '|', '/', '\' or extended ASCII characters).
 invalid_identifier is not a valid identifier ([a-zA-Z][_0-9a-zA-Z]*).
 invalid_label is not a valid label ([_0-9a-zA-Z]+).
 invalid_own_identity @field must not be your own.
 invalid_peer_handshake Invalid peer handshake.
+invalid_read_only_var_store Invalid attempt to store read-only system variable '@variable'.
+invalid_read_only_var_write Invalid attempt to change read-only system variable '@variable'.
 invalid_time_difference Invalid time difference (check system clocks).
 invalid_type @field is not a valid @label.
 key_invalid Key '@key' contains invalid characters.
@@ -109,6 +112,8 @@ list_extend , @item
 list_finish  and @item
 mapping_at_height_prefix Mapping at height 
 mapping_for_height_prefix Mapping for height 
+maximum_items_are_queued Maximum number of items for '@name' are already queued.
+maximum_items_exceeded Maximum size for '@name' items may not be exceeded.
 module_depends_reqd Module '@module' requires external dependencies to be loaded first.
 module_is_loaded Module '@module' is already loaded.
 module_not_exists Module '@module' does not appear to exist.
@@ -143,6 +148,7 @@ syncing Syncing
 syncing_at_height_prefix Syncing at height 
 syncing_for_height_prefix Syncing for height 
 system_identity_is_locked System identity needs to be unlocked.
+sytem_variable_is_in_use System variable '@name' is already in use.
 timed_out_connecting_to_peer Timed out trying to connect to '@host' using port number @port.
 timed_out_waiting_for_verification Timed out waiting for peer verification.
 timeout_connecting_to_peer Timeout occurred trying to connect to peer.
