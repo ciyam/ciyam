@@ -1459,7 +1459,7 @@ void Meta_Model::impl::impl_Generate( )
 
    try
    {
-      output_progress_message( "Generating " + get_obj( ).Name( ) + " metadata" );
+      output_progress_message( "@Generating " + get_obj( ).Name( ) + " metadata" );
 
       string vars_file_name( get_obj( ).Name( ) + ".vars.xrep" );
       string make_file_name( get_obj( ).Name( ) + ".make.vars.xrep" );
@@ -6821,6 +6821,13 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
        || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "0"
        || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "false" )
          async = false;
+
+      // NOTE: It is expected that a
+      // prior call to this function
+      // will need "clearing" before
+      // any raw "echo" output which
+      // occurs in "Package Remove".
+      output_progress_message( " " );
 
       if( !packages.empty( ) )
       {
