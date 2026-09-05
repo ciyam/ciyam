@@ -359,7 +359,7 @@ class ciyam_console_command_handler : public console_command_handler
 
    void handle_command_response( const std::string& response, bool is_special = false )
    {
-      if( !prior_progress.empty( ) || had_single_char_message )
+      if( had_single_char_message )
       {
          if( !is_stdout_console( ) )
             cout << endl;
@@ -368,8 +368,6 @@ class ciyam_console_command_handler : public console_command_handler
 
          had_single_char_message = false;
       }
-
-      prior_progress.erase( );
 
       console_command_handler::handle_command_response( response, is_special );
    }
@@ -380,19 +378,24 @@ class ciyam_console_command_handler : public console_command_handler
       {
          if( message.length( ) )
          {
-            if( !prior_progress.empty( ) && ( message.length( ) > 1 ) )
-               cout << endl;
+            string::size_type pos = 0;
 
-            cout << message;
+            bool is_single = ( message.length( ) == 1 );
+
+            if( !is_single || ( message[ 0 ] != ' ' ) )
+               cout << message;
+
+            if( is_single || had_single_char_message )
+               cout.flush( );
+            else
+               cout << endl;
          }
-         else if( !prior_progress.empty( ) || had_single_char_message )
+         else if( had_single_char_message )
          {
             cout << endl;
 
             had_single_char_message = false;
          }
-
-         prior_progress = message;
       }
       else
          progress.output_progress( message );
@@ -1684,6 +1687,11 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                            }
                         }
 
+                        had_single_char_message = true;
+                     }
+                     else if( final_response.length( ) && ( final_response[ 0 ] == '@' ) )
+                     {
+                        final_response.erase( 0, 1 );
                         had_single_char_message = true;
                      }
 
