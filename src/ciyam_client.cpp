@@ -1689,9 +1689,11 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                         had_single_char_message = true;
                      }
-                     else if( final_response.length( ) && ( final_response[ 0 ] == '@' ) )
+                     else if( final_response.length( )
+                      && ( final_response[ 0 ] == c_force_no_lf ) )
                      {
                         final_response.erase( 0, 1 );
+
                         had_single_char_message = true;
                      }
 
