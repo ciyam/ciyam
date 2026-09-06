@@ -1459,7 +1459,12 @@ void Meta_Model::impl::impl_Generate( )
 
    try
    {
-      output_progress_message( "@Generating " + get_obj( ).Name( ) + " metadata" );
+      // NOTE: Force further progress messages (i.e. dots)
+      // to be appended to the same line as this message.
+      string force_append_to_progress( 1, c_force_no_lf );
+
+      output_progress_message( force_append_to_progress
+       + "Generating " + get_obj( ).Name( ) + " metadata" );
 
       string vars_file_name( get_obj( ).Name( ) + ".vars.xrep" );
       string make_file_name( get_obj( ).Name( ) + ".make.vars.xrep" );
