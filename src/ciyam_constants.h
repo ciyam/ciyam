@@ -28,6 +28,8 @@ const int c_peer_type_local_only = 1;
 const int c_peer_type_backup_only = 2;
 const int c_peer_type_shared_only = 3;
 
+const char c_force_no_lf = '\f';
+
 const size_t c_max_extras = 9;
 const size_t c_chunk_digits = 6;
 
