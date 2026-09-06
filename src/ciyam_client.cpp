@@ -1703,7 +1703,13 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      else if( final_response.length( )
                       && ( final_response[ 0 ] == c_force_no_lf ) )
                      {
-                        final_response.erase( 0, 1 );
+                        // NOTE: If is not a console then will need to prefix
+                        // with a LF if a "single character message" has been
+                        // processed immediately prior to this.
+                        if( !is_stdout_console( ) && had_single_char_message )
+                           final_response[ 0 ] = '\n';
+                        else
+                           final_response.erase( 0, 1 );
 
                         had_single_char_message = true;
                      }
