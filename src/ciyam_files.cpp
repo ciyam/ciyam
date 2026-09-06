@@ -934,6 +934,9 @@ void output_repository_progress( progress* p_progress,
 {
    string progress;
 
+   if( !set_session_progress )
+      progress = string( 1, c_force_no_lf );
+
    string extra, value( to_string( num ) );
 
    if( total )
@@ -964,9 +967,9 @@ void output_repository_progress( progress* p_progress,
 
    // FUTURE: These messages should be handled as a server string message.
    if( !is_remove )
-      progress = "Tallying" + extra + " - " + value + "...";
+      progress += "Tallying" + extra + " - " + value + "...";
    else
-      progress = "Trimming" + extra + " - " + value + "...";
+      progress += "Trimming" + extra + " - " + value + "...";
 
    if( set_session_progress )
    {
@@ -6058,6 +6061,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
          if( archives[ i ] == repository )
          {
             archive_path = paths[ i ];
+
             break;
          }
       }
