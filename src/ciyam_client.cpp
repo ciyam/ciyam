@@ -299,6 +299,17 @@ class ciyam_console_command_handler : public console_command_handler
          port = atoi( env_var_port.c_str( ) );
    }
 
+   ~ciyam_console_command_handler( )
+   {
+      if( had_single_char_message )
+      {
+         if( !is_stdout_console( ) )
+            cout << endl;
+         else
+            progress.output_progress( "" );
+      }
+   }
+
    const char* get_host( ) const { return host.c_str( ); }
 
    int get_port( ) const { return port; }
