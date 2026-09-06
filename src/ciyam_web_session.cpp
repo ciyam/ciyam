@@ -2241,6 +2241,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            if( has_user_info( pin ) )
                               // FUTURE: This message should be handled as a server string message.
                               error = "Access token '" + pin + "' has already been allocated.";
+                           else if( !is_pin_token( pin ) || ( pin.length( ) != c_cws_access_length ) )
+                              // FUTURE: This message should be handled as a server string message.
+                              error = "Invalid nominated access token '" + pin + "' was provided.";
                         }
 
                         if( error.empty( ) )
