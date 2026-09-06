@@ -117,6 +117,15 @@ Error: Access token '11111' has already been allocated.
   }
 ]
 
+Attempt to create a user with invalid access pin '1111' then list users.
+Error: Invalid nominated access token '1111' was provided.
+[
+  {
+    "pin": "11111",
+    "name": ""
+  }
+]
+
 Connect using 11111 with 'none' and list users.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}

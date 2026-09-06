@@ -119,6 +119,11 @@ else
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
 
  echo ""
+ echo "Attempt to create a user with invalid access pin '1111' then list users."
+ env CIYAM_NODE_COMMAND="users create nominated=1111:test-1" node ../webui/ciyam.js -quiet "" 10301 $device "" none
+ env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
+
+ echo ""
  echo "Connect using 11111 with 'none' and list users."
  node ../webui/ciyam.js "" 11111 $device "" none
  env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 11111 $device "" none
