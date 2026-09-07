@@ -6239,6 +6239,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             msleep( msecs );
          else
          {
+            bool first = true;
+
             bool found_variable = false;
 
             while( true )
@@ -6260,7 +6262,23 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   int chunk = min( 1000, msecs );
 
-                  for( size_t i = 0; i < 5; i++ )
+                  int repeats = 5;
+
+                  int repeat_msecs = 200;
+
+                  // NOTE: Changes the repeats and msecs
+                  // for each repeat in the first second
+                  // to waste as little time sleeping as
+                  // possible in loops.
+                  if( first )
+                  {
+                     first = false;
+
+                     repeats = 20;
+                     repeat_msecs = 50;
+                  }
+
+                  for( size_t i = 0; i < repeats; i++ )
                   {
                      if( has_system_variable( variable ) )
                      {
@@ -6269,9 +6287,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         break;
                      }
 
-                     msleep( min( 200, chunk ) );
+                     msleep( min( repeat_msecs, chunk ) );
 
-                     chunk -= min( 200, msecs );
+                     chunk -= min( repeat_msecs, msecs );
 
                      if( !chunk )
                         break;
