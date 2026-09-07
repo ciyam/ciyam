@@ -57,6 +57,7 @@ Review messages in room 0000001.
   }
 ]
 Create a new user '11111' named 'test-1'.
+11111
 Connect using 11111 with 'none' and output entrance room details.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
@@ -194,6 +195,7 @@ Review messages in room 0000001 for 'admin'.
   }
 ]
 Create a new user '22222' named 'test-2'.
+22222
 Connect using 22222 with 'none' and output entrance room details.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0"}
