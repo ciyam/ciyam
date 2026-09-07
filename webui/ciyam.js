@@ -14,6 +14,7 @@ const c_secret_access_len = 12;
 
 const c_home_room = "0000000";
 
+const c_node_cmd_echo = "echo";
 const c_node_cmd_users = "users";
 const c_node_cmd_messages = "messages";
 const c_node_cmd_unlock_keys = "unlock-keys";
@@ -1111,57 +1112,95 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
       {
          if( command != "" )
          {
-            if( debug )
-               console.log( "cmd: " + command );
+            var commands = [ ];
 
-            var cmd_info = { cmd: command, key: "", args: "" };
+            var first = command.substr( 0, 1 );
 
-            if( command == c_node_cmd_users )
-               await ciyam.fetch_users( console.log );
-            else if( command.indexOf( c_node_cmd_users + " " ) == 0 )
+            // NOTE: Multiple commands can be provided using the command
+            // format "@<name>" which is split into lines with each line
+            // being processed as a separate command.
+            if( first == "@" )
             {
-               ciyam_node_parse_command( command, c_node_cmd_users, cmd_info );
+               var fs = require( 'fs' );
 
-               if( cmd_info.cmd == c_cmd_verb_create )
+               try
                {
-                  await ciyam.create_user( cmd_info.args, console.log );
+                  var data = fs.readFileSync( command.substring( 1 ), "utf8" );
 
-                  if( test && ( ciyam.user_token != "" ) )
-                     console.log( ciyam.user_token );
+                  var lines = data.split( "\n" );
+
+                  for( let i = 0; i < lines.length; i++ )
+                  {
+                     if( lines[ i ] != "" )
+                        commands.push( lines[ i ] );
+                  }
                }
-               else if( cmd_info.cmd == c_cmd_verb_delete )
-                  await ciyam.delete_user( cmd_info.key, console.log );
-               else if( cmd_info.cmd == c_cmd_verb_update )
-                  await ciyam.update_user( cmd_info.key, cmd_info.args, console.log );
-            }
-            else if( command == c_node_cmd_messages )
-               await ciyam.fetch_messages( c_home_room, console.log );
-            else if( command.indexOf( c_node_cmd_messages + " " ) == 0 )
-            {
-               ciyam_node_parse_command( command, c_node_cmd_messages, cmd_info );
-
-               if( cmd_info.cmd == c_cmd_verb_create )
+               catch( e )
                {
-                  await ciyam.create_message( cmd_info.key, cmd_info.args, console.log );
-
-                  if( test && ( ciyam.new_room != "" ) )
-                     console.log( ciyam.new_room );
+                  console.log( "Error: ", e.stack );
                }
-               else if( cmd_info.cmd == c_cmd_verb_review )
-                  await ciyam.fetch_messages( cmd_info.key, console.log );
             }
-            else if( command.indexOf( c_node_cmd_unlock_keys + " " ) == 0 )
+            else
+               commands.push( command );
+
+            for( let i = 0; i < commands.length; i++ )
             {
-               ciyam_node_parse_command( command, c_node_cmd_unlock_keys, cmd_info );
+               command = commands[ i ];
 
-               if( cmd_info.cmd == c_cmd_verb_create )
-                  await ciyam.create_unlock_key( cmd_info.args, console.log );
-               else if( cmd_info.cmd == c_cmd_verb_employ )
-                  await ciyam.employ_unlock_key( cmd_info.key, console.log );
+               if( debug )
+                  console.log( "cmd: " + command );
+
+               var cmd_info = { cmd: command, key: "", args: "" };
+
+               if( command.indexOf( c_node_cmd_echo + " " ) == 0 )
+                  console.log( command.substring( 5 ) );
+               else if( command == c_node_cmd_users )
+                  await ciyam.fetch_users( console.log );
+               else if( command.indexOf( c_node_cmd_users + " " ) == 0 )
+               {
+                  ciyam_node_parse_command( command, c_node_cmd_users, cmd_info );
+
+                  if( cmd_info.cmd == c_cmd_verb_create )
+                  {
+                     await ciyam.create_user( cmd_info.args, console.log );
+
+                     if( test && ( ciyam.user_token != "" ) )
+                        console.log( ciyam.user_token );
+                  }
+                  else if( cmd_info.cmd == c_cmd_verb_delete )
+                     await ciyam.delete_user( cmd_info.key, console.log );
+                  else if( cmd_info.cmd == c_cmd_verb_update )
+                     await ciyam.update_user( cmd_info.key, cmd_info.args, console.log );
+               }
+               else if( command == c_node_cmd_messages )
+                  await ciyam.fetch_messages( c_home_room, console.log );
+               else if( command.indexOf( c_node_cmd_messages + " " ) == 0 )
+               {
+                  ciyam_node_parse_command( command, c_node_cmd_messages, cmd_info );
+
+                  if( cmd_info.cmd == c_cmd_verb_create )
+                  {
+                     await ciyam.create_message( cmd_info.key, cmd_info.args, console.log );
+
+                     if( test && ( ciyam.new_room != "" ) )
+                        console.log( ciyam.new_room );
+                  }
+                  else if( cmd_info.cmd == c_cmd_verb_review )
+                     await ciyam.fetch_messages( cmd_info.key, console.log );
+               }
+               else if( command.indexOf( c_node_cmd_unlock_keys + " " ) == 0 )
+               {
+                  ciyam_node_parse_command( command, c_node_cmd_unlock_keys, cmd_info );
+
+                  if( cmd_info.cmd == c_cmd_verb_create )
+                     await ciyam.create_unlock_key( cmd_info.args, console.log );
+                  else if( cmd_info.cmd == c_cmd_verb_employ )
+                     await ciyam.employ_unlock_key( cmd_info.key, console.log );
+               }
+
+               if( ciyam.error != "" )
+                  console.log( "Error: " + ciyam.error );
             }
-
-            if( ciyam.error != "" )
-               console.log( "Error: " + ciyam.error );
          }
       }
 
