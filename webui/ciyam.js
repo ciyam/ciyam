@@ -1152,7 +1152,9 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
 
                var cmd_info = { cmd: command, key: "", args: "" };
 
-               if( command.indexOf( c_node_cmd_echo + " " ) == 0 )
+               if( command == c_node_cmd_echo )
+                  console.log( "" );
+               else if( command.indexOf( c_node_cmd_echo + " " ) == 0 )
                   console.log( command.substring( 5 ) );
                else if( command == c_node_cmd_users )
                   await ciyam.fetch_users( console.log );
@@ -1199,7 +1201,10 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
                }
 
                if( ciyam.error != "" )
+               {
                   console.log( "Error: " + ciyam.error );
+                  ciyam.error = "";
+               }
             }
          }
       }
