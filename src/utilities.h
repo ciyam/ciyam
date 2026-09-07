@@ -33,7 +33,7 @@ const char c_nul = '\0';
 
 const char* const c_whitespace_chars = " \f\n\r\t\v";
 
-const char* const c_special_characters = "abfnrtv\a\b\f\n\r\t\v";
+const char* const c_special_characters = "abefnrtv\a\b\e\f\n\r\t\v";
 
 const int c_uuid_size = 16;
 
