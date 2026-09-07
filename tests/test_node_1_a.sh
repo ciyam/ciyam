@@ -102,26 +102,28 @@ else
 
  echo ""
  echo "Employ the previously created unlock key (after restore)."
- env CIYAM_NODE_COMMAND="unlock-keys employ $unlock_key" node ../webui/ciyam.js -quiet "" 10301 $device "" none
+ echo "unlock-keys employ $unlock_key" >/tmp/ciyam/$device.lst
 
- echo ""
- echo "Fetch the list of non-admin users."
- env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
+ echo "echo" >>/tmp/ciyam/$device.lst
+ echo "echo Fetch the list of non-admin users." >>/tmp/ciyam/$device.lst
+ echo "users" >>/tmp/ciyam/$device.lst
 
- echo ""
- echo "Create a user with access pin '11111' then list users."
- env CIYAM_NODE_COMMAND="users create nominated=11111:test-1" node ../webui/ciyam.js -quiet "" 10301 $device "" none
- env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
+ echo "echo" >>/tmp/ciyam/$device.lst
+ echo "echo Create a user with access pin '11111' then list users." >>/tmp/ciyam/$device.lst
+ echo "users create nominated=11111:test-1" >>/tmp/ciyam/$device.lst
+ echo "users" >>/tmp/ciyam/$device.lst
 
- echo ""
- echo "Attempt to create another user with access pin '11111' then list users."
- env CIYAM_NODE_COMMAND="users create nominated=11111:test-1" node ../webui/ciyam.js -quiet "" 10301 $device "" none
- env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
+ echo "echo" >>/tmp/ciyam/$device.lst
+ echo "echo Attempt to create another user with access pin '11111' then list users." >>/tmp/ciyam/$device.lst
+ echo "users create nominated=11111:test-1" >>/tmp/ciyam/$device.lst
+ echo "users" >>/tmp/ciyam/$device.lst
 
- echo ""
- echo "Attempt to create a user with invalid access pin '1111' then list users."
- env CIYAM_NODE_COMMAND="users create nominated=1111:test-1" node ../webui/ciyam.js -quiet "" 10301 $device "" none
- env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
+ echo "echo" >>/tmp/ciyam/$device.lst
+ echo "echo Attempt to create a user with invalid access pin '1111' then list users." >>/tmp/ciyam/$device.lst
+ echo "users create nominated=1111:test-1" >>/tmp/ciyam/$device.lst
+ echo "users" >>/tmp/ciyam/$device.lst
+
+ env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -quiet "" 10301 $device "" none
 
  echo ""
  echo "Connect using 11111 with 'none' and list users."
@@ -212,20 +214,26 @@ else
  echo ""
  echo "Connect using <secret>:test-x with 'test' then list users."
  node ../webui/ciyam.js "" $secret:test-x $device "" test
- env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
+# env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
 
- echo ""
- echo "Delete user with access pin '22222' then list users."
- env CIYAM_NODE_COMMAND="users delete 22222" node ../webui/ciyam.js -quiet "" 10301 $device "" none
- env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
+ echo "users" >/tmp/ciyam/$device.lst
 
- echo ""
- echo "Delete user with access pin '33333' then list users."
- env CIYAM_NODE_COMMAND="users delete 33333" node ../webui/ciyam.js -quiet "" 10301 $device "" none
- env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
+ echo "echo" >>/tmp/ciyam/$device.lst
+ echo "echo Delete user with access pin '22222' then list users." >>/tmp/ciyam/$device.lst
+ echo "users delete 22222" >>/tmp/ciyam/$device.lst
+ echo "users" >>/tmp/ciyam/$device.lst
 
- echo ""
- echo "Delete user with access pin '12345' then list users."
- env CIYAM_NODE_COMMAND="users delete 12345" node ../webui/ciyam.js -quiet "" 10301 $device "" none
- env CIYAM_NODE_COMMAND=users node ../webui/ciyam.js -quiet "" 10301 $device "" none
+ echo "echo" >>/tmp/ciyam/$device.lst
+ echo "echo Delete user with access pin '33333' then list users." >>/tmp/ciyam/$device.lst
+ echo "users delete 33333" >>/tmp/ciyam/$device.lst
+ echo "users" >>/tmp/ciyam/$device.lst
+
+ echo "echo" >>/tmp/ciyam/$device.lst
+ echo "echo Delete user with access pin '12345' then list users." >>/tmp/ciyam/$device.lst
+ echo "users delete 12345" >>/tmp/ciyam/$device.lst
+ echo "users" >>/tmp/ciyam/$device.lst
+
+ env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -quiet "" 10301 $device "" none
+
+ rm -f /tmp/ciyam/$device.lst
 fi
