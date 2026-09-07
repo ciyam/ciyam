@@ -239,6 +239,8 @@ PWD now: ***
 abcXXX
 ***XXX
 *
+a	b
+1
 @abc
 -1
 @abc-1

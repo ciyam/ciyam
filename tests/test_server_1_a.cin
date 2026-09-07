@@ -72,6 +72,10 @@ PWD=abc
 #%PWD%XXX
 TEST=*
 #$TEST
+TEST=a\tb
+#$TEST
+POS=@strpos:\t:$TEST
+#$POS
 TEST=@abc
 #$TEST
 TEST=@abc-1
