@@ -3485,6 +3485,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               else
                               {
                                  file_filter ff;
+
                                  fs_iterator ffsi( rhs, &ff );
 
                                  while( ffsi.has_next( ) )
@@ -3529,11 +3530,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               absolute_path( rhs, rhs );
 
                               directory_filter df;
+
                               fs_iterator dfsi( rhs, &df );
 
                               str.erase( );
 
                               set< string > results;
+
                               size_t len = rhs.length( ) + 1;
 
                               while( dfsi.has_next( ) )
@@ -3677,6 +3680,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  pos = str.find( op );
 
                                  str.erase( 0, pos + 1 );
+
+                                 unescape( str, c_special_characters );
 
                                  pos = rhs.find( str );
 
