@@ -23,40 +23,40 @@ CIYAM_ANSI=1
 ; These words are %O%%I%orange italics%N%.
 ; These words are %K%%OG%black on green%N%.
 ;
-A=@file:~echo -e "\e[34m"
-C=@file:~echo -e "\e[36m"
-G=@file:~echo -e "\e[32m"
-K=@file:~echo -e "\e[30m"
-O=@file:~echo -e "\e[33m"
-P=@file:~echo -e "\e[35m"
-R=@file:~echo -e "\e[31m"
-W=@file:~echo -e "\e[37m"
+A=\e[34m
+C=\e[36m
+G=\e[32m
+K=\e[30m
+O=\e[33m
+P=\e[35m
+R=\e[31m
+W=\e[37m
 ;
-LA=@file:~echo -e "\e[94m"
-LC=@file:~echo -e "\e[96m"
-LG=@file:~echo -e "\e[92m"
-LK=@file:~echo -e "\e[90m"
-LO=@file:~echo -e "\e[93m"
-LP=@file:~echo -e "\e[95m"
-LR=@file:~echo -e "\e[91m"
-LW=@file:~echo -e "\e[97m"
+LA=\e[94m
+LC=\e[96m
+LG=\e[92m
+LK=\e[90m
+LO=\e[93m
+LP=\e[95m
+LR=\e[91m
+LW=\e[97m
 ;
-OA=@file:~echo -e "\e[44m"
-OC=@file:~echo -e "\e[46m"
-OG=@file:~echo -e "\e[42m"
-OK=@file:~echo -e "\e[40m"
-OO=@file:~echo -e "\e[43m"
-OP=@file:~echo -e "\e[45m"
-OR=@file:~echo -e "\e[41m"
-OW=@file:~echo -e "\e[47m"
+OA=\e[44m
+OC=\e[46m
+OG=\e[42m
+OK=\e[40m
+OO=\e[43m
+OP=\e[45m
+OR=\e[41m
+OW=\e[47m
 ;
-B=@file:~echo -e "\e[1m"
-I=@file:~echo -e "\e[3m"
-S=@file:~echo -e "\e[9m"
-U=@file:~echo -e "\e[4m"
+B=\e[1m
+I=\e[3m
+S=\e[9m
+U=\e[4m
 ;
 ; NOTE: Reset to normal.
-N=@file:~echo -e "\e[0m"
+N=\e[0m
 ;
 ; NOTE: Bold works best if it
 ; is paired with a color - so
