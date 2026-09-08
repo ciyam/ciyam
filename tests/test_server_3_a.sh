@@ -141,6 +141,9 @@ new_room_num=${room_info%-*}
 new_room_uuid=${room_info#*-}
 message=$(curl -s "localhost:13031/cws/messages/$new_room_num?access=12345&device=$device&options=from%3D$new_room_uuid&session=$session" | cut -d " " -f 2-)
 echo ${message#* }
+echo "Now rename the new room to Updated and display the entrance information for the room."
+curl -s -X POST "localhost:13031/cws/messages/0000000?access=$new_access&device=$new_device&options=for%3D0000002;text%3DUpdated&session=$new_session"
+curl -s "localhost:13031/cws/messages?access=$new_access&device=$new_device&session=$new_session" | grep 0000002
 echo "Now will perform structured I/O queries for enums/lists and views after attaching to the Meta storage."
 curl -s -X POST "localhost:13031/cws/storages/meta?access=$new_access&device=$new_device&session=$new_session"
 curl -s -X GET "localhost:13031/cws/storage-modules/100/enums?access=$new_access&device=$new_device&session=$new_session"

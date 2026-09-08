@@ -55,7 +55,7 @@ review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=
 update user *** password=<password>
 Check for messages and then create a test message and a new room.
 IRC usage is not currently available.
-test-1 #0000001 1/1 Administration
+admin #0000001 1/1 Administration
 test-1 testing...
 0000002
 Now check for messages as 'admin' and join the room created by 'test-1'.
@@ -65,6 +65,9 @@ test-1 :joined
 test-1  testing...
 test-1 :invite 0000002-NEW-ROOM-UUID-VALUE Testing
 :joined
+Now rename the new room to Updated and display the entrance information for the room.
+[none]
+0000000000000 test-1 #0000002 2/2 Updated
 Now will perform structured I/O queries for enums/lists and views after attaching to the Meta storage.
 [okay]
 id=575,name=enum_add_packages
