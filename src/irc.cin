@@ -71,13 +71,14 @@ MESSAGE=$INVITATION_MESSAGE
 CHECK_PRIOR=1
 OUTPUT=
 ;
+ROOM_RENAME=
 INVITATION_USERS=
 INVITATION_MESSAGE=
 @endif
 ;
 @ifndef $CHECK_PRIOR
 NOT_TO_SELF=
-^[hit 'a' for ANSI help, 'q' to quit, 'n' for new room, 'r' to change room, 'u' for users, 's/v' to scan/view a QR Code or space to type]
+^[hit 'a' for ANSI help, 'e' to edit, 'n' for new room, 'q' to quit, 'r' to change room, 'u' for users, 's/v' to scan/view a QR Code or space to type]
 ;
 @ifdef $CIYAM_KEY_PRESSED
 ;
@@ -89,6 +90,25 @@ NOT_TO_SELF=
 #
 @elif "$CIYAM_KEY_PRESSED" = "q"
 QUIT=1
+@elif "$CIYAM_KEY_PRESSED" = "e"
+@ifeq "$ROOM" "$ENTRANCE_ROOM"
+&Enter Room No: :ROOM_NO=
+@ifdef $ROOM_NO
+LEN=@strlen:$ROOM_NO
+@if $LEN #< $ROOM_LEN
+ROOM_NO=@padlen:$ROOM_LEN,0:$ROOM_NO
+@endif
+&Enter New Room Name: :NAME=
+@ifdef $NAME
+.run_script !irc_add_room "@name=%ROOM_NO%_$NAME"
+@ifndef $ERROR
+ROOM_RENAME=1
+@endif
+@endif
+@endif
+@else
+#(message editing not currently supported)
+@endif
 @elif "$CIYAM_KEY_PRESSED" = "n"
 &Enter Room Name: :NAME=
 .run_script !irc_add_room "@name=$NAME"
@@ -404,7 +424,12 @@ PREFIX=^^
 ;
 @ifndef $SKIP_MESSAGE
 @ifdef $SHOW_CHANGED
+@ifdef $ROOM_RENAME
+ROOM_RENAME=
+#(room renamed)
+@else
 #(found new messages)
+@endif
 SHOW_CHANGED=
 @endif
 #$PREFIX$NEXT_MESSAGE
