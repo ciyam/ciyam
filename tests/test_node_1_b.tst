@@ -360,7 +360,53 @@ Review messages in room 0000001 for 'admin'.
     "payload": "test-2  test-2 here..."
   }
 ]
-Create a new romm for 'test-1' and 'test-2' and output entrance room details for 'test-1'.
+Attempt to rename room 0000001 with an invalid name.
+Error: Invalid room name 'Name_Not_Valid'.
+Rename room 0000001 to Testing and output entrance room details.
+{"room":"0000000"}
+[
+  {
+    "name": "admin",
+    "count": "1"
+  },
+  {
+    "name": "test-1",
+    "count": "0"
+  },
+  {
+    "name": "test-2",
+    "count": "0"
+  }
+]
+[
+  {
+    "when": "0000000000001",
+    "payload": "admin #0000001 0/5 Testing"
+  }
+]
+Rename room 0000001 back to Administration and output entrance room details.
+{"room":"0000000"}
+[
+  {
+    "name": "admin",
+    "count": "1"
+  },
+  {
+    "name": "test-1",
+    "count": "0"
+  },
+  {
+    "name": "test-2",
+    "count": "0"
+  }
+]
+[
+  {
+    "when": "0000000000001",
+    "payload": "admin #0000001 0/5 Administration"
+  }
+]
+Create a new romm for 'test-1' and 'test-2' and output entrance room details for 'test-1' then rename the new room and output entrance again.
 {"room":"0000000"}
 [
   {
@@ -386,7 +432,32 @@ Create a new romm for 'test-1' and 'test-2' and output entrance room details for
     "payload": "test-1 #0000002 1/1 Private (test-1 and test-2)"
   }
 ]
-Review messages in room 0000001 again for 'test-2'.
+{"room":"0000000"}
+[
+  {
+    "name": "admin",
+    "count": "0"
+  },
+  {
+    "name": "test-1",
+    "count": "1"
+  },
+  {
+    "name": "test-2",
+    "count": "0"
+  }
+]
+[
+  {
+    "when": "0000000000001",
+    "payload": "admin #0000001 3/5 Administration"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "test-1 #0000002 1/1 Testing (test-1 and test-2)"
+  }
+]
+Review messages in room 0000001 again for 'test-2' then attempt to rename room 0000002.
 {"room":"0000001"}
 [
   {
@@ -408,6 +479,7 @@ Review messages in room 0000001 again for 'test-2'.
     "payload": "test-1 :invite 0000002-NEW-ROOM-UUID-VALUE Private (test-1 and test-2)"
   }
 ]
+Error: A room can only be renamed by its owner or the administrator.
 Join new romm for 'test-2', create an initial message for the new room and output entrace room details.
 {"room":"0000002-NEW-ROOM-UUID-VALUE"}
 [
@@ -465,7 +537,7 @@ Join new romm for 'test-2', create an initial message for the new room and outpu
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 0/1 Private (test-1 and test-2)"
+    "payload": "test-1 #0000002 0/1 Testing (test-1 and test-2)"
   }
 ]
 Output entrance room details for 'test-1' and then review messages in rooms 0000001 and 0000002.
@@ -491,7 +563,7 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 2/2 Private (test-1 and test-2)"
+    "payload": "test-1 #0000002 2/2 Testing (test-1 and test-2)"
   }
 ]
 {"room":"0000001"}
