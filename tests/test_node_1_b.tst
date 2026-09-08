@@ -80,7 +80,7 @@ ciyam.is_locked = false
 [
   {
     "when": "0000000000001",
-    "payload": "test-1 #0000001 1/1 Administration"
+    "payload": "admin #0000001 1/1 Administration"
   }
 ]
 Review messages in room 0000001 for 'test-1'.
@@ -133,7 +133,7 @@ Create an initial message for 'test-1' and output entrance room details.
 [
   {
     "when": "0000000000001",
-    "payload": "test-1 #0000001 0/2 Administration"
+    "payload": "admin #0000001 0/2 Administration"
   }
 ]
 Review messages in room 0000001 for 'test-1'.
@@ -222,7 +222,7 @@ ciyam.is_locked = false
 [
   {
     "when": "0000000000001",
-    "payload": "test-2 #0000001 1/1 Administration"
+    "payload": "admin #0000001 1/1 Administration"
   }
 ]
 Review messages in room 0000001 for 'test-2'.
@@ -287,7 +287,7 @@ Create an initial message for 'test-2' and output entrance room details.
 [
   {
     "when": "0000000000001",
-    "payload": "test-2 #0000001 0/2 Administration"
+    "payload": "admin #0000001 0/2 Administration"
   }
 ]
 Review messages in room 0000001 for 'test-2'.
@@ -379,7 +379,7 @@ Create a new romm for 'test-1' and 'test-2' and output entrance room details for
 [
   {
     "when": "0000000000001",
-    "payload": "test-1 #0000001 3/5 Administration"
+    "payload": "admin #0000001 3/5 Administration"
   },
   {
     "when": "0000000000002",
@@ -461,11 +461,11 @@ Join new romm for 'test-2', create an initial message for the new room and outpu
 [
   {
     "when": "0000000000001",
-    "payload": "test-2 #0000001 0/3 Administration"
+    "payload": "admin #0000001 0/3 Administration"
   },
   {
     "when": "0000000000002",
-    "payload": "test-2 #0000002 0/1 Private (test-1 and test-2)"
+    "payload": "test-1 #0000002 0/1 Private (test-1 and test-2)"
   }
 ]
 Output entrance room details for 'test-1' and then review messages in rooms 0000001 and 0000002.
@@ -487,7 +487,7 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
 [
   {
     "when": "0000000000001",
-    "payload": "test-1 #0000001 3/5 Administration"
+    "payload": "admin #0000001 3/5 Administration"
   },
   {
     "when": "0000000000002",
