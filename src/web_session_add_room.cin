@@ -18,11 +18,23 @@ NAME=$1
 USER=$2
 NAMES=$3
 ;
+RENAME=
+;
 STARTING_ROOM=0000001
+;
+; NOTE: If User names are instead
+; a room number then will attempt
+; to rename the room instead.
+.regex "^(0[0-9]{6})$$" "$NAMES"
+@ifeq "$NAMES" "$OUTPUT"
+RENAME=1
+NAME=%NAMES%_$NAME
+@endif
 ;
 run_script !irc_add_room "@name=$NAME"
 ;
 @ifndef $ERROR
+@ifndef $RENAME
 NEW_ROOM=$OUTPUT
 ;
 POS=@strpos:-:$NEW_ROOM
@@ -42,6 +54,7 @@ ENCODED=@base64::$MESSAGE
 MESSAGE=@strlit:_:invite $NEW_ROOM-$JOIN_TOKEN $NAME
 ENCODED=@base64::$MESSAGE
 .run_script !irc_send_message "@room=$STARTING_ROOM,@names=$NAMES,@message=$ENCODED"
+@endif
 @endif
 @endif
 ;

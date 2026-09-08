@@ -21,6 +21,30 @@ ERROR=Room and User names are required for "irc_add_room".
 NAME=$1
 USER=$2
 ;
+EXISTING=
+;
+POS=@strpos:_:$NAME
+;
+; NOTE: If NAME is in the form
+; "<room>_<name>" then instead
+; of adding rename an existing
+; room (if USER is either room
+; owner or 'admin').
+@ifdef $POS
+EXISTING=@substr:0,$POS:$NAME
+.regex "^(0[0-9]{6})$$" "$EXISTING"
+@ifeq "$OUTPUT" "$EXISTING"
+@ifeq "$EXISTING" "0000000"
+EXISTING=
+@else
+POS=@$POS+1
+NAME=@substr:$POS:$NAME
+@endif
+@else
+EXISTING=
+@endif
+@endif
+;
 CHANGED=
 ;
 ; NOTE: Room name is between five and fifty characters including letters, numbers and some specials.
@@ -92,6 +116,36 @@ ERROR=Room '$NAME' already exists.
 ~rm -f $TEMP_FILE
 ;
 @ifndef $ERROR
+;
+@ifdef $EXISTING
+;
+ADMIN_OR_OWNER=
+@ifeq "$USER" "admin"
+ADMIN_OR_OWNER=1
+@endif
+;
+@ifndef $ADMIN_OR_OWNER
+.system_variable @irc_owner_$EXISTING
+@ifeq "$OUTPUT" "$USER"
+ADMIN_OR_OWNER=1
+@endif
+@endif
+;
+@ifndef $ADMIN_OR_OWNER
+ERROR=A room can only be renamed by its owner or the administrator.
+@else
+.system_variable @irc_names_$EXISTING
+OLD_NAME=$OUTPUT
+.system_gen_key -unix_unique
+UNIX_UNIQUE=$OUTPUT
+.system_variable @queue_irc_$EXISTING "$UNIX_UNIQUE $USER $OLD_NAME"
+;
+.system_variable @irc_names_$EXISTING "$NAME"
+;
+.system_variable @irc_alter 1
+;
+@endif
+@else
 .system_variable @irc_rooms
 NEW_ROOM=$OUTPUT
 ;
@@ -110,6 +164,8 @@ NEXT_ROOM=@$NEXT_ROOM+1
 NEXT_ROOM=@padlen:$LEN,0:$NEXT_ROOM
 ;
 .system_variable @irc_rooms $NEXT_ROOM
+@endif
+;
 @endif
 ;
 .system_variable @irc_lock ""
