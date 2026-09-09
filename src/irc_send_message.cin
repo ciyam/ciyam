@@ -50,15 +50,44 @@ EDIT_MESSAGE=1
 @endif
 ;
 @ifdef $EDIT_MESSAGE
+;
 .regex "^([_0-9a-zA-Z]+)$$" "$MESSAGE"
 @ifneq "$MESSAGE" "$OUTPUT"
 ERROR=Invalid message format (needs to be base64).
+@else
+;
+NOT_FOUND=
+.session_variable @queue_irc_%ROOM%_$USER_NAME @system
+;
+.session_variable @gteq_session_queue $NAMES
+.session_variable @queue_irc_%ROOM%_$USER_NAME *
+;
+@ifndef $OUTPUT
+NOT_FOUND=1
+@else
+SOURCE_MESSAGE=%OUTPUT:1%
+;
+SOURCE_PARTS=@repstr: /\n:$SOURCE_MESSAGE
+;
+@ifneq "$NAMES" "%SOURCE_PARTS:1%"
+NOT_FOUND=1
+@elif "$USER_NAME" != "%SOURCE_PARTS:2%"
+NOT_FOUND=1
+@endif
+;
+@endif
+;
+@ifdef $NOT_FOUND
+ERROR=Source message for edit was not found (or is not own).
 @else
 .system_gen_key -unix_unique
 UNIX_UNIQUE=$OUTPUT
 ;
 .system_variable @queue_irc_%USER_NAME%_$NAMES "$UNIX_UNIQUE $MESSAGE"
 @endif
+;
+@endif
+;
 @else
 ROOM_AND_USER=@strlit:%ROOM%_$USER_NAME
 ;
