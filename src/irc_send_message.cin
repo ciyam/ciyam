@@ -38,8 +38,28 @@ STARTING_ROOM=0000001
 ROOM=$STARTING_ROOM
 @endif
 ;
+EDIT_MESSAGE=
 USER_MESSAGE=
 ;
+NAMES_LEN=@strlen:$NAMES
+@ifeq "$NAMES_LEN" "13"
+.regex "^([0-9]{13})$$" "$NAMES"
+@ifeq "$OUTPUT" "$NAMES"
+EDIT_MESSAGE=1
+@endif
+@endif
+;
+@ifdef $EDIT_MESSAGE
+.regex "^([_0-9a-zA-Z]+)$$" "$MESSAGE"
+@ifneq "$MESSAGE" "$OUTPUT"
+ERROR=Invalid message format (needs to be base64).
+@else
+.system_gen_key -unix_unique
+UNIX_UNIQUE=$OUTPUT
+;
+.system_variable @queue_irc_%USER_NAME%_$NAMES "$UNIX_UNIQUE $MESSAGE"
+@endif
+@else
 ROOM_AND_USER=@strlit:%ROOM%_$USER_NAME
 ;
 NAMES_CHECK=@repstr:./_:$NAMES
@@ -100,7 +120,7 @@ LIST=@repstr:@/,:$IRC_USERS
 IRC_USERS=,$LIST
 IRC_USERS=@repstr:,/@:$IRC_USERS
 ;
-USER_MESSAGE=_ (private message sent to $LIST)
+USER_MESSAGE=_(private message sent to $LIST)
 USER_MESSAGE=@base64::$USER_MESSAGE
 @endif
 @endif
@@ -118,6 +138,8 @@ CHANGED=1
 @ifdef $USER_MESSAGE
 CHANGED=1
 .system_variable @queue_irc_$ROOM_AND_USER "$UNIX_UNIQUE $USER_NAME $USER_MESSAGE"
+@endif
+;
 @endif
 ;
 @endif
