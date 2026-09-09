@@ -42,6 +42,8 @@ START_POINT=
 START_POINTS=
 WAS_ENTRANCE=
 ;
+.session_variable @deque commence
+;
 ; NOTE: ROOM and START_POINT can be provided as '<room>@<start_point>'.
 POS=@strpos:@:$ROOM
 @ifdef $POS
@@ -249,6 +251,58 @@ CHANGED=1
 .session_variable -id=$SESSION @queue_irc_$ROOM_AND_USER *
 @endif
 ;
+@ifdef $OUTPUT
+@ifndef $WAS_ENTRANCE
+.session_variable @deque "~$OUTPUT"
+;
+MESSAGES=
+@label MSG_NEXT
+;
+@:MSG_LOOP
+.session_variable @deque front
+@ifndef $OUTPUT
+@label END_MSG_LOOP
+@endif
+;
+@skip
+;
+@:MSG_NEXT
+NEXT_MESSAGE=$OUTPUT
+;
+MESSAGE_PARTS=@repstr: /\n:$NEXT_MESSAGE
+;
+MSG_UNIQUE=%MESSAGE_PARTS:1%
+MSG_AUTHOR=%MESSAGE_PARTS:2%
+;
+.system_variable @queue_irc_%MSG_AUTHOR%_$MSG_UNIQUE*
+@ifdef $OUTPUT
+.session_variable @queue_irc_%MSG_AUTHOR%_$MSG_UNIQUE @system
+.session_variable @queue_irc_%MSG_AUTHOR%_$MSG_UNIQUE *
+LAST_LINE=%OUTPUT:^1%
+;
+NEW_MSG_PARTS=@repstr: /\n:$LAST_LINE
+NEW_MSG_UNIQUE=%NEW_MSG_PARTS:1%
+NEW_MSG_BASE64=%NEW_MSG_PARTS:2%
+;
+NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR* $NEW_MSG_BASE64
+@endif
+;
+@ifndef $MESSAGES
+MESSAGES=$NEXT_MESSAGE
+@else
+MESSAGES=$MESSAGES\n$NEXT_MESSAGE
+@endif
+;
+.session_variable @deque pop_front
+;
+!!@:MSG_LOOP
+;
+@:END_MSG_LOOP
+;
+OUTPUT=$MESSAGES
+@endif
+@endif
+;
 @ifndef $ERROR
 @ifdef $OUTPUT
 >/tmp/ciyam/$UUID
@@ -269,6 +323,8 @@ RETURN=@strlit:@/tmp/ciyam/$UUID
 ;
 PREFIX=
 ERROR_OR_RETURN=
+;
+.session_variable @deque complete
 ;
 @ifdef $CHANGED
 .system_variable @irc_alter 1
