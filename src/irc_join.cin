@@ -170,8 +170,13 @@ CHANGED=1
 ;
 @ifdef $EXTRA
 ENCODED=@base64::$EXTRA
+;
+.session_variable @irc_user
+OLD_IRC_USER=$OUTPUT
 .session_variable @irc_user $USER
+;
 .run_script !irc_send_message "@room=$ROOM_NO,@names=ALL,@message=$ENCODED"
+.session_variable @irc_user "$OLD_IRC_USER"
 @endif
 ;
 @endif
