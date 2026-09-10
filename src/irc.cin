@@ -211,6 +211,9 @@ SHOW_CHANGED=
 &Enter Room No: :ROOM=
 @ifndef $ROOM
 ROOM=$OLD_ROOM
+@elif "$ROOM" = "~"
+ROOM=$OLD_ROOM
+REREAD_ALL=~!
 @elif "$ROOM" = "!"
 ROOM=$OLD_ROOM
 REREAD_ALL=!
