@@ -110,30 +110,31 @@ ROOM_RENAME=1
 @endif
 @endif
 @else
-@ifndef $EDIT_LINE_NUM
 &Enter Message #: :EDIT_LINE_NUM=
-@else
-&Enter Message (use 0 if verified) #: :EDIT_LINE_NUM=
+;
+@ifeq "$EDIT_LINE_NUM" "0"
+EDIT_LINE_NUM=
 @endif
 ;
 @ifndef $EDIT_LINE_NUM
 EDIT_UNIX_UNIQUE=
-@elif "$EDIT_LINE_NUM" = "0"
-EDIT_LINE_NUM=
 @endif
 ;
 @ifdef $EDIT_LINE_NUM
 MESSAGE_PROMPT=CHECK_MESSAGE=?MESSAGE_LINES:$EDIT_LINE_NUM?
 MESSAGE_PROMPT=@repstr:?/%%:$MESSAGE_PROMPT
 $MESSAGE_PROMPT
+@ifdef $CHECK_MESSAGE
 EDIT_MSG_PARTS=@repstr: /\n:$CHECK_MESSAGE
 EDIT_UNIX_UNIQUE=%EDIT_MSG_PARTS:1%
-EDIT_MSG_USER=%EDIT_MSG_PARTS:2%
 EDIT_MSG_CONTENT=@base64:%EDIT_MSG_PARTS:3%
-EDIT_MSG_CONTENT=@substr:1:$EDIT_MSG_CONTENT
-EDIT_USER_PADDED=@padlen:-14, :$EDIT_MSG_USER
-#[Verify Edit Message] $EDIT_USER_PADDED $EDIT_MSG_CONTENT
+EDIT_MSG_CONTENT=@substr:2:$EDIT_MSG_CONTENT
+#$EDIT_MSG_CONTENT
+#(type new content or just enter to leave as is)
 @else
+#(message $EDIT_LINE_NUM not found)
+@endif
+;
 @ifdef $EDIT_UNIX_UNIQUE
 &:EDITED_MESSAGE=_
 MLEN=@strlen:$EDITED_MESSAGE
@@ -224,6 +225,8 @@ ERROR=
 ROOM=$OLD_ROOM
 @else
 @ifneq "$ROOM" "$OLD_ROOM"
+MESSAGE_LINES=
+;
 EDIT_LINE_NUM=
 EDIT_UNIX_UNIQUE=
 @endif
@@ -384,6 +387,25 @@ START_POINT_INFO=
 MESSAGES=$OUTPUT
 MESSAGE_LINES=$MESSAGES
 ;
+PAD_LEN=1
+@ifneq "%MESSAGES:10%" ""
+PAD_LEN=@$PAD_LEN+1
+@ifneq "%MESSAGES:100%" ""
+PAD_LEN=@$PAD_LEN+1
+@ifneq "%MESSAGES:1000%" ""
+PAD_LEN=@$PAD_LEN+1
+@ifneq "%MESSAGES:10000%" ""
+PAD_LEN=@$PAD_LEN+1
+@ifneq "%MESSAGES:100000%" ""
+PAD_LEN=@$PAD_LEN+1
+@endif
+@endif
+@endif
+@endif
+@endif
+;
+LINE_NUM=1
+;
 @label MSG_NEXT
 ;
 @:MSG_LOOP
@@ -411,7 +433,7 @@ LOCAL=@date:%NEXT_MSG_PARTS:1%:yyyy-mm-dd hh:mm:ss
 ;
 USER_NAME=@strlit:%NEXT_MSG_PARTS:2%
 ;
-USER_NAME_PADDED=@padlen:-14, :$USER_NAME
+USER_NAME_PADDED=@padlen:-15, :$USER_NAME
 ;
 @ifneq "$ROOM" "$ENTRANCE_ROOM"
 MESSAGE_ROOM_NUM=
@@ -469,6 +491,8 @@ PREFIX=^^
 @endif
 @endif
 ;
+LINE_NUM=@padlen:$PAD_LEN :$LINE_NUM
+;
 @ifndef $SKIP_MESSAGE
 @ifdef $SHOW_CHANGED
 @ifdef $ROOM_RENAME
@@ -479,9 +503,10 @@ ROOM_RENAME=
 @endif
 SHOW_CHANGED=
 @endif
-#$PREFIX$NEXT_MESSAGE
+#$PREFIX$LINE_NUM $NEXT_MESSAGE
 @endif
 ;
+LINE_NUM=@$LINE_NUM+1
 MESSAGES=%MESSAGES:-1%
 ;
 !!@:MSG_LOOP
