@@ -489,7 +489,7 @@ Join new romm for 'test-2', create an initial message for the new room and outpu
   },
   {
     "name": "test-2",
-    "count": "1"
+    "count": "2"
   }
 ]
 [
@@ -537,7 +537,7 @@ Join new romm for 'test-2', create an initial message for the new room and outpu
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 0/1 Testing (test-1 and test-2)"
+    "payload": "test-1 #0000002 0/2 Testing (test-1 and test-2)"
   }
 ]
 Output entrance room details for 'test-1' and then review messages in rooms 0000001 and 0000002.
@@ -563,7 +563,7 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 2/2 Testing (test-1 and test-2)"
+    "payload": "test-1 #0000002 3/3 Testing (test-1 and test-2)"
   }
 ]
 {"room":"0000001"}
@@ -613,6 +613,10 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
   },
   {
     "when": "0000000000002",
+    "payload": "test-2 :joined"
+  },
+  {
+    "when": "0000000000003",
     "payload": "test-2  hi..."
   }
 ]
