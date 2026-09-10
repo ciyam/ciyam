@@ -25,6 +25,7 @@ ROOM=$1
 USER=$2
 SESSION=$3
 ;
+SKIP_EDITS=
 IS_WEB_SESSION=
 ;
 ; NOTE: Prefix "ROOM"
@@ -33,6 +34,15 @@ IS_WEB_SESSION=
 FIRST=@substr:0,1:$ROOM
 @ifeq "$FIRST" "_"
 IS_WEB_SESSION=1
+ROOM=@substr:1:$ROOM
+@endif
+;
+; NOTE: Prefix "ROOM"
+; with a "~" in order
+; skip any "edits".
+FIRST=@substr:0,1:$ROOM
+@ifeq "$FIRST" "~"
+SKIP_EDITS=1
 ROOM=@substr:1:$ROOM
 @endif
 ;
@@ -252,6 +262,7 @@ CHANGED=1
 @endif
 ;
 @ifdef $OUTPUT
+@ifndef $SKIP_EDITS
 @ifndef $WAS_ENTRANCE
 .session_variable @deque "~$OUTPUT"
 ;
@@ -300,6 +311,7 @@ MESSAGES=$MESSAGES\n$NEXT_MESSAGE
 @:END_MSG_LOOP
 ;
 OUTPUT=$MESSAGES
+@endif
 @endif
 @endif
 ;
