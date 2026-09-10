@@ -25,6 +25,7 @@ USER=$1
 ROOM_NO=$2
 SESSION=$3
 ;
+EXTRA=
 CHANGED=
 ;
 ENTRANCE_ROOM=0000000
@@ -150,6 +151,7 @@ ALL_USERS=@set_sort:@:$ALL_USERS
 EXTRA=_:joined
 ;
 .system_variable @irc_users_$ROOM_NO $ALL_USERS
+;
 RETURN=:joined (as $USER)|$EXTRA|$ALL_USERS
 @endif
 ;
@@ -165,6 +167,12 @@ CHANGED=1
 .session_variable -id=$SESSION @queue_irc_$ROOM_AND_USER @system
 ;
 .system_variable @irc_lock ""
+;
+@ifdef $EXTRA
+ENCODED=@base64::$EXTRA
+.session_variable @irc_user $USER
+.run_script !irc_send_message "@room=$ROOM_NO,@names=ALL,@message=$ENCODED"
+@endif
 ;
 @endif
 ;

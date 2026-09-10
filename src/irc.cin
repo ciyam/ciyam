@@ -329,9 +329,6 @@ DISPLAY_USERS= $DISPLAY_USERS
 REMOTE=
 @endif
 ;
-@ifdef $REMOTE
-MESSAGE=$REMOTE
-@endif
 @endif
 @endif
 ;
