@@ -57,6 +57,7 @@ ERROR=Invalid message format (needs to be base64).
 @else
 ;
 NOT_FOUND=
+NOT_EDITABLE=
 .session_variable @queue_irc_%ROOM%_$USER_NAME @system
 ;
 .session_variable @gteq_session_queue $NAMES
@@ -73,12 +74,19 @@ SOURCE_PARTS=@repstr: /\n:$SOURCE_MESSAGE
 NOT_FOUND=1
 @elif "$USER_NAME" != "%SOURCE_PARTS:2%"
 NOT_FOUND=1
+@else
+PREFIX=@substr:0,2:%SOURCE_PARTS:3%
+@ifeq "$PREFIX" "Xz"
+NOT_EDITABLE=1
+@endif
 @endif
 ;
 @endif
 ;
 @ifdef $NOT_FOUND
 ERROR=Source message for edit was not found (or is not own).
+@elif "$NOT_EDITABLE" = "1"
+ERROR=Source message is designated as a system generated message.
 @else
 .system_gen_key -unix_unique
 UNIX_UNIQUE=$OUTPUT
@@ -149,7 +157,7 @@ LIST=@repstr:@/,:$IRC_USERS
 IRC_USERS=,$LIST
 IRC_USERS=@repstr:,/@:$IRC_USERS
 ;
-USER_MESSAGE=_(private message sent to $LIST)
+USER_MESSAGE=_:private message sent to $LIST
 USER_MESSAGE=@base64::$USER_MESSAGE
 @endif
 @endif
