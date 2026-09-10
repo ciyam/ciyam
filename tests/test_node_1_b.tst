@@ -489,7 +489,7 @@ Join new romm for 'test-2', create an initial message for the new room and outpu
   },
   {
     "name": "test-2",
-    "count": "2"
+    "count": "1"
   }
 ]
 [
