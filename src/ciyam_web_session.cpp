@@ -57,6 +57,8 @@ namespace
 
 #include "ciyam_constants.h"
 
+const char c_omit_edits = '~';
+
 const size_t c_cws_max_devices = 10;
 
 const size_t c_cws_seed_reserve = 120;
@@ -2620,6 +2622,19 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     if( option_parameters.count( c_cws_request_messages_review_options_from ) )
                                        from = option_parameters[ c_cws_request_messages_review_options_from ];
 
+                                    string fetch_room_prefix( "_" );
+
+                                    // NOTE: Uses an underbar prefix for the "room" to prevent any padding being
+                                    // added (being only applicable for console usage such as "irc.cin"). Also a
+                                    // "~" is added to the "fetch_room_prefix" (which will skip applying "edits"
+                                    // to the fetched messages) if is provided as a "from" prefix.
+                                    if( !from.empty( ) && ( from[ 0 ] == c_omit_edits ) )
+                                    {
+                                       from.erase( 0, 1 );
+
+                                       fetch_room_prefix += string( 1, c_omit_edits );
+                                    }
+
                                     if( room == c_web_session_default_room_number )
                                     {
                                        request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"\n";
@@ -2692,9 +2707,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                        }
                                     }
 
-                                    // NOTE: Uses an underbar prefix for the "room" to prevent any padding being
-                                    // added (as this would only be wanted for console usage such as "irc.cin").
-                                    request_and_args += "run_script !irc_fetch_messages \"@room=_" + room + "\"";
+                                    request_and_args += "run_script !irc_fetch_messages \"@room=" + fetch_room_prefix + room + "\"";
                                  }
                               }
                               else if( is_user_info_request )
