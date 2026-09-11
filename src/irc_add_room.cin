@@ -22,6 +22,7 @@ NAME=$1
 USER=$2
 ;
 EXISTING=
+NEW_ROOM=
 ;
 POS=@strpos:_:$NAME
 ;
@@ -169,6 +170,18 @@ NEXT_ROOM=@padlen:$LEN,0:$NEXT_ROOM
 @endif
 ;
 .system_variable @irc_lock ""
+;
+@ifdef $NEW_ROOM
+MESSAGE=@strlit:_:create $NEW_ROOM-$UUID $NAME
+ENCODED=@base64::$MESSAGE
+;
+.session_variable @irc_user
+OLD_IRC_USER=$OUTPUT
+.session_variable @irc_user $USER
+;
+.run_script !irc_send_message "@room=$NEW_ROOM,@names=$USER,@message=$ENCODED"
+.session_variable @irc_user "$OLD_IRC_USER"
+@endif
 ;
 @endif
 ;
