@@ -16,18 +16,22 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $4
 NUM_ARGS=@$NUM_ARGS+1
 @endif
+@ifdef $4
+NUM_ARGS=@$NUM_ARGS+1
+@endif
 ;
 ERROR=
 RETURN=
 ;
-@ifneq "$NUM_ARGS" "4"
-ERROR=Room, names, message and sender are required for "irc_send_message".
+@ifneq "$NUM_ARGS" "5"
+ERROR=Room, names, message, sender and session id are required for "irc_send_message".
 @else
 ;
 ROOM=$1
 NAMES=$2
 MESSAGE=$3
 USER_NAME=$4
+SESSION_ID=$5
 ;
 CHANGED=
 ;
@@ -37,6 +41,40 @@ STARTING_ROOM=0000001
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
 ROOM=$STARTING_ROOM
 @endif
+;
+; NOTE: Checks all MESSAGE characters
+; provided are in the base64 URL set.
+.regex "^([_0-9a-zA-Z]+)$$" "$MESSAGE"
+;
+@ifneq "$MESSAGE" "$OUTPUT"
+ERROR=Invalid message format (needs to be base64).
+@else
+PREFIX=@substr:0,3:$MESSAGE
+;
+.session_variable  -id=$SESSION_ID @ip_addr
+@ifeq "$OUTPUT" "::1"
+PREFIX=
+@elif "$OUTPUT" = "127.0.0.1"
+PREFIX=
+@endif
+;
+@ifdef $PREFIX
+@ifeq "$PREFIX" "XyA"
+PREFIX=
+@elif "$PREFIX" = "XyB"
+PREFIX=
+@elif "$PREFIX" = "XyD"
+PREFIX=
+@endif
+;
+@ifdef $PREFIX
+ERROR=Unexpected invalid message prefix.
+@endif
+;
+@endif
+@endif
+;
+@ifndef $ERROR
 ;
 EDIT_MESSAGE=
 USER_MESSAGE=
@@ -50,11 +88,6 @@ EDIT_MESSAGE=1
 @endif
 ;
 @ifdef $EDIT_MESSAGE
-;
-.regex "^([_0-9a-zA-Z]+)$$" "$MESSAGE"
-@ifneq "$MESSAGE" "$OUTPUT"
-ERROR=Invalid message format (needs to be base64).
-@else
 ;
 NOT_FOUND=
 NOT_EDITABLE=
@@ -78,7 +111,6 @@ NOT_FOUND=1
 PREFIX=@substr:0,2:%SOURCE_PARTS:3%
 @ifeq "$PREFIX" "Xz"
 NOT_EDITABLE=1
-@endif
 @endif
 ;
 @endif
@@ -113,14 +145,6 @@ NAMES_CHECK=@repstr:./_:$NAMES
 NAMES=.$NAMES
 NAMES=@repstr:./@:.$NAMES
 @endif
-;
-; NOTE: Checks all MESSAGE characters
-; provided are in the base64 URL set.
-.regex "^([_0-9a-zA-Z]+)$$" "$MESSAGE"
-;
-@ifneq "$MESSAGE" "$OUTPUT"
-ERROR=Invalid message format (needs to be base64).
-@else
 ;
 ; NOTE: This is for "_/?".
 @ifeq "$MESSAGE" "Xy8_"
