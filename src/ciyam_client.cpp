@@ -1683,6 +1683,8 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   {
                      had_message = true;
 
+                     bool force_message_output = false;
+
                      if( ( final_response != string( " " ) )
                       && ( final_response.length( ) == 1 ) )
                      {
@@ -1711,24 +1713,43 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         else
                            final_response.erase( 0, 1 );
 
+                        force_message_output = true;
+
+                        // NOTE: In order to make sure
+                        // no LF will be automatically
+                        // appended is setting this.
                         had_single_char_message = true;
                      }
 
-                     date_time now( date_time::standard( ) );
+                     bool show_message_output = ( force_message_output || ( final_response.length( ) > 1 ) );
 
-                     uint64_t elapsed = seconds_between( dtm, now );
-
-                     // NOTE: Only checks the elapsed time for single character
-                     // messages (assumes all other messages sent by the server
-                     // are intended to always be output).
-                     if( !had_single_char_message || ( elapsed >= g_seconds ) )
+                     // NOTE: Will only check the elapsed time for single character
+                     // messages (all other messages being output by the server are
+                     // are considered necessary for output).
+                     if( !show_message_output && ( final_response.length( ) == 1 ) )
                      {
-                        dtm = now;
+                        date_time now( date_time::standard( ) );
 
+                        if( seconds_between( dtm, now ) >= g_seconds )
+                        {
+                           dtm = now;
+
+                           show_message_output = true;
+                        }
+                     }
+
+                     if( show_message_output )
+                     {
                         if( !show_no_progress )
                         {
                            if( !is_stdout_console( ) )
+                           {
+                              if( !force_message_output
+                               && had_single_char_message && ( final_response.length( ) > 1 ) )
+                                 cout << '\n';
+
                               handle_progress_message( final_response );
+                           }
                            else
                            {
                               if( had_single_char_message )
