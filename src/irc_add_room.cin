@@ -137,13 +137,10 @@ ERROR=A room can only be renamed by its owner or the administrator.
 @else
 .system_variable @irc_names_$EXISTING
 OLD_NAME=$OUTPUT
-.system_gen_key -unix_unique
-UNIX_UNIQUE=$OUTPUT
-.system_variable @queue_irc_$EXISTING "$UNIX_UNIQUE $USER $OLD_NAME"
 ;
 .system_variable @irc_names_$EXISTING "$NAME"
 ;
-.system_variable @irc_alter 1
+CHANGED=1
 ;
 @endif
 @else
@@ -171,15 +168,24 @@ NEXT_ROOM=@padlen:$LEN,0:$NEXT_ROOM
 ;
 .system_variable @irc_lock ""
 ;
+@ifdef $CHANGED
 @ifdef $NEW_ROOM
+NAMES=$USER
+SEND_ROOM=$NEW_ROOM
 MESSAGE=@strlit:_:create $NEW_ROOM-$UUID $NAME
+@else
+NAMES=ALL
+SEND_ROOM=$EXISTING
+MESSAGE=@strlit:_:rename '$OLD_NAME' to '$NAME'
+@endif
+;
 ENCODED=@base64::$MESSAGE
 ;
 .session_variable @irc_user
 OLD_IRC_USER=$OUTPUT
 .session_variable @irc_user $USER
 ;
-.run_script !irc_send_message "@room=$NEW_ROOM,@names=$USER,@message=$ENCODED"
+.run_script !irc_send_message "@room=$SEND_ROOM,@names=$NAMES,@message=$ENCODED"
 .session_variable @irc_user "$OLD_IRC_USER"
 @endif
 ;
