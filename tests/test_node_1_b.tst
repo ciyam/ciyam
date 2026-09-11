@@ -381,7 +381,7 @@ Rename room 0000001 to Testing and output entrance room details.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 0/5 Testing"
+    "payload": "admin #0000001 1/6 Testing"
   }
 ]
 Rename room 0000001 back to Administration and output entrance room details.
@@ -403,7 +403,7 @@ Rename room 0000001 back to Administration and output entrance room details.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 0/5 Administration"
+    "payload": "admin #0000001 2/7 Administration"
   }
 ]
 Create a new romm for 'test-1' and 'test-2' and output entrance room details for 'test-1' then rename the new room and output entrance again.
@@ -425,7 +425,7 @@ Create a new romm for 'test-1' and 'test-2' and output entrance room details for
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 3/5 Administration"
+    "payload": "admin #0000001 5/7 Administration"
   },
   {
     "when": "0000000000002",
@@ -450,11 +450,11 @@ Create a new romm for 'test-1' and 'test-2' and output entrance room details for
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 3/5 Administration"
+    "payload": "admin #0000001 5/7 Administration"
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 1/1 Testing (test-1 and test-2)"
+    "payload": "test-1 #0000002 2/2 Testing (test-1 and test-2)"
   }
 ]
 Review messages in room 0000001 again for 'test-2' then attempt to rename room 0000002.
@@ -476,6 +476,14 @@ Review messages in room 0000001 again for 'test-2' then attempt to rename room 0
 [
   {
     "when": "0000000000001",
+    "payload": "admin :rename 'Administration' to 'Testing'"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "admin :rename 'Testing' to 'Administration'"
+  },
+  {
+    "when": "0000000000003",
     "payload": "test-1 :invite 0000002-NEW-ROOM-UUID-VALUE Private (test-1 and test-2)"
   }
 ]
@@ -533,7 +541,7 @@ Join new romm for 'test-2', create an initial message for the new room and outpu
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 0/3 Administration"
+    "payload": "admin #0000001 0/5 Administration"
   },
   {
     "when": "0000000000002",
@@ -559,11 +567,11 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 3/5 Administration"
+    "payload": "admin #0000001 5/7 Administration"
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 3/3 Testing (test-1 and test-2)"
+    "payload": "test-1 #0000002 4/4 Testing (test-1 and test-2)"
   }
 ]
 {"room":"0000001"}
@@ -592,6 +600,14 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
   },
   {
     "when": "0000000000003",
+    "payload": "admin :rename 'Administration' to 'Testing'"
+  },
+  {
+    "when": "0000000000004",
+    "payload": "admin :rename 'Testing' to 'Administration'"
+  },
+  {
+    "when": "0000000000005",
     "payload": "test-1 :private (message sent to test-2)"
   }
 ]
@@ -613,10 +629,14 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
   },
   {
     "when": "0000000000002",
-    "payload": "test-2 :joined"
+    "payload": "test-1 :rename 'Private (test-1 and test-2)' to 'Testing (test-1 and test-2)'"
   },
   {
     "when": "0000000000003",
+    "payload": "test-2 :joined"
+  },
+  {
+    "when": "0000000000004",
     "payload": "test-2  hi..."
   }
 ]
