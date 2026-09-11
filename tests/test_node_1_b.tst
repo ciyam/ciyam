@@ -592,7 +592,7 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
   },
   {
     "when": "0000000000003",
-    "payload": "test-1 :private message sent to test-2"
+    "payload": "test-1 :private (message sent to test-2)"
   }
 ]
 {"room":"0000002"}
