@@ -199,10 +199,9 @@ OTHER_USERS=$OTHER_USERS$APPEND_USERS
 <names.cin $OTHER_USERS
 @ifdef $NAMES
 INVITATION_USERS=@repstr:,/.:$NAMES
-INVITATION_MESSAGE=@strlit:_:invite $ROOM-$JOIN_TOKEN $NEW_ROOM_NAME
+INVITATION_MESSAGE=@strlit:_ (invite) $ROOM-$JOIN_TOKEN $NEW_ROOM_NAME
 @endif
 @endif
-MESSAGE=@strlit:_:create $ROOM-$JOIN_TOKEN $NAME
 .run_script !irc_join "@name=$USER,@room=$ROOM"
 @endif
 @elif "$CIYAM_KEY_PRESSED" = "r"
