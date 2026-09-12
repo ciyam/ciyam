@@ -920,7 +920,7 @@ class CIYAM
       }
    }
 
-   async fetch_messages( room, callback )
+   async fetch_messages( room, options, callback )
    {
       if( this.sessid == "" )
          callback( "Error: No current session exists." );
@@ -929,8 +929,12 @@ class CIYAM
          this.user_callback = callback;
 
          var url = this.get_cws_url( ) + "/messages/" + room
-          + "?access=" + this.access + "&device=" + this.device
-          + "&format=" + this.format_type + "&session=" + this.sessid;
+          + "?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type;
+
+         if( ( options != null ) && ( options != "" ) )
+            url += "&options=" + encodeURIComponent( options );
+
+         url += "&session=" + this.sessid;
 
          var old_room = this.room;
 
@@ -1175,7 +1179,7 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
                      await ciyam.update_user( cmd_info.key, cmd_info.args, console.log );
                }
                else if( command == c_node_cmd_messages )
-                  await ciyam.fetch_messages( c_home_room, console.log );
+                  await ciyam.fetch_messages( c_home_room, "", console.log );
                else if( command.indexOf( c_node_cmd_messages + " " ) == 0 )
                {
                   ciyam_node_parse_command( command, c_node_cmd_messages, cmd_info );
@@ -1188,7 +1192,7 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
                         console.log( ciyam.new_room );
                   }
                   else if( cmd_info.cmd == c_cmd_verb_review )
-                     await ciyam.fetch_messages( cmd_info.key, console.log );
+                     await ciyam.fetch_messages( cmd_info.key, cmd_info.args, console.log );
                }
                else if( command.indexOf( c_node_cmd_unlock_keys + " " ) == 0 )
                {
