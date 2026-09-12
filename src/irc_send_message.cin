@@ -79,6 +79,15 @@ ERROR=Unexpected invalid message prefix.
 EDIT_MESSAGE=
 USER_MESSAGE=
 ;
+ISSUED_PREFIX=message
+;
+POS=@strpos:_:$NAMES
+@ifdef $POS
+ISSUED_PREFIX=@substr:0,$POS:$NAMES
+POS=@$POS+1
+NAMES=@substr:$POS:$NAMES
+@endif
+;
 NAMES_LEN=@strlen:$NAMES
 @ifeq "$NAMES_LEN" "13"
 .regex "^([0-9]{13})$$" "$NAMES"
@@ -181,7 +190,7 @@ LIST=@repstr:@/,:$IRC_USERS
 IRC_USERS=,$LIST
 IRC_USERS=@repstr:,/@:$IRC_USERS
 ;
-USER_MESSAGE=_:issued (message sent to $LIST)
+USER_MESSAGE=_:issued ($ISSUED_PREFIX sent to $LIST)
 USER_MESSAGE=@base64::$USER_MESSAGE
 @endif
 @endif
