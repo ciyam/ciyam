@@ -109,12 +109,12 @@ else
  env CIYAM_NODE_COMMAND="messages create 0000000 for=0000002;text=Renamed (test-1 and test-2)" node ../webui/ciyam.js -test "" 22222 $device "" none
 
  echo "Join new romm for 'test-2', create an initial message for the new room and output entrace room details."
- env CIYAM_NODE_COMMAND="messages review $new_room" node ../webui/ciyam.js -test "" 22222 $device "" none | sed "s/$new_room/0000002-NEW-ROOM-UUID-VALUE/g"
+ env CIYAM_NODE_COMMAND="messages review 0000002 from=${new_room:8}" node ../webui/ciyam.js -test "" 22222 $device "" none
  env CIYAM_NODE_COMMAND="messages create 0000002 text=hi..." node ../webui/ciyam.js -test "" 22222 $device "" none
  env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 22222 $device "" none
 
  echo "Output entrance room details for 'test-1' and then review messages in rooms 0000001 and 0000002."
  env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 11111 $device "" none
  env CIYAM_NODE_COMMAND="messages review 0000001" node ../webui/ciyam.js -test "" 11111 $device "" none
- env CIYAM_NODE_COMMAND="messages review 0000002" node ../webui/ciyam.js -test "" 11111 $device "" none | sed "s/$new_room/0000002-NEW-ROOM-UUID-VALUE/g"
+ env CIYAM_NODE_COMMAND="messages review 0000002 from=0" node ../webui/ciyam.js -test "" 11111 $device "" none | sed "s/$new_room/0000002-NEW-ROOM-UUID-VALUE/g"
 fi
