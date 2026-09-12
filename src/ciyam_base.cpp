@@ -89,6 +89,8 @@ const size_t c_default_seconds = 1;
 
 const size_t c_default_max_peers = 100;
 
+const size_t c_max_key_wait_attempts = 300;
+
 // NOTE: This limit is supplied (along with the identity information) to
 // client interfaces and is not the max # of concurrent server sessions.
 const size_t c_default_max_user_limit = 1000;
@@ -13118,6 +13120,8 @@ int64_t unix_unique( )
 {
    guard g( g_mutex );
 
+   size_t attempts = 0;
+
    while( true )
    {
       int64_t now = unix_time( );
@@ -13126,7 +13130,7 @@ int64_t unix_unique( )
       // implementation as used
       // for "gen_key" but just
       // uses an integer value.
-      if( now != g_key_tm_val )
+      if( now > g_key_tm_val )
       {
          g_key_count = 0;
          g_key_tm_val = now;
@@ -13136,7 +13140,16 @@ int64_t unix_unique( )
       else
       {
          if( g_key_count >= 999 )
+         {
+            // NOTE: If the system clock is changed it
+            // is possible that the time could be less
+            // than last used so will retry for another
+            // two seconds before giving up.
+            if( ++attempts > c_max_key_wait_attempts )
+               throw runtime_error( "max. wait attempts exceeded for key generation" );
+
             msleep( 10 );
+         }
          else
          {
             ++g_key_count;
@@ -13159,6 +13172,8 @@ string gen_key( const char* p_suffix, bool use_get_dtm )
    {
       guard g( g_mutex );
 
+      size_t attempts = 0;
+
       if( gtp_session->p_storage_handler->get_root( ).type == e_storage_type_standard )
       {
          if( use_get_dtm )
@@ -13172,7 +13187,7 @@ string gen_key( const char* p_suffix, bool use_get_dtm )
             {
                int64_t now = unix_time( );
 
-               if( now != g_key_tm_val )
+               if( now > g_key_tm_val )
                {
                   g_key_count = 0;
                   g_key_tm_val = now;
@@ -13184,7 +13199,12 @@ string gen_key( const char* p_suffix, bool use_get_dtm )
                   // NOTE: Supports 000-999 suffixes to the unix time value
                   // (and will reset it after waiting for the next second).
                   if( g_key_count >= 999 )
+                  {
+                     if( ++attempts > c_max_key_wait_attempts )
+                        throw runtime_error( "max. wait attempts exceeded for key generation" );
+
                      msleep( 10 );
+                  }
                   else
                   {
                      ++g_key_count;
@@ -13221,7 +13241,7 @@ string gen_key( const char* p_suffix, bool use_get_dtm )
             {
                int64_t now = unix_time( );
 
-               if( now != g_key_tm_val )
+               if( now > g_key_tm_val )
                {
                   g_key_count = 0;
                   g_key_tm_val = now;
@@ -13233,7 +13253,12 @@ string gen_key( const char* p_suffix, bool use_get_dtm )
                   // NOTE: Supports 000-fff suffixes to the unix time value
                   // (and will reset it after waiting for the next second).
                   if( g_key_count >= 4095 )
+                  {
+                     if( ++attempts > c_max_key_wait_attempts )
+                        throw runtime_error( "max. wait attempts exceeded for key generation" );
+
                      msleep( 10 );
+                  }
                   else
                   {
                      ++g_key_count;
