@@ -24,6 +24,8 @@ HEIGHT=$3
 EXTRA=$4
 TEST_CHAIN=
 ;
+CIYAM_TMP_DIR=/tmp/ciyam
+;
 .file_hash bc.$IDENT.0.blk
 @ifndef $ERROR
 ;
@@ -128,12 +130,12 @@ MODULUS=@$NEXT_HEIGHT#$MULTIPLE
 @endif
 ENTROPY_HASH=$OUTPUT
 ;
-.=crypto_lamport new_primary $ENTROPY_HASH$EXTRA
+.=crypto_lamport $CIYAM_TMP_DIR/new_lamport $ENTROPY_HASH$EXTRA
 ;
-.file_put new_primary.key bc.$IDENT.$HEIGHT.key
-.file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
+.file_put $CIYAM_TMP_DIR/new_lamport.key bc.$IDENT.$HEIGHT.key
+.file_put $CIYAM_TMP_DIR/new_lamport.pub bc.$IDENT.$HEIGHT.pub
 ;
-~rm new_primary.key new_primary.pub
+~rm $CIYAM_TMP_DIR/new_lamport.key $CIYAM_TMP_DIR/new_lamport.pub
 ;
 HEIGHT=@$HEIGHT+$MULTIPLE
 @endif
@@ -155,15 +157,15 @@ HEIGHT=@$HEIGHT+$MULTIPLE
 @endif
 ENTROPY_HASH=$OUTPUT
 ;
-.=crypto_lamport new_primary $ENTROPY_HASH$EXTRA
+.=crypto_lamport $CIYAM_TMP_DIR/new_lamport $ENTROPY_HASH$EXTRA
 ;
 @ifneq "$MODULUS" "0"
-.file_put new_primary.key bc.$IDENT.$HEIGHT.key
+.file_put $CIYAM_TMP_DIR/new_lamport.key bc.$IDENT.$HEIGHT.key
 @endif
 ;
-.file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
+.file_put $CIYAM_TMP_DIR/new_lamport.pub bc.$IDENT.$HEIGHT.pub
 ;
-~rm new_primary.key new_primary.pub
+~rm $CIYAM_TMP_DIR/new_lamport.key $CIYAM_TMP_DIR/new_lamport.pub
 ;
 HEIGHT=@$NEXT_HEIGHT-1
 ;
@@ -189,13 +191,13 @@ HEIGHT=@$HEIGHT+$SQUARED
 @endif
 ENTROPY_HASH=$OUTPUT
 ;
-.=crypto_lamport new_primary $ENTROPY_HASH$EXTRA
+.=crypto_lamport $CIYAM_TMP_DIR/new_lamport $ENTROPY_HASH$EXTRA
 ;
 .file_kill -q bc.$IDENT.$HEIGHT.key
 ;
-.file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
+.file_put $CIYAM_TMP_DIR/new_lamport.pub bc.$IDENT.$HEIGHT.pub
 ;
-~rm new_primary.key new_primary.pub
+~rm $CIYAM_TMP_DIR/new_lamport.key $CIYAM_TMP_DIR/new_lamport.pub
 @endif
 ;
 @endif
