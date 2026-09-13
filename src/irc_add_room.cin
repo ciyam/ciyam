@@ -71,13 +71,14 @@ CHANGED=
 @ifndef $TOKEN
 ;
 ; NOTE: Room name is between five and fifty characters including letters, numbers and some specials.
-.regex -chain "^[a-zA-Z][-+&() a-zA-Z0-9]+$$&&^.*[)a-zA-Z0-9]$$&&^[-+&() a-zA-Z0-9]{5,50}$$" "$NAME"
+.regex -chain "^[a-zA-Z][-+&()' a-zA-Z0-9]+$$&&^.*[)a-zA-Z0-9]$$&&^[-+&()' a-zA-Z0-9]{5,50}$$" "$NAME"
 NAME_CHECK=$OUTPUT
 ;
 @ifdef $NAME_CHECK
 ; NOTE: Limit specials for repeats.
 NAME_CHECK=@repstr:&&/&:$NAME_CHECK
 NAME_CHECK=@repstr:()/@:$NAME_CHECK
+NAME_CHECK=@repstr:''/@:$NAME_CHECK
 NAME_CHECK=@repstr:  / :$NAME_CHECK
 ;
 ; NOTE: Only allow one pair of parentheses
@@ -224,14 +225,24 @@ OLD_IRC_USER=$OUTPUT
 @ifndef $OUTPUT
 ERROR=Invalid room number '$EXISTING'.
 @else
-MESSAGE=@strlit:_:invite $EXISTING-$TOKEN $OUTPUT
+ROOM_NAME=$OUTPUT
+@ifneq "$USER" "admin"
+.system_variable @irc_owner_$EXISTING
+@ifneq "$OUTPUT" "$USER"
+ERROR=Invitations can only be issued by its owner or the administrator.
+@endif
+@endif
+@endif
+;
+@ifndef $ERROR
+MESSAGE=@strlit:_:invite $EXISTING-$TOKEN $ROOM_NAME
 ENCODED=@base64::$MESSAGE
 ;
 .session_variable @irc_user
 OLD_IRC_USER=$OUTPUT
 .session_variable @irc_user $USER
 ;
-.run_script !irc_send_message "@room=$STARTING_ROOM,@names=$NAMES,@message=$ENCODED"
+.run_script !irc_send_message "@room=$STARTING_ROOM,@names=invite_$NAMES,@message=$ENCODED"
 .session_variable @irc_user "$OLD_IRC_USER"
 @endif
 @endif
