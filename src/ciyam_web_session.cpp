@@ -2693,7 +2693,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                        // NOTE: If has just created a message then set
                                        // "from" to make sure that it will be fetched.
-                                       if( is_post_request )
+                                       if( from.empty( ) && is_post_request )
                                           from = to_string( now );
 
                                        if( from.empty( ) )
