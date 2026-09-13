@@ -16,7 +16,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $4
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-@ifdef $4
+@ifdef $5
 NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
