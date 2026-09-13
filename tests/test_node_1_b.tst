@@ -520,6 +520,10 @@ Join new romm for 'test-2', create an initial message for the new room and outpu
 [
   {
     "when": "0000000000001",
+    "payload": "test-2 :joined"
+  },
+  {
+    "when": "0000000000002",
     "payload": "test-2  hi..."
   }
 ]
