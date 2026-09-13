@@ -24,6 +24,8 @@ USER=$2
 EXISTING=
 NEW_ROOM=
 ;
+STARTING_ROOM=0000001
+;
 POS=@strpos:_:$NAME
 ;
 ; NOTE: If NAME is in the form
@@ -46,7 +48,27 @@ EXISTING=
 @endif
 @endif
 ;
+NAMES=
+TOKEN=
+;
+; NOTE: Join invitations can be
+; issued if NAME is provided as
+; "<room>_<uuid>_<names>" where
+; <names> are user names of one
+; or more other users.
+LEN=@strlen:$NAME
+@if "$LEN" > 35
+POS=@strpos:_:$NAME
+@ifdef $POS
+TOKEN=@substr:0,$POS:$NAME
+POS=@$POS+1
+NAMES=@substr:$POS:$NAME
+@endif
+@endif
+;
 CHANGED=
+;
+@ifndef $TOKEN
 ;
 ; NOTE: Room name is between five and fifty characters including letters, numbers and some specials.
 .regex -chain "^[a-zA-Z][-+&() a-zA-Z0-9]+$$&&^.*[)a-zA-Z0-9]$$&&^[-+&() a-zA-Z0-9]{5,50}$$" "$NAME"
@@ -193,6 +215,25 @@ OLD_IRC_USER=$OUTPUT
 ;
 @endif
 ;
+@endif
+;
+@endif
+;
+@ifdef $TOKEN
+.system_variable @irc_names_$EXISTING
+@ifndef $OUTPUT
+ERROR=Invalid room number '$EXISTING'.
+@else
+MESSAGE=@strlit:_:invite $EXISTING-$TOKEN $OUTPUT
+ENCODED=@base64::$MESSAGE
+;
+.session_variable @irc_user
+OLD_IRC_USER=$OUTPUT
+.session_variable @irc_user $USER
+;
+.run_script !irc_send_message "@room=$STARTING_ROOM,@names=$NAMES,@message=$ENCODED"
+.session_variable @irc_user "$OLD_IRC_USER"
+@endif
 @endif
 ;
 PREFIX=
