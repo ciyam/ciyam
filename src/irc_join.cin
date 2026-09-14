@@ -49,8 +49,8 @@ ROOM_NO=$STARTING_ROOM
 ERROR=IRC usage is not currently available.
 @else
 @ifneq "$ROOM_NO" "$STARTING_ROOM"
-.system_variable @irc_uuids_$JOIN_TOKEN
-@ifneq "$ROOM_NO" "$OUTPUT"
+.system_variable @irc_uuids_$ROOM_NO
+@ifneq "$OUTPUT" "$JOIN_TOKEN"
 .system_variable @irc_users_$ROOM_NO
 ALL_USERS=@strlit:$OUTPUT@
 CHECK_USERS=@repstr:@$USER@/:$ALL_USERS

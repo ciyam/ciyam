@@ -178,7 +178,7 @@ CHANGED=1
 .system_variable @irc_names_$NEW_ROOM "$NAME"
 .system_variable @irc_owner_$NEW_ROOM "$USER"
 .system_variable @irc_users_$NEW_ROOM "@$USER"
-.system_variable @irc_uuids_$UUID $NEW_ROOM
+.system_variable @irc_uuids_$NEW_ROOM "$UUID"
 ;
 NEXT_ROOM=$NEW_ROOM
 LEN=@strlen:$NEXT_ROOM
@@ -238,22 +238,15 @@ ERROR=Invitations can only be issued by the room owner or the administrator.
 ;
 @ifndef $ERROR
 ;
-; NOTE: If a dummy UUID is provided then will locate
-; the actual UUID that was used when the room create
-; took place.
+; NOTE: If a dummy UUID is provided then replaces
+; it with the UUID assigned during room creation.
 @ifeq "$TOKEN" "00000000000000000000000000000000"
->$CIYAM_TMP_DIR/$UUID
-system_variable @irc_uuids_*
->
-~grep " $EXISTING" $CIYAM_TMP_DIR/$UUID
-@ifndef $OUTPUT
-ERROR=Unexpected UUID not found for room '$EXISTING'.
+.system_variable @irc_uuids_$EXISTING
+@ifdef $OUTPUT
+TOKEN=$OUTPUT
 @else
-POS=@strpos: :$OUTPUT
-TOKEN=@substr:0,$POS:$OUTPUT
-TOKEN=@repstr:@irc_uuids_/:$TOKEN
+ERROR=Unexpected UUID not found for room '$EXISTING'.
 @endif
-~rm -f $CIYAM_TMP_DIR/$UUID
 @endif
 ;
 @endif
