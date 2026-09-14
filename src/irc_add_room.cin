@@ -62,7 +62,7 @@ TOKEN=
 ; <names> are user names of one
 ; or more other users.
 LEN=@strlen:$NAME
-@if "$LEN" > 35
+@if "$LEN" #> 35
 POS=@strpos:_:$NAME
 @ifdef $POS
 TOKEN=@substr:0,$POS:$NAME
