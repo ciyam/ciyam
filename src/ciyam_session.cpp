@@ -9347,6 +9347,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string max_extra( get_parm_val( parameters, c_cmd_ciyam_session_utils_entropy_max_extra ) );
          string minimum_chars( get_parm_val( parameters, c_cmd_ciyam_session_utils_entropy_minimum_chars ) );
          bool numeric = has_parm_val( parameters, c_cmd_ciyam_session_utils_entropy_numeric );
+         bool hex_digits = has_parm_val( parameters, c_cmd_ciyam_session_utils_entropy_hex_digits );
          bool alpha_lower = has_parm_val( parameters, c_cmd_ciyam_session_utils_entropy_alpha_lower );
 
          size_t max_extra_val = from_string< size_t >( max_extra );
@@ -9356,6 +9357,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( numeric )
             type = e_printable_type_numeric;
+         else if( hex_digits )
+            type = e_printable_type_hex_digits;
          else if( alpha_lower )
             type = e_printable_type_alpha_lower;
 
