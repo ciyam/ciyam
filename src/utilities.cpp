@@ -325,7 +325,7 @@ string random_characters( size_t minimum, size_t max_extra, printable_type type 
 
    for( size_t i = 0; i < total_chars; i++ )
    {
-      if( ( i % 8 ) == 0 )
+      if( ( i % c_uuid_size ) == 0 )
       {
          offset = 0;
 
@@ -337,6 +337,15 @@ string random_characters( size_t minimum, size_t max_extra, printable_type type 
 
       if( type == e_printable_type_numeric )
          retval += '0' + ( next % 10 );
+      else if( type == e_printable_type_hex_digits )
+      {
+         unsigned char nibble = ( next & 0x0f );
+
+         if( nibble < 10 )
+            retval += '0' + nibble;
+         else
+            retval += 'a' + ( nibble - 10 );
+      }
       else if( type == e_printable_type_alpha_lower )
          retval += 'a' + ( next % 26 );
       else if( type == e_printable_type_alpha_mixed )

@@ -320,6 +320,7 @@ class uuid
 enum printable_type
 {
    e_printable_type_numeric,
+   e_printable_type_hex_digits,
    e_printable_type_alpha_lower,
    e_printable_type_alpha_mixed,
    e_printable_type_alpha_numeric
