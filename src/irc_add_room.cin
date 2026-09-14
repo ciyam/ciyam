@@ -26,6 +26,11 @@ NEW_ROOM=
 ;
 STARTING_ROOM=0000001
 ;
+CIYAM_TMP_DIR=/tmp/ciyam
+;
+.session_variable @uuid
+UUID=$OUTPUT
+;
 POS=@strpos:_:$NAME
 ;
 ; NOTE: If NAME is in the form
@@ -119,10 +124,7 @@ ERROR=Invalid room name '$NAME'.
 ERROR=Unable to obtain the system IRC lock (try again later).
 @else
 ;
-.session_variable @uuid
-UUID=$OUTPUT
-;
-TEMP_FILE=/tmp/ciyam/$UUID
+TEMP_FILE=$CIYAM_TMP_DIR/$UUID
 ;
 >$TEMP_FILE
 system_variable @irc_names_**
@@ -229,9 +231,31 @@ ROOM_NAME=$OUTPUT
 @ifneq "$USER" "admin"
 .system_variable @irc_owner_$EXISTING
 @ifneq "$OUTPUT" "$USER"
-ERROR=Invitations can only be issued by its owner or the administrator.
+ERROR=Invitations can only be issued by the room owner or the administrator.
 @endif
 @endif
+@endif
+;
+@ifndef $ERROR
+;
+; NOTE: If a dummy UUID is provided then will locate
+; the actual UUID that was used when the room create
+; took place.
+@ifeq "$TOKEN" "00000000000000000000000000000000"
+>$CIYAM_TMP_DIR/$UUID
+system_variable @irc_uuids_*
+>
+~grep " $EXISTING" $CIYAM_TMP_DIR/$UUID
+@ifndef $OUTPUT
+ERROR=Unexpected UUID not found for room '$EXISTING'.
+@else
+POS=@strpos: :$OUTPUT
+TOKEN=@substr:0,$POS:$OUTPUT
+TOKEN=@repstr:@irc_uuids_/:$TOKEN
+@endif
+~rm -f $CIYAM_TMP_DIR/$UUID
+@endif
+;
 @endif
 ;
 @ifndef $ERROR
@@ -242,7 +266,7 @@ ENCODED=@base64::$MESSAGE
 OLD_IRC_USER=$OUTPUT
 .session_variable @irc_user $USER
 ;
-.run_script !irc_send_message "@room=$STARTING_ROOM,@names=invite_$NAMES,@message=$ENCODED"
+.run_script !irc_send_message "@room=%EXISTING%_$STARTING_ROOM,@names=invite_$NAMES,@message=$ENCODED"
 .session_variable @irc_user "$OLD_IRC_USER"
 @endif
 @endif
