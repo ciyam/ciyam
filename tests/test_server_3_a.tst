@@ -63,7 +63,7 @@ admin #0000001 3/3 Administration
 test-1+1
 test-1 :joined
 test-1  testing...
-test-1 :invite 0000002-NEW-ROOM-UUID-VALUE Testing
+test-1 :invite room 0000002-NEW-ROOM-UUID-VALUE Testing
 :joined
 Now rename the new room to Updated and display the entrance information for the room.
 [none]
