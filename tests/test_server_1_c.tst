@@ -287,6 +287,13 @@ system_variable test_*
 test_xxx abc-111-def
 test_yyy abc-222-def
 test_zzz abc-333-def
+session_variable @search 000
+session_variable @replace 999
+system_variable test_|xxx|yyy|zzz abc-000-def
+system_variable test_*
+test_xxx abc-999-def
+test_yyy abc-999-def
+test_zzz abc-999-def
 system_variable test_xxx ""
 system_variable test_yyy ""
 system_variable test_zzz ""
