@@ -268,6 +268,28 @@ zzz
 system_variable @queue_test3 *
 yyy
 zzz
+session_variable @search 000
+session_variable @replace xxx|yyy|zzz
+system_variable test_|xxx|yyy|zzz abc-000-def
+system_variable test_*
+test_xxx abc-xxx-def
+test_yyy abc-yyy-def
+test_zzz abc-zzz-def
+system_variable test_|xxx|yyy|zzz abc-000-def
+system_variable test_*
+test_xxx abc-000-def
+test_yyy abc-000-def
+test_zzz abc-000-def
+session_variable @search 000
+session_variable @replace 111|222|333
+system_variable test_|xxx|yyy|zzz abc-000-def
+system_variable test_*
+test_xxx abc-111-def
+test_yyy abc-222-def
+test_zzz abc-333-def
+system_variable test_xxx ""
+system_variable test_yyy ""
+system_variable test_zzz ""
 system_variable @sys_var_prefix test
 system_variable >test_a aaa
 system_variable >test_b bbb
