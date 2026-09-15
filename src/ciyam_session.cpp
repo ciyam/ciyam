@@ -8569,10 +8569,35 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( !has_current )
             {
+               string search, replace;
+
+               // NOTE: Session variables "@search" and "@replace"
+               // can be provided in order to change "value" where
+               //  "@replace" can be in the form "rep_1|rep_2|..."
+               // for multiple name suffixes.
+               if( has_session_variable( e_special_var_search )
+                || has_session_variable( e_special_var_replace ) )
+               {
+                  search = get_session_variable( e_special_var_search );
+                  replace = get_session_variable( e_special_var_replace );
+
+                  set_session_variable( e_special_var_search, "" );
+                  set_session_variable( e_special_var_replace, "" );
+               }
+
                string::size_type pos = name_or_expr.find( '|' );
 
                if( pos == string::npos )
+               {
+                  if( !search.empty( ) )
+                  {
+                     value = replaced( value, search, replace );
+
+                     check_is_valid_command_response( value );
+                  }
+
                   set_system_variable( name_or_expr, value, false, &handler );
+               }
                else
                {
                   string prefix( name_or_expr.substr( 0, pos ) );
@@ -8582,8 +8607,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   if( !name_or_expr.empty( ) )
                   {
                      vector< string > suffixes;
+                     vector< string > replaces;
 
                      split( name_or_expr, suffixes, '|' );
+
+                     if( !replace.empty( ) )
+                        split( replace, replaces, '|' );
 
                      // NOTE: Uses "|" for multiple variable name suffixes:
                      // "system_variable prefix_|suffix_1|suffix_2 <value>"
@@ -8594,10 +8623,26 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      // "system_variable prefix_suffix_2 <value>"
                      for( size_t i = 0; i < suffixes.size( ); i++ )
                      {
+                        string val( value );
+
                         string suffix( suffixes[ i ] );
 
                         if( !suffix.empty( ) )
-                           set_system_variable( prefix + suffix, value );
+                        {
+                           if( !search.empty( ) )
+                           {
+                              string replace;
+
+                              if( i < replaces.size( ) )
+                                 replace = replaces[ i ];
+
+                              val = replaced( val, search, replace );
+
+                              check_is_valid_command_response( val );
+                           }
+
+                           set_system_variable( prefix + suffix, val );
+                        }
                      }
                   }
                }
