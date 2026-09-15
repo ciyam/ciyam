@@ -238,12 +238,16 @@ ERROR=Invitations can only be issued by the room owner or the administrator.
 ;
 @ifndef $ERROR
 ;
+SEARCH=
+REPLACE=
 ; NOTE: If a dummy UUID is provided then replaces
 ; it with the UUID assigned during room creation.
 @ifeq "$TOKEN" "00000000000000000000000000000000"
 .system_variable @irc_uuids_$EXISTING
 @ifdef $OUTPUT
-TOKEN=$OUTPUT
+SEARCH=LTAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw
+REPLACE=-$OUTPUT
+REPLACE=@base64::$REPLACE
 @else
 ERROR=Unexpected UUID not found for room '$EXISTING'.
 @endif
@@ -252,13 +256,17 @@ ERROR=Unexpected UUID not found for room '$EXISTING'.
 @endif
 ;
 @ifndef $ERROR
-MESSAGE=@strlit:_:invite $EXISTING-$TOKEN $ROOM_NAME
+MESSAGE=@strlit:_:invite room $EXISTING-$TOKEN $ROOM_NAME
 ENCODED=@base64::$MESSAGE
 ;
 .session_variable @irc_user
 OLD_IRC_USER=$OUTPUT
 .session_variable @irc_user $USER
 ;
+@ifdef $SEARCH
+.session_variable @search $SEARCH
+.session_variable @replace $REPLACE
+@endif
 .run_script !irc_send_message "@room=%EXISTING%_$STARTING_ROOM,@names=invite_$NAMES,@message=$ENCODED"
 .session_variable @irc_user "$OLD_IRC_USER"
 @endif
