@@ -8611,8 +8611,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      split( name_or_expr, suffixes, '|' );
 
-                     if( !replace.empty( ) )
+                     // NOTE: If "|" is found in "@replace" then
+                     // split it (with the assumption that there
+                     // are specific values for each suffix). If
+                     // not then uses the same replace for each.
+                     if( !replace.empty( )
+                      && ( replace.find( '|' ) != string::npos ) )
+                     {
                         split( replace, replaces, '|' );
+
+                        replace.erase( );
+                     }
 
                      // NOTE: Uses "|" for multiple variable name suffixes:
                      // "system_variable prefix_|suffix_1|suffix_2 <value>"
@@ -8631,12 +8640,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         {
                            if( !search.empty( ) )
                            {
-                              string replace;
+                              string next_rep( replace );
 
                               if( i < replaces.size( ) )
-                                 replace = replaces[ i ];
+                                 next_rep = replaces[ i ];
 
-                              val = replaced( val, search, replace );
+                              val = replaced( val, search, next_rep );
 
                               check_is_valid_command_response( val );
                            }
