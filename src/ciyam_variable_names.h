@@ -61,6 +61,7 @@ enum special_var
    e_special_var_title,
    e_special_var_branch,
    e_special_var_cloned,
+   e_special_var_filter,
    e_special_var_images,
    e_special_var_module,
    e_special_var_opened,

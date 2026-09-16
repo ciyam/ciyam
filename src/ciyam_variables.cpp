@@ -108,6 +108,7 @@ constexpr const char* c_special_variable_slotx = "@slotx";
 constexpr const char* c_special_variable_title = "@title";
 constexpr const char* c_special_variable_branch = "@branch";
 constexpr const char* c_special_variable_cloned = "@cloned";
+constexpr const char* c_special_variable_filter = "@filter";
 constexpr const char* c_special_variable_images = "@images";
 constexpr const char* c_special_variable_module = "@module";
 constexpr const char* c_special_variable_opened = "@opened";
@@ -490,6 +491,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_title );
       g_special_variable_names.push_back( c_special_variable_branch );
       g_special_variable_names.push_back( c_special_variable_cloned );
+      g_special_variable_names.push_back( c_special_variable_filter );
       g_special_variable_names.push_back( c_special_variable_images );
       g_special_variable_names.push_back( c_special_variable_module );
       g_special_variable_names.push_back( c_special_variable_opened );
@@ -1107,6 +1109,15 @@ string get_system_variable( const var_name& var, bool is_internal )
          variable.erase( 0, 1 );
    }
 
+   string filter;
+
+   if( has_session_variable( c_special_variable_filter ) )
+   {
+      filter = get_session_variable( c_special_variable_filter );
+
+      set_session_variable( c_special_variable_filter, "" );
+   }
+
    // NOTE: The special system variable prefix is only intended for
    // testing purposes and is only applicable to unrestricted lists.
    string sys_var_prefix;
@@ -1197,6 +1208,9 @@ string get_system_variable( const var_name& var, bool is_internal )
                   if( g_variables.count( next ) )
                      next_value = g_variables[ next ];
 
+                  if( !filter.empty( ) && !wildcard_match( filter, next_value ) )
+                     continue;
+
                   if( output_all_persistent_variables || ( value != next_value ) )
                   {
                      if( !retval.empty( ) )
@@ -1279,11 +1293,14 @@ string get_system_variable( const var_name& var, bool is_internal )
       {
          if( wildcard_match( variable, ci->first ) )
          {
-            if( !retval.empty( ) )
-               retval += "\n";
-
             string next( ci->first );
             string value( ci->second );
+
+            if( !filter.empty( ) && !wildcard_match( filter, value ) )
+               continue;
+
+            if( !retval.empty( ) )
+               retval += "\n";
 
             if( !is_internal )
                truncate_value_for_secret_hash_prefixed_name( next, value );
