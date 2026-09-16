@@ -2590,9 +2590,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                        }
                                     }
 
-                                    if( names.empty( ) )
-                                       names = c_web_session_default_message_for;
-
                                     if( !is_special_request
                                      && ( room == c_web_session_default_room_number ) )
                                     {
@@ -2613,6 +2610,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     }
                                     else
                                     {
+                                       if( names.empty( ) )
+                                          names = c_web_session_default_message_for;
+
                                        string prefix( is_special_request ? c_web_session_meta_message_prefix : c_web_session_default_message_prefix );
 
                                        request_and_args = "run_script !irc_send_message \"@room=" + room + ",@names=" + names + ",@message="
