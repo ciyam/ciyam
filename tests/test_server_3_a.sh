@@ -109,7 +109,7 @@ curl -s -X GET "localhost:13031/cws/status?access=12345&device=$device&session=b
 curl -s -X GET "localhost:13031/cws/status?access=12345&device=$device&session=$session"
 curl -s -X POST "localhost:13031/cws/unlock-keys?access=12345&device=$device&session=$session"
 echo "Reserve a new access token and suggest the username 'test-1'."
-new_access=$(curl -s -X POST "localhost:13031/cws/users?access=12345&device=$device&options=nominated%3d88888%3atest-1&session=$session")
+new_access=$(curl -s -X POST "localhost:13031/cws/users?access=12345&device=$device&options=nominated%3D88888%3Atest-1&session=$session")
 echo "Prepare to activate the newly reserved access token."
 curl -s -X POST "localhost:13031/cws?access=$new_access"
 echo "Attempt to use 'test_1' rather than 'test-1' username."
@@ -131,7 +131,7 @@ summary=$(curl -s "localhost:13031/cws/messages?access=$new_access&device=$new_d
 echo ${summary#* }
 message=$(curl -s -X POST "localhost:13031/cws/messages/0000001?access=$new_access&device=$new_device&options=text%3Dtesting...&session=$new_session" | tail -n 1)
 echo ${message#* }
-room_info=$(curl -s -X POST "localhost:13031/cws/messages/0000000?access=$new_access&device=$new_device&options=text%3DTesting&session=$new_session")
+room_info=$(curl -s -X POST "localhost:13031/cws/messages/0000000?access=$new_access&device=$new_device&options=for%3Dadmin%3Btext%3DTesting&session=$new_session")
 echo ${room_info%-*}
 echo "Now check for messages as 'admin' and join the room created by 'test-1'."
 summary=$(curl -s "localhost:13031/cws/messages?access=12345&device=$device&session=$session" | tail -n 1)
