@@ -22,6 +22,8 @@ RENAME=
 ;
 STARTING_ROOM=0000001
 ;
+DUMMY_JOIN_UUID=00000000000000000000000000000000
+;
 ; NOTE: If User names are instead
 ; a room number then will attempt
 ; to rename the room instead.
@@ -48,7 +50,7 @@ NEW_ROOM=@substr:0,$POS:$NEW_ROOM
 ;
 @ifndef $ERROR
 @ifdef $NAMES
-.run_script !irc_add_room "@name=%NEW_ROOM%_%JOIN_TOKEN%_$NAMES"
+.run_script !irc_add_room "@name=%NEW_ROOM%_%DUMMY_JOIN_UUID%_$NAMES"
 @endif
 @endif
 @endif
