@@ -177,11 +177,17 @@ session_variable @search 000
 session_variable @replace xxx|yyy|zzz
 system_variable test_|xxx|yyy|zzz abc-000-def
 system_variable test_*
+session_variable @filter *xxx*
+system_variable test_*
+session_variable @filter *zzz*
+system_variable test_*
 system_variable test_|xxx|yyy|zzz abc-000-def
 system_variable test_*
 session_variable @search 000
 session_variable @replace 111|222|333
 system_variable test_|xxx|yyy|zzz abc-000-def
+system_variable test_*
+session_variable @filter *222*
 system_variable test_*
 session_variable @search 000
 session_variable @replace 999

@@ -275,6 +275,12 @@ system_variable test_*
 test_xxx abc-xxx-def
 test_yyy abc-yyy-def
 test_zzz abc-zzz-def
+session_variable @filter *xxx*
+system_variable test_*
+test_xxx abc-xxx-def
+session_variable @filter *zzz*
+system_variable test_*
+test_zzz abc-zzz-def
 system_variable test_|xxx|yyy|zzz abc-000-def
 system_variable test_*
 test_xxx abc-000-def
@@ -287,6 +293,9 @@ system_variable test_*
 test_xxx abc-111-def
 test_yyy abc-222-def
 test_zzz abc-333-def
+session_variable @filter *222*
+system_variable test_*
+test_yyy abc-222-def
 session_variable @search 000
 session_variable @replace 999
 system_variable test_|xxx|yyy|zzz abc-000-def
