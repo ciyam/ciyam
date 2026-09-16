@@ -51,6 +51,9 @@ ERROR=IRC usage is not currently available.
 @ifneq "$ROOM_NO" "$STARTING_ROOM"
 .system_variable @irc_uuids_$ROOM_NO
 @ifneq "$OUTPUT" "$JOIN_TOKEN"
+.crypto_hash $USER$OUTPUT
+USER_TOKEN=@substr:0,32:$OUTPUT
+@ifneq "$USER_TOKEN" "$JOIN_TOKEN"
 .system_variable @irc_users_$ROOM_NO
 ALL_USERS=@strlit:$OUTPUT@
 CHECK_USERS=@repstr:@$USER@/:$ALL_USERS
@@ -59,6 +62,7 @@ CHECK_USERS=@repstr:@$USER@/:$ALL_USERS
 ERROR=Unknown room '$ROOM_NO' (or not joined).
 @else
 ERROR=Unknown or invalid join token '$JOIN_TOKEN'.
+@endif
 @endif
 @endif
 @endif
