@@ -188,11 +188,11 @@ NEXT_ROOM=@padlen:$LEN,0:$NEXT_ROOM
 ;
 @ifdef $CHANGED
 @ifdef $NEW_ROOM
-NAMES=$USER
+SEND_NAME=$USER
 SEND_ROOM=$NEW_ROOM
 MESSAGE=@strlit:_:create $NEW_ROOM-$UUID $NAME
 @else
-NAMES=ALL
+SEND_NAME=ALL
 SEND_ROOM=$EXISTING
 MESSAGE=@strlit:_:rename '$OLD_NAME' to '$NAME'
 @endif
@@ -203,7 +203,7 @@ ENCODED=@base64::$MESSAGE
 OLD_IRC_USER=$OUTPUT
 .session_variable @irc_user $USER
 ;
-.run_script !irc_send_message "@room=$SEND_ROOM,@names=$NAMES,@message=$ENCODED"
+.run_script !irc_send_message "@room=$SEND_ROOM,@names=$SEND_NAME,@message=$ENCODED"
 .session_variable @irc_user "$OLD_IRC_USER"
 @endif
 ;
@@ -245,6 +245,19 @@ REPLACE=
 @ifdef $OUTPUT
 ASSIGN=$OUTPUT
 SEARCH=$DUMMY_JOIN_SUFFIX
+;
+@ifeq "ALL" "$NAMES"
+NAMES=OTHERS
+@endif
+;
+@ifeq "OTHERS" "$NAMES"
+.system_variable @irc_users_$STARTING_ROOM
+NAMES=@repstr:@$USER/:$OUTPUT
+@ifdef $NAMES
+NAMES=@substr:1:$NAMES
+NAMES=@repstr:@/.:$NAMES
+@endif
+@endif
 ;
 USER_LINES=@repstr:./\n:$NAMES
 ;
@@ -290,12 +303,19 @@ ENCODED=@base64::$MESSAGE
 OLD_IRC_USER=$OUTPUT
 .session_variable @irc_user $USER
 ;
+; NOTE: If NAMES is equal to USER
+; then will not send any invites.
+@ifdef $NAMES
+@ifneq "$USER" "$NAMES"
+;
 @ifdef $SEARCH
 .session_variable @search $SEARCH
 .session_variable @replace $REPLACE
 @endif
 .run_script !irc_send_message "@room=%EXISTING%_$STARTING_ROOM,@names=invite_$NAMES,@message=$ENCODED"
 .session_variable @irc_user "$OLD_IRC_USER"
+@endif
+@endif
 @endif
 @endif
 ;
