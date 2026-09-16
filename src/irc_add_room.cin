@@ -28,6 +28,11 @@ STARTING_ROOM=0000001
 ;
 CIYAM_TMP_DIR=/tmp/ciyam
 ;
+DUMMY_UUID=00000000000000000000000000000000
+;
+DUMMY_SUFFIX=-$DUMMY_UUID
+DUMMY_SUFFIX=@base64::$DUMMY_SUFFIX
+;
 .session_variable @uuid
 UUID=$OUTPUT
 ;
@@ -126,20 +131,12 @@ ERROR=Unable to obtain the system IRC lock (try again later).
 ;
 TEMP_FILE=$CIYAM_TMP_DIR/$UUID
 ;
->$TEMP_FILE
-system_variable @irc_names_**
->
+.session_variable @filter "$NAME"
+.system_variable @irc_names_**
 ;
-@ifndef $ERROR
-CHECK_NAME=@file:~grep "^$NAME$$" $TEMP_FILE
-;
-@ifeq "$NAME" "$CHECK_NAME"
+@ifdef $OUTPUT
 ERROR=Room '$NAME' already exists.
 @endif
-;
-@endif
-;
-~rm -f $TEMP_FILE
 ;
 @ifndef $ERROR
 ;
@@ -240,12 +237,13 @@ ERROR=Invitations can only be issued by the room owner or the administrator.
 ;
 SEARCH=
 REPLACE=
-; NOTE: If a dummy UUID is provided then replaces
-; it with the UUID assigned during room creation.
-@ifeq "$TOKEN" "00000000000000000000000000000000"
+; NOTE: If a dummy UUID is provided then replace
+; it with the UUID assigned during room creation
+; via session "@search" and "@replace" variables.
+@ifeq "$TOKEN" "$DUMMY_UUID"
 .system_variable @irc_uuids_$EXISTING
 @ifdef $OUTPUT
-SEARCH=LTAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw
+SEARCH=$DUMMY_SUFFIX
 REPLACE=-$OUTPUT
 REPLACE=@base64::$REPLACE
 @else
