@@ -2598,8 +2598,15 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     {
                                        is_adding_room = true;
 
-                                       request_and_args = "<web_session_add_room.cin \""
-                                        + option_parameters[ c_cws_request_messages_create_options_text ] + "\" \"" + username + "\"";
+                                       string text( option_parameters[ c_cws_request_messages_create_options_text ] );
+
+                                       // NOTE: If is an invitation to an existing room
+                                       // then "text" can be expected to contain a list
+                                       // of names (if comma separated then must modify
+                                       // to be dots).
+                                       replace( text, ",", "." );
+
+                                       request_and_args = "<web_session_add_room.cin \"" + text + "\" \"" + username + "\"";
 
                                        if( !names.empty( ) )
                                           request_and_args += " \"" + names + "\"";
