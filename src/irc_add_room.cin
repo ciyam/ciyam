@@ -26,12 +26,10 @@ NEW_ROOM=
 ;
 STARTING_ROOM=0000001
 ;
-CIYAM_TMP_DIR=/tmp/ciyam
+DUMMY_JOIN_UUID=00000000000000000000000000000000
 ;
-DUMMY_UUID=00000000000000000000000000000000
-;
-DUMMY_SUFFIX=-$DUMMY_UUID
-DUMMY_SUFFIX=@base64::$DUMMY_SUFFIX
+DUMMY_JOIN_SUFFIX=-$DUMMY_JOIN_UUID
+DUMMY_JOIN_SUFFIX=@base64::$DUMMY_JOIN_SUFFIX
 ;
 .session_variable @uuid
 UUID=$OUTPUT
@@ -128,8 +126,6 @@ ERROR=Invalid room name '$NAME'.
 @ifeq "$OUTPUT" "0"
 ERROR=Unable to obtain the system IRC lock (try again later).
 @else
-;
-TEMP_FILE=$CIYAM_TMP_DIR/$UUID
 ;
 .session_variable @filter "$NAME"
 .system_variable @irc_names_**
@@ -239,18 +235,51 @@ SEARCH=
 REPLACE=
 ; NOTE: If a dummy UUID is provided then replace
 ; it with the UUID assigned during room creation
-; via session "@search" and "@replace" variables.
-@ifeq "$TOKEN" "$DUMMY_UUID"
+; via session "@search" and "@replace" variables
+; where "@replace" is a "|" separated token list
+; and each token being the leading 32 characters
+; of SHA256( NAME + UUID ) to ensure a different
+; token is provided to each user.
+@ifeq "$TOKEN" "$DUMMY_JOIN_UUID"
 .system_variable @irc_uuids_$EXISTING
 @ifdef $OUTPUT
-SEARCH=$DUMMY_SUFFIX
-REPLACE=-$OUTPUT
-REPLACE=@base64::$REPLACE
+ASSIGN=$OUTPUT
+SEARCH=$DUMMY_JOIN_SUFFIX
+;
+USER_LINES=@repstr:./\n:$NAMES
+;
+@label NEXT
+;
+@:LOOP
+NEXT_USER=%USER_LINES:1%
+@ifndef $NEXT_USER
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+.crypto_hash $NEXT_USER$ASSIGN
+NEXT_JOIN_INFO=@substr:0,32:$OUTPUT
+NEXT_JOIN_INFO=-$NEXT_JOIN_INFO
+NEXT_JOIN_INFO=@base64::$NEXT_JOIN_INFO
+;
+@ifndef $REPLACE
+REPLACE=@strlit:$NEXT_JOIN_INFO
+@else
+REPLACE=@strlit:$REPLACE|$NEXT_JOIN_INFO
+@endif
+;
+USER_LINES=%USER_LINES:-1%
+;
+!!@:LOOP
+;
+@:END_LOOP
+;
 @else
 ERROR=Unexpected UUID not found for room '$EXISTING'.
 @endif
 @endif
-;
 @endif
 ;
 @ifndef $ERROR
