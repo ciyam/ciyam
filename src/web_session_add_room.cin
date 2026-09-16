@@ -27,10 +27,16 @@ DUMMY_JOIN_UUID=00000000000000000000000000000000
 ; NOTE: If User names are instead
 ; a room number then will attempt
 ; to rename the room instead.
+@ifdef $NAMES
 .regex "^(0[0-9]{6})$$" "$NAMES"
 @ifeq "$NAMES" "$OUTPUT"
 RENAME=1
 NAME=%NAMES%_$NAME
+@endif
+@endif
+;
+@ifeq "$NAME" "$NAMES"
+NAMES=
 @endif
 ;
 run_script !irc_add_room "@name=$NAME"
