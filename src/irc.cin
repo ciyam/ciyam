@@ -45,6 +45,8 @@ EDIT_UNIX_UNIQUE=
 ENTRANCE_ROOM=0000000
 STARTING_ROOM=0000001
 ;
+DUMMY_JOIN_UUID=00000000000000000000000000000000
+;
 INVITATION_INFORMATION=
 ;
 ROOM=$ENTRANCE_ROOM
@@ -248,6 +250,19 @@ FORCE_OUTPUT=1
 @retain NAMES
 <names.cin $ALL_USERS
 RESTRICT=@repstr:,/.:$NAMES
+@ifdef $RESTRICT
+@ifeq "$ROOM" "$ENTRANCE_ROOM"
+&Invite to Room No: :INV_ROOM=
+@ifdef $INV_ROOM
+LEN=@strlen:$INV_ROOM
+@if $LEN #< $ROOM_LEN
+INV_ROOM=@padlen:$ROOM_LEN,0:$INV_ROOM
+@endif
+.run_script !irc_add_room @name=%INV_ROOM%_%DUMMY_JOIN_UUID%_$RESTRICT
+RESTRICT=
+@endif
+@endif
+@endif
 @elif "$CIYAM_KEY_PRESSED" = "v"
 &Enter QR Code: :QR_CODE=
 #^^Entered QR Code: $QR_CODE
