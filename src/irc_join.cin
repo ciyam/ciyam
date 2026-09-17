@@ -107,20 +107,52 @@ USER_EXPECTED=$USER
 ERROR=Unexpected alias '$USER' for username '$USER_EXPECTED'.
 @else
 ;
+JOINED_OR_REMOVE=
+;
 ; NOTE: If already joined then will
 ; return the current list of users.
 .session_variable -id=$SESSION @irc_$ROOM_NO
 @ifdef $OUTPUT
+JOINED_OR_REMOVE=1
+@elif "$REMOVE" != ""
+JOINED_OR_REMOVE=1
+@endif
+;
+@ifdef $JOINED_OR_REMOVE
 .system_variable @irc_users_$ROOM_NO
 ALL_USERS=@strlit:$OUTPUT
 ;
 @ifdef $REMOVE
+;
 @ifeq "$ROOM_NO" "$STARTING_ROOM"
-ERROR=Removal not permitted.
+ERROR=Removal from this room is not permitted.
 @else
+.system_variable @irc_lock 1 "" 100
+;
+@ifeq "$OUTPUT" "0"
+ERROR=Unable to obtain the system IRC lock (try again later).
+@else
+;
+CHECK_USERS=@strlit:$ALL_USERS@
+OTHER_USERS=@repstr:@$USER@/:$CHECK_USERS
+;
+@ifneq "$CHECK_USERS" "$OTHER_USERS"
+;
+LENGTH=@strlen:@$USER
+POS=@strpos:@$USER@:$CHECK_USERS
+;
+PREFIX=
+@ifneq "$POS" "0"
+PREFIX=@substr:0,$POS:$ALL_USERS
+@endif
+;
+POS=@$POS+$LENGTH
+SUFFIX=@substr:$POS:$ALL_USERS
+;
+ALL_USERS=$PREFIX$SUFFIX
+;
 EXTRA=_:remove
 ;
-ALL_USERS=@repstr:@$USER/:$ALL_USERS
 .session_variable @irc_is_remove 1
 .session_variable -id=$SESSION @irc_$ROOM_NO ""
 .system_variable @irc_users_$ROOM_NO "$ALL_USERS"
@@ -129,6 +161,11 @@ ALL_USERS=@repstr:@$USER/:$ALL_USERS
 .system_variable @irc_users_$STARTING_ROOM
 ALL_USERS=@strlit:$OUTPUT
 ;
+@endif
+;
+.system_variable @irc_lock ""
+;
+@endif
 @endif
 @endif
 ;
