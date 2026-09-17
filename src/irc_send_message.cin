@@ -187,6 +187,14 @@ RETURN=$RETURN\nclear (clears room history)
 .system_variable @irc_users_$ROOM
 IRC_USERS=@strlit:$OUTPUT
 ;
+; NOTE: IF has been removed will ensure that the
+; "remove" message is also sent to the USER (for
+; reference if is later re-joined).
+.session_variable -id=$SESSION_ID @irc_is_remove
+@ifdef $OUTPUT
+IRC_USERS=@strlit:@$USER_NAME$IRC_USERS
+@endif
+;
 @ifdef $IRC_USERS
 ;
 @ifneq "$NAMES" "ALL"
