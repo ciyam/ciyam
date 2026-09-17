@@ -6232,8 +6232,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          unique_ptr< guard > up_guard;
 
+         // NOTE: The "lock" option is intended only
+         // for interactive mutex testing purposes.
          if( lock )
+         {
+            if( !variable.empty( ) )
+               throw runtime_error( "'lock' and 'variable' are incompatible options" );
+
             up_guard.reset( new guard( g_mutex, "wait" ) );
+         }
 
          if( no_progress || ( msecs <= 2000 ) )
             msleep( msecs );
