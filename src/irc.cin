@@ -33,8 +33,8 @@ QUIT=
 ERROR=
 MESSAGE=
 RESTRICT=
-REREAD_ALL=!
 NOT_TO_SELF=
+FETCH_PREFIX=!
 FORCE_OUTPUT=
 SHOW_CHANGED=
 EDIT_LINE_NUM=
@@ -206,10 +206,10 @@ SHOW_CHANGED=
 ROOM=$OLD_ROOM
 @elif "$ROOM" = "~"
 ROOM=$OLD_ROOM
-REREAD_ALL=~!
+FETCH_PREFIX=~!
 @elif "$ROOM" = "!"
 ROOM=$OLD_ROOM
-REREAD_ALL=!
+FETCH_PREFIX=!
 @endif
 LEN=@strlen:$ROOM
 @if $LEN #< $ROOM_LEN
@@ -220,6 +220,10 @@ ROOM=@padlen:$ROOM_LEN,0:$ROOM
 ERROR=
 ROOM=$OLD_ROOM
 @else
+FIRST=@substr:0,1:$ROOM
+@ifeq "$FIRST" "~"
+ROOM=$ENTRANCE_ROOM
+@endif
 @ifneq "$ROOM" "$OLD_ROOM"
 MESSAGE_LINES=
 ;
@@ -384,8 +388,8 @@ START_POINT_INFO=@strlit:@@$START_POINTS
 @endif
 @endif
 ;
-.run_script !irc_fetch_messages "@room=$REREAD_ALL$ROOM$START_POINT_INFO"
-REREAD_ALL=
+.run_script !irc_fetch_messages "@room=$FETCH_PREFIX$ROOM$START_POINT_INFO"
+FETCH_PREFIX=
 START_POINT_INFO=
 @endif
 ;
