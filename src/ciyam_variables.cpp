@@ -1078,6 +1078,19 @@ bool has_system_variable( const var_name& var )
 
 string get_system_variable( const var_name& var, bool is_internal )
 {
+   string filter;
+
+   if( has_session_variable( c_special_variable_filter ) )
+   {
+      filter = get_session_variable( c_special_variable_filter );
+
+      set_session_variable( c_special_variable_filter, "" );
+   }
+
+   // NOTE: Due to potential thread deadlock
+   // between the "g_session_mutex" and this
+   // any session variable functions need to
+   // be called prior to here.
    guard g( g_mutex );
 
    string name( var.name );
@@ -1107,15 +1120,6 @@ string get_system_variable( const var_name& var, bool is_internal )
 
       if( had_persist_prefix || had_restore_prefix )
          variable.erase( 0, 1 );
-   }
-
-   string filter;
-
-   if( has_session_variable( c_special_variable_filter ) )
-   {
-      filter = get_session_variable( c_special_variable_filter );
-
-      set_session_variable( c_special_variable_filter, "" );
    }
 
    // NOTE: The special system variable prefix is only intended for
