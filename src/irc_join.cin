@@ -126,6 +126,9 @@ ALL_USERS=@repstr:@$USER/:$ALL_USERS
 .system_variable @irc_users_$ROOM_NO "$ALL_USERS"
 .system_variable @session_@queue_irc_%ROOM_NO%_$USER ""
 ;
+.system_variable @irc_users_$STARTING_ROOM
+ALL_USERS=@strlit:$OUTPUT
+;
 @endif
 @endif
 ;
