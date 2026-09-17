@@ -37,6 +37,7 @@ Error: This web session is not valid (or has expired).
 quit
 attach storage <name>
 create message <room> [for=<name,>;]text=<text>
+delete message <room>
 delete javascript
 delete stylesheet
 delete webcmdlist
@@ -220,6 +221,7 @@ create user [secret|nominated=[<pin>:][<username>]]
 create message <room> [for=<name,>;]text=<text>
 create unlock-key [encrypted=<prefix>-<xor_hash>]
 delete user <pin>
+delete message <room>
 delete javascript
 delete stylesheet
 delete webcmdlist
