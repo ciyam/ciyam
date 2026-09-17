@@ -920,6 +920,32 @@ class CIYAM
       }
    }
 
+   async delete_messages( room, callback )
+   {
+      if( this.sessid == "" )
+         callback( "Error: No current session exists." );
+      else
+      {
+         this.user_callback = callback;
+
+         var url = this.get_cws_url( ) + "/messages/" + room
+          + "?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type;
+
+         url += "&session=" + this.sessid;
+
+         var old_room = this.room;
+
+         this.room = room;
+
+         await this.fetch( url, "DELETE", this.at_fetch_messages.bind( this ) )
+
+         if( this.error != null )
+            this.room = old_room;
+         else
+            this.room = c_home_room;
+      }
+   }
+
    async fetch_messages( room, options, callback )
    {
       if( this.sessid == "" )
@@ -1191,6 +1217,8 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
                      if( test && ( ciyam.new_room != "" ) )
                         console.log( ciyam.new_room );
                   }
+                  else if( cmd_info.cmd == c_cmd_verb_delete )
+                     await ciyam.delete_messages( cmd_info.key, console.log );
                   else if( cmd_info.cmd == c_cmd_verb_review )
                      await ciyam.fetch_messages( cmd_info.key, cmd_info.args, console.log );
                }
