@@ -158,15 +158,15 @@ constexpr const char* c_cws_request_unlock_keys_create_options_encrypted = "encr
 
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax to HTTP requests.
 constexpr const char* c_cws_help_request_output = "quit\n"
- "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\n"
+ "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete message <room>\n"
  "delete javascript\ndelete stylesheet\ndelete webcmdlist\nemploy unlock-key <key>\nretain javascript\n"
  "retain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [from=<unix_time>]\nreview storages\n"
  "review javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user *** password=<password>";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
- "attach storage <name>\ncreate user [secret|nominated=[<pin>:][<username>]]\n"
- "create message <room> [for=<name,>;]text=<text>\ncreate unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete javascript\ndelete stylesheet\n"
+ "attach storage <name>\ncreate user [secret|nominated=[<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
+ "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete message <room>\ndelete javascript\ndelete stylesheet\n"
  "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [from=<unix_time>]\n"
  "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user <pin> password=<password>";
@@ -2642,9 +2642,18 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                        fetch_room_prefix += string( 1, c_omit_edits );
                                     }
 
+                                    string prefixed_join_room( room );
+
+                                    if( is_delete_request )
+                                    {
+                                       prefixed_join_room.insert( 0, "~" );
+
+                                       room = c_web_session_default_room_number;
+                                    }
+
                                     if( room == c_web_session_default_room_number )
                                     {
-                                       request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"\n";
+                                       request_and_args += "<web_session_join.cin \"" + username + "\" \"" + prefixed_join_room + "\"\n";
 
                                        // NOTE: If no "from" has been specified will instead use the relevant system variable values.
                                        if( from.empty( ) )
