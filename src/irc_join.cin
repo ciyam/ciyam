@@ -133,6 +133,11 @@ ERROR=Removal from this room is not permitted.
 ERROR=Unable to obtain the system IRC lock (try again later).
 @else
 ;
+.system_variable @irc_owner_$ROOM_NO
+@ifeq "$USER" "$OUTPUT"
+ERROR=Removal of the room owner is not permitted.
+@else
+;
 CHECK_USERS=@strlit:$ALL_USERS@
 OTHER_USERS=@repstr:@$USER@/:$CHECK_USERS
 ;
@@ -160,6 +165,8 @@ EXTRA=_:remove
 ;
 .system_variable @irc_users_$STARTING_ROOM
 ALL_USERS=@strlit:$OUTPUT
+;
+@endif
 ;
 @endif
 ;
