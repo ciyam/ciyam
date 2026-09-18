@@ -21,6 +21,7 @@ ERROR=Room and User names are required for "irc_add_room".
 NAME=$1
 USER=$2
 ;
+ASSIGN=
 EXISTING=
 NEW_ROOM=
 ;
@@ -33,6 +34,15 @@ DUMMY_JOIN_SUFFIX=@base64::$DUMMY_JOIN_SUFFIX
 ;
 .session_variable @uuid
 UUID=$OUTPUT
+;
+POS=@strpos:=:$NAME
+;
+@ifdef $POS
+EXISTING=@substr:0,$POS:$NAME
+POS=@$POS+1
+NAME=@substr:$POS:$NAME
+ASSIGN=1
+@else
 ;
 POS=@strpos:_:$NAME
 ;
@@ -56,6 +66,8 @@ EXISTING=
 @endif
 @endif
 ;
+@endif
+;
 NAMES=
 TOKEN=
 ;
@@ -77,6 +89,10 @@ NAMES=@substr:$POS:$NAME
 CHANGED=
 ;
 @ifndef $TOKEN
+;
+@ifdef $ASSIGN
+NAME_CHECK=$NAME
+@else
 ;
 ; NOTE: Room name is between five and fifty characters including letters, numbers and some specials.
 .regex -chain "^[a-zA-Z][-+&()' a-zA-Z0-9]+$$&&^.*[)a-zA-Z0-9]$$&&^[-+&()' a-zA-Z0-9]{5,50}$$" "$NAME"
@@ -117,6 +133,8 @@ NAME_CHECK=
 @endif
 @endif
 ;
+@endif
+;
 @ifneq "$NAME" "$NAME_CHECK"
 ERROR=Invalid room name '$NAME'.
 @else
@@ -127,11 +145,23 @@ ERROR=Invalid room name '$NAME'.
 ERROR=Unable to obtain the system IRC lock (try again later).
 @else
 ;
+@ifdef $ASSIGN
+.system_variable @irc_users_$EXISTING
+ALL_USERS=$OUTPUT@
+CHECK_USERS=@repstr:@$NAME@/:$ALL_USERS
+;
+@ifeq "$ALL_USERS" "$CHECK_USERS"
+ERROR=User '$NAME' is not a room member.
+@endif
+;
+@else
 .session_variable @filter "$NAME"
 .system_variable @irc_names_**
 ;
 @ifdef $OUTPUT
 ERROR=Room '$NAME' already exists.
+@endif
+;
 @endif
 ;
 @ifndef $ERROR
@@ -151,16 +181,28 @@ ADMIN_OR_OWNER=1
 @endif
 ;
 @ifndef $ADMIN_OR_OWNER
+@ifndef $ASSIGN
 ERROR=A room can only be renamed by its owner or the administrator.
+@else
+ERROR=A room can only be assigned by its owner or the administrator.
+@endif
+@else
+;
+@ifdef $ASSIGN
+.system_variable @irc_owner_$EXISTING
+OLD_NAME=$OUTPUT
+.system_variable @irc_owner_$EXISTING "$NAME"
 @else
 .system_variable @irc_names_$EXISTING
 OLD_NAME=$OUTPUT
 ;
 .system_variable @irc_names_$EXISTING "$NAME"
+@endif
 ;
 CHANGED=1
 ;
 @endif
+;
 @else
 .system_variable @irc_rooms
 NEW_ROOM=$OUTPUT
@@ -194,7 +236,11 @@ MESSAGE=@strlit:_:create $NEW_ROOM-$UUID $NAME
 @else
 SEND_NAME=ALL
 SEND_ROOM=$EXISTING
+@ifdef $ASSIGN
+MESSAGE=@strlit:_:assign '$OLD_NAME' to '$NAME'
+@else
 MESSAGE=@strlit:_:rename '$OLD_NAME' to '$NAME'
+@endif
 @endif
 ;
 ENCODED=@base64::$MESSAGE
