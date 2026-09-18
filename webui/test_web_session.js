@@ -56,6 +56,7 @@ const users_update_cmd = "users|update";
 const messages_create_cmd = "messages|create";
 const messages_delete_cmd = "messages|delete";
 const messages_review_cmd = "messages|review";
+const messages_update_cmd = "messages|update";
 
 const storages_attach_cmd = "storages|attach";
 const storages_review_cmd = "storages|review";
@@ -1061,7 +1062,8 @@ async function do_fetch( )
 
          var request_type = "GET";
 
-         if( ( cmd == users_update_cmd ) || ( cmd == javascripts_retain_cmd )
+         if( ( cmd == users_update_cmd )
+          || ( cmd == messages_update_cmd ) || ( cmd == javascripts_retain_cmd )
           || ( cmd == stylesheets_retain_cmd ) || ( cmd == webcmdlists_retain_cmd ) )
             request_type = "PUT";
          else if( ( cmd == "" ) || ( cmd == users_create_cmd )
@@ -1097,7 +1099,8 @@ async function do_fetch( )
 
          if( ( cmd == users_create_cmd )
           || ( cmd == users_delete_cmd ) || ( cmd == users_update_cmd )
-          || ( cmd == messages_create_cmd ) || ( cmd == messages_delete_cmd ) || ( cmd == messages_review_cmd )
+          || ( cmd == messages_create_cmd ) || ( cmd == messages_delete_cmd )
+          || ( cmd == messages_review_cmd ) || ( cmd == messages_update_cmd )
           || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
           || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd )
           || ( cmd == javascripts_review_cmd ) || ( cmd == stylesheets_review_cmd )
@@ -1110,7 +1113,7 @@ async function do_fetch( )
                has_name_suffix = true;
 
                if( ( cmd == users_update_cmd ) || ( cmd == messages_create_cmd )
-                || ( cmd == messages_review_cmd ) || ( cmd == storage_instances_review_cmd ) )
+                || ( cmd == messages_review_cmd ) || ( cmd == messages_update_cmd ) || ( cmd == storage_instances_review_cmd ) )
                   has_cmd_options = true;
             }
 
