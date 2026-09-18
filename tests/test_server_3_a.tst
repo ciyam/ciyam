@@ -54,6 +54,7 @@ review webcmdlist[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 update user *** password=<password>
+update message <room> name=<name>|owner=<user>
 Check for messages and then create a test message and a new room.
 IRC usage is not currently available.
 admin #0000001 1/1 Administration
@@ -67,7 +68,7 @@ test-1  testing...
 test-1 :invite room 0000002-NEW-ROOM-UUID-VALUE Testing
 :joined
 Now rename the new room to Updated and display the entrance information for the room.
-[none]
+[okay]
 0000000000000 test-1 #0000002 3/3 Updated
 Now will perform structured I/O queries for enums/lists and views after attaching to the Meta storage.
 [okay]
@@ -238,6 +239,7 @@ review webcmdlist[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 update user <pin> password=<password>
+update message <room> name=<name>|owner=<user>
 100 Meta
 Error: Unknonwn module id '99' for storage 'Meta'.
 id=575,name=enum_add_packages
