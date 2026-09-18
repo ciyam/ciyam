@@ -18,12 +18,20 @@ NAME=$1
 USER=$2
 NAMES=$3
 ;
+ASSIGN=
 RENAME=
 ;
 STARTING_ROOM=0000001
 ;
 DUMMY_JOIN_UUID=00000000000000000000000000000000
 ;
+POS=@strpos:=:$NAME
+;
+@ifdef $POS
+ASSIGN=1
+@endif
+;
+@ifndef $ASSIGN
 ; NOTE: If User names are instead
 ; a room number then will attempt
 ; to rename the room instead.
@@ -34,6 +42,7 @@ RENAME=1
 NAME=%NAMES%_$NAME
 @endif
 @endif
+@endif
 ;
 @ifeq "$NAME" "$NAMES"
 NAMES=
@@ -42,6 +51,7 @@ NAMES=
 run_script !irc_add_room "@name=$NAME"
 ;
 @ifndef $ERROR
+@ifndef $ASSIGN
 @ifndef $RENAME
 NEW_ROOM=$OUTPUT
 ;
@@ -59,8 +69,9 @@ NEW_ROOM=@substr:0,$POS:$NEW_ROOM
 .run_script !irc_add_room "@name=%NEW_ROOM%_%DUMMY_JOIN_UUID%_$NAMES"
 @endif
 @endif
-@endif
 ;
+@endif
+@endif
 @endif
 ;
 @endif
