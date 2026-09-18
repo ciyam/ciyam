@@ -211,11 +211,40 @@ FETCH_PREFIX=~!
 ROOM=$OLD_ROOM
 FETCH_PREFIX=!
 @endif
+;
+PREFIX=
+SUFFIX=
+TRANSFER=
+POS=@strpos:=:$ROOM
+;
+@ifdef $POS
+TRANSFER=1
+SUFFIX=@substr:$POS:$ROOM
+ROOM=@substr:0,$POS:$ROOM
+@endif
+;
+FIRST=@substr:0,1:$ROOM
+@ifeq "$FIRST" "~"
+PREFIX=~
+ROOM=@substr:1:$ROOM
+@endif
+;
 LEN=@strlen:$ROOM
 @if $LEN #< $ROOM_LEN
 ROOM=@padlen:$ROOM_LEN,0:$ROOM
 @endif
-.run_script !irc_join "@name=$USER,@room=$ROOM"
+;
+@ifdef $TRANSFER
+.run_script !irc_add_room "@name=$ROOM$SUFFIX"
+TRANSFER=
+ROOM=$OLD_ROOM
+@else
+.run_script !irc_join "@name=$USER,@room=$PREFIX$ROOM"
+@ifdef $PREFIX
+ROOM=$ENTRANCE_ROOM
+@endif
+@endif
+;
 @ifdef $ERROR
 ERROR=
 ROOM=$OLD_ROOM
