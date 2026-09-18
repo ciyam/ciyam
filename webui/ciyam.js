@@ -920,32 +920,6 @@ class CIYAM
       }
    }
 
-   async delete_messages( room, callback )
-   {
-      if( this.sessid == "" )
-         callback( "Error: No current session exists." );
-      else
-      {
-         this.user_callback = callback;
-
-         var url = this.get_cws_url( ) + "/messages/" + room
-          + "?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type;
-
-         url += "&session=" + this.sessid;
-
-         var old_room = this.room;
-
-         this.room = room;
-
-         await this.fetch( url, "DELETE", this.at_fetch_messages.bind( this ) )
-
-         if( this.error != null )
-            this.room = old_room;
-         else
-            this.room = c_home_room;
-      }
-   }
-
    async fetch_messages( room, options, callback )
    {
       if( this.sessid == "" )
@@ -966,7 +940,7 @@ class CIYAM
 
          this.room = room;
 
-         await this.fetch( url, "GET", this.at_fetch_messages.bind( this ) )
+         await this.fetch( url, "GET", this.at_fetch_messages.bind( this ) );
 
          if( this.error != null )
             this.room = old_room;
@@ -995,10 +969,76 @@ class CIYAM
 
          this.room = room;
 
-         await this.fetch( url, "POST", this.at_fetch_messages.bind( this ) )
+         await this.fetch( url, "POST", this.at_fetch_messages.bind( this ) );
 
          if( this.error != null )
             this.room = old_room;
+      }
+   }
+
+   at_delete_message_room( response )
+   {
+      if( this.format_type == c_format_type_text )
+      {
+         if( this.user_callback != null )
+            this.user_callback( response );
+      }
+      else
+      {
+         const obj = JSON.parse( response );
+
+         if( obj.error != null )
+            this.error = obj.error;
+      }
+   }
+
+   async delete_message_room( room, callback )
+   {
+      if( this.sessid == "" )
+         callback( "Error: No current session exists." );
+      else
+      {
+         this.user_callback = callback;
+
+         var url = this.get_cws_url( ) + "/messages/" + room
+          + "?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type;
+
+         url += "&session=" + this.sessid;
+
+         await this.fetch( url, "DELETE", this.at_delete_message_room.bind( this ) );
+      }
+   }
+
+   at_update_message_room( response )
+   {
+      if( this.format_type == c_format_type_text )
+      {
+         if( this.user_callback != null )
+            this.user_callback( response );
+      }
+      else
+      {
+         const obj = JSON.parse( response );
+
+         if( obj.error != null )
+            this.error = obj.error;
+      }
+   }
+   async update_message_room( room, options, callback )
+   {
+      if( this.sessid == "" )
+         callback( "Error: No current session exists." );
+      else
+      {
+         var url = this.get_cws_url( ) + "/messages/" + room
+          + "?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type;
+
+         if( ( options != null ) && ( options != "" ) )
+            url += "&options=" + encodeURIComponent( options );
+
+         url += "&session=" + this.sessid;
+
+         await this.fetch( url, "PUT", this.at_update_message_room.bind( this ) );
       }
    }
 
@@ -1039,7 +1079,7 @@ class CIYAM
 
          url += "&session=" + this.sessid;
 
-         await this.fetch( url, "POST", this.at_create_unlock_key.bind( this ) )
+         await this.fetch( url, "POST", this.at_create_unlock_key.bind( this ) );
       }
    }
 
@@ -1218,9 +1258,11 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
                         console.log( ciyam.new_room );
                   }
                   else if( cmd_info.cmd == c_cmd_verb_delete )
-                     await ciyam.delete_messages( cmd_info.key, console.log );
+                     await ciyam.delete_message_room( cmd_info.key, console.log );
                   else if( cmd_info.cmd == c_cmd_verb_review )
                      await ciyam.fetch_messages( cmd_info.key, cmd_info.args, console.log );
+                  else if( cmd_info.cmd == c_cmd_verb_update )
+                     await ciyam.update_message_room( cmd_info.key, cmd_info.args, console.log );
                }
                else if( command.indexOf( c_node_cmd_unlock_keys + " " ) == 0 )
                {
