@@ -406,7 +406,7 @@ Rename room 0000001 back to Administration and output entrance room details.
     "payload": "admin #0000001 2/7 Administration"
   }
 ]
-Create a new romm for 'test-1' and 'test-2' and output entrance room details for 'test-1' then rename the new room and output entrance again.
+Create a new romm for 'test-1' and 'test-2' and output entrance room details for 'test-1'.
 {"room":"0000000"}
 [
   {
@@ -432,6 +432,35 @@ Create a new romm for 'test-1' and 'test-2' and output entrance room details for
     "payload": "test-1 #0000002 1/1 Private (test-1 and test-2)"
   }
 ]
+Rename the new room and output the entrance again.
+{"room":"0000000"}
+[
+  {
+    "name": "admin",
+    "count": "0"
+  },
+  {
+    "name": "test-1",
+    "count": "1"
+  },
+  {
+    "name": "test-2",
+    "count": "0"
+  }
+]
+[
+  {
+    "when": "0000000000001",
+    "payload": "admin #0000001 5/7 Administration"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "test-1 #0000002 2/2 Testing (test-1 and test-2)"
+  }
+]
+Attempt to transfer the ownership to 'admin' and then to 'test-2' and output the entrance again.
+Error: User 'admin' is not a room member.
+Error: User 'test-2' is not a room member.
 {"room":"0000000"}
 [
   {

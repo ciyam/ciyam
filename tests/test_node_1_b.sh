@@ -96,17 +96,27 @@ else
 
  env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 10301 $device "" none
 
- rm -f /tmp/ciyam/$device.lst
-
- echo "Create a new romm for 'test-1' and 'test-2' and output entrance room details for 'test-1' then rename the new room and output entrance again."
+ echo "Create a new romm for 'test-1' and 'test-2' and output entrance room details for 'test-1'."
  new_room=$(env CIYAM_NODE_COMMAND="messages create 0000000 for=test-2;text=Private (test-1 and test-2)" node ../webui/ciyam.js -test "" 11111 $device "" none)
- env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 11111 $device "" none
- env CIYAM_NODE_COMMAND="messages create 0000000 for=0000002;text=Testing (test-1 and test-2)" node ../webui/ciyam.js -test "" 11111 $device "" none
- env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 11111 $device "" none
+
+ echo "messages" >/tmp/ciyam/$device.lst
+
+ echo "echo Rename the new room and output the entrance again." >>/tmp/ciyam/$device.lst
+ echo "messages update 0000002 name=Testing (test-1 and test-2)" >>/tmp/ciyam/$device.lst
+ echo "messages" >>/tmp/ciyam/$device.lst
+
+ echo "echo Attempt to transfer the ownership to 'admin' and then to 'test-2' and output the entrance again." >>/tmp/ciyam/$device.lst
+ echo "messages update 0000002 owner=admin" >>/tmp/ciyam/$device.lst
+ echo "messages update 0000002 owner=test-2" >>/tmp/ciyam/$device.lst
+ echo "messages" >>/tmp/ciyam/$device.lst
+
+ env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 11111 $device "" none
+
+ rm -f /tmp/ciyam/$device.lst
 
  echo "Review messages in room 0000001 again for 'test-2' then attempt to rename room 0000002."
  env CIYAM_NODE_COMMAND="messages review 0000001" node ../webui/ciyam.js -test "" 22222 $device "" none | sed "s/0000002-[0-9a-f]*/0000002-NEW-ROOM-UUID-VALUE/g"
- env CIYAM_NODE_COMMAND="messages create 0000000 for=0000002;text=Renamed (test-1 and test-2)" node ../webui/ciyam.js -test "" 22222 $device "" none
+ env CIYAM_NODE_COMMAND="messages update 0000002 name=Renamed (test-1 and test-2)" node ../webui/ciyam.js -test "" 22222 $device "" none
 
  echo "Join new romm for 'test-2', create an initial message for the new room and output entrace room details."
  env CIYAM_NODE_COMMAND="messages review 0000002 from=${new_room:8}" node ../webui/ciyam.js -test "" 22222 $device "" none
