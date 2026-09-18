@@ -19,8 +19,17 @@ USERNAME=$1
 IRC_ROOM=$2
 JOIN_TOKEN=$3
 ;
+UNJOIN=
+;
+FIRST=@substr:0,1:$IRC_ROOM
+@ifeq "$FIRST" "~"
+UNJOIN=1
+@else
+;
 @ifdef $JOIN_TOKEN
 JOIN_TOKEN=-$JOIN_TOKEN
+@endif
+;
 @endif
 ;
 .run_script !irc_join "@name=$USERNAME,@room=$IRC_ROOM$JOIN_TOKEN"
@@ -37,8 +46,10 @@ IRC_USERS=$JOIN_LINE
 ;
 @endif
 ;
+@ifndef $UNJOIN
 @ifdef $IRC_USERS
 #$IRC_USERS
+@endif
 @endif
 ;
 @endif
