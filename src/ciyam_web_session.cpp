@@ -154,6 +154,9 @@ constexpr const char* c_cws_request_messages_create_options_text = "text";
 
 constexpr const char* c_cws_request_messages_review_options_from = "from";
 
+constexpr const char* c_cws_request_messages_update_options_name = "name";
+constexpr const char* c_cws_request_messages_update_options_owner = "owner";
+
 constexpr const char* c_cws_request_unlock_keys_create_options_encrypted = "encrypted";
 
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax to HTTP requests.
@@ -162,14 +165,16 @@ constexpr const char* c_cws_help_request_output = "quit\n"
  "delete javascript\ndelete stylesheet\ndelete webcmdlist\nemploy unlock-key <key>\nretain javascript\n"
  "retain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [from=<unix_time>]\nreview storages\n"
  "review javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
- "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user *** password=<password>";
+ "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
+ "update user *** password=<password>\nupdate message <room> name=<name>|owner=<user>";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|nominated=[<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
  "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete message <room>\ndelete javascript\ndelete stylesheet\n"
  "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [from=<unix_time>]\n"
  "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
- "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user <pin> password=<password>";
+ "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user <pin> password=<password>\n"
+ "update message <room> name=<name>|owner=<user>";
 
 constexpr const char* c_web_session_script = "web_session.cin";
 
@@ -2559,6 +2564,32 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_messages_prefix ) )
                                     room = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_messages_prefix ) );
 
+                                 if( is_put_request
+                                  && option_parameters.count( c_cws_request_messages_update_options_name ) )
+                                 {
+                                    use_none_response = false;
+
+                                    string name( option_parameters[ c_cws_request_messages_update_options_name ] );
+
+                                    request_and_args = "<web_session_add_room.cin \"" + name + "\" \"" + username + "\" " + room + "\n";
+
+                                    room = c_web_session_default_room_number;
+                                 }
+
+                                 if( is_put_request
+                                  && option_parameters.count( c_cws_request_messages_update_options_owner ) )
+                                 {
+                                    use_none_response = false;
+
+                                    string room_assign( room );
+
+                                    room_assign += '=' + option_parameters[ c_cws_request_messages_update_options_owner ];
+
+                                    request_and_args = "<web_session_add_room.cin \"" + room_assign + "\" \"" + username + "\"\n";
+
+                                    room = c_web_session_default_room_number;
+                                 }
+
                                  if( is_post_request
                                   && option_parameters.count( c_cws_request_messages_create_options_text ) )
                                  {
@@ -2620,7 +2651,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     }
                                  }
 
-                                 if( !is_adding_room && !is_special_request )
+                                 if( !is_put_request && !is_adding_room && !is_special_request )
                                  {
                                     request_and_args += "IRC_ROOM=" + room + '\n';
 
