@@ -2572,8 +2572,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     string name( option_parameters[ c_cws_request_messages_update_options_name ] );
 
                                     request_and_args = "<web_session_add_room.cin \"" + name + "\" \"" + username + "\" " + room + "\n";
-
-                                    room = c_web_session_default_room_number;
                                  }
 
                                  if( is_put_request
@@ -2586,8 +2584,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     room_assign += '=' + option_parameters[ c_cws_request_messages_update_options_owner ];
 
                                     request_and_args = "<web_session_add_room.cin \"" + room_assign + "\" \"" + username + "\"\n";
-
-                                    room = c_web_session_default_room_number;
                                  }
 
                                  if( is_post_request
@@ -2651,7 +2647,17 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     }
                                  }
 
-                                 if( !is_put_request && !is_adding_room && !is_special_request )
+                                 if( is_delete_request )
+                                 {
+                                    use_none_response = false;
+
+                                    string prefixed_room( "~" + room );
+
+                                    request_and_args += "<web_session_join.cin \"" + username + "\" \"" + prefixed_room + "\"\n";
+                                 }
+
+                                 if( !is_put_request && !is_delete_request
+                                  && !is_adding_room && !is_special_request )
                                  {
                                     request_and_args += "IRC_ROOM=" + room + '\n';
 
@@ -2675,16 +2681,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                     string prefixed_join_room( room );
 
-                                    if( is_delete_request )
-                                    {
-                                       prefixed_join_room.insert( 0, "~" );
-
-                                       room = c_web_session_default_room_number;
-                                    }
-
                                     if( room == c_web_session_default_room_number )
                                     {
-                                       request_and_args += "<web_session_join.cin \"" + username + "\" \"" + prefixed_join_room + "\"\n";
+                                       request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"\n";
 
                                        // NOTE: If no "from" has been specified will instead use the relevant system variable values.
                                        if( from.empty( ) )
