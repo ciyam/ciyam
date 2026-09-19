@@ -55,16 +55,15 @@ review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 update user *** password=<password>
 update message <room> name=<name>|owner=<user>
-Check for messages and then create a test message and a new room.
+Check for messages and attempt to create a non-special message and then create a new room.
 IRC usage is not currently available.
 admin #0000001 1/1 Administration
-test-1 testing...
+Normal messages for this room are disallowed.
 0000002
 Now check for messages as 'admin' and join the room created by 'test-1'.
-admin #0000001 3/3 Administration
+admin #0000001 2/2 Administration
 test-1+1
 test-1 :joined
-test-1  testing...
 test-1 :invite room 0000002-NEW-ROOM-UUID-VALUE Testing
 :joined
 Now rename the new room to Updated and display the entrance information for the room.

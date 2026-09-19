@@ -101,24 +101,8 @@ Review messages in room 0000001 for 'test-1'.
     "payload": "test-1 :joined"
   }
 ]
-Create an initial message for 'test-1' and output entrance room details.
-{"room":"0000001"}
-[
-  {
-    "name": "admin",
-    "count": "0"
-  },
-  {
-    "name": "test-1",
-    "count": "1"
-  }
-]
-[
-  {
-    "when": "0000000000001",
-    "payload": "test-1  test-1 here..."
-  }
-]
+Attempt an initial message for 'test-1' and output entrance room details.
+Error: Normal messages for this room are disallowed.
 {"room":"0000000"}
 [
   {
@@ -133,7 +117,7 @@ Create an initial message for 'test-1' and output entrance room details.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 0/2 Administration"
+    "payload": "admin #0000001 0/1 Administration"
   }
 ]
 Review messages in room 0000001 for 'test-1'.
@@ -169,7 +153,7 @@ Output the entrance room details for 'admin'.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 2/3 Administration"
+    "payload": "admin #0000001 1/2 Administration"
   }
 ]
 Review messages in room 0000001 for 'admin'.
@@ -188,10 +172,6 @@ Review messages in room 0000001 for 'admin'.
   {
     "when": "0000000000001",
     "payload": "test-1 :joined"
-  },
-  {
-    "when": "0000000000002",
-    "payload": "test-1  test-1 here..."
   }
 ]
 Create a new user '22222' named 'test-2'.
@@ -247,28 +227,8 @@ Review messages in room 0000001 for 'test-2'.
     "payload": "test-2 :joined"
   }
 ]
-Create an initial message for 'test-2' and output entrance room details.
-{"room":"0000001"}
-[
-  {
-    "name": "admin",
-    "count": "0"
-  },
-  {
-    "name": "test-1",
-    "count": "0"
-  },
-  {
-    "name": "test-2",
-    "count": "1"
-  }
-]
-[
-  {
-    "when": "0000000000001",
-    "payload": "test-2  test-2 here..."
-  }
-]
+Attempt an initial message for 'test-2' and output entrance room details.
+Error: Normal messages for this room are disallowed.
 {"room":"0000000"}
 [
   {
@@ -287,7 +247,7 @@ Create an initial message for 'test-2' and output entrance room details.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 0/2 Administration"
+    "payload": "admin #0000001 0/1 Administration"
   }
 ]
 Review messages in room 0000001 for 'test-2'.
@@ -331,7 +291,7 @@ Output entrance room details for 'admin'.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 2/5 Administration"
+    "payload": "admin #0000001 1/3 Administration"
   }
 ]
 Review messages in room 0000001 for 'admin'.
@@ -354,10 +314,6 @@ Review messages in room 0000001 for 'admin'.
   {
     "when": "0000000000001",
     "payload": "test-2 :joined"
-  },
-  {
-    "when": "0000000000002",
-    "payload": "test-2  test-2 here..."
   }
 ]
 Attempt to rename room 0000001 with an invalid name.
@@ -381,7 +337,7 @@ Rename room 0000001 to Testing and output entrance room details.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 1/6 Testing"
+    "payload": "admin #0000001 1/4 Testing"
   }
 ]
 Rename room 0000001 back to Administration and output entrance room details.
@@ -403,7 +359,7 @@ Rename room 0000001 back to Administration and output entrance room details.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 2/7 Administration"
+    "payload": "admin #0000001 2/5 Administration"
   }
 ]
 Create a new romm for 'test-1' and 'test-2' and output entrance room details for 'test-1'.
@@ -425,7 +381,7 @@ Create a new romm for 'test-1' and 'test-2' and output entrance room details for
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 5/7 Administration"
+    "payload": "admin #0000001 4/5 Administration"
   },
   {
     "when": "0000000000002",
@@ -451,7 +407,7 @@ Rename the new room and output the entrance again.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 5/7 Administration"
+    "payload": "admin #0000001 4/5 Administration"
   },
   {
     "when": "0000000000002",
@@ -479,7 +435,7 @@ Error: User 'test-2' is not a room member.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 5/7 Administration"
+    "payload": "admin #0000001 4/5 Administration"
   },
   {
     "when": "0000000000002",
@@ -574,7 +530,7 @@ Join new romm for 'test-2', create an initial message for the new room and outpu
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 0/5 Administration"
+    "payload": "admin #0000001 0/4 Administration"
   },
   {
     "when": "0000000000002",
@@ -600,7 +556,7 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 5/7 Administration"
+    "payload": "admin #0000001 4/5 Administration"
   },
   {
     "when": "0000000000002",
@@ -629,18 +585,14 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
   },
   {
     "when": "0000000000002",
-    "payload": "test-2  test-2 here..."
-  },
-  {
-    "when": "0000000000003",
     "payload": "admin :rename 'Administration' to 'Testing'"
   },
   {
-    "when": "0000000000004",
+    "when": "0000000000003",
     "payload": "admin :rename 'Testing' to 'Administration'"
   },
   {
-    "when": "0000000000005",
+    "when": "0000000000004",
     "payload": "test-1 :issued (invite for 0000002 sent to test-2)"
   }
 ]

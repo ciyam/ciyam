@@ -123,7 +123,7 @@ new_checked=$(echo -n "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721
 new_session=$(echo -n "$new_checked$new_unique" | sha256sum | head -c 20)
 curl -s "localhost:13031/cws/help?access=$new_access&device=$new_device&session=bad_session"
 curl -s "localhost:13031/cws/help?access=$new_access&device=$new_device&session=$new_session"
-echo "Check for messages and then create a test message and a new room."
+echo "Check for messages and attempt to create a non-special message and then create a new room."
 summary=$(curl -s "localhost:13031/cws/messages?access=$new_access&device=$new_device&session=$new_session" | tail -n 1)
 echo ${summary#* }
 ./system_variable set @irc_allow 1

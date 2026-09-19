@@ -40,7 +40,7 @@ else
  echo "echo Review messages in room 0000001 for 'test-1'." >>/tmp/ciyam/$device.lst
  echo "messages review 0000001" >>/tmp/ciyam/$device.lst
 
- echo "echo Create an initial message for 'test-1' and output entrance room details." >>/tmp/ciyam/$device.lst
+ echo "echo Attempt an initial message for 'test-1' and output entrance room details." >>/tmp/ciyam/$device.lst
  echo "messages create 0000001 text=test-1 here..." >>/tmp/ciyam/$device.lst
  echo "messages" >>/tmp/ciyam/$device.lst
 
@@ -68,7 +68,7 @@ else
  echo "echo Review messages in room 0000001 for 'test-2'." >>/tmp/ciyam/$device.lst
  echo "messages review 0000001" >>/tmp/ciyam/$device.lst
 
- echo "echo Create an initial message for 'test-2' and output entrance room details." >>/tmp/ciyam/$device.lst
+ echo "echo Attempt an initial message for 'test-2' and output entrance room details." >>/tmp/ciyam/$device.lst
  echo "messages create 0000001 text=test-2 here..." >>/tmp/ciyam/$device.lst
  echo "messages" >>/tmp/ciyam/$device.lst
 
