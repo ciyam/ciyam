@@ -77,6 +77,27 @@ ERROR=Normal messages for this room are disallowed.
 @endif
 ;
 @ifndef $ERROR
+ROOM_POSTS=
+.system_variable @irc_posts_$ROOM
+@ifdef $OUTPUT
+ROOM_POSTS=$OUTPUT
+@endif
+;
+@ifeq "$ROOM_POSTS" "OWN"
+.system_variable @irc_owner_$ROOM
+@ifneq "$OUTPUT" "$USER_NAME"
+@ifndef $SPECIAL
+ERROR=Message creation for this room is owner only.
+@endif
+@endif
+@elif "$ROOM_POSTS" = "NONE"
+@ifndef $SPECIAL
+ERROR=Message creation is not permitted for this room.
+@endif
+@endif
+@endif
+;
+@ifndef $ERROR
 ;
 .session_variable  -id=$SESSION_ID @ip_addr
 @ifeq "$OUTPUT" "::1"
