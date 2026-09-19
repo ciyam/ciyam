@@ -474,7 +474,7 @@ Review messages in room 0000001 again for 'test-2' then attempt to rename room 0
     "payload": "test-1 :invite room 0000002-NEW-ROOM-UUID-VALUE Private (test-1 and test-2)"
   }
 ]
-Error: A room can only be renamed by its owner or the administrator.
+Error: A room can only be changed by its owner or the administrator.
 Join new romm for 'test-2', create an initial message for the new room and output entrace room details.
 {"room":"0000002"}
 [
