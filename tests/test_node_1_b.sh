@@ -58,6 +58,9 @@ else
  echo "echo Create a new user '22222' named 'test-2'." >>/tmp/ciyam/$device.lst
  echo "users create nominated=22222:test-2" >>/tmp/ciyam/$device.lst
 
+ echo "echo Attempt to transfer 0000001 ownership to 'test-2'." >>/tmp/ciyam/$device.lst
+ echo "messages update 0000001 owner=test-2" >>/tmp/ciyam/$device.lst
+
  env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 10301 $device "" none
 
  echo "Connect using 22222 with 'none' and output entrance room details."
