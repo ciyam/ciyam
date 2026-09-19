@@ -21,6 +21,7 @@ ERROR=Room and User names are required for "irc_add_room".
 NAME=$1
 USER=$2
 ;
+POSTS=
 ASSIGN=
 EXISTING=
 NEW_ROOM=
@@ -146,6 +147,21 @@ ERROR=Unable to obtain the system IRC lock (try again later).
 @else
 ;
 @ifdef $ASSIGN
+FIRST=@substr:0,1:$NAME
+@ifeq "$FIRST" "@"
+POSTS=1
+NAME=@substr:1:$NAME
+@ifneq "$NAME" "ANY"
+@ifneq "$NAME" "OWN"
+@ifneq "$NAME" "NONE"
+ERROR=Unknown room posts value '$NAME'.
+@endif
+@endif
+@endif
+@ifeq "$EXISTING" "$STARTING_ROOM"
+ERROR=Posts assignment for this room is not permitted.
+@endif
+@else
 @ifeq "$EXISTING" "$STARTING_ROOM"
 ERROR=Ownership assignment for this room is not permitted.
 @else
@@ -155,6 +171,7 @@ CHECK_USERS=@repstr:@$NAME@/:$ALL_USERS
 ;
 @ifeq "$ALL_USERS" "$CHECK_USERS"
 ERROR=User '$NAME' is not a room member.
+@endif
 @endif
 @endif
 ;
@@ -185,13 +202,12 @@ ADMIN_OR_OWNER=1
 @endif
 ;
 @ifndef $ADMIN_OR_OWNER
-@ifndef $ASSIGN
-ERROR=A room can only be renamed by its owner or the administrator.
-@else
-ERROR=A room can only be assigned by its owner or the administrator.
-@endif
+ERROR=A room can only be changed by its owner or the administrator.
 @else
 ;
+@ifdef $POSTS
+.system_variable @irc_posts_$EXISTING "$NAME"
+@else
 @ifdef $ASSIGN
 .system_variable @irc_owner_$EXISTING
 OLD_NAME=$OUTPUT
@@ -201,6 +217,7 @@ OLD_NAME=$OUTPUT
 OLD_NAME=$OUTPUT
 ;
 .system_variable @irc_names_$EXISTING "$NAME"
+@endif
 @endif
 ;
 CHANGED=1
@@ -216,6 +233,7 @@ RETURN=$NEW_ROOM-$UUID
 CHANGED=1
 .system_variable @irc_names_$NEW_ROOM "$NAME"
 .system_variable @irc_owner_$NEW_ROOM "$USER"
+.system_variable @irc_posts_$NEW_ROOM "any"
 .system_variable @irc_users_$NEW_ROOM "@$USER"
 .system_variable @irc_uuids_$NEW_ROOM "$UUID"
 ;
@@ -240,10 +258,14 @@ MESSAGE=@strlit:_:create $NEW_ROOM-$UUID $NAME
 @else
 SEND_NAME=ALL
 SEND_ROOM=$EXISTING
+@ifdef $POSTS
+MESSAGE=@strlit:_:allows set to $NAME
+@else
 @ifdef $ASSIGN
 MESSAGE=@strlit:_:assign '$OLD_NAME' to '$NAME'
 @else
 MESSAGE=@strlit:_:rename '$OLD_NAME' to '$NAME'
+@endif
 @endif
 @endif
 ;
