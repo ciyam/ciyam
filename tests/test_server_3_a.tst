@@ -54,7 +54,7 @@ review webcmdlist[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 update user *** password=<password>
-update message <room> name=<name>|owner=<user>
+update message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}
 Check for messages and attempt to create a non-special message and then create a new room.
 IRC usage is not currently available.
 admin #0000001 1/1 Administration
@@ -238,7 +238,7 @@ review webcmdlist[s] [<name>]
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 update user <pin> password=<password>
-update message <room> name=<name>|owner=<user>
+update message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}
 100 Meta
 Error: Unknonwn module id '99' for storage 'Meta'.
 id=575,name=enum_add_packages
