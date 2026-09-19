@@ -724,7 +724,9 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                {
                   cerr << c_error_output_prefix << put_file_error << endl;
 
-                  // NOTE: Will only set the error environment variable if hasn't already been set.
+                  set_environment_variable( c_env_var_output, "" );
+
+                  // NOTE: Will only set the error environment variable if it has not been set.
                   if( get_environment_variable( c_env_var_error ).empty( ) )
                      set_environment_variable( c_env_var_error, put_file_error.c_str( ) );
 
@@ -1771,7 +1773,10 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   else if( is_error || !get_is_quiet_command( ) )
                      handle_command_response( final_response, is_error );
 
-                  // NOTE: Will only set the error environment variable if hasn't already been set.
+                  if( is_error )
+                     set_environment_variable( c_env_var_output, "" );
+
+                  // NOTE: Will only set the error environment variable if it has not been set.
                   if( is_error && get_environment_variable( c_env_var_error ).empty( ) )
                      set_environment_variable( c_env_var_error, response.substr( start ).c_str( ) );
 
