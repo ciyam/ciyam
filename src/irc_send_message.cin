@@ -60,6 +60,24 @@ ERROR=Invalid message format (needs to be base64).
 @else
 PREFIX=@substr:0,3:$MESSAGE
 ;
+; NOTE: Special messages begin with "_:[a-z]"
+; and (unless is "admin") are the only type
+; of messages allowed in the "starting room".
+SPECIAL=
+@ifeq "$PREFIX" "Xzp"
+SPECIAL=1
+@endif
+;
+@ifeq "$ROOM" "$STARTING_ROOM"
+@ifneq "$USER_NAME" "admin"
+@ifndef $SPECIAL
+ERROR=Normal messages for this room are disallowed.
+@endif
+@endif
+@endif
+;
+@ifndef $ERROR
+;
 .session_variable  -id=$SESSION_ID @ip_addr
 @ifeq "$OUTPUT" "::1"
 PREFIX=
@@ -78,6 +96,8 @@ PREFIX=
 ;
 @ifdef $PREFIX
 ERROR=Unexpected invalid message prefix.
+@endif
+;
 @endif
 ;
 @endif
