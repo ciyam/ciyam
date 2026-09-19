@@ -69,6 +69,9 @@ CIYAM_PAUSE_SECONDS=1
 ;
 @ifdef $INVITATION_INFORMATION
 .run_script !irc_add_room "@name=$INVITATION_INFORMATION"
+@ifdef $ERROR
+ERROR=
+@endif
 ;
 INVITATION_INFORMATION=
 @endif
@@ -98,7 +101,9 @@ ROOM_NO=@padlen:$ROOM_LEN,0:$ROOM_NO
 &Enter New Room Name: :NAME=
 @ifdef $NAME
 .run_script !irc_add_room "@name=%ROOM_NO%_$NAME"
-@ifndef $ERROR
+@ifdef $ERROR
+ERROR=
+@else
 ROOM_RENAME=1
 @endif
 @endif
@@ -141,10 +146,15 @@ EDITED_MESSAGE=@substr:1:$EDITED_MESSAGE
 EDITED_MESSAGE=_ $EDITED_MESSAGE
 ENCODED=@base64::$EDITED_MESSAGE
 .run_script !irc_send_message "@room=$ROOM,@names=$EDIT_UNIX_UNIQUE,@message=$ENCODED"
+@ifdef $ERROR
+ERROR=
+@endif
+;
 @endif
 @endif
 @endif
 @endif
+;
 @elif "$CIYAM_KEY_PRESSED" = "n"
 &Enter Room Name: :NAME=
 .run_script !irc_add_room "@name=$NAME"
@@ -197,7 +207,11 @@ INVITATION_INFORMATION=%ROOM%_%JOIN_TOKEN%_$INVITATION_USERS
 @endif
 @endif
 .run_script !irc_join "@name=$USER,@room=$ROOM"
+@ifdef $ERROR
+ERROR=
 @endif
+@endif
+;
 @elif "$CIYAM_KEY_PRESSED" = "r"
 OLD_ROOM=$ROOM
 SHOW_CHANGED=
@@ -215,6 +229,7 @@ FETCH_PREFIX=!
 PREFIX=
 SUFFIX=
 TRANSFER=
+;
 POS=@strpos:=:$ROOM
 ;
 @ifdef $POS
@@ -292,23 +307,31 @@ LEN=@strlen:$INV_ROOM
 INV_ROOM=@padlen:$ROOM_LEN,0:$INV_ROOM
 @endif
 .run_script !irc_add_room @name=%INV_ROOM%_%DUMMY_JOIN_UUID%_$RESTRICT
+@ifdef $ERROR
+ERROR=
+@endif
+;
 RESTRICT=
 @endif
 @endif
 @endif
+;
 @elif "$CIYAM_KEY_PRESSED" = "v"
 &Enter QR Code: :QR_CODE=
 #^^Entered QR Code: $QR_CODE
 ~qrencode -tANSI $QR_CODE
+;
 @elif "$CIYAM_KEY_PRESSED" = "s"
 #Scan QR_CODE:
 QR_CODE=@file:~zbarcam -1 -q --raw
 #^^Scanned QR Code: $QR_CODE
+;
 @elif "$CIYAM_KEY_PRESSED" = "/"
 &/:MESSAGE=_/
 @ifeq "$MESSAGE" "_/"
 MESSAGE=_/help
 @endif
+;
 @elif "$CIYAM_KEY_PRESSED" = " "
 &:MESSAGE=_
 MLEN=@strlen:$MESSAGE
@@ -386,6 +409,9 @@ RESTRICT=
 ENCODED=@base64::$MESSAGE
 ;
 .run_script !irc_send_message "@room=$ROOM,@names=$NAMES,@message=$ENCODED"
+@ifdef $ERROR
+ERROR=
+@endif
 ;
 @ifdef $OUTPUT
 #$OUTPUT
@@ -418,6 +444,10 @@ START_POINT_INFO=@strlit:@@$START_POINTS
 @endif
 ;
 .run_script !irc_fetch_messages "@room=$FETCH_PREFIX$ROOM$START_POINT_INFO"
+@ifdef $ERROR
+ERROR=
+@endif
+;
 FETCH_PREFIX=
 START_POINT_INFO=
 @endif
