@@ -146,12 +146,16 @@ ERROR=Unable to obtain the system IRC lock (try again later).
 @else
 ;
 @ifdef $ASSIGN
+@ifeq "$EXISTING" "$STARTING_ROOM"
+ERROR=Ownership assignment for this room is not permitted.
+@else
 .system_variable @irc_users_$EXISTING
 ALL_USERS=$OUTPUT@
 CHECK_USERS=@repstr:@$NAME@/:$ALL_USERS
 ;
 @ifeq "$ALL_USERS" "$CHECK_USERS"
 ERROR=User '$NAME' is not a room member.
+@endif
 @endif
 ;
 @else
