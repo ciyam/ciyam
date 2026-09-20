@@ -4,6 +4,10 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+if [ -f ciyam_server.stop ]; then
+ sleep 0.5
+fi
+
 touch ciyam_server.cmd
 sleep 0.5
 
