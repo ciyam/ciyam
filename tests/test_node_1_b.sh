@@ -97,6 +97,10 @@ else
  echo "messages create 0000000 for=0000001;text=Administration" >>/tmp/ciyam/$device.lst
  echo "messages" >>/tmp/ciyam/$device.lst
 
+ echo "echo Attempt to change posts to 'ALL' and assign ownership to 'test-1' for room 0000001." >>/tmp/ciyam/$device.lst
+ echo "messages update 0000001 posts=ALL" >>/tmp/ciyam/$device.lst
+ echo "messages update 0000001 owner=test-1" >>/tmp/ciyam/$device.lst
+
  env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 10301 $device "" none
 
  echo "Create a new romm for 'test-1' and 'test-2' and output entrance room details for 'test-1'."
@@ -106,6 +110,15 @@ else
 
  echo "echo Rename the new room and output the entrance again." >>/tmp/ciyam/$device.lst
  echo "messages update 0000002 name=Testing (test-1 and test-2)" >>/tmp/ciyam/$device.lst
+ echo "messages" >>/tmp/ciyam/$device.lst
+
+ echo "echo Change the posts to 'NONE' and then attempt to create a message for the new room." >>/tmp/ciyam/$device.lst
+ echo "messages update 0000002 posts=NONE" >>/tmp/ciyam/$device.lst
+ echo "messages create 0000002 text=Test Message" >>/tmp/ciyam/$device.lst
+ echo "messages" >>/tmp/ciyam/$device.lst
+
+ echo "echo Change the posts back to 'ANY' and output the entrance again." >>/tmp/ciyam/$device.lst
+ echo "messages update 0000002 posts=ANY" >>/tmp/ciyam/$device.lst
  echo "messages" >>/tmp/ciyam/$device.lst
 
  echo "echo Attempt to transfer the ownership to 'admin' and then to 'test-2' and output the entrance again." >>/tmp/ciyam/$device.lst

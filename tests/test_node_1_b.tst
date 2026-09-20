@@ -364,6 +364,9 @@ Rename room 0000001 back to Administration and output entrance room details.
     "payload": "admin #0000001 2/5 Administration"
   }
 ]
+Attempt to change posts to 'ALL' and assign ownership to 'test-1' for room 0000001.
+Error: Posts assignment for this room is not permitted.
+Error: Ownership assignment for this room is not permitted.
 Create a new romm for 'test-1' and 'test-2' and output entrance room details for 'test-1'.
 {"room":"0000000"}
 [
@@ -416,6 +419,59 @@ Rename the new room and output the entrance again.
     "payload": "test-1 #0000002 2/2 Testing (test-1 and test-2)"
   }
 ]
+Change the posts to 'NONE' and then attempt to create a message for the new room.
+Error: Message creation is not permitted for this room.
+{"room":"0000000"}
+[
+  {
+    "name": "admin",
+    "count": "0"
+  },
+  {
+    "name": "test-1",
+    "count": "1"
+  },
+  {
+    "name": "test-2",
+    "count": "0"
+  }
+]
+[
+  {
+    "when": "0000000000001",
+    "payload": "admin #0000001 4/5 Administration"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "test-1 #0000002 3/3~ Testing (test-1 and test-2)"
+  }
+]
+Change the posts back to 'ANY' and output the entrance again.
+{"room":"0000000"}
+[
+  {
+    "name": "admin",
+    "count": "0"
+  },
+  {
+    "name": "test-1",
+    "count": "1"
+  },
+  {
+    "name": "test-2",
+    "count": "0"
+  }
+]
+[
+  {
+    "when": "0000000000001",
+    "payload": "admin #0000001 4/5 Administration"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "test-1 #0000002 4/4 Testing (test-1 and test-2)"
+  }
+]
 Attempt to transfer the ownership to 'admin' and then to 'test-2' and output the entrance again.
 Error: User 'admin' is not a room member.
 Error: User 'test-2' is not a room member.
@@ -441,7 +497,7 @@ Error: User 'test-2' is not a room member.
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 2/2 Testing (test-1 and test-2)"
+    "payload": "test-1 #0000002 4/4 Testing (test-1 and test-2)"
   }
 ]
 Review messages in room 0000001 again for 'test-2' then attempt to rename room 0000002.
@@ -562,7 +618,7 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 4/4 Testing (test-1 and test-2)"
+    "payload": "test-1 #0000002 6/6 Testing (test-1 and test-2)"
   }
 ]
 {"room":"0000001"}
@@ -620,10 +676,18 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
   },
   {
     "when": "0000000000003",
-    "payload": "test-2 :joined"
+    "payload": "test-1 :allows set to NONE"
   },
   {
     "when": "0000000000004",
+    "payload": "test-1 :allows set to ANY"
+  },
+  {
+    "when": "0000000000005",
+    "payload": "test-2 :joined"
+  },
+  {
+    "when": "0000000000006",
     "payload": "test-2  hi..."
   }
 ]
