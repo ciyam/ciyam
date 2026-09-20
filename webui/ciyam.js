@@ -1024,12 +1024,15 @@ class CIYAM
             this.error = obj.error;
       }
    }
+
    async update_message_room( room, options, callback )
    {
       if( this.sessid == "" )
          callback( "Error: No current session exists." );
       else
       {
+         this.user_callback = callback;
+
          var url = this.get_cws_url( ) + "/messages/" + room
           + "?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type;
 
