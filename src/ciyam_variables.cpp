@@ -1435,6 +1435,10 @@ void set_system_variable( const var_name& var,
 {
    string name( var.name );
 
+   size_t queue_max_items = 0;
+
+   string queue_variable_name, queue_value_for_session;
+
    // NOTE: The special variable "@cmd" is used to run and hold the results of a "ciyam_command".
    if( name == c_special_variable_cmd )
    {
@@ -1667,7 +1671,12 @@ void set_system_variable( const var_name& var,
             // NOTE: If a system variable "@session_<variable>" is found then will also add
             // the item to sessions where a "@system_<variable>" session variable is found.
             if( g_variables.count( string( c_special_variable_session ) + '_' + variable ) )
-               add_queue_item_for_linked_sessions( variable, val, max_items );
+            {
+               queue_variable_name = variable;
+
+               queue_max_items = max_items;
+               queue_value_for_session = val;
+            }
          }
       }
       else if( persist
@@ -1789,6 +1798,11 @@ void set_system_variable( const var_name& var,
             ods_fs.remove_file( variable );
       }
    }
+
+   // NOTE: Need to make this function call outside the scope of the "guard" object in order to avoid
+   // a possible thread deadlock from taking place (with a session variable assignment to "@system").
+   if( !queue_variable_name.empty( ) )
+      add_queue_item_for_linked_sessions( queue_variable_name, queue_value_for_session, queue_max_items );
 }
 
 bool set_system_variable( const var_name& var, const string& value,
