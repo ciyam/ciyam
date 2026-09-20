@@ -5502,13 +5502,6 @@ void term_globals( )
 
    term_files_area( );
 
-   string ext_ip_addr_file( "~" );
-
-   ext_ip_addr_file += c_check_ext_ip_addr;
-
-   if( file_exists( ext_ip_addr_file ) )
-      remove_file( ext_ip_addr_file );
-
    if( file_exists( c_at_term_script ) )
    {
       int rc = system( c_at_term_script );
@@ -11373,7 +11366,7 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
          throw runtime_error( "cannot backup a storage unless it has been locked for admin" );
 
       if( p_sav_db_file_names )
-         *p_sav_db_file_names = p_ods->backup_database( ".sav", ' ' );
+         *p_sav_db_file_names = p_ods->backup_database( c_sav_file_ext, ' ' );
 
       // NOTE: Create a SQL file (which is the storage name with a ".backup.sql" extension).
       string sql_file_name( handler.get_name( ) );
