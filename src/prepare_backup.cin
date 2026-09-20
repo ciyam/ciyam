@@ -31,6 +31,7 @@ NUM_TRIES=0
 MAX_TRIES=60
 ;
 @label NEXT
+;
 @:LOOP
 ;
 .wait 1000
@@ -115,12 +116,22 @@ BACKUP_FILES_PATH=$OUTPUT
 <append_peer_pinned_info_list.cin "~prepare_backup.files"
 ~tar -cf $BACKUP_FILES_PATH/.ciyam/System_Files_And_Archives.tar --files-from="~prepare_backup.files"
 ~rm -f .prepare_backup_needed "~prepare_backup.files"
+;
+.system_variable @irc_vars_dir
+IRC_FILES_PATH=$OUTPUT
+;
+@ifdef $IRC_FILES_PATH
+~cp "$IRC_FILES_PATH/irc_variables.cin" "$BACKUP_FILES_PATH/.ciyam"
+@endif
+;
 #Prepared application server files, archives and databases.
 .system_variable @backup_needed 1
 @endif
+;
 @else
 ~./ciyam_backup $STORAGE $APP_DIR
 @endif
+;
 @endif
 ;
 .system_variable @preparing_backup ""
