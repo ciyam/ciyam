@@ -14,6 +14,8 @@ const c_secret_access_len = 12;
 
 const c_home_room = "0000000";
 
+const c_response_okay = "[okay]";
+
 const c_node_cmd_echo = "echo";
 const c_node_cmd_users = "users";
 const c_node_cmd_messages = "messages";
@@ -987,7 +989,13 @@ class CIYAM
       {
          const obj = JSON.parse( response );
 
-         if( obj.error != null )
+         if( obj.error == null )
+         {
+            if( ( this.user_callback != null )
+             && ( obj.response != c_response_okay ) )
+               this.user_callback( obj.response );
+         }
+         else
             this.error = obj.error;
       }
    }
@@ -1020,7 +1028,13 @@ class CIYAM
       {
          const obj = JSON.parse( response );
 
-         if( obj.error != null )
+         if( obj.error == null )
+         {
+            if( ( this.user_callback != null )
+             && ( obj.response != c_response_okay ) )
+               this.user_callback( obj.response );
+         }
+         else
             this.error = obj.error;
       }
    }
