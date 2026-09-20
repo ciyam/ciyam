@@ -83,7 +83,10 @@ constexpr const char* c_ext_htm = "htm";
 constexpr const char* c_ext_jpg = "jpg";
 constexpr const char* c_ext_png = "png";
 constexpr const char* c_ext_ttf = "ttf";
+constexpr const char* c_ext_svg = "svg";
 constexpr const char* c_ext_html = "html";
+constexpr const char* c_ext_woff = "woff";
+constexpr const char* c_ext_woff2 = "woff2";
 
 constexpr const char* c_data_text = "text";
 constexpr const char* c_data_image = "image";
@@ -157,6 +160,8 @@ constexpr const char* c_http_keep_alive_header_info = "Keep-Alive: timeout=10, m
 #endif
 
 constexpr const char* c_http_content_type_font_ttf = "font/ttf";
+constexpr const char* c_http_content_type_font_woff = "font/woff";
+constexpr const char* c_http_content_type_font_woff2 = "font/woff2";
 
 constexpr const char* c_http_content_type_text_csv = "text/csv";
 constexpr const char* c_http_content_type_text_plain = "text/plain";
@@ -170,6 +175,7 @@ constexpr const char* c_http_content_type_text_plain_utf8 = "text/plain; charset
 constexpr const char* c_http_content_type_image_gif = "image/gif";
 constexpr const char* c_http_content_type_image_jpg = "image/jpg";
 constexpr const char* c_http_content_type_image_png = "image/png";
+constexpr const char* c_http_content_type_image_svg = "image/svg";
 
 constexpr const char* c_http_content_type_application_form = "application/x-www-form-urlencoded";
 constexpr const char* c_http_content_type_application_json = "application/json";
@@ -1230,12 +1236,20 @@ void http_request_handler::on_start( )
                         osstr << c_http_content_type_image_jpg;
                      else if( extension == c_ext_png )
                         osstr << c_http_content_type_image_png;
+                     else if( extension == c_ext_svg )
+                        osstr << c_http_content_type_image_svg;
                      else if( extension == c_ext_ttf )
                         osstr << c_http_content_type_font_ttf;
+                     else if( extension == c_ext_woff )
+                        osstr << c_http_content_type_font_woff;
+                     else if( extension == c_ext_woff2 )
+                        osstr << c_http_content_type_font_woff2;
                      else if( ( extension == c_ext_htm ) || ( extension == c_ext_html ) )
                         osstr << c_http_content_type_text_html_utf8;
                      else
+                     {
                         osstr << c_http_content_type_text_plain_utf8;
+                     }
 
                      osstr << c_crlf;
 
@@ -1361,7 +1375,7 @@ void http_request_handler::on_start( )
 
             if( empty_but_not_unchanged )
                response = c_html_test_response;
-            else if( !response.empty( ) && !has_format_parameter )
+            else if( was_endpoint && !response.empty( ) && !has_format_parameter )
                   response += '\n';
 
             if( !response.empty( ) )
