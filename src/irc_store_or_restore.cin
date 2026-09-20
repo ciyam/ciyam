@@ -41,7 +41,7 @@ CIYAM_TMP_DIR=/tmp/ciyam
 IRC_VARS_DIR=$CIYAM_TMP_DIR
 @endif
 ;
-IRC_VARS_FILE=irc_variables.cin
+IRC_VARS_FILE_NAME=irc_variables.cin
 ;
 .system_variable @irc_alter ""
 ;
@@ -51,7 +51,24 @@ IRC_VARS_FILE=irc_variables.cin
 ; if they can be restored from a prior store.
 @ifndef $OUTPUT
 ;
-IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE
+IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE_NAME
+;
+; NOTE: If the IRC variables file is not found
+; then also check the ".ciyam" directory below
+; the backup directory (and if found then will
+; copy the file to the $IRC_VARS_DIR).
+@ifndef $IRC_VARS_FILE
+.system_variable @backup_files
+BACKUP_FILES_PATH=$OUTPUT
+;
+IRC_VARS_FILE=@files:$BACKUP_FILES_PATH/.ciyam:$IRC_VARS_FILE_NAME
+
+@ifdef $IRC_VARS_FILE
+~cp "$BACKUP_FILES_PATH/.ciyam/irc_variables.cin" "$IRC_VARS_DIR"
+;
+IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE_NAME
+@endif
+@endif
 ;
 @ifdef $IRC_VARS_FILE
 <$IRC_VARS_DIR/$IRC_VARS_FILE
