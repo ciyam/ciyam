@@ -137,8 +137,8 @@ struct system_variable_eraser
 struct temporary_system_variable
 {
    temporary_system_variable( const var_name& var );
-
    temporary_system_variable( const var_name& var, const std::string& value );
+   temporary_system_variable( const var_name& var, const std::string& value, const std::string& original_value );
 
    ~temporary_system_variable( );
 

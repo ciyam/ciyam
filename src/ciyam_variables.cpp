@@ -1974,6 +1974,16 @@ struct temporary_system_variable::impl
       set_system_variable( var, value );
    }
 
+   impl( const var_name& var, const string& value, const string& original_value )
+    :
+    var( var ),
+    original_value( original_value )
+   {
+      guard g( g_mutex );
+
+      set_system_variable( var, value );
+   }
+
    ~impl( )
    {
       set_system_variable( var, original_value );
@@ -1992,6 +2002,11 @@ temporary_system_variable::temporary_system_variable( const var_name& var )
 temporary_system_variable::temporary_system_variable( const var_name& var, const string& value )
 {
    p_impl = new impl( var, value );
+}
+
+temporary_system_variable::temporary_system_variable( const var_name& var, const string& value, const string& original_value )
+{
+   p_impl = new impl( var, value, original_value );
 }
 
 temporary_system_variable::~temporary_system_variable( )
