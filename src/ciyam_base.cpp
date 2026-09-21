@@ -89,6 +89,8 @@ const size_t c_default_seconds = 1;
 
 const size_t c_default_max_peers = 100;
 
+const size_t c_max_deadlock_checks = 250;
+
 const size_t c_max_key_wait_attempts = 300;
 
 // NOTE: This limit is supplied (along with the identity information) to
@@ -8286,6 +8288,28 @@ void init_session(
  const string* p_ip_addr, const string* p_blockchain, int port,
  bool is_support_session, bool add_pubkey_variable, size_t session_id )
 {
+   thread_id lock_id = g_session_mutex.get_lock_id( );
+
+   // NOTE: If the session mutex is locked then will
+   // check whether or not the lock id changes for a
+   // few seconds and if not then will assume that a
+   // thread deadlock could have taken place.
+   if( lock_id != 0 )
+   {
+      size_t i = 0;
+
+      for( i = 0; i < c_max_deadlock_checks; i++ )
+      {
+         if( g_session_mutex.get_lock_id( ) != lock_id )
+            break;
+
+         msleep( 10 );
+      }
+
+      if( i >= c_max_deadlock_checks )
+         throw runtime_error( "possible deadlock detection" );
+   }
+
    // NOTE: Scope for guard object.
    {
       guard g( g_session_mutex, "init_session" );
