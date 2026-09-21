@@ -366,6 +366,7 @@ string g_set_name;
 
 string g_cube_name;
 string g_none_name;
+string g_uuid_name;
 
 string g_algos_name;
 string g_array_name;
@@ -5220,6 +5221,7 @@ void init_globals( const char* p_sid, int* p_port, int* p_use_udp, int* p_web_po
 
       g_cube_name = get_special_var_name( e_special_var_cube );
       g_none_name = get_special_var_name( e_special_var_none );
+      g_uuid_name = get_special_var_name( e_special_var_uuid );
 
       g_algos_name = get_special_var_name( e_special_var_algos );
       g_array_name = get_special_var_name( e_special_var_array );
@@ -5263,7 +5265,6 @@ void init_globals( const char* p_sid, int* p_port, int* p_use_udp, int* p_web_po
       // NOTE: Remember special read only session variable names for later checks.
       g_read_only_var_names.insert( get_special_var_name( e_special_var_tls ) );
       g_read_only_var_names.insert( get_special_var_name( e_special_var_slot ) );
-      g_read_only_var_names.insert( get_special_var_name( e_special_var_uuid ) );
       g_read_only_var_names.insert( get_special_var_name( e_special_var_pubkey ) );
       g_read_only_var_names.insert( get_special_var_name( e_special_var_ip_addr ) );
       g_read_only_var_names.insert( get_special_var_name( e_special_var_session_id ) );
@@ -10604,6 +10605,15 @@ void set_session_variable( const var_name& var, const string& value,
             if( p_set_special_temporary && *p_set_special_temporary )
                gtp_session->variables[ name + c_temporary_special_variable_suffix ] = old_val;
          }
+      }
+      else if( name == g_uuid_name )
+      {
+         if( sess_id )
+            throw runtime_error( "invalid attempt to change '" + g_uuid_name + "' for another session" );
+
+         skip_standard_variable = true;
+
+         gtp_session->variables[ g_uuid_name ] = uuid( ).as_string( );
       }
       else if( name == g_algos_name )
       {
