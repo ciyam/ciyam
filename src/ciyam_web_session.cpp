@@ -59,6 +59,8 @@ namespace
 
 const char c_omit_edits = '~';
 
+const size_t c_cws_helpers = 5;
+
 const size_t c_cws_max_devices = 10;
 
 const size_t c_cws_seed_reserve = 120;
@@ -93,6 +95,9 @@ constexpr const char* c_list_suffix = ".list";
 constexpr const char* c_ciyam_prefix = "ciyam_";
 
 constexpr const char* c_username_suffix = "@";
+
+constexpr const char* c_web_helper_prefix = "@web_helper_";
+constexpr const char* c_web_session_prefix = "@web_session_";
 
 constexpr const char* c_error_output_prefix = "Error: ";
 
@@ -1159,6 +1164,29 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
    if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_sessions_prefix ) )
       session = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_sessions_prefix ) );
+
+   // NOTE: Empty code block for scope purposes.
+   {
+      guard g( g_mutex );
+
+      static bool first = true;
+
+      if( first )
+      {
+         first = false;
+
+         for( size_t i = 0; i < c_cws_helpers; i++ )
+         {
+#ifndef SSL_SUPPORT
+            string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<web_helper.cin " + to_string( i ) + "\" > /dev/null &" );
+#else
+            string cmd( "./ciyam_client -tls -quiet -no_prompt -no_stderr -exec=\"<web_helper.cin " + to_string( i ) + "\" > /dev/null &" );
+#endif
+            int rc = system( cmd.c_str( ) );
+            ( void )rc;
+         }
+      }
+   }
 
    string instance_module_id;
    string instance_mclass_id;
@@ -2478,16 +2506,42 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) starting "
                          "session " + session + " with device " + device + " for access " + access );
 
+                        bool found_helper = false;
+
+                        if( !found_helper )
+                        {
+                           guard g( g_mutex );
+
+                           for( size_t i = 0; i < c_cws_helpers; i++ )
+                           {
+                              string next_helper( c_web_helper_prefix + to_string( i ) );
+                              string next_session( c_web_session_prefix + to_string( i ) );
+
+                              if( !has_system_variable( next_session )
+                               && has_any_session_variable( next_helper ) )
+                              {
+                                 found_helper = true;
+
+                                 set_system_variable( next_session,
+                                  script_name + ' ' + access + ' ' + device + ' ' + session + ' ' + username );
+
+                                 break;
+                              }
+                           }
+                        }
+
+                        if( !found_helper )
+                        {
 #ifndef SSL_SUPPORT
-                        string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<"
+                           string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<"
 #else
-                        string cmd( "./ciyam_client -tls -quiet -no_prompt -no_stderr -exec=\"<"
+                           string cmd( "./ciyam_client -tls -quiet -no_prompt -no_stderr -exec=\"<"
 #endif
-                         + script_name + ' ' + access + ' ' + device + ' ' + session + ' ' + username + "\" > /dev/null &" );
+                            + script_name + ' ' + access + ' ' + device + ' ' + session + ' ' + username + "\" > /dev/null &" );
 
-                        int rc = system( cmd.c_str( ) );
-
-                        ( void )rc;
+                           int rc = system( cmd.c_str( ) );
+                           ( void )rc;
+                        }
 
                         msleep( 50 );
                      }
