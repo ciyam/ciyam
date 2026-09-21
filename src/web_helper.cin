@@ -1,0 +1,42 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+;
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "1"
+ERROR=Need to provide a helper identity.
+#Error: $ERROR
+@else
+;
+ID=$1
+;
+.session_variable @web_helper_$ID 1
+;
+@:LOOP
+;
+.wait -variable=@web_session_$ID -no_progress 10000
+;
+.system_variable @web_session_$ID
+@ifdef $OUTPUT
+;
+COMMAND=$OUTPUT
+;
+<$COMMAND
+;
+ERROR=
+;
+; NOTE: Forces a new UUID.
+.session_variable @uuid ""
+;
+.system_variable @web_session_$ID ""
+@endif
+;
+!!@:LOOP
+;
+@endif
