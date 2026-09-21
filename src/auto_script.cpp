@@ -137,6 +137,8 @@ bool g_has_read = false;
 
 time_t g_scripts_mod = 0;
 
+string g_none;
+
 string g_read_script_extra;
 
 vector< script_info > g_scripts;
@@ -597,7 +599,7 @@ void autoscript_session::on_start( )
       if( !script_reconfig )
          changed = true;
 
-      temporary_system_variable auto_script_variable( e_special_var_auto_script, c_true_value );
+      temporary_system_variable auto_script_variable( e_special_var_auto_script, c_true_value, g_none );
 
       TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
        "started autoscript session (tid = " + to_string( current_thread_id( ) ) + ")" );
