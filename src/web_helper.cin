@@ -16,6 +16,7 @@ ERROR=Need to provide a helper identity.
 ;
 ID=$1
 ;
+.system_variable @web_session_$ID ""
 .session_variable @web_helper_$ID 1
 ;
 @:LOOP
@@ -27,12 +28,12 @@ ID=$1
 ;
 COMMAND=$OUTPUT
 ;
+; NOTE: Forces a new UUID.
+.session_variable @uuid ""
+;
 <$COMMAND
 ;
 ERROR=
-;
-; NOTE: Forces a new UUID.
-.session_variable @uuid ""
 ;
 .system_variable @web_session_$ID ""
 @endif
