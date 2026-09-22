@@ -139,4 +139,20 @@ ok   other room not entrance
 ok   time shape
 ok   time of a bad unique
 
+== day labels ==================================================
+ok   same day is Today
+ok   one day back is Yesterday
+ok   two days back is a weekday
+ok   six days back is still a weekday
+ok   seven days back gives a date
+ok   seven days back drops the bare weekday
+ok   a bad unique has no label
+ok   day key shape
+ok   day key of a bad unique
+ok   same day shares a key
+ok   different days differ
+ok   days between counts calendar days
+ok   full stamp mentions the year
+ok   full stamp of a bad unique
+
 All checks passed.
