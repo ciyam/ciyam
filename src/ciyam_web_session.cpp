@@ -61,6 +61,8 @@ const char c_omit_edits = '~';
 
 const size_t c_cws_helpers = 5;
 
+const size_t c_helper_seconds = 5;
+
 const size_t c_cws_max_devices = 10;
 
 const size_t c_cws_seed_reserve = 120;
@@ -221,6 +223,8 @@ constexpr const char* c_storage_module_instance_options_fields = "fields";
 mutex g_mutex;
 
 bool g_cws_admin_locked = false;
+
+int64_t g_helper_check_tm_val = 0;
 
 atomic< size_t > g_cws_active_commands;
 
@@ -1165,26 +1169,47 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_sessions_prefix ) )
       session = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_sessions_prefix ) );
 
+   bool is_locked = false;
+
+   bool is_identity_none = !has_identity( &is_locked );
+
    // NOTE: Empty code block for scope purposes.
    {
       guard g( g_mutex );
 
-      static bool first = true;
+      int64_t now = unix_time( );
 
-      if( first )
+      if( !is_locked && ( g_helper_check_tm_val < now ) )
       {
-         first = false;
+         g_helper_check_tm_val = ( now + c_helper_seconds );
+
+         size_t num_found = 0;
 
          for( size_t i = 0; i < c_cws_helpers; i++ )
          {
+            string next_helper( c_web_helper_prefix + to_string( i ) );
+
+            if( has_any_session_variable( next_helper ) )
+               ++num_found;
+            else
+            {
 #ifndef SSL_SUPPORT
-            string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<web_helper.cin " + to_string( i ) + "\" > /dev/null &" );
+               string cmd( "./ciyam_client -quiet -no_prompt -no_stderr -exec=\"<web_helper.cin " + to_string( i ) + "\" > /dev/null &" );
 #else
-            string cmd( "./ciyam_client -tls -quiet -no_prompt -no_stderr -exec=\"<web_helper.cin " + to_string( i ) + "\" > /dev/null &" );
+               string cmd( "./ciyam_client -tls -quiet -no_prompt -no_stderr -exec=\"<web_helper.cin " + to_string( i ) + "\" > /dev/null &" );
 #endif
-            int rc = system( cmd.c_str( ) );
-            ( void )rc;
+               int rc = system( cmd.c_str( ) );
+               ( void )rc;
+            }
          }
+
+         // NOTE: If just started then
+         // uses a small wait in order
+         // to (hopefully) find one of
+         // these helpers to begin the
+         // first web session with.
+         if( !num_found )
+            msleep( 100 );
       }
    }
 
@@ -1311,10 +1336,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    string access_seed;
 
    access_seed.reserve( c_cws_seed_reserve );
-
-   bool is_locked = false;
-
-   bool is_identity_none = !has_identity( &is_locked );
 
    bool is_identity_reset = ( access.length( ) > c_cws_secret_length );
 
@@ -2508,7 +2529,13 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                         bool found_helper = false;
 
-                        if( !found_helper )
+                        // NOTE: In order to reduce the initial connection time
+                        // (and to reuse an existing process where possible) it
+                        // is expected that a fixed number of "helper" sessions
+                        // exist (each having a specific session variable name)
+                        // so each of these are checked for availablility prior
+                        // to creating a new process.
+                        if( !is_locked )
                         {
                            guard g( g_mutex );
 
