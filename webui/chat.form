@@ -1,0 +1,333 @@
+<!--
+Copyright (c) 2026 CIYAM Developers
+
+Distributed under the MIT/X11 software license, please refer to the file
+license.txt in the root project directory or
+http://www.opensource.org/licenses/mit-license.php.
+-->
+
+<!-- ================================================================
+     Sign in
+     ================================================================ -->
+<div id="signin_view" class="chat-signin">
+   <form id="signin_form" class="chat-signin-form" onsubmit="do_connect( ); return false;">
+      <div class="chat-brand">
+         <span class="chat-logo"></span>
+         <span class="chat-wordmark">CIYAM</span>
+         <span class="chat-brand-note">cws &middot; irc</span>
+      </div>
+
+      <h2 id="signin_title">Sign in</h2>
+      <p class="chat-signin-lede" id="signin_lede">Credentials are hashed in this browser and never sent in the clear.</p>
+
+      <label class="chat-label" for="signin_access">Account</label>
+      <select id="signin_access" class="chat-field chat-field--mono" onchange="do_select_access( )">
+         <option value="">Enter an account PIN&hellip;</option>
+         <option value="create">+ Register new account</option>
+      </select>
+
+      <div id="signin_pin_row" hidden>
+         <label class="chat-label" for="signin_pin">Account PIN</label>
+         <input type="text" id="signin_pin" class="chat-field chat-field--mono" maxlength="12"
+          placeholder="5 digits, or admin" autocomplete="off">
+      </div>
+
+      <div id="signin_name_row" hidden>
+         <label class="chat-label" for="signin_name">Choose a username</label>
+         <input type="text" id="signin_name" class="chat-field chat-field--mono" maxlength="12"
+          placeholder="3-12 characters, lowercase" autocomplete="off">
+         <div class="chat-hint" id="signin_name_hint">This is the name others see in chat.</div>
+      </div>
+
+      <div id="signin_password_row">
+         <label class="chat-label" for="signin_password">Password</label>
+         <input type="password" id="signin_password" class="chat-field chat-field--mono" autocomplete="current-password">
+         <div class="chat-hint" id="signin_password_hint"></div>
+      </div>
+
+      <label class="chat-check" for="signin_retain">
+         <input type="checkbox" id="signin_retain"> Remember this account on this browser
+      </label>
+
+      <div class="chat-signin-actions">
+         <button type="submit" id="signin_connect" class="chat-btn chat-btn--primary">Connect</button>
+      </div>
+
+      <div id="signin_busy" class="chat-signin-busy" hidden>
+         <span class="chat-spinner"></span>
+         <span>Contacting the server&hellip;</span>
+      </div>
+
+      <div id="signin_error" class="chat-error-text" role="alert"></div>
+
+      <div class="chat-signin-foot">
+         <div class="chat-status">
+            <span class="chat-dot is-idle" id="signin_dot"></span>
+            <span class="chat-sessid" id="signin_state">not connected &middot; no session id yet</span>
+         </div>
+         <button type="button" class="chat-btn--link" onclick="do_reset_browser( )">Reset this browser</button>
+         <div class="chat-signin-foot-note">Forgets the device token and every saved account. Disabled while a session is open.</div>
+      </div>
+   </form>
+
+   <div class="chat-signin-side">
+      <div class="chat-eyebrow">Connection details</div>
+      <dl class="chat-detail-card">
+         <div class="chat-detail-row"><dt>device</dt><dd id="detail_device" class="is-empty">&mdash;</dd></div>
+         <div class="chat-detail-row"><dt>challenge</dt><dd id="detail_unique" class="is-empty">&mdash;</dd></div>
+         <div class="chat-detail-row"><dt>session</dt><dd id="detail_session" class="is-empty">&mdash;</dd></div>
+      </dl>
+      <p class="chat-prose">The device token is issued once per browser and reused by every later session on this
+      machine. A session id appears when the challenge is answered &mdash; that is the signal you are signed in.</p>
+      <div class="chat-callout">
+         Opening a linked tab shares this live session with another tab &mdash; no second sign in.
+         <button type="button" class="chat-callout-action" onclick="do_open_linked_tab( )">Open a linked tab &rarr;</button>
+      </div>
+   </div>
+</div>
+
+<!-- ================================================================
+     Chat
+     ================================================================ -->
+<div id="chat_view" class="chat-app" hidden>
+   <div class="chat-topbar">
+      <span class="chat-logo"></span>
+      <span class="chat-wordmark">CIYAM</span>
+      <span class="chat-divider"></span>
+      <span class="chat-status">
+         <span class="chat-dot"></span>
+         Connected as <b id="topbar_user">&mdash;</b>
+         <span class="chat-status-role" id="topbar_role"></span>
+      </span>
+      <span class="chat-sessid" id="topbar_session"></span>
+      <div class="chat-topbar-right">
+         <span class="chat-busy" id="chat_busy" hidden title="Waiting for the server">
+            <span class="chat-spinner"></span>
+         </span>
+         <span class="chat-poll-label" id="topbar_poll"></span>
+         <button type="button" class="chat-btn chat-btn--mono" onclick="do_refresh( )">Refresh</button>
+         <button type="button" class="chat-btn chat-btn--mono" id="console_toggle" onclick="do_toggle_console( )">Console</button>
+         <button type="button" class="chat-btn chat-btn--mono" onclick="do_disconnect( )">Sign out</button>
+      </div>
+   </div>
+
+   <div id="chat_alert" class="chat-alert" hidden>
+      <span class="chat-alert-text" id="chat_alert_text"></span>
+      <button type="button" onclick="do_dismiss_alert( )" aria-label="Dismiss">&times;</button>
+   </div>
+
+   <div class="chat-body">
+      <!-- room rail -->
+      <nav class="chat-rail" aria-label="Rooms">
+         <div class="chat-rail-head">
+            <span class="chat-section-label">Rooms</span>
+            <button type="button" class="chat-btn chat-btn--small" onclick="do_open_create_room( )">+ New</button>
+         </div>
+         <div class="chat-room-list" id="room_list"></div>
+         <div class="chat-rail-foot">
+            <div class="chat-rail-foot-top">
+               <span class="chat-room-number">0000000</span>
+               <span class="chat-section-label" style="text-transform: none; letter-spacing: 0;">Entrance</span>
+            </div>
+            <div class="chat-rail-foot-note">Lobby, not a chat target &mdash; it lists your rooms and creates them.</div>
+         </div>
+      </nav>
+
+      <!-- thread -->
+      <main class="chat-thread">
+         <div class="chat-thread-head" id="thread_head" hidden>
+            <div style="min-width: 0;">
+               <div class="chat-thread-title">
+                  <h1 id="thread_name">&mdash;</h1>
+                  <span class="chat-thread-number" id="thread_number"></span>
+               </div>
+               <div class="chat-thread-meta" id="thread_meta"></div>
+            </div>
+            <div class="chat-owner-actions" id="owner_actions" hidden>
+               <button type="button" class="chat-btn" onclick="do_open_rename_room( )">Rename</button>
+               <button type="button" class="chat-btn chat-btn--accent" onclick="do_open_invite( )">Invite</button>
+            </div>
+         </div>
+
+         <div class="chat-empty" id="thread_empty">
+            <h2>No room selected</h2>
+            <p>Pick a room from the rail, or create one. The entrance room is a lobby &mdash; it lists your rooms
+            rather than holding a conversation.</p>
+            <button type="button" class="chat-btn chat-btn--accent" onclick="do_open_create_room( )">Create a room</button>
+         </div>
+
+         <div class="chat-messages" id="message_list" hidden></div>
+
+         <div class="chat-composer" id="composer" hidden>
+            <div class="chat-recipients" id="recipient_row" hidden></div>
+            <div class="chat-composer-row">
+               <textarea id="composer_input" class="chat-input" rows="1"
+                placeholder="Message" onkeydown="return do_composer_key( event )"></textarea>
+               <button type="button" class="chat-btn chat-btn--primary" id="composer_send" onclick="do_send( )">Send</button>
+            </div>
+            <div class="chat-composer-foot">
+               <button type="button" class="chat-btn chat-btn--small" id="composer_scope" onclick="do_toggle_scope( )">Send to selected&hellip;</button>
+               <button type="button" class="chat-btn chat-btn--small" id="composer_cancel_edit" hidden onclick="do_cancel_edit( )">Cancel edit</button>
+               <span class="chat-composer-note" id="composer_note">Ordinary chat only &mdash; system and slash messages are server-side.</span>
+            </div>
+         </div>
+      </main>
+
+      <!-- presence -->
+      <aside class="chat-presence" aria-label="Members">
+         <div class="chat-presence-head" id="presence_head">Members</div>
+         <div class="chat-member-list" id="member_list"></div>
+         <div class="chat-presence-note">
+            <code>+2</code> means two open sessions. <code>+0</code> is a member who is not connected.
+         </div>
+         <div class="chat-presence-foot" id="presence_foot">no push &middot; no typing state</div>
+      </aside>
+   </div>
+</div>
+
+<!-- ================================================================
+     Console drawer - embeds the existing test harness and hands it
+     the live session over BroadcastChannel.
+     ================================================================ -->
+<div id="console_drawer" class="chat-console" hidden>
+   <div class="chat-console-bar">
+      <span class="chat-console-label">Console</span>
+      <span class="chat-console-session">
+         <span class="chat-dot"></span>
+         <span id="console_session">inherits chat session</span>
+      </span>
+      <button type="button" class="chat-console-close" onclick="do_toggle_console( )" aria-label="Close console">&times;</button>
+   </div>
+   <div class="chat-console-notice" id="console_notice" hidden></div>
+   <iframe id="console_frame" class="chat-console-frame" title="Developer console"></iframe>
+</div>
+
+<!-- ================================================================
+     Dialogs
+     ================================================================ -->
+<div id="room_dialog" class="chat-scrim" hidden>
+   <form class="chat-dialog" onsubmit="do_submit_room_dialog( ); return false;">
+      <h2 id="room_dialog_title">Create a room</h2>
+      <p class="chat-dialog-note" id="room_dialog_note">5 to 50 characters. Letters, digits, spaces and
+      <span class="chat-mono">- + &amp; ( ) '</span> &mdash; one pair of brackets at most.</p>
+      <label class="chat-label" for="room_dialog_name">Room name</label>
+      <input type="text" id="room_dialog_name" class="chat-field" maxlength="50" autocomplete="off"
+       oninput="do_clear_room_name_error( )" onblur="do_validate_room_name( )">
+      <div class="chat-error-text" id="room_dialog_error"></div>
+      <div id="room_dialog_invitees_row" hidden>
+         <label class="chat-label" for="room_dialog_invitees">Invite</label>
+         <div class="chat-invitee-list" id="room_dialog_invitees"></div>
+      </div>
+      <div class="chat-dialog-actions">
+         <button type="button" class="chat-btn" onclick="do_close_room_dialog( )">Cancel</button>
+         <button type="submit" class="chat-btn chat-btn--accent" id="room_dialog_submit">Create</button>
+      </div>
+   </form>
+</div>
+
+<div id="pin_dialog" class="chat-scrim" hidden>
+   <div class="chat-dialog">
+      <h2>Account created</h2>
+      <p class="chat-dialog-note">The server issued this PIN. <strong>It is the only way back
+      into this account</strong> &mdash; it cannot be looked up later without an administrator,
+      so write it down now.</p>
+      <div class="chat-token" id="pin_value"></div>
+      <div class="chat-hint" id="pin_username"></div>
+      <div class="chat-dialog-actions">
+         <button type="button" class="chat-btn" onclick="do_copy_pin( )">Copy PIN</button>
+         <button type="button" class="chat-btn chat-btn--accent" onclick="do_close_pin_dialog( )">I have saved it</button>
+      </div>
+   </div>
+</div>
+
+<div id="token_dialog" class="chat-scrim" hidden>
+   <div class="chat-dialog">
+      <h2>Room created</h2>
+      <p class="chat-dialog-note">Anyone holding this join token can enter the room. Invited members already
+      have it &mdash; this is for sharing it another way.</p>
+      <div class="chat-token" id="token_value"></div>
+      <div class="chat-qr" id="token_qr"></div>
+      <div class="chat-dialog-actions">
+         <button type="button" class="chat-btn" onclick="do_copy_token( )">Copy token</button>
+         <button type="button" class="chat-btn chat-btn--accent" onclick="do_close_token_dialog( )">Done</button>
+      </div>
+   </div>
+</div>
+
+<!-- ================================================================
+     Templates
+
+     NOTE: Cloned and filled with textContent - never innerHTML. Message
+     text, usernames and room names all originate with other users.
+     ================================================================ -->
+
+<template id="tpl_room">
+   <button type="button" class="chat-room">
+      <span class="chat-room-top">
+         <span class="chat-room-number"></span>
+         <span class="chat-room-lock" hidden></span>
+         <span class="chat-room-count"></span>
+      </span>
+      <span class="chat-room-name"></span>
+      <span class="chat-room-owner"></span>
+   </button>
+</template>
+
+<template id="tpl_day">
+   <div class="chat-day">
+      <span class="chat-day-label"></span>
+   </div>
+</template>
+
+<template id="tpl_message">
+   <div class="chat-message">
+      <span class="chat-message-time"></span>
+      <span class="chat-message-sender">
+         <span class="chat-message-sender-name"></span>
+         <span class="chat-edit-mark" hidden>*</span>
+      </span>
+      <span class="chat-message-text">
+         <span class="chat-message-body"></span>
+         <span class="chat-edit-tag" hidden>edited</span>
+         <button type="button" class="chat-message-edit" hidden>edit</button>
+      </span>
+   </div>
+</template>
+
+<template id="tpl_notice">
+   <div class="chat-notice">
+      <span class="chat-notice-text">
+         <span class="chat-notice-time"></span>
+         <span class="chat-notice-who"></span>
+         <span class="chat-notice-verb"></span>
+         <span class="chat-notice-detail"></span>
+         <button type="button" class="chat-notice-action" hidden>Join</button>
+      </span>
+   </div>
+</template>
+
+<template id="tpl_marker">
+   <div class="chat-marker"><span></span></div>
+</template>
+
+<template id="tpl_member">
+   <button type="button" class="chat-member">
+      <span class="chat-dot"></span>
+      <span class="chat-member-name"></span>
+      <span class="chat-member-count"></span>
+   </button>
+</template>
+
+<template id="tpl_recipient">
+   <span class="chat-recipient">
+      <span class="chat-recipient-name"></span>
+      <button type="button" aria-label="Remove">&times;</button>
+   </span>
+</template>
+
+<template id="tpl_invitee">
+   <label class="chat-recipient">
+      <input type="checkbox" class="chat-invitee-check">
+      <span class="chat-invitee-name"></span>
+   </label>
+</template>
