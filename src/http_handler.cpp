@@ -95,6 +95,8 @@ constexpr const char* c_data_application = "application";
 
 constexpr const char* c_all_specials = " !\"#$%&'()*+,-./<=>?@[\\]^`{|}~";
 
+constexpr const char* c_hdr_separator = ": ";
+
 constexpr const char* c_data_separator = "\r\n\r\n";
 
 constexpr const char* c_get_request = "GET";
@@ -150,6 +152,8 @@ constexpr const char* c_http_host_header = "host";
 constexpr const char* c_http_content_type_header = "content-type";
 constexpr const char* c_http_content_length_header = "content-length";
 constexpr const char* c_http_content_disposition_header = "content-disposition";
+
+constexpr const char* c_http_x_forwarded_for_header = "x-forwarded-for";
 
 constexpr const char* c_http_connection_header_info = "Connection: keep-alive";
 
@@ -560,7 +564,7 @@ void http_request_handler::on_start( )
          {
             string next( header_lines[ i ] );
 
-            string::size_type pos = next.find( ": " );
+            string::size_type pos = next.find( c_hdr_separator );
 
             string name( lower( next.substr( 0, pos ) ) );
 
@@ -568,6 +572,8 @@ void http_request_handler::on_start( )
 
             if( pos != string::npos )
                data = next.substr( pos + 2 );
+
+            TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, name + c_hdr_separator + data );
 
             header_info[ name ] = data;
 #ifdef DEBUG
@@ -660,6 +666,9 @@ void http_request_handler::on_start( )
              && ( pos == ( http_document.length( ) - 1 ) ) )
                http_document += c_index_html;
          }
+
+         if( http_document.find( ".." ) != string::npos )
+            throw runtime_error( "unepected non-absolute path '" + http_document + "'" );
 
          map< string, string > params;
 
@@ -1107,10 +1116,15 @@ void http_request_handler::on_start( )
 
                was_endpoint = true;
 
+               string ip_addr_for( ip_addr );
+
+               if( header_info.count( c_http_x_forwarded_for_header ) )
+                  ip_addr_for = header_info[ c_http_x_forwarded_for_header ];
+
                if( !is_json_output )
-                  response = ip_addr;
+                  response = ip_addr_for;
                else
-                  response = "{\"ip_addr\":\"" + escaped_json( ip_addr ) + "\"}";
+                  response = "{\"ip_addr\":\"" + escaped_json( ip_addr_for ) + "\"}";
             }
             else if( http_document == c_unix_now_endpoint )
             {
@@ -1166,7 +1180,11 @@ void http_request_handler::on_start( )
             // the path does not exist).
             string check_path( absolute_path( path + http_document, &rc ) );
 
-            if( check_path.find( start ) == 0 )
+            // NOTE: For a development environment it makes sense to use
+            // a soft link for the "webui" project directory so the test
+            // is being omitted (for production environments a file with
+            // a list of permitted "links" might need to be considered).
+            if( g_is_devt_system || ( check_path.find( start ) == 0 ) )
             {
                if( file_exists( path + http_document ) )
                {
