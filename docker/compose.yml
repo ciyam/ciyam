@@ -1,0 +1,19 @@
+# Copyright (c) 2026 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+# NOTE: Run from the repository root:
+#   docker compose -f docker/compose.yml up --build
+
+services:
+  ciyam:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: ciyam-server
+    container_name: ciyam-server
+    ports:
+      - "13031:13031"
+      - "12021:12021"
+    stop_grace_period: 20s
