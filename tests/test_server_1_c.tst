@@ -133,6 +133,15 @@ system_variable @queue_test bbb
 system_variable @queue_test ccc
 system_variable @queue_test*
 @queue_test aaa [+2]
+session_variable test_1 1
+session_variable test_2 2
+session_variable test_3 3
+session_variable test_?
+test_1 1
+test_2 2
+test_3 3
+session_variable test_? ""
+session_variable test_*
 session_variable @queue_test @system
 session_variable @queue_test*
 @queue_test aaa [+2]
