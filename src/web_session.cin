@@ -78,7 +78,7 @@ IRC_ALLOWED=1
 .system_variable @irc_allow
 @ifndef $OUTPUT
 .wait 500
-.system_variable @irc_allow
+x.system_variable @irc_allow
 @ifndef $OUTPUT
 IRC_ALLOWED=
 @endif
@@ -229,6 +229,7 @@ ERROR=Session has been terminated.
 ;
 ~rm -rf $CIYAM_TMP_DIR/$SESSION
 ;
+@ifdef $IRC_ALLOWED
 .session_variable @irc_* ""
 .session_variable @queue_irc_* ""
 .session_variable @script_executed ""
@@ -236,5 +237,6 @@ ERROR=Session has been terminated.
 ;
 .system_variable @web.$TOKEN.$DEVICE.message ""
 .system_variable @session_@queue_irc_*_$USER ""
+@endif
 ;
 @endif
