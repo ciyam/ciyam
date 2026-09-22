@@ -1179,7 +1179,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
       int64_t now = unix_time( );
 
-      if( !is_locked && ( g_helper_check_tm_val < now ) )
+      if( !is_locked && !is_identity_none && ( g_helper_check_tm_val < now ) )
       {
          g_helper_check_tm_val = ( now + c_helper_seconds );
 
