@@ -1,0 +1,3 @@
+# NOTE: Web fonts must be stored byte for byte - never treated as text.
+*.woff2 binary
+*.ttf binary
