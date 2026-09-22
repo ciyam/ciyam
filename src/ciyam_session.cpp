@@ -2509,7 +2509,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                else
                   name_or_expr = get_parm_val( parameters, c_cmd_ciyam_session_session_variable_name_or_expr );
 
-               if( name_or_expr.find_first_of( "*?" ) != string::npos )
+               if( name_or_expr.find_first_of( "?*" ) != string::npos )
                   okay = false;
             }
          }
@@ -6397,10 +6397,38 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                check_is_valid_command_response( value );
 
-               if( has_current )
-                  set_session_variable( name_or_expr, value, current );
+               vector< string > names;
+
+               if( name_or_expr.find_first_of( "?*" ) == string::npos )
+                  names.push_back( name_or_expr );
                else
-                  set_session_variable( name_or_expr, value, &needs_response, &handler, sess_id );
+               {
+                  string lines( get_session_variable( name_or_expr ) );
+
+                  vector< string > all_lines;
+
+                  if( !lines.empty( ) )
+                  {
+                     split( lines, all_lines, '\n' );
+
+                     for( size_t i = 0; i < all_lines.size( ); i++ )
+                     {
+                        string next( all_lines[ i ] );
+
+                        string::size_type pos = next.find( ' ' );
+
+                        names.push_back( next.substr( 0, pos ) );
+                     }
+                  }
+               }
+
+               for( size_t i = 0; i < names.size( ); i++ )
+               {
+                  if( has_current )
+                     set_session_variable( names[ i ], value, current );
+                  else
+                     set_session_variable( names[ i ], value, &needs_response, &handler, sess_id );
+               }
             }
 
             if( needs_response )
