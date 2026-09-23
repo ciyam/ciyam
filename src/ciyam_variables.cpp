@@ -188,6 +188,7 @@ constexpr const char* c_special_variable_auto_update = "@auto_update";
 constexpr const char* c_special_variable_cws_scripts = "@cws_scripts";
 constexpr const char* c_special_variable_cws_ssheets = "@cws_ssheets";
 constexpr const char* c_special_variable_cws_webcmds = "@cws_webcmds";
+constexpr const char* c_special_variable_ddns_update = "@ddns_update";
 constexpr const char* c_special_variable_errors_only = "@errors_only";
 constexpr const char* c_special_variable_init_log_id = "@init_log_id";
 constexpr const char* c_special_variable_ip_ext_addr = "@ip_ext_addr";
@@ -571,6 +572,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_cws_scripts );
       g_special_variable_names.push_back( c_special_variable_cws_ssheets );
       g_special_variable_names.push_back( c_special_variable_cws_webcmds );
+      g_special_variable_names.push_back( c_special_variable_ddns_update );
       g_special_variable_names.push_back( c_special_variable_errors_only );
       g_special_variable_names.push_back( c_special_variable_init_log_id );
       g_special_variable_names.push_back( c_special_variable_ip_ext_addr );
@@ -836,6 +838,16 @@ void set_auto_script( bool change = false, bool remove = false )
    set_file_variable( variable, true );
 }
 
+void set_ddns_update( bool change = false, bool remove = false )
+{
+   string variable( c_special_variable_ddns_update );
+
+   if( change )
+      touch_or_remove( variable, remove, true );
+
+   set_file_variable( variable, true );
+}
+
 void set_backup_needed( bool change = false, bool remove = false )
 {
    string variable( c_special_variable_backup_needed );
@@ -1057,6 +1069,8 @@ bool has_system_variable( const var_name& var )
 
    if( name == c_special_variable_auto_script )
       set_auto_script( );
+   else if( name == c_special_variable_ddns_update )
+      set_ddns_update( );
    else if( name == c_special_variable_backup_needed )
       set_backup_needed( );
    else if( name == c_special_variable_restore_needed )
@@ -1255,6 +1269,9 @@ string get_system_variable( const var_name& var, bool is_internal )
       if( wildcard_match( variable, c_special_variable_auto_script ) )
          set_auto_script( );
 
+      if( wildcard_match( variable, c_special_variable_ddns_update ) )
+         set_ddns_update( );
+
       if( wildcard_match( variable, c_special_variable_backup_needed ) )
          set_backup_needed( );
 
@@ -1338,6 +1355,9 @@ string get_system_variable( const var_name& var, bool is_internal )
    {
       if( variable == c_special_variable_auto_script )
          set_auto_script( );
+
+      if( variable == c_special_variable_ddns_update )
+         set_ddns_update( );
 
       if( variable == c_special_variable_backup_needed )
          set_backup_needed( );
@@ -1478,6 +1498,12 @@ void set_system_variable( const var_name& var,
       guard g( g_mutex );
 
       set_auto_script( true, value.empty( ) );
+   }
+   else if( name == c_special_variable_ddns_update )
+   {
+      guard g( g_mutex );
+
+      set_ddns_update( true, value.empty( ) );
    }
    else if( name == c_special_variable_backup_needed )
    {
