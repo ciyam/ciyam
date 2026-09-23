@@ -1448,12 +1448,17 @@ function build_notice( entry )
 
    var detail = "";
 
-   if( event.verb === "rename" )
+   if( ( event.verb === "rename" ) || ( event.verb === "assign" ) )
       detail = " '" + ( event.from_name || "" ) + "' to '" + ( event.to_name || "" ) + "'";
    else if( ( event.verb === "invite" ) || ( event.verb === "create" ) )
       detail = " " + ( event.name || "" ) + " (#" + ( event.room || "" ) + ")";
-   else if( event.verb === "issued" )
-      detail = " " + ( event.detail || "" );
+   else
+   {
+      // NOTE: Anything else shows its detail as the server sent it. Enumerating the verbs
+      // meant a new one silently lost its text - ":allows set to own" rendered as bare
+      // ":allows". The server emits eight verbs and this client knew four.
+      detail = ( event.detail ) ? ( " " + event.detail ) : "";
+   }
 
    node.querySelector( ".chat-notice-detail" ).textContent = detail;
 
