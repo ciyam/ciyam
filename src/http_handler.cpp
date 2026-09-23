@@ -109,6 +109,7 @@ constexpr const char* c_options_request = "OPTIONS";
 
 constexpr const char* c_index_html = "index.html";
 
+constexpr const char* c_links_file = ".links";
 constexpr const char* c_redirects_file = ".redirects";
 
 constexpr const char* c_echo_endpoint = "/echo";
@@ -365,9 +366,12 @@ string g_cws_endpoint_prefix;
 
 atomic< size_t > g_active_handlers;
 
+atomic< time_t > g_links_file_mod;
 atomic< time_t > g_redirects_file_mod;
 
 atomic< size_t > g_num_request_handler;
+
+vector< string > g_links;
 
 map< string, string > g_redirects;
 
@@ -383,7 +387,7 @@ inline void deccrement_handlers( )
    --g_active_handlers;
 }
 
-bool redirects_file_has_changed( const char* p_file_name )
+bool file_has_changed( const char* p_file_name, atomic< time_t >& file_mod )
 {
    bool changed = false;
 
@@ -392,10 +396,10 @@ bool redirects_file_has_changed( const char* p_file_name )
    if( p_file_name && file_exists( p_file_name ) )
       t = last_modification_time( p_file_name );
 
-   if( t != g_redirects_file_mod )
+   if( t != file_mod )
       changed = true;
 
-   g_redirects_file_mod = t;
+   file_mod = t;
 
    return changed;
 }
@@ -1180,11 +1184,44 @@ void http_request_handler::on_start( )
             // the path does not exist).
             string check_path( absolute_path( path + http_document, &rc ) );
 
-            // NOTE: For a development environment it makes sense to use
-            // a soft link for the "webui" project directory so the test
-            // is being omitted (for production environments a file with
-            // a list of permitted "links" might need to be considered).
-            if( g_is_devt_system || ( check_path.find( start ) == 0 ) )
+            bool allowed = ( check_path.find( start ) == 0 );
+
+            if( !allowed )
+            {
+               guard g( g_mutex );
+
+               string links_file( start + '/' );
+
+               links_file += c_links_file;
+
+               // NOTE: As soft-links in or below the start directory could be
+               // used (especially for a development environment) in order for
+               // these to also be allowed they must be included in a ".links"
+               // file with an absolute path per line as per the following:
+               //
+               // /home/admin/ciyam/proto/
+               // /home/admin/ciyam/webui/
+               //
+               if( file_has_changed( links_file.c_str( ), g_links_file_mod ) )
+               {
+                  g_links.clear( );
+
+                  if( file_exists( links_file ) )
+                     buffer_file_lines( links_file, g_links );
+               }
+
+               for( size_t i = 0; i < g_links.size( ); i++ )
+               {
+                  if( check_path.find( g_links[ i ] ) == 0 )
+                  {
+                     allowed = true;
+
+                     break;
+                  }
+               }
+            }
+
+            if( allowed )
             {
                if( file_exists( path + http_document ) )
                {
@@ -1301,7 +1338,7 @@ void http_request_handler::on_start( )
                   // /old_dir /new_page.html
                   // /old_page.html /new_page.html
                   //
-                  if( redirects_file_has_changed( redirects_file.c_str( ) ) )
+                  if( file_has_changed( redirects_file.c_str( ), g_redirects_file_mod ) )
                   {
                      g_redirects.clear( );
 
