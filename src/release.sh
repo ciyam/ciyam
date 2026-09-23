@@ -126,6 +126,13 @@ else
    exit 1
   fi
 
+  mkdir $release_name/html/fonts
+  if [ ! -d $release_name/html/fonts ]; then
+   echo "Error: Unable to create '$release_name/html/fonts' directory (incorrect perms?)."
+
+   exit 1
+  fi
+
   mkdir $release_name/ciyam
   if [ ! -d $release_name/ciyam ]; then
    echo "Error: Unable to create '$release_name/ciyam' directory (incorrect umask?)."
@@ -185,6 +192,9 @@ else
  cp ../webui/*.js  $release_name/html
  cp ../webui/*.form  $release_name/html
  cp ../webui/*.html  $release_name/html
+
+ cp ../webui/fonts/OFL.txt $release_name/html/fonts
+ cp ../webui/fonts/*.woff2 $release_name/html/fonts
 
  ./unbundle -qq fonts -d $release_name/html/fonts
 
