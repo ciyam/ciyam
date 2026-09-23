@@ -141,6 +141,7 @@ enum special_var
    e_special_var_cws_scripts,
    e_special_var_cws_ssheets,
    e_special_var_cws_webcmds,
+   e_special_var_ddns_update,
    e_special_var_errors_only,
    e_special_var_init_log_id,
    e_special_var_ip_ext_addr,
