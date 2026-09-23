@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2026 CIYAM Developers
+
+Distributed under the MIT/X11 software license, please refer to the file
+license.txt in the root project directory or
+http://www.opensource.org/licenses/mit-license.php.
+-->
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+   <meta http-equiv="Expires" content="0"/>
+   <meta http-equiv="Pragma" content="no-cache"/>
+   <meta http-equiv="Cache-Control" content="no-cache"/>
+   <meta http-equiv="Cache-Control" content="no-store"/>
+
+   <title>CIYAM Chat</title>
+
+   <!--
+   NOTE: Fonts are self-hosted. Loading them from a font CDN would disclose
+   every visitor's IP address to a third party on page load, which is exactly
+   what CIYAM exists to avoid. There are no external requests from this page.
+   -->
+   <link rel="stylesheet" href="fonts.css">
+
+   <link rel="stylesheet" href="tokens.css">
+   <link rel="stylesheet" href="chat_tokens.css">
+   <link rel="stylesheet" href="chat.css">
+
+   <script type="text/javascript" src="ciyam.js"></script>
+   <script type="text/javascript" src="sha2.min.js"></script>
+   <script type="text/javascript" src="qrcode.min.js"></script>
+   <script type="text/javascript" src="chat_parse.js"></script>
+</head>
+
+<body onload="load( )">
+   <!--
+   NOTE: This DIV is used for loading the
+   "form" content dynamically, matching the
+   pattern used by "test_web_session.html".
+   -->
+   <div id="chat_content"></div>
+
+   <script>
+   const c_load_delay = 50;
+
+   const c_max_load_attempts = 100;
+
+   const c_channel_name = "test_web_channel";
+
+   var g_self = 0;
+   var g_owner = 0;
+
+   var g_load_attempts = 0;
+
+   var ciyam = new CIYAM( window.location.protocol + "//" + window.location.host, false, true );
+
+   const chat_channel = new BroadcastChannel( c_channel_name );
+
+   // NOTE: The shared channel protocol is the one "test_web_session.html" already
+   // speaks, so the harness can be embedded unchanged:
+   //
+   //   "<target>:<viewer>"   viewer asks target for its session
+   //   "<viewer>-<owner>"    target names itself as the owner
+   //   "<viewer>=<fields>"   target hands over its credentials
+   //   "<id>"                session ended - unlink
+   //
+   // The harness reads the first five credential fields and ignores any extra,
+   // so the username and role can be appended for another chat tab to pick up.
+   chat_channel.addEventListener( "message", function( event )
+   {
+      var data = String( event.data );
+
+      var pos = data.indexOf( ":" );
+
+      if( pos >= 0 )
+      {
+         var target = data.substr( 0, pos );
+         var viewer = data.substring( pos + 1 );
+
+         if( ( g_self == target ) && ( ciyam.sessid !== "" ) )
+         {
+            chat_channel.postMessage( viewer + "-" + g_self );
+
+            chat_channel.postMessage( viewer + "=" + ciyam.access + "," + ciyam.device + ","
+             + ciyam.hashed + "," + ciyam.sessid + "," + ciyam.unique + ","
+             + ciyam.username + "," + ( ciyam.is_admin ? "1" : "0" ) );
+         }
+
+         return;
+      }
+
+      pos = data.indexOf( "-" );
+
+      if( pos >= 0 )
+      {
+         var viewer = data.substr( 0, pos );
+
+         if( g_self == viewer )
+            g_owner = data.substring( pos + 1 );
+
+         return;
+      }
+
+      pos = data.indexOf( "=" );
+
+      if( pos >= 0 )
+      {
+         var viewer = data.substr( 0, pos );
+
+         if( ( g_self == viewer ) && ( ciyam.sessid === "" ) )
+            adopt_session( data.substring( pos + 1 ) );
+
+         return;
+      }
+
+      if( ( data == g_self ) || ( data == g_owner ) )
+      {
+         g_owner = 0;
+
+         if( typeof do_disconnect === "function" )
+            window.location.reload( );
+      }
+   } );
+
+   function adopt_session( shared )
+   {
+      var fields = shared.split( "," );
+
+      if( fields.length < 5 )
+         return;
+
+      ciyam.access = fields[ 0 ];
+      ciyam.device = fields[ 1 ];
+      ciyam.hashed = fields[ 2 ];
+      ciyam.sessid = fields[ 3 ];
+      ciyam.unique = fields[ 4 ];
+
+      if( fields.length > 5 )
+         ciyam.username = fields[ 5 ];
+
+      if( fields.length > 6 )
+         ciyam.is_admin = ( fields[ 6 ] === "1" );
+
+      if( typeof enter_chat === "function" )
+      {
+         update_connection_details( );
+
+         enter_chat( );
+      }
+   }
+
+   function load_form( name )
+   {
+      fetch( name + ".form?" + Date.now( ) )
+       .then( function( response ) { return response.text( ); } )
+       .then( function( data )
+       {
+          document.getElementById( "chat_content" ).innerHTML = data;
+       } );
+   }
+
+   function load_main_js( name, source )
+   {
+      var script = document.createElement( "script" );
+
+      // NOTE: Cache busted on the clock, as the ".form" fetch above already is. It was
+      // previously keyed by the source id so a linked tab could reuse the copy cached by
+      // the tab that opened it - but the server sends no "Cache-Control" header, only
+      // "Last-Modified", so browsers cache heuristically and that key never changed
+      // while iterating. The result was new markup paired with stale logic, which reads
+      // as a bug in code that has already been fixed. One extra 55 KB download per tab
+      // is a cheap price for the page always being what is on disk.
+      script.src = name + ".js?" + Date.now( );
+
+      script.setAttribute( "id", name );
+
+      document.body.appendChild( script );
+   }
+
+   function call_at_load( )
+   {
+      if( typeof window[ "chat" ] === "function" )
+         chat( );
+      else if( ++g_load_attempts <= c_max_load_attempts )
+         window.setTimeout( call_at_load, c_load_delay );
+      else
+         document.getElementById( "chat_content" ).textContent = "(failed to load chat.js)";
+   }
+
+   function load( )
+   {
+      load_form( "chat" );
+
+      window.setTimeout( load_main, 100 );
+   }
+
+   function load_main( )
+   {
+      g_self = Date.now( );
+
+      if( sessionStorage.getItem( "self" ) !== null )
+         g_self = sessionStorage.getItem( "self" );
+      else
+         sessionStorage.setItem( "self", g_self );
+
+      var href = new URL( window.location.href );
+
+      var source = href.searchParams.get( "source" );
+
+      if( source === null )
+         source = g_self;
+
+      load_main_js( "chat", source );
+
+      window.setTimeout( call_at_load, c_load_delay );
+
+      window.setTimeout( load_complete, 200 );
+   }
+
+   function load_complete( )
+   {
+      var href = new URL( window.location.href );
+
+      var source = href.searchParams.get( "source" );
+
+      // NOTE: Announce to the opener so that a live session can be shared.
+      if( source !== null )
+         chat_channel.postMessage( source + ":" + g_self );
+   }
+   </script>
+</body>
+
+</html>

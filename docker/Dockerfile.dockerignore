@@ -1,0 +1,6 @@
+.git
+.git/**
+tests/
+docs/
+**/*.tst
+**/*.new

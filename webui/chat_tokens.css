@@ -1,0 +1,325 @@
+/* Copyright (c) 2026 CIYAM Developers
+ *
+ * Distributed under the MIT/X11 software license, please refer to the file license.txt
+ * in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+ */
+
+/* ====================================================================
+   Chat prototype token extensions.
+
+   Layered on top of "tokens.css", which must be loaded first. Nothing
+   here redefines an existing token - every name is new - so the parent
+   system is left exactly as it is and the other "webui" pages are not
+   affected.
+
+   These values come from the Claude Design canvas for the CIYAM chat
+   client. Where the design departs from "tokens.css" the departure is
+   noted, so that a later decision to promote any of this into the
+   parent system is made deliberately rather than by accident.
+   ==================================================================== */
+
+:root
+{
+   /* ------------------------------------------------------------------
+      Cool neutral ramp.
+
+      NOTE: The design uses a blue biased neutral rather than the near
+      grey ramp in "tokens.css" (--color-neutral-200 is #f4f4f7 where
+      the equivalent here is #f6f7fa). The stops line up with the
+      parent ramp, so this is a hue shift and not a new structure. Half
+      steps exist where the design genuinely uses an intermediate tone.
+      ------------------------------------------------------------------ */
+
+   --color-cool-100: #ffffff;
+   --color-cool-150: #fbfcfd;
+   --color-cool-200: #f6f7fa;
+   --color-cool-250: #eef0f5;
+   --color-cool-300: #e4e8f0;
+   --color-cool-400: #d8dde8;
+   --color-cool-500: #c3cad6;
+   --color-cool-550: #b0b8c6;
+   --color-cool-600: #98a1b2;
+   --color-cool-650: #8c95a8;
+   --color-cool-700: #7b84a0;
+   --color-cool-750: #6a7385;
+   --color-cool-800: #3d4553;
+   --color-cool-900: #1b1f2a;
+
+   /* ------------------------------------------------------------------
+      Chat semantic aliases (light).
+      ------------------------------------------------------------------ */
+
+   --color-chat-bg: var(--color-cool-100);
+   --color-chat-bg-raised: var(--color-cool-150);
+   --color-chat-bg-rail: var(--color-cool-200);
+   --color-chat-bg-selected: #eceefe;
+
+   --color-chat-rule: var(--color-cool-250);
+   --color-chat-border: var(--color-cool-300);
+   --color-chat-border-strong: var(--color-cool-400);
+   --color-chat-border-selected: #d6daff;
+
+   --color-chat-text: var(--color-cool-900);
+   --color-chat-text-strong: var(--color-cool-800);
+   --color-chat-text-secondary: var(--color-cool-750);
+   --color-chat-text-meta: var(--color-cool-650);
+   --color-chat-text-faint: var(--color-cool-600);
+   --color-chat-text-ghost: var(--color-cool-550);
+
+   --color-chat-accent: var(--color-accent-500);
+   --color-chat-accent-deep: #4351d4;
+
+   /* ------------------------------------------------------------------
+      Chat status colours.
+
+      NOTE: The greens are teal shifted against --color-success-500
+      (#2ea043) in the parent system, to sit with the indigo accent.
+      ------------------------------------------------------------------ */
+
+   --color-chat-online: #2f9e6e;
+   --color-chat-online-text: #2f8f68;
+
+   --color-chat-critical: #c0405c;
+   --color-chat-critical-text: #8e2c44;
+   --color-chat-critical-bg: #fdf4f5;
+   --color-chat-critical-border: #f0cfd6;
+
+   --color-chat-warning: #c07d20;
+   --color-chat-warning-text: #8a5a14;
+   --color-chat-warning-bg: #fdf8ef;
+   --color-chat-warning-border: #f0dcc0;
+
+   /* ------------------------------------------------------------------
+      Sender identity colours.
+
+      A rotating palette so each participant is distinguishable at a
+      glance. The first three are taken from the design; the remainder
+      are derived at a matching lightness and saturation to complete a
+      usable rotation. Assign by a stable hash of the username so that
+      a given user keeps the same colour between sessions.
+      ------------------------------------------------------------------ */
+
+   --color-sender-1: #4351d4;
+   --color-sender-2: #2f8f68;
+   --color-sender-3: #a4553d;
+   --color-sender-4: #7a4b9e;
+   --color-sender-5: #1f6f8f;
+   --color-sender-6: #8a5a14;
+
+   /* ------------------------------------------------------------------
+      Console surface.
+
+      NOTE: This is a dark surface *inside* a light page, not a dark
+      theme. Like --color-scrim in "tokens.css" it is deliberately not
+      remapped for the dark theme - the console reads as a different
+      material from the chat in both themes.
+      ------------------------------------------------------------------ */
+
+   --color-console-bg: #14161d;
+   --color-console-bg-deep: #0f1117;
+   --color-console-bg-bar: #1b1e27;
+   --color-console-bg-active: #262a35;
+
+   --color-console-rule: #2b3140;
+   --color-console-border: #262a35;
+   --color-console-border-strong: #3a4151;
+   --color-console-border-subtle: #21242e;
+
+   --color-console-text: #c9d1e0;
+   --color-console-text-bright: #e7ecf5;
+   --color-console-text-dim: #8b95a9;
+   --color-console-text-faint: #7d879b;
+   --color-console-text-muted: #5f6979;
+   --color-console-text-users: #9aa5b8;
+
+   --color-console-accent: #8f9bff;
+   --color-console-ok: #4cc38a;
+
+   --color-console-notice-bg: #221d12;
+   --color-console-notice-border: #3a3020;
+   --color-console-notice-text: #d9c08a;
+
+   --shadow-console: 0 -18px 40px rgba(12, 15, 22, 0.28);
+   --shadow-screen: 0 1px 2px rgba(20, 25, 40, 0.06), 0 16px 40px rgba(20, 25, 40, 0.10);
+
+   /* ------------------------------------------------------------------
+      Typography.
+
+      NOTE: The parent system specifies system-ui stacks and ships no
+      web fonts. The design is mono forward - roughly seven in every
+      eight text elements are monospaced - which is what gives it the
+      instrument feel. Both faces fall back to the parent stacks, so
+      the page stays legible if the fonts do not load.
+      ------------------------------------------------------------------ */
+
+   --font-family-chat: "Public Sans", var(--font-family);
+   --font-family-chat-mono: "JetBrains Mono", var(--font-family-mono);
+
+   /* NOTE: The design uses half point sizes that do not sit on the
+      parent 12/14/16 scale. They are kept because the density depends
+      on them, but they are named here rather than inlined. */
+
+   --font-size-chat-nano: 0.6875rem;  /* 11px   - rail meta, console labels */
+   --font-size-chat-micro: 0.71875rem;/* 11.5px - timestamps, presence counts */
+   --font-size-chat-tiny: 0.75rem;    /* 12px   - room numbers, buttons */
+   --font-size-chat-small: 0.78125rem;/* 12.5px - console body, hints */
+   --font-size-chat-meta: 0.8125rem;  /* 13px   - topbar status */
+   --font-size-chat-name: 0.84375rem; /* 13.5px - room names, senders */
+   --font-size-chat-body: 0.875rem;   /* 14px   - message text, composer */
+   --font-size-chat-title: 1rem;      /* 16px   - room title */
+
+   /* ------------------------------------------------------------------
+      Layout.
+      ------------------------------------------------------------------ */
+
+   --chat-topbar-height: 52px;
+   --chat-rail-width: 276px;
+   --chat-presence-width: 230px;
+   --chat-console-bar-height: 42px;
+   --chat-console-inspector-width: 360px;
+
+   /* NOTE: How far down the viewport the console drawer starts, leaving the
+      conversation visible above it. */
+   --chat-console-top: 210px;
+
+   /* Message rows are a three column grid - time, sender, text. */
+   --chat-time-width: 68px;
+   --chat-sender-width: 104px;
+}
+
+/* ====================================================================
+   Dark theme.
+
+   The design is light only, so these are a considered mapping rather
+   than something the canvas specifies. The console surface tokens are
+   intentionally absent - they hold in both themes.
+   ==================================================================== */
+
+@media (prefers-color-scheme: dark)
+{
+   :root
+   {
+      --color-chat-bg: #16171f;
+      --color-chat-bg-raised: #1b1d26;
+      --color-chat-bg-rail: #12131a;
+      --color-chat-bg-selected: #232651;
+
+      --color-chat-rule: #24262f;
+      --color-chat-border: #2c2e39;
+      --color-chat-border-strong: #3a3d4a;
+      --color-chat-border-selected: #3b3f7a;
+
+      --color-chat-text: var(--color-cool-250);
+      --color-chat-text-strong: var(--color-cool-300);
+      --color-chat-text-secondary: var(--color-cool-550);
+      --color-chat-text-meta: var(--color-cool-600);
+      --color-chat-text-faint: var(--color-cool-700);
+      --color-chat-text-ghost: var(--color-cool-750);
+
+      --color-chat-accent-deep: #8f9bff;
+
+      --color-chat-online: #4cc38a;
+      --color-chat-online-text: #4cc38a;
+
+      --color-chat-critical-text: #f2919f;
+      --color-chat-critical-bg: #2e161c;
+      --color-chat-critical-border: #4a2630;
+
+      --color-chat-warning-text: #e0b871;
+      --color-chat-warning-bg: #2a2214;
+      --color-chat-warning-border: #3a3020;
+
+      --color-sender-1: #8f9bff;
+      --color-sender-2: #4cc38a;
+      --color-sender-3: #d08a6e;
+      --color-sender-4: #b48fd8;
+      --color-sender-5: #5aa8c6;
+      --color-sender-6: #d9c08a;
+
+      --shadow-screen: 0 1px 2px rgba(0, 0, 0, 0.40), 0 16px 40px rgba(0, 0, 0, 0.55);
+   }
+}
+
+[data-theme="dark"]
+{
+   --color-chat-bg: #16171f;
+   --color-chat-bg-raised: #1b1d26;
+   --color-chat-bg-rail: #12131a;
+   --color-chat-bg-selected: #232651;
+
+   --color-chat-rule: #24262f;
+   --color-chat-border: #2c2e39;
+   --color-chat-border-strong: #3a3d4a;
+   --color-chat-border-selected: #3b3f7a;
+
+   --color-chat-text: var(--color-cool-250);
+   --color-chat-text-strong: var(--color-cool-300);
+   --color-chat-text-secondary: var(--color-cool-550);
+   --color-chat-text-meta: var(--color-cool-600);
+   --color-chat-text-faint: var(--color-cool-700);
+   --color-chat-text-ghost: var(--color-cool-750);
+
+   --color-chat-accent-deep: #8f9bff;
+
+   --color-chat-online: #4cc38a;
+   --color-chat-online-text: #4cc38a;
+
+   --color-chat-critical-text: #f2919f;
+   --color-chat-critical-bg: #2e161c;
+   --color-chat-critical-border: #4a2630;
+
+   --color-chat-warning-text: #e0b871;
+   --color-chat-warning-bg: #2a2214;
+   --color-chat-warning-border: #3a3020;
+
+   --color-sender-1: #8f9bff;
+   --color-sender-2: #4cc38a;
+   --color-sender-3: #d08a6e;
+   --color-sender-4: #b48fd8;
+   --color-sender-5: #5aa8c6;
+   --color-sender-6: #d9c08a;
+
+   --shadow-screen: 0 1px 2px rgba(0, 0, 0, 0.40), 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme="light"]
+{
+   --color-chat-bg: var(--color-cool-100);
+   --color-chat-bg-raised: var(--color-cool-150);
+   --color-chat-bg-rail: var(--color-cool-200);
+   --color-chat-bg-selected: #eceefe;
+
+   --color-chat-rule: var(--color-cool-250);
+   --color-chat-border: var(--color-cool-300);
+   --color-chat-border-strong: var(--color-cool-400);
+   --color-chat-border-selected: #d6daff;
+
+   --color-chat-text: var(--color-cool-900);
+   --color-chat-text-strong: var(--color-cool-800);
+   --color-chat-text-secondary: var(--color-cool-750);
+   --color-chat-text-meta: var(--color-cool-650);
+   --color-chat-text-faint: var(--color-cool-600);
+   --color-chat-text-ghost: var(--color-cool-550);
+
+   --color-chat-accent-deep: #4351d4;
+
+   --color-chat-online: #2f9e6e;
+   --color-chat-online-text: #2f8f68;
+
+   --color-chat-critical-text: #8e2c44;
+   --color-chat-critical-bg: #fdf4f5;
+   --color-chat-critical-border: #f0cfd6;
+
+   --color-chat-warning-text: #8a5a14;
+   --color-chat-warning-bg: #fdf8ef;
+   --color-chat-warning-border: #f0dcc0;
+
+   --color-sender-1: #4351d4;
+   --color-sender-2: #2f8f68;
+   --color-sender-3: #a4553d;
+   --color-sender-4: #7a4b9e;
+   --color-sender-5: #1f6f8f;
+   --color-sender-6: #8a5a14;
+
+   --shadow-screen: 0 1px 2px rgba(20, 25, 40, 0.06), 0 16px 40px rgba(20, 25, 40, 0.10);
+}
