@@ -95,6 +95,8 @@ constexpr const char* c_data_application = "application";
 
 constexpr const char* c_all_specials = " !\"#$%&'()*+,-./<=>?@[\\]^`{|}~";
 
+constexpr const char* c_hdr_separator = ": ";
+
 constexpr const char* c_data_separator = "\r\n\r\n";
 
 constexpr const char* c_get_request = "GET";
@@ -107,6 +109,7 @@ constexpr const char* c_options_request = "OPTIONS";
 
 constexpr const char* c_index_html = "index.html";
 
+constexpr const char* c_links_file = ".links";
 constexpr const char* c_redirects_file = ".redirects";
 
 constexpr const char* c_echo_endpoint = "/echo";
@@ -150,6 +153,8 @@ constexpr const char* c_http_host_header = "host";
 constexpr const char* c_http_content_type_header = "content-type";
 constexpr const char* c_http_content_length_header = "content-length";
 constexpr const char* c_http_content_disposition_header = "content-disposition";
+
+constexpr const char* c_http_x_forwarded_for_header = "x-forwarded-for";
 
 constexpr const char* c_http_connection_header_info = "Connection: keep-alive";
 
@@ -361,9 +366,12 @@ string g_cws_endpoint_prefix;
 
 atomic< size_t > g_active_handlers;
 
+atomic< time_t > g_links_file_mod;
 atomic< time_t > g_redirects_file_mod;
 
 atomic< size_t > g_num_request_handler;
+
+vector< string > g_links;
 
 map< string, string > g_redirects;
 
@@ -379,7 +387,7 @@ inline void deccrement_handlers( )
    --g_active_handlers;
 }
 
-bool redirects_file_has_changed( const char* p_file_name )
+bool file_has_changed( const char* p_file_name, atomic< time_t >& file_mod )
 {
    bool changed = false;
 
@@ -388,10 +396,10 @@ bool redirects_file_has_changed( const char* p_file_name )
    if( p_file_name && file_exists( p_file_name ) )
       t = last_modification_time( p_file_name );
 
-   if( t != g_redirects_file_mod )
+   if( t != file_mod )
       changed = true;
 
-   g_redirects_file_mod = t;
+   file_mod = t;
 
    return changed;
 }
@@ -560,7 +568,7 @@ void http_request_handler::on_start( )
          {
             string next( header_lines[ i ] );
 
-            string::size_type pos = next.find( ": " );
+            string::size_type pos = next.find( c_hdr_separator );
 
             string name( lower( next.substr( 0, pos ) ) );
 
@@ -568,6 +576,8 @@ void http_request_handler::on_start( )
 
             if( pos != string::npos )
                data = next.substr( pos + 2 );
+
+            TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, name + c_hdr_separator + data );
 
             header_info[ name ] = data;
 #ifdef DEBUG
@@ -660,6 +670,9 @@ void http_request_handler::on_start( )
              && ( pos == ( http_document.length( ) - 1 ) ) )
                http_document += c_index_html;
          }
+
+         if( http_document.find( ".." ) != string::npos )
+            throw runtime_error( "unepected non-absolute path '" + http_document + "'" );
 
          map< string, string > params;
 
@@ -1107,10 +1120,15 @@ void http_request_handler::on_start( )
 
                was_endpoint = true;
 
+               string ip_addr_for( ip_addr );
+
+               if( header_info.count( c_http_x_forwarded_for_header ) )
+                  ip_addr_for = header_info[ c_http_x_forwarded_for_header ];
+
                if( !is_json_output )
-                  response = ip_addr;
+                  response = ip_addr_for;
                else
-                  response = "{\"ip_addr\":\"" + escaped_json( ip_addr ) + "\"}";
+                  response = "{\"ip_addr\":\"" + escaped_json( ip_addr_for ) + "\"}";
             }
             else if( http_document == c_unix_now_endpoint )
             {
@@ -1166,7 +1184,44 @@ void http_request_handler::on_start( )
             // the path does not exist).
             string check_path( absolute_path( path + http_document, &rc ) );
 
-            if( check_path.find( start ) == 0 )
+            bool allowed = ( check_path.find( start ) == 0 );
+
+            if( !allowed )
+            {
+               guard g( g_mutex );
+
+               string links_file( start + '/' );
+
+               links_file += c_links_file;
+
+               // NOTE: As soft-links in or below the start directory could be
+               // used (especially for a development environment) in order for
+               // these to also be allowed they must be included in a ".links"
+               // file with an absolute path per line as per the following:
+               //
+               // /home/admin/ciyam/proto/
+               // /home/admin/ciyam/webui/
+               //
+               if( file_has_changed( links_file.c_str( ), g_links_file_mod ) )
+               {
+                  g_links.clear( );
+
+                  if( file_exists( links_file ) )
+                     buffer_file_lines( links_file, g_links );
+               }
+
+               for( size_t i = 0; i < g_links.size( ); i++ )
+               {
+                  if( check_path.find( g_links[ i ] ) == 0 )
+                  {
+                     allowed = true;
+
+                     break;
+                  }
+               }
+            }
+
+            if( allowed )
             {
                if( file_exists( path + http_document ) )
                {
@@ -1283,7 +1338,7 @@ void http_request_handler::on_start( )
                   // /old_dir /new_page.html
                   // /old_page.html /new_page.html
                   //
-                  if( redirects_file_has_changed( redirects_file.c_str( ) ) )
+                  if( file_has_changed( redirects_file.c_str( ), g_redirects_file_mod ) )
                   {
                      g_redirects.clear( );
 
