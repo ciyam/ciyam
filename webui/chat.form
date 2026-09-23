@@ -150,7 +150,7 @@ http://www.opensource.org/licenses/mit-license.php.
             </div>
             <div class="chat-owner-actions" id="owner_actions" hidden>
                <button type="button" class="chat-btn" onclick="do_open_rename_room( )">Rename</button>
-               <button type="button" class="chat-btn chat-btn--accent" onclick="do_open_invite( )">Invite</button>
+               <button type="button" class="chat-btn chat-btn--accent" id="owner_invite" onclick="do_open_invite( )">Invite</button>
             </div>
          </div>
 

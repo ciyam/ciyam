@@ -293,6 +293,24 @@ check( "other room not entrance", cp.is_entrance_room( "0000001" ), false );
 check( "time shape", /^\d\d:\d\d:\d\d$/.test( cp.unique_to_time( "1757520000002" ) ), true );
 check( "time of a bad unique", cp.unique_to_time( "not-a-number" ), "" );
 
+heading( "system events" );
+
+// NOTE: The server emits eight verbs - joined, create, invite, issued, rename, assign,
+// allows and remove. Enumerating them in the view meant a new one lost its detail, so
+// these pin the two that were being dropped.
+var ev = cp.parse_system_event( ":allows set to own" );
+check( "allows verb", ev.verb, "allows" );
+check( "allows keeps its detail", ev.detail, "set to own" );
+
+ev = cp.parse_system_event( ":assign 'admin' to 'tester-1'" );
+check( "assign verb", ev.verb, "assign" );
+check( "assign names the old owner", ev.from_name, "admin" );
+check( "assign names the new owner", ev.to_name, "tester-1" );
+
+ev = cp.parse_system_event( ":remove" );
+check( "a bare verb has no detail", ev.detail, "" );
+check( "a bare verb still parses", ev.verb, "remove" );
+
 heading( "saved account list" );
 
 // NOTE: "cws.access" is shared with "test_web_session.html", so a malformed value breaks

@@ -139,6 +139,15 @@ ok   other room not entrance
 ok   time shape
 ok   time of a bad unique
 
+== system events ===============================================
+ok   allows verb
+ok   allows keeps its detail
+ok   assign verb
+ok   assign names the old owner
+ok   assign names the new owner
+ok   a bare verb has no detail
+ok   a bare verb still parses
+
 == saved account list ==========================================
 ok   no key yet
 ok   empty string is no accounts

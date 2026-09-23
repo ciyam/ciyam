@@ -165,20 +165,37 @@ http://www.opensource.org/licenses/mit-license.php.
 
    function load_main_js( name, source )
    {
-      var script = document.createElement( "script" );
+      // NOTE: Keyed by the file's own "Last-Modified" rather than the clock or the
+      // session id. Both alternatives fail in one direction:
+      //
+      //   the clock       - a different key per tab, so a linked tab re-downloads rather
+      //                     than reusing the cached copy, which breaks the console
+      //   the session id  - shared across linked tabs, but "sessionStorage" survives a
+      //                     hard reload, so an edited file kept serving the old script
+      //                     and new markup ran against stale logic
+      //
+      // "Last-Modified" is the same for every tab and changes exactly when the file does.
+      // The extra HEAD request is one round trip against getting both properties.
+      function append_script( key )
+      {
+         var script = document.createElement( "script" );
 
-      // NOTE: Cache busted on the clock, as the ".form" fetch above already is. It was
-      // previously keyed by the source id so a linked tab could reuse the copy cached by
-      // the tab that opened it - but the server sends no "Cache-Control" header, only
-      // "Last-Modified", so browsers cache heuristically and that key never changed
-      // while iterating. The result was new markup paired with stale logic, which reads
-      // as a bug in code that has already been fixed. One extra 55 KB download per tab
-      // is a cheap price for the page always being what is on disk.
-      script.src = name + ".js?" + Date.now( );
+         script.src = name + ".js?" + encodeURIComponent( key );
 
-      script.setAttribute( "id", name );
+         script.setAttribute( "id", name );
 
-      document.body.appendChild( script );
+         document.body.appendChild( script );
+      }
+
+      fetch( name + ".js", { method: "HEAD" } )
+       .then( function( response )
+       {
+          // NOTE: Falls back to the source id, so a server not answering HEAD behaves as
+          // it did before rather than not loading at all.
+          return response.headers.get( "Last-Modified" ) || source;
+       } )
+       .catch( function( ) { return source; } )
+       .then( append_script );
    }
 
    function call_at_load( )

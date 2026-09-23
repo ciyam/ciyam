@@ -137,7 +137,9 @@ function parse_system_event( text )
       else
          event.room = target;
    }
-   else if( event.verb === "rename" )
+   // NOTE: ":assign" carries the same "'old' to 'new'" shape as ":rename" - it reports a
+   // change of room ownership. Both are parsed here so the notice can name the two sides.
+   else if( ( event.verb === "rename" ) || ( event.verb === "assign" ) )
    {
       var quoted = event.detail.match( /'([^']*)'\s+to\s+'([^']*)'/ );
 

@@ -134,7 +134,9 @@ function populate_accounts( )
       if( localStorage.getItem( c_storage_hashed_prefix + access ) !== null )
          label += "  ·  saved password";
 
-      select.options.add( new Option( label, access, false ), 1 );
+      // NOTE: Inserted after the entries already added rather than always at index 1,
+      // which reversed the list - the stored value is sorted, so the display was not.
+      select.options.add( new Option( label, access, false ), 1 + n );
    }
 
    // NOTE: Only preselect a saved account when there is one - otherwise the first
@@ -1325,6 +1327,19 @@ function last_rendered_day( list )
    return ( last === null ) ? "" : ( last.dataset.day || "" );
 }
 
+// NOTE: Sending returns the new message, and a poll already in flight was issued with an
+// earlier "from" - so it returns that same message and it gets appended twice. Rather
+// than trying to order the two, appending is made idempotent: a unique already on screen
+// is skipped. The DOM is asked directly so this cannot drift out of step with a separate
+// record of what has been drawn. Reported by Ian, 2026-09-23.
+function already_rendered( list, unique )
+{
+   if( !unique )
+      return false;
+
+   return ( list.querySelector( "[data-unique=\"" + unique + "\"]" ) !== null );
+}
+
 function append_messages( messages )
 {
    var list = document.getElementById( "message_list" );
@@ -1334,6 +1349,9 @@ function append_messages( messages )
    for( var i = 0; i < messages.length; i++ )
    {
       var entry = messages[ i ];
+
+      if( already_rendered( list, entry.unique ) )
+         continue;
 
       var key = day_key( entry.unique );
 
@@ -1351,7 +1369,12 @@ function append_messages( messages )
 
       var row = ( entry.kind === "system" ) ? build_notice( entry ) : build_message( entry );
 
-      row.firstElementChild.dataset.day = ( key !== "" ) ? key : last_rendered_day( list );
+      var element = row.firstElementChild;
+
+      element.dataset.day = ( key !== "" ) ? key : last_rendered_day( list );
+
+      if( entry.unique )
+         element.dataset.unique = entry.unique;
 
       list.appendChild( row );
    }
@@ -1425,12 +1448,17 @@ function build_notice( entry )
 
    var detail = "";
 
-   if( event.verb === "rename" )
+   if( ( event.verb === "rename" ) || ( event.verb === "assign" ) )
       detail = " '" + ( event.from_name || "" ) + "' to '" + ( event.to_name || "" ) + "'";
    else if( ( event.verb === "invite" ) || ( event.verb === "create" ) )
       detail = " " + ( event.name || "" ) + " (#" + ( event.room || "" ) + ")";
-   else if( event.verb === "issued" )
-      detail = " " + ( event.detail || "" );
+   else
+   {
+      // NOTE: Anything else shows its detail as the server sent it. Enumerating the verbs
+      // meant a new one silently lost its text - ":allows set to own" rendered as bare
+      // ":allows". The server emits eight verbs and this client knew four.
+      detail = ( event.detail ) ? ( " " + event.detail ) : "";
+   }
 
    node.querySelector( ".chat-notice-detail" ).textContent = detail;
 
@@ -1601,6 +1629,11 @@ function update_thread_meta( )
    var is_owner = ( g_room_owner === ciyam.username ) || ciyam.is_admin;
 
    document.getElementById( "owner_actions" ).hidden = !is_owner;
+
+   // NOTE: Nobody can be invited to or removed from the Administration room - it is
+   // joined automatically - so the control is absent there rather than present and
+   // failing. Ian raised this against 0000001 specifically.
+   document.getElementById( "owner_invite" ).hidden = is_starting_room( g_room );
 
    document.getElementById( "presence_foot" ).textContent =
     "poll every " + ( c_poll_interval / 1000 ) + "s"
