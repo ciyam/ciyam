@@ -167,9 +167,14 @@ http://www.opensource.org/licenses/mit-license.php.
    {
       var script = document.createElement( "script" );
 
-      // NOTE: Keyed by source rather than the clock so that a linked tab
-      // reuses the copy already cached by the tab that opened it.
-      script.src = name + ".js?" + source;
+      // NOTE: Cache busted on the clock, as the ".form" fetch above already is. It was
+      // previously keyed by the source id so a linked tab could reuse the copy cached by
+      // the tab that opened it - but the server sends no "Cache-Control" header, only
+      // "Last-Modified", so browsers cache heuristically and that key never changed
+      // while iterating. The result was new markup paired with stale logic, which reads
+      // as a bug in code that has already been fixed. One extra 55 KB download per tab
+      // is a cheap price for the page always being what is on disk.
+      script.src = name + ".js?" + Date.now( );
 
       script.setAttribute( "id", name );
 
