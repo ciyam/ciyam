@@ -819,6 +819,15 @@ void autoscript_session::on_start( )
 
                string system_variable( g_scripts[ j->second ].system_variable );
 
+               bool clear_variable = false;
+
+               if( !system_variable.empty( ) && ( system_variable[ 0 ] == '~' ) )
+               {
+                  clear_variable = true;
+
+                  system_variable.erase( 0, 1 );
+               }
+
                // NOTE: If a system variable should exist
                // then will not execute the script unless
                // "force_immediate" is set.
@@ -951,6 +960,9 @@ void autoscript_session::on_start( )
                      executed = true;
 
                      exec_system( cmd_and_args, true );
+
+                     if( clear_variable && !system_variable.empty( ) )
+                        set_system_variable( system_variable, "" );
                   }
                }
 
