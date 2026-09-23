@@ -382,28 +382,6 @@ textarea
    color: var(--color-chat-text-secondary);
 }
 
-/* NOTE: The label wraps the box so the text is part of the hit area. */
-.chat-check
-{
-   align-items: center;
-   color: var(--color-chat-text-secondary);
-   cursor: pointer;
-   display: flex;
-   font-size: var(--font-size-chat-meta);
-   gap: 8px;
-   margin-top: 16px;
-   user-select: none;
-}
-
-.chat-check input
-{
-   accent-color: var(--color-chat-accent-deep);
-   cursor: pointer;
-   height: 15px;
-   margin: 0;
-   width: 15px;
-}
-
 .chat-signin-actions
 {
    display: flex;

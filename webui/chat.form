@@ -45,9 +45,14 @@ http://www.opensource.org/licenses/mit-license.php.
          <div class="chat-hint" id="signin_password_hint"></div>
       </div>
 
-      <label class="chat-check" for="signin_retain">
-         <input type="checkbox" id="signin_retain"> Remember this account on this browser
-      </label>
+      <label class="chat-label" for="signin_retain">Remember on this browser</label>
+      <select id="signin_retain" class="chat-field">
+         <option value="none">Nothing &mdash; forget this account</option>
+         <option value="access">The PIN only</option>
+         <option value="full">The PIN and the password</option>
+      </select>
+      <div class="chat-hint">The PIN is the only way back into an account. Saving the
+      password as well signs you in without typing it.</div>
 
       <div class="chat-signin-actions">
          <button type="submit" id="signin_connect" class="chat-btn chat-btn--primary">Connect</button>

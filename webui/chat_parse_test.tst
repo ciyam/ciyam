@@ -139,6 +139,21 @@ ok   other room not entrance
 ok   time shape
 ok   time of a bad unique
 
+== saved account list ==========================================
+ok   no key yet
+ok   empty string is no accounts
+ok   a single account
+ok   leading blank dropped
+ok   trailing blank dropped
+ok   interior blank dropped
+ok   surrounding space trimmed
+ok   duplicates collapsed
+ok   emptied list removes the key
+ok   list of blanks removes the key
+ok   one account formats
+ok   accounts are sorted
+ok   round trip repairs corruption
+
 == day labels ==================================================
 ok   same day is Today
 ok   one day back is Yesterday

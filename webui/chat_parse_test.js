@@ -293,6 +293,32 @@ check( "other room not entrance", cp.is_entrance_room( "0000001" ), false );
 check( "time shape", /^\d\d:\d\d:\d\d$/.test( cp.unique_to_time( "1757520000002" ) ), true );
 check( "time of a bad unique", cp.unique_to_time( "not-a-number" ), "" );
 
+heading( "saved account list" );
+
+// NOTE: "cws.access" is shared with "test_web_session.html", so a malformed value breaks
+// the harness as well. Ian hit exactly that - an emptied list stored as "" came back as
+// one blank account, and the next PIN appended to it giving ",11111".
+check( "no key yet", cp.parse_access_list( null ).length, 0 );
+check( "empty string is no accounts", cp.parse_access_list( "" ).length, 0 );
+check( "a single account", cp.parse_access_list( "11111" ).join( "," ), "11111" );
+
+check( "leading blank dropped", cp.parse_access_list( ",11111" ).join( "," ), "11111" );
+check( "trailing blank dropped", cp.parse_access_list( "11111," ).join( "," ), "11111" );
+check( "interior blank dropped", cp.parse_access_list( "11111,,22222" ).join( "," ), "11111,22222" );
+check( "surrounding space trimmed", cp.parse_access_list( " 11111 , 22222 " ).join( "," ), "11111,22222" );
+check( "duplicates collapsed", cp.parse_access_list( "11111,11111" ).join( "," ), "11111" );
+
+// NOTE: null means "remove the key" - storing "" is what caused the blank entry.
+check( "emptied list removes the key", cp.format_access_list( [ ] ), null );
+check( "list of blanks removes the key", cp.format_access_list( [ "" ] ), null );
+check( "one account formats", cp.format_access_list( [ "11111" ] ), "11111" );
+check( "accounts are sorted", cp.format_access_list( [ "22222", "11111" ] ), "11111,22222" );
+
+// NOTE: Reading a corrupted value repairs it, so an already broken browser heals on the
+// next write rather than needing the user to clear storage by hand.
+check( "round trip repairs corruption",
+ cp.format_access_list( cp.parse_access_list( ",11111" ) ), "11111" );
+
 heading( "day labels" );
 
 // NOTE: Fixed "now" of Wednesday 23 September 2026, so the labels below do not change

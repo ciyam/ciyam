@@ -564,6 +564,42 @@ function posting_status( room, entry, username, is_admin )
    return { can_post: true, reason: "" };
 }
 
+// NOTE: The saved account list is a comma separated string in localStorage, shared with
+// "test_web_session.html" - both read the same "cws.access" key. Parsing and formatting
+// live here, as one pair, because doing it inline in three places is what allowed a blank
+// entry to get in: "".split( "," ) is [ "" ], not [ ], so an emptied list came back as a
+// single nameless account and the next PIN appended to it, giving ",11111". That then
+// broke the harness PIN list as well as ours.
+function parse_access_list( stored )
+{
+   if( ( stored === null ) || ( stored === undefined ) )
+      return [ ];
+
+   var entries = String( stored ).split( "," );
+
+   var valid = [ ];
+
+   for( var i = 0; i < entries.length; i++ )
+   {
+      var entry = entries[ i ].trim( );
+
+      if( ( entry !== "" ) && ( valid.indexOf( entry ) < 0 ) )
+         valid.push( entry );
+   }
+
+   return valid;
+}
+
+// NOTE: Returns null when nothing is left, so the caller removes the key rather than
+// storing an empty string. Ian: "if intending to wipe the access it should be deleted
+// (rather than set to an empty string)".
+function format_access_list( entries )
+{
+   var valid = parse_access_list( ( entries || [ ] ).join( "," ) );
+
+   return ( valid.length === 0 ) ? null : valid.sort( ).join( "," );
+}
+
 // NOTE: Room names are validated server side by "irc_add_room". Checking the
 // same rules here lets the form report a problem before a round trip.
 function is_valid_room_name( name )
@@ -631,6 +667,8 @@ if( typeof module !== "undefined" )
       is_entrance_room: is_entrance_room,
       is_starting_room: is_starting_room,
       posting_status: posting_status,
+      parse_access_list: parse_access_list,
+      format_access_list: format_access_list,
       is_valid_room_name: is_valid_room_name,
       is_valid_username: is_valid_username
    };

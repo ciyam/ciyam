@@ -24,6 +24,13 @@ const c_max_sender_colours = 6;
 // at. Admin signs in with that PIN like any other account.
 const c_access_create = "create";
 
+// NOTE: Three outcomes, not two. The harness has had this all along as
+// "creds retain partial" - keep the access PIN, drop the hashed password. A single
+// checkbox could not express it, which is what Ian raised.
+const c_retain_none = "none";
+const c_retain_access = "access";
+const c_retain_full = "full";
+
 const c_storage_device = "cws.device";
 const c_storage_access = "cws.access";
 const c_storage_hashed_prefix = "cws.hashed_";
@@ -113,9 +120,7 @@ function populate_accounts( )
          select.remove( i );
    }
 
-   var stored = localStorage.getItem( c_storage_access );
-
-   var entries = ( stored === null ) ? [ ] : stored.split( "," );
+   var entries = parse_access_list( localStorage.getItem( c_storage_access ) );
 
    for( var n = 0; n < entries.length; n++ )
    {
@@ -479,59 +484,64 @@ async function do_disconnect( )
 // a button that refused to do anything until you had connected.
 function apply_retain_choice( )
 {
-   var retain = document.getElementById( "signin_retain" ).checked;
+   var mode = document.getElementById( "signin_retain" ).value;
 
    if( ciyam.access === "" )
       return;
 
-   // NOTE: A PIN the server has just issued is kept whatever the checkbox says - it is
-   // the account's only identifier and the user has no other copy of it. The checkbox
-   // then governs only whether the *password* is saved alongside it.
-   if( g_registered_pin === ciyam.access )
-      retain = true;
+   // NOTE: A PIN the server has just issued is the account's only identifier and the user
+   // has no other copy, so it is kept even when "forget" was chosen - see ISS-010. The
+   // password still follows the choice.
+   if( ( g_registered_pin === ciyam.access ) && ( mode === c_retain_none ) )
+      mode = c_retain_access;
 
-   var stored = localStorage.getItem( c_storage_access );
-
-   var entries = ( stored === null ) ? [ ] : stored.split( "," );
+   var entries = parse_access_list( localStorage.getItem( c_storage_access ) );
 
    var pos = entries.indexOf( ciyam.access );
 
-   if( retain )
-   {
-      if( pos < 0 )
-      {
-         entries.push( ciyam.access );
-         entries.sort( );
-      }
-
-      // NOTE: The password is saved only when the box is ticked, even for a PIN that is
-      // being kept regardless.
-      if( ( ciyam.hashed !== "" ) && document.getElementById( "signin_retain" ).checked )
-         localStorage.setItem( c_storage_hashed_prefix + ciyam.access, ciyam.hashed );
-      else
-         localStorage.removeItem( c_storage_hashed_prefix + ciyam.access );
-   }
-   else
+   if( mode === c_retain_none )
    {
       if( pos >= 0 )
          entries.splice( pos, 1 );
 
       localStorage.removeItem( c_storage_hashed_prefix + ciyam.access );
    }
+   else
+   {
+      if( pos < 0 )
+         entries.push( ciyam.access );
 
-   localStorage.setItem( c_storage_access, entries.join( "," ) );
+      if( ( mode === c_retain_full ) && ( ciyam.hashed !== "" ) )
+         localStorage.setItem( c_storage_hashed_prefix + ciyam.access, ciyam.hashed );
+      else
+         localStorage.removeItem( c_storage_hashed_prefix + ciyam.access );
+   }
+
+   // NOTE: Removing the key rather than storing an empty string. Storing "" left a blank
+   // entry that both this client and the harness then read as a nameless account.
+   var value = format_access_list( entries );
+
+   if( value === null )
+      localStorage.removeItem( c_storage_access );
+   else
+      localStorage.setItem( c_storage_access, value );
 }
 
 // NOTE: Reflects whether the selected account is already saved, so the box shows the
 // current state rather than a default that would silently forget it on the next connect.
 function refresh_retain_choice( access )
 {
-   var stored = localStorage.getItem( c_storage_access );
+   var entries = parse_access_list( localStorage.getItem( c_storage_access ) );
 
-   var entries = ( stored === null ) ? [ ] : stored.split( "," );
+   var mode = c_retain_none;
 
-   document.getElementById( "signin_retain" ).checked =
-    ( ( access !== "" ) && ( entries.indexOf( access ) >= 0 ) );
+   if( ( access !== "" ) && ( entries.indexOf( access ) >= 0 ) )
+   {
+      mode = ( localStorage.getItem( c_storage_hashed_prefix + access ) !== null )
+       ? c_retain_full : c_retain_access;
+   }
+
+   document.getElementById( "signin_retain" ).value = mode;
 }
 
 function do_reset_browser( )
