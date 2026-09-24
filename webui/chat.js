@@ -1392,26 +1392,8 @@ function on_messages_response( response, asked_for, replace )
       if( next !== "" )
          g_start_point = next;
 
-      // NOTE: On a full load mark where reading had got to, so that a long
-      // history has a visible boundary.
-      if( replace && ( g_start_point !== "" ) )
-         append_marker( "last read " + g_start_point );
-
       update_thread_meta( );
    }
-}
-
-function append_marker( text )
-{
-   var node = document.getElementById( "tpl_marker" ).content.cloneNode( true );
-
-   node.querySelector( "span" ).textContent = text;
-
-   var list = document.getElementById( "message_list" );
-
-   list.appendChild( node );
-
-   list.scrollTop = list.scrollHeight;
 }
 
 // NOTE: Every row carries its day, so the last one in the list says which day the list

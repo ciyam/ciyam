@@ -890,30 +890,6 @@ textarea
    cursor: pointer;
 }
 
-.chat-marker
-{
-   margin-top: 10px;
-   display: flex;
-   align-items: center;
-   gap: 10px;
-}
-
-.chat-marker::before,
-.chat-marker::after
-{
-   content: "";
-   height: 1px;
-   flex: 1;
-   background: var(--color-chat-border);
-}
-
-.chat-marker span
-{
-   font-family: var(--font-family-chat-mono);
-   font-size: var(--font-size-chat-nano);
-   color: var(--color-chat-text-ghost);
-}
-
 /* ---- composer ---- */
 
 .chat-composer

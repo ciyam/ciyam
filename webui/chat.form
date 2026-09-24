@@ -299,10 +299,6 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </template>
 
-<template id="tpl_marker">
-   <div class="chat-marker"><span></span></div>
-</template>
-
 <template id="tpl_member">
    <button type="button" class="chat-member">
       <span class="chat-dot"></span>
