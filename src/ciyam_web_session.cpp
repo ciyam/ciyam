@@ -161,6 +161,7 @@ constexpr const char* c_cws_request_messages_create_options_text = "text";
 
 constexpr const char* c_cws_request_messages_review_options_from = "from";
 
+constexpr const char* c_cws_request_messages_update_options_for = "for";
 constexpr const char* c_cws_request_messages_update_options_name = "name";
 constexpr const char* c_cws_request_messages_update_options_owner = "owner";
 constexpr const char* c_cws_request_messages_update_options_posts = "posts";
@@ -200,6 +201,8 @@ constexpr const char* c_web_session_initial_room_number = "0000001";
 constexpr const char* c_web_session_meta_message_prefix = "_/";
 
 constexpr const char* c_web_session_default_message_prefix = "_ ";
+
+constexpr const char* c_web_session_dummy_uuid = "00000000000000000000000000000000";
 
 constexpr const char* c_storage_attribute_id = "id";
 constexpr const char* c_storage_attribute_user_info = "user_info";
@@ -2647,13 +2650,32 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     room = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_messages_prefix ) );
 
                                  if( is_put_request
+                                  && option_parameters.count( c_cws_request_messages_update_options_for ) )
+                                 {
+                                    use_none_response = false;
+
+                                    string room_invite( room );
+
+                                    string names( option_parameters[ c_cws_request_messages_update_options_for ] );
+
+                                    // NOTE: Names need to use a
+                                    // dot separator rather than
+                                    // a comma.
+                                    replace( names, ",", "." );
+
+                                    room_invite += '_' + string( c_web_session_dummy_uuid ) + '_' + names;
+
+                                    request_and_args = "<web_session_add_room.cin \"" + room_invite + "\" \"" + username + "\"";
+                                 }
+
+                                 if( is_put_request
                                   && option_parameters.count( c_cws_request_messages_update_options_name ) )
                                  {
                                     use_none_response = false;
 
                                     string name( option_parameters[ c_cws_request_messages_update_options_name ] );
 
-                                    request_and_args = "<web_session_add_room.cin \"" + name + "\" \"" + username + "\" " + room + "\n";
+                                    request_and_args = "<web_session_add_room.cin \"" + name + "\" \"" + username + "\" " + room;
                                  }
 
                                  if( is_put_request
@@ -2665,7 +2687,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                     room_assign += '=' + option_parameters[ c_cws_request_messages_update_options_owner ];
 
-                                    request_and_args = "<web_session_add_room.cin \"" + room_assign + "\" \"" + username + "\"\n";
+                                    request_and_args = "<web_session_add_room.cin \"" + room_assign + "\" \"" + username + "\"";
                                  }
 
                                  if( is_put_request
@@ -2677,7 +2699,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                     room_assign += "=@" + option_parameters[ c_cws_request_messages_update_options_posts ];
 
-                                    request_and_args = "<web_session_add_room.cin \"" + room_assign + "\" \"" + username + "\"\n";
+                                    request_and_args = "<web_session_add_room.cin \"" + room_assign + "\" \"" + username + "\"";
                                  }
 
                                  if( is_post_request
