@@ -313,7 +313,13 @@ async function register_account( username, password )
       return "";
    }
 
-   ciyam.device = token;
+   // NOTE: The browser keeps the device it already has. A saved password is hashed with
+   // the device - sha256( sha256( access + password ) + device ) - so adopting the new
+   // account's token here silently invalidated every password saved before it, and the
+   // other accounts could not sign in until the browser was reset. Device tokens are not
+   // tied to an account for signing in, so the new one is only needed when there is none.
+   if( ciyam.device === "" )
+      ciyam.device = token;
 
    return pin;
 }
@@ -998,6 +1004,54 @@ function do_open_invite( )
       if( first !== null )
          first.focus( );
    }
+
+   mark_already_invited( g_room );
+}
+
+// NOTE: The server accepts the same invitation twice without complaint, so the picker
+// stops it instead. This user's Administration room holds an ":issued" receipt for every
+// invitation they sent; anyone already invited to this room is shown but cannot be ticked.
+// The dialog is drawn first and marked when the receipts arrive, so a slow fetch never
+// delays it. Invitations sent by someone else are not visible here - see ISS-017.
+function mark_already_invited( room )
+{
+   serialised( function( )
+   {
+      return ciyam.fetch_messages( c_starting_room_no, "from=0", function( response )
+      {
+         // NOTE: The dialog may have been closed or switched to another room meanwhile.
+         if( is_error_response( response ) || ( g_dialog_mode !== "invite" ) || ( g_room !== room )
+          || document.getElementById( "room_dialog" ).hidden )
+            return;
+
+         var invited = invited_to_room( parse_fetch_response( response ).messages, room );
+
+         var checks = document.querySelectorAll( "#room_dialog_invitees .chat-invitee-check" );
+
+         for( var i = 0; i < checks.length; i++ )
+         {
+            var box = checks[ i ];
+
+            if( !invited[ box.value ] )
+               continue;
+
+            box.checked = false;
+            box.disabled = true;
+
+            var row = box.parentNode;
+
+            row.classList.add( "is-invited" );
+            row.title = "Already invited to this room";
+
+            var tag = document.createElement( "span" );
+
+            tag.className = "chat-invitee-tag";
+            tag.textContent = "invited";
+
+            row.appendChild( tag );
+         }
+      } );
+   } );
 }
 
 function ticked_invitees( )

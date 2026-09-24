@@ -566,6 +566,37 @@ function posting_status( room, entry, username, is_admin )
    return { can_post: true, reason: "" };
 }
 
+// NOTE: Who this user has already invited to a room, from the ":issued" receipts the
+// server posts to their Administration room. The server accepts a duplicate invitation
+// without complaint, and the invitee just gets a second notice carrying the same token,
+// so the picker uses this to stop it being sent again.
+//
+// Only receipts addressed to the viewer are visible, so this knows about invitations this
+// user sent - not ones another owner or the administrator sent to the same person.
+function invited_to_room( messages, room )
+{
+   var names = { };
+
+   for( var i = 0; i < ( messages || [ ] ).length; i++ )
+   {
+      var event = messages[ i ].event;
+
+      if( !event || ( event.verb !== "issued" ) || ( event.issued_kind !== "invite" ) )
+         continue;
+
+      if( event.room !== room )
+         continue;
+
+      ( event.recipients || [ ] ).forEach( function( name )
+      {
+         if( name )
+            names[ name ] = true;
+      } );
+   }
+
+   return names;
+}
+
 // NOTE: The session handover on the "test_web_channel" BroadcastChannel is a string whose
 // receivers - ours and the harness's - test for ":" first, then "-", then "=". The
 // credentials message is "<viewer>=<field>,<field>,...", so a field containing "-" or ":"
@@ -695,6 +726,7 @@ if( typeof module !== "undefined" )
       is_entrance_room: is_entrance_room,
       is_starting_room: is_starting_room,
       posting_status: posting_status,
+      invited_to_room: invited_to_room,
       encode_channel_field: encode_channel_field,
       decode_channel_field: decode_channel_field,
       parse_access_list: parse_access_list,

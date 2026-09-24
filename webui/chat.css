@@ -989,6 +989,24 @@ textarea
    font-size: var(--font-size-chat-tiny);
 }
 
+/* NOTE: Someone already invited to the room - shown so the picker is honest about who is
+   missing from it, but greyed and untickable so the invitation is not sent twice. */
+.chat-recipient.is-invited
+{
+   border-color: var(--color-chat-rule);
+   background: none;
+   color: var(--color-chat-text-ghost);
+   cursor: default;
+}
+
+.chat-invitee-tag
+{
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-micro);
+   color: var(--color-chat-text-ghost);
+   padding-right: 5px;
+}
+
 .chat-recipient button
 {
    border: 0;

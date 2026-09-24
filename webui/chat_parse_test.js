@@ -311,6 +311,25 @@ ev = cp.parse_system_event( ":remove" );
 check( "a bare verb has no detail", ev.detail, "" );
 check( "a bare verb still parses", ev.verb, "remove" );
 
+heading( "invitations already sent" );
+
+var receipts = cp.parse_fetch_response( [
+ "admin+1 tester-1+0",
+ "1790259222001 admin :issued (invite for 0000005 sent to tester-1)",
+ "1790259222002 admin :issued (invite for 0000005 sent to tester-2,tester-3)",
+ "1790259222003 admin :issued (invite for 0000006 sent to damon)",
+ "1790259222004 admin :issued (message sent to tester-1)",
+ "1790259222005 admin hello" ].join( "\n" ) ).messages;
+
+var sent = cp.invited_to_room( receipts, "0000005" );
+
+check( "single recipient found", sent[ "tester-1" ], true );
+check( "every name in a list found", ( sent[ "tester-2" ] === true ) && ( sent[ "tester-3" ] === true ), true );
+check( "another room ignored", sent[ "damon" ], undefined );
+check( "a private message receipt ignored", Object.keys( cp.invited_to_room( receipts, "" ) ).length, 0 );
+check( "nothing for an unknown room", Object.keys( cp.invited_to_room( receipts, "0000009" ) ).length, 0 );
+check( "no messages is no invitations", Object.keys( cp.invited_to_room( [ ], "0000005" ) ).length, 0 );
+
 heading( "session handover fields" );
 
 // NOTE: Receivers of the handover test for ":" then "-" then "=", so a field carrying "-"

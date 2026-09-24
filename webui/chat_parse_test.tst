@@ -148,6 +148,14 @@ ok   assign names the new owner
 ok   a bare verb has no detail
 ok   a bare verb still parses
 
+== invitations already sent ====================================
+ok   single recipient found
+ok   every name in a list found
+ok   another room ignored
+ok   a private message receipt ignored
+ok   nothing for an unknown room
+ok   no messages is no invitations
+
 == session handover fields =====================================
 ok   hyphen is encoded
 ok   colon is encoded
