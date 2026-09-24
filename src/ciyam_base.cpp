@@ -172,6 +172,8 @@ constexpr const char* c_version_file_name = ".version";
 
 constexpr const char* c_skip_compress_file = ".skip_compress";
 
+constexpr const char* c_ext_ip_addr_file = ".ext_ip_addr";
+
 constexpr const char* c_check_ext_ip_addr = "check_ext_ip_addr";
 
 constexpr const char* c_server_demo_identities_list = "ciyam_demo_identities.lst";
@@ -5556,9 +5558,9 @@ int has_external_ip_address( )
 
    int64_t now = unix_time( );
 
-   string ext_ip_addr_file( c_tmp_ciyam_directory );
+   string check_ext_ip_addr_file( c_tmp_ciyam_directory );
 
-   ext_ip_addr_file += '/' + string( c_check_ext_ip_addr ) + c_tmp_file_ext;
+   check_ext_ip_addr_file += '/' + string( c_check_ext_ip_addr ) + c_tmp_file_ext;
 
    // NOTE: If being called for the first time
    // then will ensure that the output file is
@@ -5567,10 +5569,10 @@ int has_external_ip_address( )
    {
       g_ext_ip_check_tm_val++;
 
-      file_remove( ext_ip_addr_file );
+      file_remove( check_ext_ip_addr_file );
 
-      if( file_exists( ext_ip_addr_file ) )
-         throw runtime_error( "unable to remove '" + ext_ip_addr_file + "'" );
+      if( file_exists( check_ext_ip_addr_file ) )
+         throw runtime_error( "unable to remove '" + check_ext_ip_addr_file + "'" );
    }
 
    // NOTE: Will execute a bash script to get
@@ -5593,10 +5595,10 @@ int has_external_ip_address( )
    }
    else
    {
-      if( file_exists( ext_ip_addr_file ) )
+      if( file_exists( check_ext_ip_addr_file ) )
       {
          // NOTE: Will also handle the async delete of the file after the above existence check.
-         string ext_ip_addr( buffer_file( ( const string& )ext_ip_addr_file, 0, 0, 0, false ) );
+         string ext_ip_addr( buffer_file( ( const string& )check_ext_ip_addr_file, 0, 0, 0, false ) );
 
          string::size_type pos = ext_ip_addr.find( '\n' );
 
@@ -5613,10 +5615,31 @@ int has_external_ip_address( )
          {
             rc = 1;
 
+            // NOTE: Uses "/tmp/ciyam/.ext_ip_addr" in order
+            // for bash scripts (such as "check_ext_ip_addr"
+            // to check the validated external IP address).
+            string ext_ip_addr_file( c_tmp_ciyam_directory );
+
+            ext_ip_addr_file += '/' + string( c_ext_ip_addr_file );
+
+            if( !file_exists( ext_ip_addr_file ) )
+               write_file( ext_ip_addr_file, ext_ip_addr );
+            else
+            {
+               string old_ext_ip_addr( buffer_file( ext_ip_addr_file ) );
+
+               if( ext_ip_addr != old_ext_ip_addr )
+               {
+                  write_file( ext_ip_addr_file, ext_ip_addr );
+
+                  set_system_variable( e_special_var_ddns_update, c_true_value );
+               }
+            }
+
             set_system_variable( ip_ext_addr_name, ext_ip_addr, true );
          }
 
-         file_remove( ext_ip_addr_file );
+         file_remove( check_ext_ip_addr_file );
       }
    }
 
