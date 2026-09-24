@@ -920,6 +920,7 @@ function do_open_create_room( )
    document.getElementById( "room_dialog_title" ).textContent = "Create a room";
    document.getElementById( "room_dialog_submit" ).textContent = "Create";
    document.getElementById( "room_dialog_name" ).value = "";
+   document.getElementById( "room_dialog_name_row" ).hidden = false;
    document.getElementById( "room_dialog_invitees_row" ).hidden = false;
 
    set_error( "room_dialog_error", "" );
@@ -950,6 +951,7 @@ function do_open_rename_room( )
    document.getElementById( "room_dialog_title" ).textContent = "Rename this room";
    document.getElementById( "room_dialog_submit" ).textContent = "Rename";
    document.getElementById( "room_dialog_name" ).value = g_room_name;
+   document.getElementById( "room_dialog_name_row" ).hidden = false;
    document.getElementById( "room_dialog_invitees_row" ).hidden = true;
 
    set_error( "room_dialog_error", "" );
@@ -958,10 +960,97 @@ function do_open_rename_room( )
    document.getElementById( "room_dialog_name" ).focus( );
 }
 
+// NOTE: Invites to the room already open, using the "for" option on a messages PUT that
+// Ian added on 2026-09-24. Reuses the create dialog without its name field, and offers
+// only people who are not already members - inviting a member again would just issue a
+// token they have no use for.
 function do_open_invite( )
 {
-   show_alert( "Inviting to an existing room needs a server route that does not exist yet - "
-    + "create a room with invitees instead.", "is-warning" );
+   if( ( g_room === "" ) || is_starting_room( g_room ) )
+      return;
+
+   g_dialog_mode = "invite";
+
+   document.getElementById( "room_dialog_title" ).textContent = "Invite to " + g_room_name;
+   document.getElementById( "room_dialog_submit" ).textContent = "Invite";
+   document.getElementById( "room_dialog_name_row" ).hidden = true;
+   document.getElementById( "room_dialog_invitees_row" ).hidden = false;
+
+   set_error( "room_dialog_error", "" );
+
+   document.getElementById( "room_dialog_invitees" ).textContent = "";
+
+   document.getElementById( "room_dialog" ).hidden = false;
+
+   var members = { };
+
+   for( var i = 0; i < g_members.length; i++ )
+      members[ g_members[ i ].name ] = true;
+
+   var candidates = ( g_known_users.length > 0 ) ? g_known_users : [ ];
+
+   render_invitees( candidates.filter( function( user ) { return !members[ user.name ]; } ) );
+
+   if( candidates.length > 0 )
+   {
+      var first = document.querySelector( "#room_dialog_invitees .chat-invitee-check" );
+
+      if( first !== null )
+         first.focus( );
+   }
+}
+
+function ticked_invitees( )
+{
+   var checks = document.querySelectorAll( "#room_dialog_invitees .chat-invitee-check" );
+
+   var names = [ ];
+
+   for( var i = 0; i < checks.length; i++ )
+   {
+      if( checks[ i ].checked )
+         names.push( checks[ i ].value );
+   }
+
+   return names;
+}
+
+async function submit_invite( )
+{
+   var names = ticked_invitees( );
+
+   if( names.length === 0 )
+   {
+      set_error( "room_dialog_error", "Choose at least one person to invite." );
+
+      return;
+   }
+
+   ciyam.error = "";
+
+   var room = g_room;
+
+   await ciyam.update_message_room( room, "for=" + names.join( "," ), function( response )
+   {
+      if( is_error_response( response ) )
+      {
+         set_error( "room_dialog_error", error_text( response ) );
+
+         return;
+      }
+
+      do_close_room_dialog( );
+
+      show_alert( "Invited " + names.join( ", " ) + " to " + g_room_name + ".", "is-info" );
+
+      // NOTE: The invitation is posted as a system event, so a reload shows the
+      // receipt without waiting for the next poll.
+      if( room === g_room )
+         load_messages( "from=0", true );
+   } );
+
+   if( ciyam.error !== "" )
+      set_error( "room_dialog_error", ciyam.error );
 }
 
 function render_invitees( members )
@@ -1044,6 +1133,10 @@ function do_close_room_dialog( )
 
 async function do_submit_room_dialog( )
 {
+   // NOTE: Invite has no name field, so it is handled before the name is validated.
+   if( g_dialog_mode === "invite" )
+      return submit_invite( );
+
    var name = document.getElementById( "room_dialog_name" ).value.trim( );
 
    if( !is_valid_room_name( name ) )

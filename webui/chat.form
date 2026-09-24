@@ -213,11 +213,13 @@ http://www.opensource.org/licenses/mit-license.php.
 <div id="room_dialog" class="chat-scrim" hidden>
    <form class="chat-dialog" onsubmit="do_submit_room_dialog( ); return false;">
       <h2 id="room_dialog_title">Create a room</h2>
-      <p class="chat-dialog-note" id="room_dialog_note">5 to 50 characters. Letters, digits, spaces and
-      <span class="chat-mono">- + &amp; ( ) '</span> &mdash; one pair of brackets at most.</p>
-      <label class="chat-label" for="room_dialog_name">Room name</label>
-      <input type="text" id="room_dialog_name" class="chat-field" maxlength="50" autocomplete="off"
-       oninput="do_clear_room_name_error( )" onblur="do_validate_room_name( )">
+      <div id="room_dialog_name_row">
+         <p class="chat-dialog-note" id="room_dialog_note">5 to 50 characters. Letters, digits, spaces and
+         <span class="chat-mono">- + &amp; ( ) '</span> &mdash; one pair of brackets at most.</p>
+         <label class="chat-label" for="room_dialog_name">Room name</label>
+         <input type="text" id="room_dialog_name" class="chat-field" maxlength="50" autocomplete="off"
+          oninput="do_clear_room_name_error( )" onblur="do_validate_room_name( )">
+      </div>
       <div class="chat-error-text" id="room_dialog_error"></div>
       <div id="room_dialog_invitees_row" hidden>
          <label class="chat-label" for="room_dialog_invitees">Invite</label>
