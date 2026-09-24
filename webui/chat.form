@@ -247,20 +247,6 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </div>
 
-<div id="token_dialog" class="chat-scrim" hidden>
-   <div class="chat-dialog">
-      <h2>Room created</h2>
-      <p class="chat-dialog-note">Anyone holding this join token can enter the room. Invited members already
-      have it &mdash; this is for sharing it another way.</p>
-      <div class="chat-token" id="token_value"></div>
-      <div class="chat-qr" id="token_qr"></div>
-      <div class="chat-dialog-actions">
-         <button type="button" class="chat-btn" onclick="do_copy_token( )">Copy token</button>
-         <button type="button" class="chat-btn chat-btn--accent" onclick="do_close_token_dialog( )">Done</button>
-      </div>
-   </div>
-</div>
-
 <!-- ================================================================
      Templates
 

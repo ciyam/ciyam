@@ -1293,15 +1293,6 @@ textarea
    background: var(--color-chat-bg-rail);
 }
 
-.chat-qr
-{
-   align-self: center;
-   padding: 10px;
-   background: #ffffff;
-   border: 1px solid var(--color-chat-border);
-   border-radius: var(--radius-sm);
-}
-
 .chat-error-text
 {
    font-family: var(--font-family-chat-mono);

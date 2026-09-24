@@ -89,12 +89,6 @@ function chat( )
 
          event.preventDefault( );
       }
-      else if( !document.getElementById( "token_dialog" ).hidden )
-      {
-         do_close_token_dialog( );
-
-         event.preventDefault( );
-      }
       else if( !document.getElementById( "room_dialog" ).hidden )
       {
          do_close_room_dialog( );
@@ -1284,12 +1278,15 @@ async function do_submit_room_dialog( )
       set_error( "room_dialog_error", ciyam.error );
 }
 
-// NOTE: Shows the join token and switches to the room just created, so the user ends up
-// in it rather than having to find it in the rail.
+// NOTE: Switches to the room just created, so the user ends up in it rather than having
+// to find it in the rail. The create response is "<room>-<join token>" in text format.
+//
+// There is deliberately no "room created" dialog any more. It showed the token and a QR
+// code and said anyone holding it could enter - but tokens are now derived per user, so
+// that token was the owner's own and should never have been shared. Invitations are how
+// people get in. Removed at Ian's suggestion, 2026-09-24.
 async function open_new_room( response )
 {
-   show_new_room( response );
-
    var value = String( response ).trim( );
 
    if( value.charAt( 0 ) === ":" )
@@ -1307,40 +1304,6 @@ async function open_new_room( response )
    await load_rooms( );
 
    select_room( room, token );
-}
-
-// NOTE: The create response is "<room>-<join token>" in text format.
-function show_new_room( response )
-{
-   var value = String( response ).trim( );
-
-   if( value.charAt( 0 ) === ":" )
-      value = value.substring( 1 );
-
-   var pos = value.indexOf( "-" );
-
-   if( pos < 0 )
-      return;
-
-   document.getElementById( "token_value" ).textContent = value;
-
-   var qr = document.getElementById( "token_qr" );
-
-   qr.textContent = "";
-
-   if( typeof QRCode !== "undefined" )
-   {
-      try
-      {
-         new QRCode( qr, { text: value, width: 160, height: 160 } );
-      }
-      catch( e )
-      {
-         qr.textContent = "(QR unavailable)";
-      }
-   }
-
-   document.getElementById( "token_dialog" ).hidden = false;
 }
 
 // NOTE: A registered account's PIN is issued by the server and shown nowhere else. Miss
@@ -1369,19 +1332,6 @@ function do_copy_pin( )
 function do_close_pin_dialog( )
 {
    document.getElementById( "pin_dialog" ).hidden = true;
-}
-
-function do_copy_token( )
-{
-   var value = document.getElementById( "token_value" ).textContent;
-
-   if( navigator.clipboard )
-      navigator.clipboard.writeText( value );
-}
-
-function do_close_token_dialog( )
-{
-   document.getElementById( "token_dialog" ).hidden = true;
 }
 
 // ====================================================================
