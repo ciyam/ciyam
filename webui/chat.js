@@ -386,6 +386,16 @@ async function do_connect( )
 
       if( ( ciyam.error === "" ) && ( access !== "" ) )
       {
+         // NOTE: "CIYAM.connect" only asks for a new challenge when "unique" is empty, and a
+         // failed attempt leaves it set - so after a wrong password every retry reused the
+         // stale challenge and failed until the page was reloaded. Cleared here for each
+         // attempt. A typed password also always wins over any hash left from a previous
+         // attempt. Reported by Ian 2026-09-24; the underlying fix belongs in "ciyam.js".
+         ciyam.unique = "";
+
+         if( password !== "" )
+            ciyam.hashed = "";
+
          await ciyam.connect( access, ciyam.device, ciyam.hashed, password, function( ) { } );
 
          if( needs_claiming( ) )
