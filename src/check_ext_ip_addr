@@ -17,3 +17,16 @@ ip_addr=$(curl -m 10 -s https://ipv4.icanhazip.com)
 # name should be changed for consistency and need to
 # also change the "check_ext_ip_addr" constant.
 echo -n "$ip_addr" > /tmp/ciyam/check_ext_ip_addr.tmp
+
+# NOTE: If any "ciyam.*.ip.log" files are found that
+# are newer than "/tmp/ciyam/.ext_ip_addr" then will
+# touch "/tmp/ciyam/.ddns_update" (so the autoscript
+# for updating DDNS entries will be executed).
+if [ -f /tmp/ciyam/.ext_ip_addr ]; then
+ newer=$(find . -newer /tmp/ciyam/.ext_ip_addr -name "ciyam.*.ip.log")
+
+ if [ "$newer" != "" ]; then
+  touch /tmp/ciyam/.ddns_update
+  touch /tmp/ciyam/.ext_ip_addr
+ fi
+fi

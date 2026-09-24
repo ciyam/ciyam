@@ -42,7 +42,7 @@
 # <script/>
 #  <name>*ciyam_ddns_ip_updates
 #  <time>00:00:30
-#  <cycle>1m
+#  <cycle>1m ~@ddns_update
 #  <filename>*script*
 #  <arguments>ciyam_ddns_ip_updates.cin
 # </script>
