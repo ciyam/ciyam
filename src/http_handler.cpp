@@ -112,6 +112,8 @@ constexpr const char* c_index_html = "index.html";
 constexpr const char* c_links_file = ".links";
 constexpr const char* c_redirects_file = ".redirects";
 
+constexpr const char* c_ip_addr_file_ext = ".ip_addr";
+
 constexpr const char* c_echo_endpoint = "/echo";
 constexpr const char* c_system_endpoint = "/system";
 constexpr const char* c_upload_endpoint = "/upload";
@@ -200,6 +202,7 @@ constexpr const char* c_upload_filename = "upload";
 
 constexpr const char* c_replace_document_marker = "DOCUMENT";
 
+constexpr const char* c_query_param_name_token = "token";
 constexpr const char* c_query_param_name_verbose = "verbose";
 
 constexpr const char* c_query_param_value_json = "json";
@@ -1124,6 +1127,28 @@ void http_request_handler::on_start( )
 
                if( header_info.count( c_http_x_forwarded_for_header ) )
                   ip_addr_for = header_info[ c_http_x_forwarded_for_header ];
+
+               // NOTE: The "token" query parameter supports
+               // writing to "/tmp/ciyam/<token>.ip_addr" if
+               // this file exists. If this is a "soft-link"
+               // to a "ciyam.<name>.ip.log" file it can act
+               // as a trigger for performing a DDNS update.
+               if( params.count( c_query_param_name_token ) )
+               {
+                  string token( params[ c_query_param_name_token ] );
+
+                  string token_file( c_tmp_ciyam_directory );
+
+                  token_file += '/' + token + c_ip_addr_file_ext;
+
+                  if( file_exists( token_file ) )
+                  {
+                     string old_ip_addr_for( buffer_file( token_file ) );
+
+                     if( ip_addr_for != old_ip_addr_for )
+                        write_file( token_file, ip_addr_for );
+                  }
+               }
 
                if( !is_json_output )
                   response = ip_addr_for;
