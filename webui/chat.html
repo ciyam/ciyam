@@ -87,7 +87,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
             chat_channel.postMessage( viewer + "=" + ciyam.access + "," + ciyam.device + ","
              + ciyam.hashed + "," + ciyam.sessid + "," + ciyam.unique + ","
-             + ciyam.username + "," + ( ciyam.is_admin ? "1" : "0" ) );
+             + encode_channel_field( ciyam.username ) + "," + ( ciyam.is_admin ? "1" : "0" ) );
          }
 
          return;
@@ -140,7 +140,7 @@ http://www.opensource.org/licenses/mit-license.php.
       ciyam.unique = fields[ 4 ];
 
       if( fields.length > 5 )
-         ciyam.username = fields[ 5 ];
+         ciyam.username = decode_channel_field( fields[ 5 ] );
 
       if( fields.length > 6 )
          ciyam.is_admin = ( fields[ 6 ] === "1" );

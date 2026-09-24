@@ -148,6 +148,16 @@ ok   assign names the new owner
 ok   a bare verb has no detail
 ok   a bare verb still parses
 
+== session handover fields =====================================
+ok   hyphen is encoded
+ok   colon is encoded
+ok   equals is encoded
+ok   comma is encoded
+ok   plain name unchanged
+ok   round trip
+ok   empty encodes empty
+ok   malformed decodes empty
+
 == saved account list ==========================================
 ok   no key yet
 ok   empty string is no accounts

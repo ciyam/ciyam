@@ -566,6 +566,32 @@ function posting_status( room, entry, username, is_admin )
    return { can_post: true, reason: "" };
 }
 
+// NOTE: The session handover on the "test_web_channel" BroadcastChannel is a string whose
+// receivers - ours and the harness's - test for ":" first, then "-", then "=". The
+// credentials message is "<viewer>=<field>,<field>,...", so a field containing "-" or ":"
+// is read as a different message type and silently dropped. A username like "tester-1"
+// did exactly that, and the console showed nothing but its own device (ISS-016).
+//
+// Any field that can hold free text is therefore encoded so that none of ":", "-", "="
+// or "," survive. encodeURIComponent covers the last three but leaves "-" alone, hence the
+// extra replace.
+function encode_channel_field( value )
+{
+   return encodeURIComponent( String( value || "" ) ).replace( /-/g, "%2D" );
+}
+
+function decode_channel_field( value )
+{
+   try
+   {
+      return decodeURIComponent( String( value || "" ) );
+   }
+   catch( e )
+   {
+      return "";
+   }
+}
+
 // NOTE: The saved account list is a comma separated string in localStorage, shared with
 // "test_web_session.html" - both read the same "cws.access" key. Parsing and formatting
 // live here, as one pair, because doing it inline in three places is what allowed a blank
@@ -669,6 +695,8 @@ if( typeof module !== "undefined" )
       is_entrance_room: is_entrance_room,
       is_starting_room: is_starting_room,
       posting_status: posting_status,
+      encode_channel_field: encode_channel_field,
+      decode_channel_field: decode_channel_field,
       parse_access_list: parse_access_list,
       format_access_list: format_access_list,
       is_valid_room_name: is_valid_room_name,

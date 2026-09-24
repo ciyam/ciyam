@@ -311,6 +311,22 @@ ev = cp.parse_system_event( ":remove" );
 check( "a bare verb has no detail", ev.detail, "" );
 check( "a bare verb still parses", ev.verb, "remove" );
 
+heading( "session handover fields" );
+
+// NOTE: Receivers of the handover test for ":" then "-" then "=", so a field carrying "-"
+// turned the credentials message into an owner message and it was dropped - ISS-016. The
+// api.ciyam.org test accounts are all "test-N", so every one of them hit it.
+var enc = cp.encode_channel_field( "tester-1" );
+
+check( "hyphen is encoded", enc.indexOf( "-" ), -1 );
+check( "colon is encoded", cp.encode_channel_field( "a:b" ).indexOf( ":" ), -1 );
+check( "equals is encoded", cp.encode_channel_field( "a=b" ).indexOf( "=" ), -1 );
+check( "comma is encoded", cp.encode_channel_field( "a,b" ).indexOf( "," ), -1 );
+check( "plain name unchanged", cp.encode_channel_field( "admin" ), "admin" );
+check( "round trip", cp.decode_channel_field( enc ), "tester-1" );
+check( "empty encodes empty", cp.encode_channel_field( "" ), "" );
+check( "malformed decodes empty", cp.decode_channel_field( "%E0%A4%A" ), "" );
+
 heading( "saved account list" );
 
 // NOTE: "cws.access" is shared with "test_web_session.html", so a malformed value breaks
