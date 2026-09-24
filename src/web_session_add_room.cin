@@ -50,7 +50,7 @@ NAMES=
 ;
 run_script !irc_add_room "@name=$NAME"
 ;
-@ifndef $ERROR
+@ifdef $OUTPUT
 @ifndef $ASSIGN
 @ifndef $RENAME
 NEW_ROOM=$OUTPUT
