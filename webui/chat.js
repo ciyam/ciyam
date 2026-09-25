@@ -65,8 +65,6 @@ var g_console_loaded = false;
 
 function chat( )
 {
-   install_claim_workaround( );
-
    if( localStorage.getItem( c_storage_device ) !== null )
       ciyam.device = localStorage.getItem( c_storage_device );
 
@@ -214,51 +212,6 @@ function do_select_access( )
 // Session
 // ====================================================================
 
-// NOTE: Registering a device, or opening a session, for an account whose username has
-// not yet been claimed returns "<pin> <seed>" rather than a device token or a session
-// unique. "CIYAM.at_connect" recognises that in its JSON branch, through "obj.pin", but
-// the text branch has no equivalent and stores the whole string as the device or unique.
-// The account is then never claimed, the session carries no username, and every later
-// call answers "<pin> @none" - which is why creating a room appeared to do nothing.
-//
-// Patched on the instance rather than in "ciyam.js", which is shared with the harness.
-// Reported to Ian - remove this once the text branch handles it.
-function install_claim_workaround( )
-{
-   var original = ciyam.at_connect.bind( ciyam );
-
-   ciyam.at_connect = function( response )
-   {
-      var text = String( response );
-
-      var sep = text.indexOf( " " );
-
-      if( ( sep > 0 ) && ( text.indexOf( "[" ) !== 0 ) && ( text.indexOf( "Error: " ) !== 0 ) )
-      {
-         ciyam.access = text.substr( 0, sep );
-
-         if( ciyam.seed === "" )
-            ciyam.seed = text.substring( sep + 1 );
-
-         if( ciyam.user_callback != null )
-            ciyam.user_callback( response );
-
-         return;
-      }
-
-      original( response );
-   };
-}
-
-// NOTE: The claim only happens on the code path taken when no device token is held, so a
-// browser that already has one (from signing in as somebody else) would open a session
-// with no username instead. Detected by the connect ending with no session and no error,
-// which is what the seed response leaves behind, and retried without the device.
-function needs_claiming( )
-{
-   return ( ( ciyam.sessid === "" ) && ( ciyam.error === "" ) && ( ciyam.seed !== "" ) );
-}
-
 // NOTE: Registration is done here rather than through "CIYAM.connect", which cannot do
 // it for any username longer than a PIN - it treats a longer "access" as admin seed
 // entropy and sends admin credentials instead, so anything from six characters up fails
@@ -380,26 +333,12 @@ async function do_connect( )
 
       if( ( ciyam.error === "" ) && ( access !== "" ) )
       {
-         // NOTE: "CIYAM.connect" only asks for a new challenge when "unique" is empty, and a
-         // failed attempt leaves it set - so after a wrong password every retry reused the
-         // stale challenge and failed until the page was reloaded. Cleared here for each
-         // attempt. A typed password also always wins over any hash left from a previous
-         // attempt. Reported by Ian 2026-09-24; the underlying fix belongs in "ciyam.js".
-         ciyam.unique = "";
-
+         // NOTE: "CIYAM.connect" uses a hash it is handed in preference to the password, so
+         // a typed password has to clear any hash still held from a previous sign in.
          if( password !== "" )
             ciyam.hashed = "";
 
          await ciyam.connect( access, ciyam.device, ciyam.hashed, password, function( ) { } );
-
-         if( needs_claiming( ) )
-         {
-            // NOTE: A fresh device registration is what carries the credentials that
-            // claim the account, so the stored token is deliberately not reused here.
-            ciyam.device = "";
-
-            await ciyam.connect( access, "", "", password, function( ) { } );
-         }
       }
    }
    finally
