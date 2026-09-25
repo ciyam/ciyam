@@ -4,6 +4,7 @@ ok   three members parsed
 ok   offline member
 ok   two sessions
 ok   hyphenated name kept
+ok   extra=TIME suffix tolerated
 ok   empty line yields none
 ok   online first then alphabetical
 

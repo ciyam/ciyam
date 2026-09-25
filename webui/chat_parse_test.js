@@ -49,6 +49,11 @@ check( "three members parsed", members.length, 3 );
 check( "offline member", members[ 0 ], { name: "admin", sessions: 0, online: false } );
 check( "two sessions", members[ 2 ], { name: "test-2", sessions: 2, online: true } );
 check( "hyphenated name kept", members[ 1 ].name, "test-1" );
+// NOTE: Ian's "extra=TIME" option (46797f3a) appends ".<time>" to each member. The chat does
+// not ask for it yet - this pins that the parser would still read names and counts.
+check( "extra=TIME suffix tolerated", cp.parse_members( "admin+2.1790313275000 verify-a+0" ).map( function( m ) { return m.name + ":" + m.sessions; } ),
+ [ "admin:2", "verify-a:0" ] );
+
 check( "empty line yields none", cp.parse_members( "" ).length, 0 );
 
 var ordered = cp.apply_presence( members ).map( function( m ) { return m.name; } );

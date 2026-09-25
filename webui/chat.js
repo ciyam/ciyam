@@ -741,7 +741,7 @@ function on_rooms_response( response )
    {
       end_first_load( );
 
-      show_alert( result.error, "is-error" );
+      show_alert( result.error, "is-error", true );
 
       return;
    }
@@ -750,6 +750,8 @@ function on_rooms_response( response )
    // response meant for a different caller and must not be acted on here.
    if( ( result.rooms.length === 0 ) && ( result.messages.length > 0 ) )
       return;
+
+   clear_loading_alert( );
 
    // NOTE: The entrance listing returns every user, so the invitee picker can be
    // populated from it with no request of its own.
@@ -1416,7 +1418,7 @@ function on_messages_response( response, asked_for, replace )
 
       if( result.error !== "" )
       {
-         show_alert( result.error, "is-error" );
+         show_alert( result.error, "is-error", true );
 
          return;
       }
@@ -1424,6 +1426,8 @@ function on_messages_response( response, asked_for, replace )
       // NOTE: Defensive - room rows mean this is an entrance listing, not ours.
       if( result.rooms.length > 0 )
          return;
+
+      clear_loading_alert( );
 
       // NOTE: The user changed room while this was in flight.
       if( asked_for !== g_room )
@@ -2215,14 +2219,26 @@ function is_dialog_open( )
    return false;
 }
 
-function show_alert( text, kind )
+// NOTE: "from_loading" marks an error raised by loading rooms or messages. The next load
+// that succeeds clears it - Ian saw "IRC not available" stay up after IRC had come back and
+// the rooms had appeared. Errors from something the user did stay until dismissed.
+function show_alert( text, kind, from_loading )
 {
    var alert = document.getElementById( "chat_alert" );
 
    document.getElementById( "chat_alert_text" ).textContent = text;
 
    alert.className = "chat-alert " + ( kind || "is-error" );
+   alert.dataset.fromLoading = from_loading ? "1" : "";
    alert.hidden = false;
+}
+
+function clear_loading_alert( )
+{
+   var alert = document.getElementById( "chat_alert" );
+
+   if( !alert.hidden && ( alert.dataset.fromLoading === "1" ) )
+      alert.hidden = true;
 }
 
 function do_dismiss_alert( )
