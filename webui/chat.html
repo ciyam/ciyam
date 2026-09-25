@@ -154,7 +154,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
    function load_form( name )
    {
-      fetch( name + ".form?" + Date.now( ) )
+      return fetch( name + ".form?" + Date.now( ) )
        .then( function( response ) { return response.text( ); } )
        .then( function( data )
        {
@@ -228,11 +228,19 @@ http://www.opensource.org/licenses/mit-license.php.
          document.getElementById( "chat_content" ).textContent = "(failed to load chat.js)";
    }
 
+   // NOTE: The scripts are loaded only once the markup is in place. They used to start 100ms
+   // after the markup was requested, whether or not it had arrived - and a "chat.js" served
+   // from the browser's memory cache could then run first. "populate_accounts( )" found no
+   // select and threw, so the saved accounts vanished: Ian saw it in Firefox after F5, and
+   // only restarting Firefox, which empties that cache, brought them back.
    function load( )
    {
-      load_form( "chat" );
-
-      window.setTimeout( load_main, 100 );
+      load_form( "chat" )
+       .then( load_main )
+       .catch( function( )
+       {
+          document.getElementById( "chat_content" ).textContent = "(failed to load chat.form - reload to try again)";
+       } );
    }
 
    function load_main( )
