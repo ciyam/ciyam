@@ -137,6 +137,7 @@ function console_main( )
    bind_prompt( );
    bind_palette( );
    bind_log_filter( );
+   bind_server_filter( );
 
    window.addEventListener( "storage", function( )
    {
@@ -1094,6 +1095,8 @@ async function probe_raw( )
 {
    g_server_scripts = [ ];
 
+   document.getElementById( "server_filter" ).value = "";
+
    if( !ciyam.is_admin )
    {
       g_raw_available = false;
@@ -1121,12 +1124,51 @@ async function probe_raw( )
    render_server_scripts( );
 }
 
+// NOTE: The same matching as the palette - every word typed must appear in the script's
+// name or its arguments, and name matches come first.
+function bind_server_filter( )
+{
+   var filter = document.getElementById( "server_filter" );
+
+   filter.addEventListener( "input", render_server_scripts );
+
+   filter.addEventListener( "keydown", function( event )
+   {
+      if( ( event.key === "Escape" ) && ( filter.value !== "" ) )
+      {
+         event.preventDefault( );
+
+         event.stopPropagation( );
+
+         filter.value = "";
+
+         render_server_scripts( );
+
+         // NOTE: Back to the full list with the script that was picked still in view.
+         var current = document.querySelector( "#server_scripts [aria-current=true]" );
+
+         if( current !== null )
+            current.scrollIntoView( { block: "nearest" } );
+      }
+   } );
+}
+
 function render_server_scripts( )
 {
    var holder = document.getElementById( "server_scripts" );
    var note = document.getElementById( "server_scripts_note" );
+   var filter = document.getElementById( "server_filter" );
 
    holder.textContent = "";
+
+   filter.hidden = ( g_server_scripts.length === 0 );
+
+   var items = g_server_scripts.map( function( script )
+   {
+      return { command: script.name, description: script.args.join( " " ), script: script };
+   } );
+
+   var shown = filter_palette( items, filter.value );
 
    if( !ciyam.is_admin )
       note.textContent = "Server scripts need the admin PIN on a development system.";
@@ -1134,16 +1176,25 @@ function render_server_scripts( )
       note.textContent = "Raw protocol is refused here, so server scripts are unavailable - it needs a development system.";
    else if( g_raw_available === null )
       note.textContent = "Checking…";
-   else
+   else if( shown.length === g_server_scripts.length )
       note.textContent = g_server_scripts.length + " from run_script *";
+   else if( shown.length === 0 )
+      note.textContent = "No scripts match - Esc clears the filter.";
+   else
+      note.textContent = shown.length + " of " + g_server_scripts.length + " from run_script *";
 
-   g_server_scripts.forEach( function( script )
+   shown.forEach( function( item )
    {
+      var script = item.script;
+
       var button = document.createElement( "button" );
 
       button.type = "button";
       button.className = "console-item";
       button.textContent = script.name;
+
+      if( ( g_current_server_script !== null ) && ( g_current_server_script.name === script.name ) )
+         button.setAttribute( "aria-current", "true" );
 
       var sub = document.createElement( "span" );
 

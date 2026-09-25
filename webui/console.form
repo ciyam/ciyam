@@ -130,6 +130,8 @@ http://www.opensource.org/licenses/mit-license.php.
                <button type="button" class="console-item is-new" onclick="do_new_script( )">+ New script</button>
 
                <span class="console-listhead">On the server <span class="console-gate">admin &middot; dev</span></span>
+               <input class="console-sfield console-list-filter" id="server_filter" type="search" autocomplete="off" spellcheck="false"
+                placeholder="Filter scripts" aria-label="Filter the server scripts" aria-controls="server_scripts" hidden>
                <div class="console-list-scroll is-server" id="server_scripts"></div>
                <p class="console-more" id="server_scripts_note"></p>
             </div>

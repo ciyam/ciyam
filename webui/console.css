@@ -746,6 +746,12 @@ code
    max-height: 40%;
 }
 
+.console-list-filter
+{
+   flex: none;
+   margin: 2px 0 6px;
+}
+
 .console-list-scroll.is-server
 {
    flex: 1 1 0;
