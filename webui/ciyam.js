@@ -434,7 +434,16 @@ class CIYAM
             this.error = response;
          else
          {
-            if( this.device == "" )
+            var sep = response.indexOf( " " );
+
+            if( sep > 0 )
+            {
+               this.access = response.substr( 0, sep );
+
+               if( this.seed == "" )
+                  this.seed = response.substring( sep + 1 );
+            }
+            else if( this.device == "" )
                this.device = response;
             else if( this.unique == "" )
                this.unique = response;
@@ -477,6 +486,7 @@ class CIYAM
          var extra = "";
 
          this.error = "";
+         this.unique = "";
 
          var pos = access.indexOf( ":" );
 
