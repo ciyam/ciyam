@@ -109,8 +109,6 @@ http://www.opensource.org/licenses/mit-license.php.
          <span class="chat-busy" id="chat_busy" hidden title="Waiting for the server">
             <span class="chat-spinner"></span>
          </span>
-         <span class="chat-poll-label" id="topbar_poll"></span>
-         <button type="button" class="chat-btn chat-btn--mono" onclick="do_refresh( )">Refresh</button>
          <button type="button" class="chat-btn chat-btn--mono" id="console_toggle" onclick="do_toggle_console( )">Console</button>
 
          <!-- NOTE: The signed in user's initial, in place of an avatar image. It opens the
@@ -144,12 +142,18 @@ http://www.opensource.org/licenses/mit-license.php.
             <button type="button" class="chat-btn chat-btn--small" onclick="do_open_create_room( )">+ New</button>
          </div>
          <div class="chat-room-list" id="room_list"></div>
+         <!-- NOTE: When the rooms were last checked, and a way to check now. The icon is inline so
+              the page still makes no outside request. -->
          <div class="chat-rail-foot">
-            <div class="chat-rail-foot-top">
-               <span class="chat-room-number">0000000</span>
-               <span class="chat-section-label" style="text-transform: none; letter-spacing: 0;">Entrance</span>
-            </div>
-            <div class="chat-rail-foot-note">Lobby, not a chat target &mdash; it lists your rooms and creates them.</div>
+            <div class="chat-poll-label" id="rail_poll"></div>
+            <button type="button" class="chat-btn chat-refresh" id="rail_refresh" onclick="do_refresh( )"
+             title="Check for new rooms and messages now">
+               <svg class="chat-refresh-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+                  <path d="M13.2 8A5.2 5.2 0 1 1 11.6 4.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                  <path d="M13.6 1.9v3.6H10z" fill="currentColor"/>
+               </svg>
+               Refresh
+            </button>
          </div>
       </nav>
 

@@ -731,6 +731,14 @@ async function do_disconnect( )
    g_invite_total = -1;
    g_selected_invite = "";
 
+   // NOTE: Nothing from this session may be left on screen for the next account - an alert
+   // such as "Password changed." was still showing after someone else signed in.
+   do_dismiss_alert( );
+
+   g_last_poll = 0;
+
+   document.getElementById( "rail_poll" ).textContent = "";
+
    end_first_load( );
 
    if( g_console_open )
@@ -987,6 +995,9 @@ function on_rooms_response( response )
       return;
 
    clear_loading_alert( );
+
+   // NOTE: The room list is polled too - someone with no room open still sees when.
+   g_last_poll = Date.now( );
 
    // NOTE: The entrance listing returns every user, so the invitee picker can be
    // populated from it with no request of its own.
@@ -2457,17 +2468,30 @@ async function poll( )
    }
 }
 
+// NOTE: The button turns its icon while the refresh runs, and cannot be pressed again until
+// it is done.
 async function do_refresh( )
 {
-   await load_rooms( );
+   var button = document.getElementById( "rail_refresh" );
 
-   if( g_room !== "" )
-      await load_messages( "from=0", true );
+   button.disabled = true;
+
+   try
+   {
+      await load_rooms( );
+
+      if( g_room !== "" )
+         await load_messages( "from=0", true );
+   }
+   finally
+   {
+      button.disabled = false;
+   }
 }
 
 function update_poll_label( )
 {
-   var label = document.getElementById( "topbar_poll" );
+   var label = document.getElementById( "rail_poll" );
 
    if( ( label === null ) || ( g_last_poll === 0 ) )
       return;
