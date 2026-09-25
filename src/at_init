@@ -37,12 +37,13 @@ if [ -f "ciyam_server.sid" ]; then
  seed_hash=$(sha256sum $source | head -c 64)
 
  for filename in ciyam.*.ip.log; do
-  token=$(echo "$filename$seed_hash" | sha256sum | head -c 12)
+  if [ -f "$filename" ]; then
+   token=$(echo "$filename$seed_hash" | sha256sum | head -c 12)
 
-  if [ ! -f /tmp/ciyam/$token.ip_addr ]; then
-   ln -s $PWD/$filename /tmp/ciyam/$token.ip_addr
+   if [ ! -f /tmp/ciyam/$token.ip_addr ]; then
+    ln -s $PWD/$filename /tmp/ciyam/$token.ip_addr
+   fi
   fi
-
  done
 fi
 
