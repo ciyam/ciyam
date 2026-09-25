@@ -236,7 +236,6 @@ ERROR=Session has been terminated.
 .session_variable @storage_var_name ""
 ;
 .system_variable @web.$TOKEN.$DEVICE.message ""
-.system_variable @session_@queue_irc_*_$USER ""
 @endif
 ;
 @endif
