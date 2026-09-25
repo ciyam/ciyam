@@ -37,6 +37,13 @@ const c_storage_hashed_prefix = "cws.hashed_";
 
 var g_room = "";
 var g_rooms = [ ];
+
+// NOTE: Invitations waiting to be taken up, worked out from Administration's messages. The
+// room total last seen for Administration says when to read it again; -1 means never read.
+var g_invite_messages = [ ];
+var g_invitations = [ ];
+var g_invite_total = -1;
+var g_selected_invite = "";
 var g_members = [ ];
 var g_room_name = "";
 var g_room_owner = "";
@@ -477,12 +484,15 @@ function show_thread_view( )
 {
    var loading = g_first_load;
    var has_room = ( g_room !== "" );
+   var inviting = !loading && !has_room && ( g_selected_invite !== "" );
 
    document.getElementById( "thread_loading" ).hidden = !loading;
-   document.getElementById( "thread_empty" ).hidden = loading || has_room;
+   document.getElementById( "thread_invite" ).hidden = !inviting;
+   document.getElementById( "thread_empty" ).hidden = loading || has_room || inviting;
    document.getElementById( "thread_head" ).hidden = loading || !has_room;
    document.getElementById( "message_list" ).hidden = loading || !has_room;
    document.getElementById( "composer" ).hidden = loading || !has_room;
+   document.getElementById( "room_panel" ).hidden = loading || ( !has_room && !inviting );
 }
 
 async function do_disconnect( )
@@ -495,6 +505,11 @@ async function do_disconnect( )
    g_rooms = [ ];
    g_members = [ ];
    g_start_point = "";
+
+   g_invite_messages = [ ];
+   g_invitations = [ ];
+   g_invite_total = -1;
+   g_selected_invite = "";
 
    end_first_load( );
 
@@ -761,11 +776,30 @@ function on_rooms_response( response )
    {
       g_rooms = derive_room_list( result.rooms );
 
+      // NOTE: A new invitation arrives as a message in Administration, which moves its total
+      // in this listing - so it is only read again when that changes, not on every poll.
+      var starting = find_room( c_starting_room_no );
+
+      if( !ciyam.is_admin && ( starting !== null ) && ( starting.total !== g_invite_total ) )
+      {
+         g_invite_total = starting.total;
+
+         check_invitations( );
+      }
+
+      refresh_invitations( );
+
       render_rooms( );
 
-      // NOTE: Open the first room with anything unread, else the first listed.
-      if( ( g_room === "" ) && ( g_rooms.length > 0 ) )
-         select_room( g_rooms[ 0 ].room, "" );
+      if( ( g_room !== "" ) || ( g_selected_invite !== "" ) )
+         update_thread_meta( );
+
+      var shown = visible_rooms( g_rooms, ciyam.is_admin );
+
+      // NOTE: Open the first room with anything unread, else the first listed - of the rooms
+      // this user can see, and not over an invitation they are looking at.
+      if( ( g_room === "" ) && ( g_selected_invite === "" ) && ( shown.length > 0 ) )
+         select_room( shown[ 0 ].room, "" );
 
       // NOTE: With no room to open there is nothing more to wait for - and now "No room
       // selected" is true rather than premature.
@@ -782,7 +816,10 @@ var g_members_drawn = "";
 
 function rooms_signature( )
 {
-   var parts = [ g_room ];
+   var parts = [ g_room, g_selected_invite, ciyam.is_admin ? "adm" : "std" ];
+
+   for( var n = 0; n < g_invitations.length; n++ )
+      parts.push( "invite:" + g_invitations[ n ].room + ":" + g_invitations[ n ].name + ":" + g_invitations[ n ].inviter );
 
    for( var i = 0; i < g_rooms.length; i++ )
    {
@@ -868,30 +905,68 @@ function render_rooms( force )
 
    var template = document.getElementById( "tpl_room" );
 
-   reconcile_list( list, g_rooms,
-    function( entry )
+   // NOTE: Invitations first, newest first, then the rooms themselves. They are keyed apart,
+   // so when an invitation is taken up its entry is replaced by the room's own.
+   var items = g_invitations.map( function( invite ) { return { key: "invite:" + invite.room, invite: invite }; } )
+    .concat( visible_rooms( g_rooms, ciyam.is_admin ).map( function( entry ) { return { key: entry.room, room: entry }; } ) );
+
+   reconcile_list( list, items,
+    function( item )
     {
-       return entry.room;
+       return item.key;
     },
-    function( entry )
+    function( item )
     {
        var node = template.content.cloneNode( true ).querySelector( ".chat-room" );
 
-       node.querySelector( ".chat-room-number" ).textContent = "#" + entry.room;
-
-       node.dataset.room = entry.room;
-
-       node.addEventListener( "click", function( event )
+       if( item.invite )
        {
-          select_room( event.currentTarget.dataset.room, "" );
-       } );
+          node.classList.add( "is-invitation" );
+
+          node.dataset.invite = item.invite.room;
+
+          node.addEventListener( "click", function( event )
+          {
+             select_invitation( event.currentTarget.dataset.invite );
+          } );
+       }
+       else
+       {
+          node.dataset.room = item.room.room;
+
+          node.addEventListener( "click", function( event )
+          {
+             select_room( event.currentTarget.dataset.room, "" );
+          } );
+       }
 
        return node;
     },
-    function( node, entry )
+    function( node, item )
     {
+       if( item.invite )
+       {
+          set_text( node.querySelector( ".chat-room-name" ), item.invite.name );
+
+          var sub = node.querySelector( ".chat-room-sub" );
+
+          set_text( sub, "invited by " + item.invite.inviter );
+
+          sub.hidden = false;
+
+          node.querySelector( ".chat-room-count" ).hidden = true;
+          node.querySelector( ".chat-room-invite" ).hidden = false;
+
+          node.title = item.invite.inviter + " invited you to this room";
+
+          node.classList.toggle( "is-selected", ( item.invite.room === g_selected_invite ) );
+
+          return;
+       }
+
+       var entry = item.room;
+
        set_text( node.querySelector( ".chat-room-name" ), entry.name );
-       set_text( node.querySelector( ".chat-room-owner" ), "owner " + entry.owner );
 
        var count = node.querySelector( ".chat-room-count" );
 
@@ -935,15 +1010,22 @@ function select_room( room, token )
    g_edit_unique = "";
    g_recipients = [ ];
 
+   g_selected_invite = "";
+
    var entry = find_room( room );
 
-   g_room_name = entry ? entry.name : room;
+   // NOTE: Just joined from an invitation, the room is not in the listing yet - the
+   // invitation has its name until the listing catches up.
+   var invite = entry ? null : find_invitation( room );
+
+   g_room_name = entry ? entry.name : ( invite ? invite.name : room );
    g_room_owner = entry ? entry.owner : "";
 
    show_thread_view( );
 
    document.getElementById( "thread_name" ).textContent = g_room_name;
-   document.getElementById( "thread_number" ).textContent = "#" + room;
+
+   update_thread_meta( );
 
    document.getElementById( "message_list" ).textContent = "";
 
@@ -965,6 +1047,109 @@ function find_room( room )
    }
 
    return null;
+}
+
+// ====================================================================
+// Invitations
+// ====================================================================
+
+function find_invitation( room )
+{
+   for( var i = 0; i < g_invitations.length; i++ )
+   {
+      if( g_invitations[ i ].room === room )
+         return g_invitations[ i ];
+   }
+
+   return null;
+}
+
+// NOTE: A selected invitation shows a join prompt rather than the room - the server refuses
+// a non-member's read, so nothing is fetched until the user joins.
+function select_invitation( room )
+{
+   var invite = find_invitation( room );
+
+   if( invite === null )
+      return;
+
+   g_room = "";
+   g_start_point = "";
+   g_edit_unique = "";
+   g_recipients = [ ];
+   g_members = [ ];
+
+   g_selected_invite = room;
+
+   document.getElementById( "invite_title" ).textContent = invite.name;
+   document.getElementById( "invite_text" ).textContent = invite.inviter + " invited you to join this room.";
+
+   show_thread_view( );
+   update_thread_meta( );
+
+   render_members( true );
+   render_rooms( true );
+}
+
+function do_join_invitation( )
+{
+   var invite = find_invitation( g_selected_invite );
+
+   if( invite === null )
+      return;
+
+   // NOTE: The token goes in "from", which is how the server recognises a join. Once the
+   // listing includes the room, the invitation drops out of the rail by itself.
+   select_room( invite.room, invite.token );
+
+   load_rooms( );
+}
+
+// NOTE: Only for someone who cannot see Administration - admin reads it as a room, and a
+// background read would mark its messages read behind their back. Quiet, like polling, so
+// it stays out of the console's log.
+function check_invitations( )
+{
+   g_in_poll = true;
+
+   serialised( function( )
+   {
+      return ciyam.fetch_messages( c_starting_room_no, "from=0", on_invitations_response );
+   } );
+
+   g_in_poll = false;
+}
+
+function on_invitations_response( response )
+{
+   var result = parse_fetch_response( response );
+
+   // NOTE: Forget the total, so the next poll tries again.
+   if( result.error !== "" )
+   {
+      g_invite_total = -1;
+
+      return;
+   }
+
+   g_invite_messages = result.messages;
+
+   refresh_invitations( );
+}
+
+function refresh_invitations( )
+{
+   g_invitations = pending_invitations( g_invite_messages, g_rooms );
+
+   // NOTE: The invitation on screen can be taken up elsewhere - another tab, say.
+   if( ( g_selected_invite !== "" ) && ( find_invitation( g_selected_invite ) === null ) )
+   {
+      g_selected_invite = "";
+
+      show_thread_view( );
+   }
+
+   render_rooms( );
 }
 
 // NOTE: Deliberately synchronous, and the dialog is shown before the invitee list is
@@ -1442,6 +1627,15 @@ function on_messages_response( response, asked_for, replace )
 
       append_messages( result.messages );
 
+      // NOTE: Admin sees Administration as a room, so their invitations come from here
+      // rather than from a background read.
+      if( is_starting_room( asked_for ) )
+      {
+         g_invite_messages = replace ? result.messages : g_invite_messages.concat( result.messages );
+
+         refresh_invitations( );
+      }
+
       var next = next_start_point( result.messages );
 
       if( next !== "" )
@@ -1754,23 +1948,44 @@ function apply_posting_rules( )
    }
 }
 
+// NOTE: Fills the Room section of the right panel - the room's number, owner, who may post
+// and how many messages, with the owner's Rename and Invite. For a selected invitation only
+// the number and who sent it are known.
 function update_thread_meta( )
 {
    var entry = find_room( g_room );
 
-   var parts = [ ];
+   var invite = ( g_room === "" ) ? find_invitation( g_selected_invite ) : null;
 
-   if( g_room_owner !== "" )
-      parts.push( "owner " + g_room_owner );
-
-   parts.push( g_members.length + " member" + ( g_members.length === 1 ? "" : "s" ) );
-
+   // NOTE: A room joined from an invitation is not in the listing at first, so its owner
+   // is unknown until the listing catches up - and a rename or a change of owner reaches
+   // here the same way.
    if( entry )
-      parts.push( entry.total + " message" + ( entry.total === 1 ? "" : "s" ) );
+   {
+      g_room_owner = entry.owner;
 
-   document.getElementById( "thread_meta" ).textContent = parts.join( " · " );
+      if( entry.name && ( entry.name !== g_room_name ) )
+      {
+         g_room_name = entry.name;
 
-   var is_owner = ( g_room_owner === ciyam.username ) || ciyam.is_admin;
+         document.getElementById( "thread_name" ).textContent = g_room_name;
+      }
+   }
+
+   var posting = { any: "Anyone", own: "Owner only", none: "Locked" };
+
+   set_text( document.getElementById( "room_fact_number" ), "#" + ( invite ? invite.room : g_room ) );
+   set_text( document.getElementById( "room_fact_owner" ), g_room_owner || "-" );
+   set_text( document.getElementById( "room_fact_posts" ), entry ? ( posting[ entry.posts ] || entry.posts ) : "-" );
+   set_text( document.getElementById( "room_fact_messages" ), entry ? String( entry.total ) : "-" );
+   set_text( document.getElementById( "room_fact_inviter" ), invite ? invite.inviter : "" );
+
+   document.getElementById( "room_fact_owner_row" ).hidden = !!invite;
+   document.getElementById( "room_fact_posts_row" ).hidden = !!invite;
+   document.getElementById( "room_fact_messages_row" ).hidden = !!invite;
+   document.getElementById( "room_fact_inviter_row" ).hidden = !invite;
+
+   var is_owner = !invite && ( ( g_room_owner === ciyam.username ) || ciyam.is_admin );
 
    document.getElementById( "owner_actions" ).hidden = !is_owner;
 
@@ -1961,7 +2176,7 @@ function render_composer( )
    if( g_recipients.length > 0 )
       input.placeholder = "Private message to " + g_recipients.join( ", " );
    else
-      input.placeholder = "Message #" + g_room + " — plain chat";
+      input.placeholder = "Message " + ( g_room_name || ( "#" + g_room ) ) + " — plain chat";
 
    document.getElementById( "composer_scope" ).textContent =
     ( g_recipients.length > 0 ) ? "Send to everyone" : "Send to selected…";

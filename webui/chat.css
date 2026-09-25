@@ -588,11 +588,6 @@ textarea
    color: var(--color-chat-text-meta);
 }
 
-.chat-room.is-selected .chat-room-number
-{
-   color: var(--color-chat-accent);
-}
-
 .chat-room-count
 {
    margin-left: auto;
@@ -618,7 +613,10 @@ textarea
 
 .chat-room-name
 {
-   margin-top: 3px;
+   min-width: 0;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
    font-size: var(--font-size-chat-name);
    font-weight: 500;
    color: var(--color-chat-text-strong);
@@ -630,12 +628,41 @@ textarea
    color: var(--color-chat-text);
 }
 
-.chat-room-owner
+/* NOTE: An invitation in the rail - labelled, with who sent it underneath. */
+.chat-room-invite
 {
+   margin-left: auto;
+   flex: none;
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-nano);
+   font-weight: 600;
+   letter-spacing: 0.04em;
+   text-transform: uppercase;
+   color: var(--color-chat-accent-deep);
+   background: var(--color-chat-bg-selected);
+   border: 1px solid var(--color-chat-border-selected);
+   border-radius: var(--radius-xs);
+   padding: 1px 6px;
+}
+
+.chat-room-sub
+{
+   display: block;
    margin-top: 2px;
    font-family: var(--font-family-chat-mono);
    font-size: var(--font-size-chat-nano);
    color: var(--color-chat-text-faint);
+}
+
+.chat-room.is-invitation
+{
+   border-style: dashed;
+   border-color: var(--color-chat-border-selected);
+}
+
+.chat-room.is-invitation.is-selected
+{
+   border-style: solid;
 }
 
 .chat-rail-foot
@@ -699,18 +726,68 @@ textarea
    letter-spacing: -0.01em;
 }
 
-.chat-thread-number
+/* NOTE: The join prompt for a selected invitation. */
+.chat-invite-eyebrow
 {
    font-family: var(--font-family-chat-mono);
-   font-size: var(--font-size-chat-tiny);
-   color: var(--color-chat-text-meta);
+   font-size: var(--font-size-chat-nano);
+   font-weight: 600;
+   letter-spacing: 0.08em;
+   text-transform: uppercase;
+   color: var(--color-chat-accent-deep);
 }
 
-.chat-thread-meta
+.chat-invite-view h2
 {
-   margin-top: 3px;
-   font-size: var(--font-size-chat-tiny);
-   color: var(--color-chat-text-meta);
+   margin: 0;
+}
+
+.chat-invite-view p
+{
+   margin: 0;
+   color: var(--color-chat-text-secondary);
+}
+
+/* NOTE: The Room section, above Members in the right panel. */
+.chat-room-panel
+{
+   flex: none;
+   border-bottom: 1px solid var(--color-chat-border);
+   padding-bottom: 14px;
+}
+
+.chat-room-facts
+{
+   margin: 0;
+   padding: 0 16px;
+   display: grid;
+   gap: 6px;
+}
+
+.chat-room-fact
+{
+   display: flex;
+   justify-content: space-between;
+   gap: 12px;
+   font-size: var(--font-size-chat-meta);
+}
+
+.chat-room-fact dt
+{
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-room-fact dd
+{
+   margin: 0;
+   color: var(--color-chat-text-strong);
+   text-align: right;
+   overflow-wrap: anywhere;
+}
+
+.chat-room-panel .chat-owner-actions
+{
+   margin: 12px 16px 0;
 }
 
 .chat-owner-actions
