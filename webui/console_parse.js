@@ -395,6 +395,12 @@ function parse_script_list( response )
 // NOTE: "!" runs the script synchronously and returns its result. Arguments are comma
 // separated on the server, so a value containing a comma cannot be passed - that is
 // refused here rather than silently split into two arguments.
+//
+// "run_script" takes exactly two words, the name and the list, and the server splits the
+// line on whitespace - so a list with a space in it must be one double-quoted word. Quotes
+// only count at the start of a word ("setup_arguments( )" in "utilities.cpp"): written as
+// @name="Test Room" they would stay in the value. A quote or backslash inside a value would
+// need escaping, so those are refused too.
 function build_script_command( name, values )
 {
    var pairs = [ ];
@@ -408,10 +414,18 @@ function build_script_command( name, values )
       if( value.indexOf( "," ) >= 0 )
          return { error: "The value for '" + keys[ i ] + "' cannot contain a comma." };
 
+      if( /["\\]/.test( value ) )
+         return { error: "The value for '" + keys[ i ] + "' cannot contain a double quote or a backslash." };
+
       pairs.push( keys[ i ] + "=" + value );
    }
 
-   return { command: "run_script !" + name + ( pairs.length > 0 ? " " + pairs.join( "," ) : "" ) };
+   var list = pairs.join( "," );
+
+   if( /\s/.test( list ) )
+      list = "\"" + list + "\"";
+
+   return { command: "run_script !" + name + ( list !== "" ? " " + list : "" ) };
 }
 
 function is_destructive_script( name )

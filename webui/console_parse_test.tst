@@ -65,6 +65,10 @@ ok   error means none
 ok   command
 ok   command without arguments
 ok   comma refused
+ok   a space quotes the whole list
+ok   the whole list, not just the value
+ok   quote refused
+ok   backslash refused
 ok   destroy is destructive
 ok   backup import is destructive
 ok   backup export is not

@@ -189,6 +189,20 @@ check( "command without arguments", cp.build_script_command( "backup_export", { 
 check( "comma refused", cp.build_script_command( "add_archive", { "@name": "a,b" } ),
  { error: "The value for '@name' cannot contain a comma." } );
 
+// NOTE: The case that failed in use - unquoted, the server saw four words and answered
+// "invalid command usage".
+check( "a space quotes the whole list", cp.build_script_command( "irc_add_room", { "@name": "Test Room 2" } ),
+ { command: "run_script !irc_add_room \"@name=Test Room 2\"" } );
+
+check( "the whole list, not just the value", cp.build_script_command( "add_archive", { "@path": "/tmp/a", "@name": "my file" } ),
+ { command: "run_script !add_archive \"@path=/tmp/a,@name=my file\"" } );
+
+check( "quote refused", cp.build_script_command( "irc_add_room", { "@name": "say \"hi\"" } ),
+ { error: "The value for '@name' cannot contain a double quote or a backslash." } );
+
+check( "backslash refused", cp.build_script_command( "add_archive", { "@path": "C:\\tmp" } ),
+ { error: "The value for '@path' cannot contain a double quote or a backslash." } );
+
 check( "destroy is destructive", cp.is_destructive_script( "destroy_peerchain_entry" ), true );
 check( "backup import is destructive", cp.is_destructive_script( "backup_import" ), true );
 check( "backup export is not", cp.is_destructive_script( "backup_export" ), false );
