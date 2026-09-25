@@ -154,6 +154,11 @@ http://www.opensource.org/licenses/mit-license.php.
             </div>
          </div>
 
+         <div class="chat-empty chat-loading" id="thread_loading" role="status" hidden>
+            <span class="chat-spinner"></span>
+            <p>Loading your rooms&hellip;</p>
+         </div>
+
          <div class="chat-empty" id="thread_empty">
             <h2>No room selected</h2>
             <p>Pick a room from the rail, or create one. The entrance room is a lobby &mdash; it lists your rooms

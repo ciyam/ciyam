@@ -1481,6 +1481,13 @@ textarea
    align-items: center;
 }
 
+.chat-loading p
+{
+   margin: 0;
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-secondary);
+}
+
 .chat-signin-busy
 {
    display: flex;

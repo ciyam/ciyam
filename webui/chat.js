@@ -56,6 +56,11 @@ var g_known_users = [ ];
 // kept and shown. Cleared once used.
 var g_registered_pin = "";
 
+const c_first_load_limit = 15000;
+
+var g_first_load = false;
+var g_first_load_timer = null;
+
 var g_console_open = false;
 var g_console_loaded = false;
 
@@ -418,9 +423,62 @@ function enter_chat( )
    document.getElementById( "topbar_session" ).textContent = "session " + ciyam.sessid;
    document.getElementById( "console_session" ).textContent = "inherits chat session " + ciyam.sessid;
 
+   begin_first_load( );
+
    load_rooms( );
 
    start_polling( );
+}
+
+// NOTE: Between sign in and the first room's messages the thread showed "No room selected"
+// - untrue, just not loaded yet - or, after signing out and back in, the previous room's
+// header. A spinner holds the thread until the first room is ready or there is none.
+function begin_first_load( )
+{
+   g_first_load = true;
+
+   if( g_first_load_timer !== null )
+      window.clearTimeout( g_first_load_timer );
+
+   // NOTE: A lost response must not leave the spinner up for good.
+   g_first_load_timer = window.setTimeout( end_first_load, c_first_load_limit );
+
+   show_thread_view( );
+}
+
+function end_first_load( )
+{
+   if( g_first_load_timer !== null )
+   {
+      window.clearTimeout( g_first_load_timer );
+
+      g_first_load_timer = null;
+   }
+
+   if( !g_first_load )
+      return;
+
+   g_first_load = false;
+
+   show_thread_view( );
+
+   var list = document.getElementById( "message_list" );
+
+   // NOTE: Messages rendered while the list was hidden could not scroll it.
+   list.scrollTop = list.scrollHeight;
+}
+
+// NOTE: The one place that decides which of the thread's views is showing.
+function show_thread_view( )
+{
+   var loading = g_first_load;
+   var has_room = ( g_room !== "" );
+
+   document.getElementById( "thread_loading" ).hidden = !loading;
+   document.getElementById( "thread_empty" ).hidden = loading || has_room;
+   document.getElementById( "thread_head" ).hidden = loading || !has_room;
+   document.getElementById( "message_list" ).hidden = loading || !has_room;
+   document.getElementById( "composer" ).hidden = loading || !has_room;
 }
 
 async function do_disconnect( )
@@ -433,6 +491,8 @@ async function do_disconnect( )
    g_rooms = [ ];
    g_members = [ ];
    g_start_point = "";
+
+   end_first_load( );
 
    if( g_console_open )
       do_toggle_console( );
@@ -673,6 +733,8 @@ function on_rooms_response( response )
 
    if( result.error !== "" )
    {
+      end_first_load( );
+
       show_alert( result.error, "is-error" );
 
       return;
@@ -696,6 +758,11 @@ function on_rooms_response( response )
       // NOTE: Open the first room with anything unread, else the first listed.
       if( ( g_room === "" ) && ( g_rooms.length > 0 ) )
          select_room( g_rooms[ 0 ].room, "" );
+
+      // NOTE: With no room to open there is nothing more to wait for - and now "No room
+      // selected" is true rather than premature.
+      if( g_room === "" )
+         end_first_load( );
    }
 }
 
@@ -865,10 +932,7 @@ function select_room( room, token )
    g_room_name = entry ? entry.name : room;
    g_room_owner = entry ? entry.owner : "";
 
-   document.getElementById( "thread_head" ).hidden = false;
-   document.getElementById( "thread_empty" ).hidden = true;
-   document.getElementById( "message_list" ).hidden = false;
-   document.getElementById( "composer" ).hidden = false;
+   show_thread_view( );
 
    document.getElementById( "thread_name" ).textContent = g_room_name;
    document.getElementById( "thread_number" ).textContent = "#" + room;
@@ -1336,6 +1400,11 @@ function on_messages_response( response, asked_for, replace )
 {
    {
       var result = parse_fetch_response( response );
+
+      // NOTE: The first room's messages are what the loading state was waiting for -
+      // including when they fail, so an error is shown rather than a spinner forever.
+      if( g_first_load && replace )
+         end_first_load( );
 
       g_last_poll = Date.now( );
 
