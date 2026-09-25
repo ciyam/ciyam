@@ -190,6 +190,7 @@ else
  cp ../pics/background_texture.png $release_name/html
 
  cp ../webui/*.js  $release_name/html
+ cp ../webui/*.css  $release_name/html
  cp ../webui/*.form  $release_name/html
  cp ../webui/*.html  $release_name/html
 
