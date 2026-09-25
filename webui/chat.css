@@ -1318,7 +1318,7 @@ textarea
    font-size: var(--font-size-chat-nano);
    letter-spacing: 0.1em;
    text-transform: uppercase;
-   color: var(--color-console-text-faint);
+   color: var(--color-console-text-bright);
 }
 
 .chat-console-session

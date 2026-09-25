@@ -769,7 +769,8 @@ code
 .console-listhead
 {
    display: block;
-   color: var(--color-console-text-muted);
+   color: var(--color-console-text);
+   font-weight: 600;
    font-size: 10px;
    text-transform: uppercase;
    letter-spacing: 0.07em;
