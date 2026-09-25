@@ -727,6 +727,7 @@ code
    flex-direction: column;
    gap: 1px;
    min-height: 0;
+   overflow-y: auto;
 }
 
 .console-list-scroll
@@ -741,9 +742,12 @@ code
    max-height: 35%;
 }
 
+/* NOTE: A floor on the server list - without one it squeezed to nothing in a short drawer.
+   Below that the whole column scrolls instead. */
 .console-list-scroll.is-server
 {
    flex: 1 1 auto;
+   min-height: 7.5rem;
 }
 
 .console-body
