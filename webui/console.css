@@ -34,6 +34,14 @@
    box-sizing: border-box;
 }
 
+/* NOTE: A thin scrollbar that sits back on the dark surface, for every scrolling area in
+   the console, rather than the platform's light default. */
+*
+{
+   scrollbar-width: thin;
+   scrollbar-color: var(--color-console-border-strong) transparent;
+}
+
 html,
 body
 {
@@ -697,11 +705,18 @@ code
    Scripts tab
    ==================================================================== */
 
+/* NOTE: The two columns scroll separately, so a long list of server scripts can be
+   scrolled while the editor or argument form beside it stays in view. */
+.console-panel--scripts
+{
+   overflow: hidden;
+}
+
 .console-cols
 {
    display: grid;
    grid-template-columns: 260px 1fr;
-   min-height: 100%;
+   height: 100%;
 }
 
 .console-list
@@ -711,12 +726,32 @@ code
    display: flex;
    flex-direction: column;
    gap: 1px;
+   min-height: 0;
+}
+
+.console-list-scroll
+{
+   min-height: 0;
+   overflow-y: auto;
+}
+
+.console-list-scroll.is-saved
+{
+   flex: 0 1 auto;
+   max-height: 35%;
+}
+
+.console-list-scroll.is-server
+{
+   flex: 1 1 auto;
 }
 
 .console-body
 {
    padding-left: 16px;
    min-width: 0;
+   min-height: 0;
+   overflow-y: auto;
 }
 
 .console-listhead
@@ -998,9 +1033,25 @@ code
 
 @media (max-width: 720px)
 {
+   .console-panel--scripts
+   {
+      overflow: auto;
+   }
+
    .console-cols
    {
       grid-template-columns: 1fr;
+      height: auto;
+   }
+
+   .console-list-scroll.is-server
+   {
+      max-height: 40vh;
+   }
+
+   .console-body
+   {
+      overflow-y: visible;
    }
 
    .console-list

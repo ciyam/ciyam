@@ -1869,8 +1869,15 @@ function append_log_rows( entry )
 
    pair.className = "console-pair";
 
+   // NOTE: The whole request - method and endpoint, then the options or raw command sent
+   // with it. A bare "(none)" read as though nothing had been sent at all.
+   var sent = String( entry.method ) + " " + String( entry.endpoint );
+
+   if( entry.request )
+      sent += "\n" + entry.request;
+
    pair.appendChild( make_span( "Request", "console-k" ) );
-   pair.appendChild( make_span( entry.request || "(none)", "console-v" ) );
+   pair.appendChild( make_span( sent, "console-v" ) );
    pair.appendChild( make_span( "Response", "console-k" ) );
    pair.appendChild( make_span( String( entry.response ), "console-v " + ( entry.ok ? "is-ok" : "is-err" ) ) );
 

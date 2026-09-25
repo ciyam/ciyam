@@ -122,15 +122,15 @@ http://www.opensource.org/licenses/mit-license.php.
       </div>
 
       <!-- ---------------------------------------------------- scripts -->
-      <div class="console-panel" id="panel_scripts" role="tabpanel" aria-labelledby="tab_scripts" hidden>
+      <div class="console-panel console-panel--scripts" id="panel_scripts" role="tabpanel" aria-labelledby="tab_scripts" hidden>
          <div class="console-cols">
             <div class="console-list">
                <span class="console-listhead">Saved here</span>
-               <div id="saved_scripts"></div>
+               <div class="console-list-scroll is-saved" id="saved_scripts"></div>
                <button type="button" class="console-item is-new" onclick="do_new_script( )">+ New script</button>
 
                <span class="console-listhead">On the server <span class="console-gate">admin &middot; dev</span></span>
-               <div id="server_scripts"></div>
+               <div class="console-list-scroll is-server" id="server_scripts"></div>
                <p class="console-more" id="server_scripts_note"></p>
             </div>
 
