@@ -736,17 +736,19 @@ code
    overflow-y: auto;
 }
 
+/* NOTE: Saved scripts come first for space - they are the user's own and the ones reached
+   for most. The list takes what it needs up to 40% of the column and is never squeezed;
+   the server list has the rest, and never less than a few rows. Below that the whole
+   column scrolls instead. */
 .console-list-scroll.is-saved
 {
-   flex: 0 1 auto;
-   max-height: 35%;
+   flex: 0 0 auto;
+   max-height: 40%;
 }
 
-/* NOTE: A floor on the server list - without one it squeezed to nothing in a short drawer.
-   Below that the whole column scrolls instead. */
 .console-list-scroll.is-server
 {
-   flex: 1 1 auto;
+   flex: 1 1 0;
    min-height: 7.5rem;
 }
 

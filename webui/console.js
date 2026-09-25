@@ -34,7 +34,7 @@ const c_max_wait_ms = 60000;
 const c_max_script_depth = 5;
 const c_max_script_name = 60;
 
-const c_delete_confirm_ms = 3000;
+const c_delete_confirm_ms = 5000;
 
 const c_raw_probe = "run_script *";
 
