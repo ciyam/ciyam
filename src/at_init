@@ -24,6 +24,28 @@ if [ -f /tmp/ciyam/ciyam_storages.tmp ]; then
  fi
 fi
 
+# NOTE: For generating DDNS tokens
+# use: "touch ciyam.<name>.ip.log"
+# and then start/restart service.
+if [ -f "ciyam_server.sid" ]; then
+ source=ciyam_server.sid
+
+ if [ -f "ciyam_server.sid.chk" ]; then
+  source=ciyam_server.sid.chk
+ fi
+
+ seed_hash=$(sha256sum $source | head -c 64)
+
+ for filename in ciyam.*.ip.log; do
+  token=$(echo "$filename$seed_hash" | sha256sum | head -c 12)
+
+  if [ ! -f /tmp/ciyam/$token.ip_addr ]; then
+   ln -s $PWD/$filename /tmp/ciyam/$token.ip_addr
+  fi
+
+ done
+fi
+
 # NOTE: Modify the following if wanting to be notified when the CIYAM application server has been started.
 #curl -H "Title: CIYAM Started" -d  "CIYAM Application Server has started." https://ntfy.domain.org/up_admin
 
