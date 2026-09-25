@@ -91,7 +91,7 @@ http://www.opensource.org/licenses/mit-license.php.
       </div>
 
       <!-- -------------------------------------------------------- log -->
-      <div class="console-panel" id="panel_log" role="tabpanel" aria-labelledby="tab_log" hidden>
+      <div class="console-panel console-panel--log" id="panel_log" role="tabpanel" aria-labelledby="tab_log" hidden>
          <div class="console-filterbar">
             <span class="console-flabel">Source</span>
             <button type="button" class="console-chip" data-source="all" aria-pressed="true">All</button>

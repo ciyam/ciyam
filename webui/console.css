@@ -263,6 +263,43 @@ code
    overflow: hidden;
 }
 
+/* NOTE: The same for the Log - the filters stay put and only the table scrolls, with its
+   column headings pinned to the top of it. */
+.console-panel--log
+{
+   display: flex;
+   flex-direction: column;
+   overflow: hidden;
+}
+
+.console-panel--log .console-filterbar
+{
+   flex: none;
+}
+
+.console-panel--log .console-table-wrap
+{
+   flex: 1;
+   min-height: 0;
+   overflow: auto;
+}
+
+.console-panel--log .console-empty
+{
+   flex: none;
+}
+
+/* NOTE: A collapsed border does not travel with a pinned cell, so the rule under the
+   headings is drawn as a shadow instead. */
+.console-logtable thead th
+{
+   position: sticky;
+   top: 0;
+   z-index: 1;
+   background: var(--color-console-bg);
+   box-shadow: inset 0 -1px 0 var(--color-console-rule);
+}
+
 .console-note
 {
    margin: 0 0 14px;
