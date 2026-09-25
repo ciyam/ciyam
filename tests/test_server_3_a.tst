@@ -46,7 +46,7 @@ retain javascript
 retain stylesheet
 retain webcmdlist
 review users
-review messages <room> [from=<unix_time>]
+review messages <room> [[from=<unix_time>;]extra={NONE|TIME}]
 review storages
 review javascript[s] [<name>]
 review stylesheet[s] [<name>]
@@ -230,7 +230,7 @@ retain javascript
 retain stylesheet
 retain webcmdlist
 review users
-review messages <room> [from=<unix_time>]
+review messages <room> [[from=<unix_time>;]extra={NONE|TIME}]
 review storages
 review javascript[s] [<name>]
 review stylesheet[s] [<name>]
