@@ -171,6 +171,22 @@ ok   admin sees Administration
 ok   others do not
 ok   the list itself is untouched
 
+== password strength ===========================================
+ok   empty says nothing
+ok   under seven is unsatisfactory
+ok   seven digits is weak
+ok   twelve lower case is moderate
+ok   digits and lower, eight long, is moderate
+ok   three kinds with digits, ten long, is strong
+ok   all four kinds, twelve long, is very strong
+ok   boundary: 7 x 7 = 49 is strong
+
+== user initial ================================================
+ok   first letter, upper case
+ok   admin
+ok   a PIN
+ok   nothing
+
 == session handover fields =====================================
 ok   hyphen is encoded
 ok   colon is encoded

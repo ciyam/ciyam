@@ -375,6 +375,27 @@ check( "admin sees Administration", cp.visible_rooms( listed, true ).map( functi
 check( "others do not", cp.visible_rooms( listed, false ).map( function( r ) { return r.room; } ), [ "0000004", "0000005" ] );
 check( "the list itself is untouched", listed.length, 3 );
 
+heading( "password strength" );
+
+// NOTE: The same scores "test_bip39.html" gives - length times a multiplier for variety.
+function rated( p ) { return cp.password_strength( p ).text; }
+
+check( "empty says nothing", cp.password_strength( "" ), { level: -1, text: "" } );
+check( "under seven is unsatisfactory", cp.password_strength( "abc12!" ), { level: 0, text: "Unsatisfactory" } );
+check( "seven digits is weak", rated( "1234567" ), "Weak" );
+check( "twelve lower case is moderate", rated( "abcdefghijkl" ), "Moderate" );
+check( "digits and lower, eight long, is moderate", rated( "abcd1234" ), "Moderate" );
+check( "three kinds with digits, ten long, is strong", rated( "Abcdefg123" ), "Strong" );
+check( "all four kinds, twelve long, is very strong", rated( "Abcdef12!@#x" ), "Very Strong" );
+check( "boundary: 7 x 7 = 49 is strong", rated( "Ab1!xyz" ), "Strong" );
+
+heading( "user initial" );
+
+check( "first letter, upper case", cp.user_initial( "verify-a" ), "V" );
+check( "admin", cp.user_initial( "admin" ), "A" );
+check( "a PIN", cp.user_initial( "20401" ), "2" );
+check( "nothing", cp.user_initial( "" ), "?" );
+
 heading( "session handover fields" );
 
 // NOTE: Receivers of the handover test for ":" then "-" then "=", so a field carrying "-"

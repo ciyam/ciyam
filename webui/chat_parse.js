@@ -665,6 +665,67 @@ function visible_rooms( rooms, is_admin )
    return ( rooms || [ ] ).filter( function( entry ) { return !is_starting_room( entry.room ); } );
 }
 
+// NOTE: The password strength rules from "test_bip39.html", so both pages rate a password
+// the same way. Under seven characters is unsatisfactory; otherwise the length is scaled by
+// how many kinds of character are used - digits alone count least - and the score banded.
+// Level 0 cannot be saved; the rest are allowed, with the rating shown.
+const c_password_min_length = 7;
+
+const c_password_ratings = [
+   { level: 1, min: 0, text: "Weak" },
+   { level: 2, min: 24, text: "Moderate" },
+   { level: 3, min: 48, text: "Strong" },
+   { level: 4, min: 80, text: "Very Strong" }
+];
+
+function password_strength( password )
+{
+   var text = String( password || "" );
+
+   if( text.length === 0 )
+      return { level: -1, text: "" };
+
+   if( text.length < c_password_min_length )
+      return { level: 0, text: "Unsatisfactory" };
+
+   var has_digits = /[0-9]/.test( text );
+   var has_lower = /[a-z]/.test( text );
+   var has_upper = /[A-Z]/.test( text );
+   var has_special = /[^A-Za-z0-9]/.test( text );
+
+   var kinds = ( has_digits ? 1 : 0 ) + ( has_lower ? 1 : 0 ) + ( has_upper ? 1 : 0 ) + ( has_special ? 1 : 0 );
+
+   var multiplier = 7;
+
+   if( kinds === 1 )
+      multiplier = has_digits ? 1 : 2;
+   else if( kinds === 2 )
+      multiplier = has_digits ? 3 : 4;
+   else if( kinds === 3 )
+      multiplier = has_digits ? 5 : 6;
+
+   var score = text.length * multiplier;
+
+   var rating = c_password_ratings[ 0 ];
+
+   for( var i = 1; i < c_password_ratings.length; i++ )
+   {
+      if( score >= c_password_ratings[ i ].min )
+         rating = c_password_ratings[ i ];
+   }
+
+   return { level: rating.level, text: rating.text };
+}
+
+// NOTE: The letter shown in place of an avatar - the first character of the username, or of
+// the PIN for an account that has no username.
+function user_initial( name )
+{
+   var text = String( name || "" ).trim( );
+
+   return ( text === "" ) ? "?" : text.charAt( 0 ).toUpperCase( );
+}
+
 function encode_channel_field( value )
 {
    return encodeURIComponent( String( value || "" ) ).replace( /-/g, "%2D" );
@@ -787,6 +848,8 @@ if( typeof module !== "undefined" )
       posting_status: posting_status,
       invited_to_room: invited_to_room,
       pending_invitations: pending_invitations,
+      password_strength: password_strength,
+      user_initial: user_initial,
       visible_rooms: visible_rooms,
       encode_channel_field: encode_channel_field,
       decode_channel_field: decode_channel_field,
