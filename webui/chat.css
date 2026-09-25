@@ -756,6 +756,15 @@ textarea
    padding-bottom: 14px;
 }
 
+.chat-room-panel-name
+{
+   padding: 0 16px 10px;
+   font-size: var(--font-size-chat-name);
+   font-weight: 700;
+   color: var(--color-chat-text-strong);
+   overflow-wrap: anywhere;
+}
+
 .chat-room-facts
 {
    margin: 0;

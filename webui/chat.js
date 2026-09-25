@@ -1974,6 +1974,7 @@ function update_thread_meta( )
 
    var posting = { any: "Anyone", own: "Owner only", none: "Locked" };
 
+   set_text( document.getElementById( "room_fact_name" ), invite ? invite.name : g_room_name );
    set_text( document.getElementById( "room_fact_number" ), "#" + ( invite ? invite.room : g_room ) );
    set_text( document.getElementById( "room_fact_owner" ), g_room_owner || "-" );
    set_text( document.getElementById( "room_fact_posts" ), entry ? ( posting[ entry.posts ] || entry.posts ) : "-" );

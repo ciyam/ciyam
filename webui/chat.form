@@ -188,8 +188,9 @@ http://www.opensource.org/licenses/mit-license.php.
 
       <!-- presence -->
       <aside class="chat-presence" aria-label="Room and members">
-         <section class="chat-room-panel" id="room_panel" aria-label="Room" hidden>
-            <div class="chat-presence-head">Room</div>
+         <section class="chat-room-panel" id="room_panel" aria-label="Room details" hidden>
+            <div class="chat-presence-head">Room Details</div>
+            <div class="chat-room-panel-name" id="room_fact_name"></div>
             <dl class="chat-room-facts">
                <div class="chat-room-fact"><dt>Number</dt><dd class="chat-mono" id="room_fact_number"></dd></div>
                <div class="chat-room-fact" id="room_fact_owner_row"><dt>Owner</dt><dd id="room_fact_owner"></dd></div>
