@@ -606,6 +606,65 @@ function invited_to_room( messages, room )
 // Any field that can hold free text is therefore encoded so that none of ":", "-", "="
 // or "," survive. encodeURIComponent covers the last three but leaves "-" alone, hence the
 // extra replace.
+// NOTE: The invitations still waiting to be taken up, from the messages in the starting room.
+// An invitation is a private ":invite room <room>-<token> <name>" message to the invitee, sent
+// by the inviter. One is pending until its room appears among the user's own rooms - which
+// is also what clears it, with no state to keep. The server accepts the same invitation
+// twice (ISS-017), so there is one entry per room, and the latest supplies its details.
+// Newest first.
+function pending_invitations( messages, rooms )
+{
+   var joined = { };
+
+   ( rooms || [ ] ).forEach( function( entry ) { joined[ entry.room ] = true; } );
+
+   var latest = { };
+
+   ( messages || [ ] ).forEach( function( message )
+   {
+      if( !message || ( message.kind !== c_kind_system ) || !message.event )
+         return;
+
+      var event = message.event;
+
+      if( ( event.verb !== "invite" ) || !event.room || !event.token )
+         return;
+
+      if( joined[ event.room ] || is_entrance_room( event.room ) || is_starting_room( event.room ) )
+         return;
+
+      latest[ event.room ] = {
+         room: event.room,
+         token: event.token,
+         name: event.name || event.room,
+         inviter: message.sender,
+         unique: message.unique
+      };
+   } );
+
+   var pending = Object.keys( latest ).map( function( room ) { return latest[ room ]; } );
+
+   pending.sort( function( lhs, rhs )
+   {
+      if( lhs.unique !== rhs.unique )
+         return ( lhs.unique > rhs.unique ) ? -1 : 1;
+
+      return ( lhs.room < rhs.room ) ? -1 : ( lhs.room > rhs.room ) ? 1 : 0;
+   } );
+
+   return pending;
+}
+
+// NOTE: The rooms shown in the rail. The starting room - Administration - is shown to admin
+// only; it still exists for everyone, and is read in the background for invitations.
+function visible_rooms( rooms, is_admin )
+{
+   if( is_admin )
+      return ( rooms || [ ] ).slice( );
+
+   return ( rooms || [ ] ).filter( function( entry ) { return !is_starting_room( entry.room ); } );
+}
+
 function encode_channel_field( value )
 {
    return encodeURIComponent( String( value || "" ) ).replace( /-/g, "%2D" );
@@ -727,6 +786,8 @@ if( typeof module !== "undefined" )
       is_starting_room: is_starting_room,
       posting_status: posting_status,
       invited_to_room: invited_to_room,
+      pending_invitations: pending_invitations,
+      visible_rooms: visible_rooms,
       encode_channel_field: encode_channel_field,
       decode_channel_field: decode_channel_field,
       parse_access_list: parse_access_list,

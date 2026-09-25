@@ -157,6 +157,20 @@ ok   a private message receipt ignored
 ok   nothing for an unknown room
 ok   no messages is no invitations
 
+== pending invitations =========================================
+ok   one per room, joined rooms left out
+ok   newest first, latest details win
+ok   inviter is the sender
+ok   a name with brackets kept
+ok   joining clears it
+ok   no messages, none pending
+ok   never the starting room, never without a token
+
+== rooms shown in the rail =====================================
+ok   admin sees Administration
+ok   others do not
+ok   the list itself is untouched
+
 == session handover fields =====================================
 ok   hyphen is encoded
 ok   colon is encoded

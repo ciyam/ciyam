@@ -335,6 +335,46 @@ check( "a private message receipt ignored", Object.keys( cp.invited_to_room( rec
 check( "nothing for an unknown room", Object.keys( cp.invited_to_room( receipts, "0000009" ) ).length, 0 );
 check( "no messages is no invitations", Object.keys( cp.invited_to_room( [ ], "0000005" ) ).length, 0 );
 
+heading( "pending invitations" );
+
+// NOTE: As tester-1 sees Administration - its own invitations, two of them to the same room
+// (the server accepts duplicates, ISS-017), one to a room since joined, and ordinary noise.
+var inbox = cp.parse_fetch_response( [
+ "admin+1 tester-1+0 damon+0",
+ "1790259222001 admin :invite room 0000005-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa Design Review",
+ "1790259222002 damon :invite room 0000006-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb Garden (Veg)",
+ "1790259222003 admin :invite room 0000005-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa Design Review 2",
+ "1790259222004 admin :invite room 0000007-cccccccccccccccccccccccccccccccc Old Room",
+ "1790259222005 tester-1 :joined",
+ "1790259222006 admin hello everyone" ].join( "\n" ) ).messages;
+
+var member_of = [ { room: "0000001" }, { room: "0000007" } ];
+
+var pending = cp.pending_invitations( inbox, member_of );
+
+check( "one per room, joined rooms left out", pending.map( function( p ) { return p.room; } ), [ "0000005", "0000006" ] );
+check( "newest first, latest details win", pending[ 0 ], {
+ room: "0000005", token: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", name: "Design Review 2", inviter: "admin", unique: "1790259222003" } );
+check( "inviter is the sender", pending[ 1 ].inviter, "damon" );
+check( "a name with brackets kept", pending[ 1 ].name, "Garden (Veg)" );
+check( "joining clears it", cp.pending_invitations( inbox, member_of.concat( [ { room: "0000005" }, { room: "0000006" } ] ) ).length, 0 );
+check( "no messages, none pending", cp.pending_invitations( [ ], member_of ).length, 0 );
+
+var odd = cp.parse_fetch_response( [
+ "admin+1",
+ "1790259222010 admin :invite room 0000001-dddddddddddddddddddddddddddddddd Administration",
+ "1790259222011 admin :invite room 0000008" ].join( "\n" ) ).messages;
+
+check( "never the starting room, never without a token", cp.pending_invitations( odd, [ ] ).length, 0 );
+
+heading( "rooms shown in the rail" );
+
+var listed = [ { room: "0000001" }, { room: "0000004" }, { room: "0000005" } ];
+
+check( "admin sees Administration", cp.visible_rooms( listed, true ).map( function( r ) { return r.room; } ), [ "0000001", "0000004", "0000005" ] );
+check( "others do not", cp.visible_rooms( listed, false ).map( function( r ) { return r.room; } ), [ "0000004", "0000005" ] );
+check( "the list itself is untouched", listed.length, 3 );
+
 heading( "session handover fields" );
 
 // NOTE: Receivers of the handover test for ":" then "-" then "=", so a field carrying "-"
