@@ -112,7 +112,22 @@ http://www.opensource.org/licenses/mit-license.php.
          <span class="chat-poll-label" id="topbar_poll"></span>
          <button type="button" class="chat-btn chat-btn--mono" onclick="do_refresh( )">Refresh</button>
          <button type="button" class="chat-btn chat-btn--mono" id="console_toggle" onclick="do_toggle_console( )">Console</button>
-         <button type="button" class="chat-btn chat-btn--mono" onclick="do_disconnect( )">Sign out</button>
+
+         <!-- NOTE: The signed in user's initial, in place of an avatar image. It opens the
+              account menu, which is where signing out now lives. -->
+         <div class="chat-user">
+            <button type="button" class="chat-avatar" id="user_avatar" aria-haspopup="menu" aria-expanded="false"
+             aria-controls="user_menu" onclick="do_toggle_user_menu( )"></button>
+            <div class="chat-user-menu" id="user_menu" role="menu" aria-labelledby="user_avatar" hidden>
+               <div class="chat-user-menu-head">
+                  <span class="chat-avatar chat-avatar--large" id="user_menu_initial" aria-hidden="true"></span>
+                  <b class="chat-user-menu-name" id="user_menu_name"></b>
+                  <span class="chat-user-menu-meta" id="user_menu_meta"></span>
+               </div>
+               <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_open_password_dialog( )">Change password&hellip;</button>
+               <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_sign_out( )">Sign out</button>
+            </div>
+         </div>
       </div>
    </div>
 
@@ -253,6 +268,35 @@ http://www.opensource.org/licenses/mit-license.php.
       <div class="chat-dialog-actions">
          <button type="button" class="chat-btn" onclick="do_close_room_dialog( )">Cancel</button>
          <button type="submit" class="chat-btn chat-btn--accent" id="room_dialog_submit">Create</button>
+      </div>
+   </form>
+</div>
+
+<div id="password_dialog" class="chat-scrim" hidden>
+   <form class="chat-dialog chat-dialog--password" onsubmit="do_submit_password( ); return false;">
+      <h2>Change password</h2>
+      <p class="chat-dialog-note">You stay signed in. If this browser remembers your password,
+      it will remember the new one.</p>
+
+      <label class="chat-label" for="password_current">Current password</label>
+      <input type="password" id="password_current" class="chat-field" autocomplete="current-password" oninput="update_password_dialog( )">
+
+      <label class="chat-label" for="password_new">New password</label>
+      <input type="password" id="password_new" class="chat-field" autocomplete="new-password" oninput="update_password_dialog( )">
+
+      <div class="chat-strength" id="password_strength" hidden>
+         <div class="chat-strength-track"><div class="chat-strength-bar" id="password_strength_bar"></div></div>
+         <span class="chat-strength-label" id="password_strength_label"></span>
+      </div>
+
+      <label class="chat-label" for="password_confirm">Confirm new password</label>
+      <input type="password" id="password_confirm" class="chat-field" autocomplete="new-password" oninput="update_password_dialog( )">
+
+      <div class="chat-error-text" id="password_error" role="alert"></div>
+
+      <div class="chat-dialog-actions">
+         <button type="button" class="chat-btn" onclick="do_close_password_dialog( )">Cancel</button>
+         <button type="submit" class="chat-btn chat-btn--accent" id="password_submit" disabled>Change password</button>
       </div>
    </form>
 </div>

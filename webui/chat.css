@@ -164,6 +164,213 @@ textarea
    gap: 8px;
 }
 
+/* ====================================================================
+   Account menu - the user's initial in place of an avatar
+   ==================================================================== */
+
+.chat-user
+{
+   position: relative;
+   flex: none;
+}
+
+.chat-avatar
+{
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   width: 32px;
+   height: 32px;
+   border: 0;
+   border-radius: var(--radius-circle);
+   background: var(--color-chat-accent);
+   color: #ffffff;
+   font-family: var(--font-family-chat);
+   font-size: var(--font-size-chat-body);
+   font-weight: 700;
+   line-height: 1;
+   cursor: pointer;
+   user-select: none;
+}
+
+button.chat-avatar:hover
+{
+   box-shadow: 0 0 0 3px var(--color-chat-border);
+}
+
+.chat-avatar--large
+{
+   width: 56px;
+   height: 56px;
+   font-size: 24px;
+   cursor: default;
+}
+
+/* NOTE: Below the dialogs (z-index 40), so a dialog opened from the menu sits on top. */
+.chat-user-menu
+{
+   position: absolute;
+   top: calc(100% + 8px);
+   right: 0;
+   z-index: 35;
+   width: 240px;
+   padding: 6px;
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-md);
+   box-shadow: var(--shadow-lg);
+}
+
+.chat-user-menu-head
+{
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 6px;
+   padding: 14px 10px 12px;
+   margin-bottom: 4px;
+   border-bottom: 1px solid var(--color-chat-border);
+   text-align: center;
+}
+
+.chat-user-menu-name
+{
+   font-size: var(--font-size-chat-name);
+   font-weight: 700;
+   color: var(--color-chat-text-strong);
+   overflow-wrap: anywhere;
+}
+
+.chat-user-menu-meta
+{
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-nano);
+   color: var(--color-chat-text-faint);
+}
+
+.chat-user-menu-item
+{
+   display: block;
+   width: 100%;
+   padding: 8px 10px;
+   border: 0;
+   border-radius: var(--radius-sm);
+   background: none;
+   text-align: left;
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-strong);
+   cursor: pointer;
+}
+
+.chat-user-menu-item:hover,
+.chat-user-menu-item:focus-visible
+{
+   background: var(--color-chat-bg-rail);
+}
+
+/* ====================================================================
+   Password strength - the bands and colours of "test_bip39.html"
+   ==================================================================== */
+
+/* NOTE: Even spacing for the three fields - the general "label after a field" gap is sized
+   for the sign in form, and the strength bar between two fields broke the rhythm. */
+.chat-dialog--password .chat-label,
+.chat-dialog--password .chat-field + .chat-label
+{
+   margin: 8px 0 0;
+}
+
+.chat-strength
+{
+   margin-top: -2px;
+}
+
+.chat-strength-track
+{
+   height: 4px;
+   border-radius: var(--radius-pill);
+   background: var(--color-chat-border);
+   overflow: hidden;
+   margin-bottom: 4px;
+}
+
+.chat-strength-bar
+{
+   height: 100%;
+   width: 0;
+   border-radius: var(--radius-pill);
+   transition: width 200ms ease, background 200ms ease;
+}
+
+.chat-strength-label
+{
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 600;
+}
+
+.chat-strength[data-level="0"] .chat-strength-bar
+{
+   width: 20%;
+   background: var(--color-critical);
+}
+
+.chat-strength[data-level="1"] .chat-strength-bar
+{
+   width: 35%;
+   background: var(--color-warning);
+}
+
+.chat-strength[data-level="2"] .chat-strength-bar
+{
+   width: 55%;
+   background: var(--color-pwd-strength-moderate);
+}
+
+.chat-strength[data-level="3"] .chat-strength-bar
+{
+   width: 75%;
+   background: var(--color-success);
+}
+
+.chat-strength[data-level="4"] .chat-strength-bar
+{
+   width: 100%;
+   background: var(--color-success-700);
+}
+
+.chat-strength[data-level="0"] .chat-strength-label
+{
+   color: var(--color-critical);
+}
+
+.chat-strength[data-level="1"] .chat-strength-label
+{
+   color: var(--color-warning);
+}
+
+.chat-strength[data-level="2"] .chat-strength-label
+{
+   color: var(--color-pwd-strength-moderate);
+}
+
+.chat-strength[data-level="3"] .chat-strength-label
+{
+   color: var(--color-success);
+}
+
+.chat-strength[data-level="4"] .chat-strength-label
+{
+   color: var(--color-success-700);
+}
+
+@media (prefers-reduced-motion: reduce)
+{
+   .chat-strength-bar
+   {
+      transition: none;
+   }
+}
+
 .chat-poll-label
 {
    font-family: var(--font-family-chat-mono);
