@@ -160,6 +160,7 @@ constexpr const char* c_cws_request_messages_create_options_for = "for";
 constexpr const char* c_cws_request_messages_create_options_text = "text";
 
 constexpr const char* c_cws_request_messages_review_options_from = "from";
+constexpr const char* c_cws_request_messages_review_options_extra = "extra";
 
 constexpr const char* c_cws_request_messages_update_options_for = "for";
 constexpr const char* c_cws_request_messages_update_options_name = "name";
@@ -172,7 +173,7 @@ constexpr const char* c_cws_request_unlock_keys_create_options_encrypted = "encr
 constexpr const char* c_cws_help_request_output = "quit\n"
  "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete message <room>\n"
  "delete javascript\ndelete stylesheet\ndelete webcmdlist\nemploy unlock-key <key>\nretain javascript\n"
- "retain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [from=<unix_time>]\nreview storages\n"
+ "retain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\n"
  "review javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
  "update user *** password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}";
@@ -180,7 +181,7 @@ constexpr const char* c_cws_help_request_output = "quit\n"
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|nominated=[<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
  "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete message <room>\ndelete javascript\ndelete stylesheet\n"
- "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [from=<unix_time>]\n"
+ "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\n"
  "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user <pin> password=<password>\n"
  "update message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}";
@@ -194,6 +195,9 @@ constexpr const char* c_web_session_unknown_response = "[unknown]";
 
 constexpr const char* c_web_session_default_message_for = "ALL";
 constexpr const char* c_web_session_special_message_for = "IRC";
+
+constexpr const char* c_web_session_messages_extra_none = "NONE";
+constexpr const char* c_web_session_messages_extra_time = "TIME";
 
 constexpr const char* c_web_session_default_room_number = "0000000";
 constexpr const char* c_web_session_initial_room_number = "0000001";
@@ -834,7 +838,8 @@ const sio_graph& get_meta_data( const string& model_name )
    return *g_model_meta_data[ model_name ];
 }
 
-void process_messages_response( string& response, bool needs_decoding, bool is_json_format, const string& room_from )
+void process_messages_response( string& response, bool needs_decoding,
+ bool is_json_format, const string& room_from, map< string, string >& user_froms )
 {
    vector< string > messages;
 
@@ -864,7 +869,34 @@ void process_messages_response( string& response, bool needs_decoding, bool is_j
                      next_message.erase( 0, pos + 1 );
 
                   if( !next_message.empty( ) )
+                  {
                      had_users = true;
+
+                     vector< string > user_info;
+
+                     split( next_message, user_info, ' ' );
+
+                     string updated_message;
+
+                     for( size_t j = 0; j < user_info.size( ); j++ )
+                     {
+                        string next( user_info[ j ] );
+
+                        string::size_type pos = next.find( '+' );
+
+                        string name( next.substr( 0, pos ) );
+
+                        if( user_froms.count( name ) )
+                           next += '.' + user_froms[ name ];
+
+                        if( !updated_message.empty( ) )
+                           updated_message += ' ';
+
+                        updated_message += next;
+                     }
+
+                     next_message = updated_message;
+                  }
                }
                else
                {
@@ -2602,6 +2634,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      {
                         found = true;
 
+                        string room( c_web_session_default_room_number );
+
                         string room_from;
 
                         bool allowed_command = true;
@@ -2610,6 +2644,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         bool is_special_request = false;
 
                         string storage_name;
+
+                        map< string, string > user_room_froms;
 
                         if( is_user_info_request )
                         {
@@ -2644,10 +2680,73 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               {
                                  use_none_response = true;
 
-                                 string room( c_web_session_default_room_number );
-
                                  if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_messages_prefix ) )
                                     room = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_messages_prefix ) );
+
+                                 string extra;
+
+                                 if( option_parameters.count( c_cws_request_messages_review_options_extra ) )
+                                    extra = option_parameters[ c_cws_request_messages_review_options_extra ];
+
+                                 if( ( room != c_web_session_default_room_number )
+                                  && ( extra == c_web_session_messages_extra_time ) )
+                                 {
+                                    string all_room_froms( get_system_variable( var_prefix + "*." + room ) );
+
+                                    if( !all_room_froms.empty( ) )
+                                    {
+                                       vector< string > room_froms;
+
+                                       split( all_room_froms, room_froms, '\n' );
+
+                                       // NOTE: Each line is in the form:
+                                       // @web.<pin>.<device>.<room> <time_val>
+                                       for( size_t i = 0; i < room_froms.size( ); i++ )
+                                       {
+                                          string next_line( room_froms[ i ] );
+
+                                          string::size_type pos = next_line.find( ' ' );
+
+                                          if( pos != string::npos )
+                                          {
+                                             string from_value( next_line.substr( pos + 1 ) );
+
+                                             next_line.erase( pos );
+
+                                             pos = next_line.find( '.' );
+
+                                             if( pos != string::npos )
+                                             {
+                                                next_line.erase( 0, pos + 1 );
+
+                                                pos = next_line.find( '.' );
+
+                                                if( pos != string::npos )
+                                                {
+                                                   next_line.erase( pos );
+
+                                                   if( !next_line.empty( ) )
+                                                   {
+                                                      string user_name;
+
+                                                      if( has_user_info( next_line ) )
+                                                         user_name = get_user_name( next_line );
+                                                      else if( next_line == g_cws_admin_token )
+                                                         user_name = c_admin;
+
+                                                      if( !user_name.empty( ) )
+                                                      {
+                                                         if( !user_room_froms.count( user_name )
+                                                          || ( user_room_froms[ user_name ] < from_value ) )
+                                                            user_room_froms[ user_name ] = from_value;
+                                                      }
+                                                   }
+                                                }
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
 
                                  if( is_put_request
                                   && option_parameters.count( c_cws_request_messages_update_options_for ) )
@@ -2778,6 +2877,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     request_and_args += "IRC_ROOM=" + room + '\n';
 
                                     string from;
+
+                                    string extra;
 
                                     if( option_parameters.count( c_cws_request_messages_review_options_from ) )
                                        from = option_parameters[ c_cws_request_messages_review_options_from ];
@@ -3008,7 +3109,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     if( is_user_info_request )
                                        process_user_info_response( session, response );
                                     else if( !is_adding_room && is_messages_request )
-                                       process_messages_response( response, !is_special_request, is_json_output, room_from );
+                                       process_messages_response( response, !is_special_request, is_json_output, room_from, user_room_froms );
                                  }
 
                                  break;
