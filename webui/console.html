@@ -27,12 +27,16 @@ http://www.opensource.org/licenses/mit-license.php.
 
    <link rel="stylesheet" href="tokens.css">
    <link rel="stylesheet" href="chat_tokens.css">
-   <link rel="stylesheet" href="console.css">
 
    <script type="text/javascript" src="ciyam.js"></script>
    <script type="text/javascript" src="sha2.min.js"></script>
    <script type="text/javascript" src="chat_parse.js"></script>
-   <script type="text/javascript" src="console_parse.js"></script>
+
+   <!--
+   NOTE: "console.css", "console_parse.js" and "console.js" change often, and the server
+   sends only "Last-Modified" - so a plain tag let the browser keep an old copy. They are
+   loaded below with that date as a query string instead.
+   -->
 </head>
 
 <body onload="load( )">
@@ -59,26 +63,46 @@ http://www.opensource.org/licenses/mit-license.php.
 
    // NOTE: Keyed by the file's own "Last-Modified", as "chat.html" does and for the same
    // reasons - see "load_main_js( )" there.
-   function load_main_js( name )
+   function version_of( file )
    {
-      function append_script( key )
-      {
-         var script = document.createElement( "script" );
-
-         script.src = name + ".js?" + encodeURIComponent( key );
-
-         script.setAttribute( "id", name );
-
-         document.body.appendChild( script );
-      }
-
-      fetch( name + ".js", { method: "HEAD" } )
+      return fetch( file, { method: "HEAD" } )
        .then( function( response )
        {
           return response.headers.get( "Last-Modified" ) || String( Date.now( ) );
        } )
-       .catch( function( ) { return String( Date.now( ) ); } )
-       .then( append_script );
+       .catch( function( ) { return String( Date.now( ) ); } );
+   }
+
+   function load_style( file )
+   {
+      return version_of( file ).then( function( key )
+      {
+         var link = document.createElement( "link" );
+
+         link.rel = "stylesheet";
+         link.href = file + "?" + encodeURIComponent( key );
+
+         document.head.appendChild( link );
+      } );
+   }
+
+   // NOTE: Resolves once the script has run, so the next can rely on it.
+   function load_script( file )
+   {
+      return version_of( file ).then( function( key )
+      {
+         return new Promise( function( resolve )
+         {
+            var script = document.createElement( "script" );
+
+            script.src = file + "?" + encodeURIComponent( key );
+
+            script.onload = resolve;
+            script.onerror = resolve;
+
+            document.body.appendChild( script );
+         } );
+      } );
    }
 
    function call_at_load( )
@@ -95,12 +119,10 @@ http://www.opensource.org/licenses/mit-license.php.
    // runs against an empty page.
    function load( )
    {
-      load_form( "console" ).then( function( )
-      {
-         load_main_js( "console" );
-
-         window.setTimeout( call_at_load, c_load_delay );
-      } );
+      Promise.all( [ load_style( "console.css" ), load_form( "console" ) ] )
+       .then( function( ) { return load_script( "console_parse.js" ); } )
+       .then( function( ) { return load_script( "console.js" ); } )
+       .then( function( ) { window.setTimeout( call_at_load, c_load_delay ); } );
    }
    </script>
 </body>

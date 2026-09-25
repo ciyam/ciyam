@@ -33,7 +33,6 @@ http://www.opensource.org/licenses/mit-license.php.
    <script type="text/javascript" src="ciyam.js"></script>
    <script type="text/javascript" src="sha2.min.js"></script>
    <script type="text/javascript" src="chat_parse.js"></script>
-   <script type="text/javascript" src="console_parse.js"></script>
 </head>
 
 <body onload="load( )">
@@ -198,6 +197,27 @@ http://www.opensource.org/licenses/mit-license.php.
        .then( append_script );
    }
 
+   function load_versioned_script( file )
+   {
+      return fetch( file, { method: "HEAD" } )
+       .then( function( response ) { return response.headers.get( "Last-Modified" ) || String( Date.now( ) ); } )
+       .catch( function( ) { return String( Date.now( ) ); } )
+       .then( function( key )
+       {
+          return new Promise( function( resolve )
+          {
+             var script = document.createElement( "script" );
+
+             script.src = file + "?" + encodeURIComponent( key );
+
+             script.onload = resolve;
+             script.onerror = resolve;
+
+             document.body.appendChild( script );
+          } );
+       } );
+   }
+
    function call_at_load( )
    {
       if( typeof window[ "chat" ] === "function" )
@@ -231,9 +251,14 @@ http://www.opensource.org/licenses/mit-license.php.
       if( source === null )
          source = g_self;
 
-      load_main_js( "chat", source );
+      // NOTE: "chat.js" calls into "console_parse.js" as soon as it starts, so that is loaded
+      // first - keyed by its "Last-Modified" too, since it changes as the console does.
+      load_versioned_script( "console_parse.js" ).then( function( )
+      {
+         load_main_js( "chat", source );
 
-      window.setTimeout( call_at_load, c_load_delay );
+         window.setTimeout( call_at_load, c_load_delay );
+      } );
 
       window.setTimeout( load_complete, 200 );
    }
