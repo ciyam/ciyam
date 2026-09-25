@@ -59,12 +59,28 @@ var g_registered_pin = "";
 var g_console_open = false;
 var g_console_loaded = false;
 
+// NOTE: The request log the developer console shows. Kept here, in memory only, so that a
+// console opened later can still see how this session began - sign in and the first loads
+// happen before anyone opens the drawer. Request URLs carry credentials; the entries do
+// not, because "make_log_entry( )" drops them.
+const c_log_channel_name = "ciyam_console_log";
+
+var g_request_log = [ ];
+var g_request_log_id = 0;
+
+var g_in_poll = false;
+var g_request_quiet = false;
+
+var g_log_channel = null;
+
 // ====================================================================
 // Entry point
 // ====================================================================
 
 function chat( )
 {
+   install_request_log( );
+
    if( localStorage.getItem( c_storage_device ) !== null )
       ciyam.device = localStorage.getItem( c_storage_device );
 
@@ -421,6 +437,8 @@ async function do_disconnect( )
    if( g_console_open )
       do_toggle_console( );
 
+   unlink_consoles( );
+
    document.getElementById( "chat_view" ).hidden = true;
    document.getElementById( "signin_view" ).hidden = false;
 
@@ -601,11 +619,30 @@ function end_busy( )
 
 function serialised( fn )
 {
+   // NOTE: Whether this was queued by the poll is decided now, when it is queued, and
+   // applied only while "fn" issues its request - which it does synchronously - so the
+   // request log can leave polling out without guessing from the URL.
+   var quiet = g_in_poll;
+
+   var run = function( )
+   {
+      g_request_quiet = quiet;
+
+      try
+      {
+         return fn( );
+      }
+      finally
+      {
+         g_request_quiet = false;
+      }
+   };
+
    var wrapped = function( )
    {
       begin_busy( );
 
-      return Promise.resolve( ).then( fn ).then(
+      return Promise.resolve( ).then( run ).then(
        function( value ) { end_busy( ); return value; },
        function( error ) { end_busy( ); throw error; } );
    };
@@ -1882,11 +1919,27 @@ async function poll( )
    if( is_dialog_open( ) )
       return;
 
-   // NOTE: Awaited in turn rather than issued together - see the serialiser above.
-   await load_rooms( );
+   // NOTE: Awaited in turn rather than issued together - see the serialiser above. The
+   // flag is only up while each request is queued, so nothing the user does in between is
+   // mistaken for polling.
+   g_in_poll = true;
+
+   var rooms = load_rooms( );
+
+   g_in_poll = false;
+
+   await rooms;
 
    if( g_room !== "" )
-      await load_messages( g_start_point ? ( "from=" + g_start_point ) : "", false );
+   {
+      g_in_poll = true;
+
+      var messages = load_messages( g_start_point ? ( "from=" + g_start_point ) : "", false );
+
+      g_in_poll = false;
+
+      await messages;
+   }
 }
 
 async function do_refresh( )
@@ -1925,10 +1978,59 @@ function do_toggle_console( )
    {
       g_console_loaded = true;
 
-      // NOTE: The harness announces itself on the shared channel and is then
-      // handed this session - see the handler in "chat.html".
-      document.getElementById( "console_frame" ).src = "test_web_session.html?source=" + g_self;
+      // NOTE: The console announces itself on the shared channel and is then handed this
+      // session - see the handler in "chat.html".
+      document.getElementById( "console_frame" ).src = "console.html?embedded=1&source=" + encodeURIComponent( g_self );
    }
+}
+
+// NOTE: The same console in its own window, linked to this session the same way. More room
+// than the drawer, and the conversation stays fully visible beside it.
+function do_popout_console( )
+{
+   window.open( "console.html?source=" + encodeURIComponent( g_self ), "_blank", "noopener" );
+
+   if( g_console_open )
+      do_toggle_console( );
+}
+
+// NOTE: A console opened for one session must not carry on under the next, so signing out
+// unloads the drawer's console and tells any others that the session has ended.
+function unlink_consoles( )
+{
+   chat_channel.postMessage( String( g_self ) );
+
+   g_console_loaded = false;
+
+   document.getElementById( "console_frame" ).src = "about:blank";
+}
+
+function install_request_log( )
+{
+   install_log_capture( ciyam, "chat", function( ) { return g_request_quiet; }, record_request );
+
+   g_log_channel = new BroadcastChannel( c_log_channel_name );
+
+   g_log_channel.addEventListener( "message", function( event )
+   {
+      var data = event.data;
+
+      if( ( data !== null ) && ( typeof data === "object" ) && ( data.kind === "replay" ) && ( data.owner === String( g_self ) ) )
+         g_log_channel.postMessage( { kind: "entries", owner: String( g_self ), viewer: data.viewer, entries: g_request_log } );
+   } );
+}
+
+function record_request( entry )
+{
+   entry.id = ++g_request_log_id;
+
+   g_request_log.push( entry );
+
+   if( g_request_log.length > c_console_log_capacity )
+      g_request_log.shift( );
+
+   if( g_log_channel !== null )
+      g_log_channel.postMessage( { kind: "entry", owner: String( g_self ), entry: entry } );
 }
 
 // ====================================================================

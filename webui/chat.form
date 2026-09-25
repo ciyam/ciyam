@@ -191,8 +191,8 @@ http://www.opensource.org/licenses/mit-license.php.
 </div>
 
 <!-- ================================================================
-     Console drawer - embeds the existing test harness and hands it
-     the live session over BroadcastChannel.
+     Console drawer - embeds the developer console and hands it the
+     live session over BroadcastChannel.
      ================================================================ -->
 <div id="console_drawer" class="chat-console" hidden>
    <div class="chat-console-bar">
@@ -201,6 +201,7 @@ http://www.opensource.org/licenses/mit-license.php.
          <span class="chat-dot"></span>
          <span id="console_session">inherits chat session</span>
       </span>
+      <button type="button" class="chat-console-close" onclick="do_popout_console( )" aria-label="Open the console in its own window" title="Open in its own window">&#8599;</button>
       <button type="button" class="chat-console-close" onclick="do_toggle_console( )" aria-label="Close console">&times;</button>
    </div>
    <div class="chat-console-notice" id="console_notice" hidden></div>
