@@ -269,6 +269,16 @@ check( "hashed password shortened", cp.summarise_storage_value( "cws.hashed_4567
 check( "other values whole", cp.summarise_storage_value( "cws.access", "45679,20101" ), "45679,20101" );
 
 // --------------------------------------------------------------------
+heading( "preferences" );
+
+check( "nothing stored", cp.parse_prefs( null ), { log_session_only: false } );
+check( "stored value", cp.parse_prefs( "{\"log_session_only\":true}" ), { log_session_only: true } );
+check( "not JSON", cp.parse_prefs( "yes please" ), { log_session_only: false } );
+check( "wrong type", cp.parse_prefs( "{\"log_session_only\":\"true\"}" ), { log_session_only: false } );
+check( "unknown names dropped", cp.parse_prefs( "{\"log_session_only\":true,\"other\":1}" ), { log_session_only: true } );
+check( "not an object", cp.parse_prefs( "[true]" ), { log_session_only: false } );
+
+// --------------------------------------------------------------------
 heading( "request log entries" );
 
 var t0 = new Date( 2026, 8, 25, 23, 14, 4, 0 );

@@ -99,6 +99,10 @@ http://www.opensource.org/licenses/mit-license.php.
             <button type="button" class="console-chip" data-source="console" aria-pressed="false">Console</button>
             <button type="button" class="console-chip" onclick="do_clear_log( )">Clear</button>
             <span class="console-fnote">Polling is never logged &mdash; only requests something asked for.</span>
+            <label class="console-check" title="Clears the log when the session ends, so the next account signed in here cannot see it">
+               <input type="checkbox" id="log_session_only" onchange="do_set_log_session_only( )">
+               Log current session only
+            </label>
          </div>
 
          <div class="console-table-wrap">

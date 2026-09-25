@@ -594,6 +594,23 @@ code
    margin-left: auto;
 }
 
+.console-check
+{
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   font-size: var(--font-size-chat-nano);
+   color: var(--color-console-text-dim);
+   white-space: nowrap;
+   cursor: pointer;
+}
+
+.console-check input
+{
+   margin: 0;
+   accent-color: var(--color-console-accent);
+}
+
 .console-logtable,
 .console-kv
 {

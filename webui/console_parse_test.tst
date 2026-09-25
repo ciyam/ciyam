@@ -97,6 +97,14 @@ ok   no placeholder
 ok   hashed password shortened
 ok   other values whole
 
+== preferences =================================================
+ok   nothing stored
+ok   stored value
+ok   not JSON
+ok   wrong type
+ok   unknown names dropped
+ok   not an object
+
 == request log entries =========================================
 ok   entry
 ok   credentials never kept

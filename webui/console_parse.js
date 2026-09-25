@@ -534,6 +534,47 @@ function summarise_storage_value( key, value )
 }
 
 // ====================================================================
+// Preferences
+// ====================================================================
+
+// NOTE: One "localStorage" key holding a small JSON object, read by the chat and the console
+// alike and shared by every account on the browser. More can be added to "c_console_prefs"
+// as they are needed; a per-account set would be a second key ending in the PIN.
+const c_console_prefs_key = "cws.prefs";
+
+const c_console_prefs = { log_session_only: false };
+
+// NOTE: Only known names, and only values of the default's type, are taken from what is
+// stored - anything else, including text that is not JSON at all, falls back to the default.
+function parse_prefs( stored )
+{
+   var prefs = { };
+
+   var parsed = null;
+
+   try
+   {
+      parsed = JSON.parse( String( stored ) );
+   }
+   catch( e )
+   {
+      parsed = null;
+   }
+
+   Object.keys( c_console_prefs ).forEach( function( name )
+   {
+      var fallback = c_console_prefs[ name ];
+
+      if( ( parsed !== null ) && ( typeof parsed === "object" ) && ( typeof parsed[ name ] === typeof fallback ) )
+         prefs[ name ] = parsed[ name ];
+      else
+         prefs[ name ] = fallback;
+   } );
+
+   return prefs;
+}
+
+// ====================================================================
 // Request log
 // ====================================================================
 
@@ -688,6 +729,7 @@ if( typeof module !== "undefined" )
       filter_palette: filter_palette,
       first_placeholder: first_placeholder,
       summarise_storage_value: summarise_storage_value,
+      parse_prefs: parse_prefs,
       format_clock: format_clock,
       make_log_entry: make_log_entry,
       install_log_capture: install_log_capture

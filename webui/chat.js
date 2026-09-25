@@ -73,6 +73,10 @@ const c_log_channel_name = "ciyam_console_log";
 var g_request_log = [ ];
 var g_request_log_id = 0;
 
+// NOTE: Counts sessions ended in this page. Starting a count at sign out, not sign in,
+// means the sign in requests belong to the session they start.
+var g_session_seq = 0;
+
 var g_in_poll = false;
 var g_request_quiet = false;
 
@@ -498,6 +502,8 @@ async function do_disconnect( )
       do_toggle_console( );
 
    unlink_consoles( );
+
+   end_log_session( );
 
    document.getElementById( "chat_view" ).hidden = true;
    document.getElementById( "signin_view" ).hidden = false;
@@ -2088,7 +2094,7 @@ function install_request_log( )
          return;
 
       if( data.kind === "replay" )
-         g_log_channel.postMessage( { kind: "entries", owner: String( g_self ), viewer: data.viewer, entries: g_request_log } );
+         g_log_channel.postMessage( { kind: "entries", owner: String( g_self ), viewer: data.viewer, entries: replay_entries( ) } );
       else if( data.kind === "request" )
          proxy_console_request( data );
    } );
@@ -2148,9 +2154,40 @@ function proxy_console_request( data )
    } );
 }
 
+function log_session_only( )
+{
+   try
+   {
+      return parse_prefs( localStorage.getItem( c_console_prefs_key ) ).log_session_only;
+   }
+   catch( e )
+   {
+      return false;
+   }
+}
+
+// NOTE: The "Log current session only" preference is set in the console. With it on, a
+// console that links is sent only this session's requests - never an earlier account's.
+function replay_entries( )
+{
+   if( !log_session_only( ) )
+      return g_request_log;
+
+   return g_request_log.filter( function( entry ) { return entry.session === g_session_seq; } );
+}
+
+function end_log_session( )
+{
+   ++g_session_seq;
+
+   if( log_session_only( ) )
+      g_request_log = [ ];
+}
+
 function record_request( entry )
 {
    entry.id = ++g_request_log_id;
+   entry.session = g_session_seq;
 
    g_request_log.push( entry );
 

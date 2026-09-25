@@ -84,6 +84,11 @@ var g_log_keys = { };
 var g_log_counter = 0;
 var g_log_filter = "all";
 
+var g_prefs = parse_prefs( null );
+
+// NOTE: Counts sessions ended in this page, so each log entry can say which it belongs to.
+var g_session_seq = 0;
+
 var g_quiet = false;
 var g_queue = Promise.resolve( );
 
@@ -139,8 +144,13 @@ function console_main( )
    bind_log_filter( );
    bind_server_filter( );
 
+   load_prefs( );
+
+   // NOTE: Another tab - the chat, or another console - may change a preference.
    window.addEventListener( "storage", function( )
    {
+      load_prefs( );
+
       render_storage( );
       render_saved_scripts( );
    } );
@@ -249,6 +259,8 @@ function end_linked_session( )
    ciyam.hashed = "";
 
    print_line( "The chat session ended. This console is no longer connected.", "is-warn" );
+
+   end_log_session( );
 
    document.getElementById( "prompt_input" ).disabled = true;
 
@@ -467,6 +479,8 @@ async function do_disconnect( )
    g_server_scripts = [ ];
 
    ciyam.remove_all_variables( );
+
+   end_log_session( );
 
    document.getElementById( "main_view" ).hidden = true;
    document.getElementById( "signin_view" ).hidden = false;
@@ -1823,9 +1837,72 @@ function bind_log_filter( )
    } );
 }
 
+function load_prefs( )
+{
+   g_prefs = parse_prefs( stored( c_console_prefs_key ) );
+
+   document.getElementById( "log_session_only" ).checked = g_prefs.log_session_only;
+}
+
+function do_set_log_session_only( )
+{
+   g_prefs.log_session_only = document.getElementById( "log_session_only" ).checked;
+
+   try
+   {
+      localStorage.setItem( c_console_prefs_key, JSON.stringify( g_prefs ) );
+   }
+   catch( e )
+   {
+   }
+
+   if( g_prefs.log_session_only )
+      forget_earlier_sessions( );
+
+   render_storage( );
+}
+
+function set_log( entries )
+{
+   g_log = entries;
+   g_log_keys = { };
+
+   g_log.forEach( function( entry ) { g_log_keys[ entry.source + ":" + entry.id ] = true; } );
+
+   render_log( );
+}
+
+// NOTE: Ticked mid-session, what is already showing from an earlier session goes at once.
+// Linked, this console only ever lived in the current session, but the chat's entries came
+// from its replay - so those are dropped and asked for again, and the chat now sends only
+// the current session's.
+function forget_earlier_sessions( )
+{
+   if( g_linked )
+   {
+      set_log( g_log.filter( function( entry ) { return entry.source !== "chat"; } ) );
+
+      if( g_connected )
+         g_log_channel.postMessage( { kind: "replay", owner: g_source, viewer: g_self } );
+   }
+   else
+      set_log( g_log.filter( function( entry ) { return entry.session === g_session_seq; } ) );
+}
+
+// NOTE: When the session ends. The log is only ever in memory, so a reload clears it
+// anyway - this is for signing out and a different account signing in on the same page.
+function end_log_session( )
+{
+   ++g_session_seq;
+
+   if( g_prefs.log_session_only )
+      do_clear_log( );
+}
+
 function add_console_entry( entry )
 {
    entry.id = ++g_log_counter;
+   entry.session = g_session_seq;
 
    add_log_entry( entry );
 
