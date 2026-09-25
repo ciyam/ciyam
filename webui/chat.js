@@ -452,7 +452,7 @@ function enter_chat( )
 
    document.getElementById( "topbar_user" ).textContent = ciyam.username || ciyam.access;
    document.getElementById( "topbar_role" ).textContent = ciyam.is_admin ? "· admin" : "· standard";
-   document.getElementById( "topbar_session" ).textContent = "session " + ciyam.sessid;
+   document.getElementById( "user_menu_session" ).textContent = "session " + ciyam.sessid;
    document.getElementById( "console_session" ).textContent = "inherits chat session " + ciyam.sessid;
 
    render_user_badge( );
