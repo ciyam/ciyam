@@ -2015,8 +2015,67 @@ function install_request_log( )
    {
       var data = event.data;
 
-      if( ( data !== null ) && ( typeof data === "object" ) && ( data.kind === "replay" ) && ( data.owner === String( g_self ) ) )
+      if( ( data === null ) || ( typeof data !== "object" ) || ( data.owner !== String( g_self ) ) )
+         return;
+
+      if( data.kind === "replay" )
          g_log_channel.postMessage( { kind: "entries", owner: String( g_self ), viewer: data.viewer, entries: g_request_log } );
+      else if( data.kind === "request" )
+         proxy_console_request( data );
+   } );
+}
+
+// NOTE: A linked console shares this session, and the server keeps one command slot and one
+// output file per access and device - so two requests in flight on the session at once can
+// each receive the other's response (ISS-020). The console therefore sends its requests
+// here, and they join this tab's queue like any other. Not logged as "chat": the console
+// logs them itself, as its own.
+function proxy_console_request( data )
+{
+   function reply( response )
+   {
+      g_log_channel.postMessage( { kind: "response", owner: String( g_self ), viewer: data.viewer, id: data.id, response: response } );
+   }
+
+   var methods = [ "GET", "POST", "PUT", "DELETE" ];
+
+   if( ( ciyam.sessid === "" ) || ( typeof data.url !== "string" )
+    || ( data.url.indexOf( ciyam.get_cws_url( ) ) !== 0 ) || ( methods.indexOf( data.method ) < 0 ) )
+   {
+      reply( null );
+
+      return;
+   }
+
+   serialised( function( )
+   {
+      return new Promise( function( resolve )
+      {
+         var answered = false;
+
+         g_request_quiet = true;
+
+         var pending = ciyam.fetch( data.url, data.method, function( response )
+         {
+            answered = true;
+
+            reply( String( response ) );
+
+            resolve( );
+         } );
+
+         g_request_quiet = false;
+
+         pending.then( function( )
+         {
+            if( !answered )
+            {
+               reply( null );
+
+               resolve( );
+            }
+         } );
+      } );
    } );
 }
 

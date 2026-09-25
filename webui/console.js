@@ -23,6 +23,8 @@ const c_retain_full = "full";
 const c_announce_interval = 2000;
 const c_max_announces = 30;
 
+const c_linked_request_timeout = 30000;
+
 const c_output_line_limit = 40;
 
 const c_log_limit = 500;
@@ -84,6 +86,9 @@ var g_log_filter = "all";
 
 var g_quiet = false;
 var g_queue = Promise.resolve( );
+
+var g_linked_request_id = 0;
+var g_linked_pending = { };
 
 var g_script_depth = 0;
 var g_stop_requested = false;
@@ -257,7 +262,9 @@ function on_log_message( event )
    if( !g_linked || ( data === null ) || ( typeof data !== "object" ) || ( data.owner !== g_source ) )
       return;
 
-   if( data.kind === "entry" )
+   if( ( data.kind === "response" ) && ( data.viewer === g_self ) && g_linked_pending[ data.id ] )
+      g_linked_pending[ data.id ]( ( data.response === null ) ? null : String( data.response ) );
+   else if( data.kind === "entry" )
       add_log_entry( data.entry );
    else if( ( data.kind === "entries" ) && ( data.viewer === g_self ) && Array.isArray( data.entries ) )
       data.entries.forEach( add_log_entry );
@@ -766,8 +773,15 @@ function delay( ms )
 
 // NOTE: One request at a time, in the order they were asked for. "quiet" is set just as
 // the request starts, which is when the log capture asks whether to record it.
+//
+// Linked, the request goes to the chat to send instead: the server keeps one command slot
+// per access and device, so this console and the chat must never have requests in flight
+// on the shared session at the same time (ISS-020). The chat queues them with its own.
 function send_request( method, url, quiet )
 {
+   if( g_linked )
+      return send_linked_request( method, url, quiet );
+
    var job = g_queue.then( function( )
    {
       return new Promise( function( resolve )
@@ -792,6 +806,37 @@ function send_request( method, url, quiet )
    g_queue = job.catch( function( ) { } );
 
    return job;
+}
+
+function send_linked_request( method, url, quiet )
+{
+   var id = ++g_linked_request_id;
+
+   var started = new Date( );
+
+   return new Promise( function( resolve )
+   {
+      var timer = window.setTimeout( function( ) { finish( null ); }, c_linked_request_timeout );
+
+      function finish( response )
+      {
+         if( !g_linked_pending[ id ] )
+            return;
+
+         delete g_linked_pending[ id ];
+
+         window.clearTimeout( timer );
+
+         if( !quiet )
+            add_console_entry( make_log_entry( "console", method, url, null, response, started, new Date( ) ) );
+
+         resolve( response );
+      }
+
+      g_linked_pending[ id ] = finish;
+
+      g_log_channel.postMessage( { kind: "request", owner: g_source, viewer: g_self, id: id, method: method, url: url } );
+   } );
 }
 
 function session_info( )
