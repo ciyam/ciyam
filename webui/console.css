@@ -1,0 +1,1048 @@
+/* Copyright (c) 2026 CIYAM Developers
+ *
+ * Distributed under the MIT/X11 software license, please refer to the file license.txt
+ * in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+ */
+
+/* ====================================================================
+   Developer console styles.
+
+   Requires "tokens.css" and then "chat_tokens.css", whose console surface
+   tokens this builds on. Classes are prefixed "console-" so nothing here
+   can collide with the chat's "chat-" or the shared "c-" classes.
+
+   NOTE: The console is a dark surface in both themes, like the drawer
+   it sits in - it is a different material, not a dark theme.
+   ==================================================================== */
+
+:root
+{
+   /* NOTE: Local to the console - the three states the chat tokens do not
+      name. Values are the ones agreed in the design mock. */
+   --console-err: #e2726e;
+   --console-warn: #d6a44c;
+   --console-err-border: rgba(226, 114, 110, 0.5);
+   --console-ok-border: rgba(76, 195, 138, 0.35);
+
+   color-scheme: dark;
+}
+
+*,
+*::before,
+*::after
+{
+   box-sizing: border-box;
+}
+
+html,
+body
+{
+   height: 100%;
+}
+
+body
+{
+   margin: 0;
+   background: var(--color-console-bg);
+   color: var(--color-console-text);
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-small);
+   line-height: 1.55;
+}
+
+[hidden]
+{
+   display: none !important;
+}
+
+button,
+input,
+select,
+textarea
+{
+   font: inherit;
+   color: inherit;
+}
+
+:focus-visible
+{
+   outline: 2px solid var(--color-console-accent);
+   outline-offset: 2px;
+}
+
+code
+{
+   color: var(--color-console-accent);
+}
+
+.console-sr-only
+{
+   position: absolute;
+   width: 1px;
+   height: 1px;
+   overflow: hidden;
+   clip: rect(0 0 0 0);
+   white-space: nowrap;
+}
+
+/* ====================================================================
+   Shell
+   ==================================================================== */
+
+.console-app
+{
+   display: flex;
+   flex-direction: column;
+   height: 100vh;
+}
+
+.console-titlebar
+{
+   flex: none;
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   flex-wrap: wrap;
+   padding: 9px 14px;
+   background: var(--color-console-bg-deep);
+   border-bottom: 1px solid var(--color-console-border);
+   font-size: var(--font-size-chat-tiny);
+}
+
+.console-app.is-embedded .console-titlebar
+{
+   display: none;
+}
+
+.console-dot
+{
+   width: 8px;
+   height: 8px;
+   border-radius: var(--radius-circle);
+   background: var(--color-console-ok);
+   flex: none;
+}
+
+.console-dot.is-idle
+{
+   background: var(--color-console-text-muted);
+}
+
+.console-name
+{
+   color: var(--color-console-text-bright);
+   font-weight: 500;
+}
+
+.console-sep
+{
+   color: var(--color-console-text-muted);
+}
+
+.console-meta
+{
+   color: var(--color-console-text-faint);
+   overflow-wrap: anywhere;
+}
+
+.console-role
+{
+   margin-left: auto;
+   color: var(--color-console-accent);
+   border: 1px solid var(--color-console-border-strong);
+   border-radius: 3px;
+   padding: 1px 7px;
+}
+
+.console-role.is-idle
+{
+   color: var(--color-console-text-faint);
+}
+
+.console-main
+{
+   flex: 1;
+   min-height: 0;
+   display: flex;
+   flex-direction: column;
+}
+
+.console-statusbar
+{
+   flex: none;
+   display: flex;
+   gap: 18px;
+   flex-wrap: wrap;
+   padding: 7px 14px;
+   background: var(--color-console-bg-bar);
+   border-top: 1px solid var(--color-console-border);
+   font-size: var(--font-size-chat-nano);
+   color: var(--color-console-text-muted);
+}
+
+.console-statusbar b
+{
+   font-weight: 500;
+   color: var(--color-console-text-faint);
+}
+
+/* ====================================================================
+   Tabs and panels
+   ==================================================================== */
+
+.console-tabs
+{
+   flex: none;
+   display: flex;
+   background: var(--color-console-bg-bar);
+   border-bottom: 1px solid var(--color-console-border);
+   overflow-x: auto;
+}
+
+.console-tab
+{
+   appearance: none;
+   background: none;
+   border: 0;
+   border-right: 1px solid var(--color-console-border);
+   border-bottom: 2px solid transparent;
+   color: var(--color-console-text-dim);
+   font-size: var(--font-size-chat-tiny);
+   padding: 9px 16px;
+   cursor: pointer;
+   white-space: nowrap;
+}
+
+.console-tab:hover
+{
+   color: var(--color-console-text-bright);
+   background: var(--color-console-bg-active);
+}
+
+.console-tab[aria-selected="true"]
+{
+   color: var(--color-console-text-bright);
+   background: var(--color-console-bg);
+   border-bottom-color: var(--color-console-accent);
+}
+
+.console-tab:focus-visible
+{
+   outline-offset: -2px;
+}
+
+.console-count
+{
+   color: var(--color-console-text-muted);
+   margin-left: 6px;
+   font-variant-numeric: tabular-nums;
+}
+
+.console-panel
+{
+   flex: 1;
+   min-height: 0;
+   overflow: auto;
+   padding: 14px;
+}
+
+/* NOTE: The Console panel does not scroll as a whole - the scrollback does, so the
+   prompt stays put at the bottom. */
+.console-panel--console
+{
+   display: flex;
+   flex-direction: column;
+   overflow: hidden;
+}
+
+.console-note
+{
+   margin: 0 0 14px;
+   max-width: 76ch;
+   color: var(--color-console-text-faint);
+   font-size: var(--font-size-chat-tiny);
+   line-height: 1.6;
+}
+
+.console-empty
+{
+   color: var(--color-console-text-muted);
+   font-size: var(--font-size-chat-tiny);
+}
+
+.console-error
+{
+   margin: 10px 0 0;
+   min-height: 1em;
+   color: var(--console-err);
+   font-size: var(--font-size-chat-tiny);
+}
+
+.console-error:empty
+{
+   display: none;
+}
+
+.console-table-wrap
+{
+   overflow-x: auto;
+}
+
+/* ====================================================================
+   Console tab
+   ==================================================================== */
+
+.console-scrollback
+{
+   flex: 1;
+   min-height: 0;
+   overflow-y: auto;
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+}
+
+.console-line
+{
+   white-space: pre-wrap;
+   overflow-wrap: anywhere;
+}
+
+.console-line.is-cmd
+{
+   color: var(--color-console-text-bright);
+   margin-top: 10px;
+}
+
+.console-line.is-cmd::before
+{
+   content: "> ";
+   color: var(--color-console-accent);
+}
+
+.console-line.is-dim
+{
+   color: var(--color-console-text-faint);
+}
+
+.console-line.is-ok
+{
+   color: var(--color-console-ok);
+}
+
+.console-line.is-err
+{
+   color: var(--console-err);
+}
+
+.console-line.is-warn
+{
+   color: var(--console-warn);
+}
+
+.console-expander
+{
+   align-self: flex-start;
+   appearance: none;
+   background: none;
+   border: 1px dashed var(--color-console-border-strong);
+   border-radius: 3px;
+   color: var(--color-console-text-dim);
+   font-size: var(--font-size-chat-nano);
+   padding: 1px 8px;
+   margin: 2px 0;
+   cursor: pointer;
+}
+
+.console-expander:hover
+{
+   color: var(--color-console-text-bright);
+}
+
+.console-prompt
+{
+   flex: none;
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   margin-top: 12px;
+   padding-top: 12px;
+   border-top: 1px solid var(--color-console-rule);
+}
+
+.console-chev
+{
+   color: var(--color-console-accent);
+}
+
+.console-prompt input
+{
+   flex: 1;
+   min-width: 0;
+   background: none;
+   border: 0;
+   color: var(--color-console-text-bright);
+   padding: 2px 0;
+}
+
+.console-prompt input:focus
+{
+   outline: none;
+}
+
+.console-prompt input:disabled
+{
+   color: var(--color-console-text-muted);
+}
+
+.console-hint
+{
+   color: var(--color-console-text-muted);
+   font-size: var(--font-size-chat-nano);
+   white-space: nowrap;
+}
+
+/* ====================================================================
+   Chips and form fields
+   ==================================================================== */
+
+.console-bar
+{
+   display: flex;
+   gap: 8px;
+   flex-wrap: wrap;
+   align-items: center;
+   margin-top: 12px;
+}
+
+.console-chip
+{
+   appearance: none;
+   background: none;
+   font-size: var(--font-size-chat-nano);
+   color: var(--color-console-text-dim);
+   cursor: pointer;
+   border: 1px solid var(--color-console-border-strong);
+   border-radius: 3px;
+   padding: 2px 10px;
+   text-decoration: none;
+   white-space: nowrap;
+}
+
+.console-chip:hover
+{
+   color: var(--color-console-text-bright);
+   background: var(--color-console-bg-active);
+}
+
+.console-chip[aria-pressed="true"],
+.console-chip.is-solid
+{
+   color: var(--color-console-bg-deep);
+   background: var(--color-console-accent);
+   border-color: var(--color-console-accent);
+}
+
+.console-chip.is-danger
+{
+   color: var(--console-err);
+   border-color: var(--console-err-border);
+}
+
+.console-chip:disabled
+{
+   opacity: 0.45;
+   cursor: not-allowed;
+}
+
+.console-sfield
+{
+   background: var(--color-console-bg-deep);
+   color: var(--color-console-text-bright);
+   border: 1px solid var(--color-console-border-strong);
+   border-radius: 3px;
+   font-size: var(--font-size-chat-tiny);
+   padding: 5px 9px;
+   width: 100%;
+}
+
+.console-sfield:disabled,
+.console-sfield:read-only
+{
+   color: var(--color-console-text-faint);
+}
+
+.console-sfield:focus
+{
+   outline: 2px solid var(--color-console-accent);
+   outline-offset: -1px;
+}
+
+.console-slabel
+{
+   color: var(--color-console-text-dim);
+   font-size: var(--font-size-chat-tiny);
+}
+
+/* ====================================================================
+   Sign in and waiting
+   ==================================================================== */
+
+.console-signin
+{
+   flex: 1;
+   overflow: auto;
+   padding: 24px 14px;
+   max-width: 560px;
+}
+
+.console-signin-grid
+{
+   display: grid;
+   grid-template-columns: 96px 1fr;
+   gap: 10px 14px;
+   align-items: center;
+}
+
+.console-foot
+{
+   margin: 18px 0 0;
+   color: var(--color-console-text-faint);
+   font-size: var(--font-size-chat-nano);
+   line-height: 1.6;
+}
+
+.console-waiting
+{
+   flex: 1;
+   padding: 24px 14px;
+   color: var(--color-console-text-faint);
+}
+
+/* ====================================================================
+   Log tab
+   ==================================================================== */
+
+.console-filterbar
+{
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   flex-wrap: wrap;
+   padding-bottom: 12px;
+   margin-bottom: 4px;
+   border-bottom: 1px solid var(--color-console-rule);
+}
+
+.console-flabel
+{
+   color: var(--color-console-text-muted);
+   font-size: 10px;
+   text-transform: uppercase;
+   letter-spacing: 0.07em;
+}
+
+.console-fnote
+{
+   color: var(--color-console-text-muted);
+   font-size: var(--font-size-chat-nano);
+   margin-left: auto;
+}
+
+.console-logtable,
+.console-kv
+{
+   width: 100%;
+   border-collapse: collapse;
+   font-size: var(--font-size-chat-tiny);
+}
+
+.console-logtable th,
+.console-kv th
+{
+   text-align: left;
+   font-weight: 500;
+   color: var(--color-console-text-muted);
+   text-transform: uppercase;
+   letter-spacing: 0.07em;
+   font-size: 10px;
+   padding: 8px 10px 8px 0;
+   border-bottom: 1px solid var(--color-console-rule);
+   white-space: nowrap;
+}
+
+.console-logtable td,
+.console-kv td
+{
+   padding: 7px 10px 7px 0;
+   border-bottom: 1px solid var(--color-console-border-subtle);
+   vertical-align: top;
+   font-variant-numeric: tabular-nums;
+}
+
+.console-logtable .is-num,
+.console-kv .is-num
+{
+   text-align: right;
+}
+
+.console-logrow
+{
+   cursor: pointer;
+}
+
+.console-logrow:hover td
+{
+   background: var(--color-console-bg-active);
+}
+
+.console-logrow .console-when,
+.console-logrow .console-ms
+{
+   color: var(--color-console-text-faint);
+}
+
+.console-logrow .console-verb
+{
+   color: var(--color-console-accent);
+}
+
+.console-logrow .console-path
+{
+   word-break: break-all;
+}
+
+.console-reqsum
+{
+   color: var(--color-console-text-faint);
+   white-space: pre;
+}
+
+.console-twist
+{
+   color: var(--color-console-text-muted);
+   width: 1em;
+}
+
+.console-src
+{
+   font-size: 10px;
+   text-transform: uppercase;
+   letter-spacing: 0.06em;
+   color: var(--color-console-text-muted);
+   border: 1px solid var(--color-console-border);
+   border-radius: 3px;
+   padding: 0 5px;
+}
+
+.console-result
+{
+   display: inline-block;
+   min-width: 3.2em;
+   border-radius: 3px;
+   padding: 0 5px;
+   font-size: var(--font-size-chat-nano);
+   text-align: center;
+   color: var(--color-console-ok);
+   border: 1px solid var(--console-ok-border);
+}
+
+.console-result.is-err
+{
+   color: var(--console-err);
+   border-color: var(--console-err-border);
+}
+
+.console-detail td
+{
+   background: var(--color-console-bg-deep);
+   padding: 0;
+}
+
+.console-pair
+{
+   display: grid;
+   grid-template-columns: 76px 1fr;
+   gap: 4px 12px;
+   padding: 12px 14px;
+}
+
+.console-pair .console-k
+{
+   color: var(--color-console-text-muted);
+   font-size: 10px;
+   text-transform: uppercase;
+   letter-spacing: 0.07em;
+}
+
+.console-pair .console-v
+{
+   white-space: pre-wrap;
+   overflow-wrap: anywhere;
+   max-height: 18em;
+   overflow-y: auto;
+}
+
+.console-pair .console-v.is-ok
+{
+   color: var(--color-console-ok);
+}
+
+.console-pair .console-v.is-err
+{
+   color: var(--console-err);
+}
+
+/* ====================================================================
+   Scripts tab
+   ==================================================================== */
+
+.console-cols
+{
+   display: grid;
+   grid-template-columns: 260px 1fr;
+   min-height: 100%;
+}
+
+.console-list
+{
+   border-right: 1px solid var(--color-console-rule);
+   padding-right: 12px;
+   display: flex;
+   flex-direction: column;
+   gap: 1px;
+}
+
+.console-body
+{
+   padding-left: 16px;
+   min-width: 0;
+}
+
+.console-listhead
+{
+   display: block;
+   color: var(--color-console-text-muted);
+   font-size: 10px;
+   text-transform: uppercase;
+   letter-spacing: 0.07em;
+   padding: 14px 8px 6px;
+   border-bottom: 1px solid var(--color-console-rule);
+   margin-bottom: 4px;
+}
+
+.console-listhead:first-child
+{
+   padding-top: 0;
+}
+
+.console-gate
+{
+   float: right;
+   text-transform: none;
+   letter-spacing: 0;
+   color: var(--color-console-accent);
+}
+
+.console-item
+{
+   appearance: none;
+   background: none;
+   border: 0;
+   width: 100%;
+   text-align: left;
+   font-size: var(--font-size-chat-tiny);
+   color: var(--color-console-text-dim);
+   padding: 6px 8px;
+   border-radius: 3px;
+   cursor: pointer;
+   overflow-wrap: anywhere;
+}
+
+.console-item:hover,
+.console-item[aria-current="true"]
+{
+   background: var(--color-console-bg-active);
+   color: var(--color-console-text-bright);
+}
+
+.console-item.is-new
+{
+   color: var(--color-console-accent);
+}
+
+.console-sub
+{
+   display: block;
+   color: var(--color-console-text-muted);
+   font-size: var(--font-size-chat-nano);
+}
+
+.console-more
+{
+   color: var(--color-console-text-muted);
+   font-size: var(--font-size-chat-nano);
+   padding: 8px;
+   margin: 0;
+}
+
+.console-more:empty
+{
+   display: none;
+}
+
+.console-script-name
+{
+   margin: 4px 0 10px;
+   max-width: 34rem;
+}
+
+.console-scriptbox
+{
+   width: 100%;
+   min-height: 180px;
+   resize: vertical;
+   background: var(--color-console-bg-deep);
+   color: var(--color-console-text);
+   border: 1px solid var(--color-console-border-strong);
+   border-radius: 3px;
+   font-size: var(--font-size-chat-tiny);
+   line-height: 1.7;
+   padding: 10px 12px;
+}
+
+.console-scriptbox:focus
+{
+   outline: 2px solid var(--color-console-accent);
+   outline-offset: -1px;
+}
+
+.console-script-title
+{
+   margin: 0 0 12px;
+   font-size: var(--font-size-chat-body);
+   font-weight: 500;
+   color: var(--color-console-text-bright);
+}
+
+.console-argform
+{
+   display: grid;
+   grid-template-columns: 150px 1fr;
+   gap: 8px 14px;
+   align-items: center;
+   margin-bottom: 14px;
+}
+
+.console-runline
+{
+   padding: 10px 12px;
+   background: var(--color-console-bg-deep);
+   border: 1px solid var(--color-console-border);
+   border-radius: 3px;
+}
+
+.console-preview
+{
+   font-size: var(--font-size-chat-tiny);
+   word-break: break-all;
+}
+
+.console-confirm
+{
+   display: flex;
+   gap: 8px;
+   align-items: flex-start;
+   margin: 12px 0 0;
+   color: var(--console-warn);
+   font-size: var(--font-size-chat-tiny);
+   border-left: 2px solid var(--console-warn);
+   padding-left: 10px;
+}
+
+/* ====================================================================
+   Variables and storage
+   ==================================================================== */
+
+.console-kv .console-k
+{
+   color: var(--color-console-text-bright);
+   white-space: nowrap;
+}
+
+.console-kv .console-v
+{
+   word-break: break-all;
+   white-space: pre-wrap;
+}
+
+.console-kv .console-by
+{
+   color: var(--color-console-text-muted);
+   white-space: nowrap;
+}
+
+.console-vedit
+{
+   background: var(--color-console-bg-deep);
+   color: var(--color-console-text-bright);
+   border: 1px solid var(--color-console-border);
+   border-radius: 3px;
+   font-size: var(--font-size-chat-tiny);
+   padding: 2px 7px;
+   width: 100%;
+   max-width: 34rem;
+}
+
+.console-vedit:focus
+{
+   outline: 2px solid var(--color-console-accent);
+   outline-offset: -1px;
+}
+
+.console-vedit::placeholder
+{
+   color: var(--color-console-text-muted);
+}
+
+/* ====================================================================
+   Palette
+   ==================================================================== */
+
+.console-scrim
+{
+   position: fixed;
+   inset: 0;
+   display: flex;
+   justify-content: center;
+   align-items: flex-start;
+   padding: 8vh 16px 16px;
+   background: rgba(8, 10, 14, 0.55);
+   z-index: 10;
+}
+
+.console-palette
+{
+   width: 100%;
+   max-width: 620px;
+   background: var(--color-console-bg-bar);
+   border: 1px solid var(--color-console-border-strong);
+   border-radius: 6px;
+   box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.6);
+   overflow: hidden;
+}
+
+.console-palette input
+{
+   width: 100%;
+   background: var(--color-console-bg-deep);
+   border: 0;
+   border-bottom: 1px solid var(--color-console-border);
+   color: var(--color-console-text-bright);
+   padding: 12px 14px;
+}
+
+.console-palette input:focus
+{
+   outline: none;
+}
+
+.console-palette-list
+{
+   list-style: none;
+   margin: 0;
+   padding: 4px 0;
+   max-height: 50vh;
+   overflow-y: auto;
+}
+
+.console-palette-list li
+{
+   display: flex;
+   gap: 12px;
+   justify-content: space-between;
+   padding: 7px 14px;
+   cursor: pointer;
+}
+
+.console-palette-list li[aria-selected="true"]
+{
+   background: var(--color-console-bg-active);
+}
+
+.console-palette-cmd
+{
+   color: var(--color-console-text-bright);
+   overflow-wrap: anywhere;
+}
+
+.console-palette-desc
+{
+   color: var(--color-console-text-muted);
+   font-size: var(--font-size-chat-nano);
+   text-align: right;
+}
+
+.console-palette-foot
+{
+   margin: 0;
+   padding: 7px 14px;
+   border-top: 1px solid var(--color-console-border);
+   color: var(--color-console-text-muted);
+   font-size: var(--font-size-chat-nano);
+}
+
+/* ====================================================================
+   Narrow screens
+   ==================================================================== */
+
+@media (max-width: 720px)
+{
+   .console-cols
+   {
+      grid-template-columns: 1fr;
+   }
+
+   .console-list
+   {
+      border-right: 0;
+      border-bottom: 1px solid var(--color-console-rule);
+      padding: 0 0 12px;
+      margin-bottom: 12px;
+   }
+
+   .console-body
+   {
+      padding-left: 0;
+   }
+
+   .console-fnote
+   {
+      margin-left: 0;
+      flex-basis: 100%;
+   }
+
+   .console-hint
+   {
+      display: none;
+   }
+}
+
+@media (max-width: 520px)
+{
+   .console-signin-grid,
+   .console-argform
+   {
+      grid-template-columns: 1fr;
+      gap: 4px;
+   }
+}
+
+@media (prefers-reduced-motion: reduce)
+{
+   *
+   {
+      transition: none !important;
+      animation: none !important;
+   }
+}

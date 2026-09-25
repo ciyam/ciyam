@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2026 CIYAM Developers
+
+Distributed under the MIT/X11 software license, please refer to the file
+license.txt in the root project directory or
+http://www.opensource.org/licenses/mit-license.php.
+-->
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+   <meta http-equiv="Expires" content="0"/>
+   <meta http-equiv="Pragma" content="no-cache"/>
+   <meta http-equiv="Cache-Control" content="no-cache"/>
+   <meta http-equiv="Cache-Control" content="no-store"/>
+
+   <title>CIYAM Console</title>
+
+   <!--
+   NOTE: Fonts are self-hosted, as for the chat. There are no external
+   requests from this page.
+   -->
+   <link rel="stylesheet" href="fonts.css">
+
+   <link rel="stylesheet" href="tokens.css">
+   <link rel="stylesheet" href="chat_tokens.css">
+   <link rel="stylesheet" href="console.css">
+
+   <script type="text/javascript" src="ciyam.js"></script>
+   <script type="text/javascript" src="sha2.min.js"></script>
+   <script type="text/javascript" src="chat_parse.js"></script>
+   <script type="text/javascript" src="console_parse.js"></script>
+</head>
+
+<body onload="load( )">
+   <div id="console_content"></div>
+
+   <script>
+   const c_load_delay = 50;
+
+   const c_max_load_attempts = 100;
+
+   var g_load_attempts = 0;
+
+   var ciyam = new CIYAM( window.location.protocol + "//" + window.location.host, false, true );
+
+   function load_form( name )
+   {
+      return fetch( name + ".form?" + Date.now( ) )
+       .then( function( response ) { return response.text( ); } )
+       .then( function( data )
+       {
+          document.getElementById( "console_content" ).innerHTML = data;
+       } );
+   }
+
+   // NOTE: Keyed by the file's own "Last-Modified", as "chat.html" does and for the same
+   // reasons - see "load_main_js( )" there.
+   function load_main_js( name )
+   {
+      function append_script( key )
+      {
+         var script = document.createElement( "script" );
+
+         script.src = name + ".js?" + encodeURIComponent( key );
+
+         script.setAttribute( "id", name );
+
+         document.body.appendChild( script );
+      }
+
+      fetch( name + ".js", { method: "HEAD" } )
+       .then( function( response )
+       {
+          return response.headers.get( "Last-Modified" ) || String( Date.now( ) );
+       } )
+       .catch( function( ) { return String( Date.now( ) ); } )
+       .then( append_script );
+   }
+
+   function call_at_load( )
+   {
+      if( typeof window[ "console_main" ] === "function" )
+         console_main( );
+      else if( ++g_load_attempts <= c_max_load_attempts )
+         window.setTimeout( call_at_load, c_load_delay );
+      else
+         document.getElementById( "console_content" ).textContent = "(failed to load console.js)";
+   }
+
+   // NOTE: The markup is in place before the script is appended, so "console_main( )" never
+   // runs against an empty page.
+   function load( )
+   {
+      load_form( "console" ).then( function( )
+      {
+         load_main_js( "console" );
+
+         window.setTimeout( call_at_load, c_load_delay );
+      } );
+   }
+   </script>
+</body>
+
+</html>

@@ -1,0 +1,239 @@
+<!--
+Copyright (c) 2026 CIYAM Developers
+
+Distributed under the MIT/X11 software license, please refer to the file
+license.txt in the root project directory or
+http://www.opensource.org/licenses/mit-license.php.
+-->
+<div class="console-app" id="console_app">
+
+   <!-- ================================================================
+        Title bar - hidden when embedded in the chat, whose drawer bar
+        already says which session this is.
+        ================================================================ -->
+   <header class="console-titlebar" id="console_titlebar">
+      <span class="console-dot is-idle" id="title_dot"></span>
+      <span class="console-name">cws</span>
+      <span class="console-sep">&middot;</span>
+      <span class="console-meta" id="title_host"></span>
+      <span class="console-sep" id="title_session_sep" hidden>&middot;</span>
+      <span class="console-meta" id="title_session" hidden></span>
+      <span class="console-role is-idle" id="title_role">not connected</span>
+      <button type="button" class="console-chip" id="title_disconnect" onclick="do_disconnect( )" hidden>Sign out</button>
+   </header>
+
+   <!-- ================================================================
+        Standalone sign in - never shown when linked to the chat.
+        ================================================================ -->
+   <section class="console-signin" id="signin_view" hidden>
+      <form class="console-signin-grid" id="signin_form" onsubmit="do_connect( ); return false;">
+         <label class="console-slabel" for="signin_account">Account</label>
+         <select class="console-sfield" id="signin_account" onchange="do_select_account( )">
+            <option value="">Enter an account PIN&hellip;</option>
+         </select>
+
+         <label class="console-slabel" for="signin_pin" id="signin_pin_label">PIN</label>
+         <input class="console-sfield" id="signin_pin" type="text" inputmode="numeric" autocomplete="off" spellcheck="false">
+
+         <label class="console-slabel" for="signin_password">Password</label>
+         <input class="console-sfield" id="signin_password" type="password" autocomplete="current-password">
+
+         <label class="console-slabel" for="signin_retain">Remember</label>
+         <select class="console-sfield" id="signin_retain">
+            <option value="none">Nothing &mdash; forget this account</option>
+            <option value="access">The PIN only</option>
+            <option value="full">The PIN and the password</option>
+         </select>
+
+         <span></span>
+         <div class="console-bar">
+            <button type="submit" class="console-chip is-solid" id="signin_connect">Connect</button>
+            <a class="console-chip" href="chat.html">Open chat instead</a>
+         </div>
+      </form>
+
+      <p class="console-error" id="signin_error" role="alert"></p>
+
+      <p class="console-foot">Uses the same saved accounts as the chat, so an account saved in
+      one is offered by the other. No registration here &mdash; a developer tool is not where an
+      account is created.</p>
+   </section>
+
+   <!-- ================================================================
+        Linked, waiting for the chat to hand over its session.
+        ================================================================ -->
+   <section class="console-waiting" id="waiting_view" hidden>
+      <p id="waiting_text">Waiting for the chat to share its session&hellip;</p>
+   </section>
+
+   <!-- ================================================================
+        The console proper.
+        ================================================================ -->
+   <section class="console-main" id="main_view" hidden>
+      <div class="console-tabs" role="tablist" aria-label="Console views">
+         <button type="button" class="console-tab" role="tab" id="tab_console" aria-controls="panel_console" aria-selected="true">Console</button>
+         <button type="button" class="console-tab" role="tab" id="tab_log" aria-controls="panel_log" aria-selected="false" tabindex="-1">Log <span class="console-count" id="count_log">0</span></button>
+         <button type="button" class="console-tab" role="tab" id="tab_scripts" aria-controls="panel_scripts" aria-selected="false" tabindex="-1">Scripts</button>
+         <button type="button" class="console-tab" role="tab" id="tab_vars" aria-controls="panel_vars" aria-selected="false" tabindex="-1">Variables <span class="console-count" id="count_vars">0</span></button>
+         <button type="button" class="console-tab" role="tab" id="tab_storage" aria-controls="panel_storage" aria-selected="false" tabindex="-1">Storage <span class="console-count" id="count_storage">0</span></button>
+      </div>
+
+      <!-- ---------------------------------------------------- console -->
+      <div class="console-panel console-panel--console" id="panel_console" role="tabpanel" aria-labelledby="tab_console">
+         <div class="console-scrollback" id="scrollback" role="log" aria-live="polite"></div>
+
+         <form class="console-prompt" id="prompt_form" onsubmit="do_submit_prompt( ); return false;">
+            <span class="console-chev" aria-hidden="true">&gt;</span>
+            <label for="prompt_input" class="console-sr-only">Command</label>
+            <input id="prompt_input" type="text" autocomplete="off" spellcheck="false" placeholder="status">
+            <span class="console-hint" id="prompt_hint">&uarr;&darr; history &middot; ctrl+k palette</span>
+         </form>
+      </div>
+
+      <!-- -------------------------------------------------------- log -->
+      <div class="console-panel" id="panel_log" role="tabpanel" aria-labelledby="tab_log" hidden>
+         <div class="console-filterbar">
+            <span class="console-flabel">Source</span>
+            <button type="button" class="console-chip" data-source="all" aria-pressed="true">All</button>
+            <button type="button" class="console-chip" data-source="chat" aria-pressed="false" id="filter_chat">Chat</button>
+            <button type="button" class="console-chip" data-source="console" aria-pressed="false">Console</button>
+            <button type="button" class="console-chip" onclick="do_clear_log( )">Clear</button>
+            <span class="console-fnote">Polling is never logged &mdash; only requests something asked for.</span>
+         </div>
+
+         <div class="console-table-wrap">
+            <table class="console-logtable">
+               <thead>
+                  <tr>
+                     <th scope="col"><span class="console-sr-only">Expand</span></th>
+                     <th scope="col">Time</th>
+                     <th scope="col">Source</th>
+                     <th scope="col">Method</th>
+                     <th scope="col">Endpoint</th>
+                     <th scope="col">Result</th>
+                     <th scope="col" class="is-num">ms</th>
+                  </tr>
+               </thead>
+               <tbody id="log_body"></tbody>
+            </table>
+         </div>
+
+         <p class="console-empty" id="log_empty">Nothing logged yet.</p>
+      </div>
+
+      <!-- ---------------------------------------------------- scripts -->
+      <div class="console-panel" id="panel_scripts" role="tabpanel" aria-labelledby="tab_scripts" hidden>
+         <div class="console-cols">
+            <div class="console-list">
+               <span class="console-listhead">Saved here</span>
+               <div id="saved_scripts"></div>
+               <button type="button" class="console-item is-new" onclick="do_new_script( )">+ New script</button>
+
+               <span class="console-listhead">On the server <span class="console-gate">admin &middot; dev</span></span>
+               <div id="server_scripts"></div>
+               <p class="console-more" id="server_scripts_note"></p>
+            </div>
+
+            <div class="console-body">
+               <div id="script_editor">
+                  <p class="console-note">Type or paste a script and Run executes it line by line,
+                  switching to the Console so you can watch it. <code>{name}</code> substitutes a
+                  variable. Lines starting <code>#</code> are comments, and a run stops at the first
+                  error. Saved scripts are kept in this browser and shared by every account on it.</p>
+
+                  <label class="console-slabel" for="script_name">Name</label>
+                  <input class="console-sfield console-script-name" id="script_name" type="text" spellcheck="false" placeholder="new script">
+
+                  <label class="console-sr-only" for="script_body">Script body</label>
+                  <textarea class="console-scriptbox" id="script_body" spellcheck="false"></textarea>
+
+                  <div class="console-bar">
+                     <button type="button" class="console-chip is-solid" id="script_run" onclick="do_run_editor( )">Run</button>
+                     <button type="button" class="console-chip is-danger" id="script_stop" onclick="do_stop_script( )" hidden>Stop</button>
+                     <button type="button" class="console-chip" onclick="do_save_script( )">Save</button>
+                     <button type="button" class="console-chip" id="script_delete" onclick="do_delete_script( )" hidden>Delete</button>
+                  </div>
+
+                  <p class="console-error" id="script_error" role="alert"></p>
+               </div>
+
+               <div id="script_args" hidden>
+                  <p class="console-note">A CIYAM script from <code>manuscript.sio</code>. Its arguments
+                  come from <code>run_script *</code>, and the server refuses a missing or unknown one
+                  before anything executes.</p>
+
+                  <h3 class="console-script-title" id="args_title"></h3>
+
+                  <div class="console-argform" id="args_form"></div>
+
+                  <div class="console-runline">
+                     <code class="console-preview" id="args_preview"></code>
+                  </div>
+
+                  <label class="console-confirm" id="args_confirm_row" hidden>
+                     <input type="checkbox" id="args_confirm" onchange="update_args_preview( )">
+                     This is a system script and cannot be undone from here. Run it anyway.
+                  </label>
+
+                  <div class="console-bar">
+                     <button type="button" class="console-chip is-solid" id="args_run" onclick="do_run_server_script( )">Run this script</button>
+                     <button type="button" class="console-chip" onclick="show_script_editor( )">Cancel</button>
+                  </div>
+
+                  <p class="console-error" id="args_error" role="alert"></p>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <!-- -------------------------------------------------- variables -->
+      <div class="console-panel" id="panel_vars" role="tabpanel" aria-labelledby="tab_vars" hidden>
+         <p class="console-note">Client-side variables held by this console &mdash; what scripts
+         substitute as <code>{name}</code>. Edit a value in place, or use
+         <code>var &lt;name&gt; &lt;text&gt;</code> at the prompt. Session values are fixed.</p>
+
+         <div class="console-table-wrap">
+            <table class="console-kv">
+               <thead><tr><th scope="col">Name</th><th scope="col">Value</th><th scope="col">Set by</th></tr></thead>
+               <tbody id="vars_body"></tbody>
+            </table>
+         </div>
+
+         <p class="console-error" id="vars_error" role="alert"></p>
+      </div>
+
+      <!-- ---------------------------------------------------- storage -->
+      <div class="console-panel" id="panel_storage" role="tabpanel" aria-labelledby="tab_storage" hidden>
+         <p class="console-note">What this browser holds in <code>localStorage</code> for this
+         site, so the inspector is not needed. Read only. Saved scripts are kept here; the log and
+         the scrollback are not, because requests carry the access PIN and the device token.</p>
+
+         <div class="console-table-wrap">
+            <table class="console-kv">
+               <thead><tr><th scope="col">Key</th><th scope="col">Value</th><th scope="col" class="is-num">Bytes</th></tr></thead>
+               <tbody id="storage_body"></tbody>
+            </table>
+         </div>
+      </div>
+   </section>
+
+   <footer class="console-statusbar" id="statusbar">
+      <span><b>mode</b> <span id="status_mode">standalone</span></span>
+      <span><b>format</b> text</span>
+      <span><b>device</b> <span id="status_device">none</span></span>
+      <span><b>raw</b> <span id="status_raw">unknown</span></span>
+      <span><b>requests</b> <span id="status_requests">0</span></span>
+   </footer>
+
+   <!-- ================================================================
+        Command palette - ctrl+k.
+        ================================================================ -->
+   <div class="console-scrim" id="palette" hidden>
+      <div class="console-palette" role="dialog" aria-modal="true" aria-label="Command palette">
+         <label for="palette_input" class="console-sr-only">Filter commands</label>
+         <input id="palette_input" type="text" autocomplete="off" spellcheck="false" placeholder="Type to filter commands">
+         <ul class="console-palette-list" id="palette_list" role="listbox" aria-label="Commands"></ul>
+         <p class="console-palette-foot">&uarr;&darr; choose &middot; Enter insert &middot; Esc close</p>
+      </div>
+   </div>
+</div>
