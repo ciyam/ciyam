@@ -124,11 +124,6 @@ textarea
    font-weight: 600;
 }
 
-.chat-status-role
-{
-   color: var(--color-chat-text-faint);
-}
-
 .chat-dot
 {
    width: 7px;
@@ -241,11 +236,33 @@ button.chat-avatar:hover
    overflow-wrap: anywhere;
 }
 
-.chat-user-menu-meta
+/* NOTE: One per line and left aligned, under the centred initial and name. */
+.chat-user-menu-facts
 {
-   font-family: var(--font-family-chat-mono);
-   font-size: var(--font-size-chat-nano);
+   align-self: stretch;
+   margin: 4px 0 0;
+   display: grid;
+   gap: 2px;
+   text-align: left;
+   font-size: var(--font-size-chat-tiny);
+}
+
+.chat-user-menu-facts dt,
+.chat-user-menu-facts dd
+{
+   display: inline;
+   margin: 0;
+}
+
+.chat-user-menu-facts dt
+{
    color: var(--color-chat-text-faint);
+}
+
+.chat-user-menu-facts dd
+{
+   color: var(--color-chat-text-strong);
+   overflow-wrap: anywhere;
 }
 
 .chat-user-menu-item

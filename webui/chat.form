@@ -102,7 +102,6 @@ http://www.opensource.org/licenses/mit-license.php.
       <span class="chat-status">
          <span class="chat-dot"></span>
          Connected as <b id="topbar_user">&mdash;</b>
-         <span class="chat-status-role" id="topbar_role"></span>
       </span>
       <div class="chat-topbar-right">
          <span class="chat-busy" id="chat_busy" hidden title="Waiting for the server">
@@ -119,8 +118,14 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="chat-user-menu-head">
                   <span class="chat-avatar chat-avatar--large" id="user_menu_initial" aria-hidden="true"></span>
                   <b class="chat-user-menu-name" id="user_menu_name"></b>
-                  <span class="chat-user-menu-meta" id="user_menu_meta"></span>
-                  <span class="chat-user-menu-meta" id="user_menu_session"></span>
+                  <!-- NOTE: "Session type" is Ian's term - "c_session_type_admin" and
+                       "c_session_type_standard" in "ciyam.js". It belongs to the session: one
+                       opened with the admin PIN is "[adm]", any other "[std]". -->
+                  <dl class="chat-user-menu-facts">
+                     <div><dt>PIN:</dt> <dd class="chat-mono" id="user_menu_pin"></dd></div>
+                     <div><dt>Session type:</dt> <dd id="user_menu_type"></dd></div>
+                     <div><dt>Session:</dt> <dd class="chat-mono" id="user_menu_session"></dd></div>
+                  </dl>
                </div>
                <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_open_password_dialog( )">Change password&hellip;</button>
                <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_sign_out( )">Sign out</button>

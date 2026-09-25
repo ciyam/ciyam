@@ -451,8 +451,7 @@ function enter_chat( )
    document.getElementById( "chat_view" ).hidden = false;
 
    document.getElementById( "topbar_user" ).textContent = ciyam.username || ciyam.access;
-   document.getElementById( "topbar_role" ).textContent = ciyam.is_admin ? "· admin" : "· standard";
-   document.getElementById( "user_menu_session" ).textContent = "session " + ciyam.sessid;
+   document.getElementById( "user_menu_session" ).textContent = ciyam.sessid;
    document.getElementById( "console_session" ).textContent = "inherits chat session " + ciyam.sessid;
 
    render_user_badge( );
@@ -490,8 +489,8 @@ function render_user_badge( )
    avatar.setAttribute( "aria-label", "Account menu for " + name );
 
    document.getElementById( "user_menu_name" ).textContent = name;
-   document.getElementById( "user_menu_meta" ).textContent =
-    "PIN " + ciyam.access + " · " + ( ciyam.is_admin ? "admin" : "standard" );
+   document.getElementById( "user_menu_pin" ).textContent = ciyam.access;
+   document.getElementById( "user_menu_type" ).textContent = ciyam.is_admin ? "admin" : "standard";
 }
 
 function do_toggle_user_menu( )
