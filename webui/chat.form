@@ -178,7 +178,12 @@ http://www.opensource.org/licenses/mit-license.php.
             <span class="chat-invite-eyebrow">Invitation</span>
             <h2 id="invite_title"></h2>
             <p id="invite_text"></p>
-            <button type="button" class="chat-btn chat-btn--primary" id="invite_join" onclick="do_join_invitation( )">Join room</button>
+            <div class="chat-invite-actions">
+               <button type="button" class="chat-btn chat-btn--primary" id="invite_join" onclick="do_join_invitation( )">Join room</button>
+               <button type="button" class="chat-btn" id="invite_decline" onclick="do_decline_invitation( )">Decline</button>
+            </div>
+            <p class="chat-invite-warning" id="invite_decline_note" hidden>Declining cannot be undone -
+            the room cannot invite you again. Click Decline for good to confirm.</p>
          </div>
 
          <div class="chat-empty chat-loading" id="thread_loading" role="status" hidden>

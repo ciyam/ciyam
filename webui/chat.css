@@ -1001,6 +1001,27 @@ button.chat-avatar:hover
    color: var(--color-chat-text-secondary);
 }
 
+.chat-invite-actions
+{
+   display: flex;
+   gap: 10px;
+   justify-content: center;
+   align-items: center;
+}
+
+.chat-invite-actions .chat-btn:not(.chat-btn--primary)
+{
+   height: 44px;
+   padding: 0 18px;
+}
+
+.chat-invite-view .chat-invite-warning
+{
+   max-width: 38ch;
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-critical-text);
+}
+
 /* NOTE: The Room section, above Members in the right panel. */
 .chat-room-panel
 {

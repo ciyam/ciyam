@@ -1311,6 +1311,8 @@ function select_invitation( room )
 
    g_selected_invite = room;
 
+   disarm_decline( );
+
    document.getElementById( "invite_title" ).textContent = invite.name;
    document.getElementById( "invite_text" ).textContent = invite.inviter + " invited you to join this room.";
 
@@ -1319,6 +1321,81 @@ function select_invitation( room )
 
    render_members( true );
    render_rooms( true );
+}
+
+// NOTE: A decline cannot be taken back - the server refuses any later invitation to that
+// room for this user (Ian, 2026-09-26) - so the first click only arms it, and says so.
+const c_decline_confirm_ms = 5000;
+
+var g_decline_armed = 0;
+
+function disarm_decline( )
+{
+   g_decline_armed = 0;
+
+   document.getElementById( "invite_decline" ).textContent = "Decline";
+   document.getElementById( "invite_decline_note" ).hidden = true;
+}
+
+async function do_decline_invitation( )
+{
+   var invite = find_invitation( g_selected_invite );
+
+   if( invite === null )
+      return;
+
+   if( ( g_decline_armed === 0 ) || ( Date.now( ) - g_decline_armed > c_decline_confirm_ms ) )
+   {
+      g_decline_armed = Date.now( );
+
+      document.getElementById( "invite_decline" ).textContent = "Decline for good";
+      document.getElementById( "invite_decline_note" ).hidden = false;
+
+      window.setTimeout( function( )
+      {
+         if( ( g_decline_armed !== 0 ) && ( Date.now( ) - g_decline_armed >= c_decline_confirm_ms ) )
+            disarm_decline( );
+      }, c_decline_confirm_ms );
+
+      return;
+   }
+
+   disarm_decline( );
+
+   // NOTE: "messages delete <room>" - for someone only invited it declines; for a member
+   // it would leave the room.
+   var response = await new Promise( function( resolve )
+   {
+      serialised( function( )
+      {
+         return ciyam.delete_message_room( invite.room, function( r ) { resolve( String( r ) ); } );
+      } );
+   } );
+
+   if( is_error_response( response ) )
+   {
+      show_alert( error_text( response ), "is-error" );
+
+      return;
+   }
+
+   // NOTE: Drop it here at once. The server now answers it as ":ignore", so the next read of
+   // Administration keeps it gone; until then the old ":invite" must not bring it back.
+   g_invite_messages = g_invite_messages.filter( function( message )
+   {
+      return !( message.event && ( message.event.verb === "invite" ) && ( message.event.room === invite.room ) );
+   } );
+
+   g_invite_total = -1;
+   g_selected_invite = "";
+
+   refresh_invitations( );
+   show_thread_view( );
+   render_rooms( true );
+
+   show_alert( "Declined the invitation to " + invite.name + ".", "is-info" );
+
+   load_rooms( );
 }
 
 function do_join_invitation( )
@@ -1997,6 +2074,13 @@ function build_message( entry )
    return node;
 }
 
+function room_label( room )
+{
+   var entry = find_room( room );
+
+   return ( entry && entry.name ) ? ( entry.name + " (#" + room + ")" ) : ( "#" + room );
+}
+
 function build_notice( entry )
 {
    var node = document.getElementById( "tpl_notice" ).content.cloneNode( true );
@@ -2016,7 +2100,21 @@ function build_notice( entry )
 
    var detail = "";
 
-   if( ( event.verb === "rename" ) || ( event.verb === "assign" ) )
+   // NOTE: The server's own wording for an answered invitation - "invite for 0000002 was
+   // processed" - is told in the room's terms instead, with its name when this user knows it.
+   if( ( event.verb === "ignore" ) && event.room )
+   {
+      node.querySelector( ".chat-notice-verb" ).textContent = ":invite";
+
+      detail = " " + room_label( event.room ) + " - already answered";
+   }
+   else if( ( event.verb === "reject" ) && event.room )
+   {
+      node.querySelector( ".chat-notice-verb" ).textContent = ":declined";
+
+      detail = " the invitation to " + room_label( event.room );
+   }
+   else if( ( event.verb === "rename" ) || ( event.verb === "assign" ) )
       detail = " '" + ( event.from_name || "" ) + "' to '" + ( event.to_name || "" ) + "'";
    else if( ( event.verb === "invite" ) || ( event.verb === "create" ) )
       detail = " " + ( event.name || "" ) + " (#" + ( event.room || "" ) + ")";
