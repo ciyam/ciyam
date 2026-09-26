@@ -1751,7 +1751,7 @@ function handle_response( data )
          {
             started_session = true;
 
-            if( prefix == admin_session_name )
+            if( prefix.startsWith( admin_session_name ) )
                is_admin_session = true;
             else
                is_admin_session = false;
