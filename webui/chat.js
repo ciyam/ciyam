@@ -35,6 +35,9 @@ const c_storage_device = "cws.device";
 const c_storage_access = "cws.access";
 const c_storage_hashed_prefix = "cws.hashed_";
 
+// NOTE: The announcements this account has dismissed on this browser, by message id.
+const c_storage_dismissed_prefix = "cws.dismissed_";
+
 var g_room = "";
 var g_rooms = [ ];
 
@@ -42,6 +45,9 @@ var g_rooms = [ ];
 // room total last seen for Administration says when to read it again; -1 means never read.
 var g_invite_messages = [ ];
 var g_invitations = [ ];
+
+var g_announcements = [ ];
+var g_announcements_drawn = "";
 var g_invite_total = -1;
 var g_selected_invite = "";
 var g_members = [ ];
@@ -110,6 +116,13 @@ function chat( )
    window.addEventListener( "resize", resize_composer );
 
    watch_drawer_widths( );
+
+   // NOTE: An announcement dismissed in another tab of this browser goes here too.
+   window.addEventListener( "storage", function( event )
+   {
+      if( ( ciyam.access !== "" ) && ( event.key === dismissed_key( ) ) )
+         refresh_announcements( );
+   } );
 
    // NOTE: Escape cancels whichever dialog is open. Bound on the document because the
    // dialogs are not focus traps, so the key would otherwise be missed depending on
@@ -840,6 +853,9 @@ function show_thread_view( )
    document.getElementById( "message_list" ).hidden = loading || !has_room;
    document.getElementById( "composer" ).hidden = loading || !has_room;
    document.getElementById( "room_panel" ).hidden = loading || ( !has_room && !inviting );
+   // NOTE: Announcements show whatever the thread holds - someone with no rooms yet is the
+   // very person a welcome is for.
+   document.getElementById( "announcements" ).hidden = loading || ( g_announcements.length === 0 );
 }
 
 async function do_disconnect( )
@@ -857,6 +873,11 @@ async function do_disconnect( )
    g_invitations = [ ];
    g_invite_total = -1;
    g_selected_invite = "";
+
+   g_announcements = [ ];
+   g_announcements_drawn = "";
+
+   document.getElementById( "announcements" ).textContent = "";
 
    // NOTE: Nothing from this session may be left on screen for the next account - an alert
    // such as "Password changed." was still showing after someone else signed in.
@@ -1555,6 +1576,8 @@ function on_invitations_response( response )
 
 function refresh_invitations( )
 {
+   refresh_announcements( );
+
    g_invitations = pending_invitations( g_invite_messages, g_rooms );
 
    // NOTE: The invitation on screen can be taken up elsewhere - another tab, say.
@@ -1617,6 +1640,98 @@ function do_open_rename_room( )
 
    document.getElementById( "room_dialog" ).hidden = false;
    document.getElementById( "room_dialog_name" ).focus( );
+}
+
+// ====================================================================
+// Announcements - a prototype
+// ====================================================================
+
+// NOTE: Admin's messages in Administration, from the same background read as invitations.
+// Admin reads Administration as a room, so sees none of this.
+function refresh_announcements( )
+{
+   var list = ciyam.is_admin ? [ ] : pending_announcements( g_invite_messages, read_dismissed( ) );
+
+   var signature = announcements_signature( list );
+
+   if( signature === g_announcements_drawn )
+      return;
+
+   g_announcements = list;
+   g_announcements_drawn = signature;
+
+   render_announcements( );
+}
+
+function announcements_signature( list )
+{
+   return list.map( function( m ) { return m.unique + ( m.edited ? "*" : "" ) + m.text; } ).join( "\n" );
+}
+
+function dismissed_key( )
+{
+   return c_storage_dismissed_prefix + ciyam.access;
+}
+
+function read_dismissed( )
+{
+   try
+   {
+      return parse_dismissed( localStorage.getItem( dismissed_key( ) ) );
+   }
+   catch( e )
+   {
+      return [ ];
+   }
+}
+
+function render_announcements( )
+{
+   var host = document.getElementById( "announcements" );
+
+   var template = document.getElementById( "tpl_announcement" );
+
+   host.textContent = "";
+
+   g_announcements.forEach( function( message )
+   {
+      var node = template.content.cloneNode( true ).querySelector( ".chat-announcement" );
+
+      var when = node.querySelector( ".chat-announcement-when" );
+
+      when.textContent = day_label( message.unique ) + " " + unique_to_time( message.unique ).substring( 0, 5 );
+      when.title = unique_to_full( message.unique );
+
+      node.querySelector( ".chat-announcement-text" ).textContent = message.text;
+
+      var ok = node.querySelector( ".chat-announcement-ok" );
+
+      ok.title = "Dismiss - it will not be shown again on this browser";
+
+      ok.addEventListener( "click", function( ) { do_dismiss_announcement( message.unique ); } );
+
+      host.appendChild( node );
+   } );
+
+   show_thread_view( );
+}
+
+// NOTE: Remembered in this browser only - on another device it shows again.
+function do_dismiss_announcement( unique )
+{
+   try
+   {
+      localStorage.setItem( dismissed_key( ), JSON.stringify( add_dismissed( read_dismissed( ), unique ) ) );
+   }
+   catch( e )
+   {
+   }
+
+   // NOTE: Hidden at once even if the browser would not save it - it then returns next time.
+   g_announcements = g_announcements.filter( function( m ) { return m.unique !== unique; } );
+   g_announcements_drawn = announcements_signature( g_announcements );
+
+   render_announcements( );
 }
 
 // NOTE: Invites to the room already open, using the "for" option on a messages PUT that

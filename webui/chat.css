@@ -919,6 +919,77 @@ button.chat-avatar:hover
    text-overflow: ellipsis;
 }
 
+/* NOTE: Announcements sit between the room's name and its messages, tinted with the accent
+   so they read as from the service rather than from the room. Several scroll inside the strip
+   rather than pushing the conversation off the screen. */
+.chat-announcements
+{
+   flex: none;
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   max-height: 40vh;
+   overflow-y: auto;
+   padding: 10px 20px;
+   border-bottom: 1px solid var(--color-chat-border);
+}
+
+.chat-announcement
+{
+   display: flex;
+   align-items: flex-start;
+   gap: 12px;
+   padding: 10px 12px;
+   border: 1px solid color-mix(in srgb, var(--color-chat-accent) 25%, var(--color-chat-border));
+   border-left: 3px solid var(--color-chat-accent);
+   border-radius: var(--radius-sm);
+   background: color-mix(in srgb, var(--color-chat-accent) 8%, var(--color-chat-bg));
+}
+
+.chat-announcement-body
+{
+   flex: 1;
+   min-width: 0;
+}
+
+.chat-announcement-head
+{
+   display: flex;
+   align-items: baseline;
+   gap: 8px;
+}
+
+.chat-announcement-label
+{
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 700;
+   letter-spacing: 0.04em;
+   text-transform: uppercase;
+   color: var(--color-chat-accent-deep);
+}
+
+.chat-announcement-when
+{
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-micro);
+   color: var(--color-chat-text-faint);
+}
+
+.chat-announcement-text
+{
+   margin: 4px 0 0;
+   font-size: var(--font-size-chat-body);
+   line-height: 1.5;
+   color: var(--color-chat-text);
+   white-space: pre-wrap;
+   overflow-wrap: anywhere;
+}
+
+.chat-announcement-ok
+{
+   flex: none;
+}
+
 /* NOTE: An invitation or an empty thread has this bar only on a narrow screen, where it holds
    the buttons for the panels that have slid away - see "Narrow screens" below. */
 .chat-thread-head[data-view="invite"],
@@ -1883,6 +1954,13 @@ button.chat-avatar:hover
    .chat-thread-head
    {
       gap: 6px;
+      padding: 8px 10px;
+   }
+
+   /* NOTE: Less of a phone's height, and the strip's own edges tightened to the screen's. */
+   .chat-announcements
+   {
+      max-height: 30vh;
       padding: 8px 10px;
    }
 

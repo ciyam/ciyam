@@ -188,6 +188,11 @@ http://www.opensource.org/licenses/mit-license.php.
             </button>
          </div>
 
+         <!-- NOTE: Announcements - admin's messages in Administration, which only admin sees as
+              a room - shown at the top of every room until dismissed. A prototype: see
+              "pending_announcements( )" in "chat_parse.js". Not shown to admin. -->
+         <section class="chat-announcements" id="announcements" aria-label="Announcements" hidden></section>
+
          <!-- Selected invitation - the server refuses a non-member's read, so nothing is
               fetched until the user joins. -->
          <div class="chat-empty chat-invite-view" id="thread_invite" hidden>
@@ -376,6 +381,19 @@ http://www.opensource.org/licenses/mit-license.php.
 <template id="tpl_day">
    <div class="chat-day">
       <span class="chat-day-label"></span>
+   </div>
+</template>
+
+<template id="tpl_announcement">
+   <div class="chat-announcement" role="note">
+      <div class="chat-announcement-body">
+         <div class="chat-announcement-head">
+            <span class="chat-announcement-label">Announcement</span>
+            <span class="chat-announcement-when"></span>
+         </div>
+         <p class="chat-announcement-text"></p>
+      </div>
+      <button type="button" class="chat-btn chat-btn--small chat-announcement-ok">OK</button>
    </div>
 </template>
 
