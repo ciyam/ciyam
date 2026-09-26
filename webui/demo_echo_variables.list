@@ -1,0 +1,11 @@
+.var cmd echo {aaa} and {bbb} ({ccc}...)
+var aaa xxx
+var bbb yyy
+var @ccc null
+@{cmd}
+?{aaa} echo has "aaa"
+?{bbb} echo has "bbb"
+?{ccc} echo has "ccc"
+!{aaa} echo not has "aaa"
+!{bbb} echo not has "bbb"
+!{ccc} echo not has "ccc"

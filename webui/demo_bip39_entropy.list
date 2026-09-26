@@ -1,0 +1,12 @@
+var !entropy_1 de604cee0755a3d81944ea96aed12681
+load script bip39 3c6eede8b0c9717370546cd446427499
+wait 250
+eval script bip39 {@1}
+var @entropy_2 ciyam_bip39_result
+clear
+load script xor_hex_data
+wait 250
+eval script xor_hex_data {entropy_1}
+eval script xor_hex_data {entropy_2}
+var @entropy_3 ciyam_xor_hex_data_result
+eval script bip39 {entropy_3}

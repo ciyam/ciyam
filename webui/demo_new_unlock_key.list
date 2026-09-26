@@ -1,0 +1,37 @@
+var rounds 33333
+!{entropy} var entropy de604cee0755a3d81944ea96aed12681
+!{password} var password need_to_use_a_very_good_password
+load script harden {entropy}
+wait 250
+wait ciyam_harden_result
+var @sid_hash ciyam_harden_result
+load script harden {sid_hash}
+wait 250
+wait ciyam_harden_result
+var @dbl_hash ciyam_harden_result
+clear
+?{DEVICE} seed
+?{DEVICE} var password {@1}
+load script harden {password}
+wait 250
+wait ciyam_harden_result
+exec script harden {rounds}:30
+wait ciyam_harden_reset
+var pwd_hard {@1}
+load script xor_hex_data {sid_hash}
+wait 250
+wait ciyam_xor_hex_data_result
+exec script xor_hex_data {pwd_hard}
+var xor_hash {@1}
+clear
+var #pwd_hard substr:0,8
+var prefix {@1}
+clear
+?{DEVICE} echo {prefix}-{xor_hash}
+?{DEVICE} echo (user unlock-key)
+?{DEVICE} echo {password}
+!{DEVICE} echo {prefix}{xor_hash}{dbl_hash}
+var @entropy null
+var @password null
+var @pwd_hard null
+var @sid_hash null
