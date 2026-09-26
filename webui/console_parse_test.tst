@@ -95,6 +95,7 @@ ok   empty query keeps all
 ok   every word must match
 ok   command matches rank first
 ok   description only
+ok   a word starting with it ranks first
 ok   placeholder
 ok   no placeholder
 

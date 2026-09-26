@@ -479,8 +479,9 @@ function push_history( history, line, max )
    return list;
 }
 
-// NOTE: Every word typed must appear in the command or its description. Matches on the
-// command itself rank ahead of matches only in the description.
+// NOTE: Every word typed must appear in the command or its description. Matches at the start
+// of a word of the command rank first, then anywhere in the command, then only in the
+// description.
 function filter_palette( items, query )
 {
    var words = split_words( String( query || "" ).toLowerCase( ) );
@@ -503,7 +504,18 @@ function filter_palette( items, query )
 
       var in_command = words.every( function( w ) { return command.indexOf( w ) >= 0; } );
 
-      scored.push( { item: item, rank: ( in_command ? 0 : 1 ), index: index } );
+      // NOTE: A word of the command that starts with what was typed beats a match inside a
+      // word - "view" should find "view lists" before "messages review".
+      var command_words = split_words( command );
+
+      var at_word_start = words.every( function( w )
+      {
+         return command_words.some( function( cw ) { return cw.indexOf( w ) === 0; } );
+      } );
+
+      var rank = at_word_start ? 0 : ( in_command ? 1 : 2 );
+
+      scored.push( { item: item, rank: rank, index: index } );
    } );
 
    scored.sort( function( lhs, rhs ) { return ( lhs.rank - rhs.rank ) || ( lhs.index - rhs.index ); } );

@@ -264,6 +264,13 @@ check( "command matches rank first", cp.filter_palette( items, "list" ).map( fun
 
 check( "description only", cp.filter_palette( items, "rooms" ).length, 1 );
 
+var views = [
+ { command: "messages review 0000000", description: "list rooms" },
+ { command: "view lists", description: "command lists on the server" } ];
+
+check( "a word starting with it ranks first", cp.filter_palette( views, "view" ).map( function( i ) { return i.command; } ),
+ [ "view lists", "messages review 0000000" ] );
+
 check( "placeholder", cp.first_placeholder( "messages create 0000000 text=<name>" ), { start: 29, end: 35 } );
 check( "no placeholder", cp.first_placeholder( "users review" ), null );
 
