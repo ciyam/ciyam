@@ -378,6 +378,26 @@ var odd = cp.parse_fetch_response( [
 
 check( "never the starting room, never without a token", cp.pending_invitations( odd, [ ] ).length, 0 );
 
+heading( "room events in plain words" );
+
+function said( line, label ) { return cp.describe_event( cp.parse_system_event( line ), label ); }
+
+function known( room ) { return ( room === "0000005" ) ? "Design Review (#0000005)" : "#" + room; }
+
+check( "joined", said( ":joined" ), "joined" );
+check( "left", said( ":remove" ), "left the room" );
+check( "created", said( ":create 0000004-abc Design Review" ), "created Design Review (#0000004)" );
+check( "invited you", said( ":invite room 0000005-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa Design Review" ), "invited you to Design Review (#0000005)" );
+check( "renamed", said( ":rename 'Old' to 'New'" ), "renamed the room from 'Old' to 'New'" );
+check( "handed over", said( ":assign 'admin' to 'tester-1'" ), "handed the room from 'admin' to 'tester-1'" );
+check( "posting set", said( ":allows set to own" ), "set who may post to the owner only" );
+check( "posting locked", said( ":allows set to none" ), "set who may post to nobody - locked" );
+check( "invitation sent", said( ":issued (invite for 0000005 sent to tester-1,tester-2)", known ), "invited tester-1, tester-2 to Design Review (#0000005)" );
+check( "private message sent", said( ":issued (message sent to verify-a)" ), "sent a private message to verify-a" );
+check( "answered", said( ":ignore (invite for 0000005 was processed)", known ), "invited you to Design Review (#0000005) - already answered" );
+check( "declined", said( ":reject (invite for 0000004 was rejected)" ), "declined the invitation to #0000004" );
+check( "an unknown verb keeps its words, without the colon", said( ":frobbed the widget" ), "frobbed the widget" );
+
 heading( "rooms shown in the rail" );
 
 var listed = [ { room: "0000001" }, { room: "0000004" }, { room: "0000005" } ];

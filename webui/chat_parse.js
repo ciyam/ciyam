@@ -665,6 +665,75 @@ function pending_invitations( messages, rooms )
    return pending;
 }
 
+// NOTE: A room event in plain words, after the name of whoever it is about - "joined",
+// "left the room" - rather than the server's ":joined" and ":remove". "label" turns a room
+// number into what the reader knows it as. An unknown verb still shows its detail, without
+// the colon, so a new one from the server is never silently dropped.
+function describe_event( event, label )
+{
+   var name_of = label || function( room ) { return "#" + room; };
+
+   var posting = { any: "anyone", own: "the owner only", none: "nobody - locked" };
+
+   switch( event.verb )
+   {
+      case "joined":
+         return "joined";
+
+      case "remove":
+         return "left the room";
+
+      case "create":
+         return "created " + ( event.name ? event.name + " (#" + event.room + ")" : name_of( event.room ) );
+
+      case "invite":
+         return "invited you to " + ( event.name ? event.name + " (#" + event.room + ")" : name_of( event.room ) );
+
+      case "rename":
+         return "renamed the room from '" + ( event.from_name || "" ) + "' to '" + ( event.to_name || "" ) + "'";
+
+      case "assign":
+         return "handed the room from '" + ( event.from_name || "" ) + "' to '" + ( event.to_name || "" ) + "'";
+
+      case "allows":
+      {
+         var set = String( event.detail || "" ).match( /^set to (\S+)/ );
+
+         if( set )
+            return "set who may post to " + ( posting[ set[ 1 ].toLowerCase( ) ] || set[ 1 ] );
+
+         break;
+      }
+
+      case "issued":
+         if( event.recipients && event.recipients.length )
+         {
+            if( event.issued_kind === "invite" )
+               return "invited " + event.recipients.join( ", " ) + ( event.room ? " to " + name_of( event.room ) : "" );
+
+            if( event.issued_kind === "message" )
+               return "sent a private message to " + event.recipients.join( ", " );
+         }
+
+         break;
+
+      // NOTE: Only the invitee sees these, and the sender is whoever invited them.
+      case "ignore":
+         if( event.room )
+            return "invited you to " + name_of( event.room ) + " - already answered";
+
+         break;
+
+      case "reject":
+         if( event.room )
+            return "declined the invitation to " + name_of( event.room );
+
+         break;
+   }
+
+   return event.verb + ( event.detail ? " " + event.detail : "" );
+}
+
 // NOTE: The rooms shown in the rail. The starting room - Administration - is shown to admin
 // only; it still exists for everyone, and is read in the background for invitations.
 function visible_rooms( rooms, is_admin )
@@ -858,6 +927,7 @@ if( typeof module !== "undefined" )
       posting_status: posting_status,
       invited_to_room: invited_to_room,
       pending_invitations: pending_invitations,
+      describe_event: describe_event,
       password_strength: password_strength,
       user_initial: user_initial,
       visible_rooms: visible_rooms,

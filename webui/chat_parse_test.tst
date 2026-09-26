@@ -169,6 +169,21 @@ ok   joining clears it
 ok   no messages, none pending
 ok   never the starting room, never without a token
 
+== room events in plain words ==================================
+ok   joined
+ok   left
+ok   created
+ok   invited you
+ok   renamed
+ok   handed over
+ok   posting set
+ok   posting locked
+ok   invitation sent
+ok   private message sent
+ok   answered
+ok   declined
+ok   an unknown verb keeps its words, without the colon
+
 == rooms shown in the rail =====================================
 ok   admin sees Administration
 ok   others do not
