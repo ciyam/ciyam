@@ -54,7 +54,9 @@ const c_console_nouns =
 };
 
 // NOTE: The CWS routes, as "do_fetch( )" in "test_web_session.js" maps them. "name" is a
-// path segment after the noun; "options" is everything after that, sent as "options=".
+// path segment after the noun - required, or "optional" where the server lists what is
+// available without one ("review javascript[s] [<name>]" in its help); "options" is
+// everything after that, sent as "options=".
 const c_console_routes =
 {
    "users|review": { method: "GET", name: false, options: false },
@@ -68,20 +70,20 @@ const c_console_routes =
    "messages|delete": { method: "DELETE", name: true, options: false },
 
    "storages|attach": { method: "POST", name: true, options: false },
-   "storages|review": { method: "GET", name: true, options: false },
+   "storages|review": { method: "GET", name: "optional", options: false },
 
    "unlock-keys|create": { method: "POST", name: false, options: true },
    "unlock-keys|employ": { method: "POST", name: true, options: false },
 
-   "javascripts|review": { method: "GET", name: true, options: false },
-   "stylesheets|review": { method: "GET", name: true, options: false },
-   "webcmdlists|review": { method: "GET", name: true, options: false },
+   "javascripts|review": { method: "GET", name: "optional", options: false },
+   "stylesheets|review": { method: "GET", name: "optional", options: false },
+   "webcmdlists|review": { method: "GET", name: "optional", options: false },
 
    "javascripts|delete": { method: "DELETE", name: false, options: false },
    "stylesheets|delete": { method: "DELETE", name: false, options: false },
    "webcmdlists|delete": { method: "DELETE", name: false, options: false },
 
-   "storage-modules|review": { method: "GET", name: true, options: false },
+   "storage-modules|review": { method: "GET", name: "optional", options: false },
    "storage-instances|review": { method: "GET", name: true, options: true }
 };
 
@@ -280,7 +282,7 @@ function resolve_command( line )
    else if( rest.length > 0 )
       return { kind: "unknown", word: words[ 0 ], reason: "'" + key.replace( "|", " " ) + "' takes no options" };
 
-   if( route.name && ( name === "" ) )
+   if( ( route.name === true ) && ( name === "" ) )
       return { kind: "unknown", word: words[ 0 ], reason: "'" + key.replace( "|", " " ) + "' needs a name" };
 
    var noun = key.substr( 0, key.indexOf( "|" ) );

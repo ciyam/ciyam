@@ -108,6 +108,13 @@ check( "unlock keys", cp.resolve_command( "unlock-keys create" ).method, "POST" 
 check( "status", cp.resolve_command( "status" ).path, "/status" );
 
 check( "missing name", cp.resolve_command( "messages review" ).reason, "'messages review' needs a name" );
+
+// NOTE: Ian, 2026-09-26 - these list what is available when given no name.
+check( "view lists without a name", pick( cp.resolve_command( "view lists" ), keys ), { kind: "cws", method: "GET", path: "/webcmdlists", options: "" } );
+check( "view scripts without a name", cp.resolve_command( "view scripts" ).path, "/javascripts" );
+check( "view styles without a name", cp.resolve_command( "view styles" ).path, "/stylesheets" );
+check( "review storages without a name", cp.resolve_command( "review storages" ).path, "/storages" );
+check( "a list by name", cp.resolve_command( "view list demo_echo_variables" ).path, "/webcmdlists/demo_echo_variables" );
 check( "options where none are taken", cp.resolve_command( "users review extra" ).reason, "'users review' takes no options" );
 
 check( "raw", cp.resolve_command( "~run_script *" ), { kind: "raw", request: "run_script *" } );

@@ -26,6 +26,11 @@ ok   users create nominated
 ok   unlock keys
 ok   status
 ok   missing name
+ok   view lists without a name
+ok   view scripts without a name
+ok   view styles without a name
+ok   review storages without a name
+ok   a list by name
 ok   options where none are taken
 ok   raw
 ok   raw with space
