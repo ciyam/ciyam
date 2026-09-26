@@ -2339,12 +2339,16 @@ async function do_send( )
 
    var options = "";
 
+   // NOTE: The server drops a lone backslash as an escape, so each is doubled to arrive as
+   // typed - see "escape_message_text( )" in "chat_parse.js". Line breaks go as they are.
+   var sent = escape_message_text( text );
+
    if( g_edit_unique !== "" )
-      options = "for=" + g_edit_unique + ";text=" + text;
+      options = "for=" + g_edit_unique + ";text=" + sent;
    else if( g_recipients.length > 0 )
-      options = "for=" + g_recipients.join( "," ) + ";text=" + text;
+      options = "for=" + g_recipients.join( "," ) + ";text=" + sent;
    else
-      options = "text=" + text;
+      options = "text=" + sent;
 
    input.value = "";
    input.disabled = true;

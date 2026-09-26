@@ -1130,6 +1130,12 @@ button.chat-avatar:hover
    overflow-wrap: anywhere;
 }
 
+/* NOTE: A message keeps its line breaks - typed with ctrl+enter. */
+.chat-message-body
+{
+   white-space: pre-wrap;
+}
+
 .chat-edit-mark
 {
    color: var(--color-chat-text-faint);
