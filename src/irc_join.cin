@@ -65,10 +65,12 @@ USER_TOKEN=@substr:0,32:$OUTPUT
 ALL_USERS=@strlit:$OUTPUT@
 CHECK_USERS=@repstr:@$USER@/:$ALL_USERS
 @ifeq "$ALL_USERS" "$CHECK_USERS"
+@ifndef $REMOVE
 @ifndef $JOIN_TOKEN
 ERROR=Unknown room '$ROOM_NO' (or not joined).
 @else
 ERROR=Unknown or invalid join token '$JOIN_TOKEN'.
+@endif
 @endif
 @endif
 @endif
@@ -141,7 +143,18 @@ ERROR=Removal of the room owner is not permitted.
 CHECK_USERS=@strlit:$ALL_USERS@
 OTHER_USERS=@repstr:@$USER@/:$CHECK_USERS
 ;
-@ifneq "$CHECK_USERS" "$OTHER_USERS"
+@ifeq "$CHECK_USERS" "$OTHER_USERS"
+;
+.system_variable @irc_xinvr_%ROOM_NO%_$USER
+@ifndef $OUTPUT
+CHANGED=1
+.system_variable @irc_xinvr_%ROOM_NO%_$USER 1
+.system_variable @irc_xinvs_%ROOM_NO%_$USER ""
+EXTRA=_:reject (invite for $ROOM_NO was rejected)
+ROOM_NO=$STARTING_ROOM
+@endif
+;
+@else
 ;
 LENGTH=@strlen:@$USER
 POS=@strpos:@$USER@:$CHECK_USERS
@@ -239,6 +252,7 @@ RETURN=:joined (as $USER)|$EXTRA|$ALL_USERS
 .system_variable @session_@queue_irc_$ROOM_AND_USER
 @ifndef $OUTPUT
 CHANGED=1
+.system_variable @irc_xinvs_$ROOM_AND_USER ""
 .system_variable @session_@queue_irc_$ROOM_AND_USER 1
 @endif
 ;
