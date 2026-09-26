@@ -2095,38 +2095,12 @@ function build_notice( entry )
    time.textContent = unique_to_time( entry.unique );
    time.title = unique_to_full( entry.unique );
 
+   // NOTE: Plain words - "verify-a joined", "admin sent a private message to verify-a" -
+   // from "describe_event( )" in "chat_parse.js", where every verb's wording is tested.
+   // Rooms are named as this user knows them.
    node.querySelector( ".chat-notice-who" ).textContent = entry.sender + " ";
-   node.querySelector( ".chat-notice-verb" ).textContent = ":" + event.verb;
-
-   var detail = "";
-
-   // NOTE: The server's own wording for an answered invitation - "invite for 0000002 was
-   // processed" - is told in the room's terms instead, with its name when this user knows it.
-   if( ( event.verb === "ignore" ) && event.room )
-   {
-      node.querySelector( ".chat-notice-verb" ).textContent = ":invite";
-
-      detail = " " + room_label( event.room ) + " - already answered";
-   }
-   else if( ( event.verb === "reject" ) && event.room )
-   {
-      node.querySelector( ".chat-notice-verb" ).textContent = ":declined";
-
-      detail = " the invitation to " + room_label( event.room );
-   }
-   else if( ( event.verb === "rename" ) || ( event.verb === "assign" ) )
-      detail = " '" + ( event.from_name || "" ) + "' to '" + ( event.to_name || "" ) + "'";
-   else if( ( event.verb === "invite" ) || ( event.verb === "create" ) )
-      detail = " " + ( event.name || "" ) + " (#" + ( event.room || "" ) + ")";
-   else
-   {
-      // NOTE: Anything else shows its detail as the server sent it. Enumerating the verbs
-      // meant a new one silently lost its text - ":allows set to own" rendered as bare
-      // ":allows". The server emits eight verbs and this client knew four.
-      detail = ( event.detail ) ? ( " " + event.detail ) : "";
-   }
-
-   node.querySelector( ".chat-notice-detail" ).textContent = detail;
+   node.querySelector( ".chat-notice-verb" ).textContent = describe_event( event, room_label );
+   node.querySelector( ".chat-notice-detail" ).textContent = "";
 
    // NOTE: An invitation carries a join token, so it can be acted on directly.
    if( ( event.verb === "invite" ) && event.room && event.token )

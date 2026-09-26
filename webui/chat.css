@@ -1091,10 +1091,13 @@ button.chat-avatar:hover
    gap: 2px;
 }
 
+/* NOTE: Aligned on the first line's baseline - the time is in a smaller monospaced face, so
+   aligned to the top of the row it sat visibly higher than the name and the text. */
 .chat-message
 {
    display: grid;
    grid-template-columns: var(--chat-time-width) var(--chat-sender-width) 1fr;
+   align-items: baseline;
    gap: 12px;
    padding: 5px 0;
 }
