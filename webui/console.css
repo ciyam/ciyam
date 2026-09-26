@@ -800,6 +800,18 @@ code
    max-height: 40%;
 }
 
+/* NOTE: Server lists are few - a handful of rows, then their own scroll. */
+.console-list-scroll.is-lists
+{
+   flex: 0 0 auto;
+   max-height: 25%;
+}
+
+.console-origin
+{
+   color: var(--color-console-accent);
+}
+
 .console-list-filter
 {
    flex: none;

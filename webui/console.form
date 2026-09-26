@@ -133,7 +133,13 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="console-list-scroll is-saved" id="saved_scripts"></div>
                <button type="button" class="console-item is-new" onclick="do_new_script( )">+ New script</button>
 
-               <span class="console-listhead">On the server <span class="console-gate">admin &middot; dev</span></span>
+               <!-- NOTE: Ian's ".list" files (webcmdlists) - any account can read them. One opens
+                    in the editor as a copy: Run runs it, Save keeps it in this browser. -->
+               <span class="console-listhead">Lists on the server</span>
+               <div class="console-list-scroll is-lists" id="server_lists"></div>
+               <p class="console-more" id="server_lists_note"></p>
+
+               <span class="console-listhead">Server scripts <span class="console-gate">admin &middot; dev</span></span>
                <input class="console-sfield console-list-filter" id="server_filter" type="search" autocomplete="off" spellcheck="false"
                 placeholder="Filter scripts" aria-label="Filter the server scripts" aria-controls="server_scripts" hidden>
                <div class="console-list-scroll is-server" id="server_scripts"></div>
@@ -143,9 +149,13 @@ http://www.opensource.org/licenses/mit-license.php.
             <div class="console-body">
                <div id="script_editor">
                   <p class="console-note">Type or paste a script and Run executes it line by line,
-                  switching to the Console so you can watch it. <code>{name}</code> substitutes a
-                  variable. Lines starting <code>#</code> are comments, and a run stops at the first
-                  error. Saved scripts are kept in this browser and shared by every account on it.</p>
+                  switching to the Console so you can watch it. Scripts use the harness's list
+                  language &mdash; <code>{name}</code>, <code>{@1}</code>, <code>?{name}</code>,
+                  <code>@{name}</code> and the rest are under <code>help</code>. Lines starting
+                  <code>#</code> are comments, and a run stops at the first error. Saved scripts are
+                  kept in this browser and shared by every account on it.</p>
+
+                  <p class="console-note console-origin" id="script_origin" hidden></p>
 
                   <label class="console-slabel" for="script_name">Name</label>
                   <input class="console-sfield console-script-name" id="script_name" type="text" spellcheck="false" placeholder="new script">

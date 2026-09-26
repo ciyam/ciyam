@@ -79,11 +79,16 @@ var g_announce_timer = null;
 var g_raw_available = null;
 var g_server_scripts = [ ];
 
+var g_server_lists = [ ];
+
 var g_history = [ ];
 var g_history_at = 0;
 var g_history_draft = "";
 
 var g_log = [ ];
+
+// NOTE: The last output - what "{@1}" reads and "exec" runs. See "append_output( )".
+var g_output = "";
 var g_log_keys = { };
 var g_log_counter = 0;
 var g_log_filter = "all";
@@ -481,6 +486,9 @@ async function do_disconnect( )
    g_connected = false;
    g_raw_available = null;
    g_server_scripts = [ ];
+   g_server_lists = [ ];
+
+   g_output = "";
 
    ciyam.remove_all_variables( );
 
@@ -526,6 +534,7 @@ function enter_console( )
    render_log( );
 
    probe_raw( );
+   load_server_lists( );
 
    select_tab( "console" );
 
@@ -869,8 +878,32 @@ async function run_line( line, from_script )
    print_command( line );
 
    // NOTE: "{name}" substitution is Ian's, from "ciyam.js", so a script written for the
-   // harness runs unchanged here - including "." at the start to switch it off.
-   var text = ciyam.replace_variables( String( line ).trim( ) );
+   // harness runs unchanged here - including "." at the start to switch it off, and
+   // "{@1}", "{@}" for the lines of the last output.
+   var text = ciyam.replace_variables( String( line ).trim( ), g_output );
+
+   // NOTE: "@" makes the line out of variables - "@{cmd}" runs the command "cmd" holds,
+   // substituted again so the variables inside it are filled in too.
+   if( text.charAt( 0 ) === "@" )
+      text = ciyam.replace_variables( text.substring( 1 ), g_output );
+
+   var guard = apply_line_guard( text );
+
+   if( !guard.run )
+   {
+      print_line( "(skipped)", "is-dim" );
+
+      return { ok: true };
+   }
+
+   text = guard.text;
+
+   if( is_javascript_line( text ) )
+   {
+      print_line( "Error: The console does not run server javascripts yet - they will run in a sandbox. Use the harness for this line.", "is-err" );
+
+      return { ok: false };
+   }
 
    var spec = resolve_command( text );
 
@@ -936,6 +969,9 @@ async function run_line( line, from_script )
 
    print_output( response );
 
+   // NOTE: A response replaces the output, as it replaces the harness's text box.
+   g_output = response.replace( /\s+$/, "" );
+
    if( ( spec.kind === "raw" ) && ( response.trim( ) === "[bad]" ) )
       print_line( "Raw protocol needs the admin PIN on a development system, and a command starting a-z.", "is-dim" );
 
@@ -965,8 +1001,13 @@ async function run_local( spec, from_script )
 
          return { ok: true };
 
+      // NOTE: "clear" empties the output, as in the harness. Typed at the prompt it also
+      // clears the screen; in a list it must not, or the list's own output would vanish.
       case "clear":
-         document.getElementById( "scrollback" ).textContent = "";
+         g_output = "";
+
+         if( !from_script )
+            document.getElementById( "scrollback" ).textContent = "";
 
          return { ok: true };
 
@@ -976,43 +1017,13 @@ async function run_local( spec, from_script )
 
          print_output( all === "" ? "(no variables)" : all );
 
+         g_output = all;
+
          return { ok: true };
       }
 
       case "var":
-      {
-         var space = args.search( /\s/ );
-
-         var name = ( space < 0 ) ? args : args.substr( 0, space );
-         var value = ( space < 0 ) ? null : args.substring( space ).trim( );
-
-         if( name === "" )
-         {
-            print_line( "Error: Usage is var <name> [<text>].", "is-err" );
-
-            return { ok: false };
-         }
-
-         if( value === null )
-         {
-            print_output( ciyam.has_variable( name ) ? ciyam.get_variable( name ) : "(not set)" );
-
-            return { ok: true };
-         }
-
-         if( !is_valid_variable_name( name ) )
-         {
-            print_line( "Error: Invalid variable name '" + name + "' - start with a letter, use letters, digits and _, and not all upper case.", "is-err" );
-
-            return { ok: false };
-         }
-
-         ciyam.set_variable( name, value );
-
-         render_vars( );
-
-         return { ok: true };
-      }
+         return run_var( args );
 
       case "unset":
          if( ciyam.has_variable( args ) )
@@ -1027,13 +1038,20 @@ async function run_local( spec, from_script )
       case "echo":
          print_output( args );
 
+         g_output = append_output( g_output, args );
+
          return { ok: true };
 
+      // NOTE: Eleven characters unless told otherwise, as in the harness.
       case "seed":
       {
          var count = parseInt( args, 10 );
 
-         print_output( CIYAM.generate_base64_key( ( count > 0 && count <= 256 ) ? count : undefined ) );
+         var seed = CIYAM.generate_base64_key( ( count > 0 && count <= 256 ) ? count : 11 );
+
+         print_output( seed );
+
+         g_output = append_output( g_output, seed );
 
          return { ok: true };
       }
@@ -1046,8 +1064,17 @@ async function run_local( spec, from_script )
 
          return { ok: true };
 
+      // NOTE: "wait <variable>" waits for a server javascript to set its result, so it
+      // arrives with the javascripts themselves.
       case "wait":
       {
+         if( /^[A-Za-z_]/.test( args ) )
+         {
+            print_line( "Error: wait " + args + " waits for a server javascript's result - the console does not run those yet.", "is-err" );
+
+            return { ok: false };
+         }
+
          var ms = Math.min( Math.max( parseInt( args, 10 ) || 0, 0 ), c_max_wait_ms );
 
          await delay( ms );
@@ -1068,6 +1095,88 @@ async function run_local( spec, from_script )
 
          return run_script_body( body, args );
       }
+
+      // NOTE: Runs the output as a list - the harness's way to run a server list is
+      // "view list <name>" and then "exec". The output is emptied first, as there.
+      case "exec":
+      {
+         if( g_output.trim( ) === "" )
+         {
+            print_line( "Error: Nothing to run - the output is empty. Try view list <name> first.", "is-err" );
+
+            return { ok: false };
+         }
+
+         var list = g_output;
+
+         g_output = "";
+
+         return run_script_body( list, "the output" );
+      }
+   }
+
+   return { ok: false };
+}
+
+// NOTE: The forms are parsed by "parse_var_command( )". Showing a variable, or part of it,
+// also adds it to the output - that is how a list passes a value on through "{@1}".
+function run_var( args )
+{
+   var command = parse_var_command( args );
+
+   switch( command.kind )
+   {
+      case "error":
+         print_line( "Error: " + command.message + ".", "is-err" );
+
+         return { ok: false };
+
+      case "show":
+         if( !ciyam.has_variable( command.name ) )
+            print_line( "(not set)", "is-dim" );
+         else
+         {
+            var value = ciyam.get_variable( command.name );
+
+            print_output( value );
+
+            g_output = append_output( g_output, value );
+         }
+
+         return { ok: true };
+
+      case "substr":
+         if( ciyam.has_variable( command.name ) )
+         {
+            var part = substr_of( ciyam.get_variable( command.name ), command.start, command.length );
+
+            print_output( part );
+
+            g_output = append_output( g_output, part );
+         }
+
+         return { ok: true };
+
+      case "from_script":
+         print_line( "Error: var @" + command.name + " reads a server javascript's result - the console does not run those yet.", "is-err" );
+
+         return { ok: false };
+
+      case "remove":
+         if( ciyam.has_variable( command.name ) )
+            ciyam.remove_variable( command.name );
+
+         render_vars( );
+
+         return { ok: true };
+
+      case "set":
+         if( !command.only_if_unset || !ciyam.has_variable( command.name ) )
+            ciyam.set_variable( command.name, command.value );
+
+         render_vars( );
+
+         return { ok: true };
    }
 
    return { ok: false };
@@ -1082,14 +1191,24 @@ function print_help( )
     "  <noun> <verb> [name] [opts]  a CWS request - e.g. messages review 0000001 from=0",
     "  ~<command>                   raw CIYAM protocol (admin, development system)",
     "  var <name> [<text>]          show or set a variable; use it as {name}",
+    "  var !<name> <text>           set it only if it is not set",
+    "  var #<name> substr:<a>[,<n>] part of it, into the output",
+    "  var @<name> null             remove a variable - or unset <name>",
     "  unset <name>                 remove a variable",
     "  vars                         list the variables",
     "  echo <text>                  print text, after substitution",
     "  seed [<count>]               print random characters",
     "  wait <ms>                    pause - useful in scripts",
     "  run <script>                 run a saved script",
+    "  exec                         run the output as a list - after view list <name>",
     "  history                      commands entered this session",
-    "  clear                        clear the scrollback"
+    "  clear                        empty the output and the scrollback",
+    "",
+    "In a line - the harness's list language",
+    "  {name}  {@1}  {@}            a variable; a line of the last output; all of it",
+    "  .<line>                      no substitution",
+    "  ?{name} <line>               run only if name is set; !{name} only if not",
+    "  @{name}                      run the command a variable holds"
    ];
 
    // NOTE: Linked, the session is the chat's - ending it here would sign the chat out.
@@ -1421,8 +1540,89 @@ function show_script_editor( )
 
    document.getElementById( "script_args" ).hidden = true;
    document.getElementById( "script_editor" ).hidden = false;
+   document.getElementById( "script_origin" ).hidden = true;
 
    render_saved_scripts( );
+}
+
+// ====================================================================
+// Lists on the server - Ian's ".list" files
+// ====================================================================
+
+async function load_server_lists( )
+{
+   g_server_lists = [ ];
+
+   render_server_lists( null );
+
+   var response = await send_request( "GET",
+    build_cws_url( ciyam.get_cws_url( ), { path: "/webcmdlists" }, session_info( ) ), true );
+
+   g_server_lists = parse_name_list( response );
+
+   render_server_lists( response );
+}
+
+function render_server_lists( response )
+{
+   var holder = document.getElementById( "server_lists" );
+   var note = document.getElementById( "server_lists_note" );
+
+   holder.textContent = "";
+
+   if( response === null )
+      note.textContent = g_connected ? "Checking…" : "";
+   else if( g_server_lists.length === 0 )
+      note.textContent = ( String( response ).indexOf( "Error: " ) === 0 ) ? response.trim( ) : "No lists on this server.";
+   else
+      note.textContent = g_server_lists.length + " from view lists";
+
+   g_server_lists.forEach( function( name )
+   {
+      var button = document.createElement( "button" );
+
+      button.type = "button";
+      button.className = "console-item";
+      button.textContent = name;
+
+      button.addEventListener( "click", function( ) { open_server_list( name, button ); } );
+
+      holder.appendChild( button );
+   } );
+}
+
+// NOTE: Opens a copy in the editor. It is not saved anywhere until Save - and then only in
+// this browser, under whatever name is in the box.
+async function open_server_list( name, button )
+{
+   var response = await send_request( "GET",
+    build_cws_url( ciyam.get_cws_url( ), { path: "/webcmdlists/" + encodeURIComponent( name ) }, session_info( ) ), false );
+
+   if( ( response === null ) || ( response.indexOf( "Error: " ) === 0 ) )
+   {
+      show_script_editor( );
+
+      set_error( "script_error", ( response === null ) ? "The list could not be fetched." : response.trim( ) );
+
+      return;
+   }
+
+   show_script_editor( );
+
+   g_current_script = "";
+
+   mark_current_item( button );
+
+   document.getElementById( "script_name" ).value = name;
+   document.getElementById( "script_body" ).value = response.replace( /\s+$/, "" ) + "\n";
+   document.getElementById( "script_delete" ).hidden = true;
+
+   var origin = document.getElementById( "script_origin" );
+
+   origin.textContent = "From the server's " + name + ".list - Save keeps a copy in this browser.";
+   origin.hidden = false;
+
+   set_error( "script_error", "" );
 }
 
 function open_saved_script( name, button )
