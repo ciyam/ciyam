@@ -246,6 +246,47 @@ check( "repeats and blanks dropped", history, [ "status", "vars" ] );
 check( "oldest dropped at the limit", cp.push_history( [ "a", "b", "c" ], "d", 3 ), [ "b", "c", "d" ] );
 
 // --------------------------------------------------------------------
+heading( "list language" );
+
+// NOTE: The guards see the line after substitution - "?{aaa} echo" is "?xxx echo" when aaa
+// is set and "? echo" when it is not.
+check( "? runs when the value was there", cp.apply_line_guard( "?xxx echo has aaa" ), { run: true, text: "echo has aaa" } );
+check( "? skips when it was not", cp.apply_line_guard( "? echo has ccc" ), { run: false, text: "" } );
+check( "! runs when it was not", cp.apply_line_guard( "! echo not has ccc" ), { run: true, text: "echo not has ccc" } );
+check( "! skips when it was", cp.apply_line_guard( "!xxx echo not has aaa" ), { run: false, text: "" } );
+check( "? then ! on one line", cp.apply_line_guard( "?a ! echo both" ), { run: true, text: "echo both" } );
+check( "a line without a guard is untouched", cp.apply_line_guard( "echo plain" ), { run: true, text: "echo plain" } );
+check( "a lone ? with no space is left alone", cp.apply_line_guard( "?" ), { run: true, text: "?" } );
+check( "raw protocol is not a guard", cp.apply_line_guard( "~run_script !irc_join" ), { run: true, text: "~run_script !irc_join" } );
+
+check( "var name shows it", cp.parse_var_command( "aaa" ), { kind: "show", name: "aaa" } );
+check( "var name text sets it", cp.parse_var_command( "aaa xxx and more" ), { kind: "set", name: "aaa", value: "xxx and more", only_if_unset: false } );
+check( "var !name sets only if unset", cp.parse_var_command( "!entropy de60" ), { kind: "set", name: "entropy", value: "de60", only_if_unset: true } );
+check( "var @name null removes", cp.parse_var_command( "@ccc null" ), { kind: "remove", name: "ccc", value: "", only_if_unset: false } );
+check( "var @name global reads a script result", cp.parse_var_command( "@entropy_2 ciyam_bip39_result" ), { kind: "from_script", name: "entropy_2", source: "ciyam_bip39_result", only_if_unset: false } );
+check( "var #name substr with a length", cp.parse_var_command( "#pwd_hard substr:0,8" ), { kind: "substr", name: "pwd_hard", start: 0, length: 8 } );
+check( "var #name substr without one", cp.parse_var_command( "#pwd_hard substr:4" ), { kind: "substr", name: "pwd_hard", start: 4, length: null } );
+check( "an unknown function is refused", cp.parse_var_command( "#x upper:1" ).kind, "error" );
+check( "an all upper case name is reserved", cp.parse_var_command( "DEVICE x" ).kind, "error" );
+check( "no arguments is a usage error", cp.parse_var_command( "" ).kind, "error" );
+
+check( "substr with a length", cp.substr_of( "abcdefghij", 0, 8 ), "abcdefgh" );
+check( "substr to the end", cp.substr_of( "abcdefghij", 4, null ), "efghij" );
+
+check( "output starts empty", cp.append_output( "", "one" ), "one" );
+check( "output adds a line", cp.append_output( "one", "two" ), "one\ntwo" );
+
+check( "load script is a javascript line", cp.is_javascript_line( "load script bip39 3c6e" ), true );
+check( "eval script is one", cp.is_javascript_line( "eval script xor_hex_data {entropy_1}" ), true );
+check( "exec script is one", cp.is_javascript_line( "exec script harden {rounds}:30" ), true );
+check( "plain exec is not", cp.is_javascript_line( "exec" ), false );
+check( "view scripts is not", cp.is_javascript_line( "view scripts" ), false );
+check( "exec resolves to the console", cp.resolve_command( "exec" ), { kind: "local", name: "exec", args: "" } );
+
+check( "list names, one per line", cp.parse_name_list( "demo_bip39_entropy\ndemo_echo_variables\ndemo_new_unlock_key\n" ), [ "demo_bip39_entropy", "demo_echo_variables", "demo_new_unlock_key" ] );
+check( "no lists", cp.parse_name_list( "[none]" ), [ ] );
+check( "an error is no lists", cp.parse_name_list( "Error: This web session is not valid (or has expired)." ), [ ] );
+
 heading( "palette" );
 
 var items = [

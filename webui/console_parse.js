@@ -87,7 +87,7 @@ const c_console_routes =
    "storage-instances|review": { method: "GET", name: true, options: true }
 };
 
-const c_console_local_commands = [ "help", "clear", "vars", "var", "unset", "echo", "seed", "history", "wait", "run" ];
+const c_console_local_commands = [ "help", "clear", "vars", "var", "unset", "echo", "seed", "history", "wait", "run", "exec" ];
 
 const c_console_quit_names = [ "quit", "exit", "finish" ];
 
@@ -360,6 +360,145 @@ function split_script( body )
    }
 
    return steps;
+}
+
+// ====================================================================
+// The list language - Ian's ".list" files, as "test_web_session.js" runs them
+// ====================================================================
+
+// NOTE: A line is substituted first ("ciyam.replace_variables"), so "?{name} ..." has become
+// "?<value> ..." - or a bare "? ..." when "name" is unset. "?" runs the rest of the line only
+// if the value was there, "!" only if it was not. As in the harness, a "?" guard is applied
+// and then a "!" guard, each at most once.
+function apply_line_guard( text )
+{
+   var line = String( text || "" );
+
+   var guards = [ "?", "!" ];
+
+   for( var i = 0; i < guards.length; i++ )
+   {
+      if( line.charAt( 0 ) !== guards[ i ] )
+         continue;
+
+      var space = line.indexOf( " " );
+
+      if( space <= 0 )
+         continue;
+
+      var bare = ( space === 1 );
+
+      var run = ( guards[ i ] === "?" ) ? !bare : bare;
+
+      if( !run )
+         return { run: false, text: "" };
+
+      line = line.substring( space + 1 );
+   }
+
+   return { run: true, text: line };
+}
+
+// NOTE: The forms of "var", from the harness:
+//
+//   var <name>                      show it - and add it to the output
+//   var <name> <text>               set it; an empty text removes it
+//   var !<name> <text>              set it only if it is not already set
+//   var #<name> substr:<start>[,<length>]
+//                                   add part of it to the output; the variable is unchanged
+//   var @<name> null                remove it
+//   var @<name> <global>            set it from a server javascript's result
+//
+// Returns { kind, ... } for the console to act on, or { kind: "error", message }.
+function parse_var_command( args )
+{
+   var text = String( args || "" ).trim( );
+
+   if( text === "" )
+      return { kind: "error", message: "Usage is var <name> [<text>]" };
+
+   var space = text.search( /\s/ );
+
+   if( space < 0 )
+      return { kind: "show", name: text };
+
+   var name = text.substr( 0, space );
+   var value = text.substring( space ).trim( );
+
+   var only_if_unset = false;
+
+   if( name.charAt( 0 ) === "!" )
+   {
+      only_if_unset = true;
+      name = name.substring( 1 );
+   }
+
+   if( name.charAt( 0 ) === "#" )
+   {
+      name = name.substring( 1 );
+
+      var match = /^substr:(-?\d+)(?:,(\d+))?$/.exec( value );
+
+      if( match === null )
+         return { kind: "error", message: "Invalid or unknown variable function information '" + value + "'" };
+
+      return { kind: "substr", name: name, start: parseInt( match[ 1 ], 10 ),
+       length: ( match[ 2 ] === undefined ) ? null : parseInt( match[ 2 ], 10 ) };
+   }
+
+   if( name.charAt( 0 ) === "@" )
+   {
+      name = name.substring( 1 );
+
+      if( value !== "null" )
+         return { kind: "from_script", name: name, source: value, only_if_unset: only_if_unset };
+
+      value = "";
+   }
+
+   if( !is_valid_variable_name( name ) )
+      return { kind: "error", message: "Invalid variable name '" + name + "' - start with a letter, use letters, digits and _, and not all upper case" };
+
+   return { kind: ( value === "" ) ? "remove" : "set", name: name, value: value, only_if_unset: only_if_unset };
+}
+
+// NOTE: "substr:<start>,<length>" as the harness does it - JavaScript's own "substring" and
+// "substr" on the value.
+function substr_of( value, start, length )
+{
+   var text = String( value || "" );
+
+   return ( length === null ) ? text.substring( start ) : text.substr( start, length );
+}
+
+// NOTE: The output buffer is what "{@1}", "{@2}" and "{@}" read. A server response replaces
+// it; "echo", "seed" and "var" add a line to it; "clear" empties it.
+function append_output( buffer, text )
+{
+   var before = String( buffer || "" );
+
+   return ( before === "" ) ? String( text ) : before + "\n" + text;
+}
+
+// NOTE: "view lists" answers one name per line. An error, or "[none]" when there are none,
+// is an empty list.
+function parse_name_list( response )
+{
+   var text = String( response || "" ).trim( );
+
+   if( ( text === "" ) || ( text === "[none]" ) || ( text.indexOf( "Error: " ) === 0 ) )
+      return [ ];
+
+   return text.split( /\r?\n/ ).map( function( line ) { return line.trim( ); } )
+    .filter( function( line ) { return /^[A-Za-z0-9_\-.]+$/.test( line ); } );
+}
+
+// NOTE: Lines that need a server javascript run - "load script", "eval script", "exec
+// script" and the rest of the harness's "javascripts" verbs. Those come with the sandbox
+// (part 3 of the Scripts tab plan); until then a list stops on them with a plain reason.
+function is_javascript_line( text )
+{
+   return /^~?(load|reload|eval|exec|employ|result|unload)\s+(script|scripts|javascript|javascripts)(\s|$)/i.test( String( text || "" ).trim( ) );
 }
 
 // NOTE: "run_script *" answers one script per line as "name @arg1 @arg2". Anything that
@@ -734,6 +873,12 @@ if( typeof module !== "undefined" )
       build_cws_url: build_cws_url,
       is_valid_variable_name: is_valid_variable_name,
       split_script: split_script,
+      apply_line_guard: apply_line_guard,
+      parse_var_command: parse_var_command,
+      substr_of: substr_of,
+      append_output: append_output,
+      is_javascript_line: is_javascript_line,
+      parse_name_list: parse_name_list,
       parse_script_list: parse_script_list,
       build_script_command: build_script_command,
       is_destructive_script: is_destructive_script,

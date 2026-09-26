@@ -90,6 +90,39 @@ ok   short output untouched
 ok   repeats and blanks dropped
 ok   oldest dropped at the limit
 
+== list language ===============================================
+ok   ? runs when the value was there
+ok   ? skips when it was not
+ok   ! runs when it was not
+ok   ! skips when it was
+ok   ? then ! on one line
+ok   a line without a guard is untouched
+ok   a lone ? with no space is left alone
+ok   raw protocol is not a guard
+ok   var name shows it
+ok   var name text sets it
+ok   var !name sets only if unset
+ok   var @name null removes
+ok   var @name global reads a script result
+ok   var #name substr with a length
+ok   var #name substr without one
+ok   an unknown function is refused
+ok   an all upper case name is reserved
+ok   no arguments is a usage error
+ok   substr with a length
+ok   substr to the end
+ok   output starts empty
+ok   output adds a line
+ok   load script is a javascript line
+ok   eval script is one
+ok   exec script is one
+ok   plain exec is not
+ok   view scripts is not
+ok   exec resolves to the console
+ok   list names, one per line
+ok   no lists
+ok   an error is no lists
+
 == palette =====================================================
 ok   empty query keeps all
 ok   every word must match
