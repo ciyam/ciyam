@@ -439,6 +439,36 @@ check( "admin sees Administration", cp.visible_rooms( listed, true ).map( functi
 check( "others do not", cp.visible_rooms( listed, false ).map( function( r ) { return r.room; } ), [ "0000004", "0000005" ] );
 check( "the list itself is untouched", listed.length, 3 );
 
+heading( "announcements" );
+
+// NOTE: As the background read of Administration returns them to a standard account.
+var admin_room = cp.parse_fetch_response( [
+   "admin+1 verify-e+1",
+   "1790435700000 admin  Announcement",
+   "1790435793000 admin  Announcement 2\\",
+   "Welcome to the new chat!",
+   "1790436690000 tester-1 :joined",
+   "1790436716001 admin :invite room 0000006-7e8dc218f33200c07e43ead73911af9a Common room",
+   "1790436800000 tester-1  not from admin",
+   "1790436900000 admin*  Edited announcement"
+].join( "\n" ) ).messages;
+
+function ids( list ) { return list.map( function( m ) { return m.unique; } ); }
+
+check( "admin's messages, newest first", ids( cp.pending_announcements( admin_room, [ ] ) ), [ "1790436900000", "1790435793000", "1790435700000" ] );
+check( "a multi-line one keeps its lines", cp.pending_announcements( admin_room, [ ] )[ 1 ].text, "Announcement 2\nWelcome to the new chat!" );
+check( "an edited one is still admin's", cp.pending_announcements( admin_room, [ ] )[ 0 ].text, "Edited announcement" );
+check( "dismissed ones are left out", ids( cp.pending_announcements( admin_room, [ "1790435793000" ] ) ), [ "1790436900000", "1790435700000" ] );
+check( "nothing read, nothing shown", cp.pending_announcements( null, null ), [ ] );
+
+check( "dismissed list read back", cp.parse_dismissed( "[\"1790435700000\",\"1790435793000\"]" ), [ "1790435700000", "1790435793000" ] );
+check( "a damaged value is nothing dismissed", cp.parse_dismissed( "{oops" ), [ ] );
+check( "nothing stored is nothing dismissed", cp.parse_dismissed( null ), [ ] );
+check( "stray entries are dropped", cp.parse_dismissed( "[\"123\",42,\"x\"]" ), [ "123" ] );
+check( "dismissing adds the id once", cp.add_dismissed( [ "1", "2" ], "2" ), [ "1", "2" ] );
+check( "and keeps the newest", cp.add_dismissed( Array.from( { length: cp.c_max_dismissed }, function( _, i ) { return String( i ); } ), "new" ).slice( -2 ), [ String( cp.c_max_dismissed - 1 ), "new" ] );
+check( "the list stays capped", cp.add_dismissed( Array.from( { length: cp.c_max_dismissed }, function( _, i ) { return String( i ); } ), "new" ).length, cp.c_max_dismissed );
+
 heading( "unread while the rail is out of sight" );
 
 var waiting = [ { room: "0000001", unread: 4 }, { room: "0000004", unread: 2 }, { room: "0000005", unread: 3 }, { room: "0000006", unread: 0 } ];

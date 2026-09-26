@@ -803,6 +803,57 @@ function visible_rooms( rooms, is_admin )
    return ( rooms || [ ] ).filter( function( entry ) { return !is_starting_room( entry.room ); } );
 }
 
+// NOTE: Announcements - a prototype, 2026-09-27. Administration is hidden from everyone but
+// admin, yet every account is a member of it and the chat already reads it in the background
+// for invitations - so admin's ordinary messages there reach every browser, and are shown as
+// announcements at the top of each room. The server returns only what was posted after the
+// account joined, and only what was meant for it: a message admin sends to named people
+// reaches just those people. Room notices (":invite", ":joined") are never announcements.
+const c_announcer = "admin";
+
+// NOTE: Dismissed ids are kept per account in "localStorage". Only the newest are kept -
+// an old announcement the server no longer returns needs no entry.
+const c_max_dismissed = 200;
+
+function pending_announcements( messages, dismissed )
+{
+   var gone = dismissed || [ ];
+
+   return ( messages || [ ] ).filter( function( message )
+   {
+      return message && ( message.kind === c_kind_chat ) && ( message.sender === c_announcer )
+       && ( gone.indexOf( message.unique ) < 0 );
+   } ).sort( function( a, b ) { return Number( b.unique ) - Number( a.unique ); } );
+}
+
+// NOTE: Anything that is not a list of message ids is treated as nothing dismissed - a
+// damaged value then shows announcements again, rather than hiding them for good.
+function parse_dismissed( stored )
+{
+   try
+   {
+      var value = JSON.parse( stored );
+
+      if( !Array.isArray( value ) )
+         return [ ];
+
+      return value.filter( function( id ) { return ( typeof id === "string" ) && /^\d+$/.test( id ); } );
+   }
+   catch( e )
+   {
+      return [ ];
+   }
+}
+
+function add_dismissed( dismissed, unique )
+{
+   var list = ( dismissed || [ ] ).filter( function( id ) { return id !== unique; } );
+
+   list.push( unique );
+
+   return list.slice( -c_max_dismissed );
+}
+
 // NOTE: What the room rail would show as waiting when it is out of sight - on a narrow screen
 // it slides away, and this is the count on the button that brings it back. The unread
 // messages in the rooms shown there, apart from the one open, and each open invitation.
@@ -1021,6 +1072,10 @@ if( typeof module !== "undefined" )
       user_initial: user_initial,
       visible_rooms: visible_rooms,
       unread_elsewhere: unread_elsewhere,
+      pending_announcements: pending_announcements,
+      parse_dismissed: parse_dismissed,
+      add_dismissed: add_dismissed,
+      c_max_dismissed: c_max_dismissed,
       badge_text: badge_text,
       encode_channel_field: encode_channel_field,
       decode_channel_field: decode_channel_field,

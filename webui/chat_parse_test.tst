@@ -206,6 +206,20 @@ ok   admin sees Administration
 ok   others do not
 ok   the list itself is untouched
 
+== announcements ===============================================
+ok   admin's messages, newest first
+ok   a multi-line one keeps its lines
+ok   an edited one is still admin's
+ok   dismissed ones are left out
+ok   nothing read, nothing shown
+ok   dismissed list read back
+ok   a damaged value is nothing dismissed
+ok   nothing stored is nothing dismissed
+ok   stray entries are dropped
+ok   dismissing adds the id once
+ok   and keeps the newest
+ok   the list stays capped
+
 == unread while the rail is out of sight =======================
 ok   the open room is not counted
 ok   each invitation counts one
