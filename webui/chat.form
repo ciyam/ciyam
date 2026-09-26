@@ -138,8 +138,16 @@ http://www.opensource.org/licenses/mit-license.php.
 
    <div class="chat-body">
       <!-- room rail -->
-      <nav class="chat-rail" aria-label="Rooms">
+      <nav class="chat-rail" id="room_rail" aria-label="Rooms">
          <div class="chat-rail-head">
+            <!-- NOTE: The open rail covers the "<" that opened it, so it has its own, in the same
+                 place - a second tap closes it. Shown only when the rail is a drawer. -->
+            <button type="button" class="chat-head-btn chat-rail-close" onclick="close_drawers( true )"
+             aria-label="Hide rooms" title="Close">
+               <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" focusable="false">
+                  <path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+               </svg>
+            </button>
             <span class="chat-section-label">Rooms</span>
             <button type="button" class="chat-btn chat-btn--small" onclick="do_open_create_room( )">+ New</button>
          </div>
@@ -166,12 +174,29 @@ http://www.opensource.org/licenses/mit-license.php.
 
       <!-- thread -->
       <main class="chat-thread">
-         <div class="chat-thread-head" id="thread_head" hidden>
-            <div style="min-width: 0;">
-               <div class="chat-thread-title">
-                  <h1 id="thread_name">&mdash;</h1>
-               </div>
+         <!-- NOTE: On a narrow screen the room rail and the room details slide away, and the two
+              buttons here bring them back - each shows only while its panel is out of sight.
+              "data-view" says what the thread is showing: a room has this bar at every width,
+              an invitation or nothing at all only when a button is needed to get about. -->
+         <div class="chat-thread-head" id="thread_head" data-view="room" hidden>
+            <button type="button" class="chat-head-btn chat-rail-toggle" id="rail_toggle" aria-controls="room_rail"
+             aria-expanded="false" aria-label="Show rooms" title="Rooms" onclick="do_toggle_rail( )">
+               <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" focusable="false">
+                  <path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+               </svg>
+               <span class="chat-head-badge" id="rail_badge" hidden></span>
+            </button>
+            <div class="chat-thread-title">
+               <h1 id="thread_name">&mdash;</h1>
             </div>
+            <button type="button" class="chat-head-btn chat-details-toggle" id="details_toggle" aria-controls="room_details"
+             aria-expanded="false" aria-label="Show room details" title="Room details" onclick="do_toggle_details( )">
+               <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" focusable="false">
+                  <circle cx="3" cy="8" r="1.5" fill="currentColor"/>
+                  <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
+                  <circle cx="13" cy="8" r="1.5" fill="currentColor"/>
+               </svg>
+            </button>
          </div>
 
          <!-- Selected invitation - the server refuses a non-member's read, so nothing is
@@ -218,8 +243,13 @@ http://www.opensource.org/licenses/mit-license.php.
          </div>
       </main>
 
+      <!-- NOTE: Dims the thread behind a panel slid over it; a tap on it closes the panel. -->
+      <div class="chat-drawer-scrim" id="drawer_scrim" onclick="close_drawers( true )"></div>
+
       <!-- presence -->
-      <aside class="chat-presence" aria-label="Room and members">
+      <aside class="chat-presence" id="room_details" aria-label="Room and members">
+         <button type="button" class="chat-head-btn chat-drawer-close" onclick="close_drawers( true )"
+          aria-label="Close room details" title="Close">&times;</button>
          <section class="chat-room-panel" id="room_panel" aria-label="Room details" hidden>
             <div class="chat-presence-head">Room Details</div>
             <div class="chat-room-panel-name" id="room_fact_name"></div>

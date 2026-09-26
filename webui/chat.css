@@ -977,6 +977,8 @@ button.chat-avatar:hover
 
 .chat-thread-title
 {
+   flex: 1;
+   min-width: 0;
    display: flex;
    align-items: baseline;
    gap: 9px;
@@ -984,10 +986,80 @@ button.chat-avatar:hover
 
 .chat-thread-title h1
 {
+   min-width: 0;
    margin: 0;
+   overflow: hidden;
    font-size: var(--font-size-chat-title);
    font-weight: 600;
    letter-spacing: -0.01em;
+   white-space: nowrap;
+   text-overflow: ellipsis;
+}
+
+/* NOTE: An invitation or an empty thread has this bar only on a narrow screen, where it holds
+   the buttons for the panels that have slid away - see "Narrow screens" below. */
+.chat-thread-head[data-view="invite"],
+.chat-thread-head[data-view="empty"]
+{
+   display: none;
+}
+
+/* NOTE: The buttons that bring back a panel slid out of sight. Shown only on a narrow screen. */
+.chat-head-btn
+{
+   position: relative;
+   display: none;
+   align-items: center;
+   justify-content: center;
+   flex: none;
+   width: 36px;
+   height: 36px;
+   padding: 0;
+   border: 0;
+   border-radius: var(--radius-sm);
+   background: transparent;
+   color: var(--color-chat-text-strong);
+   font-size: 22px;
+   line-height: 1;
+   cursor: pointer;
+}
+
+.chat-head-btn:hover,
+.chat-head-btn[aria-expanded="true"]
+{
+   background: var(--color-chat-border);
+}
+
+/* NOTE: The "<" grows to hold a count beside it, as a phone's back button does, rather than a
+   badge over it. The chevron stays put either way, which the rail's own "<" relies on. */
+.chat-rail-toggle,
+.chat-rail-close
+{
+   justify-content: flex-start;
+   gap: 3px;
+   width: auto;
+   min-width: 36px;
+   padding: 0 9px;
+}
+
+.chat-head-badge
+{
+   min-width: 18px;
+   height: 18px;
+   padding: 0 5px;
+   border-radius: 9px;
+   background: var(--color-chat-accent);
+   color: #ffffff;
+   font-family: var(--font-family-chat-mono);
+   font-size: 11px;
+   font-weight: 700;
+   line-height: 18px;
+   text-align: center;
+}
+
+.chat-drawer-scrim
+{
+   display: none;
 }
 
 /* NOTE: The join prompt for a selected invitation. */
@@ -1768,15 +1840,89 @@ button.chat-avatar:hover
 /* ====================================================================
    Responsive
 
-   NOTE: The presence panel is the first to go, then the room rail
-   becomes a drawer over the thread.
+   NOTE: The presence panel is the first to go, then the room rail -
+   each becomes a drawer over the thread, brought back by a button in
+   the thread's head ("..." and "<").
    ==================================================================== */
 
+/* NOTE: A panel slid out of sight is also hidden from the keyboard and screen readers - the
+   "visibility" change waits for the slide to finish on the way out, and is immediate on the
+   way in. The panels only slide over the thread; nothing is taken from it to make room. */
 @media (max-width: 1100px)
 {
+   /* NOTE: Clipped, or the details parked off to the right widen the page - a phone then lets
+      it be scrolled or zoomed out sideways. */
+   .chat-body
+   {
+      position: relative;
+      overflow: hidden;
+   }
+
    .chat-presence
    {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      z-index: 20;
+      width: min(85vw, 300px);
+      box-shadow: var(--shadow-lg);
+      transform: translateX(100%);
+      visibility: hidden;
+      transition: transform var(--duration-medium) var(--easing-standard),
+       visibility 0s linear var(--duration-medium);
+   }
+
+   .chat-app.is-details-open .chat-presence
+   {
+      transform: translateX(0);
+      visibility: visible;
+      transition: transform var(--duration-medium) var(--easing-standard), visibility 0s;
+   }
+
+   .chat-drawer-close
+   {
+      display: inline-flex;
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 1;
+   }
+
+   .chat-thread-head[data-view="invite"]
+   {
+      display: flex;
+   }
+
+   .chat-details-toggle
+   {
+      display: inline-flex;
+   }
+
+   /* NOTE: With nothing open there are no details to show. */
+   .chat-thread-head[data-view="empty"] .chat-details-toggle
+   {
       display: none;
+   }
+
+   .chat-drawer-scrim
+   {
+      display: block;
+      position: absolute;
+      inset: 0;
+      z-index: 15;
+      background: var(--color-scrim);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--duration-medium) var(--easing-standard),
+       visibility 0s linear var(--duration-medium);
+   }
+
+   .chat-app.is-details-open .chat-drawer-scrim
+   {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity var(--duration-medium) var(--easing-standard), visibility 0s;
    }
 }
 
@@ -1785,23 +1931,67 @@ button.chat-avatar:hover
    .chat-rail
    {
       position: absolute;
-      top: var(--chat-topbar-height);
+      top: 0;
       bottom: 0;
       left: 0;
       z-index: 20;
+      width: min(85vw, 320px);
       box-shadow: var(--shadow-lg);
       transform: translateX(-100%);
-      transition: transform var(--duration-medium) var(--easing-standard);
+      visibility: hidden;
+      transition: transform var(--duration-medium) var(--easing-standard),
+       visibility 0s linear var(--duration-medium);
    }
 
    .chat-app.is-rail-open .chat-rail
    {
       transform: translateX(0);
+      visibility: visible;
+      transition: transform var(--duration-medium) var(--easing-standard), visibility 0s;
    }
 
-   .chat-body
+   .chat-app.is-rail-open .chat-drawer-scrim
    {
-      position: relative;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity var(--duration-medium) var(--easing-standard), visibility 0s;
+   }
+
+   .chat-thread-head
+   {
+      gap: 6px;
+      padding: 8px 10px;
+   }
+
+   .chat-thread-head[data-view="empty"]
+   {
+      display: flex;
+   }
+
+   .chat-rail-toggle,
+   .chat-rail-close
+   {
+      display: inline-flex;
+   }
+
+   /* NOTE: Lines the rail's "<" up with the thread's, so the tap that opened it closes it. */
+   .chat-rail-head
+   {
+      gap: 6px;
+      padding: 8px 16px 10px 10px;
+   }
+
+   /* NOTE: The name is in the account menu, and the console is not made for a phone yet. */
+   .chat-status,
+   .chat-topbar .chat-divider,
+   #console_toggle
+   {
+      display: none;
+   }
+
+   .chat-topbar
+   {
+      padding: 0 12px;
    }
 
    .chat-signin

@@ -110,6 +110,8 @@ function chat( )
 
    window.addEventListener( "resize", resize_composer );
 
+   watch_drawer_widths( );
+
    // NOTE: Escape cancels whichever dialog is open. Bound on the document because the
    // dialogs are not focus traps, so the key would otherwise be missed depending on
    // what happens to have focus.
@@ -139,6 +141,12 @@ function chat( )
       else if( !document.getElementById( "user_menu" ).hidden )
       {
          close_user_menu( true );
+
+         event.preventDefault( );
+      }
+      else if( open_drawer( ) !== "" )
+      {
+         close_drawers( true );
 
          event.preventDefault( );
       }
@@ -536,6 +544,112 @@ function do_menu_sign_out( )
 }
 
 // ====================================================================
+// Narrow screens - the room rail and room details slide over the thread
+// ====================================================================
+
+// NOTE: These match the widths in "chat.css" at which each panel leaves the page. One panel
+// is open at a time. Room details stay until closed; the rail also closes on picking a room.
+const c_rail_width_query = "(max-width: 820px)";
+const c_details_width_query = "(max-width: 1100px)";
+
+function open_drawer( )
+{
+   var app = document.getElementById( "chat_view" );
+
+   if( app.classList.contains( "is-rail-open" ) )
+      return "rail";
+
+   if( app.classList.contains( "is-details-open" ) )
+      return "details";
+
+   return "";
+}
+
+function set_drawer( which, restore_focus )
+{
+   var was = open_drawer( );
+
+   var app = document.getElementById( "chat_view" );
+
+   app.classList.toggle( "is-rail-open", ( which === "rail" ) );
+   app.classList.toggle( "is-details-open", ( which === "details" ) );
+
+   update_drawer_toggles( );
+
+   // NOTE: Focus goes into a panel as it opens - it comes before or after the thread, so the
+   // keyboard would otherwise have to go the long way round to reach it.
+   if( which === "rail" )
+   {
+      var rail = document.getElementById( "room_rail" );
+
+      var target = rail.querySelector( ".chat-room.is-selected" ) || rail.querySelector( "button" );
+
+      if( target )
+         target.focus( { preventScroll: true } );
+   }
+   else if( which === "details" )
+      document.querySelector( "#room_details .chat-drawer-close" ).focus( { preventScroll: true } );
+   else if( restore_focus && ( was !== "" ) )
+      document.getElementById( ( was === "rail" ) ? "rail_toggle" : "details_toggle" ).focus( );
+}
+
+function close_drawers( restore_focus )
+{
+   if( open_drawer( ) !== "" )
+      set_drawer( "", restore_focus );
+}
+
+function do_toggle_rail( )
+{
+   set_drawer( ( open_drawer( ) === "rail" ) ? "" : "rail", true );
+}
+
+function do_toggle_details( )
+{
+   set_drawer( ( open_drawer( ) === "details" ) ? "" : "details", true );
+}
+
+// NOTE: A panel open when the window widens past its width is part of the page again, and
+// would come back as a drawer if the window narrowed later - so it is closed.
+function watch_drawer_widths( )
+{
+   [ [ c_rail_width_query, "rail" ], [ c_details_width_query, "details" ] ].forEach( function( pair )
+   {
+      window.matchMedia( pair[ 0 ] ).addEventListener( "change", function( event )
+      {
+         if( !event.matches && ( open_drawer( ) === pair[ 1 ] ) )
+            close_drawers( false );
+      } );
+   } );
+}
+
+// NOTE: The rail's button carries a count of what is waiting elsewhere, since the rail and its
+// counts are out of sight.
+function update_drawer_toggles( )
+{
+   var drawer = open_drawer( );
+
+   var waiting = badge_text( unread_elsewhere( g_rooms, g_invitations, g_room, ciyam.is_admin ) );
+
+   var badge = document.getElementById( "rail_badge" );
+
+   set_text( badge, waiting );
+
+   badge.hidden = ( waiting === "" );
+
+   var rail = document.getElementById( "rail_toggle" );
+
+   rail.setAttribute( "aria-expanded", ( drawer === "rail" ) ? "true" : "false" );
+   rail.setAttribute( "aria-label", ( ( drawer === "rail" ) ? "Hide rooms" : "Show rooms" )
+    + ( ( waiting !== "" ) ? " (" + waiting + " unread)" : "" ) );
+
+   var details = document.getElementById( "details_toggle" );
+
+   details.setAttribute( "aria-expanded", ( drawer === "details" ) ? "true" : "false" );
+   details.setAttribute( "aria-label", ( drawer === "details" ) ? "Hide room details" : "Show room details" );
+}
+
+// ====================================================================
 // Change password
 // ====================================================================
 
@@ -713,7 +827,16 @@ function show_thread_view( )
    document.getElementById( "thread_loading" ).hidden = !loading;
    document.getElementById( "thread_invite" ).hidden = !inviting;
    document.getElementById( "thread_empty" ).hidden = loading || has_room || inviting;
-   document.getElementById( "thread_head" ).hidden = loading || !has_room;
+   // NOTE: Only a room has its head at every width; for an invitation or an empty thread it
+   // holds the narrow screen's panel buttons, so the title says where the user is.
+   var head = document.getElementById( "thread_head" );
+
+   head.hidden = loading;
+   head.dataset.view = has_room ? "room" : ( inviting ? "invite" : "empty" );
+
+   if( !has_room )
+      document.getElementById( "thread_name" ).textContent = inviting ? "Invitation" : "Rooms";
+
    document.getElementById( "message_list" ).hidden = loading || !has_room;
    document.getElementById( "composer" ).hidden = loading || !has_room;
    document.getElementById( "room_panel" ).hidden = loading || ( !has_room && !inviting );
@@ -742,6 +865,8 @@ async function do_disconnect( )
    g_last_poll = 0;
 
    document.getElementById( "rail_poll" ).textContent = "";
+
+   close_drawers( false );
 
    end_first_load( );
 
@@ -1130,6 +1255,8 @@ function reconcile_list( host, items, key_of, make, update )
 
 function render_rooms( force )
 {
+   update_drawer_toggles( );
+
    var signature = rooms_signature( );
 
    if( !force && ( signature === g_rooms_drawn ) )
@@ -1257,6 +1384,9 @@ function select_room( room, token )
    g_room_name = entry ? entry.name : ( invite ? invite.name : room );
    g_room_owner = entry ? entry.owner : "";
 
+   if( open_drawer( ) === "rail" )
+      close_drawers( false );
+
    show_thread_view( );
 
    document.getElementById( "thread_name" ).textContent = g_room_name;
@@ -1321,6 +1451,9 @@ function select_invitation( room )
 
    document.getElementById( "invite_title" ).textContent = invite.name;
    document.getElementById( "invite_text" ).textContent = invite.inviter + " invited you to join this room.";
+
+   if( open_drawer( ) === "rail" )
+      close_drawers( false );
 
    show_thread_view( );
    update_thread_meta( );
