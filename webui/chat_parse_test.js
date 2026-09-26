@@ -350,6 +350,17 @@ var inbox = cp.parse_fetch_response( [
 
 var member_of = [ { room: "0000001" }, { room: "0000007" } ];
 
+// NOTE: As the server now answers once an invitation has been declined - the original
+// becomes ":ignore", with an edited marker, and the decline is posted as ":reject".
+var answered = cp.parse_fetch_response( [
+ "admin+1 verify-a+1",
+ "1790370000001 admin* :ignore (invite for 0000002 was processed)",
+ "1790370000002 verify-a :reject (invite for 0000002 was rejected)" ].join( "\n" ) ).messages;
+
+check( "ignore names its room", [ answered[ 0 ].event.verb, answered[ 0 ].event.room, answered[ 0 ].sender ], [ "ignore", "0000002", "admin" ] );
+check( "reject names its room", [ answered[ 1 ].event.verb, answered[ 1 ].event.room ], [ "reject", "0000002" ] );
+check( "an answered invitation is not pending", cp.pending_invitations( answered, [ ] ).length, 0 );
+
 var pending = cp.pending_invitations( inbox, member_of );
 
 check( "one per room, joined rooms left out", pending.map( function( p ) { return p.room; } ), [ "0000005", "0000006" ] );

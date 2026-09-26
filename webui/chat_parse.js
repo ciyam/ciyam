@@ -137,6 +137,16 @@ function parse_system_event( text )
       else
          event.room = target;
    }
+   // NOTE: Once an invitation is joined or declined the server rewrites it as ":ignore (invite
+   // for <room> was processed)", and a decline also posts ":reject (invite for <room> was
+   // rejected)" - Ian, 2026-09-26. Both keep the room number, so it is picked out here.
+   else if( ( event.verb === "ignore" ) || ( event.verb === "reject" ) )
+   {
+      var about = event.detail.match( /invite for (\d{7})/ );
+
+      if( about )
+         event.room = about[ 1 ];
+   }
    // NOTE: ":assign" carries the same "'old' to 'new'" shape as ":rename" - it reports a
    // change of room ownership. Both are parsed here so the notice can name the two sides.
    else if( ( event.verb === "rename" ) || ( event.verb === "assign" ) )

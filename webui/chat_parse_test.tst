@@ -158,6 +158,9 @@ ok   nothing for an unknown room
 ok   no messages is no invitations
 
 == pending invitations =========================================
+ok   ignore names its room
+ok   reject names its room
+ok   an answered invitation is not pending
 ok   one per room, joined rooms left out
 ok   newest first, latest details win
 ok   inviter is the sender
