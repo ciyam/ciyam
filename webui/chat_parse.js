@@ -311,6 +311,23 @@ function escape_message_text( text )
    return String( text || "" ).replace( /\\/g, "\\\\" );
 }
 
+// NOTE: The server keeps each message as a queue item of at most 1000 characters
+// ("c_default_max_deque_item_size" in "ciyam_variables.cpp"), which holds the text encoded
+// with the sender's name - measured at 733 bytes of text for "admin" and 730 for "verify-a".
+// So the chat stops at a round 700 bytes, under the limit for any name up to 38 characters.
+// It is bytes, not characters: "é" is two and most emoji four.
+const c_max_message_bytes = 700;
+
+function message_bytes( text )
+{
+   var value = String( text || "" );
+
+   if( typeof TextEncoder !== "undefined" )
+      return new TextEncoder( ).encode( value ).length;
+
+   return unescape( encodeURIComponent( value ) ).length;
+}
+
 function unescape_message_text( text )
 {
    return String( text || "" ).replace( /\\([\s\S])/g, "$1" );
@@ -970,6 +987,8 @@ if( typeof module !== "undefined" )
       invited_to_room: invited_to_room,
       pending_invitations: pending_invitations,
       escape_message_text: escape_message_text,
+      message_bytes: message_bytes,
+      c_max_message_bytes: c_max_message_bytes,
       unescape_message_text: unescape_message_text,
       join_continued_lines: join_continued_lines,
       describe_event: describe_event,

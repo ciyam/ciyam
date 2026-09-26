@@ -403,6 +403,14 @@ check( "sending doubles a backslash", cp.escape_message_text( "a\\b \\\\ c" ), "
 check( "sending leaves breaks alone", cp.escape_message_text( "one\ntwo" ), "one\ntwo" );
 check( "a round trip keeps what was typed", cp.unescape_message_text( cp.escape_message_text( "C:\\temp\\x" ) ), "C:\\temp\\x" );
 
+heading( "message size" );
+
+check( "letters are a byte each", cp.message_bytes( "hello" ), 5 );
+check( "an accented letter is two", cp.message_bytes( "é" ), 2 );
+check( "an emoji is four", cp.message_bytes( "😀" ), 4 );
+check( "a line break is one", cp.message_bytes( "a\nb" ), 3 );
+check( "the limit sits under the smallest measured", cp.c_max_message_bytes <= 730, true );
+
 heading( "room events in plain words" );
 
 function said( line, label ) { return cp.describe_event( cp.parse_system_event( line ), label ); }

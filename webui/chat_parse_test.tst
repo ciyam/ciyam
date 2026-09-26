@@ -179,6 +179,13 @@ ok   sending doubles a backslash
 ok   sending leaves breaks alone
 ok   a round trip keeps what was typed
 
+== message size ================================================
+ok   letters are a byte each
+ok   an accented letter is two
+ok   an emoji is four
+ok   a line break is one
+ok   the limit sits under the smallest measured
+
 == room events in plain words ==================================
 ok   joined
 ok   left
