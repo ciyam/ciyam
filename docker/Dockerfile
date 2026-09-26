@@ -101,9 +101,10 @@ RUN make ciyam_base.so ciyam_client ciyam_server
 # that is what it is made here.
 RUN ln -sfn "$WEBDIR" /ciyam/src/html
 
-# NOTE: Both the harness and the chat prototype are published into the web root.
+# NOTE: Both the harness and the chat prototype are published into the web root, with
+# the ".list" command lists (webcmdlists) the console and the harness can run.
 RUN set -e; \
-    for ext in js css html form; do \
+    for ext in js css html form list; do \
        cp -f /ciyam/webui/*."$ext" "$WEBDIR"/ 2>/dev/null || true; \
     done; \
     if [ -d /ciyam/webui/fonts ]; then cp -a /ciyam/webui/fonts "$WEBDIR"/; fi; \
