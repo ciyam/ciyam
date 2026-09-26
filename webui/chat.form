@@ -65,30 +65,13 @@ http://www.opensource.org/licenses/mit-license.php.
 
       <div id="signin_error" class="chat-error-text" role="alert"></div>
 
+      <!-- NOTE: This page is only seen with no session, so there is no connection state to
+           show here - the device and session are in the account menu once signed in. -->
       <div class="chat-signin-foot">
-         <div class="chat-status">
-            <span class="chat-dot is-idle" id="signin_dot"></span>
-            <span class="chat-sessid" id="signin_state">not connected &middot; no session id yet</span>
-         </div>
          <button type="button" class="chat-btn--link" onclick="do_reset_browser( )">Reset this browser</button>
-         <div class="chat-signin-foot-note">Forgets the device token and every saved account. Disabled while a session is open.</div>
+         <div class="chat-signin-foot-note">Forgets the device token and every saved account.</div>
       </div>
    </form>
-
-   <div class="chat-signin-side">
-      <div class="chat-eyebrow">Connection details</div>
-      <dl class="chat-detail-card">
-         <div class="chat-detail-row"><dt>device</dt><dd id="detail_device" class="is-empty">&mdash;</dd></div>
-         <div class="chat-detail-row"><dt>challenge</dt><dd id="detail_unique" class="is-empty">&mdash;</dd></div>
-         <div class="chat-detail-row"><dt>session</dt><dd id="detail_session" class="is-empty">&mdash;</dd></div>
-      </dl>
-      <p class="chat-prose">The device token is issued once per browser and reused by every later session on this
-      machine. A session id appears when the challenge is answered &mdash; that is the signal you are signed in.</p>
-      <div class="chat-callout">
-         Opening a linked tab shares this live session with another tab &mdash; no second sign in.
-         <button type="button" class="chat-callout-action" onclick="do_open_linked_tab( )">Open a linked tab &rarr;</button>
-      </div>
-   </div>
 </div>
 
 <!-- ================================================================
@@ -120,9 +103,15 @@ http://www.opensource.org/licenses/mit-license.php.
                        opened with the admin PIN is "[adm]", any other "[std]". -->
                   <dl class="chat-user-menu-facts">
                      <div><dt>PIN:</dt> <dd class="chat-mono" id="user_menu_pin"></dd></div>
+                     <div><dt>Device:</dt> <dd class="chat-mono" id="user_menu_device"></dd></div>
                      <div><dt>Session type:</dt> <dd id="user_menu_type"></dd></div>
                      <div><dt>Session:</dt> <dd class="chat-mono" id="user_menu_session"></dd></div>
                   </dl>
+                  <!-- NOTE: A linked tab takes over this session and polls on it too, which is
+                       what ISS-020 is about - two senders on one session get each other's
+                       responses. It is here for testing that, not for everyday use. -->
+                  <button type="button" class="chat-user-menu-link" role="menuitem" onclick="do_menu_linked_tab( )"
+                   title="Opens the chat in a new tab sharing this session - no second sign in">Open a linked tab &rarr;</button>
                </div>
                <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_open_password_dialog( )">Change password&hellip;</button>
                <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_sign_out( )">Sign out</button>

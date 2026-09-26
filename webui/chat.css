@@ -144,13 +144,6 @@ textarea
    background: var(--color-cool-500);
 }
 
-.chat-sessid
-{
-   font-family: var(--font-family-chat-mono);
-   font-size: var(--font-size-chat-micro);
-   color: var(--color-chat-text-faint);
-}
-
 .chat-topbar-right
 {
    margin-left: auto;
@@ -263,6 +256,25 @@ button.chat-avatar:hover
 {
    color: var(--color-chat-text-strong);
    overflow-wrap: anywhere;
+}
+
+/* NOTE: A small link under the facts rather than a full menu item - it is there for testing. */
+.chat-user-menu-link
+{
+   align-self: flex-start;
+   margin-top: 4px;
+   padding: 0;
+   border: 0;
+   background: none;
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-tiny);
+   color: var(--color-chat-accent);
+   cursor: pointer;
+}
+
+.chat-user-menu-link:hover
+{
+   text-decoration: underline;
 }
 
 .chat-user-menu-item
@@ -484,34 +496,28 @@ button.chat-avatar:hover
    Sign in
    ==================================================================== */
 
+/* NOTE: The form alone, centred - "margin: auto" rather than centring the container, so a
+   form taller than the window scrolls from its top instead of losing it off the page. */
 .chat-signin
 {
    display: flex;
-   height: 100vh;
+   min-height: 100vh;
+   padding: 40px 16px;
    background: var(--color-chat-bg-raised);
 }
 
 .chat-signin-form
 {
-   width: 520px;
-   flex: none;
-   padding: 56px 56px 40px;
+   width: 100%;
+   max-width: 520px;
+   margin: auto;
+   padding: 48px 56px 36px;
    display: flex;
    flex-direction: column;
    background: var(--color-chat-bg);
-   border-right: 1px solid var(--color-chat-border);
-   overflow-y: auto;
-}
-
-.chat-signin-side
-{
-   flex: 1;
-   min-width: 0;
-   padding: 56px 48px;
-   display: flex;
-   flex-direction: column;
-   gap: 18px;
-   background: var(--color-chat-bg-rail);
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-lg);
+   box-shadow: var(--shadow-sm);
 }
 
 .chat-brand
@@ -616,8 +622,9 @@ button.chat-avatar:hover
 
 .chat-signin-foot
 {
-   margin-top: auto;
-   padding-top: 24px;
+   margin-top: 32px;
+   padding-top: 20px;
+   border-top: 1px solid var(--color-chat-rule);
    display: flex;
    flex-direction: column;
    gap: 10px;
@@ -630,90 +637,6 @@ button.chat-avatar:hover
    color: var(--color-chat-text-faint);
    max-width: 380px;
    line-height: 1.5;
-}
-
-.chat-eyebrow
-{
-   font-family: var(--font-family-chat-mono);
-   font-size: var(--font-size-chat-nano);
-   letter-spacing: 0.1em;
-   text-transform: uppercase;
-   color: var(--color-chat-text-meta);
-}
-
-.chat-detail-card
-{
-   border: 1px solid var(--color-chat-border);
-   border-radius: var(--radius-md);
-   background: var(--color-chat-bg);
-   overflow: hidden;
-   font-family: var(--font-family-chat-mono);
-   font-size: var(--font-size-chat-small);
-}
-
-.chat-detail-row
-{
-   display: flex;
-   justify-content: space-between;
-   gap: 16px;
-   padding: 13px 16px;
-   border-bottom: 1px solid var(--color-chat-rule);
-}
-
-.chat-detail-row:last-child
-{
-   border-bottom: 0;
-}
-
-.chat-detail-row dt
-{
-   color: var(--color-chat-text-meta);
-   margin: 0;
-}
-
-.chat-detail-row dd
-{
-   margin: 0;
-   text-align: right;
-   word-break: break-all;
-}
-
-.chat-detail-row dd.is-empty
-{
-   color: var(--color-chat-text-faint);
-}
-
-.chat-prose
-{
-   font-size: var(--font-size-chat-meta);
-   line-height: 1.6;
-   color: var(--color-chat-text-secondary);
-   max-width: 420px;
-}
-
-.chat-callout
-{
-   padding: 14px 16px;
-   border: 1px solid var(--color-chat-border);
-   border-left: 3px solid var(--color-chat-accent);
-   border-radius: var(--radius-sm);
-   background: var(--color-chat-bg);
-   font-size: var(--font-size-chat-meta);
-   line-height: 1.55;
-   color: var(--color-chat-text-strong);
-   max-width: 420px;
-}
-
-.chat-callout-action
-{
-   margin-top: 8px;
-   font-family: var(--font-family-chat-mono);
-   font-size: var(--font-size-chat-tiny);
-   color: var(--color-chat-accent);
-   background: none;
-   border: 0;
-   padding: 0;
-   cursor: pointer;
 }
 
 /* ====================================================================
@@ -1996,22 +1919,18 @@ button.chat-avatar:hover
 
    .chat-signin
    {
-      flex-direction: column;
-      height: auto;
-      min-height: 100vh;
+      padding: 0;
+      background: var(--color-chat-bg);
    }
 
    .chat-signin-form
    {
-      width: 100%;
+      max-width: none;
+      margin: 0;
       padding: 32px 24px;
-      border-right: 0;
-      border-bottom: 1px solid var(--color-chat-border);
-   }
-
-   .chat-signin-side
-   {
-      padding: 32px 24px;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
    }
 
    .chat-message

@@ -101,7 +101,6 @@ function chat( )
       ciyam.device = localStorage.getItem( c_storage_device );
 
    populate_accounts( );
-   update_connection_details( );
 
    window.setInterval( update_poll_label, 1000 );
 
@@ -375,7 +374,6 @@ async function do_connect( )
    }
 
    set_error( "signin_error", "" );
-   set_signin_state( "connecting…", "is-idle" );
 
    document.getElementById( "signin_connect" ).disabled = true;
 
@@ -420,12 +418,9 @@ async function do_connect( )
    if( ciyam.device !== "" )
       localStorage.setItem( c_storage_device, ciyam.device );
 
-   update_connection_details( );
-
    if( ciyam.error !== "" )
    {
       set_error( "signin_error", ciyam.error );
-      set_signin_state( "not connected", "is-idle" );
 
       return;
    }
@@ -433,7 +428,6 @@ async function do_connect( )
    if( ciyam.sessid === "" )
    {
       set_error( "signin_error", "No session was established." );
-      set_signin_state( "not connected", "is-idle" );
 
       return;
    }
@@ -453,8 +447,6 @@ async function do_connect( )
    // live session at the wrong PIN and every later call failed with "This web session is
    // not valid (or has expired)". Signing out rebuilds the list, which is the only time
    // the sign-in view is seen again.
-   set_signin_state( "connected", "" );
-
    enter_chat( );
 }
 
@@ -503,6 +495,7 @@ function render_user_badge( )
 
    document.getElementById( "user_menu_name" ).textContent = name;
    document.getElementById( "user_menu_pin" ).textContent = ciyam.access;
+   document.getElementById( "user_menu_device" ).textContent = ciyam.device;
    document.getElementById( "user_menu_type" ).textContent = ciyam.is_admin ? "admin" : "standard";
 }
 
@@ -534,6 +527,13 @@ function close_user_menu( restore_focus )
 
    if( restore_focus )
       avatar.focus( );
+}
+
+function do_menu_linked_tab( )
+{
+   close_user_menu( false );
+
+   do_open_linked_tab( );
 }
 
 function do_menu_sign_out( )
@@ -880,9 +880,6 @@ async function do_disconnect( )
    document.getElementById( "chat_view" ).hidden = true;
    document.getElementById( "signin_view" ).hidden = false;
 
-   set_signin_state( "not connected · no session id yet", "is-idle" );
-
-   update_connection_details( );
    populate_accounts( );
 }
 
@@ -973,33 +970,6 @@ function do_open_linked_tab( )
    window.open( url.toString( ), "_blank" );
 }
 
-function set_signin_state( text, dot_class )
-{
-   document.getElementById( "signin_state" ).textContent = text;
-
-   var dot = document.getElementById( "signin_dot" );
-
-   dot.className = "chat-dot" + ( dot_class ? ( " " + dot_class ) : "" );
-}
-
-function update_connection_details( )
-{
-   set_detail( "detail_device", ciyam.device );
-   set_detail( "detail_unique", ciyam.unique );
-   set_detail( "detail_session", ciyam.sessid );
-}
-
-function set_detail( id, value )
-{
-   var node = document.getElementById( id );
-
-   node.textContent = ( value === "" ) ? "—" : value;
-
-   if( value === "" )
-      node.classList.add( "is-empty" );
-   else
-      node.classList.remove( "is-empty" );
-}
 
 // ====================================================================
 // Request serialisation
