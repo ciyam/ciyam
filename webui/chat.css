@@ -897,12 +897,23 @@ button.chat-avatar:hover
    border-top: 1px solid var(--color-chat-border);
 }
 
-.chat-rail-foot .chat-poll-label
+/* NOTE: When the rooms were last polled, with the busy spinner beside it while a request is
+   taking a while - both about the same thing, so they sit together. */
+.chat-rail-status
 {
-   display: block;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: 6px;
    min-height: 1.4em;
    margin-bottom: 8px;
-   text-align: center;
+}
+
+.chat-rail-status .chat-spinner
+{
+   width: 11px;
+   height: 11px;
+   border-width: 1.5px;
 }
 
 /* NOTE: The width of the rail, with its icon. */
