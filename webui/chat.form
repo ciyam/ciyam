@@ -211,6 +211,7 @@ http://www.opensource.org/licenses/mit-license.php.
                <button type="button" class="chat-btn chat-btn--small" id="composer_scope" onclick="do_toggle_scope( )">Send to selected&hellip;</button>
                <button type="button" class="chat-btn chat-btn--small" id="composer_cancel_edit" hidden onclick="do_cancel_edit( )">Cancel edit</button>
                <span class="chat-composer-note" id="composer_note">Ordinary chat only &mdash; system and slash messages are server-side.</span>
+               <span class="chat-composer-count" id="composer_count" aria-live="polite" hidden></span>
             </div>
          </div>
       </main>

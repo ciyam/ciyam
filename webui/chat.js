@@ -106,7 +106,7 @@ function chat( )
    window.setInterval( update_poll_label, 1000 );
 
    // NOTE: Typing, and a change of width that re-wraps the text, both resize the composer.
-   document.getElementById( "composer_input" ).addEventListener( "input", resize_composer );
+   document.getElementById( "composer_input" ).addEventListener( "input", on_composer_input );
 
    window.addEventListener( "resize", resize_composer );
 
@@ -984,10 +984,11 @@ function on_rooms_response( response )
 {
    var result = parse_fetch_response( response );
 
+   // NOTE: A failure on the first load keeps the spinner up - the next poll tries again, and
+   // the first-load limit still ends it. Ending it here showed "No room selected" to someone
+   // who does have rooms, until the next poll found them.
    if( result.error !== "" )
    {
-      end_first_load( );
-
       show_alert( result.error, "is-error", true );
 
       return;
@@ -2344,6 +2345,14 @@ async function do_send( )
    if( ( text === "" ) || ( g_room === "" ) )
       return;
 
+   // NOTE: Enter sends as well as the button, so the length is checked here too.
+   if( message_too_long( ) )
+   {
+      update_composer_count( );
+
+      return;
+   }
+
    var options = "";
 
    // NOTE: The server drops a lone backslash as an escape, so each is doubled to arrive as
@@ -2366,10 +2375,14 @@ async function do_send( )
 
    var was_edit = ( g_edit_unique !== "" );
 
+   var failed = false;
+
    await ciyam.create_message( g_room, options, function( response )
    {
       if( is_error_response( response ) )
       {
+         failed = true;
+
          show_alert( error_text( response ), "is-error" );
 
          return;
@@ -2400,7 +2413,24 @@ async function do_send( )
    input.focus( );
 
    if( ciyam.error !== "" )
+   {
+      failed = true;
+
       show_alert( ciyam.error, "is-error" );
+   }
+
+   // NOTE: A message the server refused goes back into the box - it was cleared on sending,
+   // and was otherwise simply lost. An edit stays an edit, to be tried again.
+   if( failed )
+   {
+      input.value = text;
+
+      on_composer_input( );
+
+      return;
+   }
+
+   update_composer_count( );
 
    do_cancel_edit( );
 }
@@ -2435,6 +2465,38 @@ function resize_composer( )
       list.scrollTop = list.scrollHeight;
 }
 
+// NOTE: The count appears as a message nears the server's limit, and past it turns red and
+// holds the Send button - better than the server's "Maximum size for 'irc_...' items" after
+// the fact. Counted in bytes, as the server counts - see "message_bytes( )".
+const c_count_from_bytes = 600;
+
+function message_too_long( )
+{
+   return message_bytes( document.getElementById( "composer_input" ).value.trim( ) ) > c_max_message_bytes;
+}
+
+function update_composer_count( )
+{
+   var input = document.getElementById( "composer_input" );
+   var count = document.getElementById( "composer_count" );
+
+   var bytes = message_bytes( input.value.trim( ) );
+
+   var over = ( bytes > c_max_message_bytes );
+
+   count.hidden = ( bytes < c_count_from_bytes );
+   count.classList.toggle( "is-over", over );
+   count.textContent = bytes + " / " + c_max_message_bytes + ( over ? " - too long" : "" );
+
+   document.getElementById( "composer_send" ).disabled = over || input.disabled;
+}
+
+function on_composer_input( )
+{
+   resize_composer( );
+   update_composer_count( );
+}
+
 function begin_edit( unique, text )
 {
    g_edit_unique = unique;
@@ -2444,7 +2506,7 @@ function begin_edit( unique, text )
    input.value = text;
    input.focus( );
 
-   resize_composer( );
+   on_composer_input( );
 
    document.getElementById( "composer_cancel_edit" ).hidden = false;
    document.getElementById( "composer_send" ).textContent = "Save edit";

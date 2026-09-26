@@ -1130,7 +1130,22 @@ button.chat-avatar:hover
    overflow-wrap: anywhere;
 }
 
-/* NOTE: A message keeps its line breaks - typed with ctrl+enter. */
+.chat-composer-count
+{
+   margin-left: auto;
+   flex: none;
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-micro);
+   color: var(--color-chat-text-faint);
+}
+
+.chat-composer-count.is-over
+{
+   color: var(--color-chat-critical-text);
+   font-weight: 600;
+}
+
+/* NOTE: A message keeps its line breaks - typed with shift+enter. */
 .chat-message-body
 {
    white-space: pre-wrap;
