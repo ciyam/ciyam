@@ -169,6 +169,16 @@ ok   joining clears it
 ok   no messages, none pending
 ok   never the starting room, never without a token
 
+== line breaks and backslashes =================================
+ok   five messages, none lost to a break
+ok   a line break comes back as one
+ok   a stored backslash comes back single
+ok   backslash then break
+ok   an ending backslash does not swallow the next message
+ok   sending doubles a backslash
+ok   sending leaves breaks alone
+ok   a round trip keeps what was typed
+
 == room events in plain words ==================================
 ok   joined
 ok   left

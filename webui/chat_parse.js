@@ -247,7 +247,7 @@ function parse_message_line( line )
       unique: unique,
       sender: sender,
       edited: edited,
-      text: text
+      text: unescape_message_text( text )
    };
 }
 
@@ -295,6 +295,46 @@ function parse_room_entry( unique, owner, remainder )
 // NOTE: Splits a complete "format=text" fetch into its member list and its
 // rows. The caller does not need to know whether it asked for the entrance
 // room - the row kinds say what came back.
+// NOTE: How the server carries a message's backslashes and line breaks - verified against
+// the container, 2026-09-26:
+//
+//   on the way in   "\" escapes the next character and is dropped: "a\b" is stored "ab",
+//                   and "\\" is stored as one "\"
+//   on the way out  a stored "\" comes back as "\\", and a line break as "\" at the end of
+//                   the line, the message carrying on on the next - the response is one
+//                   message per line, so a raw break would split it
+//
+// So a backslash the user typed is doubled before sending, and on receipt the continued
+// lines are joined and the escapes undone.
+function escape_message_text( text )
+{
+   return String( text || "" ).replace( /\\/g, "\\\\" );
+}
+
+function unescape_message_text( text )
+{
+   return String( text || "" ).replace( /\\([\s\S])/g, "$1" );
+}
+
+// NOTE: A line ends in a continuation when it ends in an odd number of backslashes - an even
+// number is escaped backslashes, and the message genuinely ends there.
+function join_continued_lines( lines )
+{
+   var joined = [ ];
+
+   for( var i = 0; i < lines.length; i++ )
+   {
+      var line = lines[ i ];
+
+      while( ( /(?:^|[^\\])(?:\\\\)*\\$/.test( line ) ) && ( i + 1 < lines.length ) )
+         line = line + "\n" + lines[ ++i ];
+
+      joined.push( line );
+   }
+
+   return joined;
+}
+
 function parse_fetch_response( response )
 {
    var result = { error: "", members: [ ], messages: [ ], rooms: [ ], has_new: false };
@@ -309,7 +349,9 @@ function parse_fetch_response( response )
    if( !response )
       return result;
 
-   var lines = response.split( "\n" );
+   // NOTE: A message with a line break arrives over several lines - see
+   // "escape_message_text( )" above.
+   var lines = join_continued_lines( response.split( "\n" ) );
 
    result.members = parse_members( lines[ 0 ] );
 
@@ -927,6 +969,9 @@ if( typeof module !== "undefined" )
       posting_status: posting_status,
       invited_to_room: invited_to_room,
       pending_invitations: pending_invitations,
+      escape_message_text: escape_message_text,
+      unescape_message_text: unescape_message_text,
+      join_continued_lines: join_continued_lines,
       describe_event: describe_event,
       password_strength: password_strength,
       user_initial: user_initial,

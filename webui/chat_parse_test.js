@@ -378,6 +378,31 @@ var odd = cp.parse_fetch_response( [
 
 check( "never the starting room, never without a token", cp.pending_invitations( odd, [ ] ).length, 0 );
 
+heading( "line breaks and backslashes" );
+
+// NOTE: The lines the container returned on 2026-09-26 for messages sent as "one<break>two",
+// "double\\slash" (one backslash stored), "bs then nl\<break>next", and "ends with\\"
+// (one backslash stored, so it comes back doubled and must not join the next line).
+var multi = cp.parse_fetch_response( [
+ "admin+1",
+ "1790426390001 admin  one\\",
+ "two",
+ "1790426391000 admin  double\\\\slash",
+ "1790426392000 admin  bs then nl\\\\\\",
+ "next",
+ "1790426393000 admin  ends with\\\\",
+ "1790426394000 admin  after" ].join( "\n" ) ).messages;
+
+check( "five messages, none lost to a break", multi.length, 5 );
+check( "a line break comes back as one", multi[ 0 ].text, "one\ntwo" );
+check( "a stored backslash comes back single", multi[ 1 ].text, "double\\slash" );
+check( "backslash then break", multi[ 2 ].text, "bs then nl\\\nnext" );
+check( "an ending backslash does not swallow the next message", [ multi[ 3 ].text, multi[ 4 ].text ], [ "ends with\\", "after" ] );
+
+check( "sending doubles a backslash", cp.escape_message_text( "a\\b \\\\ c" ), "a\\\\b \\\\\\\\ c" );
+check( "sending leaves breaks alone", cp.escape_message_text( "one\ntwo" ), "one\ntwo" );
+check( "a round trip keeps what was typed", cp.unescape_message_text( cp.escape_message_text( "C:\\temp\\x" ) ), "C:\\temp\\x" );
+
 heading( "room events in plain words" );
 
 function said( line, label ) { return cp.describe_event( cp.parse_system_event( line ), label ); }
