@@ -164,9 +164,12 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
 
                <div id="script_args" hidden>
-                  <p class="console-note">A CIYAM script from <code>manuscript.sio</code>. Its arguments
-                  come from <code>run_script *</code>, and the server refuses a missing or unknown one
-                  before anything executes.</p>
+                  <!-- NOTE: Listed for reference, not run from here - Ian, 2026-09-26: they are
+                       admin and development only, some are only for the server itself to run,
+                       and one can stop the server. Running one is a typed, deliberate act. -->
+                  <p class="console-note">A CIYAM script from <code>manuscript.sio</code>, listed for
+                  reference. Its arguments come from <code>run_script *</code>. <b>Copy to prompt</b>
+                  puts the command at the console prompt &mdash; nothing runs until you press Enter.</p>
 
                   <h3 class="console-script-title" id="args_title"></h3>
 
@@ -176,13 +179,11 @@ http://www.opensource.org/licenses/mit-license.php.
                      <code class="console-preview" id="args_preview"></code>
                   </div>
 
-                  <label class="console-confirm" id="args_confirm_row" hidden>
-                     <input type="checkbox" id="args_confirm" onchange="update_args_preview( )">
-                     This is a system script and cannot be undone from here. Run it anyway.
-                  </label>
+                  <p class="console-confirm" id="args_warning" hidden>This is a system script and cannot
+                  be undone. Check the command at the prompt before pressing Enter.</p>
 
                   <div class="console-bar">
-                     <button type="button" class="console-chip is-solid" id="args_run" onclick="do_run_server_script( )">Run this script</button>
+                     <button type="button" class="console-chip is-solid" id="args_copy" onclick="do_copy_server_script( )">Copy to prompt</button>
                      <button type="button" class="console-chip" onclick="show_script_editor( )">Cancel</button>
                   </div>
 

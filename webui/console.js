@@ -1286,10 +1286,7 @@ function show_server_script( script, button )
       form.appendChild( field );
    } );
 
-   var destructive = is_destructive_script( script.name );
-
-   document.getElementById( "args_confirm_row" ).hidden = !destructive;
-   document.getElementById( "args_confirm" ).checked = false;
+   document.getElementById( "args_warning" ).hidden = !is_destructive_script( script.name );
 
    set_error( "args_error", "" );
 
@@ -1328,12 +1325,13 @@ function update_args_preview( )
 
    var missing = Object.keys( values ).some( function( key ) { return values[ key ] === ""; } );
 
-   var unconfirmed = !document.getElementById( "args_confirm_row" ).hidden && !document.getElementById( "args_confirm" ).checked;
-
-   document.getElementById( "args_run" ).disabled = missing || unconfirmed || !!built.error;
+   document.getElementById( "args_copy" ).disabled = missing || !!built.error;
 }
 
-function do_run_server_script( )
+// NOTE: Puts the command at the prompt rather than running it - a server script is run only
+// by pressing Enter on it there, like anything typed. It is not added to the history until
+// it is actually run.
+function do_copy_server_script( )
 {
    if( g_current_server_script === null )
       return;
@@ -1349,7 +1347,13 @@ function do_run_server_script( )
 
    select_tab( "console" );
 
-   run_line( "~" + built.command );
+   var input = document.getElementById( "prompt_input" );
+
+   input.value = "~" + built.command;
+
+   input.focus( );
+
+   input.setSelectionRange( input.value.length, input.value.length );
 }
 
 // ====================================================================
