@@ -119,6 +119,8 @@ constexpr const char* c_web_session_suffix = ".session";
 constexpr const char* c_web_started_suffix = ".started";
 constexpr const char* c_web_storage_suffix = ".storage";
 
+constexpr const char* c_cws_artifacts_link = ".ciyam";
+
 constexpr const char* c_cws_uri_suffix_help = "help";
 constexpr const char* c_cws_uri_suffix_users = "users";
 constexpr const char* c_cws_uri_suffix_status = "status";
@@ -228,6 +230,8 @@ constexpr const char* c_storage_module_instance_options_query = "query";
 constexpr const char* c_storage_module_instance_options_fields = "fields";
 
 mutex g_mutex;
+
+string g_cws_artifacts_dir;
 
 bool g_cws_admin_locked = false;
 
@@ -1078,7 +1082,7 @@ string get_files_for_endpoint(
 
       file_filter ff;
 
-      fs_iterator fs( g_html_dir, &ff );
+      fs_iterator fs( g_cws_artifacts_dir, &ff );
 
       while( fs.has_next( ) )
       {
@@ -1211,6 +1215,23 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    // NOTE: Empty code block for scope purposes.
    {
       guard g( g_mutex );
+
+      // NOTE: Allows for a "html/.ciyam"
+      // link to be used in order to have
+      // artifacts (such as "javascripts"
+      // and "stylesheets") being located
+      // separately to other web files.
+      if( g_cws_artifacts_dir.empty( ) )
+      {
+         string linked_artifacts( g_html_dir + '/' );
+
+         linked_artifacts += c_cws_artifacts_link;
+
+         if( !dir_exists( linked_artifacts, true ) )
+            g_cws_artifacts_dir = g_html_dir;
+         else
+            g_cws_artifacts_dir = linked_artifacts;
+      }
 
       int64_t now = unix_time( );
 
@@ -2072,7 +2093,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                }
                else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_javascripts ) )
                {
-                  string file_name( g_html_dir + '/' + c_ciyam_prefix + access + c_js_suffix );
+                  string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + access + c_js_suffix );
 
                   if( payload.empty( ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -2096,7 +2117,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_javascripts_prefix ) ) );
 
-                  string file_name( g_html_dir + '/' + c_ciyam_prefix + name + c_js_suffix );
+                  string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + name + c_js_suffix );
 
                   if( !file_exists( file_name ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -2122,7 +2143,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      error = "Javascript data cannot be erased whilst the system is locked.";
                   else
                   {
-                     string file_name( g_html_dir + '/' + c_ciyam_prefix + access + c_js_suffix );
+                     string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + access + c_js_suffix );
 
                      file_remove( file_name );
 
@@ -2146,7 +2167,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                }
                else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_stylesheets ) )
                {
-                  string file_name( g_html_dir + '/' + access + c_css_suffix );
+                  string file_name( g_cws_artifacts_dir + '/' + access + c_css_suffix );
 
                   if( payload.empty( ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -2170,7 +2191,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_stylesheets_prefix ) ) );
 
-                  string file_name( g_html_dir + '/' + name + c_css_suffix );
+                  string file_name( g_cws_artifacts_dir + '/' + name + c_css_suffix );
 
                   if( !file_exists( file_name ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -2194,7 +2215,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      error = "Stylesheet data cannot be erased whilst the system is locked.";
                   else
                   {
-                     string file_name( g_html_dir + '/' + access + c_css_suffix );
+                     string file_name( g_cws_artifacts_dir + '/' + access + c_css_suffix );
 
                      file_remove( file_name );
 
@@ -2218,7 +2239,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                }
                else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_webcmdlists ) )
                {
-                  string file_name( g_html_dir + '/' + access + c_list_suffix );
+                  string file_name( g_cws_artifacts_dir + '/' + access + c_list_suffix );
 
                   if( payload.empty( ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -2242,7 +2263,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_webcmdlists_prefix ) ) );
 
-                  string file_name( g_html_dir + '/' + name + c_list_suffix );
+                  string file_name( g_cws_artifacts_dir + '/' + name + c_list_suffix );
 
                   if( !file_exists( file_name ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -2266,7 +2287,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      error = "Commands list data cannot be erased whilst the system is locked.";
                   else
                   {
-                     string file_name( g_html_dir + '/' + access + c_list_suffix );
+                     string file_name( g_cws_artifacts_dir + '/' + access + c_list_suffix );
 
                      file_remove( file_name );
 
