@@ -87,6 +87,8 @@ ROOM=@substr:1:$ROOM
 ;
 ENTRANCE_ROOM=0000000
 ;
+ROOM_LEN=@strlen:$ENTRANCE_ROOM
+;
 RELOAD=
 ROOM_AND_USER=@strlit:%ROOM%_$USER
 ;
@@ -307,6 +309,43 @@ NEW_MSG_UNIQUE=%NEW_MSG_PARTS:1%
 NEW_MSG_BASE64=%NEW_MSG_PARTS:2%
 ;
 NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR* $NEW_MSG_BASE64
+@else
+MSG_BASE64=%MESSAGE_PARTS:3%
+;
+; NOTE: If message is an "invite" then
+; will decode and if already joined is
+; replaced with an "ignore" message.
+POS=@strpos:XzppbnZpdGUgcm9vbSAw:$MSG_BASE64
+;
+@ifeq "$POS" "0"
+IGNORE=
+DECODED=@base64:$MSG_BASE64
+POS=@strpos:0:$DECODED
+@ifdef $POS
+DECODED=@substr:$POS:$DECODED
+POS=@strpos:-:$DECODED
+DECODED=@substr:0,$POS:$DECODED
+LEN=@strlen:$DECODED
+@ifeq "$LEN" "$ROOM_LEN"
+.system_variable @irc_xinvr_%DECODED%_$USER
+@ifdef $OUTPUT
+IGNORE=1
+@else
+.system_variable @session_@queue_irc_%DECODED%_$USER
+@ifdef $OUTPUT
+IGNORE=1
+@endif
+@endif
+;
+@ifdef $IGNORE
+NEW_MSG=_:ignore (invite for $DECODED was processed)
+NEW_MSG_BASE64=@base64::$NEW_MSG
+NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR* $NEW_MSG_BASE64
+@endif
+;
+@endif
+@endif
+@endif
 @endif
 ;
 @ifndef $MESSAGES
