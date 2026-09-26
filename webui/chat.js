@@ -105,6 +105,11 @@ function chat( )
 
    window.setInterval( update_poll_label, 1000 );
 
+   // NOTE: Typing, and a change of width that re-wraps the text, both resize the composer.
+   document.getElementById( "composer_input" ).addEventListener( "input", resize_composer );
+
+   window.addEventListener( "resize", resize_composer );
+
    // NOTE: Escape cancels whichever dialog is open. Bound on the document because the
    // dialogs are not focus traps, so the key would otherwise be missed depending on
    // what happens to have focus.
@@ -2247,6 +2252,8 @@ function apply_posting_rules( )
 
       input.value = "";
       input.placeholder = status.locked ? "🔒 " + status.reason : status.reason;
+
+      resize_composer( );
    }
 }
 
@@ -2353,6 +2360,8 @@ async function do_send( )
    input.value = "";
    input.disabled = true;
 
+   resize_composer( );
+
    ciyam.error = "";
 
    var was_edit = ( g_edit_unique !== "" );
@@ -2396,6 +2405,36 @@ async function do_send( )
    do_cancel_edit( );
 }
 
+// NOTE: The composer grows with what is typed - wrapped or broken over lines - up to five
+// lines, and scrolls beyond that. The row keeps the Send button at the bottom, so the box
+// grows upwards as the thread gives way; a thread that was at its latest message stays there.
+const c_composer_max_lines = 5;
+
+function resize_composer( )
+{
+   var input = document.getElementById( "composer_input" );
+   var list = document.getElementById( "message_list" );
+
+   var at_end = ( list.scrollTop + list.clientHeight >= list.scrollHeight - 40 );
+
+   input.style.height = "auto";
+
+   var style = getComputedStyle( input );
+
+   var borders = parseFloat( style.borderTopWidth ) + parseFloat( style.borderBottomWidth );
+   var padding = parseFloat( style.paddingTop ) + parseFloat( style.paddingBottom );
+
+   var tallest = Math.ceil( ( parseFloat( style.lineHeight ) * c_composer_max_lines ) + padding + borders );
+
+   var wanted = input.scrollHeight + borders;
+
+   input.style.height = Math.min( wanted, tallest ) + "px";
+   input.style.overflowY = ( wanted > tallest ) ? "auto" : "hidden";
+
+   if( at_end )
+      list.scrollTop = list.scrollHeight;
+}
+
 function begin_edit( unique, text )
 {
    g_edit_unique = unique;
@@ -2404,6 +2443,8 @@ function begin_edit( unique, text )
 
    input.value = text;
    input.focus( );
+
+   resize_composer( );
 
    document.getElementById( "composer_cancel_edit" ).hidden = false;
    document.getElementById( "composer_send" ).textContent = "Save edit";
