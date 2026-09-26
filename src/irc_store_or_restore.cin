@@ -95,6 +95,8 @@ system_variable "-p=$PREFIX" @irc_owner_*
 system_variable "-p=$PREFIX" @irc_posts_*
 system_variable "-p=$PREFIX" @irc_users_*
 system_variable "-p=$PREFIX" @irc_uuids_*
+system_variable "-p=$PREFIX" @irc_xinvr_*
+system_variable "-p=$PREFIX" @irc_xinvs_*
 ;
 system_variable "-p=$PREFIX" @session_@queue_irc_*
 ;
