@@ -206,6 +206,16 @@ ok   admin sees Administration
 ok   others do not
 ok   the list itself is untouched
 
+== unread while the rail is out of sight =======================
+ok   the open room is not counted
+ok   each invitation counts one
+ok   Administration counts for admin only
+ok   nothing open counts every room
+ok   no rooms, no count
+ok   badge for none
+ok   badge for some
+ok   badge capped
+
 == password strength ===========================================
 ok   empty says nothing
 ok   under seven is unsatisfactory

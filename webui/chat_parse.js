@@ -803,6 +803,31 @@ function visible_rooms( rooms, is_admin )
    return ( rooms || [ ] ).filter( function( entry ) { return !is_starting_room( entry.room ); } );
 }
 
+// NOTE: What the room rail would show as waiting when it is out of sight - on a narrow screen
+// it slides away, and this is the count on the button that brings it back. The unread
+// messages in the rooms shown there, apart from the one open, and each open invitation.
+function unread_elsewhere( rooms, invitations, current_room, is_admin )
+{
+   var total = ( invitations || [ ] ).length;
+
+   visible_rooms( rooms, is_admin ).forEach( function( entry )
+   {
+      if( ( entry.room !== current_room ) && ( entry.unread > 0 ) )
+         total += entry.unread;
+   } );
+
+   return total;
+}
+
+// NOTE: A count for a small badge - nothing for none, and capped so it stays small.
+function badge_text( count )
+{
+   if( !( count > 0 ) )
+      return "";
+
+   return ( count > 99 ) ? "99+" : String( count );
+}
+
 // NOTE: The password strength rules from "test_bip39.html", so both pages rate a password
 // the same way. Under seven characters is unsatisfactory; otherwise the length is scaled by
 // how many kinds of character are used - digits alone count least - and the score banded.
@@ -995,6 +1020,8 @@ if( typeof module !== "undefined" )
       password_strength: password_strength,
       user_initial: user_initial,
       visible_rooms: visible_rooms,
+      unread_elsewhere: unread_elsewhere,
+      badge_text: badge_text,
       encode_channel_field: encode_channel_field,
       decode_channel_field: decode_channel_field,
       parse_access_list: parse_access_list,

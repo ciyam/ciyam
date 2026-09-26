@@ -439,6 +439,20 @@ check( "admin sees Administration", cp.visible_rooms( listed, true ).map( functi
 check( "others do not", cp.visible_rooms( listed, false ).map( function( r ) { return r.room; } ), [ "0000004", "0000005" ] );
 check( "the list itself is untouched", listed.length, 3 );
 
+heading( "unread while the rail is out of sight" );
+
+var waiting = [ { room: "0000001", unread: 4 }, { room: "0000004", unread: 2 }, { room: "0000005", unread: 3 }, { room: "0000006", unread: 0 } ];
+var invited = [ { room: "0000009" } ];
+
+check( "the open room is not counted", cp.unread_elsewhere( waiting, [ ], "0000004", false ), 3 );
+check( "each invitation counts one", cp.unread_elsewhere( waiting, invited, "0000004", false ), 4 );
+check( "Administration counts for admin only", cp.unread_elsewhere( waiting, invited, "0000004", true ), 8 );
+check( "nothing open counts every room", cp.unread_elsewhere( waiting, [ ], "", false ), 5 );
+check( "no rooms, no count", cp.unread_elsewhere( null, null, "", false ), 0 );
+check( "badge for none", cp.badge_text( 0 ), "" );
+check( "badge for some", cp.badge_text( 7 ), "7" );
+check( "badge capped", cp.badge_text( 140 ), "99+" );
+
 heading( "password strength" );
 
 // NOTE: The same scores "test_bip39.html" gives - length times a multiplier for variety.
