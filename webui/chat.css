@@ -1933,15 +1933,21 @@ button.chat-avatar:hover
       box-shadow: none;
    }
 
+   /* NOTE: The time and name share a line, with the text under them across the width. */
    .chat-message
    {
-      grid-template-columns: 1fr;
-      gap: 2px;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 2px 8px;
    }
 
    .chat-message-time
    {
       text-align: left;
+   }
+
+   .chat-message-text
+   {
+      grid-column: 1 / -1;
    }
 }
 
