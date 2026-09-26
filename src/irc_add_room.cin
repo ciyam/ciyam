@@ -337,6 +337,29 @@ USER_LINES=@repstr:./\n:$NAMES
 ;
 @:LOOP
 NEXT_USER=%USER_LINES:1%
+;
+BAD_INVITE=
+;
+.system_variable @irc_xinvr_%EXISTING%_$NEXT_USER
+@ifdef $OUTPUT
+BAD_INVITE=1
+@else
+.system_variable @irc_xinvs_%EXISTING%_$NEXT_USER
+@ifdef $OUTPUT
+BAD_INVITE=1
+@else
+.system_variable @session_@queue_irc_%EXISTING%_$NEXT_USER
+@ifdef $OUTPUT
+BAD_INVITE=1
+@endif
+@endif
+@endif
+;
+@ifdef $BAD_INVITE
+ERROR=Invalid attempt to invite '$NEXT_USER' to room '$EXISTING'.
+NEXT_USER=
+@endif
+;
 @ifndef $NEXT_USER
 @label END_LOOP
 @endif
@@ -385,7 +408,11 @@ OLD_IRC_USER=$OUTPUT
 .session_variable @replace $REPLACE
 @endif
 .run_script !irc_send_message "@room=%EXISTING%_$STARTING_ROOM,@names=invite_$NAMES,@message=$ENCODED"
+;
 .session_variable @irc_user "$OLD_IRC_USER"
+;
+SUFFIX=@repstr:./|:$NAMES
+.system_variable @irc_xinvs_%EXISTING%_|$SUFFIX 1
 @endif
 @endif
 @endif
