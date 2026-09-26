@@ -14,6 +14,8 @@ const c_secret_access_len = 12;
 
 const c_home_room = "0000000";
 
+const c_own_access = "***";
+
 const c_response_okay = "[okay]";
 
 const c_node_cmd_echo = "echo";
@@ -830,6 +832,9 @@ class CIYAM
          callback( "Error: No current session exists." );
       else
       {
+         if( access_pin == c_own_access )
+            access_pin = this.access;
+
          var url = this.get_cws_url( ) + "/users/" + access_pin
           + "?access=" + this.access + "&device=" + this.device + "&format=" + this.format_type;
 
