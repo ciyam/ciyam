@@ -54,7 +54,7 @@ It will present a HTML form with a Perform Post Request button. To verify that F
 click on the button. Output should look something like the following:
 
 Posted Data: name=Joe+Bloggs&age=&sex=male&submit=Perform+Post+Request...
-(if the browser prompts to download the .fcgi file then configure Apache according to fcgi_configuration.txt)
+(if the browser prompts to download the .fcgi file then configure Apache according to fcgi_configuration.md)
 
 If you go "back" to the page and then click the button again you should now see some like this:
 
@@ -67,7 +67,7 @@ If all has gone well then it is time to install the IDE application which is don
 ./setup Meta meta
 ./install_fcgi ciyam_interface meta
 ./install_fcgi upload meta
-./install Meta meta index
+./install_module Meta meta index
 
 For production environments the initial "ciyam_server.sid" file (created by running the "config" script) will
 need to be removed prior to starting the application server (skip the scripts if is a development environment
@@ -203,4 +203,4 @@ also have been automatically set.
 It should be noted that some package types will have one or more dependencies upon other package types so the
 order that new package types are installed is important.
 
-For more specific information about the various Package Types that are available refer to "packages.txt".
+For more specific information about the various Package Types that are available refer to "packages.md".
