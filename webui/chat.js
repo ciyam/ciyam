@@ -150,6 +150,12 @@ function chat( )
 
          event.preventDefault( );
       }
+      else if( !document.getElementById( "emoji_panel" ).hidden )
+      {
+         close_emoji_panel( true );
+
+         event.preventDefault( );
+      }
       else if( !document.getElementById( "user_menu" ).hidden )
       {
          close_user_menu( true );
@@ -171,7 +177,14 @@ function chat( )
 
       if( !menu.hidden && !event.target.closest( ".chat-user" ) )
          close_user_menu( false );
+
+      // NOTE: And outside the emoji panel closes that - its own button toggles it instead.
+      if( !document.getElementById( "emoji_panel" ).hidden
+       && !event.target.closest( "#emoji_panel" ) && !event.target.closest( "#emoji_toggle" ) )
+         close_emoji_panel( false );
    } );
+
+   bind_emoji_search( );
 }
 
 function populate_accounts( )
@@ -557,6 +570,276 @@ function do_menu_sign_out( )
 }
 
 // ====================================================================
+// Emoji panel
+// ====================================================================
+
+// NOTE: The curated list is in "chat_emoji.js". The panel is built the first time it opens.
+var g_emoji_catalogue = null;
+
+const c_storage_emoji_recent = "cws.emoji_recent";
+
+// NOTE: A phone has emoji on its own keyboard, and focusing a field there brings the keyboard
+// up over the panel - so on a touch screen nothing is focused for the user.
+function has_fine_pointer( )
+{
+   return window.matchMedia( "(pointer: fine)" ).matches;
+}
+
+function do_toggle_emoji( )
+{
+   if( document.getElementById( "emoji_panel" ).hidden )
+      open_emoji_panel( );
+   else
+      close_emoji_panel( true );
+}
+
+function open_emoji_panel( )
+{
+   if( document.getElementById( "emoji_toggle" ).disabled )
+      return;
+
+   if( g_emoji_catalogue === null )
+   {
+      g_emoji_catalogue = emoji_catalogue( );
+
+      build_emoji_panel( );
+   }
+
+   var search = document.getElementById( "emoji_search" );
+
+   search.value = "";
+
+   render_recent_emoji( );
+   show_emoji_results( "" );
+
+   document.getElementById( "emoji_scroll" ).scrollTop = 0;
+   document.getElementById( "emoji_panel" ).hidden = false;
+   document.getElementById( "emoji_toggle" ).setAttribute( "aria-expanded", "true" );
+
+   if( has_fine_pointer( ) )
+      search.focus( );
+}
+
+function close_emoji_panel( restore_focus )
+{
+   var panel = document.getElementById( "emoji_panel" );
+
+   if( panel.hidden )
+      return;
+
+   panel.hidden = true;
+
+   document.getElementById( "emoji_toggle" ).setAttribute( "aria-expanded", "false" );
+
+   if( restore_focus && has_fine_pointer( ) )
+      document.getElementById( "composer_input" ).focus( );
+}
+
+function emoji_button( item )
+{
+   var button = document.createElement( "button" );
+
+   button.type = "button";
+   button.className = "chat-emoji";
+   button.textContent = item.char;
+   button.title = item.name;
+   button.setAttribute( "aria-label", item.name );
+
+   button.addEventListener( "click", function( ) { insert_emoji( item.char ); } );
+
+   return button;
+}
+
+function emoji_section( id, label, items )
+{
+   var section = document.createElement( "section" );
+
+   section.className = "chat-emoji-section";
+   section.dataset.section = id;
+
+   var head = document.createElement( "h3" );
+
+   head.className = "chat-emoji-section-head";
+   head.textContent = label;
+
+   var grid = document.createElement( "div" );
+
+   grid.className = "chat-emoji-grid";
+
+   items.forEach( function( item ) { grid.appendChild( emoji_button( item ) ); } );
+
+   section.appendChild( head );
+   section.appendChild( grid );
+
+   return section;
+}
+
+// NOTE: One section per category, then two that change - Recent at the top, and the search
+// results, shown in place of everything else while there is something typed.
+function build_emoji_panel( )
+{
+   var scroll = document.getElementById( "emoji_scroll" );
+   var tabs = document.getElementById( "emoji_tabs" );
+
+   scroll.appendChild( emoji_section( "recent", "Recent", [ ] ) );
+   scroll.appendChild( emoji_section( "results", "Results", [ ] ) );
+
+   g_emoji_catalogue.forEach( function( category )
+   {
+      scroll.appendChild( emoji_section( category.id, category.label, category.items ) );
+
+      var tab = document.createElement( "button" );
+
+      tab.type = "button";
+      tab.className = "chat-emoji-tab";
+      tab.textContent = category.icon;
+      tab.title = category.label;
+      tab.setAttribute( "aria-label", category.label );
+
+      tab.addEventListener( "click", function( )
+      {
+         var search = document.getElementById( "emoji_search" );
+
+         if( search.value !== "" )
+         {
+            search.value = "";
+
+            show_emoji_results( "" );
+         }
+
+         var target = scroll.querySelector( "[data-section=\"" + category.id + "\"]" );
+
+         scroll.scrollTop = target.offsetTop - scroll.offsetTop;
+      } );
+
+      tabs.appendChild( tab );
+   } );
+}
+
+function read_recent_emoji( )
+{
+   try
+   {
+      return parse_recent_emoji( localStorage.getItem( c_storage_emoji_recent ) );
+   }
+   catch( e )
+   {
+      return [ ];
+   }
+}
+
+// NOTE: Recent is drawn when the panel opens, not as emoji are picked - the row moving under
+// the pointer while several are clicked in turn would put the wrong one in.
+function render_recent_emoji( )
+{
+   var section = document.querySelector( "#emoji_scroll [data-section=\"recent\"]" );
+
+   var grid = section.querySelector( ".chat-emoji-grid" );
+
+   grid.textContent = "";
+
+   var names = { };
+
+   g_emoji_catalogue.forEach( function( category )
+   {
+      category.items.forEach( function( item ) { names[ item.char ] = item.name; } );
+   } );
+
+   var recent = read_recent_emoji( ).filter( function( char ) { return names[ char ] !== undefined; } );
+
+   recent.forEach( function( char ) { grid.appendChild( emoji_button( { char: char, name: names[ char ] } ) ); } );
+
+   section.hidden = ( recent.length === 0 );
+}
+
+function show_emoji_results( query )
+{
+   var scroll = document.getElementById( "emoji_scroll" );
+
+   var searching = ( query.trim( ) !== "" );
+
+   scroll.querySelectorAll( ".chat-emoji-section" ).forEach( function( section )
+   {
+      var id = section.dataset.section;
+
+      if( id === "results" )
+         section.hidden = !searching;
+      else if( id === "recent" )
+         section.hidden = searching || ( section.querySelector( ".chat-emoji-grid" ).children.length === 0 );
+      else
+         section.hidden = searching;
+   } );
+
+   if( !searching )
+      return;
+
+   var results = scroll.querySelector( "[data-section=\"results\"]" );
+
+   var grid = results.querySelector( ".chat-emoji-grid" );
+
+   grid.textContent = "";
+
+   var found = search_emoji( g_emoji_catalogue, query );
+
+   found.forEach( function( item ) { grid.appendChild( emoji_button( item ) ); } );
+
+   results.querySelector( ".chat-emoji-section-head" ).textContent = ( found.length === 0 ) ? "No emoji match" : "Results";
+
+   scroll.scrollTop = 0;
+}
+
+function bind_emoji_search( )
+{
+   var search = document.getElementById( "emoji_search" );
+
+   search.addEventListener( "input", function( ) { show_emoji_results( search.value ); } );
+
+   // NOTE: Enter takes the first result, as a search box usually does.
+   search.addEventListener( "keydown", function( event )
+   {
+      if( event.key !== "Enter" )
+         return;
+
+      event.preventDefault( );
+
+      var first = document.querySelector( "#emoji_scroll [data-section=\"results\"] .chat-emoji" );
+
+      if( first !== null )
+         insert_emoji( first.textContent );
+   } );
+}
+
+// NOTE: Goes in where the cursor was in the message box - its selection is kept while the
+// panel has the focus - and the cursor moves past it, so several in a row land in order.
+function insert_emoji( char )
+{
+   var input = document.getElementById( "composer_input" );
+
+   if( input.disabled )
+      return;
+
+   var start = input.selectionStart;
+   var end = input.selectionEnd;
+
+   input.value = input.value.substring( 0, start ) + char + input.value.substring( end );
+
+   var after = start + char.length;
+
+   input.setSelectionRange( after, after );
+
+   // NOTE: The same path as typing, so the box grows and the byte count follows.
+   input.dispatchEvent( new Event( "input" ) );
+
+   try
+   {
+      localStorage.setItem( c_storage_emoji_recent, JSON.stringify( push_recent_emoji( read_recent_emoji( ), char ) ) );
+   }
+   catch( e )
+   {
+   }
+}
+
+// ====================================================================
 // Narrow screens - the room rail and room details slide over the thread
 // ====================================================================
 
@@ -888,6 +1171,8 @@ async function do_disconnect( )
    document.getElementById( "rail_poll" ).textContent = "";
 
    close_drawers( false );
+
+   close_emoji_panel( false );
 
    end_first_load( );
 
@@ -1377,6 +1662,8 @@ function select_room( room, token )
 
    if( open_drawer( ) === "rail" )
       close_drawers( false );
+
+   close_emoji_panel( false );
 
    show_thread_view( );
 
@@ -2483,6 +2770,11 @@ function apply_posting_rules( )
    send.disabled = !status.can_post;
    scope.disabled = !status.can_post;
 
+   document.getElementById( "emoji_toggle" ).disabled = !status.can_post;
+
+   if( !status.can_post )
+      close_emoji_panel( false );
+
    if( status.can_post )
       note.textContent = "Ordinary chat only — system and slash messages are server-side.";
    else
@@ -2582,6 +2874,8 @@ async function do_send( )
 
    if( ( text === "" ) || ( g_room === "" ) )
       return;
+
+   close_emoji_panel( false );
 
    // NOTE: Enter sends as well as the button, so the length is checked here too.
    if( message_too_long( ) )

@@ -222,10 +222,29 @@ http://www.opensource.org/licenses/mit-license.php.
          <div class="chat-messages" id="message_list" hidden></div>
 
          <div class="chat-composer" id="composer" hidden>
+            <!-- NOTE: The emoji panel - the device's own emoji font, from the curated list in
+                 "chat_emoji.js". Opens above the message box; an emoji goes in at the cursor
+                 and the panel stays open for more. -->
+            <div class="chat-emoji-panel" id="emoji_panel" role="dialog" aria-label="Emoji" hidden>
+               <input type="search" class="chat-field chat-emoji-search" id="emoji_search" placeholder="Search emoji"
+                aria-label="Search emoji" autocomplete="off" spellcheck="false">
+               <div class="chat-emoji-tabs" id="emoji_tabs"></div>
+               <div class="chat-emoji-scroll" id="emoji_scroll"></div>
+            </div>
             <div class="chat-recipients" id="recipient_row" hidden></div>
             <div class="chat-composer-row">
                <textarea id="composer_input" class="chat-input" rows="1"
                 placeholder="Message" onkeydown="return do_composer_key( event )"></textarea>
+               <button type="button" class="chat-btn chat-emoji-toggle" id="emoji_toggle" onclick="do_toggle_emoji( )"
+                aria-label="Add an emoji" aria-haspopup="dialog" aria-expanded="false" aria-controls="emoji_panel"
+                title="Emoji - Windows also has Win+. and macOS Ctrl+Cmd+Space">
+                  <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false">
+                     <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                     <circle cx="7" cy="8" r="1.2" fill="currentColor"/>
+                     <circle cx="13" cy="8" r="1.2" fill="currentColor"/>
+                     <path d="M6.2 11.8c.9 1.5 2.2 2.3 3.8 2.3s2.9-.8 3.8-2.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                  </svg>
+               </button>
                <button type="button" class="chat-btn chat-btn--primary" id="composer_send" onclick="do_send( )">Send</button>
             </div>
             <div class="chat-composer-foot">
