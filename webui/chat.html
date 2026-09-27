@@ -149,9 +149,13 @@ http://www.opensource.org/licenses/mit-license.php.
          enter_chat( );
    }
 
+   // NOTE: No cache keys. The server sends "Cache-Control: no-cache" for ".html", ".form",
+   // ".js" and ".css" (Ian, 2026-09-27 - ISS-021), so the browser checks each file every time
+   // and an edited one arrives with a plain reload. Before that the chat keyed each file by
+   // its "Last-Modified", at the cost of a HEAD request per file.
    function load_form( name )
    {
-      return fetch( name + ".form?" + Date.now( ) )
+      return fetch( name + ".form" )
        .then( function( response ) { return response.text( ); } )
        .then( function( data )
        {
@@ -159,60 +163,31 @@ http://www.opensource.org/licenses/mit-license.php.
        } );
    }
 
-   function load_main_js( name, source )
+   function load_main_js( name )
    {
-      // NOTE: Keyed by the file's own "Last-Modified" rather than the clock or the
-      // session id. Both alternatives fail in one direction:
-      //
-      //   the clock       - a different key per tab, so a linked tab re-downloads rather
-      //                     than reusing the cached copy, which breaks the console
-      //   the session id  - shared across linked tabs, but "sessionStorage" survives a
-      //                     hard reload, so an edited file kept serving the old script
-      //                     and new markup ran against stale logic
-      //
-      // "Last-Modified" is the same for every tab and changes exactly when the file does.
-      // The extra HEAD request is one round trip against getting both properties.
-      function append_script( key )
+      var script = document.createElement( "script" );
+
+      script.src = name + ".js";
+
+      script.setAttribute( "id", name );
+
+      document.body.appendChild( script );
+   }
+
+   // NOTE: Resolves once the script has run, so the next can rely on it.
+   function load_script( file )
+   {
+      return new Promise( function( resolve )
       {
          var script = document.createElement( "script" );
 
-         script.src = name + ".js?" + encodeURIComponent( key );
+         script.src = file;
 
-         script.setAttribute( "id", name );
+         script.onload = resolve;
+         script.onerror = resolve;
 
          document.body.appendChild( script );
-      }
-
-      fetch( name + ".js", { method: "HEAD" } )
-       .then( function( response )
-       {
-          // NOTE: Falls back to the source id, so a server not answering HEAD behaves as
-          // it did before rather than not loading at all.
-          return response.headers.get( "Last-Modified" ) || source;
-       } )
-       .catch( function( ) { return source; } )
-       .then( append_script );
-   }
-
-   function load_versioned_script( file )
-   {
-      return fetch( file, { method: "HEAD" } )
-       .then( function( response ) { return response.headers.get( "Last-Modified" ) || String( Date.now( ) ); } )
-       .catch( function( ) { return String( Date.now( ) ); } )
-       .then( function( key )
-       {
-          return new Promise( function( resolve )
-          {
-             var script = document.createElement( "script" );
-
-             script.src = file + "?" + encodeURIComponent( key );
-
-             script.onload = resolve;
-             script.onerror = resolve;
-
-             document.body.appendChild( script );
-          } );
-       } );
+      } );
    }
 
    function call_at_load( )
@@ -249,18 +224,11 @@ http://www.opensource.org/licenses/mit-license.php.
       else
          sessionStorage.setItem( "self", g_self );
 
-      var href = new URL( window.location.href );
-
-      var source = href.searchParams.get( "source" );
-
-      if( source === null )
-         source = g_self;
-
       // NOTE: "chat.js" calls into "console_parse.js" as soon as it starts, so that is loaded
-      // first - keyed by its "Last-Modified" too, since it changes as the console does.
-      load_versioned_script( "console_parse.js" ).then( function( )
+      // first.
+      load_script( "console_parse.js" ).then( function( )
       {
-         load_main_js( "chat", source );
+         load_main_js( "chat" );
 
          window.setTimeout( call_at_load, c_load_delay );
       } );

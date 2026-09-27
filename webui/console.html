@@ -33,9 +33,10 @@ http://www.opensource.org/licenses/mit-license.php.
    <script type="text/javascript" src="chat_parse.js"></script>
 
    <!--
-   NOTE: "console.css", "console_parse.js" and "console.js" change often, and the server
-   sends only "Last-Modified" - so a plain tag let the browser keep an old copy. They are
-   loaded below with that date as a query string instead.
+   NOTE: The server sends "Cache-Control: no-cache" for ".html", ".form", ".js" and ".css"
+   (Ian, 2026-09-27 - ISS-021), so the browser checks each file every time and an edited one
+   arrives with a plain reload. The console's files are still loaded below, in order, so the
+   markup is in place before the scripts run.
    -->
 </head>
 
@@ -53,7 +54,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
    function load_form( name )
    {
-      return fetch( name + ".form?" + Date.now( ) )
+      return fetch( name + ".form" )
        .then( function( response ) { return response.text( ); } )
        .then( function( data )
        {
@@ -61,47 +62,31 @@ http://www.opensource.org/licenses/mit-license.php.
        } );
    }
 
-   // NOTE: Keyed by the file's own "Last-Modified", as "chat.html" does and for the same
-   // reasons - see "load_main_js( )" there.
-   function version_of( file )
-   {
-      return fetch( file, { method: "HEAD" } )
-       .then( function( response )
-       {
-          return response.headers.get( "Last-Modified" ) || String( Date.now( ) );
-       } )
-       .catch( function( ) { return String( Date.now( ) ); } );
-   }
-
    function load_style( file )
    {
-      return version_of( file ).then( function( key )
-      {
-         var link = document.createElement( "link" );
+      var link = document.createElement( "link" );
 
-         link.rel = "stylesheet";
-         link.href = file + "?" + encodeURIComponent( key );
+      link.rel = "stylesheet";
+      link.href = file;
 
-         document.head.appendChild( link );
-      } );
+      document.head.appendChild( link );
+
+      return Promise.resolve( );
    }
 
    // NOTE: Resolves once the script has run, so the next can rely on it.
    function load_script( file )
    {
-      return version_of( file ).then( function( key )
+      return new Promise( function( resolve )
       {
-         return new Promise( function( resolve )
-         {
-            var script = document.createElement( "script" );
+         var script = document.createElement( "script" );
 
-            script.src = file + "?" + encodeURIComponent( key );
+         script.src = file;
 
-            script.onload = resolve;
-            script.onerror = resolve;
+         script.onload = resolve;
+         script.onerror = resolve;
 
-            document.body.appendChild( script );
-         } );
+         document.body.appendChild( script );
       } );
    }
 
