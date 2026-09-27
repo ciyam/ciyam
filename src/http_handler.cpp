@@ -84,6 +84,7 @@ constexpr const char* c_ext_jpg = "jpg";
 constexpr const char* c_ext_png = "png";
 constexpr const char* c_ext_ttf = "ttf";
 constexpr const char* c_ext_svg = "svg";
+constexpr const char* c_ext_form = "form";
 constexpr const char* c_ext_html = "html";
 constexpr const char* c_ext_woff = "woff";
 constexpr const char* c_ext_woff2 = "woff2";
@@ -145,6 +146,9 @@ constexpr const char* c_http_date_prefix = "Date: ";
 constexpr const char* c_http_server_prefix = "Server: ";
 constexpr const char* c_http_location_prefix = "Location: ";
 constexpr const char* c_http_modified_prefix = "Last-Modified: ";
+
+constexpr const char* c_http_cache_control_prefix = "Cache-Control: ";
+
 constexpr const char* c_http_content_type_prefix = "Content-Type: ";
 constexpr const char* c_http_content_length_prefix = "Content-Length: ";
 
@@ -165,6 +169,8 @@ constexpr const char* c_http_keep_alive_header_info = "Keep-Alive: timeout=1, ma
 #else
 constexpr const char* c_http_keep_alive_header_info = "Keep-Alive: timeout=10, max=100";
 #endif
+
+constexpr const char* c_http_cache_control_no_cache = "no-cache";
 
 constexpr const char* c_http_content_type_font_ttf = "font/ttf";
 constexpr const char* c_http_content_type_font_woff = "font/woff";
@@ -1300,6 +1306,10 @@ void http_request_handler::on_start( )
                       << c_crlf << c_http_server_prefix << g_server_id
                       << c_crlf << c_http_date_prefix << formatted_dtm
                       << c_crlf << c_http_modified_prefix << formatted_document_dtm << c_crlf;
+
+                     if( ( extension == c_ext_js ) || ( extension == c_ext_css )
+                      || ( extension == c_ext_form ) || ( extension == c_ext_html ) )
+                        osstr << c_http_cache_control_prefix << c_http_cache_control_no_cache << c_crlf;
 
                      if( request_type != e_http_request_type_head )
                         osstr << c_http_connection_header_info << c_crlf << c_http_keep_alive_header_info << c_crlf;
