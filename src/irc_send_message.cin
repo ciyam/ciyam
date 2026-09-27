@@ -53,7 +53,7 @@ ROOM=$STARTING_ROOM
 ;
 ; NOTE: Checks all MESSAGE characters
 ; provided are in the base64 URL set.
-.regex "^([_0-9a-zA-Z]+)$$" "$MESSAGE"
+.regex "^([-_0-9a-zA-Z]+)$$" "$MESSAGE"
 ;
 @ifneq "$MESSAGE" "$OUTPUT"
 ERROR=Invalid message format (needs to be base64).
