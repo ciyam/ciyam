@@ -11,6 +11,7 @@
 // Compare against "chat_parse_test.tst" - see "run_chat_tests.sh".
 
 const cp = require( "./chat_parse.js" );
+const ce = require( "./chat_emoji.js" );
 
 var failures = 0;
 
@@ -438,6 +439,38 @@ var listed = [ { room: "0000001" }, { room: "0000004" }, { room: "0000005" } ];
 check( "admin sees Administration", cp.visible_rooms( listed, true ).map( function( r ) { return r.room; } ), [ "0000001", "0000004", "0000005" ] );
 check( "others do not", cp.visible_rooms( listed, false ).map( function( r ) { return r.room; } ), [ "0000004", "0000005" ] );
 check( "the list itself is untouched", listed.length, 3 );
+
+heading( "emoji" );
+
+var catalogue = ce.emoji_catalogue( );
+
+var every = [ ].concat.apply( [ ], catalogue.map( function( c ) { return c.items; } ) );
+
+function chars( list ) { return list.map( function( i ) { return i.char; } ); }
+
+check( "eight categories, none empty", [ catalogue.length, catalogue.every( function( c ) { return c.items.length > 0; } ) ], [ 8, true ] );
+check( "each entry has a name", every.every( function( i ) { return i.name !== ""; } ), true );
+check( "no emoji is listed twice", every.length === new Set( chars( every ) ).size, true );
+check( "none is longer than 16 bytes", every.every( function( i ) { return Buffer.byteLength( i.char, "utf8" ) <= 16; } ), true );
+check( "at least 500 in all", every.length >= 500, true );
+check( "code points become the character", ce.emoji_from_codes( "1F600" ), "😀" );
+check( "with a variation selector", ce.emoji_from_codes( "2764 FE0F" ), "❤️" );
+check( "a keycap", ce.emoji_from_codes( "0031 FE0F 20E3" ), "1️⃣" );
+
+check( "search by the start of a word", chars( ce.search_emoji( catalogue, "thumb" ) ), [ ce.emoji_from_codes( "1F44D" ), ce.emoji_from_codes( "1F44E" ) ] );
+check( "every word must match", chars( ce.search_emoji( catalogue, "heart red" ) ), [ ce.emoji_from_codes( "2764 FE0F" ) ] );
+check( "extra words count", chars( ce.search_emoji( catalogue, "lol" ) ).indexOf( ce.emoji_from_codes( "1F602" ) ) >= 0, true );
+check( "a name match comes before a keyword match", chars( ce.search_emoji( catalogue, "sun" ) )[ 0 ], ce.emoji_from_codes( "1F31E" ) );
+check( "hyphenated names split", chars( ce.search_emoji( catalogue, "eyes heart" ) ), [ ce.emoji_from_codes( "1F60D" ) ] );
+check( "nothing typed, nothing found", ce.search_emoji( catalogue, "  " ), [ ] );
+check( "no match", ce.search_emoji( catalogue, "xyzzy" ), [ ] );
+
+check( "recent: newest first", ce.push_recent_emoji( [ "a", "b" ], "c" ), [ "c", "a", "b" ] );
+check( "recent: once each", ce.push_recent_emoji( [ "a", "b", "c" ], "b" ), [ "b", "a", "c" ] );
+check( "recent: capped", ce.push_recent_emoji( Array.from( { length: ce.c_emoji_recent_max }, function( _, i ) { return "e" + i; } ), "new" ).length, ce.c_emoji_recent_max );
+check( "recent: read back", ce.parse_recent_emoji( "[\"\\ud83d\\ude00\",\"x\"]" ), [ "😀", "x" ] );
+check( "recent: damaged is empty", ce.parse_recent_emoji( "{nope" ), [ ] );
+check( "recent: stray entries dropped", ce.parse_recent_emoji( "[1,\"\",\"ok\"]" ), [ "ok" ] );
 
 heading( "private messages" );
 

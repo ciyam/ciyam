@@ -206,6 +206,29 @@ ok   admin sees Administration
 ok   others do not
 ok   the list itself is untouched
 
+== emoji =======================================================
+ok   eight categories, none empty
+ok   each entry has a name
+ok   no emoji is listed twice
+ok   none is longer than 16 bytes
+ok   at least 500 in all
+ok   code points become the character
+ok   with a variation selector
+ok   a keycap
+ok   search by the start of a word
+ok   every word must match
+ok   extra words count
+ok   a name match comes before a keyword match
+ok   hyphenated names split
+ok   nothing typed, nothing found
+ok   no match
+ok   recent: newest first
+ok   recent: once each
+ok   recent: capped
+ok   recent: read back
+ok   recent: damaged is empty
+ok   recent: stray entries dropped
+
 == private messages ============================================
 ok   a public message is not private
 ok   a private one is, without its marker
