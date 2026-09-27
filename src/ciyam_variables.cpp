@@ -45,9 +45,9 @@ const int c_lock_attempt_sleep_time = 100;
 
 const size_t c_secret_truncate_length = 9;
 
-const size_t c_default_max_deque_item_size = 1000;
+const size_t c_default_max_deque_item_size = 8000;
 
-const size_t c_default_max_deque_size_limit = 10000;
+const size_t c_default_max_deque_size_limit = 6000;
 
 constexpr const char* c_double_asterisk = "**";
 
