@@ -241,6 +241,8 @@ atomic< size_t > g_cws_active_commands;
 
 set< string > g_cws_access_tokens;
 
+set< string > g_cws_session_requests;
+
 map< string, set< string > > g_cws_access_devices;
 
 map< string, unique_ptr< sio_graph > > g_model_meta_data;
@@ -258,6 +260,23 @@ struct session_info
 };
 
 map< string, unique_ptr< session_info > > g_session_info;
+
+struct session_request
+{
+   session_request( const string& session )
+    :
+    session( session )
+   {
+      g_cws_session_requests.insert( session );
+   }
+
+   ~session_request( )
+   {
+      g_cws_session_requests.erase( session );
+   }
+
+   string session;
+};
 
 inline string escaped_json( const string& s )
 {
@@ -1211,6 +1230,30 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    bool is_locked = false;
 
    bool is_identity_none = !has_identity( &is_locked );
+
+   unique_ptr< session_request > up_session_request;
+
+   // NOTE: Need to order request/response handling
+   // per session (to make sure that any concurrent
+   // requests do not end up mixing up responses as
+   // the output file is determined via the session
+   // identity.
+   for( size_t i = 0; i < 50; i++ )
+   {
+      guard g( g_mutex );
+
+      if( !g_cws_session_requests.count( session ) )
+      {
+         up_session_request.reset( new session_request( session ) );
+
+         break;
+      }
+
+      msleep( 100 );
+   }
+
+   if( !up_session_request.get( ) )
+      throw runtime_error( "unable to access session due to concurrent usage" );
 
    // NOTE: Empty code block for scope purposes.
    {
@@ -3113,10 +3156,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               set_system_variable( web_command_var_name, "variable " + web_message_var_name );
                            }
 
-                           for( size_t i = 0; i < 30; i++ )
+                           bool found_response = false;
+
+                           // NOTE: Allows five seconds for
+                           // the commands to be processed.
+                           for( size_t i = 0; i < 55; i++ )
                            {
                               if( file_exists( output_file_name ) )
                               {
+                                 found_response = true;
+
                                  response = buffer_file( output_file_name );
 
                                  response = trim( response, false, false, "\n" );
@@ -3139,16 +3188,22 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               msleep( ( i < 10 ) ? 50 : 100 );
                            }
 
-                           if( has_error_prefix( response ) )
+                           if( !found_response || has_error_prefix( response ) )
                            {
                               found = false;
 
-                              error = response.substr( CONST_LENGTH( c_error_output_prefix ) );
+                              if( !found_response )
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Timed out waiting for web session response.";
+                              else
+                              {
+                                 error = response.substr( CONST_LENGTH( c_error_output_prefix ) );
 
-                              string::size_type pos = error.find( '\n' );
+                                 string::size_type pos = error.find( '\n' );
 
-                              if( pos && ( pos != string::npos ) )
-                                 error.erase( pos );
+                                 if( pos && ( pos != string::npos ) )
+                                    error.erase( pos );
+                              }
 
                               response.erase( );
                            }
