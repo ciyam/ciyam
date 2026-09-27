@@ -231,10 +231,13 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="chat-emoji-tabs" id="emoji_tabs"></div>
                <div class="chat-emoji-scroll" id="emoji_scroll"></div>
             </div>
+            <!-- NOTE: The ":name" suggestions - typing ":thu" offers the matching emoji here. -->
+            <ul class="chat-emoji-suggest" id="emoji_suggest" role="listbox" aria-label="Emoji suggestions" hidden></ul>
             <div class="chat-recipients" id="recipient_row" hidden></div>
             <div class="chat-composer-row">
                <textarea id="composer_input" class="chat-input" rows="1"
-                placeholder="Message" onkeydown="return do_composer_key( event )"></textarea>
+                placeholder="Message" onkeydown="return do_composer_key( event )"
+                aria-autocomplete="list" aria-controls="emoji_suggest" aria-expanded="false"></textarea>
                <button type="button" class="chat-btn chat-emoji-toggle" id="emoji_toggle" onclick="do_toggle_emoji( )"
                 aria-label="Add an emoji" aria-haspopup="dialog" aria-expanded="false" aria-controls="emoji_panel"
                 title="Emoji - Windows also has Win+. and macOS Ctrl+Cmd+Space">

@@ -1392,6 +1392,56 @@ button.chat-avatar:hover
    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif;
 }
 
+/* NOTE: The ":name" suggestions - a short list above the message box, at its left, where the
+   text is being typed. */
+.chat-emoji-suggest
+{
+   position: absolute;
+   left: 20px;
+   bottom: calc(100% + 8px);
+   z-index: 26;
+   min-width: 240px;
+   max-width: calc(100% - 40px);
+   max-height: 300px;
+   overflow-y: auto;
+   margin: 0;
+   padding: 4px;
+   list-style: none;
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-md);
+   box-shadow: var(--shadow-lg);
+}
+
+.chat-emoji-option
+{
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   padding: 5px 10px;
+   border-radius: var(--radius-sm);
+   cursor: pointer;
+}
+
+.chat-emoji-option[aria-selected="true"]
+{
+   background: color-mix(in srgb, var(--color-chat-accent) 12%, var(--color-chat-bg));
+}
+
+.chat-emoji-option-char
+{
+   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif;
+   font-size: 20px;
+   line-height: 1;
+}
+
+.chat-emoji-option-code
+{
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-strong);
+}
+
 .chat-emoji-toggle
 {
    flex: none;

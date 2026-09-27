@@ -185,6 +185,7 @@ function chat( )
    } );
 
    bind_emoji_search( );
+   bind_emoji_suggest( );
 }
 
 function populate_accounts( )
@@ -573,10 +574,34 @@ function do_menu_sign_out( )
 // Emoji panel
 // ====================================================================
 
-// NOTE: The curated list is in "chat_emoji.js". The panel is built the first time it opens.
+// NOTE: The curated list is in "chat_emoji.js", read in the first time either the panel or the
+// ":name" suggestions want it. The panel's buttons are built the first time it opens.
 var g_emoji_catalogue = null;
+var g_emoji_panel_built = false;
 
-const c_storage_emoji_recent = "cws.emoji_recent";
+// NOTE: Per account, like the other saved settings. The first version kept one list for the
+// whole browser under "cws.emoji_recent"; that is simply dropped.
+const c_storage_emoji_recent_prefix = "cws.emoji_recent_";
+const c_storage_emoji_recent_old = "cws.emoji_recent";
+
+const c_emoji_suggest_max = 8;
+
+var g_emoji_suggestions = [ ];
+var g_emoji_suggest_index = 0;
+var g_emoji_suggest_query = null;
+
+function emoji_list( )
+{
+   if( g_emoji_catalogue === null )
+      g_emoji_catalogue = emoji_catalogue( );
+
+   return g_emoji_catalogue;
+}
+
+function emoji_recent_key( )
+{
+   return c_storage_emoji_recent_prefix + ciyam.access;
+}
 
 // NOTE: A phone has emoji on its own keyboard, and focusing a field there brings the keyboard
 // up over the panel - so on a touch screen nothing is focused for the user.
@@ -598,12 +623,16 @@ function open_emoji_panel( )
    if( document.getElementById( "emoji_toggle" ).disabled )
       return;
 
-   if( g_emoji_catalogue === null )
+   if( !g_emoji_panel_built )
    {
-      g_emoji_catalogue = emoji_catalogue( );
+      emoji_list( );
 
       build_emoji_panel( );
+
+      g_emoji_panel_built = true;
    }
+
+   close_emoji_suggest( );
 
    var search = document.getElementById( "emoji_search" );
 
@@ -720,11 +749,24 @@ function read_recent_emoji( )
 {
    try
    {
-      return parse_recent_emoji( localStorage.getItem( c_storage_emoji_recent ) );
+      localStorage.removeItem( c_storage_emoji_recent_old );
+
+      return parse_recent_emoji( localStorage.getItem( emoji_recent_key( ) ) );
    }
    catch( e )
    {
       return [ ];
+   }
+}
+
+function remember_recent_emoji( char )
+{
+   try
+   {
+      localStorage.setItem( emoji_recent_key( ), JSON.stringify( push_recent_emoji( read_recent_emoji( ), char ) ) );
+   }
+   catch( e )
+   {
    }
 }
 
@@ -830,13 +872,190 @@ function insert_emoji( char )
    // NOTE: The same path as typing, so the box grows and the byte count follows.
    input.dispatchEvent( new Event( "input" ) );
 
-   try
+   remember_recent_emoji( char );
+}
+
+// ====================================================================
+// ":name" suggestions - the emoji autocomplete
+// ====================================================================
+
+// NOTE: Typing ":" and two letters - ":thu" - offers the emoji whose names match, above the
+// message box. Up and Down move through them, Tab or Enter takes one in place of the ":thu",
+// Escape puts them away. "emoji_query_at( )" decides when, so "10:30" and ":)" never do.
+function update_emoji_suggest( )
+{
+   var input = document.getElementById( "composer_input" );
+
+   var found = null;
+
+   if( !input.disabled && ( input.selectionStart === input.selectionEnd ) )
+      found = emoji_query_at( input.value, input.selectionStart );
+
+   var list = found ? suggest_emoji( emoji_list( ), found.query, c_emoji_suggest_max ) : [ ];
+
+   if( list.length === 0 )
    {
-      localStorage.setItem( c_storage_emoji_recent, JSON.stringify( push_recent_emoji( read_recent_emoji( ), char ) ) );
+      close_emoji_suggest( );
+
+      return;
    }
-   catch( e )
+
+   if( ( g_emoji_suggest_query === null ) || ( g_emoji_suggest_query.query !== found.query ) )
+      g_emoji_suggest_index = 0;
+
+   g_emoji_suggest_query = found;
+   g_emoji_suggestions = list;
+
+   close_emoji_panel( false );
+
+   render_emoji_suggest( );
+}
+
+function emoji_suggest_open( )
+{
+   return !document.getElementById( "emoji_suggest" ).hidden;
+}
+
+function render_emoji_suggest( )
+{
+   var host = document.getElementById( "emoji_suggest" );
+   var input = document.getElementById( "composer_input" );
+
+   host.textContent = "";
+
+   g_emoji_suggestions.forEach( function( item, index )
    {
+      var option = document.createElement( "li" );
+
+      option.id = "emoji_suggest_" + index;
+      option.className = "chat-emoji-option";
+      option.setAttribute( "role", "option" );
+      option.setAttribute( "aria-selected", ( index === g_emoji_suggest_index ) ? "true" : "false" );
+
+      var char = document.createElement( "span" );
+
+      char.className = "chat-emoji-option-char";
+      char.textContent = item.char;
+
+      var code = document.createElement( "span" );
+
+      code.className = "chat-emoji-option-code";
+      code.textContent = emoji_shortcode( item.name );
+
+      option.appendChild( char );
+      option.appendChild( code );
+
+      // NOTE: On mousedown, so the message box keeps the focus and its cursor.
+      option.addEventListener( "mousedown", function( event )
+      {
+         event.preventDefault( );
+
+         take_emoji_suggestion( index );
+      } );
+
+      host.appendChild( option );
+   } );
+
+   host.hidden = false;
+
+   input.setAttribute( "aria-expanded", "true" );
+   input.setAttribute( "aria-activedescendant", "emoji_suggest_" + g_emoji_suggest_index );
+
+   var current = document.getElementById( "emoji_suggest_" + g_emoji_suggest_index );
+
+   if( current !== null )
+      current.scrollIntoView( { block: "nearest" } );
+}
+
+function close_emoji_suggest( )
+{
+   var host = document.getElementById( "emoji_suggest" );
+
+   if( host.hidden )
+      return;
+
+   host.hidden = true;
+   host.textContent = "";
+
+   g_emoji_suggestions = [ ];
+   g_emoji_suggest_query = null;
+
+   var input = document.getElementById( "composer_input" );
+
+   input.setAttribute( "aria-expanded", "false" );
+   input.removeAttribute( "aria-activedescendant" );
+}
+
+function take_emoji_suggestion( index )
+{
+   var item = g_emoji_suggestions[ index ];
+   var query = g_emoji_suggest_query;
+
+   if( !item || !query )
+      return;
+
+   var input = document.getElementById( "composer_input" );
+
+   var caret = input.selectionStart;
+
+   input.value = input.value.substring( 0, query.start ) + item.char + input.value.substring( caret );
+
+   var after = query.start + item.char.length;
+
+   input.setSelectionRange( after, after );
+
+   close_emoji_suggest( );
+
+   input.dispatchEvent( new Event( "input" ) );
+
+   remember_recent_emoji( item.char );
+}
+
+// NOTE: The keys the suggestions take while they are showing - returns true when it took one.
+// Escape is kept from the page's own handler, which would otherwise close a panel as well.
+function emoji_suggest_key( event )
+{
+   if( !emoji_suggest_open( ) )
+      return false;
+
+   var count = g_emoji_suggestions.length;
+
+   if( ( event.key === "ArrowDown" ) || ( event.key === "ArrowUp" ) )
+   {
+      g_emoji_suggest_index = ( g_emoji_suggest_index + ( ( event.key === "ArrowDown" ) ? 1 : count - 1 ) ) % count;
+
+      render_emoji_suggest( );
    }
+   else if( ( ( event.key === "Enter" ) && !event.shiftKey ) || ( event.key === "Tab" ) )
+      take_emoji_suggestion( g_emoji_suggest_index );
+   else if( event.key === "Escape" )
+   {
+      close_emoji_suggest( );
+
+      event.stopPropagation( );
+   }
+   else
+      return false;
+
+   event.preventDefault( );
+
+   return true;
+}
+
+function bind_emoji_suggest( )
+{
+   var input = document.getElementById( "composer_input" );
+
+   // NOTE: Moving the cursor can move into or out of a ":name".
+   input.addEventListener( "click", update_emoji_suggest );
+
+   input.addEventListener( "keyup", function( event )
+   {
+      if( [ "ArrowLeft", "ArrowRight", "Home", "End" ].indexOf( event.key ) >= 0 )
+         update_emoji_suggest( );
+   } );
+
+   input.addEventListener( "blur", close_emoji_suggest );
 }
 
 // ====================================================================
@@ -1173,6 +1392,7 @@ async function do_disconnect( )
    close_drawers( false );
 
    close_emoji_panel( false );
+   close_emoji_suggest( );
 
    end_first_load( );
 
@@ -1664,6 +1884,7 @@ function select_room( room, token )
       close_drawers( false );
 
    close_emoji_panel( false );
+   close_emoji_suggest( );
 
    show_thread_view( );
 
@@ -2773,7 +2994,10 @@ function apply_posting_rules( )
    document.getElementById( "emoji_toggle" ).disabled = !status.can_post;
 
    if( !status.can_post )
+   {
       close_emoji_panel( false );
+      close_emoji_suggest( );
+   }
 
    if( status.can_post )
       note.textContent = "Ordinary chat only — system and slash messages are server-side.";
@@ -2847,6 +3071,9 @@ function update_thread_meta( )
 
 function do_composer_key( event )
 {
+   if( emoji_suggest_key( event ) )
+      return false;
+
    if( ( event.key === "Enter" ) && !event.shiftKey )
    {
       event.preventDefault( );
@@ -2876,6 +3103,7 @@ async function do_send( )
       return;
 
    close_emoji_panel( false );
+   close_emoji_suggest( );
 
    // NOTE: Enter sends as well as the button, so the length is checked here too.
    if( message_too_long( ) )
@@ -3027,6 +3255,7 @@ function on_composer_input( )
 {
    resize_composer( );
    update_composer_count( );
+   update_emoji_suggest( );
 }
 
 function begin_edit( unique, text )
