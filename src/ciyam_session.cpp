@@ -6227,8 +6227,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             var_no_progress = true;
          }
 
+         // NOTE: If message is prefixed with '@'
+         // then removes the prefix and then uses
+         // it as a response (which can be useful
+         // for testing purposes).
          if( !message.empty( ) )
-            handler.output_progress( message );
+         {
+            if( message[ 0 ] == '@' )
+            {
+               response = message.substr( 1 );
+
+               message.erase( );
+            }
+            else
+               handler.output_progress( message );
+         }
 
          unique_ptr< guard > up_guard;
 
