@@ -513,6 +513,13 @@ check( "a private one is, without its marker", [ received_side[ 1 ].private, rec
 check( "the sender's copy and its receipt become one", sent_side.map( function( m ) { return m.kind + ( m.private ? "!" : "" ); } ), [ "chat", "system", "chat!" ] );
 check( "the copy carries who it went to, less the sender", sent_side[ 2 ].recipients, [ "verify-a" ] );
 check( "a receipt with no copy stays a notice", sent_side[ 1 ].event.recipients, [ "verify-a" ] );
+// NOTE: Real, 2026-09-28 - verify-a sent a public message and edited it; the server now marks
+// every edit with "!" (ISS-026).
+var edited_line = cp.parse_message_line( "1790520461000 verify-a* !edit probe 1165 (edited)" );
+
+check( "an edited message is not private for its !", [ edited_line.edited, edited_line.private ], [ true, false ] );
+check( "and the ! is not part of its text", edited_line.text, "edit probe 1165 (edited)" );
+check( "an edited one in the old form is unchanged", cp.parse_message_line( "1790520461000 verify-a*  edit probe" ).text, "edit probe" );
 check( "a message starting ! in the old format is not private", cp.parse_message_line( "1790514104000 admin  !not private" ).private, false );
 check( "and keeps its !", cp.parse_message_line( "1790514104000 admin  !not private" ).text, "!not private" );
 

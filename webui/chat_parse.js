@@ -243,9 +243,15 @@ function parse_message_line( line )
 
    // NOTE: A leading space is the placeholder left by the stripped "_" prefix
    // and is not part of what the user typed; "!" is the same place, marking it private.
-   var is_private = ( first === c_private_marker );
+   var marked = ( first === c_private_marker );
 
-   var text = ( ( first === " " ) || is_private ) ? remainder.substring( 1 ) : remainder;
+   // NOTE: Except on an edited message. An edit is sent as "for=<unique>", and the server
+   // marks anything with a "for" as private - so every edited message comes back with "!",
+   // private or not (ISS-026). On an edit the mark says nothing, so it is not believed; an
+   // edited private message, which the chat itself never makes, would show as public.
+   var is_private = marked && !edited;
+
+   var text = ( ( first === " " ) || marked ) ? remainder.substring( 1 ) : remainder;
 
    return {
       kind: c_kind_chat,

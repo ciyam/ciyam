@@ -251,6 +251,9 @@ ok   a private one is, without its marker
 ok   the sender's copy and its receipt become one
 ok   the copy carries who it went to, less the sender
 ok   a receipt with no copy stays a notice
+ok   an edited message is not private for its !
+ok   and the ! is not part of its text
+ok   an edited one in the old form is unchanged
 ok   a message starting ! in the old format is not private
 ok   and keeps its !
 ok   label on a received one
