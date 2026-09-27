@@ -207,6 +207,7 @@ constexpr const char* c_web_session_initial_room_number = "0000001";
 constexpr const char* c_web_session_meta_message_prefix = "_/";
 
 constexpr const char* c_web_session_default_message_prefix = "_ ";
+constexpr const char* c_web_session_private_message_prefix = "_!";
 
 constexpr const char* c_web_session_dummy_uuid = "00000000000000000000000000000000";
 
@@ -1240,13 +1241,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    // identity.
    for( size_t i = 0; i < 50; i++ )
    {
-      guard g( g_mutex );
-
-      if( !g_cws_session_requests.count( session ) )
+      // NOTE: Empty code block for scope purposes.
       {
-         up_session_request.reset( new session_request( session ) );
+         guard g( g_mutex );
 
-         break;
+         if( !g_cws_session_requests.count( session ) )
+         {
+            up_session_request.reset( new session_request( session ) );
+
+            break;
+         }
       }
 
       msleep( 100 );
@@ -2920,6 +2924,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                           names = c_web_session_default_message_for;
 
                                        string prefix( is_special_request ? c_web_session_meta_message_prefix : c_web_session_default_message_prefix );
+
+                                       if( !is_special_request && ( names != c_web_session_default_message_for ) )
+                                          prefix = c_web_session_private_message_prefix;
 
                                        request_and_args = "run_script !irc_send_message \"@room=" + room + ",@names=" + names + ",@message="
                                         + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";

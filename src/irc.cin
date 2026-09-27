@@ -345,7 +345,11 @@ MESSAGE=
 SHOW_CHANGED=
 @else
 MESSAGE=@substr:1:$MESSAGE
+@ifndef $NAMES
 MESSAGE=_ $MESSAGE
+@else
+MESSAGE=_!$MESSAGE
+@endif
 @endif
 @endif
 @endif
