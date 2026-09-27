@@ -2216,28 +2216,77 @@ function read_dismissed( )
    }
 }
 
+// NOTE: One card, as the strip shows it and as admin's preview shows it. "when" is the text
+// for its time; "private" marks one sent to named people.
+function build_announcement_card( text, when, when_title, is_private )
+{
+   var node = document.getElementById( "tpl_announcement" ).content.cloneNode( true ).querySelector( ".chat-announcement" );
+
+   var stamp = node.querySelector( ".chat-announcement-when" );
+
+   stamp.textContent = when;
+   stamp.title = when_title || "";
+
+   node.querySelector( ".chat-announcement-text" ).textContent = text;
+
+   // NOTE: One admin sent to named people, rather than to everyone.
+   if( is_private )
+      node.querySelector( ".chat-announcement-label" ).textContent = "Announcement · to you";
+
+   return node;
+}
+
+// NOTE: Past two, the stack is collapsed to the newest two with "Show N more" - and with two
+// or more there is a heading with the count and "Dismiss all". "announcement_stack( )" decides.
+var g_announcements_expanded = false;
+
+var g_dismiss_all_timer = null;
+
 function render_announcements( )
 {
    var host = document.getElementById( "announcements" );
 
-   var template = document.getElementById( "tpl_announcement" );
-
    host.textContent = "";
 
-   g_announcements.forEach( function( message )
+   disarm_dismiss_all( );
+
+   if( g_announcements.length <= c_announcements_collapsed )
+      g_announcements_expanded = false;
+
+   if( g_announcements.length >= 2 )
    {
-      var node = template.content.cloneNode( true ).querySelector( ".chat-announcement" );
+      var head = document.createElement( "div" );
 
-      var when = node.querySelector( ".chat-announcement-when" );
+      head.className = "chat-announcements-head";
 
-      when.textContent = day_label( message.unique ) + " " + unique_to_time( message.unique ).substring( 0, 5 );
-      when.title = unique_to_full( message.unique );
+      var count = document.createElement( "span" );
 
-      node.querySelector( ".chat-announcement-text" ).textContent = message.text;
+      count.className = "chat-announcements-count";
+      count.textContent = "Announcements · " + g_announcements.length;
 
-      // NOTE: One admin sent to named people, rather than to everyone.
-      if( message.private )
-         node.querySelector( ".chat-announcement-label" ).textContent = "Announcement · to you";
+      var all = document.createElement( "button" );
+
+      all.type = "button";
+      all.id = "announcements_dismiss_all";
+      all.className = "chat-btn chat-btn--small chat-announcements-all";
+      all.textContent = "Dismiss all";
+      all.title = "Dismiss every announcement - they will not be shown again on this browser";
+
+      all.addEventListener( "click", do_dismiss_all_announcements );
+
+      head.appendChild( count );
+      head.appendChild( all );
+
+      host.appendChild( head );
+   }
+
+   var stack = announcement_stack( g_announcements, g_announcements_expanded );
+
+   stack.shown.forEach( function( message )
+   {
+      var node = build_announcement_card( message.text,
+       day_label( message.unique ) + " " + unique_to_time( message.unique ).substring( 0, 5 ),
+       unique_to_full( message.unique ), message.private );
 
       var ok = node.querySelector( ".chat-announcement-ok" );
 
@@ -2248,7 +2297,114 @@ function render_announcements( )
       host.appendChild( node );
    } );
 
+   if( ( stack.more > 0 ) || g_announcements_expanded )
+   {
+      var toggle = document.createElement( "button" );
+
+      toggle.type = "button";
+      toggle.id = "announcements_more";
+      toggle.className = "chat-announcements-more";
+      toggle.textContent = g_announcements_expanded ? "Show fewer" : ( "Show " + stack.more + " more" );
+      toggle.setAttribute( "aria-expanded", g_announcements_expanded ? "true" : "false" );
+
+      toggle.addEventListener( "click", function( )
+      {
+         g_announcements_expanded = !g_announcements_expanded;
+
+         render_announcements( );
+
+         document.getElementById( "announcements_more" ).focus( );
+      } );
+
+      host.appendChild( toggle );
+   }
+
    show_thread_view( );
+}
+
+// NOTE: Two clicks, as Decline is - they go for good on this browser, and a slip of the pointer
+// should not lose ones not yet read.
+function do_dismiss_all_announcements( )
+{
+   var button = document.getElementById( "announcements_dismiss_all" );
+
+   if( g_dismiss_all_timer === null )
+   {
+      button.textContent = "Dismiss all " + g_announcements.length + "?";
+      button.classList.add( "is-armed" );
+
+      g_dismiss_all_timer = window.setTimeout( disarm_dismiss_all, 5000 );
+
+      return;
+   }
+
+   disarm_dismiss_all( );
+
+   var dismissed = read_dismissed( );
+
+   g_announcements.forEach( function( message ) { dismissed = add_dismissed( dismissed, message.unique ); } );
+
+   try
+   {
+      localStorage.setItem( dismissed_key( ), JSON.stringify( dismissed ) );
+   }
+   catch( e )
+   {
+   }
+
+   g_announcements = [ ];
+   g_announcements_drawn = announcements_signature( g_announcements );
+
+   render_announcements( );
+}
+
+function disarm_dismiss_all( )
+{
+   if( g_dismiss_all_timer !== null )
+   {
+      window.clearTimeout( g_dismiss_all_timer );
+
+      g_dismiss_all_timer = null;
+   }
+
+   var button = document.getElementById( "announcements_dismiss_all" );
+
+   if( button !== null )
+   {
+      button.textContent = "Dismiss all";
+      button.classList.remove( "is-armed" );
+   }
+}
+
+// NOTE: What admin is about to post in Administration, shown as everyone else will see it -
+// the card, and who will see it. Only for admin, in Administration, with something typed.
+function update_announcement_preview( )
+{
+   var host = document.getElementById( "announcement_preview" );
+   var input = document.getElementById( "composer_input" );
+
+   var text = input.value.trim( );
+
+   var showing = ciyam.is_admin && is_starting_room( g_room ) && ( text !== "" ) && !input.disabled;
+
+   host.hidden = !showing;
+
+   var holder = document.getElementById( "announcement_preview_card" );
+
+   holder.textContent = "";
+
+   if( !showing )
+      return;
+
+   var others = g_recipients.filter( function( name ) { return name !== ciyam.username; } );
+
+   var card = build_announcement_card( text, "now", "", others.length > 0 );
+
+   card.querySelector( ".chat-announcement-ok" ).hidden = true;
+
+   holder.appendChild( card );
+
+   set_text( document.getElementById( "announcement_preview_audience" ), announcement_audience( g_recipients, ciyam.username ) );
 }
 
 // NOTE: Remembered in this browser only - on another device it shows again.
@@ -3294,6 +3450,7 @@ async function do_send( )
    input.disabled = true;
 
    resize_composer( );
+   update_announcement_preview( );
 
    ciyam.error = "";
 
@@ -3420,6 +3577,7 @@ function on_composer_input( )
    resize_composer( );
    update_composer_count( );
    update_emoji_suggest( );
+   update_announcement_preview( );
 }
 
 function begin_edit( unique, text )
@@ -3515,6 +3673,9 @@ function render_composer( )
 
    document.getElementById( "composer_scope" ).textContent =
     ( g_recipients.length > 0 ) ? "Send to everyone" : "Send to selected…";
+
+   // NOTE: The recipients, or the room, may have changed who a preview is for.
+   update_announcement_preview( );
 }
 
 // ====================================================================

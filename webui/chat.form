@@ -231,6 +231,15 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="chat-emoji-tabs" id="emoji_tabs"></div>
                <div class="chat-emoji-scroll" id="emoji_scroll"></div>
             </div>
+            <!-- NOTE: For admin in Administration - what is being typed, as everyone else will see
+                 it at the top of every room, and who will. -->
+            <div class="chat-announcement-preview" id="announcement_preview" hidden>
+               <div class="chat-announcement-preview-head">
+                  <span class="chat-announcement-preview-label">Preview</span>
+                  <span class="chat-announcement-preview-audience" id="announcement_preview_audience"></span>
+               </div>
+               <div id="announcement_preview_card"></div>
+            </div>
             <!-- NOTE: The ":name" suggestions - typing ":thu" offers the matching emoji here. -->
             <ul class="chat-emoji-suggest" id="emoji_suggest" role="listbox" aria-label="Emoji suggestions" hidden></ul>
             <div class="chat-recipients" id="recipient_row" hidden></div>

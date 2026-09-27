@@ -934,6 +934,81 @@ button.chat-avatar:hover
    border-bottom: 1px solid var(--color-chat-border);
 }
 
+/* NOTE: With two or more - the count, and Dismiss all. */
+.chat-announcements-head
+{
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 12px;
+}
+
+.chat-announcements-count
+{
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 600;
+   letter-spacing: 0.04em;
+   text-transform: uppercase;
+   color: var(--color-chat-text-secondary);
+}
+
+/* NOTE: The first click arms it, as Decline does - the second dismisses them all. */
+.chat-announcements-all.is-armed
+{
+   color: var(--color-chat-critical-text);
+   border-color: var(--color-chat-critical-border);
+   background: var(--color-chat-critical-bg);
+}
+
+.chat-announcements-more
+{
+   align-self: flex-start;
+   padding: 0;
+   border: 0;
+   background: none;
+   font-size: var(--font-size-chat-meta);
+   font-weight: 600;
+   color: var(--color-chat-accent-deep);
+   cursor: pointer;
+}
+
+.chat-announcements-more:hover
+{
+   text-decoration: underline;
+}
+
+/* NOTE: Admin's preview, above the message box in Administration. Kept short - a long
+   announcement scrolls inside it rather than pushing the message box off the screen. */
+.chat-announcement-preview
+{
+   max-height: 35vh;
+   overflow-y: auto;
+   margin-bottom: 10px;
+}
+
+.chat-announcement-preview-head
+{
+   display: flex;
+   align-items: baseline;
+   gap: 10px;
+   margin-bottom: 6px;
+}
+
+.chat-announcement-preview-label
+{
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 700;
+   letter-spacing: 0.04em;
+   text-transform: uppercase;
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-announcement-preview-audience
+{
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-faint);
+}
+
 .chat-announcement
 {
    display: flex;
