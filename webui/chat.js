@@ -1704,6 +1704,10 @@ function render_announcements( )
 
       node.querySelector( ".chat-announcement-text" ).textContent = message.text;
 
+      // NOTE: One admin sent to named people, rather than to everyone.
+      if( message.private )
+         node.querySelector( ".chat-announcement-label" ).textContent = "Announcement · to you";
+
       var ok = node.querySelector( ".chat-announcement-ok" );
 
       ok.title = "Dismiss - it will not be shown again on this browser";
@@ -2279,10 +2283,26 @@ function build_message( entry )
       row.querySelector( ".chat-edit-tag" ).hidden = false;
    }
 
-   if( entry.sender === ciyam.username )
+   if( entry.private )
    {
-      row.classList.add( "is-own" );
+      var label = private_label( entry );
 
+      var mark = row.querySelector( ".chat-private" );
+
+      mark.hidden = false;
+      mark.title = label.title;
+
+      mark.querySelector( ".chat-private-label" ).textContent = label.text;
+
+      row.classList.add( "is-private" );
+   }
+
+   row.classList.toggle( "is-own", ( entry.sender === ciyam.username ) );
+
+   // NOTE: No editing a private message - an edit is sent as "for=<unique>", and what the
+   // server does with that for a message only some people hold has not been worked out.
+   if( ( entry.sender === ciyam.username ) && !entry.private )
+   {
       var edit = row.querySelector( ".chat-message-edit" );
 
       edit.hidden = false;
@@ -2580,7 +2600,7 @@ async function do_send( )
    if( g_edit_unique !== "" )
       options = "for=" + g_edit_unique + ";text=" + sent;
    else if( g_recipients.length > 0 )
-      options = "for=" + g_recipients.join( "," ) + ";text=" + sent;
+      options = "for=" + with_sender( g_recipients, ciyam.username ).join( "," ) + ";text=" + sent;
    else
       options = "text=" + sent;
 

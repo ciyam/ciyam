@@ -1222,6 +1222,26 @@ button.chat-avatar:hover
    font-weight: 600;
 }
 
+/* NOTE: The private marker - a small pill before the text, so a message only some can see
+   is not mistaken for one said to the room. */
+.chat-private
+{
+   display: inline-flex;
+   align-items: center;
+   gap: 4px;
+   margin-right: 8px;
+   padding: 1px 7px;
+   border-radius: var(--radius-pill);
+   background: color-mix(in srgb, var(--color-chat-accent) 12%, var(--color-chat-bg));
+   color: var(--color-chat-accent-deep);
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-nano);
+   font-weight: 600;
+   vertical-align: 1px;
+   white-space: nowrap;
+   cursor: default;
+}
+
 /* NOTE: A message keeps its line breaks - typed with shift+enter. */
 .chat-message-body
 {
