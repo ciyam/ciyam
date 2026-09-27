@@ -1535,6 +1535,10 @@ void http_request_handler::on_start( )
 
          response = osstr.str( );
 
+         TRACE_LOG( TRACE_DETAILS | TRACE_SESSION,
+          to_comparable_string( handler, false, 8 )
+          + " - (responding with " + to_string( response.length( ) ) + " bytes)" );
+
          up_socket->send_n( ( unsigned char* )response.data( ), response.length( ), c_response_timeout );
 
          if( was_endpoint )
