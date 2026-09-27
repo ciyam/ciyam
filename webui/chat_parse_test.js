@@ -602,6 +602,19 @@ check( "an edited one is still admin's", cp.pending_announcements( admin_room, [
 check( "dismissed ones are left out", ids( cp.pending_announcements( admin_room, [ "1790435793000" ] ) ), [ "1790436900000", "1790435700000" ] );
 check( "nothing read, nothing shown", cp.pending_announcements( null, null ), [ ] );
 
+var five = [ "e", "d", "c", "b", "a" ].map( function( u ) { return { unique: u }; } );
+
+function uniques( list ) { return list.map( function( m ) { return m.unique; } ); }
+
+check( "a stack of five shows the newest two", [ uniques( cp.announcement_stack( five, false ).shown ), cp.announcement_stack( five, false ).more ], [ [ "e", "d" ], 3 ] );
+check( "expanded, all of them", [ cp.announcement_stack( five, true ).shown.length, cp.announcement_stack( five, true ).more ], [ 5, 0 ] );
+check( "two or fewer are never held back", [ cp.announcement_stack( five.slice( 0, 2 ), false ).more, cp.announcement_stack( [ ], false ).shown.length ], [ 0, 0 ] );
+check( "three is collapsed", cp.announcement_stack( five.slice( 0, 3 ), false ).more, 1 );
+
+check( "preview audience: everyone", cp.announcement_audience( [ ], "admin" ), "Everyone sees this at the top of every room until they dismiss it" );
+check( "preview audience: named people", cp.announcement_audience( [ "verify-a", "tester-1" ], "admin" ), "Only verify-a, tester-1 will see this, marked as to them" );
+check( "preview audience: admin's own copy left out", cp.announcement_audience( [ "verify-a", "admin" ], "admin" ), "Only verify-a will see this, marked as to them" );
+
 check( "dismissed list read back", cp.parse_dismissed( "[\"1790435700000\",\"1790435793000\"]" ), [ "1790435700000", "1790435793000" ] );
 check( "a damaged value is nothing dismissed", cp.parse_dismissed( "{oops" ), [ ] );
 check( "nothing stored is nothing dismissed", cp.parse_dismissed( null ), [ ] );

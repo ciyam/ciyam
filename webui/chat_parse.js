@@ -998,6 +998,32 @@ function pending_announcements( messages, dismissed )
    } ).sort( function( a, b ) { return Number( b.unique ) - Number( a.unique ); } );
 }
 
+// NOTE: A stack of announcements is kept small: past two, only the newest two show and the
+// rest wait behind "Show N more". Returns which to show and how many are held back.
+const c_announcements_collapsed = 2;
+
+function announcement_stack( list, expanded )
+{
+   var all = list || [ ];
+
+   if( expanded || ( all.length <= c_announcements_collapsed ) )
+      return { shown: all.slice( ), more: 0 };
+
+   return { shown: all.slice( 0, c_announcements_collapsed ), more: all.length - c_announcements_collapsed };
+}
+
+// NOTE: Who will see an announcement admin is about to post - for the preview. Admin's own
+// name in "for" is only there to keep a copy (ISS-022), so it is left out.
+function announcement_audience( recipients, sender )
+{
+   var others = ( recipients || [ ] ).filter( function( name ) { return name !== sender; } );
+
+   if( others.length === 0 )
+      return "Everyone sees this at the top of every room until they dismiss it";
+
+   return "Only " + others.join( ", " ) + " will see this, marked as to them";
+}
+
 // NOTE: Anything that is not a list of message ids is treated as nothing dismissed - a
 // damaged value then shows announcements again, rather than hiding them for good.
 function parse_dismissed( stored )
@@ -1245,6 +1271,9 @@ if( typeof module !== "undefined" )
       visible_rooms: visible_rooms,
       unread_elsewhere: unread_elsewhere,
       pending_announcements: pending_announcements,
+      announcement_stack: announcement_stack,
+      announcement_audience: announcement_audience,
+      c_announcements_collapsed: c_announcements_collapsed,
       seen_by: seen_by,
       merge_new_messages: merge_new_messages,
       needs_full_read: needs_full_read,

@@ -300,6 +300,13 @@ ok   a multi-line one keeps its lines
 ok   an edited one is still admin's
 ok   dismissed ones are left out
 ok   nothing read, nothing shown
+ok   a stack of five shows the newest two
+ok   expanded, all of them
+ok   two or fewer are never held back
+ok   three is collapsed
+ok   preview audience: everyone
+ok   preview audience: named people
+ok   preview audience: admin's own copy left out
 ok   dismissed list read back
 ok   a damaged value is nothing dismissed
 ok   nothing stored is nothing dismissed
