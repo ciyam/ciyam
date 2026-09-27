@@ -1651,6 +1651,10 @@ function on_rooms_response( response )
       if( ( g_room !== "" ) || ( g_selected_invite !== "" ) )
          update_thread_meta( );
 
+      // NOTE: The owner can change who may post while others are in the room - so the message
+      // box follows the listing, not only a change of room.
+      sync_posting_rules( );
+
       var shown = visible_rooms( g_rooms, ciyam.is_admin );
 
       // NOTE: Open the first room with anything unread, else the first listed - of the rooms
@@ -2053,13 +2057,23 @@ function do_join_invitation( )
 // NOTE: Only for someone who cannot see Administration - admin reads it as a room, and a
 // background read would mark its messages read behind their back. Quiet, like polling, so
 // it stays out of the console's log.
-function check_invitations( )
+//
+// NOTE: Whole ("from=0") the first time; after that only what is new - no "from" - added to
+// what is held, and whole again only when "needs_full_read( )" says a read of what is new
+// cannot be trusted (Ian, 2026-09-27: reading it whole every time was wasteful).
+var g_invite_read_whole = false;
+
+function check_invitations( whole )
 {
+   g_invite_read_whole = !!whole || ( g_invite_messages.length === 0 );
+
+   var options = g_invite_read_whole ? "from=0" : "";
+
    g_in_poll = true;
 
    serialised( function( )
    {
-      return ciyam.fetch_messages( c_starting_room_no, "from=0", on_invitations_response );
+      return ciyam.fetch_messages( c_starting_room_no, options, on_invitations_response );
    } );
 
    g_in_poll = false;
@@ -2077,7 +2091,16 @@ function on_invitations_response( response )
       return;
    }
 
-   g_invite_messages = result.messages;
+   if( g_invite_read_whole )
+      g_invite_messages = result.messages;
+   else if( needs_full_read( result.messages ) )
+   {
+      check_invitations( true );
+
+      return;
+   }
+   else
+      g_invite_messages = merge_new_messages( g_invite_messages, result.messages );
 
    refresh_invitations( );
 }
@@ -2623,9 +2646,12 @@ function load_messages( options, replace )
    // rather than written into whatever room is now open.
    var asked_for = g_room;
 
+   // NOTE: "extra=TIME" puts each member's read point on the member line - the read markers.
+   var asked = ( options ? options + ";" : "" ) + "extra=TIME";
+
    return serialised( function( )
    {
-      return ciyam.fetch_messages( asked_for, options, function( response )
+      return ciyam.fetch_messages( asked_for, asked, function( response )
       {
          on_messages_response( response, asked_for, replace );
       } );
@@ -2684,8 +2710,50 @@ function on_messages_response( response, asked_for, replace )
       if( next !== "" )
          g_start_point = next;
 
+      render_seen_markers( );
+
       update_thread_meta( );
    }
+}
+
+// NOTE: "Seen by ..." under the last message each other member has read, from their read
+// points ("seen_by( )" in "chat_parse.js"). Redrawn on every read of the room, as read points
+// only move forward and a marker moves down with them.
+function render_seen_markers( )
+{
+   var list = document.getElementById( "message_list" );
+
+   var was_at_end = ( list.scrollTop + list.clientHeight >= list.scrollHeight - 40 );
+
+   list.querySelectorAll( ".chat-seen" ).forEach( function( marker ) { marker.remove( ); } );
+
+   // NOTE: The list's own rows only - an own message's Edit button carries its unique too, and
+   // counting it put a second marker under every message the user had sent.
+   var rows = Array.from( list.querySelectorAll( ":scope > [data-unique]" ) );
+
+   var marks = seen_by( rows.map( function( row ) { return row.dataset.unique; } ), g_members, ciyam.username );
+
+   rows.forEach( function( row )
+   {
+      var names = marks[ row.dataset.unique ];
+
+      if( !names )
+         return;
+
+      var marker = document.createElement( "div" );
+
+      marker.className = "chat-seen";
+      marker.textContent = "Seen by " + names.join( ", " );
+      marker.title = names.join( ", " ) + ( ( names.length === 1 ) ? " has" : " have" ) + " read up to here";
+
+      // NOTE: The day of the row it follows - "last_rendered_day( )" reads the last element.
+      marker.dataset.day = row.dataset.day || "";
+
+      row.after( marker );
+   } );
+
+   if( was_at_end )
+      list.scrollTop = list.scrollHeight;
 }
 
 // NOTE: Every row carries its day, so the last one in the list says which day the list
@@ -2974,6 +3042,26 @@ function render_members( force )
       head.textContent = heading;
 }
 
+// NOTE: What was last applied to the message box, so a listing that changes nothing about
+// posting leaves it alone - applying a refusal empties the box.
+var g_posting_applied = "";
+
+function posting_key( status )
+{
+   return g_room + " " + status.can_post + " " + status.reason;
+}
+
+function sync_posting_rules( )
+{
+   if( g_room === "" )
+      return;
+
+   var status = posting_status( g_room, find_room( g_room ), ciyam.username, ciyam.is_admin );
+
+   if( posting_key( status ) !== g_posting_applied )
+      apply_posting_rules( );
+}
+
 // NOTE: The rules themselves live in "chat_parse.js" so they are covered by the regression
 // tests - this only reflects the answer in the UI.
 function apply_posting_rules( )
@@ -2981,6 +3069,8 @@ function apply_posting_rules( )
    var entry = find_room( g_room );
 
    var status = posting_status( g_room, entry, ciyam.username, ciyam.is_admin );
+
+   g_posting_applied = posting_key( status );
 
    var input = document.getElementById( "composer_input" );
    var send = document.getElementById( "composer_send" );
@@ -2999,11 +3089,27 @@ function apply_posting_rules( )
       close_emoji_suggest( );
    }
 
+   // NOTE: The standard note gives way on a phone; a reason the user cannot post does not.
+   note.classList.toggle( "is-reason", !status.can_post );
+
    if( status.can_post )
+   {
       note.textContent = "Ordinary chat only — system and slash messages are server-side.";
+
+      // NOTE: Posting allowed again - the reason it was not goes, and the usual placeholder
+      // comes back.
+      if( input.dataset.refused === "1" )
+      {
+         input.dataset.refused = "";
+
+         render_composer( );
+      }
+   }
    else
    {
       note.textContent = status.reason;
+
+      input.dataset.refused = "1";
 
       input.value = "";
       input.placeholder = status.locked ? "🔒 " + status.reason : status.reason;
@@ -3054,6 +3160,19 @@ function update_thread_meta( )
 
    document.getElementById( "owner_actions" ).hidden = !is_owner;
 
+   // NOTE: The owner's choice replaces the plain text - left alone while a change is on its
+   // way, so the listing catching up does not flick it back.
+   var changeable = !invite && can_change_posting( g_room, entry, ciyam.username, ciyam.is_admin );
+
+   var select = document.getElementById( "room_posts_select" );
+
+   select.hidden = !changeable;
+
+   document.getElementById( "room_fact_posts" ).hidden = changeable;
+
+   if( changeable && !select.disabled )
+      select.value = entry.posts || "any";
+
    // NOTE: Nobody can be invited to or removed from the Administration room - it is
    // joined automatically - so the control is absent there rather than present and
    // failing. Ian raised this against 0000001 specifically.
@@ -3063,6 +3182,51 @@ function update_thread_meta( )
     "poll every " + ( c_poll_interval / 1000 ) + "s"
     + ( g_start_point ? ( "\nfrom=" + g_start_point ) : "" )
     + "\nno push · no typing state";
+}
+
+// NOTE: Who may post, changed by the owner or admin from Room Details. The server posts an
+// ":allows set to ..." notice into the room, and the listing follows on the next refresh.
+async function do_change_posting( )
+{
+   var select = document.getElementById( "room_posts_select" );
+
+   var room = g_room;
+   var entry = find_room( room );
+   var value = posts_request_value( select.value );
+
+   if( !entry || ( value === "" ) || ( select.value === entry.posts ) )
+      return;
+
+   select.disabled = true;
+
+   ciyam.error = "";
+
+   var answer = await serialised( function( )
+   {
+      return new Promise( function( resolve )
+      {
+         ciyam.update_message_room( room, "posts=" + value, resolve );
+      } );
+   } );
+
+   select.disabled = false;
+
+   if( is_error_response( answer ) || ( ciyam.error !== "" ) )
+   {
+      show_alert( error_text( is_error_response( answer ) ? answer : ciyam.error ), "is-error" );
+
+      select.value = entry.posts || "any";
+
+      return;
+   }
+
+   // NOTE: Straight away rather than on the next listing, so the message box follows at once.
+   entry.posts = select.value;
+
+   apply_posting_rules( );
+   update_thread_meta( );
+
+   load_rooms( );
 }
 
 // ====================================================================
@@ -3347,7 +3511,7 @@ function render_composer( )
    if( g_recipients.length > 0 )
       input.placeholder = "Private message to " + g_recipients.join( ", " );
    else
-      input.placeholder = "Message " + ( g_room_name || ( "#" + g_room ) ) + " — plain chat";
+      input.placeholder = "Message " + ( g_room_name || ( "#" + g_room ) );
 
    document.getElementById( "composer_scope" ).textContent =
     ( g_recipients.length > 0 ) ? "Send to everyone" : "Send to selected…";

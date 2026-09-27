@@ -272,7 +272,15 @@ http://www.opensource.org/licenses/mit-license.php.
             <dl class="chat-room-facts">
                <div class="chat-room-fact"><dt>Number</dt><dd class="chat-mono" id="room_fact_number"></dd></div>
                <div class="chat-room-fact" id="room_fact_owner_row"><dt>Owner</dt><dd id="room_fact_owner"></dd></div>
-               <div class="chat-room-fact" id="room_fact_posts_row"><dt>Posting</dt><dd id="room_fact_posts"></dd></div>
+               <!-- NOTE: The owner, or admin, can change who may post; everyone else sees it. -->
+               <div class="chat-room-fact" id="room_fact_posts_row"><dt><label for="room_posts_select">Posting</label></dt><dd>
+                  <span id="room_fact_posts"></span>
+                  <select class="chat-room-posts" id="room_posts_select" onchange="do_change_posting( )" hidden>
+                     <option value="any">Anyone</option>
+                     <option value="own">Owner only</option>
+                     <option value="none">Locked</option>
+                  </select>
+               </dd></div>
                <div class="chat-room-fact" id="room_fact_messages_row"><dt>Messages</dt><dd id="room_fact_messages"></dd></div>
                <div class="chat-room-fact" id="room_fact_inviter_row" hidden><dt>Invited by</dt><dd id="room_fact_inviter"></dd></div>
             </dl>

@@ -1145,6 +1145,24 @@ button.chat-avatar:hover
    overflow-wrap: anywhere;
 }
 
+/* NOTE: The owner's choice of who may post, in place of the plain text. */
+.chat-room-posts
+{
+   padding: 2px 6px;
+   border: 1px solid var(--color-chat-border-strong);
+   border-radius: var(--radius-xs);
+   background: var(--color-chat-bg);
+   color: var(--color-chat-text-strong);
+   font: inherit;
+   cursor: pointer;
+}
+
+.chat-room-posts:disabled
+{
+   opacity: 0.6;
+   cursor: progress;
+}
+
 .chat-room-panel .chat-owner-actions
 {
    margin: 12px 16px 0;
@@ -1220,6 +1238,15 @@ button.chat-avatar:hover
 {
    color: var(--color-chat-critical-text);
    font-weight: 600;
+}
+
+/* NOTE: Read markers - who has read up to this message. Quiet, and to the right. */
+.chat-seen
+{
+   margin: 0 0 4px;
+   text-align: right;
+   font-size: var(--font-size-chat-micro);
+   color: var(--color-chat-text-faint);
 }
 
 /* NOTE: The private marker - a small pill before the text, so a message only some can see
@@ -1575,6 +1602,16 @@ button.chat-avatar:hover
    font-size: var(--font-size-chat-body);
    line-height: 1.4;
    resize: none;
+}
+
+/* NOTE: A placeholder never wraps - the box is one line high until something is typed, so a
+   second line was cut in half on a phone. A long one is cut off at the edge (with an ellipsis
+   where the browser draws one - Chrome does not, for a text box); the note says it in full. */
+.chat-input::placeholder
+{
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
 }
 
 .chat-input:focus
@@ -2149,6 +2186,13 @@ button.chat-avatar:hover
    {
       gap: 6px;
       padding: 8px 10px;
+   }
+
+   /* NOTE: The standard "ordinary chat only" note is dropped on a phone for the room it
+      takes; a reason the user cannot post stays. */
+   .chat-composer-note:not(.is-reason)
+   {
+      display: none;
    }
 
    /* NOTE: On a phone the panel spans the screen, directly above the message box - over it,
