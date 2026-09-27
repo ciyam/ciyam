@@ -2194,23 +2194,30 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_javascripts_prefix ) ) );
 
-                  string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + name + c_js_suffix );
-
-                  if( !file_exists( file_name ) )
+                  if( ( access != g_cws_admin_token ) && ( name != access )
+                   && is_pin_token( name ) && ( name.length( ) == c_cws_access_length ) )
                      // FUTURE: This message should be handled as a server string message.
-                     error = "Javascript '" + file_name + "' was not found.";
+                     error = "Javascript for '" + name + "' is unavailable.";
                   else
                   {
-                     found = true;
+                     string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + name + c_js_suffix );
 
-                     string script_data( opt_buffer_file( file_name ) );
-
-                     replace( script_data, c_ciyam_prefix + name, c_ciyam_prefix + access );
-
-                     if( !is_json_output )
-                        response = script_data;
+                     if( !file_exists( file_name ) )
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "Javascript '" + file_name + "' was not found.";
                      else
-                        response = "{\"javascript\":\"" + escaped_json( script_data ) + "\"}";
+                     {
+                        found = true;
+
+                        string script_data( opt_buffer_file( file_name ) );
+
+                        replace( script_data, c_ciyam_prefix + name, c_ciyam_prefix + access );
+
+                        if( !is_json_output )
+                           response = script_data;
+                        else
+                           response = "{\"javascript\":\"" + escaped_json( script_data ) + "\"}";
+                     }
                   }
                }
                else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_javascripts ) )
@@ -2268,21 +2275,28 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_stylesheets_prefix ) ) );
 
-                  string file_name( g_cws_artifacts_dir + '/' + name + c_css_suffix );
-
-                  if( !file_exists( file_name ) )
+                  if( ( access != g_cws_admin_token ) && ( name != access )
+                   && is_pin_token( name ) && ( name.length( ) == c_cws_access_length ) )
                      // FUTURE: This message should be handled as a server string message.
-                     error = "Stylesheet '" + file_name + "' was not found.";
+                     error = "Stylesheet for '" + name + "' is unavailable.";
                   else
                   {
-                     found = true;
+                     string file_name( g_cws_artifacts_dir + '/' + name + c_css_suffix );
 
-                     string style_data( opt_buffer_file( file_name ) );
-
-                     if( !is_json_output )
-                        response = style_data;
+                     if( !file_exists( file_name ) )
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "Stylesheet '" + file_name + "' was not found.";
                      else
-                        response = "{\"stylesheet\":\"" + escaped_json( style_data ) + "\"}";
+                     {
+                        found = true;
+
+                        string style_data( opt_buffer_file( file_name ) );
+
+                        if( !is_json_output )
+                           response = style_data;
+                        else
+                           response = "{\"stylesheet\":\"" + escaped_json( style_data ) + "\"}";
+                     }
                   }
                }
                else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_stylesheets ) )
@@ -2340,21 +2354,28 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   string name( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_webcmdlists_prefix ) ) );
 
-                  string file_name( g_cws_artifacts_dir + '/' + name + c_list_suffix );
-
-                  if( !file_exists( file_name ) )
+                  if( ( access != g_cws_admin_token ) && ( name != access )
+                   && is_pin_token( name ) && ( name.length( ) == c_cws_access_length ) )
                      // FUTURE: This message should be handled as a server string message.
-                     error = "Commands list '" + file_name + "' was not found.";
+                     error = "Commands list for '" + name + "' is unavailable.";
                   else
                   {
-                     found = true;
+                     string file_name( g_cws_artifacts_dir + '/' + name + c_list_suffix );
 
-                     string style_data( opt_buffer_file( file_name ) );
-
-                     if( !is_json_output )
-                        response = style_data;
+                     if( !file_exists( file_name ) )
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "Commands list '" + file_name + "' was not found.";
                      else
-                        response = "{\"webcmdlist\":\"" + escaped_json( style_data ) + "\"}";
+                     {
+                        found = true;
+
+                        string style_data( opt_buffer_file( file_name ) );
+
+                        if( !is_json_output )
+                           response = style_data;
+                        else
+                           response = "{\"webcmdlist\":\"" + escaped_json( style_data ) + "\"}";
+                     }
                   }
                }
                else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_webcmdlists ) )
