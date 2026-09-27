@@ -222,6 +222,22 @@ ok   a name match comes before a keyword match
 ok   hyphenated names split
 ok   nothing typed, nothing found
 ok   no match
+ok   autocomplete: a colon and two letters
+ok   autocomplete: at the very start
+ok   autocomplete: only up to the cursor
+ok   autocomplete: one letter is not enough
+ok   autocomplete: not a time
+ok   autocomplete: not a link
+ok   autocomplete: not a smiley
+ok   autocomplete: not once a space is typed
+ok   autocomplete: not glued to a word
+ok   autocomplete: after a line break
+ok   shortcode from a name
+ok   shortcode without the punctuation
+ok   shortcode keeps + and -
+ok   suggestions: _ for a space
+ok   suggestions: at most eight
+ok   suggestions: as many as asked
 ok   recent: newest first
 ok   recent: once each
 ok   recent: capped

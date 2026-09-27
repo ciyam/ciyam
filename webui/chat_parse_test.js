@@ -465,6 +465,23 @@ check( "hyphenated names split", chars( ce.search_emoji( catalogue, "eyes heart"
 check( "nothing typed, nothing found", ce.search_emoji( catalogue, "  " ), [ ] );
 check( "no match", ce.search_emoji( catalogue, "xyzzy" ), [ ] );
 
+check( "autocomplete: a colon and two letters", ce.emoji_query_at( "nice :th", 8 ), { start: 5, query: "th" } );
+check( "autocomplete: at the very start", ce.emoji_query_at( ":thumbs_up", 10 ), { start: 0, query: "thumbs_up" } );
+check( "autocomplete: only up to the cursor", ce.emoji_query_at( "a :thu and more", 6 ), { start: 2, query: "thu" } );
+check( "autocomplete: one letter is not enough", ce.emoji_query_at( "ok :p", 5 ), null );
+check( "autocomplete: not a time", ce.emoji_query_at( "at 10:30", 8 ), null );
+check( "autocomplete: not a link", ce.emoji_query_at( "see http://x", 12 ), null );
+check( "autocomplete: not a smiley", ce.emoji_query_at( "hi :)", 5 ), null );
+check( "autocomplete: not once a space is typed", ce.emoji_query_at( "a :thumbs up", 12 ), null );
+check( "autocomplete: not glued to a word", ce.emoji_query_at( "word:thu", 8 ), null );
+check( "autocomplete: after a line break", ce.emoji_query_at( "one\n:tad", 8 ), { start: 4, query: "tad" } );
+check( "shortcode from a name", ce.emoji_shortcode( "thumbs up" ), ":thumbs_up:" );
+check( "shortcode without the punctuation", ce.emoji_shortcode( "OK hand" ), ":ok_hand:" );
+check( "shortcode keeps + and -", ce.emoji_shortcode( "1st place medal" ), ":1st_place_medal:" );
+check( "suggestions: _ for a space", chars( ce.suggest_emoji( catalogue, "thumbs_up" ) ), [ ce.emoji_from_codes( "1F44D" ) ] );
+check( "suggestions: at most eight", ce.suggest_emoji( catalogue, "heart" ).length, 8 );
+check( "suggestions: as many as asked", ce.suggest_emoji( catalogue, "heart", 3 ).length, 3 );
+
 check( "recent: newest first", ce.push_recent_emoji( [ "a", "b" ], "c" ), [ "c", "a", "b" ] );
 check( "recent: once each", ce.push_recent_emoji( [ "a", "b", "c" ], "b" ), [ "b", "a", "c" ] );
 check( "recent: capped", ce.push_recent_emoji( Array.from( { length: ce.c_emoji_recent_max }, function( _, i ) { return "e" + i; } ), "new" ).length, ce.c_emoji_recent_max );

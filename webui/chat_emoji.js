@@ -454,6 +454,42 @@ function search_emoji( catalogue, query )
    return exact.concat( first, rest );
 }
 
+// NOTE: The ":name" being typed just before the cursor, for the autocomplete - or null. The
+// colon must start the text or follow a space, and be followed by at least two letters,
+// digits, "_", "+" or "-" with nothing else before the cursor. So "10:30", "http://", ":)"
+// and ":p" never offer anything.
+const c_emoji_query_min = 2;
+
+function emoji_query_at( text, caret )
+{
+   var before = String( text || "" ).substring( 0, caret );
+
+   var match = /(^|\s):([a-z0-9_+\-]*)$/i.exec( before );
+
+   if( match === null )
+      return null;
+
+   var query = match[ 2 ];
+
+   if( ( query.length < c_emoji_query_min ) || ( query.length > 30 ) )
+      return null;
+
+   return { start: before.length - query.length - 1, query: query };
+}
+
+// NOTE: How an emoji is shown in the autocomplete - its name, as the shortcodes elsewhere
+// look: ":thumbs_up:".
+function emoji_shortcode( name )
+{
+   return ":" + String( name || "" ).toLowerCase( ).replace( /[^a-z0-9+\-]+/g, "_" ).replace( /^_+|_+$/g, "" ) + ":";
+}
+
+// NOTE: "_" typed for a space, as in a shortcode - ":thumbs_up" finds "thumbs up".
+function suggest_emoji( catalogue, query, max )
+{
+   return search_emoji( catalogue, String( query || "" ).replace( /_/g, " " ) ).slice( 0, max || 8 );
+}
+
 // NOTE: The most recent first, each once, and only so many.
 function push_recent_emoji( recent, char )
 {
@@ -491,6 +527,9 @@ if( typeof module !== "undefined" )
       emoji_from_codes: emoji_from_codes,
       emoji_catalogue: emoji_catalogue,
       search_emoji: search_emoji,
+      emoji_query_at: emoji_query_at,
+      emoji_shortcode: emoji_shortcode,
+      suggest_emoji: suggest_emoji,
       push_recent_emoji: push_recent_emoji,
       parse_recent_emoji: parse_recent_emoji
    };
