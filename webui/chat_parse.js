@@ -22,6 +22,8 @@ const c_kind_system = "system";
 
 const c_edited_marker = "*";
 
+const c_private_marker = "!";
+
 // NOTE: Who may post in a room, and the markers used to signal it in the entrance listing.
 const c_posts_any = "any";
 const c_posts_own = "own";
@@ -183,8 +185,9 @@ function parse_system_event( text )
 
 // NOTE: Every non-member line is "<unique> <sender> <remainder>". The first
 // character of the remainder says what kind of line it is - a space for
-// ordinary chat (the stripped "_" marker), a colon for a system event and a
-// hash for an entrance room listing.
+// ordinary chat (the stripped "_" marker), "!" for a private message (Ian,
+// 2026-09-27 - before then a private message had a space too), a colon for a
+// system event and a hash for an entrance room listing.
 function parse_message_line( line )
 {
    if( !line )
@@ -239,14 +242,17 @@ function parse_message_line( line )
    }
 
    // NOTE: A leading space is the placeholder left by the stripped "_" prefix
-   // and is not part of what the user typed.
-   var text = ( first === " " ) ? remainder.substring( 1 ) : remainder;
+   // and is not part of what the user typed; "!" is the same place, marking it private.
+   var is_private = ( first === c_private_marker );
+
+   var text = ( ( first === " " ) || is_private ) ? remainder.substring( 1 ) : remainder;
 
    return {
       kind: c_kind_chat,
       unique: unique,
       sender: sender,
       edited: edited,
+      private: is_private,
       text: unescape_message_text( text )
    };
 }
@@ -395,7 +401,64 @@ function parse_fetch_response( response )
       }
    }
 
+   result.messages = pair_private_copies( result.messages );
+
    return result;
+}
+
+// NOTE: A sender who puts their own name in "for" gets a copy of their private message - and
+// the ":issued (message sent to ...)" receipt for it carries the same unique. The two are one
+// thing: the receipt's recipients go onto the copy, and the receipt is dropped. Left as two,
+// the chat would draw whichever came first and skip the other as already drawn.
+function pair_private_copies( messages )
+{
+   var copies = { };
+
+   ( messages || [ ] ).forEach( function( entry )
+   {
+      if( entry && ( entry.kind === c_kind_chat ) && entry.private )
+         copies[ entry.unique + " " + entry.sender ] = entry;
+   } );
+
+   return ( messages || [ ] ).filter( function( entry )
+   {
+      var event = entry && entry.event;
+
+      if( !event || ( event.verb !== "issued" ) || ( event.issued_kind !== "message" ) )
+         return true;
+
+      var copy = copies[ entry.unique + " " + entry.sender ];
+
+      if( !copy )
+         return true;
+
+      copy.recipients = ( event.recipients || [ ] ).filter( function( name ) { return name !== entry.sender; } );
+
+      return false;
+   } );
+}
+
+// NOTE: The small label on a private message. A copy the user sent says who it went to;
+// one they received can only say it was sent to them - the server does not say who else.
+function private_label( entry )
+{
+   if( entry.recipients && entry.recipients.length )
+      return { text: "private · to " + entry.recipients.join( ", " ),
+       title: "Private - only you and " + entry.recipients.join( ", " ) + " can see this" };
+
+   return { text: "private", title: "Private - sent to you, not to the whole room" };
+}
+
+// NOTE: Adding the sender to "for" is how they keep a copy of what they sent (Ian,
+// 2026-09-27) - otherwise they get only the ":issued" receipt.
+function with_sender( recipients, sender )
+{
+   var list = ( recipients || [ ] ).slice( );
+
+   if( sender && ( list.indexOf( sender ) < 0 ) )
+      list.push( sender );
+
+   return list;
 }
 
 // NOTE: Rooms arrive in allocation order. Sort unread first so that anything
@@ -1073,6 +1136,9 @@ if( typeof module !== "undefined" )
       visible_rooms: visible_rooms,
       unread_elsewhere: unread_elsewhere,
       pending_announcements: pending_announcements,
+      pair_private_copies: pair_private_copies,
+      private_label: private_label,
+      with_sender: with_sender,
       parse_dismissed: parse_dismissed,
       add_dismissed: add_dismissed,
       c_max_dismissed: c_max_dismissed,

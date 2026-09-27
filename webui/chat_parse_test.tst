@@ -206,6 +206,20 @@ ok   admin sees Administration
 ok   others do not
 ok   the list itself is untouched
 
+== private messages ============================================
+ok   a public message is not private
+ok   a private one is, without its marker
+ok   the sender's copy and its receipt become one
+ok   the copy carries who it went to, less the sender
+ok   a receipt with no copy stays a notice
+ok   a message starting ! in the old format is not private
+ok   and keeps its !
+ok   label on a received one
+ok   label on a sent copy
+ok   the sender is added to for
+ok   only once
+ok   not when unknown
+
 == announcements ===============================================
 ok   admin's messages, newest first
 ok   a multi-line one keeps its lines

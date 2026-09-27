@@ -439,6 +439,39 @@ check( "admin sees Administration", cp.visible_rooms( listed, true ).map( functi
 check( "others do not", cp.visible_rooms( listed, false ).map( function( r ) { return r.room; } ), [ "0000004", "0000005" ] );
 check( "the list itself is untouched", listed.length, 3 );
 
+heading( "private messages" );
+
+// NOTE: Real lines from the container, 2026-09-27: admin sent one message to the room, one to
+// verify-a, and one to verify-a with admin's own name in "for" to keep a copy.
+var sent_side = cp.parse_fetch_response( [
+   "admin+1 verify-a+0 verify-e+0",
+   "1790514104000 admin  public 3493",
+   "1790514104001 admin :issued (message sent to verify-a)",
+   "1790514104002 admin !private-to-a-and-me 3493",
+   "1790514104002 admin :issued (message sent to verify-a,admin)"
+].join( "\n" ) ).messages;
+
+var received_side = cp.parse_fetch_response( [
+   "admin+1 verify-a+0 verify-e+0",
+   "1790514104000 admin  public 3493",
+   "1790514104001 admin !private-to-a 3493",
+   "1790514104002 admin !private-to-a-and-me 3493"
+].join( "\n" ) ).messages;
+
+check( "a public message is not private", [ received_side[ 0 ].private, received_side[ 0 ].text ], [ false, "public 3493" ] );
+check( "a private one is, without its marker", [ received_side[ 1 ].private, received_side[ 1 ].text ], [ true, "private-to-a 3493" ] );
+check( "the sender's copy and its receipt become one", sent_side.map( function( m ) { return m.kind + ( m.private ? "!" : "" ); } ), [ "chat", "system", "chat!" ] );
+check( "the copy carries who it went to, less the sender", sent_side[ 2 ].recipients, [ "verify-a" ] );
+check( "a receipt with no copy stays a notice", sent_side[ 1 ].event.recipients, [ "verify-a" ] );
+check( "a message starting ! in the old format is not private", cp.parse_message_line( "1790514104000 admin  !not private" ).private, false );
+check( "and keeps its !", cp.parse_message_line( "1790514104000 admin  !not private" ).text, "!not private" );
+
+check( "label on a received one", cp.private_label( received_side[ 1 ] ), { text: "private", title: "Private - sent to you, not to the whole room" } );
+check( "label on a sent copy", cp.private_label( sent_side[ 2 ] ), { text: "private · to verify-a", title: "Private - only you and verify-a can see this" } );
+check( "the sender is added to for", cp.with_sender( [ "verify-a" ], "admin" ), [ "verify-a", "admin" ] );
+check( "only once", cp.with_sender( [ "verify-a", "admin" ], "admin" ), [ "verify-a", "admin" ] );
+check( "not when unknown", cp.with_sender( [ "verify-a" ], "" ), [ "verify-a" ] );
+
 heading( "announcements" );
 
 // NOTE: As the background read of Administration returns them to a standard account.
