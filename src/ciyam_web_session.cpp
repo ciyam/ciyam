@@ -244,9 +244,9 @@ set< string > g_cws_access_tokens;
 
 set< string > g_cws_session_requests;
 
-map< string, set< string > > g_cws_access_devices;
-
 map< string, unique_ptr< sio_graph > > g_model_meta_data;
+
+map< string, map< string, int64_t > > g_cws_access_devices;
 
 struct session_info
 {
@@ -388,7 +388,7 @@ size_t get_num_access_devices( const string& access_token )
    return ( !g_cws_access_devices.count( access_token ) ? 0 : g_cws_access_devices[ access_token ].size( ) );
 }
 
-bool has_access_device( const string& access_token, const string& device_token )
+bool has_access_device( const string& access_token, const string& device_token, int64_t unix_tm_val )
 {
    guard g( g_mutex );
 
@@ -397,31 +397,11 @@ bool has_access_device( const string& access_token, const string& device_token )
    if( g_cws_access_devices.count( access_token ) )
    {
       if( g_cws_access_devices[ access_token ].count( device_token ) )
+      {
+         g_cws_access_devices[ access_token ][ device_token ] = unix_tm_val;
+
          retval = true;
-   }
-
-   return retval;
-}
-
-bool has_added_access_device( const string& access_token, const string& device_token )
-{
-   guard g( g_mutex );
-
-   bool retval = false;
-
-   size_t num_devices = get_num_access_devices( access_token );
-
-   // NOTE: Need to check that the device has not already been added
-   // (in case concurrent threads called "has_access_device" and are
-   // now both calling this function to add the same device token).
-   if( ( num_devices < c_cws_max_devices )
-    && !g_cws_access_devices[ access_token ].count( device_token ) )
-   {
-      retval = true;
-
-      g_cws_access_devices[ access_token ].insert( device_token );
-
-      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) added device " + device_token + " for access " + access_token );
+      }
    }
 
    return retval;
@@ -438,6 +418,64 @@ void remove_access_device_if_present( const string& access_token, const string& 
 
       TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) removed device " + device_token + " for access " + access_token );
    }
+}
+
+bool has_added_access_device( const string& access_token, const string& device_token, int64_t unix_tm_val )
+{
+   guard g( g_mutex );
+
+   // NOTE: Need to check that the device has not already been added
+   // (in case concurrent threads called "has_access_device" and are
+   // now both calling this function to add the same device token).
+   bool retval = g_cws_access_devices[ access_token ].count( device_token );
+
+   if( !retval )
+   {
+      size_t num_devices = get_num_access_devices( access_token );
+
+      if( num_devices >= c_cws_max_devices )
+      {
+         string oldest_device;
+
+         // NOTE: Will only remove an existing device
+         // if its last access is older than a number
+         // of seconds before the current unix time.
+         int64_t oldest_tm_val = ( unix_tm_val - 5 );
+
+         const map< string, int64_t >& access_devices = g_cws_access_devices[ access_token ];
+
+         map< string, int64_t >::const_iterator ci = access_devices.begin( );
+
+         while( ci != access_devices.end( ) )
+         {
+            if( ci->second < oldest_tm_val )
+            {
+               oldest_device = ci->first;
+               oldest_tm_val = ci->second;
+            }
+
+            ++ci;
+         }
+
+         if( !oldest_device.empty( ) )
+         {
+            remove_access_device_if_present( access_token, oldest_device );
+
+            num_devices = get_num_access_devices( access_token );
+         }
+      }
+
+      if( num_devices < c_cws_max_devices )
+      {
+         retval = true;
+
+         g_cws_access_devices[ access_token ].insert( make_pair( device_token, unix_tm_val ) );
+
+         TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) added device " + device_token + " for access " + access_token );
+      }
+   }
+
+   return retval;
 }
 
 void init_session_info( const string& access, const string& device, const string& session, int64_t now )
@@ -1213,6 +1251,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 {
    bool found = false;
 
+   int64_t now = unix_time( );
+
    bool use_unknown_response = false;
 
    string prefix( c_web_access_prefix );
@@ -1686,36 +1726,28 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       error = "This web session is not valid (or has expired).";
    else if( uri_suffix == c_cws_uri_suffix_devices )
    {
-      size_t num_devices = get_num_access_devices( access );
+      found = true;
 
-      if( num_devices >= c_cws_max_devices )
-         // FUTURE: This message should be handled as a server string message.
-         error = "Maximum devices have been created for web session access token '" + access + "'.";
+      string new_device( create_or_check_device( ) );
+
+      if( !is_json_output )
+         response = new_device;
       else
-      {
-         found = true;
-
-         string new_device( create_or_check_device( ) );
-
-         if( !is_json_output )
-            response = new_device;
-         else
-            response = "{\"device\":\"" + new_device + "\"}";
-      }
+         response = "{\"device\":\"" + new_device + "\"}";
    }
    else
    {
       if( !are_hex_nibbles( device, false ) || ( device.length( ) != c_cws_device_length ) )
          // FUTURE: This message should be handled as a server string message.
          error = "Invalid device identity '" + device + "'.";
-      else if( !has_access_device( access, device ) )
+      else if( !has_access_device( access, device, now ) )
       {
          if( !verify_whether_device_is_valid( device ) )
             // FUTURE: This message should be handled as a server string message.
             error = "Invalid device identity '" + device + "'.";
          else
          {
-            if( !has_added_access_device( access, device ) )
+            if( !has_added_access_device( access, device, now ) )
                // FUTURE: This message should be handled as a server string message.
                error = "Maximum devices have been created for web session access token '" + access + "'.";
          }
@@ -1736,8 +1768,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          string web_storage_var_name( var_prefix + access + '.' + device + c_web_storage_suffix );
 
          bool is_admin = ( access == g_cws_admin_token );
-
-         int64_t now = unix_time( );
 
          if( is_post_request && ( uri_suffix == c_cws_uri_suffix_sessions ) )
          {
