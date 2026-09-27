@@ -82,7 +82,21 @@ function parse_members( line )
       if( isNaN( count ) )
          count = 0;
 
-      members.push( { name: name, sessions: count, online: ( count > 0 ) } );
+      var member = { name: name, sessions: count, online: ( count > 0 ) };
+
+      // NOTE: With "extra=TIME" the count is followed by ".<unique>" - the "from" this user
+      // last read the room from, so everything before that unique has reached them.
+      var dot = entry.indexOf( ".", pos );
+
+      if( dot > 0 )
+      {
+         var read = entry.substring( dot + 1 );
+
+         if( /^\d+$/.test( read ) )
+            member.read = read;
+      }
+
+      members.push( member );
    }
 
    return members;
@@ -704,6 +718,95 @@ function posting_status( room, entry, username, is_admin )
    return { can_post: true, reason: "" };
 }
 
+// NOTE: Read markers - which message each member has read up to, from "extra=TIME". A member
+// has read everything before their read point, so their marker goes under the last message
+// (or notice) below it. The user's own is left out, as are members with no read point or
+// none past the first message. Returns { <unique>: [ names ] }, names in order.
+function seen_by( uniques, members, me )
+{
+   var marks = { };
+
+   ( members || [ ] ).forEach( function( member )
+   {
+      if( !member.read || ( member.name === me ) )
+         return;
+
+      var read = Number( member.read );
+
+      var last = "";
+
+      ( uniques || [ ] ).forEach( function( unique )
+      {
+         if( Number( unique ) < read )
+            last = unique;
+      } );
+
+      if( last === "" )
+         return;
+
+      ( marks[ last ] = marks[ last ] || [ ] ).push( member.name );
+   } );
+
+   Object.keys( marks ).forEach( function( unique ) { marks[ unique ].sort( ); } );
+
+   return marks;
+}
+
+// NOTE: New messages added to those already held, as a read without "from" returns only what
+// is new. Keyed on the unique with the sender and what was said, since a private copy and its
+// receipt share a unique - and an entry already held is not taken twice.
+function merge_new_messages( held, fresh )
+{
+   function key( m ) { return m.unique + " " + ( m.sender || "" ) + " " + ( m.text || "" ); }
+
+   var seen = { };
+
+   ( held || [ ] ).forEach( function( m ) { seen[ key( m ) ] = true; } );
+
+   return ( held || [ ] ).concat( ( fresh || [ ] ).filter( function( m ) { return !seen[ key( m ) ]; } ) );
+}
+
+// NOTE: When a read of only what is new is not enough, and Administration must be read whole
+// ("from=0") - Ian's suggestion, 2026-09-27. Two cases:
+//
+//   - nothing new came back, though its message count moved - something else on this device
+//     (the console, another tab) read it first and moved the server's "new" point past it
+//   - anything about invitations came back - an answered invitation is rewritten in place,
+//     as ":ignore", which a read of only what is new never returns
+//
+// Announcements, the everyday case, are new lines and take the cheap read.
+const c_invitation_verbs = [ "invite", "ignore", "reject", "joined", "remove" ];
+
+function needs_full_read( fresh )
+{
+   if( !fresh || ( fresh.length === 0 ) )
+      return true;
+
+   return fresh.some( function( m ) { return m.event && ( c_invitation_verbs.indexOf( m.event.verb ) >= 0 ); } );
+}
+
+// NOTE: The "posts" option for a room's messages PUT - who may post. The server takes only
+// "ANY", "OWN" or "NONE", in capitals ("Unknown room posts value 'own'" otherwise), from
+// the owner or admin, and never for Administration. "" for anything else.
+function posts_request_value( posts )
+{
+   var value = String( posts || "" ).toLowerCase( );
+
+   if( [ c_posts_any, c_posts_own, c_posts_none ].indexOf( value ) < 0 )
+      return "";
+
+   return value.toUpperCase( );
+}
+
+// NOTE: Whether this user may change who posts in a room.
+function can_change_posting( room, entry, username, is_admin )
+{
+   if( !entry || is_entrance_room( room ) || is_starting_room( room ) )
+      return false;
+
+   return is_admin || ( ( entry.owner || "" ) === username );
+}
+
 // NOTE: Who this user has already invited to a room, from the ":issued" receipts the
 // server posts to their Administration room. The server accepts a duplicate invitation
 // without complaint, and the invitee just gets a second notice carrying the same token,
@@ -1142,6 +1245,11 @@ if( typeof module !== "undefined" )
       visible_rooms: visible_rooms,
       unread_elsewhere: unread_elsewhere,
       pending_announcements: pending_announcements,
+      seen_by: seen_by,
+      merge_new_messages: merge_new_messages,
+      needs_full_read: needs_full_read,
+      posts_request_value: posts_request_value,
+      can_change_posting: can_change_posting,
       pair_private_copies: pair_private_copies,
       private_label: private_label,
       with_sender: with_sender,

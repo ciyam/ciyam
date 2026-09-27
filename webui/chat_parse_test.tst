@@ -206,6 +206,38 @@ ok   admin sees Administration
 ok   others do not
 ok   the list itself is untouched
 
+== read markers ================================================
+ok   the read point is kept
+ok   the session count is still right
+ok   a line without it has none
+ok   each marker under the last message before the read point
+ok   the user's own is left out
+ok   a read point before every message shows nothing
+ok   names under one message are sorted
+
+== reading only what is new ====================================
+ok   new ones are added after
+ok   one already held is not taken twice
+ok   same unique, different entry - both kept
+ok   nothing held yet
+ok   nothing new
+ok   an announcement takes the cheap read
+ok   nothing came back - read it whole
+ok   an invitation - read it whole
+ok   an answered one - read it whole
+ok   a decline - read it whole
+ok   a join - read it whole
+
+== changing who may post =======================================
+ok   the server's value is in capitals
+ok   anything else is nothing
+ok   the owner may change it
+ok   admin may
+ok   another member may not
+ok   nobody for Administration
+ok   nobody for the entrance
+ok   nothing known, nothing changed
+
 == emoji =======================================================
 ok   eight categories, none empty
 ok   each entry has a name

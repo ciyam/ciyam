@@ -50,8 +50,8 @@ check( "three members parsed", members.length, 3 );
 check( "offline member", members[ 0 ], { name: "admin", sessions: 0, online: false } );
 check( "two sessions", members[ 2 ], { name: "test-2", sessions: 2, online: true } );
 check( "hyphenated name kept", members[ 1 ].name, "test-1" );
-// NOTE: Ian's "extra=TIME" option (46797f3a) appends ".<time>" to each member. The chat does
-// not ask for it yet - this pins that the parser would still read names and counts.
+// NOTE: Ian's "extra=TIME" option (46797f3a) appends ".<time>" to each member - the chat asks
+// for it for read markers since 2026-09-28. Names and counts must still read correctly.
 check( "extra=TIME suffix tolerated", cp.parse_members( "admin+2.1790313275000 verify-a+0" ).map( function( m ) { return m.name + ":" + m.sessions; } ),
  [ "admin:2", "verify-a:0" ] );
 
@@ -439,6 +439,57 @@ var listed = [ { room: "0000001" }, { room: "0000004" }, { room: "0000005" } ];
 check( "admin sees Administration", cp.visible_rooms( listed, true ).map( function( r ) { return r.room; } ), [ "0000001", "0000004", "0000005" ] );
 check( "others do not", cp.visible_rooms( listed, false ).map( function( r ) { return r.room; } ), [ "0000004", "0000005" ] );
 check( "the list itself is untouched", listed.length, 3 );
+
+heading( "read markers" );
+
+// NOTE: A real member line with "extra=TIME", 2026-09-28.
+var readers = cp.parse_members( "admin+1.1790521522001 tester-1+1.1790521522001 verify-a+0.1790520461001 verify-e+0" );
+
+check( "the read point is kept", readers.map( function( m ) { return m.name + ":" + ( m.read || "-" ); } ), [ "admin:1790521522001", "tester-1:1790521522001", "verify-a:1790520461001", "verify-e:-" ] );
+check( "the session count is still right", readers.map( function( m ) { return m.sessions; } ), [ 1, 1, 0, 0 ] );
+check( "a line without it has none", cp.parse_members( "admin+1 verify-a+0" )[ 0 ].read, undefined );
+
+var in_room = [ "1790520461000", "1790520462000", "1790521522000" ];
+
+check( "each marker under the last message before the read point",
+ cp.seen_by( in_room, readers, "admin" ), { "1790521522000": [ "tester-1" ], "1790520461000": [ "verify-a" ] } );
+check( "the user's own is left out", Object.keys( cp.seen_by( in_room, readers, "tester-1" ) ).sort( ).map( function( k ) { return k + ":" + cp.seen_by( in_room, readers, "tester-1" )[ k ].join( "," ); } ), [ "1790520461000:verify-a", "1790521522000:admin" ] );
+check( "a read point before every message shows nothing", cp.seen_by( in_room, [ { name: "x", read: "1790000000000" } ], "admin" ), { } );
+check( "names under one message are sorted", cp.seen_by( in_room, [ { name: "zed", read: "1790530000000" }, { name: "amy", read: "1790530000000" } ], "admin" ), { "1790521522000": [ "amy", "zed" ] } );
+
+heading( "reading only what is new" );
+
+var held = [ { unique: "1", sender: "admin", text: "one" }, { unique: "2", sender: "admin", text: "two" } ];
+
+check( "new ones are added after", cp.merge_new_messages( held, [ { unique: "3", sender: "admin", text: "three" } ] ).map( function( m ) { return m.unique; } ), [ "1", "2", "3" ] );
+check( "one already held is not taken twice", cp.merge_new_messages( held, [ { unique: "2", sender: "admin", text: "two" } ] ).length, 2 );
+check( "same unique, different entry - both kept", cp.merge_new_messages( held, [ { unique: "2", sender: "admin", text: "(issued)" } ] ).length, 3 );
+check( "nothing held yet", cp.merge_new_messages( null, [ { unique: "1", sender: "admin", text: "one" } ] ).length, 1 );
+check( "nothing new", cp.merge_new_messages( held, [ ] ), held );
+
+var fresh_lines = function( lines ) { return cp.parse_fetch_response( [ "admin+1 verify-a+1" ].concat( lines ).join( "\n" ) ).messages; };
+
+check( "an announcement takes the cheap read", cp.needs_full_read( fresh_lines( [ "1790520000000 admin  Maintenance on Sunday" ] ) ), false );
+check( "nothing came back - read it whole", cp.needs_full_read( [ ] ), true );
+check( "an invitation - read it whole", cp.needs_full_read( fresh_lines( [ "1790520000001 admin :invite room 0000006-7e8dc218f33200c07e43ead73911af9a Common room" ] ) ), true );
+check( "an answered one - read it whole", cp.needs_full_read( fresh_lines( [ "1790520000002 admin :ignore (invite for 0000006 was processed)" ] ) ), true );
+check( "a decline - read it whole", cp.needs_full_read( fresh_lines( [ "1790520000003 verify-a :reject (invite for 0000006 was rejected)" ] ) ), true );
+check( "a join - read it whole", cp.needs_full_read( fresh_lines( [ "1790520000004 tester-1 :joined" ] ) ), true );
+
+heading( "changing who may post" );
+
+// NOTE: Verified 2026-09-28 - "posts=own" is refused, "posts=OWN" is "[okay]".
+check( "the server's value is in capitals", [ cp.posts_request_value( "any" ), cp.posts_request_value( "own" ), cp.posts_request_value( "none" ) ], [ "ANY", "OWN", "NONE" ] );
+check( "anything else is nothing", [ cp.posts_request_value( "all" ), cp.posts_request_value( "" ), cp.posts_request_value( null ) ], [ "", "", "" ] );
+
+var owned = { room: "0000004", owner: "verify-a", posts: "any" };
+
+check( "the owner may change it", cp.can_change_posting( "0000004", owned, "verify-a", false ), true );
+check( "admin may", cp.can_change_posting( "0000004", owned, "admin", true ), true );
+check( "another member may not", cp.can_change_posting( "0000004", owned, "verify-e", false ), false );
+check( "nobody for Administration", cp.can_change_posting( "0000001", { room: "0000001", owner: "admin" }, "admin", true ), false );
+check( "nobody for the entrance", cp.can_change_posting( "0000000", { room: "0000000", owner: "admin" }, "admin", true ), false );
+check( "nothing known, nothing changed", cp.can_change_posting( "0000004", null, "verify-a", false ), false );
 
 heading( "emoji" );
 
