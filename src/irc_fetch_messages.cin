@@ -297,6 +297,11 @@ MESSAGE_PARTS=@repstr: /\n:$NEXT_MESSAGE
 ;
 MSG_UNIQUE=%MESSAGE_PARTS:1%
 MSG_AUTHOR=%MESSAGE_PARTS:2%
+MSG_BASE64=%MESSAGE_PARTS:3%
+;
+MSG_PREFIX=@substr:0,3:$MSG_BASE64
+;
+@ifneq "$MSG_PREFIX" "Xzp"
 ;
 .system_variable @queue_irc_%MSG_AUTHOR%_$MSG_UNIQUE*
 @ifdef $OUTPUT
@@ -310,7 +315,6 @@ NEW_MSG_BASE64=%NEW_MSG_PARTS:2%
 ;
 NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR* $NEW_MSG_BASE64
 @else
-MSG_BASE64=%MESSAGE_PARTS:3%
 ;
 ; NOTE: If message is an "invite" then
 ; will decode and if already joined is
@@ -335,6 +339,8 @@ IGNORE=1
 @ifdef $OUTPUT
 IGNORE=1
 @endif
+@endif
+;
 @endif
 ;
 @ifdef $IGNORE
