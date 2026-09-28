@@ -3756,13 +3756,26 @@ function remove_recipient( name )
       g_recipients.splice( pos, 1 );
 
    render_composer( );
+
+   // NOTE: The name's remove button has just gone with the redraw - the focus would be lost.
+   document.getElementById( "composer_input" ).focus( );
 }
 
 function do_toggle_scope( )
 {
+   // NOTE: Back to everyone - the next thing is typing, so the message box has the focus.
    if( g_recipients.length > 0 )
+   {
       g_recipients = [ ];
-   else if( window.matchMedia( c_details_width_query ).matches )
+
+      render_composer( );
+
+      document.getElementById( "composer_input" ).focus( );
+
+      return;
+   }
+
+   if( window.matchMedia( c_details_width_query ).matches )
    {
       // NOTE: On a narrow screen the members are in Room Details, out of sight - open it.
       set_drawer( "details", false );
