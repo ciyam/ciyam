@@ -61,6 +61,9 @@ const c_palette_commands = [
    { command: "var <name> <text>", description: "set a variable" },
    { command: "history", description: "commands entered this session" },
    { command: "clear", description: "clear the scrollback" },
+   { command: "remove creds", description: "forget this account's saved PIN and password on this browser" },
+   { command: "remove creds <pin>", description: "forget another saved account on this browser (admin)", admin: true },
+   { command: "retain creds", description: "save this account's PIN and password on this browser" },
    { command: "~run_script *", description: "list the server scripts (admin, dev)", raw: true }
 ];
 
@@ -1001,6 +1004,9 @@ async function run_local( spec, from_script )
 
          return { ok: true };
 
+      case "creds":
+         return run_creds( spec.creds );
+
       // NOTE: "clear" empties the output, as in the harness. Typed at the prompt it also
       // clears the screen; in a list it must not, or the list's own output would vanish.
       case "clear":
@@ -1182,6 +1188,59 @@ function run_var( args )
    return { ok: false };
 }
 
+// NOTE: "remove creds" and "retain creds", as in the harness - they change what this browser
+// has saved, never the account. "remove creds <pin>" forgets one other account without the
+// reset that forgets them all. The sign in list is rebuilt when signing out, so it shows
+// the change then. See "plan_creds_removal( )".
+function run_creds( creds )
+{
+   var keys = [ ];
+
+   try
+   {
+      for( var i = 0; i < localStorage.length; i++ )
+         keys.push( localStorage.key( i ) );
+   }
+   catch( e )
+   {
+   }
+
+   var list = stored( c_storage_access );
+
+   var plan = ( creds.verb === "remove" )
+    ? plan_creds_removal( keys, list, creds.pin || ciyam.access, creds.partial )
+    : plan_creds_retain( list, ciyam.access, ciyam.hashed || "", creds.partial );
+
+   if( plan.error )
+   {
+      print_line( plan.error, "is-err" );
+
+      return { ok: false };
+   }
+
+   try
+   {
+      if( plan.list === null )
+         localStorage.removeItem( c_storage_access );
+      else if( plan.list !== undefined )
+         localStorage.setItem( c_storage_access, plan.list );
+
+      plan.remove.forEach( function( key ) { localStorage.removeItem( key ); } );
+
+      Object.keys( plan.set ).forEach( function( key ) { localStorage.setItem( key, plan.set[ key ] ); } );
+   }
+   catch( e )
+   {
+      print_line( "Error: This browser would not change its saved data.", "is-err" );
+
+      return { ok: false };
+   }
+
+   print_line( plan.message, "is-dim" );
+
+   return { ok: true };
+}
+
 function print_help( )
 {
    var lines = [
@@ -1203,6 +1262,11 @@ function print_help( )
     "  exec                         run the output as a list - after view list <name>",
     "  history                      commands entered this session",
     "  clear                        empty the output and the scrollback",
+    // NOTE: As the harness, naming another account's PIN is offered to admin only.
+    ciyam.is_admin
+     ? "  remove creds [<pin>]         forget a saved account here - partial keeps the PIN"
+     : "  remove creds                 forget this account here - partial keeps the PIN",
+    "  retain creds [partial]       save this account here - partial leaves out the password",
     "",
     "In a line - the harness's list language",
     "  {name}  {@1}  {@}            a variable; a line of the last output; all of it",
