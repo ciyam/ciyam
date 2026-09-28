@@ -379,6 +379,21 @@ var odd = cp.parse_fetch_response( [
 
 check( "never the starting room, never without a token", cp.pending_invitations( odd, [ ] ).length, 0 );
 
+// NOTE: Real lines, 2026-09-28 - since Ian's change that day the server no longer rewrites an
+// answered invitation as ":ignore" (ISS-028), so the original ":invite" stays beside the decline.
+var declined_inbox = cp.parse_fetch_response( [
+ "admin+1 verify-a+1",
+ "1790595024000 verify-a :invite room 0000010-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee Admin Declines 3602",
+ "1790595028000 admin :reject (invite for 0000010 was rejected)",
+ "1790595030000 tester-1 :reject (invite for 0000011 was rejected)",
+ "1790595031000 verify-a :invite room 0000011-ffffffffffffffffffffffffffffffff Shared Room" ].join( "\n" ) ).messages;
+
+check( "the rooms this user declined", cp.declined_rooms( declined_inbox, "admin" ), { "0000010": true } );
+check( "someone else's decline is not this user's", cp.declined_rooms( declined_inbox, "verify-e" ), { } );
+check( "a declined invitation is not pending, with no :ignore", cp.pending_invitations( declined_inbox, [ ], "admin" ).map( function( p ) { return p.room; } ), [ "0000011" ] );
+check( "another's decline leaves this user's invitation", cp.pending_invitations( declined_inbox, [ ], "admin" ).some( function( p ) { return p.room === "0000011"; } ), true );
+check( "without 'me', declines are not counted", cp.pending_invitations( declined_inbox, [ ] ).length, 2 );
+
 heading( "line breaks and backslashes" );
 
 // NOTE: The lines the container returned on 2026-09-26 for messages sent as "one<break>two",
@@ -410,7 +425,8 @@ check( "letters are a byte each", cp.message_bytes( "hello" ), 5 );
 check( "an accented letter is two", cp.message_bytes( "é" ), 2 );
 check( "an emoji is four", cp.message_bytes( "😀" ), 4 );
 check( "a line break is one", cp.message_bytes( "a\nb" ), 3 );
-check( "the limit sits under the smallest measured", cp.c_max_message_bytes <= 730, true );
+check( "the limit is 4000 bytes", cp.c_max_message_bytes, 4000 );
+check( "well under the smallest measured, leaving Ian's reserve", cp.c_max_message_bytes <= 5980 - 1000, true );
 
 heading( "room events in plain words" );
 
@@ -565,11 +581,15 @@ check( "the sender's copy and its receipt become one", sent_side.map( function( 
 check( "the copy carries who it went to, less the sender", sent_side[ 2 ].recipients, [ "verify-a" ] );
 check( "a receipt with no copy stays a notice", sent_side[ 1 ].event.recipients, [ "verify-a" ] );
 // NOTE: Real, 2026-09-28 - verify-a sent a public message and edited it; the server now marks
-// every edit with "!" (ISS-026).
-var edited_line = cp.parse_message_line( "1790520461000 verify-a* !edit probe 1165 (edited)" );
+// every edit with "!" (ISS-026). Fixed by Ian on 2026-09-28 - an edit keeps the original's
+// prefix, so "!" on an edit is true again. Real lines after that fix:
+var edited_public = cp.parse_message_line( "1790594242000 admin*  pub edited 1161" );
+var edited_private = cp.parse_message_line( "1790594243000 admin* !priv edited 1161" );
 
-check( "an edited message is not private for its !", [ edited_line.edited, edited_line.private ], [ true, false ] );
-check( "and the ! is not part of its text", edited_line.text, "edit probe 1165 (edited)" );
+check( "an edited public message is public", [ edited_public.edited, edited_public.private, edited_public.text ], [ true, false, "pub edited 1161" ] );
+check( "a public message is edited as for=<unique>", cp.edit_for_value( "1790594242000", false ), "1790594242000" );
+check( "a private one as for=!<unique>", cp.edit_for_value( "1790594243000", true ), "!1790594243000" );
+check( "an edited private message stays private", [ edited_private.edited, edited_private.private, edited_private.text ], [ true, true, "priv edited 1161" ] );
 check( "an edited one in the old form is unchanged", cp.parse_message_line( "1790520461000 verify-a*  edit probe" ).text, "edit probe" );
 check( "a message starting ! in the old format is not private", cp.parse_message_line( "1790514104000 admin  !not private" ).private, false );
 check( "and keeps its !", cp.parse_message_line( "1790514104000 admin  !not private" ).text, "!not private" );

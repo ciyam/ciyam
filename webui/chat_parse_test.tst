@@ -168,6 +168,11 @@ ok   a name with brackets kept
 ok   joining clears it
 ok   no messages, none pending
 ok   never the starting room, never without a token
+ok   the rooms this user declined
+ok   someone else's decline is not this user's
+ok   a declined invitation is not pending, with no :ignore
+ok   another's decline leaves this user's invitation
+ok   without 'me', declines are not counted
 
 == line breaks and backslashes =================================
 ok   five messages, none lost to a break
@@ -184,7 +189,8 @@ ok   letters are a byte each
 ok   an accented letter is two
 ok   an emoji is four
 ok   a line break is one
-ok   the limit sits under the smallest measured
+ok   the limit is 4000 bytes
+ok   well under the smallest measured, leaving Ian's reserve
 
 == room events in plain words ==================================
 ok   joined
@@ -283,8 +289,10 @@ ok   a private one is, without its marker
 ok   the sender's copy and its receipt become one
 ok   the copy carries who it went to, less the sender
 ok   a receipt with no copy stays a notice
-ok   an edited message is not private for its !
-ok   and the ! is not part of its text
+ok   an edited public message is public
+ok   a public message is edited as for=<unique>
+ok   a private one as for=!<unique>
+ok   an edited private message stays private
 ok   an edited one in the old form is unchanged
 ok   a message starting ! in the old format is not private
 ok   and keeps its !

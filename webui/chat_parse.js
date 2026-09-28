@@ -257,15 +257,11 @@ function parse_message_line( line )
 
    // NOTE: A leading space is the placeholder left by the stripped "_" prefix
    // and is not part of what the user typed; "!" is the same place, marking it private.
-   var marked = ( first === c_private_marker );
+   // NOTE: Edits included. Until 2026-09-28 the server marked every edit private (ISS-026) and
+   // the mark was ignored on an edit; an edit now keeps the original's prefix, so it is true.
+   var is_private = ( first === c_private_marker );
 
-   // NOTE: Except on an edited message. An edit is sent as "for=<unique>", and the server
-   // marks anything with a "for" as private - so every edited message comes back with "!",
-   // private or not (ISS-026). On an edit the mark says nothing, so it is not believed; an
-   // edited private message, which the chat itself never makes, would show as public.
-   var is_private = marked && !edited;
-
-   var text = ( ( first === " " ) || marked ) ? remainder.substring( 1 ) : remainder;
+   var text = ( ( first === " " ) || is_private ) ? remainder.substring( 1 ) : remainder;
 
    return {
       kind: c_kind_chat,
@@ -337,12 +333,13 @@ function escape_message_text( text )
    return String( text || "" ).replace( /\\/g, "\\\\" );
 }
 
-// NOTE: The server keeps each message as a queue item of at most 1000 characters
-// ("c_default_max_deque_item_size" in "ciyam_variables.cpp"), which holds the text encoded
-// with the sender's name - measured at 733 bytes of text for "admin" and 730 for "verify-a".
-// So the chat stops at a round 700 bytes, under the limit for any name up to 38 characters.
-// It is bytes, not characters: "é" is two and most emoji four.
-const c_max_message_bytes = 700;
+// NOTE: The server keeps each message as a queue item of at most 8000 characters since
+// 2026-09-28 ("c_default_max_deque_item_size" in "ciyam_variables.cpp", 1000 before), which
+// holds the text encoded with the sender's name - measured at 5983 bytes of text for "admin"
+// and 5980 for "verify-a". Ian wants room kept in reserve (pinned-message room ids, end-to-end
+// encryption data), so the chat stops at 4000 bytes, as Damon chose (QST-004). It is bytes,
+// not characters: "é" is two and most emoji four.
+const c_max_message_bytes = 4000;
 
 function message_bytes( text )
 {
@@ -467,6 +464,14 @@ function private_label( entry )
        title: "Private - only you and " + entry.recipients.join( ", " ) + " can see this" };
 
    return { text: "private", title: "Private - sent to you, not to the whole room" };
+}
+
+// NOTE: The "for" value that edits a message: its unique, with "!" in front for a private one
+// (Ian, 2026-09-28). The server keeps public and private apart - an edit must say which, and
+// the wrong one is refused ("Source message must not be modified to or from private.").
+function edit_for_value( unique, is_private )
+{
+   return ( is_private ? c_private_marker : "" ) + unique;
 }
 
 // NOTE: Adding the sender to "for" is how they keep a copy of what they sent (Ian,
@@ -853,9 +858,28 @@ function invited_to_room( messages, room )
 // is also what clears it, with no state to keep. The server accepts the same invitation
 // twice (ISS-017), so there is one entry per room, and the latest supplies its details.
 // Newest first.
-function pending_invitations( messages, rooms )
+// NOTE: The rooms whose invitation this user has declined - from their own ":reject (invite
+// for <room> was rejected)". Only their own: someone else's decline of the same room must not
+// answer this user's invitation. A decline is final - the server refuses to invite them again.
+function declined_rooms( messages, me )
 {
-   var joined = { };
+   var declined = { };
+
+   ( messages || [ ] ).forEach( function( message )
+   {
+      if( message && message.event && ( message.event.verb === "reject" ) && message.event.room
+       && me && ( message.sender === me ) )
+         declined[ message.event.room ] = true;
+   } );
+
+   return declined;
+}
+
+// NOTE: "me" lets a declined invitation drop out even when the server has not rewritten it as
+// ":ignore" - which it stopped doing on 2026-09-28 (ISS-028). Joined rooms drop out as before.
+function pending_invitations( messages, rooms, me )
+{
+   var joined = declined_rooms( messages, me );
 
    ( rooms || [ ] ).forEach( function( entry ) { joined[ entry.room ] = true; } );
 
@@ -1270,6 +1294,7 @@ if( typeof module !== "undefined" )
       user_initial: user_initial,
       visible_rooms: visible_rooms,
       unread_elsewhere: unread_elsewhere,
+      declined_rooms: declined_rooms,
       pending_announcements: pending_announcements,
       announcement_stack: announcement_stack,
       announcement_audience: announcement_audience,
@@ -1282,6 +1307,7 @@ if( typeof module !== "undefined" )
       pair_private_copies: pair_private_copies,
       private_label: private_label,
       with_sender: with_sender,
+      edit_for_value: edit_for_value,
       parse_dismissed: parse_dismissed,
       add_dismissed: add_dismissed,
       c_max_dismissed: c_max_dismissed,
