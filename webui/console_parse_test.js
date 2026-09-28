@@ -10,6 +10,13 @@
 // Run with:  node console_parse_test.js
 // Compare against "console_parse_test.tst" - see "run_chat_tests.sh".
 
+// NOTE: In the browser the console loads "chat_parse.js" first; its saved account list
+// helpers are globals there, and made so here.
+const chat_parse = require( "./chat_parse.js" );
+
+global.parse_access_list = chat_parse.parse_access_list;
+global.format_access_list = chat_parse.format_access_list;
+
 const cp = require( "./console_parse.js" );
 
 var failures = 0;
@@ -134,6 +141,42 @@ check( "comment", cp.resolve_command( "# a note" ), { kind: "none" } );
 // NOTE: Unlike the harness, an unrecognised command is not sent as raw protocol - "~" is
 // required, so a typo cannot become a server command.
 check( "unknown is not sent raw", cp.resolve_command( "variable @irc_allow" ), { kind: "unknown", word: "variable" } );
+
+// --------------------------------------------------------------------
+heading( "saved credentials" );
+
+check( "remove creds", cp.parse_creds_command( "remove creds" ), { verb: "remove", pin: "", partial: false, error: "" } );
+check( "remove creds for a PIN", cp.parse_creds_command( "remove creds 20401" ).pin, "20401" );
+check( "remove creds partial", cp.parse_creds_command( "remove creds partial" ).partial, true );
+check( "a PIN and partial, either order", [ cp.parse_creds_command( "remove creds partial 20401" ).pin, cp.parse_creds_command( "remove creds 20401 partial" ).partial ], [ "20401", true ] );
+check( "the harness's word orders", [ "creds remove", "creds|remove", "delete creds", "Remove Credentials" ].map( function( t ) { return cp.parse_creds_command( t ).verb; } ), [ "remove", "remove", "remove", "remove" ] );
+check( "retain creds partial", cp.parse_creds_command( "retain creds partial" ), { verb: "retain", pin: "", partial: true, error: "" } );
+check( "not a PIN: refused", cp.parse_creds_command( "remove creds 204" ).error !== "", true );
+check( "retain takes no PIN", cp.parse_creds_command( "retain creds 20401" ).error, "'retain creds' takes only 'partial'" );
+check( "other lines are not creds", [ "remove", "creds", "messages delete 0000004", "delete messages 0000004", "constructor creds" ].map( function( t ) { return cp.parse_creds_command( t ); } ), [ null, null, null, null, null ] );
+check( "resolved as a local command", cp.resolve_command( "remove creds 20401" ).kind + " " + cp.resolve_command( "remove creds 20401" ).name, "local creds" );
+check( "a bad argument says why", cp.resolve_command( "remove creds bob" ).reason, "'remove creds' takes a 5-digit PIN and 'partial', both optional" );
+
+var keys = [ "cws.access", "cws.device", "cws.hashed_20401", "cws.dismissed_20401", "cws.emoji_recent_20401", "cws.hashed_20405", "cws.prefs", "cws.script_demo" ];
+
+check( "completely: the PIN out of the list, and every key of that account",
+ cp.plan_creds_removal( keys, "20362,20401,20405", "20401", false ),
+ { list: "20362,20405", remove: [ "cws.hashed_20401", "cws.dismissed_20401", "cws.emoji_recent_20401" ], set: { }, message: "(removed credentials completely for 20401)" } );
+check( "the last account: the list key goes", cp.plan_creds_removal( [ "cws.access" ], "20401", "20401", false ).list, null );
+check( "partially: only the password hash", cp.plan_creds_removal( keys, "20362,20401", "20401", true ),
+ { list: undefined, remove: [ "cws.hashed_20401" ], set: { }, message: "(removed credentials partially for 20401)" } );
+check( "partially, with no saved password", cp.plan_creds_removal( keys, "20362", "20362", true ).error, "Error: No saved password for '20362'." );
+check( "nothing saved for that PIN", cp.plan_creds_removal( keys, "20362", "20303", false ).error, "Error: Unable to find credentials for '20303'." );
+check( "not in the list, but its keys are still removed", cp.plan_creds_removal( keys, "20362", "20405", false ).remove, [ "cws.hashed_20405" ] );
+check( "no PIN and not signed in", cp.plan_creds_removal( keys, "20362", "", false ).error, "Error: Not signed in - name the account: remove creds <pin>" );
+check( "keys of a longer PIN are not touched", cp.plan_creds_removal( [ "cws.hashed_204011" ], "20401", "20401", false ).remove, [ ] );
+
+check( "retain: the PIN and its hash", cp.plan_creds_retain( "20401", "20362", "abc", false ),
+ { list: "20362,20401", remove: [ ], set: { "cws.hashed_20362": "abc" }, message: "(retained credentials completely for 20362)" } );
+check( "retain partial: the PIN, and any old hash dropped", cp.plan_creds_retain( null, "20362", "abc", true ),
+ { list: "20362", remove: [ "cws.hashed_20362" ], set: { }, message: "(retained credentials partially for 20362)" } );
+check( "retain with no hash held: the PIN only, and says so", cp.plan_creds_retain( "20362", "20362", "", false ).message, "(retained credentials partially for 20362 - no password hash is held here)" );
+check( "retain, not signed in", cp.plan_creds_retain( "20362", "", "", false ).error, "Error: Not signed in." );
 
 // --------------------------------------------------------------------
 heading( "building request URLs" );

@@ -91,6 +91,19 @@ const c_console_local_commands = [ "help", "clear", "vars", "var", "unset", "ech
 
 const c_console_quit_names = [ "quit", "exit", "finish" ];
 
+// NOTE: The harness's "remove creds" and "retain creds", in any of its word orders - "remove
+// creds", "creds remove", "creds|remove" - with "delete" meaning "remove".
+const c_creds_nouns = [ "creds", "credentials" ];
+const c_creds_verbs = { remove: "remove", delete: "remove", retain: "retain" };
+
+const c_creds_pin_length = 5;
+
+const c_creds_hashed_prefix = "cws.hashed_";
+
+// NOTE: Every key that belongs to one account on this browser - "cws.<name>_<pin>", the
+// harness's "arbitrary" value included. Removing an account completely takes all of them.
+const c_creds_account_prefixes = [ c_creds_hashed_prefix, "cws.dismissed_", "cws.emoji_recent_", "cws.arbitrary_" ];
+
 // ====================================================================
 // Session handover
 // ====================================================================
@@ -232,6 +245,16 @@ function resolve_command( line )
       return { kind: "raw", request: raw };
    }
 
+   var creds = parse_creds_command( text );
+
+   if( creds !== null )
+   {
+      if( creds.error !== "" )
+         return { kind: "unknown", word: creds.verb, reason: creds.error };
+
+      return { kind: "local", name: "creds", args: "", creds: creds };
+   }
+
    var words = split_words( text );
 
    var first = words[ 0 ].toLowerCase( );
@@ -295,6 +318,155 @@ function resolve_command( line )
       name: name,
       options: options
    };
+}
+
+// ====================================================================
+// Saved credentials
+// ====================================================================
+
+function creds_verb( word )
+{
+   var key = String( word || "" ).toLowerCase( );
+
+   return Object.prototype.hasOwnProperty.call( c_creds_verbs, key ) ? c_creds_verbs[ key ] : "";
+}
+
+function is_creds_noun( word )
+{
+   return c_creds_nouns.indexOf( String( word || "" ).toLowerCase( ) ) >= 0;
+}
+
+// NOTE: "remove creds [<pin>] [partial]" or "retain creds [partial]" - null for any other
+// line. "partial" keeps the PIN in the saved list and deals only with the password hash.
+function parse_creds_command( text )
+{
+   var words = split_words( text );
+
+   if( words.length === 0 )
+      return null;
+
+   var verb = "";
+   var rest = [ ];
+
+   var pipe = words[ 0 ].indexOf( "|" );
+
+   if( pipe > 0 )
+   {
+      if( is_creds_noun( words[ 0 ].substr( 0, pipe ) ) )
+         verb = creds_verb( words[ 0 ].substring( pipe + 1 ) );
+
+      rest = words.slice( 1 );
+   }
+   else if( words.length > 1 )
+   {
+      if( creds_verb( words[ 0 ] ) && is_creds_noun( words[ 1 ] ) )
+         verb = creds_verb( words[ 0 ] );
+      else if( is_creds_noun( words[ 0 ] ) && creds_verb( words[ 1 ] ) )
+         verb = creds_verb( words[ 1 ] );
+
+      rest = words.slice( 2 );
+   }
+
+   if( verb === "" )
+      return null;
+
+   var result = { verb: verb, pin: "", partial: false, error: "" };
+
+   for( var i = 0; i < rest.length; i++ )
+   {
+      var word = rest[ i ].toLowerCase( );
+
+      if( ( word === "partial" ) && !result.partial )
+         result.partial = true;
+      else if( ( verb === "remove" ) && ( result.pin === "" )
+       && /^\d+$/.test( word ) && ( word.length === c_creds_pin_length ) )
+         result.pin = word;
+      else
+      {
+         result.error = ( verb === "remove" )
+          ? "'remove creds' takes a " + c_creds_pin_length + "-digit PIN and 'partial', both optional"
+          : "'retain creds' takes only 'partial'";
+
+         break;
+      }
+   }
+
+   return result;
+}
+
+// NOTE: What "remove creds" does to this browser's saved data, worked out without touching
+// it. "keys" are the localStorage keys present and "list" the stored "cws.access" value.
+// Returns the new list (null to remove the key, undefined to leave it alone), the keys to
+// remove and the line to print - or an error. Relies on "parse_access_list( )" and
+// "format_access_list( )" from "chat_parse.js", which the console loads.
+function plan_creds_removal( keys, list, access, partial )
+{
+   if( access === "" )
+      return { error: "Error: Not signed in - name the account: remove creds <pin>" };
+
+   var hashed_key = c_creds_hashed_prefix + access;
+
+   if( partial )
+   {
+      if( keys.indexOf( hashed_key ) < 0 )
+         return { error: "Error: No saved password for '" + access + "'." };
+
+      return { list: undefined, remove: [ hashed_key ], set: { }, message: "(removed credentials partially for " + access + ")" };
+   }
+
+   var remove = c_creds_account_prefixes
+    .map( function( prefix ) { return prefix + access; } )
+    .filter( function( key ) { return keys.indexOf( key ) >= 0; } );
+
+   var entries = parse_access_list( list );
+
+   var pos = entries.indexOf( access );
+
+   if( ( pos < 0 ) && ( remove.length === 0 ) )
+      return { error: "Error: Unable to find credentials for '" + access + "'." };
+
+   var new_list = undefined;
+
+   if( pos >= 0 )
+   {
+      entries.splice( pos, 1 );
+
+      new_list = format_access_list( entries );
+   }
+
+   return { list: new_list, remove: remove, set: { }, message: "(removed credentials completely for " + access + ")" };
+}
+
+// NOTE: What "retain creds" does - saves the signed in account's PIN, and its password hash
+// unless "partial" (which also drops a hash saved before). A tab that holds no hash - one
+// signed in some other way - can save only the PIN, and says so.
+function plan_creds_retain( list, access, hashed, partial )
+{
+   if( access === "" )
+      return { error: "Error: Not signed in." };
+
+   var entries = parse_access_list( list );
+
+   if( entries.indexOf( access ) < 0 )
+      entries.push( access );
+
+   var hashed_key = c_creds_hashed_prefix + access;
+
+   if( partial || ( hashed === "" ) )
+   {
+      return {
+         list: format_access_list( entries ),
+         remove: [ hashed_key ],
+         set: { },
+         message: "(retained credentials partially for " + access + ( partial ? "" : " - no password hash is held here" ) + ")"
+      };
+   }
+
+   var set = { };
+
+   set[ hashed_key ] = hashed;
+
+   return { list: format_access_list( entries ), remove: [ ], set: set, message: "(retained credentials completely for " + access + ")" };
 }
 
 // NOTE: "own" stands in for the caller's access where the harness used "***".
@@ -870,6 +1042,9 @@ if( typeof module !== "undefined" )
       parse_channel_message: parse_channel_message,
       parse_credentials: parse_credentials,
       resolve_command: resolve_command,
+      parse_creds_command: parse_creds_command,
+      plan_creds_removal: plan_creds_removal,
+      plan_creds_retain: plan_creds_retain,
       build_cws_url: build_cws_url,
       is_valid_variable_name: is_valid_variable_name,
       split_script: split_script,

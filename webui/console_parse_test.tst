@@ -44,6 +44,31 @@ ok   blank
 ok   comment
 ok   unknown is not sent raw
 
+== saved credentials ===========================================
+ok   remove creds
+ok   remove creds for a PIN
+ok   remove creds partial
+ok   a PIN and partial, either order
+ok   the harness's word orders
+ok   retain creds partial
+ok   not a PIN: refused
+ok   retain takes no PIN
+ok   other lines are not creds
+ok   resolved as a local command
+ok   a bad argument says why
+ok   completely: the PIN out of the list, and every key of that account
+ok   the last account: the list key goes
+ok   partially: only the password hash
+ok   partially, with no saved password
+ok   nothing saved for that PIN
+ok   not in the list, but its keys are still removed
+ok   no PIN and not signed in
+ok   keys of a longer PIN are not touched
+ok   retain: the PIN and its hash
+ok   retain partial: the PIN, and any old hash dropped
+ok   retain with no hash held: the PIN only, and says so
+ok   retain, not signed in
+
 == building request URLs =======================================
 ok   fetch
 ok   raw
