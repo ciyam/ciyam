@@ -212,6 +212,20 @@ ok   admin sees Administration
 ok   others do not
 ok   the list itself is untouched
 
+== time-outs ===================================================
+ok   a time-out is recognised
+ok   another error is not one
+ok   an answer is not one
+ok   nothing is not one
+ok   three in a row ends the session
+ok   sent after all - newer than the start point
+ok   the same words from before the send do not count
+ok   someone else's words do not count
+ok   not there - not sent
+ok   an edit arrived if its message now reads so
+ok   an edit that did not take
+ok   no start point yet - anything of mine counts
+
 == read markers ================================================
 ok   the read point is kept
 ok   the session count is still right

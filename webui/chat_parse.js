@@ -483,6 +483,35 @@ function composer_mode( recipients, editing, edit_private )
    return { is_private: to_people, label: to_people ? "Private to" : "", send: to_people ? "Send privately" : "Send", send_short: "Send" };
 }
 
+// NOTE: Time-outs (ISS-020). The server gives up on a request after 5 seconds - "Error: Timed out
+// waiting for web session response." - but may still finish it, and its late answer could
+// reach the next request. The chat then absorbs any late answer, re-reads what is on screen,
+// and after this many in a row gives up on the session.
+const c_max_timeouts_in_row = 3;
+
+function is_timeout_response( response )
+{
+   return is_error_response( response ) && ( error_text( response ).indexOf( "Timed out waiting for web session response" ) === 0 );
+}
+
+// NOTE: Whether a message whose send timed out reached the room after all, judged from the
+// room re-read whole. "pending" is { me, text, after, edit }: "after" is the start point the
+// chat held before sending - a server unique, so the browser's clock plays no part - and
+// "edit" the unique of a message being edited. Rows are { unique, sender, text }.
+function arrived_after_timeout( rows, pending )
+{
+   return ( rows || [ ] ).some( function( row )
+   {
+      if( ( row.sender !== pending.me ) || ( row.text !== pending.text ) )
+         return false;
+
+      if( pending.edit )
+         return row.unique === pending.edit;
+
+      return Number( row.unique ) >= Number( pending.after || 0 );
+   } );
+}
+
 // NOTE: The "for" value that edits a message: its unique, with "!" in front for a private one
 // (Ian, 2026-09-28). The server keeps public and private apart - an edit must say which, and
 // the wrong one is refused ("Source message must not be modified to or from private.").
@@ -1325,6 +1354,9 @@ if( typeof module !== "undefined" )
       private_label: private_label,
       with_sender: with_sender,
       edit_for_value: edit_for_value,
+      is_timeout_response: is_timeout_response,
+      arrived_after_timeout: arrived_after_timeout,
+      c_max_timeouts_in_row: c_max_timeouts_in_row,
       composer_mode: composer_mode,
       parse_dismissed: parse_dismissed,
       add_dismissed: add_dismissed,

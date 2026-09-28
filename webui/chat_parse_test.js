@@ -456,6 +456,28 @@ check( "admin sees Administration", cp.visible_rooms( listed, true ).map( functi
 check( "others do not", cp.visible_rooms( listed, false ).map( function( r ) { return r.room; } ), [ "0000004", "0000005" ] );
 check( "the list itself is untouched", listed.length, 3 );
 
+heading( "time-outs" );
+
+// NOTE: The server's own words, seen on the container 2026-09-27.
+check( "a time-out is recognised", cp.is_timeout_response( "Error: Timed out waiting for web session response." ), true );
+check( "another error is not one", cp.is_timeout_response( "Error: Unknown room '0000009' (or not joined)." ), false );
+check( "an answer is not one", cp.is_timeout_response( "admin+1\n1790520000000 admin  hello" ), false );
+check( "nothing is not one", cp.is_timeout_response( null ), false );
+check( "three in a row ends the session", cp.c_max_timeouts_in_row, 3 );
+
+var after_rows = [
+   { unique: "1790520000000", sender: "admin", text: "hello" },
+   { unique: "1790520005000", sender: "admin", text: "did it arrive" },
+   { unique: "1790520006000", sender: "verify-a", text: "same words" } ];
+
+check( "sent after all - newer than the start point", cp.arrived_after_timeout( after_rows, { me: "admin", text: "did it arrive", after: "1790520001000" } ), true );
+check( "the same words from before the send do not count", cp.arrived_after_timeout( after_rows, { me: "admin", text: "hello", after: "1790520001000" } ), false );
+check( "someone else's words do not count", cp.arrived_after_timeout( after_rows, { me: "admin", text: "same words", after: "1790520001000" } ), false );
+check( "not there - not sent", cp.arrived_after_timeout( after_rows, { me: "admin", text: "never arrived", after: "1790520001000" } ), false );
+check( "an edit arrived if its message now reads so", cp.arrived_after_timeout( after_rows, { me: "admin", text: "hello", edit: "1790520000000" } ), true );
+check( "an edit that did not take", cp.arrived_after_timeout( after_rows, { me: "admin", text: "hello again", edit: "1790520000000" } ), false );
+check( "no start point yet - anything of mine counts", cp.arrived_after_timeout( after_rows, { me: "admin", text: "did it arrive", after: "" } ), true );
+
 heading( "read markers" );
 
 // NOTE: A real member line with "extra=TIME", 2026-09-28.
