@@ -93,6 +93,7 @@ system_variable "-p=$PREFIX" @irc_rooms*
 system_variable "-p=$PREFIX" -quoted @irc_names_*
 system_variable "-p=$PREFIX" @irc_owner_*
 system_variable "-p=$PREFIX" @irc_posts_*
+system_variable "-p=$PREFIX" @irc_times_*
 system_variable "-p=$PREFIX" @irc_users_*
 system_variable "-p=$PREFIX" @irc_uuids_*
 system_variable "-p=$PREFIX" @irc_xinvr_*
