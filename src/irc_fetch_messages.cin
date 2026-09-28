@@ -363,6 +363,10 @@ MESSAGES=$MESSAGES\n$NEXT_MESSAGE
 ;
 @:END_MSG_LOOP
 ;
+UTIME=@unix:
+EXTRA=000
+.system_variable @irc_times_$ROOM_AND_USER $UTIME$EXTRA
+;
 OUTPUT=$MESSAGES
 @endif
 @endif
