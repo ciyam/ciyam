@@ -1326,10 +1326,14 @@ button.chat-avatar:hover
 
 /* NOTE: The private marker - a small pill before the text, so a message only some can see
    is not mistaken for one said to the room. */
+/* NOTE: Aligned on its label's baseline, so "private" sits on the same line as the name and
+   the message beside it. Centred items give an inline-flex box the icon's bottom edge as its
+   baseline - the eye has no text - which lifted the label a few pixels. The icon is centred
+   on its own. */
 .chat-private
 {
    display: inline-flex;
-   align-items: center;
+   align-items: baseline;
    gap: 4px;
    margin-right: 8px;
    padding: 1px 7px;
@@ -1340,9 +1344,14 @@ button.chat-avatar:hover
    font-family: var(--font-family-chat-mono);
    font-size: var(--font-size-chat-nano);
    font-weight: 600;
-   vertical-align: 1px;
+   vertical-align: baseline;
    white-space: nowrap;
    cursor: default;
+}
+
+.chat-private svg
+{
+   align-self: center;
 }
 
 /* NOTE: A message keeps its line breaks - typed with shift+enter. */
