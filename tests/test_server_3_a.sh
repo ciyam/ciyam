@@ -85,6 +85,7 @@ curl -s "localhost:13031/post-limit?format=json"
 curl -s "localhost:13031/post-limit?format=json&verbose=true"
 curl -s -d "testing..." "localhost:13031/echo"
 curl -s -d "testing..." "localhost:13031/echo?format=json"
+curl -s -i -d "testing..." -H "X-Request-ID: unique-id" "localhost:13031/echo" | grep "X-Request-ID"
 
 # Basic file upload API tests.
 filename=$(curl -s -F "file=@test.jpg" localhost:13031/upload)

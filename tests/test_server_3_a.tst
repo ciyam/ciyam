@@ -22,7 +22,8 @@ CIYAM 0.0.0{"name":"CIYAM", "version":"0.0.0"}127.0.0.1{"ip_addr":"::1"}{"ip_add
 Error: Invalid format value 'xxxx'.
 100000000
 {"post_limit":"100000000"}{"post_limit":"100.0 MB"}testing...
-{"data":"testing..."}Error: Invalid device identity 'bad_device'.
+{"data":"testing..."}X-Request-ID: unique-id
+Error: Invalid device identity 'bad_device'.
 [adm]@admin
 Error: This web session is not valid (or has expired).
 [adm]@admin
