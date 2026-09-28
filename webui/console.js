@@ -63,7 +63,9 @@ const c_palette_commands = [
    { command: "clear", description: "clear the scrollback" },
    { command: "remove creds", description: "forget this account's saved PIN and password on this browser" },
    { command: "remove creds <pin>", description: "forget another saved account on this browser (admin)", admin: true },
+   { command: "remove creds partial", description: "forget this account's saved password - keep its PIN" },
    { command: "retain creds", description: "save this account's PIN and password on this browser" },
+   { command: "retain creds partial", description: "save this account's PIN only - not its password" },
    { command: "~run_script *", description: "list the server scripts (admin, dev)", raw: true }
 ];
 
