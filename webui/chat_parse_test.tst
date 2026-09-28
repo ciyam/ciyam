@@ -290,6 +290,11 @@ ok   the sender's copy and its receipt become one
 ok   the copy carries who it went to, less the sender
 ok   a receipt with no copy stays a notice
 ok   an edited public message is public
+ok   the message box, to everyone
+ok   the message box, to named people
+ok   the message box, editing a public message
+ok   the message box, editing a private one
+ok   an edit decides, whoever is picked
 ok   a public message is edited as for=<unique>
 ok   a private one as for=!<unique>
 ok   an edited private message stays private

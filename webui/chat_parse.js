@@ -466,6 +466,20 @@ function private_label( entry )
    return { text: "private", title: "Private - sent to you, not to the whole room" };
 }
 
+// NOTE: What the message box says about who will see what is typed - Damon, 2026-09-28: a
+// private mode that stays on after sending is only safe if it cannot be missed. Private is
+// shown by colour and by words together - "Private to" and "Send privately" - never colour
+// alone. Editing a private message is private too, and keeps "Save edit".
+function composer_mode( recipients, editing, edit_private )
+{
+   var to_people = ( recipients || [ ] ).length > 0;
+
+   if( editing )
+      return { is_private: !!edit_private, label: edit_private ? "Editing a private message" : "", send: "Save edit" };
+
+   return { is_private: to_people, label: to_people ? "Private to" : "", send: to_people ? "Send privately" : "Send" };
+}
+
 // NOTE: The "for" value that edits a message: its unique, with "!" in front for a private one
 // (Ian, 2026-09-28). The server keeps public and private apart - an edit must say which, and
 // the wrong one is refused ("Source message must not be modified to or from private.").
@@ -1308,6 +1322,7 @@ if( typeof module !== "undefined" )
       private_label: private_label,
       with_sender: with_sender,
       edit_for_value: edit_for_value,
+      composer_mode: composer_mode,
       parse_dismissed: parse_dismissed,
       add_dismissed: add_dismissed,
       c_max_dismissed: c_max_dismissed,
