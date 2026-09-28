@@ -123,14 +123,31 @@ EDIT_UNIX_UNIQUE=
 MESSAGE_PROMPT=CHECK_MESSAGE=?MESSAGE_LINES:$EDIT_LINE_NUM?
 MESSAGE_PROMPT=@repstr:?/%%:$MESSAGE_PROMPT
 $MESSAGE_PROMPT
+;
 @ifdef $CHECK_MESSAGE
 EDIT_MSG_PARTS=@repstr: /\n:$CHECK_MESSAGE
 EDIT_UNIX_UNIQUE=%EDIT_MSG_PARTS:1%
+EDIT_MSG_OWNER=%EDIT_MSG_PARTS:2%
 EDIT_MSG_CONTENT=@base64:%EDIT_MSG_PARTS:3%
 EDIT_MSG_PREFIX=@substr:0,2:$EDIT_MSG_CONTENT
+;
+POS=@strpos:*:$EDIT_MSG_OWNER
+@ifdef $POS
+EDIT_MSG_OWNER=@substr:0,$POS:$EDIT_MSG_OWNER
+@endif
+;
+@ifneq "$USER" "$EDIT_MSG_OWNER"
+EDIT_UNIX_UNIQUE=
+#(own messages only are editable)
+@elif "$EDIT_MSG_PREFIX" = "_:"
+EDIT_UNIX_UNIQUE=
+#(system messages are not editable)
+@else
 EDIT_MSG_CONTENT=@substr:2:$EDIT_MSG_CONTENT
 #$EDIT_MSG_CONTENT
-#(type new content or just enter to leave as is)
+#(type new content or just enter to cancel)
+@endif
+;
 @else
 #(message $EDIT_LINE_NUM not found)
 @endif
