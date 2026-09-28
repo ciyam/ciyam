@@ -2977,7 +2977,24 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                        string prefix( is_special_request ? c_web_session_meta_message_prefix : c_web_session_default_message_prefix );
 
                                        if( !is_special_request && ( names != c_web_session_default_message_for ) )
-                                          prefix = c_web_session_private_message_prefix;
+                                       {
+                                          bool is_private = false;
+
+                                          // NOTE: If is prefixed by '!' or is not an edit
+                                          // then will prefix as private (as the send will
+                                          // prevent changes between public and private it
+                                          // must be explicitly provided here for edits).
+                                          if( names[ 0 ] == '!' )
+                                          {
+                                             is_private = true;
+                                             names.erase( 0, 1 );
+                                          }
+                                          else if( !is_pin_token( names ) )
+                                             is_private = true;
+
+                                          if( is_private )
+                                             prefix = c_web_session_private_message_prefix;
+                                       }
 
                                        request_and_args = "run_script !irc_send_message \"@room=" + room + ",@names=" + names + ",@message="
                                         + base64::encode( prefix + option_parameters[ c_cws_request_messages_create_options_text ], true ) + "\"\n";
