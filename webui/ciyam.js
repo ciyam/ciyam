@@ -642,7 +642,12 @@ class CIYAM
             if( !all_callbacks && ( callback != null ) && ( this.node_crypto == null ) )
                callback( this.connect_status );
 
-            if( this.connect_status != "" )
+            if( this.connect_status == "" )
+            {
+               if( this.error == "" )
+                  this.error = "invalid or missing connect status";
+            }
+            else
             {
                var session_info = this.connect_status;
 
