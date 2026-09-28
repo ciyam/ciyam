@@ -587,10 +587,10 @@ var edited_public = cp.parse_message_line( "1790594242000 admin*  pub edited 116
 var edited_private = cp.parse_message_line( "1790594243000 admin* !priv edited 1161" );
 
 check( "an edited public message is public", [ edited_public.edited, edited_public.private, edited_public.text ], [ true, false, "pub edited 1161" ] );
-check( "the message box, to everyone", cp.composer_mode( [ ], false, false ), { is_private: false, label: "", send: "Send" } );
-check( "the message box, to named people", cp.composer_mode( [ "verify-a" ], false, false ), { is_private: true, label: "Private to", send: "Send privately" } );
-check( "the message box, editing a public message", cp.composer_mode( [ ], true, false ), { is_private: false, label: "", send: "Save edit" } );
-check( "the message box, editing a private one", cp.composer_mode( [ ], true, true ), { is_private: true, label: "Editing a private message", send: "Save edit" } );
+check( "the message box, to everyone", cp.composer_mode( [ ], false, false ), { is_private: false, label: "", send: "Send", send_short: "Send" } );
+check( "the message box, to named people", cp.composer_mode( [ "verify-a" ], false, false ), { is_private: true, label: "Private to", send: "Send privately", send_short: "Send" } );
+check( "the message box, editing a public message", cp.composer_mode( [ ], true, false ), { is_private: false, label: "", send: "Save edit", send_short: "Save edit" } );
+check( "the message box, editing a private one", cp.composer_mode( [ ], true, true ), { is_private: true, label: "Editing a private message", send: "Save edit", send_short: "Save edit" } );
 check( "an edit decides, whoever is picked", cp.composer_mode( [ "verify-a" ], true, false ).is_private, false );
 check( "a public message is edited as for=<unique>", cp.edit_for_value( "1790594242000", false ), "1790594242000" );
 check( "a private one as for=!<unique>", cp.edit_for_value( "1790594243000", true ), "!1790594243000" );

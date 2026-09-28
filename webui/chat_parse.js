@@ -470,14 +470,17 @@ function private_label( entry )
 // private mode that stays on after sending is only safe if it cannot be missed. Private is
 // shown by colour and by words together - "Private to" and "Send privately" - never colour
 // alone. Editing a private message is private too, and keeps "Save edit".
+//
+// "send_short" is for a phone, where "Send privately" would squeeze the box - Damon,
+// 2026-09-28: there it is just "Send", the amber and the heading still saying private.
 function composer_mode( recipients, editing, edit_private )
 {
    var to_people = ( recipients || [ ] ).length > 0;
 
    if( editing )
-      return { is_private: !!edit_private, label: edit_private ? "Editing a private message" : "", send: "Save edit" };
+      return { is_private: !!edit_private, label: edit_private ? "Editing a private message" : "", send: "Save edit", send_short: "Save edit" };
 
-   return { is_private: to_people, label: to_people ? "Private to" : "", send: to_people ? "Send privately" : "Send" };
+   return { is_private: to_people, label: to_people ? "Private to" : "", send: to_people ? "Send privately" : "Send", send_short: "Send" };
 }
 
 // NOTE: The "for" value that edits a message: its unique, with "!" in front for a private one
