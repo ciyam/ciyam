@@ -99,19 +99,32 @@ ERROR=Message creation is not permitted for this room.
 ;
 @ifndef $ERROR
 ;
+TARGET=
+@ifeq "$PREFIX" "XyA"
+PREFIX=
+TARGET=public
+@elif "$PREFIX" = "XyB"
+PREFIX=
+TARGET=public
+@elif "$PREFIX" = "XyD"
+PREFIX=
+TARGET=public
+@elif "$PREFIX" = "XyE"
+PREFIX=
+TARGET=private
+@elif "$PREFIX" = "XyF"
+PREFIX=
+TARGET=private
+@elif "$PREFIX" = "XyH"
+PREFIX=
+TARGET=private
+@endif
+;
+@ifdef $PREFIX
 .session_variable  -id=$SESSION_ID @ip_addr
 @ifeq "$OUTPUT" "::1"
 PREFIX=
 @elif "$OUTPUT" = "127.0.0.1"
-PREFIX=
-@endif
-;
-@ifdef $PREFIX
-@ifeq "$PREFIX" "XyA"
-PREFIX=
-@elif "$PREFIX" = "XyB"
-PREFIX=
-@elif "$PREFIX" = "XyD"
 PREFIX=
 @endif
 ;
@@ -168,14 +181,30 @@ NOT_FOUND=1
 NOT_FOUND=1
 @else
 PREFIX=@substr:0,2:%SOURCE_PARTS:3%
+;
+OLD_PREFIX=@substr:0,3:%SOURCE_PARTS:3%
+OLD_TARGET=public
+@ifeq "$OLD_PREFIX" "XyE"
+OLD_TARGET=private
+@elif "$OLD_PREFIX" = "XyF"
+OLD_TARGET=private
+@elif "$OLD_PREFIX" = "XyH"
+OLD_TARGET=private
+@endif
+;
+BAD_TARGET=
 @ifeq "$PREFIX" "Xz"
 NOT_EDITABLE=1
+@elif "$TARGET" != "$OLD_TARGET"
+BAD_TARGET=1
 @endif
 ;
 @endif
 ;
 @ifdef $NOT_FOUND
 ERROR=Source message for edit was not found (or is not own).
+@elif "$BAD_TARGET" = "1"
+ERROR=Source message must not be modified to or from private.
 @elif "$NOT_EDITABLE" = "1"
 ERROR=Source message is designated as a system generated message.
 @else
