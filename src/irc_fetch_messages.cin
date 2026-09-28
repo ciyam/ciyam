@@ -303,13 +303,10 @@ MSG_PREFIX=@substr:0,3:$MSG_BASE64
 ;
 @ifneq "$MSG_PREFIX" "Xzp"
 ;
-.system_variable @queue_irc_%MSG_AUTHOR%_$MSG_UNIQUE*
+.system_variable @updated_record_irc_%MSG_AUTHOR%_$MSG_UNIQUE
 @ifdef $OUTPUT
-.session_variable @queue_irc_%MSG_AUTHOR%_$MSG_UNIQUE @system
-.session_variable @queue_irc_%MSG_AUTHOR%_$MSG_UNIQUE *
-LAST_LINE=%OUTPUT:^1%
+NEW_MSG_PARTS=@repstr: /\n:$OUTPUT
 ;
-NEW_MSG_PARTS=@repstr: /\n:$LAST_LINE
 NEW_MSG_UNIQUE=%NEW_MSG_PARTS:1%
 NEW_MSG_BASE64=%NEW_MSG_PARTS:2%
 ;

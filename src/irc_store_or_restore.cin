@@ -100,6 +100,8 @@ system_variable "-p=$PREFIX" @irc_xinvs_*
 ;
 system_variable "-p=$PREFIX" @session_@queue_irc_*
 ;
+system_variable "-p=$PREFIX" @updated_record_irc_*
+;
 system_variable "-p=$PREFIX" @web.*.*.0*
 ;
 .system_variable @queue_irc_*
