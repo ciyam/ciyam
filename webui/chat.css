@@ -2454,3 +2454,13 @@ button.chat-avatar:hover
 {
    content: "\2713\00a0";
 }
+
+/* NOTE: A declined invitation is no longer an action at all. */
+.chat-notice-action.is-declined
+{
+   border-color: var(--color-chat-border);
+   background: none;
+   color: var(--color-chat-text-faint);
+   font-weight: 400;
+   cursor: default;
+}

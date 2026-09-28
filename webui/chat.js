@@ -59,6 +59,7 @@ var g_poll_timer = null;
 var g_last_poll = 0;
 
 var g_edit_unique = "";
+var g_edit_private = false;
 var g_recipients = [ ];
 
 var g_dialog_mode = "create";
@@ -1871,6 +1872,7 @@ function select_room( room, token )
    g_room = room;
    g_start_point = "";
    g_edit_unique = "";
+   g_edit_private = false;
    g_recipients = [ ];
 
    g_selected_invite = "";
@@ -1945,6 +1947,7 @@ function select_invitation( room )
    g_room = "";
    g_start_point = "";
    g_edit_unique = "";
+   g_edit_private = false;
    g_recipients = [ ];
    g_members = [ ];
 
@@ -2109,7 +2112,7 @@ function refresh_invitations( )
 {
    refresh_announcements( );
 
-   g_invitations = pending_invitations( g_invite_messages, g_rooms );
+   g_invitations = pending_invitations( g_invite_messages, g_rooms, ciyam.username );
 
    // NOTE: The invitation on screen can be taken up elsewhere - another tab, say.
    if( ( g_selected_invite !== "" ) && ( find_invitation( g_selected_invite ) === null ) )
@@ -2120,6 +2123,10 @@ function refresh_invitations( )
    }
 
    render_rooms( );
+
+   // NOTE: A decline can arrive without the room list changing, so the Join links on screen
+   // are brought up to date here too.
+   refresh_invite_actions( );
 }
 
 // NOTE: Deliberately synchronous, and the dialog is shown before the invitee list is
@@ -3031,19 +3038,22 @@ function build_message( entry )
 
    row.classList.toggle( "is-own", ( entry.sender === ciyam.username ) );
 
-   // NOTE: No editing a private message - an edit is sent as "for=<unique>", and what the
-   // server does with that for a message only some people hold has not been worked out.
-   if( ( entry.sender === ciyam.username ) && !entry.private )
+   // NOTE: Private messages too, since 2026-09-28 - the edit says it is private
+   // ("edit_for_value( )"), and the server keeps it so.
+   if( entry.sender === ciyam.username )
    {
       var edit = row.querySelector( ".chat-message-edit" );
 
       edit.hidden = false;
       edit.dataset.unique = entry.unique;
       edit.dataset.text = entry.text;
+      edit.dataset.private = entry.private ? "1" : "";
 
       edit.addEventListener( "click", function( event )
       {
-         begin_edit( event.currentTarget.dataset.unique, event.currentTarget.dataset.text );
+         var data = event.currentTarget.dataset;
+
+         begin_edit( data.unique, data.text, data.private === "1" );
       } );
    }
 
@@ -3122,12 +3132,19 @@ function apply_invite_state( action )
 {
    var joined = is_joined( action.dataset.room );
 
-   set_text( action, joined ? "Joined" : "Join" );
+   // NOTE: Declined by this user - the server no longer rewrites such an invitation as
+   // ":ignore" (ISS-028), so the chat reads it from the user's own ":reject" instead.
+   var declined = !joined && !!declined_rooms( g_invite_messages, ciyam.username )[ action.dataset.room ];
+
+   set_text( action, joined ? "Joined" : ( declined ? "Declined" : "Join" ) );
 
    action.classList.toggle( "is-joined", joined );
+   action.classList.toggle( "is-declined", declined );
+
+   action.disabled = declined;
 
    action.title = joined ? "Already a member - open this room"
-    : "Accept this invitation and join the room";
+    : ( declined ? "You declined this invitation" : "Accept this invitation and join the room" );
 }
 
 // NOTE: Called whenever the room list changes, so invitations already on screen pick up
@@ -3440,7 +3457,7 @@ async function do_send( )
    var sent = escape_message_text( text );
 
    if( g_edit_unique !== "" )
-      options = "for=" + g_edit_unique + ";text=" + sent;
+      options = "for=" + edit_for_value( g_edit_unique, g_edit_private ) + ";text=" + sent;
    else if( g_recipients.length > 0 )
       options = "for=" + with_sender( g_recipients, ciyam.username ).join( "," ) + ";text=" + sent;
    else
@@ -3549,7 +3566,7 @@ function resize_composer( )
 // NOTE: The count appears as a message nears the server's limit, and past it turns red and
 // holds the Send button - better than the server's "Maximum size for 'irc_...' items" after
 // the fact. Counted in bytes, as the server counts - see "message_bytes( )".
-const c_count_from_bytes = 600;
+const c_count_from_bytes = 3600;
 
 function message_too_long( )
 {
@@ -3580,9 +3597,10 @@ function on_composer_input( )
    update_announcement_preview( );
 }
 
-function begin_edit( unique, text )
+function begin_edit( unique, text, is_private )
 {
    g_edit_unique = unique;
+   g_edit_private = !!is_private;
 
    var input = document.getElementById( "composer_input" );
 
@@ -3598,6 +3616,7 @@ function begin_edit( unique, text )
 function do_cancel_edit( )
 {
    g_edit_unique = "";
+   g_edit_private = false;
 
    document.getElementById( "composer_cancel_edit" ).hidden = true;
    document.getElementById( "composer_send" ).textContent = "Send";
