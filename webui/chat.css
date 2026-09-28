@@ -1711,6 +1711,12 @@ button.chat-avatar:hover
    background: color-mix(in srgb, var(--color-chat-private-strong) 85%, #000000);
 }
 
+/* NOTE: The Send button's short label shows only on a phone - see "render_composer( )". */
+.chat-send-short
+{
+   display: none;
+}
+
 .chat-composer-row
 {
    display: flex;
@@ -2315,6 +2321,16 @@ button.chat-avatar:hover
    {
       gap: 6px;
       padding: 8px 10px;
+   }
+
+   .chat-send-full
+   {
+      display: none;
+   }
+
+   .chat-send-short
+   {
+      display: inline;
    }
 
    /* NOTE: The standard "ordinary chat only" note is dropped on a phone for the room it

@@ -3711,7 +3711,26 @@ function render_composer( )
    document.getElementById( "composer" ).classList.toggle( "is-private", mode.is_private );
    document.getElementById( "composer_private" ).hidden = !mode.is_private;
    document.getElementById( "composer_private_label" ).textContent = mode.label;
-   document.getElementById( "composer_send" ).textContent = mode.send;
+   // NOTE: Both labels, the screen width choosing - "Send privately" would squeeze the box on a
+   // phone, so there it is "Send". The accessible name is always the full one.
+   var send = document.getElementById( "composer_send" );
+
+   send.textContent = "";
+
+   var full = document.createElement( "span" );
+
+   full.className = "chat-send-full";
+   full.textContent = mode.send;
+
+   var short = document.createElement( "span" );
+
+   short.className = "chat-send-short";
+   short.textContent = mode.send_short;
+
+   send.appendChild( full );
+   send.appendChild( short );
+
+   send.setAttribute( "aria-label", mode.send );
 
    var template = document.getElementById( "tpl_recipient" );
 
