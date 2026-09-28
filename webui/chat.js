@@ -104,6 +104,8 @@ function chat( )
 {
    install_request_log( );
 
+   watch_timeouts( );
+
    if( localStorage.getItem( c_storage_device ) !== null )
       ciyam.device = localStorage.getItem( c_storage_device );
 
@@ -1377,6 +1379,10 @@ async function do_disconnect( )
    g_invite_total = -1;
    g_selected_invite = "";
 
+   g_timeouts_in_row = 0;
+   g_resyncing = false;
+   g_uncertain_send = null;
+
    g_announcements = [ ];
    g_announcements_drawn = "";
 
@@ -1609,9 +1615,11 @@ function on_rooms_response( response )
    // NOTE: A failure on the first load keeps the spinner up - the next poll tries again, and
    // the first-load limit still ends it. Ending it here showed "No room selected" to someone
    // who does have rooms, until the next poll found them.
+   // NOTE: A time-out has its own notice, from 'note_timeout'.
    if( result.error !== "" )
    {
-      show_alert( result.error, "is-error", true );
+      if( !is_timeout_response( response ) )
+         show_alert( result.error, "is-error", true );
 
       return;
    }
@@ -2833,9 +2841,11 @@ function on_messages_response( response, asked_for, replace )
 
       g_last_poll = Date.now( );
 
+      // NOTE: A time-out has its own notice, from 'note_timeout'.
       if( result.error !== "" )
       {
-         show_alert( result.error, "is-error", true );
+         if( !is_timeout_response( response ) )
+            show_alert( result.error, "is-error", true );
 
          return;
       }
@@ -3488,8 +3498,22 @@ async function do_send( )
 
    var failed = false;
 
+   // NOTE: What is needed to tell, after a time-out, whether this arrived after all - see
+   // "arrived_after_timeout( )". The start point is the server's, not the browser's clock.
+   var pending = { me: ciyam.username, text: text, after: g_start_point, edit: g_edit_unique, room: g_room };
+
+   var timed_out = false;
+
    await ciyam.create_message( g_room, options, function( response )
    {
+      if( is_timeout_response( response ) )
+      {
+         failed = true;
+         timed_out = true;
+
+         return;
+      }
+
       if( is_error_response( response ) )
       {
          failed = true;
@@ -3531,12 +3555,22 @@ async function do_send( )
    }
 
    // NOTE: A message the server refused goes back into the box - it was cleared on sending,
-   // and was otherwise simply lost. An edit stays an edit, to be tried again.
+   // and was otherwise simply lost. An edit stays an edit, to be tried again. One that timed
+   // out goes back too, until the re-read after the time-out says whether it was sent.
    if( failed )
    {
       input.value = text;
 
       on_composer_input( );
+
+      if( timed_out )
+      {
+         g_uncertain_send = pending;
+
+         show_alert( "The server did not answer in time - your message may have been sent. Checking…", "is-info" );
+
+         document.getElementById( "chat_alert" ).dataset.resync = "1";
+      }
 
       return;
    }
@@ -3918,6 +3952,188 @@ function install_request_log( )
    } );
 }
 
+// ====================================================================
+// Time-outs (ISS-020)
+// ====================================================================
+
+// NOTE: The server gives up on a request after 5 seconds, but may still finish it - and Ian
+// warns its late answer could reach the next request on the session. So after a time-out the
+// chat sends one request only to absorb a late answer, then re-reads the room list and the
+// open room whole, so nothing wrongly added stays on screen. A send that timed out may have
+// been sent: the re-read says whether it was. Three time-outs in a row and the session ends -
+// the server or the connection is in trouble. Agreed with Damon, 2026-09-28.
+var g_timeouts_in_row = 0;
+var g_resyncing = false;
+var g_uncertain_send = null;
+var g_losing_contact = false;
+
+// NOTE: Every response passes here first, whatever asked for it - polls, sends, the linked
+// console's requests. The callbacks are otherwise untouched.
+function watch_timeouts( )
+{
+   [ "fetch", "post" ].forEach( function( name )
+   {
+      var original = ciyam[ name ].bind( ciyam );
+
+      ciyam[ name ] = function( url, arg, callback )
+      {
+         return original( url, arg, function( response )
+         {
+            note_response( response );
+
+            if( callback )
+               callback( response );
+         } );
+      };
+   } );
+}
+
+function note_response( response )
+{
+   if( is_timeout_response( response ) )
+      note_timeout( );
+   else if( typeof response === "string" )
+      g_timeouts_in_row = 0;
+}
+
+function note_timeout( )
+{
+   // NOTE: Not while signing in or out - signing out makes a request of its own, and its
+   // time-out must not start the sign out again.
+   if( g_losing_contact || ( ciyam.sessid === "" ) )
+      return;
+
+   ++g_timeouts_in_row;
+
+   if( g_timeouts_in_row >= c_max_timeouts_in_row )
+   {
+      lose_contact( );
+
+      return;
+   }
+
+   if( g_resyncing )
+      return;
+
+   g_resyncing = true;
+
+   show_alert( "The server was slow to answer - catching up…", "is-info" );
+
+   document.getElementById( "chat_alert" ).dataset.resync = "1";
+
+   // NOTE: After the request in hand has finished, so the resync joins the queue behind it.
+   window.setTimeout( resync_after_timeout, 0 );
+}
+
+function resync_after_timeout( )
+{
+   if( !g_resyncing )
+      return;
+
+   // NOTE: Its answer is thrown away - if a late one is coming, this is where it lands.
+   g_in_poll = true;
+
+   var drain = serialised( function( )
+   {
+      return ciyam.fetch_messages( c_lobby_room, "", function( ) { } );
+   } );
+
+   g_in_poll = false;
+
+   drain
+    .then( function( ) { return load_rooms( ); } )
+    .then( function( ) { if( g_room !== "" ) return load_messages( "from=0", true ); } )
+    .then( function( )
+    {
+       // NOTE: Administration read whole again, for the invitations and announcements.
+       if( !ciyam.is_admin && ( g_invite_messages.length > 0 ) )
+          check_invitations( true );
+    } )
+    .then( finish_resync, finish_resync );
+}
+
+function finish_resync( )
+{
+   if( !g_resyncing )
+      return;
+
+   g_resyncing = false;
+
+   if( g_uncertain_send !== null )
+   {
+      resolve_uncertain_send( );
+
+      return;
+   }
+
+   var alert = document.getElementById( "chat_alert" );
+
+   if( !alert.hidden && ( alert.dataset.resync === "1" ) )
+      do_dismiss_alert( );
+}
+
+// NOTE: Whether a send that timed out reached the room, from the room just re-read whole.
+function resolve_uncertain_send( )
+{
+   var pending = g_uncertain_send;
+
+   g_uncertain_send = null;
+
+   if( pending.room !== g_room )
+   {
+      show_alert( "The server did not answer in time - check whether your message arrived before sending it again.", "is-info" );
+
+      return;
+   }
+
+   var rows = Array.from( document.querySelectorAll( "#message_list > .chat-message" ) ).map( function( row )
+   {
+      return {
+         unique: row.dataset.unique,
+         sender: row.querySelector( ".chat-message-sender-name" ).textContent,
+         text: row.querySelector( ".chat-message-body" ).textContent
+      };
+   } );
+
+   if( arrived_after_timeout( rows, pending ) )
+   {
+      var input = document.getElementById( "composer_input" );
+
+      if( input.value.trim( ) === pending.text )
+      {
+         input.value = "";
+
+         on_composer_input( );
+      }
+
+      if( pending.edit )
+         do_cancel_edit( );
+
+      show_alert( "Your message was sent after all - no need to send it again.", "is-info" );
+   }
+   else
+      show_alert( "Your message was not sent - it is back in the box to send again.", "is-info" );
+}
+
+async function lose_contact( )
+{
+   g_losing_contact = true;
+   g_resyncing = false;
+   g_uncertain_send = null;
+
+   try
+   {
+      await do_disconnect( );
+   }
+   finally
+   {
+      g_losing_contact = false;
+   }
+
+   set_error( "signin_error", "Lost contact with the server - it did not answer " + c_max_timeouts_in_row
+    + " times in a row. Please sign in again." );
+}
+
 // NOTE: A linked console shares this session, and the server keeps one command slot and one
 // output file per access and device - so two requests in flight on the session at once can
 // each receive the other's response (ISS-020). The console therefore sends its requests
@@ -4045,6 +4261,7 @@ function show_alert( text, kind, from_loading )
    alert.className = "chat-alert " + ( kind || "is-error" );
    alert.dataset.fromLoading = from_loading ? "1" : "";
    alert.dataset.scopeHint = "";
+   alert.dataset.resync = "";
    alert.hidden = false;
 }
 
