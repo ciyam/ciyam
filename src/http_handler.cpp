@@ -147,6 +147,8 @@ constexpr const char* c_http_server_prefix = "Server: ";
 constexpr const char* c_http_location_prefix = "Location: ";
 constexpr const char* c_http_modified_prefix = "Last-Modified: ";
 
+constexpr const char* c_http_x_request_id_prefix = "X-Request-ID: ";
+
 constexpr const char* c_http_cache_control_prefix = "Cache-Control: ";
 
 constexpr const char* c_http_content_type_prefix = "Content-Type: ";
@@ -160,6 +162,7 @@ constexpr const char* c_http_content_type_header = "content-type";
 constexpr const char* c_http_content_length_header = "content-length";
 constexpr const char* c_http_content_disposition_header = "content-disposition";
 
+constexpr const char* c_http_x_request_id_header = "x-request-id";
 constexpr const char* c_http_x_forwarded_for_header = "x-forwarded-for";
 
 constexpr const char* c_http_connection_header_info = "Connection: keep-alive";
@@ -209,12 +212,11 @@ constexpr const char* c_upload_filename = "upload";
 constexpr const char* c_replace_document_marker = "DOCUMENT";
 
 constexpr const char* c_query_param_name_token = "token";
+constexpr const char* c_query_param_name_format = "format";
 constexpr const char* c_query_param_name_verbose = "verbose";
 
 constexpr const char* c_query_param_value_json = "json";
 constexpr const char* c_query_param_value_text = "text";
-
-constexpr const char* c_query_param_name_format = "format";
 
 const int c_num_retries = 5;
 
@@ -667,7 +669,7 @@ void http_request_handler::on_start( )
 
          ostringstream osstr;
 
-         string data, error, header, access, device, response, session, moved_document;
+         string data, error, header, access, device, response, session, request_id, moved_document;
 
          // NOTE: If document ends in '/' then will
          // automatically append "index.html".
@@ -719,6 +721,9 @@ void http_request_handler::on_start( )
                   is_verbose = true;
             }
          }
+
+         if( header_info.count( c_http_x_request_id_header ) )
+            request_id = header_info[ c_http_x_request_id_header ];
 
          if( error.empty( )
           && header_info.count( c_http_content_length_header ) )
@@ -812,6 +817,9 @@ void http_request_handler::on_start( )
                osstr << c_http_1_1 << ' ' << c_http_200_OK << c_crlf
                 << c_http_server_prefix << g_server_id << c_crlf << c_http_date_prefix << formatted_dtm << c_crlf;
 
+               if( !request_id.empty( ) )
+                  osstr << c_http_x_request_id_prefix << request_id << c_crlf;
+
                osstr << c_http_content_type_prefix << header_info[ c_http_content_type_header ] << c_crlf;
 
                if( !is_json_output )
@@ -856,6 +864,9 @@ void http_request_handler::on_start( )
                      }
                   }
                }
+
+               if( !request_id.empty( ) )
+                  osstr << c_http_x_request_id_prefix << request_id << c_crlf;
 
                osstr << c_http_content_type_prefix << c_http_content_type_text_plain_utf8 << c_crlf;
 
@@ -1307,6 +1318,9 @@ void http_request_handler::on_start( )
                       << c_crlf << c_http_date_prefix << formatted_dtm
                       << c_crlf << c_http_modified_prefix << formatted_document_dtm << c_crlf;
 
+                     if( !request_id.empty( ) )
+                        osstr << c_http_x_request_id_prefix << request_id << c_crlf;
+
                      if( ( extension == c_ext_js ) || ( extension == c_ext_css )
                       || ( extension == c_ext_form ) || ( extension == c_ext_html ) )
                         osstr << c_http_cache_control_prefix << c_http_cache_control_no_cache << c_crlf;
@@ -1447,6 +1461,9 @@ void http_request_handler::on_start( )
                 << c_http_server_prefix << g_server_id << c_crlf << c_http_date_prefix << formatted_dtm << c_crlf;
 
                osstr << c_http_access_control_allow_origin_all << c_crlf;
+
+               if( !request_id.empty( ) )
+                  osstr << c_http_x_request_id_prefix << request_id << c_crlf;
 
                osstr << c_http_content_type_prefix;
 
