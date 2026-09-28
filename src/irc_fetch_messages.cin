@@ -301,7 +301,25 @@ MSG_BASE64=%MESSAGE_PARTS:3%
 ;
 MSG_PREFIX=@substr:0,3:$MSG_BASE64
 ;
+IS_INVITE=
+POS=@strpos:XzppbnZpdGUgcm9vbSAw:$MSG_BASE64
+@ifeq "$POS" "0"
+IS_INVITE=1
+@endif
+;
+NON_SYSTEM=
 @ifneq "$MSG_PREFIX" "Xzp"
+NON_SYSTEM=1
+@endif
+;
+INVITE_OR_NON_SYSTEM=
+@ifdef $IS_INVITE
+INVITE_OR_NON_SYSTEM=1
+@elif "$NON_SYSTEM" != ""
+INVITE_OR_NON_SYSTEM=1
+@endif
+;
+@ifdef $INVITE_OR_NON_SYSTEM
 ;
 .system_variable @updated_record_irc_%MSG_AUTHOR%_$MSG_UNIQUE
 @ifdef $OUTPUT
@@ -316,9 +334,7 @@ NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR* $NEW_MSG_BASE64
 ; NOTE: If message is an "invite" then
 ; will decode and if already joined is
 ; replaced with an "ignore" message.
-POS=@strpos:XzppbnZpdGUgcm9vbSAw:$MSG_BASE64
-;
-@ifeq "$POS" "0"
+@ifdef $IS_INVITE
 IGNORE=
 DECODED=@base64:$MSG_BASE64
 POS=@strpos:0:$DECODED
