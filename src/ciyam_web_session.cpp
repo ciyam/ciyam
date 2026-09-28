@@ -98,6 +98,8 @@ constexpr const char* c_ciyam_prefix = "ciyam_";
 
 constexpr const char* c_username_suffix = "@";
 
+constexpr const char* c_irc_times_prefix = "@irc_times_";
+
 constexpr const char* c_web_helper_prefix = "@web_helper_";
 constexpr const char* c_web_session_prefix = "@web_session_";
 
@@ -2807,60 +2809,41 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  if( option_parameters.count( c_cws_request_messages_review_options_extra ) )
                                     extra = option_parameters[ c_cws_request_messages_review_options_extra ];
 
+                                 // NOTE: If the TIME extra option was provided then
+                                 // (provided the room is not the entrance) will get
+                                 // any time values stored by "irc_fetch_messages".
                                  if( ( room != c_web_session_default_room_number )
                                   && ( extra == c_web_session_messages_extra_time ) )
                                  {
-                                    string all_room_froms( get_system_variable( var_prefix + "*." + room ) );
+                                    string all_room_times( get_system_variable( c_irc_times_prefix + room + "_*" ) );
 
-                                    if( !all_room_froms.empty( ) )
+                                    if( !all_room_times.empty( ) )
                                     {
-                                       vector< string > room_froms;
+                                       vector< string > room_times;
 
-                                       split( all_room_froms, room_froms, '\n' );
+                                       split( all_room_times, room_times, '\n' );
 
                                        // NOTE: Each line is in the form:
-                                       // @web.<pin>.<device>.<room> <time_val>
-                                       for( size_t i = 0; i < room_froms.size( ); i++ )
+                                       // @@irc_times_<room>_<user> <time_val>
+                                       for( size_t i = 0; i < room_times.size( ); i++ )
                                        {
-                                          string next_line( room_froms[ i ] );
+                                          string next_line( room_times[ i ] );
 
                                           string::size_type pos = next_line.find( ' ' );
 
                                           if( pos != string::npos )
                                           {
-                                             string from_value( next_line.substr( pos + 1 ) );
+                                             string time_value( next_line.substr( pos + 1 ) );
 
                                              next_line.erase( pos );
 
-                                             pos = next_line.find( '.' );
+                                             pos = next_line.rfind( '_' );
 
                                              if( pos != string::npos )
                                              {
-                                                next_line.erase( 0, pos + 1 );
+                                                string user_name( next_line.substr( pos + 1 ) );
 
-                                                pos = next_line.find( '.' );
-
-                                                if( pos != string::npos )
-                                                {
-                                                   next_line.erase( pos );
-
-                                                   if( !next_line.empty( ) )
-                                                   {
-                                                      string user_name;
-
-                                                      if( has_user_info( next_line ) )
-                                                         user_name = get_user_name( next_line );
-                                                      else if( next_line == g_cws_admin_token )
-                                                         user_name = c_admin;
-
-                                                      if( !user_name.empty( ) )
-                                                      {
-                                                         if( !user_room_froms.count( user_name )
-                                                          || ( user_room_froms[ user_name ] < from_value ) )
-                                                            user_room_froms[ user_name ] = from_value;
-                                                      }
-                                                   }
-                                                }
+                                                user_room_froms[ user_name ] = time_value;
                                              }
                                           }
                                        }
