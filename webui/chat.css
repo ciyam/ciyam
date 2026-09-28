@@ -1333,9 +1333,10 @@ button.chat-avatar:hover
    gap: 4px;
    margin-right: 8px;
    padding: 1px 7px;
+   border: 1px solid var(--color-chat-private-border);
    border-radius: var(--radius-pill);
-   background: color-mix(in srgb, var(--color-chat-accent) 12%, var(--color-chat-bg));
-   color: var(--color-chat-accent-deep);
+   background: var(--color-chat-private-bg);
+   color: var(--color-chat-private-text);
    font-family: var(--font-family-chat-mono);
    font-size: var(--font-size-chat-nano);
    font-weight: 600;
@@ -1655,6 +1656,50 @@ button.chat-avatar:hover
 .chat-emoji:focus-visible
 {
    background: var(--color-chat-bg-rail);
+}
+
+/* NOTE: Private mode - the message box, the names it goes to and the Send button all in the
+   private amber, the same as the label on a sent private message. Colour with words - the
+   heading and "Send privately" say it too - and only while it is private. */
+.chat-composer-private
+{
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   flex-wrap: wrap;
+   margin-bottom: 8px;
+   color: var(--color-chat-private-text);
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 600;
+}
+
+.chat-composer.is-private .chat-input
+{
+   border-color: var(--color-chat-private-border);
+   background: var(--color-chat-private-bg);
+}
+
+.chat-composer.is-private .chat-input:focus
+{
+   border-color: var(--color-chat-private-strong);
+   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-chat-private-border) 45%, transparent);
+}
+
+.chat-composer.is-private .chat-recipient
+{
+   border-color: var(--color-chat-private-border);
+   background: var(--color-chat-private-bg);
+   color: var(--color-chat-private-text);
+}
+
+.chat-composer.is-private #composer_send
+{
+   background: var(--color-chat-private-strong);
+}
+
+.chat-composer.is-private #composer_send:hover
+{
+   background: color-mix(in srgb, var(--color-chat-private-strong) 85%, #000000);
 }
 
 .chat-composer-row

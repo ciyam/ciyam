@@ -3427,6 +3427,19 @@ function do_composer_key( event )
       return false;
    }
 
+   // NOTE: Escape in an empty box leaves private mode - a quick way back to everyone, and
+   // only when nothing typed could be lost or sent to the wrong people.
+   if( ( event.key === "Escape" ) && ( g_recipients.length > 0 ) && ( event.target.value === "" ) )
+   {
+      g_recipients = [ ];
+
+      render_composer( );
+
+      event.stopPropagation( );
+
+      return false;
+   }
+
    return true;
 }
 
@@ -3610,7 +3623,8 @@ function begin_edit( unique, text, is_private )
    on_composer_input( );
 
    document.getElementById( "composer_cancel_edit" ).hidden = false;
-   document.getElementById( "composer_send" ).textContent = "Save edit";
+
+   render_composer( );
 }
 
 function do_cancel_edit( )
@@ -3619,13 +3633,35 @@ function do_cancel_edit( )
    g_edit_private = false;
 
    document.getElementById( "composer_cancel_edit" ).hidden = true;
-   document.getElementById( "composer_send" ).textContent = "Send";
+
+   render_composer( );
+}
+
+// NOTE: The hint goes once it has been acted on - and only that hint, not whatever else the
+// alert bar might be saying by then.
+function show_scope_hint( text )
+{
+   show_alert( text, "is-info" );
+
+   document.getElementById( "chat_alert" ).dataset.scopeHint = "1";
+}
+
+function clear_scope_hint( )
+{
+   var alert = document.getElementById( "chat_alert" );
+
+   if( !alert.hidden && ( alert.dataset.scopeHint === "1" ) )
+      do_dismiss_alert( );
+
+   alert.dataset.scopeHint = "";
 }
 
 function add_recipient( name )
 {
    if( ( name === "" ) || ( name === ciyam.username ) )
       return;
+
+   clear_scope_hint( );
 
    if( g_recipients.indexOf( name ) < 0 )
       g_recipients.push( name );
@@ -3647,8 +3683,15 @@ function do_toggle_scope( )
 {
    if( g_recipients.length > 0 )
       g_recipients = [ ];
+   else if( window.matchMedia( c_details_width_query ).matches )
+   {
+      // NOTE: On a narrow screen the members are in Room Details, out of sight - open it.
+      set_drawer( "details", false );
+
+      show_scope_hint( "Pick members to send to privately." );
+   }
    else
-      show_alert( "Pick members from the list on the right to send privately.", "is-info" );
+      show_scope_hint( "Pick members from the list on the right to send privately." );
 
    render_composer( );
 }
@@ -3660,6 +3703,15 @@ function render_composer( )
    row.textContent = "";
 
    row.hidden = ( g_recipients.length === 0 );
+
+   // NOTE: The whole message area says when what is typed is private - amber, "Private to",
+   // "Send privately" - and says nothing extra when it is not. See "composer_mode( )".
+   var mode = composer_mode( g_recipients, g_edit_unique !== "", g_edit_private );
+
+   document.getElementById( "composer" ).classList.toggle( "is-private", mode.is_private );
+   document.getElementById( "composer_private" ).hidden = !mode.is_private;
+   document.getElementById( "composer_private_label" ).textContent = mode.label;
+   document.getElementById( "composer_send" ).textContent = mode.send;
 
    var template = document.getElementById( "tpl_recipient" );
 
@@ -3973,6 +4025,7 @@ function show_alert( text, kind, from_loading )
 
    alert.className = "chat-alert " + ( kind || "is-error" );
    alert.dataset.fromLoading = from_loading ? "1" : "";
+   alert.dataset.scopeHint = "";
    alert.hidden = false;
 }
 

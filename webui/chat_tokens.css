@@ -89,6 +89,14 @@
    --color-chat-warning-bg: #fdf8ef;
    --color-chat-warning-border: #f0dcc0;
 
+   /* NOTE: Private messages - a warm amber, distinct from the accent (announcements, primary
+      buttons, focus) and from the warning colours. Tints the message box, its recipients and
+      the Send button while a message is private, and the label on a sent one. */
+   --color-chat-private-text: #7a4a0c;
+   --color-chat-private-bg: #fdf1d8;
+   --color-chat-private-border: #e8c27a;
+   --color-chat-private-strong: #93540f;
+
    /* ------------------------------------------------------------------
       Sender identity colours.
 
@@ -229,6 +237,11 @@
       --color-chat-warning-bg: #2a2214;
       --color-chat-warning-border: #3a3020;
 
+      --color-chat-private-text: #f0c56f;
+      --color-chat-private-bg: #2e2412;
+      --color-chat-private-border: #6e5222;
+      --color-chat-private-strong: #9a6414;
+
       --color-sender-1: #8f9bff;
       --color-sender-2: #4cc38a;
       --color-sender-3: #d08a6e;
@@ -272,6 +285,11 @@
    --color-chat-warning-bg: #2a2214;
    --color-chat-warning-border: #3a3020;
 
+   --color-chat-private-text: #f0c56f;
+   --color-chat-private-bg: #2e2412;
+   --color-chat-private-border: #6e5222;
+   --color-chat-private-strong: #9a6414;
+
    --color-sender-1: #8f9bff;
    --color-sender-2: #4cc38a;
    --color-sender-3: #d08a6e;
@@ -313,6 +331,14 @@
    --color-chat-warning-text: #8a5a14;
    --color-chat-warning-bg: #fdf8ef;
    --color-chat-warning-border: #f0dcc0;
+
+   /* NOTE: Private messages - a warm amber, distinct from the accent (announcements, primary
+      buttons, focus) and from the warning colours. Tints the message box, its recipients and
+      the Send button while a message is private, and the label on a sent one. */
+   --color-chat-private-text: #7a4a0c;
+   --color-chat-private-bg: #fdf1d8;
+   --color-chat-private-border: #e8c27a;
+   --color-chat-private-strong: #93540f;
 
    --color-sender-1: #4351d4;
    --color-sender-2: #2f8f68;

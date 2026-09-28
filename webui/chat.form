@@ -242,7 +242,18 @@ http://www.opensource.org/licenses/mit-license.php.
             </div>
             <!-- NOTE: The ":name" suggestions - typing ":thu" offers the matching emoji here. -->
             <ul class="chat-emoji-suggest" id="emoji_suggest" role="listbox" aria-label="Emoji suggestions" hidden></ul>
-            <div class="chat-recipients" id="recipient_row" hidden></div>
+            <!-- NOTE: Shown only while what is typed is private - the words as well as the amber
+                 of the box, so the mode is never shown by colour alone. Escape in an empty box
+                 leaves it, as do each name's x and "Send to everyone". -->
+            <div class="chat-composer-private" id="composer_private" title="Escape in an empty message box sends to everyone again" hidden>
+               <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" focusable="false">
+                  <path d="M1.5 8s2.4-4.5 6.5-4.5S14.5 8 14.5 8 12.1 12.5 8 12.5 1.5 8 1.5 8z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                  <circle cx="8" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+                  <path d="M2.5 13.5l11-11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+               </svg>
+               <span class="chat-composer-private-label" id="composer_private_label">Private to</span>
+               <div class="chat-recipients" id="recipient_row"></div>
+            </div>
             <div class="chat-composer-row">
                <textarea id="composer_input" class="chat-input" rows="1"
                 placeholder="Message" onkeydown="return do_composer_key( event )"
