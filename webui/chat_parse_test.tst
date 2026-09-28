@@ -368,6 +368,16 @@ ok   admin
 ok   a PIN
 ok   nothing
 
+== status reply ================================================
+ok   admin
+ok   a standard user
+ok   an account with no username
+ok   locked, with its source
+ok   empty: not a status
+ok   another request's answer: not a status
+ok   an error: not a status
+ok   an unknown type: not a status
+
 == session handover fields =====================================
 ok   hyphen is encoded
 ok   colon is encoded

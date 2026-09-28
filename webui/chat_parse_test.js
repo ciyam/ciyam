@@ -705,6 +705,17 @@ check( "admin", cp.user_initial( "admin" ), "A" );
 check( "a PIN", cp.user_initial( "20401" ), "2" );
 check( "nothing", cp.user_initial( "" ), "?" );
 
+heading( "status reply" );
+
+check( "admin", cp.parse_status_reply( "[adm]@admin" ), { is_admin: true, is_locked: false, lock_source: 0, username: "admin" } );
+check( "a standard user", cp.parse_status_reply( "[std]@verify-a" ), { is_admin: false, is_locked: false, lock_source: 0, username: "verify-a" } );
+check( "an account with no username", cp.parse_status_reply( "[std]@" ).username, "" );
+check( "locked, with its source", cp.parse_status_reply( "[std]-1@bob" ), { is_admin: false, is_locked: true, lock_source: "1", username: "bob" } );
+check( "empty: not a status", cp.parse_status_reply( "" ), null );
+check( "another request's answer: not a status", cp.parse_status_reply( "test@admin" ), null );
+check( "an error: not a status", cp.parse_status_reply( "Error: Timed out waiting for web session response." ), null );
+check( "an unknown type: not a status", cp.parse_status_reply( "[bad]" ), null );
+
 heading( "session handover fields" );
 
 // NOTE: Receivers of the handover test for ":" then "-" then "=", so a field carrying "-"

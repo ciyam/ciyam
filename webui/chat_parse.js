@@ -1208,6 +1208,35 @@ function user_initial( name )
    return ( text === "" ) ? "?" : text.charAt( 0 ).toUpperCase( );
 }
 
+// NOTE: The "/status" reply read as "CIYAM.connect" reads it - "[adm]" or "[std]", a "-" and
+// its source when locked, then "@" and the username (empty for an account without one). Null
+// for anything else: "CIYAM.connect" ignores such a reply and signs in regardless, leaving no
+// username and an admin treated as a standard user.
+function parse_status_reply( text )
+{
+   var reply = String( text || "" );
+
+   var end = reply.indexOf( "]" );
+
+   if( ( reply.indexOf( "[" ) !== 0 ) || ( end < 0 ) )
+      return null;
+
+   var type = reply.substr( 0, end + 1 );
+
+   if( ( type !== "[adm]" ) && ( type !== "[std]" ) )
+      return null;
+
+   var rest = reply.substring( end + 1 );
+   var at = rest.indexOf( "@" );
+
+   return {
+      is_admin: ( type === "[adm]" ),
+      is_locked: ( rest.charAt( 0 ) === "-" ),
+      lock_source: ( rest.charAt( 0 ) === "-" ) ? rest.substr( 1, 1 ) : 0,
+      username: ( at >= 0 ) ? rest.substring( at + 1 ) : ""
+   };
+}
+
 function encode_channel_field( value )
 {
    return encodeURIComponent( String( value || "" ) ).replace( /-/g, "%2D" );
@@ -1338,6 +1367,7 @@ if( typeof module !== "undefined" )
       describe_event: describe_event,
       password_strength: password_strength,
       user_initial: user_initial,
+      parse_status_reply: parse_status_reply,
       visible_rooms: visible_rooms,
       unread_elsewhere: unread_elsewhere,
       declined_rooms: declined_rooms,
