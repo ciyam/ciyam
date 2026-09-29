@@ -146,7 +146,7 @@ COMMAND=$OUTPUT
 .system_variable @web.$TOKEN.$DEVICE.command ""
 ;
 @ifneq "$COMMAND" ";@web_session_check"
-; NOTE: Supports up to five commands.
+; NOTE: Supports up to eight commands.
 >$TEMP_FILE
 COMMAND_1=%COMMAND:1%
 $COMMAND_1
@@ -170,10 +170,28 @@ $COMMAND_4
 COMMAND_5=%COMMAND:5%
 $COMMAND_5
 @endif
+@ifndef $ERROR
 @ifdef "%COMMAND:6%"
-POS=@strpos:;:%COMMAND:6%
+COMMAND_6=%COMMAND:6%
+$COMMAND_6
+@endif
+@ifndef $ERROR
+@ifdef "%COMMAND:7%"
+COMMAND_7=%COMMAND:7%
+$COMMAND_7
+@endif
+@ifndef $ERROR
+@ifdef "%COMMAND:8%"
+COMMAND_8=%COMMAND:8%
+$COMMAND_8
+@endif
+@ifdef "%COMMAND:9%"
+POS=@strpos:;:%COMMAND:9%
 @ifneq "$POS" "0"
-#IGNORED: %COMMAND:6%
+#IGNORED: %COMMAND:9%
+@endif
+@endif
+@endif
 @endif
 @endif
 @endif
