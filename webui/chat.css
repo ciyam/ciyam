@@ -2534,3 +2534,103 @@ button.chat-avatar:hover
    font-weight: 400;
    cursor: default;
 }
+
+/* ====================================================================
+   Direct messages - a prototype
+   ==================================================================== */
+
+/* NOTE: Rooms and direct messages share one scrolling area in the rail. */
+.chat-rail-lists
+{
+   flex: 1;
+   min-height: 0;
+   overflow-y: auto;
+   display: flex;
+   flex-direction: column;
+}
+
+.chat-rail-lists .chat-room-list
+{
+   flex: none;
+   min-height: auto;
+   overflow: visible;
+}
+
+.chat-dm-head
+{
+   padding-top: 14px;
+}
+
+.chat-thread-sub
+{
+   min-width: 0;
+   margin: 0;
+   overflow: hidden;
+   white-space: nowrap;
+   text-overflow: ellipsis;
+   font-size: var(--font-size-chat-tiny);
+   color: var(--color-chat-text-secondary);
+}
+
+/* NOTE: A member, and beside them the envelope that opens a direct message. */
+.chat-member-row
+{
+   display: flex;
+   align-items: center;
+   gap: 2px;
+}
+
+.chat-member-row .chat-member
+{
+   flex: 1;
+   min-width: 0;
+}
+
+.chat-member-dm
+{
+   flex: none;
+   display: flex;
+   padding: 7px;
+   border: none;
+   border-radius: var(--radius-sm);
+   background: none;
+   color: var(--color-chat-text-secondary);
+   cursor: pointer;
+}
+
+.chat-member-dm:hover,
+.chat-member-dm:focus-visible
+{
+   background: var(--color-chat-bg);
+   color: var(--color-chat-accent);
+}
+
+/* NOTE: A new conversation's first messages, held until the others accept - dashed and
+   dimmed, so they read as not yet sent. */
+.chat-held
+{
+   flex: none;
+   display: flex;
+   flex-direction: column;
+   align-items: flex-start;
+   gap: 6px;
+   padding: 10px 24px;
+   border-top: 1px dashed var(--color-chat-border);
+}
+
+.chat-held-note
+{
+   font-size: var(--font-size-chat-tiny);
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-held-message
+{
+   max-width: 100%;
+   padding: 7px 11px;
+   border: 1px dashed var(--color-chat-border);
+   border-radius: var(--radius-sm);
+   color: var(--color-chat-text-meta);
+   white-space: pre-wrap;
+   overflow-wrap: anywhere;
+}

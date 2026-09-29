@@ -140,7 +140,17 @@ http://www.opensource.org/licenses/mit-license.php.
             <span class="chat-section-label">Rooms</span>
             <button type="button" class="chat-btn chat-btn--small" onclick="do_open_create_room( )">+ New</button>
          </div>
-         <div class="chat-room-list" id="room_list"></div>
+         <!-- NOTE: Rooms, then direct messages - one scrolling area, so neither squeezes the other. -->
+         <div class="chat-rail-lists">
+            <div class="chat-room-list" id="room_list"></div>
+            <!-- NOTE: Direct messages - a prototype. A conversation is a room named from its people;
+                 see "dm_room_name( )" in "chat_parse.js". -->
+            <div class="chat-rail-head chat-dm-head">
+               <span class="chat-section-label">Direct messages</span>
+               <button type="button" class="chat-btn chat-btn--small" onclick="do_open_new_message( )">+ New</button>
+            </div>
+            <div class="chat-room-list" id="dm_list"></div>
+         </div>
          <!-- NOTE: When the rooms were last checked, and a way to check now. The icon is inline so
               the page still makes no outside request. -->
          <div class="chat-rail-foot">
@@ -177,6 +187,7 @@ http://www.opensource.org/licenses/mit-license.php.
             </button>
             <div class="chat-thread-title">
                <h1 id="thread_name">&mdash;</h1>
+               <p class="chat-thread-sub" id="thread_sub" hidden></p>
             </div>
             <button type="button" class="chat-head-btn chat-details-toggle" id="details_toggle" aria-controls="room_details"
              aria-expanded="false" aria-label="Show room details" title="Room details" onclick="do_toggle_details( )">
@@ -196,7 +207,7 @@ http://www.opensource.org/licenses/mit-license.php.
          <!-- Selected invitation - the server refuses a non-member's read, so nothing is
               fetched until the user joins. -->
          <div class="chat-empty chat-invite-view" id="thread_invite" hidden>
-            <span class="chat-invite-eyebrow">Invitation</span>
+            <span class="chat-invite-eyebrow" id="invite_eyebrow">Invitation</span>
             <h2 id="invite_title"></h2>
             <p id="invite_text"></p>
             <div class="chat-invite-actions">
@@ -220,6 +231,10 @@ http://www.opensource.org/licenses/mit-license.php.
          </div>
 
          <div class="chat-messages" id="message_list" hidden></div>
+
+         <!-- NOTE: A new conversation's first messages, held until the others accept - a member
+              sees nothing posted before they joined. In memory only. -->
+         <div class="chat-held" id="held_list" hidden></div>
 
          <div class="chat-composer" id="composer" hidden>
             <!-- NOTE: The emoji panel - the device's own emoji font, from the curated list in
@@ -353,7 +368,7 @@ http://www.opensource.org/licenses/mit-license.php.
       </div>
       <div class="chat-error-text" id="room_dialog_error"></div>
       <div id="room_dialog_invitees_row" hidden>
-         <label class="chat-label" for="room_dialog_invitees">Invite</label>
+         <label class="chat-label" for="room_dialog_invitees" id="room_dialog_invitees_label">Invite</label>
          <div class="chat-invitee-list" id="room_dialog_invitees"></div>
       </div>
       <div class="chat-dialog-actions">
@@ -484,12 +499,22 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </template>
 
+<!-- NOTE: Clicking a member makes the next message private to them in this room; the envelope
+     beside them opens a direct message instead. -->
 <template id="tpl_member">
-   <button type="button" class="chat-member">
-      <span class="chat-dot"></span>
-      <span class="chat-member-name"></span>
-      <span class="chat-member-count"></span>
-   </button>
+   <div class="chat-member-row">
+      <button type="button" class="chat-member">
+         <span class="chat-dot"></span>
+         <span class="chat-member-name"></span>
+         <span class="chat-member-count"></span>
+      </button>
+      <button type="button" class="chat-member-dm" title="Direct message">
+         <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
+            <rect x="2" y="3.5" width="12" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M2.6 4.4L8 8.6l5.4-4.2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+         </svg>
+      </button>
+   </div>
 </template>
 
 <template id="tpl_recipient">

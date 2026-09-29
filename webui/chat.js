@@ -62,6 +62,11 @@ var g_edit_unique = "";
 var g_edit_private = false;
 var g_recipients = [ ];
 
+// NOTE: Direct messages started here and waiting for the others to accept - room number to
+// { waiting, texts, total }. A member sees nothing posted before they joined, so what is sent
+// meanwhile is held. In memory only, like everything else the chat shows.
+var g_dm_pending = { };
+
 var g_dialog_mode = "create";
 
 var g_known_users = [ ];
@@ -1657,6 +1662,8 @@ function on_rooms_response( response )
 
       render_rooms( );
 
+      watch_held_rooms( );
+
       if( ( g_room !== "" ) || ( g_selected_invite !== "" ) )
          update_thread_meta( );
 
@@ -1691,6 +1698,8 @@ function rooms_signature( )
    for( var n = 0; n < g_invitations.length; n++ )
       parts.push( "invite:" + g_invitations[ n ].room + ":" + g_invitations[ n ].name + ":" + g_invitations[ n ].inviter );
 
+   parts.push( "held:" + Object.keys( g_dm_pending ).join( "," ) );
+
    for( var i = 0; i < g_rooms.length; i++ )
    {
       var r = g_rooms[ i ];
@@ -1703,7 +1712,8 @@ function rooms_signature( )
 
 function members_signature( )
 {
-   var parts = [ ];
+   // NOTE: The envelopes beside members depend on whether this is a direct message.
+   var parts = [ is_dm_name( g_room_name ) ? "dm" : "room" ];
 
    for( var i = 0; i < g_members.length; i++ )
       parts.push( g_members[ i ].name + "+" + g_members[ i ].sessions );
@@ -1773,97 +1783,119 @@ function render_rooms( force )
 
    g_rooms_drawn = signature;
 
-   var list = document.getElementById( "room_list" );
-
-   var template = document.getElementById( "tpl_room" );
-
    // NOTE: Invitations first, newest first, then the rooms themselves. They are keyed apart,
-   // so when an invitation is taken up its entry is replaced by the room's own.
-   var items = g_invitations.map( function( invite ) { return { key: "invite:" + invite.room, invite: invite }; } )
-    .concat( visible_rooms( g_rooms, ciyam.is_admin ).map( function( entry ) { return { key: entry.room, room: entry }; } ) );
+   // so when an invitation is taken up its entry is replaced by the room's own. Direct messages
+   // - rooms named from their people - have a list of their own, requests first.
+   var rooms = visible_rooms( g_rooms, ciyam.is_admin );
 
-   reconcile_list( list, items,
-    function( item )
-    {
-       return item.key;
-    },
-    function( item )
-    {
-       var node = template.content.cloneNode( true ).querySelector( ".chat-room" );
+   var invites = g_invitations.map( function( invite ) { return { key: "invite:" + invite.room, invite: invite }; } );
+   var entries = rooms.map( function( entry ) { return { key: entry.room, room: entry }; } );
 
-       if( item.invite )
-       {
-          node.classList.add( "is-invitation" );
+   var is_dm = function( item ) { return is_dm_name( item.invite ? item.invite.name : item.room.name ); };
+   var is_not_dm = function( item ) { return !is_dm( item ); };
 
-          node.dataset.invite = item.invite.room;
+   var key_of = function( item ) { return item.key; };
 
-          node.addEventListener( "click", function( event )
-          {
-             select_invitation( event.currentTarget.dataset.invite );
-          } );
-       }
-       else
-       {
-          node.dataset.room = item.room.room;
+   reconcile_list( document.getElementById( "room_list" ), invites.filter( is_not_dm ).concat( entries.filter( is_not_dm ) ),
+    key_of, make_rail_item, update_rail_item );
 
-          node.addEventListener( "click", function( event )
-          {
-             select_room( event.currentTarget.dataset.room, "" );
-          } );
-       }
-
-       return node;
-    },
-    function( node, item )
-    {
-       if( item.invite )
-       {
-          set_text( node.querySelector( ".chat-room-name" ), item.invite.name );
-
-          var sub = node.querySelector( ".chat-room-sub" );
-
-          set_text( sub, "invited by " + item.invite.inviter );
-
-          sub.hidden = false;
-
-          node.querySelector( ".chat-room-count" ).hidden = true;
-          node.querySelector( ".chat-room-invite" ).hidden = false;
-
-          node.title = item.invite.inviter + " invited you to this room";
-
-          node.classList.toggle( "is-selected", ( item.invite.room === g_selected_invite ) );
-
-          return;
-       }
-
-       var entry = item.room;
-
-       set_text( node.querySelector( ".chat-room-name" ), entry.name );
-
-       var count = node.querySelector( ".chat-room-count" );
-
-       set_text( count, entry.unread + "/" + entry.total );
-
-       count.classList.toggle( "has-unread", ( entry.unread > 0 ) );
-
-       var mark = node.querySelector( ".chat-room-lock" );
-
-       if( entry.posts === "any" )
-          mark.hidden = true;
-       else
-       {
-          mark.hidden = false;
-
-          set_text( mark, ( entry.posts === "none" ) ? "\uD83D\uDD12" : "\uD83D\uDD13" );
-
-          mark.title = ( entry.posts === "none" ) ? "Locked - nobody can post"
-           : "Only the room owner can post";
-       }
-
-       node.classList.toggle( "is-selected", ( entry.room === g_room ) );
-    } );
+   reconcile_list( document.getElementById( "dm_list" ), invites.filter( is_dm ).concat( entries.filter( is_dm ) ),
+    key_of, make_rail_item, update_rail_item );
 
    refresh_invite_actions( );
+}
+
+function make_rail_item( item )
+{
+   var node = document.getElementById( "tpl_room" ).content.cloneNode( true ).querySelector( ".chat-room" );
+
+   if( item.invite )
+   {
+      node.classList.add( "is-invitation" );
+
+      node.dataset.invite = item.invite.room;
+
+      node.addEventListener( "click", function( event )
+      {
+         select_invitation( event.currentTarget.dataset.invite );
+      } );
+   }
+   else
+   {
+      node.dataset.room = item.room.room;
+
+      node.addEventListener( "click", function( event )
+      {
+         select_room( event.currentTarget.dataset.room, "" );
+      } );
+   }
+
+   return node;
+}
+
+function update_rail_item( node, item )
+{
+   if( item.invite )
+   {
+      var dm = is_dm_name( item.invite.name );
+
+      set_text( node.querySelector( ".chat-room-name" ), dm ? item.invite.inviter : item.invite.name );
+
+      var sub = node.querySelector( ".chat-room-sub" );
+
+      set_text( sub, dm ? "wants to message you" : ( "invited by " + item.invite.inviter ) );
+
+      sub.hidden = false;
+
+      node.querySelector( ".chat-room-count" ).hidden = true;
+
+      var label = node.querySelector( ".chat-room-invite" );
+
+      set_text( label, dm ? "Request" : "Invitation" );
+
+      label.hidden = false;
+
+      node.title = dm ? ( item.invite.inviter + " wants to message you" ) : ( item.invite.inviter + " invited you to this room" );
+
+      node.classList.toggle( "is-selected", ( item.invite.room === g_selected_invite ) );
+
+      return;
+   }
+
+   var entry = item.room;
+
+   set_text( node.querySelector( ".chat-room-name" ), dm_title( entry.name, ciyam.username ) );
+
+   var count = node.querySelector( ".chat-room-count" );
+
+   set_text( count, entry.unread + "/" + entry.total );
+
+   count.classList.toggle( "has-unread", ( entry.unread > 0 ) );
+
+   // NOTE: A new conversation waiting for the others to accept says so.
+   var waiting = !!g_dm_pending[ entry.room ];
+
+   var room_sub = node.querySelector( ".chat-room-sub" );
+
+   set_text( room_sub, waiting ? "waiting to accept" : "" );
+
+   room_sub.hidden = !waiting;
+
+   var mark = node.querySelector( ".chat-room-lock" );
+
+   if( entry.posts === "any" )
+      mark.hidden = true;
+   else
+   {
+      mark.hidden = false;
+
+      set_text( mark, ( entry.posts === "none" ) ? "\uD83D\uDD12" : "\uD83D\uDD13" );
+
+      mark.title = ( entry.posts === "none" ) ? "Locked - nobody can post"
+       : "Only the room owner can post";
+   }
+
+   node.classList.toggle( "is-selected", ( entry.room === g_room ) );
 }
 
 function set_text( node, text )
@@ -1902,11 +1934,13 @@ function select_room( room, token )
 
    show_thread_view( );
 
-   document.getElementById( "thread_name" ).textContent = g_room_name;
+   show_thread_title( );
 
    update_thread_meta( );
 
    document.getElementById( "message_list" ).textContent = "";
+
+   render_held( );
 
    render_rooms( true );
    render_composer( );
@@ -1915,6 +1949,32 @@ function select_room( room, token )
    // NOTE: A token is only supplied when joining from an invitation. It goes
    // in "from", which is how the server recognises a join token.
    load_messages( ( token !== "" ) ? ( "from=" + token ) : "from=0", true );
+}
+
+// NOTE: A direct message is shown as its other people, with a quiet line saying who can read it
+// - the whole conversation is private, so there is no mode to switch on.
+function show_thread_title( )
+{
+   var dm = parse_dm_name( g_room_name );
+
+   document.getElementById( "thread_name" ).textContent = dm_title( g_room_name, ciyam.username );
+
+   var sub = document.getElementById( "thread_sub" );
+
+   var others = ( dm && dm.people ) ? dm.people.filter( function( person ) { return person !== ciyam.username; } ) : [ ];
+
+   sub.textContent = ( others.length > 0 ) ? ( "Direct message · only you and " + name_list( others ) ) : "Direct message";
+
+   sub.hidden = ( dm === null );
+}
+
+// NOTE: "Bob", "Bob and Carol", "Bob, Carol and Dave".
+function name_list( names )
+{
+   if( names.length < 2 )
+      return names.join( "" );
+
+   return names.slice( 0, -1 ).join( ", " ) + " and " + names[ names.length - 1 ];
 }
 
 function find_room( room )
@@ -1963,8 +2023,13 @@ function select_invitation( room )
 
    disarm_decline( );
 
-   document.getElementById( "invite_title" ).textContent = invite.name;
-   document.getElementById( "invite_text" ).textContent = invite.inviter + " invited you to join this room.";
+   var dm = parse_dm_name( invite.name );
+
+   document.getElementById( "invite_eyebrow" ).textContent = dm ? "Message request" : "Invitation";
+   document.getElementById( "invite_title" ).textContent = dm ? invite.inviter : invite.name;
+   document.getElementById( "invite_text" ).textContent = dm ? dm_request_text( invite, dm ) : ( invite.inviter + " invited you to join this room." );
+   document.getElementById( "invite_join" ).textContent = dm ? "Accept" : "Join room";
+   document.getElementById( "thread_sub" ).hidden = true;
 
    if( open_drawer( ) === "rail" )
       close_drawers( false );
@@ -1974,6 +2039,26 @@ function select_invitation( room )
 
    render_members( true );
    render_rooms( true );
+}
+
+function dm_request_text( invite, dm )
+{
+   if( dm.people === null )
+      return invite.inviter + " wants to start a group conversation with you.";
+
+   var others = dm.people.filter( function( person ) { return ( person !== ciyam.username ) && ( person !== invite.inviter ); } );
+
+   if( others.length === 0 )
+      return invite.inviter + " wants to message you.";
+
+   return invite.inviter + " wants to start a conversation with you and " + name_list( others ) + ".";
+}
+
+function selected_request( )
+{
+   var invite = find_invitation( g_selected_invite );
+
+   return ( invite !== null ) && is_dm_name( invite.name );
 }
 
 // NOTE: A decline cannot be taken back - the server refuses any later invitation to that
@@ -1986,7 +2071,7 @@ function disarm_decline( )
 {
    g_decline_armed = 0;
 
-   document.getElementById( "invite_decline" ).textContent = "Decline";
+   document.getElementById( "invite_decline" ).textContent = selected_request( ) ? "Decline and block" : "Decline";
    document.getElementById( "invite_decline_note" ).hidden = true;
 }
 
@@ -2001,7 +2086,14 @@ async function do_decline_invitation( )
    {
       g_decline_armed = Date.now( );
 
-      document.getElementById( "invite_decline" ).textContent = "Decline for good";
+      // NOTE: For a direct message a decline is a block - the server refuses any later
+      // invitation to that conversation - so it says so.
+      var request = selected_request( );
+
+      document.getElementById( "invite_decline" ).textContent = request ? "Block for good" : "Decline for good";
+      document.getElementById( "invite_decline_note" ).textContent = request
+       ? ( "Declining blocks this conversation for good - " + invite.inviter + " can never message you in it again. Click Block for good to confirm." )
+       : "Declining cannot be undone - the room cannot invite you again. Click Decline for good to confirm.";
       document.getElementById( "invite_decline_note" ).hidden = false;
 
       window.setTimeout( function( )
@@ -2046,7 +2138,8 @@ async function do_decline_invitation( )
    show_thread_view( );
    render_rooms( true );
 
-   show_alert( "Declined the invitation to " + invite.name + ".", "is-info" );
+   show_alert( is_dm_name( invite.name ) ? ( "Declined and blocked " + invite.inviter + "'s message request." )
+    : ( "Declined the invitation to " + invite.name + "." ), "is-info" );
 
    load_rooms( );
 }
@@ -2145,6 +2238,8 @@ function do_open_create_room( )
 {
    g_dialog_mode = "create";
 
+   document.getElementById( "room_dialog_invitees_label" ).textContent = "Invite";
+
    document.getElementById( "room_dialog_title" ).textContent = "Create a room";
    document.getElementById( "room_dialog_submit" ).textContent = "Create";
    document.getElementById( "room_dialog_name" ).value = "";
@@ -2170,6 +2265,213 @@ function do_open_create_room( )
 function load_invitees( )
 {
    render_invitees( ( g_known_users.length > 0 ) ? g_known_users : g_members );
+}
+
+// NOTE: Pick one or more people; the chat opens the conversation with exactly them, starting it
+// if there is none - see "open_dm( )".
+function do_open_new_message( )
+{
+   g_dialog_mode = "dm";
+
+   document.getElementById( "room_dialog_title" ).textContent = "New message";
+   document.getElementById( "room_dialog_submit" ).textContent = "Message";
+   document.getElementById( "room_dialog_invitees_label" ).textContent = "To";
+   document.getElementById( "room_dialog_name_row" ).hidden = true;
+   document.getElementById( "room_dialog_invitees_row" ).hidden = false;
+
+   set_error( "room_dialog_error", "" );
+
+   document.getElementById( "room_dialog_invitees" ).textContent = "";
+
+   document.getElementById( "room_dialog" ).hidden = false;
+
+   load_invitees( );
+
+   document.getElementById( "room_dialog_submit" ).focus( );
+}
+
+function submit_new_message( )
+{
+   var names = ticked_invitees( );
+
+   if( names.length === 0 )
+   {
+      set_error( "room_dialog_error", "Choose who to message." );
+
+      return;
+   }
+
+   do_close_room_dialog( );
+
+   return open_dm( names );
+}
+
+// NOTE: The conversation with exactly these people - found by its name, or waiting as their
+// request, or else started: a room named from them, with them invited, in one request. Its
+// first messages are held until they accept - see "g_dm_pending".
+async function open_dm( people )
+{
+   var others = dm_people( people ).filter( function( person ) { return person !== ciyam.username; } );
+
+   if( others.length === 0 )
+      return;
+
+   var everyone = others.concat( [ ciyam.username ] );
+
+   var existing = find_dm_room( g_rooms, everyone );
+
+   if( existing !== null )
+   {
+      select_room( existing.room, "" );
+
+      return;
+   }
+
+   var name = dm_room_name( everyone );
+
+   var request = g_invitations.filter( function( invite ) { return invite.name === name; } )[ 0 ];
+
+   if( request )
+   {
+      select_invitation( request.room );
+
+      return;
+   }
+
+   ciyam.error = "";
+
+   var reply = "";
+
+   await serialised( function( )
+   {
+      return ciyam.create_message( c_lobby_room, "for=" + others.join( "," ) + ";text=" + name, function( response )
+      {
+         reply = String( response );
+      } );
+   } );
+
+   if( is_error_response( reply ) || ( ciyam.error !== "" ) )
+   {
+      show_alert( is_error_response( reply ) ? error_text( reply ) : ciyam.error, "is-error" );
+
+      return;
+   }
+
+   var room = reply.trim( ).replace( /^:/, "" ).split( "-" )[ 0 ];
+
+   g_dm_pending[ room ] = { waiting: others, texts: [ ], total: -1 };
+
+   await open_new_room( reply );
+}
+
+// NOTE: What is held for the open conversation, and who it is waiting for.
+function render_held( )
+{
+   var host = document.getElementById( "held_list" );
+
+   var pending = g_dm_pending[ g_room ];
+
+   host.textContent = "";
+   host.hidden = !pending;
+
+   if( !pending )
+      return;
+
+   var note = document.createElement( "div" );
+
+   note.className = "chat-held-note";
+
+   var who = name_list( pending.waiting );
+
+   if( pending.texts.length === 0 )
+      note.textContent = "Waiting for " + who + " to accept. Anything you send now is held here, and sent when they do.";
+   else
+      note.textContent = "Waiting for " + who + " to accept - " + ( ( pending.texts.length === 1 ) ? "this is" : "these are" )
+       + " sent when they do. Held on this page only: reloading it loses " + ( ( pending.texts.length === 1 ) ? "it." : "them." );
+
+   host.appendChild( note );
+
+   pending.texts.forEach( function( text )
+   {
+      var held = document.createElement( "div" );
+
+      held.className = "chat-held-message";
+      held.textContent = text;
+
+      host.appendChild( held );
+   } );
+}
+
+// NOTE: Each read of a waiting conversation - open, or checked in the background - looks for
+// the others' ":joined". Once all have, what was held is sent, in order.
+function note_dm_joins( room, messages )
+{
+   var pending = g_dm_pending[ room ];
+
+   if( !pending )
+      return;
+
+   pending.waiting = dm_waiting_for( messages, pending.waiting );
+
+   if( pending.waiting.length > 0 )
+   {
+      if( room === g_room )
+         render_held( );
+
+      return;
+   }
+
+   delete g_dm_pending[ room ];
+
+   pending.texts.forEach( function( text )
+   {
+      serialised( function( )
+      {
+         return ciyam.create_message( room, "text=" + escape_message_text( text ), function( ) { } );
+      } );
+   } );
+
+   if( room === g_room )
+   {
+      render_held( );
+
+      if( pending.texts.length > 0 )
+         load_messages( "from=0", true );
+   }
+
+   render_rooms( true );
+}
+
+// NOTE: A waiting conversation that is not open is read again only when its total in the
+// listing moves - which a ":joined" does. Quiet, like the poll it comes from.
+function watch_held_rooms( )
+{
+   Object.keys( g_dm_pending ).forEach( function( room )
+   {
+      var entry = find_room( room );
+
+      var pending = g_dm_pending[ room ];
+
+      if( ( room === g_room ) || ( entry === null ) || ( entry.total === pending.total ) )
+         return;
+
+      pending.total = entry.total;
+
+      g_in_poll = true;
+
+      serialised( function( )
+      {
+         return ciyam.fetch_messages( room, "from=0", function( response )
+         {
+            var result = parse_fetch_response( response );
+
+            if( ( result.error === "" ) && ( result.rooms.length === 0 ) )
+               note_dm_joins( room, result.messages );
+         } );
+      } );
+
+      g_in_poll = false;
+   } );
 }
 
 function do_open_rename_room( )
@@ -2451,6 +2753,8 @@ function do_open_invite( )
 
    g_dialog_mode = "invite";
 
+   document.getElementById( "room_dialog_invitees_label" ).textContent = "Invite";
+
    document.getElementById( "room_dialog_title" ).textContent = "Invite to " + g_room_name;
    document.getElementById( "room_dialog_submit" ).textContent = "Invite";
    document.getElementById( "room_dialog_name_row" ).hidden = true;
@@ -2665,6 +2969,9 @@ function do_close_room_dialog( )
 
 async function do_submit_room_dialog( )
 {
+   if( g_dialog_mode === "dm" )
+      return submit_new_message( );
+
    // NOTE: Invite has no name field, so it is handled before the name is validated.
    if( g_dialog_mode === "invite" )
       return submit_invite( );
@@ -2898,6 +3205,8 @@ function on_messages_response( response, asked_for, replace )
       render_seen_markers( );
 
       update_thread_meta( );
+
+      note_dm_joins( asked_for, result.messages );
    }
 }
 
@@ -3199,7 +3508,9 @@ function render_members( force )
     },
     function( member )
     {
-       var node = template.content.cloneNode( true ).querySelector( ".chat-member" );
+       var row = template.content.cloneNode( true ).querySelector( ".chat-member-row" );
+
+       var node = row.querySelector( ".chat-member" );
 
        node.querySelector( ".chat-member-name" ).textContent = member.name;
 
@@ -3207,13 +3518,31 @@ function render_members( force )
 
        node.addEventListener( "click", function( event )
        {
-          add_recipient( event.currentTarget.dataset.name );
+          // NOTE: In a direct message everything is private already.
+          if( !is_dm_name( g_room_name ) )
+             add_recipient( event.currentTarget.dataset.name );
        } );
 
-       return node;
+       var dm = row.querySelector( ".chat-member-dm" );
+
+       dm.dataset.name = member.name;
+       dm.setAttribute( "aria-label", "Direct message " + member.name );
+       dm.title = "Direct message " + member.name;
+
+       dm.addEventListener( "click", function( event )
+       {
+          open_dm( [ event.currentTarget.dataset.name ] );
+       } );
+
+       return row;
     },
-    function( node, member )
+    function( row, member )
     {
+       var node = row.querySelector( ".chat-member" );
+
+       // NOTE: Not beside yourself, and not inside a direct message - it would open this one.
+       row.querySelector( ".chat-member-dm" ).hidden = ( member.name === ciyam.username ) || is_dm_name( g_room_name );
+
        var count = node.querySelector( ".chat-member-count" );
 
        var text = "+" + member.sessions;
@@ -3333,31 +3662,34 @@ function update_thread_meta( )
       {
          g_room_name = entry.name;
 
-         document.getElementById( "thread_name" ).textContent = g_room_name;
+         show_thread_title( );
       }
    }
 
    var posting = { any: "Anyone", own: "Owner only", none: "Locked" };
 
-   set_text( document.getElementById( "room_fact_name" ), invite ? invite.name : g_room_name );
+   // NOTE: A direct message has no owner's controls - adding someone is a new conversation.
+   var is_dm = is_dm_name( invite ? invite.name : g_room_name );
+
+   set_text( document.getElementById( "room_fact_name" ), dm_title( invite ? invite.name : g_room_name, ciyam.username ) );
    set_text( document.getElementById( "room_fact_number" ), "#" + ( invite ? invite.room : g_room ) );
    set_text( document.getElementById( "room_fact_owner" ), g_room_owner || "-" );
    set_text( document.getElementById( "room_fact_posts" ), entry ? ( posting[ entry.posts ] || entry.posts ) : "-" );
    set_text( document.getElementById( "room_fact_messages" ), entry ? String( entry.total ) : "-" );
    set_text( document.getElementById( "room_fact_inviter" ), invite ? invite.inviter : "" );
 
-   document.getElementById( "room_fact_owner_row" ).hidden = !!invite;
-   document.getElementById( "room_fact_posts_row" ).hidden = !!invite;
+   document.getElementById( "room_fact_owner_row" ).hidden = !!invite || is_dm;
+   document.getElementById( "room_fact_posts_row" ).hidden = !!invite || is_dm;
    document.getElementById( "room_fact_messages_row" ).hidden = !!invite;
    document.getElementById( "room_fact_inviter_row" ).hidden = !invite;
 
-   var is_owner = !invite && ( ( g_room_owner === ciyam.username ) || ciyam.is_admin );
+   var is_owner = !invite && !is_dm && ( ( g_room_owner === ciyam.username ) || ciyam.is_admin );
 
    document.getElementById( "owner_actions" ).hidden = !is_owner;
 
    // NOTE: The owner's choice replaces the plain text - left alone while a change is on its
    // way, so the listing catching up does not flick it back.
-   var changeable = !invite && can_change_posting( g_room, entry, ciyam.username, ciyam.is_admin );
+   var changeable = !invite && !is_dm && can_change_posting( g_room, entry, ciyam.username, ciyam.is_admin );
 
    var select = document.getElementById( "room_posts_select" );
 
@@ -3481,6 +3813,23 @@ async function do_send( )
    if( message_too_long( ) )
    {
       update_composer_count( );
+
+      return;
+   }
+
+   // NOTE: A new conversation's first messages wait until the others have joined - they would
+   // see nothing posted before.
+   var held = g_dm_pending[ g_room ];
+
+   if( held && ( g_edit_unique === "" ) )
+   {
+      held.texts.push( text );
+
+      input.value = "";
+
+      resize_composer( );
+      update_composer_count( );
+      render_held( );
 
       return;
    }
@@ -3826,10 +4175,14 @@ function render_composer( )
    if( g_recipients.length > 0 )
       input.placeholder = "Private message to " + g_recipients.join( ", " );
    else
-      input.placeholder = "Message " + ( g_room_name || ( "#" + g_room ) );
+      input.placeholder = "Message " + ( dm_title( g_room_name, ciyam.username ) || ( "#" + g_room ) );
 
-   document.getElementById( "composer_scope" ).textContent =
-    ( g_recipients.length > 0 ) ? "Send to everyone" : "Send to selected…";
+   var scope = document.getElementById( "composer_scope" );
+
+   scope.textContent = ( g_recipients.length > 0 ) ? "Send to everyone" : "Send to selected…";
+
+   // NOTE: A direct message is private throughout - there is nobody else to leave out.
+   scope.hidden = is_dm_name( g_room_name );
 
    // NOTE: The recipients, or the room, may have changed who a preview is for.
    update_announcement_preview( );
