@@ -450,7 +450,7 @@ async function do_connect( )
 
    if( ciyam.error !== "" )
    {
-      set_error( "signin_error", ciyam.error );
+      set_error( "signin_error", sign_in_error_text( ciyam.error ) );
 
       return;
    }
@@ -458,15 +458,6 @@ async function do_connect( )
    if( ciyam.sessid === "" )
    {
       set_error( "signin_error", "No session was established." );
-
-      return;
-   }
-
-   if( !( await confirm_status( ) ) )
-   {
-      await ciyam.disconnect( function( ) { } );
-
-      set_error( "signin_error", "The server's answer to signing in was not what was expected. Please try again." );
 
       return;
    }
@@ -487,42 +478,6 @@ async function do_connect( )
    // not valid (or has expired)". Signing out rebuilds the list, which is the only time
    // the sign-in view is seen again.
    enter_chat( );
-}
-
-// NOTE: "CIYAM.connect" keeps the "/status" reply only when it starts with a session type,
-// and signs in regardless. An empty or crossed reply (ISS-020) was seen after a few quick
-// reloads - no username, so the badge showed the PIN's first digit, and an admin would have
-// been given the standard view. Asked again, twice at most, before the reply is trusted.
-async function confirm_status( )
-{
-   for( var attempt = 0; attempt < 3; attempt++ )
-   {
-      var status = parse_status_reply( ciyam.connect_status );
-
-      if( status !== null )
-      {
-         ciyam.is_admin = status.is_admin;
-         ciyam.is_locked = status.is_locked;
-         ciyam.lock_source = status.lock_source;
-         ciyam.username = status.username;
-
-         return true;
-      }
-
-      if( attempt > 0 )
-         await new Promise( function( resolve ) { setTimeout( resolve, 500 ); } );
-
-      var url = ciyam.get_cws_url( ) + "/status?access=" + ciyam.access + "&device=" + ciyam.device
-       + "&format=text&session=" + ciyam.sessid;
-
-      // NOTE: Not "ciyam.fetch" - its time-out watch would start catching up mid sign in.
-      ciyam.connect_status = await fetch( url )
-       .then( function( response ) { return response.text( ); } )
-       .then( function( text ) { return text.trim( ); } )
-       .catch( function( ) { return ""; } );
-   }
-
-   return false;
 }
 
 function enter_chat( )
