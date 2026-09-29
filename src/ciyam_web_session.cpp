@@ -3219,7 +3219,11 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            string unique_for_commands( uuid( ).as_string( ) );
 
                            if( !web_session_commands.empty( ) )
+                           {
+                              file_remove( output_file_name );
+
                               set_system_variable( web_command_var_name, '#' + unique_for_commands + '\n' + web_session_commands );
+                           }
 
                            bool found_response = false;
 
@@ -3229,9 +3233,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            {
                               if( file_exists( output_file_name ) )
                               {
-                                 found_response = true;
-
                                  response = buffer_file( output_file_name );
+
+                                 file_remove( output_file_name );
 
                                  string::size_type pos = response.find( '\n' );
 
@@ -3244,25 +3248,24 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                  // NOTE: The first line of the response
                                  // should be the UUID that was "echoed"
-                                 // as the initial command. If it is not
-                                 // a match then clear the command along
-                                 // with waiting a while in order to try
-                                 // and prevent multiple mismatches that
-                                 // can occur after one late response.
+                                 // as the first command. If it does not
+                                 // match then will continue looping (as
+                                 // it might still be executed after the
+                                 // prior command output was removed).
                                  if( first_line != unique_for_commands )
                                  {
                                     response.erase( );
 
-                                    set_system_variable( web_command_var_name, "" );
+                                    TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(ignoring response due to incorrect UUID)" );
 
-                                    TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(erased response due to incorrect UUID)" );
+                                    msleep( 100 );
 
-                                    msleep( 1000 );
+                                    continue;
                                  }
-                                 else
-                                    response = trim( response, false, false, "\n" );
 
-                                 file_remove( output_file_name );
+                                 found_response = true;
+
+                                 response = trim( response, false, false, "\n" );
 
                                  if( !response.empty( ) && !has_error_prefix( response ) )
                                  {
