@@ -2558,23 +2558,27 @@ async function submit_invite( )
 
    var room = g_room;
 
-   await ciyam.update_message_room( room, "for=" + names.join( "," ), function( response )
+   // NOTE: Through the queue like every other request (ISS-005).
+   await serialised( function( )
    {
-      if( is_error_response( response ) )
+      return ciyam.update_message_room( room, "for=" + names.join( "," ), function( response )
       {
-         set_error( "room_dialog_error", error_text( response ) );
+         if( is_error_response( response ) )
+         {
+            set_error( "room_dialog_error", error_text( response ) );
 
-         return;
-      }
+            return;
+         }
 
-      do_close_room_dialog( );
+         do_close_room_dialog( );
 
-      show_alert( "Invited " + names.join( ", " ) + " to " + g_room_name + ".", "is-info" );
+         show_alert( "Invited " + names.join( ", " ) + " to " + g_room_name + ".", "is-info" );
 
-      // NOTE: The invitation is posted as a system event, so a reload shows the
-      // receipt without waiting for the next poll.
-      if( room === g_room )
-         load_messages( "from=0", true );
+         // NOTE: The invitation is posted as a system event, so a reload shows the
+         // receipt without waiting for the next poll.
+         if( room === g_room )
+            load_messages( "from=0", true );
+      } );
    } );
 
    if( ciyam.error !== "" )
@@ -2680,20 +2684,24 @@ async function do_submit_room_dialog( )
    {
       ciyam.error = "";
 
-      await ciyam.update_message_room( g_room, "name=" + name, function( response )
+      // NOTE: Through the queue like every other request (ISS-005).
+      await serialised( function( )
       {
-         if( is_error_response( response ) )
-            set_error( "room_dialog_error", error_text( response ) );
-         else
+         return ciyam.update_message_room( g_room, "name=" + name, function( response )
          {
-            do_close_room_dialog( );
+            if( is_error_response( response ) )
+               set_error( "room_dialog_error", error_text( response ) );
+            else
+            {
+               do_close_room_dialog( );
 
-            g_room_name = name;
+               g_room_name = name;
 
-            document.getElementById( "thread_name" ).textContent = name;
+               document.getElementById( "thread_name" ).textContent = name;
 
-            load_rooms( );
-         }
+               load_rooms( );
+            }
+         } );
       } );
 
       if( ciyam.error !== "" )
@@ -2721,27 +2729,31 @@ async function do_submit_room_dialog( )
 
    ciyam.error = "";
 
-   await ciyam.create_message( c_lobby_room, options, function( response )
+   // NOTE: Through the queue like every other request (ISS-005).
+   await serialised( function( )
    {
-      if( is_error_response( response ) )
+      return ciyam.create_message( c_lobby_room, options, function( response )
       {
-         set_error( "room_dialog_error", error_text( response ) );
+         if( is_error_response( response ) )
+         {
+            set_error( "room_dialog_error", error_text( response ) );
 
-         return;
-      }
+            return;
+         }
 
-      do_close_room_dialog( );
+         do_close_room_dialog( );
 
-      if( g_dialog_mode === "create" )
-         open_new_room( response );
-      else
-      {
-         g_room_name = name;
+         if( g_dialog_mode === "create" )
+            open_new_room( response );
+         else
+         {
+            g_room_name = name;
 
-         document.getElementById( "thread_name" ).textContent = name;
+            document.getElementById( "thread_name" ).textContent = name;
 
-         load_rooms( );
-      }
+            load_rooms( );
+         }
+      } );
    } );
 
    if( ciyam.error !== "" )
@@ -3504,44 +3516,52 @@ async function do_send( )
 
    var timed_out = false;
 
-   await ciyam.create_message( g_room, options, function( response )
+   // NOTE: Through the queue like every other request (ISS-005) - a send outside it could
+   // overlap a poll, and "ciyam.js" keeps one callback per instance, so the send's reply
+   // could go to the poll's callback and the message not show until the next poll. In the
+   // queue it waits only for the request in flight: a poll queues its next step only after
+   // the one before has answered, so the send goes ahead of it.
+   await serialised( function( )
    {
-      if( is_timeout_response( response ) )
+      return ciyam.create_message( g_room, options, function( response )
       {
-         failed = true;
-         timed_out = true;
+         if( is_timeout_response( response ) )
+         {
+            failed = true;
+            timed_out = true;
 
-         return;
-      }
+            return;
+         }
 
-      if( is_error_response( response ) )
-      {
-         failed = true;
+         if( is_error_response( response ) )
+         {
+            failed = true;
 
-         show_alert( error_text( response ), "is-error" );
+            show_alert( error_text( response ), "is-error" );
 
-         return;
-      }
+            return;
+         }
 
-      var result = parse_fetch_response( response );
+         var result = parse_fetch_response( response );
 
-      g_members = apply_presence( result.members );
+         g_members = apply_presence( result.members );
 
-      render_members( );
+         render_members( );
 
-      // NOTE: An edit rewrites an existing line, so the whole thread is
-      // reloaded rather than appended to.
-      if( was_edit )
-         load_messages( "from=0", true );
-      else
-      {
-         append_messages( result.messages );
+         // NOTE: An edit rewrites an existing line, so the whole thread is
+         // reloaded rather than appended to.
+         if( was_edit )
+            load_messages( "from=0", true );
+         else
+         {
+            append_messages( result.messages );
 
-         var next = next_start_point( result.messages );
+            var next = next_start_point( result.messages );
 
-         if( next !== "" )
-            g_start_point = next;
-      }
+            if( next !== "" )
+               g_start_point = next;
+         }
+      } );
    } );
 
    input.disabled = false;
