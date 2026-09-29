@@ -196,6 +196,8 @@ constexpr const char* c_http_content_type_image_svg = "image/svg";
 constexpr const char* c_http_content_type_application_form = "application/x-www-form-urlencoded";
 constexpr const char* c_http_content_type_application_json = "application/json";
 
+constexpr const char* c_http_content_type_application_ciyam = "application/ciyam";
+
 constexpr const char* c_http_content_type_multipart_form_data = "multipart/form-data";
 
 constexpr const char* c_http_content_disposition_form_data = "form-data";
@@ -415,6 +417,123 @@ bool file_has_changed( const char* p_file_name, atomic< time_t >& file_mod )
    return changed;
 }
 
+void parse_header_info( const vector< string >& header_lines, map< string, string >& header_info )
+{
+   for( size_t i = 0; i < header_lines.size( ); i++ )
+   {
+      string next( header_lines[ i ] );
+
+      string::size_type pos = next.find( c_hdr_separator );
+
+      string name( lower( next.substr( 0, pos ) ) );
+
+      string data;
+
+      if( pos != string::npos )
+         data = next.substr( pos + 2 );
+
+      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, name + c_hdr_separator + data );
+
+      header_info[ name ] = data;
+#ifdef DEBUG
+      if( i == 0 )
+         cerr << "\n[Header Info]" << endl;
+
+      cerr << header_lines[ i ] << endl;
+#endif
+   }
+}
+
+void parse_query_info( const string& http_qry_info,
+ map< string, string >& params, string& access, string& device, string& session,
+ string& error, bool& is_json_output, bool& is_text_output, bool& is_verbose, bool& has_format_parameter )
+{
+   if( !http_qry_info.empty( ) )
+   {
+      if( !parse_query_params( http_qry_info, params ) )
+         // FUTURE: This message should be handled as a server string message.
+         error = "Invalid format for query parameters '" + http_qry_info + "'.";
+      else
+      {
+         if( params.count( c_query_param_name_format ) )
+         {
+            if( params[ c_query_param_name_format ] == c_query_param_value_json )
+               is_json_output = true;
+            else if( params[ c_query_param_name_format ] == c_query_param_value_text )
+               is_text_output = true;
+            else
+               // FUTURE: This message should be handled as a server string message.
+               error = "Invalid format value '" + params[ c_query_param_name_format ] + "'.";
+
+            if( error.empty( ) )
+               has_format_parameter = true;
+         }
+
+         if( params.count( c_query_param_name_access ) )
+            access = params[ c_query_param_name_access ];
+
+         if( params.count( c_query_param_name_device ) )
+            device = params[ c_query_param_name_device ];
+
+         if( params.count( c_query_param_name_session ) )
+            session = params[ c_query_param_name_session ];
+
+         if( params.count( c_query_param_name_verbose ) )
+            is_verbose = true;
+      }
+   }
+}
+
+void parse_http_request( const string& request, string& http_verb,
+ string& http_document, string& http_protocol, string& http_qry_info, http_request_type& request_type )
+{
+   string http_request( request );
+
+   string::size_type pos = http_request.find( ' ' );
+
+   http_verb = http_request.substr( 0, pos );
+
+   if( http_verb == c_get_request )
+      request_type = e_http_request_type_get;
+   else if( http_verb == c_put_request )
+      request_type = e_http_request_type_put;
+   else if( http_verb == c_head_request )
+      request_type = e_http_request_type_head;
+   else if( http_verb == c_post_request )
+      request_type = e_http_request_type_post;
+   else if( http_verb == c_trace_request )
+      request_type = e_http_request_type_trace;
+   else if( http_verb == c_delete_request )
+      request_type = e_http_request_type_delete;
+   else if( http_verb == c_options_request )
+      request_type = e_http_request_type_options;
+
+   if( pos != string::npos )
+   {
+      http_document = http_request.substr( pos + 1 );
+
+      http_request.erase( pos );
+
+      pos = http_document.find( ' ' );
+
+      if( pos != string::npos )
+      {
+         http_protocol = http_document.substr( pos + 1 );
+
+         http_document.erase( pos );
+      }
+
+      pos = http_document.find( '?' );
+
+      if( pos != string::npos )
+      {
+         http_qry_info = http_document.substr( pos + 1 );
+
+         http_document.erase( pos );
+      }
+   }
+}
+
 }
 
 class http_request_handler : public thread
@@ -575,77 +694,14 @@ void http_request_handler::on_start( )
 #ifdef DEBUG
          cerr << "handler #" << handler << "\n[Request]\n" << http_request << endl;
 #endif
-         for( size_t i = 0; i < header_lines.size( ); i++ )
-         {
-            string next( header_lines[ i ] );
-
-            string::size_type pos = next.find( c_hdr_separator );
-
-            string name( lower( next.substr( 0, pos ) ) );
-
-            string data;
-
-            if( pos != string::npos )
-               data = next.substr( pos + 2 );
-
-            TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, name + c_hdr_separator + data );
-
-            header_info[ name ] = data;
-#ifdef DEBUG
-            if( i == 0 )
-               cerr << "\n[Header Info]" << endl;
-
-            cerr << header_lines[ i ] << endl;
-#endif
-         }
+         parse_header_info( header_lines, header_info );
 
          string http_verb, http_document, http_protocol, http_qry_info;
 
-         string::size_type pos = http_request.find( ' ' );
-
-         http_verb = http_request.substr( 0, pos );
-
          http_request_type request_type = e_http_request_type_unknown;
 
-         if( http_verb == c_get_request )
-            request_type = e_http_request_type_get;
-         else if( http_verb == c_put_request )
-            request_type = e_http_request_type_put;
-         else if( http_verb == c_head_request )
-            request_type = e_http_request_type_head;
-         else if( http_verb == c_post_request )
-            request_type = e_http_request_type_post;
-         else if( http_verb == c_trace_request )
-            request_type = e_http_request_type_trace;
-         else if( http_verb == c_delete_request )
-            request_type = e_http_request_type_delete;
-         else if( http_verb == c_options_request )
-            request_type = e_http_request_type_options;
-
-         if( pos != string::npos )
-         {
-            http_document = http_request.substr( pos + 1 );
-
-            http_request.erase( pos );
-
-            pos = http_document.find( ' ' );
-
-            if( pos != string::npos )
-            {
-               http_protocol = http_document.substr( pos + 1 );
-
-               http_document.erase( pos );
-            }
-
-            pos = http_document.find( '?' );
-
-            if( pos != string::npos )
-            {
-               http_qry_info = http_document.substr( pos + 1 );
-
-               http_document.erase( pos );
-            }
-         }
+         parse_http_request( http_request,
+          http_verb, http_document, http_protocol, http_qry_info, request_type );
 
 #ifdef DEBUG
          cerr << "\nrequest ==> " << http_request << endl;
@@ -687,43 +743,8 @@ void http_request_handler::on_start( )
 
          map< string, string > params;
 
-         if( !http_qry_info.empty( ) )
-         {
-            if( !parse_query_params( http_qry_info, params ) )
-               // FUTURE: This message should be handled as a server string message.
-               error = "Invalid format for query parameters '" + http_qry_info + "'.";
-            else
-            {
-               if( params.count( c_query_param_name_format ) )
-               {
-                  if( params[ c_query_param_name_format ] == c_query_param_value_json )
-                     is_json_output = true;
-                  else if( params[ c_query_param_name_format ] == c_query_param_value_text )
-                     is_text_output = true;
-                  else
-                     // FUTURE: This message should be handled as a server string message.
-                     error = "Invalid format value '" + params[ c_query_param_name_format ] + "'.";
-
-                  if( error.empty( ) )
-                     has_format_parameter = true;
-               }
-
-               if( params.count( c_query_param_name_access ) )
-                  access = params[ c_query_param_name_access ];
-
-               if( params.count( c_query_param_name_device ) )
-                  device = params[ c_query_param_name_device ];
-
-               if( params.count( c_query_param_name_session ) )
-                  session = params[ c_query_param_name_session ];
-
-               if( params.count( c_query_param_name_verbose ) )
-                  is_verbose = true;
-            }
-         }
-
-         if( header_info.count( c_http_x_request_id_header ) )
-            request_id = header_info[ c_http_x_request_id_header ];
+         parse_query_info( http_qry_info, params, access, device, session,
+          error, is_json_output, is_text_output, is_verbose, has_format_parameter );
 
          if( error.empty( )
           && header_info.count( c_http_content_length_header ) )
@@ -792,6 +813,70 @@ void http_request_handler::on_start( )
                // FUTURE: This message should be handled as a server string message.
                error = "Post data was too large (maximum allowed is " + format_bytes( g_max_post_data_allowed ) + ").";
          }
+
+         // NOTE: If POST content is "application/ciyam" then it is processed
+         // now as a replacement HTTP request (but it will retain all headers
+         // and query parameters unless replacement values are now provided).
+         if( !data.empty( ) && header_info.count( c_http_content_type_header )
+          && ( header_info[ c_http_content_type_header ] == c_http_content_type_application_ciyam ) )
+         {
+            string::size_type pos = data.find( '\n' );
+
+            if( pos == string::npos )
+               throw runtime_error( "invalid CIYAM application content data (missing format line)" );
+
+            string format( data.substr( 0, pos ) );
+
+            data.erase( 0, pos + 1 );
+
+            if( format == "plain" )
+            {
+               http_verb.erase( );
+               http_document.erase( );
+               http_protocol.erase( );
+               http_qry_info.erase( );
+
+               parse_http_request( data,
+                http_verb, http_document, http_protocol, http_qry_info, request_type );
+
+               if( !http_qry_info.empty( ) )
+                  parse_query_info( http_qry_info, params, access, device, session,
+                   error, is_json_output, is_text_output, is_verbose, has_format_parameter );
+
+               pos = data.find( "\n\n" );
+
+               if( pos == string::npos )
+                  data.erase( );
+               else
+               {
+                  if( pos != 0 )
+                  {
+                     string headers( data.substr( 0, pos ) );
+
+                     vector< string > header_lines;
+
+                     split( headers, header_lines, '\n' );
+
+                     parse_header_info( header_lines, header_info );
+                  }
+
+                  data.erase( 0, pos + 2 );
+               }
+            }
+
+#ifdef DEBUG
+            cerr << "\nCIYAM (replaced)" << endl;
+            cerr << "request ==> " << http_request << endl;
+            cerr << "document ==> " << http_document << endl;
+            cerr << "protocol ==> " << http_protocol << endl;
+
+            if( !http_qry_info.empty( ) )
+               cerr << "qry_info ==> " << http_qry_info << endl;
+#endif
+         }
+
+         if( header_info.count( c_http_x_request_id_header ) )
+            request_id = header_info[ c_http_x_request_id_header ];
 
          bool unchanged = false;
 
@@ -1652,7 +1737,6 @@ void init_request_handler( tcp_socket* p_socket, const string& address )
 #endif
    }
 }
-
 
 http_listener::http_listener( int port, bool has_auto )
  :
