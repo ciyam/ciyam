@@ -2793,6 +2793,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            response = "[bad]";
                         else
                         {
+                           string web_session_commands;
+
                            if( !request.empty( )
                             || is_messages_request || is_user_info_request
                             || is_module_info_request || is_instance_fetch_request )
@@ -3205,14 +3207,19 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                               update_session_info( session, now );
 
-                              set_system_variable( web_command_var_name, request_and_args );
+                              web_session_commands = request_and_args;
                            }
                            else
                            {
                               update_session_info( session, now );
 
-                              set_system_variable( web_command_var_name, "variable " + web_message_var_name );
+                              web_session_commands = "variable " + web_message_var_name;
                            }
+
+                           string unique_for_commands( uuid( ).as_string( ) );
+
+                           if( !web_session_commands.empty( ) )
+                              set_system_variable( web_command_var_name, '#' + unique_for_commands + '\n' + web_session_commands );
 
                            bool found_response = false;
 
@@ -3226,7 +3233,34 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                  response = buffer_file( output_file_name );
 
-                                 response = trim( response, false, false, "\n" );
+                                 string::size_type pos = response.find( '\n' );
+
+                                 string first_line( response.substr( 0, pos ) );
+
+                                 if( pos == string::npos )
+                                    response.erase( );
+                                 else
+                                    response.erase( 0, pos + 1 );
+
+                                 // NOTE: The first line of the response
+                                 // should be the UUID that was "echoed"
+                                 // as the initial command. If it is not
+                                 // a match then clear the command along
+                                 // with waiting a while in order to try
+                                 // and prevent multiple mismatches that
+                                 // can occur after one late response.
+                                 if( first_line != unique_for_commands )
+                                 {
+                                    response.erase( );
+
+                                    set_system_variable( web_command_var_name, "" );
+
+                                    TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(erased response due to incorrect UUID)" );
+
+                                    msleep( 1000 );
+                                 }
+                                 else
+                                    response = trim( response, false, false, "\n" );
 
                                  file_remove( output_file_name );
 
