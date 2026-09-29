@@ -87,6 +87,12 @@ curl -s -d "testing..." "localhost:13031/echo"
 curl -s -d "testing..." "localhost:13031/echo?format=json"
 curl -s -i -d "testing..." -H "X-Request-ID: unique-id" "localhost:13031/echo" | grep "X-Request-ID"
 
+# Simple replacement tests.
+curl -s -d $'plain\nGET /echo?opt=value HTTP/1.1' -X POST "localhost:13031/echo" -H 'Content-Type: application/ciyam'
+curl -s -d $'plain\nPOST /echo?opt=value HTTP/1.1\n\ntesting...' -X POST "localhost:13031/echo" -H 'Content-Type: application/ciyam'
+curl -s -d $'plain\nPOST /echo?opt=value&format=json HTTP/1.1\n\ntesting...' -X POST "localhost:13031/echo" -H 'Content-Type: application/ciyam'
+echo ""
+
 # Basic file upload API tests.
 filename=$(curl -s -F "file=@test.jpg" localhost:13031/upload)
 diff test.jpg $filename

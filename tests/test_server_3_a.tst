@@ -23,6 +23,9 @@ Error: Invalid format value 'xxxx'.
 100000000
 {"post_limit":"100000000"}{"post_limit":"100.0 MB"}testing...
 {"data":"testing..."}X-Request-ID: unique-id
+opt=value
+testing...
+{"data":"testing..."}
 Error: Invalid device identity 'bad_device'.
 [adm]@admin
 Error: This web session is not valid (or has expired).
