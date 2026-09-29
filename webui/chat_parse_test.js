@@ -705,16 +705,11 @@ check( "admin", cp.user_initial( "admin" ), "A" );
 check( "a PIN", cp.user_initial( "20401" ), "2" );
 check( "nothing", cp.user_initial( "" ), "?" );
 
-heading( "status reply" );
+heading( "sign in errors" );
 
-check( "admin", cp.parse_status_reply( "[adm]@admin" ), { is_admin: true, is_locked: false, lock_source: 0, username: "admin" } );
-check( "a standard user", cp.parse_status_reply( "[std]@verify-a" ), { is_admin: false, is_locked: false, lock_source: 0, username: "verify-a" } );
-check( "an account with no username", cp.parse_status_reply( "[std]@" ).username, "" );
-check( "locked, with its source", cp.parse_status_reply( "[std]-1@bob" ), { is_admin: false, is_locked: true, lock_source: "1", username: "bob" } );
-check( "empty: not a status", cp.parse_status_reply( "" ), null );
-check( "another request's answer: not a status", cp.parse_status_reply( "test@admin" ), null );
-check( "an error: not a status", cp.parse_status_reply( "Error: Timed out waiting for web session response." ), null );
-check( "an unknown type: not a status", cp.parse_status_reply( "[bad]" ), null );
+check( "a missing connect status, in plain words", cp.sign_in_error_text( "invalid or missing connect status" ), "The server's answer to signing in was not what was expected. Please try again." );
+check( "any other error as it is", cp.sign_in_error_text( "Error: Web session is currently busy (try again shortly)." ), "Error: Web session is currently busy (try again shortly)." );
+check( "nothing", cp.sign_in_error_text( "" ), "" );
 
 heading( "session handover fields" );
 

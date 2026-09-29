@@ -1208,33 +1208,19 @@ function user_initial( name )
    return ( text === "" ) ? "?" : text.charAt( 0 ).toUpperCase( );
 }
 
-// NOTE: The "/status" reply read as "CIYAM.connect" reads it - "[adm]" or "[std]", a "-" and
-// its source when locked, then "@" and the username (empty for an account without one). Null
-// for anything else: "CIYAM.connect" ignores such a reply and signs in regardless, leaving no
-// username and an admin treated as a standard user.
-function parse_status_reply( text )
+// NOTE: A sign in error in plain words. Ian's "connect" says "invalid or missing connect status"
+// when the server's answer to signing in was not a session status (ISS-029); every other error
+// is already a sentence and is shown as it is.
+const c_connect_status_error = "invalid or missing connect status";
+
+function sign_in_error_text( error )
 {
-   var reply = String( text || "" );
+   var text = String( error || "" );
 
-   var end = reply.indexOf( "]" );
+   if( text === c_connect_status_error )
+      return "The server's answer to signing in was not what was expected. Please try again.";
 
-   if( ( reply.indexOf( "[" ) !== 0 ) || ( end < 0 ) )
-      return null;
-
-   var type = reply.substr( 0, end + 1 );
-
-   if( ( type !== "[adm]" ) && ( type !== "[std]" ) )
-      return null;
-
-   var rest = reply.substring( end + 1 );
-   var at = rest.indexOf( "@" );
-
-   return {
-      is_admin: ( type === "[adm]" ),
-      is_locked: ( rest.charAt( 0 ) === "-" ),
-      lock_source: ( rest.charAt( 0 ) === "-" ) ? rest.substr( 1, 1 ) : 0,
-      username: ( at >= 0 ) ? rest.substring( at + 1 ) : ""
-   };
+   return text;
 }
 
 function encode_channel_field( value )
@@ -1367,7 +1353,7 @@ if( typeof module !== "undefined" )
       describe_event: describe_event,
       password_strength: password_strength,
       user_initial: user_initial,
-      parse_status_reply: parse_status_reply,
+      sign_in_error_text: sign_in_error_text,
       visible_rooms: visible_rooms,
       unread_elsewhere: unread_elsewhere,
       declined_rooms: declined_rooms,
