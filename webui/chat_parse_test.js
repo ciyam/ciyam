@@ -705,6 +705,33 @@ check( "admin", cp.user_initial( "admin" ), "A" );
 check( "a PIN", cp.user_initial( "20401" ), "2" );
 check( "nothing", cp.user_initial( "" ), "?" );
 
+heading( "direct messages" );
+
+check( "named from the sorted people", cp.dm_room_name( [ "verify-a", "admin" ] ), "DM admin + verify-a" );
+check( "the same whoever starts it", cp.dm_room_name( [ "admin", "verify-a" ] ), cp.dm_room_name( [ "verify-a", "admin" ] ) );
+check( "a group", cp.dm_room_name( [ "carol", "admin", "bob" ] ), "DM admin + bob + carol" );
+check( "names cleaned and not repeated", cp.dm_room_name( [ " Bob ", "bob", "admin" ] ), "DM admin + bob" );
+check( "a valid room name", cp.is_valid_room_name( cp.dm_room_name( [ "twelve-chars", "another-name", "third-person" ] ) ), true );
+var big = cp.dm_room_name( [ "twelve-chars", "another-name", "third-person", "fourth-one" ] );
+check( "too long for a room name: a hash and the size", /^DM [0-9a-f]{8} \(4\)$/.test( big ), true );
+check( "and still a valid room name", cp.is_valid_room_name( big ), true );
+check( "the hash is the same whoever starts it", big, cp.dm_room_name( [ "fourth-one", "third-person", "another-name", "twelve-chars" ] ) );
+check( "read back: the people", cp.parse_dm_name( "DM admin + verify-a" ), { people: [ "admin", "verify-a" ], count: 2 } );
+check( "read back: a hashed group", cp.parse_dm_name( big ), { people: null, count: 4 } );
+check( "not a direct message: an ordinary room", cp.is_dm_name( "Ledger Ops" ), false );
+check( "not a direct message: one person", cp.is_dm_name( "DM admin" ), false );
+check( "not a direct message: not usernames", cp.is_dm_name( "DM Planning + Review" ), false );
+check( "shown as the other person", cp.dm_title( "DM admin + verify-a", "admin" ), "verify-a" );
+check( "shown as the others", cp.dm_title( "DM admin + bob + carol", "bob" ), "admin, carol" );
+check( "a hashed group", cp.dm_title( big, "admin" ), "Group of 4" );
+check( "an ordinary room keeps its name", cp.dm_title( "Ledger Ops", "admin" ), "Ledger Ops" );
+var dm_rooms = [ { room: "0000009", name: "DM admin + bob" }, { room: "0000004", name: "DM admin + bob" }, { room: "0000005", name: "DM admin + carol" }, { room: "0000006", name: "Ledger Ops" } ];
+check( "finds the conversation - the lowest numbered of two", cp.find_dm_room( dm_rooms, [ "bob", "admin" ] ).room, "0000004" );
+check( "none yet", cp.find_dm_room( dm_rooms, [ "admin", "dave" ] ), null );
+var dm_lines = [ "1790000000000 admin :create 0000004-abc DM admin + bob + carol", "1790000000001 bob :joined" ].map( cp.parse_message_line );
+check( "waiting for whoever has not joined", cp.dm_waiting_for( dm_lines, [ "bob", "carol" ] ), [ "carol" ] );
+check( "nobody left to wait for", cp.dm_waiting_for( dm_lines.concat( [ cp.parse_message_line( "1790000000002 carol :joined" ) ] ), [ "bob", "carol" ] ), [ ] );
+
 heading( "sign in errors" );
 
 check( "a missing connect status, in plain words", cp.sign_in_error_text( "invalid or missing connect status" ), "The server's answer to signing in was not what was expected. Please try again." );

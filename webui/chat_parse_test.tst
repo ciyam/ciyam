@@ -368,6 +368,29 @@ ok   admin
 ok   a PIN
 ok   nothing
 
+== direct messages =============================================
+ok   named from the sorted people
+ok   the same whoever starts it
+ok   a group
+ok   names cleaned and not repeated
+ok   a valid room name
+ok   too long for a room name: a hash and the size
+ok   and still a valid room name
+ok   the hash is the same whoever starts it
+ok   read back: the people
+ok   read back: a hashed group
+ok   not a direct message: an ordinary room
+ok   not a direct message: one person
+ok   not a direct message: not usernames
+ok   shown as the other person
+ok   shown as the others
+ok   a hashed group
+ok   an ordinary room keeps its name
+ok   finds the conversation - the lowest numbered of two
+ok   none yet
+ok   waiting for whoever has not joined
+ok   nobody left to wait for
+
 == sign in errors ==============================================
 ok   a missing connect status, in plain words
 ok   any other error as it is

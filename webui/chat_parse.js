@@ -1045,6 +1045,138 @@ function visible_rooms( rooms, is_admin )
    return ( rooms || [ ] ).filter( function( entry ) { return !is_starting_room( entry.room ); } );
 }
 
+// NOTE: Direct messages - a prototype, 2026-09-29. A direct message is a room whose members are
+// exactly the people in the conversation, one room for each set of people. It is named from
+// them - "DM " and the sorted usernames joined by " + " - so both sides arrive at the same name
+// and the chat can find an existing conversation, and show it by the other people's names,
+// without reading it. Usernames are 3 to 12 of "a-z", "0-9" and "-", all allowed in a room name.
+// A group whose names will not fit the 50 character limit is named by a short hash and its size.
+const c_dm_prefix = "DM ";
+const c_dm_separator = " + ";
+const c_max_room_name = 50;
+
+// NOTE: FNV-1a - enough to tell groups apart in one person's rooms; it hides nothing, nor needs
+// to, since only the members and the server ever see a room's name.
+function dm_hash( text )
+{
+   var hash = 0x811c9dc5;
+
+   for( var i = 0; i < text.length; i++ )
+   {
+      hash ^= text.charCodeAt( i );
+      hash = Math.imul( hash, 0x01000193 ) >>> 0;
+   }
+
+   return ( "0000000" + hash.toString( 16 ) ).slice( -8 );
+}
+
+function dm_people( usernames )
+{
+   var people = [ ];
+
+   ( usernames || [ ] ).forEach( function( name )
+   {
+      var clean = String( name || "" ).trim( ).toLowerCase( );
+
+      if( ( clean !== "" ) && ( people.indexOf( clean ) < 0 ) )
+         people.push( clean );
+   } );
+
+   return people.sort( );
+}
+
+// NOTE: The room name for a conversation between "usernames" - which include the user.
+function dm_room_name( usernames )
+{
+   var people = dm_people( usernames );
+
+   var name = c_dm_prefix + people.join( c_dm_separator );
+
+   if( name.length <= c_max_room_name )
+      return name;
+
+   return c_dm_prefix + dm_hash( people.join( "," ) ) + " (" + people.length + ")";
+}
+
+// NOTE: Whether a room name is a direct message's, and who is in it: "people" is null for a
+// group named by its hash, whose members are known only by reading it.
+function parse_dm_name( name )
+{
+   var text = String( name || "" );
+
+   if( text.indexOf( c_dm_prefix ) !== 0 )
+      return null;
+
+   var rest = text.substring( c_dm_prefix.length );
+
+   var hashed = rest.match( /^([0-9a-f]{8}) \((\d+)\)$/ );
+
+   if( hashed )
+      return { people: null, count: Number( hashed[ 2 ] ) };
+
+   var people = rest.split( c_dm_separator );
+
+   var valid = ( people.length >= 2 ) && people.every( function( person )
+   {
+      return /^[a-z][-a-z0-9]{1,10}[a-z0-9]$/.test( person );
+   } );
+
+   return valid ? { people: people, count: people.length } : null;
+}
+
+function is_dm_name( name )
+{
+   return parse_dm_name( name ) !== null;
+}
+
+// NOTE: How a conversation is shown - the other people, never the room name.
+function dm_title( name, me )
+{
+   var dm = parse_dm_name( name );
+
+   if( dm === null )
+      return String( name || "" );
+
+   if( dm.people === null )
+      return "Group of " + dm.count;
+
+   var others = dm.people.filter( function( person ) { return person !== me; } );
+
+   return ( others.length > 0 ) ? others.join( ", " ) : "Only you";
+}
+
+// NOTE: The conversation with exactly these people, if the user already has one - the lowest
+// numbered, should two have been started at the same moment.
+function find_dm_room( rooms, usernames )
+{
+   var name = dm_room_name( usernames );
+
+   var found = null;
+
+   ( rooms || [ ] ).forEach( function( entry )
+   {
+      if( ( entry.name === name ) && ( ( found === null ) || ( entry.room < found.room ) ) )
+         found = entry;
+   } );
+
+   return found;
+}
+
+// NOTE: Who has not joined yet. A member sees nothing posted before they joined, so the first
+// message of a new conversation waits until everyone it is for has - their ":joined" notices.
+function dm_waiting_for( messages, recipients )
+{
+   var joined = { };
+
+   ( messages || [ ] ).forEach( function( message )
+   {
+      if( message && ( message.kind === c_kind_system ) && message.event && ( message.event.verb === "joined" ) )
+         joined[ message.sender ] = true;
+   } );
+
+   return ( recipients || [ ] ).filter( function( name ) { return !joined[ name ]; } );
+}
+
 // NOTE: Announcements - a prototype, 2026-09-27. Administration is hidden from everyone but
 // admin, yet every account is a member of it and the chat already reads it in the background
 // for invitations - so admin's ordinary messages there reach every browser, and are shown as
@@ -1355,6 +1487,12 @@ if( typeof module !== "undefined" )
       user_initial: user_initial,
       sign_in_error_text: sign_in_error_text,
       visible_rooms: visible_rooms,
+      dm_room_name: dm_room_name,
+      parse_dm_name: parse_dm_name,
+      is_dm_name: is_dm_name,
+      dm_title: dm_title,
+      find_dm_room: find_dm_room,
+      dm_waiting_for: dm_waiting_for,
       unread_elsewhere: unread_elsewhere,
       declined_rooms: declined_rooms,
       pending_announcements: pending_announcements,
