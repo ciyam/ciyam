@@ -2409,6 +2409,14 @@ async function open_dm( people )
 
    var name = dm_room_name( everyone );
 
+   // NOTE: Too many names to fit a room name - see "dm_room_name( )".
+   if( name === "" )
+   {
+      show_alert( "That is too many people for a direct message - it fits two, or three with short names. Create a room for a bigger group.", "is-error" );
+
+      return;
+   }
+
    ciyam.error = "";
 
    var reply = "";
@@ -2427,8 +2435,9 @@ async function open_dm( people )
       // conversation - someone else's, found untrusted above - blocks it.
       var taken = /already exists/.test( reply );
 
-      show_alert( taken ? ( "This conversation cannot be started - a room called \u201C" + name
-       + "\u201D already exists, and it is not yours." ) : ( is_error_response( reply ) ? error_text( reply ) : ciyam.error ), "is-error" );
+      show_alert( taken ? ( "This conversation cannot be started - someone else already has a room called \u201C" + name
+       + "\u201D. Room names are shared by everyone on the server, so a conversation's name can be taken first." )
+       : ( is_error_response( reply ) ? error_text( reply ) : ciyam.error ), "is-error" );
 
       return;
    }
