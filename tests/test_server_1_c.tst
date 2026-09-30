@@ -159,6 +159,26 @@ ccc
 aaa
 bbb
 ccc
+session_variable @queue_test ccc
+session_variable @queue_test bbb
+session_variable @queue_test aaa
+session_variable @queue_test @deque
+session_variable @deque
+ccc
+bbb
+aaa
+session_variable @deque ""
+session_variable @queue_test *
+session_variable @queue_test ccc
+session_variable @queue_test bbb
+session_variable @queue_test aaa
+session_variable @queue_test @set
+session_variable @set
+aaa
+bbb
+ccc
+session_variable @set ""
+session_variable @queue_test *
 system_variable @queue_test aaa
 system_variable @queue_test bbb
 system_variable @queue_test ccc

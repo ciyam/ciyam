@@ -100,6 +100,21 @@ session_variable @queue_test*
 system_variable @queue_test *
 session_variable @queue_test *
 ;
+session_variable @queue_test ccc
+session_variable @queue_test bbb
+session_variable @queue_test aaa
+session_variable @queue_test @deque
+session_variable @deque
+session_variable @deque ""
+session_variable @queue_test *
+;
+session_variable @queue_test ccc
+session_variable @queue_test bbb
+session_variable @queue_test aaa
+session_variable @queue_test @set
+session_variable @set
+session_variable @set ""
+session_variable @queue_test *
 ;
 system_variable @queue_test aaa
 system_variable @queue_test bbb
