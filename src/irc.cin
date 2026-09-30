@@ -467,7 +467,12 @@ START_POINT_INFO=@strlit:@@$START_POINTS
 @endif
 @endif
 ;
-.run_script !irc_fetch_messages "@room=$FETCH_PREFIX$ROOM$START_POINT_INFO"
+; NOTE: As OUTPUT is limited to 100K uses a temporary
+; file to store the output (read in to MESSAGES using
+; the "@file" environment variable assignment).
+>/tmp/$ROOM.$USER.tmp
+run_script !irc_fetch_messages "@room=$FETCH_PREFIX$ROOM$START_POINT_INFO"
+>
 @ifdef $ERROR
 #$ERROR
 ERROR=
@@ -477,9 +482,21 @@ FETCH_PREFIX=
 START_POINT_INFO=
 @endif
 ;
-@ifdef $OUTPUT
-MESSAGES=$OUTPUT
+@ifndef $OUTPUT
+~rm -f /tmp/$ROOM.$USER.tmp
+@else
+MESSAGES=@file:/tmp/$ROOM.$USER.tmp
+;
+; FUTURE: It would be possible to use
+; "@line" in order to read "MESSAGES"
+; line by line (without requiring all
+; of it to be read) but MESSAGE_LINES
+; is being used to get any particular
+; specific message by its line number
+; for message "editing".
 MESSAGE_LINES=$MESSAGES
+;
+~rm -f /tmp/$ROOM.$USER.tmp
 ;
 PAD_LEN=1
 @ifneq "%MESSAGES:10%" ""
