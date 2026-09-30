@@ -232,6 +232,7 @@ ok   the session count is still right
 ok   a line without it has none
 ok   each marker under the last message before the read point
 ok   the user's own is left out
+ok   a read point equal to a message's unique has read that message
 ok   a read point before every message shows nothing
 ok   names under one message are sorted
 

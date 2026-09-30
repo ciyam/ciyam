@@ -492,6 +492,10 @@ var in_room = [ "1790520461000", "1790520462000", "1790521522000" ];
 check( "each marker under the last message before the read point",
  cp.seen_by( in_room, readers, "admin" ), { "1790521522000": [ "tester-1" ], "1790520461000": [ "verify-a" ] } );
 check( "the user's own is left out", Object.keys( cp.seen_by( in_room, readers, "tester-1" ) ).sort( ).map( function( k ) { return k + ":" + cp.seen_by( in_room, readers, "tester-1" )[ k ].join( "," ); } ), [ "1790520461000:verify-a", "1790521522000:admin" ] );
+// NOTE: Since 2026-09-30 a read point is the unique of the last message read, not a later time -
+// so a member who has read exactly the last message is shown under it.
+check( "a read point equal to a message's unique has read that message",
+ cp.seen_by( in_room, [ { name: "bob", read: "1790521522000" } ], "admin" ), { "1790521522000": [ "bob" ] } );
 check( "a read point before every message shows nothing", cp.seen_by( in_room, [ { name: "x", read: "1790000000000" } ], "admin" ), { } );
 check( "names under one message are sorted", cp.seen_by( in_room, [ { name: "zed", read: "1790530000000" }, { name: "amy", read: "1790530000000" } ], "admin" ), { "1790521522000": [ "amy", "zed" ] } );
 

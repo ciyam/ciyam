@@ -84,8 +84,8 @@ function parse_members( line )
 
       var member = { name: name, sessions: count, online: ( count > 0 ) };
 
-      // NOTE: With "extra=TIME" the count is followed by ".<unique>" - the "from" this user
-      // last read the room from, so everything before that unique has reached them.
+      // NOTE: With "extra=TIME" the count is followed by ".<unique>" - the last message this
+      // user's reads have returned, so everything up to and including it has reached them.
       var dot = entry.indexOf( ".", pos );
 
       if( dot > 0 )
@@ -769,10 +769,12 @@ function posting_status( room, entry, username, is_admin )
    return { can_post: true, reason: "" };
 }
 
-// NOTE: Read markers - which message each member has read up to, from "extra=TIME". A member
-// has read everything before their read point, so their marker goes under the last message
-// (or notice) below it. The user's own is left out, as are members with no read point or
-// none past the first message. Returns { <unique>: [ names ] }, names in order.
+// NOTE: Read markers - which message each member has read up to, from "extra=TIME". Since Ian's
+// change of 2026-09-30 a read point is the unique of the last message that member's read returned
+// (it was the time of the read), so they have read everything up to and including it, and their
+// marker goes under the last message (or notice) at or before it. The user's own is left out, as
+// are members with no read point or none reaching the first message. Returns { <unique>: [ names ] },
+// names in order.
 function seen_by( uniques, members, me )
 {
    var marks = { };
@@ -788,7 +790,7 @@ function seen_by( uniques, members, me )
 
       ( uniques || [ ] ).forEach( function( unique )
       {
-         if( Number( unique ) < read )
+         if( Number( unique ) <= read )
             last = unique;
       } );
 
