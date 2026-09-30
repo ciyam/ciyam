@@ -134,6 +134,7 @@ constexpr const char* c_unix_time = "unix";
 
 constexpr const char* c_function_date = "date";
 constexpr const char* c_function_file = "file";
+constexpr const char* c_function_line = "line";
 constexpr const char* c_function_files = "files";
 constexpr const char* c_function_lower = "lower";
 constexpr const char* c_function_paths = "paths";
@@ -2801,7 +2802,7 @@ void process_fissile_commands(
 
 struct console_command_handler::impl
 {
-   ~impl( ) { output_file.close( ); }
+   ~impl( ) { input_file.close( ); output_file.close( ); }
 
    fissile_string fissile_data;
 
@@ -2815,6 +2816,7 @@ struct console_command_handler::impl
 
    map< string, fissile_string > fissile_values;
 
+   fstream input_file;
    fstream output_file;
 };
 
@@ -3421,6 +3423,37 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     throw runtime_error( "file '" + rhs + "' not found" );
 
                                  str = buffer_file_lines( rhs );
+                              }
+                           }
+                           else if( lhs == c_function_line )
+                           {
+                              string rhs( str.substr( pos + 1 ) );
+
+                              if( rhs.empty( ) )
+                              {
+                                 if( !p_impl->input_file )
+                                    str.erase( );
+                                 else
+                                 {
+                                    getline( p_impl->input_file, str );
+
+                                    if( p_impl->input_file.eof( ) )
+                                       p_impl->input_file.close( );
+                                 }
+                              }
+                              else if( !file_exists( rhs ) )
+                                 throw runtime_error( "file '" + rhs + "' not found" );
+                              else
+                              {
+                                 if( p_impl->input_file )
+                                    p_impl->input_file.close( );
+
+                                 p_impl->input_file.open( rhs.c_str( ) );
+
+                                 getline( p_impl->input_file, str );
+
+                                 if( p_impl->input_file.eof( ) )
+                                    p_impl->input_file.close( );
                               }
                            }
                            else if( lhs == c_function_files )
