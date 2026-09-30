@@ -6364,14 +6364,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          bool get_all_queue_items = false;
 
+         string set_variable_name( get_special_var_name( e_special_var_set ) );
+         string deque_variable_name( get_special_var_name( e_special_var_deque ) );
+
          // NOTE: If "*" is used as <value> for a "@queue_"
          // prefixed variable then return all queued items.
-         if( ( value == "*" )
+         // Also allows "@set" and "@queue" for moving all
+         // queued items to one of those special variables.
+         if( ( ( value == "*" )
+          || ( value == set_variable_name )
+          || ( value == deque_variable_name ) )
           && ( name_or_expr.find( c_special_variable_queue_prefix ) == 0 ) )
          {
             has_val = false;
 
             get_all_queue_items = true;
+
+            if( quoted && ( value != "*" ) )
+               throw runtime_error( "invalid 'session_variable' usage of quoted with " + value );
          }
 
          size_t sess_id = 0;
@@ -6467,6 +6477,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         if( !gteq.empty( ) && ( next < gteq ) )
                            continue;
+
+                        if( value == set_variable_name )
+                        {
+                           set_session_variable( set_variable_name, next );
+
+                           continue;
+                        }
+
+                        if( value == deque_variable_name )
+                        {
+                           set_session_variable( deque_variable_name, "push_back " + next );
+
+                           continue;
+                        }
 
                         if( !response.empty( ) )
                            response += '\n';
