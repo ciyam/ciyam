@@ -1785,13 +1785,18 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      if( response.length( ) <= c_max_length_for_output_env_var )
                         set_environment_variable( c_env_var_output, response.substr( start ).c_str( ) );
                      else
-                        set_environment_variable( c_env_var_output, "*** response exceeded maximum allowed length ***" );
+                     {
+                        set_environment_variable( c_env_var_output, "" );
+
+                        set_environment_variable( c_env_var_error, "*** response exceeded maximum allowed length ***" );
+                     }
                   }
 
                   // NOTE: Make sure that progress messages do not end the conversation.
                   if( is_message )
                   {
                      response.erase( );
+
                      is_in_progress = true;
                   }
 
