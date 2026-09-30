@@ -271,15 +271,20 @@ CHANGED=1
 .session_variable @gteq_session_queue $START_POINT
 @endif
 ;
-.session_variable -id=$SESSION @queue_irc_$ROOM_AND_USER *
+.session_variable -id=$SESSION @queue_irc_$ROOM_AND_USER @deque
+;
+.session_variable @deque size
+@ifeq "$OUTPUT" "0"
+OUTPUT=
+@endif
 @endif
 ;
-@ifdef $OUTPUT
-@ifndef $SKIP_EDITS
-@ifndef $WAS_ENTRANCE
-.session_variable @deque "~$OUTPUT"
+LAST_UNIQUE=
 ;
-MESSAGES=
+@ifdef $OUTPUT
+>/tmp/ciyam/$UUID
+@ifndef $WAS_ENTRANCE
+;
 @label MSG_NEXT
 ;
 @:MSG_LOOP
@@ -301,6 +306,8 @@ MSG_BASE64=%MESSAGE_PARTS:3%
 ;
 MSG_PREFIX=@substr:0,3:$MSG_BASE64
 ;
+LAST_UNIQUE=@strlit:$MSG_UNIQUE
+;
 IS_INVITE=
 POS=@strpos:XzppbnZpdGUgcm9vbSAw:$MSG_BASE64
 @ifeq "$POS" "0"
@@ -321,7 +328,12 @@ INVITE_OR_NON_SYSTEM=1
 ;
 @ifdef $INVITE_OR_NON_SYSTEM
 ;
+@ifdef $SKIP_EDITS
+OUTPUT=
+@else
 .system_variable @updated_record_irc_%MSG_AUTHOR%_$MSG_UNIQUE
+@endif
+;
 @ifdef $OUTPUT
 NEW_MSG_PARTS=@repstr: /\n:$OUTPUT
 ;
@@ -367,11 +379,7 @@ NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR* $NEW_MSG_BASE64
 @endif
 @endif
 ;
-@ifndef $MESSAGES
-MESSAGES=$NEXT_MESSAGE
-@else
-MESSAGES=$MESSAGES\n$NEXT_MESSAGE
-@endif
+#$NEXT_MESSAGE
 ;
 .session_variable @deque pop_front
 ;
@@ -379,25 +387,23 @@ MESSAGES=$MESSAGES\n$NEXT_MESSAGE
 ;
 @:END_MSG_LOOP
 ;
-UTIME=@unix:
-EXTRA=000
-.system_variable @irc_times_$ROOM_AND_USER $UTIME$EXTRA
+@ifdef $LAST_UNIQUE
+.system_variable @irc_times_$ROOM_AND_USER $LAST_UNIQUE
+@endif
 ;
-OUTPUT=$MESSAGES
+OUTPUT=1
 @endif
-@endif
+>
 @endif
 ;
 @ifndef $ERROR
 @ifdef $OUTPUT
+@ifneq "$OUTPUT" "1"
 >/tmp/ciyam/$UUID
 #$OUTPUT
 >
-@ifndef $WAS_ENTRANCE
-LAST_LINE=%OUTPUT:^1%
-POS=@strpos: :$LAST_LINE
-LAST_UNIQUE=@substr:0,$POS:$LAST_LINE
-;
+@endif
+@ifdef $LAST_UNIQUE
 .session_variable -id=$SESSION @irc_last_unique $LAST_UNIQUE
 @endif
 RETURN=@strlit:@/tmp/ciyam/$UUID
