@@ -387,9 +387,21 @@ ok   shown as the others
 ok   a hashed group
 ok   an ordinary room keeps its name
 ok   finds the conversation - the lowest numbered of two
+ok   not one owned by someone it does not name
 ok   none yet
 ok   waiting for whoever has not joined
 ok   nobody left to wait for
+ok   trusted when the owner is named
+ok   not when someone else owns it
+ok   an owner not known yet is trusted until it is
+ok   an ordinary room is never a direct message
+ok   a hashed group cannot be checked by its name
+ok   a member the name leaves out
+ok   nobody left out
+ok   names listed
+ok   a request from one person
+ok   a request for a group
+ok   a request for a hashed group
 
 == sign in errors ==============================================
 ok   a missing connect status, in plain words

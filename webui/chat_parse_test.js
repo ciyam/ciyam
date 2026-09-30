@@ -725,17 +725,43 @@ check( "shown as the other person", cp.dm_title( "DM admin + verify-a", "admin" 
 check( "shown as the others", cp.dm_title( "DM admin + bob + carol", "bob" ), "admin, carol" );
 check( "a hashed group", cp.dm_title( big, "admin" ), "Group of 4" );
 check( "an ordinary room keeps its name", cp.dm_title( "Ledger Ops", "admin" ), "Ledger Ops" );
-var dm_rooms = [ { room: "0000009", name: "DM admin + bob" }, { room: "0000004", name: "DM admin + bob" }, { room: "0000005", name: "DM admin + carol" }, { room: "0000006", name: "Ledger Ops" } ];
+var dm_rooms = [
+ { room: "0000009", name: "DM admin + bob", owner: "bob" },
+ { room: "0000004", name: "DM admin + bob", owner: "admin" },
+ { room: "0000003", name: "DM admin + bob", owner: "carol" },
+ { room: "0000005", name: "DM admin + carol", owner: "admin" },
+ { room: "0000006", name: "Ledger Ops", owner: "admin" } ];
 check( "finds the conversation - the lowest numbered of two", cp.find_dm_room( dm_rooms, [ "bob", "admin" ] ).room, "0000004" );
+check( "not one owned by someone it does not name", cp.find_dm_room( dm_rooms, [ "bob", "admin" ] ).room !== "0000003", true );
 check( "none yet", cp.find_dm_room( dm_rooms, [ "admin", "dave" ] ), null );
-var dm_lines = [ "1790000000000 admin :create 0000004-abc DM admin + bob + carol", "1790000000001 bob :joined" ].map( cp.parse_message_line );
+var dm_lines = [ "1790000000000 admin :create 0000004-abc DM admin + bob + carol", "1790000000001 bob :joined" ]
+ .map( cp.parse_message_line );
 check( "waiting for whoever has not joined", cp.dm_waiting_for( dm_lines, [ "bob", "carol" ] ), [ "carol" ] );
-check( "nobody left to wait for", cp.dm_waiting_for( dm_lines.concat( [ cp.parse_message_line( "1790000000002 carol :joined" ) ] ), [ "bob", "carol" ] ), [ ] );
+check( "nobody left to wait for",
+ cp.dm_waiting_for( dm_lines.concat( [ cp.parse_message_line( "1790000000002 carol :joined" ) ] ), [ "bob", "carol" ] ), [ ] );
+
+// NOTE: A room's name is its owner's to choose - "DM admin + bob" owned by carol is her room,
+// not a conversation between admin and bob (found by review, 2026-09-30).
+check( "trusted when the owner is named", cp.dm_trusted( "DM admin + bob", "bob" ), true );
+check( "not when someone else owns it", cp.dm_trusted( "DM admin + bob", "carol" ), false );
+check( "an owner not known yet is trusted until it is", cp.dm_trusted( "DM admin + bob", "" ), true );
+check( "an ordinary room is never a direct message", cp.dm_trusted( "Ledger Ops", "admin" ), false );
+check( "a hashed group cannot be checked by its name", cp.dm_trusted( big, "anyone" ), true );
+check( "a member the name leaves out", cp.dm_outsiders( "DM admin + bob", [ "admin", "bob", "carol" ] ), [ "carol" ] );
+check( "nobody left out", cp.dm_outsiders( "DM admin + bob", [ "admin", "bob" ] ), [ ] );
+check( "names listed", [ cp.name_list( [ "bob" ] ), cp.name_list( [ "bob", "carol" ] ), cp.name_list( [ "bob", "carol", "dave" ] ) ],
+ [ "bob", "bob and carol", "bob, carol and dave" ] );
+check( "a request from one person", cp.dm_request_text( "admin", "DM admin + bob", "bob" ), "admin wants to message you." );
+check( "a request for a group", cp.dm_request_text( "admin", "DM admin + bob + carol", "bob" ),
+ "admin wants to start a conversation with you and carol." );
+check( "a request for a hashed group", cp.dm_request_text( "admin", big, "bob" ), "admin wants to start a group conversation with you." );
 
 heading( "sign in errors" );
 
-check( "a missing connect status, in plain words", cp.sign_in_error_text( "invalid or missing connect status" ), "The server's answer to signing in was not what was expected. Please try again." );
-check( "any other error as it is", cp.sign_in_error_text( "Error: Web session is currently busy (try again shortly)." ), "Error: Web session is currently busy (try again shortly)." );
+check( "a missing connect status, in plain words", cp.sign_in_error_text( "invalid or missing connect status" ),
+ "The server's answer to signing in was not what was expected. Please try again." );
+check( "any other error as it is", cp.sign_in_error_text( "Error: Web session is currently busy (try again shortly)." ),
+ "Error: Web session is currently busy (try again shortly)." );
 check( "nothing", cp.sign_in_error_text( "" ), "" );
 
 heading( "session handover fields" );

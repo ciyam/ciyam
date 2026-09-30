@@ -1145,8 +1145,9 @@ function dm_title( name, me )
    return ( others.length > 0 ) ? others.join( ", " ) : "Only you";
 }
 
-// NOTE: The conversation with exactly these people, if the user already has one - the lowest
-// numbered, should two have been started at the same moment.
+// NOTE: The conversation with exactly these people, if the user already has one - and only if
+// its owner is one of them (see "dm_trusted( )"). Room names are unique across the server, so
+// there is at most one; the lowest number is taken should that ever change.
 function find_dm_room( rooms, usernames )
 {
    var name = dm_room_name( usernames );
@@ -1155,7 +1156,7 @@ function find_dm_room( rooms, usernames )
 
    ( rooms || [ ] ).forEach( function( entry )
    {
-      if( ( entry.name === name ) && ( ( found === null ) || ( entry.room < found.room ) ) )
+      if( ( entry.name === name ) && dm_trusted( entry.name, entry.owner ) && ( ( found === null ) || ( entry.room < found.room ) ) )
          found = entry;
    } );
 
@@ -1175,6 +1176,63 @@ function dm_waiting_for( messages, recipients )
    } );
 
    return ( recipients || [ ] ).filter( function( name ) { return !joined[ name ]; } );
+}
+
+// NOTE: A room's name is set by its owner, so a name alone proves nothing - anyone can call a
+// room "DM admin + bob" and invite both, then read what they say (found by review, 2026-09-30).
+// So it is taken as a direct message only when "who" - its owner, or the sender of a request -
+// is one of the people it names. A group named by its hash cannot be checked by its name; its
+// members are checked when it is read, by "dm_outsiders( )". An owner not yet known is trusted
+// until the listing says who it is.
+function dm_trusted( name, who )
+{
+   var dm = parse_dm_name( name );
+
+   if( dm === null )
+      return false;
+
+   if( ( dm.people === null ) || !who )
+      return true;
+
+   return dm.people.indexOf( who ) >= 0;
+}
+
+// NOTE: Members of a conversation its name leaves out - anyone in the room can read it.
+function dm_outsiders( name, members )
+{
+   var dm = parse_dm_name( name );
+
+   if( ( dm === null ) || ( dm.people === null ) )
+      return [ ];
+
+   return ( members || [ ] ).filter( function( member ) { return dm.people.indexOf( member ) < 0; } );
+}
+
+// NOTE: "Bob", "Bob and Carol", "Bob, Carol and Dave".
+function name_list( names )
+{
+   var list = names || [ ];
+
+   if( list.length < 2 )
+      return list.join( "" );
+
+   return list.slice( 0, -1 ).join( ", " ) + " and " + list[ list.length - 1 ];
+}
+
+// NOTE: What a request says - who wants to talk, and who else would be in the conversation.
+function dm_request_text( inviter, name, me )
+{
+   var dm = parse_dm_name( name );
+
+   if( ( dm === null ) || ( dm.people === null ) )
+      return inviter + " wants to start a group conversation with you.";
+
+   var others = dm.people.filter( function( person ) { return ( person !== me ) && ( person !== inviter ); } );
+
+   if( others.length === 0 )
+      return inviter + " wants to message you.";
+
+   return inviter + " wants to start a conversation with you and " + name_list( others ) + ".";
 }
 
 // NOTE: Announcements - a prototype, 2026-09-27. Administration is hidden from everyone but
@@ -1493,6 +1551,10 @@ if( typeof module !== "undefined" )
       dm_title: dm_title,
       find_dm_room: find_dm_room,
       dm_waiting_for: dm_waiting_for,
+      dm_trusted: dm_trusted,
+      dm_outsiders: dm_outsiders,
+      name_list: name_list,
+      dm_request_text: dm_request_text,
       unread_elsewhere: unread_elsewhere,
       declined_rooms: declined_rooms,
       pending_announcements: pending_announcements,
