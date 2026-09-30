@@ -717,14 +717,13 @@ check( "a group", cp.dm_room_name( [ "carol", "admin", "bob" ] ), "Private (admi
 check( "names cleaned and not repeated", cp.dm_room_name( [ " Bob ", "bob", "admin" ] ), "Private (admin + bob)" );
 check( "a valid room name", cp.is_valid_room_name( cp.dm_room_name( [ "twelve-chars", "another-name" ] ) ), true );
 check( "three short names still fit", cp.dm_room_name( [ "amy", "bob", "cat" ] ), "Private (amy + bob + cat)" );
+// NOTE: A group whose names will not fit is not a direct message - a name made from a hash could
+// not be checked, and anyone could make one (found by review, 2026-10-01).
 var big = cp.dm_room_name( [ "twelve-chars", "another-name", "third-person", "fourth-one" ] );
-check( "too long for a room name: the size and a hash", /^Private \(group of 4 [0-9a-f]{8}\)$/.test( big ), true );
-check( "and still a valid room name", cp.is_valid_room_name( big ), true );
-check( "the hash is the same whoever starts it", big, cp.dm_room_name( [ "fourth-one", "third-person", "another-name", "twelve-chars" ] ) );
+check( "too many names to fit: no conversation name", big, "" );
 check( "read back: the people", cp.parse_dm_name( "Private (admin + verify-a)" ), { people: [ "admin", "verify-a" ], count: 2 } );
 check( "read back: the first form still", cp.parse_dm_name( "DM admin + verify-a" ), { people: [ "admin", "verify-a" ], count: 2 } );
-check( "read back: a hashed group", [ cp.parse_dm_name( big ).people, cp.parse_dm_name( big ).count ], [ null, 4 ] );
-check( "read back: the first form of a hashed group", [ cp.parse_dm_name( "DM 0a1b2c3d (4)" ).people, cp.parse_dm_name( "DM 0a1b2c3d (4)" ).count ], [ null, 4 ] );
+check( "a hashed name is not a conversation", [ cp.is_dm_name( "Private (group of 4 0a1b2c3d)" ), cp.is_dm_name( "DM 0a1b2c3d (4)" ) ], [ false, false ] );
 check( "one conversation whichever form it is named in", cp.dm_key( "DM admin + verify-a" ), cp.dm_key( "Private (verify-a + admin)" ) );
 check( "an ordinary room has no key", cp.dm_key( "Private (test-1 and test-2)" ), null );
 check( "not a direct message: an ordinary room", cp.is_dm_name( "Ledger Ops" ), false );
@@ -733,7 +732,6 @@ check( "not a direct message: a room called Private with other words", cp.is_dm_
 check( "not a direct message: not usernames", cp.is_dm_name( "DM Planning + Review" ), false );
 check( "shown as the other person", cp.dm_title( "Private (admin + verify-a)", "admin" ), "verify-a" );
 check( "shown as the others", cp.dm_title( "DM admin + bob + carol", "bob" ), "admin, carol" );
-check( "a hashed group", cp.dm_title( big, "admin" ), "Group of 4" );
 check( "an ordinary room keeps its name", cp.dm_title( "Ledger Ops", "admin" ), "Ledger Ops" );
 var dm_rooms = [
  { room: "0000009", name: "DM admin + bob", owner: "bob" },
@@ -744,8 +742,10 @@ var dm_rooms = [
 check( "finds the conversation - the lowest numbered of two", cp.find_dm_room( dm_rooms, [ "bob", "admin" ] ).room, "0000004" );
 check( "not one owned by someone it does not name", cp.find_dm_room( dm_rooms, [ "bob", "admin" ] ).room !== "0000003", true );
 check( "none yet", cp.find_dm_room( dm_rooms, [ "admin", "dave" ] ), null );
-check( "found by its people, in the new form too", cp.find_dm_room( dm_rooms.concat( [ { room: "0000007", name: "Private (admin + dave)", owner: "dave" } ] ),
- [ "dave", "admin" ] ).room, "0000007" );
+check( "found by its people, in the new form too",
+ cp.find_dm_room( dm_rooms.concat( [ { room: "0000007", name: "Private (admin + dave)", owner: "dave" } ] ), [ "dave", "admin" ] ).room, "0000007" );
+check( "too big a group finds nothing - not an ordinary room either",
+ cp.find_dm_room( dm_rooms, [ "twelve-chars", "another-name", "third-person", "admin" ] ), null );
 
 // NOTE: The New message list marks what already exists - it does not hide anyone, since the same
 // list picks the people for a group conversation (Ian, 2026-09-30: people already in one showed).
@@ -769,7 +769,6 @@ check( "trusted when the owner is named", cp.dm_trusted( "DM admin + bob", "bob"
 check( "not when someone else owns it", cp.dm_trusted( "DM admin + bob", "carol" ), false );
 check( "an owner not known yet is trusted until it is", cp.dm_trusted( "DM admin + bob", "" ), true );
 check( "an ordinary room is never a direct message", cp.dm_trusted( "Ledger Ops", "admin" ), false );
-check( "a hashed group cannot be checked by its name", cp.dm_trusted( big, "anyone" ), true );
 check( "a member the name leaves out", cp.dm_outsiders( "DM admin + bob", [ "admin", "bob", "carol" ] ), [ "carol" ] );
 check( "nobody left out", cp.dm_outsiders( "DM admin + bob", [ "admin", "bob" ] ), [ ] );
 check( "names listed", [ cp.name_list( [ "bob" ] ), cp.name_list( [ "bob", "carol" ] ), cp.name_list( [ "bob", "carol", "dave" ] ) ],
@@ -777,7 +776,6 @@ check( "names listed", [ cp.name_list( [ "bob" ] ), cp.name_list( [ "bob", "caro
 check( "a request from one person", cp.dm_request_text( "admin", "DM admin + bob", "bob" ), "admin wants to message you." );
 check( "a request for a group", cp.dm_request_text( "admin", "DM admin + bob + carol", "bob" ),
  "admin wants to start a conversation with you and carol." );
-check( "a request for a hashed group", cp.dm_request_text( "admin", big, "bob" ), "admin wants to start a group conversation with you." );
 
 heading( "sign in errors" );
 

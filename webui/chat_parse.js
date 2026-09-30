@@ -1052,7 +1052,13 @@ function visible_rooms( rooms, is_admin )
 // them - "Private (" and the sorted usernames joined by " + " - so both sides arrive at the same
 // name and the chat can find an existing conversation, and show it by the other people's names,
 // without reading it. Usernames are 3 to 12 of "a-z", "0-9" and "-", all allowed in a room name.
-// A group whose names will not fit the 50 character limit is named by its size and a short hash.
+//
+// A group whose names will not fit the 50 character limit cannot be a direct message. It was
+// named by a hash of its people, until review found (2026-10-01) that such a name cannot be
+// checked - no people in it to find the owner among - and the hash can be worked out by anyone,
+// so anyone could make a room that passes for another group's conversation. Two people of any
+// length fit, three with short names; a bigger group is an ordinary room until the server knows
+// what a direct message is.
 //
 // "Private (...)" since 2026-10-01, at Ian's suggestion - it reads better where a room name is
 // shown as it is, in the terminal client. The first names, "DM ...", are still read, and a
@@ -1062,21 +1068,6 @@ const c_dm_suffix = ")";
 const c_dm_prefix_old = "DM ";
 const c_dm_separator = " + ";
 const c_max_room_name = 50;
-
-// NOTE: FNV-1a - enough to tell groups apart in one person's rooms; it hides nothing, nor needs
-// to, since only the members and the server ever see a room's name.
-function dm_hash( text )
-{
-   var hash = 0x811c9dc5;
-
-   for( var i = 0; i < text.length; i++ )
-   {
-      hash ^= text.charCodeAt( i );
-      hash = Math.imul( hash, 0x01000193 ) >>> 0;
-   }
-
-   return ( "0000000" + hash.toString( 16 ) ).slice( -8 );
-}
 
 function dm_people( usernames )
 {
@@ -1093,21 +1084,18 @@ function dm_people( usernames )
    return people.sort( );
 }
 
-// NOTE: The room name for a conversation between "usernames" - which include the user.
+// NOTE: The room name for a conversation between "usernames" - which include the user. Empty
+// when their names will not fit a room name - too big a group to be a direct message.
 function dm_room_name( usernames )
 {
    var people = dm_people( usernames );
 
    var name = c_dm_prefix + people.join( c_dm_separator ) + c_dm_suffix;
 
-   if( name.length <= c_max_room_name )
-      return name;
-
-   return c_dm_prefix + "group of " + people.length + " " + dm_hash( people.join( "," ) ) + c_dm_suffix;
+   return ( name.length <= c_max_room_name ) ? name : "";
 }
 
-// NOTE: Whether a room name is a direct message's, and who is in it: "people" is null for a
-// group named by its hash, whose members are known only by reading it. Reads both forms -
+// NOTE: Whether a room name is a direct message's, and who is in it. Reads both forms -
 // "Private (...)" and the first, "DM ...".
 function parse_dm_name( name )
 {
@@ -1123,15 +1111,6 @@ function parse_dm_name( name )
    if( rest === null )
       return null;
 
-   var group = rest.match( /^group of (\d+) ([0-9a-f]{8})$/ );
-
-   if( group )
-      return { people: null, count: Number( group[ 1 ] ), hash: group[ 2 ] };
-
-   var old_group = rest.match( /^([0-9a-f]{8}) \((\d+)\)$/ );
-
-   if( old_group )
-      return { people: null, count: Number( old_group[ 2 ] ), hash: old_group[ 1 ] };
 
    var people = rest.split( c_dm_separator );
 
@@ -1148,17 +1127,14 @@ function is_dm_name( name )
    return parse_dm_name( name ) !== null;
 }
 
-// NOTE: What identifies a conversation whatever form its name takes - its people, or for a group
-// named by its hash, that hash and its size. Null for a room that is not a direct message.
+// NOTE: What identifies a conversation whatever form its name takes - its people. Null for a room
+// that is not a direct message.
 function dm_key( name )
 {
    var dm = parse_dm_name( name );
 
    if( dm === null )
       return null;
-
-   if( dm.people === null )
-      return "group:" + dm.hash + ":" + dm.count;
 
    return "people:" + dm.people.slice( ).sort( ).join( "," );
 }
@@ -1171,9 +1147,6 @@ function dm_title( name, me )
    if( dm === null )
       return String( name || "" );
 
-   if( dm.people === null )
-      return "Group of " + dm.count;
-
    var others = dm.people.filter( function( person ) { return person !== me; } );
 
    return ( others.length > 0 ) ? others.join( ", " ) : "Only you";
@@ -1185,6 +1158,9 @@ function dm_title( name, me )
 function find_dm_room( rooms, usernames )
 {
    var key = dm_key( dm_room_name( usernames ) );
+
+   if( key === null )
+      return null;
 
    var found = null;
 
@@ -1213,6 +1189,9 @@ function dm_existing( people, me, rooms, invitations, waiting )
       return { kind: ( ( waiting || [ ] ).indexOf( room.room ) >= 0 ) ? "waiting" : "open", room: room.room };
 
    var key = dm_key( dm_room_name( everyone ) );
+
+   if( key === null )
+      return { kind: "", room: "" };
 
    var request = ( invitations || [ ] ).filter( function( invite )
    {
@@ -1243,9 +1222,8 @@ function dm_waiting_for( messages, recipients )
 // NOTE: A room's name is set by its owner, so a name alone proves nothing - anyone can call a
 // room "DM admin + bob" and invite both, then read what they say (found by review, 2026-09-30).
 // So it is taken as a direct message only when "who" - its owner, or the sender of a request -
-// is one of the people it names. A group named by its hash cannot be checked by its name; its
-// members are checked when it is read, by "dm_outsiders( )". An owner not yet known is trusted
-// until the listing says who it is.
+// is one of the people it names. An owner not yet known is trusted until the listing says who
+// it is - joining from a request, whose sender was checked.
 function dm_trusted( name, who )
 {
    var dm = parse_dm_name( name );
@@ -1253,7 +1231,7 @@ function dm_trusted( name, who )
    if( dm === null )
       return false;
 
-   if( ( dm.people === null ) || !who )
+   if( !who )
       return true;
 
    return dm.people.indexOf( who ) >= 0;
@@ -1264,7 +1242,7 @@ function dm_outsiders( name, members )
 {
    var dm = parse_dm_name( name );
 
-   if( ( dm === null ) || ( dm.people === null ) )
+   if( dm === null )
       return [ ];
 
    return ( members || [ ] ).filter( function( member ) { return dm.people.indexOf( member ) < 0; } );
@@ -1286,8 +1264,8 @@ function dm_request_text( inviter, name, me )
 {
    var dm = parse_dm_name( name );
 
-   if( ( dm === null ) || ( dm.people === null ) )
-      return inviter + " wants to start a group conversation with you.";
+   if( dm === null )
+      return inviter + " wants to start a conversation with you.";
 
    var others = dm.people.filter( function( person ) { return ( person !== me ) && ( person !== inviter ); } );
 

@@ -376,13 +376,10 @@ ok   a group
 ok   names cleaned and not repeated
 ok   a valid room name
 ok   three short names still fit
-ok   too long for a room name: the size and a hash
-ok   and still a valid room name
-ok   the hash is the same whoever starts it
+ok   too many names to fit: no conversation name
 ok   read back: the people
 ok   read back: the first form still
-ok   read back: a hashed group
-ok   read back: the first form of a hashed group
+ok   a hashed name is not a conversation
 ok   one conversation whichever form it is named in
 ok   an ordinary room has no key
 ok   not a direct message: an ordinary room
@@ -391,12 +388,12 @@ ok   not a direct message: a room called Private with other words
 ok   not a direct message: not usernames
 ok   shown as the other person
 ok   shown as the others
-ok   a hashed group
 ok   an ordinary room keeps its name
 ok   finds the conversation - the lowest numbered of two
 ok   not one owned by someone it does not name
 ok   none yet
 ok   found by its people, in the new form too
+ok   too big a group finds nothing - not an ordinary room either
 ok   a conversation open
 ok   one started here, not joined yet
 ok   their request
@@ -409,13 +406,11 @@ ok   trusted when the owner is named
 ok   not when someone else owns it
 ok   an owner not known yet is trusted until it is
 ok   an ordinary room is never a direct message
-ok   a hashed group cannot be checked by its name
 ok   a member the name leaves out
 ok   nobody left out
 ok   names listed
 ok   a request from one person
 ok   a request for a group
-ok   a request for a hashed group
 
 == sign in errors ==============================================
 ok   a missing connect status, in plain words
