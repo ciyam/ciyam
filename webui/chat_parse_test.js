@@ -711,21 +711,27 @@ check( "nothing", cp.user_initial( "" ), "?" );
 
 heading( "direct messages" );
 
-check( "named from the sorted people", cp.dm_room_name( [ "verify-a", "admin" ] ), "DM admin + verify-a" );
+check( "named from the sorted people", cp.dm_room_name( [ "verify-a", "admin" ] ), "Private (admin + verify-a)" );
 check( "the same whoever starts it", cp.dm_room_name( [ "admin", "verify-a" ] ), cp.dm_room_name( [ "verify-a", "admin" ] ) );
-check( "a group", cp.dm_room_name( [ "carol", "admin", "bob" ] ), "DM admin + bob + carol" );
-check( "names cleaned and not repeated", cp.dm_room_name( [ " Bob ", "bob", "admin" ] ), "DM admin + bob" );
-check( "a valid room name", cp.is_valid_room_name( cp.dm_room_name( [ "twelve-chars", "another-name", "third-person" ] ) ), true );
+check( "a group", cp.dm_room_name( [ "carol", "admin", "bob" ] ), "Private (admin + bob + carol)" );
+check( "names cleaned and not repeated", cp.dm_room_name( [ " Bob ", "bob", "admin" ] ), "Private (admin + bob)" );
+check( "a valid room name", cp.is_valid_room_name( cp.dm_room_name( [ "twelve-chars", "another-name" ] ) ), true );
+check( "three short names still fit", cp.dm_room_name( [ "amy", "bob", "cat" ] ), "Private (amy + bob + cat)" );
 var big = cp.dm_room_name( [ "twelve-chars", "another-name", "third-person", "fourth-one" ] );
-check( "too long for a room name: a hash and the size", /^DM [0-9a-f]{8} \(4\)$/.test( big ), true );
+check( "too long for a room name: the size and a hash", /^Private \(group of 4 [0-9a-f]{8}\)$/.test( big ), true );
 check( "and still a valid room name", cp.is_valid_room_name( big ), true );
 check( "the hash is the same whoever starts it", big, cp.dm_room_name( [ "fourth-one", "third-person", "another-name", "twelve-chars" ] ) );
-check( "read back: the people", cp.parse_dm_name( "DM admin + verify-a" ), { people: [ "admin", "verify-a" ], count: 2 } );
-check( "read back: a hashed group", cp.parse_dm_name( big ), { people: null, count: 4 } );
+check( "read back: the people", cp.parse_dm_name( "Private (admin + verify-a)" ), { people: [ "admin", "verify-a" ], count: 2 } );
+check( "read back: the first form still", cp.parse_dm_name( "DM admin + verify-a" ), { people: [ "admin", "verify-a" ], count: 2 } );
+check( "read back: a hashed group", [ cp.parse_dm_name( big ).people, cp.parse_dm_name( big ).count ], [ null, 4 ] );
+check( "read back: the first form of a hashed group", [ cp.parse_dm_name( "DM 0a1b2c3d (4)" ).people, cp.parse_dm_name( "DM 0a1b2c3d (4)" ).count ], [ null, 4 ] );
+check( "one conversation whichever form it is named in", cp.dm_key( "DM admin + verify-a" ), cp.dm_key( "Private (verify-a + admin)" ) );
+check( "an ordinary room has no key", cp.dm_key( "Private (test-1 and test-2)" ), null );
 check( "not a direct message: an ordinary room", cp.is_dm_name( "Ledger Ops" ), false );
 check( "not a direct message: one person", cp.is_dm_name( "DM admin" ), false );
+check( "not a direct message: a room called Private with other words", cp.is_dm_name( "Private (Planning)" ), false );
 check( "not a direct message: not usernames", cp.is_dm_name( "DM Planning + Review" ), false );
-check( "shown as the other person", cp.dm_title( "DM admin + verify-a", "admin" ), "verify-a" );
+check( "shown as the other person", cp.dm_title( "Private (admin + verify-a)", "admin" ), "verify-a" );
 check( "shown as the others", cp.dm_title( "DM admin + bob + carol", "bob" ), "admin, carol" );
 check( "a hashed group", cp.dm_title( big, "admin" ), "Group of 4" );
 check( "an ordinary room keeps its name", cp.dm_title( "Ledger Ops", "admin" ), "Ledger Ops" );
@@ -738,6 +744,19 @@ var dm_rooms = [
 check( "finds the conversation - the lowest numbered of two", cp.find_dm_room( dm_rooms, [ "bob", "admin" ] ).room, "0000004" );
 check( "not one owned by someone it does not name", cp.find_dm_room( dm_rooms, [ "bob", "admin" ] ).room !== "0000003", true );
 check( "none yet", cp.find_dm_room( dm_rooms, [ "admin", "dave" ] ), null );
+check( "found by its people, in the new form too", cp.find_dm_room( dm_rooms.concat( [ { room: "0000007", name: "Private (admin + dave)", owner: "dave" } ] ),
+ [ "dave", "admin" ] ).room, "0000007" );
+
+// NOTE: The New message list marks what already exists - it does not hide anyone, since the same
+// list picks the people for a group conversation (Ian, 2026-09-30: people already in one showed).
+var dm_invites = [ { room: "0000011", name: "Private (admin + erin)", inviter: "erin" },
+ { room: "0000012", name: "Private (admin + fay)", inviter: "carol" } ];
+check( "a conversation open", cp.dm_existing( [ "bob" ], "admin", dm_rooms, dm_invites, [ ] ), { kind: "open", room: "0000004" } );
+check( "one started here, not joined yet", cp.dm_existing( [ "bob" ], "admin", dm_rooms, dm_invites, [ "0000004" ] ), { kind: "waiting", room: "0000004" } );
+check( "their request", cp.dm_existing( [ "erin" ], "admin", dm_rooms, dm_invites, [ ] ), { kind: "request", room: "0000011" } );
+check( "not a request from someone it does not name", cp.dm_existing( [ "fay" ], "admin", dm_rooms, dm_invites, [ ] ), { kind: "", room: "" } );
+check( "nothing yet", cp.dm_existing( [ "dave" ], "admin", dm_rooms, dm_invites, [ ] ), { kind: "", room: "" } );
+check( "a group is its own conversation", cp.dm_existing( [ "bob", "carol" ], "admin", dm_rooms, dm_invites, [ ] ), { kind: "", room: "" } );
 var dm_lines = [ "1790000000000 admin :create 0000004-abc DM admin + bob + carol", "1790000000001 bob :joined" ]
  .map( cp.parse_message_line );
 check( "waiting for whoever has not joined", cp.dm_waiting_for( dm_lines, [ "bob", "carol" ] ), [ "carol" ] );

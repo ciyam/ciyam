@@ -375,13 +375,19 @@ ok   the same whoever starts it
 ok   a group
 ok   names cleaned and not repeated
 ok   a valid room name
-ok   too long for a room name: a hash and the size
+ok   three short names still fit
+ok   too long for a room name: the size and a hash
 ok   and still a valid room name
 ok   the hash is the same whoever starts it
 ok   read back: the people
+ok   read back: the first form still
 ok   read back: a hashed group
+ok   read back: the first form of a hashed group
+ok   one conversation whichever form it is named in
+ok   an ordinary room has no key
 ok   not a direct message: an ordinary room
 ok   not a direct message: one person
+ok   not a direct message: a room called Private with other words
 ok   not a direct message: not usernames
 ok   shown as the other person
 ok   shown as the others
@@ -390,6 +396,13 @@ ok   an ordinary room keeps its name
 ok   finds the conversation - the lowest numbered of two
 ok   not one owned by someone it does not name
 ok   none yet
+ok   found by its people, in the new form too
+ok   a conversation open
+ok   one started here, not joined yet
+ok   their request
+ok   not a request from someone it does not name
+ok   nothing yet
+ok   a group is its own conversation
 ok   waiting for whoever has not joined
 ok   nobody left to wait for
 ok   trusted when the owner is named

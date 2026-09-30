@@ -1049,11 +1049,17 @@ function visible_rooms( rooms, is_admin )
 
 // NOTE: Direct messages - a prototype, 2026-09-29. A direct message is a room whose members are
 // exactly the people in the conversation, one room for each set of people. It is named from
-// them - "DM " and the sorted usernames joined by " + " - so both sides arrive at the same name
-// and the chat can find an existing conversation, and show it by the other people's names,
+// them - "Private (" and the sorted usernames joined by " + " - so both sides arrive at the same
+// name and the chat can find an existing conversation, and show it by the other people's names,
 // without reading it. Usernames are 3 to 12 of "a-z", "0-9" and "-", all allowed in a room name.
-// A group whose names will not fit the 50 character limit is named by a short hash and its size.
-const c_dm_prefix = "DM ";
+// A group whose names will not fit the 50 character limit is named by its size and a short hash.
+//
+// "Private (...)" since 2026-10-01, at Ian's suggestion - it reads better where a room name is
+// shown as it is, in the terminal client. The first names, "DM ...", are still read, and a
+// conversation is matched by its people, not its exact name, so either form is found.
+const c_dm_prefix = "Private (";
+const c_dm_suffix = ")";
+const c_dm_prefix_old = "DM ";
 const c_dm_separator = " + ";
 const c_max_room_name = 50;
 
@@ -1092,29 +1098,40 @@ function dm_room_name( usernames )
 {
    var people = dm_people( usernames );
 
-   var name = c_dm_prefix + people.join( c_dm_separator );
+   var name = c_dm_prefix + people.join( c_dm_separator ) + c_dm_suffix;
 
    if( name.length <= c_max_room_name )
       return name;
 
-   return c_dm_prefix + dm_hash( people.join( "," ) ) + " (" + people.length + ")";
+   return c_dm_prefix + "group of " + people.length + " " + dm_hash( people.join( "," ) ) + c_dm_suffix;
 }
 
 // NOTE: Whether a room name is a direct message's, and who is in it: "people" is null for a
-// group named by its hash, whose members are known only by reading it.
+// group named by its hash, whose members are known only by reading it. Reads both forms -
+// "Private (...)" and the first, "DM ...".
 function parse_dm_name( name )
 {
    var text = String( name || "" );
 
-   if( text.indexOf( c_dm_prefix ) !== 0 )
+   var rest = null;
+
+   if( ( text.indexOf( c_dm_prefix ) === 0 ) && ( text.slice( -1 ) === c_dm_suffix ) )
+      rest = text.substring( c_dm_prefix.length, text.length - c_dm_suffix.length );
+   else if( text.indexOf( c_dm_prefix_old ) === 0 )
+      rest = text.substring( c_dm_prefix_old.length );
+
+   if( rest === null )
       return null;
 
-   var rest = text.substring( c_dm_prefix.length );
+   var group = rest.match( /^group of (\d+) ([0-9a-f]{8})$/ );
 
-   var hashed = rest.match( /^([0-9a-f]{8}) \((\d+)\)$/ );
+   if( group )
+      return { people: null, count: Number( group[ 1 ] ), hash: group[ 2 ] };
 
-   if( hashed )
-      return { people: null, count: Number( hashed[ 2 ] ) };
+   var old_group = rest.match( /^([0-9a-f]{8}) \((\d+)\)$/ );
+
+   if( old_group )
+      return { people: null, count: Number( old_group[ 2 ] ), hash: old_group[ 1 ] };
 
    var people = rest.split( c_dm_separator );
 
@@ -1129,6 +1146,21 @@ function parse_dm_name( name )
 function is_dm_name( name )
 {
    return parse_dm_name( name ) !== null;
+}
+
+// NOTE: What identifies a conversation whatever form its name takes - its people, or for a group
+// named by its hash, that hash and its size. Null for a room that is not a direct message.
+function dm_key( name )
+{
+   var dm = parse_dm_name( name );
+
+   if( dm === null )
+      return null;
+
+   if( dm.people === null )
+      return "group:" + dm.hash + ":" + dm.count;
+
+   return "people:" + dm.people.slice( ).sort( ).join( "," );
 }
 
 // NOTE: How a conversation is shown - the other people, never the room name.
@@ -1152,17 +1184,45 @@ function dm_title( name, me )
 // there is at most one; the lowest number is taken should that ever change.
 function find_dm_room( rooms, usernames )
 {
-   var name = dm_room_name( usernames );
+   var key = dm_key( dm_room_name( usernames ) );
 
    var found = null;
 
    ( rooms || [ ] ).forEach( function( entry )
    {
-      if( ( entry.name === name ) && dm_trusted( entry.name, entry.owner ) && ( ( found === null ) || ( entry.room < found.room ) ) )
+      if( ( dm_key( entry.name ) === key ) && dm_trusted( entry.name, entry.owner ) && ( ( found === null ) || ( entry.room < found.room ) ) )
          found = entry;
    } );
 
    return found;
+}
+
+// NOTE: What already exists for a conversation with "people" - for the New message list and
+// its button. "open" - a conversation; "waiting" - one started here that they have not joined
+// ("waiting" names such rooms); "request" - their request to the user; "" - nothing yet.
+function dm_existing( people, me, rooms, invitations, waiting )
+{
+   var everyone = dm_people( ( people || [ ] ).concat( [ me ] ) );
+
+   if( everyone.length < 2 )
+      return { kind: "", room: "" };
+
+   var room = find_dm_room( rooms, everyone );
+
+   if( room !== null )
+      return { kind: ( ( waiting || [ ] ).indexOf( room.room ) >= 0 ) ? "waiting" : "open", room: room.room };
+
+   var key = dm_key( dm_room_name( everyone ) );
+
+   var request = ( invitations || [ ] ).filter( function( invite )
+   {
+      return ( dm_key( invite.name ) === key ) && dm_trusted( invite.name, invite.inviter );
+   } )[ 0 ];
+
+   if( request )
+      return { kind: "request", room: request.room };
+
+   return { kind: "", room: "" };
 }
 
 // NOTE: Who has not joined yet. A member sees nothing posted before they joined, so the first
@@ -1554,6 +1614,8 @@ if( typeof module !== "undefined" )
       find_dm_room: find_dm_room,
       dm_waiting_for: dm_waiting_for,
       dm_trusted: dm_trusted,
+      dm_key: dm_key,
+      dm_existing: dm_existing,
       dm_outsiders: dm_outsiders,
       name_list: name_list,
       dm_request_text: dm_request_text,
