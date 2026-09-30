@@ -1169,7 +1169,9 @@ function update_drawer_toggles( )
    var details = document.getElementById( "details_toggle" );
 
    details.setAttribute( "aria-expanded", ( drawer === "details" ) ? "true" : "false" );
-   details.setAttribute( "aria-label", ( drawer === "details" ) ? "Hide room details" : "Show room details" );
+   var what = room_is_dm( ) ? "chat details" : "room details";
+
+   details.setAttribute( "aria-label", ( ( drawer === "details" ) ? "Hide " : "Show " ) + what );
 }
 
 // ====================================================================
@@ -2306,7 +2308,58 @@ function do_open_new_message( )
 
    load_invitees( );
 
+   mark_new_message( );
+
+   document.getElementById( "room_dialog_invitees" ).onchange = function( )
+   {
+      if( g_dialog_mode === "dm" )
+         mark_new_message( );
+   };
+
    document.getElementById( "room_dialog_submit" ).focus( );
+}
+
+// NOTE: Beside each person, what already exists between you - nobody is hidden, since the same
+// list picks the people for a group (Ian, 2026-09-30: people already in a conversation showed
+// as if they were not). And the button says what it will do: open what exists, or start one.
+const c_dm_existing_notes = { open: "conversation open", waiting: "waiting for them to accept", request: "wants to message you" };
+
+function mark_new_message( )
+{
+   var waiting = Object.keys( g_dm_pending );
+
+   var boxes = document.querySelectorAll( "#room_dialog_invitees .chat-invitee-check" );
+
+   var ticked = [ ];
+
+   for( var i = 0; i < boxes.length; i++ )
+   {
+      var box = boxes[ i ];
+
+      var label = box.closest( ".chat-recipient" );
+
+      var note = label.querySelector( ".chat-invitee-note" );
+
+      if( note === null )
+      {
+         note = document.createElement( "span" );
+         note.className = "chat-invitee-note";
+
+         label.appendChild( note );
+      }
+
+      var existing = dm_existing( [ box.value ], ciyam.username, g_rooms, g_invitations, waiting );
+
+      note.textContent = c_dm_existing_notes[ existing.kind ] || "";
+      note.hidden = ( note.textContent === "" );
+
+      if( box.checked )
+         ticked.push( box.value );
+   }
+
+   var chosen = ( ticked.length > 0 ) ? dm_existing( ticked, ciyam.username, g_rooms, g_invitations, waiting ) : { kind: "" };
+
+   document.getElementById( "room_dialog_submit" ).textContent = ( chosen.kind !== "" ) ? "Open conversation" : "Message";
 }
 
 function submit_new_message( )
@@ -2337,9 +2390,17 @@ async function open_dm( people )
 
    var everyone = others.concat( [ ciyam.username ] );
 
-   var existing = find_dm_room( g_rooms, everyone );
+   // NOTE: A conversation - open, or waiting for them - or their request to the user.
+   var existing = dm_existing( others, ciyam.username, g_rooms, g_invitations, Object.keys( g_dm_pending ) );
 
-   if( existing !== null )
+   if( existing.kind === "request" )
+   {
+      select_invitation( existing.room );
+
+      return;
+   }
+
+   if( existing.kind !== "" )
    {
       select_room( existing.room, "" );
 
@@ -2347,15 +2408,6 @@ async function open_dm( people )
    }
 
    var name = dm_room_name( everyone );
-
-   var request = g_invitations.filter( function( invite ) { return invite.name === name; } )[ 0 ];
-
-   if( request )
-   {
-      select_invitation( request.room );
-
-      return;
-   }
 
    ciyam.error = "";
 
@@ -3732,6 +3784,14 @@ function update_thread_meta( )
 
    // NOTE: A direct message has no owner's controls - adding someone is a new conversation.
    var is_dm = invite ? dm_trusted( invite.name, invite.inviter ) : room_is_dm( );
+
+   // NOTE: A room or a chat - the panel says which it describes.
+   var details = is_dm ? "Chat Details" : "Room Details";
+
+   set_text( document.getElementById( "room_panel_head" ), details );
+
+   document.getElementById( "room_panel" ).setAttribute( "aria-label", details );
+   document.getElementById( "details_toggle" ).title = details;
 
    var fact_name = invite ? invite.name : g_room_name;
 

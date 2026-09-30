@@ -2634,3 +2634,11 @@ button.chat-avatar:hover
    white-space: pre-wrap;
    overflow-wrap: anywhere;
 }
+
+/* NOTE: In the New message list, what already exists with each person. */
+.chat-invitee-note
+{
+   margin-left: 6px;
+   font-size: var(--font-size-chat-tiny);
+   color: var(--color-chat-text-secondary);
+}

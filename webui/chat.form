@@ -302,7 +302,7 @@ http://www.opensource.org/licenses/mit-license.php.
          <button type="button" class="chat-head-btn chat-drawer-close" onclick="close_drawers( true )"
           aria-label="Close room details" title="Close">&times;</button>
          <section class="chat-room-panel" id="room_panel" aria-label="Room details" hidden>
-            <div class="chat-presence-head">Room Details</div>
+            <div class="chat-presence-head" id="room_panel_head">Room Details</div>
             <div class="chat-room-panel-name" id="room_fact_name"></div>
             <dl class="chat-room-facts">
                <div class="chat-room-fact"><dt>Number</dt><dd class="chat-mono" id="room_fact_number"></dd></div>
