@@ -117,6 +117,8 @@ const int c_max_pdf_or_single_limit = 100000;
 const size_t c_response_length_small = 256;
 const size_t c_response_reserve_size = 1024;
 
+const size_t c_response_length_large = 10000;
+
 const size_t c_var_max_check_retries = 100;
 
 const size_t c_max_key_append_chars = 7;
@@ -8953,7 +8955,28 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   if( file_exists( file_name ) )
                   {
-                     response = buffer_file( file_name );
+                     bool single_string_response = false;
+
+                     if( has_session_variable( e_special_var_single_string_response ) )
+                        single_string_response = true;
+
+                     // NOTE: In order to work with "ciyam_client" (which limits
+                     // the OUTPUT variable size) larger responses are sent line
+                     // by line (unless forced using "@single_string_reponse").
+                     if( single_string_response
+                      || ( file_size( file_name ) <= c_response_length_large ) )
+                        response = buffer_file( file_name );
+                     else
+                     {
+                        response.erase( );
+
+                        string output;
+
+                        ifstream inpf( file_name );
+
+                        while( getline( inpf, output ) )
+                           socket.write_line( output, c_request_timeout, p_sock_progress );
+                     }
 
                      file_remove( file_name );
                   }
