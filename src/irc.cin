@@ -469,6 +469,7 @@ START_POINT_INFO=@strlit:@@$START_POINTS
 ;
 .run_script !irc_fetch_messages "@room=$FETCH_PREFIX$ROOM$START_POINT_INFO"
 @ifdef $ERROR
+#$ERROR
 ERROR=
 @endif
 ;
