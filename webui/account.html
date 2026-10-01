@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2026 CIYAM Developers
+
+Distributed under the MIT/X11 software license, please refer to the file
+license.txt in the root project directory or
+http://www.opensource.org/licenses/mit-license.php.
+-->
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+   <meta http-equiv="Expires" content="0"/>
+   <meta http-equiv="Pragma" content="no-cache"/>
+   <meta http-equiv="Cache-Control" content="no-cache"/>
+   <meta http-equiv="Cache-Control" content="no-store"/>
+
+   <title>CIYAM Accounts</title>
+
+   <!--
+   NOTE: Fonts are self-hosted, as for the chat. There are no external
+   requests from this page - the QR code is drawn here, by "qrcode.min.js".
+   -->
+   <link rel="stylesheet" href="fonts.css">
+
+   <link rel="stylesheet" href="tokens.css">
+   <link rel="stylesheet" href="chat_tokens.css">
+   <link rel="stylesheet" href="chat.css">
+   <link rel="stylesheet" href="account.css">
+
+   <script type="text/javascript" src="ciyam.js"></script>
+   <script type="text/javascript" src="sha2.min.js"></script>
+   <script type="text/javascript" src="chat_parse.js"></script>
+   <script type="text/javascript" src="account_parse.js"></script>
+   <script type="text/javascript" src="qrcode.min.js"></script>
+</head>
+
+<body onload="load( )">
+   <div id="account_content"></div>
+
+   <script>
+   const c_load_delay = 50;
+
+   const c_max_load_attempts = 100;
+
+   var g_load_attempts = 0;
+
+   var ciyam = new CIYAM( window.location.protocol + "//" + window.location.host, false, true );
+
+   function load_form( name )
+   {
+      return fetch( name + ".form" )
+       .then( function( response ) { return response.text( ); } )
+       .then( function( data )
+       {
+          document.getElementById( "account_content" ).innerHTML = data;
+       } );
+   }
+
+   // NOTE: Resolves once the script has run, so the next can rely on it.
+   function load_script( file )
+   {
+      return new Promise( function( resolve )
+      {
+         var script = document.createElement( "script" );
+
+         script.src = file;
+
+         script.onload = resolve;
+         script.onerror = resolve;
+
+         document.body.appendChild( script );
+      } );
+   }
+
+   function call_at_load( )
+   {
+      if( typeof window[ "account_main" ] === "function" )
+         account_main( );
+      else if( ++g_load_attempts <= c_max_load_attempts )
+         window.setTimeout( call_at_load, c_load_delay );
+      else
+         document.getElementById( "account_content" ).textContent = "(failed to load account.js)";
+   }
+
+   // NOTE: The markup is in place before the script is appended, so "account_main( )" never
+   // runs against an empty page.
+   function load( )
+   {
+      load_form( "account" )
+       .then( function( ) { return load_script( "account.js" ); } )
+       .then( function( ) { window.setTimeout( call_at_load, c_load_delay ); } )
+       .catch( function( )
+       {
+          document.getElementById( "account_content" ).textContent = "(failed to load account.form - reload to try again)";
+       } );
+   }
+   </script>
+</body>
+
+</html>

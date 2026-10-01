@@ -1,0 +1,896 @@
+/* Copyright (c) 2026 CIYAM Developers
+ *
+ * Distributed under the MIT/X11 software license, please refer to the file license.txt
+ * in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+ */
+
+/* ====================================================================
+   The accounts page.
+
+   Loaded after "chat.css", whose sign in card, fields, buttons and
+   strength bar it reuses as they are. Everything here is new and
+   prefixed "account-", built from the same tokens, so nothing in the
+   chat changes.
+   ==================================================================== */
+
+/* ====================================================================
+   Pieces shared by every view
+   ==================================================================== */
+
+.account-hint
+{
+   margin-top: 6px;
+   font-size: var(--font-size-chat-small);
+   line-height: 1.45;
+   color: var(--color-chat-text-secondary);
+}
+
+.account-hint:empty
+{
+   display: none;
+}
+
+/* NOTE: The sign in card's rhythm puts space above a label that follows a field; a hint
+   between them would otherwise take that space away. */
+.account-hint + .chat-label,
+.chat-strength + .chat-label
+{
+   margin-top: 22px;
+}
+
+/* NOTE: A label is inline, so inside a plain "div" the sign in card's spacing - margins on the
+   label - would be lost; a stack keeps it, as the card itself does. */
+.account-stack
+{
+   display: flex;
+   flex-direction: column;
+}
+
+.account-stack + .account-stack
+{
+   margin-top: 22px;
+}
+
+.account-form .chat-label
+{
+   display: block;
+}
+
+.account-aside
+{
+   margin: 22px 0 0;
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-secondary);
+   text-align: center;
+}
+
+.account-aside a,
+.account-banner a,
+.account-back
+{
+   color: var(--color-chat-accent-deep);
+   font-weight: 600;
+}
+
+.account-note
+{
+   margin: 0;
+   font-size: var(--font-size-chat-meta);
+   line-height: 1.5;
+   color: var(--color-chat-text-secondary);
+}
+
+.account-optional
+{
+   font-weight: 400;
+   letter-spacing: 0;
+   text-transform: none;
+}
+
+.account-sr
+{
+   position: absolute;
+   width: 1px;
+   height: 1px;
+   overflow: hidden;
+   clip: rect( 0 0 0 0 );
+   white-space: nowrap;
+}
+
+.account-check
+{
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   font-size: var(--font-size-chat-body);
+   cursor: pointer;
+}
+
+.account-check input
+{
+   width: 18px;
+   height: 18px;
+   margin: 0;
+   accent-color: var(--color-chat-accent-deep);
+}
+
+.account-warning
+{
+   display: flex;
+   flex-wrap: wrap;
+   gap: 4px 8px;
+   padding: 12px 14px;
+   border: 1px solid var(--color-chat-warning-border);
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-warning-bg);
+   font-size: var(--font-size-chat-meta);
+   line-height: 1.5;
+   color: var(--color-chat-warning-text);
+}
+
+.account-link-btn
+{
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   text-decoration: none;
+}
+
+.account-btn-tall
+{
+   height: 44px;
+   padding: 0 18px;
+   font-size: var(--font-size-chat-body);
+}
+
+.account-btn-danger
+{
+   height: 30px;
+   padding: 0 12px;
+   border: 0;
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-critical-text);
+   color: #ffffff;
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 600;
+   cursor: pointer;
+   white-space: nowrap;
+}
+
+.account-btn-danger:hover
+{
+   background: var(--color-chat-critical);
+}
+
+.account-pill
+{
+   display: inline-flex;
+   align-items: center;
+   height: 24px;
+   padding: 0 10px;
+   border-radius: var(--radius-pill);
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 600;
+   white-space: nowrap;
+}
+
+.account-pill--accent,
+.account-pill--admin
+{
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+}
+
+.account-pill--active
+{
+   background: color-mix( in srgb, var(--color-chat-online) 16%, transparent );
+   color: var(--color-chat-online-text);
+}
+
+.account-pill--unclaimed
+{
+   background: var(--color-chat-warning-bg);
+   color: var(--color-chat-warning-text);
+}
+
+.account-avatar
+{
+   flex: none;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   width: 32px;
+   height: 32px;
+   border-radius: 50%;
+   background: var(--color-chat-border);
+   color: #ffffff;
+   font-size: var(--font-size-chat-meta);
+   font-weight: 700;
+}
+
+.account-avatar.is-unknown
+{
+   color: var(--color-chat-text-secondary);
+}
+
+.account-avatar--large
+{
+   width: 52px;
+   height: 52px;
+   font-size: 22px;
+}
+
+/* ====================================================================
+   Welcome - the tabs, and "write these down"
+   ==================================================================== */
+
+.account-tabs
+{
+   display: grid;
+   grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+   gap: 4px;
+   padding: 4px;
+   margin-bottom: 24px;
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-rule);
+}
+
+.account-tabs button
+{
+   height: 40px;
+   border: 0;
+   border-radius: 6px;
+   background: transparent;
+   color: var(--color-chat-text-secondary);
+   cursor: pointer;
+}
+
+.account-tabs button[aria-selected="true"]
+{
+   background: var(--color-chat-bg);
+   color: var(--color-chat-text);
+   font-weight: 600;
+   box-shadow: var(--shadow-sm);
+}
+
+.account-code-field
+{
+   letter-spacing: 0.06em;
+}
+
+.account-inline
+{
+   display: flex;
+   gap: 8px;
+}
+
+/* NOTE: The field gives way to the button beside it - at its full width it pushed the button
+   off a phone's screen. */
+.account-inline .chat-field
+{
+   flex: 1 1 auto;
+   min-width: 0;
+   width: auto;
+}
+
+.account-inline-btn
+{
+   flex: none;
+   height: 46px;
+   padding: 0 16px;
+   font-size: var(--font-size-chat-body);
+}
+
+.account-tick
+{
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: 48px;
+   height: 48px;
+   margin-top: 28px;
+   border-radius: 50%;
+   background: color-mix( in srgb, var(--color-chat-online) 16%, transparent );
+   color: var(--color-chat-online-text);
+}
+
+.account-tick + h2
+{
+   margin-top: 16px;
+}
+
+.account-facts
+{
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+   margin-bottom: 16px;
+}
+
+.account-facts--row
+{
+   display: grid;
+   grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+   gap: 16px;
+   margin: 0;
+}
+
+.account-fact
+{
+   display: flex;
+   flex-direction: column;
+   padding: 16px 18px;
+   border-radius: var(--radius-md);
+   background: var(--color-chat-bg-rail);
+}
+
+.account-fact .chat-label
+{
+   margin-bottom: 4px;
+}
+
+.account-fact-big
+{
+   font-size: 32px;
+   font-weight: 600;
+   letter-spacing: 0.08em;
+}
+
+.account-fact-name
+{
+   font-size: 24px;
+   font-weight: 600;
+   overflow-wrap: anywhere;
+}
+
+#written_view .account-check
+{
+   margin-top: 20px;
+}
+
+/* ====================================================================
+   Signed in - the frame
+   ==================================================================== */
+
+.account-app
+{
+   display: flex;
+   flex-direction: column;
+   min-height: 100vh;
+   background: var(--color-chat-bg-rail);
+}
+
+.account-topbar
+{
+   flex: none;
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 8px 12px;
+   min-height: var(--chat-topbar-height, 52px);
+   padding: 8px 18px;
+   border-bottom: 1px solid var(--color-chat-border);
+   background: var(--color-chat-bg-raised);
+}
+
+.account-divider
+{
+   width: 1px;
+   height: 18px;
+   background: var(--color-chat-border);
+}
+
+.account-title
+{
+   font-size: var(--font-size-chat-name);
+   font-weight: 600;
+}
+
+.account-spacer
+{
+   flex-grow: 1;
+}
+
+.account-nav
+{
+   display: flex;
+   gap: 4px;
+}
+
+.account-nav a
+{
+   padding: 6px 10px;
+   border-radius: var(--radius-sm);
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-strong);
+   text-decoration: none;
+}
+
+.account-nav a:hover
+{
+   background: var(--color-chat-rule);
+}
+
+.account-nav a[aria-current="page"]
+{
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+   font-weight: 600;
+}
+
+.account-who-am-i
+{
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-secondary);
+}
+
+.account-main
+{
+   flex-grow: 1;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 16px;
+   padding: 36px 16px 56px;
+}
+
+.account-alert
+{
+   width: 100%;
+   max-width: 640px;
+   padding: 10px 14px;
+   border: 1px solid var(--color-chat-border-selected);
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+   font-size: var(--font-size-chat-meta);
+}
+
+.account-main.is-wide .account-alert
+{
+   max-width: 1000px;
+}
+
+.account-alert.is-error
+{
+   border-color: var(--color-chat-critical-border);
+   background: var(--color-chat-critical-bg);
+   color: var(--color-chat-critical-text);
+}
+
+.account-section
+{
+   width: 100%;
+   max-width: 640px;
+   display: flex;
+   flex-direction: column;
+   gap: 18px;
+}
+
+.account-section--wide
+{
+   max-width: 1000px;
+}
+
+.account-section h1
+{
+   margin: 0;
+   font-size: 26px;
+   font-weight: 600;
+   letter-spacing: -0.01em;
+}
+
+.account-section h2
+{
+   margin: 0;
+   font-size: 18px;
+   font-weight: 600;
+}
+
+.account-lede
+{
+   margin: 6px 0 0;
+   font-size: var(--font-size-chat-body);
+   line-height: 1.5;
+   color: var(--color-chat-text-secondary);
+}
+
+.account-card
+{
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-lg);
+   box-shadow: var(--shadow-sm);
+}
+
+.account-form
+{
+   display: flex;
+   flex-direction: column;
+   gap: 18px;
+   padding: 32px 36px;
+}
+
+.account-actions-row
+{
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: flex-end;
+   gap: 10px;
+}
+
+.account-back
+{
+   align-self: flex-start;
+   font-size: var(--font-size-chat-meta);
+   text-decoration: none;
+}
+
+/* ====================================================================
+   People
+   ==================================================================== */
+
+.account-head
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: flex-end;
+   gap: 16px;
+}
+
+.account-head > div
+{
+   flex-grow: 1;
+}
+
+.account-banner
+{
+   display: flex;
+   align-items: center;
+   gap: 14px;
+   padding: 12px 14px 12px 18px;
+   border: 1px solid var(--color-chat-border-selected);
+   border-radius: var(--radius-md);
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+}
+
+.account-banner p
+{
+   flex-grow: 1;
+   margin: 0;
+   font-size: var(--font-size-chat-meta);
+   line-height: 1.5;
+}
+
+.account-banner a
+{
+   font-size: var(--font-size-chat-meta);
+   white-space: nowrap;
+}
+
+.account-banner-close
+{
+   flex: none;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: 32px;
+   height: 32px;
+   border: 0;
+   border-radius: var(--radius-sm);
+   background: transparent;
+   color: inherit;
+   cursor: pointer;
+}
+
+.account-banner-close:hover
+{
+   background: var(--color-chat-bg);
+}
+
+.account-table-wrap
+{
+   overflow-x: auto;
+}
+
+.account-table
+{
+   width: 100%;
+   border-collapse: collapse;
+}
+
+.account-table th
+{
+   padding: 12px 20px;
+   background: var(--color-chat-bg-raised);
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 600;
+   letter-spacing: 0.04em;
+   text-transform: uppercase;
+   text-align: left;
+   color: var(--color-chat-text-secondary);
+}
+
+.account-table td
+{
+   padding: 12px 20px;
+   border-top: 1px solid var(--color-chat-rule);
+   vertical-align: middle;
+}
+
+.account-who
+{
+   display: flex;
+   align-items: center;
+   gap: 12px;
+}
+
+.account-name
+{
+   font-weight: 600;
+}
+
+.account-name.is-unknown
+{
+   font-weight: 400;
+   font-style: italic;
+   color: var(--color-chat-text-secondary);
+}
+
+.account-sub
+{
+   font-size: var(--font-size-chat-small);
+   color: var(--color-chat-text-secondary);
+}
+
+.account-sub:empty
+{
+   display: none;
+}
+
+.account-pin
+{
+   font-size: var(--font-size-chat-body);
+}
+
+.account-row-actions
+{
+   text-align: right;
+   white-space: nowrap;
+}
+
+.account-you
+{
+   font-size: var(--font-size-chat-small);
+   color: var(--color-chat-text-secondary);
+}
+
+.account-confirm
+{
+   display: inline-flex;
+   align-items: center;
+   gap: 8px;
+   padding: 5px 5px 5px 12px;
+   border: 1px solid var(--color-chat-critical-border);
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-critical-bg);
+   white-space: normal;
+}
+
+.account-confirm-text
+{
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-critical-text);
+   text-align: left;
+}
+
+.account-empty
+{
+   margin: 0;
+   padding: 16px 20px;
+   color: var(--color-chat-text-secondary);
+}
+
+.account-empty:empty
+{
+   display: none;
+}
+
+/* ====================================================================
+   Add a person, and handing over
+   ==================================================================== */
+
+.account-choices
+{
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+   margin: 0;
+   padding: 0;
+   border: 0;
+}
+
+.account-choices legend
+{
+   padding: 0;
+}
+
+.account-choice
+{
+   display: flex;
+   gap: 14px;
+   padding: 16px 18px;
+   border: 1px solid var(--color-chat-border-strong);
+   border-radius: var(--radius-md);
+   background: var(--color-chat-bg);
+   cursor: pointer;
+}
+
+.account-choice:has( input:checked )
+{
+   border: 2px solid var(--color-chat-accent-deep);
+   padding: 15px 17px;
+   background: var(--color-chat-bg-raised);
+}
+
+.account-choice input
+{
+   flex: none;
+   width: 18px;
+   height: 18px;
+   margin: 2px 0 0;
+   accent-color: var(--color-chat-accent-deep);
+}
+
+.account-choice-text
+{
+   display: flex;
+   flex-direction: column;
+   gap: 4px;
+}
+
+.account-choice-title
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 8px;
+   font-size: 15px;
+   font-weight: 600;
+}
+
+.account-choice-desc
+{
+   font-size: var(--font-size-chat-meta);
+   line-height: 1.5;
+   color: var(--color-chat-text-secondary);
+}
+
+.account-pin-fields
+{
+   display: flex;
+   flex-direction: column;
+   gap: 14px;
+}
+
+.account-grid
+{
+   display: grid;
+   grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+   gap: 16px;
+}
+
+.account-handover
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 28px;
+}
+
+.account-qr
+{
+   flex: none;
+   padding: 12px;
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-md);
+   background: #ffffff;
+   line-height: 0;
+}
+
+.account-qr img,
+.account-qr canvas
+{
+   display: block;
+}
+
+.account-handover-code
+{
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   flex: 1 1 220px;
+}
+
+.account-handover-code .chat-label
+{
+   margin: 0;
+}
+
+.account-code
+{
+   font-size: 32px;
+   font-weight: 600;
+   letter-spacing: 0.06em;
+   overflow-wrap: anywhere;
+}
+
+.account-steps
+{
+   margin: 0;
+   padding: 16px 20px 16px 38px;
+   border-radius: var(--radius-md);
+   background: var(--color-chat-bg-rail);
+   line-height: 1.7;
+   color: var(--color-chat-text-strong);
+}
+
+.account-steps b
+{
+   overflow-wrap: anywhere;
+}
+
+/* ====================================================================
+   My account
+   ==================================================================== */
+
+.account-identity
+{
+   display: flex;
+   align-items: center;
+   gap: 18px;
+   padding: 22px 26px;
+}
+
+.account-identity-name
+{
+   font-size: 20px;
+   font-weight: 600;
+}
+
+.account-identity-meta
+{
+   margin-top: 2px;
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-secondary);
+}
+
+/* ====================================================================
+   A phone
+   ==================================================================== */
+
+@media ( max-width: 640px )
+{
+   .account-form
+   {
+      padding: 24px 20px;
+   }
+
+   .account-grid,
+   .account-facts--row
+   {
+      grid-template-columns: minmax( 0, 1fr );
+   }
+
+   .account-table td,
+   .account-table th
+   {
+      padding: 12px 14px;
+   }
+
+   .account-who-am-i
+   {
+      display: none;
+   }
+}

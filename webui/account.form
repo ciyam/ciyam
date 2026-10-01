@@ -1,0 +1,424 @@
+<!--
+Copyright (c) 2026 CIYAM Developers
+
+Distributed under the MIT/X11 software license, please refer to the file
+license.txt in the root project directory or
+http://www.opensource.org/licenses/mit-license.php.
+-->
+
+<!-- ================================================================ sign in -->
+<div class="chat-signin" id="signin_view" hidden>
+   <form class="chat-signin-form" onsubmit="do_sign_in( event )" novalidate>
+      <div class="chat-brand">
+         <span class="chat-logo"></span>
+         <span class="chat-wordmark">CIYAM</span>
+         <span class="chat-brand-note">accounts</span>
+      </div>
+
+      <h2 tabindex="-1">Accounts</h2>
+      <p class="chat-signin-lede">Sign in to manage your account - or, as admin, the people on this node.</p>
+
+      <label class="chat-label" for="signin_pin">PIN</label>
+      <input type="text" id="signin_pin" class="chat-field chat-field--mono" inputmode="numeric" maxlength="5"
+       autocomplete="username" list="signin_saved" oninput="update_signin_hint( )">
+      <datalist id="signin_saved"></datalist>
+
+      <label class="chat-label" for="signin_password">Password</label>
+      <input type="password" id="signin_password" class="chat-field" autocomplete="current-password">
+      <div class="account-hint" id="signin_hint"></div>
+
+      <div class="chat-error-text" id="signin_error" role="alert"></div>
+
+      <div class="chat-signin-actions">
+         <button type="submit" class="chat-btn chat-btn--primary" id="signin_submit">Sign in</button>
+      </div>
+
+      <p class="account-aside">New here, with a code or a PIN from your admin? <a href="#welcome">Set up your account</a></p>
+   </form>
+</div>
+
+<!-- ================================================================ welcome - redeem a code, or claim a PIN -->
+<div class="chat-signin" id="welcome_view" hidden>
+   <form class="chat-signin-form" onsubmit="do_join( event )" novalidate>
+      <div class="chat-brand">
+         <span class="chat-logo"></span>
+         <span class="chat-wordmark">CIYAM</span>
+         <span class="chat-brand-note">accounts</span>
+      </div>
+
+      <h2 tabindex="-1">Welcome</h2>
+      <p class="chat-signin-lede">Use what you were given to set up your account.</p>
+
+      <div class="account-tabs" role="tablist" aria-label="What you were given">
+         <button type="button" role="tab" id="join_tab_code" aria-selected="true" onclick="set_join_mode( 'code' )">I have a code</button>
+         <button type="button" role="tab" id="join_tab_pin" aria-selected="false" onclick="set_join_mode( 'pin' )">I have a PIN</button>
+      </div>
+
+      <div class="account-stack" id="join_code_row">
+         <label class="chat-label" for="join_code">Code</label>
+         <input type="text" id="join_code" class="chat-field chat-field--mono account-code-field" autocomplete="off"
+          autocapitalize="none" spellcheck="false" placeholder="abc-defg-hij" oninput="on_join_code_input( )">
+         <div class="account-hint">From the person who added you - scanning their QR code fills it in.</div>
+      </div>
+
+      <div class="account-stack" id="join_pin_row" hidden>
+         <label class="chat-label" for="join_pin">PIN</label>
+         <div class="account-inline">
+            <input type="text" id="join_pin" class="chat-field chat-field--mono" inputmode="numeric" maxlength="5"
+             autocomplete="off" oninput="on_join_pin_input( )">
+            <button type="button" class="chat-btn account-inline-btn" id="join_pin_check" onclick="do_check_pin( )">Continue</button>
+         </div>
+      </div>
+
+      <div class="account-stack" id="join_details">
+         <label class="chat-label" for="join_username">Choose a username</label>
+         <input type="text" id="join_username" class="chat-field" autocomplete="username" autocapitalize="none"
+          spellcheck="false" maxlength="12">
+         <div class="account-hint" id="join_username_hint"></div>
+
+         <label class="chat-label" for="join_password">Choose a password</label>
+         <input type="password" id="join_password" class="chat-field" autocomplete="new-password" oninput="update_strength( 'join' )">
+         <div class="chat-strength" id="join_strength" hidden>
+            <div class="chat-strength-track"><div class="chat-strength-bar"></div></div>
+            <span class="chat-strength-label" id="join_strength_label"></span>
+         </div>
+
+         <label class="chat-label" for="join_confirm">Type it again</label>
+         <input type="password" id="join_confirm" class="chat-field" autocomplete="new-password">
+      </div>
+
+      <div class="chat-error-text" id="join_error" role="alert"></div>
+
+      <div class="chat-signin-actions">
+         <button type="submit" class="chat-btn chat-btn--primary" id="join_submit">Create my account</button>
+      </div>
+
+      <p class="account-aside">Already set up? <a href="#">Sign in</a></p>
+   </form>
+</div>
+
+<!-- ================================================================ write these down -->
+<div class="chat-signin" id="written_view" hidden>
+   <div class="chat-signin-form">
+      <div class="chat-brand">
+         <span class="chat-logo"></span>
+         <span class="chat-wordmark">CIYAM</span>
+         <span class="chat-brand-note">accounts</span>
+      </div>
+
+      <span class="account-tick" aria-hidden="true">
+         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </span>
+
+      <h2 tabindex="-1">You're in. Write these down.</h2>
+      <p class="chat-signin-lede">On a new phone or computer you'll need all three: your PIN, your username and your password.</p>
+
+      <div class="account-facts">
+         <div class="account-fact">
+            <span class="chat-label">Your PIN</span>
+            <span class="chat-mono account-fact-big" id="written_pin"></span>
+         </div>
+         <div class="account-fact">
+            <span class="chat-label">Your username</span>
+            <span class="account-fact-name" id="written_username"></span>
+         </div>
+      </div>
+
+      <p class="account-note">Keep a hint for your password with them - never the password itself. If you forget it, ask the person who added you.</p>
+
+      <label class="account-check">
+         <input type="checkbox" id="written_check" onchange="update_written( )">
+         I've written my PIN and username down
+      </label>
+
+      <div class="chat-signin-actions">
+         <button type="button" class="chat-btn chat-btn--primary" id="written_open" onclick="do_open_chat( )" disabled>Open the chat</button>
+      </div>
+   </div>
+</div>
+
+<!-- ================================================================ signed in -->
+<div class="account-app" id="app_view" hidden>
+   <header class="account-topbar">
+      <span class="chat-logo"></span>
+      <span class="chat-wordmark">CIYAM</span>
+      <span class="account-divider"></span>
+      <span class="account-title">Accounts</span>
+
+      <nav class="account-nav" aria-label="Accounts">
+         <a href="#people" id="nav_people">People</a>
+         <a href="#mine" id="nav_mine">My account</a>
+      </nav>
+
+      <span class="account-spacer"></span>
+
+      <nav class="account-nav" aria-label="Other pages">
+         <a href="chat.html">Chat</a>
+         <a href="console.html">Console</a>
+      </nav>
+
+      <span class="account-who-am-i" id="topbar_user"></span>
+      <button type="button" class="chat-btn" onclick="do_sign_out( )">Sign out</button>
+   </header>
+
+   <main class="account-main">
+      <div class="account-alert" id="account_alert" role="status" hidden></div>
+
+      <!-- ------------------------------------------------------------ People -->
+      <section class="account-section account-section--wide" id="people_section" hidden>
+         <div class="account-head">
+            <div>
+               <h1 tabindex="-1">People</h1>
+               <p class="account-lede">Everyone with an account on this node. Only you can add people.</p>
+            </div>
+            <a class="chat-btn chat-btn--primary account-link-btn" href="#add">Add a person</a>
+         </div>
+
+         <div class="account-banner" id="people_banner" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+               <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="11" x2="12" y2="16"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <p>You're signed in as <b>admin</b>, whose password unlocks the whole node. For everyday chat, add
+             yourself as a person too, and keep admin for administration.</p>
+            <a href="#add">Add yourself</a>
+            <button type="button" class="account-banner-close" onclick="do_hide_banner( )" aria-label="Hide this suggestion">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+            </button>
+         </div>
+
+         <div class="account-card account-table-wrap">
+            <table class="account-table">
+               <thead>
+                  <tr>
+                     <th scope="col">Person</th>
+                     <th scope="col">PIN</th>
+                     <th scope="col">Status</th>
+                     <th scope="col"><span class="account-sr">Actions</span></th>
+                  </tr>
+               </thead>
+               <tbody id="people_rows"></tbody>
+            </table>
+            <p class="account-empty" id="people_empty">Loading...</p>
+         </div>
+
+         <p class="account-note">Codes you've handed out but nobody has used yet aren't listed here - the node doesn't keep a list of them.</p>
+      </section>
+
+      <!-- ------------------------------------------------------------ Add a person -->
+      <section class="account-section" id="add_section" hidden>
+         <a class="account-back" href="#people">&larr; People</a>
+
+         <form class="account-card account-form" onsubmit="do_add( event )" novalidate>
+            <div>
+               <h1 tabindex="-1">Add a person</h1>
+               <p class="account-lede">They choose their own password. You never see it, and neither does the node.</p>
+            </div>
+
+            <fieldset class="account-choices">
+               <legend class="chat-label">How they'll join</legend>
+
+               <label class="account-choice">
+                  <input type="radio" name="add_how" value="code" checked onchange="update_add_form( )">
+                  <span class="account-choice-text">
+                     <span class="account-choice-title">With a code <span class="account-pill account-pill--accent">Recommended</span></span>
+                     <span class="account-choice-desc">A one-time code you hand over in person - on screen as a QR code, or read out.
+                      They choose their username and password, and the node gives them a PIN.</span>
+                  </span>
+               </label>
+
+               <label class="account-choice">
+                  <input type="radio" name="add_how" value="pin" onchange="update_add_form( )">
+                  <span class="account-choice-text">
+                     <span class="account-choice-title">With a PIN you choose</span>
+                     <span class="account-choice-desc">For someone who'd rather not handle a code, such as a household member.
+                      You choose the PIN, and can suggest a username.</span>
+                  </span>
+               </label>
+            </fieldset>
+
+            <div class="account-pin-fields" id="add_pin_fields" hidden>
+               <div class="account-grid">
+                  <div>
+                     <label class="chat-label" for="add_pin">PIN <span class="account-optional">- optional</span></label>
+                     <input type="text" id="add_pin" class="chat-field chat-field--mono" inputmode="numeric" maxlength="5" autocomplete="off">
+                     <div class="account-hint">5 digits. Leave it empty for a random one.</div>
+                  </div>
+                  <div>
+                     <label class="chat-label" for="add_username">Username <span class="account-optional">- optional</span></label>
+                     <input type="text" id="add_username" class="chat-field" maxlength="12" autocomplete="off" autocapitalize="none" spellcheck="false">
+                     <div class="account-hint">3 to 12 characters: a-z, 0-9 and -</div>
+                  </div>
+               </div>
+
+               <label class="account-check">
+                  <input type="checkbox" id="add_suggestion" checked>
+                  Only a suggestion - they can choose a different username
+               </label>
+
+               <div class="account-warning">
+                  <b>Hand it over in person.</b>
+                  <span>Whoever signs in with this PIN first sets the password.</span>
+               </div>
+            </div>
+
+            <div class="chat-error-text" id="add_error" role="alert"></div>
+
+            <div class="account-actions-row">
+               <a class="chat-btn account-link-btn account-btn-tall" href="#people">Cancel</a>
+               <button type="submit" class="chat-btn chat-btn--primary" id="add_submit">Create a code</button>
+            </div>
+         </form>
+      </section>
+
+      <!-- ------------------------------------------------------------ Hand over the code -->
+      <section class="account-section" id="handover_section" hidden>
+         <div class="account-card account-form">
+            <div>
+               <h1 tabindex="-1">Hand this code over in person</h1>
+               <p class="account-lede">It's for one person - it becomes their account when they use it.</p>
+            </div>
+
+            <div class="account-handover">
+               <div class="account-qr" id="handover_qr" role="img" aria-label="A QR code that opens this page on their phone, with the code filled in"></div>
+
+               <div class="account-handover-code">
+                  <span class="chat-label">The code</span>
+                  <span class="chat-mono account-code" id="handover_code"></span>
+                  <div>
+                     <button type="button" class="chat-btn" id="handover_copy" onclick="do_copy_code( )">Copy</button>
+                  </div>
+                  <p class="account-hint">Scanning the QR code opens this page on their phone, with the code filled in.</p>
+               </div>
+            </div>
+
+            <ol class="account-steps">
+               <li>They scan the QR code - or open <b class="chat-mono" id="handover_url"></b> and type the code</li>
+               <li>They choose a username and a password</li>
+               <li>They write down the PIN they're given</li>
+            </ol>
+
+            <div class="account-warning">
+               <b>Shown only now.</b>
+               <span>The node can't show this code again. If it's lost before they use it, add them again.</span>
+            </div>
+
+            <div class="account-actions-row">
+               <a class="chat-btn chat-btn--primary account-link-btn" href="#people">Done</a>
+            </div>
+         </div>
+      </section>
+
+      <!-- ------------------------------------------------------------ The PIN is ready -->
+      <section class="account-section" id="ready_section" hidden>
+         <div class="account-card account-form">
+            <div>
+               <h1 tabindex="-1">The PIN is ready</h1>
+               <p class="account-lede">Give it to them in person. They set their password the first time they sign in with it.</p>
+            </div>
+
+            <div class="account-facts account-facts--row">
+               <div class="account-fact">
+                  <span class="chat-label">PIN</span>
+                  <span class="chat-mono account-fact-big" id="ready_pin"></span>
+               </div>
+               <div class="account-fact">
+                  <span class="chat-label">Username</span>
+                  <span class="account-fact-name" id="ready_username"></span>
+                  <span class="account-hint" id="ready_username_note"></span>
+               </div>
+            </div>
+
+            <div class="account-warning">
+               <b>Until they sign in,</b>
+               <span>anyone with this PIN can set the password. It shows in People as "Not yet claimed" until then.
+                They set it up at <b class="chat-mono" id="ready_url"></b>, under "I have a PIN".</span>
+            </div>
+
+            <div class="account-actions-row">
+               <a class="chat-btn chat-btn--primary account-link-btn" href="#people">Done</a>
+            </div>
+         </div>
+      </section>
+
+      <!-- ------------------------------------------------------------ My account -->
+      <section class="account-section" id="mine_section" hidden>
+         <h1 tabindex="-1">My account</h1>
+
+         <div class="account-card account-identity">
+            <span class="account-avatar account-avatar--large" id="mine_avatar"></span>
+            <div>
+               <div class="account-identity-name" id="mine_name"></div>
+               <div class="account-identity-meta">PIN <span class="chat-mono" id="mine_pin"></span> &middot; <span id="mine_type"></span></div>
+            </div>
+         </div>
+
+         <form class="account-card account-form" id="mine_password_form" onsubmit="do_change_password( event )" novalidate>
+            <div>
+               <h2>Change password</h2>
+               <p class="account-lede">You stay signed in here. Other devices will need the new password.</p>
+            </div>
+
+            <input type="text" id="mine_username" class="account-sr" autocomplete="username" tabindex="-1" aria-hidden="true" readonly>
+
+            <div>
+               <label class="chat-label" for="mine_current">Current password</label>
+               <input type="password" id="mine_current" class="chat-field" autocomplete="current-password">
+            </div>
+
+            <div>
+               <label class="chat-label" for="mine_password">New password</label>
+               <input type="password" id="mine_password" class="chat-field" autocomplete="new-password" oninput="update_strength( 'mine' )">
+               <div class="chat-strength" id="mine_strength" hidden>
+                  <div class="chat-strength-track"><div class="chat-strength-bar"></div></div>
+                  <span class="chat-strength-label" id="mine_strength_label"></span>
+               </div>
+            </div>
+
+            <div>
+               <label class="chat-label" for="mine_confirm">Type it again</label>
+               <input type="password" id="mine_confirm" class="chat-field" autocomplete="new-password">
+            </div>
+
+            <div class="chat-error-text" id="mine_error" role="alert"></div>
+
+            <div class="account-actions-row">
+               <button type="submit" class="chat-btn chat-btn--primary" id="mine_submit">Change password</button>
+            </div>
+         </form>
+
+         <div class="account-card account-form" id="mine_admin_note" hidden>
+            <h2>Password</h2>
+            <p class="account-lede">admin's password is also the node's master password - the one that unlocks the node after a
+             restart - so it isn't changed here.</p>
+         </div>
+      </section>
+   </main>
+</div>
+
+<template id="tpl_person">
+   <tr>
+      <td>
+         <div class="account-who">
+            <span class="account-avatar"></span>
+            <div>
+               <div class="account-name"></div>
+               <div class="account-sub"></div>
+            </div>
+         </div>
+      </td>
+      <td class="chat-mono account-pin"></td>
+      <td><span class="account-pill"></span></td>
+      <td class="account-row-actions">
+         <span class="account-you" hidden>You</span>
+         <button type="button" class="chat-btn account-remove">Remove</button>
+         <div class="account-confirm" hidden>
+            <span class="account-confirm-text"></span>
+            <button type="button" class="account-btn-danger account-confirm-yes">Remove for good</button>
+            <button type="button" class="chat-btn account-confirm-no">Keep</button>
+         </div>
+      </td>
+   </tr>
+</template>
