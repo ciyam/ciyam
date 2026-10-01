@@ -4115,7 +4115,7 @@ function resize_composer( )
 // NOTE: The count appears as a message nears the server's limit, and past it turns red and
 // holds the Send button - better than the server's "Maximum size for 'irc_...' items" after
 // the fact. Counted in bytes, as the server counts - see "message_bytes( )".
-const c_count_from_bytes = 3600;
+const c_count_from_bytes = 2000;
 
 function message_too_long( )
 {
