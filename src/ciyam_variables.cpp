@@ -45,9 +45,9 @@ const int c_lock_attempt_sleep_time = 100;
 
 const size_t c_secret_truncate_length = 9;
 
-const size_t c_default_max_deque_item_size = 8000;
+const size_t c_default_max_deque_item_size = 3000;
 
-const size_t c_default_max_deque_size_limit = 6000;
+const size_t c_default_max_deque_size_limit = 9000;
 
 constexpr const char* c_double_asterisk = "**";
 
@@ -294,6 +294,7 @@ constexpr const char* c_special_variable_blockchain_is_hub = "@blockchain_is_hub
 constexpr const char* c_special_variable_fields_and_values = "@fields_and_values";
 constexpr const char* c_special_variable_generate_log_file = "@generate_log_file";
 constexpr const char* c_special_variable_last_suffixed_key = "@last_suffixed_key";
+constexpr const char* c_special_variable_limit_queue_items = "@limit_queue_items";
 constexpr const char* c_special_variable_package_type_path = "@package_type_path";
 constexpr const char* c_special_variable_peer_data_created = "@peer_data_created";
 constexpr const char* c_special_variable_peer_is_dependent = "@peer_is_dependent";
@@ -678,6 +679,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_fields_and_values );
       g_special_variable_names.push_back( c_special_variable_generate_log_file );
       g_special_variable_names.push_back( c_special_variable_last_suffixed_key );
+      g_special_variable_names.push_back( c_special_variable_limit_queue_items );
       g_special_variable_names.push_back( c_special_variable_package_type_path );
       g_special_variable_names.push_back( c_special_variable_peer_data_created );
       g_special_variable_names.push_back( c_special_variable_peer_is_dependent );
