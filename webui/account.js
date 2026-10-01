@@ -245,6 +245,20 @@ function saved_pins( )
    }
 }
 
+// NOTE: Read each time it is needed rather than once - the chat may have replaced it since this
+// page loaded ("Reset this browser").
+function stored_device( )
+{
+   try
+   {
+      return localStorage.getItem( c_storage_device ) || "";
+   }
+   catch( e )
+   {
+      return "";
+   }
+}
+
 function saved_hash( pin )
 {
    try
@@ -311,20 +325,31 @@ async function do_sign_in( event )
 
    submit.disabled = true;
 
-   ciyam.error = "";
+   ciyam.device = stored_device( );
 
-   await request( function( done )
+   await connect_as( pin, hashed, password );
+
+   // NOTE: The node has never seen this browser's device token - it was issued before the node
+   // was rebuilt, or by another node at this address. A typed password does not depend on it,
+   // so the server is asked for a new one and the sign in tried again. A saved password cannot
+   // be used: it was hashed with the old token. The chat asks for "Reset this browser" instead.
+   if( is_unknown_device_error( ciyam.error ) && ( password !== "" ) )
    {
-      return ciyam.connect( pin, ciyam.device, hashed, password, done );
-   } );
+      ciyam.device = "";
+
+      await connect_as( pin, "", password );
+   }
 
    submit.disabled = false;
 
-   remember_device( );
+   if( ciyam.error === "" )
+      remember_device( );
 
    if( ciyam.error !== "" )
    {
-      set_error( "signin_error", sign_in_error_text( ciyam.error ) );
+      set_error( "signin_error", is_unknown_device_error( ciyam.error )
+       ? "This browser's saved sign in is from before the node was set up again - type your password."
+       : sign_in_error_text( ciyam.error ) );
 
       return;
    }
@@ -339,6 +364,17 @@ async function do_sign_in( event )
    document.getElementById( "signin_password" ).value = "";
 
    enter_app( );
+}
+
+async function connect_as( pin, hashed, password )
+{
+   ciyam.error = "";
+   ciyam.unique = "";
+
+   await request( function( done )
+   {
+      return ciyam.connect( pin, ciyam.device, hashed, password, done );
+   } );
 }
 
 function remember_device( )
