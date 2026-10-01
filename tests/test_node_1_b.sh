@@ -142,5 +142,6 @@ else
  echo "Output entrance room details for 'test-1' and then review messages in rooms 0000001 and 0000002."
  env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 11111 $device "" none
  env CIYAM_NODE_COMMAND="messages review 0000001" node ../webui/ciyam.js -test "" 11111 $device "" none
+ env CIYAM_NODE_COMMAND="messages update 0000002 for=bad_user" node ../webui/ciyam.js -test "" 11111 $device "" none
  env CIYAM_NODE_COMMAND="messages review 0000002 from=0" node ../webui/ciyam.js -test "" 11111 $device "" none | sed "s/0000002-[0-9a-f]*/0000002-NEW-ROOM-UUID-VALUE/g"
 fi

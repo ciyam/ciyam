@@ -654,6 +654,7 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
     "payload": "test-1 :issued (invite for 0000002 sent to test-2)"
   }
 ]
+Error: Invalid attempt to invite 'bad_user' to room '0000002'.
 {"room":"0000002"}
 [
   {
