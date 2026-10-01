@@ -6364,10 +6364,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool has_current = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_current );
          string current( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_current ) );
 
+         size_t limit_queue_items = 0;
+
          bool get_all_queue_items = false;
 
          string set_variable_name( get_special_var_name( e_special_var_set ) );
          string deque_variable_name( get_special_var_name( e_special_var_deque ) );
+         string limit_queue_items_name( get_special_var_name( e_special_var_limit_queue_items ) );
 
          // NOTE: If "*" is used as <value> for a "@queue_"
          // prefixed variable then return all queued items.
@@ -6382,8 +6385,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             get_all_queue_items = true;
 
-            if( quoted && ( value != "*" ) )
-               throw runtime_error( "invalid 'session_variable' usage of quoted with " + value );
+            // NOTE: Uses the "@limit_queue_items" session variable
+            // to limit the total number of queue items to process.
+            if( has_session_variable( limit_queue_items_name ) )
+            {
+               limit_queue_items = from_string< size_t >( get_session_variable( limit_queue_items_name ) );
+
+               set_session_variable( limit_queue_items_name, "" );
+            }
          }
 
          size_t sess_id = 0;
@@ -6470,6 +6479,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      // NOTE: If is provided this session variable acts as a "gteq" filter.
                      string gteq( get_session_variable( e_special_var_gteq_session_queue ) );
 
+                     size_t num_items = 0;
+
                      while( true )
                      {
                         string next( get_session_variable( name_or_expr, sess_id ) );
@@ -6480,27 +6491,45 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         if( !gteq.empty( ) && ( next < gteq ) )
                            continue;
 
+                        bool skip_response = false;
+
                         if( value == set_variable_name )
                         {
-                           set_session_variable( set_variable_name, next );
+                           skip_response = true;
 
-                           continue;
+                           string value( prefix + next );
+
+                           if( quoted )
+                              value += '"';
+
+                           set_session_variable( set_variable_name, value );
                         }
 
                         if( value == deque_variable_name )
                         {
-                           set_session_variable( deque_variable_name, "push_back " + next );
+                           skip_response = true;
 
-                           continue;
+                           string value( "push_back " + prefix + next );
+
+                           if( quoted )
+                              value += '"';
+
+                           set_session_variable( deque_variable_name, value );
                         }
 
-                        if( !response.empty( ) )
-                           response += '\n';
+                        if( !skip_response )
+                        {
+                           if( !response.empty( ) )
+                              response += '\n';
 
-                        response += prefix + next;
+                           response += prefix + next;
 
-                        if( quoted )
-                           response += '"';
+                           if( quoted )
+                              response += '"';
+                        }
+
+                        if( ++num_items == limit_queue_items )
+                           break;
                      }
 
                      if( !gteq.empty( ) )
@@ -8608,7 +8637,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string current( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_current ) );
          string retries( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_retries ) );
 
+         size_t limit_queue_items = 0;
+
          bool get_all_queue_items = false;
+
+         string limit_queue_items_name( get_special_var_name( e_special_var_limit_queue_items ) );
 
          // NOTE: If "*" is used as <value> for a "@queue_"
          // prefixed variable then return all queued items.
@@ -8618,6 +8651,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             has_value = false;
 
             get_all_queue_items = true;
+
+            // NOTE: Uses the "@limit_queue_items" session variable
+            // to limit the total number of queue items to process.
+            if( has_session_variable( limit_queue_items_name ) )
+            {
+               limit_queue_items = from_string< size_t >( get_session_variable( limit_queue_items_name ) );
+
+               set_session_variable( limit_queue_items_name, "" );
+            }
          }
 
          possibly_expected_error = true;
@@ -8765,6 +8807,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   if( quoted )
                      prefix += '"';
 
+                  size_t num_items = 0;
+
                   while( true )
                   {
                      string next( get_system_variable( name_or_expr, false ) );
@@ -8779,6 +8823,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      if( quoted )
                         response += '"';
+
+                     if( ++num_items == limit_queue_items )
+                        break;
                   }
                }
             }
