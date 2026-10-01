@@ -61,16 +61,26 @@ function account_main( )
 // NOTE: One request at a time - "ciyam.js" keeps a single callback per instance, so a second
 // request in flight would take the first one's answer (ISS-005). Resolves once the call has
 // finished - "connect( )" makes several requests - with the last answer its callback was given.
+// A request lost on the way is only logged by "ciyam.fetch", never answered, so no answer at all
+// is an error - not an empty answer, which would read as success.
+const c_no_answer = "Error: The server did not answer - check the connection and try again.";
+
 function request( issue )
 {
    return new Promise( function( resolve )
    {
       g_queue = g_queue.then( function( )
       {
+         var answered = false;
+
          var last = "";
 
-         return Promise.resolve( issue( function( response ) { last = String( response ); } ) )
-          .then( function( ) { resolve( last ); } );
+         return Promise.resolve( issue( function( response )
+         {
+            answered = true;
+
+            last = String( response );
+         } ) ).then( function( ) { resolve( answered ? last : c_no_answer ); } );
       } ).catch( function( e )
       {
          resolve( "Error: " + ( e && e.message ? e.message : "the request failed." ) );
@@ -406,6 +416,9 @@ async function do_sign_out( )
       return ciyam.disconnect( done );
    } );
 
+   // NOTE: Signed out here whatever the server answered - a session left half open would take
+   // the next change of address back into the page.
+   ciyam.sessid = "";
    ciyam.access = "";
    ciyam.hashed = "";
    ciyam.username = "";
@@ -449,6 +462,10 @@ async function load_people( )
 
    if( problem_text( response ) !== "" )
    {
+      g_people = [ ];
+
+      document.getElementById( "people_rows" ).replaceChildren( );
+
       set_error( "people_empty", "The list could not be read: " + problem_text( response ) );
 
       return;
@@ -530,10 +547,10 @@ function render_people( )
 
    if( g_armed !== "" )
    {
-      var yes = body.querySelector( ".account-confirm:not([hidden]) .account-confirm-no" );
+      var keep = body.querySelector( ".account-confirm:not([hidden]) .account-confirm-no" );
 
-      if( yes !== null )
-         yes.focus( );
+      if( keep !== null )
+         keep.focus( );
    }
 }
 
@@ -1019,9 +1036,10 @@ async function do_check_pin( )
 
    var reply = parse_join_reply( response );
 
+   // NOTE: The server answers an unknown PIN as an invalid session; anything else is passed on.
    if( reply.kind === "error" )
    {
-      set_error( "join_error", "That PIN isn't known on this node." );
+      set_error( "join_error", /not valid/.test( reply.error ) ? "That PIN isn't known on this node." : reply.error );
 
       return;
    }
