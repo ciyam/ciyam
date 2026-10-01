@@ -333,13 +333,14 @@ function escape_message_text( text )
    return String( text || "" ).replace( /\\/g, "\\\\" );
 }
 
-// NOTE: The server keeps each message as a queue item of at most 8000 characters since
-// 2026-09-28 ("c_default_max_deque_item_size" in "ciyam_variables.cpp", 1000 before), which
-// holds the text encoded with the sender's name - measured at 5983 bytes of text for "admin"
-// and 5980 for "verify-a". Ian wants room kept in reserve (pinned-message room ids, end-to-end
-// encryption data), so the chat stops at 4000 bytes, as Damon chose (QST-004). It is bytes,
-// not characters: "é" is two and most emoji four.
-const c_max_message_bytes = 4000;
+// NOTE: The server keeps each message as a queue item of at most 3000 characters since
+// 2026-10-01 ("c_default_max_deque_item_size" in "ciyam_variables.cpp", 8000 before), which
+// holds the text encoded with the sender's name - measured at 2233 bytes of text for "admin"
+// and 2230 for "verify-a", a byte less for each letter of the name, so 2226 for the longest.
+// Ian lowered it so a thousand rooms fit in memory, keeping his reserve in the figure itself,
+// so the chat stops just under it (QST-004). It is bytes, not characters: "é" is two and most
+// emoji four.
+const c_max_message_bytes = 2200;
 
 function message_bytes( text )
 {

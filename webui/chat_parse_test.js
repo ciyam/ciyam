@@ -425,8 +425,8 @@ check( "letters are a byte each", cp.message_bytes( "hello" ), 5 );
 check( "an accented letter is two", cp.message_bytes( "é" ), 2 );
 check( "an emoji is four", cp.message_bytes( "😀" ), 4 );
 check( "a line break is one", cp.message_bytes( "a\nb" ), 3 );
-check( "the limit is 4000 bytes", cp.c_max_message_bytes, 4000 );
-check( "well under the smallest measured, leaving Ian's reserve", cp.c_max_message_bytes <= 5980 - 1000, true );
+check( "the limit is 2200 bytes", cp.c_max_message_bytes, 2200 );
+check( "under what the server takes from the longest name", cp.c_max_message_bytes <= 2233 - ( 12 - 5 ), true );
 
 heading( "room events in plain words" );
 

@@ -189,8 +189,8 @@ ok   letters are a byte each
 ok   an accented letter is two
 ok   an emoji is four
 ok   a line break is one
-ok   the limit is 4000 bytes
-ok   well under the smallest measured, leaving Ian's reserve
+ok   the limit is 2200 bytes
+ok   under what the server takes from the longest name
 
 == room events in plain words ==================================
 ok   joined
