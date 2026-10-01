@@ -179,6 +179,31 @@ bbb
 ccc
 session_variable @set ""
 session_variable @queue_test *
+session_variable @queue_test aaa
+session_variable @queue_test bbb
+session_variable @queue_test ccc
+session_variable @queue_test ddd
+session_variable @queue_test eee
+session_variable @queue_test fff
+session_variable @queue_test ggg
+session_variable @queue_test hhh
+session_variable @queue_test iii
+session_variable @queue_test jjj
+session_variable @limit_queue_items 2
+session_variable @queue_test *
+aaa
+bbb
+session_variable @limit_queue_items 3
+session_variable @queue_test *
+ccc
+ddd
+eee
+session_variable @queue_test *
+fff
+ggg
+hhh
+iii
+jjj
 system_variable @queue_test aaa
 system_variable @queue_test bbb
 system_variable @queue_test ccc
