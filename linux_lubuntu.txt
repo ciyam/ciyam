@@ -1469,31 +1469,40 @@ smtps      inet  n       -       -       -       -       smtpd
 sudo apt install dovecot-common dovecot-imapd dovecot-pop3d -y
 
 sudo vi /etc/dovecot/conf.d/10-auth.conf
+(note different options for 2.3 and 2.4)
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
-disable_plaintext_auth = yes
+#(2.3)disable_plaintext_auth = yes
 ...
-auth_username_format = %Ln
+#(2.3)auth_username_format = %Ln
+#(2.4)auth_username_format = %{user | username | lower}
 ...
 auth_mechanisms = plain login
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo vi /etc/dovecot/conf.d/10-master.conf
+(note different options for 2.3 and 2.4)
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
   unix_listener /var/spool/postfix/private/auth {
     mode = 0666
+#(2.4)   user = postfix
+#(2.4)   group = postfis
   }
 ...
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo vi /etc/dovecot/conf.d/10-ssl.conf
+(note different options for 2.3 and 2.4)
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ssl = required
 ...
-ssl_cert = </etc/letsencrypt/live/***domain_name***/fullchain.pem
-ssl_key = </etc/letsencrypt/live//***domain_name***/privkey.pem
+#(2.3)ssl_cert = </etc/letsencrypt/live/***domain_name***/fullchain.pem
+#(2.3)ssl_key = </etc/letsencrypt/live//***domain_name***/privkey.pem
+#(2.4)ssl_server_cert_file = /etc/letsencrypt/live/***domain_name***/fullchain.pem
+#(2.4)ssl_server_key_file = /etc/letsencrypt/live/***domain_name***/privkey.pem
 ...
+#(2.4)ssl_min_protocol = TLSv1.2
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo dovecot -n
