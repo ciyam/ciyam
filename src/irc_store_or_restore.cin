@@ -31,6 +31,8 @@
 ;
 @ifndef $OUTPUT
 ;
+.session_variable @deque commence
+;
 .system_variable @irc_vars_dir
 IRC_VARS_DIR=$OUTPUT
 ;
@@ -43,6 +45,8 @@ IRC_VARS_DIR=$CIYAM_TMP_DIR
 ;
 IRC_VARS_FILE_NAME=irc_variables.cin
 ;
+IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE_NAME
+;
 .system_variable @irc_alter ""
 ;
 .system_variable @irc_rooms
@@ -50,8 +54,6 @@ IRC_VARS_FILE_NAME=irc_variables.cin
 ; NOTE: If no IRC rooms exist then will check
 ; if they can be restored from a prior store.
 @ifndef $OUTPUT
-;
-IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE_NAME
 ;
 ; NOTE: If the IRC variables file is not found
 ; then also check the ".ciyam" directory below
@@ -108,10 +110,10 @@ system_variable "-p=$PREFIX" @web.*.*.0*
 .system_variable @queue_irc_*
 ALL_MESSAGE_QUEUE_INFO=@strlit:$OUTPUT
 ;
-@label NEXT
-;
 @:LOOP
 NEXT_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:1%
+;
+@label NEXT
 ;
 @ifndef $NEXT_MESSAGE_QUEUE_INFO
 @label END_LOOP
@@ -128,7 +130,31 @@ PREFIX=$$C $NEXT_MESSAGE_QUEUE_NAME$SP
 ;
 .session_variable $NEXT_MESSAGE_QUEUE_NAME @system
 ;
-session_variable "-p=$PREFIX" -quoted $NEXT_MESSAGE_QUEUE_NAME *
+@label INNER_NEXT
+;
+; NOTE: In order to prevent overflow in "ciyam_client" for OUTPUT will
+; only output a limited number of queue items at a time using "@deque"
+; (in order to be able to determine when finished).
+;
+@:INNER_LOOP
+.session_variable @limit_queue_items 25
+.session_variable "-p=$PREFIX" -quoted $NEXT_MESSAGE_QUEUE_NAME @deque
+;
+.session_variable @deque size
+@ifeq "$OUTPUT" "0"
+@label INNER_END_LOOP
+@endif
+;
+@skip
+;
+@:INNER_NEXT
+;
+session_variable @deque
+.session_variable @deque ""
+;
+!!@:INNER_LOOP
+;
+@:INNER_END_LOOP
 ;
 ALL_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:-1%
 ;
@@ -140,6 +166,8 @@ ALL_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:-1%
 @endif
 ;
 @endif
+;
+.session_variable @deque complete
 ;
 system_variable @run_script_prefix_irc_lock ""
 ;
