@@ -340,6 +340,7 @@ NEXT_USER=%USER_LINES:1%
 ;
 BAD_INVITE=
 ;
+@ifdef $NEXT_USER
 .system_variable @irc_xinvr_%EXISTING%_$NEXT_USER
 @ifdef $OUTPUT
 BAD_INVITE=1
@@ -351,6 +352,14 @@ BAD_INVITE=1
 .system_variable @session_@queue_irc_%EXISTING%_$NEXT_USER
 @ifdef $OUTPUT
 BAD_INVITE=1
+@else
+.system_variable @irc_users_$STARTING_ROOM
+ALL_USERS=@strlit:$OUTPUT@
+CHECK_USERS=@repstr:@$NEXT_USER@/:$ALL_USERS
+@ifeq "$ALL_USERS" "$CHECK_USERS"
+BAD_INVITE=1
+@endif
+@endif
 @endif
 @endif
 @endif
