@@ -52,4 +52,8 @@ ok   a bad code still opens Welcome, empty
 ok   #welcome
 ok   nothing
 
+== a device token the node has never seen ======================
+ok   the server's words
+ok   anything else
+
 All checks passed.

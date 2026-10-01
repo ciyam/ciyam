@@ -193,6 +193,13 @@ function join_url( origin, code )
    return String( origin ) + "/" + c_account_page + "#" + c_account_code_param + code;
 }
 
+// NOTE: Whether signing in failed because the node has never seen this browser's device token -
+// one issued by a node since rebuilt, or by another node at the same address.
+function is_unknown_device_error( error )
+{
+   return /Invalid device identity/.test( String( error || "" ) );
+}
+
 // NOTE: What the address asks for: "#code=<code>" or "#welcome" open the Welcome screen.
 function parse_account_hash( hash )
 {
@@ -218,6 +225,7 @@ if( typeof module !== "undefined" )
       nominate_problem: nominate_problem,
       join_problem: join_problem,
       join_url: join_url,
+      is_unknown_device_error: is_unknown_device_error,
       parse_account_hash: parse_account_hash
    };
 }

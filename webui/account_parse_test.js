@@ -121,6 +121,13 @@ check( "a bad code still opens Welcome, empty", ap.parse_account_hash( "#code=no
 check( "#welcome", ap.parse_account_hash( "#welcome" ), { view: "welcome", code: "" } );
 check( "nothing", ap.parse_account_hash( "" ), { view: "", code: "" } );
 
+// --------------------------------------------------------------------
+heading( "a device token the node has never seen" );
+
+check( "the server's words", ap.is_unknown_device_error( "Error: Invalid device identity 'c6f7ea5f172a64b'." ), true );
+check( "anything else", [ ap.is_unknown_device_error( "Error: User credentials are either invalid or incorrect." ),
+ ap.is_unknown_device_error( "" ) ], [ false, false ] );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 
