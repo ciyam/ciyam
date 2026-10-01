@@ -113,7 +113,7 @@ function parse_people( text, own_pin, own_name )
       rows.push( row );
    } );
 
-   if( ( own_pin || "" ) !== "" && !rows.some( function( row ) { return row.you; } ) )
+   if( ( ( own_pin || "" ) !== "" ) && !rows.some( function( row ) { return row.you; } ) )
       rows.push( { pin: own_pin, name: own_name || "", you: true, status: "admin" } );
 
    var rank = { admin: 0, active: 1, unclaimed: 2 };
