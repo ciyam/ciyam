@@ -126,8 +126,9 @@ bool get_response( string& text, tcp_socket& socket,
 {
    string response;
 
+   // NOTE: Include sent text for context but only the first line (without a CR).
    if( p_progress && !text.empty( ) )
-      p_progress->output_progress( text );
+      p_progress->output_progress( text.substr( 0, text.find_first_of( "\r\n" ) ) );
 
    text.erase( );
 
@@ -183,7 +184,7 @@ bool get_response( string& text, tcp_socket& socket,
    }
 
    if( p_progress && !text.empty( ) )
-      p_progress->output_progress( text );
+      p_progress->output_progress( text.substr( 0, text.find_first_of( "\r\n" ) ) );
 
    return okay;
 }
@@ -316,6 +317,7 @@ string transform_header_to_utf_8_if_required( const string& header )
       else if( header[ i ] < 0 )
       {
          has_unicode = true;
+
          break;
       }
    }
@@ -345,7 +347,7 @@ void send_message( const string& host_and_port,
    }
 
    if( p_progress )
-      p_progress->output_progress( "host = " + host + ", port = " + to_string( port ) );
+      p_progress->output_progress( "(smtp) host = " + host + ", port = " + to_string( port ) );
 
    if( p_file_names )
    {
@@ -361,16 +363,16 @@ void send_message( const string& host_and_port,
             next_file.erase( 0, pos + 1 );
 
          if( !file_exists( next_file ) )
-            throw runtime_error( "file '" + next_file + "' not found" );
+            throw runtime_error( "(smtp) file '" + next_file + "' not found" );
 
          num_bytes += file_size( next_file );
       }
 
       if( p_progress )
-         p_progress->output_progress( "total attached file data: " + to_string( num_bytes ) );
+         p_progress->output_progress( "(smtp) total attached file data: " + to_string( num_bytes ) );
 
       if( user_info.max_attachment_bytes && ( num_bytes > user_info.max_attachment_bytes ) )
-         throw runtime_error( "maximum allowed attached file data exceeded" );
+         throw runtime_error( "(smtp) maximum allowed attached file data exceeded" );
    }
 
 #ifdef SSL_SUPPORT
@@ -384,22 +386,35 @@ void send_message( const string& host_and_port,
    {
       ip_address address( host.c_str( ), port );
 
-      if( p_progress )
-         p_progress->output_progress( "connecting..." );
+      string type( !address.get_is_ipv6( ) ? "IPv4" : "IPv6" );
 
-      if( socket.connect( address ) )
+      if( p_progress )
+         p_progress->output_progress( "(smtp) connecting " + type );
+
+      okay = socket.connect( address, c_initial_timeout );
+
+      if( !okay && address.get_is_ipv6( ) )
+      {
+         address.force_ipv4( );
+
+         if( p_progress )
+            p_progress->output_progress( "(smtp) retrying using IPv4" );
+      }
+
+      if( socket.connect( address, c_initial_timeout ) )
       {
 #ifdef USE_NO_DELAY
          socket.set_no_delay( );
 #endif
 #ifdef SSL_SUPPORT
          // NOTE: For SSL all protocol is secure (unlike STARTTLS).
-         // FUTURE: After a successful SSL connection the server certificate should
-         // be checked (at the very least make sure that it is the host requested).
          if( user_info.use_ssl )
             socket.ssl_connect( );
+
+         // FUTURE: After a successful SSL connection the server certificate should
+         // be checked (at the very least make sure that it is the host requested).
 #endif
-         string str( "(connected now reading greeting)" );
+         string str( "(smtp) connected - reading greeting" );
 
          // NOTE: Read (and ignore) the connection message...
          if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
@@ -469,7 +484,7 @@ void send_message( const string& host_and_port,
             else if( user_info.auth_type == e_smtp_auth_type_cram_md5 )
                str = string( "AUTH CRAM-MD5" );
             else
-               throw runtime_error( "unexpected smtp_auth_type in send_message" );
+               throw runtime_error( "(smtp) unexpected smtp_auth_type in send_message" );
 
             socket.write_line( str );
 
@@ -689,7 +704,9 @@ void send_message( const string& host_and_port,
          if( has_html && !has_message )
          {
             extracted_message = extract_text_from_html( *p_html );
+
             p_message = &extracted_message;
+
             has_message = true;
          }
 
@@ -761,6 +778,7 @@ void send_message( const string& host_and_port,
             str += string( "\r\n" );
          }
 
+         // NOTE: Final fullstop.
          str += string( ".\r\n" );
 
          socket.write_line( str );
@@ -774,12 +792,15 @@ void send_message( const string& host_and_port,
 
          // NOTE: Read (but ignore) any disconnection message...
          get_response( str, socket, c_final_response_timeout, p_progress );
+
+         if( p_progress )
+            p_progress->output_progress( "(smtp) disconnected" );
       }
       else
-         throw runtime_error( "unable to connect to '" + host + "' on port #" + to_string( port ) );
+         throw runtime_error( "(smtp) unable to connect to '" + host + "' on port #" + to_string( port ) );
    }
    else
-      throw runtime_error( "unable to open socket" );
+      throw runtime_error( "(smtp) unable to open socket" );
 }
 
 }
