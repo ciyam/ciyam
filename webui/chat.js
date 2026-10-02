@@ -104,6 +104,10 @@ var g_log_channel = null;
 
 function chat( )
 {
+   // NOTE: The chat's tab, which the accounts page reuses rather than opening another - see
+   // "open_app_tab( )" in "chat_parse.js".
+   window.name = c_tab_chat;
+
    install_request_log( );
 
    watch_timeouts( );
@@ -1170,14 +1174,15 @@ function update_drawer_toggles( )
 // ====================================================================
 
 // NOTE: The account - changing the password, and for admin the people on the node - is on the
-// accounts page, opened in a new tab that shares this session: it announces itself to this chat
-// and is handed the session, as the console is (see "chat.html"), so there is no second sign in.
-// Not "noopener" - the page goes back here with "Back to the chat".
+// accounts page, in its own tab sharing this session: it announces itself to this chat and is
+// handed the session, as the console is (see "chat.html"), so there is no second sign in. An
+// accounts tab already on this session is reused, at My account, not reloaded.
 function do_menu_account_settings( )
 {
    close_user_menu( false );
 
-   window.open( "account.html?source=" + encodeURIComponent( g_self ) + "#mine", "_blank" );
+   open_app_tab( c_tab_accounts, "account.html?source=" + encodeURIComponent( g_self ) + "#mine", ciyam.sessid,
+    function( tab ) { tab.location.hash = "mine"; } );
 }
 
 // NOTE: Between sign in and the first room's messages the thread showed "No room selected"
@@ -4285,7 +4290,7 @@ function do_toggle_console( )
 // than the drawer, and the conversation stays fully visible beside it.
 function do_popout_console( )
 {
-   window.open( "console.html?source=" + encodeURIComponent( g_self ), "_blank", "noopener" );
+   open_app_tab( c_tab_console, "console.html?source=" + encodeURIComponent( g_self ), ciyam.sessid );
 
    if( g_console_open )
       do_toggle_console( );

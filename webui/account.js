@@ -75,6 +75,9 @@ var g_request_quiet = false;
 
 function account_main( )
 {
+   // NOTE: The accounts page's tab, which the chat reuses rather than opening another.
+   window.name = c_tab_accounts;
+
    try
    {
       if( localStorage.getItem( c_storage_device ) !== null )
@@ -290,26 +293,18 @@ function do_toggle_console( )
 
 function do_popout_console( )
 {
-   window.open( "console.html?source=" + encodeURIComponent( g_self ), "_blank", "noopener" );
+   open_app_tab( c_tab_console, "console.html?source=" + encodeURIComponent( g_self ), ciyam.sessid );
 
    if( !document.getElementById( "console_drawer" ).hidden )
       do_toggle_console( );
 }
 
-// NOTE: Opened from the chat, the chat is already there - this page goes back to it. Otherwise
-// the chat opens in a new tab sharing this session, as the chat's own "Open a linked tab" does.
+// NOTE: The chat's tab, reused - switched to when it is on this session, as it is when this page
+// was opened from it; otherwise the chat opens sharing this session. This page stays open, so the
+// chat's Account settings comes back to it without reloading.
 function do_open_chat_linked( )
 {
-   if( ( g_source !== "" ) && window.opener && !window.opener.closed )
-   {
-      window.opener.focus( );
-
-      window.close( );
-
-      return;
-   }
-
-   window.open( "chat.html?source=" + encodeURIComponent( g_self ), "_blank" );
+   open_app_tab( c_tab_chat, "chat.html?source=" + encodeURIComponent( g_self ), ciyam.sessid );
 }
 
 // NOTE: A console or chat opened from this session must not carry on under the next.

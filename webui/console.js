@@ -136,6 +136,12 @@ function console_main( )
 
    if( g_embedded )
       document.getElementById( "console_app" ).classList.add( "is-embedded" );
+   else
+   {
+      // NOTE: Its own tab, which the chat and the accounts page reuse - never in a drawer, whose
+      // frame would then be found by the name instead.
+      window.name = c_tab_console;
+   }
 
    document.getElementById( "title_host" ).textContent = window.location.host;
 
