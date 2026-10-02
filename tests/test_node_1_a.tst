@@ -7,7 +7,7 @@ Create external system identity and 'admin' access with 'none'.
 
 Connect using ADMIN with 'none'.
 CIYAM [http://localhost:13031]
-{"name":"CIYAM", "version":"0.0.0"}
+{"name":":CIYAM:", "version":"0.0.0"}
 [adm]-2@admin
 ciyam.username = admin
 ciyam.is_admin = true
@@ -29,7 +29,7 @@ ciyam.is_locked = false
 
 Update 'admin' access password to 'test' and change identity to internal (after restore).
 CIYAM [http://localhost:13031]
-{"name":"CIYAM", "version":"0.0.0"}
+{"name":":CIYAM:", "version":"0.0.0"}
 [adm]@admin
 ciyam.username = admin
 ciyam.is_admin = true
@@ -59,7 +59,7 @@ Error: System identity is not currently locked.
 
 Connect using 10301 with 'test' (after restore).
 CIYAM [http://localhost:13031]
-{"name":"CIYAM", "version":"0.0.0"}
+{"name":":CIYAM:", "version":"0.0.0"}
 [adm]-1@admin
 ciyam.username = admin
 ciyam.is_admin = true
@@ -69,7 +69,7 @@ ciyam.lock_source => 1
 
 Update 'admin' access password to 'none' (after restore).
 CIYAM [http://localhost:13031]
-{"name":"CIYAM", "version":"0.0.0"}
+{"name":":CIYAM:", "version":"0.0.0"}
 [adm]@admin
 ciyam.username = admin
 ciyam.is_admin = true

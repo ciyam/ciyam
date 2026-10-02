@@ -1209,8 +1209,12 @@ void http_request_handler::on_start( )
 
                string name( c_CIYAM );
 
-               if( !has_identity( ) )
+               bool is_locked = false;
+
+               if( !has_identity( &is_locked ) )
                   name = '*' + name + '*';
+               else if( is_locked )
+                  name = ':' + name + ':';
 
                string version( get_system_variable( e_special_var_version ) );
 
