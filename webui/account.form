@@ -442,7 +442,8 @@ http://www.opensource.org/licenses/mit-license.php.
          <span class="chat-dot"></span>
          <span id="console_session"></span>
       </span>
-      <button type="button" class="chat-console-close" onclick="do_popout_console( )" aria-label="Open the console in its own window" title="Open in its own window">&#8599;</button>
+      <button type="button" class="chat-console-close" onclick="do_popout_console( )"
+       aria-label="Open the console in its own window" title="Open in its own window">&#8599;</button>
       <button type="button" class="chat-console-close" onclick="do_toggle_console( )" aria-label="Close console">&times;</button>
    </div>
    <iframe id="console_frame" class="chat-console-frame" title="Developer console"></iframe>

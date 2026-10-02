@@ -63,6 +63,10 @@ var g_log_channel = null;
 var g_announces = 0;
 var g_announce_timer = null;
 
+// NOTE: The pages this one has handed its session to - a chat it opened signs the session out
+// for everyone when it signs out, and says so with its id.
+var g_viewers = { };
+
 var g_console_loaded = false;
 
 var g_request_log = [ ];
@@ -170,6 +174,8 @@ function on_channel_message( event )
 
    if( ( message.kind === "announce" ) && ( message.id === g_self ) && ( ciyam.sessid !== "" ) )
    {
+      g_viewers[ message.rest ] = true;
+
       g_channel.postMessage( message.rest + "-" + g_self );
 
       g_channel.postMessage( message.rest + "=" + ciyam.access + "," + ciyam.device + "," + ciyam.hashed + ","
@@ -186,6 +192,8 @@ function on_channel_message( event )
    }
    else if( ( message.kind === "ended" ) && ( g_source !== "" ) && ( ciyam.sessid !== "" )
     && ( ( message.id === g_source ) || ( message.id === g_owner ) ) )
+      end_linked_session( );
+   else if( ( message.kind === "ended" ) && ( g_source === "" ) && ( ciyam.sessid !== "" ) && g_viewers[ message.id ] )
       end_linked_session( );
 }
 
@@ -780,6 +788,8 @@ async function do_sign_out( )
 function clear_session( )
 {
    unlink_others( );
+
+   g_viewers = { };
 
    ciyam.sessid = "";
    ciyam.access = "";
