@@ -211,7 +211,15 @@ ERROR=Source message is designated as a system generated message.
 .system_gen_key -unix_unique
 UNIX_UNIQUE=$OUTPUT
 ;
+; NOTE: Attempts to push a "queue item" to check
+; if the default maxiumum item size was exceeded.
+.system_variable @queue_irc "$UNIX_UNIQUE $MESSAGE"
+@ifdef $ERROR
+UNIX_UNIQUE=
+@else
 .system_variable @updated_record_irc_%USER_NAME%_$NAMES "$UNIX_UNIQUE $MESSAGE"
+@endif
+.system_variable @queue_irc ""
 @endif
 ;
 @endif
