@@ -1581,7 +1581,9 @@ function open_app_tab( name, url, our_sessid, on_focus )
 }
 
 // NOTE: "Remember on this browser" - the chat's and the accounts page's sign in. "none" forgets
-// the account, "access" keeps its PIN, "full" its PIN and password hash.
+// the account, "access" keeps its PIN, "full" its PIN and password hash. Three outcomes, not two:
+// the harness has had "creds retain partial" all along - keep the PIN, drop the password - which a
+// single checkbox could not express, as Ian raised.
 const c_retain_none = "none";
 const c_retain_access = "access";
 const c_retain_full = "full";

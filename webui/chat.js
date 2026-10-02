@@ -24,10 +24,6 @@ const c_max_sender_colours = 6;
 // at. Admin signs in with that PIN like any other account.
 const c_access_create = "create";
 
-// NOTE: Three outcomes, not two. The harness has had this all along as
-// "creds retain partial" - keep the access PIN, drop the hashed password. A single
-// checkbox could not express it, which is what Ian raised.
-
 const c_storage_device = "cws.device";
 const c_storage_access = "cws.access";
 const c_storage_hashed_prefix = "cws.hashed_";
