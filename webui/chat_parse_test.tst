@@ -442,6 +442,17 @@ ok   one account formats
 ok   accounts are sorted
 ok   round trip repairs corruption
 
+== remember on this browser ====================================
+ok   an account not saved shows Nothing
+ok   saved, no password: The PIN only
+ok   saved with a password: both
+ok   no account yet
+ok   Nothing forgets the account and its password
+ok   Nothing for the last account removes the key
+ok   The PIN only: saved, any password dropped
+ok   The PIN and the password
+ok   both, but no hash held - the PIN only
+
 == day labels ==================================================
 ok   same day is Today
 ok   one day back is Yesterday

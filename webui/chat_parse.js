@@ -1507,6 +1507,45 @@ function format_access_list( entries )
    return ( valid.length === 0 ) ? null : valid.sort( ).join( "," );
 }
 
+// NOTE: "Remember on this browser" - the chat's and the accounts page's sign in. "none" forgets
+// the account, "access" keeps its PIN, "full" its PIN and password hash.
+const c_retain_none = "none";
+const c_retain_access = "access";
+const c_retain_full = "full";
+
+// NOTE: What the box shows for an account already used here - its current state, rather than a
+// default that would silently forget it at the next sign in.
+function retain_mode_of( stored, access, has_hash )
+{
+   if( ( access === "" ) || ( parse_access_list( stored ).indexOf( access ) < 0 ) )
+      return c_retain_none;
+
+   return has_hash ? c_retain_full : c_retain_access;
+}
+
+// NOTE: What a sign in does with the choice: the saved list to store ("list", null to remove the
+// key) and whether to keep the password hash ("keep_hash" - otherwise it is removed). A hash is
+// kept only when there is one to keep.
+function plan_retain_choice( stored, access, mode, hashed )
+{
+   var entries = parse_access_list( stored );
+
+   var pos = entries.indexOf( access );
+
+   if( mode === c_retain_none )
+   {
+      if( pos >= 0 )
+         entries.splice( pos, 1 );
+
+      return { list: format_access_list( entries ), keep_hash: false };
+   }
+
+   if( pos < 0 )
+      entries.push( access );
+
+   return { list: format_access_list( entries ), keep_hash: ( ( mode === c_retain_full ) && ( hashed !== "" ) ) };
+}
+
 // NOTE: Room names are validated server side by "irc_add_room". Checking the
 // same rules here lets the form report a problem before a round trip.
 function is_valid_room_name( name )
@@ -1625,6 +1664,8 @@ if( typeof module !== "undefined" )
       decode_channel_field: decode_channel_field,
       parse_access_list: parse_access_list,
       format_access_list: format_access_list,
+      retain_mode_of: retain_mode_of,
+      plan_retain_choice: plan_retain_choice,
       is_valid_room_name: is_valid_room_name,
       is_valid_username: is_valid_username
    };

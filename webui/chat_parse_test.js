@@ -827,6 +827,22 @@ check( "accounts are sorted", cp.format_access_list( [ "22222", "11111" ] ), "11
 check( "round trip repairs corruption",
  cp.format_access_list( cp.parse_access_list( ",11111" ) ), "11111" );
 
+heading( "remember on this browser" );
+
+check( "an account not saved shows Nothing", cp.retain_mode_of( "11111", "22222", false ), "none" );
+check( "saved, no password: The PIN only", cp.retain_mode_of( "11111,22222", "22222", false ), "access" );
+check( "saved with a password: both", cp.retain_mode_of( "11111,22222", "22222", true ), "full" );
+check( "no account yet", cp.retain_mode_of( "11111", "", false ), "none" );
+
+check( "Nothing forgets the account and its password", cp.plan_retain_choice( "11111,22222", "22222", "none", "h" ),
+ { list: "11111", keep_hash: false } );
+check( "Nothing for the last account removes the key", cp.plan_retain_choice( "22222", "22222", "none", "h" ),
+ { list: null, keep_hash: false } );
+check( "The PIN only: saved, any password dropped", cp.plan_retain_choice( "11111", "22222", "access", "h" ),
+ { list: "11111,22222", keep_hash: false } );
+check( "The PIN and the password", cp.plan_retain_choice( null, "22222", "full", "h" ), { list: "22222", keep_hash: true } );
+check( "both, but no hash held - the PIN only", cp.plan_retain_choice( "22222", "22222", "full", "" ), { list: "22222", keep_hash: false } );
+
 heading( "day labels" );
 
 // NOTE: Fixed "now" of Wednesday 23 September 2026, so the labels below do not change
