@@ -1656,12 +1656,25 @@ void set_system_variable( const var_name& var,
          {
             string suffix( variable.substr( CONST_LENGTH( c_special_variable_queue_prefix ) ) );
 
-            // NOTE: If finds a number after the first character in the
-            // suffix then removes the remaining characters in order to
-            // simplify the error message text.
+            // NOTE: If a number follows an underbar in the name suffix
+            // (which is at least three characters) then removes all of
+            // the remaining characters as the suffix used for grouping
+            // queue names for the use of special queue variables (such
+            // as "@qs_ni_<suffix>"). A trailing underbar will likewise
+            // be removed.
+            //
+            // The following queue names will use the one common "test"
+            // name "suffix" for settings (such as "@qs_pf_test"):
+            //
+            // @queue_test
+            // @queue_test_
+            // @queue_test_1
+            // @queue_test_2
+            //
             string::size_type pos = suffix.find_first_of( "0123456789" );
 
-            if( ( pos != 0 ) && ( pos != string::npos ) )
+            if( ( pos != string::npos )
+             && ( pos > 1 ) && ( suffix[ pos - 1 ] == '_' ) )
                suffix.erase( pos );
 
             // NOTE: If the final suffix character is an underbar then remove it.
@@ -1688,8 +1701,8 @@ void set_system_variable( const var_name& var,
                max_items = from_string< size_t >( g_variables[ max_items_var_name ] );
 
             // NOTE: If there is a maximum number of items then if the
-            // "@qs_pf_<name>" variable has been set (and has the max.
-            // number of items currently) will pop the front item from
+            // "@qs_pf_<suffix>" variable exists (and the maximum item
+            // number has been reached) will "pop" the front item from
             // the deque before pushing back the new item.
             if( max_items )
             {

@@ -322,6 +322,46 @@ zzz
 system_variable @queue_test3 *
 yyy
 zzz
+system_variable @qs_ni_test 2
+system_variable @qs_pf_test 1
+system_variable @queue_test aaa
+system_variable @queue_test bbb
+system_variable @queue_test ccc
+system_variable @queue_test1 aaa
+system_variable @queue_test1 bbb
+system_variable @queue_test1 ccc
+system_variable @queue_test2 aaa
+system_variable @queue_test2 bbb
+system_variable @queue_test2 ccc
+system_variable @queue_test_ aaa
+system_variable @queue_test_ bbb
+system_variable @queue_test_ ccc
+system_variable @queue_test_1 aaa
+system_variable @queue_test_1 bbb
+system_variable @queue_test_1 ccc
+system_variable @queue_test_2 aaa
+system_variable @queue_test_2 bbb
+system_variable @queue_test_2 ccc
+system_variable @queue_test_x aaa
+system_variable @queue_test_x bbb
+system_variable @queue_test_x ccc
+system_variable @queue_test*
+@queue_test bbb [+1]
+@queue_test1 aaa [+2]
+@queue_test2 aaa [+2]
+@queue_test_ bbb [+1]
+@queue_test_1 bbb [+1]
+@queue_test_2 bbb [+1]
+@queue_test_x aaa [+2]
+system_variable @qs_ni_test ""
+system_variable @qs_pf_test ""
+system_variable @queue_test ""
+system_variable @queue_test1 ""
+system_variable @queue_test2 ""
+system_variable @queue_test_ ""
+system_variable @queue_test_1 ""
+system_variable @queue_test_2 ""
+system_variable @queue_test_x ""
 session_variable @search 000
 session_variable @replace xxx|yyy|zzz
 system_variable test_|xxx|yyy|zzz abc-000-def
