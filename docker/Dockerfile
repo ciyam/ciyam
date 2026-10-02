@@ -16,7 +16,9 @@
 # Build from the repository root:
 #   docker build -f docker/Dockerfile -t ciyam-server .
 
-FROM ubuntu:24.04
+# NOTE: Ubuntu 26.04 since 2026-10-02, as Ian's nodes - its OpenSSL 3.5 offers ML-KEM, the
+# post-quantum key exchange, for TLS.
+FROM ubuntu:26.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV WEBDIR=/var/www/html
@@ -30,13 +32,14 @@ ENV CIYAM_GROUP=root
 RUN apt-get update && apt-get install -y --no-install-recommends \
       build-essential make ca-certificates openssl dos2unix \
       libssl-dev zlib1g-dev libpng-dev libhpdf-dev \
-      libreadline-dev libncurses-dev libtinfo-dev \
+      libreadline-dev libncurses-dev \
       libmysqlclient-dev libmysqlcppconn-dev \
       nodejs \
  && rm -rf /var/lib/apt/lists/*
 
 # NOTE: The build links with "-ltermcap", which no longer ships as its own library
-# on Ubuntu - the symbols live in libtinfo.
+# on Ubuntu - the symbols live in libtinfo, which "libncurses-dev" provides (26.04 has
+# no separate "libtinfo-dev").
 RUN if [ ! -e /usr/lib/x86_64-linux-gnu/libtermcap.so ]; then \
       ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so /usr/lib/x86_64-linux-gnu/libtermcap.so; \
     fi
