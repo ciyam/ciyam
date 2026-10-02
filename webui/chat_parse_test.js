@@ -827,6 +827,14 @@ check( "accounts are sorted", cp.format_access_list( [ "22222", "11111" ] ), "11
 check( "round trip repairs corruption",
  cp.format_access_list( cp.parse_access_list( ",11111" ) ), "11111" );
 
+heading( "a tab for each page" );
+
+check( "no tab of that name - the browser made an empty one: load it", cp.choose_tab_action( true, "", "abc" ), "load" );
+check( "a tab on this session: switch to it, no reload", cp.choose_tab_action( false, "abc", "abc" ), "focus" );
+check( "a tab signed in as someone else: leave it, open another", cp.choose_tab_action( false, "xyz", "abc" ), "new" );
+check( "a tab signed out: leave it, open another", cp.choose_tab_action( false, "", "abc" ), "new" );
+check( "neither signed in: still another - nothing to share", cp.choose_tab_action( false, "", "" ), "new" );
+
 heading( "remember on this browser" );
 
 check( "an account not saved shows Nothing", cp.retain_mode_of( "11111", "22222", false ), "none" );

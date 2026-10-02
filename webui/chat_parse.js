@@ -1507,6 +1507,79 @@ function format_access_list( entries )
    return ( valid.length === 0 ) ? null : valid.sort( ).join( "," );
 }
 
+// NOTE: Each page of the node keeps to one browser tab, named for it, so moving between them
+// reuses a tab rather than opening another (Damon, 2026-10-02). Lower case and hyphens - names
+// starting "_" are reserved by browsers.
+const c_tab_chat = "ciyam-chat";
+const c_tab_accounts = "ciyam-accounts";
+const c_tab_console = "ciyam-console";
+
+// NOTE: What to do with the tab found by a name: "load" an empty one (there was none - the
+// browser has just made it), "focus" one already on this session (no reload - it keeps its
+// place), or open a "new" one when the tab found is signed in some other way or not at all,
+// rather than reload over someone's session.
+function choose_tab_action( is_blank, their_sessid, our_sessid )
+{
+   if( is_blank )
+      return "load";
+
+   if( ( ( their_sessid || "" ) !== "" ) && ( their_sessid === our_sessid ) )
+      return "focus";
+
+   return "new";
+}
+
+// NOTE: The one function here that touches the browser: opens "url" in the tab named "name", as
+// "choose_tab_action( )" decides. The pages share an origin, so the tab found can be looked into
+// without reloading it. A browser finds a named tab only among tabs related to this one - opened
+// from it or from each other - so one opened by typing its address may still get a second tab.
+// "on_focus" runs in a tab that is reused, to take it to the right place.
+function open_app_tab( name, url, our_sessid, on_focus )
+{
+   var found = null;
+
+   try
+   {
+      found = window.open( "", name );
+   }
+   catch( e )
+   {
+   }
+
+   if( !found )
+   {
+      window.open( url, "_blank" );
+
+      return;
+   }
+
+   var blank = false;
+   var theirs = "";
+
+   try
+   {
+      blank = ( found.location.href === "about:blank" );
+      theirs = ( found.ciyam && found.ciyam.sessid ) ? found.ciyam.sessid : "";
+   }
+   catch( e )
+   {
+   }
+
+   var action = choose_tab_action( blank, theirs, our_sessid );
+
+   if( action === "load" )
+      found.location.href = url;
+   else if( action === "focus" )
+   {
+      if( on_focus )
+         on_focus( found );
+
+      found.focus( );
+   }
+   else
+      window.open( url, "_blank" );
+}
+
 // NOTE: "Remember on this browser" - the chat's and the accounts page's sign in. "none" forgets
 // the account, "access" keeps its PIN, "full" its PIN and password hash.
 const c_retain_none = "none";
@@ -1665,6 +1738,7 @@ if( typeof module !== "undefined" )
       parse_access_list: parse_access_list,
       format_access_list: format_access_list,
       retain_mode_of: retain_mode_of,
+      choose_tab_action: choose_tab_action,
       plan_retain_choice: plan_retain_choice,
       is_valid_room_name: is_valid_room_name,
       is_valid_username: is_valid_username

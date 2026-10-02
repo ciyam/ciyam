@@ -442,6 +442,13 @@ ok   one account formats
 ok   accounts are sorted
 ok   round trip repairs corruption
 
+== a tab for each page =========================================
+ok   no tab of that name - the browser made an empty one: load it
+ok   a tab on this session: switch to it, no reload
+ok   a tab signed in as someone else: leave it, open another
+ok   a tab signed out: leave it, open another
+ok   neither signed in: still another - nothing to share
+
 == remember on this browser ====================================
 ok   an account not saved shows Nothing
 ok   saved, no password: The PIN only
