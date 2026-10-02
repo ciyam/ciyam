@@ -175,7 +175,11 @@ ERROR=
 ;
 @elif "$CIYAM_KEY_PRESSED" = "n"
 &Enter Room Name: :NAME=
+@ifndef $NAME
+ERROR=1
+@else
 .run_script !irc_add_room "@name=$NAME"
+@endif
 @ifdef $ERROR
 ERROR=
 @else
