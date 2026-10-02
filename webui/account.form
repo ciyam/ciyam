@@ -62,9 +62,15 @@ http://www.opensource.org/licenses/mit-license.php.
 
       <div class="chat-signin-actions">
          <button type="submit" class="chat-btn chat-btn--primary" id="signin_submit">Sign in</button>
+         <a class="chat-btn account-link-btn account-btn-tall" id="signin_setup" href="#welcome">New here? Set up your account</a>
       </div>
+      <div class="account-hint account-centred">With the code or PIN from the person who added you.</div>
 
-      <p class="account-aside">New here, with a code or a PIN from your admin? <a href="#welcome">Set up your account</a></p>
+      <!-- NOTE: As on the chat's sign in - the sign in is the same on every page of the node. -->
+      <div class="chat-signin-foot">
+         <button type="button" class="chat-btn--link" onclick="do_reset_browser( )">Reset this browser</button>
+         <div class="chat-signin-foot-note">Forgets the device token and every saved account.</div>
+      </div>
    </form>
 </div>
 

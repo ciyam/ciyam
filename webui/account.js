@@ -574,6 +574,27 @@ function fill_saved_pins( )
    on_signin_access( );
 }
 
+// NOTE: As the chat's - "do_reset_browser( )" in "chat.js". Everything this browser keeps for the
+// node goes: the device token, which a rebuilt node no longer knows, and every saved account.
+function do_reset_browser( )
+{
+   if( ciyam.sessid !== "" )
+      return;
+
+   if( !confirm( "Forget the device token and every saved account on this browser?" ) )
+      return;
+
+   try
+   {
+      localStorage.clear( );
+   }
+   catch( e )
+   {
+   }
+
+   location.reload( );
+}
+
 function signin_pin( )
 {
    var chosen = document.getElementById( "signin_access" ).value;

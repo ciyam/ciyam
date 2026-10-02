@@ -56,6 +56,11 @@
    display: block;
 }
 
+.account-centred
+{
+   text-align: center;
+}
+
 .account-aside
 {
    margin: 22px 0 0;
