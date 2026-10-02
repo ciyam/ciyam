@@ -59,7 +59,7 @@ namespace
 // DELE n     ;delete a message
 // QUIT
 
-const size_t c_initial_timeout = 15000;
+const size_t c_initial_timeout = 5000;
 const size_t c_subsequent_timeout = 1500;
 const size_t c_final_response_timeout = 500;
 
@@ -86,7 +86,7 @@ constexpr const char* c_response_multi_terminator = ".";
 void send_simple_request( tcp_socket& socket, const string& request, progress* p_progress = 0 )
 {
    if( socket.write_line( request ) <= 0 )
-      throw runtime_error( "send failure for request..." );
+      throw runtime_error( "(pop3) send failure for request..." );
 
    if( p_progress && !request.empty( ) )
       p_progress->output_progress( request );
@@ -99,7 +99,7 @@ string get_simple_response( tcp_socket& socket, progress* p_progress = 0 )
    size_t timeout = c_initial_timeout;
 
    if( socket.read_line( response_line, timeout ) <= 0 )
-      throw runtime_error( "recv failure for simple response" );
+      throw runtime_error( "(pop3) recv failure for simple response" );
 
    if( p_progress && !response_line.empty( ) )
       p_progress->output_progress( response_line );
@@ -119,6 +119,7 @@ string get_simple_response( tcp_socket& socket, progress* p_progress = 0 )
 void get_multi_line_response( tcp_socket& socket, ostream& os, bool* p_is_mime = 0, progress* p_progress = 0 )
 {
    string next_response_line;
+
    size_t timeout = c_initial_timeout;
 
    if( p_is_mime )
@@ -140,7 +141,7 @@ void get_multi_line_response( tcp_socket& socket, ostream& os, bool* p_is_mime =
             continue;
          }
 
-         throw runtime_error( "recv failure for multi-line response" );
+         throw runtime_error( "(pop3) recv failure for multi-line response" );
       }
 
       if( p_is_mime && !finished_headers )
@@ -174,6 +175,7 @@ void get_multi_line_response( tcp_socket& socket, ostream& os, bool* p_is_mime =
       os << next_response_line << '\n';
 
       timeout = c_subsequent_timeout;
+
       next_response_line.erase( );
    }
 }
@@ -182,12 +184,14 @@ void get_multi_line_response( tcp_socket& socket,
  vector< string >& response_lines, bool* p_is_mime = 0, progress* p_progress = 0 )
 {
    string next_response_line;
+
    size_t timeout = c_initial_timeout;
 
    if( p_is_mime )
       *p_is_mime = false;
 
    bool finished_headers = false;
+
    while( true )
    {
       if( socket.read_line( next_response_line, timeout ) <= 0 )
@@ -199,7 +203,8 @@ void get_multi_line_response( tcp_socket& socket,
             response_lines.push_back( "" );
             continue;
          }
-         throw runtime_error( "recv failure for multi-line response" );
+
+         throw runtime_error( "(pop3) recv failure for multi-line response" );
       }
 
       if( p_is_mime && !finished_headers )
@@ -229,7 +234,9 @@ void get_multi_line_response( tcp_socket& socket,
          break;
 
       response_lines.push_back( next_response_line );
+
       timeout = c_subsequent_timeout;
+
       next_response_line.erase( );
    }
 }
@@ -238,17 +245,17 @@ int parse_stat_response( const string& response, long* p_octets )
 {
    if( response.size( ) >= CONST_LENGTH( c_prefix_err )
     && response.substr( 0, CONST_LENGTH( c_prefix_err ) ) == c_prefix_err )
-      throw runtime_error( "pop3 - " + response.substr( CONST_LENGTH( c_prefix_err ) + 1 ) );
+      throw runtime_error( "(pop3) " + response.substr( CONST_LENGTH( c_prefix_err ) + 1 ) );
 
    if( response.size( ) >= CONST_LENGTH( c_prefix_ok )
     && response.substr( 0, CONST_LENGTH( c_prefix_ok ) ) != c_prefix_ok )
-      throw runtime_error( "pop3 - unexpected STAT response '" + response + "'" );
+      throw runtime_error( "(pop3) unexpected STAT response '" + response + "'" );
 
    string stat_details( response.substr( CONST_LENGTH( c_prefix_ok ) + 1 ) );
 
    string::size_type pos = stat_details.find( ' ' );
    if( pos == string::npos )
-      throw runtime_error( "pop3 - unable to interpret '" + response + "' as a STAT response" );
+      throw runtime_error( "(pop3) unable to interpret '" + response + "' as a STAT response" );
 
    if( p_octets )
       *p_octets = atol( stat_details.substr( pos + 1 ).c_str( ) );
@@ -271,8 +278,9 @@ void parse_list_response(
          throw runtime_error( response_lines[ i ].substr( CONST_LENGTH( c_prefix_err ) + 1 ) );
 
       string::size_type pos = response_lines[ i ].find( ' ' );
+
       if( pos == string::npos )
-         throw runtime_error( "unable to interpret '" + response_lines[ i ] + "' as a list entry" );
+         throw runtime_error( "(pop3) unable to interpret '" + response_lines[ i ] + "' as a list entry" );
 
       message_list.push_back( make_pair(
        atoi( response_lines[ i ].substr( 0, pos ).c_str( ) ),
@@ -283,9 +291,11 @@ void parse_list_response(
 void parse_top_response( const vector< string >& response_lines, vector< string >& headers )
 {
    bool found = false;
+
    size_t last_header = 0;
 
    bool get_all_headers = headers.empty( );
+
    for( vector< string >::size_type i = 0; i < response_lines.size( ); i++ )
    {
       if( get_all_headers )
@@ -296,6 +306,7 @@ void parse_top_response( const vector< string >& response_lines, vector< string 
           && ( response_lines[ i ][ 0 ] == ' ' || response_lines[ i ][ 0 ] == '\t' ) )
          {
             headers[ last_header ] += "\n" + response_lines[ i ];
+
             continue;
          }
          else
@@ -379,7 +390,7 @@ void pop3::init( const string& host, int port, pop3_ctype ctype, progress* p_pro
 {
 #ifndef SSL_SUPPORT
    if( ctype != e_pop3_ctype_insecure )
-      throw runtime_error( "pop3::init - cannot init securely without SSL support" );
+      throw runtime_error( "(pop3) cannot init securely without SSL support" );
 #endif
    p_impl->host = host;
    p_impl->port = port;
@@ -401,29 +412,40 @@ void pop3::init( const string& host, int port, pop3_ctype ctype, progress* p_pro
 void pop3::login( const string& user, const string& password )
 {
    if( !p_impl->socket.open( ) )
-      throw runtime_error( "pop3::login - unable to open socket" );
+      throw runtime_error( "(pop3) unable to open socket" );
 
    try
    {
       string response;
+
       ip_address address( p_impl->host.c_str( ), p_impl->port );
 
-      if( p_impl->p_progress )
-         p_impl->p_progress->output_progress( "host = " + p_impl->host + ", port = " + to_string( p_impl->port ) );
+      string type( !address.get_is_ipv6( ) ? "IPv4" : "IPv6" );
 
-      if( p_impl->socket.connect( address ) )
+      if( p_impl->p_progress )
+         p_impl->p_progress->output_progress( "(pop3) connecting " + type );
+
+      bool okay = p_impl->socket.connect( address, c_initial_timeout );
+
+      if( !okay && address.get_is_ipv6( ) )
+      {
+         address.force_ipv4( );
+
+         if( p_impl->p_progress )
+            p_impl->p_progress->output_progress( "(pop3) retrying using IPv4" );
+      }
+
+      if( p_impl->socket.connect( address, c_initial_timeout ) )
       {
 #ifdef USE_NO_DELAY
          p_impl->socket.set_no_delay( );
 #endif
 #ifdef SSL_SUPPORT
          // NOTE: For SSL all protocol is secure (unlike STARTTLS).
-         // FUTURE: After a successful SSL connection the server certificate should
-         // be checked (at the very least make sure that it is the host requested).
          if( p_impl->ctype == e_pop3_ctype_ssl )
             p_impl->socket.ssl_connect( );
 
-         // NOTE: Get server greeting...
+         // NOTE: Get server greeting.
          response = get_simple_response( p_impl->socket, p_impl->p_progress );
 
          if( p_impl->ctype == e_pop3_ctype_tls )
@@ -431,10 +453,11 @@ void pop3::login( const string& user, const string& password )
             send_simple_request( p_impl->socket, c_request_stls, p_impl->p_progress );
             response = get_simple_response( p_impl->socket, p_impl->p_progress );
 
-            // FUTURE: After a successful SSL connection the server certificate should
-            // be checked (at the very least make sure that it is the host requested).
             p_impl->socket.ssl_connect( );
          }
+
+         // FUTURE: After a successful SSL connection the server certificate should
+         // be checked (at the very least make sure that it is the host requested).
 #endif
          string user_req( c_request_user );
          user_req += ' ' + user;
@@ -459,11 +482,13 @@ void pop3::login( const string& user, const string& password )
          // NOTE: Make the message list request regardless of the STAT response
          // as some servers don't display the number of messages in their response.
          get_message_list( p_impl->message_list );
+
          if( p_impl->messages != p_impl->message_list.size( ) )
          {
             p_impl->messages = p_impl->message_list.size( );
 
             p_impl->total_size = 0;
+
             for( size_t i = 0; i < p_impl->message_list.size( ); i++ )
                p_impl->total_size += p_impl->message_list[ i ].second;
          }
@@ -471,11 +496,13 @@ void pop3::login( const string& user, const string& password )
          p_impl->is_open = true;
       }
       else
-         throw runtime_error( "pop3::login - unable to connect to host '" + p_impl->host + "'" );
+         throw runtime_error( "(pop3) unable to connect to host '"
+          + p_impl->host + "' on port #" + to_string( p_impl->port ) );
    }
    catch( ... )
    {
       p_impl->socket.close( );
+
       throw;
    }
 }
@@ -495,6 +522,7 @@ void pop3::get_message_list( vector< pair< int, long > >& message_list )
    send_simple_request( p_impl->socket, c_request_list, p_impl->p_progress );
 
    vector< string > response_lines;
+
    get_multi_line_response( p_impl->socket, response_lines, 0, p_impl->p_progress );
 
    parse_list_response( response_lines, message_list );
@@ -503,28 +531,33 @@ void pop3::get_message_list( vector< pair< int, long > >& message_list )
 void pop3::get_message( int message_num, ostream& os, bool* p_is_mime )
 {
    string request( c_request_retr );
+
    request += ' ' + to_string( message_num );
 
    send_simple_request( p_impl->socket, request, p_impl->p_progress );
+
    get_multi_line_response( p_impl->socket, os, p_is_mime, p_impl->p_progress );
 }
 
 void pop3::get_message_headers( int message_num, vector< string >& headers )
 {
    bool found = false;
+
    for( size_t i = 0; i < p_impl->message_list.size( ); i++ )
    {
       if( p_impl->message_list[ i ].first == message_num )
       {
          found = true;
+
          break;
       }
    }
 
    if( !found )
-      throw runtime_error( "pop3 - message #" + to_string( message_num ) + " does not exist" );
+      throw runtime_error( "(pop3) message #" + to_string( message_num ) + " does not exist" );
 
    string top_request( c_request_top );
+
    top_request += ' ';
    top_request += to_string( message_num );
    top_request += " 0";
@@ -532,6 +565,7 @@ void pop3::get_message_headers( int message_num, vector< string >& headers )
    send_simple_request( p_impl->socket, top_request, p_impl->p_progress );
 
    vector< string > response_lines;
+
    get_multi_line_response( p_impl->socket, response_lines, 0, p_impl->p_progress );
 
    parse_top_response( response_lines, headers );
@@ -540,11 +574,13 @@ void pop3::get_message_headers( int message_num, vector< string >& headers )
 void pop3::delete_message( int message_num )
 {
    bool found = false;
+
    for( size_t i = 0; i < p_impl->message_list.size( ); i++ )
    {
       if( p_impl->message_list[ i ].first == message_num )
       {
          found = true;
+
          break;
       }
    }
@@ -553,10 +589,12 @@ void pop3::delete_message( int message_num )
       throw runtime_error( "pop3 - message #" + to_string( message_num ) + " does not exist" );
 
    string dele_request( c_request_dele );
+
    dele_request += ' ' + to_string( message_num );
 
    send_simple_request( p_impl->socket, dele_request, p_impl->p_progress );
-   string response = get_simple_response( p_impl->socket, p_impl->p_progress );
+
+   string response( get_simple_response( p_impl->socket, p_impl->p_progress ) );
 }
 
 void pop3::disconnect( )
@@ -566,14 +604,20 @@ void pop3::disconnect( )
       send_simple_request( p_impl->socket, c_request_quit, p_impl->p_progress );
 
       string response;
+
       size_t timeout( c_final_response_timeout );
+
       p_impl->socket.read_line( response, timeout );
 
-      if( p_impl->p_progress && !response.empty( ) )
-         p_impl->p_progress->output_progress( response );
+      if( p_impl->p_progress )
+      {
+         if( !response.empty( ) )
+            p_impl->p_progress->output_progress( response );
+
+         p_impl->p_progress->output_progress( "(pop3) disconnected" );
+      }
 
       p_impl->socket.close( );
       p_impl->is_open = false;
    }
 }
-
