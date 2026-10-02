@@ -1656,6 +1656,18 @@ void set_system_variable( const var_name& var,
          {
             string suffix( variable.substr( CONST_LENGTH( c_special_variable_queue_prefix ) ) );
 
+            // NOTE: If finds a number after the first character in the
+            // suffix then removes the remaining characters in order to
+            // simplify the error message text.
+            string::size_type pos = suffix.find_first_of( "0123456789" );
+
+            if( ( pos != 0 ) && ( pos != string::npos ) )
+               suffix.erase( pos );
+
+            // NOTE: If the final suffix character is an underbar then remove it.
+            if( ( suffix.size( ) > 1 ) && ( suffix[ suffix.length( ) - 1 ] == '_' ) )
+               suffix.erase( suffix.size( ) - 1 );
+
             size_t max_item_size = c_default_max_deque_item_size;
 
             string max_item_size_var_name( c_qs_max_chars_prefix + suffix );
