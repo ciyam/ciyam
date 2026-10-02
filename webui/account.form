@@ -36,14 +36,27 @@ http://www.opensource.org/licenses/mit-license.php.
       <h2 tabindex="-1">Accounts</h2>
       <p class="chat-signin-lede">Sign in to manage your account - or, as admin, the people on this node.</p>
 
-      <label class="chat-label" for="signin_pin">PIN</label>
+      <label class="chat-label" for="signin_access">Account</label>
+      <select id="signin_access" class="chat-field chat-field--mono" onchange="on_signin_access( )">
+         <option value="">Enter a PIN&hellip;</option>
+      </select>
+
+      <label class="chat-label" for="signin_pin" id="signin_pin_label">PIN</label>
       <input type="text" id="signin_pin" class="chat-field chat-field--mono" inputmode="numeric" maxlength="5"
-       autocomplete="username" list="signin_saved" oninput="update_signin_hint( )">
-      <datalist id="signin_saved"></datalist>
+       autocomplete="username" oninput="on_signin_access( )">
 
       <label class="chat-label" for="signin_password">Password</label>
       <input type="password" id="signin_password" class="chat-field" autocomplete="current-password">
       <div class="account-hint" id="signin_hint"></div>
+
+      <label class="chat-label" for="signin_retain">Remember on this browser</label>
+      <select id="signin_retain" class="chat-field">
+         <option value="none">Nothing &mdash; forget this account</option>
+         <option value="access">The PIN only</option>
+         <option value="full">The PIN and the password</option>
+      </select>
+      <div class="account-hint">Shared with the chat on this browser. Saving the password as well signs you in
+       without typing it.</div>
 
       <div class="chat-error-text" id="signin_error" role="alert"></div>
 

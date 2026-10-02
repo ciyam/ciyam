@@ -550,36 +550,95 @@ function saved_hash( pin )
    }
 }
 
+// NOTE: The accounts saved on this browser - by this page or the chat, which share them - ahead
+// of "Enter a PIN...", the first chosen when there is one, as the chat does.
 function fill_saved_pins( )
 {
-   var list = document.getElementById( "signin_saved" );
+   var select = document.getElementById( "signin_access" );
 
-   list.replaceChildren( );
-
-   saved_pins( ).forEach( function( pin )
+   for( var i = select.options.length - 1; i >= 0; i-- )
    {
-      var option = document.createElement( "option" );
+      if( select.options[ i ].value !== "" )
+         select.remove( i );
+   }
 
-      option.value = pin;
+   saved_pins( ).forEach( function( pin, n )
+   {
+      var label = pin + ( ( saved_hash( pin ) !== null ) ? "  \u00b7  saved password" : "" );
 
-      list.appendChild( option );
+      select.options.add( new Option( label, pin, false ), n );
    } );
+
+   select.selectedIndex = 0;
+
+   on_signin_access( );
 }
 
-// NOTE: A PIN whose password the chat saved can sign in here without it.
-function update_signin_hint( )
+function signin_pin( )
 {
-   var pin = document.getElementById( "signin_pin" ).value.trim( );
+   var chosen = document.getElementById( "signin_access" ).value;
 
-   set_error( "signin_hint", ( is_account_pin( pin ) && ( saved_hash( pin ) !== null ) )
-    ? "This browser has the password saved - leave it empty to use it." : "" );
+   return ( chosen !== "" ) ? chosen : document.getElementById( "signin_pin" ).value.trim( );
+}
+
+// NOTE: The PIN field only for a PIN not saved here; the Remember box shows what is saved for the
+// account now, so signing in never silently forgets it. A saved password can be used by leaving
+// the field empty - it stays open, so a password that no longer works can be typed instead.
+function on_signin_access( )
+{
+   var typed = ( document.getElementById( "signin_access" ).value === "" );
+
+   document.getElementById( "signin_pin_label" ).hidden = !typed;
+   document.getElementById( "signin_pin" ).hidden = !typed;
+
+   var pin = signin_pin( );
+
+   var has_hash = is_account_pin( pin ) && ( saved_hash( pin ) !== null );
+
+   set_error( "signin_hint", has_hash ? "The password is saved on this browser - leave it empty to use it." : "" );
+
+   var stored = null;
+
+   try
+   {
+      stored = localStorage.getItem( c_storage_access );
+   }
+   catch( e )
+   {
+   }
+
+   document.getElementById( "signin_retain" ).value = retain_mode_of( stored, is_account_pin( pin ) ? pin : "", has_hash );
+}
+
+// NOTE: After a sign in, what the Remember box asked for - "plan_retain_choice( )" in
+// "chat_parse.js", the same as the chat's.
+function apply_retain_choice( )
+{
+   try
+   {
+      var plan = plan_retain_choice( localStorage.getItem( c_storage_access ), ciyam.access,
+       document.getElementById( "signin_retain" ).value, ciyam.hashed );
+
+      if( plan.keep_hash )
+         localStorage.setItem( c_storage_hashed_prefix + ciyam.access, ciyam.hashed );
+      else
+         localStorage.removeItem( c_storage_hashed_prefix + ciyam.access );
+
+      if( plan.list === null )
+         localStorage.removeItem( c_storage_access );
+      else
+         localStorage.setItem( c_storage_access, plan.list );
+   }
+   catch( e )
+   {
+   }
 }
 
 async function do_sign_in( event )
 {
    event.preventDefault( );
 
-   var pin = document.getElementById( "signin_pin" ).value.trim( );
+   var pin = signin_pin( );
    var password = document.getElementById( "signin_password" ).value;
 
    if( !is_account_pin( pin ) )
@@ -641,6 +700,9 @@ async function do_sign_in( event )
    }
 
    document.getElementById( "signin_password" ).value = "";
+   document.getElementById( "signin_pin" ).value = "";
+
+   apply_retain_choice( );
 
    enter_app( );
 }
