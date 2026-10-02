@@ -449,6 +449,11 @@ ok   a tab signed in as someone else: leave it, open another
 ok   a tab signed out: leave it, open another
 ok   neither signed in: still another - nothing to share
 
+== an address once a link has ended ============================
+ok   source goes, the section stays
+ok   other parameters stay
+ok   an address with no source is left as it is
+
 == remember on this browser ====================================
 ok   an account not saved shows Nothing
 ok   saved, no password: The PIN only

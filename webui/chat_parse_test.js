@@ -835,6 +835,13 @@ check( "a tab signed in as someone else: leave it, open another", cp.choose_tab_
 check( "a tab signed out: leave it, open another", cp.choose_tab_action( false, "", "abc" ), "new" );
 check( "neither signed in: still another - nothing to share", cp.choose_tab_action( false, "", "" ), "new" );
 
+heading( "an address once a link has ended" );
+
+check( "source goes, the section stays", cp.address_without_source( "http://localhost:13031/account.html?source=1790900000000#mine" ),
+ "/account.html#mine" );
+check( "other parameters stay", cp.address_without_source( "http://h/console.html?embedded=1&source=5" ), "/console.html?embedded=1" );
+check( "an address with no source is left as it is", cp.address_without_source( "http://h/chat.html" ), "/chat.html" );
+
 heading( "remember on this browser" );
 
 check( "an account not saved shows Nothing", cp.retain_mode_of( "11111", "22222", false ), "none" );

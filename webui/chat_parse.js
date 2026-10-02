@@ -1580,6 +1580,31 @@ function open_app_tab( name, url, our_sessid, on_focus )
       window.open( url, "_blank" );
 }
 
+// NOTE: A page's address without "source=" - the page it was linked to - keeping everything else
+// and the "#...". While linked it stays, so a reload links straight back; once the link has ended
+// it goes, so a reload does not try to link again (Damon, 2026-10-02).
+function address_without_source( href )
+{
+   var url = new URL( href );
+
+   url.searchParams.delete( "source" );
+
+   return url.pathname + url.search + url.hash;
+}
+
+// NOTE: In the browser - drops "source=" from the address bar without loading the page again or
+// adding to its history.
+function forget_source( )
+{
+   try
+   {
+      history.replaceState( null, "", address_without_source( window.location.href ) );
+   }
+   catch( e )
+   {
+   }
+}
+
 // NOTE: "Remember on this browser" - the chat's and the accounts page's sign in. "none" forgets
 // the account, "access" keeps its PIN, "full" its PIN and password hash. Three outcomes, not two:
 // the harness has had "creds retain partial" all along - keep the PIN, drop the password - which a
@@ -1741,6 +1766,7 @@ if( typeof module !== "undefined" )
       format_access_list: format_access_list,
       retain_mode_of: retain_mode_of,
       choose_tab_action: choose_tab_action,
+      address_without_source: address_without_source,
       plan_retain_choice: plan_retain_choice,
       is_valid_room_name: is_valid_room_name,
       is_valid_username: is_valid_username
