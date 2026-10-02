@@ -113,7 +113,8 @@ http://www.opensource.org/licenses/mit-license.php.
                   <button type="button" class="chat-user-menu-link" role="menuitem" onclick="do_menu_linked_tab( )"
                    title="Opens the chat in a new tab sharing this session - no second sign in">Open a linked tab &rarr;</button>
                </div>
-               <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_open_password_dialog( )">Change password&hellip;</button>
+               <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_account_settings( )"
+                title="Opens your account in a new tab sharing this session">Account settings&hellip;</button>
                <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_sign_out( )">Sign out</button>
             </div>
          </div>
@@ -374,35 +375,6 @@ http://www.opensource.org/licenses/mit-license.php.
       <div class="chat-dialog-actions">
          <button type="button" class="chat-btn" onclick="do_close_room_dialog( )">Cancel</button>
          <button type="submit" class="chat-btn chat-btn--accent" id="room_dialog_submit">Create</button>
-      </div>
-   </form>
-</div>
-
-<div id="password_dialog" class="chat-scrim" hidden>
-   <form class="chat-dialog chat-dialog--password" onsubmit="do_submit_password( ); return false;">
-      <h2>Change password</h2>
-      <p class="chat-dialog-note">You stay signed in. If this browser remembers your password,
-      it will remember the new one.</p>
-
-      <label class="chat-label" for="password_current">Current password</label>
-      <input type="password" id="password_current" class="chat-field" autocomplete="current-password" oninput="update_password_dialog( )">
-
-      <label class="chat-label" for="password_new">New password</label>
-      <input type="password" id="password_new" class="chat-field" autocomplete="new-password" oninput="update_password_dialog( )">
-
-      <div class="chat-strength" id="password_strength" hidden>
-         <div class="chat-strength-track"><div class="chat-strength-bar" id="password_strength_bar"></div></div>
-         <span class="chat-strength-label" id="password_strength_label"></span>
-      </div>
-
-      <label class="chat-label" for="password_confirm">Confirm new password</label>
-      <input type="password" id="password_confirm" class="chat-field" autocomplete="new-password" oninput="update_password_dialog( )">
-
-      <div class="chat-error-text" id="password_error" role="alert"></div>
-
-      <div class="chat-dialog-actions">
-         <button type="button" class="chat-btn" onclick="do_close_password_dialog( )">Cancel</button>
-         <button type="submit" class="chat-btn chat-btn--accent" id="password_submit" disabled>Change password</button>
       </div>
    </form>
 </div>

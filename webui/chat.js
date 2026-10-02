@@ -152,12 +152,6 @@ function chat( )
 
          event.preventDefault( );
       }
-      else if( !document.getElementById( "password_dialog" ).hidden )
-      {
-         do_close_password_dialog( );
-
-         event.preventDefault( );
-      }
       else if( !document.getElementById( "emoji_panel" ).hidden )
       {
          close_emoji_panel( true );
@@ -1175,133 +1169,18 @@ function update_drawer_toggles( )
 }
 
 // ====================================================================
-// Change password
+// Account settings
 // ====================================================================
 
-function do_open_password_dialog( )
+// NOTE: The account - changing the password, and for admin the people on the node - is on the
+// accounts page, opened in a new tab that shares this session: it announces itself to this chat
+// and is handed the session, as the console is (see "chat.html"), so there is no second sign in.
+// Not "noopener" - the page goes back here with "Back to the chat".
+function do_menu_account_settings( )
 {
    close_user_menu( false );
 
-   [ "password_current", "password_new", "password_confirm" ].forEach( function( id )
-   {
-      document.getElementById( id ).value = "";
-   } );
-
-   set_error( "password_error", "" );
-
-   update_password_dialog( );
-
-   document.getElementById( "password_dialog" ).hidden = false;
-
-   document.getElementById( "password_current" ).focus( );
-}
-
-function do_close_password_dialog( )
-{
-   document.getElementById( "password_dialog" ).hidden = true;
-}
-
-// NOTE: The strength bar follows the new password; Change is enabled once there is a current
-// password, the new one is at least weak, and the two new ones match.
-function update_password_dialog( )
-{
-   var current = document.getElementById( "password_current" ).value;
-   var fresh = document.getElementById( "password_new" ).value;
-   var confirm = document.getElementById( "password_confirm" ).value;
-
-   var strength = password_strength( fresh );
-
-   var box = document.getElementById( "password_strength" );
-
-   box.hidden = ( strength.level < 0 );
-   box.dataset.level = String( strength.level );
-
-   document.getElementById( "password_strength_label" ).textContent = strength.text;
-
-   document.getElementById( "password_submit" ).disabled =
-    ( current === "" ) || ( strength.level < 1 ) || ( fresh !== confirm );
-
-   if( ( confirm !== "" ) && ( fresh !== confirm ) && ( confirm.length >= fresh.length ) )
-      set_error( "password_error", "The new passwords do not match." );
-   else if( strength.level === 0 )
-      set_error( "password_error", "Use at least 7 characters." );
-   else
-      set_error( "password_error", "" );
-}
-
-// NOTE: The hash this session was opened with, for a given password - "determine_hashed( )"
-// in "ciyam.js", worked out without touching the session's own.
-function session_hash_for( password )
-{
-   return hex_sha256( hex_sha256( ciyam.hash_combined( password ) ) + ciyam.device );
-}
-
-async function do_submit_password( )
-{
-   var current = document.getElementById( "password_current" ).value;
-   var fresh = document.getElementById( "password_new" ).value;
-   var confirm = document.getElementById( "password_confirm" ).value;
-
-   // NOTE: The server only checks the session, so the current password is checked here,
-   // against the hash the session was opened with - no request, and nothing sent.
-   if( session_hash_for( current ) !== ciyam.hashed )
-   {
-      set_error( "password_error", "The current password is not right." );
-
-      return;
-   }
-
-   if( ( password_strength( fresh ).level < 1 ) || ( fresh !== confirm ) )
-      return;
-
-   if( fresh === current )
-   {
-      set_error( "password_error", "The new password is the same as the current one." );
-
-      return;
-   }
-
-   var submit = document.getElementById( "password_submit" );
-
-   submit.disabled = true;
-
-   // NOTE: The account's own PIN - "***" is not substituted by "update_user( )" and the
-   // server refuses it. The password is hashed with the PIN before it is sent.
-   var response = await new Promise( function( resolve )
-   {
-      serialised( function( )
-      {
-         return ciyam.update_user( ciyam.access, "password=" + fresh, function( r ) { resolve( String( r ) ); } );
-      } );
-   } );
-
-   submit.disabled = false;
-
-   if( is_error_response( response ) )
-   {
-      set_error( "password_error", error_text( response ) );
-
-      return;
-   }
-
-   // NOTE: The session stays open. A hash remembered for this account was made from the old
-   // password and the server now refuses it, so it is replaced; nothing stored, nothing to do.
-   var hashed = session_hash_for( fresh );
-
-   ciyam.hashed = hashed;
-
-   try
-   {
-      if( localStorage.getItem( c_storage_hashed_prefix + ciyam.access ) !== null )
-         localStorage.setItem( c_storage_hashed_prefix + ciyam.access, hashed );
-   }
-   catch( e )
-   {
-   }
-
-   do_close_password_dialog( );
-
-   show_alert( "Password changed.", "is-info" );
+   window.open( "account.html?source=" + encodeURIComponent( g_self ) + "#mine", "_blank" );
 }
 
 // NOTE: Between sign in and the first room's messages the thread showed "No room selected"

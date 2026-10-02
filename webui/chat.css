@@ -301,14 +301,6 @@ button.chat-avatar:hover
    Password strength - the bands and colours of "test_bip39.html"
    ==================================================================== */
 
-/* NOTE: Even spacing for the three fields - the general "label after a field" gap is sized
-   for the sign in form, and the strength bar between two fields broke the rhythm. */
-.chat-dialog--password .chat-label,
-.chat-dialog--password .chat-field + .chat-label
-{
-   margin: 8px 0 0;
-}
-
 .chat-strength
 {
    margin-top: -2px;
