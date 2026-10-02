@@ -27,9 +27,6 @@ const c_access_create = "create";
 // NOTE: Three outcomes, not two. The harness has had this all along as
 // "creds retain partial" - keep the access PIN, drop the hashed password. A single
 // checkbox could not express it, which is what Ian raised.
-const c_retain_none = "none";
-const c_retain_access = "access";
-const c_retain_full = "full";
 
 const c_storage_device = "cws.device";
 const c_storage_access = "cws.access";
@@ -1326,53 +1323,28 @@ function apply_retain_choice( )
    if( ( g_registered_pin === ciyam.access ) && ( mode === c_retain_none ) )
       mode = c_retain_access;
 
-   var entries = parse_access_list( localStorage.getItem( c_storage_access ) );
+   // NOTE: The plan is shared with the accounts page - "plan_retain_choice( )" in "chat_parse.js".
+   var plan = plan_retain_choice( localStorage.getItem( c_storage_access ), ciyam.access, mode, ciyam.hashed );
 
-   var pos = entries.indexOf( ciyam.access );
-
-   if( mode === c_retain_none )
-   {
-      if( pos >= 0 )
-         entries.splice( pos, 1 );
-
-      localStorage.removeItem( c_storage_hashed_prefix + ciyam.access );
-   }
+   if( plan.keep_hash )
+      localStorage.setItem( c_storage_hashed_prefix + ciyam.access, ciyam.hashed );
    else
-   {
-      if( pos < 0 )
-         entries.push( ciyam.access );
-
-      if( ( mode === c_retain_full ) && ( ciyam.hashed !== "" ) )
-         localStorage.setItem( c_storage_hashed_prefix + ciyam.access, ciyam.hashed );
-      else
-         localStorage.removeItem( c_storage_hashed_prefix + ciyam.access );
-   }
+      localStorage.removeItem( c_storage_hashed_prefix + ciyam.access );
 
    // NOTE: Removing the key rather than storing an empty string. Storing "" left a blank
    // entry that both this client and the harness then read as a nameless account.
-   var value = format_access_list( entries );
-
-   if( value === null )
+   if( plan.list === null )
       localStorage.removeItem( c_storage_access );
    else
-      localStorage.setItem( c_storage_access, value );
+      localStorage.setItem( c_storage_access, plan.list );
 }
 
 // NOTE: Reflects whether the selected account is already saved, so the box shows the
 // current state rather than a default that would silently forget it on the next connect.
 function refresh_retain_choice( access )
 {
-   var entries = parse_access_list( localStorage.getItem( c_storage_access ) );
-
-   var mode = c_retain_none;
-
-   if( ( access !== "" ) && ( entries.indexOf( access ) >= 0 ) )
-   {
-      mode = ( localStorage.getItem( c_storage_hashed_prefix + access ) !== null )
-       ? c_retain_full : c_retain_access;
-   }
-
-   document.getElementById( "signin_retain" ).value = mode;
+   document.getElementById( "signin_retain" ).value = retain_mode_of( localStorage.getItem( c_storage_access ),
+    access, ( access !== "" ) && ( localStorage.getItem( c_storage_hashed_prefix + access ) !== null ) );
 }
 
 function do_reset_browser( )

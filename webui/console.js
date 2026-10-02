@@ -16,9 +16,7 @@ const c_storage_access = "cws.access";
 const c_storage_hashed_prefix = "cws.hashed_";
 const c_storage_script_prefix = "cws.script_";
 
-const c_retain_none = "none";
-const c_retain_access = "access";
-const c_retain_full = "full";
+// NOTE: c_retain_none, c_retain_access and c_retain_full come from "chat_parse.js", loaded first.
 
 const c_announce_interval = 2000;
 const c_max_announces = 30;
