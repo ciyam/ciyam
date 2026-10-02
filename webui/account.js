@@ -36,6 +36,39 @@ var g_join_code = "";
 
 var g_alert_timer = null;
 
+// NOTE: Sharing a session with the chat and the console, over the channel the chat and Ian's
+// harness already speak - see "chat.html" and "parse_channel_message( )" in "console_parse.js":
+//
+//   "<owner>:<viewer>"   a viewer asks the page that opened it for its session
+//   "<viewer>-<owner>"   the owner names itself
+//   "<viewer>=<fields>"  the owner hands over its session
+//   "<id>"               that page's session has ended - its viewers let go
+//
+// This page is a viewer when the chat opens it ("?source=<chat>"), and an owner for the chat or
+// console it opens. Ids are fresh for each load, never from "sessionStorage", which a page and
+// its iframe share.
+const c_channel_name = "test_web_channel";
+const c_log_channel_name = "ciyam_console_log";
+
+const c_announce_interval = 500;
+const c_max_announces = 10;
+
+var g_self = String( Date.now( ) );
+var g_source = "";
+var g_owner = "";
+
+var g_channel = null;
+var g_log_channel = null;
+
+var g_announces = 0;
+var g_announce_timer = null;
+
+var g_console_loaded = false;
+
+var g_request_log = [ ];
+var g_request_log_id = 0;
+var g_request_quiet = false;
+
 // ====================================================================
 // Entry point
 // ====================================================================
@@ -53,9 +86,243 @@ function account_main( )
 
    fill_saved_pins( );
 
+   // NOTE: Every request is logged for a console, as the chat's are.
+   install_log_capture( ciyam, "account", function( ) { return g_request_quiet; }, record_request );
+
+   g_channel = new BroadcastChannel( c_channel_name );
+   g_channel.addEventListener( "message", on_channel_message );
+
+   g_log_channel = new BroadcastChannel( c_log_channel_name );
+   g_log_channel.addEventListener( "message", on_log_message );
+
+   var source = new URL( window.location.href ).searchParams.get( "source" );
+
+   if( ( source !== null ) && /^[0-9]+$/.test( source ) )
+   {
+      g_source = source;
+
+      g_announce_timer = window.setInterval( announce, c_announce_interval );
+
+      announce( );
+   }
+
    window.addEventListener( "hashchange", route );
 
    route( );
+}
+
+// ====================================================================
+// A shared session
+// ====================================================================
+
+function announce( )
+{
+   if( ciyam.sessid !== "" )
+      return;
+
+   if( ++g_announces > c_max_announces )
+   {
+      stop_announcing( );
+
+      set_error( "linking_text", "The chat didn't share its session - is it still signed in?" );
+
+      document.getElementById( "linking_actions" ).hidden = false;
+
+      return;
+   }
+
+   g_channel.postMessage( g_source + ":" + g_self );
+}
+
+function stop_announcing( )
+{
+   if( g_announce_timer !== null )
+   {
+      window.clearInterval( g_announce_timer );
+
+      g_announce_timer = null;
+   }
+}
+
+function is_waiting_for_link( )
+{
+   return ( g_source !== "" ) && ( ciyam.sessid === "" ) && ( g_announce_timer !== null );
+}
+
+function do_sign_in_instead( )
+{
+   stop_announcing( );
+
+   g_source = "";
+
+   route( );
+}
+
+function on_channel_message( event )
+{
+   var message = parse_channel_message( event.data );
+
+   if( message === null )
+      return;
+
+   if( ( message.kind === "announce" ) && ( message.id === g_self ) && ( ciyam.sessid !== "" ) )
+   {
+      g_channel.postMessage( message.rest + "-" + g_self );
+
+      g_channel.postMessage( message.rest + "=" + ciyam.access + "," + ciyam.device + "," + ciyam.hashed + ","
+       + ciyam.sessid + "," + ciyam.unique + "," + encode_channel_field( ciyam.username ) + "," + ( ciyam.is_admin ? "1" : "0" ) );
+   }
+   else if( ( message.kind === "owner" ) && ( message.id === g_self ) )
+      g_owner = message.rest;
+   else if( ( message.kind === "credentials" ) && ( message.id === g_self ) && is_waiting_for_link( ) )
+   {
+      var credentials = parse_credentials( message.rest );
+
+      if( credentials !== null )
+         adopt_session( credentials );
+   }
+   else if( ( message.kind === "ended" ) && ( g_source !== "" ) && ( ciyam.sessid !== "" )
+    && ( ( message.id === g_source ) || ( message.id === g_owner ) ) )
+      end_linked_session( );
+}
+
+function adopt_session( credentials )
+{
+   stop_announcing( );
+
+   ciyam.access = credentials.access;
+   ciyam.device = credentials.device;
+   ciyam.hashed = credentials.hashed;
+   ciyam.sessid = credentials.sessid;
+   ciyam.unique = credentials.unique;
+   ciyam.username = credentials.username;
+   ciyam.is_admin = credentials.is_admin;
+
+   enter_app( );
+}
+
+// NOTE: The chat signed out, so the session this page borrowed is gone. Nothing of it is kept.
+function end_linked_session( )
+{
+   clear_session( );
+
+   g_source = "";
+   g_owner = "";
+
+   route( );
+
+   set_error( "signin_error", "The chat signed out, so this page did too." );
+}
+
+// NOTE: Requests and the log for a console linked to this page - the drawer's, or one in its
+// own window. It hands its requests here, so this page's queue keeps them one at a time.
+function on_log_message( event )
+{
+   var data = event.data;
+
+   if( ( data === null ) || ( typeof data !== "object" ) || ( data.owner !== g_self ) )
+      return;
+
+   if( data.kind === "replay" )
+      g_log_channel.postMessage( { kind: "entries", owner: g_self, viewer: data.viewer, entries: g_request_log } );
+   else if( data.kind === "request" )
+      proxy_console_request( data );
+}
+
+function proxy_console_request( data )
+{
+   function reply( response )
+   {
+      g_log_channel.postMessage( { kind: "response", owner: g_self, viewer: data.viewer, id: data.id, response: response } );
+   }
+
+   var methods = [ "GET", "POST", "PUT", "DELETE" ];
+
+   if( ( ciyam.sessid === "" ) || ( typeof data.url !== "string" )
+    || ( data.url.indexOf( ciyam.get_cws_url( ) ) !== 0 ) || ( methods.indexOf( data.method ) < 0 ) )
+   {
+      reply( null );
+
+      return;
+   }
+
+   request( function( done )
+   {
+      // NOTE: Not logged here - the console logs its own request.
+      g_request_quiet = true;
+
+      var pending = ciyam.fetch( data.url, data.method, done );
+
+      g_request_quiet = false;
+
+      return pending;
+   } ).then( function( response )
+   {
+      reply( ( response === c_no_answer ) ? null : response );
+   } );
+}
+
+function record_request( entry )
+{
+   entry.id = ++g_request_log_id;
+
+   g_request_log.push( entry );
+
+   if( g_request_log.length > c_console_log_capacity )
+      g_request_log.shift( );
+
+   g_log_channel.postMessage( { kind: "entry", owner: g_self, entry: entry } );
+}
+
+function do_toggle_console( )
+{
+   var drawer = document.getElementById( "console_drawer" );
+
+   drawer.hidden = !drawer.hidden;
+
+   if( !drawer.hidden && !g_console_loaded )
+   {
+      g_console_loaded = true;
+
+      document.getElementById( "console_frame" ).src = "console.html?embedded=1&source=" + encodeURIComponent( g_self );
+   }
+}
+
+function do_popout_console( )
+{
+   window.open( "console.html?source=" + encodeURIComponent( g_self ), "_blank", "noopener" );
+
+   if( !document.getElementById( "console_drawer" ).hidden )
+      do_toggle_console( );
+}
+
+// NOTE: Opened from the chat, the chat is already there - this page goes back to it. Otherwise
+// the chat opens in a new tab sharing this session, as the chat's own "Open a linked tab" does.
+function do_open_chat_linked( )
+{
+   if( ( g_source !== "" ) && window.opener && !window.opener.closed )
+   {
+      window.opener.focus( );
+
+      window.close( );
+
+      return;
+   }
+
+   window.open( "chat.html?source=" + encodeURIComponent( g_self ), "_blank" );
+}
+
+// NOTE: A console or chat opened from this session must not carry on under the next.
+function unlink_others( )
+{
+   g_channel.postMessage( g_self );
+
+   g_console_loaded = false;
+
+   document.getElementById( "console_drawer" ).hidden = true;
+   document.getElementById( "console_frame" ).src = "about:blank";
+
+   g_request_log = [ ];
 }
 
 // NOTE: One request at a time - "ciyam.js" keeps a single callback per instance, so a second
@@ -120,7 +387,9 @@ function route( )
 
    if( ciyam.sessid === "" )
    {
-      if( asked.view === "welcome" )
+      if( is_waiting_for_link( ) )
+         show_view( "linking_view" );
+      else if( asked.view === "welcome" )
          open_welcome( asked.code );
       else
          show_view( "signin_view" );
@@ -149,7 +418,7 @@ function route( )
 
 function show_view( id )
 {
-   [ "signin_view", "welcome_view", "written_view", "app_view" ].forEach( function( view )
+   [ "linking_view", "signin_view", "welcome_view", "written_view", "app_view" ].forEach( function( view )
    {
       document.getElementById( view ).hidden = ( view !== id );
    } );
@@ -401,8 +670,15 @@ function remember_device( )
 
 function enter_app( )
 {
+   var linked = ( g_source !== "" );
+
    document.getElementById( "nav_people" ).hidden = !ciyam.is_admin;
-   document.getElementById( "topbar_user" ).textContent = ciyam.username || ciyam.access;
+   document.getElementById( "topbar_user" ).textContent = ( ciyam.username || ciyam.access ) + ( linked ? " - through the chat" : "" );
+   document.getElementById( "console_session" ).textContent = "inherits session " + ciyam.sessid;
+
+   // NOTE: The session is the chat's - signing out belongs there, and "Chat" goes back to it.
+   document.getElementById( "sign_out_button" ).hidden = linked;
+   document.getElementById( "chat_button" ).textContent = linked ? "Back to the chat" : "Chat";
 
    var wanted = window.location.hash.replace( /^#/, "" );
 
@@ -416,11 +692,21 @@ async function do_sign_out( )
       return ciyam.disconnect( done );
    } );
 
-   // NOTE: Signed out here whatever the server answered - a session left half open would take
-   // the next change of address back into the page.
+   clear_session( );
+
+   show_view( "signin_view" );
+}
+
+// NOTE: Signed out here whatever the server answered - a session left half open would take the
+// next change of address back into the page. A console or chat sharing it lets go.
+function clear_session( )
+{
+   unlink_others( );
+
    ciyam.sessid = "";
    ciyam.access = "";
    ciyam.hashed = "";
+   ciyam.unique = "";
    ciyam.username = "";
    ciyam.is_admin = false;
 
@@ -433,8 +719,6 @@ async function do_sign_out( )
    clear_hash( );
 
    fill_saved_pins( );
-
-   show_view( "signin_view" );
 }
 
 // ====================================================================

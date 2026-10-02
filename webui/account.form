@@ -6,6 +6,24 @@ license.txt in the root project directory or
 http://www.opensource.org/licenses/mit-license.php.
 -->
 
+<!-- ================================================================ linking - opened from the chat, waiting for its session -->
+<div class="chat-signin" id="linking_view" hidden>
+   <div class="chat-signin-form">
+      <div class="chat-brand">
+         <span class="chat-logo"></span>
+         <span class="chat-wordmark">CIYAM</span>
+         <span class="chat-brand-note">accounts</span>
+      </div>
+
+      <h2 tabindex="-1">Accounts</h2>
+      <p class="chat-signin-lede" id="linking_text" role="status">Using the chat's session...</p>
+
+      <div class="chat-signin-actions" id="linking_actions" hidden>
+         <button type="button" class="chat-btn chat-btn--primary" onclick="do_sign_in_instead( )">Sign in here instead</button>
+      </div>
+   </div>
+</div>
+
 <!-- ================================================================ sign in -->
 <div class="chat-signin" id="signin_view" hidden>
    <form class="chat-signin-form" onsubmit="do_sign_in( event )" novalidate>
@@ -153,13 +171,12 @@ http://www.opensource.org/licenses/mit-license.php.
 
       <span class="account-spacer"></span>
 
-      <nav class="account-nav" aria-label="Other pages">
-         <a href="chat.html">Chat</a>
-         <a href="console.html">Console</a>
-      </nav>
-
       <span class="account-who-am-i" id="topbar_user"></span>
-      <button type="button" class="chat-btn" onclick="do_sign_out( )">Sign out</button>
+
+      <button type="button" class="chat-btn" id="chat_button" onclick="do_open_chat_linked( )"
+       title="Opens the chat sharing this session - no second sign in">Chat</button>
+      <button type="button" class="chat-btn chat-btn--mono" id="console_toggle" onclick="do_toggle_console( )">Console</button>
+      <button type="button" class="chat-btn" id="sign_out_button" onclick="do_sign_out( )">Sign out</button>
    </header>
 
    <main class="account-main">
@@ -396,6 +413,20 @@ http://www.opensource.org/licenses/mit-license.php.
          </div>
       </section>
    </main>
+</div>
+
+<!-- ================================================================ the console drawer - as in the chat, handed this page's session -->
+<div id="console_drawer" class="chat-console" hidden>
+   <div class="chat-console-bar">
+      <span class="chat-console-label">Console</span>
+      <span class="chat-console-session">
+         <span class="chat-dot"></span>
+         <span id="console_session"></span>
+      </span>
+      <button type="button" class="chat-console-close" onclick="do_popout_console( )" aria-label="Open the console in its own window" title="Open in its own window">&#8599;</button>
+      <button type="button" class="chat-console-close" onclick="do_toggle_console( )" aria-label="Close console">&times;</button>
+   </div>
+   <iframe id="console_frame" class="chat-console-frame" title="Developer console"></iframe>
 </div>
 
 <template id="tpl_person">

@@ -220,6 +220,14 @@
    font-size: 22px;
 }
 
+/* NOTE: A heading takes focus when its section opens, so a screen reader announces it - it is
+   not something to act on, so it shows no focus ring. */
+h1[tabindex="-1"]:focus,
+h2[tabindex="-1"]:focus
+{
+   outline: none;
+}
+
 /* ====================================================================
    Welcome - the tabs, and "write these down"
    ==================================================================== */
