@@ -193,7 +193,7 @@ function on_channel_message( event )
    else if( ( message.kind === "ended" ) && ( g_source !== "" ) && ( ciyam.sessid !== "" )
     && ( ( message.id === g_source ) || ( message.id === g_owner ) ) )
       end_linked_session( );
-   else if( ( message.kind === "ended" ) && ( g_source === "" ) && ( ciyam.sessid !== "" ) && g_viewers[ message.id ] )
+   else if( ( message.kind === "ended" ) && ( ciyam.sessid !== "" ) && g_viewers[ message.id ] )
       end_linked_session( );
 }
 
