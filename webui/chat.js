@@ -1253,6 +1253,9 @@ async function do_disconnect( )
 
    await ciyam.disconnect( function( ) { } );
 
+   // NOTE: Signed out, a linked chat is linked no more - see "forget_source( )".
+   forget_source( );
+
    g_room = "";
    g_rooms = [ ];
    g_members = [ ];

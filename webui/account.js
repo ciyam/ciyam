@@ -131,6 +131,8 @@ function announce( )
    {
       stop_announcing( );
 
+      forget_source( );
+
       set_error( "linking_text", "The chat didn't share its session - is it still signed in?" );
 
       document.getElementById( "linking_actions" ).hidden = false;
@@ -159,6 +161,8 @@ function is_waiting_for_link( )
 function do_sign_in_instead( )
 {
    stop_announcing( );
+
+   forget_source( );
 
    g_source = "";
 
@@ -216,6 +220,8 @@ function adopt_session( credentials )
 function end_linked_session( )
 {
    clear_session( );
+
+   forget_source( );
 
    g_source = "";
    g_owner = "";

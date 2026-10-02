@@ -121,8 +121,14 @@ http://www.opensource.org/licenses/mit-license.php.
       {
          g_owner = 0;
 
+         // NOTE: The link has ended - "source=" goes first, so the reload does not try to link
+         // to a page that is no longer signed in.
          if( typeof do_disconnect === "function" )
+         {
+            forget_source( );
+
             window.location.reload( );
+         }
       }
    } );
 
