@@ -94,8 +94,6 @@ constexpr const char* c_js_suffix = ".js";
 constexpr const char* c_css_suffix = ".css";
 constexpr const char* c_list_suffix = ".list";
 
-constexpr const char* c_ciyam_prefix = "ciyam_";
-
 constexpr const char* c_username_suffix = "@";
 
 constexpr const char* c_irc_times_prefix = "@irc_times_";
@@ -124,6 +122,7 @@ constexpr const char* c_web_storage_suffix = ".storage";
 constexpr const char* c_cws_artifacts_link = ".ciyam";
 
 constexpr const char* c_cws_uri_suffix_help = "help";
+constexpr const char* c_cws_uri_suffix_logs = "logs";
 constexpr const char* c_cws_uri_suffix_users = "users";
 constexpr const char* c_cws_uri_suffix_status = "status";
 constexpr const char* c_cws_uri_suffix_devices = "devices";
@@ -136,6 +135,7 @@ constexpr const char* c_cws_uri_suffix_webcmdlists = "webcmdlists";
 constexpr const char* c_cws_uri_suffix_unlock_keys = "unlock-keys";
 constexpr const char* c_cws_uri_suffix_storage_modules = "storage-modules";
 
+constexpr const char* c_cws_uri_suffix_logs_prefix = "logs/";
 constexpr const char* c_cws_uri_suffix_users_prefix = "users/";
 constexpr const char* c_cws_uri_suffix_messages_prefix = "messages/";
 constexpr const char* c_cws_uri_suffix_sessions_prefix = "sessions/";
@@ -185,8 +185,9 @@ constexpr const char* c_cws_help_request_output = "quit\n"
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|nominated=[<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
  "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete message <room>\ndelete javascript\ndelete stylesheet\n"
- "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\n"
- "review storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+ "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview logs [<name>]\n"
+ "review users\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\nreview javascript[s] [<name>]\n"
+ "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user <pin> password=<password>\n"
  "update message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}";
 
@@ -333,6 +334,36 @@ bool has_const_char_prefix( const string& s, const char* p, size_t plen )
 }
 
 #define HAS_CONST_CHAR_PREFIX( s, p ) has_const_char_prefix( s, p, CONST_LENGTH( p ) )
+
+string as_json_array( const string& name, const deque< string >& array, bool multiline = false )
+{
+   string retval;
+
+   if( name.empty( ) )
+      retval = "   [\n   ";
+   else
+      retval = "{\n \"" + name + "\":\n [\n";
+
+   for( size_t i = 0; i < array.size( ); i++ )
+   {
+      if( i > 0 )
+      {
+         if( !multiline )
+            retval += ',';
+         else
+            retval += ",\n";
+      }
+
+      retval += "  \"" + escaped_json( array[ i ] ) + '"';
+   }
+
+   if( name.empty( ) )
+      retval += "\n   ]";
+   else
+      retval += "\n ]\n}";
+
+   return retval;
+}
 
 string as_json_array( const string& name, const vector< string >& array, bool multiline = false )
 {
@@ -2543,6 +2574,58 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                         remove_user_info_from_storage( pin );
                      }
+                  }
+               }
+               else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_logs ) )
+               {
+                  if( access != g_cws_admin_token )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Logs can only be viewed by the administrator.";
+                  else
+                  {
+                     found = true;
+
+                     vector< string > log_names;
+
+                     string ciyam_prefix( c_ciyam_prefix );
+
+                     if( file_exists( string( c_ciyam_script ) + c_log_file_ext, true ) )
+                        log_names.push_back( replaced( c_ciyam_script, ciyam_prefix, "" ) );
+
+                     if( file_exists( string( c_ciyam_server ) + c_log_file_ext, true ) )
+                        log_names.push_back( replaced( c_ciyam_server, ciyam_prefix, "" ) );
+
+                     if( file_exists( string( c_ciyam_update ) + c_log_file_ext, true ) )
+                        log_names.push_back( replaced( c_ciyam_update, ciyam_prefix, "" ) );
+
+                     if( !is_json_output )
+                        response = join( log_names, '\n' );
+                     else
+                        response = as_json_array( "all_logs", log_names );
+                  }
+               }
+               else if( is_get_request
+                && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_logs_prefix ) )
+               {
+                  if( access != g_cws_admin_token )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "Logs can only be viewed by the administrator.";
+                  else
+                  {
+                     found = true;
+
+                     string log( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_logs_prefix ) ) );
+
+                     deque< string > log_lines;
+
+                     string log_file_name( "ciyam_" + log + ".log" );
+
+                     buffer_file_tail( log_file_name, log_lines, 0 );
+
+                     if( !is_json_output )
+                        response = join( log_lines, '\n' );
+                     else
+                        response = as_json_array( "all_lines", log_lines );
                   }
                }
                else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_users ) )

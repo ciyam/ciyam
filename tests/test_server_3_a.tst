@@ -233,6 +233,7 @@ employ unlock-key <key>
 retain javascript
 retain stylesheet
 retain webcmdlist
+review logs [<name>]
 review users
 review messages <room> [[from=<unix_time>;]extra={NONE|TIME}]
 review storages
