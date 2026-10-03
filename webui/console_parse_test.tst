@@ -148,7 +148,26 @@ ok   eval script is one
 ok   exec script is one
 ok   plain exec is not
 ok   view scripts is not
+ok   execute script is one
 ok   exec resolves to the console
+
+== server javascript lines =====================================
+ok   load with an input
+ok   load with none
+ok   eval keeps every word
+ok   exec is eval
+ok   employ and execute too
+ok   reload is load
+ok   result, named
+ok   result without a name is this account's
+ok   unload
+ok   this account's own
+ok   load needs a name
+ok   no path in a name
+ok   no quotes in a name
+ok   not a script line
+ok   a global's name
+ok   not a global's name
 ok   list names, one per line
 ok   no lists
 ok   an error is no lists

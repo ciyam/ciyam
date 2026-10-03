@@ -332,7 +332,34 @@ check( "eval script is one", cp.is_javascript_line( "eval script xor_hex_data {e
 check( "exec script is one", cp.is_javascript_line( "exec script harden {rounds}:30" ), true );
 check( "plain exec is not", cp.is_javascript_line( "exec" ), false );
 check( "view scripts is not", cp.is_javascript_line( "view scripts" ), false );
+check( "execute script is one", cp.is_javascript_line( "execute script harden 10" ), true );
 check( "exec resolves to the console", cp.resolve_command( "exec" ), { kind: "local", name: "exec", args: "" } );
+
+// --------------------------------------------------------------------
+heading( "server javascript lines" );
+
+// NOTE: The lines of Ian's two demo lists, and the harness's other verbs.
+check( "load with an input", cp.parse_script_line( "load script bip39 3c6eede8b0c9717370546cd446427499" ),
+ { kind: "script", verb: "load", name: "bip39", arg: "3c6eede8b0c9717370546cd446427499" } );
+check( "load with none", cp.parse_script_line( "load script xor_hex_data" ), { kind: "script", verb: "load", name: "xor_hex_data", arg: null } );
+check( "eval keeps every word", cp.parse_script_line( "eval script bip39 abandon ability able about" ),
+ { kind: "script", verb: "eval", name: "bip39", arg: "abandon ability able about" } );
+check( "exec is eval", cp.parse_script_line( "exec script harden 33333:30" ), { kind: "script", verb: "eval", name: "harden", arg: "33333:30" } );
+check( "employ and execute too", [ cp.parse_script_line( "employ javascript harden 1" ).verb, cp.parse_script_line( "execute script harden 1" ).verb ],
+ [ "eval", "eval" ] );
+check( "reload is load", cp.parse_script_line( "reload javascripts harden" ).verb, "load" );
+check( "result, named", cp.parse_script_line( "result script bip39" ), { kind: "script", verb: "result", name: "bip39", arg: null } );
+check( "result without a name is this account's", cp.parse_script_line( "result script" ), { kind: "script", verb: "result", name: "***", arg: null } );
+check( "unload", cp.parse_script_line( "unload script harden" ), { kind: "script", verb: "unload", name: "harden", arg: null } );
+check( "this account's own", cp.parse_script_line( "load script ***" ).name, "***" );
+check( "load needs a name", cp.parse_script_line( "load script" ), { kind: "error", message: "Name the script - load script <name> [<input>]" } );
+check( "no path in a name", cp.parse_script_line( "load script ../secret" ).kind, "error" );
+check( "no quotes in a name", cp.parse_script_line( "eval script a\"b 1" ).kind, "error" );
+check( "not a script line", [ cp.parse_script_line( "view scripts" ), cp.parse_script_line( "status" ) ], [ null, null ] );
+
+check( "a global's name", [ cp.is_global_name( "ciyam_harden_result" ), cp.is_global_name( "$x" ) ], [ true, true ] );
+check( "not a global's name", [ cp.is_global_name( "a.b" ), cp.is_global_name( "1x" ), cp.is_global_name( "" ), cp.is_global_name( "a b" ) ],
+ [ false, false, false, false ] );
 
 check( "list names, one per line", cp.parse_name_list( "demo_bip39_entropy\ndemo_echo_variables\ndemo_new_unlock_key\n" ), [ "demo_bip39_entropy", "demo_echo_variables", "demo_new_unlock_key" ] );
 check( "no lists", cp.parse_name_list( "[none]" ), [ ] );

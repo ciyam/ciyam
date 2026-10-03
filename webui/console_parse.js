@@ -678,11 +678,59 @@ function parse_name_list( response )
 }
 
 // NOTE: Lines that need a server javascript run - "load script", "eval script", "exec
-// script" and the rest of the harness's "javascripts" verbs. Those come with the sandbox
-// (part 3 of the Scripts tab plan); until then a list stops on them with a plain reason.
+// script" and the rest of the harness's "javascripts" verbs. Admin only, run in the page as
+// the harness runs them (decided 2026-10-03) - see "parse_script_line( )".
 function is_javascript_line( text )
 {
-   return /^~?(load|reload|eval|exec|employ|result|unload)\s+(script|scripts|javascript|javascripts)(\s|$)/i.test( String( text || "" ).trim( ) );
+   return /^~?(load|reload|eval|exec|employ|execute|result|unload)\s+(script|scripts|javascript|javascripts)(\s|$)/i.test( String( text || "" ).trim( ) );
+}
+
+// NOTE: The harness's verbs for a server javascript, by what each does: "load" puts the script
+// in the page and calls its "_at_load", "eval" calls its "_execute", "result" shows its
+// "_result" and "unload" takes it out again.
+const c_console_script_verbs = {
+   load: "load", reload: "load",
+   eval: "eval", exec: "eval", employ: "eval", execute: "eval",
+   result: "result", unload: "unload"
+};
+
+// NOTE: "load script bip39 3c6e..." split into the verb, the script's name and the rest as its
+// argument, spaces and all - "eval script bip39 <twelve words>" passes all twelve. No argument is
+// null, as the harness has it. The name becomes part of a file name and of the functions called,
+// so it is only letters, digits and "_" - or "***", this account's own. "load" and "eval" need a
+// name; "result" and "unload" without one mean this account's own, as in the harness.
+//
+// Returns { kind: "script", verb, name, arg }, { kind: "error", message }, or null for a line
+// that is not about a server javascript at all.
+function parse_script_line( text )
+{
+   var match = /^~?(\w+)\s+(?:script|scripts|javascript|javascripts)(?:\s+(\S+))?(?:\s+([\s\S]*))?$/i.exec( String( text || "" ).trim( ) );
+
+   if( match === null )
+      return null;
+
+   var verb = c_console_script_verbs[ match[ 1 ].toLowerCase( ) ];
+
+   if( !verb )
+      return null;
+
+   var name = match[ 2 ] || "";
+
+   if( ( name === "" ) && ( ( verb === "load" ) || ( verb === "eval" ) ) )
+      return { kind: "error", message: "Name the script - " + match[ 1 ].toLowerCase( ) + " script <name> [<input>]" };
+
+   if( ( name !== "" ) && ( name !== c_console_own_name ) && !/^[A-Za-z0-9_]+$/.test( name ) )
+      return { kind: "error", message: "Invalid script name '" + name + "' - letters, digits and _ only" };
+
+   return { kind: "script", verb: verb, name: ( name === "" ) ? c_console_own_name : name,
+    arg: ( match[ 3 ] === undefined ) ? null : match[ 3 ] };
+}
+
+// NOTE: A global a server javascript sets - "wait ciyam_harden_result", "var @x ciyam_bip39_result".
+// Only a plain identifier, so nothing but a name is ever looked up on the page.
+function is_global_name( name )
+{
+   return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test( String( name || "" ) );
 }
 
 // NOTE: "run_script *" answers one script per line as "name @arg1 @arg2". Anything that
@@ -1083,6 +1131,8 @@ if( typeof module !== "undefined" )
       substr_of: substr_of,
       append_output: append_output,
       is_javascript_line: is_javascript_line,
+      parse_script_line: parse_script_line,
+      is_global_name: is_global_name,
       parse_name_list: parse_name_list,
       parse_script_list: parse_script_list,
       build_script_command: build_script_command,
