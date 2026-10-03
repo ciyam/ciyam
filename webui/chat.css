@@ -612,6 +612,24 @@ button.chat-avatar:hover
    margin-top: 24px;
 }
 
+/* NOTE: "New here? Set up your account" - a link to the accounts page dressed as a button, the
+   same on the sign in of every page of the node. */
+.chat-signin-setup
+{
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   height: 44px;
+   padding: 0 18px;
+   font-size: var(--font-size-chat-body);
+   text-decoration: none;
+}
+
+.chat-signin-centred
+{
+   text-align: center;
+}
+
 .chat-signin-foot
 {
    margin-top: 32px;
@@ -2075,17 +2093,6 @@ button.chat-avatar:hover
    gap: 6px;
    max-height: 140px;
    overflow-y: auto;
-}
-
-.chat-token
-{
-   font-family: var(--font-family-chat-mono);
-   font-size: var(--font-size-chat-tiny);
-   word-break: break-all;
-   padding: 10px 12px;
-   border: 1px solid var(--color-chat-border);
-   border-radius: var(--radius-sm);
-   background: var(--color-chat-bg-rail);
 }
 
 .chat-error-text

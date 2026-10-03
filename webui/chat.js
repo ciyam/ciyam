@@ -16,14 +16,12 @@ const c_poll_interval = 4000;
 
 const c_max_sender_colours = 6;
 
-// NOTE: The fixed entry in the account selector, as distinct from a saved PIN.
-//
-// There is deliberately no "admin" entry. On a bootstrapped server the literal access
-// "admin" is refused - "This web session is not valid (or has expired)" - because the
-// access token is the PIN the bootstrap issued, which ".web_access_admin" merely points
-// at. Admin signs in with that PIN like any other account.
-const c_access_create = "create";
-
+// NOTE: The account selector has one fixed entry, "Enter an account PIN...", ahead of the saved
+// PINs. There is no "Register" entry - accounts are added by admin and set up on the accounts
+// page. There is deliberately no "admin" entry either. On a bootstrapped server the literal
+// access "admin" is refused - "This web session is not valid (or has expired)" - because the
+// access token is the PIN the bootstrap issued, which ".web_access_admin" merely points at.
+// Admin signs in with that PIN like any other account.
 const c_storage_device = "cws.device";
 const c_storage_access = "cws.access";
 const c_storage_hashed_prefix = "cws.hashed_";
@@ -63,10 +61,6 @@ var g_dm_pending = { };
 var g_dialog_mode = "create";
 
 var g_known_users = [ ];
-
-// NOTE: Set for the one connect that follows a registration, so the issued PIN can be
-// kept and shown. Cleared once used.
-var g_registered_pin = "";
 
 const c_first_load_limit = 15000;
 
@@ -137,13 +131,7 @@ function chat( )
       if( event.key !== "Escape" )
          return;
 
-      if( !document.getElementById( "pin_dialog" ).hidden )
-      {
-         do_close_pin_dialog( );
-
-         event.preventDefault( );
-      }
-      else if( !document.getElementById( "room_dialog" ).hidden )
+      if( !document.getElementById( "room_dialog" ).hidden )
       {
          do_close_room_dialog( );
 
@@ -191,15 +179,12 @@ function populate_accounts( )
 {
    var select = document.getElementById( "signin_access" );
 
-   // NOTE: Saved accounts are inserted *ahead* of the fixed entries, so they cannot be
-   // cleared by trimming from the end - doing that removed "+ Register new account" and
-   // left the saved ones in place, so every rebuild listed each PIN once more than the
-   // last. Removing by value is stable however many have been inserted.
+   // NOTE: Saved accounts are removed by value rather than by trimming from the end - trimming
+   // once removed a fixed entry and left the saved ones in place, so every rebuild listed each
+   // PIN once more than the last. Removing by value is stable however many have been inserted.
    for( var i = select.options.length - 1; i >= 0; i-- )
    {
-      var value = select.options[ i ].value;
-
-      if( ( value !== "" ) && ( value !== c_access_create ) )
+      if( select.options[ i ].value !== "" )
          select.remove( i );
    }
 
@@ -209,7 +194,7 @@ function populate_accounts( )
    {
       var access = entries[ n ];
 
-      if( ( access === "" ) || ( access === c_access_create ) )
+      if( access === "" )
          continue;
 
       var label = access;
@@ -242,157 +227,43 @@ function do_select_access( )
 
    var access = document.getElementById( "signin_access" ).value;
 
-   var pin_row = document.getElementById( "signin_pin_row" );
-   var name_row = document.getElementById( "signin_name_row" );
-   var password_row = document.getElementById( "signin_password_row" );
    var hint = document.getElementById( "signin_password_hint" );
-
-   name_row.hidden = true;
 
    set_error( "signin_error", "" );
 
-   if( access === c_access_create )
-   {
-      pin_row.hidden = true;
-      password_row.hidden = false;
+   document.getElementById( "signin_pin_row" ).hidden = ( access !== "" );
 
-      // NOTE: Registering is the one case that needs a username, and this row was never
-      // being shown - so there was no way to supply one and the form could not be used.
-      name_row.hidden = false;
+   ciyam.access = access;
 
-      ciyam.access = "";
-      ciyam.hashed = "";
+   var hashed = localStorage.getItem( c_storage_hashed_prefix + access );
 
-      var new_password = document.getElementById( "signin_password" );
+   ciyam.hashed = ( hashed === null ) ? "" : hashed;
 
-      new_password.value = "";
+   var password = document.getElementById( "signin_password" );
 
-      // NOTE: Re-enabled because selecting a saved account disables it.
-      new_password.disabled = false;
+   password.value = "";
+   password.disabled = ( ciyam.hashed !== "" );
 
-      hint.textContent = "A PIN will be issued by the server.";
+   hint.textContent = ( ciyam.hashed !== "" )
+    ? "Using saved credentials for this account." : "";
 
-      document.getElementById( "signin_connect" ).textContent = "Register";
-   }
-   else
-   {
-      pin_row.hidden = ( access !== "" );
-      password_row.hidden = false;
-
-      ciyam.access = access;
-
-      var hashed = localStorage.getItem( c_storage_hashed_prefix + access );
-
-      ciyam.hashed = ( hashed === null ) ? "" : hashed;
-
-      var password = document.getElementById( "signin_password" );
-
-      password.value = "";
-      password.disabled = ( ciyam.hashed !== "" );
-
-      hint.textContent = ( ciyam.hashed !== "" )
-       ? "Using saved credentials for this account." : "";
-
-      document.getElementById( "signin_connect" ).textContent = "Connect";
-   }
-
-   refresh_retain_choice( ( access === c_access_create ) ? "" : access );
+   refresh_retain_choice( access );
 }
 
 // ====================================================================
 // Session
 // ====================================================================
 
-// NOTE: Registration is done here rather than through "CIYAM.connect", which cannot do
-// it for any username longer than a PIN - it treats a longer "access" as admin seed
-// entropy and sends admin credentials instead, so anything from six characters up fails
-// with "User credentials are either invalid or incorrect". See ISS-008. These are the
-// same two requests it would otherwise issue.
-//
-// The first allocates a PIN and answers "<pin> <seed>"; the second claims it by sending
-// "<username>:<hash>" and answers the device token. An ordinary PIN sign in follows.
-async function register_account( username, password )
-{
-   var issued = "";
-
-   await ciyam.fetch( ciyam.get_cws_url( ) + "/devices?access=" + encodeURIComponent( username )
-    + "&format=" + ciyam.format_type, "POST", function( response ) { issued = String( response ).trim( ); } );
-
-   if( issued.indexOf( "Error: " ) === 0 )
-   {
-      ciyam.error = issued;
-
-      return "";
-   }
-
-   var pos = issued.indexOf( " " );
-
-   var pin = ( pos > 0 ) ? issued.substr( 0, pos ) : issued;
-
-   if( !/^[0-9]{5}$/.test( pin ) )
-   {
-      ciyam.error = "Error: The server did not issue a PIN (answered '" + issued + "').";
-
-      return "";
-   }
-
-   var credentials = username + ":" + ciyam.hash_combined( password, pin );
-
-   var token = "";
-
-   await ciyam.fetch( ciyam.get_cws_url( ) + "/devices?access=" + pin
-    + "&format=" + ciyam.format_type + "&passwd=" + CIYAM.encode_base64_url( credentials ),
-    "POST", function( response ) { token = String( response ).trim( ); } );
-
-   if( token.indexOf( "Error: " ) === 0 )
-   {
-      ciyam.error = token;
-
-      return "";
-   }
-
-   // NOTE: The browser keeps the device it already has. A saved password is hashed with
-   // the device - sha256( sha256( access + password ) + device ) - so adopting the new
-   // account's token here silently invalidated every password saved before it, and the
-   // other accounts could not sign in until the browser was reset. Device tokens are not
-   // tied to an account for signing in, so the new one is only needed when there is none.
-   if( ciyam.device === "" )
-      ciyam.device = token;
-
-   return pin;
-}
-
 async function do_connect( )
 {
-   var select = document.getElementById( "signin_access" );
+   var access = document.getElementById( "signin_access" ).value;
 
-   var is_register = ( select.value === c_access_create );
-
-   var access = select.value;
-
-   if( is_register )
-      access = "";
-   else if( access === "" )
+   if( access === "" )
       access = document.getElementById( "signin_pin" ).value.trim( );
 
    var password = document.getElementById( "signin_password" ).value;
-   var username = document.getElementById( "signin_name" ).value.trim( );
 
-   if( is_register && ( username === "" ) )
-   {
-      set_error( "signin_error", "Choose a username to register." );
-
-      return;
-   }
-
-   if( ( username !== "" ) && !is_valid_username( username ) )
-   {
-      set_error( "signin_error", "Username must be 3-12 lowercase characters, no repeated hyphens." );
-
-      return;
-   }
-
-   if( !is_register && ( access === "" ) )
+   if( access === "" )
    {
       set_error( "signin_error", "Enter the account PIN." );
 
@@ -414,22 +285,12 @@ async function do_connect( )
 
    try
    {
-      if( is_register )
-      {
-         access = await register_account( username, password );
+      // NOTE: "CIYAM.connect" uses a hash it is handed in preference to the password, so
+      // a typed password has to clear any hash still held from a previous sign in.
+      if( password !== "" )
+         ciyam.hashed = "";
 
-         g_registered_pin = access;
-      }
-
-      if( ( ciyam.error === "" ) && ( access !== "" ) )
-      {
-         // NOTE: "CIYAM.connect" uses a hash it is handed in preference to the password, so
-         // a typed password has to clear any hash still held from a previous sign in.
-         if( password !== "" )
-            ciyam.hashed = "";
-
-         await ciyam.connect( access, ciyam.device, ciyam.hashed, password, function( ) { } );
-      }
+      await ciyam.connect( access, ciyam.device, ciyam.hashed, password, function( ) { } );
    }
    finally
    {
@@ -459,13 +320,6 @@ async function do_connect( )
    }
 
    apply_retain_choice( );
-
-   if( g_registered_pin !== "" )
-   {
-      show_new_pin( g_registered_pin, ciyam.username || username );
-
-      g_registered_pin = "";
-   }
 
    // NOTE: The account list is deliberately *not* rebuilt here. "populate_accounts"
    // reselects the first saved entry and "do_select_access" then overwrites
@@ -1320,12 +1174,6 @@ function apply_retain_choice( )
 
    if( ciyam.access === "" )
       return;
-
-   // NOTE: A PIN the server has just issued is the account's only identifier and the user
-   // has no other copy, so it is kept even when "forget" was chosen - see ISS-010. The
-   // password still follows the choice.
-   if( ( g_registered_pin === ciyam.access ) && ( mode === c_retain_none ) )
-      mode = c_retain_access;
 
    // NOTE: The plan is shared with the accounts page - "plan_retain_choice( )" in "chat_parse.js".
    var plan = plan_retain_choice( localStorage.getItem( c_storage_access ), ciyam.access, mode, ciyam.hashed );
@@ -3058,34 +2906,6 @@ async function open_new_room( response )
    await load_rooms( );
 
    select_room( room, token );
-}
-
-// NOTE: A registered account's PIN is issued by the server and shown nowhere else. Miss
-// it and the account is unreachable - there is no recovery short of an administrator
-// listing the users. So it is shown on a dialog that has to be dismissed, and the PIN is
-// also added to the saved list regardless of the "remember" choice, see
-// "apply_retain_choice".
-function show_new_pin( pin, username )
-{
-   document.getElementById( "pin_value" ).textContent = pin;
-
-   set_text( document.getElementById( "pin_username" ),
-    "Signed in as " + username + ". Keep the PIN with the password you just chose." );
-
-   document.getElementById( "pin_dialog" ).hidden = false;
-}
-
-function do_copy_pin( )
-{
-   var value = document.getElementById( "pin_value" ).textContent;
-
-   if( navigator.clipboard )
-      navigator.clipboard.writeText( value );
-}
-
-function do_close_pin_dialog( )
-{
-   document.getElementById( "pin_dialog" ).hidden = true;
 }
 
 // ====================================================================

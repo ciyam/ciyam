@@ -23,20 +23,12 @@ http://www.opensource.org/licenses/mit-license.php.
       <label class="chat-label" for="signin_access">Account</label>
       <select id="signin_access" class="chat-field chat-field--mono" onchange="do_select_access( )">
          <option value="">Enter an account PIN&hellip;</option>
-         <option value="create">+ Register new account</option>
       </select>
 
       <div id="signin_pin_row" hidden>
          <label class="chat-label" for="signin_pin">Account PIN</label>
          <input type="text" id="signin_pin" class="chat-field chat-field--mono" maxlength="12"
           placeholder="5 digits, or admin" autocomplete="off">
-      </div>
-
-      <div id="signin_name_row" hidden>
-         <label class="chat-label" for="signin_name">Choose a username</label>
-         <input type="text" id="signin_name" class="chat-field chat-field--mono" maxlength="12"
-          placeholder="3-12 characters, lowercase" autocomplete="off">
-         <div class="chat-hint" id="signin_name_hint">This is the name others see in chat.</div>
       </div>
 
       <div id="signin_password_row">
@@ -56,7 +48,10 @@ http://www.opensource.org/licenses/mit-license.php.
 
       <div class="chat-signin-actions">
          <button type="submit" id="signin_connect" class="chat-btn chat-btn--primary">Connect</button>
+         <!-- NOTE: Accounts are added by admin and set up on the accounts page - as on its sign in. -->
+         <a class="chat-btn chat-signin-setup" id="signin_setup" href="account.html#welcome">New here? Set up your account</a>
       </div>
+      <div class="chat-hint chat-signin-centred">With the code or PIN from the person who added you.</div>
 
       <div id="signin_busy" class="chat-signin-busy" hidden>
          <span class="chat-spinner"></span>
@@ -377,21 +372,6 @@ http://www.opensource.org/licenses/mit-license.php.
          <button type="submit" class="chat-btn chat-btn--accent" id="room_dialog_submit">Create</button>
       </div>
    </form>
-</div>
-
-<div id="pin_dialog" class="chat-scrim" hidden>
-   <div class="chat-dialog">
-      <h2>Account created</h2>
-      <p class="chat-dialog-note">The server issued this PIN. <strong>It is the only way back
-      into this account</strong> &mdash; it cannot be looked up later without an administrator,
-      so write it down now.</p>
-      <div class="chat-token" id="pin_value"></div>
-      <div class="chat-hint" id="pin_username"></div>
-      <div class="chat-dialog-actions">
-         <button type="button" class="chat-btn" onclick="do_copy_pin( )">Copy PIN</button>
-         <button type="button" class="chat-btn chat-btn--accent" onclick="do_close_pin_dialog( )">I have saved it</button>
-      </div>
-   </div>
 </div>
 
 <!-- ================================================================
