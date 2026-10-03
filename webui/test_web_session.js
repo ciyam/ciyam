@@ -48,6 +48,8 @@ const creds_delete_cmd = "creds|delete";
 const creds_remove_cmd = "creds|remove";
 const creds_retain_cmd = "creds|retain";
 
+const logs_review_cmd = "logs|review";
+
 const users_create_cmd = "users|create";
 const users_delete_cmd = "users|delete";
 const users_review_cmd = "users|review";
@@ -391,8 +393,9 @@ function reformatted( request )
 
       if( suffix != "" )
       {
-         if( ( second.length > 3 )
-          && ( second.slice( -1 ) != "s" ) )
+         if( ( second == "log" )
+          || ( ( second.length > 3 )
+          && ( second.slice( -1 ) != "s" ) ) )
             second += "s";
 
          request = second + suffix;
@@ -1097,7 +1100,7 @@ async function do_fetch( )
                need_to_include_payload = true;
          }
 
-         if( ( cmd == users_create_cmd )
+         if( ( cmd == logs_review_cmd ) || ( cmd == users_create_cmd )
           || ( cmd == users_delete_cmd ) || ( cmd == users_update_cmd )
           || ( cmd == messages_create_cmd ) || ( cmd == messages_delete_cmd )
           || ( cmd == messages_review_cmd ) || ( cmd == messages_update_cmd )
