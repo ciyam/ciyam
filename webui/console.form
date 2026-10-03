@@ -109,7 +109,8 @@ http://www.opensource.org/licenses/mit-license.php.
             <button type="button" class="console-chip" data-source="chat" aria-pressed="false" id="filter_chat">Chat</button>
             <button type="button" class="console-chip" data-source="console" aria-pressed="false">Console</button>
             <button type="button" class="console-chip" onclick="do_clear_log( )">Clear</button>
-            <label class="console-check console-push" title="Also logs polling and other background reads - for diagnostics. They are left out otherwise, so they do not bury what was asked for">
+            <label class="console-check console-push" title="Also logs polling and other background reads - for diagnostics">
+               <!-- NOTE: Left out otherwise, so they do not bury what was asked for. -->
                <input type="checkbox" id="log_polling" onchange="do_set_log_polling( )">
                Log polling
             </label>

@@ -1047,6 +1047,10 @@ const c_wait_variable_delay = 100;
 var g_script_libraries = null;
 var g_loaded_scripts = { };
 
+// NOTE: Counts the sessions whose scripts have been unloaded, so a script still working when its
+// session ended - "exec script harden 33333:30" - cannot answer into the next one.
+var g_script_generation = 0;
+
 function add_page_script( src, id )
 {
    return new Promise( function( resolve )
@@ -1067,12 +1071,21 @@ function add_page_script( src, id )
 
 // NOTE: What the scripts use besides "sha2.min.js" - "BIP39" and "QRCode". Loaded on first use
 // only, since "bip39.min.js" is nearly 700 KB; both are in "webui/" with everything else.
-function load_script_libraries( )
+//
+// Resolves false if either did not load, and forgets the attempt so the next "load script" tries again.
+async function load_script_libraries( )
 {
    if( g_script_libraries === null )
       g_script_libraries = Promise.all( [ add_page_script( "bip39.min.js" ), add_page_script( "qrcode.min.js" ) ] );
 
-   return g_script_libraries;
+   var loaded = await g_script_libraries;
+
+   if( loaded.indexOf( false ) < 0 )
+      return true;
+
+   g_script_libraries = null;
+
+   return false;
 }
 
 // NOTE: The harness's progress functions, by the names its scripts call - "ciyam_harden.js" shows
@@ -1138,6 +1151,14 @@ function unload_server_script( prefix )
       window[ prefix + suffix ] = undefined;
    } );
 
+   // NOTE: And so is every other value the script keeps - "ciyam_harden_string_to_hash" holds what
+   // it was given. Its functions are left, so a loop still running ends quietly rather than failing.
+   Object.keys( window ).forEach( function( name )
+   {
+      if( ( name.indexOf( prefix + "_" ) === 0 ) && ( typeof window[ name ] !== "function" ) )
+         window[ name ] = undefined;
+   } );
+
    return true;
 }
 
@@ -1146,6 +1167,8 @@ function unload_server_script( prefix )
 function unload_server_scripts( )
 {
    Object.keys( g_loaded_scripts ).forEach( unload_server_script );
+
+   ++g_script_generation;
 
    init_script_value = null;
 
@@ -1171,6 +1194,8 @@ function script_answered( value )
 // "c_script_answer_wait" if it is still working.
 function call_script( prefix, fn, args )
 {
+   var generation = g_script_generation;
+
    return new Promise( function( resolve )
    {
       var timer = window.setTimeout( function( ) { resolve( { ok: true } ); }, c_script_answer_wait );
@@ -1179,13 +1204,18 @@ function call_script( prefix, fn, args )
       {
          window.clearTimeout( timer );
 
-         print_line( "Error: " + prefix + ".js failed - " + ( ( e && e.message ) ? e.message : String( e ) ), "is-err" );
+         if( generation === g_script_generation )
+            print_line( "Error: " + prefix + ".js failed - " + ( ( e && e.message ) ? e.message : String( e ) ), "is-err" );
 
          resolve( { ok: false } );
       };
 
       var callback = function( value )
       {
+         // NOTE: From a session that has since ended - see "g_script_generation".
+         if( generation !== g_script_generation )
+            return;
+
          script_answered( value );
 
          window.clearTimeout( timer );
@@ -1252,7 +1282,12 @@ async function run_script_line( spec, from_script )
    {
       case "load":
       {
-         await load_script_libraries( );
+         if( !await load_script_libraries( ) )
+         {
+            print_line( "Error: bip39.min.js or qrcode.min.js did not load - the scripts need them. Try again.", "is-err" );
+
+            return { ok: false };
+         }
 
          unload_server_script( prefix );
 
@@ -1661,6 +1696,11 @@ function print_help( )
     "  @{name}                      run the command a variable holds"
    ];
 
+   // NOTE: Linked, the session is the chat's - ending it here would sign the chat out. With the
+   // console's commands, ahead of the blank line before the list language.
+   if( !g_linked )
+      lines.splice( lines.indexOf( "" ), 0, "  quit                         sign out" );
+
    if( ciyam.is_admin )
    {
       lines.push( "" );
@@ -1672,10 +1712,6 @@ function print_help( )
       lines.push( "  wait <global>                wait for a script to set a global" );
       lines.push( "  var @<name> <global>         set a variable from a script's global" );
    }
-
-   // NOTE: Linked, the session is the chat's - ending it here would sign the chat out.
-   if( !g_linked )
-      lines.push( "  quit                         sign out" );
 
    lines.push( "" );
    lines.push( "Keys: up and down recall history, ctrl+k opens the palette." );
