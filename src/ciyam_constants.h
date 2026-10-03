@@ -120,6 +120,7 @@ const size_t c_max_notifer_checks = 100;
 constexpr const char* c_CIYAM = "CIYAM";
 
 constexpr const char* c_ciyam_tag = "ciyam";
+constexpr const char* c_ciyam_prefix = "ciyam_";
 
 constexpr const char* c_bc_prefix = "bc.";
 
