@@ -587,10 +587,9 @@ code
    letter-spacing: 0.07em;
 }
 
-.console-fnote
+/* NOTE: Pushes what follows in a filter bar to its right-hand end. */
+.console-push
 {
-   color: var(--color-console-text-muted);
-   font-size: var(--font-size-chat-nano);
    margin-left: auto;
 }
 
@@ -1146,10 +1145,9 @@ code
       padding-left: 0;
    }
 
-   .console-fnote
+   .console-push
    {
       margin-left: 0;
-      flex-basis: 100%;
    }
 
    .console-hint

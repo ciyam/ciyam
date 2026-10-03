@@ -72,6 +72,10 @@ var g_self = String( Date.now( ) ) + String( Math.floor( Math.random( ) * 1000 )
 var g_source = "";
 var g_owner = "";
 
+// NOTE: The page whose session a linked console shares - "linked_owner( )". The chat unless the
+// accounts page opened it.
+var g_owner_page = linked_owner( "" );
+
 var g_linked = false;
 var g_embedded = false;
 var g_connected = false;
@@ -134,6 +138,8 @@ function console_main( )
 
    g_linked = ( g_source !== "" );
 
+   g_owner_page = linked_owner( href.searchParams.get( "from" ) || "" );
+
    if( g_embedded )
       document.getElementById( "console_app" ).classList.add( "is-embedded" );
    else
@@ -145,7 +151,8 @@ function console_main( )
 
    document.getElementById( "title_host" ).textContent = window.location.host;
 
-   install_log_capture( ciyam, "console", function( ) { return g_quiet; }, add_console_entry );
+   // NOTE: A quiet request is logged too while "Log polling" is ticked.
+   install_log_capture( ciyam, "console", function( ) { return g_quiet && !g_prefs.log_polling; }, add_console_entry );
 
    try
    {
@@ -179,12 +186,17 @@ function console_main( )
    g_log_channel = new BroadcastChannel( c_log_channel_name );
    g_log_channel.addEventListener( "message", on_log_message );
 
-   document.getElementById( "filter_chat" ).hidden = !g_linked;
+   var owner_filter = document.getElementById( "filter_chat" );
+
+   owner_filter.hidden = !g_linked;
+   owner_filter.dataset.source = g_owner_page.source;
+   owner_filter.textContent = g_owner_page.label;
 
    update_status( );
 
    if( g_linked )
    {
+      document.getElementById( "waiting_text" ).textContent = "Waiting for " + g_owner_page.name + " to share its session…";
       document.getElementById( "waiting_view" ).hidden = false;
 
       announce( );
@@ -214,8 +226,8 @@ function announce( )
 
       g_announce_timer = null;
 
-      document.getElementById( "waiting_text" ).textContent =
-       "The chat did not share a session. Is it signed in? Reload this console to try again.";
+      document.getElementById( "waiting_text" ).textContent = g_owner_page.subject
+       + " did not share a session. Is it signed in? Reload this console to try again.";
 
       return;
    }
@@ -276,9 +288,13 @@ function end_linked_session( )
    ciyam.unique = "";
    ciyam.hashed = "";
 
-   print_line( "The chat session ended. This console is no longer connected.", "is-warn" );
+   print_line( g_owner_page.subject + "'s session ended. This console is no longer connected.", "is-warn" );
 
    end_log_session( );
+
+   // NOTE: As the chat and the accounts page do - so a reload starts a console of its own rather
+   // than waiting for a session that has gone.
+   forget_source( );
 
    document.getElementById( "prompt_input" ).disabled = true;
 
@@ -483,7 +499,7 @@ async function do_disconnect( )
 {
    if( g_linked )
    {
-      print_line( "This console shares the chat's session - sign out from the chat.", "is-err" );
+      print_line( "This console shares " + g_owner_page.name + "'s session - sign out from " + g_owner_page.name + ".", "is-err" );
 
       return;
    }
@@ -532,7 +548,7 @@ function enter_console( )
    update_title( );
    update_status( );
 
-   print_line( "CIYAM console · " + ( g_linked ? "linked to the chat" : "standalone" ) + " · signed in as "
+   print_line( "CIYAM console · " + ( g_linked ? "linked to " + g_owner_page.name : "standalone" ) + " · signed in as "
     + ( ciyam.username || ciyam.access ) + ( ciyam.is_admin ? " [adm]" : " [std]" ), "is-dim" );
 
    print_line( "Type help for the commands, or press ctrl+k for the palette.", "is-dim" );
@@ -936,7 +952,7 @@ async function run_line( line, from_script )
    {
       if( g_linked )
       {
-         print_line( "Error: This console shares the chat's session - sign out from the chat.", "is-err" );
+         print_line( "Error: This console shares " + g_owner_page.name + "'s session - sign out from " + g_owner_page.name + ".", "is-err" );
 
          return { ok: false };
       }
@@ -2120,12 +2136,11 @@ function load_prefs( )
    g_prefs = parse_prefs( stored( c_console_prefs_key ) );
 
    document.getElementById( "log_session_only" ).checked = g_prefs.log_session_only;
+   document.getElementById( "log_polling" ).checked = g_prefs.log_polling;
 }
 
-function do_set_log_session_only( )
+function save_prefs( )
 {
-   g_prefs.log_session_only = document.getElementById( "log_session_only" ).checked;
-
    try
    {
       localStorage.setItem( c_console_prefs_key, JSON.stringify( g_prefs ) );
@@ -2134,10 +2149,26 @@ function do_set_log_session_only( )
    {
    }
 
+   render_storage( );
+}
+
+function do_set_log_session_only( )
+{
+   g_prefs.log_session_only = document.getElementById( "log_session_only" ).checked;
+
    if( g_prefs.log_session_only )
       forget_earlier_sessions( );
 
-   render_storage( );
+   save_prefs( );
+}
+
+// NOTE: Read by the chat and the accounts page as well, on every request, so ticking it here
+// starts logging their polling too - from the next poll, with no reload.
+function do_set_log_polling( )
+{
+   g_prefs.log_polling = document.getElementById( "log_polling" ).checked;
+
+   save_prefs( );
 }
 
 function set_log( entries )
@@ -2151,14 +2182,14 @@ function set_log( entries )
 }
 
 // NOTE: Ticked mid-session, what is already showing from an earlier session goes at once.
-// Linked, this console only ever lived in the current session, but the chat's entries came
-// from its replay - so those are dropped and asked for again, and the chat now sends only
+// Linked, this console only ever lived in the current session, but its owner's entries came
+// from its replay - so those are dropped and asked for again, and the owner now sends only
 // the current session's.
 function forget_earlier_sessions( )
 {
    if( g_linked )
    {
-      set_log( g_log.filter( function( entry ) { return entry.source !== "chat"; } ) );
+      set_log( g_log.filter( function( entry ) { return entry.source !== g_owner_page.source; } ) );
 
       if( g_connected )
          g_log_channel.postMessage( { kind: "replay", owner: g_source, viewer: g_self } );

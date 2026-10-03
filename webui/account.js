@@ -93,8 +93,9 @@ function account_main( )
 
    fill_saved_pins( );
 
-   // NOTE: Every request is logged for a console, as the chat's are.
-   install_log_capture( ciyam, "account", function( ) { return g_request_quiet; }, record_request );
+   // NOTE: Every request is logged for a console, as the chat's are - the quiet ones only while the
+   // console's "Log polling" is ticked.
+   install_log_capture( ciyam, "account", function( ) { return g_request_quiet && !is_logging_polling( ); }, record_request );
 
    g_channel = new BroadcastChannel( c_channel_name );
    g_channel.addEventListener( "message", on_channel_message );
@@ -301,13 +302,14 @@ function do_toggle_console( )
    {
       g_console_loaded = true;
 
-      document.getElementById( "console_frame" ).src = "console.html?embedded=1&source=" + encodeURIComponent( g_self );
+      // NOTE: "from=accounts" so the console names this page, not the chat, and filters its log by it.
+      document.getElementById( "console_frame" ).src = "console.html?embedded=1&from=accounts&source=" + encodeURIComponent( g_self );
    }
 }
 
 function do_popout_console( )
 {
-   open_app_tab( c_tab_console, "console.html?source=" + encodeURIComponent( g_self ), ciyam.sessid );
+   open_app_tab( c_tab_console, "console.html?from=accounts&source=" + encodeURIComponent( g_self ), ciyam.sessid );
 
    if( !document.getElementById( "console_drawer" ).hidden )
       do_toggle_console( );

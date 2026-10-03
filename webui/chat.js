@@ -4128,7 +4128,8 @@ function unlink_consoles( )
 
 function install_request_log( )
 {
-   install_log_capture( ciyam, "chat", function( ) { return g_request_quiet; }, record_request );
+   // NOTE: Polling and background reads are quiet, and left out - unless the console's "Log polling" is ticked.
+   install_log_capture( ciyam, "chat", function( ) { return g_request_quiet && !is_logging_polling( ); }, record_request );
 
    g_log_channel = new BroadcastChannel( c_log_channel_name );
 
