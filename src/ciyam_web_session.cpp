@@ -335,37 +335,8 @@ bool has_const_char_prefix( const string& s, const char* p, size_t plen )
 
 #define HAS_CONST_CHAR_PREFIX( s, p ) has_const_char_prefix( s, p, CONST_LENGTH( p ) )
 
-string as_json_array( const string& name, const deque< string >& array, bool multiline = false )
-{
-   string retval;
-
-   if( name.empty( ) )
-      retval = "   [\n   ";
-   else
-      retval = "{\n \"" + name + "\":\n [\n";
-
-   for( size_t i = 0; i < array.size( ); i++ )
-   {
-      if( i > 0 )
-      {
-         if( !multiline )
-            retval += ',';
-         else
-            retval += ",\n";
-      }
-
-      retval += "  \"" + escaped_json( array[ i ] ) + '"';
-   }
-
-   if( name.empty( ) )
-      retval += "\n   ]";
-   else
-      retval += "\n ]\n}";
-
-   return retval;
-}
-
-string as_json_array( const string& name, const vector< string >& array, bool multiline = false )
+template< typename T > string as_json_array(
+ const string& name, const T& array, bool multiline = false )
 {
    string retval;
 
