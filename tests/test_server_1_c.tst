@@ -114,6 +114,36 @@ session_variable @progress_*
 @progress_prior 0
 @progress_total 0
 @progress_value 100%
+system_variable @keyed_test:aaa xxx
+system_variable @keyed_test:bbb xxx
+system_variable @keyed_test:bbb yyy
+system_variable @keyed_test:ccc zzz
+system_variable @keyed_test:ccc
+zzz
+system_variable @keyed_test:bbb
+yyy
+system_variable @keyed_test:aaa
+xxx
+system_variable @keyed_test:ddd
+system_variable @keyed_test
+aaa xxx
+bbb yyy
+ccc zzz
+system_variable @keyed_test:aaa 111
+system_variable @keyed_test:ccc 333
+system_variable @keyed_test
+aaa 111
+bbb yyy
+ccc 333
+system_variable @keyed_test:aaa ""
+system_variable @keyed_test:bbb 222
+system_variable @keyed_test:ddd 444
+system_variable @keyed_test
+bbb 222
+ccc 333
+ddd 444
+system_variable @keyed_test ""
+system_variable @keyed_test
 system_variable @queue_test abc
 system_variable @queue_test*
 @queue_test abc [+0]

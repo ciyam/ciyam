@@ -70,6 +70,26 @@ session_variable @progress_value
 session_variable @progress_*
 session_variable @progress_clear
 session_variable @progress_*
+;
+system_variable @keyed_test:aaa xxx
+system_variable @keyed_test:bbb xxx
+system_variable @keyed_test:bbb yyy
+system_variable @keyed_test:ccc zzz
+system_variable @keyed_test:ccc
+system_variable @keyed_test:bbb
+system_variable @keyed_test:aaa
+system_variable @keyed_test:ddd
+system_variable @keyed_test
+system_variable @keyed_test:aaa 111
+system_variable @keyed_test:ccc 333
+system_variable @keyed_test
+system_variable @keyed_test:aaa ""
+system_variable @keyed_test:bbb 222
+system_variable @keyed_test:ddd 444
+system_variable @keyed_test
+system_variable @keyed_test ""
+system_variable @keyed_test
+;
 system_variable @queue_test abc
 system_variable @queue_test*
 system_variable @queue_test def

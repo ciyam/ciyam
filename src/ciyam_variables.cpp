@@ -395,6 +395,8 @@ map< string, string > g_variables;
 
 map< string, deque< string > > g_deque_variables;
 
+map< string, map< string, string > > g_mapped_variables;
+
 inline string quote_if_contains_white_space( const string& name )
 {
    string retval( name );
@@ -1086,6 +1088,8 @@ bool has_system_variable( const var_name& var )
 
    if( g_variables.count( name ) )
       retval = true;
+   else if( name.find( c_special_variable_keyed_prefix ) == 0 )
+      retval = g_mapped_variables.count( name );
    else if( name.find( c_special_variable_queue_prefix ) == 0 )
       retval = g_deque_variables.count( name );
 
@@ -1335,6 +1339,19 @@ string get_system_variable( const var_name& var, bool is_internal )
          }
       }
 
+      map< string, map< string, string > >::const_iterator mci;
+
+      for( mci = g_mapped_variables.begin( ); mci != g_mapped_variables.end( ); ++mci )
+      {
+         if( wildcard_match( name, mci->first ) )
+         {
+            if( !retval.empty( ) )
+               retval += "\n";
+
+            retval += mci->first + " (" + to_string( mci->second.size( ) ) + ")";
+         }
+      }
+
       map< string, deque< string > >::const_iterator dci;
 
       for( dci = g_deque_variables.begin( ); dci != g_deque_variables.end( ); ++dci )
@@ -1399,7 +1416,32 @@ string get_system_variable( const var_name& var, bool is_internal )
       if( variable == c_special_variable_complete_restore_needed )
          set_complete_restore_needed( );
 
-      if( variable.find( c_special_variable_queue_prefix ) == 0 )
+      if( variable.find( c_special_variable_keyed_prefix ) == 0 )
+      {
+         string::size_type pos = variable.find( ':' );
+
+         if( g_mapped_variables.count( variable.substr( 0, pos ) ) )
+         {
+            if( pos == string::npos )
+            {
+               map< string, string >::const_iterator ci;
+
+               for( ci = g_mapped_variables[ variable ].begin( ); ci != g_mapped_variables[ variable ].end( ); ++ci )
+               {
+                  if( !retval.empty( ) )
+                     retval += '\n';
+
+                  retval += ci->first + ' ' + ci->second;
+               }
+            }
+            else
+            {
+               if( g_mapped_variables[ variable.substr( 0, pos ) ].count( variable.substr( pos + 1 ) ) )
+                  retval = g_mapped_variables[ variable.substr( 0, pos ) ][ variable.substr( pos + 1 ) ];
+            }
+         }
+      }
+      else if( variable.find( c_special_variable_queue_prefix ) == 0 )
       {
          if( g_deque_variables.count( variable ) )
          {
@@ -1644,7 +1686,30 @@ void set_system_variable( const var_name& var,
 
       string::size_type pos = variable.find_first_of( "?*" );
 
-      if( variable.find( c_special_variable_queue_prefix ) == 0 )
+      if( variable.find( c_special_variable_keyed_prefix ) == 0 )
+      {
+         if( persist )
+            throw runtime_error( "cannot persist '"
+             + string( c_special_variable_keyed_prefix ) + "' prefixed variables" );
+
+         string::size_type pos = variable.find( ':' );
+
+         if( pos == string::npos )
+         {
+            if( !val.empty( ) )
+               throw runtime_error( "invalid keyed variable missing key separator ':'" );
+
+            g_mapped_variables.erase( variable );
+         }
+         else
+         {
+            if( val.empty( ) )
+               g_mapped_variables[ variable.substr( 0, pos ) ].erase( variable.substr( pos + 1 ) );
+            else
+               g_mapped_variables[ variable.substr( 0, pos ) ][ variable.substr( pos + 1 ) ] = val;
+         }
+      }
+      else if( variable.find( c_special_variable_queue_prefix ) == 0 )
       {
          if( persist )
             throw runtime_error( "cannot persist '"
