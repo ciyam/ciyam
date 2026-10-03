@@ -118,6 +118,7 @@ constexpr const char* c_ip_addr_file_ext = ".ip_addr";
 constexpr const char* c_echo_endpoint = "/echo";
 constexpr const char* c_system_endpoint = "/system";
 constexpr const char* c_upload_endpoint = "/upload";
+constexpr const char* c_uptime_endpoint = "/uptime";
 constexpr const char* c_ip_addr_endpoint = "/ip-addr";
 constexpr const char* c_unix_now_endpoint = "/unix-now";
 constexpr const char* c_post_limit_endpoint = "/post-limit";
@@ -1222,6 +1223,23 @@ void http_request_handler::on_start( )
                   response = name + ' ' + version;
                else
                   response = "{\"name\":\"" + name + "\", \"version\":\"" + version + "\"}";
+            }
+            else if( http_document == c_uptime_endpoint )
+            {
+               found = true;
+
+               was_endpoint = true;
+
+               int64_t started = from_string< int64_t >( get_system_variable( e_special_var_utm_at_start ) );
+
+               int uptime = ( unix_time( ) - started );
+
+               string uptime_formatted( format_duration( uptime, true, true ) );
+
+               if( !is_json_output )
+                  response = uptime_formatted;
+               else
+                  response = "{\"uptime\":\"" + uptime_formatted + "\"}";
             }
             else if( http_document == c_ip_addr_endpoint )
             {
