@@ -10043,24 +10043,7 @@ string get_session_variable( const var_name& var, size_t sess_id )
             }
          }
       }
-      else if( name.find( c_special_variable_queue_prefix ) == 0 )
-      {
-         if( gtp_session->deque_variables.count( name ) )
-         {
-            found = true;
-
-            if( gtp_session->deque_variables[ name ].size( ) )
-            {
-               retval = gtp_session->deque_variables[ name ].front( );
-
-               gtp_session->deque_variables[ name ].pop_front( );
-            }
-
-            if( !gtp_session->deque_variables[ name ].size( ) )
-               gtp_session->deque_variables.erase( name );
-         }
-      }
-      else if( name.find( c_special_variable_mapped_prefix ) == 0 )
+      else if( name.find( c_special_variable_keyed_prefix ) == 0 )
       {
          string::size_type pos = name.find( ':' );
 
@@ -10085,6 +10068,23 @@ string get_session_variable( const var_name& var, size_t sess_id )
                if( gtp_session->mapped_variables[ name.substr( 0, pos ) ].count( name.substr( pos + 1 ) ) )
                   retval = gtp_session->mapped_variables[ name.substr( 0, pos ) ][ name.substr( pos + 1 ) ];
             }
+         }
+      }
+      else if( name.find( c_special_variable_queue_prefix ) == 0 )
+      {
+         if( gtp_session->deque_variables.count( name ) )
+         {
+            found = true;
+
+            if( gtp_session->deque_variables[ name ].size( ) )
+            {
+               retval = gtp_session->deque_variables[ name ].front( );
+
+               gtp_session->deque_variables[ name ].pop_front( );
+            }
+
+            if( !gtp_session->deque_variables[ name ].size( ) )
+               gtp_session->deque_variables.erase( name );
          }
       }
       else if( gtp_session->variables.count( name ) )
@@ -10872,6 +10872,27 @@ void set_session_variable( const var_name& var, const string& value,
                gtp_session->deque_items.push_front( val.substr( pos + 1 ) );
          }
       }
+      else if( name.find( c_special_variable_keyed_prefix ) == 0 )
+      {
+         skip_standard_variable = true;
+
+         string::size_type pos = name.find( ':' );
+
+         if( pos == string::npos )
+         {
+            if( !val.empty( ) )
+               throw runtime_error( "invalid keyed variable missing key separator ':'" );
+
+            gtp_session->mapped_variables.erase( name );
+         }
+         else
+         {
+            if( val.empty( ) )
+               gtp_session->mapped_variables[ name.substr( 0, pos ) ].erase( name.substr( pos + 1 ) );
+            else
+               gtp_session->mapped_variables[ name.substr( 0, pos ) ][ name.substr( pos + 1 ) ] = val;
+         }
+      }
       else if( name.find( c_special_variable_queue_prefix ) == 0 )
       {
          skip_standard_variable = true;
@@ -10917,27 +10938,6 @@ void set_session_variable( const var_name& var, const string& value,
 
             if( gtp_session->deque_variables[ name ].empty( ) )
                gtp_session->deque_variables.erase( name );
-         }
-      }
-      else if( name.find( c_special_variable_mapped_prefix ) == 0 )
-      {
-         skip_standard_variable = true;
-
-         string::size_type pos = name.find( ':' );
-
-         if( pos == string::npos )
-         {
-            if( !val.empty( ) )
-               throw runtime_error( "invalid mapped variable missing key separator ':'" );
-
-            gtp_session->mapped_variables.erase( name );
-         }
-         else
-         {
-            if( val.empty( ) )
-               gtp_session->mapped_variables[ name.substr( 0, pos ) ].erase( name.substr( pos + 1 ) );
-            else
-               gtp_session->mapped_variables[ name.substr( 0, pos ) ][ name.substr( pos + 1 ) ] = val;
          }
       }
       else if( name == get_special_var_name( e_special_var_progress_clear ) )

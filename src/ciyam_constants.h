@@ -432,7 +432,7 @@ constexpr const char* c_response_not_found = "(not found)";
 constexpr const char* c_response_error_prefix = "(error)";
 constexpr const char* c_response_message_prefix = "(message)";
 
+constexpr const char* c_special_variable_keyed_prefix = "@keyed_";
 constexpr const char* c_special_variable_queue_prefix = "@queue_";
-constexpr const char* c_special_variable_mapped_prefix = "@mapped_";
 
 #endif

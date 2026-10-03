@@ -1260,6 +1260,48 @@ ggg
 session_variable @deque
 ccc
 hhh
+session_variable @keyed_test:abc xxx
+session_variable @keyed_test:def yyy
+session_variable @keyed_test:ghi zzz
+session_variable @keyed_test:abc
+xxx
+session_variable @keyed_test:def
+yyy
+session_variable @keyed_test:ghi
+zzz
+session_variable @keyed_test:abc 111
+session_variable @keyed_test:def 222
+session_variable @keyed_test:ghi 333
+session_variable @keyed_test
+abc 111
+def 222
+ghi 333
+session_variable @keyed_test:abc
+111
+session_variable @keyed_test:def
+222
+session_variable @keyed_test:ghi
+333
+session_variable @keyed_test:abc ""
+session_variable @keyed_test:abc
+session_variable @keyed_test:def
+222
+session_variable @keyed_test:ghi
+333
+session_variable @keyed_test
+def 222
+ghi 333
+session_variable @keyed_test:def ""
+session_variable @keyed_test:abc
+session_variable @keyed_test:def
+session_variable @keyed_test:ghi
+333
+session_variable @keyed_test
+ghi 333
+session_variable @keyed_test ""
+session_variable @keyed_test:abc
+session_variable @keyed_test:def
+session_variable @keyed_test:ghi
 session_variable @queue_test abc
 session_variable @queue_test def
 session_variable @queue_test ghi
@@ -1270,48 +1312,6 @@ def
 session_variable @queue_test
 ghi
 session_variable @queue_test
-session_variable @mapped_test:abc xxx
-session_variable @mapped_test:def yyy
-session_variable @mapped_test:ghi zzz
-session_variable @mapped_test:abc
-xxx
-session_variable @mapped_test:def
-yyy
-session_variable @mapped_test:ghi
-zzz
-session_variable @mapped_test:abc 111
-session_variable @mapped_test:def 222
-session_variable @mapped_test:ghi 333
-session_variable @mapped_test
-abc 111
-def 222
-ghi 333
-session_variable @mapped_test:abc
-111
-session_variable @mapped_test:def
-222
-session_variable @mapped_test:ghi
-333
-session_variable @mapped_test:abc ""
-session_variable @mapped_test:abc
-session_variable @mapped_test:def
-222
-session_variable @mapped_test:ghi
-333
-session_variable @mapped_test
-def 222
-ghi 333
-session_variable @mapped_test:def ""
-session_variable @mapped_test:abc
-session_variable @mapped_test:def
-session_variable @mapped_test:ghi
-333
-session_variable @mapped_test
-ghi 333
-session_variable @mapped_test ""
-session_variable @mapped_test:abc
-session_variable @mapped_test:def
-session_variable @mapped_test:ghi
 args are "XXX"
 arg $0 is "test_args.cin"
 arg $1 is "XXX"
