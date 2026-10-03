@@ -52,6 +52,8 @@ const c_palette_commands = [
    { command: "view lists", description: "command lists on the server" },
    { command: "view list <name>", description: "show a command list" },
    { command: "view scripts", description: "JavaScripts on the server" },
+   { command: "load script <name>", description: "load a server JavaScript and run its _at_load (admin)", admin: true },
+   { command: "eval script <name> <input>", description: "run a loaded JavaScript's _execute (admin)", admin: true },
    { command: "users review", description: "list accounts (admin)", admin: true },
    { command: "users create secret", description: "issue an account-creation token (admin)", admin: true },
    { command: "users create nominated=<pin>:<username>", description: "reserve a PIN and username (admin)", admin: true },
@@ -292,6 +294,8 @@ function end_linked_session( )
 
    end_log_session( );
 
+   unload_server_scripts( );
+
    // NOTE: As the chat and the accounts page do - so a reload starts a console of its own rather
    // than waiting for a session that has gone.
    forget_source( );
@@ -518,6 +522,8 @@ async function do_disconnect( )
    ciyam.remove_all_variables( );
 
    end_log_session( );
+
+   unload_server_scripts( );
 
    document.getElementById( "main_view" ).hidden = true;
    document.getElementById( "signin_view" ).hidden = false;
@@ -925,9 +931,16 @@ async function run_line( line, from_script )
 
    if( is_javascript_line( text ) )
    {
-      print_line( "Error: The console does not run server javascripts yet - they will run in a sandbox. Use the harness for this line.", "is-err" );
+      var script = parse_script_line( text );
 
-      return { ok: false };
+      if( ( script === null ) || ( script.kind === "error" ) )
+      {
+         print_line( "Error: " + ( script ? script.message : "Not a server javascript line" ) + ".", "is-err" );
+
+         return { ok: false };
+      }
+
+      return run_script_line( script, from_script );
    }
 
    var spec = resolve_command( text );
@@ -1001,6 +1014,336 @@ async function run_line( line, from_script )
       print_line( "Raw protocol needs the admin PIN on a development system, and a command starting a-z.", "is-dim" );
 
    return { ok: !is_error_output( response ) };
+}
+
+// ====================================================================
+// Server javascripts
+// ====================================================================
+
+// NOTE: Ian's server javascripts - "ciyam_<name>.js" - run in this page, as the harness runs them,
+// and by admin alone: admins can run any server script, and nobody else runs them at all (decided
+// 2026-10-03, QST-005). A fingerprint against tampering is to come.
+//
+// The scripts read two page globals, as they do in the harness. "init_script_value" is the input
+// given with "load script <name> <input>", which "_at_load" passes on to "_execute";
+// "include_script_usage_hints" adds a usage line to what a script answers - when typed, not when
+// run from a list.
+var init_script_value = null;
+var include_script_usage_hints = false;
+
+// NOTE: The harness's figures - fifty milliseconds between looks for "_at_load", a hundred looks.
+const c_script_load_attempts = 100;
+const c_script_load_delay = 50;
+
+// NOTE: How long a line waits for a script to answer before the next one runs. One that takes
+// longer - "exec script harden 33333:30" - still answers into the output when it finishes, and a
+// list waits for it with "wait <variable>", as in the harness.
+const c_script_answer_wait = 2000;
+
+// NOTE: "wait <variable>" - the harness's hundred looks, a tenth of a second apart.
+const c_wait_variable_repeats = 100;
+const c_wait_variable_delay = 100;
+
+var g_script_libraries = null;
+var g_loaded_scripts = { };
+
+function add_page_script( src, id )
+{
+   return new Promise( function( resolve )
+   {
+      var script = document.createElement( "script" );
+
+      script.src = src;
+
+      if( id )
+         script.id = id;
+
+      script.onload = function( ) { resolve( true ); };
+      script.onerror = function( ) { resolve( false ); };
+
+      document.head.appendChild( script );
+   } );
+}
+
+// NOTE: What the scripts use besides "sha2.min.js" - "BIP39" and "QRCode". Loaded on first use
+// only, since "bip39.min.js" is nearly 700 KB; both are in "webui/" with everything else.
+function load_script_libraries( )
+{
+   if( g_script_libraries === null )
+      g_script_libraries = Promise.all( [ add_page_script( "bip39.min.js" ), add_page_script( "qrcode.min.js" ) ] );
+
+   return g_script_libraries;
+}
+
+// NOTE: The harness's progress functions, by the names its scripts call - "ciyam_harden.js" shows
+// how far through its rounds it is.
+function show_progress( )
+{
+   document.getElementById( "progress_bar" ).style.width = "0%";
+   document.getElementById( "progress_track" ).hidden = false;
+}
+
+function hide_progress( )
+{
+   document.getElementById( "progress_track" ).hidden = true;
+}
+
+function update_progress( fraction )
+{
+   document.getElementById( "progress_bar" ).style.width = ( Math.min( Math.max( Number( fraction ) || 0, 0 ), 1 ) * 100 ) + "%";
+}
+
+// NOTE: "ciyam_rpc_unlock.js" draws a QR code into "test_image", as in the harness; the panel
+// shows while there is one.
+function refresh_qr( )
+{
+   var panel = document.getElementById( "script_qr" );
+
+   panel.hidden = ( document.getElementById( "test_image" ).childElementCount === 0 );
+
+   // NOTE: The panel takes room from the scrollback, so what the script printed is brought back into view.
+   if( !panel.hidden )
+      scroll_to_end( );
+}
+
+function do_hide_qr( )
+{
+   document.getElementById( "test_image" ).textContent = "";
+
+   refresh_qr( );
+}
+
+function unload_server_script( prefix )
+{
+   var old = document.getElementById( prefix );
+
+   delete g_loaded_scripts[ prefix ];
+
+   if( old === null )
+      return false;
+
+   old.remove( );
+
+   // NOTE: As the harness cleans up - a script's "var"s cannot be deleted, so they are emptied too.
+   [ "_result", "_at_load", "_execute" ].forEach( function( suffix )
+   {
+      try
+      {
+         delete window[ prefix + suffix ];
+      }
+      catch( e )
+      {
+      }
+
+      window[ prefix + suffix ] = undefined;
+   } );
+
+   return true;
+}
+
+// NOTE: When the session ends - what a script worked out, an unlock key's hashes say, must not
+// outlast the account that ran it.
+function unload_server_scripts( )
+{
+   Object.keys( g_loaded_scripts ).forEach( unload_server_script );
+
+   init_script_value = null;
+
+   hide_progress( );
+   do_hide_qr( );
+}
+
+// NOTE: What a script answers, through the callback it is handed, goes into the output as a
+// server's response does - so "{@1}" reads it on the next line.
+function script_answered( value )
+{
+   var text = ( ( value === null ) || ( value === undefined ) ) ? "" : String( value );
+
+   print_output( text );
+
+   g_output = text.replace( /\s+$/, "" );
+
+   refresh_qr( );
+}
+
+// NOTE: Calls a script's function with a callback, as the harness does, and the input as data -
+// never spliced into code to be evaluated. Resolves when the script answers, or after
+// "c_script_answer_wait" if it is still working.
+function call_script( prefix, fn, args )
+{
+   return new Promise( function( resolve )
+   {
+      var timer = window.setTimeout( function( ) { resolve( { ok: true } ); }, c_script_answer_wait );
+
+      var failed = function( e )
+      {
+         window.clearTimeout( timer );
+
+         print_line( "Error: " + prefix + ".js failed - " + ( ( e && e.message ) ? e.message : String( e ) ), "is-err" );
+
+         resolve( { ok: false } );
+      };
+
+      var callback = function( value )
+      {
+         script_answered( value );
+
+         window.clearTimeout( timer );
+
+         resolve( { ok: true } );
+      };
+
+      try
+      {
+         var result = fn.apply( window, [ callback ].concat( args ) );
+
+         if( result && ( typeof result.catch === "function" ) )
+            result.catch( failed );
+      }
+      catch( e )
+      {
+         failed( e );
+      }
+   } );
+}
+
+async function find_script_function( name )
+{
+   for( var i = 0; i < c_script_load_attempts; i++ )
+   {
+      if( typeof window[ name ] === "function" )
+         return window[ name ];
+
+      await delay( c_script_load_delay );
+   }
+
+   return null;
+}
+
+function refuse_unless_admin( )
+{
+   if( ciyam.is_admin )
+      return false;
+
+   print_line( "Error: Server javascripts are run by admin only.", "is-err" );
+
+   return true;
+}
+
+async function run_script_line( spec, from_script )
+{
+   if( !g_connected )
+   {
+      print_line( "Error: Not connected.", "is-err" );
+
+      return { ok: false };
+   }
+
+   if( refuse_unless_admin( ) )
+      return { ok: false };
+
+   var name = ( spec.name === c_console_own_name ) ? ciyam.access : spec.name;
+
+   var prefix = "ciyam_" + name;
+
+   include_script_usage_hints = !from_script;
+
+   switch( spec.verb )
+   {
+      case "load":
+      {
+         await load_script_libraries( );
+
+         unload_server_script( prefix );
+
+         init_script_value = spec.arg;
+
+         if( !await add_page_script( prefix + ".js?" + Date.now( ), prefix ) )
+         {
+            print_line( "Error: There is no server javascript called '" + name + "' - " + prefix + ".js did not load.", "is-err" );
+
+            return { ok: false };
+         }
+
+         g_loaded_scripts[ prefix ] = true;
+
+         var at_load = await find_script_function( prefix + "_at_load" );
+
+         if( at_load === null )
+         {
+            print_line( "Error: " + prefix + ".js has no " + prefix + "_at_load( ) - (failed to load script).", "is-err" );
+
+            return { ok: false };
+         }
+
+         return call_script( prefix, at_load, [ ] );
+      }
+
+      case "eval":
+      {
+         var execute = window[ prefix + "_execute" ];
+
+         if( typeof execute !== "function" )
+         {
+            print_line( "Error: Load it first - load script " + spec.name + ".", "is-err" );
+
+            return { ok: false };
+         }
+
+         return call_script( prefix, execute, ( spec.arg === null ) ? [ ] : [ spec.arg ] );
+      }
+
+      case "result":
+      {
+         var result = window[ prefix + "_result" ];
+
+         if( ( result === null ) || ( result === undefined ) )
+            print_line( "(no result)", "is-dim" );
+         else
+            script_answered( result );
+
+         return { ok: true };
+      }
+
+      case "unload":
+         print_line( unload_server_script( prefix ) ? "(" + name + " unloaded)" : "(" + name + " was not loaded)", "is-dim" );
+
+         return { ok: true };
+   }
+
+   return { ok: false };
+}
+
+// NOTE: "wait <variable>" - until a server javascript sets the global to something other than
+// nothing, empty or false, as in the harness. A stop asked for ends the wait.
+async function wait_for_global( name )
+{
+   if( !is_global_name( name ) )
+   {
+      print_line( "Error: wait takes milliseconds, or the name of a global a server javascript sets.", "is-err" );
+
+      return { ok: false };
+   }
+
+   if( refuse_unless_admin( ) )
+      return { ok: false };
+
+   for( var i = 0; i < c_wait_variable_repeats; i++ )
+   {
+      var value = window[ name ];
+
+      if( ( value !== null ) && ( value !== undefined ) && ( value !== "" ) && ( value !== false ) )
+         return { ok: true };
+
+      if( g_stop_requested )
+         return { ok: false };
+
+      await delay( c_wait_variable_delay );
+   }
+
+   print_line( "(timed out waiting for '" + name + "')", "is-err" );
+
+   return { ok: false };
 }
 
 async function run_local( spec, from_script )
@@ -1092,16 +1435,11 @@ async function run_local( spec, from_script )
 
          return { ok: true };
 
-      // NOTE: "wait <variable>" waits for a server javascript to set its result, so it
-      // arrives with the javascripts themselves.
+      // NOTE: "wait <variable>" waits for a server javascript to set a global - "wait_for_global( )".
       case "wait":
       {
-         if( /^[A-Za-z_]/.test( args ) )
-         {
-            print_line( "Error: wait " + args + " waits for a server javascript's result - the console does not run those yet.", "is-err" );
-
-            return { ok: false };
-         }
+         if( /^[A-Za-z_$]/.test( args ) )
+            return wait_for_global( args );
 
          var ms = Math.min( Math.max( parseInt( args, 10 ) || 0, 0 ), c_max_wait_ms );
 
@@ -1185,10 +1523,36 @@ function run_var( args )
 
          return { ok: true };
 
+      // NOTE: "var @<name> <global>" - from a global a server javascript set, as in the harness. One
+      // not set, or empty, leaves the variable unset.
       case "from_script":
-         print_line( "Error: var @" + command.name + " reads a server javascript's result - the console does not run those yet.", "is-err" );
+      {
+         if( refuse_unless_admin( ) )
+            return { ok: false };
 
-         return { ok: false };
+         if( !is_valid_variable_name( command.name ) || !is_global_name( command.source ) )
+         {
+            print_line( "Error: Usage is var @<name> <global> - a variable's name, then the global a script sets.", "is-err" );
+
+            return { ok: false };
+         }
+
+         if( !command.only_if_unset || !ciyam.has_variable( command.name ) )
+         {
+            var global = window[ command.source ];
+
+            global = ( ( global === null ) || ( global === undefined ) ) ? "" : String( global );
+
+            if( global !== "" )
+               ciyam.set_variable( command.name, global );
+            else if( ciyam.has_variable( command.name ) )
+               ciyam.remove_variable( command.name );
+         }
+
+         render_vars( );
+
+         return { ok: true };
+      }
 
       case "remove":
          if( ciyam.has_variable( command.name ) )
@@ -1296,6 +1660,18 @@ function print_help( )
     "  ?{name} <line>               run only if name is set; !{name} only if not",
     "  @{name}                      run the command a variable holds"
    ];
+
+   if( ciyam.is_admin )
+   {
+      lines.push( "" );
+      lines.push( "Server javascripts - admin only, as in the harness" );
+      lines.push( "  load script <name> [<input>] load ciyam_<name>.js; its _at_load gets the input" );
+      lines.push( "  eval script <name> [<input>] run its _execute - exec and employ too" );
+      lines.push( "  result script [<name>]       its _result, into the output" );
+      lines.push( "  unload script [<name>]       take it out of the page" );
+      lines.push( "  wait <global>                wait for a script to set a global" );
+      lines.push( "  var @<name> <global>         set a variable from a script's global" );
+   }
 
    // NOTE: Linked, the session is the chat's - ending it here would sign the chat out.
    if( !g_linked )

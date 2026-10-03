@@ -347,6 +347,43 @@ code
    gap: 2px;
 }
 
+/* NOTE: A server javascript's progress - "show_progress( )", "update_progress( fraction )". */
+.console-progress
+{
+   flex: none;
+   height: 3px;
+   margin: 6px 0;
+   border-radius: 2px;
+   background: var(--color-console-border);
+   overflow: hidden;
+}
+
+.console-progress-bar
+{
+   width: 0%;
+   height: 100%;
+   background: var(--color-console-accent);
+   transition: width 0.1s linear;
+}
+
+/* NOTE: A QR code a server javascript drew - on white, so a phone's camera can read it. */
+.console-qr
+{
+   flex: none;
+   display: flex;
+   align-items: flex-start;
+   gap: 12px;
+   margin: 8px 0;
+}
+
+.console-qr #test_image
+{
+   padding: 12px;
+   border-radius: 4px;
+   background: #ffffff;
+   line-height: 0;
+}
+
 .console-line
 {
    white-space: pre-wrap;

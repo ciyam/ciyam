@@ -82,6 +82,17 @@ http://www.opensource.org/licenses/mit-license.php.
       <div class="console-panel console-panel--console" id="panel_console" role="tabpanel" aria-labelledby="tab_console">
          <div class="console-scrollback" id="scrollback" role="log" aria-live="polite"></div>
 
+         <!-- NOTE: What a server javascript draws on, by the harness's names: the progress bar that
+              "show_progress( )" and its pair move, and "test_image", where "ciyam_rpc_unlock.js"
+              draws a QR code. -->
+         <div class="console-progress" id="progress_track" hidden>
+            <div class="console-progress-bar" id="progress_bar"></div>
+         </div>
+         <div class="console-qr" id="script_qr" hidden>
+            <div id="test_image"></div>
+            <button type="button" class="console-chip" onclick="do_hide_qr( )">Hide</button>
+         </div>
+
          <form class="console-prompt" id="prompt_form" onsubmit="do_submit_prompt( ); return false;">
             <span class="console-chev" aria-hidden="true">&gt;</span>
             <label for="prompt_input" class="console-sr-only">Command</label>
