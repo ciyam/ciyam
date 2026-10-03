@@ -141,7 +141,9 @@ std::string format_bytes( int64_t size,
 int64_t unformat_bytes( const std::string& size_string,
  int64_t default_val = INT64_C( 0 ), bool use_iec_always = false );
 
-std::string format_duration( int value, bool include_seconds = true );
+std::string format_duration( int value,
+ bool include_seconds = true, bool use_weeks_if_applicable = false );
+
 int unformat_duration( const std::string& value );
 
 void split_list_items(

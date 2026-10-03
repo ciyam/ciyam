@@ -414,7 +414,8 @@ int64_t unformat_bytes( const string& size_string, int64_t default_val, bool use
    return retval;
 }
 
-string format_duration( int value, bool include_seconds )
+string format_duration( int value,
+ bool include_seconds, bool use_weeks_if_applicable )
 {
    string str;
 
@@ -424,7 +425,19 @@ string format_duration( int value, bool include_seconds )
 
       value -= ( days * ( int )seconds_per_day( ) );
 
-      str = to_string( days ) + "d";
+      if( use_weeks_if_applicable && ( days >= 7 ) )
+      {
+         int weeks = ( days / 7 );
+
+         str += to_string( weeks ) + "w";
+
+         days -= ( weeks * 7 );
+      }
+
+      if( !str.empty( ) )
+         str += " ";
+
+      str += to_string( days ) + "d";
    }
 
    if( value >= 3600 )
