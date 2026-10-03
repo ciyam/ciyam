@@ -83,6 +83,14 @@ check( "junk in a fixed field", cp.parse_credentials( "45679,c5<b>,8dd2f1,ddd52e
 check( "undecodable username", cp.parse_credentials( "1,2,3,4,5,%E0%A4%A,0" ).username, "" );
 
 // --------------------------------------------------------------------
+heading( "the page a linked console belongs to" );
+
+check( "the accounts page", cp.linked_owner( "accounts" ),
+ { name: "the accounts page", subject: "The accounts page", source: "account", label: "Accounts" } );
+check( "the chat", cp.linked_owner( "" ), { name: "the chat", subject: "The chat", source: "chat", label: "Chat" } );
+check( "anything else is the chat", cp.linked_owner( "other" ).source, "chat" );
+
+// --------------------------------------------------------------------
 heading( "resolving commands" );
 
 var keys = [ "kind", "method", "path", "options" ];
@@ -369,12 +377,13 @@ check( "other values whole", cp.summarise_storage_value( "cws.access", "45679,20
 // --------------------------------------------------------------------
 heading( "preferences" );
 
-check( "nothing stored", cp.parse_prefs( null ), { log_session_only: false } );
-check( "stored value", cp.parse_prefs( "{\"log_session_only\":true}" ), { log_session_only: true } );
-check( "not JSON", cp.parse_prefs( "yes please" ), { log_session_only: false } );
-check( "wrong type", cp.parse_prefs( "{\"log_session_only\":\"true\"}" ), { log_session_only: false } );
-check( "unknown names dropped", cp.parse_prefs( "{\"log_session_only\":true,\"other\":1}" ), { log_session_only: true } );
-check( "not an object", cp.parse_prefs( "[true]" ), { log_session_only: false } );
+check( "nothing stored", cp.parse_prefs( null ), { log_session_only: false, log_polling: false } );
+check( "stored value", cp.parse_prefs( "{\"log_session_only\":true}" ), { log_session_only: true, log_polling: false } );
+check( "not JSON", cp.parse_prefs( "yes please" ), { log_session_only: false, log_polling: false } );
+check( "wrong type", cp.parse_prefs( "{\"log_session_only\":\"true\"}" ), { log_session_only: false, log_polling: false } );
+check( "unknown names dropped", cp.parse_prefs( "{\"log_session_only\":true,\"other\":1}" ), { log_session_only: true, log_polling: false } );
+check( "not an object", cp.parse_prefs( "[true]" ), { log_session_only: false, log_polling: false } );
+check( "log polling", cp.parse_prefs( "{\"log_polling\":true}" ), { log_session_only: false, log_polling: true } );
 
 // --------------------------------------------------------------------
 heading( "request log entries" );

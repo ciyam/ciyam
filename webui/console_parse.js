@@ -172,6 +172,18 @@ function parse_credentials( rest )
    };
 }
 
+// NOTE: Which page a linked console shares its session with - "from=accounts" in its address when
+// the accounts page opened it, nothing when the chat did. "name" and "subject" (to start a sentence)
+// are for messages, "source" and "label" for the Log's filter: each page tags what it logs with its
+// own source.
+function linked_owner( from )
+{
+   if( from === "accounts" )
+      return { name: "the accounts page", subject: "The accounts page", source: "account", label: "Accounts" };
+
+   return { name: "the chat", subject: "The chat", source: "chat", label: "Chat" };
+}
+
 // ====================================================================
 // Commands
 // ====================================================================
@@ -865,9 +877,12 @@ function summarise_storage_value( key, value )
 // NOTE: One "localStorage" key holding a small JSON object, read by the chat and the console
 // alike and shared by every account on the browser. More can be added to "c_console_prefs"
 // as they are needed; a per-account set would be a second key ending in the PIN.
+//
+// "log_polling" also logs the quiet requests - polling and other background reads - which are
+// otherwise left out so they do not bury what was asked for. For diagnostics; off by default.
 const c_console_prefs_key = "cws.prefs";
 
-const c_console_prefs = { log_session_only: false };
+const c_console_prefs = { log_session_only: false, log_polling: false };
 
 // NOTE: Only known names, and only values of the default's type, are taken from what is
 // stored - anything else, including text that is not JSON at all, falls back to the default.
@@ -897,6 +912,20 @@ function parse_prefs( stored )
    } );
 
    return prefs;
+}
+
+// NOTE: In the browser - whether "Log polling" is ticked. Read afresh on each request, so ticking
+// it in the console takes effect in the chat and the accounts page at their next poll.
+function is_logging_polling( )
+{
+   try
+   {
+      return parse_prefs( localStorage.getItem( c_console_prefs_key ) ).log_polling;
+   }
+   catch( e )
+   {
+      return false;
+   }
 }
 
 // ====================================================================
@@ -1041,6 +1070,7 @@ if( typeof module !== "undefined" )
    module.exports = {
       parse_channel_message: parse_channel_message,
       parse_credentials: parse_credentials,
+      linked_owner: linked_owner,
       resolve_command: resolve_command,
       parse_creds_command: parse_creds_command,
       plan_creds_removal: plan_creds_removal,

@@ -13,6 +13,11 @@ ok   too few fields
 ok   junk in a fixed field
 ok   undecodable username
 
+== the page a linked console belongs to ========================
+ok   the accounts page
+ok   the chat
+ok   anything else is the chat
+
 == resolving commands ==========================================
 ok   noun then verb
 ok   verb then noun
@@ -168,6 +173,7 @@ ok   not JSON
 ok   wrong type
 ok   unknown names dropped
 ok   not an object
+ok   log polling
 
 == request log entries =========================================
 ok   entry
