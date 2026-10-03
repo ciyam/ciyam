@@ -48,6 +48,10 @@ else
  node ../webui/ciyam.js "" de604cee0755a3d81944ea96aed12681 $device "" test
 
  echo ""
+ echo "Attempt to connect using 'dummy' with 'test'."
+ node ../webui/ciyam.js -quiet "" dummy "" "" test
+
+ echo ""
  echo "Attempt to connect using 10101 with 'test'."
  node ../webui/ciyam.js -quiet "" 10101 "" "" test
 

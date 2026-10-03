@@ -819,21 +819,24 @@ bool has_web_session_access_token( const string& token,
             if( is_not_empty )
                suffix = buffer_file( token_file );
 
-            // NOTE: It is expected that a "create user" command (using the
-            // "secret" option) had been issued previously so now create an
-            // nameless access "PIN" (and also sets a system variable using
-            // the name "@cws_token_<token>" to the PIN so any applications
-            // can find it assuming they had recorded the "token" before).
-            pin = create_access_token( prefix, e_printable_type_numeric, &suffix );
+            if( has_token )
+            {
+               // NOTE: It is expected that a "create user" command (using the
+               // "secret" option) had been issued previously so now create an
+               // nameless access "PIN" (and also sets a system variable using
+               // the name "@cws_token_<token>" to the PIN so any applications
+               // can find it assuming they had recorded the "token" before).
+               pin = create_access_token( prefix, e_printable_type_numeric, &suffix );
 
-            file_remove( token_file );
+               file_remove( token_file );
 
-            string cws_token_var_name(
-             get_special_var_name( e_special_var_cws_token ) );
+               string cws_token_var_name(
+                get_special_var_name( e_special_var_cws_token ) );
 
-            set_system_variable( cws_token_var_name + '_' + token, pin );
+               set_system_variable( cws_token_var_name + '_' + token, pin );
 
-            retval = true;
+               retval = true;
+            }
          }
          else
          {
@@ -2507,7 +2510,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      if( !has_user_info( pin ) )
                         // FUTURE: This message should be handled as a server string message.
-                        error = "Unkknown access pin '" + pin + "' for user update.";
+                        error = "Unknown access pin '" + pin + "' for user update.";
                      else if( !valid_options || ( option_parameters.size( ) > valid_options ) )
                         // FUTURE: This message should be handled as a server string message.
                         error = "Invalid options '" + options + "' for user upddate.";
@@ -2533,7 +2536,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      if( !has_user_info( pin ) )
                         // FUTURE: This message should be handled as a server string message.
-                        error = "Unkknown user access '" + pin + "' for removal.";
+                        error = "Unknown user access '" + pin + "' for removal.";
                      else
                      {
                         found = true;

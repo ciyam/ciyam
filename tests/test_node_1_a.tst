@@ -36,6 +36,9 @@ ciyam.is_admin = true
 ciyam.is_locked = false
 {"message":"Session terminated."}
 
+Attempt to connect using 'dummy' with 'test'.
+Error: This web session is not valid (or has expired).
+
 Attempt to connect using 10101 with 'test'.
 Error: This web session is not valid (or has expired).
 
@@ -249,7 +252,7 @@ Delete user with access pin '11111' then list users.
 ]
 
 Attempt to delete user with access pin '11111' again then list users.
-{"error":"Unkknown user access '11111' for removal."}
+{"error":"Unknown user access '11111' for removal."}
 [
   {
     "pin": "22222",
