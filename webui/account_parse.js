@@ -200,6 +200,19 @@ function is_unknown_device_error( error )
    return /Invalid device identity/.test( String( error || "" ) );
 }
 
+// NOTE: The server answers a code or a PIN it does not know - made up, mistyped, or a code already
+// used (since ISS-034's fix) - as an invalid session, which reads as something wrong with the
+// browser. So that one is said in the page's own words; any other error is passed on as it came.
+function refused_join_text( error, mode )
+{
+   var text = String( error || "" ).replace( /^Error: /, "" );
+
+   if( !/not valid/.test( text ) )
+      return text;
+
+   return ( mode === "code" ) ? "That code isn't known, or has already been used." : "That PIN isn't known on this node.";
+}
+
 // NOTE: What the address asks for: "#code=<code>" or "#welcome" open the Welcome screen.
 function parse_account_hash( hash )
 {
@@ -226,6 +239,7 @@ if( typeof module !== "undefined" )
       join_problem: join_problem,
       join_url: join_url,
       is_unknown_device_error: is_unknown_device_error,
+      refused_join_text: refused_join_text,
       parse_account_hash: parse_account_hash
    };
 }

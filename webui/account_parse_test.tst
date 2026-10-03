@@ -56,4 +56,11 @@ ok   nothing
 ok   the server's words
 ok   anything else
 
+== a code or PIN the node does not know ========================
+ok   a code
+ok   a PIN
+ok   without the prefix
+ok   anything else is passed on
+ok   nothing
+
 All checks passed.

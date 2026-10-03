@@ -128,6 +128,20 @@ check( "the server's words", ap.is_unknown_device_error( "Error: Invalid device 
 check( "anything else", [ ap.is_unknown_device_error( "Error: User credentials are either invalid or incorrect." ),
  ap.is_unknown_device_error( "" ) ], [ false, false ] );
 
+// --------------------------------------------------------------------
+heading( "a code or PIN the node does not know" );
+
+// NOTE: The server's words for a made-up code, a used one and an unknown PIN alike - checked on
+// a container built from 44ddc860, 2026-10-03 ("code_check_probe.js").
+const c_refused = "Error: This web session is not valid (or has expired).";
+
+check( "a code", ap.refused_join_text( c_refused, "code" ), "That code isn't known, or has already been used." );
+check( "a PIN", ap.refused_join_text( c_refused, "pin" ), "That PIN isn't known on this node." );
+check( "without the prefix", ap.refused_join_text( "This web session is not valid (or has expired).", "code" ),
+ "That code isn't known, or has already been used." );
+check( "anything else is passed on", ap.refused_join_text( "Error: Something else went wrong.", "code" ), "Something else went wrong." );
+check( "nothing", ap.refused_join_text( "", "pin" ), "" );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 
