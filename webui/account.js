@@ -1414,10 +1414,9 @@ async function do_check_pin( )
 
    var reply = parse_join_reply( response );
 
-   // NOTE: The server answers an unknown PIN as an invalid session; anything else is passed on.
    if( reply.kind === "error" )
    {
-      set_error( "join_error", /not valid/.test( reply.error ) ? "That PIN isn't known on this node." : reply.error );
+      set_error( "join_error", refused_join_text( reply.error, "pin" ) );
 
       return;
    }
@@ -1490,7 +1489,12 @@ async function do_join( event )
 
          if( reply.kind !== "open" )
          {
-            set_error( "join_error", problem_text( made ) || "That code wasn't accepted." );
+            var refused = is_timeout_response( made ) ? problem_text( made ) : "";
+
+            if( ( refused === "" ) && ( reply.kind === "error" ) )
+               refused = refused_join_text( reply.error, "code" );
+
+            set_error( "join_error", refused || "That code wasn't accepted." );
 
             return;
          }
