@@ -34,6 +34,9 @@ ok   missing name
 ok   view lists without a name
 ok   view scripts without a name
 ok   view styles without a name
+ok   view logs
+ok   view log server
+ok   review logs script
 ok   review storages without a name
 ok   a list by name
 ok   options where none are taken
@@ -78,6 +81,7 @@ ok   retain, not signed in
 ok   fetch
 ok   raw
 ok   own name
+ok   a payload, encoded
 ok   no device yet
 
 == variable names ==============================================
@@ -91,22 +95,6 @@ ok   empty
 
 == scripts =====================================================
 ok   steps skip blanks and comments
-ok   five scripts
-ok   arguments
-ok   no arguments
-ok   sorted
-ok   bad means none
-ok   error means none
-ok   command
-ok   command without arguments
-ok   comma refused
-ok   a space quotes the whole list
-ok   the whole list, not just the value
-ok   quote refused
-ok   backslash refused
-ok   destroy is destructive
-ok   backup import is destructive
-ok   backup export is not
 
 == output ======================================================
 ok   error
@@ -170,6 +158,7 @@ ok   a global's name
 ok   not a global's name
 ok   list names, one per line
 ok   no lists
+ok   this account's own is kept
 ok   an error is no lists
 
 == palette =====================================================

@@ -128,6 +128,9 @@ check( "missing name", cp.resolve_command( "messages review" ).reason, "'message
 check( "view lists without a name", pick( cp.resolve_command( "view lists" ), keys ), { kind: "cws", method: "GET", path: "/webcmdlists", options: "" } );
 check( "view scripts without a name", cp.resolve_command( "view scripts" ).path, "/javascripts" );
 check( "view styles without a name", cp.resolve_command( "view styles" ).path, "/stylesheets" );
+check( "view logs", pick( cp.resolve_command( "view logs" ), keys ), { kind: "cws", method: "GET", path: "/logs", options: "" } );
+check( "view log server", cp.resolve_command( "view log server" ).path, "/logs/server" );
+check( "review logs script", cp.resolve_command( "review logs script" ).path, "/logs/script" );
 check( "review storages without a name", cp.resolve_command( "review storages" ).path, "/storages" );
 check( "a list by name", cp.resolve_command( "view list demo_echo_variables" ).path, "/webcmdlists/demo_echo_variables" );
 check( "options where none are taken", cp.resolve_command( "users review extra" ).reason, "'users review' takes no options" );
@@ -200,6 +203,9 @@ check( "raw", cp.build_cws_url( "http://h/cws", { path: "", request: "run_script
 check( "own name", cp.build_cws_url( "http://h/cws", cp.resolve_command( "users delete ***" ), session ),
  "http://h/cws/users/45679?access=45679&device=c5588b&format=text&session=ddd52e" );
 
+check( "a payload, encoded", cp.build_cws_url( "http://h/cws", { path: "/javascripts", payload: "var a = 1; // b&c" }, session ),
+ "http://h/cws/javascripts?access=45679&device=c5588b&format=text&payload=var%20a%20%3D%201%3B%20%2F%2F%20b%26c&session=ddd52e" );
+
 check( "no device yet", cp.build_cws_url( "http://h/cws", { path: "/status" }, { access: "1", device: "", sessid: "s" } ),
  "http://h/cws/status?access=1&format=text&session=s" );
 
@@ -219,51 +225,6 @@ heading( "scripts" );
 
 check( "steps skip blanks and comments", cp.split_script( "status\n\n# note\n  messages review 0000001  \r\n" ),
  [ { line: 1, text: "status" }, { line: 4, text: "messages review 0000001" } ] );
-
-var listing = [
- "add_archive @path @size @name",
- "backup_export",
- "close_channel @storage @identity",
- "destroy_peerchain_entry @identity",
- "export_app_file @app_directory @list_hash @web_root"
-].join( "\n" );
-
-var scripts = cp.parse_script_list( listing );
-
-check( "five scripts", scripts.length, 5 );
-check( "arguments", scripts[ 0 ], { name: "add_archive", args: [ "@path", "@size", "@name" ] } );
-check( "no arguments", scripts[ 1 ], { name: "backup_export", args: [ ] } );
-check( "sorted", scripts.map( function( s ) { return s.name; } ),
- [ "add_archive", "backup_export", "close_channel", "destroy_peerchain_entry", "export_app_file" ] );
-
-check( "bad means none", cp.parse_script_list( "[bad]" ), [ ] );
-check( "error means none", cp.parse_script_list( "Error: Script 'x' not found." ), [ ] );
-
-check( "command", cp.build_script_command( "add_archive", { "@path": "/tmp/a", "@size": "10", "@name": "x" } ),
- { command: "run_script !add_archive @path=/tmp/a,@size=10,@name=x" } );
-
-check( "command without arguments", cp.build_script_command( "backup_export", { } ), { command: "run_script !backup_export" } );
-
-check( "comma refused", cp.build_script_command( "add_archive", { "@name": "a,b" } ),
- { error: "The value for '@name' cannot contain a comma." } );
-
-// NOTE: The case that failed in use - unquoted, the server saw four words and answered
-// "invalid command usage".
-check( "a space quotes the whole list", cp.build_script_command( "irc_add_room", { "@name": "Test Room 2" } ),
- { command: "run_script !irc_add_room \"@name=Test Room 2\"" } );
-
-check( "the whole list, not just the value", cp.build_script_command( "add_archive", { "@path": "/tmp/a", "@name": "my file" } ),
- { command: "run_script !add_archive \"@path=/tmp/a,@name=my file\"" } );
-
-check( "quote refused", cp.build_script_command( "irc_add_room", { "@name": "say \"hi\"" } ),
- { error: "The value for '@name' cannot contain a double quote or a backslash." } );
-
-check( "backslash refused", cp.build_script_command( "add_archive", { "@path": "C:\\tmp" } ),
- { error: "The value for '@path' cannot contain a double quote or a backslash." } );
-
-check( "destroy is destructive", cp.is_destructive_script( "destroy_peerchain_entry" ), true );
-check( "backup import is destructive", cp.is_destructive_script( "backup_import" ), true );
-check( "backup export is not", cp.is_destructive_script( "backup_export" ), false );
 
 // --------------------------------------------------------------------
 heading( "output" );
@@ -363,6 +324,7 @@ check( "not a global's name", [ cp.is_global_name( "a.b" ), cp.is_global_name( "
 
 check( "list names, one per line", cp.parse_name_list( "demo_bip39_entropy\ndemo_echo_variables\ndemo_new_unlock_key\n" ), [ "demo_bip39_entropy", "demo_echo_variables", "demo_new_unlock_key" ] );
 check( "no lists", cp.parse_name_list( "[none]" ), [ ] );
+check( "this account's own is kept", cp.parse_name_list( "***\nbip39\nharden\n" ), [ "***", "bip39", "harden" ] );
 check( "an error is no lists", cp.parse_name_list( "Error: This web session is not valid (or has expired)." ), [ ] );
 
 heading( "palette" );

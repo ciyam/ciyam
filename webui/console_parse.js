@@ -20,8 +20,6 @@ const c_console_max_response_chars = 20000;
 
 const c_console_short_key_length = 17;
 
-const c_console_destructive_prefixes = [ "destroy_", "remove_", "close_", "backup_import" ];
-
 // NOTE: Query parameters that carry credentials. They are never kept in a log entry -
 // the log is broadcast between tabs and shown on screen, and none of it is needed to
 // read what a request did.
@@ -50,7 +48,8 @@ const c_console_nouns =
    "storage-instance": "storage-instances", "storage-instances": "storage-instances",
    script: "javascripts", scripts: "javascripts", javascript: "javascripts", javascripts: "javascripts",
    style: "stylesheets", styles: "stylesheets", stylesheet: "stylesheets", stylesheets: "stylesheets",
-   list: "webcmdlists", lists: "webcmdlists", webcmdlist: "webcmdlists", webcmdlists: "webcmdlists"
+   list: "webcmdlists", lists: "webcmdlists", webcmdlist: "webcmdlists", webcmdlists: "webcmdlists",
+   log: "logs", logs: "logs"
 };
 
 // NOTE: The CWS routes, as "do_fetch( )" in "test_web_session.js" maps them. "name" is a
@@ -78,6 +77,9 @@ const c_console_routes =
    "javascripts|review": { method: "GET", name: "optional", options: false },
    "stylesheets|review": { method: "GET", name: "optional", options: false },
    "webcmdlists|review": { method: "GET", name: "optional", options: false },
+
+   // NOTE: Ian, 2026-10-03 - admin only on the server: the log names, or one whole log.
+   "logs|review": { method: "GET", name: "optional", options: false },
 
    "javascripts|delete": { method: "DELETE", name: false, options: false },
    "stylesheets|delete": { method: "DELETE", name: false, options: false },
@@ -502,6 +504,11 @@ function build_cws_url( base, spec, session )
    if( spec.request )
       url += "&request=" + encodeURIComponent( spec.request );
 
+   // NOTE: What is saved - "retain javascript" and "retain webcmdlist" take it as "payload=", as the
+   // harness sends it.
+   if( spec.payload )
+      url += "&payload=" + encodeURIComponent( spec.payload );
+
    if( !spec.no_session )
       url += "&session=" + session.sessid;
 
@@ -664,8 +671,8 @@ function append_output( buffer, text )
    return ( before === "" ) ? String( text ) : before + "\n" + text;
 }
 
-// NOTE: "view lists" answers one name per line. An error, or "[none]" when there are none,
-// is an empty list.
+// NOTE: "view lists" and "view scripts" answer one name per line - this account's own as "***", as
+// the server shows it. An error, or "[none]" when there are none, is an empty list.
 function parse_name_list( response )
 {
    var text = String( response || "" ).trim( );
@@ -674,7 +681,7 @@ function parse_name_list( response )
       return [ ];
 
    return text.split( /\r?\n/ ).map( function( line ) { return line.trim( ); } )
-    .filter( function( line ) { return /^[A-Za-z0-9_\-.]+$/.test( line ); } );
+    .filter( function( line ) { return ( line === c_console_own_name ) || /^[A-Za-z0-9_\-.]+$/.test( line ); } );
 }
 
 // NOTE: Lines that need a server javascript run - "load script", "eval script", "exec
@@ -731,81 +738,6 @@ function parse_script_line( text )
 function is_global_name( name )
 {
    return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test( String( name || "" ) );
-}
-
-// NOTE: "run_script *" answers one script per line as "name @arg1 @arg2". Anything that
-// does not look like that - an error, or "[bad]" when raw protocol is refused - yields an
-// empty list rather than a list of nonsense.
-function parse_script_list( response )
-{
-   var text = String( response || "" );
-
-   if( ( text.indexOf( "Error: " ) === 0 ) || ( text.trim( ) === "[bad]" ) )
-      return [ ];
-
-   var scripts = [ ];
-
-   text.split( /\r?\n/ ).forEach( function( line )
-   {
-      var words = split_words( line );
-
-      if( ( words.length === 0 ) || !/^[a-z][a-z0-9_]*$/.test( words[ 0 ] ) )
-         return;
-
-      var args = words.slice( 1 ).filter( function( w ) { return /^@[a-z0-9_]+$/.test( w ); } );
-
-      if( args.length !== ( words.length - 1 ) )
-         return;
-
-      scripts.push( { name: words[ 0 ], args: args } );
-   } );
-
-   scripts.sort( function( lhs, rhs ) { return ( lhs.name < rhs.name ) ? -1 : ( lhs.name > rhs.name ) ? 1 : 0; } );
-
-   return scripts;
-}
-
-// NOTE: "!" runs the script synchronously and returns its result. Arguments are comma
-// separated on the server, so a value containing a comma cannot be passed - that is
-// refused here rather than silently split into two arguments.
-//
-// "run_script" takes exactly two words, the name and the list, and the server splits the
-// line on whitespace - so a list with a space in it must be one double-quoted word. Quotes
-// only count at the start of a word ("setup_arguments( )" in "utilities.cpp"): written as
-// @name="Test Room" they would stay in the value. A quote or backslash inside a value would
-// need escaping, so those are refused too.
-function build_script_command( name, values )
-{
-   var pairs = [ ];
-
-   var keys = Object.keys( values || { } );
-
-   for( var i = 0; i < keys.length; i++ )
-   {
-      var value = String( values[ keys[ i ] ] );
-
-      if( value.indexOf( "," ) >= 0 )
-         return { error: "The value for '" + keys[ i ] + "' cannot contain a comma." };
-
-      if( /["\\]/.test( value ) )
-         return { error: "The value for '" + keys[ i ] + "' cannot contain a double quote or a backslash." };
-
-      pairs.push( keys[ i ] + "=" + value );
-   }
-
-   var list = pairs.join( "," );
-
-   if( /\s/.test( list ) )
-      list = "\"" + list + "\"";
-
-   return { command: "run_script !" + name + ( list !== "" ? " " + list : "" ) };
-}
-
-function is_destructive_script( name )
-{
-   var text = String( name || "" );
-
-   return c_console_destructive_prefixes.some( function( prefix ) { return text.indexOf( prefix ) === 0; } );
 }
 
 // ====================================================================
@@ -1134,9 +1066,6 @@ if( typeof module !== "undefined" )
       parse_script_line: parse_script_line,
       is_global_name: is_global_name,
       parse_name_list: parse_name_list,
-      parse_script_list: parse_script_list,
-      build_script_command: build_script_command,
-      is_destructive_script: is_destructive_script,
       is_error_output: is_error_output,
       truncate_lines: truncate_lines,
       push_history: push_history,
