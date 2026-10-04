@@ -394,6 +394,7 @@ Create a new romm for 'test-1' and 'test-2' and output entrance room details for
   }
 ]
 Rename the new room and output the entrance again.
+Error: Invalid room number '1000002' for CWS 'messages' endpoint.
 {"room":"0000000"}
 [
   {

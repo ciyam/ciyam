@@ -109,6 +109,7 @@ else
  echo "messages" >/tmp/ciyam/$device.lst
 
  echo "echo Rename the new room and output the entrance again." >>/tmp/ciyam/$device.lst
+ echo "messages update 1000002 name=Testing (test-1 and test-2)" >>/tmp/ciyam/$device.lst
  echo "messages update 0000002 name=Testing (test-1 and test-2)" >>/tmp/ciyam/$device.lst
  echo "messages" >>/tmp/ciyam/$device.lst
 
