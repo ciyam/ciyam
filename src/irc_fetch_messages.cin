@@ -271,7 +271,7 @@ CHANGED=1
 .session_variable @gteq_session_queue $START_POINT
 @endif
 ;
-.session_variable -id=$SESSION @queue_irc_$ROOM_AND_USER @deque
+.session_variable -p=@ -s=_$USER -sys_keyed -id=$SESSION @queue_irc_$ROOM_AND_USER @deque
 ;
 .session_variable @deque size
 @ifeq "$OUTPUT" "0"
