@@ -98,6 +98,10 @@ var g_raw_available = null;
 var g_server_lists = [ ];
 var g_server_javascripts = [ ];
 
+// NOTE: Whether each listing has been read - until it has, the account may have one saved already.
+var g_server_lists_known = false;
+var g_server_javascripts_known = false;
+
 // NOTE: What the Scripts tab's editor holds - a "list" (the harness's list language, run here) or a
 // server "javascript", which is saved but not run from the editor - and whether it is this account's
 // own from the server, which saving replaces without asking.
@@ -538,6 +542,8 @@ async function do_disconnect( )
 
    unload_server_scripts( );
 
+   reset_script_editor( );
+
    document.getElementById( "main_view" ).hidden = true;
    document.getElementById( "signin_view" ).hidden = false;
    document.getElementById( "scrollback" ).textContent = "";
@@ -576,6 +582,8 @@ function enter_console( )
    render_vars( );
    render_storage( );
    render_log( );
+
+   reset_script_editor( );
 
    probe_raw( );
    load_server_lists( );
@@ -1860,10 +1868,28 @@ function show_script_editor( kind )
    disarm_replace( );
 
    document.getElementById( "script_server_hint" ).textContent = is_list
-    ? "On the server each account keeps one list - " + ciyam.access + ".list, shown as ***. The name above is not kept, and saving replaces the list saved before."
+    ? "On the server each account keeps one list - " + ciyam.access + ".list, shown as ***. "
+     + "The name above is not kept, and saving replaces the list saved before."
     : "On the server each account keeps one JavaScript - ciyam_" + ciyam.access + ".js, shown as ***. Saving replaces the one saved before.";
 
    render_saved_scripts( );
+}
+
+// NOTE: Whenever a session starts or ends - what the editor held, and whose it was, belongs to the
+// account before. Left, the next account's one click could save it as their own (found by review).
+function reset_script_editor( )
+{
+   g_current_script = "";
+
+   show_script_editor( "list" );
+
+   document.getElementById( "script_name" ).value = "";
+   document.getElementById( "script_body" ).value = "";
+   document.getElementById( "script_delete" ).hidden = true;
+
+   mark_current_item( null );
+
+   set_error( "script_error", "" );
 }
 
 function server_save_label( )
@@ -1907,7 +1933,10 @@ async function do_save_to_server( )
 
    var button = document.getElementById( "script_save_server" );
 
-   var has_own = ( is_javascript ? g_server_javascripts : g_server_lists ).indexOf( c_console_own_name ) >= 0;
+   // NOTE: Not knowing - the listing still loading, or failed - is treated as having one, so it asks (found by review).
+   var known = is_javascript ? g_server_javascripts_known : g_server_lists_known;
+
+   var has_own = !known || ( ( is_javascript ? g_server_javascripts : g_server_lists ).indexOf( c_console_own_name ) >= 0 );
 
    if( has_own && !g_editor_from_own && ( ( g_replace_armed === 0 ) || ( Date.now( ) - g_replace_armed > c_delete_confirm_ms ) ) )
    {
@@ -1965,6 +1994,7 @@ async function do_save_to_server( )
 async function load_server_lists( )
 {
    g_server_lists = [ ];
+   g_server_lists_known = false;
 
    render_server_lists( null );
 
@@ -1972,6 +2002,7 @@ async function load_server_lists( )
     build_cws_url( ciyam.get_cws_url( ), { path: "/webcmdlists" }, session_info( ) ), true );
 
    g_server_lists = parse_name_list( response );
+   g_server_lists_known = ( response !== null ) && !is_error_output( response );
 
    render_server_lists( response );
 }
@@ -2011,10 +2042,9 @@ async function open_server_list( name, button )
    var response = await send_request( "GET",
     build_cws_url( ciyam.get_cws_url( ), { path: server_item_path( "/webcmdlists/", name ) }, session_info( ) ), false );
 
+   // NOTE: The editor is left as it was - switched first, what it held would be relabelled (found by review).
    if( ( response === null ) || ( response.indexOf( "Error: " ) === 0 ) )
    {
-      show_script_editor( );
-
       set_error( "script_error", ( response === null ) ? "The list could not be fetched." : response.trim( ) );
 
       return;
@@ -2048,6 +2078,7 @@ async function open_server_list( name, button )
 async function load_server_javascripts( )
 {
    g_server_javascripts = [ ];
+   g_server_javascripts_known = false;
 
    document.getElementById( "javascripts_group" ).hidden = !ciyam.is_admin;
 
@@ -2060,6 +2091,7 @@ async function load_server_javascripts( )
     build_cws_url( ciyam.get_cws_url( ), { path: "/javascripts" }, session_info( ) ), true );
 
    g_server_javascripts = parse_name_list( response );
+   g_server_javascripts_known = ( response !== null ) && !is_error_output( response );
 
    render_server_javascripts( response );
 }
@@ -2099,14 +2131,15 @@ async function open_server_javascript( name, button )
    var response = await send_request( "GET",
     build_cws_url( ciyam.get_cws_url( ), { path: server_item_path( "/javascripts/", name ) }, session_info( ) ), false );
 
-   show_script_editor( "javascript" );
-
+   // NOTE: As for a list - the editor is only switched once there is a JavaScript to put in it.
    if( ( response === null ) || ( response.indexOf( "Error: " ) === 0 ) )
    {
       set_error( "script_error", ( response === null ) ? "The JavaScript could not be fetched." : response.trim( ) );
 
       return;
    }
+
+   show_script_editor( "javascript" );
 
    g_current_script = "";
 
