@@ -154,25 +154,33 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="console-list-scroll is-lists" id="server_lists"></div>
                <p class="console-more" id="server_lists_note"></p>
 
-               <span class="console-listhead">Server scripts <span class="console-gate">admin &middot; dev</span></span>
-               <input class="console-sfield console-list-filter" id="server_filter" type="search" autocomplete="off" spellcheck="false"
-                placeholder="Filter scripts" aria-label="Filter the server scripts" aria-controls="server_scripts" hidden>
-               <div class="console-list-scroll is-server" id="server_scripts"></div>
-               <p class="console-more" id="server_scripts_note"></p>
+               <!-- NOTE: The server's javascripts - "review javascripts" - for admin, who alone runs them.
+                    The CIYAM scripts "~run_script *" lists are not here: many are only for the server
+                    itself to run (Ian, 2026-10-04). -->
+               <div class="console-list-group" id="javascripts_group" hidden>
+                  <span class="console-listhead">JavaScripts on the server <span class="console-gate">admin</span></span>
+                  <div class="console-list-scroll is-javascripts" id="server_javascripts"></div>
+                  <p class="console-more" id="server_javascripts_note"></p>
+               </div>
             </div>
 
             <div class="console-body">
-               <div id="script_editor">
-                  <p class="console-note">Type or paste a script and Run executes it line by line,
+               <div class="console-editor" id="script_editor">
+                  <p class="console-note" id="script_note_list">Type or paste a script and Run executes it line by line,
                   switching to the Console so you can watch it. Scripts use the harness's list
                   language &mdash; <code>{name}</code>, <code>{@1}</code>, <code>?{name}</code>,
                   <code>@{name}</code> and the rest are under <code>help</code>. Lines starting
-                  <code>#</code> are comments, and a run stops at the first error. Saved scripts are
-                  kept in this browser and shared by every account on it.</p>
+                  <code>#</code> are comments, and a run stops at the first error. <b>Save here</b> keeps
+                  any number of scripts in this browser, by name, shared by every account on it. On the
+                  server each account keeps <b>one</b> list.</p>
+
+                  <p class="console-note" id="script_note_javascript" hidden>A server JavaScript. Each
+                  account keeps <b>one</b> on the server, named after its PIN, so it never replaces anyone
+                  else's &mdash; <code>load script ***</code> runs it.</p>
 
                   <p class="console-note console-origin" id="script_origin" hidden></p>
 
-                  <label class="console-slabel" for="script_name">Name</label>
+                  <label class="console-slabel" for="script_name" id="script_name_label">Name, for Save here</label>
                   <input class="console-sfield console-script-name" id="script_name" type="text" spellcheck="false" placeholder="new script">
 
                   <label class="console-sr-only" for="script_body">Script body</label>
@@ -181,38 +189,16 @@ http://www.opensource.org/licenses/mit-license.php.
                   <div class="console-bar">
                      <button type="button" class="console-chip is-solid" id="script_run" onclick="do_run_editor( )">Run</button>
                      <button type="button" class="console-chip is-danger" id="script_stop" onclick="do_stop_script( )" hidden>Stop</button>
-                     <button type="button" class="console-chip" onclick="do_save_script( )">Save</button>
+                     <button type="button" class="console-chip" id="script_save" onclick="do_save_script( )">Save here</button>
+                     <button type="button" class="console-chip" id="script_save_server" onclick="do_save_to_server( )">Save as my server list</button>
                      <button type="button" class="console-chip" id="script_delete" onclick="do_delete_script( )" hidden>Delete</button>
                   </div>
 
+                  <!-- NOTE: The server keeps one list and one JavaScript per account, named after its PIN -
+                       the name in the box is not sent. Said here, as the box would suggest otherwise. -->
+                  <p class="console-note console-server-hint" id="script_server_hint"></p>
+
                   <p class="console-error" id="script_error" role="alert"></p>
-               </div>
-
-               <div id="script_args" hidden>
-                  <!-- NOTE: Listed for reference, not run from here - Ian, 2026-09-26: they are
-                       admin and development only, some are only for the server itself to run,
-                       and one can stop the server. Running one is a typed, deliberate act. -->
-                  <p class="console-note">A CIYAM script from <code>manuscript.sio</code>, listed for
-                  reference. Its arguments come from <code>run_script *</code>. <b>Copy to prompt</b>
-                  puts the command at the console prompt &mdash; nothing runs until you press Enter.</p>
-
-                  <h3 class="console-script-title" id="args_title"></h3>
-
-                  <div class="console-argform" id="args_form"></div>
-
-                  <div class="console-runline">
-                     <code class="console-preview" id="args_preview"></code>
-                  </div>
-
-                  <p class="console-confirm" id="args_warning" hidden>This is a system script and cannot
-                  be undone. Check the command at the prompt before pressing Enter.</p>
-
-                  <div class="console-bar">
-                     <button type="button" class="console-chip is-solid" id="args_copy" onclick="do_copy_server_script( )">Copy to prompt</button>
-                     <button type="button" class="console-chip" onclick="show_script_editor( )">Cancel</button>
-                  </div>
-
-                  <p class="console-error" id="args_error" role="alert"></p>
                </div>
             </div>
          </div>

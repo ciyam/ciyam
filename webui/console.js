@@ -86,9 +86,16 @@ var g_announces = 0;
 var g_announce_timer = null;
 
 var g_raw_available = null;
-var g_server_scripts = [ ];
 
 var g_server_lists = [ ];
+var g_server_javascripts = [ ];
+
+// NOTE: What the Scripts tab's editor holds - a "list" (the harness's list language, run here) or a
+// server "javascript", which is saved but not run from the editor - and whether it is this account's
+// own from the server, which saving replaces without asking.
+var g_editor_kind = "list";
+var g_editor_from_own = false;
+var g_replace_armed = 0;
 
 var g_history = [ ];
 var g_history_at = 0;
@@ -117,7 +124,6 @@ var g_script_depth = 0;
 var g_stop_requested = false;
 
 var g_current_script = "";
-var g_current_server_script = null;
 
 var g_delete_armed = 0;
 
@@ -169,7 +175,6 @@ function console_main( )
    bind_prompt( );
    bind_palette( );
    bind_log_filter( );
-   bind_server_filter( );
 
    load_prefs( );
 
@@ -514,8 +519,8 @@ async function do_disconnect( )
 
    g_connected = false;
    g_raw_available = null;
-   g_server_scripts = [ ];
    g_server_lists = [ ];
+   g_server_javascripts = [ ];
 
    g_output = "";
 
@@ -566,6 +571,7 @@ function enter_console( )
 
    probe_raw( );
    load_server_lists( );
+   load_server_javascripts( );
 
    select_tab( "console" );
 
@@ -1724,20 +1730,16 @@ function print_help( )
 // ====================================================================
 
 // NOTE: Raw protocol needs the admin PIN on a development system. Probing once, quietly,
-// means the "~" affordance and the server scripts are only offered when they will work -
-// and "run_script *" never executes anything, so the probe doubles as the script list.
+// means the "~" affordance is only offered when it will work - and "run_script *" never
+// executes anything. What it lists is not shown: many of those scripts are only for the server
+// itself to run (Ian, 2026-10-04), and "~run_script *" lists them at the prompt.
 async function probe_raw( )
 {
-   g_server_scripts = [ ];
-
-   document.getElementById( "server_filter" ).value = "";
-
    if( !ciyam.is_admin )
    {
       g_raw_available = false;
 
       update_status( );
-      render_server_scripts( );
 
       return;
    }
@@ -1746,102 +1748,9 @@ async function probe_raw( )
 
    var response = await send_request( "GET", url, true );
 
-   if( ( response === null ) || ( response.trim( ) === "[bad]" ) || ( response.indexOf( "Error: " ) === 0 ) )
-      g_raw_available = false;
-   else
-   {
-      g_raw_available = true;
-
-      g_server_scripts = parse_script_list( response );
-   }
+   g_raw_available = ( response !== null ) && ( response.trim( ) !== "[bad]" ) && ( response.indexOf( "Error: " ) !== 0 );
 
    update_status( );
-   render_server_scripts( );
-}
-
-// NOTE: The same matching as the palette - every word typed must appear in the script's
-// name or its arguments, and name matches come first.
-function bind_server_filter( )
-{
-   var filter = document.getElementById( "server_filter" );
-
-   filter.addEventListener( "input", render_server_scripts );
-
-   filter.addEventListener( "keydown", function( event )
-   {
-      if( ( event.key === "Escape" ) && ( filter.value !== "" ) )
-      {
-         event.preventDefault( );
-
-         event.stopPropagation( );
-
-         filter.value = "";
-
-         render_server_scripts( );
-
-         // NOTE: Back to the full list with the script that was picked still in view.
-         var current = document.querySelector( "#server_scripts [aria-current=true]" );
-
-         if( current !== null )
-            current.scrollIntoView( { block: "nearest" } );
-      }
-   } );
-}
-
-function render_server_scripts( )
-{
-   var holder = document.getElementById( "server_scripts" );
-   var note = document.getElementById( "server_scripts_note" );
-   var filter = document.getElementById( "server_filter" );
-
-   holder.textContent = "";
-
-   filter.hidden = ( g_server_scripts.length === 0 );
-
-   var items = g_server_scripts.map( function( script )
-   {
-      return { command: script.name, description: script.args.join( " " ), script: script };
-   } );
-
-   var shown = filter_palette( items, filter.value );
-
-   if( !ciyam.is_admin )
-      note.textContent = "Server scripts need the admin PIN on a development system.";
-   else if( g_raw_available === false )
-      note.textContent = "Raw protocol is refused here, so server scripts are unavailable - it needs a development system.";
-   else if( g_raw_available === null )
-      note.textContent = "Checking…";
-   else if( shown.length === g_server_scripts.length )
-      note.textContent = g_server_scripts.length + " from run_script *";
-   else if( shown.length === 0 )
-      note.textContent = "No scripts match - Esc clears the filter.";
-   else
-      note.textContent = shown.length + " of " + g_server_scripts.length + " from run_script *";
-
-   shown.forEach( function( item )
-   {
-      var script = item.script;
-
-      var button = document.createElement( "button" );
-
-      button.type = "button";
-      button.className = "console-item";
-      button.textContent = script.name;
-
-      if( ( g_current_server_script !== null ) && ( g_current_server_script.name === script.name ) )
-         button.setAttribute( "aria-current", "true" );
-
-      var sub = document.createElement( "span" );
-
-      sub.className = "console-sub";
-      sub.textContent = ( script.args.length > 0 ) ? script.args.join( " " ) : "no arguments";
-
-      button.appendChild( sub );
-
-      button.addEventListener( "click", function( ) { show_server_script( script, button ); } );
-
-      holder.appendChild( button );
-   } );
 }
 
 function mark_current_item( button )
@@ -1853,124 +1762,6 @@ function mark_current_item( button )
 
    if( button )
       button.setAttribute( "aria-current", "true" );
-}
-
-function show_server_script( script, button )
-{
-   g_current_server_script = script;
-
-   mark_current_item( button );
-
-   document.getElementById( "args_title" ).textContent = script.name;
-
-   var form = document.getElementById( "args_form" );
-
-   form.textContent = "";
-
-   if( script.args.length === 0 )
-   {
-      var none = document.createElement( "span" );
-
-      none.className = "console-slabel";
-      none.textContent = "No arguments";
-
-      form.appendChild( none );
-      form.appendChild( document.createElement( "span" ) );
-   }
-
-   script.args.forEach( function( arg, index )
-   {
-      var id = "arg_" + index;
-
-      var label = document.createElement( "label" );
-
-      label.className = "console-slabel";
-      label.htmlFor = id;
-      label.textContent = arg;
-
-      var field = document.createElement( "input" );
-
-      field.className = "console-sfield";
-      field.id = id;
-      field.type = "text";
-      field.spellcheck = false;
-      field.dataset.arg = arg;
-      field.placeholder = "required";
-
-      field.addEventListener( "input", update_args_preview );
-
-      form.appendChild( label );
-      form.appendChild( field );
-   } );
-
-   document.getElementById( "args_warning" ).hidden = !is_destructive_script( script.name );
-
-   set_error( "args_error", "" );
-
-   document.getElementById( "script_editor" ).hidden = true;
-   document.getElementById( "script_args" ).hidden = false;
-
-   update_args_preview( );
-}
-
-function args_values( )
-{
-   var values = { };
-
-   document.querySelectorAll( "#args_form input" ).forEach( function( field )
-   {
-      values[ field.dataset.arg ] = field.value.trim( );
-   } );
-
-   return values;
-}
-
-function update_args_preview( )
-{
-   if( g_current_server_script === null )
-      return;
-
-   var values = args_values( );
-
-   var shown = { };
-
-   Object.keys( values ).forEach( function( key ) { shown[ key ] = values[ key ] || "?"; } );
-
-   var built = build_script_command( g_current_server_script.name, shown );
-
-   document.getElementById( "args_preview" ).textContent = built.error ? built.error : "~" + built.command;
-
-   var missing = Object.keys( values ).some( function( key ) { return values[ key ] === ""; } );
-
-   document.getElementById( "args_copy" ).disabled = missing || !!built.error;
-}
-
-// NOTE: Puts the command at the prompt rather than running it - a server script is run only
-// by pressing Enter on it there, like anything typed. It is not added to the history until
-// it is actually run.
-function do_copy_server_script( )
-{
-   if( g_current_server_script === null )
-      return;
-
-   var built = build_script_command( g_current_server_script.name, args_values( ) );
-
-   if( built.error )
-   {
-      set_error( "args_error", built.error );
-
-      return;
-   }
-
-   select_tab( "console" );
-
-   var input = document.getElementById( "prompt_input" );
-
-   input.value = "~" + built.command;
-
-   input.focus( );
-
-   input.setSelectionRange( input.value.length, input.value.length );
 }
 
 // ====================================================================
@@ -2032,15 +1823,131 @@ function render_saved_scripts( )
    } );
 }
 
-function show_script_editor( )
+// NOTE: A list runs here and can be saved here or on the server; a javascript is only saved on the
+// server - it runs with "load script", for admin.
+function show_script_editor( kind )
 {
-   g_current_server_script = null;
+   g_editor_kind = kind || "list";
 
-   document.getElementById( "script_args" ).hidden = true;
+   var is_list = ( g_editor_kind === "list" );
+
    document.getElementById( "script_editor" ).hidden = false;
    document.getElementById( "script_origin" ).hidden = true;
 
+   document.getElementById( "script_note_list" ).hidden = !is_list;
+   document.getElementById( "script_note_javascript" ).hidden = is_list;
+
+   document.getElementById( "script_run" ).hidden = !is_list;
+   document.getElementById( "script_save" ).hidden = !is_list;
+
+   document.getElementById( "script_name" ).readOnly = !is_list;
+   document.getElementById( "script_name_label" ).textContent = is_list ? "Name, for Save here" : "Opened from";
+
+   if( !is_list )
+      document.getElementById( "script_delete" ).hidden = true;
+
+   // NOTE: Set again by whatever opens this account's own "***" - see "do_save_to_server( )".
+   g_editor_from_own = false;
+
+   disarm_replace( );
+
+   document.getElementById( "script_server_hint" ).textContent = is_list
+    ? "On the server each account keeps one list - " + ciyam.access + ".list, shown as ***. The name above is not kept, and saving replaces the list saved before."
+    : "On the server each account keeps one JavaScript - ciyam_" + ciyam.access + ".js, shown as ***. Saving replaces the one saved before.";
+
    render_saved_scripts( );
+}
+
+function server_save_label( )
+{
+   return ( g_editor_kind === "javascript" ) ? "Save as my server JavaScript" : "Save as my server list";
+}
+
+function disarm_replace( )
+{
+   g_replace_armed = 0;
+
+   document.getElementById( "script_save_server" ).textContent = server_save_label( );
+}
+
+// NOTE: The server lists this account's own list or javascript as "***".
+function server_item_label( name )
+{
+   return ( name === c_console_own_name ) ? c_console_own_name + " (yours)" : name;
+}
+
+function server_item_path( prefix, name )
+{
+   return prefix + ( ( name === c_console_own_name ) ? ciyam.access : encodeURIComponent( name ) );
+}
+
+// NOTE: "retain webcmdlist" or "retain javascript" - one of each per account, which the server names
+// after the PIN, so it replaces only this account's own (Ian, 2026-10-04: a button, not a command).
+// Replacing one already there takes a second click, unless it is that one being edited.
+async function do_save_to_server( )
+{
+   var body = document.getElementById( "script_body" ).value;
+
+   if( body.trim( ) === "" )
+   {
+      set_error( "script_error", "There is nothing to save." );
+
+      return;
+   }
+
+   var is_javascript = ( g_editor_kind === "javascript" );
+
+   var button = document.getElementById( "script_save_server" );
+
+   var has_own = ( is_javascript ? g_server_javascripts : g_server_lists ).indexOf( c_console_own_name ) >= 0;
+
+   if( has_own && !g_editor_from_own && ( ( g_replace_armed === 0 ) || ( Date.now( ) - g_replace_armed > c_delete_confirm_ms ) ) )
+   {
+      g_replace_armed = Date.now( );
+
+      button.textContent = is_javascript ? "Replace my server JavaScript?" : "Replace my server list?";
+
+      window.setTimeout( function( )
+      {
+         if( ( g_replace_armed !== 0 ) && ( Date.now( ) - g_replace_armed >= c_delete_confirm_ms ) )
+            disarm_replace( );
+      }, c_delete_confirm_ms );
+
+      return;
+   }
+
+   disarm_replace( );
+
+   button.disabled = true;
+
+   var response = await send_request( "PUT", build_cws_url( ciyam.get_cws_url( ),
+    { path: is_javascript ? "/javascripts" : "/webcmdlists", payload: body }, session_info( ) ), false );
+
+   button.disabled = false;
+
+   if( ( response === null ) || is_error_output( response ) )
+   {
+      set_error( "script_error", ( response === null ) ? "The server did not answer - nothing was saved." : response.trim( ) );
+
+      return;
+   }
+
+   set_error( "script_error", "" );
+
+   // NOTE: The editor now holds this account's own, so saving it again needs no second click.
+   g_editor_from_own = true;
+
+   var origin = document.getElementById( "script_origin" );
+
+   origin.textContent = is_javascript
+    ? "Saved on the server as this account's own, ciyam_" + ciyam.access + ".js - load script *** runs it."
+    : "Saved on the server as this account's own list, " + ciyam.access + ".list - listed as ***.";
+   origin.hidden = false;
+
+   if( is_javascript )
+      load_server_javascripts( );
+   else
+      load_server_lists( );
 }
 
 // ====================================================================
@@ -2081,7 +1988,7 @@ function render_server_lists( response )
 
       button.type = "button";
       button.className = "console-item";
-      button.textContent = name;
+      button.textContent = server_item_label( name );
 
       button.addEventListener( "click", function( ) { open_server_list( name, button ); } );
 
@@ -2089,12 +1996,12 @@ function render_server_lists( response )
    } );
 }
 
-// NOTE: Opens a copy in the editor. It is not saved anywhere until Save - and then only in
-// this browser, under whatever name is in the box.
+// NOTE: Opens a copy in the editor. It is not saved anywhere until Save here - in this browser,
+// under whatever name is in the box - or Save to server, as this account's own list.
 async function open_server_list( name, button )
 {
    var response = await send_request( "GET",
-    build_cws_url( ciyam.get_cws_url( ), { path: "/webcmdlists/" + encodeURIComponent( name ) }, session_info( ) ), false );
+    build_cws_url( ciyam.get_cws_url( ), { path: server_item_path( "/webcmdlists/", name ) }, session_info( ) ), false );
 
    if( ( response === null ) || ( response.indexOf( "Error: " ) === 0 ) )
    {
@@ -2109,6 +2016,8 @@ async function open_server_list( name, button )
 
    g_current_script = "";
 
+   g_editor_from_own = ( name === c_console_own_name );
+
    mark_current_item( button );
 
    document.getElementById( "script_name" ).value = name;
@@ -2117,7 +2026,93 @@ async function open_server_list( name, button )
 
    var origin = document.getElementById( "script_origin" );
 
-   origin.textContent = "From the server's " + name + ".list - Save keeps a copy in this browser.";
+   origin.textContent = "From the server's " + ( ( name === c_console_own_name ) ? ciyam.access : name )
+    + ".list - Save here keeps a copy in this browser.";
+   origin.hidden = false;
+
+   set_error( "script_error", "" );
+}
+
+// ====================================================================
+// JavaScripts on the server - "review javascripts", for admin
+// ====================================================================
+
+async function load_server_javascripts( )
+{
+   g_server_javascripts = [ ];
+
+   document.getElementById( "javascripts_group" ).hidden = !ciyam.is_admin;
+
+   if( !ciyam.is_admin )
+      return;
+
+   render_server_javascripts( null );
+
+   var response = await send_request( "GET",
+    build_cws_url( ciyam.get_cws_url( ), { path: "/javascripts" }, session_info( ) ), true );
+
+   g_server_javascripts = parse_name_list( response );
+
+   render_server_javascripts( response );
+}
+
+function render_server_javascripts( response )
+{
+   var holder = document.getElementById( "server_javascripts" );
+   var note = document.getElementById( "server_javascripts_note" );
+
+   holder.textContent = "";
+
+   if( response === null )
+      note.textContent = g_connected ? "Checking…" : "";
+   else if( g_server_javascripts.length === 0 )
+      note.textContent = ( String( response ).indexOf( "Error: " ) === 0 ) ? response.trim( ) : "No JavaScripts on this server.";
+   else
+      note.textContent = g_server_javascripts.length + " from review javascripts";
+
+   g_server_javascripts.forEach( function( name )
+   {
+      var button = document.createElement( "button" );
+
+      button.type = "button";
+      button.className = "console-item";
+      button.textContent = server_item_label( name );
+
+      button.addEventListener( "click", function( ) { open_server_javascript( name, button ); } );
+
+      holder.appendChild( button );
+   } );
+}
+
+// NOTE: The server hands a javascript back with its "ciyam_<name>" renamed for this account
+// ("ciyam_<pin>"), ready to be saved as this account's own.
+async function open_server_javascript( name, button )
+{
+   var response = await send_request( "GET",
+    build_cws_url( ciyam.get_cws_url( ), { path: server_item_path( "/javascripts/", name ) }, session_info( ) ), false );
+
+   show_script_editor( "javascript" );
+
+   if( ( response === null ) || ( response.indexOf( "Error: " ) === 0 ) )
+   {
+      set_error( "script_error", ( response === null ) ? "The JavaScript could not be fetched." : response.trim( ) );
+
+      return;
+   }
+
+   g_current_script = "";
+
+   g_editor_from_own = ( name === c_console_own_name );
+
+   mark_current_item( button );
+
+   document.getElementById( "script_name" ).value = "ciyam_" + ( ( name === c_console_own_name ) ? ciyam.access : name ) + ".js";
+   document.getElementById( "script_body" ).value = response.replace( /\s+$/, "" ) + "\n";
+
+   var origin = document.getElementById( "script_origin" );
+
+   origin.textContent = ( name === c_console_own_name ) ? "This account's own JavaScript."
+    : "From the server's ciyam_" + name + ".js - its functions are named for this account, ciyam_" + ciyam.access + "_...";
    origin.hidden = false;
 
    set_error( "script_error", "" );

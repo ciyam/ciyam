@@ -309,6 +309,13 @@ code
    line-height: 1.6;
 }
 
+/* NOTE: Under the editor's buttons - what saving to the server keeps, and that it replaces. */
+.console-server-hint
+{
+   flex: none;
+   margin: 10px 0 0;
+}
+
 .console-empty
 {
    color: var(--color-console-text-muted);
@@ -795,8 +802,8 @@ code
    Scripts tab
    ==================================================================== */
 
-/* NOTE: The two columns scroll separately, so a long list of server scripts can be
-   scrolled while the editor or argument form beside it stays in view. */
+/* NOTE: The two columns scroll separately, so the lists can be scrolled while the editor beside
+   them stays in view. */
 .console-panel--scripts
 {
    overflow: hidden;
@@ -848,16 +855,18 @@ code
    color: var(--color-console-accent);
 }
 
-.console-list-filter
-{
-   flex: none;
-   margin: 2px 0 6px;
-}
-
-.console-list-scroll.is-server
+/* NOTE: The server's javascripts, for admin - the rest of the column, never less than a few rows. */
+.console-list-group
 {
    flex: 1 1 0;
+   display: flex;
+   flex-direction: column;
    min-height: 7.5rem;
+}
+
+.console-list-scroll.is-javascripts
+{
+   flex: 1 1 0;
 }
 
 .console-body
@@ -866,6 +875,18 @@ code
    min-width: 0;
    min-height: 0;
    overflow-y: auto;
+   display: flex;
+   flex-direction: column;
+}
+
+/* NOTE: The editor reaches the bottom of the console (Ian, 2026-10-04) - the script box takes what
+   the notes, the name and the buttons leave. */
+.console-editor
+{
+   flex: 1 1 auto;
+   display: flex;
+   flex-direction: column;
+   min-height: 0;
 }
 
 .console-listhead
@@ -949,9 +970,10 @@ code
 
 .console-scriptbox
 {
+   flex: 1 1 auto;
    width: 100%;
    min-height: 180px;
-   resize: vertical;
+   resize: none;
    background: var(--color-console-bg-deep);
    color: var(--color-console-text);
    border: 1px solid var(--color-console-border-strong);
@@ -965,49 +987,6 @@ code
 {
    outline: 2px solid var(--color-console-accent);
    outline-offset: -1px;
-}
-
-.console-script-title
-{
-   margin: 0 0 12px;
-   font-size: var(--font-size-chat-body);
-   font-weight: 500;
-   color: var(--color-console-text-bright);
-}
-
-.console-argform
-{
-   display: grid;
-   grid-template-columns: 150px 1fr;
-   gap: 8px 14px;
-   align-items: center;
-   margin-bottom: 14px;
-}
-
-.console-runline
-{
-   padding: 10px 12px;
-   background: var(--color-console-bg-deep);
-   border: 1px solid var(--color-console-border);
-   border-radius: 3px;
-}
-
-.console-preview
-{
-   font-size: var(--font-size-chat-tiny);
-   word-break: break-all;
-}
-
-.console-confirm
-{
-   display: flex;
-   gap: 8px;
-   align-items: flex-start;
-   margin: 12px 0 0;
-   color: var(--console-warn);
-   font-size: var(--font-size-chat-tiny);
-   border-left: 2px solid var(--console-warn);
-   padding-left: 10px;
 }
 
 /* ====================================================================
@@ -1159,7 +1138,7 @@ code
       height: auto;
    }
 
-   .console-list-scroll.is-server
+   .console-list-group
    {
       max-height: 40vh;
    }
@@ -1195,8 +1174,7 @@ code
 
 @media (max-width: 520px)
 {
-   .console-signin-grid,
-   .console-argform
+   .console-signin-grid
    {
       grid-template-columns: 1fr;
       gap: 4px;
