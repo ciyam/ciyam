@@ -48,7 +48,7 @@ NAME=@substr:$POS:$NAME
 ASSIGN=1
 ASSIGN_OR_DIRECT=1
 @else
-POS=@strpos:@:$NAME
+POS=@strpos:.:$NAME
 @ifeq "$POS" "0"
 NAME=@substr:1:$NAME
 DIRECT=1
@@ -192,7 +192,7 @@ ERROR=User '$NAME' is not a room member.
 ;
 @ifdef $DIRECT
 .system_variable @irc_users_$STARTING_ROOM
-ALL_USERS=$OUTPUT@
+ALL_USERS=@strlit:$OUTPUT@
 CHECK_USERS=@repstr:@$NAME@/:$ALL_USERS
 @ifeq "$ALL_USERS" "$CHECK_USERS"
 ERROR=User '$NAME' is not known.

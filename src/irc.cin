@@ -192,7 +192,7 @@ JOIN_TOKEN=@substr:$JPOS:$ROOM
 ROOM=@substr:0,$POS:$ROOM
 ;
 FIRST=@substr:0,1:$NEW_ROOM_NAME
-@ifeq "$FIRST" "@"
+@ifeq "$FIRST" "."
 NAMES=@substr:1:$NEW_ROOM_NAME
 @else
 #Select invitees
