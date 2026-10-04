@@ -1413,13 +1413,13 @@ async function run_local( spec, from_script )
       case "creds":
          return run_creds( spec.creds );
 
-      // NOTE: "clear" empties the output, as in the harness. Typed at the prompt it also
-      // clears the screen; in a list it must not, or the list's own output would vanish.
+      // NOTE: "clear" empties the output and clears the screen - in a list too, as in the harness,
+      // where the output box is what is shown. Ian's demo lists clear to take hashes and a password
+      // off the screen (Ian, 2026-10-04).
       case "clear":
          g_output = "";
 
-         if( !from_script )
-            document.getElementById( "scrollback" ).textContent = "";
+         document.getElementById( "scrollback" ).textContent = "";
 
          return { ok: true };
 
