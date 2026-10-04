@@ -107,21 +107,85 @@ system_variable "-p=$PREFIX" @updated_record_irc_*
 ;
 system_variable "-p=$PREFIX" @web.*.*.0*
 ;
-.system_variable @queue_irc_*
-ALL_MESSAGE_QUEUE_INFO=@strlit:$OUTPUT
+.system_variable @irc_names_*
+ALL_ROOMS=$OUTPUT
+;
+ITEM_AFTER=
 ;
 @:LOOP
-NEXT_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:1%
+NEXT_ROOM=%ALL_ROOMS:1%
 ;
 @label NEXT
 ;
-@ifndef $NEXT_MESSAGE_QUEUE_INFO
+@ifndef $NEXT_ROOM
 @label END_LOOP
 @endif
 ;
 @skip
 ;
 @:NEXT
+;
+NEXT_ROOM=@repstr:@irc_names_/:$NEXT_ROOM
+POS=@strpos: :$NEXT_ROOM
+NEXT_ROOM=@substr:0,$POS:$NEXT_ROOM
+;
+.system_variable @keyed_irc_$NEXT_ROOM*
+@ifdef $OUTPUT
+;
+@label NEXT_KEY
+;
+@:KEY_LOOP
+;
+@ifdef $ITEM_AFTER
+.session_variable @limit_keyed_after $ITEM_AFTER
+@endif
+;
+.session_variable @limit_keyed_items 25
+;
+system_variable "-p=$PREFIX@keyed_irc_$NEXT_ROOM:" -quoted @keyed_irc_$NEXT_ROOM
+;
+@ifndef %OUTPUT:25%
+@label END_KEY_LOOP
+@else
+LAST_LINE=%OUTPUT:25%
+POS=@strpos:\::$LAST_LINE
+POS=@$POS+1
+LAST_LINE=@substr:$POS:$LAST_LINE
+POS=@strpos: :$LAST_LINE
+ITEM_AFTER=@substr:0,$POS:$LAST_LINE
+@endif
+;
+@skip
+;
+@:NEXT_KEY
+;
+!!@:KEY_LOOP
+;
+@:END_KEY_LOOP
+;
+@endif
+;
+ALL_ROOMS=%ALL_ROOMS:-1%
+;
+!!@:LOOP
+;
+@:END_LOOP
+;
+.system_variable @queue_irc_*
+ALL_MESSAGE_QUEUE_INFO=@strlit:$OUTPUT
+;
+@:OUTER_LOOP
+NEXT_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:1%
+;
+@label OUTER_NEXT
+;
+@ifndef $NEXT_MESSAGE_QUEUE_INFO
+@label OUTER_END_LOOP
+@endif
+;
+@skip
+;
+@:OUTER_NEXT
 NEXT_MESSAGE_QUEUE_INFO_LINES=@repstr: /\n:$NEXT_MESSAGE_QUEUE_INFO
 ;
 NEXT_MESSAGE_QUEUE_NAME=@strlit:%NEXT_MESSAGE_QUEUE_INFO_LINES:1%
@@ -137,7 +201,7 @@ PREFIX=$$C $NEXT_MESSAGE_QUEUE_NAME$SP
 ; (in order to be able to determine when finished).
 ;
 @:INNER_LOOP
-.session_variable @limit_queue_items 25
+.session_variable @limit_queue_items 1500
 .session_variable "-p=$PREFIX" -quoted $NEXT_MESSAGE_QUEUE_NAME @deque
 ;
 .session_variable @deque size
@@ -158,9 +222,9 @@ session_variable @deque
 ;
 ALL_MESSAGE_QUEUE_INFO=@strlit:%ALL_MESSAGE_QUEUE_INFO:-1%
 ;
-!!@:LOOP
+!!@:OUTER_LOOP
 ;
-@:END_LOOP
+@:OUTER_END_LOOP
 >
 ;
 @endif
