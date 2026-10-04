@@ -980,7 +980,7 @@ help *variable*
 
 commands: *variable*
 =========
-session_variable|var [-p=<prefix>] [-quoted] [-id=<session_id>|-num_found] <name_or_expr> [<[value]> [<[current]>]] (get/set a session variable or num matching sessions)
+session_variable|var [-p=<prefix>] [-s=<suffix>] [-keyed|-quoted|-sys_keyed] [-id=<session_id>|-num_found] <name_or_expr> [<[value]> [<[current]>]] (get/set a session variable or num matching sessions)
 
 system_variable|variable [-p=<prefix>] [-quoted] <name_or_expr> [-has|{<[value]> [<[current]>] [<retries>]}] (get/has/set a system variable)
 help !*variable*
