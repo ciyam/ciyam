@@ -8799,7 +8799,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
                else
                {
-                  string prefix( name_or_expr.substr( 0, pos ) );
+                  string name_prefix( name_or_expr.substr( 0, pos ) );
 
                   name_or_expr.erase( 0, pos + 1 );
 
@@ -8849,7 +8849,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                               check_is_valid_command_response( val );
                            }
 
-                           set_system_variable( prefix + suffix, val );
+                           set_system_variable( name_prefix + suffix, val );
                         }
                      }
                   }
