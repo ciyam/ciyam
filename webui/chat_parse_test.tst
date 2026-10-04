@@ -454,6 +454,13 @@ ok   source goes, the section stays
 ok   other parameters stay
 ok   an address with no source is left as it is
 
+== a linked tab opens on the same room =========================
+ok   the room goes in the address
+ok   a room already asked for is replaced
+ok   no room open, no room asked for
+ok   the room asked for
+ok   only a room number
+
 == remember on this browser ====================================
 ok   an account not saved shows Nothing
 ok   saved, no password: The PIN only

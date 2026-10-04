@@ -1592,6 +1592,34 @@ function address_without_source( href )
    return url.pathname + url.search + url.hash;
 }
 
+// NOTE: "Open a linked tab" opens on the room the user is in - "#room=<number>" in its address (Ian,
+// 2026-10-02: in a linked tab opened on another room, a message typed in the first did not appear).
+const c_room_hash_prefix = "#room=";
+
+function linked_tab_address( href, source, room )
+{
+   var url = new URL( href );
+
+   url.searchParams.set( "source", source );
+
+   url.hash = /^\d{7}$/.test( String( room || "" ) ) ? c_room_hash_prefix + room : "";
+
+   return url.toString( );
+}
+
+// NOTE: The room an address asks for, or "" - only a seven digit room number.
+function room_from_hash( hash )
+{
+   var text = String( hash || "" );
+
+   if( text.indexOf( c_room_hash_prefix ) !== 0 )
+      return "";
+
+   var room = text.substring( c_room_hash_prefix.length );
+
+   return /^\d{7}$/.test( room ) ? room : "";
+}
+
 // NOTE: In the browser - drops "source=" from the address bar without loading the page again or
 // adding to its history.
 function forget_source( )
@@ -1767,6 +1795,8 @@ if( typeof module !== "undefined" )
       retain_mode_of: retain_mode_of,
       choose_tab_action: choose_tab_action,
       address_without_source: address_without_source,
+      linked_tab_address: linked_tab_address,
+      room_from_hash: room_from_hash,
       plan_retain_choice: plan_retain_choice,
       is_valid_room_name: is_valid_room_name,
       is_valid_username: is_valid_username

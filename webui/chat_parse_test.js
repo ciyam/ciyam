@@ -842,6 +842,17 @@ check( "source goes, the section stays", cp.address_without_source( "http://loca
 check( "other parameters stay", cp.address_without_source( "http://h/console.html?embedded=1&source=5" ), "/console.html?embedded=1" );
 check( "an address with no source is left as it is", cp.address_without_source( "http://h/chat.html" ), "/chat.html" );
 
+heading( "a linked tab opens on the same room" );
+
+check( "the room goes in the address", cp.linked_tab_address( "http://h/chat.html", "1790900000000", "0000004" ),
+ "http://h/chat.html?source=1790900000000#room=0000004" );
+check( "a room already asked for is replaced", cp.linked_tab_address( "http://h/chat.html?source=1#room=0000002", "2", "0000005" ),
+ "http://h/chat.html?source=2#room=0000005" );
+check( "no room open, no room asked for", cp.linked_tab_address( "http://h/chat.html#room=0000002", "3", "" ), "http://h/chat.html?source=3" );
+check( "the room asked for", cp.room_from_hash( "#room=0000004" ), "0000004" );
+check( "only a room number", [ cp.room_from_hash( "#room=12" ), cp.room_from_hash( "#room=0000004x" ), cp.room_from_hash( "#mine" ), cp.room_from_hash( "" ) ],
+ [ "", "", "", "" ] );
+
 heading( "remember on this browser" );
 
 check( "an account not saved shows Nothing", cp.retain_mode_of( "11111", "22222", false ), "none" );
