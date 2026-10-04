@@ -58,6 +58,10 @@ var g_recipients = [ ];
 // meanwhile is held. In memory only, like everything else the chat shows.
 var g_dm_pending = { };
 
+// NOTE: The room this page was asked to open first - "#room=<number>", from "Open a linked tab" in
+// another. Used once, then cleared from the address too.
+var g_asked_room = "";
+
 var g_dialog_mode = "create";
 
 var g_known_users = [ ];
@@ -97,6 +101,8 @@ function chat( )
    // NOTE: The chat's tab, which the accounts page reuses rather than opening another - see
    // "open_app_tab( )" in "chat_parse.js".
    window.name = c_tab_chat;
+
+   g_asked_room = room_from_hash( window.location.hash );
 
    install_request_log( );
 
@@ -1212,13 +1218,25 @@ function do_reset_browser( )
    location.reload( );
 }
 
+// NOTE: On the room open here - see "linked_tab_address( )".
 function do_open_linked_tab( )
 {
-   var url = new URL( window.location.href );
+   window.open( linked_tab_address( window.location.href, g_self, g_room ), "_blank" );
+}
 
-   url.searchParams.set( "source", g_self );
+// NOTE: Once the room asked for has been opened - or found not to be one this user has - the
+// "#room=" goes, so a reload opens as usual rather than going back to it.
+function forget_asked_room( )
+{
+   g_asked_room = "";
 
-   window.open( url.toString( ), "_blank" );
+   try
+   {
+      history.replaceState( null, "", window.location.pathname + window.location.search );
+   }
+   catch( e )
+   {
+   }
 }
 
 
@@ -1386,10 +1404,17 @@ function on_rooms_response( response )
 
       var shown = visible_rooms( g_rooms, ciyam.is_admin );
 
-      // NOTE: Open the first room with anything unread, else the first listed - of the rooms
-      // this user can see, and not over an invitation they are looking at.
+      // NOTE: Open the room the address asked for, if it is one this user can see; else the first
+      // with anything unread, else the first listed - and not over an invitation they are looking at.
       if( ( g_room === "" ) && ( g_selected_invite === "" ) && ( shown.length > 0 ) )
-         select_room( shown[ 0 ].room, "" );
+      {
+         var asked = shown.filter( function( entry ) { return entry.room === g_asked_room; } );
+
+         select_room( ( asked.length > 0 ) ? asked[ 0 ].room : shown[ 0 ].room, "" );
+      }
+
+      if( g_asked_room !== "" )
+         forget_asked_room( );
 
       // NOTE: With no room to open there is nothing more to wait for - and now "No room
       // selected" is true rather than premature.
