@@ -76,6 +76,19 @@ ERROR=Normal messages for this room are disallowed.
 @endif
 @endif
 ;
+; NOTE: Attempts to push a "queue item" in order to check whether or not
+; the default maximum queue items size has been exceeded (uses a "dummy"
+; user name value so that this size is always the same for all users).
+DUMMY_USER_NAME=xxxxxxxxxxxx
+DUMMY_UNIX_UNIQUE=0000000000000
+;
+LEN_UNIX_UNIQUE=@strlen:$DUMMY_UNIX_UNIQUE
+;
+.system_variable @queue_irc "$DUMMY_UNIX_UNIQUE $DUMMY_USER_NAME $MESSAGE"
+@ifndef $ERROR
+.system_variable @queue_irc ""
+@endif
+;
 @ifndef $ERROR
 ROOM_POSTS=
 .system_variable @irc_posts_$ROOM
@@ -163,26 +176,21 @@ EDIT_MESSAGE=1
 ;
 NOT_FOUND=
 NOT_EDITABLE=
-.session_variable @queue_irc_%ROOM%_$USER_NAME @system
-;
-.session_variable @gteq_session_queue $NAMES
-.session_variable @queue_irc_%ROOM%_$USER_NAME *
+.system_variable @keyed_irc_%ROOM%:$NAMES
 ;
 @ifndef $OUTPUT
 NOT_FOUND=1
 @else
-SOURCE_MESSAGE=%OUTPUT:1%
+SOURCE_MESSAGE=$OUTPUT
 ;
 SOURCE_PARTS=@repstr: /\n:$SOURCE_MESSAGE
 ;
-@ifneq "$NAMES" "%SOURCE_PARTS:1%"
-NOT_FOUND=1
-@elif "$USER_NAME" != "%SOURCE_PARTS:2%"
+@ifneq "$USER_NAME" "%SOURCE_PARTS:1%"
 NOT_FOUND=1
 @else
-PREFIX=@substr:0,2:%SOURCE_PARTS:3%
+PREFIX=@substr:0,2:%SOURCE_PARTS:2%
 ;
-OLD_PREFIX=@substr:0,3:%SOURCE_PARTS:3%
+OLD_PREFIX=@substr:0,3:%SOURCE_PARTS:2%
 OLD_TARGET=public
 @ifeq "$OLD_PREFIX" "XyE"
 OLD_TARGET=private
@@ -211,16 +219,7 @@ ERROR=Source message is designated as a system generated message.
 .system_gen_key -unix_unique
 UNIX_UNIQUE=$OUTPUT
 ;
-; NOTE: Attempts to push a "queue item" (including USER_NAME
-; which is not in the edit record) in order to check whether
-; the default maxiumum queue item size was exceeded.
-.system_variable @queue_irc "$UNIX_UNIQUE $USER_NAME $MESSAGE"
-@ifdef $ERROR
-UNIX_UNIQUE=
-@else
 .system_variable @updated_record_irc_%USER_NAME%_$NAMES "$UNIX_UNIQUE $MESSAGE"
-@endif
-.system_variable @queue_irc ""
 @endif
 ;
 @endif
@@ -297,6 +296,8 @@ USER_MESSAGE=@base64::$USER_MESSAGE
 ;
 IRC_USER_SUFFIXES=@repstr:@/|:$IRC_USERS
 ;
+CREATED_KEYED=
+;
 .system_gen_key -unix_unique
 UNIX_UNIQUE=$OUTPUT
 ;
@@ -307,7 +308,15 @@ CHANGED=1
 .session_variable @search $OUTPUT
 .session_variable -id=$SESSION_ID @replace
 .session_variable @replace $OUTPUT
+@else
+@ifndef $SPECIAL
+CREATED_KEYED=1
+.system_variable @keyed_irc_$ROOM:$UNIX_UNIQUE "$USER_NAME $MESSAGE"
+.system_variable @queue_irc_%ROOM%_$IRC_USER_SUFFIXES "$UNIX_UNIQUE @"
 @endif
+@endif
+;
+@ifndef $CREATED_KEYED
 .system_variable @queue_irc_%ROOM%_$IRC_USER_SUFFIXES "$UNIX_UNIQUE $USER_NAME $MESSAGE"
 @endif
 ;
