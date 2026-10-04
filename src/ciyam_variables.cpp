@@ -294,6 +294,8 @@ constexpr const char* c_special_variable_blockchain_is_hub = "@blockchain_is_hub
 constexpr const char* c_special_variable_fields_and_values = "@fields_and_values";
 constexpr const char* c_special_variable_generate_log_file = "@generate_log_file";
 constexpr const char* c_special_variable_last_suffixed_key = "@last_suffixed_key";
+constexpr const char* c_special_variable_limit_keyed_after = "@limit_keyed_after";
+constexpr const char* c_special_variable_limit_keyed_items = "@limit_keyed_items";
 constexpr const char* c_special_variable_limit_queue_items = "@limit_queue_items";
 constexpr const char* c_special_variable_package_type_path = "@package_type_path";
 constexpr const char* c_special_variable_peer_data_created = "@peer_data_created";
@@ -681,6 +683,8 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_fields_and_values );
       g_special_variable_names.push_back( c_special_variable_generate_log_file );
       g_special_variable_names.push_back( c_special_variable_last_suffixed_key );
+      g_special_variable_names.push_back( c_special_variable_limit_keyed_after );
+      g_special_variable_names.push_back( c_special_variable_limit_keyed_items );
       g_special_variable_names.push_back( c_special_variable_limit_queue_items );
       g_special_variable_names.push_back( c_special_variable_package_type_path );
       g_special_variable_names.push_back( c_special_variable_peer_data_created );
@@ -1107,6 +1111,24 @@ string get_system_variable( const var_name& var, bool is_internal )
       set_session_variable( c_special_variable_filter, "" );
    }
 
+   string limit_keyed_after;
+
+   size_t limit_keyed_items = 0;
+
+   if( has_session_variable( c_special_variable_limit_keyed_after ) )
+   {
+      limit_keyed_after = get_session_variable( c_special_variable_limit_keyed_after );
+
+      set_session_variable( c_special_variable_limit_keyed_after, "" );
+   }
+
+   if( has_session_variable( c_special_variable_limit_keyed_items ) )
+   {
+      limit_keyed_items = from_string< size_t >( get_session_variable( c_special_variable_limit_keyed_items ) );
+
+      set_session_variable( c_special_variable_limit_keyed_items, "" );
+   }
+
    // NOTE: Due to potential thread deadlock
    // between the "g_session_mutex" and this
    // any session variable functions need to
@@ -1432,14 +1454,33 @@ string get_system_variable( const var_name& var, bool is_internal )
          {
             if( pos == string::npos )
             {
-               map< string, string >::const_iterator ci;
+               map< string, string >::const_iterator ci, end;
 
-               for( ci = g_mapped_variables[ variable ].begin( ); ci != g_mapped_variables[ variable ].end( ); ++ci )
+               end = g_mapped_variables[ variable ].end( );
+
+               if( limit_keyed_after.empty( ) )
+                  ci = g_mapped_variables[ variable ].begin( );
+               else
+               {
+                  ci = g_mapped_variables[ variable ].lower_bound( limit_keyed_after );
+
+                  if( ci != end )
+                     ++ci;
+               }
+
+               size_t num = 0;
+
+               while( ci != end )
                {
                   if( !retval.empty( ) )
                      retval += '\n';
 
                   retval += ci->first + ' ' + ci->second;
+
+                  if( ++num == limit_keyed_items )
+                     break;
+
+                  ++ci;
                }
             }
             else
