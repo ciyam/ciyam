@@ -1361,10 +1361,18 @@ string get_system_variable( const var_name& var, bool is_internal )
             if( !retval.empty( ) )
                retval += "\n";
 
+            string front_value( dci->second.front( ) );
+
+            if( front_value.length( ) > c_max_front_queue_item_chars )
+            {
+               front_value.erase( c_max_front_queue_item_chars - 3 );
+               front_value += "...";
+            }
+
             if( skip_name_output )
-               retval += dci->second.front( );
+               retval += front_value;
             else
-               retval += quote_if_contains_white_space( dci->first ) + ' ' + dci->second.front( );
+               retval += quote_if_contains_white_space( dci->first ) + ' ' + front_value;
 
             retval += " [+" + to_string( dci->second.size( ) - 1 ) + "]";
          }

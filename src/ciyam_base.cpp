@@ -10024,7 +10024,15 @@ string get_session_variable( const var_name& var, size_t sess_id )
                if( !retval.empty( ) )
                   retval += "\n";
 
-               retval += dci->first + ' ' + dci->second.front( );
+               string front_value( dci->second.front( ) );
+
+               if( front_value.length( ) > c_max_front_queue_item_chars )
+               {
+                  front_value.erase( c_max_front_queue_item_chars - 3 );
+                  front_value += "...";
+               }
+
+               retval += dci->first + ' ' + front_value;
 
                retval += " [+" + to_string( dci->second.size( ) - 1 ) + "]";
             }

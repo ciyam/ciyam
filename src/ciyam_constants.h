@@ -49,6 +49,8 @@ const size_t c_key_rounds_multiplier = 30;
 
 const size_t c_auto_script_msleep = 1000; // i.e. 1 sec
 
+const size_t c_max_front_queue_item_chars = 50;
+
 const char c_persist_variable_prefix = '>';
 const char c_restore_variable_prefix = '<';
 
