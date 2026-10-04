@@ -2695,13 +2695,33 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   string response_suffix;
 
+                  string room( c_web_session_default_room_number );
+
                   if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storages_prefix ) )
                      is_user_info_request = true;
                   else if( ( uri_suffix == c_cws_uri_suffix_messages )
                    || HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_messages_prefix ) )
                   {
                      if( has_system_variable( e_special_var_irc_allow ) )
+                     {
                         is_messages_request = true;
+
+                        if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_messages_prefix ) )
+                           room = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_messages_prefix ) );
+
+                        bool invalid_room = false;
+
+                        if( room.length( ) != CONST_LENGTH( c_web_session_default_room_number ) )
+                           invalid_room = true;
+                        else if( ( room[ 0 ] != '0' )
+                         || ( room.find_first_not_of( "0123456789" ) != string::npos ) )
+                           invalid_room = true;
+
+                        if( invalid_room )
+                           // FUTURE: This message should be handled as a server string message.
+                           error = "Invalid room number '" + room + "' for CWS 'messages' endpoint.";
+
+                     }
                      else
                         // FUTURE: This message should be handled as a server string message.
                         error = "IRC usage is not currently available.";
@@ -2716,7 +2736,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         response_suffix = c_username_suffix;
                      else
                         // FUTURE: This message should be handled as a server string message.
-                        error = "invalid CWS endpoint suffix '" + uri_suffix + "'";
+                        error = "Invalid CWS endpoint suffix '" + uri_suffix + "'.";
                   }
 
                   if( error.empty( ) )
@@ -2812,8 +2832,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      {
                         found = true;
 
-                        string room( c_web_session_default_room_number );
-
                         string room_from;
 
                         bool allowed_command = true;
@@ -2859,9 +2877,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               if( is_messages_request )
                               {
                                  use_none_response = true;
-
-                                 if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_messages_prefix ) )
-                                    room = uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_messages_prefix ) );
 
                                  string extra;
 
