@@ -6355,7 +6355,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_session_variable )
       {
          string prefix( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_prefix ) );
+         string suffix( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_suffix ) );
+         bool keyed = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_keyed );
          bool quoted = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_quoted );
+         bool sys_keyed = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_sys_keyed );
          string session_id( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_session_id ) );
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_name_or_expr ) );
          bool num_found = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_num_found );
@@ -6367,6 +6370,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          size_t limit_queue_items = 0;
 
          bool get_all_queue_items = false;
+
+         string key_prefix;
+         string key_suffix;
+
+         if( keyed || sys_keyed )
+         {
+            swap( prefix, key_prefix );
+            swap( suffix, key_suffix );
+         }
 
          string set_variable_name( get_special_var_name( e_special_var_set ) );
          string deque_variable_name( get_special_var_name( e_special_var_deque ) );
@@ -6493,11 +6505,82 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         bool skip_response = false;
 
+                        // NOTE: Supports the replacment of the entire value or
+                        // a prefixed word with a "keyed" variable that has the
+                        // same name (from either session or system variables).
+                        if( keyed || sys_keyed )
+                        {
+                           if( key_prefix.empty( ) )
+                           {
+                              string key_variable( replaced( name_or_expr,
+                               c_special_variable_queue_prefix, c_special_variable_keyed_prefix ) );
+
+                              if( !key_suffix.empty( ) )
+                              {
+                                 string::size_type spos = key_variable.rfind( key_suffix );
+
+                                 if( spos != string::npos )
+                                    key_variable.erase( spos );
+                              }
+
+                              if( sys_keyed )
+                                 next = get_system_variable( key_variable + ':' + next );
+                              else
+                                 next = get_session_variable( key_variable + ':' + next );
+                           }
+                           else
+                           {
+                              string::size_type pos = next.find( key_prefix );
+
+                              if( pos != string::npos )
+                              {
+                                 string value( next.substr( 0, pos ) );
+
+                                 next.erase( 0, pos + 1 );
+
+                                 pos = next.find( ' ' );
+
+                                 string key_name( next.substr( 0, pos ) );
+
+                                 // NOTE: Special case if the key name *is* the
+                                 // key prefix then instead uses the first word
+                                 // of the next value as the key name.
+                                 if( key_name.empty( ) )
+                                 {
+                                    string::size_type spos = value.find( ' ' );
+
+                                    key_name = value.substr( 0, spos );
+                                 }
+
+                                 string key_variable( replaced( name_or_expr,
+                                  c_special_variable_queue_prefix, c_special_variable_keyed_prefix ) );
+
+                                 if( !key_suffix.empty( ) )
+                                 {
+                                    string::size_type spos = key_variable.rfind( key_suffix );
+
+                                    if( spos != string::npos )
+                                       key_variable.erase( spos );
+                                 }
+
+                                 if( sys_keyed )
+                                    value += get_system_variable( key_variable + ':' + key_name );
+                                 else
+                                    value += get_session_variable( key_variable + ':' + key_name );
+
+                                 if( pos != string::npos )
+                                    value += next.substr( pos );
+
+                                 next = value;
+                              }
+                           }
+                        }
+
                         if( value == set_variable_name )
                         {
                            skip_response = true;
 
-                           string value( prefix + next );
+                           string value( prefix + next + suffix );
 
                            if( quoted )
                               value += '"';
@@ -6509,7 +6592,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         {
                            skip_response = true;
 
-                           string value( "push_back " + prefix + next );
+                           string value( "push_back " + prefix + next + suffix );
 
                            if( quoted )
                               value += '"';
@@ -6522,7 +6605,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                            if( !response.empty( ) )
                               response += '\n';
 
-                           response += prefix + next;
+                           response += prefix + next + suffix;
 
                            if( quoted )
                               response += '"';
@@ -6540,7 +6623,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   response = get_session_variable( expression( name_or_expr ), sess_id );
 
                if( !get_all_queue_items
-                && !response.empty( ) && ( quoted || !prefix.empty( ) ) )
+                && !response.empty( ) && ( quoted || !prefix.empty( ) || !suffix.empty( ) ) )
                {
                   vector< string > lines;
 
@@ -6560,8 +6643,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( pos != string::npos )
                      {
                         string content( prefix
-                         + next_line.substr( 0, pos + 1 )
-                         + extra + next_line.substr( pos + 1 ) + extra );
+                         + next_line.substr( 0, pos + 1 ) + extra
+                         + next_line.substr( pos + 1 ) + suffix + extra );
 
                         lines[ i ] = content;
                      }
