@@ -108,10 +108,14 @@ else
 
  echo "messages" >/tmp/ciyam/$device.lst
 
- echo "echo Rename the new room and output the entrance again." >>/tmp/ciyam/$device.lst
+ echo "echo Rename the new room (using an invalid room number first) and output the entrance again." >>/tmp/ciyam/$device.lst
  echo "messages update 1000002 name=Testing (test-1 and test-2)" >>/tmp/ciyam/$device.lst
  echo "messages update 0000002 name=Testing (test-1 and test-2)" >>/tmp/ciyam/$device.lst
  echo "messages" >>/tmp/ciyam/$device.lst
+
+ echo "echo Attempt to create a private room with an unknown user 'none' and then with 'admin'." >>/tmp/ciyam/$device.lst
+ echo "messages create 0000000 text=.none" >>/tmp/ciyam/$device.lst
+ echo "messages create 0000000 text=.admin" >>/tmp/ciyam/$device.lst
 
  echo "echo Change the posts to 'NONE' and then attempt to create a message for the new room." >>/tmp/ciyam/$device.lst
  echo "messages update 0000002 posts=NONE" >>/tmp/ciyam/$device.lst

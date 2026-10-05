@@ -393,7 +393,7 @@ Create a new romm for 'test-1' and 'test-2' and output entrance room details for
     "payload": "test-1 #0000002 1/1 Private (test-1 and test-2)"
   }
 ]
-Rename the new room and output the entrance again.
+Rename the new room (using an invalid room number first) and output the entrance again.
 Error: Invalid room number '1000002' for CWS 'messages' endpoint.
 {"room":"0000000"}
 [
@@ -420,6 +420,9 @@ Error: Invalid room number '1000002' for CWS 'messages' endpoint.
     "payload": "test-1 #0000002 2/2 Testing (test-1 and test-2)"
   }
 ]
+Attempt to create a private room with an unknown user 'none' and then with 'admin'.
+Error: User 'none' is not known.
+Error: Private rooms are not permitted with the administrator.
 Change the posts to 'NONE' and then attempt to create a message for the new room.
 Error: Message creation is not permitted for this room.
 {"room":"0000000"}
