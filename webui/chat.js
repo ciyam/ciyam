@@ -2135,7 +2135,9 @@ async function open_dm( people )
       return;
    }
 
-   var name = dm_room_name( everyone );
+   // NOTE: Two people - Ian's server direct message, ".<the other>"; a group - the prototype's room
+   // ("dm_create_text( )"), until the server has groups.
+   var name = dm_create_text( everyone, ciyam.username );
 
    // NOTE: Too many names to fit a room name - see "dm_room_name( )".
    if( name === "" )
@@ -2157,15 +2159,11 @@ async function open_dm( people )
       } );
    } );
 
+   // NOTE: In plain words - someone not signed in yet, a conversation that already exists, or a group's
+   // name another room holds ("dm_create_problem( )").
    if( is_error_response( reply ) || ( ciyam.error !== "" ) )
    {
-      // NOTE: Room names are unique across the server. A room with this name that is not the
-      // conversation - someone else's, found untrusted above - blocks it.
-      var taken = /already exists/.test( reply );
-
-      show_alert( taken ? ( "This conversation cannot be started - someone else already has a room called \u201C" + name
-       + "\u201D. Room names are shared by everyone on the server, so a conversation's name can be taken first." )
-       : ( is_error_response( reply ) ? error_text( reply ) : ciyam.error ), "is-error" );
+      show_alert( is_error_response( reply ) ? dm_create_problem( reply, others ) : ciyam.error, "is-error" );
 
       return;
    }
