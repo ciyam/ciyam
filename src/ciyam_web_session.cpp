@@ -3022,7 +3022,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                        request_and_args = "<web_session_add_room.cin \"" + text + "\" \"" + username + "\"";
 
-                                       if( !is_private && !names.empty( ) )
+                                       if( !names.empty( ) && ( !is_private || ( names == text.substr( 1 ) ) ) )
                                           request_and_args += " \"" + names + "\"";
                                     }
                                     else
