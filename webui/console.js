@@ -74,7 +74,14 @@ const c_palette_commands = [
    { command: "remove creds partial", description: "forget this account's saved password - keep its PIN" },
    { command: "retain creds", description: "save this account's PIN and password on this browser" },
    { command: "retain creds partial", description: "save this account's PIN only - not its password" },
-   { command: "~run_script *", description: "list the server scripts (admin, dev)", raw: true }
+   { command: "~run_script *", description: "list the server scripts (admin, dev)", raw: true },
+   // NOTE: Ian's commands for watching the server work (2026-09-27). A trace level stays set, for every
+   // session, until it is set back.
+   { command: "~trace", description: "the server's trace level now (admin, dev)", raw: true },
+   { command: "~trace 70008", description: "trace sessions in detail - stays on until set back (admin, dev)", raw: true },
+   { command: "~trace 10000", description: "tracing back to the usual level (admin, dev)", raw: true },
+   { command: "~log_tail -n=20 server", description: "the last 20 lines of the server's log (admin, dev)", raw: true },
+   { command: "~wait -no_progress <ms> @<word>", description: "the server answers <word> after <ms> - over 5000 times out (admin, dev)", raw: true }
 ];
 
 var g_self = String( Date.now( ) ) + String( Math.floor( Math.random( ) * 1000 ) ).padStart( 3, "0" );
@@ -1733,6 +1740,17 @@ function print_help( )
       lines.push( "  unload script [<name>]       take it out of the page" );
       lines.push( "  wait <global>                wait for a script to set a global" );
       lines.push( "  var @<name> <global>         set a variable from a script's global" );
+   }
+
+   // NOTE: Raw protocol - only where it works, admin on a development system.
+   if( g_raw_available )
+   {
+      lines.push( "" );
+      lines.push( "Tracing - raw protocol, admin on a development system" );
+      lines.push( "  ~trace                       the server's trace level now - 10000 is the usual" );
+      lines.push( "  ~trace 70008                 trace sessions in detail; stays on, for everyone, until set back" );
+      lines.push( "  ~log_tail -n=<lines> server  the last lines of the server's log - script and update logs too" );
+      lines.push( "  ~wait -no_progress <ms> @<word>  the server answers <word> after <ms>; over 5000 times out" );
    }
 
    lines.push( "" );
