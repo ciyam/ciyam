@@ -122,6 +122,16 @@ http://www.opensource.org/licenses/mit-license.php.
 
          <label class="chat-label" for="join_confirm">Type it again</label>
          <input type="password" id="join_confirm" class="chat-field" autocomplete="new-password">
+
+         <!-- NOTE: As on the sign in - you are signed in once the account is made (Damon, 2026-10-05). -->
+         <label class="chat-label" for="join_retain">Remember on this browser</label>
+         <select id="join_retain" class="chat-field">
+            <option value="none">Nothing &mdash; forget this account</option>
+            <option value="access">The PIN only</option>
+            <option value="full">The PIN and the password</option>
+         </select>
+         <div class="account-hint">You're signed in once your account is made. Saving the password as well signs you in
+          without typing it next time.</div>
       </div>
 
       <div class="chat-error-text" id="join_error" role="alert"></div>
@@ -218,7 +228,7 @@ http://www.opensource.org/licenses/mit-license.php.
             </svg>
             <p>You're signed in as <b>admin</b>, whose password unlocks the whole node. For everyday chat, add
              yourself as a person too, and keep admin for administration.</p>
-            <a href="#add">Add yourself</a>
+            <a href="#yourself">Add yourself</a>
             <button type="button" class="account-banner-close" onclick="do_hide_banner( )" aria-label="Hide this suggestion">
                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
@@ -307,6 +317,70 @@ http://www.opensource.org/licenses/mit-license.php.
                <button type="submit" class="chat-btn chat-btn--primary" id="add_submit">Create a code</button>
             </div>
          </form>
+      </section>
+
+      <!-- ------------------------------------------------------------ Add yourself -->
+      <!-- NOTE: Admin's own everyday account, made and claimed here at once - nothing to hand over (Ian,
+           2026-10-05). This browser remembers it as admin's own, so the banner on People goes. -->
+      <section class="account-section" id="yourself_section" hidden>
+         <a class="account-back" href="#people">&larr; People</a>
+
+         <form class="account-card account-form" id="yourself_form" onsubmit="do_add_yourself( event )" novalidate>
+            <div>
+               <h1 tabindex="-1">Add yourself</h1>
+               <p class="account-lede">An everyday account for you, apart from admin - for the chat. It's set up here and
+                now, so there's nothing to hand over.</p>
+            </div>
+
+            <div class="account-stack">
+               <label class="chat-label" for="yourself_username">Your username</label>
+               <input type="text" id="yourself_username" class="chat-field" maxlength="12" autocomplete="off"
+                autocapitalize="none" spellcheck="false">
+               <div class="account-hint">3 to 12 characters: a-z, 0-9 and -</div>
+
+               <label class="chat-label" for="yourself_password">Your password</label>
+               <input type="password" id="yourself_password" class="chat-field" autocomplete="new-password"
+                oninput="update_strength( 'yourself' )">
+               <div class="chat-strength" id="yourself_strength" hidden>
+                  <div class="chat-strength-track"><div class="chat-strength-bar"></div></div>
+                  <span class="chat-strength-label" id="yourself_strength_label"></span>
+               </div>
+
+               <label class="chat-label" for="yourself_confirm">Type it again</label>
+               <input type="password" id="yourself_confirm" class="chat-field" autocomplete="new-password">
+               <div class="account-hint">Not admin's password - this one is for everyday use.</div>
+            </div>
+
+            <div class="chat-error-text" id="yourself_error" role="alert"></div>
+
+            <div class="account-actions-row">
+               <a class="chat-btn account-link-btn account-btn-tall" href="#people">Cancel</a>
+               <button type="submit" class="chat-btn chat-btn--primary" id="yourself_submit">Create my account</button>
+            </div>
+         </form>
+
+         <div class="account-card account-form" id="yourself_done" hidden>
+            <div>
+               <h1 tabindex="-1">Your account is ready</h1>
+               <p class="account-lede">Write these down. Sign in to the chat with them for everyday use - this browser
+                remembers the PIN, and can save the password when you first sign in.</p>
+            </div>
+
+            <div class="account-facts">
+               <div class="account-fact">
+                  <span class="chat-label">Your PIN</span>
+                  <span class="chat-mono account-fact-big" id="yourself_pin"></span>
+               </div>
+               <div class="account-fact">
+                  <span class="chat-label">Your username</span>
+                  <span class="account-fact-name" id="yourself_name"></span>
+               </div>
+            </div>
+
+            <div class="account-actions-row">
+               <a class="chat-btn chat-btn--primary account-link-btn" href="#people">Done</a>
+            </div>
+         </div>
       </section>
 
       <!-- ------------------------------------------------------------ Hand over the code -->
