@@ -54,12 +54,12 @@ const c_palette_commands = [
    { command: "view list ***", description: "your own list on the server" },
    { command: "delete webcmdlist", description: "delete your own list on the server" },
    { command: "view scripts", description: "JavaScripts on the server" },
-   { command: "load script <name>", description: "load a server JavaScript and run its _at_load (admin)", admin: true },
-   { command: "load script ***", description: "load and run your own JavaScript on the server (admin)", admin: true },
-   { command: "eval script <name> <input>", description: "run a loaded JavaScript's _execute (admin)", admin: true },
-   { command: "result script <name>", description: "a loaded JavaScript's _result, into the output (admin)", admin: true },
-   { command: "unload script <name>", description: "take a JavaScript out of the page (admin)", admin: true },
-   { command: "delete javascript", description: "delete your own JavaScript on the server (admin)", admin: true },
+   { command: "load script <name>", description: "load a server JavaScript and run its _at_load - another account's, admin only" },
+   { command: "load script ***", description: "load and run your own JavaScript on the server" },
+   { command: "eval script <name> <input>", description: "run a loaded JavaScript's _execute" },
+   { command: "result script <name>", description: "a loaded JavaScript's _result, into the output" },
+   { command: "unload script <name>", description: "take a JavaScript out of the page" },
+   { command: "delete javascript", description: "delete your own JavaScript on the server" },
    { command: "view logs", description: "the server's log files (admin)", admin: true },
    { command: "view log <name>", description: "one whole log - script, server or update (admin)", admin: true },
    { command: "users review", description: "list accounts (admin)", admin: true },
@@ -80,7 +80,8 @@ const c_palette_commands = [
    { command: "~trace", description: "the server's trace level now (admin, dev)", raw: true },
    { command: "~trace 70008", description: "trace sessions in detail - stays on until set back (admin, dev)", raw: true },
    { command: "~trace 10000", description: "tracing back to the usual level (admin, dev)", raw: true },
-   { command: "~log_tail -n=20 server", description: "the last 20 lines of the server's log (admin, dev)", raw: true },
+   { command: "~log_tail server", description: "the last 10 lines of the server's log (admin, dev)", raw: true },
+   { command: "~log_tail -n=50 server", description: "the last 50 lines - -n=<lines> takes any number (admin, dev)", raw: true },
    { command: "~wait -no_progress <ms> @<word>", description: "the server answers <word> after <ms> - over 5000 times out (admin, dev)", raw: true }
 ];
 
@@ -1050,8 +1051,9 @@ async function run_line( line, from_script )
 // ====================================================================
 
 // NOTE: Ian's server javascripts - "ciyam_<name>.js" - run in this page, as the harness runs them,
-// and by admin alone: admins can run any server script, and nobody else runs them at all (decided
-// 2026-10-03, QST-005). A fingerprint against tampering is to come.
+// with this account's session. Anyone runs those not named after a PIN, and their own; another
+// account's is admin's alone (Ian, 2026-10-05 - "script_allowed( )"). A fingerprint against tampering
+// is to come.
 //
 // The scripts read two page globals, as they do in the harness. "init_script_value" is the input
 // given with "load script <name> <input>", which "_at_load" passes on to "_execute";
@@ -1279,12 +1281,12 @@ async function find_script_function( name )
    return null;
 }
 
-function refuse_unless_admin( )
+function refuse_unless_allowed( name )
 {
-   if( ciyam.is_admin )
+   if( script_allowed( name, ciyam.access, ciyam.is_admin ) )
       return false;
 
-   print_line( "Error: Server javascripts are run by admin only.", "is-err" );
+   print_line( "Error: The javascript '" + name + "' is another account's - only admin runs it.", "is-err" );
 
    return true;
 }
@@ -1298,7 +1300,7 @@ async function run_script_line( spec, from_script )
       return { ok: false };
    }
 
-   if( refuse_unless_admin( ) )
+   if( refuse_unless_allowed( spec.name ) )
       return { ok: false };
 
    var name = ( spec.name === c_console_own_name ) ? ciyam.access : spec.name;
@@ -1388,9 +1390,6 @@ async function wait_for_global( name )
 
       return { ok: false };
    }
-
-   if( refuse_unless_admin( ) )
-      return { ok: false };
 
    for( var i = 0; i < c_wait_variable_repeats; i++ )
    {
@@ -1591,9 +1590,6 @@ function run_var( args )
       // not set, or empty, leaves the variable unset.
       case "from_script":
       {
-         if( refuse_unless_admin( ) )
-            return { ok: false };
-
          if( !is_valid_variable_name( command.name ) || !is_global_name( command.source ) )
          {
             print_line( "Error: Usage is var @<name> <global> - a variable's name, then the global a script sets.", "is-err" );
@@ -1730,17 +1726,15 @@ function print_help( )
    if( !g_linked )
       lines.splice( lines.indexOf( "" ), 0, "  quit                         sign out" );
 
-   if( ciyam.is_admin )
-   {
-      lines.push( "" );
-      lines.push( "Server javascripts - admin only, as in the harness" );
-      lines.push( "  load script <name> [<input>] load ciyam_<name>.js; its _at_load gets the input" );
-      lines.push( "  eval script <name> [<input>] run its _execute - exec and employ too" );
-      lines.push( "  result script [<name>]       its _result, into the output" );
-      lines.push( "  unload script [<name>]       take it out of the page" );
-      lines.push( "  wait <global>                wait for a script to set a global" );
-      lines.push( "  var @<name> <global>         set a variable from a script's global" );
-   }
+   lines.push( "" );
+   lines.push( ciyam.is_admin ? "Server javascripts - as in the harness; admin runs any"
+    : "Server javascripts - as in the harness; any not named after a PIN, and your own (***)" );
+   lines.push( "  load script <name> [<input>] load ciyam_<name>.js; its _at_load gets the input" );
+   lines.push( "  eval script <name> [<input>] run its _execute - exec and employ too" );
+   lines.push( "  result script [<name>]       its _result, into the output" );
+   lines.push( "  unload script [<name>]       take it out of the page" );
+   lines.push( "  wait <global>                wait for a script to set a global" );
+   lines.push( "  var @<name> <global>         set a variable from a script's global" );
 
    // NOTE: Raw protocol - only where it works, admin on a development system.
    if( g_raw_available )
@@ -1749,7 +1743,7 @@ function print_help( )
       lines.push( "Tracing - raw protocol, admin on a development system" );
       lines.push( "  ~trace                       the server's trace level now - 10000 is the usual" );
       lines.push( "  ~trace 70008                 trace sessions in detail; stays on, for everyone, until set back" );
-      lines.push( "  ~log_tail -n=<lines> server  the last lines of the server's log - script and update logs too" );
+      lines.push( "  ~log_tail [-n=<lines>] server  the last lines of the server's log, 10 unless -n says - script and update too" );
       lines.push( "  ~wait -no_progress <ms> @<word>  the server answers <word> after <ms>; over 5000 times out" );
    }
 
@@ -1858,7 +1852,7 @@ function render_saved_scripts( )
 }
 
 // NOTE: A list runs here and can be saved here or on the server; a javascript is only saved on the
-// server - it runs with "load script", for admin.
+// server - it runs with "load script".
 function show_script_editor( kind )
 {
    g_editor_kind = kind || "list";
@@ -2090,18 +2084,14 @@ async function open_server_list( name, button )
 }
 
 // ====================================================================
-// JavaScripts on the server - "review javascripts", for admin
+// JavaScripts on the server - "review javascripts"
 // ====================================================================
 
+// NOTE: For everyone - the server lists another account's own to admin alone (Ian, 2026-10-05).
 async function load_server_javascripts( )
 {
    g_server_javascripts = [ ];
    g_server_javascripts_known = false;
-
-   document.getElementById( "javascripts_group" ).hidden = !ciyam.is_admin;
-
-   if( !ciyam.is_admin )
-      return;
 
    render_server_javascripts( null );
 

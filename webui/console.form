@@ -154,11 +154,12 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="console-list-scroll is-lists" id="server_lists"></div>
                <p class="console-more" id="server_lists_note"></p>
 
-               <!-- NOTE: The server's javascripts - "review javascripts" - for admin, who alone runs them.
-                    The CIYAM scripts "~run_script *" lists are not here: many are only for the server
-                    itself to run (Ian, 2026-10-04). -->
-               <div class="console-list-group" id="javascripts_group" hidden>
-                  <span class="console-listhead">JavaScripts on the server <span class="console-gate">admin</span></span>
+               <!-- NOTE: The server's javascripts - "review javascripts". Everyone sees those not named after
+                    a PIN, and their own; admin sees every account's too (Ian, 2026-10-05). The CIYAM scripts
+                    "~run_script *" lists are not here: many are only for the server itself to run
+                    (Ian, 2026-10-04). -->
+               <div class="console-list-group" id="javascripts_group">
+                  <span class="console-listhead">JavaScripts on the server</span>
                   <div class="console-list-scroll is-javascripts" id="server_javascripts"></div>
                   <p class="console-more" id="server_javascripts_note"></p>
                </div>
