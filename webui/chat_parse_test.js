@@ -762,6 +762,26 @@ var dm_lines = [ "1790000000000 admin :create 0000004-abc DM admin + bob + carol
 check( "waiting for whoever has not joined", cp.dm_waiting_for( dm_lines, [ "bob", "carol" ] ), [ "carol" ] );
 check( "nobody left to wait for",
  cp.dm_waiting_for( dm_lines.concat( [ cp.parse_message_line( "1790000000002 carol :joined" ) ] ), [ "bob", "carol" ] ), [ ] );
+check( "a member has joined, though their :joined is gone from the queue",
+ cp.dm_waiting_for( [ ], [ "bob", "carol" ], cp.parse_members( "admin+1 carol+0" ) ), [ "bob" ] );
+
+// NOTE: Real lines, 2026-10-05 ("dm_decline_probe.js") - verify-a's starting room, after starting a
+// conversation with verify-e, who declined it. Then a group of admin's, and someone else's receipt.
+var outcome_lines = cp.parse_fetch_response( [
+ "admin+0 verify-a+1 verify-e+0",
+ "1791201084000 verify-a :issued (invite for 0000003 sent to verify-e)",
+ "1791204165000 verify-e :reject (invite for 0000003 was rejected)",
+ "1791204166000 admin :issued (invite for 0000005 sent to bob,carol)",
+ "1791204167000 carol :reject (invite for 0000005 was rejected)",
+ "1791204168000 dave :reject (invite for 0000005 was rejected)",
+ "1791204169000 admin :issued (invite for 0000005 sent to bob)",
+ "1791204170000 admin :issued (message sent to verify-a)" ].join( "\n" ) ).messages;
+
+check( "whom each conversation was for, and who declined", cp.dm_invite_outcomes( outcome_lines, "verify-a" ),
+ { "0000003": { invited: [ "verify-e" ], declined: [ "verify-e" ] } } );
+check( "a group's, each name once - a decline only from someone invited", cp.dm_invite_outcomes( outcome_lines, "admin" ),
+ { "0000005": { invited: [ "bob", "carol" ], declined: [ "carol" ] } } );
+check( "nothing for someone who started none", cp.dm_invite_outcomes( outcome_lines, "verify-e" ), { } );
 
 // NOTE: A room's name is its owner's to choose - "DM admin + bob" owned by carol is her room,
 // not a conversation between admin and bob (found by review, 2026-09-30).

@@ -1284,8 +1284,10 @@ function dm_existing( people, me, rooms, invitations, waiting )
 }
 
 // NOTE: Who has not joined yet. A member sees nothing posted before they joined, so the first
-// message of a new conversation waits until everyone it is for has - their ":joined" notices.
-function dm_waiting_for( messages, recipients )
+// message of a new conversation waits until everyone it is for has - their ":joined" notices, or
+// their name in the room's member line ("members", from "parse_members( )"), which still has them
+// once a long conversation's ":joined" has gone from the queue. Someone only invited is not in it.
+function dm_waiting_for( messages, recipients, members )
 {
    var joined = { };
 
@@ -1295,7 +1297,54 @@ function dm_waiting_for( messages, recipients )
          joined[ message.sender ] = true;
    } );
 
+   ( members || [ ] ).forEach( function( member )
+   {
+      if( member && member.name )
+         joined[ member.name ] = true;
+   } );
+
    return ( recipients || [ ] ).filter( function( name ) { return !joined[ name ]; } );
+}
+
+// NOTE: What became of the conversations this user started, from the starting room - kept by the
+// server, so it outlasts a reload, as what the chat holds does not. Their own ":issued (invite for
+// <room> sent to <names>)" says whom each was for, and an invitee's ":reject (invite for <room> was
+// rejected)" that they declined (verified 2026-10-05, "dm_decline_probe.js"). Nothing here says who
+// has joined - that is the room's own member line ("dm_waiting_for( )").
+//
+// Returns { <room>: { invited: [ names ], declined: [ names ] } }, each name once.
+function dm_invite_outcomes( messages, me )
+{
+   var outcomes = { };
+
+   ( messages || [ ] ).forEach( function( message )
+   {
+      var event = message && message.event;
+
+      if( !event || !event.room || ( event.verb !== "issued" ) || ( event.issued_kind !== "invite" ) || !me || ( message.sender !== me ) )
+         return;
+
+      var outcome = outcomes[ event.room ] || ( outcomes[ event.room ] = { invited: [ ], declined: [ ] } );
+
+      ( event.recipients || [ ] ).forEach( function( name )
+      {
+         if( name && ( name !== me ) && ( outcome.invited.indexOf( name ) < 0 ) )
+            outcome.invited.push( name );
+      } );
+   } );
+
+   // NOTE: Only a decline by someone this user invited counts - it is that invitation it answers.
+   ( messages || [ ] ).forEach( function( message )
+   {
+      var event = message && message.event;
+
+      var outcome = event && ( event.verb === "reject" ) && event.room ? outcomes[ event.room ] : null;
+
+      if( outcome && ( outcome.invited.indexOf( message.sender ) >= 0 ) && ( outcome.declined.indexOf( message.sender ) < 0 ) )
+         outcome.declined.push( message.sender );
+   } );
+
+   return outcomes;
 }
 
 // NOTE: A room's name is set by its owner, so a name alone proves nothing - anyone can call a
@@ -1842,6 +1891,7 @@ if( typeof module !== "undefined" )
       dm_title: dm_title,
       find_dm_room: find_dm_room,
       dm_waiting_for: dm_waiting_for,
+      dm_invite_outcomes: dm_invite_outcomes,
       dm_trusted: dm_trusted,
       dm_key: dm_key,
       dm_existing: dm_existing,
