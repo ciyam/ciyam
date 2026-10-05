@@ -200,6 +200,22 @@ function is_unknown_device_error( error )
    return /Invalid device identity/.test( String( error || "" ) );
 }
 
+// NOTE: Whether People shows admin the "Add yourself" banner - not once admin has hidden it, nor while
+// the account admin added for themselves (remembered on this browser) is among the people. Ian,
+// 2026-10-05: it kept showing after admin had added themselves.
+function shows_add_yourself( hidden, own_pin, people )
+{
+   if( hidden )
+      return false;
+
+   var pin = String( own_pin || "" );
+
+   if( !is_account_pin( pin ) )
+      return true;
+
+   return !( people || [ ] ).some( function( person ) { return person.pin === pin; } );
+}
+
 // NOTE: The server answers a code or a PIN it does not know - made up, mistyped, or a code already
 // used (since ISS-034's fix) - as an invalid session, which reads as something wrong with the
 // browser. So that one is said in the page's own words; any other error is passed on as it came.
@@ -240,6 +256,7 @@ if( typeof module !== "undefined" )
       join_url: join_url,
       is_unknown_device_error: is_unknown_device_error,
       refused_join_text: refused_join_text,
+      shows_add_yourself: shows_add_yourself,
       parse_account_hash: parse_account_hash
    };
 }

@@ -63,4 +63,11 @@ ok   without the prefix
 ok   anything else is passed on
 ok   nothing
 
+== the Add yourself banner =====================================
+ok   shown until admin has added themselves
+ok   not once their own account is among the people
+ok   shown again if that account was removed
+ok   not once admin has hidden it
+ok   not a PIN is no account
+
 All checks passed.

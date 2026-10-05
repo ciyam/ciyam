@@ -142,6 +142,17 @@ check( "without the prefix", ap.refused_join_text( "This web session is not vali
 check( "anything else is passed on", ap.refused_join_text( "Error: Something else went wrong.", "code" ), "Something else went wrong." );
 check( "nothing", ap.refused_join_text( "", "pin" ), "" );
 
+// --------------------------------------------------------------------
+heading( "the Add yourself banner" );
+
+const banner_people = [ { pin: "23048", name: "admin" }, { pin: "40311", name: "damon" } ];
+
+check( "shown until admin has added themselves", ap.shows_add_yourself( false, "", banner_people ), true );
+check( "not once their own account is among the people", ap.shows_add_yourself( false, "40311", banner_people ), false );
+check( "shown again if that account was removed", ap.shows_add_yourself( false, "51234", banner_people ), true );
+check( "not once admin has hidden it", ap.shows_add_yourself( true, "", banner_people ), false );
+check( "not a PIN is no account", ap.shows_add_yourself( false, "dam", banner_people ), true );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 
