@@ -54,9 +54,21 @@ var g_edit_private = false;
 var g_recipients = [ ];
 
 // NOTE: Direct messages started here and waiting for the others to accept - room number to
-// { waiting, texts, total }. A member sees nothing posted before they joined, so what is sent
-// meanwhile is held. In memory only, like everything else the chat shows.
+// { waiting, texts, total, checked }. A member sees nothing posted before they joined, so what is
+// sent meanwhile is held. In memory only, like everything else the chat shows - but rebuilt after a
+// reload from the starting room ("restore_dm_outcomes( )"), "checked" false until the room's own
+// member line has said who is still to join.
 var g_dm_pending = { };
+
+// NOTE: Conversations this user started that someone declined - room number to their names - and
+// those everyone it was for declined, so nobody else will read them. From the starting room each
+// time, so they need no keeping.
+var g_dm_declined = { };
+var g_dm_shut = { };
+
+// NOTE: Conversations whose waiting has been worked out this session - started here, or restored
+// once. A restored one is not restored again after its people have joined.
+var g_dm_checked = { };
 
 // NOTE: The room this page was asked to open first - "#room=<number>", from "Open a linked tab" in
 // another. Used once, then cleared from the address too.
@@ -1127,6 +1139,9 @@ async function do_disconnect( )
    // NOTE: Held first messages belong to the account that wrote them - the next one to sign in
    // on this page must not send them.
    g_dm_pending = { };
+   g_dm_declined = { };
+   g_dm_shut = { };
+   g_dm_checked = { };
 
    document.getElementById( "held_list" ).textContent = "";
    document.getElementById( "held_list" ).hidden = true;
@@ -1618,13 +1633,19 @@ function update_rail_item( node, item )
    count.classList.toggle( "has-unread", ( entry.unread > 0 ) );
 
    // NOTE: A new conversation waiting for the others to accept says so.
-   var waiting = !!g_dm_pending[ entry.room ];
+   // NOTE: One restored after a reload says so only once its member line has confirmed it - and one
+   // that someone declined says who.
+   var pending = g_dm_pending[ entry.room ];
+
+   var waiting = !!pending && ( pending.checked !== false );
+
+   var declined = g_dm_declined[ entry.room ] || [ ];
 
    var room_sub = node.querySelector( ".chat-room-sub" );
 
-   set_text( room_sub, waiting ? "waiting for them to accept" : "" );
+   set_text( room_sub, ( declined.length > 0 ) ? ( name_list( declined ) + " declined" ) : ( waiting ? "waiting for them to accept" : "" ) );
 
-   room_sub.hidden = !waiting;
+   room_sub.hidden = !waiting && ( declined.length === 0 );
 
    var mark = node.querySelector( ".chat-room-lock" );
 
@@ -1967,6 +1988,8 @@ function refresh_invitations( )
 
    g_invitations = pending_invitations( g_invite_messages, g_rooms, ciyam.username );
 
+   restore_dm_outcomes( );
+
    // NOTE: The invitation on screen can be taken up elsewhere - another tab, say.
    if( ( g_selected_invite !== "" ) && ( find_invitation( g_selected_invite ) === null ) )
    {
@@ -2205,7 +2228,8 @@ async function open_dm( people )
       return;
    }
 
-   g_dm_pending[ room ] = { waiting: others, texts: [ ], total: -1 };
+   g_dm_pending[ room ] = { waiting: others, texts: [ ], total: -1, checked: true };
+   g_dm_checked[ room ] = true;
 
    await open_new_room( reply );
 }
@@ -2217,11 +2241,25 @@ function render_held( )
 
    var pending = g_dm_pending[ g_room ];
 
+   var shut = !pending && !!g_dm_shut[ g_room ];
+
    host.textContent = "";
-   host.hidden = !pending;
+   host.hidden = !pending && !shut;
 
    if( !pending )
+   {
+      if( shut )
+      {
+         var gone = document.createElement( "div" );
+
+         gone.className = "chat-held-note";
+         gone.textContent = name_list( g_dm_declined[ g_room ] ) + " declined this conversation, so nothing sent here reaches them.";
+
+         host.appendChild( gone );
+      }
+
       return;
+   }
 
    var note = document.createElement( "div" );
 
@@ -2249,15 +2287,22 @@ function render_held( )
 }
 
 // NOTE: Each read of a waiting conversation - open, or checked in the background - looks for
-// the others' ":joined". Once all have, what was held is sent, in order.
-function note_dm_joins( room, messages )
+// the others' ":joined", and at its member line. Once all have joined, what was held is sent, in order.
+function note_dm_joins( room, messages, members )
 {
    var pending = g_dm_pending[ room ];
 
    if( !pending )
       return;
 
-   pending.waiting = dm_waiting_for( messages, pending.waiting );
+   pending.waiting = dm_waiting_for( messages, pending.waiting, members );
+
+   var was_checked = ( pending.checked !== false );
+
+   pending.checked = true;
+
+   if( !was_checked )
+      render_rooms( true );
 
    if( pending.waiting.length > 0 )
    {
@@ -2330,12 +2375,78 @@ function watch_held_rooms( )
             var result = parse_fetch_response( response );
 
             if( ( result.error === "" ) && ( result.rooms.length === 0 ) )
-               note_dm_joins( room, result.messages );
+               note_dm_joins( room, result.messages, result.members );
          } );
       } );
 
       g_in_poll = false;
    } );
+}
+
+// NOTE: After each read of the starting room - what became of the conversations this user started
+// ("dm_invite_outcomes( )"). A decline is marked, and takes whoever declined out of what is waiting,
+// with anything held only for them - which says so. One still waiting is restored after a reload,
+// unchecked until its member line is read ("watch_held_rooms( )"), so what is sent there is held
+// again rather than posted where they cannot see it.
+function restore_dm_outcomes( )
+{
+   var outcomes = dm_invite_outcomes( g_invite_messages, dm_me( ) );
+
+   var declined = { };
+   var shut = { };
+
+   Object.keys( outcomes ).forEach( function( room )
+   {
+      var entry = find_room( room );
+
+      // NOTE: Only a conversation this user is still in, and one that is truly a direct message.
+      if( ( entry === null ) || !dm_trusted( entry.name, entry.owner ) )
+         return;
+
+      var outcome = outcomes[ room ];
+
+      var still = outcome.invited.filter( function( name ) { return outcome.declined.indexOf( name ) < 0; } );
+
+      if( outcome.declined.length > 0 )
+      {
+         declined[ room ] = outcome.declined;
+
+         if( still.length === 0 )
+            shut[ room ] = true;
+      }
+
+      var pending = g_dm_pending[ room ];
+
+      if( pending )
+      {
+         pending.waiting = pending.waiting.filter( function( name ) { return outcome.declined.indexOf( name ) < 0; } );
+
+         if( pending.waiting.length === 0 )
+         {
+            delete g_dm_pending[ room ];
+
+            if( pending.texts.length > 0 )
+               show_alert( name_list( outcome.declined ) + " declined - " + ( ( pending.texts.length === 1 ) ? "the message held for them was"
+                : ( pending.texts.length + " messages held for them were" ) ) + " not sent.", "is-error" );
+         }
+
+         return;
+      }
+
+      if( g_dm_checked[ room ] )
+         return;
+
+      g_dm_checked[ room ] = true;
+
+      if( still.length > 0 )
+         g_dm_pending[ room ] = { waiting: still, texts: [ ], total: -1, checked: false };
+   } );
+
+   g_dm_declined = declined;
+   g_dm_shut = shut;
+
+   if( g_room !== "" )
+      render_held( );
 }
 
 function do_open_rename_room( )
@@ -3055,7 +3166,7 @@ function on_messages_response( response, asked_for, replace )
 
       update_thread_meta( );
 
-      note_dm_joins( asked_for, result.messages );
+      note_dm_joins( asked_for, result.messages, result.members );
    }
 }
 
@@ -3673,6 +3784,15 @@ async function do_send( )
    if( message_too_long( ) )
    {
       update_composer_count( );
+
+      return;
+   }
+
+   // NOTE: Nobody else will read it - the conversation's only other person declined. The text is
+   // left in the box.
+   if( !g_dm_pending[ g_room ] && g_dm_shut[ g_room ] && ( g_edit_unique === "" ) )
+   {
+      show_alert( name_list( g_dm_declined[ g_room ] ) + " declined this conversation - nothing sent here would reach them.", "is-error" );
 
       return;
    }
