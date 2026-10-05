@@ -435,6 +435,8 @@ ok   not with admin
 ok   nor admin with anyone
 ok   nor with yourself
 ok   anyone else may message someone
+ok   the server's room is made alone, then they are invited
+ok   a group's room takes its people in the one request
 ok   the server's words for admin, as they come
 
 == sign in errors ==============================================

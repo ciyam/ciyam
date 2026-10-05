@@ -812,6 +812,9 @@ check( "not with admin", cp.dm_allowed( "bob", "admin" ), false );
 check( "nor admin with anyone", [ cp.dm_allowed( "admin", "bob" ), cp.dm_allowed( "admin" ) ], [ false, false ] );
 check( "nor with yourself", cp.dm_allowed( "bob", "bob" ), false );
 check( "anyone else may message someone", cp.dm_allowed( "bob" ), true );
+check( "the server's room is made alone, then they are invited", cp.dm_create_options( ".carol", [ "carol" ] ), { options: "text=.carol", invite: "carol" } );
+check( "a group's room takes its people in the one request", cp.dm_create_options( "Private (amy + bob + cat)", [ "bob", "cat" ] ),
+ { options: "for=bob,cat;text=Private (amy + bob + cat)", invite: "" } );
 check( "the server's words for admin, as they come", cp.dm_create_problem( "Error: Private rooms are not permitted with the administrator.", [ "admin" ] ),
  "Private rooms are not permitted with the administrator." );
 

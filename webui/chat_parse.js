@@ -1168,6 +1168,19 @@ function dm_allowed( me, person )
    return ( person !== c_admin_username ) && ( person !== me );
 }
 
+// NOTE: What starting a conversation sends, from "dm_create_text( )"'s name. The server's own room
+// ignores who is named with it (Ian, 2026-10-05), so it is made alone and the other person invited
+// after ("invite" - "" for a group's room, which takes its people in the one request).
+function dm_create_options( name, others )
+{
+   var is_server_room = ( String( name ).indexOf( c_dm_create_prefix ) === 0 );
+
+   return {
+      options: ( is_server_room ? "" : "for=" + ( others || [ ] ).join( "," ) + ";" ) + "text=" + name,
+      invite: is_server_room ? ( others || [ ] )[ 0 ] : ""
+   };
+}
+
 // NOTE: The server's refusals when a conversation is started, in plain words - "others" are the
 // people it was for. Anything else is passed on as it came.
 function dm_create_problem( reply, others )
@@ -1828,6 +1841,7 @@ if( typeof module !== "undefined" )
       dm_create_text: dm_create_text,
       dm_create_problem: dm_create_problem,
       dm_allowed: dm_allowed,
+      dm_create_options: dm_create_options,
       parse_dm_name: parse_dm_name,
       is_dm_name: is_dm_name,
       dm_title: dm_title,
