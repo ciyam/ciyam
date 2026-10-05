@@ -1168,17 +1168,12 @@ function dm_allowed( me, person )
    return ( person !== c_admin_username ) && ( person !== me );
 }
 
-// NOTE: What starting a conversation sends, from "dm_create_text( )"'s name. The server's own room
-// ignores who is named with it (Ian, 2026-10-05), so it is made alone and the other person invited
-// after ("invite" - "" for a group's room, which takes its people in the one request).
+// NOTE: What starting a conversation sends, from "dm_create_text( )"'s name - its people named with it,
+// so the one request makes the room and invites them. The server's own room takes a name only when it
+// is the one after the dot (Ian, 2026-10-05, "7c7cc6e7"), and that is the one "dm_create_text( )" gives.
 function dm_create_options( name, others )
 {
-   var is_server_room = ( String( name ).indexOf( c_dm_create_prefix ) === 0 );
-
-   return {
-      options: ( is_server_room ? "" : "for=" + ( others || [ ] ).join( "," ) + ";" ) + "text=" + name,
-      invite: is_server_room ? ( others || [ ] )[ 0 ] : ""
-   };
+   return "for=" + ( others || [ ] ).join( "," ) + ";text=" + name;
 }
 
 // NOTE: The server's refusals when a conversation is started, in plain words - "others" are the

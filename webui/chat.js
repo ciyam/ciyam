@@ -2176,12 +2176,12 @@ async function open_dm( people )
 
    var reply = "";
 
-   // NOTE: The server's own room is made alone, its other person invited after ("dm_create_options( )").
-   var create = dm_create_options( name, others );
+   // NOTE: One request makes the room and invites its people ("dm_create_options( )").
+   var options = dm_create_options( name, others );
 
    await serialised( function( )
    {
-      return ciyam.create_message( c_lobby_room, create.options, function( response )
+      return ciyam.create_message( c_lobby_room, options, function( response )
       {
          reply = String( response );
       } );
@@ -2205,32 +2205,7 @@ async function open_dm( people )
       return;
    }
 
-   var waiting = true;
-
-   if( create.invite !== "" )
-   {
-      var invited = "";
-
-      await serialised( function( )
-      {
-         return ciyam.update_message_room( room, "for=" + create.invite, function( response )
-         {
-            invited = String( response );
-         } );
-      } );
-
-      // NOTE: The room is made either way. Not invited, there is nobody to wait for - so nothing is held
-      // for them, and this says why (found by review).
-      if( is_error_response( invited ) )
-      {
-         waiting = false;
-
-         show_alert( "The conversation was started, but " + create.invite + " could not be invited: " + error_text( invited ), "is-error" );
-      }
-   }
-
-   if( waiting )
-      g_dm_pending[ room ] = { waiting: others, texts: [ ], total: -1 };
+   g_dm_pending[ room ] = { waiting: others, texts: [ ], total: -1 };
 
    await open_new_room( reply );
 }
