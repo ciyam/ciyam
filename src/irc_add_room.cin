@@ -211,7 +211,7 @@ NAMES=$NAME
 @endif
 ;
 .session_variable @filter "$NAME"
-.system_variable @irc_names_**
+.system_variable @irc_names_***
 ;
 @ifdef $OUTPUT
 ERROR=Room '$NAME' already exists.

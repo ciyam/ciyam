@@ -103,12 +103,15 @@ system_variable "-p=$PREFIX" @irc_xinvs_*
 ;
 system_variable "-p=$PREFIX" @session_@queue_irc_*
 ;
-system_variable "-p=$PREFIX" @updated_record_irc_*
-;
 system_variable "-p=$PREFIX" @web.*.*.0*
 ;
-.system_variable @irc_names_*
+.system_variable @irc_names_**
 ALL_ROOMS=$OUTPUT
+;
+@ifdef $ALL_ROOMS
+.system_variable -s=_ME @irc_names_**
+ALL_ROOMS=@strlit:$ALL_ROOMS\n$OUTPUT
+@endif
 ;
 ITEM_AFTER=
 ;
@@ -126,8 +129,6 @@ NEXT_ROOM=%ALL_ROOMS:1%
 @:NEXT
 ;
 NEXT_ROOM=@repstr:@irc_names_/:$NEXT_ROOM
-POS=@strpos: :$NEXT_ROOM
-NEXT_ROOM=@substr:0,$POS:$NEXT_ROOM
 ;
 .system_variable @keyed_irc_$NEXT_ROOM*
 @ifdef $OUTPUT

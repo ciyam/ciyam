@@ -3694,11 +3694,11 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               str = to_string( str.length( ) - pos - 1 );
                            else if( lhs == c_function_strlit )
                            {
-                              // NOTE: Although it might appear to do nothing
-                              // this "@strlit" function is needed for values
-                              // that can start with a '@' (otherwise parsing
-                              // might treat them as a numerical operation).
-                              str = str.substr( pos + 1 );
+                              // NOTE: Although it appears to do little more than simple
+                              // unescaping this function is required in order to handle
+                              // values that could start with a '@' character (otherwise
+                              // they are likely to be parsed as a numerical operation).
+                              str = unescaped( str.substr( pos + 1 ), c_special_characters );
                            }
                            else if( lhs == c_function_strpos )
                            {

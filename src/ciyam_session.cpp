@@ -6648,6 +6648,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         lines[ i ] = content;
                      }
+                     else
+                        lines[ i ] = prefix + next_line + suffix;
                   }
 
                   response = join( lines, '\n' );
@@ -8711,6 +8713,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_system_variable )
       {
          string prefix( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_prefix ) );
+         string suffix( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_suffix ) );
          bool quoted = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_quoted );
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) );
          bool has_found = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_found );
@@ -8902,7 +8905,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( !response.empty( ) )
                         response += '\n';
 
-                     response += prefix + next;
+                     response += prefix + next + suffix;
 
                      if( quoted )
                         response += '"';
@@ -8913,15 +8916,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
             }
             else
-            {
                response = get_system_variable( expression( name_or_expr ), false );
 
-               if( !prefix.empty( ) && !response.empty( ) )
-                  response = prefix + response;
-            }
-
             if( !get_all_queue_items
-             && !response.empty( ) && ( quoted || !prefix.empty( ) ) )
+             && !response.empty( ) && ( quoted || !prefix.empty( ) || !suffix.empty( ) ) )
             {
                vector< string > lines;
 
@@ -8942,10 +8940,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   {
                      string content( prefix
                       + next_line.substr( 0, pos + 1 )
-                      + extra + next_line.substr( pos + 1 ) + extra );
+                      + extra + next_line.substr( pos + 1 ) + suffix + extra );
 
                      lines[ i ] = content;
                   }
+                  else
+                     lines[ i ] = prefix + next_line + suffix;
                }
 
                response = join( lines, '\n' );

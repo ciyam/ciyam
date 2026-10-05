@@ -50,6 +50,7 @@ const size_t c_default_max_deque_item_size = 3000;
 const size_t c_default_max_deque_size_limit = 9000;
 
 constexpr const char* c_double_asterisk = "**";
+constexpr const char* c_triple_asterisk = "***";
 
 constexpr const char* c_qs_max_chars_prefix = "@qs_mc_";
 constexpr const char* c_qs_num_items_prefix = "@qs_ni_";
@@ -1142,10 +1143,20 @@ string get_system_variable( const var_name& var, bool is_internal )
    string variable( name );
 
    bool skip_name_output = false;
+   bool skip_value_output = false;
 
-   if( variable.find( c_double_asterisk ) != string::npos )
+   // NOTE: If a triple asterisk is found then only outputs
+   // values or if instead a double asterisk was found then
+   // only outputs the variable names.
+   if( variable.find( c_triple_asterisk ) != string::npos )
    {
       skip_name_output = true;
+
+      replace( variable, c_double_asterisk, "*" );
+   }
+   else if( variable.find( c_double_asterisk ) != string::npos )
+   {
+      skip_value_output = true;
 
       replace( variable, c_double_asterisk, "*" );
    }
@@ -1267,6 +1278,8 @@ string get_system_variable( const var_name& var, bool is_internal )
 
                      if( skip_name_output )
                         retval += value;
+                     else if( skip_value_output )
+                        retval += next;
                      else
                         retval += quote_if_contains_white_space( next ) + ' ' + value;
                   }
@@ -1356,6 +1369,8 @@ string get_system_variable( const var_name& var, bool is_internal )
 
             if( skip_name_output )
                retval += value;
+            else if( skip_value_output )
+               retval += next;
             else
                retval += quote_if_contains_white_space( next ) + ' ' + value;
          }
@@ -1393,6 +1408,8 @@ string get_system_variable( const var_name& var, bool is_internal )
 
             if( skip_name_output )
                retval += front_value;
+            else if( skip_value_output )
+               retval += dci->first;
             else
                retval += quote_if_contains_white_space( dci->first ) + ' ' + front_value;
 

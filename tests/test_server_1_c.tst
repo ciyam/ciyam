@@ -601,7 +601,7 @@ help *variable*
 
 commands: *variable*
 =========
-system_variable|variable [-p=<prefix>] [-quoted] <name_or_expr> [-has|{<[value]> [<[current]>] [<retries>]}] (get/has/set a system variable)
+system_variable|variable [-p=<prefix>] [-s=<suffix>] [-quoted] <name_or_expr> [-has|{<[value]> [<[current]>] [<retries>]}] (get/has/set a system variable)
 system_variable xxx
 session_variable xxx
 Error: command 'session_variable' is not currently permitted
