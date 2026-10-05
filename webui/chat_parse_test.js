@@ -806,6 +806,15 @@ check( "a group's name taken by another room", cp.dm_create_problem( "Error: Roo
  .indexOf( "someone else already has a room called" ) > 0, true );
 check( "anything else as it came", cp.dm_create_problem( "Error: Something else.", [ "bob" ] ), "Something else." );
 
+// NOTE: Ian, 2026-10-05 - no private rooms for admin, or with admin.
+check( "two people may", cp.dm_allowed( "bob", "carol" ), true );
+check( "not with admin", cp.dm_allowed( "bob", "admin" ), false );
+check( "nor admin with anyone", [ cp.dm_allowed( "admin", "bob" ), cp.dm_allowed( "admin" ) ], [ false, false ] );
+check( "nor with yourself", cp.dm_allowed( "bob", "bob" ), false );
+check( "anyone else may message someone", cp.dm_allowed( "bob" ), true );
+check( "the server's words for admin, as they come", cp.dm_create_problem( "Error: Private rooms are not permitted with the administrator.", [ "admin" ] ),
+ "Private rooms are not permitted with the administrator." );
+
 heading( "sign in errors" );
 
 check( "a missing connect status, in plain words", cp.sign_in_error_text( "invalid or missing connect status" ),

@@ -430,6 +430,12 @@ ok   never signed in
 ok   already have one
 ok   a group's name taken by another room
 ok   anything else as it came
+ok   two people may
+ok   not with admin
+ok   nor admin with anyone
+ok   nor with yourself
+ok   anyone else may message someone
+ok   the server's words for admin, as they come
 
 == sign in errors ==============================================
 ok   a missing connect status, in plain words

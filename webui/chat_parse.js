@@ -1152,6 +1152,22 @@ function dm_create_text( usernames, me )
    return dm_room_name( people );
 }
 
+// NOTE: Whether "me" may have a conversation with "person" - Ian, 2026-10-05: admin may neither start
+// a private room nor be the other person in one, admin being for administration; and a conversation
+// with yourself is none. With "person" left out, whether "me" may message anyone at all.
+const c_admin_username = "admin";
+
+function dm_allowed( me, person )
+{
+   if( me === c_admin_username )
+      return false;
+
+   if( ( person === undefined ) || ( person === null ) )
+      return true;
+
+   return ( person !== c_admin_username ) && ( person !== me );
+}
+
 // NOTE: The server's refusals when a conversation is started, in plain words - "others" are the
 // people it was for. Anything else is passed on as it came.
 function dm_create_problem( reply, others )
@@ -1811,6 +1827,7 @@ if( typeof module !== "undefined" )
       dm_room_name: dm_room_name,
       dm_create_text: dm_create_text,
       dm_create_problem: dm_create_problem,
+      dm_allowed: dm_allowed,
       parse_dm_name: parse_dm_name,
       is_dm_name: is_dm_name,
       dm_title: dm_title,
