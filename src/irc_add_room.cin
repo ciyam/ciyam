@@ -196,6 +196,8 @@ ALL_USERS=@strlit:$OUTPUT@
 CHECK_USERS=@repstr:@$NAME@/:$ALL_USERS
 @ifeq "$ALL_USERS" "$CHECK_USERS"
 ERROR=User '$NAME' is not known.
+@elif "$USER" = "$NAME"
+ERROR=Private rooms can only be created for separate users.
 @elif "$USER" = "admin"
 ERROR=Private rooms are not permitted for the administrator.
 @elif "$NAME" = "admin"
