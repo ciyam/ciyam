@@ -1141,28 +1141,33 @@ async function do_add_yourself( event )
    var password = document.getElementById( "yourself_password" ).value;
    var confirm = document.getElementById( "yourself_confirm" ).value;
 
-   // NOTE: Straight here from the banner's address, People may not have been read yet - and it is
-   // what catches a username already in use.
-   if( g_people.length === 0 )
-      await load_people( );
-
-   var problem = join_problem( username, password, confirm ) || nominate_problem( "", username, g_people );
-
-   if( problem !== "" )
-   {
-      set_error( "yourself_error", problem );
-
-      return;
-   }
-
-   set_error( "yourself_error", "" );
-
    var submit = document.getElementById( "yourself_submit" );
+
+   // NOTE: Taken out of use before anything is asked of the server, so a second click cannot make a
+   // second account (found by review).
+   if( submit.disabled )
+      return;
 
    submit.disabled = true;
 
    try
    {
+      // NOTE: Straight here from the banner's address, People may not have been read yet - and it is
+      // what catches a username already in use.
+      if( g_people.length === 0 )
+         await load_people_quietly( );
+
+      var problem = join_problem( username, password, confirm ) || nominate_problem( "", username, g_people );
+
+      if( problem !== "" )
+      {
+         set_error( "yourself_error", problem );
+
+         return;
+      }
+
+      set_error( "yourself_error", "" );
+
       var made = await request( function( done )
       {
          return ciyam.create_user( nominated_options( "", username, false ), done );
