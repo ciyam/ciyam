@@ -23,7 +23,7 @@ USER=$2
 ;
 POSTS=
 ASSIGN=
-DIRECT=
+PRIVATE=
 EXISTING=
 NEW_ROOM=
 ;
@@ -37,7 +37,7 @@ DUMMY_JOIN_SUFFIX=@base64::$DUMMY_JOIN_SUFFIX
 .session_variable @uuid
 UUID=$OUTPUT
 ;
-ASSIGN_OR_DIRECT=
+ASSIGN_OR_PRIVATE=
 ;
 POS=@strpos:=:$NAME
 ;
@@ -46,17 +46,17 @@ EXISTING=@substr:0,$POS:$NAME
 POS=@$POS+1
 NAME=@substr:$POS:$NAME
 ASSIGN=1
-ASSIGN_OR_DIRECT=1
+ASSIGN_OR_PRIVATE=1
 @else
 POS=@strpos:.:$NAME
 @ifeq "$POS" "0"
 NAME=@substr:1:$NAME
-DIRECT=1
-ASSIGN_OR_DIRECT=1
+PRIVATE=1
+ASSIGN_OR_PRIVATE=1
 @endif
 @endif
 ;
-@ifndef $ASSIGN_OR_DIRECT
+@ifndef $ASSIGN_OR_PRIVATE
 ;
 POS=@strpos:_:$NAME
 ;
@@ -104,7 +104,7 @@ CHANGED=
 ;
 @ifndef $TOKEN
 ;
-@ifdef $ASSIGN_OR_DIRECT
+@ifdef $ASSIGN_OR_PRIVATE
 NAME_CHECK=$NAME
 @else
 ;
@@ -190,12 +190,16 @@ ERROR=User '$NAME' is not a room member.
 ;
 @else
 ;
-@ifdef $DIRECT
+@ifdef $PRIVATE
 .system_variable @irc_users_$STARTING_ROOM
 ALL_USERS=@strlit:$OUTPUT@
 CHECK_USERS=@repstr:@$NAME@/:$ALL_USERS
 @ifeq "$ALL_USERS" "$CHECK_USERS"
 ERROR=User '$NAME' is not known.
+@elif "$USER" = "admin"
+ERROR=Private rooms are not permitted for the administrator.
+@elif "$NAME" = "admin"
+ERROR=Private rooms are not permitted with the administrator.
 @else
 @if "$USER" < "$NAME"
 NAME=/$USER/$NAME
