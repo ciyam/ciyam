@@ -143,7 +143,7 @@ http://www.opensource.org/licenses/mit-license.php.
                  see "dm_room_name( )" in "chat_parse.js". -->
             <div class="chat-rail-head chat-dm-head">
                <span class="chat-section-label">Direct messages</span>
-               <button type="button" class="chat-btn chat-btn--small" onclick="do_open_new_message( )">+ New</button>
+               <button type="button" class="chat-btn chat-btn--small" id="dm_new" onclick="do_open_new_message( )">+ New</button>
             </div>
             <div class="chat-room-list" id="dm_list"></div>
          </div>

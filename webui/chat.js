@@ -342,6 +342,9 @@ function enter_chat( )
    document.getElementById( "chat_view" ).hidden = false;
 
    document.getElementById( "topbar_user" ).textContent = ciyam.username || ciyam.access;
+
+   // NOTE: Admin has no conversations of its own to start (Ian, 2026-10-05).
+   document.getElementById( "dm_new" ).hidden = !dm_allowed( ciyam.username );
    document.getElementById( "user_menu_session" ).textContent = ciyam.sessid;
    document.getElementById( "console_session" ).textContent = "inherits chat session " + ciyam.sessid;
 
@@ -2013,7 +2016,13 @@ function do_open_create_room( )
 // poll had in flight and took seconds to appear.
 function load_invitees( )
 {
-   render_invitees( ( g_known_users.length > 0 ) ? g_known_users : g_members );
+   var people = ( g_known_users.length > 0 ) ? g_known_users : g_members;
+
+   // NOTE: Not admin, for a conversation - see "dm_allowed( )".
+   if( g_dialog_mode === "dm" )
+      people = people.filter( function( person ) { return dm_allowed( ciyam.username, person.name ); } );
+
+   render_invitees( people );
 }
 
 // NOTE: Pick one or more people; the chat opens the conversation with exactly them, starting it
@@ -2107,14 +2116,23 @@ function submit_new_message( )
 }
 
 // NOTE: The conversation with exactly these people - found by its name, or waiting as their
-// request, or else started: a room named from them, with them invited, in one request. Its
-// first messages are held until they accept - see "g_dm_pending".
+// request, or else started: a room named from them, with them invited. Its first messages are
+// held until they accept - see "g_dm_pending".
 async function open_dm( people )
 {
    var others = dm_people( people ).filter( function( person ) { return person !== ciyam.username; } );
 
    if( others.length === 0 )
       return;
+
+   // NOTE: Not with admin, nor for admin - the server refuses it (Ian, 2026-10-05).
+   if( !others.every( function( person ) { return dm_allowed( ciyam.username, person ); } ) )
+   {
+      show_alert( dm_allowed( ciyam.username ) ? "Admin is for administration - there are no direct messages with admin."
+       : "Admin is for administration - direct messages are for everyday accounts.", "is-error" );
+
+      return;
+   }
 
    var everyone = others.concat( [ ciyam.username ] );
 
@@ -2151,9 +2169,13 @@ async function open_dm( people )
 
    var reply = "";
 
+   // NOTE: The server's own room ignores who is named with it (Ian, 2026-10-05), so the other person is
+   // invited once it is made, below. A group's room still takes them in the one request.
+   var is_server_room = ( name.indexOf( "." ) === 0 );
+
    await serialised( function( )
    {
-      return ciyam.create_message( c_lobby_room, "for=" + others.join( "," ) + ";text=" + name, function( response )
+      return ciyam.create_message( c_lobby_room, ( is_server_room ? "" : "for=" + others.join( "," ) + ";" ) + "text=" + name, function( response )
       {
          reply = String( response );
       } );
@@ -2175,6 +2197,23 @@ async function open_dm( people )
       show_alert( "The conversation could not be started - the server answered: " + reply.trim( ), "is-error" );
 
       return;
+   }
+
+   if( is_server_room )
+   {
+      var invited = "";
+
+      await serialised( function( )
+      {
+         return ciyam.update_message_room( room, "for=" + others[ 0 ], function( response )
+         {
+            invited = String( response );
+         } );
+      } );
+
+      // NOTE: The room is made either way - opened, it says who it is waiting for; this says why.
+      if( is_error_response( invited ) )
+         show_alert( "The conversation was started, but " + others[ 0 ] + " could not be invited: " + error_text( invited ), "is-error" );
    }
 
    g_dm_pending[ room ] = { waiting: others, texts: [ ], total: -1 };
@@ -3361,8 +3400,9 @@ function render_members( force )
     {
        var node = row.querySelector( ".chat-member" );
 
-       // NOTE: Not beside yourself, and not inside a direct message - it would open this one.
-       row.querySelector( ".chat-member-dm" ).hidden = ( member.name === ciyam.username ) || room_is_dm( );
+       // NOTE: Not beside yourself, nor admin, nor for admin ("dm_allowed( )"), and not inside a direct
+       // message - it would open this one.
+       row.querySelector( ".chat-member-dm" ).hidden = !dm_allowed( ciyam.username, member.name ) || room_is_dm( );
 
        var count = node.querySelector( ".chat-member-count" );
 
