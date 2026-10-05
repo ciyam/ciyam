@@ -219,7 +219,7 @@ ERROR=Source message is designated as a system generated message.
 .system_gen_key -unix_unique
 UNIX_UNIQUE=$OUTPUT
 ;
-.system_variable @updated_record_irc_%USER_NAME%_$NAMES "$UNIX_UNIQUE $MESSAGE"
+.system_variable @keyed_irc_%ROOM%_ME:$NAMES "$UNIX_UNIQUE $MESSAGE"
 @endif
 ;
 @endif

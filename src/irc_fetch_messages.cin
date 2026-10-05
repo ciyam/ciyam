@@ -331,7 +331,7 @@ INVITE_OR_NON_SYSTEM=1
 @ifdef $SKIP_EDITS
 OUTPUT=
 @else
-.system_variable @updated_record_irc_%MSG_AUTHOR%_$MSG_UNIQUE
+.system_variable @keyed_irc_%ROOM%_ME:$MSG_UNIQUE
 @endif
 ;
 @ifdef $OUTPUT
