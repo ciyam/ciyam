@@ -685,8 +685,8 @@ function parse_name_list( response )
 }
 
 // NOTE: Lines that need a server javascript run - "load script", "eval script", "exec
-// script" and the rest of the harness's "javascripts" verbs. Admin only, run in the page as
-// the harness runs them (decided 2026-10-03) - see "parse_script_line( )".
+// script" and the rest of the harness's "javascripts" verbs. Run in the page as the harness runs
+// them - another account's by admin alone ("script_allowed( )") - see "parse_script_line( )".
 function is_javascript_line( text )
 {
    return /^~?(load|reload|eval|exec|employ|execute|result|unload)\s+(script|scripts|javascript|javascripts)(\s|$)/i.test( String( text || "" ).trim( ) );
