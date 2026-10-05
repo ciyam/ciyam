@@ -733,6 +733,20 @@ function parse_script_line( text )
     arg: ( match[ 3 ] === undefined ) ? null : match[ 3 ] };
 }
 
+// NOTE: Whether this account may run a server javascript (Ian, 2026-10-05): anyone runs those not named
+// after a PIN, and their own; another account's - all digits, as the server tells a PIN - is admin's
+// alone. The server already keeps them from the listing and "review javascript"; this keeps "load
+// script", which fetches the file itself, to the same rule.
+function script_allowed( name, access, is_admin )
+{
+   var value = String( name || "" );
+
+   if( is_admin || ( value === c_console_own_name ) || ( value === String( access || "" ) ) )
+      return true;
+
+   return !/^[0-9]+$/.test( value );
+}
+
 // NOTE: A global a server javascript sets - "wait ciyam_harden_result", "var @x ciyam_bip39_result".
 // Only a plain identifier, so nothing but a name is ever looked up on the page.
 function is_global_name( name )
@@ -1064,6 +1078,7 @@ if( typeof module !== "undefined" )
       append_output: append_output,
       is_javascript_line: is_javascript_line,
       parse_script_line: parse_script_line,
+      script_allowed: script_allowed,
       is_global_name: is_global_name,
       parse_name_list: parse_name_list,
       is_error_output: is_error_output,

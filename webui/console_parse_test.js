@@ -322,6 +322,10 @@ check( "a global's name", [ cp.is_global_name( "ciyam_harden_result" ), cp.is_gl
 check( "not a global's name", [ cp.is_global_name( "a.b" ), cp.is_global_name( "1x" ), cp.is_global_name( "" ), cp.is_global_name( "a b" ) ],
  [ false, false, false, false ] );
 
+check( "anyone runs a script not named after a PIN", [ cp.script_allowed( "bip39", "12345", false ), cp.script_allowed( "demo_2", "12345", false ) ], [ true, true ] );
+check( "and their own, by name or as ***", [ cp.script_allowed( "12345", "12345", false ), cp.script_allowed( "***", "12345", false ) ], [ true, true ] );
+check( "another account's is admin's alone", [ cp.script_allowed( "54321", "12345", false ), cp.script_allowed( "54321", "12345", true ) ], [ false, true ] );
+
 check( "list names, one per line", cp.parse_name_list( "demo_bip39_entropy\ndemo_echo_variables\ndemo_new_unlock_key\n" ), [ "demo_bip39_entropy", "demo_echo_variables", "demo_new_unlock_key" ] );
 check( "no lists", cp.parse_name_list( "[none]" ), [ ] );
 check( "this account's own is kept", cp.parse_name_list( "***\nbip39\nharden\n" ), [ "***", "bip39", "harden" ] );

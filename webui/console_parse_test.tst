@@ -156,6 +156,9 @@ ok   no quotes in a name
 ok   not a script line
 ok   a global's name
 ok   not a global's name
+ok   anyone runs a script not named after a PIN
+ok   and their own, by name or as ***
+ok   another account's is admin's alone
 ok   list names, one per line
 ok   no lists
 ok   this account's own is kept
