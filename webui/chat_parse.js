@@ -1303,7 +1303,36 @@ function dm_waiting_for( messages, recipients, members )
          joined[ member.name ] = true;
    } );
 
+   // NOTE: Someone who joined and has since left ("_:remove") is not waited for either - otherwise,
+   // once their ":joined" has gone from the queue, a reload would hold everything for them for good.
+   ( messages || [ ] ).forEach( function( message )
+   {
+      if( message && ( message.kind === c_kind_system ) && message.event && ( message.event.verb === "remove" ) )
+         joined[ message.sender ] = true;
+   } );
+
    return ( recipients || [ ] ).filter( function( name ) { return !joined[ name ]; } );
+}
+
+// NOTE: What a decline does to a conversation still waiting - "waiting" who it waits for, "outcome"
+// from "dm_invite_outcomes( )". Whoever declined is waited for no longer; while anyone else is, what is
+// held stays ("keep"). Once nobody is, it is sent if anyone it was for is left - they joined - and
+// dropped only when everyone declined (found by review: in a group, one decline after the other had
+// joined dropped what was held for the one who joined).
+//
+// Returns { waiting: [ names ], held: "keep" | "send" | "drop" }.
+function dm_after_declines( waiting, outcome )
+{
+   var declined = ( outcome && outcome.declined ) || [ ];
+
+   var left = ( waiting || [ ] ).filter( function( name ) { return declined.indexOf( name ) < 0; } );
+
+   if( left.length > 0 )
+      return { waiting: left, held: "keep" };
+
+   var still = ( ( outcome && outcome.invited ) || [ ] ).filter( function( name ) { return declined.indexOf( name ) < 0; } );
+
+   return { waiting: [ ], held: ( still.length > 0 ) ? "send" : "drop" };
 }
 
 // NOTE: What became of the conversations this user started, from the starting room - kept by the
@@ -1892,6 +1921,7 @@ if( typeof module !== "undefined" )
       find_dm_room: find_dm_room,
       dm_waiting_for: dm_waiting_for,
       dm_invite_outcomes: dm_invite_outcomes,
+      dm_after_declines: dm_after_declines,
       dm_trusted: dm_trusted,
       dm_key: dm_key,
       dm_existing: dm_existing,

@@ -406,6 +406,11 @@ ok   a member has joined, though their :joined is gone from the queue
 ok   whom each conversation was for, and who declined
 ok   a group's, each name once - a decline only from someone invited
 ok   nothing for someone who started none
+ok   someone who joined, then left, is not waited for
+ok   a decline: still waiting for the rest, held kept
+ok   the last to answer declines, the other joined: held sent
+ok   everyone declined: held dropped
+ok   nobody declined: nothing changes
 ok   trusted when the owner is named
 ok   not when someone else owns it
 ok   an owner not known yet is trusted until it is

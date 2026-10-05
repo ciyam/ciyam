@@ -783,6 +783,17 @@ check( "a group's, each name once - a decline only from someone invited", cp.dm_
  { "0000005": { invited: [ "bob", "carol" ], declined: [ "carol" ] } } );
 check( "nothing for someone who started none", cp.dm_invite_outcomes( outcome_lines, "verify-e" ), { } );
 
+check( "someone who joined, then left, is not waited for",
+ cp.dm_waiting_for( [ cp.parse_message_line( "1790000000003 carol :remove" ) ], [ "bob", "carol" ] ), [ "bob" ] );
+
+check( "a decline: still waiting for the rest, held kept", cp.dm_after_declines( [ "bob", "carol" ], { invited: [ "bob", "carol" ], declined: [ "carol" ] } ),
+ { waiting: [ "bob" ], held: "keep" } );
+check( "the last to answer declines, the other joined: held sent", cp.dm_after_declines( [ "carol" ], { invited: [ "bob", "carol" ], declined: [ "carol" ] } ),
+ { waiting: [ ], held: "send" } );
+check( "everyone declined: held dropped", cp.dm_after_declines( [ "verify-e" ], { invited: [ "verify-e" ], declined: [ "verify-e" ] } ),
+ { waiting: [ ], held: "drop" } );
+check( "nobody declined: nothing changes", cp.dm_after_declines( [ "bob" ], { invited: [ "bob" ], declined: [ ] } ), { waiting: [ "bob" ], held: "keep" } );
+
 // NOTE: A room's name is its owner's to choose - "DM admin + bob" owned by carol is her room,
 // not a conversation between admin and bob (found by review, 2026-09-30).
 check( "trusted when the owner is named", cp.dm_trusted( "DM admin + bob", "bob" ), true );
