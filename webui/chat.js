@@ -1454,7 +1454,10 @@ function rooms_signature( )
    for( var n = 0; n < g_invitations.length; n++ )
       parts.push( "invite:" + g_invitations[ n ].room + ":" + g_invitations[ n ].name + ":" + g_invitations[ n ].inviter );
 
-   parts.push( "held:" + Object.keys( g_dm_pending ).join( "," ) );
+   // NOTE: What the rail says under a conversation - waiting once confirmed, or who declined.
+   parts.push( "held:" + dm_waiting_rooms( ).join( "," ) );
+
+   parts.push( "declined:" + Object.keys( g_dm_declined ).map( function( room ) { return room + "=" + g_dm_declined[ room ].join( "," ); } ).join( ";" ) );
 
    for( var i = 0; i < g_rooms.length; i++ )
    {
@@ -2086,7 +2089,7 @@ const c_dm_existing_notes = { open: "conversation open", waiting: "waiting for t
 
 function mark_new_message( )
 {
-   var waiting = Object.keys( g_dm_pending );
+   var waiting = dm_waiting_rooms( );
 
    var boxes = document.querySelectorAll( "#room_dialog_invitees .chat-invitee-check" );
 
@@ -2167,7 +2170,7 @@ async function open_dm( people )
    var everyone = others.concat( [ ciyam.username ] );
 
    // NOTE: A conversation - open, or waiting for them - or their request to the user.
-   var existing = dm_existing( others, ciyam.username, g_rooms, g_invitations, Object.keys( g_dm_pending ) );
+   var existing = dm_existing( others, ciyam.username, g_rooms, g_invitations, dm_waiting_rooms( ) );
 
    if( existing.kind === "request" )
    {
@@ -2240,6 +2243,10 @@ function render_held( )
    var host = document.getElementById( "held_list" );
 
    var pending = g_dm_pending[ g_room ];
+
+   // NOTE: Restored after a reload and not yet confirmed - nothing until its member line is read.
+   if( pending && ( pending.checked === false ) )
+      pending = null;
 
    var shut = !pending && !!g_dm_shut[ g_room ];
 
@@ -2314,6 +2321,13 @@ function note_dm_joins( room, messages, members )
 
    delete g_dm_pending[ room ];
 
+   send_held( room, pending );
+}
+
+// NOTE: What was held for a conversation, sent in order once nobody is left to wait for - after the
+// last join, or a decline by the last still to answer ("restore_dm_outcomes( )").
+function send_held( room, pending )
+{
    // NOTE: Each resolves with its text if it was not sent - an error, a time-out, or no answer.
    var sends = pending.texts.map( function( text )
    {
@@ -2383,6 +2397,13 @@ function watch_held_rooms( )
    } );
 }
 
+// NOTE: The conversations known to be waiting - not one restored after a reload until its member line
+// has confirmed it (found by review: it read as waiting meanwhile).
+function dm_waiting_rooms( )
+{
+   return Object.keys( g_dm_pending ).filter( function( room ) { return g_dm_pending[ room ].checked !== false; } );
+}
+
 // NOTE: After each read of the starting room - what became of the conversations this user started
 // ("dm_invite_outcomes( )"). A decline is marked, and takes whoever declined out of what is waiting,
 // with anything held only for them - which says so. One still waiting is restored after a reload,
@@ -2419,13 +2440,17 @@ function restore_dm_outcomes( )
 
       if( pending )
       {
-         pending.waiting = pending.waiting.filter( function( name ) { return outcome.declined.indexOf( name ) < 0; } );
+         var after = dm_after_declines( pending.waiting, outcome );
 
-         if( pending.waiting.length === 0 )
+         pending.waiting = after.waiting;
+
+         if( after.held !== "keep" )
          {
             delete g_dm_pending[ room ];
 
-            if( pending.texts.length > 0 )
+            if( after.held === "send" )
+               send_held( room, pending );
+            else if( pending.texts.length > 0 )
                show_alert( name_list( outcome.declined ) + " declined - " + ( ( pending.texts.length === 1 ) ? "the message held for them was"
                 : ( pending.texts.length + " messages held for them were" ) ) + " not sent.", "is-error" );
          }
