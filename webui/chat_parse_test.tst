@@ -412,6 +412,25 @@ ok   names listed
 ok   a request from one person
 ok   a request for a group
 
+== direct messages on the server ===============================
+ok   the server's name read
+ok   one person twice is not a conversation
+ok   nor three, nor a name that is not a username
+ok   shown as the other person
+ok   trusted as it is - the server built it
+ok   the same conversation as the prototype's, by its people
+ok   found in the rail
+ok   their request found
+ok   a request to message you
+ok   two people start one as .<the other>
+ok   whoever starts it
+ok   a group keeps the prototype's room
+ok   too big a group, nothing
+ok   never signed in
+ok   already have one
+ok   a group's name taken by another room
+ok   anything else as it came
+
 == sign in errors ==============================================
 ok   a missing connect status, in plain words
 ok   any other error as it is

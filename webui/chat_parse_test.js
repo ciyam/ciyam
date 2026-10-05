@@ -721,8 +721,8 @@ check( "three short names still fit", cp.dm_room_name( [ "amy", "bob", "cat" ] )
 // not be checked, and anyone could make one (found by review, 2026-10-01).
 var big = cp.dm_room_name( [ "twelve-chars", "another-name", "third-person", "fourth-one" ] );
 check( "too many names to fit: no conversation name", big, "" );
-check( "read back: the people", cp.parse_dm_name( "Private (admin + verify-a)" ), { people: [ "admin", "verify-a" ], count: 2 } );
-check( "read back: the first form still", cp.parse_dm_name( "DM admin + verify-a" ), { people: [ "admin", "verify-a" ], count: 2 } );
+check( "read back: the people", cp.parse_dm_name( "Private (admin + verify-a)" ), { people: [ "admin", "verify-a" ], count: 2, server: false } );
+check( "read back: the first form still", cp.parse_dm_name( "DM admin + verify-a" ), { people: [ "admin", "verify-a" ], count: 2, server: false } );
 check( "a hashed name is not a conversation", [ cp.is_dm_name( "Private (group of 4 0a1b2c3d)" ), cp.is_dm_name( "DM 0a1b2c3d (4)" ) ], [ false, false ] );
 check( "one conversation whichever form it is named in", cp.dm_key( "DM admin + verify-a" ), cp.dm_key( "Private (verify-a + admin)" ) );
 check( "an ordinary room has no key", cp.dm_key( "Private (test-1 and test-2)" ), null );
@@ -776,6 +776,35 @@ check( "names listed", [ cp.name_list( [ "bob" ] ), cp.name_list( [ "bob", "caro
 check( "a request from one person", cp.dm_request_text( "admin", "DM admin + bob", "bob" ), "admin wants to message you." );
 check( "a request for a group", cp.dm_request_text( "admin", "DM admin + bob + carol", "bob" ),
  "admin wants to start a conversation with you and carol." );
+
+heading( "direct messages on the server" );
+
+// NOTE: Ian's server direct messages - made as ".<user>", named "/<a>/<b>" by the server, two people
+// only (2026-10-02, "." since 2026-10-05). Checked on the container with "dm_server_probe.js".
+check( "the server's name read", cp.parse_dm_name( "/admin/verify-a" ), { people: [ "admin", "verify-a" ], count: 2, server: true } );
+check( "one person twice is not a conversation", cp.parse_dm_name( "/admin/admin" ), null );
+check( "nor three, nor a name that is not a username", [ cp.parse_dm_name( "/a1b/bob/carol" ), cp.parse_dm_name( "/admin/Bob" ), cp.parse_dm_name( "/admin" ) ],
+ [ null, null, null ] );
+check( "shown as the other person", cp.dm_title( "/admin/verify-a", "verify-a" ), "admin" );
+check( "trusted as it is - the server built it", [ cp.dm_trusted( "/admin/verify-a", "admin" ), cp.dm_trusted( "/admin/verify-a", "carol" ) ], [ true, true ] );
+check( "the same conversation as the prototype's, by its people", cp.dm_key( "/admin/verify-a" ), cp.dm_key( "Private (admin + verify-a)" ) );
+check( "found in the rail", cp.find_dm_room( [ { room: "0000016", name: "/admin/verify-a", owner: "admin" } ], [ "verify-a", "admin" ] ).room, "0000016" );
+check( "their request found", cp.dm_existing( [ "verify-a" ], "admin", [ ], [ { room: "0000016", name: "/admin/verify-a", inviter: "verify-a" } ], [ ] ),
+ { kind: "request", room: "0000016" } );
+check( "a request to message you", cp.dm_request_text( "admin", "/admin/verify-a", "verify-a" ), "admin wants to message you." );
+
+check( "two people start one as .<the other>", cp.dm_create_text( [ "verify-a", "admin" ], "admin" ), ".verify-a" );
+check( "whoever starts it", cp.dm_create_text( [ "verify-a", "admin" ], "verify-a" ), ".admin" );
+check( "a group keeps the prototype's room", cp.dm_create_text( [ "carol", "admin", "bob" ], "admin" ), "Private (admin + bob + carol)" );
+check( "too big a group, nothing", cp.dm_create_text( [ "twelve-chars", "another-name", "third-person", "admin" ], "admin" ), "" );
+
+check( "never signed in", cp.dm_create_problem( "Error: User 'tester-1' is not known.", [ "tester-1" ] ),
+ "tester-1 has not signed in yet, so cannot be messaged." );
+check( "already have one", cp.dm_create_problem( "Error: Room '/admin/verify-a' already exists.", [ "verify-a" ] ),
+ "You already have a conversation with verify-a - if it is not in the rail, look for their request, or it may have been declined." );
+check( "a group's name taken by another room", cp.dm_create_problem( "Error: Room 'Private (a1b + bob + carol)' already exists.", [ "bob", "carol" ] )
+ .indexOf( "someone else already has a room called" ) > 0, true );
+check( "anything else as it came", cp.dm_create_problem( "Error: Something else.", [ "bob" ] ), "Something else." );
 
 heading( "sign in errors" );
 

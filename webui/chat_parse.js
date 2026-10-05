@@ -1064,11 +1064,20 @@ function visible_rooms( rooms, is_admin )
 // "Private (...)" since 2026-10-01, at Ian's suggestion - it reads better where a room name is
 // shown as it is, in the terminal client. The first names, "DM ...", are still read, and a
 // conversation is matched by its people, not its exact name, so either form is found.
+//
+// Since 2026-10-05 a conversation between two people is Ian's server direct message instead: made
+// as "." and the other's name, it is named "/<a>/<b>" by the server - the two names in order - and
+// only those two can be in it, nor can it be renamed. A group, which the server does not have yet,
+// keeps the prototype's "Private (...)" room. Both forms are read, matched by their people.
 const c_dm_prefix = "Private (";
 const c_dm_suffix = ")";
 const c_dm_prefix_old = "DM ";
 const c_dm_separator = " + ";
+const c_dm_server_prefix = "/";
+const c_dm_create_prefix = ".";
 const c_max_room_name = 50;
+
+const c_username_pattern = /^[a-z][-a-z0-9]{1,10}[a-z0-9]$/;
 
 function dm_people( usernames )
 {
@@ -1096,11 +1105,22 @@ function dm_room_name( usernames )
    return ( name.length <= c_max_room_name ) ? name : "";
 }
 
-// NOTE: Whether a room name is a direct message's, and who is in it. Reads both forms -
-// "Private (...)" and the first, "DM ...".
+// NOTE: Whether a room name is a direct message's, and who is in it. Reads the server's "/<a>/<b>"
+// ("server" true - the server named it, so it is to be trusted) and the prototype's two forms,
+// "Private (...)" and the first, "DM ...". A server name of one person twice is not a conversation.
 function parse_dm_name( name )
 {
    var text = String( name || "" );
+
+   if( text.indexOf( c_dm_server_prefix ) === 0 )
+   {
+      var pair = text.substring( c_dm_server_prefix.length ).split( c_dm_server_prefix );
+
+      var server_valid = ( pair.length === 2 ) && ( pair[ 0 ] !== pair[ 1 ] )
+       && c_username_pattern.test( pair[ 0 ] ) && c_username_pattern.test( pair[ 1 ] );
+
+      return server_valid ? { people: pair, count: 2, server: true } : null;
+   }
 
    var rest = null;
 
@@ -1112,15 +1132,49 @@ function parse_dm_name( name )
    if( rest === null )
       return null;
 
-
    var people = rest.split( c_dm_separator );
 
-   var valid = ( people.length >= 2 ) && people.every( function( person )
-   {
-      return /^[a-z][-a-z0-9]{1,10}[a-z0-9]$/.test( person );
-   } );
+   var valid = ( people.length >= 2 ) && people.every( function( person ) { return c_username_pattern.test( person ); } );
 
-   return valid ? { people: people, count: people.length } : null;
+   return valid ? { people: people, count: people.length, server: false } : null;
+}
+
+// NOTE: What starting a conversation with "usernames" - the user among them - sends as the room's
+// name: for two people "." and the other's name, which the server makes "/<a>/<b>"; for a group the
+// prototype's "Private (...)" name, or "" when it is too big to fit.
+function dm_create_text( usernames, me )
+{
+   var people = dm_people( usernames );
+
+   if( ( people.length === 2 ) && ( people.indexOf( me ) >= 0 ) )
+      return c_dm_create_prefix + people.filter( function( person ) { return person !== me; } )[ 0 ];
+
+   return dm_room_name( people );
+}
+
+// NOTE: The server's refusals when a conversation is started, in plain words - "others" are the
+// people it was for. Anything else is passed on as it came.
+function dm_create_problem( reply, others )
+{
+   var text = String( reply || "" ).trim( ).replace( /^Error: /, "" );
+
+   var unknown = /^User '([^']+)' is not known\.$/.exec( text );
+
+   if( unknown !== null )
+      return unknown[ 1 ] + " has not signed in yet, so cannot be messaged.";
+
+   var exists = /^Room '([^']+)' already exists\.$/.exec( text );
+
+   if( ( exists !== null ) && ( exists[ 1 ].indexOf( c_dm_server_prefix ) === 0 ) )
+      return "You already have a conversation with " + name_list( others || [ ] )
+       + " - if it is not in the rail, look for their request, or it may have been declined.";
+
+   // NOTE: A group's "Private (...)" name is shared by everyone on the server, so another room can hold it first.
+   if( exists !== null )
+      return "This conversation cannot be started - someone else already has a room called “" + exists[ 1 ]
+       + "”. Room names are shared by everyone on the server, so a conversation's name can be taken first.";
+
+   return text;
 }
 
 function is_dm_name( name )
@@ -1224,7 +1278,8 @@ function dm_waiting_for( messages, recipients )
 // room "DM admin + bob" and invite both, then read what they say (found by review, 2026-09-30).
 // So it is taken as a direct message only when "who" - its owner, or the sender of a request -
 // is one of the people it names. An owner not yet known is trusted until the listing says who
-// it is - joining from a request, whose sender was checked.
+// it is - joining from a request, whose sender was checked. A server name is trusted as it is: the
+// server builds it from the two people, and lets nobody else in.
 function dm_trusted( name, who )
 {
    var dm = parse_dm_name( name );
@@ -1232,7 +1287,7 @@ function dm_trusted( name, who )
    if( dm === null )
       return false;
 
-   if( !who )
+   if( dm.server || !who )
       return true;
 
    return dm.people.indexOf( who ) >= 0;
@@ -1754,6 +1809,8 @@ if( typeof module !== "undefined" )
       sign_in_error_text: sign_in_error_text,
       visible_rooms: visible_rooms,
       dm_room_name: dm_room_name,
+      dm_create_text: dm_create_text,
+      dm_create_problem: dm_create_problem,
       parse_dm_name: parse_dm_name,
       is_dm_name: is_dm_name,
       dm_title: dm_title,
