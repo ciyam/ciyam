@@ -1621,8 +1621,9 @@ bool is_ntfy_email( const std::string& recipient );
 
 std::string ntfy_topic( const std::string& user_key );
 
-void send_ntfy_message(
- const std::string& user_key, const std::string& message, bool throw_on_error = false );
+void send_ntfy_message( const std::string& user_key,
+ const std::string& message, const std::string* p_title = 0,
+ const std::string* p_priority = 0, const std::string* p_tag_names = 0, bool* p_rc = 0 );
 
 struct user_account
 {

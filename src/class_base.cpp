@@ -5715,24 +5715,41 @@ string ntfy_topic( const string& user_key )
    return retval;
 }
 
-void send_ntfy_message( const string& user_key, const string& message, bool throw_on_error )
+void send_ntfy_message( const string& user_key, const string& message,
+ const string* p_title, const string* p_priority, const string* p_tag_names, bool* p_rc )
 {
    string ntfy_server( get_ntfy_server( ) );
 
    if( ntfy_server.empty( ) )
    {
-      if( throw_on_error )
+      if( p_rc )
+         *p_rc = false;
+      else
          throw runtime_error( "missing 'ntfy_server' information" );
    }
    else
    {
-      string tmp_file_name( "/tmp/" + uuid( ).as_string( ) );
+      string tmp_file_name( c_tmp_path + '/' + uuid( ).as_string( ) );
 
       string prefix( c_ntfy_message_prefix );
 
-      string cmd( "curl -s -d "
-       + escaped_shell_arg( prefix + " " + message )
-       + " https://" + ntfy_server + "/" + ntfy_topic( user_key ) );
+      string cmd( "curl -s" );
+
+      string headers( " " );
+
+      if( p_title )
+         headers += "-H \"Title: " + *p_title + "\" ";
+
+      if( p_priority )
+         headers += "-H \"Priority: " + *p_priority + "\" ";
+
+      if( p_tag_names )
+         headers += "-H \"Tags: " + *p_tag_names + "\" ";
+
+      cmd += headers;
+
+      cmd += "-d " + escaped_shell_arg( prefix + " " + message )
+       + " https://" + ntfy_server + "/" + ntfy_topic( user_key );
 
       cmd += " >" + tmp_file_name + " 2>&1";
 
@@ -5752,7 +5769,9 @@ void send_ntfy_message( const string& user_key, const string& message, bool thro
 
          if( !response.empty( ) && ( response.find( c_ntfy_normal_reponse ) == string::npos ) )
          {
-            if( throw_on_error )
+            if( p_rc )
+               *p_rc = false;
+            else
                throw runtime_error( response );
 
             TRACE_LOG( TRACE_MINIMAL, response );
