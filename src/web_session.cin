@@ -254,10 +254,11 @@ ERROR=Session has been terminated.
 @ifdef $IRC_ALLOWED
 .session_variable @irc_* ""
 .session_variable @queue_irc_* ""
+@endif
+;
 .session_variable @script_executed ""
 .session_variable @storage_var_name ""
 ;
 .system_variable @web.$TOKEN.$DEVICE.message ""
-@endif
 ;
 @endif
