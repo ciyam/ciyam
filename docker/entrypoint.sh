@@ -59,6 +59,15 @@ wait_for_server( )
 # The server sends to "https://<ntfy_server>/<topic>" with curl, which checks the certificate, so a
 # self-signed one given at /etc/ciyam-ntfy is trusted first. "ntfy_server" is set in the config
 # before the server starts, as it is read only then.
+#
+# The name is a host, with a port if need be - "ntfy", not "https://ntfy" - as the server puts "https://"
+# in front itself. Anything else is refused rather than written into the config (found by review).
+case "${CIYAM_NTFY_SERVER:-}" in
+   *[!A-Za-z0-9.:-]*)
+      echo "(ntfy server '$CIYAM_NTFY_SERVER' ignored - a host name with a port if need be, not a URL)"
+      CIYAM_NTFY_SERVER= ;;
+esac
+
 if [ -n "${CIYAM_NTFY_SERVER:-}" ]; then
    if [ -f /etc/ciyam-ntfy/ntfy.crt ]; then
       cp /etc/ciyam-ntfy/ntfy.crt /usr/local/share/ca-certificates/ciyam-ntfy.crt
@@ -81,7 +90,7 @@ ntfy_alert( )
 
    [ -n "${CIYAM_NTFY_SERVER:-}" ] && [ -f /etc/ciyam-ntfy/admin_topic ] || return 0
 
-   topic=$(cat /etc/ciyam-ntfy/admin_topic)
+   topic=$(tr -d '\r\n' < /etc/ciyam-ntfy/admin_topic)
 
    curl -s -m 10 -o /dev/null -w "(ntfy alert: %{http_code})\n" \
     -H "Title: $1" -H "Priority: $2" -H "Tags: $3" \
@@ -91,7 +100,7 @@ ntfy_alert( )
 
 system_state( )
 {
-   node -e "fetch('http://localhost:13031/system').then(r=>r.text()).then(t=>process.stdout.write(t)).catch(()=>{})" 2>/dev/null
+   node -e "fetch('http://localhost:13031/system',{signal:AbortSignal.timeout(5000)}).then(r=>r.text()).then(t=>process.stdout.write(t)).catch(()=>{})" 2>/dev/null
 }
 
 if [ ! -f .web_access_admin ]; then
@@ -112,7 +121,10 @@ if [ ! -f .web_access_admin ]; then
 
       show_banner
 
-      ntfy_alert "Home node started" "low" "white_check_mark" "Set up and ready - admin's PIN is in the container's log."
+      # NOTE: Only when the bootstrap worked - otherwise "Set up and ready" would be untrue (found by review).
+      if [ -f .web_access_admin ]; then
+         ntfy_alert "Home node started" "low" "white_check_mark" "Set up and ready - admin's PIN is in the container's log."
+      fi
    ) &
 else
    echo "(existing access token found - the system identity will be locked, so IRC is"
