@@ -8980,9 +8980,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_system_ntfy_send )
       {
          string uid( get_parm_val( parameters, c_cmd_ciyam_session_system_ntfy_send_uid ) );
+         string tags( get_parm_val( parameters, c_cmd_ciyam_session_system_ntfy_send_tags ) );
+         string title( get_parm_val( parameters, c_cmd_ciyam_session_system_ntfy_send_title ) );
+         string priority( get_parm_val( parameters, c_cmd_ciyam_session_system_ntfy_send_priority ) );
          string message( get_parm_val( parameters, c_cmd_ciyam_session_system_ntfy_send_message ) );
 
-         send_ntfy_message( uid, message, true );
+         send_ntfy_message( uid, message, &title, &priority, &tags );
       }
       else if( command == c_cmd_ciyam_session_system_ntfy_topic )
       {
