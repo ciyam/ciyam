@@ -465,6 +465,19 @@ http://www.opensource.org/licenses/mit-license.php.
             </div>
          </div>
 
+         <!-- NOTE: This account's devices (Ian, 2026-10-06) - "GET /cws/devices". Rows are made in "render_devices( )". -->
+         <div class="account-card account-form" id="mine_devices">
+            <div>
+               <h2>Devices</h2>
+               <p class="account-lede">Each browser this account has signed in from. Remove one you've lost - it's signed out, and
+                needs the password to sign in again.</p>
+            </div>
+
+            <ul class="account-devices" id="mine_devices_list"></ul>
+
+            <div class="chat-error-text" id="mine_devices_error" role="alert"></div>
+         </div>
+
          <form class="account-card account-form" id="mine_password_form" onsubmit="do_change_password( event )" novalidate>
             <div>
                <h2>Change password</h2>

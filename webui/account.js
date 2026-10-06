@@ -30,6 +30,10 @@ var g_queue = Promise.resolve( );
 var g_people = [ ];
 var g_armed = "";
 
+// NOTE: This account's devices on My account, and the one whose Remove has been clicked once.
+var g_devices = [ ];
+var g_device_armed = "";
+
 var g_handover_code = "";
 var g_ready = null;
 
@@ -815,6 +819,12 @@ function clear_session( )
    g_armed = "";
    g_ready = null;
 
+   // NOTE: The next account on this page must not see this one's devices.
+   g_devices = [ ];
+   g_device_armed = "";
+
+   document.getElementById( "mine_devices_list" ).replaceChildren( );
+
    forget_handover( );
 
    clear_hash( );
@@ -1351,6 +1361,168 @@ function render_mine( )
    update_strength( "mine" );
 
    set_error( "mine_error", "" );
+
+   load_devices( );
+}
+
+// ====================================================================
+// My devices - Ian, 2026-10-06
+// ====================================================================
+
+// NOTE: "GET /cws/devices" with this session - this PIN's devices, an active session marked.
+function devices_url( suffix )
+{
+   return ciyam.get_cws_url( ) + "/devices" + suffix + "?access=" + ciyam.access + "&device=" + ciyam.device
+    + "&format=text&session=" + ciyam.sessid;
+}
+
+async function load_devices( )
+{
+   g_device_armed = "";
+
+   var response = await request( function( done )
+   {
+      return ciyam.fetch( devices_url( "" ), "GET", done );
+   } );
+
+   if( problem_text( response ) !== "" )
+   {
+      g_devices = [ ];
+
+      render_devices( );
+
+      set_error( "mine_devices_error", "The devices could not be read: " + problem_text( response ) );
+
+      return;
+   }
+
+   g_devices = parse_devices( response, ciyam.device );
+
+   set_error( "mine_devices_error", "" );
+
+   render_devices( );
+}
+
+// NOTE: Device tokens and sessions are the server's, so only "textContent" - and a token is shortened, as
+// the console's log does with long values. This browser cannot be removed from here (the server refuses).
+function render_devices( )
+{
+   var list = document.getElementById( "mine_devices_list" );
+
+   list.replaceChildren( );
+
+   g_devices.forEach( function( entry )
+   {
+      var row = document.createElement( "li" );
+
+      row.className = "account-device";
+
+      var label = document.createElement( "div" );
+
+      label.className = "account-device-label";
+
+      var token = document.createElement( "span" );
+
+      token.className = "chat-mono";
+      token.textContent = short_device( entry.device );
+      token.title = entry.device;
+
+      label.appendChild( token );
+
+      var state = document.createElement( "span" );
+
+      state.className = "account-device-state";
+      state.textContent = entry.current ? "This browser" : ( entry.active ? "Signed in now" : "Not signed in" );
+
+      label.appendChild( state );
+
+      row.appendChild( label );
+
+      if( !entry.current )
+      {
+         if( g_device_armed === entry.device )
+         {
+            var ask = document.createElement( "span" );
+
+            ask.className = "account-confirm-text";
+            ask.textContent = "Remove it? It's signed out.";
+
+            var yes = document.createElement( "button" );
+
+            yes.type = "button";
+            yes.className = "account-btn-danger";
+            yes.textContent = "Remove for good";
+            yes.onclick = function( ) { do_remove_device( entry.device ); };
+
+            var no = document.createElement( "button" );
+
+            no.type = "button";
+            no.className = "chat-btn";
+            no.textContent = "Keep";
+            no.onclick = function( ) { arm_remove_device( "" ); };
+
+            row.appendChild( ask );
+            row.appendChild( yes );
+            row.appendChild( no );
+         }
+         else
+         {
+            var remove = document.createElement( "button" );
+
+            remove.type = "button";
+            remove.className = "chat-btn";
+            remove.textContent = "Remove";
+            remove.setAttribute( "aria-label", "Remove device " + short_device( entry.device ) );
+            remove.onclick = function( ) { arm_remove_device( entry.device ); };
+
+            row.appendChild( remove );
+         }
+      }
+
+      list.appendChild( row );
+   } );
+
+   if( g_devices.length === 0 )
+   {
+      var none = document.createElement( "li" );
+
+      none.className = "account-device account-device--none";
+      none.textContent = "None listed.";
+
+      list.appendChild( none );
+   }
+}
+
+function short_device( device )
+{
+   var text = String( device || "" );
+
+   return ( text.length > 12 ) ? text.substr( 0, 6 ) + "…" + text.substr( -4 ) : text;
+}
+
+// NOTE: Removing asks once more in the row itself, as removing a person does.
+function arm_remove_device( device )
+{
+   g_device_armed = device;
+
+   render_devices( );
+}
+
+async function do_remove_device( device )
+{
+   var response = await request( function( done )
+   {
+      return ciyam.fetch( devices_url( "/" + encodeURIComponent( device ) ), "DELETE", done );
+   } );
+
+   g_device_armed = "";
+
+   if( problem_text( response ) !== "" )
+      show_alert( "Not removed: " + problem_text( response ), true );
+   else
+      show_alert( "The device " + short_device( device ) + " was removed and signed out." );
+
+   load_devices( );
 }
 
 // NOTE: The hash this session was opened with, for a given password - "determine_hashed( )"
