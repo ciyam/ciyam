@@ -1100,6 +1100,11 @@ function make_log_entry( source, method, url, body, response, started, finished 
 
    var text = ( response === null ) ? "" : String( response );
 
+   // NOTE: "GET /cws/devices" answers each device's live session id - a credential, as "session=" is - so
+   // they are masked here with the rest (found by review, 2026-10-07).
+   if( /^\/cws\/devices\/?$/.test( endpoint.split( "?" )[ 0 ] ) )
+      text = mask_device_sessions( text );
+
    var failed = ( response === null ) || is_error_output( text );
 
    if( text.length > c_console_max_response_chars )
@@ -1118,6 +1123,12 @@ function make_log_entry( source, method, url, body, response, started, finished 
       sent: sent,
       had: had
    };
+}
+
+// NOTE: A devices list - "<device> <session>", "*" after an active one - with each session id hidden.
+function mask_device_sessions( text )
+{
+   return String( text || "" ).replace( /^(\s*[A-Za-z0-9]+\s+)[A-Za-z0-9]+(\*?)\s*$/gm, "$1(session)$2" );
 }
 
 // NOTE: The whole query for a logged request, to copy and try again (Ian, 2026-10-06 - he still opened
@@ -1223,6 +1234,7 @@ if( typeof module !== "undefined" )
       parse_script_line: parse_script_line,
       script_allowed: script_allowed,
       full_query: full_query,
+      mask_device_sessions: mask_device_sessions,
       normalise_ntfy_server: normalise_ntfy_server,
       is_ntfy_topic: is_ntfy_topic,
       ntfy_subscribe_link: ntfy_subscribe_link,

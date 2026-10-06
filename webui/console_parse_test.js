@@ -422,6 +422,12 @@ check( "a sign in's password hash is never put back", cp.full_query( "http://h",
 check( "only the credentials the request had", cp.full_query( "http://h", failed, now_session ), "http://h/cws/status" );
 check( "an entry from before nothing", cp.full_query( "http://h", { endpoint: "/cws/status" }, now_session ), "" );
 
+// NOTE: A devices list carries every device's live session id - masked as the entry is made (found by review).
+var devices_entry = cp.make_log_entry( "account", "GET", "http://h/cws/devices?access=45679&device=e0f1a2&format=text&session=fff123",
+ null, "a1b2c3d4 11111111111111111111*\ne5f6a7b8 22222222222222222222", t0, t1 );
+check( "a devices list keeps its devices, not their sessions", devices_entry.response, "a1b2c3d4 (session)*\ne5f6a7b8 (session)" );
+check( "only a devices list is masked", cp.make_log_entry( "chat", "GET", "http://h/cws/messages/0000001", null, "a1b2 3456", t0, t1 ).response, "a1b2 3456" );
+
 check( "devices: the list", cp.resolve_command( "view devices" ), { kind: "cws", key: "devices|review", method: "GET", path: "/devices", name: "", options: "" } );
 check( "devices: one removed", cp.resolve_command( "delete device ab12cd" ),
  { kind: "cws", key: "devices|delete", method: "DELETE", path: "/devices/ab12cd", name: "ab12cd", options: "" } );

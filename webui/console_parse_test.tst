@@ -198,6 +198,8 @@ ok   the full query, with this tab's credentials, in the harness's order
 ok   a sign in's password hash is never put back
 ok   only the credentials the request had
 ok   an entry from before nothing
+ok   a devices list keeps its devices, not their sessions
+ok   only a devices list is masked
 ok   devices: the list
 ok   devices: one removed
 ok   devices: removing needs which
