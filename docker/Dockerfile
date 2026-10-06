@@ -29,8 +29,9 @@ ENV CIYAM_GROUP=root
 # <mysqldb>false - that flag only governs whether the MySQL libraries are linked.
 # The "base" library it depends on still compiles "sql_db.cpp", which includes
 # <mysql/mysql.h>, so the development headers have to be present to build at all.
+# NOTE: "curl" is how the server sends to ntfy - "send_ntfy_message( )" in "class_base.cpp" runs it.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      build-essential make ca-certificates openssl dos2unix \
+      build-essential make ca-certificates openssl dos2unix curl \
       libssl-dev zlib1g-dev libpng-dev libhpdf-dev \
       libreadline-dev libncurses-dev \
       libmysqlclient-dev libmysqlcppconn-dev \

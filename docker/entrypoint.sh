@@ -55,6 +55,21 @@ wait_for_server( )
    return 1
 }
 
+# NOTE: An ntfy server, when one is named (CIYAM_NTFY_SERVER - see the vault's "ntfy-container.sh").
+# The server sends to "https://<ntfy_server>/<topic>" with curl, which checks the certificate, so a
+# self-signed one given at /etc/ciyam-ntfy is trusted first. "ntfy_server" is set in the config
+# before the server starts, as it is read only then.
+if [ -n "${CIYAM_NTFY_SERVER:-}" ]; then
+   if [ -f /etc/ciyam-ntfy/ntfy.crt ]; then
+      cp /etc/ciyam-ntfy/ntfy.crt /usr/local/share/ca-certificates/ciyam-ntfy.crt
+      update-ca-certificates >/dev/null 2>&1
+   fi
+
+   sed -i "s|^#* *<ntfy_server>.*| <ntfy_server>$CIYAM_NTFY_SERVER|" ciyam_server.sio
+
+   echo "(ntfy server: $CIYAM_NTFY_SERVER)"
+fi
+
 if [ ! -f .web_access_admin ]; then
    echo "(no access token found - bootstrapping 'admin')"
 
