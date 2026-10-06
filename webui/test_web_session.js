@@ -55,6 +55,9 @@ const users_delete_cmd = "users|delete";
 const users_review_cmd = "users|review";
 const users_update_cmd = "users|update";
 
+const devices_review_cmd = "devices|review";
+const devices_delete_cmd = "devices|delete";
+
 const messages_create_cmd = "messages|create";
 const messages_delete_cmd = "messages|delete";
 const messages_review_cmd = "messages|review";
@@ -1073,7 +1076,7 @@ async function do_fetch( )
           || ( cmd == messages_create_cmd ) || ( cmd == storages_attach_cmd )
           || ( cmd == unlock_keys_create_cmd ) || ( cmd == unlock_keys_employ_cmd ) )
             request_type = "POST";
-         else if( ( cmd == users_delete_cmd ) || ( cmd == messages_delete_cmd )
+         else if( ( cmd == users_delete_cmd ) || ( cmd == devices_delete_cmd ) || ( cmd == messages_delete_cmd )
           || ( cmd == javascripts_delete_cmd ) || ( cmd == stylesheets_delete_cmd ) || ( cmd == webcmdlists_delete_cmd ) )
             request_type = "DELETE";
 
@@ -1087,7 +1090,8 @@ async function do_fetch( )
 
          if( request == help_name )
             cmd_is_url_suffix = true;
-         else if( ( cmd == users_review_cmd ) || ( cmd == unlock_keys_create_cmd )
+         else if( ( cmd == users_review_cmd )
+          || ( cmd == devices_review_cmd ) || ( cmd == unlock_keys_create_cmd )
           || ( cmd == javascripts_delete_cmd ) || ( cmd == stylesheets_delete_cmd )
           || ( cmd == javascripts_retain_cmd ) || ( cmd == stylesheets_retain_cmd )
           || ( cmd == webcmdlists_delete_cmd ) || ( cmd == webcmdlists_retain_cmd ) )
@@ -1100,8 +1104,9 @@ async function do_fetch( )
                need_to_include_payload = true;
          }
 
-         if( ( cmd == logs_review_cmd ) || ( cmd == users_create_cmd )
-          || ( cmd == users_delete_cmd ) || ( cmd == users_update_cmd )
+         if( ( cmd == logs_review_cmd )
+          || ( cmd == users_create_cmd ) || ( cmd == users_delete_cmd )
+          || ( cmd == users_update_cmd ) || ( cmd == devices_delete_cmd )
           || ( cmd == messages_create_cmd ) || ( cmd == messages_delete_cmd )
           || ( cmd == messages_review_cmd ) || ( cmd == messages_update_cmd )
           || ( cmd == storages_attach_cmd ) || ( cmd == storages_review_cmd )
