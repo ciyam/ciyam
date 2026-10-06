@@ -84,7 +84,16 @@ const c_palette_commands = [
    { command: "~trace 10000", description: "tracing back to the usual level (admin, dev)", raw: true },
    { command: "~log_tail server", description: "the last 10 lines of the server's log (admin, dev)", raw: true },
    { command: "~log_tail -n=50 server", description: "the last 50 lines - -n=<lines> takes any number (admin, dev)", raw: true },
-   { command: "~wait -no_progress <ms> @<word>", description: "the server answers <word> after <ms> - over 5000 times out (admin, dev)", raw: true }
+   { command: "~wait -no_progress <ms> @<word>", description: "the server answers <word> after <ms> - over 5000 times out (admin, dev)", raw: true },
+   // NOTE: ntfy (the proof of concept, 2026-10-06) - a topic as a QR code to subscribe a phone, and the server's
+   // own commands. "~ntfy_send" takes the message as one value, so it is quoted.
+   { command: "ntfy server <url>", description: "the ntfy server as the phones reach it - kept in this browser" },
+   { command: "ntfy qr <topic>", description: "a topic as a QR code, to subscribe a phone - the app's link" },
+   { command: "ntfy qr <topic> web", description: "a topic as a QR code of ntfy's web page - every phone camera opens it" },
+   { command: "ntfy qr", description: "the node's own topic as a QR code (admin, dev)", raw: true },
+   { command: "~ntfy_topic <uid>", description: "a user's ntfy topic - with no uid, the node's own (admin, dev)", raw: true },
+   { command: "~ntfy_send \"<message>\"", description: "send to the node's own topic (admin, dev)", raw: true },
+   { command: "~ntfy_send -uid=<uid> \"<message>\"", description: "send to a user's topic (admin, dev)", raw: true }
 ];
 
 var g_self = String( Date.now( ) ) + String( Math.floor( Math.random( ) * 1000 ) ).padStart( 3, "0" );
@@ -1159,6 +1168,149 @@ function do_hide_qr( )
    refresh_qr( );
 }
 
+// ====================================================================
+// ntfy - subscribing a phone (the ntfy proof of concept, 2026-10-06)
+// ====================================================================
+
+var g_qr_library = null;
+
+// NOTE: Just "qrcode.min.js" - "load_script_libraries( )" brings "bip39.min.js" too, nearly 700 KB a QR
+// code does not need.
+async function load_qr_library( )
+{
+   if( typeof QRCode === "function" )
+      return true;
+
+   if( g_qr_library === null )
+      g_qr_library = add_page_script( "qrcode.min.js" );
+
+   var loaded = await g_qr_library;
+
+   if( !loaded )
+      g_qr_library = null;
+
+   return loaded;
+}
+
+function saved_ntfy_server( )
+{
+   try
+   {
+      return localStorage.getItem( c_ntfy_server_key ) || "";
+   }
+   catch( e )
+   {
+      return "";
+   }
+}
+
+// NOTE: "ntfy server [<url>]" and "ntfy qr [<topic>]" ("parse_ntfy_command( )"). The QR code is the apps'
+// own subscribe link, drawn here - the console sends nothing to ntfy. With no topic, the node's own, which
+// only raw protocol can ask the server for ("~ntfy_topic").
+async function run_ntfy( args )
+{
+   var command = parse_ntfy_command( args );
+
+   if( command.verb === "error" )
+   {
+      print_line( "Error: " + command.message, "is-err" );
+
+      return { ok: false };
+   }
+
+   if( command.verb === "server" )
+   {
+      if( command.server === "" )
+      {
+         var current = saved_ntfy_server( );
+
+         print_line( current ? "The phones reach ntfy at " + current + "." : "No ntfy server set - ntfy server http://<address>:<port>", "is-dim" );
+
+         g_output = current;
+
+         return { ok: true };
+      }
+
+      try
+      {
+         localStorage.setItem( c_ntfy_server_key, command.server );
+      }
+      catch( e )
+      {
+         print_line( "Error: This browser would not keep it.", "is-err" );
+
+         return { ok: false };
+      }
+
+      print_line( "The phones reach ntfy at " + command.server + " - kept in this browser.", "is-dim" );
+
+      g_output = command.server;
+
+      return { ok: true };
+   }
+
+   var server = saved_ntfy_server( );
+
+   if( server === "" )
+   {
+      print_line( "Error: Set the server the phones use first - ntfy server http://<address>:<port>", "is-err" );
+
+      return { ok: false };
+   }
+
+   var topic = command.topic;
+
+   if( topic === "" )
+   {
+      if( !g_connected || !g_raw_available )
+      {
+         print_line( "Error: Name the topic - ntfy qr <topic>. The node's own needs raw protocol: admin on a development system.", "is-err" );
+
+         return { ok: false };
+      }
+
+      var response = await send_request( "GET", build_cws_url( ciyam.get_cws_url( ), { path: "", request: "ntfy_topic" }, session_info( ) ), true );
+
+      topic = ( response === null ) ? "" : response.trim( );
+
+      if( !is_ntfy_topic( topic ) )
+      {
+         print_line( "Error: The server gave no topic" + ( response ? " - " + response.trim( ) : "." ), "is-err" );
+
+         return { ok: false };
+      }
+   }
+
+   if( !await load_qr_library( ) )
+   {
+      print_line( "Error: qrcode.min.js did not load - try again.", "is-err" );
+
+      return { ok: false };
+   }
+
+   // NOTE: The apps' own link by default - a GrapheneOS camera's Scan mode can open it; with "web", ntfy's page
+   // for the topic, which every camera opens (the iPhone's showed "No usable data" for the other, 2026-10-06).
+   var app_link = ntfy_subscribe_link( server, topic );
+   var web_link = ntfy_web_link( server, topic );
+
+   var holder = document.getElementById( "test_image" );
+
+   holder.textContent = "";
+
+   new QRCode( holder, { text: command.web ? web_link : app_link, width: 220, height: 220 } );
+
+   refresh_qr( );
+
+   print_output( [ "Subscribe on a phone - scan the code with its camera, or add these in the ntfy app:",
+    "  server    " + server, "  topic     " + topic,
+    "  app link  " + app_link + ( command.web ? "" : "   (in the code)" ),
+    "  web page  " + web_link + ( command.web ? "   (in the code)" : "   - ntfy qr " + ( command.topic || "" ) + ( command.topic ? " " : "" ) + "web for this one" ) ].join( "\n" ) );
+
+   g_output = topic;
+
+   return { ok: true };
+}
+
 function unload_server_script( prefix )
 {
    var old = document.getElementById( prefix );
@@ -1492,6 +1644,9 @@ async function run_local( spec, from_script )
          return { ok: true };
       }
 
+      case "ntfy":
+         return run_ntfy( args );
+
       case "history":
          if( g_history.length === 0 )
             print_line( "(no history)", "is-dim" );
@@ -1709,6 +1864,8 @@ function print_help( )
     "  run <script>                 run a saved script",
     "  exec                         run the output as a list - after view list <name>",
     "  history                      commands entered this session",
+    "  ntfy server [<url>]          the ntfy server as the phones reach it - kept in this browser",
+    "  ntfy qr [<topic>] [web]      a topic as a QR code, to subscribe a phone - the node's own if none; web: ntfy's page",
     "  clear                        empty the output and the scrollback",
     // NOTE: As the harness, naming another account's PIN is offered to admin only.
     ciyam.is_admin
@@ -1747,6 +1904,10 @@ function print_help( )
       lines.push( "  ~trace 70008                 trace sessions in detail; stays on, for everyone, until set back" );
       lines.push( "  ~log_tail [-n=<lines>] server  the last lines of the server's log, 10 unless -n says - script and update too" );
       lines.push( "  ~wait -no_progress <ms> @<word>  the server answers <word> after <ms>; over 5000 times out" );
+      lines.push( "" );
+      lines.push( "Notifications - ntfy, raw protocol" );
+      lines.push( "  ~ntfy_topic [<uid>]          a topic - the node's own with no uid; admin has none" );
+      lines.push( "  ~ntfy_send [-uid=<uid>] \"<message>\"  send to it - the message quoted, or it is several words" );
    }
 
    lines.push( "" );
