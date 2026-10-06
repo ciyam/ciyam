@@ -70,6 +70,30 @@ if [ -n "${CIYAM_NTFY_SERVER:-}" ]; then
    echo "(ntfy server: $CIYAM_NTFY_SERVER)"
 fi
 
+# NOTE: Admin's alerts - a stand-in, for the ntfy proof of concept, for what the server's own "at_init"
+# could send. The topic comes with the certificate ("admin_topic") rather than from "ntfy_topic", which
+# needs the identity - and while locked there is none to read; admin has no server topic anyway. Sent
+# with curl directly, to try what "send_ntfy_message( )" does not send yet: a title, a priority, tags and
+# a link opened when the notification is tapped (CIYAM_PUBLIC_URL - this node as the phone reaches it).
+ntfy_alert( )
+{
+   local topic
+
+   [ -n "${CIYAM_NTFY_SERVER:-}" ] && [ -f /etc/ciyam-ntfy/admin_topic ] || return 0
+
+   topic=$(cat /etc/ciyam-ntfy/admin_topic)
+
+   curl -s -m 10 -o /dev/null -w "(ntfy alert: %{http_code})\n" \
+    -H "Title: $1" -H "Priority: $2" -H "Tags: $3" \
+    ${CIYAM_PUBLIC_URL:+-H "Click: $CIYAM_PUBLIC_URL/chat.html"} \
+    -d "$4" "https://$CIYAM_NTFY_SERVER/$topic"
+}
+
+system_state( )
+{
+   node -e "fetch('http://localhost:13031/system').then(r=>r.text()).then(t=>process.stdout.write(t)).catch(()=>{})" 2>/dev/null
+}
+
 if [ ! -f .web_access_admin ]; then
    echo "(no access token found - bootstrapping 'admin')"
 
@@ -87,12 +111,23 @@ if [ ! -f .web_access_admin ]; then
       unset seed
 
       show_banner
+
+      ntfy_alert "Home node started" "low" "white_check_mark" "Set up and ready - admin's PIN is in the container's log."
    ) &
 else
    echo "(existing access token found - the system identity will be locked, so IRC is"
    echo " unavailable until the container is recreated rather than restarted)"
 
-   ( show_banner ) &
+   (
+      show_banner
+
+      # NOTE: The alert the Home design leads with - "the node restarted and needs unlocking". Sent only when
+      # "/system" says so (":CIYAM:"), so a restart that somehow comes back unlocked stays quiet.
+      if wait_for_server && [ "$(system_state | cut -c1-7)" = ":CIYAM:" ]; then
+         ntfy_alert "Home node needs unlocking" "high" "lock" \
+          "It restarted, and nobody can sign in until it's unlocked. Use one of your unlock keys."
+      fi
+   ) &
 fi
 
 # NOTE: Exec so the server is PID 1 and receives "docker stop" directly.
