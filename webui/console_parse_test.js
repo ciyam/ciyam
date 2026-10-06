@@ -391,12 +391,14 @@ var entry = cp.make_log_entry( "console", "post",
 
 check( "entry", entry, {
  source: "console", time: "23:14:04", method: "POST", endpoint: "/cws/messages/0000000",
- request: "text=Design Review", response: "0000004-8d88bf9c1b679df29aea5a719ca33fe4", ok: true, ms: 38 } );
+ request: "text=Design Review", response: "0000004-8d88bf9c1b679df29aea5a719ca33fe4", ok: true, ms: 38,
+ path: "/cws/messages/0000000", sent: [ "format=text", "options=text%3DDesign%20Review" ], had: { access: true, device: true, session: true } } );
 
 var secret = cp.make_log_entry( "chat", "POST",
  "http://h/cws/devices?access=45679&format=text&passwd=YWRtaW46NDg0&request=%40none", null, "c5588b", t0, t1 );
 
-check( "credentials never kept", /45679|passwd|YWRt|device=/.test( JSON.stringify( secret ) ), false );
+// NOTE: Only that a password was sent is kept ("had"), for "full_query( )" - never the hash.
+check( "credentials never kept", /45679|YWRt|device=|passwd=/.test( JSON.stringify( secret ) ), false );
 check( "request kept", secret.request, "@none" );
 
 check( "error marked", cp.make_log_entry( "console", "GET", "http://h/cws?request=x", null, "[bad]", t0, t1 ).ok, false );
@@ -410,6 +412,20 @@ check( "posted body kept", cp.make_log_entry( "chat", "POST", "http://h/cws/mess
 
 check( "long response cut", /truncated at 20000/.test(
  cp.make_log_entry( "chat", "GET", "http://h/cws/status", null, "x".repeat( 20100 ), t0, t1 ).response ), true );
+
+// NOTE: The whole query put back together from this tab's session, to copy (Ian, 2026-10-06).
+var now_session = { access: "45679", device: "e0f1a2", sessid: "fff123" };
+check( "the full query, with this tab's credentials, in the harness's order", cp.full_query( "http://localhost:13031", entry, now_session ),
+ "http://localhost:13031/cws/messages/0000000?access=45679&device=e0f1a2&format=text&options=text%3DDesign%20Review&session=fff123" );
+check( "a sign in's password hash is never put back", cp.full_query( "http://h", secret, now_session ),
+ "http://h/cws/devices?access=45679&passwd=PASSWORD_HASH&format=text&request=%40none" );
+check( "only the credentials the request had", cp.full_query( "http://h", failed, now_session ), "http://h/cws/status" );
+check( "an entry from before nothing", cp.full_query( "http://h", { endpoint: "/cws/status" }, now_session ), "" );
+
+check( "devices: the list", cp.resolve_command( "view devices" ), { kind: "cws", key: "devices|review", method: "GET", path: "/devices", name: "", options: "" } );
+check( "devices: one removed", cp.resolve_command( "delete device ab12cd" ),
+ { kind: "cws", key: "devices|delete", method: "DELETE", path: "/devices/ab12cd", name: "ab12cd", options: "" } );
+check( "devices: removing needs which", cp.resolve_command( "delete device" ).reason, "'devices delete' needs a name" );
 
 // --------------------------------------------------------------------
 heading( "log capture" );

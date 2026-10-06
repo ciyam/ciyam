@@ -194,6 +194,13 @@ ok   error marked
 ok   network failure
 ok   posted body kept
 ok   long response cut
+ok   the full query, with this tab's credentials, in the harness's order
+ok   a sign in's password hash is never put back
+ok   only the credentials the request had
+ok   an entry from before nothing
+ok   devices: the list
+ok   devices: one removed
+ok   devices: removing needs which
 
 == log capture =================================================
 ok   caller still gets the response

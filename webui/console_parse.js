@@ -25,6 +25,9 @@ const c_console_short_key_length = 17;
 // read what a request did.
 const c_console_secret_params = [ "access", "device", "session", "passwd", "format" ];
 
+// NOTE: Of those, the ones that are credentials - "format" is only left out of what is shown.
+const c_console_credential_params = [ "access", "device", "session", "passwd" ];
+
 // NOTE: Verb synonyms are the ones the harness accepts ("reformatted( )" in
 // "test_web_session.js"), so a command that works there works here.
 const c_console_verbs =
@@ -44,6 +47,7 @@ const c_console_nouns =
    message: "messages", messages: "messages",
    storage: "storages", storages: "storages",
    "unlock-key": "unlock-keys", "unlock-keys": "unlock-keys",
+   device: "devices", devices: "devices",
    "storage-module": "storage-modules", "storage-modules": "storage-modules",
    "storage-instance": "storage-instances", "storage-instances": "storage-instances",
    script: "javascripts", scripts: "javascripts", javascript: "javascripts", javascripts: "javascripts",
@@ -62,6 +66,11 @@ const c_console_routes =
    "users|create": { method: "POST", name: false, options: true },
    "users|delete": { method: "DELETE", name: true, options: false },
    "users|update": { method: "PUT", name: true, options: true },
+
+   // NOTE: Ian, 2026-10-06 - this PIN's own devices, with a session: the list, or one removed (and its
+   // session ended) - never the one asking.
+   "devices|review": { method: "GET", name: false, options: false },
+   "devices|delete": { method: "DELETE", name: true, options: false },
 
    "messages|review": { method: "GET", name: true, options: true },
    "messages|create": { method: "POST", name: true, options: true },
@@ -964,6 +973,10 @@ function make_log_entry( source, method, url, body, response, started, finished 
 
    var kept = [ ];
 
+   // NOTE: For "full_query( )" - the query as sent, but for the credentials, and which of them it had.
+   var sent = [ ];
+   var had = { };
+
    query.split( "&" ).forEach( function( pair )
    {
       if( pair === "" )
@@ -974,6 +987,11 @@ function make_log_entry( source, method, url, body, response, started, finished 
       var name = ( eq < 0 ) ? pair : pair.substr( 0, eq );
       var value = ( eq < 0 ) ? "" : decode_field( pair.substring( eq + 1 ) );
 
+      if( c_console_credential_params.indexOf( name ) >= 0 )
+         had[ name ] = true;
+      else
+         sent.push( pair );
+
       if( c_console_secret_params.indexOf( name ) >= 0 )
          return;
 
@@ -982,6 +1000,8 @@ function make_log_entry( source, method, url, body, response, started, finished 
       else
          kept.push( name + "=" + value );
    } );
+
+   var path = endpoint;
 
    if( kept.length > 0 )
       endpoint += "?" + kept.join( "&" );
@@ -1004,8 +1024,42 @@ function make_log_entry( source, method, url, body, response, started, finished 
       request: request,
       response: ( response === null ) ? "(no response - the request failed)" : text,
       ok: !failed,
-      ms: Math.max( 0, finished.getTime( ) - started.getTime( ) )
+      ms: Math.max( 0, finished.getTime( ) - started.getTime( ) ),
+      path: path,
+      sent: sent,
+      had: had
    };
+}
+
+// NOTE: The whole query for a logged request, to copy and try again (Ian, 2026-10-06 - he still opened
+// "test_web_session.html" for it). An entry keeps no credentials, so they are put back from "session" -
+// this tab's own, which a linked console shares with the chat - in the harness's order, where the
+// request had them. A password hash is never put back: a sign in's comes back as "passwd=PASSWORD_HASH".
+// "origin" is the server's address, before "/cws". Returns "" for an entry from before this was kept.
+function full_query( origin, entry, session )
+{
+   if( !entry || !entry.path || !entry.sent )
+      return "";
+
+   var had = entry.had || { };
+
+   var parts = [ ];
+
+   if( had.access )
+      parts.push( "access=" + session.access );
+
+   if( had.device && session.device )
+      parts.push( "device=" + session.device );
+
+   if( had.passwd )
+      parts.push( "passwd=PASSWORD_HASH" );
+
+   parts = parts.concat( entry.sent );
+
+   if( had.session )
+      parts.push( "session=" + session.sessid );
+
+   return String( origin || "" ) + entry.path + ( ( parts.length > 0 ) ? "?" + parts.join( "&" ) : "" );
 }
 
 // NOTE: Every request goes through "CIYAM.fetch" or "CIYAM.post", so wrapping those two on
@@ -1079,6 +1133,7 @@ if( typeof module !== "undefined" )
       is_javascript_line: is_javascript_line,
       parse_script_line: parse_script_line,
       script_allowed: script_allowed,
+      full_query: full_query,
       is_global_name: is_global_name,
       parse_name_list: parse_name_list,
       is_error_output: is_error_output,
