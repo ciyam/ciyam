@@ -202,6 +202,21 @@ ok   devices: the list
 ok   devices: one removed
 ok   devices: removing needs which
 
+== ntfy - subscribing a phone ==================================
+ok   ntfy is a local command
+ok   a server address, tidied
+ok   not a server address
+ok   a topic, by ntfy's rule
+ok   the apps' subscribe link - plain HTTP says so
+ok   and HTTPS does not
+ok   no link without a server or a topic
+ok   ntfy server <url>
+ok   ntfy server, to show it
+ok   ntfy qr <topic>, and the node's own
+ok   ntfy qr ... web - the web page instead, the node's own or a named one
+ok   the web page for a topic
+ok   ntfy refusals
+
 == log capture =================================================
 ok   caller still gets the response
 ok   request logged

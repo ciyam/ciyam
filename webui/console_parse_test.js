@@ -427,6 +427,29 @@ check( "devices: one removed", cp.resolve_command( "delete device ab12cd" ),
  { kind: "cws", key: "devices|delete", method: "DELETE", path: "/devices/ab12cd", name: "ab12cd", options: "" } );
 check( "devices: removing needs which", cp.resolve_command( "delete device" ).reason, "'devices delete' needs a name" );
 
+heading( "ntfy - subscribing a phone" );
+
+check( "ntfy is a local command", cp.resolve_command( "ntfy qr" ), { kind: "local", name: "ntfy", args: "qr" } );
+check( "a server address, tidied", [ cp.normalise_ntfy_server( "HTTP://192.168.0.15:8090/" ), cp.normalise_ntfy_server( "https://ntfy.example.org" ) ],
+ [ "http://192.168.0.15:8090", "https://ntfy.example.org" ] );
+check( "not a server address", [ cp.normalise_ntfy_server( "192.168.0.15:8090" ), cp.normalise_ntfy_server( "http://h/topic" ), cp.normalise_ntfy_server( "" ) ],
+ [ "", "", "" ] );
+check( "a topic, by ntfy's rule", [ cp.is_ntfy_topic( "upZXUDXPJ6K4DQ" ), cp.is_ntfy_topic( "ciyam-alerts-779y5x7gy6" ), cp.is_ntfy_topic( "a b" ), cp.is_ntfy_topic( "x".repeat( 65 ) ) ],
+ [ true, true, false, false ] );
+check( "the apps' subscribe link - plain HTTP says so", cp.ntfy_subscribe_link( "http://192.168.0.15:8090", "ciyam-alerts-779y5x7gy6" ),
+ "ntfy://192.168.0.15:8090/ciyam-alerts-779y5x7gy6?secure=false" );
+check( "and HTTPS does not", cp.ntfy_subscribe_link( "https://ntfy.example.org", "up2XW5ELSOW5GQ" ), "ntfy://ntfy.example.org/up2XW5ELSOW5GQ" );
+check( "no link without a server or a topic", [ cp.ntfy_subscribe_link( "", "abc" ), cp.ntfy_subscribe_link( "http://h:1", "a b" ) ], [ "", "" ] );
+check( "ntfy server <url>", cp.parse_ntfy_command( "server http://192.168.0.15:8090" ), { verb: "server", server: "http://192.168.0.15:8090", topic: "", web: false } );
+check( "ntfy server, to show it", cp.parse_ntfy_command( "server" ), { verb: "server", server: "", topic: "", web: false } );
+check( "ntfy qr <topic>, and the node's own", [ cp.parse_ntfy_command( "qr abc-1" ), cp.parse_ntfy_command( "qr" ) ],
+ [ { verb: "qr", server: "", topic: "abc-1", web: false }, { verb: "qr", server: "", topic: "", web: false } ] );
+check( "ntfy qr ... web - the web page instead, the node's own or a named one", [ cp.parse_ntfy_command( "qr web" ), cp.parse_ntfy_command( "qr abc-1 web" ) ],
+ [ { verb: "qr", server: "", topic: "", web: true }, { verb: "qr", server: "", topic: "abc-1", web: true } ] );
+check( "the web page for a topic", [ cp.ntfy_web_link( "http://192.168.0.15:8090/", "abc-1" ), cp.ntfy_web_link( "h", "abc" ) ], [ "http://192.168.0.15:8090/abc-1", "" ] );
+check( "ntfy refusals", [ cp.parse_ntfy_command( "server 192.168.0.15" ).verb, cp.parse_ntfy_command( "qr a/b" ).verb, cp.parse_ntfy_command( "" ).verb,
+ cp.parse_ntfy_command( "send hi" ).verb ], [ "error", "error", "error", "error" ] );
+
 // --------------------------------------------------------------------
 heading( "log capture" );
 

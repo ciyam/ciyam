@@ -98,7 +98,11 @@ const c_console_routes =
    "storage-instances|review": { method: "GET", name: true, options: true }
 };
 
-const c_console_local_commands = [ "help", "clear", "vars", "var", "unset", "echo", "seed", "history", "wait", "run", "exec" ];
+const c_console_local_commands = [ "help", "clear", "vars", "var", "unset", "echo", "seed", "history", "wait", "run", "exec", "ntfy" ];
+
+// NOTE: The ntfy server as the phones reach it - kept in this browser, as only the person setting up
+// knows it: the node sends to its own name for ntfy (https://ntfy in the container), which no phone can use.
+const c_ntfy_server_key = "cws.ntfy_server";
 
 const c_console_quit_names = [ "quit", "exit", "finish" ];
 
@@ -756,6 +760,91 @@ function script_allowed( name, access, is_admin )
    return !/^[0-9]+$/.test( value );
 }
 
+// ====================================================================
+// ntfy - subscribing a phone (the ntfy proof of concept, 2026-10-06)
+// ====================================================================
+
+// NOTE: A server address as the phones reach it - "http(s)://<host>[:<port>]", with nothing after it.
+// "" when it is not one.
+function normalise_ntfy_server( text )
+{
+   var match = /^(https?):\/\/([A-Za-z0-9.-]+(?::\d{1,5})?)\/?$/i.exec( String( text || "" ).trim( ) );
+
+   return ( match === null ) ? "" : match[ 1 ].toLowerCase( ) + "://" + match[ 2 ];
+}
+
+// NOTE: ntfy's own rule for a topic - letters, digits, "-" and "_", at most 64.
+function is_ntfy_topic( text )
+{
+   return /^[-_A-Za-z0-9]{1,64}$/.test( String( text || "" ) );
+}
+
+// NOTE: What a phone's camera opens to subscribe - the apps' own "ntfy://<host>/<topic>" link, with
+// "secure=false" when the server is plain HTTP. Scanned, it saves typing a topic: both phones once
+// subscribed to an O for a D.
+function ntfy_subscribe_link( server, topic )
+{
+   var normal = normalise_ntfy_server( server );
+
+   if( ( normal === "" ) || !is_ntfy_topic( topic ) )
+      return "";
+
+   var http = ( normal.indexOf( "http://" ) === 0 );
+
+   return "ntfy://" + normal.replace( /^https?:\/\//, "" ) + "/" + topic + ( http ? "?secure=false" : "" );
+}
+
+// NOTE: The same topic as an ordinary web address - ntfy's own page for it. Every phone camera opens one,
+// where the iPhone's would not open "ntfy://" ("No usable data", 2026-10-06); the page shows the topic, so
+// it can be copied into the app rather than typed.
+function ntfy_web_link( server, topic )
+{
+   var normal = normalise_ntfy_server( server );
+
+   return ( ( normal === "" ) || !is_ntfy_topic( topic ) ) ? "" : normal + "/" + topic;
+}
+
+// NOTE: "ntfy server [<url>]" - set, or show, the server the phones use; "ntfy qr [<topic>] [web]" - a topic
+// as a QR code, the node's own when none is named: the apps' "ntfy://" link, or with "web" ntfy's web page
+// for it. Returns { verb, server, topic, web } or { verb: "error", message }.
+function parse_ntfy_command( args )
+{
+   var words = String( args || "" ).trim( ).split( /\s+/ ).filter( function( w ) { return w !== ""; } );
+
+   var verb = ( words[ 0 ] || "" ).toLowerCase( );
+
+   var usage = "Usage is ntfy server [<url>], or ntfy qr [<topic>] [web]";
+
+   if( ( verb === "server" ) && ( words.length <= 2 ) )
+   {
+      if( words.length === 1 )
+         return { verb: "server", server: "", topic: "", web: false };
+
+      var server = normalise_ntfy_server( words[ 1 ] );
+
+      return ( server === "" ) ? { verb: "error", message: "Not a server address - http://<address>:<port>, say http://192.168.0.15:8090" }
+       : { verb: "server", server: server, topic: "", web: false };
+   }
+
+   // NOTE: "web" last - "ntfy qr web" is the node's own topic as a web page, not a topic called "web".
+   var web = ( words.length > 1 ) && ( words[ words.length - 1 ].toLowerCase( ) === "web" );
+
+   if( web )
+      words.pop( );
+
+   if( ( verb === "qr" ) && ( words.length <= 2 ) )
+   {
+      var topic = words[ 1 ] || "";
+
+      if( ( topic !== "" ) && !is_ntfy_topic( topic ) )
+         return { verb: "error", message: "Not a topic - letters, digits, - and _ only" };
+
+      return { verb: "qr", server: "", topic: topic, web: web };
+   }
+
+   return { verb: "error", message: usage };
+}
+
 // NOTE: A global a server javascript sets - "wait ciyam_harden_result", "var @x ciyam_bip39_result".
 // Only a plain identifier, so nothing but a name is ever looked up on the page.
 function is_global_name( name )
@@ -1134,6 +1223,12 @@ if( typeof module !== "undefined" )
       parse_script_line: parse_script_line,
       script_allowed: script_allowed,
       full_query: full_query,
+      normalise_ntfy_server: normalise_ntfy_server,
+      is_ntfy_topic: is_ntfy_topic,
+      ntfy_subscribe_link: ntfy_subscribe_link,
+      ntfy_web_link: ntfy_web_link,
+      parse_ntfy_command: parse_ntfy_command,
+      c_ntfy_server_key: c_ntfy_server_key,
       is_global_name: is_global_name,
       parse_name_list: parse_name_list,
       is_error_output: is_error_output,
