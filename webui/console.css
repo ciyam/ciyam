@@ -798,6 +798,12 @@ code
    color: var(--console-err);
 }
 
+/* NOTE: "Copy full query" under an opened Log entry. */
+.console-copyrow
+{
+   padding: 0 14px 12px;
+}
+
 /* ====================================================================
    Scripts tab
    ==================================================================== */

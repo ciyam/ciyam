@@ -62,6 +62,8 @@ const c_palette_commands = [
    { command: "delete javascript", description: "delete your own JavaScript on the server" },
    { command: "view logs", description: "the server's log files (admin)", admin: true },
    { command: "view log <name>", description: "one whole log - script, server or update (admin)", admin: true },
+   { command: "view devices", description: "this account's devices - * after one with an active session" },
+   { command: "delete device <ident>", description: "remove one of this account's devices and end its session - not this one" },
    { command: "users review", description: "list accounts (admin)", admin: true },
    { command: "users create secret", description: "issue an account-creation token (admin)", admin: true },
    { command: "users create nominated=<pin>:<username>", description: "reserve a PIN and username (admin)", admin: true },
@@ -2718,6 +2720,66 @@ function do_clear_log( )
    render_log( );
 }
 
+const c_copy_query_label = "Copy full query";
+
+const c_copy_query_ms = 1500;
+
+// NOTE: An entry keeps no credentials, so they are put back from this tab's session ("full_query( )") -
+// the chat's own, when linked. Signed out, there are none to put back.
+async function copy_full_query( entry, button )
+{
+   var text = g_connected ? full_query( ciyam.host_info, entry, session_info( ) ) : "";
+
+   var said = !g_connected ? "Sign in first" : ( ( text !== "" ) && await copy_text( text ) ) ? "Copied" : "Could not copy";
+
+   button.textContent = said;
+
+   window.setTimeout( function( ) { button.textContent = c_copy_query_label; }, c_copy_query_ms );
+}
+
+// NOTE: The clipboard API needs a secure page - "localhost" is one, a plain "http://" node is not - so a
+// hidden text area and "copy" stand in for it there.
+async function copy_text( text )
+{
+   try
+   {
+      if( navigator.clipboard && window.isSecureContext )
+      {
+         await navigator.clipboard.writeText( text );
+
+         return true;
+      }
+   }
+   catch( e )
+   {
+   }
+
+   var area = document.createElement( "textarea" );
+
+   area.value = text;
+   area.setAttribute( "readonly", "" );
+   area.style.position = "fixed";
+   area.style.opacity = "0";
+
+   document.body.appendChild( area );
+
+   area.select( );
+
+   var copied = false;
+
+   try
+   {
+      copied = document.execCommand( "copy" );
+   }
+   catch( e )
+   {
+   }
+
+   document.body.removeChild( area );
+
+   return copied;
+}
+
 function render_log( )
 {
    document.getElementById( "log_body" ).textContent = "";
@@ -2820,6 +2882,32 @@ function append_log_rows( entry )
    pair.appendChild( make_span( String( entry.response ), "console-v " + ( entry.ok ? "is-ok" : "is-err" ) ) );
 
    detail_cell.appendChild( pair );
+
+   // NOTE: The list keeps its pared-down look (Ian, 2026-10-06) - the whole query is copied from here, the
+   // opened entry, to try again elsewhere. An entry from before this was kept has nothing to copy.
+   if( entry.sent )
+   {
+      var copy_row = document.createElement( "div" );
+
+      copy_row.className = "console-copyrow";
+
+      var copy = document.createElement( "button" );
+
+      copy.type = "button";
+      copy.className = "console-chip";
+      copy.textContent = c_copy_query_label;
+
+      copy.addEventListener( "click", function( event )
+      {
+         event.stopPropagation( );
+
+         copy_full_query( entry, copy );
+      } );
+
+      copy_row.appendChild( copy );
+      detail_cell.appendChild( copy_row );
+   }
+
    detail.appendChild( detail_cell );
 
    function toggle( )
