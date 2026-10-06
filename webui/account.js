@@ -825,6 +825,8 @@ function clear_session( )
 
    document.getElementById( "mine_devices_list" ).replaceChildren( );
 
+   set_error( "mine_devices_error", "" );
+
    forget_handover( );
 
    clear_hash( );
@@ -1380,10 +1382,16 @@ async function load_devices( )
 {
    g_device_armed = "";
 
+   var asked_for = ciyam.access;
+
    var response = await request( function( done )
    {
       return ciyam.fetch( devices_url( "" ), "GET", done );
    } );
+
+   // NOTE: Signed out, or another account in, while it was asked - not theirs to show (found by review).
+   if( ( ciyam.access === "" ) || ( ciyam.access !== asked_for ) )
+      return;
 
    if( problem_text( response ) !== "" )
    {
@@ -1445,7 +1453,7 @@ function render_devices( )
             var ask = document.createElement( "span" );
 
             ask.className = "account-confirm-text";
-            ask.textContent = "Remove it? It's signed out.";
+            ask.textContent = "Remove it? It will be signed out.";
 
             var yes = document.createElement( "button" );
 

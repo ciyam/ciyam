@@ -1304,7 +1304,8 @@ async function run_ntfy( args )
    print_output( [ "Subscribe on a phone - scan the code with its camera, or add these in the ntfy app:",
     "  server    " + server, "  topic     " + topic,
     "  app link  " + app_link + ( command.web ? "" : "   (in the code)" ),
-    "  web page  " + web_link + ( command.web ? "   (in the code)" : "   - ntfy qr " + ( command.topic || "" ) + ( command.topic ? " " : "" ) + "web for this one" ) ].join( "\n" ) );
+    "  web page  " + web_link + ( command.web ? "   (in the code)"
+     : "   - ntfy qr " + ( command.topic ? command.topic + " " : "" ) + "web for this one" ) ].join( "\n" ) );
 
    g_output = topic;
 
