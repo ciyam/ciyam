@@ -1100,6 +1100,8 @@ void http_request_handler::on_start( )
 
                cws_paramaters cws_params;
 
+               cws_params.ip_addr = ip_addr;
+
                cws_params.is_json_output = is_json_output;
 
                if( params.count( c_query_param_name_access ) )
