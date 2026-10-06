@@ -274,6 +274,7 @@ constexpr const char* c_special_variable_system_identity = "@system_identity";
 constexpr const char* c_special_variable_total_put_files = "@total_put_files";
 constexpr const char* c_special_variable_can_omit_prepare = "@can_omit_prepare";
 constexpr const char* c_special_variable_check_if_changed = "@check_if_changed";
+constexpr const char* c_special_variable_cws_max_sessions = "@cws_max_sessions";
 constexpr const char* c_special_variable_cws_username_for = "@cws_username_for";
 constexpr const char* c_special_variable_dummy_time_stamp = "@dummy_time_stamp";
 constexpr const char* c_special_variable_preparing_backup = "@preparing_backup";
@@ -663,6 +664,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_total_put_files );
       g_special_variable_names.push_back( c_special_variable_can_omit_prepare );
       g_special_variable_names.push_back( c_special_variable_check_if_changed );
+      g_special_variable_names.push_back( c_special_variable_cws_max_sessions );
       g_special_variable_names.push_back( c_special_variable_cws_username_for );
       g_special_variable_names.push_back( c_special_variable_dummy_time_stamp );
       g_special_variable_names.push_back( c_special_variable_preparing_backup );
