@@ -243,9 +243,32 @@ function parse_account_hash( hash )
    return { view: "", code: "" };
 }
 
+// NOTE: "GET /cws/devices" (Ian, 2026-10-06) - this PIN's devices, one per line, "<device> <session>",
+// with "*" after a session the server treats as active. "current" is this browser's own device, which
+// cannot be removed from here. Anything not of that shape is left out; this browser comes first.
+//
+// Returns [ { device, session, active, current } ].
+function parse_devices( text, current )
+{
+   var devices = [ ];
+
+   String( text || "" ).split( /\r?\n/ ).forEach( function( line )
+   {
+      var match = /^([A-Za-z0-9]+)\s+([A-Za-z0-9]+)(\*?)$/.exec( line.trim( ) );
+
+      if( match === null )
+         return;
+
+      devices.push( { device: match[ 1 ], session: match[ 2 ], active: ( match[ 3 ] === "*" ), current: ( match[ 1 ] === current ) } );
+   } );
+
+   return devices.filter( function( d ) { return d.current; } ).concat( devices.filter( function( d ) { return !d.current; } ) );
+}
+
 if( typeof module !== "undefined" )
 {
    module.exports = {
+      parse_devices: parse_devices,
       normalise_code: normalise_code,
       is_account_pin: is_account_pin,
       parse_join_reply: parse_join_reply,

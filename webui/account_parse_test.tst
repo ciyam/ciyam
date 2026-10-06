@@ -70,4 +70,9 @@ ok   shown again if that account was removed
 ok   not once admin has hidden it
 ok   not a PIN is no account
 
+== this account's devices ======================================
+ok   each device, this browser first
+ok   with Windows line ends too
+ok   nothing, or anything else, is none
+
 All checks passed.

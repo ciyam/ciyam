@@ -153,6 +153,19 @@ check( "shown again if that account was removed", ap.shows_add_yourself( false, 
 check( "not once admin has hidden it", ap.shows_add_yourself( true, "", banner_people ), false );
 check( "not a PIN is no account", ap.shows_add_yourself( false, "dam", banner_people ), true );
 
+// --------------------------------------------------------------------
+heading( "this account's devices" );
+
+// NOTE: The shape of "GET /cws/devices", from Ian's code of 2026-10-06 - "<device> <session>", "*" after an active one.
+const devices_text = "a1b2c3d4 11111111111111111111*\ne5f6a7b8 22222222222222222222\nc9d0e1f2 33333333333333333333*\n";
+
+check( "each device, this browser first", ap.parse_devices( devices_text, "c9d0e1f2" ), [
+ { device: "c9d0e1f2", session: "33333333333333333333", active: true, current: true },
+ { device: "a1b2c3d4", session: "11111111111111111111", active: true, current: false },
+ { device: "e5f6a7b8", session: "22222222222222222222", active: false, current: false } ] );
+check( "with Windows line ends too", ap.parse_devices( "a1b2c3d4 111*\r\n", "x" ).length, 1 );
+check( "nothing, or anything else, is none", [ ap.parse_devices( "", "x" ), ap.parse_devices( "Error: something", "x" ) ], [ [ ], [ ] ] );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 
