@@ -75,6 +75,9 @@ const size_t c_cws_device_replen = 7;
 
 const size_t c_cws_session_length = 20;
 
+const size_t c_cws_max_sessions_default = 100;
+const size_t c_cws_max_sessions_allowed = 1000;
+
 const size_t c_save_data_delay = 250;
 
 const size_t c_admin_lock_attempts = 10;
@@ -137,6 +140,7 @@ constexpr const char* c_cws_uri_suffix_storage_modules = "storage-modules";
 
 constexpr const char* c_cws_uri_suffix_logs_prefix = "logs/";
 constexpr const char* c_cws_uri_suffix_users_prefix = "users/";
+constexpr const char* c_cws_uri_suffix_devices_prefix = "devices/";
 constexpr const char* c_cws_uri_suffix_messages_prefix = "messages/";
 constexpr const char* c_cws_uri_suffix_sessions_prefix = "sessions/";
 constexpr const char* c_cws_uri_suffix_storages_prefix = "storages/";
@@ -175,18 +179,18 @@ constexpr const char* c_cws_request_unlock_keys_create_options_encrypted = "encr
 
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax to HTTP requests.
 constexpr const char* c_cws_help_request_output = "quit\n"
- "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete message <room>\n"
+ "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete device <ident>\ndelete message <room>\n"
  "delete javascript\ndelete stylesheet\ndelete webcmdlist\nemploy unlock-key <key>\nretain javascript\n"
- "retain stylesheet\nretain webcmdlist\nreview users\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\n"
+ "retain stylesheet\nretain webcmdlist\nreview users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\n"
  "review javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
  "update user *** password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|nominated=[<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
- "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete message <room>\ndelete javascript\ndelete stylesheet\n"
+ "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete device <ident>\ndelete message <room>\ndelete javascript\ndelete stylesheet\n"
  "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview logs [<name>]\n"
- "review users\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\nreview javascript[s] [<name>]\n"
+ "review users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\nreview javascript[s] [<name>]\n"
  "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user <pin> password=<password>\n"
  "update message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}";
@@ -258,6 +262,8 @@ struct session_info
 
    string user_key;
    string username;
+
+   string ip_addr;
 
    int64_t init_request;
    int64_t last_request;
@@ -482,9 +488,65 @@ bool has_added_access_device( const string& access_token, const string& device_t
    return retval;
 }
 
-void init_session_info( const string& access, const string& device, const string& session, int64_t now )
+size_t max_sessions( )
 {
+   size_t maximum_sessions = from_string< size_t >( get_system_variable( e_special_var_cws_max_sessions ) );
+
+   size_t prior_maximum_sessions = maximum_sessions;
+
+   // NOTE: The "@cws_max_sessions" system variable can be
+   // used to provide a maximum number of current sessions
+   // - if not set (or zero) then will use the default and
+   // will not allow more than a hard-coded maximum limit.
+   if( !maximum_sessions )
+      maximum_sessions = c_cws_max_sessions_default;
+   else if( maximum_sessions > c_cws_max_sessions_allowed )
+      maximum_sessions = c_cws_max_sessions_allowed;
+
+   if( maximum_sessions != prior_maximum_sessions )
+      set_system_variable( e_special_var_cws_max_sessions, to_string( maximum_sessions ) );
+
+   return maximum_sessions;
+}
+
+void init_session_info( const string& access, const string& device, const string& session, const string& ip_addr, int64_t now )
+{
+   size_t maximum_sessions = max_sessions( );
+
    guard g( g_mutex );
+
+   if( !g_session_info.count( session ) )
+   {
+      if( g_session_info.size( ) >= maximum_sessions )
+      {
+         if( access != g_cws_admin_token )
+            throw runtime_error( "*** maximum allowed sessions already exist ***" );
+
+         // NOTE: If is an "admin" session then terminates
+         // all old sessions (which includes "admin" ones)
+         // in order to allow this new session.
+         while( g_session_info.size( ) >= maximum_sessions )
+         {
+            int64_t oldest = 0;
+
+            string oldest_session;
+
+            for( auto i = g_session_info.begin( ); i != g_session_info.end( ); ++i )
+            {
+               if( !oldest || ( i->second->last_request < oldest ) )
+               {
+                  oldest_session = i->first;
+                  oldest = i->second->last_request;
+               }
+            }
+
+            if( oldest_session.empty( ) )
+               throw runtime_error( "unable to find the oldest session in init_session_info" );
+
+            g_session_info.erase( oldest_session );
+         }
+      }
+   }
 
    g_session_info[ session ].reset( new session_info );
 
@@ -495,6 +557,8 @@ void init_session_info( const string& access, const string& device, const string
       g_session_info[ session ]->username = c_admin;
    else
       g_session_info[ session ]->username = get_user_name( access );
+
+   g_session_info[ session ]->ip_addr = ip_addr;
 
    g_session_info[ session ]->init_request = now;
    g_session_info[ session ]->last_request = now;
@@ -508,12 +572,34 @@ void remove_session_info( const string& session )
       g_session_info.erase( session );
 }
 
-void update_session_info( const string& session, int64_t now )
+bool has_session_info( const string& session )
+{
+   size_t maximum_sessions = max_sessions( );
+
+   guard g( g_mutex );
+
+   // NOTE: If the maximum number of sessions was
+   // reduced then will terminate this session if
+   // it is not the "admin" user.
+   if( g_session_info.size( ) > maximum_sessions )
+   {
+      if( g_session_info.count( session )
+       && ( g_session_info[ session ]->access != g_cws_admin_token ) )
+         g_session_info.erase( session );
+   }
+
+   return g_session_info.count( session );
+}
+
+void update_session_info( const string& session, const string& ip_addr, int64_t now )
 {
    guard g( g_mutex );
 
    if( g_session_info.count( session ) )
+   {
+      g_session_info[ session ]->ip_addr = ip_addr;
       g_session_info[ session ]->last_request = now;
+   }
 }
 
 void update_session_info( const string& session, const string& user_key )
@@ -534,6 +620,26 @@ string get_session_info_user_key( const string& session )
       retval = g_session_info[ session ]->user_key;
 
    return retval;
+}
+
+void remove_session_for_device_if_present( const string& access_token, const string& device_token )
+{
+   guard g( g_mutex );
+
+   string session;
+
+   for( auto i = g_session_info.begin( ); i != g_session_info.end( ); i++ )
+   {
+      if( ( i->second->access == access_token ) && ( i->second->device == device_token ) )
+      {
+         session = i->first;
+
+         break;
+      }
+   }
+
+   if( !session.empty( ) )
+      remove_session_info( session );
 }
 
 struct cws_active_command
@@ -1242,15 +1348,15 @@ void dump_session_info( ostream& os )
 
    if( !g_session_info.empty( ) )
    {
-      os << "session              pin   device          init_request        last_request        username\n";
-      os << "-------------------- ----- --------------- ------------------- ------------------- ---------------\n";
+      os << "session              pin   device          init_request        last_request        username (ip_addr)\n";
+      os << "-------------------- ----- --------------- ------------------- ------------------- ----------------------------------------------\n";
    }
 
    for( auto i = g_session_info.begin( ); i != g_session_info.end( ); i++ )
       os << i->first << ' ' << i->second->access << ' ' << i->second->device
        << ' ' << date_time( i->second->init_request ).as_string( true, false )
        << ' ' << date_time( i->second->last_request ).as_string( true, false )
-       << ' ' << ( i->second->username.empty( ) ? g_none_tag : i->second->username ) << '\n';
+       << ' ' << ( i->second->username.empty( ) ? g_none_tag : i->second->username ) << " (" << i->second->ip_addr << ")\n";
 }
 
 bool process_cws_request( http_request_type request_type, const string& uri_suffix,
@@ -1267,6 +1373,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    string access( cws_params.access );
    string device( cws_params.device );
    string passwd( cws_params.passwd );
+   string ip_addr( cws_params.ip_addr );
    string options( cws_params.options );
    string payload( cws_params.payload );
    string request( cws_params.request );
@@ -1731,7 +1838,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    else if( !has_access_token( access ) )
       // FUTURE: This message should be handled as a server string message.
       error = "This web session is not valid (or has expired).";
-   else if( uri_suffix == c_cws_uri_suffix_devices )
+   else if( device.empty( ) && ( uri_suffix == c_cws_uri_suffix_devices ) )
    {
       found = true;
 
@@ -1833,7 +1940,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                set_system_variable( web_session_var_name, new_session );
 
-               init_session_info( access, device, new_session, now );
+               init_session_info( access, device, new_session, ip_addr, now );
 
                // NOTE: This "command" will force the web session script to
                // check that the session identity it was given when started
@@ -1843,7 +1950,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          }
          else
          {
-            if( session != get_system_variable( web_session_var_name ) )
+            if( !has_session_info( session )
+             || ( session != get_system_variable( web_session_var_name ) ) )
                // FUTURE: This message should be handled as a server string message.
                error = "This web session is not valid (or has expired).";
             else
@@ -1868,6 +1976,57 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      response = help_output;
                   else
                      response = "{\"commands\":\"" + escaped_json( help_output ) + "\"}";
+               }
+               else if( uri_suffix == c_cws_uri_suffix_devices )
+               {
+                  found = true;
+
+                  string variables( get_system_variable( var_prefix + access + ".*.session" ) );
+
+                  replace( variables, var_prefix + access + ".", "" );
+
+                  replace( variables, ".session", "" );
+
+                  vector< string > lines;
+
+                  if( !variables.empty( ) )
+                     split( variables, lines, '\n' );
+
+                  for( size_t i = 0; i < lines.size( ); i++ )
+                  {
+                     string next_line( lines[ i ] );
+
+                     string::size_type pos = next_line.find( ' ' );
+
+                     if( pos != string::npos )
+                     {
+                        if( has_session_info( next_line.substr( pos + 1 ) ) )
+                           lines[ i ] += '*';
+                     }
+                  }
+
+                  if( !is_json_output )
+                     response = join( lines, '\n' );
+                  else
+                     response = as_json_array( "all_devices", lines, true );
+               }
+               else if( is_delete_request && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_devices_prefix ) )
+               {
+                  string target( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_devices_prefix ) ) );
+
+                  if( target == device )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "You cannot remove your current device.";
+                  else
+                  {
+                     found = true;
+
+                     remove_access_device_if_present( access, target );
+
+                     remove_session_for_device_if_present( access, target );
+
+                     set_system_variable( var_prefix + access + '.' + target + ".*", "" );
+                  }
                }
                else if( is_delete_request && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_sessions_prefix ) )
                {
@@ -3276,13 +3435,13 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  }
                               }
 
-                              update_session_info( session, now );
+                              update_session_info( session, ip_addr, now );
 
                               web_session_commands = request_and_args;
                            }
                            else
                            {
-                              update_session_info( session, now );
+                              update_session_info( session, ip_addr, now );
 
                               web_session_commands = "variable " + web_message_var_name;
                            }
