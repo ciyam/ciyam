@@ -56,6 +56,10 @@ body
    font-family: var(--font-family-chat-mono);
    font-size: var(--font-size-chat-small);
    line-height: 1.55;
+   /* NOTE: JetBrains Mono joins some runs of symbols into one shape - "***", a PIN's own list or script,
+      showed with its middle asterisk raised (Ian, 2026-10-07). A console shows exactly what was typed. */
+   font-variant-ligatures: none;
+   font-feature-settings: "liga" 0, "calt" 0;
 }
 
 [hidden]
