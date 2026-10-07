@@ -69,7 +69,10 @@ textarea
 {
    display: flex;
    flex-direction: column;
+   /* NOTE: "dvh" - the height a phone's browser actually shows, its address bar included; "vh" alone is the height
+      with the bar hidden, which put the chat's message box below the screen in GrapheneOS's Vanadium (Ian, 2026-10-07). */
    height: 100vh;
+   height: 100dvh;
    background: var(--color-chat-bg);
 }
 
@@ -494,6 +497,7 @@ button.chat-avatar:hover
 {
    display: flex;
    min-height: 100vh;
+   min-height: 100dvh;
    padding: 40px 16px;
    background: var(--color-chat-bg-raised);
 }
