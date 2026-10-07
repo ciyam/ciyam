@@ -142,5 +142,9 @@ else
    ) &
 fi
 
+# NOTE: A crash leaves a core dump where the host keeps them - Docker Desktop's WSL saves them under Windows'
+# "%TEMP%\wsl-crashes"; a Linux host by its "core_pattern". Read one with gdb in a "CIYAM_CPP_OPTS=-g" build.
+ulimit -c unlimited 2>/dev/null || true
+
 # NOTE: Exec so the server is PID 1 and receives "docker stop" directly.
 exec ./ciyam_server -quiet -no_udp -no_peers

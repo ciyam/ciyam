@@ -38,6 +38,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       nodejs \
  && rm -rf /var/lib/apt/lists/*
 
+# NOTE: "--build-arg CIYAM_CPP_OPTS=-g" builds with debug information, as Ian builds his development system, so a
+# crash's core dump gives a stack with source lines - and adds gdb to read one. Empty, the build is as before.
+ARG CIYAM_CPP_OPTS=
+RUN if [ -n "$CIYAM_CPP_OPTS" ]; then \
+       apt-get update && apt-get install -y --no-install-recommends gdb && rm -rf /var/lib/apt/lists/*; \
+    fi
+
 # NOTE: The build links with "-ltermcap", which no longer ships as its own library
 # on Ubuntu - the symbols live in libtinfo, which "libncurses-dev" provides (26.04 has
 # no separate "libtinfo-dev").
