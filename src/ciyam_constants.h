@@ -36,6 +36,8 @@ const size_t c_chunk_digits = 6;
 const size_t c_identity_length = 7;
 const size_t c_encrypted_length = 32;
 
+const size_t c_cws_access_length = 5;
+
 const size_t c_bc_identity_length = 9;
 
 const size_t c_bc_scaling_value = 50;
