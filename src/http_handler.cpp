@@ -1221,10 +1221,19 @@ void http_request_handler::on_start( )
 
                string version( get_system_variable( e_special_var_version ) );
 
+               string cipher;
+
+#ifdef SSL_SUPPORT
+               cipher = up_socket->crypto_cipher( );
+#endif
+
+               if( cipher.empty( ) )
+                  cipher = "(NONE)";
+
                if( !is_json_output )
-                  response = name + ' ' + version;
+                  response = name + ' ' + version + ' ' + cipher;
                else
-                  response = "{\"name\":\"" + name + "\", \"version\":\"" + version + "\"}";
+                  response = "{\"name\":\"" + name + "\", \"version\":\"" + version + "\", \"security\":\"" + cipher + "\"}";
             }
             else if( http_document == c_uptime_endpoint )
             {
