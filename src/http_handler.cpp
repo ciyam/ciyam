@@ -86,6 +86,7 @@ constexpr const char* c_ext_ttf = "ttf";
 constexpr const char* c_ext_svg = "svg";
 constexpr const char* c_ext_form = "form";
 constexpr const char* c_ext_html = "html";
+constexpr const char* c_ext_list = "list";
 constexpr const char* c_ext_woff = "woff";
 constexpr const char* c_ext_woff2 = "woff2";
 
@@ -1383,10 +1384,51 @@ void http_request_handler::on_start( )
 
             if( allowed )
             {
-               if( file_exists( path + http_document ) )
-               {
-                  found = true;
+               found = file_exists( path + http_document );
 
+               if( found )
+               {
+                  string name_check( http_document );
+
+                  string::size_type pos = name_check.rfind( '/' );
+
+                  name_check.erase( 0, pos + 1 );
+
+                  pos = name_check.find( c_ciyam_prefix );
+
+                  // NOTE: If the requested file is in the form of either:
+                  //
+                  // <path>/ciyam_#####.js
+                  // <path>/ciyam_#####.list
+                  //
+                  // then will set as being not found if the IP address of
+                  // the requester does not match an existing CWS session.
+                  if( pos == 0 )
+                  {
+                     name_check.erase( 0, CONST_LENGTH( c_ciyam_prefix ) );
+
+                     pos = name_check.rfind( '.' );
+
+                     if( pos != string::npos )
+                     {
+                        string ext( name_check.substr( pos + 1 ) );
+
+                        name_check.erase( pos );
+
+                        if( ( name_check.length( ) == c_cws_access_length )
+                         && ( ( ext == c_ext_js ) || ( ext == c_ext_list ) ) )
+                        {
+                           pos = name_check.find_first_not_of( "0123456789" );
+
+                           if( ( pos == string::npos ) && !ip_addr_belongs_to_a_web_session( ip_addr ) )
+                              found = false;
+                        }
+                     }
+                  }
+               }
+
+               if( found )
+               {
                   string extension;
 
 #ifdef DEBUG
