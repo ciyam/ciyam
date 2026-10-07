@@ -183,6 +183,7 @@ ok   stored value
 ok   not JSON
 ok   wrong type
 ok   unknown names dropped
+ok   a list's lines shown as they run - off unless asked
 ok   not an object
 ok   log polling
 

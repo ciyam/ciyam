@@ -972,9 +972,12 @@ function summarise_storage_value( key, value )
 //
 // "log_polling" also logs the quiet requests - polling and other background reads - which are
 // otherwise left out so they do not bury what was asked for. For diagnostics; off by default.
+//
+// "echo_list_lines" prints each line of a list as it runs, before what it answers. Off by default, as
+// in the harness - the output is much cleaner without (Ian, 2026-10-07).
 const c_console_prefs_key = "cws.prefs";
 
-const c_console_prefs = { log_session_only: false, log_polling: false };
+const c_console_prefs = { log_session_only: false, log_polling: false, echo_list_lines: false };
 
 // NOTE: Only known names, and only values of the default's type, are taken from what is
 // stored - anything else, including text that is not JSON at all, falls back to the default.

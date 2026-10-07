@@ -371,13 +371,14 @@ check( "other values whole", cp.summarise_storage_value( "cws.access", "45679,20
 // --------------------------------------------------------------------
 heading( "preferences" );
 
-check( "nothing stored", cp.parse_prefs( null ), { log_session_only: false, log_polling: false } );
-check( "stored value", cp.parse_prefs( "{\"log_session_only\":true}" ), { log_session_only: true, log_polling: false } );
-check( "not JSON", cp.parse_prefs( "yes please" ), { log_session_only: false, log_polling: false } );
-check( "wrong type", cp.parse_prefs( "{\"log_session_only\":\"true\"}" ), { log_session_only: false, log_polling: false } );
-check( "unknown names dropped", cp.parse_prefs( "{\"log_session_only\":true,\"other\":1}" ), { log_session_only: true, log_polling: false } );
-check( "not an object", cp.parse_prefs( "[true]" ), { log_session_only: false, log_polling: false } );
-check( "log polling", cp.parse_prefs( "{\"log_polling\":true}" ), { log_session_only: false, log_polling: true } );
+check( "nothing stored", cp.parse_prefs( null ), { log_session_only: false, log_polling: false, echo_list_lines: false } );
+check( "stored value", cp.parse_prefs( "{\"log_session_only\":true}" ), { log_session_only: true, log_polling: false, echo_list_lines: false } );
+check( "not JSON", cp.parse_prefs( "yes please" ), { log_session_only: false, log_polling: false, echo_list_lines: false } );
+check( "wrong type", cp.parse_prefs( "{\"log_session_only\":\"true\"}" ), { log_session_only: false, log_polling: false, echo_list_lines: false } );
+check( "unknown names dropped", cp.parse_prefs( "{\"log_session_only\":true,\"other\":1}" ), { log_session_only: true, log_polling: false, echo_list_lines: false } );
+check( "a list's lines shown as they run - off unless asked", [ cp.parse_prefs( null ).echo_list_lines, cp.parse_prefs( "{\"echo_list_lines\":true}" ).echo_list_lines ], [ false, true ] );
+check( "not an object", cp.parse_prefs( "[true]" ), { log_session_only: false, log_polling: false, echo_list_lines: false } );
+check( "log polling", cp.parse_prefs( "{\"log_polling\":true}" ), { log_session_only: false, log_polling: true, echo_list_lines: false } );
 
 // --------------------------------------------------------------------
 heading( "request log entries" );
