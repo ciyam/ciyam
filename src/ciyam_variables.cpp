@@ -818,7 +818,7 @@ void touch_or_remove( const string& variable, bool remove, bool use_temp_directo
    string file_name( c_hidden_file_prefix + variable.substr( 1 ) );
 
    if( use_temp_directory )
-      file_name = string( c_tmp_ciyam_directory ) + '/' + file_name;
+      file_name = string( c_tmp_ciyam_path ) + '/' + file_name;
 
    if( remove )
       file_remove( file_name );
@@ -831,7 +831,7 @@ void set_file_variable( const string& variable, bool use_temp_directory = false 
    string file_name( c_hidden_file_prefix + variable.substr( 1 ) );
 
    if( use_temp_directory )
-      file_name = string( c_tmp_ciyam_directory ) + '/' + file_name;
+      file_name = string( c_tmp_ciyam_path ) + '/' + file_name;
 
    if( file_exists( file_name ) )
       g_variables[ variable ] = c_true_value;

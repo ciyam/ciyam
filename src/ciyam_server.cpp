@@ -333,13 +333,13 @@ int main( int argc, char* argv[ ] )
          processor.process_commands( );
       }
 
-      if( !dir_exists( c_tmp_ciyam_directory ) )
-         create_dir( c_tmp_ciyam_directory );
+      if( !dir_exists( c_tmp_ciyam_path ) )
+         create_dir( c_tmp_ciyam_path );
 
       // NOTE: Check that the temporary directory exists or was created and then
       // will also check that files can be created and deleted in the directory.
-      if( !dir_exists( c_tmp_ciyam_directory ) )
-         throw runtime_error( "was unable to create " + string( c_tmp_ciyam_directory ) );
+      if( !dir_exists( c_tmp_ciyam_path ) )
+         throw runtime_error( "was unable to create " + string( c_tmp_ciyam_path ) );
       else
       {
          ofstream outf( c_tmp_ciyam_file_dummy );
@@ -353,7 +353,7 @@ int main( int argc, char* argv[ ] )
       if( file_exists( c_tmp_ciyam_file_dummy ) )
          throw runtime_error( "was unable to remove " + string( c_tmp_ciyam_file_dummy ) );
 
-      g_temporary_directory = c_tmp_ciyam_directory;
+      g_temporary_directory = c_tmp_ciyam_path;
 
       umask( STANDARD_UMASK );
 

@@ -339,7 +339,7 @@ void read_script_info( )
                      info.lock_filename.erase( 0, 1 );
                   }
 
-                  info.lock_filename = string( c_tmp_ciyam_directory ) + '/' + info.lock_filename;
+                  info.lock_filename = string( c_tmp_ciyam_path ) + '/' + info.lock_filename;
                }
             }
 

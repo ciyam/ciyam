@@ -1189,7 +1189,7 @@ void Meta_Package::impl::impl_Install( )
          } while( get_obj( ).child_Package_Option( ).iterate_next( ) );
       }
 
-      string tmp_filename( c_tmp_ciyam_directory );
+      string tmp_filename( c_tmp_ciyam_path );
 
       tmp_filename += '/' + get_uuid( );
 

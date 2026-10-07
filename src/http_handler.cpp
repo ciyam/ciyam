@@ -1272,7 +1272,7 @@ void http_request_handler::on_start( )
                {
                   string token( params[ c_query_param_name_token ] );
 
-                  string token_file( c_tmp_ciyam_directory );
+                  string token_file( c_tmp_ciyam_path );
 
                   token_file += '/' + token + c_ip_addr_file_ext;
 

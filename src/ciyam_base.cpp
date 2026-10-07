@@ -3898,7 +3898,7 @@ void read_script_info( )
                         info.lock_filename.erase( 0, 1 );
                      }
 
-                     info.lock_filename = string( c_tmp_ciyam_directory ) + '/' + info.lock_filename;
+                     info.lock_filename = string( c_tmp_ciyam_path ) + '/' + info.lock_filename;
                   }
                }
             }
@@ -5558,7 +5558,7 @@ int has_external_ip_address( )
 
    int64_t now = unix_time( );
 
-   string check_ext_ip_addr_file( c_tmp_ciyam_directory );
+   string check_ext_ip_addr_file( c_tmp_ciyam_path );
 
    check_ext_ip_addr_file += '/' + string( c_check_ext_ip_addr ) + c_tmp_file_ext;
 
@@ -5618,7 +5618,7 @@ int has_external_ip_address( )
             // NOTE: Uses "/tmp/ciyam/.ext_ip_addr" in order
             // for bash scripts (such as "check_ext_ip_addr"
             // to check the validated external IP address).
-            string ext_ip_addr_file( c_tmp_ciyam_directory );
+            string ext_ip_addr_file( c_tmp_ciyam_path );
 
             ext_ip_addr_file += '/' + string( c_ext_ip_addr_file );
 
@@ -7818,7 +7818,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
       if( is_script )
       {
-         string args_file( c_tmp_ciyam_directory );
+         string args_file( c_tmp_ciyam_path );
 
          args_file += '/' + uuid( ).as_string( );
 

@@ -3884,7 +3884,7 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
    {
       string create_script( "./create_db" );
 
-      string tmp_filename( c_tmp_ciyam_directory );
+      string tmp_filename( c_tmp_ciyam_path );
 
       tmp_filename += '/' + get_uuid( );
 

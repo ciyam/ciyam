@@ -191,7 +191,7 @@ constexpr const char* c_ciyam_ui_stop_file = "ciyam_interface.stop";
 
 constexpr const char* c_tmp_path = "/tmp";
 
-constexpr const char* c_tmp_ciyam_directory = "/tmp/ciyam";
+constexpr const char* c_tmp_ciyam_path = "/tmp/ciyam";
 
 constexpr const char* c_ciyam_server_sid_file = "ciyam_server.sid";
 constexpr const char* c_ciyam_server_sid_chk_file = "ciyam_server.sid.chk";
