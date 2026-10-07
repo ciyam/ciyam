@@ -333,6 +333,15 @@ function escape_message_text( text )
    return String( text || "" ).replace( /\\/g, "\\\\" );
 }
 
+// NOTE: Whether the message box keeps the focus once a message is sent - so a follow-up can be typed
+// straight away, on a computer. On a phone the focus keeps the on-screen keyboard up, over half the
+// screen and the message just sent (Ian, 2026-10-07), so there it lets go. "coarse_pointer" - a touch
+// screen as the main pointer, the browser's "(pointer: coarse)" - stands in for an on-screen keyboard.
+function keeps_focus_after_send( coarse_pointer )
+{
+   return !coarse_pointer;
+}
+
 // NOTE: The server keeps each message as a queue item of at most 3000 characters since
 // 2026-10-01 ("c_default_max_deque_item_size" in "ciyam_variables.cpp", 8000 before), which
 // holds the text encoded with the sender's name - measured at 2233 bytes of text for "admin"
@@ -1901,6 +1910,7 @@ if( typeof module !== "undefined" )
       invited_to_room: invited_to_room,
       pending_invitations: pending_invitations,
       escape_message_text: escape_message_text,
+      keeps_focus_after_send: keeps_focus_after_send,
       message_bytes: message_bytes,
       c_max_message_bytes: c_max_message_bytes,
       unescape_message_text: unescape_message_text,
