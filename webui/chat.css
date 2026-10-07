@@ -69,7 +69,7 @@ textarea
 {
    display: flex;
    flex-direction: column;
-   /* NOTE: "dvh" - the height a phone's browser actually shows, its address bar included; "vh" alone is the height
+   /* NOTE: "dvh" - the height actually left visible, smaller while a phone's address bar shows; "vh" alone is the height
       with the bar hidden, which put the chat's message box below the screen in GrapheneOS's Vanadium (Ian, 2026-10-07). */
    height: 100vh;
    height: 100dvh;
