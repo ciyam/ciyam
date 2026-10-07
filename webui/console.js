@@ -966,7 +966,9 @@ async function run_line( line, from_script )
 
    if( !guard.run )
    {
-      print_line( "(skipped)", "is-dim" );
+      // NOTE: Only beside a line that was shown - unshown, a list's skipped lines print nothing, as in the harness (Ian, 2026-10-08).
+      if( !from_script || g_prefs.echo_list_lines )
+         print_line( "(skipped)", "is-dim" );
 
       return { ok: true };
    }
