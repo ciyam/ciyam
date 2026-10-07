@@ -3793,6 +3793,18 @@ function do_composer_key( event )
    return true;
 }
 
+// NOTE: After a message is sent, or held - the focus back in the message box on a computer, and let go on a
+// phone, so its keyboard goes and the message just sent can be seen ("keeps_focus_after_send( )").
+function settle_composer( input )
+{
+   var coarse = !!( window.matchMedia && window.matchMedia( "(pointer: coarse)" ).matches );
+
+   if( keeps_focus_after_send( coarse ) )
+      input.focus( );
+   else
+      input.blur( );
+}
+
 async function do_send( )
 {
    var input = document.getElementById( "composer_input" );
@@ -3835,6 +3847,8 @@ async function do_send( )
       resize_composer( );
       update_composer_count( );
       render_held( );
+
+      settle_composer( input );
 
       return;
    }
@@ -3919,7 +3933,8 @@ async function do_send( )
    } );
 
    input.disabled = false;
-   input.focus( );
+
+   settle_composer( input );
 
    if( ciyam.error !== "" )
    {
