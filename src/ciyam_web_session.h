@@ -42,6 +42,8 @@ struct cws_paramaters
 
 void dump_session_info( std::ostream& os );
 
+bool ip_addr_belongs_to_a_web_session( const std::string& ip_addr );
+
 bool process_cws_request( http_request_type request_type, const std::string& uri_suffix,
  const cws_paramaters& cws_params, bool& use_none_response, std::string& response, std::string& error );
 

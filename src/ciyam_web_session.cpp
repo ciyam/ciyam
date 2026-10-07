@@ -67,7 +67,6 @@ const size_t c_cws_max_devices = 10;
 
 const size_t c_cws_seed_reserve = 120;
 
-const size_t c_cws_access_length = 5;
 const size_t c_cws_secret_length = 12;
 
 const size_t c_cws_device_length = 15;
@@ -1359,6 +1358,25 @@ void dump_session_info( ostream& os )
        << ' ' << ( i->second->username.empty( ) ? g_none_tag : i->second->username ) << " (" << i->second->ip_addr << ")\n";
 }
 
+bool ip_addr_belongs_to_a_web_session( const string& ip_addr )
+{
+   guard g( g_mutex );
+
+   bool retval = false;
+
+   for( auto i = g_session_info.begin( ); i != g_session_info.end( ); i++ )
+   {
+      if( ip_addr == i->second->ip_addr )
+      {
+         retval = true;
+
+         break;
+      }
+   }
+
+   return retval;
+}
+
 bool process_cws_request( http_request_type request_type, const string& uri_suffix,
  const cws_paramaters& cws_params, bool& use_none_response, string& response, string& error )
 {
@@ -2491,12 +2509,12 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   found = true;
 
-                  response = get_files_for_endpoint( access,
-                   e_special_var_cws_webcmds, 0, c_list_suffix, is_json_output, use_none_response );
+                  response = get_files_for_endpoint( access, e_special_var_cws_webcmds,
+                   c_ciyam_prefix, c_list_suffix, is_json_output, use_none_response );
                }
                else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_webcmdlists ) )
                {
-                  string file_name( g_cws_artifacts_dir + '/' + access + c_list_suffix );
+                  string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + access + c_list_suffix );
 
                   if( payload.empty( ) )
                      // FUTURE: This message should be handled as a server string message.
@@ -2526,7 +2544,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      error = "Commands list for '" + name + "' is unavailable.";
                   else
                   {
-                     string file_name( g_cws_artifacts_dir + '/' + name + c_list_suffix );
+                     string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + name + c_list_suffix );
 
                      if( !file_exists( file_name ) )
                         // FUTURE: This message should be handled as a server string message.
@@ -2551,7 +2569,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      error = "Commands list data cannot be erased whilst the system is locked.";
                   else
                   {
-                     string file_name( g_cws_artifacts_dir + '/' + access + c_list_suffix );
+                     string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + access + c_list_suffix );
 
                      file_remove( file_name );
 
