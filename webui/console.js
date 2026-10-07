@@ -2044,7 +2044,7 @@ function show_script_editor( kind )
    disarm_replace( );
 
    document.getElementById( "script_server_hint" ).textContent = is_list
-    ? "On the server each account keeps one list - " + ciyam.access + ".list, shown as ***. "
+    ? "On the server each account keeps one list - ciyam_" + ciyam.access + ".list, shown as ***. "
      + "The name above is not kept, and saving replaces the list saved before."
     : "On the server each account keeps one JavaScript - ciyam_" + ciyam.access + ".js, shown as ***. Saving replaces the one saved before.";
 
@@ -2154,7 +2154,7 @@ async function do_save_to_server( )
 
    origin.textContent = is_javascript
     ? "Saved on the server as this account's own, ciyam_" + ciyam.access + ".js - load script *** runs it."
-    : "Saved on the server as this account's own list, " + ciyam.access + ".list - listed as ***.";
+    : "Saved on the server as this account's own list, ciyam_" + ciyam.access + ".list - listed as ***.";
    origin.hidden = false;
 
    if( is_javascript )
@@ -2240,7 +2240,7 @@ async function open_server_list( name, button )
 
    var origin = document.getElementById( "script_origin" );
 
-   origin.textContent = "From the server's " + ( ( name === c_console_own_name ) ? ciyam.access : name )
+   origin.textContent = "From the server's ciyam_" + ( ( name === c_console_own_name ) ? ciyam.access : name )
     + ".list - Save here keeps a copy in this browser.";
    origin.hidden = false;
 
