@@ -16,9 +16,9 @@ Check usage of salted RPC password hash value for original time stamp used still
 Error: Incorrect or invalid password.
 Use the 'password' bash script to generate the password hash and salted password hash file.
 @system_is_for_devt 1
-CIYAM 0.0.0
+CIYAM 0.0.0 (NONE)
 ::1
-CIYAM 0.0.0{"name":"CIYAM", "version":"0.0.0"}127.0.0.1{"ip_addr":"::1"}{"ip_addr":"127.0.0.1"}::1
+CIYAM 0.0.0 (NONE){"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}127.0.0.1{"ip_addr":"::1"}{"ip_addr":"127.0.0.1"}::1
 Error: Invalid format value 'xxxx'.
 100000000
 {"post_limit":"100000000"}{"post_limit":"100.0 MB"}testing...

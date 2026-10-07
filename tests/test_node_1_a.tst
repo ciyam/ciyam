@@ -1,13 +1,13 @@
 Initial basic check for node and 'ciyam.js'.
 CIYAM [http://localhost:13031]
-{"name":"*CIYAM*", "version":"0.0.0"}
+{"name":"*CIYAM*", "version":"0.0.0", "security":"(NONE)"}
 {"data":"testing..."}
 Create external system identity and 'admin' access with 'none'.
 (created device - length is 15)
 
 Connect using ADMIN with 'none'.
 CIYAM [http://localhost:13031]
-{"name":":CIYAM:", "version":"0.0.0"}
+{"name":":CIYAM:", "version":"0.0.0", "security":"(NONE)"}
 [adm]-2@admin
 ciyam.username = admin
 ciyam.is_admin = true
@@ -20,7 +20,7 @@ Employ master password as an unlock key.
 
 Connect using ADMIN with 'none'.
 CIYAM [http://localhost:13031]
-{"name":"CIYAM", "version":"0.0.0"}
+{"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [adm]@admin
 ciyam.username = admin
 ciyam.is_admin = true
@@ -29,7 +29,7 @@ ciyam.is_locked = false
 
 Update 'admin' access password to 'test' and change identity to internal (after restore).
 CIYAM [http://localhost:13031]
-{"name":":CIYAM:", "version":"0.0.0"}
+{"name":":CIYAM:", "version":"0.0.0", "security":"(NONE)"}
 [adm]@admin
 ciyam.username = admin
 ciyam.is_admin = true
@@ -50,7 +50,7 @@ Error: This web session is not valid (or has expired).
 
 Connect using 10301 with 'test'.
 CIYAM [http://localhost:13031]
-{"name":"CIYAM", "version":"0.0.0"}
+{"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [adm]@admin
 ciyam.username = admin
 ciyam.is_admin = true
@@ -62,7 +62,7 @@ Error: System identity is not currently locked.
 
 Connect using 10301 with 'test' (after restore).
 CIYAM [http://localhost:13031]
-{"name":":CIYAM:", "version":"0.0.0"}
+{"name":":CIYAM:", "version":"0.0.0", "security":"(NONE)"}
 [adm]-1@admin
 ciyam.username = admin
 ciyam.is_admin = true
@@ -72,7 +72,7 @@ ciyam.lock_source => 1
 
 Update 'admin' access password to 'none' (after restore).
 CIYAM [http://localhost:13031]
-{"name":":CIYAM:", "version":"0.0.0"}
+{"name":":CIYAM:", "version":"0.0.0", "security":"(NONE)"}
 [adm]@admin
 ciyam.username = admin
 ciyam.is_admin = true
@@ -90,7 +90,7 @@ Error: This web session is not valid (or has expired).
 
 Connect using 10301 with 'none' and create an unlock key.
 CIYAM [http://localhost:13031]
-{"name":"CIYAM", "version":"0.0.0"}
+{"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [adm]@admin
 ciyam.username = admin
 ciyam.is_admin = true
@@ -131,7 +131,7 @@ Error: Invalid nominated access token '1111' was provided.
 
 Connect using 11111 with 'none' and list users.
 CIYAM [http://localhost:13031]
-{"name":"CIYAM", "version":"0.0.0"}
+{"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@test-1
 ciyam.username = test-1
 ciyam.is_admin = false
@@ -152,7 +152,7 @@ Update own password for 11111 from 'none' to 'test'.
 
 Connect using 11111 with 'test'.
 CIYAM [http://localhost:13031]
-{"name":"CIYAM", "version":"0.0.0"}
+{"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@test-1
 ciyam.username = test-1
 ciyam.is_admin = false
@@ -164,7 +164,7 @@ Update password for 11111 to 'none' as admin.
 
 Connect using 11111 with 'none'.
 CIYAM [http://localhost:13031]
-{"name":"CIYAM", "version":"0.0.0"}
+{"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@test-1
 ciyam.username = test-1
 ciyam.is_admin = false
@@ -188,7 +188,7 @@ Error: ?test-2
 
 Connect using 22222:test with 'test' (after suggestion).
 CIYAM [http://localhost:13031]
-{"name":"CIYAM", "version":"0.0.0"}
+{"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@test
 ciyam.username = test
 ciyam.is_admin = false
@@ -222,7 +222,7 @@ Error: Username 'test' has already been taken.
 
 Connect using 33333:testing with 'test' and list users
 CIYAM [http://localhost:13031]
-{"name":"CIYAM", "version":"0.0.0"}
+{"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@testing
 ciyam.username = testing
 ciyam.is_admin = false
@@ -273,7 +273,7 @@ Force 'the <secret>' token to be for pin '12345'.
 
 Connect using <secret>:test-x with 'test' then list users.
 CIYAM [http://localhost:13031]
-{"name":"CIYAM", "version":"0.0.0"}
+{"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@test-x
 ciyam.username = test-x
 ciyam.is_admin = false
