@@ -294,11 +294,18 @@ string ssl_socket::crypto_cipher( ) const
 
    if( p_ssl )
    {
-      retval = string( SSL_get_cipher( p_ssl ) );
+      const char* p_cipher = SSL_get_cipher( p_ssl );
+
+      if( p_cipher )
+      {
+         retval = string( p_cipher );
 
 #if OPENSSL_VERSION_NUMBER >= 0x30200000L
-      retval += " (" + string( SSL_get0_group_name( p_ssl ) ) + ")";
+         // NOTE: If no cipher expects "(NONE)".
+         if( retval.find( '(' ) == string::npos )
+            retval += " (" + string( SSL_get0_group_name( p_ssl ) ) + ")";
 #endif
+      }
    }
 
    return retval;
