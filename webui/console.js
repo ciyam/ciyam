@@ -947,7 +947,10 @@ function session_info( )
 // NOTE: Resolves to { ok } so a script knows whether to carry on.
 async function run_line( line, from_script )
 {
-   print_command( line );
+   // NOTE: A list's own lines are not printed unless asked - only what they answer, as in the harness
+   // ("echo_list_lines", the Scripts tab's "Show each line"; Ian, 2026-10-07).
+   if( !from_script || g_prefs.echo_list_lines )
+      print_command( line );
 
    // NOTE: "{name}" substitution is Ian's, from "ciyam.js", so a script written for the
    // harness runs unchanged here - including "." at the start to switch it off, and
@@ -2030,6 +2033,7 @@ function show_script_editor( kind )
    document.getElementById( "script_note_javascript" ).hidden = is_list;
 
    document.getElementById( "script_run" ).hidden = !is_list;
+   document.getElementById( "echo_list_lines_row" ).hidden = !is_list;
    document.getElementById( "script_save" ).hidden = !is_list;
 
    document.getElementById( "script_name" ).readOnly = !is_list;
@@ -2522,7 +2526,9 @@ async function run_script_body( body, name )
 
       if( !result.ok )
       {
-         print_line( "Stopped at line " + steps[ i ].line + " of '" + name + "'.", "is-err" );
+         // NOTE: Unless each line is shown the failing one was not printed, so the stop names it.
+         print_line( "Stopped at line " + steps[ i ].line + " of '" + name + "'"
+          + ( g_prefs.echo_list_lines ? "." : ": " + steps[ i ].text ), "is-err" );
 
          ok = false;
 
@@ -2757,6 +2763,7 @@ function load_prefs( )
 
    document.getElementById( "log_session_only" ).checked = g_prefs.log_session_only;
    document.getElementById( "log_polling" ).checked = g_prefs.log_polling;
+   document.getElementById( "echo_list_lines" ).checked = g_prefs.echo_list_lines;
 }
 
 function save_prefs( )
@@ -2787,6 +2794,13 @@ function do_set_log_session_only( )
 function do_set_log_polling( )
 {
    g_prefs.log_polling = document.getElementById( "log_polling" ).checked;
+
+   save_prefs( );
+}
+
+function do_set_echo_list_lines( )
+{
+   g_prefs.echo_list_lines = document.getElementById( "echo_list_lines" ).checked;
 
    save_prefs( );
 }

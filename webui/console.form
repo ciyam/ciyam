@@ -189,6 +189,11 @@ http://www.opensource.org/licenses/mit-license.php.
 
                   <div class="console-bar">
                      <button type="button" class="console-chip is-solid" id="script_run" onclick="do_run_editor( )">Run</button>
+                     <label class="console-check" id="echo_list_lines_row"
+                      title="Print each line of a list before what it answers - off, only the answers show">
+                        <input type="checkbox" id="echo_list_lines" onchange="do_set_echo_list_lines( )">
+                        Show each line
+                     </label>
                      <button type="button" class="console-chip is-danger" id="script_stop" onclick="do_stop_script( )" hidden>Stop</button>
                      <button type="button" class="console-chip" id="script_save" onclick="do_save_script( )">Save here</button>
                      <button type="button" class="console-chip" id="script_save_server" onclick="do_save_to_server( )">Save as my server list</button>
