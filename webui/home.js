@@ -65,13 +65,20 @@ function home_main( )
    document.getElementById( "unlock_form" ).addEventListener( "submit", do_unlock );
    document.getElementById( "rescue_form" ).addEventListener( "submit", do_rescue );
    document.getElementById( "unlock_sign_out" ).addEventListener( "click", do_sign_out );
-   document.getElementById( "app_sign_out" ).addEventListener( "click", do_sign_out );
+   // NOTE: "Sign out of every app" - here and in the switcher alike, every tab on the session told (2026-10-08).
+   document.getElementById( "app_sign_out" ).addEventListener( "click", apps_sign_out_everywhere );
 
    install_shell( );
    install_member_home( );
    install_admin( );
+   install_console( );
 
-   check_node( );
+   var source = linking_source( );
+
+   if( source !== "" )
+      start_linking( source );
+   else
+      check_node( );
 }
 
 function show_view( id )
@@ -438,24 +445,104 @@ function open_channel( )
 
    g_channel.addEventListener( "message", function( event )
    {
-      var data = String( event.data );
+      var message = parse_channel_message( event.data );
 
-      var pos = data.indexOf( ":" );
-
-      if( pos < 0 )
+      if( message === null )
          return;
 
-      var target = data.substr( 0, pos );
-      var viewer = data.substring( pos + 1 );
+      // NOTE: An app opened from here asks for the session - it is handed over.
+      if( ( message.kind === "announce" ) && ( message.id === g_self ) && ( ciyam.sessid !== "" ) )
+      {
+         g_channel.postMessage( message.rest + "-" + g_self );
 
-      if( ( target !== g_self ) || ( ciyam.sessid === "" ) || !/^[0-9]+$/.test( viewer ) )
-         return;
+         g_channel.postMessage( message.rest + "=" + ciyam.access + "," + ciyam.device + "," + ciyam.hashed + ","
+          + ciyam.sessid + "," + ciyam.unique + "," + encode_channel_field( ciyam.username ) + "," + ( ciyam.is_admin ? "1" : "0" ) );
+      }
+      // NOTE: Home opened from another app ("?source=", the switcher) - that app's session, taken up here.
+      else if( ( message.kind === "credentials" ) && ( message.id === g_self ) && ( g_link_timer !== null ) )
+      {
+         var credentials = parse_credentials( message.rest );
 
-      g_channel.postMessage( viewer + "-" + g_self );
-
-      g_channel.postMessage( viewer + "=" + ciyam.access + "," + ciyam.device + "," + ciyam.hashed + "," + ciyam.sessid + ","
-       + ciyam.unique + "," + encode_channel_field( ciyam.username ) + "," + ( ciyam.is_admin ? "1" : "0" ) );
+         if( credentials !== null )
+            adopt_session( credentials );
+      }
    } );
+}
+
+// ---- Home opened on another app's session - the switcher's "?source=" (2026-10-08)
+
+const c_link_interval = 500;
+const c_link_attempts = 10;
+
+var g_link_timer = null;
+var g_link_attempts = 0;
+
+function linking_source( )
+{
+   var source = new URL( window.location.href ).searchParams.get( "source" );
+
+   return ( ( source !== null ) && /^[0-9]+$/.test( source ) ) ? source : "";
+}
+
+// NOTE: Asks the app that opened Home for its session, a few times; none answering, Home arrives as usual.
+function start_linking( source )
+{
+   open_channel( );
+
+   g_link_attempts = 0;
+
+   var ask = function( )
+   {
+      if( ++g_link_attempts > c_link_attempts )
+      {
+         stop_linking( );
+
+         check_node( );
+
+         return;
+      }
+
+      g_channel.postMessage( source + ":" + g_self );
+   };
+
+   g_link_timer = window.setInterval( ask, c_link_interval );
+
+   ask( );
+}
+
+function stop_linking( )
+{
+   if( g_link_timer !== null )
+      window.clearInterval( g_link_timer );
+
+   g_link_timer = null;
+
+   // NOTE: The "?source=" goes once used, so a reload is Home's own, with its kept session.
+   var url = new URL( window.location.href );
+
+   if( url.searchParams.has( "source" ) )
+   {
+      url.searchParams.delete( "source" );
+
+      history.replaceState( null, "", url.pathname + url.search + url.hash );
+   }
+}
+
+async function adopt_session( credentials )
+{
+   stop_linking( );
+
+   ciyam.access = credentials.access;
+   ciyam.device = credentials.device;
+   ciyam.hashed = credentials.hashed;
+   ciyam.sessid = credentials.sessid;
+   ciyam.unique = credentials.unique;
+   ciyam.username = credentials.username;
+   ciyam.is_admin = credentials.is_admin;
+
+   await read_system( );
+
+   after_sign_in( );
 }
 
 function unlink_apps( )
@@ -684,6 +771,15 @@ function install_shell( )
 
    open_channel( );
 
+   // NOTE: The switcher at the top of the side menu - the CIYAM mark and "Home", as in every app (2026-10-08).
+   apps_build( document.getElementById( "apps_host" ), {
+      current: "home",
+      self: function( ) { return g_self; },
+      sign_out: do_sign_out,
+      signed_out: signed_out_elsewhere,
+      from: "home"
+   } );
+
    document.getElementById( "rail_open" ).addEventListener( "click", open_rail );
    document.getElementById( "rail_scrim" ).addEventListener( "click", close_rail );
 
@@ -706,6 +802,11 @@ async function enter_app( )
    keep_session( );
 
    build_shell( );
+
+   apps_refresh( );
+
+   // NOTE: The console drawer, as in the chat and the accounts page - admin's, and not on a phone (Damon, 2026-10-08).
+   document.getElementById( "console_toggle" ).hidden = !ciyam.is_admin;
 
    var name = ciyam.username || ciyam.access;
 
@@ -1374,6 +1475,150 @@ function install_admin( )
    } );
 }
 
+// NOTE: Another tab on this session signed out of every app - the session has gone, so nothing is asked of the node.
+function signed_out_elsewhere( )
+{
+   stop_refresh( );
+   forget_shown_key( );
+   close_console( );
+   unlink_apps( );
+   forget_session( );
+   clear_ciyam( );
+   forget_admin( );
+   close_rail( );
+
+   history.replaceState( null, "", window.location.pathname + window.location.search );
+
+   check_node( ).then( function( )
+   {
+      signin_set_text( "signin_error", "You signed out in another app." );
+   } );
+}
+
+// ====================================================================
+// The console drawer - as in the chat and the accounts page (2026-10-08)
+// ====================================================================
+
+const c_log_channel_name = "ciyam_console_log";
+
+var g_log_channel = null;
+var g_console_loaded = false;
+var g_request_log = [ ];
+var g_request_log_id = 0;
+var g_request_quiet = false;
+
+// NOTE: Home's requests are logged for a console, as the chat's and the accounts page's are - the quiet ones (a
+// console's own, passed through here) only while the console's "Log polling" is ticked.
+function install_console( )
+{
+   install_log_capture( ciyam, "home", function( ) { return g_request_quiet && !is_logging_polling( ); }, record_request );
+
+   if( typeof BroadcastChannel !== "undefined" )
+   {
+      g_log_channel = new BroadcastChannel( c_log_channel_name );
+      g_log_channel.addEventListener( "message", on_log_message );
+   }
+
+   document.getElementById( "console_toggle" ).addEventListener( "click", toggle_console );
+   document.getElementById( "console_popout" ).addEventListener( "click", popout_console );
+   document.getElementById( "console_close" ).addEventListener( "click", toggle_console );
+}
+
+function record_request( entry )
+{
+   entry.id = ++g_request_log_id;
+
+   g_request_log.push( entry );
+
+   if( g_request_log.length > c_console_log_capacity )
+      g_request_log.shift( );
+
+   if( g_log_channel !== null )
+      g_log_channel.postMessage( { kind: "entry", owner: g_self, entry: entry } );
+}
+
+// NOTE: A linked console sends its requests here, so Home's queue keeps them one at a time (ISS-005, ISS-020).
+function on_log_message( event )
+{
+   var data = event.data;
+
+   if( ( data === null ) || ( typeof data !== "object" ) || ( data.owner !== g_self ) )
+      return;
+
+   if( data.kind === "replay" )
+      g_log_channel.postMessage( { kind: "entries", owner: g_self, viewer: data.viewer, entries: g_request_log } );
+   else if( data.kind === "request" )
+      proxy_console_request( data );
+}
+
+function proxy_console_request( data )
+{
+   function reply( response )
+   {
+      g_log_channel.postMessage( { kind: "response", owner: g_self, viewer: data.viewer, id: data.id, response: response } );
+   }
+
+   var methods = [ "GET", "POST", "PUT", "DELETE" ];
+
+   if( ( ciyam.sessid === "" ) || ( typeof data.url !== "string" )
+    || ( data.url.indexOf( ciyam.get_cws_url( ) ) !== 0 ) || ( methods.indexOf( data.method ) < 0 ) )
+   {
+      reply( null );
+
+      return;
+   }
+
+   request( function( done )
+   {
+      // NOTE: Not logged here - the console logs its own request.
+      g_request_quiet = true;
+
+      var pending = ciyam.fetch( data.url, data.method, done );
+
+      g_request_quiet = false;
+
+      return pending;
+   } ).then( function( response )
+   {
+      reply( ( response === c_no_answer ) ? null : response );
+   } );
+}
+
+function toggle_console( )
+{
+   var drawer = document.getElementById( "console_drawer" );
+
+   drawer.hidden = !drawer.hidden;
+
+   set_text( "console_session", "inherits session " + ciyam.sessid );
+
+   if( !drawer.hidden && !g_console_loaded )
+   {
+      g_console_loaded = true;
+
+      // NOTE: "from=home" so the console names Home, and filters its log by it.
+      document.getElementById( "console_frame" ).src = "console.html?embedded=1&from=home&source=" + encodeURIComponent( g_self );
+   }
+}
+
+function popout_console( )
+{
+   open_app_tab( "ciyam-console", "console.html?from=home&source=" + encodeURIComponent( g_self ), ciyam.sessid );
+
+   if( !document.getElementById( "console_drawer" ).hidden )
+      toggle_console( );
+}
+
+// NOTE: A console opened for one session must not carry on under the next.
+function close_console( )
+{
+   g_console_loaded = false;
+   g_request_log = [ ];
+
+   document.getElementById( "console_drawer" ).hidden = true;
+   document.getElementById( "console_frame" ).src = "about:blank";
+}
+
 // NOTE: Admin's figures, logs and the log chosen are not left for whoever signs in next in this tab (found by review).
 function forget_admin( )
 {
@@ -1399,6 +1644,8 @@ async function do_sign_out( )
    stop_refresh( );
 
    forget_shown_key( );
+
+   close_console( );
 
    unlink_apps( );
 

@@ -131,13 +131,8 @@ http://www.opensource.org/licenses/mit-license.php.
      Home open in their own tabs on this session. The rail's items are built by "home.js". -->
 <div class="home-app" id="app_view" hidden>
    <nav class="home-rail" id="home_rail" aria-label="Home">
-      <div class="home-rail-brand">
-         <span class="chat-logo"></span>
-         <span class="home-rail-brand-text">
-            <span class="chat-wordmark">CIYAM</span>
-            <span class="home-rail-brand-note">Home node</span>
-         </span>
-      </div>
+      <!-- NOTE: The app switcher - the CIYAM mark and "Home", as at the top of every app ("apps.js", 2026-10-08). -->
+      <div class="home-rail-brand" id="apps_host"></div>
 
       <div class="home-rail-group">
          <span class="home-rail-heading">Apps</span>
@@ -180,6 +175,8 @@ http://www.opensource.org/licenses/mit-license.php.
          </span>
 
          <span class="home-pill" id="app_security_pill" title="How the node sees this connection - from /system" hidden></span>
+
+         <button type="button" class="chat-btn chat-btn--mono home-console-toggle" id="console_toggle" hidden>Console</button>
 
          <span class="home-avatar home-topbar-avatar" id="top_avatar"></span>
       </header>
@@ -375,4 +372,19 @@ http://www.opensource.org/licenses/mit-license.php.
 
       <nav class="home-bottombar" id="home_bottombar" aria-label="Apps"></nav>
    </div>
+</div>
+
+<!-- NOTE: The console drawer - as in the chat and the accounts page, handed Home's session (Damon, 2026-10-08). -->
+<div id="console_drawer" class="chat-console" hidden>
+   <div class="chat-console-bar">
+      <span class="chat-console-label">Console</span>
+      <span class="chat-console-session">
+         <span class="chat-dot"></span>
+         <span id="console_session"></span>
+      </span>
+      <button type="button" class="chat-console-close" id="console_popout"
+       aria-label="Open the console in its own window" title="Open in its own window">&#8599;</button>
+      <button type="button" class="chat-console-close" id="console_close" aria-label="Close console">&times;</button>
+   </div>
+   <iframe id="console_frame" class="chat-console-frame" title="Developer console"></iframe>
 </div>

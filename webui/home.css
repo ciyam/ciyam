@@ -1004,7 +1004,8 @@
    }
 
    /* NOTE: No console on a phone (parked 2026-10-05) - the menu is the computer's, so it is left out here. */
-   .home-rail-item[data-key="console"]
+   .home-rail-item[data-key="console"],
+   .home-console-toggle
    {
       display: none;
    }
