@@ -236,7 +236,7 @@ employ unlock-key <key>
 retain javascript
 retain stylesheet
 retain webcmdlist
-review logs [<name>]
+review logs [<name> [lines=10]]
 review users
 review devices
 review messages <room> [[from=<unix_time>;]extra={NONE|TIME}]
