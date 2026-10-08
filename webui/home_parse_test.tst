@@ -125,5 +125,24 @@ ok   needs you - nothing
 ok   a device shortened
 ok   a short one kept
 ok   the devices
+ok   devices shown - this browser, then signed in, four in all
+ok   and how many more
+ok   the signed out last, when there is room
+ok   a few - all of them, none more
+ok   none
+ok   more - three
+ok   more - one
+ok   more - none
+
+== the session kept for a reload ===============================
+ok   never the hashed password
+ok   read back as it was
+ok   admin kept as admin
+ok   nothing kept
+ok   not JSON
+ok   not a PIN
+ok   no session
+ok   no device
+ok   admin only when it says so exactly
 
 All checks passed.

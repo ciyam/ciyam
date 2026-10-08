@@ -246,6 +246,41 @@ check( "the devices", hp.device_rows( [
  { label: "e5f6a7…b8c9", title: "e5f6a7b8c9d0e1f2b8c9", state: "Signed in now", active: true, current: false },
  { label: "c9d0e1…f203", title: "c9d0e1f2a3b4f203", state: "Not signed in", active: false, current: false } ] );
 
+function row( label, current, active ) { return { label: label, title: label, state: "", active: active, current: current }; }
+
+var many = [ row( "off-1", false, false ), row( "on-1", false, true ), row( "here", true, true ), row( "off-2", false, false ),
+ row( "on-2", false, true ), row( "on-3", false, true ), row( "on-4", false, true ) ];
+
+check( "devices shown - this browser, then signed in, four in all",
+ hp.devices_shown( many, 0 ).rows.map( function( r ) { return r.label; } ), [ "here", "on-1", "on-2", "on-3" ] );
+check( "and how many more", hp.devices_shown( many, 0 ).more, 3 );
+check( "the signed out last, when there is room", hp.devices_shown( many, 10 ).rows.map( function( r ) { return r.label; } ),
+ [ "here", "on-1", "on-2", "on-3", "on-4", "off-1", "off-2" ] );
+check( "a few - all of them, none more", hp.devices_shown( [ row( "here", true, true ) ], 0 ), { rows: [ row( "here", true, true ) ], more: 0 } );
+check( "none", hp.devices_shown( [ ], 0 ), { rows: [ ], more: 0 } );
+check( "more - three", hp.more_devices_text( 3 ), "and 3 more devices" );
+check( "more - one", hp.more_devices_text( 1 ), "and 1 more device" );
+check( "more - none", hp.more_devices_text( 0 ), "" );
+
+// --------------------------------------------------------------------
+heading( "the session kept for a reload" );
+
+var signed_in = { access: "20401", device: "6034a59f4554116", hashed: "secret-hash", sessid: "4014a01afdf955cf0ef8",
+ unique: "1759999999123", username: "verify-a", is_admin: false };
+
+var kept = hp.format_resume( signed_in );
+
+check( "never the hashed password", kept.indexOf( "secret-hash" ) < 0 && kept.indexOf( "hashed" ) < 0, true );
+check( "read back as it was", hp.parse_resume( kept ),
+ { access: "20401", device: "6034a59f4554116", sessid: "4014a01afdf955cf0ef8", unique: "1759999999123", username: "verify-a", is_admin: false } );
+check( "admin kept as admin", hp.parse_resume( hp.format_resume( { access: "97620", device: "d", sessid: "ab12", unique: "", username: "admin", is_admin: true } ) ).is_admin, true );
+check( "nothing kept", hp.parse_resume( null ), null );
+check( "not JSON", hp.parse_resume( "{nope" ), null );
+check( "not a PIN", hp.parse_resume( JSON.stringify( { access: "abc", device: "d", sessid: "ab12" } ) ), null );
+check( "no session", hp.parse_resume( JSON.stringify( { access: "20401", device: "d", sessid: "" } ) ), null );
+check( "no device", hp.parse_resume( JSON.stringify( { access: "20401", device: "", sessid: "ab12" } ) ), null );
+check( "admin only when it says so exactly", hp.parse_resume( JSON.stringify( { access: "20401", device: "d", sessid: "ab12", is_admin: "true" } ) ).is_admin, false );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

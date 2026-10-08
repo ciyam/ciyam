@@ -459,6 +459,61 @@ function device_rows( devices )
    } );
 }
 
+// NOTE: How many devices My account lists - this browser and three more; the rest are a count, the whole list
+// a link away (Damon, 2026-10-08: test runs had left fifteen).
+const c_home_devices_shown = 4;
+
+// NOTE: The devices My account lists, from "device_rows( )" - this browser first, then those signed in now, then
+// the rest, as many as "limit" (or the default) in all. Returns { rows, more } - "more" being how many are left.
+function devices_shown( rows, limit )
+{
+   var count = ( limit > 0 ) ? limit : c_home_devices_shown;
+
+   var ordered = ( rows || [ ] ).filter( function( row ) { return row.current; } )
+    .concat( ( rows || [ ] ).filter( function( row ) { return !row.current && row.active; } ) )
+    .concat( ( rows || [ ] ).filter( function( row ) { return !row.current && !row.active; } ) );
+
+   return { rows: ordered.slice( 0, count ), more: Math.max( 0, ordered.length - count ) };
+}
+
+// NOTE: The line beneath a shortened list.
+function more_devices_text( more )
+{
+   return ( more > 0 ) ? "and " + counted( more, "more device", "more devices" ) : "";
+}
+
+// NOTE: Home's session kept for its tab, so a reload does not ask for the sign in again (Damon, 2026-10-08) - in
+// "sessionStorage", gone when the tab closes. Only what requests need once signed in: never the hashed password,
+// which is used only to work out the session at the sign in. Read back, anything not of that shape is nothing.
+function format_resume( ciyam_like )
+{
+   return JSON.stringify( { access: ciyam_like.access, device: ciyam_like.device, sessid: ciyam_like.sessid,
+    unique: ciyam_like.unique, username: ciyam_like.username, is_admin: !!ciyam_like.is_admin } );
+}
+
+function parse_resume( stored )
+{
+   try
+   {
+      var value = JSON.parse( stored );
+
+      if( !value || ( typeof value !== "object" ) )
+         return null;
+
+      var text = function( name ) { return ( typeof value[ name ] === "string" ) ? value[ name ] : ""; };
+
+      if( !/^[0-9]{5}$/.test( text( "access" ) ) || !/^[0-9a-f]+$/i.test( text( "sessid" ) ) || ( text( "device" ) === "" ) )
+         return null;
+
+      return { access: text( "access" ), device: text( "device" ), sessid: text( "sessid" ), unique: text( "unique" ),
+       username: text( "username" ), is_admin: ( value.is_admin === true ) };
+   }
+   catch( e )
+   {
+      return null;
+   }
+}
+
 // NOTE: An app opened from Home on Home's session - "?source=<Home's id>", the channel's handshake ("chat.html").
 function linked_app_address( page, source )
 {
@@ -495,6 +550,10 @@ if( typeof module !== "undefined" )
       needs_you: needs_you,
       short_device: short_device,
       device_rows: device_rows,
+      devices_shown: devices_shown,
+      format_resume: format_resume,
+      parse_resume: parse_resume,
+      more_devices_text: more_devices_text,
       linked_app_address: linked_app_address
    };
 }
