@@ -928,7 +928,12 @@ function install_member_home( )
 
    document.getElementById( "tile_chat" ).addEventListener( "click", function( event ) { event.preventDefault( ); open_app_by_key( "chat" ); } );
    document.getElementById( "tile_account" ).addEventListener( "click", function( event ) { event.preventDefault( ); open_app_by_key( "account" ); } );
-   document.getElementById( "manage_devices" ).addEventListener( "click", function( event ) { event.preventDefault( ); open_app_by_key( "account", "#mine" ); } );
+   document.getElementById( "manage_devices" ).addEventListener( "click", function( event )
+   {
+      event.preventDefault( );
+
+      open_app_by_key( "account", "#mine" );
+   } );
 
    document.addEventListener( "visibilitychange", function( )
    {
