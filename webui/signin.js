@@ -4,10 +4,10 @@
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 // NOTE: The node's sign in, shared - one copy for every app, so the sign in is the same everywhere
-// (Damon, 2026-10-08). Home uses it first; the chat, the accounts page and the console each have their
-// own copy still, to move over one at a time with their browser suites as the check. It is the
-// accounts page's, the newest of the three: the saved accounts, "Remember on this browser", a typed
-// password tried again with a new device token after the node was set up again, "Reset this browser".
+// (Damon, 2026-10-08) - Home, the chat, the accounts page and the console, each of which had its own copy.
+// It is the accounts page's, the newest of the three: the saved accounts, "Remember on this browser", a typed
+// password tried again with a new device token after the node was set up again, "Reset this browser"; with
+// the chat's "Contacting the server..." while it signs in.
 //
 // The page builds it with "signin_build( host, options )", shows it with "signin_show( )" and may reword it
 // with "signin_describe( title, lede )":
@@ -19,6 +19,12 @@
 //   options.request        the page's one-at-a-time request wrapper (ISS-005), resolving to the answer
 //   options.on_signed_in   called once "ciyam" has a session
 //   options.error_text     optional - a refusal in the page's own words, or "" to leave it as it is
+//   options.ids            optional - { access, submit }: the ids a page's suites know its list and button by
+//   options.submit_text    optional - the button's word ("Sign in"; the chat and the console "Connect")
+//   options.extra_link     optional - { text, href }: a second action beside the button (the console's chat)
+//   options.on_busy        optional - called with true as the sign in starts and false as it ends
+//
+// "request" may be left out - the sign in is then made at once, as the console made it.
 //
 // The element ids are the ones every page's sign in has used ("signin_access", "signin_pin", ...), as
 // the browser suites expect. Needs "chat_parse.js" ("parse_access_list( )", "retain_mode_of( )",
@@ -35,6 +41,8 @@ const c_signin_storage_hashed_prefix = "cws.hashed_";
 const c_signin_saved_mark = "  ·  saved password";
 
 var g_signin_options = { };
+
+var g_signin_ids = { access: "signin_access", submit: "signin_submit" };
 
 function signin_element( tag, attributes, text )
 {
@@ -58,8 +66,11 @@ function signin_build( host, options )
 {
    g_signin_options = options || { };
 
+   g_signin_ids = { access: ( g_signin_options.ids && g_signin_options.ids.access ) || "signin_access",
+    submit: ( g_signin_options.ids && g_signin_options.ids.submit ) || "signin_submit" };
+
    var view = signin_element( "div", { class: "chat-signin", id: "signin_view", hidden: "" } );
-   var form = signin_element( "form", { class: "chat-signin-form", novalidate: "" } );
+   var form = signin_element( "form", { class: "chat-signin-form", id: "signin_form", novalidate: "" } );
 
    form.addEventListener( "submit", signin_submit );
 
@@ -73,9 +84,9 @@ function signin_build( host, options )
    form.appendChild( signin_element( "h2", { tabindex: "-1" }, g_signin_options.title || "Sign in" ) );
    form.appendChild( signin_element( "p", { class: "chat-signin-lede" }, g_signin_options.lede || "" ) );
 
-   form.appendChild( signin_element( "label", { class: "chat-label", for: "signin_access" }, "Account" ) );
+   form.appendChild( signin_element( "label", { class: "chat-label", for: g_signin_ids.access }, "Account" ) );
 
-   var access = signin_element( "select", { id: "signin_access", class: "chat-field chat-field--mono" } );
+   var access = signin_element( "select", { id: g_signin_ids.access, class: "chat-field chat-field--mono" } );
 
    access.appendChild( new Option( "Enter a PIN…", "" ) );
    access.addEventListener( "change", signin_on_access );
@@ -112,13 +123,26 @@ function signin_build( host, options )
 
    var actions = signin_element( "div", { class: "chat-signin-actions" } );
 
-   actions.appendChild( signin_element( "button", { type: "submit", class: "chat-btn chat-btn--primary", id: "signin_submit" }, "Sign in" ) );
+   actions.appendChild( signin_element( "button", { type: "submit", class: "chat-btn chat-btn--primary", id: g_signin_ids.submit },
+    g_signin_options.submit_text || "Sign in" ) );
+
+   if( g_signin_options.extra_link )
+      actions.appendChild( signin_element( "a", { class: "chat-btn chat-signin-setup", id: "signin_extra", href: g_signin_options.extra_link.href },
+       g_signin_options.extra_link.text ) );
 
    if( g_signin_options.setup_href )
       actions.appendChild( signin_element( "a", { class: "chat-btn chat-signin-setup", id: "signin_setup",
        href: g_signin_options.setup_href }, "New here? Set up your account" ) );
 
    form.appendChild( actions );
+
+   // NOTE: Shown while the sign in is under way - it can take a few seconds (the chat's, 2026-09).
+   var busy = signin_element( "div", { class: "chat-signin-busy", id: "signin_busy", hidden: "" } );
+
+   busy.appendChild( signin_element( "span", { class: "chat-spinner" } ) );
+   busy.appendChild( signin_element( "span", { }, "Contacting the server…" ) );
+
+   form.appendChild( busy );
 
    if( g_signin_options.setup_href )
       form.appendChild( signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_setup_hint" },
@@ -217,7 +241,7 @@ function signin_remember_device( )
 // NOTE: The accounts saved on this browser, by any app, ahead of "Enter a PIN...", the first chosen.
 function signin_fill_saved( )
 {
-   var select = document.getElementById( "signin_access" );
+   var select = document.getElementById( g_signin_ids.access );
 
    for( var i = select.options.length - 1; i >= 0; i-- )
    {
@@ -237,7 +261,7 @@ function signin_fill_saved( )
 
 function signin_pin( )
 {
-   var chosen = document.getElementById( "signin_access" ).value;
+   var chosen = document.getElementById( g_signin_ids.access ).value;
 
    return ( chosen !== "" ) ? chosen : document.getElementById( "signin_pin" ).value.trim( );
 }
@@ -247,7 +271,7 @@ function signin_pin( )
 // empty - it stays open, so a password that no longer works can be typed instead.
 function signin_on_access( )
 {
-   var typed = ( document.getElementById( "signin_access" ).value === "" );
+   var typed = ( document.getElementById( g_signin_ids.access ).value === "" );
 
    document.getElementById( "signin_pin_label" ).hidden = !typed;
    document.getElementById( "signin_pin" ).hidden = !typed;
@@ -311,10 +335,15 @@ async function signin_connect( pin, hashed, password )
    ciyam.error = "";
    ciyam.unique = "";
 
-   await g_signin_options.request( function( done )
+   var issue = function( done )
    {
       return ciyam.connect( pin, ciyam.device, hashed, password, done );
-   } );
+   };
+
+   if( g_signin_options.request )
+      await g_signin_options.request( issue );
+   else
+      await issue( function( ) { } );
 }
 
 async function signin_submit( event )
@@ -342,9 +371,14 @@ async function signin_submit( event )
 
    signin_set_text( "signin_error", "" );
 
-   var submit = document.getElementById( "signin_submit" );
+   var submit = document.getElementById( g_signin_ids.submit );
 
    submit.disabled = true;
+
+   document.getElementById( "signin_busy" ).hidden = false;
+
+   if( g_signin_options.on_busy )
+      g_signin_options.on_busy( true );
 
    ciyam.device = signin_stored_device( );
 
@@ -361,6 +395,11 @@ async function signin_submit( event )
    }
 
    submit.disabled = false;
+
+   document.getElementById( "signin_busy" ).hidden = true;
+
+   if( g_signin_options.on_busy )
+      g_signin_options.on_busy( false );
 
    if( ciyam.error !== "" )
    {
