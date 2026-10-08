@@ -387,6 +387,7 @@
 {
    display: grid;
    grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+   align-items: start;
    gap: 16px;
    margin: 24px 0 16px;
 }
@@ -564,6 +565,18 @@
    text-decoration: none;
 }
 
+#announce_list
+{
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+}
+
+#announce_list:empty
+{
+   display: none;
+}
+
 .home-announcement
 {
    display: flex;
@@ -648,8 +661,11 @@
    text-overflow: ellipsis;
 }
 
-#manage_devices
+.home-external-link
 {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
    font-size: 14px;
    font-weight: 600;
    color: var(--color-chat-accent-deep);
@@ -1050,6 +1066,7 @@
 
    .home-tiles
    {
+      grid-template-columns: minmax( 0, 1fr );
       gap: 12px;
       margin-top: 16px;
    }

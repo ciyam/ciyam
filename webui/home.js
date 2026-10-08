@@ -932,11 +932,15 @@ function stop_refresh( )
 function install_member_home( )
 {
    document.getElementById( "tile_chat_icon" ).appendChild( icon( "chat", 22 ) );
-   document.getElementById( "tile_account_icon" ).appendChild( icon( "account", 22 ) );
 
    document.getElementById( "tile_chat" ).addEventListener( "click", function( event ) { event.preventDefault( ); open_app_by_key( "chat" ); } );
-   document.getElementById( "tile_account" ).addEventListener( "click", function( event ) { event.preventDefault( ); open_app_by_key( "account" ); } );
-   document.getElementById( "manage_devices" ).addEventListener( "click", function( event )
+
+   // NOTE: The accounts page, in its own tab for now - marked so, as the menu marks it.
+   var manage = document.getElementById( "manage_account" );
+
+   manage.appendChild( icon( "external", 14 ) );
+
+   manage.addEventListener( "click", function( event )
    {
       event.preventDefault( );
 
