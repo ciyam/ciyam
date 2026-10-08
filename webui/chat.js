@@ -955,8 +955,8 @@ function update_drawer_toggles( )
 
 // NOTE: The account - changing the password, and for admin the people on the node - is on the
 // accounts page, opened as the switcher opens it (2026-10-09): in this tab, on the session kept
-// for it, or a new tab with ctrl or cmd and click. An accounts tab already on this session is
-// then reused, at My account, not reloaded.
+// for it, or with ctrl or cmd and click in its own tab - one already on this session reused, at
+// My account, not reloaded.
 function do_menu_account_settings( event )
 {
    close_user_menu( false );

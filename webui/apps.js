@@ -7,9 +7,10 @@
 // the app's name ("CIYAM · Chat"); open, it lists every app, this one marked. Choosing another opens it in this tab,
 // on the session kept for the tab (Damon, 2026-10-09) - "Back" returns as it would anywhere. The button at a row's
 // right, or ctrl or cmd and click, opens it in a new tab instead; an app already open in another tab on this session
-// is gone to, so there are never two of one. Never "Back to", since any app may have opened any other. At its foot, who is signed in and "Sign out of every app", which reaches every tab on the session
-// whichever app it is chosen in. On a phone it is a sheet from the bottom. Which apps, and the sign out message,
-// are "switcher_apps( )" and "signed_out_message( )" in "chat_parse.js", with their tests.
+// is gone to, so there are never two of one. Never "Back to", since any app may have opened any other. At its foot,
+// who is signed in and "Sign out of every app", which reaches every tab on the session whichever app it is chosen in.
+// On a phone it is a sheet from the bottom. Which apps, and the sign out message, are "switcher_apps( )" and
+// "signed_out_message( )" in "chat_parse.js", with their tests.
 //
 // The page builds it with "apps_build( host, options )" and calls "apps_refresh( )" once signed in:
 //

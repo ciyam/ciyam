@@ -178,8 +178,8 @@ function unsent_work( )
    if( ciyam.sessid === "" )
       return "";
 
-   var filled = [ "add_pin", "add_username", "yourself_username", "yourself_password", "mine_current", "mine_password",
-    "mine_confirm" ].some( function( id )
+   var filled = [ "add_pin", "add_username", "yourself_username", "yourself_password", "yourself_confirm", "mine_current",
+    "mine_password", "mine_confirm" ].some( function( id )
    {
       var field = document.getElementById( id );
 

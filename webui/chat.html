@@ -230,19 +230,18 @@ http://www.opensource.org/licenses/mit-license.php.
    {
       g_self = Date.now( );
 
-      // NOTE: A chat opened from another page - with "?source=" - takes a fresh id when it first
-      // loads. The browser copies "sessionStorage" into a tab opened from another, so it would
-      // otherwise share the opener's id, and two pages with one id both answer a console asking
-      // for its session. On a reload it keeps its id - "?source=" is still in the address - so
-      // the consoles and pages linked to it stay linked.
-      var opened_from = new URL( window.location.href ).searchParams.get( "source" );
-
+      // NOTE: A chat takes a fresh id each time it is opened, and keeps it only through a reload or
+      // "Back" - so the consoles and pages linked to it stay linked. The browser copies
+      // "sessionStorage" into a tab opened from another, so it would otherwise share the opener's
+      // id, and two pages with one id both answer a console asking for its session. Since the apps
+      // open each other in the same tab (2026-10-09) that holds without "?source=" too: a chat
+      // switched to in a tab opened from another chat had that chat's id (found by review).
       var entries = ( typeof performance !== "undefined" ) && performance.getEntriesByType
        ? performance.getEntriesByType( "navigation" ) : [ ];
 
       var first_load = ( entries.length === 0 ) || ( entries[ 0 ].type === "navigate" );
 
-      if( ( ( opened_from === null ) || !first_load ) && ( sessionStorage.getItem( "self" ) !== null ) )
+      if( !first_load && ( sessionStorage.getItem( "self" ) !== null ) )
          g_self = sessionStorage.getItem( "self" );
 
       sessionStorage.setItem( "self", g_self );
