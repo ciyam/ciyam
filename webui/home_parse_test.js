@@ -148,9 +148,17 @@ check( "people - codes waiting", hp.people_note( { active: 6, unclaimed: 2 } ), 
 check( "people - one code", hp.people_note( { active: 6, unclaimed: 1 } ), "1 code not yet claimed" );
 check( "people - all claimed", hp.people_note( { active: 6, unclaimed: 0 } ), "Every code claimed" );
 
+check( "people waiting - one", hp.people_waiting_text( { active: 4, unclaimed: 1 } ), "1 person hasn't used their code yet." );
+check( "people waiting - two", hp.people_waiting_text( { active: 4, unclaimed: 2 } ), "2 people haven't used their code yet." );
+check( "people waiting - none", hp.people_waiting_text( { active: 4, unclaimed: 0 } ), "Everyone you added has set up their account." );
+
 check( "keys - none made", /^None made here yet/.test( hp.keys_note( 0 ) ), true );
 check( "keys - one made", /^1 key made here so far/.test( hp.keys_note( 1 ) ), true );
 check( "keys - three made", /^3 keys made here so far/.test( hp.keys_note( 3 ) ), true );
+
+check( "a key too soon after another, said plainly", /a few seconds apart/.test(
+ hp.key_error_text( "Error: *** attempt to create another unlock key too quickly ***" ) ), true );
+check( "any other refusal as it came", hp.key_error_text( "Error: Only the administrator can do that." ), "Only the administrator can do that." );
 
 check( "an error line", hp.log_line_kind( "[2026-10-07 13:20:10] [000005] [general] :: Error: unable to open file" ), "error" );
 check( "a failure", hp.log_line_kind( "backup failed" ), "error" );

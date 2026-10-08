@@ -72,9 +72,14 @@ ok   a blank line inside is kept
 ok   people - codes waiting
 ok   people - one code
 ok   people - all claimed
+ok   people waiting - one
+ok   people waiting - two
+ok   people waiting - none
 ok   keys - none made
 ok   keys - one made
 ok   keys - three made
+ok   a key too soon after another, said plainly
+ok   any other refusal as it came
 ok   an error line
 ok   a failure
 ok   a warning

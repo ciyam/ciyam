@@ -257,6 +257,27 @@ function people_note( summary )
    return "Every code claimed";
 }
 
+// NOTE: The Overview's People card - who has not used the code admin gave them.
+function people_waiting_text( summary )
+{
+   if( summary.unclaimed === 0 )
+      return "Everyone you added has set up their account.";
+
+   return ( ( summary.unclaimed === 1 ) ? "1 person hasn't" : summary.unclaimed + " people haven't" ) + " used their code yet.";
+}
+
+// NOTE: Making an unlock key refused, said plainly - the node makes one every three seconds at most
+// ("unlock_create_allowed( )" in "ciyam_base.cpp"). Anything else is passed on as it came.
+function key_error_text( error )
+{
+   var text = String( error || "" ).replace( /^Error: /, "" );
+
+   if( /too quickly/i.test( text ) )
+      return "Keys are made one at a time, a few seconds apart - wait a moment, then make another.";
+
+   return text;
+}
+
 // NOTE: Unlock keys made on this browser, as admin's Overview says it - the node cannot list them.
 function keys_note( count )
 {
@@ -461,6 +482,8 @@ if( typeof module !== "undefined" )
       parse_log_lines: parse_log_lines,
       people_note: people_note,
       keys_note: keys_note,
+      key_error_text: key_error_text,
+      people_waiting_text: people_waiting_text,
       log_line_kind: log_line_kind,
       log_view: log_view,
       home_apps: home_apps,
