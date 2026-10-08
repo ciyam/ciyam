@@ -25,56 +25,9 @@ http://www.opensource.org/licenses/mit-license.php.
 </div>
 
 <!-- ================================================================ sign in -->
-<div class="chat-signin" id="signin_view" hidden>
-   <form class="chat-signin-form" onsubmit="do_sign_in( event )" novalidate>
-      <div class="chat-brand">
-         <span class="chat-logo"></span>
-         <span class="chat-wordmark">CIYAM</span>
-         <span class="chat-brand-note">accounts</span>
-      </div>
+<!-- NOTE: The node's sign in, shared by every app - built here by "signin.js". -->
+<div id="signin_host"></div>
 
-      <h2 tabindex="-1">Accounts</h2>
-      <p class="chat-signin-lede">Sign in to manage your account - or, as admin, the people on this node.</p>
-
-      <label class="chat-label" for="signin_access">Account</label>
-      <select id="signin_access" class="chat-field chat-field--mono" onchange="on_signin_access( )">
-         <option value="">Enter a PIN&hellip;</option>
-      </select>
-
-      <label class="chat-label" for="signin_pin" id="signin_pin_label">PIN</label>
-      <input type="text" id="signin_pin" class="chat-field chat-field--mono" inputmode="numeric" maxlength="5"
-       autocomplete="username" oninput="on_signin_access( )">
-
-      <label class="chat-label" for="signin_password">Password</label>
-      <input type="password" id="signin_password" class="chat-field" autocomplete="current-password">
-      <div class="account-hint" id="signin_hint"></div>
-
-      <label class="chat-label" for="signin_retain">Remember on this browser</label>
-      <select id="signin_retain" class="chat-field">
-         <option value="none">Nothing &mdash; forget this account</option>
-         <option value="access">The PIN only</option>
-         <option value="full">The PIN and the password</option>
-      </select>
-      <div class="account-hint">Shared with the chat on this browser. Saving the password as well signs you in
-       without typing it.</div>
-
-      <div class="chat-error-text" id="signin_error" role="alert"></div>
-
-      <div class="chat-signin-actions">
-         <button type="submit" class="chat-btn chat-btn--primary" id="signin_submit">Sign in</button>
-         <a class="chat-btn chat-signin-setup" id="signin_setup" href="#welcome">New here? Set up your account</a>
-      </div>
-      <div class="chat-hint chat-signin-centred">With the code or PIN from the person who added you.</div>
-
-      <!-- NOTE: As on the chat's sign in - the sign in is the same on every page of the node. -->
-      <div class="chat-signin-foot">
-         <button type="button" class="chat-btn--link" onclick="do_reset_browser( )">Reset this browser</button>
-         <div class="chat-signin-foot-note">Forgets the device token and every saved account.</div>
-      </div>
-   </form>
-</div>
-
-<!-- ================================================================ welcome - redeem a code, or claim a PIN -->
 <div class="chat-signin" id="welcome_view" hidden>
    <form class="chat-signin-form" onsubmit="do_join( event )" novalidate>
       <div class="chat-brand">

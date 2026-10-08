@@ -98,7 +98,17 @@ function account_main( )
    {
    }
 
-   fill_saved_pins( );
+   // NOTE: The node's sign in, shared by every app ("signin.js", 2026-10-08) - this page's was its first form.
+   signin_build( document.getElementById( "signin_host" ), {
+      note: "accounts",
+      title: "Accounts",
+      lede: "Sign in to manage your account - or, as admin, the people on this node.",
+      setup_href: "#welcome",
+      request: request,
+      on_signed_in: enter_app
+   } );
+
+   signin_fill_saved( );
 
    // NOTE: Every request is logged for a console, as the chat's are - the quiet ones only while the
    // console's "Log polling" is ticked.
@@ -532,127 +542,8 @@ function update_strength( prefix )
 // Sign in and out
 // ====================================================================
 
-function saved_pins( )
-{
-   try
-   {
-      return parse_access_list( localStorage.getItem( c_storage_access ) ).filter( is_account_pin );
-   }
-   catch( e )
-   {
-      return [ ];
-   }
-}
-
-// NOTE: Read each time it is needed rather than once - the chat may have replaced it since this
-// page loaded ("Reset this browser").
-function stored_device( )
-{
-   try
-   {
-      return localStorage.getItem( c_storage_device ) || "";
-   }
-   catch( e )
-   {
-      return "";
-   }
-}
-
-function saved_hash( pin )
-{
-   try
-   {
-      return localStorage.getItem( c_storage_hashed_prefix + pin );
-   }
-   catch( e )
-   {
-      return null;
-   }
-}
-
-// NOTE: The accounts saved on this browser - by this page or the chat, which share them - ahead
-// of "Enter a PIN...", the first chosen when there is one, as the chat does.
-function fill_saved_pins( )
-{
-   var select = document.getElementById( "signin_access" );
-
-   for( var i = select.options.length - 1; i >= 0; i-- )
-   {
-      if( select.options[ i ].value !== "" )
-         select.remove( i );
-   }
-
-   saved_pins( ).forEach( function( pin, n )
-   {
-      var label = pin + ( ( saved_hash( pin ) !== null ) ? "  \u00b7  saved password" : "" );
-
-      select.options.add( new Option( label, pin, false ), n );
-   } );
-
-   select.selectedIndex = 0;
-
-   on_signin_access( );
-}
-
-// NOTE: As the chat's - "do_reset_browser( )" in "chat.js". Everything this browser keeps for the
-// node goes: the device token, which a rebuilt node no longer knows, and every saved account.
-function do_reset_browser( )
-{
-   if( ciyam.sessid !== "" )
-      return;
-
-   if( !confirm( "Forget the device token and every saved account on this browser?" ) )
-      return;
-
-   try
-   {
-      localStorage.clear( );
-   }
-   catch( e )
-   {
-   }
-
-   location.reload( );
-}
-
-function signin_pin( )
-{
-   var chosen = document.getElementById( "signin_access" ).value;
-
-   return ( chosen !== "" ) ? chosen : document.getElementById( "signin_pin" ).value.trim( );
-}
-
-// NOTE: The PIN field only for a PIN not saved here; the Remember box shows what is saved for the
-// account now, so signing in never silently forgets it. A saved password can be used by leaving
-// the field empty - it stays open, so a password that no longer works can be typed instead.
-function on_signin_access( )
-{
-   var typed = ( document.getElementById( "signin_access" ).value === "" );
-
-   document.getElementById( "signin_pin_label" ).hidden = !typed;
-   document.getElementById( "signin_pin" ).hidden = !typed;
-
-   var pin = signin_pin( );
-
-   var has_hash = is_account_pin( pin ) && ( saved_hash( pin ) !== null );
-
-   set_error( "signin_hint", has_hash ? "The password is saved on this browser - leave it empty to use it." : "" );
-
-   var stored = null;
-
-   try
-   {
-      stored = localStorage.getItem( c_storage_access );
-   }
-   catch( e )
-   {
-   }
-
-   document.getElementById( "signin_retain" ).value = retain_mode_of( stored, is_account_pin( pin ) ? pin : "", has_hash );
-}
-
-// NOTE: After a sign in, what the Remember box asked for - "plan_retain_choice( )" in
-// "chat_parse.js", the same as the chat's. The sign in's box, or Welcome's after a claim.
+// NOTE: After a claim, what Welcome's Remember box asked for - "plan_retain_choice( )" in
+// "chat_parse.js", as the shared sign in ("signin.js") does after a sign in.
 function apply_retain_choice( select_id )
 {
    try
@@ -673,79 +564,6 @@ function apply_retain_choice( select_id )
    catch( e )
    {
    }
-}
-
-async function do_sign_in( event )
-{
-   event.preventDefault( );
-
-   var pin = signin_pin( );
-   var password = document.getElementById( "signin_password" ).value;
-
-   if( !is_account_pin( pin ) )
-   {
-      set_error( "signin_error", "Enter your PIN - 5 digits." );
-
-      return;
-   }
-
-   var hashed = ( password === "" ) ? saved_hash( pin ) : "";
-
-   if( ( password === "" ) && ( hashed === null ) )
-   {
-      set_error( "signin_error", "Enter your password." );
-
-      return;
-   }
-
-   set_error( "signin_error", "" );
-
-   var submit = document.getElementById( "signin_submit" );
-
-   submit.disabled = true;
-
-   ciyam.device = stored_device( );
-
-   await connect_as( pin, hashed, password );
-
-   // NOTE: The node has never seen this browser's device token - it was issued before the node
-   // was rebuilt, or by another node at this address. A typed password does not depend on it,
-   // so the server is asked for a new one and the sign in tried again. A saved password cannot
-   // be used: it was hashed with the old token. The chat asks for "Reset this browser" instead.
-   if( is_unknown_device_error( ciyam.error ) && ( password !== "" ) )
-   {
-      ciyam.device = "";
-
-      await connect_as( pin, "", password );
-   }
-
-   submit.disabled = false;
-
-   if( ciyam.error === "" )
-      remember_device( );
-
-   if( ciyam.error !== "" )
-   {
-      set_error( "signin_error", is_unknown_device_error( ciyam.error )
-       ? "This browser's saved sign in is from before the node was set up again - type your password."
-       : sign_in_error_text( ciyam.error ) );
-
-      return;
-   }
-
-   if( ciyam.sessid === "" )
-   {
-      set_error( "signin_error", "No session was established." );
-
-      return;
-   }
-
-   document.getElementById( "signin_password" ).value = "";
-   document.getElementById( "signin_pin" ).value = "";
-
-   apply_retain_choice( );
-
-   enter_app( );
 }
 
 async function connect_as( pin, hashed, password )
@@ -831,7 +649,7 @@ function clear_session( )
 
    clear_hash( );
 
-   fill_saved_pins( );
+   signin_fill_saved( );
 }
 
 // ====================================================================
@@ -1844,7 +1662,7 @@ async function do_join( event )
 
       // NOTE: Signed in at once with what was just chosen, then the Remember choice saved, as on the
       // sign in (Damon, 2026-10-05) - Ian found the chat's sign in waiting, on another PIN. A device
-      // token from before the node was set up again is replaced, as "do_sign_in( )" does. Should the
+      // token from before the node was set up again is replaced, as the sign in does ("signin.js"). Should the
       // sign in fail, the PIN is still remembered, so the account can be found.
       await connect_as( pin, "", password );
 
