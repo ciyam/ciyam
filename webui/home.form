@@ -125,24 +125,91 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </div>
 
-<!-- NOTE: Signed in, the node ready. The shell, member Home and admin's sections fill this in (build steps
-     4 to 6). -->
+<!-- NOTE: Signed in, the node ready - the shell (build step 4): a side menu of apps and, for admin, the node's
+     sections, with who is signed in and "Sign out of every app". On a phone the menu is a drawer from the top
+     bar, admin's sections are chips beneath it, and the apps are a bar along the bottom. The apps other than
+     Home open in their own tabs on this session. The rail's items are built by "home.js". -->
 <div class="home-app" id="app_view" hidden>
-   <header class="home-topbar">
-      <div class="chat-brand">
+   <nav class="home-rail" id="home_rail" aria-label="Home">
+      <div class="home-rail-brand">
          <span class="chat-logo"></span>
-         <span class="chat-wordmark">CIYAM</span>
-         <span class="chat-brand-note">home</span>
+         <span class="home-rail-brand-text">
+            <span class="chat-wordmark">CIYAM</span>
+            <span class="home-rail-brand-note">Home node</span>
+         </span>
       </div>
 
-      <span class="home-pill" id="app_security_pill" title="How the node sees this connection - from /system" hidden></span>
+      <div class="home-rail-group">
+         <span class="home-rail-heading">Apps</span>
+         <div id="rail_apps"></div>
+      </div>
 
-      <span class="home-topbar-user" id="app_user"></span>
-      <button type="button" class="chat-btn" id="app_sign_out">Sign out</button>
-   </header>
+      <div class="home-rail-group" id="rail_node" hidden>
+         <span class="home-rail-heading">Node</span>
+         <div id="rail_sections"></div>
+      </div>
 
-   <main class="home-main">
-      <h1 id="app_greeting"></h1>
-      <p class="home-note" id="app_node"></p>
-   </main>
+      <div class="home-rail-spacer"></div>
+
+      <div class="home-rail-user">
+         <div class="home-rail-user-row">
+            <span class="home-avatar" id="rail_avatar"></span>
+            <span class="home-rail-user-text">
+               <span class="home-rail-user-name" id="rail_name"></span>
+               <span class="home-rail-user-role" id="rail_role"></span>
+               <span class="home-rail-user-role">PIN <span class="home-mono" id="rail_pin"></span></span>
+            </span>
+         </div>
+         <button type="button" class="chat-btn" id="app_sign_out">Sign out of every app</button>
+      </div>
+   </nav>
+
+   <div class="home-scrim" id="rail_scrim" hidden></div>
+
+   <div class="home-body">
+      <header class="home-topbar">
+         <button type="button" class="home-menu-button" id="rail_open" aria-label="Open the menu" aria-controls="home_rail"
+          aria-expanded="false">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+         </button>
+
+         <span class="home-topbar-title">
+            <span class="home-topbar-heading" id="top_heading"></span>
+            <span class="home-topbar-sub" id="top_sub"></span>
+         </span>
+
+         <span class="home-pill" id="app_security_pill" title="How the node sees this connection - from /system" hidden></span>
+
+         <span class="home-avatar home-topbar-avatar" id="top_avatar"></span>
+      </header>
+
+      <nav class="home-chips" id="home_chips" aria-label="Node" hidden></nav>
+
+      <main class="home-main">
+         <!-- NOTE: A member's Home (build step 5). -->
+         <section class="home-section" id="section_home" hidden>
+            <h1 id="app_greeting"></h1>
+            <p class="home-note" id="app_node"></p>
+         </section>
+
+         <!-- NOTE: Admin's sections (build step 6). -->
+         <section class="home-section" id="section_overview" hidden>
+            <h1>Overview</h1>
+            <p class="home-note" id="overview_node"></p>
+         </section>
+
+         <section class="home-section" id="section_keys" hidden>
+            <h1>Unlock keys</h1>
+            <p class="home-note">Make a key to unlock the node after a restart, and keep a few somewhere safe.</p>
+         </section>
+
+         <section class="home-section" id="section_logs" hidden>
+            <h1>Logs</h1>
+            <p class="home-note">The node's own logs, read only.</p>
+         </section>
+      </main>
+
+      <nav class="home-bottombar" id="home_bottombar" aria-label="Apps"></nav>
+   </div>
 </div>
