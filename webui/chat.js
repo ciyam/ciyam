@@ -145,8 +145,8 @@ function chat( )
       sign_out: do_disconnect,
       signed_out: async function( )
       {
-         // NOTE: The session has gone already - asking the node to end it again only fails.
-         await do_disconnect( );
+         // NOTE: The session has gone already - nothing is asked of the node (found by review).
+         await do_disconnect( true );
 
          set_error( "signin_error", "You signed out in another app." );
       }
@@ -1001,11 +1001,19 @@ function show_thread_view( )
    document.getElementById( "announcements" ).hidden = loading || ( g_announcements.length === 0 );
 }
 
-async function do_disconnect( )
+// NOTE: "already_ended" - another tab signed out of every app - clears this page without a request: the session has
+// gone, and a request made now would be outside the queue (ISS-005, found by review).
+async function do_disconnect( already_ended )
 {
    stop_polling( );
 
-   await ciyam.disconnect( function( ) { } );
+   if( already_ended === true )
+   {
+      ciyam.sessid = "";
+      ciyam.unique = "";
+   }
+   else
+      await ciyam.disconnect( function( ) { } );
 
    // NOTE: Signed out, a linked chat is linked no more - see "forget_source( )".
    forget_source( );

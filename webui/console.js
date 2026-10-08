@@ -202,19 +202,25 @@ function console_main( )
       on_signed_in: enter_console
    } );
 
-   // NOTE: The app switcher - the same in every app, its button the CIYAM mark and "Console" (2026-10-08). Not
-   // drawn in a drawer, whose title bar is hidden; the page the drawer is in has its own.
-   apps_build( document.getElementById( "apps_host" ), {
-      current: "console",
-      self: function( ) { return g_self; },
-      sign_out: do_disconnect,
-      signed_out: async function( )
-      {
-         await do_disconnect( );
+   // NOTE: The app switcher - the same in every app, its button the CIYAM mark and "Console" (2026-10-08). Not in a
+   // drawer, whose title bar is hidden and whose page has its own - nor listening there for a sign out, which that
+   // page answers by closing the drawer (found by review). Shown once signed in, as in the other apps.
+   if( !g_embedded )
+   {
+      apps_build( document.getElementById( "apps_host" ), {
+         current: "console",
+         self: function( ) { return g_self; },
+         sign_out: do_disconnect,
+         signed_out: async function( )
+         {
+            await do_disconnect( true );
 
-         set_error( "signin_error", "You signed out in another app." );
-      }
-   } );
+            set_error( "signin_error", "You signed out in another app." );
+         }
+      } );
+   }
+
+   document.getElementById( "apps_host" ).hidden = true;
 
    // NOTE: A quiet request is logged too while "Log polling" is ticked.
    install_log_capture( ciyam, "console", function( ) { return g_quiet && !g_prefs.log_polling; }, add_console_entry );
@@ -411,12 +417,24 @@ function stored( key )
 }
 
 // NOTE: Linked or not - the session is shared, not owned, so this console may end it too (2026-10-08); every other
-// tab on it has been told by the switcher. Linked, it then becomes a console of its own.
-async function do_disconnect( )
+// tab on it has been told by the switcher. Linked, the request goes through the page that shares the session, as
+// all its requests do (ISS-020), and it then becomes a console of its own. "already_ended" - another tab signed
+// out of every app - asks nothing of the node: the session has gone (found by review).
+async function do_disconnect( already_ended )
 {
    g_stop_requested = true;
 
-   await ciyam.disconnect( function( ) { } );
+   if( already_ended !== true )
+   {
+      if( g_linked )
+         await send_request( "DELETE", ciyam.get_cws_url( ) + "/sessions/" + ciyam.sessid + "?access=" + ciyam.access
+          + "&device=" + ciyam.device + "&format=" + ciyam.format_type );
+      else
+         await ciyam.disconnect( function( ) { } );
+   }
+
+   ciyam.sessid = "";
+   ciyam.unique = "";
 
    if( g_linked )
    {
@@ -449,6 +467,8 @@ async function do_disconnect( )
    update_title( );
    update_status( );
 
+   document.getElementById( "apps_host" ).hidden = true;
+
    signin_show( );
 }
 
@@ -467,6 +487,8 @@ function enter_console( )
    var prompt = document.getElementById( "prompt_input" );
 
    prompt.disabled = false;
+
+   document.getElementById( "apps_host" ).hidden = g_embedded;
 
    apps_refresh( );
 
