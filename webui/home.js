@@ -1095,11 +1095,15 @@ function count_key_made( )
    }
 }
 
-async function read_log( name )
+// NOTE: A log's last "count" lines - every line for none. The node gives ten unless asked (Ian, "3d6a5820"), so
+// Home always says how many it wants.
+async function read_log( name, count )
 {
+   var url = admin_url( "/logs/" + encodeURIComponent( name ) ) + "&options=" + encodeURIComponent( log_options( count ) );
+
    var response = await request( function( done )
    {
-      return ciyam.fetch( admin_url( "/logs/" + encodeURIComponent( name ) ), "GET", done );
+      return ciyam.fetch( url, "GET", done );
    } );
 
    return is_error_response( response ) ? null : parse_log_lines( response );
@@ -1159,7 +1163,7 @@ async function load_overview( )
       set_text( "overview_people", people_waiting_text( summary ) );
    }
 
-   var server = await read_log( "server" );
+   var server = await read_log( "server", c_overview_log_lines );
 
    if( ciyam.access !== asked_for )
       return;
@@ -1289,7 +1293,7 @@ async function load_logs( )
       return;
    }
 
-   g_log_lines = ( await read_log( g_log_name ) ) || [ ];
+   g_log_lines = ( await read_log( g_log_name, parseInt( document.getElementById( "log_count" ).value, 10 ) ) ) || [ ];
 
    show_log( );
 }
@@ -1332,7 +1336,8 @@ function install_admin( )
    document.getElementById( "key_copy" ).addEventListener( "click", do_copy_key );
    document.getElementById( "key_stored" ).addEventListener( "click", forget_shown_key );
    document.getElementById( "log_filter" ).addEventListener( "input", show_log );
-   document.getElementById( "log_count" ).addEventListener( "change", show_log );
+   // NOTE: More lines are read from the node, not cut from what was read.
+   document.getElementById( "log_count" ).addEventListener( "change", load_logs );
 
    [ [ "overview_make_key", "keys" ], [ "overview_open_logs", "logs" ] ].forEach( function( pair )
    {
