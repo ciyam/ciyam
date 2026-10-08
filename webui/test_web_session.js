@@ -1120,7 +1120,7 @@ async function do_fetch( )
             {
                has_name_suffix = true;
 
-               if( ( cmd == users_update_cmd ) || ( cmd == messages_create_cmd )
+               if( ( cmd == logs_review_cmd ) || ( cmd == users_update_cmd ) || ( cmd == messages_create_cmd )
                 || ( cmd == messages_review_cmd ) || ( cmd == messages_update_cmd ) || ( cmd == storage_instances_review_cmd ) )
                   has_cmd_options = true;
             }

@@ -578,7 +578,6 @@ http_request_handler::http_request_handler( tcp_socket* p_socket, const string& 
       throw runtime_error( "unexpected invalid socket in http_request_handler::http_request_handler" );
 
    up_socket->set_no_delay( );
-   up_socket->set_no_linger( );
 
 #ifdef SSL_SUPPORT
    if( this->up_socket->is_tls_handshake( ) )
