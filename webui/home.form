@@ -272,37 +272,32 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
             </div>
 
-            <div class="home-columns">
-               <div class="home-column-main">
-                  <section class="home-card home-card--row" aria-label="Connection security">
-                     <span class="home-tile-icon" id="connection_icon"></span>
-                     <span class="home-card-body">
-                        <h2 id="connection_heading"></h2>
-                        <span class="home-mono home-cipher" id="connection_cipher"></span>
-                        <span class="home-note home-empty">As the node sees this browser's connection. Behind a proxy it sees
-                         the proxy's instead.</span>
-                     </span>
-                  </section>
+            <!-- NOTE: In rows (Damon, 2026-10-08): the node's safety - how this connection is encrypted, and the unlock
+                 keys - side by side; then Quick actions, a tile each, added to as Home grows; then the log, full width. -->
+            <div class="home-pair">
+               <section class="home-card home-card--row" aria-label="Connection security">
+                  <span class="home-tile-icon" id="connection_icon"></span>
+                  <span class="home-card-body">
+                     <h2 id="connection_heading"></h2>
+                     <span class="home-mono home-cipher" id="connection_cipher"></span>
+                     <span class="home-note home-empty">As the node sees this browser's connection. Behind a proxy it sees
+                      the proxy's instead.</span>
+                  </span>
+               </section>
 
-                  <section class="home-card home-card--row home-card--warn" aria-label="Unlock keys">
-                     <span class="home-tile-icon is-warn" id="keys_icon"></span>
-                     <span class="home-card-body">
-                        <h2>Keep a few unlock keys</h2>
-                        <span class="home-note home-empty" id="overview_keys_note"></span>
-                     </span>
-                     <a href="#keys" class="chat-btn chat-btn--primary home-card-action" id="overview_make_key">Make a key</a>
-                  </section>
+               <section class="home-card home-card--row home-card--warn" aria-label="Unlock keys">
+                  <span class="home-tile-icon is-warn" id="keys_icon"></span>
+                  <span class="home-card-body">
+                     <h2>Keep a few unlock keys</h2>
+                     <span class="home-note home-empty" id="overview_keys_note"></span>
+                  </span>
+                  <a href="#keys" class="chat-btn chat-btn--primary home-card-action" id="overview_make_key">Make a key</a>
+               </section>
+            </div>
 
-                  <section class="home-card" aria-label="The server log">
-                     <div class="home-card-head">
-                        <h2>Latest from the server log</h2>
-                        <a href="#logs" class="home-link" id="overview_open_logs">Open Logs</a>
-                     </div>
-                     <pre class="home-log home-log--short" id="overview_log"></pre>
-                  </section>
-               </div>
-
-               <div class="home-column-side">
+            <section class="home-quick" aria-labelledby="quick_heading">
+               <h2 class="home-rail-heading" id="quick_heading">Quick actions</h2>
+               <div class="home-quick-grid" id="quick_actions">
                   <section class="home-card" aria-label="People">
                      <h2>People</h2>
                      <p class="home-note home-empty" id="overview_people"></p>
@@ -312,7 +307,15 @@ http://www.opensource.org/licenses/mit-license.php.
                      </div>
                   </section>
                </div>
-            </div>
+            </section>
+
+            <section class="home-card" aria-label="The server log">
+               <div class="home-card-head">
+                  <h2>Latest from the server log</h2>
+                  <a href="#logs" class="home-link" id="overview_open_logs">Open Logs</a>
+               </div>
+               <pre class="home-log home-log--short" id="overview_log"></pre>
+            </section>
          </section>
 
          <!-- NOTE: Unlock keys - made by admin while the node is unlocked, each shown once and used once. The node

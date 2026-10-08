@@ -738,6 +738,41 @@
    background: var(--color-chat-online);
 }
 
+/* NOTE: Two cards side by side - admin's connection and unlock keys - each as tall as the other. */
+.home-pair
+{
+   display: grid;
+   grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+   gap: 16px;
+   margin-bottom: 24px;
+}
+
+.home-pair .home-card--row
+{
+   align-items: flex-start;
+   align-content: flex-start;
+}
+
+/* NOTE: Quick actions - a tile each, three to a row, added to as Home grows. */
+.home-quick
+{
+   margin-bottom: 24px;
+}
+
+.home-quick > .home-rail-heading
+{
+   display: block;
+   margin: 0;
+   padding: 0 0 10px;
+}
+
+.home-quick-grid
+{
+   display: grid;
+   grid-template-columns: repeat( auto-fill, minmax( 260px, 1fr ) );
+   gap: 16px;
+}
+
 .home-card--row
 {
    flex-direction: row;
@@ -1075,6 +1110,12 @@
    {
       grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
       gap: 10px;
+   }
+
+   .home-pair
+   {
+      grid-template-columns: minmax( 0, 1fr );
+      gap: 12px;
    }
 
    .home-log-filter
