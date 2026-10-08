@@ -245,20 +245,134 @@ http://www.opensource.org/licenses/mit-license.php.
             </div>
          </section>
 
-         <!-- NOTE: Admin's sections (build step 6). -->
+         <!-- NOTE: Admin's sections (build step 6) - what the web API gives today. Sessions in use and the other
+              limits wait on Ian's combined admin request (R2). -->
          <section class="home-section" id="section_overview" hidden>
-            <h1>Overview</h1>
-            <p class="home-note" id="overview_node"></p>
+            <div class="home-section-head">
+               <span>
+                  <h1>Overview</h1>
+                  <p class="home-note" id="overview_node"></p>
+               </span>
+               <button type="button" class="chat-btn" id="overview_refresh">Refresh</button>
+            </div>
+
+            <div class="home-stats" aria-label="At a glance">
+               <div class="home-stat">
+                  <span class="home-stat-label">Node</span>
+                  <span class="home-stat-value"><span class="home-state-dot"></span><span id="stat_node"></span></span>
+                  <span class="home-stat-note">Unlocked &middot; identity set up</span>
+               </div>
+               <div class="home-stat">
+                  <span class="home-stat-label">Up for</span>
+                  <span class="home-stat-value" id="stat_uptime">&hellip;</span>
+                  <span class="home-stat-note">Since the last restart</span>
+               </div>
+               <div class="home-stat">
+                  <span class="home-stat-label">People</span>
+                  <span class="home-stat-value"><span id="stat_people">&hellip;</span> <span class="home-stat-unit">active</span></span>
+                  <span class="home-stat-note" id="stat_people_note"></span>
+               </div>
+               <div class="home-stat">
+                  <span class="home-stat-label">Sessions</span>
+                  <span class="home-stat-value"><span class="home-stat-unit">up to</span> 100</span>
+                  <span class="home-stat-note">How many are in use is not reported yet</span>
+               </div>
+            </div>
+
+            <div class="home-columns">
+               <div class="home-column-main">
+                  <section class="home-card home-card--row" aria-label="Connection security">
+                     <span class="home-tile-icon" id="connection_icon"></span>
+                     <span class="home-card-body">
+                        <h2 id="connection_heading"></h2>
+                        <span class="home-mono home-cipher" id="connection_cipher"></span>
+                        <span class="home-note home-empty">As the node sees this browser's connection. Behind a proxy it sees
+                         the proxy's instead.</span>
+                     </span>
+                  </section>
+
+                  <section class="home-card home-card--row home-card--warn" aria-label="Unlock keys">
+                     <span class="home-tile-icon is-warn" id="keys_icon"></span>
+                     <span class="home-card-body">
+                        <h2>Keep a few unlock keys</h2>
+                        <span class="home-note home-empty" id="overview_keys_note"></span>
+                     </span>
+                     <a href="#keys" class="chat-btn chat-btn--primary home-card-action" id="overview_make_key">Make a key</a>
+                  </section>
+
+                  <section class="home-card" aria-label="The server log">
+                     <div class="home-card-head">
+                        <h2>Latest from the server log</h2>
+                        <a href="#logs" class="home-link" id="overview_open_logs">Open Logs</a>
+                     </div>
+                     <pre class="home-log home-log--short" id="overview_log"></pre>
+                  </section>
+               </div>
+
+               <div class="home-column-side">
+                  <section class="home-card" aria-label="People">
+                     <h2>People</h2>
+                     <p class="home-note home-empty" id="overview_people"></p>
+                     <div class="home-card-actions">
+                        <a href="#" class="chat-btn" id="overview_add_person">Add a person</a>
+                        <a href="#" class="chat-btn" id="overview_people_link">People</a>
+                     </div>
+                  </section>
+               </div>
+            </div>
          </section>
 
+         <!-- NOTE: Unlock keys - made by admin while the node is unlocked, each shown once and used once. The node
+              cannot list them, so Home counts the ones made on this browser (the design's known limit). -->
          <section class="home-section" id="section_keys" hidden>
             <h1>Unlock keys</h1>
-            <p class="home-note">Make a key to unlock the node after a restart, and keep a few somewhere safe.</p>
+            <p class="home-note">A key unlocks the node after a restart without the master password - from anywhere, by
+             anyone who has it. Each works once. Keep a few somewhere safe: a password manager, or written down.</p>
+
+            <section class="home-card home-keys-card">
+               <p class="home-note home-empty" id="keys_note"></p>
+               <div class="home-card-actions">
+                  <button type="button" class="chat-btn chat-btn--primary" id="key_make">Make a key</button>
+               </div>
+               <div class="chat-error-text" id="key_error" role="alert"></div>
+
+               <div class="home-new-key" id="key_shown" hidden>
+                  <span class="home-rail-heading">Your new key - shown once</span>
+                  <div class="home-new-key-row">
+                     <span class="home-key-qr" id="key_qr" aria-hidden="true"></span>
+                     <span class="home-new-key-text">
+                        <span class="home-key" id="key_text"></span>
+                        <span class="home-note home-empty">Store it now - it cannot be shown again. A phone can scan the
+                         code into a password manager.</span>
+                        <span class="home-card-actions">
+                           <button type="button" class="chat-btn" id="key_copy">Copy</button>
+                           <button type="button" class="chat-btn chat-btn--primary" id="key_stored">I've stored it</button>
+                        </span>
+                     </span>
+                  </div>
+               </div>
+            </section>
          </section>
 
+         <!-- NOTE: The node's logs, read only - admin's (Ian, 2026-10-03). The newest at the end, as in the file. -->
          <section class="home-section" id="section_logs" hidden>
-            <h1>Logs</h1>
-            <p class="home-note">The node's own logs, read only.</p>
+            <div class="home-section-head">
+               <h1>Logs</h1>
+               <button type="button" class="chat-btn" id="logs_refresh">Refresh</button>
+            </div>
+
+            <div class="home-log-bar">
+               <div class="home-log-tabs" id="log_tabs" role="tablist" aria-label="Logs"></div>
+               <input type="search" class="chat-field home-log-filter" id="log_filter" placeholder="Filter" aria-label="Filter the log">
+               <select class="chat-field home-log-count" id="log_count" aria-label="How many lines">
+                  <option value="100">Last 100 lines</option>
+                  <option value="200" selected>Last 200 lines</option>
+                  <option value="1000">Last 1000 lines</option>
+                  <option value="0">Every line</option>
+               </select>
+            </div>
+            <p class="home-note" id="log_status" role="status"></p>
+            <pre class="home-log" id="log_lines"></pre>
          </section>
       </main>
 

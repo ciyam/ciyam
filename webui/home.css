@@ -655,6 +655,277 @@
    color: var(--color-chat-accent-deep);
 }
 
+/* ---- admin's sections: Overview, Unlock keys, Logs ---- */
+
+.home-section-head
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: flex-start;
+   justify-content: space-between;
+   gap: 12px;
+}
+
+.home-stats
+{
+   display: grid;
+   grid-template-columns: repeat( 4, minmax( 0, 1fr ) );
+   gap: 14px;
+   margin: 20px 0 16px;
+}
+
+.home-stat
+{
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   padding: 16px 18px;
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-lg);
+}
+
+.home-stat-label
+{
+   font-size: 12px;
+   font-weight: 600;
+   color: var(--color-chat-text-secondary);
+}
+
+.home-stat-value
+{
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   font-size: 20px;
+   font-weight: 600;
+}
+
+.home-stat-unit
+{
+   font-size: 14px;
+   font-weight: 500;
+   color: var(--color-chat-text-secondary);
+}
+
+.home-stat-note
+{
+   font-size: 12px;
+   color: var(--color-chat-text-secondary);
+}
+
+.home-state-dot
+{
+   width: 10px;
+   height: 10px;
+   border-radius: 5px;
+   background: var(--color-chat-online);
+}
+
+.home-card--row
+{
+   flex-direction: row;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 16px;
+}
+
+.home-card--warn
+{
+   border-color: var(--color-chat-warning-border);
+}
+
+.home-card-body
+{
+   flex: 1 1 260px;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+   gap: 3px;
+}
+
+.home-tile-icon.is-warn
+{
+   background: var(--color-chat-warning-bg);
+   color: var(--color-chat-warning-text);
+}
+
+.home-cipher
+{
+   font-size: 13px;
+   color: var(--color-chat-text);
+   overflow-wrap: anywhere;
+}
+
+/* NOTE: Links drawn as buttons - their text centred as a button's is. */
+.home-card-action,
+.home-card-actions .chat-btn,
+.home-need-answer
+{
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   text-decoration: none;
+}
+
+.home-card-actions
+{
+   display: flex;
+   flex-wrap: wrap;
+   gap: 8px;
+}
+
+.home-link
+{
+   font-size: 13px;
+   font-weight: 600;
+   color: var(--color-chat-accent-deep);
+}
+
+/* NOTE: The console's dark surface, as the design shows the log - in both themes. Its tints are the console's
+   ("console.css", "--console-err" and "--console-warn"), which Home does not load. */
+.home-log
+{
+   margin: 0;
+   max-height: 60vh;
+   overflow: auto;
+   padding: 14px 16px;
+   background: var(--color-console-bg);
+   color: var(--color-console-text);
+   border-radius: var(--radius-md);
+   font-family: var(--font-family-chat-mono);
+   font-size: 12px;
+   line-height: 1.7;
+   white-space: pre;
+}
+
+.home-log--short
+{
+   max-height: none;
+   white-space: pre-wrap;
+   overflow-wrap: anywhere;
+}
+
+.home-log-line.is-error
+{
+   color: #e2726e;
+}
+
+.home-log-line.is-warn
+{
+   color: #d6a44c;
+}
+
+.home-log:empty::before
+{
+   content: "(empty)";
+   color: var(--color-console-text-dim);
+}
+
+.home-keys-card
+{
+   margin-top: 16px;
+   max-width: 720px;
+}
+
+.home-new-key
+{
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+   padding-top: 16px;
+   border-top: 1px solid var(--color-chat-rule);
+}
+
+.home-new-key .home-rail-heading
+{
+   padding: 0;
+}
+
+.home-new-key-row
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 20px;
+}
+
+.home-key-qr
+{
+   flex: 0 0 auto;
+   padding: 8px;
+   background: #ffffff;
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-md);
+   line-height: 0;
+}
+
+.home-new-key-text
+{
+   flex: 1 1 240px;
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+}
+
+.home-key
+{
+   font-family: var(--font-family-chat-mono);
+   font-size: 22px;
+   letter-spacing: 0.06em;
+   overflow-wrap: anywhere;
+   user-select: all;
+}
+
+.home-log-bar
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 10px;
+   margin: 16px 0 8px;
+}
+
+.home-log-tabs
+{
+   display: flex;
+   gap: 4px;
+   flex: 1 1 auto;
+}
+
+.home-log-tab
+{
+   height: 34px;
+   padding: 0 14px;
+   border: 1px solid var(--color-chat-border);
+   border-radius: 17px;
+   background: var(--color-chat-bg);
+   color: var(--color-chat-text);
+   font: inherit;
+   font-size: 13px;
+   cursor: pointer;
+}
+
+.home-log-tab[aria-selected="true"]
+{
+   border-color: var(--color-chat-accent);
+   background: var(--color-chat-accent);
+   color: #ffffff;
+   font-weight: 600;
+}
+
+.home-log-filter,
+.home-log-count
+{
+   width: auto;
+   margin: 0;
+}
+
+.home-log-filter
+{
+   flex: 0 1 220px;
+}
+
 /* ---- a phone: the menu a drawer, admin's sections as chips, the apps along the bottom ---- */
 
 @media ( max-width: 760px )
@@ -781,6 +1052,17 @@
    {
       gap: 12px;
       margin-top: 16px;
+   }
+
+   .home-stats
+   {
+      grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+      gap: 10px;
+   }
+
+   .home-log-filter
+   {
+      flex: 1 1 140px;
    }
 
    .home-tile

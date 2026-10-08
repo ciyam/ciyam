@@ -69,6 +69,7 @@ function home_main( )
 
    install_shell( );
    install_member_home( );
+   install_admin( );
 
    check_node( );
 }
@@ -293,6 +294,7 @@ const c_icons = {
    overview: "M12 14l4-4M3.5 18a9 9 0 1 1 17 0",
    keys: "M15 7a4 4 0 1 1-3.5 6L4 20.5H2v-3l7.5-7.5A4 4 0 0 1 15 7z",
    logs: "M5 4h14v16H5zM8 8h8M8 12h8M8 16h5",
+   shield: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM9 12l2 2 4-4",
    external: "M7 17 17 7M9 7h8v8"
 };
 
@@ -566,6 +568,12 @@ function go( section )
 
    if( window.location.hash !== "#" + section )
       history.replaceState( null, "", "#" + section );
+
+   // NOTE: A new unlock key is shown once - leaving the section lets it go.
+   if( section !== "keys" )
+      forget_shown_key( );
+
+   on_section_shown( section );
 }
 
 function open_rail( )
@@ -949,11 +957,316 @@ function install_member_home( )
    } );
 }
 
+// ====================================================================
+// Admin's sections - build step 6
+// ====================================================================
+
+// NOTE: How many unlock keys this browser has made - the node cannot list them. Kept per browser, and the
+// browser keeps it per node, by its address.
+const c_storage_keys_made = "home.unlock_keys_made";
+
+const c_qr_size = 168;
+
+const c_overview_log_lines = 5;
+
+var g_log_names = [ ];
+var g_log_name = "server";
+var g_log_lines = [ ];
+
+function admin_url( path )
+{
+   return ciyam.get_cws_url( ) + path + "?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&session=" + ciyam.sessid;
+}
+
+function keys_made( )
+{
+   try
+   {
+      return parse_key_count( localStorage.getItem( c_storage_keys_made ) );
+   }
+   catch( e )
+   {
+      return 0;
+   }
+}
+
+function count_key_made( )
+{
+   try
+   {
+      localStorage.setItem( c_storage_keys_made, String( keys_made( ) + 1 ) );
+   }
+   catch( e )
+   {
+   }
+}
+
+async function read_log( name )
+{
+   var response = await request( function( done )
+   {
+      return ciyam.fetch( admin_url( "/logs/" + encodeURIComponent( name ) ), "GET", done );
+   } );
+
+   return is_error_response( response ) ? null : parse_log_lines( response );
+}
+
+// NOTE: A log's lines drawn read only, each tinted by what it says - text only, never markup.
+function draw_log( element, lines )
+{
+   element.replaceChildren( );
+
+   lines.forEach( function( line )
+   {
+      var row = document.createElement( "span" );
+
+      var kind = log_line_kind( line );
+
+      row.className = "home-log-line" + ( kind !== "" ? " is-" + kind : "" );
+      row.textContent = line + "\n";
+
+      element.appendChild( row );
+   } );
+}
+
+async function load_overview( )
+{
+   if( !ciyam.is_admin )
+      return;
+
+   var asked_for = ciyam.access;
+
+   await read_system( );
+
+   set_text( "stat_node", ( g_system.state === "ready" ) ? "Ready" : "Not ready" );
+   set_text( "stat_uptime", uptime_words( await fetch_text( "/uptime" ) ) || "-" );
+
+   var security = security_text( g_system.security );
+
+   set_text( "connection_heading", security.heading || "Connection: not reported" );
+   set_text( "connection_cipher", ( g_system.cipher !== "" ) ? g_system.cipher + ( g_system.group !== "" ? " (" + g_system.group + ")" : "" )
+    : ( g_system.security === "none" ? "Plain HTTP - (NONE)" : "" ) );
+
+   document.getElementById( "connection_icon" ).classList.toggle( "is-warn", g_system.security === "none" );
+
+   set_text( "overview_keys_note", keys_note( keys_made( ) ) );
+
+   var users = await request( function( done ) { return ciyam.fetch_users( done ); } );
+
+   if( ciyam.access !== asked_for )
+      return;
+
+   if( !is_error_response( users ) )
+   {
+      var summary = people_summary( parse_people( users, ciyam.access, ciyam.username || "admin" ) );
+
+      set_text( "stat_people", String( summary.active ) );
+      set_text( "stat_people_note", people_note( summary ) );
+      set_text( "overview_people", people_waiting_text( summary ) );
+   }
+
+   var server = await read_log( "server" );
+
+   if( ciyam.access !== asked_for )
+      return;
+
+   draw_log( document.getElementById( "overview_log" ),
+    server ? log_view( server, "", c_overview_log_lines ).lines : [ "(the server log could not be read)" ] );
+}
+
+// ---- Unlock keys
+
+function show_keys( )
+{
+   set_text( "keys_note", keys_note( keys_made( ) ) );
+}
+
+async function do_make_key( )
+{
+   var button = document.getElementById( "key_make" );
+
+   button.disabled = true;
+
+   set_text( "key_error", "" );
+
+   var reply = await request( function( done ) { return ciyam.create_unlock_key( "", done ); } );
+
+   button.disabled = false;
+
+   var key = normalise_unlock_key( String( reply ).trim( ) );
+
+   if( is_error_response( reply ) || ( key === "" ) )
+   {
+      set_text( "key_error", is_error_response( reply ) ? key_error_text( reply ) : "The node did not answer with a key." );
+
+      return;
+   }
+
+   count_key_made( );
+
+   set_text( "key_text", key );
+
+   var box = document.getElementById( "key_qr" );
+
+   box.replaceChildren( );
+
+   // NOTE: Drawn in the page - "qrcode.min.js" - so the key goes nowhere else. The library titles its image
+   // with the text it holds; that tooltip is taken off, so the key is not shown on hover.
+   new QRCode( box, { text: key, width: c_qr_size, height: c_qr_size, colorDark: "#1b1f2a", colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M } );
+
+   box.removeAttribute( "title" );
+   box.querySelectorAll( "[title]" ).forEach( function( node ) { node.removeAttribute( "title" ); } );
+
+   set_text( "key_copy", "Copy" );
+
+   document.getElementById( "key_shown" ).hidden = false;
+   document.getElementById( "key_make" ).hidden = true;
+
+   show_keys( );
+}
+
+async function do_copy_key( )
+{
+   try
+   {
+      await navigator.clipboard.writeText( document.getElementById( "key_text" ).textContent );
+
+      set_text( "key_copy", "Copied" );
+   }
+   catch( e )
+   {
+      set_text( "key_copy", "Copy it by hand" );
+   }
+}
+
+// NOTE: Once stored, the key leaves the page - it is shown once.
+function forget_shown_key( )
+{
+   set_text( "key_text", "" );
+
+   document.getElementById( "key_qr" ).replaceChildren( );
+   document.getElementById( "key_shown" ).hidden = true;
+   document.getElementById( "key_make" ).hidden = false;
+}
+
+// ---- Logs
+
+async function load_logs( )
+{
+   if( !ciyam.is_admin )
+      return;
+
+   set_text( "log_status", "Reading…" );
+
+   var names = await request( function( done ) { return ciyam.fetch( admin_url( "/logs" ), "GET", done ); } );
+
+   g_log_names = is_error_response( names ) ? [ ] : parse_log_names( names );
+
+   if( g_log_names.indexOf( g_log_name ) < 0 )
+      g_log_name = g_log_names.length > 0 ? g_log_names[ 0 ] : "";
+
+   var tabs = document.getElementById( "log_tabs" );
+
+   tabs.replaceChildren( );
+
+   g_log_names.forEach( function( name )
+   {
+      var tab = document.createElement( "button" );
+
+      tab.type = "button";
+      tab.className = "home-log-tab";
+      tab.textContent = name;
+      tab.setAttribute( "role", "tab" );
+      tab.setAttribute( "aria-selected", String( name === g_log_name ) );
+      tab.addEventListener( "click", function( ) { g_log_name = name; load_logs( ); } );
+
+      tabs.appendChild( tab );
+   } );
+
+   if( g_log_name === "" )
+   {
+      g_log_lines = [ ];
+
+      set_text( "log_status", is_error_response( names ) ? error_text( names ) : "There are no logs." );
+
+      draw_log( document.getElementById( "log_lines" ), [ ] );
+
+      return;
+   }
+
+   g_log_lines = ( await read_log( g_log_name ) ) || [ ];
+
+   show_log( );
+}
+
+function show_log( )
+{
+   var count = parseInt( document.getElementById( "log_count" ).value, 10 );
+
+   var view = log_view( g_log_lines, document.getElementById( "log_filter" ).value, ( count > 0 ) ? count : g_log_lines.length );
+
+   draw_log( document.getElementById( "log_lines" ), view.lines );
+
+   set_text( "log_status", "'" + g_log_name + "' - " + ( ( view.lines.length < view.total ) ? "the last " + view.lines.length + " of " : "" )
+    + view.total + " line" + ( view.total === 1 ? "" : "s" ) + ( document.getElementById( "log_filter" ).value.trim( ) !== "" ? " matching" : "" ) );
+
+   var pre = document.getElementById( "log_lines" );
+
+   pre.scrollTop = pre.scrollHeight;
+}
+
+// NOTE: A section's data is read when it is shown, not before - Logs can be large.
+function on_section_shown( section )
+{
+   if( section === "overview" )
+      load_overview( );
+   else if( section === "keys" )
+      show_keys( );
+   else if( section === "logs" )
+      load_logs( );
+}
+
+function install_admin( )
+{
+   document.getElementById( "connection_icon" ).appendChild( icon( "shield", 22 ) );
+   document.getElementById( "keys_icon" ).appendChild( icon( "keys", 22 ) );
+
+   document.getElementById( "overview_refresh" ).addEventListener( "click", load_overview );
+   document.getElementById( "logs_refresh" ).addEventListener( "click", load_logs );
+   document.getElementById( "key_make" ).addEventListener( "click", do_make_key );
+   document.getElementById( "key_copy" ).addEventListener( "click", do_copy_key );
+   document.getElementById( "key_stored" ).addEventListener( "click", forget_shown_key );
+   document.getElementById( "log_filter" ).addEventListener( "input", show_log );
+   document.getElementById( "log_count" ).addEventListener( "change", show_log );
+
+   [ [ "overview_make_key", "keys" ], [ "overview_open_logs", "logs" ] ].forEach( function( pair )
+   {
+      document.getElementById( pair[ 0 ] ).addEventListener( "click", function( event ) { event.preventDefault( ); go( pair[ 1 ] ); } );
+   } );
+
+   document.getElementById( "overview_add_person" ).addEventListener( "click", function( event )
+   {
+      event.preventDefault( );
+
+      open_app_by_key( "account", "#add" );
+   } );
+
+   document.getElementById( "overview_people_link" ).addEventListener( "click", function( event )
+   {
+      event.preventDefault( );
+
+      open_app_by_key( "account", "#people" );
+   } );
+}
+
 // NOTE: Signing out of Home signs every app it opened out too - they were on its session (the design's
 // "Sign out of every app").
 async function do_sign_out( )
 {
    stop_refresh( );
+
+   forget_shown_key( );
 
    unlink_apps( );
 
