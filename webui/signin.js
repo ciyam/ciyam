@@ -154,7 +154,8 @@ function signin_build( host, options )
    reset.addEventListener( "click", signin_reset_browser );
 
    foot.appendChild( reset );
-   foot.appendChild( signin_element( "div", { class: "chat-signin-foot-note" }, "Forgets the device token and every saved account." ) );
+   foot.appendChild( signin_element( "div", { class: "chat-signin-foot-note" },
+    "Forgets the device token, every saved account and this browser's other settings for the node." ) );
 
    form.appendChild( foot );
    view.appendChild( form );
@@ -310,13 +311,14 @@ function signin_apply_retain( )
 }
 
 // NOTE: Everything this browser keeps for the node goes: the device token, which a rebuilt node no
-// longer knows, and every saved account - for every app, as they share them.
+// longer knows, every saved account - for every app, as they share them - and the rest: dismissed
+// announcements, recent emoji, Home's count of keys made. Said so on the page (found by review).
 function signin_reset_browser( )
 {
    if( ciyam.sessid !== "" )
       return;
 
-   if( !confirm( "Forget the device token and every saved account on this browser?" ) )
+   if( !confirm( "Forget the device token, every saved account and this browser's other settings for the node?" ) )
       return;
 
    try

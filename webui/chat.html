@@ -211,8 +211,8 @@ http://www.opensource.org/licenses/mit-license.php.
 
    // NOTE: The scripts are loaded only once the markup is in place. They used to start 100ms
    // after the markup was requested, whether or not it had arrived - and a "chat.js" served
-   // from the browser's memory cache could then run first. "populate_accounts( )" found no
-   // select and threw, so the saved accounts vanished: Ian saw it in Firefox after F5, and
+   // from the browser's memory cache could then run first. The sign in (then "populate_accounts( )")
+   // found no select and threw, so the saved accounts vanished: Ian saw it in Firefox after F5, and
    // only restarting Firefox, which empties that cache, brought them back.
    function load( )
    {
