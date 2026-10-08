@@ -237,15 +237,25 @@ function parse_log_names( text )
    return names;
 }
 
-// NOTE: "GET /cws/logs/<name>" as text - the whole log, a line each; the last line's break leaves no line.
+// NOTE: "GET /cws/logs/<name>" as text - its last lines ("lines=<n>", ten unless asked; "lines=0" all of it - Ian,
+// "3d6a5820"), a line each; the last line's break leaves no line. An empty log answers "[none]".
 function parse_log_lines( text )
 {
+   if( String( text || "" ).trim( ) === "[none]" )
+      return [ ];
+
    var lines = String( text || "" ).split( "\n" ).map( function( line ) { return line.replace( /\r$/, "" ); } );
 
    if( ( lines.length > 0 ) && ( lines[ lines.length - 1 ] === "" ) )
       lines.pop( );
 
    return lines;
+}
+
+// NOTE: The options asking a log for its last "count" lines - every line for none ("lines=0").
+function log_options( count )
+{
+   return "lines=" + ( ( count > 0 ) ? Math.floor( count ) : 0 );
 }
 
 // NOTE: The People figure's line on admin's Overview.
@@ -535,6 +545,7 @@ if( typeof module !== "undefined" )
       uptime_words: uptime_words,
       parse_log_names: parse_log_names,
       parse_log_lines: parse_log_lines,
+      log_options: log_options,
       people_note: people_note,
       keys_note: keys_note,
       key_error_text: key_error_text,

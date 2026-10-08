@@ -69,6 +69,9 @@ ok   a log's lines
 ok   a log with no last break
 ok   an empty log
 ok   a blank line inside is kept
+ok   an empty log - the node's [none]
+ok   the last 200 lines asked for
+ok   every line asked for
 ok   people - codes waiting
 ok   people - one code
 ok   people - all claimed

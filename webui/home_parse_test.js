@@ -143,6 +143,9 @@ check( "a log's lines", hp.parse_log_lines( "one\r\ntwo\nthree\n" ), [ "one", "t
 check( "a log with no last break", hp.parse_log_lines( "one\ntwo" ), [ "one", "two" ] );
 check( "an empty log", hp.parse_log_lines( "" ), [ ] );
 check( "a blank line inside is kept", hp.parse_log_lines( "one\n\ntwo\n" ), [ "one", "", "two" ] );
+check( "an empty log - the node's [none]", hp.parse_log_lines( "[none]" ), [ ] );
+check( "the last 200 lines asked for", hp.log_options( 200 ), "lines=200" );
+check( "every line asked for", hp.log_options( 0 ), "lines=0" );
 
 check( "people - codes waiting", hp.people_note( { active: 6, unclaimed: 2 } ), "2 codes not yet claimed" );
 check( "people - one code", hp.people_note( { active: 6, unclaimed: 1 } ), "1 code not yet claimed" );
@@ -273,13 +276,15 @@ var kept = hp.format_resume( signed_in );
 check( "never the hashed password", kept.indexOf( "secret-hash" ) < 0 && kept.indexOf( "hashed" ) < 0, true );
 check( "read back as it was", hp.parse_resume( kept ),
  { access: "20401", device: "6034a59f4554116", sessid: "4014a01afdf955cf0ef8", unique: "1759999999123", username: "verify-a", is_admin: false } );
-check( "admin kept as admin", hp.parse_resume( hp.format_resume( { access: "97620", device: "d", sessid: "ab12", unique: "", username: "admin", is_admin: true } ) ).is_admin, true );
+check( "admin kept as admin", hp.parse_resume( hp.format_resume(
+ { access: "97620", device: "d", sessid: "ab12", unique: "", username: "admin", is_admin: true } ) ).is_admin, true );
 check( "nothing kept", hp.parse_resume( null ), null );
 check( "not JSON", hp.parse_resume( "{nope" ), null );
 check( "not a PIN", hp.parse_resume( JSON.stringify( { access: "abc", device: "d", sessid: "ab12" } ) ), null );
 check( "no session", hp.parse_resume( JSON.stringify( { access: "20401", device: "d", sessid: "" } ) ), null );
 check( "no device", hp.parse_resume( JSON.stringify( { access: "20401", device: "", sessid: "ab12" } ) ), null );
-check( "admin only when it says so exactly", hp.parse_resume( JSON.stringify( { access: "20401", device: "d", sessid: "ab12", is_admin: "true" } ) ).is_admin, false );
+check( "admin only when it says so exactly",
+ hp.parse_resume( JSON.stringify( { access: "20401", device: "d", sessid: "ab12", is_admin: "true" } ) ).is_admin, false );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
