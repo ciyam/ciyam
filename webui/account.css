@@ -382,19 +382,6 @@ h2[tabindex="-1"]:focus
    background: var(--color-chat-bg-raised);
 }
 
-.account-divider
-{
-   width: 1px;
-   height: 18px;
-   background: var(--color-chat-border);
-}
-
-.account-title
-{
-   font-size: var(--font-size-chat-name);
-   font-weight: 600;
-}
-
 .account-spacer
 {
    flex-grow: 1;

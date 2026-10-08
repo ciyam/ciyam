@@ -151,12 +151,6 @@ code
    background: var(--color-console-text-muted);
 }
 
-.console-name
-{
-   color: var(--color-console-text-bright);
-   font-weight: 500;
-}
-
 .console-sep
 {
    color: var(--color-console-text-muted);
