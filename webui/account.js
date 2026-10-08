@@ -129,7 +129,8 @@ function account_main( )
 
          set_error( "signin_error", "You signed out in another app." );
       },
-      from: "accounts"
+      from: "accounts",
+      unsent: unsent_work
    } );
 
    // NOTE: Every request is logged for a console, as the chat's are - the quiet ones only while the
@@ -155,7 +156,37 @@ function account_main( )
 
    window.addEventListener( "hashchange", route );
 
-   route( );
+   // NOTE: Switched to from another app in this tab, or reloaded - the session kept for the tab, if the node still
+   // knows it (2026-10-09). Nothing is shown until it is known, so the sign in does not flash past.
+   if( ( g_source === "" ) && ( signin_kept_session( ) !== null ) )
+   {
+      signin_resume( ).then( function( resumed )
+      {
+         if( resumed )
+            enter_app( );
+         else
+            route( );
+      } );
+   }
+   else
+      route( );
+}
+
+// NOTE: What leaving for another app in this tab would lose - a form part filled in. The switcher asks first.
+function unsent_work( )
+{
+   if( ciyam.sessid === "" )
+      return "";
+
+   var filled = [ "add_pin", "add_username", "yourself_username", "yourself_password", "mine_current", "mine_password",
+    "mine_confirm" ].some( function( id )
+   {
+      var field = document.getElementById( id );
+
+      return ( field !== null ) && ( field.value !== "" );
+   } );
+
+   return filled ? "A form here is part filled in." : "";
 }
 
 // ====================================================================
@@ -605,6 +636,8 @@ function remember_device( )
 
 function enter_app( )
 {
+   signin_keep_session( );
+
    document.getElementById( "nav_people" ).hidden = !ciyam.is_admin;
    document.getElementById( "topbar_user" ).textContent = ciyam.username || ciyam.access;
    document.getElementById( "console_session" ).textContent = "inherits session " + ciyam.sessid;
@@ -634,6 +667,8 @@ async function do_sign_out( )
 function clear_session( )
 {
    unlink_others( );
+
+   signin_forget_session( );
 
    g_viewers = { };
 

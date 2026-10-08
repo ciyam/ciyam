@@ -1003,6 +1003,51 @@ check( "signed out - another session", cp.is_signed_out_here( cp.signed_out_mess
 check( "signed out - this tab signed in to nothing", cp.is_signed_out_here( cp.signed_out_message( "" ), "" ), false );
 check( "signed out - a channel string is not one", cp.is_signed_out_here( "1790900000000", "1790900000000" ), false );
 
+var chat_app = cp.switcher_apps( false, false, "home" )[ 1 ];
+
+check( "a row - opens here, a new tab at its right", cp.switcher_row( chat_app, false ),
+ { action: "here", note: "Rooms and messages", button: "new", label: "Open Chat in a new tab" } );
+check( "a row - open in another tab, gone to", cp.switcher_row( chat_app, true ),
+ { action: "go", note: "Open in another tab", button: "go", label: "Go to the tab Chat is open in" } );
+check( "a row - this app, open elsewhere too", cp.switcher_row( cp.switcher_apps( false, false, "chat" )[ 1 ], true ),
+ { action: "current", note: "You are here", button: "", label: "" } );
+
+check( "a plain click - this tab", cp.switch_wants_new_tab( { button: 0 } ), false );
+check( "ctrl, cmd or shift and click - a new tab", [ { ctrlKey: true }, { metaKey: true }, { shiftKey: true } ].map( cp.switch_wants_new_tab ),
+ [ true, true, true ] );
+check( "the middle button - a new tab", cp.switch_wants_new_tab( { button: 1 } ), true );
+check( "no event - this tab", cp.switch_wants_new_tab( null ), false );
+
+check( "which apps - the question", cp.which_apps_message( "4014a01afdf9" ), { kind: "which_apps", sessid: "4014a01afdf9" } );
+check( "which apps - this session", cp.is_which_apps_here( cp.which_apps_message( "4014a01afdf9" ), "4014a01afdf9" ), true );
+check( "which apps - another session", cp.is_which_apps_here( cp.which_apps_message( "4014a01afdf9" ), "99" ), false );
+check( "which apps - signed in to nothing", cp.is_which_apps_here( cp.which_apps_message( "" ), "" ), false );
+check( "an app open - this session", cp.app_open_here( cp.app_open_message( "4014a01afdf9", "console" ), "4014a01afdf9" ), "console" );
+check( "an app open - another session", cp.app_open_here( cp.app_open_message( "4014a01afdf9", "console" ), "99" ), "" );
+check( "an app open - not a key", cp.app_open_here( cp.app_open_message( "4014a01afdf9", "<b>x</b>" ), "4014a01afdf9" ), "" );
+check( "an app open - a signed out message is not one", cp.app_open_here( cp.signed_out_message( "4014a01afdf9" ), "4014a01afdf9" ), "" );
+
+// --------------------------------------------------------------------
+heading( "the session kept for the tab" );
+
+var signed_in = { access: "20401", device: "6034a59f4554116", hashed: "secret-hash", sessid: "4014a01afdf955cf0ef8",
+ unique: "1759999999123", username: "verify-a", is_admin: false };
+
+var kept = cp.format_tab_session( signed_in );
+
+check( "never the hashed password", kept.indexOf( "secret-hash" ) < 0 && kept.indexOf( "hashed" ) < 0, true );
+check( "read back as it was", cp.parse_tab_session( kept ),
+ { access: "20401", device: "6034a59f4554116", sessid: "4014a01afdf955cf0ef8", unique: "1759999999123", username: "verify-a", is_admin: false } );
+check( "admin kept as admin", cp.parse_tab_session( cp.format_tab_session(
+ { access: "97620", device: "d", sessid: "ab12", unique: "", username: "admin", is_admin: true } ) ).is_admin, true );
+check( "nothing kept", cp.parse_tab_session( null ), null );
+check( "not JSON", cp.parse_tab_session( "{nope" ), null );
+check( "not a PIN", cp.parse_tab_session( JSON.stringify( { access: "abc", device: "d", sessid: "ab12" } ) ), null );
+check( "no session", cp.parse_tab_session( JSON.stringify( { access: "20401", device: "d", sessid: "" } ) ), null );
+check( "no device", cp.parse_tab_session( JSON.stringify( { access: "20401", device: "", sessid: "ab12" } ) ), null );
+check( "admin only when it says so exactly",
+ cp.parse_tab_session( JSON.stringify( { access: "20401", device: "d", sessid: "ab12", is_admin: "true" } ) ).is_admin, false );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

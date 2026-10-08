@@ -205,7 +205,6 @@ check( "a member opens on Home", hp.home_section( false, "" ), "home" );
 check( "a member asking for an admin section", hp.home_section( false, "#keys" ), "home" );
 
 check( "the roles", [ hp.role_text( true ), hp.role_text( false ) ], [ "Administrator", "Member" ] );
-check( "an app on Home's session", hp.linked_app_address( "chat.html", "1759999999123" ), "chat.html?source=1759999999123" );
 
 // --------------------------------------------------------------------
 heading( "a member's Home" );
@@ -264,27 +263,6 @@ check( "none", hp.devices_shown( [ ], 0 ), { rows: [ ], more: 0 } );
 check( "more - three", hp.more_devices_text( 3 ), "and 3 more devices" );
 check( "more - one", hp.more_devices_text( 1 ), "and 1 more device" );
 check( "more - none", hp.more_devices_text( 0 ), "" );
-
-// --------------------------------------------------------------------
-heading( "the session kept for a reload" );
-
-var signed_in = { access: "20401", device: "6034a59f4554116", hashed: "secret-hash", sessid: "4014a01afdf955cf0ef8",
- unique: "1759999999123", username: "verify-a", is_admin: false };
-
-var kept = hp.format_resume( signed_in );
-
-check( "never the hashed password", kept.indexOf( "secret-hash" ) < 0 && kept.indexOf( "hashed" ) < 0, true );
-check( "read back as it was", hp.parse_resume( kept ),
- { access: "20401", device: "6034a59f4554116", sessid: "4014a01afdf955cf0ef8", unique: "1759999999123", username: "verify-a", is_admin: false } );
-check( "admin kept as admin", hp.parse_resume( hp.format_resume(
- { access: "97620", device: "d", sessid: "ab12", unique: "", username: "admin", is_admin: true } ) ).is_admin, true );
-check( "nothing kept", hp.parse_resume( null ), null );
-check( "not JSON", hp.parse_resume( "{nope" ), null );
-check( "not a PIN", hp.parse_resume( JSON.stringify( { access: "abc", device: "d", sessid: "ab12" } ) ), null );
-check( "no session", hp.parse_resume( JSON.stringify( { access: "20401", device: "d", sessid: "" } ) ), null );
-check( "no device", hp.parse_resume( JSON.stringify( { access: "20401", device: "", sessid: "ab12" } ) ), null );
-check( "admin only when it says so exactly",
- hp.parse_resume( JSON.stringify( { access: "20401", device: "d", sessid: "ab12", is_admin: "true" } ) ).is_admin, false );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );

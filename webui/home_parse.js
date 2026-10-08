@@ -327,7 +327,7 @@ function log_view( lines, filter, count )
    return { lines: matched.slice( Math.max( 0, matched.length - limit ) ), total: matched.length };
 }
 
-// NOTE: The apps in the switcher, each but Home opening in its own tab ("tab", for "open_app_tab( )"). The
+// NOTE: The apps in Home's rail, each with the tab "open_app_tab( )" finds it by when one is asked for. The
 // accounts page is admin's "Accounts" - everyone's people - and a member's "My account". The console is
 // admin's - and anyone's on a development system - and never on a phone (parked 2026-10-05). People is
 // not one of Home's sections: it is the accounts page's.
@@ -492,44 +492,6 @@ function more_devices_text( more )
    return ( more > 0 ) ? "and " + counted( more, "more device", "more devices" ) : "";
 }
 
-// NOTE: Home's session kept for its tab, so a reload does not ask for the sign in again (Damon, 2026-10-08) - in
-// "sessionStorage", gone when the tab closes. Only what requests need once signed in: never the hashed password,
-// which is used only to work out the session at the sign in. Read back, anything not of that shape is nothing.
-function format_resume( ciyam_like )
-{
-   return JSON.stringify( { access: ciyam_like.access, device: ciyam_like.device, sessid: ciyam_like.sessid,
-    unique: ciyam_like.unique, username: ciyam_like.username, is_admin: !!ciyam_like.is_admin } );
-}
-
-function parse_resume( stored )
-{
-   try
-   {
-      var value = JSON.parse( stored );
-
-      if( !value || ( typeof value !== "object" ) )
-         return null;
-
-      var text = function( name ) { return ( typeof value[ name ] === "string" ) ? value[ name ] : ""; };
-
-      if( !/^[0-9]{5}$/.test( text( "access" ) ) || !/^[0-9a-f]+$/i.test( text( "sessid" ) ) || ( text( "device" ) === "" ) )
-         return null;
-
-      return { access: text( "access" ), device: text( "device" ), sessid: text( "sessid" ), unique: text( "unique" ),
-       username: text( "username" ), is_admin: ( value.is_admin === true ) };
-   }
-   catch( e )
-   {
-      return null;
-   }
-}
-
-// NOTE: An app opened from Home on Home's session - "?source=<Home's id>", the channel's handshake ("chat.html").
-function linked_app_address( page, source )
-{
-   return page + "?source=" + encodeURIComponent( String( source ) );
-}
-
 if( typeof module !== "undefined" )
 {
    module.exports = {
@@ -562,9 +524,6 @@ if( typeof module !== "undefined" )
       short_device: short_device,
       device_rows: device_rows,
       devices_shown: devices_shown,
-      format_resume: format_resume,
-      parse_resume: parse_resume,
-      more_devices_text: more_devices_text,
-      linked_app_address: linked_app_address
+      more_devices_text: more_devices_text
    };
 }

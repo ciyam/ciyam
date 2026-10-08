@@ -1728,6 +1728,94 @@ function switcher_title( key, is_admin )
    return titles[ key ] || "";
 }
 
+// NOTE: The session this tab is on, kept for the tab, so an app switched to in it - or a reload - carries on without a
+// second sign in (Damon, 2026-10-09: the switcher opens apps in this tab). In "sessionStorage" - one for each tab,
+// gone when it closes, and shared by every app the tab shows. Only what requests need once signed in: never the
+// hashed password, which is used only to work out the session at the sign in. Read back, anything not of that shape
+// is nothing. Home kept its own from 2026-10-08.
+const c_tab_session_key = "ciyam.session";
+
+function format_tab_session( ciyam_like )
+{
+   return JSON.stringify( { access: ciyam_like.access, device: ciyam_like.device, sessid: ciyam_like.sessid,
+    unique: ciyam_like.unique, username: ciyam_like.username, is_admin: !!ciyam_like.is_admin } );
+}
+
+function parse_tab_session( stored )
+{
+   try
+   {
+      var value = JSON.parse( stored );
+
+      if( !value || ( typeof value !== "object" ) )
+         return null;
+
+      var text = function( name ) { return ( typeof value[ name ] === "string" ) ? value[ name ] : ""; };
+
+      if( !/^[0-9]{5}$/.test( text( "access" ) ) || !/^[0-9a-f]+$/i.test( text( "sessid" ) ) || ( text( "device" ) === "" ) )
+         return null;
+
+      return { access: text( "access" ), device: text( "device" ), sessid: text( "sessid" ), unique: text( "unique" ),
+       username: text( "username" ), is_admin: ( value.is_admin === true ) };
+   }
+   catch( e )
+   {
+      return null;
+   }
+}
+
+// NOTE: Choosing an app opens it in this tab, unless a new one is asked for - by the button at the row's right, or
+// the browser's own ways of asking: ctrl or cmd and click, shift and click, the middle button.
+function switch_wants_new_tab( event_like )
+{
+   var event = event_like || { };
+
+   return !!( event.ctrlKey || event.metaKey || event.shiftKey || ( event.button === 1 ) );
+}
+
+// NOTE: One row of the switcher - what choosing it does ("current", "here", or "go" to the tab it is open in), the
+// line under its name, and the button at its right ("new" for a new tab, "go", or none). An app open in another tab
+// on this session is gone to rather than opened again, so there are never two of one.
+function switcher_row( app, open_elsewhere )
+{
+   if( app.current )
+      return { action: "current", note: "You are here", button: "", label: "" };
+
+   if( open_elsewhere )
+      return { action: "go", note: "Open in another tab", button: "go", label: "Go to the tab " + app.title + " is open in" };
+
+   return { action: "here", note: app.note, button: "new", label: "Open " + app.title + " in a new tab" };
+}
+
+// NOTE: Which apps are open in other tabs on this session - asked on the session's channel each time the switcher
+// opens, and every app on the same session answers with its own key. Anything else is not an answer.
+function which_apps_message( sessid )
+{
+   return { kind: "which_apps", sessid: String( sessid || "" ) };
+}
+
+function app_open_message( sessid, app )
+{
+   return { kind: "app_open", sessid: String( sessid || "" ), app: String( app || "" ) };
+}
+
+function is_which_apps_here( data, sessid )
+{
+   return !!data && ( typeof data === "object" ) && ( data.kind === "which_apps" )
+    && ( typeof data.sessid === "string" ) && ( data.sessid !== "" ) && ( data.sessid === sessid );
+}
+
+function app_open_here( data, sessid )
+{
+   if( !data || ( typeof data !== "object" ) || ( data.kind !== "app_open" ) || ( typeof data.app !== "string" ) )
+      return "";
+
+   if( ( typeof data.sessid !== "string" ) || ( data.sessid === "" ) || ( data.sessid !== sessid ) )
+      return "";
+
+   return /^[a-z]+$/.test( data.app ) ? data.app : "";
+}
+
 // NOTE: What to do with the tab found by a name: "load" an empty one (there was none - the
 // browser has just made it), "focus" one already on this session (no reload - it keeps its
 // place), or open a "new" one when the tab found is signed in some other way or not at all,
@@ -1940,6 +2028,14 @@ if( typeof module !== "undefined" )
       switcher_title: switcher_title,
       signed_out_message: signed_out_message,
       is_signed_out_here: is_signed_out_here,
+      format_tab_session: format_tab_session,
+      parse_tab_session: parse_tab_session,
+      switch_wants_new_tab: switch_wants_new_tab,
+      switcher_row: switcher_row,
+      which_apps_message: which_apps_message,
+      app_open_message: app_open_message,
+      is_which_apps_here: is_which_apps_here,
+      app_open_here: app_open_here,
       is_error_response: is_error_response,
       error_text: error_text,
       parse_members: parse_members,

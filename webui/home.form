@@ -128,7 +128,8 @@ http://www.opensource.org/licenses/mit-license.php.
 <!-- NOTE: Signed in, the node ready - the shell (build step 4): a side menu of apps and, for admin, the node's
      sections, with who is signed in and "Sign out of every app". On a phone the menu is a drawer from the top
      bar, admin's sections are chips beneath it, and the apps are a bar along the bottom. The apps other than
-     Home open in their own tabs on this session. The rail's items are built by "home.js". -->
+     Home open in this tab on its session, as the switcher opens them - a new tab with ctrl or cmd and click
+     (2026-10-09). The rail's items are built by "home.js". -->
 <div class="home-app" id="app_view" hidden>
    <nav class="home-rail" id="home_rail" aria-label="Home">
       <!-- NOTE: The app switcher - the CIYAM mark and "Home", as at the top of every app ("apps.js", 2026-10-08). -->
@@ -207,15 +208,13 @@ http://www.opensource.org/licenses/mit-license.php.
                      <span class="home-rail-heading">Devices</span>
                      <ul class="home-device-list" id="device_list"></ul>
                      <span class="home-note home-empty" id="device_more"></span>
-                     <a href="#" class="home-external-link" id="manage_account"
-                      title="Opens in its own tab, on this session">Manage my account</a>
+                     <a href="account.html#mine" class="home-account-link" id="manage_account">Manage my account</a>
                   </div>
                </section>
 
                <a class="home-tile" href="#" id="tile_chat">
                   <span class="home-tile-top">
                      <span class="home-tile-icon is-chat" id="tile_chat_icon"></span>
-                     <span class="home-tile-tab">Opens in its own tab</span>
                   </span>
                   <span class="home-tile-title">Chat</span>
                   <span class="home-tile-text" id="tile_chat_text">&hellip;</span>

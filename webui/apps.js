@@ -4,9 +4,10 @@
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 // NOTE: The app switcher, shared - the same in every app (Damon, 2026-10-08). Its button is the CIYAM mark and
-// the app's name ("CIYAM · Chat"); open, it lists every app, this one marked, and choosing another switches to
-// its tab if it is open on this session, else opens one on it - never "Back to", since any app may have opened
-// any other. At its foot, who is signed in and "Sign out of every app", which reaches every tab on the session
+// the app's name ("CIYAM · Chat"); open, it lists every app, this one marked. Choosing another opens it in this tab,
+// on the session kept for the tab (Damon, 2026-10-09) - "Back" returns as it would anywhere. The button at a row's
+// right, or ctrl or cmd and click, opens it in a new tab instead; an app already open in another tab on this session
+// is gone to, so there are never two of one. Never "Back to", since any app may have opened any other. At its foot, who is signed in and "Sign out of every app", which reaches every tab on the session
 // whichever app it is chosen in. On a phone it is a sheet from the bottom. Which apps, and the sign out message,
 // are "switcher_apps( )" and "signed_out_message( )" in "chat_parse.js", with their tests.
 //
@@ -17,15 +18,25 @@
 //   options.sign_out       the page's own sign out - it ends the session on the node and clears the page
 //   options.signed_out     the page's own clearing, when another tab on the session signed out of every app
 //   options.from           optional - how the console names this page ("home", "accounts"; the chat by default)
+//   options.unsent         optional - what leaving this page would lose ("Your message isn't sent yet."), or ""
 //
-// Needs "chat_parse.js" ("switcher_apps( )", "switcher_title( )", "signed_out_message( )", "open_app_tab( )",
-// "user_initial( )", "sender_colour_index( )") and the page's "ciyam". Its look is "apps.css".
+// "apps_go( key, hash, event )" opens an app from elsewhere on the page by the same rules - Home's tiles.
+//
+// Needs "chat_parse.js" ("switcher_apps( )", "switcher_row( )", "switch_wants_new_tab( )", the session channel's
+// messages, "open_app_tab( )", "user_initial( )", "sender_colour_index( )"), "signin.js" (the session kept for the
+// tab) and the page's "ciyam". Its look is "apps.css".
 
 const c_apps_phone_query = "(max-width: 760px)";
 
 var g_apps_options = { };
 
 var g_apps_session_channel = null;
+
+// NOTE: The apps open in other tabs on this session, as they answered when the panel last opened.
+var g_apps_open_elsewhere = { };
+
+// NOTE: Where this page is leaving for, while it asks first about work not yet sent.
+var g_apps_leaving = null;
 
 function apps_element( tag, class_name, text )
 {
@@ -76,7 +87,8 @@ const c_apps_icons = {
    console: "M4 6l5 5-5 5M12 18h8",
    chevron: "M6 9l6 6 6-6",
    tick: "M5 12l5 5L20 7",
-   external: "M7 17 17 7M9 7h8v8"
+   new_tab: "M14 4h6v6M20 4l-8 8M10 6H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5",
+   go_tab: "M8 4h11a1 1 0 0 1 1 1v11M4 8h11a1 1 0 0 1 1 1v11H5a1 1 0 0 1-1-1z"
 };
 
 function apps_build( host, options )
@@ -134,6 +146,53 @@ function apps_build( host, options )
    list.id = "apps_list";
 
    panel.appendChild( list );
+
+   var hint = apps_element( "span", "apps-hint" );
+
+   hint.appendChild( apps_svg( c_apps_icons.new_tab, 14 ) );
+   hint.appendChild( apps_element( "span", "", "New tab - or ctrl / cmd and click" ) );
+
+   panel.appendChild( hint );
+
+   var leave = apps_element( "div", "apps-leave" );
+
+   leave.id = "apps_leave";
+   leave.hidden = true;
+   leave.setAttribute( "role", "alert" );
+
+   var leave_text = apps_element( "span", "" );
+
+   leave_text.id = "apps_leave_text";
+
+   var leave_actions = apps_element( "div", "apps-leave-actions" );
+
+   var stay = apps_element( "button", "chat-btn", "Stay" );
+
+   stay.type = "button";
+   stay.id = "apps_stay";
+   stay.addEventListener( "click", function( ) { apps_close( ); } );
+
+   var go = apps_element( "button", "chat-btn chat-btn--primary", "Leave" );
+
+   go.type = "button";
+   go.id = "apps_leave_anyway";
+   go.addEventListener( "click", function( )
+   {
+      var leaving = g_apps_leaving;
+
+      apps_close( );
+
+      if( leaving !== null )
+         apps_leave_for( leaving.app, leaving.hash );
+   } );
+
+   leave_actions.appendChild( stay );
+   leave_actions.appendChild( go );
+
+   leave.appendChild( leave_text );
+   leave.appendChild( leave_actions );
+
+   panel.appendChild( leave );
 
    var foot = apps_element( "div", "apps-foot" );
 
@@ -194,8 +253,35 @@ function apps_build( host, options )
 
             g_apps_options.signed_out( );
          }
+         else if( is_which_apps_here( event.data, ciyam.sessid ) )
+            g_apps_session_channel.postMessage( app_open_message( ciyam.sessid, g_apps_options.current ) );
+         else
+         {
+            var open = app_open_here( event.data, ciyam.sessid );
+
+            if( ( open !== "" ) && !g_apps_open_elsewhere[ open ] )
+            {
+               g_apps_open_elsewhere[ open ] = true;
+
+               if( !document.getElementById( "apps_panel" ).hidden )
+                  apps_render_list( );
+            }
+         }
       } );
    }
+
+   // NOTE: Back to a page the browser kept as it was - its session may have ended since, in this tab or another. The
+   // page loads again, and takes up the tab's session if there still is one.
+   window.addEventListener( "pageshow", function( event )
+   {
+      if( !event.persisted || ( ciyam.sessid === "" ) )
+         return;
+
+      var kept = signin_kept_session( );
+
+      if( ( kept === null ) || ( kept.sessid !== ciyam.sessid ) )
+         window.location.reload( );
+   } );
 
    apps_refresh( );
 }
@@ -227,15 +313,42 @@ function apps_refresh( )
 
 function apps_open( )
 {
+   g_apps_open_elsewhere = { };
+   g_apps_leaving = null;
+
+   document.getElementById( "apps_leave" ).hidden = true;
+
+   apps_render_list( );
+
+   apps_refresh( );
+
+   document.getElementById( "apps_panel" ).hidden = false;
+   document.getElementById( "apps_scrim" ).hidden = !apps_is_phone( );
+   document.getElementById( "apps_trigger" ).setAttribute( "aria-expanded", "true" );
+
+   // NOTE: Which apps are open in other tabs on this session - each answers, and its row then says so.
+   if( ( g_apps_session_channel !== null ) && ( ciyam.sessid !== "" ) )
+      g_apps_session_channel.postMessage( which_apps_message( ciyam.sessid ) );
+}
+
+function apps_render_list( )
+{
    var list = document.getElementById( "apps_list" );
 
    list.replaceChildren( );
 
    switcher_apps( ciyam.is_admin, apps_is_phone( ), g_apps_options.current ).forEach( function( app )
    {
+      var row_state = switcher_row( app, !!g_apps_open_elsewhere[ app.key ] );
+
+      var row = apps_element( "div", "apps-row" + ( app.current ? " is-current" : "" ) );
+
+      row.dataset.key = app.key;
+
       var item = apps_element( "a", "apps-item" + ( app.current ? " is-current" : "" ) );
 
-      item.href = app.page;
+      // NOTE: The address a new tab needs - so the browser's own "Open in new tab" works too.
+      item.href = apps_address( app, "" );
       item.dataset.key = app.key;
 
       var icon = apps_element( "span", "apps-icon apps-icon--" + app.key );
@@ -245,40 +358,71 @@ function apps_open( )
       var words = apps_element( "span", "apps-words" );
 
       words.appendChild( apps_element( "span", "apps-title", app.title ) );
-      words.appendChild( apps_element( "span", "apps-item-note", app.current ? "You are here" : app.note ) );
+      words.appendChild( apps_element( "span", "apps-item-note" + ( row_state.action === "go" ? " is-open" : "" ), row_state.note ) );
 
       item.appendChild( icon );
       item.appendChild( words );
 
       if( app.current )
-      {
          item.setAttribute( "aria-current", "page" );
-         item.appendChild( apps_svg( c_apps_icons.tick, 16 ) );
-      }
-      else
-      {
-         item.title = "Opens in its own tab, on this session";
-         item.appendChild( apps_svg( c_apps_icons.external, 14 ) );
-      }
 
-      item.addEventListener( "click", function( event )
+      var choose = function( event )
       {
          event.preventDefault( );
 
-         apps_close( );
+         if( row_state.action === "current" )
+            apps_close( );
+         else if( ( row_state.action === "go" ) || switch_wants_new_tab( event ) )
+         {
+            apps_close( );
 
-         if( !app.current )
-            apps_switch_to( app );
+            apps_switch_to( app, "" );
+         }
+         else
+            apps_go_here( app, "" );
+      };
+
+      item.addEventListener( "click", choose );
+
+      // NOTE: The middle button - a new tab, on the session.
+      item.addEventListener( "auxclick", function( event )
+      {
+         if( event.button === 1 )
+            choose( event );
       } );
 
-      list.appendChild( item );
+      row.appendChild( item );
+
+      if( row_state.button === "" )
+      {
+         var tick = apps_element( "span", "apps-side is-tick" );
+
+         tick.appendChild( apps_svg( c_apps_icons.tick, 16 ) );
+
+         row.appendChild( tick );
+      }
+      else
+      {
+         var side = apps_element( "button", "apps-side" + ( row_state.button === "go" ? " is-go" : "" ) );
+
+         side.type = "button";
+         side.dataset.key = app.key;
+         side.title = ( row_state.button === "go" ) ? "Go to its tab" : "Open in a new tab";
+         side.setAttribute( "aria-label", row_state.label );
+         side.appendChild( apps_svg( ( row_state.button === "go" ) ? c_apps_icons.go_tab : c_apps_icons.new_tab, 16 ) );
+
+         side.addEventListener( "click", function( )
+         {
+            apps_close( );
+
+            apps_switch_to( app, "" );
+         } );
+
+         row.appendChild( side );
+      }
+
+      list.appendChild( row );
    } );
-
-   apps_refresh( );
-
-   document.getElementById( "apps_panel" ).hidden = false;
-   document.getElementById( "apps_scrim" ).hidden = !apps_is_phone( );
-   document.getElementById( "apps_trigger" ).setAttribute( "aria-expanded", "true" );
 }
 
 function apps_close( )
@@ -290,12 +434,15 @@ function apps_close( )
 
    panel.hidden = true;
 
+   g_apps_leaving = null;
+
+   document.getElementById( "apps_leave" ).hidden = true;
    document.getElementById( "apps_scrim" ).hidden = true;
    document.getElementById( "apps_trigger" ).setAttribute( "aria-expanded", "false" );
 }
 
-// NOTE: Its tab if open on this session, else one opened on it - "?source=" asks this page for the session.
-function apps_switch_to( app )
+// NOTE: The address of an app opened in a new tab - "?source=" asks this page for the session.
+function apps_address( app, hash )
 {
    var self = g_apps_options.self ? String( g_apps_options.self( ) ) : "";
 
@@ -304,7 +451,59 @@ function apps_switch_to( app )
    if( ( app.key === "console" ) && g_apps_options.from )
       address += "&from=" + encodeURIComponent( g_apps_options.from );
 
-   open_app_tab( app.tab, address, ciyam.sessid );
+   return address + ( hash || "" );
+}
+
+// NOTE: In a new tab - or the tab it is already open in, on this session.
+function apps_switch_to( app, hash )
+{
+   open_app_tab( app.tab, apps_address( app, hash ), ciyam.sessid );
+}
+
+// NOTE: In this tab - asking first, in the panel, if leaving would lose work not yet sent.
+function apps_go_here( app, hash )
+{
+   var unsent = g_apps_options.unsent ? g_apps_options.unsent( ) : "";
+
+   if( unsent === "" )
+   {
+      apps_close( );
+
+      apps_leave_for( app, hash );
+
+      return;
+   }
+
+   if( document.getElementById( "apps_panel" ).hidden )
+      apps_open( );
+
+   g_apps_leaving = { app: app, hash: hash || "" };
+
+   document.getElementById( "apps_leave_text" ).textContent = unsent + " Leave for " + app.title + " anyway?";
+   document.getElementById( "apps_leave" ).hidden = false;
+   document.getElementById( "apps_stay" ).focus( );
+}
+
+function apps_leave_for( app, hash )
+{
+   signin_keep_session( );
+
+   window.location.href = app.page + ( hash || "" );
+}
+
+// NOTE: An app opened from elsewhere on the page - Home's tiles - by the switcher's rules: this tab, unless the event
+// asks for a new one.
+function apps_go( key, hash, event )
+{
+   var app = switcher_apps( ciyam.is_admin, false, g_apps_options.current ).filter( function( entry ) { return entry.key === key; } )[ 0 ];
+
+   if( !app || app.current )
+      return;
+
+   if( switch_wants_new_tab( event ) )
+      apps_switch_to( app, hash );
+   else
+      apps_go_here( app, hash );
 }
 
 // NOTE: Every tab on the session is told before the session ends, so none is left with one the node no longer has.

@@ -51,8 +51,8 @@ http://www.opensource.org/licenses/mit-license.php.
                   <button type="button" class="chat-user-menu-link" role="menuitem" onclick="do_menu_linked_tab( )"
                    title="Opens the chat in a new tab sharing this session - no second sign in">Open a linked tab &rarr;</button>
                </div>
-               <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_account_settings( )"
-                title="Opens your account in a new tab sharing this session">Account settings&hellip;</button>
+               <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_account_settings( event )"
+                title="Opens your account here - ctrl or cmd and click for a new tab">Account settings&hellip;</button>
                <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_sign_out( )">Sign out of every app</button>
             </div>
          </div>

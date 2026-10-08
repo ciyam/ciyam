@@ -136,7 +136,20 @@ function chat( )
       on_busy: function( busy ) { if( busy ) begin_busy( ); else end_busy( ); }
    } );
 
-   signin_show( );
+   // NOTE: Switched to from another app in this tab, or reloaded - the session kept for the tab, if the node still
+   // knows it (2026-10-09). Opened with "?source=", "chat.html" asks that page for its session instead.
+   if( new URL( window.location.href ).searchParams.get( "source" ) === null )
+   {
+      signin_resume( ).then( function( resumed )
+      {
+         if( resumed )
+            enter_chat( );
+         else
+            signin_show( );
+      } );
+   }
+   else
+      signin_show( );
 
    // NOTE: The app switcher - the same in every app, its button the CIYAM mark and "Chat" (2026-10-08).
    apps_build( document.getElementById( "apps_host" ), {
@@ -149,7 +162,8 @@ function chat( )
          await do_disconnect( true );
 
          set_error( "signin_error", "You signed out in another app." );
-      }
+      },
+      unsent: unsent_work
    } );
 
    window.setInterval( update_poll_label, 1000 );
@@ -226,6 +240,8 @@ function chat( )
 
 function enter_chat( )
 {
+   signin_keep_session( );
+
    document.getElementById( "signin_view" ).hidden = true;
    document.getElementById( "chat_view" ).hidden = false;
 
@@ -313,6 +329,20 @@ function do_menu_linked_tab( )
    close_user_menu( false );
 
    do_open_linked_tab( );
+}
+
+// NOTE: What leaving for another app in this tab would lose - the switcher asks first (2026-10-09).
+function unsent_work( )
+{
+   if( ciyam.sessid === "" )
+      return "";
+
+   if( document.getElementById( "composer_input" ).value.trim( ) !== "" )
+      return "Your message isn't sent yet.";
+
+   var held = Object.keys( g_dm_pending ).some( function( room ) { return g_dm_pending[ room ].texts.length > 0; } );
+
+   return held ? "A message waiting for them to accept would be lost." : "";
 }
 
 // NOTE: "Sign out of every app" - every tab on the session told, as from the switcher (2026-10-08).
@@ -924,15 +954,18 @@ function update_drawer_toggles( )
 // ====================================================================
 
 // NOTE: The account - changing the password, and for admin the people on the node - is on the
-// accounts page, in its own tab sharing this session: it announces itself to this chat and is
-// handed the session, as the console is (see "chat.html"), so there is no second sign in. An
-// accounts tab already on this session is reused, at My account, not reloaded.
-function do_menu_account_settings( )
+// accounts page, opened as the switcher opens it (2026-10-09): in this tab, on the session kept
+// for it, or a new tab with ctrl or cmd and click. An accounts tab already on this session is
+// then reused, at My account, not reloaded.
+function do_menu_account_settings( event )
 {
    close_user_menu( false );
 
-   open_app_tab( c_tab_accounts, "account.html?source=" + encodeURIComponent( g_self ) + "#mine", ciyam.sessid,
-    function( tab ) { tab.location.hash = "mine"; } );
+   if( switch_wants_new_tab( event ) )
+      open_app_tab( c_tab_accounts, "account.html?source=" + encodeURIComponent( g_self ) + "#mine", ciyam.sessid,
+       function( tab ) { tab.location.hash = "mine"; } );
+   else
+      apps_go( "account", "#mine", event );
 }
 
 // NOTE: Between sign in and the first room's messages the thread showed "No room selected"
@@ -1006,6 +1039,8 @@ function show_thread_view( )
 async function do_disconnect( already_ended )
 {
    stop_polling( );
+
+   signin_forget_session( );
 
    if( already_ended === true )
    {

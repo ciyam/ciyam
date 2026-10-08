@@ -112,7 +112,6 @@ ok   admin asking for something not theirs
 ok   a member opens on Home
 ok   a member asking for an admin section
 ok   the roles
-ok   an app on Home's session
 
 == a member's Home =============================================
 ok   the chat's summary - a member
@@ -136,16 +135,5 @@ ok   none
 ok   more - three
 ok   more - one
 ok   more - none
-
-== the session kept for a reload ===============================
-ok   never the hashed password
-ok   read back as it was
-ok   admin kept as admin
-ok   nothing kept
-ok   not JSON
-ok   not a PIN
-ok   no session
-ok   no device
-ok   admin only when it says so exactly
 
 All checks passed.

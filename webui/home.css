@@ -254,11 +254,6 @@
    flex-grow: 1;
 }
 
-.home-rail-external
-{
-   color: var(--color-chat-text-secondary);
-}
-
 .home-rail-spacer
 {
    flex-grow: 1;
@@ -426,12 +421,6 @@
    justify-content: center;
    background: var(--color-chat-bg-selected);
    color: var(--color-chat-accent-deep);
-}
-
-.home-tile-tab
-{
-   font-size: var(--font-size-chat-meta);
-   color: var(--color-chat-text-secondary);
 }
 
 .home-tile-title
@@ -659,7 +648,7 @@
    text-overflow: ellipsis;
 }
 
-.home-external-link
+.home-account-link
 {
    display: inline-flex;
    align-items: center;
@@ -1125,11 +1114,6 @@
    .home-tile
    {
       padding: 16px;
-   }
-
-   .home-tile-tab
-   {
-      display: none;
    }
 
    .home-need

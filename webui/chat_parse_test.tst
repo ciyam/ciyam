@@ -539,5 +539,31 @@ ok   signed out - this session
 ok   signed out - another session
 ok   signed out - this tab signed in to nothing
 ok   signed out - a channel string is not one
+ok   a row - opens here, a new tab at its right
+ok   a row - open in another tab, gone to
+ok   a row - this app, open elsewhere too
+ok   a plain click - this tab
+ok   ctrl, cmd or shift and click - a new tab
+ok   the middle button - a new tab
+ok   no event - this tab
+ok   which apps - the question
+ok   which apps - this session
+ok   which apps - another session
+ok   which apps - signed in to nothing
+ok   an app open - this session
+ok   an app open - another session
+ok   an app open - not a key
+ok   an app open - a signed out message is not one
+
+== the session kept for the tab ================================
+ok   never the hashed password
+ok   read back as it was
+ok   admin kept as admin
+ok   nothing kept
+ok   not JSON
+ok   not a PIN
+ok   no session
+ok   no device
+ok   admin only when it says so exactly
 
 All checks passed.

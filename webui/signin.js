@@ -433,3 +433,97 @@ async function signin_submit( event )
    if( g_signin_options.on_signed_in )
       g_signin_options.on_signed_in( );
 }
+
+// ---- The session kept for this tab - "format_tab_session( )" in "chat_parse.js" (2026-10-09)
+
+const c_signin_lobby_room = "0000000";
+
+function signin_keep_session( )
+{
+   try
+   {
+      if( ciyam.sessid !== "" )
+         sessionStorage.setItem( c_tab_session_key, format_tab_session( ciyam ) );
+   }
+   catch( e )
+   {
+   }
+}
+
+function signin_forget_session( )
+{
+   try
+   {
+      sessionStorage.removeItem( c_tab_session_key );
+   }
+   catch( e )
+   {
+   }
+}
+
+function signin_kept_session( )
+{
+   try
+   {
+      return parse_tab_session( sessionStorage.getItem( c_tab_session_key ) );
+   }
+   catch( e )
+   {
+      return null;
+   }
+}
+
+// NOTE: Takes up the session kept for this tab - an app switched to in it, or a reload - if the node still knows it,
+// tried with one request: the lobby listing, which moves nothing the session has read. Refused - it timed out, or
+// the node was set up again - it is forgotten, and the page signs in as usual. The hashed password is not kept for
+// the tab, but where the person chose to save it on this browser it is here already - the accounts page needs it
+// to check a password change.
+async function signin_resume( )
+{
+   var kept = signin_kept_session( );
+
+   if( kept === null )
+      return false;
+
+   ciyam.access = kept.access;
+   ciyam.device = kept.device;
+   ciyam.sessid = kept.sessid;
+   ciyam.unique = kept.unique;
+   ciyam.username = kept.username;
+   ciyam.is_admin = kept.is_admin;
+   ciyam.hashed = signin_saved_hash( kept.access ) || "";
+
+   var reply = "";
+
+   var issue = function( done )
+   {
+      return ciyam.fetch_messages( c_signin_lobby_room, "", done );
+   };
+
+   try
+   {
+      if( g_signin_options.request )
+         reply = String( await g_signin_options.request( issue ) );
+      else
+         await issue( function( response ) { reply = String( response ); } );
+   }
+   catch( e )
+   {
+      reply = "";
+   }
+
+   if( ( reply === "" ) || is_error_response( reply ) || ( parse_fetch_response( reply ).rooms.length === 0 ) )
+   {
+      ciyam.sessid = "";
+      ciyam.unique = "";
+      ciyam.hashed = "";
+      ciyam.username = "";
+      ciyam.is_admin = false;
+
+      signin_forget_session( );
+
+      return false;
+   }
+
+   return true;
+}

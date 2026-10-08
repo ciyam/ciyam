@@ -216,7 +216,8 @@ function console_main( )
             await do_disconnect( true );
 
             set_error( "signin_error", "You signed out in another app." );
-         }
+         },
+         unsent: unsent_work
       } );
    }
 
@@ -273,8 +274,29 @@ function console_main( )
 
       g_announce_timer = window.setInterval( announce, c_announce_interval );
    }
+   else if( !g_embedded )
+   {
+      // NOTE: Switched to from another app in this tab, or reloaded - the session kept for the tab, if the node still
+      // knows it (2026-10-09).
+      signin_resume( ).then( function( resumed )
+      {
+         if( resumed )
+            enter_console( );
+         else
+            signin_show( );
+      } );
+   }
    else
       signin_show( );
+}
+
+// NOTE: What leaving for another app in this tab would lose - a script still running. The switcher asks first.
+function unsent_work( )
+{
+   if( !g_connected )
+      return "";
+
+   return document.getElementById( "script_stop" ).hidden ? "" : "A script is still running.";
 }
 
 // ====================================================================
@@ -365,6 +387,9 @@ function end_linked_session( )
 {
    g_connected = false;
 
+   if( !g_embedded )
+      signin_forget_session( );
+
    ciyam.sessid = "";
    ciyam.unique = "";
    ciyam.hashed = "";
@@ -424,6 +449,9 @@ async function do_disconnect( already_ended )
 {
    g_stop_requested = true;
 
+   if( !g_embedded )
+      signin_forget_session( );
+
    if( already_ended !== true )
    {
       if( g_linked )
@@ -479,6 +507,9 @@ async function do_disconnect( already_ended )
 function enter_console( )
 {
    g_connected = true;
+
+   if( !g_embedded )
+      signin_keep_session( );
 
    document.getElementById( "signin_view" ).hidden = true;
    document.getElementById( "waiting_view" ).hidden = true;

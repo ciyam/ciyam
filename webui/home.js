@@ -157,8 +157,8 @@ async function check_node( )
       return;
    }
 
-   // NOTE: A reload - the session this tab had, if the node still knows it.
-   if( ( screen === "signin" ) && await resume_session( ) )
+   // NOTE: A reload, or an app switched to Home in this tab - the session kept for the tab, if the node still knows it.
+   if( ( screen === "signin" ) && await signin_resume( ) )
    {
       after_sign_in( );
 
@@ -187,32 +187,6 @@ function on_signed_in( )
    after_sign_in( );
 }
 
-// NOTE: Home's session kept for this tab - "format_resume( )" in "home_parse.js" says what, and why not the hashed
-// password. Gone when the tab closes, or at a sign out.
-const c_storage_resume = "home.session";
-
-function keep_session( )
-{
-   try
-   {
-      sessionStorage.setItem( c_storage_resume, format_resume( ciyam ) );
-   }
-   catch( e )
-   {
-   }
-}
-
-function forget_session( )
-{
-   try
-   {
-      sessionStorage.removeItem( c_storage_resume );
-   }
-   catch( e )
-   {
-   }
-}
-
 function clear_ciyam( )
 {
    ciyam.sessid = "";
@@ -221,50 +195,6 @@ function clear_ciyam( )
    ciyam.unique = "";
    ciyam.username = "";
    ciyam.is_admin = false;
-}
-
-// NOTE: The session this tab had before a reload, tried with one request - the lobby listing, which moves
-// nothing the session has read. Refused - it timed out, or the node was set up again - it is forgotten.
-async function resume_session( )
-{
-   var kept = null;
-
-   try
-   {
-      kept = parse_resume( sessionStorage.getItem( c_storage_resume ) );
-   }
-   catch( e )
-   {
-   }
-
-   if( kept === null )
-      return false;
-
-   ciyam.access = kept.access;
-   ciyam.device = kept.device;
-   ciyam.sessid = kept.sessid;
-   ciyam.unique = kept.unique;
-   ciyam.username = kept.username;
-   ciyam.is_admin = kept.is_admin;
-
-   // NOTE: The hashed password is not kept for the tab, but where the person chose to save it on this browser it
-   // is here already - and an app opened from Home needs it to check a password change (found by review).
-   ciyam.hashed = signin_saved_hash( kept.access ) || "";
-
-   var reply = await request( function( done )
-   {
-      return ciyam.fetch_messages( c_lobby_room, "", done );
-   } );
-
-   if( is_error_response( reply ) || ( parse_fetch_response( reply ).rooms.length === 0 ) )
-   {
-      clear_ciyam( );
-      forget_session( );
-
-      return false;
-   }
-
-   return true;
 }
 
 async function after_sign_in( )
@@ -389,8 +319,7 @@ const c_icons = {
    overview: "M12 14l4-4M3.5 18a9 9 0 1 1 17 0",
    keys: "M15 7a4 4 0 1 1-3.5 6L4 20.5H2v-3l7.5-7.5A4 4 0 0 1 15 7z",
    logs: "M5 4h14v16H5zM8 8h8M8 12h8M8 16h5",
-   shield: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM9 12l2 2 4-4",
-   external: "M7 17 17 7M9 7h8v8"
+   shield: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM9 12l2 2 4-4"
 };
 
 // NOTE: As wide as the design's phone layouts - below it the side menu becomes a drawer.
@@ -551,12 +480,12 @@ function unlink_apps( )
       g_channel.postMessage( g_self );
 }
 
-function rail_item( key, title, opens_tab, on_click )
+function rail_item( key, title, is_app, on_click )
 {
    var item = document.createElement( "a" );
 
    item.className = "home-rail-item";
-   item.href = opens_tab ? "#" : "#" + key;
+   item.href = "#" + key;
    item.dataset.key = key;
 
    item.appendChild( icon( key ) );
@@ -571,25 +500,40 @@ function rail_item( key, title, opens_tab, on_click )
    if( key === "chat" )
       item.appendChild( chat_badge( ) );
 
-   if( opens_tab )
+   if( is_app )
+      bind_app_link( item, on_click );
+   else
    {
-      item.title = "Opens in its own tab, on this session";
+      item.addEventListener( "click", function( event )
+      {
+         event.preventDefault( );
 
-      var mark = icon( "external", 14 );
-
-      mark.classList.add( "home-rail-external" );
-
-      item.appendChild( mark );
+         on_click( event );
+      } );
    }
 
+   return item;
+}
+
+// NOTE: An app opens in this tab, or a new one with ctrl or cmd and click or the middle button ("apps_go( )").
+function bind_app_link( item, on_click )
+{
    item.addEventListener( "click", function( event )
    {
       event.preventDefault( );
 
-      on_click( );
+      on_click( event );
    } );
 
-   return item;
+   item.addEventListener( "auxclick", function( event )
+   {
+      if( event.button !== 1 )
+         return;
+
+      event.preventDefault( );
+
+      on_click( event );
+   } );
 }
 
 function bottom_item( key, title, on_click )
@@ -611,12 +555,7 @@ function bottom_item( key, title, on_click )
    if( key === "chat" )
       item.appendChild( chat_badge( ) );
 
-   item.addEventListener( "click", function( event )
-   {
-      event.preventDefault( );
-
-      on_click( );
-   } );
+   bind_app_link( item, on_click );
 
    return item;
 }
@@ -633,7 +572,8 @@ function chat_badge( )
    return badge;
 }
 
-function open_app( app )
+// NOTE: In this tab, as the switcher opens it (Damon, 2026-10-09) - a new one when the event asks.
+function open_app( app, event )
 {
    close_rail( );
 
@@ -644,7 +584,7 @@ function open_app( app )
       return;
    }
 
-   open_app_tab( app.tab, linked_app_address( app.page, g_self ), ciyam.sessid );
+   apps_go( app.key, "", event );
 }
 
 // NOTE: Built afresh at each sign in - who is signed in decides the apps and the sections.
@@ -663,12 +603,12 @@ function build_shell( )
 
    apps.forEach( function( app )
    {
-      rail_apps.appendChild( rail_item( app.key, app.title, ( app.key !== "home" ), function( ) { open_app( app ); } ) );
+      rail_apps.appendChild( rail_item( app.key, app.title, true, function( event ) { open_app( app, event ); } ) );
    } );
 
    phone_apps.forEach( function( app )
    {
-      bottom.appendChild( bottom_item( app.key, ( app.key === "account" ) ? "Account" : app.title, function( ) { open_app( app ); } ) );
+      bottom.appendChild( bottom_item( app.key, ( app.key === "account" ) ? "Account" : app.title, function( event ) { open_app( app, event ); } ) );
    } );
 
    sections.forEach( function( section )
@@ -799,7 +739,7 @@ function install_shell( )
 
 async function enter_app( )
 {
-   keep_session( );
+   signin_keep_session( );
 
    build_shell( );
 
@@ -995,7 +935,7 @@ function render_member_home( )
       answer.className = "chat-btn home-need-answer";
       answer.href = "#";
       answer.textContent = "Answer in Chat";
-      answer.addEventListener( "click", function( event ) { event.preventDefault( ); open_app_by_key( "chat" ); } );
+      bind_app_link( answer, function( event ) { open_app_by_key( "chat", "", event ); } );
 
       row.appendChild( avatar );
       row.appendChild( text );
@@ -1094,16 +1034,11 @@ function render_member_home( )
    } );
 }
 
-function open_app_by_key( key, hash )
+function open_app_by_key( key, hash, event )
 {
-   var app = home_apps( ciyam.is_admin, false, false ).filter( function( entry ) { return entry.key === key; } )[ 0 ];
-
-   if( !app )
-      return;
-
    close_rail( );
 
-   open_app_tab( app.tab, linked_app_address( app.page, g_self ) + ( hash || "" ), ciyam.sessid );
+   apps_go( key, hash || "", event );
 }
 
 function start_refresh( )
@@ -1129,19 +1064,10 @@ function install_member_home( )
 {
    document.getElementById( "tile_chat_icon" ).appendChild( icon( "chat", 22 ) );
 
-   document.getElementById( "tile_chat" ).addEventListener( "click", function( event ) { event.preventDefault( ); open_app_by_key( "chat" ); } );
+   bind_app_link( document.getElementById( "tile_chat" ), function( event ) { open_app_by_key( "chat", "", event ); } );
 
-   // NOTE: The accounts page, in its own tab for now - marked so, as the menu marks it.
-   var manage = document.getElementById( "manage_account" );
-
-   manage.appendChild( icon( "external", 14 ) );
-
-   manage.addEventListener( "click", function( event )
-   {
-      event.preventDefault( );
-
-      open_app_by_key( "account", "#mine" );
-   } );
+   // NOTE: The accounts page - in this tab now, as every app opens (Damon, 2026-10-09; in its own tab until then).
+   bind_app_link( document.getElementById( "manage_account" ), function( event ) { open_app_by_key( "account", "#mine", event ); } );
 
    document.addEventListener( "visibilitychange", function( )
    {
@@ -1460,19 +1386,9 @@ function install_admin( )
       document.getElementById( pair[ 0 ] ).addEventListener( "click", function( event ) { event.preventDefault( ); go( pair[ 1 ] ); } );
    } );
 
-   document.getElementById( "overview_add_person" ).addEventListener( "click", function( event )
-   {
-      event.preventDefault( );
+   bind_app_link( document.getElementById( "overview_add_person" ), function( event ) { open_app_by_key( "account", "#add", event ); } );
 
-      open_app_by_key( "account", "#add" );
-   } );
-
-   document.getElementById( "overview_people_link" ).addEventListener( "click", function( event )
-   {
-      event.preventDefault( );
-
-      open_app_by_key( "account", "#people" );
-   } );
+   bind_app_link( document.getElementById( "overview_people_link" ), function( event ) { open_app_by_key( "account", "#people", event ); } );
 }
 
 // NOTE: Another tab on this session signed out of every app - the session has gone, so nothing is asked of the node.
@@ -1482,7 +1398,7 @@ function signed_out_elsewhere( )
    forget_shown_key( );
    close_console( );
    unlink_apps( );
-   forget_session( );
+   signin_forget_session( );
    clear_ciyam( );
    forget_admin( );
    close_rail( );
@@ -1649,7 +1565,7 @@ async function do_sign_out( )
 
    unlink_apps( );
 
-   forget_session( );
+   signin_forget_session( );
 
    await request( function( done )
    {
