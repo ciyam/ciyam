@@ -56,7 +56,8 @@ function home_main( )
       lede: "Sign in to your node - your apps, and what needs you.",
       setup_href: "account.html#welcome",
       request: request,
-      on_signed_in: on_signed_in
+      on_signed_in: on_signed_in,
+      error_text: function( error ) { return ( g_system.state === "locked" ) ? locked_sign_in_text( error ) : ""; }
    } );
 
    document.getElementById( "unreachable_retry" ).addEventListener( "click", check_node );
@@ -147,14 +148,14 @@ async function check_node( )
 
    if( screen === "signin" )
    {
-      signin_describe( "Home", "Sign in to your node - your apps, and what needs you." );
+      signin_describe( "Home", "Sign in to your node - your apps, and what needs you.", true );
       signin_show( );
       show_view( "signin_view" );
    }
    else if( screen === "unlock" )
    {
       signin_describe( "This node is locked", "It restarted. Sign in first - with your own account; it does not have to be"
-       + " admin's - then use one of the unlock keys you kept." );
+       + " admin's - then use one of the unlock keys you kept.", false );
       signin_show( );
       show_view( "signin_view" );
    }

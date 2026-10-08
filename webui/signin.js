@@ -18,6 +18,7 @@
 //   options.setup_href     where "New here?" goes - the accounts page's Welcome
 //   options.request        the page's one-at-a-time request wrapper (ISS-005), resolving to the answer
 //   options.on_signed_in   called once "ciyam" has a session
+//   options.error_text     optional - a refusal in the page's own words, or "" to leave it as it is
 //
 // The element ids are the ones every page's sign in has used ("signin_access", "signin_pin", ...), as
 // the browser suites expect. Needs "chat_parse.js" ("parse_access_list( )", "retain_mode_of( )",
@@ -120,7 +121,7 @@ function signin_build( host, options )
    form.appendChild( actions );
 
    if( g_signin_options.setup_href )
-      form.appendChild( signin_element( "div", { class: "chat-hint chat-signin-centred" },
+      form.appendChild( signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_setup_hint" },
        "With the code or PIN from the person who added you." ) );
 
    var foot = signin_element( "div", { class: "chat-signin-foot" } );
@@ -150,11 +151,17 @@ function signin_show( )
    document.getElementById( "signin_view" ).hidden = false;
 }
 
-// NOTE: A different heading and line for the same sign in - Home's for a locked node, say.
-function signin_describe( title, lede )
+// NOTE: A different heading and line for the same sign in - Home's for a locked node, say - and whether it
+// offers "New here?", which a locked node cannot use.
+function signin_describe( title, lede, offers_setup )
 {
    document.querySelector( "#signin_view h2" ).textContent = title;
    document.querySelector( "#signin_view .chat-signin-lede" ).textContent = lede;
+
+   document.querySelectorAll( "#signin_setup, #signin_setup_hint" ).forEach( function( element )
+   {
+      element.hidden = ( offers_setup === false );
+   } );
 }
 
 function signin_hide( )
@@ -357,9 +364,11 @@ async function signin_submit( event )
 
    if( ciyam.error !== "" )
    {
-      signin_set_text( "signin_error", is_unknown_device_error( ciyam.error )
+      var own = g_signin_options.error_text ? g_signin_options.error_text( ciyam.error ) : "";
+
+      signin_set_text( "signin_error", ( own !== "" ) ? own : ( is_unknown_device_error( ciyam.error )
        ? "This browser's saved sign in is from before the node was set up again - type your password."
-       : sign_in_error_text( ciyam.error ) );
+       : sign_in_error_text( ciyam.error ) ) );
 
       return;
    }
