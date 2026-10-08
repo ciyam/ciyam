@@ -190,6 +190,18 @@ function console_main( )
 
    document.getElementById( "title_host" ).textContent = window.location.host;
 
+   // NOTE: The node's sign in, shared by every app ("signin.js", 2026-10-08) - the console's own ids and words
+   // kept, so its suites and its "Open chat instead" carry on. It signs in at once, as it always did.
+   signin_build( document.getElementById( "signin_host" ), {
+      note: "console",
+      title: "Console",
+      lede: "A developer's view of this node - its requests, scripts and variables. No accounts are made here.",
+      submit_text: "Connect",
+      ids: { access: "signin_account", submit: "signin_connect" },
+      extra_link: { text: "Open chat instead", href: "chat.html" },
+      on_signed_in: enter_console
+   } );
+
    // NOTE: A quiet request is logged too while "Log polling" is ticked.
    install_log_capture( ciyam, "console", function( ) { return g_quiet && !g_prefs.log_polling; }, add_console_entry );
 
@@ -242,11 +254,7 @@ function console_main( )
       g_announce_timer = window.setInterval( announce, c_announce_interval );
    }
    else
-   {
-      document.getElementById( "signin_view" ).hidden = false;
-
-      populate_accounts( );
-   }
+      signin_show( );
 }
 
 // ====================================================================
@@ -373,168 +381,6 @@ function stored( key )
    }
 }
 
-function populate_accounts( )
-{
-   var select = document.getElementById( "signin_account" );
-
-   while( select.options.length > 1 )
-      select.remove( 1 );
-
-   var entries = parse_access_list( stored( c_storage_access ) );
-
-   entries.forEach( function( access )
-   {
-      var label = access;
-
-      if( stored( c_storage_hashed_prefix + access ) !== null )
-         label += "  ·  saved password";
-
-      select.options.add( new Option( label, access, false ) );
-   } );
-
-   select.selectedIndex = ( entries.length > 0 ) ? 1 : 0;
-
-   do_select_account( );
-}
-
-function do_select_account( )
-{
-   var access = document.getElementById( "signin_account" ).value;
-
-   var pin = document.getElementById( "signin_pin" );
-   var password = document.getElementById( "signin_password" );
-   var retain = document.getElementById( "signin_retain" );
-
-   var has_saved = ( access !== "" ) && ( stored( c_storage_hashed_prefix + access ) !== null );
-
-   pin.value = access;
-   pin.readOnly = ( access !== "" );
-
-   password.value = "";
-   password.placeholder = has_saved ? "saved - leave blank" : "";
-
-   retain.value = has_saved ? c_retain_full : ( access !== "" ? c_retain_access : c_retain_none );
-
-   set_error( "signin_error", "" );
-
-   if( access === "" )
-      pin.focus( );
-   else
-      password.focus( );
-}
-
-async function do_connect( )
-{
-   var access = document.getElementById( "signin_pin" ).value.trim( );
-   var password = document.getElementById( "signin_password" ).value;
-
-   set_error( "signin_error", "" );
-
-   if( access === "" )
-   {
-      set_error( "signin_error", "Enter an account PIN." );
-
-      return;
-   }
-
-   var hashed = "";
-
-   if( password === "" )
-      hashed = stored( c_storage_hashed_prefix + access ) || "";
-
-   if( ( password === "" ) && ( hashed === "" ) )
-   {
-      set_error( "signin_error", "Enter the password." );
-
-      return;
-   }
-
-   var button = document.getElementById( "signin_connect" );
-
-   button.disabled = true;
-
-   ciyam.error = "";
-
-   // NOTE: "CIYAM.connect" prefers a hash it is handed over the password, so a typed
-   // password must not arrive alongside an old hash.
-   ciyam.hashed = "";
-
-   await ciyam.connect( access, ciyam.device, hashed, password, function( ) { } );
-
-   button.disabled = false;
-
-   if( ciyam.device !== "" )
-   {
-      try
-      {
-         localStorage.setItem( c_storage_device, ciyam.device );
-      }
-      catch( e )
-      {
-      }
-   }
-
-   if( ciyam.error !== "" )
-   {
-      set_error( "signin_error", ciyam.error );
-
-      return;
-   }
-
-   if( ciyam.sessid === "" )
-   {
-      set_error( "signin_error", "No session was established." );
-
-      return;
-   }
-
-   apply_retain( document.getElementById( "signin_retain" ).value );
-
-   document.getElementById( "signin_password" ).value = "";
-
-   enter_console( );
-}
-
-// NOTE: The same keys and the same rules as the chat's "apply_retain_choice( )", so an
-// account saved in either is offered by both.
-function apply_retain( mode )
-{
-   try
-   {
-      var entries = parse_access_list( localStorage.getItem( c_storage_access ) );
-
-      var pos = entries.indexOf( ciyam.access );
-
-      if( mode === c_retain_none )
-      {
-         if( pos >= 0 )
-            entries.splice( pos, 1 );
-
-         localStorage.removeItem( c_storage_hashed_prefix + ciyam.access );
-      }
-      else
-      {
-         if( pos < 0 )
-            entries.push( ciyam.access );
-
-         if( ( mode === c_retain_full ) && ( ciyam.hashed !== "" ) )
-            localStorage.setItem( c_storage_hashed_prefix + ciyam.access, ciyam.hashed );
-         else
-            localStorage.removeItem( c_storage_hashed_prefix + ciyam.access );
-      }
-
-      var value = format_access_list( entries );
-
-      if( value === null )
-         localStorage.removeItem( c_storage_access );
-      else
-         localStorage.setItem( c_storage_access, value );
-   }
-   catch( e )
-   {
-   }
-}
-
 async function do_disconnect( )
 {
    if( g_linked )
@@ -564,13 +410,12 @@ async function do_disconnect( )
    reset_script_editor( );
 
    document.getElementById( "main_view" ).hidden = true;
-   document.getElementById( "signin_view" ).hidden = false;
    document.getElementById( "scrollback" ).textContent = "";
 
    update_title( );
    update_status( );
 
-   populate_accounts( );
+   signin_show( );
 }
 
 // ====================================================================

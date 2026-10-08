@@ -28,9 +28,18 @@ http://www.opensource.org/licenses/mit-license.php.
    <link rel="stylesheet" href="tokens.css">
    <link rel="stylesheet" href="chat_tokens.css">
 
+   <!--
+   NOTE: The node's sign in is shared by every app ("signin.js", 2026-10-08) and drawn by "chat.css" and
+   "signin.css". "console.css" is loaded after them, below, so the console proper looks as it did.
+   -->
+   <link rel="stylesheet" href="chat.css">
+   <link rel="stylesheet" href="signin.css">
+
    <script type="text/javascript" src="ciyam.js"></script>
    <script type="text/javascript" src="sha2.min.js"></script>
    <script type="text/javascript" src="chat_parse.js"></script>
+   <script type="text/javascript" src="account_parse.js"></script>
+   <script type="text/javascript" src="signin.js"></script>
 
    <!--
    NOTE: The server sends "Cache-Control: no-cache" for ".html", ".form", ".js" and ".css"

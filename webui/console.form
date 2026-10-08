@@ -25,39 +25,8 @@ http://www.opensource.org/licenses/mit-license.php.
    <!-- ================================================================
         Standalone sign in - never shown when linked to the chat.
         ================================================================ -->
-   <section class="console-signin" id="signin_view" hidden>
-      <form class="console-signin-grid" id="signin_form" onsubmit="do_connect( ); return false;">
-         <label class="console-slabel" for="signin_account">Account</label>
-         <select class="console-sfield" id="signin_account" onchange="do_select_account( )">
-            <option value="">Enter an account PIN&hellip;</option>
-         </select>
-
-         <label class="console-slabel" for="signin_pin" id="signin_pin_label">PIN</label>
-         <input class="console-sfield" id="signin_pin" type="text" inputmode="numeric" autocomplete="off" spellcheck="false">
-
-         <label class="console-slabel" for="signin_password">Password</label>
-         <input class="console-sfield" id="signin_password" type="password" autocomplete="current-password">
-
-         <label class="console-slabel" for="signin_retain">Remember</label>
-         <select class="console-sfield" id="signin_retain">
-            <option value="none">Nothing &mdash; forget this account</option>
-            <option value="access">The PIN only</option>
-            <option value="full">The PIN and the password</option>
-         </select>
-
-         <span></span>
-         <div class="console-bar">
-            <button type="submit" class="console-chip is-solid" id="signin_connect">Connect</button>
-            <a class="console-chip" href="chat.html">Open chat instead</a>
-         </div>
-      </form>
-
-      <p class="console-error" id="signin_error" role="alert"></p>
-
-      <p class="console-foot">Uses the same saved accounts as the chat, so an account saved in
-      one is offered by the other. No registration here &mdash; a developer tool is not where an
-      account is created.</p>
-   </section>
+   <!-- NOTE: The node's sign in, shared by every app - built here by "signin.js" (2026-10-08). -->
+   <div id="signin_host"></div>
 
    <!-- ================================================================
         Linked, waiting for the chat or the accounts page to hand over its session.
