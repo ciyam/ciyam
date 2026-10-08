@@ -240,6 +240,10 @@ async function resume_session( )
    ciyam.username = kept.username;
    ciyam.is_admin = kept.is_admin;
 
+   // NOTE: The hashed password is not kept for the tab, but where the person chose to save it on this browser it
+   // is here already - and an app opened from Home needs it to check a password change (found by review).
+   ciyam.hashed = signin_saved_hash( kept.access ) || "";
+
    var reply = await request( function( done )
    {
       return ciyam.fetch_messages( c_lobby_room, "", done );
@@ -689,9 +693,10 @@ function install_shell( )
          close_rail( );
    } );
 
+   // NOTE: Only once in Home - not behind Unlock, where a section would load unseen (found by review).
    window.addEventListener( "hashchange", function( )
    {
-      if( ciyam.sessid !== "" )
+      if( ( ciyam.sessid !== "" ) && !document.getElementById( "app_view" ).hidden )
          go( home_section( ciyam.is_admin, window.location.hash ) );
    } );
 }
@@ -1255,9 +1260,14 @@ async function load_logs( )
    if( !ciyam.is_admin )
       return;
 
+   var asked_for = ciyam.access;
+
    set_text( "log_status", "Reading…" );
 
    var names = await request( function( done ) { return ciyam.fetch( admin_url( "/logs" ), "GET", done ); } );
+
+   if( ciyam.access !== asked_for )
+      return;
 
    g_log_names = is_error_response( names ) ? [ ] : parse_log_names( names );
 
@@ -1293,7 +1303,12 @@ async function load_logs( )
       return;
    }
 
-   g_log_lines = ( await read_log( g_log_name, parseInt( document.getElementById( "log_count" ).value, 10 ) ) ) || [ ];
+   var lines = await read_log( g_log_name, parseInt( document.getElementById( "log_count" ).value, 10 ) );
+
+   if( ciyam.access !== asked_for )
+      return;
+
+   g_log_lines = lines || [ ];
 
    show_log( );
 }
@@ -1359,6 +1374,24 @@ function install_admin( )
    } );
 }
 
+// NOTE: Admin's figures, logs and the log chosen are not left for whoever signs in next in this tab (found by review).
+function forget_admin( )
+{
+   g_log_names = [ ];
+   g_log_name = "server";
+   g_log_lines = [ ];
+
+   document.getElementById( "log_filter" ).value = "";
+
+   [ "log_tabs", "log_lines", "overview_log" ].forEach( function( id ) { document.getElementById( id ).replaceChildren( ); } );
+
+   [ "log_status", "stat_people_note", "overview_people", "overview_keys_note", "connection_heading", "connection_cipher" ]
+    .forEach( function( id ) { set_text( id, "" ); } );
+
+   set_text( "stat_people", "…" );
+   set_text( "stat_uptime", "…" );
+}
+
 // NOTE: Signing out of Home signs every app it opened out too - they were on its session (the design's
 // "Sign out of every app").
 async function do_sign_out( )
@@ -1378,6 +1411,8 @@ async function do_sign_out( )
 
    // NOTE: "disconnect( )" ends the session on the server but leaves the instance as it was.
    clear_ciyam( );
+
+   forget_admin( );
 
    close_rail( );
 
