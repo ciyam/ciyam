@@ -1279,6 +1279,12 @@ string escaped_shell_arg( const string& arg )
 
    if( !s.empty( ) && ( s != "\"\"" ) )
    {
+      // NOTE: Add escapes for
+      // potentially dangerous
+      // shell characters.
+      replace( s, "`", "\\`" );
+      replace( s, "$", "\\$" );
+
       replace( s, "\"", "\\\"" );
 
       s = '"' + s + '"';
@@ -1293,8 +1299,6 @@ string escaped_shell_cmd( const string& cmd )
 
    if( !s.empty( ) )
    {
-      replace( s, "\\", "\\\\" );
-
       size_t nsq = count( s.begin( ), s.end( ), '\'' );
       size_t ndq = count( s.begin( ), s.end( ), '\"' );
 
@@ -1312,22 +1316,22 @@ string escaped_shell_cmd( const string& cmd )
 
       if( ndq_pos != string::npos )
       {
-         if( nsq_pos != string::npos && nsq_pos < ndq_pos )
+         if( ( nsq_pos != string::npos ) && ( nsq_pos < ndq_pos ) )
             ++ndq_pos;
 
          s.insert( ndq_pos, "\\" );
       }
 
+      replace( s, "`", "\\`", "$", "\\$" );
       replace( s, "&", "\\&", "|", "\\|" );
       replace( s, "<", "\\<", ">", "\\>" );
       replace( s, "`", "\\`", "%", "\\%" );
       replace( s, "*", "\\*", "?", "\\?" );
       replace( s, "#", "\\#", "~", "\\~" );
       replace( s, "[", "\\[", "]", "\\]" );
+      replace( s, "{", "\\{", "}", "\\}" );
       replace( s, "(", "\\(", ")", "\\)" );
       replace( s, ",", "\\,", ";", "\\;" );
-
-      replace( s, "0x0a", "\\0x0a", "0xff", "\\0xff" );
    }
 
    return s;
@@ -1337,7 +1341,7 @@ size_t find_end_of_escaped_sequence( const string& s, size_t p, char eos, char e
 {
    string::size_type pos = string::npos;
 
-   assert( esc != '\0' && eos != '\0' && esc != eos );
+   assert( ( esc != '\0' ) && ( eos != '\0' ) && ( esc != eos ) );
 
    bool is_escape = false;
 

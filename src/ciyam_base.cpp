@@ -8107,9 +8107,8 @@ string process_script_args( const string& raw_args, bool use_system_variables )
             }
          }
 
-         // NOTE: Use 'escape' to prevent any variable replacements.
          if( !next_arg.empty( ) )
-            next_arg = escaped_shell_arg( escape( next_arg, "$" ) );
+            next_arg = escaped_shell_arg( next_arg );
 
          if( !retval.empty( ) )
             retval += " ";

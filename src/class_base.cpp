@@ -5729,7 +5729,7 @@ void send_ntfy_message( const string& user_key, const string& message,
    }
    else
    {
-      string tmp_file_name( c_tmp_path + '/' + uuid( ).as_string( ) );
+      string tmp_file_name( string( c_tmp_path ) + '/' + uuid( ).as_string( ) );
 
       string prefix( c_ntfy_message_prefix );
 
@@ -5737,14 +5737,34 @@ void send_ntfy_message( const string& user_key, const string& message,
 
       string headers( " " );
 
-      if( p_title )
-         headers += "-H \"Title: " + *p_title + "\" ";
+      if( p_title && !p_title->empty( ) )
+         headers += "-H \"Title: " + escaped_shell_arg( *p_title ) + "\" ";
 
-      if( p_priority )
+      if( p_priority && !p_priority->empty( ) )
+      {
+         size_t len = p_priority->length( );
+
+         // NOTE: Limit priority characters
+         // to only basic alphanumerics.
+         for( size_t i = 0; i < len; i++ )
+         {
+            char ch = ( *p_priority )[ i ];
+
+            if( ( ch < '0' ) || ( ch > '9' ) )
+            {
+               if( ( ch < 'A' ) || ( ch > 'Z' ) )
+               {
+                  if( ( ch < 'a' ) || ( ch > 'z' ) )
+                     throw runtime_error( "invalid priority value '" + *p_priority + "'" );
+               }
+            }
+         }
+
          headers += "-H \"Priority: " + *p_priority + "\" ";
+      }
 
-      if( p_tag_names )
-         headers += "-H \"Tags: " + *p_tag_names + "\" ";
+      if( p_tag_names && !p_tag_names->empty( ) )
+         headers += "-H \"Tags: " + escaped_shell_arg( *p_tag_names ) + "\" ";
 
       cmd += headers;
 
@@ -5756,7 +5776,6 @@ void send_ntfy_message( const string& user_key, const string& message,
       TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, cmd );
 
       int rc = system( cmd.c_str( ) );
-
       ( void )rc;
 
       if( file_exists( tmp_file_name ) )
