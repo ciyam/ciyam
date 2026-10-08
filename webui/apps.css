@@ -1,0 +1,279 @@
+/* Copyright (c) 2026 CIYAM Developers
+
+   Distributed under the MIT/X11 software license, please refer to the file license.txt
+   in the root project directory or http://www.opensource.org/licenses/mit-license.php. */
+
+/* NOTE: The app switcher ("apps.js") - its button the CIYAM mark and the app's name, the same in every app; the
+   panel keeps its own type and colour, whatever the page around it sets (the console's is dark). */
+
+.apps
+{
+   position: relative;
+   display: inline-flex;
+   flex: none;
+}
+
+.apps-trigger
+{
+   display: inline-flex;
+   align-items: center;
+   gap: 8px;
+   height: 40px;
+   padding: 0 10px;
+   border: 1px solid transparent;
+   border-radius: var(--radius-md);
+   background: transparent;
+   color: inherit;
+   font-family: var(--font-family-chat);
+   font-size: 15px;
+   font-weight: 600;
+   cursor: pointer;
+}
+
+.apps-trigger:hover,
+.apps-trigger[aria-expanded="true"]
+{
+   border-color: var(--color-chat-border-selected);
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-text);
+}
+
+.apps-wordmark
+{
+   color: inherit;
+}
+
+.apps-dot
+{
+   opacity: 0.55;
+}
+
+.apps-trigger svg
+{
+   opacity: 0.7;
+}
+
+.apps-panel
+{
+   position: absolute;
+   top: calc( 100% + 6px );
+   left: 0;
+   z-index: 60;
+   box-sizing: border-box;
+   width: 320px;
+   padding: 8px;
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-lg);
+   box-shadow: var(--shadow-lg);
+   font-family: var(--font-family-chat);
+   font-size: 14px;
+   line-height: 1.4;
+   color: var(--color-chat-text);
+   text-align: left;
+}
+
+.apps-heading
+{
+   padding: 10px 12px 6px;
+   font-size: 11px;
+   font-weight: 600;
+   letter-spacing: 0.08em;
+   text-transform: uppercase;
+   color: var(--color-chat-text-secondary);
+}
+
+.apps-list
+{
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+}
+
+.apps-item
+{
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   min-height: 48px;
+   padding: 0 12px;
+   border-radius: var(--radius-md);
+   color: var(--color-chat-text);
+   text-decoration: none;
+}
+
+.apps-item:hover
+{
+   background: var(--color-chat-bg-raised);
+}
+
+.apps-item.is-current
+{
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+}
+
+.apps-item > svg
+{
+   flex: none;
+   color: var(--color-chat-text-secondary);
+}
+
+.apps-item.is-current > svg
+{
+   color: var(--color-chat-accent);
+}
+
+.apps-icon
+{
+   flex: 0 0 34px;
+   width: 34px;
+   height: 34px;
+   border-radius: 9px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   background: var(--color-chat-bg-raised);
+   color: var(--color-chat-text-secondary);
+}
+
+.apps-item.is-current .apps-icon
+{
+   background: var(--color-chat-accent);
+   color: #ffffff;
+}
+
+.apps-icon--console
+{
+   background: var(--color-console-bg);
+   color: var(--color-console-text);
+}
+
+.apps-words
+{
+   flex-grow: 1;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+}
+
+.apps-title
+{
+   font-weight: 600;
+}
+
+.apps-item-note,
+.apps-note
+{
+   font-size: 12px;
+   color: var(--color-chat-text-secondary);
+}
+
+.apps-foot
+{
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   margin-top: 6px;
+   padding: 12px 6px 4px;
+   border-top: 1px solid var(--color-chat-rule);
+}
+
+.apps-avatar
+{
+   flex: 0 0 30px;
+   width: 30px;
+   height: 30px;
+   border-radius: 15px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   color: #ffffff;
+   font-size: 13px;
+   font-weight: 700;
+}
+
+.apps-who
+{
+   flex-grow: 1;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+}
+
+.apps-name
+{
+   font-size: 13px;
+   font-weight: 600;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.apps-sign-out
+{
+   flex: none;
+   font-size: 12px;
+}
+
+.apps-scrim
+{
+   display: none;
+}
+
+/* NOTE: On a phone the panel is a sheet from the bottom, the mark's word left out of the button. */
+@media ( max-width: 760px )
+{
+   .apps-wordmark,
+   .apps-dot
+   {
+      display: none;
+   }
+
+   .apps-trigger
+   {
+      height: 44px;
+      font-size: 16px;
+   }
+
+   .apps-scrim:not( [hidden] )
+   {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: 59;
+      background: rgba( 15, 18, 26, 0.35 );
+   }
+
+   .apps-panel
+   {
+      position: fixed;
+      top: auto;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: auto;
+      padding: 12px 12px calc( 18px + env( safe-area-inset-bottom, 0px ) );
+      border-radius: 18px 18px 0 0;
+   }
+
+   .apps-item
+   {
+      min-height: 56px;
+   }
+
+   .apps-foot
+   {
+      flex-wrap: wrap;
+   }
+
+   .apps-sign-out
+   {
+      width: 100%;
+      height: 48px;
+      font-size: 15px;
+   }
+}
