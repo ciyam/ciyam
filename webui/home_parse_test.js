@@ -157,9 +157,23 @@ check( "no console on a phone", keys( hp.home_apps( true, true, true ) ), [ "hom
 check( "the pages", hp.home_apps( true, false, false ).map( function( app ) { return app.page; } ),
  [ "home.html", "chat.html", "account.html", "console.html" ] );
 
-check( "admin's sections", keys( hp.home_sections( true ) ), [ "overview", "keys", "logs", "people" ] );
+check( "admin's accounts app is Accounts", hp.home_apps( true, false, false )[ 2 ].title, "Accounts" );
+check( "a member's is My account", hp.home_apps( false, false, false )[ 2 ].title, "My account" );
+check( "the tabs the apps reuse", hp.home_apps( true, false, false ).map( function( app ) { return app.tab; } ),
+ [ "ciyam-home", "ciyam-chat", "ciyam-accounts", "ciyam-console" ] );
+
+check( "admin's sections - People is the accounts page's", keys( hp.home_sections( true ) ), [ "overview", "keys", "logs" ] );
 check( "a member has none", hp.home_sections( false ), [ ] );
 check( "a copy, not the list itself", hp.home_sections( true ) !== hp.home_sections( true ), true );
+
+check( "admin opens on the Overview", hp.home_section( true, "" ), "overview" );
+check( "admin asking for the logs", hp.home_section( true, "#logs" ), "logs" );
+check( "admin asking for something not theirs", hp.home_section( true, "#settings" ), "overview" );
+check( "a member opens on Home", hp.home_section( false, "" ), "home" );
+check( "a member asking for an admin section", hp.home_section( false, "#keys" ), "home" );
+
+check( "the roles", [ hp.role_text( true ), hp.role_text( false ) ], [ "Administrator", "Member" ] );
+check( "an app on Home's session", hp.linked_app_address( "chat.html", "1759999999123" ), "chat.html?source=1759999999123" );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
