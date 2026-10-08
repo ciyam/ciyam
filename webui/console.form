@@ -12,14 +12,14 @@ http://www.opensource.org/licenses/mit-license.php.
         already says which session this is.
         ================================================================ -->
    <header class="console-titlebar" id="console_titlebar">
+      <!-- NOTE: The app switcher - the CIYAM mark and "Console", as at the top of every app ("apps.js", 2026-10-08).
+           It replaced "cws" here, and the Sign out that was refused while linked. -->
+      <div id="apps_host" class="console-apps"></div>
       <span class="console-dot is-idle" id="title_dot"></span>
-      <span class="console-name">cws</span>
-      <span class="console-sep">&middot;</span>
       <span class="console-meta" id="title_host"></span>
       <span class="console-sep" id="title_session_sep" hidden>&middot;</span>
       <span class="console-meta" id="title_session" hidden></span>
       <span class="console-role is-idle" id="title_role">not connected</span>
-      <button type="button" class="console-chip" id="title_disconnect" onclick="do_disconnect( )" hidden>Sign out</button>
    </header>
 
    <!-- ================================================================

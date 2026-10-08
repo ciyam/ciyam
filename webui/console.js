@@ -202,6 +202,20 @@ function console_main( )
       on_signed_in: enter_console
    } );
 
+   // NOTE: The app switcher - the same in every app, its button the CIYAM mark and "Console" (2026-10-08). Not
+   // drawn in a drawer, whose title bar is hidden; the page the drawer is in has its own.
+   apps_build( document.getElementById( "apps_host" ), {
+      current: "console",
+      self: function( ) { return g_self; },
+      sign_out: do_disconnect,
+      signed_out: async function( )
+      {
+         await do_disconnect( );
+
+         set_error( "signin_error", "You signed out in another app." );
+      }
+   } );
+
    // NOTE: A quiet request is logged too while "Log polling" is ticked.
    install_log_capture( ciyam, "console", function( ) { return g_quiet && !g_prefs.log_polling; }, add_console_entry );
 
@@ -285,7 +299,22 @@ function on_channel_message( event )
 {
    var message = parse_channel_message( event.data );
 
-   if( ( message === null ) || !g_linked )
+   if( message === null )
+      return;
+
+   // NOTE: An app opened from this console's switcher asks for the session - it is handed over, as the other
+   // apps hand theirs (2026-10-08).
+   if( ( message.kind === "announce" ) && ( message.id === g_self ) && g_connected && ( ciyam.sessid !== "" ) )
+   {
+      g_channel.postMessage( message.rest + "-" + g_self );
+
+      g_channel.postMessage( message.rest + "=" + ciyam.access + "," + ciyam.device + "," + ciyam.hashed + ","
+       + ciyam.sessid + "," + ciyam.unique + "," + encode_channel_field( ciyam.username ) + "," + ( ciyam.is_admin ? "1" : "0" ) );
+
+      return;
+   }
+
+   if( !g_linked )
       return;
 
    if( ( message.kind === "owner" ) && ( message.id === g_self ) )
@@ -381,18 +410,23 @@ function stored( key )
    }
 }
 
+// NOTE: Linked or not - the session is shared, not owned, so this console may end it too (2026-10-08); every other
+// tab on it has been told by the switcher. Linked, it then becomes a console of its own.
 async function do_disconnect( )
 {
-   if( g_linked )
-   {
-      print_line( "This console shares " + g_owner_page.name + "'s session - sign out from " + g_owner_page.name + ".", "is-err" );
-
-      return;
-   }
-
    g_stop_requested = true;
 
    await ciyam.disconnect( function( ) { } );
+
+   if( g_linked )
+   {
+      g_linked = false;
+      g_source = "";
+
+      forget_source( );
+
+      document.getElementById( "filter_chat" ).hidden = true;
+   }
 
    g_connected = false;
    g_raw_available = null;
@@ -434,6 +468,8 @@ function enter_console( )
 
    prompt.disabled = false;
 
+   apps_refresh( );
+
    update_title( );
    update_status( );
 
@@ -468,7 +504,6 @@ function update_title( )
 
    document.getElementById( "title_session" ).hidden = !g_connected;
    document.getElementById( "title_session_sep" ).hidden = !g_connected;
-   document.getElementById( "title_disconnect" ).hidden = !g_connected || g_linked;
 
    if( g_connected )
    {
@@ -487,7 +522,7 @@ function update_title( )
 
 function update_status( )
 {
-   document.getElementById( "status_mode" ).textContent = g_linked ? "linked to chat" : "standalone";
+   document.getElementById( "status_mode" ).textContent = g_linked ? "linked to " + g_owner_page.label.toLowerCase( ) : "standalone";
    document.getElementById( "status_device" ).textContent = ciyam.device || "none";
    document.getElementById( "status_requests" ).textContent = String( g_log_counter );
 
@@ -854,14 +889,16 @@ async function run_line( line, from_script )
 
    if( spec.kind === "quit" )
    {
-      if( g_linked )
+      // NOTE: In a drawer the console is part of the page around it, so signing out is that page's switcher's. In
+      // its own tab it signs out of every app, as its switcher does (2026-10-08).
+      if( g_embedded )
       {
-         print_line( "Error: This console shares " + g_owner_page.name + "'s session - sign out from " + g_owner_page.name + ".", "is-err" );
+         print_line( "Error: This console is part of " + g_owner_page.name + " - sign out from " + g_owner_page.name + "'s switcher.", "is-err" );
 
          return { ok: false };
       }
 
-      await do_disconnect( );
+      await apps_sign_out_everywhere( );
 
       return { ok: true };
    }
@@ -1731,10 +1768,10 @@ function print_help( )
     "  @{name}                      run the command a variable holds"
    ];
 
-   // NOTE: Linked, the session is the chat's - ending it here would sign the chat out. With the
-   // console's commands, ahead of the blank line before the list language.
-   if( !g_linked )
-      lines.splice( lines.indexOf( "" ), 0, "  quit                         sign out" );
+   // NOTE: With the console's commands, ahead of the blank line before the list language. The session is shared,
+   // so quitting signs out of every app, linked or not (2026-10-08) - but not from a drawer, which is its page's.
+   if( !g_embedded )
+      lines.splice( lines.indexOf( "" ), 0, "  quit                         sign out of every app" );
 
    lines.push( "" );
    lines.push( ciyam.is_admin ? "Server javascripts - as in the harness; admin runs any"

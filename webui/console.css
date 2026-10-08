@@ -122,6 +122,16 @@ code
    font-size: var(--font-size-chat-tiny);
 }
 
+/* NOTE: The app switcher ("apps.js") in the console's slim title bar - its words the bar's light ones. */
+.console-apps .apps-trigger
+{
+   height: 30px;
+   margin: -4px 0;
+   padding: 0 8px;
+   font-size: 13px;
+   color: var(--color-console-text-bright);
+}
+
 .console-app.is-embedded .console-titlebar
 {
    display: none;
