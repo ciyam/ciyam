@@ -1,0 +1,148 @@
+<!--
+Copyright (c) 2026 CIYAM Developers
+
+Distributed under the MIT/X11 software license, please refer to the file
+license.txt in the root project directory or
+http://www.opensource.org/licenses/mit-license.php.
+-->
+
+<!-- NOTE: Before anyone signs in - how the node sees this connection, and its state. Shown above every
+     arriving screen; "/system" decides both (Home App Scope, R1). -->
+<div class="home-arrive-bar" id="arrive_bar" hidden>
+   <span class="home-pill" id="security_pill" title="How the node sees this connection - from /system" hidden></span>
+   <span class="home-pill" id="state_pill" hidden></span>
+</div>
+
+<!-- NOTE: The shared sign in ("signin.js") is built here. -->
+<div id="signin_host"></div>
+
+<div class="chat-signin" id="checking_view">
+   <div class="chat-signin-form">
+      <p class="chat-signin-lede" role="status">Looking for the node&hellip;</p>
+   </div>
+</div>
+
+<div class="chat-signin" id="unreachable_view" hidden>
+   <div class="chat-signin-form">
+      <div class="chat-brand">
+         <span class="chat-logo"></span>
+         <span class="chat-wordmark">CIYAM</span>
+         <span class="chat-brand-note">home</span>
+      </div>
+
+      <h2 tabindex="-1">The node did not answer</h2>
+      <p class="chat-signin-lede">This address did not answer as a CIYAM node. It may be starting up, or the
+       connection may be down.</p>
+
+      <div class="chat-signin-actions">
+         <button type="button" class="chat-btn chat-btn--primary" id="unreachable_retry">Try again</button>
+      </div>
+   </div>
+</div>
+
+<div class="chat-signin" id="setup_view" hidden>
+   <div class="chat-signin-form">
+      <div class="chat-brand">
+         <span class="chat-logo"></span>
+         <span class="chat-wordmark">CIYAM</span>
+         <span class="chat-brand-note">home</span>
+      </div>
+
+      <h2 tabindex="-1">This node needs setting up</h2>
+      <p class="chat-signin-lede">It has no identity yet, so nobody can sign in. Setting it up gives it:</p>
+
+      <ul class="home-list">
+         <li>twelve words that can restore it - written down and kept safe</li>
+         <li>a master password, for unlocking it after a restart</li>
+         <li>admin's PIN, to sign in and add people</li>
+      </ul>
+
+      <p class="home-note">For now this is done on the node itself, from its terminal - see "docs/system_identity.md".
+       Setting up from here is planned.</p>
+
+      <div class="chat-signin-actions">
+         <button type="button" class="chat-btn" id="setup_retry">Check again</button>
+      </div>
+   </div>
+</div>
+
+<!-- NOTE: Unlocking needs a session - the unlock key is used on one ("employ_unlock_key( )") - so a locked
+     node is signed in to first, then unlocked. Anyone with a key may unlock, not only admin (Ian, 2026-10-03). -->
+<div class="chat-signin" id="unlock_view" hidden>
+   <div class="home-unlock">
+      <form class="chat-signin-form" id="unlock_form" novalidate>
+         <div class="chat-brand">
+            <span class="chat-logo"></span>
+            <span class="chat-wordmark">CIYAM</span>
+            <span class="chat-brand-note">home</span>
+         </div>
+
+         <h2 tabindex="-1">This node is locked</h2>
+         <p class="chat-signin-lede">It restarted, and the apps cannot be used until it is unlocked. Use one of the
+          unlock keys you kept.</p>
+
+         <label class="chat-label" for="unlock_key">Unlock key</label>
+         <input type="text" id="unlock_key" class="chat-field chat-field--mono" placeholder="XXXXX-xxxxx-XXXXX"
+          autocomplete="off" autocapitalize="off" spellcheck="false">
+         <div class="signin-hint">Each key works once. Make a new one afterwards, in Unlock keys.</div>
+
+         <div class="chat-error-text" id="unlock_error" role="alert"></div>
+         <div class="home-done-text" id="unlock_done" role="status"></div>
+
+         <div class="chat-signin-actions">
+            <button type="submit" class="chat-btn chat-btn--primary" id="unlock_submit">Unlock</button>
+            <button type="button" class="chat-btn" id="unlock_sign_out">Sign out</button>
+         </div>
+      </form>
+
+      <!-- NOTE: The master password is a rescue - for someone on the node's own network with no keys left
+           (Ian, 2026-10-03). Over a connection the node sees as unencrypted that is said before it is typed. -->
+      <details class="home-rescue" id="rescue_panel">
+         <summary>No keys left? Use the master password</summary>
+
+         <form id="rescue_form" novalidate>
+            <p class="home-note">The master password unlocks the node like a key, but it is the node's most important
+             secret. Only type it on a device on the node's own network - never from outside.</p>
+
+            <div class="home-warning" id="rescue_warning" role="alert" hidden>
+               <strong>This connection isn't encrypted.</strong> The node sees it as plain text - only use the password
+               if you are on the node's own network.
+            </div>
+
+            <label class="chat-label" for="rescue_password">Master password</label>
+            <input type="password" id="rescue_password" class="chat-field" autocomplete="off">
+
+            <div class="chat-error-text" id="rescue_error" role="alert"></div>
+
+            <div class="chat-signin-actions">
+               <button type="submit" class="chat-btn" id="rescue_submit">Unlock with the password</button>
+            </div>
+         </form>
+      </details>
+
+      <p class="home-note home-unlock-foot">After a restart, chat rooms held only in memory may be gone until the node
+       restores them.</p>
+   </div>
+</div>
+
+<!-- NOTE: Signed in, the node ready. The shell, member Home and admin's sections fill this in (build steps
+     4 to 6). -->
+<div class="home-app" id="app_view" hidden>
+   <header class="home-topbar">
+      <div class="chat-brand">
+         <span class="chat-logo"></span>
+         <span class="chat-wordmark">CIYAM</span>
+         <span class="chat-brand-note">home</span>
+      </div>
+
+      <span class="home-pill" id="app_security_pill" title="How the node sees this connection - from /system" hidden></span>
+
+      <span class="home-topbar-user" id="app_user"></span>
+      <button type="button" class="chat-btn" id="app_sign_out">Sign out</button>
+   </header>
+
+   <main class="home-main">
+      <h1 id="app_greeting"></h1>
+      <p class="home-note" id="app_node"></p>
+   </main>
+</div>

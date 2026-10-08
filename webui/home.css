@@ -1,0 +1,216 @@
+/* Copyright (c) 2026 CIYAM Developers
+
+   Distributed under the MIT/X11 software license, please refer to the file license.txt
+   in the root project directory or http://www.opensource.org/licenses/mit-license.php. */
+
+/* NOTE: The Home app, on "chat.css" - the same card, fields and buttons as the chat and the accounts page,
+   so Home sits beside them without a seam (Home App Scope, the design accepted 2026-10-06). */
+
+[hidden]
+{
+   display: none !important;
+}
+
+/* ---- the pills: the connection's security and the node's state ---- */
+
+.home-arrive-bar
+{
+   position: absolute;
+   top: 16px;
+   right: 16px;
+   z-index: 1;
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: flex-end;
+   gap: 8px;
+}
+
+.home-pill
+{
+   display: inline-flex;
+   align-items: center;
+   gap: 7px;
+   height: 30px;
+   padding: 0 12px;
+   border-radius: 15px;
+   border: 1px solid var(--color-chat-border);
+   background: var(--color-chat-bg);
+   color: var(--color-chat-text-secondary);
+   font-size: var(--font-size-chat-small);
+   font-weight: 600;
+   white-space: nowrap;
+}
+
+.home-pill::before
+{
+   content: "";
+   width: 8px;
+   height: 8px;
+   border-radius: 4px;
+   background: currentColor;
+}
+
+.home-pill.is-none
+{
+   color: var(--color-chat-text-secondary);
+}
+
+.home-pill.is-encrypted,
+.home-pill.is-quantum
+{
+   border-color: var(--color-chat-border-selected);
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+}
+
+.home-pill.is-ready
+{
+   color: var(--color-chat-online-text);
+}
+
+.home-pill.is-locked,
+.home-pill.is-new
+{
+   border-color: var(--color-chat-warning-border);
+   background: var(--color-chat-warning-bg);
+   color: var(--color-chat-warning-text);
+}
+
+/* ---- arriving: Set up and Unlock ---- */
+
+.home-list
+{
+   margin: 0 0 14px;
+   padding-left: 20px;
+   line-height: 1.6;
+   color: var(--color-chat-text);
+}
+
+.home-note
+{
+   margin: 0 0 14px;
+   font-size: var(--font-size-chat-small);
+   line-height: 1.5;
+   color: var(--color-chat-text-secondary);
+}
+
+.home-unlock
+{
+   width: 100%;
+   max-width: 520px;
+   margin: auto;
+   display: flex;
+   flex-direction: column;
+   gap: 16px;
+}
+
+.home-unlock .chat-signin-form
+{
+   margin: 0;
+}
+
+.home-unlock-foot
+{
+   padding: 0 6px;
+}
+
+.home-done-text
+{
+   margin-top: 10px;
+   font-size: var(--font-size-chat-small);
+   color: var(--color-chat-online-text);
+}
+
+.home-done-text:empty
+{
+   display: none;
+}
+
+.home-rescue
+{
+   padding: 18px 24px;
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-warning-border);
+   border-radius: var(--radius-lg);
+}
+
+.home-rescue summary
+{
+   cursor: pointer;
+   font-weight: 600;
+}
+
+.home-rescue form
+{
+   display: flex;
+   flex-direction: column;
+   margin-top: 14px;
+}
+
+.home-warning
+{
+   margin-bottom: 14px;
+   padding: 12px 14px;
+   border: 1px solid var(--color-chat-critical-border);
+   border-radius: var(--radius-md);
+   background: var(--color-chat-critical-bg);
+   color: var(--color-chat-critical-text);
+   font-size: var(--font-size-chat-small);
+   line-height: 1.45;
+}
+
+/* ---- signed in ---- */
+
+.home-app
+{
+   min-height: 100vh;
+   min-height: 100dvh;
+   background: var(--color-chat-bg-raised);
+}
+
+.home-topbar
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 12px;
+   padding: 14px 24px;
+   background: var(--color-chat-bg);
+   border-bottom: 1px solid var(--color-chat-border);
+}
+
+.home-topbar-user
+{
+   margin-left: auto;
+   font-size: var(--font-size-chat-small);
+   color: var(--color-chat-text-secondary);
+}
+
+.home-main
+{
+   max-width: 1080px;
+   padding: 36px 44px;
+}
+
+.home-main h1
+{
+   margin: 0 0 8px;
+   font-size: 28px;
+   font-weight: 600;
+}
+
+@media ( max-width: 600px )
+{
+   .home-arrive-bar
+   {
+      position: static;
+      justify-content: center;
+      padding: 12px 16px 0;
+      background: var(--color-chat-bg-raised);
+   }
+
+   .home-main
+   {
+      padding: 24px 16px;
+   }
+}
