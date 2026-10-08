@@ -123,7 +123,20 @@ function chat( )
    if( localStorage.getItem( c_storage_device ) !== null )
       ciyam.device = localStorage.getItem( c_storage_device );
 
-   populate_accounts( );
+   // NOTE: The node's sign in, shared by every app ("signin.js", 2026-10-08) - the chat's own ids and words kept,
+   // so its suites carry on. It signs in at once, as it always did, with "Contacting the server..." meanwhile.
+   signin_build( document.getElementById( "signin_host" ), {
+      note: "cws · irc",
+      title: "Sign in",
+      lede: "Credentials are hashed in this browser and never sent in the clear.",
+      submit_text: "Connect",
+      ids: { access: "signin_access", submit: "signin_connect" },
+      setup_href: "account.html#welcome",
+      on_signed_in: enter_chat,
+      on_busy: function( busy ) { if( busy ) begin_busy( ); else end_busy( ); }
+   } );
+
+   signin_show( );
 
    window.setInterval( update_poll_label, 1000 );
 
@@ -193,160 +206,9 @@ function chat( )
    bind_emoji_suggest( );
 }
 
-function populate_accounts( )
-{
-   var select = document.getElementById( "signin_access" );
-
-   // NOTE: Saved accounts are removed by value rather than by trimming from the end - trimming
-   // once removed a fixed entry and left the saved ones in place, so every rebuild listed each
-   // PIN once more than the last. Removing by value is stable however many have been inserted.
-   for( var i = select.options.length - 1; i >= 0; i-- )
-   {
-      if( select.options[ i ].value !== "" )
-         select.remove( i );
-   }
-
-   var entries = parse_access_list( localStorage.getItem( c_storage_access ) );
-
-   for( var n = 0; n < entries.length; n++ )
-   {
-      var access = entries[ n ];
-
-      if( access === "" )
-         continue;
-
-      var label = access;
-
-      if( localStorage.getItem( c_storage_hashed_prefix + access ) !== null )
-         label += "  ·  saved password";
-
-      // NOTE: Inserted after the entries already added rather than always at index 1,
-      // which reversed the list - the stored value is sorted, so the display was not.
-      select.options.add( new Option( label, access, false ), 1 + n );
-   }
-
-   // NOTE: Only preselect a saved account when there is one - otherwise the first
-   // option stands and the PIN field is what the user needs.
-   if( entries.length > 0 )
-      select.selectedIndex = 1;
-
-   // NOTE: Always run this, even with no saved accounts. It is what decides which
-   // fields are visible, and skipping it left the PIN field hidden until the user
-   // changed the selection and changed it back.
-   do_select_access( );
-}
-
-function do_select_access( )
-{
-   // NOTE: This writes to "ciyam.access" and "ciyam.hashed", so it must never run while a
-   // session is open - it would repoint the session at a different account.
-   if( ciyam.sessid !== "" )
-      return;
-
-   var access = document.getElementById( "signin_access" ).value;
-
-   var hint = document.getElementById( "signin_password_hint" );
-
-   set_error( "signin_error", "" );
-
-   document.getElementById( "signin_pin_row" ).hidden = ( access !== "" );
-
-   ciyam.access = access;
-
-   var hashed = localStorage.getItem( c_storage_hashed_prefix + access );
-
-   ciyam.hashed = ( hashed === null ) ? "" : hashed;
-
-   var password = document.getElementById( "signin_password" );
-
-   password.value = "";
-   password.disabled = ( ciyam.hashed !== "" );
-
-   hint.textContent = ( ciyam.hashed !== "" )
-    ? "Using saved credentials for this account." : "";
-
-   refresh_retain_choice( access );
-}
-
 // ====================================================================
 // Session
 // ====================================================================
-
-async function do_connect( )
-{
-   var access = document.getElementById( "signin_access" ).value;
-
-   if( access === "" )
-      access = document.getElementById( "signin_pin" ).value.trim( );
-
-   var password = document.getElementById( "signin_password" ).value;
-
-   if( access === "" )
-   {
-      set_error( "signin_error", "Enter the account PIN." );
-
-      return;
-   }
-
-   set_error( "signin_error", "" );
-
-   document.getElementById( "signin_connect" ).disabled = true;
-
-   ciyam.error = "";
-
-   begin_busy( );
-
-   var signin_note = document.getElementById( "signin_busy" );
-
-   if( signin_note !== null )
-      signin_note.hidden = false;
-
-   try
-   {
-      // NOTE: "CIYAM.connect" uses a hash it is handed in preference to the password, so
-      // a typed password has to clear any hash still held from a previous sign in.
-      if( password !== "" )
-         ciyam.hashed = "";
-
-      await ciyam.connect( access, ciyam.device, ciyam.hashed, password, function( ) { } );
-   }
-   finally
-   {
-      end_busy( );
-
-      if( signin_note !== null )
-         signin_note.hidden = true;
-   }
-
-   document.getElementById( "signin_connect" ).disabled = false;
-
-   if( ciyam.device !== "" )
-      localStorage.setItem( c_storage_device, ciyam.device );
-
-   if( ciyam.error !== "" )
-   {
-      set_error( "signin_error", sign_in_error_text( ciyam.error ) );
-
-      return;
-   }
-
-   if( ciyam.sessid === "" )
-   {
-      set_error( "signin_error", "No session was established." );
-
-      return;
-   }
-
-   apply_retain_choice( );
-
-   // NOTE: The account list is deliberately *not* rebuilt here. "populate_accounts"
-   // reselects the first saved entry and "do_select_access" then overwrites
-   // "ciyam.access" with it - which, once a second account had been saved, pointed the
-   // live session at the wrong PIN and every later call failed with "This web session is
-   // not valid (or has expired)". Signing out rebuilds the list, which is the only time
-   // the sign-in view is seen again.
-   enter_chat( );
-}
 
 function enter_chat( )
 {
@@ -1184,56 +1046,8 @@ async function do_disconnect( )
    end_log_session( );
 
    document.getElementById( "chat_view" ).hidden = true;
-   document.getElementById( "signin_view" ).hidden = false;
 
-   populate_accounts( );
-}
-
-// NOTE: Applied after a successful connect rather than on demand - there is nothing to
-// remember until the session has produced a hashed password, which is why this used to be
-// a button that refused to do anything until you had connected.
-function apply_retain_choice( )
-{
-   var mode = document.getElementById( "signin_retain" ).value;
-
-   if( ciyam.access === "" )
-      return;
-
-   // NOTE: The plan is shared with the accounts page - "plan_retain_choice( )" in "chat_parse.js".
-   var plan = plan_retain_choice( localStorage.getItem( c_storage_access ), ciyam.access, mode, ciyam.hashed );
-
-   if( plan.keep_hash )
-      localStorage.setItem( c_storage_hashed_prefix + ciyam.access, ciyam.hashed );
-   else
-      localStorage.removeItem( c_storage_hashed_prefix + ciyam.access );
-
-   // NOTE: Removing the key rather than storing an empty string. Storing "" left a blank
-   // entry that both this client and the harness then read as a nameless account.
-   if( plan.list === null )
-      localStorage.removeItem( c_storage_access );
-   else
-      localStorage.setItem( c_storage_access, plan.list );
-}
-
-// NOTE: Reflects whether the selected account is already saved, so the box shows the
-// current state rather than a default that would silently forget it on the next connect.
-function refresh_retain_choice( access )
-{
-   document.getElementById( "signin_retain" ).value = retain_mode_of( localStorage.getItem( c_storage_access ),
-    access, ( access !== "" ) && ( localStorage.getItem( c_storage_hashed_prefix + access ) !== null ) );
-}
-
-function do_reset_browser( )
-{
-   if( ciyam.sessid !== "" )
-      return;
-
-   if( !confirm( "Forget the device token and every saved account on this browser?" ) )
-      return;
-
-   localStorage.clear( );
-
-   location.reload( );
+   signin_show( );
 }
 
 // NOTE: On the room open here - see "linked_tab_address( )".

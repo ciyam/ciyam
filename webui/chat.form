@@ -9,65 +9,8 @@ http://www.opensource.org/licenses/mit-license.php.
 <!-- ================================================================
      Sign in
      ================================================================ -->
-<div id="signin_view" class="chat-signin">
-   <form id="signin_form" class="chat-signin-form" onsubmit="do_connect( ); return false;">
-      <div class="chat-brand">
-         <span class="chat-logo"></span>
-         <span class="chat-wordmark">CIYAM</span>
-         <span class="chat-brand-note">cws &middot; irc</span>
-      </div>
-
-      <h2 id="signin_title">Sign in</h2>
-      <p class="chat-signin-lede" id="signin_lede">Credentials are hashed in this browser and never sent in the clear.</p>
-
-      <label class="chat-label" for="signin_access">Account</label>
-      <select id="signin_access" class="chat-field chat-field--mono" onchange="do_select_access( )">
-         <option value="">Enter an account PIN&hellip;</option>
-      </select>
-
-      <div id="signin_pin_row" hidden>
-         <label class="chat-label" for="signin_pin">Account PIN</label>
-         <input type="text" id="signin_pin" class="chat-field chat-field--mono" maxlength="12"
-          placeholder="5 digits, or admin" autocomplete="off">
-      </div>
-
-      <div id="signin_password_row">
-         <label class="chat-label" for="signin_password">Password</label>
-         <input type="password" id="signin_password" class="chat-field chat-field--mono" autocomplete="current-password">
-         <div class="chat-hint" id="signin_password_hint"></div>
-      </div>
-
-      <label class="chat-label" for="signin_retain">Remember on this browser</label>
-      <select id="signin_retain" class="chat-field">
-         <option value="none">Nothing &mdash; forget this account</option>
-         <option value="access">The PIN only</option>
-         <option value="full">The PIN and the password</option>
-      </select>
-      <div class="chat-hint">The PIN is the only way back into an account. Saving the
-      password as well signs you in without typing it.</div>
-
-      <div class="chat-signin-actions">
-         <button type="submit" id="signin_connect" class="chat-btn chat-btn--primary">Connect</button>
-         <!-- NOTE: Accounts are added by admin and set up on the accounts page - as on its sign in. -->
-         <a class="chat-btn chat-signin-setup" id="signin_setup" href="account.html#welcome">New here? Set up your account</a>
-      </div>
-      <div class="chat-hint chat-signin-centred">With the code or PIN from the person who added you.</div>
-
-      <div id="signin_busy" class="chat-signin-busy" hidden>
-         <span class="chat-spinner"></span>
-         <span>Contacting the server&hellip;</span>
-      </div>
-
-      <div id="signin_error" class="chat-error-text" role="alert"></div>
-
-      <!-- NOTE: This page is only seen with no session, so there is no connection state to
-           show here - the device and session are in the account menu once signed in. -->
-      <div class="chat-signin-foot">
-         <button type="button" class="chat-btn--link" onclick="do_reset_browser( )">Reset this browser</button>
-         <div class="chat-signin-foot-note">Forgets the device token and every saved account.</div>
-      </div>
-   </form>
-</div>
+<!-- NOTE: The node's sign in, shared by every app - built here by "signin.js" (2026-10-08). -->
+<div id="signin_host"></div>
 
 <!-- ================================================================
      Chat
