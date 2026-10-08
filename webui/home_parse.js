@@ -134,6 +134,18 @@ function arriving_screen( state )
    return "unreachable";
 }
 
+// NOTE: A sign in refused while the node is locked, said plainly. A locked node should let people sign in, so
+// that one of them can use a key (Ian, 2026-10-03); today it cannot start the session - "Was unable to start a
+// web session" (2026-10-07, for Ian). Any other refusal is left as it was - "" here.
+function locked_sign_in_text( error )
+{
+   if( !/unable to start a web session/i.test( String( error || "" ) ) )
+      return "";
+
+   return "The node is not letting anyone sign in while it is locked - a fault being fixed. Until then it can only be"
+    + " unlocked on the node itself, from its terminal.";
+}
+
 // NOTE: An unlock key as typed or pasted - with spaces between the groups, as the docs show it, or
 // none at all - in the server's own form, or "" if it cannot be one. Case is kept: the characters are
 // base64, so "a" and "A" differ.
@@ -281,6 +293,7 @@ if( typeof module !== "undefined" )
       security_text: security_text,
       warns_master_password: warns_master_password,
       arriving_screen: arriving_screen,
+      locked_sign_in_text: locked_sign_in_text,
       normalise_unlock_key: normalise_unlock_key,
       parse_key_count: parse_key_count,
       people_summary: people_summary,

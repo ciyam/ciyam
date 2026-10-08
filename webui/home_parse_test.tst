@@ -30,6 +30,9 @@ ok   ready - the sign in
 ok   locked - Unlock
 ok   new - Set up
 ok   no answer - unreachable
+ok   a locked node's refusal said plainly
+ok   any other refusal left as it was
+ok   no error
 
 == unlock keys =================================================
 ok   as the node gives it
