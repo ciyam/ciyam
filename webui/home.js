@@ -68,6 +68,7 @@ function home_main( )
    document.getElementById( "app_sign_out" ).addEventListener( "click", do_sign_out );
 
    install_shell( );
+   install_member_home( );
 
    check_node( );
 }
@@ -390,6 +391,9 @@ function rail_item( key, title, opens_tab, on_click )
 
    item.appendChild( label );
 
+   if( key === "chat" )
+      item.appendChild( chat_badge( ) );
+
    if( opens_tab )
    {
       item.title = "Opens in its own tab, on this session";
@@ -427,6 +431,9 @@ function bottom_item( key, title, on_click )
 
    item.appendChild( label );
 
+   if( key === "chat" )
+      item.appendChild( chat_badge( ) );
+
    item.addEventListener( "click", function( event )
    {
       event.preventDefault( );
@@ -435,6 +442,18 @@ function bottom_item( key, title, on_click )
    } );
 
    return item;
+}
+
+// NOTE: What waits in the chat - unread messages, requests and invitations, as the chat's own badge counts them.
+function chat_badge( )
+{
+   var badge = document.createElement( "span" );
+
+   badge.className = "home-badge";
+   badge.dataset.badge = "chat";
+   badge.hidden = true;
+
+   return badge;
 }
 
 function open_app( app )
@@ -603,12 +622,334 @@ async function enter_app( )
    go( home_section( ciyam.is_admin, window.location.hash ) );
 
    show_view( "app_view" );
+
+   g_rooms = [ ];
+   g_starting_messages = [ ];
+   g_starting_total = -1;
+   g_devices = [ ];
+
+   render_member_home( );
+
+   await load_member_home( );
+
+   start_refresh( );
+}
+
+// ====================================================================
+// A member's Home - build step 5
+// ====================================================================
+
+const c_lobby_room = "0000000";
+const c_administration_room = "0000001";
+
+// NOTE: The key the chat keeps a person's dismissed announcements under, so dismissing on Home dismisses in the
+// chat too (Damon, 2026-10-08: one dismissal for both) - the chat hears it through the "storage" event.
+const c_storage_dismissed = "cws.dismissed_";
+
+// NOTE: How often Home looks again while it is open - and at once when its tab is shown again.
+const c_refresh_ms = 60000;
+
+var g_rooms = [ ];
+var g_starting_messages = [ ];
+var g_starting_total = -1;
+var g_devices = [ ];
+var g_refresh_timer = null;
+
+function devices_url( )
+{
+   return ciyam.get_cws_url( ) + "/devices?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&session=" + ciyam.sessid;
+}
+
+function read_dismissed( )
+{
+   try
+   {
+      return parse_dismissed( localStorage.getItem( c_storage_dismissed + ciyam.access ) );
+   }
+   catch( e )
+   {
+      return [ ];
+   }
+}
+
+function dismiss_announcement( unique )
+{
+   try
+   {
+      localStorage.setItem( c_storage_dismissed + ciyam.access, JSON.stringify( add_dismissed( read_dismissed( ), unique ) ) );
+   }
+   catch( e )
+   {
+   }
+
+   render_member_home( );
+}
+
+// NOTE: The lobby listing gives every room and its unread count without moving what the session has read.
+// Administration - invitations, requests, announcements - is read whole, and only when its total changes, as
+// the chat reads it: a tab of the chat opened from Home shares this session.
+async function load_member_home( )
+{
+   var asked_for = ciyam.access;
+
+   var listing = parse_fetch_response( await request( function( done )
+   {
+      return ciyam.fetch_messages( c_lobby_room, "", done );
+   } ) );
+
+   if( ciyam.access !== asked_for )
+      return;
+
+   if( listing.error === "" )
+      g_rooms = derive_room_list( listing.rooms );
+
+   var starting = g_rooms.filter( function( entry ) { return entry.room === c_administration_room; } )[ 0 ];
+
+   if( !ciyam.is_admin && starting && ( starting.total !== g_starting_total ) )
+   {
+      var read = parse_fetch_response( await request( function( done )
+      {
+         return ciyam.fetch_messages( c_administration_room, "from=0", done );
+      } ) );
+
+      if( ciyam.access !== asked_for )
+         return;
+
+      if( read.error === "" )
+      {
+         g_starting_messages = read.messages;
+         g_starting_total = starting.total;
+      }
+   }
+
+   var devices = await request( function( done )
+   {
+      return ciyam.fetch( devices_url( ), "GET", done );
+   } );
+
+   if( ciyam.access !== asked_for )
+      return;
+
+   g_devices = is_error_response( devices ) ? [ ] : parse_devices( devices, ciyam.device );
+
+   render_member_home( );
+}
+
+function invitations_waiting( )
+{
+   return ciyam.is_admin ? [ ] : pending_invitations( g_starting_messages, g_rooms, ciyam.username );
+}
+
+function render_member_home( )
+{
+   var invitations = invitations_waiting( );
+   var summary = chat_summary( g_rooms, invitations, ciyam.is_admin );
+
+   set_text( "tile_chat_text", chat_summary_text( summary ) );
+
+   document.querySelectorAll( "[data-badge='chat']" ).forEach( function( badge )
+   {
+      badge.textContent = badge_text( summary.badge );
+      badge.hidden = ( summary.badge === 0 );
+   } );
+
+   // ---- Needs you
+   var list = document.getElementById( "needs_list" );
+   var items = needs_you( invitations, ciyam.username );
+
+   list.replaceChildren( );
+
+   items.forEach( function( item )
+   {
+      var row = document.createElement( "li" );
+
+      row.className = "home-need";
+
+      var avatar = document.createElement( "span" );
+
+      avatar.className = "home-avatar" + ( ( item.kind === "invitation" ) ? " is-room" : "" );
+      avatar.textContent = ( item.kind === "invitation" ) ? "#" : user_initial( item.inviter );
+
+      if( item.kind !== "invitation" )
+         avatar.style.background = "var(--color-sender-" + sender_colour_index( item.inviter ) + ")";
+
+      var text = document.createElement( "span" );
+
+      text.className = "home-need-text";
+
+      var what = document.createElement( "span" );
+
+      what.className = "home-need-what";
+      what.textContent = item.text;
+
+      var detail = document.createElement( "span" );
+
+      detail.className = "home-need-detail";
+      detail.textContent = item.detail;
+
+      text.appendChild( what );
+      text.appendChild( detail );
+
+      var answer = document.createElement( "a" );
+
+      answer.className = "chat-btn home-need-answer";
+      answer.href = "#";
+      answer.textContent = "Answer in Chat";
+      answer.addEventListener( "click", function( event ) { event.preventDefault( ); open_app_by_key( "chat" ); } );
+
+      row.appendChild( avatar );
+      row.appendChild( text );
+      row.appendChild( answer );
+
+      list.appendChild( row );
+   } );
+
+   document.getElementById( "needs_empty" ).hidden = ( items.length > 0 );
+   document.getElementById( "needs_count" ).hidden = ( items.length === 0 );
+
+   set_text( "needs_count", String( items.length ) );
+
+   // ---- Announcements - admin's, so admin sees none, as in the chat
+   var announcements = ciyam.is_admin ? [ ] : pending_announcements( g_starting_messages, read_dismissed( ) );
+   var holder = document.getElementById( "announce_list" );
+
+   holder.replaceChildren( );
+
+   announcements.forEach( function( message )
+   {
+      var card = document.createElement( "section" );
+
+      card.className = "home-announcement";
+      card.dataset.unique = message.unique;
+
+      var label = document.createElement( "span" );
+
+      label.className = "home-announcement-label";
+      label.textContent = "Announcement · from admin";
+
+      var text = document.createElement( "p" );
+
+      text.className = "home-announcement-text";
+      text.textContent = message.text;
+
+      var ok = document.createElement( "button" );
+
+      ok.type = "button";
+      ok.className = "chat-btn chat-btn--primary";
+      ok.textContent = "OK";
+      ok.addEventListener( "click", function( ) { dismiss_announcement( message.unique ); } );
+
+      card.appendChild( label );
+      card.appendChild( text );
+      card.appendChild( ok );
+
+      holder.appendChild( card );
+   } );
+
+   // ---- Your account
+   var name = ciyam.username || ciyam.access;
+   var avatar_large = document.getElementById( "account_avatar" );
+
+   avatar_large.textContent = user_initial( name );
+   avatar_large.style.background = "var(--color-sender-" + sender_colour_index( name ) + ")";
+
+   set_text( "account_name", name );
+   set_text( "account_role", role_text( ciyam.is_admin ) );
+   set_text( "account_pin", ciyam.access );
+
+   var devices = document.getElementById( "device_list" );
+
+   devices.replaceChildren( );
+
+   device_rows( g_devices ).forEach( function( row )
+   {
+      var item = document.createElement( "li" );
+
+      item.className = "home-device" + ( row.active ? " is-active" : "" );
+
+      var dot = document.createElement( "span" );
+
+      dot.className = "home-device-dot";
+
+      var label = document.createElement( "span" );
+
+      label.className = "home-device-label" + ( row.current ? "" : " home-mono" );
+      label.textContent = row.label;
+      label.title = row.title;
+
+      var state = document.createElement( "span" );
+
+      state.className = "home-device-state";
+      state.textContent = row.state;
+
+      item.appendChild( dot );
+      item.appendChild( label );
+      item.appendChild( state );
+
+      devices.appendChild( item );
+   } );
+}
+
+function open_app_by_key( key, hash )
+{
+   var app = home_apps( ciyam.is_admin, false, false ).filter( function( entry ) { return entry.key === key; } )[ 0 ];
+
+   if( !app )
+      return;
+
+   close_rail( );
+
+   open_app_tab( app.tab, linked_app_address( app.page, g_self ) + ( hash || "" ), ciyam.sessid );
+}
+
+function start_refresh( )
+{
+   stop_refresh( );
+
+   g_refresh_timer = window.setInterval( function( )
+   {
+      if( ( ciyam.sessid !== "" ) && !document.hidden )
+         load_member_home( );
+   }, c_refresh_ms );
+}
+
+function stop_refresh( )
+{
+   if( g_refresh_timer !== null )
+      window.clearInterval( g_refresh_timer );
+
+   g_refresh_timer = null;
+}
+
+function install_member_home( )
+{
+   document.getElementById( "tile_chat_icon" ).appendChild( icon( "chat", 22 ) );
+   document.getElementById( "tile_account_icon" ).appendChild( icon( "account", 22 ) );
+
+   document.getElementById( "tile_chat" ).addEventListener( "click", function( event ) { event.preventDefault( ); open_app_by_key( "chat" ); } );
+   document.getElementById( "tile_account" ).addEventListener( "click", function( event ) { event.preventDefault( ); open_app_by_key( "account" ); } );
+   document.getElementById( "manage_devices" ).addEventListener( "click", function( event ) { event.preventDefault( ); open_app_by_key( "account", "#mine" ); } );
+
+   document.addEventListener( "visibilitychange", function( )
+   {
+      if( !document.hidden && ( ciyam.sessid !== "" ) )
+         load_member_home( );
+   } );
+
+   // NOTE: The chat dismissing an announcement - or another Home - shows here at once.
+   window.addEventListener( "storage", function( event )
+   {
+      if( ( ciyam.access !== "" ) && ( event.key === c_storage_dismissed + ciyam.access ) )
+         render_member_home( );
+   } );
 }
 
 // NOTE: Signing out of Home signs every app it opened out too - they were on its session (the design's
 // "Sign out of every app").
 async function do_sign_out( )
 {
+   stop_refresh( );
+
    unlink_apps( );
 
    await request( function( done )

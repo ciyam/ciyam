@@ -365,6 +365,296 @@
    letter-spacing: -0.01em;
 }
 
+.home-badge
+{
+   min-width: 20px;
+   height: 20px;
+   box-sizing: border-box;
+   padding: 0 6px;
+   border-radius: 10px;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   background: var(--color-chat-accent);
+   color: #ffffff;
+   font-size: 11px;
+   font-weight: 700;
+}
+
+/* ---- a member's Home: tiles, Needs you, announcements, Your account ---- */
+
+.home-tiles
+{
+   display: grid;
+   grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+   gap: 16px;
+   margin: 24px 0 16px;
+}
+
+.home-tile
+{
+   display: flex;
+   flex-direction: column;
+   gap: 6px;
+   padding: 22px;
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-lg);
+   color: var(--color-chat-text);
+   text-decoration: none;
+}
+
+.home-tile:hover
+{
+   border-color: var(--color-chat-border-selected);
+}
+
+.home-tile-top
+{
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   margin-bottom: 8px;
+}
+
+.home-tile-icon
+{
+   width: 44px;
+   height: 44px;
+   border-radius: 12px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+}
+
+.home-tile-tab
+{
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-secondary);
+}
+
+.home-tile-title
+{
+   font-size: 18px;
+   font-weight: 600;
+}
+
+.home-tile-text
+{
+   font-size: 14px;
+   color: var(--color-chat-text-secondary);
+}
+
+.home-columns
+{
+   display: flex;
+   flex-wrap: wrap;
+   gap: 16px;
+   align-items: flex-start;
+}
+
+.home-column-main
+{
+   flex: 3 1 420px;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+   gap: 16px;
+}
+
+.home-column-side
+{
+   flex: 2 1 280px;
+   min-width: 0;
+}
+
+.home-card
+{
+   box-sizing: border-box;
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+   padding: 20px 22px;
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-lg);
+}
+
+.home-card h2
+{
+   margin: 0;
+   font-size: 16px;
+   font-weight: 600;
+}
+
+.home-card-head
+{
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+}
+
+.home-count
+{
+   padding: 2px 8px;
+   border-radius: 10px;
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+   font-size: 12px;
+   font-weight: 700;
+}
+
+.home-empty
+{
+   margin: 0;
+}
+
+.home-needs,
+.home-device-list
+{
+   margin: 0;
+   padding: 0;
+   list-style: none;
+}
+
+.home-need
+{
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   padding: 12px 0;
+   border-top: 1px solid var(--color-chat-rule);
+}
+
+.home-avatar.is-room
+{
+   border-radius: 10px;
+   background: var(--color-chat-bg-raised);
+   border: 1px solid var(--color-chat-border);
+   color: var(--color-chat-text-secondary);
+}
+
+.home-need-text
+{
+   flex-grow: 1;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+}
+
+.home-need-what
+{
+   font-size: 14px;
+   font-weight: 600;
+}
+
+.home-need-detail,
+.home-device-state
+{
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-secondary);
+}
+
+.home-need-answer
+{
+   flex: 0 0 auto;
+   text-decoration: none;
+}
+
+.home-announcement
+{
+   display: flex;
+   flex-direction: column;
+   align-items: flex-start;
+   gap: 10px;
+   padding: 18px 22px;
+   background: var(--color-chat-bg-selected);
+   border: 1px solid var(--color-chat-border-selected);
+   border-radius: var(--radius-lg);
+}
+
+.home-announcement-label
+{
+   font-size: 12px;
+   font-weight: 700;
+   letter-spacing: 0.08em;
+   text-transform: uppercase;
+   color: var(--color-chat-accent-deep);
+}
+
+.home-announcement-text
+{
+   margin: 0;
+   font-size: 15px;
+   line-height: 1.5;
+   white-space: pre-wrap;
+   overflow-wrap: anywhere;
+}
+
+.home-avatar--large
+{
+   flex-basis: 48px;
+   width: 48px;
+   height: 48px;
+   border-radius: 24px;
+   font-size: 18px;
+}
+
+.home-devices
+{
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   padding-top: 14px;
+   border-top: 1px solid var(--color-chat-rule);
+}
+
+.home-devices .home-rail-heading
+{
+   padding: 0;
+}
+
+.home-device
+{
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   padding: 3px 0;
+   font-size: 14px;
+}
+
+.home-device-dot
+{
+   flex: 0 0 8px;
+   width: 8px;
+   height: 8px;
+   border-radius: 4px;
+   background: var(--color-chat-border-strong);
+}
+
+.home-device.is-active .home-device-dot
+{
+   background: var(--color-chat-online);
+}
+
+.home-device-label
+{
+   flex-grow: 1;
+   min-width: 0;
+   overflow: hidden;
+   text-overflow: ellipsis;
+}
+
+#manage_devices
+{
+   font-size: 14px;
+   font-weight: 600;
+   color: var(--color-chat-accent-deep);
+}
+
 /* ---- a phone: the menu a drawer, admin's sections as chips, the apps along the bottom ---- */
 
 @media ( max-width: 760px )
@@ -485,6 +775,44 @@
    .home-section h1
    {
       font-size: 24px;
+   }
+
+   .home-tiles
+   {
+      gap: 12px;
+      margin-top: 16px;
+   }
+
+   .home-tile
+   {
+      padding: 16px;
+   }
+
+   .home-tile-tab
+   {
+      display: none;
+   }
+
+   .home-need
+   {
+      flex-wrap: wrap;
+   }
+
+   .home-need-answer
+   {
+      margin-left: 46px;
+   }
+
+   .home-bottom-item
+   {
+      position: relative;
+   }
+
+   .home-bottom-item .home-badge
+   {
+      position: absolute;
+      top: 2px;
+      left: calc( 50% + 6px );
    }
 
    .home-bottombar

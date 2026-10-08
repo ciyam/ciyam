@@ -187,10 +187,62 @@ http://www.opensource.org/licenses/mit-license.php.
       <nav class="home-chips" id="home_chips" aria-label="Node" hidden></nav>
 
       <main class="home-main">
-         <!-- NOTE: A member's Home (build step 5). -->
+         <!-- NOTE: A member's Home (build step 5) - their apps, what needs them, announcements and their account.
+              What it says of the chat is read as the chat reads it ("chat_parse.js"). -->
          <section class="home-section" id="section_home" hidden>
             <h1 id="app_greeting"></h1>
             <p class="home-note" id="app_node"></p>
+
+            <div class="home-tiles" aria-label="Your apps">
+               <a class="home-tile" href="#" id="tile_chat">
+                  <span class="home-tile-top">
+                     <span class="home-tile-icon is-chat" id="tile_chat_icon"></span>
+                     <span class="home-tile-tab">Opens in its own tab</span>
+                  </span>
+                  <span class="home-tile-title">Chat</span>
+                  <span class="home-tile-text" id="tile_chat_text">&hellip;</span>
+               </a>
+               <a class="home-tile" href="#" id="tile_account">
+                  <span class="home-tile-top">
+                     <span class="home-tile-icon is-account" id="tile_account_icon"></span>
+                     <span class="home-tile-tab">Opens in its own tab</span>
+                  </span>
+                  <span class="home-tile-title">My account</span>
+                  <span class="home-tile-text">Password and devices</span>
+               </a>
+            </div>
+
+            <div class="home-columns">
+               <div class="home-column-main">
+                  <section class="home-card" aria-labelledby="needs_heading">
+                     <div class="home-card-head">
+                        <h2 id="needs_heading">Needs you</h2>
+                        <span class="home-count" id="needs_count" hidden></span>
+                     </div>
+                     <ul class="home-needs" id="needs_list"></ul>
+                     <p class="home-note home-empty" id="needs_empty">Nothing is waiting for you.</p>
+                  </section>
+
+                  <div id="announce_list"></div>
+               </div>
+
+               <section class="home-card home-column-side" aria-labelledby="account_heading">
+                  <h2 id="account_heading">Your account</h2>
+                  <div class="home-rail-user-row">
+                     <span class="home-avatar home-avatar--large" id="account_avatar"></span>
+                     <span class="home-rail-user-text">
+                        <span class="home-rail-user-name" id="account_name"></span>
+                        <span class="home-rail-user-role"><span id="account_role"></span> &middot; PIN
+                         <span class="home-mono" id="account_pin"></span></span>
+                     </span>
+                  </div>
+                  <div class="home-devices">
+                     <span class="home-rail-heading">Devices</span>
+                     <ul class="home-device-list" id="device_list"></ul>
+                     <a href="#" id="manage_devices">Manage devices in My account</a>
+                  </div>
+               </section>
+            </div>
          </section>
 
          <!-- NOTE: Admin's sections (build step 6). -->
