@@ -1366,6 +1366,15 @@ async function do_change_password( event )
    var fresh = document.getElementById( "mine_password" ).value;
    var confirm = document.getElementById( "mine_confirm" ).value;
 
+   // NOTE: A session handed over without its hash - Home's after a reload, its password not saved on this browser -
+   // cannot check the current password here, so it says so rather than calling it wrong (found by review).
+   if( ciyam.hashed === "" )
+   {
+      set_error( "mine_error", "Your current password can't be checked on this session - sign out, then sign in here to change it." );
+
+      return;
+   }
+
    // NOTE: The server only checks the session, so the current password is checked here,
    // against the hash the session was opened with - no request, and nothing sent.
    if( session_hash_for( current ) !== ciyam.hashed )
