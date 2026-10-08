@@ -7,7 +7,7 @@
 // security, unlock keys, admin's Overview and Logs, and which apps and sections a person sees. Loads
 // in the browser as plain globals and in Node through "module.exports", so all of it is covered by
 // "home_parse_test.js" without a server or a browser. What a member's Home shows of the chat - the
-// invitations, requests and announcements waiting - comes from "chat_parse.js" as it is.
+// invitations, requests and announcements waiting - is read by "chat_parse.js", which the page loads first.
 
 const c_home_page = "home.html";
 
@@ -311,6 +311,104 @@ function role_text( is_admin )
    return is_admin ? "Administrator" : "Member";
 }
 
+// ====================================================================
+// A member's Home - build step 5. These use the chat's own reading of the node ("chat_parse.js":
+// "visible_rooms( )", "is_dm_name( )", "dm_request_text( )"), so Home and the chat never disagree.
+// ====================================================================
+
+// NOTE: What the Chat tile and the menu's badge say, from the lobby listing's rooms and the invitations still
+// waiting ("pending_invitations( )"). A message request is an invitation to a direct message room. The badge
+// is what the chat's own counts - "unread_elsewhere( )" with no room open.
+function chat_summary( rooms, invitations, is_admin )
+{
+   var summary = { unread: 0, rooms: 0, requests: 0, invitations: 0, badge: 0 };
+
+   visible_rooms( rooms, is_admin ).forEach( function( entry )
+   {
+      if( entry.unread > 0 )
+      {
+         summary.unread += entry.unread;
+         ++summary.rooms;
+      }
+   } );
+
+   ( invitations || [ ] ).forEach( function( invite )
+   {
+      if( is_dm_name( invite.name ) )
+         ++summary.requests;
+      else
+         ++summary.invitations;
+   } );
+
+   summary.badge = summary.unread + summary.requests + summary.invitations;
+
+   return summary;
+}
+
+function counted( count, one, many )
+{
+   return count + " " + ( ( count === 1 ) ? one : many );
+}
+
+// NOTE: The Chat tile's line - "3 unread in 2 rooms · 1 message request", or that nothing is new.
+function chat_summary_text( summary )
+{
+   var parts = [ ];
+
+   if( summary.unread > 0 )
+      parts.push( summary.unread + " unread in " + counted( summary.rooms, "room", "rooms" ) );
+
+   if( summary.requests > 0 )
+      parts.push( counted( summary.requests, "message request", "message requests" ) );
+
+   if( summary.invitations > 0 )
+      parts.push( counted( summary.invitations, "room invitation", "room invitations" ) );
+
+   return ( parts.length > 0 ) ? parts.join( " · " ) : "Nothing new";
+}
+
+// NOTE: "Needs you" - each invitation waiting, said as the chat says it, a message request first by
+// kind. They are answered in the chat.
+function needs_you( invitations, me )
+{
+   return ( invitations || [ ] ).map( function( invite )
+   {
+      var request = is_dm_name( invite.name );
+
+      return {
+         kind: request ? "request" : "invitation",
+         text: request ? dm_request_text( invite.inviter, invite.name, me ) : ( invite.inviter + " invited you to " + invite.name ),
+         detail: request ? "Message request" : "Room invitation",
+         inviter: invite.inviter,
+         room: invite.room
+      };
+   } );
+}
+
+// NOTE: A device token shortened for a list - the first six and last four characters, as the accounts page
+// shows them; the whole token is its title.
+function short_device( device )
+{
+   var text = String( device || "" );
+
+   return ( text.length > 12 ) ? text.substr( 0, 6 ) + "…" + text.substr( -4 ) : text;
+}
+
+// NOTE: "Your account"'s devices, from "parse_devices( )" in "account_parse.js" - this browser first.
+function device_rows( devices )
+{
+   return ( devices || [ ] ).map( function( entry )
+   {
+      return {
+         label: entry.current ? "This browser" : short_device( entry.device ),
+         title: entry.device,
+         state: ( entry.current || entry.active ) ? "Signed in now" : "Not signed in",
+         active: !!( entry.current || entry.active ),
+         current: !!entry.current
+      };
+   } );
+}
+
 // NOTE: An app opened from Home on Home's session - "?source=<Home's id>", the channel's handshake ("chat.html").
 function linked_app_address( page, source )
 {
@@ -337,6 +435,11 @@ if( typeof module !== "undefined" )
       home_sections: home_sections,
       home_section: home_section,
       role_text: role_text,
+      chat_summary: chat_summary,
+      chat_summary_text: chat_summary_text,
+      needs_you: needs_you,
+      short_device: short_device,
+      device_rows: device_rows,
       linked_app_address: linked_app_address
    };
 }

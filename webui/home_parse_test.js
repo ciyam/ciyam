@@ -10,6 +10,14 @@
 // Run with:  node home_parse_test.js
 // Compare against "home_parse_test.tst" - see "run_chat_tests.sh".
 
+// NOTE: In the browser the page loads "chat_parse.js" first; the helpers it uses from there are globals,
+// and made so here.
+const chat_parse = require( "./chat_parse.js" );
+
+global.visible_rooms = chat_parse.visible_rooms;
+global.is_dm_name = chat_parse.is_dm_name;
+global.dm_request_text = chat_parse.dm_request_text;
+
 const hp = require( "./home_parse.js" );
 
 var failures = 0;
@@ -174,6 +182,48 @@ check( "a member asking for an admin section", hp.home_section( false, "#keys" )
 
 check( "the roles", [ hp.role_text( true ), hp.role_text( false ) ], [ "Administrator", "Member" ] );
 check( "an app on Home's session", hp.linked_app_address( "chat.html", "1759999999123" ), "chat.html?source=1759999999123" );
+
+// --------------------------------------------------------------------
+heading( "a member's Home" );
+
+// NOTE: Rooms as "parse_room_entry( )" gives them; Administration ("0000001") is not a member's to count.
+var rooms = [
+ { room: "0000001", unread: 4, total: 9, name: "Administration" },
+ { room: "0000004", unread: 2, total: 30, name: "Book club" },
+ { room: "0000007", unread: 1, total: 3, name: "/admin/verify-a" },
+ { room: "0000009", unread: 0, total: 12, name: "Garden" } ];
+
+var invitations = [
+ { room: "0000011", token: "t1", name: "/bob/verify-a", inviter: "bob", unique: "1759900000002" },
+ { room: "0000012", token: "t2", name: "Recipes", inviter: "carol", unique: "1759900000001" } ];
+
+check( "the chat's summary - a member", hp.chat_summary( rooms, invitations, false ),
+ { unread: 3, rooms: 2, requests: 1, invitations: 1, badge: 5 } );
+check( "the badge is the chat's own count", hp.chat_summary( rooms, invitations, false ).badge,
+ chat_parse.unread_elsewhere( rooms, invitations, "", false ) );
+check( "admin counts Administration too", hp.chat_summary( rooms, [ ], true ).unread, 7 );
+check( "nothing at all", hp.chat_summary( [ ], [ ], false ), { unread: 0, rooms: 0, requests: 0, invitations: 0, badge: 0 } );
+
+check( "the Chat tile's line", hp.chat_summary_text( hp.chat_summary( rooms, invitations, false ) ),
+ "3 unread in 2 rooms · 1 message request · 1 room invitation" );
+check( "one of each, singular", hp.chat_summary_text( { unread: 1, rooms: 1, requests: 0, invitations: 0 } ), "1 unread in 1 room" );
+check( "requests only, plural", hp.chat_summary_text( { unread: 0, rooms: 0, requests: 2, invitations: 0 } ), "2 message requests" );
+check( "nothing new", hp.chat_summary_text( { unread: 0, rooms: 0, requests: 0, invitations: 0 } ), "Nothing new" );
+
+check( "needs you - a request and an invitation", hp.needs_you( invitations, "verify-a" ), [
+ { kind: "request", text: "bob wants to message you.", detail: "Message request", inviter: "bob", room: "0000011" },
+ { kind: "invitation", text: "carol invited you to Recipes", detail: "Room invitation", inviter: "carol", room: "0000012" } ] );
+check( "needs you - nothing", hp.needs_you( [ ], "verify-a" ), [ ] );
+
+check( "a device shortened", hp.short_device( "6034a59f4554116a" ), "6034a5…116a" );
+check( "a short one kept", hp.short_device( "abc" ), "abc" );
+check( "the devices", hp.device_rows( [
+ { device: "6034a59f4554116a", session: "s1", active: true, current: true },
+ { device: "e5f6a7b8c9d0e1f2b8c9", session: "s2", active: true, current: false },
+ { device: "c9d0e1f2a3b4f203", session: "s3", active: false, current: false } ] ), [
+ { label: "This browser", title: "6034a59f4554116a", state: "Signed in now", active: true, current: true },
+ { label: "e5f6a7…b8c9", title: "e5f6a7b8c9d0e1f2b8c9", state: "Signed in now", active: true, current: false },
+ { label: "c9d0e1…f203", title: "c9d0e1f2a3b4f203", state: "Not signed in", active: false, current: false } ] );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );

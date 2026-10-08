@@ -96,4 +96,19 @@ ok   a member asking for an admin section
 ok   the roles
 ok   an app on Home's session
 
+== a member's Home =============================================
+ok   the chat's summary - a member
+ok   the badge is the chat's own count
+ok   admin counts Administration too
+ok   nothing at all
+ok   the Chat tile's line
+ok   one of each, singular
+ok   requests only, plural
+ok   nothing new
+ok   needs you - a request and an invitation
+ok   needs you - nothing
+ok   a device shortened
+ok   a short one kept
+ok   the devices
+
 All checks passed.
