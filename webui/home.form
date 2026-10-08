@@ -209,6 +209,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   <div class="home-devices">
                      <span class="home-rail-heading">Devices</span>
                      <ul class="home-device-list" id="device_list"></ul>
+                     <span class="home-note home-empty" id="device_more"></span>
                      <a href="#" class="home-external-link" id="manage_account"
                       title="Opens in its own tab, on this session">Manage my account</a>
                   </div>

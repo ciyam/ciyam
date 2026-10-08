@@ -150,6 +150,14 @@ async function check_node( )
       return;
    }
 
+   // NOTE: A reload - the session this tab had, if the node still knows it.
+   if( ( screen === "signin" ) && await resume_session( ) )
+   {
+      after_sign_in( );
+
+      return;
+   }
+
    if( screen === "signin" )
    {
       signin_describe( "Home", "Sign in to your node - your apps, and what needs you.", true );
@@ -170,6 +178,82 @@ async function check_node( )
 function on_signed_in( )
 {
    after_sign_in( );
+}
+
+// NOTE: Home's session kept for this tab - "format_resume( )" in "home_parse.js" says what, and why not the hashed
+// password. Gone when the tab closes, or at a sign out.
+const c_storage_resume = "home.session";
+
+function keep_session( )
+{
+   try
+   {
+      sessionStorage.setItem( c_storage_resume, format_resume( ciyam ) );
+   }
+   catch( e )
+   {
+   }
+}
+
+function forget_session( )
+{
+   try
+   {
+      sessionStorage.removeItem( c_storage_resume );
+   }
+   catch( e )
+   {
+   }
+}
+
+function clear_ciyam( )
+{
+   ciyam.sessid = "";
+   ciyam.access = "";
+   ciyam.hashed = "";
+   ciyam.unique = "";
+   ciyam.username = "";
+   ciyam.is_admin = false;
+}
+
+// NOTE: The session this tab had before a reload, tried with one request - the lobby listing, which moves
+// nothing the session has read. Refused - it timed out, or the node was set up again - it is forgotten.
+async function resume_session( )
+{
+   var kept = null;
+
+   try
+   {
+      kept = parse_resume( sessionStorage.getItem( c_storage_resume ) );
+   }
+   catch( e )
+   {
+   }
+
+   if( kept === null )
+      return false;
+
+   ciyam.access = kept.access;
+   ciyam.device = kept.device;
+   ciyam.sessid = kept.sessid;
+   ciyam.unique = kept.unique;
+   ciyam.username = kept.username;
+   ciyam.is_admin = kept.is_admin;
+
+   var reply = await request( function( done )
+   {
+      return ciyam.fetch_messages( c_lobby_room, "", done );
+   } );
+
+   if( is_error_response( reply ) || ( parse_fetch_response( reply ).rooms.length === 0 ) )
+   {
+      clear_ciyam( );
+      forget_session( );
+
+      return false;
+   }
+
+   return true;
 }
 
 async function after_sign_in( )
@@ -614,6 +698,8 @@ function install_shell( )
 
 async function enter_app( )
 {
+   keep_session( );
+
    build_shell( );
 
    var name = ciyam.username || ciyam.access;
@@ -869,7 +955,11 @@ function render_member_home( )
 
    devices.replaceChildren( );
 
-   device_rows( g_devices ).forEach( function( row )
+   var shown = devices_shown( device_rows( g_devices ), 0 );
+
+   set_text( "device_more", more_devices_text( shown.more ) );
+
+   shown.rows.forEach( function( row )
    {
       var item = document.createElement( "li" );
 
@@ -1274,18 +1364,15 @@ async function do_sign_out( )
 
    unlink_apps( );
 
+   forget_session( );
+
    await request( function( done )
    {
       return ciyam.disconnect( done );
    } );
 
    // NOTE: "disconnect( )" ends the session on the server but leaves the instance as it was.
-   ciyam.sessid = "";
-   ciyam.access = "";
-   ciyam.hashed = "";
-   ciyam.unique = "";
-   ciyam.username = "";
-   ciyam.is_admin = false;
+   clear_ciyam( );
 
    close_rail( );
 
