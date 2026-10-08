@@ -1,0 +1,27 @@
+/* Copyright (c) 2026 CIYAM Developers
+
+   Distributed under the MIT/X11 software license, please refer to the file license.txt
+   in the root project directory or http://www.opensource.org/licenses/mit-license.php. */
+
+/* NOTE: What the shared sign in ("signin.js") adds to "chat.css"'s ".chat-signin" card - the hints
+   beneath a field, as the accounts page's "account-hint". */
+
+.signin-hint
+{
+   margin-top: 6px;
+   font-size: var(--font-size-chat-small);
+   line-height: 1.45;
+   color: var(--color-chat-text-secondary);
+}
+
+.signin-hint:empty
+{
+   display: none;
+}
+
+/* NOTE: The card's rhythm puts space above a label that follows a field; a hint between them would
+   otherwise take that space away. */
+.signin-hint + .chat-label
+{
+   margin-top: 22px;
+}
