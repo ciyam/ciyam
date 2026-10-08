@@ -6,6 +6,22 @@
 /* NOTE: What the shared sign in ("signin.js") adds to "chat.css"'s ".chat-signin" card - the hints
    beneath a field, as the accounts page's "account-hint". */
 
+/* NOTE: The card keeps its own type and colour, whatever the page around it sets - the console's monospaced,
+   light-on-dark page left the heading faint on the white card (2026-10-08). */
+.chat-signin
+{
+   font-family: var(--font-family-chat);
+   font-size: var(--font-size-chat-body);
+   line-height: 1.5;
+   color: var(--color-chat-text);
+}
+
+.chat-signin h2,
+.chat-signin .chat-wordmark
+{
+   color: var(--color-chat-text-strong, var(--color-chat-text));
+}
+
 .signin-hint
 {
    margin-top: 6px;
