@@ -280,11 +280,15 @@ struct session_request
     :
     session( session )
    {
+      guard g( g_mutex );
+
       g_cws_session_requests.insert( session );
    }
 
    ~session_request( )
    {
+      guard g( g_mutex );
+
       g_cws_session_requests.erase( session );
    }
 
