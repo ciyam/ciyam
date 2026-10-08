@@ -4,7 +4,7 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-# NOTE: Runs the chat, console and accounts parsing tests and diffs the output against the captured
+# NOTE: Runs the chat, console, accounts and Home parsing tests and diffs the output against the captured
 # expected output, following the same ".new" against ".tst" convention as the
 # regression suite in "tests". Needs neither a running server nor a browser.
 #
@@ -17,7 +17,7 @@ cd "$(dirname "$0")" || exit 1
 # Every suite runs even when an earlier one fails, so one run reports them all.
 overall=0
 
-for test_name in chat_parse_test console_parse_test account_parse_test; do
+for test_name in chat_parse_test console_parse_test account_parse_test home_parse_test; do
  if [ ! -f $test_name.js ]; then
   echo "Error: Did not find '$test_name.js'."
   overall=1
