@@ -196,6 +196,10 @@ function linked_owner( from )
    if( from === "accounts" )
       return { name: "the accounts page", subject: "The accounts page", source: "account", label: "Accounts" };
 
+   // NOTE: Home's console drawer, and the switcher from Home (2026-10-08).
+   if( from === "home" )
+      return { name: "Home", subject: "Home", source: "home", label: "Home" };
+
    return { name: "the chat", subject: "The chat", source: "chat", label: "Chat" };
 }
 

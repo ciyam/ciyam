@@ -89,6 +89,7 @@ check( "the accounts page", cp.linked_owner( "accounts" ),
  { name: "the accounts page", subject: "The accounts page", source: "account", label: "Accounts" } );
 check( "the chat", cp.linked_owner( "" ), { name: "the chat", subject: "The chat", source: "chat", label: "Chat" } );
 check( "anything else is the chat", cp.linked_owner( "other" ).source, "chat" );
+check( "Home", cp.linked_owner( "home" ), { name: "Home", subject: "Home", source: "home", label: "Home" } );
 
 // --------------------------------------------------------------------
 heading( "resolving commands" );

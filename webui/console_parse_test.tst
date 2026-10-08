@@ -17,6 +17,7 @@ ok   undecodable username
 ok   the accounts page
 ok   the chat
 ok   anything else is the chat
+ok   Home
 
 == resolving commands ==========================================
 ok   noun then verb
