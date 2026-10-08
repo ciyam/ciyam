@@ -138,6 +138,20 @@ function chat( )
 
    signin_show( );
 
+   // NOTE: The app switcher - the same in every app, its button the CIYAM mark and "Chat" (2026-10-08).
+   apps_build( document.getElementById( "apps_host" ), {
+      current: "chat",
+      self: function( ) { return String( g_self ); },
+      sign_out: do_disconnect,
+      signed_out: async function( )
+      {
+         // NOTE: The session has gone already - asking the node to end it again only fails.
+         await do_disconnect( );
+
+         set_error( "signin_error", "You signed out in another app." );
+      }
+   } );
+
    window.setInterval( update_poll_label, 1000 );
 
    // NOTE: Typing, and a change of width that re-wraps the text, both resize the composer.
@@ -216,6 +230,8 @@ function enter_chat( )
    document.getElementById( "chat_view" ).hidden = false;
 
    document.getElementById( "topbar_user" ).textContent = ciyam.username || ciyam.access;
+
+   apps_refresh( );
 
    // NOTE: Admin has no conversations of its own to start (Ian, 2026-10-05).
    document.getElementById( "dm_new" ).hidden = !dm_allowed( dm_me( ) );
@@ -299,11 +315,12 @@ function do_menu_linked_tab( )
    do_open_linked_tab( );
 }
 
+// NOTE: "Sign out of every app" - every tab on the session told, as from the switcher (2026-10-08).
 function do_menu_sign_out( )
 {
    close_user_menu( false );
 
-   do_disconnect( );
+   apps_sign_out_everywhere( );
 }
 
 // ====================================================================

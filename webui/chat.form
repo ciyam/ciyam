@@ -17,8 +17,8 @@ http://www.opensource.org/licenses/mit-license.php.
      ================================================================ -->
 <div id="chat_view" class="chat-app" hidden>
    <div class="chat-topbar">
-      <span class="chat-logo"></span>
-      <span class="chat-wordmark">CIYAM</span>
+      <!-- NOTE: The app switcher - the CIYAM mark and "Chat", as at the top of every app ("apps.js", 2026-10-08). -->
+      <div id="apps_host"></div>
       <span class="chat-divider"></span>
       <span class="chat-status">
          <span class="chat-dot"></span>
@@ -53,7 +53,7 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
                <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_account_settings( )"
                 title="Opens your account in a new tab sharing this session">Account settings&hellip;</button>
-               <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_sign_out( )">Sign out</button>
+               <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_sign_out( )">Sign out of every app</button>
             </div>
          </div>
       </div>
