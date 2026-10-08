@@ -110,6 +110,28 @@ function account_main( )
 
    signin_fill_saved( );
 
+   // NOTE: The app switcher - the same in every app, its button the CIYAM mark and this page's name (2026-10-08).
+   apps_build( document.getElementById( "apps_host" ), {
+      current: "account",
+      self: function( ) { return g_self; },
+      sign_out: do_sign_out,
+      signed_out: function( )
+      {
+         clear_session( );
+
+         // NOTE: As when the page that opened this one signs out - a reload must not try to link to it again.
+         forget_source( );
+
+         g_source = "";
+         g_owner = "";
+
+         route( );
+
+         set_error( "signin_error", "You signed out in another app." );
+      },
+      from: "accounts"
+   } );
+
    // NOTE: Every request is logged for a console, as the chat's are - the quiet ones only while the
    // console's "Log polling" is ticked.
    install_log_capture( ciyam, "account", function( ) { return g_request_quiet && !is_logging_polling( ); }, record_request );
@@ -330,14 +352,6 @@ function do_popout_console( )
 
    if( !document.getElementById( "console_drawer" ).hidden )
       do_toggle_console( );
-}
-
-// NOTE: The chat's tab, reused - switched to when it is on this session, as it is when this page
-// was opened from it; otherwise the chat opens sharing this session. This page stays open, so the
-// chat's Account settings comes back to it without reloading.
-function do_open_chat_linked( )
-{
-   open_app_tab( c_tab_chat, "chat.html?source=" + encodeURIComponent( g_self ), ciyam.sessid );
 }
 
 // NOTE: A console or chat opened from this session must not carry on under the next.
@@ -591,15 +605,12 @@ function remember_device( )
 
 function enter_app( )
 {
-   var linked = ( g_source !== "" );
-
    document.getElementById( "nav_people" ).hidden = !ciyam.is_admin;
-   document.getElementById( "topbar_user" ).textContent = ( ciyam.username || ciyam.access ) + ( linked ? " - through the chat" : "" );
+   document.getElementById( "topbar_user" ).textContent = ciyam.username || ciyam.access;
    document.getElementById( "console_session" ).textContent = "inherits session " + ciyam.sessid;
 
-   // NOTE: The session is the chat's - signing out belongs there, and "Chat" goes back to it.
-   document.getElementById( "sign_out_button" ).hidden = linked;
-   document.getElementById( "chat_button" ).textContent = linked ? "Back to the chat" : "Chat";
+   // NOTE: Moving between apps, and signing out of every one, is the switcher's - whoever opened this page.
+   apps_refresh( );
 
    var wanted = window.location.hash.replace( /^#/, "" );
 
@@ -1760,7 +1771,7 @@ function do_open_chat( )
       return;
    }
 
-   do_open_chat_linked( );
+   open_app_tab( c_tab_chat, "chat.html?source=" + encodeURIComponent( g_self ), ciyam.sessid );
 
    enter_app( );
 }

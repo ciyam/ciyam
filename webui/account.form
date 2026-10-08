@@ -141,10 +141,9 @@ http://www.opensource.org/licenses/mit-license.php.
 <!-- ================================================================ signed in -->
 <div class="account-app" id="app_view" hidden>
    <header class="account-topbar">
-      <span class="chat-logo"></span>
-      <span class="chat-wordmark">CIYAM</span>
-      <span class="account-divider"></span>
-      <span class="account-title">Accounts</span>
+      <!-- NOTE: The app switcher - the CIYAM mark and "Accounts" (or "My account"), as at the top of every app
+           ("apps.js", 2026-10-08). It replaced "Chat" - "Back to the chat" when linked - and Sign out here. -->
+      <div id="apps_host"></div>
 
       <nav class="account-nav" aria-label="Accounts">
          <a href="#people" id="nav_people">People</a>
@@ -155,10 +154,7 @@ http://www.opensource.org/licenses/mit-license.php.
 
       <span class="account-who-am-i" id="topbar_user"></span>
 
-      <button type="button" class="chat-btn" id="chat_button" onclick="do_open_chat_linked( )"
-       title="Opens the chat sharing this session - no second sign in">Chat</button>
       <button type="button" class="chat-btn chat-btn--mono" id="console_toggle" onclick="do_toggle_console( )">Console</button>
-      <button type="button" class="chat-btn" id="sign_out_button" onclick="do_sign_out( )">Sign out</button>
    </header>
 
    <main class="account-main">
