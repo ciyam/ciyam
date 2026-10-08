@@ -237,6 +237,35 @@ function parse_log_names( text )
    return names;
 }
 
+// NOTE: "GET /cws/logs/<name>" as text - the whole log, a line each; the last line's break leaves no line.
+function parse_log_lines( text )
+{
+   var lines = String( text || "" ).split( "\n" ).map( function( line ) { return line.replace( /\r$/, "" ); } );
+
+   if( ( lines.length > 0 ) && ( lines[ lines.length - 1 ] === "" ) )
+      lines.pop( );
+
+   return lines;
+}
+
+// NOTE: The People figure's line on admin's Overview.
+function people_note( summary )
+{
+   if( summary.unclaimed > 0 )
+      return counted( summary.unclaimed, "code", "codes" ) + " not yet claimed";
+
+   return "Every code claimed";
+}
+
+// NOTE: Unlock keys made on this browser, as admin's Overview says it - the node cannot list them.
+function keys_note( count )
+{
+   if( count === 0 )
+      return "None made here yet. Without one, a restart leaves the node locked until you reach it.";
+
+   return counted( count, "key", "keys" ) + " made here so far. Each works once - keep a few somewhere safe.";
+}
+
 // NOTE: Tints a log line - "error" or "warn" - so they stand out in a long log; "" for the rest.
 function log_line_kind( line )
 {
@@ -429,6 +458,9 @@ if( typeof module !== "undefined" )
       parse_uptime: parse_uptime,
       uptime_words: uptime_words,
       parse_log_names: parse_log_names,
+      parse_log_lines: parse_log_lines,
+      people_note: people_note,
+      keys_note: keys_note,
       log_line_kind: log_line_kind,
       log_view: log_view,
       home_apps: home_apps,

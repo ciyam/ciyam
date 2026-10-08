@@ -139,6 +139,19 @@ check( "the log names", hp.parse_log_names( "script\nserver\nupdate\n" ), [ "scr
 check( "the log names - blank lines and repeats", hp.parse_log_names( "\r\nserver\r\n\r\nserver\n" ), [ "server" ] );
 check( "the log names - an error is not a name", hp.parse_log_names( "Error: Logs can only be viewed by the administrator." ), [ ] );
 
+check( "a log's lines", hp.parse_log_lines( "one\r\ntwo\nthree\n" ), [ "one", "two", "three" ] );
+check( "a log with no last break", hp.parse_log_lines( "one\ntwo" ), [ "one", "two" ] );
+check( "an empty log", hp.parse_log_lines( "" ), [ ] );
+check( "a blank line inside is kept", hp.parse_log_lines( "one\n\ntwo\n" ), [ "one", "", "two" ] );
+
+check( "people - codes waiting", hp.people_note( { active: 6, unclaimed: 2 } ), "2 codes not yet claimed" );
+check( "people - one code", hp.people_note( { active: 6, unclaimed: 1 } ), "1 code not yet claimed" );
+check( "people - all claimed", hp.people_note( { active: 6, unclaimed: 0 } ), "Every code claimed" );
+
+check( "keys - none made", /^None made here yet/.test( hp.keys_note( 0 ) ), true );
+check( "keys - one made", /^1 key made here so far/.test( hp.keys_note( 1 ) ), true );
+check( "keys - three made", /^3 keys made here so far/.test( hp.keys_note( 3 ) ), true );
+
 check( "an error line", hp.log_line_kind( "[2026-10-07 13:20:10] [000005] [general] :: Error: unable to open file" ), "error" );
 check( "a failure", hp.log_line_kind( "backup failed" ), "error" );
 check( "a warning", hp.log_line_kind( "Warning: '/home/root/backup.img' was not found." ), "warn" );

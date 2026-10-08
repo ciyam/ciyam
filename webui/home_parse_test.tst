@@ -65,6 +65,16 @@ ok   uptime in words - an error
 ok   the log names
 ok   the log names - blank lines and repeats
 ok   the log names - an error is not a name
+ok   a log's lines
+ok   a log with no last break
+ok   an empty log
+ok   a blank line inside is kept
+ok   people - codes waiting
+ok   people - one code
+ok   people - all claimed
+ok   keys - none made
+ok   keys - one made
+ok   keys - three made
 ok   an error line
 ok   a failure
 ok   a warning
