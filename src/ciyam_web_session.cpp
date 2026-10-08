@@ -82,6 +82,8 @@ const size_t c_save_data_delay = 250;
 const size_t c_admin_lock_attempts = 10;
 const size_t c_admin_retry_timeout = 100;
 
+const size_t c_default_log_tail_lines = 10;
+
 const size_t c_min_passwd_retry_seconds = 3;
 
 const size_t c_unlock_key_file_name_len = 8;
@@ -158,6 +160,8 @@ constexpr const char* c_cws_uri_suffix_enums_extra_prefix = "/enums/";
 constexpr const char* c_cws_uri_suffix_lists_extra_prefix = "/lists/";
 constexpr const char* c_cws_uri_suffix_views_extra_prefix = "/views/";
 
+constexpr const char* c_cws_request_logs_review_options_lines = "lines";
+
 constexpr const char* c_cws_request_users_create_options_secret = "secret";
 constexpr const char* c_cws_request_users_create_options_nomimated = "nominated";
 
@@ -188,7 +192,7 @@ constexpr const char* c_cws_help_request_output = "quit\n"
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|nominated=[<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
  "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete device <ident>\ndelete message <room>\ndelete javascript\ndelete stylesheet\n"
- "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview logs [<name>]\n"
+ "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview logs [<name> [lines=10]]\n"
  "review users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\nreview javascript[s] [<name>]\n"
  "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user <pin> password=<password>\n"
@@ -2764,16 +2768,26 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      string log( uri_suffix.substr( CONST_LENGTH( c_cws_uri_suffix_logs_prefix ) ) );
 
+                     string lines( to_string( c_default_log_tail_lines ) );
+
+                     if( option_parameters.count( c_cws_request_logs_review_options_lines ) )
+                        lines = option_parameters[ c_cws_request_logs_review_options_lines ];
+
                      deque< string > log_lines;
 
                      string log_file_name( "ciyam_" + log + ".log" );
 
-                     buffer_file_tail( log_file_name, log_lines, 0 );
+                     buffer_file_tail( log_file_name, log_lines, from_string< size_t >( lines ) );
 
-                     if( !is_json_output )
-                        response = join( log_lines, '\n' );
+                     if( log_lines.empty( ) )
+                        use_none_response = true;
                      else
-                        response = as_json_array( "all_lines", log_lines );
+                     {
+                        if( !is_json_output )
+                           response = join( log_lines, '\n' );
+                        else
+                           response = as_json_array( "all_lines", log_lines );
+                     }
                   }
                }
                else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_users ) )
