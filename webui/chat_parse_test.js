@@ -981,6 +981,28 @@ check( "days between counts calendar days",
 check( "full stamp mentions the year", /2026/.test( cp.unique_to_full( at( 21 ) ) ), true );
 check( "full stamp of a bad unique", cp.unique_to_full( "not-a-number" ), "" );
 
+// --------------------------------------------------------------------
+heading( "the app switcher" );
+
+function app_keys( list ) { return list.map( function( app ) { return app.key + ( app.current ? "*" : "" ); } ); }
+
+check( "admin's apps, the chat marked", app_keys( cp.switcher_apps( true, false, "chat" ) ), [ "home", "chat*", "account", "console" ] );
+check( "a member's - no console", app_keys( cp.switcher_apps( false, false, "home" ) ), [ "home*", "chat", "account" ] );
+check( "admin on a phone - no console", app_keys( cp.switcher_apps( true, true, "account" ) ), [ "home", "chat", "account*" ] );
+check( "the accounts page by who you are", [ cp.switcher_apps( true, false, "" )[ 2 ].title, cp.switcher_apps( false, false, "" )[ 2 ].title ],
+ [ "Accounts", "My account" ] );
+check( "each app's page and tab", cp.switcher_apps( true, false, "" ).map( function( app ) { return app.page + " " + app.tab; } ),
+ [ "home.html ciyam-home", "chat.html ciyam-chat", "account.html ciyam-accounts", "console.html ciyam-console" ] );
+check( "the button's name", [ "home", "chat", "account", "console" ].map( function( key ) { return cp.switcher_title( key, false ); } ),
+ [ "Home", "Chat", "My account", "Console" ] );
+check( "an app not known - no name", cp.switcher_title( "other", true ), "" );
+
+check( "signed out - the message", cp.signed_out_message( "4014a01afdf9" ), { kind: "signed_out", sessid: "4014a01afdf9" } );
+check( "signed out - this session", cp.is_signed_out_here( cp.signed_out_message( "4014a01afdf9" ), "4014a01afdf9" ), true );
+check( "signed out - another session", cp.is_signed_out_here( cp.signed_out_message( "4014a01afdf9" ), "99" ), false );
+check( "signed out - this tab signed in to nothing", cp.is_signed_out_here( cp.signed_out_message( "" ), "" ), false );
+check( "signed out - a channel string is not one", cp.is_signed_out_here( "1790900000000", "1790900000000" ), false );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

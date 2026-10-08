@@ -1680,6 +1680,54 @@ const c_tab_chat = "ciyam-chat";
 const c_tab_accounts = "ciyam-accounts";
 const c_tab_console = "ciyam-console";
 
+// NOTE: The app switcher - the same in every app (Damon, 2026-10-08: no "Back to", one switcher, its button the
+// CIYAM mark and the app's name). Every app, this one marked: Home, Chat, the accounts page - admin's "Accounts",
+// a member's "My account" - and the console, admin's and never on a phone. Each with its page and its tab; Home's
+// tab is "c_tab_home" in "home_parse.js", named here as it is, since the Home page loads both.
+function switcher_apps( is_admin, is_phone, current )
+{
+   var apps = [
+      { key: "home", title: "Home", note: "The node, and what needs you", page: "home.html", tab: "ciyam-home" },
+      { key: "chat", title: "Chat", note: "Rooms and messages", page: "chat.html", tab: c_tab_chat },
+      { key: "account", title: switcher_title( "account", is_admin ), note: is_admin ? "People, and your account" : "Your password and devices",
+       page: "account.html", tab: c_tab_accounts }
+   ];
+
+   if( is_admin && !is_phone )
+      apps.push( { key: "console", title: "Console", note: "Admin · developer tools", page: "console.html", tab: c_tab_console } );
+
+   return apps.map( function( app )
+   {
+      app.current = ( app.key === current );
+
+      return app;
+   } );
+}
+
+// NOTE: "Sign out of every app" from any of them - the session is shared, not owned, so whichever app signs out
+// tells every tab on the same session, on a channel of its own ("ciyam_session"), whoever opened whom. Any
+// other message, or one for another session, is not for this tab.
+const c_session_channel_name = "ciyam_session";
+
+function signed_out_message( sessid )
+{
+   return { kind: "signed_out", sessid: String( sessid || "" ) };
+}
+
+function is_signed_out_here( data, sessid )
+{
+   return !!data && ( typeof data === "object" ) && ( data.kind === "signed_out" )
+    && ( typeof data.sessid === "string" ) && ( data.sessid !== "" ) && ( data.sessid === sessid );
+}
+
+// NOTE: The app's name beside the CIYAM mark on the switcher's button.
+function switcher_title( key, is_admin )
+{
+   var titles = { home: "Home", chat: "Chat", account: is_admin ? "Accounts" : "My account", console: "Console" };
+
+   return titles[ key ] || "";
+}
+
 // NOTE: What to do with the tab found by a name: "load" an empty one (there was none - the
 // browser has just made it), "focus" one already on this session (no reload - it keeps its
 // place), or open a "new" one when the tab found is signed in some other way or not at all,
@@ -1888,6 +1936,10 @@ function is_valid_username( name )
 if( typeof module !== "undefined" )
 {
    module.exports = {
+      switcher_apps: switcher_apps,
+      switcher_title: switcher_title,
+      signed_out_message: signed_out_message,
+      is_signed_out_here: is_signed_out_here,
       is_error_response: is_error_response,
       error_text: error_text,
       parse_members: parse_members,

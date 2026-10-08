@@ -526,4 +526,18 @@ ok   days between counts calendar days
 ok   full stamp mentions the year
 ok   full stamp of a bad unique
 
+== the app switcher ============================================
+ok   admin's apps, the chat marked
+ok   a member's - no console
+ok   admin on a phone - no console
+ok   the accounts page by who you are
+ok   each app's page and tab
+ok   the button's name
+ok   an app not known - no name
+ok   signed out - the message
+ok   signed out - this session
+ok   signed out - another session
+ok   signed out - this tab signed in to nothing
+ok   signed out - a channel string is not one
+
 All checks passed.
