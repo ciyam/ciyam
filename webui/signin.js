@@ -674,6 +674,17 @@ function recover_build( )
       signin_set_text( "recover_strength_label", strength.text );
    } );
 
+   // NOTE: Enter goes on to the password again, as from each word - it is Enter there that sends the form.
+   password.addEventListener( "keydown", function( event )
+   {
+      if( ( event.key === "Enter" ) && !event.shiftKey )
+      {
+         event.preventDefault( );
+
+         document.getElementById( "recover_confirm" ).focus( );
+      }
+   } );
+
    form.appendChild( password );
 
    var meter = signin_element( "div", { class: "chat-strength", id: "recover_strength", hidden: "" } );
@@ -808,6 +819,9 @@ async function recover_show( )
 function recover_on_input( event )
 {
    var input = event.target;
+
+   // NOTE: A refusal was about the words as they were - it goes once they change.
+   signin_set_text( "recover_error", "" );
 
    var words = recovery_words( input.value );
 
@@ -948,6 +962,12 @@ function recover_take_suggestion( word )
 
    input.value = word;
 
+   recover_next_field( input );
+}
+
+// NOTE: On from a word's box - to the next, or after the last to the new password.
+function recover_next_field( input )
+{
    var next = recover_inputs( )[ parseInt( input.dataset.index, 10 ) + 1 ];
 
    ( next || document.getElementById( "recover_password" ) ).focus( );
@@ -955,10 +975,24 @@ function recover_take_suggestion( word )
    recover_words_status( );
 }
 
+// NOTE: Enter moves on from a box whether a word was chosen from the list or typed in full - the last box to the new
+// password - and never sends the form from a word (Damon, 2026-10-10: Enter on a whole word sent it, and the count of
+// words then stood as an error).
 function recover_on_keydown( event )
 {
    if( ( g_recover_input !== event.target ) || ( g_recover_words.length === 0 ) )
+   {
+      if( ( event.key === "Enter" ) && !event.shiftKey )
+      {
+         event.preventDefault( );
+
+         recover_hide_suggestions( );
+
+         recover_next_field( event.target );
+      }
+
       return;
+   }
 
    if( ( event.key === "ArrowDown" ) || ( event.key === "ArrowUp" ) )
    {
