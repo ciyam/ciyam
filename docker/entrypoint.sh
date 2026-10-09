@@ -115,6 +115,15 @@ if [ ! -f .web_access_admin ]; then
 
       seed=$(node -e 'console.log( require( "crypto" ).randomBytes( 67 ).toString( "hex" ) )')
 
+      # NOTE: A test node only - set up from the entropy given, so its twelve words are known and recovering the node
+      # with them can be tried (Damon, 2026-10-09). Thirty-two hex characters are twelve words. Never for a real node:
+      # whoever has the words can take the node over.
+      if [[ "${CIYAM_TEST_ENTROPY:-}" =~ ^[0-9a-f]{32}$ ]]; then
+         seed="$CIYAM_TEST_ENTROPY"
+
+         echo "(a TEST node - set up from known entropy, so its twelve words are known)"
+      fi
+
       node /ciyam/webui/ciyam.js -test "" admin "$seed" "" none >/dev/null 2>&1
 
       unset seed
