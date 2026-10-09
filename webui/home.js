@@ -52,12 +52,11 @@ function home_main( )
 {
    signin_build( document.getElementById( "signin_host" ), {
       note: "home",
-      title: "Home",
-      lede: "Sign in to your node - your apps, and what needs you.",
       setup_href: "account.html#welcome",
+      offers_home: false,
       request: request,
       on_signed_in: on_signed_in,
-      error_text: function( error ) { return ( g_system.state === "locked" ) ? locked_sign_in_text( error ) : ""; }
+      error_text: function( error ) { return ( g_system.state === "locked" ) ? locked_sign_in_text( error, true ) : ""; }
    } );
 
    document.getElementById( "unreachable_retry" ).addEventListener( "click", check_node );
@@ -171,7 +170,7 @@ async function check_node( )
 
    if( screen === "signin" )
    {
-      signin_describe( "Home", "Sign in to your node - your apps, and what needs you.", true );
+      signin_describe( c_signin_title, c_signin_lede, true );
       signin_show( );
       show_view( "signin_view" );
    }
@@ -341,24 +340,18 @@ function typed_words( )
 
 function install_recover( )
 {
-   // NOTE: The offer beneath the shared sign in - shown by "check_node( )" when the node is locked.
-   var offer = document.createElement( "p" );
+   // NOTE: The offer, beneath the sign in's refusal - shown by "check_node( )" when the node is locked. A full button,
+   // as the way on from a refusal is everywhere (2026-10-10).
+   var offer = document.createElement( "a" );
 
-   offer.className = "home-recover-offer";
+   offer.className = "chat-btn chat-signin-setup home-recover-offer";
    offer.id = "recover_offer";
+   offer.href = "#";
    offer.hidden = true;
-   offer.appendChild( document.createTextNode( "Can't sign in? " ) );
+   offer.textContent = "Can't sign in? Recover the node with its twelve words";
+   offer.addEventListener( "click", function( event ) { event.preventDefault( ); show_recover( ); } );
 
-   var link = document.createElement( "a" );
-
-   link.href = "#";
-   link.id = "recover_open";
-   link.textContent = "Recover the node with your twelve words";
-   link.addEventListener( "click", function( event ) { event.preventDefault( ); show_recover( ); } );
-
-   offer.appendChild( link );
-
-   document.getElementById( "signin_form" ).appendChild( offer );
+   document.getElementById( "signin_locked" ).after( offer );
 
    var grid = document.getElementById( "recover_words" );
 

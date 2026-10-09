@@ -1617,7 +1617,17 @@ function sign_in_error_text( error )
    if( text === c_connect_status_error )
       return "The server's answer to signing in was not what was expected. Please try again.";
 
-   return text;
+   if( is_locked_sign_in_error( text ) )
+      return "This node is locked - it restarted, and nobody can sign in until it is unlocked.";
+
+   // NOTE: The node's own words, without its "Error: " - the panel says it is one (2026-10-10).
+   return text.replace( /^Error:\s*/, "" );
+}
+
+// NOTE: How a locked node answers a sign in today - it cannot start the session (2026-10-07, for Ian).
+function is_locked_sign_in_error( error )
+{
+   return /unable to start a web session/i.test( String( error || "" ) );
 }
 
 function encode_channel_field( value )
@@ -2093,6 +2103,7 @@ if( typeof module !== "undefined" )
       password_strength: password_strength,
       user_initial: user_initial,
       sign_in_error_text: sign_in_error_text,
+      is_locked_sign_in_error: is_locked_sign_in_error,
       visible_rooms: visible_rooms,
       dm_room_name: dm_room_name,
       dm_create_text: dm_create_text,

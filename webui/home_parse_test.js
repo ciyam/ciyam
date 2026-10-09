@@ -90,9 +90,11 @@ check( "locked - Unlock", hp.arriving_screen( "locked" ), "unlock" );
 check( "new - Set up", hp.arriving_screen( "new" ), "setup" );
 check( "no answer - unreachable", hp.arriving_screen( "" ), "unreachable" );
 
-check( "a locked node's refusal said plainly", /only be unlocked on the node itself/.test(
+check( "a locked node's refusal said plainly", /recover it with its twelve words/.test(
  hp.locked_sign_in_text( "Error: Was unable to start a web session with access token '97620'." ) ), true );
 check( "any other refusal left as it was", hp.locked_sign_in_text( "Error: Invalid password." ), "" );
+check( "any refusal, when the node is known to be locked", /recover it with its twelve words/.test(
+ hp.locked_sign_in_text( "Error: This web session is not valid (or has expired).", true ) ), true );
 check( "no error", hp.locked_sign_in_text( "" ), "" );
 
 // --------------------------------------------------------------------

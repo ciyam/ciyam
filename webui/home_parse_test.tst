@@ -32,6 +32,7 @@ ok   new - Set up
 ok   no answer - unreachable
 ok   a locked node's refusal said plainly
 ok   any other refusal left as it was
+ok   any refusal, when the node is known to be locked
 ok   no error
 
 == recovering with the twelve words ============================

@@ -41,3 +41,33 @@
 {
    margin-top: 22px;
 }
+
+/* NOTE: A refusal stands out - a panel in the card's own type, with the critical colours (Damon, 2026-10-10: it was
+   small mono type, easily missed). Nothing shows while there is no refusal. */
+.chat-signin .signin-error:not( :empty )
+{
+   margin-top: 18px;
+   padding: 12px 14px;
+   border: 1px solid var(--color-chat-critical-border);
+   border-left-width: 4px;
+   border-radius: var(--radius-md);
+   background: var(--color-chat-critical-bg);
+   color: var(--color-chat-critical-text);
+   font-family: var(--font-family-chat);
+   font-size: var(--font-size-chat-small);
+   font-weight: 600;
+   line-height: 1.45;
+}
+
+.chat-signin .signin-error:empty
+{
+   min-height: 0;
+}
+
+/* NOTE: A locked node's refusal - the way on, a full button beneath it: to Home, which can unlock or recover it, or on
+   Home itself recovering with the twelve words. */
+.chat-signin .signin-locked,
+.chat-signin .home-recover-offer
+{
+   margin-top: 10px;
+}

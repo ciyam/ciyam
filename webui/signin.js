@@ -12,17 +12,17 @@
 // The page builds it with "signin_build( host, options )", shows it with "signin_show( )" and may reword it
 // with "signin_describe( title, lede )":
 //
-//   options.note           the word beside the wordmark ("home")
-//   options.title          the heading ("Home")
-//   options.lede           the line beneath it
+//   options.note           the word beside the wordmark - which part of the node this is ("home", "chat")
 //   options.setup_href     where "New here?" goes - the accounts page's Welcome
+//   options.offers_home    optional - false on Home itself: elsewhere a locked node's refusal links to Home
 //   options.request        the page's one-at-a-time request wrapper (ISS-005), resolving to the answer
 //   options.on_signed_in   called once "ciyam" has a session
 //   options.error_text     optional - a refusal in the page's own words, or "" to leave it as it is
 //   options.ids            optional - { access, submit }: the ids a page's suites know its list and button by
-//   options.submit_text    optional - the button's word ("Sign in"; the chat and the console "Connect")
-//   options.extra_link     optional - { text, href }: a second action beside the button (the console's chat)
 //   options.on_busy        optional - called with true as the sign in starts and false as it ends
+//
+// The heading, its line and the button are the same everywhere (Damon, 2026-10-10: "the login screen should be the same
+// for all" - the parts are one app, Ian's point). Only Home rewords it, for a locked node ("signin_describe( )").
 //
 // "request" may be left out - the sign in is then made at once, as the console made it.
 //
@@ -39,6 +39,11 @@ const c_signin_storage_access = "cws.access";
 const c_signin_storage_hashed_prefix = "cws.hashed_";
 
 const c_signin_saved_mark = "  ·  saved password";
+
+const c_signin_title = "Sign in";
+
+const c_signin_lede = "One PIN and password for every part of your node. The password is hashed in this browser and never sent"
+ + " in the clear.";
 
 var g_signin_options = { };
 
@@ -81,8 +86,8 @@ function signin_build( host, options )
    brand.appendChild( signin_element( "span", { class: "chat-brand-note" }, g_signin_options.note || "" ) );
 
    form.appendChild( brand );
-   form.appendChild( signin_element( "h2", { tabindex: "-1" }, g_signin_options.title || "Sign in" ) );
-   form.appendChild( signin_element( "p", { class: "chat-signin-lede" }, g_signin_options.lede || "" ) );
+   form.appendChild( signin_element( "h2", { tabindex: "-1" }, c_signin_title ) );
+   form.appendChild( signin_element( "p", { class: "chat-signin-lede" }, c_signin_lede ) );
 
    form.appendChild( signin_element( "label", { class: "chat-label", for: g_signin_ids.access }, "Account" ) );
 
@@ -119,16 +124,18 @@ function signin_build( host, options )
    form.appendChild( signin_element( "div", { class: "signin-hint" },
     "Shared by every app on this browser. Saving the password as well signs you in without typing it." ) );
 
-   form.appendChild( signin_element( "div", { class: "chat-error-text", id: "signin_error", role: "alert" } ) );
+   // NOTE: A refusal stands out - a panel of its own (Damon, 2026-10-10: it was small grey-red type). A locked node's
+   // comes with the way to Home, which can unlock or recover it.
+   form.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "signin_error", role: "alert" } ) );
+
+   var locked = signin_element( "a", { class: "chat-btn chat-signin-setup signin-locked", id: "signin_locked", href: "home.html", hidden: "" },
+    "Open Home to unlock or recover it" );
+
+   form.appendChild( locked );
 
    var actions = signin_element( "div", { class: "chat-signin-actions" } );
 
-   actions.appendChild( signin_element( "button", { type: "submit", class: "chat-btn chat-btn--primary", id: g_signin_ids.submit },
-    g_signin_options.submit_text || "Sign in" ) );
-
-   if( g_signin_options.extra_link )
-      actions.appendChild( signin_element( "a", { class: "chat-btn chat-signin-setup", id: "signin_extra", href: g_signin_options.extra_link.href },
-       g_signin_options.extra_link.text ) );
+   actions.appendChild( signin_element( "button", { type: "submit", class: "chat-btn chat-btn--primary", id: g_signin_ids.submit }, "Sign in" ) );
 
    if( g_signin_options.setup_href )
       actions.appendChild( signin_element( "a", { class: "chat-btn chat-signin-setup", id: "signin_setup",
@@ -197,6 +204,44 @@ function signin_hide( )
 function signin_set_text( id, text )
 {
    document.getElementById( id ).textContent = text;
+
+   if( id === "signin_error" )
+      document.getElementById( "signin_locked" ).hidden = true;
+}
+
+// NOTE: The refusal, in words - and, for a node that is locked, the way to Home, unless this is Home. A locked node
+// answers a sign in in more than one way ("unable to start a web session", "not valid (or has expired)" - both seen
+// 2026-10-10), so the node is asked: "/system" names a locked one ":CIYAM:".
+async function signin_show_refusal( error )
+{
+   var own = g_signin_options.error_text ? g_signin_options.error_text( error ) : "";
+
+   signin_set_text( "signin_error", ( own !== "" ) ? own : ( is_unknown_device_error( error )
+    ? "This browser's saved sign in is from before the node was set up again - type your password."
+    : sign_in_error_text( error ) ) );
+
+   if( g_signin_options.offers_home === false )
+      return;
+
+   var locked = is_locked_sign_in_error( error );
+
+   if( !locked )
+   {
+      try
+      {
+         locked = ( await ( await fetch( "/system", { cache: "no-store" } ) ).text( ) ).trim( ).indexOf( ":CIYAM:" ) === 0;
+      }
+      catch( e )
+      {
+      }
+   }
+
+   if( locked && ( document.getElementById( "signin_error" ).textContent !== "" ) )
+   {
+      signin_set_text( "signin_error", sign_in_error_text( "Error: Was unable to start a web session." ) );
+
+      document.getElementById( "signin_locked" ).hidden = false;
+   }
 }
 
 function signin_storage_get( key )
@@ -405,11 +450,7 @@ async function signin_submit( event )
 
    if( ciyam.error !== "" )
    {
-      var own = g_signin_options.error_text ? g_signin_options.error_text( ciyam.error ) : "";
-
-      signin_set_text( "signin_error", ( own !== "" ) ? own : ( is_unknown_device_error( ciyam.error )
-       ? "This browser's saved sign in is from before the node was set up again - type your password."
-       : sign_in_error_text( ciyam.error ) ) );
+      signin_show_refusal( ciyam.error );
 
       return;
    }

@@ -855,7 +855,11 @@ heading( "sign in errors" );
 
 check( "a missing connect status, in plain words", cp.sign_in_error_text( "invalid or missing connect status" ),
  "The server's answer to signing in was not what was expected. Please try again." );
-check( "any other error as it is", cp.sign_in_error_text( "Error: Web session is currently busy (try again shortly)." ),
+check( "a locked node, said so", cp.sign_in_error_text( "Error: Was unable to start a web session with access token '10301'." ),
+ "This node is locked - it restarted, and nobody can sign in until it is unlocked." );
+check( "a locked node's refusal known", [ cp.is_locked_sign_in_error( "Error: Was unable to start a web session with access token '1'." ),
+ cp.is_locked_sign_in_error( "Error: Invalid password." ) ], [ true, false ] );
+check( "any other error as it is, less its 'Error:'", cp.sign_in_error_text( "Error: Web session is currently busy (try again shortly)." ),
  "Error: Web session is currently busy (try again shortly)." );
 check( "nothing", cp.sign_in_error_text( "" ), "" );
 

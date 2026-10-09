@@ -101,8 +101,6 @@ function account_main( )
    // NOTE: The node's sign in, shared by every app ("signin.js", 2026-10-08) - this page's was its first form.
    signin_build( document.getElementById( "signin_host" ), {
       note: "accounts",
-      title: "Accounts",
-      lede: "Sign in to manage your account - or, as admin, the people on this node.",
       setup_href: "#welcome",
       request: request,
       on_signed_in: enter_app

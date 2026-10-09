@@ -194,11 +194,8 @@ function console_main( )
    // kept, so its suites and its "Open chat instead" carry on. It signs in at once, as it always did.
    signin_build( document.getElementById( "signin_host" ), {
       note: "console",
-      title: "Console",
-      lede: "A developer's view of this node - its requests, scripts and variables. No accounts are made here.",
-      submit_text: "Connect",
       ids: { access: "signin_account", submit: "signin_connect" },
-      extra_link: { text: "Open chat instead", href: "chat.html" },
+      setup_href: "account.html#welcome",
       on_signed_in: enter_console
    } );
 

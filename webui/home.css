@@ -161,15 +161,6 @@
 
 /* ---- recovering with the twelve words (2026-10-09) ---- */
 
-.home-recover-offer
-{
-   margin: 18px 0 0;
-   padding-top: 16px;
-   border-top: 1px solid var(--color-chat-rule);
-   font-size: var(--font-size-chat-small);
-   color: var(--color-chat-text-secondary);
-}
-
 .home-words-set
 {
    position: relative;

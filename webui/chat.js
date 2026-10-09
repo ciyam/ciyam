@@ -126,10 +126,7 @@ function chat( )
    // NOTE: The node's sign in, shared by every app ("signin.js", 2026-10-08) - the chat's own ids and words kept,
    // so its suites carry on. It signs in at once, as it always did, with "Contacting the server..." meanwhile.
    signin_build( document.getElementById( "signin_host" ), {
-      note: "cws · irc",
-      title: "Sign in",
-      lede: "Credentials are hashed in this browser and never sent in the clear.",
-      submit_text: "Connect",
+      note: "chat",
       ids: { access: "signin_access", submit: "signin_connect" },
       setup_href: "account.html#welcome",
       on_signed_in: enter_chat,

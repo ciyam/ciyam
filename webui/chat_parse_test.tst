@@ -452,7 +452,11 @@ ok   the server's words for admin, as they come
 
 == sign in errors ==============================================
 ok   a missing connect status, in plain words
-ok   any other error as it is
+ok   a locked node, said so
+ok   a locked node's refusal known
+FAIL any other error as it is, less its 'Error:'
+       expected: "Error: Web session is currently busy (try again shortly)."
+       actual:   "Web session is currently busy (try again shortly)."
 ok   nothing
 
 == session handover fields =====================================
@@ -571,4 +575,4 @@ ok   no session
 ok   no device
 ok   admin only when it says so exactly
 
-All checks passed.
+1 check(s) FAILED.

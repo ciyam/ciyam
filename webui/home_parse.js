@@ -137,16 +137,17 @@ function arriving_screen( state )
    return "unreachable";
 }
 
-// NOTE: A sign in refused while the node is locked, said plainly. A locked node should let people sign in, so
+// NOTE: A sign in refused while the node is locked, said plainly - for any refusal when the node is known to be locked
+// ("is_locked"; it answers in more than one way, 2026-10-10). A locked node should let people sign in, so
 // that one of them can use a key (Ian, 2026-10-03); today it cannot start the session - "Was unable to start a
 // web session" (2026-10-07, for Ian). Any other refusal is left as it was - "" here.
-function locked_sign_in_text( error )
+function locked_sign_in_text( error, is_locked )
 {
-   if( !/unable to start a web session/i.test( String( error || "" ) ) )
+   if( ( is_locked !== true ) && !/unable to start a web session/i.test( String( error || "" ) ) )
       return "";
 
-   return "The node is not letting anyone sign in while it is locked - a fault being fixed. Until then it can only be"
-    + " unlocked on the node itself, from its terminal.";
+   return "The node is not letting anyone sign in while it is locked - a fault being fixed. Until then, recover it with"
+    + " its twelve words, below, or unlock it on the node itself.";
 }
 
 // NOTE: An unlock key as typed or pasted - with spaces between the groups, as the docs show it, or
