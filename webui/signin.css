@@ -64,10 +64,157 @@
    min-height: 0;
 }
 
-/* NOTE: A locked node's refusal - the way on, a full button beneath it: to Home, which can unlock or recover it, or on
-   Home itself recovering with the twelve words. */
-.chat-signin .signin-locked,
-.chat-signin .home-recover-offer
+/* NOTE: Recovering with the twelve words - offered on a locked node, below the sign in's buttons: an edge case. */
+.chat-signin .recover-offer
 {
    margin-top: 10px;
+}
+
+/* ---- recovering with the twelve words - in every part of the node since 2026-10-10 (Home's alone before) ---- */
+
+.recover-words-set
+{
+   position: relative;
+   margin: 0 0 6px;
+   padding: 0;
+   border: none;
+}
+
+.recover-words-set legend
+{
+   padding: 0;
+}
+
+/* NOTE: The twelve boxes, numbered - three to a row, two on a phone. */
+.recover-words
+{
+   display: grid;
+   grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
+   gap: 8px;
+   margin-top: 6px;
+}
+
+.recover-word
+{
+   display: flex;
+   align-items: center;
+   gap: 6px;
+}
+
+.recover-word-number
+{
+   flex: 0 0 18px;
+   text-align: right;
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-tiny);
+   color: var(--color-chat-text-secondary);
+}
+
+.recover-word input
+{
+   flex: 1 1 auto;
+   min-width: 0;
+   height: 36px;
+   padding: 0 8px;
+}
+
+.recover-word input.is-unknown
+{
+   border-color: var(--color-chat-critical-border);
+   background: var(--color-chat-critical-bg);
+}
+
+/* NOTE: The words a box offers - those starting with what is typed (2026-10-10), beneath the box being typed in. */
+.recover-word-suggest
+{
+   position: absolute;
+   z-index: 5;
+   margin: 0;
+   padding: 4px;
+   list-style: none;
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-md);
+   box-shadow: var(--shadow-lg);
+}
+
+.recover-word-option
+{
+   padding: 6px 10px;
+   border-radius: var(--radius-sm);
+   font-size: 14px;
+   cursor: pointer;
+}
+
+.recover-word-option:hover,
+.recover-word-option.is-active
+{
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+}
+
+.recover-pin
+{
+   margin: 4px 0 8px;
+   font-size: 32px;
+   font-weight: 700;
+   letter-spacing: 0.08em;
+   color: var(--color-chat-text-strong);
+}
+
+/* NOTE: The recovery's two cards - the words and the password, then the PIN - as wide as the sign in's. */
+.recover-box
+{
+   width: 100%;
+   max-width: 520px;
+   margin: auto;
+   display: flex;
+   flex-direction: column;
+   gap: 16px;
+}
+
+.recover-box .chat-signin-form
+{
+   margin: 0;
+}
+
+/* NOTE: The note and warning the recovery uses - Home's look, as Home had them. */
+.recover-note
+{
+   margin: 0 0 14px;
+   font-size: var(--font-size-chat-small);
+   line-height: 1.5;
+   color: var(--color-chat-text-secondary);
+}
+
+.recover-warning
+{
+   margin: 12px 0 14px;
+   padding: 12px 14px;
+   border: 1px solid var(--color-chat-critical-border);
+   border-radius: var(--radius-md);
+   background: var(--color-chat-critical-bg);
+   color: var(--color-chat-critical-text);
+   font-size: var(--font-size-chat-small);
+   line-height: 1.45;
+}
+
+.recover-status:not( :empty )
+{
+   margin-top: 10px;
+   font-size: var(--font-size-chat-small);
+   color: var(--color-chat-online-text);
+}
+
+.recover-mono
+{
+   font-family: var(--font-family-chat-mono);
+}
+
+@media ( max-width: 760px )
+{
+   .recover-words
+   {
+      grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+   }
 }

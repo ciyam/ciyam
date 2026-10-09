@@ -174,78 +174,6 @@ function parse_key_count( stored )
    return ( isNaN( count ) || ( count < 0 ) ) ? 0 : count;
 }
 
-// NOTE: Recovering a node with the twelve words written down when it was set up (Ian, 2026-10-09: how the UI must do
-// it when a PIN and password cannot be given). The words become the node's entropy in the page - Ian's BIP39 library,
-// which also says whether they fit together (their checksum); these say what else is wrong with them, in words.
-const c_home_recovery_words = 12;
-
-const c_home_words_mismatched = "These twelve words don't fit together - check each word, and that they are in order.";
-
-// NOTE: The words as typed or pasted - into one box or across them, with spaces, commas, line breaks or numbers
-// ("1. taxi 2. act") between - in lower case, anything else dropped.
-function recovery_words( text )
-{
-   return String( text || "" ).toLowerCase( ).split( /[^a-z]+/ ).filter( function( word ) { return word !== ""; } );
-}
-
-// NOTE: "" when there are twelve and each is one of the words; else what is wrong. An unknown word is said before a
-// count, since a misspelling is the likelier slip.
-function recovery_words_problem( words, wordlist )
-{
-   var list = words || [ ];
-
-   if( list.length === 0 )
-      return "Type or paste your twelve words.";
-
-   var unknown = list.filter( function( word ) { return ( wordlist || [ ] ).indexOf( word ) < 0; } );
-
-   if( unknown.length > 0 )
-      return "\"" + unknown[ 0 ] + "\" isn't one of the words - check its spelling.";
-
-   if( list.length !== c_home_recovery_words )
-      return "That's " + counted( list.length, "word", "words" ) + " - there are twelve.";
-
-   return "";
-}
-
-// NOTE: The words a box offers as it is typed in - those starting with what is typed, as an autocomplete does (Damon,
-// 2026-10-10: the browser's own list matched anywhere in a word), at most "limit". None once the word is whole and the
-// only one, or for nothing typed.
-function word_completions( typed, wordlist, limit )
-{
-   var prefix = String( typed || "" ).trim( ).toLowerCase( );
-
-   if( ( prefix === "" ) || /[^a-z]/.test( prefix ) )
-      return [ ];
-
-   var matches = ( wordlist || [ ] ).filter( function( word ) { return word.indexOf( prefix ) === 0; } );
-
-   if( ( matches.length === 1 ) && ( matches[ 0 ] === prefix ) )
-      return [ ];
-
-   return matches.slice( 0, ( limit > 0 ) ? limit : 6 );
-}
-
-// NOTE: The node's refusals, said plainly - anything else as it came.
-function recovery_error_text( error )
-{
-   var text = String( error || "" ).replace( /^Error:\s*/, "" ).trim( );
-
-   if( /identity mismatch/i.test( text ) )
-      return "Those aren't this node's twelve words.";
-
-   if( /not currently locked/i.test( text ) )
-      return "This node isn't locked, so there is nothing to recover - sign in as usual.";
-
-   // NOTE: Words that are not the node's are answered so today - the mismatch is set, then a later check for an
-   // administration lock replaces it (seen 2026-10-09, for Ian). It is also the answer while someone else is signing
-   // in as admin, which is rare.
-   if( /locked for administration/i.test( text ) )
-      return "The node did not accept those words - check each one, and that they are in order.";
-
-   return text;
-}
-
 // NOTE: The people figure on admin's Overview, from "parse_people( )" in "account_parse.js" - admin is
 // not counted.
 function people_summary( rows )
@@ -686,10 +614,6 @@ if( typeof module !== "undefined" )
       log_line_kind: log_line_kind,
       log_view: log_view,
       log_line_parts: log_line_parts,
-      recovery_words: recovery_words,
-      recovery_words_problem: recovery_words_problem,
-      recovery_error_text: recovery_error_text,
-      word_completions: word_completions,
       log_problems: log_problems,
       log_problems_text: log_problems_text,
       rooms_filling: rooms_filling,

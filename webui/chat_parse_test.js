@@ -1059,6 +1059,41 @@ check( "no device", cp.parse_tab_session( JSON.stringify( { access: "20401", dev
 check( "admin only when it says so exactly",
  cp.parse_tab_session( JSON.stringify( { access: "20401", device: "d", sessid: "ab12", is_admin: "true" } ) ).is_admin, false );
 
+// --------------------------------------------------------------------
+heading( "recovering with the twelve words" );
+
+// NOTE: A few of the 2048 - enough to tell known words from others.
+var wordlist = [ "act", "attitude", "describe", "endless", "focus", "govern", "isolate", "note", "outer", "taxi", "ugly", "abandon" ];
+
+check( "typed with spaces", cp.recovery_words( "taxi act describe" ), [ "taxi", "act", "describe" ] );
+check( "pasted with numbers, commas and line breaks, any case", cp.recovery_words( "1. Taxi, 2. ACT\n3) describe" ), [ "taxi", "act", "describe" ] );
+check( "nothing", cp.recovery_words( "  " ), [ ] );
+
+var twelve = cp.recovery_words( "taxi act describe attitude focus ugly govern outer note isolate endless act" );
+
+check( "twelve known words - nothing wrong", cp.recovery_words_problem( twelve, wordlist ), "" );
+check( "none yet", cp.recovery_words_problem( [ ], wordlist ), "Type or paste your twelve words." );
+check( "a misspelling said before a count", cp.recovery_words_problem( [ "taxi", "acct" ], wordlist ), "\"acct\" isn't one of the words - check its spelling." );
+check( "too few", cp.recovery_words_problem( twelve.slice( 0, 11 ), wordlist ), "That's 11 words - there are twelve." );
+check( "too many", cp.recovery_words_problem( twelve.concat( [ "act" ] ), wordlist ), "That's 13 words - there are twelve." );
+
+var completing = [ "abandon", "act", "action", "actor", "actress", "actual", "adapt", "fact", "impact", "taxi" ];
+
+check( "completions start with what is typed - not anywhere in a word", cp.word_completions( "act", completing, 6 ),
+ [ "act", "action", "actor", "actress", "actual" ] );
+check( "any case, spaces trimmed", cp.word_completions( " AC ", completing, 6 ), [ "act", "action", "actor", "actress", "actual" ] );
+check( "at most the limit", cp.word_completions( "a", completing, 3 ), [ "abandon", "act", "action" ] );
+check( "a whole word that is the only one - none", cp.word_completions( "taxi", completing, 6 ), [ ] );
+check( "nothing typed, or not a word - none", [ cp.word_completions( "", completing, 6 ), cp.word_completions( "a1", completing, 6 ) ], [ [ ], [ ] ] );
+check( "no word starts so - none", cp.word_completions( "zz", completing, 6 ), [ ] );
+
+check( "the node's refusals - not its words", cp.recovery_error_text( "Error: System identity mismatch (incorrect mnemonics?)." ),
+ "Those aren't this node's twelve words." );
+check( "- what it answers today for words not its own", cp.recovery_error_text( "Error: System is currently locked for administration." ),
+ "The node did not accept those words - check each one, and that they are in order." );
+check( "- not locked", /isn't locked, so there is nothing to recover/.test( cp.recovery_error_text( "Error: System identity is not currently locked." ) ), true );
+check( "- anything else as it came", cp.recovery_error_text( "Error: Something else." ), "Something else." );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

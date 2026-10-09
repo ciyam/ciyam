@@ -159,103 +159,6 @@
    line-height: 1.45;
 }
 
-/* ---- recovering with the twelve words (2026-10-09) ---- */
-
-.home-words-set
-{
-   position: relative;
-   margin: 0 0 6px;
-   padding: 0;
-   border: none;
-}
-
-.home-words-set legend
-{
-   padding: 0;
-}
-
-/* NOTE: The twelve boxes, numbered - three to a row, two on a phone. */
-.home-words
-{
-   display: grid;
-   grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
-   gap: 8px;
-   margin-top: 6px;
-}
-
-.home-word
-{
-   display: flex;
-   align-items: center;
-   gap: 6px;
-}
-
-.home-word-number
-{
-   flex: 0 0 18px;
-   text-align: right;
-   font-family: var(--font-family-chat-mono);
-   font-size: var(--font-size-chat-tiny);
-   color: var(--color-chat-text-secondary);
-}
-
-.home-word input
-{
-   flex: 1 1 auto;
-   min-width: 0;
-   height: 36px;
-   padding: 0 8px;
-}
-
-.home-word input.is-unknown
-{
-   border-color: var(--color-chat-critical-border);
-   background: var(--color-chat-critical-bg);
-}
-
-/* NOTE: The words a box offers - those starting with what is typed (2026-10-10), beneath the box being typed in. */
-.home-word-suggest
-{
-   position: absolute;
-   z-index: 5;
-   margin: 0;
-   padding: 4px;
-   list-style: none;
-   background: var(--color-chat-bg);
-   border: 1px solid var(--color-chat-border);
-   border-radius: var(--radius-md);
-   box-shadow: var(--shadow-lg);
-}
-
-.home-word-option
-{
-   padding: 6px 10px;
-   border-radius: var(--radius-sm);
-   font-size: 14px;
-   cursor: pointer;
-}
-
-.home-word-option:hover,
-.home-word-option.is-active
-{
-   background: var(--color-chat-bg-selected);
-   color: var(--color-chat-accent-deep);
-}
-
-.home-recover .home-warning
-{
-   margin-top: 12px;
-}
-
-.home-recover-pin
-{
-   margin: 4px 0 8px;
-   font-size: 32px;
-   font-weight: 700;
-   letter-spacing: 0.08em;
-   color: var(--color-chat-text-strong);
-}
-
 /* ---- the shell: a side menu, a top bar, the sections ---- */
 
 .home-app
@@ -1106,11 +1009,6 @@
 
 @media ( max-width: 760px )
 {
-   .home-words
-   {
-      grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
-   }
-
    .home-arrive-bar
    {
       position: static;

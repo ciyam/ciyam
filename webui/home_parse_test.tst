@@ -35,26 +35,6 @@ ok   any other refusal left as it was
 ok   any refusal, when the node is known to be locked
 ok   no error
 
-== recovering with the twelve words ============================
-ok   typed with spaces
-ok   pasted with numbers, commas and line breaks, any case
-ok   nothing
-ok   twelve known words - nothing wrong
-ok   none yet
-ok   a misspelling said before a count
-ok   too few
-ok   too many
-ok   completions start with what is typed - not anywhere in a word
-ok   any case, spaces trimmed
-ok   at most the limit
-ok   a whole word that is the only one - none
-ok   nothing typed, or not a word - none
-ok   no word starts so - none
-ok   the node's refusals - not its words
-ok   - what it answers today for words not its own
-ok   - not locked
-ok   - anything else as it came
-
 == unlock keys =================================================
 ok   as the node gives it
 ok   with spaces, as the docs show it

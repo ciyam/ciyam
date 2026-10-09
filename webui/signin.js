@@ -14,7 +14,6 @@
 //
 //   options.note           the word beside the wordmark - which part of the node this is ("home", "chat")
 //   options.setup_href     where "New here?" goes - the accounts page's Welcome
-//   options.offers_home    optional - false on Home itself: elsewhere a locked node's refusal links to Home
 //   options.request        the page's one-at-a-time request wrapper (ISS-005), resolving to the answer
 //   options.on_signed_in   called once "ciyam" has a session
 //   options.error_text     optional - a refusal in the page's own words, or "" to leave it as it is
@@ -23,6 +22,10 @@
 //
 // The heading, its line and the button are the same everywhere (Damon, 2026-10-10: "the login screen should be the same
 // for all" - the parts are one app, Ian's point). Only Home rewords it, for a locked node ("signin_describe( )").
+//
+// On a locked node it offers recovering with the twelve words, below its buttons - in place, whichever part this is,
+// then on to "options.on_signed_in" as after a sign in (Damon, 2026-10-10; Home's alone before). Needs Ian's
+// "bip39.min.js" beside it, read in only then, and "recovery_words( )" and the rest from "chat_parse.js".
 //
 // "request" may be left out - the sign in is then made at once, as the console made it.
 //
@@ -124,14 +127,8 @@ function signin_build( host, options )
    form.appendChild( signin_element( "div", { class: "signin-hint" },
     "Shared by every app on this browser. Saving the password as well signs you in without typing it." ) );
 
-   // NOTE: A refusal stands out - a panel of its own (Damon, 2026-10-10: it was small grey-red type). A locked node's
-   // comes with the way to Home, which can unlock or recover it.
+   // NOTE: A refusal stands out - a panel of its own (Damon, 2026-10-10: it was small grey-red type).
    form.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "signin_error", role: "alert" } ) );
-
-   var locked = signin_element( "a", { class: "chat-btn chat-signin-setup signin-locked", id: "signin_locked", href: "home.html", hidden: "" },
-    "Open Home to unlock or recover it" );
-
-   form.appendChild( locked );
 
    var actions = signin_element( "div", { class: "chat-signin-actions" } );
 
@@ -142,6 +139,15 @@ function signin_build( host, options )
        href: g_signin_options.setup_href }, "New here? Set up your account" ) );
 
    form.appendChild( actions );
+
+   // NOTE: Recovering with the twelve words - only on a locked node ("signin_check_locked( )"), and below the buttons:
+   // an edge case, rarely needed (Damon, 2026-10-10).
+   var offer = signin_element( "button", { type: "button", class: "chat-btn chat-signin-setup recover-offer", id: "recover_offer", hidden: "" },
+    "Can't sign in? Recover the node with its twelve words" );
+
+   offer.addEventListener( "click", recover_show );
+
+   form.appendChild( offer );
 
    // NOTE: Shown while the sign in is under way - it can take a few seconds (the chat's, 2026-09).
    var busy = signin_element( "div", { class: "chat-signin-busy", id: "signin_busy", hidden: "" } );
@@ -168,6 +174,8 @@ function signin_build( host, options )
    view.appendChild( form );
    host.appendChild( view );
 
+   host.appendChild( recover_build( ) );
+
    return view;
 }
 
@@ -180,7 +188,40 @@ function signin_show( )
 
    signin_fill_saved( );
 
+   document.getElementById( "recover_view" ).hidden = true;
    document.getElementById( "signin_view" ).hidden = false;
+
+   signin_check_locked( );
+}
+
+var g_signin_plain = false;
+
+// NOTE: Whether the node is locked - "/system" names a locked one ":CIYAM:". A locked node offers recovery and not
+// "New here?", which cannot work on it. Answers whether it is; "(NONE)" there is a connection not encrypted.
+async function signin_check_locked( )
+{
+   var locked = false;
+
+   try
+   {
+      var system = ( await ( await fetch( "/system", { cache: "no-store" } ) ).text( ) ).trim( );
+
+      locked = ( system.indexOf( ":CIYAM:" ) === 0 );
+
+      g_signin_plain = / \(NONE\)$/.test( system );
+   }
+   catch( e )
+   {
+   }
+
+   document.getElementById( "recover_offer" ).hidden = !locked;
+
+   if( locked )
+   {
+      document.querySelectorAll( "#signin_setup, #signin_setup_hint" ).forEach( function( element ) { element.hidden = true; } );
+   }
+
+   return locked;
 }
 
 // NOTE: A different heading and line for the same sign in - Home's for a locked node, say - and whether it
@@ -204,14 +245,11 @@ function signin_hide( )
 function signin_set_text( id, text )
 {
    document.getElementById( id ).textContent = text;
-
-   if( id === "signin_error" )
-      document.getElementById( "signin_locked" ).hidden = true;
 }
 
-// NOTE: The refusal, in words - and, for a node that is locked, the way to Home, unless this is Home. A locked node
-// answers a sign in in more than one way ("unable to start a web session", "not valid (or has expired)" - both seen
-// 2026-10-10), so the node is asked: "/system" names a locked one ":CIYAM:".
+// NOTE: The refusal, in words. A locked node answers a sign in in more than one way ("unable to start a web session",
+// "not valid (or has expired)" - both seen 2026-10-10), so the node is asked, and a locked one said so - with its
+// recovery offered beneath - unless the page has words of its own for it (Home's).
 async function signin_show_refusal( error )
 {
    var own = g_signin_options.error_text ? g_signin_options.error_text( error ) : "";
@@ -220,28 +258,10 @@ async function signin_show_refusal( error )
     ? "This browser's saved sign in is from before the node was set up again - type your password."
     : sign_in_error_text( error ) ) );
 
-   if( g_signin_options.offers_home === false )
-      return;
+   var locked = await signin_check_locked( );
 
-   var locked = is_locked_sign_in_error( error );
-
-   if( !locked )
-   {
-      try
-      {
-         locked = ( await ( await fetch( "/system", { cache: "no-store" } ) ).text( ) ).trim( ).indexOf( ":CIYAM:" ) === 0;
-      }
-      catch( e )
-      {
-      }
-   }
-
-   if( locked && ( document.getElementById( "signin_error" ).textContent !== "" ) )
-   {
+   if( locked && ( own === "" ) && ( document.getElementById( "signin_error" ).textContent !== "" ) )
       signin_set_text( "signin_error", sign_in_error_text( "Error: Was unable to start a web session." ) );
-
-      document.getElementById( "signin_locked" ).hidden = false;
-   }
 }
 
 function signin_storage_get( key )
@@ -569,4 +589,516 @@ async function signin_resume( )
    }
 
    return true;
+}
+
+// ====================================================================
+// Recovering the node with its twelve words (Ian, 2026-10-09; in every part, 2026-10-10)
+// ====================================================================
+
+// NOTE: The two cards - the words and a new master password, then admin's PIN - built here, as the sign in is, so
+// every part of the node has the same. The ids are the ones "home_recover" knows them by.
+function recover_build( )
+{
+   var view = signin_element( "div", { class: "chat-signin", id: "recover_view", hidden: "" } );
+   var box = signin_element( "div", { class: "recover-box" } );
+
+   var form = signin_element( "form", { class: "chat-signin-form recover-form", id: "recover_form", novalidate: "" } );
+
+   form.addEventListener( "submit", recover_submit );
+
+   var brand = signin_element( "div", { class: "chat-brand" } );
+
+   brand.appendChild( signin_element( "span", { class: "chat-logo" } ) );
+   brand.appendChild( signin_element( "span", { class: "chat-wordmark" }, "CIYAM" ) );
+   brand.appendChild( signin_element( "span", { class: "chat-brand-note" }, g_signin_options.note || "" ) );
+
+   form.appendChild( brand );
+   form.appendChild( signin_element( "h2", { tabindex: "-1" }, "Recover this node" ) );
+   form.appendChild( signin_element( "p", { class: "chat-signin-lede" },
+    "With the twelve words written down when it was set up. The node checks them and takes a new master password, then"
+    + " shows admin's PIN." ) );
+
+   var set = signin_element( "fieldset", { class: "recover-words-set" } );
+
+   set.appendChild( signin_element( "legend", { class: "chat-label" }, "Your twelve words" ) );
+
+   var grid = signin_element( "div", { class: "recover-words", id: "recover_words" } );
+
+   for( var i = 0; i < c_recovery_words; i++ )
+   {
+      var cell = signin_element( "label", { class: "recover-word" } );
+
+      cell.appendChild( signin_element( "span", { class: "recover-word-number" }, String( i + 1 ) ) );
+
+      var input = signin_element( "input", { type: "text", class: "chat-field", autocomplete: "off", autocapitalize: "none",
+       spellcheck: "false", "aria-autocomplete": "list", "aria-controls": "recover_suggest", "aria-label": "Word " + ( i + 1 ),
+       "data-index": String( i ) } );
+
+      input.addEventListener( "input", recover_on_input );
+      input.addEventListener( "keydown", recover_on_keydown );
+      input.addEventListener( "blur", function( ) { recover_hide_suggestions( ); recover_words_status( ); } );
+
+      cell.appendChild( input );
+      grid.appendChild( cell );
+   }
+
+   set.appendChild( grid );
+   set.appendChild( signin_element( "ul", { class: "recover-word-suggest", id: "recover_suggest", role: "listbox", "aria-label": "Words",
+    hidden: "" } ) );
+
+   form.appendChild( set );
+   form.appendChild( signin_element( "div", { class: "signin-hint", id: "recover_words_status", role: "status" },
+    "Type them in order, or paste all twelve into the first box." ) );
+
+   var warning = signin_element( "div", { class: "recover-warning", id: "recover_warning", role: "alert", hidden: "" } );
+
+   warning.appendChild( signin_element( "strong", { }, "This connection isn't encrypted." ) );
+   warning.appendChild( document.createTextNode( " The node sees it as plain text - only recover from a device on the node's"
+    + " own network." ) );
+
+   form.appendChild( warning );
+
+   form.appendChild( signin_element( "label", { class: "chat-label", for: "recover_password" }, "New master password" ) );
+
+   var password = signin_element( "input", { type: "password", id: "recover_password", class: "chat-field", autocomplete: "new-password" } );
+
+   password.addEventListener( "input", function( )
+   {
+      var strength = password_strength( password.value );
+
+      var meter = document.getElementById( "recover_strength" );
+
+      meter.hidden = ( strength.level < 0 );
+      meter.dataset.level = String( strength.level );
+
+      signin_set_text( "recover_strength_label", strength.text );
+   } );
+
+   form.appendChild( password );
+
+   var meter = signin_element( "div", { class: "chat-strength", id: "recover_strength", hidden: "" } );
+   var track = signin_element( "div", { class: "chat-strength-track" } );
+
+   track.appendChild( signin_element( "div", { class: "chat-strength-bar" } ) );
+
+   meter.appendChild( track );
+   meter.appendChild( signin_element( "span", { class: "chat-strength-label", id: "recover_strength_label" } ) );
+
+   form.appendChild( meter );
+   form.appendChild( signin_element( "label", { class: "chat-label", for: "recover_confirm" }, "The same again" ) );
+   form.appendChild( signin_element( "input", { type: "password", id: "recover_confirm", class: "chat-field", autocomplete: "new-password" } ) );
+   form.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "recover_error", role: "alert" } ) );
+   form.appendChild( signin_element( "div", { class: "recover-status", id: "recover_status", role: "status" } ) );
+
+   var actions = signin_element( "div", { class: "chat-signin-actions" } );
+
+   actions.appendChild( signin_element( "button", { type: "submit", class: "chat-btn chat-btn--primary", id: "recover_submit" }, "Recover the node" ) );
+
+   var back = signin_element( "button", { type: "button", class: "chat-btn chat-signin-setup", id: "recover_back" }, "Back to sign in" );
+
+   back.addEventListener( "click", function( ) { signin_show( ); } );
+
+   actions.appendChild( back );
+
+   form.appendChild( actions );
+
+   var done = signin_element( "section", { class: "chat-signin-form recover-form", id: "recover_done", "aria-labelledby": "recover_done_heading",
+    hidden: "" } );
+
+   done.appendChild( brand.cloneNode( true ) );
+   done.appendChild( signin_element( "h2", { id: "recover_done_heading" }, "Recovered" ) );
+   done.appendChild( signin_element( "p", { class: "chat-signin-lede" }, "The node is unlocked, with its new master password." ) );
+   done.appendChild( signin_element( "span", { class: "chat-label" }, "Admin's PIN" ) );
+   done.appendChild( signin_element( "span", { class: "recover-mono recover-pin", id: "recover_pin" } ) );
+   done.appendChild( signin_element( "p", { class: "recover-note" }, "Write it down - it may be a new one, and only this one works"
+    + " now. Then make a few unlock keys, in Home, so a restart can be undone without the words." ) );
+
+   var done_actions = signin_element( "div", { class: "chat-signin-actions" } );
+
+   var go_on = signin_element( "button", { type: "button", class: "chat-btn chat-btn--primary", id: "recover_continue" }, "Continue" );
+
+   // NOTE: On as after a sign in - into whichever part of the node this is.
+   go_on.addEventListener( "click", function( )
+   {
+      view.hidden = true;
+
+      if( g_signin_options.on_signed_in )
+         g_signin_options.on_signed_in( );
+   } );
+
+   done_actions.appendChild( go_on );
+   done.appendChild( done_actions );
+
+   box.appendChild( form );
+   box.appendChild( done );
+   view.appendChild( box );
+
+   return view;
+}
+
+var g_recover_bip39 = null;
+
+// NOTE: Ian's BIP39 library - large, so read in only when recovery opens, and once.
+function recover_load_bip39( )
+{
+   if( g_recover_bip39 === null )
+   {
+      g_recover_bip39 = new Promise( function( resolve )
+      {
+         if( typeof BIP39 !== "undefined" )
+         {
+            resolve( true );
+
+            return;
+         }
+
+         var script = document.createElement( "script" );
+
+         script.src = "bip39.min.js";
+         script.onload = function( ) { resolve( typeof BIP39 !== "undefined" ); };
+         script.onerror = function( ) { g_recover_bip39 = null; resolve( false ); };
+
+         document.body.appendChild( script );
+      } );
+   }
+
+   return g_recover_bip39;
+}
+
+function recover_wordlist( )
+{
+   return ( typeof BIP39 !== "undefined" ) ? BIP39.DEFAULT_WORDLIST : [ ];
+}
+
+function recover_inputs( )
+{
+   return Array.from( document.querySelectorAll( "#recover_words input" ) );
+}
+
+async function recover_show( )
+{
+   recover_inputs( ).forEach( function( input ) { input.value = ""; input.classList.remove( "is-unknown" ); } );
+
+   [ "recover_password", "recover_confirm" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );
+
+   document.getElementById( "recover_strength" ).hidden = true;
+   document.getElementById( "recover_warning" ).hidden = !g_signin_plain;
+   document.getElementById( "recover_form" ).hidden = false;
+   document.getElementById( "recover_done" ).hidden = true;
+
+   signin_set_text( "recover_error", "" );
+   signin_set_text( "recover_status", "" );
+
+   document.getElementById( "signin_view" ).hidden = true;
+   document.getElementById( "recover_view" ).hidden = false;
+
+   recover_inputs( )[ 0 ].focus( );
+
+   if( !await recover_load_bip39( ) )
+   {
+      signin_set_text( "recover_error", "The word list could not be read - reload the page to try again." );
+
+      return;
+   }
+
+   recover_words_status( );
+}
+
+// NOTE: Words pasted into a box - all twelve, say - go on across the boxes from it.
+function recover_on_input( event )
+{
+   var input = event.target;
+
+   var words = recovery_words( input.value );
+
+   if( ( words.length > 1 ) || /[\s,]/.test( input.value.trim( ) ) )
+   {
+      var inputs = recover_inputs( );
+      var start = parseInt( input.dataset.index, 10 );
+
+      words.slice( 0, inputs.length - start ).forEach( function( word, i ) { inputs[ start + i ].value = word; } );
+
+      recover_hide_suggestions( );
+
+      inputs[ Math.min( inputs.length - 1, start + words.length ) ].focus( );
+   }
+   else
+      recover_show_suggestions( input );
+
+   recover_words_status( );
+}
+
+// NOTE: What is wrong with the words, as they are typed - each box not one of the words marked, once it has a whole word,
+// and the word still being typed left alone while it is the start of a real one.
+function recover_words_status( )
+{
+   var wordlist = recover_wordlist( );
+
+   if( wordlist.length === 0 )
+      return "";
+
+   recover_inputs( ).forEach( function( input )
+   {
+      var word = input.value.trim( ).toLowerCase( );
+
+      input.classList.toggle( "is-unknown", ( word !== "" ) && ( wordlist.indexOf( word ) < 0 ) && ( document.activeElement !== input ) );
+   } );
+
+   var words = recover_inputs( ).filter( function( input )
+   {
+      var word = input.value.trim( ).toLowerCase( );
+
+      return !( ( input === document.activeElement ) && ( wordlist.indexOf( word ) < 0 ) && ( word_completions( word, wordlist, 1 ).length > 0 ) );
+   } ).map( function( input ) { return input.value.trim( ).toLowerCase( ); } ).filter( function( word ) { return word !== ""; } );
+
+   var problem = ( words.length === 0 ) ? "" : recovery_words_problem( words, wordlist );
+
+   if( ( problem === "" ) && ( words.length === c_recovery_words ) && !BIP39.validateMnemonic( words.join( " " ) ) )
+      problem = c_recovery_words_mismatched;
+
+   signin_set_text( "recover_words_status", ( problem !== "" ) ? problem : ( words.length === c_recovery_words
+    ? "All twelve words are here, and they fit together." : "Type them in order, or paste all twelve into the first box." ) );
+
+   return problem;
+}
+
+// ---- The words a box offers as it is typed in - from their start, as an autocomplete does (Damon, 2026-10-10: the
+// browser's own list matched anywhere in a word). Up and down choose, Enter or Tab takes one and goes on to the next
+// box, Escape closes, a click takes one.
+
+const c_recover_suggestions = 6;
+
+var g_recover_input = null;
+var g_recover_words = [ ];
+var g_recover_index = 0;
+
+function recover_show_suggestions( input )
+{
+   var list = document.getElementById( "recover_suggest" );
+
+   g_recover_words = word_completions( input.value, recover_wordlist( ), c_recover_suggestions );
+   g_recover_index = 0;
+
+   if( g_recover_words.length === 0 )
+   {
+      recover_hide_suggestions( );
+
+      return;
+   }
+
+   g_recover_input = input;
+
+   recover_draw_suggestions( );
+
+   // NOTE: Beneath the box being typed in - the list sits in the words' fieldset, which it is placed against.
+   var set = list.parentElement.getBoundingClientRect( );
+   var box = input.getBoundingClientRect( );
+
+   list.style.left = Math.round( box.left - set.left ) + "px";
+   list.style.top = Math.round( box.bottom - set.top + 2 ) + "px";
+   list.style.minWidth = Math.round( box.width ) + "px";
+   list.hidden = false;
+}
+
+function recover_draw_suggestions( )
+{
+   var list = document.getElementById( "recover_suggest" );
+
+   list.replaceChildren( );
+
+   g_recover_words.forEach( function( word, i )
+   {
+      var option = signin_element( "li", { id: "recover_suggest_" + i, class: "recover-word-option" + ( ( i === g_recover_index ) ? " is-active" : "" ),
+       role: "option", "aria-selected": String( i === g_recover_index ) }, word );
+
+      // NOTE: On the press, before the box loses its focus.
+      option.addEventListener( "mousedown", function( event )
+      {
+         event.preventDefault( );
+
+         recover_take_suggestion( word );
+      } );
+
+      list.appendChild( option );
+   } );
+
+   if( g_recover_input !== null )
+      g_recover_input.setAttribute( "aria-activedescendant", "recover_suggest_" + g_recover_index );
+}
+
+function recover_hide_suggestions( )
+{
+   document.getElementById( "recover_suggest" ).hidden = true;
+
+   if( g_recover_input !== null )
+      g_recover_input.removeAttribute( "aria-activedescendant" );
+
+   g_recover_input = null;
+   g_recover_words = [ ];
+}
+
+function recover_take_suggestion( word )
+{
+   var input = g_recover_input;
+
+   recover_hide_suggestions( );
+
+   if( input === null )
+      return;
+
+   input.value = word;
+
+   var next = recover_inputs( )[ parseInt( input.dataset.index, 10 ) + 1 ];
+
+   ( next || document.getElementById( "recover_password" ) ).focus( );
+
+   recover_words_status( );
+}
+
+function recover_on_keydown( event )
+{
+   if( ( g_recover_input !== event.target ) || ( g_recover_words.length === 0 ) )
+      return;
+
+   if( ( event.key === "ArrowDown" ) || ( event.key === "ArrowUp" ) )
+   {
+      event.preventDefault( );
+
+      var count = g_recover_words.length;
+
+      g_recover_index = ( g_recover_index + ( event.key === "ArrowDown" ? 1 : count - 1 ) ) % count;
+
+      recover_draw_suggestions( );
+   }
+   else if( ( ( event.key === "Enter" ) || ( event.key === "Tab" ) ) && !event.shiftKey )
+   {
+      event.preventDefault( );
+
+      recover_take_suggestion( g_recover_words[ g_recover_index ] );
+   }
+   else if( event.key === "Escape" )
+   {
+      event.preventDefault( );
+
+      recover_hide_suggestions( );
+   }
+}
+
+async function recover_submit( event )
+{
+   event.preventDefault( );
+
+   signin_set_text( "recover_error", "" );
+
+   if( !await recover_load_bip39( ) )
+   {
+      signin_set_text( "recover_error", "The word list could not be read - reload the page to try again." );
+
+      return;
+   }
+
+   var words = recover_inputs( ).map( function( input ) { return input.value.trim( ).toLowerCase( ); } ).filter( function( word ) { return word !== ""; } );
+
+   var problem = recovery_words_problem( words, recover_wordlist( ) );
+
+   if( ( problem === "" ) && !BIP39.validateMnemonic( words.join( " " ) ) )
+      problem = c_recovery_words_mismatched;
+
+   if( problem !== "" )
+   {
+      signin_set_text( "recover_error", problem );
+
+      return;
+   }
+
+   var password = document.getElementById( "recover_password" ).value;
+
+   if( password_strength( password ).level < 1 )
+   {
+      signin_set_text( "recover_error", "The master password needs at least " + c_password_min_length + " characters." );
+
+      return;
+   }
+
+   if( password !== document.getElementById( "recover_confirm" ).value )
+   {
+      signin_set_text( "recover_error", "The two passwords are not the same." );
+
+      return;
+   }
+
+   var button = document.getElementById( "recover_submit" );
+
+   button.disabled = true;
+
+   signin_set_text( "recover_status", "Checking the words with the node..." );
+
+   // NOTE: The words' entropy as "access", and the new password - "connect( )" in "ciyam.js" then does as Ian's curl
+   // does: the node checks the entropy, answers with admin's PIN, and takes the password with the entropy, then the
+   // session is made as for any sign in. A fresh device is registered, as from the terminal - kept with this tab's
+   // session only, not as the browser's token: the passwords saved here for other accounts are hashed with that.
+   var device = ciyam.device;
+
+   recover_clear_ciyam( );
+
+   ciyam.device = "";
+
+   var reply = "";
+
+   var issue = function( done )
+   {
+      return ciyam.connect( BIP39.mnemonicToEntropy( words.join( " " ) ), "", "", password, done );
+   };
+
+   try
+   {
+      if( g_signin_options.request )
+         reply = String( await g_signin_options.request( issue ) );
+      else
+         await issue( function( response ) { reply = String( response ); } );
+   }
+   catch( e )
+   {
+      reply = "Error: " + ( ( e && e.message ) ? e.message : "the request failed." );
+   }
+
+   button.disabled = false;
+
+   signin_set_text( "recover_status", "" );
+
+   if( ( ciyam.error !== "" ) || ( ciyam.sessid === "" ) )
+   {
+      var error = ciyam.error || ( is_error_response( reply ) ? reply : "The node did not recover." );
+
+      recover_clear_ciyam( );
+
+      ciyam.device = device;
+
+      signin_set_text( "recover_error", recovery_error_text( error ) );
+
+      return;
+   }
+
+   document.getElementById( "recover_password" ).value = "";
+   document.getElementById( "recover_confirm" ).value = "";
+
+   signin_keep_session( );
+
+   signin_set_text( "recover_pin", ciyam.access );
+
+   document.getElementById( "recover_form" ).hidden = true;
+   document.getElementById( "recover_done" ).hidden = false;
+
+   // NOTE: The way on has the focus - not the heading, which looked strange outlined (Damon, 2026-10-10).
+   document.getElementById( "recover_continue" ).focus( );
+}
+
+function recover_clear_ciyam( )
+{
+   ciyam.sessid = "";
+   ciyam.access = "";
+   ciyam.hashed = "";
+   ciyam.unique = "";
+   ciyam.username = "";
+   ciyam.is_admin = false;
 }

@@ -98,41 +98,6 @@ check( "any refusal, when the node is known to be locked", /recover it with its 
 check( "no error", hp.locked_sign_in_text( "" ), "" );
 
 // --------------------------------------------------------------------
-heading( "recovering with the twelve words" );
-
-// NOTE: A few of the 2048 - enough to tell known words from others.
-var wordlist = [ "act", "attitude", "describe", "endless", "focus", "govern", "isolate", "note", "outer", "taxi", "ugly", "abandon" ];
-
-check( "typed with spaces", hp.recovery_words( "taxi act describe" ), [ "taxi", "act", "describe" ] );
-check( "pasted with numbers, commas and line breaks, any case", hp.recovery_words( "1. Taxi, 2. ACT\n3) describe" ), [ "taxi", "act", "describe" ] );
-check( "nothing", hp.recovery_words( "  " ), [ ] );
-
-var twelve = hp.recovery_words( "taxi act describe attitude focus ugly govern outer note isolate endless act" );
-
-check( "twelve known words - nothing wrong", hp.recovery_words_problem( twelve, wordlist ), "" );
-check( "none yet", hp.recovery_words_problem( [ ], wordlist ), "Type or paste your twelve words." );
-check( "a misspelling said before a count", hp.recovery_words_problem( [ "taxi", "acct" ], wordlist ), "\"acct\" isn't one of the words - check its spelling." );
-check( "too few", hp.recovery_words_problem( twelve.slice( 0, 11 ), wordlist ), "That's 11 words - there are twelve." );
-check( "too many", hp.recovery_words_problem( twelve.concat( [ "act" ] ), wordlist ), "That's 13 words - there are twelve." );
-
-var completing = [ "abandon", "act", "action", "actor", "actress", "actual", "adapt", "fact", "impact", "taxi" ];
-
-check( "completions start with what is typed - not anywhere in a word", hp.word_completions( "act", completing, 6 ),
- [ "act", "action", "actor", "actress", "actual" ] );
-check( "any case, spaces trimmed", hp.word_completions( " AC ", completing, 6 ), [ "act", "action", "actor", "actress", "actual" ] );
-check( "at most the limit", hp.word_completions( "a", completing, 3 ), [ "abandon", "act", "action" ] );
-check( "a whole word that is the only one - none", hp.word_completions( "taxi", completing, 6 ), [ ] );
-check( "nothing typed, or not a word - none", [ hp.word_completions( "", completing, 6 ), hp.word_completions( "a1", completing, 6 ) ], [ [ ], [ ] ] );
-check( "no word starts so - none", hp.word_completions( "zz", completing, 6 ), [ ] );
-
-check( "the node's refusals - not its words", hp.recovery_error_text( "Error: System identity mismatch (incorrect mnemonics?)." ),
- "Those aren't this node's twelve words." );
-check( "- what it answers today for words not its own", hp.recovery_error_text( "Error: System is currently locked for administration." ),
- "The node did not accept those words - check each one, and that they are in order." );
-check( "- not locked", /isn't locked, so there is nothing to recover/.test( hp.recovery_error_text( "Error: System identity is not currently locked." ) ), true );
-check( "- anything else as it came", hp.recovery_error_text( "Error: Something else." ), "Something else." );
-
-// --------------------------------------------------------------------
 heading( "unlock keys" );
 
 check( "as the node gives it", hp.normalise_unlock_key( "NUJ5M-mk4eV-hWNWY" ), "NUJ5M-mk4eV-hWNWY" );
