@@ -5738,7 +5738,7 @@ void send_ntfy_message( const string& user_key, const string& message,
       string headers( " " );
 
       if( p_title && !p_title->empty( ) )
-         headers += "-H \"Title: " + escaped_shell_arg( *p_title ) + "\" ";
+         headers += "-H " + escaped_shell_arg( "Title: " + *p_title ) + " ";
 
       if( p_priority && !p_priority->empty( ) )
       {
@@ -5764,7 +5764,7 @@ void send_ntfy_message( const string& user_key, const string& message,
       }
 
       if( p_tag_names && !p_tag_names->empty( ) )
-         headers += "-H \"Tags: " + escaped_shell_arg( *p_tag_names ) + "\" ";
+         headers += "-H " + escaped_shell_arg( "Tags: " + *p_tag_names ) + " ";
 
       cmd += headers;
 

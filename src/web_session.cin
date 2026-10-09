@@ -103,7 +103,7 @@ IRC_ALLOWED=
 @endif
 ;
 @ifdef $IRC_ALLOWED
-.variable @web.$TOKEN.$DEVICE.0*
+.=system_variable @web.$TOKEN.$DEVICE.0*
 @ifdef $OUTPUT
 ALL_START_POINTS=$OUTPUT
 ALL_START_POINTS=@repstr:@web.$TOKEN.$DEVICE./:$ALL_START_POINTS
@@ -117,15 +117,15 @@ ALL_START_POINTS=@repstr:\n/,:$ALL_START_POINTS
 ADMIN_TOKEN=@file:.web_access_admin
 ;
 @ifeq "$TOKEN" "$ADMIN_TOKEN"
-.system_variable @web.$TOKEN.$DEVICE.message "[adm]$LOCKED"
+.=system_variable @web.$TOKEN.$DEVICE.message "[adm]$LOCKED"
 @else
 @ifdef $LOCKED
 LOCKED=?
 @endif
-.system_variable @web.$TOKEN.$DEVICE.message "[std]$LOCKED"
+.=system_variable @web.$TOKEN.$DEVICE.message "[std]$LOCKED"
 @endif
 ;
-.session_variable @storage_var_name @web.$TOKEN.$DEVICE.storage
+.=session_variable @storage_var_name @web.$TOKEN.$DEVICE.storage
 ;
 @label NEXT
 ;
@@ -135,15 +135,15 @@ LOCKED=?
 ;
 @:NEXT
 ;
-.wait -variable=@web.$TOKEN.$DEVICE.command -no_progress 60000 web_session
+.=wait -variable=@web.$TOKEN.$DEVICE.command -no_progress 60000 web_session
 ;
-.system_variable @web.$TOKEN.$DEVICE.command
+.=system_variable @web.$TOKEN.$DEVICE.command
 COMMAND=$OUTPUT
 ;
 @ifndef $COMMAND
 @label END_LOOP
 @else
-.system_variable @web.$TOKEN.$DEVICE.command ""
+.=system_variable @web.$TOKEN.$DEVICE.command ""
 ;
 @ifneq "$COMMAND" ";@web_session_check"
 ; NOTE: Supports up to eight commands.
@@ -225,17 +225,17 @@ UNIX_UNIQUE=@$UNIX_UNIQUE+1
 .session_variable @irc_start_point_$IRC_ROOM $UNIX_UNIQUE
 .session_variable @irc_start_prior_$IRC_ROOM $UNIX_UNIQUE
 ;
-.system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM
+.=system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM
 @ifneq "$OUTPUT" "$UNIX_UNIQUE"
 .system_variable @irc_alter 1
-.system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM $UNIX_UNIQUE
+.=system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM $UNIX_UNIQUE
 @endif
 @endif
 @endif
 ;
 @endif
 ;
-.system_variable @web.$TOKEN.$DEVICE.session
+.=system_variable @web.$TOKEN.$DEVICE.session
 ;
 @ifneq "$OUTPUT" "$SESSION"
 ERROR=Session has been terminated.
@@ -259,6 +259,6 @@ ERROR=Session has been terminated.
 .session_variable @script_executed ""
 .session_variable @storage_var_name ""
 ;
-.system_variable @web.$TOKEN.$DEVICE.message ""
+.=system_variable @web.$TOKEN.$DEVICE.message ""
 ;
 @endif

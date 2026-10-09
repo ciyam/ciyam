@@ -129,6 +129,9 @@ constexpr const char* c_cws_endpoint_prefix = "/cws/";
 
 constexpr const char* c_boundary_prefix = "boundary=";
 
+constexpr const char* c_access_query_prefix = "?access=";
+constexpr const char* c_passwd_query_prefix = "&passwd=";
+
 constexpr const char* c_req_param_host = "Host:";
 
 constexpr const char* c_req_param_if_modified = "If-Modified-Since:";
@@ -419,6 +422,33 @@ bool file_has_changed( const char* p_file_name, atomic< time_t >& file_mod )
    return changed;
 }
 
+void redact_query_value( string& str, const char* p_query_prefix, size_t prefix_length )
+{
+   string::size_type pos = str.find( p_query_prefix );
+
+   if( pos != string::npos )
+   {
+      pos += prefix_length;
+
+      string::size_type rpos = str.find( '&', pos );
+
+      if( rpos == string::npos )
+      {
+         size_t len = ( str.length( ) - prefix_length - pos );
+
+         str.erase( pos );
+
+         str += string( len, 'X' );
+      }
+      else
+      {
+         str.erase( pos, rpos - pos );
+
+         str.insert( pos, string( rpos - pos, 'X' ) );
+      }
+   }
+}
+
 void parse_header_info( const vector< string >& header_lines, map< string, string >& header_info )
 {
    for( size_t i = 0; i < header_lines.size( ); i++ )
@@ -689,8 +719,16 @@ void http_request_handler::on_start( )
 
          had_request = true;
 
-         TRACE_LOG( TRACE_DETAILS | TRACE_SESSION,
-          to_comparable_string( handler, false, 8 ) + " - " + http_request );
+         IF_IS_TRACING( TRACE_DETAILS | TRACE_SESSION )
+         {
+            string request_to_log( http_request );
+
+            redact_query_value( request_to_log, c_access_query_prefix, CONST_LENGTH( c_access_query_prefix ) );
+            redact_query_value( request_to_log, c_passwd_query_prefix, CONST_LENGTH( c_passwd_query_prefix ) );
+
+            TRACE_LOG( TRACE_DETAILS | TRACE_SESSION,
+             to_comparable_string( handler, false, 8 ) + " - " + request_to_log );
+         }
 
 #ifdef DEBUG
          cerr << "handler #" << handler << "\n[Request]\n" << http_request << endl;

@@ -3479,7 +3479,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            {
                               update_session_info( session, ip_addr, now );
 
-                              web_session_commands = "variable " + web_message_var_name;
+                              web_session_commands = "=system_variable " + web_message_var_name;
                            }
 
                            string unique_for_commands( uuid( ).as_string( ) );
