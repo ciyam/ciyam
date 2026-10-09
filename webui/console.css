@@ -132,6 +132,15 @@ code
    color: var(--color-console-text-bright);
 }
 
+/* NOTE: Its highlight the console's own - the chat's light one left its light words unreadable (Damon, 2026-10-09). */
+.console-apps .apps-trigger:hover,
+.console-apps .apps-trigger[aria-expanded="true"]
+{
+   border-color: var(--color-console-border-strong);
+   background: var(--color-console-bg-active);
+   color: var(--color-console-text-bright);
+}
+
 .console-app.is-embedded .console-titlebar
 {
    display: none;
