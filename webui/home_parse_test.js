@@ -96,6 +96,31 @@ check( "any other refusal left as it was", hp.locked_sign_in_text( "Error: Inval
 check( "no error", hp.locked_sign_in_text( "" ), "" );
 
 // --------------------------------------------------------------------
+heading( "recovering with the twelve words" );
+
+// NOTE: A few of the 2048 - enough to tell known words from others.
+var wordlist = [ "act", "attitude", "describe", "endless", "focus", "govern", "isolate", "note", "outer", "taxi", "ugly", "abandon" ];
+
+check( "typed with spaces", hp.recovery_words( "taxi act describe" ), [ "taxi", "act", "describe" ] );
+check( "pasted with numbers, commas and line breaks, any case", hp.recovery_words( "1. Taxi, 2. ACT\n3) describe" ), [ "taxi", "act", "describe" ] );
+check( "nothing", hp.recovery_words( "  " ), [ ] );
+
+var twelve = hp.recovery_words( "taxi act describe attitude focus ugly govern outer note isolate endless act" );
+
+check( "twelve known words - nothing wrong", hp.recovery_words_problem( twelve, wordlist ), "" );
+check( "none yet", hp.recovery_words_problem( [ ], wordlist ), "Type or paste your twelve words." );
+check( "a misspelling said before a count", hp.recovery_words_problem( [ "taxi", "acct" ], wordlist ), "\"acct\" isn't one of the words - check its spelling." );
+check( "too few", hp.recovery_words_problem( twelve.slice( 0, 11 ), wordlist ), "That's 11 words - there are twelve." );
+check( "too many", hp.recovery_words_problem( twelve.concat( [ "act" ] ), wordlist ), "That's 13 words - there are twelve." );
+
+check( "the node's refusals - not its words", hp.recovery_error_text( "Error: System identity mismatch (incorrect mnemonics?)." ),
+ "Those aren't this node's twelve words." );
+check( "- what it answers today for words not its own", hp.recovery_error_text( "Error: System is currently locked for administration." ),
+ "The node did not accept those words - check each one, and that they are in order." );
+check( "- not locked", /isn't locked, so there is nothing to recover/.test( hp.recovery_error_text( "Error: System identity is not currently locked." ) ), true );
+check( "- anything else as it came", hp.recovery_error_text( "Error: Something else." ), "Something else." );
+
+// --------------------------------------------------------------------
 heading( "unlock keys" );
 
 check( "as the node gives it", hp.normalise_unlock_key( "NUJ5M-mk4eV-hWNWY" ), "NUJ5M-mk4eV-hWNWY" );

@@ -14,7 +14,7 @@ const c_ready_poll_ms = 1500;
 
 const c_no_answer = "Error: The server did not answer - check the connection and try again.";
 
-const c_views = [ "checking_view", "unreachable_view", "setup_view", "signin_view", "unlock_view", "app_view" ];
+const c_views = [ "checking_view", "unreachable_view", "setup_view", "signin_view", "unlock_view", "recover_view", "app_view" ];
 
 const c_pill_classes = [ "is-none", "is-encrypted", "is-quantum", "is-ready", "is-locked", "is-new" ];
 
@@ -71,6 +71,7 @@ function home_main( )
    install_shell( );
    install_member_home( );
    install_admin( );
+   install_recover( );
    install_console( );
 
    var source = linking_source( );
@@ -164,6 +165,9 @@ async function check_node( )
 
       return;
    }
+
+   // NOTE: Recovering with the twelve words is offered only on a locked node - the node refuses it otherwise.
+   document.getElementById( "recover_offer" ).hidden = ( screen !== "unlock" );
 
    if( screen === "signin" )
    {
@@ -287,6 +291,308 @@ async function do_rescue( event )
    await employ( encodeURIComponent( password ), "rescue_error", "rescue_submit" );
 
    document.getElementById( "rescue_password" ).value = "";
+}
+
+// ---- Recovering the node with its twelve words (Ian, 2026-10-09) - "recover_view" in "home.form"
+
+var g_bip39_loading = null;
+
+// NOTE: Ian's BIP39 library - large, so read in only when recovery opens, and once.
+function load_bip39( )
+{
+   if( g_bip39_loading === null )
+   {
+      g_bip39_loading = new Promise( function( resolve )
+      {
+         if( typeof BIP39 !== "undefined" )
+         {
+            resolve( true );
+
+            return;
+         }
+
+         var script = document.createElement( "script" );
+
+         script.src = "bip39.min.js";
+         script.onload = function( ) { resolve( typeof BIP39 !== "undefined" ); };
+         script.onerror = function( ) { g_bip39_loading = null; resolve( false ); };
+
+         document.body.appendChild( script );
+      } );
+   }
+
+   return g_bip39_loading;
+}
+
+function bip39_wordlist( )
+{
+   return ( typeof BIP39 !== "undefined" ) ? BIP39.DEFAULT_WORDLIST : [ ];
+}
+
+function word_inputs( )
+{
+   return Array.from( document.querySelectorAll( "#recover_words input" ) );
+}
+
+function typed_words( )
+{
+   return word_inputs( ).map( function( input ) { return input.value.trim( ).toLowerCase( ); } ).filter( function( word ) { return word !== ""; } );
+}
+
+function install_recover( )
+{
+   // NOTE: The offer beneath the shared sign in - shown by "check_node( )" when the node is locked.
+   var offer = document.createElement( "p" );
+
+   offer.className = "home-recover-offer";
+   offer.id = "recover_offer";
+   offer.hidden = true;
+   offer.appendChild( document.createTextNode( "Can't sign in? " ) );
+
+   var link = document.createElement( "a" );
+
+   link.href = "#";
+   link.id = "recover_open";
+   link.textContent = "Recover the node with your twelve words";
+   link.addEventListener( "click", function( event ) { event.preventDefault( ); show_recover( ); } );
+
+   offer.appendChild( link );
+
+   document.getElementById( "signin_form" ).appendChild( offer );
+
+   var grid = document.getElementById( "recover_words" );
+
+   for( var i = 0; i < c_home_recovery_words; i++ )
+   {
+      var box = document.createElement( "label" );
+
+      box.className = "home-word";
+
+      var number = document.createElement( "span" );
+
+      number.className = "home-word-number";
+      number.textContent = String( i + 1 );
+
+      var input = document.createElement( "input" );
+
+      input.type = "text";
+      input.className = "chat-field";
+      input.setAttribute( "list", "recover_wordlist" );
+      input.setAttribute( "autocomplete", "off" );
+      input.setAttribute( "autocapitalize", "none" );
+      input.setAttribute( "spellcheck", "false" );
+      input.setAttribute( "aria-label", "Word " + ( i + 1 ) );
+      input.dataset.index = String( i );
+      input.addEventListener( "input", on_word_input );
+
+      box.appendChild( number );
+      box.appendChild( input );
+
+      grid.appendChild( box );
+   }
+
+   document.getElementById( "recover_password" ).addEventListener( "input", function( )
+   {
+      var strength = password_strength( document.getElementById( "recover_password" ).value );
+
+      var meter = document.getElementById( "recover_strength" );
+
+      meter.hidden = ( strength.level < 0 );
+      meter.dataset.level = String( strength.level );
+
+      set_text( "recover_strength_label", strength.text );
+   } );
+
+   document.getElementById( "recover_form" ).addEventListener( "submit", do_recover );
+   document.getElementById( "recover_back" ).addEventListener( "click", function( ) { check_node( ); } );
+   document.getElementById( "recover_continue" ).addEventListener( "click", function( ) { after_sign_in( ); } );
+}
+
+async function show_recover( )
+{
+   word_inputs( ).forEach( function( input ) { input.value = ""; input.classList.remove( "is-unknown" ); } );
+
+   [ "recover_password", "recover_confirm" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );
+
+   document.getElementById( "recover_strength" ).hidden = true;
+   document.getElementById( "recover_warning" ).hidden = !warns_master_password( g_system.security );
+   document.getElementById( "recover_form" ).hidden = false;
+   document.getElementById( "recover_done" ).hidden = true;
+
+   set_text( "recover_error", "" );
+   set_text( "recover_status", "" );
+
+   show_view( "recover_view" );
+
+   word_inputs( )[ 0 ].focus( );
+
+   if( !await load_bip39( ) )
+   {
+      set_text( "recover_error", "The word list could not be read - reload the page to try again." );
+
+      return;
+   }
+
+   var list = document.getElementById( "recover_wordlist" );
+
+   if( list.childNodes.length === 0 )
+   {
+      bip39_wordlist( ).forEach( function( word )
+      {
+         var option = document.createElement( "option" );
+
+         option.value = word;
+
+         list.appendChild( option );
+      } );
+   }
+
+   show_words_status( );
+}
+
+// NOTE: Words pasted into a box - all twelve, say - go on across the boxes from it.
+function on_word_input( event )
+{
+   var input = event.target;
+
+   var words = recovery_words( input.value );
+
+   if( ( words.length > 1 ) || /[\s,]/.test( input.value.trim( ) ) )
+   {
+      var inputs = word_inputs( );
+      var start = parseInt( input.dataset.index, 10 );
+
+      words.slice( 0, inputs.length - start ).forEach( function( word, i ) { inputs[ start + i ].value = word; } );
+
+      var next = inputs[ Math.min( inputs.length - 1, start + words.length ) ];
+
+      next.focus( );
+   }
+
+   show_words_status( );
+}
+
+// NOTE: What is wrong with the words, as they are typed - each box not one of the words marked, once it has a whole word.
+function show_words_status( )
+{
+   var wordlist = bip39_wordlist( );
+
+   if( wordlist.length === 0 )
+      return "";
+
+   word_inputs( ).forEach( function( input )
+   {
+      var word = input.value.trim( ).toLowerCase( );
+
+      input.classList.toggle( "is-unknown", ( word !== "" ) && ( wordlist.indexOf( word ) < 0 ) && ( document.activeElement !== input ) );
+   } );
+
+   var words = typed_words( );
+
+   var problem = ( words.length === 0 ) ? "" : recovery_words_problem( words, wordlist );
+
+   if( ( problem === "" ) && ( words.length === c_home_recovery_words ) && !BIP39.validateMnemonic( words.join( " " ) ) )
+      problem = c_home_words_mismatched;
+
+   set_text( "recover_words_status", ( problem !== "" ) ? problem : ( words.length === c_home_recovery_words
+    ? "All twelve words are here, and they fit together." : "Type them in order, or paste all twelve into the first box." ) );
+
+   return problem;
+}
+
+async function do_recover( event )
+{
+   event.preventDefault( );
+
+   set_text( "recover_error", "" );
+
+   if( !await load_bip39( ) )
+   {
+      set_text( "recover_error", "The word list could not be read - reload the page to try again." );
+
+      return;
+   }
+
+   var words = typed_words( );
+
+   var problem = recovery_words_problem( words, bip39_wordlist( ) );
+
+   if( ( problem === "" ) && !BIP39.validateMnemonic( words.join( " " ) ) )
+      problem = c_home_words_mismatched;
+
+   if( problem !== "" )
+   {
+      set_text( "recover_error", problem );
+
+      return;
+   }
+
+   var password = document.getElementById( "recover_password" ).value;
+
+   if( password_strength( password ).level < 1 )
+   {
+      set_text( "recover_error", "The master password needs at least " + c_password_min_length + " characters." );
+
+      return;
+   }
+
+   if( password !== document.getElementById( "recover_confirm" ).value )
+   {
+      set_text( "recover_error", "The two passwords are not the same." );
+
+      return;
+   }
+
+   var button = document.getElementById( "recover_submit" );
+
+   button.disabled = true;
+
+   set_text( "recover_status", "Checking the words with the node..." );
+
+   // NOTE: The words' entropy as "access", and the new password - "connect( )" in "ciyam.js" then does as Ian's curl
+   // does: the node checks the entropy, answers with admin's new PIN, and takes the password with the entropy, then the
+   // session is made as for any sign in. A fresh device is registered, as from the terminal - kept with this tab's
+   // session only, not as the browser's token: the passwords saved here for other accounts are hashed with that.
+   clear_ciyam( );
+
+   var device = ciyam.device;
+
+   ciyam.device = "";
+
+   var reply = await request( function( done )
+   {
+      return ciyam.connect( BIP39.mnemonicToEntropy( words.join( " " ) ), "", "", password, done );
+   } );
+
+   button.disabled = false;
+
+   set_text( "recover_status", "" );
+
+   if( ( ciyam.error !== "" ) || ( ciyam.sessid === "" ) )
+   {
+      var error = ciyam.error || ( is_error_response( reply ) ? reply : "The node did not recover." );
+
+      clear_ciyam( );
+
+      ciyam.device = device;
+
+      set_text( "recover_error", recovery_error_text( error ) );
+
+      return;
+   }
+
+   document.getElementById( "recover_password" ).value = "";
+   document.getElementById( "recover_confirm" ).value = "";
+
+   signin_keep_session( );
+
+   set_text( "recover_pin", ciyam.access );
+
+   document.getElementById( "recover_form" ).hidden = true;
+   document.getElementById( "recover_done" ).hidden = false;
+   document.getElementById( "recover_done_heading" ).focus( );
+
+   await read_system( );
 }
 
 async function wait_until_ready( )

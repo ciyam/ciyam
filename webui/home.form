@@ -66,6 +66,71 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </div>
 
+<!-- NOTE: Recovering the node with its twelve words (Ian, 2026-10-09: how the UI must do it when a PIN and password
+     cannot be given). No sign in: the node checks the words, takes a new master password, shows admin's PIN (perhaps a
+     new one) and is unlocked. Only while it is locked. Offered beneath the sign in on a locked node. The word boxes are built by
+     "home.js"; the words become the node's entropy with Ian's BIP39 library, read in only when this opens. -->
+<div class="chat-signin" id="recover_view" hidden>
+   <div class="home-unlock">
+      <form class="chat-signin-form home-recover" id="recover_form" novalidate>
+         <div class="chat-brand">
+            <span class="chat-logo"></span>
+            <span class="chat-wordmark">CIYAM</span>
+            <span class="chat-brand-note">home</span>
+         </div>
+
+         <h2 tabindex="-1">Recover this node</h2>
+         <p class="chat-signin-lede">With the twelve words written down when it was set up. The node checks them and
+          takes a new master password, then shows admin's PIN.</p>
+
+         <fieldset class="home-words-set">
+            <legend class="chat-label">Your twelve words</legend>
+            <div class="home-words" id="recover_words"></div>
+         </fieldset>
+         <datalist id="recover_wordlist"></datalist>
+         <div class="signin-hint" id="recover_words_status" role="status">Type them in order, or paste all twelve into the
+          first box.</div>
+
+         <div class="home-warning" id="recover_warning" role="alert" hidden>
+            <strong>This connection isn't encrypted.</strong> The node sees it as plain text - only recover from a device on
+            the node's own network.
+         </div>
+
+         <label class="chat-label" for="recover_password">New master password</label>
+         <input type="password" id="recover_password" class="chat-field" autocomplete="new-password">
+         <div class="chat-strength" id="recover_strength" hidden>
+            <div class="chat-strength-track"><div class="chat-strength-bar"></div></div>
+            <span class="chat-strength-label" id="recover_strength_label"></span>
+         </div>
+
+         <label class="chat-label" for="recover_confirm">The same again</label>
+         <input type="password" id="recover_confirm" class="chat-field" autocomplete="new-password">
+
+         <div class="chat-error-text" id="recover_error" role="alert"></div>
+         <div class="home-done-text" id="recover_status" role="status"></div>
+
+         <div class="chat-signin-actions">
+            <button type="submit" class="chat-btn chat-btn--primary" id="recover_submit">Recover the node</button>
+            <button type="button" class="chat-btn" id="recover_back">Back</button>
+         </div>
+      </form>
+
+      <section class="chat-signin-form home-recover" id="recover_done" hidden aria-labelledby="recover_done_heading">
+         <h2 id="recover_done_heading" tabindex="-1">Recovered</h2>
+         <p class="chat-signin-lede">The node is unlocked, with its new master password.</p>
+
+         <span class="chat-label">Admin's PIN</span>
+         <span class="home-mono home-recover-pin" id="recover_pin"></span>
+         <p class="home-note">Write it down - it may be a new one, and only this one works now. Then make a few unlock
+          keys, so a restart can be undone without the words.</p>
+
+         <div class="chat-signin-actions">
+            <button type="button" class="chat-btn chat-btn--primary" id="recover_continue">Continue to Home</button>
+         </div>
+      </section>
+   </div>
+</div>
+
 <!-- NOTE: Unlocking needs a session - the unlock key is used on one ("employ_unlock_key( )") - so a locked
      node is signed in to first, then unlocked. Anyone with a key may unlock, not only admin (Ian, 2026-10-03). -->
 <div class="chat-signin" id="unlock_view" hidden>

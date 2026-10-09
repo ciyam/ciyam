@@ -159,6 +159,82 @@
    line-height: 1.45;
 }
 
+/* ---- recovering with the twelve words (2026-10-09) ---- */
+
+.home-recover-offer
+{
+   margin: 18px 0 0;
+   padding-top: 16px;
+   border-top: 1px solid var(--color-chat-rule);
+   font-size: var(--font-size-chat-small);
+   color: var(--color-chat-text-secondary);
+}
+
+.home-words-set
+{
+   margin: 0 0 6px;
+   padding: 0;
+   border: none;
+}
+
+.home-words-set legend
+{
+   padding: 0;
+}
+
+/* NOTE: The twelve boxes, numbered - three to a row, two on a phone. */
+.home-words
+{
+   display: grid;
+   grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
+   gap: 8px;
+   margin-top: 6px;
+}
+
+.home-word
+{
+   display: flex;
+   align-items: center;
+   gap: 6px;
+}
+
+.home-word-number
+{
+   flex: 0 0 18px;
+   text-align: right;
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-tiny);
+   color: var(--color-chat-text-secondary);
+}
+
+.home-word input
+{
+   flex: 1 1 auto;
+   min-width: 0;
+   height: 36px;
+   padding: 0 8px;
+}
+
+.home-word input.is-unknown
+{
+   border-color: var(--color-chat-critical-border);
+   background: var(--color-chat-critical-bg);
+}
+
+.home-recover .home-warning
+{
+   margin-top: 12px;
+}
+
+.home-recover-pin
+{
+   margin: 4px 0 8px;
+   font-size: 32px;
+   font-weight: 700;
+   letter-spacing: 0.08em;
+   color: var(--color-chat-text-strong);
+}
+
 /* ---- the shell: a side menu, a top bar, the sections ---- */
 
 .home-app
@@ -1009,6 +1085,11 @@
 
 @media ( max-width: 760px )
 {
+   .home-words
+   {
+      grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+   }
+
    .home-arrive-bar
    {
       position: static;
