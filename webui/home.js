@@ -536,6 +536,16 @@ function bind_app_link( item, on_click )
    } );
 }
 
+// NOTE: A link to another app carries the address a new tab needs - on this page's session - so the browser's own
+// "Open in new tab" works too (found by review, 2026-10-09). Home's own stays "#home".
+function app_address( item, app, hash )
+{
+   if( app.key !== "home" )
+      item.href = app.page + "?source=" + encodeURIComponent( g_self ) + ( hash || "" );
+
+   return item;
+}
+
 function bottom_item( key, title, on_click )
 {
    var item = document.createElement( "a" );
@@ -603,12 +613,13 @@ function build_shell( )
 
    apps.forEach( function( app )
    {
-      rail_apps.appendChild( rail_item( app.key, app.title, true, function( event ) { open_app( app, event ); } ) );
+      rail_apps.appendChild( app_address( rail_item( app.key, app.title, true, function( event ) { open_app( app, event ); } ), app ) );
    } );
 
    phone_apps.forEach( function( app )
    {
-      bottom.appendChild( bottom_item( app.key, ( app.key === "account" ) ? "Account" : app.title, function( event ) { open_app( app, event ); } ) );
+      bottom.appendChild( app_address( bottom_item( app.key, ( app.key === "account" ) ? "Account" : app.title,
+       function( event ) { open_app( app, event ); } ), app ) );
    } );
 
    sections.forEach( function( section )
@@ -1066,8 +1077,12 @@ function install_member_home( )
 
    bind_app_link( document.getElementById( "tile_chat" ), function( event ) { open_app_by_key( "chat", "", event ); } );
 
+   app_address( document.getElementById( "tile_chat" ), { key: "chat", page: "chat.html" } );
+
    // NOTE: The accounts page - in this tab now, as every app opens (Damon, 2026-10-09; in its own tab until then).
    bind_app_link( document.getElementById( "manage_account" ), function( event ) { open_app_by_key( "account", "#mine", event ); } );
+
+   app_address( document.getElementById( "manage_account" ), { key: "account", page: "account.html" }, "#mine" );
 
    document.addEventListener( "visibilitychange", function( )
    {

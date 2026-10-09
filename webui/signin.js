@@ -475,7 +475,9 @@ function signin_kept_session( )
 
 // NOTE: Takes up the session kept for this tab - an app switched to in it, or a reload - if the node still knows it,
 // tried with one request: the lobby listing, which moves nothing the session has read. Refused - it timed out, or
-// the node was set up again - it is forgotten, and the page signs in as usual. The hashed password is not kept for
+// the node was set up again - it is forgotten, and the page signs in as usual. A session the node does not know is
+// an error ("This web session is not valid", "No current session exists" - seen 2026-10-09), so only an error or no
+// answer counts: a listing with no rooms in it is still a session (found by review). The hashed password is not kept for
 // the tab, but where the person chose to save it on this browser it is here already - the accounts page needs it
 // to check a password change.
 async function signin_resume( )
@@ -512,7 +514,7 @@ async function signin_resume( )
       reply = "";
    }
 
-   if( ( reply === "" ) || is_error_response( reply ) || ( parse_fetch_response( reply ).rooms.length === 0 ) )
+   if( ( reply.trim( ) === "" ) || is_error_response( reply ) )
    {
       ciyam.sessid = "";
       ciyam.unique = "";

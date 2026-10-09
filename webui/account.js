@@ -158,7 +158,8 @@ function account_main( )
 
    // NOTE: Switched to from another app in this tab, or reloaded - the session kept for the tab, if the node still
    // knows it (2026-10-09). Nothing is shown until it is known, so the sign in does not flash past.
-   if( ( g_source === "" ) && ( signin_kept_session( ) !== null ) )
+   // NOTE: Not for a Welcome link - it is for someone new, whoever this tab was signed in as (found by review).
+   if( ( g_source === "" ) && ( signin_kept_session( ) !== null ) && ( parse_account_hash( window.location.hash ).view !== "welcome" ) )
    {
       signin_resume( ).then( function( resumed )
       {
