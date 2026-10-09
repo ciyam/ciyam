@@ -129,8 +129,10 @@ constexpr const char* c_cws_endpoint_prefix = "/cws/";
 
 constexpr const char* c_boundary_prefix = "boundary=";
 
-constexpr const char* c_access_query_prefix = "?access=";
+constexpr const char* c_access_query_prefix = "&access=";
 constexpr const char* c_passwd_query_prefix = "&passwd=";
+
+constexpr const char* c_request_query_prefix = "&request=";
 
 constexpr const char* c_req_param_host = "Host:";
 
@@ -430,7 +432,7 @@ void redact_query_value( string& str, const char* p_query_prefix, size_t prefix_
    {
       pos += prefix_length;
 
-      string::size_type rpos = str.find( '&', pos );
+      string::size_type rpos = str.find_first_of( "& ", pos );
 
       if( rpos == string::npos )
       {
@@ -723,8 +725,24 @@ void http_request_handler::on_start( )
          {
             string request_to_log( http_request );
 
-            redact_query_value( request_to_log, c_access_query_prefix, CONST_LENGTH( c_access_query_prefix ) );
-            redact_query_value( request_to_log, c_passwd_query_prefix, CONST_LENGTH( c_passwd_query_prefix ) );
+            string::size_type pos = request_to_log.find( '?' );
+
+            if( pos != string::npos )
+            {
+               // NOTE: For easier redaction
+               // changes the "query string"
+               // separator to the parameter
+               // separator (and restores it
+               // back after redaction).
+               request_to_log[ pos ] = '&';
+
+               redact_query_value( request_to_log, c_access_query_prefix, CONST_LENGTH( c_access_query_prefix ) );
+               redact_query_value( request_to_log, c_passwd_query_prefix, CONST_LENGTH( c_passwd_query_prefix ) );
+
+               redact_query_value( request_to_log, c_request_query_prefix, CONST_LENGTH( c_request_query_prefix ) );
+
+               request_to_log[ pos ] = '?';
+            }
 
             TRACE_LOG( TRACE_DETAILS | TRACE_SESSION,
              to_comparable_string( handler, false, 8 ) + " - " + request_to_log );
