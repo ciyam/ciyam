@@ -123,8 +123,9 @@ function chat( )
    if( localStorage.getItem( c_storage_device ) !== null )
       ciyam.device = localStorage.getItem( c_storage_device );
 
-   // NOTE: The node's sign in, shared by every app ("signin.js", 2026-10-08) - the chat's own ids and words kept,
-   // so its suites carry on. It signs in at once, as it always did, with "Contacting the server..." meanwhile.
+   // NOTE: The node's sign in, shared by every part ("signin.js", 2026-10-08) and the same in each (2026-10-10) - the
+   // chat's own ids kept, so its suites carry on. It signs in at once, as it always did, with "Contacting the server..."
+   // meanwhile.
    signin_build( document.getElementById( "signin_host" ), {
       note: "chat",
       ids: { access: "signin_access", submit: "signin_connect" },

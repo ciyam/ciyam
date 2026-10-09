@@ -228,4 +228,11 @@ ok   quiet request not logged
 ok   post logged with body
 ok   a request that never answers is still logged
 
+== the node's entropy kept out of the log ======================
+ok   the answer - the PIN kept, the entropy not
+ok   the access - not kept, as ever
+ok   the request - said, not kept
+ok   nor in the query kept to copy
+ok   a claim's request and answer kept as they were
+
 All checks passed.

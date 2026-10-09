@@ -860,7 +860,7 @@ check( "a locked node, said so", cp.sign_in_error_text( "Error: Was unable to st
 check( "a locked node's refusal known", [ cp.is_locked_sign_in_error( "Error: Was unable to start a web session with access token '1'." ),
  cp.is_locked_sign_in_error( "Error: Invalid password." ) ], [ true, false ] );
 check( "any other error as it is, less its 'Error:'", cp.sign_in_error_text( "Error: Web session is currently busy (try again shortly)." ),
- "Error: Web session is currently busy (try again shortly)." );
+ "Web session is currently busy (try again shortly)." );
 check( "nothing", cp.sign_in_error_text( "" ), "" );
 
 heading( "session handover fields" );
@@ -1073,7 +1073,8 @@ var twelve = cp.recovery_words( "taxi act describe attitude focus ugly govern ou
 
 check( "twelve known words - nothing wrong", cp.recovery_words_problem( twelve, wordlist ), "" );
 check( "none yet", cp.recovery_words_problem( [ ], wordlist ), "Type or paste your twelve words." );
-check( "a misspelling said before a count", cp.recovery_words_problem( [ "taxi", "acct" ], wordlist ), "\"acct\" isn't one of the words - check its spelling." );
+check( "a misspelling said before a count", cp.recovery_words_problem( [ "taxi", "acct" ], wordlist ),
+ "\"acct\" isn't one of the words - check its spelling." );
 check( "too few", cp.recovery_words_problem( twelve.slice( 0, 11 ), wordlist ), "That's 11 words - there are twelve." );
 check( "too many", cp.recovery_words_problem( twelve.concat( [ "act" ] ), wordlist ), "That's 13 words - there are twelve." );
 
@@ -1091,7 +1092,8 @@ check( "the node's refusals - not its words", cp.recovery_error_text( "Error: Sy
  "Those aren't this node's twelve words." );
 check( "- what it answers today for words not its own", cp.recovery_error_text( "Error: System is currently locked for administration." ),
  "The node did not accept those words - check each one, and that they are in order." );
-check( "- not locked", /isn't locked, so there is nothing to recover/.test( cp.recovery_error_text( "Error: System identity is not currently locked." ) ), true );
+check( "- not locked", /isn't locked, so there is nothing to recover/.test(
+ cp.recovery_error_text( "Error: System identity is not currently locked." ) ), true );
 check( "- anything else as it came", cp.recovery_error_text( "Error: Something else." ), "Something else." );
 
 console.log( "" );

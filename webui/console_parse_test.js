@@ -506,6 +506,31 @@ heading( "log capture" );
 
    check( "a request that never answers is still logged", [ dropped.length, dropped[ 0 ].ok ], [ 1, false ] );
 
+   // --------------------------------------------------------------------
+   heading( "the node's entropy kept out of the log" );
+
+   // NOTE: Recovering with the twelve words - "connect( )" sends the entropy as "request=" and "/cws/devices" answers it
+   // back after admin's PIN (found by review, 2026-10-10).
+   var rec_t0 = new Date( 2026, 9, 10, 9, 0, 0 );
+   var entropy = "de604cee0755a3d81944ea96aed12681";
+
+   var first = cp.make_log_entry( "chat", "POST", "http://localhost:13031/cws/devices?access=" + entropy + "&format=text", null,
+    "10301 " + entropy, rec_t0, rec_t0 );
+
+   check( "the answer - the PIN kept, the entropy not", first.response, "10301 (the node's entropy)" );
+   check( "the access - not kept, as ever", JSON.stringify( first ).indexOf( entropy ) < 0, true );
+
+   var second = cp.make_log_entry( "chat", "POST", "http://localhost:13031/cws/sessions?access=10301&device=abc&format=text&passwd=x&request="
+    + entropy, null, "1791507362123", rec_t0, rec_t0 );
+
+   check( "the request - said, not kept", second.request, "(the node's entropy - not kept)" );
+   check( "nor in the query kept to copy", JSON.stringify( second ).indexOf( entropy ) < 0, true );
+
+   var claim = cp.make_log_entry( "chat", "POST", "http://localhost:13031/cws/devices?access=45679&passwd=x&format=text&request=%40none",
+    null, "45679 @none", rec_t0, rec_t0 );
+
+   check( "a claim's request and answer kept as they were", [ claim.request, claim.response ], [ "@none", "45679 @none" ] );
+
    console.log( "" );
    console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

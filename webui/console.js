@@ -190,8 +190,8 @@ function console_main( )
 
    document.getElementById( "title_host" ).textContent = window.location.host;
 
-   // NOTE: The node's sign in, shared by every app ("signin.js", 2026-10-08) - the console's own ids and words
-   // kept, so its suites and its "Open chat instead" carry on. It signs in at once, as it always did.
+   // NOTE: The node's sign in, shared by every part ("signin.js", 2026-10-08) and the same in each (2026-10-10) - the
+   // console's own ids kept, so its suites carry on. It signs in at once, as it always did.
    signin_build( document.getElementById( "signin_host" ), {
       note: "console",
       ids: { access: "signin_account", submit: "signin_connect" },

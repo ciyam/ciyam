@@ -1069,6 +1069,11 @@ function make_log_entry( source, method, url, body, response, started, finished 
 
    var kept = [ ];
 
+   // NOTE: Recovering a node - or setting one up - sends its entropy, the twelve words, as "request=" to "/cws/devices" or
+   // "/cws/sessions", and "/cws/devices" answers it back after admin's PIN: the node's secret above all, kept out of the
+   // log entirely (found by review, 2026-10-10 - "connect( )" in "ciyam.js" sends it so).
+   var is_connect = /^\/cws\/(devices|sessions)\/?$/.test( endpoint );
+
    // NOTE: For "full_query( )" - the query as sent, but for the credentials, and which of them it had.
    var sent = [ ];
    var had = { };
@@ -1082,6 +1087,13 @@ function make_log_entry( source, method, url, body, response, started, finished 
 
       var name = ( eq < 0 ) ? pair : pair.substr( 0, eq );
       var value = ( eq < 0 ) ? "" : decode_field( pair.substring( eq + 1 ) );
+
+      if( is_connect && ( name === "request" ) && /^[0-9A-Fa-f]{32,}$/.test( value ) )
+      {
+         request = "(the node's entropy - not kept)";
+
+         return;
+      }
 
       if( c_console_credential_params.indexOf( name ) >= 0 )
          had[ name ] = true;
@@ -1109,6 +1121,9 @@ function make_log_entry( source, method, url, body, response, started, finished 
 
    // NOTE: "GET /cws/devices" answers each device's live session id - a credential, as "session=" is - so
    // they are masked here with the rest (found by review, 2026-10-07).
+   if( is_connect )
+      text = text.replace( /^(\s*\d{5}\s+)[0-9A-Za-z]{32,}/, "$1(the node's entropy)" );
+
    if( /^\/cws\/devices\/?$/.test( endpoint.split( "?" )[ 0 ] ) )
       text = mask_device_sessions( text );
 

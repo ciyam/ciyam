@@ -191,6 +191,8 @@ function signin_show( )
    document.getElementById( "recover_view" ).hidden = true;
    document.getElementById( "signin_view" ).hidden = false;
 
+   recover_clear_words( );
+
    signin_check_locked( );
 }
 
@@ -1116,6 +1118,8 @@ async function recover_submit( event )
    document.getElementById( "recover_password" ).value = "";
    document.getElementById( "recover_confirm" ).value = "";
 
+   recover_clear_words( );
+
    signin_keep_session( );
 
    signin_set_text( "recover_pin", ciyam.access );
@@ -1125,6 +1129,15 @@ async function recover_submit( event )
 
    // NOTE: The way on has the focus - not the heading, which looked strange outlined (Damon, 2026-10-10).
    document.getElementById( "recover_continue" ).focus( );
+}
+
+// NOTE: The words are the node's secret - not left in the page once they have been used, or the sign in is shown again
+// (found by review, 2026-10-10).
+function recover_clear_words( )
+{
+   recover_inputs( ).forEach( function( input ) { input.value = ""; input.classList.remove( "is-unknown" ); } );
+
+   recover_hide_suggestions( );
 }
 
 function recover_clear_ciyam( )

@@ -27,6 +27,13 @@ for test_name in chat_parse_test console_parse_test account_parse_test home_pars
  node $test_name.js > $test_name.new 2>&1
  test_status=$?
 
+ # NOTE: A failing check is said out loud, not only in the exit status - a capture recaptured with a "FAIL" in it
+ # would otherwise go on matching quietly (found 2026-10-10).
+ if [ $test_status -ne 0 ]; then
+  echo "Error: '$test_name' has failing checks:"
+  grep -A2 "^FAIL" $test_name.new
+ fi
+
  if [ "$1" = "-recapture" ]; then
   mv $test_name.new $test_name.tst
   echo "Recaptured '$test_name.tst'."
