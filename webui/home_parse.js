@@ -311,6 +311,104 @@ function log_line_kind( line )
    return "";
 }
 
+// NOTE: A server log line's time and its words - "[2026-10-09 00:52:14] [000003] [general] session error: ..." - or the
+// whole line as its words when it is not of that shape.
+function log_line_parts( line )
+{
+   var text = String( line || "" );
+
+   var match = text.match( /^\[(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)\]\s+\[\d+\]\s+\[[^\]]*\]\s*(.*)$/ );
+
+   return match ? { time: match[ 1 ], text: match[ 2 ] } : { time: "", text: text };
+}
+
+// NOTE: The errors and warnings in a log since the server last started - its last "server starting" line - for the
+// Overview (Damon, 2026-10-09: what can be shown of R2's warnings before Ian's combined request). "since_start" is
+// false when no start is among the lines read, so the count is only of those. "latest" is the newest of them.
+function log_problems( lines )
+{
+   var all = lines || [ ];
+   var start = -1;
+
+   all.forEach( function( line, i )
+   {
+      if( /\]\s*server starting\b/.test( line ) )
+         start = i;
+   } );
+
+   var result = { errors: 0, warnings: 0, latest: "", since_start: ( start >= 0 ) };
+
+   all.slice( start + 1 ).forEach( function( line )
+   {
+      var kind = log_line_kind( line );
+
+      if( kind === "error" )
+         ++result.errors;
+      else if( kind === "warn" )
+         ++result.warnings;
+
+      if( kind !== "" )
+         result.latest = line;
+   } );
+
+   return result;
+}
+
+function log_problems_text( problems )
+{
+   var when = problems.since_start ? " since the restart" : " in the log's latest lines";
+
+   if( ( problems.errors === 0 ) && ( problems.warnings === 0 ) )
+      return "No errors or warnings" + when;
+
+   var parts = [ ];
+
+   if( problems.errors > 0 )
+      parts.push( counted( problems.errors, "error", "errors" ) );
+
+   if( problems.warnings > 0 )
+      parts.push( counted( problems.warnings, "warning", "warnings" ) );
+
+   return parts.join( " and " ) + when;
+}
+
+// NOTE: How many messages a room keeps - its queue's limit (9,000 since 2026-10-01, Ian). A full room refuses new
+// messages rather than dropping its oldest, as nothing sets "@qs_pf_irc" ("IRC Domain Model"). The node does not
+// report the limit to a page, so it is named here.
+const c_home_room_limit = 9000;
+
+const c_home_room_filling = 0.8;
+
+// NOTE: The rooms in a listing ("derive_room_list( )" in "chat_parse.js") at or past "c_home_room_filling" of the
+// limit, the fullest first - only rooms the one asking is in, as the listing has no others.
+function rooms_filling( rooms )
+{
+   return ( rooms || [ ] ).filter( function( entry )
+   {
+      return ( entry.kind === "room" ) && ( entry.total >= c_home_room_limit * c_home_room_filling );
+   } ).map( function( entry )
+   {
+      return { room: entry.room, name: entry.name || ( "#" + entry.room ), total: entry.total,
+       percent: Math.min( 100, Math.floor( 100 * entry.total / c_home_room_limit ) ) };
+   } ).sort( function( a, b ) { return b.total - a.total; } );
+}
+
+function rooms_filling_text( filling )
+{
+   if( filling.length === 0 )
+      return "No room is filling up";
+
+   return ( filling.length === 1 ? "1 room is" : filling.length + " rooms are" ) + " filling up";
+}
+
+// NOTE: One filling room in words - "General - 7,412 of 9,000 messages (82%)", or full.
+function room_filling_line( room )
+{
+   var of = room.total.toLocaleString( "en-AU" ) + " of " + c_home_room_limit.toLocaleString( "en-AU" ) + " messages";
+
+   return room.name + " - " + ( room.total >= c_home_room_limit ? "full, " + of + " - new messages are refused" : of + " (" + room.percent + "%)" );
+}
+
 // NOTE: What the Logs section shows - the lines holding "filter" (any case), the last "count" of them,
 // newest at the end as in the file. Returns { lines, total } - "total" being how many matched.
 function log_view( lines, filter, count )
@@ -514,6 +612,12 @@ if( typeof module !== "undefined" )
       people_waiting_text: people_waiting_text,
       log_line_kind: log_line_kind,
       log_view: log_view,
+      log_line_parts: log_line_parts,
+      log_problems: log_problems,
+      log_problems_text: log_problems_text,
+      rooms_filling: rooms_filling,
+      rooms_filling_text: rooms_filling_text,
+      room_filling_line: room_filling_line,
       home_apps: home_apps,
       home_sections: home_sections,
       home_section: home_section,

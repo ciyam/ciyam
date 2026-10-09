@@ -788,6 +788,47 @@
    color: var(--color-chat-warning-text);
 }
 
+.home-tile-icon.is-full
+{
+   background: var(--color-chat-critical-bg);
+   color: var(--color-chat-critical-text);
+}
+
+/* NOTE: The rooms filling up - one a line - and the latest problem in the log, cut to two lines. */
+.home-filling
+{
+   margin: 2px 0 0;
+   padding: 0;
+   list-style: none;
+   font-size: 13px;
+   color: var(--color-chat-text);
+}
+
+.home-filling:empty
+{
+   display: none;
+}
+
+.home-filling li + li
+{
+   margin-top: 2px;
+}
+
+.home-filling li.is-full
+{
+   color: var(--color-chat-critical-text);
+   font-weight: 600;
+}
+
+#problems_latest
+{
+   display: -webkit-box;
+   -webkit-box-orient: vertical;
+   -webkit-line-clamp: 2;
+   overflow: hidden;
+   overflow-wrap: anywhere;
+}
+
 .home-cipher
 {
    font-size: 13px;

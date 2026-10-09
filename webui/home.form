@@ -292,6 +292,30 @@ http://www.opensource.org/licenses/mit-license.php.
                </section>
             </div>
 
+            <!-- NOTE: The node's health, as far as the node tells a page today (Damon, 2026-10-09 - R2's warnings, before
+                 Ian's combined request): problems in the server log since the restart, and rooms near the number of
+                 messages a room keeps. -->
+            <div class="home-pair">
+               <section class="home-card home-card--row" id="problems_card" aria-label="Problems in the server log">
+                  <span class="home-tile-icon" id="problems_icon"></span>
+                  <span class="home-card-body">
+                     <h2 id="problems_heading">&hellip;</h2>
+                     <span class="home-note home-empty" id="problems_latest"></span>
+                  </span>
+                  <a href="#logs" class="chat-btn home-card-action" id="problems_show" hidden>Show them</a>
+               </section>
+
+               <section class="home-card home-card--row" id="rooms_card" aria-label="Chat rooms">
+                  <span class="home-tile-icon" id="rooms_icon"></span>
+                  <span class="home-card-body">
+                     <h2 id="rooms_heading">&hellip;</h2>
+                     <ul class="home-filling" id="rooms_filling"></ul>
+                     <span class="home-note home-empty" id="rooms_note">Of the rooms you are in. A full room refuses new
+                      messages.</span>
+                  </span>
+               </section>
+            </div>
+
             <section class="home-quick" aria-labelledby="quick_heading">
                <h2 class="home-rail-heading" id="quick_heading">Quick actions</h2>
                <div class="home-quick-grid" id="quick_actions">

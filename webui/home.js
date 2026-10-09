@@ -1095,6 +1095,12 @@ const c_qr_size = 168;
 
 const c_overview_log_lines = 5;
 
+// NOTE: How much of the server log the Overview reads to count its problems since the restart (2026-10-09), and how
+// many filling rooms it names.
+const c_overview_problem_lines = 1000;
+
+const c_overview_filling_shown = 3;
+
 var g_log_names = [ ];
 var g_log_name = "server";
 var g_log_lines = [ ];
@@ -1195,13 +1201,108 @@ async function load_overview( )
       set_text( "overview_people", people_waiting_text( summary ) );
    }
 
-   var server = await read_log( "server", c_overview_log_lines );
+   // NOTE: Enough of the log to reach back to the last start, usually - the latest lines are drawn from the same read.
+   var server = await read_log( "server", c_overview_problem_lines );
 
    if( ciyam.access !== asked_for )
       return;
 
    draw_log( document.getElementById( "overview_log" ),
     server ? log_view( server, "", c_overview_log_lines ).lines : [ "(the server log could not be read)" ] );
+
+   show_problems( server );
+
+   var listing = await request( function( done ) { return ciyam.fetch_messages( c_lobby_room, "", done ); } );
+
+   if( ciyam.access !== asked_for )
+      return;
+
+   show_filling( is_error_response( listing ) ? null : derive_room_list( parse_fetch_response( listing ).rooms ) );
+}
+
+// NOTE: The errors and warnings in the server log since the restart - the latest in words, and Logs filtered to them.
+var g_problems_filter = "";
+
+function show_problems( lines )
+{
+   var card = document.getElementById( "problems_card" );
+   var show = document.getElementById( "problems_show" );
+
+   if( lines === null )
+   {
+      set_text( "problems_heading", "The server log could not be read" );
+      set_text( "problems_latest", "" );
+
+      show.hidden = true;
+
+      return;
+   }
+
+   var problems = log_problems( lines );
+   var any = ( problems.errors + problems.warnings ) > 0;
+
+   g_problems_filter = ( problems.errors > 0 ) ? "error" : "warn";
+
+   set_text( "problems_heading", log_problems_text( problems ) );
+
+   var latest = log_line_parts( problems.latest );
+
+   set_text( "problems_latest", any ? "Latest" + ( latest.time !== "" ? ", " + latest.time : "" ) + ": " + latest.text : "" );
+
+   card.classList.toggle( "home-card--warn", problems.errors > 0 );
+   document.getElementById( "problems_icon" ).classList.toggle( "is-warn", problems.errors > 0 );
+
+   show.hidden = !any;
+}
+
+function show_problems_in_logs( event )
+{
+   event.preventDefault( );
+
+   g_log_name = "server";
+
+   document.getElementById( "log_filter" ).value = g_problems_filter;
+   document.getElementById( "log_count" ).value = String( c_overview_problem_lines );
+
+   go( "logs" );
+}
+
+// NOTE: The rooms near the number of messages a room keeps - a full one refuses new messages. Only the rooms admin
+// is in: the listing has no others.
+function show_filling( rooms )
+{
+   var list = document.getElementById( "rooms_filling" );
+
+   list.replaceChildren( );
+
+   if( rooms === null )
+   {
+      set_text( "rooms_heading", "The rooms could not be read" );
+
+      return;
+   }
+
+   var filling = rooms_filling( rooms );
+
+   set_text( "rooms_heading", rooms_filling_text( filling ) );
+
+   filling.slice( 0, c_overview_filling_shown ).forEach( function( room )
+   {
+      var item = document.createElement( "li" );
+
+      item.textContent = room_filling_line( room );
+
+      if( room.total >= c_home_room_limit )
+         item.className = "is-full";
+
+      list.appendChild( item );
+   } );
+
+   var full = filling.some( function( room ) { return room.total >= c_home_room_limit; } );
+
+   document.getElementById( "rooms_card" ).classList.toggle( "home-card--warn", filling.length > 0 );
+   document.getElementById( "rooms_icon" ).classList.toggle( "is-warn", filling.length > 0 );
+   document.getElementById( "rooms_icon" ).classList.toggle( "is-full", full );
 }
 
 // ---- Unlock keys
@@ -1371,6 +1472,10 @@ function install_admin( )
 {
    document.getElementById( "connection_icon" ).appendChild( icon( "shield", 22 ) );
    document.getElementById( "keys_icon" ).appendChild( icon( "keys", 22 ) );
+   document.getElementById( "problems_icon" ).appendChild( icon( "logs", 22 ) );
+   document.getElementById( "rooms_icon" ).appendChild( icon( "chat", 22 ) );
+
+   document.getElementById( "problems_show" ).addEventListener( "click", show_problems_in_logs );
 
    document.getElementById( "overview_refresh" ).addEventListener( "click", load_overview );
    document.getElementById( "logs_refresh" ).addEventListener( "click", load_logs );

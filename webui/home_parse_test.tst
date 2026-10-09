@@ -88,6 +88,19 @@ ok   a failure
 ok   a warning
 ok   an ordinary line
 ok   a word holding 'error' is not one
+ok   a log line's time and words
+ok   a line of another shape - all words
+ok   problems since the restart - not before it
+ok   no start among the lines read
+ok   no lines
+ok   in words - both
+ok   in words - none
+ok   in words - one, no start read
+ok   rooms filling - at 80% or more, fullest first
+ok   rooms filling - none
+ok   rooms filling - in words
+ok   a filling room
+ok   a full room
 ok   the log - the last lines
 ok   the log - filtered, any case
 ok   the log - fewer than asked

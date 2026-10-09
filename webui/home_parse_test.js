@@ -169,6 +169,42 @@ check( "a warning", hp.log_line_kind( "Warning: '/home/root/backup.img' was not 
 check( "an ordinary line", hp.log_line_kind( "[2026-10-07 13:20:10] [000000] [general] :: (responding with 698 bytes)" ), "" );
 check( "a word holding 'error' is not one", hp.log_line_kind( "terrors and mirrors" ), "" );
 
+// NOTE: A real server log, the rebuilt container of 2026-10-09 - two starts, the second with errors after it.
+var server_log = [
+   "[2026-10-08 09:00:00] [000000] [general] server starting (pid :::::::::: 1)",
+   "[2026-10-08 09:10:00] [000004] [general] session error: from the run before",
+   "[2026-10-09 00:52:06] [000000] [general] server starting (pid :::::::::: 1)",
+   "[2026-10-09 00:52:06] [000000] [general] rpc_core listener started on tcp port 11011",
+   "[2026-10-09 00:52:14] [000003] [general] session error: system variable not found for '/home//shared' notifier",
+   "[2026-10-09 00:53:00] [000003] [general] warning: something to watch",
+   "[2026-10-09 00:56:38] [000005] [general] session error: \\ https://ntfy/upJW5R65MZ36PA" ];
+
+check( "a log line's time and words", hp.log_line_parts( server_log[ 4 ] ),
+ { time: "2026-10-09 00:52:14", text: "session error: system variable not found for '/home//shared' notifier" } );
+check( "a line of another shape - all words", hp.log_line_parts( "just text" ), { time: "", text: "just text" } );
+check( "problems since the restart - not before it", hp.log_problems( server_log ),
+ { errors: 2, warnings: 1, latest: server_log[ 6 ], since_start: true } );
+check( "no start among the lines read", hp.log_problems( server_log.slice( 3 ) ).since_start, false );
+check( "no lines", hp.log_problems( [ ] ), { errors: 0, warnings: 0, latest: "", since_start: false } );
+check( "in words - both", hp.log_problems_text( hp.log_problems( server_log ) ), "2 errors and 1 warning since the restart" );
+check( "in words - none", hp.log_problems_text( { errors: 0, warnings: 0, since_start: true } ), "No errors or warnings since the restart" );
+check( "in words - one, no start read", hp.log_problems_text( { errors: 1, warnings: 0, since_start: false } ), "1 error in the log's latest lines" );
+
+var listed = [
+   { kind: "room", room: "0000001", name: "Administration", total: 120 },
+   { kind: "room", room: "0000002", name: "General", total: 7412 },
+   { kind: "room", room: "0000003", name: "Busy", total: 9000 },
+   { kind: "room", room: "0000004", name: "", total: 7200 },
+   { kind: "chat", room: "0000005", name: "not a room", total: 8999 } ];
+
+check( "rooms filling - at 80% or more, fullest first", hp.rooms_filling( listed ).map( function( r ) { return r.name + " " + r.percent; } ),
+ [ "Busy 100", "General 82", "#0000004 80" ] );
+check( "rooms filling - none", hp.rooms_filling( listed.slice( 0, 1 ) ), [ ] );
+check( "rooms filling - in words", [ hp.rooms_filling_text( [ ] ), hp.rooms_filling_text( [ 1 ] ), hp.rooms_filling_text( [ 1, 2 ] ) ],
+ [ "No room is filling up", "1 room is filling up", "2 rooms are filling up" ] );
+check( "a filling room", hp.room_filling_line( hp.rooms_filling( listed )[ 1 ] ), "General - 7,412 of 9,000 messages (82%)" );
+check( "a full room", hp.room_filling_line( hp.rooms_filling( listed )[ 0 ] ), "Busy - full, 9,000 of 9,000 messages - new messages are refused" );
+
 var log = [ "one alpha", "two beta", "three alpha", "four gamma", "five alpha" ];
 
 check( "the log - the last lines", hp.log_view( log, "", 2 ), { lines: [ "four gamma", "five alpha" ], total: 5 } );
