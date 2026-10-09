@@ -1787,16 +1787,24 @@ function switcher_row( app, open_elsewhere )
    return { action: "here", note: app.note, button: "new", label: "Open " + app.title + " in a new tab" };
 }
 
-// NOTE: Which apps are open in other tabs on this session - asked on the session's channel each time the switcher
-// opens, and every app on the same session answers with its own key. Anything else is not an answer.
+// NOTE: Which apps are open in other tabs on this session - asked on the session's channel when an app signs in and
+// each time the switcher opens; every app on the same session answers with its own key and its page's id ("g_self"),
+// and says so unasked when it signs in. A page leaving - another app in its tab, or the tab closed - says that too, so
+// its app is no longer counted, and a console linked to it carries on by itself (found by review, 2026-10-09).
+// Anything else is not an answer.
 function which_apps_message( sessid )
 {
    return { kind: "which_apps", sessid: String( sessid || "" ) };
 }
 
-function app_open_message( sessid, app )
+function app_open_message( sessid, app, page )
 {
-   return { kind: "app_open", sessid: String( sessid || "" ), app: String( app || "" ) };
+   return { kind: "app_open", sessid: String( sessid || "" ), app: String( app || "" ), page: String( page || "" ) };
+}
+
+function page_left_message( sessid, page )
+{
+   return { kind: "page_left", sessid: String( sessid || "" ), page: String( page || "" ) };
 }
 
 function is_which_apps_here( data, sessid )
@@ -1805,15 +1813,31 @@ function is_which_apps_here( data, sessid )
     && ( typeof data.sessid === "string" ) && ( data.sessid !== "" ) && ( data.sessid === sessid );
 }
 
+// NOTE: { app, page } for an app open on this session, or null.
 function app_open_here( data, sessid )
 {
    if( !data || ( typeof data !== "object" ) || ( data.kind !== "app_open" ) || ( typeof data.app !== "string" ) )
+      return null;
+
+   if( ( typeof data.sessid !== "string" ) || ( data.sessid === "" ) || ( data.sessid !== sessid ) )
+      return null;
+
+   if( !/^[a-z]+$/.test( data.app ) || ( typeof data.page !== "string" ) || !/^\d+$/.test( data.page ) )
+      return null;
+
+   return { app: data.app, page: data.page };
+}
+
+// NOTE: The id of a page on this session that has left, or "".
+function page_left_here( data, sessid )
+{
+   if( !data || ( typeof data !== "object" ) || ( data.kind !== "page_left" ) || ( typeof data.page !== "string" ) )
       return "";
 
    if( ( typeof data.sessid !== "string" ) || ( data.sessid === "" ) || ( data.sessid !== sessid ) )
       return "";
 
-   return /^[a-z]+$/.test( data.app ) ? data.app : "";
+   return /^\d+$/.test( data.page ) ? data.page : "";
 }
 
 // NOTE: What to do with the tab found by a name: "load" an empty one (there was none - the
@@ -2036,6 +2060,8 @@ if( typeof module !== "undefined" )
       app_open_message: app_open_message,
       is_which_apps_here: is_which_apps_here,
       app_open_here: app_open_here,
+      page_left_message: page_left_message,
+      page_left_here: page_left_here,
       is_error_response: is_error_response,
       error_text: error_text,
       parse_members: parse_members,

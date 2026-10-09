@@ -550,10 +550,15 @@ ok   which apps - the question
 ok   which apps - this session
 ok   which apps - another session
 ok   which apps - signed in to nothing
-ok   an app open - this session
+ok   an app open - this session, and its page
 ok   an app open - another session
 ok   an app open - not a key
+ok   an app open - no page
 ok   an app open - a signed out message is not one
+ok   a page left - the message
+ok   a page left - this session
+ok   a page left - another session
+ok   a page left - not an id
 
 == the session kept for the tab ================================
 ok   never the hashed password

@@ -217,7 +217,8 @@ function console_main( )
 
             set_error( "signin_error", "You signed out in another app." );
          },
-         unsent: unsent_work
+         unsent: unsent_work,
+         page_left: on_page_left
       } );
    }
 
@@ -381,6 +382,48 @@ function adopt_session( credentials )
    g_log_channel.postMessage( { kind: "replay", owner: g_source, viewer: g_self } );
 
    enter_console( );
+}
+
+// NOTE: How long a page that left has to come back - a chat reloaded keeps its id and announces itself again once it
+// has taken up its session - before this console stops waiting for it.
+const c_owner_return_ms = 3000;
+
+// NOTE: The page this console is linked to has left - switched to another app in its tab, or closed (found by review,
+// 2026-10-09). Its requests went through that page, so they would wait in vain: unless it comes back, the console
+// carries on by itself, on the same session, which is still the node's.
+function on_page_left( page )
+{
+   if( !g_linked || !g_connected || ( ( page !== g_source ) && ( page !== g_owner ) ) )
+      return;
+
+   window.setTimeout( function( )
+   {
+      if( g_linked && g_connected && !g_apps_open_pages[ g_source ] && !g_apps_open_pages[ g_owner ] )
+         carry_on_alone( );
+   }, c_owner_return_ms );
+}
+
+function carry_on_alone( )
+{
+   var owner = g_owner_page.subject;
+
+   g_linked = false;
+   g_source = "";
+   g_owner = "";
+
+   // NOTE: Anything still waiting on the page that left is answered now, as no answer, rather than after its time-out.
+   Object.keys( g_linked_pending ).forEach( function( id ) { g_linked_pending[ id ]( null ); } );
+
+   forget_source( );
+
+   document.getElementById( "filter_chat" ).hidden = true;
+
+   signin_keep_session( );
+
+   print_line( owner + " has gone - this console carries on by itself, on the same session.", "is-dim" );
+
+   update_title( );
+   update_status( );
 }
 
 function end_linked_session( )

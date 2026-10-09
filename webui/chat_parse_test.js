@@ -1022,10 +1022,17 @@ check( "which apps - the question", cp.which_apps_message( "4014a01afdf9" ), { k
 check( "which apps - this session", cp.is_which_apps_here( cp.which_apps_message( "4014a01afdf9" ), "4014a01afdf9" ), true );
 check( "which apps - another session", cp.is_which_apps_here( cp.which_apps_message( "4014a01afdf9" ), "99" ), false );
 check( "which apps - signed in to nothing", cp.is_which_apps_here( cp.which_apps_message( "" ), "" ), false );
-check( "an app open - this session", cp.app_open_here( cp.app_open_message( "4014a01afdf9", "console" ), "4014a01afdf9" ), "console" );
-check( "an app open - another session", cp.app_open_here( cp.app_open_message( "4014a01afdf9", "console" ), "99" ), "" );
-check( "an app open - not a key", cp.app_open_here( cp.app_open_message( "4014a01afdf9", "<b>x</b>" ), "4014a01afdf9" ), "" );
-check( "an app open - a signed out message is not one", cp.app_open_here( cp.signed_out_message( "4014a01afdf9" ), "4014a01afdf9" ), "" );
+check( "an app open - this session, and its page", cp.app_open_here( cp.app_open_message( "4014a01afdf9", "console", 1790900000000 ), "4014a01afdf9" ),
+ { app: "console", page: "1790900000000" } );
+check( "an app open - another session", cp.app_open_here( cp.app_open_message( "4014a01afdf9", "console", "17" ), "99" ), null );
+check( "an app open - not a key", cp.app_open_here( cp.app_open_message( "4014a01afdf9", "<b>x</b>", "17" ), "4014a01afdf9" ), null );
+check( "an app open - no page", cp.app_open_here( cp.app_open_message( "4014a01afdf9", "chat" ), "4014a01afdf9" ), null );
+check( "an app open - a signed out message is not one", cp.app_open_here( cp.signed_out_message( "4014a01afdf9" ), "4014a01afdf9" ), null );
+
+check( "a page left - the message", cp.page_left_message( "4014a01afdf9", 17 ), { kind: "page_left", sessid: "4014a01afdf9", page: "17" } );
+check( "a page left - this session", cp.page_left_here( cp.page_left_message( "4014a01afdf9", "17" ), "4014a01afdf9" ), "17" );
+check( "a page left - another session", cp.page_left_here( cp.page_left_message( "4014a01afdf9", "17" ), "99" ), "" );
+check( "a page left - not an id", cp.page_left_here( cp.page_left_message( "4014a01afdf9", "x" ), "4014a01afdf9" ), "" );
 
 // --------------------------------------------------------------------
 heading( "the session kept for the tab" );
