@@ -18,7 +18,7 @@ SID_FILE=@files::ciyam_server.sid
 PIN=$1
 ;
 @ifdef $PIN
-.regex "^[0-9]{5}$$" "$PIN"
+.=regex "^[0-9]{5}$$" "$PIN"
 @ifneq "$PIN" "$OUTPUT"
 ERROR=Provided PIN "$PIN" is not valid.
 @endif
@@ -34,10 +34,10 @@ PIN=$OUTPUT
 ;
 PASSWORD=@password:Enter web admin password:
 ;
-.crypto_hash "$PIN$PASSWORD"
+.=crypto_hash "$PIN$PASSWORD"
 HASHED=$OUTPUT
 ;
-.crypto_hash "$~HASHED"
+.=crypto_hash "$~HASHED"
 DOUBLED=$OUTPUT
 ;
 ~echo -n $~DOUBLED > .web_access_$PIN

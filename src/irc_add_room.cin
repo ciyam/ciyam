@@ -67,7 +67,7 @@ POS=@strpos:_:$NAME
 ; owner or 'admin').
 @ifdef $POS
 EXISTING=@substr:0,$POS:$NAME
-.regex "^(0[0-9]{6})$$" "$EXISTING"
+.=regex "^(0[0-9]{6})$$" "$EXISTING"
 @ifeq "$OUTPUT" "$EXISTING"
 @ifeq "$EXISTING" "0000000"
 EXISTING=
@@ -430,7 +430,7 @@ NEXT_USER=
 @skip
 ;
 @:NEXT
-.crypto_hash $NEXT_USER$ASSIGN
+.=crypto_hash $NEXT_USER$ASSIGN
 NEXT_JOIN_INFO=@substr:0,32:$OUTPUT
 NEXT_JOIN_INFO=-$NEXT_JOIN_INFO
 NEXT_JOIN_INFO=@base64::$NEXT_JOIN_INFO
