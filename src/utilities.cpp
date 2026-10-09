@@ -1282,6 +1282,8 @@ string escaped_shell_arg( const string& arg )
       // NOTE: Add escapes for
       // potentially dangerous
       // shell characters.
+      replace( s, "\\", "\\\\" );
+
       replace( s, "`", "\\`" );
       replace( s, "$", "\\$" );
 
@@ -1299,6 +1301,8 @@ string escaped_shell_cmd( const string& cmd )
 
    if( !s.empty( ) )
    {
+      replace( s, "\\", "\\\\" );
+
       size_t nsq = count( s.begin( ), s.end( ), '\'' );
       size_t ndq = count( s.begin( ), s.end( ), '\"' );
 
@@ -1322,10 +1326,10 @@ string escaped_shell_cmd( const string& cmd )
          s.insert( ndq_pos, "\\" );
       }
 
-      replace( s, "`", "\\`", "$", "\\$" );
+      replace( s, "`", "\\`", "!", "\\!" );
+      replace( s, "$", "\\$", "%", "\\%" );
       replace( s, "&", "\\&", "|", "\\|" );
       replace( s, "<", "\\<", ">", "\\>" );
-      replace( s, "`", "\\`", "%", "\\%" );
       replace( s, "*", "\\*", "?", "\\?" );
       replace( s, "#", "\\#", "~", "\\~" );
       replace( s, "[", "\\[", "]", "\\]" );
