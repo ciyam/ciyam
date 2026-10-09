@@ -172,6 +172,7 @@
 
 .home-words-set
 {
+   position: relative;
    margin: 0 0 6px;
    padding: 0;
    border: none;
@@ -219,6 +220,35 @@
 {
    border-color: var(--color-chat-critical-border);
    background: var(--color-chat-critical-bg);
+}
+
+/* NOTE: The words a box offers - those starting with what is typed (2026-10-10), beneath the box being typed in. */
+.home-word-suggest
+{
+   position: absolute;
+   z-index: 5;
+   margin: 0;
+   padding: 4px;
+   list-style: none;
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-md);
+   box-shadow: var(--shadow-lg);
+}
+
+.home-word-option
+{
+   padding: 6px 10px;
+   border-radius: var(--radius-sm);
+   font-size: 14px;
+   cursor: pointer;
+}
+
+.home-word-option:hover,
+.home-word-option.is-active
+{
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
 }
 
 .home-recover .home-warning

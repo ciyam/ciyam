@@ -377,13 +377,16 @@ function install_recover( )
 
       input.type = "text";
       input.className = "chat-field";
-      input.setAttribute( "list", "recover_wordlist" );
       input.setAttribute( "autocomplete", "off" );
+      input.setAttribute( "aria-autocomplete", "list" );
+      input.setAttribute( "aria-controls", "recover_suggest" );
       input.setAttribute( "autocapitalize", "none" );
       input.setAttribute( "spellcheck", "false" );
       input.setAttribute( "aria-label", "Word " + ( i + 1 ) );
       input.dataset.index = String( i );
       input.addEventListener( "input", on_word_input );
+      input.addEventListener( "keydown", on_word_keydown );
+      input.addEventListener( "blur", function( ) { hide_suggestions( ); show_words_status( ); } );
 
       box.appendChild( number );
       box.appendChild( input );
@@ -433,21 +436,134 @@ async function show_recover( )
       return;
    }
 
-   var list = document.getElementById( "recover_wordlist" );
+   show_words_status( );
+}
 
-   if( list.childNodes.length === 0 )
+// ---- The words a box offers as it is typed in - from their start, as an autocomplete does (Damon, 2026-10-10: the
+// browser's own list, a "datalist", matched anywhere in a word). Up and down choose, Enter or Tab takes one and goes on
+// to the next box, Escape closes, a click takes one.
+
+const c_suggestions_shown = 6;
+
+var g_suggest_input = null;
+var g_suggest_words = [ ];
+var g_suggest_index = 0;
+
+function show_suggestions( input )
+{
+   var list = document.getElementById( "recover_suggest" );
+
+   g_suggest_words = word_completions( input.value, bip39_wordlist( ), c_suggestions_shown );
+   g_suggest_index = 0;
+
+   if( g_suggest_words.length === 0 )
    {
-      bip39_wordlist( ).forEach( function( word )
-      {
-         var option = document.createElement( "option" );
+      hide_suggestions( );
 
-         option.value = word;
-
-         list.appendChild( option );
-      } );
+      return;
    }
 
+   g_suggest_input = input;
+
+   draw_suggestions( );
+
+   // NOTE: Beneath the box being typed in - the list sits in the words' fieldset, which it is placed against.
+   var set = list.parentElement.getBoundingClientRect( );
+   var box = input.getBoundingClientRect( );
+
+   list.style.left = Math.round( box.left - set.left ) + "px";
+   list.style.top = Math.round( box.bottom - set.top + 2 ) + "px";
+   list.style.minWidth = Math.round( box.width ) + "px";
+   list.hidden = false;
+}
+
+function draw_suggestions( )
+{
+   var list = document.getElementById( "recover_suggest" );
+
+   list.replaceChildren( );
+
+   g_suggest_words.forEach( function( word, i )
+   {
+      var option = document.createElement( "li" );
+
+      option.id = "recover_suggest_" + i;
+      option.className = "home-word-option" + ( ( i === g_suggest_index ) ? " is-active" : "" );
+      option.setAttribute( "role", "option" );
+      option.setAttribute( "aria-selected", String( i === g_suggest_index ) );
+      option.textContent = word;
+
+      // NOTE: On the press, before the box loses its focus.
+      option.addEventListener( "mousedown", function( event )
+      {
+         event.preventDefault( );
+
+         take_suggestion( word );
+      } );
+
+      list.appendChild( option );
+   } );
+
+   if( g_suggest_input !== null )
+      g_suggest_input.setAttribute( "aria-activedescendant", "recover_suggest_" + g_suggest_index );
+}
+
+function hide_suggestions( )
+{
+   document.getElementById( "recover_suggest" ).hidden = true;
+
+   if( g_suggest_input !== null )
+      g_suggest_input.removeAttribute( "aria-activedescendant" );
+
+   g_suggest_input = null;
+   g_suggest_words = [ ];
+}
+
+function take_suggestion( word )
+{
+   var input = g_suggest_input;
+
+   hide_suggestions( );
+
+   if( input === null )
+      return;
+
+   input.value = word;
+
+   var next = word_inputs( )[ parseInt( input.dataset.index, 10 ) + 1 ];
+
+   ( next || document.getElementById( "recover_password" ) ).focus( );
+
    show_words_status( );
+}
+
+function on_word_keydown( event )
+{
+   if( ( g_suggest_input !== event.target ) || ( g_suggest_words.length === 0 ) )
+      return;
+
+   if( ( event.key === "ArrowDown" ) || ( event.key === "ArrowUp" ) )
+   {
+      event.preventDefault( );
+
+      var count = g_suggest_words.length;
+
+      g_suggest_index = ( g_suggest_index + ( event.key === "ArrowDown" ? 1 : count - 1 ) ) % count;
+
+      draw_suggestions( );
+   }
+   else if( ( ( event.key === "Enter" ) || ( event.key === "Tab" ) ) && !event.shiftKey )
+   {
+      event.preventDefault( );
+
+      take_suggestion( g_suggest_words[ g_suggest_index ] );
+   }
+   else if( event.key === "Escape" )
+   {
+      event.preventDefault( );
+
+      hide_suggestions( );
+   }
 }
 
 // NOTE: Words pasted into a box - all twelve, say - go on across the boxes from it.
@@ -466,8 +582,12 @@ function on_word_input( event )
 
       var next = inputs[ Math.min( inputs.length - 1, start + words.length ) ];
 
+      hide_suggestions( );
+
       next.focus( );
    }
+   else
+      show_suggestions( input );
 
    show_words_status( );
 }
@@ -487,7 +607,13 @@ function show_words_status( )
       input.classList.toggle( "is-unknown", ( word !== "" ) && ( wordlist.indexOf( word ) < 0 ) && ( document.activeElement !== input ) );
    } );
 
-   var words = typed_words( );
+   // NOTE: Not the word still being typed - the start of a real one is not yet wrong (Damon, 2026-10-10).
+   var words = word_inputs( ).filter( function( input )
+   {
+      var word = input.value.trim( ).toLowerCase( );
+
+      return !( ( input === document.activeElement ) && ( wordlist.indexOf( word ) < 0 ) && ( word_completions( word, wordlist, 1 ).length > 0 ) );
+   } ).map( function( input ) { return input.value.trim( ).toLowerCase( ); } ).filter( function( word ) { return word !== ""; } );
 
    var problem = ( words.length === 0 ) ? "" : recovery_words_problem( words, wordlist );
 

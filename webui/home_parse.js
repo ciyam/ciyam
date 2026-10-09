@@ -207,6 +207,24 @@ function recovery_words_problem( words, wordlist )
    return "";
 }
 
+// NOTE: The words a box offers as it is typed in - those starting with what is typed, as an autocomplete does (Damon,
+// 2026-10-10: the browser's own list matched anywhere in a word), at most "limit". None once the word is whole and the
+// only one, or for nothing typed.
+function word_completions( typed, wordlist, limit )
+{
+   var prefix = String( typed || "" ).trim( ).toLowerCase( );
+
+   if( ( prefix === "" ) || /[^a-z]/.test( prefix ) )
+      return [ ];
+
+   var matches = ( wordlist || [ ] ).filter( function( word ) { return word.indexOf( prefix ) === 0; } );
+
+   if( ( matches.length === 1 ) && ( matches[ 0 ] === prefix ) )
+      return [ ];
+
+   return matches.slice( 0, ( limit > 0 ) ? limit : 6 );
+}
+
 // NOTE: The node's refusals, said plainly - anything else as it came.
 function recovery_error_text( error )
 {
@@ -670,6 +688,7 @@ if( typeof module !== "undefined" )
       recovery_words: recovery_words,
       recovery_words_problem: recovery_words_problem,
       recovery_error_text: recovery_error_text,
+      word_completions: word_completions,
       log_problems: log_problems,
       log_problems_text: log_problems_text,
       rooms_filling: rooms_filling,

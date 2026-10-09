@@ -113,6 +113,16 @@ check( "a misspelling said before a count", hp.recovery_words_problem( [ "taxi",
 check( "too few", hp.recovery_words_problem( twelve.slice( 0, 11 ), wordlist ), "That's 11 words - there are twelve." );
 check( "too many", hp.recovery_words_problem( twelve.concat( [ "act" ] ), wordlist ), "That's 13 words - there are twelve." );
 
+var completing = [ "abandon", "act", "action", "actor", "actress", "actual", "adapt", "fact", "impact", "taxi" ];
+
+check( "completions start with what is typed - not anywhere in a word", hp.word_completions( "act", completing, 6 ),
+ [ "act", "action", "actor", "actress", "actual" ] );
+check( "any case, spaces trimmed", hp.word_completions( " AC ", completing, 6 ), [ "act", "action", "actor", "actress", "actual" ] );
+check( "at most the limit", hp.word_completions( "a", completing, 3 ), [ "abandon", "act", "action" ] );
+check( "a whole word that is the only one - none", hp.word_completions( "taxi", completing, 6 ), [ ] );
+check( "nothing typed, or not a word - none", [ hp.word_completions( "", completing, 6 ), hp.word_completions( "a1", completing, 6 ) ], [ [ ], [ ] ] );
+check( "no word starts so - none", hp.word_completions( "zz", completing, 6 ), [ ] );
+
 check( "the node's refusals - not its words", hp.recovery_error_text( "Error: System identity mismatch (incorrect mnemonics?)." ),
  "Those aren't this node's twelve words." );
 check( "- what it answers today for words not its own", hp.recovery_error_text( "Error: System is currently locked for administration." ),

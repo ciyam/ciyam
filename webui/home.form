@@ -86,8 +86,8 @@ http://www.opensource.org/licenses/mit-license.php.
          <fieldset class="home-words-set">
             <legend class="chat-label">Your twelve words</legend>
             <div class="home-words" id="recover_words"></div>
+            <ul class="home-word-suggest" id="recover_suggest" role="listbox" aria-label="Words" hidden></ul>
          </fieldset>
-         <datalist id="recover_wordlist"></datalist>
          <div class="signin-hint" id="recover_words_status" role="status">Type them in order, or paste all twelve into the
           first box.</div>
 
