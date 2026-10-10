@@ -1202,7 +1202,9 @@ async function recover_forget_saved( )
       users = "Error: " + ( ( e && e.message ) ? e.message : "the request failed." );
    }
 
-   var node_pins = is_error_response( users ) ? null
+   // NOTE: No answer is not an empty node - "fetch( )" does not call back when the request fails, and the list would
+   // then hold admin alone, so every other saved account would go (found by review).
+   var node_pins = ( ( users.trim( ) === "" ) || is_error_response( users ) ) ? null
     : parse_people( users, ciyam.access, "admin" ).map( function( row ) { return row.pin; } );
 
    try

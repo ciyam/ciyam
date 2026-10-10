@@ -26,8 +26,6 @@ const c_storage_device = "cws.device";
 const c_storage_access = "cws.access";
 const c_storage_hashed_prefix = "cws.hashed_";
 
-// NOTE: The announcements this account has dismissed on this browser, by message id.
-
 var g_room = "";
 var g_rooms = [ ];
 

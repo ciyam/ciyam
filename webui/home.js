@@ -790,9 +790,6 @@ async function enter_app( )
 const c_lobby_room = "0000000";
 const c_administration_room = "0000001";
 
-// NOTE: The key the chat keeps a person's dismissed announcements under, so dismissing on Home dismisses in the
-// chat too (Damon, 2026-10-08: one dismissal for both) - the chat hears it through the "storage" event.
-
 // NOTE: How often Home looks again while it is open - and at once when its tab is shown again.
 const c_refresh_ms = 60000;
 
@@ -807,7 +804,9 @@ function devices_url( )
    return ciyam.get_cws_url( ) + "/devices?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&session=" + ciyam.sessid;
 }
 
-// NOTE: Shared with the chat - by the account's name, not its PIN ("account_storage_key( )" in "chat_parse.js").
+// NOTE: The key the chat keeps a person's dismissed announcements under, so dismissing on Home dismisses in the
+// chat too (Damon, 2026-10-08: one dismissal for both) - the chat hears it through the "storage" event. By the
+// account's name, not its PIN ("account_storage_key( )" in "chat_parse.js").
 function dismissed_key( )
 {
    return account_storage_key( c_storage_dismissed_by_name, ciyam.username, ciyam.is_admin );
