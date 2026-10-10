@@ -2067,6 +2067,60 @@ function forget_source( )
 // the account, "access" keeps its PIN, "full" its PIN and password hash. Three outcomes, not two:
 // the harness has had "creds retain partial" all along - keep the PIN, drop the password - which a
 // single checkbox could not express, as Ian raised.
+// NOTE: A PIN is not shown once its account is made - it is meant to be known only by its user and the administrator, and
+// on screen anyone looking over a shoulder could read it (Ian, 2026-10-10). Each PIN saved on this browser keeps its
+// account's name beside it ("cws.name_<pin>"), and the sign in's list shows that in place of the PIN.
+const c_saved_name_prefix = "cws.name_";
+
+// NOTE: The name an account goes by on screen - never its PIN. Admin has no username of its own.
+function account_display_name( username, is_admin )
+{
+   var name = String( username || "" ).trim( );
+
+   if( name !== "" )
+      return name;
+
+   return is_admin ? "admin" : "Your account";
+}
+
+// NOTE: A saved account in the sign in's list - its name, or for one saved before names were kept, its place in the list
+// ("Saved account 2") until it next signs in.
+function saved_account_label( name, n )
+{
+   var text = String( name || "" ).trim( );
+
+   return ( text !== "" ) ? text : "Saved account " + ( n + 1 );
+}
+
+// NOTE: The stored keys of names whose PIN is no longer saved - left when a PIN is forgotten elsewhere (the console's
+// "creds", a recovery), so the sign in lets them go as it lists the rest.
+function stale_saved_names( keys, stored )
+{
+   var saved = parse_access_list( stored );
+
+   return ( keys || [ ] ).filter( function( key )
+   {
+      return ( String( key ).indexOf( c_saved_name_prefix ) === 0 ) && ( saved.indexOf( key.substr( c_saved_name_prefix.length ) ) < 0 );
+   } );
+}
+
+// NOTE: What is kept for one account on this browser whether or not it is remembered - its recent emoji, the
+// announcements it dismissed - is keyed by the account's name, not its PIN, so "Remember: Nothing" leaves no PIN behind
+// (Damon, 2026-10-11). The "@" sets these keys apart from the ones kept by PIN before.
+const c_storage_dismissed_by_name = "cws.dismissed@";
+const c_storage_emoji_recent_by_name = "cws.emoji_recent@";
+
+function account_storage_key( prefix, username, is_admin )
+{
+   return prefix + account_display_name( username, is_admin );
+}
+
+// NOTE: The keys kept by PIN before then - let go by the sign in, as it lists the saved accounts.
+function pin_keyed_leftovers( keys )
+{
+   return ( keys || [ ] ).filter( function( key ) { return /^cws\.(dismissed|emoji_recent)_[0-9]{5}$/.test( String( key ) ); } );
+}
+
 const c_retain_none = "none";
 const c_retain_access = "access";
 const c_retain_full = "full";
@@ -2255,6 +2309,14 @@ if( typeof module !== "undefined" )
       linked_tab_address: linked_tab_address,
       room_from_hash: room_from_hash,
       plan_retain_choice: plan_retain_choice,
+      c_saved_name_prefix: c_saved_name_prefix,
+      account_display_name: account_display_name,
+      saved_account_label: saved_account_label,
+      stale_saved_names: stale_saved_names,
+      c_storage_dismissed_by_name: c_storage_dismissed_by_name,
+      c_storage_emoji_recent_by_name: c_storage_emoji_recent_by_name,
+      account_storage_key: account_storage_key,
+      pin_keyed_leftovers: pin_keyed_leftovers,
       is_valid_room_name: is_valid_room_name,
       is_valid_username: is_valid_username
    };

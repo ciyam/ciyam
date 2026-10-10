@@ -153,7 +153,6 @@ http://www.opensource.org/licenses/mit-license.php.
             <span class="home-rail-user-text">
                <span class="home-rail-user-name" id="rail_name"></span>
                <span class="home-rail-user-role" id="rail_role"></span>
-               <span class="home-rail-user-role">PIN <span class="home-mono" id="rail_pin"></span></span>
             </span>
          </div>
          <button type="button" class="chat-btn" id="app_sign_out">Sign out</button>
@@ -200,8 +199,7 @@ http://www.opensource.org/licenses/mit-license.php.
                      <span class="home-avatar home-avatar--large" id="account_avatar"></span>
                      <span class="home-rail-user-text">
                         <span class="home-rail-user-name" id="account_name"></span>
-                        <span class="home-rail-user-role"><span id="account_role"></span> &middot; PIN
-                         <span class="home-mono" id="account_pin"></span></span>
+                        <span class="home-rail-user-role" id="account_role"></span>
                      </span>
                   </div>
                   <div class="home-devices">

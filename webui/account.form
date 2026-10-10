@@ -332,7 +332,7 @@ http://www.opensource.org/licenses/mit-license.php.
             <span class="account-avatar account-avatar--large" id="mine_avatar"></span>
             <div>
                <div class="account-identity-name" id="mine_name"></div>
-               <div class="account-identity-meta">PIN <span class="chat-mono" id="mine_pin"></span> &middot; <span id="mine_type"></span></div>
+               <div class="account-identity-meta"><span id="mine_type"></span></div>
             </div>
          </div>
 

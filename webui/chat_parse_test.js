@@ -1089,6 +1089,24 @@ check( "nothing typed, or not a word - none", [ cp.word_completions( "", complet
 check( "no word starts so - none", cp.word_completions( "zz", completing, 6 ), [ ] );
 
 // NOTE: After a recovery - admin's PIN 10301, once 31324; 40311 another account, kept with its password.
+// NOTE: PINs out of sight (Ian, 2026-10-10) - names in their place.
+check( "an account's name on screen - its username", cp.account_display_name( "damon", false ), "damon" );
+check( "- admin, with none of its own", [ cp.account_display_name( "", true ), cp.account_display_name( undefined, true ) ], [ "admin", "admin" ] );
+check( "- never a PIN", cp.account_display_name( "", false ), "Your account" );
+check( "a saved account listed by its name", cp.saved_account_label( "damon", 0 ), "damon" );
+check( "- one saved before names were kept, by its place", [ cp.saved_account_label( "", 0 ), cp.saved_account_label( null, 2 ) ],
+ [ "Saved account 1", "Saved account 3" ] );
+check( "names whose PIN is no longer saved - let go", cp.stale_saved_names( [ "cws.name_10301", "cws.name_31324", "cws.access", "cws.name_40311" ],
+ "10301,40311" ), [ "cws.name_31324" ] );
+check( "- none saved, every name goes", cp.stale_saved_names( [ "cws.name_10301", "cws.device" ], null ), [ "cws.name_10301" ] );
+
+// NOTE: Kept for an account whether or not it is remembered - by its name (2026-10-11).
+check( "dismissed announcements kept by name", cp.account_storage_key( cp.c_storage_dismissed_by_name, "damon", false ), "cws.dismissed@damon" );
+check( "recent emoji kept by name - admin's as admin", cp.account_storage_key( cp.c_storage_emoji_recent_by_name, "", true ), "cws.emoji_recent@admin" );
+check( "the keys kept by PIN before - let go, nothing else",
+ cp.pin_keyed_leftovers( [ "cws.dismissed_20401", "cws.emoji_recent_10301", "cws.dismissed@damon", "cws.hashed_10301", "cws.emoji_recent", "cws.access" ] ),
+ [ "cws.dismissed_20401", "cws.emoji_recent_10301" ] );
+
 check( "after a recovery - admin's old PIN goes, its password with it, and the new PIN's password",
  cp.plan_after_recovery( "31324,40311", [ "40311" ], "10301" ), { list: "40311", forget: [ "10301", "31324" ] } );
 check( "- the same PIN again (a test node) - kept, its password not", cp.plan_after_recovery( "10301,40311", [ "40311" ], "10301" ),

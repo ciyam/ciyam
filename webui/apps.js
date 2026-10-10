@@ -327,7 +327,7 @@ function apps_refresh( )
 
    current.textContent = switcher_title( g_apps_options.current, ciyam.is_admin );
 
-   var name = ciyam.username || ciyam.access;
+   var name = account_display_name( ciyam.username, ciyam.is_admin );
 
    var avatar = document.getElementById( "apps_avatar" );
 

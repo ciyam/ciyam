@@ -565,7 +565,7 @@ function enter_console( )
    update_status( );
 
    print_line( "CIYAM console · " + ( g_linked ? "linked to " + g_owner_page.name : "standalone" ) + " · signed in as "
-    + ( ciyam.username || ciyam.access ) + ( ciyam.is_admin ? " [adm]" : " [std]" ), "is-dim" );
+    + ( account_display_name( ciyam.username, ciyam.is_admin ) ) + ( ciyam.is_admin ? " [adm]" : " [std]" ), "is-dim" );
 
    print_line( "Type help for the commands, or press ctrl+k for the palette.", "is-dim" );
 
@@ -598,10 +598,10 @@ function update_title( )
 
    if( g_connected )
    {
-      document.getElementById( "title_host" ).textContent = ciyam.access + "@" + window.location.host;
+      document.getElementById( "title_host" ).textContent = account_display_name( ciyam.username, ciyam.is_admin ) + "@" + window.location.host;
       document.getElementById( "title_session" ).textContent = "session " + ciyam.sessid;
 
-      role.textContent = ( ciyam.is_admin ? "[adm] " : "[std] " ) + ( ciyam.username || ciyam.access );
+      role.textContent = ( ciyam.is_admin ? "[adm] " : "[std] " ) + ( account_display_name( ciyam.username, ciyam.is_admin ) );
    }
    else
    {
@@ -1789,8 +1789,12 @@ function run_creds( creds )
 
    var list = stored( c_storage_access );
 
+   // NOTE: The account's name - as saved beside its PIN, or as signed in - for what is kept by name.
+   var pin = creds.pin || ciyam.access;
+   var name = stored( c_saved_name_prefix + pin ) || ( ( pin === ciyam.access ) ? account_display_name( ciyam.username, ciyam.is_admin ) : "" );
+
    var plan = ( creds.verb === "remove" )
-    ? plan_creds_removal( keys, list, creds.pin || ciyam.access, creds.partial )
+    ? plan_creds_removal( keys, list, pin, creds.partial, name )
     : plan_creds_retain( list, ciyam.access, ciyam.hashed || "", creds.partial );
 
    if( plan.error )
@@ -2218,8 +2222,8 @@ async function open_server_list( name, button )
 
    var origin = document.getElementById( "script_origin" );
 
-   origin.textContent = "From the server's ciyam_" + ( ( name === c_console_own_name ) ? ciyam.access : name )
-    + ".list - Save here keeps a copy in this browser.";
+   origin.textContent = ( ( name === c_console_own_name ) ? "From your own list on the server" : "From the server's ciyam_" + name + ".list" )
+    + " - Save here keeps a copy in this browser.";
    origin.hidden = false;
 
    set_error( "script_error", "" );

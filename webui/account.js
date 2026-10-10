@@ -601,6 +601,8 @@ function apply_retain_choice( select_id )
    catch( e )
    {
    }
+
+   signin_remember_name( ciyam.access, account_display_name( ciyam.username, ciyam.is_admin ) );
 }
 
 async function connect_as( pin, hashed, password )
@@ -631,7 +633,7 @@ function enter_app( )
    signin_keep_session( );
 
    document.getElementById( "nav_people" ).hidden = !ciyam.is_admin;
-   document.getElementById( "topbar_user" ).textContent = ciyam.username || ciyam.access;
+   document.getElementById( "topbar_user" ).textContent = account_display_name( ciyam.username, ciyam.is_admin );
    document.getElementById( "console_session" ).textContent = "inherits session " + ciyam.sessid;
 
    // NOTE: Moving between apps, and signing out of every one, is the switcher's - whoever opened this page.
@@ -1040,13 +1042,14 @@ function render_mine( )
 {
    var name = ciyam.username || "";
 
+   var shown = account_display_name( name, ciyam.is_admin );
+
    var avatar = document.getElementById( "mine_avatar" );
 
-   avatar.textContent = user_initial( name || ciyam.access );
-   avatar.style.background = "var(--color-sender-" + sender_colour_index( name || ciyam.access ) + ")";
+   avatar.textContent = user_initial( shown );
+   avatar.style.background = "var(--color-sender-" + sender_colour_index( shown ) + ")";
 
-   document.getElementById( "mine_name" ).textContent = name || "No username";
-   document.getElementById( "mine_pin" ).textContent = ciyam.access;
+   document.getElementById( "mine_name" ).textContent = shown;
    document.getElementById( "mine_type" ).textContent = ciyam.is_admin ? "Administrator" : "Standard";
 
    // NOTE: For a password manager - which account the password belongs to.
@@ -1573,7 +1576,11 @@ async function do_join( event )
          apply_retain_choice( "join_retain" );
       }
       else
+      {
          remember_pin( pin );
+
+         signin_remember_name( pin, username );
+      }
 
       show_written( pin, username );
    }

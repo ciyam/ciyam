@@ -16,6 +16,8 @@ const chat_parse = require( "./chat_parse.js" );
 
 global.parse_access_list = chat_parse.parse_access_list;
 global.format_access_list = chat_parse.format_access_list;
+global.c_storage_dismissed_by_name = chat_parse.c_storage_dismissed_by_name;
+global.c_storage_emoji_recent_by_name = chat_parse.c_storage_emoji_recent_by_name;
 
 const cp = require( "./console_parse.js" );
 
@@ -174,6 +176,10 @@ var keys = [ "cws.access", "cws.device", "cws.hashed_20401", "cws.dismissed_2040
 check( "completely: the PIN out of the list, and every key of that account",
  cp.plan_creds_removal( keys, "20362,20401,20405", "20401", false ),
  { list: "20362,20405", remove: [ "cws.hashed_20401", "cws.dismissed_20401", "cws.emoji_recent_20401" ], set: { }, message: "(removed credentials completely for 20401)" } );
+check( "with its name: what is kept by name goes too, and the name saved beside its PIN",
+ cp.plan_creds_removal( [ "cws.access", "cws.hashed_20401", "cws.name_20401", "cws.dismissed@verify-a", "cws.emoji_recent@verify-a", "cws.dismissed@verify-e" ],
+  "20401,20405", "20401", false, "verify-a" ).remove,
+ [ "cws.hashed_20401", "cws.name_20401", "cws.dismissed@verify-a", "cws.emoji_recent@verify-a" ] );
 check( "the last account: the list key goes", cp.plan_creds_removal( [ "cws.access" ], "20401", "20401", false ).list, null );
 check( "partially: only the password hash", cp.plan_creds_removal( keys, "20362,20401", "20401", true ),
  { list: undefined, remove: [ "cws.hashed_20401" ], set: { }, message: "(removed credentials partially for 20401)" } );

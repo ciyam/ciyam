@@ -639,7 +639,7 @@ function build_shell( )
    document.getElementById( "rail_node" ).hidden = ( sections.length === 0 );
    chips.hidden = ( sections.length === 0 );
 
-   var name = ciyam.username || ciyam.access;
+   var name = account_display_name( ciyam.username, ciyam.is_admin );
 
    [ "rail_avatar", "top_avatar" ].forEach( function( id )
    {
@@ -651,7 +651,6 @@ function build_shell( )
 
    set_text( "rail_name", name );
    set_text( "rail_role", role_text( ciyam.is_admin ) );
-   set_text( "rail_pin", ciyam.access );
    set_text( "top_sub", name + " · " + role_text( ciyam.is_admin ) );
 }
 
@@ -757,7 +756,7 @@ async function enter_app( )
    // NOTE: The console drawer, as in the chat and the accounts page - admin's, and not on a phone (Damon, 2026-10-08).
    document.getElementById( "console_toggle" ).hidden = !ciyam.is_admin;
 
-   var name = ciyam.username || ciyam.access;
+   var name = account_display_name( ciyam.username, ciyam.is_admin );
 
    set_text( "app_greeting", "Hello, " + name );
 
@@ -793,7 +792,6 @@ const c_administration_room = "0000001";
 
 // NOTE: The key the chat keeps a person's dismissed announcements under, so dismissing on Home dismisses in the
 // chat too (Damon, 2026-10-08: one dismissal for both) - the chat hears it through the "storage" event.
-const c_storage_dismissed = "cws.dismissed_";
 
 // NOTE: How often Home looks again while it is open - and at once when its tab is shown again.
 const c_refresh_ms = 60000;
@@ -809,11 +807,17 @@ function devices_url( )
    return ciyam.get_cws_url( ) + "/devices?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&session=" + ciyam.sessid;
 }
 
+// NOTE: Shared with the chat - by the account's name, not its PIN ("account_storage_key( )" in "chat_parse.js").
+function dismissed_key( )
+{
+   return account_storage_key( c_storage_dismissed_by_name, ciyam.username, ciyam.is_admin );
+}
+
 function read_dismissed( )
 {
    try
    {
-      return parse_dismissed( localStorage.getItem( c_storage_dismissed + ciyam.access ) );
+      return parse_dismissed( localStorage.getItem( dismissed_key( ) ) );
    }
    catch( e )
    {
@@ -825,7 +829,7 @@ function dismiss_announcement( unique )
 {
    try
    {
-      localStorage.setItem( c_storage_dismissed + ciyam.access, JSON.stringify( add_dismissed( read_dismissed( ), unique ) ) );
+      localStorage.setItem( dismissed_key( ), JSON.stringify( add_dismissed( read_dismissed( ), unique ) ) );
    }
    catch( e )
    {
@@ -996,7 +1000,7 @@ function render_member_home( )
    } );
 
    // ---- Your account
-   var name = ciyam.username || ciyam.access;
+   var name = account_display_name( ciyam.username, ciyam.is_admin );
    var avatar_large = document.getElementById( "account_avatar" );
 
    avatar_large.textContent = user_initial( name );
@@ -1004,7 +1008,6 @@ function render_member_home( )
 
    set_text( "account_name", name );
    set_text( "account_role", role_text( ciyam.is_admin ) );
-   set_text( "account_pin", ciyam.access );
 
    var devices = document.getElementById( "device_list" );
 
@@ -1091,7 +1094,7 @@ function install_member_home( )
    // NOTE: The chat dismissing an announcement - or another Home - shows here at once.
    window.addEventListener( "storage", function( event )
    {
-      if( ( ciyam.access !== "" ) && ( event.key === c_storage_dismissed + ciyam.access ) )
+      if( ( ciyam.access !== "" ) && ( event.key === dismissed_key( ) ) )
          render_member_home( );
    } );
 }

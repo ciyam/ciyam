@@ -126,8 +126,9 @@ const c_creds_pin_length = 5;
 const c_creds_hashed_prefix = "cws.hashed_";
 
 // NOTE: Every key that belongs to one account on this browser - "cws.<name>_<pin>", the
-// harness's "arbitrary" value included. Removing an account completely takes all of them.
-const c_creds_account_prefixes = [ c_creds_hashed_prefix, "cws.dismissed_", "cws.emoji_recent_", "cws.arbitrary_" ];
+// harness's "arbitrary" value and the name shown for a saved PIN included, and those kept by PIN before
+// recent emoji and dismissals were kept by name. Removing an account completely takes all of them.
+const c_creds_account_prefixes = [ c_creds_hashed_prefix, "cws.name_", "cws.dismissed_", "cws.emoji_recent_", "cws.arbitrary_" ];
 
 // ====================================================================
 // Session handover
@@ -438,9 +439,10 @@ function parse_creds_command( text )
 // NOTE: What "remove creds" does to this browser's saved data, worked out without touching
 // it. "keys" are the localStorage keys present and "list" the stored "cws.access" value.
 // Returns the new list (null to remove the key, undefined to leave it alone), the keys to
-// remove and the line to print - or an error. Relies on "parse_access_list( )" and
-// "format_access_list( )" from "chat_parse.js", which the console loads.
-function plan_creds_removal( keys, list, access, partial )
+// remove and the line to print - or an error. "name" is the account's name, if known: what is kept by name
+// (recent emoji, dismissals - 2026-10-11) goes with it. Relies on "parse_access_list( )", "format_access_list( )"
+// and the "c_storage_..._by_name" prefixes from "chat_parse.js", which the console loads.
+function plan_creds_removal( keys, list, access, partial, name )
 {
    if( access === "" )
       return { error: "Error: Not signed in - name the account: remove creds <pin>" };
@@ -457,6 +459,7 @@ function plan_creds_removal( keys, list, access, partial )
 
    var remove = c_creds_account_prefixes
     .map( function( prefix ) { return prefix + access; } )
+    .concat( name ? [ c_storage_dismissed_by_name + name, c_storage_emoji_recent_by_name + name ] : [ ] )
     .filter( function( key ) { return keys.indexOf( key ) >= 0; } );
 
    var entries = parse_access_list( list );

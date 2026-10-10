@@ -31,7 +31,8 @@
 //
 // The element ids are the ones every page's sign in has used ("signin_access", "signin_pin", ...), as
 // the browser suites expect. Needs "chat_parse.js" ("parse_access_list( )", "retain_mode_of( )",
-// "plan_retain_choice( )", "sign_in_error_text( )") and "account_parse.js" ("is_account_pin( )",
+// "plan_retain_choice( )", "sign_in_error_text( )", "account_display_name( )", "saved_account_label( )",
+// "stale_saved_names( )", "pin_keyed_leftovers( )") and "account_parse.js" ("is_account_pin( )",
 // "is_unknown_device_error( )"), and the page's "ciyam". The look is "chat.css"'s ".chat-signin".
 //
 // NOTE: Its own names throughout - the pages declare "c_storage_device" and the rest as "const", and a
@@ -103,8 +104,9 @@ function signin_build( host, options )
 
    form.appendChild( signin_element( "label", { class: "chat-label", for: "signin_pin", id: "signin_pin_label" }, "PIN" ) );
 
-   var pin = signin_element( "input", { type: "text", id: "signin_pin", class: "chat-field chat-field--mono",
-    inputmode: "numeric", maxlength: "5", autocomplete: "username" } );
+   // NOTE: Typed out of sight, like the password (Ian, 2026-10-10).
+   var pin = signin_element( "input", { type: "password", id: "signin_pin", class: "chat-field chat-field--mono",
+    inputmode: "numeric", maxlength: "5", autocomplete: "off" } );
 
    pin.addEventListener( "input", signin_on_access );
 
@@ -288,6 +290,44 @@ function signin_saved_hash( pin )
    return signin_storage_get( c_signin_storage_hashed_prefix + pin );
 }
 
+function signin_saved_name( pin )
+{
+   return signin_storage_get( c_saved_name_prefix + pin ) || "";
+}
+
+// NOTE: The name shown for a saved PIN - kept while the PIN is saved, let go when it is not. The accounts page calls it
+// too, after a claim.
+function signin_remember_name( pin, name )
+{
+   try
+   {
+      if( parse_access_list( localStorage.getItem( c_signin_storage_access ) ).indexOf( pin ) >= 0 )
+         localStorage.setItem( c_saved_name_prefix + pin, name );
+      else
+         localStorage.removeItem( c_saved_name_prefix + pin );
+   }
+   catch( e )
+   {
+   }
+}
+
+function signin_forget_stale_names( )
+{
+   try
+   {
+      var keys = [ ];
+
+      for( var i = 0; i < localStorage.length; i++ )
+         keys.push( localStorage.key( i ) );
+
+      stale_saved_names( keys, localStorage.getItem( c_signin_storage_access ) ).concat( pin_keyed_leftovers( keys ) )
+       .forEach( function( key ) { localStorage.removeItem( key ); } );
+   }
+   catch( e )
+   {
+   }
+}
+
 // NOTE: Read each time - another app may have replaced it since this page loaded ("Reset this browser").
 function signin_stored_device( )
 {
@@ -306,9 +346,12 @@ function signin_remember_device( )
    }
 }
 
-// NOTE: The accounts saved on this browser, by any app, ahead of "Enter a PIN...", the first chosen.
+// NOTE: The accounts saved on this browser, by any app, ahead of "Enter a PIN...", the first chosen - by name, never by
+// PIN (Ian, 2026-10-10).
 function signin_fill_saved( )
 {
+   signin_forget_stale_names( );
+
    var select = document.getElementById( g_signin_ids.access );
 
    for( var i = select.options.length - 1; i >= 0; i-- )
@@ -319,7 +362,8 @@ function signin_fill_saved( )
 
    signin_saved_pins( ).forEach( function( pin, n )
    {
-      select.options.add( new Option( pin + ( ( signin_saved_hash( pin ) !== null ) ? c_signin_saved_mark : "" ), pin, false ), n );
+      select.options.add( new Option( saved_account_label( signin_saved_name( pin ), n ) + ( ( signin_saved_hash( pin ) !== null ) ? c_signin_saved_mark : "" ),
+       pin, false ), n );
    } );
 
    select.selectedIndex = 0;
@@ -375,6 +419,8 @@ function signin_apply_retain( )
    catch( e )
    {
    }
+
+   signin_remember_name( ciyam.access, account_display_name( ciyam.username, ciyam.is_admin ) );
 }
 
 // NOTE: Everything this browser keeps for the node goes: the device token, which a rebuilt node no

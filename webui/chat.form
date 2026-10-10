@@ -40,7 +40,6 @@ http://www.opensource.org/licenses/mit-license.php.
                        "c_session_type_standard" in "ciyam.js". It belongs to the session: one
                        opened with the admin PIN is "[adm]", any other "[std]". -->
                   <dl class="chat-user-menu-facts">
-                     <div><dt>PIN:</dt> <dd class="chat-mono" id="user_menu_pin"></dd></div>
                      <div><dt>Device:</dt> <dd class="chat-mono" id="user_menu_device"></dd></div>
                      <div><dt>Session type:</dt> <dd id="user_menu_type"></dd></div>
                      <div><dt>Session:</dt> <dd class="chat-mono" id="user_menu_session"></dd></div>

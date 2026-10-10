@@ -588,6 +588,16 @@ ok   at most the limit
 ok   a whole word that is the only one - none
 ok   nothing typed, or not a word - none
 ok   no word starts so - none
+ok   an account's name on screen - its username
+ok   - admin, with none of its own
+ok   - never a PIN
+ok   a saved account listed by its name
+ok   - one saved before names were kept, by its place
+ok   names whose PIN is no longer saved - let go
+ok   - none saved, every name goes
+ok   dismissed announcements kept by name
+ok   recent emoji kept by name - admin's as admin
+ok   the keys kept by PIN before - let go, nothing else
 ok   after a recovery - admin's old PIN goes, its password with it, and the new PIN's password
 ok   - the same PIN again (a test node) - kept, its password not
 ok   - the accounts not read - only the new PIN's password goes

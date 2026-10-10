@@ -66,6 +66,7 @@ ok   other lines are not creds
 ok   resolved as a local command
 ok   a bad argument says why
 ok   completely: the PIN out of the list, and every key of that account
+ok   with its name: what is kept by name goes too, and the name saved beside its PIN
 ok   the last account: the list key goes
 ok   partially: only the password hash
 ok   partially, with no saved password

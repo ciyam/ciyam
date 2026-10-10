@@ -27,7 +27,6 @@ const c_storage_access = "cws.access";
 const c_storage_hashed_prefix = "cws.hashed_";
 
 // NOTE: The announcements this account has dismissed on this browser, by message id.
-const c_storage_dismissed_prefix = "cws.dismissed_";
 
 var g_room = "";
 var g_rooms = [ ];
@@ -243,7 +242,7 @@ function enter_chat( )
    document.getElementById( "signin_view" ).hidden = true;
    document.getElementById( "chat_view" ).hidden = false;
 
-   document.getElementById( "topbar_user" ).textContent = ciyam.username || ciyam.access;
+   document.getElementById( "topbar_user" ).textContent = account_display_name( ciyam.username, ciyam.is_admin );
 
    apps_refresh( );
 
@@ -269,7 +268,7 @@ function enter_chat( )
 // in place of an avatar image, top right and larger in the menu it opens.
 function render_user_badge( )
 {
-   var name = ciyam.username || ciyam.access;
+   var name = account_display_name( ciyam.username, ciyam.is_admin );
 
    var colour = "var(--color-sender-" + sender_colour_index( name ) + ")";
 
@@ -287,7 +286,6 @@ function render_user_badge( )
    avatar.setAttribute( "aria-label", "Account menu for " + name );
 
    document.getElementById( "user_menu_name" ).textContent = name;
-   document.getElementById( "user_menu_pin" ).textContent = ciyam.access;
    document.getElementById( "user_menu_device" ).textContent = ciyam.device;
    document.getElementById( "user_menu_type" ).textContent = ciyam.is_admin ? "admin" : "standard";
 }
@@ -362,7 +360,6 @@ var g_emoji_panel_built = false;
 
 // NOTE: Per account, like the other saved settings. The first version kept one list for the
 // whole browser under "cws.emoji_recent"; that is simply dropped.
-const c_storage_emoji_recent_prefix = "cws.emoji_recent_";
 const c_storage_emoji_recent_old = "cws.emoji_recent";
 
 const c_emoji_suggest_max = 8;
@@ -379,9 +376,10 @@ function emoji_list( )
    return g_emoji_catalogue;
 }
 
+// NOTE: By the account's name, not its PIN - "account_storage_key( )" in "chat_parse.js".
 function emoji_recent_key( )
 {
-   return c_storage_emoji_recent_prefix + ciyam.access;
+   return account_storage_key( c_storage_emoji_recent_by_name, ciyam.username, ciyam.is_admin );
 }
 
 // NOTE: A phone has emoji on its own keyboard, and focusing a field there brings the keyboard
@@ -2390,7 +2388,7 @@ function announcements_signature( list )
 
 function dismissed_key( )
 {
-   return c_storage_dismissed_prefix + ciyam.access;
+   return account_storage_key( c_storage_dismissed_by_name, ciyam.username, ciyam.is_admin );
 }
 
 function read_dismissed( )
