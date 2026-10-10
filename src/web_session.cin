@@ -15,13 +15,12 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "3"
-ERROR=Need token, device and session values.
+ERROR=Need device, session and username values.
 @else
 ;
-TOKEN=$1
-DEVICE=$2
-SESSION=$3
-USERNAME=$4
+DEVICE=$1
+SESSION=$2
+USERNAME=$3
 ;
 ENTRANCE_ROOM=0000000
 ;
@@ -34,7 +33,7 @@ TEMP_NAME=$OUTPUT
 ;
 TEMP_FILE=$CIYAM_TMP_DIR/$SESSION/$TEMP_NAME
 ;
-OUTPUT_FILE=$CIYAM_TMP_DIR/web.$TOKEN.$DEVICE
+OUTPUT_FILE=$CIYAM_TMP_DIR/web.$USERNAME.$DEVICE
 ;
 ~rm -f $OUTPUT_FILE
 ;
@@ -103,10 +102,10 @@ IRC_ALLOWED=
 @endif
 ;
 @ifdef $IRC_ALLOWED
-.=system_variable @web.$TOKEN.$DEVICE.0*
+.=system_variable @web.$USERNAME.$DEVICE.0*
 @ifdef $OUTPUT
 ALL_START_POINTS=$OUTPUT
-ALL_START_POINTS=@repstr:@web.$TOKEN.$DEVICE./:$ALL_START_POINTS
+ALL_START_POINTS=@repstr:@web.$USERNAME.$DEVICE./:$ALL_START_POINTS
 ALL_START_POINTS=@repstr: /=:$ALL_START_POINTS
 ALL_START_POINTS=@repstr:\n/,:$ALL_START_POINTS
 ;
@@ -114,18 +113,16 @@ ALL_START_POINTS=@repstr:\n/,:$ALL_START_POINTS
 @endif
 @endif
 ;
-ADMIN_TOKEN=@file:.web_access_admin
-;
-@ifeq "$TOKEN" "$ADMIN_TOKEN"
-.=system_variable @web.$TOKEN.$DEVICE.message "[adm]$LOCKED"
+@ifeq "admin" "$USERNAME"
+.=system_variable @web.$USERNAME.$DEVICE.message "[adm]$LOCKED"
 @else
 @ifdef $LOCKED
 LOCKED=?
 @endif
-.=system_variable @web.$TOKEN.$DEVICE.message "[std]$LOCKED"
+.=system_variable @web.$USERNAME.$DEVICE.message "[std]$LOCKED"
 @endif
 ;
-.=session_variable @storage_var_name @web.$TOKEN.$DEVICE.storage
+.=session_variable @storage_var_name @web.$USERNAME.$DEVICE.storage
 ;
 @label NEXT
 ;
@@ -135,15 +132,15 @@ LOCKED=?
 ;
 @:NEXT
 ;
-.=wait -variable=@web.$TOKEN.$DEVICE.command -no_progress 60000 web_session
+.=wait -variable=@web.$USERNAME.$DEVICE.command -no_progress 60000 web_session
 ;
-.=system_variable @web.$TOKEN.$DEVICE.command
+.=system_variable @web.$USERNAME.$DEVICE.command
 COMMAND=$OUTPUT
 ;
 @ifndef $COMMAND
 @label END_LOOP
 @else
-.=system_variable @web.$TOKEN.$DEVICE.command ""
+.=system_variable @web.$USERNAME.$DEVICE.command ""
 ;
 @ifneq "$COMMAND" ";@web_session_check"
 ; NOTE: Supports up to eight commands.
@@ -225,17 +222,17 @@ UNIX_UNIQUE=@$UNIX_UNIQUE+1
 .session_variable @irc_start_point_$IRC_ROOM $UNIX_UNIQUE
 .session_variable @irc_start_prior_$IRC_ROOM $UNIX_UNIQUE
 ;
-.=system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM
+.=system_variable @web.$USERNAME.$DEVICE.$IRC_ROOM
 @ifneq "$OUTPUT" "$UNIX_UNIQUE"
 .system_variable @irc_alter 1
-.=system_variable @web.$TOKEN.$DEVICE.$IRC_ROOM $UNIX_UNIQUE
+.=system_variable @web.$USERNAME.$DEVICE.$IRC_ROOM $UNIX_UNIQUE
 @endif
 @endif
 @endif
 ;
 @endif
 ;
-.=system_variable @web.$TOKEN.$DEVICE.session
+.=system_variable @web.$USERNAME.$DEVICE.session
 ;
 @ifneq "$OUTPUT" "$SESSION"
 ERROR=Session has been terminated.
@@ -259,6 +256,6 @@ ERROR=Session has been terminated.
 .session_variable @script_executed ""
 .session_variable @storage_var_name ""
 ;
-.=system_variable @web.$TOKEN.$DEVICE.message ""
+.=system_variable @web.$USERNAME.$DEVICE.message ""
 ;
 @endif
