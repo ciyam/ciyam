@@ -240,6 +240,10 @@ constexpr const char* c_storage_module_instance_options_path = "path";
 constexpr const char* c_storage_module_instance_options_query = "query";
 constexpr const char* c_storage_module_instance_options_fields = "fields";
 
+constexpr const char* c_sanctioned_variable_num_unlock_keys = "system_variable @num_unlock_keys";
+constexpr const char* c_sanctioned_variable_system_is_for_demo = "system_variable @system_is_for_demo";
+constexpr const char* c_sanctioned_variable_system_is_for_devt = "system_variable @system_is_for_devt";
+
 mutex g_mutex;
 
 string g_cws_artifacts_dir;
@@ -253,6 +257,8 @@ atomic< size_t > g_cws_active_commands;
 set< string > g_cws_access_tokens;
 
 set< string > g_cws_session_requests;
+
+set< string > g_cws_sanctioned_requests;
 
 map< string, unique_ptr< sio_graph > > g_model_meta_data;
 
@@ -377,6 +383,20 @@ template< typename T > string as_json_array(
       retval += "\n ]\n}";
 
    return retval;
+}
+
+bool is_admin_sanctioned( const string& request_and_args )
+{
+   guard g( g_mutex );
+
+   if( g_cws_sanctioned_requests.empty( ) )
+   {
+      g_cws_sanctioned_requests.insert( c_sanctioned_variable_num_unlock_keys );
+      g_cws_sanctioned_requests.insert( c_sanctioned_variable_system_is_for_demo );
+      g_cws_sanctioned_requests.insert( c_sanctioned_variable_system_is_for_devt );
+   }
+
+   return g_cws_sanctioned_requests.count( request_and_args );
 }
 
 bool has_access_token( const string& access_token )
@@ -3052,7 +3072,26 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                         if( !request.empty( ) && !is_user_info_request )
                         {
-                           if( !g_is_devt_system || ( access != g_cws_admin_token ) )
+                           bool is_admin_and_devt_or_okay = false;
+
+                           if( access == g_cws_admin_token )
+                           {
+                              is_admin_and_devt_or_okay = g_is_devt_system;
+
+                              // NOTE: General usage of the application
+                              // protocol is not permitted unless using
+                              // a development environment but a number
+                              // of simple requests can be sanctioned.
+                              if( !is_admin_and_devt_or_okay
+                               && is_admin_sanctioned( request_and_args ) )
+                              {
+                                 use_none_response = true;
+
+                                 is_admin_and_devt_or_okay = true;
+                              }
+                           }
+
+                           if( !is_admin_and_devt_or_okay )
                               allowed_command = false;
                            else
                            {
