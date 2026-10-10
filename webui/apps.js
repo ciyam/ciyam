@@ -8,7 +8,8 @@
 // on the session kept for the tab (Damon, 2026-10-09) - "Back" returns as it would anywhere. The button at a row's
 // right, or ctrl or cmd and click, opens it in a new tab instead; an app already open in another tab on this session
 // is gone to, so there are never two of one. Never "Back to", since any app may have opened any other. At its foot,
-// who is signed in and "Sign out of every app", which reaches every tab on the session whichever app it is chosen in.
+// who is signed in and "Sign out" (Ian, 2026-10-10 - it was "Sign out of every app"), which reaches every tab on the
+// session whichever app it is chosen in.
 // On a phone it is a sheet from the bottom. Which apps, and the sign out message, are "switcher_apps( )" and
 // "signed_out_message( )" in "chat_parse.js", with their tests.
 //
@@ -214,7 +215,7 @@ function apps_build( host, options )
    who.appendChild( name );
    who.appendChild( apps_element( "span", "apps-note", "One session, every app" ) );
 
-   var sign_out = apps_element( "button", "chat-btn apps-sign-out", "Sign out of every app" );
+   var sign_out = apps_element( "button", "chat-btn apps-sign-out", "Sign out" );
 
    sign_out.type = "button";
    sign_out.id = "apps_sign_out";

@@ -1862,7 +1862,7 @@ function print_help( )
    // NOTE: With the console's commands, ahead of the blank line before the list language. The session is shared,
    // so quitting signs out of every app, linked or not (2026-10-08) - but not from a drawer, which is its page's.
    if( !g_embedded )
-      lines.splice( lines.indexOf( "" ), 0, "  quit                         sign out of every app" );
+      lines.splice( lines.indexOf( "" ), 0, "  quit                         sign out" );
 
    lines.push( "" );
    lines.push( ciyam.is_admin ? "Server javascripts - as in the harness; admin runs any"

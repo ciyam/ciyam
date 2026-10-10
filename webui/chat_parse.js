@@ -1808,7 +1808,7 @@ function switcher_apps( is_admin, is_phone, current )
    } );
 }
 
-// NOTE: "Sign out of every app" from any of them - the session is shared, not owned, so whichever app signs out
+// NOTE: "Sign out" from any of them - the session is shared, not owned, so whichever app signs out
 // tells every tab on the same session, on a channel of its own ("ciyam_session"), whoever opened whom. Any
 // other message, or one for another session, is not for this tab.
 const c_session_channel_name = "ciyam_session";

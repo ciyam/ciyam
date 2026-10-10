@@ -126,7 +126,7 @@ http://www.opensource.org/licenses/mit-license.php.
 </div>
 
 <!-- NOTE: Signed in, the node ready - the shell (build step 4): a side menu of apps and, for admin, the node's
-     sections, with who is signed in and "Sign out of every app". On a phone the menu is a drawer from the top
+     sections, with who is signed in and "Sign out". On a phone the menu is a drawer from the top
      bar, admin's sections are chips beneath it, and the apps are a bar along the bottom. The apps other than
      Home open in this tab on its session, as the switcher opens them - a new tab with ctrl or cmd and click
      (2026-10-09). The rail's items are built by "home.js". -->
@@ -156,7 +156,7 @@ http://www.opensource.org/licenses/mit-license.php.
                <span class="home-rail-user-role">PIN <span class="home-mono" id="rail_pin"></span></span>
             </span>
          </div>
-         <button type="button" class="chat-btn" id="app_sign_out">Sign out of every app</button>
+         <button type="button" class="chat-btn" id="app_sign_out">Sign out</button>
       </div>
    </nav>
 

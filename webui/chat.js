@@ -343,7 +343,7 @@ function unsent_work( )
    return held ? "A message waiting for them to accept would be lost." : "";
 }
 
-// NOTE: "Sign out of every app" - every tab on the session told, as from the switcher (2026-10-08).
+// NOTE: "Sign out" - every tab on the session told, as from the switcher (2026-10-08).
 function do_menu_sign_out( )
 {
    close_user_menu( false );

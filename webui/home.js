@@ -63,7 +63,7 @@ function home_main( )
    document.getElementById( "unlock_form" ).addEventListener( "submit", do_unlock );
    document.getElementById( "rescue_form" ).addEventListener( "submit", do_rescue );
    document.getElementById( "unlock_sign_out" ).addEventListener( "click", do_sign_out );
-   // NOTE: "Sign out of every app" - here and in the switcher alike, every tab on the session told (2026-10-08).
+   // NOTE: "Sign out" - here and in the switcher alike, every tab on the session told (2026-10-08).
    document.getElementById( "app_sign_out" ).addEventListener( "click", apps_sign_out_everywhere );
 
    install_shell( );
@@ -1667,7 +1667,7 @@ function forget_admin( )
 }
 
 // NOTE: Signing out of Home signs every app it opened out too - they were on its session (the design's
-// "Sign out of every app").
+// "Sign out").
 async function do_sign_out( )
 {
    stop_refresh( );
