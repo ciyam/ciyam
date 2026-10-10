@@ -1911,7 +1911,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          {
             if( !has_added_access_device( access, device, now ) )
                // FUTURE: This message should be handled as a server string message.
-               error = "Maximum devices have been created for web session access token '" + access + "'.";
+               error = "Maximum devices have been already created for this account.";
          }
       }
 
@@ -1919,15 +1919,25 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       {
          string var_prefix( get_special_var_name( e_special_var_web ) + '.' );
 
-         string output_file_name( g_temporary_directory + '/' + var_prefix.substr( 1 ) + access + '.' + device );
+         string username;
 
-         string web_lock_name( var_prefix + access + '.' + device + c_web_lock_suffix );
+         if( access == g_cws_admin_token )
+            username = c_admin;
+         else
+            username = get_user_name( access );
 
-         string web_command_var_name( var_prefix + access + '.' + device + c_web_command_suffix );
-         string web_message_var_name( var_prefix + access + '.' + device + c_web_message_suffix );
-         string web_session_var_name( var_prefix + access + '.' + device + c_web_session_suffix );
-         string web_started_var_name( var_prefix + access + '.' + device + c_web_started_suffix );
-         string web_storage_var_name( var_prefix + access + '.' + device + c_web_storage_suffix );
+         if( username.empty( ) )
+            throw runtime_error( "unexpected missing username for access token '" + access + "'" );
+
+         string output_file_name( g_temporary_directory + '/' + var_prefix.substr( 1 ) + username + '.' + device );
+
+         string web_lock_name( var_prefix + username + '.' + device + c_web_lock_suffix );
+
+         string web_command_var_name( var_prefix + username + '.' + device + c_web_command_suffix );
+         string web_message_var_name( var_prefix + username + '.' + device + c_web_message_suffix );
+         string web_session_var_name( var_prefix + username + '.' + device + c_web_session_suffix );
+         string web_started_var_name( var_prefix + username + '.' + device + c_web_started_suffix );
+         string web_storage_var_name( var_prefix + username + '.' + device + c_web_storage_suffix );
 
          bool is_admin = ( access == g_cws_admin_token );
 
@@ -1983,7 +1993,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   remove_session_info( old_session );
 
                   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) replacing "
-                   "session " + old_session + " with device " + device + " for access " + access );
+                   "session " + old_session + " with device " + device + " for username " + username );
                }
 
                set_system_variable( web_session_var_name, new_session );
@@ -2029,9 +2039,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                {
                   found = true;
 
-                  string variables( get_system_variable( var_prefix + access + ".*.session" ) );
+                  string variables( get_system_variable( var_prefix + username + ".*.session" ) );
 
-                  replace( variables, var_prefix + access + ".", "" );
+                  replace( variables, var_prefix + username + ".", "" );
 
                   replace( variables, ".session", "" );
 
@@ -2073,7 +2083,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      remove_session_for_device_if_present( access, target );
 
-                     set_system_variable( var_prefix + access + '.' + target + ".*", "" );
+                     set_system_variable( var_prefix + username + '.' + target + ".*", "" );
                   }
                }
                else if( is_delete_request && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_sessions_prefix ) )
@@ -2103,7 +2113,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   file_remove( g_temporary_directory + '/' + session + c_tmp_file_ext );
 
                   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) finished "
-                   "session " + session + " with device " + device + " for access " + access );
+                   "session " + session + " with device " + device + " for username " + username );
 
                   remove_session_info( session );
 
@@ -2960,13 +2970,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   {
                      string script_name( c_web_session_script );
 
-                     string username;
-
-                     if( access == g_cws_admin_token )
-                        username = c_admin;
-                     else
-                        username = get_user_name( access );
-
                      if( response_suffix == c_username_suffix )
                         response_suffix += username;
 
@@ -2975,7 +2978,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      if( !running )
                      {
                         TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(web_session) starting "
-                         "session " + session + " with device " + device + " for access " + access );
+                         "session " + session + " with device " + device + " for username " + username );
 
                         bool found_helper = false;
 
@@ -3000,7 +3003,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  found_helper = true;
 
                                  set_system_variable( next_session,
-                                  script_name + ' ' + access + ' ' + device + ' ' + session + ' ' + username );
+                                  script_name + ' ' + device + ' ' + session + ' ' + username );
 
                                  break;
                               }
@@ -3014,7 +3017,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 #else
                            string cmd( "./ciyam_client -tls -quiet -no_prompt -no_stderr -exec=\"<"
 #endif
-                            + script_name + ' ' + access + ' ' + device + ' ' + session + ' ' + username + "\" > /dev/null &" );
+                            + script_name + ' ' + device + ' ' + session + ' ' + username + "\" > /dev/null &" );
 
                            int rc = system( cmd.c_str( ) );
                            ( void )rc;
@@ -3043,7 +3046,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         set_system_variable( web_started_var_name, "" );
 
                         // FUTURE: This message should be handled as a server string message.
-                        error = "Was unable to start a web session with access token '" + access + "'.";
+                        error = "Was unable to start a web session for '" + username + "'.";
                      }
                      else
                      {
@@ -3336,7 +3339,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                        // NOTE: If no "from" has been specified will instead use the relevant system variable values.
                                        if( from.empty( ) )
                                        {
-                                          string all_start_point_vars( get_system_variable( var_prefix + access + "." + device + ".0*" ) );
+                                          string all_start_point_vars( get_system_variable( var_prefix + username + "." + device + ".0*" ) );
 
                                           if( !all_start_point_vars.empty( ) )
                                           {
@@ -3391,7 +3394,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                           from = to_string( now );
 
                                        if( from.empty( ) )
-                                          from = get_system_variable( var_prefix + access + "." + device + "." + room );
+                                          from = get_system_variable( var_prefix + username + "." + device + "." + room );
 
                                        if( !from.empty( ) )
                                        {
