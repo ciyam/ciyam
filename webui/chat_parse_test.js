@@ -1088,9 +1088,20 @@ check( "a whole word that is the only one - none", cp.word_completions( "taxi", 
 check( "nothing typed, or not a word - none", [ cp.word_completions( "", completing, 6 ), cp.word_completions( "a1", completing, 6 ) ], [ [ ], [ ] ] );
 check( "no word starts so - none", cp.word_completions( "zz", completing, 6 ), [ ] );
 
+// NOTE: After a recovery - admin's PIN 10301, once 31324; 40311 another account, kept with its password.
+check( "after a recovery - admin's old PIN goes, its password with it, and the new PIN's password",
+ cp.plan_after_recovery( "31324,40311", [ "40311" ], "10301" ), { list: "40311", forget: [ "10301", "31324" ] } );
+check( "- the same PIN again (a test node) - kept, its password not", cp.plan_after_recovery( "10301,40311", [ "40311" ], "10301" ),
+ { list: "10301,40311", forget: [ "10301" ] } );
+check( "- the accounts not read - only the new PIN's password goes", cp.plan_after_recovery( "31324,40311", null, "10301" ),
+ { list: "31324,40311", forget: [ "10301" ] } );
+check( "- nothing saved", cp.plan_after_recovery( null, [ "40311" ], "10301" ), { list: null, forget: [ "10301" ] } );
+check( "- only admin's old PIN saved - none left", cp.plan_after_recovery( "31324", [ ], "10301" ), { list: null, forget: [ "10301", "31324" ] } );
+check( "- what is not a PIN is kept", cp.plan_after_recovery( "creds-a,31324", [ ], "10301" ), { list: "creds-a", forget: [ "10301", "31324" ] } );
+
 check( "the node's refusals - not its words", cp.recovery_error_text( "Error: System identity mismatch (incorrect mnemonics?)." ),
  "Those aren't this node's twelve words." );
-check( "- what it answers today for words not its own", cp.recovery_error_text( "Error: System is currently locked for administration." ),
+check( "- what it answered for words not its own, before Ian's 'a9d18319'", cp.recovery_error_text( "Error: System is currently locked for administration." ),
  "The node did not accept those words - check each one, and that they are in order." );
 check( "- not locked", /isn't locked, so there is nothing to recover/.test(
  cp.recovery_error_text( "Error: System identity is not currently locked." ) ), true );

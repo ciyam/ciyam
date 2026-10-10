@@ -379,7 +379,7 @@ function signin_apply_retain( )
 
 // NOTE: Everything this browser keeps for the node goes: the device token, which a rebuilt node no
 // longer knows, every saved account - for every app, as they share them - and the rest: dismissed
-// announcements, recent emoji, Home's count of keys made. Said so on the page (found by review).
+// announcements and recent emoji. Said so on the page (found by review).
 function signin_reset_browser( )
 {
    if( ciyam.sessid !== "" )
@@ -1122,6 +1122,8 @@ async function recover_submit( event )
 
    signin_keep_session( );
 
+   await recover_forget_saved( );
+
    signin_set_text( "recover_pin", ciyam.access );
 
    document.getElementById( "recover_form" ).hidden = true;
@@ -1129,6 +1131,48 @@ async function recover_submit( event )
 
    // NOTE: The way on has the focus - not the heading, which looked strange outlined (Damon, 2026-10-10).
    document.getElementById( "recover_continue" ).focus( );
+}
+
+// NOTE: What this browser saved for admin no longer works after a recovery - "plan_after_recovery( )" in "chat_parse.js".
+// The accounts are read as admin, now signed in, to tell admin's old PIN from the others saved here.
+async function recover_forget_saved( )
+{
+   var users = "";
+
+   var issue = function( done )
+   {
+      return ciyam.fetch_users( done );
+   };
+
+   try
+   {
+      if( g_signin_options.request )
+         users = String( await g_signin_options.request( issue ) );
+      else
+         await issue( function( response ) { users = String( response ); } );
+   }
+   catch( e )
+   {
+      users = "Error: " + ( ( e && e.message ) ? e.message : "the request failed." );
+   }
+
+   var node_pins = is_error_response( users ) ? null
+    : parse_people( users, ciyam.access, "admin" ).map( function( row ) { return row.pin; } );
+
+   try
+   {
+      var plan = plan_after_recovery( localStorage.getItem( c_signin_storage_access ), node_pins, ciyam.access );
+
+      plan.forget.forEach( function( pin ) { localStorage.removeItem( c_signin_storage_hashed_prefix + pin ); } );
+
+      if( plan.list === null )
+         localStorage.removeItem( c_signin_storage_access );
+      else
+         localStorage.setItem( c_signin_storage_access, plan.list );
+   }
+   catch( e )
+   {
+   }
 }
 
 // NOTE: The words are the node's secret - not left in the page once they have been used, or the sign in is shown again

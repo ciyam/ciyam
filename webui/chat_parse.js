@@ -1696,6 +1696,28 @@ function recovery_error_text( error )
    return text;
 }
 
+// NOTE: What a recovery leaves saved on this browser. Admin's PIN changes on a recovery, the password always does, and
+// the password is hashed with the PIN (Ian, 2026-10-10) - so the password saved for admin's new PIN goes ("forget"), and
+// so does admin's old PIN: a saved PIN the node no longer has ("node_pins", its accounts as admin now lists them; null
+// when they could not be read, and then only the new PIN's password goes). Other accounts, and anything that is not a
+// PIN, are kept. "list" is null when nothing is left, as "format_access_list( )".
+function plan_after_recovery( stored, node_pins, admin_pin )
+{
+   var forget = [ admin_pin ];
+
+   var kept = parse_access_list( stored ).filter( function( entry )
+   {
+      if( !/^[0-9]{5}$/.test( entry ) || ( entry === admin_pin ) || ( node_pins === null ) || ( node_pins.indexOf( entry ) >= 0 ) )
+         return true;
+
+      forget.push( entry );
+
+      return false;
+   } );
+
+   return { list: format_access_list( kept ), forget: forget };
+}
+
 // NOTE: How a locked node answers a sign in today - it cannot start the session (2026-10-07, for Ian).
 function is_locked_sign_in_error( error )
 {
@@ -2180,6 +2202,7 @@ if( typeof module !== "undefined" )
       recovery_words_problem: recovery_words_problem,
       word_completions: word_completions,
       recovery_error_text: recovery_error_text,
+      plan_after_recovery: plan_after_recovery,
       visible_rooms: visible_rooms,
       dm_room_name: dm_room_name,
       dm_create_text: dm_create_text,

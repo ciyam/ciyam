@@ -588,8 +588,14 @@ ok   at most the limit
 ok   a whole word that is the only one - none
 ok   nothing typed, or not a word - none
 ok   no word starts so - none
+ok   after a recovery - admin's old PIN goes, its password with it, and the new PIN's password
+ok   - the same PIN again (a test node) - kept, its password not
+ok   - the accounts not read - only the new PIN's password goes
+ok   - nothing saved
+ok   - only admin's old PIN saved - none left
+ok   - what is not a PIN is kept
 ok   the node's refusals - not its words
-ok   - what it answers today for words not its own
+ok   - what it answered for words not its own, before Ian's 'a9d18319'
 ok   - not locked
 ok   - anything else as it came
 
