@@ -12,10 +12,6 @@
 const c_storage_device = "cws.device";
 const c_storage_access = "cws.access";
 const c_storage_hashed_prefix = "cws.hashed_";
-const c_storage_banner = "cws.accounts_banner_hidden";
-
-// NOTE: The PIN of the account admin added for themselves - "Add yourself" - by admin's PIN.
-const c_storage_own_prefix = "cws.accounts_own_";
 
 const c_alert_time = 6000;
 
@@ -23,7 +19,7 @@ const c_copied_time = 2000;
 
 const c_qr_size = 176;
 
-const c_admin_views = [ "people", "add", "yourself", "handover", "ready", "mine" ];
+const c_admin_views = [ "people", "add", "handover", "ready", "mine" ];
 
 var g_queue = Promise.resolve( );
 
@@ -177,8 +173,7 @@ function unsent_work( )
    if( ciyam.sessid === "" )
       return "";
 
-   var filled = [ "add_pin", "add_username", "yourself_username", "yourself_password", "yourself_confirm", "mine_current",
-    "mine_password", "mine_confirm" ].some( function( id )
+   var filled = [ "add_pin", "add_username", "mine_current", "mine_password", "mine_confirm" ].some( function( id )
    {
       var field = document.getElementById( id );
 
@@ -524,8 +519,6 @@ function show_section( name )
       load_people( );
    else if( name === "add" )
       reset_add_form( );
-   else if( name === "yourself" )
-      reset_yourself_form( );
    else if( name === "mine" )
       render_mine( );
 
@@ -703,8 +696,6 @@ function clear_session( )
 
 async function load_people( )
 {
-   document.getElementById( "people_banner" ).hidden = true;
-
    var response = await request( function( done )
    {
       return ciyam.fetch_users( done );
@@ -724,27 +715,6 @@ async function load_people( )
    g_people = parse_people( response, ciyam.access, ciyam.username || "admin" );
 
    render_people( );
-
-   render_banner( );
-}
-
-// NOTE: "Add yourself" - not once admin has hidden it, nor while the account admin added for
-// themselves is among the people ("shows_add_yourself( )").
-function render_banner( )
-{
-   var hidden = false;
-   var own = "";
-
-   try
-   {
-      hidden = ( localStorage.getItem( c_storage_banner ) !== null );
-      own = localStorage.getItem( c_storage_own_prefix + ciyam.access ) || "";
-   }
-   catch( e )
-   {
-   }
-
-   document.getElementById( "people_banner" ).hidden = !shows_add_yourself( hidden, own, g_people );
 }
 
 function render_people( )
@@ -850,19 +820,6 @@ async function do_remove( pin )
       show_alert( ( person && person.name ? person.name : "PIN " + pin ) + " was removed." );
 
    load_people( );
-}
-
-function do_hide_banner( )
-{
-   try
-   {
-      localStorage.setItem( c_storage_banner, "1" );
-   }
-   catch( e )
-   {
-   }
-
-   document.getElementById( "people_banner" ).hidden = true;
 }
 
 // ====================================================================
@@ -982,124 +939,6 @@ async function do_add( event )
       render_handover( );
 
       go( "handover" );
-   }
-}
-
-// ====================================================================
-// Add yourself - admin's own everyday account
-// ====================================================================
-
-function reset_yourself_form( )
-{
-   [ "yourself_username", "yourself_password", "yourself_confirm" ].forEach( function( id )
-   {
-      document.getElementById( id ).value = "";
-   } );
-
-   update_strength( "yourself" );
-
-   set_error( "yourself_error", "" );
-
-   document.getElementById( "yourself_form" ).hidden = false;
-   document.getElementById( "yourself_done" ).hidden = true;
-}
-
-// NOTE: Made as a PIN with admin's chosen, fixed username, then claimed at once with the password -
-// the claim is a request of its own, apart from admin's session, which stays as it is. The new PIN is
-// remembered as admin's own and in the saved accounts; its password is saved, if wanted, when admin
-// first signs in with it - this page cannot be signed in as both.
-async function do_add_yourself( event )
-{
-   event.preventDefault( );
-
-   var username = document.getElementById( "yourself_username" ).value.trim( );
-   var password = document.getElementById( "yourself_password" ).value;
-   var confirm = document.getElementById( "yourself_confirm" ).value;
-
-   var submit = document.getElementById( "yourself_submit" );
-
-   // NOTE: Taken out of use before anything is asked of the server, so a second click cannot make a
-   // second account (found by review).
-   if( submit.disabled )
-      return;
-
-   submit.disabled = true;
-
-   try
-   {
-      // NOTE: Straight here from the banner's address, People may not have been read yet - and it is
-      // what catches a username already in use.
-      if( g_people.length === 0 )
-         await load_people_quietly( );
-
-      var problem = join_problem( username, password, confirm ) || nominate_problem( "", username, g_people );
-
-      if( problem !== "" )
-      {
-         set_error( "yourself_error", problem );
-
-         return;
-      }
-
-      set_error( "yourself_error", "" );
-
-      var made = await request( function( done )
-      {
-         return ciyam.create_user( nominated_options( "", username, false ), done );
-      } );
-
-      if( problem_text( made ) !== "" )
-      {
-         set_error( "yourself_error", problem_text( made ) );
-
-         return;
-      }
-
-      var pin = made.trim( );
-
-      if( !is_account_pin( pin ) )
-      {
-         set_error( "yourself_error", "The server's answer was not a PIN: " + pin );
-
-         return;
-      }
-
-      var credentials = CIYAM.encode_base64_url( username + ":" + ciyam.hash_combined( password, pin ) );
-
-      var claimed = await post_devices( "access=" + pin + "&passwd=" + credentials );
-
-      if( problem_text( claimed ) !== "" )
-      {
-         set_error( "yourself_error", "Your account, PIN " + pin + ", was made but could not be set up: " + problem_text( claimed )
-          + " Sign in to the chat with the PIN to finish." );
-
-         return;
-      }
-
-      try
-      {
-         localStorage.setItem( c_storage_own_prefix + ciyam.access, pin );
-      }
-      catch( e )
-      {
-      }
-
-      remember_pin( pin );
-
-      document.getElementById( "yourself_password" ).value = "";
-      document.getElementById( "yourself_confirm" ).value = "";
-
-      document.getElementById( "yourself_pin" ).textContent = pin;
-      document.getElementById( "yourself_name" ).textContent = username;
-
-      document.getElementById( "yourself_form" ).hidden = true;
-      document.getElementById( "yourself_done" ).hidden = false;
-
-      document.querySelector( "#yourself_done h1" ).focus( { preventScroll: true } );
-   }
-   finally
-   {
-      submit.disabled = false;
    }
 }
 
