@@ -52,6 +52,8 @@ const size_t c_default_max_deque_size_limit = 9000;
 constexpr const char* c_double_asterisk = "**";
 constexpr const char* c_triple_asterisk = "***";
 
+constexpr const char* c_unlock_keys_file = ".unlock_keys";
+
 constexpr const char* c_qs_max_chars_prefix = "@qs_mc_";
 constexpr const char* c_qs_num_items_prefix = "@qs_ni_";
 constexpr const char* c_qs_pop_front_prefix = "@qs_pf_";
@@ -265,6 +267,7 @@ constexpr const char* c_special_variable_files_area_path = "@files_area_path";
 constexpr const char* c_special_variable_force_db_create = "@force_db_create";
 constexpr const char* c_special_variable_log_all_scripts = "@log_all_scripts";
 constexpr const char* c_special_variable_notifier_events = "@notifier_events";
+constexpr const char* c_special_variable_num_unlock_keys = "@num_unlock_keys";
 constexpr const char* c_special_variable_paired_identity = "@paired_identity";
 constexpr const char* c_special_variable_queue_hub_users = "@queue_hub_users";
 constexpr const char* c_special_variable_row_cache_limit = "@row_cache_limit";
@@ -655,6 +658,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_force_db_create );
       g_special_variable_names.push_back( c_special_variable_log_all_scripts );
       g_special_variable_names.push_back( c_special_variable_notifier_events );
+      g_special_variable_names.push_back( c_special_variable_num_unlock_keys );
       g_special_variable_names.push_back( c_special_variable_paired_identity );
       g_special_variable_names.push_back( c_special_variable_queue_hub_users );
       g_special_variable_names.push_back( c_special_variable_row_cache_limit );
@@ -799,6 +803,7 @@ void init_special_variable_names( )
    g_read_only_variables.insert( c_special_variable_shared_files );
    g_read_only_variables.insert( c_special_variable_utm_at_start );
    g_read_only_variables.insert( c_special_variable_utm_init_base );
+   g_read_only_variables.insert( c_special_variable_num_unlock_keys );
    g_read_only_variables.insert( c_special_variable_ssl_cert_issuer );
    g_read_only_variables.insert( c_special_variable_system_identity );
    g_read_only_variables.insert( c_special_variable_ssl_cert_subject );
@@ -877,6 +882,31 @@ void set_restore_needed( bool change = false, bool remove = false )
       touch_or_remove( variable, remove );
 
    set_file_variable( variable );
+}
+
+void set_num_unlock_keys( )
+{
+   string cmd( "find . -name \"*.key\" | wc -l > " );
+
+   string unlock_keys_tmp_file( c_tmp_ciyam_path );
+
+   unlock_keys_tmp_file += '/' + string( c_unlock_keys_file );
+
+   cmd += unlock_keys_tmp_file;
+
+   int rc = system( cmd.c_str( ) );
+   ( void )rc;
+
+   size_t num_keys = 0;
+
+   if( file_exists( unlock_keys_tmp_file ) )
+   {
+      num_keys = from_string< size_t >( buffer_file( unlock_keys_tmp_file ) );
+
+      file_remove( unlock_keys_tmp_file );
+   }
+
+   g_variables[ c_special_variable_num_unlock_keys ] = to_string( num_keys );
 }
 
 void set_generate_hub_block( bool change = false, bool remove = false )
@@ -1331,6 +1361,9 @@ string get_system_variable( const var_name& var, bool is_internal )
       if( wildcard_match( variable, c_special_variable_restore_needed ) )
          set_restore_needed( );
 
+      if( wildcard_match( variable, c_special_variable_num_unlock_keys ) )
+         set_num_unlock_keys( );
+
       if( wildcard_match( variable, c_special_variable_generate_hub_block ) )
          set_generate_hub_block( );
 
@@ -1429,6 +1462,9 @@ string get_system_variable( const var_name& var, bool is_internal )
 
       if( variable == c_special_variable_backup_needed )
          set_backup_needed( );
+
+      if( variable == c_special_variable_num_unlock_keys )
+         set_num_unlock_keys( );
 
       if( variable == c_special_variable_trace_filters )
       {
