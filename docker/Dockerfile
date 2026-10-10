@@ -68,6 +68,14 @@ WORKDIR /ciyam/src
 RUN mkdir -p /tmp/ciyam "$WEBDIR" /ciyam/src/.files \
  && ./config
 
+# NOTE: The server watches "<user_home_path>/backup" and ".../shared" ("backup.cin", "shared.cin"), and the default
+# "ciyam_server.sio" has "/home/$USER" - with no "$USER" in the container every start logged "system variable not found
+# for '/home//shared' notifier" (Ian, 2026-10-10). It is set to the path "at_init" uses, "/home/$CIYAM_USER", and the
+# folders made.
+RUN sed -i "s|^\( *\)<user_home_path>.*|\1<user_home_path>/home/$CIYAM_USER|" ciyam_server.sio \
+ && grep -q "^ *<user_home_path>/home/$CIYAM_USER$" ciyam_server.sio \
+ && mkdir -p "/home/$CIYAM_USER/backup" "/home/$CIYAM_USER/opened" "/home/$CIYAM_USER/shared"
+
 # NOTE: Stops "set_password" being run when the admin password is first set. That
 # script uses "sudo chpasswd" to set a *Linux* account password, which is neither
 # possible nor meaningful in a container - there is no sudo, and the container user
