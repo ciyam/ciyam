@@ -27,6 +27,11 @@ ciyam.is_admin = true
 ciyam.is_locked = false
 {"message":"Session terminated."}
 
+Attempt restoring and updating the 'admin' password using incorrect entropy.
+CIYAM [http://localhost:13031]
+{"name":":CIYAM:", "version":"0.0.0", "security":"(NONE)"}
+Error: System identity mismatch (incorrect mnemonics?).
+
 Update 'admin' access password to 'test' and change identity to internal (after restore).
 CIYAM [http://localhost:13031]
 {"name":":CIYAM:", "version":"0.0.0", "security":"(NONE)"}

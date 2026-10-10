@@ -44,6 +44,10 @@ else
  check_if_started
 
  echo ""
+ echo "Attempt restoring and updating the 'admin' password using incorrect entropy."
+ node ../webui/ciyam.js "" de604cee0755a3d81944ea96aed12680 $device "" test
+
+ echo ""
  echo "Update 'admin' access password to 'test' and change identity to internal (after restore)."
  node ../webui/ciyam.js "" de604cee0755a3d81944ea96aed12681 $device "" test
 
