@@ -6,12 +6,12 @@
 ERROR=
 ;
 .session_variable @storage_var_name
-STORAGE_VAR_NAME=$OUTPUT
+STORAGE_VAR_NAME=@strlit:$OUTPUT
 ;
 ; NOTE: If no specific storage provided
 ; then instead uses the system default.
 @ifndef $STORAGE_VAR_NAME
-STORAGE_VAR_NAME=@storage
+STORAGE_VAR_NAME=@strlit:@storage
 @endif
 ;
 .system_variable $STORAGE_VAR_NAME
