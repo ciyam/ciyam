@@ -1686,7 +1686,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
    // NOTE: Only allow administration to occur
    // if using the correct "admin" access PIN.
-   if( g_cws_admin_locked && ( access != c_admin ) )
+   if( error.empty( )
+    && g_cws_admin_locked && ( access != c_admin ) )
    {
       bool okay = true;
 
@@ -1705,7 +1706,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          error = "System is currently locked for administration.";
    }
 
-   if( is_locked && !passwd.empty( ) && !g_cws_admin_locked )
+   if( is_locked && error.empty( )
+    && !passwd.empty( ) && !g_cws_admin_locked )
       // FUTURE: This message should be handled as a server string message.
       error = "System is currently locked for administration.";
 
