@@ -531,6 +531,15 @@ heading( "log capture" );
 
    check( "a claim's request and answer kept as they were", [ claim.request, claim.response ], [ "@none", "45679 @none" ] );
 
+   // --------------------------------------------------------------------
+   heading( "whether the raw protocol can be used" );
+
+   check( "the probe asks whether the node is for development", cp.c_console_raw_probe, "system_variable @system_is_for_devt" );
+   check( "a development node - yes", [ cp.is_devt_reply( "1" ), cp.is_devt_reply( "1\n" ) ], [ true, true ] );
+   check( "any other node - its variable empty - no", cp.is_devt_reply( "" ), false );
+   check( "refused, or no reply - no", [ cp.is_devt_reply( "Error: Not permitted." ), cp.is_devt_reply( "[bad]" ), cp.is_devt_reply( null ) ],
+    [ false, false, false ] );
+
    console.log( "" );
    console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

@@ -20,6 +20,16 @@ const c_console_max_response_chars = 20000;
 
 const c_console_short_key_length = 17;
 
+// NOTE: Whether the raw protocol ("~") can be used - on a development node only. Admin may now ask a few system variables
+// on any node (Ian, 2026-10-10), so the probe asks whether the node is for development rather than whether a request is
+// answered: "1" (the server's true) only there, nothing or an error everywhere else. It used to be "run_script *".
+const c_console_raw_probe = "system_variable @system_is_for_devt";
+
+function is_devt_reply( response )
+{
+   return ( typeof response === "string" ) && ( response.trim( ) === "1" );
+}
+
 // NOTE: Query parameters that carry credentials. They are never kept in a log entry -
 // the log is broadcast between tabs and shown on screen, and none of it is needed to
 // read what a request did.
@@ -1238,6 +1248,8 @@ function install_log_capture( instance, source, is_quiet, on_entry, p_now )
 if( typeof module !== "undefined" )
 {
    module.exports = {
+      c_console_raw_probe: c_console_raw_probe,
+      is_devt_reply: is_devt_reply,
       parse_channel_message: parse_channel_message,
       parse_credentials: parse_credentials,
       linked_owner: linked_owner,

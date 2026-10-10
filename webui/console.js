@@ -34,8 +34,6 @@ const c_max_script_name = 60;
 
 const c_delete_confirm_ms = 5000;
 
-const c_raw_probe = "run_script *";
-
 // NOTE: Only commands verified against the container are offered. A palette entry that
 // fails teaches the user to distrust the palette.
 const c_palette_commands = [
@@ -1902,9 +1900,10 @@ function print_help( )
 // ====================================================================
 
 // NOTE: Raw protocol needs the admin PIN on a development system. Probing once, quietly,
-// means the "~" affordance is only offered when it will work - and "run_script *" never
-// executes anything. What it lists is not shown: many of those scripts are only for the server
-// itself to run (Ian, 2026-10-04), and "~run_script *" lists them at the prompt.
+// means the "~" affordance is only offered when it will work - the probe asks whether the
+// node is for development ("is_devt_reply( )"), which changes nothing. The server scripts are
+// not listed: many are only for the server itself to run (Ian, 2026-10-04), and "~run_script *"
+// lists them at the prompt.
 async function probe_raw( )
 {
    if( !ciyam.is_admin )
@@ -1916,11 +1915,9 @@ async function probe_raw( )
       return;
    }
 
-   var url = build_cws_url( ciyam.get_cws_url( ), { path: "", request: c_raw_probe }, session_info( ) );
+   var url = build_cws_url( ciyam.get_cws_url( ), { path: "", request: c_console_raw_probe }, session_info( ) );
 
-   var response = await send_request( "GET", url, true );
-
-   g_raw_available = ( response !== null ) && ( response.trim( ) !== "[bad]" ) && ( response.indexOf( "Error: " ) !== 0 );
+   g_raw_available = is_devt_reply( await send_request( "GET", url, true ) );
 
    update_status( );
 }

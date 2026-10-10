@@ -235,4 +235,10 @@ ok   the request - said, not kept
 ok   nor in the query kept to copy
 ok   a claim's request and answer kept as they were
 
+== whether the raw protocol can be used ========================
+ok   the probe asks whether the node is for development
+ok   a development node - yes
+ok   any other node - its variable empty - no
+ok   refused, or no reply - no
+
 All checks passed.
