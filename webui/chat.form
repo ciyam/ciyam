@@ -289,7 +289,6 @@ http://www.opensource.org/licenses/mit-license.php.
       <button type="button" class="chat-console-close" onclick="do_toggle_console( )" aria-label="Close console">&times;</button>
    </div>
    <div class="chat-console-notice" id="console_notice" hidden></div>
-   <iframe id="console_frame" class="chat-console-frame" title="Developer console"></iframe>
 </div>
 
 <!-- ================================================================

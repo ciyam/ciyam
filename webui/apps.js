@@ -561,3 +561,27 @@ async function apps_sign_out_everywhere( )
    if( g_apps_options.sign_out )
       await g_apps_options.sign_out( );
 }
+
+// NOTE: The console drawer's frame is made the first time the console opens and removed when the session ends. An
+// <iframe> with no "src" holds an "about:blank" with no doctype, which Firefox reports as a page in quirks mode (Ian,
+// 2026-10-10) - the frame now exists only while it holds the console.
+function apps_console_frame_load( drawer, src )
+{
+   apps_console_frame_unload( );
+
+   var frame = apps_element( "iframe", "chat-console-frame" );
+
+   frame.id = "console_frame";
+   frame.title = "Developer console";
+   frame.src = src;
+
+   drawer.appendChild( frame );
+}
+
+function apps_console_frame_unload( )
+{
+   var frame = document.getElementById( "console_frame" );
+
+   if( frame !== null )
+      frame.remove( );
+}

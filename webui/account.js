@@ -372,7 +372,7 @@ function do_toggle_console( )
       g_console_loaded = true;
 
       // NOTE: "from=accounts" so the console names this page, not the chat, and filters its log by it.
-      document.getElementById( "console_frame" ).src = "console.html?embedded=1&from=accounts&source=" + encodeURIComponent( g_self );
+      apps_console_frame_load( document.getElementById( "console_drawer" ), "console.html?embedded=1&from=accounts&source=" + encodeURIComponent( g_self ) );
    }
 }
 
@@ -392,7 +392,7 @@ function unlink_others( )
    g_console_loaded = false;
 
    document.getElementById( "console_drawer" ).hidden = true;
-   document.getElementById( "console_frame" ).src = "about:blank";
+   apps_console_frame_unload( );
 
    g_request_log = [ ];
 }

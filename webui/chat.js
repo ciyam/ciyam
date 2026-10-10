@@ -4185,7 +4185,7 @@ function do_toggle_console( )
 
       // NOTE: The console announces itself on the shared channel and is then handed this
       // session - see the handler in "chat.html".
-      document.getElementById( "console_frame" ).src = "console.html?embedded=1&source=" + encodeURIComponent( g_self );
+      apps_console_frame_load( document.getElementById( "console_drawer" ), "console.html?embedded=1&source=" + encodeURIComponent( g_self ) );
    }
 }
 
@@ -4207,7 +4207,7 @@ function unlink_consoles( )
 
    g_console_loaded = false;
 
-   document.getElementById( "console_frame" ).src = "about:blank";
+   apps_console_frame_unload( );
 }
 
 function install_request_log( )

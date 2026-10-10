@@ -1631,7 +1631,7 @@ function toggle_console( )
       g_console_loaded = true;
 
       // NOTE: "from=home" so the console names Home, and filters its log by it.
-      document.getElementById( "console_frame" ).src = "console.html?embedded=1&from=home&source=" + encodeURIComponent( g_self );
+      apps_console_frame_load( document.getElementById( "console_drawer" ), "console.html?embedded=1&from=home&source=" + encodeURIComponent( g_self ) );
    }
 }
 
@@ -1650,7 +1650,7 @@ function close_console( )
    g_request_log = [ ];
 
    document.getElementById( "console_drawer" ).hidden = true;
-   document.getElementById( "console_frame" ).src = "about:blank";
+   apps_console_frame_unload( );
 }
 
 // NOTE: Admin's figures, logs and the log chosen are not left for whoever signs in next in this tab (found by review).
