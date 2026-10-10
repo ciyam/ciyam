@@ -110,10 +110,11 @@ check( "a character base64 does not have", hp.normalise_unlock_key( "NUJ5M-mk4eV
 check( "the master password is not a key", hp.normalise_unlock_key( "need_to_use_a_very_good_password" ), "" );
 check( "nothing", hp.normalise_unlock_key( "" ), "" );
 
-check( "keys made - a count", hp.parse_key_count( "3" ), 3 );
-check( "keys made - none stored", hp.parse_key_count( null ), 0 );
-check( "keys made - not a count", hp.parse_key_count( "lots" ), 0 );
-check( "keys made - below none", hp.parse_key_count( "-2" ), 0 );
+check( "keys - asked of the node", hp.c_home_keys_request, "system_variable @num_unlock_keys" );
+check( "keys - the node's count", [ hp.parse_key_count( "3" ), hp.parse_key_count( "3\n" ), hp.parse_key_count( "0" ) ], [ 3, 3, 0 ] );
+check( "keys - no answer is not none", [ hp.parse_key_count( null ), hp.parse_key_count( "" ) ], [ null, null ] );
+check( "keys - not a count", [ hp.parse_key_count( "lots" ), hp.parse_key_count( "-2" ), hp.parse_key_count( "Error: Not permitted." ) ],
+ [ null, null, null ] );
 
 // --------------------------------------------------------------------
 heading( "admin's Overview" );
@@ -157,9 +158,10 @@ check( "people waiting - one", hp.people_waiting_text( { active: 4, unclaimed: 1
 check( "people waiting - two", hp.people_waiting_text( { active: 4, unclaimed: 2 } ), "2 people haven't used their code yet." );
 check( "people waiting - none", hp.people_waiting_text( { active: 4, unclaimed: 0 } ), "Everyone you added has set up their account." );
 
-check( "keys - none made", /^None made here yet/.test( hp.keys_note( 0 ) ), true );
-check( "keys - one made", /^1 key made here so far/.test( hp.keys_note( 1 ) ), true );
-check( "keys - three made", /^3 keys made here so far/.test( hp.keys_note( 3 ) ), true );
+check( "keys - none left", /^None left\. .*make a few\.$/.test( hp.keys_note( 0 ) ), true );
+check( "keys - one left", /^1 unlock key left\./.test( hp.keys_note( 1 ) ), true );
+check( "keys - three left", /^3 unlock keys left\./.test( hp.keys_note( 3 ) ), true );
+check( "keys - the node not saying", hp.keys_note( null ), "The node did not say how many unlock keys it holds." );
 
 check( "a key too soon after another, said plainly", /a few seconds apart/.test(
  hp.key_error_text( "Error: *** attempt to create another unlock key too quickly ***" ) ), true );

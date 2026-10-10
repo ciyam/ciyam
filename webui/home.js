@@ -1100,10 +1100,6 @@ function install_member_home( )
 // Admin's sections - build step 6
 // ====================================================================
 
-// NOTE: How many unlock keys this browser has made - the node cannot list them. Kept per browser, and the
-// browser keeps it per node, by its address.
-const c_storage_keys_made = "home.unlock_keys_made";
-
 const c_qr_size = 168;
 
 const c_overview_log_lines = 5;
@@ -1123,27 +1119,26 @@ function admin_url( path )
    return ciyam.get_cws_url( ) + path + "?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&session=" + ciyam.sessid;
 }
 
-function keys_made( )
+// NOTE: How many unlock keys the node holds - asked of the node, so every browser says the same (Ian, 2026-10-10). The
+// count this browser used to keep is let go.
+async function read_key_count( )
 {
    try
    {
-      return parse_key_count( localStorage.getItem( c_storage_keys_made ) );
+      localStorage.removeItem( "home.unlock_keys_made" );
    }
    catch( e )
    {
-      return 0;
    }
-}
 
-function count_key_made( )
-{
-   try
+   var url = admin_url( "" ) + "&request=" + encodeURIComponent( c_home_keys_request );
+
+   var response = await request( function( done )
    {
-      localStorage.setItem( c_storage_keys_made, String( keys_made( ) + 1 ) );
-   }
-   catch( e )
-   {
-   }
+      return ciyam.fetch( url, "GET", done );
+   } );
+
+   return is_error_response( response ) ? null : parse_key_count( response );
 }
 
 // NOTE: A log's last "count" lines - every line for none. The node gives ten unless asked (Ian, "3d6a5820"), so
@@ -1198,12 +1193,14 @@ async function load_overview( )
 
    document.getElementById( "connection_icon" ).classList.toggle( "is-warn", g_system.security === "none" );
 
-   set_text( "overview_keys_note", keys_note( keys_made( ) ) );
+   var key_count = await read_key_count( );
 
    var users = await request( function( done ) { return ciyam.fetch_users( done ); } );
 
    if( ciyam.access !== asked_for )
       return;
+
+   set_text( "overview_keys_note", keys_note( key_count ) );
 
    if( !is_error_response( users ) )
    {
@@ -1320,9 +1317,9 @@ function show_filling( rooms )
 
 // ---- Unlock keys
 
-function show_keys( )
+async function show_keys( )
 {
-   set_text( "keys_note", keys_note( keys_made( ) ) );
+   set_text( "keys_note", keys_note( await read_key_count( ) ) );
 }
 
 async function do_make_key( )
@@ -1345,8 +1342,6 @@ async function do_make_key( )
 
       return;
    }
-
-   count_key_made( );
 
    set_text( "key_text", key );
 

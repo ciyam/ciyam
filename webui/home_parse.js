@@ -165,13 +165,16 @@ function normalise_unlock_key( text )
    return match[ 1 ] + "-" + match[ 2 ] + "-" + match[ 3 ];
 }
 
-// NOTE: How many unlock keys this browser has made on this node - kept by Home, since the node cannot
-// list them (each is a file named by its own hash). Anything that is not a count is none.
-function parse_key_count( stored )
-{
-   var count = parseInt( String( stored || "" ), 10 );
+// NOTE: How many unlock keys the node holds - "system_variable @num_unlock_keys", which admin may ask on any node (Ian,
+// "889b160f", 2026-10-10). Counted by the node, so it is the same in every browser and goes down as keys are used - it
+// replaced a count this browser kept of the keys it had made. null for anything that is not a count.
+const c_home_keys_request = "system_variable @num_unlock_keys";
 
-   return ( isNaN( count ) || ( count < 0 ) ) ? 0 : count;
+function parse_key_count( reply )
+{
+   var value = String( reply === null || reply === undefined ? "" : reply ).trim( );
+
+   return /^[0-9]+$/.test( value ) ? parseInt( value, 10 ) : null;
 }
 
 // NOTE: The people figure on admin's Overview, from "parse_people( )" in "account_parse.js" - admin is
@@ -289,13 +292,16 @@ function key_error_text( error )
    return text;
 }
 
-// NOTE: Unlock keys made on this browser, as admin's Overview says it - the node cannot list them.
+// NOTE: The unlock keys the node holds, as admin's Overview says it - each is used up when it unlocks the node.
 function keys_note( count )
 {
-   if( count === 0 )
-      return "None made here yet. Without one, a restart leaves the node locked until you reach it.";
+   if( count === null )
+      return "The node did not say how many unlock keys it holds.";
 
-   return counted( count, "key", "keys" ) + " made here so far. Each works once - keep a few somewhere safe.";
+   if( count === 0 )
+      return "None left. Without one, a restart leaves the node locked until you reach it - make a few.";
+
+   return counted( count, "unlock key", "unlock keys" ) + " left. Each works once - make more before they run out.";
 }
 
 // NOTE: Tints a log line - "error" or "warn" - so they stand out in a long log; "" for the rest.
@@ -600,6 +606,7 @@ if( typeof module !== "undefined" )
       arriving_screen: arriving_screen,
       locked_sign_in_text: locked_sign_in_text,
       normalise_unlock_key: normalise_unlock_key,
+      c_home_keys_request: c_home_keys_request,
       parse_key_count: parse_key_count,
       people_summary: people_summary,
       parse_uptime: parse_uptime,

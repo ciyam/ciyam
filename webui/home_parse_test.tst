@@ -45,10 +45,10 @@ ok   too short
 ok   a character base64 does not have
 ok   the master password is not a key
 ok   nothing
-ok   keys made - a count
-ok   keys made - none stored
-ok   keys made - not a count
-ok   keys made - below none
+ok   keys - asked of the node
+ok   keys - the node's count
+ok   keys - no answer is not none
+ok   keys - not a count
 
 == admin's Overview ============================================
 ok   people - admin not counted
@@ -79,9 +79,10 @@ ok   people - all claimed
 ok   people waiting - one
 ok   people waiting - two
 ok   people waiting - none
-ok   keys - none made
-ok   keys - one made
-ok   keys - three made
+ok   keys - none left
+ok   keys - one left
+ok   keys - three left
+ok   keys - the node not saying
 ok   a key too soon after another, said plainly
 ok   any other refusal as it came
 ok   an error line
