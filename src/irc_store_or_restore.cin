@@ -88,8 +88,9 @@ IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE_NAME
 ;
 PREFIX=$$C$SP
 ;
->$IRC_VARS_DIR/$IRC_VARS_FILE
+>$IRC_VARS_DIR/$IRC_VARS_FILE_NAME
 #C=system_variable
+;
 system_variable "-p=$PREFIX" @irc_rooms*
 ;
 system_variable "-p=$PREFIX" -quoted @irc_names_*
@@ -100,6 +101,8 @@ system_variable "-p=$PREFIX" @irc_users_*
 system_variable "-p=$PREFIX" @irc_uuids_*
 system_variable "-p=$PREFIX" @irc_xinvr_*
 system_variable "-p=$PREFIX" @irc_xinvs_*
+;
+system_variable "-p=$PREFIX" @qs_??_irc
 ;
 system_variable "-p=$PREFIX" @session_@queue_irc_*
 ;
