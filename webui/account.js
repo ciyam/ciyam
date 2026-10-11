@@ -121,7 +121,7 @@ function account_main( )
 
          route( );
 
-         set_error( "signin_error", "You signed out in another app." );
+         set_error( "signin_error", "You signed out in another tab." );
       },
       from: "accounts",
       unsent: unsent_work

@@ -156,7 +156,7 @@ function chat( )
          // NOTE: The session has gone already - nothing is asked of the node (found by review).
          await do_disconnect( true );
 
-         set_error( "signin_error", "You signed out in another app." );
+         set_error( "signin_error", "You signed out in another tab." );
       },
       unsent: unsent_work
    } );

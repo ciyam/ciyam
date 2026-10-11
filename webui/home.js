@@ -1528,7 +1528,7 @@ function signed_out_elsewhere( )
 
    check_node( ).then( function( )
    {
-      signin_set_text( "signin_error", "You signed out in another app." );
+      signin_set_text( "signin_error", "You signed out in another tab." );
    } );
 }
 

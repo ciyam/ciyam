@@ -127,7 +127,7 @@ function signin_build( host, options )
 
    form.appendChild( retain );
    form.appendChild( signin_element( "div", { class: "signin-hint" },
-    "Shared by every app on this browser. Saving the password as well signs you in without typing it." ) );
+    "Shared by every part of your node on this browser. Saving the password as well signs you in without typing it." ) );
 
    // NOTE: A refusal stands out - a panel of its own (Damon, 2026-10-10: it was small grey-red type).
    form.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "signin_error", role: "alert" } ) );

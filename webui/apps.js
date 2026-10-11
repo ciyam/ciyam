@@ -111,7 +111,7 @@ function apps_build( host, options )
    trigger.setAttribute( "aria-haspopup", "true" );
    trigger.setAttribute( "aria-expanded", "false" );
    trigger.setAttribute( "aria-controls", "apps_panel" );
-   trigger.title = "Switch apps";
+   trigger.title = "Switch to…";
 
    trigger.appendChild( apps_element( "span", "chat-logo" ) );
    trigger.appendChild( apps_element( "span", "chat-wordmark apps-wordmark", "CIYAM" ) );
@@ -144,9 +144,9 @@ function apps_build( host, options )
 
    panel.id = "apps_panel";
    panel.hidden = true;
-   panel.setAttribute( "aria-label", "Apps" );
+   panel.setAttribute( "aria-label", "On this node" );
 
-   panel.appendChild( apps_element( "span", "apps-heading", "Apps on this node" ) );
+   panel.appendChild( apps_element( "span", "apps-heading", "On this node" ) );
 
    var list = apps_element( "div", "apps-list" );
 
@@ -213,7 +213,7 @@ function apps_build( host, options )
    name.id = "apps_name";
 
    who.appendChild( name );
-   who.appendChild( apps_element( "span", "apps-note", "One session, every app" ) );
+   who.appendChild( apps_element( "span", "apps-note", "Signed in across your node" ) );
 
    var sign_out = apps_element( "button", "chat-btn apps-sign-out", "Sign out" );
 

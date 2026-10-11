@@ -78,7 +78,7 @@ http://www.opensource.org/licenses/mit-license.php.
          </div>
 
          <h2 tabindex="-1">This node is locked</h2>
-         <p class="chat-signin-lede">It restarted, and the apps cannot be used until it is unlocked. Use one of the
+         <p class="chat-signin-lede">It restarted, and nothing on it can be used until it is unlocked. Use one of the
           unlock keys you kept.</p>
 
          <label class="chat-label" for="unlock_key">Unlock key</label>
@@ -136,7 +136,7 @@ http://www.opensource.org/licenses/mit-license.php.
       <div class="home-rail-brand" id="apps_host"></div>
 
       <div class="home-rail-group">
-         <span class="home-rail-heading">Apps</span>
+         <span class="home-rail-heading">Go to</span>
          <div id="rail_apps"></div>
       </div>
 
@@ -391,7 +391,7 @@ http://www.opensource.org/licenses/mit-license.php.
          </section>
       </main>
 
-      <nav class="home-bottombar" id="home_bottombar" aria-label="Apps"></nav>
+      <nav class="home-bottombar" id="home_bottombar" aria-label="Go to"></nav>
    </div>
 </div>
 

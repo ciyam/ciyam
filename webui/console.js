@@ -210,7 +210,7 @@ function console_main( )
          {
             await do_disconnect( true );
 
-            set_error( "signin_error", "You signed out in another app." );
+            set_error( "signin_error", "You signed out in another tab." );
          },
          unsent: unsent_work,
          page_left: on_page_left
