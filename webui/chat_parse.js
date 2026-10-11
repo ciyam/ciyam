@@ -756,7 +756,7 @@ function is_reserved_room( room )
 //
 // Three separate restrictions apply:
 //  - the entrance room is a lobby and never accepts messages
-//  - the reserved room is reserved for invitations and admin messages
+//  - the reserved room is kept for invitations and admin messages
 //  - a room may be set to owner-only or locked with the "posts" option
 function posting_status( room, entry, username, is_admin )
 {
@@ -1445,7 +1445,7 @@ function dm_request_text( inviter, name, me )
    return inviter + " wants to start a conversation with you and " + name_list( others ) + ".";
 }
 
-// NOTE: Announcements - a prototype, 2026-09-27. the Admin room is hidden from everyone but
+// NOTE: Announcements - a prototype, 2026-09-27. The Admin room is hidden from everyone but
 // admin, yet every account is a member of it and the chat already reads it in the background
 // for invitations - so admin's ordinary messages there reach every browser, and are shown as
 // announcements at the top of each room. The server returns only what was posted after the

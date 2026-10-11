@@ -449,6 +449,7 @@ function signin_reset_browser( )
    try
    {
       localStorage.clear( );
+      sessionStorage.removeItem( c_signin_last_account_key );
    }
    catch( e )
    {
@@ -570,7 +571,12 @@ function signin_keep_session( )
       if( ciyam.sessid !== "" )
       {
          sessionStorage.setItem( c_tab_session_key, format_tab_session( ciyam ) );
-         sessionStorage.setItem( c_signin_last_account_key, ciyam.access );
+
+         // NOTE: Only an account saved on this browser - "Remember: Nothing" leaves no PIN behind (found by review).
+         if( signin_saved_pins( ).indexOf( ciyam.access ) >= 0 )
+            sessionStorage.setItem( c_signin_last_account_key, ciyam.access );
+         else
+            sessionStorage.removeItem( c_signin_last_account_key );
       }
    }
    catch( e )

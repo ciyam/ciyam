@@ -700,11 +700,13 @@ function go( section )
    if( section !== "people" )
    {
       forget_handover( );
+      forget_ready( );
 
-      g_ready = null;
+      // NOTE: Every PIN hidden again - one shown stays shown only while People is (found by review).
+      g_people_shown = { };
    }
 
-   // NOTE: Only the problems is for the visit "Show them" opened - Logs chosen again shows the whole log.
+   // NOTE: The problems alone are for the visit "Show them" opened - Logs chosen again shows the whole log.
    if( section !== "logs" )
       g_log_problems_only = false;
 
@@ -850,7 +852,7 @@ function dismiss_announcement( unique )
 }
 
 // NOTE: The lobby listing gives every room and its unread count without moving what the session has read.
-// the Admin room - invitations, requests, announcements - is read whole, and only when its total changes, as
+// The Admin room - invitations, requests, announcements - is read whole, and only when its total changes, as
 // the chat reads it: a tab of the chat opened from Home shares this session.
 async function load_member_home( )
 {
@@ -1501,7 +1503,11 @@ function on_section_shown( section )
    if( section === "overview" )
       load_overview( );
    else if( section === "people" )
-      show_people( "people" );
+   {
+      show_people( g_people_opening );
+
+      g_people_opening = "people";
+   }
    else if( section === "keys" )
       show_keys( );
    else if( section === "logs" )
@@ -1539,8 +1545,9 @@ function install_admin( )
    {
       event.preventDefault( );
 
+      g_people_opening = "add";
+
       go( "people" );
-      show_people( "add" );
    } );
 
    install_people( );
@@ -1715,6 +1722,9 @@ var g_handover_code = "";
 var g_ready = null;
 var g_people_alert_timer = null;
 
+// NOTE: The view People opens on - the list, unless the Overview's "Add a person" asked for its form.
+var g_people_opening = "people";
+
 // NOTE: What went wrong with a request, in words - "" if nothing did.
 function people_problem( response )
 {
@@ -1738,7 +1748,7 @@ function show_people( view )
       forget_handover( );
 
    if( view !== "ready" )
-      g_ready = null;
+      forget_ready( );
 
    if( view === "people" )
       load_people( );
@@ -1767,10 +1777,16 @@ function people_alert( text, is_error )
 
 async function load_people( )
 {
+   var asked_for = ciyam.access;
+
    var response = await request( function( done )
    {
       return ciyam.fetch_users( done );
    } );
+
+   // NOTE: Signed out, or in again as someone else, while it was asked - the answer is not theirs (found by review).
+   if( ciyam.access !== asked_for )
+      return;
 
    if( people_problem( response ) !== "" )
    {
@@ -1899,10 +1915,15 @@ async function do_remove( pin )
 {
    var person = g_people.filter( function( row ) { return row.pin === pin; } )[ 0 ];
 
+   var asked_for = ciyam.access;
+
    var response = await request( function( done )
    {
       return ciyam.delete_user( pin, done );
    } );
+
+   if( ciyam.access !== asked_for )
+      return;
 
    g_people_armed = "";
 
@@ -1936,9 +1957,11 @@ function reset_add_form( )
 
 async function load_people_quietly( )
 {
+   var asked_for = ciyam.access;
+
    var response = await request( function( done ) { return ciyam.fetch_users( done ); } );
 
-   if( people_problem( response ) === "" )
+   if( ( ciyam.access === asked_for ) && ( people_problem( response ) === "" ) )
       g_people = parse_people( response, ciyam.access, ciyam.username || "admin" );
 }
 
@@ -2062,6 +2085,14 @@ function render_handover( )
    box.querySelectorAll( "[title]" ).forEach( function( node ) { node.removeAttribute( "title" ); } );
 }
 
+// NOTE: A new PIN is shown once - not left in the page when its view goes (found by review).
+function forget_ready( )
+{
+   g_ready = null;
+
+   [ "ready_pin", "ready_url", "ready_username", "ready_username_note" ].forEach( function( id ) { set_text( id, "" ); } );
+}
+
 function forget_handover( )
 {
    g_handover_code = "";
@@ -2120,8 +2151,8 @@ function forget_people( )
    g_people = [ ];
    g_people_armed = "";
    g_people_shown = { };
-   g_ready = null;
 
+   forget_ready( );
    forget_handover( );
 
    document.getElementById( "people_rows" ).replaceChildren( );

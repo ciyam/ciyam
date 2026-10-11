@@ -15,8 +15,6 @@ const c_storage_hashed_prefix = "cws.hashed_";
 
 const c_alert_time = 6000;
 
-const c_copied_time = 2000;
-
 // NOTE: People's views, when it was here - an address for one now opens People in Home.
 const c_people_views = [ "people", "add", "handover", "ready" ];
 

@@ -1266,11 +1266,11 @@ function on_rooms_response( response )
 
       // NOTE: A new invitation arrives as a message in the Admin room, which moves its total
       // in this listing - so it is only read again when that changes, not on every poll.
-      var starting = find_room( c_reserved_room_no );
+      var reserved = find_room( c_reserved_room_no );
 
-      if( !ciyam.is_admin && ( starting !== null ) && ( starting.total !== g_invite_total ) )
+      if( !ciyam.is_admin && ( reserved !== null ) && ( reserved.total !== g_invite_total ) )
       {
-         g_invite_total = starting.total;
+         g_invite_total = reserved.total;
 
          check_invitations( );
       }

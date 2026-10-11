@@ -1105,7 +1105,8 @@ check( "saved accounts - by name, A to Z whatever the case, then those with no n
   { pin: "31324", label: "Saved account 1" }, { pin: "40311", label: "Saved account 2" } ] );
 check( "- none saved", cp.order_saved_accounts( [ ] ), [ ] );
 check( "the account just signed out of - chosen", cp.chosen_saved_index( ordered_accounts, "20405" ), 2 );
-check( "- not saved, or none yet - the first", [ cp.chosen_saved_index( ordered_accounts, "55555" ), cp.chosen_saved_index( ordered_accounts, null ) ], [ 0, 0 ] );
+check( "- not saved, or none yet - the first",
+ [ cp.chosen_saved_index( ordered_accounts, "55555" ), cp.chosen_saved_index( ordered_accounts, null ) ], [ 0, 0 ] );
 
 check( "names whose PIN is no longer saved - let go", cp.stale_saved_names( [ "cws.name_10301", "cws.name_31324", "cws.access", "cws.name_40311" ],
  "10301,40311" ), [ "cws.name_31324" ] );
