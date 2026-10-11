@@ -336,6 +336,29 @@ function log_line_parts( line )
 // false when no start is among the lines read, so the count is only of those. "latest" is the newest of them.
 function log_problems( lines )
 {
+   var found = problem_lines( lines );
+
+   var result = { errors: 0, warnings: 0, latest: "", since_start: found.since_start };
+
+   found.lines.forEach( function( line )
+   {
+      if( log_line_kind( line ) === "error" )
+         ++result.errors;
+      else
+         ++result.warnings;
+
+      result.latest = line;
+   } );
+
+   return result;
+}
+
+// NOTE: The problem lines themselves - those "log_line_kind( )" calls an error or a warning, after the last "server
+// starting", or among every line read when no start is. The Overview counts these and "Show them" shows these, so the
+// two always agree (2026-10-12: it filtered by one word, "error" or "warn", which missed "failed" and the like, hid the
+// warnings when there were errors, and showed lines from before the restart).
+function problem_lines( lines )
+{
    var all = lines || [ ];
    var start = -1;
 
@@ -345,22 +368,7 @@ function log_problems( lines )
          start = i;
    } );
 
-   var result = { errors: 0, warnings: 0, latest: "", since_start: ( start >= 0 ) };
-
-   all.slice( start + 1 ).forEach( function( line )
-   {
-      var kind = log_line_kind( line );
-
-      if( kind === "error" )
-         ++result.errors;
-      else if( kind === "warn" )
-         ++result.warnings;
-
-      if( kind !== "" )
-         result.latest = line;
-   } );
-
-   return result;
+   return { lines: all.slice( start + 1 ).filter( function( line ) { return log_line_kind( line ) !== ""; } ), since_start: ( start >= 0 ) };
 }
 
 function log_problems_text( problems )
@@ -624,6 +632,7 @@ if( typeof module !== "undefined" )
       log_view: log_view,
       log_line_parts: log_line_parts,
       log_problems: log_problems,
+      problem_lines: problem_lines,
       log_problems_text: log_problems_text,
       rooms_filling: rooms_filling,
       rooms_filling_text: rooms_filling_text,

@@ -585,6 +585,11 @@ http://www.opensource.org/licenses/mit-license.php.
                   <option value="0">Every line</option>
                </select>
             </div>
+            <!-- NOTE: The Overview's "Show them" - only the lines it counted (2026-10-12). -->
+            <div class="home-log-only" id="log_problems_only" hidden>
+               <span id="log_problems_label"></span>
+               <button type="button" class="chat-btn" id="log_problems_clear">Show the whole log</button>
+            </div>
             <p class="home-note" id="log_status" role="status"></p>
             <pre class="home-log" id="log_lines"></pre>
          </section>

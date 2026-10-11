@@ -97,6 +97,9 @@ ok   a line of another shape - all words
 ok   problems since the restart - not before it
 ok   no start among the lines read
 ok   no lines
+ok   the problem lines - since the restart, errors and warnings, 'failed' among them
+ok   and exactly what is counted
+ok   no start read - every problem line read
 ok   in words - both
 ok   in words - none
 ok   in words - one, no start read

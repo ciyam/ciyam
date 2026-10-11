@@ -704,6 +704,10 @@ function go( section )
       g_ready = null;
    }
 
+   // NOTE: Only the problems is for the visit "Show them" opened - Logs chosen again shows the whole log.
+   if( section !== "logs" )
+      g_log_problems_only = false;
+
    on_section_shown( section );
 }
 
@@ -1246,8 +1250,9 @@ async function load_overview( )
    show_filling( is_error_response( listing ) ? null : derive_room_list( parse_fetch_response( listing ).rooms ) );
 }
 
-// NOTE: The errors and warnings in the server log since the restart - the latest in words, and Logs filtered to them.
-var g_problems_filter = "";
+// NOTE: The errors and warnings in the server log since the restart - the latest in words, and Logs showing just
+// those lines ("problem_lines( )") when "Show them" is chosen, until the whole log is asked for again.
+var g_log_problems_only = false;
 
 function show_problems( lines )
 {
@@ -1267,8 +1272,6 @@ function show_problems( lines )
    var problems = log_problems( lines );
    var any = ( problems.errors + problems.warnings ) > 0;
 
-   g_problems_filter = ( problems.errors > 0 ) ? "error" : "warn";
-
    set_text( "problems_heading", log_problems_text( problems ) );
 
    var latest = log_line_parts( problems.latest );
@@ -1286,15 +1289,16 @@ function show_problems_in_logs( event )
    event.preventDefault( );
 
    g_log_name = "server";
+   g_log_problems_only = true;
 
-   document.getElementById( "log_filter" ).value = g_problems_filter;
+   document.getElementById( "log_filter" ).value = "";
    document.getElementById( "log_count" ).value = String( c_overview_problem_lines );
 
    go( "logs" );
 }
 
-// NOTE: The rooms near the number of messages a room keeps - a full one refuses new messages. Only the rooms admin
-// is in: the listing has no others.
+// NOTE: The rooms near the number of messages a room keeps - a full one drops its oldest (Ian's "@qs_pf_irc",
+// 2026-10-11). Only the rooms admin is in: the listing has no others.
 function show_filling( rooms )
 {
    var list = document.getElementById( "rooms_filling" );
@@ -1439,7 +1443,7 @@ async function load_logs( )
       tab.textContent = name;
       tab.setAttribute( "role", "tab" );
       tab.setAttribute( "aria-selected", String( name === g_log_name ) );
-      tab.addEventListener( "click", function( ) { g_log_name = name; load_logs( ); } );
+      tab.addEventListener( "click", function( ) { g_log_name = name; g_log_problems_only = false; load_logs( ); } );
 
       tabs.appendChild( tab );
    } );
@@ -1469,12 +1473,22 @@ function show_log( )
 {
    var count = parseInt( document.getElementById( "log_count" ).value, 10 );
 
-   var view = log_view( g_log_lines, document.getElementById( "log_filter" ).value, ( count > 0 ) ? count : g_log_lines.length );
+   var found = g_log_problems_only ? problem_lines( g_log_lines ) : null;
+
+   var view = log_view( found ? found.lines : g_log_lines, document.getElementById( "log_filter" ).value,
+    ( count > 0 ) ? count : g_log_lines.length );
+
+   document.getElementById( "log_problems_only" ).hidden = !found;
+
+   if( found )
+      set_text( "log_problems_label", "Errors and warnings " + ( found.since_start ? "since the restart" : "in the lines read" )
+       + " - " + found.lines.length + ", as the Overview counts them" );
 
    draw_log( document.getElementById( "log_lines" ), view.lines );
 
    set_text( "log_status", "'" + g_log_name + "' - " + ( ( view.lines.length < view.total ) ? "the last " + view.lines.length + " of " : "" )
-    + view.total + " line" + ( view.total === 1 ? "" : "s" ) + ( document.getElementById( "log_filter" ).value.trim( ) !== "" ? " matching" : "" ) );
+    + view.total + " line" + ( view.total === 1 ? "" : "s" ) + ( found ? " - problems only" : "" )
+    + ( document.getElementById( "log_filter" ).value.trim( ) !== "" ? " matching" : "" ) );
 
    var pre = document.getElementById( "log_lines" );
 
@@ -1502,6 +1516,7 @@ function install_admin( )
    document.getElementById( "rooms_icon" ).appendChild( icon( "chat", 22 ) );
 
    document.getElementById( "problems_show" ).addEventListener( "click", show_problems_in_logs );
+   document.getElementById( "log_problems_clear" ).addEventListener( "click", function( ) { g_log_problems_only = false; show_log( ); } );
 
    document.getElementById( "overview_refresh" ).addEventListener( "click", load_overview );
    document.getElementById( "logs_refresh" ).addEventListener( "click", load_logs );
@@ -2140,6 +2155,7 @@ function forget_admin( )
    g_log_names = [ ];
    g_log_name = "server";
    g_log_lines = [ ];
+   g_log_problems_only = false;
 
    document.getElementById( "log_filter" ).value = "";
 

@@ -192,6 +192,15 @@ check( "problems since the restart - not before it", hp.log_problems( server_log
  { errors: 2, warnings: 1, latest: server_log[ 6 ], since_start: true } );
 check( "no start among the lines read", hp.log_problems( server_log.slice( 3 ) ).since_start, false );
 check( "no lines", hp.log_problems( [ ] ), { errors: 0, warnings: 0, latest: "", since_start: false } );
+
+// NOTE: "Show them" shows these lines - the same the count is made of (2026-10-12).
+var with_failed = server_log.concat( [ "[2026-10-09 01:00:00] [000006] [general] connection failed to peer",
+ "[2026-10-09 01:00:01] [000006] [general] an errors_seen counter is not a problem" ] );
+check( "the problem lines - since the restart, errors and warnings, 'failed' among them",
+ hp.problem_lines( with_failed ), { lines: [ server_log[ 4 ], server_log[ 5 ], server_log[ 6 ], with_failed[ 7 ] ], since_start: true } );
+check( "and exactly what is counted", hp.problem_lines( with_failed ).lines.length,
+ hp.log_problems( with_failed ).errors + hp.log_problems( with_failed ).warnings );
+check( "no start read - every problem line read", hp.problem_lines( server_log.slice( 3 ) ).lines.length, 3 );
 check( "in words - both", hp.log_problems_text( hp.log_problems( server_log ) ), "2 errors and 1 warning since the restart" );
 check( "in words - none", hp.log_problems_text( { errors: 0, warnings: 0, since_start: true } ), "No errors or warnings since the restart" );
 check( "in words - one, no start read", hp.log_problems_text( { errors: 1, warnings: 0, since_start: false } ), "1 error in the log's latest lines" );

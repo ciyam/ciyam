@@ -863,6 +863,26 @@
 
 /* NOTE: The console's dark surface, as the design shows the log - in both themes. Its tints are the console's
    ("console.css", "--console-err" and "--console-warn"), which Home does not load. */
+/* NOTE: Logs showing only the problems the Overview counted - said, with the way back to the whole log. */
+.home-log-only
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 8px 12px;
+   padding: 8px 8px 8px 14px;
+   border: 1px solid var(--color-chat-border-selected);
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+   font-size: var(--font-size-chat-meta);
+}
+
+.home-log-only span
+{
+   flex: 1 1 auto;
+}
+
 .home-log
 {
    margin: 0;
