@@ -93,8 +93,8 @@ else
  echo "messages create 0000000 for=0000001;text=Testing" >>/tmp/ciyam/$device.lst
  echo "messages" >>/tmp/ciyam/$device.lst
 
- echo "echo Rename room 0000001 back to Administration and output entrance room details." >>/tmp/ciyam/$device.lst
- echo "messages create 0000000 for=0000001;text=Administration" >>/tmp/ciyam/$device.lst
+ echo "echo Rename room 0000001 back to Admin and output entrance room details." >>/tmp/ciyam/$device.lst
+ echo "messages create 0000000 for=0000001;text=Admin" >>/tmp/ciyam/$device.lst
  echo "messages" >>/tmp/ciyam/$device.lst
 
  echo "echo Attempt to change posts to 'ALL' and assign ownership to 'test-1' for room 0000001." >>/tmp/ciyam/$device.lst
@@ -109,8 +109,8 @@ else
  echo "messages" >/tmp/ciyam/$device.lst
 
  echo "echo Rename the new room (using an invalid room number first) and output the entrance again." >>/tmp/ciyam/$device.lst
- echo "messages update 1000002 name=Testing (test-1 and test-2)" >>/tmp/ciyam/$device.lst
- echo "messages update 0000002 name=Testing (test-1 and test-2)" >>/tmp/ciyam/$device.lst
+ echo "messages update 1000003 name=Testing (test-1 and test-2)" >>/tmp/ciyam/$device.lst
+ echo "messages update 0000003 name=Testing (test-1 and test-2)" >>/tmp/ciyam/$device.lst
  echo "messages" >>/tmp/ciyam/$device.lst
 
  echo "echo Attempt to create a private room with an unknown user 'none' and then with 'admin'." >>/tmp/ciyam/$device.lst
@@ -118,35 +118,37 @@ else
  echo "messages create 0000000 text=.admin" >>/tmp/ciyam/$device.lst
 
  echo "echo Change the posts to 'NONE' and then attempt to create a message for the new room." >>/tmp/ciyam/$device.lst
- echo "messages update 0000002 posts=NONE" >>/tmp/ciyam/$device.lst
- echo "messages create 0000002 text=Test Message" >>/tmp/ciyam/$device.lst
+ echo "messages update 0000003 posts=NONE" >>/tmp/ciyam/$device.lst
+ echo "messages create 0000003 text=Test Message" >>/tmp/ciyam/$device.lst
  echo "messages" >>/tmp/ciyam/$device.lst
 
  echo "echo Change the posts back to 'ANY' and output the entrance again." >>/tmp/ciyam/$device.lst
- echo "messages update 0000002 posts=ANY" >>/tmp/ciyam/$device.lst
+ echo "messages update 0000003 posts=ANY" >>/tmp/ciyam/$device.lst
  echo "messages" >>/tmp/ciyam/$device.lst
 
  echo "echo Attempt to transfer the ownership to 'admin' and then to 'test-2' and output the entrance again." >>/tmp/ciyam/$device.lst
- echo "messages update 0000002 owner=admin" >>/tmp/ciyam/$device.lst
- echo "messages update 0000002 owner=test-2" >>/tmp/ciyam/$device.lst
+ echo "messages update 0000003 owner=admin" >>/tmp/ciyam/$device.lst
+ echo "messages update 0000003 owner=test-2" >>/tmp/ciyam/$device.lst
  echo "messages" >>/tmp/ciyam/$device.lst
 
  env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 11111 $device "" none
 
  rm -f /tmp/ciyam/$device.lst
 
- echo "Review messages in room 0000001 again for 'test-2' then attempt to rename room 0000002."
- env CIYAM_NODE_COMMAND="messages review 0000001" node ../webui/ciyam.js -test "" 22222 $device "" none | sed "s/0000002-[0-9a-f]*/0000002-NEW-ROOM-UUID-VALUE/g"
- env CIYAM_NODE_COMMAND="messages update 0000002 name=Renamed (test-1 and test-2)" node ../webui/ciyam.js -test "" 22222 $device "" none
+ echo "Review messages in room 0000001 again for 'test-2' then attempt to rename rooms 0000002 and 0000003."
+ env CIYAM_NODE_COMMAND="messages review 0000001" node ../webui/ciyam.js -test "" 22222 $device "" none | sed "s/0000003-[0-9a-f]*/0000003-NEW-ROOM-UUID-VALUE/g"
+ env CIYAM_NODE_COMMAND="messages update 0000002 name=Renamed (should fail)" node ../webui/ciyam.js -test "" 22222 $device "" none
+ env CIYAM_NODE_COMMAND="messages update 0000003 name=Renamed (should fail)" node ../webui/ciyam.js -test "" 22222 $device "" none
 
  echo "Join new romm for 'test-2', create an initial message for the new room and output entrace room details."
- env CIYAM_NODE_COMMAND="messages review 0000002 from=${new_room:8}" node ../webui/ciyam.js -test "" 22222 $device "" none
- env CIYAM_NODE_COMMAND="messages create 0000002 from=0;text=hi..." node ../webui/ciyam.js -test "" 22222 $device "" none
+ env CIYAM_NODE_COMMAND="messages review 0000003 from=${new_room:8}" node ../webui/ciyam.js -test "" 22222 $device "" none
+ env CIYAM_NODE_COMMAND="messages create 0000003 from=0;text=hi..." node ../webui/ciyam.js -test "" 22222 $device "" none
  env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 22222 $device "" none
 
- echo "Output entrance room details for 'test-1' and then review messages in rooms 0000001 and 0000002."
+ echo "Output entrance room details for 'test-1' and then review messages in rooms 0000001, 0000002 and 0000003."
  env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 11111 $device "" none
  env CIYAM_NODE_COMMAND="messages review 0000001" node ../webui/ciyam.js -test "" 11111 $device "" none
- env CIYAM_NODE_COMMAND="messages update 0000002 for=bad_user" node ../webui/ciyam.js -test "" 11111 $device "" none
- env CIYAM_NODE_COMMAND="messages review 0000002 from=0" node ../webui/ciyam.js -test "" 11111 $device "" none | sed "s/0000002-[0-9a-f]*/0000002-NEW-ROOM-UUID-VALUE/g"
+ env CIYAM_NODE_COMMAND="messages review 0000002" node ../webui/ciyam.js -test "" 11111 $device "" none
+ env CIYAM_NODE_COMMAND="messages update 0000003 for=bad_user" node ../webui/ciyam.js -test "" 11111 $device "" none
+ env CIYAM_NODE_COMMAND="messages review 0000003 from=0" node ../webui/ciyam.js -test "" 11111 $device "" none | sed "s/0000003-[0-9a-f]*/0000003-NEW-ROOM-UUID-VALUE/g"
 fi

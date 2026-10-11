@@ -11,7 +11,11 @@ Output the entrance room details.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 0/0 Administration"
+    "payload": "admin #0000001 0/0 Admin"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "admin #0000002 0/0 General"
   }
 ]
 Create an initial test message.
@@ -39,7 +43,11 @@ Output the entrance room details.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 0/1 Administration"
+    "payload": "admin #0000001 0/1 Admin"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "admin #0000002 0/0 General"
   }
 ]
 Review messages in room 0000001.
@@ -80,7 +88,11 @@ ciyam.is_locked = false
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 1/1 Administration"
+    "payload": "admin #0000001 1/1 Admin"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "admin #0000002 1/1 General"
   }
 ]
 Review messages in room 0000001 for 'test-1'.
@@ -117,7 +129,11 @@ Error: Normal messages for this room are disallowed.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 0/1 Administration"
+    "payload": "admin #0000001 0/1 Admin"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "admin #0000002 1/1 General"
   }
 ]
 Review messages in room 0000001 for 'test-1'.
@@ -153,7 +169,11 @@ Output the entrance room details for 'admin'.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 1/2 Administration"
+    "payload": "admin #0000001 1/2 Admin"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "admin #0000002 1/1 General"
   }
 ]
 Review messages in room 0000001 for 'admin'.
@@ -204,7 +224,11 @@ ciyam.is_locked = false
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 1/1 Administration"
+    "payload": "admin #0000001 1/1 Admin"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "admin #0000002 1/1 General"
   }
 ]
 Review messages in room 0000001 for 'test-2'.
@@ -249,7 +273,11 @@ Error: Normal messages for this room are disallowed.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 0/1 Administration"
+    "payload": "admin #0000001 0/1 Admin"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "admin #0000002 1/1 General"
   }
 ]
 Review messages in room 0000001 for 'test-2'.
@@ -293,7 +321,11 @@ Output entrance room details for 'admin'.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 1/3 Administration"
+    "payload": "admin #0000001 1/3 Admin"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "admin #0000002 2/2 General"
   }
 ]
 Review messages in room 0000001 for 'admin'.
@@ -340,9 +372,13 @@ Rename room 0000001 to Testing and output entrance room details.
   {
     "when": "0000000000001",
     "payload": "admin #0000001 1/4 Testing"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "admin #0000002 2/2 General"
   }
 ]
-Rename room 0000001 back to Administration and output entrance room details.
+Rename room 0000001 back to Admin and output entrance room details.
 {"room":"0000000"}
 [
   {
@@ -361,7 +397,11 @@ Rename room 0000001 back to Administration and output entrance room details.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 2/5 Administration"
+    "payload": "admin #0000001 2/5 Admin"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "admin #0000002 2/2 General"
   }
 ]
 Attempt to change posts to 'ALL' and assign ownership to 'test-1' for room 0000001.
@@ -386,15 +426,19 @@ Create a new romm for 'test-1' and 'test-2' and output entrance room details for
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 4/5 Administration"
+    "payload": "admin #0000001 4/5 Admin"
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 1/1 Private (test-1 and test-2)"
+    "payload": "admin #0000002 2/2 General"
+  },
+  {
+    "when": "0000000000003",
+    "payload": "test-1 #0000003 1/1 Private (test-1 and test-2)"
   }
 ]
 Rename the new room (using an invalid room number first) and output the entrance again.
-Error: Invalid room number '1000002' for CWS 'messages' endpoint.
+Error: Invalid room number '1000003' for CWS 'messages' endpoint.
 {"room":"0000000"}
 [
   {
@@ -413,11 +457,15 @@ Error: Invalid room number '1000002' for CWS 'messages' endpoint.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 4/5 Administration"
+    "payload": "admin #0000001 4/5 Admin"
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 2/2 Testing (test-1 and test-2)"
+    "payload": "admin #0000002 2/2 General"
+  },
+  {
+    "when": "0000000000003",
+    "payload": "test-1 #0000003 2/2 Testing (test-1 and test-2)"
   }
 ]
 Attempt to create a private room with an unknown user 'none' and then with 'admin'.
@@ -443,11 +491,15 @@ Error: Message creation is not permitted for this room.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 4/5 Administration"
+    "payload": "admin #0000001 4/5 Admin"
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 3/3~ Testing (test-1 and test-2)"
+    "payload": "admin #0000002 2/2 General"
+  },
+  {
+    "when": "0000000000003",
+    "payload": "test-1 #0000003 3/3~ Testing (test-1 and test-2)"
   }
 ]
 Change the posts back to 'ANY' and output the entrance again.
@@ -469,11 +521,15 @@ Change the posts back to 'ANY' and output the entrance again.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 4/5 Administration"
+    "payload": "admin #0000001 4/5 Admin"
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 4/4 Testing (test-1 and test-2)"
+    "payload": "admin #0000002 2/2 General"
+  },
+  {
+    "when": "0000000000003",
+    "payload": "test-1 #0000003 4/4 Testing (test-1 and test-2)"
   }
 ]
 Attempt to transfer the ownership to 'admin' and then to 'test-2' and output the entrance again.
@@ -497,14 +553,18 @@ Error: User 'test-2' is not a room member.
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 4/5 Administration"
+    "payload": "admin #0000001 4/5 Admin"
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 4/4 Testing (test-1 and test-2)"
+    "payload": "admin #0000002 2/2 General"
+  },
+  {
+    "when": "0000000000003",
+    "payload": "test-1 #0000003 4/4 Testing (test-1 and test-2)"
   }
 ]
-Review messages in room 0000001 again for 'test-2' then attempt to rename room 0000002.
+Review messages in room 0000001 again for 'test-2' then attempt to rename rooms 0000002 and 0000003.
 {"room":"0000001"}
 [
   {
@@ -523,20 +583,21 @@ Review messages in room 0000001 again for 'test-2' then attempt to rename room 0
 [
   {
     "when": "0000000000001",
-    "payload": "admin :rename 'Administration' to 'Testing'"
+    "payload": "admin :rename 'Admin' to 'Testing'"
   },
   {
     "when": "0000000000002",
-    "payload": "admin :rename 'Testing' to 'Administration'"
+    "payload": "admin :rename 'Testing' to 'Admin'"
   },
   {
     "when": "0000000000003",
-    "payload": "test-1 :invite room 0000002-NEW-ROOM-UUID-VALUE Private (test-1 and test-2)"
+    "payload": "test-1 :invite room 0000003-NEW-ROOM-UUID-VALUE Private (test-1 and test-2)"
   }
 ]
 Error: A room can only be changed by its owner or the administrator.
+Error: A room can only be changed by its owner or the administrator.
 Join new romm for 'test-2', create an initial message for the new room and output entrace room details.
-{"room":"0000002"}
+{"room":"0000003"}
 [
   {
     "name": "test-1",
@@ -553,7 +614,7 @@ Join new romm for 'test-2', create an initial message for the new room and outpu
     "payload": "test-2 :joined"
   }
 ]
-{"room":"0000002"}
+{"room":"0000003"}
 [
   {
     "name": "test-1",
@@ -592,14 +653,18 @@ Join new romm for 'test-2', create an initial message for the new room and outpu
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 0/4 Administration"
+    "payload": "admin #0000001 0/4 Admin"
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 0/2 Testing (test-1 and test-2)"
+    "payload": "admin #0000002 1/1 General"
+  },
+  {
+    "when": "0000000000003",
+    "payload": "test-1 #0000003 0/2 Testing (test-1 and test-2)"
   }
 ]
-Output entrance room details for 'test-1' and then review messages in rooms 0000001 and 0000002.
+Output entrance room details for 'test-1' and then review messages in rooms 0000001, 0000002 and 0000003.
 {"room":"0000000"}
 [
   {
@@ -618,11 +683,15 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
 [
   {
     "when": "0000000000001",
-    "payload": "admin #0000001 4/5 Administration"
+    "payload": "admin #0000001 4/5 Admin"
   },
   {
     "when": "0000000000002",
-    "payload": "test-1 #0000002 6/6 Testing (test-1 and test-2)"
+    "payload": "admin #0000002 2/2 General"
+  },
+  {
+    "when": "0000000000003",
+    "payload": "test-1 #0000003 6/6 Testing (test-1 and test-2)"
   }
 ]
 {"room":"0000001"}
@@ -647,19 +716,44 @@ Output entrance room details for 'test-1' and then review messages in rooms 0000
   },
   {
     "when": "0000000000002",
-    "payload": "admin :rename 'Administration' to 'Testing'"
+    "payload": "admin :rename 'Admin' to 'Testing'"
   },
   {
     "when": "0000000000003",
-    "payload": "admin :rename 'Testing' to 'Administration'"
+    "payload": "admin :rename 'Testing' to 'Admin'"
   },
   {
     "when": "0000000000004",
-    "payload": "test-1 :issued (invite for 0000002 sent to test-2)"
+    "payload": "test-1 :issued (invite for 0000003 sent to test-2)"
   }
 ]
-Error: Invalid attempt to invite 'bad_user' to room '0000002'.
 {"room":"0000002"}
+[
+  {
+    "name": "admin",
+    "count": "0"
+  },
+  {
+    "name": "test-1",
+    "count": "1"
+  },
+  {
+    "name": "test-2",
+    "count": "0"
+  }
+]
+[
+  {
+    "when": "0000000000001",
+    "payload": "test-1 :joined"
+  },
+  {
+    "when": "0000000000002",
+    "payload": "test-2 :joined"
+  }
+]
+Error: Invalid attempt to invite 'bad_user' to room '0000003'.
+{"room":"0000003"}
 [
   {
     "name": "test-1",
@@ -673,7 +767,7 @@ Error: Invalid attempt to invite 'bad_user' to room '0000002'.
 [
   {
     "when": "0000000000001",
-    "payload": "test-1 :create 0000002-NEW-ROOM-UUID-VALUE Private (test-1 and test-2)"
+    "payload": "test-1 :create 0000003-NEW-ROOM-UUID-VALUE Private (test-1 and test-2)"
   },
   {
     "when": "0000000000002",
