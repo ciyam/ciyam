@@ -30,7 +30,8 @@ REMOVE=
 CHANGED=
 ;
 ENTRANCE_ROOM=0000000
-STARTING_ROOM=0000001
+RESERVED_ROOM=0000001
+STARTING_ROOM=0000002
 ;
 PREFIX=@substr:0,2:$ROOM_NO
 @ifeq "$PREFIX" "~0"
@@ -48,14 +49,14 @@ ROOM_NO=@substr:0,$POS:$ROOM_NO
 @endif
 ;
 @ifeq "$ROOM_NO" "$ENTRANCE_ROOM"
-ROOM_NO=$STARTING_ROOM
+ROOM_NO=$RESERVED_ROOM
 @endif
 ;
 .system_variable @irc_allow
 @ifndef $OUTPUT
 ERROR=IRC usage is not currently available.
 @else
-@ifneq "$ROOM_NO" "$STARTING_ROOM"
+@ifneq "$ROOM_NO" "$RESERVED_ROOM"
 .system_variable @irc_uuids_$ROOM_NO
 @ifneq "$OUTPUT" "$JOIN_TOKEN"
 .=crypto_hash $USER$OUTPUT
@@ -126,7 +127,7 @@ ALL_USERS=@strlit:$OUTPUT
 ;
 @ifdef $REMOVE
 ;
-@ifeq "$ROOM_NO" "$STARTING_ROOM"
+@ifeq "$ROOM_NO" "$RESERVED_ROOM"
 ERROR=Removal from this room is not permitted.
 @else
 .system_variable @irc_lock 1 "" 100
@@ -151,7 +152,7 @@ CHANGED=1
 .system_variable @irc_xinvr_%ROOM_NO%_$USER 1
 .system_variable @irc_xinvs_%ROOM_NO%_$USER ""
 EXTRA=_:reject (invite for $ROOM_NO was rejected)
-ROOM_NO=$STARTING_ROOM
+ROOM_NO=$RESERVED_ROOM
 @endif
 ;
 @else
@@ -176,7 +177,7 @@ EXTRA=_:remove
 .system_variable @irc_users_$ROOM_NO "$ALL_USERS"
 .system_variable @session_@queue_irc_%ROOM_NO%_$USER ""
 ;
-.system_variable @irc_users_$STARTING_ROOM
+.system_variable @irc_users_$RESERVED_ROOM
 ALL_USERS=@strlit:$OUTPUT
 ;
 @endif
@@ -197,7 +198,7 @@ RETURN=@strlit:$ALL_USERS
 ;
 @ifeq "$OUTPUT" "0"
 ERROR=Unable to obtain the system IRC lock (try again later).
-@elif "$ROOM_NO" != "$STARTING_ROOM"
+@elif "$ROOM_NO" != "$RESERVED_ROOM"
 .system_variable @irc_users_$ROOM_NO
 @ifndef $OUTPUT
 .system_variable @irc_lock ""
@@ -210,11 +211,18 @@ ERROR=Invalid room number $ROOM_NO.
 .system_variable @irc_rooms
 @ifndef $OUTPUT
 CHANGED=1
-.system_variable @irc_names_$STARTING_ROOM Administration
+.system_variable @qs_pf_irc 1
+;
+.system_variable @irc_names_$RESERVED_ROOM Admin
+.system_variable @irc_names_$STARTING_ROOM General
+;
+.system_variable @irc_owner_$RESERVED_ROOM admin
 .system_variable @irc_owner_$STARTING_ROOM admin
+;
+.system_variable @irc_users_$RESERVED_ROOM @admin
 .system_variable @irc_users_$STARTING_ROOM @admin
 ;
-.system_variable @irc_rooms 0000002
+.system_variable @irc_rooms 0000003
 @endif
 ;
 .system_variable @irc_users_$ROOM_NO
@@ -239,7 +247,7 @@ EXTRA=_:joined
 ;
 .system_variable @irc_users_$ROOM_NO $ALL_USERS
 ;
-@ifneq "$ROOM_NO" "$STARTING_ROOM"
+@ifneq "$ROOM_NO" "$RESERVED_ROOM"
 RETURN=dummy|$EXTRA|$ALL_USERS
 @else
 RETURN=:joined (as $USER)|$EXTRA|$ALL_USERS
