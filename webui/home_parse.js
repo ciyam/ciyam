@@ -414,7 +414,8 @@ function room_filling_line( room )
 {
    var of = room.total.toLocaleString( "en-AU" ) + " of " + c_home_room_limit.toLocaleString( "en-AU" ) + " messages";
 
-   return room.name + " - " + ( room.total >= c_home_room_limit ? "full, " + of + " - new messages are refused" : of + " (" + room.percent + "%)" );
+   // NOTE: A full room drops its oldest message for each new one since Ian's "@qs_pf_irc" (2026-10-11) - it refused them.
+   return room.name + " - " + ( room.total >= c_home_room_limit ? "full, " + of + " - the oldest make way for new ones" : of + " (" + room.percent + "%)" );
 }
 
 // NOTE: What the Logs section shows - the lines holding "filter" (any case), the last "count" of them,

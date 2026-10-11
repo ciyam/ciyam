@@ -172,9 +172,9 @@ var shut_entry = { owner: "alice", posts: "none" };
 
 check( "entrance room never accepts posts",
  cp.posting_status( "0000000", null, "alice", false ).can_post, false );
-check( "starting room refused for a standard user",
+check( "reserved room refused for a standard user",
  cp.posting_status( "0000001", open_entry, "bob", false ).can_post, false );
-check( "starting room allowed for admin",
+check( "reserved room allowed for admin",
  cp.posting_status( "0000001", open_entry, "admin", true ).can_post, true );
 check( "open room allows anyone",
  cp.posting_status( "0000002", open_entry, "bob", false ).can_post, true );
@@ -191,8 +191,8 @@ check( "locked is flagged as locked",
 check( "a reason is always given when refused",
  cp.posting_status( "0000002", shut_entry, "alice", false ).reason.length > 0, true );
 
-check( "starting room recognised", cp.is_starting_room( "0000001" ), true );
-check( "other room is not the starting room", cp.is_starting_room( "0000002" ), false );
+check( "reserved room recognised", cp.is_reserved_room( "0000001" ), true );
+check( "other room is not the reserved room", cp.is_reserved_room( "0000002" ), false );
 
 heading( "no new messages" );
 
@@ -377,7 +377,7 @@ var odd = cp.parse_fetch_response( [
  "1790259222010 admin :invite room 0000001-dddddddddddddddddddddddddddddddd Administration",
  "1790259222011 admin :invite room 0000008" ].join( "\n" ) ).messages;
 
-check( "never the starting room, never without a token", cp.pending_invitations( odd, [ ] ).length, 0 );
+check( "never the reserved room, never without a token", cp.pending_invitations( odd, [ ] ).length, 0 );
 
 // NOTE: Real lines, 2026-09-28 - since Ian's change that day the server no longer rewrites an
 // answered invitation as ":ignore" (ISS-028), so the original ":invite" stays beside the decline.
@@ -767,7 +767,7 @@ check( "nobody left to wait for",
 check( "a member has joined, though their :joined is gone from the queue",
  cp.dm_waiting_for( [ ], [ "bob", "carol" ], cp.parse_members( "admin+1 carol+0" ) ), [ "bob" ] );
 
-// NOTE: Real lines, 2026-10-05 ("dm_decline_probe.js") - verify-a's starting room, after starting a
+// NOTE: Real lines, 2026-10-05 ("dm_decline_probe.js") - verify-a's reserved room, after starting a
 // conversation with verify-e, who declined it. Then a group of admin's, and someone else's receipt.
 var outcome_lines = cp.parse_fetch_response( [
  "admin+0 verify-a+1 verify-e+0",

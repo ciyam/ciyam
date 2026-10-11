@@ -32,7 +32,10 @@ const c_posts_none = "none";
 const c_posts_own_marker = "!";
 const c_posts_none_marker = "~";
 
-const c_starting_room = "0000001";
+// NOTE: Room 0000001 - Ian's RESERVED_ROOM, named "Admin" (until 2026-10-11 "Administration", and here the "starting
+// room"): invitations and admin's messages; only admin sees it as a room. Ian's STARTING_ROOM is now General, 0000002,
+// which everyone joins - an ordinary room to the client.
+const c_reserved_room = "0000001";
 
 const c_num_sender_colours = 6;
 
@@ -743,9 +746,9 @@ function is_entrance_room( room )
    return ( room === c_entrance_room );
 }
 
-function is_starting_room( room )
+function is_reserved_room( room )
 {
-   return ( room === c_starting_room );
+   return ( room === c_reserved_room );
 }
 
 // NOTE: Decides whether the composer should accept input, and why not when it should not.
@@ -753,14 +756,14 @@ function is_starting_room( room )
 //
 // Three separate restrictions apply:
 //  - the entrance room is a lobby and never accepts messages
-//  - the starting room is reserved for invitations and admin messages
+//  - the reserved room is reserved for invitations and admin messages
 //  - a room may be set to owner-only or locked with the "posts" option
 function posting_status( room, entry, username, is_admin )
 {
    if( is_entrance_room( room ) )
       return { can_post: false, reason: "The entrance room is a lobby - pick a room to chat in." };
 
-   if( is_starting_room( room ) && !is_admin )
+   if( is_reserved_room( room ) && !is_admin )
       return { can_post: false, reason: "Room 0000001 is reserved for invitations and admin messages." };
 
    var posts = ( entry && entry.posts ) ? entry.posts : c_posts_any;
@@ -829,7 +832,7 @@ function merge_new_messages( held, fresh )
    return ( held || [ ] ).concat( ( fresh || [ ] ).filter( function( m ) { return !seen[ key( m ) ]; } ) );
 }
 
-// NOTE: When a read of only what is new is not enough, and Administration must be read whole
+// NOTE: When a read of only what is new is not enough, and the Admin room must be read whole
 // ("from=0") - Ian's suggestion, 2026-09-27. Two cases:
 //
 //   - nothing new came back, though its message count moved - something else on this device
@@ -850,7 +853,7 @@ function needs_full_read( fresh )
 
 // NOTE: The "posts" option for a room's messages PUT - who may post. The server takes only
 // "ANY", "OWN" or "NONE", in capitals ("Unknown room posts value 'own'" otherwise), from
-// the owner or admin, and never for Administration. "" for anything else.
+// the owner or admin, and never for the Admin room. "" for anything else.
 function posts_request_value( posts )
 {
    var value = String( posts || "" ).toLowerCase( );
@@ -864,14 +867,14 @@ function posts_request_value( posts )
 // NOTE: Whether this user may change who posts in a room.
 function can_change_posting( room, entry, username, is_admin )
 {
-   if( !entry || is_entrance_room( room ) || is_starting_room( room ) )
+   if( !entry || is_entrance_room( room ) || is_reserved_room( room ) )
       return false;
 
    return is_admin || ( ( entry.owner || "" ) === username );
 }
 
 // NOTE: Who this user has already invited to a room, from the ":issued" receipts the
-// server posts to their Administration room. The server accepts a duplicate invitation
+// server posts to their Admin room. The server accepts a duplicate invitation
 // without complaint, and the invitee just gets a second notice carrying the same token,
 // so the picker uses this to stop it being sent again.
 //
@@ -910,7 +913,7 @@ function invited_to_room( messages, room )
 // Any field that can hold free text is therefore encoded so that none of ":", "-", "="
 // or "," survive. encodeURIComponent covers the last three but leaves "-" alone, hence the
 // extra replace.
-// NOTE: The invitations still waiting to be taken up, from the messages in the starting room.
+// NOTE: The invitations still waiting to be taken up, from the messages in the reserved room.
 // An invitation is a private ":invite room <room>-<token> <name>" message to the invitee, sent
 // by the inviter. One is pending until its room appears among the user's own rooms - which
 // is also what clears it, with no state to keep. The server accepts the same invitation
@@ -953,7 +956,7 @@ function pending_invitations( messages, rooms, me )
       if( ( event.verb !== "invite" ) || !event.room || !event.token )
          return;
 
-      if( joined[ event.room ] || is_entrance_room( event.room ) || is_starting_room( event.room ) )
+      if( joined[ event.room ] || is_entrance_room( event.room ) || is_reserved_room( event.room ) )
          return;
 
       latest[ event.room ] = {
@@ -1047,14 +1050,14 @@ function describe_event( event, label )
    return event.verb + ( event.detail ? " " + event.detail : "" );
 }
 
-// NOTE: The rooms shown in the rail. The starting room - Administration - is shown to admin
+// NOTE: The rooms shown in the rail. The reserved room - the Admin room - is shown to admin
 // only; it still exists for everyone, and is read in the background for invitations.
 function visible_rooms( rooms, is_admin )
 {
    if( is_admin )
       return ( rooms || [ ] ).slice( );
 
-   return ( rooms || [ ] ).filter( function( entry ) { return !is_starting_room( entry.room ); } );
+   return ( rooms || [ ] ).filter( function( entry ) { return !is_reserved_room( entry.room ); } );
 }
 
 // NOTE: Direct messages - a prototype, 2026-09-29. A direct message is a room whose members are
@@ -1344,7 +1347,7 @@ function dm_after_declines( waiting, outcome )
    return { waiting: [ ], held: ( still.length > 0 ) ? "send" : "drop" };
 }
 
-// NOTE: What became of the conversations this user started, from the starting room - kept by the
+// NOTE: What became of the conversations this user started, from the reserved room - kept by the
 // server, so it outlasts a reload, as what the chat holds does not. Their own ":issued (invite for
 // <room> sent to <names>)" says whom each was for, and an invitee's ":reject (invite for <room> was
 // rejected)" that they declined (verified 2026-10-05, "dm_decline_probe.js"). Nothing here says who
@@ -1442,7 +1445,7 @@ function dm_request_text( inviter, name, me )
    return inviter + " wants to start a conversation with you and " + name_list( others ) + ".";
 }
 
-// NOTE: Announcements - a prototype, 2026-09-27. Administration is hidden from everyone but
+// NOTE: Announcements - a prototype, 2026-09-27. the Admin room is hidden from everyone but
 // admin, yet every account is a member of it and the chat already reads it in the background
 // for invitations - so admin's ordinary messages there reach every browser, and are shown as
 // announcements at the top of each room. The server returns only what was posted after the
@@ -2273,7 +2276,7 @@ if( typeof module !== "undefined" )
       days_between: days_between,
       sender_colour_index: sender_colour_index,
       is_entrance_room: is_entrance_room,
-      is_starting_room: is_starting_room,
+      is_reserved_room: is_reserved_room,
       posting_status: posting_status,
       invited_to_room: invited_to_room,
       pending_invitations: pending_invitations,

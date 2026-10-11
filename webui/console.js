@@ -40,7 +40,7 @@ const c_palette_commands = [
    { command: "status", description: "this session's status" },
    { command: "help", description: "console and server commands" },
    { command: "messages review 0000000", description: "list rooms and unread counts" },
-   { command: "messages review 0000001 from=0", description: "the Administration room" },
+   { command: "messages review 0000001 from=0", description: "the Admin room" },
    { command: "messages review <room> from=0", description: "every message in a room" },
    { command: "messages create 0000000 text=<room name>", description: "create a room" },
    { command: "messages create 0000000 for=<names>;text=<room name>", description: "create a room and invite" },

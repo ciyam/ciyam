@@ -838,7 +838,7 @@ function dismiss_announcement( unique )
 }
 
 // NOTE: The lobby listing gives every room and its unread count without moving what the session has read.
-// Administration - invitations, requests, announcements - is read whole, and only when its total changes, as
+// the Admin room - invitations, requests, announcements - is read whole, and only when its total changes, as
 // the chat reads it: a tab of the chat opened from Home shares this session.
 async function load_member_home( )
 {

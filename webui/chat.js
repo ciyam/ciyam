@@ -10,7 +10,7 @@
 // usernames and room names are supplied by other users and must never reach innerHTML.
 
 const c_lobby_room = "0000000";
-const c_starting_room_no = "0000001";
+const c_reserved_room_no = "0000001";
 
 const c_poll_interval = 4000;
 
@@ -29,8 +29,8 @@ const c_storage_hashed_prefix = "cws.hashed_";
 var g_room = "";
 var g_rooms = [ ];
 
-// NOTE: Invitations waiting to be taken up, worked out from Administration's messages. The
-// room total last seen for Administration says when to read it again; -1 means never read.
+// NOTE: Invitations waiting to be taken up, worked out from the Admin room's messages. The
+// room total last seen for the Admin room says when to read it again; -1 means never read.
 var g_invite_messages = [ ];
 var g_invitations = [ ];
 
@@ -53,12 +53,12 @@ var g_recipients = [ ];
 // NOTE: Direct messages started here and waiting for the others to accept - room number to
 // { waiting, texts, total, checked }. A member sees nothing posted before they joined, so what is
 // sent meanwhile is held. In memory only, like everything else the chat shows - but rebuilt after a
-// reload from the starting room ("restore_dm_outcomes( )"), "checked" false until the room's own
+// reload from the reserved room ("restore_dm_outcomes( )"), "checked" false until the room's own
 // member line has said who is still to join.
 var g_dm_pending = { };
 
 // NOTE: Conversations this user started that someone declined - room number to their names - and
-// those everyone it was for declined, so nobody else will read them. From the starting room each
+// those everyone it was for declined, so nobody else will read them. From the reserved room each
 // time, so they need no keeping.
 var g_dm_declined = { };
 var g_dm_shut = { };
@@ -1264,9 +1264,9 @@ function on_rooms_response( response )
    {
       g_rooms = derive_room_list( result.rooms );
 
-      // NOTE: A new invitation arrives as a message in Administration, which moves its total
+      // NOTE: A new invitation arrives as a message in the Admin room, which moves its total
       // in this listing - so it is only read again when that changes, not on every poll.
-      var starting = find_room( c_starting_room_no );
+      var starting = find_room( c_reserved_room_no );
 
       if( !ciyam.is_admin && ( starting !== null ) && ( starting.total !== g_invite_total ) )
       {
@@ -1769,7 +1769,7 @@ async function do_decline_invitation( )
    }
 
    // NOTE: Drop it here at once. The server now answers it as ":ignore", so the next read of
-   // Administration keeps it gone; until then the old ":invite" must not bring it back.
+   // the Admin room keeps it gone; until then the old ":invite" must not bring it back.
    g_invite_messages = g_invite_messages.filter( function( message )
    {
       return !( message.event && ( message.event.verb === "invite" ) && ( message.event.room === invite.room ) );
@@ -1802,7 +1802,7 @@ function do_join_invitation( )
    load_rooms( );
 }
 
-// NOTE: Only for someone who cannot see Administration - admin reads it as a room, and a
+// NOTE: Only for someone who cannot see the Admin room - admin reads it as a room, and a
 // background read would mark its messages read behind their back. Quiet, like polling, so
 // it stays out of the console's log.
 //
@@ -1821,7 +1821,7 @@ function check_invitations( whole )
 
    serialised( function( )
    {
-      return ciyam.fetch_messages( c_starting_room_no, options, on_invitations_response );
+      return ciyam.fetch_messages( c_reserved_room_no, options, on_invitations_response );
    } );
 
    g_in_poll = false;
@@ -2272,7 +2272,7 @@ function dm_waiting_rooms( )
    return Object.keys( g_dm_pending ).filter( function( room ) { return g_dm_pending[ room ].checked !== false; } );
 }
 
-// NOTE: After each read of the starting room - what became of the conversations this user started
+// NOTE: After each read of the reserved room - what became of the conversations this user started
 // ("dm_invite_outcomes( )"). A decline is marked, and takes whoever declined out of what is waiting,
 // with anything held only for them - which says so. One still waiting is restored after a reload,
 // unchecked until its member line is read ("watch_held_rooms( )"), so what is sent there is held
@@ -2362,8 +2362,8 @@ function do_open_rename_room( )
 // Announcements - a prototype
 // ====================================================================
 
-// NOTE: Admin's messages in Administration, from the same background read as invitations.
-// Admin reads Administration as a room, so sees none of this.
+// NOTE: Admin's messages in the Admin room, from the same background read as invitations.
+// Admin reads the Admin room as a room, so sees none of this.
 function refresh_announcements( )
 {
    var list = ciyam.is_admin ? [ ] : pending_announcements( g_invite_messages, read_dismissed( ) );
@@ -2561,8 +2561,8 @@ function disarm_dismiss_all( )
    }
 }
 
-// NOTE: What admin is about to post in Administration, shown as everyone else will see it -
-// the card, and who will see it. Only for admin, in Administration, with something typed.
+// NOTE: What admin is about to post in the Admin room, shown as everyone else will see it -
+// the card, and who will see it. Only for admin, in the Admin room, with something typed.
 function update_announcement_preview( )
 {
    var host = document.getElementById( "announcement_preview" );
@@ -2570,7 +2570,7 @@ function update_announcement_preview( )
 
    var text = input.value.trim( );
 
-   var showing = ciyam.is_admin && is_starting_room( g_room ) && ( text !== "" ) && !input.disabled;
+   var showing = ciyam.is_admin && is_reserved_room( g_room ) && ( text !== "" ) && !input.disabled;
 
    host.hidden = !showing;
 
@@ -2616,7 +2616,7 @@ function do_dismiss_announcement( unique )
 // token they have no use for.
 function do_open_invite( )
 {
-   if( ( g_room === "" ) || is_starting_room( g_room ) )
+   if( ( g_room === "" ) || is_reserved_room( g_room ) )
       return;
 
    g_dialog_mode = "invite";
@@ -2655,7 +2655,7 @@ function do_open_invite( )
 }
 
 // NOTE: The server accepts the same invitation twice without complaint, so the picker
-// stops it instead. This user's Administration room holds an ":issued" receipt for every
+// stops it instead. This user's Admin room holds an ":issued" receipt for every
 // invitation they sent; anyone already invited to this room is shown but cannot be ticked.
 // The dialog is drawn first and marked when the receipts arrive, so a slow fetch never
 // delays it. Invitations sent by someone else are not visible here - see ISS-017.
@@ -2663,7 +2663,7 @@ function mark_already_invited( room )
 {
    serialised( function( )
    {
-      return ciyam.fetch_messages( c_starting_room_no, "from=0", function( response )
+      return ciyam.fetch_messages( c_reserved_room_no, "from=0", function( response )
       {
          // NOTE: The dialog may have been closed or switched to another room meanwhile.
          if( is_error_response( response ) || ( g_dialog_mode !== "invite" ) || ( g_room !== room )
@@ -3041,9 +3041,9 @@ function on_messages_response( response, asked_for, replace )
 
       append_messages( result.messages );
 
-      // NOTE: Admin sees Administration as a room, so their invitations come from here
+      // NOTE: Admin sees the Admin room as a room, so their invitations come from here
       // rather than from a background read.
-      if( is_starting_room( asked_for ) )
+      if( is_reserved_room( asked_for ) )
       {
          g_invite_messages = replace ? result.messages : g_invite_messages.concat( result.messages );
 
@@ -3258,7 +3258,7 @@ function build_notice( entry )
    var event = entry.event;
 
    // NOTE: System events are timed like any other message. They were previously the one
-   // kind of row with no time at all, which made the Administration room - almost entirely
+   // kind of row with no time at all, which made the Admin room - almost entirely
    // joins and invitations - read as undated.
    var time = node.querySelector( ".chat-notice-time" );
 
@@ -3564,10 +3564,10 @@ function update_thread_meta( )
    if( changeable && !select.disabled )
       select.value = entry.posts || "any";
 
-   // NOTE: Nobody can be invited to or removed from the Administration room - it is
+   // NOTE: Nobody can be invited to or removed from the Admin room - it is
    // joined automatically - so the control is absent there rather than present and
    // failing. Ian raised this against 0000001 specifically.
-   document.getElementById( "owner_invite" ).hidden = is_starting_room( g_room );
+   document.getElementById( "owner_invite" ).hidden = is_reserved_room( g_room );
 
    document.getElementById( "presence_foot" ).textContent =
     "poll every " + ( c_poll_interval / 1000 ) + "s"
@@ -4320,7 +4320,7 @@ function resync_after_timeout( )
     .then( function( ) { if( g_room !== "" ) return load_messages( "from=0", true ); } )
     .then( function( )
     {
-       // NOTE: Administration read whole again, for the invitations and announcements.
+       // NOTE: The Admin room read whole again, for the invitations and announcements.
        if( !ciyam.is_admin && ( g_invite_messages.length > 0 ) )
           check_invitations( true );
     } )

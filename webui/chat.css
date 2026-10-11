@@ -991,7 +991,7 @@ button.chat-avatar:hover
    text-decoration: underline;
 }
 
-/* NOTE: Admin's preview, above the message box in Administration. Kept short - a long
+/* NOTE: Admin's preview, above the message box in the Admin room. Kept short - a long
    announcement scrolls inside it rather than pushing the message box off the screen. */
 .chat-announcement-preview
 {

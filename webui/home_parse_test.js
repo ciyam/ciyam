@@ -209,7 +209,7 @@ check( "rooms filling - none", hp.rooms_filling( listed.slice( 0, 1 ) ), [ ] );
 check( "rooms filling - in words", [ hp.rooms_filling_text( [ ] ), hp.rooms_filling_text( [ 1 ] ), hp.rooms_filling_text( [ 1, 2 ] ) ],
  [ "No room is filling up", "1 room is filling up", "2 rooms are filling up" ] );
 check( "a filling room", hp.room_filling_line( hp.rooms_filling( listed )[ 1 ] ), "General - 7,412 of 9,000 messages (82%)" );
-check( "a full room", hp.room_filling_line( hp.rooms_filling( listed )[ 0 ] ), "Busy - full, 9,000 of 9,000 messages - new messages are refused" );
+check( "a full room", hp.room_filling_line( hp.rooms_filling( listed )[ 0 ] ), "Busy - full, 9,000 of 9,000 messages - the oldest make way for new ones" );
 
 var log = [ "one alpha", "two beta", "three alpha", "four gamma", "five alpha" ];
 

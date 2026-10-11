@@ -65,8 +65,8 @@ ok   not locked when owner only
 
 == who may post ================================================
 ok   entrance room never accepts posts
-ok   starting room refused for a standard user
-ok   starting room allowed for admin
+ok   reserved room refused for a standard user
+ok   reserved room allowed for admin
 ok   open room allows anyone
 ok   owner-only refuses a member
 ok   owner-only allows the owner
@@ -74,8 +74,8 @@ ok   owner-only allows admin
 ok   locked refuses the owner too
 ok   locked is flagged as locked
 ok   a reason is always given when refused
-ok   starting room recognised
-ok   other room is not the starting room
+ok   reserved room recognised
+ok   other room is not the reserved room
 
 == no new messages =============================================
 ok   kind
@@ -167,7 +167,7 @@ ok   inviter is the sender
 ok   a name with brackets kept
 ok   joining clears it
 ok   no messages, none pending
-ok   never the starting room, never without a token
+ok   never the reserved room, never without a token
 ok   the rooms this user declined
 ok   someone else's decline is not this user's
 ok   a declined invitation is not pending, with no :ignore
