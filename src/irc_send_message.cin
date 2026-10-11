@@ -38,7 +38,7 @@ CHANGED=
 TARGET_ROOM=
 ;
 ENTRANCE_ROOM=0000000
-STARTING_ROOM=0000001
+RESERVED_ROOM=0000001
 ;
 POS=@strpos:_:$ROOM
 @ifdef $POS
@@ -48,7 +48,7 @@ ROOM=@substr:$POS:$ROOM
 @endif
 ;
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
-ROOM=$STARTING_ROOM
+ROOM=$RESERVED_ROOM
 @endif
 ;
 ; NOTE: Checks all MESSAGE characters
@@ -68,7 +68,7 @@ SPECIAL=
 SPECIAL=1
 @endif
 ;
-@ifeq "$ROOM" "$STARTING_ROOM"
+@ifeq "$ROOM" "$RESERVED_ROOM"
 @ifneq "$USER_NAME" "admin"
 @ifndef $SPECIAL
 ERROR=Normal messages for this room are disallowed.

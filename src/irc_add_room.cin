@@ -27,7 +27,7 @@ PRIVATE=
 EXISTING=
 NEW_ROOM=
 ;
-STARTING_ROOM=0000001
+RESERVED_ROOM=0000001
 ;
 DUMMY_JOIN_UUID=00000000000000000000000000000000
 ;
@@ -171,11 +171,11 @@ ERROR=Unknown room posts value '$NAME'.
 @endif
 @endif
 @endif
-@ifeq "$EXISTING" "$STARTING_ROOM"
+@ifeq "$EXISTING" "$RESERVED_ROOM"
 ERROR=Posts assignment for this room is not permitted.
 @endif
 @else
-@ifeq "$EXISTING" "$STARTING_ROOM"
+@ifeq "$EXISTING" "$RESERVED_ROOM"
 ERROR=Ownership assignment for this room is not permitted.
 @else
 .system_variable @irc_users_$EXISTING
@@ -191,7 +191,7 @@ ERROR=User '$NAME' is not a room member.
 @else
 ;
 @ifdef $PRIVATE
-.system_variable @irc_users_$STARTING_ROOM
+.system_variable @irc_users_$RESERVED_ROOM
 ALL_USERS=@strlit:$OUTPUT@
 CHECK_USERS=@repstr:@$NAME@/:$ALL_USERS
 @ifeq "$ALL_USERS" "$CHECK_USERS"
@@ -377,7 +377,7 @@ NAMES=OTHERS
 @endif
 ;
 @ifeq "OTHERS" "$NAMES"
-.system_variable @irc_users_$STARTING_ROOM
+.system_variable @irc_users_$RESERVED_ROOM
 NAMES=@repstr:@$USER/:$OUTPUT
 @ifdef $NAMES
 NAMES=@substr:1:$NAMES
@@ -407,7 +407,7 @@ BAD_INVITE=1
 @ifdef $OUTPUT
 BAD_INVITE=1
 @else
-.system_variable @irc_users_$STARTING_ROOM
+.system_variable @irc_users_$RESERVED_ROOM
 ALL_USERS=@strlit:$OUTPUT@
 CHECK_USERS=@repstr:@$NEXT_USER@/:$ALL_USERS
 @ifeq "$ALL_USERS" "$CHECK_USERS"
@@ -470,7 +470,7 @@ OLD_IRC_USER=$OUTPUT
 .session_variable @search $SEARCH
 .session_variable @replace $REPLACE
 @endif
-.run_script !irc_send_message "@room=%EXISTING%_$STARTING_ROOM,@names=invite_$NAMES,@message=$ENCODED"
+.run_script !irc_send_message "@room=%EXISTING%_$RESERVED_ROOM,@names=invite_$NAMES,@message=$ENCODED"
 ;
 .session_variable @irc_user "$OLD_IRC_USER"
 ;
