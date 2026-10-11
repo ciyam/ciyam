@@ -211,8 +211,7 @@ constexpr const char* c_web_session_special_message_for = "IRC";
 constexpr const char* c_web_session_messages_extra_none = "NONE";
 constexpr const char* c_web_session_messages_extra_time = "TIME";
 
-constexpr const char* c_web_session_default_room_number = "0000000";
-constexpr const char* c_web_session_initial_room_number = "0000001";
+constexpr const char* c_web_session_entrance_room_number = "0000000";
 
 constexpr const char* c_web_session_meta_message_prefix = "_/";
 
@@ -2922,7 +2921,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   string response_suffix;
 
-                  string room( c_web_session_default_room_number );
+                  string room( c_web_session_entrance_room_number );
 
                   if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storages_prefix ) )
                      is_user_info_request = true;
@@ -2938,7 +2937,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                         bool invalid_room = false;
 
-                        if( room.length( ) != CONST_LENGTH( c_web_session_default_room_number ) )
+                        if( room.length( ) != CONST_LENGTH( c_web_session_entrance_room_number ) )
                            invalid_room = true;
                         else if( ( room[ 0 ] != '0' )
                          || ( room.find_first_not_of( "0123456789" ) != string::npos ) )
@@ -3125,7 +3124,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  // NOTE: If the TIME extra option was provided then
                                  // (provided the room is not the entrance) will get
                                  // any time values stored by "irc_fetch_messages".
-                                 if( ( room != c_web_session_default_room_number )
+                                 if( ( room != c_web_session_entrance_room_number )
                                   && ( extra == c_web_session_messages_extra_time ) )
                                  {
                                     string all_room_times( get_system_variable( c_irc_times_prefix + room + "_*" ) );
@@ -3248,7 +3247,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     }
 
                                     if( !is_special_request
-                                     && ( room == c_web_session_default_room_number ) )
+                                     && ( room == c_web_session_entrance_room_number ) )
                                     {
                                        is_adding_room = true;
 
@@ -3332,7 +3331,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                     string prefixed_join_room( room );
 
-                                    if( room == c_web_session_default_room_number )
+                                    if( room == c_web_session_entrance_room_number )
                                     {
                                        request_and_args += "<web_session_join.cin \"" + username + "\" \"" + room + "\"\n";
 
