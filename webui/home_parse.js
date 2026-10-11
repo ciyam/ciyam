@@ -203,15 +203,16 @@ function parse_uptime( text )
    return /^([0-9]+[wdhms] ?)+$/.test( value ) ? value : "";
 }
 
-// NOTE: The uptime as the Overview says it - the two largest parts that are not nothing, in words:
-// "1w 0d 3h 4m 5s" is "1 week 3 hours", "41m 45s" is "41 minutes 45 seconds". "" for anything else.
+// NOTE: The uptime as the Overview says it - the two largest parts that are not nothing, in words, to the minute: seconds
+// are left out, as Home refreshes once a minute (Ian, 2026-10-11). "1w 0d 3h 4m 5s" is "1 week 3 hours", "41m 45s" is
+// "41 minutes", under a minute "just started". "" for anything else.
 function uptime_words( text )
 {
-   var names = { w: "week", d: "day", h: "hour", m: "minute", s: "second" };
+   var names = { w: "week", d: "day", h: "hour", m: "minute" };
 
    var parts = parse_uptime( text ).split( " " ).filter( function( part )
    {
-      return ( part !== "" ) && ( parseInt( part, 10 ) > 0 );
+      return ( part !== "" ) && ( parseInt( part, 10 ) > 0 ) && ( part.charAt( part.length - 1 ) !== "s" );
    } );
 
    if( ( parts.length === 0 ) && ( parse_uptime( text ) !== "" ) )

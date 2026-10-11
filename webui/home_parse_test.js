@@ -129,7 +129,9 @@ check( "people - nobody", hp.people_summary( [ ] ), { active: 0, unclaimed: 0 } 
 check( "uptime - as the node gives it", hp.parse_uptime( "41m 45s" ), "41m 45s" );
 check( "uptime - weeks", hp.parse_uptime( "1w 0d 3h 4m 5s\n" ), "1w 0d 3h 4m 5s" );
 check( "uptime - an error", hp.parse_uptime( "Error: something" ), "" );
-check( "uptime in words - minutes", hp.uptime_words( "41m 45s" ), "41 minutes 45 seconds" );
+check( "uptime in words - minutes, no seconds (Ian, 2026-10-11)", hp.uptime_words( "41m 45s" ), "41 minutes" );
+check( "uptime in words - an hour and seconds is the hour", hp.uptime_words( "1h 0m 5s" ), "1 hour" );
+check( "uptime in words - under a minute, just started", hp.uptime_words( "45s" ), "just started" );
 check( "uptime in words - the two largest, a nothing skipped", hp.uptime_words( "1w 0d 3h 4m 5s" ), "1 week 3 hours" );
 check( "uptime in words - one of each", hp.uptime_words( "1d 1h 1m 1s" ), "1 day 1 hour" );
 check( "uptime in words - just started", hp.uptime_words( "0s" ), "just started" );

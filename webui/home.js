@@ -1058,8 +1058,14 @@ function start_refresh( )
 
    g_refresh_timer = window.setInterval( function( )
    {
-      if( ( ciyam.sessid !== "" ) && !document.hidden )
-         load_member_home( );
+      if( ( ciyam.sessid === "" ) || document.hidden )
+         return;
+
+      load_member_home( );
+
+      // NOTE: Admin's Overview too, while it is shown - a page left open is a way to watch the node (Ian, 2026-10-11).
+      if( ciyam.is_admin && ( g_section === "overview" ) )
+         load_overview( );
    }, c_refresh_ms );
 }
 

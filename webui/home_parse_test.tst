@@ -56,7 +56,9 @@ ok   people - nobody
 ok   uptime - as the node gives it
 ok   uptime - weeks
 ok   uptime - an error
-ok   uptime in words - minutes
+ok   uptime in words - minutes, no seconds (Ian, 2026-10-11)
+ok   uptime in words - an hour and seconds is the hour
+ok   uptime in words - under a minute, just started
 ok   uptime in words - the two largest, a nothing skipped
 ok   uptime in words - one of each
 ok   uptime in words - just started
