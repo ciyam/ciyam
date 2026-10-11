@@ -103,7 +103,11 @@ system_state( )
    node -e "fetch('http://localhost:13031/system',{signal:AbortSignal.timeout(5000)}).then(r=>r.text()).then(t=>process.stdout.write(t)).catch(()=>{})" 2>/dev/null
 }
 
-if [ ! -f .web_access_admin ]; then
+# NOTE: A node left new - "CIYAM_NO_SETUP=1" - so setting one up from Home can be tried (Damon, 2026-10-12): "/system"
+# answers "*CIYAM*" until someone does. Whoever is first sets it up, so only on a node nobody else can reach.
+if [ ! -f .web_access_admin ] && [ "${CIYAM_NO_SETUP:-}" = "1" ]; then
+   echo "(no access token found - left NEW, to be set up from Home: http://localhost:13031/home.html)"
+elif [ ! -f .web_access_admin ]; then
    echo "(no access token found - bootstrapping 'admin')"
 
    (
