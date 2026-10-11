@@ -993,8 +993,8 @@ function app_keys( list ) { return list.map( function( app ) { return app.key + 
 check( "admin's apps, the chat marked", app_keys( cp.switcher_apps( true, false, "chat" ) ), [ "home", "chat*", "account", "console" ] );
 check( "a member's - no console", app_keys( cp.switcher_apps( false, false, "home" ) ), [ "home*", "chat", "account" ] );
 check( "admin on a phone - no console", app_keys( cp.switcher_apps( true, true, "account" ) ), [ "home", "chat", "account*" ] );
-check( "the accounts page by who you are", [ cp.switcher_apps( true, false, "" )[ 2 ].title, cp.switcher_apps( false, false, "" )[ 2 ].title ],
- [ "Accounts", "My account" ] );
+check( "the accounts page is My account for everyone - People is in Home (2026-10-11)",
+ [ cp.switcher_apps( true, false, "" )[ 2 ].title, cp.switcher_apps( false, false, "" )[ 2 ].title ], [ "My account", "My account" ] );
 check( "each app's page and tab", cp.switcher_apps( true, false, "" ).map( function( app ) { return app.page + " " + app.tab; } ),
  [ "home.html ciyam-home", "chat.html ciyam-chat", "account.html ciyam-accounts", "console.html ciyam-console" ] );
 check( "the button's name", [ "home", "chat", "account", "console" ].map( function( key ) { return cp.switcher_title( key, false ); } ),

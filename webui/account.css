@@ -5,7 +5,8 @@
  */
 
 /* ====================================================================
-   The accounts page.
+   The accounts page - and Home's People, which moved there from it
+   (2026-10-11) and keeps its look.
 
    Loaded after "chat.css", whose sign in card, fields, buttons and
    strength bar it reuses as they are. Everything here is new and
@@ -386,33 +387,6 @@ h2[tabindex="-1"]:focus
    flex-grow: 1;
 }
 
-.account-nav
-{
-   display: flex;
-   gap: 4px;
-}
-
-.account-nav a
-{
-   padding: 6px 10px;
-   border-radius: var(--radius-sm);
-   font-size: var(--font-size-chat-meta);
-   color: var(--color-chat-text-strong);
-   text-decoration: none;
-}
-
-.account-nav a:hover
-{
-   background: var(--color-chat-rule);
-}
-
-.account-nav a[aria-current="page"]
-{
-   background: var(--color-chat-bg-selected);
-   color: var(--color-chat-accent-deep);
-   font-weight: 600;
-}
-
 .account-who-am-i
 {
    font-size: var(--font-size-chat-meta);
@@ -441,7 +415,8 @@ h2[tabindex="-1"]:focus
    font-size: var(--font-size-chat-meta);
 }
 
-.account-main.is-wide .account-alert
+/* NOTE: In Home's People the notice lines up with the list, the wide one. */
+#people_alert
 {
    max-width: 1000px;
 }
@@ -519,6 +494,26 @@ h2[tabindex="-1"]:focus
    align-self: flex-start;
    font-size: var(--font-size-chat-meta);
    text-decoration: none;
+}
+
+/* NOTE: In Home's People the way back is a button, not a link (2026-10-11) - it looks the same. */
+button.account-back,
+.account-pin-show
+{
+   padding: 0;
+   border: 0;
+   background: none;
+   font-family: inherit;
+   cursor: pointer;
+}
+
+/* NOTE: A PIN hidden in Home's People - "Show" beside it reads it (2026-10-11). */
+.account-pin-show
+{
+   margin-left: 8px;
+   color: var(--color-chat-accent-deep);
+   font-size: var(--font-size-chat-meta);
+   font-weight: 600;
 }
 
 /* ====================================================================
@@ -881,6 +876,62 @@ h2[tabindex="-1"]:focus
    .account-table th
    {
       padding: 12px 14px;
+   }
+
+   /* NOTE: On a phone the four columns did not fit, and People scrolled sideways (Damon, 2026-10-11) - each person is a
+      card of two rows instead: who and their status, then the PIN and Remove. A Remove being confirmed takes the row. */
+   .account-table thead
+   {
+      display: none;
+   }
+
+   .account-table tr
+   {
+      display: grid;
+      grid-template-columns: minmax( 0, 1fr ) auto;
+      align-items: center;
+      gap: 8px 12px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--color-chat-rule);
+   }
+
+   .account-table tbody tr:first-child
+   {
+      border-top: 0;
+   }
+
+   .account-table td
+   {
+      padding: 0;
+      border-top: 0;
+   }
+
+   .account-table td:nth-child( 1 )
+   {
+      grid-area: 1 / 1;
+   }
+
+   .account-table td:nth-child( 3 )
+   {
+      grid-area: 1 / 2;
+      text-align: right;
+   }
+
+   .account-table td:nth-child( 2 )
+   {
+      grid-area: 2 / 1;
+   }
+
+   .account-table td:nth-child( 4 )
+   {
+      grid-area: 2 / 2;
+   }
+
+   .account-table td.account-row-actions:has( .account-confirm:not( [hidden] ) )
+   {
+      grid-area: 3 / 1 / 4 / 3;
+      text-align: left;
+      white-space: normal;
    }
 
    .account-who-am-i

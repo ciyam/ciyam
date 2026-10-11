@@ -308,8 +308,8 @@ http://www.opensource.org/licenses/mit-license.php.
                   <span class="home-card-body">
                      <h2 id="rooms_heading">&hellip;</h2>
                      <ul class="home-filling" id="rooms_filling"></ul>
-                     <span class="home-note home-empty" id="rooms_note">Of the rooms you are in. A full room refuses new
-                      messages.</span>
+                     <span class="home-note home-empty" id="rooms_note">Of the rooms you are in. A full room drops its oldest
+                      messages to make way for new ones.</span>
                   </span>
                </section>
             </div>
@@ -339,6 +339,205 @@ http://www.opensource.org/licenses/mit-license.php.
 
          <!-- NOTE: Unlock keys - made by admin while the node is unlocked, each shown once and used once. The node
               cannot list them, so Home counts the ones made on this browser (the design's known limit). -->
+         <!-- NOTE: People - adding, handing over and removing accounts - moved here from the accounts page, which keeps My
+              account and Welcome (Damon, 2026-10-11: the node's administration in Home). Its look is "account.css", which
+              the accounts page shares. Four views in the one section, as on the accounts page - the list, Add a person,
+              the code to hand over and the PIN ready - the last two shown once. -->
+         <section class="home-section" id="section_people" hidden>
+            <div class="account-alert" id="people_alert" role="status" hidden></div>
+
+            <section class="account-section account-section--wide" id="people_section">
+               <div class="account-head">
+                  <div>
+                     <h1 tabindex="-1">People</h1>
+                     <p class="account-lede">Everyone with an account on this node. Only you can add people.</p>
+                  </div>
+                  <button type="button" class="chat-btn chat-btn--primary" id="people_add">Add a person</button>
+               </div>
+
+               <div class="account-card account-table-wrap">
+                  <table class="account-table">
+                     <thead>
+                        <tr>
+                           <th scope="col">Person</th>
+                           <th scope="col">PIN</th>
+                           <th scope="col">Status</th>
+                           <th scope="col"><span class="account-sr">Actions</span></th>
+                        </tr>
+                     </thead>
+                     <tbody id="people_rows"></tbody>
+                  </table>
+                  <p class="account-empty" id="people_empty">Loading...</p>
+               </div>
+
+               <p class="account-note">PINs are hidden while Home is open - <b>Show</b> one to read it. Codes you've handed out
+                but nobody has used yet aren't listed here - the node doesn't keep a list of them.</p>
+            </section>
+
+            <section class="account-section" id="add_section" hidden>
+               <button type="button" class="account-back" data-people="list">&larr; People</button>
+
+               <form class="account-card account-form" id="add_form" novalidate>
+                  <div>
+                     <h1 tabindex="-1">Add a person</h1>
+                     <p class="account-lede">They choose their own password. You never see it, and neither does the node.</p>
+                  </div>
+
+                  <fieldset class="account-choices">
+                     <legend class="chat-label">How they'll join</legend>
+
+                     <label class="account-choice">
+                        <input type="radio" name="add_how" value="code" checked>
+                        <span class="account-choice-text">
+                           <span class="account-choice-title">With a code <span class="account-pill account-pill--accent">Recommended</span></span>
+                           <span class="account-choice-desc">A one-time code you hand over in person - on screen as a QR code, or read
+                            out. They choose their username and password, and the node gives them a PIN.</span>
+                        </span>
+                     </label>
+
+                     <label class="account-choice">
+                        <input type="radio" name="add_how" value="pin">
+                        <span class="account-choice-text">
+                           <span class="account-choice-title">With a PIN you choose</span>
+                           <span class="account-choice-desc">For someone who'd rather not handle a code, such as a household member.
+                            You choose the PIN, and can suggest a username.</span>
+                        </span>
+                     </label>
+                  </fieldset>
+
+                  <div class="account-pin-fields" id="add_pin_fields" hidden>
+                     <div class="account-grid">
+                        <div>
+                           <label class="chat-label" for="add_pin">PIN <span class="account-optional">- optional</span></label>
+                           <input type="text" id="add_pin" class="chat-field chat-field--mono" inputmode="numeric" maxlength="5" autocomplete="off">
+                           <div class="account-hint">5 digits. Leave it empty for a random one.</div>
+                        </div>
+                        <div>
+                           <label class="chat-label" for="add_username">Username <span class="account-optional">- optional</span></label>
+                           <input type="text" id="add_username" class="chat-field" maxlength="12" autocomplete="off" autocapitalize="none"
+                            spellcheck="false">
+                           <div class="account-hint">3 to 12 characters: a-z, 0-9 and -</div>
+                        </div>
+                     </div>
+
+                     <label class="account-check">
+                        <input type="checkbox" id="add_suggestion" checked>
+                        Only a suggestion - they can choose a different username
+                     </label>
+
+                     <div class="account-warning">
+                        <b>Hand it over in person.</b>
+                        <span>Whoever signs in with this PIN first sets the password.</span>
+                     </div>
+                  </div>
+
+                  <div class="chat-error-text" id="add_error" role="alert"></div>
+
+                  <div class="account-actions-row">
+                     <button type="button" class="chat-btn account-btn-tall" data-people="list">Cancel</button>
+                     <button type="submit" class="chat-btn chat-btn--primary" id="add_submit">Create a code</button>
+                  </div>
+               </form>
+            </section>
+
+            <section class="account-section" id="handover_section" hidden>
+               <div class="account-card account-form">
+                  <div>
+                     <h1 tabindex="-1">Hand this code over in person</h1>
+                     <p class="account-lede">It's for one person - it becomes their account when they use it.</p>
+                  </div>
+
+                  <div class="account-handover">
+                     <div class="account-qr" id="handover_qr" role="img"
+                      aria-label="A QR code that opens the accounts page on their phone, with the code filled in"></div>
+
+                     <div class="account-handover-code">
+                        <span class="chat-label">The code</span>
+                        <span class="chat-mono account-code" id="handover_code"></span>
+                        <div>
+                           <button type="button" class="chat-btn" id="handover_copy">Copy</button>
+                        </div>
+                        <p class="account-hint">Scanning the QR code opens the accounts page on their phone, with the code filled in.</p>
+                     </div>
+                  </div>
+
+                  <ol class="account-steps">
+                     <li>They scan the QR code - or open <b class="chat-mono" id="handover_url"></b> and type the code</li>
+                     <li>They choose a username and a password</li>
+                     <li>They write down the PIN they're given</li>
+                  </ol>
+
+                  <div class="account-warning">
+                     <b>Shown only now.</b>
+                     <span>The node can't show this code again. If it's lost before they use it, add them again.</span>
+                  </div>
+
+                  <div class="account-actions-row">
+                     <button type="button" class="chat-btn chat-btn--primary" id="handover_done" data-people="list">Done</button>
+                  </div>
+               </div>
+            </section>
+
+            <section class="account-section" id="ready_section" hidden>
+               <div class="account-card account-form">
+                  <div>
+                     <h1 tabindex="-1">The PIN is ready</h1>
+                     <p class="account-lede">Give it to them in person. They set their password the first time they sign in with it.</p>
+                  </div>
+
+                  <div class="account-facts account-facts--row">
+                     <div class="account-fact">
+                        <span class="chat-label">PIN</span>
+                        <span class="chat-mono account-fact-big" id="ready_pin"></span>
+                     </div>
+                     <div class="account-fact">
+                        <span class="chat-label">Username</span>
+                        <span class="account-fact-name" id="ready_username"></span>
+                        <span class="account-hint" id="ready_username_note"></span>
+                     </div>
+                  </div>
+
+                  <div class="account-warning">
+                     <b>Until they sign in,</b>
+                     <span>anyone with this PIN can set the password. It shows in People as "Not yet claimed" until then.
+                      They set it up at <b class="chat-mono" id="ready_url"></b>, under "I have a PIN".</span>
+                  </div>
+
+                  <div class="account-actions-row">
+                     <button type="button" class="chat-btn chat-btn--primary" id="ready_done" data-people="list">Done</button>
+                  </div>
+               </div>
+            </section>
+
+            <template id="tpl_person">
+               <tr>
+                  <td>
+                     <div class="account-who">
+                        <span class="account-avatar"></span>
+                        <div>
+                           <div class="account-name"></div>
+                           <div class="account-sub"></div>
+                        </div>
+                     </div>
+                  </td>
+                  <td>
+                     <span class="chat-mono account-pin"></span>
+                     <button type="button" class="account-pin-show">Show</button>
+                  </td>
+                  <td><span class="account-pill"></span></td>
+                  <td class="account-row-actions">
+                     <span class="account-you" hidden>You</span>
+                     <button type="button" class="chat-btn account-remove">Remove</button>
+                     <div class="account-confirm" hidden>
+                        <span class="account-confirm-text"></span>
+                        <button type="button" class="account-btn-danger account-confirm-yes">Remove for good</button>
+                        <button type="button" class="chat-btn account-confirm-no">Keep</button>
+                     </div>
+                  </td>
+               </tr>
+            </template>
+         </section>
+
          <section class="home-section" id="section_keys" hidden>
             <h1>Unlock keys</h1>
             <p class="home-note">A key unlocks the node after a restart without the master password - from anywhere, by

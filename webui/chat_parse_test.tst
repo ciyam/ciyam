@@ -532,7 +532,7 @@ ok   full stamp of a bad unique
 ok   admin's apps, the chat marked
 ok   a member's - no console
 ok   admin on a phone - no console
-ok   the accounts page by who you are
+ok   the accounts page is My account for everyone - People is in Home (2026-10-11)
 ok   each app's page and tab
 ok   the button's name
 ok   an app not known - no name

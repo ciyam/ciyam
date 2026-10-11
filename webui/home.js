@@ -312,7 +312,8 @@ async function wait_until_ready( )
 const c_icons = {
    home: "M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z",
    chat: "M4 5h16v11H8l-4 4z",
-   account: "M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M10 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M21 19v-1a4 4 0 0 0-3-3.9M16 5.1a3 3 0 0 1 0 5.8",
+   account: "M19 20v-1a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v1M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8",
+   people: "M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M10 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M21 19v-1a4 4 0 0 0-3-3.9M16 5.1a3 3 0 0 1 0 5.8",
    console: "M4 6l5 5-5 5M12 18h8",
    overview: "M12 14l4-4M3.5 18a9 9 0 1 1 17 0",
    keys: "M15 7a4 4 0 1 1-3.5 6L4 20.5H2v-3l7.5-7.5A4 4 0 0 1 15 7z",
@@ -659,12 +660,12 @@ function go( section )
 {
    g_section = section;
 
-   [ "home", "overview", "keys", "logs" ].forEach( function( key )
+   [ "home", "overview", "people", "keys", "logs" ].forEach( function( key )
    {
       document.getElementById( "section_" + key ).hidden = ( key !== section );
    } );
 
-   var titles = { home: "Home", overview: "Overview", keys: "Unlock keys", logs: "Logs" };
+   var titles = { home: "Home", overview: "Overview", people: "People", keys: "Unlock keys", logs: "Logs" };
 
    set_text( "top_heading", titles[ section ] || "Home" );
 
@@ -692,9 +693,16 @@ function go( section )
    if( window.location.hash !== "#" + section )
       history.replaceState( null, "", "#" + section );
 
-   // NOTE: A new unlock key is shown once - leaving the section lets it go.
+   // NOTE: A new unlock key is shown once - leaving the section lets it go. So is a code or a new PIN, in People.
    if( section !== "keys" )
       forget_shown_key( );
+
+   if( section !== "people" )
+   {
+      forget_handover( );
+
+      g_ready = null;
+   }
 
    on_section_shown( section );
 }
@@ -1478,6 +1486,8 @@ function on_section_shown( section )
 {
    if( section === "overview" )
       load_overview( );
+   else if( section === "people" )
+      show_people( "people" );
    else if( section === "keys" )
       show_keys( );
    else if( section === "logs" )
@@ -1507,9 +1517,18 @@ function install_admin( )
       document.getElementById( pair[ 0 ] ).addEventListener( "click", function( event ) { event.preventDefault( ); go( pair[ 1 ] ); } );
    } );
 
-   bind_app_link( document.getElementById( "overview_add_person" ), function( event ) { open_app_by_key( "account", "#add", event ); } );
+   // NOTE: People is one of Home's own sections since 2026-10-11 - it was the accounts page's.
+   document.getElementById( "overview_people_link" ).addEventListener( "click", function( event ) { event.preventDefault( ); go( "people" ); } );
 
-   bind_app_link( document.getElementById( "overview_people_link" ), function( event ) { open_app_by_key( "account", "#people", event ); } );
+   document.getElementById( "overview_add_person" ).addEventListener( "click", function( event )
+   {
+      event.preventDefault( );
+
+      go( "people" );
+      show_people( "add" );
+   } );
+
+   install_people( );
 }
 
 // NOTE: Another tab on this session signed out of every app - the session has gone, so nothing is asked of the node.
@@ -1656,9 +1675,468 @@ function close_console( )
    apps_console_frame_unload( );
 }
 
+// ====================================================================
+// People - adding, handing over and removing accounts, moved here from the accounts page (Damon, 2026-10-11)
+// ====================================================================
+
+// NOTE: As the accounts page had them: four views in the one section - the list, Add a person, the code to hand over
+// and the PIN ready. A code and a new PIN are shown once - leaving the view, or the section, lets them go.
+const c_people_views = [ "people", "add", "handover", "ready" ];
+
+const c_people_alert_ms = 6000;
+
+const c_people_copied_ms = 2000;
+
+const c_people_qr_size = 176;
+
+// NOTE: A PIN is for its user and the administrator (Ian, 2026-10-10), and Home may be left open to watch the node
+// (2026-10-11) - so People hides each PIN until "Show" is chosen for its row.
+const c_hidden_pin = "•••••";
+
+var g_people = [ ];
+var g_people_armed = "";
+var g_people_shown = { };
+var g_handover_code = "";
+var g_ready = null;
+var g_people_alert_timer = null;
+
+// NOTE: What went wrong with a request, in words - "" if nothing did.
+function people_problem( response )
+{
+   if( is_timeout_response( response ) )
+      return "The server didn't answer in time - try again.";
+
+   if( is_error_response( response ) )
+      return error_text( response );
+
+   return "";
+}
+
+function show_people( view )
+{
+   c_people_views.forEach( function( name )
+   {
+      document.getElementById( name + "_section" ).hidden = ( name !== view );
+   } );
+
+   if( view !== "handover" )
+      forget_handover( );
+
+   if( view !== "ready" )
+      g_ready = null;
+
+   if( view === "people" )
+      load_people( );
+   else if( view === "add" )
+      reset_add_form( );
+
+   var heading = document.querySelector( "#" + view + "_section h1" );
+
+   if( heading !== null )
+      heading.focus( { preventScroll: true } );
+}
+
+function people_alert( text, is_error )
+{
+   var alert = document.getElementById( "people_alert" );
+
+   alert.textContent = text;
+   alert.classList.toggle( "is-error", !!is_error );
+   alert.hidden = false;
+
+   if( g_people_alert_timer !== null )
+      window.clearTimeout( g_people_alert_timer );
+
+   g_people_alert_timer = window.setTimeout( function( ) { alert.hidden = true; }, c_people_alert_ms );
+}
+
+async function load_people( )
+{
+   var response = await request( function( done )
+   {
+      return ciyam.fetch_users( done );
+   } );
+
+   if( people_problem( response ) !== "" )
+   {
+      g_people = [ ];
+
+      document.getElementById( "people_rows" ).replaceChildren( );
+
+      set_text( "people_empty", "The list could not be read: " + people_problem( response ) );
+
+      return;
+   }
+
+   g_people = parse_people( response, ciyam.access, ciyam.username || "admin" );
+
+   render_people( );
+}
+
+function render_people( )
+{
+   var body = document.getElementById( "people_rows" );
+
+   body.replaceChildren( );
+
+   set_text( "people_empty", ( g_people.length === 0 ) ? "Nobody yet." : "" );
+
+   g_people.forEach( function( person )
+   {
+      var row = document.getElementById( "tpl_person" ).content.firstElementChild.cloneNode( true );
+
+      row.dataset.pin = person.pin;
+
+      var avatar = row.querySelector( ".account-avatar" );
+      var name = row.querySelector( ".account-name" );
+
+      avatar.textContent = user_initial( person.name );
+
+      if( person.name !== "" )
+      {
+         avatar.style.background = "var(--color-sender-" + sender_colour_index( person.name ) + ")";
+
+         name.textContent = person.name;
+      }
+      else
+      {
+         avatar.classList.add( "is-unknown" );
+
+         name.textContent = "No username yet";
+         name.classList.add( "is-unknown" );
+
+         row.querySelector( ".account-sub" ).textContent = "Waiting for its first sign in";
+      }
+
+      var shown = !!g_people_shown[ person.pin ];
+      var show = row.querySelector( ".account-pin-show" );
+
+      row.querySelector( ".account-pin" ).textContent = shown ? person.pin : c_hidden_pin;
+
+      show.textContent = shown ? "Hide" : "Show";
+      show.setAttribute( "aria-label", ( shown ? "Hide the PIN of " : "Show the PIN of " ) + ( person.name || "this account" ) );
+      show.onclick = function( ) { toggle_pin( person.pin ); };
+
+      var pill = row.querySelector( ".account-pill" );
+
+      pill.textContent = { admin: "Administrator", active: "Active", unclaimed: "Not yet claimed" }[ person.status ];
+      pill.classList.add( "account-pill--" + person.status );
+
+      var remove = row.querySelector( ".account-remove" );
+      var confirm = row.querySelector( ".account-confirm" );
+
+      // NOTE: Named, not by PIN - the PIN may be hidden.
+      var called = person.name || "this unclaimed account";
+
+      if( person.you )
+      {
+         row.querySelector( ".account-you" ).hidden = false;
+
+         remove.hidden = true;
+      }
+      else if( g_people_armed === person.pin )
+      {
+         remove.hidden = true;
+         confirm.hidden = false;
+
+         row.querySelector( ".account-confirm-text" ).textContent = "Remove " + called + "? They can no longer sign in.";
+
+         row.querySelector( ".account-confirm-yes" ).onclick = function( ) { do_remove( person.pin ); };
+         row.querySelector( ".account-confirm-no" ).onclick = function( ) { arm_remove( "" ); };
+      }
+      else
+      {
+         remove.setAttribute( "aria-label", "Remove " + called );
+         remove.onclick = function( ) { arm_remove( person.pin ); };
+      }
+
+      body.appendChild( row );
+   } );
+
+   if( g_people_armed !== "" )
+   {
+      var keep = body.querySelector( ".account-confirm:not([hidden]) .account-confirm-no" );
+
+      if( keep !== null )
+         keep.focus( );
+   }
+}
+
+function toggle_pin( pin )
+{
+   if( g_people_shown[ pin ] )
+      delete g_people_shown[ pin ];
+   else
+      g_people_shown[ pin ] = true;
+
+   render_people( );
+}
+
+// NOTE: Removing asks once more in the row itself, as the chat's "Block for good" does.
+function arm_remove( pin )
+{
+   g_people_armed = pin;
+
+   render_people( );
+}
+
+async function do_remove( pin )
+{
+   var person = g_people.filter( function( row ) { return row.pin === pin; } )[ 0 ];
+
+   var response = await request( function( done )
+   {
+      return ciyam.delete_user( pin, done );
+   } );
+
+   g_people_armed = "";
+
+   if( people_problem( response ) !== "" )
+      people_alert( "Not removed: " + people_problem( response ), true );
+   else
+      people_alert( ( person && person.name ? person.name : "The unclaimed account" ) + " was removed." );
+
+   load_people( );
+}
+
+function add_how( )
+{
+   return document.querySelector( "input[name='add_how']:checked" ).value;
+}
+
+function reset_add_form( )
+{
+   document.querySelector( "input[name='add_how'][value='code']" ).checked = true;
+
+   document.getElementById( "add_pin" ).value = "";
+   document.getElementById( "add_username" ).value = "";
+   document.getElementById( "add_suggestion" ).checked = true;
+
+   update_add_form( );
+
+   // NOTE: The list is checked against when a PIN or username is chosen.
+   if( g_people.length === 0 )
+      load_people_quietly( );
+}
+
+async function load_people_quietly( )
+{
+   var response = await request( function( done ) { return ciyam.fetch_users( done ); } );
+
+   if( people_problem( response ) === "" )
+      g_people = parse_people( response, ciyam.access, ciyam.username || "admin" );
+}
+
+function update_add_form( )
+{
+   var by_pin = ( add_how( ) === "pin" );
+
+   document.getElementById( "add_pin_fields" ).hidden = !by_pin;
+   document.getElementById( "add_submit" ).textContent = by_pin ? "Create the PIN" : "Create a code";
+
+   set_text( "add_error", "" );
+}
+
+async function do_add( event )
+{
+   event.preventDefault( );
+
+   var by_pin = ( add_how( ) === "pin" );
+
+   var pin = document.getElementById( "add_pin" ).value.trim( );
+   var username = document.getElementById( "add_username" ).value.trim( );
+   var suggestion = document.getElementById( "add_suggestion" ).checked;
+
+   if( by_pin )
+   {
+      var problem = nominate_problem( pin, username, g_people );
+
+      if( problem !== "" )
+      {
+         set_text( "add_error", problem );
+
+         return;
+      }
+   }
+
+   set_text( "add_error", "" );
+
+   var submit = document.getElementById( "add_submit" );
+
+   submit.disabled = true;
+
+   var options = by_pin ? nominated_options( pin, username, suggestion ) : "secret";
+
+   var response = await request( function( done )
+   {
+      return ciyam.create_user( options, done );
+   } );
+
+   submit.disabled = false;
+
+   if( people_problem( response ) !== "" )
+   {
+      set_text( "add_error", people_problem( response ) );
+
+      return;
+   }
+
+   var answer = response.trim( );
+
+   if( by_pin )
+   {
+      if( !is_account_pin( answer ) )
+      {
+         set_text( "add_error", "The server's answer was not a PIN: " + answer );
+
+         return;
+      }
+
+      show_people( "ready" );
+
+      g_ready = { pin: answer, username: username, suggestion: suggestion };
+
+      render_ready( );
+   }
+   else
+   {
+      if( normalise_code( answer ) === "" )
+      {
+         set_text( "add_error", "The server's answer was not a code: " + answer );
+
+         return;
+      }
+
+      show_people( "handover" );
+
+      g_handover_code = answer;
+
+      render_handover( );
+   }
+}
+
+// NOTE: Where a new person goes - the accounts page, whose Welcome takes a code or a PIN.
+function account_page_address( )
+{
+   return window.location.protocol + "//" + window.location.host + "/" + c_account_page;
+}
+
+function render_handover( )
+{
+   set_text( "handover_code", g_handover_code );
+   set_text( "handover_url", account_page_address( ) );
+   set_text( "handover_copy", "Copy" );
+
+   var box = document.getElementById( "handover_qr" );
+
+   box.replaceChildren( );
+
+   // NOTE: Drawn in the page - "qrcode.min.js" - so the code goes nowhere else. It opens the accounts page's Welcome.
+   new QRCode( box, {
+      text: join_url( window.location.protocol + "//" + window.location.host, g_handover_code ),
+      width: c_people_qr_size,
+      height: c_people_qr_size,
+      colorDark: "#1b1f2a",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+   } );
+
+   // NOTE: The library gives its image a "title" of the address, code and all - a tooltip anyone looking over admin's
+   // shoulder could read.
+   box.removeAttribute( "title" );
+   box.querySelectorAll( "[title]" ).forEach( function( node ) { node.removeAttribute( "title" ); } );
+}
+
+function forget_handover( )
+{
+   g_handover_code = "";
+
+   set_text( "handover_code", "" );
+
+   document.getElementById( "handover_qr" ).replaceChildren( );
+}
+
+async function do_copy_code( )
+{
+   var button = document.getElementById( "handover_copy" );
+
+   try
+   {
+      await navigator.clipboard.writeText( g_handover_code );
+
+      button.textContent = "Copied";
+   }
+   catch( e )
+   {
+      // NOTE: The clipboard needs HTTPS or "localhost"; elsewhere the code is selected instead, ready to copy by hand.
+      var range = document.createRange( );
+
+      range.selectNodeContents( document.getElementById( "handover_code" ) );
+
+      window.getSelection( ).removeAllRanges( );
+      window.getSelection( ).addRange( range );
+
+      button.textContent = "Selected - copy it";
+   }
+
+   window.setTimeout( function( ) { button.textContent = "Copy"; }, c_people_copied_ms );
+}
+
+function render_ready( )
+{
+   set_text( "ready_pin", g_ready.pin );
+   set_text( "ready_url", account_page_address( ) );
+
+   if( g_ready.username === "" )
+   {
+      set_text( "ready_username", "Their choice" );
+      set_text( "ready_username_note", "They choose one when they set their password" );
+   }
+   else
+   {
+      set_text( "ready_username", g_ready.username );
+      set_text( "ready_username_note", g_ready.suggestion ? "A suggestion - they can change it" : "Chosen by you" );
+   }
+}
+
+// NOTE: What People holds is not left for whoever signs in next in this tab.
+function forget_people( )
+{
+   g_people = [ ];
+   g_people_armed = "";
+   g_people_shown = { };
+   g_ready = null;
+
+   forget_handover( );
+
+   document.getElementById( "people_rows" ).replaceChildren( );
+   document.getElementById( "people_alert" ).hidden = true;
+
+   set_text( "people_empty", "Loading..." );
+}
+
+function install_people( )
+{
+   document.getElementById( "people_add" ).addEventListener( "click", function( ) { show_people( "add" ); } );
+   document.getElementById( "add_form" ).addEventListener( "submit", do_add );
+   document.getElementById( "handover_copy" ).addEventListener( "click", do_copy_code );
+
+   document.querySelectorAll( "input[name='add_how']" ).forEach( function( input )
+   {
+      input.addEventListener( "change", update_add_form );
+   } );
+
+   document.querySelectorAll( "#section_people [data-people='list']" ).forEach( function( button )
+   {
+      button.addEventListener( "click", function( ) { show_people( "people" ); } );
+   } );
+}
+
 // NOTE: Admin's figures, logs and the log chosen are not left for whoever signs in next in this tab (found by review).
 function forget_admin( )
 {
+   forget_people( );
+
    g_log_names = [ ];
    g_log_name = "server";
    g_log_lines = [ ];

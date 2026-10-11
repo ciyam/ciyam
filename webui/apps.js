@@ -317,7 +317,7 @@ function apps_is_phone( )
    return window.matchMedia( c_apps_phone_query ).matches;
 }
 
-// NOTE: Who is signed in decides the accounts page's name ("Accounts" or "My account") and the console's place.
+// NOTE: Who is signed in decides the console's place - and once decided the accounts page's name, now "My account" for all.
 function apps_refresh( )
 {
    var current = document.getElementById( "apps_current" );

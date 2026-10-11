@@ -1788,15 +1788,16 @@ const c_tab_accounts = "ciyam-accounts";
 const c_tab_console = "ciyam-console";
 
 // NOTE: The app switcher - the same in every app (Damon, 2026-10-08: no "Back to", one switcher, its button the
-// CIYAM mark and the app's name). Every app, this one marked: Home, Chat, the accounts page - admin's "Accounts",
-// a member's "My account" - and the console, admin's and never on a phone. Each with its page and its tab; Home's
-// tab is "c_tab_home" in "home_parse.js", named here as it is, since the Home page loads both.
+// CIYAM mark and the app's name). Every app, this one marked: Home, Chat, the accounts page - "My account" for
+// everyone since People moved into Home (2026-10-11), "Accounts" for admin before - and the console, admin's and never
+// on a phone. Each with its page and its tab; Home's tab is "c_tab_home" in "home_parse.js", named here as it is,
+// since the Home page loads both.
 function switcher_apps( is_admin, is_phone, current )
 {
    var apps = [
       { key: "home", title: "Home", note: "The node, and what needs you", page: "home.html", tab: "ciyam-home" },
       { key: "chat", title: "Chat", note: "Rooms and messages", page: "chat.html", tab: c_tab_chat },
-      { key: "account", title: switcher_title( "account", is_admin ), note: is_admin ? "People, and your account" : "Your password and devices",
+      { key: "account", title: switcher_title( "account", is_admin ), note: "Your password and devices",
        page: "account.html", tab: c_tab_accounts }
    ];
 
@@ -1830,7 +1831,7 @@ function is_signed_out_here( data, sessid )
 // NOTE: The app's name beside the CIYAM mark on the switcher's button.
 function switcher_title( key, is_admin )
 {
-   var titles = { home: "Home", chat: "Chat", account: is_admin ? "Accounts" : "My account", console: "Console" };
+   var titles = { home: "Home", chat: "Chat", account: "My account", console: "Console" };
 
    return titles[ key ] || "";
 }

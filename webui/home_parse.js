@@ -44,6 +44,7 @@ const c_home_log_lines = 200;
 
 const c_home_admin_sections = [
    { key: "overview", title: "Overview" },
+   { key: "people", title: "People" },
    { key: "keys", title: "Unlock keys" },
    { key: "logs", title: "Logs" }
 ];
@@ -435,15 +436,14 @@ function log_view( lines, filter, count )
 }
 
 // NOTE: The apps in Home's rail, each with the tab "open_app_tab( )" finds it by when one is asked for. The
-// accounts page is admin's "Accounts" - everyone's people - and a member's "My account". The console is
-// admin's - and anyone's on a development system - and never on a phone (parked 2026-10-05). People is
-// not one of Home's sections: it is the accounts page's.
+// accounts page is "My account" for everyone - admin's People is one of Home's sections since 2026-10-11. The
+// console is admin's - and anyone's on a development system - and never on a phone (parked 2026-10-05).
 function home_apps( is_admin, is_development, is_phone )
 {
    var apps = [
       { key: "home", title: "Home", page: c_home_page, tab: c_tab_home },
       { key: "chat", title: "Chat", page: "chat.html", tab: "ciyam-chat" },
-      { key: "account", title: is_admin ? "Accounts" : "My account", page: "account.html", tab: "ciyam-accounts" }
+      { key: "account", title: "My account", page: "account.html", tab: "ciyam-accounts" }
    ];
 
    if( ( is_admin || is_development ) && !is_phone )

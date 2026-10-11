@@ -117,10 +117,10 @@ ok   admin's - the console too
 ok   anyone's on a development system
 ok   no console on a phone
 ok   the pages
-ok   admin's accounts app is Accounts
+ok   admin's accounts app is My account too - People is in Home (2026-10-11)
 ok   a member's is My account
 ok   the tabs the apps reuse
-ok   admin's sections - People is the accounts page's
+ok   admin's sections - People among them since 2026-10-11
 ok   a member has none
 ok   a copy, not the list itself
 ok   admin opens on the Overview

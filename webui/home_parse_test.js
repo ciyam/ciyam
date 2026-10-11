@@ -231,12 +231,12 @@ check( "no console on a phone", keys( hp.home_apps( true, true, true ) ), [ "hom
 check( "the pages", hp.home_apps( true, false, false ).map( function( app ) { return app.page; } ),
  [ "home.html", "chat.html", "account.html", "console.html" ] );
 
-check( "admin's accounts app is Accounts", hp.home_apps( true, false, false )[ 2 ].title, "Accounts" );
+check( "admin's accounts app is My account too - People is in Home (2026-10-11)", hp.home_apps( true, false, false )[ 2 ].title, "My account" );
 check( "a member's is My account", hp.home_apps( false, false, false )[ 2 ].title, "My account" );
 check( "the tabs the apps reuse", hp.home_apps( true, false, false ).map( function( app ) { return app.tab; } ),
  [ "ciyam-home", "ciyam-chat", "ciyam-accounts", "ciyam-console" ] );
 
-check( "admin's sections - People is the accounts page's", keys( hp.home_sections( true ) ), [ "overview", "keys", "logs" ] );
+check( "admin's sections - People among them since 2026-10-11", keys( hp.home_sections( true ) ), [ "overview", "people", "keys", "logs" ] );
 check( "a member has none", hp.home_sections( false ), [ ] );
 check( "a copy, not the list itself", hp.home_sections( true ) !== hp.home_sections( true ), true );
 
