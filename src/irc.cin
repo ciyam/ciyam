@@ -43,7 +43,8 @@ MESSAGE_LINES=
 EDIT_UNIX_UNIQUE=
 ;
 ENTRANCE_ROOM=0000000
-STARTING_ROOM=0000001
+RESERVED_ROOM=0000001
+STARTING_ROOM=0000002
 ;
 DUMMY_JOIN_UUID=00000000000000000000000000000000
 ;
@@ -54,6 +55,14 @@ ROOM=$ENTRANCE_ROOM
 ROOM_LEN=@strlen:$ROOM
 ;
 .run_script !irc_join "@name=$USER,@room=$ROOM"
+;
+; NOTE: If new then is also joining the General room.
+@ifndef $ERROR
+CHECK_START_POINTS=@files:$LOCAL_FILES_DIR:.irc_$USER
+@ifndef $CHECK_START_POINTS
+.run_script !irc_join "@name=$USER,@room=$STARTING_ROOM"
+@endif
+@endif
 ;
 @ifdef $ERROR
 @label END_LOOP
