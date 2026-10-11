@@ -605,9 +605,10 @@ function signin_kept_session( )
 // tried with one request: the lobby listing, which moves nothing the session has read. Refused - it timed out, or
 // the node was set up again - it is forgotten, and the page signs in as usual. A session the node does not know is
 // an error ("This web session is not valid", "No current session exists" - seen 2026-10-09), so only an error or no
-// answer counts: a listing with no rooms in it is still a session (found by review). The hashed password is not kept for
-// the tab, but where the person chose to save it on this browser it is here already - the accounts page needs it
-// to check a password change.
+// answer counts. An empty reply is no answer: the listing always begins with the entrance's line of members, so even
+// someone in no rooms gets one (seen 2026-10-12 - tester-2, out of every room it could leave). The hashed password is
+// not kept for the tab, but where the person chose to save it on this browser it is here already - the accounts page
+// needs it to check a password change.
 async function signin_resume( )
 {
    var kept = signin_kept_session( );
