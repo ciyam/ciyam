@@ -239,6 +239,7 @@ constexpr const char* c_storage_module_instance_options_path = "path";
 constexpr const char* c_storage_module_instance_options_query = "query";
 constexpr const char* c_storage_module_instance_options_fields = "fields";
 
+constexpr const char* c_sanctioned_variable_sid_secure = "system_variable @sid_secure";
 constexpr const char* c_sanctioned_variable_num_unlock_keys = "system_variable @num_unlock_keys";
 constexpr const char* c_sanctioned_variable_system_is_for_demo = "system_variable @system_is_for_demo";
 constexpr const char* c_sanctioned_variable_system_is_for_devt = "system_variable @system_is_for_devt";
@@ -390,6 +391,7 @@ bool is_admin_sanctioned( const string& request_and_args )
 
    if( g_cws_sanctioned_requests.empty( ) )
    {
+      g_cws_sanctioned_requests.insert( c_sanctioned_variable_sid_secure );
       g_cws_sanctioned_requests.insert( c_sanctioned_variable_num_unlock_keys );
       g_cws_sanctioned_requests.insert( c_sanctioned_variable_system_is_for_demo );
       g_cws_sanctioned_requests.insert( c_sanctioned_variable_system_is_for_devt );
