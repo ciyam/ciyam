@@ -63,18 +63,18 @@ update user *** password=<password>
 update message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}
 Check for messages and attempt to create a non-special message and then create a new room.
 IRC usage is not currently available.
-admin #0000001 1/1 Administration
+admin #0000001 1/1 Admin
 Normal messages for this room are disallowed.
-0000002
+0000003
 Now check for messages as 'admin' and join the room created by 'test-1'.
-admin #0000001 2/2 Administration
+admin #0000001 2/2 Admin
 test-1+1
 test-1 :joined
-test-1 :invite room 0000002-NEW-ROOM-UUID-VALUE Testing
+test-1 :invite room 0000003-NEW-ROOM-UUID-VALUE Testing
 :joined
 Now rename the new room to Updated and display the entrance information for the room.
 [okay]
-0000000000000 test-1 #0000002 3/3 Updated
+0000000000000 test-1 #0000003 3/3 Updated
 Now will perform structured I/O queries for enums/lists and views after attaching to the Meta storage.
 [okay]
 id=575,name=enum_add_packages
