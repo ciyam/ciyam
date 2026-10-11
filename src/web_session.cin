@@ -23,6 +23,8 @@ SESSION=$2
 USERNAME=$3
 ;
 ENTRANCE_ROOM=0000000
+RESERVED_ROOM=0000001
+STARTING_ROOM=0000002
 ;
 CIYAM_TMP_DIR=/tmp/ciyam
 ;
@@ -98,6 +100,11 @@ IRC_ALLOWED=
 @ifdef $IRC_ALLOWED
 @retain IRC_USERS
 <web_session_join.cin "$USERNAME" "$IRC_ROOM"
+; NOTE: If not a member then will now join STARTING_ROOM.
+.system_variable @session_@queue_irc_%STARTING_ROOM%_$USERNAME
+@ifndef $OUTPUT
+<web_session_join.cin "$USERNAME" "$STARTING_ROOM"
+@endif
 @endif
 @endif
 ;
