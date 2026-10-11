@@ -98,12 +98,21 @@ IRC_ALLOWED=
 ;
 @ifdef $USERNAME
 @ifdef $IRC_ALLOWED
+IS_NEW_USER=
+; KLUDGE: The '?' is used to prevent removing
+; an item (but could match incorrect queues).
+.system_variable @queue_i?c_%RESERVED_ROOM%_$USERNAME
+@ifndef $OUTPUT
+IS_NEW_USER=1
+@endif
+;
 @retain IRC_USERS
 <web_session_join.cin "$USERNAME" "$IRC_ROOM"
+;
 ; NOTE: If not a member then will now join STARTING_ROOM.
-.system_variable @session_@queue_irc_%STARTING_ROOM%_$USERNAME
-@ifndef $OUTPUT
+@ifdef $IS_NEW_USER
 <web_session_join.cin "$USERNAME" "$STARTING_ROOM"
+IS_NEW_USER=
 @endif
 @endif
 @endif

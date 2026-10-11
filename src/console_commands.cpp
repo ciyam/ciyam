@@ -1819,10 +1819,12 @@ fissile_string handle_numeric_fissile_op(
    }
 
    tpos = next.find( '#' );
+
    if( tpos == string::npos )
       throw runtime_error( "did not find fissile numeric type prefix" );
 
    string type( next.substr( 0, tpos + 1 ) );
+
    next.erase( 0, tpos + 1 );
 
    if( next.empty( ) )
@@ -3014,6 +3016,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
    remove_trailing_cr_from_text_file_line( str );
 
+   string error_message;
+
    if( handling_startup_options )
    {
       if( !str.empty( ) )
@@ -3111,7 +3115,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
       string error_context;
 
-      if( !script_file.empty( ) )
+      if( script_file.empty( ) )
+         error_context = " at line #" + to_string( line_number );
+      else
          error_context = " processing script '" + script_file + "' at line #" + to_string( line_number );
 
       if( is_skipping_to_label || !conditions.empty( ) )
@@ -3419,10 +3425,11 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               }
                               else
                               {
-                                 if( !file_exists( rhs ) )
-                                    throw runtime_error( "file '" + rhs + "' not found" );
 
-                                 str = buffer_file_lines( rhs );
+                                 if( file_exists( rhs ) )
+                                    str = buffer_file_lines( rhs );
+                                 else
+                                    error_message = "file '" + rhs + "' not found";
                               }
                            }
                            else if( lhs == c_function_line )
@@ -3442,7 +3449,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  }
                               }
                               else if( !file_exists( rhs ) )
-                                 throw runtime_error( "file '" + rhs + "' not found" );
+                                 error_message = "file '" + rhs + "' not found";
                               else
                               {
                                  if( p_impl->input_file )
@@ -4070,16 +4077,19 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             else
                unescape( str, c_special_characters );
 
-            if( input_depth
-             && ( assign_env_var_name != c_env_var_error )
-             && ( assign_env_var_name != c_env_var_output )
-             && ( assign_env_var_name != c_env_var_ciyam_fissile ) )
-               retain_prior_env_var_value( assign_env_var_name, variables_retaining, variables_prior_values );
+            if( error_message.empty( ) )
+            {
+               if( input_depth
+                && ( assign_env_var_name != c_env_var_error )
+                && ( assign_env_var_name != c_env_var_output )
+                && ( assign_env_var_name != c_env_var_ciyam_fissile ) )
+                  retain_prior_env_var_value( assign_env_var_name, variables_retaining, variables_prior_values );
 
-            set_environment_variable( assign_env_var_name.c_str( ), str.c_str( ) );
+               set_environment_variable( assign_env_var_name.c_str( ), str.c_str( ) );
 
-            if( was_password )
-               clear_key( str );
+               if( was_password )
+                  clear_key( str );
+            }
 
             str.erase( );
          }
@@ -4800,7 +4810,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            else if( op == c_op_lteq )
                               val = ( !numeric ? ( lhs <= rhs ) : ( lhs_num <= rhs_num ) );
                            else
-                           throw runtime_error( "unknown op '" + op + " for 'elif' expression" + error_context );
+                              throw runtime_error( "unknown op '" + op + " for 'elif' expression" + error_context );
 
                            conditions.pop_back( );
                            conditions.push_back( val );
@@ -4960,6 +4970,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             else if( str[ 0 ] == c_forget_command_prefix )
             {
                str.erase( 0, 1 );
+
                str_for_history.erase( );
 
                if( str.empty( ) )
@@ -4968,6 +4979,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             else if( str[ 0 ] == c_ignore_command_prefix )
             {
                str.erase( 0, 1 );
+
                str_for_history = str;
 
                if( str.empty( ) )
@@ -5097,6 +5109,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             if( !ignore_prior && !is_reading_input && !str_for_history.empty( ) )
                prior_command = str_for_history;
          }
+
+         if( !error_message.empty( ) )
+            throw runtime_error( error_message + error_context );
       }
 
       if( !max_history_lines )
