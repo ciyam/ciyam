@@ -32,8 +32,8 @@
 // The element ids are the ones every page's sign in has used ("signin_access", "signin_pin", ...), as
 // the browser suites expect. Needs "chat_parse.js" ("parse_access_list( )", "retain_mode_of( )",
 // "plan_retain_choice( )", "sign_in_error_text( )", "account_display_name( )", "saved_account_label( )",
-// "stale_saved_names( )", "pin_keyed_leftovers( )") and "account_parse.js" ("is_account_pin( )",
-// "is_unknown_device_error( )"), and the page's "ciyam". The look is "chat.css"'s ".chat-signin".
+// "stale_saved_names( )", "pin_keyed_leftovers( )", "order_saved_accounts( )", "chosen_saved_index( )") and
+// "account_parse.js" ("is_account_pin( )", "is_unknown_device_error( )"), and the page's "ciyam". The look is "chat.css"'s ".chat-signin".
 //
 // NOTE: Its own names throughout - the pages declare "c_storage_device" and the rest as "const", and a
 // second declaration of one would stop the page. The keys stored are the same, so the apps share them.
@@ -360,13 +360,25 @@ function signin_fill_saved( )
          select.remove( i );
    }
 
-   signin_saved_pins( ).forEach( function( pin, n )
+   var ordered = order_saved_accounts( signin_saved_pins( ).map( function( pin ) { return { pin: pin, name: signin_saved_name( pin ) }; } ) );
+
+   ordered.forEach( function( account, n )
    {
-      select.options.add( new Option( saved_account_label( signin_saved_name( pin ), n ) + ( ( signin_saved_hash( pin ) !== null ) ? c_signin_saved_mark : "" ),
-       pin, false ), n );
+      select.options.add( new Option( account.label + ( ( signin_saved_hash( account.pin ) !== null ) ? c_signin_saved_mark : "" ),
+       account.pin, false ), n );
    } );
 
-   select.selectedIndex = 0;
+   var last = null;
+
+   try
+   {
+      last = sessionStorage.getItem( c_signin_last_account_key );
+   }
+   catch( e )
+   {
+   }
+
+   select.selectedIndex = chosen_saved_index( ordered, last );
 
    signin_on_access( );
 }
@@ -547,12 +559,19 @@ async function signin_submit( event )
 
 const c_signin_lobby_room = "0000000";
 
+// NOTE: The account this tab is signed in as is kept apart too, and outlasts signing out - the sign in starts on it
+// ("chosen_saved_index( )").
+const c_signin_last_account_key = "ciyam.last_account";
+
 function signin_keep_session( )
 {
    try
    {
       if( ciyam.sessid !== "" )
+      {
          sessionStorage.setItem( c_tab_session_key, format_tab_session( ciyam ) );
+         sessionStorage.setItem( c_signin_last_account_key, ciyam.access );
+      }
    }
    catch( e )
    {

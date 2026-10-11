@@ -1096,6 +1096,17 @@ check( "- never a PIN", cp.account_display_name( "", false ), "Your account" );
 check( "a saved account listed by its name", cp.saved_account_label( "damon", 0 ), "damon" );
 check( "- one saved before names were kept, by its place", [ cp.saved_account_label( "", 0 ), cp.saved_account_label( null, 2 ) ],
  [ "Saved account 1", "Saved account 3" ] );
+// NOTE: In alphabetical order, the account just signed out of chosen (Ian, 2026-10-11).
+var saved_accounts = [ { pin: "20405", name: "verify-e" }, { pin: "31324", name: "" }, { pin: "10301", name: "admin" },
+ { pin: "20401", name: "Maya" }, { pin: "40311", name: "" } ];
+var ordered_accounts = cp.order_saved_accounts( saved_accounts );
+check( "saved accounts - by name, A to Z whatever the case, then those with no name as saved",
+ ordered_accounts, [ { pin: "10301", label: "admin" }, { pin: "20401", label: "Maya" }, { pin: "20405", label: "verify-e" },
+  { pin: "31324", label: "Saved account 1" }, { pin: "40311", label: "Saved account 2" } ] );
+check( "- none saved", cp.order_saved_accounts( [ ] ), [ ] );
+check( "the account just signed out of - chosen", cp.chosen_saved_index( ordered_accounts, "20405" ), 2 );
+check( "- not saved, or none yet - the first", [ cp.chosen_saved_index( ordered_accounts, "55555" ), cp.chosen_saved_index( ordered_accounts, null ) ], [ 0, 0 ] );
+
 check( "names whose PIN is no longer saved - let go", cp.stale_saved_names( [ "cws.name_10301", "cws.name_31324", "cws.access", "cws.name_40311" ],
  "10301,40311" ), [ "cws.name_31324" ] );
 check( "- none saved, every name goes", cp.stale_saved_names( [ "cws.name_10301", "cws.device" ], null ), [ "cws.name_10301" ] );

@@ -593,6 +593,10 @@ ok   - admin, with none of its own
 ok   - never a PIN
 ok   a saved account listed by its name
 ok   - one saved before names were kept, by its place
+ok   saved accounts - by name, A to Z whatever the case, then those with no name as saved
+ok   - none saved
+ok   the account just signed out of - chosen
+ok   - not saved, or none yet - the first
 ok   names whose PIN is no longer saved - let go
 ok   - none saved, every name goes
 ok   dismissed announcements kept by name

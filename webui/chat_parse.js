@@ -2092,6 +2092,42 @@ function saved_account_label( name, n )
    return ( text !== "" ) ? text : "Saved account " + ( n + 1 );
 }
 
+// NOTE: The saved accounts as the sign in lists them - by name, A to Z whatever the case, then any saved before names were
+// kept, in the order saved (Ian, 2026-10-11: "the ordering should probably be alphabetic"). Takes { pin, name } and gives
+// each its "label" too.
+function order_saved_accounts( accounts )
+{
+   var named = ( accounts || [ ] ).filter( function( account ) { return String( account.name || "" ).trim( ) !== ""; } );
+   var unnamed = ( accounts || [ ] ).filter( function( account ) { return String( account.name || "" ).trim( ) === ""; } );
+
+   named.sort( function( a, b )
+   {
+      var x = a.name.trim( ).toLowerCase( );
+      var y = b.name.trim( ).toLowerCase( );
+
+      if( x !== y )
+         return ( x < y ) ? -1 : 1;
+
+      return ( a.pin < b.pin ) ? -1 : ( ( a.pin > b.pin ) ? 1 : 0 );
+   } );
+
+   return named.map( function( account ) { return { pin: account.pin, label: account.name.trim( ) }; } )
+    .concat( unnamed.map( function( account, n ) { return { pin: account.pin, label: saved_account_label( "", n ) }; } ) );
+}
+
+// NOTE: Which saved account the sign in starts on - the one this tab was last signed in as, when it is saved, so signing
+// out and back in needs no choosing (Ian, 2026-10-11); otherwise the first.
+function chosen_saved_index( ordered, last_pin )
+{
+   for( var i = 0; i < ( ordered || [ ] ).length; i++ )
+   {
+      if( ordered[ i ].pin === last_pin )
+         return i;
+   }
+
+   return 0;
+}
+
 // NOTE: The stored keys of names whose PIN is no longer saved - left when a PIN is forgotten elsewhere (the console's
 // "creds", a recovery), so the sign in lets them go as it lists the rest.
 function stale_saved_names( keys, stored )
@@ -2313,6 +2349,8 @@ if( typeof module !== "undefined" )
       account_display_name: account_display_name,
       saved_account_label: saved_account_label,
       stale_saved_names: stale_saved_names,
+      order_saved_accounts: order_saved_accounts,
+      chosen_saved_index: chosen_saved_index,
       c_storage_dismissed_by_name: c_storage_dismissed_by_name,
       c_storage_emoji_recent_by_name: c_storage_emoji_recent_by_name,
       account_storage_key: account_storage_key,
