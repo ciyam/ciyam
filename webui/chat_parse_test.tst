@@ -257,6 +257,11 @@ ok   anything else is nothing
 ok   the owner may change it
 ok   admin may
 ok   another member may not
+ok   a member may leave a room
+ok   - General too, now
+ok   - not one they own
+ok   - never the Admin room, nor the entrance
+ok   - not one the listing does not have yet
 ok   nobody for Administration
 ok   nobody for the entrance
 ok   nothing known, nothing changed

@@ -453,6 +453,38 @@ button.chat-avatar:hover
    background: var(--color-accent-600);
 }
 
+/* NOTE: Leaving a room, from Room Details - asked again in place (2026-10-12). */
+.chat-room-leave
+{
+   margin-top: 12px;
+}
+
+.chat-room-leave-confirm
+{
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   padding: 10px 12px;
+   border: 1px solid var(--color-chat-critical-border);
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-critical-bg);
+   color: var(--color-chat-critical-text);
+   font-size: var(--font-size-chat-meta);
+}
+
+.chat-room-leave-buttons
+{
+   display: flex;
+   gap: 8px;
+}
+
+.chat-btn--danger
+{
+   border-color: var(--color-chat-critical-text);
+   background: var(--color-chat-critical-text);
+   color: #ffffff;
+}
+
 .chat-btn--small
 {
    height: 26px;

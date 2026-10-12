@@ -3551,6 +3551,14 @@ function update_thread_meta( )
 
    document.getElementById( "owner_actions" ).hidden = !is_owner;
 
+   // NOTE: Leaving - a member's, not the owner's; not for a direct message, which is a conversation rather than a room.
+   var leavable = !invite && !is_dm && can_leave_room( g_room, entry, ciyam.username );
+
+   document.getElementById( "room_leave_row" ).hidden = !leavable;
+
+   if( !leavable || ( g_leave_armed !== g_room ) )
+      disarm_leave( );
+
    // NOTE: The owner's choice replaces the plain text - left alone while a change is on its
    // way, so the listing catching up does not flick it back.
    var changeable = !invite && !is_dm && can_change_posting( g_room, entry, ciyam.username, ciyam.is_admin );
@@ -3573,6 +3581,82 @@ function update_thread_meta( )
     "poll every " + ( c_poll_interval / 1000 ) + "s"
     + ( g_start_point ? ( "\nfrom=" + g_start_point ) : "" )
     + "\nno push · no typing state";
+}
+
+// NOTE: Leaving the open room - asked again in place, as removing a person is. Gone from the rail at once; the server's
+// ":left" notice is the room's to keep. To come back someone must invite them, General included (Ian, 2026-10-12).
+var g_leave_armed = "";
+
+function do_arm_leave( )
+{
+   g_leave_armed = g_room;
+
+   set_text( document.getElementById( "room_leave_text" ), "Leave " + g_room_name + "? To come back, someone will have to invite you." );
+
+   document.getElementById( "room_leave" ).hidden = true;
+   document.getElementById( "room_leave_confirm" ).hidden = false;
+   document.getElementById( "room_leave_stay" ).focus( );
+}
+
+function disarm_leave( )
+{
+   g_leave_armed = "";
+
+   document.getElementById( "room_leave" ).hidden = false;
+   document.getElementById( "room_leave_confirm" ).hidden = true;
+}
+
+function do_cancel_leave( )
+{
+   disarm_leave( );
+
+   document.getElementById( "room_leave" ).focus( );
+}
+
+async function do_leave_room( )
+{
+   var room = g_leave_armed;
+   var name = g_room_name;
+
+   if( ( room === "" ) || ( room !== g_room ) )
+      return;
+
+   document.getElementById( "room_leave_go" ).disabled = true;
+
+   var response = await new Promise( function( resolve )
+   {
+      serialised( function( )
+      {
+         return ciyam.delete_message_room( room, function( r ) { resolve( String( r ) ); } );
+      } );
+   } );
+
+   document.getElementById( "room_leave_go" ).disabled = false;
+
+   disarm_leave( );
+
+   if( is_error_response( response ) )
+   {
+      show_alert( error_text( response ), "is-error" );
+
+      return;
+   }
+
+   g_rooms = g_rooms.filter( function( entry ) { return entry.room !== room; } );
+
+   if( g_room === room )
+   {
+      g_room = "";
+      g_start_point = "";
+      g_members = [ ];
+   }
+
+   show_thread_view( );
+   render_rooms( true );
+
+   show_alert( "You left " + name + ".", "is-info" );
+
+   load_rooms( );
 }
 
 // NOTE: Who may post, changed by the owner or admin from Room Details. The server posts an

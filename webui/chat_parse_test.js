@@ -531,6 +531,14 @@ var owned = { room: "0000004", owner: "verify-a", posts: "any" };
 check( "the owner may change it", cp.can_change_posting( "0000004", owned, "verify-a", false ), true );
 check( "admin may", cp.can_change_posting( "0000004", owned, "admin", true ), true );
 check( "another member may not", cp.can_change_posting( "0000004", owned, "verify-e", false ), false );
+// NOTE: Leaving (Ian, 2026-10-12).
+check( "a member may leave a room", cp.can_leave_room( "0000004", { room: "0000004", owner: "admin" }, "verify-a" ), true );
+check( "- General too, now", cp.can_leave_room( "0000002", { room: "0000002", owner: "admin" }, "verify-a" ), true );
+check( "- not one they own", cp.can_leave_room( "0000004", { room: "0000004", owner: "verify-a" }, "verify-a" ), false );
+check( "- never the Admin room, nor the entrance", [ cp.can_leave_room( "0000001", { room: "0000001", owner: "admin" }, "verify-a" ),
+ cp.can_leave_room( "0000000", { room: "0000000", owner: "" }, "verify-a" ) ], [ false, false ] );
+check( "- not one the listing does not have yet", cp.can_leave_room( "0000004", null, "verify-a" ), false );
+
 check( "nobody for Administration", cp.can_change_posting( "0000001", { room: "0000001", owner: "admin" }, "admin", true ), false );
 check( "nobody for the entrance", cp.can_change_posting( "0000000", { room: "0000000", owner: "admin" }, "admin", true ), false );
 check( "nothing known, nothing changed", cp.can_change_posting( "0000004", null, "verify-a", false ), false );

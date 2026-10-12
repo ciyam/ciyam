@@ -261,6 +261,17 @@ http://www.opensource.org/licenses/mit-license.php.
                <button type="button" class="chat-btn chat-btn--small" onclick="do_open_rename_room( )">Rename</button>
                <button type="button" class="chat-btn chat-btn--small chat-btn--accent" id="owner_invite" onclick="do_open_invite( )">Invite</button>
             </div>
+            <!-- NOTE: Leaving a room - asked again in place (Ian, 2026-10-12). -->
+            <div class="chat-room-leave" id="room_leave_row" hidden>
+               <button type="button" class="chat-btn chat-btn--small" id="room_leave" onclick="do_arm_leave( )">Leave this room</button>
+               <div class="chat-room-leave-confirm" id="room_leave_confirm" hidden>
+                  <span id="room_leave_text"></span>
+                  <span class="chat-room-leave-buttons">
+                     <button type="button" class="chat-btn chat-btn--small" id="room_leave_stay" onclick="do_cancel_leave( )">Stay</button>
+                     <button type="button" class="chat-btn chat-btn--small chat-btn--danger" id="room_leave_go" onclick="do_leave_room( )">Leave</button>
+                  </span>
+               </div>
+            </div>
          </section>
 
          <div class="chat-presence-head" id="presence_head">Members</div>

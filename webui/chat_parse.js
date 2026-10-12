@@ -873,6 +873,17 @@ function can_change_posting( room, entry, username, is_admin )
    return is_admin || ( ( entry.owner || "" ) === username );
 }
 
+// NOTE: Whether this user may leave a room (Ian, 2026-10-12: "I can't seem to find any UI to leave a room"). Not the
+// entrance, nor the Admin room - it carries every invitation - nor a room they own: Ian thinks leaving your own room is
+// probably wrong, and it would be left with nobody to look after it. General can be left since his change of 2026-10-12.
+function can_leave_room( room, entry, username )
+{
+   if( !entry || is_entrance_room( room ) || is_reserved_room( room ) )
+      return false;
+
+   return ( entry.owner || "" ) !== username;
+}
+
 // NOTE: Who this user has already invited to a room, from the ":issued" receipts the
 // server posts to their Admin room. The server accepts a duplicate invitation
 // without complaint, and the invitee just gets a second notice carrying the same token,
@@ -2327,6 +2338,7 @@ if( typeof module !== "undefined" )
       needs_full_read: needs_full_read,
       posts_request_value: posts_request_value,
       can_change_posting: can_change_posting,
+      can_leave_room: can_leave_room,
       pair_private_copies: pair_private_copies,
       private_label: private_label,
       with_sender: with_sender,
