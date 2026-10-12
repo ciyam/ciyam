@@ -1134,6 +1134,19 @@
    min-width: 0;
 }
 
+#alerts_server_error:empty
+{
+   display: none;
+}
+
+/* NOTE: As tall as the field beside it (Damon, 2026-10-12). */
+.home-alerts-server .chat-btn
+{
+   height: 46px;
+   padding: 0 20px;
+   font-size: var(--font-size-chat-body);
+}
+
 .home-key--topic
 {
    font-size: 17px;

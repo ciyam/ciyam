@@ -457,6 +457,7 @@ button.chat-avatar:hover
 .chat-room-leave
 {
    margin-top: 12px;
+   padding: 0 16px;
 }
 
 .chat-room-leave-confirm
