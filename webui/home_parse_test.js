@@ -363,6 +363,10 @@ heading( "setting up a new node" );
 // NOTE: Real answers from a node left new (2026-10-12) - the first request's, then a second first request's.
 check( "refused - the PIN held by another's setup, or gone", [ hp.setup_refused( "Error: This web session is not valid (or has expired)." ),
  hp.setup_refused( "Error: Invalid device identity 'x'." ), hp.setup_refused( "0123abcd" ), hp.setup_refused( null ) ], [ true, false, false, false ] );
+check( "Enter in the password - on to typing it again, once long enough", [ hp.setup_password_enter( "new", "lantern-orbit", "", true ),
+ hp.setup_password_enter( "new", "short", "", false ) ], [ { focus: "setup_password_confirm", problem: "" }, { focus: "", problem: "short" } ] );
+check( "Enter in typing it again - on to Make my twelve words, once they match", [ hp.setup_password_enter( "confirm", "lantern-orbit", "lantern-orbit", true ),
+ hp.setup_password_enter( "confirm", "lantern-orbit", "lantern-orbiT", true ) ], [ { focus: "setup_make_words", problem: "" }, { focus: "", problem: "different" } ] );
 check( "the second refused - its PIN gone", [ hp.setup_pin_gone( "Error: System is currently locked for administration." ),
  hp.setup_pin_gone( "Error: This web session is not valid (or has expired)." ), hp.setup_pin_gone( "Error: Invalid device identity 'x'." ) ],
  [ true, true, false ] );

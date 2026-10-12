@@ -182,6 +182,8 @@ ok   the test - its title quoted whole
 
 == setting up a new node =======================================
 ok   refused - the PIN held by another's setup, or gone
+ok   Enter in the password - on to typing it again, once long enough
+ok   Enter in typing it again - on to Make my twelve words, once they match
 ok   the second refused - its PIN gone
 ok   the first request's answer - admin's PIN and the node's suggestion
 ok   a second first request - refused, not an answer

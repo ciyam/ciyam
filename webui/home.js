@@ -372,10 +372,11 @@ function setup_show( view )
    if( view === "setup_password" )
       document.getElementById( "setup_http_warning" ).hidden = !warns_master_password( g_system.security );
 
-   var heading = document.querySelector( "#" + view + " h2" );
+   // NOTE: The master password's own field, for typing straight away (Damon, 2026-10-13); elsewhere the view's heading.
+   var first = ( view === "setup_password" ) ? document.getElementById( "setup_password_new" ) : document.querySelector( "#" + view + " h2" );
 
-   if( heading !== null )
-      heading.focus( { preventScroll: true } );
+   if( first !== null )
+      first.focus( { preventScroll: true } );
 }
 
 function setup_clear_fields( )
@@ -550,6 +551,10 @@ function pop_bubble( bubble, event )
    g_bubbles = g_bubbles.filter( function( other ) { return other !== bubble; } );
 
    setup_count_pops( );
+
+   // NOTE: The twelfth - on to Next (Damon, 2026-10-13).
+   if( g_setup.pops === c_setup_pops )
+      document.getElementById( "setup_random_next" ).focus( );
 }
 
 function setup_count_pops( )
@@ -563,6 +568,26 @@ function setup_count_pops( )
 }
 
 // ---- The master password, then the words
+
+// NOTE: Enter moves on through the two fields ("setup_password_enter( )"), saying what is wrong where it cannot.
+function setup_password_key( event )
+{
+   if( event.key !== "Enter" )
+      return;
+
+   event.preventDefault( );
+
+   var password = document.getElementById( "setup_password_new" ).value;
+
+   var next = setup_password_enter( ( event.target.id === "setup_password_new" ) ? "new" : "confirm", password,
+    document.getElementById( "setup_password_confirm" ).value, password_strength( password ).level >= 1 );
+
+   set_text( "setup_password_error", ( next.problem === "short" ) ? "The master password needs at least " + c_password_min_length + " characters."
+    : ( next.problem === "different" ? "The two passwords are not the same." : "" ) );
+
+   if( next.focus !== "" )
+      document.getElementById( next.focus ).focus( );
+}
 
 function setup_update_strength( )
 {
@@ -910,6 +935,11 @@ function install_setup( )
    document.getElementById( "setup_random_next" ).addEventListener( "click", function( ) { setup_show( "setup_password" ); } );
 
    document.getElementById( "setup_password_new" ).addEventListener( "input", setup_update_strength );
+
+   [ "setup_password_new", "setup_password_confirm" ].forEach( function( id )
+   {
+      document.getElementById( id ).addEventListener( "keydown", setup_password_key );
+   } );
 
    document.getElementById( "setup_password_back" ).addEventListener( "click", function( ) { setup_show( "setup_random" ); } );
 

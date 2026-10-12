@@ -732,6 +732,23 @@ function ntfy_server_example( hostname )
 // Setting up a new node (Damon and Ian, 2026-10-12 - "Home App Scope", Setting up a new node)
 // ====================================================================
 
+// NOTE: What Enter does in setting up's two password fields (Damon, 2026-10-13): from the first, on to "Type it again" once
+// the password is long enough; from the second, on to "Make my twelve words" once the two match - focus only, nothing sent,
+// as that button is the node's first request. Otherwise what is wrong: "short" or "different".
+function setup_password_enter( field, password, again, long_enough )
+{
+   if( !long_enough )
+      return { focus: "", problem: "short" };
+
+   if( field === "new" )
+      return { focus: "setup_password_confirm", problem: "" };
+
+   if( password !== again )
+      return { focus: "", problem: "different" };
+
+   return { focus: "setup_make_words", problem: "" };
+}
+
 // NOTE: The node refusing the first set up request - "This web session is not valid (or has expired)." - while someone
 // else's setup holds admin's PIN.
 function setup_refused( text )
@@ -825,6 +842,7 @@ if( typeof module !== "undefined" )
       parse_system: parse_system,
       setup_reply: setup_reply,
       setup_refused: setup_refused,
+      setup_password_enter: setup_password_enter,
       c_home_ntfy_topic_request: c_home_ntfy_topic_request,
       c_home_ntfy_test_request: c_home_ntfy_test_request,
       ntfy_server_example: ntfy_server_example,
