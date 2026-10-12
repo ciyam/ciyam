@@ -128,7 +128,7 @@ ok   the pages
 ok   admin's accounts app is My account too - People is in Home (2026-10-11)
 ok   a member's is My account
 ok   the tabs the apps reuse
-ok   admin's sections - People among them since 2026-10-11
+ok   admin's sections - People since 2026-10-11, Health since 2026-10-12
 ok   a member has none
 ok   a copy, not the list itself
 ok   admin opens on the Overview
@@ -160,6 +160,20 @@ ok   none
 ok   more - three
 ok   more - one
 ok   more - none
+
+== health ======================================================
+ok   what needs you - problems first, then the rest
+ok   - the log's, counted since the restart, its latest line and time
+ok   - a full room, and one filling
+ok   - no unlock keys left - to make one
+ok   nothing wrong - nothing
+ok   warnings alone - a warning
+ok   no keys on a node without a secure identity - not a problem
+ok   what the node did not say raises nothing
+ok   the fullest rooms - filling or not, rooms only, as many as asked
+ok   the heading
+ok   the node's kind
+ok   a flag - '1' or nothing
 
 == setting up a new node =======================================
 ok   the first request's answer - admin's PIN and the node's suggestion

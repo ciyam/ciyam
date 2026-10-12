@@ -44,6 +44,7 @@ const c_home_log_lines = 200;
 
 const c_home_admin_sections = [
    { key: "overview", title: "Overview" },
+   { key: "health", title: "Health" },
    { key: "people", title: "People" },
    { key: "keys", title: "Unlock keys" },
    { key: "logs", title: "Logs" }
@@ -410,9 +411,9 @@ function log_problems_text( problems )
    return parts.join( " and " ) + when;
 }
 
-// NOTE: How many messages a room keeps - its queue's limit (9,000 since 2026-10-01, Ian). A full room refuses new
-// messages rather than dropping its oldest, as nothing sets "@qs_pf_irc" ("IRC Domain Model"). The node does not
-// report the limit to a page, so it is named here.
+// NOTE: How many messages a room keeps - its queue's limit (9,000 since 2026-10-01, Ian). A full room drops its oldest
+// for each new one since "@qs_pf_irc" (2026-10-11, "IRC Domain Model"). The node does not report the limit to a page,
+// so it is named here.
 const c_home_room_limit = 9000;
 
 const c_home_room_filling = 0.8;
@@ -421,14 +422,23 @@ const c_home_room_filling = 0.8;
 // limit, the fullest first - only rooms the one asking is in, as the listing has no others.
 function rooms_filling( rooms )
 {
+   return rooms_fullest( rooms, Infinity ).filter( function( room )
+   {
+      return room.total >= c_home_room_limit * c_home_room_filling;
+   } );
+}
+
+// NOTE: The fullest "count" rooms in a listing, filling or not - Health's bars - in "rooms_filling( )"'s shape.
+function rooms_fullest( rooms, count )
+{
    return ( rooms || [ ] ).filter( function( entry )
    {
-      return ( entry.kind === "room" ) && ( entry.total >= c_home_room_limit * c_home_room_filling );
+      return entry.kind === "room";
    } ).map( function( entry )
    {
       return { room: entry.room, name: entry.name || ( "#" + entry.room ), total: entry.total,
        percent: Math.min( 100, Math.floor( 100 * entry.total / c_home_room_limit ) ) };
-   } ).sort( function( a, b ) { return b.total - a.total; } );
+   } ).sort( function( a, b ) { return b.total - a.total; } ).slice( 0, count );
 }
 
 function rooms_filling_text( filling )
@@ -629,6 +639,78 @@ function more_devices_text( more )
 }
 
 // ====================================================================
+// Health (Damon, 2026-10-12 - "Home App Scope", Health): the Overview shows only what needs you, Health the detail
+// ====================================================================
+
+// NOTE: Whether the node says it is for development or demo - "system_variable @system_is_for_devt" and "..._demo", which
+// admin may ask on any node (Ian, "fe66af9d"): "1" or nothing. null when not answered.
+const c_home_devt_request = "system_variable @system_is_for_devt";
+const c_home_demo_request = "system_variable @system_is_for_demo";
+
+function parse_flag( reply )
+{
+   return parse_secure( reply );
+}
+
+// NOTE: The node's kind, in words, for Health.
+function node_kind_text( devt, demo )
+{
+   if( devt === true )
+      return "Development - raw protocol open to admin";
+
+   if( demo === true )
+      return "Demo";
+
+   if( ( devt === false ) && ( demo === false ) )
+      return "Standard";
+
+   return "Not reported";
+}
+
+// NOTE: What needs you, from what the node said - for the Overview's list and Health's count alike, so the two always agree.
+// "facts": { secure, keys, problems (from "log_problems( )"), filling (from "rooms_filling( )") }; anything the node did not
+// say (null) raises nothing. Each: { key, level ("problem" or "warn"), title, detail, action, target } - problems first.
+// A plain HTTP connection is not among them: on one's own network it is normal - Health says so ("worth knowing").
+function health_issues( facts )
+{
+   var issues = [ ];
+   var problems = facts.problems;
+
+   if( problems && ( ( problems.errors + problems.warnings ) > 0 ) )
+   {
+      var when = problems.since_start ? " since the restart" : " in the log's latest lines";
+      var latest = log_line_parts( problems.latest );
+      var time = latest.time.replace( /^\d{4}-\d\d-\d\d /, "" );
+
+      issues.push( { key: "log", level: ( problems.errors > 0 ) ? "problem" : "warn",
+       title: ( ( problems.errors > 0 ) ? counted( problems.errors, "error", "errors" ) : counted( problems.warnings, "warning", "warnings" ) ) + when,
+       detail: ( time !== "" ? time + " " : "" ) + latest.text, action: "Show them", target: "problems" } );
+   }
+
+   ( facts.filling || [ ] ).slice( 0, 3 ).forEach( function( room )
+   {
+      var full = ( room.total >= c_home_room_limit );
+
+      issues.push( { key: "room:" + room.room, level: full ? "problem" : "warn",
+       title: room.name + ( full ? " is full" : " is " + room.percent + "% full" ),
+       detail: room.total.toLocaleString( "en-AU" ) + " of " + c_home_room_limit.toLocaleString( "en-AU" ) + " messages - the oldest are dropped.",
+       action: "Rooms", target: "health" } );
+   } );
+
+   if( ( facts.secure !== false ) && ( facts.keys === 0 ) )
+      issues.push( { key: "keys", level: "warn", title: "No unlock keys left",
+       detail: "After a restart, only the master password unlocks the node.", action: "Make a key", target: "keys" } );
+
+   return issues.filter( function( issue ) { return issue.level === "problem"; } )
+    .concat( issues.filter( function( issue ) { return issue.level !== "problem"; } ) );
+}
+
+function health_heading( issues )
+{
+   return ( issues.length === 1 ) ? "1 thing needs you" : issues.length + " things need you";
+}
+
+// ====================================================================
 // Setting up a new node (Damon and Ian, 2026-10-12 - "Home App Scope", Setting up a new node)
 // ====================================================================
 
@@ -709,6 +791,12 @@ if( typeof module !== "undefined" )
    module.exports = {
       parse_system: parse_system,
       setup_reply: setup_reply,
+      c_home_devt_request: c_home_devt_request,
+      c_home_demo_request: c_home_demo_request,
+      parse_flag: parse_flag,
+      node_kind_text: node_kind_text,
+      health_issues: health_issues,
+      health_heading: health_heading,
       setup_kept: setup_kept,
       randomness_hex: randomness_hex,
       word_choices: word_choices,
@@ -739,6 +827,7 @@ if( typeof module !== "undefined" )
       problem_lines: problem_lines,
       log_problems_text: log_problems_text,
       rooms_filling: rooms_filling,
+      rooms_fullest: rooms_fullest,
       rooms_filling_text: rooms_filling_text,
       room_filling_line: room_filling_line,
       home_apps: home_apps,

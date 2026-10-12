@@ -383,10 +383,10 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="home-stat">
                   <span class="home-stat-label">Node</span>
                   <span class="home-stat-value"><span class="home-state-dot"></span><span id="stat_node"></span></span>
-                  <span class="home-stat-note">Unlocked &middot; identity set up</span>
+                  <span class="home-stat-note" id="stat_node_note">Unlocked</span>
                </div>
                <div class="home-stat">
-                  <span class="home-stat-label">Up for</span>
+                  <span class="home-stat-label">Uptime</span>
                   <span class="home-stat-value" id="stat_uptime">&hellip;</span>
                   <span class="home-stat-note">Since the last restart</span>
                </div>
@@ -397,57 +397,31 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
                <div class="home-stat">
                   <span class="home-stat-label">Sessions</span>
-                  <span class="home-stat-value"><span class="home-stat-unit">up to</span> 100</span>
-                  <span class="home-stat-note">How many are in use is not reported yet</span>
+                  <span class="home-stat-value home-stat-value--quiet">Not reported</span>
+                  <span class="home-stat-note">Waiting on the node</span>
                </div>
             </div>
 
-            <!-- NOTE: In rows (Damon, 2026-10-08): the node's safety - how this connection is encrypted, and the unlock
-                 keys - side by side; then Quick actions, a tile each, added to as Home grows; then the log, full width. -->
-            <div class="home-pair">
-               <section class="home-card home-card--row" aria-label="Connection security">
-                  <span class="home-tile-icon" id="connection_icon"></span>
-                  <span class="home-card-body">
-                     <h2 id="connection_heading"></h2>
-                     <span class="home-mono home-cipher" id="connection_cipher"></span>
-                     <span class="home-note home-empty">As the node sees this browser's connection. Behind a proxy it sees
-                      the proxy's instead.</span>
-                  </span>
-               </section>
+            <!-- NOTE: Only what needs you (Damon, 2026-10-12) - each a line with its way to act, from the same rules as Health
+                 ("health_issues( )"), so the two always agree; nothing wrong, it says so. The detail is Health's. -->
+            <section class="home-attention" id="attention_card" aria-labelledby="attention_heading" hidden>
+               <div class="home-attention-head">
+                  <h2 id="attention_heading"></h2>
+                  <a href="#health" class="home-link" id="attention_all">View Health &rarr;</a>
+               </div>
+               <ul class="home-attention-list" id="attention_list"></ul>
+            </section>
+            <p class="home-note" id="attention_rest" hidden>Everything else is OK.
+             <a href="#health" class="home-link" id="attention_rest_link">View Health</a></p>
 
-               <section class="home-card home-card--row home-card--warn" id="overview_keys_card" aria-label="Unlock keys">
-                  <span class="home-tile-icon is-warn" id="keys_icon"></span>
-                  <span class="home-card-body">
-                     <h2 id="overview_keys_heading">Keep a few unlock keys</h2>
-                     <span class="home-note home-empty" id="overview_keys_note"></span>
-                  </span>
-                  <a href="#keys" class="chat-btn chat-btn--primary home-card-action" id="overview_make_key">Make a key</a>
-               </section>
-            </div>
-
-            <!-- NOTE: The node's health, as far as the node tells a page today (Damon, 2026-10-09 - R2's warnings, before
-                 Ian's combined request): problems in the server log since the restart, and rooms near the number of
-                 messages a room keeps. -->
-            <div class="home-pair">
-               <section class="home-card home-card--row" id="problems_card" aria-label="Problems in the server log">
-                  <span class="home-tile-icon" id="problems_icon"></span>
-                  <span class="home-card-body">
-                     <h2 id="problems_heading">&hellip;</h2>
-                     <span class="home-note home-empty" id="problems_latest"></span>
-                  </span>
-                  <a href="#logs" class="chat-btn home-card-action" id="problems_show" hidden>Show them</a>
-               </section>
-
-               <section class="home-card home-card--row" id="rooms_card" aria-label="Chat rooms">
-                  <span class="home-tile-icon" id="rooms_icon"></span>
-                  <span class="home-card-body">
-                     <h2 id="rooms_heading">&hellip;</h2>
-                     <ul class="home-filling" id="rooms_filling"></ul>
-                     <span class="home-note home-empty" id="rooms_note">Of the rooms you are in. A full room drops its oldest
-                      messages to make way for new ones.</span>
-                  </span>
-               </section>
-            </div>
+            <section class="home-card home-card--row home-well" id="well_card" aria-labelledby="well_heading" hidden>
+               <span class="home-well-tick" aria-hidden="true">&#10003;</span>
+               <span class="home-card-body">
+                  <h2 id="well_heading">Nothing needs you</h2>
+                  <span class="home-note home-empty">Identity, unlock keys, server log and chat rooms are all OK.</span>
+               </span>
+               <a href="#health" class="chat-btn home-card-action" id="well_health">View Health</a>
+            </section>
 
             <section class="home-quick" aria-labelledby="quick_heading">
                <h2 class="home-rail-heading" id="quick_heading">Quick actions</h2>
@@ -460,16 +434,109 @@ http://www.opensource.org/licenses/mit-license.php.
                         <a href="#" class="chat-btn" id="overview_people_link">People</a>
                      </div>
                   </section>
+                  <section class="home-card" aria-label="Unlock keys">
+                     <h2>Unlock keys</h2>
+                     <p class="home-note home-empty" id="overview_keys_line"></p>
+                     <div class="home-card-actions">
+                        <a href="#keys" class="chat-btn" id="overview_make_key">Make a key</a>
+                     </div>
+                  </section>
+                  <section class="home-card" aria-label="Logs">
+                     <h2>Logs</h2>
+                     <p class="home-note home-empty">Server and script logs.</p>
+                     <div class="home-card-actions">
+                        <a href="#logs" class="chat-btn" id="overview_open_logs">View logs</a>
+                     </div>
+                  </section>
                </div>
             </section>
+         </section>
 
-            <section class="home-card" aria-label="The server log">
-               <div class="home-card-head">
-                  <h2>Latest from the server log</h2>
-                  <a href="#logs" class="home-link" id="overview_open_logs">Open Logs</a>
-               </div>
-               <pre class="home-log home-log--short" id="overview_log"></pre>
-            </section>
+         <!-- NOTE: Health (Damon, 2026-10-12) - every check the node allows a page today, in detail, each card saying whether
+              it needs you; its rail item carries how many do. The greyed card at the foot is what Ian's R2 figures would add -
+              kept in sight as the gap. -->
+         <section class="home-section" id="section_health" hidden>
+            <div class="home-section-head">
+               <span>
+                  <h1>Health</h1>
+                  <p class="home-note">Checked every minute while open.</p>
+               </span>
+               <button type="button" class="chat-btn" id="health_refresh">Refresh</button>
+            </div>
+
+            <div class="home-health-grid">
+               <section class="home-card home-health-card" id="health_identity_card" aria-labelledby="health_identity_heading">
+                  <div class="home-health-head">
+                     <h2 id="health_identity_heading">Identity and keys</h2>
+                     <span class="home-health-pill" id="health_identity_pill"></span>
+                  </div>
+                  <p class="home-health-line" id="health_secure_line"></p>
+                  <p class="home-health-line" id="overview_keys_note"></p>
+                  <div class="home-card-actions">
+                     <a href="#keys" class="chat-btn chat-btn--primary" id="health_make_key">Make a key</a>
+                  </div>
+               </section>
+
+               <section class="home-card home-health-card" id="health_connection_card" aria-labelledby="connection_heading">
+                  <div class="home-health-head">
+                     <h2 id="connection_heading"></h2>
+                     <span class="home-health-pill" id="health_connection_pill"></span>
+                  </div>
+                  <span class="home-mono home-cipher" id="connection_cipher"></span>
+                  <p class="home-note home-empty" id="connection_note">As the node sees this browser - behind a proxy, the proxy's.</p>
+               </section>
+
+               <section class="home-card home-health-card home-health-wide" id="health_log_card" aria-labelledby="health_log_heading">
+                  <div class="home-health-head">
+                     <h2 id="health_log_heading">Server log</h2>
+                     <span class="home-health-pill" id="health_log_pill"></span>
+                  </div>
+                  <p class="home-health-line" id="problems_heading">&hellip;</p>
+                  <p class="home-note home-empty" id="problems_latest"></p>
+                  <pre class="home-log home-log--short" id="overview_log"></pre>
+                  <div class="home-card-actions">
+                     <a href="#logs" class="chat-btn" id="problems_show" hidden>Show them</a>
+                     <a href="#logs" class="chat-btn" id="health_open_logs">All logs</a>
+                  </div>
+               </section>
+
+               <section class="home-card home-health-card" id="health_rooms_card" aria-labelledby="health_rooms_heading">
+                  <div class="home-health-head">
+                     <h2 id="health_rooms_heading">Chat rooms</h2>
+                     <span class="home-health-pill" id="health_rooms_pill"></span>
+                  </div>
+                  <p class="home-health-line" id="rooms_heading">&hellip;</p>
+                  <ul class="home-room-bars" id="rooms_filling"></ul>
+                  <p class="home-note home-empty" id="rooms_note">Rooms you're in. Each keeps 9,000 messages, then drops the oldest.</p>
+               </section>
+
+               <section class="home-card home-health-card" id="health_node_card" aria-labelledby="health_node_heading">
+                  <div class="home-health-head">
+                     <h2 id="health_node_heading">Node</h2>
+                     <span class="home-health-pill" id="health_node_pill"></span>
+                  </div>
+                  <dl class="home-health-facts">
+                     <dt>State</dt><dd id="health_state"></dd>
+                     <dt>Uptime</dt><dd id="health_uptime"></dd>
+                     <dt>Version</dt><dd class="home-mono" id="health_version"></dd>
+                     <dt>Kind</dt><dd id="health_kind"></dd>
+                  </dl>
+               </section>
+
+               <section class="home-health-wide home-health-gap" aria-labelledby="health_gap_heading">
+                  <div class="home-health-head">
+                     <h2 id="health_gap_heading">Not reported yet</h2>
+                     <span class="home-note">Waiting on the node</span>
+                  </div>
+                  <div class="home-health-gap-grid">
+                     <span><b>Chat memory</b>Store used, of its limit</span>
+                     <span><b>Files area</b>Space used and free</span>
+                     <span><b>Sessions in use</b>Of the maximum, and ending one</span>
+                     <span><b>Devices</b>Signed in, everyone's</span>
+                     <span><b>Updates</b>New version, and installing it</span>
+                  </div>
+               </section>
+            </div>
          </section>
 
          <!-- NOTE: Unlock keys - made by admin while the node is unlocked, each shown once and used once. The node

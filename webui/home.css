@@ -725,21 +725,6 @@
    background: var(--color-chat-online);
 }
 
-/* NOTE: Two cards side by side - admin's connection and unlock keys - each as tall as the other. */
-.home-pair
-{
-   display: grid;
-   grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
-   gap: 16px;
-   margin-bottom: 24px;
-}
-
-.home-pair .home-card--row
-{
-   align-items: flex-start;
-   align-content: flex-start;
-}
-
 /* NOTE: Quick actions - a tile each, three to a row, added to as Home grows. */
 .home-quick
 {
@@ -768,11 +753,6 @@
    gap: 16px;
 }
 
-.home-card--warn
-{
-   border-color: var(--color-chat-warning-border);
-}
-
 .home-card-body
 {
    flex: 1 1 260px;
@@ -782,44 +762,7 @@
    gap: 3px;
 }
 
-.home-tile-icon.is-warn
-{
-   background: var(--color-chat-warning-bg);
-   color: var(--color-chat-warning-text);
-}
-
-.home-tile-icon.is-full
-{
-   background: var(--color-chat-critical-bg);
-   color: var(--color-chat-critical-text);
-}
-
-/* NOTE: The rooms filling up - one a line - and the latest problem in the log, cut to two lines. */
-.home-filling
-{
-   margin: 2px 0 0;
-   padding: 0;
-   list-style: none;
-   font-size: 13px;
-   color: var(--color-chat-text);
-}
-
-.home-filling:empty
-{
-   display: none;
-}
-
-.home-filling li + li
-{
-   margin-top: 2px;
-}
-
-.home-filling li.is-full
-{
-   color: var(--color-chat-critical-text);
-   font-weight: 600;
-}
-
+/* NOTE: The latest problem in the log, cut to two lines. */
 #problems_latest
 {
    display: -webkit-box;
@@ -837,6 +780,339 @@
 }
 
 /* NOTE: Links drawn as buttons - their text centred as a button's is. */
+/* ---- admin's Overview - what needs you, or that nothing does (2026-10-12) ---- */
+
+.home-stat-value--quiet
+{
+   font-size: 15px;
+   font-weight: 500;
+   color: var(--color-chat-text-secondary);
+}
+
+.home-attention
+{
+   margin-bottom: 8px;
+   border: 1px solid var(--color-chat-warning-border);
+   border-radius: var(--radius-lg);
+   background: var(--color-chat-bg);
+   overflow: hidden;
+}
+
+.home-attention-head
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: baseline;
+   justify-content: space-between;
+   gap: 8px;
+   padding: 16px 22px 12px;
+   border-bottom: 1px solid var(--color-chat-rule);
+}
+
+.home-attention-head h2
+{
+   margin: 0;
+   font-size: 17px;
+   font-weight: 600;
+}
+
+.home-attention-list
+{
+   margin: 0;
+   padding: 0;
+   list-style: none;
+}
+
+.home-attention-item
+{
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   padding: 14px 22px;
+}
+
+.home-attention-item + .home-attention-item
+{
+   border-top: 1px solid var(--color-chat-rule);
+}
+
+.home-attention-dot
+{
+   flex: none;
+   width: 10px;
+   height: 10px;
+   border-radius: 5px;
+   background: var(--color-chat-warning);
+}
+
+.home-attention-item.is-problem .home-attention-dot
+{
+   background: var(--color-chat-critical);
+}
+
+.home-attention-body
+{
+   flex: 1 1 240px;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+}
+
+.home-attention-detail
+{
+   font-size: 13px;
+   color: var(--color-chat-text-secondary);
+   overflow-wrap: anywhere;
+}
+
+.home-attention-item > .chat-btn
+{
+   flex: none;
+}
+
+#attention_rest
+{
+   margin: 0 0 24px;
+}
+
+.home-well
+{
+   margin-bottom: 24px;
+   border-color: var(--color-chat-online);
+}
+
+.home-well-tick
+{
+   flex: none;
+   width: 44px;
+   height: 44px;
+   border-radius: 22px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   border: 2px solid var(--color-chat-online);
+   color: var(--color-chat-online-text);
+   font-size: 20px;
+   font-weight: 700;
+}
+
+/* NOTE: Health's count beside its menu item and chip - amber, red when something is a problem. */
+.home-badge[data-badge='health']
+{
+   background: var(--color-chat-warning);
+}
+
+.home-badge[data-badge='health'].is-problem
+{
+   background: var(--color-chat-critical);
+}
+
+.home-chip .home-badge
+{
+   min-width: 18px;
+   height: 18px;
+   margin-left: 6px;
+}
+
+/* ---- Health - a card for each check, saying whether it needs you (2026-10-12) ---- */
+
+.home-health-grid
+{
+   display: grid;
+   grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+   gap: 16px;
+   margin: 20px 0 24px;
+}
+
+.home-health-wide
+{
+   grid-column: 1 / -1;
+}
+
+.home-health-head
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   justify-content: space-between;
+   gap: 8px;
+}
+
+.home-health-head h2
+{
+   margin: 0;
+}
+
+.home-health-pill
+{
+   padding: 2px 10px;
+   border: 1px solid var(--color-chat-border);
+   border-radius: 999px;
+   font-size: 12px;
+   font-weight: 600;
+   color: var(--color-chat-text-secondary);
+   white-space: nowrap;
+}
+
+.home-health-pill:empty
+{
+   display: none;
+}
+
+.home-health-pill.is-ok
+{
+   border-color: var(--color-chat-online);
+   background: color-mix( in srgb, var(--color-chat-online) 16%, transparent );
+   color: var(--color-chat-online-text);
+}
+
+.home-health-pill.is-warn
+{
+   border-color: var(--color-chat-warning-border);
+   background: var(--color-chat-warning-bg);
+   color: var(--color-chat-warning-text);
+}
+
+.home-health-pill.is-problem
+{
+   border-color: var(--color-chat-critical-border);
+   background: var(--color-chat-critical-bg);
+   color: var(--color-chat-critical-text);
+}
+
+.home-health-line
+{
+   margin: 0;
+   font-size: 14px;
+   color: var(--color-chat-text);
+}
+
+.home-health-facts
+{
+   display: grid;
+   grid-template-columns: auto minmax( 0, 1fr );
+   gap: 6px 16px;
+   margin: 0;
+   font-size: 14px;
+}
+
+.home-health-facts dt
+{
+   color: var(--color-chat-text-secondary);
+}
+
+.home-health-facts dd
+{
+   margin: 0;
+   overflow-wrap: anywhere;
+}
+
+/* NOTE: The fullest rooms as bars - amber filling, red full. */
+.home-room-bars
+{
+   margin: 0;
+   padding: 0;
+   list-style: none;
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   font-size: 13px;
+}
+
+.home-room-bars:empty
+{
+   display: none;
+}
+
+.home-room-bars li
+{
+   display: grid;
+   grid-template-columns: minmax( 0, 8em ) minmax( 0, 1fr ) auto;
+   align-items: center;
+   gap: 4px 10px;
+}
+
+.home-room-bar-name
+{
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.home-room-bar
+{
+   height: 8px;
+   border-radius: 4px;
+   background: var(--color-chat-bg-selected);
+   overflow: hidden;
+}
+
+.home-room-bar > span
+{
+   display: block;
+   height: 100%;
+   background: var(--color-chat-accent);
+}
+
+.home-room-bars li.is-filling .home-room-bar > span
+{
+   background: var(--color-chat-warning);
+}
+
+.home-room-bars li.is-full .home-room-bar > span
+{
+   background: var(--color-chat-critical);
+}
+
+.home-room-bar-count
+{
+   color: var(--color-chat-text-secondary);
+   font-variant-numeric: tabular-nums;
+}
+
+/* NOTE: What Health cannot say yet - greyed, kept in sight as the gap Ian's R2 figures would fill. */
+.home-health-gap
+{
+   box-sizing: border-box;
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+   padding: 20px 22px;
+   border: 1px dashed var(--color-chat-border-strong);
+   border-radius: var(--radius-lg);
+   background: var(--color-chat-bg-rail);
+   color: var(--color-chat-text-secondary);
+}
+
+.home-health-gap h2
+{
+   margin: 0;
+   font-size: 16px;
+   font-weight: 600;
+}
+
+.home-health-gap-grid
+{
+   display: grid;
+   grid-template-columns: repeat( auto-fill, minmax( 180px, 1fr ) );
+   gap: 12px;
+}
+
+.home-health-gap-grid > span
+{
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+   font-size: 13px;
+}
+
+.home-health-gap-grid b
+{
+   font-weight: 600;
+   color: var(--color-chat-text-faint);
+}
+
 .home-card-action,
 .home-card-actions .chat-btn,
 .home-need-answer
@@ -1161,10 +1437,32 @@
       gap: 10px;
    }
 
-   .home-pair
+   .home-health-grid,
+   .home-health-gap-grid
    {
       grid-template-columns: minmax( 0, 1fr );
       gap: 12px;
+   }
+
+   .home-attention-item
+   {
+      flex-wrap: wrap;
+   }
+
+   .home-attention-item > .chat-btn
+   {
+      margin-left: 22px;
+   }
+
+   .home-room-bars li
+   {
+      grid-template-columns: minmax( 0, 1fr ) auto;
+   }
+
+   .home-room-bar
+   {
+      grid-column: 1 / -1;
+      grid-row: 2;
    }
 
    .home-log-filter

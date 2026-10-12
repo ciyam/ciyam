@@ -252,7 +252,7 @@ check( "a member's is My account", hp.home_apps( false, false, false )[ 2 ].titl
 check( "the tabs the apps reuse", hp.home_apps( true, false, false ).map( function( app ) { return app.tab; } ),
  [ "ciyam-home", "ciyam-chat", "ciyam-accounts", "ciyam-console" ] );
 
-check( "admin's sections - People among them since 2026-10-11", keys( hp.home_sections( true ) ), [ "overview", "people", "keys", "logs" ] );
+check( "admin's sections - People since 2026-10-11, Health since 2026-10-12", keys( hp.home_sections( true ) ), [ "overview", "health", "people", "keys", "logs" ] );
 check( "a member has none", hp.home_sections( false ), [ ] );
 check( "a copy, not the list itself", hp.home_sections( true ) !== hp.home_sections( true ), true );
 
@@ -321,6 +321,33 @@ check( "none", hp.devices_shown( [ ], 0 ), { rows: [ ], more: 0 } );
 check( "more - three", hp.more_devices_text( 3 ), "and 3 more devices" );
 check( "more - one", hp.more_devices_text( 1 ), "and 1 more device" );
 check( "more - none", hp.more_devices_text( 0 ), "" );
+
+// --------------------------------------------------------------------
+heading( "health" );
+
+var some_problems = hp.log_problems( server_log );
+var some_filling = hp.rooms_filling( [ { room: "0000002", name: "General", kind: "room", total: 8280 },
+ { room: "0000009", name: "Family", kind: "room", total: 9000 }, { room: "0000010", name: "Quiet", kind: "room", total: 12 } ] );
+var issues = hp.health_issues( { secure: true, keys: 0, problems: some_problems, filling: some_filling } );
+check( "what needs you - problems first, then the rest", issues.map( function( i ) { return i.key + " " + i.level; } ),
+ [ "log problem", "room:0000009 problem", "room:0000002 warn", "keys warn" ] );
+check( "- the log's, counted since the restart, its latest line and time", [ issues[ 0 ].title, issues[ 0 ].detail, issues[ 0 ].target ],
+ [ "2 errors since the restart", "00:56:38 session error: \\ https://ntfy/upJW5R65MZ36PA", "problems" ] );
+check( "- a full room, and one filling", [ issues[ 1 ].title, issues[ 2 ].title ], [ "Family is full", "General is 92% full" ] );
+check( "- no unlock keys left - to make one", [ issues[ 3 ].title, issues[ 3 ].action, issues[ 3 ].target ], [ "No unlock keys left", "Make a key", "keys" ] );
+check( "nothing wrong - nothing", hp.health_issues( { secure: true, keys: 3, problems: hp.log_problems( [ ] ), filling: [ ] } ), [ ] );
+check( "warnings alone - a warning", hp.health_issues( { secure: true, keys: 2, problems: { errors: 0, warnings: 2, latest: "x", since_start: true }, filling: [ ] } )
+ .map( function( i ) { return i.title + " " + i.level; } ), [ "2 warnings since the restart warn" ] );
+check( "no keys on a node without a secure identity - not a problem", hp.health_issues( { secure: false, keys: 0, problems: null, filling: null } ), [ ] );
+check( "what the node did not say raises nothing", hp.health_issues( { secure: null, keys: null, problems: null, filling: null } ), [ ] );
+check( "the fullest rooms - filling or not, rooms only, as many as asked", hp.rooms_fullest( [ { room: "0000003", name: "", kind: "room", total: 40 },
+ { room: "0000002", name: "General", kind: "room", total: 900 }, { room: "x", name: "bob", kind: "direct", total: 5000 },
+ { room: "0000004", name: "Quiet", kind: "room", total: 1 } ], 2 ),
+ [ { room: "0000002", name: "General", total: 900, percent: 10 }, { room: "0000003", name: "#0000003", total: 40, percent: 0 } ] );
+check( "the heading", [ hp.health_heading( [ 1 ] ), hp.health_heading( [ 1, 2, 3 ] ) ], [ "1 thing needs you", "3 things need you" ] );
+check( "the node's kind", [ hp.node_kind_text( true, false ), hp.node_kind_text( false, true ), hp.node_kind_text( false, false ), hp.node_kind_text( null, null ) ],
+ [ "Development - raw protocol open to admin", "Demo", "Standard", "Not reported" ] );
+check( "a flag - '1' or nothing", [ hp.parse_flag( "1" ), hp.parse_flag( "" ), hp.parse_flag( null ) ], [ true, false, null ] );
 
 // --------------------------------------------------------------------
 heading( "setting up a new node" );

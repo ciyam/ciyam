@@ -977,7 +977,8 @@ const c_icons = {
    overview: "M12 14l4-4M3.5 18a9 9 0 1 1 17 0",
    keys: "M15 7a4 4 0 1 1-3.5 6L4 20.5H2v-3l7.5-7.5A4 4 0 0 1 15 7z",
    logs: "M5 4h14v16H5zM8 8h8M8 12h8M8 16h5",
-   shield: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM9 12l2 2 4-4"
+   shield: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM9 12l2 2 4-4",
+   health: "M3 12h4l3-8 4 16 3-8h4"
 };
 
 // NOTE: As wide as the design's phone layouts - below it the side menu becomes a drawer.
@@ -1158,6 +1159,9 @@ function rail_item( key, title, is_app, on_click )
    if( key === "chat" )
       item.appendChild( chat_badge( ) );
 
+   if( key === "health" )
+      item.appendChild( health_badge( ) );
+
    if( is_app )
       bind_app_link( item, on_click );
    else
@@ -1240,6 +1244,18 @@ function chat_badge( )
    return badge;
 }
 
+// NOTE: How many things need admin - Health's count, the same as the Overview's list (2026-10-12).
+function health_badge( )
+{
+   var badge = document.createElement( "span" );
+
+   badge.className = "home-badge";
+   badge.dataset.badge = "health";
+   badge.hidden = true;
+
+   return badge;
+}
+
 // NOTE: In this tab, as the switcher opens it (Damon, 2026-10-09) - a new one when the event asks.
 function open_app( app, event )
 {
@@ -1291,6 +1307,9 @@ function build_shell( )
       chip.dataset.key = section.key;
       chip.textContent = section.title;
 
+      if( section.key === "health" )
+         chip.appendChild( health_badge( ) );
+
       chip.addEventListener( "click", function( event ) { event.preventDefault( ); go( section.key ); } );
 
       chips.appendChild( chip );
@@ -1319,12 +1338,12 @@ function go( section )
 {
    g_section = section;
 
-   [ "home", "overview", "people", "keys", "logs" ].forEach( function( key )
+   [ "home", "overview", "health", "people", "keys", "logs" ].forEach( function( key )
    {
       document.getElementById( "section_" + key ).hidden = ( key !== section );
    } );
 
-   var titles = { home: "Home", overview: "Overview", people: "People", keys: "Unlock keys", logs: "Logs" };
+   var titles = { home: "Home", overview: "Overview", health: "Health", people: "People", keys: "Unlock keys", logs: "Logs" };
 
    set_text( "top_heading", titles[ section ] || "Home" );
 
@@ -1736,8 +1755,8 @@ function start_refresh( )
 
       load_member_home( );
 
-      // NOTE: Admin's Overview too, while it is shown - a page left open is a way to watch the node (Ian, 2026-10-11).
-      if( ciyam.is_admin && ( g_section === "overview" ) )
+      // NOTE: Admin's Overview or Health too, while shown - a page left open is a way to watch the node (Ian, 2026-10-11).
+      if( ciyam.is_admin && ( ( g_section === "overview" ) || ( g_section === "health" ) ) )
          load_overview( );
    }, c_refresh_ms );
 }
@@ -1822,30 +1841,40 @@ async function read_key_count( )
    return is_error_response( response ) ? null : parse_key_count( response );
 }
 
-// NOTE: Whether the node's identity is held encrypted - without it, no unlock keys (Ian, 2026-10-12).
-async function read_secure( )
+// NOTE: One of the requests admin may make of any node ("is_admin_sanctioned") - its answer, or null when refused.
+async function ask_node( text )
 {
-   var url = admin_url( "" ) + "&request=" + encodeURIComponent( c_home_secure_request );
+   var url = admin_url( "" ) + "&request=" + encodeURIComponent( text );
 
    var response = await request( function( done )
    {
       return ciyam.fetch( url, "GET", done );
    } );
 
-   return is_error_response( response ) ? null : parse_secure( response );
+   return is_error_response( response ) ? null : response;
 }
 
-// NOTE: On a node without a secure identity the keys are not offered - the Overview's card and Unlock keys say why.
+// NOTE: Whether the node's identity is held encrypted - without it, no unlock keys (Ian, 2026-10-12).
+async function read_secure( )
+{
+   return parse_secure( await ask_node( c_home_secure_request ) );
+}
+
+// NOTE: On a node without a secure identity the keys are not offered - Health and Unlock keys say why.
 function show_keys_available( secure )
 {
    var none = ( secure === false );
 
-   set_text( "overview_keys_heading", none ? "No unlock keys on this node" : "Keep a few unlock keys" );
+   [ "overview_make_key", "health_make_key", "key_make" ].forEach( function( id ) { document.getElementById( id ).hidden = none; } );
+}
 
-   document.getElementById( "overview_keys_card" ).classList.toggle( "home-card--warn", !none );
-   document.getElementById( "keys_icon" ).classList.toggle( "is-warn", !none );
-   document.getElementById( "overview_make_key" ).hidden = none;
-   document.getElementById( "key_make" ).hidden = none;
+// NOTE: A Health card's word on itself - "ok", "warn", "problem", or "quiet" for what was not said or is only worth knowing.
+function set_health_pill( id, level, text )
+{
+   var pill = document.getElementById( id );
+
+   pill.className = "home-health-pill is-" + level;
+   pill.textContent = text;
 }
 
 // NOTE: A log's last "count" lines - every line for none. The node gives ten unless asked (Ian, "3d6a5820"), so
@@ -1889,28 +1918,22 @@ async function load_overview( )
 
    await read_system( );
 
-   set_text( "stat_node", ( g_system.state === "ready" ) ? "Ready" : "Not ready" );
-   set_text( "stat_uptime", uptime_words( await fetch_text( "/uptime" ) ) || "-" );
+   var uptime = uptime_words( await fetch_text( "/uptime" ) ) || "-";
 
-   var security = security_text( g_system.security );
-
-   set_text( "connection_heading", security.heading || "Connection: not reported" );
-   set_text( "connection_cipher", ( g_system.cipher !== "" ) ? g_system.cipher + ( g_system.group !== "" ? " (" + g_system.group + ")" : "" )
-    : ( g_system.security === "none" ? "Plain HTTP - (NONE)" : "" ) );
-
-   document.getElementById( "connection_icon" ).classList.toggle( "is-warn", g_system.security === "none" );
+   show_connection( );
 
    var secure = await read_secure( );
    var key_count = await read_key_count( );
+   var devt = parse_flag( await ask_node( c_home_devt_request ) );
+   var demo = parse_flag( await ask_node( c_home_demo_request ) );
 
    var users = await request( function( done ) { return ciyam.fetch_users( done ); } );
 
    if( ciyam.access !== asked_for )
       return;
 
-   set_text( "overview_keys_note", ( secure === false ) ? c_home_keys_unavailable : keys_note( key_count ) );
-
-   show_keys_available( secure );
+   show_node_facts( uptime, secure, devt, demo );
+   show_identity( secure, key_count );
 
    if( !is_error_response( users ) )
    {
@@ -1930,14 +1953,146 @@ async function load_overview( )
    draw_log( document.getElementById( "overview_log" ),
     server ? log_view( server, "", c_overview_log_lines ).lines : [ "(the server log could not be read)" ] );
 
-   show_problems( server );
+   var problems = show_problems( server );
 
    var listing = await request( function( done ) { return ciyam.fetch_messages( c_lobby_room, "", done ); } );
 
    if( ciyam.access !== asked_for )
       return;
 
-   show_filling( is_error_response( listing ) ? null : derive_room_list( parse_fetch_response( listing ).rooms ) );
+   var filling = show_filling( is_error_response( listing ) ? null : derive_room_list( parse_fetch_response( listing ).rooms ) );
+
+   show_attention( health_issues( { secure: secure, keys: key_count, problems: problems, filling: filling } ) );
+}
+
+// NOTE: The node at a glance (the Overview's first stat) and in Health's node card.
+function show_node_facts( uptime, secure, devt, demo )
+{
+   var ready = ( g_system.state === "ready" );
+
+   set_text( "stat_node", ready ? "Ready" : "Not ready" );
+   set_text( "stat_node_note", "Unlocked" + ( secure === true ? " · encrypted identity" : "" ) );
+   set_text( "stat_uptime", uptime );
+
+   set_text( "health_state", ready ? "Ready, unlocked" : "Not ready" );
+   set_text( "health_uptime", uptime );
+   set_text( "health_version", g_system.version || "-" );
+   set_text( "health_kind", node_kind_text( devt, demo ) );
+
+   set_health_pill( "health_node_pill", ready ? "ok" : "problem", ready ? "OK" : "Not ready" );
+}
+
+// NOTE: How this browser's connection is encrypted, as the node sees it. Plain HTTP is normal on the node's own network
+// (Ian, 2026-10-03) - worth knowing, not a problem, so it is not among what needs you.
+function show_connection( )
+{
+   var security = security_text( g_system.security );
+
+   set_text( "connection_heading", security.heading || "Connection: not reported" );
+   set_text( "connection_cipher", ( g_system.cipher !== "" ) ? g_system.cipher + ( g_system.group !== "" ? " (" + g_system.group + ")" : "" )
+    : ( g_system.security === "none" ? "Plain HTTP - (NONE)" : "" ) );
+
+   if( g_system.security === "none" )
+      set_health_pill( "health_connection_pill", "quiet", "Worth knowing" );
+   else if( security.heading !== "" )
+      set_health_pill( "health_connection_pill", "ok", "OK" );
+   else
+      set_health_pill( "health_connection_pill", "quiet", "Not reported" );
+}
+
+// NOTE: The identity and its unlock keys - Health's card, and the Overview's quick action.
+function show_identity( secure, key_count )
+{
+   var none = ( secure === false );
+
+   set_text( "health_secure_line", ( secure === true ) ? "Held encrypted. After a restart, needs an unlock key or the master password."
+    : ( none ? "Not held encrypted." : "Not reported." ) );
+
+   set_text( "overview_keys_note", none ? c_home_keys_unavailable : keys_note( key_count ) );
+
+   set_text( "overview_keys_line", none ? "Not used on this node." : ( key_count === null ? "Not reported." : counted( key_count, "key", "keys" ) + " left." ) );
+
+   if( none )
+      set_health_pill( "health_identity_pill", "quiet", "No keys needed" );
+   else if( key_count === 0 )
+      set_health_pill( "health_identity_pill", "warn", "No keys left" );
+   else if( key_count === null )
+      set_health_pill( "health_identity_pill", "quiet", "Not reported" );
+   else
+      set_health_pill( "health_identity_pill", "ok", "OK" );
+
+   show_keys_available( secure );
+}
+
+// NOTE: What needs admin - on the Overview, each with its way to act, or "Nothing needs you"; Health's badge counts them.
+function show_attention( issues )
+{
+   var list = document.getElementById( "attention_list" );
+
+   list.replaceChildren( );
+
+   issues.forEach( function( issue )
+   {
+      var item = document.createElement( "li" );
+
+      item.className = "home-attention-item is-" + issue.level;
+
+      var dot = document.createElement( "span" );
+
+      dot.className = "home-attention-dot";
+      dot.setAttribute( "aria-hidden", "true" );
+
+      var body = document.createElement( "span" );
+
+      body.className = "home-attention-body";
+
+      var title = document.createElement( "b" );
+
+      title.textContent = issue.title;
+
+      var detail = document.createElement( "span" );
+
+      detail.className = "home-attention-detail";
+      detail.textContent = issue.detail;
+
+      body.append( title, detail );
+
+      var action = document.createElement( "button" );
+
+      action.type = "button";
+      action.className = "chat-btn" + ( issue.level === "problem" ? " chat-btn--primary" : "" );
+      action.textContent = issue.action;
+      action.dataset.target = issue.target;
+
+      action.addEventListener( "click", function( event )
+      {
+         if( issue.target === "problems" )
+            show_problems_in_logs( event );
+         else
+            go( issue.target );
+      } );
+
+      item.append( dot, body, action );
+
+      list.appendChild( item );
+   } );
+
+   var any = ( issues.length > 0 );
+
+   set_text( "attention_heading", any ? health_heading( issues ) : "" );
+
+   document.getElementById( "attention_card" ).hidden = !any;
+   document.getElementById( "attention_rest" ).hidden = !any;
+   document.getElementById( "well_card" ).hidden = any;
+
+   var problem = issues.some( function( issue ) { return issue.level === "problem"; } );
+
+   document.querySelectorAll( "[data-badge='health']" ).forEach( function( badge )
+   {
+      badge.textContent = badge_text( issues.length );
+      badge.hidden = !any;
+      badge.classList.toggle( "is-problem", problem );
+   } );
 }
 
 // NOTE: The errors and warnings in the server log since the restart - the latest in words, and Logs showing just
@@ -1946,17 +2101,17 @@ var g_log_problems_only = false;
 
 function show_problems( lines )
 {
-   var card = document.getElementById( "problems_card" );
    var show = document.getElementById( "problems_show" );
 
    if( lines === null )
    {
       set_text( "problems_heading", "The server log could not be read" );
       set_text( "problems_latest", "" );
+      set_health_pill( "health_log_pill", "quiet", "Not read" );
 
       show.hidden = true;
 
-      return;
+      return null;
    }
 
    var problems = log_problems( lines );
@@ -1968,10 +2123,16 @@ function show_problems( lines )
 
    set_text( "problems_latest", any ? "Latest" + ( latest.time !== "" ? ", " + latest.time : "" ) + ": " + latest.text : "" );
 
-   card.classList.toggle( "home-card--warn", problems.errors > 0 );
-   document.getElementById( "problems_icon" ).classList.toggle( "is-warn", problems.errors > 0 );
+   if( problems.errors > 0 )
+      set_health_pill( "health_log_pill", "problem", counted( problems.errors, "error", "errors" ) );
+   else if( problems.warnings > 0 )
+      set_health_pill( "health_log_pill", "warn", counted( problems.warnings, "warning", "warnings" ) );
+   else
+      set_health_pill( "health_log_pill", "ok", "OK" );
 
    show.hidden = !any;
+
+   return problems;
 }
 
 function show_problems_in_logs( event )
@@ -1988,7 +2149,8 @@ function show_problems_in_logs( event )
 }
 
 // NOTE: The rooms near the number of messages a room keeps - a full one drops its oldest (Ian's "@qs_pf_irc",
-// 2026-10-11). Only the rooms admin is in: the listing has no others.
+// 2026-10-11) - and Health's bars for the fullest, filling or not. Only the rooms admin is in: the listing has no others.
+// Returns the rooms filling up, or null when the listing could not be read.
 function show_filling( rooms )
 {
    var list = document.getElementById( "rooms_filling" );
@@ -1998,31 +2160,61 @@ function show_filling( rooms )
    if( rooms === null )
    {
       set_text( "rooms_heading", "The rooms could not be read" );
+      set_health_pill( "health_rooms_pill", "quiet", "Not read" );
 
-      return;
+      return null;
    }
 
    var filling = rooms_filling( rooms );
 
    set_text( "rooms_heading", rooms_filling_text( filling ) );
 
-   filling.slice( 0, c_overview_filling_shown ).forEach( function( room )
+   rooms_fullest( rooms, c_overview_filling_shown ).forEach( function( room )
    {
       var item = document.createElement( "li" );
 
-      item.textContent = room_filling_line( room );
-
       if( room.total >= c_home_room_limit )
          item.className = "is-full";
+      else if( room.total >= c_home_room_limit * c_home_room_filling )
+         item.className = "is-filling";
+
+      var name = document.createElement( "span" );
+
+      name.className = "home-room-bar-name";
+      name.textContent = room.name;
+
+      var bar = document.createElement( "span" );
+
+      bar.className = "home-room-bar";
+      bar.setAttribute( "role", "img" );
+      bar.setAttribute( "aria-label", room.percent + "% full" );
+
+      var fill = document.createElement( "span" );
+
+      fill.style.width = Math.max( room.percent, 1 ) + "%";
+
+      bar.appendChild( fill );
+
+      var count = document.createElement( "span" );
+
+      count.className = "home-room-bar-count";
+      count.textContent = room.total.toLocaleString( "en-AU" ) + " of " + c_home_room_limit.toLocaleString( "en-AU" );
+
+      item.append( name, bar, count );
 
       list.appendChild( item );
    } );
 
    var full = filling.some( function( room ) { return room.total >= c_home_room_limit; } );
 
-   document.getElementById( "rooms_card" ).classList.toggle( "home-card--warn", filling.length > 0 );
-   document.getElementById( "rooms_icon" ).classList.toggle( "is-warn", filling.length > 0 );
-   document.getElementById( "rooms_icon" ).classList.toggle( "is-full", full );
+   if( full )
+      set_health_pill( "health_rooms_pill", "problem", "Full" );
+   else if( filling.length > 0 )
+      set_health_pill( "health_rooms_pill", "warn", "Filling up" );
+   else
+      set_health_pill( "health_rooms_pill", "ok", "OK" );
+
+   return filling;
 }
 
 // ---- Unlock keys
@@ -2192,7 +2384,7 @@ function show_log( )
 // NOTE: A section's data is read when it is shown, not before - Logs can be large.
 function on_section_shown( section )
 {
-   if( section === "overview" )
+   if( ( section === "overview" ) || ( section === "health" ) )
       load_overview( );
    else if( section === "people" )
    {
@@ -2208,15 +2400,11 @@ function on_section_shown( section )
 
 function install_admin( )
 {
-   document.getElementById( "connection_icon" ).appendChild( icon( "shield", 22 ) );
-   document.getElementById( "keys_icon" ).appendChild( icon( "keys", 22 ) );
-   document.getElementById( "problems_icon" ).appendChild( icon( "logs", 22 ) );
-   document.getElementById( "rooms_icon" ).appendChild( icon( "chat", 22 ) );
-
    document.getElementById( "problems_show" ).addEventListener( "click", show_problems_in_logs );
    document.getElementById( "log_problems_clear" ).addEventListener( "click", function( ) { g_log_problems_only = false; show_log( ); } );
 
    document.getElementById( "overview_refresh" ).addEventListener( "click", load_overview );
+   document.getElementById( "health_refresh" ).addEventListener( "click", load_overview );
    document.getElementById( "logs_refresh" ).addEventListener( "click", load_logs );
    document.getElementById( "key_make" ).addEventListener( "click", do_make_key );
    document.getElementById( "key_copy" ).addEventListener( "click", do_copy_key );
@@ -2225,7 +2413,8 @@ function install_admin( )
    // NOTE: More lines are read from the node, not cut from what was read.
    document.getElementById( "log_count" ).addEventListener( "change", load_logs );
 
-   [ [ "overview_make_key", "keys" ], [ "overview_open_logs", "logs" ] ].forEach( function( pair )
+   [ [ "overview_make_key", "keys" ], [ "overview_open_logs", "logs" ], [ "health_make_key", "keys" ], [ "health_open_logs", "logs" ],
+    [ "attention_all", "health" ], [ "attention_rest_link", "health" ], [ "well_health", "health" ] ].forEach( function( pair )
    {
       document.getElementById( pair[ 0 ] ).addEventListener( "click", function( event ) { event.preventDefault( ); go( pair[ 1 ] ); } );
    } );
@@ -2882,10 +3071,14 @@ function forget_admin( )
 
    document.getElementById( "log_filter" ).value = "";
 
-   [ "log_tabs", "log_lines", "overview_log" ].forEach( function( id ) { document.getElementById( id ).replaceChildren( ); } );
+   [ "log_tabs", "log_lines", "overview_log", "attention_list", "rooms_filling" ].forEach( function( id ) { document.getElementById( id ).replaceChildren( ); } );
 
-   [ "log_status", "stat_people_note", "overview_people", "overview_keys_note", "connection_heading", "connection_cipher" ]
+   [ "log_status", "stat_people_note", "overview_people", "overview_keys_note", "connection_heading", "connection_cipher", "attention_heading",
+    "overview_keys_line", "health_secure_line", "health_state", "health_uptime", "health_version", "health_kind", "problems_latest",
+    "health_identity_pill", "health_connection_pill", "health_log_pill", "health_rooms_pill", "health_node_pill" ]
     .forEach( function( id ) { set_text( id, "" ); } );
+
+   [ "attention_card", "attention_rest", "well_card" ].forEach( function( id ) { document.getElementById( id ).hidden = true; } );
 
    set_text( "stat_people", "…" );
    set_text( "stat_uptime", "…" );
