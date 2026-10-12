@@ -70,6 +70,10 @@ const size_t c_max_line_length = 10000;
 
 const size_t c_max_request_lines = 100;
 
+const size_t c_admin_access_check_cycles = 20;
+
+const size_t c_admin_identity_expiry_seconds = 300;
+
 #include "ciyam_constants.h"
 
 constexpr const char* c_crlf = "\r\n";
@@ -1967,6 +1971,24 @@ void http_listener::on_start( )
 
       g_cws_username_for_prefix = get_special_var_name( e_special_var_cws_username_for ) + '_';
 
+      string admin_access_file( c_web_access_prefix );
+
+      admin_access_file += c_admin;
+
+      size_t check_count = !file_exists( c_ciyam_server_sid_file );
+
+      if( check_count && file_exists( admin_access_file ) )
+      {
+         int64_t tm_val = last_modification_time( admin_access_file );
+
+         int64_t tm_now = unix_time( );
+
+         tm_val += c_admin_identity_expiry_seconds;
+
+         if( tm_now < tm_val )
+            set_system_variable( e_special_var_utm_web_reset, to_string( tm_val ) );
+      }
+
       while( true )
       {
          if( g_server_shutdown )
@@ -1974,7 +1996,61 @@ void http_listener::on_start( )
             if( !g_active_handlers )
                break;
             else
+            {
                msleep( c_shutdown_timeout );
+
+               continue;
+            }
+         }
+
+         // NOTE: Will only check for an expired
+         // admin PIN when there are no handlers
+         // active and no system identity file.
+         if( check_count && !g_active_handlers )
+         {
+            if( ++check_count > c_admin_access_check_cycles )
+            {
+               check_count = !file_exists( c_ciyam_server_sid_file );
+
+               if( check_count && file_exists( admin_access_file ) )
+               {
+                  int64_t tm_now = unix_time( );
+
+                  int64_t tm_val = last_modification_time( admin_access_file );
+
+                  if( tm_now > tm_val )
+                  {
+                     int64_t elapsed = ( tm_now - tm_val );
+
+                     // NOTE: If the admin PIN had been created with
+                     // no system identity file appearing within the
+                     // expiry time frame then will remove access in
+                     // order to restart the system setup workflow.
+                     if( elapsed > c_admin_identity_expiry_seconds )
+                     {
+                        string pin( buffer_file( admin_access_file ) );
+
+                        string admin_pin_file( c_web_access_prefix );
+
+                        admin_pin_file += pin;
+
+                        file_remove( admin_pin_file );
+                        file_remove( admin_access_file );
+
+                        set_system_variable( e_special_var_utm_web_reset, "" );
+                     }
+                     else
+                     {
+                        string utm_web_reset(
+                         get_system_variable( e_special_var_utm_web_reset ) );
+
+                        if( utm_web_reset.empty( ) || ( utm_web_reset == c_false_value ) )
+                           set_system_variable( e_special_var_utm_web_reset,
+                            to_string( tm_val + c_admin_identity_expiry_seconds ) );
+                     }
+                  }
+               }
+            }
          }
 
 #ifdef SSL_SUPPORT
