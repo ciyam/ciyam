@@ -702,7 +702,9 @@ function setup_draw_words( )
       list.appendChild( item );
    } );
 
-   set_text( "setup_words_note", "Made from your bubbles and the node's own suggestion together. The node is waiting - finish in this tab." );
+   // NOTE: No countdown (Damon, 2026-10-12) - an open tab keeps the node waiting by itself, so a clock would only add pressure.
+   set_text( "setup_words_note", "Made from your bubbles and the node's own suggestion together. The node waits for you while this tab"
+    + " is open - take your time, and finish here." );
 
    document.getElementById( "setup_written" ).checked = false;
    document.getElementById( "setup_words_next" ).disabled = true;

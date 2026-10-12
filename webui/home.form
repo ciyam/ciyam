@@ -139,7 +139,7 @@ http://www.opensource.org/licenses/mit-license.php.
       <section id="setup_check" hidden>
          <h2 tabindex="-1">Check what you wrote</h2>
          <p class="chat-signin-lede">From your paper, not from memory: for each word, pick the one you wrote. The words are
-          hidden now.</p>
+          hidden now, and the node is still waiting - there's no hurry.</p>
          <div class="home-setup-check" id="setup_check_rows"></div>
          <div class="home-setup-count">
             <span id="setup_check_count">0 of 12 right</span>
