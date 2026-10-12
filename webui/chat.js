@@ -916,12 +916,18 @@ function watch_drawer_widths( )
 }
 
 // NOTE: The rail's button carries a count of what is waiting elsewhere, since the rail and its
-// counts are out of sight.
+// counts are out of sight - and so does the tab's title, for a tab in the background (2026-10-12).
+const c_chat_title = "CIYAM Chat";
+
 function update_drawer_toggles( )
 {
    var drawer = open_drawer( );
 
-   var waiting = badge_text( unread_elsewhere( g_rooms, g_invitations, g_room, ciyam.is_admin ) );
+   var count = unread_elsewhere( g_rooms, g_invitations, g_room, ciyam.is_admin );
+
+   var waiting = badge_text( count );
+
+   document.title = page_title( c_chat_title, count );
 
    var badge = document.getElementById( "rail_badge" );
 
@@ -1100,6 +1106,8 @@ async function do_disconnect( already_ended )
    end_log_session( );
 
    document.getElementById( "chat_view" ).hidden = true;
+
+   document.title = c_chat_title;
 
    signin_show( );
 }

@@ -697,6 +697,9 @@ check( "no rooms, no count", cp.unread_elsewhere( null, null, "", false ), 0 );
 check( "badge for none", cp.badge_text( 0 ), "" );
 check( "badge for some", cp.badge_text( 7 ), "7" );
 check( "badge capped", cp.badge_text( 140 ), "99+" );
+check( "a page's title - with what waits", cp.page_title( "CIYAM Chat", 3 ), "(3) CIYAM Chat" );
+check( "a page's title - nothing waiting, the title alone", cp.page_title( "CIYAM Chat", 0 ), "CIYAM Chat" );
+check( "a page's title - capped as the badge is", cp.page_title( "CIYAM Home", 250 ), "(99+) CIYAM Home" );
 
 heading( "password strength" );
 

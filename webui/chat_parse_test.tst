@@ -359,6 +359,9 @@ ok   no rooms, no count
 ok   badge for none
 ok   badge for some
 ok   badge capped
+ok   a page's title - with what waits
+ok   a page's title - nothing waiting, the title alone
+ok   a page's title - capped as the badge is
 
 == password strength ===========================================
 ok   empty says nothing

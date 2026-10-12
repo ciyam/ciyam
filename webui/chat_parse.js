@@ -1558,6 +1558,15 @@ function badge_text( count )
    return ( count > 99 ) ? "99+" : String( count );
 }
 
+// NOTE: A page's title with what waits in front of it - "(3) CIYAM Chat" - so a tab in the background shows it, as other
+// chat apps do (Damon, 2026-10-12). The badge's own cap; nothing waiting, the title alone.
+function page_title( title, count )
+{
+   var waiting = badge_text( count );
+
+   return ( waiting !== "" ) ? "(" + waiting + ") " + title : title;
+}
+
 // NOTE: The password strength rules from "test_bip39.html", so both pages rate a password
 // the same way. Under seven characters is unsatisfactory; otherwise the length is scaled by
 // how many kinds of character are used - digits alone count least - and the score banded.
@@ -2351,6 +2360,7 @@ if( typeof module !== "undefined" )
       add_dismissed: add_dismissed,
       c_max_dismissed: c_max_dismissed,
       badge_text: badge_text,
+      page_title: page_title,
       encode_channel_field: encode_channel_field,
       decode_channel_field: decode_channel_field,
       parse_access_list: parse_access_list,
