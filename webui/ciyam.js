@@ -1198,8 +1198,17 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
       if( typeof process.env.CIYAM_NODE_COMMAND !== "undefined" )
          command = process.env.CIYAM_NODE_COMMAND;
 
-      if( test && ( command == "" ) && ( device != ciyam.device ) )
-         console.log( ciyam.device );
+      if( test && ( device != ciyam.device ) )
+      {
+         if( command == "" )
+            console.log( ciyam.device );
+         else if( command == "credentials" )
+         {
+            command = "";
+
+            console.log( ciyam.access + " " + ciyam.device + " " + ciyam.hashed );
+         }
+      }
 
       if( !test && !quiet && ( ciyam.connect_status != "" ) )
       {
