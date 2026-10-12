@@ -758,10 +758,12 @@ function setup_refused( text )
 
 // NOTE: The node refusing the second, its PIN gone - it waits five minutes from its last word with the tab that has it (Ian,
 // 2026-10-12). Then it answers "System is currently locked for administration." - as it also does, for a moment, while
-// another admin command runs, so the page asks again before believing it.
+// another admin command runs, so the page asks again before believing it. A node that has restarted since - or been made
+// new again - never gave that PIN: "User credentials are either invalid or incorrect." (Damon, 2026-10-13, carrying on
+// in a tab kept from before). The password is the page's own, so only the PIN can be wrong.
 function setup_pin_gone( text )
 {
-   return setup_refused( text ) || /locked for administration/i.test( String( text || "" ) );
+   return setup_refused( text ) || /locked for administration|credentials are either invalid or incorrect/i.test( String( text || "" ) );
 }
 
 // NOTE: The node's answer to the first set up request ("POST /cws/devices?access=admin") - admin's PIN and the entropy the

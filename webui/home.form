@@ -203,8 +203,8 @@ http://www.opensource.org/licenses/mit-license.php.
            while it is open - so this is a tab that slept, or was set aside, for longer. -->
       <section id="setup_expired" hidden>
          <h2 tabindex="-1">The node stopped waiting</h2>
-         <p class="chat-signin-lede">It waits five minutes at a time, and this tab was away longer - asleep, or set aside - so it
-          let this setup go.</p>
+         <p class="chat-signin-lede">It waits five minutes at a time, and this tab was away longer - asleep, or set aside - or the
+          node restarted, so it let this setup go.</p>
          <div class="recover-warning"><b>Cross out the words you wrote down</b> - they won't be the node's. Starting again gives
           you new ones.</div>
          <div class="chat-signin-actions">
