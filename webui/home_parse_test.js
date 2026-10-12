@@ -160,6 +160,13 @@ check( "people waiting - one", hp.people_waiting_text( { active: 4, unclaimed: 1
 check( "people waiting - two", hp.people_waiting_text( { active: 4, unclaimed: 2 } ), "2 people haven't used their code yet." );
 check( "people waiting - none", hp.people_waiting_text( { active: 4, unclaimed: 0 } ), "Everyone you added has set up their account." );
 
+// NOTE: "@sid_secure" (Ian, 2026-10-12) - no unlock keys without a secure identity.
+check( "secure - asked of the node", hp.c_home_secure_request, "system_variable @sid_secure" );
+check( "secure - '1' is held encrypted", [ hp.parse_secure( "1" ), hp.parse_secure( "1\n" ) ], [ true, true ] );
+check( "secure - nothing is not - a development or demo node", hp.parse_secure( "" ), false );
+check( "secure - no answer, or anything else, is not known", [ hp.parse_secure( null ), hp.parse_secure( "Error: Not permitted." ) ], [ null, null ] );
+check( "secure - not, said plainly", /no unlock keys/.test( hp.c_home_keys_unavailable ), true );
+
 check( "keys - none left", /^None left\. .*make a few\.$/.test( hp.keys_note( 0 ) ), true );
 check( "keys - one left", /^1 unlock key left\./.test( hp.keys_note( 1 ) ), true );
 check( "keys - three left", /^3 unlock keys left\./.test( hp.keys_note( 3 ) ), true );
@@ -314,6 +321,44 @@ check( "none", hp.devices_shown( [ ], 0 ), { rows: [ ], more: 0 } );
 check( "more - three", hp.more_devices_text( 3 ), "and 3 more devices" );
 check( "more - one", hp.more_devices_text( 1 ), "and 1 more device" );
 check( "more - none", hp.more_devices_text( 0 ), "" );
+
+// --------------------------------------------------------------------
+heading( "setting up a new node" );
+
+// NOTE: Real answers from a node left new (2026-10-12) - the first request's, then a second first request's.
+check( "the first request's answer - admin's PIN and the node's suggestion", hp.setup_reply( "32364 4651a055cc23e9ca17aa2582cb586c68\n" ),
+ { pin: "32364", suggested: "4651a055cc23e9ca17aa2582cb586c68" } );
+check( "a second first request - refused, not an answer", hp.setup_reply( "Error: This web session is not valid (or has expired)." ), null );
+check( "nothing - not an answer", [ hp.setup_reply( "" ), hp.setup_reply( null ), hp.setup_reply( "32364" ) ], [ null, null, null ] );
+
+check( "kept for the tab - read back", hp.setup_kept( JSON.stringify( { pin: "32364", suggested: "4651a055cc23e9ca17aa2582cb586c68" } ) ),
+ { pin: "32364", suggested: "4651a055cc23e9ca17aa2582cb586c68" } );
+check( "kept for the tab - and nothing else from it",
+ hp.setup_kept( JSON.stringify( { pin: "32364", suggested: "4651a055cc23e9ca17aa2582cb586c68", words: "x" } ) ),
+ { pin: "32364", suggested: "4651a055cc23e9ca17aa2582cb586c68" } );
+check( "kept for the tab - anything else is nothing",
+ [ hp.setup_kept( null ), hp.setup_kept( "{" ), hp.setup_kept( JSON.stringify( { pin: "1", suggested: "x" } ) ) ],
+ [ null, null, null ] );
+
+var crypto = require( "crypto" );
+var sha = function( text ) { return crypto.createHash( "sha256" ).update( text ).digest( "hex" ); };
+var pops = [ { t: 1012.5, x: 120, y: 40, hit: true }, { t: 1630.25, x: 300, y: 210, hit: false } ];
+var mine = hp.randomness_hex( pops, "00ff", sha, 32 );
+check( "the person's randomness - hex, as long as asked", /^[0-9a-f]{32}$/.test( mine ), true );
+check( "- the same pops and browser numbers, the same", hp.randomness_hex( pops, "00ff", sha, 32 ), mine );
+check( "- a pop a millisecond later, different", hp.randomness_hex( [ { t: 1013.5, x: 120, y: 40, hit: true }, pops[ 1 ] ], "00ff", sha, 32 ) !== mine, true );
+check( "- other browser numbers, different", hp.randomness_hex( pops, "00fe", sha, 32 ) !== mine, true );
+check( "- longer than one hash when asked", /^[0-9a-f]{100}$/.test( hp.randomness_hex( pops, "00ff", sha, 100 ) ), true );
+
+var setup_words = [ "orbit", "lemon", "canvas", "dutch", "ribbon", "wealth", "glide", "spare", "trophy", "marine", "elbow", "quiz" ];
+var setup_list = setup_words.concat( [ "oyster", "fringe", "legal", "thumb", "cancel", "sponsor", "dust", "wagon" ] );
+var seq = [ 0.95, 0.10, 0.40, 0.70, 0.20, 0.55, 0.85, 0.30, 0.65, 0.05, 0.45, 0.75 ];
+var next = function( ) { var v = seq.shift( ); seq.push( v ); return v; };
+var three = hp.word_choices( setup_words, 4, setup_list, next );
+check( "checking a word - three choices, the right one among them", three.length === 3 && three.indexOf( "ribbon" ) >= 0, true );
+check( "- the others are not the person's other words",
+ three.filter( function( w ) { return w !== "ribbon"; } ).every( function( w ) { return setup_words.indexOf( w ) < 0; } ), true );
+check( "- no word twice", three[ 0 ] !== three[ 1 ] && three[ 1 ] !== three[ 2 ] && three[ 0 ] !== three[ 2 ], true );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );

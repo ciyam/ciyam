@@ -294,6 +294,27 @@ function key_error_text( error )
    return text;
 }
 
+// NOTE: Whether the node's identity is held encrypted - "system_variable @sid_secure", which admin may ask on any node (Ian,
+// "e50db383", 2026-10-12): "1" if it is, nothing if not. Without it there are no unlock keys - a pure development or
+// demo-only node. null when the node did not answer, which is not taken as either.
+const c_home_secure_request = "system_variable @sid_secure";
+
+const c_home_keys_unavailable = "This node's identity isn't held encrypted - a development or demo node - so it has no unlock"
+ + " keys: there is nothing to unlock.";
+
+function parse_secure( reply )
+{
+   if( ( reply === null ) || ( reply === undefined ) )
+      return null;
+
+   var value = String( reply ).trim( );
+
+   if( value === "1" )
+      return true;
+
+   return ( value === "" ) ? false : null;
+}
+
 // NOTE: The unlock keys the node holds, as admin's Overview says it - each is used up when it unlocks the node.
 function keys_note( count )
 {
@@ -607,16 +628,99 @@ function more_devices_text( more )
    return ( more > 0 ) ? "and " + counted( more, "more device", "more devices" ) : "";
 }
 
+// ====================================================================
+// Setting up a new node (Damon and Ian, 2026-10-12 - "Home App Scope", Setting up a new node)
+// ====================================================================
+
+// NOTE: The node's answer to the first set up request ("POST /cws/devices?access=admin") - admin's PIN and the entropy the
+// node suggests, "32364 4651a055cc23e9ca17aa2582cb586c68". null for anything else - an error is said apart, by the page.
+function setup_reply( text )
+{
+   var match = String( text || "" ).trim( ).match( /^([0-9]{5})\s+([0-9a-f]{32,})$/ );
+
+   return ( match === null ) ? null : { pin: match[ 1 ], suggested: match[ 2 ] };
+}
+
+// NOTE: What is kept for the tab between the two requests, so a reload can still finish - the PIN and the node's suggestion,
+// never the words or the person's randomness (those are made again). null for anything else.
+function setup_kept( stored )
+{
+   try
+   {
+      var value = JSON.parse( stored );
+
+      if( value && /^[0-9]{5}$/.test( value.pin ) && /^[0-9a-f]{32,}$/.test( value.suggested ) )
+         return { pin: value.pin, suggested: value.suggested };
+   }
+   catch( e )
+   {
+   }
+
+   return null;
+}
+
+// NOTE: The person's randomness as hex, "length" characters - every pop's time and place (and the misses' times) with the
+// browser's own random numbers, hashed by "sha256" (hex in, hex out: "hex_sha256( )" in the page). Long enough to mix
+// with the node's suggestion by "xor_hex_data" - several hashes chained when one is too short.
+function randomness_hex( samples, browser_hex, sha256, length )
+{
+   var text = ( samples || [ ] ).map( function( sample )
+   {
+      return sample.t.toFixed( 3 ) + "," + Math.round( sample.x || 0 ) + "," + Math.round( sample.y || 0 ) + ( sample.hit ? "+" : "-" );
+   } ).join( ";" ) + "|" + String( browser_hex || "" );
+
+   var hex = "";
+
+   for( var n = 0; hex.length < length; n++ )
+      hex += sha256( n + ":" + text );
+
+   return hex.substr( 0, length );
+}
+
+// NOTE: The three words to pick from when checking word "index" - the right one and two others from the list, in an order
+// "random( )" (0 to 1) decides. Never one of the person's other words, so a slip on the paper is caught.
+function word_choices( words, index, wordlist, random )
+{
+   var right = words[ index ];
+   var choices = [ right ];
+
+   for( var tries = 0; ( choices.length < 3 ) && ( tries < 200 ); tries++ )
+   {
+      var other = wordlist[ Math.floor( random( ) * wordlist.length ) ];
+
+      if( other && ( choices.indexOf( other ) < 0 ) && ( words.indexOf( other ) < 0 ) )
+         choices.push( other );
+   }
+
+   for( var i = choices.length - 1; i > 0; i-- )
+   {
+      var j = Math.floor( random( ) * ( i + 1 ) );
+      var swap = choices[ i ];
+
+      choices[ i ] = choices[ j ];
+      choices[ j ] = swap;
+   }
+
+   return choices;
+}
+
 if( typeof module !== "undefined" )
 {
    module.exports = {
       parse_system: parse_system,
+      setup_reply: setup_reply,
+      setup_kept: setup_kept,
+      randomness_hex: randomness_hex,
+      word_choices: word_choices,
       security_text: security_text,
       warns_master_password: warns_master_password,
       arriving_screen: arriving_screen,
       locked_sign_in_text: locked_sign_in_text,
       normalise_unlock_key: normalise_unlock_key,
       c_home_keys_request: c_home_keys_request,
+      c_home_secure_request: c_home_secure_request,
+      c_home_keys_unavailable: c_home_keys_unavailable,
+      parse_secure: parse_secure,
       parse_key_count: parse_key_count,
       people_summary: people_summary,
       parse_uptime: parse_uptime,

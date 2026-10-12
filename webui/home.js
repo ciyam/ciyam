@@ -66,6 +66,7 @@ function home_main( )
    // NOTE: "Sign out" - here and in the switcher alike, every tab on the session told (2026-10-08).
    document.getElementById( "app_sign_out" ).addEventListener( "click", apps_sign_out_everywhere );
 
+   install_setup( );
    install_shell( );
    install_member_home( );
    install_admin( );
@@ -176,8 +177,10 @@ async function check_node( )
       signin_show( );
       show_view( "signin_view" );
    }
+   else if( screen === "setup" )
+      setup_open( );
    else
-      show_view( screen === "setup" ? "setup_view" : "unreachable_view" );
+      show_view( "unreachable_view" );
 }
 
 function on_signed_in( )
@@ -215,6 +218,662 @@ async function after_sign_in( )
    }
 
    enter_app( );
+}
+
+// ====================================================================
+// Setting up a new node (Damon and Ian, 2026-10-12 - "Home App Scope", Setting up a new node)
+// ====================================================================
+
+// NOTE: The node takes two requests: "access=admin" answers admin's PIN and the entropy it suggests, then the PIN with the
+// master password's hash and the entropy chosen answers admin's first device. A second first request is refused, so between
+// the two the page must finish - the password is asked before the first is sent, and the PIN and the suggestion are kept for
+// the tab ("setup_kept( )") so a reload can still finish, with new words. The words are the node's suggestion mixed with the
+// person's randomness by Ian's "xor_hex_data" - never words they type: the twelfth is a checksum, and people choose poor
+// words (Ian, 2026-10-12) - typing them is for restoring.
+const c_setup_views = [ "setup_intro", "setup_random", "setup_password", "setup_words", "setup_check", "setup_done", "setup_resume",
+ "setup_elsewhere" ];
+
+// NOTE: "Step N of 5" - the views that are steps.
+const c_setup_steps = { setup_random: 1, setup_password: 2, setup_words: 3, setup_check: 4, setup_done: 5 };
+
+const c_setup_pops = 12;
+
+const c_setup_kept_key = "ciyam.setup";
+
+// NOTE: Twelve words are 128 bits - 32 hex characters, the length the node suggests.
+const c_setup_entropy_length = 32;
+
+const c_setup_most_bubbles = 7;
+
+var g_setup = null;
+var g_bubbles = [ ];
+var g_bubble_frame = 0;
+var g_bubble_id = 0;
+var g_bubble_last = 0;
+
+function setup_fresh( )
+{
+   return { samples: [ ], pops: 0, password: "", pin: "", suggested: "", entropy: "", words: [ ], right: 0 };
+}
+
+function setup_kept_read( )
+{
+   try
+   {
+      return setup_kept( sessionStorage.getItem( c_setup_kept_key ) );
+   }
+   catch( e )
+   {
+      return null;
+   }
+}
+
+function setup_kept_write( )
+{
+   try
+   {
+      sessionStorage.setItem( c_setup_kept_key, JSON.stringify( { pin: g_setup.pin, suggested: g_setup.suggested } ) );
+   }
+   catch( e )
+   {
+   }
+}
+
+function setup_kept_forget( )
+{
+   try
+   {
+      sessionStorage.removeItem( c_setup_kept_key );
+   }
+   catch( e )
+   {
+   }
+}
+
+// NOTE: A new node - from the start, or where a reload left it.
+function setup_open( )
+{
+   clear_bubbles( );
+
+   g_setup = setup_fresh( );
+
+   setup_clear_fields( );
+
+   show_view( "setup_view" );
+
+   setup_show( setup_kept_read( ) !== null ? "setup_resume" : "setup_intro" );
+
+   // NOTE: The word list is read in now, while the person reads - it is needed for the words and for checking them.
+   recover_load_bip39( );
+}
+
+function setup_show( view )
+{
+   c_setup_views.forEach( function( name ) { document.getElementById( name ).hidden = ( name !== view ); } );
+
+   var step = c_setup_steps[ view ] || 0;
+
+   document.getElementById( "setup_progress" ).hidden = ( step === 0 );
+
+   set_text( "setup_step", step > 0 ? "Step " + step + " of 5" : "" );
+
+   document.querySelectorAll( "#setup_progress .home-setup-bars span" ).forEach( function( bar, i )
+   {
+      bar.classList.toggle( "is-done", i < step );
+   } );
+
+   if( view === "setup_random" )
+      start_bubbles( );
+   else
+      stop_bubbles( );
+
+   // NOTE: Over plain HTTP the master password is said to be for your own network only.
+   if( view === "setup_password" )
+      document.getElementById( "setup_http_warning" ).hidden = !warns_master_password( g_system.security );
+
+   var heading = document.querySelector( "#" + view + " h2" );
+
+   if( heading !== null )
+      heading.focus( { preventScroll: true } );
+}
+
+function setup_clear_fields( )
+{
+   [ "setup_password_new", "setup_password_confirm" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );
+
+   [ "setup_written", "setup_pin_written" ].forEach( function( id ) { document.getElementById( id ).checked = false; } );
+
+   [ "setup_password_error", "setup_password_status", "setup_finish_error", "setup_finish_status", "setup_pin" ]
+    .forEach( function( id ) { set_text( id, "" ); } );
+
+   [ "setup_word_list", "setup_check_rows" ].forEach( function( id ) { document.getElementById( id ).replaceChildren( ); } );
+
+   document.getElementById( "setup_strength" ).hidden = true;
+   document.getElementById( "setup_random_next" ).disabled = true;
+   document.getElementById( "setup_words_next" ).disabled = true;
+   document.getElementById( "setup_finish" ).disabled = true;
+   document.getElementById( "setup_continue" ).disabled = true;
+
+   setup_count_pops( );
+}
+
+// ---- The bubbles
+
+// NOTE: Less motion asked for - they rise slowly.
+function bubble_speed( )
+{
+   return window.matchMedia( "(prefers-reduced-motion: reduce)" ).matches ? 0.35 : 1;
+}
+
+function start_bubbles( )
+{
+   if( g_bubble_frame !== 0 )
+      return;
+
+   var field = document.getElementById( "setup_bubbles" );
+
+   if( g_bubbles.length === 0 )
+   {
+      for( var i = 0; i < 4; i++ )
+         add_bubble( field, true );
+   }
+
+   g_bubble_last = performance.now( );
+   g_bubble_frame = window.requestAnimationFrame( step_bubbles );
+}
+
+function stop_bubbles( )
+{
+   if( g_bubble_frame !== 0 )
+      window.cancelAnimationFrame( g_bubble_frame );
+
+   g_bubble_frame = 0;
+}
+
+function clear_bubbles( )
+{
+   stop_bubbles( );
+
+   g_bubbles = [ ];
+
+   document.getElementById( "setup_bubbles" ).replaceChildren( );
+}
+
+function add_bubble( field, anywhere )
+{
+   var width = field.clientWidth || 430;
+   var height = field.clientHeight || 300;
+   var size = 30 + Math.random( ) * 26;
+
+   var button = document.createElement( "button" );
+
+   button.type = "button";
+   button.className = "home-bubble";
+   button.setAttribute( "aria-label", "Pop this bubble" );
+   button.style.width = size + "px";
+   button.style.height = size + "px";
+
+   var bubble = { id: ++g_bubble_id, element: button, size: size,
+    x: 8 + Math.random( ) * Math.max( 1, width - size - 16 ),
+    y: anywhere ? 24 + Math.random( ) * Math.max( 1, height - size - 40 ) : height + 4,
+    rise: 0.9 + Math.random( ) * 1.1, sway: 5 + Math.random( ) * 16, wobble: 0.001 + Math.random( ) * 0.0012,
+    phase: Math.random( ) * 6.283, left: 0 };
+
+   button.addEventListener( "click", function( event )
+   {
+      event.stopPropagation( );
+
+      pop_bubble( bubble, event );
+   } );
+
+   field.appendChild( button );
+   g_bubbles.push( bubble );
+
+   place_bubble( bubble, performance.now( ) );
+}
+
+function place_bubble( bubble, now )
+{
+   bubble.left = bubble.x + Math.sin( now * bubble.wobble + bubble.phase ) * bubble.sway;
+
+   bubble.element.style.transform = "translate(" + bubble.left.toFixed( 1 ) + "px, " + bubble.y.toFixed( 1 ) + "px)";
+}
+
+// NOTE: Each rises at its own pace, which wanders, and sways on its own rhythm - as bubbles do. New ones come at random.
+function step_bubbles( now )
+{
+   var field = document.getElementById( "setup_bubbles" );
+   var elapsed = Math.min( 64, now - g_bubble_last );
+   var speed = bubble_speed( );
+
+   g_bubble_last = now;
+
+   g_bubbles = g_bubbles.filter( function( bubble )
+   {
+      bubble.y -= bubble.rise * 0.025 * elapsed * speed;
+      bubble.rise = Math.max( 0.6, Math.min( 2.4, bubble.rise + ( Math.random( ) - 0.5 ) * 0.02 ) );
+
+      if( bubble.y + bubble.size < -6 )
+      {
+         bubble.element.remove( );
+
+         return false;
+      }
+
+      place_bubble( bubble, now );
+
+      return true;
+   } );
+
+   var chance = ( 0.02 * speed + ( g_bubbles.length < 3 ? 0.04 : 0 ) ) * elapsed / 40;
+
+   if( ( g_setup.pops < c_setup_pops ) && ( g_bubbles.length < c_setup_most_bubbles ) && ( Math.random( ) < chance ) )
+      add_bubble( field, false );
+
+   g_bubble_frame = window.requestAnimationFrame( step_bubbles );
+}
+
+// NOTE: Where and when - a key press has no pointer, so the bubble's own place.
+function setup_sample( event, bubble )
+{
+   var box = document.getElementById( "setup_bubbles" ).getBoundingClientRect( );
+   var from_pointer = event && ( event.clientX || event.clientY );
+
+   return { t: performance.now( ), hit: !!bubble,
+    x: from_pointer ? event.clientX - box.left : ( bubble ? bubble.left + bubble.size / 2 : 0 ),
+    y: from_pointer ? event.clientY - box.top : ( bubble ? bubble.y + bubble.size / 2 : 0 ) };
+}
+
+function pop_bubble( bubble, event )
+{
+   if( g_setup.pops >= c_setup_pops )
+      return;
+
+   g_setup.samples.push( setup_sample( event, bubble ) );
+   g_setup.pops++;
+
+   var burst = document.createElement( "span" );
+
+   burst.className = "home-bubble-burst";
+   burst.setAttribute( "aria-hidden", "true" );
+   burst.style.width = bubble.size + "px";
+   burst.style.height = bubble.size + "px";
+   burst.style.transform = "translate(" + bubble.left.toFixed( 1 ) + "px, " + bubble.y.toFixed( 1 ) + "px)";
+
+   document.getElementById( "setup_bubbles" ).appendChild( burst );
+
+   window.setTimeout( function( ) { burst.remove( ); }, 450 );
+
+   bubble.element.remove( );
+
+   g_bubbles = g_bubbles.filter( function( other ) { return other !== bubble; } );
+
+   setup_count_pops( );
+}
+
+function setup_count_pops( )
+{
+   var pops = g_setup ? g_setup.pops : 0;
+
+   set_text( "setup_popped", pops + " of " + c_setup_pops + " popped" + ( pops >= c_setup_pops ? " - thank you" : "" ) );
+
+   document.getElementById( "setup_popped_bar" ).style.width = Math.round( pops / c_setup_pops * 100 ) + "%";
+   document.getElementById( "setup_random_next" ).disabled = ( pops < c_setup_pops );
+}
+
+// ---- The master password, then the words
+
+function setup_update_strength( )
+{
+   var strength = password_strength( document.getElementById( "setup_password_new" ).value );
+   var meter = document.getElementById( "setup_strength" );
+
+   meter.hidden = ( strength.level < 0 );
+   meter.dataset.level = String( strength.level );
+
+   set_text( "setup_strength_label", strength.text );
+}
+
+// NOTE: Ian's "xor_hex_data" - the node's suggestion with the person's randomness.
+function setup_mix( suggested, mine )
+{
+   ciyam_xor_hex_data_result = suggested;
+
+   var mixed = ciyam_xor_hex_data_xor_next( mine );
+
+   ciyam_xor_hex_data_result = null;
+
+   return mixed;
+}
+
+function setup_browser_hex( )
+{
+   var bytes = new Uint8Array( 32 );
+
+   window.crypto.getRandomValues( bytes );
+
+   return Array.from( bytes ).map( function( b ) { return ( b < 16 ? "0" : "" ) + b.toString( 16 ); } ).join( "" );
+}
+
+async function setup_make_words( )
+{
+   var password = document.getElementById( "setup_password_new" ).value;
+
+   set_text( "setup_password_error", "" );
+
+   if( password_strength( password ).level < 1 )
+   {
+      set_text( "setup_password_error", "The master password needs at least " + c_password_min_length + " characters." );
+
+      return;
+   }
+
+   if( password !== document.getElementById( "setup_password_confirm" ).value )
+   {
+      set_text( "setup_password_error", "The two passwords are not the same." );
+
+      return;
+   }
+
+   var button = document.getElementById( "setup_make_words" );
+
+   button.disabled = true;
+
+   try
+   {
+      if( !await recover_load_bip39( ) )
+      {
+         set_text( "setup_password_error", "The word list could not be read - reload the page to try again." );
+
+         return;
+      }
+
+      // NOTE: The node's first request - not again after a reload, which kept what it answered.
+      if( g_setup.pin === "" )
+      {
+         set_text( "setup_password_status", "Asking the node to start..." );
+
+         var reply = await request( function( done )
+         {
+            return ciyam.fetch( ciyam.get_cws_url( ) + "/devices?access=admin&format=text", "POST", done );
+         } );
+
+         set_text( "setup_password_status", "" );
+
+         var answer = setup_reply( reply );
+
+         if( answer === null )
+         {
+            if( /not valid|has expired/i.test( reply ) )
+               setup_show( "setup_elsewhere" );
+            else
+               set_text( "setup_password_error", "The node did not start setting up: " + error_text( reply ) );
+
+            return;
+         }
+
+         g_setup.pin = answer.pin;
+         g_setup.suggested = answer.suggested;
+
+         setup_kept_write( );
+      }
+
+      g_setup.password = password;
+
+      var mine = randomness_hex( g_setup.samples, setup_browser_hex( ), hex_sha256, g_setup.suggested.length );
+
+      g_setup.entropy = setup_mix( g_setup.suggested, mine ).substr( 0, c_setup_entropy_length );
+
+      g_setup.words = BIP39.entropyToMnemonic( g_setup.entropy ).split( " " );
+
+      document.getElementById( "setup_password_new" ).value = "";
+      document.getElementById( "setup_password_confirm" ).value = "";
+      document.getElementById( "setup_strength" ).hidden = true;
+
+      setup_draw_words( );
+      setup_show( "setup_words" );
+   }
+   finally
+   {
+      button.disabled = false;
+   }
+}
+
+function setup_draw_words( )
+{
+   var list = document.getElementById( "setup_word_list" );
+
+   list.replaceChildren( );
+
+   g_setup.words.forEach( function( word, i )
+   {
+      var item = document.createElement( "li" );
+      var number = document.createElement( "span" );
+      var text = document.createElement( "b" );
+
+      number.textContent = String( i + 1 );
+      text.textContent = word;
+
+      item.appendChild( number );
+      item.appendChild( text );
+      list.appendChild( item );
+   } );
+
+   set_text( "setup_words_note", "Made from your bubbles and the node's own suggestion together. The node is waiting - finish in this tab." );
+
+   document.getElementById( "setup_written" ).checked = false;
+   document.getElementById( "setup_words_next" ).disabled = true;
+}
+
+// ---- Checking them
+
+function setup_draw_check( )
+{
+   var rows = document.getElementById( "setup_check_rows" );
+   var list = recover_wordlist( );
+
+   rows.replaceChildren( );
+
+   g_setup.right = 0;
+
+   g_setup.words.forEach( function( word, i )
+   {
+      var row = document.createElement( "div" );
+      var label = document.createElement( "span" );
+      var note = document.createElement( "p" );
+
+      row.className = "home-setup-check-row";
+      label.className = "home-setup-check-label";
+      label.textContent = "Word " + ( i + 1 );
+      note.className = "home-setup-check-note";
+      note.hidden = true;
+
+      row.appendChild( label );
+
+      word_choices( g_setup.words, i, list, Math.random ).forEach( function( choice )
+      {
+         var button = document.createElement( "button" );
+
+         button.type = "button";
+         button.className = "home-setup-choice";
+         button.textContent = choice;
+
+         button.addEventListener( "click", function( ) { setup_pick( row, note, button, choice === word, i ); } );
+
+         row.appendChild( button );
+      } );
+
+      rows.appendChild( row );
+      rows.appendChild( note );
+   } );
+
+   setup_count_right( );
+}
+
+function setup_pick( row, note, button, is_right, index )
+{
+   row.querySelectorAll( ".home-setup-choice" ).forEach( function( other ) { other.classList.remove( "is-wrong" ); } );
+
+   if( is_right )
+   {
+      button.classList.add( "is-right" );
+
+      row.querySelectorAll( ".home-setup-choice" ).forEach( function( other ) { other.disabled = true; } );
+
+      note.hidden = true;
+
+      g_setup.right++;
+
+      setup_count_right( );
+   }
+   else
+   {
+      button.classList.add( "is-wrong" );
+
+      note.textContent = "Not that one - look at word " + ( index + 1 ) + " on your paper again.";
+      note.hidden = false;
+   }
+}
+
+function setup_count_right( )
+{
+   var right = g_setup.right;
+
+   set_text( "setup_check_count", right + " of " + c_setup_pops + " right" );
+
+   document.getElementById( "setup_check_bar" ).style.width = Math.round( right / c_setup_pops * 100 ) + "%";
+   document.getElementById( "setup_finish" ).disabled = ( right < g_setup.words.length );
+}
+
+// ---- Finishing - the node's second request, then signed in as admin
+
+async function setup_finish( )
+{
+   var button = document.getElementById( "setup_finish" );
+
+   button.disabled = true;
+
+   set_text( "setup_finish_error", "" );
+   set_text( "setup_finish_status", "Setting the node up..." );
+
+   var credentials = CIYAM.encode_base64_url( "admin:" + ciyam.hash_combined( g_setup.password, g_setup.pin ) );
+
+   var device = await request( function( done )
+   {
+      return ciyam.fetch( ciyam.get_cws_url( ) + "/devices?access=" + g_setup.pin + "&format=text&passwd=" + credentials
+       + "&request=" + g_setup.entropy, "POST", done );
+   } );
+
+   device = String( device ).trim( );
+
+   if( is_error_response( device ) || !/^[0-9a-f]{8,}$/.test( device ) )
+   {
+      set_text( "setup_finish_status", "" );
+      set_text( "setup_finish_error", "The node was not set up: " + error_text( device ) );
+
+      button.disabled = false;
+
+      return;
+   }
+
+   setup_kept_forget( );
+
+   // NOTE: The pills say so - the node is ready now.
+   await read_system( );
+
+   set_text( "setup_finish_status", "Set up - signing in as admin..." );
+
+   ciyam.error = "";
+   ciyam.device = device;
+
+   await request( function( done )
+   {
+      return ciyam.connect( g_setup.pin, device, "", g_setup.password, done );
+   } );
+
+   set_text( "setup_finish_status", "" );
+
+   if( ( ciyam.error === "" ) && ( ciyam.sessid !== "" ) )
+   {
+      signin_remember_device( );
+      signin_keep_session( );
+   }
+
+   set_text( "setup_pin", g_setup.pin );
+
+   // NOTE: The words, the entropy and the password go - only the PIN is shown, once.
+   g_setup.words = [ ];
+   g_setup.entropy = "";
+   g_setup.password = "";
+   g_setup.samples = [ ];
+
+   document.getElementById( "setup_word_list" ).replaceChildren( );
+   document.getElementById( "setup_check_rows" ).replaceChildren( );
+   setup_show( "setup_done" );
+
+   if( ciyam.sessid === "" )
+      set_text( "setup_finish_error", "The node is set up, but signing in failed - sign in with admin's PIN and the master password." );
+}
+
+function install_setup( )
+{
+   document.getElementById( "setup_start" ).addEventListener( "click", function( ) { setup_show( "setup_random" ); } );
+
+   document.getElementById( "setup_resume_go" ).addEventListener( "click", function( )
+   {
+      var kept = setup_kept_read( );
+
+      if( kept !== null )
+      {
+         g_setup.pin = kept.pin;
+         g_setup.suggested = kept.suggested;
+      }
+
+      setup_show( "setup_random" );
+   } );
+
+   // NOTE: A tap that misses still adds its moment - only a pop counts.
+   document.getElementById( "setup_bubbles" ).addEventListener( "pointerdown", function( event )
+   {
+      if( ( event.target.id === "setup_bubbles" ) && g_setup && ( g_setup.pops < c_setup_pops ) )
+         g_setup.samples.push( setup_sample( event, null ) );
+   } );
+
+   document.getElementById( "setup_random_next" ).addEventListener( "click", function( ) { setup_show( "setup_password" ); } );
+
+   document.getElementById( "setup_password_new" ).addEventListener( "input", setup_update_strength );
+
+   document.getElementById( "setup_password_back" ).addEventListener( "click", function( ) { setup_show( "setup_random" ); } );
+
+   document.getElementById( "setup_make_words" ).addEventListener( "click", setup_make_words );
+
+   document.getElementById( "setup_written" ).addEventListener( "change", function( event )
+   {
+      document.getElementById( "setup_words_next" ).disabled = !event.target.checked;
+   } );
+
+   document.getElementById( "setup_words_next" ).addEventListener( "click", function( )
+   {
+      setup_draw_check( );
+      setup_show( "setup_check" );
+   } );
+
+   document.getElementById( "setup_check_back" ).addEventListener( "click", function( ) { setup_show( "setup_words" ); } );
+   document.getElementById( "setup_finish" ).addEventListener( "click", setup_finish );
+
+   document.getElementById( "setup_pin_written" ).addEventListener( "change", function( event )
+   {
+      document.getElementById( "setup_continue" ).disabled = !event.target.checked;
+   } );
+
+   document.getElementById( "setup_continue" ).addEventListener( "click", function( )
+   {
+      set_text( "setup_pin", "" );
+
+      after_sign_in( );
+   } );
+
+   g_setup = setup_fresh( );
 }
 
 // NOTE: "employ_unlock_key( )" takes an unlock key - or, the server finding no key's shape, the master
@@ -1163,6 +1822,32 @@ async function read_key_count( )
    return is_error_response( response ) ? null : parse_key_count( response );
 }
 
+// NOTE: Whether the node's identity is held encrypted - without it, no unlock keys (Ian, 2026-10-12).
+async function read_secure( )
+{
+   var url = admin_url( "" ) + "&request=" + encodeURIComponent( c_home_secure_request );
+
+   var response = await request( function( done )
+   {
+      return ciyam.fetch( url, "GET", done );
+   } );
+
+   return is_error_response( response ) ? null : parse_secure( response );
+}
+
+// NOTE: On a node without a secure identity the keys are not offered - the Overview's card and Unlock keys say why.
+function show_keys_available( secure )
+{
+   var none = ( secure === false );
+
+   set_text( "overview_keys_heading", none ? "No unlock keys on this node" : "Keep a few unlock keys" );
+
+   document.getElementById( "overview_keys_card" ).classList.toggle( "home-card--warn", !none );
+   document.getElementById( "keys_icon" ).classList.toggle( "is-warn", !none );
+   document.getElementById( "overview_make_key" ).hidden = none;
+   document.getElementById( "key_make" ).hidden = none;
+}
+
 // NOTE: A log's last "count" lines - every line for none. The node gives ten unless asked (Ian, "3d6a5820"), so
 // Home always says how many it wants.
 async function read_log( name, count )
@@ -1215,6 +1900,7 @@ async function load_overview( )
 
    document.getElementById( "connection_icon" ).classList.toggle( "is-warn", g_system.security === "none" );
 
+   var secure = await read_secure( );
    var key_count = await read_key_count( );
 
    var users = await request( function( done ) { return ciyam.fetch_users( done ); } );
@@ -1222,7 +1908,9 @@ async function load_overview( )
    if( ciyam.access !== asked_for )
       return;
 
-   set_text( "overview_keys_note", keys_note( key_count ) );
+   set_text( "overview_keys_note", ( secure === false ) ? c_home_keys_unavailable : keys_note( key_count ) );
+
+   show_keys_available( secure );
 
    if( !is_error_response( users ) )
    {
@@ -1341,7 +2029,11 @@ function show_filling( rooms )
 
 async function show_keys( )
 {
-   set_text( "keys_note", keys_note( await read_key_count( ) ) );
+   var secure = await read_secure( );
+
+   set_text( "keys_note", ( secure === false ) ? c_home_keys_unavailable : keys_note( await read_key_count( ) ) );
+
+   show_keys_available( secure );
 }
 
 async function do_make_key( )

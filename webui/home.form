@@ -40,29 +40,164 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </div>
 
+<!-- NOTE: Setting up a new node from here (Damon and Ian, 2026-10-12 - "Home App Scope", Setting up a new node). One card,
+     a view at a time: before you start, the person's randomness (bubbles - never their own words: Ian, 2026-10-12, the
+     twelfth word is a checksum and people choose poor words; typing words is for restoring), the master password,
+     the twelve words, checking them, done - and, when something goes wrong, carrying on after a reload or a node already
+     being set up. Nothing is sent before the words; between the node's two set up requests the page must finish. -->
 <div class="chat-signin" id="setup_view" hidden>
-   <div class="chat-signin-form">
+   <div class="chat-signin-form home-setup">
       <div class="chat-brand">
          <span class="chat-logo"></span>
          <span class="chat-wordmark">CIYAM</span>
          <span class="chat-brand-note">home</span>
       </div>
 
-      <h2 tabindex="-1">This node needs setting up</h2>
-      <p class="chat-signin-lede">It has no identity yet, so nobody can sign in. Setting it up gives it:</p>
-
-      <ul class="home-list">
-         <li>twelve words that can restore it - written down and kept safe</li>
-         <li>a master password, for unlocking it after a restart</li>
-         <li>admin's PIN, to sign in and add people</li>
-      </ul>
-
-      <p class="home-note">For now this is done on the node itself, from its terminal - see "docs/system_identity.md".
-       Setting up from here is planned.</p>
-
-      <div class="chat-signin-actions">
-         <button type="button" class="chat-btn" id="setup_retry">Check again</button>
+      <div class="home-setup-progress" id="setup_progress" hidden>
+         <span class="home-note" id="setup_step"></span>
+         <span class="home-setup-bars" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+         </span>
       </div>
+
+      <section id="setup_intro">
+         <h2 tabindex="-1">Set up this node</h2>
+         <p class="chat-signin-lede">It has no identity yet, so nobody can sign in. Setting it up takes a few minutes and gives it:</p>
+         <ol class="home-setup-gives">
+            <li><b>Twelve words</b> that can always restore it - written down on paper and kept safe</li>
+            <li><b>A master password</b> - admin's password, and what unlocks the node after a restart</li>
+            <li><b>Admin's PIN</b>, to sign in and add the people who use it</li>
+         </ol>
+         <div class="recover-warning"><b>Before it's on the internet.</b> Whoever sets a node up first owns it. Do this while
+          only you can reach it - on your own network, before it's connected to the internet.</div>
+         <p class="recover-note"><b>Finish in this tab.</b> Have paper and a pen ready. Once the words are made, the node waits
+          for this page to finish.</p>
+         <div class="chat-signin-actions">
+            <button type="button" class="chat-btn chat-btn--primary" id="setup_start">Start setting up</button>
+         </div>
+      </section>
+
+      <section id="setup_random" hidden>
+         <h2 tabindex="-1">Add your own randomness</h2>
+         <p class="chat-signin-lede">Pop twelve bubbles as they rise. Exactly when and where you catch each one is mixed with
+          the node's own suggestion, so neither alone decides your twelve words.</p>
+         <div class="home-bubbles" id="setup_bubbles" role="group" aria-label="Bubbles to pop"></div>
+         <div class="home-setup-count">
+            <span id="setup_popped">0 of 12 popped</span>
+            <span>The browser adds its own randomness too</span>
+         </div>
+         <div class="home-setup-meter" aria-hidden="true"><span id="setup_popped_bar"></span></div>
+         <div class="home-setup-actions">
+            <span></span>
+            <button type="button" class="chat-btn chat-btn--primary" id="setup_random_next" disabled>Next</button>
+         </div>
+      </section>
+
+
+      <section id="setup_password" hidden>
+         <h2 tabindex="-1">Choose the master password</h2>
+         <p class="chat-signin-lede">It's admin's password, and it unlocks the node after a restart. Make it long - a few
+          unrelated words is easy to remember and hard to guess.</p>
+         <label class="chat-label" for="setup_password_new">Master password</label>
+         <input type="password" class="chat-field" id="setup_password_new" autocomplete="new-password">
+         <div class="chat-strength" id="setup_strength" hidden>
+            <div class="chat-strength-track"><div class="chat-strength-bar"></div></div>
+            <span class="chat-strength-label" id="setup_strength_label"></span>
+         </div>
+         <label class="chat-label" for="setup_password_confirm">Type it again</label>
+         <input type="password" class="chat-field" id="setup_password_confirm" autocomplete="new-password">
+         <div class="recover-warning" id="setup_http_warning" hidden><b>Over plain HTTP.</b> The connection isn't encrypted. The
+          password is hashed in this browser before it's sent, but use your own network only.</div>
+         <p class="recover-note" id="setup_password_note">Next, the node makes your words - from here, finish in this tab.
+          Nothing has been sent to the node yet.</p>
+         <div class="chat-error-text signin-error" id="setup_password_error" role="alert"></div>
+         <div class="recover-status" id="setup_password_status" role="status"></div>
+         <div class="home-setup-actions">
+            <button type="button" class="home-link-button" id="setup_password_back">&larr; Back</button>
+            <button type="button" class="chat-btn chat-btn--primary" id="setup_make_words">Make my twelve words</button>
+         </div>
+      </section>
+
+      <section id="setup_words" hidden>
+         <h2 tabindex="-1">Write down your twelve words</h2>
+         <p class="chat-signin-lede">On paper, in order. They can restore the node if everything else is lost - and anyone who
+          has them can take it over.</p>
+         <ol class="home-setup-words" id="setup_word_list"></ol>
+         <div class="recover-warning"><b>Shown only now.</b> Not a screenshot, not a file on this computer, not a photo. The node
+          never shows them again, and this page forgets them once the node is set up.</div>
+         <p class="recover-note" id="setup_words_note"></p>
+         <label class="home-setup-tick">
+            <input type="checkbox" id="setup_written">
+            <span>I've written all twelve down, in order</span>
+         </label>
+         <div class="home-setup-actions">
+            <span></span>
+            <button type="button" class="chat-btn chat-btn--primary" id="setup_words_next" disabled>Check them</button>
+         </div>
+      </section>
+
+      <section id="setup_check" hidden>
+         <h2 tabindex="-1">Check what you wrote</h2>
+         <p class="chat-signin-lede">From your paper, not from memory: for each word, pick the one you wrote. The words are
+          hidden now.</p>
+         <div class="home-setup-check" id="setup_check_rows"></div>
+         <div class="home-setup-count">
+            <span id="setup_check_count">0 of 12 right</span>
+            <span>All twelve, then the node is set up</span>
+         </div>
+         <div class="home-setup-meter is-good" aria-hidden="true"><span id="setup_check_bar"></span></div>
+         <div class="chat-error-text signin-error" id="setup_finish_error" role="alert"></div>
+         <div class="recover-status" id="setup_finish_status" role="status"></div>
+         <div class="home-setup-actions">
+            <button type="button" class="home-link-button" id="setup_check_back">&larr; See the words again</button>
+            <button type="button" class="chat-btn chat-btn--primary" id="setup_finish" disabled>Finish setting up</button>
+         </div>
+      </section>
+
+      <section id="setup_done" hidden>
+         <span class="home-setup-done" aria-hidden="true">&#10003;</span>
+         <h2 tabindex="-1">Your node is set up</h2>
+         <p class="chat-signin-lede">You're signed in as admin. One more thing to write down - admin's PIN. It's shown only now;
+          you sign in with it and the master password.</p>
+         <div class="home-setup-pin">
+            <span class="chat-label">Admin's PIN</span>
+            <span class="recover-mono" id="setup_pin"></span>
+         </div>
+         <p class="recover-note"><b>Next, in Home:</b> make an unlock key or two, so a restart doesn't need the master password -
+          then add the people who'll use the node.</p>
+         <label class="home-setup-tick">
+            <input type="checkbox" id="setup_pin_written">
+            <span>I've written admin's PIN down</span>
+         </label>
+         <div class="home-setup-actions">
+            <span></span>
+            <button type="button" class="chat-btn chat-btn--primary" id="setup_continue" disabled>Continue to Home</button>
+         </div>
+      </section>
+
+      <section id="setup_resume" hidden>
+         <h2 tabindex="-1">Carry on setting up</h2>
+         <p class="chat-signin-lede">This tab was reloaded after the node started making your words, so it's waiting to be
+          finished. For safety the words weren't kept - you'll get new ones.</p>
+         <div class="recover-warning"><b>Wrote some words down already?</b> Cross them out - they won't be the node's. Only the
+          twelve you check at the end count.</div>
+         <div class="chat-signin-actions">
+            <button type="button" class="chat-btn chat-btn--primary" id="setup_resume_go">Carry on</button>
+         </div>
+      </section>
+
+      <section id="setup_elsewhere" hidden>
+         <h2 tabindex="-1">This node is already being set up</h2>
+         <p class="chat-signin-lede">Someone has started setting it up - in another tab or browser, or on another device - and
+          only they can finish it.</p>
+         <div class="chat-error-text signin-error"><b>If it wasn't you,</b> someone else can reach this node. Disconnect it from
+          the network now, and set it up again from its terminal.</div>
+         <p class="recover-note">If it was you, go back to that tab and finish there. A closed tab can't be picked up again - the
+          node then needs setting up from its terminal.</p>
+         <div class="chat-signin-actions">
+            <button type="button" class="chat-btn" id="setup_retry">Check again</button>
+         </div>
+      </section>
    </div>
 </div>
 
@@ -280,10 +415,10 @@ http://www.opensource.org/licenses/mit-license.php.
                   </span>
                </section>
 
-               <section class="home-card home-card--row home-card--warn" aria-label="Unlock keys">
+               <section class="home-card home-card--row home-card--warn" id="overview_keys_card" aria-label="Unlock keys">
                   <span class="home-tile-icon is-warn" id="keys_icon"></span>
                   <span class="home-card-body">
-                     <h2>Keep a few unlock keys</h2>
+                     <h2 id="overview_keys_heading">Keep a few unlock keys</h2>
                      <span class="home-note home-empty" id="overview_keys_note"></span>
                   </span>
                   <a href="#keys" class="chat-btn chat-btn--primary home-card-action" id="overview_make_key">Make a key</a>

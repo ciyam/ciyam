@@ -81,6 +81,11 @@ ok   people - all claimed
 ok   people waiting - one
 ok   people waiting - two
 ok   people waiting - none
+ok   secure - asked of the node
+ok   secure - '1' is held encrypted
+ok   secure - nothing is not - a development or demo node
+ok   secure - no answer, or anything else, is not known
+ok   secure - not, said plainly
 ok   keys - none left
 ok   keys - one left
 ok   keys - three left
@@ -155,5 +160,21 @@ ok   none
 ok   more - three
 ok   more - one
 ok   more - none
+
+== setting up a new node =======================================
+ok   the first request's answer - admin's PIN and the node's suggestion
+ok   a second first request - refused, not an answer
+ok   nothing - not an answer
+ok   kept for the tab - read back
+ok   kept for the tab - and nothing else from it
+ok   kept for the tab - anything else is nothing
+ok   the person's randomness - hex, as long as asked
+ok   - the same pops and browser numbers, the same
+ok   - a pop a millisecond later, different
+ok   - other browser numbers, different
+ok   - longer than one hash when asked
+ok   checking a word - three choices, the right one among them
+ok   - the others are not the person's other words
+ok   - no word twice
 
 All checks passed.
