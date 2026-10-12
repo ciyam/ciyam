@@ -258,6 +258,7 @@ enum special_var
    e_special_var_peer_is_dependent,
    e_special_var_preparing_restore,
    e_special_var_trace_session_ids,
+   e_special_var_web_admin_ip_addr,
    e_special_var_web_session_check,
    e_special_var_attached_file_path,
    e_special_var_check_script_error,
