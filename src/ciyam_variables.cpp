@@ -241,6 +241,7 @@ constexpr const char* c_special_variable_sub_directory = "@sub_directory";
 constexpr const char* c_special_variable_trace_filters = "@trace_filters";
 constexpr const char* c_special_variable_update_fields = "@update_fields";
 constexpr const char* c_special_variable_utm_init_base = "@utm_init_base";
+constexpr const char* c_special_variable_utm_web_reset = "@utm_web_reset";
 constexpr const char* c_special_variable_cmd_delay_wait = "@cmd_delay_wait";
 constexpr const char* c_special_variable_force_internal = "@force_internal";
 constexpr const char* c_special_variable_log_files_path = "@log_files_path";
@@ -632,6 +633,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_trace_filters );
       g_special_variable_names.push_back( c_special_variable_update_fields );
       g_special_variable_names.push_back( c_special_variable_utm_init_base );
+      g_special_variable_names.push_back( c_special_variable_utm_web_reset );
       g_special_variable_names.push_back( c_special_variable_cmd_delay_wait );
       g_special_variable_names.push_back( c_special_variable_force_internal );
       g_special_variable_names.push_back( c_special_variable_log_files_path );

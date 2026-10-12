@@ -191,6 +191,7 @@ enum special_var
    e_special_var_trace_filters,
    e_special_var_update_fields,
    e_special_var_utm_init_base,
+   e_special_var_utm_web_reset,
    e_special_var_cmd_delay_wait,
    e_special_var_force_internal,
    e_special_var_log_files_path,
