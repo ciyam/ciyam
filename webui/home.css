@@ -1201,6 +1201,15 @@
    gap: 8px;
 }
 
+/* NOTE: Beside a primary button, the others stand as tall - "Copy" and "I've stored it", "Copy topic" and "Send a test
+   alert" (Damon, 2026-10-13). */
+.home-card-actions:has( .chat-btn--primary ) .chat-btn
+{
+   height: 44px;
+   padding: 0 20px;
+   font-size: var(--font-size-chat-body);
+}
+
 .home-link
 {
    font-size: 13px;
