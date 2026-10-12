@@ -176,6 +176,8 @@ ok   the node's kind
 ok   a flag - '1' or nothing
 
 == setting up a new node =======================================
+ok   refused - the PIN held by another's setup, or gone
+ok   the second refused - its PIN gone
 ok   the first request's answer - admin's PIN and the node's suggestion
 ok   a second first request - refused, not an answer
 ok   nothing - not an answer

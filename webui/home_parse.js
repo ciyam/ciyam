@@ -714,6 +714,21 @@ function health_heading( issues )
 // Setting up a new node (Damon and Ian, 2026-10-12 - "Home App Scope", Setting up a new node)
 // ====================================================================
 
+// NOTE: The node refusing the first set up request - "This web session is not valid (or has expired)." - while someone
+// else's setup holds admin's PIN.
+function setup_refused( text )
+{
+   return /not valid|has expired/i.test( String( text || "" ) );
+}
+
+// NOTE: The node refusing the second, its PIN gone - it waits five minutes from its last word with the tab that has it (Ian,
+// 2026-10-12). Then it answers "System is currently locked for administration." - as it also does, for a moment, while
+// another admin command runs, so the page asks again before believing it.
+function setup_pin_gone( text )
+{
+   return setup_refused( text ) || /locked for administration/i.test( String( text || "" ) );
+}
+
 // NOTE: The node's answer to the first set up request ("POST /cws/devices?access=admin") - admin's PIN and the entropy the
 // node suggests, "32364 4651a055cc23e9ca17aa2582cb586c68". null for anything else - an error is said apart, by the page.
 function setup_reply( text )
@@ -791,6 +806,8 @@ if( typeof module !== "undefined" )
    module.exports = {
       parse_system: parse_system,
       setup_reply: setup_reply,
+      setup_refused: setup_refused,
+      setup_pin_gone: setup_pin_gone,
       c_home_devt_request: c_home_devt_request,
       c_home_demo_request: c_home_demo_request,
       parse_flag: parse_flag,

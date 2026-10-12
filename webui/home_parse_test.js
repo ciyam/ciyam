@@ -353,6 +353,11 @@ check( "a flag - '1' or nothing", [ hp.parse_flag( "1" ), hp.parse_flag( "" ), h
 heading( "setting up a new node" );
 
 // NOTE: Real answers from a node left new (2026-10-12) - the first request's, then a second first request's.
+check( "refused - the PIN held by another's setup, or gone", [ hp.setup_refused( "Error: This web session is not valid (or has expired)." ),
+ hp.setup_refused( "Error: Invalid device identity 'x'." ), hp.setup_refused( "0123abcd" ), hp.setup_refused( null ) ], [ true, false, false, false ] );
+check( "the second refused - its PIN gone", [ hp.setup_pin_gone( "Error: System is currently locked for administration." ),
+ hp.setup_pin_gone( "Error: This web session is not valid (or has expired)." ), hp.setup_pin_gone( "Error: Invalid device identity 'x'." ) ],
+ [ true, true, false ] );
 check( "the first request's answer - admin's PIN and the node's suggestion", hp.setup_reply( "32364 4651a055cc23e9ca17aa2582cb586c68\n" ),
  { pin: "32364", suggested: "4651a055cc23e9ca17aa2582cb586c68" } );
 check( "a second first request - refused, not an answer", hp.setup_reply( "Error: This web session is not valid (or has expired)." ), null );

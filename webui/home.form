@@ -192,10 +192,23 @@ http://www.opensource.org/licenses/mit-license.php.
           only they can finish it.</p>
          <div class="chat-error-text signin-error"><b>If it wasn't you,</b> someone else can reach this node. Disconnect it from
           the network now, and set it up again from its terminal.</div>
-         <p class="recover-note">If it was you, go back to that tab and finish there. A closed tab can't be picked up again - the
-          node then needs setting up from its terminal.</p>
+         <p class="recover-note">If it was you, go back to that tab and finish there. If that tab was closed, the node stops waiting
+          for it five minutes after it last heard from it - then <b>Check again</b> starts afresh.</p>
          <div class="chat-signin-actions">
             <button type="button" class="chat-btn" id="setup_retry">Check again</button>
+         </div>
+      </section>
+
+      <!-- NOTE: The node waits five minutes from its last word with this tab (Ian, 2026-10-12), and the tab keeps it waiting
+           while it is open - so this is a tab that slept, or was set aside, for longer. -->
+      <section id="setup_expired" hidden>
+         <h2 tabindex="-1">The node stopped waiting</h2>
+         <p class="chat-signin-lede">It waits five minutes at a time, and this tab was away longer - asleep, or set aside - so it
+          let this setup go.</p>
+         <div class="recover-warning"><b>Cross out the words you wrote down</b> - they won't be the node's. Starting again gives
+          you new ones.</div>
+         <div class="chat-signin-actions">
+            <button type="button" class="chat-btn chat-btn--primary" id="setup_again">Start again</button>
          </div>
       </section>
    </div>

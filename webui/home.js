@@ -231,7 +231,7 @@ async function after_sign_in( )
 // person's randomness by Ian's "xor_hex_data" - never words they type: the twelfth is a checksum, and people choose poor
 // words (Ian, 2026-10-12) - typing them is for restoring.
 const c_setup_views = [ "setup_intro", "setup_random", "setup_password", "setup_words", "setup_check", "setup_done", "setup_resume",
- "setup_elsewhere" ];
+ "setup_elsewhere", "setup_expired" ];
 
 // NOTE: "Step N of 5" - the views that are steps.
 const c_setup_steps = { setup_random: 1, setup_password: 2, setup_words: 3, setup_check: 4, setup_done: 5 };
@@ -246,6 +246,14 @@ const c_setup_entropy_length = 32;
 const c_setup_most_bubbles = 7;
 
 var g_setup = null;
+
+// NOTE: The node waits five minutes from its last word with this tab, then lets admin's PIN go so setting up can start
+// over ("@utm_web_reset", Ian, 2026-10-12). "/ip-addr?token=<PIN>", from the address the PIN was given to, gives it another
+// five ("2a99baee") - sent when the PIN comes, at each step, every minute and on coming back to the tab, so an open tab
+// never runs out. It answers this browser's address either way: whether it was in time is known only at the end.
+const c_setup_alive_ms = 60 * 1000;
+
+var g_setup_alive_timer = null;
 var g_bubbles = [ ];
 var g_bubble_frame = 0;
 var g_bubble_id = 0;
@@ -290,9 +298,36 @@ function setup_kept_forget( )
    }
 }
 
+async function setup_keep_alive( )
+{
+   if( ( g_setup === null ) || ( g_setup.pin === "" ) )
+      return;
+
+   await fetch_text( "/ip-addr?token=" + encodeURIComponent( g_setup.pin ) );
+}
+
+function setup_alive_start( )
+{
+   setup_alive_stop( );
+
+   setup_keep_alive( );
+
+   g_setup_alive_timer = window.setInterval( setup_keep_alive, c_setup_alive_ms );
+}
+
+function setup_alive_stop( )
+{
+   if( g_setup_alive_timer !== null )
+      window.clearInterval( g_setup_alive_timer );
+
+   g_setup_alive_timer = null;
+}
+
 // NOTE: A new node - from the start, or where a reload left it.
 function setup_open( )
 {
+   setup_alive_stop( );
+
    clear_bubbles( );
 
    g_setup = setup_fresh( );
@@ -326,6 +361,12 @@ function setup_show( view )
       start_bubbles( );
    else
       stop_bubbles( );
+
+   // NOTE: Each step tells the node this tab is still here; done, or let go, it stops.
+   if( ( view === "setup_done" ) || ( view === "setup_expired" ) || ( view === "setup_elsewhere" ) )
+      setup_alive_stop( );
+   else
+      setup_keep_alive( );
 
    // NOTE: Over plain HTTP the master password is said to be for your own network only.
    if( view === "setup_password" )
@@ -604,7 +645,7 @@ async function setup_make_words( )
 
          if( answer === null )
          {
-            if( /not valid|has expired/i.test( reply ) )
+            if( setup_refused( reply ) )
                setup_show( "setup_elsewhere" );
             else
                set_text( "setup_password_error", "The node did not start setting up: " + error_text( reply ) );
@@ -616,6 +657,8 @@ async function setup_make_words( )
          g_setup.suggested = answer.suggested;
 
          setup_kept_write( );
+
+         setup_alive_start( );
       }
 
       g_setup.password = password;
@@ -758,23 +801,44 @@ async function setup_finish( )
 
    var credentials = CIYAM.encode_base64_url( "admin:" + ciyam.hash_combined( g_setup.password, g_setup.pin ) );
 
-   var device = await request( function( done )
+   var send = async function( )
    {
-      return ciyam.fetch( ciyam.get_cws_url( ) + "/devices?access=" + g_setup.pin + "&format=text&passwd=" + credentials
-       + "&request=" + g_setup.entropy, "POST", done );
-   } );
+      return String( await request( function( done )
+      {
+         return ciyam.fetch( ciyam.get_cws_url( ) + "/devices?access=" + g_setup.pin + "&format=text&passwd=" + credentials
+          + "&request=" + g_setup.entropy, "POST", done );
+      } ) ).trim( );
+   };
 
-   device = String( device ).trim( );
+   var device = await send( );
+
+   // NOTE: Refused as if the PIN had gone - asked once more, as the same words also mean the node was busy for a moment.
+   if( setup_pin_gone( device ) )
+   {
+      await new Promise( function( resolve ) { window.setTimeout( resolve, 2000 ); } );
+
+      device = await send( );
+   }
 
    if( is_error_response( device ) || !/^[0-9a-f]{8,}$/.test( device ) )
    {
       set_text( "setup_finish_status", "" );
-      set_text( "setup_finish_error", "The node was not set up: " + error_text( device ) );
 
       button.disabled = false;
 
+      // NOTE: The PIN went while this tab was away - the node is new again, and the words are no good.
+      if( setup_pin_gone( device ) )
+      {
+         setup_kept_forget( );
+         setup_show( "setup_expired" );
+      }
+      else
+         set_text( "setup_finish_error", "The node was not set up: " + error_text( device ) );
+
       return;
    }
+
+   setup_alive_stop( );
 
    setup_kept_forget( );
 
@@ -827,6 +891,8 @@ function install_setup( )
       {
          g_setup.pin = kept.pin;
          g_setup.suggested = kept.suggested;
+
+         setup_alive_start( );
       }
 
       setup_show( "setup_random" );
@@ -860,6 +926,20 @@ function install_setup( )
 
    document.getElementById( "setup_check_back" ).addEventListener( "click", function( ) { setup_show( "setup_words" ); } );
    document.getElementById( "setup_finish" ).addEventListener( "click", setup_finish );
+
+   document.getElementById( "setup_again" ).addEventListener( "click", function( )
+   {
+      setup_kept_forget( );
+
+      check_node( );
+   } );
+
+   // NOTE: Back to a tab that was set aside - the timer may have been held back meanwhile.
+   document.addEventListener( "visibilitychange", function( )
+   {
+      if( !document.hidden && ( g_setup_alive_timer !== null ) )
+         setup_keep_alive( );
+   } );
 
    document.getElementById( "setup_pin_written" ).addEventListener( "change", function( event )
    {
