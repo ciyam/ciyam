@@ -6226,7 +6226,12 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          g_locked_identity = false;
 
-         set_system_variable( e_special_var_sid_secure, c_true_value, true );
+         set_system_variable( e_special_var_utm_web_reset, "" );
+
+         if( was_self_encrypted )
+            set_system_variable( e_special_var_sid_secure, "", true );
+         else
+            set_system_variable( e_special_var_sid_secure, c_true_value, true );
 
          if( get_system_variable( e_special_var_blockchain_backup_identity ).empty( ) )
             run_init_script = true;
@@ -6260,6 +6265,10 @@ void set_external_identity( const string& info, const string& info_check )
 
    if( info_check.length( ) )
       write_file( c_ciyam_server_sid_chk_file, info_check );
+
+   set_system_variable( e_special_var_utm_web_reset, "" );
+
+   set_system_variable( e_special_var_sid_secure, c_true_value, true );
 }
 
 bool unlock_create_allowed( )
