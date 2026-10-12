@@ -1,0 +1,73 @@
+#!/bin/bash
+# Copyright (c) 2026 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [  $# -lt 1 ]; then
+ echo "Usage: ciyam_node [cmd_and_args|@<cmds_list_file>] [[host]] [[name]|[PIN] [password]]"
+ echo -e "\n(store creds) ciyam_node credentials [host] [[name@]PIN] [password]"
+ echo -e "(check rooms) ciyam_node \"messages review 0000000\" [host] [[name]|[PIN] [password]]"
+else
+ cmd_and_args=$1
+
+ host_name=$2
+ user_access=$3
+ user_passwd=$4
+
+ user_name=${user_access%@*}
+ user_access=${user_access##*@}
+
+ if [ "$user_name" = "$user_access" ]; then
+   user_name=
+ fi
+
+ if [ ! "$user_name" = "" ]; then
+   user_name=_$user_name
+ fi
+
+ if [ ! "$user_access" = "" ] && [[ ! $user_access =~ ^[0-9]+$ ]]; then
+   user_name=_$user_access
+   user_access=
+ fi
+
+ credentials=
+ save_credentials=
+ credentials_file=.ciyam_credentials$user_name
+
+ webui_prefix=.
+
+ if [ -f ../webui/ciyam.js ]; then
+  webui_prefix=../webui
+ fi
+
+ if [ ! "$host_name" = "" ]; then
+  credentials_file=$credentials_file@${host_name##*://}
+ fi
+
+ if [ "$cmd_and_args" = "creds" ] || [ "$cmd_and_args" = "credentials" ]; then
+  save_credentials=1
+ fi
+
+ if [ ! "$user_access" = "" ] && [ ! "$user_passwd" = "" ]; then
+  credentials=$(env CIYAM_NODE_COMMAND=credentials node $webui_prefix/ciyam.js -test "$host_name" "$user_access" "" "" "$user_passwd")
+ elif [ -f $credentials_file ]; then
+  credentials=$(<$credentials_file)
+ fi
+
+ if [ "$credentials" = "" ]; then
+  echo "Error: User credentials need to be provided."
+ else
+  if [ ! "${#credentials}" = "86"  ]; then
+   echo "Error: Invalid user credentials were provided (or server not available)."
+  else
+   if [ "$save_credentials" = "1" ]; then
+    echo "(saving to '$credentials_file')"
+    echo "$credentials" > $credentials_file
+   else
+    env CIYAM_NODE_COMMAND="$cmd_and_args" node $webui_prefix/ciyam.js -test "$host_name" $credentials
+   fi
+  fi
+ fi
+
+fi
