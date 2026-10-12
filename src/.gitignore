@@ -37,6 +37,9 @@ html
 .web_extend_admin
 .web_extern_admin
 
+# Ignore all saved credential files.
+.ciyam_credentials*
+
 # Ignore all .old, .sav and .tmp files.
 *.old
 *.sav
