@@ -88,7 +88,11 @@ IRC_VARS_FILE=@files:$IRC_VARS_DIR:$IRC_VARS_FILE_NAME
 ;
 PREFIX=$$C$SP
 ;
+.utils_entropy -x=15 30
+RANDOM_CHARACTERS=$OUTPUT
+;
 >$IRC_VARS_DIR/$IRC_VARS_FILE_NAME
+#;$RANDOM_CHARACTERS
 #C=system_variable
 ;
 system_variable "-p=$PREFIX" @irc_rooms*
