@@ -1738,12 +1738,17 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
    if( error.empty( ) && !access.empty( ) )
    {
+      bool had_admin_token = !g_cws_admin_token.empty( );
+
       bool has_access_file = has_web_session_access_token( access, access_file, passwd, pin );
 
       if( !has_access_file )
          access.erase( );
       else if( pin.empty( ) )
          add_access_token_if_new( access );
+
+      if( !had_admin_token && !g_cws_admin_token.empty( ) )
+         set_system_variable( e_special_var_web_admin_ip_addr, ip_addr );
 
       // NOTE: If is "admin locked" or the system identity is "unknown"
       // and the access token matches the "admin" PIN then will set the
@@ -1809,6 +1814,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                   file_touch( c_web_extern_pass_admin, 0, true );
                }
+
+               set_system_variable( e_special_var_web_admin_ip_addr, "" );
             }
             catch( exception& x )
             {
