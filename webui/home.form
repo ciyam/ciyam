@@ -93,7 +93,6 @@ http://www.opensource.org/licenses/mit-license.php.
          </div>
       </section>
 
-
       <section id="setup_password" hidden>
          <h2 tabindex="-1">Choose the master password</h2>
          <p class="chat-signin-lede">It's admin's password, and it unlocks the node after a restart. Make it long - a few
@@ -107,7 +106,8 @@ http://www.opensource.org/licenses/mit-license.php.
          <label class="chat-label" for="setup_password_confirm">Type it again</label>
          <input type="password" class="chat-field" id="setup_password_confirm" autocomplete="new-password">
          <div class="recover-warning" id="setup_http_warning" hidden><b>Over plain HTTP.</b> The connection isn't encrypted. The
-          password is hashed in this browser before it's sent, but use your own network only.</div>
+          password is hashed in this browser before it's sent, but the randomness your words come from isn't - use your own
+          network only.</div>
          <p class="recover-note" id="setup_password_note">Next, the node makes your words - from here, finish in this tab.
           Nothing has been sent to the node yet.</p>
          <div class="chat-error-text signin-error" id="setup_password_error" role="alert"></div>
@@ -157,8 +157,9 @@ http://www.opensource.org/licenses/mit-license.php.
       <section id="setup_done" hidden>
          <span class="home-setup-done" aria-hidden="true">&#10003;</span>
          <h2 tabindex="-1">Your node is set up</h2>
-         <p class="chat-signin-lede">You're signed in as admin. One more thing to write down - admin's PIN. It's shown only now;
-          you sign in with it and the master password.</p>
+         <p class="chat-signin-lede" id="setup_done_lede">You're signed in as admin. One more thing to write down - admin's PIN.
+          It's shown only now; you sign in with it and the master password.</p>
+         <div class="chat-error-text signin-error" id="setup_done_error" role="alert" hidden></div>
          <div class="home-setup-pin">
             <span class="chat-label">Admin's PIN</span>
             <span class="recover-mono" id="setup_pin"></span>

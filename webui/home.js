@@ -92,6 +92,13 @@ function show_view( id )
 
    // NOTE: The arriving screens carry the pills above them; signed in, the top bar does.
    document.getElementById( "arrive_bar" ).hidden = ( id === "app_view" ) || ( id === "checking_view" );
+
+   // NOTE: Leaving setting up by another way than its own views - its bubbles and its still-alive timer stop (found by review).
+   if( id !== "setup_view" )
+   {
+      stop_bubbles( );
+      setup_alive_stop( );
+   }
 }
 
 function set_text( id, text )
@@ -808,10 +815,11 @@ function setup_pick( row, note, button, is_right, index )
 function setup_count_right( )
 {
    var right = g_setup.right;
+   var total = g_setup.words.length;
 
-   set_text( "setup_check_count", right + " of " + c_setup_pops + " right" );
+   set_text( "setup_check_count", right + " of " + total + " right" );
 
-   document.getElementById( "setup_check_bar" ).style.width = Math.round( right / c_setup_pops * 100 ) + "%";
+   document.getElementById( "setup_check_bar" ).style.width = ( total > 0 ? Math.round( right / total * 100 ) : 0 ) + "%";
    document.getElementById( "setup_finish" ).disabled = ( right < g_setup.words.length );
 }
 
@@ -900,10 +908,17 @@ async function setup_finish( )
 
    document.getElementById( "setup_word_list" ).replaceChildren( );
    document.getElementById( "setup_check_rows" ).replaceChildren( );
-   setup_show( "setup_done" );
+   // NOTE: Signed in, or not - said where it is seen, on the done view (found by review); Continue then goes to the sign in.
+   var signed_in = ( ciyam.sessid !== "" );
 
-   if( ciyam.sessid === "" )
-      set_text( "setup_finish_error", "The node is set up, but signing in failed - sign in with admin's PIN and the master password." );
+   set_text( "setup_done_lede", signed_in ? "You're signed in as admin. One more thing to write down - admin's PIN. It's shown only now;"
+    + " you sign in with it and the master password." : "Write down admin's PIN - it's shown only now. You sign in with it and the master"
+    + " password." );
+   set_text( "setup_done_error", signed_in ? "" : "The node is set up, but signing in failed - sign in with admin's PIN and the master password." );
+
+   document.getElementById( "setup_done_error" ).hidden = signed_in;
+
+   setup_show( "setup_done" );
 }
 
 function install_setup( )
@@ -982,7 +997,11 @@ function install_setup( )
    {
       set_text( "setup_pin", "" );
 
-      after_sign_in( );
+      // NOTE: Not signed in - the setting up's sign in failed - to the sign in, the node now ready.
+      if( ciyam.sessid === "" )
+         check_node( );
+      else
+         after_sign_in( );
    } );
 
    g_setup = setup_fresh( );
@@ -2145,7 +2164,8 @@ function show_identity( secure, key_count )
 
    set_text( "overview_keys_note", none ? c_home_keys_unavailable : keys_note( key_count ) );
 
-   set_text( "overview_keys_line", none ? "Not used on this node." : ( key_count === null ? "Not reported." : counted( key_count, "key", "keys" ) + " left." ) );
+   set_text( "overview_keys_line", none ? "Not used on this node."
+    : ( key_count === null ? "Not reported." : counted( key_count, "key", "keys" ) + " left." ) );
 
    if( none )
       set_health_pill( "health_identity_pill", "quiet", "No keys needed" );
@@ -2358,9 +2378,16 @@ function show_filling( rooms )
 
 async function show_keys( )
 {
-   var secure = await read_secure( );
+   var asked_for = ciyam.access;
 
-   set_text( "keys_note", ( secure === false ) ? c_home_keys_unavailable : keys_note( await read_key_count( ) ) );
+   var secure = await read_secure( );
+   var count = ( secure === false ) ? null : await read_key_count( );
+
+   // NOTE: An answer arriving after a sign out is let go (found by review).
+   if( ciyam.access !== asked_for )
+      return;
+
+   set_text( "keys_note", ( secure === false ) ? c_home_keys_unavailable : keys_note( count ) );
 
    show_keys_available( secure );
 }
@@ -2474,6 +2501,8 @@ async function show_alerts( )
 
    g_alerts_topic = is_ntfy_topic( topic ) ? topic : "";
 
+   set_text( "alerts_copy", "Copy topic" );
+
    draw_alerts( );
 }
 
@@ -2576,7 +2605,16 @@ async function send_test_alert( )
 
    set_text( "alerts_test_status", "Sending..." );
 
+   var asked_for = ciyam.access;
+
    var reply = await ask_node( c_home_ntfy_test_request );
+
+   if( ciyam.access !== asked_for )
+   {
+      button.disabled = false;
+
+      return;
+   }
 
    set_text( "alerts_test_status", ( reply === null ) ? "The node could not send it." : "Sent - it should be on the phone in a moment." );
 
@@ -3386,7 +3424,12 @@ function forget_admin( )
 
    document.getElementById( "log_filter" ).value = "";
 
-   [ "log_tabs", "log_lines", "overview_log", "attention_list", "rooms_filling" ].forEach( function( id ) { document.getElementById( id ).replaceChildren( ); } );
+   [ "log_tabs", "log_lines", "overview_log", "attention_list", "rooms_filling" ].forEach( function( id )
+   {
+      document.getElementById( id ).replaceChildren( );
+   } );
+
+   set_text( "alerts_copy", "Copy topic" );
 
    [ "log_status", "stat_people_note", "overview_people", "overview_keys_note", "connection_heading", "connection_cipher", "attention_heading",
     "overview_keys_line", "health_secure_line", "health_state", "health_uptime", "health_version", "health_kind", "problems_latest",

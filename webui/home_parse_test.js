@@ -337,7 +337,8 @@ check( "- the log's, counted since the restart, its latest line and time", [ iss
 check( "- a full room, and one filling", [ issues[ 1 ].title, issues[ 2 ].title ], [ "Family is full", "General is 92% full" ] );
 check( "- no unlock keys left - to make one", [ issues[ 3 ].title, issues[ 3 ].action, issues[ 3 ].target ], [ "No unlock keys left", "Make a key", "keys" ] );
 check( "nothing wrong - nothing", hp.health_issues( { secure: true, keys: 3, problems: hp.log_problems( [ ] ), filling: [ ] } ), [ ] );
-check( "warnings alone - a warning", hp.health_issues( { secure: true, keys: 2, problems: { errors: 0, warnings: 2, latest: "x", since_start: true }, filling: [ ] } )
+check( "warnings alone - a warning", hp.health_issues( { secure: true, keys: 2,
+ problems: { errors: 0, warnings: 2, latest: "x", since_start: true }, filling: [ ] } )
  .map( function( i ) { return i.title + " " + i.level; } ), [ "2 warnings since the restart warn" ] );
 check( "no keys on a node without a secure identity - not a problem", hp.health_issues( { secure: false, keys: 0, problems: null, filling: null } ), [ ] );
 check( "what the node did not say raises nothing", hp.health_issues( { secure: null, keys: null, problems: null, filling: null } ), [ ] );
@@ -346,7 +347,8 @@ check( "the fullest rooms - filling or not, rooms only, as many as asked", hp.ro
  { room: "0000004", name: "Quiet", kind: "room", total: 1 } ], 2 ),
  [ { room: "0000002", name: "General", total: 900, percent: 10 }, { room: "0000003", name: "#0000003", total: 40, percent: 0 } ] );
 check( "the heading", [ hp.health_heading( [ 1 ] ), hp.health_heading( [ 1, 2, 3 ] ) ], [ "1 thing needs you", "3 things need you" ] );
-check( "the node's kind", [ hp.node_kind_text( true, false ), hp.node_kind_text( false, true ), hp.node_kind_text( false, false ), hp.node_kind_text( null, null ) ],
+check( "the node's kind", [ hp.node_kind_text( true, false ), hp.node_kind_text( false, true ), hp.node_kind_text( false, false ),
+ hp.node_kind_text( null, null ) ],
  [ "Development - raw protocol open to admin", "Demo", "Standard", "Not reported" ] );
 check( "a flag - '1' or nothing", [ hp.parse_flag( "1" ), hp.parse_flag( "" ), hp.parse_flag( null ) ], [ true, false, null ] );
 
@@ -366,7 +368,8 @@ check( "refused - the PIN held by another's setup, or gone", [ hp.setup_refused(
 check( "Enter in the password - on to typing it again, once long enough", [ hp.setup_password_enter( "new", "lantern-orbit", "", true ),
  hp.setup_password_enter( "new", "short", "", false ) ], [ { focus: "setup_password_confirm", problem: "" }, { focus: "", problem: "short" } ] );
 check( "Enter in typing it again - on to Make my twelve words, once they match", [ hp.setup_password_enter( "confirm", "lantern-orbit", "lantern-orbit", true ),
- hp.setup_password_enter( "confirm", "lantern-orbit", "lantern-orbiT", true ) ], [ { focus: "setup_make_words", problem: "" }, { focus: "", problem: "different" } ] );
+ hp.setup_password_enter( "confirm", "lantern-orbit", "lantern-orbiT", true ) ],
+ [ { focus: "setup_make_words", problem: "" }, { focus: "", problem: "different" } ] );
 check( "the second refused - a PIN the node never gave (it restarted)", hp.setup_pin_gone( "Error: User credentials are either invalid or incorrect." ), true );
 check( "the second refused - its PIN gone", [ hp.setup_pin_gone( "Error: System is currently locked for administration." ),
  hp.setup_pin_gone( "Error: This web session is not valid (or has expired)." ), hp.setup_pin_gone( "Error: Invalid device identity 'x'." ) ],
