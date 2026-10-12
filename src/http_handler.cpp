@@ -1343,6 +1343,28 @@ void http_request_handler::on_start( )
                      if( ip_addr_for != old_ip_addr_for )
                         write_file( token_file, ip_addr_for );
                   }
+                  else
+                  {
+                     // NOTE: Allows for a special case in order to "touch"
+                     // the ".web_access_admin" file when is waiting to set
+                     // the system identity (if "token" matches the PIN and
+                     // the IP address matches the PIN creator).
+                     if( has_system_variable( e_special_var_utm_web_reset )
+                      && ( ip_addr == get_system_variable( e_special_var_web_admin_ip_addr ) ) )
+                     {
+                        string admin_web_access_file( c_web_access_prefix );
+
+                        admin_web_access_file += c_admin;
+
+                        if( file_exists( admin_web_access_file )
+                         && ( token == buffer_file( admin_web_access_file ) ) )
+                        {
+                           file_touch( admin_web_access_file );
+
+                           set_system_variable( e_special_var_utm_web_reset, c_false_value );
+                        }
+                     }
+                  }
                }
 
                if( !is_json_output )
