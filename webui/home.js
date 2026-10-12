@@ -1312,6 +1312,26 @@ function bottom_item( key, title, on_click )
    return item;
 }
 
+// NOTE: The tab's title carries what Home's badges count - the chat's, and Health's for admin - for a tab in the
+// background (2026-10-12).
+const c_home_title = "CIYAM Home";
+
+var g_title_counts = { chat: 0, health: 0 };
+
+function update_title( which, count )
+{
+   g_title_counts[ which ] = count;
+
+   document.title = page_title( c_home_title, g_title_counts.chat + g_title_counts.health );
+}
+
+function forget_title( )
+{
+   g_title_counts = { chat: 0, health: 0 };
+
+   document.title = c_home_title;
+}
+
 // NOTE: What waits in the chat - unread messages, requests and invitations, as the chat's own badge counts them.
 function chat_badge( )
 {
@@ -1676,6 +1696,8 @@ function render_member_home( )
       badge.textContent = badge_text( summary.badge );
       badge.hidden = ( summary.badge === 0 );
    } );
+
+   update_title( "chat", summary.badge );
 
    // ---- Needs you
    var list = document.getElementById( "needs_list" );
@@ -2173,6 +2195,8 @@ function show_attention( issues )
       badge.hidden = !any;
       badge.classList.toggle( "is-problem", problem );
    } );
+
+   update_title( "health", issues.length );
 }
 
 // NOTE: The errors and warnings in the server log since the restart - the latest in words, and Logs showing just
@@ -3143,6 +3167,8 @@ function install_people( )
 function forget_admin( )
 {
    forget_people( );
+
+   forget_title( );
 
    g_log_names = [ ];
    g_log_name = "server";
