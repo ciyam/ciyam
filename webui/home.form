@@ -783,6 +783,63 @@ http://www.opensource.org/licenses/mit-license.php.
             </section>
          </section>
 
+         <!-- NOTE: Alerts (Damon, 2026-10-12 - "Home App Scope", Notifications) - ntfy on a phone. Three kinds: the node's
+              notices for everyone, admin's own, and each person's - every one sent to that person's own topic, never a shared
+              one. Admin's is the node's own topic, readable today only on a development node; each person's waits on Ian. -->
+         <section class="home-section" id="section_alerts" hidden>
+            <h1>Alerts</h1>
+            <p class="home-note">Notifications on a phone, through the ntfy app - the node's alerts for admin now, and later
+             each person's own.</p>
+
+            <section class="home-card" aria-labelledby="alerts_server_heading">
+               <h2 id="alerts_server_heading">ntfy server</h2>
+               <p class="home-note home-empty">Where the phones reach ntfy - kept in this browser.</p>
+               <form class="home-alerts-server" id="alerts_server_form" novalidate>
+                  <label class="home-visually-hidden" for="alerts_server">ntfy server address</label>
+                  <input type="url" class="chat-field chat-field--mono" id="alerts_server" autocomplete="off" spellcheck="false">
+                  <button type="submit" class="chat-btn">Save</button>
+               </form>
+               <div class="chat-error-text" id="alerts_server_error" role="alert"></div>
+            </section>
+
+            <section class="home-card" aria-labelledby="alerts_admin_heading">
+               <div class="home-health-head">
+                  <h2 id="alerts_admin_heading">Node admin alerts</h2>
+                  <span class="home-health-pill" id="alerts_admin_pill"></span>
+               </div>
+               <p class="home-health-line" id="alerts_admin_line"></p>
+               <div class="home-new-key-row" id="alerts_subscribe" hidden>
+                  <span class="home-key-qr" id="alerts_qr" aria-hidden="true"></span>
+                  <span class="home-new-key-text">
+                     <span class="home-rail-heading">Topic</span>
+                     <span class="home-key home-key--topic" id="alerts_topic"></span>
+                     <span class="home-alerts-codes" role="group" aria-label="What the code opens">
+                        <button type="button" class="chat-btn is-current" id="alerts_code_app" aria-pressed="true">For the ntfy app</button>
+                        <button type="button" class="chat-btn" id="alerts_code_web" aria-pressed="false">For an iPhone</button>
+                     </span>
+                     <span class="home-note home-empty" id="alerts_code_note"></span>
+                     <span class="home-card-actions">
+                        <button type="button" class="chat-btn" id="alerts_copy">Copy topic</button>
+                        <button type="button" class="chat-btn chat-btn--primary" id="alerts_test">Send a test alert</button>
+                     </span>
+                     <span class="home-note" id="alerts_test_status" role="status"></span>
+                  </span>
+               </div>
+               <p class="home-note home-empty" id="alerts_admin_today" hidden>Today the node sends here only what it is asked to,
+                like the test. Its own alerts - restarted, waiting to be unlocked, an error, a room filling - are still to
+                come from the node.</p>
+            </section>
+
+            <section class="home-health-gap" aria-labelledby="alerts_mine_heading">
+               <div class="home-health-head">
+                  <h2 id="alerts_mine_heading">My notifications</h2>
+                  <span class="home-note">Waiting on the node</span>
+               </div>
+               <p class="home-alerts-gap-text">Each person's own topic: the node's notices for everyone - down, back up, planned
+                downtime - and their own direct messages and invitations, never their words. Coming once the node sends them.</p>
+            </section>
+         </section>
+
          <!-- NOTE: The node's logs, read only - admin's (Ian, 2026-10-03). The newest at the end, as in the file. -->
          <section class="home-section" id="section_logs" hidden>
             <div class="home-section-head">

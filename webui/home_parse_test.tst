@@ -128,7 +128,7 @@ ok   the pages
 ok   admin's accounts app is My account too - People is in Home (2026-10-11)
 ok   a member's is My account
 ok   the tabs the apps reuse
-ok   admin's sections - People since 2026-10-11, Health since 2026-10-12
+ok   admin's sections - People since 2026-10-11, Health and Alerts since 2026-10-12
 ok   a member has none
 ok   a copy, not the list itself
 ok   admin opens on the Overview
@@ -174,6 +174,11 @@ ok   the fullest rooms - filling or not, rooms only, as many as asked
 ok   the heading
 ok   the node's kind
 ok   a flag - '1' or nothing
+
+== alerts ======================================================
+ok   the ntfy server's example - this page's machine, ntfy's port
+ok   - with no machine, a placeholder
+ok   the test - its title quoted whole
 
 == setting up a new node =======================================
 ok   refused - the PIN held by another's setup, or gone

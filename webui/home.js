@@ -1058,7 +1058,8 @@ const c_icons = {
    keys: "M15 7a4 4 0 1 1-3.5 6L4 20.5H2v-3l7.5-7.5A4 4 0 0 1 15 7z",
    logs: "M5 4h14v16H5zM8 8h8M8 12h8M8 16h5",
    shield: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM9 12l2 2 4-4",
-   health: "M3 12h4l3-8 4 16 3-8h4"
+   health: "M3 12h4l3-8 4 16 3-8h4",
+   alerts: "M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"
 };
 
 // NOTE: As wide as the design's phone layouts - below it the side menu becomes a drawer.
@@ -1438,12 +1439,12 @@ function go( section )
 {
    g_section = section;
 
-   [ "home", "overview", "health", "people", "keys", "logs" ].forEach( function( key )
+   [ "home", "overview", "health", "people", "keys", "alerts", "logs" ].forEach( function( key )
    {
       document.getElementById( "section_" + key ).hidden = ( key !== section );
    } );
 
-   var titles = { home: "Home", overview: "Overview", health: "Health", people: "People", keys: "Unlock keys", logs: "Logs" };
+   var titles = { home: "Home", overview: "Overview", health: "Health", people: "People", keys: "Unlock keys", alerts: "Alerts", logs: "Logs" };
 
    set_text( "top_heading", titles[ section ] || "Home" );
 
@@ -2399,6 +2400,171 @@ function forget_shown_key( )
    document.getElementById( "key_make" ).hidden = false;
 }
 
+// ---- Alerts (Damon, 2026-10-12)
+
+// NOTE: The node's own topic, as it last said - "" where it would not say.
+var g_alerts_topic = "";
+
+// NOTE: The code opens the ntfy app ("ntfy://") or ntfy's web page for the topic - an iPhone's camera opens only the
+// second ("No usable data" for the first, 2026-10-06); the page shows the topic, to copy into the app.
+var g_alerts_web = false;
+
+function alerts_saved_server( )
+{
+   try
+   {
+      return localStorage.getItem( c_ntfy_server_key ) || "";
+   }
+   catch( e )
+   {
+      return "";
+   }
+}
+
+async function show_alerts( )
+{
+   var field = document.getElementById( "alerts_server" );
+
+   field.value = alerts_saved_server( );
+   field.placeholder = ntfy_server_example( window.location.hostname );
+
+   set_text( "alerts_server_error", "" );
+   set_text( "alerts_test_status", "" );
+
+   var asked_for = ciyam.access;
+
+   var reply = await ask_node( c_home_ntfy_topic_request );
+
+   if( ciyam.access !== asked_for )
+      return;
+
+   var topic = ( reply === null ) ? "" : String( reply ).trim( );
+
+   g_alerts_topic = is_ntfy_topic( topic ) ? topic : "";
+
+   draw_alerts( );
+}
+
+function draw_alerts( )
+{
+   var server = alerts_saved_server( );
+   var box = document.getElementById( "alerts_subscribe" );
+   var qr = document.getElementById( "alerts_qr" );
+
+   qr.replaceChildren( );
+
+   document.getElementById( "alerts_admin_today" ).hidden = ( g_alerts_topic === "" );
+
+   if( g_alerts_topic === "" )
+   {
+      set_health_pill( "alerts_admin_pill", "quiet", "Not available" );
+      set_text( "alerts_admin_line", "This node doesn't let a page read its alert topic yet - only a development node does, through"
+       + " the raw protocol." );
+
+      box.hidden = true;
+
+      return;
+   }
+
+   set_text( "alerts_topic", g_alerts_topic );
+
+   if( server === "" )
+   {
+      set_health_pill( "alerts_admin_pill", "warn", "Server needed" );
+      set_text( "alerts_admin_line", "Save the ntfy server above, and a phone can subscribe with a code." );
+
+      box.hidden = true;
+
+      return;
+   }
+
+   set_health_pill( "alerts_admin_pill", "ok", "Ready" );
+   set_text( "alerts_admin_line", "The node's own topic - subscribe admin's phone to it." );
+
+   var link = g_alerts_web ? ntfy_web_link( server, g_alerts_topic ) : ntfy_subscribe_link( server, g_alerts_topic );
+
+   // NOTE: Drawn in the page - "qrcode.min.js" - so the topic goes nowhere else.
+   new QRCode( qr, { text: link, width: c_qr_size, height: c_qr_size, colorDark: "#1b1f2a", colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M } );
+
+   // NOTE: The library titles its image with the text - the topic is a secret, so no tooltip gives it away.
+   qr.removeAttribute( "title" );
+   qr.querySelectorAll( "[title]" ).forEach( function( element ) { element.removeAttribute( "title" ); } );
+
+   set_text( "alerts_code_note", g_alerts_web ? "Opens ntfy's page for the topic - copy the topic from it into the app, with "
+    + server + " as the server." : "Opens the ntfy app on the subscription - on Android, from the camera's Scan." );
+
+   [ [ "alerts_code_app", !g_alerts_web ], [ "alerts_code_web", g_alerts_web ] ].forEach( function( pair )
+   {
+      var button = document.getElementById( pair[ 0 ] );
+
+      button.classList.toggle( "is-current", pair[ 1 ] );
+      button.setAttribute( "aria-pressed", pair[ 1 ] ? "true" : "false" );
+   } );
+
+   box.hidden = false;
+}
+
+function save_alerts_server( event )
+{
+   event.preventDefault( );
+
+   var server = normalise_ntfy_server( document.getElementById( "alerts_server" ).value );
+
+   if( server === "" )
+   {
+      set_text( "alerts_server_error", "Not a server address - like " + ntfy_server_example( window.location.hostname ) + "." );
+
+      return;
+   }
+
+   try
+   {
+      localStorage.setItem( c_ntfy_server_key, server );
+   }
+   catch( e )
+   {
+      set_text( "alerts_server_error", "This browser would not keep it." );
+
+      return;
+   }
+
+   document.getElementById( "alerts_server" ).value = server;
+
+   set_text( "alerts_server_error", "" );
+
+   draw_alerts( );
+}
+
+async function send_test_alert( )
+{
+   var button = document.getElementById( "alerts_test" );
+
+   button.disabled = true;
+
+   set_text( "alerts_test_status", "Sending..." );
+
+   var reply = await ask_node( c_home_ntfy_test_request );
+
+   set_text( "alerts_test_status", ( reply === null ) ? "The node could not send it." : "Sent - it should be on the phone in a moment." );
+
+   button.disabled = false;
+}
+
+async function copy_alerts_topic( )
+{
+   try
+   {
+      await navigator.clipboard.writeText( g_alerts_topic );
+
+      set_text( "alerts_copy", "Copied" );
+   }
+   catch( e )
+   {
+      set_text( "alerts_copy", "Copy it by hand" );
+   }
+}
+
 // ---- Logs
 
 async function load_logs( )
@@ -2498,6 +2664,8 @@ function on_section_shown( section )
    }
    else if( section === "keys" )
       show_keys( );
+   else if( section === "alerts" )
+      show_alerts( );
    else if( section === "logs" )
       load_logs( );
 }
@@ -2509,6 +2677,15 @@ function install_admin( )
 
    document.getElementById( "overview_refresh" ).addEventListener( "click", load_overview );
    document.getElementById( "health_refresh" ).addEventListener( "click", load_overview );
+
+   document.getElementById( "alerts_server_form" ).addEventListener( "submit", save_alerts_server );
+   document.getElementById( "alerts_test" ).addEventListener( "click", send_test_alert );
+   document.getElementById( "alerts_copy" ).addEventListener( "click", copy_alerts_topic );
+
+   [ [ "alerts_code_app", false ], [ "alerts_code_web", true ] ].forEach( function( pair )
+   {
+      document.getElementById( pair[ 0 ] ).addEventListener( "click", function( ) { g_alerts_web = pair[ 1 ]; draw_alerts( ); } );
+   } );
    document.getElementById( "logs_refresh" ).addEventListener( "click", load_logs );
    document.getElementById( "key_make" ).addEventListener( "click", do_make_key );
    document.getElementById( "key_copy" ).addEventListener( "click", do_copy_key );
@@ -3185,6 +3362,14 @@ function forget_admin( )
     .forEach( function( id ) { set_text( id, "" ); } );
 
    [ "attention_card", "attention_rest", "well_card" ].forEach( function( id ) { document.getElementById( id ).hidden = true; } );
+
+   g_alerts_topic = "";
+   g_alerts_web = false;
+
+   document.getElementById( "alerts_qr" ).replaceChildren( );
+   document.getElementById( "alerts_subscribe" ).hidden = true;
+
+   [ "alerts_topic", "alerts_test_status", "alerts_admin_line", "alerts_admin_pill" ].forEach( function( id ) { set_text( id, "" ); } );
 
    set_text( "stat_people", "…" );
    set_text( "stat_uptime", "…" );

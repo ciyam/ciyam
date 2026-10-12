@@ -47,6 +47,7 @@ const c_home_admin_sections = [
    { key: "health", title: "Health" },
    { key: "people", title: "People" },
    { key: "keys", title: "Unlock keys" },
+   { key: "alerts", title: "Alerts" },
    { key: "logs", title: "Logs" }
 ];
 
@@ -711,6 +712,23 @@ function health_heading( issues )
 }
 
 // ====================================================================
+// Alerts (Damon, 2026-10-12 - "Home App Scope", Notifications): ntfy on admin's phone
+// ====================================================================
+
+// NOTE: The node's own ntfy topic - where it sends its alerts - and a test sent to it. Both are raw protocol (Ian's
+// "ntfy_topic" and "ntfy_send"), so a development node only until he lets admin ask for them on any node. The title is
+// quoted whole - quoted after the "=" it is cut short and the request times out (2026-10-07).
+const c_home_ntfy_topic_request = "ntfy_topic";
+const c_home_ntfy_test_request = "ntfy_send \"-title=Test alert\" -tags=white_check_mark \"From Home - this phone gets the node alerts.\"";
+
+// NOTE: How the ntfy server's address looks, for the box it is typed into - the machine this page came from, on ntfy's
+// port beside it. Only an example: where ntfy runs is the owner's to say.
+function ntfy_server_example( hostname )
+{
+   return "http://" + ( String( hostname || "" ).trim( ) || "<address>" ) + ":8090";
+}
+
+// ====================================================================
 // Setting up a new node (Damon and Ian, 2026-10-12 - "Home App Scope", Setting up a new node)
 // ====================================================================
 
@@ -807,6 +825,9 @@ if( typeof module !== "undefined" )
       parse_system: parse_system,
       setup_reply: setup_reply,
       setup_refused: setup_refused,
+      c_home_ntfy_topic_request: c_home_ntfy_topic_request,
+      c_home_ntfy_test_request: c_home_ntfy_test_request,
+      ntfy_server_example: ntfy_server_example,
       setup_pin_gone: setup_pin_gone,
       c_home_devt_request: c_home_devt_request,
       c_home_demo_request: c_home_demo_request,

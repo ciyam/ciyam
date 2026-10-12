@@ -252,7 +252,8 @@ check( "a member's is My account", hp.home_apps( false, false, false )[ 2 ].titl
 check( "the tabs the apps reuse", hp.home_apps( true, false, false ).map( function( app ) { return app.tab; } ),
  [ "ciyam-home", "ciyam-chat", "ciyam-accounts", "ciyam-console" ] );
 
-check( "admin's sections - People since 2026-10-11, Health since 2026-10-12", keys( hp.home_sections( true ) ), [ "overview", "health", "people", "keys", "logs" ] );
+check( "admin's sections - People since 2026-10-11, Health and Alerts since 2026-10-12", keys( hp.home_sections( true ) ),
+ [ "overview", "health", "people", "keys", "alerts", "logs" ] );
 check( "a member has none", hp.home_sections( false ), [ ] );
 check( "a copy, not the list itself", hp.home_sections( true ) !== hp.home_sections( true ), true );
 
@@ -348,6 +349,13 @@ check( "the heading", [ hp.health_heading( [ 1 ] ), hp.health_heading( [ 1, 2, 3
 check( "the node's kind", [ hp.node_kind_text( true, false ), hp.node_kind_text( false, true ), hp.node_kind_text( false, false ), hp.node_kind_text( null, null ) ],
  [ "Development - raw protocol open to admin", "Demo", "Standard", "Not reported" ] );
 check( "a flag - '1' or nothing", [ hp.parse_flag( "1" ), hp.parse_flag( "" ), hp.parse_flag( null ) ], [ true, false, null ] );
+
+// --------------------------------------------------------------------
+heading( "alerts" );
+
+check( "the ntfy server's example - this page's machine, ntfy's port", hp.ntfy_server_example( "antares.local" ), "http://antares.local:8090" );
+check( "- with no machine, a placeholder", hp.ntfy_server_example( "" ), "http://<address>:8090" );
+check( "the test - its title quoted whole", hp.c_home_ntfy_test_request.indexOf( '"-title=Test alert"' ) > 0, true );
 
 // --------------------------------------------------------------------
 heading( "setting up a new node" );

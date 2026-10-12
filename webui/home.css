@@ -1113,6 +1113,64 @@
    color: var(--color-chat-text-faint);
 }
 
+/* ---- Alerts (2026-10-12) ---- */
+
+#section_alerts > .home-card,
+#section_alerts > .home-health-gap
+{
+   margin-top: 16px;
+}
+
+.home-alerts-server
+{
+   display: flex;
+   flex-wrap: wrap;
+   gap: 10px;
+}
+
+.home-alerts-server .chat-field
+{
+   flex: 1 1 260px;
+   min-width: 0;
+}
+
+.home-key--topic
+{
+   font-size: 17px;
+   letter-spacing: 0.02em;
+}
+
+.home-alerts-codes
+{
+   display: flex;
+   flex-wrap: wrap;
+   gap: 8px;
+}
+
+.home-alerts-codes .chat-btn.is-current
+{
+   border-color: var(--color-chat-accent);
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+   font-weight: 600;
+}
+
+.home-alerts-gap-text
+{
+   margin: 0;
+   font-size: 14px;
+}
+
+.home-visually-hidden
+{
+   position: absolute;
+   width: 1px;
+   height: 1px;
+   overflow: hidden;
+   clip-path: inset( 50% );
+   white-space: nowrap;
+}
+
 .home-card-action,
 .home-card-actions .chat-btn,
 .home-need-answer
