@@ -890,6 +890,18 @@ function recover_build( )
    done.appendChild( signin_element( "span", { class: "recover-mono recover-pin", id: "recover_pin" } ) );
    done.appendChild( signin_element( "p", { class: "recover-note", id: "recover_done_note" }, words.done_note ) );
 
+   // NOTE: Admin's PIN remembered on this browser, as setting up's end offers (2026-10-13) - not the password: this session's
+   // hash is made with a device of its own ("recover_submit( )"), so a saved one would not work at the next sign in.
+   done.appendChild( signin_element( "label", { class: "chat-label", for: "recover_retain" }, "Remember on this browser" ) );
+
+   var retain = signin_element( "select", { id: "recover_retain", class: "chat-field" } );
+
+   retain.appendChild( new Option( "Nothing — forget this account", "none" ) );
+   retain.appendChild( new Option( "The PIN only", "access" ) );
+
+   done.appendChild( retain );
+   done.appendChild( signin_element( "div", { class: "signin-hint" }, "The password isn't kept here - type it at the next sign in." ) );
+
    var done_actions = signin_element( "div", { class: "chat-signin-actions" } );
 
    var go_on = signin_element( "button", { type: "button", class: "chat-btn chat-btn--primary", id: "recover_continue" }, "Continue" );
@@ -897,6 +909,8 @@ function recover_build( )
    // NOTE: On as after a sign in - into whichever part of the node this is.
    go_on.addEventListener( "click", function( )
    {
+      signin_apply_retain( document.getElementById( "recover_retain" ).value );
+
       view.hidden = true;
 
       g_recover_fresh = null;
@@ -1386,6 +1400,8 @@ async function recover_submit( event )
    await recover_forget_saved( );
 
    signin_set_text( "recover_pin", ciyam.access );
+
+   document.getElementById( "recover_retain" ).value = c_retain_access;
 
    document.getElementById( "recover_form" ).hidden = true;
    document.getElementById( "recover_done" ).hidden = false;
