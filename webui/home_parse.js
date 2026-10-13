@@ -751,6 +751,27 @@ function setup_password_enter( field, password, again, long_enough )
    return { focus: "setup_make_words", problem: "" };
 }
 
+// NOTE: The still-alive token (Ian, 2026-10-13 - "637f4e60", "944901f7"): the first twelve hex of the SHA-256 of admin's
+// PIN and the entropy the node suggested with it - nobody else could make it, none of the entropy is in the URL, and it
+// is as long as a DDNS token. "sha256" is the page's own ("hex_sha256").
+function setup_alive_token( pin, suggested, sha256 )
+{
+   return String( sha256( String( pin || "" ) + String( suggested || "" ) ) ).toLowerCase( ).substr( 0, 12 );
+}
+
+// NOTE: The node's answer to it - this browser's address with every character an "X" when it was in time and kept the node
+// waiting ("kept"); the address as it is when not - admin's PIN gone ("gone"). Anything else - no answer, an error page -
+// says nothing ("unknown").
+function setup_alive_answer( text )
+{
+   var value = String( text || "" ).trim( );
+
+   if( /^X+$/.test( value ) )
+      return "kept";
+
+   return /^[0-9A-Fa-f.:]+$/.test( value ) ? "gone" : "unknown";
+}
+
 // NOTE: The node refusing the first set up request - "This web session is not valid (or has expired)." - while someone
 // else's setup holds admin's PIN.
 function setup_refused( text )
@@ -851,6 +872,8 @@ if( typeof module !== "undefined" )
       c_home_ntfy_test_request: c_home_ntfy_test_request,
       ntfy_server_example: ntfy_server_example,
       setup_pin_gone: setup_pin_gone,
+      setup_alive_token: setup_alive_token,
+      setup_alive_answer: setup_alive_answer,
       c_home_devt_request: c_home_devt_request,
       c_home_demo_request: c_home_demo_request,
       parse_flag: parse_flag,

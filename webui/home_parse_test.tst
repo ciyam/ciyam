@@ -185,6 +185,8 @@ ok   the test - its title quoted whole
 ok   refused - the PIN held by another's setup, or gone
 ok   Enter in the password - on to typing it again, once long enough
 ok   Enter in typing it again - on to Make my twelve words, once they match
+ok   the still-alive token - twelve hex of the hash of the PIN and the suggestion
+ok   the answer - all X's kept it waiting, an address did not, anything else says nothing
 ok   the second refused - a PIN the node never gave (it restarted)
 ok   the second refused - its PIN gone
 ok   the first request's answer - admin's PIN and the node's suggestion

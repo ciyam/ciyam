@@ -310,7 +310,15 @@ async function setup_keep_alive( )
    if( ( g_setup === null ) || ( g_setup.pin === "" ) )
       return;
 
-   await fetch_text( "/ip-addr?token=" + encodeURIComponent( g_setup.pin ) );
+   var reply = await fetch_text( "/ip-addr?token=" + setup_alive_token( g_setup.pin, g_setup.suggested, hex_sha256 ) );
+
+   // NOTE: The node no longer waiting - said now, not at Finish (Ian's answer, 2026-10-13): a tab back after too long, or a
+   // node restarted. Only while still being kept alive - not once Finish is under way, when the token is let go.
+   if( ( setup_alive_answer( reply ) === "gone" ) && ( g_setup_alive_timer !== null ) )
+   {
+      setup_kept_forget( );
+      setup_show( "setup_expired" );
+   }
 }
 
 function setup_alive_start( )
@@ -898,6 +906,9 @@ async function setup_finish( )
    set_text( "setup_finish_error", "" );
    set_text( "setup_finish_status", "Setting the node up..." );
 
+   // NOTE: No still-alive while the node takes its identity - it lets the token go as it does (Ian, "637f4e60").
+   setup_alive_stop( );
+
    var credentials = CIYAM.encode_base64_url( "admin:" + ciyam.hash_combined( g_setup.password, g_setup.pin ) );
 
    var send = async function( )
@@ -932,7 +943,11 @@ async function setup_finish( )
          setup_show( "setup_expired" );
       }
       else
+      {
          set_text( "setup_finish_error", "The node was not set up: " + error_text( device ) );
+
+         setup_alive_start( );
+      }
 
       return;
    }
