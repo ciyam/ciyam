@@ -1736,6 +1736,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       // FUTURE: This message should be handled as a server string message.
       error = "System is currently locked for administration.";
 
+   bool admin_token_created = false;
+
    if( error.empty( ) && !access.empty( ) )
    {
       bool had_admin_token = !g_cws_admin_token.empty( );
@@ -1748,7 +1750,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          add_access_token_if_new( access );
 
       if( !had_admin_token && !g_cws_admin_token.empty( ) )
-         set_system_variable( e_special_var_web_admin_ip_addr, ip_addr );
+         admin_token_created = true;
 
       // NOTE: If is "admin locked" or the system identity is "unknown"
       // and the access token matches the "admin" PIN then will set the
@@ -1816,6 +1818,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                }
 
                set_system_variable( e_special_var_web_admin_ip_addr, "" );
+               set_system_variable( e_special_var_web_admin_pin_hash, "" );
             }
             catch( exception& x )
             {
@@ -1883,6 +1886,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       {
          get_mnemonics_or_hex_seed( seed, "" );
          get_mnemonics_or_hex_seed( seed, seed );
+
+         if( admin_token_created )
+         {
+            sha256 hash( pin + seed );
+
+            string hash_token( hash.get_digest_as_string( ).substr( 0, 12 ) );
+
+            set_system_variable( e_special_var_web_admin_ip_addr, ip_addr );
+            set_system_variable( e_special_var_web_admin_pin_hash, hash_token );
+         }
       }
 
       found = true;
