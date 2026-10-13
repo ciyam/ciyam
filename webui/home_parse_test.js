@@ -129,6 +129,8 @@ check( "people - nobody", hp.people_summary( [ ] ), { active: 0, unclaimed: 0 } 
 check( "uptime - as the node gives it", hp.parse_uptime( "41m 45s" ), "41m 45s" );
 check( "uptime - weeks", hp.parse_uptime( "1w 0d 3h 4m 5s\n" ), "1w 0d 3h 4m 5s" );
 check( "uptime - an error", hp.parse_uptime( "Error: something" ), "" );
+check( "the node's line - its version and how long it has been up", [ hp.node_line( "0.0.0", "11 minutes" ), hp.node_line( "0.0.0", "" ) ],
+ [ "Home node · CIYAM 0.0.0 · up 11 minutes", "Home node · CIYAM 0.0.0" ] );
 check( "uptime in words - minutes, no seconds (Ian, 2026-10-11)", hp.uptime_words( "41m 45s" ), "41 minutes" );
 check( "uptime in words - an hour and seconds is the hour", hp.uptime_words( "1h 0m 5s" ), "1 hour" );
 check( "uptime in words - under a minute, just started", hp.uptime_words( "45s" ), "just started" );

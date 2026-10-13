@@ -1698,12 +1698,7 @@ async function enter_app( )
 
    set_text( "app_greeting", "Hello, " + name );
 
-   var uptime = uptime_words( await fetch_text( "/uptime" ) );
-
-   var node = "Home node · CIYAM " + g_system.version + ( uptime !== "" ? " · up " + uptime : "" );
-
-   set_text( "app_node", node );
-   set_text( "overview_node", node );
+   await refresh_node_line( );
 
    go( home_section( ciyam.is_admin, window.location.hash ) );
 
@@ -1997,6 +1992,16 @@ function open_app_by_key( key, hash, event )
    apps_go( key, hash || "", event );
 }
 
+// NOTE: "Home node · CIYAM 0.0.0 · up 11 minutes" - kept up to date with the minute, as Uptime is (Ian, 2026-10-13: it stayed
+// as it was at sign in).
+async function refresh_node_line( )
+{
+   var line = node_line( g_system.version, uptime_words( await fetch_text( "/uptime" ) ) );
+
+   set_text( "app_node", line );
+   set_text( "overview_node", line );
+}
+
 function start_refresh( )
 {
    stop_refresh( );
@@ -2007,6 +2012,7 @@ function start_refresh( )
          return;
 
       load_member_home( );
+      refresh_node_line( );
 
       // NOTE: Admin's Overview or Health too, while shown - a page left open is a way to watch the node (Ian, 2026-10-11).
       if( ciyam.is_admin && ( ( g_section === "overview" ) || ( g_section === "health" ) ) )
