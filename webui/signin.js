@@ -1015,9 +1015,10 @@ async function recover_show( options )
 
    recover_inputs( )[ 0 ].focus( );
 
+   // NOTE: Said on the words' step, which is the one showing (found by review).
    if( !await recover_load_bip39( ) )
    {
-      signin_set_text( "recover_error", "The word list could not be read - reload the page to try again." );
+      signin_set_text( "recover_words_error", "The word list could not be read - reload the page to try again." );
 
       return;
    }
@@ -1223,7 +1224,9 @@ function recover_words_problem_now( )
 // words' own step. Nothing is sent yet: the node sees the words with the password.
 async function recover_words_go( )
 {
+   // NOTE: A refusal from the password's step goes too - back to the words and on again is a fresh try (found by review).
    signin_set_text( "recover_words_error", "" );
+   signin_set_text( "recover_error", "" );
 
    if( !await recover_load_bip39( ) )
    {

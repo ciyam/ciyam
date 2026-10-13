@@ -407,7 +407,8 @@ check( "- the same pops and browser numbers, the same", hp.randomness_hex( pops,
 check( "- a pop a millisecond later, different", hp.randomness_hex( [ { t: 1013.5, x: 120, y: 40, hit: true }, pops[ 1 ] ], "00ff", sha, 32 ) !== mine, true );
 check( "- other browser numbers, different", hp.randomness_hex( pops, "00fe", sha, 32 ) !== mine, true );
 check( "- longer than one hash when asked", /^[0-9a-f]{100}$/.test( hp.randomness_hex( pops, "00ff", sha, 100 ) ), true );
-check( "- a pop's colour counts too", hp.randomness_hex( [ { t: 1012.5, x: 120, y: 40, hit: true, c: "f53d3d" }, pops[ 1 ] ], "00ff", sha, 32 ) !== mine, true );
+check( "- a pop's colour counts too", hp.randomness_hex( [ { t: 1012.5, x: 120, y: 40, hit: true, c: "f53d3d" }, pops[ 1 ] ], "00ff", sha, 32 ) !== mine,
+ true );
 check( "a bubble's colour - the hue from two bytes, how vivid and light from the third", [ hp.bubble_colour( [ 0, 0, 255 ] ),
  hp.bubble_colour( [ 0, 120, 0 ] ) ], [ { rgb: "rgb(245, 61, 61)", hex: "f53d3d" }, { rgb: "rgb(52, 178, 52)", hex: "34b234" } ] );
 check( "- any three bytes, a colour", [ [ 255, 255, 255 ], [ 1, 103, 17 ], [ 0, 59, 240 ], [ 0, 239, 128 ] ].every( function( b )
