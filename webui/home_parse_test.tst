@@ -201,6 +201,9 @@ ok   - the same pops and browser numbers, the same
 ok   - a pop a millisecond later, different
 ok   - other browser numbers, different
 ok   - longer than one hash when asked
+ok   - a pop's colour counts too
+ok   a bubble's colour - the hue from two bytes, how vivid and light from the third
+ok   - any three bytes, a colour
 ok   checking a word - three choices, the right one among them
 ok   - the others are not the person's other words
 ok   - no word twice

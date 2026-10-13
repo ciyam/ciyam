@@ -824,14 +824,36 @@ function setup_kept( stored )
    return null;
 }
 
-// NOTE: The person's randomness as hex, "length" characters - every pop's time and place (and the misses' times) with the
-// browser's own random numbers, hashed by "sha256" (hex in, hex out: "hex_sha256( )" in the page). Long enough to mix
+// NOTE: A bubble's colour from three random bytes (Ian, 2026-10-13: "different colors ... randomised RGB values") - the
+// first two choose the hue anywhere round the wheel, the third how vivid and how light, within a band every bubble can be
+// seen in, on a light page or a dark one. "rgb" for its style, "hex" for its pop's sample.
+function bubble_colour( bytes )
+{
+   var hue = ( ( bytes[ 0 ] << 8 ) | bytes[ 1 ] ) % 360;
+   var saturation = 0.55 + ( bytes[ 2 ] >> 4 ) / 15 * 0.35;
+   var lightness = 0.45 + ( bytes[ 2 ] & 15 ) / 15 * 0.15;
+
+   var chroma = ( 1 - Math.abs( 2 * lightness - 1 ) ) * saturation;
+   var sector = hue / 60;
+   var second = chroma * ( 1 - Math.abs( sector % 2 - 1 ) );
+
+   var parts = [ [ chroma, second, 0 ], [ second, chroma, 0 ], [ 0, chroma, second ], [ 0, second, chroma ], [ second, 0, chroma ],
+    [ chroma, 0, second ] ][ Math.floor( sector ) ];
+
+   var rgb = parts.map( function( part ) { return Math.round( ( part + lightness - chroma / 2 ) * 255 ); } );
+
+   return { rgb: "rgb(" + rgb.join( ", " ) + ")", hex: rgb.map( function( n ) { return ( n < 16 ? "0" : "" ) + n.toString( 16 ); } ).join( "" ) };
+}
+
+// NOTE: The person's randomness as hex, "length" characters - every pop's time, place and colour (and the misses' times)
+// with the browser's own random numbers, hashed by "sha256" (hex in, hex out: "hex_sha256( )" in the page). Long enough to mix
 // with the node's suggestion by "xor_hex_data" - several hashes chained when one is too short.
 function randomness_hex( samples, browser_hex, sha256, length )
 {
    var text = ( samples || [ ] ).map( function( sample )
    {
-      return sample.t.toFixed( 3 ) + "," + Math.round( sample.x || 0 ) + "," + Math.round( sample.y || 0 ) + ( sample.hit ? "+" : "-" );
+      return sample.t.toFixed( 3 ) + "," + Math.round( sample.x || 0 ) + "," + Math.round( sample.y || 0 ) + ( sample.hit ? "+" : "-" )
+       + ( sample.c || "" );
    } ).join( ";" ) + "|" + String( browser_hex || "" );
 
    var hex = "";
@@ -890,6 +912,7 @@ if( typeof module !== "undefined" )
       health_heading: health_heading,
       setup_kept: setup_kept,
       randomness_hex: randomness_hex,
+      bubble_colour: bubble_colour,
       word_choices: word_choices,
       security_text: security_text,
       warns_master_password: warns_master_password,

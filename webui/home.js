@@ -250,7 +250,7 @@ const c_setup_kept_key = "ciyam.setup";
 // NOTE: Twelve words are 128 bits - 32 hex characters, the length the node suggests.
 const c_setup_entropy_length = 32;
 
-const c_setup_most_bubbles = 8;
+const c_setup_most_bubbles = 16;
 
 var g_setup = null;
 
@@ -449,7 +449,7 @@ function start_bubbles( )
 
    if( ( g_bubbles.length === 0 ) && ( g_setup.pops < c_setup_pops ) )
    {
-      for( var i = 0; i < 4; i++ )
+      for( var i = 0; i < 8; i++ )
          add_bubble( field, true );
    }
 
@@ -481,7 +481,14 @@ function add_bubble( field, anywhere )
 {
    var width = field.clientWidth || 430;
    var height = field.clientHeight || 300;
-   var size = 30 + Math.random( ) * 26;
+   var size = 26 + Math.random( ) * 22;
+
+   // NOTE: Each its own colour, from the browser's secure random numbers - kept with its pop (Ian, 2026-10-13).
+   var bytes = new Uint8Array( 3 );
+
+   window.crypto.getRandomValues( bytes );
+
+   var colour = bubble_colour( bytes );
 
    var button = document.createElement( "button" );
 
@@ -490,6 +497,7 @@ function add_bubble( field, anywhere )
    button.setAttribute( "aria-label", "Pop this bubble" );
    button.style.width = size + "px";
    button.style.height = size + "px";
+   button.style.setProperty( "--bubble-colour", colour.rgb );
 
    // NOTE: Livelier since 2026-10-13 (Ian: "move around a more and a little faster") - a drift sideways that wanders, as
    // well as a wider, quicker sway.
@@ -497,7 +505,8 @@ function add_bubble( field, anywhere )
     x: 8 + Math.random( ) * Math.max( 1, width - size - 16 ),
     y: anywhere ? 24 + Math.random( ) * Math.max( 1, height - size - 40 ) : height + 4,
     rise: 1 + Math.random( ) * 1.4, drift: ( Math.random( ) - 0.5 ) * 0.06,
-    sway: 8 + Math.random( ) * 20, wobble: 0.0015 + Math.random( ) * 0.002, phase: Math.random( ) * 6.283, left: 0 };
+    sway: 8 + Math.random( ) * 20, wobble: 0.0015 + Math.random( ) * 0.002, phase: Math.random( ) * 6.283, left: 0,
+    colour: colour.hex, rgb: colour.rgb };
 
    button.addEventListener( "click", function( event )
    {
@@ -557,8 +566,9 @@ function step_bubbles( now )
       return true;
    } );
 
-   // NOTE: A little more often since 2026-10-13 (Damon) - and sooner still with only a couple left to catch.
-   var chance = ( 0.03 * speed + ( g_bubbles.length < 3 ? 0.05 : 0 ) ) * elapsed / 40;
+   // NOTE: More of them since 2026-10-13 (Ian) - up to sixteen, so popping is picking some out here and there, not every
+   // one that rises - and sooner still with only a few in the box.
+   var chance = ( 0.07 * speed + ( g_bubbles.length < 6 ? 0.08 : 0 ) ) * elapsed / 40;
 
    if( ( g_setup.pops < c_setup_pops ) && ( g_bubbles.length < c_setup_most_bubbles ) && ( Math.random( ) < chance ) )
       add_bubble( field, false );
@@ -572,7 +582,7 @@ function setup_sample( event, bubble )
    var box = document.getElementById( "setup_bubbles" ).getBoundingClientRect( );
    var from_pointer = event && ( event.clientX || event.clientY );
 
-   return { t: performance.now( ), hit: !!bubble,
+   return { t: performance.now( ), hit: !!bubble, c: bubble ? bubble.colour : "",
     x: from_pointer ? event.clientX - box.left : ( bubble ? bubble.left + bubble.size / 2 : 0 ),
     y: from_pointer ? event.clientY - box.top : ( bubble ? bubble.y + bubble.size / 2 : 0 ) };
 }
@@ -584,6 +594,7 @@ function burst_bubble( bubble )
 
    burst.className = "home-bubble-burst";
    burst.setAttribute( "aria-hidden", "true" );
+   burst.style.setProperty( "--bubble-colour", bubble.rgb );
    burst.style.width = bubble.size + "px";
    burst.style.height = bubble.size + "px";
    burst.style.transform = "translate(" + bubble.left.toFixed( 1 ) + "px, " + bubble.y.toFixed( 1 ) + "px)";

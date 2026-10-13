@@ -1705,10 +1705,11 @@
    left: 0;
    top: 0;
    padding: 0;
-   border: 1px solid color-mix( in srgb, var(--color-chat-accent) 40%, transparent );
+   border: 1px solid color-mix( in srgb, var(--bubble-colour, var(--color-chat-accent)) 55%, transparent );
    border-radius: 50%;
    background: radial-gradient( circle at 32% 28%, rgba( 255, 255, 255, 0.95 ) 0 10%,
-    color-mix( in srgb, var(--color-chat-accent) 16%, transparent ) 18% 58%, color-mix( in srgb, var(--color-chat-accent) 32%, transparent ) 100% );
+    color-mix( in srgb, var(--bubble-colour, var(--color-chat-accent)) 22%, transparent ) 18% 58%,
+    color-mix( in srgb, var(--bubble-colour, var(--color-chat-accent)) 45%, transparent ) 100% );
    cursor: pointer;
 }
 
@@ -1797,7 +1798,7 @@
    position: absolute;
    left: 0;
    top: 0;
-   border: 2px dashed color-mix( in srgb, var(--color-chat-accent) 60%, transparent );
+   border: 2px dashed color-mix( in srgb, var(--bubble-colour, var(--color-chat-accent)) 70%, transparent );
    border-radius: 50%;
    pointer-events: none;
    animation: home-burst 0.45s ease-out forwards;

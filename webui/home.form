@@ -97,8 +97,8 @@ http://www.opensource.org/licenses/mit-license.php.
 
       <section id="setup_random" hidden>
          <h2 tabindex="-1">Add your own randomness</h2>
-         <p class="chat-signin-lede">Pop twelve bubbles as they rise. Exactly when and where you catch each one is mixed with
-          the node's own suggestion, so neither alone decides your twelve words.</p>
+         <p class="chat-signin-lede">Pop any twelve bubbles as they rise. Which ones, and exactly when and where you catch
+          them, is mixed with the node's own suggestion, so neither alone decides your twelve words.</p>
          <div class="home-bubbles" id="setup_bubbles" role="group" aria-label="Bubbles to pop"></div>
          <div class="home-setup-count">
             <span id="setup_popped">0 of 12 popped</span>
