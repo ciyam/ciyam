@@ -1009,13 +1009,15 @@ function end_first_load( )
 // NOTE: The one place that decides which of the thread's views is showing.
 function show_thread_view( )
 {
-   var loading = g_first_load;
-   var has_room = ( g_room !== "" );
-   var inviting = !loading && !has_room && ( g_selected_invite !== "" );
+   var loading = g_first_load && !g_chat_off;
+   var has_room = ( g_room !== "" ) && !g_chat_off;
+   var inviting = !loading && !has_room && !g_chat_off && ( g_selected_invite !== "" );
+
+   document.getElementById( "thread_off" ).hidden = !g_chat_off;
 
    document.getElementById( "thread_loading" ).hidden = !loading;
    document.getElementById( "thread_invite" ).hidden = !inviting;
-   document.getElementById( "thread_empty" ).hidden = loading || has_room || inviting;
+   document.getElementById( "thread_empty" ).hidden = loading || has_room || inviting || g_chat_off;
    // NOTE: Only a room has its head at every width; for an invitation or an empty thread it
    // holds the narrow screen's panel buttons, so the title says where the user is.
    var head = document.getElementById( "thread_head" );
@@ -1238,8 +1240,36 @@ function load_rooms( )
    } );
 }
 
+// NOTE: The chat not turned on - said once, in the thread, and nothing more asked of the node (Ian, 2026-10-13).
+var g_chat_off = false;
+
+function chat_turned_off( )
+{
+   g_chat_off = true;
+
+   stop_polling( );
+
+   document.getElementById( "thread_off_text" ).textContent = ciyam.is_admin
+    ? "The node isn't running its chat (IRC), so there are no rooms or messages here. It's turned on in the node's"
+    + " autoscript - its irc_store_or_restore entry."
+    : "The node isn't running its chat, so there are no rooms or messages here. Ask whoever looks after the node.";
+
+   // NOTE: Nothing can be made either.
+   [ "room_new", "dm_new" ].forEach( function( id ) { document.getElementById( id ).hidden = true; } );
+
+   end_first_load( );
+   show_thread_view( );
+}
+
 function on_rooms_response( response )
 {
+   if( irc_unavailable( response ) )
+   {
+      chat_turned_off( );
+
+      return;
+   }
+
    var result = parse_fetch_response( response );
 
    // NOTE: A failure on the first load keeps the spinner up - the next poll tries again, and

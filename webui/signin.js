@@ -174,6 +174,29 @@ function signin_build( host, options )
 
    form.appendChild( foot );
    view.appendChild( form );
+
+   // NOTE: A node not set up yet - nobody can sign in; it is set up from Home (Ian, 2026-10-13: a Back from setting up
+   // landed him on a part's sign in).
+   var fresh = signin_element( "div", { class: "chat-signin-form", id: "signin_new_node", hidden: "" } );
+   var fresh_brand = signin_element( "div", { class: "chat-brand" } );
+
+   fresh_brand.appendChild( signin_element( "span", { class: "chat-logo" } ) );
+   fresh_brand.appendChild( signin_element( "span", { class: "chat-wordmark" }, "CIYAM" ) );
+   fresh_brand.appendChild( signin_element( "span", { class: "chat-brand-note" }, g_signin_options.note || "" ) );
+
+   fresh.appendChild( fresh_brand );
+   fresh.appendChild( signin_element( "h2", { tabindex: "-1" }, "This node isn't set up yet" ) );
+   fresh.appendChild( signin_element( "p", { class: "chat-signin-lede" },
+    "It has no identity yet, so nobody can sign in. It's set up from Home - and if you were part way, Home carries on." ) );
+
+   var fresh_actions = signin_element( "div", { class: "chat-signin-actions" } );
+
+   fresh_actions.appendChild( signin_element( "a", { class: "chat-btn chat-btn--primary", id: "signin_new_node_home", href: "home.html" },
+    "Set it up in Home" ) );
+
+   fresh.appendChild( fresh_actions );
+   view.appendChild( fresh );
+
    host.appendChild( view );
 
    host.appendChild( recover_build( ) );
@@ -200,23 +223,36 @@ function signin_show( )
 
 var g_signin_plain = false;
 
+var g_signin_node_known = false;
+
 // NOTE: Whether the node is locked - "/system" names a locked one ":CIYAM:". A locked node offers recovery and not
 // "New here?", which cannot work on it. Answers whether it is; "(NONE)" there is a connection not encrypted.
 async function signin_check_locked( )
 {
    var locked = false;
+   var fresh = false;
+   var known = false;
 
    try
    {
       var system = ( await ( await fetch( "/system", { cache: "no-store" } ) ).text( ) ).trim( );
 
       locked = ( system.indexOf( ":CIYAM:" ) === 0 );
+      fresh = ( system.indexOf( "*CIYAM*" ) === 0 );
+      known = ( system.indexOf( "CIYAM" ) >= 0 );
 
       g_signin_plain = / \(NONE\)$/.test( system );
    }
    catch( e )
    {
    }
+
+   // NOTE: Not set up - the sign in gives way to the way to Home ("signin_new_node"). Whether the node answered at all is
+   // kept, so a refusal is not said to be a lock unless the node said so ("g_signin_node_known").
+   document.getElementById( "signin_form" ).hidden = fresh;
+   document.getElementById( "signin_new_node" ).hidden = !fresh;
+
+   g_signin_node_known = known;
 
    document.getElementById( "recover_offer" ).hidden = !locked;
 
@@ -258,14 +294,15 @@ async function signin_show_refusal( error )
 {
    var own = g_signin_options.error_text ? g_signin_options.error_text( error ) : "";
 
-   signin_set_text( "signin_error", ( own !== "" ) ? own : ( is_unknown_device_error( error )
-    ? "This browser's saved sign in is from before the node was set up again - type your password."
-    : sign_in_error_text( error ) ) );
-
    var locked = await signin_check_locked( );
 
-   if( locked && ( own === "" ) && ( document.getElementById( "signin_error" ).textContent !== "" ) )
-      signin_set_text( "signin_error", sign_in_error_text( "Error: Was unable to start a web session." ) );
+   // NOTE: Locked only when the node says so - "unable to start a web session" from one that is not is said as that
+   // (2026-10-13: a node waiting on its chat refuses so too).
+   var state = g_signin_node_known ? locked : undefined;
+
+   signin_set_text( "signin_error", ( own !== "" ) ? own : ( ( is_unknown_device_error( error ) && !locked )
+    ? "This browser's saved sign in is from before the node was set up again - type your password."
+    : sign_in_error_text( error, state ) ) );
 }
 
 function signin_storage_get( key )
@@ -649,7 +686,9 @@ async function signin_resume( )
       reply = "";
    }
 
-   if( ( reply.trim( ) === "" ) || is_error_response( reply ) )
+   // NOTE: The chat not turned on refuses the lobby, though the session is good (Ian, 2026-10-13) - so it is kept, and
+   // the part says why it cannot go on.
+   if( ( reply.trim( ) === "" ) || ( is_error_response( reply ) && !irc_unavailable( reply ) ) )
    {
       ciyam.sessid = "";
       ciyam.unique = "";

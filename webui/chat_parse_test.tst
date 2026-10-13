@@ -464,6 +464,9 @@ ok   a locked node, said so
 ok   a locked node's refusal known
 ok   any other error as it is, less its 'Error:'
 ok   nothing
+ok   unable to start a session on a node known not to be locked - not called locked (2026-10-13)
+ok   a node known to be locked - said so, whatever it answered
+ok   the chat not turned on
 
 == session handover fields =====================================
 ok   hyphen is encoded

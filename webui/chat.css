@@ -1999,6 +1999,17 @@ button.chat-avatar:hover
    background: var(--color-chat-bg);
 }
 
+/* NOTE: A link drawn as a button - "Back to Home" when the chat is not turned on, "Set it up in Home" on a node not set
+   up (2026-10-13). */
+.chat-empty a.chat-btn,
+.chat-signin-actions a.chat-btn
+{
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   text-decoration: none;
+}
+
 .chat-empty h2
 {
    margin: 0;

@@ -873,6 +873,13 @@ check( "a locked node's refusal known", [ cp.is_locked_sign_in_error( "Error: Wa
 check( "any other error as it is, less its 'Error:'", cp.sign_in_error_text( "Error: Web session is currently busy (try again shortly)." ),
  "Web session is currently busy (try again shortly)." );
 check( "nothing", cp.sign_in_error_text( "" ), "" );
+check( "unable to start a session on a node known not to be locked - not called locked (2026-10-13)",
+ cp.sign_in_error_text( "Error: Was unable to start a web session for 'admin'.", false ),
+ "The node couldn't start a session just now - wait a moment, then try again." );
+check( "a node known to be locked - said so, whatever it answered", cp.sign_in_error_text( "Error: This web session is not valid (or has expired).", true ),
+ "This node is locked - it restarted, and nobody can sign in until it is unlocked." );
+check( "the chat not turned on", [ cp.irc_unavailable( "Error: IRC usage is not currently available." ), cp.irc_unavailable( "Error: Other." ),
+ cp.irc_unavailable( null ) ], [ true, false, false ] );
 
 heading( "session handover fields" );
 

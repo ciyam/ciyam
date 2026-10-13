@@ -1633,15 +1633,21 @@ function user_initial( name )
 // is already a sentence and is shown as it is.
 const c_connect_status_error = "invalid or missing connect status";
 
-function sign_in_error_text( error )
+// NOTE: "locked", when known - whether "/system" says the node is locked. "Unable to start a web session" is how a locked
+// node refuses a sign in, but not only a locked one: a node waiting on its chat (IRC) that never starts refuses it too
+// (Ian's "web_session.cin", 2026-10-13) - so a node known not to be locked is not called locked.
+function sign_in_error_text( error, locked )
 {
    var text = String( error || "" );
 
    if( text === c_connect_status_error )
       return "The server's answer to signing in was not what was expected. Please try again.";
 
+   if( ( locked === true ) && ( text !== "" ) )
+      return c_sign_in_locked;
+
    if( is_locked_sign_in_error( text ) )
-      return "This node is locked - it restarted, and nobody can sign in until it is unlocked.";
+      return ( locked === false ) ? c_sign_in_no_session : c_sign_in_locked;
 
    // NOTE: The node's own words, without its "Error: " - the panel says it is one (2026-10-10).
    return text.replace( /^Error:\s*/, "" );
@@ -1745,6 +1751,17 @@ function plan_after_recovery( stored, node_pins, admin_pin )
 function is_locked_sign_in_error( error )
 {
    return /unable to start a web session/i.test( String( error || "" ) );
+}
+
+const c_sign_in_locked = "This node is locked - it restarted, and nobody can sign in until it is unlocked.";
+
+const c_sign_in_no_session = "The node couldn't start a session just now - wait a moment, then try again.";
+
+// NOTE: The node's chat (IRC) not turned on - every room and message request answered "IRC usage is not currently
+// available." (Ian, 2026-10-13: the default on his development node). The session itself is good; the chat says why.
+function irc_unavailable( response )
+{
+   return /IRC usage is not currently available/i.test( String( response || "" ) );
 }
 
 function encode_channel_field( value )
@@ -2311,6 +2328,7 @@ if( typeof module !== "undefined" )
       password_strength: password_strength,
       user_initial: user_initial,
       sign_in_error_text: sign_in_error_text,
+      irc_unavailable: irc_unavailable,
       is_locked_sign_in_error: is_locked_sign_in_error,
       recovery_words: recovery_words,
       recovery_words_problem: recovery_words_problem,

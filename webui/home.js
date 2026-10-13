@@ -1399,6 +1399,9 @@ function bottom_item( key, title, on_click )
    return item;
 }
 
+// NOTE: Whether the node's chat (IRC) is turned on, as its lobby last answered.
+var g_chat_off = false;
+
 // NOTE: The tab's title carries what Home's badges count - the chat's, and Health's for admin - for a tab in the
 // background (2026-10-12).
 const c_home_title = "CIYAM Home";
@@ -1723,13 +1726,18 @@ async function load_member_home( )
 {
    var asked_for = ciyam.access;
 
-   var listing = parse_fetch_response( await request( function( done )
+   var answer = await request( function( done )
    {
       return ciyam.fetch_messages( c_lobby_room, "", done );
-   } ) );
+   } );
+
+   var listing = parse_fetch_response( answer );
 
    if( ciyam.access !== asked_for )
       return;
+
+   // NOTE: The chat not turned on - the Chat tile says so, rather than "Nothing new" (Ian, 2026-10-13).
+   g_chat_off = irc_unavailable( answer );
 
    if( listing.error === "" )
       g_rooms = derive_room_list( listing.rooms );
@@ -1776,7 +1784,7 @@ function render_member_home( )
    var invitations = invitations_waiting( );
    var summary = chat_summary( g_rooms, invitations, ciyam.is_admin );
 
-   set_text( "tile_chat_text", chat_summary_text( summary ) );
+   set_text( "tile_chat_text", g_chat_off ? "The chat isn't turned on for this node" : chat_summary_text( summary ) );
 
    document.querySelectorAll( "[data-badge='chat']" ).forEach( function( badge )
    {
@@ -2149,7 +2157,8 @@ async function load_overview( )
    if( ciyam.access !== asked_for )
       return;
 
-   var filling = show_filling( is_error_response( listing ) ? null : derive_room_list( parse_fetch_response( listing ).rooms ) );
+   var filling = show_filling( is_error_response( listing ) ? null : derive_room_list( parse_fetch_response( listing ).rooms ),
+    irc_unavailable( listing ) );
 
    show_attention( health_issues( { secure: secure, keys: key_count, problems: problems, filling: filling } ) );
 }
@@ -2343,7 +2352,7 @@ function show_problems_in_logs( event )
 // NOTE: The rooms near the number of messages a room keeps - a full one drops its oldest (Ian's "@qs_pf_irc",
 // 2026-10-11) - and Health's bars for the fullest, filling or not. Only the rooms admin is in: the listing has no others.
 // Returns the rooms filling up, or null when the listing could not be read.
-function show_filling( rooms )
+function show_filling( rooms, chat_off )
 {
    var list = document.getElementById( "rooms_filling" );
 
@@ -2351,8 +2360,8 @@ function show_filling( rooms )
 
    if( rooms === null )
    {
-      set_text( "rooms_heading", "The rooms could not be read" );
-      set_health_pill( "health_rooms_pill", "quiet", "Not read" );
+      set_text( "rooms_heading", chat_off ? "The chat isn't turned on for this node" : "The rooms could not be read" );
+      set_health_pill( "health_rooms_pill", "quiet", chat_off ? "Off" : "Not read" );
 
       return null;
    }

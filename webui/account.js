@@ -450,7 +450,12 @@ function route( )
       else if( asked.view === "welcome" )
          open_welcome( asked.code );
       else
+      {
          show_view( "signin_view" );
+
+         // NOTE: As the shared sign in does - a node not set up says so, and points to Home (Ian, 2026-10-13).
+         signin_check_locked( );
+      }
 
       return;
    }
