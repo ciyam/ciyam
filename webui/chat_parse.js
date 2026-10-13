@@ -1758,6 +1758,17 @@ function recovery_error_text( error, fresh )
    return text;
 }
 
+// NOTE: Which step a refusal belongs on, the recovery being two (Damon, 2026-10-13): "words" for words the node would not
+// take, to be put right there - not its words, or the "locked for administration" it answered for them before; "password"
+// for anything else. Onto a node not set up no words can be wrong, so never "words" ("recovery_error_text( )").
+function recovery_error_step( error, fresh )
+{
+   if( fresh )
+      return "password";
+
+   return /identity mismatch|locked for administration/i.test( String( error || "" ) ) ? "words" : "password";
+}
+
 // NOTE: What a recovery leaves saved on this browser. Admin's PIN changes on a recovery, the password always does, and
 // the password is hashed with the PIN (Ian, 2026-10-10) - so the password saved for admin's new PIN goes ("forget"), and
 // so does admin's old PIN: a saved PIN the node no longer has ("node_pins", its accounts as admin now lists them; null
@@ -2367,6 +2378,7 @@ if( typeof module !== "undefined" )
       recovery_words_problem: recovery_words_problem,
       word_completions: word_completions,
       recovery_error_text: recovery_error_text,
+      recovery_error_step: recovery_error_step,
       recovery_texts: recovery_texts,
       plan_after_recovery: plan_after_recovery,
       visible_rooms: visible_rooms,

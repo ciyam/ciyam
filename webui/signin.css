@@ -178,6 +178,18 @@
    margin: 0;
 }
 
+/* NOTE: The recovery's two steps - the words, then the new master password (2026-10-13). */
+.recover-step
+{
+   display: flex;
+   flex-direction: column;
+}
+
+.recover-step[hidden]
+{
+   display: none;
+}
+
 /* NOTE: The note and warning the recovery uses - Home's look, as Home had them. */
 .recover-note
 {

@@ -626,5 +626,6 @@ ok   the node's refusals - not its words
 ok   - what it answered for words not its own, before Ian's 'a9d18319'
 ok   - not locked
 ok   - anything else as it came
+ok   a refusal's step - the words for words not taken, the password's for the rest, and never the words onto a new node
 
 All checks passed.

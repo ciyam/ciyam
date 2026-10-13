@@ -729,8 +729,17 @@ function recover_build( )
    var words = recovery_texts( false );
 
    form.appendChild( brand );
-   form.appendChild( signin_element( "h2", { tabindex: "-1", id: "recover_heading" }, words.heading ) );
-   form.appendChild( signin_element( "p", { class: "chat-signin-lede", id: "recover_lede" }, words.lede ) );
+
+   // NOTE: Two steps, as setting up has (Damon, 2026-10-13): the twelve words, then the new master password - all on one
+   // card it was long, and scrolled on a phone. "recover_show_step( )" shows one.
+   var step_words = signin_element( "div", { class: "recover-step", id: "recover_step_words" } );
+   var step_password = signin_element( "div", { class: "recover-step", id: "recover_step_password", hidden: "" } );
+
+   form.appendChild( step_words );
+   form.appendChild( step_password );
+
+   step_words.appendChild( signin_element( "h2", { tabindex: "-1", id: "recover_heading" }, words.heading ) );
+   step_words.appendChild( signin_element( "p", { class: "chat-signin-lede", id: "recover_lede" }, words.lede ) );
 
    var set = signin_element( "fieldset", { class: "recover-words-set" } );
 
@@ -760,12 +769,12 @@ function recover_build( )
    set.appendChild( signin_element( "ul", { class: "recover-word-suggest", id: "recover_suggest", role: "listbox", "aria-label": "Words",
     hidden: "" } ) );
 
-   form.appendChild( set );
-   form.appendChild( signin_element( "div", { class: "signin-hint", id: "recover_words_status", role: "status" },
+   step_words.appendChild( set );
+   step_words.appendChild( signin_element( "div", { class: "signin-hint", id: "recover_words_status", role: "status" },
     "Type them in order, or paste all twelve into the first box." ) );
 
    // NOTE: Recovering onto a node not set up - nothing there can check the words ("recovery_texts( true )").
-   form.appendChild( signin_element( "div", { class: "recover-warning", id: "recover_caution", hidden: "" } ) );
+   step_words.appendChild( signin_element( "div", { class: "recover-warning", id: "recover_caution", hidden: "" } ) );
 
    var warning = signin_element( "div", { class: "recover-warning", id: "recover_warning", role: "alert", hidden: "" } );
 
@@ -773,9 +782,22 @@ function recover_build( )
    warning.appendChild( document.createTextNode( " The node sees it as plain text - only recover from a device on the node's"
     + " own network." ) );
 
-   form.appendChild( warning );
+   step_words.appendChild( warning );
+   step_words.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "recover_words_error", role: "alert" } ) );
 
-   form.appendChild( signin_element( "label", { class: "chat-label", for: "recover_password" }, "New master password" ) );
+   var words_actions = signin_element( "div", { class: "chat-signin-actions" } );
+
+   var next = signin_element( "button", { type: "button", class: "chat-btn chat-btn--primary", id: "recover_words_next" }, "Next" );
+
+   next.addEventListener( "click", recover_words_go );
+
+   words_actions.appendChild( next );
+   step_words.appendChild( words_actions );
+
+   step_password.appendChild( signin_element( "h2", { tabindex: "-1", id: "recover_password_heading" }, "A new master password" ) );
+   step_password.appendChild( signin_element( "p", { class: "chat-signin-lede" },
+    "It takes the place of the old one - admin's password, and what unlocks the node after a restart." ) );
+   step_password.appendChild( signin_element( "label", { class: "chat-label", for: "recover_password" }, "New master password" ) );
 
    var password = signin_element( "input", { type: "password", id: "recover_password", class: "chat-field", autocomplete: "new-password" } );
 
@@ -802,7 +824,7 @@ function recover_build( )
       }
    } );
 
-   form.appendChild( password );
+   step_password.appendChild( password );
 
    var meter = signin_element( "div", { class: "chat-strength", id: "recover_strength", hidden: "" } );
    var track = signin_element( "div", { class: "chat-strength-track" } );
@@ -812,11 +834,11 @@ function recover_build( )
    meter.appendChild( track );
    meter.appendChild( signin_element( "span", { class: "chat-strength-label", id: "recover_strength_label" } ) );
 
-   form.appendChild( meter );
-   form.appendChild( signin_element( "label", { class: "chat-label", for: "recover_confirm" }, "The same again" ) );
-   form.appendChild( signin_element( "input", { type: "password", id: "recover_confirm", class: "chat-field", autocomplete: "new-password" } ) );
-   form.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "recover_error", role: "alert" } ) );
-   form.appendChild( signin_element( "div", { class: "recover-status", id: "recover_status", role: "status" } ) );
+   step_password.appendChild( meter );
+   step_password.appendChild( signin_element( "label", { class: "chat-label", for: "recover_confirm" }, "The same again" ) );
+   step_password.appendChild( signin_element( "input", { type: "password", id: "recover_confirm", class: "chat-field", autocomplete: "new-password" } ) );
+   step_password.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "recover_error", role: "alert" } ) );
+   step_password.appendChild( signin_element( "div", { class: "recover-status", id: "recover_status", role: "status" } ) );
 
    var actions = signin_element( "div", { class: "chat-signin-actions" } );
 
@@ -848,9 +870,15 @@ function recover_build( )
       }
    } );
 
-   actions.appendChild( back );
+   words_actions.appendChild( back );
 
-   form.appendChild( actions );
+   var to_words = signin_element( "button", { type: "button", class: "chat-btn chat-signin-setup", id: "recover_password_back" }, "Back to the words" );
+
+   to_words.addEventListener( "click", function( ) { recover_show_step( "words" ); } );
+
+   actions.appendChild( to_words );
+
+   step_password.appendChild( actions );
 
    var done = signin_element( "section", { class: "chat-signin-form recover-form", id: "recover_done", "aria-labelledby": "recover_done_heading",
     hidden: "" } );
@@ -961,7 +989,10 @@ async function recover_show( options )
    document.getElementById( "recover_warning" ).hidden = !g_signin_plain;
    document.getElementById( "recover_form" ).hidden = false;
    document.getElementById( "recover_done" ).hidden = true;
+   document.getElementById( "recover_step_words" ).hidden = false;
+   document.getElementById( "recover_step_password" ).hidden = true;
 
+   signin_set_text( "recover_words_error", "" );
    signin_set_text( "recover_error", "" );
    signin_set_text( "recover_status", "" );
 
@@ -986,6 +1017,7 @@ function recover_on_input( event )
    var input = event.target;
 
    // NOTE: A refusal was about the words as they were - it goes once they change.
+   signin_set_text( "recover_words_error", "" );
    signin_set_text( "recover_error", "" );
 
    var words = recovery_words( input.value );
@@ -1130,14 +1162,73 @@ function recover_take_suggestion( word )
    recover_next_field( input );
 }
 
-// NOTE: On from a word's box - to the next, or after the last to the new password.
+// NOTE: On from a word's box - to the next, or after the last on to the new master password, as Next.
 function recover_next_field( input )
 {
    var next = recover_inputs( )[ parseInt( input.dataset.index, 10 ) + 1 ];
 
-   ( next || document.getElementById( "recover_password" ) ).focus( );
+   if( next )
+      next.focus( );
+   else
+      recover_words_go( );
 
    recover_words_status( );
+}
+
+// NOTE: The two steps - "words" or "password" - with the focus where typing goes on.
+function recover_show_step( step )
+{
+   document.getElementById( "recover_step_words" ).hidden = ( step !== "words" );
+   document.getElementById( "recover_step_password" ).hidden = ( step !== "password" );
+
+   if( step === "password" )
+      document.getElementById( "recover_password" ).focus( );
+   else
+      recover_inputs( )[ 0 ].focus( );
+}
+
+function recover_typed_words( )
+{
+   return recover_inputs( ).map( function( input ) { return input.value.trim( ).toLowerCase( ); } ).filter( function( word ) { return word !== ""; } );
+}
+
+// NOTE: What is wrong with the words as they stand - "" when all twelve are words that fit together.
+function recover_words_problem_now( )
+{
+   var words = recover_typed_words( );
+
+   var problem = recovery_words_problem( words, recover_wordlist( ) );
+
+   if( ( problem === "" ) && !BIP39.validateMnemonic( words.join( " " ) ) )
+      problem = c_recovery_words_mismatched;
+
+   return problem;
+}
+
+// NOTE: On from the words to the new master password, once they are twelve that fit together - what is wrong said on the
+// words' own step. Nothing is sent yet: the node sees the words with the password.
+async function recover_words_go( )
+{
+   signin_set_text( "recover_words_error", "" );
+
+   if( !await recover_load_bip39( ) )
+   {
+      signin_set_text( "recover_words_error", "The word list could not be read - reload the page to try again." );
+
+      return;
+   }
+
+   var problem = recover_words_problem_now( );
+
+   if( problem !== "" )
+   {
+      signin_set_text( "recover_words_error", problem );
+
+      return;
+   }
+
+   recover_hide_suggestions( );
+   recover_show_step( "password" );
 }
 
 // NOTE: Enter moves on from a box whether a word was chosen from the list or typed in full - the last box to the new
@@ -1196,16 +1287,15 @@ async function recover_submit( event )
       return;
    }
 
-   var words = recover_inputs( ).map( function( input ) { return input.value.trim( ).toLowerCase( ); } ).filter( function( word ) { return word !== ""; } );
+   var words = recover_typed_words( );
 
-   var problem = recovery_words_problem( words, recover_wordlist( ) );
-
-   if( ( problem === "" ) && !BIP39.validateMnemonic( words.join( " " ) ) )
-      problem = c_recovery_words_mismatched;
+   var problem = recover_words_problem_now( );
 
    if( problem !== "" )
    {
-      signin_set_text( "recover_error", problem );
+      recover_show_step( "words" );
+
+      signin_set_text( "recover_words_error", problem );
 
       return;
    }
@@ -1273,7 +1363,15 @@ async function recover_submit( event )
 
       ciyam.device = device;
 
-      signin_set_text( "recover_error", recovery_error_text( error, g_recover_fresh !== null ) );
+      // NOTE: Words the node would not take are said with the words, to be put right there; anything else here.
+      if( recovery_error_step( error, g_recover_fresh !== null ) === "words" )
+      {
+         recover_show_step( "words" );
+
+         signin_set_text( "recover_words_error", recovery_error_text( error, false ) );
+      }
+      else
+         signin_set_text( "recover_error", recovery_error_text( error, g_recover_fresh !== null ) );
 
       return;
    }

@@ -1164,6 +1164,11 @@ check( "- what it answered for words not its own, before Ian's 'a9d18319'", cp.r
 check( "- not locked", /isn't locked, so there is nothing to recover/.test(
  cp.recovery_error_text( "Error: System identity is not currently locked." ) ), true );
 check( "- anything else as it came", cp.recovery_error_text( "Error: Something else." ), "Something else." );
+check( "a refusal's step - the words for words not taken, the password's for the rest, and never the words onto a new node", [
+ cp.recovery_error_step( "Error: System identity mismatch (incorrect mnemonics?).", false ),
+ cp.recovery_error_step( "Error: System is currently locked for administration.", false ),
+ cp.recovery_error_step( "Error: System is currently locked for administration.", true ),
+ cp.recovery_error_step( "Error: Something else.", false ) ], [ "words", "words", "password", "password" ] );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
