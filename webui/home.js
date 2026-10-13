@@ -250,7 +250,7 @@ const c_setup_kept_key = "ciyam.setup";
 // NOTE: Twelve words are 128 bits - 32 hex characters, the length the node suggests.
 const c_setup_entropy_length = 32;
 
-const c_setup_most_bubbles = 7;
+const c_setup_most_bubbles = 8;
 
 var g_setup = null;
 
@@ -534,7 +534,8 @@ function step_bubbles( now )
       return true;
    } );
 
-   var chance = ( 0.02 * speed + ( g_bubbles.length < 3 ? 0.04 : 0 ) ) * elapsed / 40;
+   // NOTE: A little more often since 2026-10-13 (Damon) - and sooner still with only a couple left to catch.
+   var chance = ( 0.03 * speed + ( g_bubbles.length < 3 ? 0.05 : 0 ) ) * elapsed / 40;
 
    if( ( g_setup.pops < c_setup_pops ) && ( g_bubbles.length < c_setup_most_bubbles ) && ( Math.random( ) < chance ) )
       add_bubble( field, false );
