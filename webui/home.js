@@ -962,13 +962,25 @@ async function setup_finish( )
 
    set_text( "setup_finish_status", "Set up - signing in as admin..." );
 
-   ciyam.error = "";
-   ciyam.device = device;
-
-   await request( function( done )
+   // NOTE: A node that has just taken its identity is busy starting up, and its first requests can miss the five seconds it
+   // gives them ("Timed out waiting for web session response.", seen 2026-10-13). Signing in is safe to ask again - so it is,
+   // twice more, a moment apart, for that answer only.
+   for( var tries = 0; tries < 3; tries++ )
    {
-      return ciyam.connect( g_setup.pin, device, "", g_setup.password, done );
-   } );
+      if( tries > 0 )
+         await new Promise( function( resolve ) { window.setTimeout( resolve, 2000 ); } );
+
+      ciyam.error = "";
+      ciyam.device = device;
+
+      await request( function( done )
+      {
+         return ciyam.connect( g_setup.pin, device, "", g_setup.password, done );
+      } );
+
+      if( !/Timed out waiting for web session response/.test( ciyam.error ) )
+         break;
+   }
 
    set_text( "setup_finish_status", "" );
 
