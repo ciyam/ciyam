@@ -133,6 +133,8 @@ constexpr const char* c_cws_endpoint_prefix = "/cws/";
 
 constexpr const char* c_boundary_prefix = "boundary=";
 
+constexpr const char* c_token_query_prefix = "&token=";
+
 constexpr const char* c_access_query_prefix = "&access=";
 constexpr const char* c_passwd_query_prefix = "&passwd=";
 
@@ -739,6 +741,8 @@ void http_request_handler::on_start( )
                // separator (and restores it
                // back after redaction).
                request_to_log[ pos ] = '&';
+
+               redact_query_value( request_to_log, c_token_query_prefix, CONST_LENGTH( c_token_query_prefix ) );
 
                redact_query_value( request_to_log, c_access_query_prefix, CONST_LENGTH( c_access_query_prefix ) );
                redact_query_value( request_to_log, c_passwd_query_prefix, CONST_LENGTH( c_passwd_query_prefix ) );
@@ -1347,8 +1351,8 @@ void http_request_handler::on_start( )
                   {
                      // NOTE: Allows for a special case in order to "touch"
                      // the ".web_access_admin" file when is waiting to set
-                     // the system identity (if "token" matches the PIN and
-                     // the IP address matches the PIN creator).
+                     // the system identity (if "token" is a match for what
+                     // is expected along with the requesting IP address).
                      if( has_system_variable( e_special_var_utm_web_reset )
                       && ( ip_addr == get_system_variable( e_special_var_web_admin_ip_addr ) ) )
                      {
@@ -1356,12 +1360,25 @@ void http_request_handler::on_start( )
 
                         admin_web_access_file += c_admin;
 
-                        if( file_exists( admin_web_access_file )
-                         && ( token == buffer_file( admin_web_access_file ) ) )
+                        // KLUDGE: Remove the "pin match" when "pin hash" is used in the UI.
+                        string admin_access_pin( opt_buffer_file( admin_web_access_file ) );
+
+                        bool was_pin_match = false;
+
+                        if( !admin_access_pin.empty( ) && ( token == admin_access_pin ) )
+                           was_pin_match = true;
+
+                        string admin_web_pin_hash( get_system_variable( e_special_var_web_admin_pin_hash ) );
+
+                        if( was_pin_match
+                         || ( !admin_web_pin_hash.empty( ) && ( token == admin_web_pin_hash ) ) )
                         {
                            file_touch( admin_web_access_file );
 
                            set_system_variable( e_special_var_utm_web_reset, c_false_value );
+
+                           if( !was_pin_match )
+                              ip_addr_for = string( ip_addr_for.length( ), 'X' );
                         }
                      }
                   }
