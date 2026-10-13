@@ -84,6 +84,7 @@ ok   people waiting - none
 ok   secure - asked of the node
 ok   secure - '1' is held encrypted
 ok   secure - nothing is not - a development or demo node
+ok   secure - '[okay]', how the node answers a variable with nothing in it, is not either
 ok   secure - no answer, or anything else, is not known
 ok   secure - not, said plainly
 ok   keys - none left

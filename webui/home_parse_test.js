@@ -164,6 +164,7 @@ check( "people waiting - none", hp.people_waiting_text( { active: 4, unclaimed: 
 check( "secure - asked of the node", hp.c_home_secure_request, "system_variable @sid_secure" );
 check( "secure - '1' is held encrypted", [ hp.parse_secure( "1" ), hp.parse_secure( "1\n" ) ], [ true, true ] );
 check( "secure - nothing is not - a development or demo node", hp.parse_secure( "" ), false );
+check( "secure - '[okay]', how the node answers a variable with nothing in it, is not either", hp.parse_secure( "[okay]\n" ), false );
 check( "secure - no answer, or anything else, is not known", [ hp.parse_secure( null ), hp.parse_secure( "Error: Not permitted." ) ], [ null, null ] );
 check( "secure - not, said plainly", /no unlock keys/.test( hp.c_home_keys_unavailable ), true );
 
@@ -350,7 +351,8 @@ check( "the heading", [ hp.health_heading( [ 1 ] ), hp.health_heading( [ 1, 2, 3
 check( "the node's kind", [ hp.node_kind_text( true, false ), hp.node_kind_text( false, true ), hp.node_kind_text( false, false ),
  hp.node_kind_text( null, null ) ],
  [ "Development - raw protocol open to admin", "Demo", "Standard", "Not reported" ] );
-check( "a flag - '1' or nothing", [ hp.parse_flag( "1" ), hp.parse_flag( "" ), hp.parse_flag( null ) ], [ true, false, null ] );
+check( "a flag - '1' or nothing", [ hp.parse_flag( "1" ), hp.parse_flag( "" ), hp.parse_flag( "[okay]" ), hp.parse_flag( null ) ],
+ [ true, false, false, null ] );
 
 // --------------------------------------------------------------------
 heading( "alerts" );

@@ -304,6 +304,8 @@ const c_home_secure_request = "system_variable @sid_secure";
 const c_home_keys_unavailable = "This node's identity isn't held encrypted - a development or demo node - so it has no unlock"
  + " keys: there is nothing to unlock.";
 
+// NOTE: A variable with nothing in it is answered "[okay]", not an empty reply - so on a node without a secure identity
+// "[okay]" is the "no" (Ian, 2026-10-13: unlock keys were offered there, and failed).
 function parse_secure( reply )
 {
    if( ( reply === null ) || ( reply === undefined ) )
@@ -314,7 +316,7 @@ function parse_secure( reply )
    if( value === "1" )
       return true;
 
-   return ( value === "" ) ? false : null;
+   return ( ( value === "" ) || ( value === "[okay]" ) ) ? false : null;
 }
 
 // NOTE: The unlock keys the node holds, as admin's Overview says it - each is used up when it unlocks the node.

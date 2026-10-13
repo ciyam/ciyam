@@ -2433,6 +2433,9 @@ async function do_make_key( )
    document.getElementById( "key_make" ).hidden = true;
 
    show_keys( );
+
+   // NOTE: Health's "no unlock keys left" goes at once, its count and the Overview with it (Ian, 2026-10-13).
+   load_overview( );
 }
 
 async function do_copy_key( )
