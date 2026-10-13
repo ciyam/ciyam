@@ -1718,54 +1718,72 @@
    outline-offset: 2px;
 }
 
-/* NOTE: Setting up's choice - a new node, or one recovered from its twelve words (2026-10-13). */
-.home-setup-kinds
+/* NOTE: Setting up's question - a new node, or one recovered from its twelve words - each answer a button that goes
+   straight on (Ian, 2026-10-13). */
+.home-setup-answers
 {
-   margin: 0;
-   padding: 0;
-   border: 0;
    display: flex;
    flex-direction: column;
    gap: 10px;
+   margin: 4px 0 6px;
 }
 
-.home-setup-kind
+.home-setup-answer
 {
    display: flex;
-   align-items: flex-start;
-   gap: 12px;
+   align-items: center;
+   gap: 14px;
+   width: 100%;
    padding: 14px 16px;
    border: 1px solid var(--color-chat-border);
    border-radius: var(--radius-md);
+   background: var(--color-chat-bg);
+   color: inherit;
+   font: inherit;
+   text-align: left;
    cursor: pointer;
 }
 
-.home-setup-kind:has( input:checked )
+.home-setup-answer:hover,
+.home-setup-answer:focus-visible
 {
    border-color: var(--color-chat-accent);
    background: var(--color-chat-bg-selected);
+   outline: none;
 }
 
-.home-setup-kind input
-{
-   flex: none;
-   margin: 3px 0 0;
-   width: 18px;
-   height: 18px;
-   accent-color: var(--color-chat-accent);
-}
-
-.home-setup-kind > span
+.home-setup-answer > span
 {
    display: flex;
+   flex: 1;
    flex-direction: column;
    gap: 2px;
 }
 
-.home-setup-kind > span > span
+.home-setup-answer > span > span
 {
    font-size: 14px;
    color: var(--color-chat-text-secondary);
+}
+
+.home-setup-answer::after
+{
+   content: "\203A";
+   font-size: 24px;
+   line-height: 1;
+   color: var(--color-chat-accent-deep);
+}
+
+.home-setup-tip
+{
+   margin-top: 14px;
+}
+
+.home-setup-retain
+{
+   display: flex;
+   flex-direction: column;
+   margin-bottom: 14px;
 }
 
 /* NOTE: All twelve popped - nothing left to catch, so no clicks either (Damon, 2026-10-13). */

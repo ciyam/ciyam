@@ -60,37 +60,37 @@ http://www.opensource.org/licenses/mit-license.php.
          </span>
       </div>
 
+      <!-- NOTE: The start asks one question, and each answer goes straight on (Ian, 2026-10-13 - all on one screen, Start
+           was below the fold). A new node gets a screen of its own; recovering goes to the shared recovery, worded for a
+           node not set up ("recover_show( { fresh } )"), which says the rest itself. -->
       <section id="setup_intro">
          <h2 tabindex="-1">Set up this node</h2>
-         <p class="chat-signin-lede">It has no identity yet, so nobody can sign in. Is it a new node, or does it take the place
-          of one you had?</p>
-         <!-- NOTE: New, or recover (Damon, 2026-10-13) - a machine taking the place of a node lost, failed or moved becomes
-              that node again from its twelve words: the shared recovery, worded for it ("recover_show( { fresh } )"). -->
-         <fieldset class="home-setup-kinds">
-            <legend class="home-visually-hidden">New, or recover</legend>
-            <label class="home-setup-kind">
-               <input type="radio" name="setup_kind" value="new" id="setup_kind_new" checked>
-               <span><b>A new node</b><span>New twelve words, a master password and admin's PIN - a few minutes.</span></span>
-            </label>
-            <label class="home-setup-kind">
-               <input type="radio" name="setup_kind" value="recover" id="setup_kind_recover">
-               <span><b>Recover a node from its twelve words</b><span>This machine takes the place of one that was lost,
-                failed or moved. With its words it becomes that node again - and the nodes holding its backups know it.</span></span>
-            </label>
-         </fieldset>
-         <p class="chat-signin-lede" id="setup_gives_lede">Setting it up gives it:</p>
-         <ol class="home-setup-gives" id="setup_gives">
-            <li><b>Twelve words</b> that can always restore it - written down on paper and kept safe</li>
-            <li><b>A master password</b> - admin's password, and what unlocks the node after a restart</li>
-            <li><b>Admin's PIN</b>, to sign in and add the people who use it</li>
+         <p class="chat-signin-lede">It has no identity yet, so nobody can sign in.</p>
+         <div class="home-setup-answers">
+            <button type="button" class="home-setup-answer" id="setup_choose_new">
+               <span><b>A new node</b><span>New twelve words, a master password and admin's PIN.</span></span>
+            </button>
+            <button type="button" class="home-setup-answer" id="setup_choose_recover">
+               <span><b>Recover a node</b><span>From its twelve words - this machine takes the place of one lost, failed or
+                moved.</span></span>
+            </button>
+         </div>
+         <div class="recover-warning"><b>Before it's on the internet.</b> Whoever sets a node up first owns it - do this on
+          your own network.</div>
+      </section>
+
+      <section id="setup_new" hidden>
+         <h2 tabindex="-1">A new node</h2>
+         <p class="chat-signin-lede">Setting it up gives it:</p>
+         <ol class="home-setup-gives">
+            <li><b>Twelve words</b> that can always restore it - on paper, kept safe</li>
+            <li><b>A master password</b> - admin's, and what unlocks it after a restart</li>
+            <li><b>Admin's PIN</b>, to sign in and add people</li>
          </ol>
-         <div class="recover-warning"><b>Before it's on the internet.</b> Whoever sets a node up first owns it. Do this while
-          only you can reach it - on your own network, before it's connected to the internet.</div>
-         <p class="recover-note" id="setup_tip"><b>Finish in this tab.</b> Have paper and a pen ready. Once the words are made, the
-          node waits for this page to finish.</p>
-         <p class="recover-note" id="setup_tip_recover" hidden><b>Have its twelve words to hand</b> - the paper you wrote them on
-          when it was first set up. Its old master password isn't needed: you'll choose a new one.</p>
-         <div class="chat-signin-actions">
+         <p class="recover-note home-setup-tip"><b>Finish in this tab</b>, with paper and a pen ready - a few minutes. Once the
+          words are made, the node waits for this page.</p>
+         <div class="home-setup-actions">
+            <button type="button" class="home-link-button" id="setup_new_back">&larr; Back</button>
             <button type="button" class="chat-btn chat-btn--primary" id="setup_start">Start setting up</button>
          </div>
       </section>
@@ -184,6 +184,18 @@ http://www.opensource.org/licenses/mit-license.php.
          </div>
          <p class="recover-note"><b>Next, in Home:</b> make an unlock key or two, so a restart doesn't need the master password -
           then add the people who'll use the node.</p>
+         <!-- NOTE: Saved here as a sign in would, so the next visit needn't type them (Ian, 2026-10-13) - the sign in's own
+              choices; only when signed in. -->
+         <div class="home-setup-retain" id="setup_retain_box">
+            <label class="chat-label" for="setup_retain">Remember on this browser</label>
+            <select class="chat-field" id="setup_retain">
+               <option value="none">Nothing &mdash; forget this account</option>
+               <option value="access" selected>The PIN only</option>
+               <option value="full">The PIN and the password</option>
+            </select>
+            <div class="signin-hint">Shared by every part of your node on this browser. Saving the password as well signs you in
+             without typing it.</div>
+         </div>
          <label class="home-setup-tick">
             <input type="checkbox" id="setup_pin_written">
             <span>I've written admin's PIN down</span>

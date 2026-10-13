@@ -237,7 +237,7 @@ async function after_sign_in( )
 // the tab ("setup_kept( )") so a reload can still finish, with new words. The words are the node's suggestion mixed with the
 // person's randomness by Ian's "xor_hex_data" - never words they type: the twelfth is a checksum, and people choose poor
 // words (Ian, 2026-10-12) - typing them is for restoring.
-const c_setup_views = [ "setup_intro", "setup_random", "setup_password", "setup_words", "setup_check", "setup_done", "setup_resume",
+const c_setup_views = [ "setup_intro", "setup_new", "setup_random", "setup_password", "setup_words", "setup_check", "setup_done", "setup_resume",
  "setup_elsewhere", "setup_expired" ];
 
 // NOTE: "Step N of 5" - the views that are steps.
@@ -394,17 +394,6 @@ function setup_show( view )
       first.focus( { preventScroll: true } );
 }
 
-function setup_show_kind( )
-{
-   var recover = document.getElementById( "setup_kind_recover" ).checked;
-
-   [ "setup_gives_lede", "setup_gives", "setup_tip" ].forEach( function( id ) { document.getElementById( id ).hidden = recover; } );
-
-   document.getElementById( "setup_tip_recover" ).hidden = !recover;
-
-   set_text( "setup_start", recover ? "Recover it" : "Start setting up" );
-}
-
 // NOTE: Recovering a node onto this one, from its twelve words (Damon, 2026-10-13) - the shared recovery, worded for a
 // node not set up; recovered, on into Home signed in as admin, as after a sign in. Back comes back here.
 function setup_recover( )
@@ -424,9 +413,7 @@ function setup_clear_fields( )
 
    [ "setup_written", "setup_pin_written" ].forEach( function( id ) { document.getElementById( id ).checked = false; } );
 
-   document.getElementById( "setup_kind_new" ).checked = true;
-
-   setup_show_kind( );
+   document.getElementById( "setup_retain" ).value = c_retain_access;
 
    [ "setup_password_error", "setup_password_status", "setup_finish_error", "setup_finish_status", "setup_pin" ]
     .forEach( function( id ) { set_text( id, "" ); } );
@@ -666,6 +653,9 @@ function setup_password_key( event )
 
    if( next.focus !== "" )
       document.getElementById( next.focus ).focus( );
+
+   if( next.make )
+      document.getElementById( "setup_make_words" ).click( );
 }
 
 function setup_update_strength( )
@@ -997,24 +987,19 @@ async function setup_finish( )
 
    document.getElementById( "setup_done_error" ).hidden = signed_in;
 
+   // NOTE: Nothing to remember without a sign in - the sign in it goes on to has its own.
+   document.getElementById( "setup_retain_box" ).hidden = !signed_in;
+
    setup_show( "setup_done" );
 }
 
 function install_setup( )
 {
-   // NOTE: New, or recover - the choice changes what is said, and where Start goes.
-   [ "setup_kind_new", "setup_kind_recover" ].forEach( function( id )
-   {
-      document.getElementById( id ).addEventListener( "change", setup_show_kind );
-   } );
-
-   document.getElementById( "setup_start" ).addEventListener( "click", function( )
-   {
-      if( document.getElementById( "setup_kind_recover" ).checked )
-         setup_recover( );
-      else
-         setup_show( "setup_random" );
-   } );
+   // NOTE: New, or recover - each answer goes straight on.
+   document.getElementById( "setup_choose_new" ).addEventListener( "click", function( ) { setup_show( "setup_new" ); } );
+   document.getElementById( "setup_choose_recover" ).addEventListener( "click", setup_recover );
+   document.getElementById( "setup_new_back" ).addEventListener( "click", function( ) { setup_show( "setup_intro" ); } );
+   document.getElementById( "setup_start" ).addEventListener( "click", function( ) { setup_show( "setup_random" ); } );
 
    document.getElementById( "setup_resume_go" ).addEventListener( "click", function( )
    {
@@ -1092,7 +1077,11 @@ function install_setup( )
       if( ciyam.sessid === "" )
          check_node( );
       else
+      {
+         signin_apply_retain( document.getElementById( "setup_retain" ).value );
+
          after_sign_in( );
+      }
    } );
 
    g_setup = setup_fresh( );

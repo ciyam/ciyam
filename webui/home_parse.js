@@ -742,20 +742,21 @@ function ntfy_server_example( hostname )
 // ====================================================================
 
 // NOTE: What Enter does in setting up's two password fields (Damon, 2026-10-13): from the first, on to "Type it again" once
-// the password is long enough; from the second, on to "Make my twelve words" once the two match - focus only, nothing sent,
-// as that button is the node's first request. Otherwise what is wrong: "short" or "different".
+// the password is long enough; from the second, once the two match, it makes the words ("make") - as "Make my twelve
+// words" would. Only moving the focus there left nothing seeming to happen, so it looked as if Enter sometimes worked
+// (Ian, 2026-10-13). Otherwise what is wrong: "short" or "different".
 function setup_password_enter( field, password, again, long_enough )
 {
    if( !long_enough )
-      return { focus: "", problem: "short" };
+      return { focus: "", problem: "short", make: false };
 
    if( field === "new" )
-      return { focus: "setup_password_confirm", problem: "" };
+      return { focus: "setup_password_confirm", problem: "", make: false };
 
    if( password !== again )
-      return { focus: "", problem: "different" };
+      return { focus: "", problem: "different", make: false };
 
-   return { focus: "setup_make_words", problem: "" };
+   return { focus: "", problem: "", make: true };
 }
 
 // NOTE: The still-alive token (Ian, 2026-10-13 - "637f4e60", "944901f7"): the first twelve hex of the SHA-256 of admin's

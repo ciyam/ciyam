@@ -447,13 +447,14 @@ function signin_on_access( )
     retain_mode_of( signin_storage_get( c_signin_storage_access ), is_account_pin( pin ) ? pin : "", has_hash );
 }
 
-// NOTE: After a sign in, what the Remember box asked for - "plan_retain_choice( )" in "chat_parse.js".
-function signin_apply_retain( )
+// NOTE: After a sign in, what the Remember box asked for - "plan_retain_choice( )" in "chat_parse.js". "mode" - another
+// page's own Remember box (the end of setting up, 2026-10-13); otherwise the sign in's.
+function signin_apply_retain( mode )
 {
    try
    {
       var plan = plan_retain_choice( localStorage.getItem( c_signin_storage_access ), ciyam.access,
-       document.getElementById( "signin_retain" ).value, ciyam.hashed );
+       mode || document.getElementById( "signin_retain" ).value, ciyam.hashed );
 
       if( plan.keep_hash )
          localStorage.setItem( c_signin_storage_hashed_prefix + ciyam.access, ciyam.hashed );

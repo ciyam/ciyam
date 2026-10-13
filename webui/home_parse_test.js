@@ -370,10 +370,11 @@ heading( "setting up a new node" );
 check( "refused - the PIN held by another's setup, or gone", [ hp.setup_refused( "Error: This web session is not valid (or has expired)." ),
  hp.setup_refused( "Error: Invalid device identity 'x'." ), hp.setup_refused( "0123abcd" ), hp.setup_refused( null ) ], [ true, false, false, false ] );
 check( "Enter in the password - on to typing it again, once long enough", [ hp.setup_password_enter( "new", "lantern-orbit", "", true ),
- hp.setup_password_enter( "new", "short", "", false ) ], [ { focus: "setup_password_confirm", problem: "" }, { focus: "", problem: "short" } ] );
-check( "Enter in typing it again - on to Make my twelve words, once they match", [ hp.setup_password_enter( "confirm", "lantern-orbit", "lantern-orbit", true ),
+ hp.setup_password_enter( "new", "short", "", false ) ], [ { focus: "setup_password_confirm", problem: "", make: false },
+ { focus: "", problem: "short", make: false } ] );
+check( "Enter in typing it again - makes the words, once they match", [ hp.setup_password_enter( "confirm", "lantern-orbit", "lantern-orbit", true ),
  hp.setup_password_enter( "confirm", "lantern-orbit", "lantern-orbiT", true ) ],
- [ { focus: "setup_make_words", problem: "" }, { focus: "", problem: "different" } ] );
+ [ { focus: "", problem: "", make: true }, { focus: "", problem: "different", make: false } ] );
 check( "the still-alive token - twelve hex of the hash of the PIN and the suggestion", hp.setup_alive_token( "12345", "abcd",
  function( s ) { return s === "12345abcd" ? "0123456789ABCDEF0123" : "wrong"; } ), "0123456789ab" );
 check( "the answer - all X's kept it waiting, an address did not, anything else says nothing", [ hp.setup_alive_answer( "XXXXXXXXXX" ),
