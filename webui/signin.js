@@ -725,11 +725,11 @@ function recover_build( )
    brand.appendChild( signin_element( "span", { class: "chat-wordmark" }, "CIYAM" ) );
    brand.appendChild( signin_element( "span", { class: "chat-brand-note" }, g_signin_options.note || "" ) );
 
+   var words = recovery_texts( false );
+
    form.appendChild( brand );
-   form.appendChild( signin_element( "h2", { tabindex: "-1" }, "Recover this node" ) );
-   form.appendChild( signin_element( "p", { class: "chat-signin-lede" },
-    "With the twelve words written down when it was set up. The node checks them and takes a new master password, then"
-    + " shows admin's PIN." ) );
+   form.appendChild( signin_element( "h2", { tabindex: "-1", id: "recover_heading" }, words.heading ) );
+   form.appendChild( signin_element( "p", { class: "chat-signin-lede", id: "recover_lede" }, words.lede ) );
 
    var set = signin_element( "fieldset", { class: "recover-words-set" } );
 
@@ -762,6 +762,9 @@ function recover_build( )
    form.appendChild( set );
    form.appendChild( signin_element( "div", { class: "signin-hint", id: "recover_words_status", role: "status" },
     "Type them in order, or paste all twelve into the first box." ) );
+
+   // NOTE: Recovering onto a node not set up - nothing there can check the words ("recovery_texts( true )").
+   form.appendChild( signin_element( "div", { class: "recover-warning", id: "recover_caution", hidden: "" } ) );
 
    var warning = signin_element( "div", { class: "recover-warning", id: "recover_warning", role: "alert", hidden: "" } );
 
@@ -818,9 +821,26 @@ function recover_build( )
 
    actions.appendChild( signin_element( "button", { type: "submit", class: "chat-btn chat-btn--primary", id: "recover_submit" }, "Recover the node" ) );
 
-   var back = signin_element( "button", { type: "button", class: "chat-btn chat-signin-setup", id: "recover_back" }, "Back to sign in" );
+   var back = signin_element( "button", { type: "button", class: "chat-btn chat-signin-setup", id: "recover_back" }, words.back );
 
-   back.addEventListener( "click", function( ) { signin_show( ); } );
+   // NOTE: Back to the sign in - or, recovering onto a node not set up, to wherever it was opened from.
+   back.addEventListener( "click", function( )
+   {
+      if( g_recover_fresh !== null )
+      {
+         var on_back = g_recover_fresh.on_back;
+
+         g_recover_fresh = null;
+
+         recover_clear_words( );
+
+         view.hidden = true;
+
+         on_back( );
+      }
+      else
+         signin_show( );
+   } );
 
    actions.appendChild( back );
 
@@ -830,12 +850,11 @@ function recover_build( )
     hidden: "" } );
 
    done.appendChild( brand.cloneNode( true ) );
-   done.appendChild( signin_element( "h2", { id: "recover_done_heading" }, "Recovered" ) );
-   done.appendChild( signin_element( "p", { class: "chat-signin-lede" }, "The node is unlocked, with its new master password." ) );
+   done.appendChild( signin_element( "h2", { id: "recover_done_heading" }, words.done_heading ) );
+   done.appendChild( signin_element( "p", { class: "chat-signin-lede", id: "recover_done_lede" }, words.done_lede ) );
    done.appendChild( signin_element( "span", { class: "chat-label" }, "Admin's PIN" ) );
    done.appendChild( signin_element( "span", { class: "recover-mono recover-pin", id: "recover_pin" } ) );
-   done.appendChild( signin_element( "p", { class: "recover-note" }, "Write it down - it may be a new one, and only this one works"
-    + " now. Then make a few unlock keys, in Home, so a restart can be undone without the words." ) );
+   done.appendChild( signin_element( "p", { class: "recover-note", id: "recover_done_note" }, words.done_note ) );
 
    var done_actions = signin_element( "div", { class: "chat-signin-actions" } );
 
@@ -845,6 +864,8 @@ function recover_build( )
    go_on.addEventListener( "click", function( )
    {
       view.hidden = true;
+
+      g_recover_fresh = null;
 
       if( g_signin_options.on_signed_in )
          g_signin_options.on_signed_in( );
@@ -861,6 +882,9 @@ function recover_build( )
 }
 
 var g_recover_bip39 = null;
+
+// NOTE: Recovering onto a node not set up - { on_back } - or null for a locked node's recovery.
+var g_recover_fresh = null;
 
 // NOTE: Ian's BIP39 library - large, so read in only when recovery opens, and once.
 function recover_load_bip39( )
@@ -899,8 +923,30 @@ function recover_inputs( )
    return Array.from( document.querySelectorAll( "#recover_words input" ) );
 }
 
-async function recover_show( )
+// NOTE: "options" - { fresh: true, on_back } to recover onto a node not set up (setting up's choice, Damon, 2026-10-13);
+// anything else - the sign in's click - is a locked node's recovery.
+async function recover_show( options )
 {
+   var fresh = !!( options && options.fresh );
+
+   g_recover_fresh = fresh ? { on_back: options.on_back } : null;
+
+   var words = recovery_texts( fresh );
+
+   signin_set_text( "recover_heading", words.heading );
+   signin_set_text( "recover_lede", words.lede );
+   signin_set_text( "recover_caution", words.caution );
+   signin_set_text( "recover_back", words.back );
+   signin_set_text( "recover_done_heading", words.done_heading );
+   signin_set_text( "recover_done_lede", words.done_lede );
+   signin_set_text( "recover_done_note", words.done_note );
+
+   document.getElementById( "recover_caution" ).hidden = !fresh;
+
+   // NOTE: Over plain HTTP the warning shows - known from "/system", asked here when no sign in has asked yet.
+   if( fresh )
+      await signin_check_locked( );
+
    recover_inputs( ).forEach( function( input ) { input.value = ""; input.classList.remove( "is-unknown" ); } );
 
    [ "recover_password", "recover_confirm" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );

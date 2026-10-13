@@ -386,11 +386,39 @@ function setup_show( view )
       first.focus( { preventScroll: true } );
 }
 
+function setup_show_kind( )
+{
+   var recover = document.getElementById( "setup_kind_recover" ).checked;
+
+   [ "setup_gives_lede", "setup_gives", "setup_tip" ].forEach( function( id ) { document.getElementById( id ).hidden = recover; } );
+
+   document.getElementById( "setup_tip_recover" ).hidden = !recover;
+
+   set_text( "setup_start", recover ? "Recover it" : "Start setting up" );
+}
+
+// NOTE: Recovering a node onto this one, from its twelve words (Damon, 2026-10-13) - the shared recovery, worded for a
+// node not set up; recovered, on into Home signed in as admin, as after a sign in. Back comes back here.
+function setup_recover( )
+{
+   document.getElementById( "setup_view" ).hidden = true;
+
+   recover_show( { fresh: true, on_back: function( )
+   {
+      show_view( "setup_view" );
+      setup_show( "setup_intro" );
+   } } );
+}
+
 function setup_clear_fields( )
 {
    [ "setup_password_new", "setup_password_confirm" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );
 
    [ "setup_written", "setup_pin_written" ].forEach( function( id ) { document.getElementById( id ).checked = false; } );
+
+   document.getElementById( "setup_kind_new" ).checked = true;
+
+   setup_show_kind( );
 
    [ "setup_password_error", "setup_password_status", "setup_finish_error", "setup_finish_status", "setup_pin" ]
     .forEach( function( id ) { set_text( id, "" ); } );
@@ -959,7 +987,19 @@ async function setup_finish( )
 
 function install_setup( )
 {
-   document.getElementById( "setup_start" ).addEventListener( "click", function( ) { setup_show( "setup_random" ); } );
+   // NOTE: New, or recover - the choice changes what is said, and where Start goes.
+   [ "setup_kind_new", "setup_kind_recover" ].forEach( function( id )
+   {
+      document.getElementById( id ).addEventListener( "change", setup_show_kind );
+   } );
+
+   document.getElementById( "setup_start" ).addEventListener( "click", function( )
+   {
+      if( document.getElementById( "setup_kind_recover" ).checked )
+         setup_recover( );
+      else
+         setup_show( "setup_random" );
+   } );
 
    document.getElementById( "setup_resume_go" ).addEventListener( "click", function( )
    {

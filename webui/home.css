@@ -1718,6 +1718,56 @@
    outline-offset: 2px;
 }
 
+/* NOTE: Setting up's choice - a new node, or one recovered from its twelve words (2026-10-13). */
+.home-setup-kinds
+{
+   margin: 0;
+   padding: 0;
+   border: 0;
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+}
+
+.home-setup-kind
+{
+   display: flex;
+   align-items: flex-start;
+   gap: 12px;
+   padding: 14px 16px;
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-md);
+   cursor: pointer;
+}
+
+.home-setup-kind:has( input:checked )
+{
+   border-color: var(--color-chat-accent);
+   background: var(--color-chat-bg-selected);
+}
+
+.home-setup-kind input
+{
+   flex: none;
+   margin: 3px 0 0;
+   width: 18px;
+   height: 18px;
+   accent-color: var(--color-chat-accent);
+}
+
+.home-setup-kind > span
+{
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+}
+
+.home-setup-kind > span > span
+{
+   font-size: 14px;
+   color: var(--color-chat-text-secondary);
+}
+
 /* NOTE: All twelve popped - nothing left to catch, so no clicks either (Damon, 2026-10-13). */
 .home-bubbles.is-done
 {

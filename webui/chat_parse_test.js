@@ -878,6 +878,11 @@ check( "unable to start a session on a node known not to be locked - not called 
  "The node couldn't start a session just now - wait a moment, then try again." );
 check( "a node known to be locked - said so, whatever it answered", cp.sign_in_error_text( "Error: This web session is not valid (or has expired).", true ),
  "This node is locked - it restarted, and nobody can sign in until it is unlocked." );
+check( "recovering a locked node - the sign in's words, back to the sign in", [ cp.recovery_texts( false ).heading,
+ cp.recovery_texts( false ).back, cp.recovery_texts( false ).caution ], [ "Recover this node", "Back to sign in", "" ] );
+check( "recovering onto a node not set up - its own words, the caution, back to setting up", [ cp.recovery_texts( true ).heading,
+ cp.recovery_texts( true ).back, /Check them against your paper/.test( cp.recovery_texts( true ).caution ),
+ /restored from its backups/.test( cp.recovery_texts( true ).done_note ) ], [ "Recover a node from its twelve words", "Back", true, true ] );
 check( "the chat not turned on", [ cp.irc_unavailable( "Error: IRC usage is not currently available." ), cp.irc_unavailable( "Error: Other." ),
  cp.irc_unavailable( null ) ], [ true, false, false ] );
 

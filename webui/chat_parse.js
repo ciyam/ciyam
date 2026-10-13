@@ -1709,6 +1709,33 @@ function word_completions( typed, wordlist, limit )
 // NOTE: The node's refusals, said plainly - anything else as it came. Words that are not the node's are answered
 // "locked for administration" today - the mismatch is set, then a later check for an administration lock replaces it
 // (seen 2026-10-09, for Ian). It is also the answer while someone else is signing in as admin, which is rare.
+// NOTE: The recovery cards' words - for a locked node (the sign in's "Can't sign in?"), or, "fresh", for a node not set up
+// that takes the place of one lost, failed or moved (Damon, 2026-10-13: setting up's "Recover a node from its twelve
+// words"). There nothing can check the words - any twelve that fit together make a node - hence "caution"; and the
+// identity comes back, not the data.
+function recovery_texts( fresh )
+{
+   if( !fresh )
+   {
+      return { heading: "Recover this node",
+       lede: "With the twelve words written down when it was set up. The node checks them and takes a new master password, then"
+        + " shows admin's PIN.",
+       caution: "", back: "Back to sign in", done_heading: "Recovered", done_lede: "The node is unlocked, with its new master password.",
+       done_note: "Write it down - it may be a new one, and only this one works now. Then make a few unlock keys, in Home, so a"
+        + " restart can be undone without the words." };
+   }
+
+   return { heading: "Recover a node from its twelve words",
+    lede: "This machine takes the place of one that was lost, failed or moved. With the words written down when that node was"
+     + " set up, it becomes that node again - and the nodes holding its backups know it.",
+    caution: "Check them against your paper. This machine has nothing to compare them with - twelve words that fit together"
+     + " but aren't your node's would make a different node, one your backups don't know.",
+    back: "Back", done_heading: "Recovered - it's your node again",
+    done_lede: "Its identity is back from its words, with a new master password - so the nodes holding its backups know it.",
+    done_note: "Write admin's PIN down - only this one works now. The node starts without its people, rooms and messages: they"
+     + " come back when its data is restored from its backups, which isn't offered here yet." };
+}
+
 function recovery_error_text( error )
 {
    var text = String( error || "" ).replace( /^Error:\s*/, "" ).trim( );
@@ -2334,6 +2361,7 @@ if( typeof module !== "undefined" )
       recovery_words_problem: recovery_words_problem,
       word_completions: word_completions,
       recovery_error_text: recovery_error_text,
+      recovery_texts: recovery_texts,
       plan_after_recovery: plan_after_recovery,
       visible_rooms: visible_rooms,
       dm_room_name: dm_room_name,
