@@ -11,6 +11,8 @@
 
 #  include <openssl/ssl.h>
 
+const size_t c_default_ssl_peek_timeout = 3000;
+
 const size_t c_default_ssl_accept_timeout = 30000;
 const size_t c_default_ssl_connect_timeout = 30000;
 
@@ -52,7 +54,7 @@ class ssl_socket : public tcp_socket
 
    bool is_secure( ) const { return secure; }
 
-   bool is_tls_handshake( );
+   bool is_tls_handshake( size_t timeout = c_default_ssl_peek_timeout );
 
    int recv( unsigned char* buf, int buflen, size_t timeout = 0 );
 
@@ -60,6 +62,7 @@ class ssl_socket : public tcp_socket
 
    private:
    SSL* p_ssl;
+
    bool secure;
 };
 

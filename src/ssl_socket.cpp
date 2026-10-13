@@ -460,19 +460,26 @@ void ssl_socket::ssl_connect( size_t timeout, bool* p_rc )
    }
 }
 
-bool ssl_socket::is_tls_handshake( )
+bool ssl_socket::is_tls_handshake( size_t timeout )
 {
    bool retval = false;
 
    unsigned char buf[ 2 ];
 
-   if( peek( buf, sizeof( buf ) ) == sizeof( buf ) )
+   bool okay = true;
+
+   if( peek( buf, sizeof( buf ), timeout ) == sizeof( buf ) )
    {
       // NOTE: Will assume a TLS handshake should occur if
       // the first two bytes match what would be expected.
       if( memcmp( buf, g_tls_prefix, sizeof( buf ) ) == 0 )
          retval = true;
    }
+   else if( timeout )
+      okay = has_input( timeout );
+
+   if( !okay )
+      throw runtime_error( "check handshake timeout" );
 
    return retval;
 }
