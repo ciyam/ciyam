@@ -462,3 +462,34 @@ TEST_LINE=@repstr:and/:$NEXT_LINE
 @:DONE
 .session_variable @deque complete
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For even larger files a special environment variable assignment function "@line" can be used in order to open
+a file and read the first line and when used without a file name in order to read the next line of the file.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@label NEXT
+;
+NEXT_LINE=@line:mnemonics.txt
+;
+@:LOOP
+;
+@ifeq "$NEXT_LINE" ""
+@label DONE
+@endif
+;
+@skip
+;
+@:NEXT
+;
+TEST_LINE=@repstr:and/:$NEXT_LINE
+;
+@ifneq "$NEXT_LINE" "$TEST_LINE"
+#$NEXT_LINE
+@endif
+;
+NEXT_LINE=@line:
+;
+!!@:LOOP
+;
+@:DONE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

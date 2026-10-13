@@ -116,3 +116,13 @@ a simplistic filter to prevent any "session_list" and "system_variable" commands
 Finally some hard-coded constants and global variables are being used in order to prevent logging more than a
 fixed number of messages every few seconds (where a special "****** skipped excessive logging ******" message
 will appear in the log file to indicate that this has happened).
+
+Trace Logging Security Issues
+-----------------------------
+
+When adding TRACE_LOG messages to the source code care needs to be taken in order to avoid logging information
+such as keys or passwords and for web requests a "redact_query_value" function is used in order to replace the
+value of a query parameter with 'X' characters.
+
+For application protocol scripts use a '=' command prefix so that only the command name (with no arguments) is
+logged.
