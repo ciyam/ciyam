@@ -878,6 +878,11 @@ check( "unable to start a session on a node known not to be locked - not called 
  "The node couldn't start a session just now - wait a moment, then try again." );
 check( "a node known to be locked - said so, whatever it answered", cp.sign_in_error_text( "Error: This web session is not valid (or has expired).", true ),
  "This node is locked - it restarted, and nobody can sign in until it is unlocked." );
+check( "recovering onto a node not set up, refused - someone else setting it up, not the words", [
+ cp.recovery_error_text( "Error: System is currently locked for administration.", true ),
+ cp.recovery_error_text( "Error: System is currently locked for administration.", false ) ],
+ [ "Someone else is setting this node up just now - if it isn't you, disconnect it from the network. Otherwise try again in a"
+  + " few minutes.", "The node did not accept those words - check each one, and that they are in order." ] );
 check( "recovering a locked node - the sign in's words, back to the sign in", [ cp.recovery_texts( false ).heading,
  cp.recovery_texts( false ).back, cp.recovery_texts( false ).caution ], [ "Recover this node", "Back to sign in", "" ] );
 check( "recovering onto a node not set up - its own words, the caution, back to setting up", [ cp.recovery_texts( true ).heading,

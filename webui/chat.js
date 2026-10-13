@@ -1060,6 +1060,11 @@ async function do_disconnect( already_ended )
    g_members = [ ];
    g_start_point = "";
 
+   // NOTE: The chat not turned on was this sign in's - the next may find it on (found by review).
+   g_chat_off = false;
+
+   document.getElementById( "room_new" ).hidden = false;
+
    // NOTE: Held first messages belong to the account that wrote them - the next one to sign in
    // on this page must not send them.
    g_dm_pending = { };

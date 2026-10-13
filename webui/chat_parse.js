@@ -1706,9 +1706,6 @@ function word_completions( typed, wordlist, limit )
    return matches.slice( 0, ( limit > 0 ) ? limit : 6 );
 }
 
-// NOTE: The node's refusals, said plainly - anything else as it came. Words that are not the node's are answered
-// "locked for administration" today - the mismatch is set, then a later check for an administration lock replaces it
-// (seen 2026-10-09, for Ian). It is also the answer while someone else is signing in as admin, which is rare.
 // NOTE: The recovery cards' words - for a locked node (the sign in's "Can't sign in?"), or, "fresh", for a node not set up
 // that takes the place of one lost, failed or moved (Damon, 2026-10-13: setting up's "Recover a node from its twelve
 // words"). There nothing can check the words - any twelve that fit together make a node - hence "caution"; and the
@@ -1736,9 +1733,18 @@ function recovery_texts( fresh )
      + " come back when its data is restored from its backups, which isn't offered here yet." };
 }
 
-function recovery_error_text( error )
+// NOTE: The node's refusals, said plainly - anything else as it came. Words that are not the node's are answered
+// "locked for administration" today - the mismatch is set, then a later check for an administration lock replaces it
+// (seen 2026-10-09, for Ian). It is also the answer while someone else is signing in as admin, which is rare.
+// "fresh" - recovering onto a node not set up: no words can be wrong there, and it is not locked, so a refusal means
+// someone else is setting it up just now (found by review, 2026-10-13).
+function recovery_error_text( error, fresh )
 {
    var text = String( error || "" ).replace( /^Error:\s*/, "" ).trim( );
+
+   if( fresh && /locked for administration|not valid|has expired/i.test( text ) )
+      return "Someone else is setting this node up just now - if it isn't you, disconnect it from the network. Otherwise try"
+       + " again in a few minutes.";
 
    if( /identity mismatch/i.test( text ) )
       return "Those aren't this node's twelve words.";

@@ -833,13 +833,18 @@ function recover_build( )
          g_recover_fresh = null;
 
          recover_clear_words( );
+         recover_clear_passwords( );
 
          view.hidden = true;
 
          on_back( );
       }
       else
+      {
+         recover_clear_passwords( );
+
          signin_show( );
+      }
    } );
 
    actions.appendChild( back );
@@ -1267,7 +1272,7 @@ async function recover_submit( event )
 
       ciyam.device = device;
 
-      signin_set_text( "recover_error", recovery_error_text( error ) );
+      signin_set_text( "recover_error", recovery_error_text( error, g_recover_fresh !== null ) );
 
       return;
    }
@@ -1341,6 +1346,14 @@ function recover_clear_words( )
    recover_inputs( ).forEach( function( input ) { input.value = ""; input.classList.remove( "is-unknown" ); } );
 
    recover_hide_suggestions( );
+}
+
+// NOTE: Left by Back, the new master password typed so far goes too (found by review, 2026-10-13).
+function recover_clear_passwords( )
+{
+   [ "recover_password", "recover_confirm" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );
+
+   document.getElementById( "recover_strength" ).hidden = true;
 }
 
 function recover_clear_ciyam( )

@@ -466,6 +466,7 @@ ok   any other error as it is, less its 'Error:'
 ok   nothing
 ok   unable to start a session on a node known not to be locked - not called locked (2026-10-13)
 ok   a node known to be locked - said so, whatever it answered
+ok   recovering onto a node not set up, refused - someone else setting it up, not the words
 ok   recovering a locked node - the sign in's words, back to the sign in
 ok   recovering onto a node not set up - its own words, the caution, back to setting up
 ok   the chat not turned on

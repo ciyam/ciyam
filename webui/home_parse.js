@@ -206,9 +206,6 @@ function parse_uptime( text )
    return /^([0-9]+[wdhms] ?)+$/.test( value ) ? value : "";
 }
 
-// NOTE: The uptime as the Overview says it - the two largest parts that are not nothing, in words, to the minute: seconds
-// are left out, as Home refreshes once a minute (Ian, 2026-10-11). "1w 0d 3h 4m 5s" is "1 week 3 hours", "41m 45s" is
-// "41 minutes", under a minute "just started". "" for anything else.
 // NOTE: The line under Home's greeting and the Overview's heading - "Home node · CIYAM 0.0.0 · up 11 minutes" - the uptime
 // left off when the node did not say it.
 function node_line( version, uptime )
@@ -216,6 +213,9 @@ function node_line( version, uptime )
    return "Home node · CIYAM " + ( version || "" ) + ( ( uptime || "" ) !== "" ? " · up " + uptime : "" );
 }
 
+// NOTE: The uptime as the Overview says it - the two largest parts that are not nothing, in words, to the minute: seconds
+// are left out, as Home refreshes once a minute (Ian, 2026-10-11). "1w 0d 3h 4m 5s" is "1 week 3 hours", "41m 45s" is
+// "41 minutes", under a minute "just started". "" for anything else.
 function uptime_words( text )
 {
    var names = { w: "week", d: "day", h: "hour", m: "minute" };
