@@ -1718,6 +1718,12 @@
    outline-offset: 2px;
 }
 
+/* NOTE: All twelve popped - nothing left to catch, so no clicks either (Damon, 2026-10-13). */
+.home-bubbles.is-done
+{
+   pointer-events: none;
+}
+
 .home-bubble-burst
 {
    position: absolute;
