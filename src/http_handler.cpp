@@ -1360,25 +1360,15 @@ void http_request_handler::on_start( )
 
                         admin_web_access_file += c_admin;
 
-                        // KLUDGE: Remove the "pin match" when "pin hash" is used in the UI.
-                        string admin_access_pin( opt_buffer_file( admin_web_access_file ) );
-
-                        bool was_pin_match = false;
-
-                        if( !admin_access_pin.empty( ) && ( token == admin_access_pin ) )
-                           was_pin_match = true;
-
                         string admin_web_pin_hash( get_system_variable( e_special_var_web_admin_pin_hash ) );
 
-                        if( was_pin_match
-                         || ( !admin_web_pin_hash.empty( ) && ( token == admin_web_pin_hash ) ) )
+                        if( !admin_web_pin_hash.empty( ) && ( token == admin_web_pin_hash ) )
                         {
                            file_touch( admin_web_access_file );
 
-                           set_system_variable( e_special_var_utm_web_reset, c_false_value );
+                           ip_addr_for = string( ip_addr_for.length( ), 'X' );
 
-                           if( !was_pin_match )
-                              ip_addr_for = string( ip_addr_for.length( ), 'X' );
+                           set_system_variable( e_special_var_utm_web_reset, c_false_value );
                         }
                      }
                   }
