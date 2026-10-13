@@ -272,6 +272,7 @@ enum special_var
    e_special_var_repo_entry_missing,
    e_special_var_system_is_for_demo,
    e_special_var_system_is_for_devt,
+   e_special_var_web_admin_pin_hash,
    e_special_var_blockchain_data_key,
    e_special_var_blockchain_identity,
    e_special_var_blockchain_is_owner,

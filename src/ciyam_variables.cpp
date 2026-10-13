@@ -322,6 +322,7 @@ constexpr const char* c_special_variable_gteq_session_queue = "@gteq_session_que
 constexpr const char* c_special_variable_repo_entry_missing = "@repo_entry_missing";
 constexpr const char* c_special_variable_system_is_for_demo = "@system_is_for_demo";
 constexpr const char* c_special_variable_system_is_for_devt = "@system_is_for_devt";
+constexpr const char* c_special_variable_web_admin_pin_hash = "@web_admin_pin_hash";
 constexpr const char* c_special_variable_blockchain_data_key = "@blockchain_data_key";
 constexpr const char* c_special_variable_blockchain_identity = "@blockchain_identity";
 constexpr const char* c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
@@ -715,6 +716,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_repo_entry_missing );
       g_special_variable_names.push_back( c_special_variable_system_is_for_demo );
       g_special_variable_names.push_back( c_special_variable_system_is_for_devt );
+      g_special_variable_names.push_back( c_special_variable_web_admin_pin_hash );
       g_special_variable_names.push_back( c_special_variable_blockchain_data_key );
       g_special_variable_names.push_back( c_special_variable_blockchain_identity );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_owner );
