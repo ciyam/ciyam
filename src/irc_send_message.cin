@@ -219,6 +219,9 @@ ERROR=Source message must not be modified to or from private.
 ERROR=Source message is designated as a system generated message.
 @else
 ; NOTE: If the new message is just a space then will pin/unpin it.
+@ifeq  "$MESSAGE" "XyEg"
+ERROR=Pinning of private messages is not supported.
+@else
 @ifeq "$MESSAGE" "XyAg"
 .system_variable @keyed_irc_%ROOM%_MP:$NAMES
 @ifdef $OUTPUT
@@ -237,6 +240,7 @@ ERROR=Maximum pinned messages for this room already exist.
 UNIX_UNIQUE=$OUTPUT
 ;
 .system_variable @keyed_irc_%ROOM%_ME:$NAMES "$UNIX_UNIQUE $MESSAGE"
+@endif
 @endif
 @endif
 ;
