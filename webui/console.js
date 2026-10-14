@@ -162,6 +162,13 @@ var g_palette_index = 0;
 var g_channel = null;
 var g_log_channel = null;
 
+// NOTE: Opened on its own - not from another part, nor in a drawer: no sign in card, "init" at the prompt, and quitting
+// stays in the console (Ian, 2026-10-13).
+var g_started_alone = false;
+
+// NOTE: A password being asked at the prompt - the promise's resolve, or null.
+var g_password_prompt = null;
+
 // ====================================================================
 // Entry point
 // ====================================================================
@@ -176,6 +183,8 @@ function console_main( )
    g_linked = ( g_source !== "" );
 
    g_owner_page = linked_owner( href.searchParams.get( "from" ) || "" );
+
+   g_started_alone = !g_linked && !g_embedded;
 
    if( g_embedded )
       document.getElementById( "console_app" ).classList.add( "is-embedded" );
@@ -210,7 +219,10 @@ function console_main( )
          {
             await do_disconnect( true );
 
-            set_error( "signin_error", "You signed out in another tab." );
+            if( g_started_alone )
+               print_line( "You signed out in another tab.", "is-dim" );
+            else
+               set_error( "signin_error", "You signed out in another tab." );
          },
          unsent: unsent_work,
          page_left: on_page_left
@@ -218,6 +230,27 @@ function console_main( )
    }
 
    document.getElementById( "apps_host" ).hidden = true;
+
+   // NOTE: Opened on its own, the sign in card is a step away, and back again - Remember, Reset this browser and recovery
+   // live there (Damon, 2026-10-14).
+   if( g_started_alone )
+   {
+      var actions = document.querySelector( "#signin_view .chat-signin-actions" );
+
+      if( actions !== null )
+      {
+         var back = document.createElement( "button" );
+
+         back.type = "button";
+         back.id = "signin_back_console";
+         back.className = "chat-btn chat-signin-setup";
+         back.textContent = "Back to the console";
+
+         back.addEventListener( "click", enter_unsigned );
+
+         actions.appendChild( back );
+      }
+   }
 
    // NOTE: A quiet request is logged too while "Log polling" is ticked.
    install_log_capture( ciyam, "console", function( ) { return g_quiet && !g_prefs.log_polling; }, add_console_entry );
@@ -274,12 +307,15 @@ function console_main( )
    {
       // NOTE: Switched to from another app in this tab, or reloaded - the session kept for the tab, if the node still
       // knows it (2026-10-09).
-      signin_resume( ).then( function( resumed )
+      signin_resume( ).then( async function( resumed )
       {
+         // NOTE: A node locked, or not set up, goes to the card - its recovery, or its way to Home; "init" could do nothing.
          if( resumed )
             enter_console( );
+         else if( await node_is_ready( ) )
+            enter_unsigned( );
          else
-            signin_show( );
+            show_signin_form( );
       } );
    }
    else
@@ -535,12 +571,67 @@ async function do_disconnect( already_ended )
 
    document.getElementById( "apps_host" ).hidden = true;
 
-   signin_show( );
+   // NOTE: Opened on its own, the console stays - quitting ends the session, not the console (Ian, 2026-10-13).
+   if( g_started_alone )
+      enter_unsigned( );
+   else
+      signin_show( );
 }
 
 // ====================================================================
 // The console proper
 // ====================================================================
+
+// NOTE: The console opened on its own with no session to carry on - shown at once, with no sign in card (Ian, 2026-10-13):
+// what needs no session works - the console's own commands, the node's open requests - and "init" signs in.
+function enter_unsigned( )
+{
+   g_connected = false;
+
+   document.getElementById( "signin_view" ).hidden = true;
+   document.getElementById( "waiting_view" ).hidden = true;
+   document.getElementById( "main_view" ).hidden = false;
+
+   var prompt = document.getElementById( "prompt_input" );
+
+   prompt.disabled = false;
+
+   document.getElementById( "apps_host" ).hidden = true;
+
+   update_title( );
+   update_status( );
+
+   print_line( "CIYAM console · standalone · not signed in", "is-dim" );
+   print_line( "init <name or PIN> signs in - init alone lists the accounts saved here. Type help for what works without a session.",
+    "is-dim" );
+
+   var old = document.getElementById( "console_signin_form" );
+
+   if( old !== null )
+      old.remove( );
+
+   var form = document.createElement( "button" );
+
+   form.type = "button";
+   form.id = "console_signin_form";
+   form.className = "console-expander";
+   form.textContent = "or sign in with the form - for Remember, Reset this browser and recovery";
+
+   form.addEventListener( "click", show_signin_form );
+
+   document.getElementById( "scrollback" ).appendChild( form );
+
+   render_saved_scripts( );
+   render_vars( );
+   render_storage( );
+   render_log( );
+
+   reset_script_editor( );
+
+   select_tab( "console" );
+
+   prompt.focus( );
+}
 
 function enter_console( )
 {
@@ -607,7 +698,7 @@ function update_title( )
    {
       document.getElementById( "title_host" ).textContent = window.location.host;
 
-      role.textContent = "not connected";
+      role.textContent = g_started_alone ? "not signed in" : "not connected";
    }
 }
 
@@ -723,7 +814,8 @@ function print_command( text )
 
 // NOTE: Long output shows its head and holds the rest behind an expander, so one command
 // cannot bury everything before it.
-function print_output( text )
+// NOTE: "whole" - shown in full: the console's own help, which grew past the limit (2026-10-14).
+function print_output( text, whole )
 {
    var value = String( text );
 
@@ -734,7 +826,7 @@ function print_output( text )
    else if( value.trim( ) === "[okay]" )
       kind = "is-ok";
 
-   var cut = truncate_lines( value, c_output_line_limit );
+   var cut = truncate_lines( value, whole ? Infinity : c_output_line_limit );
 
    cut.shown.forEach( function( line ) { print_line( line, kind ); } );
 
@@ -779,6 +871,19 @@ function bind_prompt( )
 
    input.addEventListener( "keydown", function( event )
    {
+      // NOTE: A password being asked - Escape gives up; no history to step through.
+      if( g_password_prompt !== null )
+      {
+         if( event.key === "Escape" )
+         {
+            event.preventDefault( );
+
+            end_password_prompt( null );
+         }
+
+         return;
+      }
+
       if( event.key === "ArrowUp" )
       {
          event.preventDefault( );
@@ -818,6 +923,15 @@ function bind_prompt( )
 function do_submit_prompt( )
 {
    var input = document.getElementById( "prompt_input" );
+
+   // NOTE: A password answered - never printed, nor kept in the history.
+   if( g_password_prompt !== null )
+   {
+      if( input.value !== "" )
+         end_password_prompt( input.value );
+
+      return;
+   }
 
    var line = input.value;
 
@@ -989,10 +1103,27 @@ async function run_line( line, from_script )
          return { ok: false };
       }
 
+      if( !g_connected )
+      {
+         print_line( "Not signed in.", "is-dim" );
+
+         return { ok: true };
+      }
+
       await apps_sign_out_everywhere( );
+
+      // NOTE: The session is shared, so every tab signed in with it is signed out too - said, as the console stays.
+      if( g_started_alone )
+         print_line( "Signed out - of every tab, as they share the session.", "is-dim" );
 
       return { ok: true };
    }
+
+   if( spec.kind === "open" )
+      return run_open( spec );
+
+   if( spec.kind === "init" )
+      return run_init( spec.target );
 
    if( !g_connected )
    {
@@ -1033,6 +1164,184 @@ async function run_line( line, from_script )
       print_line( "Raw protocol needs the admin PIN on a development system, and a command starting a-z.", "is-dim" );
 
    return { ok: !is_error_output( response ) };
+}
+
+// NOTE: The sign in card, from the console opened on its own - or at once, for a node locked or not set up.
+function show_signin_form( )
+{
+   document.getElementById( "main_view" ).hidden = true;
+
+   var back = document.getElementById( "signin_back_console" );
+
+   signin_show( );
+
+   // NOTE: Back to the console only from one that was shown - not from a locked node's card, where it could do nothing.
+   if( back !== null )
+      node_is_ready( ).then( function( ready ) { back.hidden = !ready; } );
+}
+
+// NOTE: Whether the node is set up and unlocked - "/system" answers "CIYAM ..." then, ":CIYAM:" locked, "*CIYAM*" new.
+async function node_is_ready( )
+{
+   try
+   {
+      return /^CIYAM /.test( ( await ( await fetch( "/system", { cache: "no-store" } ) ).text( ) ).trim( ) );
+   }
+   catch( e )
+   {
+      return false;
+   }
+}
+
+// NOTE: The node's own requests that need no session ("c_console_open_endpoints") - signed in or not.
+async function run_open( spec )
+{
+   var response = await send_request( "GET", ciyam.host_info + spec.path, false );
+
+   if( response === null )
+   {
+      print_line( "Error: No response - the request failed. Is the server reachable?", "is-err" );
+
+      return { ok: false };
+   }
+
+   print_output( response );
+
+   g_output = response.replace( /\s+$/, "" );
+
+   return { ok: !is_error_output( response ) };
+}
+
+// NOTE: Signing in at the prompt, the console opened on its own (Ian, 2026-10-13) - an account saved on this browser by
+// name, or a PIN; the password asked only when none is saved. Nothing new is remembered: the sign in's Remember does that.
+async function run_init( target )
+{
+   if( !g_started_alone )
+   {
+      print_line( "Error: This console shares " + g_owner_page.name + "'s session - sign in there.", "is-err" );
+
+      return { ok: false };
+   }
+
+   if( g_connected )
+   {
+      print_line( "Error: Already signed in as " + account_display_name( ciyam.username, ciyam.is_admin ) + " - quit first.", "is-err" );
+
+      return { ok: false };
+   }
+
+   var accounts = order_saved_accounts( signin_saved_pins( ).map( function( pin ) { return { pin: pin, name: signin_saved_name( pin ) }; } ) );
+
+   var chosen = init_target( target, accounts );
+
+   if( chosen.list )
+   {
+      if( accounts.length === 0 )
+         print_line( "No accounts are saved on this browser - init <PIN> to sign in.", "is-dim" );
+      else
+      {
+         print_line( "Saved on this browser:", "is-dim" );
+
+         accounts.forEach( function( account )
+         {
+            print_line( "  " + account.label + ( ( signin_saved_hash( account.pin ) !== null ) ? " - password saved" : "" ) );
+         } );
+      }
+
+      return { ok: true };
+   }
+
+   if( chosen.error )
+   {
+      print_line( "Error: " + chosen.error + ".", "is-err" );
+
+      return { ok: false };
+   }
+
+   var pin = chosen.pin;
+   var hashed = signin_saved_hash( pin );
+   var password = "";
+
+   if( hashed === null )
+   {
+      var named = accounts.filter( function( account ) { return account.pin === pin; } )[ 0 ];
+
+      password = await ask_password( "Password for " + ( named ? named.label : "this account" ) + ":" );
+
+      if( password === null )
+      {
+         print_line( "(cancelled)", "is-dim" );
+
+         return { ok: false };
+      }
+
+      hashed = "";
+   }
+
+   print_line( "Signing in...", "is-dim" );
+
+   ciyam.device = signin_stored_device( );
+
+   await signin_connect( pin, hashed, password );
+
+   // NOTE: As the sign in does - a typed password with a device token the node has never seen: a new token, once more.
+   if( is_unknown_device_error( ciyam.error ) && ( password !== "" ) )
+   {
+      ciyam.device = "";
+
+      await signin_connect( pin, "", password );
+   }
+
+   if( ( ciyam.error !== "" ) || ( ciyam.sessid === "" ) )
+   {
+      print_line( "Error: " + sign_in_error_text( ciyam.error || "No session was established.", false ), "is-err" );
+
+      ciyam.error = "";
+
+      return { ok: false };
+   }
+
+   signin_remember_device( );
+
+   enter_console( );
+
+   return { ok: true };
+}
+
+// NOTE: A password asked at the prompt itself, its typing hidden (Ian, 2026-10-13) - resolves to it, or null on Escape.
+function ask_password( label )
+{
+   var input = document.getElementById( "prompt_input" );
+
+   print_line( label, "is-dim" );
+
+   input.dataset.placeholder = input.placeholder;
+
+   input.type = "password";
+   input.autocomplete = "current-password";
+   input.placeholder = "password - Escape to give up";
+   input.value = "";
+
+   input.focus( );
+
+   return new Promise( function( resolve ) { g_password_prompt = resolve; } );
+}
+
+function end_password_prompt( value )
+{
+   var input = document.getElementById( "prompt_input" );
+
+   input.type = "text";
+   input.autocomplete = "off";
+   input.placeholder = input.dataset.placeholder || "";
+   input.value = "";
+
+   var resolve = g_password_prompt;
+
+   g_password_prompt = null;
+
+   if( resolve !== null )
+      resolve( value );
 }
 
 // ====================================================================
@@ -1866,7 +2175,14 @@ function print_help( )
    // NOTE: With the console's commands, ahead of the blank line before the list language. The session is shared,
    // so quitting signs out of every app, linked or not (2026-10-08) - but not from a drawer, which is its page's.
    if( !g_embedded )
-      lines.splice( lines.indexOf( "" ), 0, "  quit                         sign out" );
+      lines.splice( lines.indexOf( "" ), 0, g_started_alone ? "  quit, term                   sign out - the console stays"
+       : "  quit                         sign out" );
+
+   // NOTE: What works without a session - the node's own requests, and, opened on its own, signing in (Ian, 2026-10-13).
+   lines.splice( lines.indexOf( "" ), 0, "  system, uptime, unix-now     the node's own - no session needed; ip-addr, post-limit too" );
+
+   if( g_started_alone )
+      lines.splice( lines.indexOf( "" ), 0, "  init [<name or PIN>]         sign in - an account saved here, or a PIN; alone, lists them" );
 
    lines.push( "" );
    lines.push( ciyam.is_admin ? "Server javascripts - as in the harness; admin runs any"
@@ -1896,7 +2212,7 @@ function print_help( )
    lines.push( "" );
    lines.push( "Keys: up and down recall history, ctrl+k opens the palette." );
 
-   print_output( lines.join( "\n" ) );
+   print_output( lines.join( "\n" ), true );
 }
 
 // ====================================================================

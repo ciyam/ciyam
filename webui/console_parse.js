@@ -114,7 +114,11 @@ const c_console_local_commands = [ "help", "clear", "vars", "var", "unset", "ech
 // knows it: the node sends to its own name for ntfy (https://ntfy in the container), which no phone can use.
 const c_ntfy_server_key = "cws.ntfy_server";
 
-const c_console_quit_names = [ "quit", "exit", "finish" ];
+const c_console_quit_names = [ "quit", "exit", "finish", "term" ];
+
+// NOTE: The node's own requests that need no session (Ian, 2026-10-13) - its state, how long it has been up, its time,
+// this browser's address as it sees it, and the most an upload may be. Sent as "GET /<name>".
+const c_console_open_endpoints = [ "system", "uptime", "unix-now", "ip-addr", "post-limit" ];
 
 // NOTE: The harness's "remove creds" and "retain creds", in any of its word orders - "remove
 // creds", "creds remove", "creds|remove" - with "delete" meaning "remove".
@@ -310,6 +314,14 @@ function resolve_command( line )
 
    if( c_console_quit_names.indexOf( first ) >= 0 )
       return { kind: "quit" };
+
+   // NOTE: Signing in from the prompt - the console opened on its own (Ian, 2026-10-13): "init" and an account saved on
+   // this browser, by name, or a PIN ("init_target( )").
+   if( first === "init" )
+      return { kind: "init", target: words.slice( 1 ).join( " " ) };
+
+   if( ( c_console_open_endpoints.indexOf( first ) >= 0 ) && ( words.length === 1 ) )
+      return { kind: "open", path: "/" + first };
 
    if( ( first === "status" ) && ( words.length === 1 ) )
       return { kind: "cws", key: "status", method: "GET", path: "/status", name: "", options: "" };
@@ -514,6 +526,29 @@ function plan_creds_retain( list, access, hashed, partial )
 }
 
 // NOTE: "own" stands in for the caller's access where the harness used "***".
+// NOTE: Whom "init" signs in as - "accounts" are those saved on this browser, as the sign in lists them ({ pin, label }).
+// Nothing given lists them ({ list }); five digits are a PIN; anything else is a saved account's name, any case.
+function init_target( target, accounts )
+{
+   var text = String( target || "" ).trim( );
+
+   if( text === "" )
+      return { list: true };
+
+   if( /^[0-9]{5}$/.test( text ) )
+      return { pin: text };
+
+   var named = ( accounts || [ ] ).filter( function( account ) { return String( account.label || "" ).toLowerCase( ) === text.toLowerCase( ); } );
+
+   if( named.length === 1 )
+      return { pin: named[ 0 ].pin };
+
+   if( named.length > 1 )
+      return { error: "More than one account called '" + text + "' is saved here - give its PIN instead" };
+
+   return { error: "No account called '" + text + "' is saved on this browser - give its PIN instead, or init alone to list them" };
+}
+
 function build_cws_url( base, spec, session )
 {
    var path = spec.path;
@@ -1257,6 +1292,7 @@ if( typeof module !== "undefined" )
       parse_credentials: parse_credentials,
       linked_owner: linked_owner,
       resolve_command: resolve_command,
+      init_target: init_target,
       parse_creds_command: parse_creds_command,
       plan_creds_removal: plan_creds_removal,
       plan_creds_retain: plan_creds_retain,

@@ -48,6 +48,15 @@ ok   local var
 ok   local help
 ok   local is case blind
 ok   quit
+ok   term - quit too (Ian, 2026-10-13)
+ok   init - whom to sign in as, after it
+ok   the node's own requests, no session needed
+ok   - not with more after it
+ok   init alone - list the saved accounts
+ok   init a PIN
+ok   init a saved account by name, any case
+ok   - a name not saved here - said, with what to do
+ok   - two saved by that name - the PIN asked for
 ok   exit means quit
 ok   blank
 ok   comment

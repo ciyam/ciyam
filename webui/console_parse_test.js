@@ -147,6 +147,23 @@ check( "local help", cp.resolve_command( "help" ), { kind: "local", name: "help"
 check( "local is case blind", cp.resolve_command( "CLEAR" ).name, "clear" );
 
 check( "quit", cp.resolve_command( "quit" ), { kind: "quit" } );
+check( "term - quit too (Ian, 2026-10-13)", cp.resolve_command( "term" ), { kind: "quit" } );
+check( "init - whom to sign in as, after it", [ cp.resolve_command( "init" ), cp.resolve_command( "init 10301" ), cp.resolve_command( "init Mary Smith" ) ],
+ [ { kind: "init", target: "" }, { kind: "init", target: "10301" }, { kind: "init", target: "Mary Smith" } ] );
+check( "the node's own requests, no session needed", [ cp.resolve_command( "system" ), cp.resolve_command( "uptime" ), cp.resolve_command( "unix-now" ),
+ cp.resolve_command( "ip-addr" ), cp.resolve_command( "post-limit" ) ], [ { kind: "open", path: "/system" }, { kind: "open", path: "/uptime" },
+ { kind: "open", path: "/unix-now" }, { kind: "open", path: "/ip-addr" }, { kind: "open", path: "/post-limit" } ] );
+check( "- not with more after it", cp.resolve_command( "system extra" ).kind !== "open", true );
+
+var saved_here = [ { pin: "20401", label: "verify-a" }, { pin: "10301", label: "admin" }, { pin: "31324", label: "Saved account 1" } ];
+check( "init alone - list the saved accounts", cp.init_target( "", saved_here ), { list: true } );
+check( "init a PIN", cp.init_target( "40311", saved_here ), { pin: "40311" } );
+check( "init a saved account by name, any case", [ cp.init_target( "Verify-A", saved_here ), cp.init_target( " admin ", saved_here ) ],
+ [ { pin: "20401" }, { pin: "10301" } ] );
+check( "- a name not saved here - said, with what to do", /No account called 'zoe' is saved on this browser - give its PIN instead/.test(
+ cp.init_target( "zoe", saved_here ).error ), true );
+check( "- two saved by that name - the PIN asked for", /More than one account called 'sam'/.test(
+ cp.init_target( "sam", [ { pin: "1", label: "Sam" }, { pin: "2", label: "sam" } ] ).error ), true );
 check( "exit means quit", cp.resolve_command( "exit" ), { kind: "quit" } );
 
 check( "blank", cp.resolve_command( "   " ), { kind: "none" } );
