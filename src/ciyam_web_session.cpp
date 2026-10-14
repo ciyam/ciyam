@@ -41,8 +41,6 @@ extern string g_html_dir;
 extern string g_none_tag;
 extern string g_none_var;
 
-extern bool g_is_devt_system;
-
 extern string g_cws_admin_token;
 extern string g_cws_admin_device;
 
@@ -239,6 +237,10 @@ constexpr const char* c_storage_module_instance_options_path = "path";
 constexpr const char* c_storage_module_instance_options_query = "query";
 constexpr const char* c_storage_module_instance_options_fields = "fields";
 
+constexpr const char* c_sanctioned_command_system_schedule = "system_schedule";
+constexpr const char* c_sanctioned_command_system_listeners = "system_listeners";
+constexpr const char* c_sanctioned_command_system_web_sessions = "system_web_sessions";
+
 constexpr const char* c_sanctioned_variable_sid_secure = "system_variable @sid_secure";
 constexpr const char* c_sanctioned_variable_utm_web_reset = "system_variable @utm_web_reset";
 constexpr const char* c_sanctioned_variable_num_unlock_keys = "system_variable @num_unlock_keys";
@@ -392,6 +394,10 @@ bool is_admin_sanctioned( const string& request_and_args )
 
    if( g_cws_sanctioned_requests.empty( ) )
    {
+      g_cws_sanctioned_requests.insert( c_sanctioned_command_system_schedule );
+      g_cws_sanctioned_requests.insert( c_sanctioned_command_system_listeners );
+      g_cws_sanctioned_requests.insert( c_sanctioned_command_system_web_sessions );
+
       g_cws_sanctioned_requests.insert( c_sanctioned_variable_sid_secure );
       g_cws_sanctioned_requests.insert( c_sanctioned_variable_utm_web_reset );
       g_cws_sanctioned_requests.insert( c_sanctioned_variable_num_unlock_keys );
@@ -3104,7 +3110,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                            if( access == g_cws_admin_token )
                            {
-                              is_admin_and_devt_or_okay = g_is_devt_system;
+                              is_admin_and_devt_or_okay = has_system_variable( e_special_var_system_is_for_devt );
 
                               // NOTE: General usage of the application
                               // protocol is not permitted unless using
