@@ -274,6 +274,13 @@ CHANGED=1
 .session_variable @gteq_session_queue $START_POINT
 @endif
 ;
+NUM_PINNED=0
+.system_variable @keyed_irc_%ROOM%_MP
+@ifdef $OUTPUT
+.session_variable @deque "~$OUTPUT"
+.session_variable @deque size
+NUM_PINNED=$OUTPUT
+@endif
 .session_variable -p=@ -s=_$USER -sys_keyed -id=$SESSION @queue_irc_$ROOM_AND_USER @deque
 ;
 .session_variable @deque size
@@ -306,6 +313,11 @@ MESSAGE_PARTS=@repstr: /\n:$NEXT_MESSAGE
 MSG_UNIQUE=%MESSAGE_PARTS:1%
 MSG_AUTHOR=%MESSAGE_PARTS:2%
 MSG_BASE64=%MESSAGE_PARTS:3%
+;
+@if $NUM_PINNED #> 0
+MSG_AUTHOR=!$MSG_AUTHOR
+NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR $MSG_BASE64
+@endif
 ;
 MSG_PREFIX=@substr:0,3:$MSG_BASE64
 ;
@@ -382,7 +394,18 @@ NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR* $NEW_MSG_BASE64
 @endif
 @endif
 ;
+@ifneq "$NUM_PINNED" "0"
+NUM_PINNED=@$NUM_PINNED-1
+@else
+.system_variable @keyed_irc_%ROOM%_MP:$MSG_UNIQUE
+@ifdef $OUTPUT
+NEXT_MESSAGE=
+@endif
+@endif
+;
+@ifdef $NEXT_MESSAGE
 #$NEXT_MESSAGE
+@endif
 ;
 .session_variable @deque pop_front
 ;
