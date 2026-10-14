@@ -589,6 +589,7 @@ IS_PINNED=
 FIRST=@substr:0,1:$USER_NAME
 @ifeq "$FIRST" "!"
 IS_PINNED=1
+LOCAL= * * * * * * * * *$SP
 USER_NAME=@substr:1:$USER_NAME
 @endif
 ;
