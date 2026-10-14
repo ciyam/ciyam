@@ -586,6 +586,9 @@ async function do_disconnect( already_ended )
 // what needs no session works - the console's own commands, the node's open requests - and "init" signs in.
 function enter_unsigned( )
 {
+   // NOTE: A password still being asked goes - its sign in is no longer what this view is for (found by review).
+   end_password_prompt( null );
+
    g_connected = false;
 
    document.getElementById( "signin_view" ).hidden = true;
@@ -635,6 +638,8 @@ function enter_unsigned( )
 
 function enter_console( )
 {
+   end_password_prompt( null );
+
    g_connected = true;
 
    if( !g_embedded )
@@ -962,9 +967,11 @@ function delay( ms )
 // Linked, the request goes to the chat to send instead: the server keeps one command slot
 // per access and device, so this console and the chat must never have requests in flight
 // on the shared session at the same time (ISS-020). The chat queues them with its own.
-function send_request( method, url, quiet )
+// NOTE: "direct" - sent from here even when linked: the node's open requests touch no session, so need not wait on the
+// page whose session this is - which passes on session requests only (found by review).
+function send_request( method, url, quiet, direct )
 {
-   if( g_linked )
+   if( g_linked && !direct )
       return send_linked_request( method, url, quiet );
 
    var job = g_queue.then( function( )
@@ -1169,6 +1176,8 @@ async function run_line( line, from_script )
 // NOTE: The sign in card, from the console opened on its own - or at once, for a node locked or not set up.
 function show_signin_form( )
 {
+   end_password_prompt( null );
+
    document.getElementById( "main_view" ).hidden = true;
 
    var back = document.getElementById( "signin_back_console" );
@@ -1196,7 +1205,7 @@ async function node_is_ready( )
 // NOTE: The node's own requests that need no session ("c_console_open_endpoints") - signed in or not.
 async function run_open( spec )
 {
-   var response = await send_request( "GET", ciyam.host_info + spec.path, false );
+   var response = await send_request( "GET", ciyam.host_info + spec.path, false, true );
 
    if( response === null )
    {
@@ -1218,7 +1227,8 @@ async function run_init( target )
 {
    if( !g_started_alone )
    {
-      print_line( "Error: This console shares " + g_owner_page.name + "'s session - sign in there.", "is-err" );
+      print_line( "Error: init is for the console opened on its own - " + ( g_linked || g_embedded ? "this one shares " + g_owner_page.name
+       + "'s session, so sign in there." : "sign in with the form." ), "is-err" );
 
       return { ok: false };
    }
@@ -1274,6 +1284,10 @@ async function run_init( target )
 
          return { ok: false };
       }
+
+      // NOTE: Signed in meanwhile - with the card, or another tab - so this one is not tried (found by review).
+      if( g_connected )
+         return { ok: false };
 
       hashed = "";
    }
@@ -1331,6 +1345,10 @@ function end_password_prompt( value )
 {
    var input = document.getElementById( "prompt_input" );
 
+   // NOTE: Nothing asked - nothing to put back (it is called on every change of view).
+   if( g_password_prompt === null )
+      return;
+
    input.type = "text";
    input.autocomplete = "off";
    input.placeholder = input.dataset.placeholder || "";
@@ -1340,8 +1358,7 @@ function end_password_prompt( value )
 
    g_password_prompt = null;
 
-   if( resolve !== null )
-      resolve( value );
+   resolve( value );
 }
 
 // ====================================================================
@@ -3425,7 +3442,8 @@ function bind_palette( )
    {
       if( ( event.key === "k" || event.key === "K" ) && ( event.ctrlKey || event.metaKey ) )
       {
-         if( !document.getElementById( "main_view" ).hidden )
+         // NOTE: Not while a password is asked - a command inserted there would be taken for it (found by review).
+         if( !document.getElementById( "main_view" ).hidden && ( g_password_prompt === null ) )
          {
             event.preventDefault( );
 

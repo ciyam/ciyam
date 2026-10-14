@@ -525,7 +525,6 @@ function plan_creds_retain( list, access, hashed, partial )
    return { list: format_access_list( entries ), remove: [ ], set: set, message: "(retained credentials completely for " + access + ")" };
 }
 
-// NOTE: "own" stands in for the caller's access where the harness used "***".
 // NOTE: Whom "init" signs in as - "accounts" are those saved on this browser, as the sign in lists them ({ pin, label }).
 // Nothing given lists them ({ list }); five digits are a PIN; anything else is a saved account's name, any case.
 function init_target( target, accounts )
@@ -549,6 +548,7 @@ function init_target( target, accounts )
    return { error: "No account called '" + text + "' is saved on this browser - give its PIN instead, or init alone to list them" };
 }
 
+// NOTE: "own" stands in for the caller's access where the harness used "***".
 function build_cws_url( base, spec, session )
 {
    var path = spec.path;
