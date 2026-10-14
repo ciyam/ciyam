@@ -1813,10 +1813,18 @@ void set_system_variable( const var_name& var,
          }
          else
          {
+            string variable_id( variable.substr( 0, pos ) );
+            string variable_key( variable.substr( pos + 1 ) );
+
             if( val.empty( ) )
-               g_mapped_variables[ variable.substr( 0, pos ) ].erase( variable.substr( pos + 1 ) );
+            {
+               g_mapped_variables[ variable_id ].erase( variable_key );
+
+               if( g_mapped_variables[ variable_id ].empty( ) )
+                  g_mapped_variables.erase( variable_id );
+            }
             else
-               g_mapped_variables[ variable.substr( 0, pos ) ][ variable.substr( pos + 1 ) ] = val;
+               g_mapped_variables[ variable_id ][ variable_key ] = val;
          }
       }
       else if( variable.find( c_special_variable_queue_prefix ) == 0 )
