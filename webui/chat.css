@@ -1112,6 +1112,102 @@ button.chat-avatar:hover
    flex: none;
 }
 
+/* NOTE: Pinned messages - beneath any announcements, above the conversation (Ian's server, 2026-10-14). Neutral, as they
+   are the room's own; several scroll inside the strip rather than pushing the conversation off the screen. */
+.chat-pinned-strip
+{
+   flex: none;
+   display: flex;
+   flex-direction: column;
+   gap: 6px;
+   max-height: 32vh;
+   overflow-y: auto;
+   padding: 8px 20px;
+   border-bottom: 1px solid var(--color-chat-border);
+   background: var(--color-chat-bg-rail);
+}
+
+.chat-pinned-count
+{
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 600;
+   letter-spacing: 0.04em;
+   text-transform: uppercase;
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-pinned
+{
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   padding: 6px 10px;
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-bg);
+}
+
+.chat-pinned-open
+{
+   flex: 1;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+   padding: 0;
+   border: 0;
+   background: none;
+   font: inherit;
+   color: inherit;
+   text-align: left;
+   cursor: pointer;
+}
+
+.chat-pinned-head
+{
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   font-size: var(--font-size-chat-meta);
+}
+
+.chat-pinned-head svg
+{
+   flex: none;
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-pinned-sender
+{
+   font-weight: 600;
+}
+
+.chat-pinned-when
+{
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-micro);
+   color: var(--color-chat-text-faint);
+}
+
+/* NOTE: Two lines at most - opening it shows the whole message in its place. */
+.chat-pinned-text
+{
+   display: -webkit-box;
+   -webkit-line-clamp: 2;
+   -webkit-box-orient: vertical;
+   overflow: hidden;
+   font-size: var(--font-size-chat-body);
+   line-height: 1.4;
+   color: var(--color-chat-text);
+   white-space: pre-wrap;
+   overflow-wrap: anywhere;
+}
+
+.chat-pinned-unpin
+{
+   flex: none;
+}
+
 /* NOTE: An invitation or an empty thread has this bar only on a narrow screen, where it holds
    the buttons for the panels that have slid away - see "Narrow screens" below. */
 .chat-thread-head[data-view="invite"],
@@ -1430,7 +1526,8 @@ button.chat-avatar:hover
    cursor: text;
 }
 
-.chat-message-edit
+.chat-message-edit,
+.chat-message-pin
 {
    opacity: 0;
    border: 0;
@@ -1442,9 +1539,57 @@ button.chat-avatar:hover
    text-decoration: underline;
 }
 
-.chat-message.is-own:hover .chat-message-edit
+.chat-message.is-own:hover .chat-message-edit,
+.chat-message.is-own:hover .chat-message-pin
 {
    opacity: 1;
+}
+
+/* NOTE: A room at its most pinned - the pin is there, but says why it cannot be used. */
+.chat-message-pin:disabled
+{
+   cursor: not-allowed;
+   text-decoration: none;
+}
+
+/* NOTE: A pinned message, where it was said - a small mark, as private messages have. */
+.chat-pin-mark
+{
+   display: inline-flex;
+   align-items: center;
+   gap: 3px;
+   margin-right: 6px;
+   font-size: var(--font-size-chat-nano);
+   color: var(--color-chat-text-secondary);
+   vertical-align: 1px;
+}
+
+/* NOTE: Opened from the pinned strip - the message lit up a moment, so the eye finds it. */
+.chat-message.is-flashed
+{
+   animation: chat-pinned-flash 1.6s ease-out;
+}
+
+@keyframes chat-pinned-flash
+{
+   from
+   {
+      background: color-mix(in srgb, var(--color-chat-accent) 18%, transparent);
+   }
+
+   to
+   {
+      background: transparent;
+   }
+}
+
+@media (prefers-reduced-motion: reduce)
+{
+   .chat-message.is-flashed
+   {
+      animation: none;
+      outline: 2px solid var(--color-chat-accent);
+   }
 }
 
 /* system notices sit between messages as a centred rule */

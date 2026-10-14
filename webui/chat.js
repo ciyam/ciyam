@@ -36,6 +36,11 @@ var g_invitations = [ ];
 
 var g_announcements = [ ];
 var g_announcements_drawn = "";
+
+// NOTE: The room's pinned messages, from its last read - every read returns them all (Ian's server, 2026-10-14).
+var g_pinned = [ ];
+var g_pinned_drawn = "";
+var g_pinned_expanded = false;
 var g_invite_total = -1;
 var g_selected_invite = "";
 var g_members = [ ];
@@ -1034,6 +1039,8 @@ function show_thread_view( )
    // NOTE: Announcements show whatever the thread holds - someone with no rooms yet is the
    // very person a welcome is for.
    document.getElementById( "announcements" ).hidden = loading || ( g_announcements.length === 0 );
+
+   document.getElementById( "pinned" ).hidden = loading || !has_room || ( g_pinned.length === 0 );
 }
 
 // NOTE: "already_ended" - another tab signed out of every app - clears this page without a request: the session has
@@ -1059,6 +1066,8 @@ async function do_disconnect( already_ended )
    g_rooms = [ ];
    g_members = [ ];
    g_start_point = "";
+
+   clear_pinned( );
 
    // NOTE: The chat not turned on was this sign in's - the next may find it on (found by review).
    g_chat_off = false;
@@ -1595,6 +1604,9 @@ function select_room( room, token )
    g_edit_private = false;
    g_recipients = [ ];
 
+   // NOTE: The last room's pinned are not this one's - its first read brings its own.
+   clear_pinned( );
+
    // NOTE: The last room's members are not this one's - kept, they made a new conversation look
    // "not private" until its own member list arrived.
    g_members = [ ];
@@ -1716,6 +1728,8 @@ function select_invitation( room )
    g_edit_private = false;
    g_recipients = [ ];
    g_members = [ ];
+
+   clear_pinned( );
 
    g_selected_invite = room;
 
@@ -3084,6 +3098,8 @@ function on_messages_response( response, asked_for, replace )
 
       append_messages( result.messages );
 
+      apply_pinned( result.pinned );
+
       // NOTE: Admin sees the Admin room as a room, so their invitations come from here
       // rather than from a background read.
       if( is_reserved_room( asked_for ) )
@@ -3093,10 +3109,7 @@ function on_messages_response( response, asked_for, replace )
          refresh_invitations( );
       }
 
-      var next = next_start_point( result.messages );
-
-      if( next !== "" )
-         g_start_point = next;
+      g_start_point = later_start_point( g_start_point, next_start_point( result.messages ) );
 
       render_seen_markers( );
 
@@ -3284,7 +3297,210 @@ function build_message( entry )
       } );
    }
 
+   // NOTE: Pin or unpin - the sender's own ordinary messages only ("can_pin( )"); said pin or unpin by "mark_pinned_rows( )".
+   if( can_pin( entry, ciyam.username ) )
+   {
+      var pin = row.querySelector( ".chat-message-pin" );
+
+      pin.hidden = false;
+      pin.dataset.unique = entry.unique;
+
+      pin.addEventListener( "click", function( event ) { do_toggle_pin( event.currentTarget.dataset.unique ); } );
+   }
+
    return node;
+}
+
+// ====================================================================
+// Pinned messages (Ian's server, 2026-10-14)
+// ====================================================================
+
+// NOTE: A read of the room says which of its messages are pinned - all of them, every time - so the strip, the marks in
+// the conversation and each pin button follow it.
+function apply_pinned( list )
+{
+   g_pinned = list || [ ];
+
+   var signature = pinned_signature( g_pinned );
+
+   if( signature !== g_pinned_drawn )
+   {
+      g_pinned_drawn = signature;
+
+      render_pinned( );
+   }
+
+   mark_pinned_rows( );
+}
+
+function clear_pinned( )
+{
+   g_pinned = [ ];
+   g_pinned_drawn = "";
+   g_pinned_expanded = false;
+
+   render_pinned( );
+}
+
+function is_pinned( unique )
+{
+   return g_pinned.some( function( message ) { return message.unique === unique; } );
+}
+
+function render_pinned( )
+{
+   var host = document.getElementById( "pinned" );
+
+   // NOTE: The strip takes room from the conversation - one read at its end stays there as the strip grows or goes.
+   var list = document.getElementById( "message_list" );
+
+   var was_at_end = ( list.scrollTop + list.clientHeight >= list.scrollHeight - 40 );
+
+   host.textContent = "";
+
+   if( g_pinned.length <= c_pinned_collapsed )
+      g_pinned_expanded = false;
+
+   if( g_pinned.length > 0 )
+   {
+      var count = document.createElement( "div" );
+
+      count.className = "chat-pinned-count";
+      count.textContent = "Pinned · " + g_pinned.length;
+
+      host.appendChild( count );
+   }
+
+   var stack = pinned_stack( g_pinned, g_pinned_expanded );
+
+   stack.shown.forEach( function( message )
+   {
+      var node = document.getElementById( "tpl_pinned" ).content.cloneNode( true ).querySelector( ".chat-pinned" );
+
+      var sender = node.querySelector( ".chat-pinned-sender" );
+
+      sender.textContent = message.sender;
+      sender.style.color = "var(--color-sender-" + sender_colour_index( message.sender ) + ")";
+
+      var when = node.querySelector( ".chat-pinned-when" );
+
+      when.textContent = day_label( message.unique ) + " " + unique_to_time( message.unique ).substring( 0, 5 );
+      when.title = unique_to_full( message.unique );
+
+      node.querySelector( ".chat-pinned-text" ).textContent = message.text;
+      node.querySelector( ".chat-pinned-open" ).addEventListener( "click", function( ) { show_pinned_message( message.unique ); } );
+
+      if( message.sender === ciyam.username )
+      {
+         var unpin = node.querySelector( ".chat-pinned-unpin" );
+
+         unpin.hidden = false;
+         unpin.title = "Unpin - it stays in the conversation";
+
+         unpin.addEventListener( "click", function( ) { do_toggle_pin( message.unique ); } );
+      }
+
+      host.appendChild( node );
+   } );
+
+   if( ( stack.more > 0 ) || g_pinned_expanded )
+   {
+      var toggle = document.createElement( "button" );
+
+      toggle.type = "button";
+      toggle.id = "pinned_more";
+      toggle.className = "chat-announcements-more";
+      toggle.textContent = g_pinned_expanded ? "Show fewer" : ( "Show " + stack.more + " more" );
+      toggle.setAttribute( "aria-expanded", g_pinned_expanded ? "true" : "false" );
+
+      toggle.addEventListener( "click", function( )
+      {
+         g_pinned_expanded = !g_pinned_expanded;
+
+         render_pinned( );
+
+         document.getElementById( "pinned_more" ).focus( );
+      } );
+
+      host.appendChild( toggle );
+   }
+
+   show_thread_view( );
+
+   if( was_at_end )
+      list.scrollTop = list.scrollHeight;
+}
+
+// NOTE: Each row's mark, and its pin button's words - a room at its most pinned says so on the pins still to use.
+function mark_pinned_rows( )
+{
+   var full = ( g_pinned.length >= c_most_pinned );
+
+   document.querySelectorAll( "#message_list > [data-unique]" ).forEach( function( row )
+   {
+      var pinned = is_pinned( row.dataset.unique );
+
+      row.classList.toggle( "is-pinned", pinned );
+
+      var mark = row.querySelector( ".chat-pin-mark" );
+
+      if( mark !== null )
+         mark.hidden = !pinned;
+
+      var pin = row.querySelector( ".chat-message-pin" );
+
+      if( ( pin === null ) || pin.hidden )
+         return;
+
+      pin.textContent = pinned ? "unpin" : "pin";
+      pin.disabled = !pinned && full;
+      pin.title = pinned ? "Unpin - it stays in the conversation" : ( full ? "This room already has " + c_most_pinned
+       + " pinned messages - unpin one first" : "Pin to the top of the room, for everyone in it" );
+   } );
+}
+
+// NOTE: Opened from the strip - the message in its place, lit up a moment.
+function show_pinned_message( unique )
+{
+   var row = document.querySelector( "#message_list > [data-unique=\"" + unique + "\"]" );
+
+   if( row === null )
+      return;
+
+   row.scrollIntoView( { block: "center", behavior: "smooth" } );
+
+   row.classList.remove( "is-flashed" );
+
+   void row.offsetWidth;
+
+   row.classList.add( "is-flashed" );
+}
+
+// NOTE: An edit to a single space pins or unpins ("pin_options( )"). The answer is the room read on from the last start
+// point, its pinned set with it - taken as a read, so nothing jumps.
+function do_toggle_pin( unique )
+{
+   var room = g_room;
+
+   if( ( room === "" ) || !unique )
+      return;
+
+   serialised( function( )
+   {
+      return ciyam.create_message( room, pin_options( unique ), function( response )
+      {
+         if( is_error_response( response ) )
+         {
+            if( !is_timeout_response( response ) )
+               show_alert( pin_error_text( response ), "is-error", true );
+
+            return;
+         }
+
+         if( room === g_room )
+            on_messages_response( response, room, false );
+      } );
+   } );
 }
 
 function room_label( room )
@@ -3692,6 +3908,8 @@ async function do_leave_room( )
       g_room = "";
       g_start_point = "";
       g_members = [ ];
+
+      clear_pinned( );
    }
 
    show_thread_view( );
@@ -3919,10 +4137,9 @@ async function do_send( )
          {
             append_messages( result.messages );
 
-            var next = next_start_point( result.messages );
+            apply_pinned( result.pinned );
 
-            if( next !== "" )
-               g_start_point = next;
+            g_start_point = later_start_point( g_start_point, next_start_point( result.messages ) );
          }
       } );
    } );

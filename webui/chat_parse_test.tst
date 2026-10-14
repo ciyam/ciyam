@@ -628,4 +628,25 @@ ok   - not locked
 ok   - anything else as it came
 ok   a refusal's step - the words for words not taken, the password's for the rest, and never the words onto a new node
 
+== pinned messages =============================================
+ok   a pinned message - pinned, the sender without its "!"
+ok   - pinned and edited - "!admin*"
+ok   - an ordinary message carries no pinned mark
+ok   a read with one pinned - the room's pinned set
+ok   - the messages back in time order, the pinned among them
+ok   - new because of the others
+ok   a poll with nothing new but the pinned - not new
+ok   - and the start point not taken back to it
+ok   - a read whose newest is pinned moves it on
+ok   - none yet, or nothing read - as it comes
+ok   nothing pinned - none, as before
+ok   in time order - by unique, a shared one as it came
+ok   pinning - an edit to a single space
+ok   who may pin - their own ordinary messages only
+ok   the ninth pin refused - said plainly
+ok   - a private one
+ok   - anything else as it came
+ok   the strip - two, then how many more; all when asked
+ok   - redrawn when what it shows changes
+
 All checks passed.

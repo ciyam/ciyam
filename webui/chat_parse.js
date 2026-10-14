@@ -24,6 +24,12 @@ const c_edited_marker = "*";
 
 const c_private_marker = "!";
 
+// NOTE: Pinned messages (Ian, 2026-10-14) - the sender with "!" in front; at most eight in a room, and shown two at a time
+// until more are asked for, as announcements are.
+const c_pinned_marker = "!";
+const c_most_pinned = 8;
+const c_pinned_collapsed = 2;
+
 // NOTE: Who may post in a room, and the markers used to signal it in the entrance listing.
 const c_posts_any = "any";
 const c_posts_own = "own";
@@ -231,6 +237,15 @@ function parse_message_line( line )
 
    var remainder = rest.substring( pos + 1 );
 
+   // NOTE: Pinned (Ian, 2026-10-14) - "!" before the sender, and "*" after it as well when it was edited too ("!name*").
+   var pinned = false;
+
+   if( sender.charAt( 0 ) === c_pinned_marker )
+   {
+      pinned = true;
+      sender = sender.substring( 1 );
+   }
+
    var edited = false;
 
    if( sender.slice( -1 ) === c_edited_marker )
@@ -266,7 +281,7 @@ function parse_message_line( line )
 
    var text = ( ( first === " " ) || is_private ) ? remainder.substring( 1 ) : remainder;
 
-   return {
+   var entry = {
       kind: c_kind_chat,
       unique: unique,
       sender: sender,
@@ -274,6 +289,12 @@ function parse_message_line( line )
       private: is_private,
       text: unescape_message_text( text )
    };
+
+   // NOTE: Only when pinned, so every other message reads as it always has.
+   if( pinned )
+      entry.pinned = true;
+
+   return entry;
 }
 
 // NOTE: An entrance room line is "<unique> <owner> #<room> <new>/<total> <name>".
@@ -390,7 +411,7 @@ function join_continued_lines( lines )
 
 function parse_fetch_response( response )
 {
-   var result = { error: "", members: [ ], messages: [ ], rooms: [ ], has_new: false };
+   var result = { error: "", members: [ ], messages: [ ], rooms: [ ], pinned: [ ], has_new: false };
 
    if( is_error_response( response ) )
    {
@@ -427,11 +448,21 @@ function parse_fetch_response( response )
       else
       {
          result.messages.push( entry );
-         result.has_new = true;
+
+         // NOTE: Every read of a room returns its pinned messages first (Ian, 2026-10-14) - the room's whole pinned set,
+         // each time, so they are not news.
+         if( entry.pinned )
+            result.pinned.push( entry );
+         else
+            result.has_new = true;
       }
    }
 
    result.messages = pair_private_copies( result.messages );
+
+   // NOTE: Pinned ones come first, out of time - put back in their place, so a whole read draws them where they were said.
+   if( result.pinned.length > 0 )
+      result.messages = in_time_order( result.messages );
 
    return result;
 }
@@ -1733,6 +1764,71 @@ function recovery_texts( fresh )
      + " come back when its data is restored from its backups, which isn't offered here yet." };
 }
 
+// NOTE: The start point only moves on (2026-10-14) - a room's pinned messages come with every read, however old, and a
+// read of nothing new but them would otherwise take it back to the oldest. "" is no start point yet.
+function later_start_point( current, next )
+{
+   if( ( next === "" ) || ( ( current !== "" ) && ( current >= next ) ) )
+      return current;
+
+   return next;
+}
+
+// NOTE: Messages in the order they were said - by unique, those sharing one (a private copy and its receipt) as they came.
+function in_time_order( messages )
+{
+   return ( messages || [ ] ).map( function( entry, i ) { return { entry: entry, i: i }; } ).sort( function( a, b )
+   {
+      var x = String( a.entry.unique || "" );
+      var y = String( b.entry.unique || "" );
+
+      return ( x === y ) ? ( a.i - b.i ) : ( ( x < y ) ? -1 : 1 );
+   } ).map( function( item ) { return item.entry; } );
+}
+
+// NOTE: Pinning is an edit to a single space, which pins or unpins (Ian, 2026-10-14). Only the sender's own, and only
+// ordinary messages - not private ones, nor system events ("can_pin( )").
+function pin_options( unique )
+{
+   return "for=" + unique + ";text= ";
+}
+
+function can_pin( entry, me )
+{
+   return !!entry && ( entry.kind === c_kind_chat ) && ( entry.sender === me ) && !entry.private && ( me !== "" );
+}
+
+// NOTE: The node's refusals of a pin, said plainly - anything else as it came.
+function pin_error_text( error )
+{
+   var text = String( error || "" ).replace( /^Error:\s*/, "" ).trim( );
+
+   if( /Maximum pinned messages/i.test( text ) )
+      return "This room already has " + c_most_pinned + " pinned messages, the most it can hold - unpin one first.";
+
+   if( /modified to or from private/i.test( text ) )
+      return "A private message can't be pinned.";
+
+   return text;
+}
+
+// NOTE: What the pinned strip shows, to redraw it only when that changes.
+function pinned_signature( list )
+{
+   return ( list || [ ] ).map( function( m ) { return m.unique + ( m.edited ? "*" : "" ) + m.sender + " " + m.text; } ).join( "\n" );
+}
+
+// NOTE: The pinned shown - all of them asked for, or the first two with how many more.
+function pinned_stack( list, expanded )
+{
+   var all = list || [ ];
+
+   if( expanded || ( all.length <= c_pinned_collapsed ) )
+      return { shown: all.slice( ), more: 0 };
+
+   return { shown: all.slice( 0, c_pinned_collapsed ), more: all.length - c_pinned_collapsed };
+}
+
 // NOTE: The node's refusals, said plainly - anything else as it came. Words that are not the node's are answered
 // "locked for administration" today - the mismatch is set, then a later check for an administration lock replaces it
 // (seen 2026-10-09, for Ian). It is also the answer while someone else is signing in as admin, which is rare.
@@ -2379,6 +2475,13 @@ if( typeof module !== "undefined" )
       word_completions: word_completions,
       recovery_error_text: recovery_error_text,
       recovery_error_step: recovery_error_step,
+      in_time_order: in_time_order,
+      later_start_point: later_start_point,
+      pin_options: pin_options,
+      can_pin: can_pin,
+      pin_error_text: pin_error_text,
+      pinned_signature: pinned_signature,
+      pinned_stack: pinned_stack,
       recovery_texts: recovery_texts,
       plan_after_recovery: plan_after_recovery,
       visible_rooms: visible_rooms,

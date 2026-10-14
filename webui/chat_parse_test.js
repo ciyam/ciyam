@@ -1170,6 +1170,48 @@ check( "a refusal's step - the words for words not taken, the password's for the
  cp.recovery_error_step( "Error: System is currently locked for administration.", true ),
  cp.recovery_error_step( "Error: Something else.", false ) ], [ "words", "words", "password", "password" ] );
 
+heading( "pinned messages" );
+
+// NOTE: As the node sends them, captured by "pin_probe.js" (2026-10-14) - the pinned first, author prefixed "!".
+check( "a pinned message - pinned, the sender without its \"!\"", cp.parse_message_line( "1791951506000 !admin  pin probe A" ),
+ { kind: "chat", unique: "1791951506000", sender: "admin", edited: false, private: false, text: "pin probe A", pinned: true } );
+check( "- pinned and edited - \"!admin*\"", cp.parse_message_line( "1791951506000 !admin*  pin probe A edited" ),
+ { kind: "chat", unique: "1791951506000", sender: "admin", edited: true, private: false, text: "pin probe A edited", pinned: true } );
+check( "- an ordinary message carries no pinned mark", "pinned" in cp.parse_message_line( "1791951508000 admin  pin probe B" ), false );
+
+var pinned_read = cp.parse_fetch_response( "admin+2 verify-a+0\n1791951506000 !admin  pin probe A\n1791951392000 admin :create 0000004-8812 Suite Posts\n"
+ + "1791951397000 verify-a :joined\n1791951508000 admin  pin probe B" );
+check( "a read with one pinned - the room's pinned set", pinned_read.pinned.map( function( m ) { return m.unique; } ), [ "1791951506000" ] );
+check( "- the messages back in time order, the pinned among them", pinned_read.messages.map( function( m ) { return m.unique; } ),
+ [ "1791951392000", "1791951397000", "1791951506000", "1791951508000" ] );
+check( "- new because of the others", pinned_read.has_new, true );
+var pinned_only = cp.parse_fetch_response( "admin+2 verify-a+0\n1791951506000 !admin  pin probe A" );
+check( "a poll with nothing new but the pinned - not new", pinned_only.has_new, false );
+check( "- and the start point not taken back to it", cp.later_start_point( "1791951610001", cp.next_start_point( pinned_only.messages ) ),
+ "1791951610001" );
+check( "- a read whose newest is pinned moves it on", cp.later_start_point( "1791951500001", cp.next_start_point( pinned_only.messages ) ),
+ "1791951506001" );
+check( "- none yet, or nothing read - as it comes", [ cp.later_start_point( "", "1791951506001" ), cp.later_start_point( "1791951506001", "" ),
+ cp.later_start_point( "", "" ) ], [ "1791951506001", "1791951506001", "" ] );
+check( "nothing pinned - none, as before", cp.parse_fetch_response( "admin+2 verify-a+0\n1791951508000 admin  pin probe B" ).pinned, [ ] );
+check( "in time order - by unique, a shared one as it came",
+ cp.in_time_order( [ { unique: "3", n: 1 }, { unique: "1" }, { unique: "3", n: 2 }, { unique: "2" } ] ),
+ [ { unique: "1" }, { unique: "2" }, { unique: "3", n: 1 }, { unique: "3", n: 2 } ] );
+
+check( "pinning - an edit to a single space", cp.pin_options( "1791951506000" ), "for=1791951506000;text= " );
+var own = cp.parse_message_line( "1791951508000 admin  mine" );
+check( "who may pin - their own ordinary messages only", [ cp.can_pin( own, "admin" ), cp.can_pin( own, "verify-a" ),
+ cp.can_pin( cp.parse_message_line( "1791951587000 admin !private" ), "admin" ), cp.can_pin( cp.parse_message_line( "1791951397000 admin :joined" ), "admin" ),
+ cp.can_pin( null, "admin" ), cp.can_pin( own, "" ) ], [ true, false, false, false, false, false ] );
+check( "the ninth pin refused - said plainly", cp.pin_error_text( "Error: Maximum pinned messages for this room already exist." ),
+ "This room already has 8 pinned messages, the most it can hold - unpin one first." );
+check( "- a private one", cp.pin_error_text( "Error: Source message must not be modified to or from private." ), "A private message can't be pinned." );
+check( "- anything else as it came", cp.pin_error_text( "Error: Something else." ), "Something else." );
+check( "the strip - two, then how many more; all when asked", [ cp.pinned_stack( [ 1, 2, 3, 4 ], false ), cp.pinned_stack( [ 1, 2, 3, 4 ], true ),
+ cp.pinned_stack( [ 1, 2 ], false ) ], [ { shown: [ 1, 2 ], more: 2 }, { shown: [ 1, 2, 3, 4 ], more: 0 }, { shown: [ 1, 2 ], more: 0 } ] );
+check( "- redrawn when what it shows changes", [ cp.pinned_signature( pinned_read.pinned ) === cp.pinned_signature( pinned_only.pinned ),
+ cp.pinned_signature( pinned_read.pinned ) === cp.pinned_signature( [ ] ) ], [ true, false ] );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 
