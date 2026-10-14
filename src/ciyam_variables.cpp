@@ -126,6 +126,7 @@ constexpr const char* c_special_variable_ip_addr = "@ip_addr";
 constexpr const char* c_special_variable_is_last = "@is_last";
 constexpr const char* c_special_variable_message = "@message";
 constexpr const char* c_special_variable_opening = "@opening";
+constexpr const char* c_special_variable_no_devt = "@no_devt";
 constexpr const char* c_special_variable_package = "@package";
 constexpr const char* c_special_variable_pending = "@pending";
 constexpr const char* c_special_variable_pubkeyx = "@pubkeyx";
@@ -439,12 +440,6 @@ void truncate_value_for_secret_hash_prefixed_name( const string& name, string& v
 
 vector< string > g_special_variable_names;
 
-void set_system_is_for_devt( )
-{
-   if( file_exists( "config.info" ) )
-      g_variables[ c_special_variable_system_is_for_devt ] = c_true_value;
-}
-
 void init_special_variable_names( )
 {
    guard g( g_mutex );
@@ -520,6 +515,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_is_last );
       g_special_variable_names.push_back( c_special_variable_message );
       g_special_variable_names.push_back( c_special_variable_opening );
+      g_special_variable_names.push_back( c_special_variable_no_devt );
       g_special_variable_names.push_back( c_special_variable_package );
       g_special_variable_names.push_back( c_special_variable_pending );
       g_special_variable_names.push_back( c_special_variable_pubkeyx );
@@ -815,8 +811,6 @@ void init_special_variable_names( )
    g_read_only_variables.insert( c_special_variable_ssl_cert_subject );
    g_read_only_variables.insert( c_special_variable_system_is_for_demo );
    g_read_only_variables.insert( c_special_variable_system_is_for_devt );
-
-   set_system_is_for_devt( );
 }
 
 // NOTE: Special "file variables" are tied to a zero length file. If setting then the file
@@ -923,6 +917,14 @@ void set_generate_hub_block( bool change = false, bool remove = false )
       touch_or_remove( variable, remove );
 
    set_file_variable( variable );
+}
+
+void set_system_is_for_devt( )
+{
+   if( g_variables.count( c_special_variable_no_devt ) )
+      g_variables.erase( c_special_variable_system_is_for_devt );
+   else if( file_exists( "config.info" ) )
+      g_variables[ c_special_variable_system_is_for_devt ] = c_true_value;
 }
 
 void set_ods_cache_hit_ratios( )
@@ -1124,6 +1126,8 @@ bool has_system_variable( const var_name& var )
       set_restore_needed( );
    else if( name == c_special_variable_generate_hub_block )
       set_generate_hub_block( );
+   else if( name == c_special_variable_system_is_for_devt )
+      set_system_is_for_devt( );
    else if( name == c_special_variable_prepare_backup_needed )
       set_prepare_backup_needed( );
    else if( name == c_special_variable_complete_restore_needed )
@@ -1373,6 +1377,9 @@ string get_system_variable( const var_name& var, bool is_internal )
       if( wildcard_match( variable, c_special_variable_generate_hub_block ) )
          set_generate_hub_block( );
 
+      if( wildcard_match( variable, c_special_variable_system_is_for_devt ) )
+         set_system_is_for_devt( );
+
       if( wildcard_match( variable, c_special_variable_trace_session_ids ) )
       {
          string trace_session_ids( get_trace_session_ids( ) );
@@ -1487,6 +1494,9 @@ string get_system_variable( const var_name& var, bool is_internal )
 
       if( variable == c_special_variable_generate_hub_block )
          set_generate_hub_block( );
+
+      if( variable == c_special_variable_system_is_for_devt )
+         set_system_is_for_devt( );
 
       if( variable == c_special_variable_trace_session_ids )
       {
