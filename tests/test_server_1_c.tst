@@ -144,6 +144,16 @@ ccc 333
 ddd 444
 system_variable @keyed_test ""
 system_variable @keyed_test
+system_variable @keyed_test*
+system_variable @keyed_test:aaa xxx
+system_variable @keyed_test:bbb xxx
+system_variable @keyed_test*
+@keyed_test (2)
+system_variable @keyed_test:aaa ""
+system_variable @keyed_test*
+@keyed_test (1)
+system_variable @keyed_test:bbb ""
+system_variable @keyed_test*
 system_variable @queue_test abc
 system_variable @queue_test*
 @queue_test abc [+0]
