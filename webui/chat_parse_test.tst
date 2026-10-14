@@ -647,7 +647,6 @@ ok   who may pin - their own ordinary messages only
 ok   the ninth pin refused - said plainly
 ok   - a private one
 ok   - anything else as it came
-ok   the strip - two, then how many more; all when asked
 ok   - redrawn when what it shows changes
 
 All checks passed.

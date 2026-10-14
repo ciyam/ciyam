@@ -1122,13 +1122,61 @@ button.chat-avatar:hover
    gap: 6px;
    max-height: 32vh;
    overflow-y: auto;
-   padding: 8px 20px;
+   padding: 6px 20px;
    border-bottom: 1px solid var(--color-chat-border);
    background: var(--color-chat-bg-rail);
 }
 
+/* NOTE: The strip shut - one line: the pin, how many, the first, and Show (Ian, 2026-10-14). */
+.chat-pinned-line
+{
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   width: 100%;
+   padding: 2px 0;
+   border: 0;
+   background: none;
+   font: inherit;
+   color: inherit;
+   text-align: left;
+   cursor: pointer;
+}
+
+.chat-pinned-line svg
+{
+   flex: none;
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-pinned-first
+{
+   flex: 1;
+   min-width: 0;
+   overflow: hidden;
+   white-space: nowrap;
+   text-overflow: ellipsis;
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text);
+}
+
+.chat-pinned-toggle
+{
+   flex: none;
+   margin-left: auto;
+   font-size: var(--font-size-chat-meta);
+   font-weight: 600;
+   color: var(--color-chat-accent-deep);
+}
+
+.chat-pinned-line:hover .chat-pinned-toggle
+{
+   text-decoration: underline;
+}
+
 .chat-pinned-count
 {
+   flex: none;
    font-size: var(--font-size-chat-tiny);
    font-weight: 600;
    letter-spacing: 0.04em;
@@ -1206,6 +1254,13 @@ button.chat-avatar:hover
 .chat-pinned-unpin
 {
    flex: none;
+}
+
+/* NOTE: Its original gone from the conversation - the whole message here instead. */
+.chat-pinned.is-whole .chat-pinned-text
+{
+   display: block;
+   overflow: visible;
 }
 
 /* NOTE: An invitation or an empty thread has this bar only on a narrow screen, where it holds
@@ -1552,16 +1607,13 @@ button.chat-avatar:hover
    text-decoration: none;
 }
 
-/* NOTE: A pinned message, where it was said - a small mark, as private messages have. */
+/* NOTE: A pinned message, where it was said - a faint pin after it, no more (Ian, 2026-10-14: "less visible"). */
 .chat-pin-mark
 {
    display: inline-flex;
-   align-items: center;
-   gap: 3px;
-   margin-right: 6px;
-   font-size: var(--font-size-chat-nano);
-   color: var(--color-chat-text-secondary);
-   vertical-align: 1px;
+   margin-left: 6px;
+   color: var(--color-chat-text-faint);
+   vertical-align: -1px;
 }
 
 /* NOTE: Opened from the pinned strip - the message lit up a moment, so the eye finds it. */

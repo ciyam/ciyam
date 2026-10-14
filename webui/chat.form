@@ -396,19 +396,32 @@ http://www.opensource.org/licenses/mit-license.php.
             </svg>
             <span class="chat-private-label"></span>
          </span>
-         <span class="chat-pin-mark" title="Pinned to the top of the room" hidden>
-            <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false">
+         <span class="chat-message-body"></span>
+         <span class="chat-edit-tag" hidden>edited</span>
+         <!-- NOTE: Pinned, where it was said - just a faint pin after it (Ian, 2026-10-14: "less visible"). -->
+         <span class="chat-pin-mark" role="img" aria-label="Pinned" title="Pinned to the top of the room" hidden>
+            <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true" focusable="false">
                <path d="M6 1.75h4l-.6 3.9 2.6 2.6v1.1H4v-1.1l2.6-2.6z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
                <path d="M8 9.35v4.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
             </svg>
-            <span>pinned</span>
          </span>
-         <span class="chat-message-body"></span>
-         <span class="chat-edit-tag" hidden>edited</span>
          <button type="button" class="chat-message-edit" hidden>edit</button>
          <button type="button" class="chat-message-pin" hidden>pin</button>
       </span>
    </div>
+</template>
+
+<!-- NOTE: The strip shut is one line - how many, and the first (Ian, 2026-10-14); a click opens them all. -->
+<template id="tpl_pinned_line">
+   <button type="button" class="chat-pinned-line">
+      <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false">
+         <path d="M6 1.75h4l-.6 3.9 2.6 2.6v1.1H4v-1.1l2.6-2.6z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+         <path d="M8 9.35v4.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      <span class="chat-pinned-count"></span>
+      <span class="chat-pinned-first"></span>
+      <span class="chat-pinned-toggle"></span>
+   </button>
 </template>
 
 <template id="tpl_pinned">

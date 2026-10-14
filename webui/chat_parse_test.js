@@ -1209,8 +1209,6 @@ check( "the ninth pin refused - said plainly", cp.pin_error_text( "Error: Maximu
  "This room already has 8 pinned messages, the most it can hold - unpin one first." );
 check( "- a private one", cp.pin_error_text( "Error: Source message must not be modified to or from private." ), "A private message can't be pinned." );
 check( "- anything else as it came", cp.pin_error_text( "Error: Something else." ), "Something else." );
-check( "the strip - two, then how many more; all when asked", [ cp.pinned_stack( [ 1, 2, 3, 4 ], false ), cp.pinned_stack( [ 1, 2, 3, 4 ], true ),
- cp.pinned_stack( [ 1, 2 ], false ) ], [ { shown: [ 1, 2 ], more: 2 }, { shown: [ 1, 2, 3, 4 ], more: 0 }, { shown: [ 1, 2 ], more: 0 } ] );
 check( "- redrawn when what it shows changes", [ cp.pinned_signature( pinned_read.pinned ) === cp.pinned_signature( pinned_only.pinned ),
  cp.pinned_signature( pinned_read.pinned ) === cp.pinned_signature( [ ] ) ], [ true, false ] );
 

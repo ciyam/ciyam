@@ -24,11 +24,9 @@ const c_edited_marker = "*";
 
 const c_private_marker = "!";
 
-// NOTE: Pinned messages (Ian, 2026-10-14) - the sender with "!" in front; at most eight in a room, and shown two at a time
-// until more are asked for, as announcements are.
+// NOTE: Pinned messages (Ian, 2026-10-14) - the sender with "!" in front; at most eight in a room.
 const c_pinned_marker = "!";
 const c_most_pinned = 8;
-const c_pinned_collapsed = 2;
 
 // NOTE: Who may post in a room, and the markers used to signal it in the entrance listing.
 const c_posts_any = "any";
@@ -1822,17 +1820,6 @@ function pinned_signature( list )
    return ( list || [ ] ).map( function( m ) { return m.unique + ( m.edited ? "*" : "" ) + m.sender + " " + m.text; } ).join( "\n" );
 }
 
-// NOTE: The pinned shown - all of them asked for, or the first two with how many more.
-function pinned_stack( list, expanded )
-{
-   var all = list || [ ];
-
-   if( expanded || ( all.length <= c_pinned_collapsed ) )
-      return { shown: all.slice( ), more: 0 };
-
-   return { shown: all.slice( 0, c_pinned_collapsed ), more: all.length - c_pinned_collapsed };
-}
-
 // NOTE: The node's refusals, said plainly - anything else as it came. Words that are not the node's are answered
 // "locked for administration" today - the mismatch is set, then a later check for an administration lock replaces it
 // (seen 2026-10-09, for Ian). It is also the answer while someone else is signing in as admin, which is rare.
@@ -2485,7 +2472,6 @@ if( typeof module !== "undefined" )
       can_pin: can_pin,
       pin_error_text: pin_error_text,
       pinned_signature: pinned_signature,
-      pinned_stack: pinned_stack,
       recovery_texts: recovery_texts,
       plan_after_recovery: plan_after_recovery,
       visible_rooms: visible_rooms,

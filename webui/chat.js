@@ -3363,22 +3363,36 @@ function render_pinned( )
 
    host.textContent = "";
 
-   if( g_pinned.length <= c_pinned_collapsed )
+   if( g_pinned.length === 0 )
       g_pinned_expanded = false;
 
+   // NOTE: Shut, the strip is one line - how many, and the first (Ian, 2026-10-14: the two cards took too much room); a
+   // click opens them all, each opening its message, and shuts them again.
    if( g_pinned.length > 0 )
    {
-      var count = document.createElement( "div" );
+      var line = document.getElementById( "tpl_pinned_line" ).content.cloneNode( true ).querySelector( ".chat-pinned-line" );
 
-      count.className = "chat-pinned-count";
-      count.textContent = "Pinned · " + g_pinned.length;
+      line.id = "pinned_line";
+      line.setAttribute( "aria-expanded", g_pinned_expanded ? "true" : "false" );
+      line.title = g_pinned_expanded ? "Hide the pinned messages" : "Show the pinned messages";
 
-      host.appendChild( count );
+      line.querySelector( ".chat-pinned-count" ).textContent = g_pinned.length + " pinned";
+      line.querySelector( ".chat-pinned-first" ).textContent = g_pinned_expanded ? "" : g_pinned[ 0 ].text;
+      line.querySelector( ".chat-pinned-toggle" ).textContent = g_pinned_expanded ? "Hide" : "Show";
+
+      line.addEventListener( "click", function( )
+      {
+         g_pinned_expanded = !g_pinned_expanded;
+
+         render_pinned( );
+
+         document.getElementById( "pinned_line" ).focus( );
+      } );
+
+      host.appendChild( line );
    }
 
-   var stack = pinned_stack( g_pinned, g_pinned_expanded );
-
-   stack.shown.forEach( function( message )
+   ( g_pinned_expanded ? g_pinned : [ ] ).forEach( function( message )
    {
       var node = document.getElementById( "tpl_pinned" ).content.cloneNode( true ).querySelector( ".chat-pinned" );
 
@@ -3393,7 +3407,13 @@ function render_pinned( )
       when.title = unique_to_full( message.unique );
 
       node.querySelector( ".chat-pinned-text" ).textContent = message.text;
-      node.querySelector( ".chat-pinned-open" ).addEventListener( "click", function( ) { show_pinned_message( message.unique ); } );
+
+      var open = node.querySelector( ".chat-pinned-open" );
+
+      if( document.querySelector( "#message_list > [data-unique=\"" + message.unique + "\"]" ) === null )
+         open.title = "No longer in the conversation - click to read it here";
+
+      open.addEventListener( "click", function( ) { show_pinned_message( message.unique, node ); } );
 
       if( message.sender === ciyam.username )
       {
@@ -3407,28 +3427,6 @@ function render_pinned( )
 
       host.appendChild( node );
    } );
-
-   if( ( stack.more > 0 ) || g_pinned_expanded )
-   {
-      var toggle = document.createElement( "button" );
-
-      toggle.type = "button";
-      toggle.id = "pinned_more";
-      toggle.className = "chat-announcements-more";
-      toggle.textContent = g_pinned_expanded ? "Show fewer" : ( "Show " + stack.more + " more" );
-      toggle.setAttribute( "aria-expanded", g_pinned_expanded ? "true" : "false" );
-
-      toggle.addEventListener( "click", function( )
-      {
-         g_pinned_expanded = !g_pinned_expanded;
-
-         render_pinned( );
-
-         document.getElementById( "pinned_more" ).focus( );
-      } );
-
-      host.appendChild( toggle );
-   }
 
    show_thread_view( );
 
@@ -3464,13 +3462,19 @@ function mark_pinned_rows( )
    } );
 }
 
-// NOTE: Opened from the strip - the message in its place, lit up a moment.
-function show_pinned_message( unique )
+// NOTE: Opened from the strip - the message in its place, lit up a moment. Its original gone - a full room drops its
+// oldest, and a pinned one stays until unpinned (Ian, 2026-10-14) - the card shows it whole instead.
+function show_pinned_message( unique, card )
 {
    var row = document.querySelector( "#message_list > [data-unique=\"" + unique + "\"]" );
 
    if( row === null )
+   {
+      if( card )
+         card.classList.toggle( "is-whole" );
+
       return;
+   }
 
    row.scrollIntoView( { block: "center", behavior: "smooth" } );
 
