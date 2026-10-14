@@ -876,7 +876,11 @@ const c_invitation_verbs = [ "invite", "ignore", "reject", "joined", "remove" ];
 
 function needs_full_read( fresh )
 {
-   if( !fresh || ( fresh.length === 0 ) )
+   // NOTE: Not the pinned - they come with every read, so say nothing of what is new (found by review, 2026-10-14: one
+   // pinned announcement and nothing new never looked empty again).
+   fresh = ( fresh || [ ] ).filter( function( m ) { return !m.pinned; } );
+
+   if( fresh.length === 0 )
       return true;
 
    return fresh.some( function( m ) { return m.event && ( c_invitation_verbs.indexOf( m.event.verb ) >= 0 ); } );

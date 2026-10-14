@@ -41,6 +41,9 @@ var g_announcements_drawn = "";
 var g_pinned = [ ];
 var g_pinned_drawn = "";
 var g_pinned_expanded = false;
+
+// NOTE: A pin or unpin on its way - a second click meanwhile would undo it (found by review).
+var g_pin_in_flight = false;
 var g_invite_total = -1;
 var g_selected_invite = "";
 var g_members = [ ];
@@ -3104,7 +3107,8 @@ function on_messages_response( response, asked_for, replace )
       // rather than from a background read.
       if( is_reserved_room( asked_for ) )
       {
-         g_invite_messages = replace ? result.messages : g_invite_messages.concat( result.messages );
+         // NOTE: Merged, not added to - every read brings the room's pinned back again (found by review).
+         g_invite_messages = replace ? result.messages : merge_new_messages( g_invite_messages, result.messages );
 
          refresh_invitations( );
       }
@@ -3338,6 +3342,7 @@ function clear_pinned( )
    g_pinned = [ ];
    g_pinned_drawn = "";
    g_pinned_expanded = false;
+   g_pin_in_flight = false;
 
    render_pinned( );
 }
@@ -3482,13 +3487,17 @@ function do_toggle_pin( unique )
 {
    var room = g_room;
 
-   if( ( room === "" ) || !unique )
+   if( ( room === "" ) || !unique || g_pin_in_flight )
       return;
+
+   g_pin_in_flight = true;
 
    serialised( function( )
    {
       return ciyam.create_message( room, pin_options( unique ), function( response )
       {
+         g_pin_in_flight = false;
+
          if( is_error_response( response ) )
          {
             if( !is_timeout_response( response ) )

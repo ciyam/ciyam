@@ -1198,6 +1198,8 @@ check( "in time order - by unique, a shared one as it came",
  cp.in_time_order( [ { unique: "3", n: 1 }, { unique: "1" }, { unique: "3", n: 2 }, { unique: "2" } ] ),
  [ { unique: "1" }, { unique: "2" }, { unique: "3", n: 1 }, { unique: "3", n: 2 } ] );
 
+check( "the Admin room read whole when only its pinned came back - nothing new among them", cp.needs_full_read(
+ cp.parse_fetch_response( "admin+2 verify-a+0\n1791951506000 !admin  a pinned announcement" ).messages ), true );
 check( "pinning - an edit to a single space", cp.pin_options( "1791951506000" ), "for=1791951506000;text= " );
 var own = cp.parse_message_line( "1791951508000 admin  mine" );
 check( "who may pin - their own ordinary messages only", [ cp.can_pin( own, "admin" ), cp.can_pin( own, "verify-a" ),

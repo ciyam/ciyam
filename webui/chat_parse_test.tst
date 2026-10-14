@@ -641,6 +641,7 @@ ok   - a read whose newest is pinned moves it on
 ok   - none yet, or nothing read - as it comes
 ok   nothing pinned - none, as before
 ok   in time order - by unique, a shared one as it came
+ok   the Admin room read whole when only its pinned came back - nothing new among them
 ok   pinning - an edit to a single space
 ok   who may pin - their own ordinary messages only
 ok   the ninth pin refused - said plainly
