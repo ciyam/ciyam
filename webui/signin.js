@@ -448,16 +448,17 @@ function signin_on_access( )
 }
 
 // NOTE: After a sign in, what the Remember box asked for - "plan_retain_choice( )" in "chat_parse.js". "mode" - another
-// page's own Remember box (the end of setting up, 2026-10-13); otherwise the sign in's.
-function signin_apply_retain( mode )
+// page's own Remember box (the end of setting up, 2026-10-13); otherwise the sign in's. "hashed" - the password's hash to
+// keep, when not this session's (after a recovery, made for the browser's own device).
+function signin_apply_retain( mode, hashed )
 {
    try
    {
       var plan = plan_retain_choice( localStorage.getItem( c_signin_storage_access ), ciyam.access,
-       mode || document.getElementById( "signin_retain" ).value, ciyam.hashed );
+       mode || document.getElementById( "signin_retain" ).value, hashed || ciyam.hashed );
 
       if( plan.keep_hash )
-         localStorage.setItem( c_signin_storage_hashed_prefix + ciyam.access, ciyam.hashed );
+         localStorage.setItem( c_signin_storage_hashed_prefix + ciyam.access, hashed || ciyam.hashed );
       else
          localStorage.removeItem( c_signin_storage_hashed_prefix + ciyam.access );
 
@@ -890,17 +891,19 @@ function recover_build( )
    done.appendChild( signin_element( "span", { class: "recover-mono recover-pin", id: "recover_pin" } ) );
    done.appendChild( signin_element( "p", { class: "recover-note", id: "recover_done_note" }, words.done_note ) );
 
-   // NOTE: Admin's PIN remembered on this browser, as setting up's end offers (2026-10-13) - not the password: this session's
-   // hash is made with a device of its own ("recover_submit( )"), so a saved one would not work at the next sign in.
+   // NOTE: Admin's PIN, and the password, remembered on this browser as setting up's end offers (2026-10-13) - the browser
+   // started afresh by the recovery, with this session's device as its own (Ian, 2026-10-14).
    done.appendChild( signin_element( "label", { class: "chat-label", for: "recover_retain" }, "Remember on this browser" ) );
 
    var retain = signin_element( "select", { id: "recover_retain", class: "chat-field" } );
 
    retain.appendChild( new Option( "Nothing — forget this account", "none" ) );
    retain.appendChild( new Option( "The PIN only", "access" ) );
+   retain.appendChild( new Option( "The PIN and the password", "full" ) );
 
    done.appendChild( retain );
-   done.appendChild( signin_element( "div", { class: "signin-hint" }, "The password isn't kept here - type it at the next sign in." ) );
+   done.appendChild( signin_element( "div", { class: "signin-hint" }, "This browser starts afresh - what it kept for the node from before"
+    + " was cleared. Saving the password as well signs you in without typing it." ) );
 
    var done_actions = signin_element( "div", { class: "chat-signin-actions" } );
 
@@ -909,7 +912,9 @@ function recover_build( )
    // NOTE: On as after a sign in - into whichever part of the node this is.
    go_on.addEventListener( "click", function( )
    {
-      signin_apply_retain( document.getElementById( "recover_retain" ).value );
+      signin_apply_retain( document.getElementById( "recover_retain" ).value, g_recover_hash );
+
+      g_recover_hash = "";
 
       view.hidden = true;
 
@@ -933,6 +938,9 @@ var g_recover_bip39 = null;
 
 // NOTE: Recovering onto a node not set up - { on_back } - or null for a locked node's recovery.
 var g_recover_fresh = null;
+
+// NOTE: The new password's hash, for Remember - "" until a recovery succeeds.
+var g_recover_hash = "";
 
 // NOTE: Ian's BIP39 library - large, so read in only when recovery opens, and once.
 function recover_load_bip39( )
@@ -1005,6 +1013,8 @@ async function recover_show( options )
    document.getElementById( "recover_done" ).hidden = true;
    document.getElementById( "recover_step_words" ).hidden = false;
    document.getElementById( "recover_step_password" ).hidden = true;
+
+   g_recover_hash = "";
 
    signin_set_text( "recover_words_error", "" );
    signin_set_text( "recover_error", "" );
@@ -1393,14 +1403,28 @@ async function recover_submit( event )
       return;
    }
 
+   // NOTE: A recovery starts this browser afresh (Ian, 2026-10-14) - most likely a new device, its storage empty, and
+   // anything kept here from before suspect: its device token may be a node's first, random one, which no other node
+   // knows (later ones carry a checksum from the identity). So everything kept for the node goes, as "Reset this browser"
+   // does - the session itself is the tab's - and this session's device becomes the browser's, its hash for Remember.
+   try
+   {
+      localStorage.clear( );
+   }
+   catch( e )
+   {
+   }
+
+   signin_remember_device( );
+
+   g_recover_hash = ciyam.hashed;
+
    document.getElementById( "recover_password" ).value = "";
    document.getElementById( "recover_confirm" ).value = "";
 
    recover_clear_words( );
 
    signin_keep_session( );
-
-   await recover_forget_saved( );
 
    signin_set_text( "recover_pin", ciyam.access );
 
@@ -1411,50 +1435,6 @@ async function recover_submit( event )
 
    // NOTE: The way on has the focus - not the heading, which looked strange outlined (Damon, 2026-10-10).
    document.getElementById( "recover_continue" ).focus( );
-}
-
-// NOTE: What this browser saved for admin no longer works after a recovery - "plan_after_recovery( )" in "chat_parse.js".
-// The accounts are read as admin, now signed in, to tell admin's old PIN from the others saved here.
-async function recover_forget_saved( )
-{
-   var users = "";
-
-   var issue = function( done )
-   {
-      return ciyam.fetch_users( done );
-   };
-
-   try
-   {
-      if( g_signin_options.request )
-         users = String( await g_signin_options.request( issue ) );
-      else
-         await issue( function( response ) { users = String( response ); } );
-   }
-   catch( e )
-   {
-      users = "Error: " + ( ( e && e.message ) ? e.message : "the request failed." );
-   }
-
-   // NOTE: No answer is not an empty node - "fetch( )" does not call back when the request fails, and the list would
-   // then hold admin alone, so every other saved account would go (found by review).
-   var node_pins = ( ( users.trim( ) === "" ) || is_error_response( users ) ) ? null
-    : parse_people( users, ciyam.access, "admin" ).map( function( row ) { return row.pin; } );
-
-   try
-   {
-      var plan = plan_after_recovery( localStorage.getItem( c_signin_storage_access ), node_pins, ciyam.access );
-
-      plan.forget.forEach( function( pin ) { localStorage.removeItem( c_signin_storage_hashed_prefix + pin ); } );
-
-      if( plan.list === null )
-         localStorage.removeItem( c_signin_storage_access );
-      else
-         localStorage.setItem( c_signin_storage_access, plan.list );
-   }
-   catch( e )
-   {
-   }
 }
 
 // NOTE: The words are the node's secret - not left in the page once they have been used, or the sign in is shown again

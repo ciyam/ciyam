@@ -40,7 +40,7 @@ var g_announcements_drawn = "";
 // NOTE: The room's pinned messages, from its last read - every read returns them all (Ian's server, 2026-10-14).
 var g_pinned = [ ];
 var g_pinned_drawn = "";
-var g_pinned_expanded = false;
+var g_pinned_expanded = true;
 
 // NOTE: A pin or unpin on its way - a second click meanwhile would undo it (found by review).
 var g_pin_in_flight = false;
@@ -3337,11 +3337,40 @@ function apply_pinned( list )
    mark_pinned_rows( );
 }
 
+// NOTE: Open unless this account shut the room's strip on this browser (Ian, 2026-10-14: they should stand out).
+function pinned_shut_key( )
+{
+   return account_storage_key( c_storage_pinned_shut_by_name, ciyam.username, ciyam.is_admin );
+}
+
+function read_pinned_shut( )
+{
+   try
+   {
+      return parse_dismissed( localStorage.getItem( pinned_shut_key( ) ) );
+   }
+   catch( e )
+   {
+      return [ ];
+   }
+}
+
+function keep_pinned_shut( room, shut )
+{
+   try
+   {
+      localStorage.setItem( pinned_shut_key( ), JSON.stringify( with_pinned_shut( read_pinned_shut( ), room, shut ) ) );
+   }
+   catch( e )
+   {
+   }
+}
+
 function clear_pinned( )
 {
    g_pinned = [ ];
    g_pinned_drawn = "";
-   g_pinned_expanded = false;
+   g_pinned_expanded = ( g_room === "" ) || ( read_pinned_shut( ).indexOf( g_room ) < 0 );
    g_pin_in_flight = false;
 
    render_pinned( );
@@ -3363,11 +3392,8 @@ function render_pinned( )
 
    host.textContent = "";
 
-   if( g_pinned.length === 0 )
-      g_pinned_expanded = false;
-
-   // NOTE: Shut, the strip is one line - how many, and the first (Ian, 2026-10-14: the two cards took too much room); a
-   // click opens them all, each opening its message, and shuts them again.
+   // NOTE: Open, the pinned stand out (Ian, 2026-10-14 - a to-do list, room guidelines); shut, the strip is one line - how
+   // many, and the first. The line opens and shuts it, kept for the room on this browser.
    if( g_pinned.length > 0 )
    {
       var line = document.getElementById( "tpl_pinned_line" ).content.cloneNode( true ).querySelector( ".chat-pinned-line" );
@@ -3383,6 +3409,8 @@ function render_pinned( )
       line.addEventListener( "click", function( )
       {
          g_pinned_expanded = !g_pinned_expanded;
+
+         keep_pinned_shut( g_room, !g_pinned_expanded );
 
          render_pinned( );
 

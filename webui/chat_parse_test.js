@@ -1147,16 +1147,6 @@ check( "the keys kept by PIN before - let go, nothing else",
  cp.pin_keyed_leftovers( [ "cws.dismissed_20401", "cws.emoji_recent_10301", "cws.dismissed@damon", "cws.hashed_10301", "cws.emoji_recent", "cws.access" ] ),
  [ "cws.dismissed_20401", "cws.emoji_recent_10301" ] );
 
-check( "after a recovery - admin's old PIN goes, its password with it, and the new PIN's password",
- cp.plan_after_recovery( "31324,40311", [ "40311" ], "10301" ), { list: "40311", forget: [ "10301", "31324" ] } );
-check( "- the same PIN again (a test node) - kept, its password not", cp.plan_after_recovery( "10301,40311", [ "40311" ], "10301" ),
- { list: "10301,40311", forget: [ "10301" ] } );
-check( "- the accounts not read - only the new PIN's password goes", cp.plan_after_recovery( "31324,40311", null, "10301" ),
- { list: "31324,40311", forget: [ "10301" ] } );
-check( "- nothing saved", cp.plan_after_recovery( null, [ "40311" ], "10301" ), { list: null, forget: [ "10301" ] } );
-check( "- only admin's old PIN saved - none left", cp.plan_after_recovery( "31324", [ ], "10301" ), { list: null, forget: [ "10301", "31324" ] } );
-check( "- what is not a PIN is kept", cp.plan_after_recovery( "creds-a,31324", [ ], "10301" ), { list: "creds-a", forget: [ "10301", "31324" ] } );
-
 check( "the node's refusals - not its words", cp.recovery_error_text( "Error: System identity mismatch (incorrect mnemonics?)." ),
  "Those aren't this node's twelve words." );
 check( "- what it answered for words not its own, before Ian's 'a9d18319'", cp.recovery_error_text( "Error: System is currently locked for administration." ),
@@ -1200,6 +1190,9 @@ check( "in time order - by unique, a shared one as it came",
 
 check( "the Admin room read whole when only its pinned came back - nothing new among them", cp.needs_full_read(
  cp.parse_fetch_response( "admin+2 verify-a+0\n1791951506000 !admin  a pinned announcement" ).messages ), true );
+check( "the strip shut for a room, then open again - the others kept", [ cp.with_pinned_shut( [ "0000004" ], "0000002", true ),
+ cp.with_pinned_shut( [ "0000004", "0000002" ], "0000004", false ), cp.with_pinned_shut( [ "0000004" ], "0000004", true ),
+ cp.parse_dismissed( JSON.stringify( [ "0000004", "x" ] ) ) ], [ [ "0000004", "0000002" ], [ "0000002" ], [ "0000004" ], [ "0000004" ] ] );
 check( "pinning - an edit to a single space", cp.pin_options( "1791951506000" ), "for=1791951506000;text= " );
 var own = cp.parse_message_line( "1791951508000 admin  mine" );
 check( "who may pin - their own ordinary messages only", [ cp.can_pin( own, "admin" ), cp.can_pin( own, "verify-a" ),

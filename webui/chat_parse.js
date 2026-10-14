@@ -1856,28 +1856,6 @@ function recovery_error_step( error, fresh )
    return /identity mismatch|locked for administration/i.test( String( error || "" ) ) ? "words" : "password";
 }
 
-// NOTE: What a recovery leaves saved on this browser. Admin's PIN changes on a recovery, the password always does, and
-// the password is hashed with the PIN (Ian, 2026-10-10) - so the password saved for admin's new PIN goes ("forget"), and
-// so does admin's old PIN: a saved PIN the node no longer has ("node_pins", its accounts as admin now lists them; null
-// when they could not be read, and then only the new PIN's password goes). Other accounts, and anything that is not a
-// PIN, are kept. "list" is null when nothing is left, as "format_access_list( )".
-function plan_after_recovery( stored, node_pins, admin_pin )
-{
-   var forget = [ admin_pin ];
-
-   var kept = parse_access_list( stored ).filter( function( entry )
-   {
-      if( !/^[0-9]{5}$/.test( entry ) || ( entry === admin_pin ) || ( node_pins === null ) || ( node_pins.indexOf( entry ) >= 0 ) )
-         return true;
-
-      forget.push( entry );
-
-      return false;
-   } );
-
-   return { list: format_access_list( kept ), forget: forget };
-}
-
 // NOTE: How a locked node answers a sign in today - it cannot start the session (2026-10-07, for Ian).
 function is_locked_sign_in_error( error )
 {
@@ -2318,6 +2296,17 @@ function stale_saved_names( keys, stored )
 const c_storage_dismissed_by_name = "cws.dismissed@";
 const c_storage_emoji_recent_by_name = "cws.emoji_recent@";
 
+// NOTE: The rooms whose pinned strip this account shut, on this browser - open is the default (Ian, 2026-10-14: they
+// should stand out - a to-do list, room guidelines). A list of room numbers, read by "parse_dismissed( )".
+const c_storage_pinned_shut_by_name = "cws.pinned_shut@";
+
+function with_pinned_shut( rooms, room, shut )
+{
+   var others = ( rooms || [ ] ).filter( function( entry ) { return entry !== room; } );
+
+   return shut ? others.concat( [ room ] ) : others;
+}
+
 function account_storage_key( prefix, username, is_admin )
 {
    return prefix + account_display_name( username, is_admin );
@@ -2473,7 +2462,6 @@ if( typeof module !== "undefined" )
       pin_error_text: pin_error_text,
       pinned_signature: pinned_signature,
       recovery_texts: recovery_texts,
-      plan_after_recovery: plan_after_recovery,
       visible_rooms: visible_rooms,
       dm_room_name: dm_room_name,
       dm_create_text: dm_create_text,
@@ -2536,6 +2524,7 @@ if( typeof module !== "undefined" )
       chosen_saved_index: chosen_saved_index,
       c_storage_dismissed_by_name: c_storage_dismissed_by_name,
       c_storage_emoji_recent_by_name: c_storage_emoji_recent_by_name,
+      with_pinned_shut: with_pinned_shut,
       account_storage_key: account_storage_key,
       pin_keyed_leftovers: pin_keyed_leftovers,
       is_valid_room_name: is_valid_room_name,

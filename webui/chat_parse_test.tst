@@ -616,12 +616,6 @@ ok   - none saved, every name goes
 ok   dismissed announcements kept by name
 ok   recent emoji kept by name - admin's as admin
 ok   the keys kept by PIN before - let go, nothing else
-ok   after a recovery - admin's old PIN goes, its password with it, and the new PIN's password
-ok   - the same PIN again (a test node) - kept, its password not
-ok   - the accounts not read - only the new PIN's password goes
-ok   - nothing saved
-ok   - only admin's old PIN saved - none left
-ok   - what is not a PIN is kept
 ok   the node's refusals - not its words
 ok   - what it answered for words not its own, before Ian's 'a9d18319'
 ok   - not locked
@@ -642,6 +636,7 @@ ok   - none yet, or nothing read - as it comes
 ok   nothing pinned - none, as before
 ok   in time order - by unique, a shared one as it came
 ok   the Admin room read whole when only its pinned came back - nothing new among them
+ok   the strip shut for a room, then open again - the others kept
 ok   pinning - an edit to a single space
 ok   who may pin - their own ordinary messages only
 ok   the ninth pin refused - said plainly
