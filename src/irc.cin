@@ -41,6 +41,7 @@ EDIT_LINE_NUM=
 LAST_MSG_UNIX=
 MESSAGE_LINES=
 EDIT_UNIX_UNIQUE=
+PINNED_LAST_MSG_UNIX=
 ;
 ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
@@ -146,6 +147,13 @@ EDIT_MSG_OWNER=%EDIT_MSG_PARTS:2%
 EDIT_MSG_CONTENT=@base64:%EDIT_MSG_PARTS:3%
 EDIT_MSG_PREFIX=@substr:0,2:$EDIT_MSG_CONTENT
 ;
+; NOTE: If was pinned then remove the prefix.
+FIRST=@substr:0,1:$EDIT_MSG_OWNER
+@ifeq "$FIRST" "!"
+EDIT_MSG_OWNER=@substr:1:$EDIT_MSG_OWNER
+@endif
+;
+; NOTE: If was edited then remove the suffix.
 POS=@strpos:*:$EDIT_MSG_OWNER
 @ifdef $POS
 EDIT_MSG_OWNER=@substr:0,$POS:$EDIT_MSG_OWNER
@@ -260,15 +268,19 @@ ERROR=
 @elif "$CIYAM_KEY_PRESSED" = "r"
 OLD_ROOM=$ROOM
 SHOW_CHANGED=
+PINNED_LAST_MSG_UNIX=
 &Enter Room No: :ROOM=
 @ifndef $ROOM
 ROOM=$OLD_ROOM
 @elif "$ROOM" = "~"
 ROOM=$OLD_ROOM
 FETCH_PREFIX=~!
+MESSAGE_LINES=
 @elif "$ROOM" = "!"
 ROOM=$OLD_ROOM
 FETCH_PREFIX=!
+MESSAGE_LINES=
+PINNED_LAST_MSG_UNIX=
 @endif
 ;
 PREFIX=
@@ -521,7 +533,9 @@ MESSAGES=@file:/tmp/$ROOM.$USER.tmp
 ; is being used to get any particular
 ; specific message by its line number
 ; for message "editing".
+@ifndef $MESSAGE_LINES
 MESSAGE_LINES=$MESSAGES
+@endif
 ;
 ~rm -f /tmp/$ROOM.$USER.tmp
 ;
@@ -571,6 +585,13 @@ LOCAL=@date:%NEXT_MSG_PARTS:1%:yyyy-mm-dd hh:mm:ss
 ;
 USER_NAME=@strlit:%NEXT_MSG_PARTS:2%
 ;
+IS_PINNED=
+FIRST=@substr:0,1:$USER_NAME
+@ifeq "$FIRST" "!"
+IS_PINNED=1
+USER_NAME=@substr:1:$USER_NAME
+@endif
+;
 USER_NAME_PADDED=@padlen:-15, :$USER_NAME
 ;
 @ifneq "$ROOM" "$ENTRANCE_ROOM"
@@ -599,6 +620,17 @@ MESSAGE_ROOM_NUM=@padlen:-20, :$MESSAGE_ROOM_NUM
 @endif
 ;
 SKIP_MESSAGE=
+;
+@ifneq "$ROOM" "$ENTRANCE_ROOM"
+@ifdef $IS_PINNED
+@ifdef $PINNED_LAST_MSG_UNIX
+@if $LAST_MSG_UNIX #<= $PINNED_LAST_MSG_UNIX
+SKIP_MESSAGE=1
+@endif
+@endif
+@endif
+@endif
+;
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
 UNDECORATED=@substr:1,$ROOM_LEN:$MESSAGE_ROOM_NUM
 CHECK=@strlit:LAST_CHECK=@strlit:$$LAST_$UNDECORATED
@@ -646,6 +678,19 @@ SHOW_CHANGED=
 ;
 LINE_NUM=@$LINE_NUM+1
 MESSAGES=%MESSAGES:-1%
+;
+@ifdef $IS_PINNED
+KEEP_PINNED=
+@ifndef $PINNED_LAST_MSG_UNIX
+KEEP_PINNED=1
+@elif $LAST_MSG_UNIX #> $PINNED_LAST_MSG_UNIX
+KEEP_PINNED=1
+@endif
+;
+@ifdef $KEEP_PINNED
+PINNED_LAST_MSG_UNIX=$LAST_MSG_UNIX
+@endif
+@endif
 ;
 !!@:MSG_LOOP
 ;
