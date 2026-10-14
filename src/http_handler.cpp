@@ -55,8 +55,6 @@ string g_web_session_check;
 
 string g_cws_username_for_prefix;
 
-bool g_is_devt_system = false;
-
 extern string g_temporary_directory;
 
 extern atomic< size_t > g_active_listeners;
@@ -1980,8 +1978,6 @@ void http_listener::on_start( )
 
       if( !g_version_string.empty( ) )
          g_server_id += " (" + g_version_string + ")";
-
-      g_is_devt_system = has_system_variable( e_special_var_system_is_for_devt );
 
       g_max_post_data_allowed = get_max_http_post_allowed( );
 
