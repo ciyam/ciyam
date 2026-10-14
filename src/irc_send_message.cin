@@ -188,6 +188,8 @@ SOURCE_PARTS=@repstr: /\n:$SOURCE_MESSAGE
 @ifneq "$USER_NAME" "%SOURCE_PARTS:1%"
 NOT_FOUND=1
 @else
+OLD_MESSAGE=%SOURCE_PARTS:2%
+;
 PREFIX=@substr:0,2:%SOURCE_PARTS:2%
 ;
 OLD_PREFIX=@substr:0,3:%SOURCE_PARTS:2%
@@ -216,10 +218,26 @@ ERROR=Source message must not be modified to or from private.
 @elif "$NOT_EDITABLE" = "1"
 ERROR=Source message is designated as a system generated message.
 @else
+; NOTE: If the new message is just a space then will pin/unpin it.
+@ifeq "$MESSAGE" "XyAg"
+.system_variable @keyed_irc_%ROOM%_MP:$NAMES
+@ifdef $OUTPUT
+.system_variable @keyed_irc_%ROOM%_MP:$NAMES ""
+@else
+.system_variable @keyed_irc_%ROOM%_MP
+PINNED=$OUTPUT
+@ifdef %PINNED:8%
+ERROR=Maximum pinned messages for this room already exist.
+@else
+.system_variable @keyed_irc_%ROOM%_MP:$NAMES "$USER_NAME $OLD_MESSAGE"
+@endif
+@endif
+@else
 .system_gen_key -unix_unique
 UNIX_UNIQUE=$OUTPUT
 ;
 .system_variable @keyed_irc_%ROOM%_ME:$NAMES "$UNIX_UNIQUE $MESSAGE"
+@endif
 @endif
 ;
 @endif
