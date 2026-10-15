@@ -182,6 +182,7 @@ ok   backslash then break
 ok   an ending backslash does not swallow the next message
 ok   sending doubles a backslash
 ok   sending leaves breaks alone
+ok   sending keeps a ';' - the server splits on it otherwise
 ok   after sending, a computer keeps the focus in the message box
 ok   a phone lets it go, so its keyboard goes away
 ok   a round trip keeps what was typed

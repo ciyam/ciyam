@@ -417,6 +417,7 @@ check( "an ending backslash does not swallow the next message", [ multi[ 3 ].tex
 
 check( "sending doubles a backslash", cp.escape_message_text( "a\\b \\\\ c" ), "a\\\\b \\\\\\\\ c" );
 check( "sending leaves breaks alone", cp.escape_message_text( "one\ntwo" ), "one\ntwo" );
+check( "sending keeps a ';' - the server splits on it otherwise", cp.escape_message_text( "a; b;c" ), "a\\; b\\;c" );
 check( "after sending, a computer keeps the focus in the message box", cp.keeps_focus_after_send( false ), true );
 check( "a phone lets it go, so its keyboard goes away", cp.keeps_focus_after_send( true ), false );
 check( "a round trip keeps what was typed", cp.unescape_message_text( cp.escape_message_text( "C:\\temp\\x" ) ), "C:\\temp\\x" );

@@ -355,9 +355,13 @@ function parse_room_entry( unique, owner, remainder )
 //
 // So a backslash the user typed is doubled before sending, and on receipt the continued
 // lines are joined and the escapes undone.
+//
+// A ";" too (found 2026-10-15): the server splits a request's options on it, so "a; b" was
+// stored as "a" - every message with a semicolon was cut short there. After a backslash it is
+// kept as typed ("semicolon_probe.js").
 function escape_message_text( text )
 {
-   return String( text || "" ).replace( /\\/g, "\\\\" );
+   return String( text || "" ).replace( /[\\;]/g, "\\$&" );
 }
 
 // NOTE: Whether the message box keeps the focus once a message is sent - so a follow-up can be typed
