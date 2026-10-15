@@ -6115,6 +6115,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
                {
                   file_remove( key_file_name );
 
+                  TRACE_LOG( TRACE_MINIMAL, "*** system identity unlock occurred ***" );
+
                   if( !g_default_storage.empty( ) )
                   {
                      string web_app_dir( get_web_root( ) + '/' + lower( g_default_storage ) );
@@ -6326,20 +6328,29 @@ string create_unlock_sid_hash_key( bool for_web_ui, bool is_temporary )
 
    data_encrypt( sid_hash, sid_hash, key );
 
-   temp_umask tum( 077 );
+   // NOTE: Empty code block for scope purposes.
+   {
+      temp_umask tum( 077 );
 
-   ofstream outf( key_file_name.c_str( ) );
+      ofstream outf( key_file_name.c_str( ) );
 
-   outf << sid_hash;
+      outf << sid_hash;
 
-   outf.flush( );
+      outf.flush( );
 
-   if( !outf.good( ) )
-      throw runtime_error( "unexpected error occurred writing to unlock key file" );
+      if( !outf.good( ) )
+         throw runtime_error( "unexpected error occurred writing to unlock key file" );
 
-   outf.close( );
+      outf.close( );
+   }
 
    g_key_unlock_tm_val = unix_time( );
+
+   // NOTE: Set the key file's unix time to match that of the system
+   // identity (making it harder to match unlock keys to the files).
+   time_t tm_mod = last_modification_time( c_ciyam_server_sid_file );
+
+   file_touch( key_file_name, &tm_mod );
 
    unlock_key = base64::encode( unlock_key, true );
 
