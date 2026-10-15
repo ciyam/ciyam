@@ -56,6 +56,7 @@ var g_last_poll = 0;
 
 var g_edit_unique = "";
 var g_edit_private = false;
+var g_edit_draft = "";
 var g_recipients = [ ];
 
 // NOTE: Direct messages started here and waiting for the others to accept - room number to
@@ -1605,6 +1606,7 @@ function select_room( room, token )
    g_start_point = "";
    g_edit_unique = "";
    g_edit_private = false;
+   g_edit_draft = "";
    g_recipients = [ ];
 
    // NOTE: The last room's pinned are not this one's - its first read brings its own.
@@ -1729,6 +1731,7 @@ function select_invitation( room )
    g_start_point = "";
    g_edit_unique = "";
    g_edit_private = false;
+   g_edit_draft = "";
    g_recipients = [ ];
    g_members = [ ];
 
@@ -3263,7 +3266,8 @@ function build_message( entry )
    // NOTE: Deleted - nothing left to edit, pin or delete (Ian, 2026-10-15).
    row.classList.toggle( "is-deleted", !!entry.deleted );
 
-   if( entry.edited )
+   // NOTE: Deleted is an edit too, but says only that it was deleted (Ian, 2026-10-15).
+   if( entry.edited && !entry.deleted )
    {
       row.querySelector( ".chat-edit-mark" ).hidden = false;
       row.querySelector( ".chat-edit-tag" ).hidden = false;
@@ -3355,13 +3359,7 @@ function do_delete_message( button )
 
    // NOTE: Deleting the message being edited ends the edit - Send would otherwise write it back.
    if( unique === g_edit_unique )
-   {
-      document.getElementById( "composer_input" ).value = "";
-
-      on_composer_input( );
-
-      do_cancel_edit( );
-   }
+      do_abandon_edit( );
 
    button.disabled = true;
 
@@ -4097,7 +4095,7 @@ function do_composer_key( event )
 
    if( event.key === "Escape" && ( g_edit_unique !== "" ) )
    {
-      do_cancel_edit( );
+      do_abandon_edit( );
 
       return false;
    }
@@ -4369,10 +4367,14 @@ function on_composer_input( )
 
 function begin_edit( unique, text, is_private )
 {
+   var input = document.getElementById( "composer_input" );
+
+   // NOTE: What was in the box before, for Escape or Cancel edit to put back - kept from the first edit if one follows another.
+   if( g_edit_unique === "" )
+      g_edit_draft = input.value;
+
    g_edit_unique = unique;
    g_edit_private = !!is_private;
-
-   var input = document.getElementById( "composer_input" );
 
    input.value = text;
    input.focus( );
@@ -4406,10 +4408,25 @@ function edit_last_message( )
    return true;
 }
 
+// NOTE: Escape, or Cancel edit - the edit dropped and the box as it was before it (Ian, 2026-10-15: as Element does).
+function do_abandon_edit( )
+{
+   var input = document.getElementById( "composer_input" );
+
+   input.value = g_edit_draft;
+
+   on_composer_input( );
+
+   do_cancel_edit( );
+
+   input.focus( );
+}
+
 function do_cancel_edit( )
 {
    g_edit_unique = "";
    g_edit_private = false;
+   g_edit_draft = "";
 
    document.getElementById( "composer_cancel_edit" ).hidden = true;
 
