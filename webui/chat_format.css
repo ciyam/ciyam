@@ -263,12 +263,24 @@
 .chat-format-swatch
 {
    height: 28px;
+   padding: 0;
    border-radius: 6px;
    border: 1px solid var(--color-chat-border);
+   cursor: pointer;
+   font: 700 10px/1 var(--font-family-chat-mono);
+}
+
+/* NOTE: Defaults with no weight of their own ("where"), so each swatch's colour class - its text colour or background -
+   wins. A text colour also shows as a bar along the swatch's foot, in that colour. */
+:where(.chat-format-swatch)
+{
    background: var(--color-chat-bg);
    color: var(--color-chat-text);
-   cursor: pointer;
-   font: 600 10px/1 var(--font-family-chat-mono);
+}
+
+.chat-format-swatch[class*="chat-fg-"]
+{
+   box-shadow: inset 0 -5px 0 currentColor;
 }
 
 .chat-format-swatch:focus-visible
