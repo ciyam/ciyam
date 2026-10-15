@@ -1602,6 +1602,10 @@ function select_room( room, token )
    if( room === "" )
       return;
 
+   // NOTE: An edit open in the last room is given up - its text is that room's (found by review, 2026-10-15).
+   if( g_edit_unique !== "" )
+      do_abandon_edit( );
+
    g_room = room;
    g_start_point = "";
    g_edit_unique = "";
@@ -1726,6 +1730,9 @@ function select_invitation( room )
 
    if( invite === null )
       return;
+
+   if( g_edit_unique !== "" )
+      do_abandon_edit( );
 
    g_room = "";
    g_start_point = "";
@@ -4298,6 +4305,9 @@ async function do_send( )
 
    update_composer_count( );
 
+   if( was_edit )
+      restore_edit_draft( );
+
    do_cancel_edit( );
 }
 
@@ -4406,6 +4416,19 @@ function edit_last_message( )
    begin_edit( last.unique, last.text, last.private );
 
    return true;
+}
+
+// NOTE: An edit sent - what was in the box before it comes back, as in Element, unless something is in the box by now.
+function restore_edit_draft( )
+{
+   var input = document.getElementById( "composer_input" );
+
+   if( ( g_edit_draft === "" ) || ( input.value !== "" ) )
+      return;
+
+   input.value = g_edit_draft;
+
+   on_composer_input( );
 }
 
 // NOTE: Escape, or Cancel edit - the edit dropped and the box as it was before it (Ian, 2026-10-15: as Element does).
@@ -4887,7 +4910,11 @@ function resolve_uncertain_send( )
       }
 
       if( pending.edit )
+      {
+         restore_edit_draft( );
+
          do_cancel_edit( );
+      }
 
       show_alert( "Your message was sent after all - no need to send it again.", "is-info" );
    }
