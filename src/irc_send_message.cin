@@ -281,7 +281,11 @@ ERROR=Maximum pinned messages for this room already exist.
 .system_gen_key -unix_unique
 UNIX_UNIQUE=$OUTPUT
 ;
+@ifeq "$MESSAGE" "$OLD_MESSAGE"
+.system_variable @keyed_irc_%ROOM%_ME:$NAMES ""
+@else
 .system_variable @keyed_irc_%ROOM%_ME:$NAMES "$UNIX_UNIQUE $MESSAGE"
+@endif
 @endif
 @endif
 @endif
