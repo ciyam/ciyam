@@ -69,6 +69,7 @@ const c_palette_commands = [
    { command: "var <name> <text>", description: "set a variable" },
    { command: "history", description: "commands entered this session" },
    { command: "clear", description: "empty the output and clear the screen - in a list too" },
+   { command: "clear storage", description: "forget everything this browser keeps for the node, and reload - signed out" },
    { command: "remove creds", description: "forget this account's saved PIN and password on this browser" },
    { command: "remove creds <pin>", description: "forget another saved account on this browser (admin)", admin: true },
    { command: "remove creds partial", description: "forget this account's saved password - keep its PIN" },
@@ -1173,6 +1174,41 @@ async function run_line( line, from_script )
    return { ok: !is_error_output( response ) };
 }
 
+function clear_storage( )
+{
+   if( !g_started_alone )
+   {
+      print_line( "Error: This console shares " + g_owner_page.name + "'s page - clear the storage from a console opened on its own.", "is-err" );
+
+      return { ok: false };
+   }
+
+   if( g_connected )
+   {
+      print_line( "Error: Signed in - quit first, then clear storage.", "is-err" );
+
+      return { ok: false };
+   }
+
+   try
+   {
+      localStorage.clear( );
+      sessionStorage.clear( );
+   }
+   catch( e )
+   {
+      print_line( "Error: This browser would not let the storage be cleared.", "is-err" );
+
+      return { ok: false };
+   }
+
+   print_line( "Cleared - the device token, every saved account and this browser's settings for the node. Reloading...", "is-dim" );
+
+   window.setTimeout( function( ) { location.reload( ); }, 600 );
+
+   return { ok: true };
+}
+
 // NOTE: The sign in card, from the console opened on its own - or at once, for a node locked or not set up.
 function show_signin_form( )
 {
@@ -1898,6 +1934,12 @@ async function run_local( spec, from_script )
       // where the output box is what is shown. Ian's demo lists clear to take hashes and a password
       // off the screen (Ian, 2026-10-04).
       case "clear":
+         // NOTE: "clear storage" - everything this browser keeps for the node forgotten, then the page again, as the
+         // harness's "Clear Local Storage and Reload" (Ian, 2026-10-15). Only signed out, in the console opened on its
+         // own: a session in use, or another page's, is not this console's to pull from under it.
+         if( args.toLowerCase( ) === "storage" )
+            return clear_storage( );
+
          g_output = "";
 
          document.getElementById( "scrollback" ).textContent = "";
@@ -2176,6 +2218,7 @@ function print_help( )
     "  ntfy server [<url>]          the ntfy server as the phones reach it - kept in this browser",
     "  ntfy qr [<topic>] [web]      a topic as a QR code, to subscribe a phone - the node's own if none; web: ntfy's page",
     "  clear                        empty the output and the scrollback",
+    "  clear storage                forget everything this browser keeps for the node, and reload - signed out",
     // NOTE: As the harness, naming another account's PIN is offered to admin only.
     ciyam.is_admin
      ? "  remove creds [<pin>]         forget a saved account here - partial keeps the PIN"
