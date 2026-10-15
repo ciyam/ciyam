@@ -820,6 +820,15 @@ function sessions_line( summary )
     + ( summary.idle > 0 ? " · " + summary.idle + " idle an hour or more" : "" ) + ".";
 }
 
+// NOTE: The Overview's sessions figure - how many open, and beneath it how many idle; "summary" null, the node did not say.
+function sessions_stat( summary )
+{
+   if( summary === null )
+      return { value: "Not reported", note: "Waiting on the node", reported: false };
+
+   return { value: String( summary.total ), note: ( summary.idle > 0 ) ? summary.idle + " idle an hour or more" : "None idle", reported: true };
+}
+
 // NOTE: "system_schedule" - a line each: when it next runs (UTC), its name, then what else the node says of it, as it is.
 function parse_schedule( text )
 {
@@ -1037,6 +1046,7 @@ if( typeof module !== "undefined" )
       parse_web_sessions: parse_web_sessions,
       sessions_summary: sessions_summary,
       sessions_line: sessions_line,
+      sessions_stat: sessions_stat,
       parse_schedule: parse_schedule,
       parse_listeners: parse_listeners,
       setup_alive_answer: setup_alive_answer,

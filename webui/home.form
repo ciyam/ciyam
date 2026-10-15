@@ -412,8 +412,8 @@ http://www.opensource.org/licenses/mit-license.php.
             </div>
          </section>
 
-         <!-- NOTE: Admin's sections (build step 6) - what the web API gives today. Sessions in use and the other
-              limits wait on Ian's combined admin request (R2). -->
+         <!-- NOTE: Admin's sections (build step 6) - what the web API gives today. Sessions open since Ian allowed
+              "system_web_sessions" (2026-10-14); the limits still wait on the node. -->
          <section class="home-section" id="section_overview" hidden>
             <div class="home-section-head">
                <span>
@@ -441,8 +441,9 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
                <div class="home-stat">
                   <span class="home-stat-label">Sessions</span>
-                  <span class="home-stat-value home-stat-value--quiet">Not reported</span>
-                  <span class="home-stat-note">Waiting on the node</span>
+                  <span class="home-stat-value" id="stat_sessions_value"><span id="stat_sessions">&hellip;</span> <span class="home-stat-unit"
+                   id="stat_sessions_unit">open</span></span>
+                  <span class="home-stat-note" id="stat_sessions_note"></span>
                </div>
             </div>
 

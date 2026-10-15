@@ -2265,6 +2265,8 @@ function show_sessions( reply )
 
    if( reply === null )
    {
+      show_sessions_stat( null );
+
       set_text( "sessions_line", "This node doesn't report its sessions." );
       set_health_pill( "health_sessions_pill", "quiet", "Not reported" );
 
@@ -2274,6 +2276,8 @@ function show_sessions( reply )
    }
 
    var summary = sessions_summary( parse_web_sessions( reply ), Date.now( ), ciyam.sessid );
+
+   show_sessions_stat( summary );
 
    set_text( "sessions_line", sessions_line( summary ) );
    set_health_pill( "health_sessions_pill", "quiet", summary.total + " open" );
@@ -2302,6 +2306,18 @@ function show_sessions( reply )
    } );
 
    document.getElementById( "sessions_wrap" ).hidden = ( summary.people.length === 0 );
+}
+
+// NOTE: The Overview's sessions figure, from the same read as Health's card ("sessions_stat( )").
+function show_sessions_stat( summary )
+{
+   var stat = sessions_stat( summary );
+
+   set_text( "stat_sessions", stat.value );
+   set_text( "stat_sessions_note", stat.note );
+
+   document.getElementById( "stat_sessions_unit" ).hidden = !stat.reported;
+   document.getElementById( "stat_sessions_value" ).classList.toggle( "home-stat-value--quiet", !stat.reported );
 }
 
 // NOTE: Health's schedule card - each autoscript and its next run, and what else the node says of it.
@@ -3700,7 +3716,7 @@ function forget_admin( )
    [ "log_status", "stat_people_note", "overview_people", "overview_keys_note", "connection_heading", "connection_cipher", "attention_heading",
     "overview_keys_line", "health_secure_line", "health_state", "health_uptime", "health_version", "health_kind", "problems_latest",
     "health_identity_pill", "health_connection_pill", "health_log_pill", "health_rooms_pill", "health_node_pill", "sessions_line",
-    "health_sessions_pill", "health_schedule_pill", "health_listening_pill" ]
+    "health_sessions_pill", "health_schedule_pill", "health_listening_pill", "stat_sessions", "stat_sessions_note" ]
     .forEach( function( id ) { set_text( id, "" ); } );
 
    [ "attention_card", "attention_rest", "well_card" ].forEach( function( id ) { document.getElementById( id ).hidden = true; } );

@@ -193,6 +193,7 @@ ok   - one with no username
 ok   by person, the most recently seen first - yours marked
 ok   - idle an hour or more counted - since 02:53 and 01:00
 ok   - said in a line
+ok   the Overview's figure - how many open, how many idle; or not reported
 ok   the schedule - when next, the name, the rest as given
 ok   what listens - named, the peer port's chains counted
 ok   the still-alive token - twelve hex of the hash of the PIN and the suggestion

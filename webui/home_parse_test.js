@@ -396,6 +396,9 @@ check( "by person, the most recently seen first - yours marked",
 check( "- idle an hour or more counted - since 02:53 and 01:00", [ by_person.total, by_person.idle ], [ 4, 2 ] );
 check( "- said in a line", [ hp.sessions_line( by_person ), hp.sessions_line( hp.sessions_summary( [ ], at_four, "" ) ) ],
  [ "4 sessions open · 2 idle an hour or more.", "No sessions open." ] );
+check( "the Overview's figure - how many open, how many idle; or not reported", [ hp.sessions_stat( by_person ),
+ hp.sessions_stat( hp.sessions_summary( [ web_sessions[ 2 ] ], at_four, "" ) ), hp.sessions_stat( null ) ], [ { value: "4", note: "2 idle an hour or more",
+ reported: true }, { value: "1", note: "None idle", reported: true }, { value: "Not reported", note: "Waiting on the node", reported: false } ] );
 check( "the schedule - when next, the name, the rest as given", hp.parse_schedule( "2026-10-15 04:03:43 irc_store_or_restore 5s [@irc_alter]\n"
  + "2026-10-15 04:03:46 hub_check 5s [@generate_hub_block]" ), [ { next: hp.node_time_unique( "2026-10-15 04:03:43" ), name: "irc_store_or_restore",
  detail: "5s [@irc_alter]" }, { next: hp.node_time_unique( "2026-10-15 04:03:46" ), name: "hub_check", detail: "5s [@generate_hub_block]" } ] );
