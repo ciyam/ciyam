@@ -360,8 +360,8 @@ function key_unlock_text( unlock )
    if( !unlock.this_run )
       return "Last unlocked with a key" + when + ", before the last restart.";
 
-   return "Unlocked with a key since the last restart" + when + ". Which key is never recorded - if no one here used one, someone"
-    + " else has one.";
+   return "Unlocked with a key since the last restart" + when + ". The log does not say which key - if you did not use one, someone"
+    + " else holds one of your keys.";
 }
 
 // NOTE: The unlock keys the node holds, as admin's Overview says it - each is used up when it unlocks the node.

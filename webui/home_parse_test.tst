@@ -108,12 +108,12 @@ ok   the problem lines - since the restart, errors and warnings, 'failed' among 
 ok   and exactly what is counted
 ok   no start read - every problem line read
 ok   in words - both
+ok   in words - none
+ok   in words - one, no start read
 ok   an unlock with a key since the restart - when, by the node's clock
 ok   - one before the last restart
 ok   - none read
 ok   - in words
-ok   in words - none
-ok   in words - one, no start read
 ok   rooms filling - at 80% or more, fullest first
 ok   rooms filling - none
 ok   rooms filling - in words
