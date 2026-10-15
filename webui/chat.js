@@ -3353,6 +3353,16 @@ function do_delete_message( button )
    var unique = button.dataset.unique;
    var is_private = ( button.dataset.private === "1" );
 
+   // NOTE: Deleting the message being edited ends the edit - Send would otherwise write it back.
+   if( unique === g_edit_unique )
+   {
+      document.getElementById( "composer_input" ).value = "";
+
+      on_composer_input( );
+
+      do_cancel_edit( );
+   }
+
    button.disabled = true;
 
    serialised( function( )

@@ -1194,8 +1194,8 @@ check( "the strip shut for a room, then open again - the others kept", [ cp.with
  cp.with_pinned_shut( [ "0000004", "0000002" ], "0000004", false ), cp.with_pinned_shut( [ "0000004" ], "0000004", true ),
  cp.parse_dismissed( JSON.stringify( [ "0000004", "x" ] ) ) ], [ [ "0000004", "0000002" ], [ "0000002" ], [ "0000004" ], [ "0000004" ] ] );
 check( "Up edits the newest of your own - others' and nothing to edit passed over", [ cp.last_editable( [ { unique: "1", editable: true, text: "first" },
- { unique: "2", editable: true, text: "second" }, { unique: "3", editable: false, text: "theirs" } ] ).unique, cp.last_editable( [ { unique: "4", editable: false,
- text: "theirs" } ] ), cp.last_editable( [ ] ), cp.last_editable( [ { unique: "5", editable: true, text: "  " } ] ) ], [ "2", null, null, null ] );
+ { unique: "2", editable: true, text: "second" }, { unique: "3", editable: false, text: "theirs" } ] ).unique,
+ cp.last_editable( [ { unique: "4", editable: false, text: "theirs" } ] ), cp.last_editable( [ ] ), cp.last_editable( [ { unique: "5", editable: true, text: "  " } ] ) ], [ "2", null, null, null ] );
 check( "a message edited to spaces - deleted, public or private (Ian, 2026-10-15)", [ cp.parse_message_line( "1792032681000 admin*    " ),
  cp.parse_message_line( "1792032682000 admin* !  " ).deleted ], [ { kind: "chat", unique: "1792032681000", sender: "admin", edited: true, private: false,
  text: "  ", deleted: true }, true ] );
