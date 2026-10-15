@@ -1936,7 +1936,8 @@ async function run_local( spec, from_script )
       case "clear":
          // NOTE: "clear storage" - everything this browser keeps for the node forgotten, then the page again, as the
          // harness's "Clear Local Storage and Reload" (Ian, 2026-10-15). Only signed out, in the console opened on its
-         // own: a session in use, or another page's, is not this console's to pull from under it.
+         // own: a session in use, or another page's, is not this console's to pull from under it. Like the harness's it
+         // empties the whole of the node's storage, so a chat or Home open in another tab loses its saved device too.
          if( args.toLowerCase( ) === "storage" )
             return clear_storage( );
 
