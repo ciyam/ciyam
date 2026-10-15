@@ -1353,9 +1353,19 @@ async function run_init( target )
 
    signin_remember_device( );
 
+   // NOTE: A clean screen once signed in - what was above it said this console was not (Ian, 2026-10-15).
+   clear_output( );
+
    enter_console( );
 
    return { ok: true };
+}
+
+function clear_output( )
+{
+   g_output = "";
+
+   document.getElementById( "scrollback" ).textContent = "";
 }
 
 // NOTE: A password asked at the prompt itself, its typing hidden (Ian, 2026-10-13) - resolves to it, or null on Escape.
@@ -1941,9 +1951,7 @@ async function run_local( spec, from_script )
          if( args.toLowerCase( ) === "storage" )
             return clear_storage( );
 
-         g_output = "";
-
-         document.getElementById( "scrollback" ).textContent = "";
+         clear_output( );
 
          return { ok: true };
 
