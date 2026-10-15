@@ -295,28 +295,37 @@
    color: var(--color-chat-text-faint);
 }
 
-/* NOTE: "Aa" opens the docked bar - on a phone, where the phone's own menu comes up over a selection. A computer has the
-   floating bar instead. */
-.chat-format-toggle
+/* NOTE: On a phone the bar docks above the box when words are selected - said under the box, the only way to find it. */
+.chat-format-hint
 {
    display: none;
-   flex: none;
-   font-weight: 700;
-}
-
-.chat-format-toggle[aria-pressed="true"]
-{
-   background: var(--color-chat-bg-selected);
-   color: var(--color-chat-accent-deep);
-   border-color: var(--color-chat-accent);
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-faint);
 }
 
 @media (pointer: coarse)
 {
-   .chat-format-toggle
+   .chat-format-hint
    {
+      display: inline;
+   }
+}
+
+/* NOTE: Send as an arrow where the short label shows, on a phone - the box keeps the width. */
+.chat-send-arrow
+{
+   display: block;
+}
+
+@media (max-width: 820px)
+{
+   .chat-composer-row .chat-btn.is-arrow
+   {
+      flex: none;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      width: 44px;
+      padding: 0;
    }
 }

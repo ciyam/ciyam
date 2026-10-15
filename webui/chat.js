@@ -4096,15 +4096,37 @@ async function do_change_posting( )
    load_rooms( );
 }
 
+// NOTE: An upward arrow, for Send on a phone.
+function send_arrow( )
+{
+   var svg = document.createElementNS( "http://www.w3.org/2000/svg", "svg" );
+   var path = document.createElementNS( "http://www.w3.org/2000/svg", "path" );
+
+   svg.setAttribute( "viewBox", "0 0 20 20" );
+   svg.setAttribute( "width", "18" );
+   svg.setAttribute( "height", "18" );
+   svg.setAttribute( "aria-hidden", "true" );
+   svg.setAttribute( "focusable", "false" );
+   svg.setAttribute( "class", "chat-send-arrow" );
+
+   path.setAttribute( "d", "M10 16V4M4.5 9.5L10 4l5.5 5.5" );
+   path.setAttribute( "fill", "none" );
+   path.setAttribute( "stroke", "currentColor" );
+   path.setAttribute( "stroke-width", "2" );
+   path.setAttribute( "stroke-linecap", "round" );
+   path.setAttribute( "stroke-linejoin", "round" );
+
+   svg.appendChild( path );
+
+   return svg;
+}
+
 // ====================================================================
 // Formatting - colour and style (Ian, 2026-10-15; "Message Formatting Design")
 // ====================================================================
 
 // NOTE: Ian's colour letters, named for the palette's buttons - "ansi.cin" calls blue azure and yellow orange.
 const c_format_colour_names = { K: "black", R: "red", G: "green", O: "orange", A: "azure", P: "purple", C: "cyan", W: "white" };
-
-// NOTE: The bar on a phone - opened by "Aa" and kept open; on a computer it floats over selected words instead.
-var g_format_docked = false;
 
 // NOTE: The selected words in the box, kept - a tap on the bar can take the focus, and the selection with it, on a phone.
 var g_format_selection = { start: 0, end: 0 };
@@ -4174,7 +4196,8 @@ function remember_format_selection( )
       g_format_selection = { start: input.selectionStart, end: input.selectionEnd };
 }
 
-// NOTE: The bar shown or not, and where - floating while words are selected in the box, or docked while "Aa" has it open.
+// NOTE: The bar while words are selected in the box - floating over them on a computer, docked above the box on a phone,
+// where the phone's own menu comes up over the selection (Damon, 2026-10-15).
 function update_format_bar( )
 {
    var input = document.getElementById( "composer_input" );
@@ -4187,20 +4210,15 @@ function update_format_bar( )
    bar.classList.toggle( "is-floating", floats );
    bar.classList.toggle( "is-docked", !floats );
 
-   if( floats )
+   var focus = document.activeElement;
+   var inside = ( focus === input ) || bar.contains( focus ) || palette.contains( focus );
+
+   bar.hidden = input.disabled || !inside || ( g_format_selection.end <= g_format_selection.start );
+
+   if( floats && !bar.hidden )
+      place_format_bar( );
+   else if( !floats )
    {
-      var focus = document.activeElement;
-      var inside = ( focus === input ) || bar.contains( focus ) || palette.contains( focus );
-
-      bar.hidden = input.disabled || !inside || ( g_format_selection.end <= g_format_selection.start );
-
-      if( !bar.hidden )
-         place_format_bar( );
-   }
-   else
-   {
-      bar.hidden = !g_format_docked;
-
       bar.style.left = "";
       bar.style.top = "";
    }
@@ -4369,18 +4387,6 @@ function close_format_palette( )
    [ "format_colour", "format_background" ].forEach( function( id ) { document.getElementById( id ).setAttribute( "aria-expanded", "false" ); } );
 }
 
-// NOTE: "Aa" on a phone - the bar docked above the box, open until tapped again.
-function do_toggle_format_bar( )
-{
-   g_format_docked = !g_format_docked;
-
-   document.getElementById( "format_toggle" ).setAttribute( "aria-pressed", String( g_format_docked ) );
-
-   update_format_bar( );
-
-   document.getElementById( "composer_input" ).focus( );
-}
-
 // NOTE: The format keys in the box - Ctrl+B, I and U on selected words; Escape shuts the palette, then the bar. True if taken.
 function format_key( event )
 {
@@ -4409,7 +4415,7 @@ function format_key( event )
          return true;
       }
 
-      if( format_bar_floats( ) && !document.getElementById( "format_bar" ).hidden )
+      if( !document.getElementById( "format_bar" ).hidden )
       {
          input.setSelectionRange( input.selectionEnd, input.selectionEnd );
 
@@ -4441,7 +4447,7 @@ function bind_format_bar( )
    } );
 
    // NOTE: The bar's own buttons keep the focus, and so the selection, in the box.
-   document.querySelectorAll( "#format_bar button, #format_toggle" ).forEach( function( button )
+   document.querySelectorAll( "#format_bar button" ).forEach( function( button )
    {
       button.addEventListener( "mousedown", function( event ) { event.preventDefault( ); } );
    } );
@@ -4944,7 +4950,14 @@ function render_composer( )
    var short = document.createElement( "span" );
 
    short.className = "chat-send-short";
-   short.textContent = mode.send_short;
+
+   // NOTE: Send as an arrow on a phone, so the box keeps the width (Damon, 2026-10-15); "Save edit" stays in words.
+   if( mode.send_short === "Send" )
+      short.appendChild( send_arrow( ) );
+   else
+      short.textContent = mode.send_short;
+
+   send.classList.toggle( "is-arrow", mode.send_short === "Send" );
 
    send.appendChild( full );
    send.appendChild( short );
