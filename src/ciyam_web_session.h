@@ -40,7 +40,7 @@ struct cws_paramaters
    bool is_json_output;
 };
 
-void dump_session_info( std::ostream& os );
+void dump_session_info( std::ostream& os, bool full = false );
 
 bool ip_addr_belongs_to_a_web_session( const std::string& ip_addr );
 

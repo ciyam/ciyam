@@ -1380,7 +1380,7 @@ string get_files_for_endpoint(
 
 }
 
-void dump_session_info( ostream& os )
+void dump_session_info( ostream& os, bool full )
 {
    guard g( g_mutex );
 
@@ -1390,8 +1390,14 @@ void dump_session_info( ostream& os )
       os << "-------------------- ----- --------------- ------------------- ------------------- ----------------------------------------------\n";
    }
 
+   string redacted_pin( c_cws_access_length, 'X' );
+
+   string redacted_prefix( ( c_cws_access_length * 2 ), 'X' );
+
    for( auto i = g_session_info.begin( ); i != g_session_info.end( ); i++ )
-      os << i->first << ' ' << i->second->access << ' ' << i->second->device
+      os << ( !full ? redacted_prefix + i->first.substr( redacted_prefix.length( ) ) : i->first )
+       << ' ' << ( !full ? redacted_pin : i->second->access )
+       << ' ' << ( !full ? redacted_prefix + i->second->device.substr( redacted_prefix.length( ) ) : i->second->device )
        << ' ' << date_time( i->second->init_request ).as_string( true, false )
        << ' ' << date_time( i->second->last_request ).as_string( true, false )
        << ' ' << ( i->second->username.empty( ) ? g_none_tag : i->second->username ) << " (" << i->second->ip_addr << ")\n";
