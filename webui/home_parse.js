@@ -755,14 +755,15 @@ function node_time_unique( text )
 }
 
 // NOTE: "system_web_sessions" - a heading and a rule, then a line each: the session, its PIN, its device, its first and its
-// last request, and "<username> (<address>)".
+// last request, and "<username> (<address>)". Redacted unless asked "-full" on a development node (Ian, "af67621d",
+// 2026-10-15): the PIN all X's, and the first ten characters of the session and the device too.
 function parse_web_sessions( text )
 {
    var sessions = [ ];
 
    String( text || "" ).split( /\r?\n/ ).forEach( function( line )
    {
-      var m = /^([0-9a-f]{20})\s+(\d{5})\s+(\S+)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+(.*?)\s*(?:\(([^)]*)\))?\s*$/
+      var m = /^([0-9a-fX]{20})\s+(\d{5}|X{5})\s+(\S+)\s+(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)\s+(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)\s+(.*?)\s*(?:\(([^)]*)\))?\s*$/
        .exec( line );
 
       if( m )
@@ -772,9 +773,21 @@ function parse_web_sessions( text )
    return sessions;
 }
 
+// NOTE: Whether a session the node listed is this one ("mine", whole) - the end of it, when the start is redacted.
+function is_same_session( listed, mine )
+{
+   var tail = String( listed || "" ).replace( /^X+/, "" );
+
+   if( ( tail === "" ) || ( String( mine || "" ) === "" ) )
+      return false;
+
+   return ( tail === listed ) ? ( listed === mine ) : ( ( mine.length === listed.length ) && mine.endsWith( tail ) );
+}
+
 // NOTE: The sessions as Health shows them - how many, how many idle ("c_session_idle_ms"), and by person, the most recently
 // seen first: their sessions, when last seen (a unique), from where, and whether this tab's ("mine") is among them. A
-// person is their PIN - shown by name only, PINs being kept out of sight (Ian, 2026-10-10).
+// person is their PIN - shown by name only, PINs being kept out of sight (Ian, 2026-10-10) - or, the PIN redacted, their
+// name; sessions not signed in yet, with neither, are one row.
 function sessions_summary( sessions, now_ms, mine )
 {
    var by_pin = { };
@@ -787,10 +800,11 @@ function sessions_summary( sessions, now_ms, mine )
       if( ( last !== "" ) && ( now_ms - Number( last ) >= c_session_idle_ms ) )
          ++idle;
 
-      var person = by_pin[ session.pin ];
+      var who = /^X+$/.test( session.pin ) ? "name " + session.name : session.pin;
+      var person = by_pin[ who ];
 
       if( !person )
-         person = by_pin[ session.pin ] = { name: session.name, count: 0, last: "", addresses: [ ], yours: false };
+         person = by_pin[ who ] = { name: session.name, count: 0, last: "", addresses: [ ], yours: false };
 
       ++person.count;
 
@@ -800,7 +814,7 @@ function sessions_summary( sessions, now_ms, mine )
       if( ( session.address !== "" ) && ( person.addresses.indexOf( session.address ) < 0 ) )
          person.addresses.push( session.address );
 
-      if( session.session === mine )
+      if( is_same_session( session.session, mine ) )
          person.yours = true;
    } );
 
@@ -1045,6 +1059,7 @@ if( typeof module !== "undefined" )
       node_time_unique: node_time_unique,
       parse_web_sessions: parse_web_sessions,
       sessions_summary: sessions_summary,
+      is_same_session: is_same_session,
       sessions_line: sessions_line,
       sessions_stat: sessions_stat,
       parse_schedule: parse_schedule,

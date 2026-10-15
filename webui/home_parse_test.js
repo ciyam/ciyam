@@ -396,6 +396,24 @@ check( "by person, the most recently seen first - yours marked",
 check( "- idle an hour or more counted - since 02:53 and 01:00", [ by_person.total, by_person.idle ], [ 4, 2 ] );
 check( "- said in a line", [ hp.sessions_line( by_person ), hp.sessions_line( hp.sessions_summary( [ ], at_four, "" ) ) ],
  [ "4 sessions open · 2 idle an hour or more.", "No sessions open." ] );
+// NOTE: As the node answers since Ian's "af67621d" - the PIN, and the start of the session and the device, X'd out.
+var redacted = hp.parse_web_sessions( [
+ "session              pin   device          init_request        last_request        username (ip_addr)",
+ "-------------------- ----- --------------- ------------------- ------------------- ------------------",
+ "XXXXXXXXXX7b862a80ad XXXXX XXXXXXXXXX18ddb 2026-10-15 02:53:06 2026-10-15 02:53:36 admin (172.19.0.1)",
+ "XXXXXXXXXX9973a39671 XXXXX XXXXXXXXXX8d2dd 2026-10-15 03:49:54 2026-10-15 03:50:44 verify-a (172.19.0.1)",
+ "XXXXXXXXXX4ee1390b64 XXXXX XXXXXXXXXX278fd 2026-10-15 04:03:40 2026-10-15 04:03:42 admin (172.19.0.1)",
+ "XXXXXXXXXX5c00000000 XXXXX XXXXXXXXXXd0001 2026-10-15 04:00:00 2026-10-15 04:00:05 verify-a (10.0.0.4)",
+ "XXXXXXXXXX59379c5535 XXXXX XXXXXXXXXXabcde 2026-10-15 01:00:00 2026-10-15 01:00:05  (10.0.0.9)" ].join( "\n" ) );
+var redacted_by_person = hp.sessions_summary( redacted, at_four, "4f2a5b11115c00000000" );
+check( "redacted - each line still read", [ redacted.length, redacted[ 3 ].pin, redacted[ 3 ].session, redacted[ 3 ].name ],
+ [ 5, "XXXXX", "XXXXXXXXXX5c00000000", "verify-a" ] );
+check( "this session known by the end of it, the start redacted", [ hp.is_same_session( "XXXXXXXXXX5c00000000", "4f2a5b11115c00000000" ),
+ hp.is_same_session( "XXXXXXXXXX5c00000000", "4f2a5b11115c00000001" ), hp.is_same_session( "XXXXXXXXXXXXXXXXXXXX", "4f2a5b11115c00000000" ),
+ hp.is_same_session( "0b9a4a69a7b862a80ad2", "0b9a4a69a7b862a80ad2" ), hp.is_same_session( "0b9a4a69a7b862a80ad2", "" ) ],
+ [ true, false, false, true, false ] );
+check( "redacted - grouped by name, yours marked", redacted_by_person.people.map( function( p )
+ { return p.name + ":" + p.count + ( p.yours ? ":you" : "" ); } ), [ "admin:2", "verify-a:2:you", ":1" ] );
 check( "the Overview's figure - how many open, how many idle; or not reported", [ hp.sessions_stat( by_person ),
  hp.sessions_stat( hp.sessions_summary( [ web_sessions[ 2 ] ], at_four, "" ) ), hp.sessions_stat( null ) ], [ { value: "4", note: "2 idle an hour or more",
  reported: true }, { value: "1", note: "None idle", reported: true }, { value: "Not reported", note: "Waiting on the node", reported: false } ] );
