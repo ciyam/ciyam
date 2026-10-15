@@ -2112,7 +2112,8 @@ async function read_key_count( )
    return is_error_response( response ) ? null : parse_key_count( response );
 }
 
-// NOTE: One of the requests admin may make of any node ("is_admin_sanctioned") - its answer, or null when refused.
+// NOTE: One of the requests admin may make of any node ("is_admin_sanctioned") - its answer, or null when refused. A request
+// not on the node's list is answered "[bad]" - refused too, not an answer (found 2026-10-15, trying Health with "@no_devt").
 async function ask_node( text )
 {
    var url = admin_url( "" ) + "&request=" + encodeURIComponent( text );
@@ -2122,7 +2123,7 @@ async function ask_node( text )
       return ciyam.fetch( url, "GET", done );
    } );
 
-   return is_error_response( response ) ? null : response;
+   return ( is_error_response( response ) || ( String( response ).trim( ) === "[bad]" ) ) ? null : response;
 }
 
 // NOTE: Whether the node's identity is held encrypted - without it, no unlock keys (Ian, 2026-10-12).
@@ -2226,6 +2227,18 @@ async function load_overview( )
 
    var problems = show_problems( server );
 
+   // NOTE: Who is connected, what runs by itself, and where the node listens - allowed admin on any node (Ian, "136d4815").
+   var sessions = await ask_node( c_home_sessions_request );
+   var schedule = await ask_node( c_home_schedule_request );
+   var listeners = await ask_node( c_home_listeners_request );
+
+   if( ciyam.access !== asked_for )
+      return;
+
+   show_sessions( sessions );
+   show_schedule( schedule );
+   show_listening( listeners );
+
    var listing = await request( function( done ) { return ciyam.fetch_messages( c_lobby_room, "", done ); } );
 
    if( ciyam.access !== asked_for )
@@ -2235,6 +2248,138 @@ async function load_overview( )
     irc_unavailable( listing ) );
 
    show_attention( health_issues( { secure: secure, keys: key_count, problems: problems, filling: filling } ) );
+}
+
+// NOTE: A time for Health, from a unique - "Today 15:03", as the chat's days say it.
+function health_time( unique )
+{
+   return ( unique === "" ) ? "-" : day_label( unique ) + " " + unique_to_time( unique ).substring( 0, 5 );
+}
+
+// NOTE: Health's sessions card - by person, yours marked; "null", the node did not answer (one before Ian's "136d4815").
+function show_sessions( reply )
+{
+   var rows = document.getElementById( "sessions_rows" );
+
+   rows.replaceChildren( );
+
+   if( reply === null )
+   {
+      set_text( "sessions_line", "This node doesn't report its sessions." );
+      set_health_pill( "health_sessions_pill", "quiet", "Not reported" );
+
+      document.getElementById( "sessions_wrap" ).hidden = true;
+
+      return;
+   }
+
+   var summary = sessions_summary( parse_web_sessions( reply ), Date.now( ), ciyam.sessid );
+
+   set_text( "sessions_line", sessions_line( summary ) );
+   set_health_pill( "health_sessions_pill", "quiet", summary.total + " open" );
+
+   summary.people.forEach( function( person )
+   {
+      var row = document.createElement( "tr" );
+
+      var who = document.createElement( "td" );
+
+      who.textContent = ( person.name || "No name" ) + ( person.yours ? " (you)" : "" );
+      who.classList.toggle( "is-you", person.yours );
+
+      row.appendChild( who );
+
+      [ String( person.count ), health_time( person.last ), person.addresses.join( ", " ) || "-" ].forEach( function( text )
+      {
+         var cell = document.createElement( "td" );
+
+         cell.textContent = text;
+
+         row.appendChild( cell );
+      } );
+
+      rows.appendChild( row );
+   } );
+
+   document.getElementById( "sessions_wrap" ).hidden = ( summary.people.length === 0 );
+}
+
+// NOTE: Health's schedule card - each autoscript and its next run, and what else the node says of it.
+function show_schedule( reply )
+{
+   var list = document.getElementById( "schedule_list" );
+
+   list.replaceChildren( );
+
+   if( reply === null )
+   {
+      set_health_pill( "health_schedule_pill", "quiet", "Not reported" );
+
+      return;
+   }
+
+   var entries = parse_schedule( reply );
+
+   set_health_pill( "health_schedule_pill", entries.length > 0 ? "ok" : "quiet", entries.length > 0 ? entries.length + " running" : "None" );
+
+   entries.forEach( function( entry )
+   {
+      var item = document.createElement( "li" );
+
+      var name = document.createElement( "b" );
+
+      name.textContent = entry.name;
+
+      var next = document.createElement( "span" );
+
+      next.textContent = "next " + health_time( entry.next );
+
+      item.appendChild( name );
+      item.appendChild( next );
+
+      if( entry.detail !== "" )
+      {
+         var detail = document.createElement( "span" );
+
+         detail.className = "home-mono";
+         detail.textContent = entry.detail;
+
+         item.appendChild( detail );
+      }
+
+      list.appendChild( item );
+   } );
+}
+
+// NOTE: Health's listening card - each port the node takes connections on, the peer port's chains counted.
+function show_listening( reply )
+{
+   var facts = document.getElementById( "listening_facts" );
+
+   facts.replaceChildren( );
+
+   if( reply === null )
+   {
+      set_health_pill( "health_listening_pill", "quiet", "Not reported" );
+
+      return;
+   }
+
+   var listeners = parse_listeners( reply );
+
+   set_health_pill( "health_listening_pill", listeners.length > 0 ? "ok" : "quiet", listeners.length > 0 ? "OK" : "None" );
+
+   listeners.forEach( function( listener )
+   {
+      var term = document.createElement( "dt" );
+      var value = document.createElement( "dd" );
+
+      term.textContent = listener.name;
+      value.textContent = listener.port + ( listener.chains > 0 ? " · " + listener.chains + ( listener.chains === 1 ? " chain" : " chains" ) : "" );
+
+      facts.appendChild( term );
+      facts.appendChild( value );
+   } );
 }
 
 // NOTE: The node at a glance (the Overview's first stat) and in Health's node card.
@@ -3545,7 +3690,7 @@ function forget_admin( )
 
    document.getElementById( "log_filter" ).value = "";
 
-   [ "log_tabs", "log_lines", "overview_log", "attention_list", "rooms_filling" ].forEach( function( id )
+   [ "log_tabs", "log_lines", "overview_log", "attention_list", "rooms_filling", "sessions_rows", "schedule_list", "listening_facts" ].forEach( function( id )
    {
       document.getElementById( id ).replaceChildren( );
    } );
@@ -3554,7 +3699,8 @@ function forget_admin( )
 
    [ "log_status", "stat_people_note", "overview_people", "overview_keys_note", "connection_heading", "connection_cipher", "attention_heading",
     "overview_keys_line", "health_secure_line", "health_state", "health_uptime", "health_version", "health_kind", "problems_latest",
-    "health_identity_pill", "health_connection_pill", "health_log_pill", "health_rooms_pill", "health_node_pill" ]
+    "health_identity_pill", "health_connection_pill", "health_log_pill", "health_rooms_pill", "health_node_pill", "sessions_line",
+    "health_sessions_pill", "health_schedule_pill", "health_listening_pill" ]
     .forEach( function( id ) { set_text( id, "" ); } );
 
    [ "attention_card", "attention_rest", "well_card" ].forEach( function( id ) { document.getElementById( id ).hidden = true; } );

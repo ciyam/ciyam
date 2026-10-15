@@ -728,6 +728,136 @@ function health_heading( issues )
 // "ntfy_topic" and "ntfy_send"), so a development node only until he lets admin ask for them on any node. The title is
 // quoted whole - quoted after the "=" it is cut short and the request times out (2026-10-07).
 const c_home_ntfy_topic_request = "ntfy_topic";
+
+// ====================================================================
+// Health - from the commands Ian allowed admin on any node (2026-10-14, "136d4815")
+// ====================================================================
+
+const c_home_sessions_request = "system_web_sessions";
+const c_home_schedule_request = "system_schedule";
+const c_home_listeners_request = "system_listeners";
+
+// NOTE: An hour without a request - idle. The node keeps a session until it signs out, letting the longest unused go only
+// at its limit (Ian, 2026-10-14) - so idle ones are the leftovers of closed tabs (ISS-039).
+const c_session_idle_ms = 60 * 60 * 1000;
+
+// NOTE: A time as the node gives it - "2026-10-15 04:03:42", in UTC - as a unique, "<unix seconds>000", so the chat's own
+// wording of times and days ("unique_to_time( )", "day_label( )") says it. "" for anything else.
+function node_time_unique( text )
+{
+   var m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec( String( text || "" ).trim( ) );
+
+   if( !m )
+      return "";
+
+   return String( Math.floor( Date.UTC( +m[ 1 ], +m[ 2 ] - 1, +m[ 3 ], +m[ 4 ], +m[ 5 ], +m[ 6 ] ) / 1000 ) ) + "000";
+}
+
+// NOTE: "system_web_sessions" - a heading and a rule, then a line each: the session, its PIN, its device, its first and its
+// last request, and "<username> (<address>)".
+function parse_web_sessions( text )
+{
+   var sessions = [ ];
+
+   String( text || "" ).split( /\r?\n/ ).forEach( function( line )
+   {
+      var m = /^([0-9a-f]{20})\s+(\d{5})\s+(\S+)\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+(.*?)\s*(?:\(([^)]*)\))?\s*$/
+       .exec( line );
+
+      if( m )
+         sessions.push( { session: m[ 1 ], pin: m[ 2 ], device: m[ 3 ], since: m[ 4 ], last: m[ 5 ], name: m[ 6 ].trim( ), address: m[ 7 ] || "" } );
+   } );
+
+   return sessions;
+}
+
+// NOTE: The sessions as Health shows them - how many, how many idle ("c_session_idle_ms"), and by person, the most recently
+// seen first: their sessions, when last seen (a unique), from where, and whether this tab's ("mine") is among them. A
+// person is their PIN - shown by name only, PINs being kept out of sight (Ian, 2026-10-10).
+function sessions_summary( sessions, now_ms, mine )
+{
+   var by_pin = { };
+   var idle = 0;
+
+   ( sessions || [ ] ).forEach( function( session )
+   {
+      var last = node_time_unique( session.last );
+
+      if( ( last !== "" ) && ( now_ms - Number( last ) >= c_session_idle_ms ) )
+         ++idle;
+
+      var person = by_pin[ session.pin ];
+
+      if( !person )
+         person = by_pin[ session.pin ] = { name: session.name, count: 0, last: "", addresses: [ ], yours: false };
+
+      ++person.count;
+
+      if( last > person.last )
+         person.last = last;
+
+      if( ( session.address !== "" ) && ( person.addresses.indexOf( session.address ) < 0 ) )
+         person.addresses.push( session.address );
+
+      if( session.session === mine )
+         person.yours = true;
+   } );
+
+   var people = Object.keys( by_pin ).map( function( pin ) { return by_pin[ pin ]; } );
+
+   people.sort( function( a, b ) { return ( a.last === b.last ) ? 0 : ( ( a.last > b.last ) ? -1 : 1 ); } );
+
+   return { total: ( sessions || [ ] ).length, idle: idle, people: people };
+}
+
+// NOTE: Health's line for them - "12 open · 9 idle an hour or more", or that there are none.
+function sessions_line( summary )
+{
+   if( summary.total === 0 )
+      return "No sessions open.";
+
+   return summary.total + ( summary.total === 1 ? " session" : " sessions" ) + " open"
+    + ( summary.idle > 0 ? " · " + summary.idle + " idle an hour or more" : "" ) + ".";
+}
+
+// NOTE: "system_schedule" - a line each: when it next runs (UTC), its name, then what else the node says of it, as it is.
+function parse_schedule( text )
+{
+   var entries = [ ];
+
+   String( text || "" ).split( /\r?\n/ ).forEach( function( line )
+   {
+      var m = /^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+(\S+)\s*(.*)$/.exec( line.trim( ) );
+
+      if( m )
+         entries.push( { next: node_time_unique( m[ 1 ] ), name: m[ 2 ], detail: m[ 3 ].trim( ) } );
+   } );
+
+   return entries;
+}
+
+// NOTE: "system_listeners" - a line each: the port, the service, and for the peer port the chains it serves, in brackets.
+// Named as people would know them; a service not known here, as the node names it.
+const c_listener_names = { rpc_core: "Core protocol", rpc_peer: "Peers", web_rest: "Web" };
+
+function parse_listeners( text )
+{
+   var listeners = [ ];
+
+   String( text || "" ).split( /\r?\n/ ).forEach( function( line )
+   {
+      var m = /^(\d+)\s+(\S+)\s*(?:\(([^)]*)\))?/.exec( line.trim( ) );
+
+      if( !m )
+         return;
+
+      var chains = m[ 3 ] ? m[ 3 ].split( "," ).filter( function( chain ) { return chain.trim( ) !== ""; } ).length : 0;
+
+      listeners.push( { port: m[ 1 ], service: m[ 2 ], name: c_listener_names[ m[ 2 ] ] || m[ 2 ], chains: chains } );
+   } );
+
+   return listeners;
+}
 const c_home_ntfy_test_request = "ntfy_send \"-title=Test alert\" -tags=white_check_mark \"From Home - this phone gets the node alerts.\"";
 
 // NOTE: How the ntfy server's address looks, for the box it is typed into - the machine this page came from, on ntfy's
@@ -903,6 +1033,12 @@ if( typeof module !== "undefined" )
       ntfy_server_example: ntfy_server_example,
       setup_pin_gone: setup_pin_gone,
       setup_alive_token: setup_alive_token,
+      node_time_unique: node_time_unique,
+      parse_web_sessions: parse_web_sessions,
+      sessions_summary: sessions_summary,
+      sessions_line: sessions_line,
+      parse_schedule: parse_schedule,
+      parse_listeners: parse_listeners,
       setup_alive_answer: setup_alive_answer,
       c_home_devt_request: c_home_devt_request,
       c_home_demo_request: c_home_demo_request,

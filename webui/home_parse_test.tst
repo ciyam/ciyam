@@ -186,6 +186,15 @@ ok   the test - its title quoted whole
 ok   refused - the PIN held by another's setup, or gone
 ok   Enter in the password - on to typing it again, once long enough
 ok   Enter in typing it again - makes the words, once they match
+ok   a node time, in UTC, as a unique
+ok   the web sessions - a line each, the heading and rule passed over
+ok   - each read whole
+ok   - one with no username
+ok   by person, the most recently seen first - yours marked
+ok   - idle an hour or more counted - since 02:53 and 01:00
+ok   - said in a line
+ok   the schedule - when next, the name, the rest as given
+ok   what listens - named, the peer port's chains counted
 ok   the still-alive token - twelve hex of the hash of the PIN and the suggestion
 ok   the answer - all X's kept it waiting, an address did not, anything else says nothing
 ok   the second refused - a PIN the node never gave (it restarted)

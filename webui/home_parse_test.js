@@ -375,6 +375,34 @@ check( "Enter in the password - on to typing it again, once long enough", [ hp.s
 check( "Enter in typing it again - makes the words, once they match", [ hp.setup_password_enter( "confirm", "lantern-orbit", "lantern-orbit", true ),
  hp.setup_password_enter( "confirm", "lantern-orbit", "lantern-orbiT", true ) ],
  [ { focus: "", problem: "", make: true }, { focus: "", problem: "different", make: false } ] );
+// NOTE: As the node gave them, through Home's admin request (2026-10-15).
+check( "a node time, in UTC, as a unique", [ hp.node_time_unique( "2026-10-15 04:03:42" ), hp.node_time_unique( "soon" ) ],
+ [ String( Date.UTC( 2026, 9, 15, 4, 3, 42 ) / 1000 ) + "000", "" ] );
+var web_sessions = hp.parse_web_sessions( [
+ "session              pin   device          init_request        last_request        username (ip_addr)",
+ "-------------------- ----- --------------- ------------------- ------------------- ------------------",
+ "0b9a4a69a7b862a80ad2 78826 3d53733e6a18ddb 2026-10-15 02:53:06 2026-10-15 02:53:36 admin (172.19.0.1)",
+ "46c3509973a39671fcaa 20401 98706f1ff38d2dd 2026-10-15 03:49:54 2026-10-15 03:50:44 verify-a (172.19.0.1)",
+ "aca181264ee1390b64ea 78826 a072581bd278fd1 2026-10-15 04:03:40 2026-10-15 04:03:42 admin (172.19.0.1)",
+ "b93df46259379c5535d9 31324 0123456789abcde 2026-10-15 01:00:00 2026-10-15 01:00:05  (10.0.0.9)" ].join( "\n" ) );
+check( "the web sessions - a line each, the heading and rule passed over", web_sessions.length, 4 );
+check( "- each read whole", web_sessions[ 1 ], { session: "46c3509973a39671fcaa", pin: "20401", device: "98706f1ff38d2dd", since: "2026-10-15 03:49:54",
+ last: "2026-10-15 03:50:44", name: "verify-a", address: "172.19.0.1" } );
+check( "- one with no username", [ web_sessions[ 3 ].name, web_sessions[ 3 ].address ], [ "", "10.0.0.9" ] );
+var at_four = Date.UTC( 2026, 9, 15, 4, 4, 0 );
+var by_person = hp.sessions_summary( web_sessions, at_four, "aca181264ee1390b64ea" );
+check( "by person, the most recently seen first - yours marked",
+ by_person.people.map( function( p ) { return p.name + ":" + p.count + ( p.yours ? ":you" : "" ); } ), [ "admin:2:you", "verify-a:1", ":1" ] );
+check( "- idle an hour or more counted - since 02:53 and 01:00", [ by_person.total, by_person.idle ], [ 4, 2 ] );
+check( "- said in a line", [ hp.sessions_line( by_person ), hp.sessions_line( hp.sessions_summary( [ ], at_four, "" ) ) ],
+ [ "4 sessions open · 2 idle an hour or more.", "No sessions open." ] );
+check( "the schedule - when next, the name, the rest as given", hp.parse_schedule( "2026-10-15 04:03:43 irc_store_or_restore 5s [@irc_alter]\n"
+ + "2026-10-15 04:03:46 hub_check 5s [@generate_hub_block]" ), [ { next: hp.node_time_unique( "2026-10-15 04:03:43" ), name: "irc_store_or_restore",
+ detail: "5s [@irc_alter]" }, { next: hp.node_time_unique( "2026-10-15 04:03:46" ), name: "hub_check", detail: "5s [@generate_hub_block]" } ] );
+check( "what listens - named, the peer port's chains counted", hp.parse_listeners( "11011 rpc_core\n12021 rpc_peer (1461bcf13,31fcb1641,6ba75e11d)\n"
+ + "13031 web_rest\n9999 something_new" ), [ { port: "11011", service: "rpc_core", name: "Core protocol", chains: 0 }, { port: "12021", service: "rpc_peer",
+ name: "Peers", chains: 3 }, { port: "13031", service: "web_rest", name: "Web", chains: 0 }, { port: "9999", service: "something_new", name: "something_new",
+ chains: 0 } ] );
 check( "the still-alive token - twelve hex of the hash of the PIN and the suggestion", hp.setup_alive_token( "12345", "abcd",
  function( s ) { return s === "12345abcd" ? "0123456789ABCDEF0123" : "wrong"; } ), "0123456789ab" );
 check( "the answer - all X's kept it waiting, an address did not, anything else says nothing", [ hp.setup_alive_answer( "XXXXXXXXXX" ),

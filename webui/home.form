@@ -567,6 +567,44 @@ http://www.opensource.org/licenses/mit-license.php.
                   </dl>
                </section>
 
+               <!-- NOTE: From the commands Ian allowed admin on any node (2026-10-14) - who is connected, what the node runs by
+                    itself, and where it takes connections. Read every minute with the rest. -->
+               <section class="home-card home-health-card home-health-wide" id="health_sessions_card" aria-labelledby="health_sessions_heading">
+                  <div class="home-health-head">
+                     <h2 id="health_sessions_heading">Sessions</h2>
+                     <span class="home-health-pill" id="health_sessions_pill"></span>
+                  </div>
+                  <p class="home-health-line" id="sessions_line">&hellip;</p>
+                  <div class="home-table-wrap" id="sessions_wrap" hidden>
+                     <table class="home-sessions">
+                        <thead>
+                           <tr><th scope="col">Who</th><th scope="col">Sessions</th><th scope="col">Last seen</th><th scope="col">From</th></tr>
+                        </thead>
+                        <tbody id="sessions_rows"></tbody>
+                     </table>
+                  </div>
+                  <p class="home-note home-empty" id="sessions_note">A session stays until it signs out - closing a tab doesn't end it. At
+                   the node's limit, the longest unused goes. Ending one from here isn't offered yet.</p>
+               </section>
+
+               <section class="home-card home-health-card" id="health_schedule_card" aria-labelledby="health_schedule_heading">
+                  <div class="home-health-head">
+                     <h2 id="health_schedule_heading">Schedule</h2>
+                     <span class="home-health-pill" id="health_schedule_pill"></span>
+                  </div>
+                  <ul class="home-schedule" id="schedule_list"></ul>
+                  <p class="home-note home-empty" id="schedule_note">What the node runs by itself, and when each runs next.</p>
+               </section>
+
+               <section class="home-card home-health-card" id="health_listening_card" aria-labelledby="health_listening_heading">
+                  <div class="home-health-head">
+                     <h2 id="health_listening_heading">Listening</h2>
+                     <span class="home-health-pill" id="health_listening_pill"></span>
+                  </div>
+                  <dl class="home-health-facts" id="listening_facts"></dl>
+                  <p class="home-note home-empty" id="listening_note">Where the node takes connections - its ports.</p>
+               </section>
+
                <section class="home-health-wide home-health-gap" aria-labelledby="health_gap_heading">
                   <div class="home-health-head">
                      <h2 id="health_gap_heading">Not reported yet</h2>
@@ -575,7 +613,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   <div class="home-health-gap-grid">
                      <span><b>Chat memory</b>Store used, of its limit</span>
                      <span><b>Files area</b>Space used and free</span>
-                     <span><b>Sessions in use</b>Of the maximum, and ending one</span>
+                     <span><b>Sessions</b>The most allowed, and ending one</span>
                      <span><b>Devices</b>Signed in, everyone's</span>
                      <span><b>Updates</b>New version, and installing it</span>
                   </div>

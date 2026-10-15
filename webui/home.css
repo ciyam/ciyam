@@ -1008,6 +1008,78 @@
    overflow-wrap: anywhere;
 }
 
+/* NOTE: Health's sessions - one row a person; scrolled sideways within itself on a phone. */
+.home-table-wrap
+{
+   overflow-x: auto;
+}
+
+.home-sessions
+{
+   width: 100%;
+   border-collapse: collapse;
+   font-size: 13px;
+}
+
+.home-sessions th
+{
+   padding: 4px 10px 6px 0;
+   text-align: left;
+   font-size: 12px;
+   font-weight: 600;
+   color: var(--color-chat-text-secondary);
+   border-bottom: 1px solid var(--color-chat-border);
+   white-space: nowrap;
+}
+
+.home-sessions td
+{
+   padding: 6px 10px 6px 0;
+   border-bottom: 1px solid var(--color-chat-border);
+   vertical-align: top;
+}
+
+.home-sessions tr:last-child td
+{
+   border-bottom: 0;
+}
+
+.home-sessions .is-you
+{
+   font-weight: 600;
+}
+
+/* NOTE: Health's schedule - the name, then its next run; what else the node says beneath. */
+.home-schedule
+{
+   margin: 0;
+   padding: 0;
+   list-style: none;
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   font-size: 13px;
+}
+
+.home-schedule:empty
+{
+   display: none;
+}
+
+.home-schedule li
+{
+   display: grid;
+   grid-template-columns: minmax( 0, 1fr ) auto;
+   gap: 2px 10px;
+}
+
+.home-schedule .home-mono
+{
+   grid-column: 1 / -1;
+   font-size: 12px;
+   color: var(--color-chat-text-secondary);
+}
+
 /* NOTE: The fullest rooms as bars - amber filling, red full. */
 .home-room-bars
 {
