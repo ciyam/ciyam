@@ -212,6 +212,17 @@ check( "and exactly what is counted", hp.problem_lines( with_failed ).lines.leng
  hp.log_problems( with_failed ).errors + hp.log_problems( with_failed ).warnings );
 check( "no start read - every problem line read", hp.problem_lines( server_log.slice( 3 ) ).lines.length, 3 );
 check( "in words - both", hp.log_problems_text( hp.log_problems( server_log ) ), "2 errors and 1 warning since the restart" );
+
+// NOTE: An unlock with a key - the line as the rebuilt node wrote it, 2026-10-15.
+var unlocked_log = server_log.concat( [ "[2026-10-15 10:14:35] [000001] [general] *** system identity unlock occurred ***" ] );
+check( "an unlock with a key since the restart - when, by the node's clock", hp.last_key_unlock( unlocked_log ),
+ { time: "2026-10-15 10:14:35", this_run: true } );
+check( "- one before the last restart", hp.last_key_unlock( unlocked_log.concat( [ server_log[ 2 ] ] ) ), { time: "2026-10-15 10:14:35", this_run: false } );
+check( "- none read", hp.last_key_unlock( server_log ), null );
+check( "- in words", [ hp.key_unlock_text( hp.last_key_unlock( unlocked_log ) ),
+ hp.key_unlock_text( { time: "2026-10-15 10:14:35", this_run: false } ), hp.key_unlock_text( null ) ],
+ [ "Unlocked with a key since the last restart at 2026-10-15 10:14 (the node's clock). Which key is never recorded - if no one here"
+ + " used one, someone else has one.", "Last unlocked with a key at 2026-10-15 10:14 (the node's clock), before the last restart.", "" ] );
 check( "in words - none", hp.log_problems_text( { errors: 0, warnings: 0, since_start: true } ), "No errors or warnings since the restart" );
 check( "in words - one, no start read", hp.log_problems_text( { errors: 1, warnings: 0, since_start: false } ), "1 error in the log's latest lines" );
 

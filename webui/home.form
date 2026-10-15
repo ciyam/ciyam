@@ -482,6 +482,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   <section class="home-card" aria-label="Unlock keys">
                      <h2>Unlock keys</h2>
                      <p class="home-note home-empty" id="overview_keys_line"></p>
+                     <p class="home-note" id="overview_unlock_line" hidden></p>
                      <div class="home-card-actions">
                         <a href="#keys" class="chat-btn" id="overview_make_key">Make a key</a>
                      </div>
@@ -539,6 +540,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   </div>
                   <p class="home-health-line" id="health_secure_line"></p>
                   <p class="home-health-line" id="overview_keys_note"></p>
+                  <p class="home-health-line" id="health_unlock_line" hidden></p>
                   <div class="home-card-actions">
                      <a href="#keys" class="chat-btn chat-btn--primary" id="health_make_key">Make a key</a>
                   </div>

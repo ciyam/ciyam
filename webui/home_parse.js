@@ -326,6 +326,44 @@ function parse_secure( reply )
    return ( ( value === "" ) || ( value === "[okay]" ) ) ? false : null;
 }
 
+// NOTE: The node's last unlock with a key, from the server log - Ian's "*** system identity unlock occurred ***" ("ef17cb98",
+// 2026-10-15), which key never said. The newest one among the lines read: its time as the log has it (the node's own clock,
+// not UTC), and whether it came after the last "server starting" - this run unlocked with a key. null when none was read.
+function last_key_unlock( lines )
+{
+   var found = null;
+
+   ( lines || [ ] ).forEach( function( line )
+   {
+      if( /\]\s*server starting\b/.test( line ) )
+      {
+         if( found )
+            found.this_run = false;
+      }
+      else if( /\*\*\* system identity unlock occurred \*\*\*/.test( line ) )
+         found = { time: log_line_parts( line ).time, this_run: true };
+   } );
+
+   return found;
+}
+
+// NOTE: Said on Health's identity card and under the Overview's keys - a fact, not a problem: the first unlock after every
+// restart is one, and most are the owner's own. "" when none was read.
+function key_unlock_text( unlock )
+{
+   if( !unlock )
+      return "";
+
+   var at = unlock.time.replace( /:\d\d$/, "" );
+   var when = ( at !== "" ) ? " at " + at + " (the node's clock)" : "";
+
+   if( !unlock.this_run )
+      return "Last unlocked with a key" + when + ", before the last restart.";
+
+   return "Unlocked with a key since the last restart" + when + ". Which key is never recorded - if no one here used one, someone"
+    + " else has one.";
+}
+
 // NOTE: The unlock keys the node holds, as admin's Overview says it - each is used up when it unlocks the node.
 function keys_note( count )
 {
@@ -1094,6 +1132,8 @@ if( typeof module !== "undefined" )
       log_options: log_options,
       people_note: people_note,
       keys_note: keys_note,
+      last_key_unlock: last_key_unlock,
+      key_unlock_text: key_unlock_text,
       key_error_text: key_error_text,
       people_waiting_text: people_waiting_text,
       log_line_kind: log_line_kind,

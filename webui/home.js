@@ -2227,6 +2227,8 @@ async function load_overview( )
 
    var problems = show_problems( server );
 
+   show_key_unlock( server ? last_key_unlock( server ) : null );
+
    // NOTE: Who is connected, what runs by itself, and where the node listens - allowed admin on any node (Ian, "136d4815").
    var sessions = await ask_node( c_home_sessions_request );
    var schedule = await ask_node( c_home_schedule_request );
@@ -2431,6 +2433,19 @@ function show_connection( )
       set_health_pill( "health_connection_pill", "ok", "OK" );
    else
       set_health_pill( "health_connection_pill", "quiet", "Not reported" );
+}
+
+// NOTE: The last unlock with a key, from the server log - Health's identity card and the Overview's keys ("key_unlock_text( )").
+function show_key_unlock( unlock )
+{
+   var text = key_unlock_text( unlock );
+
+   [ "health_unlock_line", "overview_unlock_line" ].forEach( function( id )
+   {
+      set_text( id, text );
+
+      document.getElementById( id ).hidden = ( text === "" );
+   } );
 }
 
 // NOTE: The identity and its unlock keys - Health's card, and the Overview's quick action.
@@ -3718,6 +3733,8 @@ function forget_admin( )
     "health_identity_pill", "health_connection_pill", "health_log_pill", "health_rooms_pill", "health_node_pill", "sessions_line",
     "health_sessions_pill", "health_schedule_pill", "health_listening_pill", "stat_sessions_note" ]
     .forEach( function( id ) { set_text( id, "" ); } );
+
+   show_key_unlock( null );
 
    // NOTE: The Overview's sessions figure back as the form has it - waiting, not "Not reported" - and the table shut.
    document.getElementById( "stat_sessions_unit" ).hidden = false;
