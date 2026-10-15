@@ -728,6 +728,7 @@ function health_heading( issues )
 // "ntfy_topic" and "ntfy_send"), so a development node only until he lets admin ask for them on any node. The title is
 // quoted whole - quoted after the "=" it is cut short and the request times out (2026-10-07).
 const c_home_ntfy_topic_request = "ntfy_topic";
+const c_home_ntfy_test_request = "ntfy_send \"-title=Test alert\" -tags=white_check_mark \"From Home - this phone gets the node alerts.\"";
 
 // ====================================================================
 // Health - from the commands Ian allowed admin on any node (2026-10-14, "136d4815")
@@ -867,7 +868,6 @@ function parse_listeners( text )
 
    return listeners;
 }
-const c_home_ntfy_test_request = "ntfy_send \"-title=Test alert\" -tags=white_check_mark \"From Home - this phone gets the node alerts.\"";
 
 // NOTE: How the ntfy server's address looks, for the box it is typed into - the machine this page came from, on ntfy's
 // port beside it. Only an example: where ntfy runs is the owner's to say.

@@ -3716,8 +3716,13 @@ function forget_admin( )
    [ "log_status", "stat_people_note", "overview_people", "overview_keys_note", "connection_heading", "connection_cipher", "attention_heading",
     "overview_keys_line", "health_secure_line", "health_state", "health_uptime", "health_version", "health_kind", "problems_latest",
     "health_identity_pill", "health_connection_pill", "health_log_pill", "health_rooms_pill", "health_node_pill", "sessions_line",
-    "health_sessions_pill", "health_schedule_pill", "health_listening_pill", "stat_sessions", "stat_sessions_note" ]
+    "health_sessions_pill", "health_schedule_pill", "health_listening_pill", "stat_sessions_note" ]
     .forEach( function( id ) { set_text( id, "" ); } );
+
+   // NOTE: The Overview's sessions figure back as the form has it - waiting, not "Not reported" - and the table shut.
+   document.getElementById( "stat_sessions_unit" ).hidden = false;
+   document.getElementById( "stat_sessions_value" ).classList.remove( "home-stat-value--quiet" );
+   document.getElementById( "sessions_wrap" ).hidden = true;
 
    [ "attention_card", "attention_rest", "well_card" ].forEach( function( id ) { document.getElementById( id ).hidden = true; } );
 
@@ -3731,6 +3736,7 @@ function forget_admin( )
 
    set_text( "stat_people", "…" );
    set_text( "stat_uptime", "…" );
+   set_text( "stat_sessions", "…" );
 }
 
 // NOTE: Signing out of Home signs every app it opened out too - they were on its session (the design's
