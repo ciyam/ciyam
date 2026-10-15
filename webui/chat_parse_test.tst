@@ -638,6 +638,10 @@ ok   in time order - by unique, a shared one as it came
 ok   the Admin room read whole when only its pinned came back - nothing new among them
 ok   the strip shut for a room, then open again - the others kept
 ok   Up edits the newest of your own - others' and nothing to edit passed over
+ok   a message edited to spaces - deleted, public or private (Ian, 2026-10-15)
+ok   - an ordinary one carries no deleted mark
+ok   deleting - an edit to two spaces, private with its "!"
+ok   - not pinned, nor announced
 ok   pinning - an edit to a single space
 ok   who may pin - their own ordinary messages only
 ok   the ninth pin refused - said plainly

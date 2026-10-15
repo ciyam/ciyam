@@ -407,6 +407,7 @@ http://www.opensource.org/licenses/mit-license.php.
          </span>
          <button type="button" class="chat-message-edit" hidden>edit</button>
          <button type="button" class="chat-message-pin" hidden>pin</button>
+         <button type="button" class="chat-message-delete" hidden>delete</button>
       </span>
    </div>
 </template>

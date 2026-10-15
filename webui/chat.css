@@ -1582,7 +1582,8 @@ button.chat-avatar:hover
 }
 
 .chat-message-edit,
-.chat-message-pin
+.chat-message-pin,
+.chat-message-delete
 {
    opacity: 0;
    border: 0;
@@ -1595,9 +1596,24 @@ button.chat-avatar:hover
 }
 
 .chat-message.is-own:hover .chat-message-edit,
-.chat-message.is-own:hover .chat-message-pin
+.chat-message.is-own:hover .chat-message-pin,
+.chat-message.is-own:hover .chat-message-delete,
+.chat-message-delete.is-armed
 {
    opacity: 1;
+}
+
+/* NOTE: The first click arms it, as Decline does - the second deletes. */
+.chat-message-delete.is-armed
+{
+   color: var(--color-chat-critical-text);
+}
+
+/* NOTE: A message edited to spaces - deleted (Ian, 2026-10-15): said so, quietly, where it was. */
+.chat-message.is-deleted .chat-message-body
+{
+   font-style: italic;
+   color: var(--color-chat-text-faint);
 }
 
 /* NOTE: A room at its most pinned - the pin is there, but says why it cannot be used. */

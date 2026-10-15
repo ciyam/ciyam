@@ -292,6 +292,11 @@ function parse_message_line( line )
    if( pinned )
       entry.pinned = true;
 
+   // NOTE: Only spaces - deleted (Ian, 2026-10-15): there is no deleting yet, so a message is edited to spaces, which the
+   // node takes (a new one of only spaces it refuses).
+   if( entry.text.trim( ) === "" )
+      entry.deleted = true;
+
    return entry;
 }
 
@@ -1520,7 +1525,7 @@ function pending_announcements( messages, dismissed )
 
    return ( messages || [ ] ).filter( function( message )
    {
-      return message && ( message.kind === c_kind_chat ) && ( message.sender === c_announcer )
+      return message && ( message.kind === c_kind_chat ) && ( message.sender === c_announcer ) && !message.deleted
        && ( gone.indexOf( message.unique ) < 0 );
    } ).sort( function( a, b ) { return Number( b.unique ) - Number( a.unique ); } );
 }
@@ -1810,7 +1815,14 @@ function pin_options( unique )
 
 function can_pin( entry, me )
 {
-   return !!entry && ( entry.kind === c_kind_chat ) && ( entry.sender === me ) && !entry.private && ( me !== "" );
+   return !!entry && ( entry.kind === c_kind_chat ) && ( entry.sender === me ) && !entry.private && !entry.deleted && ( me !== "" );
+}
+
+// NOTE: Deleting one's own message - an edit to two spaces, public or private ("edit_for_value( )"); a single space would
+// pin it instead (Ian, 2026-10-15).
+function delete_options( unique, is_private )
+{
+   return "for=" + edit_for_value( unique, is_private ) + ";text=  ";
 }
 
 // NOTE: The node's refusals of a pin, said plainly - anything else as it came.
@@ -2472,6 +2484,7 @@ if( typeof module !== "undefined" )
       last_editable: last_editable,
       later_start_point: later_start_point,
       pin_options: pin_options,
+      delete_options: delete_options,
       can_pin: can_pin,
       pin_error_text: pin_error_text,
       pinned_signature: pinned_signature,

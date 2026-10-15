@@ -1196,6 +1196,14 @@ check( "the strip shut for a room, then open again - the others kept", [ cp.with
 check( "Up edits the newest of your own - others' and nothing to edit passed over", [ cp.last_editable( [ { unique: "1", editable: true, text: "first" },
  { unique: "2", editable: true, text: "second" }, { unique: "3", editable: false, text: "theirs" } ] ).unique, cp.last_editable( [ { unique: "4", editable: false,
  text: "theirs" } ] ), cp.last_editable( [ ] ), cp.last_editable( [ { unique: "5", editable: true, text: "  " } ] ) ], [ "2", null, null, null ] );
+check( "a message edited to spaces - deleted, public or private (Ian, 2026-10-15)", [ cp.parse_message_line( "1792032681000 admin*    " ),
+ cp.parse_message_line( "1792032682000 admin* !  " ).deleted ], [ { kind: "chat", unique: "1792032681000", sender: "admin", edited: true, private: false,
+ text: "  ", deleted: true }, true ] );
+check( "- an ordinary one carries no deleted mark", "deleted" in cp.parse_message_line( "1792032683000 admin  still here" ), false );
+check( "deleting - an edit to two spaces, private with its \"!\"", [ cp.delete_options( "1792032681000", false ), cp.delete_options( "1792032682000", true ) ],
+ [ "for=1792032681000;text=  ", "for=!1792032682000;text=  " ] );
+check( "- not pinned, nor announced", [ cp.can_pin( cp.parse_message_line( "1792032681000 admin*    " ), "admin" ),
+ cp.pending_announcements( [ cp.parse_message_line( "1792032681000 admin*    " ) ], [ ] ).length ], [ false, 0 ] );
 check( "pinning - an edit to a single space", cp.pin_options( "1791951506000" ), "for=1791951506000;text= " );
 var own = cp.parse_message_line( "1791951508000 admin  mine" );
 check( "who may pin - their own ordinary messages only", [ cp.can_pin( own, "admin" ), cp.can_pin( own, "verify-a" ),

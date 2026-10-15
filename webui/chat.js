@@ -3258,7 +3258,10 @@ function build_message( entry )
    name.textContent = entry.sender;
    name.style.color = "var(--color-sender-" + sender_colour_index( entry.sender ) + ")";
 
-   row.querySelector( ".chat-message-body" ).textContent = entry.text;
+   row.querySelector( ".chat-message-body" ).textContent = entry.deleted ? "Message deleted" : entry.text;
+
+   // NOTE: Deleted - nothing left to edit, pin or delete (Ian, 2026-10-15).
+   row.classList.toggle( "is-deleted", !!entry.deleted );
 
    if( entry.edited )
    {
@@ -3284,7 +3287,7 @@ function build_message( entry )
 
    // NOTE: Private messages too, since 2026-09-28 - the edit says it is private
    // ("edit_for_value( )"), and the server keeps it so.
-   if( entry.sender === ciyam.username )
+   if( ( entry.sender === ciyam.username ) && !entry.deleted )
    {
       var edit = row.querySelector( ".chat-message-edit" );
 
@@ -3312,7 +3315,65 @@ function build_message( entry )
       pin.addEventListener( "click", function( event ) { do_toggle_pin( event.currentTarget.dataset.unique ); } );
    }
 
+   // NOTE: Delete - the sender's own, public or private: an edit to two spaces ("delete_options( )"), two clicks as Decline
+   // is, since what was said is gone (Ian's idea, 2026-10-15).
+   if( ( entry.kind === "chat" ) && ( entry.sender === ciyam.username ) && !entry.deleted )
+   {
+      var remove = row.querySelector( ".chat-message-delete" );
+
+      remove.hidden = false;
+      remove.dataset.unique = entry.unique;
+      remove.dataset.private = entry.private ? "1" : "";
+      remove.title = "Delete it - for everyone; click again to confirm";
+
+      remove.addEventListener( "click", function( event ) { do_delete_message( event.currentTarget ); } );
+   }
+
    return node;
+}
+
+// NOTE: The first click arms it for five seconds - "delete?" - and the second sends.
+function do_delete_message( button )
+{
+   if( !button.classList.contains( "is-armed" ) )
+   {
+      button.classList.add( "is-armed" );
+      button.textContent = "delete?";
+
+      window.setTimeout( function( )
+      {
+         button.classList.remove( "is-armed" );
+         button.textContent = "delete";
+      }, 5000 );
+
+      return;
+   }
+
+   var room = g_room;
+   var unique = button.dataset.unique;
+   var is_private = ( button.dataset.private === "1" );
+
+   button.disabled = true;
+
+   serialised( function( )
+   {
+      return ciyam.create_message( room, delete_options( unique, is_private ), function( response )
+      {
+         button.disabled = false;
+
+         if( is_error_response( response ) )
+         {
+            if( !is_timeout_response( response ) )
+               show_alert( error_text( response ), "is-error", true );
+
+            return;
+         }
+
+         // NOTE: An edit rewrites the line in place, so the room is read whole again - as after an edit.
+         if( room === g_room )
+            load_messages( "from=0", true );
+      } );
+   } );
 }
 
 // ====================================================================
@@ -3434,7 +3495,7 @@ function render_pinned( )
       when.textContent = day_label( message.unique ) + " " + unique_to_time( message.unique ).substring( 0, 5 );
       when.title = unique_to_full( message.unique );
 
-      node.querySelector( ".chat-pinned-text" ).textContent = message.text;
+      node.querySelector( ".chat-pinned-text" ).textContent = message.deleted ? "Message deleted" : message.text;
 
       var open = node.querySelector( ".chat-pinned-open" );
 
