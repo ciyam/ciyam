@@ -9250,9 +9250,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_system_web_sessions )
       {
+         bool full = has_parm_val( parameters, c_cmd_ciyam_session_system_web_sessions_full );
+
          ostringstream osstr;
 
-         dump_session_info( osstr );
+         dump_session_info( osstr, full );
 
          response = osstr.str( );
       }
