@@ -1,0 +1,310 @@
+/* Copyright (c) 2026 CIYAM Developers
+ *
+ * Distributed under the MIT/X11 software license, please refer to the file license.txt
+ * in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+ */
+
+/* ====================================================================
+   Formatting - colour and style in messages (Ian, 2026-10-15).
+
+   Ian's 16 text colours and 8 backgrounds ("ansi.cin"), each tuned to
+   read on the chat's light and dark backgrounds - "K" (black) and "W"
+   (white) follow the theme so neither disappears. Then the format bar,
+   its colour palette and the preview above the message box.
+   ==================================================================== */
+
+:root
+{
+   --color-format-K: #1b1f2a;  --color-format-LK: #7b84a0;
+   --color-format-R: #d13a3a;  --color-format-LR: #ec5f5f;
+   --color-format-G: #23883f;  --color-format-LG: #3aa85a;
+   --color-format-O: #b86e00;  --color-format-LO: #d98f14;
+   --color-format-A: #2563d9;  --color-format-LA: #4f8df5;
+   --color-format-P: #9c3bb5;  --color-format-LP: #bb63d4;
+   --color-format-C: #0e8a9a;  --color-format-LC: #18aabd;
+   --color-format-W: #6a7385;  --color-format-LW: #98a1b2;
+
+   --color-format-OK: #3d4553;  --color-format-on-OK: #ffffff;
+   --color-format-OR: #ffdcdc;
+   --color-format-OG: #d8f2df;
+   --color-format-OO: #ffeac7;
+   --color-format-OA: #dbe7ff;
+   --color-format-OP: #f2dcf8;
+   --color-format-OC: #d3f3f6;
+   --color-format-OW: #eef0f5;
+}
+
+@media (prefers-color-scheme: dark)
+{
+   :root
+   {
+      --color-format-K: #9aa3b5;  --color-format-LK: #b6bdcc;
+      --color-format-R: #ff6b6b;  --color-format-LR: #ff9d9d;
+      --color-format-G: #57c46f;  --color-format-LG: #8be09d;
+      --color-format-O: #f0a838;  --color-format-LO: #ffc977;
+      --color-format-A: #6a9cff;  --color-format-LA: #9cbcff;
+      --color-format-P: #cf86e6;  --color-format-LP: #e4b0f2;
+      --color-format-C: #3cc6d6;  --color-format-LC: #7ce0ec;
+      --color-format-W: #eef0f5;  --color-format-LW: #ffffff;
+
+      --color-format-OK: #000000;  --color-format-on-OK: #eef0f5;
+      --color-format-OR: #4d1c1c;
+      --color-format-OG: #173d22;
+      --color-format-OO: #4a3410;
+      --color-format-OA: #1f3566;
+      --color-format-OP: #3d1f47;
+      --color-format-OC: #123f45;
+      --color-format-OW: #3d4553;
+   }
+}
+
+[data-theme="dark"]
+{
+   --color-format-K: #9aa3b5;  --color-format-LK: #b6bdcc;
+   --color-format-R: #ff6b6b;  --color-format-LR: #ff9d9d;
+   --color-format-G: #57c46f;  --color-format-LG: #8be09d;
+   --color-format-O: #f0a838;  --color-format-LO: #ffc977;
+   --color-format-A: #6a9cff;  --color-format-LA: #9cbcff;
+   --color-format-P: #cf86e6;  --color-format-LP: #e4b0f2;
+   --color-format-C: #3cc6d6;  --color-format-LC: #7ce0ec;
+   --color-format-W: #eef0f5;  --color-format-LW: #ffffff;
+
+   --color-format-OK: #000000;  --color-format-on-OK: #eef0f5;
+   --color-format-OR: #4d1c1c;
+   --color-format-OG: #173d22;
+   --color-format-OO: #4a3410;
+   --color-format-OA: #1f3566;
+   --color-format-OP: #3d1f47;
+   --color-format-OC: #123f45;
+   --color-format-OW: #3d4553;
+}
+
+[data-theme="light"]
+{
+   --color-format-K: #1b1f2a;  --color-format-LK: #7b84a0;
+   --color-format-R: #d13a3a;  --color-format-LR: #ec5f5f;
+   --color-format-G: #23883f;  --color-format-LG: #3aa85a;
+   --color-format-O: #b86e00;  --color-format-LO: #d98f14;
+   --color-format-A: #2563d9;  --color-format-LA: #4f8df5;
+   --color-format-P: #9c3bb5;  --color-format-LP: #bb63d4;
+   --color-format-C: #0e8a9a;  --color-format-LC: #18aabd;
+   --color-format-W: #6a7385;  --color-format-LW: #98a1b2;
+
+   --color-format-OK: #3d4553;  --color-format-on-OK: #ffffff;
+   --color-format-OR: #ffdcdc;
+   --color-format-OG: #d8f2df;
+   --color-format-OO: #ffeac7;
+   --color-format-OA: #dbe7ff;
+   --color-format-OP: #f2dcf8;
+   --color-format-OC: #d3f3f6;
+   --color-format-OW: #eef0f5;
+}
+
+/* ---- the words, as drawn ---- */
+
+.chat-fmt-b { font-weight: 700; }
+.chat-fmt-i { font-style: italic; }
+.chat-fmt-u { text-decoration-line: underline; }
+.chat-fmt-s { text-decoration-line: line-through; }
+.chat-fmt-u.chat-fmt-s { text-decoration-line: underline line-through; }
+
+.chat-fg-K { color: var(--color-format-K); }   .chat-fg-LK { color: var(--color-format-LK); }
+.chat-fg-R { color: var(--color-format-R); }   .chat-fg-LR { color: var(--color-format-LR); }
+.chat-fg-G { color: var(--color-format-G); }   .chat-fg-LG { color: var(--color-format-LG); }
+.chat-fg-O { color: var(--color-format-O); }   .chat-fg-LO { color: var(--color-format-LO); }
+.chat-fg-A { color: var(--color-format-A); }   .chat-fg-LA { color: var(--color-format-LA); }
+.chat-fg-P { color: var(--color-format-P); }   .chat-fg-LP { color: var(--color-format-LP); }
+.chat-fg-C { color: var(--color-format-C); }   .chat-fg-LC { color: var(--color-format-LC); }
+.chat-fg-W { color: var(--color-format-W); }   .chat-fg-LW { color: var(--color-format-LW); }
+
+.chat-bg-OK, .chat-bg-OR, .chat-bg-OG, .chat-bg-OO, .chat-bg-OA, .chat-bg-OP, .chat-bg-OC, .chat-bg-OW
+{
+   padding: 0 2px;
+   border-radius: 3px;
+   -webkit-box-decoration-break: clone;
+   box-decoration-break: clone;
+}
+
+.chat-bg-OK { background: var(--color-format-OK); }
+.chat-bg-OK:not([class*="chat-fg-"]) { color: var(--color-format-on-OK); }
+.chat-bg-OR { background: var(--color-format-OR); }
+.chat-bg-OG { background: var(--color-format-OG); }
+.chat-bg-OO { background: var(--color-format-OO); }
+.chat-bg-OA { background: var(--color-format-OA); }
+.chat-bg-OP { background: var(--color-format-OP); }
+.chat-bg-OC { background: var(--color-format-OC); }
+.chat-bg-OW { background: var(--color-format-OW); }
+
+/* ---- the preview above the message box ---- */
+
+.chat-format-preview
+{
+   margin-bottom: 10px;
+   padding: 8px 12px 10px;
+   border: 1px solid var(--color-chat-border);
+   border-radius: 10px;
+   background: var(--color-chat-bg);
+}
+
+.chat-format-preview-body
+{
+   max-height: 9.5em;
+   overflow-y: auto;
+   white-space: pre-wrap;
+   overflow-wrap: anywhere;
+   color: var(--color-chat-text);
+}
+
+/* ---- the format bar - floating over a selection, or docked above the box on a phone ---- */
+
+.chat-format-bar
+{
+   display: flex;
+   gap: 2px;
+   padding: 4px;
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-border);
+   border-radius: 10px;
+   box-shadow: var(--shadow-screen);
+   z-index: 30;
+}
+
+.chat-format-bar.is-floating
+{
+   position: absolute;
+}
+
+.chat-format-bar.is-docked
+{
+   margin-bottom: 8px;
+   justify-content: space-between;
+   box-shadow: none;
+   background: var(--color-chat-bg-raised);
+}
+
+.chat-format-bar.is-docked .chat-format-tool
+{
+   flex: 1;
+}
+
+.chat-format-tool
+{
+   min-width: 34px;
+   height: 32px;
+   display: grid;
+   place-items: center;
+   border: 0;
+   border-radius: 7px;
+   background: transparent;
+   color: var(--color-chat-text-strong);
+   cursor: pointer;
+   font: 600 15px/1 var(--font-family-chat);
+}
+
+.chat-format-tool:hover,
+.chat-format-tool[aria-pressed="true"],
+.chat-format-tool[aria-expanded="true"]
+{
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+}
+
+.chat-format-tool:focus-visible
+{
+   outline: 2px solid var(--color-chat-accent);
+   outline-offset: 1px;
+}
+
+.chat-format-italic
+{
+   font-family: Georgia, "Times New Roman", serif;
+   font-style: italic;
+}
+
+.chat-format-sep
+{
+   flex: none;
+   width: 1px;
+   margin: 5px 3px;
+   background: var(--color-chat-border);
+}
+
+.chat-format-palette
+{
+   position: absolute;
+   z-index: 31;
+   width: 252px;
+   max-width: calc(100% - 8px);
+   padding: 10px;
+   display: grid;
+   gap: 6px;
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-border);
+   border-radius: 10px;
+   box-shadow: var(--shadow-screen);
+}
+
+.chat-format-palette-label
+{
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 700;
+   letter-spacing: 0.04em;
+   text-transform: uppercase;
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-format-swatches
+{
+   display: grid;
+   grid-template-columns: repeat(8, 1fr);
+   gap: 4px;
+}
+
+.chat-format-swatch
+{
+   height: 28px;
+   border-radius: 6px;
+   border: 1px solid var(--color-chat-border);
+   background: var(--color-chat-bg);
+   color: var(--color-chat-text);
+   cursor: pointer;
+   font: 600 10px/1 var(--font-family-chat-mono);
+}
+
+.chat-format-swatch:focus-visible
+{
+   outline: 2px solid var(--color-chat-accent);
+   outline-offset: 1px;
+}
+
+.chat-format-palette-hint
+{
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-faint);
+}
+
+/* NOTE: "Aa" opens the docked bar - on a phone, where the phone's own menu comes up over a selection. A computer has the
+   floating bar instead. */
+.chat-format-toggle
+{
+   display: none;
+   flex: none;
+   font-weight: 700;
+}
+
+.chat-format-toggle[aria-pressed="true"]
+{
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+   border-color: var(--color-chat-accent);
+}
+
+@media (pointer: coarse)
+{
+   .chat-format-toggle
+   {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+   }
+}

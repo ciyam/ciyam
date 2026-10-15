@@ -175,6 +175,8 @@ function chat( )
    // NOTE: Typing, and a change of width that re-wraps the text, both resize the composer.
    document.getElementById( "composer_input" ).addEventListener( "input", on_composer_input );
 
+   bind_format_bar( );
+
    window.addEventListener( "resize", resize_composer );
 
    watch_drawer_widths( );
@@ -2225,7 +2227,8 @@ function render_held( )
       var held = document.createElement( "div" );
 
       held.className = "chat-held-message";
-      held.textContent = text;
+
+      draw_formatted( held, format_shorthand_pieces( text ) );
 
       host.appendChild( held );
    } );
@@ -2275,7 +2278,7 @@ function send_held( room, pending )
 
          serialised( function( )
          {
-            return ciyam.create_message( room, "text=" + escape_message_text( text ), function( response )
+            return ciyam.create_message( room, "text=" + escape_message_text( shorthand_to_ansi( text ) ), function( response )
             {
                answered = true;
 
@@ -2482,7 +2485,7 @@ function build_announcement_card( text, when, when_title, is_private )
    stamp.textContent = when;
    stamp.title = when_title || "";
 
-   node.querySelector( ".chat-announcement-text" ).textContent = text;
+   draw_formatted( node.querySelector( ".chat-announcement-text" ), format_pieces( text ) );
 
    // NOTE: One admin sent to named people, rather than to everyone.
    if( is_private )
@@ -2653,7 +2656,7 @@ function update_announcement_preview( )
 
    var others = g_recipients.filter( function( name ) { return name !== ciyam.username; } );
 
-   var card = build_announcement_card( text, "now", "", others.length > 0 );
+   var card = build_announcement_card( shorthand_to_ansi( text ), "now", "", others.length > 0 );
 
    card.querySelector( ".chat-announcement-ok" ).hidden = true;
 
@@ -3268,7 +3271,15 @@ function build_message( entry )
    name.textContent = entry.sender;
    name.style.color = "var(--color-sender-" + sender_colour_index( entry.sender ) + ")";
 
-   row.querySelector( ".chat-message-body" ).textContent = entry.deleted ? "Message deleted" : entry.text;
+   var body = row.querySelector( ".chat-message-body" );
+
+   // NOTE: Colour and style drawn ("draw_formatted( )"); the text as stored kept, for the check after a time-out.
+   if( entry.deleted )
+      body.textContent = "Message deleted";
+   else
+      draw_formatted( body, format_pieces( entry.text ) );
+
+   body.dataset.text = entry.text;
 
    // NOTE: Deleted - nothing left to edit, pin or delete (Ian, 2026-10-15).
    row.classList.toggle( "is-deleted", !!entry.deleted );
@@ -3479,7 +3490,7 @@ function render_pinned( )
       line.title = g_pinned_expanded ? "Hide the pinned messages" : "Show the pinned messages";
 
       line.querySelector( ".chat-pinned-count" ).textContent = g_pinned.length + " pinned";
-      line.querySelector( ".chat-pinned-first" ).textContent = g_pinned_expanded ? "" : g_pinned[ 0 ].text;
+      line.querySelector( ".chat-pinned-first" ).textContent = g_pinned_expanded ? "" : strip_format( g_pinned[ 0 ].text );
       line.querySelector( ".chat-pinned-toggle" ).textContent = g_pinned_expanded ? "Hide" : "Show";
 
       line.addEventListener( "click", function( )
@@ -3510,7 +3521,10 @@ function render_pinned( )
       when.textContent = day_label( message.unique ) + " " + unique_to_time( message.unique ).substring( 0, 5 );
       when.title = unique_to_full( message.unique );
 
-      node.querySelector( ".chat-pinned-text" ).textContent = message.deleted ? "Message deleted" : message.text;
+      if( message.deleted )
+         node.querySelector( ".chat-pinned-text" ).textContent = "Message deleted";
+      else
+         draw_formatted( node.querySelector( ".chat-pinned-text" ), format_pieces( message.text ) );
 
       var open = node.querySelector( ".chat-pinned-open" );
 
@@ -4083,12 +4097,380 @@ async function do_change_posting( )
 }
 
 // ====================================================================
+// Formatting - colour and style (Ian, 2026-10-15; "Message Formatting Design")
+// ====================================================================
+
+// NOTE: Ian's colour letters, named for the palette's buttons - "ansi.cin" calls blue azure and yellow orange.
+const c_format_colour_names = { K: "black", R: "red", G: "green", O: "orange", A: "azure", P: "purple", C: "cyan", W: "white" };
+
+// NOTE: The bar on a phone - opened by "Aa" and kept open; on a computer it floats over selected words instead.
+var g_format_docked = false;
+
+// NOTE: The selected words in the box, kept - a tap on the bar can take the focus, and the selection with it, on a phone.
+var g_format_selection = { start: 0, end: 0 };
+
+// NOTE: A message's words with their colour and style - a span each run ("format_pieces( )"), the words always as text and
+// the class names only from Ian's codes, never from the message.
+function draw_formatted( element, pieces )
+{
+   element.replaceChildren( );
+
+   pieces.forEach( function( piece )
+   {
+      var style = piece.style;
+      var classes = [ ];
+
+      [ "b", "i", "s", "u" ].forEach( function( key ) { if( style[ key ] ) classes.push( "chat-fmt-" + key ); } );
+
+      if( style.fg )
+         classes.push( "chat-fg-" + style.fg );
+
+      if( style.bg )
+         classes.push( "chat-bg-" + style.bg );
+
+      if( classes.length === 0 )
+      {
+         element.appendChild( document.createTextNode( piece.text ) );
+
+         return;
+      }
+
+      var span = document.createElement( "span" );
+
+      span.className = classes.join( " " );
+      span.textContent = piece.text;
+
+      element.appendChild( span );
+   } );
+}
+
+// NOTE: The preview above the box - while what is typed holds one of Ian's codes. Not in the Admin room while its
+// announcement preview shows, which draws the colour itself.
+function update_format_preview( )
+{
+   var input = document.getElementById( "composer_input" );
+   var body = document.getElementById( "format_preview_body" );
+
+   var showing = !input.disabled && has_shorthand_codes( input.value ) && document.getElementById( "announcement_preview" ).hidden;
+
+   document.getElementById( "format_preview" ).hidden = !showing;
+
+   if( showing )
+      draw_formatted( body, format_shorthand_pieces( input.value.trim( ) ) );
+   else
+      body.replaceChildren( );
+}
+
+function format_bar_floats( )
+{
+   return !window.matchMedia( "(pointer: coarse)" ).matches;
+}
+
+function remember_format_selection( )
+{
+   var input = document.getElementById( "composer_input" );
+
+   if( document.activeElement === input )
+      g_format_selection = { start: input.selectionStart, end: input.selectionEnd };
+}
+
+// NOTE: The bar shown or not, and where - floating while words are selected in the box, or docked while "Aa" has it open.
+function update_format_bar( )
+{
+   var input = document.getElementById( "composer_input" );
+   var bar = document.getElementById( "format_bar" );
+   var palette = document.getElementById( "format_palette" );
+   var floats = format_bar_floats( );
+
+   remember_format_selection( );
+
+   bar.classList.toggle( "is-floating", floats );
+   bar.classList.toggle( "is-docked", !floats );
+
+   if( floats )
+   {
+      var focus = document.activeElement;
+      var inside = ( focus === input ) || bar.contains( focus ) || palette.contains( focus );
+
+      bar.hidden = input.disabled || !inside || ( g_format_selection.end <= g_format_selection.start );
+
+      if( !bar.hidden )
+         place_format_bar( );
+   }
+   else
+   {
+      bar.hidden = !g_format_docked;
+
+      bar.style.left = "";
+      bar.style.top = "";
+   }
+
+   if( bar.hidden )
+      close_format_palette( );
+
+   show_format_pressed( );
+}
+
+// NOTE: Where a place in the box is, from the box's top left - a hidden copy of the box holding the text up to it.
+function composer_caret_point( input, index )
+{
+   var mirror = document.createElement( "div" );
+   var style = window.getComputedStyle( input );
+
+   [ "fontFamily", "fontSize", "fontWeight", "lineHeight", "letterSpacing", "paddingTop", "paddingRight", "paddingBottom",
+    "paddingLeft", "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth", "boxSizing", "tabSize" ]
+    .forEach( function( property ) { mirror.style[ property ] = style[ property ]; } );
+
+   mirror.style.position = "absolute";
+   mirror.style.visibility = "hidden";
+   mirror.style.left = "-9999px";
+   mirror.style.top = "0";
+   mirror.style.whiteSpace = "pre-wrap";
+   mirror.style.overflowWrap = "break-word";
+   mirror.style.width = input.offsetWidth + "px";
+   mirror.textContent = input.value.slice( 0, index );
+
+   var mark = document.createElement( "span" );
+
+   mark.textContent = "\u200b";
+   mirror.appendChild( mark );
+
+   document.body.appendChild( mirror );
+
+   var point = { left: mark.offsetLeft, top: mark.offsetTop - input.scrollTop };
+
+   mirror.remove( );
+
+   return point;
+}
+
+// NOTE: Above the start of the selection, as Element's - kept inside the composer's width.
+function place_format_bar( )
+{
+   var input = document.getElementById( "composer_input" );
+   var bar = document.getElementById( "format_bar" );
+   var host = document.getElementById( "composer" ).getBoundingClientRect( );
+   var box = input.getBoundingClientRect( );
+   var point = composer_caret_point( input, g_format_selection.start );
+
+   var left = Math.max( 4, Math.min( box.left - host.left + point.left - 8, host.width - bar.offsetWidth - 4 ) );
+   var top = box.top - host.top + Math.max( point.top, 0 ) - bar.offsetHeight - 6;
+
+   bar.style.left = left + "px";
+   bar.style.top = top + "px";
+}
+
+// NOTE: Bold and the rest pressed when every selected character has them - pressing again takes them off.
+function show_format_pressed( )
+{
+   var input = document.getElementById( "composer_input" );
+   var shared = format_selection_style( input.value, g_format_selection.start, g_format_selection.end );
+
+   document.querySelectorAll( "#format_bar [data-format]" ).forEach( function( button )
+   {
+      button.setAttribute( "aria-pressed", String( !!shared[ button.dataset.format ] ) );
+   } );
+}
+
+// NOTE: A button on the selected words - they are restyled and the codes written again ("format_restyle( )"), the same
+// words still selected. Through "insertText" where the browser has it, so Ctrl+Z undoes it.
+function apply_format( change )
+{
+   var input = document.getElementById( "composer_input" );
+   var selection = ( document.activeElement === input ) ? { start: input.selectionStart, end: input.selectionEnd } : g_format_selection;
+
+   var out = format_restyle( input.value, selection.start, selection.end, change );
+
+   close_format_palette( );
+
+   if( out === null )
+      return;
+
+   var scroll = input.scrollTop;
+   var done = false;
+
+   input.focus( );
+   input.setSelectionRange( 0, input.value.length );
+
+   try
+   {
+      done = document.execCommand( "insertText", false, out.text );
+   }
+   catch( e )
+   {
+      done = false;
+   }
+
+   if( !done || ( input.value !== out.text ) )
+      input.value = out.text;
+
+   input.setSelectionRange( out.start, out.end );
+   input.scrollTop = scroll;
+
+   g_format_selection = { start: out.start, end: out.end };
+
+   on_composer_input( );
+   update_format_bar( );
+}
+
+// NOTE: The colours - Ian's 8 and 8 lighter, or his 8 backgrounds - as buttons above the bar. The same button again shuts it.
+function do_format_palette( kind )
+{
+   var button = document.getElementById( ( kind === "bg" ) ? "format_background" : "format_colour" );
+   var was_open = ( button.getAttribute( "aria-expanded" ) === "true" );
+
+   close_format_palette( );
+
+   if( was_open )
+      return;
+
+   var palette = document.getElementById( "format_palette" );
+   var swatches = document.getElementById( "format_swatches" );
+
+   var codes = ( kind === "bg" ) ? c_format_colours.map( function( c ) { return "O" + c; } )
+    : c_format_colours.concat( c_format_colours.map( function( c ) { return "L" + c; } ) );
+
+   swatches.replaceChildren( );
+
+   codes.forEach( function( code )
+   {
+      var swatch = document.createElement( "button" );
+      var name = c_format_colour_names[ code.slice( -1 ) ];
+
+      swatch.type = "button";
+      swatch.className = "chat-format-swatch " + ( ( kind === "bg" ) ? "chat-bg-" : "chat-fg-" ) + code;
+      swatch.textContent = code;
+      swatch.title = "%" + code + "%";
+      swatch.setAttribute( "aria-label", ( kind === "bg" ) ? "On " + name : ( ( code.length === 2 ) ? "Light " + name : name ) );
+
+      swatch.addEventListener( "mousedown", function( event ) { event.preventDefault( ); } );
+      swatch.addEventListener( "click", function( ) { apply_format( ( kind === "bg" ) ? { bg: code } : { fg: code } ); } );
+
+      swatches.appendChild( swatch );
+   } );
+
+   document.getElementById( "format_palette_label" ).textContent = ( kind === "bg" ) ? "Background" : "Text colour - 8, and 8 lighter";
+
+   button.setAttribute( "aria-expanded", "true" );
+
+   palette.hidden = false;
+
+   var bar = document.getElementById( "format_bar" );
+   var composer = document.getElementById( "composer" );
+
+   palette.style.left = Math.max( 4, Math.min( bar.offsetLeft + button.offsetLeft - 8, composer.clientWidth - palette.offsetWidth - 4 ) ) + "px";
+   palette.style.top = ( bar.offsetTop - palette.offsetHeight - 6 ) + "px";
+}
+
+function close_format_palette( )
+{
+   document.getElementById( "format_palette" ).hidden = true;
+
+   [ "format_colour", "format_background" ].forEach( function( id ) { document.getElementById( id ).setAttribute( "aria-expanded", "false" ); } );
+}
+
+// NOTE: "Aa" on a phone - the bar docked above the box, open until tapped again.
+function do_toggle_format_bar( )
+{
+   g_format_docked = !g_format_docked;
+
+   document.getElementById( "format_toggle" ).setAttribute( "aria-pressed", String( g_format_docked ) );
+
+   update_format_bar( );
+
+   document.getElementById( "composer_input" ).focus( );
+}
+
+// NOTE: The format keys in the box - Ctrl+B, I and U on selected words; Escape shuts the palette, then the bar. True if taken.
+function format_key( event )
+{
+   var input = document.getElementById( "composer_input" );
+
+   if( ( event.ctrlKey || event.metaKey ) && !event.shiftKey && !event.altKey )
+   {
+      var flag = { b: "b", i: "i", u: "u" }[ String( event.key ).toLowerCase( ) ];
+
+      if( flag && ( input.selectionEnd > input.selectionStart ) )
+      {
+         event.preventDefault( );
+
+         apply_format( { flag: flag } );
+
+         return true;
+      }
+   }
+
+   if( event.key === "Escape" )
+   {
+      if( !document.getElementById( "format_palette" ).hidden )
+      {
+         close_format_palette( );
+
+         return true;
+      }
+
+      if( format_bar_floats( ) && !document.getElementById( "format_bar" ).hidden )
+      {
+         input.setSelectionRange( input.selectionEnd, input.selectionEnd );
+
+         update_format_bar( );
+
+         return true;
+      }
+   }
+
+   return false;
+}
+
+function bind_format_bar( )
+{
+   var input = document.getElementById( "composer_input" );
+
+   [ "select", "keyup", "mouseup", "touchend" ].forEach( function( type )
+   {
+      input.addEventListener( type, function( ) { window.setTimeout( update_format_bar, 0 ); } );
+   } );
+
+   input.addEventListener( "scroll", function( ) { if( !document.getElementById( "format_bar" ).hidden ) update_format_bar( ); } );
+   input.addEventListener( "blur", function( ) { window.setTimeout( update_format_bar, 0 ); } );
+
+   document.addEventListener( "selectionchange", function( )
+   {
+      if( document.activeElement === input )
+         update_format_bar( );
+   } );
+
+   // NOTE: The bar's own buttons keep the focus, and so the selection, in the box.
+   document.querySelectorAll( "#format_bar button, #format_toggle" ).forEach( function( button )
+   {
+      button.addEventListener( "mousedown", function( event ) { event.preventDefault( ); } );
+   } );
+
+   document.querySelectorAll( "#format_bar [data-format]" ).forEach( function( button )
+   {
+      button.addEventListener( "click", function( ) { apply_format( { flag: button.dataset.format } ); } );
+   } );
+
+   document.querySelectorAll( "#format_bar [data-palette]" ).forEach( function( button )
+   {
+      button.addEventListener( "click", function( ) { do_format_palette( button.dataset.palette ); } );
+   } );
+
+   document.getElementById( "format_clear" ).addEventListener( "click", function( ) { apply_format( { clear: true } ); } );
+
+   window.addEventListener( "resize", function( ) { if( !document.getElementById( "format_bar" ).hidden ) update_format_bar( ); } );
+}
+
+// ====================================================================
 // Composing
 // ====================================================================
 
 function do_composer_key( event )
 {
    if( emoji_suggest_key( event ) )
+      return false;
+
+   if( format_key( event ) )
       return false;
 
    if( ( event.key === "Enter" ) && !event.shiftKey )
@@ -4186,6 +4568,7 @@ async function do_send( )
 
       resize_composer( );
       update_composer_count( );
+      update_format_preview( );
       render_held( );
 
       settle_composer( input );
@@ -4197,7 +4580,7 @@ async function do_send( )
 
    // NOTE: The server drops a lone backslash as an escape, so each is doubled to arrive as
    // typed - see "escape_message_text( )" in "chat_parse.js". Line breaks go as they are.
-   var sent = escape_message_text( text );
+   var sent = escape_message_text( shorthand_to_ansi( text ) );
 
    if( g_edit_unique !== "" )
       options = "for=" + edit_for_value( g_edit_unique, g_edit_private ) + ";text=" + sent;
@@ -4211,6 +4594,7 @@ async function do_send( )
 
    resize_composer( );
    update_announcement_preview( );
+   update_format_preview( );
 
    ciyam.error = "";
 
@@ -4220,7 +4604,7 @@ async function do_send( )
 
    // NOTE: What is needed to tell, after a time-out, whether this arrived after all - see
    // "arrived_after_timeout( )". The start point is the server's, not the browser's clock.
-   var pending = { me: ciyam.username, text: text, after: g_start_point, edit: g_edit_unique, room: g_room };
+   var pending = { me: ciyam.username, text: shorthand_to_ansi( text ), typed: text, after: g_start_point, edit: g_edit_unique, room: g_room };
 
    var timed_out = false;
 
@@ -4348,7 +4732,7 @@ const c_count_from_bytes = 2000;
 
 function message_too_long( )
 {
-   return message_bytes( document.getElementById( "composer_input" ).value.trim( ) ) > c_max_message_bytes;
+   return message_bytes( shorthand_to_ansi( document.getElementById( "composer_input" ).value.trim( ) ) ) > c_max_message_bytes;
 }
 
 function update_composer_count( )
@@ -4356,7 +4740,8 @@ function update_composer_count( )
    var input = document.getElementById( "composer_input" );
    var count = document.getElementById( "composer_count" );
 
-   var bytes = message_bytes( input.value.trim( ) );
+   // NOTE: As it is sent - Ian's codes as their escapes, which count towards the limit.
+   var bytes = message_bytes( shorthand_to_ansi( input.value.trim( ) ) );
 
    var over = ( bytes > c_max_message_bytes );
 
@@ -4373,6 +4758,7 @@ function on_composer_input( )
    update_composer_count( );
    update_emoji_suggest( );
    update_announcement_preview( );
+   update_format_preview( );
 }
 
 function begin_edit( unique, text, is_private )
@@ -4386,7 +4772,8 @@ function begin_edit( unique, text, is_private )
    g_edit_unique = unique;
    g_edit_private = !!is_private;
 
-   input.value = text;
+   // NOTE: Ian's shorthand in the box, never an escape ("ansi_to_shorthand( )").
+   input.value = ansi_to_shorthand( text );
    input.focus( );
 
    on_composer_input( );
@@ -4602,6 +4989,7 @@ function render_composer( )
 
    // NOTE: The recipients, or the room, may have changed who a preview is for.
    update_announcement_preview( );
+   update_format_preview( );
 }
 
 // ====================================================================
@@ -4894,7 +5282,7 @@ function resolve_uncertain_send( )
       return {
          unique: row.dataset.unique,
          sender: row.querySelector( ".chat-message-sender-name" ).textContent,
-         text: row.querySelector( ".chat-message-body" ).textContent
+         text: row.querySelector( ".chat-message-body" ).dataset.text || ""
       };
    } );
 
@@ -4902,7 +5290,7 @@ function resolve_uncertain_send( )
    {
       var input = document.getElementById( "composer_input" );
 
-      if( input.value.trim( ) === pending.text )
+      if( input.value.trim( ) === pending.typed )
       {
          input.value = "";
 
