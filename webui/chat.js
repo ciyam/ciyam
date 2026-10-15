@@ -4031,6 +4031,16 @@ function do_composer_key( event )
       return false;
    }
 
+   // NOTE: Up in an empty box edits your last message (Ian, 2026-10-15 - as Element does); not while editing already, nor
+   // with a modifier, so the box's own Up is untouched once anything is typed.
+   if( ( event.key === "ArrowUp" ) && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey
+    && ( event.target.value === "" ) && ( g_edit_unique === "" ) && edit_last_message( ) )
+   {
+      event.preventDefault( );
+
+      return false;
+   }
+
    // NOTE: Escape in an empty box leaves private mode - a quick way back to everyone, and
    // only when nothing typed could be lost or sent to the wrong people.
    if( ( event.key === "Escape" ) && ( g_recipients.length > 0 ) && ( event.target.value === "" ) )
@@ -4301,6 +4311,28 @@ function begin_edit( unique, text, is_private )
    document.getElementById( "composer_cancel_edit" ).hidden = false;
 
    render_composer( );
+}
+
+// NOTE: The newest of the person's own messages in the conversation, into the box to edit ("last_editable( )") - true if
+// there was one.
+function edit_last_message( )
+{
+   var rows = Array.from( document.querySelectorAll( "#message_list > [data-unique]" ) ).map( function( row )
+   {
+      var edit = row.querySelector( ".chat-message-edit" );
+
+      return { unique: row.dataset.unique, editable: ( edit !== null ) && !edit.hidden, text: edit ? edit.dataset.text : "",
+       private: !!edit && ( edit.dataset.private === "1" ) };
+   } );
+
+   var last = last_editable( rows );
+
+   if( last === null )
+      return false;
+
+   begin_edit( last.unique, last.text, last.private );
+
+   return true;
 }
 
 function do_cancel_edit( )

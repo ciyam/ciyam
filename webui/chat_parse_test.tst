@@ -637,6 +637,7 @@ ok   nothing pinned - none, as before
 ok   in time order - by unique, a shared one as it came
 ok   the Admin room read whole when only its pinned came back - nothing new among them
 ok   the strip shut for a room, then open again - the others kept
+ok   Up edits the newest of your own - others' and nothing to edit passed over
 ok   pinning - an edit to a single space
 ok   who may pin - their own ordinary messages only
 ok   the ninth pin refused - said plainly

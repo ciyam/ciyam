@@ -1193,6 +1193,9 @@ check( "the Admin room read whole when only its pinned came back - nothing new a
 check( "the strip shut for a room, then open again - the others kept", [ cp.with_pinned_shut( [ "0000004" ], "0000002", true ),
  cp.with_pinned_shut( [ "0000004", "0000002" ], "0000004", false ), cp.with_pinned_shut( [ "0000004" ], "0000004", true ),
  cp.parse_dismissed( JSON.stringify( [ "0000004", "x" ] ) ) ], [ [ "0000004", "0000002" ], [ "0000002" ], [ "0000004" ], [ "0000004" ] ] );
+check( "Up edits the newest of your own - others' and nothing to edit passed over", [ cp.last_editable( [ { unique: "1", editable: true, text: "first" },
+ { unique: "2", editable: true, text: "second" }, { unique: "3", editable: false, text: "theirs" } ] ).unique, cp.last_editable( [ { unique: "4", editable: false,
+ text: "theirs" } ] ), cp.last_editable( [ ] ), cp.last_editable( [ { unique: "5", editable: true, text: "  " } ] ) ], [ "2", null, null, null ] );
 check( "pinning - an edit to a single space", cp.pin_options( "1791951506000" ), "for=1791951506000;text= " );
 var own = cp.parse_message_line( "1791951508000 admin  mine" );
 check( "who may pin - their own ordinary messages only", [ cp.can_pin( own, "admin" ), cp.can_pin( own, "verify-a" ),
