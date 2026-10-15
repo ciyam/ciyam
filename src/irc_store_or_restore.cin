@@ -118,6 +118,8 @@ ALL_ROOMS=$OUTPUT
 @ifdef $ALL_ROOMS
 .system_variable -s=_ME @irc_names_**
 ALL_ROOMS=@strlit:$ALL_ROOMS\n$OUTPUT
+.system_variable -s=_MP @irc_names_**
+ALL_ROOMS=@strlit:$ALL_ROOMS\n$OUTPUT
 @endif
 ;
 ITEM_AFTER=
