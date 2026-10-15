@@ -649,4 +649,30 @@ ok   - a private one
 ok   - anything else as it came
 ok   - redrawn when what it shows changes
 
+== formatting ==================================================
+ok   his codes as his console sends them - bold red is bold, then red
+ok   - a '%..%' not his left as typed
+ok   - every code of his
+ok   the preview only when there is a code
+ok   a stored message drawn - a run each style
+ok   - the ends of one style each, as other clients send them
+ok   - the lighter colours and the bright backgrounds
+ok   - 256 colours and true colour passed over, numbers and all
+ok   every other escape dropped - cursor, clearing, a title, a link, a bell
+ok   - an escape cut short, and the control characters
+ok   - line breaks and tabs kept
+ok   a message with no codes - one plain run
+ok   to edit - escapes back to his shorthand, plain left alone
+ok   bold a word
+ok   - then red - his bold-red code
+ok   - red again takes it off, then bold again
+ok   bold inside red - the red put back after it
+ok   bold off the middle of bold
+ok   a selection across a code - by the words, not the codes
+ok   clear formatting on part
+ok   over several lines
+ok   nothing selected, or only codes - nothing done
+ok   the buttons pressed - what every selected character has
+ok   his own codes typed by hand - drawn the same as the bar's
+
 All checks passed.

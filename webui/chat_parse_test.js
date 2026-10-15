@@ -1216,6 +1216,57 @@ check( "- anything else as it came", cp.pin_error_text( "Error: Something else."
 check( "- redrawn when what it shows changes", [ cp.pinned_signature( pinned_read.pinned ) === cp.pinned_signature( pinned_only.pinned ),
  cp.pinned_signature( pinned_read.pinned ) === cp.pinned_signature( [ ] ) ], [ true, false ] );
 
+// NOTE: Colour and style - Ian's shorthand typed, real escapes stored and drawn (Ian, 2026-10-15; "Message Formatting Design").
+heading( "formatting" );
+
+var esc = String.fromCharCode( 27 );
+var shown_escapes = function( text ) { return String( text ).split( esc ).join( "\\e" ); };
+
+check( "his codes as his console sends them - bold red is bold, then red", shown_escapes( cp.shorthand_to_ansi( "%BR%down%N% and %LA%%OK%x%N%" ) ),
+ "\\e[1m\\e[31mdown\\e[0m and \\e[94m\\e[40mx\\e[0m" );
+check( "- a '%..%' not his left as typed", cp.shorthand_to_ansi( "100%ZZ% %r% %N" ), "100%ZZ% %r% %N" );
+check( "- every code of his", Object.keys( cp.c_format_codes ).length, 38 );
+check( "the preview only when there is a code", [ cp.has_shorthand_codes( "%I%x%N%" ), cp.has_shorthand_codes( "50% off %ZZ%" ),
+ cp.has_shorthand_codes( "" ) ], [ true, false, false ] );
+
+check( "a stored message drawn - a run each style", cp.format_pieces( esc + "[1m" + esc + "[31mdown" + esc + "[0m now " + esc + "[3m" + esc + "[44mx" ),
+ [ { text: "down", style: { b: true, fg: "R" } }, { text: " now ", style: { } }, { text: "x", style: { i: true, bg: "OA" } } ] );
+check( "- the ends of one style each, as other clients send them", cp.format_pieces( esc + "[1;4;9mabc" + esc + "[22md" + esc + "[24;29;39me" ),
+ [ { text: "abc", style: { b: true, s: true, u: true } }, { text: "d", style: { s: true, u: true } }, { text: "e", style: { } } ] );
+check( "- the lighter colours and the bright backgrounds", cp.format_pieces( esc + "[97;101mx" ), [ { text: "x", style: { fg: "LW", bg: "OR" } } ] );
+check( "- 256 colours and true colour passed over, numbers and all", cp.format_pieces( esc + "[38;5;196;1mx" + esc + "[48;2;1;2;3my" ),
+ [ { text: "xy", style: { b: true } } ] );
+check( "every other escape dropped - cursor, clearing, a title, a link, a bell", cp.strip_format( "a" + esc + "[2J" + esc + "[10;5Hb" + esc
+ + "]0;title" + String.fromCharCode( 7 ) + "c" + esc + "]8;;http://x" + esc + "\\d" + esc + "7e" + String.fromCharCode( 7 ) + "f" ), "abcdef" );
+check( "- an escape cut short, and the control characters", cp.strip_format( "a" + esc + "[" + String.fromCharCode( 8 ) + "b" + String.fromCharCode( 155 )
+ + "c" + esc ), "abc" );
+check( "- line breaks and tabs kept", cp.strip_format( "a\n\tb" ), "a\n\tb" );
+check( "a message with no codes - one plain run", cp.format_pieces( "just words" ), [ { text: "just words", style: { } } ] );
+
+check( "to edit - escapes back to his shorthand, plain left alone", [ cp.ansi_to_shorthand( cp.shorthand_to_ansi( "Hi %R%red %B%bold%N%%R% more%N% end" ) ),
+ cp.ansi_to_shorthand( "plain 50% text" ), cp.ansi_to_shorthand( esc + "[1m" + esc + "[3mx" + esc + "[0m" ) ],
+ [ "Hi %R%red %B%bold%N%%R% more%N% end", "plain 50% text", "%BI%x%N%" ] );
+
+// NOTE: The format bar - the selected words restyled and the codes written again, with "%N%" his one off code. "start" and
+// "end" are places in what is typed, codes and all, as the box gives them.
+check( "bold a word", cp.format_restyle( "The node is down", 4, 8, { flag: "b" } ), { text: "The %B%node%N% is down", start: 7, end: 11 } );
+check( "- then red - his bold-red code", cp.format_restyle( "The %B%node%N% is down", 7, 11, { fg: "R" } ).text, "The %BR%node%N% is down" );
+check( "- red again takes it off, then bold again", [ cp.format_restyle( "The %BR%node%N% is down", 8, 12, { fg: "R" } ).text,
+ cp.format_restyle( "The %B%node%N% is down", 7, 11, { flag: "b" } ).text ], [ "The %B%node%N% is down", "The node is down" ] );
+check( "bold inside red - the red put back after it", cp.format_restyle( "%R%The whole node%N%", 7, 12, { flag: "b" } ),
+ { text: "%R%The %B%whole%N%%R% node%N%", start: 10, end: 15 } );
+check( "bold off the middle of bold", cp.format_restyle( "%B%The whole node%N%", 7, 12, { flag: "b" } ).text, "%B%The %N%whole%B% node%N%" );
+check( "a selection across a code - by the words, not the codes", cp.format_restyle( "%R%The whole%N% node", 7, 20, { flag: "b" } ).text,
+ "%R%The %B%whole%N%%B% node%N%" );
+check( "clear formatting on part", cp.format_restyle( "%BR%The whole node%N%", 8, 13, { clear: true } ).text, "%BR%The %N%whole%BR% node%N%" );
+check( "over several lines", cp.format_restyle( "one\ntwo", 2, 5, { bg: "OO" } ).text, "on%OO%e\nt%N%wo" );
+check( "nothing selected, or only codes - nothing done", [ cp.format_restyle( "abc", 1, 1, { flag: "b" } ),
+ cp.format_restyle( "%R%abc", 0, 3, { flag: "b" } ) ], [ null, null ] );
+check( "the buttons pressed - what every selected character has", [ cp.format_selection_style( "%BR%The%N% x", 4, 7 ),
+ cp.format_selection_style( "%BR%The%N% x", 4, 12 ), cp.format_selection_style( "abc", 1, 1 ) ], [ { b: true, fg: "R" }, { }, { } ] );
+check( "his own codes typed by hand - drawn the same as the bar's", cp.format_shorthand_pieces( "%B%%R%x%N%y" ),
+ [ { text: "x", style: { b: true, fg: "R" } }, { text: "y", style: { } } ] );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

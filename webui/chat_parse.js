@@ -2424,10 +2424,464 @@ function is_valid_username( name )
    return ( name.indexOf( "--" ) < 0 );
 }
 
+// ====================================================================
+// Formatting - colour and style in messages (Ian, 2026-10-15; "Message Formatting Design")
+// ====================================================================
+
+// NOTE: Ian's shorthand, from his console IRC's "ansi.cin": "%R%" and the like typed in a message, each a change to the
+// style in force, and "%N%" ending everything. A letter a text colour, "L" and a letter lighter, "O" and a letter a
+// background, "B" bold - with a letter, bold in that colour. The letters in ANSI order - 30 is "K", 31 "R" and so on.
+const c_format_colours = [ "K", "R", "G", "O", "A", "P", "C", "W" ];
+
+const c_format_codes = ( function( )
+{
+   var codes = { B: { b: true }, I: { i: true }, S: { s: true }, U: { u: true }, BI: { b: true, i: true }, N: { reset: true } };
+
+   c_format_colours.forEach( function( c )
+   {
+      codes[ c ] = { fg: c };
+      codes[ "L" + c ] = { fg: "L" + c };
+      codes[ "O" + c ] = { bg: "O" + c };
+      codes[ "B" + c ] = { b: true, fg: c };
+   } );
+
+   return codes;
+} )( );
+
+const c_format_keys = [ "b", "i", "s", "u", "fg", "bg" ];
+
+const c_format_escape = "\u001b";
+
+function format_token_pattern( )
+{
+   return /%([A-Z]{1,2})%/g;
+}
+
+// NOTE: The escapes for one of Ian's codes, as "ansi.cin" writes them - "BR" is bold, then red.
+function format_code_escapes( code )
+{
+   var change = c_format_codes[ code ];
+   var csi = c_format_escape + "[";
+
+   if( !change )
+      return "";
+
+   if( change.reset )
+      return csi + "0m";
+
+   var out = "";
+
+   if( change.b )
+      out += csi + "1m";
+
+   if( change.i )
+      out += csi + "3m";
+
+   if( change.s )
+      out += csi + "9m";
+
+   if( change.u )
+      out += csi + "4m";
+
+   if( change.fg )
+      out += csi + ( ( ( change.fg.length === 2 ) ? 90 : 30 ) + c_format_colours.indexOf( change.fg.slice( -1 ) ) ) + "m";
+
+   if( change.bg )
+      out += csi + ( 40 + c_format_colours.indexOf( change.bg.slice( -1 ) ) ) + "m";
+
+   return out;
+}
+
+// NOTE: What is typed, as it is sent - each of Ian's codes as its escapes; anything else between "%" left as typed.
+function shorthand_to_ansi( text )
+{
+   return String( text || "" ).replace( format_token_pattern( ), function( whole, code )
+   {
+      return c_format_codes[ code ] ? format_code_escapes( code ) : whole;
+   } );
+}
+
+// NOTE: Whether what is typed holds any of Ian's codes - the preview shows only then.
+function has_shorthand_codes( text )
+{
+   var pattern = format_token_pattern( );
+   var m;
+
+   while( ( m = pattern.exec( String( text || "" ) ) ) !== null )
+   {
+      if( c_format_codes[ m[ 1 ] ] )
+         return true;
+   }
+
+   return false;
+}
+
+// NOTE: One SGR sequence's numbers applied to a style - a new style, the old one left alone. Only what can be drawn: bold,
+// italics, underline, strikethrough, the 16 colours and 8 backgrounds, and their ends. 256 colours and true colour are
+// passed over, numbers and all; blink, reverse and the like are not drawn.
+function format_apply_sgr( style, params )
+{
+   var next = Object.assign( { }, style );
+   var list = ( params === "" ) ? [ "0" ] : params.split( /[;:]/ );
+
+   for( var k = 0; k < list.length; k++ )
+   {
+      var n = ( list[ k ] === "" ) ? 0 : parseInt( list[ k ], 10 );
+
+      if( n === 0 )
+         next = { };
+      else if( n === 1 )
+         next.b = true;
+      else if( n === 3 )
+         next.i = true;
+      else if( n === 4 )
+         next.u = true;
+      else if( n === 9 )
+         next.s = true;
+      else if( n === 22 )
+         delete next.b;
+      else if( n === 23 )
+         delete next.i;
+      else if( n === 24 )
+         delete next.u;
+      else if( n === 29 )
+         delete next.s;
+      else if( ( n >= 30 ) && ( n <= 37 ) )
+         next.fg = c_format_colours[ n - 30 ];
+      else if( ( n >= 90 ) && ( n <= 97 ) )
+         next.fg = "L" + c_format_colours[ n - 90 ];
+      else if( n === 39 )
+         delete next.fg;
+      else if( ( n >= 40 ) && ( n <= 47 ) )
+         next.bg = "O" + c_format_colours[ n - 40 ];
+      else if( ( n >= 100 ) && ( n <= 107 ) )
+         next.bg = "O" + c_format_colours[ n - 100 ];
+      else if( n === 49 )
+         delete next.bg;
+      else if( ( n === 38 ) || ( n === 48 ) )
+         k += ( list[ k + 1 ] === "5" ) ? 2 : ( ( list[ k + 1 ] === "2" ) ? 4 : 0 );
+   }
+
+   return next;
+}
+
+// NOTE: A message as it is stored - with real escapes, from Ian's console or from here - as characters, each with its style.
+// Only the colour and style sequences count; **every other escape is dropped, never drawn** - moving the cursor, clearing
+// the screen, a window's title, a link - and so is every other control character but a line break and a tab.
+function format_ansi_chars( text )
+{
+   var value = String( text || "" );
+   var chars = [ ];
+   var style = { };
+   var i = 0;
+
+   while( i < value.length )
+   {
+      var ch = value[ i ];
+
+      if( ch === c_format_escape )
+      {
+         var next = value[ i + 1 ];
+
+         if( next === "[" )
+         {
+            var csi = /^\u001b\[([0-9;:?<=>]*)[ -\/]*([@-~])/.exec( value.slice( i, i + 64 ) );
+
+            if( !csi )
+            {
+               i += 2;
+
+               continue;
+            }
+
+            if( csi[ 2 ] === "m" )
+               style = format_apply_sgr( style, csi[ 1 ] );
+
+            i += csi[ 0 ].length;
+
+            continue;
+         }
+
+         if( next === "]" )
+         {
+            var bell = value.indexOf( "\u0007", i );
+            var st = value.indexOf( c_format_escape + "\\", i + 2 );
+            var stop = ( ( bell >= 0 ) && ( ( st < 0 ) || ( bell < st ) ) ) ? bell + 1 : ( ( st >= 0 ) ? st + 2 : value.length );
+
+            i = stop;
+
+            continue;
+         }
+
+         i += ( next === undefined ) ? 1 : 2;
+
+         continue;
+      }
+
+      var code = ch.charCodeAt( 0 );
+
+      if( ( ( code < 32 ) && ( ch !== "\n" ) && ( ch !== "\t" ) ) || ( code === 127 ) || ( ( code >= 0x80 ) && ( code <= 0x9f ) ) )
+      {
+         ++i;
+
+         continue;
+      }
+
+      chars.push( { ch: ch, style: style } );
+
+      ++i;
+   }
+
+   return chars;
+}
+
+// NOTE: What is typed - Ian's shorthand - as characters, each with its style and where it sits in the text. A "%..%" that is
+// not one of his codes stays as text.
+function format_shorthand_chars( text )
+{
+   var value = String( text || "" );
+   var chars = [ ];
+   var style = { };
+   var at = 0;
+   var pattern = format_token_pattern( );
+   var m;
+
+   function take( from, to )
+   {
+      for( var k = from; k < to; k++ )
+         chars.push( { ch: value[ k ], raw: k, style: style } );
+   }
+
+   while( ( m = pattern.exec( value ) ) !== null )
+   {
+      var change = c_format_codes[ m[ 1 ] ];
+
+      if( !change )
+         continue;
+
+      take( at, m.index );
+
+      if( change.reset )
+         style = { };
+      else
+      {
+         style = Object.assign( { }, style, change );
+
+         delete style.reset;
+      }
+
+      at = pattern.lastIndex;
+   }
+
+   take( at, value.length );
+
+   return chars;
+}
+
+function format_same_style( a, b )
+{
+   return c_format_keys.every( function( k ) { return ( a[ k ] || "" ) === ( b[ k ] || "" ); } );
+}
+
+// NOTE: Runs of characters with one style - what is drawn, a span each. A style is { b, i, s, u, fg, bg }, only what is on.
+function format_pieces_of( chars )
+{
+   var pieces = [ ];
+
+   chars.forEach( function( c )
+   {
+      var last = pieces[ pieces.length - 1 ];
+
+      if( last && format_same_style( last.style, c.style ) )
+         last.text += c.ch;
+      else
+         pieces.push( { text: c.ch, style: c.style } );
+   } );
+
+   return pieces.map( function( piece )
+   {
+      var style = { };
+
+      c_format_keys.forEach( function( k ) { if( piece.style[ k ] ) style[ k ] = piece.style[ k ]; } );
+
+      return { text: piece.text, style: style };
+   } );
+}
+
+// NOTE: A stored message, to draw.
+function format_pieces( text )
+{
+   return format_pieces_of( format_ansi_chars( text ) );
+}
+
+// NOTE: What is typed, to preview.
+function format_shorthand_pieces( text )
+{
+   return format_pieces_of( format_shorthand_chars( text ) );
+}
+
+// NOTE: A stored message's words alone - for the places that show plain text: the pinned line, announcements, Home.
+function strip_format( text )
+{
+   return format_ansi_chars( text ).map( function( c ) { return c.ch; } ).join( "" );
+}
+
+// NOTE: Whether going from one style to another only adds - nothing stops, so no "%N%" is needed.
+function format_only_adds( from, to )
+{
+   return c_format_keys.every( function( k ) { return !from[ k ] || ( from[ k ] === to[ k ] ); } );
+}
+
+// NOTE: The codes that take "base" to "style", with Ian's combined codes where they fit - bold in a colour, bold italics.
+function format_codes_for( style, base )
+{
+   var want = { };
+   var out = [ ];
+
+   c_format_keys.forEach( function( k ) { if( style[ k ] && ( style[ k ] !== base[ k ] ) ) want[ k ] = style[ k ]; } );
+
+   if( want.b && want.fg && ( want.fg.length === 1 ) )
+   {
+      out.push( "B" + want.fg );
+
+      delete want.b;
+      delete want.fg;
+   }
+   else if( want.b && want.i )
+   {
+      out.push( "BI" );
+
+      delete want.b;
+      delete want.i;
+   }
+
+   [ [ "b", "B" ], [ "fg", null ], [ "i", "I" ], [ "s", "S" ], [ "u", "U" ], [ "bg", null ] ].forEach( function( pair )
+   {
+      if( want[ pair[ 0 ] ] )
+         out.push( pair[ 1 ] || want[ pair[ 0 ] ] );
+   } );
+
+   return out.map( function( code ) { return "%" + code + "%"; } ).join( "" );
+}
+
+// NOTE: Characters written out as Ian's shorthand - codes only where the style changes, and where anything stops "%N%" and
+// the codes still wanted (his one off code - Ian, 2026-10-15); "%N%" at the end if anything is still on. "raw" is where each
+// character landed - for keeping the same words selected.
+function format_serialise( chars )
+{
+   var text = "";
+   var current = { };
+   var raw = [ ];
+
+   chars.forEach( function( c )
+   {
+      if( !format_same_style( current, c.style ) )
+      {
+         text += format_only_adds( current, c.style ) ? format_codes_for( c.style, current ) : "%N%" + format_codes_for( c.style, { } );
+
+         current = c.style;
+      }
+
+      raw.push( text.length );
+
+      text += c.ch;
+   } );
+
+   if( c_format_keys.some( function( k ) { return current[ k ]; } ) )
+      text += "%N%";
+
+   return { text: text, raw: raw };
+}
+
+// NOTE: A stored message as Ian's shorthand, to edit - the box never holds an escape.
+function ansi_to_shorthand( text )
+{
+   return format_serialise( format_ansi_chars( text ) ).text;
+}
+
+function format_plain_index( chars, raw )
+{
+   var n = 0;
+
+   while( ( n < chars.length ) && ( chars[ n ].raw < raw ) )
+      ++n;
+
+   return n;
+}
+
+// NOTE: A format button on the selected words ("start" to "end" in what is typed) - "change" is { flag: "b" }, { fg: "R" },
+// { bg: "OR" } or { clear: true }. A style every selected character has already comes off. The whole text is written out
+// again, the same words selected; null when no words are selected.
+function format_restyle( text, start, end, change )
+{
+   var chars = format_shorthand_chars( text );
+   var from = format_plain_index( chars, start );
+   var to = format_plain_index( chars, end );
+
+   if( from >= to )
+      return null;
+
+   var picked = chars.slice( from, to );
+
+   if( change.clear )
+      picked.forEach( function( c ) { c.style = { }; } );
+   else
+   {
+      var key = change.flag || ( change.fg ? "fg" : "bg" );
+      var value = change.flag ? true : ( change.fg || change.bg );
+      var all = picked.every( function( c ) { return c.style[ key ] === value; } );
+
+      picked.forEach( function( c )
+      {
+         c.style = Object.assign( { }, c.style );
+
+         if( all )
+            delete c.style[ key ];
+         else
+            c.style[ key ] = value;
+      } );
+   }
+
+   var out = format_serialise( chars );
+
+   return { text: out.text, start: out.raw[ from ], end: out.raw[ to - 1 ] + 1 };
+}
+
+// NOTE: Which buttons show pressed - each style every selected character has; for a colour, the one they all share.
+function format_selection_style( text, start, end )
+{
+   var chars = format_shorthand_chars( text );
+   var picked = chars.slice( format_plain_index( chars, start ), format_plain_index( chars, end ) );
+   var shared = { };
+
+   if( picked.length === 0 )
+      return shared;
+
+   c_format_keys.forEach( function( k )
+   {
+      var first = picked[ 0 ].style[ k ];
+
+      if( first && picked.every( function( c ) { return c.style[ k ] === first; } ) )
+         shared[ k ] = first;
+   } );
+
+   return shared;
+}
+
 // NOTE: Exported for Node.js; in the browser these are plain globals.
 if( typeof module !== "undefined" )
 {
    module.exports = {
+      c_format_colours: c_format_colours,
+      c_format_codes: c_format_codes,
+      shorthand_to_ansi: shorthand_to_ansi,
+      has_shorthand_codes: has_shorthand_codes,
+      format_pieces: format_pieces,
+      format_shorthand_pieces: format_shorthand_pieces,
+      strip_format: strip_format,
+      ansi_to_shorthand: ansi_to_shorthand,
+      format_restyle: format_restyle,
+      format_selection_style: format_selection_style,
       switcher_apps: switcher_apps,
       switcher_title: switcher_title,
       signed_out_message: signed_out_message,
