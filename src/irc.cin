@@ -622,6 +622,15 @@ MESSAGE_ROOM_NUM=@padlen:-20, :$MESSAGE_ROOM_NUM
 ;
 SKIP_MESSAGE=
 ;
+; NOTE: If a message is just spaces then
+; will skip it (i.e. a deleted message).
+CHECK_MESSAGE=@repstr: /:$DECODED_MESSAGE
+;
+LEN=@strlen:$CHECK_MESSAGE
+@ifeq "$LEN" "0"
+SKIP_MESSAGE=1
+@endif
+;
 @ifneq "$ROOM" "$ENTRANCE_ROOM"
 @ifdef $IS_PINNED
 @ifdef $PINNED_LAST_MSG_UNIX
