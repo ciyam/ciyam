@@ -150,8 +150,6 @@ ERROR=Unexpected invalid message prefix.
 @endif
 @endif
 ;
-@ifndef $ERROR
-;
 EDIT_MESSAGE=
 USER_MESSAGE=
 ;
@@ -171,6 +169,50 @@ NAMES_LEN=@strlen:$NAMES
 EDIT_MESSAGE=1
 @endif
 @endif
+;
+; NOTE: Will not allow the
+; creation of any messages
+; that are just spaces.
+@ifndef $EDIT_MESSAGE
+MLEN=@strlen:$MESSAGE
+;
+@ifeq "$TARGET" "public"
+CHECK_SPACES=XyA
+@else
+CHECK_SPACES=XyE
+@endif
+;
+NUM_TRAILING=0
+@if $MLEN #> 3
+MLEN=@$MLEN-3
+;
+NUM_REPEATED=@$MLEN/4
+NUM_TRAILING=@$MLEN#4
+;
+@ifneq $NUM_REPEATED 0
+PADDING=@padlen:$NUM_REPEATED,.:
+PADDING=@repstr:./gICA:$PADDING
+CHECK_SPACES=%CHECK_SPACES%$PADDING
+@endif
+;
+@ifeq $NUM_TRAILING 1
+CHECK_SPACES=%CHECK_SPACES%g
+@elif $NUM_TRAILING = 2
+CHECK_SPACES=%CHECK_SPACES%gI
+@elif $NUM_TRAILING = 3
+CHECK_SPACES=%CHECK_SPACES%gIA
+@endif
+@endif
+;
+@ifeq $MESSAGE $CHECK_SPACES
+ERROR=Invalid blank message for IRC.
+@endif
+;
+@endif
+;
+@endif
+;
+@ifndef $ERROR
 ;
 @ifdef $EDIT_MESSAGE
 ;
