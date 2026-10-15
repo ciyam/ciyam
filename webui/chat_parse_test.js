@@ -1242,6 +1242,16 @@ check( "every other escape dropped - cursor, clearing, a title, a link, a bell",
 check( "- an escape cut short, and the control characters", cp.strip_format( "a" + esc + "[" + String.fromCharCode( 8 ) + "b" + String.fromCharCode( 155 )
  + "c" + esc ), "abc" );
 check( "- line breaks and tabs kept", cp.strip_format( "a\n\tb" ), "a\n\tb" );
+check( "- DCS, SOS, PM and APC dropped to their end", cp.strip_format( "a" + esc + "Pq#0;1" + esc + "\\b" + esc + "X1" + esc + "\\c" + esc + "^2" + esc
+ + "\\d" + esc + "_3" + esc + "\\e" ), "abcde" );
+check( "- one never ended drops only its opening, not the rest", cp.strip_format( "a" + esc + "]0;no end b" ), "a0;no end b" );
+check( "- a two-character escape and one with intermediates", [ cp.strip_format( "a" + esc + "7b" + esc + "(Bc" ), cp.strip_format( "a" + esc + "\nb" ) ],
+ [ "ab" + "c", "a\nb" ] );
+check( "- text turned to run the other way - its characters dropped", cp.strip_format( "a\u202eb\u2066c\u2069d" ), "abcd" );
+check( "a long SGR still read", cp.format_pieces( esc + "[" + "1;".repeat( 40 ) + "31mx" ), [ { text: "x", style: { b: true, fg: "R" } } ] );
+check( "- details after ':' kept with their number - no italics from a colour", [ cp.format_pieces( esc + "[38:2::1:2:3mx" ),
+ cp.format_pieces( esc + "[4:3mx" + esc + "[4:0my" ) ], [ [ { text: "x", style: { } } ], [ { text: "x", style: { u: true } }, { text: "y", style: { } } ] ] );
+check( "- one with a private marker is not a style", cp.format_pieces( esc + "[>4;1mx" ), [ { text: "x", style: { } } ] );
 check( "a message with no codes - one plain run", cp.format_pieces( "just words" ), [ { text: "just words", style: { } } ] );
 
 check( "to edit - escapes back to his shorthand, plain left alone", [ cp.ansi_to_shorthand( cp.shorthand_to_ansi( "Hi %R%red %B%bold%N%%R% more%N% end" ) ),
@@ -1261,6 +1271,8 @@ check( "a selection across a code - by the words, not the codes", cp.format_rest
  "%R%The %B%whole%N%%B% node%N%" );
 check( "clear formatting on part", cp.format_restyle( "%BR%The whole node%N%", 8, 13, { clear: true } ).text, "%BR%The %N%whole%BR% node%N%" );
 check( "over several lines", cp.format_restyle( "one\ntwo", 2, 5, { bg: "OO" } ).text, "on%OO%e\nt%N%wo" );
+check( "text that would join a code into one of Ian's - nothing done rather than the message changed",
+ cp.format_restyle( "x%Ry", 3, 4, { flag: "b" } ), null );
 check( "nothing selected, or only codes - nothing done", [ cp.format_restyle( "abc", 1, 1, { flag: "b" } ),
  cp.format_restyle( "%R%abc", 0, 3, { flag: "b" } ) ], [ null, null ] );
 check( "the buttons pressed - what every selected character has", [ cp.format_selection_style( "%BR%The%N% x", 4, 7 ),

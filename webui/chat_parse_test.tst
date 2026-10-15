@@ -662,6 +662,13 @@ ok   - 256 colours and true colour passed over, numbers and all
 ok   every other escape dropped - cursor, clearing, a title, a link, a bell
 ok   - an escape cut short, and the control characters
 ok   - line breaks and tabs kept
+ok   - DCS, SOS, PM and APC dropped to their end
+ok   - one never ended drops only its opening, not the rest
+ok   - a two-character escape and one with intermediates
+ok   - text turned to run the other way - its characters dropped
+ok   a long SGR still read
+ok   - details after ':' kept with their number - no italics from a colour
+ok   - one with a private marker is not a style
 ok   a message with no codes - one plain run
 ok   to edit - escapes back to his shorthand, plain left alone
 ok   bold a word
@@ -672,6 +679,7 @@ ok   bold off the middle of bold
 ok   a selection across a code - by the words, not the codes
 ok   clear formatting on part
 ok   over several lines
+ok   text that would join a code into one of Ian's - nothing done rather than the message changed
 ok   nothing selected, or only codes - nothing done
 ok   the buttons pressed - what every selected character has
 ok   his own codes typed by hand - drawn the same as the bar's

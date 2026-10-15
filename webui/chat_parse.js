@@ -2522,15 +2522,17 @@ function has_shorthand_codes( text )
 
 // NOTE: One SGR sequence's numbers applied to a style - a new style, the old one left alone. Only what can be drawn: bold,
 // italics, underline, strikethrough, the 16 colours and 8 backgrounds, and their ends. 256 colours and true colour are
-// passed over, numbers and all; blink, reverse and the like are not drawn.
+// passed over, numbers and all; blink, reverse and the like are not drawn. A number can carry its own details after ":" -
+// "4:3" a curly underline, "38:2::1:2:3" a colour - and they stay with it (found by review).
 function format_apply_sgr( style, params )
 {
    var next = Object.assign( { }, style );
-   var list = ( params === "" ) ? [ "0" ] : params.split( /[;:]/ );
+   var list = ( params === "" ) ? [ "0" ] : params.split( ";" );
 
    for( var k = 0; k < list.length; k++ )
    {
-      var n = ( list[ k ] === "" ) ? 0 : parseInt( list[ k ], 10 );
+      var parts = list[ k ].split( ":" );
+      var n = ( parts[ 0 ] === "" ) ? 0 : parseInt( parts[ 0 ], 10 );
 
       if( n === 0 )
          next = { };
@@ -2538,6 +2540,8 @@ function format_apply_sgr( style, params )
          next.b = true;
       else if( n === 3 )
          next.i = true;
+      else if( ( n === 4 ) && ( parts[ 1 ] === "0" ) )
+         delete next.u;
       else if( n === 4 )
          next.u = true;
       else if( n === 9 )
@@ -2562,7 +2566,7 @@ function format_apply_sgr( style, params )
          next.bg = "O" + c_format_colours[ n - 100 ];
       else if( n === 49 )
          delete next.bg;
-      else if( ( n === 38 ) || ( n === 48 ) )
+      else if( ( ( n === 38 ) || ( n === 48 ) || ( n === 58 ) ) && ( parts.length === 1 ) )
          k += ( list[ k + 1 ] === "5" ) ? 2 : ( ( list[ k + 1 ] === "2" ) ? 4 : 0 );
    }
 
@@ -2571,7 +2575,8 @@ function format_apply_sgr( style, params )
 
 // NOTE: A message as it is stored - with real escapes, from Ian's console or from here - as characters, each with its style.
 // Only the colour and style sequences count; **every other escape is dropped, never drawn** - moving the cursor, clearing
-// the screen, a window's title, a link - and so is every other control character but a line break and a tab.
+// the screen, a window's title, a link - and so is every other control character but a line break and a tab, and the
+// characters that turn text to run the other way (found by review).
 function format_ansi_chars( text )
 {
    var value = String( text || "" );
@@ -2589,7 +2594,7 @@ function format_ansi_chars( text )
 
          if( next === "[" )
          {
-            var csi = /^\u001b\[([0-9;:?<=>]*)[ -\/]*([@-~])/.exec( value.slice( i, i + 64 ) );
+            var csi = /^\u001b\[([0-9;:?<=>]*)([ -\/]*)([@-~])/.exec( value.slice( i ) );
 
             if( !csi )
             {
@@ -2598,7 +2603,8 @@ function format_ansi_chars( text )
                continue;
             }
 
-            if( csi[ 2 ] === "m" )
+            // NOTE: Only a plain SGR is a style - none with a private marker ("?", "<", "=", ">") or an intermediate.
+            if( ( csi[ 3 ] === "m" ) && ( csi[ 2 ] === "" ) && /^[0-9;:]*$/.test( csi[ 1 ] ) )
                style = format_apply_sgr( style, csi[ 1 ] );
 
             i += csi[ 0 ].length;
@@ -2606,25 +2612,36 @@ function format_ansi_chars( text )
             continue;
          }
 
-         if( next === "]" )
+         // NOTE: The strings - OSC (a title, a link), DCS, SOS, PM and APC - up to their end, ST, or a bell for an OSC. One
+         // never ended drops only its opening, so it cannot hide the rest of the message.
+         if( ( next !== undefined ) && ( "]PX^_".indexOf( next ) >= 0 ) )
          {
-            var bell = value.indexOf( "\u0007", i );
             var st = value.indexOf( c_format_escape + "\\", i + 2 );
-            var stop = ( ( bell >= 0 ) && ( ( st < 0 ) || ( bell < st ) ) ) ? bell + 1 : ( ( st >= 0 ) ? st + 2 : value.length );
+            var bell = ( next === "]" ) ? value.indexOf( "\u0007", i + 2 ) : -1;
 
-            i = stop;
+            if( ( bell >= 0 ) && ( ( st < 0 ) || ( bell < st ) ) )
+               i = bell + 1;
+            else if( st >= 0 )
+               i = st + 2;
+            else
+               i += 2;
 
             continue;
          }
 
-         i += ( next === undefined ) ? 1 : 2;
+         // NOTE: Any other escape - its intermediates (" " to "/") and its final character ("0" to "~"), as "ESC 7" or
+         // "ESC ( B"; an escape before anything else is dropped alone.
+         var other = /^\u001b[ -\/]*[0-~]/.exec( value.slice( i, i + 16 ) );
+
+         i += other ? other[ 0 ].length : 1;
 
          continue;
       }
 
       var code = ch.charCodeAt( 0 );
 
-      if( ( ( code < 32 ) && ( ch !== "\n" ) && ( ch !== "\t" ) ) || ( code === 127 ) || ( ( code >= 0x80 ) && ( code <= 0x9f ) ) )
+      if( ( ( code < 32 ) && ( ch !== "\n" ) && ( ch !== "\t" ) ) || ( code === 127 ) || ( ( code >= 0x80 ) && ( code <= 0x9f ) )
+       || ( ( code >= 0x202a ) && ( code <= 0x202e ) ) || ( ( code >= 0x2066 ) && ( code <= 0x2069 ) ) )
       {
          ++i;
 
@@ -2815,7 +2832,7 @@ function format_plain_index( chars, raw )
 
 // NOTE: A format button on the selected words ("start" to "end" in what is typed) - "change" is { flag: "b" }, { fg: "R" },
 // { bg: "OR" } or { clear: true }. A style every selected character has already comes off. The whole text is written out
-// again, the same words selected; null when no words are selected.
+// again, the same words selected; null when no words are selected, or the codes would not read back as meant.
 function format_restyle( text, start, end, change )
 {
    var chars = format_shorthand_chars( text );
@@ -2847,6 +2864,19 @@ function format_restyle( text, start, end, change )
    }
 
    var out = format_serialise( chars );
+
+   // NOTE: Typed text ending in "%" and capitals can join a code written after it into one of Ian's - "x%R" then "%B%" reads
+   // "%R%B%" - and the shorthand has no way round that, so the bar does nothing rather than change the message (found by
+   // review).
+   var reread = format_shorthand_chars( out.text );
+
+   var changed = ( reread.length !== chars.length ) || reread.some( function( c, k )
+   {
+      return ( c.ch !== chars[ k ].ch ) || !format_same_style( c.style, chars[ k ].style );
+   } );
+
+   if( changed )
+      return null;
 
    return { text: out.text, start: out.raw[ from ], end: out.raw[ to - 1 ] + 1 };
 }
