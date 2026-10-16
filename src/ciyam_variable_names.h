@@ -250,6 +250,7 @@ enum special_var
    e_special_var_blockchain_is_hub,
    e_special_var_fields_and_values,
    e_special_var_generate_log_file,
+   e_special_var_index_keyed_items,
    e_special_var_last_suffixed_key,
    e_special_var_limit_keyed_after,
    e_special_var_limit_keyed_items,

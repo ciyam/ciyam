@@ -110,31 +110,32 @@ NEXT_ROOM=@repstr:@irc_names_/@keyed_irc_:$NEXT_ROOM
 NEXT_EDIT_ROOM=@strlit:%NEXT_ROOM%_ME
 NEXT_PINS_ROOM=@strlit:%NEXT_ROOM%_MP
 ;
+.session_variable @index_keyed_items 1
+.session_variable @limit_keyed_items 100
+;
+.system_variable $NEXT_EDIT_ROOM
+MESSAGE_EDIT_ITEMS=$OUTPUT
+;
+@ifdef $MESSAGE_EDIT_ITEMS
+;
 NEXT_QUEUE_PREFIX=@repstr:@keyed_/@queue_:$NEXT_ROOM
 ;
 OLDEST_QUEUED_MESSAGE=
 ;
-; NOTE: Finds the oldest queued room record across all users.
+; NOTE: Finds the oldest queued unix unique key value for any user.
 .system_variable %NEXT_QUEUE_PREFIX%_***
 @ifdef $OUTPUT
 ~echo -e "$OUTPUT" | cut -c 1-13 | sort | head -c 13 >$IRC_TEMP_FILE
 OLDEST_QUEUED_MESSAGE=@file:$IRC_TEMP_FILE
 @endif
 ;
-.session_variable @limit_keyed_items 25
-;
-.system_variable $NEXT_EDIT_ROOM
-MESSAGE_EDIT_LINES=$OUTPUT
-;
-@ifdef $MESSAGE_EDIT_LINES
-;
 @:CHECK_EDIT_LOOP
 ;
 @label NEXT_CHECK_EDIT
 ;
-NEXT_MESSAGE_EDIT=%MESSAGE_EDIT_LINES:1%
+NEXT_EDIT_ITEM=%MESSAGE_EDIT_ITEMS:1%
 ;
-@ifndef $NEXT_MESSAGE_EDIT
+@ifndef $NEXT_EDIT_ITEM
 @label END_CHECK_EDIT_LOOP
 @endif
 ;
@@ -142,11 +143,8 @@ NEXT_MESSAGE_EDIT=%MESSAGE_EDIT_LINES:1%
 ;
 @:NEXT_CHECK_EDIT
 ;
-POS=@strpos: :$NEXT_MESSAGE_EDIT
-EDIT_UNIX_UNIQUE=@substr:0,$POS:$NEXT_MESSAGE_EDIT
-;
 IS_PINNED=
-.system_variable $NEXT_PINS_ROOM:$EDIT_UNIX_UNIQUE
+.system_variable $NEXT_PINS_ROOM:$NEXT_EDIT_ITEM
 @ifdef $OUTPUT
 IS_PINNED=1
 @endif
@@ -157,18 +155,18 @@ PURGE_THIS_MESSAGE=
 @ifndef $OLDEST_QUEUED_MESSAGE
 PURGE_THIS_MESSAGE=1
 @else
-@if $EDIT_UNIX_UNIQUE < $OLDEST_QUEUED_MESSAGE
+@if $NEXT_EDIT_ITEM < $OLDEST_QUEUED_MESSAGE
 PURGE_THIS_MESSAGE=1
 @endif
 @endif
 ;
 @ifdef $PURGE_THIS_MESSAGE
-.system_variable $NEXT_EDIT_ROOM:$EDIT_UNIX_UNIQUE ""
+.system_variable $NEXT_EDIT_ROOM:$NEXT_EDIT_ITEM ""
 @endif
 ;
 @endif
 ;
-MESSAGE_EDIT_LINES=%MESSAGE_EDIT_LINES:-1%
+MESSAGE_EDIT_ITEMS=%MESSAGE_EDIT_ITEMS:-1%
 ;
 !!@:CHECK_EDIT_LOOP
 ;

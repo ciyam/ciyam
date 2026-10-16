@@ -80,6 +80,8 @@ system_variable @keyed_test:bbb
 system_variable @keyed_test:aaa
 system_variable @keyed_test:ddd
 system_variable @keyed_test
+session_variable @index_keyed_items 1
+system_variable @keyed_test
 system_variable @keyed_test:aaa 111
 system_variable @keyed_test:ccc 333
 system_variable @keyed_test
