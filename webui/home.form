@@ -357,7 +357,6 @@ http://www.opensource.org/licenses/mit-license.php.
 
          <button type="button" class="chat-btn chat-btn--mono home-console-toggle" id="console_toggle" hidden>Console</button>
 
-         <span class="home-avatar home-topbar-avatar" id="top_avatar"></span>
       </header>
 
       <nav class="home-chips" id="home_chips" aria-label="Node" hidden></nav>

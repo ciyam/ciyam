@@ -1578,13 +1578,12 @@ function build_shell( )
 
    var name = account_display_name( ciyam.username, ciyam.is_admin );
 
-   [ "rail_avatar", "top_avatar" ].forEach( function( id )
-   {
-      var avatar = document.getElementById( id );
+   // NOTE: The rail's only - a phone's top bar had one too, looking like the chat's account menu but not one, so it went (Ian,
+   // 2026-10-16); Home's menu there is the hamburger.
+   var avatar = document.getElementById( "rail_avatar" );
 
-      avatar.textContent = user_initial( name );
-      avatar.style.background = "var(--color-sender-" + sender_colour_index( name ) + ")";
-   } );
+   avatar.textContent = user_initial( name );
+   avatar.style.background = "var(--color-sender-" + sender_colour_index( name ) + ")";
 
    set_text( "rail_name", name );
    set_text( "rail_role", role_text( ciyam.is_admin ) );

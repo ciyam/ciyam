@@ -333,7 +333,6 @@
 }
 
 .home-menu-button,
-.home-topbar-avatar,
 .home-topbar-sub,
 .home-chips,
 .home-bottombar
@@ -1520,8 +1519,7 @@
       cursor: pointer;
    }
 
-   .home-topbar-sub,
-   .home-topbar-avatar
+   .home-topbar-sub
    {
       display: flex;
    }
