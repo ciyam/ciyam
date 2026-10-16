@@ -1466,27 +1466,84 @@ async function ciyam_sha256_hex( text )
    throw new Error( "SHA-256 is not available - this page needs sha2.min.js, or https." );
 }
 
-// NOTE: What the page offers a module - its progress ("fraction" 0 to 1, null when done), a QR code drawn, hashing, and other
-// modules. Through the harness's own page functions and its "test_image" where the page has them, as the console does.
-function ciyam_module_page_context( host )
+// NOTE: The faster SHA-256 for many rounds - the browser's own, awaited each time, or "sha2.min.js", in step - timed once a
+// page on 2000 rounds, as Ian's "harden" did on every load (Ian, 2026-10-09: "work out whether to use the browser's native
+// SHA-256"). Resolves to { native, hash } - "hash" in step when not native, a promise when it is.
+var ciyam_sha256_choice = null;
+
+function ciyam_sha256_fastest( )
+{
+   if( ciyam_sha256_choice === null )
+      ciyam_sha256_choice = ciyam_sha256_time( );
+
+   return ciyam_sha256_choice;
+}
+
+async function ciyam_sha256_time( )
+{
+   var has_native = ( typeof crypto !== "undefined" ) && !!crypto.subtle && ( typeof crypto.subtle.digest === "function" );
+   var has_library = ( typeof hex_sha256 === "function" );
+
+   var in_step = function( text ) { return hex_sha256( String( text ) ).toLowerCase( ); };
+
+   if( !has_native || !has_library )
+      return has_native ? { native: true, hash: ciyam_sha256_hex } : { native: false, hash: in_step };
+
+   var now = ( typeof performance !== "undefined" ) ? function( ) { return performance.now( ); } : Date.now;
+   var s = "test";
+   var start = now( );
+
+   for( var i = 0; i < 2000; i++ )
+      s = await ciyam_sha256_hex( s + "test" );
+
+   var native_time = now( ) - start;
+
+   start = now( );
+
+   for( var j = 0; j < 2000; j++ )
+      s = in_step( s + "test" );
+
+   return ( native_time < ( now( ) - start ) ) ? { native: true, hash: ciyam_sha256_hex } : { native: false, hash: in_step };
+}
+
+// NOTE: What the page offers a module - its progress ("fraction" 0 to 1, null when done), a QR code drawn, hashing, other
+// modules, whether usage hints are wanted, and "expose( key, value )" - a value kept where a list can "wait" on it, as
+// "ciyam_<name>_<key>" ("harden"'s "reset"), for a module run through the old globals; nothing otherwise. Through the
+// harness's own page functions and its "test_image" where the page has them, as the console does.
+//
+// "stopped( )" says when the page has let the module go - unloaded, a session ended, or loaded again - so a long run ends
+// there, and nothing more reaches the page: what it worked out, a password's hash say, must not outlast the session that ran
+// it (found by "console_javascripts", 2026-10-16 - "harden" kept running and answering after a sign out).
+function ciyam_module_page_context( host, prefix, stopped )
 {
    var page = host || ( ( typeof window !== "undefined" ) ? window : { } );
+   var let_go = stopped || function( ) { return false; };
 
    return {
+      stopped: let_go,
+      hints: function( )
+      {
+         return !!page.include_script_usage_hints;
+      },
+      expose: function( key, value )
+      {
+         if( prefix && !let_go( ) )
+            page[ prefix + "_" + key ] = value;
+      },
       progress: function( fraction )
       {
+         if( let_go( ) )
+            return;
+
          if( fraction === null )
          {
             if( typeof page.hide_progress === "function" )
                page.hide_progress( );
          }
+         else if( ( fraction === 0 ) && ( typeof page.show_progress === "function" ) )
+            page.show_progress( );
          else if( typeof page.update_progress === "function" )
-         {
-            if( ( fraction === 0 ) && ( typeof page.show_progress === "function" ) )
-               page.show_progress( );
-
             page.update_progress( fraction );
-         }
       },
       show_qr: function( text )
       {
@@ -1502,6 +1559,7 @@ function ciyam_module_page_context( host )
          return true;
       },
       sha256: ciyam_sha256_hex,
+      sha256_fastest: ciyam_sha256_fastest,
       module: ciyam_module_named
    };
 }
@@ -1509,7 +1567,9 @@ function ciyam_module_page_context( host )
 // NOTE: The globals the console, Ian's harness and the lists use - "ciyam_<name>_at_load( callback )" (with the page's
 // "init_script_value" run at once), "_execute( callback, input )" and "_result" - made for a registered module. Usage
 // hints ("include_script_usage_hints") as the old modules gave them: on loading, "employ javascript <name> <example>";
-// with the first answer, its "hint".
+// with the first answer, its "hint" - a function of the result, where the hint holds it ("rpc_unlock"'s).
+//
+// What "run( )" and "loaded( )" answer - the result, or { result, output } - is said, and kept as "_result".
 function ciyam_module_legacy( module_class, host )
 {
    var about = module_class.about;
@@ -1523,23 +1583,54 @@ function ciyam_module_legacy( module_class, host )
       return !!host.include_script_usage_hints;
    }
 
+   // NOTE: Each instance is let go when another takes its place, or when the page takes the module's functions away (the
+   // console's "unload_server_script( )", which every sign out runs).
+   var current = null;
+
+   function make( )
+   {
+      var token = { };
+
+      current = token;
+
+      return new module_class( ciyam_module_page_context( host, prefix, function( )
+      {
+         return ( current !== token ) || ( host[ prefix + "_at_load" ] !== at_load );
+      } ) );
+   }
+
+   // NOTE: What was answered - from "run( )", the result, kept and said; as { result, output }, "result" kept and "output"
+   // said, and with no "result" the one kept before left as it was ("harden"'s "(ready)"). From "loaded( )", text is only
+   // said; { result, output } keeps a result too ("bip39"'s words).
+   function said( out, from_run )
+   {
+      var whole = ( out !== null ) && ( typeof out === "object" );
+      var result = whole ? out.result : ( from_run ? out : undefined );
+      var output = whole ? ( ( out.output !== undefined ) ? out.output : out.result ) : out;
+
+      if( whole ? ( result !== undefined ) : from_run )
+         host[ prefix + "_result" ] = ( result === undefined ) ? null : result;
+
+      return { result: result, output: ( ( output === null ) || ( output === undefined ) ) ? "" : String( output ) };
+   }
+
    async function answer( callback, input )
    {
-      var out = await instance.run( input );
+      var running = instance;
+      var answered = await running.run( input );
 
-      var said = ( out !== null ) && ( typeof out === "object" );
-      var result = said ? out.result : out;
-      var output = ( said && ( out.output !== undefined ) ) ? out.output : result;
+      // NOTE: Let go meanwhile - nothing kept, nothing said.
+      if( running.context.stopped( ) )
+         return;
 
-      host[ prefix + "_result" ] = result;
-
-      output = ( ( output === null ) || ( output === undefined ) ) ? "" : String( output );
+      var out = said( answered, true );
+      var output = out.output;
 
       if( hints_wanted( ) && !shown_hint && about.hint )
       {
          shown_hint = true;
 
-         output += "\n" + about.hint;
+         output += "\n" + ( ( typeof about.hint === "function" ) ? about.hint( out.result ) : about.hint );
       }
 
       callback( output );
@@ -1547,30 +1638,37 @@ function ciyam_module_legacy( module_class, host )
 
    host[ prefix + "_result" ] = null;
 
-   host[ prefix + "_at_load" ] = async function( callback )
+   var at_load = async function( callback )
    {
-      instance = new module_class( ciyam_module_page_context( host ) );
-      shown_hint = false;
-
       host[ prefix + "_result" ] = null;
+
+      instance = make( );
+      shown_hint = false;
 
       var input = ( host.init_script_value === undefined ) ? null : host.init_script_value;
 
       if( input !== null )
          return answer( callback, input );
 
-      var output = String( await instance.loaded( ) );
+      var output = said( await instance.loaded( ), false ).output;
 
+      // NOTE: A module whose loading answers with its own usage line ("bip39"'s "{@1}") gives no second one.
       if( hints_wanted( ) && ( about.example !== undefined ) )
+      {
          output += "\nemploy javascript " + name + " " + about.example;
+
+         shown_hint = shown_hint || !!about.hint_once;
+      }
 
       callback( output );
    };
 
+   host[ prefix + "_at_load" ] = at_load;
+
    host[ prefix + "_execute" ] = async function( callback, input )
    {
       if( instance === null )
-         instance = new module_class( ciyam_module_page_context( host ) );
+         instance = make( );
 
       return answer( callback, ( input === undefined ) ? null : input );
    };
@@ -1586,7 +1684,8 @@ if( typeof module !== "undefined" )
       ciyam_module_about: ciyam_module_about,
       ciyam_module_legacy: ciyam_module_legacy,
       ciyam_module_page_context: ciyam_module_page_context,
-      ciyam_sha256_hex: ciyam_sha256_hex
+      ciyam_sha256_hex: ciyam_sha256_hex,
+      ciyam_sha256_fastest: ciyam_sha256_fastest
    };
 }
 

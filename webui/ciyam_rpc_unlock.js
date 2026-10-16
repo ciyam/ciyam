@@ -1,50 +1,34 @@
-var ciyam_rpc_unlock_result = null;
+// Copyright (c) 2026 CIYAM Developers
+//
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-var ciyam_rpc_unlock_has_shown_hints = false;
-
-async function ciyam_rpc_unlock_at_load( callback )
+// NOTE: A password hashed with the time - "<unix time>-<sha256( time + sha256( password ) )>" - for "ciyam_client -rpc_unlock",
+// said and drawn as a QR code through the page ("show_qr" in its context), a module ("Modules" in "ciyam.js"). The usage
+// hint, the first time, is the command with the answer in it.
+ciyam_register_module( class extends ciyam_module
 {
-   console.log( "ciyam_rpc_unlock_at_load" );
-
-   ciyam_rpc_unlock_result = null;
-
-   if( init_script_value != null )
-      ciyam_rpc_unlock_execute( callback, init_script_value );
-   else
+   static about =
    {
-      var output = "(rpc_unlock loaded)";
+      name: "ciyam_rpc_unlock",
+      version: "2",
+      description: "a password hashed with the time, said and drawn as a QR code - for ciyam_client -rpc_unlock",
+      example: "test",
+      hint: function( result ) { return "./ciyam_client -tls -rpc_unlock=" + result + " localhost:6666"; },
+      needs: [ "sha256", "qrcode" ]
+   };
 
-      if( include_script_usage_hints )
-         output += "\nemploy javascript rpc_unlock test";
-
-      callback( output );
-   }
-}
-
-async function ciyam_rpc_unlock_execute( callback, input )
-{
-   console.log( "ciyam_rpc_unlock_execute" );
-
-   if( input == null )
-      input = "";
-
-   var unix_now = Math.floor( Date.now( ) / 1000 );
-   var password_hash = hex_sha256( input ).toLowerCase( );
-   var salted_password_hash = hex_sha256( unix_now + password_hash );
-
-   var output = unix_now + "-" + salted_password_hash;
-
-   if( document.getElementById( "test_image" ).innerHTML != null )
-      document.getElementById( "test_image" ).innerHTML = "";
-
-   new QRCode( document.getElementById( "test_image" ), output );
-
-   if( include_script_usage_hints && !ciyam_rpc_unlock_has_shown_hints )
+   async run( input )
    {
-      ciyam_rpc_unlock_has_shown_hints = true;
+      var sha256 = this.context.sha256 || ciyam_sha256_hex;
 
-      output += "\n./ciyam_client -tls -rpc_unlock=" + output + " localhost:6666";
+      var unix_now = Math.floor( Date.now( ) / 1000 );
+      var password_hash = await sha256( ( input === null ) ? "" : input );
+      var answer = unix_now + "-" + await sha256( unix_now + password_hash );
+
+      if( this.context.show_qr )
+         this.context.show_qr( answer );
+
+      return answer;
    }
-
-   callback( output );
-}
+} );

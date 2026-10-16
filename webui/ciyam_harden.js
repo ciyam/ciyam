@@ -1,224 +1,151 @@
-var ciyam_harden_result = null;
+// Copyright (c) 2026 CIYAM Developers
+//
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-var ciyam_harden_chunk = 0;
-
-var ciyam_harden_reset = false;
-var ciyam_harden_need_reset = false
-
-var ciyam_harden_num_repeat = 0;
-var ciyam_harden_num_repeats = 0;
-
-var ciyam_harden_use_async = false;
-
-var ciyam_harden_string_to_hash = "";
-
-var ciyam_harden_result_callback = null;
-
-async function ciyam_harden_hash_string( message )
+// NOTE: Hashes its input round after round - hardening an unlock key's entropy or a password - a module ("Modules" in
+// "ciyam.js"). In steps, as before:
+//
+//    an input, after loading or "(ready)"   primes it - one hash of it, "(hash primed)"
+//    "<rounds>"                              that many more rounds - each hashes the result with the input after it
+//    "<rounds>:<repeats>"                    that many rounds, repeated, the progress shown; then ready for a new input
+//    "+<rounds>:<repeats>"                   the same, carrying on with this input after
+//    nothing                                 "(ready)" - the next input primes again
+//
+// "reset" - ready for a new input - is kept where a list can "wait ciyam_harden_reset" ("expose" in its context), and so
+// is the result as it goes. The SHA-256 is the page's faster one, decided once a page ("ciyam_sha256_fastest( )") - it was
+// timed here on every load.
+ciyam_register_module( class extends ciyam_module
 {
-   const msg_buffer = new TextEncoder( ).encode( message );
-
-   const hash_buffer = await crypto.subtle.digest( "SHA-256", msg_buffer );
-
-   const hash_array = Array.from( new Uint8Array( hash_buffer ) );
-
-   const hash_hex = hash_array.map( b => ( "00" + b.toString( 16 ) ).slice( -2 ) ).join( "" );
-
-   return hash_hex.toLowerCase( );
-}
-
-async function ciyam_harden_hash_rounds( num, use_async, input, initial )
-{
-   var s = input;
-
-   if( initial != null )
-      s = initial;
-
-   // NOTE: If "num" rounds
-   // is zero then performs
-   // a single hash.
-   if( num == 0 )
+   static about =
    {
-      if( !use_async )
-         s = hex_sha256( input ).toLowerCase( );
-      else
-         s = await ciyam_harden_hash_string( input );
+      name: "ciyam_harden",
+      version: "2",
+      description: "hashes its input round after round - hardening entropy or a password",
+      example: "<input>",
+      needs: [ "sha256" ]
+   };
+
+   // NOTE: "num" rounds - each hashes what there is with "input" after it - from "initial", or from "input" itself; with nought
+   // rounds, one hash of "input". The page's in-step SHA-256 runs without waiting between rounds.
+   static async rounds( hasher, num, input, initial )
+   {
+      var s = ( ( initial !== null ) && ( initial !== undefined ) ) ? initial : input;
+      var count = Number( num );
+
+      if( count === 0 )
+         s = await hasher.hash( input );
+
+      for( var i = 0; i < count; i++ )
+         s = hasher.native ? await hasher.hash( s + input ) : hasher.hash( s + input );
+
+      return s;
    }
 
-   // NOTE: Perform "num" rounds
-   // (additional to the initial
-   // hash when "num" was zero).
-   for( var i = 0; i < num; i++ )
+   constructor( context )
    {
-      if( !use_async )
-         s = hex_sha256( s + input ).toLowerCase( );
-      else
-         s = await ciyam_harden_hash_string( s + input );
+      super( context );
+
+      this.result = null;
+      this.text = "";
+      this.need_reset = false;
+
+      this.set_reset( true );
    }
 
-   return s;
-}
-
-async function ciyam_harden_at_load( callback )
-{
-   console.log( "ciyam_harden_at_load" );
-
-   ciyam_harden_result = null;
-
-   const has_crypto_subtle = ( typeof window.crypto !== "undefined" ) && ( typeof window.crypto.subtle !== "undefined" );
-
-   if( !has_crypto_subtle )
-      console.log( "window.crypto or window.crypto.subtle undefined" );
-   else
+   set_reset( value )
    {
-      var start_time = performance.now( );
+      this.reset = value;
 
-      var initial_hash = hex_sha256( "test" ).toLowerCase( );
-
-      var async_result = await ciyam_harden_hash_rounds( 10000, true, "test", initial_hash );
-
-      var finish_time = performance.now( );
-
-      var async_time = ( finish_time - start_time );
-
-      start_time = performance.now( );
-
-      var non_async_result = await ciyam_harden_hash_rounds( 10000, false, "test", initial_hash );
-
-      finish_time = performance.now( );
-
-      var non_async_time = ( finish_time - start_time );
-
-      var result = async_result;
-
-      if( result != non_async_result )
-         result += " and " + non_async_result;
-
-      if( async_time < non_async_time )
-         ciyam_harden_use_async = true;
-
-      console.log( "async_time = " + async_time
-       + ", non_async_time = " + non_async_time + "\n./ciyam_command crypto_hash -x=10000 test\n" + result );
+      if( this.context.expose )
+         this.context.expose( "reset", value );
    }
 
-   if( init_script_value != null )
+   hints( )
    {
-      ciyam_harden_reset = true;
-
-      ciyam_harden_execute( callback, init_script_value );
+      return !!( this.context.hints && this.context.hints( ) );
    }
-   else
+
+   async hasher( )
    {
-      var output = "";
-
-      if( ciyam_harden_use_async )
-         output = "(using async version)";
-      else
-         output = "(using non-async version)";
-
-      if( include_script_usage_hints )
-         output += "\nemploy javascript harden <input>";
-
-      callback( output );
-
-      ciyam_harden_reset = true;
+      return this.context.sha256_fastest ? await this.context.sha256_fastest( ) : { native: true, hash: this.context.sha256 };
    }
-}
 
-async function ciyam_harden_repeat( )
-{
-   if( ciyam_harden_num_repeat < ciyam_harden_num_repeats )
+   async loaded( )
    {
-      ++ciyam_harden_num_repeat;
-
-      ciyam_harden_result = await ciyam_harden_hash_rounds( ciyam_harden_chunk,
-       ciyam_harden_use_async, ciyam_harden_string_to_hash, ciyam_harden_result );
-
-      update_progress( ciyam_harden_num_repeat / ciyam_harden_num_repeats );
-
-      window.setTimeout( ciyam_harden_repeat, 10 );
+      return ( await this.hasher( ) ).native ? "(using async version)" : "(using non-async version)";
    }
-   else
+
+   async run( input )
    {
-      hide_progress( );
+      var hasher = await this.hasher( );
 
-      ciyam_harden_reset = ciyam_harden_need_reset;
+      if( ( input === null ) || ( input === "" ) )
+      {
+         this.set_reset( true );
+         this.need_reset = false;
 
-      ciyam_harden_result_callback( ciyam_harden_result );
-   }
-}
+         return { output: "(ready)" + ( this.hints( ) ? "\nemploy javascript harden <input>" : "" ) };
+      }
 
-async function ciyam_harden_execute( callback, input )
-{
-   console.log( "ciyam_harden_execute" );
+      if( this.reset )
+      {
+         this.set_reset( false );
+         this.need_reset = false;
 
-   var output_result = true;
+         this.text = input;
+         this.result = await this.constructor.rounds( hasher, 0, input );
 
-   if( ( input == null ) || ( input == "" ) )
-   {
-      output_result = false;
+         return { result: this.result, output: "(hash primed)" + ( this.hints( ) ? "\nemploy javascript harden <rounds>[:<repeats>])" : "" ) };
+      }
 
-      ciyam_harden_reset = true;
-      ciyam_harden_need_reset = false;
-
-      var output = "(ready)";
-
-      if( include_script_usage_hints )
-         output += "\nemploy javascript harden <input>";
-
-      callback( output );
-   }
-   else if( ciyam_harden_reset )
-   {
-      output_result = false;
-
-      ciyam_harden_reset = false;
-      ciyam_harden_need_reset = false;
-
-      ciyam_harden_string_to_hash = input;
-
-      ciyam_harden_result = await ciyam_harden_hash_rounds(
-       0, ciyam_harden_use_async, ciyam_harden_string_to_hash );
-
-      var output = "(hash primed)";
-
-      if( include_script_usage_hints )
-         output += "\nemploy javascript harden <rounds>[:<repeats>])"
-
-      callback( output );
-   }
-   else
-   {
-      var pos = input.indexOf( "+" );
-
-      if( pos == 0 )
+      if( input.indexOf( "+" ) === 0 )
          input = input.substring( 1 );
       else
-         ciyam_harden_need_reset = true;
+         this.need_reset = true;
 
-      pos = input.indexOf( ":" );
+      var colon = input.indexOf( ":" );
 
-      if( pos > 0 )
+      if( colon <= 0 )
       {
-         ciyam_harden_chunk = input.substr( 0, pos );
+         this.result = await this.constructor.rounds( hasher, input, this.text, this.result );
 
-         ciyam_harden_num_repeats = input.substring( pos + 1 );
-
-         output_result = false;
-
-         ciyam_harden_num_repeat = 0;
-
-         ciyam_harden_result_callback = callback;
-
-         show_progress( );
-
-         window.setTimeout( ciyam_harden_repeat, 10 );
+         return this.result;
       }
-      else
-         ciyam_harden_result = await ciyam_harden_hash_rounds( input,
-          ciyam_harden_use_async, ciyam_harden_string_to_hash, ciyam_harden_result );
-   }
 
-   if( output_result )
-      callback( ciyam_harden_result );
-}
+      var chunk = input.substr( 0, colon );
+      var repeats = Number( input.substring( colon + 1 ) );
+
+      if( this.context.progress )
+         this.context.progress( 0 );
+
+      for( var repeat = 1; repeat <= repeats; repeat++ )
+      {
+         // NOTE: Let go by the page - unloaded, or the session ended - so it ends here, and keeps nothing.
+         if( this.context.stopped && this.context.stopped( ) )
+         {
+            this.result = null;
+            this.text = "";
+
+            return null;
+         }
+
+         this.result = await this.constructor.rounds( hasher, chunk, this.text, this.result );
+
+         if( this.context.expose )
+            this.context.expose( "result", this.result );
+
+         if( this.context.progress )
+            this.context.progress( repeat / repeats );
+
+         await new Promise( function( resolve ) { setTimeout( resolve, 10 ); } );
+      }
+
+      if( this.context.progress )
+         this.context.progress( null );
+
+      this.set_reset( this.need_reset );
+
+      return this.result;
+   }
+} );

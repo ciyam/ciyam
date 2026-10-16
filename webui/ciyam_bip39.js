@@ -1,80 +1,55 @@
-var ciyam_bip39_result = null;
+// Copyright (c) 2026 CIYAM Developers
+//
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-var ciyam_bip39_has_shown_hints = false;
-
-async function ciyam_bip39_at_load( callback )
+// NOTE: Twelve words from 32 hex digits of entropy, and back - or new random words - a module ("Modules" in "ciyam.js"), with
+// "bip39.min.js". "convert( input )" is its core. A wrong input answers with itself and what was wrong, on the next line, as
+// before - "(incorrect mnemonics)" or "(invalid entropy)" - so a list carries on.
+ciyam_register_module( class extends ciyam_module
 {
-   console.log( "ciyam_bip39_at_load" );
-
-   ciyam_bip39_result = null;
-
-   if( init_script_value != null )
-      ciyam_bip39_execute( callback, init_script_value );
-   else
+   static about =
    {
-      ciyam_bip39_result = BIP39.generateMnemonic( );
+      name: "ciyam_bip39",
+      version: "2",
+      description: "twelve words from entropy and back, or new random words",
+      example: "{@1}",
+      hint_once: true,
+      needs: [ "bip39" ]
+   };
 
-      var output = ciyam_bip39_result;
-
-      if( include_script_usage_hints )
-      {
-         ciyam_bip39_has_shown_hints = true;
-
-         output += "\nemploy javascript bip39 {@1}";
-      }
-
-      callback( output );
-   }
-}
-
-async function ciyam_bip39_execute( callback, input )
-{
-   console.log( "ciyam_bip39_execute" );
-
-   ciyam_bip39_result = input;
-
-   if( ( input == null ) || ( input == "" ) )
-      ciyam_bip39_result = BIP39.generateMnemonic( );
-   else
+   static library( )
    {
-      var pos = input.indexOf( " " );
+      if( typeof BIP39 === "undefined" )
+         throw new Error( "bip39 needs bip39.min.js" );
 
-      if( pos > 0 )
-      {
-         if( !BIP39.validateMnemonic( input ) )
-            ciyam_bip39_result = input + "\n(incorrect mnemonics)";
-         else
-            ciyam_bip39_result = BIP39.mnemonicToEntropy( input );
-      }
-      else
-      {
-         var is_valid_entropy = true;
-
-         if( input.length != 32 )
-            is_valid_entropy = false;
-         else
-         {
-            for( i = 0; i < input.length; i++ )
-            {
-               var next = input.substr( i, 1 ).toLowerCase( );
-
-               if( ( next < 0 ) || ( next > 9 ) )
-               {
-                  if( ( next < 'a' ) || ( next > 'f' ) )
-                  {
-                     is_valid_entropy = false;
-                     break;
-                  }
-               }
-            }
-         }
-
-         if( !is_valid_entropy )
-            ciyam_bip39_result = input + "\n(invalid entropy)";
-         else
-            ciyam_bip39_result = BIP39.entropyToMnemonic( input );
-      }
+      return BIP39;
    }
 
-   callback( ciyam_bip39_result );
-}
+   // NOTE: Nothing - new words; words (a space after the first) - their entropy; otherwise entropy - its words.
+   static convert( input )
+   {
+      var words = this.library( );
+
+      if( ( input === null ) || ( input === undefined ) || ( input === "" ) )
+         return words.generateMnemonic( );
+
+      if( input.indexOf( " " ) > 0 )
+         return words.validateMnemonic( input ) ? words.mnemonicToEntropy( input ) : input + "\n(incorrect mnemonics)";
+
+      return /^[0-9a-f]{32}$/i.test( input ) ? words.entropyToMnemonic( input ) : input + "\n(invalid entropy)";
+   }
+
+   // NOTE: Loading with nothing to convert answers with new words, and keeps them.
+   loaded( )
+   {
+      var words = this.constructor.convert( null );
+
+      return { result: words, output: words };
+   }
+
+   async run( input )
+   {
+      return this.constructor.convert( input );
+   }
+} );

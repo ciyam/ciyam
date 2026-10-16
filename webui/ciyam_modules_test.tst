@@ -21,4 +21,20 @@ ok   progress through the page's own functions - shown at nought, hidden at the 
 ok   - and other modules
 ok   a module that runs nothing says it loaded
 
+== bip39 =======================================================
+ok   entropy to its words, and back - either case
+ok   - nothing: twelve new words
+ok   - wrong words or entropy answer with themselves and what was wrong
+ok   through the old globals - loading answers with new words, and keeps them; no second usage line
+
+== rpc_unlock ==================================================
+ok   the time, then the hash of the time and the password's hash - drawn as a QR code
+ok   - its usage hint the command with the answer in it
+
+== harden ======================================================
+ok   in steps - primed, rounds, rounds repeated, then ready again
+ok   - '(ready)' leaves the result kept before
+ok   'reset' kept where a list waits on it - not ready once primed, ready after a repeat
+ok   let go while running - it stops, says nothing and keeps nothing on the page
+
 All checks passed.
