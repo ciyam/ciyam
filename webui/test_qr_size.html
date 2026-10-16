@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2026 CIYAM Developers
+
+Distributed under the MIT/X11 software license, please refer to the file
+license.txt in the root project directory or
+http://www.opensource.org/licenses/mit-license.php.
+-->
+<!--
+   NOTE: How big a QR code a phone reads off a screen - secure messages are limited to what one carries (Ian, 2026-10-15).
+   Show a code on a computer; scan it on the phone with this same page (Scan), the way "test_bip39.html" scans, or with the
+   phone's camera app. The camera needs https - open it on the phone as https://<the node's address>/test_qr_size.html.
+
+   Each code is random text in base64's alphabet (as an encrypted message would travel), ending "~" and a CRC-32 of the rest,
+   so the phone can say whether it read every byte right. "qrcode.min.js" makes at most 2950 bytes at L, 2328 at M, 1660 at
+   Q and 1270 at H; a Pixel read up to about 1660 off a screen.
+-->
+<html lang="en">
+
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test QR Size</title>
+
+<meta http-equiv="Permissions-Policy" content="camera=self">
+
+<script>( function( ) { var t = localStorage.getItem( "theme" ); if( t ) document.documentElement.setAttribute( "data-theme", t ); } )( );</script>
+
+<script type="text/javascript" src="qrcode.min.js"></script>
+<script type="text/javascript" src="html5-qrcode.min.js"></script>
+
+<style>
+   :root { --bg: #f6f7f9; --card: #ffffff; --text: #1b1f2a; --dim: #5d6474; --line: #d9dde5; --ok: #1e7f4f; --bad: #b3261e; --accent: #5b6cf6; }
+   @media ( prefers-color-scheme: dark ) { :root:not( [data-theme="light"] ) { --bg: #14161c; --card: #1e2129; --text: #e7e9ee; --dim: #9aa1b1;
+    --line: #343845; --ok: #5fd39a; --bad: #ff8a80; --accent: #8c98ff; } }
+   :root[data-theme="dark"] { --bg: #14161c; --card: #1e2129; --text: #e7e9ee; --dim: #9aa1b1; --line: #343845; --ok: #5fd39a; --bad: #ff8a80;
+    --accent: #8c98ff; }
+   * { box-sizing: border-box; }
+   body { margin: 0; background: var( --bg ); color: var( --text ); font: 15px/1.45 system-ui, sans-serif; }
+   main { max-width: 980px; margin: 0 auto; padding: 16px; }
+   h1 { font-size: 20px; margin: 0 0 4px; }
+   p.lead { color: var( --dim ); margin: 0 0 16px; }
+   .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+   .tabs button, .row button { font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid var( --line ); background: var( --card );
+    color: var( --text ); cursor: pointer; }
+   .tabs button[aria-pressed="true"] { border-color: var( --accent ); color: var( --accent ); font-weight: 600; }
+   .card { background: var( --card ); border: 1px solid var( --line ); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+   .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin-bottom: 12px; }
+   label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var( --dim ); }
+   select, input { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var( --line ); background: var( --bg ); color: var( --text ); }
+   input[type="number"] { width: 110px; }
+   .facts { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; margin-bottom: 12px; }
+   .facts b { font-variant-numeric: tabular-nums; }
+   .code { background: #ffffff; display: inline-block; line-height: 0; }
+   canvas { image-rendering: pixelated; display: block; }
+   .error { color: var( --bad ); }
+   .ok { color: var( --ok ); font-weight: 600; }
+   .bad { color: var( --bad ); font-weight: 600; }
+   table { border-collapse: collapse; width: 100%; font-size: 14px; }
+   th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var( --line ); font-variant-numeric: tabular-nums; }
+   #reader { max-width: 520px; }
+   [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+   <h1>QR size test</h1>
+   <p class="lead">How many bytes a phone reads off this screen. Show a code here, scan it with the phone.</p>
+
+   <div class="tabs">
+      <button type="button" id="tab_show" aria-pressed="true">Show</button>
+      <button type="button" id="tab_scan" aria-pressed="false">Scan</button>
+   </div>
+
+   <section id="show_view">
+      <div class="card">
+         <div class="row">
+            <label>Bytes
+               <select id="size_pick"></select>
+            </label>
+            <label>or exactly
+               <input type="number" id="size_exact" min="16" max="2950" step="1" placeholder="e.g. 1500">
+            </label>
+            <label>Error correction
+               <select id="level_pick">
+                  <option value="L">L - 7%, the most bytes</option>
+                  <option value="M" selected>M - 15%</option>
+                  <option value="Q">Q - 25%</option>
+                  <option value="H">H - 30%</option>
+               </select>
+            </label>
+            <label>Pixels a module
+               <select id="scale_pick">
+                  <option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>8</option>
+               </select>
+            </label>
+            <button type="button" id="make">New code</button>
+         </div>
+         <div class="facts">
+            <span>Bytes <b id="fact_bytes">-</b></span>
+            <span>Version <b id="fact_version">-</b></span>
+            <span>Modules <b id="fact_modules">-</b></span>
+            <span>Check <b id="fact_check">-</b></span>
+         </div>
+         <p class="error" id="show_error" hidden></p>
+         <div class="code" id="code_box"></div>
+      </div>
+   </section>
+
+   <section id="scan_view" hidden>
+      <div class="card">
+         <p class="lead" id="scan_note">Point the camera at the code on the PC. Each read is checked against its CRC.</p>
+         <div id="reader"></div>
+      </div>
+      <div class="card">
+         <table>
+            <thead><tr><th>Bytes</th><th>Read</th><th>Took</th><th>At</th></tr></thead>
+            <tbody id="scan_rows"></tbody>
+         </table>
+      </div>
+   </section>
+</main>
+
+<script>
+"use strict";
+
+// NOTE: The library's largest at each level is 3 bytes under the standard's - 1270 at H, 1660 at Q, 2328 at M, 2950 at L.
+const c_sizes = [ 256, 512, 768, 1024, 1270, 1536, 1660, 2048, 2328, 2560, 2950 ];
+const c_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const c_check_length = 9; // NOTE: "~" and eight hex digits.
+
+// NOTE: CRC-32 (IEEE), as zip and PNG use - "123456789" gives "cbf43926".
+const c_crc_table = ( function( )
+{
+   const table = new Uint32Array( 256 );
+
+   for( let n = 0; n < 256; n++ )
+   {
+      let c = n;
+
+      for( let k = 0; k < 8; k++ )
+         c = ( c & 1 ) ? ( 0xedb88320 ^ ( c >>> 1 ) ) : ( c >>> 1 );
+
+      table[ n ] = c >>> 0;
+   }
+
+   return table;
+} )( );
+
+function crc32_hex( text )
+{
+   let crc = 0xffffffff;
+
+   for( let i = 0; i < text.length; i++ )
+      crc = c_crc_table[ ( crc ^ text.charCodeAt( i ) ) & 0xff ] ^ ( crc >>> 8 );
+
+   return ( ( crc ^ 0xffffffff ) >>> 0 ).toString( 16 ).padStart( 8, "0" );
+}
+
+function random_payload( bytes )
+{
+   const body_length = Math.max( 1, bytes - c_check_length );
+   const random = new Uint8Array( body_length );
+
+   crypto.getRandomValues( random );
+
+   let body = "";
+
+   for( let i = 0; i < body_length; i++ )
+      body += c_alphabet[ random[ i ] & 63 ];
+
+   return body + "~" + crc32_hex( body );
+}
+
+// NOTE: Whether a read came back whole - its length and its CRC.
+function check_read( text )
+{
+   const at = text.lastIndexOf( "~" );
+
+   if( ( at < 0 ) || ( text.length - at !== c_check_length ) )
+      return { ok: false, why: "no check at the end - not one of these codes, or cut short" };
+
+   const ok = ( crc32_hex( text.slice( 0, at ) ) === text.slice( at + 1 ).toLowerCase( ) );
+
+   return { ok: ok, why: ok ? "every byte right" : "CRC does not match - bytes read wrong" };
+}
+
+// ---------------------------------------------------------------- Show
+
+function chosen_size( )
+{
+   const exact = parseInt( document.getElementById( "size_exact" ).value, 10 );
+
+   return ( exact >= 16 ) ? exact : parseInt( document.getElementById( "size_pick" ).value, 10 );
+}
+
+function make_code( )
+{
+   const bytes = chosen_size( );
+   const level = document.getElementById( "level_pick" ).value;
+   const scale = parseInt( document.getElementById( "scale_pick" ).value, 10 );
+   const text = random_payload( bytes );
+   const box = document.getElementById( "code_box" );
+   const error = document.getElementById( "show_error" );
+
+   box.replaceChildren( );
+   error.hidden = true;
+
+   let qr;
+
+   try
+   {
+      // NOTE: Made off screen, then drawn here module by module - sharp at any scale, with the four-module quiet zone.
+      qr = new QRCode( document.createElement( "div" ), { text: text, width: 64, height: 64, correctLevel: QRCode.CorrectLevel[ level ] } );
+   }
+   catch( e )
+   {
+      error.textContent = bytes + " bytes is too big for one QR code at " + level + " - the most is " + { L: 2950, M: 2328, Q: 1660, H: 1270 }[ level ] + ".";
+      error.hidden = false;
+
+      [ "fact_bytes", "fact_version", "fact_modules", "fact_check" ].forEach( function( id ) { document.getElementById( id ).textContent = "-"; } );
+
+      return;
+   }
+
+   const model = qr._oQRCode;
+   const count = model.getModuleCount( );
+   const quiet = 4;
+   const canvas = document.createElement( "canvas" );
+
+   canvas.width = canvas.height = ( count + quiet * 2 ) * scale;
+
+   const context = canvas.getContext( "2d" );
+
+   context.fillStyle = "#ffffff";
+   context.fillRect( 0, 0, canvas.width, canvas.height );
+   context.fillStyle = "#000000";
+
+   for( let row = 0; row < count; row++ )
+      for( let col = 0; col < count; col++ )
+         if( model.isDark( row, col ) )
+            context.fillRect( ( col + quiet ) * scale, ( row + quiet ) * scale, scale, scale );
+
+   box.appendChild( canvas );
+
+   document.getElementById( "fact_bytes" ).textContent = String( text.length );
+   document.getElementById( "fact_version" ).textContent = String( ( count - 17 ) / 4 );
+   document.getElementById( "fact_modules" ).textContent = count + " x " + count;
+   document.getElementById( "fact_check" ).textContent = text.slice( -8 );
+}
+
+// ---------------------------------------------------------------- Scan
+
+let g_scanner = null;
+let g_scan_started = 0;
+let g_last_read = "";
+
+function on_read( text )
+{
+   // NOTE: The same code is read many times a second - each one counted once.
+   if( text === g_last_read )
+      return;
+
+   g_last_read = text;
+
+   const result = check_read( text );
+   const row = document.createElement( "tr" );
+   const cells = [ String( text.length ), result.why, ( ( Date.now( ) - g_scan_started ) / 1000 ).toFixed( 1 ) + " s", new Date( ).toLocaleTimeString( ) ];
+
+   cells.forEach( function( value, i )
+   {
+      const cell = document.createElement( "td" );
+
+      cell.textContent = value;
+
+      if( i === 1 )
+         cell.className = result.ok ? "ok" : "bad";
+
+      row.appendChild( cell );
+   } );
+
+   document.getElementById( "scan_rows" ).prepend( row );
+
+   g_scan_started = Date.now( );
+}
+
+function start_scan( )
+{
+   if( !window.isSecureContext )
+   {
+      document.getElementById( "scan_note" ).textContent = "The camera needs https - open this page as https://<the node's address>/test_qr_size.html.";
+
+      return;
+   }
+
+   if( g_scanner )
+      return;
+
+   document.getElementById( "scan_note" ).textContent = "Point the camera at the code on the PC. Each read is checked against its CRC. Reading with "
+    + ( ( "BarcodeDetector" in window ) ? "the phone's own barcode reader."
+    : "the library's decoder - this browser has no barcode reader of its own, so dense codes are harder." );
+
+   // NOTE: The whole frame, not a box - a dense code fills it; the phone's own barcode reader when it has one (Chrome on
+   // Android does), which reads dense codes far better than the library's.
+   g_scanner = new Html5QrcodeScanner( "reader", { fps: 15, rememberLastUsedCamera: true,
+    experimentalFeatures: { useBarCodeDetectorIfSupported: true } }, false );
+
+   g_scan_started = Date.now( );
+
+   g_scanner.render( on_read, function( ) { } );
+}
+
+function show_tab( name )
+{
+   document.getElementById( "show_view" ).hidden = ( name !== "show" );
+   document.getElementById( "scan_view" ).hidden = ( name !== "scan" );
+   document.getElementById( "tab_show" ).setAttribute( "aria-pressed", String( name === "show" ) );
+   document.getElementById( "tab_scan" ).setAttribute( "aria-pressed", String( name === "scan" ) );
+
+   if( name === "scan" )
+      start_scan( );
+}
+
+// ---------------------------------------------------------------- Start
+
+( function( )
+{
+   const pick = document.getElementById( "size_pick" );
+
+   c_sizes.forEach( function( size )
+   {
+      const option = document.createElement( "option" );
+
+      option.value = option.textContent = String( size );
+      option.selected = ( size === 1024 );
+
+      pick.appendChild( option );
+   } );
+
+   document.getElementById( "make" ).addEventListener( "click", make_code );
+   [ "size_pick", "level_pick", "scale_pick" ].forEach( function( id ) { document.getElementById( id ).addEventListener( "change", make_code ); } );
+   document.getElementById( "size_exact" ).addEventListener( "change", make_code );
+   document.getElementById( "tab_show" ).addEventListener( "click", function( ) { show_tab( "show" ); } );
+   document.getElementById( "tab_scan" ).addEventListener( "click", function( ) { show_tab( "scan" ); } );
+
+   // NOTE: A phone opens on Scan.
+   if( window.matchMedia( "(pointer: coarse)" ).matches )
+      show_tab( "scan" );
+   else
+      make_code( );
+} )( );
+</script>
+</body>
+</html>
