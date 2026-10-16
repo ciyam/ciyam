@@ -300,6 +300,7 @@ constexpr const char* c_special_variable_blockchain_height = "@blockchain_height
 constexpr const char* c_special_variable_blockchain_is_hub = "@blockchain_is_hub";
 constexpr const char* c_special_variable_fields_and_values = "@fields_and_values";
 constexpr const char* c_special_variable_generate_log_file = "@generate_log_file";
+constexpr const char* c_special_variable_index_keyed_items = "@index_keyed_items";
 constexpr const char* c_special_variable_last_suffixed_key = "@last_suffixed_key";
 constexpr const char* c_special_variable_limit_keyed_after = "@limit_keyed_after";
 constexpr const char* c_special_variable_limit_keyed_items = "@limit_keyed_items";
@@ -689,6 +690,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_is_hub );
       g_special_variable_names.push_back( c_special_variable_fields_and_values );
       g_special_variable_names.push_back( c_special_variable_generate_log_file );
+      g_special_variable_names.push_back( c_special_variable_index_keyed_items );
       g_special_variable_names.push_back( c_special_variable_last_suffixed_key );
       g_special_variable_names.push_back( c_special_variable_limit_keyed_after );
       g_special_variable_names.push_back( c_special_variable_limit_keyed_items );
@@ -1158,6 +1160,15 @@ string get_system_variable( const var_name& var, bool is_internal )
 
    size_t limit_keyed_items = 0;
 
+   bool show_keyed_index_only = false;
+
+   if( has_session_variable( c_special_variable_index_keyed_items ) )
+   {
+      show_keyed_index_only = true;
+
+      set_session_variable( c_special_variable_index_keyed_items, "" );
+   }
+
    if( has_session_variable( c_special_variable_limit_keyed_after ) )
    {
       limit_keyed_after = get_session_variable( c_special_variable_limit_keyed_after );
@@ -1546,7 +1557,10 @@ string get_system_variable( const var_name& var, bool is_internal )
                   if( !retval.empty( ) )
                      retval += '\n';
 
-                  retval += ci->first + ' ' + ci->second;
+                  if( show_keyed_index_only )
+                     retval += ci->first;
+                  else
+                     retval += ci->first + ' ' + ci->second;
 
                   if( ++num == limit_keyed_items )
                      break;
