@@ -174,9 +174,10 @@
    position: absolute;
 }
 
+/* NOTE: Under the box on a phone - above it, the browser's own clipboard menu covered it (Ian, 2026-10-16, Vanadium). */
 .chat-format-bar.is-docked
 {
-   margin-bottom: 8px;
+   margin-top: 8px;
    justify-content: space-between;
    box-shadow: none;
    background: var(--color-chat-bg-raised);
@@ -295,7 +296,7 @@
    color: var(--color-chat-text-faint);
 }
 
-/* NOTE: On a phone the bar docks above the box when words are selected - said under the box, the only way to find it. */
+/* NOTE: On a phone the bar docks under the box when words are selected - said there, the only way to find it. */
 .chat-format-hint
 {
    display: none;

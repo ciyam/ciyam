@@ -4196,8 +4196,8 @@ function remember_format_selection( )
       g_format_selection = { start: input.selectionStart, end: input.selectionEnd };
 }
 
-// NOTE: The bar while words are selected in the box - floating over them on a computer, docked above the box on a phone,
-// where the phone's own menu comes up over the selection (Damon, 2026-10-15).
+// NOTE: The bar while words are selected in the box - floating over them on a computer, docked under the box on a phone,
+// where the phone's own menu comes up over the selection (Damon, 2026-10-15) and covered it above the box (Ian, Vanadium).
 function update_format_bar( )
 {
    var input = document.getElementById( "composer_input" );
