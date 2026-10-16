@@ -267,6 +267,41 @@ async function steps( module_class, list )
    check( "let go while running - it stops, says nothing and keeps nothing on the page", [ answers.length, page_of.ciyam_harden_result,
     page_of.ciyam_harden_reset ], [ 0, undefined, false ] );
 
+   heading( "chacha20" );
+
+   global.ciyam_sha256_hex = m.ciyam_sha256_hex;
+
+   require( "./ciyam_chacha20.js" );
+
+   var chacha = m.ciyam_module_named( "chacha20" );
+   var digest = require( "crypto" );
+
+   // NOTE: From Ian's own "crypt -cc" (built in the test node, 2026-10-16) - a file of zeros under "test key" comes back as
+   // the keystream itself; a message under "pass"; 70000 bytes under "k", past "crypt_stream.cpp"'s 32768-byte buffer.
+   check( "as crypt -cc - 200 zero bytes, the keystream itself", chacha.hex_of( await chacha.crypt( "test key", new Uint8Array( 200 ) ) ),
+    "f0a96087d5413adfe34ca592275ff992e9cc47512976820a5a3d0668a50a83ea976fc51e738d8f93329768481b7ca7ed2856d04b6f89c9548274e0ea76a1"
+    + "4866d267cdc1a38af4090cdc5665304661a1dcb54bad6b6d9bdf37e637a07ccf1d980f3818f06ec8934bce9949d468f67266a38cb95c82758de86a16db"
+    + "764bdb4e38a9303c3cc7e6dc1ad41c62a61e52667ebfd922325d0ff3c45cefac18ee7ecfc42df29e8023af5402e0d00e644de41ff0bdb1d2adf7074b98"
+    + "1a5137ff47726855a7f520318e70dc21" );
+   check( "- a message, and back with the same call", [ chacha.hex_of( await chacha.crypt( "pass",
+    new TextEncoder( ).encode( "Hello, CIYAM - a short secure message." ) ) ), new TextDecoder( ).decode( await chacha.crypt( "pass",
+    chacha.bytes_of( "a3b47d0962550942d63978a689509a63bbd382fb87bed0f7a965488576ab0b0c58d89e8d8894" ) ) ) ],
+    [ "a3b47d0962550942d63978a689509a63bbd382fb87bed0f7a965488576ab0b0c58d89e8d8894", "Hello, CIYAM - a short secure message." ] );
+   check( "- 70000 bytes, past its buffer", digest.createHash( "sha256" ).update( await chacha.crypt( "k", new Uint8Array( 70000 ) ) ).digest( "hex" ),
+    "9616147e42ec6d3d91000c0ae3a8fa19d8697c6d60ffe79029f7a32a9611de72" );
+
+   // NOTE: RFC 8439, 2.4.2 - its key, nonce and counter, "Ladies and Gentlemen of the class of '99...".
+   check( "the standard's own test - RFC 8439", chacha.hex_of( chacha.xor( Uint8Array.from( { length: 32 }, function( v, i ) { return i; } ),
+    chacha.bytes_of( "000000000000004a00000000" ), 1, new TextEncoder( ).encode( "Ladies and Gentlemen of the class of '99: If I could offer you "
+    + "only one tip for the future, sunscreen would be it." ) ) ), "6e2e359a2568f98041ba0728dd0d6981e97e7aec1d4360c20a27afccfd9fae0bf91b65c5524733ab"
+    + "8f593dabcd62b3571639d624e65152ab8f530c359f0861d807ca0dbf500d6a6156a38e088a22b65e52bc514d16ccf806818ce91ab77937365af90bbf74a35be6b40b8eedf2"
+    + "785e42874d" );
+   check( "through run - '<password> <hex>', and again to decrypt", [ await new chacha( { } ).run( "pass 48656c6c6f" ),
+    await new chacha( { } ).run( "pass a3b47d0962" ) ], [ "a3b47d0962", "48656c6c6f" ] );
+   check( "- a password alone, or data not hex, said", [ await new chacha( { } ).run( "pass" ).catch( function( e ) { return e.message; } ),
+    await new chacha( { } ).run( "pass xyz" ).catch( function( e ) { return e.message; } ) ],
+    [ "Give a password and then hex - <password> <hex>", "Not hex - an even number of the digits 0 to 9 and a to f." ] );
+
    console.log( "" );
    console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

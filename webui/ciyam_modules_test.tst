@@ -37,4 +37,12 @@ ok   - '(ready)' leaves the result kept before
 ok   'reset' kept where a list waits on it - not ready once primed, ready after a repeat
 ok   let go while running - it stops, says nothing and keeps nothing on the page
 
+== chacha20 ====================================================
+ok   as crypt -cc - 200 zero bytes, the keystream itself
+ok   - a message, and back with the same call
+ok   - 70000 bytes, past its buffer
+ok   the standard's own test - RFC 8439
+ok   through run - '<password> <hex>', and again to decrypt
+ok   - a password alone, or data not hex, said
+
 All checks passed.
