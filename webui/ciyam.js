@@ -1339,6 +1339,257 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
    }
 }
 
+// ====================================================================
+// Modules - "ciyam_<name>.js" plug-in algorithms (Damon, 2026-10-16; agreed with Ian - "JavaScript Modules Design")
+// ====================================================================
+//
+// A module is a class - "about" says what it is, "run( input )" answers - registered with "ciyam_register_module( )". Its
+// file is that one call, holding a class expression, so loading it again does not fail as a second "class" would:
+//
+//    ciyam_register_module( class extends ciyam_module
+//    {
+//       static about = { name: "ciyam_echo", version: "1", description: "echoes its input", example: "test",
+//        hint: "(i.e. will echo the provided argument)", needs: [ ] };
+//
+//       async run( input )
+//       {
+//          return input;
+//       }
+//    } );
+//
+// "about.name" is written as the file is named - "ciyam_echo" for "ciyam_echo.js" - so the server's renaming of a module
+// opened to become an account's own ("ciyam_<name>" to "ciyam_<PIN>") renames it too; the registry knows it as "echo".
+//
+// A page uses one through "ciyam_module_named( name )" - its class, for its own functions and "new" - and the console and Ian's
+// harness through the "ciyam_<name>_at_load", "_execute" and "_result" globals registering makes ("ciyam_module_legacy( )"),
+// so the lists that "wait ciyam_<name>_result" keep working. What a module needs from the page - progress, a QR code drawn,
+// hashing - comes in its "context" ("ciyam_module_page_context( )"), not from page globals.
+
+var ciyam_registered_modules = { };
+
+// NOTE: The base every module extends. "run( input )" resolves to the result, or to { result, output } when what is said
+// differs from what is kept (the harness's "(hash primed)"); an error is thrown. "loaded( )" is what loading with no input
+// says.
+class ciyam_module
+{
+   constructor( context )
+   {
+      this.context = context || { };
+   }
+
+   loaded( )
+   {
+      return "(" + ciyam_module_short_name( this.constructor ) + " loaded)";
+   }
+
+   async run( input )
+   {
+      throw new Error( ciyam_module_short_name( this.constructor ) + " does not run" );
+   }
+}
+
+// NOTE: "ciyam_xor_hex_data" as "xor_hex_data" - the name the console, the lists and "ciyam_module_named( )" use.
+function ciyam_module_short_name( module_class )
+{
+   return String( module_class.about.name ).substring( "ciyam_".length );
+}
+
+function ciyam_register_module( module_class )
+{
+   var about = ( module_class && module_class.about ) || { };
+
+   if( !/^ciyam_[A-Za-z0-9_]+$/.test( String( about.name || "" ) ) )
+      throw new Error( "A module needs a name in its 'about', as its file is named - 'ciyam_' and letters, digits or '_'." );
+
+   ciyam_registered_modules[ ciyam_module_short_name( module_class ) ] = module_class;
+
+   if( typeof window !== "undefined" )
+      ciyam_module_legacy( module_class, window );
+
+   return module_class;
+}
+
+// NOTE: A registered module's class, or null.
+function ciyam_module_named( name )
+{
+   return ciyam_registered_modules[ name ] || null;
+}
+
+function ciyam_unregister_module( name )
+{
+   var known = ( ciyam_registered_modules[ name ] !== undefined );
+
+   delete ciyam_registered_modules[ name ];
+
+   return known;
+}
+
+// NOTE: What a module says of itself, as lines - for the console's help.
+function ciyam_module_about( name )
+{
+   var module_class = ciyam_module_named( name );
+
+   if( module_class === null )
+      return null;
+
+   var about = module_class.about;
+   var lines = [ name + ( about.version ? " " + about.version : "" ) + ( about.description ? " - " + about.description : "" ) ];
+
+   if( about.example !== undefined )
+      lines.push( "employ javascript " + name + " " + about.example );
+
+   if( about.needs && about.needs.length )
+      lines.push( "needs: " + about.needs.join( ", " ) );
+
+   return lines;
+}
+
+// NOTE: SHA-256 of text, as lower-case hex - the browser's own where it has one (a secure context: https, or localhost),
+// "sha2.min.js" otherwise. Decided once a page, for every module that hashes (Ian, 2026-10-09).
+var ciyam_sha256_native = null;
+
+async function ciyam_sha256_hex( text )
+{
+   if( ciyam_sha256_native === null )
+      ciyam_sha256_native = ( typeof crypto !== "undefined" ) && !!crypto.subtle && ( typeof crypto.subtle.digest === "function" );
+
+   if( ciyam_sha256_native )
+   {
+      var digest = await crypto.subtle.digest( "SHA-256", new TextEncoder( ).encode( String( text ) ) );
+
+      return Array.from( new Uint8Array( digest ), function( b ) { return b.toString( 16 ).padStart( 2, "0" ); } ).join( "" );
+   }
+
+   if( typeof hex_sha256 === "function" )
+      return hex_sha256( String( text ) ).toLowerCase( );
+
+   throw new Error( "SHA-256 is not available - this page needs sha2.min.js, or https." );
+}
+
+// NOTE: What the page offers a module - its progress ("fraction" 0 to 1, null when done), a QR code drawn, hashing, and other
+// modules. Through the harness's own page functions and its "test_image" where the page has them, as the console does.
+function ciyam_module_page_context( host )
+{
+   var page = host || ( ( typeof window !== "undefined" ) ? window : { } );
+
+   return {
+      progress: function( fraction )
+      {
+         if( fraction === null )
+         {
+            if( typeof page.hide_progress === "function" )
+               page.hide_progress( );
+         }
+         else if( typeof page.update_progress === "function" )
+         {
+            if( ( fraction === 0 ) && ( typeof page.show_progress === "function" ) )
+               page.show_progress( );
+
+            page.update_progress( fraction );
+         }
+      },
+      show_qr: function( text )
+      {
+         var holder = ( typeof document !== "undefined" ) ? document.getElementById( "test_image" ) : null;
+
+         if( ( holder === null ) || ( typeof QRCode !== "function" ) )
+            return false;
+
+         holder.textContent = "";
+
+         new QRCode( holder, String( text ) );
+
+         return true;
+      },
+      sha256: ciyam_sha256_hex,
+      module: ciyam_module_named
+   };
+}
+
+// NOTE: The globals the console, Ian's harness and the lists use - "ciyam_<name>_at_load( callback )" (with the page's
+// "init_script_value" run at once), "_execute( callback, input )" and "_result" - made for a registered module. Usage
+// hints ("include_script_usage_hints") as the old modules gave them: on loading, "employ javascript <name> <example>";
+// with the first answer, its "hint".
+function ciyam_module_legacy( module_class, host )
+{
+   var about = module_class.about;
+   var name = ciyam_module_short_name( module_class );
+   var prefix = about.name;
+   var instance = null;
+   var shown_hint = false;
+
+   function hints_wanted( )
+   {
+      return !!host.include_script_usage_hints;
+   }
+
+   async function answer( callback, input )
+   {
+      var out = await instance.run( input );
+
+      var said = ( out !== null ) && ( typeof out === "object" );
+      var result = said ? out.result : out;
+      var output = ( said && ( out.output !== undefined ) ) ? out.output : result;
+
+      host[ prefix + "_result" ] = result;
+
+      output = ( ( output === null ) || ( output === undefined ) ) ? "" : String( output );
+
+      if( hints_wanted( ) && !shown_hint && about.hint )
+      {
+         shown_hint = true;
+
+         output += "\n" + about.hint;
+      }
+
+      callback( output );
+   }
+
+   host[ prefix + "_result" ] = null;
+
+   host[ prefix + "_at_load" ] = async function( callback )
+   {
+      instance = new module_class( ciyam_module_page_context( host ) );
+      shown_hint = false;
+
+      host[ prefix + "_result" ] = null;
+
+      var input = ( host.init_script_value === undefined ) ? null : host.init_script_value;
+
+      if( input !== null )
+         return answer( callback, input );
+
+      var output = String( await instance.loaded( ) );
+
+      if( hints_wanted( ) && ( about.example !== undefined ) )
+         output += "\nemploy javascript " + name + " " + about.example;
+
+      callback( output );
+   };
+
+   host[ prefix + "_execute" ] = async function( callback, input )
+   {
+      if( instance === null )
+         instance = new module_class( ciyam_module_page_context( host ) );
+
+      return answer( callback, ( input === undefined ) ? null : input );
+   };
+}
+
+if( typeof module !== "undefined" )
+{
+   module.exports = {
+      ciyam_module: ciyam_module,
+      ciyam_module_named: ciyam_module_named,
+      ciyam_register_module: ciyam_register_module,
+      ciyam_unregister_module: ciyam_unregister_module,
+      ciyam_module_about: ciyam_module_about,
+      ciyam_module_legacy: ciyam_module_legacy,
+      ciyam_module_page_context: ciyam_module_page_context,
+      ciyam_sha256_hex: ciyam_sha256_hex
+   };
+}
+
 if( typeof process !== "undefined" )
 {
    var offset = 2;

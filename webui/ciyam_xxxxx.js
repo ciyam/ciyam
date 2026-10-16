@@ -1,46 +1,26 @@
-var ciyam_xxxxx_result = null;
+// Copyright (c) 2026 CIYAM Developers
+//
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-var ciyam_xxxxx_has_shown_hints = false;
-
-async function ciyam_xxxxx_at_load( callback )
+// NOTE: The template for a module - copy it as "ciyam_<name>.js" and change "ciyam_xxxxx" to match. One call, registering a
+// class: "about" says what it is (the console's help, the usage hints), and "run( input )" answers - the result, or an error
+// thrown. See "Modules" in "ciyam.js" for the rest - "loaded( )", { result, output }, and the "context" (progress, a QR code,
+// hashing). Opened in the console to become an account's own, the server renames "ciyam_xxxxx" to "ciyam_<PIN>".
+ciyam_register_module( class extends ciyam_module
 {
-   console.log( "ciyam_xxxxx_at_load" );
-
-   ciyam_xxxxx_result = null;
-
-   if( init_script_value != null )
-      ciyam_xxxxx_execute( callback, init_script_value );
-   else
+   static about =
    {
-      var output = "(ciyam_xxxxx loaded)";
+      name: "ciyam_xxxxx",
+      version: "2",
+      description: "echoes its input - the template for a module",
+      example: "test",
+      hint: "(i.e. will echo the provided argument)",
+      needs: [ ]
+   };
 
-      // NOTE: This should be simplified.
-      if( include_script_usage_hints )
-         output += "\nemploy javascript xxxxx test";
-
-      output = output.replaceAll( "ciyam_", "" );
-
-      callback( output );
-   }
-}
-
-async function ciyam_xxxxx_execute( callback, input )
-{
-   console.log( "ciyam_xxxxx_execute" );
-
-   if( input == null )
-      input = "";
-
-   ciyam_xxxxx_result = input;
-
-   var output = ciyam_xxxxx_result;
-
-   if( include_script_usage_hints && !ciyam_xxxxx_has_shown_hints )
+   async run( input )
    {
-      ciyam_xxxxx_has_shown_hints = true;
-
-      output += "\n(i.e. will echo the provided argument)"
+      return ( input === null ) ? "" : input;
    }
-
-   callback( output );
-}
+} );

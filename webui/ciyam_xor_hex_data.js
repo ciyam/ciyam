@@ -1,85 +1,64 @@
-var ciyam_xor_hex_data_result = null;
+// Copyright (c) 2026 CIYAM Developers
+//
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-var ciyam_xor_hex_data_has_shown_hints = false;
-
-function ciyam_xor_hex_data_xor_next( input )
+// NOTE: XORs hex with the result before it - a module ("Modules" in "ciyam.js"). "xor( a, b )" is its core, for a page to use
+// directly (Home's setting up mixes the node's suggestion with the person's randomness); "run( input )" keeps the running
+// result in the instance, where it was a global.
+ciyam_register_module( class extends ciyam_module
 {
-   var hex_result = '';
-
-   var hex_current = ciyam_xor_hex_data_result;
-   var hex_implant = input;
-
-   if( ( hex_current == null ) || ( hex_current == "" ) )
-      hex_current = "00";
-   else if( ( hex_current.length % 2 ) != 0  )
-      hex_current += "0";
-
-   if( ( hex_implant == null ) || ( hex_implant == "" ) )
-      hex_implant = "00";
-   else if( ( hex_implant.length % 2 ) != 0  )
-      hex_implant += "0";
-
-   if( hex_current.length < hex_implant.length )
-      hex_current = hex_current.padStart( hex_implant.length, "0" );
-   else if( hex_implant.length < hex_current.length )
-      hex_implant = hex_implant.padStart( hex_current.length, "0" );
-
-   for( i = 0; i < hex_current.length; i += 2 )
+   static about =
    {
-      var new_hex = hex_implant.charAt( i );
-      new_hex += hex_implant.charAt( i + 1 );
+      name: "ciyam_xor_hex_data",
+      version: "2",
+      description: "XORs hex with the result before it",
+      example: "01020304",
+      hint: "(i.e. XORs the prior result with hex input)",
+      needs: [ ]
+   };
 
-      var new_val = parseInt( new_hex, 16 );
+   // NOTE: Two hex strings XORed a byte at a time - each of odd length given a trailing "0", the shorter padded at its start
+   // with zeros, an empty one taken as "00" - in lower case.
+   static xor( a, b )
+   {
+      var current = ( ( a === null ) || ( a === undefined ) || ( a === "" ) ) ? "00" : String( a );
+      var implant = ( ( b === null ) || ( b === undefined ) || ( b === "" ) ) ? "00" : String( b );
 
-      var old_hex = hex_current.charAt( i );
-      old_hex += hex_current.charAt( i + 1 );
+      if( ( current.length % 2 ) !== 0 )
+         current += "0";
 
-      var old_val = parseInt( old_hex, 16 );
+      if( ( implant.length % 2 ) !== 0 )
+         implant += "0";
 
-      var new_val = ( old_val ^ new_val );
+      if( current.length < implant.length )
+         current = current.padStart( implant.length, "0" );
+      else if( implant.length < current.length )
+         implant = implant.padStart( current.length, "0" );
 
-      if( new_val < 16 )
-         hex_result += '0';
+      var result = "";
 
-      hex_result += new_val.toString( 16 );
+      for( var i = 0; i < current.length; i += 2 )
+      {
+         var value = parseInt( current.substr( i, 2 ), 16 ) ^ parseInt( implant.substr( i, 2 ), 16 );
+
+         result += ( value < 16 ? "0" : "" ) + value.toString( 16 );
+      }
+
+      return result;
    }
 
-   return hex_result;
-}
-
-async function ciyam_xor_hex_data_at_load( callback )
-{
-   console.log( "ciyam_xor_hex_data_at_load" );
-
-   ciyam_xor_hex_data_result = null;
-
-   if( init_script_value != null )
-      ciyam_xor_hex_data_execute( callback, init_script_value );
-   else
+   constructor( context )
    {
-      var output = "(xor_hex_data loaded)";
+      super( context );
 
-      if( include_script_usage_hints )
-         output += "\nemploy javascript xor_hex_data 01020304";
-
-      callback( output );
-   }
-}
-
-async function ciyam_xor_hex_data_execute( callback, input )
-{
-   console.log( "ciyam_xor_hex_data_execute" );
-
-   var output = ciyam_xor_hex_data_xor_next( input );
-
-   ciyam_xor_hex_data_result = output;
-
-   if( include_script_usage_hints && !ciyam_xor_hex_data_has_shown_hints )
-   {
-      ciyam_xor_hex_data_has_shown_hints = true;
-
-      output += "\n(i.e. XORs the prior result with hex input)"
+      this.result = null;
    }
 
-   callback( output );
-}
+   async run( input )
+   {
+      this.result = this.constructor.xor( this.result, input );
+
+      return this.result;
+   }
+} );
