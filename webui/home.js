@@ -680,16 +680,11 @@ function setup_update_strength( )
    set_text( "setup_strength_label", strength.text );
 }
 
-// NOTE: Ian's "xor_hex_data" - the node's suggestion with the person's randomness.
+// NOTE: Ian's "xor_hex_data" - the node's suggestion with the person's randomness, through the module's own "xor( )"
+// ("ciyam_module_named( )") rather than setting its global and calling into it.
 function setup_mix( suggested, mine )
 {
-   ciyam_xor_hex_data_result = suggested;
-
-   var mixed = ciyam_xor_hex_data_xor_next( mine );
-
-   ciyam_xor_hex_data_result = null;
-
-   return mixed;
+   return ciyam_module_named( "xor_hex_data" ).xor( suggested, mine );
 }
 
 function setup_browser_hex( )
