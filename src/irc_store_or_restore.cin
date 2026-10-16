@@ -110,23 +110,23 @@ NEXT_ROOM=@repstr:@irc_names_/@keyed_irc_:$NEXT_ROOM
 NEXT_EDIT_ROOM=@strlit:%NEXT_ROOM%_ME
 NEXT_PINS_ROOM=@strlit:%NEXT_ROOM%_MP
 ;
-NEXT_QUEUE_PREFIX=@repstr:@keyed_/@queue_:$NEXT_ROOM
-;
-OLDEST_QUEUED_MESSAGE=
-;
-; NOTE: Finds the oldest queued room record across all users.
-.system_variable %NEXT_QUEUE_PREFIX%_***
-@ifdef $OUTPUT
-~echo -e "$OUTPUT" | cut -c 1-13 | sort | head -c 13 >$IRC_TEMP_FILE
-OLDEST_QUEUED_MESSAGE=@file:$IRC_TEMP_FILE
-@endif
-;
 .session_variable @limit_keyed_items 25
 ;
 .system_variable $NEXT_EDIT_ROOM
 MESSAGE_EDIT_LINES=$OUTPUT
 ;
 @ifdef $MESSAGE_EDIT_LINES
+;
+NEXT_QUEUE_PREFIX=@repstr:@keyed_/@queue_:$NEXT_ROOM
+;
+OLDEST_QUEUED_MESSAGE=
+;
+; NOTE: Finds the oldest queued unix unique key value for any user.
+.system_variable %NEXT_QUEUE_PREFIX%_***
+@ifdef $OUTPUT
+~echo -e "$OUTPUT" | cut -c 1-13 | sort | head -c 13 >$IRC_TEMP_FILE
+OLDEST_QUEUED_MESSAGE=@file:$IRC_TEMP_FILE
+@endif
 ;
 @:CHECK_EDIT_LOOP
 ;
