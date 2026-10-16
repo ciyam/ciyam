@@ -333,6 +333,16 @@ ASC=@hexasc:$HEX
 #$ASC
 HASH=@sha256:$ASC
 #$HASH
+ASCTEXT=This is a test...
+#$ASCTEXT
+ENCODED=@aschex:$ASCTEXT
+#$ENCODED
+ENCRYPT=@crypt:test:$ENCODED
+#$ENCRYPT
+DECRYPT=@crypt:test:$ENCRYPT
+#$DECRYPT
+DECODED=@hexasc:$DECRYPT
+#$DECODED
 X=x
 Y=y
 @ifeq $X $Y
