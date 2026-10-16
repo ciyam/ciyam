@@ -340,6 +340,9 @@ check( "this account's own", cp.parse_script_line( "load script ***" ).name, "**
 check( "load needs a name", cp.parse_script_line( "load script" ), { kind: "error", message: "Name the script - load script <name> [<input>]" } );
 check( "no path in a name", cp.parse_script_line( "load script ../secret" ).kind, "error" );
 check( "no quotes in a name", cp.parse_script_line( "eval script a\"b 1" ).kind, "error" );
+check( "about script is a script line", cp.is_javascript_line( "about script xor_hex_data" ), true );
+check( "about - what a module says of itself, by name", [ cp.parse_script_line( "about script xor_hex_data" ),
+ cp.parse_script_line( "about script" ).kind ], [ { kind: "script", verb: "about", name: "xor_hex_data", arg: null }, "error" ] );
 check( "not a script line", [ cp.parse_script_line( "view scripts" ), cp.parse_script_line( "status" ) ], [ null, null ] );
 
 check( "a global's name", [ cp.is_global_name( "ciyam_harden_result" ), cp.is_global_name( "$x" ) ], [ true, true ] );

@@ -754,23 +754,23 @@ function parse_name_list( response )
 // them - another account's by admin alone ("script_allowed( )") - see "parse_script_line( )".
 function is_javascript_line( text )
 {
-   return /^~?(load|reload|eval|exec|employ|execute|result|unload)\s+(script|scripts|javascript|javascripts)(\s|$)/i.test( String( text || "" ).trim( ) );
+   return /^~?(load|reload|eval|exec|employ|execute|result|unload|about)\s+(script|scripts|javascript|javascripts)(\s|$)/i.test( String( text || "" ).trim( ) );
 }
 
 // NOTE: The harness's verbs for a server javascript, by what each does: "load" puts the script
 // in the page and calls its "_at_load", "eval" calls its "_execute", "result" shows its
-// "_result" and "unload" takes it out again.
+// "_result" and "unload" takes it out again. "about" is ours - what a module says of itself.
 const c_console_script_verbs = {
    load: "load", reload: "load",
    eval: "eval", exec: "eval", employ: "eval", execute: "eval",
-   result: "result", unload: "unload"
+   result: "result", unload: "unload", about: "about"
 };
 
 // NOTE: "load script bip39 3c6e..." split into the verb, the script's name and the rest as its
 // argument, spaces and all - "eval script bip39 <twelve words>" passes all twelve. No argument is
 // null, as the harness has it. The name becomes part of a file name and of the functions called,
-// so it is only letters, digits and "_" - or "***", this account's own. "load" and "eval" need a
-// name; "result" and "unload" without one mean this account's own, as in the harness.
+// so it is only letters, digits and "_" - or "***", this account's own. "load", "eval" and "about"
+// need a name; "result" and "unload" without one mean this account's own, as in the harness.
 //
 // Returns { kind: "script", verb, name, arg }, { kind: "error", message }, or null for a line
 // that is not about a server javascript at all.
@@ -788,7 +788,7 @@ function parse_script_line( text )
 
    var name = match[ 2 ] || "";
 
-   if( ( name === "" ) && ( ( verb === "load" ) || ( verb === "eval" ) ) )
+   if( ( name === "" ) && ( ( verb === "load" ) || ( verb === "eval" ) || ( verb === "about" ) ) )
       return { kind: "error", message: "Name the script - " + match[ 1 ].toLowerCase( ) + " script <name> [<input>]" };
 
    if( ( name !== "" ) && ( name !== c_console_own_name ) && !/^[A-Za-z0-9_]+$/.test( name ) )

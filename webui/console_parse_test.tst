@@ -164,6 +164,8 @@ ok   this account's own
 ok   load needs a name
 ok   no path in a name
 ok   no quotes in a name
+ok   about script is a script line
+ok   about - what a module says of itself, by name
 ok   not a script line
 ok   a global's name
 ok   not a global's name

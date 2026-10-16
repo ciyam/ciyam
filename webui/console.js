@@ -57,6 +57,7 @@ const c_palette_commands = [
    { command: "eval script <name> <input>", description: "run a loaded JavaScript's _execute" },
    { command: "result script <name>", description: "a loaded JavaScript's _result, into the output" },
    { command: "unload script <name>", description: "take a JavaScript out of the page" },
+   { command: "about script <name>", description: "what a loaded JavaScript says of itself - its use and what it needs" },
    { command: "delete javascript", description: "delete your own JavaScript on the server" },
    { command: "view logs", description: "the server's log files (admin)", admin: true },
    { command: "view log <name>", description: "one whole log - script, server or update (admin)", admin: true },
@@ -1668,6 +1669,9 @@ function unload_server_script( prefix )
 
    delete g_loaded_scripts[ prefix ];
 
+   // NOTE: Out of the registry too, if it is a module ("ciyam_register_module( )").
+   ciyam_unregister_module( prefix.substring( "ciyam_".length ) );
+
    if( old === null )
       return false;
 
@@ -1880,6 +1884,22 @@ async function run_script_line( spec, from_script )
          print_line( unload_server_script( prefix ) ? "(" + name + " unloaded)" : "(" + name + " was not loaded)", "is-dim" );
 
          return { ok: true };
+
+      // NOTE: What a module says of itself ("ciyam_module_about( )") - one registered with "ciyam_register_module( )";
+      // one of the old kind, functions and globals only, says nothing.
+      case "about":
+      {
+         var lines = ciyam_module_about( name );
+
+         if( lines !== null )
+            print_output( lines.join( "\n" ) );
+         else if( g_loaded_scripts[ prefix ] )
+            print_line( "(" + name + " says nothing of itself - written before modules described themselves)", "is-dim" );
+         else
+            print_line( "Error: Load it first - load script " + spec.name + ".", "is-err" );
+
+         return { ok: lines !== null };
+      }
    }
 
    return { ok: false };
