@@ -1467,8 +1467,12 @@ async function ciyam_sha256_hex( text )
 }
 
 // NOTE: The faster SHA-256 for many rounds - the browser's own, awaited each time, or "sha2.min.js", in step - timed once a
-// page on 2000 rounds, as Ian's "harden" did on every load (Ian, 2026-10-09: "work out whether to use the browser's native
-// SHA-256"). Resolves to { native, hash } - "hash" in step when not native, a promise when it is.
+// page, as Ian's "harden" did on every load (Ian, 2026-10-09: "work out whether to use the browser's native SHA-256").
+// Resolves to { native, hash } - "hash" in step when not native, a promise when it is.
+//
+// Each is run a while first, untimed, then timed on 5000 rounds: timed cold on 2000, the library - slow until the engine has
+// compiled it - lost, and "harden" ran about 1.8 times slower awaiting the browser's own (found 2026-10-16,
+// "module_speed_probe.js"; in Chrome on localhost the library is the faster).
 var ciyam_sha256_choice = null;
 
 function ciyam_sha256_fastest( )
@@ -1491,16 +1495,23 @@ async function ciyam_sha256_time( )
 
    var now = ( typeof performance !== "undefined" ) ? function( ) { return performance.now( ); } : Date.now;
    var s = "test";
+
+   for( var w = 0; w < 1000; w++ )
+   {
+      s = in_step( s + "test" );
+      s = await ciyam_sha256_hex( s + "test" );
+   }
+
    var start = now( );
 
-   for( var i = 0; i < 2000; i++ )
+   for( var i = 0; i < 5000; i++ )
       s = await ciyam_sha256_hex( s + "test" );
 
    var native_time = now( ) - start;
 
    start = now( );
 
-   for( var j = 0; j < 2000; j++ )
+   for( var j = 0; j < 5000; j++ )
       s = in_step( s + "test" );
 
    return ( native_time < ( now( ) - start ) ) ? { native: true, hash: ciyam_sha256_hex } : { native: false, hash: in_step };
