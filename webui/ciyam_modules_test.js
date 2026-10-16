@@ -289,6 +289,21 @@ async function steps( module_class, list )
     stopped_page.ciyam_harden_result, ( await stopped_page.call( "ciyam_harden_execute", "" ) ).split( "\n" )[ 0 ], m.ciyam_module_stop( "nothing" ) ],
     [ true, 0, null, "(ready)", false ] );
 
+   // NOTE: Unloaded - out of the registry, and its last instance let go with whatever it held (found by review, 2026-10-16:
+   // a primed "harden" kept its password in memory until loaded again).
+   var unloaded_page = page( );
+
+   m.ciyam_module_legacy( m.ciyam_module_named( "xxxxx" ), unloaded_page );
+   unloaded_page.init_script_value = "kept?";
+
+   await unloaded_page.call( "ciyam_xxxxx_at_load" );
+
+   check( "unloaded - out of the registry, nothing left to stop", [ m.ciyam_unregister_module( "xxxxx" ), m.ciyam_module_stop( "xxxxx" ),
+    unloaded_page.ciyam_xxxxx_result ], [ true, false, null ] );
+
+   delete require.cache[ require.resolve( "./ciyam_xxxxx.js" ) ];
+   require( "./ciyam_xxxxx.js" );
+
    heading( "chacha20" );
 
    global.ciyam_sha256_hex = m.ciyam_sha256_hex;

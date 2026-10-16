@@ -1427,11 +1427,16 @@ function ciyam_module_named( name )
    return ciyam_registered_modules[ name ] || null;
 }
 
+// NOTE: Out of the registry, and what it was doing let go - its last instance, with whatever it held (a primed "harden"'s
+// password), dropped rather than kept until the module is loaded again (found by review, 2026-10-16).
 function ciyam_unregister_module( name )
 {
    var known = ( ciyam_registered_modules[ name ] !== undefined );
 
+   ciyam_module_stop( name );
+
    delete ciyam_registered_modules[ name ];
+   delete ciyam_module_stoppers[ name ];
 
    return known;
 }

@@ -1668,8 +1668,8 @@ function unload_server_script( prefix )
    var old = document.getElementById( prefix );
 
    // NOTE: Waiting for this one - the wait ends with it.
-   if( ( g_module_waiting !== null ) && ( "ciyam_" + g_module_waiting.name === prefix ) )
-      g_module_waiting.end( false );
+   module_waits( function( waiting ) { return "ciyam_" + waiting.name === prefix; } )
+    .forEach( function( waiting ) { waiting.end( false ); } );
 
    delete g_loaded_scripts[ prefix ];
 
@@ -1710,8 +1710,7 @@ function unload_server_script( prefix )
 // outlast the account that ran it.
 function unload_server_scripts( )
 {
-   if( g_module_waiting !== null )
-      g_module_waiting.end( false );
+   module_waits( ).forEach( function( waiting ) { waiting.end( false ); } );
 
    Object.keys( g_loaded_scripts ).forEach( unload_server_script );
 
@@ -1736,8 +1735,15 @@ function script_answered( value )
    refresh_qr( );
 }
 
-// NOTE: The module being waited for, if one is - { name, end( stopped ) } - so Stop, an unload or a sign out ends the wait.
-var g_module_waiting = null;
+// NOTE: The modules being waited for - each { name, end( stopped ), typed } - so Stop, an unload or a sign out ends every
+// wait. More than one can be: a list waiting on one while another is typed (found by review, 2026-10-16 - with one, a wait
+// replaced was never ended, and its list hung).
+var g_module_waiting = [ ];
+
+function module_waits( which )
+{
+   return g_module_waiting.filter( which || function( ) { return true; } );
+}
 
 // NOTE: Calls a script's function with a callback, as the harness does, and the input as data -
 // never spliced into code to be evaluated. A module ("ciyam_register_module( )") is waited for
@@ -1765,10 +1771,10 @@ function call_script( prefix, fn, args )
 
          window.clearTimeout( timer );
 
-         if( g_module_waiting === waiting )
-            g_module_waiting = null;
+         g_module_waiting = g_module_waiting.filter( function( other ) { return other !== waiting; } );
 
-         if( showed_stop )
+         // NOTE: Stop stays while any typed module still runs, or a list.
+         if( showed_stop && ( g_script_depth === 0 ) && !module_waits( function( other ) { return other.typed; } ).length )
             set_running( false );
 
          resolve( result );
@@ -1778,13 +1784,14 @@ function call_script( prefix, fn, args )
 
       if( is_module )
       {
-         waiting = { name: name, end: function( stopped )
+         waiting = { name: name, typed: ( g_script_depth === 0 ), end: function( stopped )
          {
+            // NOTE: Its progress too - the module, let go, no longer draws it (found by review: an unload left it showing).
+            hide_progress( );
+
             if( stopped )
             {
                ciyam_module_stop( name );
-
-               hide_progress( );
 
                print_line( "(" + name + " stopped)", "is-warn" );
             }
@@ -1792,10 +1799,10 @@ function call_script( prefix, fn, args )
             finish( { ok: false } );
          } };
 
-         g_module_waiting = waiting;
+         g_module_waiting.push( waiting );
 
          // NOTE: A typed line shows Stop itself; a list already has it showing.
-         if( g_script_depth === 0 )
+         if( waiting.typed )
          {
             showed_stop = true;
 
@@ -2917,9 +2924,8 @@ function do_stop_script( )
 {
    g_stop_requested = true;
 
-   // NOTE: A module being waited for is stopped where it is - not only the list's next line.
-   if( g_module_waiting !== null )
-      g_module_waiting.end( true );
+   // NOTE: Every module being waited for is stopped where it is - not only the list's next line.
+   module_waits( ).forEach( function( waiting ) { waiting.end( true ); } );
 }
 
 function set_running( running )
