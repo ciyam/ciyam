@@ -434,7 +434,6 @@ http://www.opensource.org/licenses/mit-license.php.
       <span class="chat-message-time"></span>
       <span class="chat-message-sender">
          <span class="chat-message-sender-name"></span>
-         <span class="chat-edit-mark" hidden>*</span>
       </span>
       <span class="chat-message-text">
          <!-- NOTE: A crossed-out eye - "not everyone sees this". A lock already means a room's

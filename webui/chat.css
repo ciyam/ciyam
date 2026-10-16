@@ -1558,12 +1558,6 @@ button.chat-avatar:hover
    white-space: pre-wrap;
 }
 
-.chat-edit-mark
-{
-   color: var(--color-chat-text-faint);
-   font-weight: 400;
-}
-
 .chat-edit-tag
 {
    margin-left: 6px;

@@ -3284,12 +3284,10 @@ function build_message( entry )
    // NOTE: Deleted - nothing left to edit, pin or delete (Ian, 2026-10-15).
    row.classList.toggle( "is-deleted", !!entry.deleted );
 
-   // NOTE: Deleted is an edit too, but says only that it was deleted (Ian, 2026-10-15).
+   // NOTE: Deleted is an edit too, but says only that it was deleted (Ian, 2026-10-15). "edited" alone says it - the "*"
+   // after the name went (Ian, 2026-10-16).
    if( entry.edited && !entry.deleted )
-   {
-      row.querySelector( ".chat-edit-mark" ).hidden = false;
       row.querySelector( ".chat-edit-tag" ).hidden = false;
-   }
 
    if( entry.private )
    {
