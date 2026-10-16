@@ -37,6 +37,7 @@
 #  include "crypto_keys.h"
 #endif
 #include "fs_iterator.h"
+#include "crypt_stream.h"
 
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
@@ -135,6 +136,7 @@ constexpr const char* c_unix_time = "unix";
 constexpr const char* c_function_date = "date";
 constexpr const char* c_function_file = "file";
 constexpr const char* c_function_line = "line";
+constexpr const char* c_function_crypt = "crypt";
 constexpr const char* c_function_files = "files";
 constexpr const char* c_function_lower = "lower";
 constexpr const char* c_function_paths = "paths";
@@ -3461,6 +3463,25 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                                  if( p_impl->input_file.eof( ) )
                                     p_impl->input_file.close( );
+                              }
+                           }
+                           else if( lhs == c_function_crypt )
+                           {
+                              string::size_type dpos = str.find( op, pos + 1 );
+
+                              if( dpos != string::npos )
+                              {
+                                 string rhs( str.substr( dpos + 1 ) );
+
+                                 str.erase( dpos );
+
+                                 str.erase( 0, pos + 1 );
+
+                                 stringstream ss( hex_decode( rhs ) );
+
+                                 crypt_stream( ss, str );
+
+                                 str = hex_encode( ss.str( ) );
                               }
                            }
                            else if( lhs == c_function_files )
