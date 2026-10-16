@@ -36,6 +36,7 @@ ok   in steps - primed, rounds, rounds repeated, then ready again
 ok   - '(ready)' leaves the result kept before
 ok   'reset' kept where a list waits on it - not ready once primed, ready after a repeat
 ok   let go while running - it stops, says nothing and keeps nothing on the page
+ok   stopped by the page - nothing said, nothing kept, and the next call afresh
 
 == chacha20 ====================================================
 ok   as crypt -cc - 200 zero bytes, the keystream itself

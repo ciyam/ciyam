@@ -267,6 +267,28 @@ async function steps( module_class, list )
    check( "let go while running - it stops, says nothing and keeps nothing on the page", [ answers.length, page_of.ciyam_harden_result,
     page_of.ciyam_harden_reset ], [ 0, undefined, false ] );
 
+   // NOTE: Stopped by the page - the console's Stop ("ciyam_module_stop( )"): the run let go, nothing kept, the next call afresh.
+   var stopped_page = page( );
+   var stopped_answers = [ ];
+
+   m.ciyam_module_legacy( harden, stopped_page );
+
+   stopped_page.init_script_value = "secret";
+
+   await stopped_page.call( "ciyam_harden_at_load" );
+
+   stopped_page.ciyam_harden_execute( function( value ) { stopped_answers.push( value ); }, "1:50" );
+
+   await new Promise( function( resolve ) { setTimeout( resolve, 30 ); } );
+
+   var stopped_now = m.ciyam_module_stop( "harden" );
+
+   await new Promise( function( resolve ) { setTimeout( resolve, 100 ); } );
+
+   check( "stopped by the page - nothing said, nothing kept, and the next call afresh", [ stopped_now, stopped_answers.length,
+    stopped_page.ciyam_harden_result, ( await stopped_page.call( "ciyam_harden_execute", "" ) ).split( "\n" )[ 0 ], m.ciyam_module_stop( "nothing" ) ],
+    [ true, 0, null, "(ready)", false ] );
+
    heading( "chacha20" );
 
    global.ciyam_sha256_hex = m.ciyam_sha256_hex;

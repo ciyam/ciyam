@@ -1367,6 +1367,9 @@ async function ciyam_node( host, access, device, hashed, passwd, test, debug, qu
 
 var ciyam_registered_modules = { };
 
+// NOTE: Each module run through the old globals, by its short name - what stops it ("ciyam_module_stop( )").
+var ciyam_module_stoppers = { };
+
 // NOTE: The base every module extends. "run( input )" resolves to the result, or to { result, output } when what is said
 // differs from what is kept (the harness's "(hash primed)"); an error is thrown. "loaded( )" is what loading with no input
 // says.
@@ -1407,6 +1410,15 @@ function ciyam_register_module( module_class )
       ciyam_module_legacy( module_class, window );
 
    return module_class;
+}
+
+// NOTE: Stops a module run through the old globals - the page's Stop: what it is doing is let go ("stopped( )"), keeping
+// nothing, and the next call starts afresh, as after loading it. False when there was nothing to stop.
+function ciyam_module_stop( name )
+{
+   var stopper = ciyam_module_stoppers[ name ];
+
+   return stopper ? stopper( ) : false;
 }
 
 // NOTE: A registered module's class, or null.
@@ -1595,8 +1607,20 @@ function ciyam_module_legacy( module_class, host )
    }
 
    // NOTE: Each instance is let go when another takes its place, or when the page takes the module's functions away (the
-   // console's "unload_server_script( )", which every sign out runs).
+   // console's "unload_server_script( )", which every sign out runs), or when the page stops it.
    var current = null;
+
+   ciyam_module_stoppers[ name ] = function( )
+   {
+      var had = ( instance !== null );
+
+      current = null;
+      instance = null;
+
+      host[ prefix + "_result" ] = null;
+
+      return had;
+   };
 
    function make( )
    {
@@ -1696,7 +1720,8 @@ if( typeof module !== "undefined" )
       ciyam_module_legacy: ciyam_module_legacy,
       ciyam_module_page_context: ciyam_module_page_context,
       ciyam_sha256_hex: ciyam_sha256_hex,
-      ciyam_sha256_fastest: ciyam_sha256_fastest
+      ciyam_sha256_fastest: ciyam_sha256_fastest,
+      ciyam_module_stop: ciyam_module_stop
    };
 }
 

@@ -1428,9 +1428,9 @@ var include_script_usage_hints = false;
 const c_script_load_attempts = 100;
 const c_script_load_delay = 50;
 
-// NOTE: How long a line waits for a script to answer before the next one runs. One that takes
-// longer - "exec script harden 33333:30" - still answers into the output when it finishes, and a
-// list waits for it with "wait <variable>", as in the harness.
+// NOTE: How long a line waits for a script of the old kind to answer before the next one runs. One
+// that takes longer still answers into the output when it finishes, and a list waits for it with
+// "wait <variable>", as in the harness. A module is waited for until it answers ("call_script( )").
 const c_script_answer_wait = 2000;
 
 // NOTE: "wait <variable>" - the harness's hundred looks, a tenth of a second apart.
@@ -1667,6 +1667,10 @@ function unload_server_script( prefix )
 {
    var old = document.getElementById( prefix );
 
+   // NOTE: Waiting for this one - the wait ends with it.
+   if( ( g_module_waiting !== null ) && ( "ciyam_" + g_module_waiting.name === prefix ) )
+      g_module_waiting.end( false );
+
    delete g_loaded_scripts[ prefix ];
 
    // NOTE: Out of the registry too, if it is a module ("ciyam_register_module( )").
@@ -1706,6 +1710,9 @@ function unload_server_script( prefix )
 // outlast the account that ran it.
 function unload_server_scripts( )
 {
+   if( g_module_waiting !== null )
+      g_module_waiting.end( false );
+
    Object.keys( g_loaded_scripts ).forEach( unload_server_script );
 
    ++g_script_generation;
@@ -1729,25 +1736,79 @@ function script_answered( value )
    refresh_qr( );
 }
 
+// NOTE: The module being waited for, if one is - { name, end( stopped ) } - so Stop, an unload or a sign out ends the wait.
+var g_module_waiting = null;
+
 // NOTE: Calls a script's function with a callback, as the harness does, and the input as data -
-// never spliced into code to be evaluated. Resolves when the script answers, or after
-// "c_script_answer_wait" if it is still working.
+// never spliced into code to be evaluated. A module ("ciyam_register_module( )") is waited for
+// however long it takes - the next line of a list runs once it has answered, so a list needs no
+// "wait" for it - and Stop shows while it runs, typed or not; Stop, unloading it or signing out
+// ends the wait. A script of the old kind is waited for up to "c_script_answer_wait", as before.
 function call_script( prefix, fn, args )
 {
    var generation = g_script_generation;
+   var name = prefix.substring( "ciyam_".length );
+   var is_module = ( ciyam_module_named( name ) !== null );
 
    return new Promise( function( resolve )
    {
-      var timer = window.setTimeout( function( ) { resolve( { ok: true } ); }, c_script_answer_wait );
+      var settled = false;
+      var showed_stop = false;
+      var waiting = null;
+
+      var finish = function( result )
+      {
+         if( settled )
+            return;
+
+         settled = true;
+
+         window.clearTimeout( timer );
+
+         if( g_module_waiting === waiting )
+            g_module_waiting = null;
+
+         if( showed_stop )
+            set_running( false );
+
+         resolve( result );
+      };
+
+      var timer = is_module ? null : window.setTimeout( function( ) { finish( { ok: true } ); }, c_script_answer_wait );
+
+      if( is_module )
+      {
+         waiting = { name: name, end: function( stopped )
+         {
+            if( stopped )
+            {
+               ciyam_module_stop( name );
+
+               hide_progress( );
+
+               print_line( "(" + name + " stopped)", "is-warn" );
+            }
+
+            finish( { ok: false } );
+         } };
+
+         g_module_waiting = waiting;
+
+         // NOTE: A typed line shows Stop itself; a list already has it showing.
+         if( g_script_depth === 0 )
+         {
+            showed_stop = true;
+
+            set_running( true );
+         }
+      }
 
       var failed = function( e )
       {
-         window.clearTimeout( timer );
-
          if( generation === g_script_generation )
             print_line( "Error: " + prefix + ".js failed - " + ( ( e && e.message ) ? e.message : String( e ) ), "is-err" );
 
-         resolve( { ok: false } );
+         finish( { ok: false } );
       };
 
       var callback = function( value )
@@ -1758,9 +1819,7 @@ function call_script( prefix, fn, args )
 
          script_answered( value );
 
-         window.clearTimeout( timer );
-
-         resolve( { ok: true } );
+         finish( { ok: true } );
       };
 
       try
@@ -2857,6 +2916,10 @@ function do_run_editor( )
 function do_stop_script( )
 {
    g_stop_requested = true;
+
+   // NOTE: A module being waited for is stopped where it is - not only the list's next line.
+   if( g_module_waiting !== null )
+      g_module_waiting.end( true );
 }
 
 function set_running( running )
