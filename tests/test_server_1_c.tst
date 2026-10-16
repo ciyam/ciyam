@@ -129,6 +129,11 @@ system_variable @keyed_test
 aaa xxx
 bbb yyy
 ccc zzz
+session_variable @index_keyed_items 1
+system_variable @keyed_test
+aaa
+bbb
+ccc
 system_variable @keyed_test:aaa 111
 system_variable @keyed_test:ccc 333
 system_variable @keyed_test
