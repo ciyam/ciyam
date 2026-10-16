@@ -25,7 +25,9 @@ http://www.opensource.org/licenses/mit-license.php.
 
 <meta http-equiv="Permissions-Policy" content="camera=self">
 
-<script>( function( ) { var t = localStorage.getItem( "theme" ); if( t ) document.documentElement.setAttribute( "data-theme", t ); } )( );</script>
+<script>
+   ( function( ) { try { var t = localStorage.getItem( "theme" ); if( t ) document.documentElement.setAttribute( "data-theme", t ); } catch( e ) { } } )( );
+</script>
 
 <script type="text/javascript" src="qrcode.min.js"></script>
 <script type="text/javascript" src="html5-qrcode.min.js"></script>

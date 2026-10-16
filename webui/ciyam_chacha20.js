@@ -49,12 +49,24 @@ ciyam_register_module( class extends ciyam_module
       state[ 14 ] = this.word( nonce, 4 );
       state[ 15 ] = this.word( nonce, 8 );
 
+      // NOTE: A "quarter round" - add, XOR, rotate left by 16, 12, 8 and 7.
       function quarter( a, b, c, d )
       {
-         block[ a ] = ( block[ a ] + block[ b ] ) >>> 0; block[ d ] ^= block[ a ]; block[ d ] = ( block[ d ] << 16 ) | ( block[ d ] >>> 16 );
-         block[ c ] = ( block[ c ] + block[ d ] ) >>> 0; block[ b ] ^= block[ c ]; block[ b ] = ( block[ b ] << 12 ) | ( block[ b ] >>> 20 );
-         block[ a ] = ( block[ a ] + block[ b ] ) >>> 0; block[ d ] ^= block[ a ]; block[ d ] = ( block[ d ] << 8 ) | ( block[ d ] >>> 24 );
-         block[ c ] = ( block[ c ] + block[ d ] ) >>> 0; block[ b ] ^= block[ c ]; block[ b ] = ( block[ b ] << 7 ) | ( block[ b ] >>> 25 );
+         block[ a ] = ( block[ a ] + block[ b ] ) >>> 0;
+         block[ d ] ^= block[ a ];
+         block[ d ] = ( block[ d ] << 16 ) | ( block[ d ] >>> 16 );
+
+         block[ c ] = ( block[ c ] + block[ d ] ) >>> 0;
+         block[ b ] ^= block[ c ];
+         block[ b ] = ( block[ b ] << 12 ) | ( block[ b ] >>> 20 );
+
+         block[ a ] = ( block[ a ] + block[ b ] ) >>> 0;
+         block[ d ] ^= block[ a ];
+         block[ d ] = ( block[ d ] << 8 ) | ( block[ d ] >>> 24 );
+
+         block[ c ] = ( block[ c ] + block[ d ] ) >>> 0;
+         block[ b ] ^= block[ c ];
+         block[ b ] = ( block[ b ] << 7 ) | ( block[ b ] >>> 25 );
       }
 
       for( var start = 0; start < data.length; start += 64 )
