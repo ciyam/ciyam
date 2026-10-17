@@ -191,11 +191,8 @@ void dh_crypt_stream( iostream& io, const char* p_key, size_t key_length )
 
          if( ( offset % c_sha512_digest_size ) == 0 )
          {
-            sha512 next_hash1;
-            sha512 next_hash2;
-
-            memcpy( &next_hash1, &hash1, sizeof( sha512 ) );
-            memcpy( &next_hash2, &hash2, sizeof( sha512 ) );
+            sha512 next_hash1( hash1 );
+            sha512 next_hash2( hash2 );
 
             next_hash1.update( to_string( chunk ) );
             next_hash2.update( to_string( chunk++ ) );
