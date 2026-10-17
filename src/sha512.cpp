@@ -174,6 +174,20 @@ const uint64_t sha512::sha512_k[ 80 ] =
    UINT64_C( 0x5fcb6fab3ad6faec ), UINT64_C( 0x6c44198c4a475817 )
 };
 
+namespace
+{
+
+// NOTE: Written through "volatile" so the compiler cannot drop the writes as unused (the object is about to go).
+void clear_bytes( void* p_bytes, size_t num_bytes )
+{
+   volatile unsigned char* p = ( volatile unsigned char* )p_bytes;
+
+   while( num_bytes-- )
+      *p++ = 0;
+}
+
+}
+
 sha512::sha512( )
 {
    init( );
@@ -189,6 +203,13 @@ sha512::sha512( const unsigned char* p_data, unsigned int length )
 {
    init( );
    update( p_data, length );
+}
+
+sha512::~sha512( )
+{
+   clear_bytes( m_block, sizeof( m_block ) );
+   clear_bytes( m_digest, sizeof( m_digest ) );
+   clear_bytes( m_h, sizeof( m_h ) );
 }
 
 void sha512::update( const string& str, bool is_filename )

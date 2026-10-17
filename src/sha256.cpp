@@ -204,6 +204,15 @@ void sha256_final( SHA256_CTX* ctx, uchar hash[ ] )
    }
 }
 
+// NOTE: Written through "volatile" so the compiler cannot drop the writes as unused (the memory is about to be freed).
+void clear_bytes( void* p_bytes, size_t num_bytes )
+{
+   volatile unsigned char* p = ( volatile unsigned char* )p_bytes;
+
+   while( num_bytes-- )
+      *p++ = 0;
+}
+
 } // namespace
 
 struct sha256::impl
@@ -215,8 +224,8 @@ struct sha256::impl
 
    ~impl( )
    {
-      for( size_t i = 0; i < c_sha256_digest_size; i++ )
-         digest[ i ] = 0;
+      clear_bytes( digest, sizeof( digest ) );
+      clear_bytes( &context, sizeof( context ) );
    }
 };
 

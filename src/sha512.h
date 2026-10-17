@@ -21,6 +21,8 @@ class sha512
    sha512( const std::string& str );
    sha512( const unsigned char* p_data, unsigned int length );
 
+   ~sha512( );
+
    void update( const std::string& str, bool is_filename = false );
    void update( const unsigned char* p_message, unsigned int len );
 
