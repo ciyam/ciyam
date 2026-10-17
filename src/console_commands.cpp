@@ -2827,9 +2827,7 @@ struct console_command_handler::impl
 
    map< string, fissile_string > fissile_values;
 
-#ifdef SSL_SUPPORT
    map< string, unique_ptr< private_key > > secrets;
-#endif
 
    fstream input_file;
    fstream output_file;
@@ -3726,16 +3724,12 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            }
                            else if( lhs == c_function_public )
                            {
-#ifndef SSL_SUPPORT
-                              throw runtime_error( "@public requires SSL support" );
-#else
                               string rhs( str.substr( pos + 1 ) );
 
                               if( !p_impl->secrets.count( rhs ) )
                                  str.erase( );
                               else
                                  str = p_impl->secrets[ rhs ]->get_public( );
-#endif
                            }
                            else if( lhs == c_function_repstr )
                            {
@@ -3764,30 +3758,52 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            }
                            else if( lhs == c_function_secret )
                            {
-#ifndef SSL_SUPPORT
-                              throw runtime_error( "@secret requires SSL support" );
-#else
+                              key_curve secret_curve = c_default_key_curve;
+
                               string rhs( str.substr( pos + 1 ) );
+
+                              bool is_erase = false;
 
                               if( rhs.empty( ) )
                                  rhs = uuid( ).as_string( );
+                              else
+                              {
+                                 if( rhs[ 0 ] == '~' )
+                                 {
+                                    is_erase = true;
+
+                                    rhs.erase( 0, 1 );
+                                 }
+                                 else
+                                 {
+                                    string::size_type pos = rhs.find( ' ' );
+
+                                    if( pos != string::npos )
+                                    {
+                                       secret_curve = key_curve_value( rhs.substr( 0, pos ) );
+
+                                       rhs.erase( 0, pos + 1 );
+                                    }
+                                 }
+                              }
 
                               clear_key( str );
 
-                              string name( to_comparable_string( p_impl->counter++, false, 6 ) );
+                              if( is_erase )
+                                 p_impl->secrets.erase( rhs );
+                              else
+                              {
+                                 string name( to_comparable_string( p_impl->counter++, false, 6 ) );
 
-                              str = name;
+                                 str = name;
 
-                              p_impl->secrets.insert( make_pair( name, new private_key( rhs, e_key_curve_secp256k1 ) ) );
-#endif
+                                 p_impl->secrets.insert( make_pair( name, new private_key( rhs, secret_curve ) ) );
+                              }
                            }
                            else if( lhs == c_function_sha256 )
                               str = sha256( str.substr( pos + 1 ) ).get_digest_as_string( );
                            else if( lhs == c_function_shared )
                            {
-#ifndef SSL_SUPPORT
-                              throw runtime_error( "@shared requires SSL support" );
-#else
                               string::size_type ppos = str.find( op, pos + 1 );
 
                               if( ppos == string::npos )
@@ -3809,7 +3825,6 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     str = p_impl->secrets[ str ]->construct_shared( pub_key );
                                  }
                               }
-#endif
                            }
                            else if( lhs == c_function_strlen )
                               str = to_string( str.length( ) - pos - 1 );
