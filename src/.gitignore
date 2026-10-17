@@ -74,6 +74,7 @@ test
 test_btree
 test_cache
 test_crypto_keys
+test_ed25519
 test_fcgi
 test_hash_chain
 test_numeric
