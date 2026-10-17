@@ -465,6 +465,7 @@ TEST_LINE=@repstr:and/:$NEXT_LINE
 
 For even larger files a special environment variable assignment function "@line" can be used in order to open
 a file and read the first line and when used without a file name in order to read the next line of the file.
+To determine whether or not an empty line is the EOF uses "@line:?" which will return nothing if is EOF.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @label NEXT
@@ -474,7 +475,10 @@ NEXT_LINE=@line:mnemonics.txt
 @:LOOP
 ;
 @ifeq "$NEXT_LINE" ""
+CHECK=@line:?
+@ifndef $CHECK
 @label DONE
+@endif
 @endif
 ;
 @skip
