@@ -144,6 +144,20 @@ int main( )
       }
 
       check( "a public key of small order refused for a shared secret", refused );
+
+      refused = false;
+
+      try
+      {
+         // NOTE: A mistyped seed - "hex_decode( )" would quietly read the "x" as a zero.
+         ed25519_key_pair mistyped( "x" + string( c_rfc8032_tests[ 0 ].p_seed ).substr( 1 ) );
+      }
+      catch( exception& )
+      {
+         refused = true;
+      }
+
+      check( "a seed that is not hex refused", refused );
    }
    catch( exception& x )
    {

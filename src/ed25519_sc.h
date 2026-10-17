@@ -22,7 +22,6 @@
 #ifndef ED25519_SC_H
 #  define ED25519_SC_H
 
-
 namespace ed25519_internal
 {
 

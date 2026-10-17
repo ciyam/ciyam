@@ -83,12 +83,34 @@ bool is_canonical_scalar( const unsigned char* p_s )
    return false;
 }
 
-void clear_bytes( unsigned char* p_bytes, size_t num_bytes )
+void clear_bytes( void* p_bytes, size_t num_bytes )
 {
-   volatile unsigned char* p = p_bytes;
+   volatile unsigned char* p = ( volatile unsigned char* )p_bytes;
 
    while( num_bytes-- )
       *p++ = 0;
+}
+
+// NOTE: "sha512::update( )" takes an "unsigned int" length, so a message is hashed in pieces in case it is longer.
+void hash_message( sha512& hash, const unsigned char* p_message, size_t message_len )
+{
+   const size_t c_max_piece = 0x40000000;
+
+   while( message_len > c_max_piece )
+   {
+      hash.update( p_message, ( unsigned int )c_max_piece );
+
+      p_message += c_max_piece;
+      message_len -= c_max_piece;
+   }
+
+   hash.update( p_message, ( unsigned int )message_len );
+}
+
+void check_hex( const string& hex, size_t num_bytes, const char* p_what )
+{
+   if( ( hex.length( ) != num_bytes * 2 ) || !are_hex_nibbles( hex ) )
+      throw runtime_error( string( "an ed25519 " ) + p_what + " is " + to_string( num_bytes * 2 ) + " hex digits" );
 }
 
 }
@@ -134,7 +156,7 @@ void ed25519_sign( unsigned char* p_signature, const unsigned char* p_message,
    sha512 r_hash;
 
    r_hash.update( p_private_key + 32, 32 );
-   r_hash.update( p_message, ( unsigned int )message_len );
+   hash_message( r_hash, p_message, message_len );
    r_hash.copy_digest_to_buffer( r );
 
    sc_reduce( r );
@@ -145,7 +167,7 @@ void ed25519_sign( unsigned char* p_signature, const unsigned char* p_message,
 
    hram_hash.update( p_signature, 32 );
    hram_hash.update( p_public_key, 32 );
-   hram_hash.update( p_message, ( unsigned int )message_len );
+   hash_message( hram_hash, p_message, message_len );
    hram_hash.copy_digest_to_buffer( hram );
 
    sc_reduce( hram );
@@ -173,7 +195,7 @@ bool ed25519_verify( const unsigned char* p_signature,
 
    hash.update( p_signature, 32 );
    hash.update( p_public_key, 32 );
-   hash.update( p_message, ( unsigned int )message_len );
+   hash_message( hash, p_message, message_len );
    hash.copy_digest_to_buffer( h );
 
    sc_reduce( h );
@@ -260,6 +282,13 @@ void ed25519_key_exchange( unsigned char* p_shared_secret, const unsigned char* 
    fe_tobytes( p_shared_secret, x2 );
 
    clear_bytes( e, sizeof( e ) );
+
+   clear_bytes( x2, sizeof( fe ) );
+   clear_bytes( z2, sizeof( fe ) );
+   clear_bytes( x3, sizeof( fe ) );
+   clear_bytes( z3, sizeof( fe ) );
+   clear_bytes( tmp0, sizeof( fe ) );
+   clear_bytes( tmp1, sizeof( fe ) );
 }
 
 ed25519_key_pair::ed25519_key_pair( )
@@ -275,8 +304,7 @@ ed25519_key_pair::ed25519_key_pair( )
 
 ed25519_key_pair::ed25519_key_pair( const string& seed_hex )
 {
-   if( seed_hex.length( ) != c_ed25519_seed_size * 2 )
-      throw runtime_error( "an ed25519 seed is " + to_string( c_ed25519_seed_size * 2 ) + " hex digits" );
+   check_hex( seed_hex, c_ed25519_seed_size, "seed" );
 
    unsigned char seed[ c_ed25519_seed_size ];
 
@@ -315,8 +343,7 @@ string ed25519_key_pair::sign( const string& message ) const
 // would be the same whoever's key it was used with.
 string ed25519_key_pair::construct_shared( const string& public_key_hex ) const
 {
-   if( public_key_hex.length( ) != c_ed25519_public_key_size * 2 )
-      throw runtime_error( "an ed25519 public key is " + to_string( c_ed25519_public_key_size * 2 ) + " hex digits" );
+   check_hex( public_key_hex, c_ed25519_public_key_size, "public key" );
 
    unsigned char other[ c_ed25519_public_key_size ];
    unsigned char shared[ c_ed25519_shared_secret_size ];
@@ -342,7 +369,8 @@ string ed25519_key_pair::construct_shared( const string& public_key_hex ) const
 
 bool ed25519_verify( const string& message, const string& signature_hex, const string& public_key_hex )
 {
-   if( ( signature_hex.length( ) != c_ed25519_signature_size * 2 ) || ( public_key_hex.length( ) != c_ed25519_public_key_size * 2 ) )
+   if( ( signature_hex.length( ) != c_ed25519_signature_size * 2 ) || ( public_key_hex.length( ) != c_ed25519_public_key_size * 2 )
+    || !are_hex_nibbles( signature_hex ) || !are_hex_nibbles( public_key_hex ) )
       return false;
 
    unsigned char signature[ c_ed25519_signature_size ];

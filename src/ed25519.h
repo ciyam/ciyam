@@ -27,6 +27,8 @@ void ed25519_create_seed( unsigned char* p_seed );
 
 void ed25519_create_keypair( unsigned char* p_public_key, unsigned char* p_private_key, const unsigned char* p_seed );
 
+// NOTE: The public key must be the one made with this private key - signing with any other gives away the private key
+// (from two signatures of the same message). "ed25519_key_pair" keeps the two together, so prefer it to calling this.
 void ed25519_sign( unsigned char* p_signature, const unsigned char* p_message,
  size_t message_len, const unsigned char* p_public_key, const unsigned char* p_private_key );
 
@@ -41,7 +43,7 @@ class ed25519_key_pair
 {
    public:
    ed25519_key_pair( );
-   ed25519_key_pair( const std::string& seed_hex );
+   explicit ed25519_key_pair( const std::string& seed_hex );
 
    ~ed25519_key_pair( );
 
