@@ -1879,7 +1879,7 @@ int main( int argc, char* argv[ ] )
 #ifdef SSL_SUPPORT
    ssl_socket socket;
 
-   gup_priv_key.reset( new private_key( ) );
+   gup_priv_key.reset( new private_key( e_key_curve_secp256k1 ) );
 #else
    tcp_socket socket;
 #endif

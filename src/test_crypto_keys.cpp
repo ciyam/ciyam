@@ -26,7 +26,7 @@ int main( )
 {
    try
    {
-      private_key skey( "18E14A7B6A307F426A94F8114701E7C8E774E7F9A47E2C2035DB29A206321725" );
+      private_key skey( "18E14A7B6A307F426A94F8114701E7C8E774E7F9A47E2C2035DB29A206321725", e_key_curve_secp256k1 );
 
       string key( skey.get_public( ) );
       string secret( skey.get_secret( ) );
@@ -57,12 +57,12 @@ int main( )
       cout << "\npub_key.verify_signature( \"This is a test\", signature ) = " << pub_key.verify_signature( "This is a test", signature ) << endl;
       cout << "pub_key.verify_signature( \"This is a test.\", signature ) = " << pub_key.verify_signature( "This is a test.", signature ) << endl;
 
-      private_key priv_key( secret );
+      private_key priv_key( secret, e_key_curve_secp256k1 );
       cout << "\npriv_key.verify_signature( \"This is a test\", signature ) = " << priv_key.verify_signature( "This is a test", signature ) << endl;
       cout << "priv_key.verify_signature( \"This is a test.\", signature ) = " << priv_key.verify_signature( "This is a test.", signature ) << endl;
 
-      private_key priv_key1( "710e7b873ca568c965b4d5de2e5f82359d625e8e4b258bae422903bd5aa8f939" );
-      private_key priv_key2( "720e7b873ca568c965b4d5de2e5f82359d625e8e4b258bae422903bd5aa8f939" );
+      private_key priv_key1( "710e7b873ca568c965b4d5de2e5f82359d625e8e4b258bae422903bd5aa8f939", e_key_curve_secp256k1 );
+      private_key priv_key2( "720e7b873ca568c965b4d5de2e5f82359d625e8e4b258bae422903bd5aa8f939", e_key_curve_secp256k1 );
 
       public_key pub_key1( priv_key1.get_public( ) );
       public_key pub_key2( priv_key2.get_public( ) );
@@ -84,7 +84,7 @@ int main( )
       inputs.push_back( utxo_information( 0, "3c9eab4935d1b8fe2bad3af1c443c2c61ab8212c3f45c2ba59ff4a2e93c481e2" ) );
 #else
       inputs.push_back( utxo_information( 0, "3c9eab4935d1b8fe2bad3af1c443c2c61ab8212c3f45c2ba59ff4a2e93c481e2",
-       "76a9143a89c372f5308cb58828979bb624f7e8822672ed88ac", new private_key( priv_key2.get_wif_secret( ), true ) ) );
+       "76a9143a89c372f5308cb58828979bb624f7e8822672ed88ac", new private_key( priv_key2.get_wif_secret( ), true, 0, e_key_curve_secp256k1 ) ) );
 #endif
 
       vector< output_information > outputs;

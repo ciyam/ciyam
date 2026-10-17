@@ -740,12 +740,12 @@ string create_peer_repository_entry_push_info(
    unique_ptr< private_key > up_priv_key;
 
    if( is_for_testing )
-      up_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
+      up_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ), e_key_curve_secp256k1 ) );
    else
       // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
       // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
       up_priv_key.reset(
-       new private_key( "0" + sha256( file_hash + password ).get_digest_as_string( ).substr( 1 ) ) );
+       new private_key( "0" + sha256( file_hash + password ).get_digest_as_string( ).substr( 1 ), e_key_curve_secp256k1 ) );
 
    if( p_pub_key )
       *p_pub_key = up_priv_key->get_public( );
@@ -815,12 +815,12 @@ void decrypt_pulled_peer_file( const string& dest_hash,
    unique_ptr< private_key > up_priv_key;
 
    if( is_for_testing )
-      up_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
+      up_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ), e_key_curve_secp256k1 ) );
    else
       // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
       // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
       up_priv_key.reset(
-       new private_key( "0" + sha256( dest_hash + password ).get_digest_as_string( ).substr( 1 ) ) );
+       new private_key( "0" + sha256( dest_hash + password ).get_digest_as_string( ).substr( 1 ), e_key_curve_secp256k1 ) );
 
    bool is_encrypted = false;
    unsigned char type_and_extra = '\0';

@@ -1192,7 +1192,7 @@ string create_secret_for_address_prefix_with_leading_hash160_bytes( const string
 
    while( true )
    {
-      private_key priv_key;
+      private_key priv_key( e_key_curve_secp256k1 );
 
       if( priv_key.get_address( ).find( prefix ) == 0 )
       {

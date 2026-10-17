@@ -1754,7 +1754,7 @@ void request_handler::process_request( )
 
 #ifdef SSL_SUPPORT
                      public_key pub_key( pubkeyx );
-                     private_key priv_key;
+                     private_key priv_key( e_key_curve_secp256k1 );
 #endif
 
                      string id_pwd( g_id_pwd );

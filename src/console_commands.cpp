@@ -3778,7 +3778,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                               str = name;
 
-                              p_impl->secrets.insert( make_pair( name, new private_key( rhs ) ) );
+                              p_impl->secrets.insert( make_pair( name, new private_key( rhs, e_key_curve_secp256k1 ) ) );
 #endif
                            }
                            else if( lhs == c_function_sha256 )
@@ -4107,7 +4107,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 #ifdef SSL_SUPPORT
                                  public_key pub_key( pubkey );
 
-                                 private_key priv_key;
+                                 private_key priv_key( e_key_curve_secp256k1 );
 
                                  string data( priv_key.encrypt_message( pub_key, str ) );
 

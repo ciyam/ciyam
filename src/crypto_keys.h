@@ -19,8 +19,9 @@
 // NOTE: A key is on one of two curves - "k1" (secp256k1, as Bitcoin uses, which requires SSL support) or "ed" (Ed25519
 // to sign and X25519 for shared secrets, which does not). A public key's curve is known from its size (32 bytes for "ed"
 // and 33 or 65 for "k1") so need not be given, but a private key's must be (a secret is 32 bytes for either). Whatever is
-// Bitcoin specific (WIF, hash160, addresses and transactions) is only for "k1".
-const key_curve c_default_key_curve = e_key_curve_secp256k1;
+// Bitcoin specific (WIF, hash160, addresses and transactions) is only for "k1". A private key is "ed" unless it is
+// constructed with "k1".
+const key_curve c_default_key_curve = e_key_curve_ed25519;
 
 key_curve key_curve_value( const std::string& str );
 

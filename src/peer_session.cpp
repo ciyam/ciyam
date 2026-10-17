@@ -1709,7 +1709,7 @@ void process_repository_file( const string& blockchain,
             // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
             // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
             up_priv_key.reset( new private_key( "0"
-             + sha256( combined_clear_key( src_hash, password ) ).get_digest_as_string( ).substr( 1 ) ) );
+             + sha256( combined_clear_key( src_hash, password ) ).get_digest_as_string( ).substr( 1 ), e_key_curve_secp256k1 ) );
 
             clear_key( password );
          }
@@ -1719,7 +1719,7 @@ void process_repository_file( const string& blockchain,
             // the file system doesn't get confused flag the file as being encrypted anyway.
             type_and_extra |= c_file_type_char_encrypted;
 
-            up_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
+            up_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ), e_key_curve_secp256k1 ) );
          }
 
          string stream_cipher( get_session_variable( e_special_var_blockchain_stream_cipher ) );
@@ -7119,7 +7119,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
             }
 
 #ifdef SSL_SUPPORT
-            private_key priv_key;
+            private_key priv_key( e_key_curve_secp256k1 );
 
             priv_key.get_secret( secret_key );
             public_loc = priv_key.get_public( );
@@ -7325,7 +7325,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
             if( spos != string::npos )
             {
 #ifdef SSL_SUPPORT
-               private_key priv_key;
+               private_key priv_key( e_key_curve_secp256k1 );
 
                priv_key.get_secret( secret_key );
                public_loc = priv_key.get_public( );
@@ -8119,7 +8119,7 @@ void peer_session::process_greeting( )
          if( !secret_hash.empty( ) )
          {
             public_key pub_key( public_ext );
-            private_key priv_key( secret_key );
+            private_key priv_key( secret_key, e_key_curve_secp256k1 );
 
             priv_key.construct_shared( session_secret, pub_key );
 

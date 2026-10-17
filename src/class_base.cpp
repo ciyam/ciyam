@@ -4620,7 +4620,7 @@ string shared_decrypt( const string& pk, const string& s )
 
    public_key pub_key( pk, true );
 
-   private_key priv_key( secret );
+   private_key priv_key( secret, e_key_curve_secp256k1 );
 
    return priv_key.decrypt_message( pub_key, s );
 #else
@@ -4638,7 +4638,7 @@ string shared_encrypt( const string& pk, const string& s )
 
    public_key pub_key( pk, true );
 
-   private_key priv_key( secret );
+   private_key priv_key( secret, e_key_curve_secp256k1 );
 
    return priv_key.encrypt_message( pub_key, s, 0, true );
 #else
@@ -6767,7 +6767,7 @@ uint64_t crypto_amount( const string& amount )
 string crypto_sign( const string& secret, const string& message, bool decode_hex_message )
 {
 #ifdef SSL_SUPPORT
-   private_key priv( secret, secret.length( ) > 48 && secret.length( ) < 64 ? true : false );
+   private_key priv( secret, secret.length( ) > 48 && secret.length( ) < 64 ? true : false, 0, e_key_curve_secp256k1 );
 
    if( decode_hex_message )
    {
@@ -6794,7 +6794,7 @@ string crypto_sign( const string& secret, const string& message, bool decode_hex
 string crypto_public( const string& privkey, bool is_wif, bool use_base64, bool compressed )
 {
 #ifdef SSL_SUPPORT
-   private_key priv( privkey, is_wif );
+   private_key priv( privkey, is_wif, 0, e_key_curve_secp256k1 );
 
    return priv.get_public( compressed, use_base64 );
 #else
@@ -6805,7 +6805,7 @@ string crypto_public( const string& privkey, bool is_wif, bool use_base64, bool 
 string crypto_secret( const string& privkey, bool is_wif )
 {
 #ifdef SSL_SUPPORT
-   private_key priv( privkey, is_wif );
+   private_key priv( privkey, is_wif, 0, e_key_curve_secp256k1 );
 
    return priv.get_secret( true );
 #else
@@ -6909,7 +6909,7 @@ string crypto_secret_for_sid( const string& suffix, const string& other_pubkey )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Invalid hex encoded public key '" + other_hex_bytes + "'." );
 
-   private_key own_key( priv_key );
+   private_key own_key( priv_key, e_key_curve_secp256k1 );
    public_key other_key( other_hex_bytes );
 
    clear_key( secret );
@@ -7252,7 +7252,7 @@ string create_address_key_pair( const string& ext_key,
  string& pub_key, string& priv_key, bool use_base64, bool compressed )
 {
 #ifdef SSL_SUPPORT
-   private_key new_key;
+   private_key new_key( e_key_curve_secp256k1 );
 
    external_client client_info;
 
@@ -7287,7 +7287,7 @@ string create_address_key_pair( const string& ext_key,
    get_crypto_info( client_info.extra_info, info );
 
    if( !is_secret )
-      up_new_key.reset( new private_key( priv_info, true, &compressed ) );
+      up_new_key.reset( new private_key( priv_info, true, &compressed, e_key_curve_secp256k1 ) );
    else
    {
       // NOTE: If prefixed with '!' then just assumes that the hash of the remainder of the string
@@ -7296,7 +7296,7 @@ string create_address_key_pair( const string& ext_key,
       {
          sha256 hash( priv_info.substr( 1 ) );
 
-         up_new_key.reset( new private_key( hash.get_digest_as_string( ) ) );
+         up_new_key.reset( new private_key( hash.get_digest_as_string( ), e_key_curve_secp256k1 ) );
       }
       else
       {
@@ -7304,7 +7304,7 @@ string create_address_key_pair( const string& ext_key,
 
          // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
          // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
-         up_new_key.reset( new private_key( "0" + hash.get_digest_as_string( ).substr( 1 ) ) );
+         up_new_key.reset( new private_key( "0" + hash.get_digest_as_string( ).substr( 1 ), e_key_curve_secp256k1 ) );
       }
    }
 
@@ -8243,7 +8243,7 @@ string construct_p2sh_redeem_transaction(
       throw runtime_error( "unexpected missing txid in construct_p2sh_redeem_transaction" );
 
    if( !key.empty( ) )
-      up_priv_key.reset( new private_key( key, is_wif_format ) );
+      up_priv_key.reset( new private_key( key, is_wif_format, 0, e_key_curve_secp256k1 ) );
 
    inputs.push_back( utxo_information( index,
     hex_reverse( txid ), redeem_script.c_str( ), up_priv_key.release( ), true ) );
@@ -8506,7 +8506,7 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
          utxo.original_script = ( *p_utxos )[ i ].script;
 
          if( is_sign_raw_tx && !( *p_utxos )[ i ].secret.empty( ) )
-            utxo.rp_private_key = new private_key( decrypt( ( *p_utxos )[ i ].secret ) );
+            utxo.rp_private_key = new private_key( decrypt( ( *p_utxos )[ i ].secret ), e_key_curve_secp256k1 );
 
          all_inputs.push_back( utxo );
       }
