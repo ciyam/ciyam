@@ -659,7 +659,8 @@ string public_key::get_address( bool compressed, bool use_override, address_pref
 }
 #endif
 
-// NOTE: An "ed" signature is of the message itself (Ed25519 hashes it with SHA-512) whereas a "k1" one is of its SHA-256.
+// NOTE: An "ed" signature is of the message itself (hashed using SHA-512)
+// whereas a "k1" one is of its SHA-256.
 bool public_key::verify_signature( const string& msg, const string& sig ) const
 {
    if( p_impl->curve == e_key_curve_ed25519 )
@@ -1409,9 +1410,9 @@ string construct_raw_transaction(
 
    string nlocktime( hex_encode( ( const unsigned char* )&lock_time, sizeof( lock_time ) ) );
 
-#ifndef LITTLE_ENDIAN
+#  ifndef LITTLE_ENDIAN
    nlocktime = hex_reverse( osstr.str( ) );
-#endif
+#  endif
 
    raw_transaction += nlocktime;
    signing_info_suffix += nlocktime;
