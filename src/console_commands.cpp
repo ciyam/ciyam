@@ -151,8 +151,11 @@ constexpr const char* c_function_hexbig = "hexbig";
 constexpr const char* c_function_hexdec = "hexdec";
 constexpr const char* c_function_hexlit = "hexlit";
 constexpr const char* c_function_padlen = "padlen";
+constexpr const char* c_function_public = "public";
 constexpr const char* c_function_repstr = "repstr";
+constexpr const char* c_function_secret = "secret";
 constexpr const char* c_function_sha256 = "sha256";
+constexpr const char* c_function_shared = "shared";
 constexpr const char* c_function_strlen = "strlen";
 constexpr const char* c_function_strlit = "strlit";
 constexpr const char* c_function_strpos = "strpos";
@@ -2808,7 +2811,11 @@ void process_fissile_commands(
 
 struct console_command_handler::impl
 {
+   impl( ) : counter( 0 ), use_special_fissile_character( false ) { }
+
    ~impl( ) { input_file.close( ); output_file.close( ); }
+
+   size_t counter;
 
    fissile_string fissile_data;
 
@@ -2818,9 +2825,11 @@ struct console_command_handler::impl
 
    bool use_special_fissile_character;
 
-   impl( ) : use_special_fissile_character( false ) { }
-
    map< string, fissile_string > fissile_values;
+
+#ifdef SSL_SUPPORT
+   map< string, unique_ptr< private_key > > secrets;
+#endif
 
    fstream input_file;
    fstream output_file;
@@ -3715,6 +3724,19 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  str = rhs;
                               }
                            }
+                           else if( lhs == c_function_public )
+                           {
+#ifndef SSL_SUPPORT
+                              throw runtime_error( "@public requires SSL support" );
+#else
+                              string rhs( str.substr( pos + 1 ) );
+
+                              if( !p_impl->secrets.count( rhs ) )
+                                 str.erase( );
+                              else
+                                 str = p_impl->secrets[ rhs ]->get_public( );
+#endif
+                           }
                            else if( lhs == c_function_repstr )
                            {
                               pos = find_non_escaped_char( str, op, pos + 1 );
@@ -3740,8 +3762,55 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  str = replace( rhs, find, repl );
                               }
                            }
+                           else if( lhs == c_function_secret )
+                           {
+#ifndef SSL_SUPPORT
+                              throw runtime_error( "@secret requires SSL support" );
+#else
+                              string rhs( str.substr( pos + 1 ) );
+
+                              if( rhs.empty( ) )
+                                 rhs = uuid( ).as_string( );
+
+                              clear_key( str );
+
+                              string name( to_comparable_string( p_impl->counter++, false, 6 ) );
+
+                              str = name;
+
+                              p_impl->secrets.insert( make_pair( name, new private_key( rhs ) ) );
+#endif
+                           }
                            else if( lhs == c_function_sha256 )
                               str = sha256( str.substr( pos + 1 ) ).get_digest_as_string( );
+                           else if( lhs == c_function_shared )
+                           {
+#ifndef SSL_SUPPORT
+                              throw runtime_error( "@shared requires SSL support" );
+#else
+                              string::size_type ppos = str.find( op, pos + 1 );
+
+                              if( ppos == string::npos )
+                                 str.erase( );
+                              else
+                              {
+                                 string rhs( str.substr( ppos + 1 ) );
+
+                                 str.erase( ppos );
+
+                                 str.erase( 0, pos + 1 );
+
+                                 if( !p_impl->secrets.count( str ) )
+                                    str.erase( );
+                                 else
+                                 {
+                                    public_key pub_key( rhs );
+
+                                    str = p_impl->secrets[ str ]->construct_shared( pub_key );
+                                 }
+                              }
+#endif
+                           }
                            else if( lhs == c_function_strlen )
                               str = to_string( str.length( ) - pos - 1 );
                            else if( lhs == c_function_strlit )
