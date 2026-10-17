@@ -1833,9 +1833,13 @@ void request_handler::process_request( )
                            {
                               string entropy;
 
+#ifdef SSL_SUPPORT
                               if( !simple_command( *p_session_info,
                                "crypto_seed -k=" + priv_key.get_public( )
                                + " " + priv_key.encrypt_message( pub_key, g_seed, 0, true ), &entropy ) )
+#else
+                              if( !simple_command( *p_session_info, "crypto_seed " + g_seed ), &entropy )
+#endif
                               {
                                  g_bad_seed = g_seed;
                                  g_seed.erase( );
