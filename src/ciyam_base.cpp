@@ -444,10 +444,10 @@ struct session
     cmd_handler( cmd_handler ),
     skip_is_constrained( false ),
     session_commands_executed( 0 ),
-    is_peer_session( is_peer_session ),
 #ifdef SSL_SUPPORT
     priv_key( e_key_curve_secp256k1 ),
 #endif
+    is_peer_session( is_peer_session ),
     p_storage_handler( p_storage_handler ),
     is_support_session( is_support_session )
    {
