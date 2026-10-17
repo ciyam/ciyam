@@ -17,6 +17,7 @@
 #include "ed25519.h"
 
 #include "utilities.h"
+#include "crypto_keys.h"
 
 using namespace std;
 
@@ -158,6 +159,103 @@ int main( )
       }
 
       check( "a seed that is not hex refused", refused );
+
+      // NOTE: The same through "private_key" and "public_key" on the "ed" curve.
+      check( "key curves - names", ( key_curve_value( "ed" ) == e_key_curve_ed25519 )
+       && ( key_curve_value( "k1" ) == e_key_curve_secp256k1 ) && ( key_curve_string( e_key_curve_ed25519 ) == "ed" ) );
+
+      const rfc8032_test& test_2( c_rfc8032_tests[ 1 ] );
+
+      private_key ed_key( test_2.p_seed, e_key_curve_ed25519 );
+
+      check( "private_key - the curve", ed_key.get_curve( ) == e_key_curve_ed25519 );
+      check( "private_key - the public key", ed_key.get_public( ) == test_2.p_public_key );
+      check( "private_key - the secret is the seed", ed_key.get_secret( ) == test_2.p_seed );
+      check( "private_key - the signature", ed_key.construct_signature( hex_decode( test_2.p_message ) ) == test_2.p_signature );
+
+      public_key ed_public( test_2.p_public_key );
+
+      check( "public_key - its curve from its size", ed_public.get_curve( ) == e_key_curve_ed25519 );
+
+      string signature( ed_key.construct_signature( "hello", true ) );
+
+      check( "public_key - a signature verified", ed_public.verify_signature( "hello", signature ) );
+      check( "public_key - another message refused", !ed_public.verify_signature( "hullo", signature ) );
+
+      private_key ed_first( c_rfc8032_tests[ 0 ].p_seed, e_key_curve_ed25519 );
+      public_key ed_first_public( ed_first.get_public( ) );
+
+      check( "private_key - the X25519 shared secret", ed_first.construct_shared( ed_public ) == c_shared_from_tests_1_and_2 );
+      check( "private_key - the same from the other side", ed_key.construct_shared( ed_first_public ) == c_shared_from_tests_1_and_2 );
+
+      string encrypted( ed_first.encrypt_message( ed_public, "a message for the second" ) );
+
+      check( "private_key - a message encrypted and decrypted",
+       ed_key.decrypt_message( ed_first_public, encrypted ) == "a message for the second" );
+
+      private_key ed_random( e_key_curve_ed25519 );
+
+      check( "private_key - a random key", ( ed_random.get_curve( ) == e_key_curve_ed25519 )
+       && ( ed_random.get_public( ).length( ) == c_ed25519_public_key_size * 2 ) );
+
+      refused = false;
+
+      try
+      {
+         ed_first.construct_shared( public_key( "0100000000000000000000000000000000000000000000000000000000000000" ) );
+      }
+      catch( exception& )
+      {
+         refused = true;
+      }
+
+      check( "private_key - a public key of small order refused", refused );
+
+#ifdef SSL_SUPPORT
+      private_key k1_key( e_key_curve_secp256k1 );
+      public_key k1_public( k1_key.get_public( ) );
+
+      check( "public_key - a secp256k1 key from its size", k1_public.get_curve( ) == e_key_curve_secp256k1 );
+
+      refused = false;
+
+      try
+      {
+         ed_first.construct_shared( k1_public );
+      }
+      catch( exception& )
+      {
+         refused = true;
+      }
+
+      check( "private_key - a shared secret with a key on the other curve refused", refused );
+
+      refused = false;
+
+      try
+      {
+         ed_first.get_wif_secret( );
+      }
+      catch( exception& )
+      {
+         refused = true;
+      }
+
+      check( "private_key - WIF refused for ed25519", refused );
+#else
+      refused = false;
+
+      try
+      {
+         private_key k1_key( e_key_curve_secp256k1 );
+      }
+      catch( exception& )
+      {
+         refused = true;
+      }
+
+      check( "private_key - secp256k1 refused without SSL support", refused );
+#endif
    }
    catch( exception& x )
    {

@@ -17,39 +17,43 @@
 #  include <stdexcept>
 #endif
 
-#include <openssl/bn.h>
-#include <openssl/ecdh.h>
-#include <openssl/rand.h>
-#include <openssl/ecdsa.h>
-#include <openssl/ripemd.h>
-#include <openssl/obj_mac.h>
-#include <openssl/opensslv.h>
+#include "config.h"
 
-#ifdef OPENSSL_VERSION_MAJOR
-#  if OPENSSL_VERSION_MAJOR >= 3
-#     define CRYPTO_NO_BIGNUM_INIT
-#  endif
-#endif
+#ifdef SSL_SUPPORT
+#  include <openssl/bn.h>
+#  include <openssl/ecdh.h>
+#  include <openssl/rand.h>
+#  include <openssl/ecdsa.h>
+#  include <openssl/ripemd.h>
+#  include <openssl/obj_mac.h>
+#  include <openssl/opensslv.h>
 
-#ifdef LIBRESSL_VERSION_NUMBER
-#  if LIBRESSL_VERSION_NUMBER >= 0x30000000L
-#     define CRYPTO_NO_BIGNUM_INIT
+#  ifdef OPENSSL_VERSION_MAJOR
+#     if OPENSSL_VERSION_MAJOR >= 3
+#        define CRYPTO_NO_BIGNUM_INIT
+#     endif
 #  endif
-#endif
+
+#  ifdef LIBRESSL_VERSION_NUMBER
+#     if LIBRESSL_VERSION_NUMBER >= 0x30000000L
+#        define CRYPTO_NO_BIGNUM_INIT
+#     endif
+#  endif
 
 // KLUDGE: Work-around for OpenSSL 3.0 changes.
-#ifdef CRYPTO_NO_BIGNUM_INIT
+#  ifdef CRYPTO_NO_BIGNUM_INIT
 void BN_init( void* ) { }
-#endif
+#  endif
 
 // KLUDGE: Work-around for OpenSSL 1.1 changes.
-#ifdef OPENSSL_VERSION_NUMBER
-#  if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#  ifdef OPENSSL_VERSION_NUMBER
+#     if OPENSSL_VERSION_NUMBER >= 0x10100000L
 typedef struct ECDSA_SIG_st
 {
    BIGNUM* r;
    BIGNUM* s;
 } ECDSA_SIG;
+#     endif
 #  endif
 #endif
 
@@ -57,6 +61,7 @@ typedef struct ECDSA_SIG_st
 
 #include "base64.h"
 #include "sha256.h"
+#include "ed25519.h"
 #include "utilities.h"
 #include "crypt_stream.h"
 
@@ -67,9 +72,17 @@ using namespace std;
 namespace
 {
 
-const int c_tx_max_msg_len = 80;
 const int c_num_secret_bytes = 32;
 const int c_max_public_key_bytes = 65;
+
+const char* const c_key_curve_secp256k1 = "k1";
+const char* const c_key_curve_ed25519 = "ed";
+
+const char* const c_requires_ssl = "secp256k1 keys require SSL support";
+const char* const c_only_secp256k1 = "only secp256k1 keys support this";
+
+#ifdef SSL_SUPPORT
+const int c_tx_max_msg_len = 80;
 
 const char* const c_zero_sequence_bytes = "00000000";
 const char* const c_default_sequence_bytes = "ffffffff";
@@ -79,6 +92,26 @@ const char* const c_zero_amount = "0000000000000000";
 const char* const c_empty_sig_script = "00";
 const char* const c_sig_script_marker = "XX";
 const char* const c_hash_code_type_all = "01000000";
+#endif
+
+// NOTE: Written through "volatile" so the compiler cannot drop the writes as unused.
+void clear_bytes( void* p_bytes, size_t num_bytes )
+{
+   volatile unsigned char* p = ( volatile unsigned char* )p_bytes;
+
+   while( num_bytes-- )
+      *p++ = 0;
+}
+
+bool is_all_zeros( const unsigned char* p_bytes, size_t num_bytes )
+{
+   unsigned char any = 0;
+
+   for( size_t i = 0; i < num_bytes; i++ )
+      any |= p_bytes[ i ];
+
+   return !any;
+}
 
 // NOTE: This function was sourced from the Bitcoin project.
 bool check_secret( const unsigned char buf[ c_num_secret_bytes ] )
@@ -113,6 +146,7 @@ bool check_secret( const unsigned char buf[ c_num_secret_bytes ] )
    return true;
 }
 
+#ifdef SSL_SUPPORT
 // NOTE: This function was sourced from the Bitcoin project.
 bool EC_KEY_regenerate_key( EC_KEY* p_key, BIGNUM* p_priv_key )
 {
@@ -347,24 +381,109 @@ inline uint64_t fix_endian( uint64_t x )
 
    return x;
 }
+#endif
 
 }
 
+key_curve key_curve_value( const string& str )
+{
+   key_curve curve = e_key_curve_unknown;
+
+   if( !str.empty( ) )
+   {
+      if( str == c_key_curve_secp256k1 )
+         curve = e_key_curve_secp256k1;
+      else if( str == c_key_curve_ed25519 )
+         curve = e_key_curve_ed25519;
+      else
+         throw runtime_error( "unknown key curve '" + str + "'" );
+   }
+
+   return curve;
+}
+
+string key_curve_string( key_curve curve )
+{
+   string retval;
+
+   switch( curve )
+   {
+      case e_key_curve_secp256k1:
+      retval = c_key_curve_secp256k1;
+      break;
+
+      case e_key_curve_ed25519:
+      retval = c_key_curve_ed25519;
+      break;
+
+      default:
+      throw runtime_error( "unknown key curve #" + to_string( curve ) );
+   }
+
+   return retval;
+}
+
+// NOTE: An "ed" key is held as its bytes, and a "k1" key in an "EC_KEY" (which is only created once the curve is known).
 struct public_key::impl
 {
+   key_curve curve;
+
+   unsigned char ed_public[ c_ed25519_public_key_size ];
+
+#ifndef SSL_SUPPORT
+   impl( ) : curve( e_key_curve_unknown )
+   {
+      memset( ed_public, 0, sizeof( ed_public ) );
+   }
+
+   void set_curve( key_curve new_curve )
+   {
+      if( new_curve == e_key_curve_secp256k1 )
+         throw runtime_error( c_requires_ssl );
+
+      if( new_curve != e_key_curve_ed25519 )
+         throw runtime_error( "unknown key curve #" + to_string( new_curve ) );
+
+      curve = new_curve;
+   }
+
+   int get_public_key( unsigned char*, bool )
+   {
+      throw runtime_error( c_requires_ssl );
+   }
+
+   bool verify_signature( const unsigned char*, vector< unsigned char >& )
+   {
+      throw runtime_error( c_requires_ssl );
+   }
+#else
    EC_KEY* p_key;
 
-   impl( )
+   impl( ) : curve( e_key_curve_unknown ), p_key( 0 )
    {
-      p_key = EC_KEY_new_by_curve_name( NID_secp256k1 );
-
-      if( !p_key )
-         throw runtime_error( "failed to create EC_KEY for NID_secp256k1" );
+      memset( ed_public, 0, sizeof( ed_public ) );
    }
 
    ~impl( )
    {
-      EC_KEY_free( p_key );
+      if( p_key )
+         EC_KEY_free( p_key );
+   }
+
+   void set_curve( key_curve new_curve )
+   {
+      if( ( new_curve != e_key_curve_secp256k1 ) && ( new_curve != e_key_curve_ed25519 ) )
+         throw runtime_error( "unknown key curve #" + to_string( new_curve ) );
+
+      curve = new_curve;
+
+      if( curve == e_key_curve_secp256k1 )
+      {
+         p_key = EC_KEY_new_by_curve_name( NID_secp256k1 );
+
+         if( !p_key )
+            throw runtime_error( "failed to create EC_KEY for NID_secp256k1" );
+      }
    }
 
    int get_public_key( unsigned char bytes[ c_max_public_key_bytes ], bool compressed )
@@ -391,6 +510,7 @@ struct public_key::impl
 
       return okay;
    }
+#endif
 };
 
 public_key::public_key( )
@@ -398,10 +518,8 @@ public_key::public_key( )
    p_impl = new impl;
 }
 
-public_key::public_key( const string& encoded, bool use_base64 )
+public_key::public_key( const string& encoded, bool use_base64, key_curve curve )
 {
-   p_impl = new impl;
-
    unsigned char buf[ c_max_public_key_bytes ];
 
    size_t size;
@@ -413,9 +531,40 @@ public_key::public_key( const string& encoded, bool use_base64 )
       hex_decode( encoded, buf, c_max_public_key_bytes );
    }
 
-   const unsigned char* pbegin = &buf[ 0 ];
+   if( curve == e_key_curve_unknown )
+      curve = ( size == c_ed25519_public_key_size ) ? e_key_curve_ed25519 : e_key_curve_secp256k1;
 
-   o2i_ECPublicKey( &p_impl->p_key, &pbegin, size );
+   if( curve == e_key_curve_ed25519 )
+   {
+      if( size != c_ed25519_public_key_size )
+         throw runtime_error( "an ed25519 public key is " + to_string( c_ed25519_public_key_size ) + " bytes" );
+
+      if( !use_base64 && !are_hex_nibbles( encoded ) )
+         throw runtime_error( "invalid hex for an ed25519 public key" );
+   }
+
+   p_impl = new impl;
+
+   try
+   {
+      p_impl->set_curve( curve );
+   }
+   catch( ... )
+   {
+      delete p_impl;
+      throw;
+   }
+
+   if( curve == e_key_curve_ed25519 )
+      memcpy( p_impl->ed_public, buf, c_ed25519_public_key_size );
+#ifdef SSL_SUPPORT
+   else
+   {
+      const unsigned char* pbegin = &buf[ 0 ];
+
+      o2i_ECPublicKey( &p_impl->p_key, &pbegin, size );
+   }
+#endif
 }
 
 public_key::~public_key( )
@@ -423,8 +572,21 @@ public_key::~public_key( )
    delete p_impl;
 }
 
+key_curve public_key::get_curve( ) const
+{
+   return p_impl->curve;
+}
+
 string public_key::get_public( bool compressed, bool use_base64 ) const
 {
+   if( p_impl->curve == e_key_curve_ed25519 )
+   {
+      if( !use_base64 )
+         return hex_encode( p_impl->ed_public, c_ed25519_public_key_size );
+      else
+         return base64::encode( p_impl->ed_public, c_ed25519_public_key_size );
+   }
+
    unsigned char buf[ c_max_public_key_bytes ];
 
    int len = p_impl->get_public_key( buf, compressed );
@@ -435,8 +597,12 @@ string public_key::get_public( bool compressed, bool use_base64 ) const
       return base64::encode( buf, len );
 }
 
+#ifdef SSL_SUPPORT
 string public_key::get_hash160( bool compressed ) const
 {
+   if( p_impl->curve != e_key_curve_secp256k1 )
+      throw runtime_error( c_only_secp256k1 );
+
    unsigned char buf1[ c_max_public_key_bytes ];
 
    int len = p_impl->get_public_key( buf1, compressed );
@@ -452,6 +618,9 @@ string public_key::get_hash160( bool compressed ) const
 
 string public_key::get_address( bool compressed, bool use_override, address_prefix override ) const
 {
+   if( p_impl->curve != e_key_curve_secp256k1 )
+      throw runtime_error( c_only_secp256k1 );
+
    unsigned char buf1[ c_max_public_key_bytes ];
 
    int len = p_impl->get_public_key( buf1, compressed );
@@ -478,9 +647,24 @@ string public_key::get_address( bool compressed, bool use_override, address_pref
 
    return base58_encode( buf2, RIPEMD160_DIGEST_LENGTH + 5 );
 }
+#endif
 
+// NOTE: An "ed" signature is of the message itself (Ed25519 hashes it with SHA-512) whereas a "k1" one is of its SHA-256.
 bool public_key::verify_signature( const string& msg, const string& sig ) const
 {
+   if( p_impl->curve == e_key_curve_ed25519 )
+   {
+      unsigned char signature[ c_ed25519_signature_size ];
+
+      if( base64::decode_size( sig ) > c_ed25519_signature_size )
+         return false;
+
+      if( base64::decode( sig, signature, sizeof( signature ) ) != c_ed25519_signature_size )
+         return false;
+
+      return ed25519_verify( signature, ( const unsigned char* )msg.data( ), msg.length( ), p_impl->ed_public );
+   }
+
    unsigned char buf[ c_sha256_digest_size ];
 
    sha256 hash( msg );
@@ -496,6 +680,18 @@ bool public_key::verify_signature( const string& msg, const string& sig ) const
 
 bool public_key::verify_signature( const unsigned char* p_data, const string& sig ) const
 {
+   if( p_impl->curve == e_key_curve_ed25519 )
+   {
+      unsigned char signature[ c_ed25519_signature_size ];
+
+      if( ( sig.length( ) != c_ed25519_signature_size * 2 ) || !are_hex_nibbles( sig ) )
+         return false;
+
+      hex_decode( sig, signature, sizeof( signature ) );
+
+      return ed25519_verify( signature, p_data, c_sha256_digest_size, p_impl->ed_public );
+   }
+
    vector< unsigned char > signature;
    signature.resize( sig.size( ) / 2 );
 
@@ -504,6 +700,7 @@ bool public_key::verify_signature( const unsigned char* p_data, const string& si
    return p_impl->verify_signature( p_data, signature );
 }
 
+#ifdef SSL_SUPPORT
 string public_key::address_to_hash160( const string& address )
 {
    if( address.length( ) < 33 )
@@ -540,13 +737,78 @@ string public_key::hash160_to_address(
 
    return base58_encode( buf, RIPEMD160_DIGEST_LENGTH + 5 );
 }
+#endif
 
+// NOTE: An "ed" key keeps its seed (as its secret) along with the private key made from it.
 struct private_key::impl
 {
    public_key::impl* p_pub_impl;
 
-   impl( public_key::impl* p_pub_impl ) : p_pub_impl( p_pub_impl ) { }
+   unsigned char ed_seed[ c_ed25519_seed_size ];
+   unsigned char ed_private[ c_ed25519_private_key_size ];
 
+   impl( public_key::impl* p_pub_impl ) : p_pub_impl( p_pub_impl )
+   {
+      memset( ed_seed, 0, sizeof( ed_seed ) );
+      memset( ed_private, 0, sizeof( ed_private ) );
+   }
+
+   ~impl( )
+   {
+      clear_bytes( ed_seed, sizeof( ed_seed ) );
+      clear_bytes( ed_private, sizeof( ed_private ) );
+   }
+
+   void set_seed( const unsigned char seed[ c_ed25519_seed_size ] )
+   {
+      memcpy( ed_seed, seed, c_ed25519_seed_size );
+
+      ed25519_create_keypair( p_pub_impl->ed_public, ed_private, ed_seed );
+   }
+
+   void get_shared_secret( unsigned char bytes[ c_num_secret_bytes ], const public_key::impl* p_other )
+   {
+      if( p_other->curve != p_pub_impl->curve )
+         throw runtime_error( "unexpected shared secret between keys on different curves" );
+
+      if( p_pub_impl->curve == e_key_curve_ed25519 )
+      {
+         ed25519_key_exchange( bytes, p_other->ed_public, ed_private );
+
+         // NOTE: All zeros comes from a public key of small order (and would be the same whoever's key it met).
+         if( is_all_zeros( bytes, c_num_secret_bytes ) )
+            throw runtime_error( "unusable ed25519 public key for a shared secret" );
+      }
+      else
+         get_k1_shared_secret( bytes, p_other );
+   }
+
+#ifndef SSL_SUPPORT
+   void get_secret_bytes( unsigned char* )
+   {
+      throw runtime_error( c_requires_ssl );
+   }
+
+   void set_secret_bytes( const unsigned char* )
+   {
+      throw runtime_error( c_requires_ssl );
+   }
+
+   void set_random_secret( )
+   {
+      throw runtime_error( c_requires_ssl );
+   }
+
+   void sign_message( const unsigned char*, vector< unsigned char >& )
+   {
+      throw runtime_error( c_requires_ssl );
+   }
+
+   void get_k1_shared_secret( unsigned char*, const public_key::impl* )
+   {
+      throw runtime_error( c_requires_ssl );
+   }
+#else
    // NOTE: This function was sourced from the Bitcoin project.
    void get_secret_bytes( unsigned char bytes[ c_num_secret_bytes ] )
    {
@@ -580,6 +842,18 @@ struct private_key::impl
          throw runtime_error( "unexpected failure for EC_KEY_regenerate_key in set_secret_byts" );
 
       BN_clear_free( p_bn );
+   }
+
+   void set_random_secret( )
+   {
+      unsigned char buf[ c_num_secret_bytes ];
+
+      do
+      {
+         RAND_bytes( buf, c_num_secret_bytes );
+      } while( !check_secret( buf ) );
+
+      set_secret_bytes( buf );
    }
 
    // NOTE: This function was sourced from the Bitcoin project.
@@ -620,31 +894,49 @@ struct private_key::impl
       ECDSA_SIG_free( p_sig );
    }
 
-   void get_shared_secret( unsigned char bytes[ c_num_secret_bytes ], const EC_KEY* p_key )
+   void get_k1_shared_secret( unsigned char bytes[ c_num_secret_bytes ], const public_key::impl* p_other )
    {
-      const EC_POINT* p_pub = EC_KEY_get0_public_key( p_key );
+      const EC_POINT* p_pub = EC_KEY_get0_public_key( p_other->p_key );
       const BIGNUM* p_priv = EC_KEY_get0_private_key( p_pub_impl->p_key );
 
       ECDH_compute_key( &bytes[ 0 ], c_num_secret_bytes, p_pub, p_pub_impl->p_key, 0 );
    }
+#endif
 };
 
-private_key::private_key( )
+private_key::private_key( key_curve curve )
 {
+   public_key::p_impl->set_curve( curve );
+
    p_impl = new impl( public_key::p_impl );
 
-   unsigned char buf[ c_num_secret_bytes ];
-
-   do
+   if( curve == e_key_curve_ed25519 )
    {
-      RAND_bytes( buf, c_num_secret_bytes );
-   } while( !check_secret( buf ) );
+      unsigned char seed[ c_ed25519_seed_size ];
 
-   p_impl->set_secret_bytes( buf );
+      ed25519_create_seed( seed );
+
+      p_impl->set_seed( seed );
+
+      clear_bytes( seed, sizeof( seed ) );
+   }
+   else
+      p_impl->set_random_secret( );
 }
 
-private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_compressed )
+private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_compressed, key_curve curve )
 {
+   public_key::p_impl->set_curve( curve );
+
+   if( curve == e_key_curve_ed25519 )
+   {
+      if( is_wif_format )
+         throw runtime_error( c_only_secp256k1 );
+
+      if( ( secret.length( ) > 50 ) && !are_hex_nibbles( secret ) )
+         throw runtime_error( "invalid hex for an ed25519 secret" );
+   }
+
    p_impl = new impl( public_key::p_impl );
 
    unsigned char buf[ c_num_secret_bytes ];
@@ -670,6 +962,7 @@ private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_c
          else
             base64::decode( secret, buf, c_num_secret_bytes );
       }
+#ifdef SSL_SUPPORT
       else
       {
          // NOTE: If the first encoded byte is K, L or c then is compressed.
@@ -699,14 +992,31 @@ private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_c
 
          memcpy( buf, &dbuf[ 1 ], c_num_secret_bytes );
       }
+#endif
    }
 
-   if( !check_secret( buf ) )
-      throw runtime_error( "unexpected invalid secret in private_key ctor" );
+   if( curve == e_key_curve_ed25519 )
+   {
+      if( is_all_zeros( buf, c_num_secret_bytes ) )
+         throw runtime_error( "unexpected invalid secret in private_key ctor" );
 
-   p_impl->set_secret_bytes( buf );
+      p_impl->set_seed( buf );
+   }
+   else
+   {
+      if( !check_secret( buf ) )
+         throw runtime_error( "unexpected invalid secret in private_key ctor" );
 
-   memset( buf, '\0', sizeof( buf ) );
+      p_impl->set_secret_bytes( buf );
+   }
+
+   clear_bytes( buf, sizeof( buf ) );
+}
+
+private_key::private_key( const string& secret, key_curve curve )
+ :
+ private_key( secret, false, 0, curve )
+{
 }
 
 private_key::~private_key( )
@@ -717,18 +1027,26 @@ private_key::~private_key( )
 void private_key::get_secret( string& s, bool use_base64 ) const
 {
    unsigned char buf[ c_num_secret_bytes ];
-   p_impl->get_secret_bytes( buf );
+
+   if( public_key::p_impl->curve == e_key_curve_ed25519 )
+      memcpy( buf, p_impl->ed_seed, c_num_secret_bytes );
+   else
+      p_impl->get_secret_bytes( buf );
 
    if( !use_base64 )
       hex_encode( s, buf, c_num_secret_bytes );
    else
       base64::encode( s, buf, c_num_secret_bytes );
 
-   memset( buf, 0, c_num_secret_bytes );
+   clear_bytes( buf, c_num_secret_bytes );
 }
 
+#ifdef SSL_SUPPORT
 string private_key::get_wif_secret( bool compressed, bool use_override, address_prefix override ) const
 {
+   if( public_key::p_impl->curve != e_key_curve_secp256k1 )
+      throw runtime_error( c_only_secp256k1 );
+
    unsigned char buf[ c_num_secret_bytes + 6 ];
 
    if( !use_override )
@@ -753,12 +1071,13 @@ string private_key::get_wif_secret( bool compressed, bool use_override, address_
 
    return base58_encode( buf, compressed ? c_num_secret_bytes + 6 : c_num_secret_bytes + 5 );
 }
+#endif
 
 void private_key::decrypt_message( string& s,
  const public_key& pub, const string& base64, const char* p_id ) const
 {
    unsigned char buf[ c_num_secret_bytes ];
-   p_impl->get_shared_secret( buf, pub.p_impl->p_key );
+   p_impl->get_shared_secret( buf, pub.p_impl );
 
    if( p_id )
    {
@@ -778,7 +1097,7 @@ void private_key::encrypt_message( string& s,
  const public_key& pub, const string& message, const char* p_id, bool add_salt ) const
 {
    unsigned char buf[ c_num_secret_bytes ];
-   p_impl->get_shared_secret( buf, pub.p_impl->p_key );
+   p_impl->get_shared_secret( buf, pub.p_impl );
 
    if( p_id )
    {
@@ -797,22 +1116,40 @@ void private_key::encrypt_message( string& s,
 void private_key::construct_shared( string& s, const public_key& pub ) const
 {
    unsigned char buf[ c_num_secret_bytes ];
-   p_impl->get_shared_secret( buf, pub.p_impl->p_key );
+   p_impl->get_shared_secret( buf, pub.p_impl );
 
    hex_encode( s, buf, sizeof( buf ) );
+
+   clear_bytes( buf, sizeof( buf ) );
 }
 
 string private_key::construct_signature( const unsigned char* p_digest, bool use_base64 ) const
 {
    vector< unsigned char > signature;
 
-   p_impl->sign_message( p_digest, signature );
+   if( public_key::p_impl->curve == e_key_curve_ed25519 )
+   {
+      signature.resize( c_ed25519_signature_size );
+
+      ed25519_sign( &signature[ 0 ], p_digest, c_sha256_digest_size, public_key::p_impl->ed_public, p_impl->ed_private );
+   }
+   else
+      p_impl->sign_message( p_digest, signature );
 
    return use_base64 ? base64::encode( &signature[ 0 ], signature.size( ) ) : hex_encode( &signature[ 0 ], signature.size( ) );
 }
 
 string private_key::construct_signature( const string& msg, bool use_base64 ) const
 {
+   if( public_key::p_impl->curve == e_key_curve_ed25519 )
+   {
+      unsigned char signature[ c_ed25519_signature_size ];
+
+      ed25519_sign( signature, ( const unsigned char* )msg.data( ), msg.length( ), public_key::p_impl->ed_public, p_impl->ed_private );
+
+      return use_base64 ? base64::encode( signature, sizeof( signature ) ) : hex_encode( signature, sizeof( signature ) );
+   }
+
    unsigned char buf[ c_sha256_digest_size ];
 
    sha256 hash( msg );
@@ -824,6 +1161,7 @@ string private_key::construct_signature( const string& msg, bool use_base64 ) co
    return use_base64 ? base64::encode( &signature[ 0 ], signature.size( ) ) : hex_encode( &signature[ 0 ], signature.size( ) );
 }
 
+#ifdef SSL_SUPPORT
 string create_p2sh_address( const string& hex_script, bool use_override, address_prefix override )
 {
    size_t size = hex_script.size( ) / 2;
@@ -1157,3 +1495,4 @@ string construct_raw_transaction(
 
    return replaced( raw_transaction, c_sig_script_marker, c_empty_sig_script );
 }
+#endif

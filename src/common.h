@@ -20,4 +20,11 @@ enum stream_cipher
    e_stream_cipher_dbl_hash,
 };
 
+enum key_curve
+{
+   e_key_curve_unknown,
+   e_key_curve_secp256k1,
+   e_key_curve_ed25519
+};
+
 #endif

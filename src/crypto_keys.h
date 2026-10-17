@@ -11,8 +11,20 @@
 #     include <vector>
 #  endif
 
+#  include "common.h"
+#  include "config.h"
 #  include "ptypes.h"
 #  include "pointers.h"
+
+// NOTE: A key is on one of two curves - "k1" (secp256k1, as Bitcoin uses, which requires SSL support) or "ed" (Ed25519
+// to sign and X25519 for shared secrets, which does not). A public key's curve is known from its size (32 bytes for "ed"
+// and 33 or 65 for "k1") so need not be given, but a private key's must be (a secret is 32 bytes for either). Whatever is
+// Bitcoin specific (WIF, hash160, addresses and transactions) is only for "k1".
+const key_curve c_default_key_curve = e_key_curve_secp256k1;
+
+key_curve key_curve_value( const std::string& str );
+
+std::string key_curve_string( key_curve curve = c_default_key_curve );
 
 class private_key;
 
@@ -32,23 +44,30 @@ class public_key
    friend class private_key;
 
    public:
-   public_key( const std::string& encoded, bool use_base64 = false );
+   public_key( const std::string& encoded, bool use_base64 = false, key_curve curve = e_key_curve_unknown );
 
    ~public_key( );
 
+   key_curve get_curve( ) const;
+
    std::string get_public( bool compressed = true, bool use_base64 = false ) const;
+
+#  ifdef SSL_SUPPORT
    std::string get_hash160( bool compressed = true ) const;
 
    std::string get_address( bool compressed = true,
     bool use_override = false, address_prefix override = e_address_prefix_btc_p2pkh_testnet ) const;
+#  endif
 
    bool verify_signature( const std::string& msg, const std::string& sig ) const;
    bool verify_signature( const unsigned char* p_data, const std::string& sig ) const;
 
+#  ifdef SSL_SUPPORT
    static std::string address_to_hash160( const std::string& address );
 
    static std::string hash160_to_address( const std::string& hash160,
     bool use_override = false, address_prefix override = e_address_prefix_btc_p2pkh_testnet );
+#  endif
 
    private:
    public_key( const public_key& );
@@ -64,8 +83,12 @@ class public_key
 class private_key : public public_key
 {
    public:
-   private_key( );
-   private_key( const std::string& secret, bool is_wif_format = false, bool* p_is_compressed = 0 );
+   explicit private_key( key_curve curve = c_default_key_curve );
+
+   private_key( const std::string& secret,
+    bool is_wif_format = false, bool* p_is_compressed = 0, key_curve curve = c_default_key_curve );
+
+   private_key( const std::string& secret, key_curve curve );
 
    ~private_key( );
 
@@ -80,8 +103,10 @@ class private_key : public public_key
       return s;
    }
 
+#  ifdef SSL_SUPPORT
    std::string get_wif_secret( bool compressed = true,
     bool use_override = false, address_prefix override = e_address_prefix_btc_wif_testnet ) const;
+#  endif
 
    void decrypt_message( std::string& s,
     const public_key& pub, const std::string& base64, const char* p_id = 0 ) const;
@@ -130,6 +155,7 @@ class private_key : public public_key
    private_key& operator =( const private_key& );
 };
 
+#  ifdef SSL_SUPPORT
 std::string create_p2sh_address( const std::string& hex_script,
  bool use_override = false, address_prefix override = e_address_prefix_btc_p2sh_testnet );
 
@@ -183,5 +209,6 @@ std::string construct_raw_transaction(
  const std::vector< output_information >& outputs,
  bool* p_is_complete = 0, bool randomly_order_outputs = true, const char* p_message = 0,
  uint32_t lock_time = 0, std::vector< std::string >* p_extra_sig_script_items = 0 );
+#  endif
 
 #endif
