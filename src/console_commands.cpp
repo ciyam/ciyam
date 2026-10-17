@@ -3477,9 +3477,24 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                                  str.erase( 0, pos + 1 );
 
+                                 pos = str.find( ' ' );
+
+                                 // NOTE: The key can optionally be prefixed with
+                                 // the specific stream cipher algorithm (such as
+                                 // "cc <key>") and to any avoid possible parsing
+                                 // issues keys should be either in hex or base64
+                                 // URL format.
+                                 string cipher( ( pos != string::npos )
+                                  ? str.substr( 0, pos ) : stream_cipher_string( ) );
+
+                                 if( pos != string::npos )
+                                    str.erase( 0, pos + 1 );
+
                                  stringstream ss( hex_decode( rhs ) );
 
-                                 crypt_stream( ss, str );
+                                 crypt_stream( ss, str, stream_cipher_value( cipher ) );
+
+                                 clear_key( str );
 
                                  str = hex_encode( ss.str( ) );
                               }
