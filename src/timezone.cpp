@@ -44,13 +44,13 @@ struct daylight_info
 
    double utc_offset;
 
-   bool operator ==( const daylight_info& o )
+   bool operator ==( const daylight_info& o ) const
    {
-      return utc_offset == o.utc_offset
-       && start_month == o.start_month && start_occurrence == o.start_occurrence
-       && start_day_of_week == o.start_day_of_week && start_time == o.start_time
-       && finish_month == o.finish_month && finish_occurrence == o.finish_occurrence
-       && finish_day_of_week == o.finish_day_of_week && finish_time == o.finish_time;
+      return ( utc_offset == o.utc_offset )
+       && ( start_month == o.start_month ) && ( start_occurrence == o.start_occurrence )
+       && ( start_day_of_week == o.start_day_of_week ) && ( start_time == o.start_time )
+       && ( finish_month == o.finish_month ) && ( finish_occurrence == o.finish_occurrence )
+       && ( finish_day_of_week == o.finish_day_of_week ) && ( finish_time == o.finish_time );
    }
 };
 
@@ -215,6 +215,7 @@ int main( int argc, char* argv[ ] )
       t.tm_isdst = 0;
 
       daylight_info daylight;
+
       double utc_offset = 0.0;
 
       vector< daylight_info > changes;
@@ -224,6 +225,7 @@ int main( int argc, char* argv[ ] )
       for( int i = c_start_year; i <= this_year + 2; i++ )
       {
          daylight_info new_daylight;
+
          double new_utc_offset = 0.0;
 
          t.tm_sec = 0;
@@ -239,7 +241,7 @@ int main( int argc, char* argv[ ] )
 
          bool new_has_daylight = get_daylight_info( t, new_daylight, new_utc_offset );
 
-         if( new_has_daylight != has_daylight || !( new_daylight == daylight ) )
+         if( ( new_has_daylight != has_daylight ) || !( new_daylight == daylight ) )
          {
             if( daylight.start_month != daylight.finish_month )
                changes.push_back( daylight );
