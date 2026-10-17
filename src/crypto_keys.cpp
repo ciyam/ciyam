@@ -103,6 +103,16 @@ void clear_bytes( void* p_bytes, size_t num_bytes )
       *p++ = 0;
 }
 
+struct scoped_clear_bytes
+{
+   scoped_clear_bytes( unsigned char* p_bytes, size_t num_bytes ) : p_bytes( p_bytes ), num_bytes( num_bytes ) { }
+
+   ~scoped_clear_bytes( ) { clear_bytes( p_bytes, num_bytes ); }
+
+   unsigned char* p_bytes;
+   size_t num_bytes;
+};
+
 bool is_all_zeros( const unsigned char* p_bytes, size_t num_bytes )
 {
    unsigned char any = 0;
@@ -908,7 +918,8 @@ private_key::private_key( key_curve curve )
 {
    public_key::p_impl->set_curve( curve );
 
-   p_impl = new impl( public_key::p_impl );
+   // NOTE: Held until the key is made so that it is not leaked if anything throws.
+   unique_ptr< impl > up_impl( new impl( public_key::p_impl ) );
 
    if( curve == e_key_curve_ed25519 )
    {
@@ -916,12 +927,14 @@ private_key::private_key( key_curve curve )
 
       ed25519_create_seed( seed );
 
-      p_impl->set_seed( seed );
+      up_impl->set_seed( seed );
 
       clear_bytes( seed, sizeof( seed ) );
    }
    else
-      p_impl->set_random_secret( );
+      up_impl->set_random_secret( );
+
+   p_impl = up_impl.release( );
 }
 
 private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_compressed, key_curve curve )
@@ -937,11 +950,14 @@ private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_c
          throw runtime_error( "invalid hex for an ed25519 secret" );
    }
 
-   p_impl = new impl( public_key::p_impl );
+   // NOTE: Held until the key is made so that it is not leaked if anything throws.
+   unique_ptr< impl > up_impl( new impl( public_key::p_impl ) );
 
    unsigned char buf[ c_num_secret_bytes ];
 
    memset( buf, 0, sizeof( buf ) );
+
+   scoped_clear_bytes clear_buf( buf, sizeof( buf ) );
 
    if( secret.length( ) < 30 )
    {
@@ -1000,17 +1016,17 @@ private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_c
       if( is_all_zeros( buf, c_num_secret_bytes ) )
          throw runtime_error( "unexpected invalid secret in private_key ctor" );
 
-      p_impl->set_seed( buf );
+      up_impl->set_seed( buf );
    }
    else
    {
       if( !check_secret( buf ) )
          throw runtime_error( "unexpected invalid secret in private_key ctor" );
 
-      p_impl->set_secret_bytes( buf );
+      up_impl->set_secret_bytes( buf );
    }
 
-   clear_bytes( buf, sizeof( buf ) );
+   p_impl = up_impl.release( );
 }
 
 private_key::private_key( const string& secret, key_curve curve )

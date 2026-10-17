@@ -182,6 +182,28 @@ int main( )
       check( "public_key - a signature verified", ed_public.verify_signature( "hello", signature ) );
       check( "public_key - another message refused", !ed_public.verify_signature( "hullo", signature ) );
 
+      unsigned char digest[ 32 ];
+
+      for( size_t i = 0; i < sizeof( digest ); i++ )
+         digest[ i ] = ( unsigned char )i;
+
+      string digest_signature( ed_key.construct_signature( digest ) );
+
+      check( "public_key - a signature of a digest verified", ed_public.verify_signature( digest, digest_signature ) );
+
+      digest[ 0 ] ^= 1;
+
+      check( "public_key - another digest refused", !ed_public.verify_signature( digest, digest_signature ) );
+
+      public_key ed_public_base64( ed_key.get_public( true, true ), true );
+
+      check( "public_key - from base64", ( ed_public_base64.get_curve( ) == e_key_curve_ed25519 )
+       && ( ed_public_base64.get_public( ) == test_2.p_public_key ) );
+
+      private_key ed_key_base64( ed_key.get_secret( true ), e_key_curve_ed25519 );
+
+      check( "private_key - a secret in base64", ed_key_base64.get_public( ) == test_2.p_public_key );
+
       private_key ed_first( c_rfc8032_tests[ 0 ].p_seed, e_key_curve_ed25519 );
       public_key ed_first_public( ed_first.get_public( ) );
 
