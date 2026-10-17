@@ -83,6 +83,8 @@ constexpr const char* c_ansi_normal = "\033[0m";
 constexpr const char* c_ansi_white_bold = "\033[37;1m";
 constexpr const char* c_ansi_esc_up_one_line = "\033[1A";
 
+constexpr const char* c_has_more = "!";
+
 constexpr const char* c_retain_all = "*";
 
 constexpr const char* c_env_var_sp = "SP";
@@ -3449,6 +3451,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     if( p_impl->input_file.eof( ) )
                                        p_impl->input_file.close( );
                                  }
+                              }
+                              else if( rhs == "?" )
+                              {
+                                 if( !p_impl->input_file )
+                                    str.erase( );
+                                 else
+                                    str = c_has_more;
                               }
                               else if( !file_exists( rhs ) )
                                  error_message = "file '" + rhs + "' not found";
