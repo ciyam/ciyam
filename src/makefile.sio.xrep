@@ -26,6 +26,10 @@
      <filename>cube.cpp
      <filename>date_time.cpp
      <filename>dynamic_library.cpp
+     <filename>ed25519.cpp
+     <filename>ed25519_fe.cpp
+     <filename>ed25519_ge.cpp
+     <filename>ed25519_sc.cpp
      <filename>file_buffer.cpp
      <filename>file_utils.cpp
      <filename>format.cpp
@@ -543,6 +547,29 @@
     <dlink_libs>
     <cpp_files/>
      <filename>test_crypto_keys.cpp
+    </cpp_files>
+    <cms_files/>
+    </cms_files>
+   </executable>\
+`}
+`{`(`?`$use_ssl`)`&`(`@eq`(`$use_ssl`,`'1`'`)`|`@eq`(`$use_ssl`,`'true`'`)`)\
+   <executable/>
+    <name>test_ed25519
+    <gen_ext>
+    <threads>false
+    <sockets>false
+    <openssl>true
+    <libfcgi>false
+    <libharu>false
+    <libicnv>false
+    <mysqldb>false
+    <zlibuse>false
+    <dynamic>false
+    <readline>false
+    <link_libs>base
+    <dlink_libs>
+    <cpp_files/>
+     <filename>test_ed25519.cpp
     </cpp_files>
     <cms_files/>
     </cms_files>
