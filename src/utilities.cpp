@@ -2769,7 +2769,7 @@ void hex_decode( const string& src, unsigned char* p_dest, size_t len )
          throw runtime_error( "data buffer is " + to_string( len )
           + " bytes but hex_decode requires at least " + to_string( src.length( ) / 2 ) );
 
-      memset( p_dest, len, 0 );
+      memset( p_dest, 0, len );
 
       size_t n = 0;
 
