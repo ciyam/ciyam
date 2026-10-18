@@ -127,7 +127,7 @@ INVITATION_INFORMATION=
 ;
 @ifndef $CHECK_PRIOR
 NOT_TO_SELF=
-^[hit 'a' for ANSI help, 'e' to edit, 'n' for new room, 'q' to quit, 'r' to change room, 'u' for users, 's/v' to scan/view a QR Code or space to type]
+^[hit 'a' for ANSI help, 'e' to edit, 'k' to add a key, 'n' for new room, 'q' to quit, 'r' to change room, 'u' for users, 's/v' to scan/view a QR Code or space to type]
 ;
 @ifdef $CIYAM_KEY_PRESSED
 ;
@@ -224,6 +224,29 @@ ENCODED=@base64::$EDITED_MESSAGE
 ERROR=
 @endif
 ;
+@endif
+@endif
+@endif
+@endif
+;
+@elif "$CIYAM_KEY_PRESSED" = "k"
+~echo ""
+~qrencode -tANSI $PUB
+&Enter user name for new key: :USER_FOR_PUB=
+;
+@ifdef $USER_FOR_PUB
+@ifeq "$USER" "$USER_FOR_PUB"
+#Error: User name must not be your own one.
+@else
+QR_CODE=@file:~zbarcam -1 -q --raw
+@ifdef $QR_CODE
+CHECK_QR_CODE=@lower:$QR_CODE
+POS=@strpos:error:$CHECK_QR_CODE
+@ifdef $POS
+#$QR_CODE
+@else
+~echo "Saving public key for '$USER_FOR_PUB'."
+~echo "$QR_CODE" > $LOCAL_FILES_DIR/.irc_$USER_FOR_PUB.public
 @endif
 @endif
 @endif
