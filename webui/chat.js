@@ -4140,6 +4140,41 @@ const c_storage_format_codes = "cws.format_codes";
 var g_composer_chars = [ ];
 var g_composer_codes = false;
 
+// NOTE: The styled box's own undo ("format_history( )") - with Codes on the browser's own, as before.
+var g_composer_history = format_history( [ ], 0, 0 );
+
+function reset_composer_history( )
+{
+   var input = document.getElementById( "composer_input" );
+
+   g_composer_history = format_history( g_composer_chars, input.selectionStart, input.selectionEnd );
+}
+
+// NOTE: Ctrl+Z and Ctrl+Y (or Ctrl+Shift+Z), and the browser's own Undo and Redo - its menus, or shaking an iPhone - in the
+// styled box: the words, their styles and the selection as they were.
+function composer_history_step( redo )
+{
+   var input = document.getElementById( "composer_input" );
+
+   sync_composer_chars( );
+
+   var step = redo ? format_history_redo( g_composer_history ) : format_history_undo( g_composer_history );
+
+   if( step === null )
+      return;
+
+   g_composer_history = step.history;
+   g_composer_chars = step.state.chars;
+
+   input.value = format_styled_text( g_composer_chars );
+   input.setSelectionRange( step.state.start, step.state.end );
+
+   g_format_selection = { start: step.state.start, end: step.state.end };
+
+   composer_refresh( );
+   update_format_bar( );
+}
+
 function init_composer_codes( )
 {
    try
@@ -4192,6 +4227,7 @@ function do_toggle_codes( on )
 
    show_composer_codes( );
    on_composer_input( );
+   reset_composer_history( );
    update_format_bar( );
 
    if( !input.disabled && has_fine_pointer( ) )
@@ -4238,6 +4274,9 @@ function set_composer_message( text )
    }
 
    on_composer_input( );
+
+   // NOTE: Undo starts again from the message put in - an edit's Escape is how back to before it.
+   reset_composer_history( );
 }
 
 function clear_composer( )
@@ -4245,6 +4284,7 @@ function clear_composer( )
    document.getElementById( "composer_input" ).value = "";
 
    g_composer_chars = [ ];
+   g_composer_history = format_history( [ ], 0, 0 );
 }
 
 // NOTE: The copy behind the box, drawn with the words' colour and style. It takes the box's own font, spacing, padding and
@@ -4357,6 +4397,12 @@ function update_format_bar( )
 
    remember_format_selection( );
 
+   // NOTE: The cursor's place kept in the undo, so an undo puts it back where the typing began.
+   var shown = g_composer_history.states[ g_composer_history.at ];
+
+   if( !g_composer_codes && ( document.activeElement === input ) && ( format_styled_text( shown.chars ) === input.value ) )
+      g_composer_history = format_history_select( g_composer_history, input.selectionStart, input.selectionEnd );
+
    bar.classList.toggle( "is-floating", floats );
    bar.classList.toggle( "is-docked", !floats );
 
@@ -4464,6 +4510,7 @@ function apply_format( change )
          return;
 
       g_composer_chars = styled;
+      g_composer_history = format_history_record( g_composer_history, styled, selection.start, selection.end, "format", Date.now( ) );
 
       input.focus( );
       input.setSelectionRange( selection.start, selection.end );
@@ -4633,6 +4680,17 @@ function bind_format_bar( )
          update_format_bar( );
    } );
 
+   // NOTE: The browser's own Undo and Redo, from its menus or a phone, in the styled box - ours in place of its.
+   input.addEventListener( "beforeinput", function( event )
+   {
+      if( g_composer_codes || ( ( event.inputType !== "historyUndo" ) && ( event.inputType !== "historyRedo" ) ) )
+         return;
+
+      event.preventDefault( );
+
+      composer_history_step( event.inputType === "historyRedo" );
+   } );
+
    // NOTE: The bar's own buttons keep the focus, and so the selection, in the box.
    document.querySelectorAll( "#format_bar button" ).forEach( function( button )
    {
@@ -4662,6 +4720,20 @@ function do_composer_key( event )
 {
    if( emoji_suggest_key( event ) )
       return false;
+
+   if( !g_composer_codes && ( event.ctrlKey || event.metaKey ) && !event.altKey )
+   {
+      var undo_key = String( event.key ).toLowerCase( );
+
+      if( ( undo_key === "z" ) || ( undo_key === "y" ) )
+      {
+         event.preventDefault( );
+
+         composer_history_step( ( undo_key === "y" ) || event.shiftKey );
+
+         return false;
+      }
+   }
 
    if( format_key( event ) )
       return false;
@@ -4947,11 +5019,28 @@ function update_composer_count( )
    document.getElementById( "composer_send" ).disabled = over || input.disabled;
 }
 
-function on_composer_input( )
+// NOTE: Typing - "insertText" and the like - joins a burst in the undo; a paste, an emoji or a message put in is a step of its own.
+const c_typing_input = /^(insertText|insertCompositionText|insertReplacementText|insertLineBreak|insertParagraph|delete)/;
+
+function on_composer_input( event )
 {
+   var input = document.getElementById( "composer_input" );
+
    // NOTE: With Codes off the styles follow whatever changed in the words - typed, deleted, pasted or an emoji put in.
    sync_composer_chars( );
 
+   if( !g_composer_codes )
+   {
+      var kind = ( event && c_typing_input.test( event.inputType || "" ) ) ? "type" : "other";
+
+      g_composer_history = format_history_record( g_composer_history, g_composer_chars, input.selectionStart, input.selectionEnd, kind, Date.now( ) );
+   }
+
+   composer_refresh( );
+}
+
+function composer_refresh( )
+{
    resize_composer( );
    update_composer_count( );
    update_emoji_suggest( );
