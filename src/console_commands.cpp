@@ -24,6 +24,7 @@
 
 #include "console_commands.h"
 
+#include "regex.h"
 #include "base64.h"
 #include "config.h"
 #include "format.h"
@@ -33,9 +34,7 @@
 #include "pointers.h"
 #include "date_time.h"
 #include "utilities.h"
-#ifdef SSL_SUPPORT
-#  include "crypto_keys.h"
-#endif
+#include "crypto_keys.h"
 #include "fs_iterator.h"
 #include "crypt_stream.h"
 
@@ -65,6 +64,8 @@ const int c_bad_system_exit = 999;
 const size_t c_max_pwd_size = 128;
 
 const char c_option_prefix = '-';
+
+const size_t c_max_secret_keys = 10000;
 
 constexpr const char* c_op_eq = "=";
 constexpr const char* c_op_gt = ">";
@@ -142,6 +143,7 @@ constexpr const char* c_function_crypt = "crypt";
 constexpr const char* c_function_files = "files";
 constexpr const char* c_function_lower = "lower";
 constexpr const char* c_function_paths = "paths";
+constexpr const char* c_function_regex = "regex";
 constexpr const char* c_function_upper = "upper";
 constexpr const char* c_function_aschex = "aschex";
 constexpr const char* c_function_dechex = "dechex";
@@ -3646,6 +3648,32 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                               str = join( results, '\n' );
                            }
+                           else if( lhs == c_function_regex )
+                           {
+                              string::size_type dpos = str.find( op, pos + 1 );
+
+                              if( dpos == string::npos )
+                                 str.erase( );
+                              else
+                              {
+                                 string rhs( str.substr( dpos + 1 ) );
+
+                                 str.erase( dpos );
+
+                                 str.erase( 0, pos + 1 );
+
+                                 regex re( str );
+
+                                 size_t length = 0;
+
+                                 pos = re.search( rhs, &length );
+
+                                 if( pos == string::npos )
+                                    str.erase( );
+                                 else
+                                    str = rhs.substr( pos, length );
+                              }
+                           }
                            else if( lhs == c_function_upper )
                               str = upper( str.substr( pos + 1 ) );
                            else if( lhs == c_function_aschex )
@@ -3778,11 +3806,17 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  {
                                     string::size_type pos = rhs.find( ' ' );
 
-                                    if( pos != string::npos )
+                                    // NOTE: If "rhs" is the curve name and either nothing or
+                                    // or one space follows it then create a key using a UUID
+                                    // for the specified (rather than the default) "curve".
+                                    if( ( rhs.length( ) == 2 ) || ( pos != string::npos ) )
                                     {
                                        secret_curve = key_curve_value( rhs.substr( 0, pos ) );
 
-                                       rhs.erase( 0, pos + 1 );
+                                       if( ( pos != string::npos ) && ( pos != rhs.length( ) - 1 ) )
+                                          rhs.erase( 0, pos + 1 );
+                                       else
+                                          rhs = uuid( ).as_string( );
                                     }
                                  }
                               }
@@ -3791,6 +3825,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                               if( is_erase )
                                  p_impl->secrets.erase( rhs );
+                              else if( p_impl->secrets.size( ) >= c_max_secret_keys )
+                                 throw runtime_error( "maximum secret keys are currently in use" );
                               else
                               {
                                  string name( to_comparable_string( p_impl->counter++, false, 6 ) );
