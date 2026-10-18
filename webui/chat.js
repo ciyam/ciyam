@@ -1089,6 +1089,12 @@ async function do_disconnect( already_ended )
    g_dm_shut = { };
    g_dm_checked = { };
 
+   // NOTE: What was typed, its undo and an edit open were this account's too - the next could have undone back to its words
+   // (found by review, 2026-10-18).
+   do_cancel_edit( );
+   clear_composer( );
+   resize_composer( );
+
    document.getElementById( "held_list" ).textContent = "";
    document.getElementById( "held_list" ).hidden = true;
    document.getElementById( "thread_sub" ).hidden = true;
@@ -4241,10 +4247,10 @@ function do_toggle_codes( on )
 // returning to the page, or a script - so what is sent is always what is in the box (found by the suites, 2026-10-18).
 function sync_composer_chars( )
 {
-   var value = document.getElementById( "composer_input" ).value;
+   var input = document.getElementById( "composer_input" );
 
-   if( !g_composer_codes && ( format_styled_text( g_composer_chars ) !== value ) )
-      g_composer_chars = format_styled_edit( g_composer_chars, value );
+   if( !g_composer_codes && ( format_styled_text( g_composer_chars ) !== input.value ) )
+      g_composer_chars = format_styled_edit( g_composer_chars, input.value, input.selectionEnd );
 }
 
 // NOTE: What is in the box as it is sent, escapes and all, whichever way it is shown - trimmed, unless "untrimmed".
@@ -4314,7 +4320,7 @@ function render_composer_mirror( )
 
    // NOTE: A last empty line keeps its height, as the box's does.
    if( ( input.value === "" ) || ( input.value.charAt( input.value.length - 1 ) === "\n" ) )
-      mirror.appendChild( document.createTextNode( "​" ) );
+      mirror.appendChild( document.createTextNode( "\u200b" ) );
 
    mirror.scrollTop = input.scrollTop;
 }
@@ -4802,6 +4808,10 @@ async function do_send( )
    // NOTE: As it is sent - the formatting as escapes, whichever way the box shows it.
    var text = composer_message( );
 
+   // NOTE: With Codes on, what was typed exactly - to put back as it was if the send fails. Read back from the escapes it
+   // would gain a closing "%N%", and no longer match what was sent once the server is asked whether it arrived (found by review).
+   var typed = g_composer_codes ? input.value.trim( ) : null;
+
    close_emoji_panel( false );
    close_emoji_suggest( );
 
@@ -4937,7 +4947,14 @@ async function do_send( )
    // out goes back too, until the re-read after the time-out says whether it was sent.
    if( failed )
    {
-      set_composer_message( text );
+      if( ( typed !== null ) && g_composer_codes )
+      {
+         input.value = typed;
+
+         on_composer_input( );
+      }
+      else
+         set_composer_message( text );
 
       if( timed_out )
       {

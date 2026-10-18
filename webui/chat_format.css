@@ -463,3 +463,13 @@
    margin: 0;
    accent-color: var(--color-chat-accent);
 }
+
+/* NOTE: In forced colours (high contrast) the box's own words are drawn whatever their colour - so the copy behind goes, and
+   the words are shown once, without their formatting (found by review, 2026-10-18). */
+@media (forced-colors: active)
+{
+   .chat-composer.is-styled .chat-input-mirror
+   {
+      display: none;
+   }
+}
