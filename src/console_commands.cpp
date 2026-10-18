@@ -169,6 +169,9 @@ constexpr const char* c_function_set_sort = "set_sort";
 constexpr const char* c_function_set_all_in = "set_all_in";
 constexpr const char* c_function_set_not_in = "set_not_in";
 
+constexpr const char* c_cond_prefix_1 = "@if";
+constexpr const char* c_cond_prefix_2 = "@el";
+
 constexpr const char* c_envcond_command_if = "if";
 constexpr const char* c_envcond_command_elif = "elif";
 constexpr const char* c_envcond_command_else = "else";
@@ -3214,15 +3217,30 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
          if( !skip_replacements )
          {
+            bool is_condition = false;
+
+            // NOTE: For conditional tests the environment variable replacements need to be
+            // escaped (to prevent incorrect parsing due to unexpected special characters).
+            if( ( str.find( c_cond_prefix_1 ) == 0 ) || ( str.find( c_cond_prefix_2 ) == 0 ) )
+               is_condition = true;
+
             // NOTE: First try the format %<name>% and %* or %0..9 then try $* or $0..9 and $<name> so
             // console scripts can utilise either (or a combination) of these two environment variable
             // styles. The %<name>% has to be replaced before trying %* and %0..9 otherwise the second
             // % could confuse the replacement (if it is followed by a * or 0..9).
-            replace_quoted_environment_variables( str );
+            if( !is_condition )
+               replace_quoted_environment_variables( str );
+            else
+               replace_quoted_environment_variables( str, c_environment_variable_marker_2, "\\\"\n" );
+
             replace_input_arg_values( str, args, c_environment_variable_marker_2 );
 
             replace_input_arg_values( str, args, c_environment_variable_marker_1 );
-            replace_unquoted_environment_variables( str );
+
+            if( !is_condition )
+               replace_unquoted_environment_variables( str );
+            else
+               replace_unquoted_environment_variables( str, c_environment_variable_marker_1, "\\\"\n" );
 
             // NOTE: With either format doubled tokens (but not %LIKE%%THIS%) are replaced by a single.
             string doubled_marker_1( 2, c_environment_variable_marker_1 );
