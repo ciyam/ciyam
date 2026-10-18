@@ -4,6 +4,7 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 NAMES=$1
+SINGLE=$2
 ;
 @ifndef $NAMES
 #Usage: names.cin [name-1[,name-2[,..]]
@@ -84,7 +85,12 @@ NAME_LINES=%NAME_LINES:-1%
 CHOICES=$CHOICES]
 ;
 DUMMY= <none>
-PREFIX=Selected Names
+;
+@ifdef $SINGLE
+PREFIX=Selected Name
+@else
+PREFIX=Selected Name(s)
+@endif
 ;
 NAMES=
 SELECTED_NAMES=
@@ -122,7 +128,25 @@ ERASER=@eraser:$NAME,
 ERASER=$NAME,$ERASER
 SELECTED_NAMES=$CHECK_SELECTED
 @else
+@ifdef $SINGLE
+;
+OLD_LEN=@strlen:$NAMES
+@ifdef $OLD_LEN
+NEW_LEN=@strlen:$NAME
+@ifdef $NEW_LEN
+@if $NEW_LEN #< $OLD_LEN
+EXTRA=@$OLD_LEN-$NEW_LEN
+DUMMY=@padlen:$EXTRA, :
+ERASER=@eraser:$DUMMY
+ERASER=$DUMMY$ERASER
+@endif
+@endif
+@endif
+SELECTED_NAMES=[$NAME]
+;
+@else
 SELECTED_NAMES=$SELECTED_NAMES[$NAME]
+@endif
 @endif
 ;
 @endif
@@ -144,7 +168,7 @@ NAMES=@file:~echo -n "$NAMES" | tr "," "\n" | sort | tr "\n" "," | head -c-1
 @:END_NAME_LOOP
 ;
 @ifndef $NAMES
-#^^(no names were selected)
+#^^(no name has been selected)
 @endif
 ;
 @endif
