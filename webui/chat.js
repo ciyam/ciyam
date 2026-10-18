@@ -177,6 +177,8 @@ function chat( )
 
    bind_format_bar( );
 
+   init_composer_codes( );
+
    window.addEventListener( "resize", resize_composer );
 
    watch_drawer_widths( );
@@ -2228,7 +2230,7 @@ function render_held( )
 
       held.className = "chat-held-message";
 
-      draw_formatted( held, format_shorthand_pieces( text ) );
+      draw_formatted( held, format_pieces( text ) );
 
       host.appendChild( held );
    } );
@@ -2278,7 +2280,7 @@ function send_held( room, pending )
 
          serialised( function( )
          {
-            return ciyam.create_message( room, "text=" + escape_message_text( shorthand_to_ansi( text ) ), function( response )
+            return ciyam.create_message( room, "text=" + escape_message_text( text ), function( response )
             {
                answered = true;
 
@@ -2641,9 +2643,10 @@ function update_announcement_preview( )
    var host = document.getElementById( "announcement_preview" );
    var input = document.getElementById( "composer_input" );
 
-   var text = input.value.trim( );
+   // NOTE: As it will be sent, whichever way the box shows it.
+   var text = composer_message( );
 
-   var showing = ciyam.is_admin && is_reserved_room( g_room ) && ( text !== "" ) && !input.disabled;
+   var showing = ciyam.is_admin && is_reserved_room( g_room ) && ( input.value.trim( ) !== "" ) && !input.disabled;
 
    host.hidden = !showing;
 
@@ -2656,7 +2659,7 @@ function update_announcement_preview( )
 
    var others = g_recipients.filter( function( name ) { return name !== ciyam.username; } );
 
-   var card = build_announcement_card( shorthand_to_ansi( text ), "now", "", others.length > 0 );
+   var card = build_announcement_card( text, "now", "", others.length > 0 );
 
    card.querySelector( ".chat-announcement-ok" ).hidden = true;
 
@@ -3877,7 +3880,7 @@ function apply_posting_rules( )
 
       input.dataset.refused = "1";
 
-      input.value = "";
+      clear_composer( );
       input.placeholder = status.locked ? "🔒 " + status.reason : status.reason;
 
       resize_composer( );
@@ -4129,6 +4132,153 @@ const c_format_colour_names = { K: "black", R: "red", G: "green", O: "orange", A
 // NOTE: The selected words in the box, kept - a tap on the bar can take the focus, and the selection with it, on a phone.
 var g_format_selection = { start: 0, end: 0 };
 
+// NOTE: The styled box (Ian, 2026-10-18) - with Codes off the box holds the words alone and these are their styles, a character
+// each ("format_styled_edit( )" in "chat_parse.js"); with Codes on the box holds Ian's codes, as before. This browser remembers
+// which (Damon, 2026-10-18).
+const c_storage_format_codes = "cws.format_codes";
+
+var g_composer_chars = [ ];
+var g_composer_codes = false;
+
+function init_composer_codes( )
+{
+   try
+   {
+      g_composer_codes = ( localStorage.getItem( c_storage_format_codes ) === "1" );
+   }
+   catch( e )
+   {
+      g_composer_codes = false;
+   }
+
+   show_composer_codes( );
+}
+
+function show_composer_codes( )
+{
+   document.getElementById( "composer" ).classList.toggle( "is-styled", !g_composer_codes );
+   document.getElementById( "composer_codes" ).checked = g_composer_codes;
+}
+
+// NOTE: Codes ticked or not - the box turned into Ian's shorthand, or read back into words and styles.
+function do_toggle_codes( on )
+{
+   var input = document.getElementById( "composer_input" );
+
+   if( on === g_composer_codes )
+      return;
+
+   if( on )
+   {
+      sync_composer_chars( );
+
+      input.value = format_styled_to_shorthand( g_composer_chars );
+   }
+   else
+   {
+      g_composer_chars = format_styled_from_shorthand( input.value );
+      input.value = format_styled_text( g_composer_chars );
+   }
+
+   g_composer_codes = on;
+
+   try
+   {
+      localStorage.setItem( c_storage_format_codes, on ? "1" : "0" );
+   }
+   catch( e )
+   {
+   }
+
+   show_composer_codes( );
+   on_composer_input( );
+   update_format_bar( );
+
+   if( !input.disabled && has_fine_pointer( ) )
+   {
+      input.focus( );
+      input.setSelectionRange( input.value.length, input.value.length );
+   }
+}
+
+// NOTE: The styles caught up with the box's words when they were set without an "input" - the browser putting them back on
+// returning to the page, or a script - so what is sent is always what is in the box (found by the suites, 2026-10-18).
+function sync_composer_chars( )
+{
+   var value = document.getElementById( "composer_input" ).value;
+
+   if( !g_composer_codes && ( format_styled_text( g_composer_chars ) !== value ) )
+      g_composer_chars = format_styled_edit( g_composer_chars, value );
+}
+
+// NOTE: What is in the box as it is sent, escapes and all, whichever way it is shown - trimmed, unless "untrimmed".
+function composer_message( untrimmed )
+{
+   var input = document.getElementById( "composer_input" );
+
+   if( g_composer_codes )
+      return shorthand_to_ansi( untrimmed ? input.value : input.value.trim( ) );
+
+   sync_composer_chars( );
+
+   return format_styled_to_ansi( untrimmed ? g_composer_chars : format_styled_trim( g_composer_chars ) );
+}
+
+// NOTE: A message into the box, as it is sent - one to edit, or one put back - shown with its formatting, or as Ian's codes.
+function set_composer_message( text )
+{
+   var input = document.getElementById( "composer_input" );
+
+   if( g_composer_codes )
+      input.value = ansi_to_shorthand( text );
+   else
+   {
+      g_composer_chars = format_styled_from_ansi( text );
+      input.value = format_styled_text( g_composer_chars );
+   }
+
+   on_composer_input( );
+}
+
+function clear_composer( )
+{
+   document.getElementById( "composer_input" ).value = "";
+
+   g_composer_chars = [ ];
+}
+
+// NOTE: The copy behind the box, drawn with the words' colour and style. It takes the box's own font, spacing, padding and
+// borders, so its letters fall where the box's do; bold is drawn as an outline and italics as a slant, and the background
+// colours lose their padding ("chat_format.css"), so no letter moves.
+function render_composer_mirror( )
+{
+   var input = document.getElementById( "composer_input" );
+   var mirror = document.getElementById( "composer_mirror" );
+
+   if( g_composer_codes )
+   {
+      mirror.replaceChildren( );
+
+      return;
+   }
+
+   sync_composer_chars( );
+
+   var style = window.getComputedStyle( input );
+
+   [ "fontFamily", "fontSize", "fontWeight", "lineHeight", "letterSpacing", "wordSpacing", "textIndent", "tabSize", "paddingTop",
+    "paddingRight", "paddingBottom", "paddingLeft", "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth",
+    "boxSizing", "overflowY" ].forEach( function( property ) { mirror.style[ property ] = style[ property ]; } );
+
+   draw_formatted( mirror, format_pieces_of( g_composer_chars ) );
+
+   // NOTE: A last empty line keeps its height, as the box's does.
+   if( ( input.value === "" ) || ( input.value.charAt( input.value.length - 1 ) === "\n" ) )
+      mirror.appendChild( document.createTextNode( "​" ) );
+
+   mirror.scrollTop = input.scrollTop;
+}
+
 // NOTE: A message's words with their colour and style - a span each run ("format_pieces( )"), the words always as text and
 // the class names only from Ian's codes, never from the message.
 function draw_formatted( element, pieces )
@@ -4171,7 +4321,9 @@ function update_format_preview( )
    var input = document.getElementById( "composer_input" );
    var body = document.getElementById( "format_preview_body" );
 
-   var showing = !input.disabled && has_shorthand_codes( input.value ) && document.getElementById( "announcement_preview" ).hidden;
+   // NOTE: Only with Codes on - with it off the box is the preview (Damon, 2026-10-18).
+   var showing = g_composer_codes && !input.disabled && has_shorthand_codes( input.value )
+    && document.getElementById( "announcement_preview" ).hidden;
 
    document.getElementById( "format_preview" ).hidden = !showing;
 
@@ -4280,7 +4432,10 @@ function place_format_bar( )
 function show_format_pressed( )
 {
    var input = document.getElementById( "composer_input" );
-   var shared = format_selection_style( input.value, g_format_selection.start, g_format_selection.end );
+   sync_composer_chars( );
+
+   var shared = g_composer_codes ? format_selection_style( input.value, g_format_selection.start, g_format_selection.end )
+    : format_styled_shared( g_composer_chars, g_format_selection.start, g_format_selection.end );
 
    document.querySelectorAll( "#format_bar [data-format]" ).forEach( function( button )
    {
@@ -4294,6 +4449,34 @@ function apply_format( change )
 {
    var input = document.getElementById( "composer_input" );
    var selection = ( document.activeElement === input ) ? { start: input.selectionStart, end: input.selectionEnd } : g_format_selection;
+
+   // NOTE: With Codes off the words stay as they are and only their styles change - the same words still selected. Ctrl+Z
+   // in the box undoes typing, not this.
+   if( !g_composer_codes )
+   {
+      sync_composer_chars( );
+
+      var styled = format_styled_restyle( g_composer_chars, selection.start, selection.end, change );
+
+      close_format_palette( );
+
+      if( styled === null )
+         return;
+
+      g_composer_chars = styled;
+
+      input.focus( );
+      input.setSelectionRange( selection.start, selection.end );
+
+      g_format_selection = { start: selection.start, end: selection.end };
+
+      render_composer_mirror( );
+      update_composer_count( );
+      update_announcement_preview( );
+      update_format_bar( );
+
+      return;
+   }
 
    var out = format_restyle( input.value, selection.start, selection.end, change );
 
@@ -4435,7 +4618,13 @@ function bind_format_bar( )
       input.addEventListener( type, function( ) { window.setTimeout( update_format_bar, 0 ); } );
    } );
 
-   input.addEventListener( "scroll", function( ) { if( !document.getElementById( "format_bar" ).hidden ) update_format_bar( ); } );
+   input.addEventListener( "scroll", function( )
+   {
+      document.getElementById( "composer_mirror" ).scrollTop = input.scrollTop;
+
+      if( !document.getElementById( "format_bar" ).hidden )
+         update_format_bar( );
+   } );
    input.addEventListener( "blur", function( ) { window.setTimeout( update_format_bar, 0 ); } );
 
    document.addEventListener( "selectionchange", function( )
@@ -4535,10 +4724,11 @@ async function do_send( )
 {
    var input = document.getElementById( "composer_input" );
 
-   var text = input.value.trim( );
-
-   if( ( text === "" ) || ( g_room === "" ) )
+   if( ( input.value.trim( ) === "" ) || ( g_room === "" ) )
       return;
+
+   // NOTE: As it is sent - the formatting as escapes, whichever way the box shows it.
+   var text = composer_message( );
 
    close_emoji_panel( false );
    close_emoji_suggest( );
@@ -4568,7 +4758,7 @@ async function do_send( )
    {
       held.texts.push( text );
 
-      input.value = "";
+      clear_composer( );
 
       resize_composer( );
       update_composer_count( );
@@ -4584,7 +4774,7 @@ async function do_send( )
 
    // NOTE: The server drops a lone backslash as an escape, so each is doubled to arrive as
    // typed - see "escape_message_text( )" in "chat_parse.js". Line breaks go as they are.
-   var sent = escape_message_text( shorthand_to_ansi( text ) );
+   var sent = escape_message_text( text );
 
    if( g_edit_unique !== "" )
       options = "for=" + edit_for_value( g_edit_unique, g_edit_private ) + ";text=" + sent;
@@ -4593,7 +4783,7 @@ async function do_send( )
    else
       options = "text=" + sent;
 
-   input.value = "";
+   clear_composer( );
    input.disabled = true;
 
    resize_composer( );
@@ -4608,7 +4798,7 @@ async function do_send( )
 
    // NOTE: What is needed to tell, after a time-out, whether this arrived after all - see
    // "arrived_after_timeout( )". The start point is the server's, not the browser's clock.
-   var pending = { me: ciyam.username, text: shorthand_to_ansi( text ), typed: text, after: g_start_point, edit: g_edit_unique, room: g_room };
+   var pending = { me: ciyam.username, text: text, typed: text, after: g_start_point, edit: g_edit_unique, room: g_room };
 
    var timed_out = false;
 
@@ -4675,9 +4865,7 @@ async function do_send( )
    // out goes back too, until the re-read after the time-out says whether it was sent.
    if( failed )
    {
-      input.value = text;
-
-      on_composer_input( );
+      set_composer_message( text );
 
       if( timed_out )
       {
@@ -4725,6 +4913,9 @@ function resize_composer( )
    input.style.height = Math.min( wanted, tallest ) + "px";
    input.style.overflowY = ( wanted > tallest ) ? "auto" : "hidden";
 
+   // NOTE: The copy behind follows - a new width re-wraps it, and a scroll bar takes from its width as from the box's.
+   render_composer_mirror( );
+
    if( at_end )
       list.scrollTop = list.scrollHeight;
 }
@@ -4736,7 +4927,7 @@ const c_count_from_bytes = 2000;
 
 function message_too_long( )
 {
-   return message_bytes( shorthand_to_ansi( document.getElementById( "composer_input" ).value.trim( ) ) ) > c_max_message_bytes;
+   return message_bytes( composer_message( ) ) > c_max_message_bytes;
 }
 
 function update_composer_count( )
@@ -4744,8 +4935,8 @@ function update_composer_count( )
    var input = document.getElementById( "composer_input" );
    var count = document.getElementById( "composer_count" );
 
-   // NOTE: As it is sent - Ian's codes as their escapes, which count towards the limit.
-   var bytes = message_bytes( shorthand_to_ansi( input.value.trim( ) ) );
+   // NOTE: As it is sent - the formatting as its escapes, which count towards the limit.
+   var bytes = message_bytes( composer_message( ) );
 
    var over = ( bytes > c_max_message_bytes );
 
@@ -4758,6 +4949,9 @@ function update_composer_count( )
 
 function on_composer_input( )
 {
+   // NOTE: With Codes off the styles follow whatever changed in the words - typed, deleted, pasted or an emoji put in.
+   sync_composer_chars( );
+
    resize_composer( );
    update_composer_count( );
    update_emoji_suggest( );
@@ -4770,17 +4964,17 @@ function begin_edit( unique, text, is_private )
    var input = document.getElementById( "composer_input" );
 
    // NOTE: What was in the box before, for Escape or Cancel edit to put back - kept from the first edit if one follows another.
+   // Kept as it would be sent, so it comes back whether Codes is on or off by then.
    if( g_edit_unique === "" )
-      g_edit_draft = input.value;
+      g_edit_draft = composer_message( true );
 
    g_edit_unique = unique;
    g_edit_private = !!is_private;
 
-   // NOTE: Ian's shorthand in the box, never an escape ("ansi_to_shorthand( )").
-   input.value = ansi_to_shorthand( text );
-   input.focus( );
+   // NOTE: Its formatting in the box, or Ian's shorthand with Codes on - never an escape.
+   set_composer_message( text );
 
-   on_composer_input( );
+   input.focus( );
 
    document.getElementById( "composer_cancel_edit" ).hidden = false;
 
@@ -4817,9 +5011,7 @@ function restore_edit_draft( )
    if( ( g_edit_draft === "" ) || ( input.value !== "" ) )
       return;
 
-   input.value = g_edit_draft;
-
-   on_composer_input( );
+   set_composer_message( g_edit_draft );
 }
 
 // NOTE: Escape, or Cancel edit - the edit dropped and the box as it was before it (Ian, 2026-10-15: as Element does).
@@ -4827,9 +5019,7 @@ function do_abandon_edit( )
 {
    var input = document.getElementById( "composer_input" );
 
-   input.value = g_edit_draft;
-
-   on_composer_input( );
+   set_composer_message( g_edit_draft );
 
    do_cancel_edit( );
 
@@ -5301,9 +5491,9 @@ function resolve_uncertain_send( )
    {
       var input = document.getElementById( "composer_input" );
 
-      if( input.value.trim( ) === pending.typed )
+      if( composer_message( ) === pending.typed )
       {
-         input.value = "";
+         clear_composer( );
 
          on_composer_input( );
       }

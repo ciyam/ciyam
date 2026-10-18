@@ -330,3 +330,136 @@
       padding: 0;
    }
 }
+
+/* ====================================================================
+   The styled box (Ian, 2026-10-18) - with Codes off the box shows the
+   formatting itself. The text box's words are drawn clear over a copy
+   behind it ("render_composer_mirror( )"), which takes the box's font,
+   spacing, padding and borders. Kerning and joined letters are off in
+   both, bold is drawn as an outline and italics as a slant, and the
+   background colours lose their padding - so no letter changes width
+   and the two stay one over the other. The box's own background moves
+   to the wrapper, behind the copy.
+   ==================================================================== */
+
+.chat-input-wrap
+{
+   position: relative;
+   flex: 1;
+   min-width: 0;
+   display: flex;
+   border-radius: var(--radius-sm);
+}
+
+.chat-input-mirror
+{
+   display: none;
+}
+
+.chat-composer.is-styled .chat-input-wrap
+{
+   background: var(--color-chat-bg);
+}
+
+.chat-composer.is-styled.is-private .chat-input-wrap
+{
+   background: var(--color-chat-private-bg);
+}
+
+.chat-composer.is-styled .chat-input-wrap:has(.chat-input:disabled)
+{
+   background: var(--color-chat-bg-rail);
+}
+
+.chat-composer.is-styled .chat-input,
+.chat-composer.is-styled .chat-input-mirror
+{
+   font-kerning: none;
+   font-variant-ligatures: none;
+   font-feature-settings: "kern" 0, "liga" 0, "calt" 0;
+}
+
+.chat-composer.is-styled .chat-input
+{
+   background: transparent;
+   color: transparent;
+   caret-color: var(--color-chat-text);
+}
+
+.chat-composer.is-styled .chat-input::placeholder
+{
+   color: var(--color-chat-text-ghost);
+   opacity: 1;
+}
+
+.chat-composer.is-styled .chat-input::selection
+{
+   background: color-mix(in srgb, var(--color-chat-accent) 30%, transparent);
+   color: transparent;
+}
+
+.chat-composer.is-styled .chat-input-mirror
+{
+   display: block;
+   position: absolute;
+   inset: 0;
+   margin: 0;
+   overflow-x: hidden;
+   border-style: solid;
+   border-color: transparent;
+   color: var(--color-chat-text);
+   white-space: pre-wrap;
+   overflow-wrap: break-word;
+   word-break: normal;
+   pointer-events: none;
+}
+
+.chat-composer.is-styled .chat-input-wrap:has(.chat-input:disabled) .chat-input-mirror
+{
+   opacity: .5;
+}
+
+.chat-input-mirror .chat-fmt-b
+{
+   font-weight: inherit;
+   -webkit-text-stroke: 0.045em currentColor;
+}
+
+.chat-input-mirror .chat-bg-OK, .chat-input-mirror .chat-bg-OR, .chat-input-mirror .chat-bg-OG, .chat-input-mirror .chat-bg-OO,
+.chat-input-mirror .chat-bg-OA, .chat-input-mirror .chat-bg-OP, .chat-input-mirror .chat-bg-OC, .chat-input-mirror .chat-bg-OW
+{
+   padding: 0;
+}
+
+/* NOTE: Codes, at the foot's end under Send - with the count before it when that shows. */
+.chat-composer-end
+{
+   margin-left: auto;
+   display: inline-flex;
+   align-items: center;
+   gap: 12px;
+}
+
+.chat-composer-end .chat-composer-count
+{
+   margin-left: 0;
+}
+
+.chat-format-codes
+{
+   display: inline-flex;
+   align-items: center;
+   gap: 5px;
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-faint);
+   cursor: pointer;
+   user-select: none;
+}
+
+.chat-format-codes input
+{
+   width: 14px;
+   height: 14px;
+   margin: 0;
+   accent-color: var(--color-chat-accent);
+}
