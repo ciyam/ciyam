@@ -31,14 +31,14 @@ using namespace std;
 namespace
 {
 
-int failures = 0;
+int g_failures = 0;
 
 void check( const string& label, bool okay )
 {
    cout << ( okay ? "(okay) " : "*** error *** " ) << label << endl;
 
    if( !okay )
-      ++failures;
+      ++g_failures;
 }
 
 struct rfc8032_test
@@ -358,7 +358,7 @@ int main( )
       // NOTE: Ed25519 is checked whether or not SSL is supported.
       check_ed25519( );
 
-      cout << ( failures ? to_string( failures ) + " failed" : "all passed" ) << endl;
+      cout << ( g_failures ? to_string( g_failures ) + " failed" : "all passed" ) << endl;
    }
    catch( exception& x )
    {
@@ -371,5 +371,5 @@ int main( )
       return 2;
    }
 
-   return failures ? 3 : 0;
+   return g_failures ? 3 : 0;
 }
