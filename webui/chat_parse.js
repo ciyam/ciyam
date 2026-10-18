@@ -3030,6 +3030,76 @@ function format_styled_shared( chars, start, end )
    return format_shared_style( chars.slice( start, end ) );
 }
 
+// NOTE: Undo in the styled box (Damon, 2026-10-18) - the browser's own undo knows only the words, so a format change was not
+// in it, and a deleted red word came back plain. The box keeps its own: each state the words, their styles and the selection,
+// "at" the one showing. Typing joins the state before it while it carries on - within a second, next to where the last
+// typing was, and not the first space or line after a word - so one undo takes back a burst, as a browser's does.
+const c_format_history_join_ms = 1000;
+const c_format_history_most = 200;
+
+function format_history( chars, start, end )
+{
+   return { states: [ { chars: chars, start: start, end: end } ], at: 0, kind: "", time: 0 };
+}
+
+function format_styled_same( a, b )
+{
+   return ( a.length === b.length ) && a.every( function( c, k ) { return ( c.ch === b[ k ].ch ) && format_same_style( c.style, b[ k ].style ); } );
+}
+
+// NOTE: A change to the box - "kind" is "type" for typing, "format" for the bar, anything else for the rest (a paste, an emoji,
+// a message put in to edit). Returns the history with it; a change that changes nothing only moves the selection.
+function format_history_record( history, chars, start, end, kind, time )
+{
+   var current = history.states[ history.at ];
+
+   if( format_styled_same( current.chars, chars ) )
+      return format_history_select( history, start, end );
+
+   // NOTE: What was typed, if anything - the first space or line typed after a word starts a state of its own.
+   var added = ( start > current.start ) ? format_styled_text( chars ).slice( current.start, start ) : "";
+   var after_word = ( current.start > 0 ) && !/\s/.test( current.chars[ current.start - 1 ] ? current.chars[ current.start - 1 ].ch : " " );
+
+   var joins = ( kind === "type" ) && ( history.kind === "type" ) && ( time - history.time < c_format_history_join_ms )
+    && ( history.at === history.states.length - 1 ) && ( Math.abs( start - current.start ) <= 2 ) && !( /\s/.test( added ) && after_word );
+
+   var states = history.states.slice( 0, history.at + ( joins ? 0 : 1 ) );
+
+   states.push( { chars: chars, start: start, end: end } );
+
+   if( states.length > c_format_history_most )
+      states = states.slice( states.length - c_format_history_most );
+
+   return { states: states, at: states.length - 1, kind: kind, time: time };
+}
+
+// NOTE: The selection moved, nothing else - kept, so an undo puts the cursor back where the typing began.
+function format_history_select( history, start, end )
+{
+   var states = history.states.slice( );
+
+   states[ history.at ] = { chars: states[ history.at ].chars, start: start, end: end };
+
+   return { states: states, at: history.at, kind: history.kind, time: history.time };
+}
+
+// NOTE: One back, or one forward - the history and the state to show; null when there is none.
+function format_history_undo( history )
+{
+   if( history.at === 0 )
+      return null;
+
+   return { history: { states: history.states, at: history.at - 1, kind: "", time: 0 }, state: history.states[ history.at - 1 ] };
+}
+
+function format_history_redo( history )
+{
+   if( history.at >= history.states.length - 1 )
+      return null;
+
+   return { history: { states: history.states, at: history.at + 1, kind: "", time: 0 }, state: history.states[ history.at + 1 ] };
+}
+
 // NOTE: Exported for Node.js; in the browser these are plain globals.
 if( typeof module !== "undefined" )
 {
@@ -3053,6 +3123,11 @@ if( typeof module !== "undefined" )
       format_styled_edit: format_styled_edit,
       format_styled_restyle: format_styled_restyle,
       format_styled_shared: format_styled_shared,
+      format_history: format_history,
+      format_history_record: format_history_record,
+      format_history_select: format_history_select,
+      format_history_undo: format_history_undo,
+      format_history_redo: format_history_redo,
       switcher_apps: switcher_apps,
       switcher_title: switcher_title,
       signed_out_message: signed_out_message,

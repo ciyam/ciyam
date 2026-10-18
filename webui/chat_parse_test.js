@@ -1322,6 +1322,61 @@ check( "- nothing selected, nothing done; the words left alone", [ cp.format_sty
 check( "- the one it was given is not changed", sty( s_late ), "Backup is {} late{\"fg\":\"LR\"}  - {} check{\"b\":true}  it{}" );
 check( "the buttons pressed - what every selected character has", [ cp.format_styled_shared( s_late, 10, 14 ),
  cp.format_styled_shared( s_late, 8, 14 ), cp.format_styled_shared( s_late, 4, 4 ) ], [ { fg: "LR" }, { }, { } ] );
+// NOTE: Undo in the styled box - its own history, as the browser's knows only the words. "typed" types one character after
+// another, each a moment after the last, as a person would.
+function typed( history, text, at_ms )
+{
+   let h = history;
+   let t = at_ms;
+
+   for( const ch of text )
+   {
+      const now = h.states[ h.at ];
+      const words = cp.format_styled_text( now.chars );
+      const chars = cp.format_styled_edit( now.chars, words.slice( 0, now.start ) + ch + words.slice( now.start ) );
+
+      h = cp.format_history_record( h, chars, now.start + 1, now.start + 1, "type", t );
+      t += 100;
+   }
+
+   return h;
+}
+
+const h_words = typed( cp.format_history( [ ], 0, 0 ), "the node", 0 );
+
+check( "undo - typing joined into bursts, a new one at the first space after a word", h_words.states.map( s => cp.format_styled_text( s.chars ) ),
+ [ "", "the", "the node" ] );
+check( "- a pause of a second starts another",
+ typed( typed( cp.format_history( [ ], 0, 0 ), "ab", 0 ), "cd", 5000 ).states.map( s => cp.format_styled_text( s.chars ) ), [ "", "ab", "abcd" ] );
+
+const h_bold = cp.format_history_record( cp.format_history_select( h_words, 4, 8 ), cp.format_styled_restyle( h_words.states[ 2 ].chars, 4, 8, { flag: "b" } ),
+ 4, 8, "format", 9000 );
+
+check( "- a format change is a state of its own", [ h_bold.states.length, sty( h_bold.states[ h_bold.at ].chars ) ], [ 4, "the {} node{\"b\":true}" ] );
+
+const u1 = cp.format_history_undo( h_bold );
+
+check( "- undo takes the bold off, the words left, selected as they were", [ sty( u1.state.chars ), u1.state.start, u1.state.end ], [ "the node{}", 4, 8 ] );
+
+const u2 = cp.format_history_undo( u1.history );
+
+check( "- again takes back the last word typed", cp.format_styled_text( u2.state.chars ), "the" );
+
+const r1 = cp.format_history_redo( cp.format_history_redo( u2.history ).history );
+
+check( "- redo puts both back", sty( r1.state.chars ), "the {} node{\"b\":true}" );
+check( "- nothing further either way", [ cp.format_history_redo( r1.history ), cp.format_history_undo( cp.format_history( [ ], 0, 0 ) ) ], [ null, null ] );
+
+const red = cp.format_styled_from_shorthand( "a %R%red%N% word" );
+const h_red = cp.format_history( red, 5, 5 );
+const h_gone = cp.format_history_record( h_red, cp.format_styled_edit( red, "a  word" ), 2, 2, "other", 0 );
+
+check( "- a red word deleted comes back red", sty( cp.format_history_undo( h_gone ).state.chars ), "a {} red{\"fg\":\"R\"}  word{}" );
+check( "- something new after an undo drops what could have been redone", cp.format_history_redo( cp.format_history_record(
+ u1.history, cp.format_styled_edit( u1.state.chars, "the node!" ), 9, 9, "other", 9500 ) ), null );
+check( "- a change that changes nothing only moves the selection", [ cp.format_history_record( h_red, red, 1, 3, "type", 0 ).states.length,
+ cp.format_history_record( h_red, red, 1, 3, "type", 0 ).states[ 0 ].start ], [ 1, 1 ] );
+
 check( "trimmed as the words are - styles kept", [ cp.format_styled_text( cp.format_styled_trim( cp.format_styled_edit( [ ], "  hi there \n" ) ) ),
  cp.format_styled_trim( cp.format_styled_edit( [ ], " \n " ) ).length ], [ "hi there", 0 ] );
 

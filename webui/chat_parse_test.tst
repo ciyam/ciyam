@@ -701,6 +701,16 @@ ok   - the same colour again takes it off, clear takes everything
 ok   - nothing selected, nothing done; the words left alone
 ok   - the one it was given is not changed
 ok   the buttons pressed - what every selected character has
+ok   undo - typing joined into bursts, a new one at the first space after a word
+ok   - a pause of a second starts another
+ok   - a format change is a state of its own
+ok   - undo takes the bold off, the words left, selected as they were
+ok   - again takes back the last word typed
+ok   - redo puts both back
+ok   - nothing further either way
+ok   - a red word deleted comes back red
+ok   - something new after an undo drops what could have been redone
+ok   - a change that changes nothing only moves the selection
 ok   trimmed as the words are - styles kept
 
 All checks passed.
