@@ -238,7 +238,11 @@ ERROR=
 @elif "$CIYAM_KEY_PRESSED" = "k"
 ~echo ""
 ~qrencode -tANSI $PUB
-&Enter user name for new key: :USER_FOR_PUB=
+;
+@retain NAMES
+<names.cin $ALL_USERS 1
+USER_FOR_PUB=$NAMES
+NAMES=
 ;
 @ifdef $USER_FOR_PUB
 @ifeq "$USER" "$USER_FOR_PUB"
@@ -248,9 +252,10 @@ QR_CODE=@file:~zbarcam -1 -q --raw
 @ifdef $QR_CODE
 CHECK_QR_CODE=@regex:^[0-9a-fA-F]{64}$$:$QR_CODE
 @ifneq "$QR_CODE" "$CHECK_QR_CODE"
-#$QR_CODE
+#(invalid) $QR_CODE
 @else
 ~echo "Saving public key for '$USER_FOR_PUB' ($LOCAL_FILES_DIR/.irc_$USER_FOR_PUB.public)."
+~echo ""
 ~echo "$QR_CODE" > $LOCAL_FILES_DIR/.irc_$USER_FOR_PUB.public
 @endif
 @endif
