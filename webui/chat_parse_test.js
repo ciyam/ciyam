@@ -1280,6 +1280,51 @@ check( "the buttons pressed - what every selected character has", [ cp.format_se
 check( "his own codes typed by hand - drawn the same as the bar's", cp.format_shorthand_pieces( "%B%%R%x%N%y" ),
  [ { text: "x", style: { b: true, fg: "R" } }, { text: "y", style: { } } ] );
 
+// NOTE: The styled box (Ian, 2026-10-18) - with Codes off the box holds the words, their styles kept beside them a character
+// each. "sty" writes them shortly - the words and, for each run, its style - so the checks read.
+function sty( chars )
+{
+   return cp.format_shorthand_pieces( cp.format_styled_to_shorthand( chars ) ).map( function( p ) { return p.text + JSON.stringify( p.style ); } ).join( " " );
+}
+
+const s_late = cp.format_styled_from_shorthand( "Backup is %LR%late%N% - %B%check%N% it" );
+
+check( "styled - the words alone in the box", cp.format_styled_text( s_late ), "Backup is late - check it" );
+check( "- from a stored message, the same", sty( cp.format_styled_from_ansi( cp.shorthand_to_ansi( "Backup is %LR%late%N% - %B%check%N% it" ) ) ),
+ sty( s_late ) );
+check( "- back to his shorthand, for Codes", cp.format_styled_to_shorthand( s_late ), "Backup is %LR%late%N% - %B%check%N% it" );
+check( "- as sent: escapes, the same as his shorthand gives", cp.format_styled_to_ansi( s_late ),
+ cp.shorthand_to_ansi( "Backup is %LR%late%N% - %B%check%N% it" ) );
+check( "- a '%R%' typed as words stays words when sent", cp.format_styled_to_ansi( cp.format_styled_edit( [ ], "50% %R% off" ) ), "50% %R% off" );
+check( "- with Codes on it becomes his code, as it always has", cp.format_styled_to_shorthand( cp.format_styled_edit( [ ], "a %R% b" ) ), "a %R% b" );
+check( "- bold then red together - his bold-red code, and off at the end", cp.format_styled_to_ansi(
+ cp.format_styled_restyle( cp.format_styled_restyle( cp.format_styled_edit( [ ], "go" ), 0, 2, { flag: "b" } ), 0, 2, { fg: "R" } ) ),
+ cp.shorthand_to_ansi( "%BR%go%N%" ) );
+
+check( "typing at the end of a red word - red too", sty( cp.format_styled_edit( s_late, "Backup is lateness - check it" ) ),
+ "Backup is {} lateness{\"fg\":\"LR\"}  - {} check{\"b\":true}  it{}" );
+check( "typing before it - plain, as the word before", sty( cp.format_styled_edit( s_late, "Backup is so late - check it" ) ),
+ "Backup is so {} late{\"fg\":\"LR\"}  - {} check{\"b\":true}  it{}" );
+check( "deleting part of a styled word - the rest keeps its style", sty( cp.format_styled_edit( s_late, "Backup is le - check it" ) ),
+ "Backup is {} le{\"fg\":\"LR\"}  - {} check{\"b\":true}  it{}" );
+check( "a word pasted over a selection - the style before it", sty( cp.format_styled_edit( s_late, "Backup is early - check it" ) ),
+ "Backup is early - {} check{\"b\":true}  it{}" );
+check( "everything deleted, then typed - plain", sty( cp.format_styled_edit( cp.format_styled_edit( s_late, "" ), "new" ) ), "new{}" );
+check( "an emoji - two of the box's places - in one go", cp.format_styled_edit( [ ], "a😀" ).length, 3 );
+
+check( "the bar on the words - bold, and bold again takes it off", [ sty( cp.format_styled_restyle( s_late, 0, 6, { flag: "b" } ) ),
+ sty( cp.format_styled_restyle( s_late, 17, 22, { flag: "b" } ) ) ],
+ [ "Backup{\"b\":true}  is {} late{\"fg\":\"LR\"}  - {} check{\"b\":true}  it{}", "Backup is {} late{\"fg\":\"LR\"}  - check it{}" ] );
+check( "- the same colour again takes it off, clear takes everything", [ sty( cp.format_styled_restyle( s_late, 10, 14, { fg: "LR" } ) ),
+ sty( cp.format_styled_restyle( s_late, 0, 25, { clear: true } ) ) ], [ "Backup is late - {} check{\"b\":true}  it{}", "Backup is late - check it{}" ] );
+check( "- nothing selected, nothing done; the words left alone", [ cp.format_styled_restyle( s_late, 3, 3, { flag: "b" } ),
+ cp.format_styled_text( cp.format_styled_restyle( s_late, 0, 6, { bg: "OA" } ) ) ], [ null, "Backup is late - check it" ] );
+check( "- the one it was given is not changed", sty( s_late ), "Backup is {} late{\"fg\":\"LR\"}  - {} check{\"b\":true}  it{}" );
+check( "the buttons pressed - what every selected character has", [ cp.format_styled_shared( s_late, 10, 14 ),
+ cp.format_styled_shared( s_late, 8, 14 ), cp.format_styled_shared( s_late, 4, 4 ) ], [ { fg: "LR" }, { }, { } ] );
+check( "trimmed as the words are - styles kept", [ cp.format_styled_text( cp.format_styled_trim( cp.format_styled_edit( [ ], "  hi there \n" ) ) ),
+ cp.format_styled_trim( cp.format_styled_edit( [ ], " \n " ) ).length ], [ "hi there", 0 ] );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

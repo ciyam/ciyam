@@ -683,5 +683,24 @@ ok   text that would join a code into one of Ian's - nothing done rather than th
 ok   nothing selected, or only codes - nothing done
 ok   the buttons pressed - what every selected character has
 ok   his own codes typed by hand - drawn the same as the bar's
+ok   styled - the words alone in the box
+ok   - from a stored message, the same
+ok   - back to his shorthand, for Codes
+ok   - as sent: escapes, the same as his shorthand gives
+ok   - a '%R%' typed as words stays words when sent
+ok   - with Codes on it becomes his code, as it always has
+ok   - bold then red together - his bold-red code, and off at the end
+ok   typing at the end of a red word - red too
+ok   typing before it - plain, as the word before
+ok   deleting part of a styled word - the rest keeps its style
+ok   a word pasted over a selection - the style before it
+ok   everything deleted, then typed - plain
+ok   an emoji - two of the box's places - in one go
+ok   the bar on the words - bold, and bold again takes it off
+ok   - the same colour again takes it off, clear takes everything
+ok   - nothing selected, nothing done; the words left alone
+ok   - the one it was given is not changed
+ok   the buttons pressed - what every selected character has
+ok   trimmed as the words are - styles kept
 
 All checks passed.

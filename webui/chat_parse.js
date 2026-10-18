@@ -2820,6 +2820,48 @@ function ansi_to_shorthand( text )
    return format_serialise( format_ansi_chars( text ) ).text;
 }
 
+// NOTE: A format button on the picked characters - each given a style of its own. A style every one has already comes off.
+function format_restyle_picked( picked, change )
+{
+   if( change.clear )
+      picked.forEach( function( c ) { c.style = { }; } );
+   else
+   {
+      var key = change.flag || ( change.fg ? "fg" : "bg" );
+      var value = change.flag ? true : ( change.fg || change.bg );
+      var all = picked.every( function( c ) { return c.style[ key ] === value; } );
+
+      picked.forEach( function( c )
+      {
+         c.style = Object.assign( { }, c.style );
+
+         if( all )
+            delete c.style[ key ];
+         else
+            c.style[ key ] = value;
+      } );
+   }
+}
+
+// NOTE: Each style every picked character has; for a colour, the one they all share.
+function format_shared_style( picked )
+{
+   var shared = { };
+
+   if( picked.length === 0 )
+      return shared;
+
+   c_format_keys.forEach( function( k )
+   {
+      var first = picked[ 0 ].style[ k ];
+
+      if( first && picked.every( function( c ) { return c.style[ k ] === first; } ) )
+         shared[ k ] = first;
+   } );
+
+   return shared;
+}
+
 function format_plain_index( chars, raw )
 {
    var n = 0;
@@ -2842,26 +2884,7 @@ function format_restyle( text, start, end, change )
    if( from >= to )
       return null;
 
-   var picked = chars.slice( from, to );
-
-   if( change.clear )
-      picked.forEach( function( c ) { c.style = { }; } );
-   else
-   {
-      var key = change.flag || ( change.fg ? "fg" : "bg" );
-      var value = change.flag ? true : ( change.fg || change.bg );
-      var all = picked.every( function( c ) { return c.style[ key ] === value; } );
-
-      picked.forEach( function( c )
-      {
-         c.style = Object.assign( { }, c.style );
-
-         if( all )
-            delete c.style[ key ];
-         else
-            c.style[ key ] = value;
-      } );
-   }
+   format_restyle_picked( chars.slice( from, to ), change );
 
    var out = format_serialise( chars );
 
@@ -2885,21 +2908,126 @@ function format_restyle( text, start, end, change )
 function format_selection_style( text, start, end )
 {
    var chars = format_shorthand_chars( text );
-   var picked = chars.slice( format_plain_index( chars, start ), format_plain_index( chars, end ) );
-   var shared = { };
 
-   if( picked.length === 0 )
-      return shared;
+   return format_shared_style( chars.slice( format_plain_index( chars, start ), format_plain_index( chars, end ) ) );
+}
 
-   c_format_keys.forEach( function( k )
+// NOTE: The styled message box (Ian, 2026-10-18) - with Codes off the box holds the words alone, and their styles are kept
+// beside them, a character each ({ ch, style }, as "format_ansi_chars( )" gives). These go between that and what is sent,
+// what Codes shows, and what a change to the box does to it. A place in the box is a place in these characters.
+
+function format_styled_of( chars )
+{
+   return chars.map( function( c ) { return { ch: c.ch, style: c.style }; } );
+}
+
+// NOTE: A stored message - one being edited - as the box's words and styles.
+function format_styled_from_ansi( text )
+{
+   return format_styled_of( format_ansi_chars( text ) );
+}
+
+// NOTE: What was typed with Codes on, as the box's words and styles once it is turned off.
+function format_styled_from_shorthand( text )
+{
+   return format_styled_of( format_shorthand_chars( text ) );
+}
+
+function format_styled_text( chars )
+{
+   return chars.map( function( c ) { return c.ch; } ).join( "" );
+}
+
+// NOTE: As "trim( )" does the words - the spaces and line breaks at either end dropped, with their styles.
+function format_styled_trim( chars )
+{
+   var from = 0;
+   var to = chars.length;
+
+   while( ( from < to ) && /\s/.test( chars[ from ].ch ) )
+      ++from;
+
+   while( ( to > from ) && /\s/.test( chars[ to - 1 ].ch ) )
+      --to;
+
+   return chars.slice( from, to );
+}
+
+// NOTE: As it is sent - the escapes written from the styles, with the same codes and the same one off code as Ian's shorthand
+// ("format_serialise( )"). Never through the shorthand, so words typed with a "%" stay words: a typed "%R%" is not red.
+function format_styled_to_ansi( chars )
+{
+   var text = "";
+   var current = { };
+
+   chars.forEach( function( c )
    {
-      var first = picked[ 0 ].style[ k ];
+      if( !format_same_style( current, c.style ) )
+      {
+         text += shorthand_to_ansi( format_only_adds( current, c.style )
+          ? format_codes_for( c.style, current ) : "%N%" + format_codes_for( c.style, { } ) );
 
-      if( first && picked.every( function( c ) { return c.style[ k ] === first; } ) )
-         shared[ k ] = first;
+         current = c.style;
+      }
+
+      text += c.ch;
    } );
 
-   return shared;
+   if( c_format_keys.some( function( k ) { return current[ k ]; } ) )
+      text += shorthand_to_ansi( "%N%" );
+
+   return text;
+}
+
+// NOTE: What Codes shows - Ian's shorthand. A "%R%" typed as words becomes his code here, as it always has (his shorthand has
+// no way to write one as words).
+function format_styled_to_shorthand( chars )
+{
+   return format_serialise( chars ).text;
+}
+
+// NOTE: The box's words changed - typed, deleted, pasted, an emoji put in - and the styles follow. What is the same before and
+// after keeps its style; what came in between takes the style of the character before it, as a word processor does.
+function format_styled_edit( chars, text )
+{
+   var old = format_styled_text( chars );
+   var now = String( text || "" );
+   var max = Math.min( old.length, now.length );
+   var same_before = 0;
+   var same_after = 0;
+
+   while( ( same_before < max ) && ( old[ same_before ] === now[ same_before ] ) )
+      ++same_before;
+
+   while( ( same_after < max - same_before ) && ( old[ old.length - 1 - same_after ] === now[ now.length - 1 - same_after ] ) )
+      ++same_after;
+
+   var style = ( same_before > 0 ) ? chars[ same_before - 1 ].style : { };
+   var added = [ ];
+
+   for( var k = same_before; k < now.length - same_after; k++ )
+      added.push( { ch: now[ k ], style: style } );
+
+   return chars.slice( 0, same_before ).concat( added, chars.slice( old.length - same_after ) );
+}
+
+// NOTE: A format button on the selected words in the styled box - "change" as for "format_restyle( )", "start" and "end"
+// places in the words. New characters, the same words; null when nothing is selected.
+function format_styled_restyle( chars, start, end, change )
+{
+   if( start >= end )
+      return null;
+
+   var out = format_styled_of( chars );
+
+   format_restyle_picked( out.slice( start, end ), change );
+
+   return out;
+}
+
+function format_styled_shared( chars, start, end )
+{
+   return format_shared_style( chars.slice( start, end ) );
 }
 
 // NOTE: Exported for Node.js; in the browser these are plain globals.
@@ -2916,6 +3044,15 @@ if( typeof module !== "undefined" )
       ansi_to_shorthand: ansi_to_shorthand,
       format_restyle: format_restyle,
       format_selection_style: format_selection_style,
+      format_styled_from_ansi: format_styled_from_ansi,
+      format_styled_from_shorthand: format_styled_from_shorthand,
+      format_styled_text: format_styled_text,
+      format_styled_trim: format_styled_trim,
+      format_styled_to_ansi: format_styled_to_ansi,
+      format_styled_to_shorthand: format_styled_to_shorthand,
+      format_styled_edit: format_styled_edit,
+      format_styled_restyle: format_styled_restyle,
+      format_styled_shared: format_styled_shared,
       switcher_apps: switcher_apps,
       switcher_title: switcher_title,
       signed_out_message: signed_out_message,
