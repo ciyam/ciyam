@@ -1312,6 +1312,21 @@ check( "a word pasted over a selection - the style before it", sty( cp.format_st
 check( "everything deleted, then typed - plain", sty( cp.format_styled_edit( cp.format_styled_edit( s_late, "" ), "new" ) ), "new{}" );
 check( "an emoji - two of the box's places - in one go", cp.format_styled_edit( [ ], "a😀" ).length, 3 );
 
+// NOTE: Where the cursor is says where the change was (found by review, 2026-10-18).
+const s_aa = cp.format_styled_from_shorthand( "%R%a%N%a" );
+const s_bg = cp.format_styled_from_shorthand( "%OO%word%N% next" );
+
+check( "the first of two like characters deleted - the one left keeps its own style", [ sty( cp.format_styled_edit( s_aa, "a", 0 ) ),
+ sty( cp.format_styled_edit( s_aa, "a" ) ) ], [ "a{}", "a{\"fg\":\"R\"}" ] );
+check( "a space typed after a word with a background - the word's style, as typed after it", sty( cp.format_styled_edit( s_bg, "word  next", 5 ) ),
+ "word {\"bg\":\"OO\"}  next{}" );
+check( "an emoji typed before a like one - each keeps one style for both its halves", [ cp.format_styled_edit(
+ cp.format_styled_from_shorthand( "%R%😀%N%" ), "😁😀", 2 ).map( c => c.style.fg || "-" ).join( "," ),
+ cp.format_styled_edit( cp.format_styled_from_shorthand( "%R%😀%N%" ), "😁😀" ).map( c => c.style.fg || "-" ).join( "," ) ],
+ [ "-,-,R,R", "-,-,-,-" ] );
+check( "a caret that does not fit what changed - as without one", sty( cp.format_styled_edit( s_late, "Backup is lateness - check it", 2 ) ),
+ sty( cp.format_styled_edit( s_late, "Backup is lateness - check it" ) ) );
+
 check( "the bar on the words - bold, and bold again takes it off", [ sty( cp.format_styled_restyle( s_late, 0, 6, { flag: "b" } ) ),
  sty( cp.format_styled_restyle( s_late, 17, 22, { flag: "b" } ) ) ],
  [ "Backup{\"b\":true}  is {} late{\"fg\":\"LR\"}  - {} check{\"b\":true}  it{}", "Backup is {} late{\"fg\":\"LR\"}  - check it{}" ] );

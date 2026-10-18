@@ -696,6 +696,10 @@ ok   deleting part of a styled word - the rest keeps its style
 ok   a word pasted over a selection - the style before it
 ok   everything deleted, then typed - plain
 ok   an emoji - two of the box's places - in one go
+ok   the first of two like characters deleted - the one left keeps its own style
+ok   a space typed after a word with a background - the word's style, as typed after it
+ok   an emoji typed before a like one - each keeps one style for both its halves
+ok   a caret that does not fit what changed - as without one
 ok   the bar on the words - bold, and bold again takes it off
 ok   - the same colour again takes it off, clear takes everything
 ok   - nothing selected, nothing done; the words left alone

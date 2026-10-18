@@ -2987,8 +2987,10 @@ function format_styled_to_shorthand( chars )
 }
 
 // NOTE: The box's words changed - typed, deleted, pasted, an emoji put in - and the styles follow. What is the same before and
-// after keeps its style; what came in between takes the style of the character before it, as a word processor does.
-function format_styled_edit( chars, text )
+// after keeps its style; what came in between takes the style of the character before it, as a word processor does. "caret",
+// where the cursor is after the change, says where the change ended - without it, deleting the first of two like characters
+// took the second's style away (found by review). Neither end falls inside an emoji's pair of characters.
+function format_styled_edit( chars, text, caret )
 {
    var old = format_styled_text( chars );
    var now = String( text || "" );
@@ -2996,11 +2998,29 @@ function format_styled_edit( chars, text )
    var same_before = 0;
    var same_after = 0;
 
-   while( ( same_before < max ) && ( old[ same_before ] === now[ same_before ] ) )
-      ++same_before;
+   var after_caret = ( typeof caret === "number" ) ? now.length - caret : -1;
 
-   while( ( same_after < max - same_before ) && ( old[ old.length - 1 - same_after ] === now[ now.length - 1 - same_after ] ) )
-      ++same_after;
+   if( ( after_caret >= 0 ) && ( after_caret <= old.length ) && ( old.slice( old.length - after_caret ) === now.slice( caret ) ) )
+   {
+      same_after = after_caret;
+
+      while( ( same_before < max - same_after ) && ( old[ same_before ] === now[ same_before ] ) )
+         ++same_before;
+   }
+   else
+   {
+      while( ( same_before < max ) && ( old[ same_before ] === now[ same_before ] ) )
+         ++same_before;
+
+      while( ( same_after < max - same_before ) && ( old[ old.length - 1 - same_after ] === now[ now.length - 1 - same_after ] ) )
+         ++same_after;
+   }
+
+   if( ( same_before > 0 ) && /[\ud800-\udbff]/.test( now[ same_before - 1 ] ) )
+      --same_before;
+
+   if( ( same_after > 0 ) && /[\udc00-\udfff]/.test( now[ now.length - same_after ] ) )
+      --same_after;
 
    var style = ( same_before > 0 ) ? chars[ same_before - 1 ].style : { };
    var added = [ ];
