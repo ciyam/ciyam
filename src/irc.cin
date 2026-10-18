@@ -44,7 +44,7 @@ EXISTS_SECRET=@files:$LOCAL_FILES_DIR:$STORED_SECRET
 @ifndef $EXISTS_SECRET
 ~touch $LOCAL_FILES_DIR/$STORED_SECRET
 ~chmod 600 $LOCAL_FILES_DIR/$STORED_SECRET
-~uuidgen | tr -d '-' > $LOCAL_FILES_DIR/$STORED_SECRET
+~xxd -l 16 -p /dev/urandom > $LOCAL_FILES_DIR/$STORED_SECRET
 @endif
 SECRET_ENTROPY=@file:$LOCAL_FILES_DIR/$STORED_SECRET
 @endif
@@ -57,8 +57,14 @@ POS=@strpos:error:$CHECK_ENTROPY
 ERROR=$SECRET_ENTROPY
 #$ERROR
 @else
+CHECK_SECRET_ENTROPY=@regex:^[0-9a-fA-F]{32,64}$$:$SECRET_ENTROPY
+@ifeq "$SECRET_ENTROPY" "$CHECK_SECRET_ENTROPY"
 KEY=@secret:$SECRET_ENTROPY
 PUB=@public:$KEY
+@else
+ERROR=Invalid secret entropy (incorrect size or content).
+#Error: $ERROR
+@endif
 @endif
 ;
 QUIT=
@@ -240,12 +246,11 @@ ERROR=
 @else
 QR_CODE=@file:~zbarcam -1 -q --raw
 @ifdef $QR_CODE
-CHECK_QR_CODE=@lower:$QR_CODE
-POS=@strpos:error:$CHECK_QR_CODE
-@ifdef $POS
+CHECK_QR_CODE=@regex:^[0-9a-fA-F]{64}$$:$QR_CODE
+@ifneq "$QR_CODE" "$CHECK_QR_CODE"
 #$QR_CODE
 @else
-~echo "Saving public key for '$USER_FOR_PUB'."
+~echo "Saving public key for '$USER_FOR_PUB' ($LOCAL_FILES_DIR/.irc_$USER_FOR_PUB.public)."
 ~echo "$QR_CODE" > $LOCAL_FILES_DIR/.irc_$USER_FOR_PUB.public
 @endif
 @endif
