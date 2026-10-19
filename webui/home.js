@@ -1928,7 +1928,7 @@ function render_member_home( )
       var text = document.createElement( "p" );
 
       text.className = "home-announcement-text";
-      text.textContent = strip_format( message.text );
+      text.textContent = message_plain_text( message.text );
 
       var ok = document.createElement( "button" );
 

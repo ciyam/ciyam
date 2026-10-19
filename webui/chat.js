@@ -2493,7 +2493,7 @@ function build_announcement_card( text, when, when_title, is_private )
    stamp.textContent = when;
    stamp.title = when_title || "";
 
-   draw_formatted( node.querySelector( ".chat-announcement-text" ), format_pieces( text ) );
+   draw_message_text( node.querySelector( ".chat-announcement-text" ), text );
 
    // NOTE: One admin sent to named people, rather than to everyone.
    if( is_private )
@@ -3286,7 +3286,7 @@ function build_message( entry )
    if( entry.deleted )
       body.textContent = "Message deleted";
    else
-      draw_formatted( body, format_pieces( entry.text ) );
+      draw_message_text( body, entry.text );
 
    body.dataset.text = entry.text;
 
@@ -3315,8 +3315,8 @@ function build_message( entry )
    row.classList.toggle( "is-own", ( entry.sender === ciyam.username ) );
 
    // NOTE: Private messages too, since 2026-09-28 - the edit says it is private
-   // ("edit_for_value( )"), and the server keeps it so.
-   if( ( entry.sender === ciyam.username ) && !entry.deleted )
+   // ("edit_for_value( )"), and the server keeps it so. Not one the chat cannot read - an edit would send its ciphertext as words.
+   if( ( entry.sender === ciyam.username ) && !entry.deleted && ( message_unreadable_label( entry.text ) === "" ) )
    {
       var edit = row.querySelector( ".chat-message-edit" );
 
@@ -3497,7 +3497,7 @@ function render_pinned( )
       line.title = g_pinned_expanded ? "Hide the pinned messages" : "Show the pinned messages";
 
       line.querySelector( ".chat-pinned-count" ).textContent = g_pinned.length + " pinned";
-      line.querySelector( ".chat-pinned-first" ).textContent = g_pinned_expanded ? "" : strip_format( g_pinned[ 0 ].text );
+      line.querySelector( ".chat-pinned-first" ).textContent = g_pinned_expanded ? "" : message_plain_text( g_pinned[ 0 ].text );
       line.querySelector( ".chat-pinned-toggle" ).textContent = g_pinned_expanded ? "Hide" : "Show";
 
       line.addEventListener( "click", function( )
@@ -3531,7 +3531,7 @@ function render_pinned( )
       if( message.deleted )
          node.querySelector( ".chat-pinned-text" ).textContent = "Message deleted";
       else
-         draw_formatted( node.querySelector( ".chat-pinned-text" ), format_pieces( message.text ) );
+         draw_message_text( node.querySelector( ".chat-pinned-text" ), message.text );
 
       var open = node.querySelector( ".chat-pinned-open" );
 
@@ -4323,6 +4323,20 @@ function render_composer_mirror( )
       mirror.appendChild( document.createTextNode( "\u200b" ) );
 
    mirror.scrollTop = input.scrollTop;
+}
+
+// NOTE: A stored message, drawn - one the chat cannot read (an encrypted one, "X\r" - Ian, 2026-10-20) says so in place of its
+// ciphertext ("message_unreadable_label( )").
+function draw_message_text( element, text )
+{
+   var unreadable = message_unreadable_label( text );
+
+   element.classList.toggle( "chat-unreadable", unreadable !== "" );
+
+   if( unreadable !== "" )
+      element.textContent = unreadable;
+   else
+      draw_formatted( element, format_pieces( text ) );
 }
 
 // NOTE: A message's words with their colour and style - a span each run ("format_pieces( )"), the words always as text and

@@ -473,3 +473,11 @@
       display: none;
    }
 }
+
+/* NOTE: A message the chat cannot read - an encrypted one, until it can decrypt (Ian's "X" prefix, 2026-10-20) - said so,
+   quietly, in place of its ciphertext. */
+.chat-unreadable
+{
+   font-style: italic;
+   color: var(--color-chat-text-meta);
+}
