@@ -60,11 +60,13 @@ size_t base64::decode_size( const string& input, bool url_encoding )
 {
    string::size_type l = 0;
 
+   string::size_type input_len = input.length( );
+
    if( url_encoding )
    {
-      l = ( input.length( ) / 4 ) * 3;
+      l = ( input_len / 4 ) * 3;
 
-      size_t mod = ( input.length( ) % 4 );
+      size_t mod = ( input_len % 4 );
 
       if( mod == 1 )
          throw runtime_error( "invalid URL encoded base64 '" + input + "'" );
@@ -76,14 +78,20 @@ size_t base64::decode_size( const string& input, bool url_encoding )
    }
    else
    {
-      l = ( input.length( ) / 4 ) * 3;
+      if( ( input_len % 4 ) != 0 )
+         throw runtime_error( "invalid base64 '" + input + "'" );
 
-      for( string::size_type i = input.length( ); i > 1; i-- )
+      l = ( input_len / 4 ) * 3;
+
+      if( input_len > 2 )
       {
-         if( input[ i - 1 ] == c_fillchar )
+         if( input[ input_len - 1 ] == c_fillchar )
+         {
             --l;
-         else
-            break;
+
+            if( input[ input_len - 2 ] == c_fillchar )
+               --l;
+         }
       }
    }
 
