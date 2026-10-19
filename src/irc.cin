@@ -463,7 +463,11 @@ MESSAGE=
 @else
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
 FORCE_OUTPUT=1
-#(need to enter a room to post)
+MESSAGE=@substr:1:$MESSAGE
+; NOTE: If using "readline"
+; this saves the message as
+; the only history line.
+:$MESSAGE
 MESSAGE=
 SHOW_CHANGED=
 @else
@@ -538,6 +542,9 @@ ENCODED=@base64::$MESSAGE
 .run_script !irc_send_message "@room=$ROOM,@names=$NAMES,@message=$ENCODED"
 @ifdef $ERROR
 ERROR=
+@else
+CLEAR_READLINE_HISTORY=
+:$CLEAR_READLINE_HISTORY
 @endif
 ;
 NAMES=
@@ -646,6 +653,10 @@ ENCODED_MESSAGE=@strlit:%NEXT_MSG_PARTS:3%
 ;
 DECODED_MESSAGE=@base64:$ENCODED_MESSAGE
 DECODED_MESSAGE=@substr:1,0:$DECODED_MESSAGE$EXTRA_MESSAGE
+;
+; NOTE: Pad the start of each line if is multi-line.
+SPACES=@padlen:41, :
+DECODED_MESSAGE=@repstr:\n/\n$SPACES:$DECODED_MESSAGE
 ;
 LAST_MSG_UNIX=%NEXT_MSG_PARTS:1%
 ;
