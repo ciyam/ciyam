@@ -118,10 +118,11 @@ const char c_forget_command_prefix = '-';
 const char c_ignore_command_prefix = '+';
 const char c_prompted_input_prefix = '&';
 const char c_system_command_prefix = '~';
-const char c_history_command_prefix = '!';
 const char c_comment_command_prefix = ';';
 const char c_envcond_command_prefix = '@';
+const char c_history_command_prefix = '!';
 const char c_message_command_prefix = '#';
+const char c_special_command_prefix = ':';
 const char c_env_assign_fissile_prefix = '*';
 const char c_env_assign_function_prefix = '@';
 const char c_environment_variable_assign = '=';
@@ -4774,6 +4775,48 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             else if( str[ 0 ] == c_comment_command_prefix )
             {
                clear_key( str );
+
+               str.erase( );
+            }
+            else if( str [ 0 ] == c_special_command_prefix )
+            {
+               str.erase( 0, 1 );
+
+               // NOTE: The "special" command prefix is only
+               // intended for interactive usage in order to
+               // clear and/or add to "readline" history.
+
+               bool keep_existing = false;
+
+               // NOTE: As it would make no sense to begin
+               // the line with a backspace this character
+               // (if immediately follows the prefix) will
+               // instead stop a readline history clear.
+               if( !str.empty( ) && ( str[ 0 ] == '\b' ) )
+               {
+                  str.erase( 0, 1 );
+
+                  keep_existing = true;
+               }
+
+#ifdef __GNUG__
+#  ifdef RDLINE_SUPPORT
+               if( isatty( STDIN_FILENO ) )
+               {
+                  if( !keep_existing )
+                     clear_history( );
+
+                  if( !str.empty( ) )
+                  {
+                     add_history( str.c_str( ) );
+
+                     cout << "(retained as history)\n";
+                  }
+               }
+#  endif
+#endif
+               clear_key( str );
+
                str.erase( );
             }
             else if( str[ 0 ] == c_envcond_command_prefix )
