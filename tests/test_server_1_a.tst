@@ -648,6 +648,16 @@ encode -text abcdefgh
 YWJjZGVmZ2g=
 decode -text $OUTPUT
 abcdefgh
+decode -text YQ
+Error: invalid base64 'YQ'
+decode -text YQ=
+Error: invalid base64 'YQ='
+decode -text YQ==
+a
+decode -text YQ===
+Error: invalid base64 'YQ==='
+decode -text YQ====
+Error: invalid base64 'YQ===='
 encode -url -text a
 YQ
 decode -url -text $OUTPUT
