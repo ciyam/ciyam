@@ -1465,7 +1465,7 @@ function add_page_script( src, id )
 // NOTE: What the scripts use besides "sha2.min.js" - "BIP39", "QRCode" and "ED25519" (for "ciyam_ed25519.js").
 // Loaded on first use only, since "bip39.min.js" is nearly 700 KB; all are in "webui/" with everything else.
 //
-// Resolves false if either did not load, and forgets the attempt so the next "load script" tries again.
+// Resolves false if any did not load, and forgets the attempt so the next "load script" tries again.
 async function load_script_libraries( )
 {
    if( g_script_libraries === null )

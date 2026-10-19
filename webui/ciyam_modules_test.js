@@ -386,11 +386,14 @@ async function steps( module_class, list )
     "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a" ] );
    check( "- and a shared secret between two of them, as the console's", ed.shared_secret( ed.seed_of( "0123456789abcdef0123456789abcdef" ),
     "06bd950857006e5cf4610e6f9569881bf52c34aa21f57a03940c3d7ff2040849" ), "812788dd5c3c15a6470e406315ec6e49551767cd9b11af795ec48bf93caa407c" );
-   check( "- what the console refuses, refused", [ "", "x".repeat( 52 ), "ab".repeat( 33 ), "A".repeat( 45 ) ].map( function( s )
+   // NOTE: Non-ASCII in base64, and more "=" than letters, refused there too (found by review, 2026-10-20).
+   check( "- what the console refuses, refused", [ "", "x".repeat( 52 ), "ab".repeat( 33 ), "A".repeat( 45 ), "é".repeat( 15 ),
+    "ABCDEFGH" + "=".repeat( 22 ) ].map( function( s )
    {
       try { ed.seed_of( s ); return "taken"; } catch( e ) { return e.message; }
    } ), [ "That secret gives no key - it comes to nothing.", "A secret of over 50 letters is hex - the digits 0 to 9 and a to f.",
-    "A secret in hex is at most 64 digits.", "A secret in base64 is at most 32 bytes." ] );
+    "A secret in hex is at most 64 digits.", "A secret in base64 is at most 32 bytes.", "Not base64 - only its letters, digits, '+', '/' and '='.",
+    "A secret in base64 is at most 32 bytes." ] );
 
    check( "through run - public, shared, sign and verify", [ await new ed( { } ).run( "public " + rfc[ 0 ][ 0 ] ),
     await new ed( { } ).run( "shared " + rfc[ 0 ][ 0 ] + " " + rfc[ 1 ][ 2 ] ), await new ed( { } ).run( "sign " + rfc[ 1 ][ 0 ] + " r" ),

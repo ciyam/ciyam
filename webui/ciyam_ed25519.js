@@ -17,7 +17,7 @@ ciyam_register_module( class extends ciyam_module
       description: "Ed25519 and X25519 - a public key, a shared secret, or a signature, from a secret as the console's @secret:ed reads it",
       example: "public <secret> | shared <secret> <public key> | sign <secret> <message> | verify <public key> <signature> <message>",
       hint: "(i.e. the same keys and shared secrets as the console's @secret:ed, @public and @shared)",
-      needs: [ ]
+      needs: [ "ed25519" ]
    };
 
    static library( )
@@ -56,8 +56,13 @@ ciyam_register_module( class extends ciyam_module
       for( var end = text.length; ( end > 1 ) && ( text[ end - 1 ] === "=" ); end-- )
          --size;
 
-      if( size > out.length )
+      // NOTE: More "=" than letters underflows "decode_size( )" there, which then refuses - as it does here (found by review).
+      if( ( size < 0 ) || ( size > out.length ) )
          throw new Error( "A secret in base64 is at most 32 bytes." );
+
+      // NOTE: There a character is a signed "char", so anything past ASCII is below '0' and refused (found by review).
+      if( /[^\x00-\x7f]/.test( text ) )
+         throw new Error( "Not base64 - only its letters, digits, '+', '/' and '='." );
 
       function value( ch )
       {
@@ -147,7 +152,9 @@ ciyam_register_module( class extends ciyam_module
       return this.hex_of( this.library( ).ed25519.getPublicKey( seed ) );
    }
 
-   // NOTE: One's scalar with the other's public key in its X25519 form - the same from either side.
+   // NOTE: One's scalar with the other's public key in its X25519 form - the same from either side, and as the console's for
+   // any real public key. Stricter than "ed25519.cpp": a key that is not a point on the curve is refused here, where the
+   // console works a number out from it anyway (found by review).
    static shared_secret( seed, public_key_hex )
    {
       var lib = this.library( );
@@ -178,7 +185,8 @@ ciyam_register_module( class extends ciyam_module
       return this.hex_of( this.library( ).ed25519.sign( new TextEncoder( ).encode( String( message ) ), seed ) );
    }
 
-   // NOTE: Strictly, as RFC 8032 and "ed25519.cpp" - a signature's S less than the group order, its points as encoded.
+   // NOTE: Strictly, as RFC 8032 - a signature's S less than the group order, its points as encoded. Stricter than "ed25519.cpp"
+   // in one way: a public key of small order is refused, where orlp's check can take a made-up signature for one (found by review).
    static verify( public_key_hex, signature_hex, message )
    {
       var signature = this.bytes_of( signature_hex );
