@@ -1462,14 +1462,15 @@ function add_page_script( src, id )
    } );
 }
 
-// NOTE: What the scripts use besides "sha2.min.js" - "BIP39" and "QRCode". Loaded on first use
-// only, since "bip39.min.js" is nearly 700 KB; both are in "webui/" with everything else.
+// NOTE: What the scripts use besides "sha2.min.js" - "BIP39", "QRCode" and "ED25519" (for "ciyam_ed25519.js").
+// Loaded on first use only, since "bip39.min.js" is nearly 700 KB; all are in "webui/" with everything else.
 //
 // Resolves false if either did not load, and forgets the attempt so the next "load script" tries again.
 async function load_script_libraries( )
 {
    if( g_script_libraries === null )
-      g_script_libraries = Promise.all( [ add_page_script( "bip39.min.js" ), add_page_script( "qrcode.min.js" ) ] );
+      g_script_libraries = Promise.all( [ add_page_script( "bip39.min.js" ), add_page_script( "qrcode.min.js" ),
+       add_page_script( "ed25519.min.js" ) ] );
 
    var loaded = await g_script_libraries;
 
@@ -1890,7 +1891,7 @@ async function run_script_line( spec, from_script )
       {
          if( !await load_script_libraries( ) )
          {
-            print_line( "Error: bip39.min.js or qrcode.min.js did not load - the scripts need them. Try again.", "is-err" );
+            print_line( "Error: bip39.min.js, qrcode.min.js or ed25519.min.js did not load - the scripts need them. Try again.", "is-err" );
 
             return { ok: false };
          }
