@@ -339,6 +339,67 @@ async function steps( module_class, list )
     await new chacha( { } ).run( "pass xyz" ).catch( function( e ) { return e.message; } ) ],
     [ "Give a password and then hex - <password> <hex>", "Not hex - an even number of the digits 0 to 9 and a to f." ] );
 
+   heading( "ed25519" );
+
+   // NOTE: "ed25519.min.js" as a page loads it - in a context of its own, giving the global "ED25519".
+   var curves_page = { crypto: globalThis.crypto };
+
+   curves_page.globalThis = curves_page;
+   vm.createContext( curves_page );
+   vm.runInContext( fs.readFileSync( __dirname + "/ed25519.min.js", "utf-8" ), curves_page );
+
+   global.ED25519 = curves_page.ED25519;
+
+   require( "./ciyam_ed25519.js" );
+
+   var ed = m.ciyam_module_named( "ed25519" );
+
+   // NOTE: RFC 8032, 7.1 - tests 1 and 2: the seed, the message, the public key and the signature.
+   var rfc = [ [ "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60", "",
+    "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+    "e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e065224901555fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b" ],
+    [ "4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb", "r",
+    "3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c",
+    "92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00" ] ];
+
+   check( "the standard's public keys - RFC 8032", rfc.map( function( t ) { return ed.public_key( ed.seed_of( t[ 0 ] ) ); } ),
+    [ rfc[ 0 ][ 2 ], rfc[ 1 ][ 2 ] ] );
+   check( "- its signatures, verified", rfc.map( function( t )
+   {
+      return [ ed.sign( ed.seed_of( t[ 0 ] ), t[ 1 ] ) === t[ 3 ], ed.verify( t[ 2 ], t[ 3 ], t[ 1 ] ) ];
+   } ), [ [ true, true ], [ true, true ] ] );
+   check( "- another message not verified", ed.verify( rfc[ 1 ][ 2 ], rfc[ 1 ][ 3 ], "s" ), false );
+
+   // NOTE: The X25519 secret from tests 1 and 2, as "test_crypto_keys" and the console's "@shared" give it.
+   check( "the shared secret - the same from either side, as the console's", [ ed.shared_secret( ed.seed_of( rfc[ 0 ][ 0 ] ), rfc[ 1 ][ 2 ] ),
+    ed.shared_secret( ed.seed_of( rfc[ 1 ][ 0 ] ), rfc[ 0 ][ 2 ] ) ],
+    [ "5166f24a6918368e2af831a4affadd97af0ac326bdf143596c045967cc00230e", "5166f24a6918368e2af831a4affadd97af0ac326bdf143596c045967cc00230e" ] );
+   check( "- a public key of small order refused", ( function( ) { try { return ed.shared_secret( ed.seed_of( rfc[ 0 ][ 0 ] ),
+    "0100000000000000000000000000000000000000000000000000000000000000" ); } catch( e ) { return e.message; } } )( ),
+    "That public key cannot give a shared secret." );
+
+   // NOTE: A secret read as "private_key" reads it, so the same words give the same key - each from the console's "@secret:ed"
+   // and "@public" (2026-10-20): 32 hex digits (as Ian's ".secret" holds - read as base64), a short test secret, base64.
+   check( "secrets read as the console reads them", [ ed.public_key( ed.seed_of( "0123456789abcdef0123456789abcdef" ) ),
+    ed.public_key( ed.seed_of( "hello" ) ), ed.public_key( ed.seed_of( "nWGxne/9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A=" ) ) ],
+    [ "0028b35f26edb6ffe44d3d2cc597906f4065bd550d5009c4d62c422c789493e0", "06bd950857006e5cf4610e6f9569881bf52c34aa21f57a03940c3d7ff2040849",
+    "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a" ] );
+   check( "- and a shared secret between two of them, as the console's", ed.shared_secret( ed.seed_of( "0123456789abcdef0123456789abcdef" ),
+    "06bd950857006e5cf4610e6f9569881bf52c34aa21f57a03940c3d7ff2040849" ), "812788dd5c3c15a6470e406315ec6e49551767cd9b11af795ec48bf93caa407c" );
+   check( "- what the console refuses, refused", [ "", "x".repeat( 52 ), "ab".repeat( 33 ), "A".repeat( 45 ) ].map( function( s )
+   {
+      try { ed.seed_of( s ); return "taken"; } catch( e ) { return e.message; }
+   } ), [ "That secret gives no key - it comes to nothing.", "A secret of over 50 letters is hex - the digits 0 to 9 and a to f.",
+    "A secret in hex is at most 64 digits.", "A secret in base64 is at most 32 bytes." ] );
+
+   check( "through run - public, shared, sign and verify", [ await new ed( { } ).run( "public " + rfc[ 0 ][ 0 ] ),
+    await new ed( { } ).run( "shared " + rfc[ 0 ][ 0 ] + " " + rfc[ 1 ][ 2 ] ), await new ed( { } ).run( "sign " + rfc[ 1 ][ 0 ] + " r" ),
+    await new ed( { } ).run( "verify " + rfc[ 1 ][ 2 ] + " " + rfc[ 1 ][ 3 ] + " r" ),
+    await new ed( { } ).run( "verify " + rfc[ 1 ][ 2 ] + " " + rfc[ 1 ][ 3 ] + " s" ) ],
+    [ rfc[ 0 ][ 2 ], "5166f24a6918368e2af831a4affadd97af0ac326bdf143596c045967cc00230e", rfc[ 1 ][ 3 ], "valid", "not valid" ] );
+   check( "- anything else said", await new ed( { } ).run( "keys" ).catch( function( e ) { return e.message; } ),
+    "Use one of - " + ed.about.example );
+
    console.log( "" );
    console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

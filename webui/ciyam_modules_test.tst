@@ -47,4 +47,16 @@ ok   the standard's own test - RFC 8439
 ok   through run - '<password> <hex>', and again to decrypt
 ok   - a password alone, or data not hex, said
 
+== ed25519 =====================================================
+ok   the standard's public keys - RFC 8032
+ok   - its signatures, verified
+ok   - another message not verified
+ok   the shared secret - the same from either side, as the console's
+ok   - a public key of small order refused
+ok   secrets read as the console reads them
+ok   - and a shared secret between two of them, as the console's
+ok   - what the console refuses, refused
+ok   through run - public, shared, sign and verify
+ok   - anything else said
+
 All checks passed.
