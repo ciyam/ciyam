@@ -57,11 +57,16 @@ POS=@strpos:error:$CHECK_ENTROPY
 ERROR=$SECRET_ENTROPY
 #$ERROR
 @else
+CHECK_ENTROPY=
+;
 CHECK_SECRET_ENTROPY=@regex:^[0-9a-fA-F]{32,64}$$:$SECRET_ENTROPY
 @ifeq "$SECRET_ENTROPY" "$CHECK_SECRET_ENTROPY"
-KEY=@secret:$SECRET_ENTROPY
+KEY=@secret:$~SECRET_ENTROPY
 PUB=@public:$KEY
+CHECK_SECRET_ENTROPY=
 @else
+SECRET_ENTROPY=
+CHECK_SECRET_ENTROPY=
 ERROR=Invalid secret entropy (incorrect size or content).
 #Error: $ERROR
 @endif
