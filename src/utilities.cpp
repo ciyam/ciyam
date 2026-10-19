@@ -1619,6 +1619,18 @@ string get_environment_variable( const char* p_env_var_name )
 
 void set_environment_variable( const char* p_env_var_name, const char* p_new_value )
 {
+   // NOTE: For clearing an environment
+   // variable will first overwrite all
+   // current characters with asterisks
+   // (to prevent reading from dumps).
+   if( p_new_value && !*p_new_value )
+   {
+      char* p_env_var = getenv( p_env_var_name );
+
+      if( p_env_var )
+         memset( p_env_var, '*', strlen( p_env_var ) );
+   }
+
    setenv( p_env_var_name, p_new_value, 1 );
 }
 
