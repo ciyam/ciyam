@@ -422,6 +422,17 @@ check( "after sending, a computer keeps the focus in the message box", cp.keeps_
 check( "a phone lets it go, so its keyboard goes away", cp.keeps_focus_after_send( true ), false );
 check( "a round trip keeps what was typed", cp.unescape_message_text( cp.escape_message_text( "C:\\temp\\x" ) ), "C:\\temp\\x" );
 
+// NOTE: A carriage return marks a message's kind at its start (Ian, 2026-10-20) - the chat never sends one.
+check( "sending turns a CR, or a CR and line feed, into a line feed", cp.escape_message_text( "one\r\ntwo\rthree\nfour" ), "one\ntwo\nthree\nfour" );
+check( "- so nothing typed can start 'X\\r'", cp.message_prefix( cp.escape_message_text( "X\r1234" ) ), "" );
+check( "a message's kind from its start - a letter and a CR", [ cp.message_prefix( "X\rab12" ), cp.message_prefix( "Q\rzz" ),
+ cp.message_prefix( "X ab12" ), cp.message_prefix( "XY\rab" ), cp.message_prefix( "" ) ], [ "X", "Q", "", "", "" ] );
+check( "an encrypted message said so, not shown as its ciphertext", [ cp.message_unreadable_label( "X\r9f3c" ),
+ cp.message_unreadable_label( "Q\rzz" ), cp.message_unreadable_label( "hello" ) ],
+ [ "Encrypted message - this chat cannot read it yet", "A message of a kind this chat cannot show yet", "" ] );
+check( "- and in the plain places, the pinned line and Home", [ cp.message_plain_text( "X\r9f3c" ),
+ cp.message_plain_text( "\u001b[31mred\u001b[0m words" ) ], [ "Encrypted message - this chat cannot read it yet", "red words" ] );
+
 heading( "message size" );
 
 check( "letters are a byte each", cp.message_bytes( "hello" ), 5 );

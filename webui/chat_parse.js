@@ -359,9 +359,38 @@ function parse_room_entry( unique, owner, remainder )
 // A ";" too (found 2026-10-15): the server splits a request's options on it, so "a; b" was
 // stored as "a" - every message with a semicolon was cut short there. After a backslash it is
 // kept as typed ("semicolon_probe.js").
+// A carriage return never goes: a line break goes as "\n" alone, as a CR at a message's start marks its kind (Ian,
+// 2026-10-20 - "message_prefix( )"). Browsers already give a text box's breaks as "\n"; this makes it certain.
 function escape_message_text( text )
 {
-   return String( text || "" ).replace( /[\\;]/g, "\\$&" );
+   return String( text || "" ).replace( /\r\n?/g, "\n" ).replace( /[\\;]/g, "\\$&" );
+}
+
+// NOTE: A message's kind from its start - a letter and a carriage return (Ian, 2026-10-20): "X\r" an X25519 encrypted message.
+// A CR has no other use in a message, so more letters can follow. "" for an ordinary message.
+function message_prefix( text )
+{
+   var m = /^([A-Za-z])\r/.exec( String( text || "" ) );
+
+   return m ? m[ 1 ] : "";
+}
+
+// NOTE: What is shown for a message the chat cannot read - an encrypted one, until it can decrypt, and later one whose key it
+// does not have; "" for one it can.
+function message_unreadable_label( text )
+{
+   var prefix = message_prefix( text );
+
+   if( prefix === "" )
+      return "";
+
+   return ( prefix === "X" ) ? "Encrypted message - this chat cannot read it yet" : "A message of a kind this chat cannot show yet";
+}
+
+// NOTE: A message's words for the places that show plain text - the pinned line, Home - or what is shown for one it cannot read.
+function message_plain_text( text )
+{
+   return message_unreadable_label( text ) || strip_format( text );
 }
 
 // NOTE: Whether the message box keeps the focus once a message is sent - so a follow-up can be typed
@@ -3184,6 +3213,9 @@ if( typeof module !== "undefined" )
       invited_to_room: invited_to_room,
       pending_invitations: pending_invitations,
       escape_message_text: escape_message_text,
+      message_prefix: message_prefix,
+      message_unreadable_label: message_unreadable_label,
+      message_plain_text: message_plain_text,
       keeps_focus_after_send: keeps_focus_after_send,
       message_bytes: message_bytes,
       c_max_message_bytes: c_max_message_bytes,

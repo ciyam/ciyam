@@ -186,6 +186,11 @@ ok   sending keeps a ';' - the server splits on it otherwise
 ok   after sending, a computer keeps the focus in the message box
 ok   a phone lets it go, so its keyboard goes away
 ok   a round trip keeps what was typed
+ok   sending turns a CR, or a CR and line feed, into a line feed
+ok   - so nothing typed can start 'X\r'
+ok   a message's kind from its start - a letter and a CR
+ok   an encrypted message said so, not shown as its ciphertext
+ok   - and in the plain places, the pinned line and Home
 
 == message size ================================================
 ok   letters are a byte each
