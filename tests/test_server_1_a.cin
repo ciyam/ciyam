@@ -503,6 +503,11 @@ encode -text abcdefg
 decode -text $OUTPUT
 encode -text abcdefgh
 decode -text $OUTPUT
+decode -text YQ
+decode -text YQ=
+decode -text YQ==
+decode -text YQ===
+decode -text YQ====
 ;
 encode -url -text a
 decode -url -text $OUTPUT
