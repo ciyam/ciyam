@@ -278,20 +278,46 @@ void get_line( string& str, const char* p_prompt, bool use_cin )
 
       tcsetattr( STDIN_FILENO, TCSANOW, &systerm );
 
-      char* p = readline( p_prompt );
+      bool has_continuation = false;
 
-      if( p )
+      size_t start = 0;
+
+      do
       {
-         size_t len = strlen( p );
+         char* p = readline( p_prompt );
 
-         str.resize( len );
+         size_t len = 0;
 
-         memcpy( &str[ 0 ], p, len );
+         if( p )
+         {
+            len = strlen( p );
 
-         memset( p, '\0', len );
+            str.resize( start + len );
 
-         free( p );
-      }
+            memcpy( &str[ start ], p, len );
+
+            memset( p, '\0', len );
+
+            free( p );
+         }
+
+         // NOTE: A trailing backslash is replaced with a LF and
+         // then another "readline" call (so multi-line input is
+         // still possible when not supported by the terminal).
+         if( str.empty( ) || ( str[ str.length( ) - 1 ] != '\\' ) )
+            has_continuation = false;
+         else
+         {
+            str[ str.length( ) - 1 ] = '\n';
+
+            p_prompt = 0;
+
+            has_continuation = true;
+
+            start += len;
+         }
+
+      } while( has_continuation );
    }
    else
 #  endif
