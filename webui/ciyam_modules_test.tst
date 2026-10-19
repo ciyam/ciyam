@@ -56,6 +56,7 @@ ok   - a public key of small order refused
 ok   secrets read as the console reads them
 ok   - and a shared secret between two of them, as the console's
 ok   - what the console refuses, refused
+ok   - and what it takes with filler, the same keys
 ok   through run - public, shared, sign and verify
 ok   - anything else said
 

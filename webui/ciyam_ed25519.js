@@ -51,13 +51,22 @@ ciyam_register_module( class extends ciyam_module
    // NOTE: Base64 as "base64::decode( )" reads it, into "out" - the same letters, the same leniency, the same refusals.
    static base64_into( text, out )
    {
-      var size = Math.floor( text.length / 4 ) * 3;
+      // NOTE: As "decode_size( )" since Ian's rework (2026-10-20, ISS-049) - a length a multiple of four, and only the last two
+      // characters counted as filler.
+      if( ( text.length % 4 ) !== 0 )
+         throw new Error( "Not base64 - its length is a multiple of four." );
 
-      for( var end = text.length; ( end > 1 ) && ( text[ end - 1 ] === "=" ); end-- )
+      var size = ( text.length / 4 ) * 3;
+
+      if( ( text.length > 2 ) && ( text[ text.length - 1 ] === "=" ) )
+      {
          --size;
 
-      // NOTE: More "=" than letters underflows "decode_size( )" there, which then refuses - as it does here (found by review).
-      if( ( size < 0 ) || ( size > out.length ) )
+         if( text[ text.length - 2 ] === "=" )
+            --size;
+      }
+
+      if( size > out.length )
          throw new Error( "A secret in base64 is at most 32 bytes." );
 
       // NOTE: There a character is a signed "char", so anything past ASCII is below '0' and refused (found by review).

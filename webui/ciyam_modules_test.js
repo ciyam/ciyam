@@ -386,14 +386,21 @@ async function steps( module_class, list )
     "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a" ] );
    check( "- and a shared secret between two of them, as the console's", ed.shared_secret( ed.seed_of( "0123456789abcdef0123456789abcdef" ),
     "06bd950857006e5cf4610e6f9569881bf52c34aa21f57a03940c3d7ff2040849" ), "812788dd5c3c15a6470e406315ec6e49551767cd9b11af795ec48bf93caa407c" );
-   // NOTE: Non-ASCII in base64, and more "=" than letters, refused there too (found by review, 2026-10-20).
-   check( "- what the console refuses, refused", [ "", "x".repeat( 52 ), "ab".repeat( 33 ), "A".repeat( 45 ), "é".repeat( 15 ),
-    "ABCDEFGH" + "=".repeat( 22 ) ].map( function( s )
+   // NOTE: Base64 as "base64.cpp" reads it since Ian's rework (2026-10-20, ISS-049) - a length a multiple of four, only the last
+   // two "=" filler - and non-ASCII refused there too (found by review). Each answer, a key or a refusal, the console's own.
+   check( "- what the console refuses, refused", [ "", "x".repeat( 52 ), "ab".repeat( 33 ), "A".repeat( 45 ), "é".repeat( 16 ),
+    "ABCDEFGH" + "=".repeat( 22 ), "0123456789abcdef0123456789abcdef01", "QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVpBQkNERUY====",
+    "A".repeat( 44 ) + "====" ].map( function( s )
    {
       try { ed.seed_of( s ); return "taken"; } catch( e ) { return e.message; }
    } ), [ "That secret gives no key - it comes to nothing.", "A secret of over 50 letters is hex - the digits 0 to 9 and a to f.",
-    "A secret in hex is at most 64 digits.", "A secret in base64 is at most 32 bytes.", "Not base64 - only its letters, digits, '+', '/' and '='.",
+    "A secret in hex is at most 64 digits.", "Not base64 - its length is a multiple of four.",
+    "Not base64 - only its letters, digits, '+', '/' and '='.", "Not base64 - its length is a multiple of four.",
+    "Not base64 - its length is a multiple of four.", "Not base64 - its length is a multiple of four.",
     "A secret in base64 is at most 32 bytes." ] );
+   check( "- and what it takes with filler, the same keys", [ ed.public_key( ed.seed_of( "ABCDEFGHABCDEFGHABCDEFGHABCDEFGHABCDEFGH====" ) ),
+    ed.public_key( ed.seed_of( "ABCDEFGHABCDEFGHABCDEFGHABCDEF==" ) ) ],
+    [ "104ec09f88a31693b9d36fcdea3007355334f14c1397ddc4e01d86e8e9844489", "01c96ddd8aa748228fe218198e070388aca95f45b972ca334d7adf1ba6d79efd" ] );
 
    check( "through run - public, shared, sign and verify", [ await new ed( { } ).run( "public " + rfc[ 0 ][ 0 ] ),
     await new ed( { } ).run( "shared " + rfc[ 0 ][ 0 ] + " " + rfc[ 1 ][ 2 ] ), await new ed( { } ).run( "sign " + rfc[ 1 ][ 0 ] + " r" ),
