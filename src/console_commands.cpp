@@ -4791,7 +4791,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                // NOTE: As it would make no sense to begin
                // the line with a backspace this character
                // (if immediately follows the prefix) will
-               // instead stop a readline history clear.
+               // instead stop the readline history clear.
                if( !str.empty( ) && ( str[ 0 ] == '\b' ) )
                {
                   str.erase( 0, 1 );
@@ -4810,7 +4810,10 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   {
                      add_history( str.c_str( ) );
 
-                     cout << "(retained as history)\n";
+                     if( keep_existing )
+                        cout << "(appended to history)\n";
+                     else
+                        cout << "(retained as history)\n";
                   }
                }
 #  endif
