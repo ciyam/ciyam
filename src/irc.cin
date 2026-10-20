@@ -3,6 +3,8 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+<ciyam.fissile
+;
 @retain *
 <ansi.cin
 ;
@@ -29,8 +31,9 @@ CHECK_LOCAL_SHARE_FILE=@files:/home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_N
 @else
 LOCAL_FILES_DIR=/home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_NAME
 ;
-KEY=
-PUB=
+PKEY=
+SKEY=
+;
 ERROR=
 ;
 UNLOCK_SCRIPT=.irc_$USER.unlock
@@ -60,10 +63,15 @@ ERROR=$SECRET_ENTROPY
 CHECK_ENTROPY=
 ;
 CHECK_SECRET_ENTROPY=@regex:^[0-9a-fA-F]{32,64}$$:$SECRET_ENTROPY
+;
 @ifeq "$SECRET_ENTROPY" "$CHECK_SECRET_ENTROPY"
-KEY=@secret:$~SECRET_ENTROPY
-PUB=@public:$KEY
 CHECK_SECRET_ENTROPY=
+;
+TERCES_ENTROPY=*!reverse?$SECRET_ENTROPY
+;
+PKEY=@secret:$~SECRET_ENTROPY
+SKEY=@secret:$~TERCES_ENTROPY
+;
 @else
 SECRET_ENTROPY=
 CHECK_SECRET_ENTROPY=
@@ -90,6 +98,9 @@ RESERVED_ROOM=0000001
 STARTING_ROOM=0000002
 ;
 DUMMY_JOIN_UUID=00000000000000000000000000000000
+;
+ENCRYPTED_PREFIX=X\r
+ENCRYPTED_ESCAPED=X\\r
 ;
 INVITATION_INFORMATION=
 ;
@@ -150,6 +161,33 @@ NOT_TO_SELF=
 #
 @elif "$CIYAM_KEY_PRESSED" = "q"
 QUIT=1
+;
+@elif "$CIYAM_KEY_PRESSED" = "x"
+SPUB=@public:$SKEY
+OWN_ECDHE=@shared:$PKEY:$~SPUB
+;
+&:CRYPT_MESSAGE=
+;
+IS_ENCRYPTED=
+LEN=@strlen:$CRYPT_MESSAGE
+@if $LEN #> 2
+PREFIX=@substr:0,2:$CRYPT_MESSAGE
+@ifeq "$PREFIX" "$ENCRYPTED_PREFIX"
+IS_ENCRYPTED=1
+CRYPT_MESSAGE=@substr:2:$CRYPT_MESSAGE
+@endif
+@endif
+;
+@ifdef $IS_ENCRYPTED
+DECRYPT=@crypt:cc $~OWN_ECDHE:$CRYPT_MESSAGE
+DECODED=@hexasc:$DECRYPT
+#$~DECODED
+@else
+ENCODED=@aschex:$~CRYPT_MESSAGE
+ENCRYPT=@crypt:cc $~OWN_ECDHE:$~ENCODED
+#$ENCRYPTED_ESCAPED$ENCRYPT
+@endif
+;
 @elif "$CIYAM_KEY_PRESSED" = "e"
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
 &Enter Room No: :ROOM_NO=
@@ -242,10 +280,12 @@ ERROR=
 ;
 @elif "$CIYAM_KEY_PRESSED" = "k"
 ~echo ""
-~qrencode -tANSI $PUB
+PPUB=@public:$PKEY
+~qrencode -tANSI $~PPUB
 ;
 @retain NAMES
 <names.cin $ALL_USERS 1
+;
 USER_FOR_PUB=$NAMES
 NAMES=
 ;
@@ -261,7 +301,10 @@ CHECK_QR_CODE=@regex:^[0-9a-fA-F]{64}$$:$QR_CODE
 @else
 ~echo "Saving public key for '$USER_FOR_PUB' ($LOCAL_FILES_DIR/.irc_$USER_FOR_PUB.public)."
 ~echo ""
-~echo "$QR_CODE" > $LOCAL_FILES_DIR/.irc_$USER_FOR_PUB.public
+SPUB=@public:$SKEY
+OWN_ECDHE=@shared:$PKEY:$~SPUB
+ENCRTYPED=@crypt:cc $~OWN_ECDHE:$~QR_CODE
+~echo "$ENCRTYPED" > $LOCAL_FILES_DIR/.irc_$USER_FOR_PUB.public
 @endif
 @endif
 @endif
