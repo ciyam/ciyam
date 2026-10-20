@@ -180,6 +180,23 @@ http://www.opensource.org/licenses/mit-license.php.
             <div class="chat-error-text" id="mine_devices_error" role="alert"></div>
          </div>
 
+         <!-- NOTE: Desktop notifications from the chat (Damon, 2026-10-20) - the same switch as in the chat's account menu
+              ("notify.js"); here so that, as more kinds come, they are set in one place. -->
+         <div class="account-card account-form" id="mine_notify">
+            <div>
+               <h2>Notifications</h2>
+               <p class="account-lede">A notification on this computer when a message arrives and the chat is open in the
+                background - who and where, never what was said. Kept for this account on this browser.</p>
+            </div>
+
+            <label class="account-check">
+               <input type="checkbox" id="mine_notify_switch" onchange="do_mine_notify( this.checked )">
+               Desktop notifications from the chat
+            </label>
+
+            <p class="account-lede" id="mine_notify_status" aria-live="polite"></p>
+         </div>
+
          <form class="account-card account-form" id="mine_password_form" onsubmit="do_change_password( event )" novalidate>
             <div>
                <h2>Change password</h2>

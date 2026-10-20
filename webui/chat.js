@@ -312,11 +312,123 @@ function do_toggle_user_menu( )
       return;
    }
 
+   show_notify_switch( );
+
    menu.hidden = false;
 
    document.getElementById( "user_avatar" ).setAttribute( "aria-expanded", "true" );
 
    menu.querySelector( ".chat-user-menu-item" ).focus( );
+}
+
+// ====================================================================
+// Desktop notifications (Damon, 2026-10-20) - from the chat only, while it is open but not in front; who and where, never
+// what was said ("notifications_due( )" and "messages_notification( )" in "chat_parse.js"). Offered once by a bar, then
+// switched in the account menu or on My account ("notify.js").
+// ====================================================================
+
+// NOTE: What the room list showed last - null until the first look after signing in, which notifies of nothing.
+var g_notify_seen = null;
+
+function show_notify_switch( )
+{
+   var on = notify_is_on( );
+
+   document.getElementById( "menu_notify" ).setAttribute( "aria-checked", on ? "true" : "false" );
+   document.getElementById( "menu_notify_state" ).textContent = ( notify_state( ) === "ok" ) ? ( on ? "On" : "Off" ) : "Not here";
+   document.getElementById( "menu_notify" ).title = notify_status_text( notify_is_on( ) ? "on" : "off", notify_state( ) );
+}
+
+function show_notify_bar( )
+{
+   document.getElementById( "notify_bar" ).hidden = !notify_offer_bar( notify_setting( ), notify_state( ) );
+}
+
+async function do_notify_bar( on )
+{
+   document.getElementById( "notify_bar" ).hidden = true;
+
+   var now_on = await notify_switch( on );
+
+   if( on && !now_on )
+      show_alert( notify_status_text( "off", ( notify_state( ) === "ok" ) ? "blocked" : notify_state( ) ), "is-info" );
+}
+
+async function do_menu_notify( )
+{
+   var turning_on = !notify_is_on( );
+
+   if( turning_on && ( notify_state( ) !== "ok" ) )
+   {
+      close_user_menu( true );
+
+      show_alert( notify_status_text( "off", notify_state( ) ), "is-info" );
+
+      return;
+   }
+
+   var now_on = await notify_switch( turning_on );
+
+   document.getElementById( "notify_bar" ).hidden = true;
+
+   show_notify_switch( );
+
+   if( turning_on && !now_on )
+      show_alert( notify_status_text( "off", "blocked" ), "is-info" );
+}
+
+// NOTE: In front - this tab showing and the window in use - when nothing is sent; the person is already looking.
+function chat_in_front( )
+{
+   return ( document.visibilityState === "visible" ) && document.hasFocus( );
+}
+
+// NOTE: One notification a room ("tag"), the newest replacing the last. A click brings the chat forward on the room, or
+// on the invitation.
+function send_notification( note )
+{
+   try
+   {
+      var shown = new Notification( note.title, { body: note.body, tag: "ciyam-chat-" + note.tag } );
+
+      shown.onclick = function( )
+      {
+         window.focus( );
+
+         if( note.invite )
+            select_invitation( note.room );
+         else if( note.room !== g_room )
+            select_room( note.room, "" );
+
+         shown.close( );
+      };
+   }
+   catch( e )
+   {
+   }
+}
+
+// NOTE: After each read of the room list - what has come since the last, sent if they are on and the chat is not in front.
+function notify_rooms( )
+{
+   var due = notifications_due( g_notify_seen, g_rooms, g_invitations, g_room, ciyam.username );
+
+   g_notify_seen = due.seen;
+
+   if( notify_is_on( ) && !chat_in_front( ) )
+      due.notes.forEach( send_notification );
+}
+
+// NOTE: The open room's new messages - read by the chat as they come, so the room list never counts them as unread.
+function notify_messages( messages )
+{
+   if( !notify_is_on( ) || chat_in_front( ) )
+      return;
+
+   var note = messages_notification( messages, ciyam.username, g_room, g_room_name );
+
+   if( note !== null )
+      send_notification( note );
 }
 
 function close_user_menu( restore_focus )
@@ -1095,6 +1207,11 @@ async function do_disconnect( already_ended )
    clear_composer( );
    resize_composer( );
 
+   // NOTE: The next to sign in starts afresh - nothing notified of what this account saw, and its own setting read.
+   g_notify_seen = null;
+
+   document.getElementById( "notify_bar" ).hidden = true;
+
    document.getElementById( "held_list" ).textContent = "";
    document.getElementById( "held_list" ).hidden = true;
    document.getElementById( "thread_sub" ).hidden = true;
@@ -1346,6 +1463,10 @@ function on_rooms_response( response )
       render_rooms( );
 
       watch_held_rooms( );
+
+      notify_rooms( );
+
+      show_notify_bar( );
 
       if( ( g_room !== "" ) || ( g_selected_invite !== "" ) )
          update_thread_meta( );
@@ -3122,6 +3243,10 @@ function on_messages_response( response, asked_for, replace )
          document.getElementById( "message_list" ).textContent = "";
 
       append_messages( result.messages );
+
+      // NOTE: Only what a poll brings - not a room's first read, nor reading it whole again.
+      if( !replace )
+         notify_messages( result.messages );
 
       apply_pinned( result.pinned );
 

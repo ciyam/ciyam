@@ -676,7 +676,34 @@ function render_mine( )
 
    set_error( "mine_error", "" );
 
+   show_mine_notify( );
+
    load_devices( );
+}
+
+// NOTE: Desktop notifications from the chat (Damon, 2026-10-20) - the switch here and in the chat's account menu are one
+// ("notify.js"). Where the browser cannot give them, the switch is off and says why.
+function show_mine_notify( )
+{
+   var state = notify_state( );
+   var on = notify_is_on( );
+   var box = document.getElementById( "mine_notify_switch" );
+
+   box.checked = on;
+   box.disabled = ( state !== "ok" ) && !on;
+
+   document.getElementById( "mine_notify_status" ).textContent = notify_status_text( on ? "on" : "off", state );
+}
+
+async function do_mine_notify( on )
+{
+   await notify_switch( on );
+
+   show_mine_notify( );
+
+   // NOTE: Asked to turn on and the browser said no - the line says so.
+   if( on && !notify_is_on( ) && ( notify_state( ) === "ok" ) )
+      document.getElementById( "mine_notify_status" ).textContent = notify_status_text( "off", "blocked" );
 }
 
 // ====================================================================

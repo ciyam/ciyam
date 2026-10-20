@@ -50,6 +50,12 @@ http://www.opensource.org/licenses/mit-license.php.
                   <button type="button" class="chat-user-menu-link" role="menuitem" onclick="do_menu_linked_tab( )"
                    title="Opens the chat in a new tab sharing this session - no second sign in">Open a linked tab &rarr;</button>
                </div>
+               <!-- NOTE: Desktop notifications, on or off - here and on My account (Damon, 2026-10-20); "notify.js". -->
+               <button type="button" class="chat-user-menu-item chat-notify-item" role="menuitemcheckbox" id="menu_notify"
+                aria-checked="false" onclick="do_menu_notify( )">
+                  <span>Desktop notifications</span>
+                  <span class="chat-notify-item-state" id="menu_notify_state"></span>
+               </button>
                <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_account_settings( event )"
                 title="Opens your account here - ctrl or cmd and click for a new tab">Account settings&hellip;</button>
                <button type="button" class="chat-user-menu-item" role="menuitem" onclick="do_menu_sign_out( )">Sign out</button>
@@ -61,6 +67,15 @@ http://www.opensource.org/licenses/mit-license.php.
    <div id="chat_alert" class="chat-alert" hidden>
       <span class="chat-alert-text" id="chat_alert_text"></span>
       <button type="button" onclick="do_dismiss_alert( )" aria-label="Dismiss">&times;</button>
+   </div>
+
+   <!-- NOTE: Desktop notifications offered once (Damon, 2026-10-20) - a browser asks its permission only from a click. Either
+        answer is kept; the account menu and My account switch them after. -->
+   <div id="notify_bar" class="chat-alert is-info chat-notify-bar" role="region" aria-label="Desktop notifications" hidden>
+      <span class="chat-alert-text">A notification on this computer when a message arrives and the chat is in the background -
+       who and where, never what was said.</span>
+      <button type="button" class="chat-btn chat-btn--small chat-btn--primary" onclick="do_notify_bar( true )">Turn on</button>
+      <button type="button" class="chat-btn chat-btn--small" onclick="do_notify_bar( false )">Not now</button>
    </div>
 
    <div class="chat-body">

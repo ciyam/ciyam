@@ -2896,3 +2896,35 @@ button.chat-avatar:hover
    font-size: var(--font-size-chat-tiny);
    color: var(--color-chat-text-secondary);
 }
+
+/* ---- desktop notifications (Damon, 2026-10-20) ---- */
+
+/* NOTE: The switch in the account menu - its name, and On or Off at the right. */
+.chat-user-menu-item.chat-notify-item
+{
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 12px;
+}
+
+.chat-notify-item-state
+{
+   font-size: var(--font-size-chat-tiny);
+   color: var(--color-chat-text-meta);
+}
+
+.chat-notify-item[aria-checked="true"] .chat-notify-item-state
+{
+   color: var(--color-chat-online-text);
+   font-weight: 600;
+}
+
+/* NOTE: The offer, once - in the chat's own words, not the alert strip's monospace; the buttons at its end. */
+.chat-notify-bar .chat-alert-text
+{
+   flex: 1;
+   min-width: 0;
+   font-family: var(--font-family-chat);
+   font-size: var(--font-size-chat-small);
+}
