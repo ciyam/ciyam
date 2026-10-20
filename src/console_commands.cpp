@@ -3696,7 +3696,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            else if( lhs == c_function_upper )
                               str = upper( str.substr( pos + 1 ) );
                            else if( lhs == c_function_aschex )
-                              str = hex_encode( str.substr( pos + 1 ) );
+                              str = hex_encode( unescaped( str.substr( pos + 1 ), c_special_characters ) );
                            else if( lhs == c_function_dechex )
                            {
                               int64_t val = from_string< int64_t >( str.substr( pos + 1 ) );
