@@ -9552,6 +9552,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool text = has_parm_val( parameters, c_cmd_ciyam_session_utils_decode_text );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_utils_decode_data ) );
 
+         possibly_expected_error = true;
+
          if( text )
             response = base64::decode( data, url );
          else
