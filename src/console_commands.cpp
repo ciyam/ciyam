@@ -4336,16 +4336,21 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                   // NOTE: As one script may call another all relevant state information must be
                   // captured before and then restored after processing each script.
+                  restorable< string > tmp_label( label, "" );
                   restorable< size_t > tmp_line_number( line_number, 0 );
+                  restorable< string > tmp_prior_command( prior_command, "" );
+                  restorable< string > tmp_prompt_prefix( prompt_prefix, "" );
                   restorable< vector< string > > tmp_args( args, new_args );
+                  restorable< bool > tmp_is_reading_input( is_reading_input, true );
                   restorable< string > tmp_script_file( script_file, new_args[ 0 ] );
                   restorable< vector< bool > > tmp_completed( completed, dummy_vector );
                   restorable< vector< bool > > tmp_conditions( conditions, dummy_vector );
-                  restorable< bool > tmp_is_reading_input( is_reading_input, true );
                   restorable< bool > tmp_executing_commands( is_executing_commands, false );
                   restorable< bool > tmp_allow_history_addition( allow_history_addition, true );
                   restorable< size_t > tmp_max_history_lines( max_history_lines, c_max_history );
                   restorable< vector< bool > > tmp_dummy_conditions( dummy_conditions, dummy_vector );
+                  restorable< deque< string > > tmp_history_commands( command_history, command_history );
+                  restorable< deque< size_t > > tmp_history_line_number( history_line_number, history_line_number );
                   restorable< vector< size_t > > tmp_lines_for_conditions( lines_for_conditions, dummy_lines_vector );
 
                   string next;
