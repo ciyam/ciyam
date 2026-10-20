@@ -54,7 +54,7 @@ ciyam_register_module( class extends ciyam_module
       // NOTE: As "decode_size( )" since Ian's rework (2026-10-20, ISS-049) - a length a multiple of four, and only the last two
       // characters counted as filler.
       if( ( text.length % 4 ) !== 0 )
-         throw new Error( "Not base64 - its length is a multiple of four." );
+         throw new Error( "Not base64 - its length is not a multiple of four." );
 
       var size = ( text.length / 4 ) * 3;
 

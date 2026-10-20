@@ -394,9 +394,9 @@ async function steps( module_class, list )
    {
       try { ed.seed_of( s ); return "taken"; } catch( e ) { return e.message; }
    } ), [ "That secret gives no key - it comes to nothing.", "A secret of over 50 letters is hex - the digits 0 to 9 and a to f.",
-    "A secret in hex is at most 64 digits.", "Not base64 - its length is a multiple of four.",
-    "Not base64 - only its letters, digits, '+', '/' and '='.", "Not base64 - its length is a multiple of four.",
-    "Not base64 - its length is a multiple of four.", "Not base64 - its length is a multiple of four.",
+    "A secret in hex is at most 64 digits.", "Not base64 - its length is not a multiple of four.",
+    "Not base64 - only its letters, digits, '+', '/' and '='.", "Not base64 - its length is not a multiple of four.",
+    "Not base64 - its length is not a multiple of four.", "Not base64 - its length is not a multiple of four.",
     "A secret in base64 is at most 32 bytes." ] );
    check( "- and what it takes with filler, the same keys", [ ed.public_key( ed.seed_of( "ABCDEFGHABCDEFGHABCDEFGHABCDEFGHABCDEFGH====" ) ),
     ed.public_key( ed.seed_of( "ABCDEFGHABCDEFGHABCDEFGHABCDEF==" ) ) ],
