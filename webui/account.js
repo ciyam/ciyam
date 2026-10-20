@@ -697,13 +697,13 @@ function show_mine_notify( )
 
 async function do_mine_notify( on )
 {
-   await notify_switch( on );
+   var outcome = await notify_switch( on );
 
    show_mine_notify( );
 
-   // NOTE: Asked to turn on and the browser said no - the line says so.
-   if( on && !notify_is_on( ) && ( notify_state( ) === "ok" ) )
-      document.getElementById( "mine_notify_status" ).textContent = notify_status_text( "off", "blocked" );
+   // NOTE: Asked to turn on and the browser did not - refused, or its question closed unanswered - the line says which.
+   if( on && ( outcome !== "on" ) )
+      document.getElementById( "mine_notify_status" ).textContent = notify_status_text( "off", outcome );
 }
 
 // ====================================================================

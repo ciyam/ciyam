@@ -37,13 +37,16 @@ function notify_store( value )
 }
 
 // NOTE: What this browser allows - "ok"; "insecure", as notifications need https (or localhost); "unsupported"; or
-// "blocked", refused for this site.
+// "blocked", refused for this site. A phone's browser offers "Notification" but will not show one from a page - only from
+// an installed app's service worker - so phones are "unsupported" rather than on and silent (found by review).
 function notify_state( )
 {
    if( window.isSecureContext === false )
       return "insecure";
 
-   if( typeof Notification === "undefined" )
+   var mobile = ( navigator.userAgentData && navigator.userAgentData.mobile ) || /Android|iPhone|iPad|iPod/.test( navigator.userAgent );
+
+   if( ( typeof Notification === "undefined" ) || mobile )
       return "unsupported";
 
    if( Notification.permission === "denied" )
@@ -57,18 +60,19 @@ function notify_is_on( )
    return ( notify_setting( ) === "on" ) && ( notify_state( ) === "ok" ) && ( Notification.permission === "granted" );
 }
 
-// NOTE: Turned on or off, from a click - asking the browser's permission the first time. True if on after.
+// NOTE: Turned on or off, from a click - asking the browser's permission the first time. What happened: "on", "off",
+// "blocked" (refused), "dismissed" (the question closed unanswered), or what the browser allows ("notify_state( )").
 async function notify_switch( on )
 {
    if( !on )
    {
       notify_store( "off" );
 
-      return false;
+      return "off";
    }
 
    if( notify_state( ) !== "ok" )
-      return false;
+      return notify_state( );
 
    var permission = Notification.permission;
 
@@ -86,5 +90,8 @@ async function notify_switch( on )
 
    notify_store( ( permission === "granted" ) ? "on" : "off" );
 
-   return permission === "granted";
+   if( permission === "granted" )
+      return "on";
+
+   return ( permission === "denied" ) ? "blocked" : "dismissed";
 }

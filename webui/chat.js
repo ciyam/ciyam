@@ -330,13 +330,17 @@ function do_toggle_user_menu( )
 // NOTE: What the room list showed last - null until the first look after signing in, which notifies of nothing.
 var g_notify_seen = null;
 
+// NOTE: Whether invitations have been read yet this sign in - they come after the first room list, and those waiting then
+// are not news ("notifications_due( )").
+var g_invitations_known = false;
+
 function show_notify_switch( )
 {
    var on = notify_is_on( );
 
    document.getElementById( "menu_notify" ).setAttribute( "aria-checked", on ? "true" : "false" );
-   document.getElementById( "menu_notify_state" ).textContent = ( notify_state( ) === "ok" ) ? ( on ? "On" : "Off" ) : "Not here";
-   document.getElementById( "menu_notify" ).title = notify_status_text( notify_is_on( ) ? "on" : "off", notify_state( ) );
+   document.getElementById( "menu_notify_state" ).textContent = notify_menu_word( on, notify_state( ) );
+   document.getElementById( "menu_notify" ).title = notify_status_text( on ? "on" : "off", notify_state( ) );
 }
 
 function show_notify_bar( )
@@ -348,10 +352,10 @@ async function do_notify_bar( on )
 {
    document.getElementById( "notify_bar" ).hidden = true;
 
-   var now_on = await notify_switch( on );
+   var outcome = await notify_switch( on );
 
-   if( on && !now_on )
-      show_alert( notify_status_text( "off", ( notify_state( ) === "ok" ) ? "blocked" : notify_state( ) ), "is-info" );
+   if( on && ( outcome !== "on" ) )
+      show_alert( notify_status_text( "off", outcome ), "is-info" );
 }
 
 async function do_menu_notify( )
@@ -367,14 +371,14 @@ async function do_menu_notify( )
       return;
    }
 
-   var now_on = await notify_switch( turning_on );
+   var outcome = await notify_switch( turning_on );
 
    document.getElementById( "notify_bar" ).hidden = true;
 
    show_notify_switch( );
 
-   if( turning_on && !now_on )
-      show_alert( notify_status_text( "off", "blocked" ), "is-info" );
+   if( turning_on && ( outcome !== "on" ) )
+      show_alert( notify_status_text( "off", outcome ), "is-info" );
 }
 
 // NOTE: In front - this tab showing and the window in use - when nothing is sent; the person is already looking.
@@ -383,10 +387,15 @@ function chat_in_front( )
    return ( document.visibilityState === "visible" ) && document.hasFocus( );
 }
 
+// NOTE: Those still showing, closed on signing out - one clicked after would open another account's room (found by review).
+var g_notify_shown = [ ];
+
 // NOTE: One notification a room ("tag"), the newest replacing the last. A click brings the chat forward on the room, or
-// on the invitation.
+// on the invitation - only while the account that was told is still the one signed in.
 function send_notification( note )
 {
+   var told = ciyam.username;
+
    try
    {
       var shown = new Notification( note.title, { body: note.body, tag: "ciyam-chat-" + note.tag } );
@@ -395,23 +404,38 @@ function send_notification( note )
       {
          window.focus( );
 
-         if( note.invite )
-            select_invitation( note.room );
-         else if( note.room !== g_room )
-            select_room( note.room, "" );
+         if( ( ciyam.sessid !== "" ) && ( ciyam.username === told ) )
+         {
+            if( note.invite )
+               select_invitation( note.room );
+            else if( note.room !== g_room )
+               select_room( note.room, "" );
+         }
 
          shown.close( );
       };
+
+      g_notify_shown = g_notify_shown.filter( function( other ) { return other.tag !== shown.tag; } ).concat( [ shown ] );
    }
    catch( e )
    {
    }
 }
 
+function close_notifications( )
+{
+   g_notify_shown.forEach( function( shown ) { try { shown.close( ); } catch( e ) { } } );
+
+   g_notify_shown = [ ];
+}
+
 // NOTE: After each read of the room list - what has come since the last, sent if they are on and the chat is not in front.
+// While the tab is hidden the open room is not read ("poll( )"), so it is news too - by its total ("notifications_due( )").
 function notify_rooms( )
 {
-   var due = notifications_due( g_notify_seen, g_rooms, g_invitations, g_room, ciyam.username );
+   // NOTE: Only the rooms the person is shown - not the Admin room for anyone else, whose count moves with a pin (found testing).
+   var due = notifications_due( g_notify_seen, visible_rooms( g_rooms, ciyam.is_admin ), g_invitations, g_room,
+    ciyam.username, g_invitations_known, document.hidden );
 
    g_notify_seen = due.seen;
 
@@ -425,7 +449,7 @@ function notify_messages( messages )
    if( !notify_is_on( ) || chat_in_front( ) )
       return;
 
-   var note = messages_notification( messages, ciyam.username, g_room, g_room_name );
+   var note = messages_notification( messages, ciyam.username, g_room, g_room_name, g_start_point );
 
    if( note !== null )
       send_notification( note );
@@ -1209,6 +1233,9 @@ async function do_disconnect( already_ended )
 
    // NOTE: The next to sign in starts afresh - nothing notified of what this account saw, and its own setting read.
    g_notify_seen = null;
+   g_invitations_known = false;
+
+   close_notifications( );
 
    document.getElementById( "notify_bar" ).hidden = true;
 
@@ -2050,6 +2077,8 @@ function on_invitations_response( response )
    }
    else
       g_invite_messages = merge_new_messages( g_invite_messages, result.messages );
+
+   g_invitations_known = true;
 
    refresh_invitations( );
 }
@@ -3256,6 +3285,8 @@ function on_messages_response( response, asked_for, replace )
       {
          // NOTE: Merged, not added to - every read brings the room's pinned back again (found by review).
          g_invite_messages = replace ? result.messages : merge_new_messages( g_invite_messages, result.messages );
+
+         g_invitations_known = true;
 
          refresh_invitations( );
       }
@@ -5459,10 +5490,33 @@ function stop_polling( )
    }
 }
 
+// NOTE: Hidden, the chat reads nothing - reading the open room marks it read, so others would see it seen while nobody is
+// looking. With desktop notifications on it reads the room list alone, which counts without reading, every few polls (found
+// by review, 2026-10-20 - hidden, nothing was ever notified).
+const c_hidden_poll_every = 4;
+
+var g_hidden_polls = 0;
+
 async function poll( )
 {
-   if( ( ciyam.sessid === "" ) || document.hidden )
+   if( ciyam.sessid === "" )
       return;
+
+   if( document.hidden )
+   {
+      if( !notify_is_on( ) || ( ( ++g_hidden_polls % c_hidden_poll_every ) !== 0 ) || is_dialog_open( ) )
+         return;
+
+      g_in_poll = true;
+
+      var listing = load_rooms( );
+
+      g_in_poll = false;
+
+      await listing;
+
+      return;
+   }
 
    // NOTE: Polling while a dialog is open puts requests in front of whatever the user
    // is actually waiting for.
