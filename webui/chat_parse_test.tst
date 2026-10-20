@@ -721,5 +721,14 @@ ok   - a red word deleted comes back red
 ok   - something new after an undo drops what could have been redone
 ok   - a change that changes nothing only moves the selection
 ok   trimmed as the words are - styles kept
+ok   notifications - nothing on the first look, only what it saw
+ok   - a room's unread up, by its name; a conversation by its person; the open room left to its messages
+ok   - an invitation to a room, and a request for a conversation
+ok   - nothing again for what was seen, or a count that went down
+ok   the open room's new messages - who, never what
+ok   - not for one's own, a system line, or a deleted one
+ok   the switch's line, as the browser allows
+ok   - offered once: not asked yet, and the browser can
+ok   kept per account, by name
 
 All checks passed.

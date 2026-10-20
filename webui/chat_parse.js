@@ -2370,6 +2370,98 @@ function account_storage_key( prefix, username, is_admin )
    return prefix + account_display_name( username, is_admin );
 }
 
+// NOTE: Desktop notifications (Damon, 2026-10-20) - from the chat only, while it is open but not in front; who and where,
+// never what was said; switched in the chat's account menu and on My account ("notify.js"). Kept per account on this
+// browser: "on", "off", or nothing - not asked yet.
+const c_storage_notify_by_name = "cws.notify@";
+
+// NOTE: A room as a notification names it - a conversation by its other people, any other room by its name.
+function notify_room_title( name, me )
+{
+   return is_dm_name( name ) ? dm_title( name, me ) : String( name || "" );
+}
+
+// NOTE: What has come since the last look at the room list - "before" what was seen then (null on the first look, which
+// notifies of nothing), the open room left out (its own messages say who - "messages_notification( )"). A room whose unread
+// count went up, and an invitation not there before - a request for a conversation, or to a room. Returns the
+// notifications and what is seen now, for next time.
+function notifications_due( before, rooms, invitations, open_room, me )
+{
+   var seen = { unread: { }, invited: { } };
+   var notes = [ ];
+
+   ( rooms || [ ] ).forEach( function( entry ) { seen.unread[ entry.room ] = entry.unread || 0; } );
+   ( invitations || [ ] ).forEach( function( invite ) { seen.invited[ invite.room ] = true; } );
+
+   if( !before )
+      return { notes: notes, seen: seen };
+
+   ( rooms || [ ] ).forEach( function( entry )
+   {
+      var now = entry.unread || 0;
+
+      if( ( entry.room === open_room ) || ( now <= ( before.unread[ entry.room ] || 0 ) ) )
+         return;
+
+      notes.push( { room: entry.room, tag: "room-" + entry.room, title: notify_room_title( entry.name, me ),
+       body: ( now === 1 ) ? "New message" : now + " new messages" } );
+   } );
+
+   ( invitations || [ ] ).forEach( function( invite )
+   {
+      if( before.invited[ invite.room ] )
+         return;
+
+      var conversation = is_dm_name( invite.name );
+
+      notes.push( { room: invite.room, invite: true, tag: "invite-" + invite.room,
+       title: conversation ? dm_title( invite.name, me ) : String( invite.name || invite.room ),
+       body: conversation ? "Wants to start a conversation" : "Invitation from " + invite.inviter } );
+   } );
+
+   return { notes: notes, seen: seen };
+}
+
+// NOTE: New messages in the open room, while the chat is not in front - from others, not system lines; who, never what.
+function messages_notification( messages, me, room, room_name )
+{
+   var from_others = ( messages || [ ] ).filter( function( message )
+   {
+      return message && ( message.kind === c_kind_chat ) && ( message.sender !== me ) && !message.deleted;
+   } );
+
+   if( from_others.length === 0 )
+      return null;
+
+   var senders = [ ];
+
+   from_others.forEach( function( message ) { if( senders.indexOf( message.sender ) < 0 ) senders.push( message.sender ); } );
+
+   return { room: room, tag: "room-" + room, title: notify_room_title( room_name, me ),
+    body: ( from_others.length === 1 ) ? "New message from " + senders[ 0 ] : from_others.length + " new messages from " + senders.join( ", " ) };
+}
+
+// NOTE: The switch's line - "setting" as kept, "state" what the browser allows ("notify_state( )" in "notify.js").
+function notify_status_text( setting, state )
+{
+   if( state === "insecure" )
+      return "Not available here - notifications need the node's https address.";
+
+   if( state === "unsupported" )
+      return "This browser does not offer notifications.";
+
+   if( state === "blocked" )
+      return "Blocked for this site - allow notifications in the browser's site settings, then turn them on here.";
+
+   return ( setting === "on" ) ? "On - who and where, never what was said." : "Off";
+}
+
+// NOTE: Whether the chat offers them, once - not asked yet, and the browser can give them.
+function notify_offer_bar( setting, state )
+{
+   return ( setting === "" ) && ( state === "ok" );
+}
+
 // NOTE: The keys kept by PIN before then - let go by the sign in, as it lists the saved accounts.
 function pin_keyed_leftovers( keys )
 {
@@ -3305,6 +3397,12 @@ if( typeof module !== "undefined" )
       c_storage_emoji_recent_by_name: c_storage_emoji_recent_by_name,
       with_pinned_shut: with_pinned_shut,
       account_storage_key: account_storage_key,
+      c_storage_notify_by_name: c_storage_notify_by_name,
+      notify_room_title: notify_room_title,
+      notifications_due: notifications_due,
+      messages_notification: messages_notification,
+      notify_status_text: notify_status_text,
+      notify_offer_bar: notify_offer_bar,
       pin_keyed_leftovers: pin_keyed_leftovers,
       is_valid_room_name: is_valid_room_name,
       is_valid_username: is_valid_username
