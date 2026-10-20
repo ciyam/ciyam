@@ -183,7 +183,8 @@ DECRYPT=@crypt:cc $~OWN_ECDHE:$CRYPT_MESSAGE
 DECODED=@hexasc:$DECRYPT
 #$~DECODED
 @else
-ENCODED=@aschex:$~CRYPT_MESSAGE
+PREFIX=@file:~xxd -l 16 -p /dev/urandom
+ENCODED=@aschex:$PREFIX\r$~CRYPT_MESSAGE
 ENCRYPT=@crypt:cc $~OWN_ECDHE:$~ENCODED
 #$ENCRYPTED_ESCAPED$ENCRYPT
 @endif
@@ -299,12 +300,14 @@ CHECK_QR_CODE=@regex:^[0-9a-fA-F]{64}$$:$QR_CODE
 @ifneq "$QR_CODE" "$CHECK_QR_CODE"
 #(invalid) $QR_CODE
 @else
-~echo "Saving public key for '$USER_FOR_PUB' ($LOCAL_FILES_DIR/.irc_$USER_FOR_PUB.public)."
+FILE_NAME=.irc_$USER.public.$USER_FOR_PUB
+~echo "Saving public key for '$USER_FOR_PUB' ($LOCAL_FILES_DIR/$FILE_NAME)."
 ~echo ""
+PREFIX=@file:~xxd -l 16 -p /dev/urandom
 SPUB=@public:$SKEY
 OWN_ECDHE=@shared:$PKEY:$~SPUB
-ENCRTYPED=@crypt:cc $~OWN_ECDHE:$~QR_CODE
-~echo "$ENCRTYPED" > $LOCAL_FILES_DIR/.irc_$USER_FOR_PUB.public
+ENCRTYPED=@crypt:cc $~OWN_ECDHE:$PREFIX$~QR_CODE
+~echo "$ENCRTYPED" > $LOCAL_FILES_DIR/$FILE_NAME
 @endif
 @endif
 @endif
