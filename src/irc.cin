@@ -100,7 +100,6 @@ STARTING_ROOM=0000002
 DUMMY_JOIN_UUID=00000000000000000000000000000000
 ;
 ENCRYPTED_PREFIX=X\r
-ENCRYPTED_ESCAPED=X\\r
 ;
 INVITATION_INFORMATION=
 ;
@@ -168,6 +167,16 @@ OWN_ECDHE=@shared:$PKEY:$~SPUB
 ;
 &:CRYPT_MESSAGE=
 ;
+@ifndef $CRYPT_MESSAGE
+HAS_FILE=@files::x
+@ifdef $HAS_FILE
+#(check in 'x')
+CRYPT_MESSAGE=@file:x
+@endif
+@endif
+;
+@ifdef $CRYPT_MESSAGE
+;
 IS_ENCRYPTED=
 LEN=@strlen:$CRYPT_MESSAGE
 @if $LEN #> 2
@@ -179,14 +188,36 @@ CRYPT_MESSAGE=@substr:2:$CRYPT_MESSAGE
 @endif
 ;
 @ifdef $IS_ENCRYPTED
-DECRYPT=@crypt:cc $~OWN_ECDHE:$CRYPT_MESSAGE
+POS=@strpos:\r:$CRYPT_MESSAGE
+@ifdef $POS
+SALT=@substr:0,$POS:$CRYPT_MESSAGE
+POS=@$POS+1
+CRYPT_MESSAGE=@substr:$POS:$CRYPT_MESSAGE
+@endif
+DECRYPT=@crypt:cc $~OWN_ECDHE$SALT:$CRYPT_MESSAGE
 DECODED=@hexasc:$DECRYPT
+POS=@strpos:\r:$DECODED
+@ifdef $POS
+POS=@$POS+1
+DECODED=@substr:$POS:$DECODED
+POS=@strpos:\r:$DECODED
+@ifdef $POS
+DECODED=@substr:0,$POS:$DECODED
+@endif
+@endif
 #$~DECODED
 @else
-PREFIX=@file:~xxd -l 16 -p /dev/urandom
-ENCODED=@aschex:$PREFIX\r$~CRYPT_MESSAGE
-ENCRYPT=@crypt:cc $~OWN_ECDHE:$~ENCODED
-#$ENCRYPTED_ESCAPED$ENCRYPT
+PREFIX=@file:~xxd -l 8 -p /dev/urandom
+SUFFIX=@file:~xxd -l 8 -p /dev/urandom
+SALT=@file:~xxd -l 16 -p /dev/urandom
+ENCODED=@aschex:$~PREFIX\r$~CRYPT_MESSAGE\r$SUFFIX
+ENCRYPT=@crypt:cc $~OWN_ECDHE$SALT:$~ENCODED
+>x
+#$ENCRYPTED_PREFIX$SALT\r$ENCRYPT
+>
+#(saved as 'x')
+@endif
+;
 @endif
 ;
 @elif "$CIYAM_KEY_PRESSED" = "e"
@@ -303,11 +334,11 @@ CHECK_QR_CODE=@regex:^[0-9a-fA-F]{64}$$:$QR_CODE
 FILE_NAME=.irc_$USER.public.$USER_FOR_PUB
 ~echo "Saving public key for '$USER_FOR_PUB' ($LOCAL_FILES_DIR/$FILE_NAME)."
 ~echo ""
-PREFIX=@file:~xxd -l 16 -p /dev/urandom
+SALT=@file:~xxd -l 16 -p /dev/urandom
 SPUB=@public:$SKEY
 OWN_ECDHE=@shared:$PKEY:$~SPUB
-ENCRTYPED=@crypt:cc $~OWN_ECDHE:$PREFIX$~QR_CODE
-~echo "$ENCRTYPED" > $LOCAL_FILES_DIR/$FILE_NAME
+ENCRTYPED=@crypt:cc $~OWN_ECDHE$SALT:$~QR_CODE
+~echo -e "$SALT\r$ENCRTYPED" > $LOCAL_FILES_DIR/$FILE_NAME
 @endif
 @endif
 @endif
