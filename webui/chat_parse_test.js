@@ -1409,13 +1409,13 @@ check( "trimmed as the words are - styles kept", [ cp.format_styled_text( cp.for
 // NOTE: Desktop notifications (Damon, 2026-10-20) - the chat only, who and where, never what was said.
 const n_rooms = [ { room: "0000004", name: "Suite Posts", unread: 0 }, { room: "0000007", name: "/admin/verify-a", unread: 1 },
  { room: "0000009", name: "Ledger Ops", unread: 0 } ];
-const n_first = cp.notifications_due( null, n_rooms, [ ], "0000009", "verify-a" );
+const n_first = cp.notifications_due( null, n_rooms, [ ], "0000009", "verify-a", true );
 
 check( "notifications - nothing on the first look, only what it saw", [ n_first.notes, n_first.seen.unread[ "0000007" ] ], [ [ ], 1 ] );
 
 const n_later = cp.notifications_due( n_first.seen, [ { room: "0000004", name: "Suite Posts", unread: 3 },
  { room: "0000007", name: "/admin/verify-a", unread: 2 }, { room: "0000009", name: "Ledger Ops", unread: 5 } ],
- [ { room: "0000011", name: "Planning", inviter: "admin" }, { room: "0000012", name: "/verify-a/carol", inviter: "carol" } ], "0000009", "verify-a" );
+ [ { room: "0000011", name: "Planning", inviter: "admin" }, { room: "0000012", name: "/verify-a/carol", inviter: "carol" } ], "0000009", "verify-a", true );
 
 check( "- a room's unread up, by its name; a conversation by its person; the open room left to its messages", n_later.notes.slice( 0, 2 ),
  [ { room: "0000004", tag: "room-0000004", title: "Suite Posts", body: "3 new messages" },
@@ -1423,8 +1423,22 @@ check( "- a room's unread up, by its name; a conversation by its person; the ope
 check( "- an invitation to a room, and a request for a conversation", n_later.notes.slice( 2 ),
  [ { room: "0000011", invite: true, tag: "invite-0000011", title: "Planning", body: "Invitation from admin" },
  { room: "0000012", invite: true, tag: "invite-0000012", title: "carol", body: "Wants to start a conversation" } ] );
-check( "- nothing again for what was seen, or a count that went down", cp.notifications_due( n_later.seen, [ { room: "0000004", name: "Suite Posts", unread: 0 } ],
- [ { room: "0000011", name: "Planning", inviter: "admin" } ], "", "verify-a" ).notes, [ ] );
+check( "- nothing again for what was seen, or a count that went down", cp.notifications_due( n_later.seen,
+ [ { room: "0000004", name: "Suite Posts", unread: 0 } ], [ { room: "0000011", name: "Planning", inviter: "admin" } ], "", "verify-a", true ).notes, [ ] );
+check( "- the open room, the tab hidden (nothing read): by how far its total went up, as its unread need not move", [
+ cp.notifications_due( { unread: { "0000009": 1 }, total: { "0000009": 40 }, invited: { }, invites_known: true },
+ [ { room: "0000009", name: "Ledger Ops", unread: 1, total: 42 } ], [ ], "0000009", "verify-a", true, true ).notes,
+ cp.notifications_due( { unread: { "0000009": 1 }, total: { "0000009": 40 }, invited: { }, invites_known: true },
+ [ { room: "0000009", name: "Ledger Ops", unread: 1, total: 42 } ], [ ], "0000009", "verify-a", true, false ).notes ],
+ [ [ { room: "0000009", tag: "room-0000009", title: "Ledger Ops", body: "2 new messages" } ], [ ] ] );
+
+// NOTE: Invitations are read after the first room list (found testing - every one waiting notified on signing in).
+const n_unread_only = cp.notifications_due( null, n_rooms, [ ], "", "verify-a", false );
+const n_waiting = cp.notifications_due( n_unread_only.seen, n_rooms, [ { room: "0000011", name: "Planning", inviter: "admin" } ], "", "verify-a", true );
+
+check( "- invitations not yet read, then read: those waiting are not news", [ n_unread_only.notes, n_waiting.notes ], [ [ ], [ ] ] );
+check( "- one that comes after, is", cp.notifications_due( n_waiting.seen, n_rooms, [ { room: "0000011", name: "Planning", inviter: "admin" },
+ { room: "0000013", name: "Garden", inviter: "carol" } ], "", "verify-a", true ).notes.map( n => n.title ), [ "Garden" ] );
 
 check( "the open room's new messages - who, never what", [ cp.messages_notification( [ { kind: "chat", sender: "admin", text: "secret plans" } ],
  "verify-a", "0000004", "Suite Posts" ), cp.messages_notification( [ { kind: "chat", sender: "admin", text: "a" }, { kind: "chat", sender: "carol", text: "b" },
@@ -1432,12 +1446,23 @@ check( "the open room's new messages - who, never what", [ cp.messages_notificat
  [ { room: "0000004", tag: "room-0000004", title: "Suite Posts", body: "New message from admin" },
  { room: "0000007", tag: "room-0000007", title: "admin", body: "3 new messages from admin, carol" } ] );
 check( "- not for one's own, a system line, or a deleted one", cp.messages_notification( [ { kind: "chat", sender: "verify-a", text: "mine" },
- { kind: "system", sender: "admin", text: "joined" }, { kind: "chat", sender: "admin", text: "  ", deleted: true } ], "verify-a", "0000004", "Suite Posts" ), null );
+ { kind: "system", sender: "admin", text: "joined" }, { kind: "chat", sender: "admin", text: "  ", deleted: true } ],
+ "verify-a", "0000004", "Suite Posts" ), null );
+// NOTE: Every read brings the room's pinned messages again (found by review) - not news; nor a line not after where the read began.
+check( "- nor a pinned message, brought by every read, nor one not after the read's start", cp.messages_notification( [
+ { kind: "chat", sender: "admin", text: "pinned", pinned: true, unique: "20261020120000000" },
+ { kind: "chat", sender: "admin", text: "older", unique: "20261020110000000" } ], "verify-a", "0000004", "Suite Posts", "20261020115900000" ), null );
+check( "- a new one after the read's start, still", cp.messages_notification( [ { kind: "chat", sender: "admin", text: "new", unique: "20261020120100000" } ],
+ "verify-a", "0000004", "Suite Posts", "20261020115900000" ).body, "New message from admin" );
 
 check( "the switch's line, as the browser allows", [ cp.notify_status_text( "on", "ok" ), cp.notify_status_text( "off", "ok" ),
- cp.notify_status_text( "", "ok" ), cp.notify_status_text( "on", "insecure" ), cp.notify_status_text( "on", "blocked" ), cp.notify_status_text( "", "unsupported" ) ],
+ cp.notify_status_text( "", "ok" ), cp.notify_status_text( "on", "insecure" ), cp.notify_status_text( "on", "blocked" ),
+ cp.notify_status_text( "", "unsupported" ), cp.notify_status_text( "off", "dismissed" ) ],
  [ "On - who and where, never what was said.", "Off", "Off", "Not available here - notifications need the node's https address.",
- "Blocked for this site - allow notifications in the browser's site settings, then turn them on here.", "This browser does not offer notifications." ] );
+ "Blocked for this site - allow notifications in the browser's site settings, then turn them on here.", "This browser does not offer notifications.",
+ "Not turned on - the browser's question was closed without an answer. Turn them on again to be asked." ] );
+check( "- and its word in the account menu", [ cp.notify_menu_word( true, "ok" ), cp.notify_menu_word( false, "ok" ),
+ cp.notify_menu_word( false, "insecure" ) ], [ "On", "Off", "Unavailable" ] );
 check( "- offered once: not asked yet, and the browser can", [ cp.notify_offer_bar( "", "ok" ), cp.notify_offer_bar( "off", "ok" ),
  cp.notify_offer_bar( "", "insecure" ), cp.notify_offer_bar( "", "blocked" ) ], [ true, false, false, false ] );
 check( "kept per account, by name", cp.account_storage_key( cp.c_storage_notify_by_name, "verify-a", false ), "cws.notify@verify-a" );

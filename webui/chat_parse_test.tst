@@ -725,9 +725,15 @@ ok   notifications - nothing on the first look, only what it saw
 ok   - a room's unread up, by its name; a conversation by its person; the open room left to its messages
 ok   - an invitation to a room, and a request for a conversation
 ok   - nothing again for what was seen, or a count that went down
+ok   - the open room, the tab hidden (nothing read): by how far its total went up, as its unread need not move
+ok   - invitations not yet read, then read: those waiting are not news
+ok   - one that comes after, is
 ok   the open room's new messages - who, never what
 ok   - not for one's own, a system line, or a deleted one
+ok   - nor a pinned message, brought by every read, nor one not after the read's start
+ok   - a new one after the read's start, still
 ok   the switch's line, as the browser allows
+ok   - and its word in the account menu
 ok   - offered once: not asked yet, and the browser can
 ok   kept per account, by name
 

@@ -2384,13 +2384,22 @@ function notify_room_title( name, me )
 // NOTE: What has come since the last look at the room list - "before" what was seen then (null on the first look, which
 // notifies of nothing), the open room left out (its own messages say who - "messages_notification( )"). A room whose unread
 // count went up, and an invitation not there before - a request for a conversation, or to a room. Returns the
-// notifications and what is seen now, for next time.
-function notifications_due( before, rooms, invitations, open_room, me )
+// notifications and what is seen now, for next time. "invitations_known" - whether they have been read yet: they are read after
+// the first room list, so until then an empty list is not news, and the first one read is what was waiting, not new (found
+// testing - every invitation waiting notified on signing in).
+// "open_hidden" - the tab is hidden, so the open room is not being read and is told of too: by how far its total has gone up,
+// as its unread count need not move while it is the open room (found testing).
+function notifications_due( before, rooms, invitations, open_room, me, invitations_known, open_hidden )
 {
-   var seen = { unread: { }, invited: { } };
+   var seen = { unread: { }, total: { }, invited: { }, invites_known: !!invitations_known };
    var notes = [ ];
 
-   ( rooms || [ ] ).forEach( function( entry ) { seen.unread[ entry.room ] = entry.unread || 0; } );
+   ( rooms || [ ] ).forEach( function( entry )
+   {
+      seen.unread[ entry.room ] = entry.unread || 0;
+      seen.total[ entry.room ] = entry.total || 0;
+   } );
+
    ( invitations || [ ] ).forEach( function( invite ) { seen.invited[ invite.room ] = true; } );
 
    if( !before )
@@ -2400,7 +2409,19 @@ function notifications_due( before, rooms, invitations, open_room, me )
    {
       var now = entry.unread || 0;
 
-      if( ( entry.room === open_room ) || ( now <= ( before.unread[ entry.room ] || 0 ) ) )
+      if( entry.room === open_room )
+      {
+         var was = ( before.total && ( before.total[ entry.room ] !== undefined ) ) ? before.total[ entry.room ] : ( entry.total || 0 );
+         var more = ( entry.total || 0 ) - was;
+
+         if( open_hidden && ( more > 0 ) )
+            notes.push( { room: entry.room, tag: "room-" + entry.room, title: notify_room_title( entry.name, me ),
+             body: ( more === 1 ) ? "New message" : more + " new messages" } );
+
+         return;
+      }
+
+      if( now <= ( before.unread[ entry.room ] || 0 ) )
          return;
 
       notes.push( { room: entry.room, tag: "room-" + entry.room, title: notify_room_title( entry.name, me ),
@@ -2409,7 +2430,7 @@ function notifications_due( before, rooms, invitations, open_room, me )
 
    ( invitations || [ ] ).forEach( function( invite )
    {
-      if( before.invited[ invite.room ] )
+      if( !before.invites_known || !invitations_known || before.invited[ invite.room ] )
          return;
 
       var conversation = is_dm_name( invite.name );
@@ -2422,12 +2443,15 @@ function notifications_due( before, rooms, invitations, open_room, me )
    return { notes: notes, seen: seen };
 }
 
-// NOTE: New messages in the open room, while the chat is not in front - from others, not system lines; who, never what.
-function messages_notification( messages, me, room, room_name )
+// NOTE: New messages in the open room, while the chat is not in front - from others, not system lines; who, never what. A
+// read brings the room's pinned messages every time, so they are left out, as is anything not after "after", where the read
+// began (found by review - a pinned message from someone else notified on every poll).
+function messages_notification( messages, me, room, room_name, after )
 {
    var from_others = ( messages || [ ] ).filter( function( message )
    {
-      return message && ( message.kind === c_kind_chat ) && ( message.sender !== me ) && !message.deleted;
+      return message && ( message.kind === c_kind_chat ) && ( message.sender !== me ) && !message.deleted && !message.pinned
+       && ( !after || ( String( message.unique || "" ) > after ) );
    } );
 
    if( from_others.length === 0 )
@@ -2453,7 +2477,17 @@ function notify_status_text( setting, state )
    if( state === "blocked" )
       return "Blocked for this site - allow notifications in the browser's site settings, then turn them on here.";
 
+   // NOTE: The browser's question closed without an answer - not refused, so asking again will work (found by review).
+   if( state === "dismissed" )
+      return "Not turned on - the browser's question was closed without an answer. Turn them on again to be asked.";
+
    return ( setting === "on" ) ? "On - who and where, never what was said." : "Off";
+}
+
+// NOTE: The switch's word in the chat's account menu.
+function notify_menu_word( on, state )
+{
+   return ( state === "ok" ) ? ( on ? "On" : "Off" ) : "Unavailable";
 }
 
 // NOTE: Whether the chat offers them, once - not asked yet, and the browser can give them.
@@ -3403,6 +3437,7 @@ if( typeof module !== "undefined" )
       messages_notification: messages_notification,
       notify_status_text: notify_status_text,
       notify_offer_bar: notify_offer_bar,
+      notify_menu_word: notify_menu_word,
       pin_keyed_leftovers: pin_keyed_leftovers,
       is_valid_room_name: is_valid_room_name,
       is_valid_username: is_valid_username
