@@ -162,9 +162,31 @@ NOT_TO_SELF=
 QUIT=1
 ;
 @elif "$CIYAM_KEY_PRESSED" = "x"
+PUB_KEY_FILES=@file:~find $LOCAL_FILES_DIR -name .irc_$USER.public.\* -printf '%f,'
+PUB_KEY_FILES=@repstr:.irc_$USER.public./:$PUB_KEY_FILES
+PUB_KEY_USERS=$PUB_KEY_FILES$USER
+;
+@retain NAMES
+<names.cin $PUB_KEY_USERS 1
+@ifdef $NAMES
+;
+@ifeq "$NAMES" "$USER"
+SPUB=@public:$SKEY
+@else
+PUB_KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$NAMES
+POS=@strpos:\r:$PUB_KEY_FILE_DATA
+SALT=@substr:0,$POS:$PUB_KEY_FILE_DATA
+POS=@$POS+1
+ENCRYPTED=@substr:$POS:$PUB_KEY_FILE_DATA
 SPUB=@public:$SKEY
 OWN_ECDHE=@shared:$PKEY:$~SPUB
+DECRYPTPED=@crypt:cc $~OWN_ECDHE$SALT:$ENCRYPTED
+SPUB=$DECRYPTPED
+@endif
 ;
+MSG_ECDHE=@shared:$PKEY:$~SPUB
+;
+#(type a new message or just enter to read)
 &:CRYPT_MESSAGE=
 ;
 @ifndef $CRYPT_MESSAGE
@@ -188,29 +210,33 @@ CRYPT_MESSAGE=@substr:2:$CRYPT_MESSAGE
 @endif
 ;
 @ifdef $IS_ENCRYPTED
+;
+MSG_VERIFIED=
+;
 POS=@strpos:\r:$CRYPT_MESSAGE
 @ifdef $POS
 SALT=@substr:0,$POS:$CRYPT_MESSAGE
-#SALT is $SALT
 POS=@$POS+1
 CRYPT_MESSAGE=@substr:$POS:$CRYPT_MESSAGE
 POS=@strpos:\r:$CRYPT_MESSAGE
 @ifdef $POS
 HPOS=@$POS+1
 HMAC=@substr:$HPOS:$CRYPT_MESSAGE
-#HMAC is $HMAC
 CRYPT_MESSAGE=@substr:0,$POS:$CRYPT_MESSAGE
 @endif
 @endif
-HCHK=@hmac256:mac$OWN_ECDHE$SALT:$CRYPT_MESSAGE
+HCHK=@hmac256:mac$MSG_ECDHE$SALT:$CRYPT_MESSAGE
 HCHK=@substr:0,32:$HCHK
 @ifeq "$HMAC" "$HCHK"
-#(verified)
+MSG_VERIFIED=1
 @else
+#SALT is $SALT
 #HCHK is $HCHK
-#(FAILED HMAC VERIFICATION)
+#(*** CORRUPT MESSAGE WAS UNREADABLE ***)
 @endif
-DECRYPT=@crypt:cc $OWN_ECDHE$SALT:$CRYPT_MESSAGE
+;
+@ifdef $MSG_VERIFIED
+DECRYPT=@crypt:cc $MSG_ECDHE$SALT:$CRYPT_MESSAGE
 DECODED=@hexasc:$DECRYPT
 POS=@strpos:\r:$DECODED
 @ifdef $POS
@@ -222,7 +248,10 @@ DECODED=@substr:0,$POS:$DECODED
 @endif
 @endif
 #$~DECODED
+@endif
+;
 @else
+;
 MAX_PLEN=100
 PREFIX=@entropy:5,10:alpha_numeric
 PLEN=@strlen:$PREFIX
@@ -235,20 +264,21 @@ SLEN=@125-$TOTAL
 SUFFIX=@entropy:$SLEN:alpha_numeric
 ENCODED=@aschex:$~PREFIX\r$~CRYPT_MESSAGE\r$~SUFFIX
 SALT=@file:~xxd -l 16 -p /dev/urandom
-ENCRYPT=@crypt:cc $OWN_ECDHE$SALT:$~ENCODED
-HMAC=@hmac256:mac$OWN_ECDHE$SALT:$ENCRYPT
+ENCRYPT=@crypt:cc $MSG_ECDHE$SALT:$~ENCODED
+HMAC=@hmac256:mac$MSG_ECDHE$SALT:$ENCRYPT
 HMAC=@substr:0,32:$HMAC
-#SALT is $SALT
-#HMAC is $HMAC
 >x
 #$ENCRYPTED_PREFIX$SALT\r$ENCRYPT\r$HMAC
 >
 #(stored as 'x')
 @endif
+;
 @endif
 ;
 @endif
-OWN_ECDHE=
+MSG_ECDHE=
+;
+@endif
 ;
 @elif "$CIYAM_KEY_PRESSED" = "e"
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
