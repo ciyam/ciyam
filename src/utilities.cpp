@@ -307,6 +307,31 @@ string soundex( const char* p_str, bool skip_prefix_specials )
    return retval;
 }
 
+printable_type printable_type_from_string( const string& name )
+{
+   printable_type type = e_printable_type_numeric;
+
+   string prefixed( "e_printable_type_" );
+
+   prefixed += name;
+
+   if( prefixed != STRINGIZE( e_printable_type_numeric ) )
+   {
+      if( prefixed == STRINGIZE( e_printable_type_hex_digits ) )
+         type = e_printable_type_hex_digits;
+      else if( prefixed == STRINGIZE( e_printable_type_alpha_lower ) )
+         type = e_printable_type_alpha_lower;
+      else if( prefixed == STRINGIZE( e_printable_type_alpha_mixed ) )
+         type = e_printable_type_alpha_mixed;
+      else if( prefixed == STRINGIZE( e_printable_type_alpha_numeric ) )
+         type = e_printable_type_alpha_numeric;
+      else
+         throw runtime_error( "invalid printable type '" + name + "'" );
+   }
+
+   return type;
+}
+
 string random_characters( size_t minimum, size_t max_extra, printable_type type )
 {
    uuid entropy;

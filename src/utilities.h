@@ -317,15 +317,6 @@ class uuid
    unsigned char buf[ c_uuid_size ];
 };
 
-enum printable_type
-{
-   e_printable_type_numeric,
-   e_printable_type_hex_digits,
-   e_printable_type_alpha_lower,
-   e_printable_type_alpha_mixed,
-   e_printable_type_alpha_numeric
-};
-
 uint32_t crc32( unsigned char* p_data, uint64_t len );
 
 inline uint32_t  crc32( const std::string& str )
@@ -339,6 +330,17 @@ inline std::string soundex( const std::string& s, bool skip_prefix_specials = fa
 {
    return soundex( s.c_str( ), skip_prefix_specials );
 }
+
+enum printable_type
+{
+   e_printable_type_numeric,
+   e_printable_type_hex_digits,
+   e_printable_type_alpha_lower,
+   e_printable_type_alpha_mixed,
+   e_printable_type_alpha_numeric
+};
+
+printable_type printable_type_from_string( const std::string& name );
 
 std::string random_characters( size_t minimum,
  size_t max_extra = 0, printable_type type = e_printable_type_alpha_numeric );
