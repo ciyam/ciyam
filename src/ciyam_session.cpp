@@ -38,6 +38,7 @@
 #include "config.h"
 #include "format.h"
 #include "sha256.h"
+#include "sha512.h"
 #ifdef HPDF_SUPPORT
 #  include "pdf_gen.h"
 #endif
@@ -2070,6 +2071,7 @@ class socket_command_handler : public command_handler
 
       if( ( command == c_cmd_ciyam_session_starttls )
        || ( command == c_cmd_ciyam_session_crypto_hash )
+       || ( command == c_cmd_ciyam_session_crypto_hmac )
        || ( command == c_cmd_ciyam_session_crypto_seed )
        || ( command == c_cmd_ciyam_session_utils_regex )
        || ( command == c_cmd_ciyam_session_session_wait )
@@ -2606,6 +2608,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( !data_from_file )
             clear_key( data );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_hmac )
+      {
+         bool use_sha512 = has_parm_val( parameters, c_cmd_ciyam_session_crypto_hmac_sha512 );
+         string key( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hmac_key ) );
+         string message( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hmac_message ) );
+
+         if( !use_sha512 )
+            response = hmac_sha256( key, message );
+         else
+            response = hmac_sha512( key, message );
       }
       else if( command == c_cmd_ciyam_session_crypto_keys )
       {
