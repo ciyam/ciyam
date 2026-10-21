@@ -1,0 +1,252 @@
+// Copyright (c) 2026 CIYAM Developers
+//
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+// NOTE: An encrypted message as the console's "x" makes one ("irc.cin", Ian 2026-10-21) - a module ("Modules" in "ciyam.js").
+// The "own secret" is the X25519 secret between the key from one's secret entropy and the key from that entropy reversed. A
+// message is sealed as "X", CR, a salt (16 random bytes in hex), CR, the ciphertext in hex, CR, and an HMAC - "crypt -cc"
+// (ChaCha20) under the own secret with the salt after it, of: a few random letters and digits, CR, the message, CR, more random
+// letters and digits to a fixed size. The HMAC is HMAC-SHA256 of the ciphertext's hex, keyed with "mac", the own secret and the
+// salt, its first 32 hex digits; opening checks it before decrypting. A prototype, as Ian's is: the sizes are his test ones.
+//
+// Needs "ciyam_ed25519.js" (with "ed25519.min.js") and "ciyam_chacha20.js" loaded too.
+ciyam_register_module( class extends ciyam_module
+{
+   static about =
+   {
+      name: "ciyam_secure_message",
+      version: "1",
+      description: "an encrypted message as the console's x makes one - sealed and opened under the own secret from secret entropy",
+      example: "own <entropy> | seal <own secret> <message> | open <own secret> <sealed>",
+      hint: "(i.e. the own secret, then a message sealed with it and opened again - a sealed one shows its CRs as \\r)",
+      needs: [ "sha256", "ed25519" ]
+   };
+
+   static c_prefix = "X\r";
+   static c_salt_bytes = 16;
+   static c_hmac_digits = 32;
+
+   // NOTE: Ian's test sizes - the random letters and the message at most 100 bytes, and those with the rest padded to 125.
+   // The letters before are 5 to 10, so a message of up to 90 bytes is always taken, where the console's limit moves with them.
+   static c_max_length = 100;
+   static c_padded_length = 125;
+   static c_most_before = 10;
+
+   static c_alpha_numeric = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+   static ed25519( )
+   {
+      var ed = ciyam_module_named( "ed25519" );
+
+      if( !ed )
+         throw new Error( "secure_message needs ciyam_ed25519.js loaded first." );
+
+      return ed;
+   }
+
+   static chacha20( )
+   {
+      var chacha = ciyam_module_named( "chacha20" );
+
+      if( !chacha )
+         throw new Error( "secure_message needs ciyam_chacha20.js loaded first." );
+
+      return chacha;
+   }
+
+   static hex_of( bytes )
+   {
+      return Array.from( bytes, function( b ) { return b.toString( 16 ).padStart( 2, "0" ); } ).join( "" );
+   }
+
+   static random_bytes( count )
+   {
+      var bytes = new Uint8Array( count );
+
+      crypto.getRandomValues( bytes );
+
+      return bytes;
+   }
+
+   // NOTE: Letters and digits, each from a random byte below 248 (four times 62) so that none comes up more often than another.
+   static random_alpha_numeric( count )
+   {
+      var text = "";
+
+      while( text.length < count )
+      {
+         var bytes = this.random_bytes( count - text.length );
+
+         for( var i = 0; i < bytes.length; i++ )
+            if( bytes[ i ] < 248 )
+               text += this.c_alpha_numeric[ bytes[ i ] % 62 ];
+      }
+
+      return text;
+   }
+
+   // NOTE: SHA-256 of bytes - the browser's own where it has one (a secure context), "sha2.min.js" otherwise, given the bytes
+   // as a string of character codes, which it hashes as they are.
+   static async sha256_bytes( bytes )
+   {
+      if( ( typeof crypto !== "undefined" ) && crypto.subtle && ( typeof crypto.subtle.digest === "function" ) )
+         return new Uint8Array( await crypto.subtle.digest( "SHA-256", bytes ) );
+
+      if( typeof hex_sha256 !== "function" )
+         throw new Error( "SHA-256 is not available - this page needs sha2.min.js, or https." );
+
+      var text = "";
+
+      for( var i = 0; i < bytes.length; i++ )
+         text += String.fromCharCode( bytes[ i ] );
+
+      var hex = hex_sha256( text );
+      var digest = new Uint8Array( hex.length / 2 );
+
+      for( var j = 0; j < digest.length; j++ )
+         digest[ j ] = parseInt( hex.substr( j * 2, 2 ), 16 );
+
+      return digest;
+   }
+
+   static concat( a, b )
+   {
+      var out = new Uint8Array( a.length + b.length );
+
+      out.set( a );
+      out.set( b, a.length );
+
+      return out;
+   }
+
+   // NOTE: HMAC-SHA256 (RFC 2104) of bytes with a key in bytes - a key longer than a block is hashed first.
+   static async hmac_sha256_bytes( key, message )
+   {
+      var block = new Uint8Array( 64 );
+
+      block.set( ( key.length > 64 ) ? await this.sha256_bytes( key ) : key );
+
+      var inner_pad = block.map( function( b ) { return b ^ 0x36; } );
+      var outer_pad = block.map( function( b ) { return b ^ 0x5c; } );
+
+      var inner = await this.sha256_bytes( this.concat( inner_pad, message ) );
+
+      return await this.sha256_bytes( this.concat( outer_pad, inner ) );
+   }
+
+   // NOTE: As "@hmac256:<key>:<message>" - the key and the message text, the answer lower-case hex.
+   static async hmac_sha256( key, message )
+   {
+      var encoder = new TextEncoder( );
+
+      return this.hex_of( await this.hmac_sha256_bytes( encoder.encode( String( key ) ), encoder.encode( String( message ) ) ) );
+   }
+
+   // NOTE: As "irc.cin" - the key from the entropy ("@secret"), the key from the entropy reversed, and the X25519 secret
+   // between the first and the second's public key ("@shared").
+   static own_secret( entropy )
+   {
+      var text = String( entropy || "" ).trim( );
+
+      if( !/^[0-9a-fA-F]{32,64}$/.test( text ) )
+         throw new Error( "Secret entropy is 32 to 64 hex digits." );
+
+      var ed = this.ed25519( );
+
+      return ed.shared_secret( ed.seed_of( text ), ed.public_key( ed.seed_of( text.split( "" ).reverse( ).join( "" ) ) ) );
+   }
+
+   static check_own_secret( own )
+   {
+      if( !/^[0-9a-f]{64}$/.test( String( own || "" ) ) )
+         throw new Error( "An own secret is 64 hex digits." );
+   }
+
+   // NOTE: "options" fixes the salt, the padding before and the padding after, for a known answer; each is random otherwise.
+   // The chat never sends a CR, so one in the message is taken as a line break, as when posting.
+   static async seal( own, message, options )
+   {
+      this.check_own_secret( own );
+
+      var opts = options || { };
+      var text = String( message ).replace( /\r\n?/g, "\n" );
+
+      var most = this.c_max_length - this.c_most_before;
+
+      if( new TextEncoder( ).encode( text ).length > most )
+         throw new Error( "That message is too long to seal - at most " + most + " bytes." );
+
+      var before = ( opts.before !== undefined ) ? opts.before : this.random_alpha_numeric( 5 + ( this.random_bytes( 1 )[ 0 ] % 6 ) );
+      var used = new TextEncoder( ).encode( before + text ).length;
+
+      var after = ( opts.after !== undefined ) ? opts.after : this.random_alpha_numeric( this.c_padded_length - used );
+      var salt = ( opts.salt !== undefined ) ? opts.salt : this.hex_of( this.random_bytes( this.c_salt_bytes ) );
+
+      var padded = new TextEncoder( ).encode( before + "\r" + text + "\r" + after );
+      var ciphertext = this.hex_of( await this.chacha20( ).crypt( own + salt, padded ) );
+      var hmac = ( await this.hmac_sha256( "mac" + own + salt, ciphertext ) ).substring( 0, this.c_hmac_digits );
+
+      return this.c_prefix + salt + "\r" + ciphertext + "\r" + hmac;
+   }
+
+   // NOTE: The message, or an error: not sealed this way, or its HMAC not matching (changed, or sealed under another secret).
+   static async open( own, sealed )
+   {
+      this.check_own_secret( own );
+
+      var text = String( sealed || "" );
+      var parts = text.startsWith( this.c_prefix ) ? text.substring( this.c_prefix.length ).split( "\r" ) : [ ];
+
+      if( ( parts.length !== 3 ) || !/^[0-9a-f]{32}$/.test( parts[ 0 ] ) || !/^([0-9a-f]{2})+$/.test( parts[ 1 ] )
+       || !/^[0-9a-f]{32}$/.test( parts[ 2 ] ) )
+         throw new Error( "That is not a sealed message." );
+
+      var salt = parts[ 0 ];
+      var ciphertext = parts[ 1 ];
+
+      var expected = ( await this.hmac_sha256( "mac" + own + salt, ciphertext ) ).substring( 0, this.c_hmac_digits );
+
+      // NOTE: Every digit compared, so the time taken says nothing of where they differ.
+      var differ = 0;
+
+      for( var i = 0; i < this.c_hmac_digits; i++ )
+         differ |= expected.charCodeAt( i ) ^ parts[ 2 ].charCodeAt( i );
+
+      if( differ )
+         throw new Error( "That message has been changed, or was sealed with another secret." );
+
+      var chacha = this.chacha20( );
+      var padded = new TextDecoder( ).decode( await chacha.crypt( own + salt, chacha.bytes_of( ciphertext ) ) );
+      var first = padded.indexOf( "\r" );
+      var last = padded.indexOf( "\r", first + 1 );
+
+      if( ( first < 0 ) || ( last < 0 ) )
+         throw new Error( "That message has no padding - it was not sealed this way." );
+
+      return padded.substring( first + 1, last );
+   }
+
+   // NOTE: "own <entropy>", "seal <own secret> <message>" or "open <own secret> <sealed>" - a sealed message shown, and given,
+   // with each CR as "\r", since a console line cannot hold one.
+   async run( input )
+   {
+      var it = this.constructor;
+      var text = String( input || "" ).trim( );
+      var words = text.split( /\s+/ );
+      var what = ( words[ 0 ] || "" ).toLowerCase( );
+
+      if( ( what === "own" ) && ( words.length === 2 ) )
+         return it.own_secret( words[ 1 ] );
+
+      var rest = text.replace( /^\S+\s+\S+\s?/, "" );
+
+      if( ( what === "seal" ) && ( words.length >= 3 ) )
+         return ( await it.seal( words[ 1 ], rest ) ).replace( /\r/g, "\\r" );
+
+      if( ( what === "open" ) && ( words.length === 3 ) )
+         return it.open( words[ 1 ], rest.replace( /\\r/g, "\r" ) );
+
+      throw new Error( "Use one of - " + it.about.example );
+   }
+} );

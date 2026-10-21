@@ -61,4 +61,18 @@ ok   - and what it takes with filler, the same keys
 ok   through run - public, shared, sign and verify
 ok   - anything else said
 
+== secure_message ==============================================
+ok   HMAC-SHA256 - the standard's tests, RFC 4231
+ok   - the same through sha2.min.js, with no SHA-256 of the browser's
+ok   the own secret - as the console's, from the entropy and it reversed
+ok   - entropy not 32 to 64 hex digits, said
+ok   sealed - as the console seals it, given its salt and padding
+ok   - and opened
+ok   sealed afresh - salt, ciphertext and HMAC, padded to 127 bytes, opened again with CR as a line break
+ok   - each time a new salt and padding
+ok   not opened - changed, another secret, not sealed, or too long to seal
+ok   - 90 bytes sealed, the most
+ok   through run - own, seal and open, CRs shown as \r
+ok   - anything else said
+
 All checks passed.

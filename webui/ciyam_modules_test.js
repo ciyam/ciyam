@@ -423,6 +423,90 @@ async function steps( module_class, list )
    check( "- anything else said", await new ed( { } ).run( "keys" ).catch( function( e ) { return e.message; } ),
     "Use one of - " + ed.about.example );
 
+   heading( "secure_message" );
+
+   // NOTE: It finds "ed25519" and "chacha20" in the registry, as a page's modules do.
+   global.ciyam_module_named = m.ciyam_module_named;
+
+   require( "./ciyam_secure_message.js" );
+
+   var sm = m.ciyam_module_named( "secure_message" );
+   var hex_bytes = function( hex ) { return ed.bytes_of( hex ); };
+   var hmac_hex = async function( key, message ) { return sm.hex_of( await sm.hmac_sha256_bytes( key, message ) ); };
+
+   // NOTE: RFC 4231 - tests 1 and 2, and 6 and 7 with a key longer than a block (the case "hmac_sha256" in "sha256.cpp" got
+   // wrong, ISS-051).
+   check( "HMAC-SHA256 - the standard's tests, RFC 4231", [ await hmac_hex( new Uint8Array( 20 ).fill( 0x0b ), new TextEncoder( ).encode( "Hi There" ) ),
+    await sm.hmac_sha256( "Jefe", "what do ya want for nothing?" ),
+    await hmac_hex( new Uint8Array( 131 ).fill( 0xaa ), new TextEncoder( ).encode( "Test Using Larger Than Block-Size Key - Hash Key First" ) ),
+    await hmac_hex( new Uint8Array( 131 ).fill( 0xaa ), new TextEncoder( ).encode( "This is a test using a larger than block-size key and a larger "
+    + "than block-size data. The key needs to be hashed before being used by the HMAC algorithm." ) ) ],
+    [ "b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7", "5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843",
+    "60e431591ee0b67f0d8a26aacbf5b77f8e0bc6213728c5140546040f0ee37f54", "9b09ffa71b942fcb27635fbcd5b0e944bfdc63644f0713938a7f51535c3a35e2" ] );
+
+   // NOTE: "sha2.min.js" for SHA-256 where the browser has none of its own (plain http) - the same answers, as it hashes a
+   // string of character codes as the bytes they are.
+   var native_crypto = Object.getOwnPropertyDescriptor( globalThis, "crypto" );
+
+   global.hex_sha256 = sha2_page.hex_sha256;
+   var random_only = { getRandomValues: function( b ) { return native_crypto.get.call( globalThis ).getRandomValues( b ); } };
+
+   Object.defineProperty( globalThis, "crypto", { value: random_only, configurable: true, writable: true } );
+
+   var without_native = [ typeof crypto.subtle, await sm.hmac_sha256( "Jefe", "what do ya want for nothing?" ),
+    await hmac_hex( new Uint8Array( 131 ).fill( 0xaa ), new TextEncoder( ).encode( "Test Using Larger Than Block-Size Key - Hash Key First" ) ) ];
+
+   Object.defineProperty( globalThis, "crypto", native_crypto );
+   delete global.hex_sha256;
+
+   check( "- the same through sha2.min.js, with no SHA-256 of the browser's", without_native,
+    [ "undefined", "5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843",
+    "60e431591ee0b67f0d8a26aacbf5b77f8e0bc6213728c5140546040f0ee37f54" ] );
+
+   // NOTE: From the console (2026-10-21) - "irc.cin"'s steps for this entropy, salt, padding and message: the own secret, the
+   // ciphertext "@crypt:cc" gave, and the HMAC as Node's "crypto.createHmac" gives it (the console's own varies, ISS-051).
+   var entropy = "dc4c67f1ab93e4a6bd2ab8f24b9ad6a1";
+   var own = "1089ddc7d1607b357870227c5af0d894c487f2aa4cbd54cb8a0920d371ce4d28";
+   var known = "X\r00112233445566778899aabbccddeeff\r93d750eaebb1a8c0e4c5288d39e2b2753c204627a2\r1041000cf2485e3a3bb546107a74ddd4";
+
+   check( "the own secret - as the console's, from the entropy and it reversed", sm.own_secret( entropy ), own );
+   check( "- entropy not 32 to 64 hex digits, said", [ "abc", "x".repeat( 32 ), "a".repeat( 66 ) ].map( function( s )
+   {
+      try { return sm.own_secret( s ); } catch( e ) { return e.message; }
+   } ), [ "Secret entropy is 32 to 64 hex digits.", "Secret entropy is 32 to 64 hex digits.", "Secret entropy is 32 to 64 hex digits." ] );
+   check( "sealed - as the console seals it, given its salt and padding", await sm.seal( own, "Hello Ian",
+    { salt: "00112233445566778899aabbccddeeff", before: "Ab3dE", after: "zz9YY" } ), known );
+   check( "- and opened", await sm.open( own, known ), "Hello Ian" );
+
+   var sealed = await sm.seal( own, "A line\r\nand another, café" );
+   var sealed_parts = sealed.substring( 2 ).split( "\r" );
+   var padded = new TextDecoder( ).decode( await m.ciyam_module_named( "chacha20" ).crypt( own + sealed_parts[ 0 ], hex_bytes( sealed_parts[ 1 ] ) ) );
+
+   check( "sealed afresh - salt, ciphertext and HMAC, padded to 127 bytes, opened again with CR as a line break", [ sealed.startsWith( "X\r" ),
+    /^[0-9a-f]{32}$/.test( sealed_parts[ 0 ] ), sealed_parts[ 1 ].length, /^[0-9a-f]{32}$/.test( sealed_parts[ 2 ] ),
+    /^[0-9A-Za-z]{5,10}\rA line\nand another, café\r[0-9A-Za-z]+$/.test( padded ), await sm.open( own, sealed ) ],
+    [ true, true, 254, true, true, "A line\nand another, café" ] );
+   check( "- each time a new salt and padding", ( await sm.seal( own, "same" ) ) !== ( await sm.seal( own, "same" ) ), true );
+
+   var refused = async function( promise ) { try { await promise; return "opened"; } catch( e ) { return e.message; } };
+   var changed = known.replace( "\r93d7", "\r93d6" );
+
+   check( "not opened - changed, another secret, not sealed, or too long to seal", [ await refused( sm.open( own, changed ) ),
+    await refused( sm.open( sm.own_secret( "0123456789abcdef0123456789abcdef" ), known ) ), await refused( sm.open( own, "Hello" ) ),
+    await refused( sm.open( own, known + "\r00" ) ), await refused( sm.seal( own, "x".repeat( 91 ) ) ), await refused( sm.seal( "abc", "hi" ) ) ],
+    [ "That message has been changed, or was sealed with another secret.", "That message has been changed, or was sealed with another secret.",
+    "That is not a sealed message.", "That is not a sealed message.", "That message is too long to seal - at most 90 bytes.",
+    "An own secret is 64 hex digits." ] );
+   check( "- 90 bytes sealed, the most", await sm.open( own, await sm.seal( own, "y".repeat( 90 ) ) ), "y".repeat( 90 ) );
+
+   var through_run = await new sm( { } ).run( "seal " + own + " Hello through run" );
+
+   check( "through run - own, seal and open, CRs shown as \\r", [ await new sm( { } ).run( "own " + entropy ),
+    /^X\\r[0-9a-f]{32}\\r[0-9a-f]+\\r[0-9a-f]{32}$/.test( through_run ), await new sm( { } ).run( "open " + own + " " + through_run ),
+    await new sm( { } ).run( "open " + own + " " + known.replace( /\r/g, "\\r" ) ) ], [ own, true, "Hello through run", "Hello Ian" ] );
+   check( "- anything else said", await new sm( { } ).run( "keys" ).catch( function( e ) { return e.message; } ),
+    "Use one of - " + sm.about.example );
+
    console.log( "" );
    console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 
