@@ -164,6 +164,7 @@ constexpr const char* c_function_strlit = "strlit";
 constexpr const char* c_function_strpos = "strpos";
 constexpr const char* c_function_substr = "substr";
 constexpr const char* c_function_base64 = "base64";
+constexpr const char* c_function_entropy = "entropy";
 constexpr const char* c_function_hmac256 = "hmac256";
 constexpr const char* c_function_fullpath = "fullpath";
 constexpr const char* c_function_password = "password";
@@ -3995,6 +3996,32 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     if( base64::valid_characters( rhs, true ) )
                                        str = unescaped( base64::decode( rhs, true ) );
                                  }
+                              }
+                           }
+                           else if( lhs == c_function_entropy )
+                           {
+                              string::size_type tpos = str.find( op, pos + 1 );
+
+                              if( tpos == string::npos )
+                                 str.erase( );
+                              else
+                              {
+                                 string rhs( str.substr( tpos + 1 ) );
+
+                                 str.erase( tpos );
+
+                                 str.erase( 0, pos + 1 );
+
+                                 pos = str.find( ',' );
+
+                                 size_t minimum = from_string< size_t >( str.substr( 0, pos ) );
+
+                                 size_t max_extra = 0;
+
+                                 if( pos != string::npos )
+                                    max_extra = from_string< size_t >( str.substr( pos + 1 ) );
+
+                                 str = random_characters( minimum, max_extra, printable_type_from_string( rhs ) );
                               }
                            }
                            else if( lhs == c_function_hmac256 )
