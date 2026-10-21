@@ -17,6 +17,7 @@ ok   through the old globals - as the original answered
 
 == what a module is given ======================================
 ok   SHA-256 - the browser's own where there is one
+ok   - and through sha2.min.js, text as its UTF-8
 ok   progress through the page's own functions - shown at nought, hidden at the end
 ok   - and other modules
 ok   a module that runs nothing says it loaded

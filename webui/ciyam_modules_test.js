@@ -155,6 +155,19 @@ async function steps( module_class, list )
    check( "SHA-256 - the browser's own where there is one", await m.ciyam_sha256_hex( "abc" ),
     "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad" );
 
+   // NOTE: "sha2.min.js", which a page hashes with where the browser has no SHA-256 of its own (plain http), or where it is the
+   // faster ("ciyam_sha256_fastest( )") - text not plain ASCII given it as its UTF-8 bytes, so it hashes as the browser's own and
+   // the server's do, where it took each character's low byte before (2026-10-21).
+   var sha2_page = { };
+
+   vm.createContext( sha2_page );
+   vm.runInContext( fs.readFileSync( __dirname + "/sha2.min.js", "utf-8" ), sha2_page );
+
+   check( "- and through sha2.min.js, text as its UTF-8", [ "café", "naïve ☕ test", "plain" ].map( function( s )
+   {
+      return sha2_page.hex_sha256( m.ciyam_utf8_binary( s ) ).toLowerCase( ) === require( "crypto" ).createHash( "sha256" ).update( s, "utf8" ).digest( "hex" );
+   } ), [ true, true, true ] );
+
    var calls = [ ];
    var context = m.ciyam_module_page_context( { show_progress: function( ) { calls.push( "show" ); },
     update_progress: function( f ) { calls.push( f ); }, hide_progress: function( ) { calls.push( "hide" ); } } );

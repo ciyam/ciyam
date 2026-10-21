@@ -1461,6 +1461,25 @@ function ciyam_module_about( name )
    return lines;
 }
 
+// NOTE: Text as the character codes of its UTF-8 bytes - what "sha2.min.js" hashes, a code to a byte, as they are - so the
+// library hashes text as the browser's own SHA-256 and the server do. Given the text itself, it took only the low byte of
+// each character: "café" gave another hash over plain http than over https (found 2026-10-21).
+function ciyam_utf8_binary( text )
+{
+   var s = String( text );
+
+   if( /^[\x00-\x7f]*$/.test( s ) )
+      return s;
+
+   var bytes = new TextEncoder( ).encode( s );
+   var out = "";
+
+   for( var i = 0; i < bytes.length; i++ )
+      out += String.fromCharCode( bytes[ i ] );
+
+   return out;
+}
+
 // NOTE: SHA-256 of text, as lower-case hex - the browser's own where it has one (a secure context: https, or localhost),
 // "sha2.min.js" otherwise. Decided once a page, for every module that hashes (Ian, 2026-10-09).
 var ciyam_sha256_native = null;
@@ -1478,7 +1497,7 @@ async function ciyam_sha256_hex( text )
    }
 
    if( typeof hex_sha256 === "function" )
-      return hex_sha256( String( text ) ).toLowerCase( );
+      return hex_sha256( ciyam_utf8_binary( text ) ).toLowerCase( );
 
    throw new Error( "SHA-256 is not available - this page needs sha2.min.js, or https." );
 }
@@ -1505,7 +1524,7 @@ async function ciyam_sha256_time( )
    var has_native = ( typeof crypto !== "undefined" ) && !!crypto.subtle && ( typeof crypto.subtle.digest === "function" );
    var has_library = ( typeof hex_sha256 === "function" );
 
-   var in_step = function( text ) { return hex_sha256( String( text ) ).toLowerCase( ); };
+   var in_step = function( text ) { return hex_sha256( ciyam_utf8_binary( text ) ).toLowerCase( ); };
 
    if( !has_native || !has_library )
       return has_native ? { native: true, hash: ciyam_sha256_hex } : { native: false, hash: in_step };
@@ -1725,6 +1744,7 @@ if( typeof module !== "undefined" )
       ciyam_module_legacy: ciyam_module_legacy,
       ciyam_module_page_context: ciyam_module_page_context,
       ciyam_sha256_hex: ciyam_sha256_hex,
+      ciyam_utf8_binary: ciyam_utf8_binary,
       ciyam_sha256_fastest: ciyam_sha256_fastest,
       ciyam_module_stop: ciyam_module_stop
    };
