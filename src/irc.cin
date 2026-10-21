@@ -170,7 +170,7 @@ OWN_ECDHE=@shared:$PKEY:$~SPUB
 @ifndef $CRYPT_MESSAGE
 HAS_FILE=@files::x
 @ifdef $HAS_FILE
-#(check in 'x')
+#(read from 'x')
 CRYPT_MESSAGE=@file:x
 @endif
 @endif
@@ -191,10 +191,26 @@ CRYPT_MESSAGE=@substr:2:$CRYPT_MESSAGE
 POS=@strpos:\r:$CRYPT_MESSAGE
 @ifdef $POS
 SALT=@substr:0,$POS:$CRYPT_MESSAGE
+#SALT is $SALT
 POS=@$POS+1
 CRYPT_MESSAGE=@substr:$POS:$CRYPT_MESSAGE
+POS=@strpos:\r:$CRYPT_MESSAGE
+@ifdef $POS
+HPOS=@$POS+1
+HMAC=@substr:$HPOS:$CRYPT_MESSAGE
+#HMAC is $HMAC
+CRYPT_MESSAGE=@substr:0,$POS:$CRYPT_MESSAGE
 @endif
-DECRYPT=@crypt:cc $~OWN_ECDHE$SALT:$CRYPT_MESSAGE
+@endif
+HCHK=@hmac256:mac$OWN_ECDHE$SALT:$CRYPT_MESSAGE
+HCHK=@substr:0,32:$HCHK
+@ifeq "$HMAC" "$HCHK"
+#(verified)
+@else
+#HCHK is $HCHK
+#(FAILED HMAC VERIFICATION)
+@endif
+DECRYPT=@crypt:cc $OWN_ECDHE$SALT:$CRYPT_MESSAGE
 DECODED=@hexasc:$DECRYPT
 POS=@strpos:\r:$DECODED
 @ifdef $POS
@@ -207,18 +223,32 @@ DECODED=@substr:0,$POS:$DECODED
 @endif
 #$~DECODED
 @else
-PREFIX=@file:~xxd -l 8 -p /dev/urandom
-SUFFIX=@file:~xxd -l 8 -p /dev/urandom
+MAX_PLEN=100
+PREFIX=@entropy:5,10:alpha_numeric
+PLEN=@strlen:$PREFIX
+MLEN=@strlen:$CRYPT_MESSAGE
+TOTAL=@$PLEN+$MLEN
+@if $TOTAL #> $MAX_PLEN
+#Error: Maximum message size exeeded.
+@else
+SLEN=@125-$TOTAL
+SUFFIX=@entropy:$SLEN:alpha_numeric
+ENCODED=@aschex:$~PREFIX\r$~CRYPT_MESSAGE\r$~SUFFIX
 SALT=@file:~xxd -l 16 -p /dev/urandom
-ENCODED=@aschex:$~PREFIX\r$~CRYPT_MESSAGE\r$SUFFIX
-ENCRYPT=@crypt:cc $~OWN_ECDHE$SALT:$~ENCODED
+ENCRYPT=@crypt:cc $OWN_ECDHE$SALT:$~ENCODED
+HMAC=@hmac256:mac$OWN_ECDHE$SALT:$ENCRYPT
+HMAC=@substr:0,32:$HMAC
+#SALT is $SALT
+#HMAC is $HMAC
 >x
-#$ENCRYPTED_PREFIX$SALT\r$ENCRYPT
+#$ENCRYPTED_PREFIX$SALT\r$ENCRYPT\r$HMAC
 >
-#(saved as 'x')
+#(stored as 'x')
+@endif
 @endif
 ;
 @endif
+OWN_ECDHE=
 ;
 @elif "$CIYAM_KEY_PRESSED" = "e"
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
