@@ -574,6 +574,11 @@ crypto_hash -x=9 hello -s=3
 crypto_hash -x=9 hello -s=4
 crypto_hash -x=9 hello -s=5
 ;
+crypto_hmac Jefe "what do ya want for nothing?"
+TEST=@hmac256:Jefe:what do ya want for nothing?
+#$TEST
+crypto_hmac -512 Jefe "what do ya want for nothing?"
+;
 crypto_lamport xxx xxx
 ~cp modules.lst.default xxx.src
 crypto_lamport -sign xxx
