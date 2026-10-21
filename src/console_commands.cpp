@@ -164,6 +164,7 @@ constexpr const char* c_function_strlit = "strlit";
 constexpr const char* c_function_strpos = "strpos";
 constexpr const char* c_function_substr = "substr";
 constexpr const char* c_function_base64 = "base64";
+constexpr const char* c_function_hmac256 = "hmac256";
 constexpr const char* c_function_fullpath = "fullpath";
 constexpr const char* c_function_password = "password";
 constexpr const char* c_function_set_sort = "set_sort";
@@ -3994,6 +3995,25 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     if( base64::valid_characters( rhs, true ) )
                                        str = unescaped( base64::decode( rhs, true ) );
                                  }
+                              }
+                           }
+                           else if( lhs == c_function_hmac256 )
+                           {
+                              string::size_type mpos = str.find( op, pos + 1 );
+
+                              if( mpos == string::npos )
+                                 str.erase( );
+                              else
+                              {
+                                 string rhs( str.substr( mpos + 1 ) );
+
+                                 str.erase( mpos );
+
+                                 str.erase( 0, pos + 1 );
+
+                                 str = hmac_sha256( str, rhs );
+
+                                 clear_key( rhs );
                               }
                            }
                            else if( lhs == c_function_set_sort )
