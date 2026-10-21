@@ -349,6 +349,17 @@ DECRYPT=@crypt:dh test:$ENCRYPT
 #$DECRYPT
 DECODED=@hexasc:$DECRYPT
 #$DECODED
+;
+ASCTEXT=one\rtwo
+ENCODED=@aschex:$ASCTEXT
+#$ENCODED
+DECODED=@hexasc:$ENCODED
+@ifeq "$ASCTEXT" "$DECODED"
+#(matched)
+@else
+#(did not match)
+@endif
+;
 X=x
 Y=y
 @ifeq $X $Y

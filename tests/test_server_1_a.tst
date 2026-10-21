@@ -368,6 +368,8 @@ This is a test...
 195039f3b50b840c211d5c146148d76ab6
 54686973206973206120746573742e2e2e
 This is a test...
+6f6e650d74776f
+(matched)
 @ifeq x y false
 @ifneq x y true
 @ifeq y y true
