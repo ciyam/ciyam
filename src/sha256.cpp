@@ -378,54 +378,42 @@ string hmac_sha256( const string& key, const string& message )
 
 void hmac_sha256( const string& key, const string& message, unsigned char* p_buffer )
 {
-   int key_len = key.length( );
-   int msg_len = message.length( );
+   unsigned char k_pad[ 64 ];
+   unsigned char inner[ c_sha256_digest_size ];
 
-   const unsigned char* p_key = ( const unsigned char* )key.data( );
-   const unsigned char* p_msg = ( const unsigned char* )message.data( );
+   memset( k_pad, 0, sizeof( k_pad ) );
 
-   unsigned char k_ipad[ 65 ];
-   unsigned char k_opad[ 65 ];
-
-   unsigned char tk[ c_sha256_digest_size ];
-   unsigned char tk2[ c_sha256_digest_size ];
-   unsigned char bufferIn[ 1024 ];
-   unsigned char bufferOut[ 1024 ];
-
-   if( key_len > 64 )
+   if( key.length( ) > sizeof( k_pad ) )
    {
       sha256 hash( key );
-      hash.copy_digest_to_buffer( tk );
-
-      p_key = tk;
-      key_len = 64;
+      hash.copy_digest_to_buffer( k_pad );
    }
- 
-   memset( k_ipad, 0, 65 );
-   memset( k_opad, 0, 65 );
+   else
+      memcpy( k_pad, key.data( ), key.length( ) );
 
-   memcpy( k_ipad, p_key, key_len );
-   memcpy( k_opad, p_key, key_len );
- 
-   for( int i = 0; i < 64; i++ )
-   {
-      k_ipad[ i ] ^= 0x36;
-      k_opad[ i ] ^= 0x5c;
-   }
- 
-   memset( bufferIn, 0x00, 1024 );
-   memcpy( bufferIn, k_ipad, 64 );
-   memcpy( bufferIn + 64, p_msg, msg_len );
- 
-   sha256 hash1( bufferIn, 64 + msg_len );
-   hash1.copy_digest_to_buffer( tk2 );
+   for( size_t i = 0; i < sizeof( k_pad ); i++ )
+      k_pad[ i ] ^= 0x36;
 
-   memset( bufferOut, 0x00, 1024 );
-   memcpy( bufferOut, k_opad, 64 );
-   memcpy( bufferOut + 64, tk2, c_sha256_digest_size );
- 
-   sha256 hash2( bufferOut, 64 + c_sha256_digest_size );
+   sha256 hash1;
+
+   hash1.update( k_pad, sizeof( k_pad ) );
+   hash1.update( ( const unsigned char* )message.data( ), message.length( ) );
+
+   hash1.copy_digest_to_buffer( inner );
+
+   // NOTE: Turns the inner pad (0x36) into the outer pad (0x5c).
+   for( size_t i = 0; i < sizeof( k_pad ); i++ )
+      k_pad[ i ] ^= ( 0x36 ^ 0x5c );
+
+   sha256 hash2;
+
+   hash2.update( k_pad, sizeof( k_pad ) );
+   hash2.update( inner, sizeof( inner ) );
+
    hash2.copy_digest_to_buffer( p_buffer );
+
+   memset( k_pad, 0, sizeof( k_pad ) );
+   memset( inner, 0, sizeof( inner ) );
 }
 
 #ifdef COMPILE_TESTBED_MAIN
