@@ -11,6 +11,9 @@
 // salt, its first 32 hex digits; opening checks it before decrypting. A prototype, as Ian's is: the sizes are his test ones.
 //
 // Needs "ciyam_ed25519.js" (with "ed25519.min.js") and "ciyam_chacha20.js" loaded too.
+//
+// Until "hmac_sha256" in "sha256.cpp" is fixed (ISS-051) the console's HMAC is wrong for a key over 64 bytes, as this one is,
+// so a message sealed by one is refused by the other as changed; the ciphertext itself is the same.
 ciyam_register_module( class extends ciyam_module
 {
    static about =
@@ -20,7 +23,7 @@ ciyam_register_module( class extends ciyam_module
       description: "an encrypted message as the console's x makes one - sealed and opened under the own secret from secret entropy",
       example: "own <entropy> | seal <own secret> <message> | open <own secret> <sealed>",
       hint: "(i.e. the own secret, then a message sealed with it and opened again - a sealed one shows its CRs as \\r)",
-      needs: [ "sha256", "ed25519" ]
+      needs: [ "sha256", "ed25519", "chacha20" ]
    };
 
    static c_prefix = "X\r";
@@ -182,6 +185,10 @@ ciyam_register_module( class extends ciyam_module
 
       var after = ( opts.after !== undefined ) ? opts.after : this.random_alpha_numeric( this.c_padded_length - used );
       var salt = ( opts.salt !== undefined ) ? opts.salt : this.hex_of( this.random_bytes( this.c_salt_bytes ) );
+
+      // NOTE: A salt or padding given must be what "open( )" takes - or what is sealed could not be opened.
+      if( !/^[0-9a-f]{32}$/.test( salt ) || /\r/.test( before + after ) )
+         throw new Error( "A salt is 32 lower-case hex digits, and the padding has no CR." );
 
       var padded = new TextEncoder( ).encode( before + "\r" + text + "\r" + after );
       var ciphertext = this.hex_of( await this.chacha20( ).crypt( own + salt, padded ) );

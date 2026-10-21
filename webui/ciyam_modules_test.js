@@ -493,10 +493,11 @@ async function steps( module_class, list )
 
    check( "not opened - changed, another secret, not sealed, or too long to seal", [ await refused( sm.open( own, changed ) ),
     await refused( sm.open( sm.own_secret( "0123456789abcdef0123456789abcdef" ), known ) ), await refused( sm.open( own, "Hello" ) ),
-    await refused( sm.open( own, known + "\r00" ) ), await refused( sm.seal( own, "x".repeat( 91 ) ) ), await refused( sm.seal( "abc", "hi" ) ) ],
+    await refused( sm.open( own, known + "\r00" ) ), await refused( sm.seal( own, "x".repeat( 91 ) ) ), await refused( sm.seal( "abc", "hi" ) ),
+    await refused( sm.seal( own, "hi", { salt: "XYZ" } ) ) ],
     [ "That message has been changed, or was sealed with another secret.", "That message has been changed, or was sealed with another secret.",
     "That is not a sealed message.", "That is not a sealed message.", "That message is too long to seal - at most 90 bytes.",
-    "An own secret is 64 hex digits." ] );
+    "An own secret is 64 hex digits.", "A salt is 32 lower-case hex digits, and the padding has no CR." ] );
    check( "- 90 bytes sealed, the most", await sm.open( own, await sm.seal( own, "y".repeat( 90 ) ) ), "y".repeat( 90 ) );
 
    var through_run = await new sm( { } ).run( "seal " + own + " Hello through run" );
