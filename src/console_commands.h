@@ -104,7 +104,7 @@ class console_command_handler : public command_handler
    std::string prior_command;
    std::string prompt_prefix;
 
-   std::deque< size_t > history_line_number;
+   std::deque< size_t > history_line_numbers;
    std::deque< std::string > command_history;
 
    struct impl;

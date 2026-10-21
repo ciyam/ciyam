@@ -55,7 +55,7 @@ namespace
 
 const int c_max_args = 10;
 
-const int c_max_history = 1000;
+const int c_max_history = 2500;
 
 const int c_max_usage_width = 84;
 
@@ -4286,6 +4286,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             }
             else if( str[ 0 ] == c_read_input_prefix )
             {
+               deque< string > prior_command_history = command_history;
+               deque< size_t > prior_history_line_numbers = history_line_numbers;
+
                try
                {
                   size_t file_name_offset = 1;
@@ -4347,10 +4350,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   restorable< vector< bool > > tmp_conditions( conditions, dummy_vector );
                   restorable< bool > tmp_executing_commands( is_executing_commands, false );
                   restorable< bool > tmp_allow_history_addition( allow_history_addition, true );
-                  restorable< size_t > tmp_max_history_lines( max_history_lines, c_max_history );
+                  restorable< size_t > tmp_max_history_lines( max_history_lines, max_history_lines );
                   restorable< vector< bool > > tmp_dummy_conditions( dummy_conditions, dummy_vector );
-                  restorable< deque< string > > tmp_history_commands( command_history, command_history );
-                  restorable< deque< size_t > > tmp_history_line_number( history_line_number, history_line_number );
                   restorable< vector< size_t > > tmp_lines_for_conditions( lines_for_conditions, dummy_lines_vector );
 
                   string next;
@@ -4432,7 +4433,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         offset -= history_offset;
 
                      command_history.erase( command_history.begin( ) + offset, command_history.end( ) );
-                     history_line_number.erase( history_line_number.begin( ) + offset, history_line_number.end( ) );
+                     history_line_numbers.erase( history_line_numbers.begin( ) + offset, history_line_numbers.end( ) );
                   }
 
                   if( !conditions.empty( ) )
@@ -4459,11 +4460,17 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                {
                   str.erase( );
 
+                  command_history = prior_command_history;
+                  history_line_numbers = prior_history_line_numbers;
+
                   cout << "Error: " << x.what( ) << endl;
                }
                catch( ... )
                {
                   str.erase( );
+
+                  command_history = prior_command_history;
+                  history_line_numbers = prior_history_line_numbers;
 
                   cerr << "error: unexpected exception caught" << endl;
                }
@@ -4551,7 +4558,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         history_offset = 0;
 
                         command_history.clear( );
-                        history_line_number.clear( );
+                        history_line_numbers.clear( );
                      }
 
                      while( command_history.size( ) > max_history_lines )
@@ -4559,7 +4566,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         ++history_offset;
 
                         command_history.pop_front( );
-                        history_line_number.pop_front( );
+                        history_line_numbers.pop_front( );
                      }
                   }
                }
@@ -4623,6 +4630,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               r = command_history.size( );
 
                            is_range = true;
+
                            str.erase( pos );
                         }
 
@@ -4637,11 +4645,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  if( command_history[ i ] == str )
                                  {
                                     e = i + 1;
+
                                     is_old_loop = true;
                                  }
                                  else if( command_history[ i ] == str.substr( 2 ) )
                                  {
                                     b = i + 1;
+
                                     is_loop = true;
 
                                     // NOTE: Unlike normal history commands loops
@@ -4649,8 +4659,12 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     // to be nested.
                                     if( !is_executing_commands )
                                     {
+                                       if( !max_history_lines
+                                        || ( command_history.size( ) >= max_history_lines ) )
+                                          throw runtime_error( "insufficient command history for '" + str + "'" );
+
                                        command_history.push_back( str_for_history );
-                                       history_line_number.push_back( line_number );
+                                       history_line_numbers.push_back( line_number );
                                     }
 
                                     break;
@@ -4715,7 +4729,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                            if( n > 0 )
                            {
-                              line_number = history_line_number[ n - 1 ];
+                              line_number = history_line_numbers[ n - 1 ];
                               execute_command( command_history[ n - 1 ] );
                            }
                            else
@@ -4734,7 +4748,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     }
                                     else
                                     {
-                                       line_number = history_line_number[ i ];
+                                       line_number = history_line_numbers[ i ];
                                        execute_command( command_history[ i ] );
                                     }
                                  }
@@ -4750,18 +4764,18 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  history_offset = 0;
 
                                  command_history.clear( );
-                                 history_line_number.clear( );
+                                 history_line_numbers.clear( );
                               }
                               else
                               {
                                  command_history.erase( command_history.begin( ) + b, command_history.begin( ) + e );
-                                 history_line_number.erase( history_line_number.begin( ) + b, history_line_number.begin( ) + e );
+                                 history_line_numbers.erase( history_line_numbers.begin( ) + b, history_line_numbers.begin( ) + e );
                               }
                            }
                            else
                            {
                               command_history.erase( command_history.begin( ) + ( n - 1 ) );
-                              history_line_number.erase( history_line_number.begin( ) + ( n - 1 ) );
+                              history_line_numbers.erase( history_line_numbers.begin( ) + ( n - 1 ) );
                            }
                         }
                      }
@@ -5337,7 +5351,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             if( max_history_lines && !str_for_history.empty( ) )
             {
                command_history.push_back( str_for_history );
-               history_line_number.push_back( line_number );
+               history_line_numbers.push_back( line_number );
             }
 
             if( !ignore_prior && !is_reading_input && !str_for_history.empty( ) )
@@ -5353,7 +5367,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          history_offset = 0;
 
          command_history.clear( );
-         history_line_number.clear( );
+         history_line_numbers.clear( );
       }
       else
       {
@@ -5362,7 +5376,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             ++history_offset;
 
             command_history.pop_front( );
-            history_line_number.pop_front( );
+            history_line_numbers.pop_front( );
          }
       }
    }
@@ -5402,12 +5416,12 @@ void console_command_handler::handle_special_command( const string& cmd_and_args
       if( !skip_repeated )
       {
          command_history.push_back( cmd_and_args );
-         history_line_number.push_back( line_number );
+         history_line_numbers.push_back( line_number );
 
          if( command_history.size( ) > max_history_lines )
          {
             command_history.pop_front( );
-            history_line_number.pop_front( );
+            history_line_numbers.pop_front( );
          }
       }
    }
