@@ -512,14 +512,36 @@ async function steps( module_class, list )
     await refused( sm.seal( own, "hi", { salt: "XYZ" } ) ) ],
     [ "That message has been changed, or was sealed with another secret.", "That message has been changed, or was sealed with another secret.",
     "That is not a sealed message.", "That is not a sealed message.", "That message is too long to seal - at most 90 bytes.",
-    "An own secret is 64 hex digits.", "A salt is 32 lower-case hex digits, and the padding has no CR." ] );
+    "A secret is 64 hex digits - the own secret, or one with another person.", "A salt is 32 lower-case hex digits, and the padding has no CR." ] );
    check( "- 90 bytes sealed, the most", await sm.open( own, await sm.seal( own, "y".repeat( 90 ) ) ), "y".repeat( 90 ) );
+
+   // NOTE: To another person, as "x" now does (Ian, 2026-10-22) - from the console (2026-10-22): each one's public key, as
+   // "irc.cin" shows it to scan, and "@shared" between one's key and the other's public key, the same from either side.
+   var other = "0123456789abcdef0123456789abcdef";
+   var mine_public = "c14540b4da0eff751f41a87ed680a843efe46d35dd13e84caef04f0ce526ac6b";
+   var other_public = "0028b35f26edb6ffe44d3d2cc597906f4065bd550d5009c4d62c422c789493e0";
+   var between = "f9d8bbdac733c58643b1db586545d8a049f64da83fc4dd6754d860158e92bb6b";
+
+   check( "to another person - the public keys and the secret between them, as the console's, from either side", [ sm.public_key( entropy ),
+    sm.public_key( other ), sm.shared_secret( entropy, other_public ), sm.shared_secret( other, mine_public ) ],
+    [ mine_public, other_public, between, between ] );
+
+   var to_other = await sm.seal( sm.shared_secret( entropy, other_public ), "Just for you" );
+
+   check( "- sealed by one, opened by the other, and not under either's own secret", [ await sm.open( sm.shared_secret( other, mine_public ), to_other ),
+    await refused( sm.open( own, to_other ) ), await refused( sm.open( sm.own_secret( other ), to_other ) ) ],
+    [ "Just for you", "That message has been changed, or was sealed with another secret.",
+    "That message has been changed, or was sealed with another secret." ] );
+   check( "- a public key not a key, said", await refused( Promise.resolve( ).then( function( ) { return sm.shared_secret( entropy, "abc" ); } ) ),
+    "Not hex - an even number of the digits 0 to 9 and a to f." );
 
    var through_run = await new sm( { } ).run( "seal " + own + " Hello through run" );
 
    check( "through run - own, seal and open, CRs shown as \\r", [ await new sm( { } ).run( "own " + entropy ),
     /^X\\r[0-9a-f]{32}\\r[0-9a-f]+\\r[0-9a-f]{32}$/.test( through_run ), await new sm( { } ).run( "open " + own + " " + through_run ),
     await new sm( { } ).run( "open " + own + " " + known.replace( /\r/g, "\\r" ) ) ], [ own, true, "Hello through run", "Hello Ian" ] );
+   check( "- public and shared", [ await new sm( { } ).run( "public " + entropy ), await new sm( { } ).run( "shared " + entropy + " " + other_public ) ],
+    [ mine_public, between ] );
    check( "- anything else said", await new sm( { } ).run( "keys" ).catch( function( e ) { return e.message; } ),
     "Use one of - " + sm.about.example );
 

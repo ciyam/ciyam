@@ -4,25 +4,24 @@
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 // NOTE: An encrypted message as the console's "x" makes one ("irc.cin", Ian 2026-10-21) - a module ("Modules" in "ciyam.js").
-// The "own secret" is the X25519 secret between the key from one's secret entropy and the key from that entropy reversed. A
-// message is sealed as "X", CR, a salt (16 random bytes in hex), CR, the ciphertext in hex, CR, and an HMAC - "crypt -cc"
-// (ChaCha20) under the own secret with the salt after it, of: a few random letters and digits, CR, the message, CR, more random
-// letters and digits to a fixed size. The HMAC is HMAC-SHA256 of the ciphertext's hex, keyed with "mac", the own secret and the
-// salt, its first 32 hex digits; opening checks it before decrypting. A prototype, as Ian's is: the sizes are his test ones.
+// It is sealed under a secret: one's "own secret" - the X25519 secret between the key from one's secret entropy and the key
+// from that entropy reversed - or the secret with another person, between the key from one's entropy and their public key
+// (Ian, 2026-10-22). A message is sealed as "X", CR, a salt (16 random bytes in hex), CR, the ciphertext in hex, CR, and an
+// HMAC - "crypt -cc" (ChaCha20) under the secret with the salt after it, of: a few random letters and digits, CR, the message,
+// CR, more random letters and digits to a fixed size. The HMAC is HMAC-SHA256 of the ciphertext's hex, keyed with "mac", the
+// secret and the salt, its first 32 hex digits; opening checks it before decrypting. A prototype, as Ian's is: the sizes are
+// his test ones.
 //
 // Needs "ciyam_ed25519.js" (with "ed25519.min.js") and "ciyam_chacha20.js" loaded too.
-//
-// Until "hmac_sha256" in "sha256.cpp" is fixed (ISS-051) the console's HMAC is wrong for a key over 64 bytes, as this one is,
-// so a message sealed by one is refused by the other as changed; the ciphertext itself is the same.
 ciyam_register_module( class extends ciyam_module
 {
    static about =
    {
       name: "ciyam_secure_message",
       version: "1",
-      description: "an encrypted message as the console's x makes one - sealed and opened under the own secret from secret entropy",
-      example: "own <entropy> | seal <own secret> <message> | open <own secret> <sealed>",
-      hint: "(i.e. the own secret, then a message sealed with it and opened again - a sealed one shows its CRs as \\r)",
+      description: "an encrypted message as the console's x makes one - sealed and opened under one's own secret, or one with another person",
+      example: "own <entropy> | public <entropy> | shared <entropy> <their public key> | seal <secret> <message> | open <secret> <sealed>",
+      hint: "(i.e. a secret, then a message sealed with it and opened again - a sealed one shows its CRs as \\r)",
       needs: [ "sha256", "ed25519", "chacha20" ]
    };
 
@@ -150,27 +149,51 @@ ciyam_register_module( class extends ciyam_module
    // between the first and the second's public key ("@shared").
    static own_secret( entropy )
    {
-      var text = String( entropy || "" ).trim( );
-
-      if( !/^[0-9a-fA-F]{32,64}$/.test( text ) )
-         throw new Error( "Secret entropy is 32 to 64 hex digits." );
-
+      var text = this.check_entropy( entropy );
       var ed = this.ed25519( );
 
       return ed.shared_secret( ed.seed_of( text ), ed.public_key( ed.seed_of( text.split( "" ).reverse( ).join( "" ) ) ) );
    }
 
-   static check_own_secret( own )
+   static check_entropy( entropy )
    {
-      if( !/^[0-9a-f]{64}$/.test( String( own || "" ) ) )
-         throw new Error( "An own secret is 64 hex digits." );
+      var text = String( entropy || "" ).trim( );
+
+      if( !/^[0-9a-fA-F]{32,64}$/.test( text ) )
+         throw new Error( "Secret entropy is 32 to 64 hex digits." );
+
+      return text;
    }
 
-   // NOTE: "options" fixes the salt, the padding before and the padding after, for a known answer; each is random otherwise.
-   // The chat never sends a CR, so one in the message is taken as a line break, as when posting.
-   static async seal( own, message, options )
+   // NOTE: The public key from the entropy - the one "irc.cin" shows as a QR code for others to scan.
+   static public_key( entropy )
    {
-      this.check_own_secret( own );
+      var ed = this.ed25519( );
+
+      return ed.public_key( ed.seed_of( this.check_entropy( entropy ) ) );
+   }
+
+   // NOTE: The secret for messages with another person, as "x" makes it once they are picked - "@shared" between the key from
+   // one's entropy and their public key, the same from either side.
+   static shared_secret( entropy, public_key )
+   {
+      var ed = this.ed25519( );
+
+      return ed.shared_secret( ed.seed_of( this.check_entropy( entropy ) ), String( public_key || "" ).trim( ).toLowerCase( ) );
+   }
+
+   static check_secret( secret )
+   {
+      if( !/^[0-9a-f]{64}$/.test( String( secret || "" ) ) )
+         throw new Error( "A secret is 64 hex digits - the own secret, or one with another person." );
+   }
+
+   // NOTE: Under "secret" - the own secret, or one with another person. "options" fixes the salt, the padding before and the
+   // padding after, for a known answer; each is random otherwise. The chat never sends a CR, so one in the message is taken as
+   // a line break, as when posting.
+   static async seal( secret, message, options )
+   {
+      this.check_secret( secret );
 
       var opts = options || { };
       var text = String( message ).replace( /\r\n?/g, "\n" );
@@ -191,16 +214,16 @@ ciyam_register_module( class extends ciyam_module
          throw new Error( "A salt is 32 lower-case hex digits, and the padding has no CR." );
 
       var padded = new TextEncoder( ).encode( before + "\r" + text + "\r" + after );
-      var ciphertext = this.hex_of( await this.chacha20( ).crypt( own + salt, padded ) );
-      var hmac = ( await this.hmac_sha256( "mac" + own + salt, ciphertext ) ).substring( 0, this.c_hmac_digits );
+      var ciphertext = this.hex_of( await this.chacha20( ).crypt( secret + salt, padded ) );
+      var hmac = ( await this.hmac_sha256( "mac" + secret + salt, ciphertext ) ).substring( 0, this.c_hmac_digits );
 
       return this.c_prefix + salt + "\r" + ciphertext + "\r" + hmac;
    }
 
    // NOTE: The message, or an error: not sealed this way, or its HMAC not matching (changed, or sealed under another secret).
-   static async open( own, sealed )
+   static async open( secret, sealed )
    {
-      this.check_own_secret( own );
+      this.check_secret( secret );
 
       var text = String( sealed || "" );
       var parts = text.startsWith( this.c_prefix ) ? text.substring( this.c_prefix.length ).split( "\r" ) : [ ];
@@ -212,7 +235,7 @@ ciyam_register_module( class extends ciyam_module
       var salt = parts[ 0 ];
       var ciphertext = parts[ 1 ];
 
-      var expected = ( await this.hmac_sha256( "mac" + own + salt, ciphertext ) ).substring( 0, this.c_hmac_digits );
+      var expected = ( await this.hmac_sha256( "mac" + secret + salt, ciphertext ) ).substring( 0, this.c_hmac_digits );
 
       // NOTE: Every digit compared, so the time taken says nothing of where they differ.
       var differ = 0;
@@ -224,7 +247,7 @@ ciyam_register_module( class extends ciyam_module
          throw new Error( "That message has been changed, or was sealed with another secret." );
 
       var chacha = this.chacha20( );
-      var padded = new TextDecoder( ).decode( await chacha.crypt( own + salt, chacha.bytes_of( ciphertext ) ) );
+      var padded = new TextDecoder( ).decode( await chacha.crypt( secret + salt, chacha.bytes_of( ciphertext ) ) );
       var first = padded.indexOf( "\r" );
       var last = padded.indexOf( "\r", first + 1 );
 
@@ -234,8 +257,8 @@ ciyam_register_module( class extends ciyam_module
       return padded.substring( first + 1, last );
    }
 
-   // NOTE: "own <entropy>", "seal <own secret> <message>" or "open <own secret> <sealed>" - a sealed message shown, and given,
-   // with each CR as "\r", since a console line cannot hold one.
+   // NOTE: "own <entropy>", "public <entropy>", "shared <entropy> <their public key>", "seal <secret> <message>" or "open
+   // <secret> <sealed>" - a sealed message shown, and given, with each CR as "\r", since a console line cannot hold one.
    async run( input )
    {
       var it = this.constructor;
@@ -245,6 +268,12 @@ ciyam_register_module( class extends ciyam_module
 
       if( ( what === "own" ) && ( words.length === 2 ) )
          return it.own_secret( words[ 1 ] );
+
+      if( ( what === "public" ) && ( words.length === 2 ) )
+         return it.public_key( words[ 1 ] );
+
+      if( ( what === "shared" ) && ( words.length === 3 ) )
+         return it.shared_secret( words[ 1 ], words[ 2 ] );
 
       var rest = text.replace( /^\S+\s+\S+\s?/, "" );
 

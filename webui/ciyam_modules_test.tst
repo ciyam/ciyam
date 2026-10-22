@@ -73,7 +73,11 @@ ok   sealed afresh - salt, ciphertext and HMAC, padded to 127 bytes, opened agai
 ok   - each time a new salt and padding
 ok   not opened - changed, another secret, not sealed, or too long to seal
 ok   - 90 bytes sealed, the most
+ok   to another person - the public keys and the secret between them, as the console's, from either side
+ok   - sealed by one, opened by the other, and not under either's own secret
+ok   - a public key not a key, said
 ok   through run - own, seal and open, CRs shown as \r
+ok   - public and shared
 ok   - anything else said
 
 All checks passed.
