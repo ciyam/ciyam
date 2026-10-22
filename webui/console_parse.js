@@ -793,7 +793,7 @@ function parse_script_line( text )
    // NOTE: "loaded scripts" is about them all - nothing after it.
    if( verb === "loaded" )
       return ( name === "" ) ? { kind: "script", verb: "loaded", name: "", arg: null }
-       : { kind: "error", message: "Just loaded scripts - it lists them all" };
+       : { kind: "error", message: "'loaded scripts' takes no name - it lists them all" };
 
    if( ( name === "" ) && ( ( verb === "load" ) || ( verb === "eval" ) || ( verb === "about" ) ) )
       return { kind: "error", message: "Name the script - " + match[ 1 ].toLowerCase( ) + " script <name> [<input>]" };

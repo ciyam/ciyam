@@ -346,7 +346,7 @@ check( "about - what a module says of itself, by name", [ cp.parse_script_line( 
 check( "not a script line", [ cp.parse_script_line( "view scripts" ), cp.parse_script_line( "status" ) ], [ null, null ] );
 check( "loaded scripts - a script line, about them all", [ cp.is_javascript_line( "loaded scripts" ), cp.parse_script_line( "loaded scripts" ),
  cp.parse_script_line( "loaded script harden" ) ], [ true, { kind: "script", verb: "loaded", name: "", arg: null },
- { kind: "error", message: "Just loaded scripts - it lists them all" } ] );
+ { kind: "error", message: "'loaded scripts' takes no name - it lists them all" } ] );
 check( "- what it says: in name order, with version and description where a module, this account's own marked",
  cp.loaded_scripts_lines( [ { name: "xor_hex_data", version: "", description: "" },
  { name: "chacha20", version: "1", description: "ChaCha20 - as crypt -cc" }, { name: "20401", version: "", description: "" } ], "20401" ),

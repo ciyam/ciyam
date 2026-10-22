@@ -1934,6 +1934,9 @@ async function run_script_line( spec, from_script )
 
          if( at_load === null )
          {
+            // NOTE: Taken out again, so "loaded scripts" does not list one that failed to load (found by review, 2026-10-22).
+            unload_server_script( prefix );
+
             print_line( "Error: " + prefix + ".js has no " + prefix + "_at_load( ) - (failed to load script).", "is-err" );
 
             return { ok: false };
