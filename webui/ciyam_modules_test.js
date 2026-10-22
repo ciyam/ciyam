@@ -168,6 +168,21 @@ async function steps( module_class, list )
       return sha2_page.hex_sha256( m.ciyam_utf8_binary( s ) ).toLowerCase( ) === require( "crypto" ).createHash( "sha256" ).update( s, "utf8" ).digest( "hex" );
    } ), [ true, true, true ] );
 
+   // NOTE: The sign in's hash of PIN and password - in a page through "sha2.min.js", from the command line through Node - the
+   // same for a password not plain ASCII (Ian, 2026-10-22).
+   global.hex_sha256 = sha2_page.hex_sha256;
+
+   var in_page = new m.CIYAM( "localhost:13031", false, true );
+   var passwords = [ "pässwörd", "パスワード", "plain-pass" ];
+   var signin_hashes = passwords.map( function( p ) { return in_page.hash_combined( p, "12345" ); } );
+
+   delete global.hex_sha256;
+
+   check( "the sign in's hash - a page's as the command line's, as UTF-8", signin_hashes, passwords.map( function( p )
+   {
+      return require( "crypto" ).createHash( "sha256" ).update( "12345" + p, "utf8" ).digest( "hex" );
+   } ) );
+
    var calls = [ ];
    var context = m.ciyam_module_page_context( { show_progress: function( ) { calls.push( "show" ); },
     update_progress: function( f ) { calls.push( f ); }, hide_progress: function( ) { calls.push( "hide" ); } } );

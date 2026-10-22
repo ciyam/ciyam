@@ -201,13 +201,16 @@ class CIYAM
       this.var_map.set( name, value );
    }
 
+   // NOTE: Hashed as UTF-8, as Node's is - "sha2.min.js" given the text itself took each character's low byte, so a password
+   // not plain ASCII set in a browser did not sign in from the command line (Ian, 2026-10-22: "please change the sign-in hash to
+   // use UTF-8"). One set that way before needs setting again.
    hash_combined( password, access )
    {
       if( access == null )
          access = this.access;
 
       if( typeof hex_sha256 !== "undefined" )
-         return hex_sha256( access + password );
+         return hex_sha256( ciyam_utf8_binary( access + password ) );
       else
       {
          const hash = this.node_crypto.createHash( "sha256" );
@@ -1736,6 +1739,7 @@ function ciyam_module_legacy( module_class, host )
 if( typeof module !== "undefined" )
 {
    module.exports = {
+      CIYAM: CIYAM,
       ciyam_module: ciyam_module,
       ciyam_module_named: ciyam_module_named,
       ciyam_register_module: ciyam_register_module,
