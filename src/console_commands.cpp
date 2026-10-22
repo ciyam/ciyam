@@ -55,8 +55,6 @@ namespace
 
 const int c_max_args = 10;
 
-const int c_max_history = 2500;
-
 const int c_max_usage_width = 84;
 
 const int c_bad_system_exit = 999;
@@ -66,6 +64,8 @@ const size_t c_max_pwd_size = 128;
 const char c_option_prefix = '-';
 
 const size_t c_max_secret_keys = 10000;
+
+const size_t c_default_max_history = 2500;
 
 constexpr const char* c_op_eq = "=";
 constexpr const char* c_op_gt = ">";
@@ -2848,7 +2848,7 @@ console_command_handler::console_command_handler( )
  p_std_err( &cerr ),
  p_std_out( &cout ),
  history_offset( 0 ),
- max_history_lines( c_max_history ),
+ max_history_lines( c_default_max_history ),
  description_offset( 0 ),
  progress_output_count( 0 ),
  num_custom_startup_options( 0 ),
