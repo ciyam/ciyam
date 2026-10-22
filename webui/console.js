@@ -58,6 +58,7 @@ const c_palette_commands = [
    { command: "result script <name>", description: "a loaded JavaScript's _result, into the output" },
    { command: "unload script <name>", description: "take a JavaScript out of the page" },
    { command: "about script <name>", description: "what a loaded JavaScript says of itself - its use and what it needs" },
+   { command: "loaded scripts", description: "the JavaScripts loaded in this page now, with what each says of itself" },
    { command: "delete javascript", description: "delete your own JavaScript on the server" },
    { command: "view logs", description: "the server's log files (admin)", admin: true },
    { command: "view log <name>", description: "one whole log - script, server or update (admin)", admin: true },
@@ -1874,6 +1875,26 @@ async function run_script_line( spec, from_script )
       print_line( "Error: Not connected.", "is-err" );
 
       return { ok: false };
+   }
+
+   // NOTE: "loaded scripts" - those in the page now (Ian, 2026-10-22: "it would be nice to be able to see what scripts are
+   // currently loaded"); their names, in order, into the output for a list.
+   if( spec.verb === "loaded" )
+   {
+      var entries = Object.keys( g_loaded_scripts ).map( function( loaded_prefix )
+      {
+         var short_name = loaded_prefix.substring( "ciyam_".length );
+         var module_class = ciyam_module_named( short_name );
+         var about = module_class ? module_class.about : { };
+
+         return { name: short_name, version: about.version || "", description: about.description || "" };
+      } );
+
+      print_output( loaded_scripts_lines( entries, ciyam.access ).join( "\n" ) );
+
+      g_output = entries.map( function( entry ) { return entry.name; } ).sort( ).join( " " );
+
+      return { ok: true };
    }
 
    if( refuse_unless_allowed( spec.name ) )

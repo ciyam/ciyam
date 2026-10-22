@@ -754,16 +754,18 @@ function parse_name_list( response )
 // them - another account's by admin alone ("script_allowed( )") - see "parse_script_line( )".
 function is_javascript_line( text )
 {
-   return /^~?(load|reload|eval|exec|employ|execute|result|unload|about)\s+(script|scripts|javascript|javascripts)(\s|$)/i.test( String( text || "" ).trim( ) );
+   return /^~?(load|reload|eval|exec|employ|execute|result|unload|about|loaded)\s+(script|scripts|javascript|javascripts)(\s|$)/i
+    .test( String( text || "" ).trim( ) );
 }
 
 // NOTE: The harness's verbs for a server javascript, by what each does: "load" puts the script
 // in the page and calls its "_at_load", "eval" calls its "_execute", "result" shows its
-// "_result" and "unload" takes it out again. "about" is ours - what a module says of itself.
+// "_result" and "unload" takes it out again. "about" and "loaded" are ours - what a module says
+// of itself, and which are in the page now (Ian, 2026-10-22).
 const c_console_script_verbs = {
    load: "load", reload: "load",
    eval: "eval", exec: "eval", employ: "eval", execute: "eval",
-   result: "result", unload: "unload", about: "about"
+   result: "result", unload: "unload", about: "about", loaded: "loaded"
 };
 
 // NOTE: "load script bip39 3c6e..." split into the verb, the script's name and the rest as its
@@ -788,6 +790,11 @@ function parse_script_line( text )
 
    var name = match[ 2 ] || "";
 
+   // NOTE: "loaded scripts" is about them all - nothing after it.
+   if( verb === "loaded" )
+      return ( name === "" ) ? { kind: "script", verb: "loaded", name: "", arg: null }
+       : { kind: "error", message: "Just loaded scripts - it lists them all" };
+
    if( ( name === "" ) && ( ( verb === "load" ) || ( verb === "eval" ) || ( verb === "about" ) ) )
       return { kind: "error", message: "Name the script - " + match[ 1 ].toLowerCase( ) + " script <name> [<input>]" };
 
@@ -796,6 +803,23 @@ function parse_script_line( text )
 
    return { kind: "script", verb: verb, name: ( name === "" ) ? c_console_own_name : name,
     arg: ( match[ 3 ] === undefined ) ? null : match[ 3 ] };
+}
+
+// NOTE: What "loaded scripts" says - each script in the page by name, with its version and what it says of itself where it is
+// a module (one of the old kind says nothing), this account's own marked; in name order.
+function loaded_scripts_lines( entries, access )
+{
+   var list = ( entries || [ ] ).slice( ).sort( function( a, b ) { return ( a.name < b.name ) ? -1 : ( ( a.name > b.name ) ? 1 : 0 ); } );
+
+   if( list.length === 0 )
+      return [ "(no scripts loaded)" ];
+
+   return list.map( function( entry )
+   {
+      var line = entry.name + ( entry.version ? " " + entry.version : "" ) + ( entry.description ? " - " + entry.description : "" );
+
+      return ( access && ( entry.name === String( access ) ) ) ? line + " (your own)" : line;
+   } );
 }
 
 // NOTE: Whether this account may run a server javascript (Ian, 2026-10-05): anyone runs those not named
@@ -1305,6 +1329,7 @@ if( typeof module !== "undefined" )
       append_output: append_output,
       is_javascript_line: is_javascript_line,
       parse_script_line: parse_script_line,
+      loaded_scripts_lines: loaded_scripts_lines,
       script_allowed: script_allowed,
       full_query: full_query,
       mask_device_sessions: mask_device_sessions,

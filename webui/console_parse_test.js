@@ -344,6 +344,14 @@ check( "about script is a script line", cp.is_javascript_line( "about script xor
 check( "about - what a module says of itself, by name", [ cp.parse_script_line( "about script xor_hex_data" ),
  cp.parse_script_line( "about script" ).kind ], [ { kind: "script", verb: "about", name: "xor_hex_data", arg: null }, "error" ] );
 check( "not a script line", [ cp.parse_script_line( "view scripts" ), cp.parse_script_line( "status" ) ], [ null, null ] );
+check( "loaded scripts - a script line, about them all", [ cp.is_javascript_line( "loaded scripts" ), cp.parse_script_line( "loaded scripts" ),
+ cp.parse_script_line( "loaded script harden" ) ], [ true, { kind: "script", verb: "loaded", name: "", arg: null },
+ { kind: "error", message: "Just loaded scripts - it lists them all" } ] );
+check( "- what it says: in name order, with version and description where a module, this account's own marked",
+ cp.loaded_scripts_lines( [ { name: "xor_hex_data", version: "", description: "" },
+ { name: "chacha20", version: "1", description: "ChaCha20 - as crypt -cc" }, { name: "20401", version: "", description: "" } ], "20401" ),
+ [ "20401 (your own)", "chacha20 1 - ChaCha20 - as crypt -cc", "xor_hex_data" ] );
+check( "- none loaded, said", cp.loaded_scripts_lines( [ ], "20401" ), [ "(no scripts loaded)" ] );
 
 check( "a global's name", [ cp.is_global_name( "ciyam_harden_result" ), cp.is_global_name( "$x" ) ], [ true, true ] );
 check( "not a global's name", [ cp.is_global_name( "a.b" ), cp.is_global_name( "1x" ), cp.is_global_name( "" ), cp.is_global_name( "a b" ) ],

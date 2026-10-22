@@ -167,6 +167,9 @@ ok   no quotes in a name
 ok   about script is a script line
 ok   about - what a module says of itself, by name
 ok   not a script line
+ok   loaded scripts - a script line, about them all
+ok   - what it says: in name order, with version and description where a module, this account's own marked
+ok   - none loaded, said
 ok   a global's name
 ok   not a global's name
 ok   anyone runs a script not named after a PIN
