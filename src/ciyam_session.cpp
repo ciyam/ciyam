@@ -54,6 +54,7 @@
 #include "hash_chain.h"
 #include "auto_script.h"
 #include "ciyam_files.h"
+#include "crypto_keys.h"
 #include "fs_iterator.h"
 #include "crypt_stream.h"
 #include "peer_session.h"
@@ -2829,6 +2830,70 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = shared_secret( extra_identity, ext_pseudo_identity, false );
       }
+      else if( command == c_cmd_ciyam_session_crypto_ed25519_sign )
+      {
+         string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_ed25519_sign_secret ) );
+         string message( get_parm_val( parameters, c_cmd_ciyam_session_crypto_ed25519_sign_message ) );
+
+         if( secret.length( ) < 64 )
+         {
+            sha256 hash( secret );
+
+            secret = hash.get_digest_as_string( );
+         }
+
+         private_key priv_key( secret );
+
+         response = priv_key.construct_signature( message );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_ed25519_create )
+      {
+         string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_ed25519_create_secret ) );
+
+         if( secret.length( ) < 64 )
+         {
+            sha256 hash( secret );
+
+            secret = hash.get_digest_as_string( );
+         }
+
+         private_key priv_key( secret );
+
+         response = priv_key.get_secret( ) + '\n' + priv_key.get_public( );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_ed25519_shared )
+      {
+         string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_ed25519_shared_secret ) );
+         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_ed25519_shared_pubkey ) );
+
+         if( secret.length( ) < 64 )
+         {
+            sha256 hash( secret );
+
+            secret = hash.get_digest_as_string( );
+         }
+
+         public_key pub_key( pubkey, false, e_key_curve_ed25519 );
+
+         private_key priv_key( secret );
+
+         response = priv_key.construct_shared( pub_key );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_ed25519_verify )
+      {
+         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_ed25519_verify_pubkey ) );
+         string message( get_parm_val( parameters, c_cmd_ciyam_session_crypto_ed25519_verify_message ) );
+         string signature( get_parm_val( parameters, c_cmd_ciyam_session_crypto_ed25519_verify_signature ) );
+
+         public_key pub_key( pubkey, false, e_key_curve_ed25519 );
+
+         if( !pub_key.verify_signature( message, signature ) )
+         {
+            possibly_expected_error = true;
+
+            throw runtime_error( "invalid signature" );
+         }
+      }
       else if( command == c_cmd_ciyam_session_file_chk )
       {
          string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_chk_tag_or_hash ) );
@@ -2841,6 +2906,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !has_file( hash, false ) )
          {
             possibly_expected_error = true;
+
             throw runtime_error( "file not found" );
          }
       }
@@ -2856,6 +2922,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !has_file( hash, false ) )
          {
             possibly_expected_error = true;
+
             throw runtime_error( "file '" + hash + "' not found" );
          }
 

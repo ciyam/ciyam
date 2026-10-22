@@ -204,6 +204,19 @@ ccc
 aaa
 bbb
 ccc
+session_variable @queue_test aaa
+session_variable @queue_test bbb
+session_variable @queue_test ccc
+session_variable @queue_test *
+aaa
+bbb
+ccc
+session_variable @deque "~$OUTPUT"
+session_variable @deque
+aaa
+bbb
+ccc
+session_variable @deque ""
 session_variable @queue_test ccc
 session_variable @queue_test bbb
 session_variable @queue_test aaa
