@@ -88,6 +88,8 @@ ok   - and unlocked
 ok   locked afresh - its own salt each time, the default rounds, unlocked again
 ok   not unlocked - another password, changed, or not locked keys
 ok   not locked - no password, entropy not hex, a public key not one
+ok   - more rounds than ten times the default refused, before any hashing; odd entropy refused
+ok   - a password the same whichever Unicode form it was typed in
 ok   through run - lock, unlock, words and entropy
 ok   - anything else said
 

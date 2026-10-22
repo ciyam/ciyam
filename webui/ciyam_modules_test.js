@@ -607,7 +607,17 @@ async function steps( module_class, list )
 
    check( "not locked - no password, entropy not hex, a public key not one", [ await not_locked( "", known_contents ),
     await not_locked( "p", { entropy: "xyz" } ), await not_locked( "p", { entropy: test_entropy, contacts: { someone: "abc" } } ) ],
-    [ "A password is needed to lock the keys.", "Secret entropy is 32 to 64 hex digits.", "A public key is 64 hex digits, kept by a name." ] );
+    [ "A password is needed to lock the keys.", "Secret entropy is 32 to 64 hex digits - whole bytes.", "A public key is 64 hex digits, kept by a name." ] );
+
+   // NOTE: Found by review (2026-10-23) - keys come back from the node, so it cannot ask for hours of hashing; entropy is whole
+   // bytes; a password the same in its two Unicode forms ("ä" as one character, or "a" and its two dots).
+   var too_many = "UK1:1000001:" + known_salt + ":" + known_cipher + ":" + known_locked.split( ":" )[ 4 ];
+
+   check( "- more rounds than ten times the default refused, before any hashing; odd entropy refused", [ await not_opened( "pässwörd", too_many ),
+    await not_locked( "p", { entropy: test_entropy + "a" } ),
+    await uk.lock( "p", known_contents, { rounds: 1000001 } ).catch( function( e ) { return e.message; } ) ],
+    [ "Those are not locked keys.", "Secret entropy is 32 to 64 hex digits - whole bytes.", "The rounds are a whole number from 1 to 1000000." ] );
+   check( "- a password the same whichever Unicode form it was typed in", await uk.unlock( "pässwörd".normalize( "NFD" ), known_locked ), known_contents );
 
    var locked_by_run = await new uk( { } ).run( "lock pw " + test_entropy );
 

@@ -6,7 +6,9 @@
 // NOTE: An account's own keys as the node keeps them ("user-keys", Ian 2026-10-22) - a module ("Modules" in "ciyam.js"). What is
 // kept is the secret entropy (from twelve words, as a node's is) and the public keys of others, scanned face to face. It is
 // locked before it leaves the page, under a key hardened from a password with a salt of its own - "harden"'s rounds of the
-// salt and the password - so the node, which sees only a hash of the PIN and password at sign in, cannot open it. Kept as:
+// salt and the password - so the node cannot open it without that password. Not the account's own password: the node keeps
+// one SHA-256 of the PIN and that, so whoever runs it could guess it at that speed, round the hardening (found by review,
+// 2026-10-23) - a passphrase of its own. Kept as:
 //
 //    UK1:<rounds>:<salt>:<ciphertext>:<hmac>
 //
@@ -31,8 +33,10 @@ ciyam_register_module( class extends ciyam_module
    static c_format = "UK1";
    static c_salt_bytes = 16;
 
-   // NOTE: About two thirds of a second in Chrome on a laptop (2026-10-23), so a few seconds on a phone, once a session.
+   // NOTE: About two thirds of a second in Chrome on a laptop (2026-10-23), so a few seconds on a phone, once a session. Keys
+   // come back from the node, so it cannot ask for more than ten times as many - or it could keep a page hashing for hours.
    static c_default_rounds = 100000;
+   static c_most_rounds = 1000000;
 
    static module_named( name )
    {
@@ -52,8 +56,8 @@ ciyam_register_module( class extends ciyam_module
    // NOTE: The twelve words for entropy, and back - BIP39, as a node's are made and recovered.
    static words_of_entropy( entropy )
    {
-      if( !/^[0-9a-fA-F]{32,64}$/.test( String( entropy || "" ) ) )
-         throw new Error( "Secret entropy is 32 to 64 hex digits." );
+      if( !/^([0-9a-fA-F]{2}){16,32}$/.test( String( entropy || "" ) ) )
+         throw new Error( "Secret entropy is 32 to 64 hex digits - whole bytes." );
 
       return BIP39.entropyToMnemonic( String( entropy ).toLowerCase( ) );
    }
@@ -69,12 +73,16 @@ ciyam_register_module( class extends ciyam_module
    }
 
    // NOTE: The key from a password and a salt - "harden"'s rounds of the salt and the password, with the page's faster SHA-256.
+   // The password in its composed form (NFC), so one typed with "ä" as one character or as two gives the same key.
    static async hardened_key( password, salt, rounds )
    {
       var harden = this.module_named( "harden" );
       var hasher = ( typeof ciyam_sha256_fastest === "function" ) ? await ciyam_sha256_fastest( ) : { native: true, hash: ciyam_sha256_hex };
 
-      return harden.rounds( hasher, rounds, salt + String( password ), null );
+      if( !Number.isInteger( rounds ) || ( rounds < 1 ) || ( rounds > this.c_most_rounds ) )
+         throw new Error( "The rounds are a whole number from 1 to " + this.c_most_rounds + "." );
+
+      return harden.rounds( hasher, rounds, salt + String( password ).normalize( "NFC" ), null );
    }
 
    // NOTE: What is kept - checked, so nothing that could not be used is locked: the entropy, and others' public keys by name.
@@ -84,8 +92,8 @@ ciyam_register_module( class extends ciyam_module
       var given = ( contents || { } ).contacts || { };
       var contacts = { };
 
-      if( !/^[0-9a-f]{32,64}$/.test( entropy ) )
-         throw new Error( "Secret entropy is 32 to 64 hex digits." );
+      if( !/^([0-9a-f]{2}){16,32}$/.test( entropy ) )
+         throw new Error( "Secret entropy is 32 to 64 hex digits - whole bytes." );
 
       Object.keys( given ).sort( ).forEach( function( name )
       {
@@ -131,8 +139,10 @@ ciyam_register_module( class extends ciyam_module
    {
       var parts = String( locked || "" ).trim( ).split( ":" );
 
+      // NOTE: Refused before any hashing - the rounds too, as the keys come back from the node (found by review, 2026-10-23).
       if( ( parts.length !== 5 ) || ( parts[ 0 ] !== this.c_format ) || !/^[1-9][0-9]{0,8}$/.test( parts[ 1 ] )
-       || !/^[0-9a-f]{32}$/.test( parts[ 2 ] ) || !/^([0-9a-f]{2})+$/.test( parts[ 3 ] ) || !/^[0-9a-f]{64}$/.test( parts[ 4 ] ) )
+       || ( Number( parts[ 1 ] ) > this.c_most_rounds ) || !/^[0-9a-f]{32}$/.test( parts[ 2 ] )
+       || !/^([0-9a-f]{2})+$/.test( parts[ 3 ] ) || !/^[0-9a-f]{64}$/.test( parts[ 4 ] ) )
          throw new Error( "Those are not locked keys." );
 
       var key = await this.hardened_key( password, parts[ 2 ], Number( parts[ 1 ] ) );

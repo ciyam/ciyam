@@ -33,7 +33,7 @@ ok   unlock keys
 ok   status
 ok   missing name
 ok   user keys - review, retain and delete
-ok   - retain needs something, review takes no name
+ok   - retain needs something locked, review takes no name
 ok   view lists without a name
 ok   view scripts without a name
 ok   view styles without a name
