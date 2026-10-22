@@ -348,6 +348,9 @@ string random_characters( size_t minimum, size_t max_extra, printable_type type 
 
    size_t total_chars = ( minimum + extra );
 
+   // IMPORTANT: For secure entropy only use
+   // "hex digits" as the modulus operations
+   // introduce bias (thus losing entropy).
    for( size_t i = 0; i < total_chars; i++ )
    {
       if( ( i % c_uuid_size ) == 0 )
