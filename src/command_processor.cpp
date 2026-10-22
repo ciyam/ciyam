@@ -9,11 +9,6 @@
 #endif
 #pragma hdrstop
 
-#ifndef HAS_PRECOMPILED_STD_HEADERS
-#  include <iostream>
-#  include <algorithm>
-#endif
-
 #include "command_processor.h"
 
 #include "utilities.h"
@@ -46,10 +41,6 @@ void command_processor::process_commands( )
 
       get_cmd_and_args( next );
 
-      // NOTE: If the command has LFs then will remove them (i.e. assumes
-      // that they had been handled as line continuations externally).
-      next.erase( remove( next.begin( ), next.end( ), '\n' ), next.end( ) );
-
       cmd_and_args += next;
 
       clear_key( next, true );
@@ -58,15 +49,16 @@ void command_processor::process_commands( )
       {
          remove_trailing_cr_from_text_file_line( cmd_and_args );
 
-         // NOTE: A trailing backslash (that is not escaped) will be
-         // interpreted as a line continuation (as are LFs which are
-         // being removed above).
+         // NOTE: A trailing backslash (that is not escaped) is being
+         // interpreted as a line continuation.
          string::size_type pos = cmd_and_args.find_last_not_of( '\\' );
 
-         if( ( pos != ( cmd_and_args.size( ) - 1 ) )
-          && ( ( cmd_and_args.size( ) - pos - 1 ) % 2 ) )
+         size_t cmd_and_args_size = cmd_and_args.size( );
+
+         if( ( pos != ( cmd_and_args_size - 1 ) )
+          && ( ( cmd_and_args_size - pos - 1 ) % 2 ) )
          {
-            cmd_and_args.erase( cmd_and_args.size( ) - 1 );
+            cmd_and_args.erase( cmd_and_args_size - 1 );
 
             continue;
          }
@@ -96,6 +88,7 @@ string command_processor::get_usage_for_commands( const string& wildcard_match_e
 void command_processor::push_handler( command_handler& handler )
 {
    handlers.push( &handler );
+
    handler.p_command_processor = this;
 }
 
