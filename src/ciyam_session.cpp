@@ -2844,7 +2844,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          private_key priv_key( secret );
 
-         response = priv_key.construct_signature( message );
+         response = priv_key.construct_signature( message, true );
       }
       else if( command == c_cmd_ciyam_session_crypto_ed25519_create )
       {
