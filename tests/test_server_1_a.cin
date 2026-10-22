@@ -574,13 +574,15 @@ crypto_hash -x=9 hello -s=3
 crypto_hash -x=9 hello -s=4
 crypto_hash -x=9 hello -s=5
 ;
-crypto_hmac Jefe "what do ya want for nothing?"
 TEST=@hmac256:Jefe:what do ya want for nothing?
 #$TEST
+crypto_hmac Jefe "what do ya want for nothing?"
 CHARS_62=0123456789ABCDEFGHIJKLMNOPQRUVTUWXYZabcdefghijklmnopqruvtuwxyz
-crypto_hmac $CHARS_62$CHARS_62$CHARS_62 $CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62
+crypto_hmac $CHARS_62$CHARS_62$CHARS_62 $CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62\
+$CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62
 crypto_hmac -512 Jefe "what do ya want for nothing?"
-crypto_hmac -512 $CHARS_62$CHARS_62$CHARS_62 $CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62
+crypto_hmac -512 $CHARS_62$CHARS_62$CHARS_62 $CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62\
+$CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62$CHARS_62
 ;
 crypto_lamport xxx xxx
 ~cp modules.lst.default xxx.src
