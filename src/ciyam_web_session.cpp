@@ -1736,6 +1736,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
          if( access != admin_pin )
             okay = false;
+         else if( !( is_locked || is_identity_none || is_identity_reset ) )
+            g_cws_admin_locked = false;
       }
 
       if( !okay )
