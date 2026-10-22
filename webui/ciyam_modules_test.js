@@ -545,6 +545,77 @@ async function steps( module_class, list )
    check( "- anything else said", await new sm( { } ).run( "keys" ).catch( function( e ) { return e.message; } ),
     "Use one of - " + sm.about.example );
 
+   heading( "user_keys" );
+
+   require( "./ciyam_user_keys.js" );
+
+   var uk = m.ciyam_module_named( "user_keys" );
+   var node_crypto = require( "crypto" );
+
+   // NOTE: The node's test words (Ian's, public - "rebuild-container.sh") and their entropy, both ways; BIP39's all-zero vector.
+   var test_entropy = "de604cee0755a3d81944ea96aed12681";
+   var test_words = "taxi act describe attitude focus ugly govern outer note isolate endless act";
+
+   check( "the twelve words for entropy and back - BIP39, as a node's", [ uk.words_of_entropy( test_entropy ), uk.entropy_of_words( test_words ),
+    uk.entropy_of_words( "  Taxi act describe attitude focus ugly govern outer note isolate endless   ACT " ),
+    uk.words_of_entropy( "00000000000000000000000000000000" ) ], [ test_words, test_entropy, test_entropy,
+    "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" ] );
+   check( "- words not right, said", [ "taxi act", test_words.replace( "ugly", "ugli" ), test_words.replace( "taxi", "act" ) ].map( function( w )
+   {
+      try { return uk.entropy_of_words( w ); } catch( e ) { return e.message; }
+   } ), [ "Those are not the words - check each is spelt right and in its place.", "Those are not the words - check each is spelt right and in its place.",
+    "Those are not the words - check each is spelt right and in its place." ] );
+
+   // NOTE: Worked out here without the module - "harden"'s rounds (each the SHA-256 of what there is with the salt and password
+   // after it), ChaCha20 under the key's SHA-256 with a zero nonce and counter ("crypt -cc"), HMAC-SHA256 keyed "mac" and the key.
+   var known_salt = "000102030405060708090a0b0c0d0e0f";
+   var known_contents = { entropy: test_entropy, contacts: { "verify-a": "0028b35f26edb6ffe44d3d2cc597906f4065bd550d5009c4d62c422c789493e0" } };
+   var known_key = known_salt + "pässwörd";
+
+   for( var r = 0, input = known_salt + "pässwörd"; r < 1000; r++ )
+      known_key = node_crypto.createHash( "sha256" ).update( known_key + input, "utf8" ).digest( "hex" );
+
+   var known_stream = node_crypto.createCipheriv( "chacha20", node_crypto.createHash( "sha256" ).update( known_key ).digest( ), Buffer.alloc( 16 ) );
+   var known_cipher = known_stream.update( Buffer.from( JSON.stringify( known_contents ), "utf8" ) ).toString( "hex" );
+   var known_locked = "UK1:1000:" + known_salt + ":" + known_cipher + ":"
+    + node_crypto.createHmac( "sha256", "mac" + known_key ).update( known_cipher ).digest( "hex" );
+
+   check( "locked - as worked out without the module, given a salt and rounds", await uk.lock( "pässwörd", known_contents,
+    { salt: known_salt, rounds: 1000 } ), known_locked );
+   check( "- and unlocked", await uk.unlock( "pässwörd", known_locked ), known_contents );
+
+   var locked_afresh = await uk.lock( "pässwörd", known_contents );
+
+   check( "locked afresh - its own salt each time, the default rounds, unlocked again", [ locked_afresh.split( ":" )[ 1 ],
+    locked_afresh !== ( await uk.lock( "pässwörd", known_contents ) ), await uk.unlock( "pässwörd", locked_afresh ) ],
+    [ "100000", true, known_contents ] );
+
+   var not_opened = async function( password, locked ) { try { await uk.unlock( password, locked ); return "opened"; } catch( e ) { return e.message; } };
+
+   var changed_locked = known_locked.replace( ":" + known_cipher.substring( 0, 4 ),
+    ":" + ( known_cipher[ 0 ] === "0" ? "1" : "0" ) + known_cipher.substring( 1, 4 ) );
+
+   check( "not unlocked - another password, changed, or not locked keys", [ await not_opened( "passwörd", known_locked ),
+    await not_opened( "pässwörd", changed_locked ), await not_opened( "pässwörd", "UK1:1000:" + known_salt ),
+    await not_opened( "pässwörd", "UK2" + known_locked.substring( 3 ) ) ],
+    [ "That password does not open these keys.", "That password does not open these keys.", "Those are not locked keys.", "Those are not locked keys." ] );
+
+   var not_locked = async function( password, contents )
+   {
+      try { await uk.lock( password, contents, { rounds: 10 } ); return "locked"; } catch( e ) { return e.message; }
+   };
+
+   check( "not locked - no password, entropy not hex, a public key not one", [ await not_locked( "", known_contents ),
+    await not_locked( "p", { entropy: "xyz" } ), await not_locked( "p", { entropy: test_entropy, contacts: { someone: "abc" } } ) ],
+    [ "A password is needed to lock the keys.", "Secret entropy is 32 to 64 hex digits.", "A public key is 64 hex digits, kept by a name." ] );
+
+   var locked_by_run = await new uk( { } ).run( "lock pw " + test_entropy );
+
+   check( "through run - lock, unlock, words and entropy", [ /^UK1:100000:[0-9a-f]{32}:[0-9a-f]+:[0-9a-f]{64}$/.test( locked_by_run ),
+    await new uk( { } ).run( "unlock pw " + locked_by_run ), await new uk( { } ).run( "words " + test_entropy ),
+    await new uk( { } ).run( "entropy " + test_words ) ], [ true, JSON.stringify( { entropy: test_entropy, contacts: { } } ), test_words, test_entropy ] );
+   check( "- anything else said", await new uk( { } ).run( "keys" ).catch( function( e ) { return e.message; } ), "Use one of - " + uk.about.example );
+
    console.log( "" );
    console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

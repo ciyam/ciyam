@@ -80,4 +80,15 @@ ok   through run - own, seal and open, CRs shown as \r
 ok   - public and shared
 ok   - anything else said
 
+== user_keys ===================================================
+ok   the twelve words for entropy and back - BIP39, as a node's
+ok   - words not right, said
+ok   locked - as worked out without the module, given a salt and rounds
+ok   - and unlocked
+ok   locked afresh - its own salt each time, the default rounds, unlocked again
+ok   not unlocked - another password, changed, or not locked keys
+ok   not locked - no password, entropy not hex, a public key not one
+ok   through run - lock, unlock, words and entropy
+ok   - anything else said
+
 All checks passed.
