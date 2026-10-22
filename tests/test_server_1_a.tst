@@ -780,6 +780,23 @@ crypto_lamport -verify xxx.pub:xxx.key
 file_kill xxx.key
 file_kill xxx.pub
 file_kill xxx.sig
+crypto_ed25519_create test
+9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+67d3b5eaf0c0bf6b5a602d359daecc86a7a74053490ec37ae08e71360587c870
+crypto_ed25519_sign $SECRET "$MESSAGE"
+bG0RLBWvHG4Kd9mwtcJ5VMf54FwQf2SmkFq8HxM8w+sARD8LliPqVn58Odit7/gBFkyPuzNiFzEU0SKzZnxkBg==
+crypto_ed25519_verify $PUBKEY "$MESSAGE" $SIGNATURE
+crypto_ed25519_create test_1
+38a810ebdd0b91253efbaf708316ec74cb659ccc6bfdd915df06a4ab2b31f877
+88faccfab2e9c2179ad4282fa06d91a48ea7735d66f71aa5459f105596b82c35
+crypto_ed25519_create test_2
+a109dbd832801329f8409bee2845024ad4cea9f033fa5c2bd177c6fd3e786587
+d1dadf6166d6543e5108eba2cb89626a817bc7910d0fdb9f7599d3863791b905
+crypto_ed25519_shared $SECRET_1 $PUBKEY_2
+584ee887a81f1a3778676345a7e0f2317c86647444df0f01127ed58a7927bb7e
+crypto_ed25519_shared $SECRET_2 $PUBKEY_1
+584ee887a81f1a3778676345a7e0f2317c86647444df0f01127ed58a7927bb7e
+(shared secret matches)
 regex .* (test)
 Error: invalid response '(test)' (could be confused with a protocol response)
 regex -prefix=X .* (test)

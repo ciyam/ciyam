@@ -598,6 +598,29 @@ file_kill xxx.pub
 file_kill xxx.sig
 ~rm xxx.key xxx.pub xxx.sig xxx.src
 ;
+crypto_ed25519_create test
+SECRET=%OUTPUT:1%
+PUBKEY=%OUTPUT:2%
+MESSAGE=This is a test message...
+crypto_ed25519_sign $SECRET "$MESSAGE"
+SIGNATURE=$OUTPUT
+crypto_ed25519_verify $PUBKEY "$MESSAGE" $SIGNATURE
+crypto_ed25519_create test_1
+SECRET_1=%OUTPUT:1%
+PUBKEY_1=%OUTPUT:2%
+crypto_ed25519_create test_2
+SECRET_2=%OUTPUT:1%
+PUBKEY_2=%OUTPUT:2%
+crypto_ed25519_shared $SECRET_1 $PUBKEY_2
+SHARED_1=$OUTPUT
+crypto_ed25519_shared $SECRET_2 $PUBKEY_1
+SHARED_2=$OUTPUT
+@ifeq "$SHARED_1" "$SHARED_2"
+#(shared secret matches)
+@else
+#(SHARED SECRET DID NOT MATCH)
+@endif
+;
 regex .* (test)
 regex -prefix=X .* (test)
 ;
