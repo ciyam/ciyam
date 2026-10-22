@@ -89,6 +89,7 @@ constexpr const char* c_ext_svg = "svg";
 constexpr const char* c_ext_form = "form";
 constexpr const char* c_ext_html = "html";
 constexpr const char* c_ext_list = "list";
+constexpr const char* c_ext_keys = "keys";
 constexpr const char* c_ext_woff = "woff";
 constexpr const char* c_ext_woff2 = "woff2";
 
@@ -1489,6 +1490,10 @@ void http_request_handler::on_start( )
                   //
                   // then will set as being not found if the IP address of
                   // the requester does not match an existing CWS session.
+                  //
+                  // A user's keys (<path>/ciyam_#####.keys) are never found
+                  // (as they are only available to their owner through the
+                  // CWS "user-keys" endpoint).
                   if( pos == 0 )
                   {
                      name_check.erase( 0, CONST_LENGTH( c_ciyam_prefix ) );
@@ -1501,7 +1506,9 @@ void http_request_handler::on_start( )
 
                         name_check.erase( pos );
 
-                        if( ( name_check.length( ) == c_cws_access_length )
+                        if( ext == c_ext_keys )
+                           found = false;
+                        else if( ( name_check.length( ) == c_cws_access_length )
                          && ( ( ext == c_ext_js ) || ( ext == c_ext_list ) ) )
                         {
                            pos = name_check.find_first_not_of( "0123456789" );

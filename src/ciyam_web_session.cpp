@@ -95,6 +95,7 @@ constexpr const char* c_cws_own = "***";
 constexpr const char* c_js_suffix = ".js";
 constexpr const char* c_css_suffix = ".css";
 constexpr const char* c_list_suffix = ".list";
+constexpr const char* c_keys_suffix = ".keys";
 
 constexpr const char* c_username_suffix = "@";
 
@@ -134,6 +135,7 @@ constexpr const char* c_cws_uri_suffix_storages = "storages";
 constexpr const char* c_cws_uri_suffix_javascripts = "javascripts";
 constexpr const char* c_cws_uri_suffix_stylesheets = "stylesheets";
 constexpr const char* c_cws_uri_suffix_webcmdlists = "webcmdlists";
+constexpr const char* c_cws_uri_suffix_user_keys = "user-keys";
 constexpr const char* c_cws_uri_suffix_unlock_keys = "unlock-keys";
 constexpr const char* c_cws_uri_suffix_storage_modules = "storage-modules";
 
@@ -181,18 +183,20 @@ constexpr const char* c_cws_request_unlock_keys_create_options_encrypted = "encr
 // NOTE: This help is only intended for the "test_web_session.html" page which translates this more "user friendly" syntax to HTTP requests.
 constexpr const char* c_cws_help_request_output = "quit\n"
  "attach storage <name>\ncreate message <room> [for=<name,>;]text=<text>\ndelete device <ident>\ndelete message <room>\n"
- "delete javascript\ndelete stylesheet\ndelete webcmdlist\nemploy unlock-key <key>\nretain javascript\n"
- "retain stylesheet\nretain webcmdlist\nreview users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\n"
- "review javascript[s] [<name>]\nreview stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+ "delete javascript\ndelete stylesheet\ndelete webcmdlist\ndelete user-keys\nemploy unlock-key <key>\nretain javascript\n"
+ "retain stylesheet\nretain webcmdlist\nretain user-keys\nreview users\nreview devices\n"
+ "review messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\n"
+ "review webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
  "update user *** password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|nominated=[<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
  "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete device <ident>\ndelete message <room>\ndelete javascript\ndelete stylesheet\n"
- "delete webcmdlist\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\nreview logs [<name> [lines=10]]\n"
+ "delete webcmdlist\ndelete user-keys\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\n"
+ "retain user-keys\nreview logs [<name> [lines=10]]\n"
  "review users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\nreview javascript[s] [<name>]\n"
- "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
+ "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user <pin> password=<password>\n"
  "update message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}";
 
@@ -2661,6 +2665,66 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      else
                         // FUTURE: This message should be handled as a server string message.
                         error = "Commands list could not be erased (contact the administrator).";
+                  }
+               }
+               // NOTE: A user's own keys (encrypted before they get here) which are only
+               // ever available to their owner (so unlike "webcmdlists" there is no way
+               // to fetch another's, not even for "admin", and "http_handler.cpp" won't
+               // serve the files at all).
+               else if( is_get_request && ( uri_suffix == c_cws_uri_suffix_user_keys ) )
+               {
+                  string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + access + c_keys_suffix );
+
+                  found = true;
+
+                  if( !file_exists( file_name ) )
+                     use_none_response = true;
+                  else
+                  {
+                     string keys_data( buffer_file( file_name ) );
+
+                     if( !is_json_output )
+                        response = keys_data;
+                     else
+                        response = "{\"user_keys\":\"" + escaped_json( keys_data ) + "\"}";
+                  }
+               }
+               else if( is_put_request && ( uri_suffix == c_cws_uri_suffix_user_keys ) )
+               {
+                  string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + access + c_keys_suffix );
+
+                  if( payload.empty( ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "User keys data was not provided.";
+                  else if( is_locked )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "User keys data cannot be saved whilst system is locked.";
+                  else
+                  {
+                     found = true;
+
+                     write_file( file_name, payload );
+
+                     // NOTE: This delay is used to reduce possible I/O overloading.
+                     msleep( c_save_data_delay );
+                  }
+               }
+               else if( is_delete_request && ( uri_suffix == c_cws_uri_suffix_user_keys ) )
+               {
+                  if( is_locked )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "User keys data cannot be erased whilst the system is locked.";
+                  else
+                  {
+                     string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + access + c_keys_suffix );
+
+                     file_remove( file_name );
+
+                     if( !file_exists( file_name ) )
+                        found = true;
+                     else
+                        // FUTURE: This message should be handled as a server string message.
+                        error = "User keys could not be erased (contact the administrator).";
                   }
                }
                else if( is_post_request && ( uri_suffix == c_cws_uri_suffix_users ) )
