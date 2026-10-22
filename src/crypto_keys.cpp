@@ -589,22 +589,28 @@ key_curve public_key::get_curve( ) const
 
 string public_key::get_public( bool compressed, bool use_base64 ) const
 {
+   string retval;
+
    if( p_impl->curve == e_key_curve_ed25519 )
    {
       if( !use_base64 )
-         return hex_encode( p_impl->ed_public, c_ed25519_public_key_size );
+         retval = hex_encode( p_impl->ed_public, c_ed25519_public_key_size );
       else
-         return base64::encode( p_impl->ed_public, c_ed25519_public_key_size );
+         retval = base64::encode( p_impl->ed_public, c_ed25519_public_key_size );
+   }
+   else
+   {
+      unsigned char buf[ c_max_public_key_bytes ];
+
+      int len = p_impl->get_public_key( buf, compressed );
+
+      if( !use_base64 )
+         retval = hex_encode( buf, len );
+      else
+         retval = base64::encode( buf, len );
    }
 
-   unsigned char buf[ c_max_public_key_bytes ];
-
-   int len = p_impl->get_public_key( buf, compressed );
-
-   if( !use_base64 )
-      return hex_encode( buf, len );
-   else
-      return base64::encode( buf, len );
+   return retval;
 }
 
 #ifdef SSL_SUPPORT
@@ -663,52 +669,60 @@ string public_key::get_address( bool compressed, bool use_override, address_pref
 // whereas a "k1" one is of its SHA-256.
 bool public_key::verify_signature( const string& msg, const string& sig ) const
 {
+   bool retval = false;
+
    if( p_impl->curve == e_key_curve_ed25519 )
    {
       unsigned char signature[ c_ed25519_signature_size ];
 
-      if( base64::decode_size( sig ) > c_ed25519_signature_size )
-         return false;
+      if( ( base64::decode_size( sig ) <= c_ed25519_signature_size )
+       && ( base64::decode( sig, signature, sizeof( signature ) ) == c_ed25519_signature_size ) )
+         retval = ed25519_verify( signature, ( const unsigned char* )msg.data( ), msg.length( ), p_impl->ed_public );
+   }
+   else
+   {
+      unsigned char buf[ c_sha256_digest_size ];
 
-      if( base64::decode( sig, signature, sizeof( signature ) ) != c_ed25519_signature_size )
-         return false;
+      sha256 hash( msg );
+      hash.copy_digest_to_buffer( buf );
 
-      return ed25519_verify( signature, ( const unsigned char* )msg.data( ), msg.length( ), p_impl->ed_public );
+      vector< unsigned char > signature;
+      signature.resize( base64::decode_size( sig ) );
+
+      base64::decode( sig, &signature[ 0 ], signature.size( ) );
+
+      retval = p_impl->verify_signature( buf, signature );
    }
 
-   unsigned char buf[ c_sha256_digest_size ];
-
-   sha256 hash( msg );
-   hash.copy_digest_to_buffer( buf );
-
-   vector< unsigned char > signature;
-   signature.resize( base64::decode_size( sig ) );
-
-   base64::decode( sig, &signature[ 0 ], signature.size( ) );
-
-   return p_impl->verify_signature( buf, signature );
+   return retval;
 }
 
 bool public_key::verify_signature( const unsigned char* p_data, const string& sig ) const
 {
+   bool retval = false;
+
    if( p_impl->curve == e_key_curve_ed25519 )
    {
       unsigned char signature[ c_ed25519_signature_size ];
 
-      if( ( sig.length( ) != c_ed25519_signature_size * 2 ) || !are_hex_nibbles( sig ) )
-         return false;
+      if( ( sig.length( ) == c_ed25519_signature_size * 2 ) && are_hex_nibbles( sig ) )
+      {
+         hex_decode( sig, signature, sizeof( signature ) );
 
-      hex_decode( sig, signature, sizeof( signature ) );
+         retval = ed25519_verify( signature, p_data, c_sha256_digest_size, p_impl->ed_public );
+      }
+   }
+   else
+   {
+      vector< unsigned char > signature;
+      signature.resize( sig.size( ) / 2 );
 
-      return ed25519_verify( signature, p_data, c_sha256_digest_size, p_impl->ed_public );
+      hex_decode( sig, &signature[ 0 ], signature.size( ) );
+
+      retval = p_impl->verify_signature( p_data, signature );
    }
 
-   vector< unsigned char > signature;
-   signature.resize( sig.size( ) / 2 );
-
-   hex_decode( sig, &signature[ 0 ], signature.size( ) );
-
-   return p_impl->verify_signature( p_data, signature );
+   return retval;
 }
 
 #ifdef SSL_SUPPORT
@@ -1158,24 +1172,30 @@ string private_key::construct_signature( const unsigned char* p_digest, bool use
 
 string private_key::construct_signature( const string& msg, bool use_base64 ) const
 {
+   string retval;
+
    if( public_key::p_impl->curve == e_key_curve_ed25519 )
    {
       unsigned char signature[ c_ed25519_signature_size ];
 
       ed25519_sign( signature, ( const unsigned char* )msg.data( ), msg.length( ), public_key::p_impl->ed_public, p_impl->ed_private );
 
-      return use_base64 ? base64::encode( signature, sizeof( signature ) ) : hex_encode( signature, sizeof( signature ) );
+      retval = use_base64 ? base64::encode( signature, sizeof( signature ) ) : hex_encode( signature, sizeof( signature ) );
+   }
+   else
+   {
+      unsigned char buf[ c_sha256_digest_size ];
+
+      sha256 hash( msg );
+      hash.copy_digest_to_buffer( buf );
+
+      vector< unsigned char > signature;
+      p_impl->sign_message( buf, signature );
+
+      retval = use_base64 ? base64::encode( &signature[ 0 ], signature.size( ) ) : hex_encode( &signature[ 0 ], signature.size( ) );
    }
 
-   unsigned char buf[ c_sha256_digest_size ];
-
-   sha256 hash( msg );
-   hash.copy_digest_to_buffer( buf );
-
-   vector< unsigned char > signature;
-   p_impl->sign_message( buf, signature );
-
-   return use_base64 ? base64::encode( &signature[ 0 ], signature.size( ) ) : hex_encode( &signature[ 0 ], signature.size( ) );
+   return retval;
 }
 
 #ifdef SSL_SUPPORT
