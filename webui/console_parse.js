@@ -63,6 +63,7 @@ const c_console_nouns =
    script: "javascripts", scripts: "javascripts", javascript: "javascripts", javascripts: "javascripts",
    style: "stylesheets", styles: "stylesheets", stylesheet: "stylesheets", stylesheets: "stylesheets",
    list: "webcmdlists", lists: "webcmdlists", webcmdlist: "webcmdlists", webcmdlists: "webcmdlists",
+   "user-key": "user-keys", "user-keys": "user-keys",
    log: "logs", logs: "logs"
 };
 
@@ -103,6 +104,12 @@ const c_console_routes =
    "javascripts|delete": { method: "DELETE", name: false, options: false },
    "stylesheets|delete": { method: "DELETE", name: false, options: false },
    "webcmdlists|delete": { method: "DELETE", name: false, options: false },
+
+   // NOTE: Ian, 2026-10-22 - this account's own keys, encrypted before they are sent: no name, as only the owner reaches
+   // them. "retain user-keys <data>" sends the rest of the line as the payload.
+   "user-keys|review": { method: "GET", name: false, options: false },
+   "user-keys|retain": { method: "PUT", name: false, options: false, payload: true },
+   "user-keys|delete": { method: "DELETE", name: false, options: false },
 
    "storage-modules|review": { method: "GET", name: "optional", options: false },
    "storage-instances|review": { method: "GET", name: true, options: true }
@@ -344,8 +351,21 @@ function resolve_command( line )
 
    // NOTE: Options keep their internal spaces - "text=Design Review" is one option.
    var options = "";
+   var payload = "";
 
-   if( route.options && ( rest.length > 0 ) )
+   if( route.payload )
+   {
+      if( rest.length === 0 )
+         return { kind: "unknown", word: words[ 0 ], reason: "'" + key.replace( "|", " " ) + "' needs what to save" };
+
+      var after = text;
+
+      for( var j = 0; j < ( joined ? 1 : 2 ); j++ )
+         after = after.replace( /^\s*\S+/, "" );
+
+      payload = after.trim( );
+   }
+   else if( route.options && ( rest.length > 0 ) )
    {
       var skip = ( joined ? 1 : 2 ) + ( name !== "" ? 1 : 0 );
 
@@ -364,7 +384,7 @@ function resolve_command( line )
 
    var noun = key.substr( 0, key.indexOf( "|" ) );
 
-   return {
+   var spec = {
       kind: "cws",
       key: key,
       method: route.method,
@@ -372,6 +392,12 @@ function resolve_command( line )
       name: name,
       options: options
    };
+
+   // NOTE: Only for a route that saves what it is given - every other answer is as it was.
+   if( route.payload )
+      spec.payload = payload;
+
+   return spec;
 }
 
 // ====================================================================
