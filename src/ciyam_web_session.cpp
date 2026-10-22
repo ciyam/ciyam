@@ -2681,7 +2681,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      use_none_response = true;
                   else
                   {
-                     string keys_data( buffer_file( file_name ) );
+                     string keys_data( opt_buffer_file( file_name ) );
 
                      if( !is_json_output )
                         response = keys_data;

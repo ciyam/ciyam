@@ -1481,6 +1481,14 @@ void http_request_handler::on_start( )
 
                   name_check.erase( 0, pos + 1 );
 
+                  // NOTE: A user's keys are never found (whatever the name or the case
+                  // of the extension) as they are only available to their owner through
+                  // the CWS "user-keys" endpoint.
+                  pos = name_check.rfind( '.' );
+
+                  if( ( pos != string::npos ) && ( lower( name_check.substr( pos + 1 ) ) == c_ext_keys ) )
+                     found = false;
+
                   pos = name_check.find( c_ciyam_prefix );
 
                   // NOTE: If the requested file is in the form of either:
@@ -1490,10 +1498,6 @@ void http_request_handler::on_start( )
                   //
                   // then will set as being not found if the IP address of
                   // the requester does not match an existing CWS session.
-                  //
-                  // A user's keys (<path>/ciyam_#####.keys) are never found
-                  // (as they are only available to their owner through the
-                  // CWS "user-keys" endpoint).
                   if( pos == 0 )
                   {
                      name_check.erase( 0, CONST_LENGTH( c_ciyam_prefix ) );
@@ -1506,9 +1510,7 @@ void http_request_handler::on_start( )
 
                         name_check.erase( pos );
 
-                        if( ext == c_ext_keys )
-                           found = false;
-                        else if( ( name_check.length( ) == c_cws_access_length )
+                        if( ( name_check.length( ) == c_cws_access_length )
                          && ( ( ext == c_ext_js ) || ( ext == c_ext_list ) ) )
                         {
                            pos = name_check.find_first_not_of( "0123456789" );
