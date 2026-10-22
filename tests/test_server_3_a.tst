@@ -46,10 +46,12 @@ delete message <room>
 delete javascript
 delete stylesheet
 delete webcmdlist
+delete user-keys
 employ unlock-key <key>
 retain javascript
 retain stylesheet
 retain webcmdlist
+retain user-keys
 review users
 review devices
 review messages <room> [[from=<unix_time>;]extra={NONE|TIME}]
@@ -57,6 +59,7 @@ review storages
 review javascript[s] [<name>]
 review stylesheet[s] [<name>]
 review webcmdlist[s] [<name>]
+review user-keys
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 update user *** password=<password>
@@ -232,10 +235,12 @@ delete message <room>
 delete javascript
 delete stylesheet
 delete webcmdlist
+delete user-keys
 employ unlock-key <key>
 retain javascript
 retain stylesheet
 retain webcmdlist
+retain user-keys
 review logs [<name> [lines=10]]
 review users
 review devices
@@ -244,6 +249,7 @@ review storages
 review javascript[s] [<name>]
 review stylesheet[s] [<name>]
 review webcmdlist[s] [<name>]
+review user-keys
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 update user <pin> password=<password>
