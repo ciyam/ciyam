@@ -187,23 +187,24 @@ async function steps( module_class, list )
    check( "the sign in's hash, version 0 - a page's as the command line's, as UTF-8", signin_hashes,
     passwords.map( function( p ) { return sha_hex( "12345" + p ); } ) );
 
-   // NOTE: Version 1 (Ian, 2026-10-23: hardened before it is sent) - worked out here without "ciyam.js": rounds, each the SHA-256
-   // of what there is with the PIN and password after it, from the two; the floor for twelve or more characters, twice it for
-   // nine to eleven, three times for fewer. In a page and through Node alike.
+   // NOTE: Version 1 (Ian, 2026-10-23: hardened before it is sent) - worked out here without "ciyam.js": one SHA-256 of the PIN
+   // and password, then each round after the SHA-256 of what there is with the two after it - as the server's "crypto_hash -x"
+   // does; the floor for twelve or more UTF-8 bytes, twice it for nine to eleven, three times for fewer. In a page and through
+   // Node alike - and as the node's own "crypto_hash -x=<rounds - 1>" gives it (2026-10-23), so "init_web_access" can make it.
    var hardened = function( access, password )
    {
       var rounds = m.password_hash_rounds( password );
-      var s = access + password;
+      var s = sha_hex( access + password );
 
-      for( var r = 0; r < rounds; r++ )
+      for( var r = 1; r < rounds; r++ )
          s = sha_hex( s + access + password );
 
       return s;
    };
 
-   check( "version 1's rounds - by the password's length in characters", [ m.password_hash_rounds( "seven77" ), m.password_hash_rounds( "eight888" ),
+   check( "version 1's rounds - by the password's length in UTF-8 bytes", [ m.password_hash_rounds( "seven77" ), m.password_hash_rounds( "eight888" ),
     m.password_hash_rounds( "nine99999" ), m.password_hash_rounds( "elevenchars" ), m.password_hash_rounds( "twelve-chars" ),
-    m.password_hash_rounds( "pässwörd-läng" ) ], [ 300000, 300000, 200000, 200000, 100000, 100000 ] );
+    m.password_hash_rounds( "pässwörd" ), m.password_hash_rounds( "pässwörd-läng" ) ], [ 300000, 300000, 200000, 200000, 100000, 200000, 100000 ] );
 
    var page_v1 = await in_page.hash_combined( "pässwörd", "12345" );
 
@@ -213,6 +214,9 @@ async function steps( module_class, list )
 
    check( "the sign in's hash, version 1 - the current one: hardened, a page's as Node's, as worked out here", [ page_v1 === node_v1,
     node_v1 === hardened( "12345", "pässwörd" ), node_v1 !== sha_hex( "12345pässwörd" ) ], [ true, true, true ] );
+   check( "- as the node's own crypto_hash -x gives it (-x=99999 for twelve bytes, -x=199999 for ten)", [
+    await m.password_hash( "12345", "twelve-chars", 1, node_sha ), node_v1 ],
+    [ "b2b29b24221ff5062bfe831eb0d08956ca1ef5b7b50423e633685d2d1b2c6274", "9feba07f0a288065b45986611ac756f7a364a523c0656d4912829c5f87d0b73f" ] );
    check( "- an unknown version refused", await m.password_hash( "12345", "p", 2, node_sha ).catch( function( e ) { return e.message; } ),
     "There is no password hash version 2." );
 

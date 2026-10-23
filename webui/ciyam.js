@@ -1697,11 +1697,12 @@ function is_okay_response( response )
    return false;
 }
 
-// NOTE: Version 1's rounds for a password, by its length in characters - the floor for twelve or more, twice it for nine to
-// eleven, three times for fewer.
+// NOTE: Version 1's rounds for a password, by its length in UTF-8 bytes - the floor for twelve or more, twice it for nine to
+// eleven, three times for fewer. Bytes, as a console script measures it ("@strlen"), so "init_web_access" can work the same
+// out for admin (Ian, 2026-10-23).
 function password_hash_rounds( password )
 {
-   var length = Array.from( String( password || "" ) ).length;
+   var length = new TextEncoder( ).encode( String( password || "" ) ).length;
 
    if( length >= 12 )
       return c_password_hash_floor;
@@ -1712,8 +1713,10 @@ function password_hash_rounds( password )
 }
 
 // NOTE: The PIN and password hashed as "version", in lower-case hex - version 0 one SHA-256 of the two; version 1 that many
-// rounds ("password_hash_rounds( )") each hashing what there is with the two after it, from the two themselves. In a page
-// through "sha2.min.js", in step, pausing now and then so the page can redraw; with "node_crypto", Node's own SHA-256.
+// rounds ("password_hash_rounds( )") - one SHA-256 of the two, then each round after hashing what there is with the two after
+// it - as the server's "crypto_hash -x=<rounds - 1>" does, so a console script can make it too ("init_web_access" for admin,
+// Ian 2026-10-23). In a page through "sha2.min.js", in step, pausing now and then so the page can redraw; with "node_crypto",
+// Node's own SHA-256.
 async function password_hash( access, password, version, node_crypto )
 {
    var input = String( access ) + String( password );
@@ -1736,9 +1739,9 @@ async function password_hash( access, password, version, node_crypto )
       throw new Error( "There is no password hash version " + version + "." );
 
    var rounds = password_hash_rounds( password );
-   var s = text;
+   var s = sha( text );
 
-   for( var i = 0; i < rounds; i++ )
+   for( var i = 1; i < rounds; i++ )
    {
       s = sha( s + text );
 
