@@ -665,8 +665,9 @@ string public_key::get_address( bool compressed, bool use_override, address_pref
 }
 #endif
 
-// NOTE: An "ed" signature is of the message itself (hashed using SHA-512)
-// whereas a "k1" one is of its SHA-256.
+// NOTE: An "ed" signature is of the message itself (hashed using SHA-512) whereas
+// for "k1" (and what is being assumed in the overloaded function that follows) is
+// the SHA-256 hash of the message.
 bool public_key::verify_signature( const string& msg, const string& sig ) const
 {
    bool retval = false;
@@ -675,8 +676,17 @@ bool public_key::verify_signature( const string& msg, const string& sig ) const
    {
       unsigned char signature[ c_ed25519_signature_size ];
 
-      if( ( base64::decode_size( sig ) <= c_ed25519_signature_size )
-       && ( base64::decode( sig, signature, sizeof( signature ) ) == c_ed25519_signature_size ) )
+      bool decoded = true;
+
+      // NOTE: Will handle either hex or base64 encoding for the signature.
+      if( ( sig.length( ) == ( c_ed25519_signature_size * 2 ) ) && are_hex_nibbles( sig ) )
+         hex_decode( sig, signature, sizeof( signature ) );
+      else if( base64::decode_size( sig ) == c_ed25519_signature_size )
+         base64::decode( sig, signature, sizeof( signature ) );
+      else
+         decoded = false;
+
+      if( decoded )
          retval = ed25519_verify( signature, ( const unsigned char* )msg.data( ), msg.length( ), p_impl->ed_public );
    }
    else
@@ -687,6 +697,7 @@ bool public_key::verify_signature( const string& msg, const string& sig ) const
       hash.copy_digest_to_buffer( buf );
 
       vector< unsigned char > signature;
+
       signature.resize( base64::decode_size( sig ) );
 
       base64::decode( sig, &signature[ 0 ], signature.size( ) );
@@ -697,6 +708,8 @@ bool public_key::verify_signature( const string& msg, const string& sig ) const
    return retval;
 }
 
+// NOTE: This overload assumes that the data is an SHA-256 digest (hence the hard-coding
+// of "c_sha256_digest_size" for Ed25519) and that the signature has been encoded in hex.
 bool public_key::verify_signature( const unsigned char* p_data, const string& sig ) const
 {
    bool retval = false;
@@ -705,7 +718,7 @@ bool public_key::verify_signature( const unsigned char* p_data, const string& si
    {
       unsigned char signature[ c_ed25519_signature_size ];
 
-      if( ( sig.length( ) == c_ed25519_signature_size * 2 ) && are_hex_nibbles( sig ) )
+      if( ( sig.length( ) == ( c_ed25519_signature_size * 2 ) ) && are_hex_nibbles( sig ) )
       {
          hex_decode( sig, signature, sizeof( signature ) );
 
@@ -715,6 +728,7 @@ bool public_key::verify_signature( const unsigned char* p_data, const string& si
    else
    {
       vector< unsigned char > signature;
+
       signature.resize( sig.size( ) / 2 );
 
       hex_decode( sig, &signature[ 0 ], signature.size( ) );
