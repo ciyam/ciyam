@@ -605,6 +605,9 @@ MESSAGE=This is a test message...
 crypto_ed25519_sign $SECRET "$MESSAGE"
 SIGNATURE=$OUTPUT
 crypto_ed25519_verify $PUBKEY "$MESSAGE" $SIGNATURE
+crypto_ed25519_sign -hex $SECRET "$MESSAGE"
+SIGNATURE=$OUTPUT
+crypto_ed25519_verify $PUBKEY "$MESSAGE" $SIGNATURE
 crypto_ed25519_create test_1
 SECRET_1=%OUTPUT:1%
 PUBKEY_1=%OUTPUT:2%
