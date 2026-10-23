@@ -800,6 +800,11 @@ crypto_ed25519_shared $SECRET_1 $PUBKEY_2
 crypto_ed25519_shared $SECRET_2 $PUBKEY_1
 584ee887a81f1a3778676345a7e0f2317c86647444df0f01127ed58a7927bb7e
 (shared secret matches)
+000000
+000001
+d25c8eaf817dce15bd4a188b2a9158c76c2c370a150c2a99c646c82bc8ced997
+6e850e75dd6177f3c926ef900bba028ba6bbc94ba94d54f56afdcf7a90606b0f
+(shared secret matches)
 regex .* (test)
 Error: invalid response '(test)' (could be confused with a protocol response)
 regex -prefix=X .* (test)
@@ -960,6 +965,12 @@ abcd01234
 regex @peerchain_identity abcdefg01
 regex @peerchain_identity 0123456789
 regex @peerchain_identity 1234567890
+a0b1c2d3e4f5
+A0B1C2D3E4F501
+a0b1c2d3e4f50102
+A0B1C2D3E4F50102
+A0B1C2D3E4F5010203
+a0b1c2d3e4f50102gg
 soundex no
 N000
 soundex now

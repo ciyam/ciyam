@@ -624,6 +624,22 @@ SHARED_2=$OUTPUT
 #(SHARED SECRET DID NOT MATCH)
 @endif
 ;
+KVAR_1=@secret:test_1
+#$KVAR_1
+KVAR_2=@secret:test_2
+#$KVAR_2
+PUBK_1=@public:$KVAR_1
+#$PUBK_1
+PUBK_2=@public:$KVAR_2
+#$PUBK_2
+SSEC_1=@shared:$KVAR_1:$PUBK_2
+SSEC_2=@shared:$KVAR_2:$PUBK_1
+@ifeq "$SSEC_1" "$SSEC_2"
+#(shared secret matches)
+@else
+#(SHARED SECRET DID NOT MATCH)
+@endif
+;
 regex .* (test)
 regex -prefix=X .* (test)
 ;
@@ -733,6 +749,43 @@ regex @peerchain_identity abcd01234
 regex @peerchain_identity abcdefg01
 regex @peerchain_identity 0123456789
 regex @peerchain_identity 1234567890
+;
+TEST_VALUE=a0b1c2d3e4f5
+#$TEST_VALUE
+CHECK_VALUE=@regex:^[0-9a-fA-F]{12,15}$$:$TEST_VALUE
+@ifneq "$TEST_VALUE" "$CHECK_VALUE"
+#(UNEXPECTED MISMATCH #1)
+@endif
+TEST_VALUE=A0B1C2D3E4F501
+#$TEST_VALUE
+CHECK_VALUE=@regex:^[0-9a-fA-F]{12,15}$$:$TEST_VALUE
+@ifneq "$TEST_VALUE" "$CHECK_VALUE"
+#(UNEXPECTED MISMATCH #2)
+@endif
+TEST_VALUE=a0b1c2d3e4f50102
+#$TEST_VALUE
+CHECK_VALUE=@regex:^[0-9a-fA-F]{12,16}$$:$TEST_VALUE
+@ifneq "$TEST_VALUE" "$CHECK_VALUE"
+#(UNEXPECTED MISMATCH #3)
+@endif
+TEST_VALUE=A0B1C2D3E4F50102
+#$TEST_VALUE
+CHECK_VALUE=@regex:^[0-9a-fA-F]{12,16}$$:$TEST_VALUE
+@ifneq "$TEST_VALUE" "$CHECK_VALUE"
+#(UNEXPECTED MISMATCH #4)
+@endif
+TEST_VALUE=A0B1C2D3E4F5010203
+#$TEST_VALUE
+CHECK_VALUE=@regex:^[0-9a-fA-F]{12,16}$$:$TEST_VALUE
+@ifeq "$TEST_VALUE" "$CHECK_VALUE"
+#(UNEXPECTED MATCH #1)
+@endif
+TEST_VALUE=a0b1c2d3e4f50102gg
+#$TEST_VALUE
+CHECK_VALUE=@regex:^[0-9a-fA-F]{12,16}$$:$TEST_VALUE
+@ifeq "$TEST_VALUE" "$CHECK_VALUE"
+#(UNEXPECTED MATCH #2)
+@endif
 ;
 soundex no
 soundex now
