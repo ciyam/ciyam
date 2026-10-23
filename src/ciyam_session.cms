@@ -16,7 +16,7 @@ crypto_nonce_search "searches for a proof of work nonce for given data" <val//da
 crypto_nonce_verify "verifies if a proof of work nonce is valid for given data" <val//data><val//nonce>[<val//difficulty>]
 crypto_peer_identity "output pseudo identity" <val//extra_identity>
 crypto_shared_secret "creates an encrypted shared secret" <val//extra_identity><val//ext_pseudo_identity>
-crypto_ed25519_sign "sign a message" <val//secret><val//message>
+crypto_ed25519_sign "sign a message" [<opt/-hex/hex_encode>]<val//secret><val//message>
 crypto_ed25519_create "creates an Ed25519 key pair" <val//secret>
 crypto_ed25519_shared "creates an X25519 shared secret" <val//secret><val//pubkey>
 crypto_ed25519_verify "verify an Ed25519 signature" <val//pubkey><val//message><val//signature>

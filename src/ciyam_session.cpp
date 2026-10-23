@@ -2832,8 +2832,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_crypto_ed25519_sign )
       {
+         bool hex = has_parm_val( parameters, c_cmd_ciyam_session_crypto_ed25519_sign_hex_encode );
          string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_ed25519_sign_secret ) );
          string message( get_parm_val( parameters, c_cmd_ciyam_session_crypto_ed25519_sign_message ) );
+
+         bool use_hex = false;
 
          if( secret.length( ) < 64 )
          {
@@ -2844,7 +2847,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          private_key priv_key( secret );
 
-         response = priv_key.construct_signature( message, true );
+         response = priv_key.construct_signature( message, !hex );
       }
       else if( command == c_cmd_ciyam_session_crypto_ed25519_create )
       {
