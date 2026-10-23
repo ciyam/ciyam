@@ -111,6 +111,15 @@ bool function_name( int n )
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Unusual Flow
+------------
+
+In general use just the one "return" at the end of a function and especially avoid having a "return" anywhere
+in the middle of a function (where it is most likely to be missed when paging over the code).
+
+Any use of "break" must stand out in loop statements and any intentional "drop through" in a "case" statement
+needs to be commented (so a "break" will not be added inadvertantly at some later stage).
+
 Continuation
 ------------
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
