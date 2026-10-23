@@ -448,6 +448,16 @@ var secret = cp.make_log_entry( "chat", "POST",
 check( "credentials never kept", /45679|YWRt|device=|passwd=/.test( JSON.stringify( secret ) ), false );
 check( "request kept", secret.request, "@none" );
 
+// NOTE: A password in "options" - "users update", and an account switched over to the current hash on signing in - is a
+// hash that signs in, so it is hidden in what is shown and in the query (found by review, 2026-10-23).
+var password_change = cp.make_log_entry( "account", "PUT",
+ "http://h/cws/users/20401?access=20401&device=c5588b&format=text&options=password%3D6c6d112c15af1c6e0a77d9b0b5c27954&session=ddd52e",
+ null, "[okay]", t0, t1 );
+
+check( "a password's hash never kept - hidden in the request and the query", [ password_change.request,
+ password_change.sent, /6c6d112c/.test( JSON.stringify( password_change ) ) ],
+ [ "password=(hidden)", [ "format=text", "options=password%3D(hidden)" ], false ] );
+
 check( "error marked", cp.make_log_entry( "console", "GET", "http://h/cws?request=x", null, "[bad]", t0, t1 ).ok, false );
 
 var failed = cp.make_log_entry( "console", "GET", "http://h/cws/status", null, null, t0, t1 );

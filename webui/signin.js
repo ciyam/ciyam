@@ -668,6 +668,8 @@ async function signin_resume( )
    ciyam.username = kept.username;
    ciyam.is_admin = kept.is_admin;
    ciyam.hashed = signin_saved_hash( kept.access ) || "";
+   // NOTE: The version this browser keeps for the PIN - the hash taken up was made that way (found by review, 2026-10-23).
+   ciyam.hash_version = ciyam.hash_version_for( kept.access );
 
    var reply = "";
 

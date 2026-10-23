@@ -1356,6 +1356,8 @@ async function adopt_session( credentials )
    ciyam.access = credentials.access;
    ciyam.device = credentials.device;
    ciyam.hashed = credentials.hashed;
+   // NOTE: The version this browser keeps for the PIN - the hash taken up was made that way (found by review, 2026-10-23).
+   ciyam.hash_version = ciyam.hash_version_for( ciyam.access );
    ciyam.sessid = credentials.sessid;
    ciyam.unique = credentials.unique;
    ciyam.username = credentials.username;

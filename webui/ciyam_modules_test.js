@@ -240,6 +240,19 @@ async function steps( module_class, list )
    check( "the version guessed - none kept: current; kept for the node but no versions: 0; another's kept: current; as kept",
     guessed, [ 1, 1, 0, 1, 0, 1, 1 ] );
 
+   // NOTE: Found by review (2026-10-23) - a PIN with a username after it is looked up by its PIN; and only "[okay]", as text or
+   // JSON, is taken as done - an error in JSON had been taken for success.
+   global.localStorage = fake_storage( { "cws.hash_version@20401": "0" } );
+
+   var suffixed = in_page.hash_version_for( "20401:verify-a" );
+
+   delete global.localStorage;
+
+   check( "- a PIN with a username after it, by its PIN", suffixed, 0 );
+   check( "a reply that says done - only \"[okay]\", as text or JSON", [ "[okay]", " [okay]\n", "{\"response\":\"[okay]\"}",
+    "Error: Unknown access pin '41281' for user update.", "{\"error\":\"Unknown access pin\"}", "{\"response\":\"[none]\"}", "", null, "{bad" ]
+    .map( m.is_okay_response ), [ true, true, true, false, false, false, false, false, false ] );
+
    var calls = [ ];
    var context = m.ciyam_module_page_context( { show_progress: function( ) { calls.push( "show" ); },
     update_progress: function( f ) { calls.push( f ); }, hide_progress: function( ) { calls.push( "hide" ); } } );

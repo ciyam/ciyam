@@ -264,6 +264,8 @@ function adopt_session( credentials )
    ciyam.access = credentials.access;
    ciyam.device = credentials.device;
    ciyam.hashed = credentials.hashed;
+   // NOTE: The version this browser keeps for the PIN - the hash taken up was made that way (found by review, 2026-10-23).
+   ciyam.hash_version = ciyam.hash_version_for( ciyam.access );
    ciyam.sessid = credentials.sessid;
    ciyam.unique = credentials.unique;
    ciyam.username = credentials.username;
@@ -904,9 +906,16 @@ async function do_change_password( event )
 
    holding.disabled = true;
 
-   var current_right = ( await session_hash_for( current ) === ciyam.hashed );
+   var current_right = false;
 
-   holding.disabled = false;
+   try
+   {
+      current_right = ( await session_hash_for( current ) === ciyam.hashed );
+   }
+   finally
+   {
+      holding.disabled = false;
+   }
 
    if( !current_right )
    {

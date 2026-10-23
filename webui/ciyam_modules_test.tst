@@ -23,6 +23,8 @@ ok   version 1's rounds - by the password's length in characters
 ok   the sign in's hash, version 1 - the current one: hardened, a page's as Node's, as worked out here
 ok   - an unknown version refused
 ok   the version guessed - none kept: current; kept for the node but no versions: 0; another's kept: current; as kept
+ok   - a PIN with a username after it, by its PIN
+ok   a reply that says done - only "[okay]", as text or JSON
 ok   progress through the page's own functions - shown at nought, hidden at the end
 ok   - and other modules
 ok   a module that runs nothing says it loaded

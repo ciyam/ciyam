@@ -61,6 +61,9 @@ const c_storage_hash_version_prefix = "cws.hash_version@";
 const c_wrong_password_error = "not valid";
 const c_sign_in_gap_ms = 3500;
 
+// NOTE: How long switching an account over waits for the node before keeping the older way.
+const c_switch_over_wait_ms = 20000;
+
 const c_visible_ascii_chars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
 class CIYAM
@@ -276,7 +279,7 @@ class CIYAM
       {
          if( typeof localStorage !== "undefined" )
          {
-            var kept = localStorage.getItem( c_storage_hash_version_prefix + access );
+            var kept = localStorage.getItem( c_storage_hash_version_prefix + String( access ).split( ":" )[ 0 ] );
 
             if( kept !== null )
             {
@@ -568,15 +571,25 @@ class CIYAM
    // admin set - and if it was the older way, the password is hashed the current way and set at once, the session staying
    // open as a change of password leaves it (Ian, 2026-10-23: "could automatically change this after signing in"). A saved
    // hash ("hashed") is used as it is, and changes nothing - there is no password to hash again.
+   //
+   // Only a PIN signing in is guessed at: anything else - twelve words' entropy recovering a node, a secret, a PIN with a
+   // username to claim it - is setting a password, so the current way. Nor is admin switched over: its hash is kept with its
+   // access, not as a user's, so "update_user( )" cannot change it - recovering from the words sets it the current way
+   // (found by review, 2026-10-23).
    async connect( access, device, hashed, passwd, callback, all_callbacks )
    {
       var typed = ( ( hashed == null ) || ( hashed === "" ) ) && ( passwd != null ) && ( passwd !== "" );
       var pin = String( access || "" );
 
-      if( !typed || ( this.sessid != "" ) )
+      var guessed = typed && /^[0-9]+$/.test( pin ) && ( pin.length == c_pin_access_len );
+
+      if( !typed )
+         this.hash_version = this.hash_version_for( pin );
+
+      if( !guessed || ( this.sessid != "" ) )
       {
-         if( !typed )
-            this.hash_version = this.hash_version_for( pin );
+         if( typed )
+            this.hash_version = c_password_hash_version;
 
          return this.connect_once( access, device, hashed, passwd, callback, all_callbacks, c_password_hash_version );
       }
@@ -610,20 +623,25 @@ class CIYAM
 
       if( this.sessid != "" )
       {
-         if( version < c_password_hash_version )
+         if( ( version < c_password_hash_version ) && !this.is_admin )
          {
+            // NOTE: Hashed once, and set as it is - its version kept as soon as the node has it, and the session's hash
+            // following. A reply that never comes ends the wait, the older way kept, rather than holding the sign in.
+            var combined = await this.hash_combined( passwd, this.access, c_password_hash_version );
             var self = this;
 
-            var answer = await new Promise( function( resolve )
+            var answer = await Promise.race( [ new Promise( function( resolve )
             {
-               self.update_user( self.access, "password=" + passwd, function( response ) { resolve( String( response || "" ) ); } );
-            } );
+               self.update_user( self.access, "password=" + combined, function( response ) { resolve( String( response || "" ) ); }, true );
+            } ), new Promise( function( resolve ) { setTimeout( function( ) { resolve( "Error: no answer" ); }, c_switch_over_wait_ms ); } ) ] );
 
-            if( answer.indexOf( "Error" ) !== 0 )
+            if( is_okay_response( answer ) )
             {
                version = c_password_hash_version;
 
-               await this.determine_hashed( passwd, version );
+               this.keep_hash_version( this.access, version );
+
+               this.hashed = this.session_hash( combined );
             }
          }
 
@@ -1002,7 +1020,9 @@ class CIYAM
       }
    }
 
-   async update_user( access_pin, options, callback )
+   // NOTE: A password in "options" is hashed with the PIN before it is sent - unless "is_hashed", as "connect( )" switching an
+   // account over gives it.
+   async update_user( access_pin, options, callback, is_hashed )
    {
       if( this.sessid == "" )
          callback( "Error: No current session exists." );
@@ -1024,7 +1044,7 @@ class CIYAM
 
                options = options.substr( 0, pos + 1 );
 
-               options += await this.hash_combined( passwd, access_pin );
+               options += is_hashed ? passwd : await this.hash_combined( passwd, access_pin );
             }
 
             url += "&options=" + encodeURIComponent( options );
@@ -1651,6 +1671,32 @@ function ciyam_utf8_binary( text )
    return out;
 }
 
+// NOTE: Whether a reply says it was done - "[okay]" as text, or as JSON ("{"response":"[okay]"}", Node's default); an error in
+// either, or anything else, is not (found by review, 2026-10-23 - a JSON error had been taken for success).
+function is_okay_response( response )
+{
+   var text = String( response || "" ).trim( );
+
+   if( text === c_response_okay )
+      return true;
+
+   if( text.charAt( 0 ) === "{" )
+   {
+      try
+      {
+         var obj = JSON.parse( text );
+
+         return ( obj !== null ) && ( obj.error == null ) && ( obj.response === c_response_okay );
+      }
+      catch( e )
+      {
+         return false;
+      }
+   }
+
+   return false;
+}
+
 // NOTE: Version 1's rounds for a password, by its length in characters - the floor for twelve or more, twice it for nine to
 // eleven, three times for fewer.
 function password_hash_rounds( password )
@@ -1971,6 +2017,7 @@ if( typeof module !== "undefined" )
       ciyam_utf8_binary: ciyam_utf8_binary,
       password_hash: password_hash,
       password_hash_rounds: password_hash_rounds,
+      is_okay_response: is_okay_response,
       ciyam_sha256_fastest: ciyam_sha256_fastest,
       ciyam_module_stop: ciyam_module_stop
    };

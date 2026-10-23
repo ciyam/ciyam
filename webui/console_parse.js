@@ -1191,6 +1191,14 @@ function make_log_entry( source, method, url, body, response, started, finished 
       var name = ( eq < 0 ) ? pair : pair.substr( 0, eq );
       var value = ( eq < 0 ) ? "" : decode_field( pair.substring( eq + 1 ) );
 
+      // NOTE: A password in "options" - "users update", and an account switched over to the current hash by "connect( )" in
+      // "ciyam.js" - is a hash that signs in, so it is hidden, in what is shown and in the query (found by review, 2026-10-23).
+      if( ( name === "options" ) && /(^|;)password=/.test( value ) )
+      {
+         value = value.replace( /(^|;)password=[^;]*/g, "$1password=(hidden)" );
+         pair = name + "=" + encodeURIComponent( value );
+      }
+
       if( is_connect && ( name === "request" ) && /^[0-9A-Fa-f]{32,}$/.test( value ) )
       {
          request = "(the node's entropy - not kept)";
