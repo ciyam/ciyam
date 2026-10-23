@@ -898,8 +898,17 @@ async function do_change_password( event )
    }
 
    // NOTE: The server only checks the session, so the current password is checked here,
-   // against the hash the session was opened with - no request, and nothing sent.
-   if( await session_hash_for( current ) !== ciyam.hashed )
+   // against the hash the session was opened with - no request, and nothing sent. Hashing
+   // it hardens it as a sign in does, a second or two, so the button is held meanwhile.
+   var holding = document.getElementById( "mine_submit" );
+
+   holding.disabled = true;
+
+   var current_right = ( await session_hash_for( current ) === ciyam.hashed );
+
+   holding.disabled = false;
+
+   if( !current_right )
    {
       set_error( "mine_error", "The current password is not right." );
 
