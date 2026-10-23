@@ -34,7 +34,16 @@ PIN=$OUTPUT
 ;
 PASSWORD=@password:Enter web admin password:
 ;
-.=crypto_hash "$PIN$PASSWORD"
+LENGTH=@strlen:$PASSWORD
+EXTRA=299999
+@if $LENGTH #> 8
+EXTRA=199999
+@endif
+@if $LENGTH #> 11
+EXTRA=99999
+@endif
+;
+.=crypto_hash -x=$EXTRA "$PIN$PASSWORD"
 HASHED=$OUTPUT
 ;
 .=crypto_hash "$~HASHED"
