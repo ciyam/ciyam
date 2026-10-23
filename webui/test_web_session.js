@@ -1198,7 +1198,7 @@ async function do_fetch( )
                      if( name_suffix.substr( 0, 1 ) == "!" )
                         name_suffix = name_suffix.substring( 1 );
                      else
-                        name_suffix = ciyam.hash_combined( name_suffix );
+                        name_suffix = await ciyam.hash_combined( name_suffix );
                   }
                }
 
@@ -1247,14 +1247,14 @@ async function do_fetch( )
             is_new_user = true;
 
             if( username == admin_username )
-               combined = ciyam.hash_combined( password );
+               combined = await ciyam.hash_combined( password );
             else
             {
                // NOTE: For testing purposes the password is
                // just the "username" so to make it easy for
                // this UI just copies the username across to
                // the "password" input.
-               combined = ciyam.hash_combined( username );
+               combined = await ciyam.hash_combined( username );
 
                document.getElementById( "user_password" ).value = username;
             }
@@ -1303,7 +1303,7 @@ async function do_fetch( )
 
                      request = request.substr( 0, pos + 1 );
 
-                     request += ciyam.hash_combined( password, name_suffix );
+                     request += await ciyam.hash_combined( password, name_suffix );
                   }
                }
 
@@ -1339,7 +1339,7 @@ async function do_fetch( )
                if( ciyam.sessid == "" )
                {
                   if( ciyam.hashed == "" )
-                     ciyam.determine_hashed( password );
+                     await ciyam.determine_hashed( password, ciyam.hash_version_for( ciyam.access ) );
 
                   ciyam.determine_sess_id( );
 

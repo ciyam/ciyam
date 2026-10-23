@@ -18,7 +18,11 @@ ok   through the old globals - as the original answered
 == what a module is given ======================================
 ok   SHA-256 - the browser's own where there is one
 ok   - and through sha2.min.js, text as its UTF-8
-ok   the sign in's hash - a page's as the command line's, as UTF-8
+ok   the sign in's hash, version 0 - a page's as the command line's, as UTF-8
+ok   version 1's rounds - by the password's length in characters
+ok   the sign in's hash, version 1 - the current one: hardened, a page's as Node's, as worked out here
+ok   - an unknown version refused
+ok   the version guessed - none kept: current; kept for the node but no versions: 0; another's kept: current; as kept
 ok   progress through the page's own functions - shown at nought, hidden at the end
 ok   - and other modules
 ok   a module that runs nothing says it loaded

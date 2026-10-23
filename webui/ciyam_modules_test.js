@@ -169,19 +169,76 @@ async function steps( module_class, list )
    } ), [ true, true, true ] );
 
    // NOTE: The sign in's hash of PIN and password - in a page through "sha2.min.js", from the command line through Node - the
-   // same for a password not plain ASCII (Ian, 2026-10-22).
-   global.hex_sha256 = sha2_page.hex_sha256;
+   // same for a password not plain ASCII (Ian, 2026-10-22). Version 0 is the one SHA-256 sent until 2026-10-23.
+   var node_sha = require( "crypto" );
+   var sha_hex = function( text ) { return node_sha.createHash( "sha256" ).update( text, "utf8" ).digest( "hex" ); };
+
+   // NOTE: Here in the test's own scope - called from its own context, each round would cross into it, and 300,000 rounds take
+   // minutes rather than seconds (as a page's own does).
+   global.hex_sha256 = new Function( fs.readFileSync( __dirname + "/sha2.min.js", "utf-8" ) + "; return hex_sha256;" )( );
 
    var in_page = new m.CIYAM( "localhost:13031", false, true );
    var passwords = [ "pässwörd", "パスワード", "plain-pass" ];
-   var signin_hashes = passwords.map( function( p ) { return in_page.hash_combined( p, "12345" ); } );
+   var signin_hashes = [ ];
+
+   for( var pw = 0; pw < passwords.length; pw++ )
+      signin_hashes.push( await in_page.hash_combined( passwords[ pw ], "12345", 0 ) );
+
+   check( "the sign in's hash, version 0 - a page's as the command line's, as UTF-8", signin_hashes,
+    passwords.map( function( p ) { return sha_hex( "12345" + p ); } ) );
+
+   // NOTE: Version 1 (Ian, 2026-10-23: hardened before it is sent) - worked out here without "ciyam.js": rounds, each the SHA-256
+   // of what there is with the PIN and password after it, from the two; the floor for twelve or more characters, twice it for
+   // nine to eleven, three times for fewer. In a page and through Node alike.
+   var hardened = function( access, password )
+   {
+      var rounds = m.password_hash_rounds( password );
+      var s = access + password;
+
+      for( var r = 0; r < rounds; r++ )
+         s = sha_hex( s + access + password );
+
+      return s;
+   };
+
+   check( "version 1's rounds - by the password's length in characters", [ m.password_hash_rounds( "seven77" ), m.password_hash_rounds( "eight888" ),
+    m.password_hash_rounds( "nine99999" ), m.password_hash_rounds( "elevenchars" ), m.password_hash_rounds( "twelve-chars" ),
+    m.password_hash_rounds( "pässwörd-läng" ) ], [ 300000, 300000, 200000, 200000, 100000, 100000 ] );
+
+   var page_v1 = await in_page.hash_combined( "pässwörd", "12345" );
 
    delete global.hex_sha256;
 
-   check( "the sign in's hash - a page's as the command line's, as UTF-8", signin_hashes, passwords.map( function( p )
+   var node_v1 = await m.password_hash( "12345", "pässwörd", 1, node_sha );
+
+   check( "the sign in's hash, version 1 - the current one: hardened, a page's as Node's, as worked out here", [ page_v1 === node_v1,
+    node_v1 === hardened( "12345", "pässwörd" ), node_v1 !== sha_hex( "12345pässwörd" ) ], [ true, true, true ] );
+   check( "- an unknown version refused", await m.password_hash( "12345", "p", 2, node_sha ).catch( function( e ) { return e.message; } ),
+    "There is no password hash version 2." );
+
+   // NOTE: The version a browser guesses (Ian, 2026-10-23) - as kept for the PIN; none kept, the first if the browser keeps
+   // things for the node but no versions; the current one otherwise, and on the command line.
+   var fake_storage = function( entries )
    {
-      return require( "crypto" ).createHash( "sha256" ).update( "12345" + p, "utf8" ).digest( "hex" );
-   } ) );
+      var keys = Object.keys( entries );
+
+      return { length: keys.length, key: function( i ) { return keys[ i ]; },
+       getItem: function( k ) { return entries.hasOwnProperty( k ) ? entries[ k ] : null; } };
+   };
+
+   var guessed = [ in_page.hash_version_for( "20401" ) ];
+
+   [ { }, { "cws.hashed_20401": "x" }, { "cws.hashed_20401": "x", "cws.hash_version@20101": "1" }, { "cws.hash_version@20401": "0" },
+    { "cws.hash_version@20401": "7" }, { "cws.hash_version@20401": "one" } ].forEach( function( entries )
+   {
+      global.localStorage = fake_storage( entries );
+      guessed.push( in_page.hash_version_for( "20401" ) );
+   } );
+
+   delete global.localStorage;
+
+   check( "the version guessed - none kept: current; kept for the node but no versions: 0; another's kept: current; as kept",
+    guessed, [ 1, 1, 0, 1, 0, 1, 1 ] );
 
    var calls = [ ];
    var context = m.ciyam_module_page_context( { show_progress: function( ) { calls.push( "show" ); },

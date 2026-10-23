@@ -1154,7 +1154,7 @@ async function run_line( line, from_script )
       // NOTE: A password in "users update <pin> password=<text>" is hashed with the PIN, as
       // the harness does, so it never travels in the clear.
       if( ( spec.key === "users|update" ) && /^password=/.test( spec.options ) )
-         spec.options = "password=" + ciyam.hash_combined( spec.options.substring( 9 ), spec.name );
+         spec.options = "password=" + await ciyam.hash_combined( spec.options.substring( 9 ), spec.name );
 
       url = build_cws_url( ciyam.get_cws_url( ), spec, session_info( ) );
    }

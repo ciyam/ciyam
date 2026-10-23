@@ -41,6 +41,26 @@ const c_format_type_text = "text";
 const c_session_type_admin = "[adm]";
 const c_session_type_standard = "[std]";
 
+// NOTE: How the PIN and password are hashed before they are sent (Ian, 2026-10-23: "hardening should actually take place
+// _before_ sending it to the server"). Version 0 is one SHA-256, as sent until then - which the node keeps, so whoever runs
+// one could guess a password at that speed. Version 1 hardens it here first: rounds of SHA-256 of what there is with the PIN
+// and password after it, as "harden" does - a floor good on its own, and more for a shorter password (Ian: "only multiply for
+// even more rounds for weaker (length in particular) passwords"). What a version does is fixed once used - a change is a new
+// version - so a hash already kept goes on matching the one it was made with.
+const c_password_hash_version = 1;
+const c_password_hash_floor = 100000;
+
+// NOTE: In a page, a pause every so many rounds, so it can redraw while hardening.
+const c_password_hash_pause = 5000;
+
+// NOTE: The version a PIN's password was last hashed with in this browser (Ian, 2026-10-23: a version in "localStorage").
+const c_storage_hash_version_prefix = "cws.hash_version@";
+
+// NOTE: A sign in refused with this is taken as a password hashed the other way, and tried once more - after the gap the
+// server keeps between sign ins for a PIN.
+const c_wrong_password_error = "not valid";
+const c_sign_in_gap_ms = 3500;
+
 const c_visible_ascii_chars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
 class CIYAM
@@ -84,6 +104,9 @@ class CIYAM
       this.lock_source = 0;
 
       this.node_crypto = null;
+
+      // NOTE: The version of the hash this session's password was sent with ("connect( )").
+      this.hash_version = c_password_hash_version;
 
       this.user_callback = null;
 
@@ -204,29 +227,24 @@ class CIYAM
    // NOTE: Hashed as UTF-8, as Node's is - "sha2.min.js" given the text itself took each character's low byte, so a password
    // not plain ASCII set in a browser did not sign in from the command line (Ian, 2026-10-22: "please change the sign-in hash to
    // use UTF-8"). One set that way before needs setting again.
-   hash_combined( password, access )
+   // NOTE: The PIN and password as they are sent - hashed as "version", the current one if none is given ("password_hash( )").
+   // Both kinds of hashing keep the UTF-8 of the text, as the server and Node do (Ian, 2026-10-22).
+   async hash_combined( password, access, version )
    {
       if( access == null )
          access = this.access;
 
-      if( typeof hex_sha256 !== "undefined" )
-         return hex_sha256( ciyam_utf8_binary( access + password ) );
-      else
-      {
-         const hash = this.node_crypto.createHash( "sha256" );
+      if( version == null )
+         version = c_password_hash_version;
 
-         hash.update( access + password );
-
-         return hash.digest( "hex" );
-      }
+      return password_hash( access, password, version, ( typeof hex_sha256 !== "undefined" ) ? null : this.node_crypto );
    }
 
-   determine_hashed( password )
+   // NOTE: The hash a session is opened with, from the PIN and password as sent - one SHA-256 of its SHA-256 with the device.
+   session_hash( combined )
    {
-      const combined = this.hash_combined( password );
-
       if( typeof hex_sha256 !== "undefined" )
-         this.hashed = hex_sha256( hex_sha256( combined ) + this.device );
+         return hex_sha256( hex_sha256( combined ) + this.device );
       else
       {
          const hash_1 = this.node_crypto.createHash( "sha256" );
@@ -237,7 +255,70 @@ class CIYAM
 
          hash_2.update( hash_1.digest( "hex" ) + this.device );
 
-         this.hashed = hash_2.digest( "hex" );
+         return hash_2.digest( "hex" );
+      }
+   }
+
+   async determine_hashed( password, version )
+   {
+      this.hashed = this.session_hash( await this.hash_combined( password, null, version ) );
+   }
+
+   // NOTE: The version a PIN's password was last hashed with in this browser. None kept for it: a browser keeping versions
+   // for other PINs has signed in since there were versions, so the current one; one keeping things for the node but no
+   // versions at all signed in before them, so the first (Ian, 2026-10-23) - and on the command line, the current one. A
+   // wrong guess costs one more try ("connect( )").
+   hash_version_for( access )
+   {
+      var version = c_password_hash_version;
+
+      try
+      {
+         if( typeof localStorage !== "undefined" )
+         {
+            var kept = localStorage.getItem( c_storage_hash_version_prefix + access );
+
+            if( kept !== null )
+            {
+               if( /^[0-9]+$/.test( kept ) && ( Number( kept ) <= c_password_hash_version ) )
+                  version = Number( kept );
+            }
+            else
+            {
+               var any_version = false;
+               var any_kept = false;
+
+               for( var i = 0; i < localStorage.length; i++ )
+               {
+                  var key = String( localStorage.key( i ) );
+
+                  if( key.indexOf( c_storage_hash_version_prefix ) === 0 )
+                     any_version = true;
+                  else if( key.indexOf( "cws." ) === 0 )
+                     any_kept = true;
+               }
+
+               if( any_kept && !any_version )
+                  version = 0;
+            }
+         }
+      }
+      catch( e )
+      {
+      }
+
+      return version;
+   }
+
+   keep_hash_version( access, version )
+   {
+      try
+      {
+         if( ( typeof localStorage !== "undefined" ) && ( String( access ).length == c_pin_access_len ) )
+            localStorage.setItem( c_storage_hash_version_prefix + access, String( version ) );
+      }
+      catch( e )
+      {
       }
    }
 
@@ -482,7 +563,80 @@ class CIYAM
          this.user_callback( response );
    }
 
+   // NOTE: Signing in, the password hashed as this browser last hashed it for the PIN ("hash_version_for( )"). Typed, and
+   // refused as if wrong, it is tried once more the other way - for an account a browser has not seen, or one whose password
+   // admin set - and if it was the older way, the password is hashed the current way and set at once, the session staying
+   // open as a change of password leaves it (Ian, 2026-10-23: "could automatically change this after signing in"). A saved
+   // hash ("hashed") is used as it is, and changes nothing - there is no password to hash again.
    async connect( access, device, hashed, passwd, callback, all_callbacks )
+   {
+      var typed = ( ( hashed == null ) || ( hashed === "" ) ) && ( passwd != null ) && ( passwd !== "" );
+      var pin = String( access || "" );
+
+      if( !typed || ( this.sessid != "" ) )
+      {
+         if( !typed )
+            this.hash_version = this.hash_version_for( pin );
+
+         return this.connect_once( access, device, hashed, passwd, callback, all_callbacks, c_password_hash_version );
+      }
+
+      var version = this.hash_version_for( pin );
+
+      var heard = { called: false, response: null };
+
+      var hold = function( response )
+      {
+         heard.called = true;
+         heard.response = response;
+      };
+
+      await this.connect_once( access, device, hashed, passwd, all_callbacks ? callback : hold, all_callbacks, version );
+
+      if( ( this.sessid == "" ) && ( this.error.indexOf( c_wrong_password_error ) >= 0 ) )
+      {
+         version = ( version == c_password_hash_version ) ? 0 : c_password_hash_version;
+
+         this.error = "";
+         this.unique = "";
+         this.seed = "";
+
+         heard.called = false;
+
+         await new Promise( function( resolve ) { setTimeout( resolve, c_sign_in_gap_ms ); } );
+
+         await this.connect_once( access, device, hashed, passwd, all_callbacks ? callback : hold, all_callbacks, version );
+      }
+
+      if( this.sessid != "" )
+      {
+         if( version < c_password_hash_version )
+         {
+            var self = this;
+
+            var answer = await new Promise( function( resolve )
+            {
+               self.update_user( self.access, "password=" + passwd, function( response ) { resolve( String( response || "" ) ); } );
+            } );
+
+            if( answer.indexOf( "Error" ) !== 0 )
+            {
+               version = c_password_hash_version;
+
+               await this.determine_hashed( passwd, version );
+            }
+         }
+
+         this.hash_version = version;
+
+         this.keep_hash_version( this.access, version );
+      }
+
+      if( !all_callbacks && heard.called && ( callback != null ) )
+         callback( heard.response );
+   }
+
+   async connect_once( access, device, hashed, passwd, callback, all_callbacks, version )
    {
       if( this.sessid != "" )
          callback( "Error: Current session still exists." );
@@ -510,6 +664,20 @@ class CIYAM
             this.device = device;
 
          this.hashed = hashed;
+
+         var self = this;
+         var combined = { access: null, value: "" };
+
+         var combined_for = async function( )
+         {
+            if( combined.access !== self.access )
+            {
+               combined.value = await self.hash_combined( passwd, self.access, version );
+               combined.access = self.access;
+            }
+
+            return combined.value;
+         };
 
          if( all_callbacks == null )
             all_callbacks = false;
@@ -601,7 +769,7 @@ class CIYAM
                   this.error = access;
                else
                {
-                  var credentials = access + ":" + this.hash_combined( passwd );
+                  var credentials = access + ":" + await combined_for( );
 
                   if( this.device == "" )
                      url = this.get_cws_url( ) + "/devices?access=" + this.access;
@@ -631,7 +799,7 @@ class CIYAM
          if( ( this.error == "" ) && ( this.unique != "" ) )
          {
             if( this.hashed == "" )
-               this.determine_hashed( passwd );
+               this.hashed = this.session_hash( await combined_for( ) );
 
             this.determine_sess_id( );
 
@@ -856,7 +1024,7 @@ class CIYAM
 
                options = options.substr( 0, pos + 1 );
 
-               options += this.hash_combined( passwd, access_pin );
+               options += await this.hash_combined( passwd, access_pin );
             }
 
             url += "&options=" + encodeURIComponent( options );
@@ -1483,6 +1651,58 @@ function ciyam_utf8_binary( text )
    return out;
 }
 
+// NOTE: Version 1's rounds for a password, by its length in characters - the floor for twelve or more, twice it for nine to
+// eleven, three times for fewer.
+function password_hash_rounds( password )
+{
+   var length = Array.from( String( password || "" ) ).length;
+
+   if( length >= 12 )
+      return c_password_hash_floor;
+   else if( length >= 9 )
+      return c_password_hash_floor * 2;
+   else
+      return c_password_hash_floor * 3;
+}
+
+// NOTE: The PIN and password hashed as "version", in lower-case hex - version 0 one SHA-256 of the two; version 1 that many
+// rounds ("password_hash_rounds( )") each hashing what there is with the two after it, from the two themselves. In a page
+// through "sha2.min.js", in step, pausing now and then so the page can redraw; with "node_crypto", Node's own SHA-256.
+async function password_hash( access, password, version, node_crypto )
+{
+   var input = String( access ) + String( password );
+
+   var sha = function( text )
+   {
+      if( node_crypto )
+         return node_crypto.createHash( "sha256" ).update( text, "utf8" ).digest( "hex" );
+
+      return hex_sha256( text ).toLowerCase( );
+   };
+
+   // NOTE: For "sha2.min.js" the text as its UTF-8 bytes, once - each round adds only hex to it.
+   var text = node_crypto ? input : ciyam_utf8_binary( input );
+
+   if( Number( version ) === 0 )
+      return sha( text );
+
+   if( Number( version ) !== 1 )
+      throw new Error( "There is no password hash version " + version + "." );
+
+   var rounds = password_hash_rounds( password );
+   var s = text;
+
+   for( var i = 0; i < rounds; i++ )
+   {
+      s = sha( s + text );
+
+      if( !node_crypto && ( ( i % c_password_hash_pause ) === ( c_password_hash_pause - 1 ) ) )
+         await new Promise( function( resolve ) { setTimeout( resolve, 0 ); } );
+   }
+
+   return s;
+}
+
 // NOTE: SHA-256 of text, as lower-case hex - the browser's own where it has one (a secure context: https, or localhost),
 // "sha2.min.js" otherwise. Decided once a page, for every module that hashes (Ian, 2026-10-09).
 var ciyam_sha256_native = null;
@@ -1749,6 +1969,8 @@ if( typeof module !== "undefined" )
       ciyam_module_page_context: ciyam_module_page_context,
       ciyam_sha256_hex: ciyam_sha256_hex,
       ciyam_utf8_binary: ciyam_utf8_binary,
+      password_hash: password_hash,
+      password_hash_rounds: password_hash_rounds,
       ciyam_sha256_fastest: ciyam_sha256_fastest,
       ciyam_module_stop: ciyam_module_stop
    };

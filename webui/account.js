@@ -873,10 +873,11 @@ async function do_remove_device( device )
 }
 
 // NOTE: The hash this session was opened with, for a given password - "determine_hashed( )"
-// in "ciyam.js", worked out without touching the session's own - as "chat.js" does.
-function session_hash_for( password )
+// in "ciyam.js", worked out without touching the session's own - as "chat.js" does. Hashed
+// the way the session's password was ("ciyam.hash_version"), unless another version is given.
+async function session_hash_for( password, version )
 {
-   return hex_sha256( hex_sha256( ciyam.hash_combined( password ) ) + ciyam.device );
+   return ciyam.session_hash( await ciyam.hash_combined( password, null, ( version == null ) ? ciyam.hash_version : version ) );
 }
 
 async function do_change_password( event )
@@ -898,7 +899,7 @@ async function do_change_password( event )
 
    // NOTE: The server only checks the session, so the current password is checked here,
    // against the hash the session was opened with - no request, and nothing sent.
-   if( session_hash_for( current ) !== ciyam.hashed )
+   if( await session_hash_for( current ) !== ciyam.hashed )
    {
       set_error( "mine_error", "The current password is not right." );
 
@@ -950,9 +951,13 @@ async function do_change_password( event )
 
    // NOTE: The session stays open. A hash the chat saved for this account was made from the old
    // password and is now refused, so it is replaced.
-   var hashed = session_hash_for( fresh );
+   // NOTE: "update_user( )" hashed the new one the current way, so the session's hash and version are now that way too.
+   var hashed = await session_hash_for( fresh, c_password_hash_version );
 
    ciyam.hashed = hashed;
+   ciyam.hash_version = c_password_hash_version;
+
+   ciyam.keep_hash_version( ciyam.access, c_password_hash_version );
 
    try
    {
@@ -1167,7 +1172,7 @@ async function do_join( event )
          g_join_code = code;
       }
 
-      var credentials = CIYAM.encode_base64_url( username + ":" + ciyam.hash_combined( password, g_join_pin ) );
+      var credentials = CIYAM.encode_base64_url( username + ":" + await ciyam.hash_combined( password, g_join_pin ) );
 
       var token = await post_devices( "access=" + g_join_pin + "&passwd=" + credentials );
 
@@ -1189,6 +1194,9 @@ async function do_join( event )
       }
 
       var pin = g_join_pin;
+
+      // NOTE: Claimed with the current hash, so the sign in after uses it at once rather than trying an older one first.
+      ciyam.keep_hash_version( pin, c_password_hash_version );
 
       // NOTE: Signed in at once with what was just chosen, then the Remember choice saved, as on the
       // sign in (Damon, 2026-10-05) - Ian found the chat's sign in waiting, on another PIN. A device

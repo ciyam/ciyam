@@ -905,7 +905,10 @@ async function setup_finish( )
    // NOTE: No still-alive while the node takes its identity - it lets the token go as it does (Ian, "637f4e60").
    setup_alive_stop( );
 
-   var credentials = CIYAM.encode_base64_url( "admin:" + ciyam.hash_combined( g_setup.password, g_setup.pin ) );
+   var credentials = CIYAM.encode_base64_url( "admin:" + await ciyam.hash_combined( g_setup.password, g_setup.pin ) );
+
+   // NOTE: Set up with the current hash, so the sign in after uses it at once.
+   ciyam.keep_hash_version( g_setup.pin, c_password_hash_version );
 
    var send = async function( )
    {
