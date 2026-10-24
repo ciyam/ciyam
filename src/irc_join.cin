@@ -28,6 +28,8 @@ SESSION=$3
 EXTRA=
 REMOVE=
 CHANGED=
+ROOM_NAME=
+INCLUDE_NAME=1
 ;
 ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
@@ -37,6 +39,12 @@ PREFIX=@substr:0,2:$ROOM_NO
 @ifeq "$PREFIX" "~0"
 ROOM_NO=@substr:1:$ROOM_NO
 REMOVE=1
+@endif
+;
+FIRST=@substr:0,1:$ROOM_NO
+@ifeq "$FIRST" "_"
+INCLUDE_NAME=
+ROOM_NO=@substr:1:$ROOM_NO
 @endif
 ;
 JOIN_TOKEN=
@@ -124,6 +132,8 @@ JOINED_OR_REMOVE=1
 @ifdef $JOINED_OR_REMOVE
 .system_variable @irc_users_$ROOM_NO
 ALL_USERS=@strlit:$OUTPUT
+.system_variable @irc_names_$ROOM_NO
+ROOM_NAME=$OUTPUT
 ;
 @ifdef $REMOVE
 ;
@@ -190,7 +200,12 @@ ALL_USERS=@strlit:$OUTPUT
 @endif
 @endif
 ;
-RETURN=@strlit:$ALL_USERS
+OPT_PREFIX=
+@ifdef $INCLUDE_NAME
+OPT_PREFIX=@strlit:%ROOM_NAME%_
+@endif
+;
+RETURN=@strlit:$OPT_PREFIX$ALL_USERS
 ;
 @else
 ;
