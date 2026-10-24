@@ -175,8 +175,10 @@ function join_problem( username, password, confirm )
    if( !is_valid_username( username ) )
       return "Choose a username of 3 to 12 characters: a-z, 0-9 and single hyphens, starting with a letter.";
 
-   if( password_strength( password ).level < 1 )
-      return "Choose a password of at least 7 characters.";
+   var strength = password_strength( password, [ username ] );
+
+   if( strength.level < 1 )
+      return password_refusal( strength );
 
    if( password !== confirm )
       return "The two passwords are not the same.";

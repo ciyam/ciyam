@@ -739,6 +739,36 @@ check( "three kinds with digits, ten long, is strong", rated( "Abcdefg123" ), "S
 check( "all four kinds, twelve long, is very strong", rated( "Abcdef12!@#x" ), "Very Strong" );
 check( "boundary: 7 x 7 = 49 is strong", rated( "Ab1!xyz" ), "Strong" );
 
+// NOTE: With "zxcvbn.min.js" read in (Ian, 2026-10-23) - rated by the guesses it would take, banded every hundredfold from
+// 10^8, zxcvbn's warning after; the account's own PIN and name counted as easily guessed. Read in here as a page would.
+global.zxcvbn = require( "./zxcvbn.min.js" );
+
+check( "by guesses - the predictable refused, however many kinds of character", [ rated( "Password1!" ), rated( "P@ssw0rd123" ),
+ rated( "qwertyuiop" ), rated( "Summer2024!" ) ], [ "Too easy to guess - This is similar to a commonly used password",
+ "Too easy to guess - This is similar to a commonly used password", "Too easy to guess - This is a top-100 common password",
+ "Too easy to guess - This is similar to a commonly used password" ] );
+check( "- and the rest by how many", [ rated( "new-pass-2" ), rated( "correct-horse-1" ), rated( "granite-orchid-42" ),
+ rated( "taxi-act-describe-attitude-focus" ), cp.password_strength( "Password1!" ).level, cp.password_strength( "new-pass-2" ).level ],
+ [ "Weak", "Moderate", "Strong", "Very Strong", 0, 1 ] );
+check( "- the account's own PIN or name in it counts for little", [ cp.password_strength( "verify-a-20401" ).level,
+ cp.password_strength( "verify-a-20401", [ "20401", "verify-a" ] ).level < cp.password_strength( "verify-a-20401" ).level ], [ 2, true ] );
+check( "- under seven still unsatisfactory, before it is asked", cp.password_strength( "abc12!" ), { level: 0, text: "Unsatisfactory" } );
+
+check( "- why one cannot be saved: too short, or too easy to guess", [ cp.password_refusal( cp.password_strength( "abc12!" ) ),
+ cp.password_refusal( cp.password_strength( "Password1!" ) ) ], [ "Choose a password of at least 7 characters.",
+ "That password is too easy to guess - choose a longer one, or Suggest one." ] );
+
+delete global.zxcvbn;
+
+check( "- not read in: the rules as before", rated( "Password1!" ), "Strong" );
+
+// NOTE: A passphrase offered (Ian, 2026-10-23) - five of the 2048 BIP39 words, eleven bits each of a random 16-bit value.
+var word_list = Array.from( { length: 2048 }, function( v, i ) { return "w" + i; } );
+
+check( "a suggested passphrase - five words, eleven bits each", [ cp.suggested_passphrase( word_list, [ 0, 2047, 2048, 65535, 1234 ] ),
+ cp.suggested_passphrase( word_list, [ 1, 2, 3 ], 3 ), cp.suggested_passphrase( [ "too", "few" ], [ 0, 1, 2, 3, 4 ] ) ],
+ [ "w0-w2047-w0-w2047-w1234", "w1-w2-w3", "" ] );
+
 heading( "user initial" );
 
 check( "first letter, upper case", cp.user_initial( "verify-a" ), "V" );

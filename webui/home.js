@@ -50,6 +50,9 @@ function request( issue )
 
 function home_main( )
 {
+   // NOTE: The eye in each new password's field, to see it - one suggested above all (2026-10-25).
+   attach_reveals( document );
+
    signin_build( document.getElementById( "signin_host" ), {
       note: "home",
       setup_href: "account.html#welcome",
@@ -671,7 +674,10 @@ function setup_password_key( event )
 
 function setup_update_strength( )
 {
-   var strength = password_strength( document.getElementById( "setup_password_new" ).value );
+   // NOTE: Rated by guesses once "zxcvbn.min.js" is in - read in now, and rated again then.
+   load_strength_rules( setup_update_strength );
+
+   var strength = password_strength( document.getElementById( "setup_password_new" ).value, [ g_setup.pin ] );
    var meter = document.getElementById( "setup_strength" );
 
    meter.hidden = ( strength.level < 0 );
@@ -702,9 +708,12 @@ async function setup_make_words( )
 
    set_text( "setup_password_error", "" );
 
-   if( password_strength( password ).level < 1 )
+   var strength = password_strength( password, [ g_setup.pin ] );
+
+   if( strength.level < 1 )
    {
-      set_text( "setup_password_error", "The master password needs at least " + c_password_min_length + " characters." );
+      set_text( "setup_password_error", ( strength.text === "Unsatisfactory" )
+       ? "The master password needs at least " + c_password_min_length + " characters." : password_refusal( strength ) );
 
       return;
    }

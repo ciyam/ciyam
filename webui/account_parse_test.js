@@ -16,6 +16,7 @@ const chat_parse = require( "./chat_parse.js" );
 
 global.is_valid_username = chat_parse.is_valid_username;
 global.password_strength = chat_parse.password_strength;
+global.password_refusal = chat_parse.password_refusal;
 
 const ap = require( "./account_parse.js" );
 

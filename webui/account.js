@@ -73,6 +73,9 @@ var g_request_quiet = false;
 
 function account_main( )
 {
+   // NOTE: The eye in each new password's field, to see it - one suggested above all (2026-10-25).
+   attach_reveals( document );
+
    // NOTE: The accounts page's tab, which the chat reuses rather than opening another.
    window.name = c_tab_accounts;
 
@@ -525,7 +528,13 @@ function show_alert( text, is_error )
 // NOTE: The strength bar under a new password - "join" or "mine".
 function update_strength( prefix )
 {
-   var strength = password_strength( document.getElementById( prefix + "_password" ).value );
+   // NOTE: Rated by guesses once "zxcvbn.min.js" is in - read in now, and rated again then; the PIN and username count for
+   // little in it.
+   load_strength_rules( function( ) { update_strength( prefix ); } );
+
+   var inputs = ( prefix === "join" ) ? [ g_join_pin, document.getElementById( "join_username" ).value ] : [ ciyam.access, ciyam.username ];
+
+   var strength = password_strength( document.getElementById( prefix + "_password" ).value, inputs.filter( Boolean ) );
 
    var box = document.getElementById( prefix + "_strength" );
 
@@ -961,9 +970,11 @@ async function do_change_password( event )
       return;
    }
 
-   if( password_strength( fresh ).level < 1 )
+   var fresh_strength = password_strength( fresh, [ ciyam.access, ciyam.username ].filter( Boolean ) );
+
+   if( fresh_strength.level < 1 )
    {
-      set_error( "mine_error", "Choose a password of at least 7 characters." );
+      set_error( "mine_error", password_refusal( fresh_strength ) );
 
       return;
    }

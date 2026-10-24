@@ -836,7 +836,7 @@ function recover_build( )
 
    var password = signin_element( "input", { type: "password", id: "recover_password", class: "chat-field", autocomplete: "new-password" } );
 
-   password.addEventListener( "input", function( )
+   var rate = function( )
    {
       var strength = password_strength( password.value );
 
@@ -846,7 +846,10 @@ function recover_build( )
       meter.dataset.level = String( strength.level );
 
       signin_set_text( "recover_strength_label", strength.text );
-   } );
+   };
+
+   // NOTE: Rated by guesses once "zxcvbn.min.js" is in - read in at the first key, and rated again then.
+   password.addEventListener( "input", function( ) { load_strength_rules( rate ); rate( ); } );
 
    // NOTE: Enter goes on to the password again, as from each word - it is Enter there that sends the form.
    password.addEventListener( "keydown", function( event )
@@ -870,8 +873,17 @@ function recover_build( )
    meter.appendChild( signin_element( "span", { class: "chat-strength-label", id: "recover_strength_label" } ) );
 
    step_password.appendChild( meter );
+
+   var suggest = signin_element( "button", { type: "button", class: "chat-btn chat-btn--link chat-suggest", id: "recover_suggest" }, "Suggest one" );
+
+   suggest.addEventListener( "click", function( ) { offer_passphrase( "recover_password", "recover_confirm", "recover_suggested" ); } );
+
+   step_password.appendChild( suggest );
+   step_password.appendChild( signin_element( "p", { class: "chat-hint chat-suggested", id: "recover_suggested", role: "status", hidden: "" } ) );
    step_password.appendChild( signin_element( "label", { class: "chat-label", for: "recover_confirm" }, "The same again" ) );
    step_password.appendChild( signin_element( "input", { type: "password", id: "recover_confirm", class: "chat-field", autocomplete: "new-password" } ) );
+
+   attach_reveals( step_password );
    step_password.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "recover_error", role: "alert" } ) );
    step_password.appendChild( signin_element( "div", { class: "recover-status", id: "recover_status", role: "status" } ) );
 
@@ -1001,6 +1013,134 @@ function recover_load_bip39( )
    }
 
    return g_recover_bip39;
+}
+
+// NOTE: "zxcvbn.min.js" - read in the first time a password is chosen (it is over 800 KB), and then the rating is by guesses
+// ("password_strength( )" in "chat_parse.js"); "then" is run once it is in, to rate again what is typed.
+var g_strength_rules = null;
+
+function load_strength_rules( then )
+{
+   if( g_strength_rules === null )
+   {
+      g_strength_rules = new Promise( function( resolve )
+      {
+         if( typeof zxcvbn === "function" )
+         {
+            resolve( true );
+
+            return;
+         }
+
+         var script = document.createElement( "script" );
+
+         script.src = "zxcvbn.min.js";
+         script.onload = function( ) { resolve( typeof zxcvbn === "function" ); };
+         script.onerror = function( ) { g_strength_rules = null; resolve( false ); };
+
+         document.body.appendChild( script );
+      } );
+   }
+
+   // NOTE: Only when it is still to come - "then" usually rates again, and asks again as it does, so with it already in that
+   // would never end (found by the suites, 2026-10-25: the page hung).
+   if( then && ( typeof zxcvbn !== "function" ) )
+      g_strength_rules.then( function( loaded ) { if( loaded ) then( ); } );
+
+   return g_strength_rules;
+}
+
+// NOTE: A reveal button in a new password's field - the eye - showing the password as typed, or hiding it again (Damon,
+// 2026-10-25: "if we get a suggested password, we have no way of seeing what was suggested"). Each field once; the field is
+// wrapped so the button sits inside it. "attach_reveals( )" finds them all - "autocomplete" of "new-password".
+function attach_reveal( input )
+{
+   if( !input || ( input.dataset.reveal === "1" ) )
+      return;
+
+   input.dataset.reveal = "1";
+
+   var wrap = signin_element( "span", { class: "chat-reveal-wrap" } );
+
+   input.parentNode.insertBefore( wrap, input );
+   wrap.appendChild( input );
+
+   var button = signin_element( "button", { type: "button", class: "chat-reveal", id: input.id + "_reveal" } );
+   var ns = "http://www.w3.org/2000/svg";
+   var icon = document.createElementNS( ns, "svg" );
+
+   icon.setAttribute( "viewBox", "0 0 24 24" );
+   icon.setAttribute( "aria-hidden", "true" );
+   icon.setAttribute( "focusable", "false" );
+
+   [ [ "path", { d: "M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" } ], [ "circle", { cx: "12", cy: "12", r: "3" } ],
+    [ "line", { x1: "3", y1: "21", x2: "21", y2: "3", class: "chat-reveal-slash" } ] ].forEach( function( part )
+   {
+      var shape = document.createElementNS( ns, part[ 0 ] );
+
+      Object.keys( part[ 1 ] ).forEach( function( name ) { shape.setAttribute( name, part[ 1 ][ name ] ); } );
+
+      icon.appendChild( shape );
+   } );
+
+   button.appendChild( icon );
+   button.addEventListener( "click", function( ) { set_revealed( input, input.type === "password" ); } );
+
+   wrap.appendChild( button );
+
+   set_revealed( input, false );
+}
+
+function set_revealed( input, shown )
+{
+   var button = document.getElementById( input.id + "_reveal" );
+
+   input.type = shown ? "text" : "password";
+
+   if( button )
+   {
+      var words = shown ? "Hide password" : "Show password";
+
+      button.setAttribute( "aria-label", words );
+      button.setAttribute( "aria-pressed", shown ? "true" : "false" );
+      button.title = words;
+      button.classList.toggle( "is-shown", !!shown );
+   }
+}
+
+function attach_reveals( root )
+{
+   Array.from( ( root || document ).querySelectorAll( "input[autocomplete='new-password']" ) ).forEach( attach_reveal );
+}
+
+// NOTE: "Suggest one" (Ian, 2026-10-23: a suggested passphrase of five words) - five BIP39 words fill the new password and
+// its confirmation, each told it changed, shown in both - as a browser's own password manager does - and in "note_id", to be
+// written down.
+async function offer_passphrase( password_id, confirm_id, note_id )
+{
+   if( !await recover_load_bip39( ) )
+   {
+      signin_set_text( note_id, "A passphrase could not be made - the word list did not load. Try again." );
+      document.getElementById( note_id ).hidden = false;
+
+      return;
+   }
+
+   var phrase = suggested_passphrase( BIP39.DEFAULT_WORDLIST, crypto.getRandomValues( new Uint16Array( 5 ) ) );
+
+   [ password_id, confirm_id ].forEach( function( id )
+   {
+      var field = document.getElementById( id );
+
+      field.value = phrase;
+      field.dispatchEvent( new Event( "input", { bubbles: true } ) );
+
+      attach_reveal( field );
+      set_revealed( field, true );
+   } );
+
+   signin_set_text( note_id, "Your new password: " + phrase + " - write it down; it is all you need, with the PIN." );
+   document.getElementById( note_id ).hidden = false;
 }
 
 function recover_wordlist( )
@@ -1363,9 +1503,12 @@ async function recover_submit( event )
 
    var password = document.getElementById( "recover_password" ).value;
 
-   if( password_strength( password ).level < 1 )
+   var strength = password_strength( password );
+
+   if( strength.level < 1 )
    {
-      signin_set_text( "recover_error", "The master password needs at least " + c_password_min_length + " characters." );
+      signin_set_text( "recover_error", ( strength.text === "Unsatisfactory" )
+       ? "The master password needs at least " + c_password_min_length + " characters." : password_refusal( strength ) );
 
       return;
    }

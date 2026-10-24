@@ -382,6 +382,13 @@ ok   digits and lower, eight long, is moderate
 ok   three kinds with digits, ten long, is strong
 ok   all four kinds, twelve long, is very strong
 ok   boundary: 7 x 7 = 49 is strong
+ok   by guesses - the predictable refused, however many kinds of character
+ok   - and the rest by how many
+ok   - the account's own PIN or name in it counts for little
+ok   - under seven still unsatisfactory, before it is asked
+ok   - why one cannot be saved: too short, or too easy to guess
+ok   - not read in: the rules as before
+ok   a suggested passphrase - five words, eleven bits each
 
 == user initial ================================================
 ok   first letter, upper case

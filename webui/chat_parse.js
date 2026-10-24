@@ -1679,7 +1679,22 @@ function sign_in_progress( stage, value )
 // the same way. Under seven characters is unsatisfactory; otherwise the length is scaled by
 // how many kinds of character are used - digits alone count least - and the score banded.
 // Level 0 cannot be saved; the rest are allowed, with the rating shown.
+//
+// Where "zxcvbn.min.js" has been read in (only where a password is chosen - "signin.js"), the rating is instead by how many
+// guesses it would take (Ian, 2026-10-23: "zxcvbn seems like a good option to add to the mix") - what decides how long it
+// would last, as every guess costs the same hardening. Under 10^8 is too easy to guess and cannot be saved (at 100,000 rounds
+// one graphics card makes about 10,000 guesses a second, so hours); each band after a hundred times harder, to Very Strong
+// past 10^14; with zxcvbn's own warning ("This is a top-100 common password") where it has one. These rules stay as they
+// were until it is read in, and for "test_bip39.html", which keeps them.
 const c_password_min_length = 7;
+
+const c_password_guess_ratings = [
+   { level: 0, min: 0, text: "Too easy to guess" },
+   { level: 1, min: 8, text: "Weak" },
+   { level: 2, min: 10, text: "Moderate" },
+   { level: 3, min: 12, text: "Strong" },
+   { level: 4, min: 14, text: "Very Strong" }
+];
 
 const c_password_ratings = [
    { level: 1, min: 0, text: "Weak" },
@@ -1688,7 +1703,8 @@ const c_password_ratings = [
    { level: 4, min: 80, text: "Very Strong" }
 ];
 
-function password_strength( password )
+// NOTE: "inputs" - what zxcvbn should count as easily guessed for this account: its PIN, its username.
+function password_strength( password, inputs )
 {
    var text = String( password || "" );
 
@@ -1697,6 +1713,9 @@ function password_strength( password )
 
    if( text.length < c_password_min_length )
       return { level: 0, text: "Unsatisfactory" };
+
+   if( typeof zxcvbn === "function" )
+      return password_strength_by_guesses( zxcvbn( text, ( inputs || [ ] ).map( String ) ) );
 
    var has_digits = /[0-9]/.test( text );
    var has_lower = /[a-z]/.test( text );
@@ -1725,6 +1744,49 @@ function password_strength( password )
    }
 
    return { level: rating.level, text: rating.text };
+}
+
+// NOTE: A rating from zxcvbn's estimate - its "guesses_log10", banded - and its warning, if it has one, after it.
+function password_strength_by_guesses( estimate )
+{
+   var log10 = Number( ( estimate || { } ).guesses_log10 ) || 0;
+   var warning = String( ( ( estimate || { } ).feedback || { } ).warning || "" );
+
+   var rating = c_password_guess_ratings[ 0 ];
+
+   for( var i = 1; i < c_password_guess_ratings.length; i++ )
+   {
+      if( log10 >= c_password_guess_ratings[ i ].min )
+         rating = c_password_guess_ratings[ i ];
+   }
+
+   return { level: rating.level, text: rating.text + ( warning !== "" ? " - " + warning : "" ) };
+}
+
+// NOTE: Why a password cannot be saved, from its rating - too short, or (rated by zxcvbn) too easy to guess.
+function password_refusal( strength )
+{
+   if( ( strength || { } ).text === "Unsatisfactory" )
+      return "Choose a password of at least 7 characters.";
+
+   return "That password is too easy to guess - choose a longer one, or Suggest one.";
+}
+
+// NOTE: A passphrase to offer (Ian, 2026-10-23: "a suggested passphrase of five words seems like a good idea") - "count"
+// words from the BIP39 list, each picked by eleven bits of a random 16-bit value ("random"), as the list is 2048 words, so
+// none is likelier than another: five are 55 bits. Joined by "-", which reads well and types anywhere.
+function suggested_passphrase( words, random, count )
+{
+   var list = words || [ ];
+   var picked = [ ];
+
+   if( list.length !== 2048 )
+      return "";
+
+   for( var i = 0; i < ( count || 5 ); i++ )
+      picked.push( list[ Number( random[ i ] ) & 0x7ff ] );
+
+   return picked.join( "-" );
 }
 
 // NOTE: The letter shown in place of an avatar - the first character of the username, or of
@@ -3374,6 +3436,9 @@ if( typeof module !== "undefined" )
       describe_event: describe_event,
       password_strength: password_strength,
       sign_in_progress: sign_in_progress,
+      password_strength_by_guesses: password_strength_by_guesses,
+      suggested_passphrase: suggested_passphrase,
+      password_refusal: password_refusal,
       user_initial: user_initial,
       sign_in_error_text: sign_in_error_text,
       irc_unavailable: irc_unavailable,

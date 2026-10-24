@@ -73,6 +73,8 @@ http://www.opensource.org/licenses/mit-license.php.
             <span class="chat-strength-label" id="join_strength_label"></span>
          </div>
 
+         <button type="button" class="chat-btn chat-btn--link chat-suggest" id="join_suggest" onclick="offer_passphrase( 'join_password', 'join_confirm', 'join_suggested' )">Suggest one</button>
+         <p class="chat-hint chat-suggested" id="join_suggested" role="status" hidden></p>
          <label class="chat-label" for="join_confirm">Type it again</label>
          <input type="password" id="join_confirm" class="chat-field" autocomplete="new-password">
 
@@ -223,6 +225,8 @@ http://www.opensource.org/licenses/mit-license.php.
             </div>
 
             <div>
+               <button type="button" class="chat-btn chat-btn--link chat-suggest" id="mine_suggest" onclick="offer_passphrase( 'mine_password', 'mine_confirm', 'mine_suggested' )">Suggest one</button>
+               <p class="chat-hint chat-suggested" id="mine_suggested" role="status" hidden></p>
                <label class="chat-label" for="mine_confirm">Type it again</label>
                <input type="password" id="mine_confirm" class="chat-field" autocomplete="new-password">
             </div>

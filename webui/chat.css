@@ -596,9 +596,71 @@ button.chat-avatar:hover
 }
 
 .chat-label + .chat-label,
-.chat-field + .chat-label
+.chat-field + .chat-label,
+.chat-reveal-wrap + .chat-label
 {
    margin-top: 26px;
+}
+
+/* NOTE: A new password's field with its reveal button inside, at the end (2026-10-25). */
+.chat-reveal-wrap
+{
+   position: relative;
+   display: block;
+   width: 100%;
+}
+
+.chat-reveal-wrap .chat-field
+{
+   padding-right: 46px;
+}
+
+.chat-reveal
+{
+   position: absolute;
+   top: 50%;
+   right: 6px;
+   transform: translateY(-50%);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: 36px;
+   height: 36px;
+   padding: 0;
+   border: none;
+   border-radius: var(--radius-sm);
+   background: transparent;
+   color: var(--color-chat-text-secondary);
+   cursor: pointer;
+}
+
+.chat-reveal:hover,
+.chat-reveal:focus-visible
+{
+   color: var(--color-chat-text);
+}
+
+.chat-reveal:focus-visible
+{
+   outline: 2px solid var(--color-chat-accent);
+   outline-offset: 1px;
+}
+
+.chat-reveal svg
+{
+   width: 20px;
+   height: 20px;
+   fill: none;
+   stroke: currentColor;
+   stroke-width: 1.8;
+   stroke-linecap: round;
+   stroke-linejoin: round;
+}
+
+/* NOTE: The slash says it is hidden - gone once it is shown. */
+.chat-reveal.is-shown .chat-reveal-slash
+{
+   display: none;
 }
 
 .chat-field
@@ -2734,6 +2796,24 @@ button.chat-avatar:hover
    margin-top: 12px;
    font-size: var(--font-size-chat-meta);
    color: var(--color-chat-text-secondary);
+}
+
+/* NOTE: "Suggest one" - five words offered as the password (2026-10-25) - and what was suggested, to write down. */
+.chat-suggest
+{
+   display: inline-block;
+   margin: 6px 0 2px;
+}
+
+.chat-suggested
+{
+   margin: 4px 0 20px;
+   overflow-wrap: anywhere;
+}
+
+.chat-suggested[hidden]
+{
+   display: none;
 }
 
 /* NOTE: How far securing the password has got (2026-10-25) - a thin bar under the words. */
