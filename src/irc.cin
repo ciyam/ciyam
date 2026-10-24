@@ -265,7 +265,7 @@ TOTAL=@$PLEN+$MLEN
 @if $TOTAL #> $MAX_TO_ENCRYPT
 #Error: Maximum message size exceeded.
 @else
-SLEN=@125-$TOTAL
+SLEN=@$MAX_TO_ENCRYPT-$TOTAL
 SUFFIX=@entropy:$SLEN:alpha_numeric
 ENCODED=@aschex:$~PREFIX\r$~CRYPT_MESSAGE\r$~SUFFIX
 SALT=@file:~xxd -l 16 -p /dev/urandom
@@ -659,7 +659,7 @@ TOTAL=@$PLEN+$MLEN
 MESSAGE=
 #Error: Maximum message size for encryption exceeded.
 @else
-SLEN=@125-$TOTAL
+SLEN=@$MAX_TO_ENCRYPT-$TOTAL
 SUFFIX=@entropy:$SLEN:alpha_numeric
 ENCODED=@aschex:$~PREFIX\r$~CRYPT_MESSAGE\r$~SUFFIX
 SALT=@file:~xxd -l 16 -p /dev/urandom
