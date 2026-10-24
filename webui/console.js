@@ -1264,8 +1264,6 @@ async function run_open( spec )
    return { ok: !is_error_output( response ) };
 }
 
-// NOTE: Signing in at the prompt, the console opened on its own (Ian, 2026-10-13) - an account saved on this browser by
-// name, or a PIN; the password asked only when none is saved. Nothing new is remembered: the sign in's Remember does that.
 // NOTE: What signing in from the prompt is doing, on its own line, and the bar while the password is secured (Ian, 2026-10-25:
 // "I don't see any progress (from either the Console or Sign In form)").
 function init_progress_for( line )
@@ -1297,6 +1295,8 @@ function init_progress_for( line )
    };
 }
 
+// NOTE: Signing in at the prompt, the console opened on its own (Ian, 2026-10-13) - an account saved on this browser by
+// name, or a PIN; the password asked only when none is saved. Nothing new is remembered: the sign in's Remember does that.
 async function run_init( target )
 {
    if( !g_started_alone )

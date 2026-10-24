@@ -121,7 +121,8 @@ http://www.opensource.org/licenses/mit-license.php.
             <div class="chat-strength-track"><div class="chat-strength-bar"></div></div>
             <span class="chat-strength-label" id="setup_strength_label"></span>
          </div>
-         <button type="button" class="chat-btn chat-btn--link chat-suggest" id="setup_suggest" onclick="offer_passphrase( 'setup_password_new', 'setup_password_confirm', 'setup_suggested' )">Suggest one</button>
+         <button type="button" class="chat-btn chat-btn--link chat-suggest" id="setup_suggest"
+          onclick="offer_passphrase( 'setup_password_new', 'setup_password_confirm', 'setup_suggested' )">Suggest one</button>
          <p class="chat-hint chat-suggested" id="setup_suggested" role="status" hidden></p>
          <label class="chat-label" for="setup_password_confirm">Type it again</label>
          <input type="password" class="chat-field" id="setup_password_confirm" autocomplete="new-password">
