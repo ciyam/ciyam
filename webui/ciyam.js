@@ -53,8 +53,11 @@ const c_password_hash_floor = 100000;
 // NOTE: In a page, a pause every so many rounds, so it can redraw while hardening.
 const c_password_hash_pause = 5000;
 
-// NOTE: The version a PIN's password was last hashed with in this browser (Ian, 2026-10-23: a version in "localStorage").
-const c_storage_hash_version_prefix = "cws.hash_version@";
+// NOTE: The version a PIN's password was last hashed with in this browser (Ian, 2026-10-23: a version in "localStorage") - "_"
+// before a PIN, as "cws.hashed_<pin>", and "@" before a name, as "cws.notify@<name>" (Ian, 2026-10-25). The first days had
+// "@" before the PIN too; one found so is moved.
+const c_storage_hash_version_prefix = "cws.hash_version_";
+const c_storage_hash_version_prefix_old = "cws.hash_version@";
 
 // NOTE: A sign in refused with this is taken as a password hashed the other way, and tried once more - after the gap the
 // server keeps between sign ins for a PIN.
@@ -274,12 +277,25 @@ class CIYAM
    hash_version_for( access )
    {
       var version = c_password_hash_version;
+      var storage = page_storage( );
 
       try
       {
-         if( typeof localStorage !== "undefined" )
+         if( storage !== null )
          {
-            var kept = localStorage.getItem( c_storage_hash_version_prefix + String( access ).split( ":" )[ 0 ] );
+            var pin = String( access ).split( ":" )[ 0 ];
+            var kept = storage.getItem( c_storage_hash_version_prefix + pin );
+
+            if( kept === null )
+            {
+               kept = storage.getItem( c_storage_hash_version_prefix_old + pin );
+
+               if( kept !== null )
+               {
+                  storage.setItem( c_storage_hash_version_prefix + pin, kept );
+                  storage.removeItem( c_storage_hash_version_prefix_old + pin );
+               }
+            }
 
             if( kept !== null )
             {
@@ -291,11 +307,11 @@ class CIYAM
                var any_version = false;
                var any_kept = false;
 
-               for( var i = 0; i < localStorage.length; i++ )
+               for( var i = 0; i < storage.length; i++ )
                {
-                  var key = String( localStorage.key( i ) );
+                  var key = String( storage.key( i ) );
 
-                  if( key.indexOf( c_storage_hash_version_prefix ) === 0 )
+                  if( ( key.indexOf( c_storage_hash_version_prefix ) === 0 ) || ( key.indexOf( c_storage_hash_version_prefix_old ) === 0 ) )
                      any_version = true;
                   else if( key.indexOf( "cws." ) === 0 )
                      any_kept = true;
@@ -315,10 +331,13 @@ class CIYAM
 
    keep_hash_version( access, version )
    {
+      var storage = page_storage( );
+
       try
       {
-         if( ( typeof localStorage !== "undefined" ) && ( String( access ).length == c_pin_access_len ) )
-            localStorage.setItem( c_storage_hash_version_prefix + access, String( version ) );
+         // NOTE: A PIN - all digits, as "admin" is as long (found by a check, 2026-10-25).
+         if( ( storage !== null ) && /^[0-9]+$/.test( String( access ) ) && ( String( access ).length == c_pin_access_len ) )
+            storage.setItem( c_storage_hash_version_prefix + access, String( version ) );
       }
       catch( e )
       {
@@ -1669,6 +1688,23 @@ function ciyam_utf8_binary( text )
       out += String.fromCharCode( bytes[ i ] );
 
    return out;
+}
+
+// NOTE: The page's "localStorage", or null - reached through "window" alone, so the command line never touches the one Node
+// has begun to offer, which warns each time it is touched without a file to keep it in (Ian, 2026-10-25: nodejs/node#60303).
+function page_storage( )
+{
+   if( typeof window === "undefined" )
+      return null;
+
+   try
+   {
+      return window.localStorage || null;
+   }
+   catch( e )
+   {
+      return null;
+   }
 }
 
 // NOTE: Whether a reply says it was done - "[okay]" as text, or as JSON ("{"response":"[okay]"}", Node's default); an error in

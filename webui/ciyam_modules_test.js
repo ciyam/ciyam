@@ -222,37 +222,53 @@ async function steps( module_class, list )
 
    // NOTE: The version a browser guesses (Ian, 2026-10-23) - as kept for the PIN; none kept, the first if the browser keeps
    // things for the node but no versions; the current one otherwise, and on the command line.
+   // NOTE: In a page, through "window" - the command line never touches Node's own "localStorage", which warns (Ian, 2026-10-25).
    var fake_storage = function( entries )
    {
-      var keys = Object.keys( entries );
+      return { get length( ) { return Object.keys( entries ).length; }, key: function( i ) { return Object.keys( entries )[ i ]; },
+       getItem: function( k ) { return entries.hasOwnProperty( k ) ? entries[ k ] : null; },
+       setItem: function( k, v ) { entries[ k ] = String( v ); }, removeItem: function( k ) { delete entries[ k ]; } };
+   };
 
-      return { length: keys.length, key: function( i ) { return keys[ i ]; },
-       getItem: function( k ) { return entries.hasOwnProperty( k ) ? entries[ k ] : null; } };
+   var in_window = function( entries, act )
+   {
+      global.window = { localStorage: fake_storage( entries ) };
+
+      try { return act( ); } finally { delete global.window; }
    };
 
    var guessed = [ in_page.hash_version_for( "20401" ) ];
 
-   [ { }, { "cws.hashed_20401": "x" }, { "cws.hashed_20401": "x", "cws.hash_version@20101": "1" }, { "cws.hash_version@20401": "0" },
-    { "cws.hash_version@20401": "7" }, { "cws.hash_version@20401": "one" } ].forEach( function( entries )
+   [ { }, { "cws.hashed_20401": "x" }, { "cws.hashed_20401": "x", "cws.hash_version_20101": "1" }, { "cws.hash_version_20401": "0" },
+    { "cws.hash_version_20401": "7" }, { "cws.hash_version_20401": "one" } ].forEach( function( entries )
    {
-      global.localStorage = fake_storage( entries );
-      guessed.push( in_page.hash_version_for( "20401" ) );
+      guessed.push( in_window( entries, function( ) { return in_page.hash_version_for( "20401" ); } ) );
    } );
-
-   delete global.localStorage;
 
    check( "the version guessed - none kept: current; kept for the node but no versions: 0; another's kept: current; as kept",
     guessed, [ 1, 1, 0, 1, 0, 1, 1 ] );
 
+   // NOTE: "_" before a PIN, as "cws.hashed_<pin>" (Ian, 2026-10-25) - one kept the first days' way, with "@", read and moved.
+   var moved = { "cws.hashed_20401": "x", "cws.hash_version@20401": "0" };
+
+   var moved_version = in_window( moved, function( ) { return in_page.hash_version_for( "20401" ); } );
+
+   check( "- kept the old way (\"@\" before the PIN): read, and moved to \"_\"", [ moved_version,
+    moved[ "cws.hash_version_20401" ], moved.hasOwnProperty( "cws.hash_version@20401" ) ], [ 0, "0", false ] );
+
+   var kept_by = { };
+
+   in_window( kept_by, function( ) { in_page.keep_hash_version( "20401", 1 ); in_page.keep_hash_version( "admin", 1 ); } );
+
+   check( "- kept by PIN alone, as \"cws.hash_version_<pin>\"", kept_by, { "cws.hash_version_20401": "1" } );
+
    // NOTE: Found by review (2026-10-23) - a PIN with a username after it is looked up by its PIN; and only "[okay]", as text or
    // JSON, is taken as done - an error in JSON had been taken for success.
-   global.localStorage = fake_storage( { "cws.hash_version@20401": "0" } );
-
-   var suffixed = in_page.hash_version_for( "20401:verify-a" );
-
-   delete global.localStorage;
+   var suffixed = in_window( { "cws.hash_version_20401": "0" }, function( ) { return in_page.hash_version_for( "20401:verify-a" ); } );
 
    check( "- a PIN with a username after it, by its PIN", suffixed, 0 );
+   check( "- and with no page, the command line: the current one, Node's own localStorage never touched",
+    in_page.hash_version_for( "20401" ), 1 );
    check( "a reply that says done - only \"[okay]\", as text or JSON", [ "[okay]", " [okay]\n", "{\"response\":\"[okay]\"}",
     "Error: Unknown access pin '41281' for user update.", "{\"error\":\"Unknown access pin\"}", "{\"response\":\"[none]\"}", "", null, "{bad" ]
     .map( m.is_okay_response ), [ true, true, true, false, false, false, false, false, false ] );
@@ -571,10 +587,10 @@ async function steps( module_class, list )
    var sealed_parts = sealed.substring( 2 ).split( "\r" );
    var padded = new TextDecoder( ).decode( await m.ciyam_module_named( "chacha20" ).crypt( own + sealed_parts[ 0 ], hex_bytes( sealed_parts[ 1 ] ) ) );
 
-   check( "sealed afresh - salt, ciphertext and HMAC, padded to 127 bytes, opened again with CR as a line break", [ sealed.startsWith( "X\r" ),
+   check( "sealed afresh - salt, ciphertext and HMAC, padded to 502 bytes, opened again with CR as a line break", [ sealed.startsWith( "X\r" ),
     /^[0-9a-f]{32}$/.test( sealed_parts[ 0 ] ), sealed_parts[ 1 ].length, /^[0-9a-f]{32}$/.test( sealed_parts[ 2 ] ),
     /^[0-9A-Za-z]{5,10}\rA line\nand another, café\r[0-9A-Za-z]+$/.test( padded ), await sm.open( own, sealed ) ],
-    [ true, true, 254, true, true, "A line\nand another, café" ] );
+    [ true, true, 1004, true, true, "A line\nand another, café" ] );
    check( "- each time a new salt and padding", ( await sm.seal( own, "same" ) ) !== ( await sm.seal( own, "same" ) ), true );
 
    var refused = async function( promise ) { try { await promise; return "opened"; } catch( e ) { return e.message; } };
@@ -582,12 +598,12 @@ async function steps( module_class, list )
 
    check( "not opened - changed, another secret, not sealed, or too long to seal", [ await refused( sm.open( own, changed ) ),
     await refused( sm.open( sm.own_secret( "0123456789abcdef0123456789abcdef" ), known ) ), await refused( sm.open( own, "Hello" ) ),
-    await refused( sm.open( own, known + "\r00" ) ), await refused( sm.seal( own, "x".repeat( 91 ) ) ), await refused( sm.seal( "abc", "hi" ) ),
+    await refused( sm.open( own, known + "\r00" ) ), await refused( sm.seal( own, "x".repeat( 491 ) ) ), await refused( sm.seal( "abc", "hi" ) ),
     await refused( sm.seal( own, "hi", { salt: "XYZ" } ) ) ],
     [ "That message has been changed, or was sealed with another secret.", "That message has been changed, or was sealed with another secret.",
-    "That is not a sealed message.", "That is not a sealed message.", "That message is too long to seal - at most 90 bytes.",
+    "That is not a sealed message.", "That is not a sealed message.", "That message is too long to seal - at most 490 bytes.",
     "A secret is 64 hex digits - the own secret, or one with another person.", "A salt is 32 lower-case hex digits, and the padding has no CR." ] );
-   check( "- 90 bytes sealed, the most", await sm.open( own, await sm.seal( own, "y".repeat( 90 ) ) ), "y".repeat( 90 ) );
+   check( "- 490 bytes sealed, the most", await sm.open( own, await sm.seal( own, "y".repeat( 490 ) ) ), "y".repeat( 490 ) );
 
    // NOTE: To another person, as "x" now does (Ian, 2026-10-22) - from the console (2026-10-22): each one's public key, as
    // "irc.cin" shows it to scan, and "@shared" between one's key and the other's public key, the same from either side.

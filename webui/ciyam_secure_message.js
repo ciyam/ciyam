@@ -29,10 +29,11 @@ ciyam_register_module( class extends ciyam_module
    static c_salt_bytes = 16;
    static c_hmac_digits = 32;
 
-   // NOTE: Ian's test sizes - the random letters and the message at most 100 bytes, and those with the rest padded to 125.
-   // The letters before are 5 to 10, so a message of up to 90 bytes is always taken, where the console's limit moves with them.
-   static c_max_length = 100;
-   static c_padded_length = 125;
+   // NOTE: As "irc.cin"'s "MAX_TO_ENCRYPT" (Ian, 2026-10-24) - the random letters and the message at most 500 bytes, and those
+   // with the rest padded to 500, so every message is the same size. The letters before are 5 to 10, so a message of up to 490
+   // bytes is always taken, where the console's limit moves with them.
+   static c_max_length = 500;
+   static c_padded_length = 500;
    static c_most_before = 10;
 
    static c_alpha_numeric = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";

@@ -24,7 +24,10 @@ ok   the sign in's hash, version 1 - the current one: hardened, a page's as Node
 ok   - as the node's own crypto_hash -x gives it (-x=99999 for twelve bytes, -x=199999 for ten)
 ok   - an unknown version refused
 ok   the version guessed - none kept: current; kept for the node but no versions: 0; another's kept: current; as kept
+ok   - kept the old way ("@" before the PIN): read, and moved to "_"
+ok   - kept by PIN alone, as "cws.hash_version_<pin>"
 ok   - a PIN with a username after it, by its PIN
+ok   - and with no page, the command line: the current one, Node's own localStorage never touched
 ok   a reply that says done - only "[okay]", as text or JSON
 ok   progress through the page's own functions - shown at nought, hidden at the end
 ok   - and other modules
@@ -76,10 +79,10 @@ ok   the own secret - as the console's, from the entropy and it reversed
 ok   - entropy not 32 to 64 hex digits, said
 ok   sealed - as the console seals it, given its salt and padding
 ok   - and opened
-ok   sealed afresh - salt, ciphertext and HMAC, padded to 127 bytes, opened again with CR as a line break
+ok   sealed afresh - salt, ciphertext and HMAC, padded to 502 bytes, opened again with CR as a line break
 ok   - each time a new salt and padding
 ok   not opened - changed, another secret, not sealed, or too long to seal
-ok   - 90 bytes sealed, the most
+ok   - 490 bytes sealed, the most
 ok   to another person - the public keys and the secret between them, as the console's, from either side
 ok   - sealed by one, opened by the other, and not under either's own secret
 ok   - a public key not a key, said
