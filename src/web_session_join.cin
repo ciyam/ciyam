@@ -26,6 +26,7 @@ UNJOIN=
 FIRST=@substr:0,1:$IRC_ROOM
 @ifeq "$FIRST" "~"
 UNJOIN=1
+ROOM_PREFIX=
 @else
 ;
 @ifdef $JOIN_TOKEN
