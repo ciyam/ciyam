@@ -249,10 +249,15 @@ ALL_USERS_CHECK=
 ALL_USERS_CHECK=@strlit:%ALL_USERS%@
 @endif
 ;
+OPT_PREFIX=
+@ifdef $INCLUDE_NAME
+OPT_PREFIX=@strlit:%ROOM_NAME%_
+@endif
+;
 NOT_SELF_CHECK=@repstr:@$USER@/@:$ALL_USERS_CHECK
 ;
 @ifneq "$ALL_USERS_CHECK" "$NOT_SELF_CHECK"
-RETURN=dummy|dummy|$ALL_USERS
+RETURN=dummy|dummy|$OPT_PREFIX$ALL_USERS
 @else
 ;
 ALL_USERS=@strlit:$ALL_USERS@$USER
@@ -263,9 +268,9 @@ EXTRA=_:joined
 .system_variable @irc_users_$ROOM_NO $ALL_USERS
 ;
 @ifneq "$ROOM_NO" "$RESERVED_ROOM"
-RETURN=dummy|$EXTRA|$ALL_USERS
+RETURN=dummy|$EXTRA|$OPT_PREFIX$ALL_USERS
 @else
-RETURN=:joined (as $USER)|$EXTRA|$ALL_USERS
+RETURN=:joined (as $USER)|$EXTRA|$OPT_PREFIX$ALL_USERS
 @endif
 @endif
 ;
