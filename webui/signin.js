@@ -1084,7 +1084,12 @@ function attach_reveal( input )
    } );
 
    button.appendChild( icon );
-   button.addEventListener( "click", function( ) { set_revealed( input, input.type === "password" ); } );
+   button.addEventListener( "click", function( )
+   {
+      var shown = ( input.type === "password" );
+
+      reveal_partners( input ).forEach( function( field ) { set_revealed( field, shown ); } );
+   } );
 
    wrap.appendChild( button );
 
@@ -1106,6 +1111,21 @@ function set_revealed( input, shown )
       button.title = words;
       button.classList.toggle( "is-shown", !!shown );
    }
+}
+
+// NOTE: A new password and its "type it again" are shown or hidden together (Damon, 2026-10-25) - the new password fields
+// with a reveal in the same form, or the same section of Home's set-up or step of recovery.
+function reveal_partners( input )
+{
+   var group = input.closest( "form, section, .recover-step" );
+
+   if( !group )
+      return [ input ];
+
+   return Array.from( group.querySelectorAll( "input[autocomplete='new-password']" ) ).filter( function( field )
+   {
+      return field.dataset.reveal === "1";
+   } );
 }
 
 function attach_reveals( root )
