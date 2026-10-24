@@ -1760,6 +1760,9 @@ function password_strength_by_guesses( estimate )
          rating = c_password_guess_ratings[ i ];
    }
 
+   if( warning !== "" )
+      warning = warning.charAt( 0 ).toLowerCase( ) + warning.slice( 1 );
+
    return { level: rating.level, text: rating.text + ( warning !== "" ? " - " + warning : "" ) };
 }
 

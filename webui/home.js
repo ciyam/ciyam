@@ -660,7 +660,7 @@ function setup_password_key( event )
    var password = document.getElementById( "setup_password_new" ).value;
 
    var next = setup_password_enter( ( event.target.id === "setup_password_new" ) ? "new" : "confirm", password,
-    document.getElementById( "setup_password_confirm" ).value, password_strength( password ).level >= 1 );
+    document.getElementById( "setup_password_confirm" ).value, password_strength( password, [ g_setup.pin ] ).level >= 1 );
 
    set_text( "setup_password_error", ( next.problem === "short" ) ? "The master password needs at least " + c_password_min_length + " characters."
     : ( next.problem === "different" ? "The two passwords are not the same." : "" ) );
@@ -707,6 +707,10 @@ async function setup_make_words( )
    var password = document.getElementById( "setup_password_new" ).value;
 
    set_text( "setup_password_error", "" );
+
+   // NOTE: The rules by guesses are waited for, so a password is never let through by the old ones for being sent before
+   // "zxcvbn.min.js" was in (review, 2026-10-25). If it cannot be read, the old ones are what there is.
+   await load_strength_rules( );
 
    var strength = password_strength( password, [ g_setup.pin ] );
 

@@ -744,9 +744,9 @@ check( "boundary: 7 x 7 = 49 is strong", rated( "Ab1!xyz" ), "Strong" );
 global.zxcvbn = require( "./zxcvbn.min.js" );
 
 check( "by guesses - the predictable refused, however many kinds of character", [ rated( "Password1!" ), rated( "P@ssw0rd123" ),
- rated( "qwertyuiop" ), rated( "Summer2024!" ) ], [ "Too easy to guess - This is similar to a commonly used password",
- "Too easy to guess - This is similar to a commonly used password", "Too easy to guess - This is a top-100 common password",
- "Too easy to guess - This is similar to a commonly used password" ] );
+ rated( "qwertyuiop" ), rated( "Summer2024!" ) ], [ "Too easy to guess - this is similar to a commonly used password",
+ "Too easy to guess - this is similar to a commonly used password", "Too easy to guess - this is a top-100 common password",
+ "Too easy to guess - this is similar to a commonly used password" ] );
 check( "- and the rest by how many", [ rated( "new-pass-2" ), rated( "correct-horse-1" ), rated( "granite-orchid-42" ),
  rated( "taxi-act-describe-attitude-focus" ), cp.password_strength( "Password1!" ).level, cp.password_strength( "new-pass-2" ).level ],
  [ "Weak", "Moderate", "Strong", "Very Strong", 0, 1 ] );

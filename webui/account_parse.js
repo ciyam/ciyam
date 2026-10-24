@@ -170,12 +170,13 @@ function nominate_problem( pin, username, people )
 
 // NOTE: What is wrong with a new username and password, or "" - the same rules as the chat's
 // change of password: at least "Weak", and typed the same twice.
-function join_problem( username, password, confirm )
+function join_problem( username, password, confirm, pin )
 {
    if( !is_valid_username( username ) )
       return "Choose a username of 3 to 12 characters: a-z, 0-9 and single hyphens, starting with a letter.";
 
-   var strength = password_strength( password, [ username ] );
+   // NOTE: Rated as the meter rates it, the PIN and username counting for little (review, 2026-10-25).
+   var strength = password_strength( password, [ pin, username ].filter( Boolean ) );
 
    if( strength.level < 1 )
       return password_refusal( strength );

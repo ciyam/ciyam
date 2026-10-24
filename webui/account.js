@@ -970,6 +970,10 @@ async function do_change_password( event )
       return;
    }
 
+   // NOTE: The rules by guesses are waited for, so a password is never let through by the old ones for being sent before
+   // "zxcvbn.min.js" was in (review, 2026-10-25). If it cannot be read, the old ones are what there is.
+   await load_strength_rules( );
+
    var fresh_strength = password_strength( fresh, [ ciyam.access, ciyam.username ].filter( Boolean ) );
 
    if( fresh_strength.level < 1 )
@@ -1002,7 +1006,20 @@ async function do_change_password( event )
    // NOTE: The account's own PIN - "***" is not substituted by "update_user( )" and the server
    // refuses it. The password is hashed with the PIN before it is sent - once, here, the current
    // way, and the session's hash made from the same (it had been hardened twice).
-   var combined = await with_progress( "mine", function( ) { return ciyam.hash_combined( fresh, ciyam.access, c_password_hash_version ); } );
+   var combined = "";
+
+   try
+   {
+      combined = await with_progress( "mine", function( ) { return ciyam.hash_combined( fresh, ciyam.access, c_password_hash_version ); } );
+   }
+   catch( e )
+   {
+      submit.disabled = false;
+
+      set_error( "mine_error", "The new password could not be secured - " + String( e && e.message || e ) );
+
+      return;
+   }
 
    var response = await request( function( done )
    {
@@ -1200,7 +1217,11 @@ async function do_join( event )
    var password = document.getElementById( "join_password" ).value;
    var confirm = document.getElementById( "join_confirm" ).value;
 
-   var problem = join_problem( username, password, confirm );
+   // NOTE: The rules by guesses are waited for, so a password is never let through by the old ones for being sent before
+   // "zxcvbn.min.js" was in (review, 2026-10-25). If it cannot be read, the old ones are what there is.
+   await load_strength_rules( );
+
+   var problem = join_problem( username, password, confirm, g_join_pin );
 
    if( problem !== "" )
    {

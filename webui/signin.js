@@ -1523,6 +1523,10 @@ async function recover_submit( event )
 
    var password = document.getElementById( "recover_password" ).value;
 
+   // NOTE: The rules by guesses are waited for, so a password is never let through by the old ones for being sent before
+   // "zxcvbn.min.js" was in (review, 2026-10-25). If it cannot be read, the old ones are what there is.
+   await load_strength_rules( );
+
    var strength = password_strength( password );
 
    if( strength.level < 1 )
