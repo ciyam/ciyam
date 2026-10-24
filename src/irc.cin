@@ -37,6 +37,7 @@ SKEY=
 ERROR=
 ;
 LOCK_EMOJI=🔒
+MAX_TO_ENCRYPT=500
 ;
 UNLOCK_SCRIPT=.irc_$USER.unlock
 STORED_SECRET=.irc_$USER.secret
@@ -93,6 +94,7 @@ EDIT_LINE_NUM=
 LAST_MSG_UNIX=
 MESSAGE_LINES=
 EDIT_UNIX_UNIQUE=
+DIRECT_PUB_SUFFIX=
 PINNED_LAST_MSG_UNIX=
 ;
 ENTRANCE_ROOM=0000000
@@ -138,6 +140,8 @@ CHECK_PRIOR=1
 CIYAM_PAUSE_SECONDS=1
 ;
 @:LOOP
+;
+IS_DIRECT_ROOM=
 ;
 @ifdef $INVITATION_INFORMATION
 .run_script !irc_add_room "@name=$INVITATION_INFORMATION"
@@ -254,13 +258,12 @@ DECODED=@substr:0,$POS:$DECODED
 ;
 @else
 ;
-MAX_PLEN=100
 PREFIX=@entropy:5,10:alpha_numeric
 PLEN=@strlen:$PREFIX
 MLEN=@strlen:$CRYPT_MESSAGE
 TOTAL=@$PLEN+$MLEN
-@if $TOTAL #> $MAX_PLEN
-#Error: Maximum message size exeeded.
+@if $TOTAL #> $MAX_TO_ENCRYPT
+#Error: Maximum message size exceeded.
 @else
 SLEN=@125-$TOTAL
 SUFFIX=@entropy:$SLEN:alpha_numeric
@@ -496,6 +499,7 @@ PINNED_LAST_MSG_UNIX=
 PREFIX=
 SUFFIX=
 TRANSFER=
+EXTRA_PREFIX=
 ;
 POS=@strpos:=:$ROOM
 ;
@@ -540,6 +544,8 @@ MESSAGE_LINES=
 ;
 EDIT_LINE_NUM=
 EDIT_UNIX_UNIQUE=
+;
+DIRECT_PUB_SUFFIX=
 @endif
 ;
 CHECK_PRIOR=1
@@ -626,6 +632,45 @@ MESSAGE=@file:$FILE_NAME
 @endif
 @ifndef $NAMES
 MESSAGE=_ $MESSAGE
+;
+; NOTE: If is in a DM room and has the user's public key
+; then converts into an encrypted message for this user.
+@ifdef $DIRECT_PUB_SUFFIX
+HAS_PUB_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$DIRECT_PUB_SUFFIX
+@ifdef $HAS_PUB_KEY_FILE
+PUB_KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$DIRECT_PUB_SUFFIX
+CRYPT_MESSAGE=@substr:2:$MESSAGE
+POS=@strpos:\r:$PUB_KEY_FILE_DATA
+SALT=@substr:0,$POS:$PUB_KEY_FILE_DATA
+POS=@$POS+1
+ENCRYPTED=@substr:$POS:$PUB_KEY_FILE_DATA
+SPUB=@public:$SKEY
+OWN_ECDHE=@shared:$PKEY:$~SPUB
+DECRYPTPED=@crypt:cc $~OWN_ECDHE$SALT:$ENCRYPTED
+SPUB=$DECRYPTPED
+@ifdef $SPUB
+MSG_ECDHE=@shared:$PKEY:$~SPUB
+PREFIX=@entropy:5,10:alpha_numeric
+PLEN=@strlen:$PREFIX
+MLEN=@strlen:$CRYPT_MESSAGE
+TOTAL=@$PLEN+$MLEN
+@if $TOTAL #> $MAX_TO_ENCRYPT
+MESSAGE=
+#Error: Maximum message size for encryption exceeded.
+@else
+SLEN=@125-$TOTAL
+SUFFIX=@entropy:$SLEN:alpha_numeric
+ENCODED=@aschex:$~PREFIX\r$~CRYPT_MESSAGE\r$~SUFFIX
+SALT=@file:~xxd -l 16 -p /dev/urandom
+ENCRYPT=@crypt:cc $MSG_ECDHE$SALT:$~ENCODED
+HMAC=@hmac256:mac$MSG_ECDHE$SALT:$ENCRYPT
+HMAC=@substr:0,32:$HMAC
+MESSAGE=_ $ENCRYPTED_PREFIX$SALT\r$ENCRYPT\r$HMAC
+@endif
+@endif
+@endif
+@endif
+;
 @else
 MESSAGE=_!$MESSAGE
 @endif
@@ -658,6 +703,20 @@ DISPLAY_USERS=
 LOCAL=:
 @endif
 ;
+POS=@strpos:_:$ALL_USERS
+@ifdef $POS
+ROOM_NAME=@substr:0,$POS:$ALL_USERS
+FIRST=@substr:0,1:$ROOM_NAME
+@ifeq "$FIRST" "/"
+IS_DIRECT_ROOM=1
+@endif
+POS=@$POS+1
+ALL_USERS=@substr:$POS:$ALL_USERS
+OTHER_USER=$ALL_USERS@
+OTHER_USER=@repstr:@$USER@/:$OTHER_USER
+OTHER_USER=@repstr:@/:$OTHER_USER
+DIRECT_PUB_SUFFIX=$OTHER_USER
+@endif
 @retain ALL_IRC_USERS
 <names_extra.cin $USER "$ALL_USERS_EXTRA"
 DISPLAY_USERS=@strlit:$ALL_IRC_USERS
@@ -797,6 +856,7 @@ NEXT_MESSAGE=@strlit:%MESSAGES:1%
 @skip
 ;
 @:MSG_NEXT
+PADDING_EXTRA=$SP
 ;
 NEXT_MSG_PARTS=@repstr: /\n:$NEXT_MESSAGE
 ;
@@ -806,10 +866,6 @@ ENCODED_MESSAGE=@strlit:%NEXT_MSG_PARTS:3%
 DECODED_MESSAGE=@base64:$ENCODED_MESSAGE
 DECODED_MESSAGE=@substr:1,0:$DECODED_MESSAGE$EXTRA_MESSAGE
 ;
-; NOTE: Pad the start of each line if is multi-line.
-SPACES=@padlen:41, :
-DECODED_MESSAGE=@repstr:\n/\n$SPACES:$DECODED_MESSAGE
-;
 LAST_MSG_UNIX=%NEXT_MSG_PARTS:1%
 ;
 LOCAL=@date:%NEXT_MSG_PARTS:1%:yyyy-mm-dd hh:mm:ss
@@ -818,15 +874,11 @@ USER_NAME=@strlit:%NEXT_MSG_PARTS:2%
 ;
 CHECK_ENCRYPTED=@substr:1,2:$DECODED_MESSAGE
 @ifeq "$CHECK_ENCRYPTED" "$ENCRYPTED_PREFIX"
-CHECK_USER_NAME=@repstr:*/:$USER_NAME
-;
 SPUB=
-@ifeq "$USER" "$CHECK_USER_NAME"
-SPUB=@public:$SKEY
-@else
-HAS_PUB_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$CHECK_USER_NAME
+@ifdef $DIRECT_PUB_SUFFIX
+HAS_PUB_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$DIRECT_PUB_SUFFIX
 @ifdef $HAS_PUB_KEY_FILE
-PUB_KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$CHECK_USER_NAME
+PUB_KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$DIRECT_PUB_SUFFIX
 POS=@strpos:\r:$PUB_KEY_FILE_DATA
 SALT=@substr:0,$POS:$PUB_KEY_FILE_DATA
 POS=@$POS+1
@@ -873,8 +925,9 @@ POS=@$POS+1
 DECODED=@substr:$POS:$DECODED
 POS=@strpos:\r:$DECODED
 @ifdef $POS
+PADDING_EXTRA=%G%*%N%
 DECODED_MESSAGE=@substr:0,$POS:$DECODED
-DECODED_MESSAGE=%A%=%N%$DECODED_MESSAGE
+DECODED_MESSAGE=$PADDING_EXTRA$DECODED_MESSAGE
 @endif
 @endif
 @endif
@@ -884,6 +937,11 @@ DECODED_MESSAGE=$LOCK_EMOJI ($CHECK_USER_NAME)
 @endif
 ;
 @endif
+;
+; NOTE: Pad the start of each line if is multi-line.
+SPACES=@padlen:40, :
+SPACES=$SPACES$PADDING_EXTRA
+DECODED_MESSAGE=@repstr:\n/\n$SPACES:$DECODED_MESSAGE
 ;
 IS_PINNED=
 FIRST=@substr:0,1:$USER_NAME
