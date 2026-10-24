@@ -1651,6 +1651,30 @@ function page_title( title, count )
    return ( waiting !== "" ) ? "(" + waiting + ") " + title : title;
 }
 
+// NOTE: What signing in is doing, as "ciyam.js"'s "report_progress( )" says it (Ian, 2026-10-25: a progress whilst it is
+// hashing, or waiting) - the words, and how far along it is (0 to 1) when that is known, for a bar; null for none.
+function sign_in_progress( stage, value )
+{
+   if( stage === "securing" )
+   {
+      var fraction = Math.max( 0, Math.min( 1, Number( value ) || 0 ) );
+
+      return { text: "Securing your password… " + Math.round( fraction * 100 ) + "%", fraction: fraction };
+   }
+
+   if( stage === "waiting" )
+   {
+      var seconds = Math.max( 1, Math.round( Number( value ) || 1 ) );
+
+      return { text: "Checking it another way in " + seconds + ( seconds === 1 ? " second…" : " seconds…" ), fraction: null };
+   }
+
+   if( stage === "updating" )
+      return { text: "Updating how your password is kept…", fraction: null };
+
+   return { text: "Contacting the server…", fraction: null };
+}
+
 // NOTE: The password strength rules from "test_bip39.html", so both pages rate a password
 // the same way. Under seven characters is unsatisfactory; otherwise the length is scaled by
 // how many kinds of character are used - digits alone count least - and the score banded.
@@ -3349,6 +3373,7 @@ if( typeof module !== "undefined" )
       join_continued_lines: join_continued_lines,
       describe_event: describe_event,
       password_strength: password_strength,
+      sign_in_progress: sign_in_progress,
       user_initial: user_initial,
       sign_in_error_text: sign_in_error_text,
       irc_unavailable: irc_unavailable,

@@ -2736,6 +2736,21 @@ button.chat-avatar:hover
    color: var(--color-chat-text-secondary);
 }
 
+/* NOTE: How far securing the password has got (2026-10-25) - a thin bar under the words. */
+.chat-signin-progress
+{
+   display: block;
+   width: 100%;
+   height: 4px;
+   margin-top: 8px;
+   accent-color: var(--color-chat-accent);
+}
+
+.chat-signin-progress[hidden]
+{
+   display: none;
+}
+
 /* NOTE: Defined here rather than reusing "c-spinner" from components.css - that
    stylesheet is not loaded by this page, and pulling in 37 component classes for a
    single spinner would risk colliding with the "chat-" rules. */

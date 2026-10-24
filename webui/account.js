@@ -874,6 +874,43 @@ async function do_remove_device( device )
    load_devices( );
 }
 
+// NOTE: What hardening a password (and signing in) is doing while "work" runs, under the form's button - "join" or "mine"
+// ("sign_in_progress( )" in "chat_parse.js"; Ian, 2026-10-25: a progress whilst it is hashing).
+async function with_progress( prefix, work )
+{
+   var box = document.getElementById( prefix + "_busy" );
+   var bar = document.getElementById( prefix + "_busy_bar" );
+
+   var show = function( stage, value )
+   {
+      var shown = sign_in_progress( stage, value );
+
+      document.getElementById( prefix + "_busy_text" ).textContent = shown.text;
+
+      bar.hidden = ( shown.fraction === null );
+
+      if( shown.fraction !== null )
+         bar.value = shown.fraction;
+   };
+
+   show( "securing", 0 );
+
+   box.hidden = false;
+   ciyam.on_progress = show;
+
+   try
+   {
+      return await work( );
+   }
+   finally
+   {
+      ciyam.on_progress = null;
+
+      box.hidden = true;
+      bar.hidden = true;
+   }
+}
+
 // NOTE: The hash this session was opened with, for a given password - "determine_hashed( )"
 // in "ciyam.js", worked out without touching the session's own - as "chat.js" does. Hashed
 // the way the session's password was ("ciyam.hash_version"), unless another version is given.
@@ -910,7 +947,7 @@ async function do_change_password( event )
 
    try
    {
-      current_right = ( await session_hash_for( current ) === ciyam.hashed );
+      current_right = await with_progress( "mine", async function( ) { return await session_hash_for( current ) === ciyam.hashed; } );
    }
    finally
    {
@@ -952,10 +989,13 @@ async function do_change_password( event )
    submit.disabled = true;
 
    // NOTE: The account's own PIN - "***" is not substituted by "update_user( )" and the server
-   // refuses it. The password is hashed with the PIN before it is sent.
+   // refuses it. The password is hashed with the PIN before it is sent - once, here, the current
+   // way, and the session's hash made from the same (it had been hardened twice).
+   var combined = await with_progress( "mine", function( ) { return ciyam.hash_combined( fresh, ciyam.access, c_password_hash_version ); } );
+
    var response = await request( function( done )
    {
-      return ciyam.update_user( ciyam.access, "password=" + fresh, done );
+      return ciyam.update_user( ciyam.access, "password=" + combined, done, true );
    } );
 
    submit.disabled = false;
@@ -969,8 +1009,8 @@ async function do_change_password( event )
 
    // NOTE: The session stays open. A hash the chat saved for this account was made from the old
    // password and is now refused, so it is replaced.
-   // NOTE: "update_user( )" hashed the new one the current way, so the session's hash and version are now that way too.
-   var hashed = await session_hash_for( fresh, c_password_hash_version );
+   // NOTE: Hashed the current way, so the session's hash and version are now that way too.
+   var hashed = ciyam.session_hash( combined );
 
    ciyam.hashed = hashed;
    ciyam.hash_version = c_password_hash_version;
@@ -1190,7 +1230,9 @@ async function do_join( event )
          g_join_code = code;
       }
 
-      var credentials = CIYAM.encode_base64_url( username + ":" + await ciyam.hash_combined( password, g_join_pin ) );
+      var combined = await with_progress( "join", function( ) { return ciyam.hash_combined( password, g_join_pin ); } );
+
+      var credentials = CIYAM.encode_base64_url( username + ":" + combined );
 
       var token = await post_devices( "access=" + g_join_pin + "&passwd=" + credentials );
 
@@ -1220,13 +1262,13 @@ async function do_join( event )
       // sign in (Damon, 2026-10-05) - Ian found the chat's sign in waiting, on another PIN. A device
       // token from before the node was set up again is replaced, as the sign in does ("signin.js"). Should the
       // sign in fail, the PIN is still remembered, so the account can be found.
-      await connect_as( pin, "", password );
+      await with_progress( "join", function( ) { return connect_as( pin, "", password ); } );
 
       if( is_unknown_device_error( ciyam.error ) )
       {
          ciyam.device = "";
 
-         await connect_as( pin, "", password );
+         await with_progress( "join", function( ) { return connect_as( pin, "", password ); } );
       }
 
       if( ( ciyam.error === "" ) && ( ciyam.sessid !== "" ) )

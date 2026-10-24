@@ -713,6 +713,18 @@ check( "a page's title - with what waits", cp.page_title( "CIYAM Chat", 3 ), "(3
 check( "a page's title - nothing waiting, the title alone", cp.page_title( "CIYAM Chat", 0 ), "CIYAM Chat" );
 check( "a page's title - capped as the badge is", cp.page_title( "CIYAM Home", 250 ), "(99+) CIYAM Home" );
 
+heading( "signing in - what it is doing" );
+
+// NOTE: Ian, 2026-10-25 - the password is hardened before it is sent, and a refusal tried once more the other way after a gap,
+// so the sign in says what it is doing rather than seem stuck.
+check( "securing the password - how far, for the bar", [ cp.sign_in_progress( "securing", 0 ), cp.sign_in_progress( "securing", 0.456 ),
+ cp.sign_in_progress( "securing", 2 ) ], [ { text: "Securing your password… 0%", fraction: 0 }, { text: "Securing your password… 46%", fraction: 0.456 },
+ { text: "Securing your password… 100%", fraction: 1 } ] );
+check( "- waiting to try the other way, counted down; updating; and otherwise contacting", [ cp.sign_in_progress( "waiting", 3 ).text,
+ cp.sign_in_progress( "waiting", 1 ).text, cp.sign_in_progress( "updating" ).text, cp.sign_in_progress( null ).text,
+ cp.sign_in_progress( "waiting", 3 ).fraction ], [ "Checking it another way in 3 seconds…", "Checking it another way in 1 second…",
+ "Updating how your password is kept…", "Contacting the server…", null ] );
+
 heading( "password strength" );
 
 // NOTE: The same scores "test_bip39.html" gives - length times a multiplier for variety.

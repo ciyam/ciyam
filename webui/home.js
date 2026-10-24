@@ -905,7 +905,23 @@ async function setup_finish( )
    // NOTE: No still-alive while the node takes its identity - it lets the token go as it does (Ian, "637f4e60").
    setup_alive_stop( );
 
-   var credentials = CIYAM.encode_base64_url( "admin:" + await ciyam.hash_combined( g_setup.password, g_setup.pin ) );
+   // NOTE: The password is hardened before it is sent, a second or two - said as it goes (Ian, 2026-10-25).
+   ciyam.on_progress = function( stage, value ) { set_text( "setup_finish_status", sign_in_progress( stage, value ).text ); };
+
+   var combined;
+
+   try
+   {
+      combined = await ciyam.hash_combined( g_setup.password, g_setup.pin );
+   }
+   finally
+   {
+      ciyam.on_progress = null;
+
+      set_text( "setup_finish_status", "Setting the node up..." );
+   }
+
+   var credentials = CIYAM.encode_base64_url( "admin:" + combined );
 
    // NOTE: Set up with the current hash, so the sign in after uses it at once.
    ciyam.keep_hash_version( g_setup.pin, c_password_hash_version );

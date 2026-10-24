@@ -89,6 +89,9 @@ http://www.opensource.org/licenses/mit-license.php.
 
       <div class="chat-error-text" id="join_error" role="alert"></div>
 
+      <div class="chat-signin-busy" id="join_busy" hidden><span class="chat-spinner"></span><span id="join_busy_text" role="status"></span></div>
+      <progress class="chat-signin-progress" id="join_busy_bar" max="1" value="0" hidden></progress>
+
       <div class="chat-signin-actions">
          <button type="submit" class="chat-btn chat-btn--primary" id="join_submit">Create my account</button>
       </div>
@@ -225,6 +228,9 @@ http://www.opensource.org/licenses/mit-license.php.
             </div>
 
             <div class="chat-error-text" id="mine_error" role="alert"></div>
+
+            <div class="chat-signin-busy" id="mine_busy" hidden><span class="chat-spinner"></span><span id="mine_busy_text" role="status"></span></div>
+            <progress class="chat-signin-progress" id="mine_busy_bar" max="1" value="0" hidden></progress>
 
             <div class="account-actions-row">
                <button type="submit" class="chat-btn chat-btn--primary" id="mine_submit">Change password</button>

@@ -369,6 +369,10 @@ ok   a page's title - with what waits
 ok   a page's title - nothing waiting, the title alone
 ok   a page's title - capped as the badge is
 
+== signing in - what it is doing ===============================
+ok   securing the password - how far, for the bar
+ok   - waiting to try the other way, counted down; updating; and otherwise contacting
+
 == password strength ===========================================
 ok   empty says nothing
 ok   under seven is unsatisfactory

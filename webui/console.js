@@ -1266,6 +1266,37 @@ async function run_open( spec )
 
 // NOTE: Signing in at the prompt, the console opened on its own (Ian, 2026-10-13) - an account saved on this browser by
 // name, or a PIN; the password asked only when none is saved. Nothing new is remembered: the sign in's Remember does that.
+// NOTE: What signing in from the prompt is doing, on its own line, and the bar while the password is secured (Ian, 2026-10-25:
+// "I don't see any progress (from either the Console or Sign In form)").
+function init_progress_for( line )
+{
+   return function( stage, value )
+   {
+      var shown = sign_in_progress( stage, value );
+
+      if( stage === null )
+      {
+         hide_progress( );
+
+         line.textContent = "Signing in...";
+
+         return;
+      }
+
+      line.textContent = shown.text;
+
+      if( shown.fraction === null )
+         hide_progress( );
+      else
+      {
+         if( document.getElementById( "progress_track" ).hidden )
+            show_progress( );
+
+         update_progress( shown.fraction );
+      }
+   };
+}
+
 async function run_init( target )
 {
    if( !g_started_alone )
@@ -1335,18 +1366,18 @@ async function run_init( target )
       hashed = "";
    }
 
-   print_line( "Signing in...", "is-dim" );
+   var signing = print_line( "Signing in...", "is-dim" );
 
    ciyam.device = signin_stored_device( );
 
-   await signin_connect( pin, hashed, password );
+   await signin_connect( pin, hashed, password, init_progress_for( signing ) );
 
    // NOTE: As the sign in does - a typed password with a device token the node has never seen: a new token, once more.
    if( is_unknown_device_error( ciyam.error ) && ( password !== "" ) )
    {
       ciyam.device = "";
 
-      await signin_connect( pin, "", password );
+      await signin_connect( pin, "", password, init_progress_for( signing ) );
    }
 
    if( ( ciyam.error !== "" ) || ( ciyam.sessid === "" ) )

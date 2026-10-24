@@ -114,6 +114,9 @@ class CIYAM
       // NOTE: The version of the hash this session's password was sent with ("connect( )").
       this.hash_version = c_password_hash_version;
 
+      // NOTE: Told how a password's hardening and a sign in are going, if a page sets it ("report_progress( )").
+      this.on_progress = null;
+
       this.user_callback = null;
 
       this.connect_status = "";
@@ -243,7 +246,30 @@ class CIYAM
       if( version == null )
          version = c_password_hash_version;
 
-      return password_hash( access, password, version, ( typeof hex_sha256 !== "undefined" ) ? null : this.node_crypto );
+      var self = this;
+
+      var result = await password_hash( access, password, version, ( typeof hex_sha256 !== "undefined" ) ? null : this.node_crypto,
+       function( fraction ) { self.report_progress( "securing", fraction ); } );
+
+      return result;
+   }
+
+   // NOTE: What a password's hardening and a sign in are doing, for a page to show (Ian, 2026-10-25: "I don't see any progress
+   // ... a progress whilst it is hashing (or waiting for 3 secs) would be a suggestion"): "securing" with the fraction done,
+   // "waiting" with the seconds left before trying the other way, "updating" while the password is set the current way - and
+   // null when it is over. A page's own failure to show it never stops the sign in.
+   report_progress( stage, value )
+   {
+      if( typeof this.on_progress === "function" )
+      {
+         try
+         {
+            this.on_progress( stage, value );
+         }
+         catch( e )
+         {
+         }
+      }
    }
 
    // NOTE: The hash a session is opened with, from the PIN and password as sent - one SHA-256 of its SHA-256 with the device.
@@ -610,7 +636,11 @@ class CIYAM
          if( typed )
             this.hash_version = c_password_hash_version;
 
-         return this.connect_once( access, device, hashed, passwd, callback, all_callbacks, c_password_hash_version );
+         var once = await this.connect_once( access, device, hashed, passwd, callback, all_callbacks, c_password_hash_version );
+
+         this.report_progress( null, null );
+
+         return once;
       }
 
       var version = this.hash_version_for( pin );
@@ -635,7 +665,13 @@ class CIYAM
 
          heard.called = false;
 
-         await new Promise( function( resolve ) { setTimeout( resolve, c_sign_in_gap_ms ); } );
+         // NOTE: Counted down, a second at a time, so a page can say what it is waiting for.
+         for( var left = Math.ceil( c_sign_in_gap_ms / 1000 ); left > 0; left-- )
+         {
+            this.report_progress( "waiting", left );
+
+            await new Promise( function( resolve ) { setTimeout( resolve, 1000 ); } );
+         }
 
          await this.connect_once( access, device, hashed, passwd, all_callbacks ? callback : hold, all_callbacks, version );
       }
@@ -646,6 +682,8 @@ class CIYAM
          {
             // NOTE: Hashed once, and set as it is - its version kept as soon as the node has it, and the session's hash
             // following. A reply that never comes ends the wait, the older way kept, rather than holding the sign in.
+            this.report_progress( "updating", null );
+
             var combined = await this.hash_combined( passwd, this.access, c_password_hash_version );
             var self = this;
 
@@ -668,6 +706,8 @@ class CIYAM
 
          this.keep_hash_version( this.access, version );
       }
+
+      this.report_progress( null, null );
 
       if( !all_callbacks && heard.called && ( callback != null ) )
          callback( heard.response );
@@ -1753,7 +1793,7 @@ function password_hash_rounds( password )
 // it - as the server's "crypto_hash -x=<rounds - 1>" does, so a console script can make it too ("init_web_access" for admin,
 // Ian 2026-10-23). In a page through "sha2.min.js", in step, pausing now and then so the page can redraw; with "node_crypto",
 // Node's own SHA-256.
-async function password_hash( access, password, version, node_crypto )
+async function password_hash( access, password, version, node_crypto, on_fraction )
 {
    var input = String( access ) + String( password );
 
@@ -1782,7 +1822,12 @@ async function password_hash( access, password, version, node_crypto )
       s = sha( s + text );
 
       if( !node_crypto && ( ( i % c_password_hash_pause ) === ( c_password_hash_pause - 1 ) ) )
+      {
+         if( on_fraction )
+            on_fraction( i / rounds );
+
          await new Promise( function( resolve ) { setTimeout( resolve, 0 ); } );
+      }
    }
 
    return s;

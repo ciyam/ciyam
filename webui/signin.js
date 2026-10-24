@@ -155,9 +155,12 @@ function signin_build( host, options )
    var busy = signin_element( "div", { class: "chat-signin-busy", id: "signin_busy", hidden: "" } );
 
    busy.appendChild( signin_element( "span", { class: "chat-spinner" } ) );
-   busy.appendChild( signin_element( "span", { }, "Contacting the server…" ) );
+   busy.appendChild( signin_element( "span", { id: "signin_busy_text", role: "status" }, "Contacting the server…" ) );
 
    form.appendChild( busy );
+
+   // NOTE: How far securing the password has got - it is hardened before it is sent, a second or two (Ian, 2026-10-25).
+   form.appendChild( signin_element( "progress", { class: "chat-signin-progress", id: "signin_busy_bar", max: "1", value: "0", hidden: "" } ) );
 
    if( g_signin_options.setup_href )
       form.appendChild( signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_setup_hint" },
@@ -497,20 +500,49 @@ function signin_reset_browser( )
    location.reload( );
 }
 
-async function signin_connect( pin, hashed, password )
+// NOTE: What the sign in is doing, under the spinner ("sign_in_progress( )" in "chat_parse.js").
+function signin_show_progress( stage, value )
+{
+   var shown = sign_in_progress( stage, value );
+   var bar = document.getElementById( "signin_busy_bar" );
+
+   signin_set_text( "signin_busy_text", shown.text );
+
+   if( bar )
+   {
+      bar.hidden = ( shown.fraction === null );
+
+      if( shown.fraction !== null )
+         bar.value = shown.fraction;
+   }
+}
+
+// NOTE: "on_progress" shows what it is doing somewhere else - the console's own sign in, from its prompt - the card by default.
+async function signin_connect( pin, hashed, password, on_progress )
 {
    ciyam.error = "";
    ciyam.unique = "";
+
+   ciyam.on_progress = on_progress || signin_show_progress;
 
    var issue = function( done )
    {
       return ciyam.connect( pin, ciyam.device, hashed, password, done );
    };
 
-   if( g_signin_options.request )
-      await g_signin_options.request( issue );
-   else
-      await issue( function( ) { } );
+   try
+   {
+      if( g_signin_options.request )
+         await g_signin_options.request( issue );
+      else
+         await issue( function( ) { } );
+   }
+   finally
+   {
+      ciyam.on_progress = null;
+
+      ( on_progress || signin_show_progress )( null, null );
+   }
 }
 
 async function signin_submit( event )
