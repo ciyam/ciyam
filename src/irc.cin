@@ -167,124 +167,6 @@ NOT_TO_SELF=
 @elif "$CIYAM_KEY_PRESSED" = "q"
 QUIT=1
 ;
-@elif "$CIYAM_KEY_PRESSED" = "x"
-PUB_KEY_FILES=@file:~find $LOCAL_FILES_DIR -name .irc_$USER.public.\* -printf '%f,'
-PUB_KEY_FILES=@repstr:.irc_$USER.public./:$PUB_KEY_FILES
-PUB_KEY_USERS=$PUB_KEY_FILES$USER
-;
-@retain NAMES
-<names.cin $PUB_KEY_USERS 1
-@ifdef $NAMES
-;
-@ifeq "$NAMES" "$USER"
-SPUB=@public:$SKEY
-@else
-PUB_KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$NAMES
-POS=@strpos:\r:$PUB_KEY_FILE_DATA
-SALT=@substr:0,$POS:$PUB_KEY_FILE_DATA
-POS=@$POS+1
-ENCRYPTED=@substr:$POS:$PUB_KEY_FILE_DATA
-SPUB=@public:$SKEY
-OWN_ECDHE=@shared:$PKEY:$~SPUB
-DECRYPTPED=@crypt:cc $~OWN_ECDHE$SALT:$ENCRYPTED
-SPUB=$DECRYPTPED
-@endif
-;
-MSG_ECDHE=@shared:$PKEY:$~SPUB
-;
-#(type a new message or just enter to read)
-&:CRYPT_MESSAGE=
-;
-@ifndef $CRYPT_MESSAGE
-HAS_FILE=@files::x
-@ifdef $HAS_FILE
-#(read from 'x')
-CRYPT_MESSAGE=@file:x
-@endif
-@endif
-;
-@ifdef $CRYPT_MESSAGE
-;
-IS_ENCRYPTED=
-LEN=@strlen:$CRYPT_MESSAGE
-@if $LEN #> 2
-PREFIX=@substr:0,2:$CRYPT_MESSAGE
-@ifeq "$PREFIX" "$ENCRYPTED_PREFIX"
-IS_ENCRYPTED=1
-CRYPT_MESSAGE=@substr:2:$CRYPT_MESSAGE
-@endif
-@endif
-;
-@ifdef $IS_ENCRYPTED
-;
-MSG_VERIFIED=
-;
-POS=@strpos:\r:$CRYPT_MESSAGE
-@ifdef $POS
-SALT=@substr:0,$POS:$CRYPT_MESSAGE
-POS=@$POS+1
-CRYPT_MESSAGE=@substr:$POS:$CRYPT_MESSAGE
-POS=@strpos:\r:$CRYPT_MESSAGE
-@ifdef $POS
-HPOS=@$POS+1
-HMAC=@substr:$HPOS:$CRYPT_MESSAGE
-CRYPT_MESSAGE=@substr:0,$POS:$CRYPT_MESSAGE
-@endif
-@endif
-HCHK=@hmac256:mac$MSG_ECDHE$SALT:$CRYPT_MESSAGE
-HCHK=@substr:0,32:$HCHK
-@ifeq "$HMAC" "$HCHK"
-MSG_VERIFIED=1
-@else
-#SALT is $SALT
-#HCHK is $HCHK
-#(*** CORRUPT MESSAGE WAS UNREADABLE ***)
-@endif
-;
-@ifdef $MSG_VERIFIED
-DECRYPT=@crypt:cc $MSG_ECDHE$SALT:$CRYPT_MESSAGE
-DECODED=@hexasc:$DECRYPT
-POS=@strpos:\r:$DECODED
-@ifdef $POS
-POS=@$POS+1
-DECODED=@substr:$POS:$DECODED
-POS=@strpos:\r:$DECODED
-@ifdef $POS
-DECODED=@substr:0,$POS:$DECODED
-@endif
-@endif
-#$LOCK_EMOJI$~DECODED
-@endif
-;
-@else
-;
-PREFIX=@entropy:5,10:alpha_numeric
-PLEN=@strlen:$PREFIX
-MLEN=@strlen:$CRYPT_MESSAGE
-TOTAL=@$PLEN+$MLEN
-@if $TOTAL #> $MAX_TO_ENCRYPT
-#Error: Maximum message size exceeded.
-@else
-SLEN=@$MAX_TO_ENCRYPT-$TOTAL
-SUFFIX=@entropy:$SLEN:alpha_numeric
-ENCODED=@aschex:$~PREFIX\r$~CRYPT_MESSAGE\r$~SUFFIX
-SALT=@file:~xxd -l 16 -p /dev/urandom
-ENCRYPT=@crypt:cc $MSG_ECDHE$SALT:$~ENCODED
-HMAC=@hmac256:mac$MSG_ECDHE$SALT:$ENCRYPT
-HMAC=@substr:0,32:$HMAC
->x
-#$ENCRYPTED_PREFIX$SALT\r$ENCRYPT\r$HMAC
->
-#(stored as 'x')
-@endif
-;
-@endif
-;
-@endif
-MSG_ECDHE=
-;
-@endif
-;
 @elif "$CIYAM_KEY_PRESSED" = "e"
 @ifeq "$ROOM" "$ENTRANCE_ROOM"
 &Enter Room No: :ROOM_NO=
@@ -516,6 +398,22 @@ PREFIX=~
 ROOM=@substr:1:$ROOM
 @endif
 ;
+POS=@strpos:#:$ROOM
+;
+@ifdef $POS
+KPOS=@$POS+1
+ROOM_KEY=@substr:$KPOS:$ROOM
+ROOM=@substr:0,$POS:$ROOM
+;
+FILE_NAME=.irc_$USER.secret.$ROOM
+;
+SALT=@file:~xxd -l 16 -p /dev/urandom
+SPUB=@public:$SKEY
+OWN_ECDHE=@shared:$PKEY:$~SPUB
+ENCRTYPED=@crypt:cc $~OWN_ECDHE$SALT:$~ROOM_KEY
+~echo -e "$SALT\r$ENCRTYPED" > $LOCAL_FILES_DIR/$FILE_NAME
+@endif
+;
 LEN=@strlen:$ROOM
 @if $LEN #< $ROOM_LEN
 ROOM=@padlen:$ROOM_LEN,0:$ROOM
@@ -634,23 +532,38 @@ MESSAGE=@file:$FILE_NAME
 @ifndef $NAMES
 MESSAGE=_ $MESSAGE
 ;
-; NOTE: If is in a DM room and has the user's public key
-; then converts into an encrypted message for this user.
-@ifdef $DIRECT_PUB_SUFFIX
-HAS_PUB_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$DIRECT_PUB_SUFFIX
-@ifdef $HAS_PUB_KEY_FILE
-PUB_KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$DIRECT_PUB_SUFFIX
+; NOTE: If is either in a DM room and has the user's public
+; key or is not a DM room and has this room's shared secret
+; then will encrypt the message accordingly.
+@ifndef $DIRECT_PUB_SUFFIX
+HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.secret.$ROOM
+@else
+HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$DIRECT_PUB_SUFFIX
+@endif
+;
+@ifdef $HAS_KEY_FILE
+@ifndef $DIRECT_PUB_SUFFIX
+KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.secret.$ROOM
+@else
+KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$DIRECT_PUB_SUFFIX
+@endif
+;
 CRYPT_MESSAGE=@substr:2:$MESSAGE
-POS=@strpos:\r:$PUB_KEY_FILE_DATA
-SALT=@substr:0,$POS:$PUB_KEY_FILE_DATA
+POS=@strpos:\r:$KEY_FILE_DATA
+SALT=@substr:0,$POS:$KEY_FILE_DATA
 POS=@$POS+1
-ENCRYPTED=@substr:$POS:$PUB_KEY_FILE_DATA
+ENCRYPTED=@substr:$POS:$KEY_FILE_DATA
 SPUB=@public:$SKEY
 OWN_ECDHE=@shared:$PKEY:$~SPUB
 DECRYPTPED=@crypt:cc $~OWN_ECDHE$SALT:$ENCRYPTED
-SPUB=$DECRYPTPED
-@ifdef $SPUB
-MSG_ECDHE=@shared:$PKEY:$~SPUB
+;
+MSG_KEY=$DECRYPTPED
+;
+@ifdef $MSG_KEY
+@ifdef $DIRECT_PUB_SUFFIX
+MSG_KEY=@shared:$PKEY:$~MSG_KEY
+@endif
+;
 PREFIX=@entropy:5,10:alpha_numeric
 PLEN=@strlen:$PREFIX
 MLEN=@strlen:$CRYPT_MESSAGE
@@ -663,11 +576,10 @@ SLEN=@$MAX_TO_ENCRYPT-$TOTAL
 SUFFIX=@entropy:$SLEN:alpha_numeric
 ENCODED=@aschex:$~PREFIX\r$~CRYPT_MESSAGE\r$~SUFFIX
 SALT=@file:~xxd -l 16 -p /dev/urandom
-ENCRYPT=@crypt:cc $MSG_ECDHE$SALT:$~ENCODED
-HMAC=@hmac256:mac$MSG_ECDHE$SALT:$ENCRYPT
+ENCRYPT=@crypt:cc $MSG_KEY$SALT:$~ENCODED
+HMAC=@hmac256:mac$MSG_KEY$SALT:$ENCRYPT
 HMAC=@substr:0,32:$HMAC
 MESSAGE=_ $ENCRYPTED_PREFIX$SALT\r$ENCRYPT\r$HMAC
-@endif
 @endif
 @endif
 @endif
@@ -704,6 +616,7 @@ DISPLAY_USERS=
 LOCAL=:
 @endif
 ;
+IS_DIRECT_ROOM=
 POS=@strpos:_:$ALL_USERS
 @ifdef $POS
 ROOM_NAME=@substr:0,$POS:$ALL_USERS
@@ -716,7 +629,11 @@ ALL_USERS=@substr:$POS:$ALL_USERS
 OTHER_USER=$ALL_USERS@
 OTHER_USER=@repstr:@$USER@/:$OTHER_USER
 OTHER_USER=@repstr:@/:$OTHER_USER
+@ifndef $IS_DIRECT_ROOM
+DIRECT_PUB_SUFFIX=
+@else
 DIRECT_PUB_SUFFIX=$OTHER_USER
+@endif
 @endif
 @retain ALL_IRC_USERS
 <names_extra.cin $USER "$ALL_USERS_EXTRA"
@@ -874,27 +791,43 @@ LOCAL=@date:%NEXT_MSG_PARTS:1%:yyyy-mm-dd hh:mm:ss
 USER_NAME=@strlit:%NEXT_MSG_PARTS:2%
 ;
 CHECK_ENCRYPTED=@substr:1,2:$DECODED_MESSAGE
+;
 @ifeq "$CHECK_ENCRYPTED" "$ENCRYPTED_PREFIX"
-SPUB=
-@ifdef $DIRECT_PUB_SUFFIX
-HAS_PUB_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$DIRECT_PUB_SUFFIX
-@ifdef $HAS_PUB_KEY_FILE
-PUB_KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$DIRECT_PUB_SUFFIX
-POS=@strpos:\r:$PUB_KEY_FILE_DATA
-SALT=@substr:0,$POS:$PUB_KEY_FILE_DATA
+MSG_KEY=
+;
+; NOTE: If is either in a DM room and has the user's public
+; key or is not a DM room and has this room's shared secret
+; then will decrypt the message accordingly.
+@ifndef $DIRECT_PUB_SUFFIX
+HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.secret.$ROOM
+@else
+HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$DIRECT_PUB_SUFFIX
+@endif
+;
+@ifdef $HAS_KEY_FILE
+@ifndef $DIRECT_PUB_SUFFIX
+KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.secret.$ROOM
+@else
+KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$DIRECT_PUB_SUFFIX
+@endif
+;
+POS=@strpos:\r:$KEY_FILE_DATA
+SALT=@substr:0,$POS:$KEY_FILE_DATA
 POS=@$POS+1
-ENCRYPTED=@substr:$POS:$PUB_KEY_FILE_DATA
+ENCRYPTED=@substr:$POS:$KEY_FILE_DATA
 SPUB=@public:$SKEY
 OWN_ECDHE=@shared:$PKEY:$~SPUB
 DECRYPTPED=@crypt:cc $~OWN_ECDHE$SALT:$ENCRYPTED
-SPUB=$DECRYPTPED
-@endif
+MSG_KEY=$DECRYPTPED
 @endif
 ;
-@ifdef $SPUB
+@ifdef $MSG_KEY
 MSG_VERIFIED=
 ;
-MSG_ECDHE=@shared:$PKEY:$~SPUB
+@ifdef $DIRECT_PUB_SUFFIX
+MSG_KEY=@shared:$PKEY:$~MSG_KEY
+@endif
+;
 CRYPT_MESSAGE=@substr:3:$DECODED_MESSAGE
 ;
 POS=@strpos:\r:$CRYPT_MESSAGE
@@ -909,16 +842,16 @@ HMAC=@substr:$HPOS:$CRYPT_MESSAGE
 CRYPT_MESSAGE=@substr:0,$POS:$CRYPT_MESSAGE
 @endif
 @endif
-HCHK=@hmac256:mac$MSG_ECDHE$SALT:$CRYPT_MESSAGE
+HCHK=@hmac256:mac$MSG_KEY$SALT:$CRYPT_MESSAGE
 HCHK=@substr:0,32:$HCHK
 @ifeq "$HMAC" "$HCHK"
 MSG_VERIFIED=1
 @else
-DECODED_MESSAGE=$LOCK_EMOJI (*** CORRUPT MESSAGE WAS UNREADABLE ***)
+DECODED_MESSAGE=$LOCK_EMOJI (*** ENCRYPTED MESSAGE NOT READABLE ***)
 @endif
 ;
 @ifdef $MSG_VERIFIED
-DECRYPT=@crypt:cc $MSG_ECDHE$SALT:$CRYPT_MESSAGE
+DECRYPT=@crypt:cc $MSG_KEY$SALT:$CRYPT_MESSAGE
 DECODED=@hexasc:$DECRYPT
 POS=@strpos:\r:$DECODED
 @ifdef $POS
