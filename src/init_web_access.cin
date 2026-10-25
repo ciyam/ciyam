@@ -35,12 +35,15 @@ PIN=$OUTPUT
 PASSWORD=@password:Enter web admin password:
 ;
 LENGTH=@strlen:$PASSWORD
+;
 EXTRA=299999
-@if $LENGTH #> 8
-EXTRA=199999
-@endif
-@if $LENGTH #> 11
+;
+@if $LENGTH #> 39
+EXTRA=0
+@elif $LENGTH #> 11
 EXTRA=99999
+@elif $LENGTH #> 8
+EXTRA=199999
 @endif
 ;
 .=crypto_hash -x=$EXTRA "$PIN$PASSWORD"
