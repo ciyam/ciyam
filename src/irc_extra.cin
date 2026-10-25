@@ -1,0 +1,140 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $4
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $5
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "5"
+#Usage: irc_extra.cin [!][decrypt|encrypt] [message] [key_file_data] [primary_key_var] [secondary_key_var]
+@else
+;
+OP=$1
+MESSAGE=$2
+KEY_FILE_DATA=$3
+PRIMARY_KEY_VAR=$4
+SECONDARY_KEY_VAR=$5
+;
+IS_DIRECT_MESSAGE=
+;
+MAX_TO_ENCRYPT=500
+ENCRYPTED_PREFIX=X\r
+;
+FIRST=@substr:0,1:$OP
+@ifeq "$FIRST" "!"
+OP=@substr:1:$OP
+IS_DIRECT_MESSAGE=1
+@endif
+;
+@ifeq "$OP" "encrypt"
+;
+CRYPT_MESSAGE=@substr:2:$MESSAGE
+POS=@strpos:\r:$KEY_FILE_DATA
+SALT=@substr:0,$POS:$KEY_FILE_DATA
+POS=@$POS+1
+ENCRYPTED=@substr:$POS:$KEY_FILE_DATA
+SPUB=@public:$SECONDARY_KEY_VAR
+OWN_ECDHE=@shared:$PRIMARY_KEY_VAR:$~SPUB
+DECRYPTPED=@crypt:cc $~OWN_ECDHE$SALT:$ENCRYPTED
+;
+MSG_KEY=$DECRYPTPED
+;
+@ifdef $MSG_KEY
+@ifdef $IS_DIRECT_MESSAGE
+MSG_KEY=@shared:$PRIMARY_KEY_VAR:$~MSG_KEY
+@endif
+;
+PREFIX=@entropy:5,10:alpha_numeric
+PLEN=@strlen:$PREFIX
+MLEN=@strlen:$CRYPT_MESSAGE
+TOTAL=@$PLEN+$MLEN
+@if $TOTAL #> $MAX_TO_ENCRYPT
+MESSAGE=
+#Error: Maximum message size was exceeded.
+@else
+SLEN=@$MAX_TO_ENCRYPT-$TOTAL
+SUFFIX=@entropy:$SLEN:alpha_numeric
+ENCODED=@aschex:$~PREFIX\r$~CRYPT_MESSAGE\r$~SUFFIX
+SALT=@file:~xxd -l 16 -p /dev/urandom
+ENCRYPT=@crypt:cc $MSG_KEY$SALT:$~ENCODED
+HMAC=@hmac256:mac$MSG_KEY$SALT:$ENCRYPT
+HMAC=@substr:0,32:$HMAC
+MESSAGE=_ $ENCRYPTED_PREFIX$SALT\r$ENCRYPT\r$HMAC
+@endif
+@endif
+;
+@else
+;
+POS=@strpos:\r:$KEY_FILE_DATA
+SALT=@substr:0,$POS:$KEY_FILE_DATA
+POS=@$POS+1
+ENCRYPTED=@substr:$POS:$KEY_FILE_DATA
+SPUB=@public:$SECONDARY_KEY_VAR
+OWN_ECDHE=@shared:$PRIMARY_KEY_VAR:$~SPUB
+DECRYPTPED=@crypt:cc $~OWN_ECDHE$SALT:$ENCRYPTED
+MSG_KEY=$DECRYPTPED
+;
+@ifdef $MSG_KEY
+MSG_VERIFIED=
+;
+@ifdef $IS_DIRECT_MESSAGE
+MSG_KEY=@shared:$PRIMARY_KEY_VAR:$~MSG_KEY
+@endif
+;
+CRYPT_MESSAGE=@substr:3:$MESSAGE
+;
+POS=@strpos:\r:$CRYPT_MESSAGE
+@ifdef $POS
+SALT=@substr:0,$POS:$CRYPT_MESSAGE
+POS=@$POS+1
+CRYPT_MESSAGE=@substr:$POS:$CRYPT_MESSAGE
+POS=@strpos:\r:$CRYPT_MESSAGE
+@ifdef $POS
+HPOS=@$POS+1
+HMAC=@substr:$HPOS:$CRYPT_MESSAGE
+CRYPT_MESSAGE=@substr:0,$POS:$CRYPT_MESSAGE
+@endif
+@endif
+HCHK=@hmac256:mac$MSG_KEY$SALT:$CRYPT_MESSAGE
+HCHK=@substr:0,32:$HCHK
+@ifeq "$HMAC" "$HCHK"
+MSG_VERIFIED=1
+@else
+MESSAGE=$LOCK_EMOJI (*** ENCRYPTED MESSAGE NOT READABLE ***)
+@endif
+;
+@ifdef $MSG_VERIFIED
+DECRYPT=@crypt:cc $MSG_KEY$SALT:$CRYPT_MESSAGE
+DECODED=@hexasc:$DECRYPT
+POS=@strpos:\r:$DECODED
+@ifdef $POS
+POS=@$POS+1
+DECODED=@substr:$POS:$DECODED
+POS=@strpos:\r:$DECODED
+@ifdef $POS
+PADDING_EXTRA=%G%*%N%
+MESSAGE=@substr:0,$POS:$DECODED
+MESSAGE=$PADDING_EXTRA$MESSAGE
+@endif
+@endif
+@endif
+@endif
+;
+@endif
+;
+@endif
