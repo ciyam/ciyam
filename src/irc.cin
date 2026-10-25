@@ -257,7 +257,7 @@ EDIT_MSG_CONTENT=$LOCK_EMOJI (room key unknown)
 ;
 EDIT_MSG_CONTENT=@substr:2:$EDIT_MSG_CONTENT
 #$EDIT_MSG_CONTENT
-#(type new content or just enter to cancel)
+#(type new content or one space to pin/upin and two spaces to delete or just enter to cancel)
 @endif
 ;
 @else
@@ -273,8 +273,20 @@ EDIT_LINE_NUM=
 EDITED_MESSAGE=
 EDIT_UNIX_UNIQUE=
 @else
-; NOTE: If is able to encrypt the message then will now do so.
+;
+CAN_ENCRYPT=
 @ifdef $KEY_FILE_DATA
+CAN_ENCRYPT=1
+@endif
+;
+@ifeq "$EDITED_MESSAGE" "_$SP"
+CAN_ENCRYPT=
+@elif "$EDITED_MESSAGE" = "_$SP$SP"
+CAN_ENCRYPT=
+@endif
+;
+; NOTE: If is able to encrypt the message then will now do so.
+@ifdef $CAN_ENCRYPT
 ;
 PREFIX=
 @ifdef $DIRECT_PUB_SUFFIX
@@ -549,7 +561,7 @@ QR_CODE=@file:~zbarcam -1 -q --raw
 MESSAGE=_/help
 @endif
 ;
-@elif "$CIYAM_KEY_PRESSED" = " "
+@elif "$CIYAM_KEY_PRESSED" = "$SP"
 &:MESSAGE=_
 MLEN=@strlen:$MESSAGE
 @ifeq "$MLEN" "1"
