@@ -20,6 +20,8 @@ ok   SHA-256 - the browser's own where there is one
 ok   - and through sha2.min.js, text as its UTF-8
 ok   the sign in's hash, version 0 - a page's as the command line's, as UTF-8
 ok   version 1's rounds - by the password's length in UTF-8 bytes
+ok   - one round for 40 or more UTF-8 bytes
+ok   - and hashed the same either way
 ok   the sign in's hash, version 1 - the current one: hardened, a page's as Node's, as worked out here
 ok   - as the node's own crypto_hash -x gives it (-x=99999 for twelve bytes, -x=199999 for ten)
 ok   - an unknown version refused

@@ -206,6 +206,15 @@ async function steps( module_class, list )
     m.password_hash_rounds( "nine99999" ), m.password_hash_rounds( "elevenchars" ), m.password_hash_rounds( "twelve-chars" ),
     m.password_hash_rounds( "pässwörd" ), m.password_hash_rounds( "pässwörd-läng" ) ], [ 300000, 300000, 200000, 200000, 100000, 200000, 100000 ] );
 
+   // NOTE: 40 or more UTF-8 bytes, no extra rounds (Ian, 2026-10-25) - so version 1 is version 0 for it.
+   var long_password = "a-password-of-forty-bytes-from-a-manager";
+
+   check( "- one round for 40 or more UTF-8 bytes", [ m.password_hash_rounds( long_password.slice( 0, 39 ) ),
+    m.password_hash_rounds( long_password ), m.password_hash_rounds( "ä".repeat( 19 ) + "x" ), m.password_hash_rounds( "ä".repeat( 20 ) ) ],
+    [ 100000, 1, 100000, 1 ] );
+   check( "- and hashed the same either way", ( await in_page.hash_combined( long_password, "12345", 1 ) ),
+    await in_page.hash_combined( long_password, "12345", 0 ) );
+
    var page_v1 = await in_page.hash_combined( "pässwörd", "12345" );
 
    delete global.hex_sha256;

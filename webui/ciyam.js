@@ -47,8 +47,13 @@ const c_session_type_standard = "[std]";
 // and password after it, as "harden" does - a floor good on its own, and more for a shorter password (Ian: "only multiply for
 // even more rounds for weaker (length in particular) passwords"). What a version does is fixed once used - a change is a new
 // version - so a hash already kept goes on matching the one it was made with.
+//
+// A password of 40 or more UTF-8 bytes has no extra rounds (Ian, 2026-10-25: "if a password is > 39 characters long then we
+// could skip the extra hash rounds" - one that long most likely comes from a password manager). With one round version 1 is
+// version 0, so such an account needs no version kept or switched.
 const c_password_hash_version = 1;
 const c_password_hash_floor = 100000;
+const c_password_unhardened_length = 40;
 
 // NOTE: In a page, a pause every so many rounds, so it can redraw while hardening.
 const c_password_hash_pause = 5000;
@@ -620,13 +625,13 @@ class CIYAM
    // Only a PIN signing in is guessed at: anything else - twelve words' entropy recovering a node, a secret, a PIN with a
    // username to claim it - is setting a password, so the current way. Nor is admin switched over: its hash is kept with its
    // access, not as a user's, so "update_user( )" cannot change it - recovering from the words sets it the current way
-   // (found by review, 2026-10-23).
+   // (found by review, 2026-10-23). Nor is a password with no extra rounds: hashed either way it is the same.
    async connect( access, device, hashed, passwd, callback, all_callbacks )
    {
       var typed = ( ( hashed == null ) || ( hashed === "" ) ) && ( passwd != null ) && ( passwd !== "" );
       var pin = String( access || "" );
 
-      var guessed = typed && /^[0-9]+$/.test( pin ) && ( pin.length == c_pin_access_len );
+      var guessed = typed && /^[0-9]+$/.test( pin ) && ( pin.length == c_pin_access_len ) && ( password_hash_rounds( passwd ) > 1 );
 
       if( !typed )
          this.hash_version = this.hash_version_for( pin );
@@ -1773,14 +1778,16 @@ function is_okay_response( response )
    return false;
 }
 
-// NOTE: Version 1's rounds for a password, by its length in UTF-8 bytes - the floor for twelve or more, twice it for nine to
-// eleven, three times for fewer. Bytes, as a console script measures it ("@strlen"), so "init_web_access" can work the same
-// out for admin (Ian, 2026-10-23).
+// NOTE: Version 1's rounds for a password, by its length in UTF-8 bytes - one only for 40 or more, the floor for twelve or
+// more, twice it for nine to eleven, three times for fewer. Bytes, as a console script measures it ("@strlen"), so
+// "init_web_access" can work the same out for admin (Ian, 2026-10-23).
 function password_hash_rounds( password )
 {
    var length = new TextEncoder( ).encode( String( password || "" ) ).length;
 
-   if( length >= 12 )
+   if( length >= c_password_unhardened_length )
+      return 1;
+   else if( length >= 12 )
       return c_password_hash_floor;
    else if( length >= 9 )
       return c_password_hash_floor * 2;
