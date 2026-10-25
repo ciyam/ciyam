@@ -42,6 +42,9 @@ const c_signin_storage_device = "cws.device";
 const c_signin_storage_access = "cws.access";
 const c_signin_storage_hashed_prefix = "cws.hashed_";
 
+// NOTE: An account's twelve words for its keys, kept on this browser ("account_keys.js", 2026-10-25) - forgotten with it.
+const c_signin_storage_keys_prefix = "cws.user_entropy_";
+
 const c_signin_saved_mark = "  ·  saved password";
 
 const c_signin_title = "Sign in";
@@ -464,6 +467,9 @@ function signin_apply_retain( mode, hashed )
          localStorage.setItem( c_signin_storage_hashed_prefix + ciyam.access, hashed || ciyam.hashed );
       else
          localStorage.removeItem( c_signin_storage_hashed_prefix + ciyam.access );
+
+      if( parse_access_list( plan.list ).indexOf( ciyam.access ) < 0 )
+         localStorage.removeItem( c_signin_storage_keys_prefix + ciyam.access );
 
       if( plan.list === null )
          localStorage.removeItem( c_signin_storage_access );

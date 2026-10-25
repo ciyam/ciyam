@@ -252,6 +252,38 @@ function parse_devices( text, current )
    return devices.filter( function( d ) { return d.current; } ).concat( devices.filter( function( d ) { return !d.current; } ) );
 }
 
+// NOTE: Your keys (Ian, 2026-10-25: under the twelve words) - which of the card's states, from whether this browser keeps
+// the words ("here") and what "GET /cws/user-keys" answered: "none" - nothing anywhere, to set up; "unsaved" - kept here but
+// not on the node (deleted there), to save again; "elsewhere" - on the node but not here, the words to be typed; "here"; or
+// "unreadable" - an error, or something the node keeps that is not locked keys.
+const c_keys_locked_pattern = /^UK2:[0-9a-f]{32}:([0-9a-f]{2})+:[0-9a-f]{64}$/;
+
+function keys_state( here, node_text )
+{
+   var text = String( node_text || "" ).trim( );
+
+   if( text === "[none]" )
+      return here ? "unsaved" : "none";
+
+   if( !c_keys_locked_pattern.test( text ) )
+      return "unreadable";
+
+   return here ? "here" : "elsewhere";
+}
+
+// NOTE: Which of the twelve words to check back after setting up - "count" of them, different, in order, "random( )" (0 to 1)
+// choosing. Some, not all twelve as setting up a node does (Ian, 2026-10-23: "some checked back").
+function keys_check_indexes( random, count )
+{
+   var all = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ];
+   var picked = [ ];
+
+   while( ( picked.length < ( count || 3 ) ) && ( all.length > 0 ) )
+      picked.push( all.splice( Math.floor( random( ) * all.length ), 1 )[ 0 ] );
+
+   return picked.sort( function( a, b ) { return a - b; } );
+}
+
 if( typeof module !== "undefined" )
 {
    module.exports = {
@@ -266,6 +298,8 @@ if( typeof module !== "undefined" )
       join_url: join_url,
       is_unknown_device_error: is_unknown_device_error,
       refused_join_text: refused_join_text,
-      parse_account_hash: parse_account_hash
+      parse_account_hash: parse_account_hash,
+      keys_state: keys_state,
+      keys_check_indexes: keys_check_indexes
    };
 }

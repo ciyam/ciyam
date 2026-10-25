@@ -157,6 +157,23 @@ check( "each device, this browser first", ap.parse_devices( devices_text, "c9d0e
 check( "with Windows line ends too", ap.parse_devices( "a1b2c3d4 111*\r\n", "x" ).length, 1 );
 check( "nothing, or anything else, is none", [ ap.parse_devices( "", "x" ), ap.parse_devices( "Error: something", "x" ) ], [ [ ], [ ] ] );
 
+
+// --------------------------------------------------------------------
+heading( "your keys" );
+
+const locked = "UK2:000102030405060708090a0b0c0d0e0f:9a9e:" + "ab".repeat( 32 );
+
+check( "the card's state - from this browser and the node", [ ap.keys_state( false, "[none]" ), ap.keys_state( true, "[none]\n" ),
+ ap.keys_state( false, locked ), ap.keys_state( true, locked + "\n" ) ], [ "none", "unsaved", "elsewhere", "here" ] );
+check( "- an error, or not locked keys, unreadable", [ ap.keys_state( true, "Error: Unknown request." ), ap.keys_state( false, "" ),
+ ap.keys_state( false, "UK1:1000:" + locked.substring( 4 ) ), ap.keys_state( false, locked.replace( ":9a9e:", ":9a9:" ) ) ],
+ [ "unreadable", "unreadable", "unreadable", "unreadable" ] );
+
+var draws = [ 0.99, 0, 0.5 ];
+
+check( "words to check back - three different, in order", [ ap.keys_check_indexes( function( ) { return draws.shift( ); } ),
+ ap.keys_check_indexes( function( ) { return 0; }, 12 ).length, ap.keys_check_indexes( Math.random, 20 ).length ], [ [ 0, 6, 11 ], 12, 12 ] );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

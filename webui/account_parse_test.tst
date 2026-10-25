@@ -68,4 +68,9 @@ ok   each device, this browser first
 ok   with Windows line ends too
 ok   nothing, or anything else, is none
 
+== your keys ===================================================
+ok   the card's state - from this browser and the node
+ok   - an error, or not locked keys, unreadable
+ok   words to check back - three different, in order
+
 All checks passed.

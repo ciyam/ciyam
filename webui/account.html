@@ -96,6 +96,7 @@ http://www.opensource.org/licenses/mit-license.php.
    {
       load_form( "account" )
        .then( function( ) { return load_script( "account.js" ); } )
+       .then( function( ) { return load_script( "account_keys.js" ); } )
        .then( function( ) { window.setTimeout( call_at_load, c_load_delay ); } )
        .catch( function( )
        {

@@ -940,6 +940,61 @@ button.account-back,
    }
 }
 
+/* NOTE: Your keys on My account (2026-10-25) - one part at a time; the public key beside its QR code. */
+.account-keys-part
+{
+   display: flex;
+   flex-direction: column;
+   gap: 14px;
+}
+
+.account-keys-part[hidden]
+{
+   display: none;
+}
+
+.account-keys-public
+{
+   display: flex;
+   align-items: flex-start;
+   gap: 16px;
+}
+
+.account-keys-qr
+{
+   flex: none;
+   padding: 6px;
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-sm);
+   background: #ffffff;
+   line-height: 0;
+}
+
+.account-keys-key
+{
+   display: block;
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-meta);
+   overflow-wrap: anywhere;
+   user-select: all;
+}
+
+.account-keys-words
+{
+   resize: vertical;
+   min-height: 72px;
+   padding-top: 8px;
+   line-height: 1.5;
+}
+
+@media ( max-width: 480px )
+{
+   .account-keys-public
+   {
+      flex-direction: column;
+   }
+}
+
 /* NOTE: Making twelve words - the bubbles to pop, the words to write down and the check of them. First in Home's set up, and
    since 2026-10-25 in setting up an account's keys too, so here, which both pages load ("bubbles.js"). */
 /* NOTE: The bubbles - buttons placed by "transform", rising from below the box and drifting as they go. */

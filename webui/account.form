@@ -186,6 +186,98 @@ http://www.opensource.org/licenses/mit-license.php.
             <div class="chat-error-text" id="mine_devices_error" role="alert"></div>
          </div>
 
+         <!-- NOTE: Your keys (Ian, 2026-10-23 and 2026-10-25) - for encrypted messages, from twelve words of the account's own,
+              locked under them before they go to the node ("user-keys"). One part shown at a time, by "keys_show( )" in
+              "account_keys.js". -->
+         <div class="account-card account-form" id="mine_keys">
+            <div>
+               <h2>Your keys</h2>
+               <p class="account-lede" id="keys_lede">For encrypted messages - only the people you write to can read them.</p>
+            </div>
+
+            <div class="account-keys-part" id="keys_loading" role="status">Looking for your keys…</div>
+
+            <div class="account-keys-part" id="keys_none" hidden>
+               <p class="account-lede">Your keys come from twelve words of your own, which you write down. The node never sees
+                them - it keeps only what they lock.</p>
+               <div class="account-actions-row">
+                  <button type="button" class="chat-btn chat-btn--primary" id="keys_start">Set up your keys</button>
+               </div>
+            </div>
+
+            <div class="account-keys-part" id="keys_random" hidden>
+               <p class="account-lede">Pop any twelve bubbles as they rise. When and where you catch them is mixed with this
+                browser's own randomness to make your words.</p>
+               <div class="home-bubbles" id="keys_bubbles" role="group" aria-label="Bubbles to pop"></div>
+               <div class="home-setup-count">
+                  <span id="keys_popped">0 of 12 popped</span>
+                  <span>The browser adds its own randomness too</span>
+               </div>
+               <div class="home-setup-meter" aria-hidden="true"><span id="keys_popped_bar"></span></div>
+               <div class="account-actions-row">
+                  <button type="button" class="chat-btn" id="keys_random_cancel">Cancel</button>
+                  <button type="button" class="chat-btn chat-btn--primary" id="keys_random_next" disabled>Next</button>
+               </div>
+            </div>
+
+            <div class="account-keys-part" id="keys_words" hidden>
+               <p class="account-lede">Write down your twelve words, on paper, in order. You type them on each browser you use
+                your keys on, and they are the only way to get your keys back.</p>
+               <ol class="home-setup-words" id="keys_word_list"></ol>
+               <div class="recover-warning"><b>Shown only now.</b> Not a screenshot, not a file on this computer, not a photo.
+                Anyone who has them can read your encrypted messages.</div>
+               <label class="home-setup-tick">
+                  <input type="checkbox" id="keys_written">
+                  <span>I've written all twelve down, in order</span>
+               </label>
+               <div class="account-actions-row">
+                  <button type="button" class="chat-btn" id="keys_words_cancel">Cancel</button>
+                  <button type="button" class="chat-btn chat-btn--primary" id="keys_words_next" disabled>Check them</button>
+               </div>
+            </div>
+
+            <div class="account-keys-part" id="keys_check" hidden>
+               <p class="account-lede">From your paper, not from memory: for each word, pick the one you wrote.</p>
+               <div class="home-setup-check" id="keys_check_rows"></div>
+               <div class="account-actions-row">
+                  <button type="button" class="chat-btn" id="keys_check_back">See the words again</button>
+                  <button type="button" class="chat-btn chat-btn--primary" id="keys_save" disabled>Save your keys</button>
+               </div>
+            </div>
+
+            <div class="account-keys-part" id="keys_enter" hidden>
+               <p class="account-lede" id="keys_enter_lede">Your keys are set up. To use them on this browser, type your
+                twelve words.</p>
+               <label class="chat-label" for="keys_enter_words">Your twelve words</label>
+               <textarea class="chat-field account-keys-words" id="keys_enter_words" rows="3" autocomplete="off" autocapitalize="off"
+                spellcheck="false"></textarea>
+               <div class="account-actions-row">
+                  <button type="button" class="chat-btn" id="keys_enter_new">Start again with new words</button>
+                  <button type="button" class="chat-btn chat-btn--primary" id="keys_enter_go">Use my keys here</button>
+               </div>
+            </div>
+
+            <div class="account-keys-part" id="keys_here" hidden>
+               <p class="account-lede" id="keys_here_lede">Your keys are on this browser.</p>
+               <div class="account-keys-public">
+                  <div class="account-keys-qr" id="keys_qr" aria-hidden="true"></div>
+                  <div>
+                     <div class="chat-label">Your public key</div>
+                     <p class="account-lede">Others scan or copy this to write to you. It's safe to share.</p>
+                     <code class="account-keys-key" id="keys_public"></code>
+                  </div>
+               </div>
+               <p class="account-lede" id="keys_contacts"></p>
+               <div class="account-actions-row">
+                  <button type="button" class="chat-btn" id="keys_forget">Forget them on this browser</button>
+                  <button type="button" class="chat-btn chat-btn--primary" id="keys_save_again" hidden>Save them on the node</button>
+               </div>
+            </div>
+
+            <div class="chat-error-text" id="keys_error" role="alert"></div>
+            <div class="chat-signin-busy" id="keys_busy" hidden><span class="chat-spinner"></span><span id="keys_busy_text" role="status"></span></div>
+         </div>
+
          <!-- NOTE: Desktop notifications from the chat (Damon, 2026-10-20) - the same switch as in the chat's account menu
               ("notify.js"); here so that, as more kinds come, they are set in one place. -->
          <div class="account-card account-form" id="mine_notify">

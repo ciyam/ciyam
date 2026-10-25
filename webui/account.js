@@ -562,6 +562,9 @@ function apply_retain_choice( select_id )
       else
          localStorage.removeItem( c_storage_hashed_prefix + ciyam.access );
 
+      if( parse_access_list( plan.list ).indexOf( ciyam.access ) < 0 )
+         localStorage.removeItem( c_signin_storage_keys_prefix + ciyam.access );
+
       if( plan.list === null )
          localStorage.removeItem( c_storage_access );
       else
@@ -628,6 +631,9 @@ function clear_session( )
 {
    unlink_others( );
 
+   if( typeof keys_clear === "function" )
+      keys_clear( );
+
    signin_forget_session( );
 
    g_viewers = { };
@@ -690,6 +696,10 @@ function render_mine( )
    show_mine_notify( );
 
    load_devices( );
+
+   // NOTE: Your keys - "account_keys.js" (2026-10-25).
+   if( typeof render_keys === "function" )
+      render_keys( );
 }
 
 // NOTE: Desktop notifications from the chat (Damon, 2026-10-20) - the switch here and in the chat's account menu are one
