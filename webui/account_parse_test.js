@@ -174,6 +174,22 @@ var draws = [ 0.99, 0, 0.5 ];
 check( "words to check back - three different, in order", [ ap.keys_check_indexes( function( ) { return draws.shift( ); } ),
  ap.keys_check_indexes( function( ) { return 0; }, 12 ).length, ap.keys_check_indexes( Math.random, 20 ).length ], [ [ 0, 6, 11 ], 12, 12 ] );
 
+const verify_a_key = "0028b35f26edb6ffe44d3d2cc597906f4065bd550d5009c4d62c422c789493e0";
+const own_key = "bd03d5c91f430fc9bc585d232043d781d31b61616abcf19c7333cea4ea1b6bc9";
+
+check( "a public key as pasted - capitals, spaces, broken over lines", [ ap.normalise_public_key( verify_a_key.toUpperCase( ) ),
+ ap.normalise_public_key( " " + verify_a_key.substr( 0, 32 ) + "\n  " + verify_a_key.substr( 32 ) + " " ), ap.normalise_public_key( verify_a_key + "0" ),
+ ap.normalise_public_key( verify_a_key.replace( "0", "g" ) ), ap.normalise_public_key( "" ) ], [ verify_a_key, verify_a_key, "", "", "" ] );
+check( "adding someone's key - fine", ap.contact_problem( "verify-a", verify_a_key, { }, own_key ), "" );
+check( "- not a username, no key, your own, one already kept, or theirs under another name", [
+ ap.contact_problem( "Verify A", verify_a_key, { }, own_key ).indexOf( "Type their username" ), ap.contact_problem( "verify-a", "", { }, own_key ),
+ ap.contact_problem( "verify-a", own_key, { }, own_key ), ap.contact_problem( "verify-a", verify_a_key, { "verify-a": own_key.replace( "b", "c" ) }, own_key ),
+ ap.contact_problem( "verify-b", verify_a_key, { "verify-a": verify_a_key }, own_key ) ], [ 0,
+ "A public key is 64 letters and digits, 0-9 and a-f - copy all of it.", "That's your own public key - theirs is shown on their My account.",
+ "You have a key for verify-a already - remove it first to change it.", "That key is saved for verify-a already." ] );
+check( "the keys kept, by name, shortened", ap.contact_rows( { "verify-b": own_key, "verify-a": verify_a_key } ), [
+ { name: "verify-a", key: verify_a_key, short: "0028b35f…789493e0" }, { name: "verify-b", key: own_key, short: "bd03d5c9…ea1b6bc9" } ] );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

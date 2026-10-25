@@ -267,7 +267,25 @@ http://www.opensource.org/licenses/mit-license.php.
                      <code class="account-keys-key" id="keys_public"></code>
                   </div>
                </div>
-               <p class="account-lede" id="keys_contacts"></p>
+               <!-- NOTE: Others' public keys, by username (2026-10-25) - pasted for now; "keys_draw_contacts( )" makes the rows. -->
+               <div class="account-keys-people">
+                  <h3 class="chat-label">People's public keys</h3>
+                  <p class="account-lede" id="keys_contacts"></p>
+                  <ul class="account-keys-list" id="keys_contact_list"></ul>
+                  <div>
+                     <label class="chat-label" for="keys_add_name">Their username</label>
+                     <input type="text" class="chat-field" id="keys_add_name" autocomplete="off" autocapitalize="off" spellcheck="false">
+                  </div>
+                  <div>
+                     <label class="chat-label" for="keys_add_key">Their public key</label>
+                     <textarea class="chat-field account-keys-words" id="keys_add_key" rows="2" autocomplete="off" autocapitalize="off"
+                      spellcheck="false"></textarea>
+                  </div>
+                  <div class="account-actions-row">
+                     <button type="button" class="chat-btn" id="keys_add">Add their key</button>
+                  </div>
+                  <div class="chat-error-text" id="keys_add_error" role="alert"></div>
+               </div>
                <div class="account-actions-row">
                   <button type="button" class="chat-btn" id="keys_forget">Forget them on this browser</button>
                   <button type="button" class="chat-btn chat-btn--primary" id="keys_save_again" hidden>Save them on the node</button>

@@ -72,5 +72,9 @@ ok   nothing, or anything else, is none
 ok   the card's state - from this browser and the node
 ok   - an error, or not locked keys, unreadable
 ok   words to check back - three different, in order
+ok   a public key as pasted - capitals, spaces, broken over lines
+ok   adding someone's key - fine
+ok   - not a username, no key, your own, one already kept, or theirs under another name
+ok   the keys kept, by name, shortened
 
 All checks passed.

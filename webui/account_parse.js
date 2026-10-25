@@ -284,6 +284,55 @@ function keys_check_indexes( random, count )
    return picked.sort( function( a, b ) { return a - b; } );
 }
 
+// NOTE: Others' public keys, kept with your keys by username, as the console keeps them (".irc_<me>.public.<them>"). A key as
+// pasted - in capitals, broken over lines or spaced - as 64 lower-case hex digits, or "" if it cannot be one.
+function normalise_public_key( text )
+{
+   var key = String( text || "" ).replace( /\s+/g, "" ).toLowerCase( );
+
+   return /^[0-9a-f]{64}$/.test( key ) ? key : "";
+}
+
+// NOTE: What is wrong with adding "name" and "key" - "" if nothing. "contacts" - those kept; "own_key" - this account's own.
+function contact_problem( name, key, contacts, own_key )
+{
+   var kept = contacts || { };
+
+   if( !is_valid_username( name ) )
+      return "Type their username - 3 to 12 characters: a-z, 0-9 and single hyphens, starting with a letter.";
+
+   if( key === "" )
+      return "A public key is 64 letters and digits, 0-9 and a-f - copy all of it.";
+
+   if( key === own_key )
+      return "That's your own public key - theirs is shown on their My account.";
+
+   if( kept.hasOwnProperty( name ) )
+      return "You have a key for " + name + " already - remove it first to change it.";
+
+   var other = Object.keys( kept ).filter( function( kept_name ) { return kept[ kept_name ] === key; } )[ 0 ];
+
+   if( other !== undefined )
+      return "That key is saved for " + other + " already.";
+
+   return "";
+}
+
+// NOTE: The keys kept, as the card lists them - by name, each key shortened ("short_public_key( )").
+function contact_rows( contacts )
+{
+   var kept = contacts || { };
+
+   return Object.keys( kept ).sort( ).map( function( name ) { return { name: name, key: kept[ name ], short: short_public_key( kept[ name ] ) }; } );
+}
+
+function short_public_key( key )
+{
+   var text = String( key || "" );
+
+   return ( text.length > 16 ) ? text.substr( 0, 8 ) + "…" + text.substr( -8 ) : text;
+}
+
 if( typeof module !== "undefined" )
 {
    module.exports = {
@@ -300,6 +349,10 @@ if( typeof module !== "undefined" )
       refused_join_text: refused_join_text,
       parse_account_hash: parse_account_hash,
       keys_state: keys_state,
-      keys_check_indexes: keys_check_indexes
+      keys_check_indexes: keys_check_indexes,
+      normalise_public_key: normalise_public_key,
+      contact_problem: contact_problem,
+      contact_rows: contact_rows,
+      short_public_key: short_public_key
    };
 }

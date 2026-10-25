@@ -979,6 +979,64 @@ button.account-back,
    user-select: all;
 }
 
+.account-keys-people
+{
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+   padding-top: 14px;
+   border-top: 1px solid var(--color-chat-border);
+}
+
+.account-keys-people[hidden]
+{
+   display: none;
+}
+
+.account-keys-people h3
+{
+   margin: 0;
+}
+
+.account-keys-list
+{
+   display: flex;
+   flex-direction: column;
+   gap: 6px;
+   margin: 0;
+   padding: 0;
+   list-style: none;
+}
+
+.account-keys-list:empty
+{
+   display: none;
+}
+
+.account-keys-list li
+{
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   padding: 8px 10px;
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-sm);
+}
+
+.account-keys-list b
+{
+   flex: none;
+   min-width: 96px;
+}
+
+.account-keys-list code
+{
+   flex: 1;
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-secondary);
+}
+
 .account-keys-words
 {
    resize: vertical;

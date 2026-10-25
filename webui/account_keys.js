@@ -29,7 +29,7 @@ var g_keys_installed = false;
 
 function fresh_keys( )
 {
-   return { samples: [ ], pops: 0, entropy: "", words: [ ], checking: [ ], right: 0, node: "" };
+   return { samples: [ ], pops: 0, entropy: "", words: [ ], checking: [ ], right: 0, node: "", contacts: { }, own: "", here: "" };
 }
 
 function keys_load_script( src )
@@ -157,14 +157,15 @@ function keys_clear( )
 
    g_keys = fresh_keys( );
 
-   [ "keys_word_list", "keys_check_rows", "keys_qr" ].forEach( function( id ) { document.getElementById( id ).replaceChildren( ); } );
+   [ "keys_word_list", "keys_check_rows", "keys_qr", "keys_contact_list" ].forEach( function( id ) { document.getElementById( id ).replaceChildren( ); } );
 
-   document.getElementById( "keys_enter_words" ).value = "";
+   [ "keys_enter_words", "keys_add_name", "keys_add_key" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );
    document.getElementById( "keys_written" ).checked = false;
    document.getElementById( "keys_public" ).textContent = "";
 
    keys_busy( "" );
    set_error( "keys_error", "" );
+   set_error( "keys_add_error", "" );
 }
 
 // NOTE: From My account - which part, from this browser and the node ("keys_state( )" in "account_parse.js").
@@ -253,16 +254,20 @@ async function keys_show_here( entropy, unsaved )
 
    box.removeAttribute( "title" );
 
-   var count = Object.keys( contacts ).length;
+   g_keys.here = entropy;
+   g_keys.own = key;
+   g_keys.contacts = contacts;
 
    document.getElementById( "keys_here_lede" ).textContent = unsaved
     ? "Your keys are on this browser, but not on the node - save them there so your other browsers can use them."
     : "Your keys are on this browser.";
 
-   document.getElementById( "keys_contacts" ).textContent = ( count === 0 ) ? "No one's public key saved yet."
-    : ( count + ( count === 1 ? " person's public key saved." : " people's public keys saved." ) );
-
    document.getElementById( "keys_save_again" ).hidden = !unsaved;
+
+   // NOTE: Adding someone waits until the node has your keys - what is added is saved with them.
+   document.querySelector( ".account-keys-people" ).hidden = unsaved;
+
+   keys_draw_contacts( );
 
    keys_show( "keys_here" );
 }
@@ -469,6 +474,119 @@ async function keys_save( entropy )
    await keys_show_here( words_entropy, false );
 }
 
+// ---- Others' public keys
+
+function keys_draw_contacts( )
+{
+   var list = document.getElementById( "keys_contact_list" );
+   var rows = contact_rows( g_keys.contacts );
+
+   list.replaceChildren( );
+
+   rows.forEach( function( row )
+   {
+      var item = document.createElement( "li" );
+      var name = document.createElement( "b" );
+      var key = document.createElement( "code" );
+      var remove = document.createElement( "button" );
+
+      name.textContent = row.name;
+      key.textContent = row.short;
+      key.title = row.key;
+
+      remove.type = "button";
+      remove.className = "chat-btn chat-btn--small";
+      remove.textContent = "Remove";
+      remove.setAttribute( "aria-label", "Remove " + row.name + "'s public key" );
+      remove.addEventListener( "click", function( ) { keys_remove_contact( row.name ); } );
+
+      item.appendChild( name );
+      item.appendChild( key );
+      item.appendChild( remove );
+      list.appendChild( item );
+   } );
+
+   document.getElementById( "keys_contacts" ).textContent = ( rows.length === 0 )
+    ? "None yet. Add someone's to write to them encrypted - they'll find theirs on their My account." : "";
+   document.getElementById( "keys_contacts" ).hidden = ( rows.length > 0 );
+}
+
+// NOTE: Locked again under the words with the change, and sent - the card changes once the node has them.
+async function keys_store_contacts( contacts, busy_text )
+{
+   set_error( "keys_add_error", "" );
+   keys_busy( busy_text );
+
+   var response = "";
+   var locked = "";
+
+   try
+   {
+      locked = await keys_module( "user_keys" ).lock( g_keys.here, { contacts: contacts } );
+
+      response = await request( function( done )
+      {
+         return ciyam.fetch( keys_url( "&payload=" + encodeURIComponent( locked ) ), "PUT", done );
+      } );
+   }
+   catch( e )
+   {
+      response = "Error: " + ( e && e.message ? e.message : "they could not be locked." );
+   }
+
+   keys_busy( "" );
+
+   if( problem_text( response ) !== "" )
+   {
+      set_error( "keys_add_error", "That could not be saved: " + problem_text( response ) );
+
+      return false;
+   }
+
+   g_keys.node = locked;
+   g_keys.contacts = contacts;
+
+   keys_draw_contacts( );
+
+   return true;
+}
+
+async function keys_add_contact( )
+{
+   var name = document.getElementById( "keys_add_name" ).value.trim( ).toLowerCase( );
+   var key = normalise_public_key( document.getElementById( "keys_add_key" ).value );
+   var problem = contact_problem( name, key, g_keys.contacts, g_keys.own );
+
+   if( problem !== "" )
+   {
+      set_error( "keys_add_error", problem );
+
+      return;
+   }
+
+   var contacts = Object.assign( { }, g_keys.contacts );
+
+   contacts[ name ] = key;
+
+   if( await keys_store_contacts( contacts, "Saving " + name + "'s key…" ) )
+   {
+      document.getElementById( "keys_add_name" ).value = "";
+      document.getElementById( "keys_add_key" ).value = "";
+   }
+}
+
+async function keys_remove_contact( name )
+{
+   if( !confirm( "Remove " + name + "'s public key? You can add it again later." ) )
+      return;
+
+   var contacts = Object.assign( { }, g_keys.contacts );
+
+   delete contacts[ name ];
+
+   await keys_store_contacts( contacts, "Removing " + name + "'s key…" );
+}
+
 // ---- Using them on this browser
 
 async function keys_enter_go( )
@@ -550,6 +668,7 @@ function install_keys( )
    document.getElementById( "keys_enter_new" ).addEventListener( "click", keys_start_again );
    document.getElementById( "keys_forget" ).addEventListener( "click", keys_forget );
    document.getElementById( "keys_save_again" ).addEventListener( "click", function( ) { keys_save( keys_kept_here( ) ); } );
+   document.getElementById( "keys_add" ).addEventListener( "click", keys_add_contact );
 
    document.getElementById( "keys_written" ).addEventListener( "change", function( event )
    {
