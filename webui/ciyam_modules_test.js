@@ -665,54 +665,79 @@ async function steps( module_class, list )
    } ), [ "Those are not the words - check each is spelt right and in its place.", "Those are not the words - check each is spelt right and in its place.",
     "Those are not the words - check each is spelt right and in its place." ] );
 
-   // NOTE: Worked out here without the module (Ian, 2026-10-25: the keys under the twelve words) - the key the SHA-256 of the
-   // salt, "user_keys" and the entropy; ChaCha20 under the key's SHA-256 with a zero nonce and counter ("crypt -cc"); HMAC-SHA256
-   // keyed "mac" and the key.
+   // NOTE: Worked out here without the module (Ian, 2026-10-25: a hash of the entropy kept by the browser, the keys on the node
+   // locked under it) - the access key "harden"'s rounds of "user_keys" and the entropy (each round the SHA-256 of what there is
+   // with that after it); the lock's key the SHA-256 of the salt, "user_keys" and the access key; ChaCha20 under the key's
+   // SHA-256 with a zero nonce and counter ("crypt -cc"); HMAC-SHA256 keyed "mac" and the key.
+   var sm_keys = m.ciyam_module_named( "secure_message" );
+   var known_access = "user_keys" + test_entropy;
+
+   for( var r = 0, input = "user_keys" + test_entropy; r < 1000; r++ )
+      known_access = node_crypto.createHash( "sha256" ).update( known_access + input, "utf8" ).digest( "hex" );
+
+   check( "the access key - rounds of the entropy, as worked out without the module", await uk.access_key( test_entropy, 1000 ), known_access );
+
+   var seeds = uk.seeds_of( test_entropy );
+   var other_public = sm_keys.public_key( "00112233445566778899aabbccddeeff" );
+
+   check( "the keys from the entropy - their public key and secrets the same as from the entropy itself", [
+    sm_keys.public_key_of_seed( seeds.primary ) === sm_keys.public_key( test_entropy ),
+    sm_keys.shared_secret_of_seed( seeds.primary, other_public ) === sm_keys.shared_secret( test_entropy, other_public ),
+    seeds.secondary !== seeds.primary ], [ true, true, true ] );
+
    var known_salt = "000102030405060708090a0b0c0d0e0f";
-   var known_contents = { contacts: { "verify-a": "0028b35f26edb6ffe44d3d2cc597906f4065bd550d5009c4d62c422c789493e0" } };
-   var known_key = node_crypto.createHash( "sha256" ).update( known_salt + "user_keys" + test_entropy, "utf8" ).digest( "hex" );
+   var known_contents = { primary: seeds.primary, secondary: seeds.secondary,
+    contacts: { "verify-a": "0028b35f26edb6ffe44d3d2cc597906f4065bd550d5009c4d62c422c789493e0" } };
+   var known_key = node_crypto.createHash( "sha256" ).update( known_salt + "user_keys" + known_access, "utf8" ).digest( "hex" );
 
    var known_stream = node_crypto.createCipheriv( "chacha20", node_crypto.createHash( "sha256" ).update( known_key ).digest( ), Buffer.alloc( 16 ) );
    var known_cipher = known_stream.update( Buffer.from( JSON.stringify( known_contents ), "utf8" ) ).toString( "hex" );
-   var known_locked = "UK2:" + known_salt + ":" + known_cipher + ":"
+   var known_locked = "UK3:1000:" + known_salt + ":" + known_cipher + ":"
     + node_crypto.createHmac( "sha256", "mac" + known_key ).update( known_cipher ).digest( "hex" );
 
-   check( "locked under the words' entropy - as worked out without the module, given a salt", await uk.lock( test_entropy, known_contents,
-    { salt: known_salt } ), known_locked );
-   check( "- and unlocked, the entropy in either case", [ await uk.unlock( test_entropy, known_locked ),
-    await uk.unlock( test_entropy.toUpperCase( ), known_locked ) ], [ known_contents, known_contents ] );
+   check( "locked under the access key - as worked out without the module, given a salt and rounds", await uk.lock( known_access, known_contents,
+    { salt: known_salt, rounds: 1000 } ), known_locked );
+   check( "- unlocked, with the rounds they were made with", await uk.unlock( known_access, known_locked ),
+    Object.assign( { }, known_contents, { rounds: 1000 } ) );
+   check( "- the rounds read before opening them, so typed words make the same access key", uk.rounds_of( known_locked ), 1000 );
 
-   var locked_afresh = await uk.lock( test_entropy, known_contents );
+   var locked_afresh = await uk.lock( known_access, known_contents );
 
-   check( "locked afresh - its own salt each time, unlocked again", [ locked_afresh.split( ":" ).length,
-    locked_afresh !== ( await uk.lock( test_entropy, known_contents ) ), await uk.unlock( test_entropy, locked_afresh ) ],
-    [ 4, true, known_contents ] );
+   check( "locked afresh - its own salt each time, the default rounds, unlocked again", [ locked_afresh.split( ":" )[ 1 ],
+    locked_afresh !== ( await uk.lock( known_access, known_contents ) ), ( await uk.unlock( known_access, locked_afresh ) ).contacts ],
+    [ "100000", true, known_contents.contacts ] );
 
-   var not_opened = async function( entropy, locked ) { try { await uk.unlock( entropy, locked ); return "opened"; } catch( e ) { return e.message; } };
+   var not_opened = async function( access, locked ) { try { await uk.unlock( access, locked ); return "opened"; } catch( e ) { return e.message; } };
 
    var changed_locked = known_locked.replace( ":" + known_cipher.substring( 0, 4 ),
     ":" + ( known_cipher[ 0 ] === "0" ? "1" : "0" ) + known_cipher.substring( 1, 4 ) );
 
-   check( "not unlocked - other words, changed, not locked keys, or the old passphrase form", [
-    await not_opened( "00000000000000000000000000000000", known_locked ), await not_opened( test_entropy, changed_locked ),
-    await not_opened( test_entropy, "UK2:" + known_salt ), await not_opened( test_entropy, "UK1:1000:" + known_locked.substring( 4 ) ) ],
-    [ "Those words do not open these keys.", "Those words do not open these keys.", "Those are not locked keys.", "Those are not locked keys." ] );
+   check( "not unlocked - another access key, changed, not locked keys, or an older form", [ await not_opened( "0".repeat( 64 ), known_locked ),
+    await not_opened( known_access, changed_locked ), await not_opened( known_access, "UK3:1000:" + known_salt ),
+    await not_opened( known_access, "UK2:" + known_locked.substring( 9 ) ) ],
+    [ "That does not open these keys.", "That does not open these keys.", "Those are not locked keys.", "Those are not locked keys." ] );
 
-   var not_locked = async function( entropy, contents )
+   var too_many = "UK3:1000001:" + known_locked.substring( 9 );
+
+   check( "- more rounds than ten times the default refused, before any hashing", [ await not_opened( known_access, too_many ),
+    await uk.access_key( test_entropy, 1000001 ).catch( function( e ) { return e.message; } ) ],
+    [ "Those are not locked keys.", "The rounds are a whole number from 1 to 1000000." ] );
+
+   var not_locked = async function( access, contents )
    {
-      try { await uk.lock( entropy, contents ); return "locked"; } catch( e ) { return e.message; }
+      try { await uk.lock( access, contents, { rounds: 10 } ); return "locked"; } catch( e ) { return e.message; }
    };
 
-   check( "not locked - entropy not hex, not whole bytes, or a public key not one", [ await not_locked( "xyz", known_contents ),
-    await not_locked( test_entropy + "a", known_contents ), await not_locked( test_entropy, { contacts: { someone: "abc" } } ) ],
-    [ "Secret entropy is 32 to 64 hex digits - whole bytes.", "Secret entropy is 32 to 64 hex digits - whole bytes.",
-    "A public key is 64 hex digits, kept by a name." ] );
+   check( "not locked - no access key, no keys, or a public key not one", [ await not_locked( "abc", known_contents ),
+    await not_locked( known_access, { contacts: { } } ), await not_locked( known_access, { primary: seeds.primary, secondary: seeds.secondary,
+    contacts: { someone: "abc" } } ) ], [ "An access key is 64 hex digits.", "The keys are two of 64 hex digits.", "A public key is 64 hex digits, kept by a name." ] );
 
-   var locked_by_run = await new uk( { } ).run( "lock " + test_entropy );
+   var by_run = ( await new uk( { } ).run( "lock " + test_entropy ) ).split( " " );
 
-   check( "through run - lock, unlock, words and entropy", [ /^UK2:[0-9a-f]{32}:[0-9a-f]+:[0-9a-f]{64}$/.test( locked_by_run ),
-    await new uk( { } ).run( "unlock " + test_entropy + " " + locked_by_run ), await new uk( { } ).run( "words " + test_entropy ),
-    await new uk( { } ).run( "entropy " + test_words ) ], [ true, JSON.stringify( { contacts: { } } ), test_words, test_entropy ] );
+   check( "through run - access, lock, unlock, words and entropy", [ by_run[ 0 ] === await new uk( { } ).run( "access " + test_entropy ),
+    /^UK3:100000:[0-9a-f]{32}:[0-9a-f]+:[0-9a-f]{64}$/.test( by_run[ 1 ] ),
+    JSON.parse( await new uk( { } ).run( "unlock " + by_run[ 0 ] + " " + by_run[ 1 ] ) ).primary === seeds.primary,
+    await new uk( { } ).run( "words " + test_entropy ), await new uk( { } ).run( "entropy " + test_words ) ], [ true, true, true, test_words, test_entropy ] );
    check( "- anything else said", await new uk( { } ).run( "keys" ).catch( function( e ) { return e.message; } ), "Use one of - " + uk.about.example );
 
    console.log( "" );

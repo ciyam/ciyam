@@ -128,14 +128,14 @@ check( "status", cp.resolve_command( "status" ).path, "/status" );
 check( "missing name", cp.resolve_command( "messages review" ).reason, "'messages review' needs a name" );
 
 // NOTE: Ian, 2026-10-22 - this account's own keys: no name; "retain" sends the rest of the line as the payload - only keys
-// already locked ("UK2:"), so nothing typed goes to the node in the clear (found by review, 2026-10-23).
+// already locked ("UK3:"), so nothing typed goes to the node in the clear (found by review, 2026-10-23).
 check( "user keys - review, retain and delete", [ pick( cp.resolve_command( "review user-keys" ), keys ),
- cp.resolve_command( "retain user-keys UK2:00ff:11:22" ), cp.resolve_command( "user-keys|retain UK2:abc" ).payload,
+ cp.resolve_command( "retain user-keys UK3:1000:00ff:11:22" ), cp.resolve_command( "user-keys|retain UK3:abc" ).payload,
  cp.resolve_command( "delete user-key" ).method ], [ { kind: "cws", method: "GET", path: "/user-keys", options: "" },
- { kind: "cws", key: "user-keys|retain", method: "PUT", path: "/user-keys", name: "", options: "", payload: "UK2:00ff:11:22" }, "UK2:abc", "DELETE" ] );
+ { kind: "cws", key: "user-keys|retain", method: "PUT", path: "/user-keys", name: "", options: "", payload: "UK3:1000:00ff:11:22" }, "UK3:abc", "DELETE" ] );
 check( "- retain needs something locked, review takes no name", [ cp.resolve_command( "retain user-keys" ).reason,
  cp.resolve_command( "retain user-keys de604cee0755a3d81944ea96aed12681" ).reason, cp.resolve_command( "review user-keys 20101" ).reason ],
- [ "'user-keys retain' needs what to save", "'user-keys retain' takes only what is locked first (UK2:...) - nothing in the clear",
+ [ "'user-keys retain' needs what to save", "'user-keys retain' takes only what is locked first (UK3:...) - nothing in the clear",
  "'user-keys review' takes no options" ] );
 
 // NOTE: Ian, 2026-09-26 - these list what is available when given no name.

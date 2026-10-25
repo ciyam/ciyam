@@ -183,6 +183,28 @@ ciyam_register_module( class extends ciyam_module
       return ed.shared_secret( ed.seed_of( this.check_entropy( entropy ) ), String( public_key || "" ).trim( ).toLowerCase( ) );
    }
 
+   // NOTE: The same from a key kept as its seed ("seeds_of( )" in "ciyam_user_keys.js") - the browser keeps the keys, not the
+   // entropy (Ian, 2026-10-25).
+   static check_seed( seed )
+   {
+      var text = String( seed || "" ).toLowerCase( );
+
+      if( !/^[0-9a-f]{64}$/.test( text ) )
+         throw new Error( "A key's seed is 64 hex digits." );
+
+      return this.ed25519( ).bytes_of( text );
+   }
+
+   static public_key_of_seed( seed )
+   {
+      return this.ed25519( ).public_key( this.check_seed( seed ) );
+   }
+
+   static shared_secret_of_seed( seed, public_key )
+   {
+      return this.ed25519( ).shared_secret( this.check_seed( seed ), String( public_key || "" ).trim( ).toLowerCase( ) );
+   }
+
    static check_secret( secret )
    {
       if( !/^[0-9a-f]{64}$/.test( String( secret || "" ) ) )
