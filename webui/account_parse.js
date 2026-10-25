@@ -262,6 +262,10 @@ function keys_state( here, node_text )
 {
    var text = String( node_text || "" ).trim( );
 
+   // NOTE: Keys in a form from before 2026-10-25's change ("UK1", "UK2") cannot be opened any more - as none, to set up again.
+   if( /^UK[12]:/.test( text ) )
+      text = "[none]";
+
    if( text === "[none]" )
       return here ? "lost" : "none";
 

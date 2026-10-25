@@ -70,6 +70,7 @@ ok   nothing, or anything else, is none
 
 == your keys ===================================================
 ok   the card's state - from this browser and the node
+ok   - keys in an older form, as none - set up again
 ok   - an error, or not locked keys, unreadable
 ok   words to check back - three different, in order
 ok   a public key as pasted - capitals, spaces, broken over lines
