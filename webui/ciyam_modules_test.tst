@@ -95,13 +95,11 @@ ok   - anything else said
 == user_keys ===================================================
 ok   the twelve words for entropy and back - BIP39, as a node's
 ok   - words not right, said
-ok   locked - as worked out without the module, given a salt and rounds
-ok   - and unlocked
-ok   locked afresh - its own salt each time, the default rounds, unlocked again
-ok   not unlocked - another password, changed, or not locked keys
-ok   not locked - no password, entropy not hex, a public key not one
-ok   - more rounds than ten times the default refused, before any hashing; odd entropy refused
-ok   - a password the same whichever Unicode form it was typed in
+ok   locked under the words' entropy - as worked out without the module, given a salt
+ok   - and unlocked, the entropy in either case
+ok   locked afresh - its own salt each time, unlocked again
+ok   not unlocked - other words, changed, not locked keys, or the old passphrase form
+ok   not locked - entropy not hex, not whole bytes, or a public key not one
 ok   through run - lock, unlock, words and entropy
 ok   - anything else said
 

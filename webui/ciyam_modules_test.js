@@ -665,64 +665,54 @@ async function steps( module_class, list )
    } ), [ "Those are not the words - check each is spelt right and in its place.", "Those are not the words - check each is spelt right and in its place.",
     "Those are not the words - check each is spelt right and in its place." ] );
 
-   // NOTE: Worked out here without the module - "harden"'s rounds (each the SHA-256 of what there is with the salt and password
-   // after it), ChaCha20 under the key's SHA-256 with a zero nonce and counter ("crypt -cc"), HMAC-SHA256 keyed "mac" and the key.
+   // NOTE: Worked out here without the module (Ian, 2026-10-25: the keys under the twelve words) - the key the SHA-256 of the
+   // salt, "user_keys" and the entropy; ChaCha20 under the key's SHA-256 with a zero nonce and counter ("crypt -cc"); HMAC-SHA256
+   // keyed "mac" and the key.
    var known_salt = "000102030405060708090a0b0c0d0e0f";
-   var known_contents = { entropy: test_entropy, contacts: { "verify-a": "0028b35f26edb6ffe44d3d2cc597906f4065bd550d5009c4d62c422c789493e0" } };
-   var known_key = known_salt + "pässwörd";
-
-   for( var r = 0, input = known_salt + "pässwörd"; r < 1000; r++ )
-      known_key = node_crypto.createHash( "sha256" ).update( known_key + input, "utf8" ).digest( "hex" );
+   var known_contents = { contacts: { "verify-a": "0028b35f26edb6ffe44d3d2cc597906f4065bd550d5009c4d62c422c789493e0" } };
+   var known_key = node_crypto.createHash( "sha256" ).update( known_salt + "user_keys" + test_entropy, "utf8" ).digest( "hex" );
 
    var known_stream = node_crypto.createCipheriv( "chacha20", node_crypto.createHash( "sha256" ).update( known_key ).digest( ), Buffer.alloc( 16 ) );
    var known_cipher = known_stream.update( Buffer.from( JSON.stringify( known_contents ), "utf8" ) ).toString( "hex" );
-   var known_locked = "UK1:1000:" + known_salt + ":" + known_cipher + ":"
+   var known_locked = "UK2:" + known_salt + ":" + known_cipher + ":"
     + node_crypto.createHmac( "sha256", "mac" + known_key ).update( known_cipher ).digest( "hex" );
 
-   check( "locked - as worked out without the module, given a salt and rounds", await uk.lock( "pässwörd", known_contents,
-    { salt: known_salt, rounds: 1000 } ), known_locked );
-   check( "- and unlocked", await uk.unlock( "pässwörd", known_locked ), known_contents );
+   check( "locked under the words' entropy - as worked out without the module, given a salt", await uk.lock( test_entropy, known_contents,
+    { salt: known_salt } ), known_locked );
+   check( "- and unlocked, the entropy in either case", [ await uk.unlock( test_entropy, known_locked ),
+    await uk.unlock( test_entropy.toUpperCase( ), known_locked ) ], [ known_contents, known_contents ] );
 
-   var locked_afresh = await uk.lock( "pässwörd", known_contents );
+   var locked_afresh = await uk.lock( test_entropy, known_contents );
 
-   check( "locked afresh - its own salt each time, the default rounds, unlocked again", [ locked_afresh.split( ":" )[ 1 ],
-    locked_afresh !== ( await uk.lock( "pässwörd", known_contents ) ), await uk.unlock( "pässwörd", locked_afresh ) ],
-    [ "100000", true, known_contents ] );
+   check( "locked afresh - its own salt each time, unlocked again", [ locked_afresh.split( ":" ).length,
+    locked_afresh !== ( await uk.lock( test_entropy, known_contents ) ), await uk.unlock( test_entropy, locked_afresh ) ],
+    [ 4, true, known_contents ] );
 
-   var not_opened = async function( password, locked ) { try { await uk.unlock( password, locked ); return "opened"; } catch( e ) { return e.message; } };
+   var not_opened = async function( entropy, locked ) { try { await uk.unlock( entropy, locked ); return "opened"; } catch( e ) { return e.message; } };
 
    var changed_locked = known_locked.replace( ":" + known_cipher.substring( 0, 4 ),
     ":" + ( known_cipher[ 0 ] === "0" ? "1" : "0" ) + known_cipher.substring( 1, 4 ) );
 
-   check( "not unlocked - another password, changed, or not locked keys", [ await not_opened( "passwörd", known_locked ),
-    await not_opened( "pässwörd", changed_locked ), await not_opened( "pässwörd", "UK1:1000:" + known_salt ),
-    await not_opened( "pässwörd", "UK2" + known_locked.substring( 3 ) ) ],
-    [ "That password does not open these keys.", "That password does not open these keys.", "Those are not locked keys.", "Those are not locked keys." ] );
+   check( "not unlocked - other words, changed, not locked keys, or the old passphrase form", [
+    await not_opened( "00000000000000000000000000000000", known_locked ), await not_opened( test_entropy, changed_locked ),
+    await not_opened( test_entropy, "UK2:" + known_salt ), await not_opened( test_entropy, "UK1:1000:" + known_locked.substring( 4 ) ) ],
+    [ "Those words do not open these keys.", "Those words do not open these keys.", "Those are not locked keys.", "Those are not locked keys." ] );
 
-   var not_locked = async function( password, contents )
+   var not_locked = async function( entropy, contents )
    {
-      try { await uk.lock( password, contents, { rounds: 10 } ); return "locked"; } catch( e ) { return e.message; }
+      try { await uk.lock( entropy, contents ); return "locked"; } catch( e ) { return e.message; }
    };
 
-   check( "not locked - no password, entropy not hex, a public key not one", [ await not_locked( "", known_contents ),
-    await not_locked( "p", { entropy: "xyz" } ), await not_locked( "p", { entropy: test_entropy, contacts: { someone: "abc" } } ) ],
-    [ "A password is needed to lock the keys.", "Secret entropy is 32 to 64 hex digits - whole bytes.", "A public key is 64 hex digits, kept by a name." ] );
+   check( "not locked - entropy not hex, not whole bytes, or a public key not one", [ await not_locked( "xyz", known_contents ),
+    await not_locked( test_entropy + "a", known_contents ), await not_locked( test_entropy, { contacts: { someone: "abc" } } ) ],
+    [ "Secret entropy is 32 to 64 hex digits - whole bytes.", "Secret entropy is 32 to 64 hex digits - whole bytes.",
+    "A public key is 64 hex digits, kept by a name." ] );
 
-   // NOTE: Found by review (2026-10-23) - keys come back from the node, so it cannot ask for hours of hashing; entropy is whole
-   // bytes; a password the same in its two Unicode forms ("ä" as one character, or "a" and its two dots).
-   var too_many = "UK1:1000001:" + known_salt + ":" + known_cipher + ":" + known_locked.split( ":" )[ 4 ];
+   var locked_by_run = await new uk( { } ).run( "lock " + test_entropy );
 
-   check( "- more rounds than ten times the default refused, before any hashing; odd entropy refused", [ await not_opened( "pässwörd", too_many ),
-    await not_locked( "p", { entropy: test_entropy + "a" } ),
-    await uk.lock( "p", known_contents, { rounds: 1000001 } ).catch( function( e ) { return e.message; } ) ],
-    [ "Those are not locked keys.", "Secret entropy is 32 to 64 hex digits - whole bytes.", "The rounds are a whole number from 1 to 1000000." ] );
-   check( "- a password the same whichever Unicode form it was typed in", await uk.unlock( "pässwörd".normalize( "NFD" ), known_locked ), known_contents );
-
-   var locked_by_run = await new uk( { } ).run( "lock pw " + test_entropy );
-
-   check( "through run - lock, unlock, words and entropy", [ /^UK1:100000:[0-9a-f]{32}:[0-9a-f]+:[0-9a-f]{64}$/.test( locked_by_run ),
-    await new uk( { } ).run( "unlock pw " + locked_by_run ), await new uk( { } ).run( "words " + test_entropy ),
-    await new uk( { } ).run( "entropy " + test_words ) ], [ true, JSON.stringify( { entropy: test_entropy, contacts: { } } ), test_words, test_entropy ] );
+   check( "through run - lock, unlock, words and entropy", [ /^UK2:[0-9a-f]{32}:[0-9a-f]+:[0-9a-f]{64}$/.test( locked_by_run ),
+    await new uk( { } ).run( "unlock " + test_entropy + " " + locked_by_run ), await new uk( { } ).run( "words " + test_entropy ),
+    await new uk( { } ).run( "entropy " + test_words ) ], [ true, JSON.stringify( { contacts: { } } ), test_words, test_entropy ] );
    check( "- anything else said", await new uk( { } ).run( "keys" ).catch( function( e ) { return e.message; } ), "Use one of - " + uk.about.example );
 
    console.log( "" );

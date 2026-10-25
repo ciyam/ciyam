@@ -61,7 +61,7 @@ const c_palette_commands = [
    { command: "loaded scripts", description: "the JavaScripts loaded in this page now, with what each says of itself" },
    { command: "delete javascript", description: "delete your own JavaScript on the server" },
    { command: "review user-keys", description: "your own keys on the server, as saved - encrypted" },
-   { command: "retain user-keys <data>", description: "save your own keys on the server - only as locked first (UK1:...), never in the clear" },
+   { command: "retain user-keys <data>", description: "save your own keys on the server - only as locked first (UK2:...), never in the clear" },
    { command: "delete user-keys", description: "delete your own keys on the server" },
    { command: "view logs", description: "the server's log files (admin)", admin: true },
    { command: "view log <name>", description: "one whole log - script, server or update (admin)", admin: true },

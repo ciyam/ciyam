@@ -106,10 +106,10 @@ const c_console_routes =
    "webcmdlists|delete": { method: "DELETE", name: false, options: false },
 
    // NOTE: Ian, 2026-10-22 - this account's own keys, encrypted before they are sent: no name, as only the owner reaches
-   // them. "retain user-keys <data>" sends the rest of the line as the payload - only keys already locked ("UK1:", as
+   // them. "retain user-keys <data>" sends the rest of the line as the payload - only keys already locked ("UK2:", as
    // "ciyam_user_keys.js" locks them), so nothing typed goes to the node in the clear (found by review, 2026-10-23).
    "user-keys|review": { method: "GET", name: false, options: false },
-   "user-keys|retain": { method: "PUT", name: false, options: false, payload: true, payload_prefix: "UK1:" },
+   "user-keys|retain": { method: "PUT", name: false, options: false, payload: true, payload_prefix: "UK2:" },
    "user-keys|delete": { method: "DELETE", name: false, options: false },
 
    "storage-modules|review": { method: "GET", name: "optional", options: false },
