@@ -161,12 +161,12 @@ check( "nothing, or anything else, is none", [ ap.parse_devices( "", "x" ), ap.p
 // --------------------------------------------------------------------
 heading( "your keys" );
 
-const locked = "UK2:000102030405060708090a0b0c0d0e0f:9a9e:" + "ab".repeat( 32 );
+const locked = "UK3:100000:000102030405060708090a0b0c0d0e0f:9a9e:" + "ab".repeat( 32 );
 
 check( "the card's state - from this browser and the node", [ ap.keys_state( false, "[none]" ), ap.keys_state( true, "[none]\n" ),
- ap.keys_state( false, locked ), ap.keys_state( true, locked + "\n" ) ], [ "none", "unsaved", "elsewhere", "here" ] );
+ ap.keys_state( false, locked ), ap.keys_state( true, locked + "\n" ) ], [ "none", "lost", "elsewhere", "here" ] );
 check( "- an error, or not locked keys, unreadable", [ ap.keys_state( true, "Error: Unknown request." ), ap.keys_state( false, "" ),
- ap.keys_state( false, "UK1:1000:" + locked.substring( 4 ) ), ap.keys_state( false, locked.replace( ":9a9e:", ":9a9:" ) ) ],
+ ap.keys_state( false, "UK2:" + locked.substring( 11 ) ), ap.keys_state( false, locked.replace( ":9a9e:", ":9a9:" ) ) ],
  [ "unreadable", "unreadable", "unreadable", "unreadable" ] );
 
 var draws = [ 0.99, 0, 0.5 ];

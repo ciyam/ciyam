@@ -42,8 +42,9 @@ const c_signin_storage_device = "cws.device";
 const c_signin_storage_access = "cws.access";
 const c_signin_storage_hashed_prefix = "cws.hashed_";
 
-// NOTE: An account's twelve words for its keys, kept on this browser ("account_keys.js", 2026-10-25) - forgotten with it.
-const c_signin_storage_keys_prefix = "cws.user_entropy_";
+// NOTE: What opens an account's keys, kept on this browser ("account_keys.js", 2026-10-25) - a hash of its twelve words, not
+// the words (Ian). Forgotten with the account.
+const c_signin_storage_keys_prefix = "cws.user_keys_";
 
 const c_signin_saved_mark = "  ·  saved password";
 

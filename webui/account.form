@@ -198,9 +198,9 @@ http://www.opensource.org/licenses/mit-license.php.
             <div class="account-keys-part" id="keys_loading" role="status">Looking for your keys…</div>
 
             <div class="account-keys-part" id="keys_none" hidden>
-               <p class="account-lede">Your keys come from twelve words of your own, which you write down. The node never sees
-                them - it keeps only what they lock.</p>
+               <p class="account-lede" id="keys_none_lede"></p>
                <div class="account-actions-row">
+                  <button type="button" class="chat-btn" id="keys_restore">I have my twelve words</button>
                   <button type="button" class="chat-btn chat-btn--primary" id="keys_start">Set up your keys</button>
                </div>
             </div>
@@ -253,6 +253,7 @@ http://www.opensource.org/licenses/mit-license.php.
                 spellcheck="false"></textarea>
                <div class="account-actions-row">
                   <button type="button" class="chat-btn" id="keys_enter_new">Start again with new words</button>
+                  <button type="button" class="chat-btn" id="keys_enter_cancel" hidden>Cancel</button>
                   <button type="button" class="chat-btn chat-btn--primary" id="keys_enter_go">Use my keys here</button>
                </div>
             </div>
@@ -286,9 +287,24 @@ http://www.opensource.org/licenses/mit-license.php.
                   </div>
                   <div class="chat-error-text" id="keys_add_error" role="alert"></div>
                </div>
+               <!-- NOTE: Another device (Ian, 2026-10-25: the access key "passed via QR code for simplicity rather than needing to
+                    provide the twelve words for every device") - "keys_show_device( )". -->
+               <div class="account-keys-device" id="keys_device_part" hidden>
+                  <h3 class="chat-label">Add another device</h3>
+                  <p class="account-lede">Scan this with the other device's camera - it opens this page there, and once you sign
+                   in as yourself your keys are on it too.</p>
+                  <div class="account-keys-qr" id="keys_device_qr" aria-hidden="true"></div>
+                  <label class="chat-label" for="keys_device_link">Or open this address there</label>
+                  <input type="text" class="chat-field account-keys-key" id="keys_device_link" readonly>
+                  <div class="recover-warning"><b>Only for your own devices.</b> Anyone who scans this or has the address can read
+                   your encrypted messages. Hide it once you're done.</div>
+                  <div class="account-actions-row">
+                     <button type="button" class="chat-btn" id="keys_device_hide">Hide</button>
+                  </div>
+               </div>
                <div class="account-actions-row">
                   <button type="button" class="chat-btn" id="keys_forget">Forget them on this browser</button>
-                  <button type="button" class="chat-btn chat-btn--primary" id="keys_save_again" hidden>Save them on the node</button>
+                  <button type="button" class="chat-btn" id="keys_device">Add another device</button>
                </div>
             </div>
 

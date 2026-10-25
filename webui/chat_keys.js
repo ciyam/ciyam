@@ -5,8 +5,8 @@
 
 // NOTE: Encrypted direct messages in the chat (2026-10-25), as the console has them (Ian, 2026-10-24: in a direct message whose
 // other person's public key it has, "irc.cin" encrypts every message, and decrypts theirs). The keys are those set up on My
-// account ("account_keys.js"): the twelve words' entropy this browser keeps, and the others' public keys the node keeps locked
-// under them. Read once a sign in. In a direct message the server named ("dm_other_person( )") with a key for the other person,
+// account ("account_keys.js"): kept on the node with others' public keys, locked under the access key this browser keeps - a
+// hash of the twelve words, never the words. Read once a sign in. In a direct message the server named ("dm_other_person( )") with a key for the other person,
 // a message is sealed ("ciyam_secure_message.js") under the secret between the two - the same from either side - before it is
 // sent, and theirs opened as they are drawn. Elsewhere nothing changes.
 const c_chat_keys_scripts = [ "ed25519.min.js", "ciyam_chacha20.js", "ciyam_ed25519.js", "ciyam_secure_message.js", "ciyam_user_keys.js" ];
@@ -67,7 +67,7 @@ function chat_keys_kept( )
    }
 }
 
-// NOTE: After a sign in. Keys kept here but not the ones the node's were locked with are as none - My account asks for the words.
+// NOTE: After a sign in. An access key that does not open the node's keys - or none there - is as none; My account says why.
 async function chat_keys_read( )
 {
    var read = ++g_chat_keys_read;
@@ -77,10 +77,10 @@ async function chat_keys_read( )
    g_chat_opened = { };
    g_chat_secrets = { };
 
-   var entropy = chat_keys_kept( );
+   var access = chat_keys_kept( );
    var found = false;
 
-   if( ( entropy !== "" ) && await chat_keys_load_scripts( ) )
+   if( ( access !== "" ) && await chat_keys_load_scripts( ) )
    {
       var response = "";
 
@@ -92,9 +92,9 @@ async function chat_keys_read( )
 
       try
       {
-         var contacts = ( response === "[none]" ) ? { } : ( await ciyam_module_named( "user_keys" ).unlock( entropy, response ) ).contacts;
+         var opened = await ciyam_module_named( "user_keys" ).unlock( access, response );
 
-         found = { entropy: entropy, contacts: contacts };
+         found = { primary: opened.primary, contacts: opened.contacts };
       }
       catch( e )
       {
@@ -134,7 +134,7 @@ function chat_secret_with( other )
       return "";
 
    if( !g_chat_secrets.hasOwnProperty( other ) )
-      g_chat_secrets[ other ] = ciyam_module_named( "secure_message" ).shared_secret( g_chat_keys.entropy, g_chat_keys.contacts[ other ] );
+      g_chat_secrets[ other ] = ciyam_module_named( "secure_message" ).shared_secret_of_seed( g_chat_keys.primary, g_chat_keys.contacts[ other ] );
 
    return g_chat_secrets[ other ];
 }

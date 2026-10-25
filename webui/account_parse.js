@@ -252,18 +252,18 @@ function parse_devices( text, current )
    return devices.filter( function( d ) { return d.current; } ).concat( devices.filter( function( d ) { return !d.current; } ) );
 }
 
-// NOTE: Your keys (Ian, 2026-10-25: under the twelve words) - which of the card's states, from whether this browser keeps
-// the words ("here") and what "GET /cws/user-keys" answered: "none" - nothing anywhere, to set up; "unsaved" - kept here but
-// not on the node (deleted there), to save again; "elsewhere" - on the node but not here, the words to be typed; "here"; or
-// "unreadable" - an error, or something the node keeps that is not locked keys.
-const c_keys_locked_pattern = /^UK2:[0-9a-f]{32}:([0-9a-f]{2})+:[0-9a-f]{64}$/;
+// NOTE: Your keys (Ian, 2026-10-25: locked under a hash of the twelve words, which each browser keeps) - which of the card's
+// states, from whether this browser keeps that ("here") and what "GET /cws/user-keys" answered: "none" - nothing anywhere, to
+// set up; "lost" - kept here but gone from the node, where the keys were (what a browser keeps cannot make them again - the
+// words can); "elsewhere" - on the node but not here; "here"; or "unreadable" - an error, or something that is not locked keys.
+const c_keys_locked_pattern = /^UK3:[1-9][0-9]{0,8}:[0-9a-f]{32}:([0-9a-f]{2})+:[0-9a-f]{64}$/;
 
 function keys_state( here, node_text )
 {
    var text = String( node_text || "" ).trim( );
 
    if( text === "[none]" )
-      return here ? "unsaved" : "none";
+      return here ? "lost" : "none";
 
    if( !c_keys_locked_pattern.test( text ) )
       return "unreadable";

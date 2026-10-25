@@ -73,6 +73,10 @@ var g_request_quiet = false;
 
 function account_main( )
 {
+   // NOTE: Another browser's QR code for your keys ("account_keys.js") - out of the address before anything reads it.
+   if( typeof keys_take_link === "function" )
+      keys_take_link( );
+
    // NOTE: The eye in each new password's field, to see it - one suggested above all (2026-10-25).
    attach_reveals( document );
 
@@ -142,7 +146,15 @@ function account_main( )
       announce( );
    }
 
-   window.addEventListener( "hashchange", route );
+   window.addEventListener( "hashchange", function( )
+   {
+      // NOTE: A QR code's address opened in a tab already on this page changes only the part after "#" - taken up the same,
+      // then My account shown as for any other change.
+      if( typeof keys_take_link === "function" )
+         keys_take_link( );
+
+      route( );
+   } );
 
    // NOTE: Switched to from another app in this tab, or reloaded - the session kept for the tab, if the node still
    // knows it (2026-10-09). Nothing is shown until it is known, so the sign in does not flash past.

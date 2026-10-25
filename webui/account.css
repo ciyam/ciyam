@@ -988,6 +988,30 @@ button.account-back,
    border-top: 1px solid var(--color-chat-border);
 }
 
+.account-keys-device
+{
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+   padding-top: 14px;
+   border-top: 1px solid var(--color-chat-border);
+}
+
+.account-keys-device[hidden]
+{
+   display: none;
+}
+
+.account-keys-device h3
+{
+   margin: 0;
+}
+
+.account-keys-device .account-keys-qr
+{
+   align-self: flex-start;
+}
+
 .account-keys-people[hidden]
 {
    display: none;

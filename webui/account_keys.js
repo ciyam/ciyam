@@ -3,17 +3,18 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-// NOTE: Your keys, on My account (Ian, 2026-10-23, and 2026-10-25: "just use the twelve words to encrypt them"). An account's
-// keys come from twelve words of its own - made from popped bubbles and the browser's randomness, as a node's are, written
-// down and some checked back. The words never go to the node: what it keeps ("user-keys") is what they cannot make again -
-// others' public keys, scanned face to face - locked under them ("ciyam_user_keys.js"). This browser keeps the words, so
-// they are typed once a browser: kept while the account is remembered here, for the tab only when it is not, and gone with
-// "Reset this browser" or the account forgotten at a sign in.
+// NOTE: Your keys, on My account (Ian, 2026-10-23 and 2026-10-25). An account's keys come from twelve words of its own - made
+// from popped bubbles and the browser's randomness, as a node's are, written down and some checked back. The words go nowhere:
+// from them come the keys, kept on the node ("user-keys") with others' public keys, locked under an access key - many rounds of
+// a hash of the words - which is what each browser keeps ("ciyam_user_keys.js"; Ian: a hash "won't help anyone trying to crack
+// the actual twelve words"). Another browser gets the access key from this one by a QR code, or makes it from the words typed.
+// It is kept while the account is remembered here, for the tab only when it is not, and goes with "Reset this browser" or the
+// account forgotten at a sign in.
 //
 // What the card needs is read in the first time it is shown - "bip39.min.js" only when words are made or typed
 // ("recover_load_bip39( )" in "signin.js"), being large.
-const c_keys_scripts = [ "ed25519.min.js", "ciyam_chacha20.js", "ciyam_ed25519.js", "ciyam_secure_message.js", "ciyam_user_keys.js",
- "home_parse.js", "bubbles.js", "qrcode.min.js" ];
+const c_keys_scripts = [ "ed25519.min.js", "ciyam_harden.js", "ciyam_chacha20.js", "ciyam_ed25519.js", "ciyam_secure_message.js",
+ "ciyam_user_keys.js", "home_parse.js", "bubbles.js", "qrcode.min.js" ];
 
 const c_keys_parts = [ "keys_loading", "keys_none", "keys_random", "keys_words", "keys_check", "keys_enter", "keys_here" ];
 
@@ -21,15 +22,28 @@ const c_keys_pops = 12;
 const c_keys_most_bubbles = 16;
 const c_keys_entropy_length = 32;
 const c_keys_qr_size = 120;
+const c_keys_device_qr_size = 168;
+
+// NOTE: An access key brought by another browser's QR code ("#keys=" - the part after "#" never goes to the server), held for the
+// tab until this account's keys are known.
+const c_keys_link_prefix = "#keys=";
+const c_keys_pending_name = "cws.pending_keys";
+
+// NOTE: What browsers kept before 2026-10-25's change - the entropy itself. Removed wherever it is found.
+const c_keys_old_prefix = "cws.user_entropy_";
 
 var g_keys = null;
 var g_keys_bubbles = null;
 var g_keys_scripts = null;
 var g_keys_installed = false;
 
+// NOTE: Each showing of the card counted - My account can be shown again before the last has finished, and only the latest acts.
+var g_keys_render = 0;
+
 function fresh_keys( )
 {
-   return { samples: [ ], pops: 0, entropy: "", words: [ ], checking: [ ], right: 0, node: "", contacts: { }, own: "", here: "" };
+   return { samples: [ ], pops: 0, entropy: "", words: [ ], checking: [ ], right: 0, node: "", access: "", rounds: 0,
+    primary: "", secondary: "", contacts: { }, own: "", entering: "" };
 }
 
 function keys_load_script( src )
@@ -82,6 +96,9 @@ function keys_kept_here( )
 {
    try
    {
+      localStorage.removeItem( c_keys_old_prefix + ciyam.access );
+      sessionStorage.removeItem( c_keys_old_prefix + ciyam.access );
+
       return localStorage.getItem( keys_storage_name( ) ) || sessionStorage.getItem( keys_storage_name( ) ) || "";
    }
    catch( e )
@@ -91,13 +108,13 @@ function keys_kept_here( )
 }
 
 // NOTE: For as long as the account is remembered on this browser - otherwise for the tab only.
-function keys_keep_here( entropy )
+function keys_keep_here( access )
 {
    try
    {
       var remembered = ( parse_access_list( localStorage.getItem( c_storage_access ) ).indexOf( ciyam.access ) >= 0 );
 
-      ( remembered ? localStorage : sessionStorage ).setItem( keys_storage_name( ), entropy );
+      ( remembered ? localStorage : sessionStorage ).setItem( keys_storage_name( ), access );
       ( remembered ? sessionStorage : localStorage ).removeItem( keys_storage_name( ) );
    }
    catch( e )
@@ -117,12 +134,81 @@ function keys_forget_here( )
    }
 }
 
+// NOTE: From "account_main( )", before anything else - an access key in the address taken out of it at once, so it is not left
+// in the address bar, and held for the tab until the keys are shown.
+function keys_take_link( )
+{
+   if( location.hash.indexOf( c_keys_link_prefix ) !== 0 )
+      return;
+
+   var access = location.hash.substring( c_keys_link_prefix.length ).toLowerCase( );
+
+   try
+   {
+      if( /^[0-9a-f]{64}$/.test( access ) )
+         sessionStorage.setItem( c_keys_pending_name, access );
+   }
+   catch( e )
+   {
+   }
+
+   history.replaceState( null, "", location.pathname + location.search + "#mine" );
+}
+
+function keys_pending( )
+{
+   try
+   {
+      var access = sessionStorage.getItem( c_keys_pending_name ) || "";
+
+      sessionStorage.removeItem( c_keys_pending_name );
+
+      return access;
+   }
+   catch( e )
+   {
+      return "";
+   }
+}
+
 // ---- The node's copy
 
 function keys_url( extra )
 {
    return ciyam.get_cws_url( ) + "/user-keys?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text" + ( extra || "" )
     + "&session=" + ciyam.sessid;
+}
+
+// NOTE: Locked under the access key and sent - false, with the error said, if the node did not take them.
+async function keys_send( access, rounds, contents, error_id, what )
+{
+   var response = "";
+   var locked = "";
+
+   try
+   {
+      locked = await keys_module( "user_keys" ).lock( access, contents, { rounds: rounds } );
+
+      response = await request( function( done )
+      {
+         return ciyam.fetch( keys_url( "&payload=" + encodeURIComponent( locked ) ), "PUT", done );
+      } );
+   }
+   catch( e )
+   {
+      response = "Error: " + ( e && e.message ? e.message : "they could not be locked." );
+   }
+
+   if( problem_text( response ) !== "" )
+   {
+      set_error( error_id, what + " could not be saved: " + problem_text( response ) );
+
+      return false;
+   }
+
+   g_keys.node = locked;
+
+   return true;
 }
 
 // ---- Showing it
@@ -149,7 +235,7 @@ function keys_busy( text )
    document.getElementById( "keys_busy_text" ).textContent = text || "";
 }
 
-// NOTE: Words gone from the page - after saving, cancelling or signing out.
+// NOTE: Words and keys gone from the page - after saving, cancelling or signing out.
 function keys_clear( )
 {
    if( g_keys_bubbles !== null )
@@ -157,11 +243,16 @@ function keys_clear( )
 
    g_keys = fresh_keys( );
 
-   [ "keys_word_list", "keys_check_rows", "keys_qr", "keys_contact_list" ].forEach( function( id ) { document.getElementById( id ).replaceChildren( ); } );
+   [ "keys_word_list", "keys_check_rows", "keys_qr", "keys_contact_list", "keys_device_qr" ].forEach( function( id )
+   {
+      document.getElementById( id ).replaceChildren( );
+   } );
 
-   [ "keys_enter_words", "keys_add_name", "keys_add_key" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );
+   [ "keys_enter_words", "keys_add_name", "keys_add_key", "keys_device_link" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );
+
    document.getElementById( "keys_written" ).checked = false;
    document.getElementById( "keys_public" ).textContent = "";
+   document.getElementById( "keys_device_part" ).hidden = true;
 
    keys_busy( "" );
    set_error( "keys_error", "" );
@@ -175,10 +266,14 @@ async function render_keys( )
    keys_clear( );
    keys_show( "keys_loading" );
 
+   var render = ++g_keys_render;
    var asked_for = ciyam.access;
 
    if( !await keys_load_scripts( ) )
    {
+      if( render !== g_keys_render )
+         return;
+
       keys_show( null );
       set_error( "keys_error", "What your keys need could not be read - reload the page to try again." );
 
@@ -187,12 +282,13 @@ async function render_keys( )
 
    var response = await request( function( done ) { return ciyam.fetch( keys_url( "" ), "GET", done ); } );
 
-   // NOTE: Signed out, or another account in, while it was asked - not theirs to show.
-   if( ( ciyam.access === "" ) || ( ciyam.access !== asked_for ) )
+   // NOTE: Signed out, another account in, or shown again since, while it was asked - not this one's to show.
+   if( ( ciyam.access === "" ) || ( ciyam.access !== asked_for ) || ( render !== g_keys_render ) )
       return;
 
+   var pending = keys_pending( );
    var here = keys_kept_here( );
-   var state = keys_state( here !== "", response );
+   var state = keys_state( ( here !== "" ) || ( pending !== "" ), response );
 
    g_keys.node = String( response ).trim( );
 
@@ -201,47 +297,76 @@ async function render_keys( )
       keys_show( null );
       set_error( "keys_error", "Your keys could not be read: " + ( problem_text( response ) || "the node keeps something that is not locked keys." ) );
    }
-   else if( state === "none" )
+   else if( ( state === "none" ) || ( state === "lost" ) )
+   {
+      keys_forget_here( );
+
+      document.getElementById( "keys_none_lede" ).textContent = ( state === "lost" )
+       ? "Your keys are no longer on the node, and this browser can't make them again by itself. Type your twelve words to put"
+        + " them back, or set up new ones."
+       : "Your keys come from twelve words of your own, which you write down. The node never sees them - it keeps your keys"
+        + " locked so that only your browsers can open them.";
+
       keys_show( "keys_none" );
+   }
+   else if( pending !== "" )
+      await keys_show_here( pending, "Your keys are now on this browser too.", true );
    else if( state === "elsewhere" )
-      keys_show_enter( false );
+      keys_show_enter( "elsewhere" );
    else
-      await keys_show_here( here, state === "unsaved" );
+      await keys_show_here( here, "Your keys are on this browser.", false );
 }
 
-// NOTE: The words asked for - on a browser new to the keys, or kept here but not the ones the node's were locked with (set up
-// again from another browser, say).
-function keys_show_enter( other_words )
+// NOTE: The words asked for - "elsewhere": on a browser new to the keys; "other": what this browser kept does not open the
+// node's (set up again from another browser, say); "restore": nothing on the node, the keys made again from the words.
+function keys_show_enter( mode )
 {
-   document.getElementById( "keys_enter_lede" ).textContent = other_words
-    ? "The keys on the node were locked with other words than this browser had. Type the twelve words they were set up with."
-    : "Your keys are set up. To use them on this browser, type your twelve words.";
+   g_keys.entering = mode;
 
+   document.getElementById( "keys_enter_lede" ).textContent = {
+      elsewhere: "Your keys are set up. To use them on this browser, type your twelve words - or open the QR code from"
+       + " \"Add another device\" on a browser that has them.",
+      other: "The keys on the node were locked by another browser since. Type the twelve words they were set up with.",
+      restore: "Type your twelve words, and your keys are made again from them." }[ mode ];
+
+   document.getElementById( "keys_enter_new" ).hidden = ( mode === "restore" );
+   document.getElementById( "keys_enter_cancel" ).hidden = ( mode !== "restore" );
    document.getElementById( "keys_enter_words" ).value = "";
 
    keys_show( "keys_enter" );
 }
 
-async function keys_show_here( entropy, unsaved )
+// NOTE: The keys opened with "access" and shown - or, if it does not open them, the words asked for. "from_link" - brought by
+// another browser's QR code, and kept only once it has opened them.
+async function keys_show_here( access, lede, from_link )
 {
-   var contacts = { };
+   var opened = null;
 
-   if( !unsaved )
+   try
    {
-      try
+      opened = await keys_module( "user_keys" ).unlock( access, g_keys.node );
+   }
+   catch( e )
+   {
+      if( from_link )
       {
-         contacts = ( await keys_module( "user_keys" ).unlock( entropy, g_keys.node ) ).contacts;
+         keys_show_enter( "elsewhere" );
+         set_error( "keys_error", "That QR code is not for this account's keys - is it from another account?" );
       }
-      catch( e )
+      else
       {
          keys_forget_here( );
-         keys_show_enter( true );
-
-         return;
+         keys_show_enter( "other" );
       }
+
+      return;
    }
 
-   var key = keys_module( "secure_message" ).public_key( entropy );
+   if( from_link )
+      keys_keep_here( access );
+
+   var sm = keys_module( "secure_message" );
+   var key = sm.public_key_of_seed( opened.primary );
    var box = document.getElementById( "keys_qr" );
 
    document.getElementById( "keys_public" ).textContent = key;
@@ -254,18 +379,14 @@ async function keys_show_here( entropy, unsaved )
 
    box.removeAttribute( "title" );
 
-   g_keys.here = entropy;
+   g_keys.access = access;
+   g_keys.rounds = opened.rounds;
+   g_keys.primary = opened.primary;
+   g_keys.secondary = opened.secondary;
    g_keys.own = key;
-   g_keys.contacts = contacts;
+   g_keys.contacts = opened.contacts;
 
-   document.getElementById( "keys_here_lede" ).textContent = unsaved
-    ? "Your keys are on this browser, but not on the node - save them there so your other browsers can use them."
-    : "Your keys are on this browser.";
-
-   document.getElementById( "keys_save_again" ).hidden = !unsaved;
-
-   // NOTE: Adding someone waits until the node has your keys - what is added is saved with them.
-   document.querySelector( ".account-keys-people" ).hidden = unsaved;
+   document.getElementById( "keys_here_lede" ).textContent = lede;
 
    keys_draw_contacts( );
 
@@ -297,7 +418,12 @@ function keys_count_pops( )
 
 function keys_start( )
 {
+   var node = g_keys.node;
+
    keys_clear( );
+
+   g_keys.node = node;
+
    keys_count_pops( );
    keys_show( "keys_random" );
 
@@ -428,42 +554,28 @@ function keys_pick( row, note, button, is_right, index )
    }
 }
 
-// NOTE: Locked under the words and sent; kept here once the node has them. "entropy" - kept here already (saving again).
-async function keys_save( entropy )
+// NOTE: The keys made from "entropy", locked under its access key and sent - kept here once the node has them. No one else's
+// public keys yet: new keys, or made again when the node had lost them.
+async function keys_make_and_save( entropy, lede )
 {
-   var words_entropy = entropy || g_keys.entropy;
-
    set_error( "keys_error", "" );
+   keys_busy( "Securing your keys…" );
+
+   var uk = keys_module( "user_keys" );
+   var rounds = uk.c_default_rounds;
+   var access = await uk.access_key( entropy, rounds );
+   var seeds = uk.seeds_of( entropy );
+
    keys_busy( "Saving your keys…" );
 
-   var response = "";
-
-   try
-   {
-      var locked = await keys_module( "user_keys" ).lock( words_entropy, { contacts: { } } );
-
-      response = await request( function( done )
-      {
-         return ciyam.fetch( keys_url( "&payload=" + encodeURIComponent( locked ) ), "PUT", done );
-      } );
-
-      g_keys.node = locked;
-   }
-   catch( e )
-   {
-      response = "Error: " + ( e && e.message ? e.message : "they could not be locked." );
-   }
+   var saved = await keys_send( access, rounds, { primary: seeds.primary, secondary: seeds.secondary, contacts: { } }, "keys_error", "Your keys" );
 
    keys_busy( "" );
 
-   if( problem_text( response ) !== "" )
-   {
-      set_error( "keys_error", "Your keys could not be saved: " + problem_text( response ) );
-
+   if( !saved )
       return;
-   }
 
-   keys_keep_here( words_entropy );
+   keys_keep_here( access );
 
    var node = g_keys.node;
 
@@ -471,7 +583,37 @@ async function keys_save( entropy )
 
    g_keys.node = node;
 
-   await keys_show_here( words_entropy, false );
+   await keys_show_here( access, lede, false );
+}
+
+// ---- Adding another device
+
+// NOTE: The access key as a QR code that opens this page on another device ("#keys=", "keys_take_link( )") - shown only when
+// asked, as anyone who scans it can open the keys.
+function keys_show_device( )
+{
+   var link = location.origin + location.pathname + c_keys_link_prefix + g_keys.access;
+   var box = document.getElementById( "keys_device_qr" );
+
+   box.replaceChildren( );
+
+   new QRCode( box, { text: link, width: c_keys_device_qr_size, height: c_keys_device_qr_size, colorDark: "#1b1f2a", colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M } );
+
+   box.removeAttribute( "title" );
+   box.querySelectorAll( "[title]" ).forEach( function( node ) { node.removeAttribute( "title" ); } );
+
+   document.getElementById( "keys_device_link" ).value = link;
+   document.getElementById( "keys_device_part" ).hidden = false;
+   document.getElementById( "keys_device" ).hidden = true;
+}
+
+function keys_hide_device( )
+{
+   document.getElementById( "keys_device_qr" ).replaceChildren( );
+   document.getElementById( "keys_device_link" ).value = "";
+   document.getElementById( "keys_device_part" ).hidden = true;
+   document.getElementById( "keys_device" ).hidden = false;
 }
 
 // ---- Others' public keys
@@ -511,39 +653,20 @@ function keys_draw_contacts( )
    document.getElementById( "keys_contacts" ).hidden = ( rows.length > 0 );
 }
 
-// NOTE: Locked again under the words with the change, and sent - the card changes once the node has them.
+// NOTE: Locked again with the change, and sent - the card changes once the node has them.
 async function keys_store_contacts( contacts, busy_text )
 {
    set_error( "keys_add_error", "" );
    keys_busy( busy_text );
 
-   var response = "";
-   var locked = "";
-
-   try
-   {
-      locked = await keys_module( "user_keys" ).lock( g_keys.here, { contacts: contacts } );
-
-      response = await request( function( done )
-      {
-         return ciyam.fetch( keys_url( "&payload=" + encodeURIComponent( locked ) ), "PUT", done );
-      } );
-   }
-   catch( e )
-   {
-      response = "Error: " + ( e && e.message ? e.message : "they could not be locked." );
-   }
+   var saved = await keys_send( g_keys.access, g_keys.rounds, { primary: g_keys.primary, secondary: g_keys.secondary, contacts: contacts },
+    "keys_add_error", "That" );
 
    keys_busy( "" );
 
-   if( problem_text( response ) !== "" )
-   {
-      set_error( "keys_add_error", "That could not be saved: " + problem_text( response ) );
-
+   if( !saved )
       return false;
-   }
 
-   g_keys.node = locked;
    g_keys.contacts = contacts;
 
    keys_draw_contacts( );
@@ -587,7 +710,7 @@ async function keys_remove_contact( name )
    await keys_store_contacts( contacts, "Removing " + name + "'s key…" );
 }
 
-// ---- Using them on this browser
+// ---- The words typed
 
 async function keys_enter_go( )
 {
@@ -600,11 +723,12 @@ async function keys_enter_go( )
       return;
    }
 
+   var uk = keys_module( "user_keys" );
    var entropy = "";
 
    try
    {
-      entropy = keys_module( "user_keys" ).entropy_of_words( document.getElementById( "keys_enter_words" ).value );
+      entropy = uk.entropy_of_words( document.getElementById( "keys_enter_words" ).value );
    }
    catch( e )
    {
@@ -613,9 +737,25 @@ async function keys_enter_go( )
       return;
    }
 
+   document.getElementById( "keys_enter_words" ).value = "";
+
+   if( g_keys.entering === "restore" )
+   {
+      await keys_make_and_save( entropy, "Your keys are made again from your words, and on this browser." );
+
+      return;
+   }
+
+   // NOTE: Made with the rounds the node's were locked with, so it is the access key they were locked under.
+   keys_busy( "Securing your keys…" );
+
+   var access = await uk.access_key( entropy, uk.rounds_of( g_keys.node ) );
+
+   keys_busy( "" );
+
    try
    {
-      await keys_module( "user_keys" ).unlock( entropy, g_keys.node );
+      await uk.unlock( access, g_keys.node );
    }
    catch( e )
    {
@@ -624,11 +764,9 @@ async function keys_enter_go( )
       return;
    }
 
-   keys_keep_here( entropy );
+   keys_keep_here( access );
 
-   document.getElementById( "keys_enter_words" ).value = "";
-
-   await keys_show_here( entropy, false );
+   await keys_show_here( access, "Your keys are on this browser.", false );
 }
 
 function keys_start_again( )
@@ -642,7 +780,7 @@ function keys_start_again( )
 
 function keys_forget( )
 {
-   if( !confirm( "Forget your keys on this browser? To use them here again you'll need your twelve words." ) )
+   if( !confirm( "Forget your keys on this browser? To use them here again you'll need your twelve words, or another browser's QR code." ) )
       return;
 
    keys_forget_here( );
@@ -658,16 +796,22 @@ function install_keys( )
    g_keys_installed = true;
 
    document.getElementById( "keys_start" ).addEventListener( "click", keys_start );
+   document.getElementById( "keys_restore" ).addEventListener( "click", function( ) { keys_show_enter( "restore" ); } );
    document.getElementById( "keys_random_cancel" ).addEventListener( "click", keys_cancel );
    document.getElementById( "keys_random_next" ).addEventListener( "click", keys_make_words );
    document.getElementById( "keys_words_cancel" ).addEventListener( "click", keys_cancel );
    document.getElementById( "keys_words_next" ).addEventListener( "click", keys_draw_check );
    document.getElementById( "keys_check_back" ).addEventListener( "click", function( ) { keys_show( "keys_words" ); } );
-   document.getElementById( "keys_save" ).addEventListener( "click", function( ) { keys_save( "" ); } );
+   document.getElementById( "keys_save" ).addEventListener( "click", function( )
+   {
+      keys_make_and_save( g_keys.entropy, "Your keys are on this browser." );
+   } );
    document.getElementById( "keys_enter_go" ).addEventListener( "click", keys_enter_go );
    document.getElementById( "keys_enter_new" ).addEventListener( "click", keys_start_again );
+   document.getElementById( "keys_enter_cancel" ).addEventListener( "click", keys_cancel );
    document.getElementById( "keys_forget" ).addEventListener( "click", keys_forget );
-   document.getElementById( "keys_save_again" ).addEventListener( "click", function( ) { keys_save( keys_kept_here( ) ); } );
+   document.getElementById( "keys_device" ).addEventListener( "click", keys_show_device );
+   document.getElementById( "keys_device_hide" ).addEventListener( "click", keys_hide_device );
    document.getElementById( "keys_add" ).addEventListener( "click", keys_add_contact );
 
    document.getElementById( "keys_written" ).addEventListener( "change", function( event )
