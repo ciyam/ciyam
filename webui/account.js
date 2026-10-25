@@ -167,14 +167,19 @@ function unsent_work( )
    if( ciyam.sessid === "" )
       return "";
 
-   var filled = [ "mine_current", "mine_password", "mine_confirm" ].some( function( id )
+   // NOTE: Not the current password alone - a password manager fills that in by itself, and nothing is lost with it (Damon,
+   // 2026-10-25: warned on leaving after setting up keys).
+   var filled = [ "mine_password", "mine_confirm" ].some( function( id )
    {
       var field = document.getElementById( id );
 
       return ( field !== null ) && ( field.value !== "" );
    } );
 
-   return filled ? "A form here is part filled in." : "";
+   if( filled )
+      return "A form here is part filled in.";
+
+   return ( ( typeof keys_unsent === "function" ) && keys_unsent( ) ) ? "Your new keys aren't saved yet - their twelve words would be lost." : "";
 }
 
 // ====================================================================

@@ -132,6 +132,17 @@ function keys_show( part )
    c_keys_parts.forEach( function( id ) { document.getElementById( id ).hidden = ( id !== part ); } );
 }
 
+// NOTE: Words shown, and perhaps written down, but not yet saved - for the switcher's warning on leaving ("unsent_work( )").
+function keys_unsent( )
+{
+   return [ "keys_words", "keys_check" ].some( function( id )
+   {
+      var shown = document.getElementById( id );
+
+      return ( shown !== null ) && !shown.hidden;
+   } );
+}
+
 function keys_busy( text )
 {
    document.getElementById( "keys_busy" ).hidden = !text;

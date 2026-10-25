@@ -99,7 +99,8 @@ function show_view( id )
    // NOTE: Leaving setting up by another way than its own views - its bubbles and its still-alive timer stop (found by review).
    if( id !== "setup_view" )
    {
-      setup_bubbles( ).stop( );
+      if( g_setup_bubbles !== null )
+         g_setup_bubbles.stop( );
       setup_alive_stop( );
    }
 }
@@ -343,7 +344,8 @@ function setup_open( )
 {
    setup_alive_stop( );
 
-   setup_bubbles( ).clear( );
+   if( g_setup_bubbles !== null )
+      g_setup_bubbles.clear( );
 
    g_setup = setup_fresh( );
 
@@ -374,8 +376,8 @@ function setup_show( view )
 
    if( view === "setup_random" )
       setup_bubbles( ).start( );
-   else
-      setup_bubbles( ).stop( );
+   else if( g_setup_bubbles !== null )
+      g_setup_bubbles.stop( );
 
    // NOTE: Each step tells the node this tab is still here; done, or let go, it stops.
    if( ( view === "setup_done" ) || ( view === "setup_expired" ) || ( view === "setup_elsewhere" ) )
@@ -431,7 +433,8 @@ function setup_clear_fields( )
 
 // ---- The bubbles
 
-// NOTE: "bubbles.js" (2026-10-25), shared with setting up an account's keys - made once, the first time it is wanted.
+// NOTE: "bubbles.js" (2026-10-25), shared with setting up an account's keys - made once, the first time they are shown, so
+// nothing else on Home depends on it.
 function setup_bubbles( )
 {
    if( g_setup_bubbles === null )
@@ -872,9 +875,6 @@ function install_setup( )
 
       setup_show( "setup_random" );
    } );
-
-   // NOTE: Made now, so a tap that misses adds its moment from the start.
-   setup_bubbles( );
 
    document.getElementById( "setup_random_next" ).addEventListener( "click", function( ) { setup_show( "setup_password" ); } );
 
