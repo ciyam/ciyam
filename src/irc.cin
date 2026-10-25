@@ -226,6 +226,35 @@ EDIT_UNIX_UNIQUE=
 EDIT_UNIX_UNIQUE=
 #(system messages are not editable)
 @else
+MESSAGE_CONTENT=@substr:1:$EDIT_MSG_CONTENT
+CHECK_ENCRYPTED=@substr:1,2:$MESSAGE_CONTENT
+;
+@ifeq "$CHECK_ENCRYPTED" "$ENCRYPTED_PREFIX"
+;
+@ifdef $KEY_FILE_DATA
+;
+PREFIX=_
+@ifdef $DIRECT_PUB_SUFFIX
+PREFIX=_!
+@endif
+;
+@retain MESSAGE
+<irc_extra.cin %PREFIX%decrypt "$MESSAGE_CONTENT" "$KEY_FILE_DATA" $PKEY $SKEY
+;
+EDIT_MSG_CONTENT=$MESSAGE
+MESSAGE=
+;
+@else
+;
+@ifdef $DIRECT_PUB_SUFFIX
+EDIT_MSG_CONTENT=$LOCK_EMOJI ($CHECK_USER_NAME)
+@else
+EDIT_MSG_CONTENT=$LOCK_EMOJI (room key unknown)
+@endif
+@endif
+;
+@endif
+;
 EDIT_MSG_CONTENT=@substr:2:$EDIT_MSG_CONTENT
 #$EDIT_MSG_CONTENT
 #(type new content or just enter to cancel)
@@ -237,12 +266,29 @@ EDIT_MSG_CONTENT=@substr:2:$EDIT_MSG_CONTENT
 ;
 @ifdef $EDIT_UNIX_UNIQUE
 &:EDITED_MESSAGE=_
+;
 MLEN=@strlen:$EDITED_MESSAGE
 @ifeq "$MLEN" "1"
 EDIT_LINE_NUM=
 EDITED_MESSAGE=
 EDIT_UNIX_UNIQUE=
 @else
+; NOTE: If is able to encrypt the message then will now do so.
+@ifdef $KEY_FILE_DATA
+;
+PREFIX=
+@ifdef $DIRECT_PUB_SUFFIX
+PREFIX=!
+@endif
+;
+@retain MESSAGE
+<irc_extra.cin %PREFIX%encrypt "_$EDITED_MESSAGE" "$KEY_FILE_DATA" $PKEY $SKEY
+;
+EDITED_MESSAGE=@substr:1:$MESSAGE
+MESSAGE=
+;
+@endif
+;
 EDITED_MESSAGE=@substr:1:$EDITED_MESSAGE
 EDITED_MESSAGE=$EDIT_MSG_PREFIX$EDITED_MESSAGE
 ENCODED=@base64::$EDITED_MESSAGE
@@ -531,7 +577,7 @@ MESSAGE=@file:$FILE_NAME
 @ifndef $NAMES
 MESSAGE=_ $MESSAGE
 ;
-; NOTE: If is able to encrypt the message to will now do so.
+; NOTE: If is able to encrypt the message then will now do so.
 @ifdef $KEY_FILE_DATA
 ;
 PREFIX=
@@ -772,7 +818,6 @@ USER_NAME=@strlit:%NEXT_MSG_PARTS:2%
 CHECK_ENCRYPTED=@substr:1,2:$DECODED_MESSAGE
 ;
 @ifeq "$CHECK_ENCRYPTED" "$ENCRYPTED_PREFIX"
-MSG_KEY=
 ;
 @ifdef $KEY_FILE_DATA
 ;
