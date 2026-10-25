@@ -315,6 +315,18 @@ ERROR=
 @endif
 ;
 @elif "$CIYAM_KEY_PRESSED" = "k"
+;
+@ifneq "$ROOM" "$ENTRANCE_ROOM"
+@ifdef $KEY_FILE_DATA
+#(room $ROOM already has a key)
+@elif "$ROOM" = "$RESERVED_ROOM"
+#(a key may not be provided for this room)
+@else
+ENTROPY=@entropy:32:hex_digits
+#(enter 'r' then copy and paste the following to add a key for room $ROOM)
+#$ROOM#$ENTROPY
+@endif
+@else
 ~echo ""
 PPUB=@public:$PKEY
 ~qrencode -tANSI $~PPUB
@@ -346,6 +358,8 @@ ENCRTYPED=@crypt:cc $~OWN_ECDHE$SALT:$~QR_CODE
 @endif
 @endif
 @endif
+@endif
+;
 @endif
 ;
 @elif "$CIYAM_KEY_PRESSED" = "n"
