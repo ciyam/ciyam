@@ -99,7 +99,7 @@ function show_view( id )
    // NOTE: Leaving setting up by another way than its own views - its bubbles and its still-alive timer stop (found by review).
    if( id !== "setup_view" )
    {
-      stop_bubbles( );
+      setup_bubbles( ).stop( );
       setup_alive_stop( );
    }
 }
@@ -264,10 +264,7 @@ var g_setup = null;
 const c_setup_alive_ms = 60 * 1000;
 
 var g_setup_alive_timer = null;
-var g_bubbles = [ ];
-var g_bubble_frame = 0;
-var g_bubble_id = 0;
-var g_bubble_last = 0;
+var g_setup_bubbles = null;
 
 function setup_fresh( )
 {
@@ -346,7 +343,7 @@ function setup_open( )
 {
    setup_alive_stop( );
 
-   clear_bubbles( );
+   setup_bubbles( ).clear( );
 
    g_setup = setup_fresh( );
 
@@ -376,9 +373,9 @@ function setup_show( view )
    } );
 
    if( view === "setup_random" )
-      start_bubbles( );
+      setup_bubbles( ).start( );
    else
-      stop_bubbles( );
+      setup_bubbles( ).stop( );
 
    // NOTE: Each step tells the node this tab is still here; done, or let go, it stops.
    if( ( view === "setup_done" ) || ( view === "setup_expired" ) || ( view === "setup_elsewhere" ) )
@@ -434,207 +431,17 @@ function setup_clear_fields( )
 
 // ---- The bubbles
 
-// NOTE: Less motion asked for - they rise slowly.
-function bubble_speed( )
+// NOTE: "bubbles.js" (2026-10-25), shared with setting up an account's keys - made once, the first time it is wanted.
+function setup_bubbles( )
 {
-   return window.matchMedia( "(prefers-reduced-motion: reduce)" ).matches ? 0.35 : 1;
-}
-
-function start_bubbles( )
-{
-   if( g_bubble_frame !== 0 )
-      return;
-
-   var field = document.getElementById( "setup_bubbles" );
-
-   // NOTE: All twelve popped - none to pop, and the box no longer a click target, which took the focus off Next (Damon).
-   field.classList.toggle( "is-done", g_setup.pops >= c_setup_pops );
-
-   if( ( g_bubbles.length === 0 ) && ( g_setup.pops < c_setup_pops ) )
+   if( g_setup_bubbles === null )
    {
-      for( var i = 0; i < 8; i++ )
-         add_bubble( field, true );
+      g_setup_bubbles = bubble_field( document.getElementById( "setup_bubbles" ), { state: function( ) { return g_setup; },
+       pops: c_setup_pops, most: c_setup_most_bubbles, on_count: setup_count_pops,
+       on_done: function( ) { document.getElementById( "setup_random_next" ).focus( ); } } );
    }
 
-   g_bubble_last = performance.now( );
-   g_bubble_frame = window.requestAnimationFrame( step_bubbles );
-}
-
-function stop_bubbles( )
-{
-   if( g_bubble_frame !== 0 )
-      window.cancelAnimationFrame( g_bubble_frame );
-
-   g_bubble_frame = 0;
-}
-
-function clear_bubbles( )
-{
-   stop_bubbles( );
-
-   g_bubbles = [ ];
-
-   var field = document.getElementById( "setup_bubbles" );
-
-   field.replaceChildren( );
-   field.classList.remove( "is-done" );
-}
-
-function add_bubble( field, anywhere )
-{
-   var width = field.clientWidth || 430;
-   var height = field.clientHeight || 300;
-   var size = 26 + Math.random( ) * 22;
-
-   // NOTE: Each its own colour, from the browser's secure random numbers - kept with its pop (Ian, 2026-10-13).
-   var bytes = new Uint8Array( 3 );
-
-   window.crypto.getRandomValues( bytes );
-
-   var colour = bubble_colour( bytes );
-
-   var button = document.createElement( "button" );
-
-   button.type = "button";
-   button.className = "home-bubble";
-   button.setAttribute( "aria-label", "Pop this bubble" );
-   button.style.width = size + "px";
-   button.style.height = size + "px";
-   button.style.setProperty( "--bubble-colour", colour.rgb );
-
-   // NOTE: Livelier since 2026-10-13 (Ian: "move around a more and a little faster") - a drift sideways that wanders, as
-   // well as a wider, quicker sway.
-   var bubble = { id: ++g_bubble_id, element: button, size: size, width: width,
-    x: 8 + Math.random( ) * Math.max( 1, width - size - 16 ),
-    y: anywhere ? 24 + Math.random( ) * Math.max( 1, height - size - 40 ) : height + 4,
-    rise: 1 + Math.random( ) * 1.4, drift: ( Math.random( ) - 0.5 ) * 0.06,
-    sway: 8 + Math.random( ) * 20, wobble: 0.0015 + Math.random( ) * 0.002, phase: Math.random( ) * 6.283, left: 0,
-    colour: colour.hex, rgb: colour.rgb };
-
-   button.addEventListener( "click", function( event )
-   {
-      event.stopPropagation( );
-
-      pop_bubble( bubble, event );
-   } );
-
-   field.appendChild( button );
-   g_bubbles.push( bubble );
-
-   place_bubble( bubble, performance.now( ) );
-}
-
-function place_bubble( bubble, now )
-{
-   bubble.left = bubble.x + Math.sin( now * bubble.wobble + bubble.phase ) * bubble.sway;
-
-   bubble.element.style.transform = "translate(" + bubble.left.toFixed( 1 ) + "px, " + bubble.y.toFixed( 1 ) + "px)";
-}
-
-// NOTE: Each rises at its own pace, which wanders, and sways on its own rhythm - as bubbles do. New ones come at random.
-function step_bubbles( now )
-{
-   var field = document.getElementById( "setup_bubbles" );
-   var elapsed = Math.min( 64, now - g_bubble_last );
-   var speed = bubble_speed( );
-
-   g_bubble_last = now;
-
-   g_bubbles = g_bubbles.filter( function( bubble )
-   {
-      bubble.y -= bubble.rise * 0.035 * elapsed * speed;
-      bubble.rise = Math.max( 0.8, Math.min( 3, bubble.rise + ( Math.random( ) - 0.5 ) * 0.04 ) );
-
-      // NOTE: The drift wanders, and turns back off the sides.
-      bubble.drift = Math.max( -0.09, Math.min( 0.09, bubble.drift + ( Math.random( ) - 0.5 ) * 0.008 ) );
-      bubble.x += bubble.drift * elapsed * speed;
-
-      var room = Math.max( 8, bubble.width - bubble.size - 8 - bubble.sway );
-
-      if( ( bubble.x < bubble.sway ) || ( bubble.x > room ) )
-      {
-         bubble.x = Math.max( bubble.sway, Math.min( room, bubble.x ) );
-         bubble.drift = -bubble.drift;
-      }
-
-      if( bubble.y + bubble.size < -6 )
-      {
-         bubble.element.remove( );
-
-         return false;
-      }
-
-      place_bubble( bubble, now );
-
-      return true;
-   } );
-
-   // NOTE: More of them since 2026-10-13 (Ian) - up to sixteen, so popping is picking some out here and there, not every
-   // one that rises - and sooner still with only a few in the box.
-   var chance = ( 0.07 * speed + ( g_bubbles.length < 6 ? 0.08 : 0 ) ) * elapsed / 40;
-
-   if( ( g_setup.pops < c_setup_pops ) && ( g_bubbles.length < c_setup_most_bubbles ) && ( Math.random( ) < chance ) )
-      add_bubble( field, false );
-
-   g_bubble_frame = window.requestAnimationFrame( step_bubbles );
-}
-
-// NOTE: Where and when - a key press has no pointer, so the bubble's own place.
-function setup_sample( event, bubble )
-{
-   var box = document.getElementById( "setup_bubbles" ).getBoundingClientRect( );
-   var from_pointer = event && ( event.clientX || event.clientY );
-
-   return { t: performance.now( ), hit: !!bubble, c: bubble ? bubble.colour : "",
-    x: from_pointer ? event.clientX - box.left : ( bubble ? bubble.left + bubble.size / 2 : 0 ),
-    y: from_pointer ? event.clientY - box.top : ( bubble ? bubble.y + bubble.size / 2 : 0 ) };
-}
-
-// NOTE: A bubble's burst where it was - for a pop, and for those left when the twelfth is popped.
-function burst_bubble( bubble )
-{
-   var burst = document.createElement( "span" );
-
-   burst.className = "home-bubble-burst";
-   burst.setAttribute( "aria-hidden", "true" );
-   burst.style.setProperty( "--bubble-colour", bubble.rgb );
-   burst.style.width = bubble.size + "px";
-   burst.style.height = bubble.size + "px";
-   burst.style.transform = "translate(" + bubble.left.toFixed( 1 ) + "px, " + bubble.y.toFixed( 1 ) + "px)";
-
-   document.getElementById( "setup_bubbles" ).appendChild( burst );
-
-   window.setTimeout( function( ) { burst.remove( ); }, 450 );
-
-   bubble.element.remove( );
-}
-
-function pop_bubble( bubble, event )
-{
-   if( g_setup.pops >= c_setup_pops )
-      return;
-
-   g_setup.samples.push( setup_sample( event, bubble ) );
-   g_setup.pops++;
-
-   burst_bubble( bubble );
-
-   g_bubbles = g_bubbles.filter( function( other ) { return other !== bubble; } );
-
-   setup_count_pops( );
-
-   // NOTE: The twelfth - the rest burst too (Ian, 2026-10-13), not counted: the randomness is the twelve. The box stops
-   // taking clicks, and the focus goes on to Next (Damon).
-   if( g_setup.pops === c_setup_pops )
-   {
-      g_bubbles.forEach( burst_bubble );
-      g_bubbles = [ ];
-
-      stop_bubbles( );
-
-      document.getElementById( "setup_bubbles" ).classList.add( "is-done" );
-      document.getElementById( "setup_random_next" ).focus( );
-   }
+   return g_setup_bubbles;
 }
 
 function setup_count_pops( )
@@ -1066,12 +873,8 @@ function install_setup( )
       setup_show( "setup_random" );
    } );
 
-   // NOTE: A tap that misses still adds its moment - only a pop counts.
-   document.getElementById( "setup_bubbles" ).addEventListener( "pointerdown", function( event )
-   {
-      if( ( event.target.id === "setup_bubbles" ) && g_setup && ( g_setup.pops < c_setup_pops ) )
-         g_setup.samples.push( setup_sample( event, null ) );
-   } );
+   // NOTE: Made now, so a tap that misses adds its moment from the start.
+   setup_bubbles( );
 
    document.getElementById( "setup_random_next" ).addEventListener( "click", function( ) { setup_show( "setup_password" ); } );
 
