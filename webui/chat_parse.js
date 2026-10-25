@@ -1308,6 +1308,44 @@ function dm_create_problem( reply, others )
    return text;
 }
 
+// NOTE: Encrypted direct messages (2026-10-25), as the console has them (Ian, 2026-10-24: "irc.cin" encrypts every message in
+// a direct message whose other person's public key it has). The other person in a direct message the server named ("/a/b",
+// which the console takes as one), or "" - for any other room, a group, or one "me" is not in.
+function dm_other_person( name, me )
+{
+   var dm = parse_dm_name( name );
+
+   if( ( dm === null ) || !dm.server || ( dm.people.indexOf( me ) < 0 ) )
+      return "";
+
+   return dm.people[ 0 ] === me ? dm.people[ 1 ] : dm.people[ 0 ];
+}
+
+// NOTE: What the line under a direct message adds about encryption - "keys": whether this browser has your keys (null while
+// they are still being read), "theirs": whether you have the other person's public key.
+function dm_encryption_note( other, keys, theirs )
+{
+   if( ( other === "" ) || ( keys === null ) )
+      return "";
+
+   if( !keys )
+      return "not encrypted - set up your keys on My account";
+
+   if( !theirs )
+      return "not encrypted - add " + other + "'s public key on My account";
+
+   return "encrypted";
+}
+
+// NOTE: Whether a message can be sealed - at most 490 bytes of it ("ciyam_secure_message.js", as "irc.cin"'s "MAX_TO_ENCRYPT"
+// less the most random letters before it).
+const c_sealed_most_bytes = 490;
+
+function sealed_too_long( text )
+{
+   return new TextEncoder( ).encode( String( text || "" ) ).length > c_sealed_most_bytes;
+}
+
 function is_dm_name( name )
 {
    return parse_dm_name( name ) !== null;
@@ -3475,6 +3513,9 @@ if( typeof module !== "undefined" )
       dm_after_declines: dm_after_declines,
       dm_trusted: dm_trusted,
       dm_key: dm_key,
+      dm_other_person: dm_other_person,
+      dm_encryption_note: dm_encryption_note,
+      sealed_too_long: sealed_too_long,
       dm_existing: dm_existing,
       dm_outsiders: dm_outsiders,
       name_list: name_list,

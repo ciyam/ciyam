@@ -481,3 +481,12 @@
    font-style: italic;
    color: var(--color-chat-text-meta);
 }
+
+/* NOTE: An encrypted message opened with your keys (2026-10-25) - a small padlock before it, as the console marks one. */
+.chat-encrypted::before
+{
+   content: "\1F512";
+   margin-right: 5px;
+   font-size: 0.8em;
+   opacity: 0.6;
+}

@@ -886,6 +886,16 @@ check( "nor three, nor a name that is not a username", [ cp.parse_dm_name( "/a1b
 check( "shown as the other person", cp.dm_title( "/admin/verify-a", "verify-a" ), "admin" );
 check( "trusted as it is - the server built it", [ cp.dm_trusted( "/admin/verify-a", "admin" ), cp.dm_trusted( "/admin/verify-a", "carol" ) ], [ true, true ] );
 check( "the same conversation as the prototype's, by its people", cp.dm_key( "/admin/verify-a" ), cp.dm_key( "Private (admin + verify-a)" ) );
+
+// NOTE: Encrypted direct messages (2026-10-25) - only in one the server named, as the console has them.
+check( "the other person in a direct message, to encrypt to", [ cp.dm_other_person( "/test-1/verify-a", "test-1" ),
+ cp.dm_other_person( "/test-1/verify-a", "verify-a" ), cp.dm_other_person( "/test-1/verify-a", "admin" ),
+ cp.dm_other_person( "Private (test-1 + verify-a)", "test-1" ), cp.dm_other_person( "General", "test-1" ) ], [ "verify-a", "test-1", "", "", "" ] );
+check( "- what the line under it says", [ cp.dm_encryption_note( "verify-a", true, true ), cp.dm_encryption_note( "verify-a", true, false ),
+ cp.dm_encryption_note( "verify-a", false, false ), cp.dm_encryption_note( "verify-a", null, false ), cp.dm_encryption_note( "", true, true ) ],
+ [ "encrypted", "not encrypted - add verify-a's public key on My account", "not encrypted - set up your keys on My account", "", "" ] );
+check( "- a message too long to encrypt: over 490 bytes", [ cp.sealed_too_long( "a".repeat( 490 ) ), cp.sealed_too_long( "a".repeat( 491 ) ),
+ cp.sealed_too_long( "ä".repeat( 245 ) ), cp.sealed_too_long( "ä".repeat( 246 ) ) ], [ false, true, false, true ] );
 check( "found in the rail", cp.find_dm_room( [ { room: "0000016", name: "/admin/verify-a", owner: "admin" } ], [ "verify-a", "admin" ] ).room, "0000016" );
 check( "their request found", cp.dm_existing( [ "verify-a" ], "admin", [ ], [ { room: "0000016", name: "/admin/verify-a", inviter: "verify-a" } ], [ ] ),
  { kind: "request", room: "0000016" } );

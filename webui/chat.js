@@ -269,6 +269,9 @@ function enter_chat( )
    load_rooms( );
 
    start_polling( );
+
+   // NOTE: Your keys, for encrypted direct messages ("chat_keys.js", 2026-10-25).
+   chat_keys_read( );
 }
 
 // ====================================================================
@@ -1193,6 +1196,8 @@ async function do_disconnect( already_ended )
 {
    stop_polling( );
 
+   chat_keys_forget( );
+
    signin_forget_session( );
 
    if( already_ended === true )
@@ -1844,8 +1849,11 @@ function show_thread_title( )
 
    var outsiders = dm_trusted( g_room_name, g_room_owner ) ? room_outsiders( ) : [ ];
 
+   var note = is_dm ? chat_encryption_note( ) : "";
+
    if( is_dm )
-      sub.textContent = ( others.length > 0 ) ? ( "Direct message · only you and " + name_list( others ) ) : "Direct message";
+      sub.textContent = ( ( others.length > 0 ) ? ( "Direct message · only you and " + name_list( others ) ) : "Direct message" )
+       + ( note !== "" ? " · " + note : "" );
    else if( outsiders.length > 0 )
       sub.textContent = "Not private - " + name_list( outsiders ) + " can read this too";
    else
@@ -2427,22 +2435,38 @@ function note_dm_joins( room, messages, members )
 // last join, or a decline by the last still to answer ("restore_dm_outcomes( )").
 function send_held( room, pending )
 {
-   // NOTE: Each resolves with its text if it was not sent - an error, a time-out, or no answer.
+   // NOTE: Sealed as any other message there would be ("chat_keys.js") - the conversation's other person by its name.
+   var entry = find_room( room );
+   var other = entry ? dm_other_person( entry.name, ciyam.username ) : "";
+
+   // NOTE: Each resolves with its text if it was not sent - an error, a time-out, no answer, or too long to seal.
    var sends = pending.texts.map( function( text )
    {
-      return new Promise( function( resolve )
+      return chat_seal_for( other, text ).then( function( sealing )
       {
-         var answered = false;
-
-         serialised( function( )
+         return new Promise( function( resolve )
          {
-            return ciyam.create_message( room, "text=" + escape_message_text( text ), function( response )
-            {
-               answered = true;
+            var answered = false;
 
-               resolve( is_error_response( response ) ? text : "" );
-            } );
-         } ).then( function( ) { if( !answered ) resolve( text ); }, function( ) { if( !answered ) resolve( text ); } );
+            if( sealing.sealed && ( sealing.text === "" ) )
+            {
+               resolve( text );
+
+               return;
+            }
+
+            var sent = sealing.sealed ? sealing.text : escape_message_text( text );
+
+            serialised( function( )
+            {
+               return ciyam.create_message( room, "text=" + sent, function( response )
+               {
+                  answered = true;
+
+                  resolve( is_error_response( response ) ? text : "" );
+               } );
+            } ).then( function( ) { if( !answered ) resolve( text ); }, function( ) { if( !answered ) resolve( text ); } );
+         } );
       } );
    } );
 
@@ -4485,6 +4509,10 @@ function render_composer_mirror( )
 // ciphertext ("message_unreadable_label( )").
 function draw_message_text( element, text )
 {
+   // NOTE: Opened, in a direct message with a key for the other person ("chat_keys.js", 2026-10-25).
+   if( ( message_prefix( text ) === "X" ) && chat_open_message( element, text ) )
+      return;
+
    var unreadable = message_unreadable_label( text );
 
    element.classList.toggle( "chat-unreadable", unreadable !== "" );
@@ -5028,6 +5056,23 @@ async function do_send( )
    // typed - see "escape_message_text( )" in "chat_parse.js". Line breaks go as they are.
    var sent = escape_message_text( text );
 
+   // NOTE: Sealed in a direct message with a key for the other person ("chat_keys.js", 2026-10-25) - as it is, CRs and all, as
+   // nothing in it needs escaping. Not an edit, nor a message for some only: those go as before.
+   if( ( g_edit_unique === "" ) && ( g_recipients.length === 0 ) )
+   {
+      var sealing = await chat_seal_for( chat_dm_other( ), text );
+
+      if( sealing.sealed && ( sealing.text === "" ) )
+      {
+         show_alert( "That message is too long to encrypt - at most " + c_sealed_most_bytes + " bytes. Split it in two.", "is-error" );
+
+         return;
+      }
+
+      if( sealing.sealed )
+         sent = sealing.text;
+   }
+
    if( g_edit_unique !== "" )
       options = "for=" + edit_for_value( g_edit_unique, g_edit_private ) + ";text=" + sent;
    else if( g_recipients.length > 0 )
@@ -5050,7 +5095,8 @@ async function do_send( )
 
    // NOTE: What is needed to tell, after a time-out, whether this arrived after all - see
    // "arrived_after_timeout( )". The start point is the server's, not the browser's clock.
-   var pending = { me: ciyam.username, text: text, typed: text, after: g_start_point, edit: g_edit_unique, room: g_room };
+   var pending = { me: ciyam.username, text: ( message_prefix( sent ) === "X" ) ? sent : text, typed: text, after: g_start_point,
+    edit: g_edit_unique, room: g_room };
 
    var timed_out = false;
 
