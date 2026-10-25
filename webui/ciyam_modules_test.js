@@ -638,8 +638,8 @@ async function steps( module_class, list )
    {
       return ( r.bytes === 502 ) && ( r.before >= 1 ) && ( r.after >= 1 ) && r.opened;
    } ), new Set( short_ones.map( function( r ) { return r.before; } ) ).size > 10 ], [ true, true ] );
-   check( "- how many go before: all up to 10, otherwise at least one each side; a random number in range",[ sm.padding_before( 0 ), sm.padding_before( 7 ), sm.padding_before( 10 ),
-    sm.padding_before( 11 ) >= 1 && sm.padding_before( 11 ) <= 10, Array.from( { length: 200 }, function( ) { return sm.random_below( 3 ); } )
+   check( "- how many go before: all up to 10, otherwise at least one each side; a random number in range",
+    [ sm.padding_before( 0 ), sm.padding_before( 7 ), sm.padding_before( 10 ), sm.padding_before( 11 ) >= 1 && sm.padding_before( 11 ) <= 10, Array.from( { length: 200 }, function( ) { return sm.random_below( 3 ); } )
     .every( function( v ) { return v >= 0 && v < 3; } ) ], [ 0, 7, 10, true, true ] );
 
    // NOTE: To another person, as "x" now does (Ian, 2026-10-22) - from the console (2026-10-22): each one's public key, as
@@ -758,7 +758,8 @@ async function steps( module_class, list )
 
    check( "not locked - no access key, no keys, or a public key not one", [ await not_locked( "abc", known_contents ),
     await not_locked( known_access, { contacts: { } } ), await not_locked( known_access, { primary: seeds.primary, secondary: seeds.secondary,
-    contacts: { someone: "abc" } } ) ], [ "An access key is 64 hex digits.", "The keys are two of 64 hex digits.", "A public key is 64 hex digits, kept by a name." ] );
+    contacts: { someone: "abc" } } ) ],
+    [ "An access key is 64 hex digits.", "The keys are two of 64 hex digits.", "A public key is 64 hex digits, kept by a name." ] );
 
    var by_run = ( await new uk( { } ).run( "lock " + test_entropy ) ).split( " " );
 
