@@ -1322,11 +1322,15 @@ function dm_other_person( name, me )
 }
 
 // NOTE: What the line under a direct message adds about encryption - "keys": whether this browser has your keys (null while
-// they are still being read), "theirs": whether you have the other person's public key.
+// they are still being read, "unread" if the node's answer could not be read), "theirs": whether you have the other person's
+// public key.
 function dm_encryption_note( other, keys, theirs )
 {
    if( ( other === "" ) || ( keys === null ) )
       return "";
+
+   if( keys === "unread" )
+      return "not encrypted - your keys could not be read just now; reload to try again";
 
    if( !keys )
       return "not encrypted - set up your keys on My account";

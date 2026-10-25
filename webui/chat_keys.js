@@ -13,6 +13,7 @@ const c_chat_keys_scripts = [ "ed25519.min.js", "ciyam_chacha20.js", "ciyam_ed25
 
 // NOTE: null while being read (or signed out), false when this browser has no keys for the account, else what they are.
 var g_chat_keys = null;
+var g_chat_keys_unread = false;
 var g_chat_keys_scripts = null;
 var g_chat_keys_read = 0;
 
@@ -79,8 +80,13 @@ async function chat_keys_read( )
 
    var access = chat_keys_kept( );
    var found = false;
+   var unread = false;
 
-   if( ( access !== "" ) && await chat_keys_load_scripts( ) )
+   // NOTE: Kept here but not read - the scripts, or the node's answer an error or a time-out (found by review, 2026-10-26) - is
+   // said as that, not as no keys.
+   if( ( access !== "" ) && !await chat_keys_load_scripts( ) )
+      unread = true;
+   else if( access !== "" )
    {
       var response = "";
 
@@ -99,6 +105,7 @@ async function chat_keys_read( )
       catch( e )
       {
          found = false;
+         unread = ( response !== "[none]" ) && !/^UK[0-9]+:/.test( response );
       }
    }
 
@@ -107,6 +114,7 @@ async function chat_keys_read( )
       return;
 
    g_chat_keys = found;
+   g_chat_keys_unread = unread;
 
    show_thread_title( );
    chat_keys_redraw( );
@@ -117,6 +125,7 @@ function chat_keys_forget( )
    ++g_chat_keys_read;
 
    g_chat_keys = null;
+   g_chat_keys_unread = false;
    g_chat_opened = { };
    g_chat_secrets = { };
 }
@@ -152,6 +161,9 @@ function chat_encryption_note( )
 
    if( g_chat_keys === null )
       return dm_encryption_note( other, null, false );
+
+   if( g_chat_keys_unread )
+      return dm_encryption_note( other, "unread", false );
 
    return dm_encryption_note( other, !!g_chat_keys, !!g_chat_keys && g_chat_keys.contacts.hasOwnProperty( other ) );
 }

@@ -892,8 +892,10 @@ check( "the other person in a direct message, to encrypt to", [ cp.dm_other_pers
  cp.dm_other_person( "/test-1/verify-a", "verify-a" ), cp.dm_other_person( "/test-1/verify-a", "admin" ),
  cp.dm_other_person( "Private (test-1 + verify-a)", "test-1" ), cp.dm_other_person( "General", "test-1" ) ], [ "verify-a", "test-1", "", "", "" ] );
 check( "- what the line under it says", [ cp.dm_encryption_note( "verify-a", true, true ), cp.dm_encryption_note( "verify-a", true, false ),
- cp.dm_encryption_note( "verify-a", false, false ), cp.dm_encryption_note( "verify-a", null, false ), cp.dm_encryption_note( "", true, true ) ],
- [ "encrypted", "not encrypted - add verify-a's public key on My account", "not encrypted - set up your keys on My account", "", "" ] );
+ cp.dm_encryption_note( "verify-a", false, false ), cp.dm_encryption_note( "verify-a", null, false ), cp.dm_encryption_note( "", true, true ),
+ cp.dm_encryption_note( "verify-a", "unread", false ) ],
+ [ "encrypted", "not encrypted - add verify-a's public key on My account", "not encrypted - set up your keys on My account", "", "",
+ "not encrypted - your keys could not be read just now; reload to try again" ] );
 check( "- a message too long to encrypt: over 500 bytes", [ cp.sealed_too_long( "a".repeat( 500 ) ), cp.sealed_too_long( "a".repeat( 501 ) ),
  cp.sealed_too_long( "ä".repeat( 250 ) ), cp.sealed_too_long( "ä".repeat( 251 ) ) ], [ false, true, false, true ] );
 check( "found in the rail", cp.find_dm_room( [ { room: "0000016", name: "/admin/verify-a", owner: "admin" } ], [ "verify-a", "admin" ] ).room, "0000016" );
