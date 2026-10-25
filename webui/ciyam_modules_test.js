@@ -598,7 +598,7 @@ async function steps( module_class, list )
 
    check( "sealed afresh - salt, ciphertext and HMAC, padded to 502 bytes, opened again with CR as a line break", [ sealed.startsWith( "X\r" ),
     /^[0-9a-f]{32}$/.test( sealed_parts[ 0 ] ), sealed_parts[ 1 ].length, /^[0-9a-f]{32}$/.test( sealed_parts[ 2 ] ),
-    /^[0-9A-Za-z]{5,10}\rA line\nand another, café\r[0-9A-Za-z]+$/.test( padded ), await sm.open( own, sealed ) ],
+    /^[0-9A-Za-z]+\rA line\nand another, café\r[0-9A-Za-z]+$/.test( padded ), await sm.open( own, sealed ) ],
     [ true, true, 1004, true, true, "A line\nand another, café" ] );
    check( "- each time a new salt and padding", ( await sm.seal( own, "same" ) ) !== ( await sm.seal( own, "same" ) ), true );
 
@@ -607,12 +607,40 @@ async function steps( module_class, list )
 
    check( "not opened - changed, another secret, not sealed, or too long to seal", [ await refused( sm.open( own, changed ) ),
     await refused( sm.open( sm.own_secret( "0123456789abcdef0123456789abcdef" ), known ) ), await refused( sm.open( own, "Hello" ) ),
-    await refused( sm.open( own, known + "\r00" ) ), await refused( sm.seal( own, "x".repeat( 491 ) ) ), await refused( sm.seal( "abc", "hi" ) ),
+    await refused( sm.open( own, known + "\r00" ) ), await refused( sm.seal( own, "x".repeat( 501 ) ) ), await refused( sm.seal( "abc", "hi" ) ),
     await refused( sm.seal( own, "hi", { salt: "XYZ" } ) ) ],
     [ "That message has been changed, or was sealed with another secret.", "That message has been changed, or was sealed with another secret.",
-    "That is not a sealed message.", "That is not a sealed message.", "That message is too long to seal - at most 490 bytes.",
+    "That is not a sealed message.", "That is not a sealed message.", "That message is too long to seal - at most 500 bytes.",
     "A secret is 64 hex digits - the own secret, or one with another person.", "A salt is 32 lower-case hex digits, and the padding has no CR." ] );
-   check( "- 490 bytes sealed, the most", await sm.open( own, await sm.seal( own, "y".repeat( 490 ) ) ), "y".repeat( 490 ) );
+   // NOTE: The padding (Ian, 2026-10-25) - the padded message always 500 bytes and two CRs: a message of 500 bytes with none; up
+   // to 10 left over all before it; more than that split at random, some before and some after. Each opened again.
+   var padding_of = async function( message )
+   {
+      var s = await sm.seal( own, message );
+      var p = s.substring( 2 ).split( "\r" );
+      var whole = new TextDecoder( ).decode( await m.ciyam_module_named( "chacha20" ).crypt( own + p[ 0 ], hex_bytes( p[ 1 ] ) ) );
+      var lines = whole.split( "\r" );
+
+      return { bytes: new TextEncoder( ).encode( whole ).length, before: lines[ 0 ].length, after: lines[ 2 ].length,
+       opened: ( await sm.open( own, s ) ) === message };
+   };
+
+   var full = await padding_of( "y".repeat( 500 ) );
+   var nearly = await padding_of( "y".repeat( 490 ) );
+   var short_ones = [ ];
+
+   for( var n = 0; n < 40; n++ )
+      short_ones.push( await padding_of( "y".repeat( 489 - ( n % 3 ) * 200 ) ) );
+
+   check( "- 500 bytes sealed, the most, with no padding", [ full.bytes, full.before, full.after, full.opened ], [ 502, 0, 0, true ] );
+   check( "- 10 left over, all before it", [ nearly.bytes, nearly.before, nearly.after, nearly.opened ], [ 502, 10, 0, true ] );
+   check( "- more than 10 left over, some before and some after, split at random", [ short_ones.every( function( r )
+   {
+      return ( r.bytes === 502 ) && ( r.before >= 1 ) && ( r.after >= 1 ) && r.opened;
+   } ), new Set( short_ones.map( function( r ) { return r.before; } ) ).size > 10 ], [ true, true ] );
+   check( "- how many go before: all up to 10, otherwise at least one each side; a random number in range",[ sm.padding_before( 0 ), sm.padding_before( 7 ), sm.padding_before( 10 ),
+    sm.padding_before( 11 ) >= 1 && sm.padding_before( 11 ) <= 10, Array.from( { length: 200 }, function( ) { return sm.random_below( 3 ); } )
+    .every( function( v ) { return v >= 0 && v < 3; } ) ], [ 0, 7, 10, true, true ] );
 
    // NOTE: To another person, as "x" now does (Ian, 2026-10-22) - from the console (2026-10-22): each one's public key, as
    // "irc.cin" shows it to scan, and "@shared" between one's key and the other's public key, the same from either side.

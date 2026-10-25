@@ -84,7 +84,10 @@ ok   - and opened
 ok   sealed afresh - salt, ciphertext and HMAC, padded to 502 bytes, opened again with CR as a line break
 ok   - each time a new salt and padding
 ok   not opened - changed, another secret, not sealed, or too long to seal
-ok   - 490 bytes sealed, the most
+ok   - 500 bytes sealed, the most, with no padding
+ok   - 10 left over, all before it
+ok   - more than 10 left over, some before and some after, split at random
+ok   - how many go before: all up to 10, otherwise at least one each side; a random number in range
 ok   to another person - the public keys and the secret between them, as the console's, from either side
 ok   - sealed by one, opened by the other, and not under either's own secret
 ok   - a public key not a key, said

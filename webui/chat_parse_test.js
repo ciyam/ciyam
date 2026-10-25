@@ -894,8 +894,8 @@ check( "the other person in a direct message, to encrypt to", [ cp.dm_other_pers
 check( "- what the line under it says", [ cp.dm_encryption_note( "verify-a", true, true ), cp.dm_encryption_note( "verify-a", true, false ),
  cp.dm_encryption_note( "verify-a", false, false ), cp.dm_encryption_note( "verify-a", null, false ), cp.dm_encryption_note( "", true, true ) ],
  [ "encrypted", "not encrypted - add verify-a's public key on My account", "not encrypted - set up your keys on My account", "", "" ] );
-check( "- a message too long to encrypt: over 490 bytes", [ cp.sealed_too_long( "a".repeat( 490 ) ), cp.sealed_too_long( "a".repeat( 491 ) ),
- cp.sealed_too_long( "ä".repeat( 245 ) ), cp.sealed_too_long( "ä".repeat( 246 ) ) ], [ false, true, false, true ] );
+check( "- a message too long to encrypt: over 500 bytes", [ cp.sealed_too_long( "a".repeat( 500 ) ), cp.sealed_too_long( "a".repeat( 501 ) ),
+ cp.sealed_too_long( "ä".repeat( 250 ) ), cp.sealed_too_long( "ä".repeat( 251 ) ) ], [ false, true, false, true ] );
 check( "found in the rail", cp.find_dm_room( [ { room: "0000016", name: "/admin/verify-a", owner: "admin" } ], [ "verify-a", "admin" ] ).room, "0000016" );
 check( "their request found", cp.dm_existing( [ "verify-a" ], "admin", [ ], [ { room: "0000016", name: "/admin/verify-a", inviter: "verify-a" } ], [ ] ),
  { kind: "request", room: "0000016" } );

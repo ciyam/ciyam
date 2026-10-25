@@ -29,12 +29,12 @@ ciyam_register_module( class extends ciyam_module
    static c_salt_bytes = 16;
    static c_hmac_digits = 32;
 
-   // NOTE: As "irc.cin"'s "MAX_TO_ENCRYPT" (Ian, 2026-10-24) - the random letters and the message at most 500 bytes, and those
-   // with the rest padded to 500, so every message is the same size. The letters before are 5 to 10, so a message of up to 490
-   // bytes is always taken, where the console's limit moves with them.
+   // NOTE: As "irc.cin"'s "MAX_TO_ENCRYPT" (Ian, 2026-10-24) - the message padded with random letters to 500 bytes, so every
+   // message is the same size. Padding (Ian, 2026-10-25): none for a message of 500 bytes; up to 10 left over all before it;
+   // more than that split at random, some before and some after.
    static c_max_length = 500;
    static c_padded_length = 500;
-   static c_most_before = 10;
+   static c_most_before_only = 10;
 
    static c_alpha_numeric = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
@@ -87,6 +87,32 @@ ciyam_register_module( class extends ciyam_module
       }
 
       return text;
+   }
+
+   // NOTE: From 0 to one less than "count" (at most 65,536), each as likely - two random bytes, those past the last whole
+   // multiple of "count" drawn again.
+   static random_below( count )
+   {
+      var limit = Math.floor( 65536 / count ) * count;
+
+      while( true )
+      {
+         var bytes = this.random_bytes( 2 );
+         var value = ( bytes[ 0 ] << 8 ) | bytes[ 1 ];
+
+         if( value < limit )
+            return value % count;
+      }
+   }
+
+   // NOTE: How many of the bytes left over go before the message (Ian, 2026-10-25) - all of them up to 10, otherwise from one
+   // to one less than all, the rest after it.
+   static padding_before( left_over )
+   {
+      if( left_over <= this.c_most_before_only )
+         return left_over;
+
+      return 1 + this.random_below( left_over - 1 );
    }
 
    // NOTE: SHA-256 of bytes - the browser's own where it has one (a secure context), "sha2.min.js" otherwise, given the bytes
@@ -221,15 +247,16 @@ ciyam_register_module( class extends ciyam_module
       var opts = options || { };
       var text = String( message ).replace( /\r\n?/g, "\n" );
 
-      var most = this.c_max_length - this.c_most_before;
+      var length = new TextEncoder( ).encode( text ).length;
 
-      if( new TextEncoder( ).encode( text ).length > most )
-         throw new Error( "That message is too long to seal - at most " + most + " bytes." );
+      if( length > this.c_max_length )
+         throw new Error( "That message is too long to seal - at most " + this.c_max_length + " bytes." );
 
-      var before = ( opts.before !== undefined ) ? opts.before : this.random_alpha_numeric( 5 + ( this.random_bytes( 1 )[ 0 ] % 6 ) );
-      var used = new TextEncoder( ).encode( before + text ).length;
+      var left_over = this.c_padded_length - length;
+      var before_length = this.padding_before( left_over );
 
-      var after = ( opts.after !== undefined ) ? opts.after : this.random_alpha_numeric( this.c_padded_length - used );
+      var before = ( opts.before !== undefined ) ? opts.before : this.random_alpha_numeric( before_length );
+      var after = ( opts.after !== undefined ) ? opts.after : this.random_alpha_numeric( left_over - before_length );
       var salt = ( opts.salt !== undefined ) ? opts.salt : this.hex_of( this.random_bytes( this.c_salt_bytes ) );
 
       // NOTE: A salt or padding given must be what "open( )" takes - or what is sealed could not be opened.

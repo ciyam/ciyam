@@ -457,7 +457,7 @@ ok   trusted as it is - the server built it
 ok   the same conversation as the prototype's, by its people
 ok   the other person in a direct message, to encrypt to
 ok   - what the line under it says
-ok   - a message too long to encrypt: over 490 bytes
+ok   - a message too long to encrypt: over 500 bytes
 ok   found in the rail
 ok   their request found
 ok   a request to message you

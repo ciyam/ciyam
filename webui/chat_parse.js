@@ -1337,9 +1337,9 @@ function dm_encryption_note( other, keys, theirs )
    return "encrypted";
 }
 
-// NOTE: Whether a message can be sealed - at most 490 bytes of it ("ciyam_secure_message.js", as "irc.cin"'s "MAX_TO_ENCRYPT"
-// less the most random letters before it).
-const c_sealed_most_bytes = 490;
+// NOTE: Whether a message can be sealed - at most 500 bytes of it ("ciyam_secure_message.js", as "irc.cin"'s "MAX_TO_ENCRYPT",
+// the padding fitted to what is left over since 2026-10-25).
+const c_sealed_most_bytes = 500;
 
 function sealed_too_long( text )
 {
