@@ -2,10 +2,10 @@ Initial basic check for node and 'ciyam.js'.
 CIYAM [http://localhost:13031]
 {"name":"*CIYAM*", "version":"0.0.0", "security":"(NONE)"}
 {"data":"testing..."}
-Create external system identity and 'admin' access with 'none'.
+Create external system identity and 'admin' access with '$dummy_password'.
 (created device - length is 15)
 
-Connect using ADMIN with 'none'.
+Connect using ADMIN with '$dummy_password'.
 CIYAM [http://localhost:13031]
 {"name":":CIYAM:", "version":"0.0.0", "security":"(NONE)"}
 [adm]-2@admin
@@ -18,7 +18,7 @@ ciyam.lock_source => 2
 Employ master password as an unlock key.
 {"response":"[okay]"}
 
-Connect using ADMIN with 'none'.
+Connect using ADMIN with '$dummy_password'.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [adm]@admin
@@ -32,7 +32,7 @@ CIYAM [http://localhost:13031]
 {"name":":CIYAM:", "version":"0.0.0", "security":"(NONE)"}
 Error: System identity mismatch (incorrect mnemonics?).
 
-Update 'admin' access password to 'test' and change identity to internal (after restore).
+Update 'admin' access password to '$test_password' and change identity to internal (after restore).
 CIYAM [http://localhost:13031]
 {"name":":CIYAM:", "version":"0.0.0", "security":"(NONE)"}
 [adm]@admin
@@ -41,19 +41,19 @@ ciyam.is_admin = true
 ciyam.is_locked = false
 {"message":"Session terminated."}
 
-Attempt to connect using 'dummy' with 'test'.
+Attempt to connect using 'dummy' with '$test_password'.
 Error: This web session is not valid (or has expired).
 
-Attempt to connect using 10101 with 'test'.
+Attempt to connect using 10101 with '$test_password'.
 Error: This web session is not valid (or has expired).
 
-Attempt to connect using 10201 with 'test'.
+Attempt to connect using 10201 with '$test_password'.
 Error: This web session is not valid (or has expired).
 
-Attempt to connect using 10301 with 'none'.
+Attempt to connect using 10301 with '$dummy_password'.
 Error: This web session is not valid (or has expired).
 
-Connect using 10301 with 'test'.
+Connect using 10301 with '$test_password'.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [adm]@admin
@@ -62,10 +62,10 @@ ciyam.is_admin = true
 ciyam.is_locked = false
 {"message":"Session terminated."}
 
-Attempt to update 'admin' access password to 'none' while not locked.
+Attempt to update 'admin' access password to '$dummy_password' while not locked.
 Error: System identity is not currently locked.
 
-Connect using 10301 with 'test' (after restore).
+Connect using 10301 with '$test_password' (after restore).
 CIYAM [http://localhost:13031]
 {"name":":CIYAM:", "version":"0.0.0", "security":"(NONE)"}
 [adm]-1@admin
@@ -75,7 +75,7 @@ ciyam.is_locked = true
 ciyam.lock_source => 1
 {"message":"Session terminated."}
 
-Update 'admin' access password to 'none' (after restore).
+Update 'admin' access password to '$dummy_password' (after restore).
 CIYAM [http://localhost:13031]
 {"name":":CIYAM:", "version":"0.0.0", "security":"(NONE)"}
 [adm]@admin
@@ -84,16 +84,16 @@ ciyam.is_admin = true
 ciyam.is_locked = false
 {"message":"Session terminated."}
 
-Attempt to connect using 10101 with 'none'.
+Attempt to connect using 10101 with '$dummy_password'.
 Error: This web session is not valid (or has expired).
 
-Attempt to connect using 10201 with 'none'.
+Attempt to connect using 10201 with '$dummy_password'.
 Error: This web session is not valid (or has expired).
 
-Attempt to connect using 10201 with 'test'.
+Attempt to connect using 10201 with '$test_password'.
 Error: This web session is not valid (or has expired).
 
-Connect using 10301 with 'none' and create an unlock key.
+Connect using 10301 with '$dummy_password' and create an unlock key.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [adm]@admin
@@ -134,7 +134,7 @@ Error: Invalid nominated access token '1111' was provided.
   }
 ]
 
-Connect using 11111 with 'none' and list users.
+Connect using 11111 with '$dummy_password' and list users.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@test-1
@@ -149,13 +149,13 @@ ciyam.is_locked = false
   }
 ]
 
-Attempt to connect using 11111 with 'test'.
+Attempt to connect using 11111 with '$test_password'.
 Error: This web session is not valid (or has expired).
 
-Update own password for 11111 from 'none' to 'test'.
+Update own password for 11111 from '$dummy_password' to '$test_password'.
 {"response":"[okay]"}
 
-Connect using 11111 with 'test'.
+Connect using 11111 with '$test_password'.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@test-1
@@ -164,10 +164,10 @@ ciyam.is_admin = false
 ciyam.is_locked = false
 {"message":"Session terminated."}
 
-Update password for 11111 to 'none' as admin.
+Update password for 11111 to '$dummy_password' as admin.
 {"response":"[okay]"}
 
-Connect using 11111 with 'none'.
+Connect using 11111 with '$dummy_password'.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@test-1
@@ -188,10 +188,10 @@ Create a user with access pin '22222' then list users.
   }
 ]
 
-Attempt to connect using 22222:test with 'test'.
+Attempt to connect using 22222:test with '$test_password'.
 Error: ?test-2
 
-Connect using 22222:test with 'test' (after suggestion).
+Connect using 22222:test with '$test_password' (after suggestion).
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@test
@@ -200,7 +200,7 @@ ciyam.is_admin = false
 ciyam.is_locked = false
 {"message":"Session terminated."}
 
-Attempt to update password for 11111 to 'test' as 22222.
+Attempt to update password for 11111 to '$test_password' as 22222.
 {"error":"Users can only be maintained by the administrator."}
 
 Create a user with access pin '33333' then list users.
@@ -219,13 +219,13 @@ Create a user with access pin '33333' then list users.
   }
 ]
 
-Attempt to connect using 33333:test with 'test'.
+Attempt to connect using 33333:test with '$test_password'.
 Error: ?test-3
 
-Attempt to connect using 33333:test with 'test' (after suggestion).
+Attempt to connect using 33333:test with '$test_password' (after suggestion).
 Error: Username 'test' has already been taken.
 
-Connect using 33333:testing with 'test' and list users
+Connect using 33333:testing with '$test_password' and list users
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@testing
@@ -240,7 +240,7 @@ ciyam.is_locked = false
   }
 ]
 
-Attempt to connect using 33333 with 'none'.
+Attempt to connect using 33333 with '$dummy_password'.
 Error: This web session is not valid (or has expired).
 
 Delete user with access pin '11111' then list users.
@@ -269,14 +269,14 @@ Attempt to delete user with access pin '11111' again then list users.
   }
 ]
 
-Attempt to connect using 11111 with 'none'.
+Attempt to connect using 11111 with '$dummy_password'.
 Error: This web session is not valid (or has expired).
 
 Create a secret token using 10301.
 
 Force 'the <secret>' token to be for pin '12345'.
 
-Connect using <secret>:test-x with 'test' then list users.
+Connect using <secret>:test-x with '$test_password' then list users.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@test-x

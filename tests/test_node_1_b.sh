@@ -7,8 +7,10 @@
 if [ ! -f /tmp/ciyam/.test_node ]; then
  echo "Error: Did not find '/tmp/ciyam/.test_node' (testing was skipped)."
 else
+ dummy_password=not_an_actual_password_but_is_a_long_one
+
  echo "Create a new device for use with message tests."
- device=$(node ../webui/ciyam.js -test "" 10301 "" "" none)
+ device=$(node ../webui/ciyam.js -test "" 10301 "" "" $dummy_password)
  echo "(created device - length is ${#device})"
 
  ./system_variable set @no_irc ""
@@ -30,10 +32,10 @@ else
  echo "echo Create a new user '11111' named 'test-1'." >>/tmp/ciyam/$device.lst
  echo "users create nominated=11111:test-1" >>/tmp/ciyam/$device.lst
 
- env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 10301 $device "" none
+ env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 10301 $device "" $dummy_password
 
- echo "Connect using 11111 with 'none' and output entrance room details."
- node ../webui/ciyam.js "" 11111 $device "" none
+ echo "Connect using 11111 with '\$dummy_password' and output entrance room details."
+ node ../webui/ciyam.js "" 11111 $device "" $dummy_password
 
  echo "messages" >/tmp/ciyam/$device.lst
 
@@ -47,7 +49,7 @@ else
  echo "echo Review messages in room 0000001 for 'test-1'." >>/tmp/ciyam/$device.lst
  echo "messages review 0000001" >>/tmp/ciyam/$device.lst
 
- env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 11111 $device "" none
+ env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 11111 $device "" $dummy_password
 
  echo "Output the entrance room details for 'admin'."
  echo "messages" >/tmp/ciyam/$device.lst
@@ -61,10 +63,10 @@ else
  echo "echo Attempt to transfer 0000001 ownership to 'test-2'." >>/tmp/ciyam/$device.lst
  echo "messages update 0000001 owner=test-2" >>/tmp/ciyam/$device.lst
 
- env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 10301 $device "" none
+ env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 10301 $device "" $dummy_password
 
- echo "Connect using 22222 with 'none' and output entrance room details."
- node ../webui/ciyam.js "" 22222 $device "" none
+ echo "Connect using 22222 with '\$dummy_password' and output entrance room details."
+ node ../webui/ciyam.js "" 22222 $device "" $dummy_password
 
  echo "messages" >/tmp/ciyam/$device.lst
 
@@ -78,7 +80,7 @@ else
  echo "echo Review messages in room 0000001 for 'test-2'." >>/tmp/ciyam/$device.lst
  echo "messages review 0000001" >>/tmp/ciyam/$device.lst
 
- env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 22222 $device "" none
+ env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 22222 $device "" $dummy_password
 
  echo "Output entrance room details for 'admin'."
  echo "messages" >/tmp/ciyam/$device.lst
@@ -101,10 +103,10 @@ else
  echo "messages update 0000001 posts=ALL" >>/tmp/ciyam/$device.lst
  echo "messages update 0000001 owner=test-1" >>/tmp/ciyam/$device.lst
 
- env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 10301 $device "" none
+ env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 10301 $device "" $dummy_password
 
  echo "Create a new romm for 'test-1' and 'test-2' and output entrance room details for 'test-1'."
- new_room=$(env CIYAM_NODE_COMMAND="messages create 0000000 for=test-2;text=Private (test-1 and test-2)" node ../webui/ciyam.js -test "" 11111 $device "" none)
+ new_room=$(env CIYAM_NODE_COMMAND="messages create 0000000 for=test-2;text=Private (test-1 and test-2)" node ../webui/ciyam.js -test "" 11111 $device "" $dummy_password)
 
  echo "messages" >/tmp/ciyam/$device.lst
 
@@ -131,24 +133,24 @@ else
  echo "messages update 0000003 owner=test-2" >>/tmp/ciyam/$device.lst
  echo "messages" >>/tmp/ciyam/$device.lst
 
- env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 11111 $device "" none
+ env CIYAM_NODE_COMMAND=@/tmp/ciyam/$device.lst node ../webui/ciyam.js -test "" 11111 $device "" $dummy_password
 
  rm -f /tmp/ciyam/$device.lst
 
  echo "Review messages in room 0000001 again for 'test-2' then attempt to rename rooms 0000002 and 0000003."
- env CIYAM_NODE_COMMAND="messages review 0000001" node ../webui/ciyam.js -test "" 22222 $device "" none | sed "s/0000003-[0-9a-f]*/0000003-NEW-ROOM-UUID-VALUE/g"
- env CIYAM_NODE_COMMAND="messages update 0000002 name=Renamed (should fail)" node ../webui/ciyam.js -test "" 22222 $device "" none
- env CIYAM_NODE_COMMAND="messages update 0000003 name=Renamed (should fail)" node ../webui/ciyam.js -test "" 22222 $device "" none
+ env CIYAM_NODE_COMMAND="messages review 0000001" node ../webui/ciyam.js -test "" 22222 $device "" $dummy_password | sed "s/0000003-[0-9a-f]*/0000003-NEW-ROOM-UUID-VALUE/g"
+ env CIYAM_NODE_COMMAND="messages update 0000002 name=Renamed (should fail)" node ../webui/ciyam.js -test "" 22222 $device "" $dummy_password
+ env CIYAM_NODE_COMMAND="messages update 0000003 name=Renamed (should fail)" node ../webui/ciyam.js -test "" 22222 $device "" $dummy_password
 
  echo "Join new romm for 'test-2', create an initial message for the new room and output entrace room details."
- env CIYAM_NODE_COMMAND="messages review 0000003 from=${new_room:8}" node ../webui/ciyam.js -test "" 22222 $device "" none
- env CIYAM_NODE_COMMAND="messages create 0000003 from=0;text=hi..." node ../webui/ciyam.js -test "" 22222 $device "" none
- env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 22222 $device "" none
+ env CIYAM_NODE_COMMAND="messages review 0000003 from=${new_room:8}" node ../webui/ciyam.js -test "" 22222 $device "" $dummy_password
+ env CIYAM_NODE_COMMAND="messages create 0000003 from=0;text=hi..." node ../webui/ciyam.js -test "" 22222 $device "" $dummy_password
+ env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 22222 $device "" $dummy_password
 
  echo "Output entrance room details for 'test-1' and then review messages in rooms 0000001, 0000002 and 0000003."
- env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 11111 $device "" none
- env CIYAM_NODE_COMMAND="messages review 0000001" node ../webui/ciyam.js -test "" 11111 $device "" none
- env CIYAM_NODE_COMMAND="messages review 0000002" node ../webui/ciyam.js -test "" 11111 $device "" none
- env CIYAM_NODE_COMMAND="messages update 0000003 for=bad_user" node ../webui/ciyam.js -test "" 11111 $device "" none
- env CIYAM_NODE_COMMAND="messages review 0000003 from=0" node ../webui/ciyam.js -test "" 11111 $device "" none | sed "s/0000003-[0-9a-f]*/0000003-NEW-ROOM-UUID-VALUE/g"
+ env CIYAM_NODE_COMMAND=messages node ../webui/ciyam.js -test "" 11111 $device "" $dummy_password
+ env CIYAM_NODE_COMMAND="messages review 0000001" node ../webui/ciyam.js -test "" 11111 $device "" $dummy_password
+ env CIYAM_NODE_COMMAND="messages review 0000002" node ../webui/ciyam.js -test "" 11111 $device "" $dummy_password
+ env CIYAM_NODE_COMMAND="messages update 0000003 for=bad_user" node ../webui/ciyam.js -test "" 11111 $device "" $dummy_password
+ env CIYAM_NODE_COMMAND="messages review 0000003 from=0" node ../webui/ciyam.js -test "" 11111 $device "" $dummy_password | sed "s/0000003-[0-9a-f]*/0000003-NEW-ROOM-UUID-VALUE/g"
 fi

@@ -66,7 +66,7 @@ Review messages in room 0000001.
 ]
 Create a new user '11111' named 'test-1'.
 11111
-Connect using 11111 with 'none' and output entrance room details.
+Connect using 11111 with '$dummy_password' and output entrance room details.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@test-1
@@ -198,7 +198,7 @@ Create a new user '22222' named 'test-2'.
 22222
 Attempt to transfer 0000001 ownership to 'test-2'.
 Error: Ownership assignment for this room is not permitted.
-Connect using 22222 with 'none' and output entrance room details.
+Connect using 22222 with '$dummy_password' and output entrance room details.
 CIYAM [http://localhost:13031]
 {"name":"CIYAM", "version":"0.0.0", "security":"(NONE)"}
 [std]@test-2
