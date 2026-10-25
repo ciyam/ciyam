@@ -155,13 +155,16 @@ function keys_take_link( )
    history.replaceState( null, "", location.pathname + location.search + "#mine" );
 }
 
-function keys_pending( )
+// NOTE: Taken only once the node's answer could be read (found by review, 2026-10-26) - after a time-out or an error it is
+// kept for the next showing of the card, rather than the QR code needing scanning again.
+function keys_pending( take )
 {
    try
    {
       var access = sessionStorage.getItem( c_keys_pending_name ) || "";
 
-      sessionStorage.removeItem( c_keys_pending_name );
+      if( take )
+         sessionStorage.removeItem( c_keys_pending_name );
 
       return access;
    }
@@ -286,9 +289,12 @@ async function render_keys( )
    if( ( ciyam.access === "" ) || ( ciyam.access !== asked_for ) || ( render !== g_keys_render ) )
       return;
 
-   var pending = keys_pending( );
+   var pending = keys_pending( false );
    var here = keys_kept_here( );
    var state = keys_state( ( here !== "" ) || ( pending !== "" ), response );
+
+   if( state !== "unreadable" )
+      keys_pending( true );
 
    g_keys.node = String( response ).trim( );
 
@@ -563,8 +569,21 @@ async function keys_make_and_save( entropy, lede )
 
    var uk = keys_module( "user_keys" );
    var rounds = uk.c_default_rounds;
-   var access = await uk.access_key( entropy, rounds );
-   var seeds = uk.seeds_of( entropy );
+   var access = "";
+   var seeds = null;
+
+   try
+   {
+      access = await uk.access_key( entropy, rounds );
+      seeds = uk.seeds_of( entropy );
+   }
+   catch( e )
+   {
+      keys_busy( "" );
+      set_error( "keys_error", "Your keys could not be made: " + ( e && e.message ? e.message : "reload the page to try again." ) );
+
+      return;
+   }
 
    keys_busy( "Saving your keys…" );
 
@@ -653,11 +672,57 @@ function keys_draw_contacts( )
    document.getElementById( "keys_contacts" ).hidden = ( rows.length > 0 );
 }
 
-// NOTE: Locked again with the change, and sent - the card changes once the node has them.
-async function keys_store_contacts( contacts, busy_text )
+// NOTE: Others' public keys as the node has them now, or null - another browser may have changed them since this page read
+// them (found by review, 2026-10-26), and a change made to this page's copy would undo that one.
+async function keys_latest_contacts( )
+{
+   var response = await request( function( done ) { return ciyam.fetch( keys_url( "" ), "GET", done ); } );
+
+   try
+   {
+      var opened = await keys_module( "user_keys" ).unlock( g_keys.access, String( response ).trim( ) );
+
+      g_keys.node = String( response ).trim( );
+
+      return opened.contacts;
+   }
+   catch( e )
+   {
+      return null;
+   }
+}
+
+// NOTE: "change" made to the node's latest - it gives a problem to say, or "" - then locked again and sent; the card changes
+// once the node has them.
+async function keys_store_contacts( change, busy_text )
 {
    set_error( "keys_add_error", "" );
    keys_busy( busy_text );
+
+   var latest = await keys_latest_contacts( );
+
+   if( latest === null )
+   {
+      keys_busy( "" );
+      set_error( "keys_add_error", "Your keys could not be read again from the node - reload the page to try again." );
+
+      return false;
+   }
+
+   var contacts = Object.assign( { }, latest );
+   var problem = change( contacts );
+
+   if( problem !== "" )
+   {
+      keys_busy( "" );
+
+      g_keys.contacts = latest;
+
+      keys_draw_contacts( );
+      set_error( "keys_add_error", problem );
+
+      return false;
+   }
 
    var saved = await keys_send( g_keys.access, g_keys.rounds, { primary: g_keys.primary, secondary: g_keys.secondary, contacts: contacts },
     "keys_add_error", "That" );
@@ -687,11 +752,17 @@ async function keys_add_contact( )
       return;
    }
 
-   var contacts = Object.assign( { }, g_keys.contacts );
+   var add = function( contacts )
+   {
+      var again = contact_problem( name, key, contacts, g_keys.own );
 
-   contacts[ name ] = key;
+      if( again === "" )
+         contacts[ name ] = key;
 
-   if( await keys_store_contacts( contacts, "Saving " + name + "'s key…" ) )
+      return again;
+   };
+
+   if( await keys_store_contacts( add, "Saving " + name + "'s key…" ) )
    {
       document.getElementById( "keys_add_name" ).value = "";
       document.getElementById( "keys_add_key" ).value = "";
@@ -703,11 +774,7 @@ async function keys_remove_contact( name )
    if( !confirm( "Remove " + name + "'s public key? You can add it again later." ) )
       return;
 
-   var contacts = Object.assign( { }, g_keys.contacts );
-
-   delete contacts[ name ];
-
-   await keys_store_contacts( contacts, "Removing " + name + "'s key…" );
+   await keys_store_contacts( function( contacts ) { delete contacts[ name ]; return ""; }, "Removing " + name + "'s key…" );
 }
 
 // ---- The words typed
@@ -749,7 +816,19 @@ async function keys_enter_go( )
    // NOTE: Made with the rounds the node's were locked with, so it is the access key they were locked under.
    keys_busy( "Securing your keys…" );
 
-   var access = await uk.access_key( entropy, uk.rounds_of( g_keys.node ) );
+   var access = "";
+
+   try
+   {
+      access = await uk.access_key( entropy, uk.rounds_of( g_keys.node ) );
+   }
+   catch( e )
+   {
+      keys_busy( "" );
+      set_error( "keys_error", "Your keys could not be opened: " + ( e && e.message ? e.message : "reload the page to try again." ) );
+
+      return;
+   }
 
    keys_busy( "" );
 
@@ -771,8 +850,8 @@ async function keys_enter_go( )
 
 function keys_start_again( )
 {
-   if( !confirm( "Set up new keys from new twelve words? The keys on the node are replaced, and anyone with your old public key"
-    + " will need your new one." ) )
+   if( !confirm( "Set up new keys from new twelve words? The keys on the node are replaced, the public keys you've added for others"
+    + " are removed, and anyone with your old public key will need your new one." ) )
       return;
 
    keys_start( );
