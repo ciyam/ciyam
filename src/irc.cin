@@ -140,7 +140,7 @@ CIYAM_PAUSE_SECONDS=1
 ;
 @:LOOP
 ;
-IS_DIRECT_ROOM=
+IS_DIRECT=
 ;
 @ifdef $INVITATION_INFORMATION
 .run_script !irc_add_room "@name=$INVITATION_INFORMATION"
@@ -531,21 +531,8 @@ MESSAGE=@file:$FILE_NAME
 @ifndef $NAMES
 MESSAGE=_ $MESSAGE
 ;
-; NOTE: If is either in a DM room and has the user's public
-; key or is not a DM room and has this room's shared secret
-; then will encrypt the message accordingly.
-@ifndef $DIRECT_PUB_SUFFIX
-HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.secret.$ROOM
-@else
-HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$DIRECT_PUB_SUFFIX
-@endif
-;
-@ifdef $HAS_KEY_FILE
-@ifndef $DIRECT_PUB_SUFFIX
-KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.secret.$ROOM
-@else
-KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$DIRECT_PUB_SUFFIX
-@endif
+; NOTE: If is able to encrypt the message to will now do so.
+@ifdef $KEY_FILE_DATA
 ;
 PREFIX=
 @ifdef $DIRECT_PUB_SUFFIX
@@ -589,25 +576,44 @@ DISPLAY_USERS=
 LOCAL=:
 @endif
 ;
-IS_DIRECT_ROOM=
+IS_DIRECT=
+KEY_FILE_DATA=
+DIRECT_PUB_SUFFIX=
+;
 POS=@strpos:_:$ALL_USERS
+;
 @ifdef $POS
 ROOM_NAME=@substr:0,$POS:$ALL_USERS
 FIRST=@substr:0,1:$ROOM_NAME
 @ifeq "$FIRST" "/"
-IS_DIRECT_ROOM=1
+IS_DIRECT=1
 @endif
+;
 POS=@$POS+1
 ALL_USERS=@substr:$POS:$ALL_USERS
 OTHER_USER=$ALL_USERS@
 OTHER_USER=@repstr:@$USER@/:$OTHER_USER
 OTHER_USER=@repstr:@/:$OTHER_USER
-@ifndef $IS_DIRECT_ROOM
-DIRECT_PUB_SUFFIX=
-@else
+;
+@ifdef $IS_DIRECT
 DIRECT_PUB_SUFFIX=$OTHER_USER
 @endif
+;
+@ifndef $DIRECT_PUB_SUFFIX
+HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.secret.$ROOM
+@else
+HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$DIRECT_PUB_SUFFIX
 @endif
+;
+@ifdef $HAS_KEY_FILE
+@ifndef $DIRECT_PUB_SUFFIX
+KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.secret.$ROOM
+@else
+KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$DIRECT_PUB_SUFFIX
+@endif
+@endif
+@endif
+;
 @retain ALL_IRC_USERS
 <names_extra.cin $USER "$ALL_USERS_EXTRA"
 DISPLAY_USERS=@strlit:$ALL_IRC_USERS
@@ -768,21 +774,7 @@ CHECK_ENCRYPTED=@substr:1,2:$DECODED_MESSAGE
 @ifeq "$CHECK_ENCRYPTED" "$ENCRYPTED_PREFIX"
 MSG_KEY=
 ;
-; NOTE: If is either in a DM room and has the user's public
-; key or is not a DM room and has this room's shared secret
-; then will decrypt the message accordingly.
-@ifndef $DIRECT_PUB_SUFFIX
-HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.secret.$ROOM
-@else
-HAS_KEY_FILE=@files:$LOCAL_FILES_DIR:.irc_$USER.public.$DIRECT_PUB_SUFFIX
-@endif
-;
-@ifdef $HAS_KEY_FILE
-@ifndef $DIRECT_PUB_SUFFIX
-KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.secret.$ROOM
-@else
-KEY_FILE_DATA=@file:$LOCAL_FILES_DIR/.irc_$USER.public.$DIRECT_PUB_SUFFIX
-@endif
+@ifdef $KEY_FILE_DATA
 ;
 PREFIX=
 @ifdef $DIRECT_PUB_SUFFIX
@@ -796,7 +788,11 @@ DECODED_MESSAGE=$MESSAGE
 MESSAGE=
 ;
 @else
+@ifdef $DIRECT_PUB_SUFFIX
 DECODED_MESSAGE=$LOCK_EMOJI ($CHECK_USER_NAME)
+@else
+DECODED_MESSAGE=$LOCK_EMOJI (room key unknown)
+@endif
 @endif
 ;
 @endif
