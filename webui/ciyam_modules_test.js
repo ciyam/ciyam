@@ -611,7 +611,8 @@ async function steps( module_class, list )
     await refused( sm.seal( own, "hi", { salt: "XYZ" } ) ) ],
     [ "That message has been changed, or was sealed with another secret.", "That message has been changed, or was sealed with another secret.",
     "That is not a sealed message.", "That is not a sealed message.", "That message is too long to seal - at most 500 bytes.",
-    "A secret is 64 hex digits - the own secret, or one with another person.", "A salt is 32 lower-case hex digits, and the padding has no CR." ] );
+    "A secret is 64 hex digits - the own secret, or one with another person - or a room key's 32.",
+    "A salt is 32 lower-case hex digits, and the padding has no CR." ] );
    // NOTE: The padding (Ian, 2026-10-25) - the padded message always 500 bytes and two CRs: a message of 500 bytes with none; up
    // to 10 left over all before it; more than that split at random, some before and some after. Each opened again.
    var padding_of = async function( message )
@@ -639,8 +640,22 @@ async function steps( module_class, list )
       return ( r.bytes === 502 ) && ( r.before >= 1 ) && ( r.after >= 1 ) && r.opened;
    } ), new Set( short_ones.map( function( r ) { return r.before; } ) ).size > 10 ], [ true, true ] );
    check( "- how many go before: all up to 10, otherwise at least one each side; a random number in range",
-    [ sm.padding_before( 0 ), sm.padding_before( 7 ), sm.padding_before( 10 ), sm.padding_before( 11 ) >= 1 && sm.padding_before( 11 ) <= 10, Array.from( { length: 200 }, function( ) { return sm.random_below( 3 ); } )
-    .every( function( v ) { return v >= 0 && v < 3; } ) ], [ 0, 7, 10, true, true ] );
+    [ sm.padding_before( 0 ), sm.padding_before( 7 ), sm.padding_before( 10 ), sm.padding_before( 11 ) >= 1 && sm.padding_before( 11 ) <= 10,
+    Array.from( { length: 200 }, function( ) { return sm.random_below( 3 ); } ).every( function( v ) { return v >= 0 && v < 3; } ) ],
+    [ 0, 7, 10, true, true ] );
+
+   // NOTE: Under a room key (Ian, 2026-10-25) - "irc_extra.cin"'s steps for a room that is not direct: its 32 hex digits are the
+   // secret as they are - ChaCha20 under them and the salt, the HMAC (Node's own) keyed "mac", them and the salt.
+   var room_secret = "00112233445566778899aabbccddeeff";
+   var under_room = await sm.seal( room_secret, "To the room" );
+   var room_parts = under_room.substring( 2 ).split( "\r" );
+   var room_padded = new TextDecoder( ).decode( await m.ciyam_module_named( "chacha20" ).crypt( room_secret + room_parts[ 0 ],
+    hex_bytes( room_parts[ 1 ] ) ) );
+
+   check( "sealed under a room key's 32 hex digits, as the console does, and opened", [ room_padded.split( "\r" )[ 1 ],
+    require( "crypto" ).createHmac( "sha256", "mac" + room_secret + room_parts[ 0 ] ).update( room_parts[ 1 ] ).digest( "hex" ).substring( 0, 32 )
+    === room_parts[ 2 ], await sm.open( room_secret, under_room ), await refused( sm.seal( room_secret + "0", "hi" ) ) ],
+    [ "To the room", true, "To the room", "A secret is 64 hex digits - the own secret, or one with another person - or a room key's 32." ] );
 
    // NOTE: To another person, as "x" now does (Ian, 2026-10-22) - from the console (2026-10-22): each one's public key, as
    // "irc.cin" shows it to scan, and "@shared" between one's key and the other's public key, the same from either side.
@@ -726,7 +741,7 @@ async function steps( module_class, list )
    check( "locked under the access key - as worked out without the module, given a salt and rounds", await uk.lock( known_access, known_contents,
     { salt: known_salt, rounds: 1000 } ), known_locked );
    check( "- unlocked, with the rounds they were made with", await uk.unlock( known_access, known_locked ),
-    Object.assign( { }, known_contents, { rounds: 1000 } ) );
+    Object.assign( { }, known_contents, { rooms: { }, rounds: 1000 } ) );
    check( "- the rounds read before opening them, so typed words make the same access key", uk.rounds_of( known_locked ), 1000 );
 
    var locked_afresh = await uk.lock( known_access, known_contents );
@@ -760,6 +775,17 @@ async function steps( module_class, list )
     await not_locked( known_access, { contacts: { } } ), await not_locked( known_access, { primary: seeds.primary, secondary: seeds.secondary,
     contacts: { someone: "abc" } } ) ],
     [ "An access key is 64 hex digits.", "The keys are two of 64 hex digits.", "A public key is 64 hex digits, kept by a name." ] );
+
+   // NOTE: Room keys (Ian, 2026-10-25) - 32 hex digits by the room's number, locked with the keys; none, and nothing is added.
+   var room_key = "0123456789abcdef0123456789abcdef";
+   var with_rooms = await uk.lock( known_access, Object.assign( { }, known_contents, { rooms: { "0000004": room_key.toUpperCase( ) } } ) );
+
+   check( "room keys - locked with the keys by room, in lower case, and unlocked", ( await uk.unlock( known_access, with_rooms ) ).rooms,
+    { "0000004": room_key } );
+   check( "- a room key not 32 hex digits, or a room not a number of 7, refused", [
+    await not_locked( known_access, Object.assign( { }, known_contents, { rooms: { "0000004": room_key + "00" } } ) ),
+    await not_locked( known_access, Object.assign( { }, known_contents, { rooms: { "4": room_key } } ) ) ],
+    [ "A room key is 32 hex digits, kept by its room's number.", "A room key is 32 hex digits, kept by its room's number." ] );
 
    var by_run = ( await new uk( { } ).run( "lock " + test_entropy ) ).split( " " );
 

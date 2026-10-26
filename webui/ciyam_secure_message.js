@@ -231,10 +231,12 @@ ciyam_register_module( class extends ciyam_module
       return this.ed25519( ).shared_secret( this.check_seed( seed ), String( public_key || "" ).trim( ).toLowerCase( ) );
    }
 
+   // NOTE: 64 hex digits - the own secret, or one with another person - or a room key's 32 (Ian, 2026-10-25: "irc.cin"'s "k"
+   // makes one, and "irc_extra.cin" uses it as the secret as it is).
    static check_secret( secret )
    {
-      if( !/^[0-9a-f]{64}$/.test( String( secret || "" ) ) )
-         throw new Error( "A secret is 64 hex digits - the own secret, or one with another person." );
+      if( !/^([0-9a-f]{32}|[0-9a-f]{64})$/.test( String( secret || "" ) ) )
+         throw new Error( "A secret is 64 hex digits - the own secret, or one with another person - or a room key's 32." );
    }
 
    // NOTE: Under "secret" - the own secret, or one with another person. "options" fixes the salt, the padding before and the

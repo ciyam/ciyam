@@ -88,6 +88,7 @@ ok   - 500 bytes sealed, the most, with no padding
 ok   - 10 left over, all before it
 ok   - more than 10 left over, some before and some after, split at random
 ok   - how many go before: all up to 10, otherwise at least one each side; a random number in range
+ok   sealed under a room key's 32 hex digits, as the console does, and opened
 ok   to another person - the public keys and the secret between them, as the console's, from either side
 ok   - sealed by one, opened by the other, and not under either's own secret
 ok   - a public key not a key, said
@@ -107,6 +108,8 @@ ok   locked afresh - its own salt each time, the default rounds, unlocked again
 ok   not unlocked - another access key, changed, not locked keys, or an older form
 ok   - more rounds than ten times the default refused, before any hashing
 ok   not locked - no access key, no keys, or a public key not one
+ok   room keys - locked with the keys by room, in lower case, and unlocked
+ok   - a room key not 32 hex digits, or a room not a number of 7, refused
 ok   through run - access, lock, unlock, words and entropy
 ok   - anything else said
 

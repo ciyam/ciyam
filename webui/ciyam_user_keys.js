@@ -123,11 +123,14 @@ ciyam_register_module( class extends ciyam_module
       return { primary: this.hex_of( ed.seed_of( text ) ), secondary: this.hex_of( ed.seed_of( text.split( "" ).reverse( ).join( "" ) ) ) };
    }
 
-   // NOTE: What is kept - checked, so nothing that could not be used is locked: the two keys, and others' public keys by name.
+   // NOTE: What is kept - checked, so nothing that could not be used is locked: the two keys, others' public keys by name, and
+   // room keys by room (Ian, 2026-10-25: 32 hex digits from "irc.cin"'s "k", used as they are).
    static contents_text( contents )
    {
       var given = ( contents || { } ).contacts || { };
+      var given_rooms = ( contents || { } ).rooms || { };
       var contacts = { };
+      var rooms = { };
 
       [ "primary", "secondary" ].forEach( function( which )
       {
@@ -145,7 +148,23 @@ ciyam_register_module( class extends ciyam_module
          contacts[ name ] = key;
       } );
 
-      return JSON.stringify( { primary: contents.primary, secondary: contents.secondary, contacts: contacts } );
+      Object.keys( given_rooms ).sort( ).forEach( function( room )
+      {
+         var key = String( given_rooms[ room ] || "" ).toLowerCase( );
+
+         if( !/^[0-9]{7}$/.test( room ) || !/^[0-9a-f]{32}$/.test( key ) )
+            throw new Error( "A room key is 32 hex digits, kept by its room's number." );
+
+         rooms[ room ] = key;
+      } );
+
+      var text = { primary: contents.primary, secondary: contents.secondary, contacts: contacts };
+
+      // NOTE: Only when there are some - so keys with none lock to just what they did before room keys.
+      if( Object.keys( rooms ).length > 0 )
+         text.rooms = rooms;
+
+      return JSON.stringify( text );
    }
 
    static async key_for( access_key, salt )
@@ -211,7 +230,8 @@ ciyam_register_module( class extends ciyam_module
       var chacha = this.module_named( "chacha20" );
       var contents = JSON.parse( new TextDecoder( ).decode( await chacha.crypt( key, chacha.bytes_of( parts[ 3 ] ) ) ) );
 
-      return { primary: contents.primary, secondary: contents.secondary, contacts: contents.contacts || { }, rounds: rounds };
+      return { primary: contents.primary, secondary: contents.secondary, contacts: contents.contacts || { }, rooms: contents.rooms || { },
+       rounds: rounds };
    }
 
    // NOTE: "access <entropy>", "lock <entropy>" (the keys from it, no one else's yet - the access key shown before them),
