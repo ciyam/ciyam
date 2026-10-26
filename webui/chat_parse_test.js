@@ -916,9 +916,9 @@ check( "- given as the console shows it, or alone, spaces and case aside", [ cp.
 check( "- another room's, or not 32 hex digits, refused and said", [ cp.parse_room_key( "0000005#" + room_key, "0000004" ).problem,
  cp.parse_room_key( room_key.slice( 1 ), "0000004" ).problem, cp.parse_room_key( "0000004#" + room_key + "0", "0000004" ).problem,
  cp.parse_room_key( "", "0000004" ).problem ], [ "That key is for room #0000005, not this one (#0000004).",
- "A room key is 0000004# and 32 letters and digits, 0-9 and a-f - copy all of it.",
- "A room key is 0000004# and 32 letters and digits, 0-9 and a-f - copy all of it.",
- "A room key is 0000004# and 32 letters and digits, 0-9 and a-f - copy all of it." ] );
+ "A room key is 0000004# followed by 32 letters and digits (0-9, a-f) - copy all of it.",
+ "A room key is 0000004# followed by 32 letters and digits (0-9, a-f) - copy all of it.",
+ "A room key is 0000004# followed by 32 letters and digits (0-9, a-f) - copy all of it." ] );
 check( "- a message that is just one, as shared in a direct message", [ cp.room_key_in_message( " 0000004#" + room_key + " " ),
  cp.room_key_in_message( "the key: 0000004#" + room_key ), cp.room_key_in_message( "0000004#" + room_key.toUpperCase( ) ) ],
  [ { room: "0000004", key: room_key }, null, null ] );

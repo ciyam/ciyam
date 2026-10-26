@@ -1384,7 +1384,7 @@ function parse_room_key( text, room )
    var key = whole ? whole[ 2 ] : given;
 
    if( !/^[0-9a-f]{32}$/.test( key ) )
-      return { key: "", problem: "A room key is " + room + "# and 32 letters and digits, 0-9 and a-f - copy all of it." };
+      return { key: "", problem: "A room key is " + room + "# followed by 32 letters and digits (0-9, a-f) - copy all of it." };
 
    return { key: key, problem: "" };
 }

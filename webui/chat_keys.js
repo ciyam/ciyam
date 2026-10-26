@@ -292,7 +292,20 @@ async function chat_seal_with( secret, text )
 
 // NOTE: The room key for "room" set - or taken away, with "" - on the node's latest copy of the keys (another browser, or My
 // account, may have changed them since they were read), locked again and sent. "" when done, else what to say.
-async function chat_keys_save_room( room, key )
+// NOTE: One change at a time - each re-reads the node's copy before locking it again, so two at once would lose the first (found
+// by review: the button under a shared key while Room Details was saving).
+var g_room_key_saving = Promise.resolve( );
+
+function chat_keys_save_room( room, key )
+{
+   var saved = g_room_key_saving.then( function( ) { return chat_keys_save_room_now( room, key ); } );
+
+   g_room_key_saving = saved.catch( function( ) { } );
+
+   return saved;
+}
+
+async function chat_keys_save_room_now( room, key )
 {
    if( !g_chat_keys )
       return "Set up your keys on My account first.";
@@ -536,7 +549,8 @@ async function do_remove_room_key( )
 }
 
 // NOTE: Under a message in a direct message that is just a room key ("room_key_in_message( )") for a room this person is in,
-// that this browser has not got - added with one press.
+// that this browser has not got - added with one press. One in place of a key already kept is asked first: whoever sent it could
+// read what is sent there with it, and members with the old key could not (found by review).
 function chat_offer_room_key( element, text )
 {
    var shared = room_key_in_message( text );
@@ -557,10 +571,18 @@ function chat_offer_room_key( element, text )
    }
    else
    {
-      button.textContent = "Add this room key for " + entry.name;
+      var had = g_chat_keys.rooms.hasOwnProperty( shared.room );
+
+      button.textContent = ( had ? "Use this room key for " : "Add this room key for " ) + entry.name;
 
       button.addEventListener( "click", function( )
       {
+         var kept = g_chat_keys ? ( g_chat_keys.rooms[ shared.room ] || "" ) : "";
+
+         if( ( kept !== "" ) && ( kept !== shared.key ) && !confirm( "You already have a key for " + entry.name + ". Use this one"
+          + " instead? Your messages there will be encrypted with it - only those who have this key can read them." ) )
+            return;
+
          button.disabled = true;
 
          chat_keys_save_room( shared.room, shared.key ).then( function( problem )
