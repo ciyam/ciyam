@@ -1410,6 +1410,21 @@ function room_key_in_message( text )
    return lead ? { room: lead[ 1 ], key: lead[ 2 ].toLowerCase( ) } : null;
 }
 
+// NOTE: A message that starts with a room key, the key cut short - its room, and its first and last four digits (Ian, 2026-10-27:
+// not left on the screen for anyone looking over a shoulder). Any other message as it is.
+function room_key_masked( text )
+{
+   var value = String( text || "" ).replace( /^\s+/, "" );
+   var lead = c_room_key_leading.exec( value );
+
+   if( !lead )
+      return String( text || "" );
+
+   var key = lead[ 2 ].toLowerCase( );
+
+   return lead[ 1 ] + "#" + key.substr( 0, 4 ) + "…" + key.substr( -4 ) + value.substring( lead[ 0 ].length );
+}
+
 // NOTE: Whether a message can be sealed - at most 500 bytes of it ("ciyam_secure_message.js", as "irc.cin"'s "MAX_TO_ENCRYPT",
 // the padding fitted to what is left over since 2026-10-25).
 const c_sealed_most_bytes = 500;
@@ -3594,6 +3609,7 @@ if( typeof module !== "undefined" )
       room_key_text: room_key_text,
       parse_room_key: parse_room_key,
       room_key_in_message: room_key_in_message,
+      room_key_masked: room_key_masked,
       dm_existing: dm_existing,
       dm_outsiders: dm_outsiders,
       name_list: name_list,

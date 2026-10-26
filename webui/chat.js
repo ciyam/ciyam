@@ -4534,10 +4534,11 @@ function draw_message_text( element, text, room )
    element.classList.toggle( "chat-unreadable", unreadable !== "" );
    element.classList.toggle( "chat-locked", message_prefix( text ) === "X" );
 
+   // NOTE: A room key sent unencrypted is cut short too ("room_key_masked( )").
    if( unreadable !== "" )
       element.textContent = unreadable;
    else
-      draw_formatted( element, format_pieces( text ) );
+      draw_formatted( element, format_pieces( room_key_masked( text ) ) );
 }
 
 // NOTE: A message's words with their colour and style - a span each run ("format_pieces( )"), the words always as text and

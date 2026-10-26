@@ -207,8 +207,9 @@ function chat_draw_opened( element, opened )
    element.classList.toggle( "chat-locked", !opened.ok );
    element.classList.toggle( "chat-encrypted", opened.ok );
 
+   // NOTE: A room key in it cut short - the button under it says whether it was added ("room_key_masked( )", Ian, 2026-10-27).
    if( opened.ok )
-      draw_formatted( element, format_pieces( opened.text ) );
+      draw_formatted( element, format_pieces( room_key_masked( opened.text ) ) );
    else
       element.textContent = "Encrypted message - not readable with the keys you have";
 

@@ -931,6 +931,11 @@ check( "- 64 hex digits taken too", [ cp.room_key_in_message( "0000004#" + room_
  { key: room_key + room_key, problem: "" } ] );
 check( "- the whole message pasted, words after the key", cp.parse_room_key( "0000004#" + room_key + " for General", "0000004" ),
  { key: room_key, problem: "" } );
+// NOTE: Not left on the screen for anyone looking over a shoulder (Ian, 2026-10-27).
+check( "- shown cut short in a message: its room, the first and last four digits, the words after it", [
+ cp.room_key_masked( " 0000004#" + room_key.toUpperCase( ) + " for General" ), cp.room_key_masked( "0000004#" + room_key + room_key ),
+ cp.room_key_masked( "the key: 0000004#" + room_key ), cp.room_key_masked( "" ) ],
+ [ "0000004#0123…cdef for General", "0000004#0123…cdef", "the key: 0000004#" + room_key, "" ] );
 check( "found in the rail", cp.find_dm_room( [ { room: "0000016", name: "/admin/verify-a", owner: "admin" } ], [ "verify-a", "admin" ] ).room, "0000016" );
 check( "their request found", cp.dm_existing( [ "verify-a" ], "admin", [ ], [ { room: "0000016", name: "/admin/verify-a", inviter: "verify-a" } ], [ ] ),
  { kind: "request", room: "0000016" } );
