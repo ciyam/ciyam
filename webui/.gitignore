@@ -1,2 +1,5 @@
 # Ignore any user keys.
 *.keys
+
+# Ignore known devices.
+.devices
