@@ -432,6 +432,11 @@ check( "an encrypted message said so, not shown as its ciphertext", [ cp.message
  [ "Encrypted message - this chat cannot read it yet", "A message of a kind this chat cannot show yet", "" ] );
 check( "- and in the plain places, the pinned line and Home", [ cp.message_plain_text( "X\r9f3c" ),
  cp.message_plain_text( "\u001b[31mred\u001b[0m words" ) ], [ "Encrypted message - this chat cannot read it yet", "red words" ] );
+// NOTE: Only a message that isn't encrypted is marked (Ian, 2026-10-26) - not in the entrance room, nor one of only spaces.
+check( "a message not encrypted is marked, as 'irc.cin' marks one", [ cp.is_unencrypted_message( "hello", "0000069" ),
+ cp.is_unencrypted_message( "X\r9f3c", "0000069" ), cp.is_unencrypted_message( "Q\rzz", "0000069" ),
+ cp.is_unencrypted_message( "hello", "0000000" ), cp.is_unencrypted_message( "  \n ", "0000069" ),
+ cp.is_unencrypted_message( "hi", "0000070" ) ], [ true, false, false, false, false, true ] );
 
 heading( "message size" );
 

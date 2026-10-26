@@ -191,6 +191,7 @@ ok   - so nothing typed can start 'X\r'
 ok   a message's kind from its start - a letter and a CR
 ok   an encrypted message said so, not shown as its ciphertext
 ok   - and in the plain places, the pinned line and Home
+ok   a message not encrypted is marked, as 'irc.cin' marks one
 
 == message size ================================================
 ok   letters are a byte each

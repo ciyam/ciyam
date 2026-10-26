@@ -393,6 +393,19 @@ function message_plain_text( text )
    return message_unreadable_label( text ) || strip_format( text );
 }
 
+// NOTE: Whether a message is marked as not encrypted - a warning sign before it, as "irc.cin" marks one (Ian, 2026-10-26: as
+// nearly every message should be encrypted, only those that aren't are marked, as Element does). Not in the entrance room, nor
+// a message of only spaces; an encrypted one ("X\r") or one of another kind is never marked.
+function is_unencrypted_message( text, room )
+{
+   var value = String( text || "" );
+
+   if( ( message_prefix( value ) !== "" ) || is_entrance_room( room ) )
+      return false;
+
+   return value.trim( ) !== "";
+}
+
 // NOTE: Whether the message box keeps the focus once a message is sent - so a follow-up can be typed
 // straight away, on a computer. On a phone the focus keeps the on-screen keyboard up, over half the
 // screen and the message just sent (Ian, 2026-10-07), so there it lets go. "coarse_pointer" - a touch
@@ -3516,6 +3529,7 @@ if( typeof module !== "undefined" )
       message_prefix: message_prefix,
       message_unreadable_label: message_unreadable_label,
       message_plain_text: message_plain_text,
+      is_unencrypted_message: is_unencrypted_message,
       keeps_focus_after_send: keeps_focus_after_send,
       message_bytes: message_bytes,
       c_max_message_bytes: c_max_message_bytes,

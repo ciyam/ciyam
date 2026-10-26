@@ -203,6 +203,7 @@ function chat_encryption_note( )
 function chat_draw_opened( element, opened )
 {
    element.classList.toggle( "chat-unreadable", !opened.ok );
+   element.classList.toggle( "chat-locked", !opened.ok );
    element.classList.toggle( "chat-encrypted", opened.ok );
 
    if( opened.ok )
@@ -259,7 +260,7 @@ function chat_keys_redraw( )
    document.querySelectorAll( "#message_list .chat-message-body" ).forEach( function( body )
    {
       if( message_prefix( body.dataset.text || "" ) === "X" )
-         draw_message_text( body, body.dataset.text );
+         draw_message_text( body, body.dataset.text, g_room );
    } );
 }
 

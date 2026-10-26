@@ -3468,7 +3468,7 @@ function build_message( entry )
    if( entry.deleted )
       body.textContent = "Message deleted";
    else
-      draw_message_text( body, entry.text );
+      draw_message_text( body, entry.text, g_room );
 
    body.dataset.text = entry.text;
 
@@ -4514,16 +4514,22 @@ function render_composer_mirror( )
 }
 
 // NOTE: A stored message, drawn - one the chat cannot read (an encrypted one, "X\r" - Ian, 2026-10-20) says so in place of its
-// ciphertext ("message_unreadable_label( )").
-function draw_message_text( element, text )
+// ciphertext ("message_unreadable_label( )"). "room", for a message in the open room's list, marks one that isn't encrypted
+// (Ian, 2026-10-26 - "is_unencrypted_message( )"); the padlock is only for an encrypted one that can't be read.
+function draw_message_text( element, text, room )
 {
+   element.classList.toggle( "chat-unencrypted", ( room !== undefined ) && is_unencrypted_message( text, room ) );
+   element.classList.remove( "chat-locked" );
+
    // NOTE: Opened, in a direct message with a key for the other person ("chat_keys.js", 2026-10-25).
    if( ( message_prefix( text ) === "X" ) && chat_open_message( element, text ) )
       return;
 
    var unreadable = message_unreadable_label( text );
 
+   element.classList.remove( "chat-encrypted" );
    element.classList.toggle( "chat-unreadable", unreadable !== "" );
+   element.classList.toggle( "chat-locked", message_prefix( text ) === "X" );
 
    if( unreadable !== "" )
       element.textContent = unreadable;

@@ -482,11 +482,25 @@
    color: var(--color-chat-text-meta);
 }
 
-/* NOTE: An encrypted message opened with your keys (2026-10-25) - a small padlock before it, as the console marks one. */
-.chat-encrypted::before
+/* NOTE: Only the exception is marked (Ian, 2026-10-26, as "irc.cin" does): an encrypted message opened has nothing before it
+   ("chat-encrypted"); one that can't be read - corrupt, or no key for it - a small padlock; one that isn't encrypted a warning
+   sign. Drawn before the words, so neither is copied with them. */
+.chat-locked::before,
+.chat-unencrypted::before
+{
+   margin-right: 5px;
+   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif;
+   font-size: 0.8em;
+   font-style: normal;
+}
+
+.chat-locked::before
 {
    content: "\1F512";
-   margin-right: 5px;
-   font-size: 0.8em;
    opacity: 0.6;
+}
+
+.chat-unencrypted::before
+{
+   content: "\26A0\FE0F";
 }
