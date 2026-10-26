@@ -43,7 +43,7 @@ var g_keys_render = 0;
 function fresh_keys( )
 {
    return { samples: [ ], pops: 0, entropy: "", words: [ ], checking: [ ], right: 0, node: "", access: "", rounds: 0,
-    primary: "", secondary: "", contacts: { }, own: "", entering: "" };
+    primary: "", secondary: "", contacts: { }, rooms: { }, own: "", entering: "" };
 }
 
 function keys_load_script( src )
@@ -391,6 +391,7 @@ async function keys_show_here( access, lede, from_link )
    g_keys.secondary = opened.secondary;
    g_keys.own = key;
    g_keys.contacts = opened.contacts;
+   g_keys.rooms = opened.rooms;
 
    document.getElementById( "keys_here_lede" ).textContent = lede;
 
@@ -672,9 +673,9 @@ function keys_draw_contacts( )
    document.getElementById( "keys_contacts" ).hidden = ( rows.length > 0 );
 }
 
-// NOTE: Others' public keys as the node has them now, or null - another browser may have changed them since this page read
-// them (found by review, 2026-10-26), and a change made to this page's copy would undo that one.
-async function keys_latest_contacts( )
+// NOTE: The keys as the node has them now, or null - another browser, or the chat with a room key, may have changed them since
+// this page read them (found by review, 2026-10-26), and a change made to this page's copy would undo that one.
+async function keys_latest( )
 {
    var response = await request( function( done ) { return ciyam.fetch( keys_url( "" ), "GET", done ); } );
 
@@ -683,8 +684,9 @@ async function keys_latest_contacts( )
       var opened = await keys_module( "user_keys" ).unlock( g_keys.access, String( response ).trim( ) );
 
       g_keys.node = String( response ).trim( );
+      g_keys.rooms = opened.rooms;
 
-      return opened.contacts;
+      return opened;
    }
    catch( e )
    {
@@ -699,7 +701,7 @@ async function keys_store_contacts( change, busy_text )
    set_error( "keys_add_error", "" );
    keys_busy( busy_text );
 
-   var latest = await keys_latest_contacts( );
+   var latest = await keys_latest( );
 
    if( latest === null )
    {
@@ -709,14 +711,14 @@ async function keys_store_contacts( change, busy_text )
       return false;
    }
 
-   var contacts = Object.assign( { }, latest );
+   var contacts = Object.assign( { }, latest.contacts );
    var problem = change( contacts );
 
    if( problem !== "" )
    {
       keys_busy( "" );
 
-      g_keys.contacts = latest;
+      g_keys.contacts = latest.contacts;
 
       keys_draw_contacts( );
       set_error( "keys_add_error", problem );
@@ -724,8 +726,8 @@ async function keys_store_contacts( change, busy_text )
       return false;
    }
 
-   var saved = await keys_send( g_keys.access, g_keys.rounds, { primary: g_keys.primary, secondary: g_keys.secondary, contacts: contacts },
-    "keys_add_error", "That" );
+   var saved = await keys_send( g_keys.access, g_keys.rounds, { primary: g_keys.primary, secondary: g_keys.secondary, contacts: contacts,
+    rooms: latest.rooms }, "keys_add_error", "That" );
 
    keys_busy( "" );
 
@@ -851,7 +853,7 @@ async function keys_enter_go( )
 function keys_start_again( )
 {
    if( !confirm( "Set up new keys from new twelve words? The keys on the node are replaced, the public keys you've added for others"
-    + " are removed, and anyone with your old public key will need your new one." ) )
+    + " and your room keys are removed, and anyone with your old public key will need your new one." ) )
       return;
 
    keys_start( );
