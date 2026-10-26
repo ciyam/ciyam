@@ -1,0 +1,376 @@
+/* Copyright (c) 2026 CIYAM Developers
+
+   Distributed under the MIT/X11 software license, please refer to the file
+   license.txt in the root project directory or
+   http://www.opensource.org/licenses/mit-license.php. */
+
+/* NOTE: The shell an app's pages share (Damon, 2026-10-26: consistency across the apps) - a side menu of the apps and the
+   page's own sections, who is signed in and Sign out; a top bar; on a phone the menu a drawer, the sections chips beneath
+   the top bar and the apps a bar along the bottom. Moved out of Home's "home.css" for My account; "shell.js" builds it. */
+
+.shell-app
+{
+   display: flex;
+   min-height: 100vh;
+   min-height: 100dvh;
+   background: var(--color-chat-bg-raised);
+   color: var(--color-chat-text);
+}
+
+.shell-rail
+{
+   flex: 0 0 248px;
+   box-sizing: border-box;
+   display: flex;
+   flex-direction: column;
+   gap: 22px;
+   padding: 20px 14px;
+   background: var(--color-chat-bg-rail);
+   border-right: 1px solid var(--color-chat-border);
+}
+
+.shell-rail-brand
+{
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   padding: 0 8px;
+}
+
+.shell-rail-user-text,
+.shell-topbar-title
+{
+   display: flex;
+   flex-direction: column;
+   gap: 1px;
+   min-width: 0;
+}
+
+.shell-rail-user-role,
+.shell-topbar-sub
+{
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-secondary);
+}
+
+.shell-rail-group
+{
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+}
+
+.shell-rail-heading
+{
+   padding: 0 10px 6px;
+   font-size: 11px;
+   font-weight: 600;
+   letter-spacing: 0.08em;
+   text-transform: uppercase;
+   color: var(--color-chat-text-secondary);
+}
+
+.shell-rail-item
+{
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   min-height: 38px;
+   padding: 0 10px;
+   border-radius: var(--radius-sm);
+   color: var(--color-chat-text);
+   font-size: 14px;
+   font-weight: 500;
+   text-decoration: none;
+}
+
+.shell-rail-item:hover
+{
+   background: var(--color-chat-bg-selected);
+}
+
+.shell-rail-item.is-current
+{
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-accent-deep);
+   font-weight: 600;
+}
+
+.shell-rail-label
+{
+   flex-grow: 1;
+}
+
+.shell-rail-spacer
+{
+   flex-grow: 1;
+}
+
+.shell-rail-user
+{
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   padding: 12px;
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-md);
+}
+
+.shell-rail-user-row
+{
+   display: flex;
+   align-items: center;
+   gap: 10px;
+}
+
+.shell-rail-user-name
+{
+   font-weight: 600;
+   overflow: hidden;
+   text-overflow: ellipsis;
+}
+
+.shell-avatar
+{
+   flex: 0 0 34px;
+   width: 34px;
+   height: 34px;
+   border-radius: 17px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   color: #ffffff;
+   font-weight: 700;
+   font-size: 14px;
+}
+
+.shell-body
+{
+   flex: 1 1 auto;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+}
+
+.shell-topbar
+{
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   padding: 14px 44px;
+   background: var(--color-chat-bg);
+   border-bottom: 1px solid var(--color-chat-border);
+}
+
+.shell-topbar-title
+{
+   flex-grow: 1;
+}
+
+.shell-topbar-heading
+{
+   font-size: 16px;
+   font-weight: 600;
+}
+
+.shell-menu-button,
+.shell-topbar-sub,
+.shell-chips,
+.shell-bottombar
+{
+   display: none;
+}
+
+.shell-main
+{
+   flex-grow: 1;
+   box-sizing: border-box;
+   width: 100%;
+   max-width: 1080px;
+   padding: 36px 44px 44px;
+}
+
+.shell-main h1
+{
+   margin: 0 0 8px;
+   font-size: 28px;
+   font-weight: 600;
+   letter-spacing: -0.01em;
+}
+
+.shell-badge
+{
+   min-width: 20px;
+   height: 20px;
+   box-sizing: border-box;
+   padding: 0 6px;
+   border-radius: 10px;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   background: var(--color-chat-accent);
+   color: #ffffff;
+   font-size: 11px;
+   font-weight: 700;
+}
+
+.shell-chip .shell-badge
+{
+   min-width: 18px;
+   height: 18px;
+   margin-left: 6px;
+}
+
+@media ( max-width: 760px )
+{
+   .shell-rail
+   {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 20;
+      width: 280px;
+      max-width: 85vw;
+      overflow-y: auto;
+      transform: translateX( -100% );
+      transition: transform 0.2s ease;
+   }
+
+   .shell-rail-item[data-key="console"],
+   .shell-console-toggle
+   {
+      display: none;
+   }
+
+   .shell-rail.is-open
+   {
+      transform: none;
+      box-shadow: var(--shadow-md);
+   }
+
+   .shell-scrim
+   {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      background: rgba( 15, 18, 26, 0.35 );
+   }
+
+   .shell-topbar
+   {
+      flex-wrap: wrap;
+      padding: 8px 14px;
+   }
+
+   .shell-menu-button
+   {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: var(--radius-md);
+      background: transparent;
+      color: var(--color-chat-text);
+      cursor: pointer;
+   }
+
+   .shell-topbar-sub
+   {
+      display: flex;
+   }
+
+   .shell-chips:not( [hidden] )
+   {
+      display: flex;
+      gap: 6px;
+      padding: 6px 14px 12px;
+      overflow-x: auto;
+      background: var(--color-chat-bg);
+      border-bottom: 1px solid var(--color-chat-border);
+   }
+
+   .shell-chip
+   {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 18px;
+      border: 1px solid var(--color-chat-border);
+      background: var(--color-chat-bg-raised);
+      color: var(--color-chat-text);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+   }
+
+   .shell-chip.is-current
+   {
+      border-color: var(--color-chat-accent);
+      background: var(--color-chat-accent);
+      color: #ffffff;
+      font-weight: 600;
+   }
+
+   .shell-main
+   {
+      padding: 18px 16px 90px;
+   }
+
+   .shell-main h1
+   {
+      font-size: 24px;
+   }
+
+   .shell-bottom-item
+   {
+      position: relative;
+   }
+
+   .shell-bottom-item .shell-badge
+   {
+      position: absolute;
+      top: 2px;
+      left: calc( 50% + 6px );
+   }
+
+   .shell-bottombar
+   {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 5;
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
+      padding: 6px 8px calc( 10px + env( safe-area-inset-bottom, 0px ) );
+      background: var(--color-chat-bg);
+      border-top: 1px solid var(--color-chat-border);
+   }
+
+   .shell-bottom-item
+   {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      min-height: 52px;
+      color: var(--color-chat-text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+   }
+
+   .shell-bottom-item.is-current
+   {
+      color: var(--color-chat-accent-deep);
+      font-weight: 700;
+   }
+}

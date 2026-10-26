@@ -1031,21 +1031,6 @@ async function wait_until_ready( )
 // The shell - build step 4
 // ====================================================================
 
-// NOTE: The icons, as the design's side menu draws them - a path each, in a 24 unit box.
-const c_icons = {
-   home: "M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z",
-   chat: "M4 5h16v11H8l-4 4z",
-   account: "M19 20v-1a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v1M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8",
-   people: "M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M10 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M21 19v-1a4 4 0 0 0-3-3.9M16 5.1a3 3 0 0 1 0 5.8",
-   console: "M4 6l5 5-5 5M12 18h8",
-   overview: "M12 14l4-4M3.5 18a9 9 0 1 1 17 0",
-   keys: "M15 7a4 4 0 1 1-3.5 6L4 20.5H2v-3l7.5-7.5A4 4 0 0 1 15 7z",
-   logs: "M5 4h14v16H5zM8 8h8M8 12h8M8 16h5",
-   shield: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM9 12l2 2 4-4",
-   health: "M3 12h4l3-8 4 16 3-8h4",
-   alerts: "M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"
-};
-
 // NOTE: As wide as the design's phone layouts - below it the side menu becomes a drawer.
 const c_phone_query = "(max-width: 760px)";
 
@@ -1061,29 +1046,6 @@ var g_section = "";
 function is_phone( )
 {
    return window.matchMedia( c_phone_query ).matches;
-}
-
-function icon( name, size )
-{
-   var svg = document.createElementNS( "http://www.w3.org/2000/svg", "svg" );
-
-   svg.setAttribute( "width", String( size || 18 ) );
-   svg.setAttribute( "height", String( size || 18 ) );
-   svg.setAttribute( "viewBox", "0 0 24 24" );
-   svg.setAttribute( "fill", "none" );
-   svg.setAttribute( "stroke", "currentColor" );
-   svg.setAttribute( "stroke-width", "1.8" );
-   svg.setAttribute( "stroke-linecap", "round" );
-   svg.setAttribute( "stroke-linejoin", "round" );
-   svg.setAttribute( "aria-hidden", "true" );
-
-   var path = document.createElementNS( "http://www.w3.org/2000/svg", "path" );
-
-   path.setAttribute( "d", c_icons[ name ] || "" );
-
-   svg.appendChild( path );
-
-   return svg;
 }
 
 // NOTE: The channel's handshake, as the chat speaks it ("chat.html"): an app opened with "?source=<g_self>"
@@ -1206,22 +1168,10 @@ function unlink_apps( )
       g_channel.postMessage( g_self );
 }
 
+// NOTE: The shell's item ("shell.js") with Home's badges - what waits in the chat, and Health's count for admin.
 function rail_item( key, title, is_app, on_click )
 {
-   var item = document.createElement( "a" );
-
-   item.className = "home-rail-item";
-   item.href = "#" + key;
-   item.dataset.key = key;
-
-   item.appendChild( icon( key ) );
-
-   var label = document.createElement( "span" );
-
-   label.className = "home-rail-label";
-   label.textContent = title;
-
-   item.appendChild( label );
+   var item = shell_rail_item( key, title, is_app, on_click );
 
    if( key === "chat" )
       item.appendChild( chat_badge( ) );
@@ -1229,40 +1179,7 @@ function rail_item( key, title, is_app, on_click )
    if( key === "health" )
       item.appendChild( health_badge( ) );
 
-   if( is_app )
-      bind_app_link( item, on_click );
-   else
-   {
-      item.addEventListener( "click", function( event )
-      {
-         event.preventDefault( );
-
-         on_click( event );
-      } );
-   }
-
    return item;
-}
-
-// NOTE: An app opens in this tab, or a new one with ctrl or cmd and click or the middle button ("apps_go( )").
-function bind_app_link( item, on_click )
-{
-   item.addEventListener( "click", function( event )
-   {
-      event.preventDefault( );
-
-      on_click( event );
-   } );
-
-   item.addEventListener( "auxclick", function( event )
-   {
-      if( event.button !== 1 )
-         return;
-
-      event.preventDefault( );
-
-      on_click( event );
-   } );
 }
 
 // NOTE: A link to another app carries the address a new tab needs - on this page's session - so the browser's own
@@ -1277,24 +1194,10 @@ function app_address( item, app, hash )
 
 function bottom_item( key, title, on_click )
 {
-   var item = document.createElement( "a" );
-
-   item.className = "home-bottom-item";
-   item.href = "#";
-   item.dataset.key = key;
-
-   item.appendChild( icon( key, 22 ) );
-
-   var label = document.createElement( "span" );
-
-   label.textContent = title;
-
-   item.appendChild( label );
+   var item = shell_bottom_item( key, title, on_click );
 
    if( key === "chat" )
       item.appendChild( chat_badge( ) );
-
-   bind_app_link( item, on_click );
 
    return item;
 }
@@ -1327,7 +1230,7 @@ function chat_badge( )
 {
    var badge = document.createElement( "span" );
 
-   badge.className = "home-badge";
+   badge.className = "shell-badge";
    badge.dataset.badge = "chat";
    badge.hidden = true;
 
@@ -1339,7 +1242,7 @@ function health_badge( )
 {
    var badge = document.createElement( "span" );
 
-   badge.className = "home-badge";
+   badge.className = "shell-badge";
    badge.dataset.badge = "health";
    badge.hidden = true;
 
@@ -1349,7 +1252,7 @@ function health_badge( )
 // NOTE: In this tab, as the switcher opens it (Damon, 2026-10-09) - a new one when the event asks.
 function open_app( app, event )
 {
-   close_rail( );
+   shell_close_rail( );
 
    if( app.key === "home" )
    {
@@ -1370,8 +1273,8 @@ function build_shell( )
 
    var rail_apps = document.getElementById( "rail_apps" );
    var rail_sections = document.getElementById( "rail_sections" );
-   var chips = document.getElementById( "home_chips" );
-   var bottom = document.getElementById( "home_bottombar" );
+   var chips = document.getElementById( "shell_chips" );
+   var bottom = document.getElementById( "shell_bottombar" );
 
    [ rail_apps, rail_sections, chips, bottom ].forEach( function( element ) { element.replaceChildren( ); } );
 
@@ -1388,19 +1291,12 @@ function build_shell( )
 
    sections.forEach( function( section )
    {
-      rail_sections.appendChild( rail_item( section.key, section.title, false, function( ) { close_rail( ); go( section.key ); } ) );
+      rail_sections.appendChild( rail_item( section.key, section.title, false, function( ) { shell_close_rail( ); go( section.key ); } ) );
 
-      var chip = document.createElement( "a" );
-
-      chip.className = "home-chip";
-      chip.href = "#" + section.key;
-      chip.dataset.key = section.key;
-      chip.textContent = section.title;
+      var chip = shell_chip( section.key, section.title, function( ) { go( section.key ); } );
 
       if( section.key === "health" )
          chip.appendChild( health_badge( ) );
-
-      chip.addEventListener( "click", function( event ) { event.preventDefault( ); go( section.key ); } );
 
       chips.appendChild( chip );
    } );
@@ -1412,13 +1308,7 @@ function build_shell( )
 
    // NOTE: The rail's only - a phone's top bar had one too, looking like the chat's account menu but not one, so it went (Ian,
    // 2026-10-16); Home's menu there is the hamburger.
-   var avatar = document.getElementById( "rail_avatar" );
-
-   avatar.textContent = user_initial( name );
-   avatar.style.background = "var(--color-sender-" + sender_colour_index( name ) + ")";
-
-   set_text( "rail_name", name );
-   set_text( "rail_role", role_text( ciyam.is_admin ) );
+   shell_show_user( name, role_text( ciyam.is_admin ) );
    set_text( "top_sub", name + " · " + role_text( ciyam.is_admin ) );
 }
 
@@ -1436,22 +1326,12 @@ function go( section )
 
    set_text( "top_heading", titles[ section ] || "Home" );
 
-   document.querySelectorAll( ".home-rail-item, .home-chip, .home-bottom-item" ).forEach( function( item )
-   {
-      var current = ( item.dataset.key === section ) || ( ( item.dataset.key === "home" ) && ( section === "home" ) );
-
-      item.classList.toggle( "is-current", current );
-
-      if( current )
-         item.setAttribute( "aria-current", "page" );
-      else
-         item.removeAttribute( "aria-current" );
-   } );
+   shell_mark( [ section ] );
 
    // NOTE: Home's own item stands for admin's sections too, on the phone's bottom bar.
    if( ciyam.is_admin )
    {
-      document.querySelectorAll( ".home-bottom-item[data-key='home']" ).forEach( function( item )
+      document.querySelectorAll( ".shell-bottom-item[data-key='home']" ).forEach( function( item )
       {
          item.classList.add( "is-current" );
       } );
@@ -1480,20 +1360,6 @@ function go( section )
    on_section_shown( section );
 }
 
-function open_rail( )
-{
-   document.getElementById( "home_rail" ).classList.add( "is-open" );
-   document.getElementById( "rail_scrim" ).hidden = false;
-   document.getElementById( "rail_open" ).setAttribute( "aria-expanded", "true" );
-}
-
-function close_rail( )
-{
-   document.getElementById( "home_rail" ).classList.remove( "is-open" );
-   document.getElementById( "rail_scrim" ).hidden = true;
-   document.getElementById( "rail_open" ).setAttribute( "aria-expanded", "false" );
-}
-
 function install_shell( )
 {
    window.name = c_tab_home;
@@ -1509,14 +1375,7 @@ function install_shell( )
       from: "home"
    } );
 
-   document.getElementById( "rail_open" ).addEventListener( "click", open_rail );
-   document.getElementById( "rail_scrim" ).addEventListener( "click", close_rail );
-
-   document.addEventListener( "keydown", function( event )
-   {
-      if( ( event.key === "Escape" ) && document.getElementById( "home_rail" ).classList.contains( "is-open" ) )
-         close_rail( );
-   } );
+   shell_install( );
 
    // NOTE: Only once in Home - not behind Unlock, where a section would load unseen (found by review).
    window.addEventListener( "hashchange", function( )
@@ -1702,7 +1561,7 @@ function render_member_home( )
 
       var avatar = document.createElement( "span" );
 
-      avatar.className = "home-avatar" + ( ( item.kind === "invitation" ) ? " is-room" : "" );
+      avatar.className = "shell-avatar" + ( ( item.kind === "invitation" ) ? " is-room" : "" );
       avatar.textContent = ( item.kind === "invitation" ) ? "#" : user_initial( item.inviter );
 
       if( item.kind !== "invitation" )
@@ -1730,7 +1589,7 @@ function render_member_home( )
       answer.className = "chat-btn home-need-answer";
       answer.href = "#";
       answer.textContent = "Answer in Chat";
-      bind_app_link( answer, function( event ) { open_app_by_key( "chat", "", event ); } );
+      shell_bind_link( answer, function( event ) { open_app_by_key( "chat", "", event ); } );
 
       row.appendChild( avatar );
       row.appendChild( text );
@@ -1830,7 +1689,7 @@ function render_member_home( )
 
 function open_app_by_key( key, hash, event )
 {
-   close_rail( );
+   shell_close_rail( );
 
    apps_go( key, hash || "", event );
 }
@@ -1873,14 +1732,14 @@ function stop_refresh( )
 
 function install_member_home( )
 {
-   document.getElementById( "tile_chat_icon" ).appendChild( icon( "chat", 22 ) );
+   document.getElementById( "tile_chat_icon" ).appendChild( shell_icon( "chat", 22 ) );
 
-   bind_app_link( document.getElementById( "tile_chat" ), function( event ) { open_app_by_key( "chat", "", event ); } );
+   shell_bind_link( document.getElementById( "tile_chat" ), function( event ) { open_app_by_key( "chat", "", event ); } );
 
    app_address( document.getElementById( "tile_chat" ), { key: "chat", page: "chat.html" } );
 
    // NOTE: The accounts page - in this tab now, as every app opens (Damon, 2026-10-09; in its own tab until then).
-   bind_app_link( document.getElementById( "manage_account" ), function( event ) { open_app_by_key( "account", "#mine", event ); } );
+   shell_bind_link( document.getElementById( "manage_account" ), function( event ) { open_app_by_key( "account", "#mine", event ); } );
 
    app_address( document.getElementById( "manage_account" ), { key: "account", page: "account.html" }, "#mine" );
 
@@ -2923,7 +2782,7 @@ function signed_out_elsewhere( )
    signin_forget_session( );
    clear_ciyam( );
    forget_admin( );
-   close_rail( );
+   shell_close_rail( );
 
    history.replaceState( null, "", window.location.pathname + window.location.search );
 
@@ -3611,7 +3470,7 @@ async function do_sign_out( )
 
    forget_admin( );
 
-   close_rail( );
+   shell_close_rail( );
 
    history.replaceState( null, "", window.location.pathname + window.location.search );
 

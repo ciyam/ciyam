@@ -312,59 +312,59 @@ http://www.opensource.org/licenses/mit-license.php.
      bar, admin's sections are chips beneath it, and the apps are a bar along the bottom. The apps other than
      Home open in this tab on its session, as the switcher opens them - a new tab with ctrl or cmd and click
      (2026-10-09). The rail's items are built by "home.js". -->
-<div class="home-app" id="app_view" hidden>
-   <nav class="home-rail" id="home_rail" aria-label="Home">
+<div class="shell-app" id="app_view" hidden>
+   <nav class="shell-rail" id="shell_rail" aria-label="Home">
       <!-- NOTE: The app switcher - the CIYAM mark and "Home", as at the top of every app ("apps.js", 2026-10-08). -->
-      <div class="home-rail-brand" id="apps_host"></div>
+      <div class="shell-rail-brand" id="apps_host"></div>
 
-      <div class="home-rail-group">
-         <span class="home-rail-heading">Go to</span>
+      <div class="shell-rail-group">
+         <span class="shell-rail-heading">Go to</span>
          <div id="rail_apps"></div>
       </div>
 
-      <div class="home-rail-group" id="rail_node" hidden>
-         <span class="home-rail-heading">Node</span>
+      <div class="shell-rail-group" id="rail_node" hidden>
+         <span class="shell-rail-heading">Node</span>
          <div id="rail_sections"></div>
       </div>
 
-      <div class="home-rail-spacer"></div>
+      <div class="shell-rail-spacer"></div>
 
-      <div class="home-rail-user">
-         <div class="home-rail-user-row">
-            <span class="home-avatar" id="rail_avatar"></span>
-            <span class="home-rail-user-text">
-               <span class="home-rail-user-name" id="rail_name"></span>
-               <span class="home-rail-user-role" id="rail_role"></span>
+      <div class="shell-rail-user">
+         <div class="shell-rail-user-row">
+            <span class="shell-avatar" id="rail_avatar"></span>
+            <span class="shell-rail-user-text">
+               <span class="shell-rail-user-name" id="rail_name"></span>
+               <span class="shell-rail-user-role" id="rail_role"></span>
             </span>
          </div>
          <button type="button" class="chat-btn" id="app_sign_out">Sign out</button>
       </div>
    </nav>
 
-   <div class="home-scrim" id="rail_scrim" hidden></div>
+   <div class="shell-scrim" id="rail_scrim" hidden></div>
 
-   <div class="home-body">
-      <header class="home-topbar">
-         <button type="button" class="home-menu-button" id="rail_open" aria-label="Open the menu" aria-controls="home_rail"
+   <div class="shell-body">
+      <header class="shell-topbar">
+         <button type="button" class="shell-menu-button" id="rail_open" aria-label="Open the menu" aria-controls="shell_rail"
           aria-expanded="false">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
              stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
          </button>
 
-         <span class="home-topbar-title">
-            <span class="home-topbar-heading" id="top_heading"></span>
-            <span class="home-topbar-sub" id="top_sub"></span>
+         <span class="shell-topbar-title">
+            <span class="shell-topbar-heading" id="top_heading"></span>
+            <span class="shell-topbar-sub" id="top_sub"></span>
          </span>
 
          <span class="home-pill" id="app_security_pill" title="How the node sees this connection - from /system" hidden></span>
 
-         <button type="button" class="chat-btn chat-btn--mono home-console-toggle" id="console_toggle" hidden>Console</button>
+         <button type="button" class="chat-btn chat-btn--mono shell-console-toggle" id="console_toggle" hidden>Console</button>
 
       </header>
 
-      <nav class="home-chips" id="home_chips" aria-label="Node" hidden></nav>
+      <nav class="shell-chips" id="shell_chips" aria-label="Node" hidden></nav>
 
-      <main class="home-main">
+      <main class="shell-main">
          <!-- NOTE: A member's Home (build step 5) - their apps, what needs them, announcements and their account.
               What it says of the chat is read as the chat reads it ("chat_parse.js"). -->
          <section class="home-section" id="section_home" hidden>
@@ -376,15 +376,15 @@ http://www.opensource.org/licenses/mit-license.php.
             <div class="home-tiles">
                <section class="home-card home-account-card" aria-labelledby="account_heading">
                   <h2 id="account_heading">My account</h2>
-                  <div class="home-rail-user-row">
-                     <span class="home-avatar home-avatar--large" id="account_avatar"></span>
-                     <span class="home-rail-user-text">
-                        <span class="home-rail-user-name" id="account_name"></span>
-                        <span class="home-rail-user-role" id="account_role"></span>
+                  <div class="shell-rail-user-row">
+                     <span class="shell-avatar home-avatar--large" id="account_avatar"></span>
+                     <span class="shell-rail-user-text">
+                        <span class="shell-rail-user-name" id="account_name"></span>
+                        <span class="shell-rail-user-role" id="account_role"></span>
                      </span>
                   </div>
                   <div class="home-devices">
-                     <span class="home-rail-heading">Devices</span>
+                     <span class="shell-rail-heading">Devices</span>
                      <ul class="home-device-list" id="device_list"></ul>
                      <span class="home-note home-empty" id="device_more"></span>
                      <a href="account.html#mine" class="home-account-link" id="manage_account">Manage my account</a>
@@ -471,7 +471,7 @@ http://www.opensource.org/licenses/mit-license.php.
             </section>
 
             <section class="home-quick" aria-labelledby="quick_heading">
-               <h2 class="home-rail-heading" id="quick_heading">Quick actions</h2>
+               <h2 class="shell-rail-heading" id="quick_heading">Quick actions</h2>
                <div class="home-quick-grid" id="quick_actions">
                   <section class="home-card" aria-label="People">
                      <h2>People</h2>
@@ -840,7 +840,7 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="chat-error-text" id="key_error" role="alert"></div>
 
                <div class="home-new-key" id="key_shown" hidden>
-                  <span class="home-rail-heading">Your new key - shown once</span>
+                  <span class="shell-rail-heading">Your new key - shown once</span>
                   <div class="home-new-key-row">
                      <span class="home-key-qr" id="key_qr" aria-hidden="true"></span>
                      <span class="home-new-key-text">
@@ -885,7 +885,7 @@ http://www.opensource.org/licenses/mit-license.php.
                <div class="home-new-key-row" id="alerts_subscribe" hidden>
                   <span class="home-key-qr" id="alerts_qr" aria-hidden="true"></span>
                   <span class="home-new-key-text">
-                     <span class="home-rail-heading">Topic</span>
+                     <span class="shell-rail-heading">Topic</span>
                      <span class="home-key home-key--topic" id="alerts_topic"></span>
                      <span class="home-alerts-codes" role="group" aria-label="What the code opens">
                         <button type="button" class="chat-btn is-current" id="alerts_code_app" aria-pressed="true">For the ntfy app</button>
@@ -941,7 +941,7 @@ http://www.opensource.org/licenses/mit-license.php.
          </section>
       </main>
 
-      <nav class="home-bottombar" id="home_bottombar" aria-label="Go to"></nav>
+      <nav class="shell-bottombar" id="shell_bottombar" aria-label="Go to"></nav>
    </div>
 </div>
 
