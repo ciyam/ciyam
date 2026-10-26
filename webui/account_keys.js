@@ -275,7 +275,7 @@ function keys_clear( )
    [ "keys_enter_words", "keys_add_name", "keys_add_key", "keys_device_link" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );
 
    document.getElementById( "keys_written" ).checked = false;
-   document.getElementById( "keys_public" ).textContent = "";
+   keys_hide_public( );
    document.getElementById( "keys_device_part" ).hidden = true;
    document.getElementById( "keys_device_row" ).hidden = false;
    document.getElementById( "keys_rooms" ).textContent = "";
@@ -397,17 +397,8 @@ async function keys_show_here( access, lede, from_link )
 
    var sm = keys_module( "secure_message" );
    var key = sm.public_key_of_seed( opened.primary );
-   var box = document.getElementById( "keys_qr" );
 
-   document.getElementById( "keys_public" ).textContent = key;
-
-   // NOTE: Drawn in the page - "qrcode.min.js" - so the key goes nowhere else; the library's own title taken off, as Home's.
-   box.replaceChildren( );
-
-   new QRCode( box, { text: key, width: c_keys_qr_size, height: c_keys_qr_size, colorDark: "#1b1f2a", colorLight: "#ffffff",
-    correctLevel: QRCode.CorrectLevel.M } );
-
-   box.removeAttribute( "title" );
+   keys_hide_public( );
 
    g_keys.access = access;
    g_keys.rounds = opened.rounds;
@@ -698,6 +689,40 @@ function keys_draw_contacts( )
    document.getElementById( "keys_contacts" ).hidden = ( rows.length > 0 );
 }
 
+// NOTE: The public key, as text and a QR code, only when asked (Ian, 2026-10-27: with quantum attacks to come, shown only when it
+// is known to be safe) - and taken out of the page again when hidden, or on leaving Your keys.
+function keys_show_public( )
+{
+   if( !g_keys || !g_keys.own )
+      return;
+
+   var box = document.getElementById( "keys_qr" );
+
+   document.getElementById( "keys_public" ).textContent = g_keys.own;
+
+   // NOTE: Drawn in the page - "qrcode.min.js" - so the key goes nowhere else; the library's own title taken off, as Home's.
+   box.replaceChildren( );
+
+   new QRCode( box, { text: g_keys.own, width: c_keys_qr_size, height: c_keys_qr_size, colorDark: "#1b1f2a", colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M } );
+
+   box.removeAttribute( "title" );
+   box.querySelectorAll( "[title]" ).forEach( function( node ) { node.removeAttribute( "title" ); } );
+
+   document.getElementById( "keys_public_part" ).hidden = false;
+   document.getElementById( "keys_public_show" ).hidden = true;
+   document.getElementById( "keys_public_hide" ).hidden = false;
+}
+
+function keys_hide_public( )
+{
+   document.getElementById( "keys_qr" ).replaceChildren( );
+   document.getElementById( "keys_public" ).textContent = "";
+   document.getElementById( "keys_public_part" ).hidden = true;
+   document.getElementById( "keys_public_show" ).hidden = false;
+   document.getElementById( "keys_public_hide" ).hidden = true;
+}
+
 // NOTE: Which rooms have a key kept with these ("room_keys_text( )") - made and removed in the chat.
 function keys_draw_rooms( )
 {
@@ -924,6 +949,8 @@ function install_keys( )
    document.getElementById( "keys_enter_new" ).addEventListener( "click", keys_start_again );
    document.getElementById( "keys_enter_cancel" ).addEventListener( "click", keys_cancel );
    document.getElementById( "keys_forget" ).addEventListener( "click", keys_forget );
+   document.getElementById( "keys_public_show" ).addEventListener( "click", keys_show_public );
+   document.getElementById( "keys_public_hide" ).addEventListener( "click", keys_hide_public );
    document.getElementById( "keys_device" ).addEventListener( "click", keys_show_device );
    document.getElementById( "keys_device_hide" ).addEventListener( "click", keys_hide_device );
    document.getElementById( "keys_add" ).addEventListener( "click", keys_add_contact );

@@ -310,16 +310,21 @@ http://www.opensource.org/licenses/mit-license.php.
 
                      <div class="account-keys-part" id="keys_here" hidden>
                         <p class="account-lede" id="keys_here_lede">Your keys are on this browser.</p>
-                        <div class="account-keys-public">
+                        <!-- NOTE: Shown only when asked (Ian, 2026-10-27) - public, but with quantum attacks to come it is shown
+                             only when it is known to be safe to; hidden again on leaving Your keys ("keys_hide_public( )"). -->
+                        <div class="account-keys-public" id="keys_public_part" hidden>
                            <div class="account-keys-qr" id="keys_qr" aria-hidden="true"></div>
                            <div>
                               <div class="chat-label">Your public key</div>
-                              <p class="account-lede">Others scan or copy this to write to you. It's safe to share.</p>
+                              <p class="account-lede">Others scan or copy this to write to you. Show it only where no one else can see
+                               the screen.</p>
                               <code class="account-keys-key" id="keys_public"></code>
                            </div>
                         </div>
                         <div class="account-actions-row">
                            <button type="button" class="chat-btn" id="keys_forget">Forget them on this browser</button>
+                           <button type="button" class="chat-btn" id="keys_public_hide" hidden>Hide my public key</button>
+                           <button type="button" class="chat-btn chat-btn--primary" id="keys_public_show">Show my public key</button>
                         </div>
                      </div>
 

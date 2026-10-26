@@ -541,6 +541,14 @@ function show_section( name )
    document.getElementById( "top_heading" ).textContent = title;
 
    shell_mark( [ "account", name ] );
+
+   // NOTE: What is shown only when asked is hidden again on leaving its section (Ian, 2026-10-27) - the public key, and the QR
+   // code that carries the access key to another device.
+   if( ( name !== "keys" ) && ( typeof keys_hide_public === "function" ) )
+      keys_hide_public( );
+
+   if( ( name !== "devices" ) && ( typeof keys_hide_device === "function" ) )
+      keys_hide_device( );
    shell_close_rail( );
 
    if( window.location.hash !== "#" + name )
