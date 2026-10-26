@@ -3464,6 +3464,9 @@ function build_message( entry )
 
    var body = row.querySelector( ".chat-message-body" );
 
+   // NOTE: Who sent it, before it is drawn - a room key is added by itself only from its room's owner ("chat_offer_room_key( )").
+   body.dataset.sender = entry.sender || "";
+
    // NOTE: Colour and style drawn ("draw_formatted( )"); the text as stored kept, for the check after a time-out.
    if( entry.deleted )
       body.textContent = "Message deleted";

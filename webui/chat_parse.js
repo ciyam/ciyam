@@ -1396,7 +1396,7 @@ function parse_room_key( text, room )
    var key = whole ? whole[ 2 ] : given;
 
    if( !c_room_key_digits.test( key ) )
-      return { key: "", problem: "A room key is " + room + "# followed by 32 letters and digits (0-9, a-f) - copy all of it." };
+      return { key: "", problem: "A room key is " + room + "# followed by 32 or 64 letters and digits (0-9, a-f) - copy all of it." };
 
    return { key: key, problem: "" };
 }

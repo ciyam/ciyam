@@ -382,7 +382,9 @@ http://www.opensource.org/licenses/mit-license.php.
                         <button type="button" class="chat-btn chat-btn--primary" id="keys_add">Add their key</button>
                      </div>
                      <div class="chat-error-text" id="keys_add_error" role="alert"></div>
-                     <div class="chat-signin-busy" id="contacts_busy" hidden><span class="chat-spinner"></span><span id="contacts_busy_text" role="status"></span></div>
+                     <div class="chat-signin-busy" id="contacts_busy" hidden>
+                        <span class="chat-spinner"></span><span id="contacts_busy_text" role="status"></span>
+                     </div>
                   </div>
                </div>
             </div>

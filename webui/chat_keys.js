@@ -297,9 +297,19 @@ async function chat_seal_with( secret, text )
 // by review: the button under a shared key while Room Details was saving).
 var g_room_key_saving = Promise.resolve( );
 
-function chat_keys_save_room( room, key )
+// NOTE: "only_if_none" - added as it arrived: not saved if a key for the room has been kept meanwhile ("kept" said for it), so of
+// two arriving together the first stays (found by review, 2026-10-27).
+function chat_keys_save_room( room, key, only_if_none )
 {
-   var saved = g_room_key_saving.then( function( ) { return chat_keys_save_room_now( room, key ); } );
+   var saved = g_room_key_saving.then( function( )
+   {
+      var kept = g_chat_keys ? ( g_chat_keys.rooms[ room ] || "" ) : "";
+
+      if( only_if_none && ( kept !== "" ) && ( kept !== key ) )
+         return "kept";
+
+      return chat_keys_save_room_now( room, key );
+   } );
 
    g_room_key_saving = saved.catch( function( ) { } );
 
@@ -503,7 +513,11 @@ async function do_add_room_key( )
    }
 
    if( await chat_room_key_change( g_room, given.key ) )
+   {
+      chat_room_key_removed( g_room + "#" + given.key, false );
+
       chat_room_key_reset( );
+   }
 
    chat_render_room_key( );
 }
@@ -546,14 +560,56 @@ async function do_remove_room_key( )
     + " unencrypted - unless it's added again." ) )
       return;
 
-   await chat_room_key_change( g_room, "" );
+   var room = g_room;
+   var removed = chat_room_key( room );
+
+   if( await chat_room_key_change( room, "" ) && ( removed !== "" ) )
+      chat_room_key_removed( room + "#" + removed, true );
+}
+
+// NOTE: The room keys removed on this browser, "<room>#<key>" - not added again by themselves when the direct message that
+// brought one is seen again (found by review, 2026-10-27); added by hand, one is forgotten from here. Kept for the account on
+// this browser, as the notifications switch is.
+function chat_room_keys_removed_name( )
+{
+   return "cws.room_keys_removed_" + ciyam.access;
+}
+
+function chat_room_keys_removed( )
+{
+   try
+   {
+      var kept = JSON.parse( localStorage.getItem( chat_room_keys_removed_name( ) ) || "[]" );
+
+      return Array.isArray( kept ) ? kept : [ ];
+   }
+   catch( e )
+   {
+      return [ ];
+   }
+}
+
+function chat_room_key_removed( shared, removed )
+{
+   var kept = chat_room_keys_removed( ).filter( function( entry ) { return entry !== shared; } );
+
+   if( removed )
+      kept.push( shared );
+
+   try
+   {
+      localStorage.setItem( chat_room_keys_removed_name( ), JSON.stringify( kept ) );
+   }
+   catch( e )
+   {
+   }
 }
 
 // NOTE: Under a message in a direct message that starts with a room key ("room_key_in_message( )") for a room this person is in.
-// None kept for that room yet - added as it arrives (Ian, 2026-10-26: no button to press, copying and pasting being painful). One
-// in place of a key already kept is offered, and asked first: whoever sent it could read what is sent there with it, and members
-// with the old key could not (found by review). Each is added by itself only once a sign in, so a save that fails is not tried
-// again at every redraw - the button is there for that.
+// Added as it arrives (Ian, 2026-10-26: no button to press, copying and pasting being painful) when it comes from the room's owner,
+// as the console's owner sends it, none is kept for the room, and it has not been removed here; otherwise offered. One in place of a
+// key already kept is asked first: whoever sent it could read what is sent there with it, and members with the old key could not
+// (found by review). Each is added by itself only once a sign in, so a save that fails is not tried again at every redraw.
 var g_room_keys_tried = { };
 
 function chat_offer_room_key( element, text )
@@ -582,21 +638,29 @@ function chat_offer_room_key( element, text )
    }
 
    var offered = ( kept !== "" ) ? "Use this room key for " + entry.name : "Add this room key for " + entry.name;
+   var whole = shared.room + "#" + shared.key;
 
-   var save = function( )
+   var save = function( only_if_none )
    {
       button.disabled = true;
       button.textContent = "Adding the room key for " + entry.name + "…";
 
-      chat_keys_save_room( shared.room, shared.key ).then( function( problem )
+      chat_keys_save_room( shared.room, shared.key, only_if_none ).then( function( problem )
       {
-         if( problem !== "" )
+         if( problem === "kept" )
+         {
+            button.disabled = false;
+            button.textContent = "Use this room key for " + entry.name;
+         }
+         else if( problem !== "" )
          {
             button.disabled = false;
             button.textContent = offered;
 
             show_alert( problem, "is-error" );
          }
+         else
+            chat_room_key_removed( whole, false );
       } );
    };
 
@@ -610,15 +674,15 @@ function chat_offer_room_key( element, text )
        + " instead? Your messages there will be encrypted with it - only those who have this key can read them." ) )
          return;
 
-      save( );
+      save( false );
    } );
 
-   var tried = shared.room + "#" + shared.key;
+   var from_owner = ( element.dataset.sender || "" ) === entry.owner;
 
-   if( ( kept === "" ) && !g_room_keys_tried.hasOwnProperty( tried ) )
+   if( ( kept === "" ) && from_owner && !g_room_keys_tried.hasOwnProperty( whole ) && ( chat_room_keys_removed( ).indexOf( whole ) < 0 ) )
    {
-      g_room_keys_tried[ tried ] = true;
+      g_room_keys_tried[ whole ] = true;
 
-      save( );
+      save( true );
    }
 }

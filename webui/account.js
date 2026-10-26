@@ -994,6 +994,28 @@ async function do_remove_device( entry )
 {
    var choice = device_choice( entry );
 
+   // NOTE: The same request signs out or blocks, by the device's state now - so the list is read again first, and nothing is done
+   // if it has changed since it was shown: a Sign out must never block (found by review, 2026-10-27).
+   var listed = await request( function( done )
+   {
+      return ciyam.fetch( devices_url( "" ), "GET", done );
+   } );
+
+   var now = ( problem_text( listed ) === "" )
+    ? parse_devices( listed, ciyam.device ).filter( function( d ) { return d.device === entry.device; } )[ 0 ] : null;
+
+   if( !now || ( device_choice( now ).action !== choice.action ) )
+   {
+      g_device_armed = "";
+
+      show_alert( now ? "That device has " + ( ( choice.action === "block" ) ? "signed in" : "signed out" ) + " since - nothing was done;"
+       + " choose again." : "That device is no longer listed - nothing was done.", true );
+
+      load_devices( );
+
+      return;
+   }
+
    var response = await request( function( done )
    {
       return ciyam.fetch( devices_url( "/" + encodeURIComponent( entry.device ) ), "DELETE", done );
