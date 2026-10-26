@@ -329,6 +329,7 @@ ENTROPY=@entropy:32:hex_digits
 @else
 ~echo ""
 PPUB=@public:$PKEY
+#Can copy or scan: $PPUB
 ~qrencode -tANSI $~PPUB
 ;
 @retain NAMES
