@@ -207,20 +207,28 @@ http://www.opensource.org/licenses/mit-license.php.
                <p class="account-lede">How you appear to others on this node.</p>
             </div>
 
-            <div class="account-card account-identity">
-               <span class="account-avatar account-avatar--large" id="mine_avatar"></span>
-               <div>
-                  <div class="account-identity-name" id="mine_name"></div>
-                  <div class="account-identity-meta"><span id="mine_type"></span></div>
+            <!-- NOTE: Two columns as Home's (Damon, 2026-10-26 - the page as wide as Home's), one under the other when narrow. -->
+            <div class="account-columns">
+               <div class="account-column-main">
+                  <div class="account-card account-identity">
+                     <span class="account-avatar account-avatar--large" id="mine_avatar"></span>
+                     <div>
+                        <div class="account-identity-name" id="mine_name"></div>
+                        <div class="account-identity-meta"><span id="mine_type"></span></div>
+                     </div>
+                  </div>
                </div>
-            </div>
 
-            <!-- NOTE: Room for what is to come (Damon, 2026-10-26) - where it is kept on the node is Ian's to say. -->
-            <div class="account-card account-form account-later">
-               <div>
-                  <h2>About you <span class="account-later-badge">Later</span></h2>
-                  <p class="account-lede">A name to show in the chat in place of your username, a picture, and a line about
-                   you - kept on the node, so they're the same on every device. Your username stays the same for signing in.</p>
+               <div class="account-column-side">
+                  <!-- NOTE: Room for what is to come (Damon, 2026-10-26) - where it is kept on the node is Ian's to say. -->
+                  <div class="account-card account-form account-later">
+                     <div>
+                        <h2>About you <span class="account-later-badge">Later</span></h2>
+                        <p class="account-lede">A name to show in the chat in place of your username, a picture, and a line
+                         about you - kept on the node, so they're the same on every device. Your username stays the same for
+                         signing in.</p>
+                     </div>
+                  </div>
                </div>
             </div>
          </section>
@@ -235,93 +243,100 @@ http://www.opensource.org/licenses/mit-license.php.
                <p class="account-lede" id="keys_lede">For encrypted messages - only the people you write to can read them.</p>
             </div>
 
-            <div class="account-card account-form" id="mine_keys">
-               <div class="account-keys-part" id="keys_loading" role="status">Looking for your keys…</div>
+            <div class="account-columns">
+               <div class="account-column-main">
+                  <div class="account-card account-form" id="mine_keys">
+                     <div class="account-keys-part" id="keys_loading" role="status">Looking for your keys…</div>
 
-               <div class="account-keys-part" id="keys_none" hidden>
-                  <p class="account-lede" id="keys_none_lede"></p>
-                  <div class="account-actions-row">
-                     <button type="button" class="chat-btn" id="keys_restore">I have my twelve words</button>
-                     <button type="button" class="chat-btn chat-btn--primary" id="keys_start">Set up your keys</button>
-                  </div>
-               </div>
-
-               <div class="account-keys-part" id="keys_random" hidden>
-                  <p class="account-lede">Pop any twelve bubbles as they rise. When and where you catch them is mixed with this
-                   browser's own randomness to make your words.</p>
-                  <div class="home-bubbles" id="keys_bubbles" role="group" aria-label="Bubbles to pop"></div>
-                  <div class="home-setup-count">
-                     <span id="keys_popped">0 of 12 popped</span>
-                     <span>The browser adds its own randomness too</span>
-                  </div>
-                  <div class="home-setup-meter" aria-hidden="true"><span id="keys_popped_bar"></span></div>
-                  <div class="account-actions-row">
-                     <button type="button" class="chat-btn" id="keys_random_cancel">Cancel</button>
-                     <button type="button" class="chat-btn chat-btn--primary" id="keys_random_next" disabled>Next</button>
-                  </div>
-               </div>
-
-               <div class="account-keys-part" id="keys_words" hidden>
-                  <p class="account-lede">Write down your twelve words, on paper, in order. You type them on each browser you use
-                   your keys on, and they are the only way to get your keys back.</p>
-                  <ol class="home-setup-words" id="keys_word_list"></ol>
-                  <div class="recover-warning"><b>Shown only now.</b> Not a screenshot, not a file on this computer, not a photo.
-                   Anyone who has them can read your encrypted messages.</div>
-                  <label class="home-setup-tick">
-                     <input type="checkbox" id="keys_written">
-                     <span>I've written all twelve down, in order</span>
-                  </label>
-                  <div class="account-actions-row">
-                     <button type="button" class="chat-btn" id="keys_words_cancel">Cancel</button>
-                     <button type="button" class="chat-btn chat-btn--primary" id="keys_words_next" disabled>Check them</button>
-                  </div>
-               </div>
-
-               <div class="account-keys-part" id="keys_check" hidden>
-                  <p class="account-lede">From your paper, not from memory: for each word, pick the one you wrote.</p>
-                  <div class="home-setup-check" id="keys_check_rows"></div>
-                  <div class="account-actions-row">
-                     <button type="button" class="chat-btn" id="keys_check_back">See the words again</button>
-                     <button type="button" class="chat-btn chat-btn--primary" id="keys_save" disabled>Save your keys</button>
-                  </div>
-               </div>
-
-               <div class="account-keys-part" id="keys_enter" hidden>
-                  <p class="account-lede" id="keys_enter_lede">Your keys are set up. To use them on this browser, type your
-                   twelve words.</p>
-                  <label class="chat-label" for="keys_enter_words">Your twelve words</label>
-                  <textarea class="chat-field account-keys-words" id="keys_enter_words" rows="3" autocomplete="off" autocapitalize="off"
-                   spellcheck="false"></textarea>
-                  <div class="account-actions-row">
-                     <button type="button" class="chat-btn" id="keys_enter_new">Start again with new words</button>
-                     <button type="button" class="chat-btn" id="keys_enter_cancel" hidden>Cancel</button>
-                     <button type="button" class="chat-btn chat-btn--primary" id="keys_enter_go">Use my keys here</button>
-                  </div>
-               </div>
-
-               <div class="account-keys-part" id="keys_here" hidden>
-                  <p class="account-lede" id="keys_here_lede">Your keys are on this browser.</p>
-                  <div class="account-keys-public">
-                     <div class="account-keys-qr" id="keys_qr" aria-hidden="true"></div>
-                     <div>
-                        <div class="chat-label">Your public key</div>
-                        <p class="account-lede">Others scan or copy this to write to you. It's safe to share.</p>
-                        <code class="account-keys-key" id="keys_public"></code>
+                     <div class="account-keys-part" id="keys_none" hidden>
+                        <p class="account-lede" id="keys_none_lede"></p>
+                        <div class="account-actions-row">
+                           <button type="button" class="chat-btn" id="keys_restore">I have my twelve words</button>
+                           <button type="button" class="chat-btn chat-btn--primary" id="keys_start">Set up your keys</button>
+                        </div>
                      </div>
+
+                     <div class="account-keys-part" id="keys_random" hidden>
+                        <p class="account-lede">Pop any twelve bubbles as they rise. When and where you catch them is mixed with this
+                         browser's own randomness to make your words.</p>
+                        <div class="home-bubbles" id="keys_bubbles" role="group" aria-label="Bubbles to pop"></div>
+                        <div class="home-setup-count">
+                           <span id="keys_popped">0 of 12 popped</span>
+                           <span>The browser adds its own randomness too</span>
+                        </div>
+                        <div class="home-setup-meter" aria-hidden="true"><span id="keys_popped_bar"></span></div>
+                        <div class="account-actions-row">
+                           <button type="button" class="chat-btn" id="keys_random_cancel">Cancel</button>
+                           <button type="button" class="chat-btn chat-btn--primary" id="keys_random_next" disabled>Next</button>
+                        </div>
+                     </div>
+
+                     <div class="account-keys-part" id="keys_words" hidden>
+                        <p class="account-lede">Write down your twelve words, on paper, in order. You type them on each browser you use
+                         your keys on, and they are the only way to get your keys back.</p>
+                        <ol class="home-setup-words" id="keys_word_list"></ol>
+                        <div class="recover-warning"><b>Shown only now.</b> Not a screenshot, not a file on this computer, not a photo.
+                         Anyone who has them can read your encrypted messages.</div>
+                        <label class="home-setup-tick">
+                           <input type="checkbox" id="keys_written">
+                           <span>I've written all twelve down, in order</span>
+                        </label>
+                        <div class="account-actions-row">
+                           <button type="button" class="chat-btn" id="keys_words_cancel">Cancel</button>
+                           <button type="button" class="chat-btn chat-btn--primary" id="keys_words_next" disabled>Check them</button>
+                        </div>
+                     </div>
+
+                     <div class="account-keys-part" id="keys_check" hidden>
+                        <p class="account-lede">From your paper, not from memory: for each word, pick the one you wrote.</p>
+                        <div class="home-setup-check" id="keys_check_rows"></div>
+                        <div class="account-actions-row">
+                           <button type="button" class="chat-btn" id="keys_check_back">See the words again</button>
+                           <button type="button" class="chat-btn chat-btn--primary" id="keys_save" disabled>Save your keys</button>
+                        </div>
+                     </div>
+
+                     <div class="account-keys-part" id="keys_enter" hidden>
+                        <p class="account-lede" id="keys_enter_lede">Your keys are set up. To use them on this browser, type your
+                         twelve words.</p>
+                        <label class="chat-label" for="keys_enter_words">Your twelve words</label>
+                        <textarea class="chat-field account-keys-words" id="keys_enter_words" rows="3" autocomplete="off" autocapitalize="off"
+                         spellcheck="false"></textarea>
+                        <div class="account-actions-row">
+                           <button type="button" class="chat-btn" id="keys_enter_new">Start again with new words</button>
+                           <button type="button" class="chat-btn" id="keys_enter_cancel" hidden>Cancel</button>
+                           <button type="button" class="chat-btn chat-btn--primary" id="keys_enter_go">Use my keys here</button>
+                        </div>
+                     </div>
+
+                     <div class="account-keys-part" id="keys_here" hidden>
+                        <p class="account-lede" id="keys_here_lede">Your keys are on this browser.</p>
+                        <div class="account-keys-public">
+                           <div class="account-keys-qr" id="keys_qr" aria-hidden="true"></div>
+                           <div>
+                              <div class="chat-label">Your public key</div>
+                              <p class="account-lede">Others scan or copy this to write to you. It's safe to share.</p>
+                              <code class="account-keys-key" id="keys_public"></code>
+                           </div>
+                        </div>
+                        <div class="account-actions-row">
+                           <button type="button" class="chat-btn" id="keys_forget">Forget them on this browser</button>
+                        </div>
+                     </div>
+
+                     <div class="chat-error-text" id="keys_error" role="alert"></div>
+                     <div class="chat-signin-busy" id="keys_busy" hidden><span class="chat-spinner"></span><span id="keys_busy_text" role="status"></span></div>
                   </div>
-                  <!-- NOTE: Room keys (2026-10-26) - kept with the keys, by room number; each is made, shared and removed in the
-                       chat, under Room Details. -->
-                  <div class="account-keys-rooms">
-                     <h3 class="chat-label">Room keys</h3>
+               </div>
+
+               <div class="account-column-side">
+                  <!-- NOTE: Room keys (2026-10-26) - kept with the keys, by room number; each is made, shared and removed in the chat,
+                       under Room Details. Shown once the keys are here. -->
+                  <div class="account-card account-form account-keys-rooms" id="keys_rooms_part" hidden>
+                     <h2>Room keys</h2>
                      <p class="account-lede" id="keys_rooms"></p>
                   </div>
-                  <div class="account-actions-row">
-                     <button type="button" class="chat-btn" id="keys_forget">Forget them on this browser</button>
-                  </div>
                </div>
-
-               <div class="chat-error-text" id="keys_error" role="alert"></div>
-               <div class="chat-signin-busy" id="keys_busy" hidden><span class="chat-spinner"></span><span id="keys_busy_text" role="status"></span></div>
             </div>
          </section>
 
@@ -341,24 +356,35 @@ http://www.opensource.org/licenses/mit-license.php.
                </div>
             </div>
 
-            <div class="account-card account-form account-keys-people" id="contacts_part" hidden>
-               <h2>People's public keys</h2>
-               <p class="account-lede" id="keys_contacts"></p>
-               <ul class="account-keys-list" id="keys_contact_list"></ul>
-               <div>
-                  <label class="chat-label" for="keys_add_name">Their username</label>
-                  <input type="text" class="chat-field" id="keys_add_name" autocomplete="off" autocapitalize="off" spellcheck="false">
+            <!-- NOTE: The list beside the form to add one (Damon, 2026-10-26), so a growing list never pushes the form down. -->
+            <div class="account-columns">
+               <div class="account-column-main">
+                  <div class="account-card account-form account-keys-people" id="contacts_part" hidden>
+                     <h2>People's public keys</h2>
+                     <p class="account-lede" id="keys_contacts"></p>
+                     <ul class="account-keys-list" id="keys_contact_list"></ul>
+                  </div>
                </div>
-               <div>
-                  <label class="chat-label" for="keys_add_key">Their public key</label>
-                  <textarea class="chat-field account-keys-words" id="keys_add_key" rows="2" autocomplete="off" autocapitalize="off"
-                   spellcheck="false"></textarea>
+
+               <div class="account-column-side">
+                  <div class="account-card account-form account-keys-people" id="contacts_add_part" hidden>
+                     <h2>Add someone's key</h2>
+                     <div>
+                        <label class="chat-label" for="keys_add_name">Their username</label>
+                        <input type="text" class="chat-field" id="keys_add_name" autocomplete="off" autocapitalize="off" spellcheck="false">
+                     </div>
+                     <div>
+                        <label class="chat-label" for="keys_add_key">Their public key</label>
+                        <textarea class="chat-field account-keys-words" id="keys_add_key" rows="3" autocomplete="off" autocapitalize="off"
+                         spellcheck="false"></textarea>
+                     </div>
+                     <div class="account-actions-row">
+                        <button type="button" class="chat-btn chat-btn--primary" id="keys_add">Add their key</button>
+                     </div>
+                     <div class="chat-error-text" id="keys_add_error" role="alert"></div>
+                     <div class="chat-signin-busy" id="contacts_busy" hidden><span class="chat-spinner"></span><span id="contacts_busy_text" role="status"></span></div>
+                  </div>
                </div>
-               <div class="account-actions-row">
-                  <button type="button" class="chat-btn" id="keys_add">Add their key</button>
-               </div>
-               <div class="chat-error-text" id="keys_add_error" role="alert"></div>
-               <div class="chat-signin-busy" id="contacts_busy" hidden><span class="chat-spinner"></span><span id="contacts_busy_text" role="status"></span></div>
             </div>
          </section>
 
@@ -370,48 +396,54 @@ http://www.opensource.org/licenses/mit-license.php.
                 has to sign in again.</p>
             </div>
 
-            <!-- NOTE: This account's devices (Ian, 2026-10-06) - "GET /cws/devices". Rows are made in "render_devices( )". -->
-            <div class="account-card account-form" id="mine_devices">
-               <h2>Signed in from</h2>
+            <div class="account-columns">
+               <div class="account-column-main">
+                  <!-- NOTE: This account's devices (Ian, 2026-10-06) - "GET /cws/devices". Rows are made in "render_devices( )". -->
+                  <div class="account-card account-form" id="mine_devices">
+                     <h2>Signed in from</h2>
 
-               <ul class="account-devices" id="mine_devices_list"></ul>
+                     <ul class="account-devices" id="mine_devices_list"></ul>
 
-               <div class="chat-error-text" id="mine_devices_error" role="alert"></div>
-            </div>
-
-            <!-- NOTE: Another device (Ian, 2026-10-25: the access key "passed via QR code for simplicity rather than needing to
-                 provide the twelve words for every device") - "keys_show_device( )". Only once the keys are on this browser. -->
-            <div class="account-card account-form account-keys-device" id="device_add_part" hidden>
-               <div>
-                  <h2>Add another device</h2>
-                  <p class="account-lede">Your keys on another of your own devices - this shows a QR code to scan with its
-                   camera.</p>
-               </div>
-               <div class="account-actions-row" id="keys_device_row">
-                  <button type="button" class="chat-btn" id="keys_device">Add another device</button>
-               </div>
-               <div class="account-keys-device-show" id="keys_device_part" hidden>
-                  <p class="account-lede">Scan this with the other device's camera - it opens this page there, and once you sign
-                   in as yourself your keys are on it too.</p>
-                  <div class="account-keys-qr" id="keys_device_qr" aria-hidden="true"></div>
-                  <label class="chat-label" for="keys_device_link">Or open this address there</label>
-                  <input type="text" class="chat-field account-keys-key" id="keys_device_link" readonly>
-                  <div class="recover-warning"><b>Only for your own devices.</b> Anyone who scans this or has the address can read
-                   your encrypted messages. Hide it once you're done.</div>
-                  <div class="account-actions-row">
-                     <button type="button" class="chat-btn" id="keys_device_hide">Hide</button>
+                     <div class="chat-error-text" id="mine_devices_error" role="alert"></div>
                   </div>
                </div>
-            </div>
 
-            <div class="account-card account-form account-keys-needed" id="device_need_keys" hidden>
-               <div>
-                  <h2>Add another device</h2>
-                  <p class="account-lede">To put your keys on another device from here, they need to be on this browser first -
-                   under Your keys.</p>
-               </div>
-               <div class="account-actions-row">
-                  <a class="chat-btn" href="#keys">Go to Your keys</a>
+               <div class="account-column-side">
+                  <!-- NOTE: Another device (Ian, 2026-10-25: the access key "passed via QR code for simplicity rather than needing to
+                       provide the twelve words for every device") - "keys_show_device( )". Only once the keys are on this browser. -->
+                  <div class="account-card account-form account-keys-device" id="device_add_part" hidden>
+                     <div>
+                        <h2>Add another device</h2>
+                        <p class="account-lede">Your keys on another of your own devices - this shows a QR code to scan with its
+                         camera.</p>
+                     </div>
+                     <div class="account-actions-row" id="keys_device_row">
+                        <button type="button" class="chat-btn" id="keys_device">Add another device</button>
+                     </div>
+                     <div class="account-keys-device-show" id="keys_device_part" hidden>
+                        <p class="account-lede">Scan it with the other device's camera. Once you sign in there as yourself, your keys
+                         are on it too.</p>
+                        <div class="account-keys-qr" id="keys_device_qr" aria-hidden="true"></div>
+                        <label class="chat-label" for="keys_device_link">Or open this address there</label>
+                        <input type="text" class="chat-field account-keys-key" id="keys_device_link" readonly>
+                        <div class="recover-warning"><b>Only for your own devices.</b> Anyone who scans this or has the address can read
+                         your encrypted messages. Hide it once you're done.</div>
+                        <div class="account-actions-row">
+                           <button type="button" class="chat-btn" id="keys_device_hide">Hide</button>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="account-card account-form account-keys-needed" id="device_need_keys" hidden>
+                     <div>
+                        <h2>Add another device</h2>
+                        <p class="account-lede">To put your keys on another device from here, they need to be on this browser first -
+                         under Your keys.</p>
+                     </div>
+                     <div class="account-actions-row">
+                        <a class="chat-btn" href="#keys">Go to Your keys</a>
+                     </div>
+                  </div>
                </div>
             </div>
          </section>
@@ -425,19 +457,23 @@ http://www.opensource.org/licenses/mit-license.php.
                <p class="account-lede">What the chat tells you about while you're elsewhere.</p>
             </div>
 
-            <div class="account-card account-form" id="mine_notify">
-               <div>
-                  <h2>From the chat</h2>
-                  <p class="account-lede">A notification on this computer when a message arrives and the chat is open in the
-                   background - who and where, never what was said. Kept for this account on this browser.</p>
+            <div class="account-columns">
+               <div class="account-column-main">
+                  <div class="account-card account-form" id="mine_notify">
+                     <div>
+                        <h2>From the chat</h2>
+                        <p class="account-lede">A notification on this computer when a message arrives and the chat is open in the
+                         background - who and where, never what was said. Kept for this account on this browser.</p>
+                     </div>
+
+                     <label class="account-check">
+                        <input type="checkbox" id="mine_notify_switch" onchange="do_mine_notify( this.checked )">
+                        Desktop notifications from the chat
+                     </label>
+
+                     <p class="account-lede" id="mine_notify_status" aria-live="polite"></p>
+                  </div>
                </div>
-
-               <label class="account-check">
-                  <input type="checkbox" id="mine_notify_switch" onchange="do_mine_notify( this.checked )">
-                  Desktop notifications from the chat
-               </label>
-
-               <p class="account-lede" id="mine_notify_status" aria-live="polite"></p>
             </div>
          </section>
 
@@ -448,50 +484,54 @@ http://www.opensource.org/licenses/mit-license.php.
                <p class="account-lede">The password you sign in with on each device.</p>
             </div>
 
-            <form class="account-card account-form" id="mine_password_form" onsubmit="do_change_password( event )" novalidate>
-               <div>
-                  <h2>Change password</h2>
-                  <p class="account-lede">You stay signed in here. Other devices will need the new password.</p>
-               </div>
+            <div class="account-columns">
+               <div class="account-column-main">
+                  <form class="account-card account-form" id="mine_password_form" onsubmit="do_change_password( event )" novalidate>
+                     <div>
+                        <h2>Change password</h2>
+                        <p class="account-lede">You stay signed in here. Other devices will need the new password.</p>
+                     </div>
 
-               <input type="text" id="mine_username" class="account-sr" autocomplete="username" tabindex="-1" aria-hidden="true" readonly>
+                     <input type="text" id="mine_username" class="account-sr" autocomplete="username" tabindex="-1" aria-hidden="true" readonly>
 
-               <div>
-                  <label class="chat-label" for="mine_current">Current password</label>
-                  <input type="password" id="mine_current" class="chat-field" autocomplete="current-password">
-               </div>
+                     <div>
+                        <label class="chat-label" for="mine_current">Current password</label>
+                        <input type="password" id="mine_current" class="chat-field" autocomplete="current-password">
+                     </div>
 
-               <div>
-                  <label class="chat-label" for="mine_password">New password</label>
-                  <input type="password" id="mine_password" class="chat-field" autocomplete="new-password" oninput="update_strength( 'mine' )">
-                  <div class="chat-strength" id="mine_strength" hidden>
-                     <div class="chat-strength-track"><div class="chat-strength-bar"></div></div>
-                     <span class="chat-strength-label" id="mine_strength_label"></span>
+                     <div>
+                        <label class="chat-label" for="mine_password">New password</label>
+                        <input type="password" id="mine_password" class="chat-field" autocomplete="new-password" oninput="update_strength( 'mine' )">
+                        <div class="chat-strength" id="mine_strength" hidden>
+                           <div class="chat-strength-track"><div class="chat-strength-bar"></div></div>
+                           <span class="chat-strength-label" id="mine_strength_label"></span>
+                        </div>
+                     </div>
+
+                     <div>
+                        <button type="button" class="chat-btn chat-btn--link chat-suggest" id="mine_suggest"
+                         onclick="offer_passphrase( 'mine_password', 'mine_confirm', 'mine_suggested' )">Suggest one</button>
+                        <p class="chat-hint chat-suggested" id="mine_suggested" role="status" hidden></p>
+                        <label class="chat-label" for="mine_confirm">Type it again</label>
+                        <input type="password" id="mine_confirm" class="chat-field" autocomplete="new-password">
+                     </div>
+
+                     <div class="chat-error-text" id="mine_error" role="alert"></div>
+
+                     <div class="chat-signin-busy" id="mine_busy" hidden><span class="chat-spinner"></span><span id="mine_busy_text" role="status"></span></div>
+                     <progress class="chat-signin-progress" id="mine_busy_bar" max="1" value="0" hidden></progress>
+
+                     <div class="account-actions-row">
+                        <button type="submit" class="chat-btn chat-btn--primary" id="mine_submit">Change password</button>
+                     </div>
+                  </form>
+
+                  <div class="account-card account-form" id="mine_admin_note" hidden>
+                     <h2>The master password</h2>
+                     <p class="account-lede">admin's password is also the node's master password - the one that unlocks the node after a
+                      restart - so it isn't changed here.</p>
                   </div>
                </div>
-
-               <div>
-                  <button type="button" class="chat-btn chat-btn--link chat-suggest" id="mine_suggest"
-                   onclick="offer_passphrase( 'mine_password', 'mine_confirm', 'mine_suggested' )">Suggest one</button>
-                  <p class="chat-hint chat-suggested" id="mine_suggested" role="status" hidden></p>
-                  <label class="chat-label" for="mine_confirm">Type it again</label>
-                  <input type="password" id="mine_confirm" class="chat-field" autocomplete="new-password">
-               </div>
-
-               <div class="chat-error-text" id="mine_error" role="alert"></div>
-
-               <div class="chat-signin-busy" id="mine_busy" hidden><span class="chat-spinner"></span><span id="mine_busy_text" role="status"></span></div>
-               <progress class="chat-signin-progress" id="mine_busy_bar" max="1" value="0" hidden></progress>
-
-               <div class="account-actions-row">
-                  <button type="submit" class="chat-btn chat-btn--primary" id="mine_submit">Change password</button>
-               </div>
-            </form>
-
-            <div class="account-card account-form" id="mine_admin_note" hidden>
-               <h2>The master password</h2>
-               <p class="account-lede">admin's password is also the node's master password - the one that unlocks the node after a
-                restart - so it isn't changed here.</p>
             </div>
          </section>
       </main>

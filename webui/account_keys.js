@@ -227,7 +227,9 @@ function keys_show( part )
    var here = ( part === "keys_here" );
    var looking = ( part === "keys_loading" );
 
+   document.getElementById( "keys_rooms_part" ).hidden = !here;
    document.getElementById( "contacts_part" ).hidden = !here;
+   document.getElementById( "contacts_add_part" ).hidden = !here;
    document.getElementById( "contacts_need_keys" ).hidden = here || looking;
    document.getElementById( "device_add_part" ).hidden = !here;
    document.getElementById( "device_need_keys" ).hidden = here || looking;
@@ -275,7 +277,7 @@ function keys_clear( )
    document.getElementById( "keys_written" ).checked = false;
    document.getElementById( "keys_public" ).textContent = "";
    document.getElementById( "keys_device_part" ).hidden = true;
-   document.getElementById( "keys_device" ).hidden = false;
+   document.getElementById( "keys_device_row" ).hidden = false;
    document.getElementById( "keys_rooms" ).textContent = "";
 
    keys_busy( "" );
@@ -648,7 +650,7 @@ function keys_show_device( )
 
    document.getElementById( "keys_device_link" ).value = link;
    document.getElementById( "keys_device_part" ).hidden = false;
-   document.getElementById( "keys_device" ).hidden = true;
+   document.getElementById( "keys_device_row" ).hidden = true;
 }
 
 function keys_hide_device( )
@@ -656,7 +658,7 @@ function keys_hide_device( )
    document.getElementById( "keys_device_qr" ).replaceChildren( );
    document.getElementById( "keys_device_link" ).value = "";
    document.getElementById( "keys_device_part" ).hidden = true;
-   document.getElementById( "keys_device" ).hidden = false;
+   document.getElementById( "keys_device_row" ).hidden = false;
 }
 
 // ---- Others' public keys

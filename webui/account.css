@@ -369,6 +369,44 @@ h2[tabindex="-1"]:focus
    gap: 16px;
 }
 
+/* NOTE: As wide as Home's sections (Damon, 2026-10-26) - in two columns as Home's are, one under the other when narrow. */
+.account-main > .account-section
+{
+   max-width: none;
+}
+
+.account-columns
+{
+   display: flex;
+   flex-wrap: wrap;
+   gap: 16px;
+   align-items: flex-start;
+}
+
+.account-column-main
+{
+   flex: 3 1 420px;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+   gap: 16px;
+}
+
+.account-column-side
+{
+   flex: 2 1 280px;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+   gap: 16px;
+}
+
+/* NOTE: A section of one column - a form - kept as wide as the first of two. */
+.account-column-main:only-child
+{
+   flex: 0 1 640px;
+}
+
 .account-alert
 {
    width: 100%;
@@ -450,6 +488,23 @@ h2[tabindex="-1"]:focus
    flex-wrap: wrap;
    justify-content: flex-end;
    gap: 10px;
+}
+
+.account-actions-row[hidden]
+{
+   display: none;
+}
+
+/* NOTE: A button beside the main one is as big as it (Damon, 2026-10-26) - a row's buttons the same size. */
+.account-actions-row .chat-btn
+{
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   height: 44px;
+   padding: 0 20px;
+   font-size: var(--font-size-chat-body);
+   text-decoration: none;
 }
 
 .account-back
@@ -949,17 +1004,13 @@ button.account-back,
    display: none;
 }
 
-/* NOTE: Room keys, under the public key (2026-10-26). */
-.account-keys-rooms
+/* NOTE: Room keys, beside the keys (2026-10-26). */
+.account-keys-rooms[hidden]
 {
-   display: flex;
-   flex-direction: column;
-   gap: 4px;
-   padding-top: 14px;
-   border-top: 1px solid var(--color-chat-border);
+   display: none;
 }
 
-.account-keys-rooms h3,
+.account-keys-rooms h2,
 .account-keys-rooms p
 {
    margin: 0;
