@@ -656,7 +656,7 @@ function device_rows( devices )
       return {
          label: entry.current ? "This browser" : short_device( entry.device ),
          title: entry.device,
-         state: ( entry.current || entry.active ) ? "Signed in now" : "Not signed in",
+         state: ( entry.current || entry.active ) ? "Signed in now" : ( entry.signed_out ? "Signed out" : "Not signed in" ),
          active: !!( entry.current || entry.active ),
          current: !!entry.current
       };

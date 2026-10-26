@@ -246,10 +246,40 @@ function parse_devices( text, current )
       if( match === null )
          return;
 
-      devices.push( { device: match[ 1 ], session: match[ 2 ], active: ( match[ 3 ] === "*" ), current: ( match[ 1 ] === current ) } );
+      // NOTE: A device that has signed in as this PIN before but has no session now is listed with twenty zeros for its session
+      // (Ian, 2026-10-26 - "known devices", kept in ".devices") - "signed_out".
+      devices.push( { device: match[ 1 ], session: match[ 2 ], active: ( match[ 3 ] === "*" ), current: ( match[ 1 ] === current ),
+       signed_out: /^0+$/.test( match[ 2 ] ) } );
    } );
 
    return devices.filter( function( d ) { return d.current; } ).concat( devices.filter( function( d ) { return !d.current; } ) );
+}
+
+// NOTE: What a device's row says, and what removing it does (Ian, 2026-10-26): removing one with a session signs it out - it is
+// listed as signed out then; removing one signed out blocks it, for this account, for good - its sign in refused as an invalid
+// device, and it leaves the list. So two steps, said as two: Sign out, then Block. This browser is neither.
+function device_choice( entry )
+{
+   var name = short_device( entry.device );
+
+   if( entry.current )
+      return { state: "This browser", action: "", label: "", ask: "", yes: "", done: "" };
+
+   if( entry.signed_out )
+      return { state: "Signed out", action: "block", label: "Block", ask: "Block it? It can never sign in as you again.", yes: "Block it",
+       done: "The device " + name + " is blocked - it can't sign in as you again. If it may have your password saved, change your password too." };
+
+   return { state: entry.active ? "Signed in now" : "Not signed in", action: "sign_out", label: "Sign out",
+    ask: "Sign it out? It can sign in again with your password.", yes: "Sign it out",
+    done: "The device " + name + " was signed out. To stop it signing in again, Block it." };
+}
+
+// NOTE: A device token shortened, as the console's log shortens long values.
+function short_device( device )
+{
+   var text = String( device || "" );
+
+   return ( text.length > 12 ) ? text.substr( 0, 6 ) + "…" + text.substr( -4 ) : text;
 }
 
 // NOTE: Your keys (Ian, 2026-10-25: locked under a hash of the twelve words, which each browser keeps) - which of the card's
@@ -385,6 +415,8 @@ if( typeof module !== "undefined" )
       account_section: account_section,
       room_keys_text: room_keys_text,
       parse_devices: parse_devices,
+      device_choice: device_choice,
+      short_device: short_device,
       normalise_code: normalise_code,
       is_account_pin: is_account_pin,
       parse_join_reply: parse_join_reply,

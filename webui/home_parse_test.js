@@ -316,10 +316,12 @@ check( "a short one kept", hp.short_device( "abc" ), "abc" );
 check( "the devices", hp.device_rows( [
  { device: "6034a59f4554116a", session: "s1", active: true, current: true },
  { device: "e5f6a7b8c9d0e1f2b8c9", session: "s2", active: true, current: false },
- { device: "c9d0e1f2a3b4f203", session: "s3", active: false, current: false } ] ), [
+ { device: "c9d0e1f2a3b4f203", session: "s3", active: false, current: false },
+ { device: "a3b4c5d6e7f80912", session: "00000000000000000000", active: false, current: false, signed_out: true } ] ), [
  { label: "This browser", title: "6034a59f4554116a", state: "Signed in now", active: true, current: true },
  { label: "e5f6a7…b8c9", title: "e5f6a7b8c9d0e1f2b8c9", state: "Signed in now", active: true, current: false },
- { label: "c9d0e1…f203", title: "c9d0e1f2a3b4f203", state: "Not signed in", active: false, current: false } ] );
+ { label: "c9d0e1…f203", title: "c9d0e1f2a3b4f203", state: "Not signed in", active: false, current: false },
+ { label: "a3b4c5…0912", title: "a3b4c5d6e7f80912", state: "Signed out", active: false, current: false } ] );
 
 function row( label, current, active ) { return { label: label, title: label, state: "", active: active, current: current }; }
 

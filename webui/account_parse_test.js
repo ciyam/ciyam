@@ -151,9 +151,20 @@ heading( "this account's devices" );
 const devices_text = "a1b2c3d4 11111111111111111111*\ne5f6a7b8 22222222222222222222\nc9d0e1f2 33333333333333333333*\n";
 
 check( "each device, this browser first", ap.parse_devices( devices_text, "c9d0e1f2" ), [
- { device: "c9d0e1f2", session: "33333333333333333333", active: true, current: true },
- { device: "a1b2c3d4", session: "11111111111111111111", active: true, current: false },
- { device: "e5f6a7b8", session: "22222222222222222222", active: false, current: false } ] );
+ { device: "c9d0e1f2", session: "33333333333333333333", active: true, current: true, signed_out: false },
+ { device: "a1b2c3d4", session: "11111111111111111111", active: true, current: false, signed_out: false },
+ { device: "e5f6a7b8", session: "22222222222222222222", active: false, current: false, signed_out: false } ] );
+
+// NOTE: Known devices (Ian, 2026-10-26) - one that signed in before, with no session now, has twenty zeros for its session.
+const known = ap.parse_devices( "a1b2c3d4e5f6a7b8 11111111111111111111*\nf0e1d2c3b4a59687 00000000000000000000\n", "zz" );
+check( "a device signed out - its session twenty zeros", known.map( function( d ) { return d.signed_out; } ), [ false, true ] );
+check( "- signed in: Sign out, asked first; signed out: Block, for good; this browser neither", [ ap.device_choice( known[ 0 ] ).label,
+ ap.device_choice( known[ 0 ] ).ask, ap.device_choice( known[ 1 ] ).label, ap.device_choice( known[ 1 ] ).ask,
+ ap.device_choice( { device: "x", current: true } ).action ], [ "Sign out", "Sign it out? It can sign in again with your password.", "Block",
+ "Block it? It can never sign in as you again.", "" ] );
+check( "- and what each says once done", [ ap.device_choice( known[ 0 ] ).done, ap.device_choice( known[ 1 ] ).done ], [
+ "The device a1b2c3…a7b8 was signed out. To stop it signing in again, Block it.",
+ "The device f0e1d2…9687 is blocked - it can't sign in as you again. If it may have your password saved, change your password too." ] );
 check( "with Windows line ends too", ap.parse_devices( "a1b2c3d4 111*\r\n", "x" ).length, 1 );
 check( "nothing, or anything else, is none", [ ap.parse_devices( "", "x" ), ap.parse_devices( "Error: something", "x" ) ], [ [ ], [ ] ] );
 

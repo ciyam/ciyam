@@ -918,27 +918,29 @@ function render_devices( )
       var state = document.createElement( "span" );
 
       state.className = "account-device-state";
-      state.textContent = entry.current ? "This browser" : ( entry.active ? "Signed in now" : "Not signed in" );
+      var choice = device_choice( entry );
+
+      state.textContent = choice.state;
 
       label.appendChild( state );
 
       row.appendChild( label );
 
-      if( !entry.current )
+      if( choice.action !== "" )
       {
          if( g_device_armed === entry.device )
          {
             var ask = document.createElement( "span" );
 
             ask.className = "account-confirm-text";
-            ask.textContent = "Remove it? It will be signed out.";
+            ask.textContent = choice.ask;
 
             var yes = document.createElement( "button" );
 
             yes.type = "button";
             yes.className = "account-btn-danger";
-            yes.textContent = "Remove for good";
-            yes.onclick = function( ) { do_remove_device( entry.device ); };
+            yes.textContent = choice.yes;
+            yes.onclick = function( ) { do_remove_device( entry ); };
 
             var no = document.createElement( "button" );
 
@@ -957,8 +959,8 @@ function render_devices( )
 
             remove.type = "button";
             remove.className = "chat-btn";
-            remove.textContent = "Remove";
-            remove.setAttribute( "aria-label", "Remove device " + short_device( entry.device ) );
+            remove.textContent = choice.label;
+            remove.setAttribute( "aria-label", choice.label + " device " + short_device( entry.device ) );
             remove.onclick = function( ) { arm_remove_device( entry.device ); };
 
             row.appendChild( remove );
@@ -979,14 +981,7 @@ function render_devices( )
    }
 }
 
-function short_device( device )
-{
-   var text = String( device || "" );
-
-   return ( text.length > 12 ) ? text.substr( 0, 6 ) + "…" + text.substr( -4 ) : text;
-}
-
-// NOTE: Removing asks once more in the row itself, as removing a person does.
+// NOTE: Signing out or blocking asks once more in the row itself, as removing a person does.
 function arm_remove_device( device )
 {
    g_device_armed = device;
@@ -994,19 +989,22 @@ function arm_remove_device( device )
    render_devices( );
 }
 
-async function do_remove_device( device )
+// NOTE: The one request for both (Ian, 2026-10-26) - what it does depends on whether the device has a session ("device_choice( )").
+async function do_remove_device( entry )
 {
+   var choice = device_choice( entry );
+
    var response = await request( function( done )
    {
-      return ciyam.fetch( devices_url( "/" + encodeURIComponent( device ) ), "DELETE", done );
+      return ciyam.fetch( devices_url( "/" + encodeURIComponent( entry.device ) ), "DELETE", done );
    } );
 
    g_device_armed = "";
 
    if( problem_text( response ) !== "" )
-      show_alert( "Not removed: " + problem_text( response ), true );
+      show_alert( ( ( choice.action === "block" ) ? "Not blocked: " : "Not signed out: " ) + problem_text( response ), true );
    else
-      show_alert( "The device " + short_device( device ) + " was removed and signed out." );
+      show_alert( choice.done );
 
    load_devices( );
 }

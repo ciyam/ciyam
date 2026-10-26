@@ -392,8 +392,8 @@ http://www.opensource.org/licenses/mit-license.php.
          <section class="account-section" id="section_devices" hidden>
             <div>
                <h1 tabindex="-1">Devices</h1>
-               <p class="account-lede">Each browser this account has signed in from. Remove one you've lost - it's signed out, and
-                has to sign in again.</p>
+               <p class="account-lede">Each browser this account has signed in from. Sign one out and it has to sign in again; block
+                one you've lost and it can't sign in as you again.</p>
             </div>
 
             <div class="account-columns">
