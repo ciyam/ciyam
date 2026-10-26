@@ -92,12 +92,16 @@ constexpr const char* c_force = "force";
 
 constexpr const char* c_cws_own = "***";
 
+constexpr const char* c_invalid = "00000";
+
 constexpr const char* c_js_suffix = ".js";
 constexpr const char* c_css_suffix = ".css";
-constexpr const char* c_list_suffix = ".list";
 constexpr const char* c_keys_suffix = ".keys";
+constexpr const char* c_list_suffix = ".list";
 
 constexpr const char* c_username_suffix = "@";
+
+constexpr const char* c_device_map_file = ".devices";
 
 constexpr const char* c_irc_times_prefix = "@irc_times_";
 
@@ -255,6 +259,8 @@ mutex g_mutex;
 
 string g_cws_artifacts_dir;
 
+string g_cws_device_map_file;
+
 bool g_cws_admin_locked = false;
 
 int64_t g_helper_check_tm_val = 0;
@@ -266,6 +272,8 @@ set< string > g_cws_access_tokens;
 set< string > g_cws_session_requests;
 
 set< string > g_cws_sanctioned_requests;
+
+map< string, string > g_cws_known_devices;
 
 map< string, unique_ptr< sio_graph > > g_model_meta_data;
 
@@ -549,11 +557,92 @@ size_t max_sessions( )
    return maximum_sessions;
 }
 
+void get_known_devices( const string& access, set< string >& known_devices )
+{
+   guard g( g_mutex );
+
+   for( auto i = g_cws_known_devices.begin( ); i != g_cws_known_devices.end( ); ++i )
+   {
+      string pins( i->second );
+
+      vector< string > all_pins;
+
+      split( pins, all_pins );
+
+      for( size_t j = 0; j < all_pins.size( ); j++ )
+      {
+         if( access == all_pins[ j ] )
+         {
+            known_devices.insert( i->first );
+
+            break;
+         }
+      }
+   }
+}
+
+void store_known_devices( )
+{
+   ofstream outf( g_cws_device_map_file );
+
+   for( auto i = g_cws_known_devices.begin( ); i != g_cws_known_devices.end( ); ++i )
+      outf << i->first << '=' << i->second << '\n';
+}
+
 void init_session_info( const string& access, const string& device, const string& session, const string& ip_addr, int64_t now )
 {
+   guard g( g_mutex );
+
    size_t maximum_sessions = max_sessions( );
 
-   guard g( g_mutex );
+   if( device != g_cws_admin_device )
+   {
+      if( !g_cws_known_devices.count( device ) )
+      {
+         g_cws_known_devices.insert( make_pair( device, access ) );
+
+         store_known_devices( );
+      }
+      else
+      {
+         string pins( g_cws_known_devices[ device ] );
+
+         if( !pins.empty( ) )
+         {
+            vector< string > all_pins;
+
+            split( pins, all_pins );
+
+            bool found = false;
+
+            for( size_t i = 0; i < all_pins.size( ); i++ )
+            {
+               string next_pin( all_pins[ i ] );
+
+               if( access == next_pin )
+               {
+                  found = true;
+
+                  break;
+               }
+               else if( next_pin.find( access ) == 1 )
+                  throw runtime_error( "*** sessions disallowed for this device ***" );
+            }
+
+            if( !found )
+            {
+               if( !pins.empty( ) )
+                  pins += ',';
+
+               pins += access;
+
+               g_cws_known_devices[ device ] = pins;
+
+               store_known_devices( );
+            }
+         }
+      }
+   }
 
    if( !g_session_info.count( session ) )
    {
@@ -777,8 +866,10 @@ string create_or_check_device( const string* p_device = 0, bool* p_locked = 0 )
    return device;
 }
 
-bool verify_whether_device_is_valid( const string& device )
+bool verify_whether_device_is_valid( const string& access, const string& device )
 {
+   guard g( g_mutex );
+
    bool retval = false;
 
    if( device.length( ) == c_cws_device_length )
@@ -789,15 +880,20 @@ bool verify_whether_device_is_valid( const string& device )
       {
          bool locked = false;
 
-         // NOTE: If the system identity is locked (and no identity
-         // check file exists) will just have to assume any devices
-         // are valid (which should not matter as very few commands
-         // other than "unlock" will be able to be performed whilst
-         // the system remains locked).
-         string check( create_or_check_device( &device, &locked ) );
-
-         if( locked || ( check == device ) )
+         if( g_cws_known_devices.count( device ) )
             retval = true;
+         else
+         {
+            // NOTE: If the system identity is locked (and no identity
+            // check file exists) will just have to assume any devices
+            // are valid (which should not matter as very few commands
+            // other than "unlock" will be able to be performed whilst
+            // the system remains locked).
+            string check( create_or_check_device( &device, &locked ) );
+
+            if( locked || ( check == device ) )
+               retval = true;
+         }
       }
    }
 
@@ -838,7 +934,7 @@ string create_access_token(
          }
       }
 
-      if( suffix == c_admin )
+      if( ( suffix == c_admin ) || ( suffix == c_invalid ) )
          continue;
 
       if( ptype == e_printable_type_numeric )
@@ -918,7 +1014,12 @@ bool has_web_session_access_token( const string& token,
             }
 
             if( pin.empty( ) || !is_pin_token( pin ) )
-               pin = random_characters( 5, 0, e_printable_type_numeric );
+            {
+               pin = c_invalid;
+
+               while( pin == c_invalid )
+                  pin = random_characters( 5, 0, e_printable_type_numeric );
+            }
          }
 
          ofstream outf( token_file.c_str( ), ios::out );
@@ -1501,6 +1602,13 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
             g_cws_artifacts_dir = linked_artifacts;
       }
 
+      if( g_cws_device_map_file.empty( ) )
+         g_cws_device_map_file = g_cws_artifacts_dir + '/' + string( c_device_map_file );
+
+      if( g_cws_known_devices.empty( )
+       && file_exists( g_cws_device_map_file ) )
+         buffer_file_items( g_cws_device_map_file, g_cws_known_devices );
+
       int64_t now = unix_time( );
 
       if( !is_locked && !is_identity_none && ( g_helper_check_tm_val < now ) )
@@ -1947,7 +2055,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          error = "Invalid device identity '" + device + "'.";
       else if( !has_access_device( access, device, now ) )
       {
-         if( !verify_whether_device_is_valid( device ) )
+         if( !verify_whether_device_is_valid( access, device ) )
             // FUTURE: This message should be handled as a server string message.
             error = "Invalid device identity '" + device + "'.";
          else
@@ -2093,11 +2201,19 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   if( !variables.empty( ) )
                      split( variables, lines, '\n' );
 
+                  set< string > known_devices;
+
+                  get_known_devices( access, known_devices );
+
                   for( size_t i = 0; i < lines.size( ); i++ )
                   {
                      string next_line( lines[ i ] );
 
                      string::size_type pos = next_line.find( ' ' );
+
+                     string device_id( next_line.substr( 0, pos ) );
+
+                     known_devices.erase( device_id );
 
                      if( pos != string::npos )
                      {
@@ -2105,6 +2221,13 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            lines[ i ] += '*';
                      }
                   }
+
+                  // NOTE: Any known devices that do not have system variables are appended
+                  // using a dummy session id so that the WebUI can determine this (if they
+                  // are then removed the known device will no longer permit sessions to be
+                  // created for this access PIN.
+                  for( auto i = known_devices.begin( ); i != known_devices.end( ); ++i )
+                     lines.push_back( *i + " 00000000000000000000" );
 
                   if( !is_json_output )
                      response = join( lines, '\n' );
@@ -2120,9 +2243,40 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      error = "You cannot remove your current device.";
                   else
                   {
+                     guard g( g_mutex );
+
                      found = true;
 
-                     remove_access_device_if_present( access, target );
+                     if( !g_cws_access_devices[ access ].count( target ) )
+                     {
+                        if( g_cws_known_devices.count( target ) )
+                        {
+                           string pins( g_cws_known_devices[ target ] );
+
+                           vector< string > all_pins;
+
+                           split( pins, all_pins );
+
+                           string new_pins;
+
+                           for( size_t i = 0; i < all_pins.size( ); i++ )
+                           {
+                              if( i > 0 )
+                                 new_pins += ',';
+
+                              if( all_pins[ i ] == access )
+                                 new_pins += '~';
+
+                              new_pins += all_pins[ i ];
+                           }
+
+                           g_cws_known_devices[ target ] = new_pins;
+
+                           store_known_devices( );
+                        }
+                     }
+                     else
+                        remove_access_device_if_present( access, target );
 
                      remove_session_for_device_if_present( access, target );
 
