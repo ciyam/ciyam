@@ -7,4 +7,8 @@
 if [ -f .web_device_admin ]; then
  mkdir -p test_web_info
  mv .web* test_web_info
+
+ if [ -f ../webui/.devices ]; then
+  mv ../webui/.devices test_web_info
+ fi
 fi
