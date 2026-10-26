@@ -1072,7 +1072,9 @@ function attach_reveal( input )
    input.parentNode.insertBefore( wrap, input );
    wrap.appendChild( input );
 
-   var button = signin_element( "button", { type: "button", class: "chat-reveal", id: input.id + "_reveal" } );
+   // NOTE: Not a tab stop (Ian, 2026-10-27) - Password to its "type it again" is one tab; from the keys, the checkbox after both
+   // shows them ("reveal_check( )").
+   var button = signin_element( "button", { type: "button", class: "chat-reveal", id: input.id + "_reveal", tabindex: "-1" } );
    var ns = "http://www.w3.org/2000/svg";
    var icon = document.createElementNS( ns, "svg" );
 
@@ -1118,6 +1120,12 @@ function set_revealed( input, shown )
       button.title = words;
       button.classList.toggle( "is-shown", !!shown );
    }
+
+   var partners = reveal_partners( input );
+   var check = ( partners.length > 0 ) ? document.getElementById( partners[ partners.length - 1 ].id + "_show" ) : null;
+
+   if( check )
+      check.checked = !!shown;
 }
 
 // NOTE: A new password and its "type it again" are shown or hidden together (Damon, 2026-10-25) - the new password fields
@@ -1137,7 +1145,66 @@ function reveal_partners( input )
 
 function attach_reveals( root )
 {
-   Array.from( ( root || document ).querySelectorAll( "input[autocomplete='new-password']" ) ).forEach( attach_reveal );
+   var fields = Array.from( ( root || document ).querySelectorAll( "input[autocomplete='new-password']" ) );
+
+   fields.forEach( attach_reveal );
+
+   // NOTE: Each new password and its "type it again" one tab apart (Ian, 2026-10-27, as the legacy page): "Suggest one" on the
+   // first's label row - a back-tab from it - and a checkbox after the last to show them both, the eyes being no tab stops.
+   fields.forEach( function( field )
+   {
+      var partners = reveal_partners( field );
+
+      if( partners[ 0 ] === field )
+         suggest_on_label( field );
+
+      if( partners[ partners.length - 1 ] === field )
+         reveal_check( field );
+   } );
+}
+
+function suggest_on_label( field )
+{
+   var group = field.closest( "form, section, .recover-step" ) || field.parentNode;
+   var suggest = group.querySelector( ".chat-suggest" );
+   var label = group.querySelector( "label[for='" + field.id + "']" );
+
+   if( !suggest || !label || label.parentNode.classList.contains( "chat-label-row" ) )
+      return;
+
+   var row = signin_element( "div", { class: "chat-label-row" } );
+
+   label.parentNode.insertBefore( row, label );
+   row.appendChild( label );
+   row.appendChild( suggest );
+}
+
+function reveal_check( field )
+{
+   if( document.getElementById( field.id + "_show" ) )
+      return;
+
+   var partners = reveal_partners( field );
+   var after = field.closest( ".chat-reveal-wrap" ) || field;
+   var label = signin_element( "label", { class: "chat-reveal-check" } );
+   var check = signin_element( "input", { type: "checkbox", id: field.id + "_show" } );
+
+   label.appendChild( check );
+   label.appendChild( document.createTextNode( ( partners.length > 1 ) ? "Show the passwords" : "Show the password" ) );
+
+   after.parentNode.insertBefore( label, after.nextSibling );
+
+   check.addEventListener( "change", function( )
+   {
+      reveal_partners( field ).forEach( function( partner ) { set_revealed( partner, check.checked ); } );
+   } );
+
+   // NOTE: What "Suggest one" offers, to write down - under both now, after the checkbox.
+   var group = field.closest( "form, section, .recover-step" ) || field.parentNode;
+   var note = group.querySelector( ".chat-suggested" );
+
+   if( note )
+      label.parentNode.insertBefore( note, label.nextSibling );
 }
 
 // NOTE: "Suggest one" (Ian, 2026-10-23: a suggested passphrase of five words) - five BIP39 words fill the new password and

@@ -31,6 +31,75 @@
    display: none;
 }
 
+/* NOTE: A field's hint, then the next field's label - room between them (2026-10-27). */
+.account-hint + .chat-label,
+.account-hint + .chat-label-row,
+.chat-reveal-check + .chat-label,
+.chat-suggested + .chat-label
+{
+   margin-top: 18px;
+}
+
+/* NOTE: Welcome on one screen (Ian, 2026-10-27: Firefox scrolled to reach the password's "type it again") - the card and its
+   gaps tighter than the sign in's, which has fewer fields. */
+#welcome_view
+{
+   padding-top: 16px;
+   padding-bottom: 16px;
+}
+
+#welcome_view .chat-signin-form
+{
+   padding: 28px 48px 24px;
+}
+
+#welcome_view .chat-signin-lede
+{
+   margin-bottom: 18px;
+}
+
+#welcome_view .chat-field + .chat-label,
+#welcome_view .chat-reveal-wrap + .chat-label,
+#welcome_view .chat-field + .chat-label-row,
+#welcome_view .account-hint + .chat-label,
+#welcome_view .account-hint + .chat-label-row,
+#welcome_view .chat-reveal-check + .chat-label,
+#welcome_view .chat-suggested + .chat-label,
+#welcome_view .chat-strength + .chat-label
+{
+   margin-top: 14px;
+}
+
+#welcome_view .account-stack + .account-stack
+{
+   margin-top: 14px;
+}
+
+#welcome_view .chat-field
+{
+   height: 42px;
+}
+
+#welcome_view h2
+{
+   margin-top: 18px;
+}
+
+#welcome_view .chat-signin-actions
+{
+   margin-top: 16px;
+}
+
+#welcome_view .chat-error-text:empty
+{
+   display: none;
+}
+
+#welcome_view .account-aside
+{
+   margin-top: 14px;
+}
+
 /* NOTE: The sign in card's rhythm puts space above a label that follows a field; a hint
    between them would otherwise take that space away. */
 .account-hint + .chat-label,

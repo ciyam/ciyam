@@ -2883,6 +2883,54 @@ button.chat-avatar:hover
    margin: 6px 0 2px;
 }
 
+/* NOTE: On the new password's label row since 2026-10-27 (Ian) - a back-tab from the password, not a tab stop between it and
+   its "type it again". */
+.chat-label-row
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: baseline;
+   justify-content: space-between;
+   gap: 4px 12px;
+}
+
+.chat-label-row .chat-suggest
+{
+   margin: 0 0 8px;
+}
+
+.chat-field + .chat-label-row,
+.chat-reveal-wrap + .chat-label-row,
+.chat-label + .chat-label-row
+{
+   margin-top: 26px;
+}
+
+.chat-strength + .chat-label
+{
+   margin-top: 22px;
+}
+
+/* NOTE: Both passwords shown from the keyboard (Ian, 2026-10-27) - the eyes are no tab stops. */
+.chat-reveal-check
+{
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   margin: 10px 0 0;
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-text-secondary);
+   cursor: pointer;
+}
+
+.chat-reveal-check input
+{
+   width: 16px;
+   height: 16px;
+   margin: 0;
+   accent-color: var(--color-chat-accent);
+}
+
 .chat-suggested
 {
    margin: 4px 0 20px;

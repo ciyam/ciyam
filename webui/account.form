@@ -86,8 +86,7 @@ http://www.opensource.org/licenses/mit-license.php.
             <option value="access">The PIN only</option>
             <option value="full">The PIN and the password</option>
          </select>
-         <div class="account-hint">You're signed in once your account is made. Saving the password as well signs you in
-          without typing it next time.</div>
+         <div class="account-hint">Saving the password too signs you in next time without typing it.</div>
       </div>
 
       <div class="chat-error-text" id="join_error" role="alert"></div>
