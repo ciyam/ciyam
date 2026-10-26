@@ -139,7 +139,7 @@ function keys_forget_here( )
 function keys_take_link( )
 {
    if( location.hash.indexOf( c_keys_link_prefix ) !== 0 )
-      return;
+      return false;
 
    var access = location.hash.substring( c_keys_link_prefix.length ).toLowerCase( );
 
@@ -152,7 +152,9 @@ function keys_take_link( )
    {
    }
 
-   history.replaceState( null, "", location.pathname + location.search + "#mine" );
+   history.replaceState( null, "", location.pathname + location.search + "#keys" );
+
+   return true;
 }
 
 // NOTE: Taken only once the node's answer could be read (found by review, 2026-10-26) - after a time-out or an error it is
@@ -219,6 +221,16 @@ async function keys_send( access, rounds, contents, error_id, what )
 function keys_show( part )
 {
    c_keys_parts.forEach( function( id ) { document.getElementById( id ).hidden = ( id !== part ); } );
+
+   // NOTE: Contacts and Add another device have sections of their own (2026-10-26) - each needs the keys on this browser, and
+   // says where to put them there until they are; nothing while they are still being looked for.
+   var here = ( part === "keys_here" );
+   var looking = ( part === "keys_loading" );
+
+   document.getElementById( "contacts_part" ).hidden = !here;
+   document.getElementById( "contacts_need_keys" ).hidden = here || looking;
+   document.getElementById( "device_add_part" ).hidden = !here;
+   document.getElementById( "device_need_keys" ).hidden = here || looking;
 }
 
 // NOTE: Words shown, and perhaps written down, but not yet saved - for the switcher's warning on leaving ("unsent_work( )").
@@ -236,6 +248,13 @@ function keys_busy( text )
 {
    document.getElementById( "keys_busy" ).hidden = !text;
    document.getElementById( "keys_busy_text" ).textContent = text || "";
+}
+
+// NOTE: A change to Contacts, said under it - its section's own (2026-10-26).
+function keys_contacts_busy( text )
+{
+   document.getElementById( "contacts_busy" ).hidden = !text;
+   document.getElementById( "contacts_busy_text" ).textContent = text || "";
 }
 
 // NOTE: Words and keys gone from the page - after saving, cancelling or signing out.
@@ -256,8 +275,11 @@ function keys_clear( )
    document.getElementById( "keys_written" ).checked = false;
    document.getElementById( "keys_public" ).textContent = "";
    document.getElementById( "keys_device_part" ).hidden = true;
+   document.getElementById( "keys_device" ).hidden = false;
+   document.getElementById( "keys_rooms" ).textContent = "";
 
    keys_busy( "" );
+   keys_contacts_busy( "" );
    set_error( "keys_error", "" );
    set_error( "keys_add_error", "" );
 }
@@ -396,6 +418,7 @@ async function keys_show_here( access, lede, from_link )
    document.getElementById( "keys_here_lede" ).textContent = lede;
 
    keys_draw_contacts( );
+   keys_draw_rooms( );
 
    keys_show( "keys_here" );
 }
@@ -673,6 +696,12 @@ function keys_draw_contacts( )
    document.getElementById( "keys_contacts" ).hidden = ( rows.length > 0 );
 }
 
+// NOTE: Which rooms have a key kept with these ("room_keys_text( )") - made and removed in the chat.
+function keys_draw_rooms( )
+{
+   document.getElementById( "keys_rooms" ).textContent = room_keys_text( g_keys.rooms );
+}
+
 // NOTE: The keys as the node has them now, or null - another browser, or the chat with a room key, may have changed them since
 // this page read them (found by review, 2026-10-26), and a change made to this page's copy would undo that one.
 async function keys_latest( )
@@ -685,6 +714,8 @@ async function keys_latest( )
 
       g_keys.node = String( response ).trim( );
       g_keys.rooms = opened.rooms;
+
+      keys_draw_rooms( );
 
       return opened;
    }
@@ -699,13 +730,13 @@ async function keys_latest( )
 async function keys_store_contacts( change, busy_text )
 {
    set_error( "keys_add_error", "" );
-   keys_busy( busy_text );
+   keys_contacts_busy( busy_text );
 
    var latest = await keys_latest( );
 
    if( latest === null )
    {
-      keys_busy( "" );
+      keys_contacts_busy( "" );
       set_error( "keys_add_error", "Your keys could not be read again from the node - reload the page to try again." );
 
       return false;
@@ -716,7 +747,7 @@ async function keys_store_contacts( change, busy_text )
 
    if( problem !== "" )
    {
-      keys_busy( "" );
+      keys_contacts_busy( "" );
 
       g_keys.contacts = latest.contacts;
 
@@ -729,7 +760,7 @@ async function keys_store_contacts( change, busy_text )
    var saved = await keys_send( g_keys.access, g_keys.rounds, { primary: g_keys.primary, secondary: g_keys.secondary, contacts: contacts,
     rooms: latest.rooms }, "keys_add_error", "That" );
 
-   keys_busy( "" );
+   keys_contacts_busy( "" );
 
    if( !saved )
       return false;

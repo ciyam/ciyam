@@ -192,6 +192,17 @@ check( "- not a username, no key, your own, one already kept, or theirs under an
 check( "the keys kept, by name, shortened", ap.contact_rows( { "verify-b": own_key, "verify-a": verify_a_key } ), [
  { name: "verify-a", key: verify_a_key, short: "0028b35f…789493e0" }, { name: "verify-b", key: own_key, short: "bd03d5c9…ea1b6bc9" } ] );
 
+// NOTE: My account's sections (2026-10-26) - "#mine", as the chat and Home have opened it, is the first.
+check( "My account's sections, in order", ap.account_sections( ).map( function( s ) { return s.key; } ),
+ [ "profile", "keys", "contacts", "devices", "notify", "password" ] );
+check( "- the one an address asks for, else the first", [ ap.account_section( "#devices" ), ap.account_section( "keys" ),
+ ap.account_section( "#mine" ), ap.account_section( "" ), ap.account_section( "#keys=00ff" ) ], [ "devices", "keys", "profile", "profile", "profile" ] );
+check( "the room keys kept - none, one, or several in order", [ ap.room_keys_text( { } ), ap.room_keys_text( { "0000069": "ab" } ),
+ ap.room_keys_text( { "0000072": "cd", "0000069": "ab", "0000070": "ef" } ) ], [
+ "None yet. A room's owner makes one in the chat, under Room Details, and sends it to each member.",
+ "Kept for room #0000069. Made, shared and removed in the chat, under Room Details.",
+ "Kept for rooms #0000069, #0000070 and #0000072. Made, shared and removed in the chat, under Room Details." ] );
+
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );
 

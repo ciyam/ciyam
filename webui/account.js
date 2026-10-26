@@ -24,6 +24,10 @@ var g_queue = Promise.resolve( );
 var g_devices = [ ];
 var g_device_armed = "";
 
+// NOTE: The session My account was last drawn for - a section chosen after that only shows, so what is being typed in another
+// stays (2026-10-26).
+var g_shown_for = "";
+
 var g_join_mode = "code";
 var g_join_pin = "";
 var g_join_code = "";
@@ -146,14 +150,21 @@ function account_main( )
       announce( );
    }
 
+   // NOTE: The shell - the side menu's button, its scrim and Escape ("shell.js"); Sign out, as in Home, of every app.
+   shell_install( );
+
+   document.getElementById( "app_sign_out" ).addEventListener( "click", apps_sign_out_everywhere );
+
    window.addEventListener( "hashchange", function( )
    {
       // NOTE: A QR code's address opened in a tab already on this page changes only the part after "#" - taken up the same,
-      // then My account shown as for any other change.
-      if( typeof keys_take_link === "function" )
-         keys_take_link( );
+      // then Your keys drawn again to take it.
+      var linked = ( typeof keys_take_link === "function" ) && keys_take_link( );
 
       route( );
+
+      if( linked && ( ciyam.sessid !== "" ) )
+         render_keys( );
    } );
 
    // NOTE: Switched to from another app in this tab, or reloaded - the session kept for the tab, if the node still
@@ -490,7 +501,7 @@ function route( )
       return;
    }
 
-   show_section( "mine" );
+   show_section( account_section( window.location.hash ) );
 }
 
 function show_view( id )
@@ -501,19 +512,106 @@ function show_view( id )
    } );
 }
 
-// NOTE: One section since People moved into Home (2026-10-11) - My account.
+// NOTE: One of My account's sections ("account_sections( )", 2026-10-26) - drawn afresh only for a session not drawn yet; the
+// address's "#..." follows, so a reload comes back to it.
 function show_section( name )
 {
+   var fresh = document.getElementById( "app_view" ).hidden || ( g_shown_for !== ciyam.sessid );
+
    show_view( "app_view" );
 
-   document.getElementById( name + "_section" ).hidden = false;
+   if( fresh )
+   {
+      g_shown_for = ciyam.sessid;
 
-   render_mine( );
+      build_shell( );
+      render_mine( );
+   }
 
-   var heading = document.querySelector( "#" + name + "_section h1" );
+   var title = "";
+
+   account_sections( ).forEach( function( section )
+   {
+      document.getElementById( "section_" + section.key ).hidden = ( section.key !== name );
+
+      if( section.key === name )
+         title = section.title;
+   } );
+
+   document.getElementById( "top_heading" ).textContent = title;
+
+   shell_mark( [ "account", name ] );
+   shell_close_rail( );
+
+   if( window.location.hash !== "#" + name )
+      history.replaceState( null, "", window.location.pathname + window.location.search + "#" + name );
+
+   window.scrollTo( 0, 0 );
+
+   var heading = document.querySelector( "#section_" + name + " h1" );
 
    if( heading !== null )
       heading.focus( { preventScroll: true } );
+}
+
+// NOTE: The side menu, the chips and the bottom bar - built at each sign in, as Home's are ("build_shell( )" in "home.js"): the
+// apps as the switcher lists them, My account's sections, and who is signed in.
+function build_shell( )
+{
+   var rail_apps = document.getElementById( "rail_apps" );
+   var rail_sections = document.getElementById( "rail_sections" );
+   var chips = document.getElementById( "shell_chips" );
+   var bottom = document.getElementById( "shell_bottombar" );
+
+   [ rail_apps, rail_sections, chips, bottom ].forEach( function( element ) { element.replaceChildren( ); } );
+
+   var open = function( app )
+   {
+      return function( event )
+      {
+         if( app.current )
+            show_section( account_sections( )[ 0 ].key );
+         else
+            apps_go( app.key, "", event );
+      };
+   };
+
+   switcher_apps( ciyam.is_admin, false, "account" ).forEach( function( app )
+   {
+      var item = shell_rail_item( app.key, app.title, true, open( app ) );
+
+      if( !app.current )
+         item.href = apps_address( app, "" );
+
+      rail_apps.appendChild( item );
+   } );
+
+   switcher_apps( ciyam.is_admin, true, "account" ).forEach( function( app )
+   {
+      var item = shell_bottom_item( app.key, app.current ? "Account" : app.title, open( app ) );
+
+      if( !app.current )
+         item.href = apps_address( app, "" );
+
+      bottom.appendChild( item );
+   } );
+
+   account_sections( ).forEach( function( section )
+   {
+      var go = function( ) { show_section( section.key ); };
+
+      rail_sections.appendChild( shell_rail_item( section.key, section.title, false, go ) );
+      chips.appendChild( shell_chip( section.key, section.title, go ) );
+   } );
+
+   var name = account_display_name( ciyam.username, ciyam.is_admin );
+
+   // NOTE: As Home says it ("role_text( )").
+   var role = ciyam.is_admin ? "Administrator" : "Member";
+
+   shell_show_user( name, role );
+
+   document.getElementById( "top_sub" ).textContent = name + " · " + role;
 }
 
 // NOTE: Drops the address's "#..." without a new history entry - so a used code does not sit
@@ -621,8 +719,10 @@ function enter_app( )
 {
    signin_keep_session( );
 
-   document.getElementById( "topbar_user" ).textContent = account_display_name( ciyam.username, ciyam.is_admin );
    document.getElementById( "console_session" ).textContent = "inherits session " + ciyam.sessid;
+
+   // NOTE: The console drawer is admin's, as in Home.
+   document.getElementById( "console_toggle" ).hidden = !ciyam.is_admin;
 
    // NOTE: Moving between apps, and signing out of every one, is the switcher's - whoever opened this page.
    apps_refresh( );
@@ -665,6 +765,7 @@ function clear_session( )
    // NOTE: The next account on this page must not see this one's devices.
    g_devices = [ ];
    g_device_armed = "";
+   g_shown_for = "";
 
    document.getElementById( "mine_devices_list" ).replaceChildren( );
 
@@ -691,7 +792,7 @@ function render_mine( )
    avatar.style.background = "var(--color-sender-" + sender_colour_index( shown ) + ")";
 
    document.getElementById( "mine_name" ).textContent = shown;
-   document.getElementById( "mine_type" ).textContent = ciyam.is_admin ? "Administrator" : "Standard";
+   document.getElementById( "mine_type" ).textContent = ciyam.is_admin ? "Administrator" : "Member";
 
    // NOTE: For a password manager - which account the password belongs to.
    document.getElementById( "mine_username" ).value = name || ciyam.access;

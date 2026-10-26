@@ -360,47 +360,13 @@ h2[tabindex="-1"]:focus
    Signed in - the frame
    ==================================================================== */
 
-.account-app
-{
-   display: flex;
-   flex-direction: column;
-   min-height: 100vh;
-   min-height: 100dvh;
-   background: var(--color-chat-bg-rail);
-}
-
-.account-topbar
-{
-   flex: none;
-   display: flex;
-   flex-wrap: wrap;
-   align-items: center;
-   gap: 8px 12px;
-   min-height: var(--chat-topbar-height, 52px);
-   padding: 8px 18px;
-   border-bottom: 1px solid var(--color-chat-border);
-   background: var(--color-chat-bg-raised);
-}
-
-.account-spacer
-{
-   flex-grow: 1;
-}
-
-.account-who-am-i
-{
-   font-size: var(--font-size-chat-meta);
-   color: var(--color-chat-text-secondary);
-}
-
+/* NOTE: My account is in Home's shell ("shell.css", 2026-10-26) - the side menu, the top bar, the chips and the bottom
+   bar its; here a section at a time under the notice. */
 .account-main
 {
-   flex-grow: 1;
    display: flex;
    flex-direction: column;
-   align-items: center;
    gap: 16px;
-   padding: 36px 16px 56px;
 }
 
 .account-alert
@@ -428,6 +394,11 @@ h2[tabindex="-1"]:focus
    color: var(--color-chat-critical-text);
 }
 
+.account-section[hidden]
+{
+   display: none;
+}
+
 .account-section
 {
    width: 100%;
@@ -440,14 +411,6 @@ h2[tabindex="-1"]:focus
 .account-section--wide
 {
    max-width: 1000px;
-}
-
-.account-section h1
-{
-   margin: 0;
-   font-size: 26px;
-   font-weight: 600;
-   letter-spacing: -0.01em;
 }
 
 .account-section h2
@@ -933,11 +896,6 @@ button.account-back,
       text-align: left;
       white-space: normal;
    }
-
-   .account-who-am-i
-   {
-      display: none;
-   }
 }
 
 /* NOTE: Your keys on My account (2026-10-25) - one part at a time; the public key beside its QR code. */
@@ -979,32 +937,73 @@ button.account-back,
    user-select: all;
 }
 
-.account-keys-people
+.account-keys-people h2,
+.account-keys-device h2
+{
+   margin: 0;
+}
+
+/* NOTE: Nothing to say, no room taken - the card's foot is otherwise a gap (2026-10-26). */
+#mine_keys > .chat-error-text:empty
+{
+   display: none;
+}
+
+/* NOTE: Room keys, under the public key (2026-10-26). */
+.account-keys-rooms
 {
    display: flex;
    flex-direction: column;
-   gap: 12px;
+   gap: 4px;
    padding-top: 14px;
    border-top: 1px solid var(--color-chat-border);
 }
 
-.account-keys-device
+.account-keys-rooms h3,
+.account-keys-rooms p
+{
+   margin: 0;
+}
+
+.account-keys-device-show
 {
    display: flex;
    flex-direction: column;
    gap: 12px;
-   padding-top: 14px;
-   border-top: 1px solid var(--color-chat-border);
+}
+
+.account-keys-device-show[hidden],
+.account-keys-needed[hidden],
+.account-keys-people[hidden]
+{
+   display: none;
+}
+
+/* NOTE: What is to come on Profile (2026-10-26) - dashed, as not yet a part to use. */
+.account-later
+{
+   border-style: dashed;
+   border-color: var(--color-chat-border-strong);
+   background: var(--color-chat-bg-raised);
+   box-shadow: none;
+}
+
+.account-later-badge
+{
+   display: inline-block;
+   margin-left: 8px;
+   padding: 1px 8px;
+   border-radius: 999px;
+   background: var(--color-chat-bg-rail);
+   color: var(--color-chat-text-secondary);
+   font-size: 11px;
+   font-weight: 600;
+   vertical-align: middle;
 }
 
 .account-keys-device[hidden]
 {
    display: none;
-}
-
-.account-keys-device h3
-{
-   margin: 0;
 }
 
 .account-keys-device .account-keys-qr

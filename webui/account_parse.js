@@ -337,9 +337,53 @@ function short_public_key( key )
    return ( text.length > 16 ) ? text.substr( 0, 8 ) + "…" + text.substr( -8 ) : text;
 }
 
+// NOTE: My account's sections, in the side menu's order (Damon, 2026-10-26 - one card each had made the page long, and the
+// profile's fields to come have a place now). Each is "#<key>" in the address.
+const c_account_sections = [
+   { key: "profile", title: "Profile" },
+   { key: "keys", title: "Your keys" },
+   { key: "contacts", title: "Contacts" },
+   { key: "devices", title: "Devices" },
+   { key: "notify", title: "Notifications" },
+   { key: "password", title: "Password" }
+];
+
+function account_sections( )
+{
+   return c_account_sections.map( function( section ) { return { key: section.key, title: section.title }; } );
+}
+
+// NOTE: The section an address asks for - "#mine", as the chat and Home have opened the page since before the sections, or
+// anything else, is the first.
+function account_section( hash )
+{
+   var wanted = String( hash || "" ).replace( /^#/, "" );
+
+   return c_account_sections.some( function( section ) { return section.key === wanted; } ) ? wanted : c_account_sections[ 0 ].key;
+}
+
+// NOTE: The room keys kept with the keys ("rooms", by room number) - which rooms, for Your keys; each is made, shared and
+// removed in the chat.
+function room_keys_text( rooms )
+{
+   var numbers = Object.keys( rooms || { } ).filter( function( room ) { return /^[0-9]{7}$/.test( room ); } ).sort( );
+
+   if( numbers.length === 0 )
+      return "None yet. A room's owner makes one in the chat, under Room Details, and sends it to each member.";
+
+   var named = numbers.map( function( room ) { return "#" + room; } );
+   var listed = ( named.length === 1 ) ? named[ 0 ] : named.slice( 0, -1 ).join( ", " ) + " and " + named[ named.length - 1 ];
+
+   return "Kept for " + ( ( named.length === 1 ) ? "room " : "rooms " ) + listed + ". Made, shared and removed in the chat,"
+    + " under Room Details.";
+}
+
 if( typeof module !== "undefined" )
 {
    module.exports = {
+      account_sections: account_sections,
+      account_section: account_section,
+      room_keys_text: room_keys_text,
       parse_devices: parse_devices,
       normalise_code: normalise_code,
       is_account_pin: is_account_pin,

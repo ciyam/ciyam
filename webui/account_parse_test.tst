@@ -77,5 +77,8 @@ ok   a public key as pasted - capitals, spaces, broken over lines
 ok   adding someone's key - fine
 ok   - not a username, no key, your own, one already kept, or theirs under another name
 ok   the keys kept, by name, shortened
+ok   My account's sections, in order
+ok   - the one an address asks for, else the first
+ok   the room keys kept - none, one, or several in order
 
 All checks passed.
