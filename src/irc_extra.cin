@@ -21,7 +21,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "5"
-#Usage: irc_extra.cin [!][decrypt|encrypt] [message] [key_file_data] [primary_key_var] [secondary_key_var]
+#Usage: irc_extra.cin [[!]decrypt|encrypt] [message] [key_file_data] [primary_key_var] [secondary_key_var]
 @else
 ;
 OP=$1
@@ -30,7 +30,7 @@ KEY_FILE_DATA=$3
 PRIMARY_KEY_VAR=$4
 SECONDARY_KEY_VAR=$5
 ;
-USE_PLAIN_PREFIX=
+USE_CODED_PREFIX=
 IS_DIRECT_MESSAGE=
 ;
 MAX_TO_ENCRYPT=500
@@ -39,7 +39,7 @@ ENCRYPTED_PREFIX=X\r
 FIRST=@substr:0,1:$OP
 @ifeq "$FIRST" "_"
 OP=@substr:1:$OP
-USE_PLAIN_PREFIX=1
+USE_CODED_PREFIX=1
 @endif
 ;
 FIRST=@substr:0,1:$OP
@@ -134,10 +134,9 @@ POS=@$POS+1
 DECODED=@substr:$POS:$DECODED
 POS=@strpos:\r:$DECODED
 @ifdef $POS
-@ifdef $USE_PLAIN_PREFIX
+PADDING_EXTRA=
+@ifdef $USE_CODED_PREFIX
 PADDING_EXTRA=_$SP
-@else
-PADDING_EXTRA=%G%*%N%
 @endif
 MESSAGE=@substr:0,$POS:$DECODED
 MESSAGE=$PADDING_EXTRA$MESSAGE

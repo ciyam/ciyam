@@ -37,6 +37,7 @@ SKEY=
 ERROR=
 ;
 LOCK_EMOJI=🔒
+WARN_EMOJI=⚠️
 ;
 UNLOCK_SCRIPT=.irc_$USER.unlock
 STORED_SECRET=.irc_$USER.secret
@@ -867,10 +868,20 @@ DECODED_MESSAGE=$LOCK_EMOJI (room key unknown)
 @endif
 @endif
 ;
+@else
+@ifneq "$ROOM" "$ENTRANCE_ROOM"
+FIRST=@substr:0,1:$DECODED_MESSAGE
+@ifeq "$FIRST" "$SP"
+CHECK_MESSAGE=@repstr: /:$DECODED_MESSAGE
+@ifneq "$CHECK_MESSAGE" ""
+DECODED_MESSAGE=$WARN_EMOJI$DECODED_MESSAGE
+@endif
+@endif
+@endif
 @endif
 ;
 ; NOTE: Pad the start of each line if is multi-line.
-SPACES=@padlen:40, :
+SPACES=@padlen:39, :
 SPACES=$SPACES$PADDING_EXTRA
 DECODED_MESSAGE=@repstr:\n/\n$SPACES:$DECODED_MESSAGE
 ;
