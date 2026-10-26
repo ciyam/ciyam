@@ -147,6 +147,7 @@ function chat_keys_forget( )
    g_chat_keys_unread = false;
    g_chat_opened = { };
    g_chat_secrets = { };
+   g_room_keys_tried = { };
 }
 
 // NOTE: The open room's other person, if it is a direct message the console would encrypt too.
@@ -548,9 +549,13 @@ async function do_remove_room_key( )
    await chat_room_key_change( g_room, "" );
 }
 
-// NOTE: Under a message in a direct message that is just a room key ("room_key_in_message( )") for a room this person is in,
-// that this browser has not got - added with one press. One in place of a key already kept is asked first: whoever sent it could
-// read what is sent there with it, and members with the old key could not (found by review).
+// NOTE: Under a message in a direct message that starts with a room key ("room_key_in_message( )") for a room this person is in.
+// None kept for that room yet - added as it arrives (Ian, 2026-10-26: no button to press, copying and pasting being painful). One
+// in place of a key already kept is offered, and asked first: whoever sent it could read what is sent there with it, and members
+// with the old key could not (found by review). Each is added by itself only once a sign in, so a save that fails is not tried
+// again at every redraw - the button is there for that.
+var g_room_keys_tried = { };
+
 function chat_offer_room_key( element, text )
 {
    var shared = room_key_in_message( text );
@@ -564,38 +569,56 @@ function chat_offer_room_key( element, text )
    button.type = "button";
    button.className = "chat-btn chat-btn--small chat-room-key-offer";
 
-   if( g_chat_keys.rooms[ shared.room ] === shared.key )
+   element.appendChild( button );
+
+   var kept = g_chat_keys.rooms[ shared.room ] || "";
+
+   if( kept === shared.key )
    {
       button.textContent = "Room key for " + entry.name + " added";
       button.disabled = true;
+
+      return;
    }
-   else
+
+   var offered = ( kept !== "" ) ? "Use this room key for " + entry.name : "Add this room key for " + entry.name;
+
+   var save = function( )
    {
-      var had = g_chat_keys.rooms.hasOwnProperty( shared.room );
+      button.disabled = true;
+      button.textContent = "Adding the room key for " + entry.name + "…";
 
-      button.textContent = ( had ? "Use this room key for " : "Add this room key for " ) + entry.name;
-
-      button.addEventListener( "click", function( )
+      chat_keys_save_room( shared.room, shared.key ).then( function( problem )
       {
-         var kept = g_chat_keys ? ( g_chat_keys.rooms[ shared.room ] || "" ) : "";
-
-         if( ( kept !== "" ) && ( kept !== shared.key ) && !confirm( "You already have a key for " + entry.name + ". Use this one"
-          + " instead? Your messages there will be encrypted with it - only those who have this key can read them." ) )
-            return;
-
-         button.disabled = true;
-
-         chat_keys_save_room( shared.room, shared.key ).then( function( problem )
+         if( problem !== "" )
          {
-            if( problem !== "" )
-            {
-               button.disabled = false;
+            button.disabled = false;
+            button.textContent = offered;
 
-               show_alert( problem, "is-error" );
-            }
-         } );
+            show_alert( problem, "is-error" );
+         }
       } );
-   }
+   };
 
-   element.appendChild( button );
+   button.textContent = offered;
+
+   button.addEventListener( "click", function( )
+   {
+      var now = g_chat_keys ? ( g_chat_keys.rooms[ shared.room ] || "" ) : "";
+
+      if( ( now !== "" ) && ( now !== shared.key ) && !confirm( "You already have a key for " + entry.name + ". Use this one"
+       + " instead? Your messages there will be encrypted with it - only those who have this key can read them." ) )
+         return;
+
+      save( );
+   } );
+
+   var tried = shared.room + "#" + shared.key;
+
+   if( ( kept === "" ) && !g_room_keys_tried.hasOwnProperty( tried ) )
+   {
+      g_room_keys_tried[ tried ] = true;
+
+      save( );
+   }
 }

@@ -919,9 +919,18 @@ check( "- another room's, or not 32 hex digits, refused and said", [ cp.parse_ro
  "A room key is 0000004# followed by 32 letters and digits (0-9, a-f) - copy all of it.",
  "A room key is 0000004# followed by 32 letters and digits (0-9, a-f) - copy all of it.",
  "A room key is 0000004# followed by 32 letters and digits (0-9, a-f) - copy all of it." ] );
-check( "- a message that is just one, as shared in a direct message", [ cp.room_key_in_message( " 0000004#" + room_key + " " ),
- cp.room_key_in_message( "the key: 0000004#" + room_key ), cp.room_key_in_message( "0000004#" + room_key.toUpperCase( ) ) ],
- [ { room: "0000004", key: room_key }, null, null ] );
+check( "- a message that starts with one, as shared in a direct message - words after it too (Ian, 2026-10-26)", [
+ cp.room_key_in_message( " 0000004#" + room_key + " " ), cp.room_key_in_message( "0000004#" + room_key + " for General - welcome!" ),
+ cp.room_key_in_message( "the key: 0000004#" + room_key ), cp.room_key_in_message( "0000004#" + room_key.toUpperCase( ) ),
+ cp.room_key_in_message( "0000004#" + room_key + "0" ), cp.room_key_in_message( "0000004#" + room_key + "-x" ) ],
+ [ { room: "0000004", key: room_key }, { room: "0000004", key: room_key }, null, { room: "0000004", key: room_key }, null,
+ { room: "0000004", key: room_key } ] );
+// NOTE: The console takes a key of any length - one of Ian's had 64 hex digits (2026-10-26).
+check( "- 64 hex digits taken too", [ cp.room_key_in_message( "0000004#" + room_key + room_key ),
+ cp.parse_room_key( "0000004#" + room_key + room_key, "0000004" ) ], [ { room: "0000004", key: room_key + room_key },
+ { key: room_key + room_key, problem: "" } ] );
+check( "- the whole message pasted, words after the key", cp.parse_room_key( "0000004#" + room_key + " for General", "0000004" ),
+ { key: room_key, problem: "" } );
 check( "found in the rail", cp.find_dm_room( [ { room: "0000016", name: "/admin/verify-a", owner: "admin" } ], [ "verify-a", "admin" ] ).room, "0000016" );
 check( "their request found", cp.dm_existing( [ "verify-a" ], "admin", [ ], [ { room: "0000016", name: "/admin/verify-a", inviter: "verify-a" } ], [ ] ),
  { kind: "request", room: "0000016" } );

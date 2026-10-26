@@ -785,7 +785,7 @@ async function steps( module_class, list )
    check( "- a room key not 32 hex digits, or a room not a number of 7, refused", [
     await not_locked( known_access, Object.assign( { }, known_contents, { rooms: { "0000004": room_key + "00" } } ) ),
     await not_locked( known_access, Object.assign( { }, known_contents, { rooms: { "4": room_key } } ) ) ],
-    [ "A room key is 32 hex digits, kept by its room's number.", "A room key is 32 hex digits, kept by its room's number." ] );
+    [ "A room key is 32 or 64 hex digits, kept by its room's number.", "A room key is 32 or 64 hex digits, kept by its room's number." ] );
 
    var by_run = ( await new uk( { } ).run( "lock " + test_entropy ) ).split( " " );
 

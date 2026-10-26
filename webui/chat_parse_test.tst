@@ -463,7 +463,9 @@ ok   a room key - for a room, not the entrance or reserved ones, nor a direct me
 ok   - shown as the console shows it
 ok   - given as the console shows it, or alone, spaces and case aside
 ok   - another room's, or not 32 hex digits, refused and said
-ok   - a message that is just one, as shared in a direct message
+ok   - a message that starts with one, as shared in a direct message - words after it too (Ian, 2026-10-26)
+ok   - 64 hex digits taken too
+ok   - the whole message pasted, words after the key
 ok   found in the rail
 ok   their request found
 ok   a request to message you

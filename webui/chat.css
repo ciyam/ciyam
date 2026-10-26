@@ -508,7 +508,19 @@ button.chat-avatar:hover
    gap: 6px;
 }
 
-/* NOTE: All 40 characters shown, broken where they must be - it is copied whole. */
+/* NOTE: The key pasted, all of it seen - a box that wraps (Ian, 2026-10-26: the field was too small). */
+.chat-room-key-input
+{
+   height: auto;
+   min-height: 76px;
+   padding: 10px 12px;
+   font-size: var(--font-size-chat-small);
+   line-height: 1.45;
+   word-break: break-all;
+   resize: vertical;
+}
+
+/* NOTE: All of the key shown, broken where it must be - it is copied whole. */
 .chat-room-key-text
 {
    display: block;

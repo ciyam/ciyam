@@ -152,8 +152,8 @@ ciyam_register_module( class extends ciyam_module
       {
          var key = String( given_rooms[ room ] || "" ).toLowerCase( );
 
-         if( !/^[0-9]{7}$/.test( room ) || !/^[0-9a-f]{32}$/.test( key ) )
-            throw new Error( "A room key is 32 hex digits, kept by its room's number." );
+         if( !/^[0-9]{7}$/.test( room ) || !/^([0-9a-f]{32}|[0-9a-f]{64})$/.test( key ) )
+            throw new Error( "A room key is 32 or 64 hex digits, kept by its room's number." );
 
          rooms[ room ] = key;
       } );

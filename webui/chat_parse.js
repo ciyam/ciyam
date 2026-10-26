@@ -1357,7 +1357,13 @@ function dm_encryption_note( other, keys, theirs )
 // NOTE: Room keys (Ian, 2026-10-25) - "irc.cin"'s "k" makes "<room>#<32 hex digits>" to send each member in an encrypted direct
 // message, and "r" with it saves it; every message in that room is then sealed with the 32 digits as they are. Not for the
 // entrance or reserved rooms, nor a direct message (named "/..."), which uses the other person's public key.
-const c_room_key_pattern = /^([0-9]{7})#([0-9a-f]{32})$/;
+const c_room_key_pattern = /^([0-9]{7})#([0-9a-f]{32}|[0-9a-f]{64})$/;
+
+// NOTE: "k" makes 32 hex digits; the console takes any length as the key, and one of Ian's had 64 (2026-10-26) - so 64 too.
+const c_room_key_digits = /^([0-9a-f]{32}|[0-9a-f]{64})$/;
+
+// NOTE: A key at the start of a message, anything after it (Ian, 2026-10-26: "Text: [room#secret] *").
+const c_room_key_leading = /^([0-9]{7})#([0-9a-fA-F]{64}|[0-9a-fA-F]{32})(?![0-9a-fA-F])/;
 
 function can_have_room_key( room, name )
 {
@@ -1375,6 +1381,12 @@ function room_key_text( room, key )
 // { key } or { problem } to say.
 function parse_room_key( text, room )
 {
+   // NOTE: The whole message pasted, words after the key - the key taken from its start (2026-10-26).
+   var lead = room_key_in_message( text );
+
+   if( lead )
+      text = room_key_text( lead.room, lead.key );
+
    var given = String( text || "" ).replace( /\s+/g, "" ).toLowerCase( );
    var whole = c_room_key_pattern.exec( given );
 
@@ -1383,18 +1395,19 @@ function parse_room_key( text, room )
 
    var key = whole ? whole[ 2 ] : given;
 
-   if( !/^[0-9a-f]{32}$/.test( key ) )
+   if( !c_room_key_digits.test( key ) )
       return { key: "", problem: "A room key is " + room + "# followed by 32 letters and digits (0-9, a-f) - copy all of it." };
 
    return { key: key, problem: "" };
 }
 
-// NOTE: A message that is just a room key - one shared in an encrypted direct message - as { room, key }, or null.
+// NOTE: A message that starts with a room key - one shared in an encrypted direct message, perhaps with words after it (Ian,
+// 2026-10-26) - as { room, key }, or null.
 function room_key_in_message( text )
 {
-   var whole = c_room_key_pattern.exec( String( text || "" ).trim( ) );
+   var lead = c_room_key_leading.exec( String( text || "" ).trim( ) );
 
-   return whole ? { room: whole[ 1 ], key: whole[ 2 ] } : null;
+   return lead ? { room: lead[ 1 ], key: lead[ 2 ].toLowerCase( ) } : null;
 }
 
 // NOTE: Whether a message can be sealed - at most 500 bytes of it ("ciyam_secure_message.js", as "irc.cin"'s "MAX_TO_ENCRYPT",

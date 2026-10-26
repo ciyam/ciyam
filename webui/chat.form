@@ -362,9 +362,12 @@ http://www.opensource.org/licenses/mit-license.php.
                   <button type="button" class="chat-btn chat-btn--small" id="room_key_add_open" onclick="do_open_add_room_key( )">Add a room key</button>
                </div>
                <div class="chat-room-key-add" id="room_key_add_part" hidden>
-                  <label class="chat-label" for="room_key_add_input">The room key, as it was sent to you</label>
-                  <input type="text" class="chat-field chat-mono" id="room_key_add_input" autocomplete="off" spellcheck="false"
-                   onkeydown="if( event.key === 'Enter' ) do_add_room_key( );">
+                  <!-- NOTE: A box that wraps, so all of a key is seen as it is pasted (Ian, 2026-10-26: the field was too small);
+                       Enter adds it. -->
+                  <label class="chat-label" for="room_key_add_input">The room key, or the whole message it came in</label>
+                  <textarea class="chat-field chat-mono chat-room-key-input" id="room_key_add_input" rows="3" autocomplete="off"
+                   autocapitalize="off" spellcheck="false"
+                   onkeydown="if( ( event.key === 'Enter' ) &amp;&amp; !event.shiftKey ) { event.preventDefault( ); do_add_room_key( ); }"></textarea>
                   <div class="chat-room-key-actions">
                      <button type="button" class="chat-btn chat-btn--small chat-btn--accent" id="room_key_add_go" onclick="do_add_room_key( )">Add</button>
                      <button type="button" class="chat-btn chat-btn--small" onclick="do_cancel_add_room_key( )">Cancel</button>
