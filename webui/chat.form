@@ -353,6 +353,37 @@ http://www.opensource.org/licenses/mit-license.php.
                <button type="button" class="chat-btn chat-btn--small" onclick="do_open_rename_room( )">Rename</button>
                <button type="button" class="chat-btn chat-btn--small chat-btn--accent" id="owner_invite" onclick="do_open_invite( )">Invite</button>
             </div>
+            <!-- NOTE: A room key (Ian, 2026-10-25: "irc.cin"'s "k" and "r") - made, added, shared and removed here ("chat_keys.js"). -->
+            <div class="chat-room-key" id="room_key_part" hidden>
+               <div class="chat-room-key-head">Room key</div>
+               <div class="chat-room-key-state" id="room_key_state"></div>
+               <div class="chat-room-key-actions" id="room_key_none_actions" hidden>
+                  <button type="button" class="chat-btn chat-btn--small" id="room_key_make" onclick="do_make_room_key( )">Make a room key</button>
+                  <button type="button" class="chat-btn chat-btn--small" id="room_key_add_open" onclick="do_open_add_room_key( )">Add a room key</button>
+               </div>
+               <div class="chat-room-key-add" id="room_key_add_part" hidden>
+                  <label class="chat-label" for="room_key_add_input">The room key, as it was sent to you</label>
+                  <input type="text" class="chat-field chat-mono" id="room_key_add_input" autocomplete="off" spellcheck="false"
+                   onkeydown="if( event.key === 'Enter' ) do_add_room_key( );">
+                  <div class="chat-room-key-actions">
+                     <button type="button" class="chat-btn chat-btn--small chat-btn--accent" id="room_key_add_go" onclick="do_add_room_key( )">Add</button>
+                     <button type="button" class="chat-btn chat-btn--small" onclick="do_cancel_add_room_key( )">Cancel</button>
+                  </div>
+               </div>
+               <div class="chat-room-key-actions" id="room_key_have_actions" hidden>
+                  <button type="button" class="chat-btn chat-btn--small" id="room_key_share" onclick="do_share_room_key( )">Share the key</button>
+                  <button type="button" class="chat-btn chat-btn--small" id="room_key_remove" onclick="do_remove_room_key( )">Remove the key</button>
+               </div>
+               <div class="chat-room-key-share" id="room_key_share_part" hidden>
+                  <p class="chat-room-key-note">Send this to each member in an encrypted direct message - they add it here, or with
+                     the button under it. Anyone who has it can read this room.</p>
+                  <code class="chat-room-key-text chat-mono" id="room_key_share_text" aria-label="The room key"></code>
+                  <div class="chat-room-key-actions">
+                     <button type="button" class="chat-btn chat-btn--small" id="room_key_copy" onclick="do_copy_room_key( )">Copy</button>
+                  </div>
+               </div>
+               <div class="chat-error-text" id="room_key_error" role="alert"></div>
+            </div>
             <!-- NOTE: Leaving a room - asked again in place (Ian, 2026-10-12). -->
             <div class="chat-room-leave" id="room_leave_row" hidden>
                <button type="button" class="chat-btn chat-btn--small" id="room_leave" onclick="do_arm_leave( )">Leave this room</button>

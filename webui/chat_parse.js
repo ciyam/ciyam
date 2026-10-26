@@ -1341,6 +1341,49 @@ function dm_encryption_note( other, keys, theirs )
    return "encrypted";
 }
 
+// NOTE: Room keys (Ian, 2026-10-25) - "irc.cin"'s "k" makes "<room>#<32 hex digits>" to send each member in an encrypted direct
+// message, and "r" with it saves it; every message in that room is then sealed with the 32 digits as they are. Not for the
+// entrance or reserved rooms, nor a direct message (named "/..."), which uses the other person's public key.
+const c_room_key_pattern = /^([0-9]{7})#([0-9a-f]{32})$/;
+
+function can_have_room_key( room, name )
+{
+   return /^[0-9]{7}$/.test( String( room || "" ) ) && !is_entrance_room( room ) && !is_reserved_room( room )
+    && ( String( name || "" ).charAt( 0 ) !== "/" );
+}
+
+// NOTE: As the console shows it, to be sent and pasted.
+function room_key_text( room, key )
+{
+   return room + "#" + key;
+}
+
+// NOTE: A room key given for "room" - as the console shows it ("<room>#<key>") or the key alone, spaces and case aside -
+// { key } or { problem } to say.
+function parse_room_key( text, room )
+{
+   var given = String( text || "" ).replace( /\s+/g, "" ).toLowerCase( );
+   var whole = c_room_key_pattern.exec( given );
+
+   if( whole && ( whole[ 1 ] !== room ) )
+      return { key: "", problem: "That key is for room #" + whole[ 1 ] + ", not this one (#" + room + ")." };
+
+   var key = whole ? whole[ 2 ] : given;
+
+   if( !/^[0-9a-f]{32}$/.test( key ) )
+      return { key: "", problem: "A room key is " + room + "# and 32 letters and digits, 0-9 and a-f - copy all of it." };
+
+   return { key: key, problem: "" };
+}
+
+// NOTE: A message that is just a room key - one shared in an encrypted direct message - as { room, key }, or null.
+function room_key_in_message( text )
+{
+   var whole = c_room_key_pattern.exec( String( text || "" ).trim( ) );
+
+   return whole ? { room: whole[ 1 ], key: whole[ 2 ] } : null;
+}
+
 // NOTE: Whether a message can be sealed - at most 500 bytes of it ("ciyam_secure_message.js", as "irc.cin"'s "MAX_TO_ENCRYPT",
 // the padding fitted to what is left over since 2026-10-25).
 const c_sealed_most_bytes = 500;
@@ -3520,6 +3563,10 @@ if( typeof module !== "undefined" )
       dm_other_person: dm_other_person,
       dm_encryption_note: dm_encryption_note,
       sealed_too_long: sealed_too_long,
+      can_have_room_key: can_have_room_key,
+      room_key_text: room_key_text,
+      parse_room_key: parse_room_key,
+      room_key_in_message: room_key_in_message,
       dm_existing: dm_existing,
       dm_outsiders: dm_outsiders,
       name_list: name_list,

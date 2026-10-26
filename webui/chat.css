@@ -460,6 +460,72 @@ button.chat-avatar:hover
    padding: 0 16px;
 }
 
+/* NOTE: The room key part of Room Details ("chat_keys.js"). */
+.chat-room-key
+{
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   margin-top: 14px;
+   padding: 0 16px;
+}
+
+.chat-room-key[hidden],
+.chat-room-key [hidden]
+{
+   display: none;
+}
+
+.chat-room-key-head
+{
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 600;
+   letter-spacing: 0.06em;
+   text-transform: uppercase;
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-room-key-state,
+.chat-room-key-note
+{
+   margin: 0;
+   font-size: var(--font-size-chat-small);
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-room-key-actions
+{
+   display: flex;
+   flex-wrap: wrap;
+   gap: 8px;
+}
+
+.chat-room-key-add,
+.chat-room-key-share
+{
+   display: flex;
+   flex-direction: column;
+   gap: 6px;
+}
+
+/* NOTE: All 40 characters shown, broken where they must be - it is copied whole. */
+.chat-room-key-text
+{
+   display: block;
+   padding: 8px 10px;
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-sm);
+   font-size: var(--font-size-chat-small);
+   word-break: break-all;
+   user-select: all;
+}
+
+.chat-room-key-offer
+{
+   display: block;
+   margin-top: 6px;
+}
+
 .chat-room-leave-confirm
 {
    display: flex;

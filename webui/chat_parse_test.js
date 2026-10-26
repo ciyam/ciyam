@@ -898,6 +898,25 @@ check( "- what the line under it says", [ cp.dm_encryption_note( "verify-a", tru
  "not encrypted - your keys could not be read just now; reload to try again" ] );
 check( "- a message too long to encrypt: over 500 bytes", [ cp.sealed_too_long( "a".repeat( 500 ) ), cp.sealed_too_long( "a".repeat( 501 ) ),
  cp.sealed_too_long( "ä".repeat( 250 ) ), cp.sealed_too_long( "ä".repeat( 251 ) ) ], [ false, true, false, true ] );
+
+// NOTE: Room keys (Ian, 2026-10-25) - "<room>#<32 hex digits>" as "irc.cin"'s "k" makes them.
+var room_key = "0123456789abcdef0123456789abcdef";
+check( "a room key - for a room, not the entrance or reserved ones, nor a direct message", [ cp.can_have_room_key( "0000004", "General" ),
+ cp.can_have_room_key( "0000000", "Entrance" ), cp.can_have_room_key( "0000001", "Admin" ), cp.can_have_room_key( "0000016", "/admin/verify-a" ),
+ cp.can_have_room_key( "", "General" ), cp.can_have_room_key( "4", "General" ) ], [ true, false, false, false, false, false ] );
+check( "- shown as the console shows it", cp.room_key_text( "0000004", room_key ), "0000004#" + room_key );
+check( "- given as the console shows it, or alone, spaces and case aside", [ cp.parse_room_key( " 0000004#" + room_key.toUpperCase( ) + "\n", "0000004" ),
+ cp.parse_room_key( room_key.slice( 0, 16 ) + " " + room_key.slice( 16 ), "0000004" ) ],
+ [ { key: room_key, problem: "" }, { key: room_key, problem: "" } ] );
+check( "- another room's, or not 32 hex digits, refused and said", [ cp.parse_room_key( "0000005#" + room_key, "0000004" ).problem,
+ cp.parse_room_key( room_key.slice( 1 ), "0000004" ).problem, cp.parse_room_key( "0000004#" + room_key + "0", "0000004" ).problem,
+ cp.parse_room_key( "", "0000004" ).problem ], [ "That key is for room #0000005, not this one (#0000004).",
+ "A room key is 0000004# and 32 letters and digits, 0-9 and a-f - copy all of it.",
+ "A room key is 0000004# and 32 letters and digits, 0-9 and a-f - copy all of it.",
+ "A room key is 0000004# and 32 letters and digits, 0-9 and a-f - copy all of it." ] );
+check( "- a message that is just one, as shared in a direct message", [ cp.room_key_in_message( " 0000004#" + room_key + " " ),
+ cp.room_key_in_message( "the key: 0000004#" + room_key ), cp.room_key_in_message( "0000004#" + room_key.toUpperCase( ) ) ],
+ [ { room: "0000004", key: room_key }, null, null ] );
 check( "found in the rail", cp.find_dm_room( [ { room: "0000016", name: "/admin/verify-a", owner: "admin" } ], [ "verify-a", "admin" ] ).room, "0000016" );
 check( "their request found", cp.dm_existing( [ "verify-a" ], "admin", [ ], [ { room: "0000016", name: "/admin/verify-a", inviter: "verify-a" } ], [ ] ),
  { kind: "request", room: "0000016" } );

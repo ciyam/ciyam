@@ -1856,6 +1856,8 @@ function show_thread_title( )
        + ( note !== "" ? " · " + note : "" );
    else if( outsiders.length > 0 )
       sub.textContent = "Not private - " + name_list( outsiders ) + " can read this too";
+   else if( chat_room_key( g_room ) !== "" )
+      sub.textContent = "Encrypted with the room key";
    else
       sub.textContent = "";
 
@@ -4154,6 +4156,12 @@ function update_thread_meta( )
    // failing. Ian raised this against 0000001 specifically.
    document.getElementById( "owner_invite" ).hidden = is_reserved_room( g_room );
 
+   // NOTE: The room key, if it can have one ("chat_keys.js") - not for an invitation not yet taken.
+   if( invite )
+      document.getElementById( "room_key_part" ).hidden = true;
+   else
+      chat_render_room_key( );
+
    document.getElementById( "presence_foot" ).textContent =
     "poll every " + ( c_poll_interval / 1000 ) + "s"
     + ( g_start_point ? ( "\nfrom=" + g_start_point ) : "" )
@@ -5056,11 +5064,11 @@ async function do_send( )
    // typed - see "escape_message_text( )" in "chat_parse.js". Line breaks go as they are.
    var sent = escape_message_text( text );
 
-   // NOTE: Sealed in a direct message with a key for the other person ("chat_keys.js", 2026-10-25) - as it is, CRs and all, as
-   // nothing in it needs escaping. Not an edit, nor a message for some only: those go as before.
+   // NOTE: Sealed in a direct message with a key for the other person, or in a room with a room key ("chat_keys.js", 2026-10-25
+   // and 26) - as it is, CRs and all, as nothing in it needs escaping. Not an edit, nor a message for some only: those go as before.
    if( ( g_edit_unique === "" ) && ( g_recipients.length === 0 ) )
    {
-      var sealing = await chat_seal_for( chat_dm_other( ), text );
+      var sealing = await chat_seal_here( text );
 
       if( sealing.sealed && ( sealing.text === "" ) )
       {

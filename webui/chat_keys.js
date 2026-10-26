@@ -68,6 +68,25 @@ function chat_keys_kept( )
    }
 }
 
+function chat_keys_url( extra )
+{
+   return ciyam.get_cws_url( ) + "/user-keys?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text" + ( extra || "" )
+    + "&session=" + ciyam.sessid;
+}
+
+// NOTE: The node's copy of the keys, as text - "" if the request failed.
+async function chat_keys_fetch( )
+{
+   var response = "";
+
+   await serialised( function( )
+   {
+      return ciyam.fetch( chat_keys_url( "" ), "GET", function( r ) { response = String( r || "" ).trim( ); } );
+   } );
+
+   return response;
+}
+
 // NOTE: After a sign in. An access key that does not open the node's keys - or none there - is as none; My account says why.
 async function chat_keys_read( )
 {
@@ -88,19 +107,11 @@ async function chat_keys_read( )
       unread = true;
    else if( access !== "" )
    {
-      var response = "";
-
-      await serialised( function( )
-      {
-         return ciyam.fetch( ciyam.get_cws_url( ) + "/user-keys?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&session="
-          + ciyam.sessid, "GET", function( r ) { response = String( r || "" ).trim( ); } );
-      } );
+      var response = await chat_keys_fetch( );
 
       try
       {
-         var opened = await ciyam_module_named( "user_keys" ).unlock( access, response );
-
-         found = { primary: opened.primary, contacts: opened.contacts };
+         found = chat_keys_from( access, await ciyam_module_named( "user_keys" ).unlock( access, response ) );
       }
       catch( e )
       {
@@ -117,7 +128,15 @@ async function chat_keys_read( )
    g_chat_keys_unread = unread;
 
    show_thread_title( );
+   chat_render_room_key( );
    chat_keys_redraw( );
+}
+
+// NOTE: What the chat keeps of them - all of it, as a room key's change locks them again ("chat_keys_save_room( )").
+function chat_keys_from( access, opened )
+{
+   return { access: access, rounds: opened.rounds, primary: opened.primary, secondary: opened.secondary, contacts: opened.contacts,
+    rooms: opened.rooms || { } };
 }
 
 function chat_keys_forget( )
@@ -148,10 +167,23 @@ function chat_secret_with( other )
    return g_chat_secrets[ other ];
 }
 
-// NOTE: The open room's - "" if it is not a direct message, or it cannot be encrypted.
+// NOTE: A room's key, or "" - none kept, no keys here, or a room that does not take one ("can_have_room_key( )").
+function chat_room_key( room )
+{
+   var entry = ( room === g_room ) ? { name: g_room_name } : find_room( room );
+
+   if( !g_chat_keys || !entry || !can_have_room_key( room, entry.name ) || !g_chat_keys.rooms.hasOwnProperty( room ) )
+      return "";
+
+   return g_chat_keys.rooms[ room ];
+}
+
+// NOTE: The open room's - the other person's in a direct message, else the room key - or "" if it cannot be encrypted.
 function chat_room_secret( )
 {
-   return chat_secret_with( chat_dm_other( ) );
+   var other = chat_dm_other( );
+
+   return ( other !== "" ) ? chat_secret_with( other ) : chat_room_key( g_room );
 }
 
 // NOTE: For the line under a direct message ("dm_encryption_note( )").
@@ -177,6 +209,10 @@ function chat_draw_opened( element, opened )
       draw_formatted( element, format_pieces( opened.text ) );
    else
       element.textContent = "Encrypted message - not readable with the keys you have";
+
+   // NOTE: A room key is shared in an encrypted direct message, as the console's owner sends it.
+   if( opened.ok && ( chat_dm_other( ) !== "" ) )
+      chat_offer_room_key( element, opened.text );
 }
 
 // NOTE: Drawn opened, when the open room has a secret - true if it is being handled here, false to show it can't be read.
@@ -231,8 +267,17 @@ function chat_keys_redraw( )
 // when it is too long to seal, said by the caller.
 async function chat_seal_for( other, text )
 {
-   var secret = chat_secret_with( other );
+   return chat_seal_with( chat_secret_with( other ), text );
+}
 
+// NOTE: For the open room - with the other person in a direct message, or the room key.
+async function chat_seal_here( text )
+{
+   return chat_seal_with( chat_room_secret( ), text );
+}
+
+async function chat_seal_with( secret, text )
+{
    if( secret === "" )
       return { sealed: false, text: text };
 
@@ -240,4 +285,294 @@ async function chat_seal_for( other, text )
       return { sealed: true, text: "" };
 
    return { sealed: true, text: await ciyam_module_named( "secure_message" ).seal( secret, text ) };
+}
+
+// ---- Room keys (Ian, 2026-10-25) - made or added under Room Details, or from one shared in an encrypted direct message
+
+// NOTE: The room key for "room" set - or taken away, with "" - on the node's latest copy of the keys (another browser, or My
+// account, may have changed them since they were read), locked again and sent. "" when done, else what to say.
+async function chat_keys_save_room( room, key )
+{
+   if( !g_chat_keys )
+      return "Set up your keys on My account first.";
+
+   var uk = ciyam_module_named( "user_keys" );
+   var access = g_chat_keys.access;
+   var asked_for = ciyam.access;
+   var latest = null;
+
+   try
+   {
+      latest = await uk.unlock( access, await chat_keys_fetch( ) );
+   }
+   catch( e )
+   {
+      return "Your keys could not be read from the node - reload the page to try again.";
+   }
+
+   var rooms = Object.assign( { }, latest.rooms );
+
+   if( key === "" )
+      delete rooms[ room ];
+   else
+      rooms[ room ] = key;
+
+   var locked = "";
+
+   try
+   {
+      locked = await uk.lock( access, { primary: latest.primary, secondary: latest.secondary, contacts: latest.contacts, rooms: rooms },
+       { rounds: latest.rounds } );
+   }
+   catch( e )
+   {
+      return e.message;
+   }
+
+   var answer = "";
+
+   await serialised( function( )
+   {
+      return ciyam.fetch( chat_keys_url( "&payload=" + encodeURIComponent( locked ) ), "PUT", function( r ) { answer = String( r || "" ); } );
+   } );
+
+   if( is_timeout_response( answer ) )
+      return "The server didn't answer in time - try again.";
+
+   if( is_error_response( answer ) )
+      return "The room key could not be saved: " + error_text( answer );
+
+   // NOTE: Signed out, or in again, meanwhile - saved, but not this sign in's to keep.
+   if( ciyam.access !== asked_for )
+      return "";
+
+   latest.rooms = rooms;
+
+   g_chat_keys = chat_keys_from( access, latest );
+   g_chat_secrets = { };
+
+   show_thread_title( );
+   chat_render_room_key( );
+   chat_keys_redraw( );
+
+   return "";
+}
+
+function chat_random_room_key( )
+{
+   return Array.from( crypto.getRandomValues( new Uint8Array( 16 ) ), function( b ) { return b.toString( 16 ).padStart( 2, "0" ); } ).join( "" );
+}
+
+// NOTE: The room the Room key part was last drawn for - a change of room puts away what was open there.
+var g_room_key_drawn_for = "";
+var g_room_key_busy = false;
+
+// NOTE: The Room key part of Room Details - what this browser can do in the open room.
+function chat_render_room_key( )
+{
+   var part = document.getElementById( "room_key_part" );
+
+   if( part === null )
+      return;
+
+   if( g_room_key_drawn_for !== g_room )
+   {
+      g_room_key_drawn_for = g_room;
+
+      chat_room_key_reset( );
+   }
+
+   var key = chat_room_key( g_room );
+   var state = "";
+
+   if( !can_have_room_key( g_room, g_room_name ) || ( g_chat_keys === null ) )
+      state = "";
+   else if( g_chat_keys_unread )
+      state = "Your keys could not be read just now - reload the page to use a room key.";
+   else if( !g_chat_keys )
+      state = "Not encrypted. To use a room key, set up your keys on My account.";
+   else if( key === "" )
+      state = "Not encrypted - messages here are sent as they are.";
+   else
+      state = "Encrypted with the room key - members without it see your messages as unreadable.";
+
+   part.hidden = ( state === "" );
+
+   document.getElementById( "room_key_state" ).textContent = state;
+   document.getElementById( "room_key_none_actions" ).hidden = !g_chat_keys || ( key !== "" )
+    || !document.getElementById( "room_key_add_part" ).hidden;
+   document.getElementById( "room_key_have_actions" ).hidden = !g_chat_keys || ( key === "" );
+
+   if( key === "" )
+      chat_hide_room_key_share( );
+
+   [ "room_key_make", "room_key_add_open", "room_key_add_go", "room_key_share", "room_key_remove" ].forEach( function( id )
+   {
+      document.getElementById( id ).disabled = g_room_key_busy;
+   } );
+}
+
+function chat_room_key_reset( )
+{
+   document.getElementById( "room_key_add_part" ).hidden = true;
+   document.getElementById( "room_key_add_input" ).value = "";
+   document.getElementById( "room_key_error" ).textContent = "";
+
+   chat_hide_room_key_share( );
+}
+
+function chat_hide_room_key_share( )
+{
+   document.getElementById( "room_key_share_part" ).hidden = true;
+   document.getElementById( "room_key_share_text" ).textContent = "";
+}
+
+// NOTE: Saved, said if it was not - the part busy meanwhile, so it is not asked twice.
+async function chat_room_key_change( room, key )
+{
+   g_room_key_busy = true;
+
+   document.getElementById( "room_key_error" ).textContent = "";
+
+   chat_render_room_key( );
+
+   var problem = await chat_keys_save_room( room, key );
+
+   g_room_key_busy = false;
+
+   if( g_room === room )
+      document.getElementById( "room_key_error" ).textContent = problem;
+
+   chat_render_room_key( );
+
+   return problem === "";
+}
+
+async function do_make_room_key( )
+{
+   if( !confirm( "Make a key for this room? From now on your messages here are encrypted - members can read them once you've sent"
+    + " them the key in an encrypted direct message." ) )
+      return;
+
+   var room = g_room;
+
+   if( await chat_room_key_change( room, chat_random_room_key( ) ) && ( g_room === room ) )
+      do_share_room_key( );
+}
+
+function do_open_add_room_key( )
+{
+   document.getElementById( "room_key_add_part" ).hidden = false;
+   document.getElementById( "room_key_error" ).textContent = "";
+
+   chat_render_room_key( );
+
+   document.getElementById( "room_key_add_input" ).focus( );
+}
+
+function do_cancel_add_room_key( )
+{
+   chat_room_key_reset( );
+   chat_render_room_key( );
+}
+
+async function do_add_room_key( )
+{
+   var given = parse_room_key( document.getElementById( "room_key_add_input" ).value, g_room );
+
+   if( given.problem !== "" )
+   {
+      document.getElementById( "room_key_error" ).textContent = given.problem;
+
+      return;
+   }
+
+   if( await chat_room_key_change( g_room, given.key ) )
+      chat_room_key_reset( );
+
+   chat_render_room_key( );
+}
+
+function do_share_room_key( )
+{
+   var key = chat_room_key( g_room );
+
+   if( key === "" )
+      return;
+
+   document.getElementById( "room_key_share_text" ).textContent = room_key_text( g_room, key );
+   document.getElementById( "room_key_share_part" ).hidden = false;
+}
+
+function do_copy_room_key( )
+{
+   var field = document.getElementById( "room_key_share_text" );
+   var range = document.createRange( );
+
+   range.selectNodeContents( field );
+
+   window.getSelection( ).removeAllRanges( );
+   window.getSelection( ).addRange( range );
+
+   var copied = navigator.clipboard ? navigator.clipboard.writeText( field.textContent ).then( function( ) { return true; },
+    function( ) { return document.execCommand( "copy" ); } ) : Promise.resolve( document.execCommand( "copy" ) );
+
+   copied.then( function( done )
+   {
+      document.getElementById( "room_key_copy" ).textContent = done ? "Copied" : "Copy";
+
+      setTimeout( function( ) { document.getElementById( "room_key_copy" ).textContent = "Copy"; }, 2000 );
+   } );
+}
+
+async function do_remove_room_key( )
+{
+   if( !confirm( "Remove this room's key from your keys? Messages sealed with it can't be read here any more, and yours are sent"
+    + " unencrypted - unless it's added again." ) )
+      return;
+
+   await chat_room_key_change( g_room, "" );
+}
+
+// NOTE: Under a message in a direct message that is just a room key ("room_key_in_message( )") for a room this person is in,
+// that this browser has not got - added with one press.
+function chat_offer_room_key( element, text )
+{
+   var shared = room_key_in_message( text );
+   var entry = shared ? find_room( shared.room ) : null;
+
+   if( !entry || !g_chat_keys || !can_have_room_key( shared.room, entry.name ) )
+      return;
+
+   var button = document.createElement( "button" );
+
+   button.type = "button";
+   button.className = "chat-btn chat-btn--small chat-room-key-offer";
+
+   if( g_chat_keys.rooms[ shared.room ] === shared.key )
+   {
+      button.textContent = "Room key for " + entry.name + " added";
+      button.disabled = true;
+   }
+   else
+   {
+      button.textContent = "Add this room key for " + entry.name;
+
+      button.addEventListener( "click", function( )
+      {
+         button.disabled = true;
+
+         chat_keys_save_room( shared.room, shared.key ).then( function( problem )
+         {
+            if( problem !== "" )
+            {
+               button.disabled = false;
+
+               show_alert( problem, "is-error" );
+            }
+         } );
+      } );
+   }
+
+   element.appendChild( button );
 }
