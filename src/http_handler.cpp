@@ -88,8 +88,8 @@ constexpr const char* c_ext_ttf = "ttf";
 constexpr const char* c_ext_svg = "svg";
 constexpr const char* c_ext_form = "form";
 constexpr const char* c_ext_html = "html";
-constexpr const char* c_ext_list = "list";
 constexpr const char* c_ext_keys = "keys";
+constexpr const char* c_ext_list = "list";
 constexpr const char* c_ext_woff = "woff";
 constexpr const char* c_ext_woff2 = "woff2";
 
@@ -1473,6 +1473,10 @@ void http_request_handler::on_start( )
             {
                found = file_exists( path + http_document );
 
+               // NOTE: Ensures that hidden files stay hidden.
+               if( http_document.find( "/." ) != string::npos )
+                  found = false;
+
                if( found )
                {
                   string name_check( http_document );
@@ -1481,7 +1485,7 @@ void http_request_handler::on_start( )
 
                   name_check.erase( 0, pos + 1 );
 
-                  // NOTE: A user's keys are never found (whatever the name or the case
+                  // NOTE: A user's keys are never found (whatever the name or even case
                   // of the extension) as they are only available to their owner through
                   // the CWS "user-keys" endpoint.
                   pos = name_check.rfind( '.' );
