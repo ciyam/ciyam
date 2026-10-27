@@ -173,6 +173,8 @@ constexpr const char* c_cws_request_users_create_options_nomimated = "nominated"
 
 constexpr const char* c_cws_request_users_update_options_password = "password";
 
+constexpr const char* c_cws_request_devices_delete_options_block = "block";
+
 constexpr const char* c_cws_request_messages_create_options_for = "for";
 constexpr const char* c_cws_request_messages_create_options_text = "text";
 
@@ -869,7 +871,7 @@ string create_or_check_device( const string* p_device = 0, bool* p_locked = 0 )
    return device;
 }
 
-bool verify_whether_device_is_valid( const string& access, const string& device )
+bool verify_whether_device_is_valid( const string& access, const string& device, bool* p_is_blocked = 0 )
 {
    guard g( g_mutex );
 
@@ -903,7 +905,12 @@ bool verify_whether_device_is_valid( const string& access, const string& device 
                if( pos != string::npos )
                {
                   if( pos == 1 )
+                  {
                      retval = false;
+
+                     if( p_is_blocked )
+                        *p_is_blocked = true;
+                  }
 
                   break;
                }
@@ -2115,9 +2122,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          error = "Invalid device identity '" + device + "'.";
       else if( !has_access_device( access, device, now ) )
       {
-         if( !verify_whether_device_is_valid( access, device ) )
-            // FUTURE: This message should be handled as a server string message.
-            error = "Invalid device identity '" + device + "'.";
+         bool is_blocked = false;
+
+         if( !verify_whether_device_is_valid( access, device, &is_blocked ) )
+         {
+            // FUTURE: These messages should be handled as server string messages.
+            if( is_blocked )
+               error = "This device is no longer available.";
+            else
+               error = "Invalid device identity '" + device + "'.";
+         }
          else
          {
             if( !has_added_access_device( access, device, now ) )
@@ -2307,7 +2321,12 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      found = true;
 
-                     if( !g_cws_access_devices[ access ].count( target ) )
+                     bool force_block = false;
+
+                     if( option_parameters.count( c_cws_request_devices_delete_options_block ) )
+                        force_block = true;
+
+                     if( force_block || !g_cws_access_devices[ access ].count( target ) )
                      {
                         if( g_cws_known_devices.count( target ) )
                         {
@@ -2335,8 +2354,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            store_known_devices( );
                         }
                      }
-                     else
-                        remove_access_device_if_present( access, target );
+
+                     remove_access_device_if_present( access, target );
 
                      remove_session_for_device_if_present( access, target );
 
