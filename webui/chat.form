@@ -441,9 +441,10 @@ http://www.opensource.org/licenses/mit-license.php.
           oninput="do_clear_room_name_error( )" onblur="do_validate_room_name( )">
       </div>
       <div class="chat-error-text" id="room_dialog_error"></div>
+      <!-- NOTE: The people picker ("picker.js", 2026-10-27) - the chosen as chips, and a popup list with a search. -->
       <div id="room_dialog_invitees_row" hidden>
-         <label class="chat-label" for="room_dialog_invitees" id="room_dialog_invitees_label">Invite</label>
-         <div class="chat-invitee-list" id="room_dialog_invitees"></div>
+         <label class="chat-label" for="room_dialog_picker_add" id="room_dialog_invitees_label">Invite</label>
+         <div id="room_dialog_picker"></div>
       </div>
       <div class="chat-dialog-actions">
          <button type="button" class="chat-btn" onclick="do_close_room_dialog( )">Cancel</button>
@@ -590,11 +591,4 @@ http://www.opensource.org/licenses/mit-license.php.
       <span class="chat-recipient-name"></span>
       <button type="button" aria-label="Remove">&times;</button>
    </span>
-</template>
-
-<template id="tpl_invitee">
-   <label class="chat-recipient">
-      <input type="checkbox" class="chat-invitee-check">
-      <span class="chat-invitee-name"></span>
-   </label>
 </template>

@@ -936,6 +936,17 @@ check( "- shown cut short in a message: its room, the first and last four digits
  cp.room_key_masked( " 0000004#" + room_key.toUpperCase( ) + " for General" ), cp.room_key_masked( "0000004#" + room_key + room_key ),
  cp.room_key_masked( "the key: 0000004#" + room_key ), cp.room_key_masked( "" ) ],
  [ "0000004#0123…cdef for General", "0000004#0123…cdef", "the key: 0000004#" + room_key, "" ] );
+
+// NOTE: The people picker (Damon, 2026-10-27) - a search, and Enter with one person left choosing them.
+check( "picker: a search shows names holding it, in any case, and nothing typed shows everyone", [ cp.picker_matches( "Verify-A", " ver" ),
+ cp.picker_matches( "tester-1", "-1" ), cp.picker_matches( "admin", "ian" ), cp.picker_matches( "ian", "" ), cp.picker_matches( "ian", "   " ) ],
+ [ true, true, false, true, true ] );
+check( "- Enter with one person shown chooses them; with none, two, or one who cannot be chosen, no one", [
+ cp.picker_enter_choice( [ { name: "verify-a", available: true } ] ), cp.picker_enter_choice( [ ] ), cp.picker_enter_choice( null ),
+ cp.picker_enter_choice( [ { name: "verify-a" }, { name: "verify-b" } ] ), cp.picker_enter_choice( [ { name: "kai", available: false } ] ) ],
+ [ "verify-a", "", "", "", "" ] );
+check( "- the count above the list", [ cp.picker_count_text( 0, 24 ), cp.picker_count_text( 0, 1 ), cp.picker_count_text( 2, 24 ) ],
+ [ "24 people", "1 person", "2 chosen of 24" ] );
 check( "found in the rail", cp.find_dm_room( [ { room: "0000016", name: "/admin/verify-a", owner: "admin" } ], [ "verify-a", "admin" ] ).room, "0000016" );
 check( "their request found", cp.dm_existing( [ "verify-a" ], "admin", [ ], [ { room: "0000016", name: "/admin/verify-a", inviter: "verify-a" } ], [ ] ),
  { kind: "request", room: "0000016" } );

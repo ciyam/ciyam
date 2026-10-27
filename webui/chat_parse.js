@@ -1425,6 +1425,33 @@ function room_key_masked( text )
    return lead[ 1 ] + "#" + key.substr( 0, 4 ) + "…" + key.substr( -4 ) + value.substring( lead[ 0 ].length );
 }
 
+// NOTE: The people picker ("picker.js", Damon, 2026-10-27) - whether a person is shown for what is typed in its search: their
+// name holding it, in any case.
+function picker_matches( name, query )
+{
+   var typed = String( query || "" ).trim( ).toLowerCase( );
+
+   return ( typed === "" ) || ( String( name || "" ).toLowerCase( ).indexOf( typed ) >= 0 );
+}
+
+// NOTE: Enter in the search, the list narrowed to one person, chooses them (Damon, 2026-10-27). "shown" - those the search
+// shows, each { name, available }; "" unless exactly one, and one who can be chosen.
+function picker_enter_choice( shown )
+{
+   var list = shown || [ ];
+
+   return ( ( list.length === 1 ) && ( list[ 0 ].available !== false ) ) ? String( list[ 0 ].name ) : "";
+}
+
+// NOTE: Above the picker's list - how many there are, or how many of them are chosen.
+function picker_count_text( chosen, total )
+{
+   if( chosen === 0 )
+      return total + ( ( total === 1 ) ? " person" : " people" );
+
+   return chosen + " chosen of " + total;
+}
+
 // NOTE: Whether a message can be sealed - at most 500 bytes of it ("ciyam_secure_message.js", as "irc.cin"'s "MAX_TO_ENCRYPT",
 // the padding fitted to what is left over since 2026-10-25).
 const c_sealed_most_bytes = 500;
@@ -3610,6 +3637,9 @@ if( typeof module !== "undefined" )
       parse_room_key: parse_room_key,
       room_key_in_message: room_key_in_message,
       room_key_masked: room_key_masked,
+      picker_matches: picker_matches,
+      picker_enter_choice: picker_enter_choice,
+      picker_count_text: picker_count_text,
       dm_existing: dm_existing,
       dm_outsiders: dm_outsiders,
       name_list: name_list,

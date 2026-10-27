@@ -82,6 +82,9 @@ var g_asked_room = "";
 
 var g_dialog_mode = "create";
 
+// NOTE: The dialog's people picker ("picker.js") - made the first time it is wanted.
+var g_invite_picker = null;
+
 var g_known_users = [ ];
 
 const c_first_load_limit = 15000;
@@ -1474,7 +1477,11 @@ function on_rooms_response( response )
    // NOTE: The entrance listing returns every user, so the invitee picker can be
    // populated from it with no request of its own.
    if( result.members.length > 0 )
+   {
       g_known_users = apply_presence( result.members );
+
+      offer_invitees_when_known( );
+   }
 
    {
       g_rooms = derive_room_list( result.rooms );
@@ -2137,12 +2144,31 @@ function do_open_create_room( )
    // NOTE: Emptied before the list is drawn so ticks from a previous room are not
    // carried over - render_invitees deliberately preserves whatever is already ticked
    // when it refreshes underneath the user.
-   document.getElementById( "room_dialog_invitees" ).textContent = "";
+   invite_picker( ).reset( );
 
    document.getElementById( "room_dialog" ).hidden = false;
    document.getElementById( "room_dialog_name" ).focus( );
 
    load_invitees( );
+}
+
+// NOTE: The people picker in the room dialog (Damon, 2026-10-27) - the list it draws keeps the old id, so what is ticked is
+// read as before ("ticked_invitees( )"). Choosing in New message says what each choice would open ("mark_new_message( )").
+function invite_picker( )
+{
+   if( g_invite_picker === null )
+   {
+      g_invite_picker = people_picker( document.getElementById( "room_dialog_picker" ), {
+         list_id: "room_dialog_invitees", add_id: "room_dialog_picker_add", done_id: "room_dialog_submit",
+         none_text: "No other users to invite.",
+         on_change: function( )
+         {
+            if( g_dialog_mode === "dm" )
+               mark_new_message( );
+         } } );
+   }
+
+   return g_invite_picker;
 }
 
 // NOTE: Rendered from the user list the poll already collects, so the picker appears
@@ -2173,7 +2199,7 @@ function do_open_new_message( )
 
    set_error( "room_dialog_error", "" );
 
-   document.getElementById( "room_dialog_invitees" ).textContent = "";
+   invite_picker( ).reset( );
 
    document.getElementById( "room_dialog" ).hidden = false;
 
@@ -2181,13 +2207,8 @@ function do_open_new_message( )
 
    mark_new_message( );
 
-   document.getElementById( "room_dialog_invitees" ).onchange = function( )
-   {
-      if( g_dialog_mode === "dm" )
-         mark_new_message( );
-   };
-
-   document.getElementById( "room_dialog_submit" ).focus( );
+   // NOTE: Choosing who is all there is to it, so the list is open at once, its search ready.
+   invite_picker( ).open( );
 }
 
 // NOTE: Beside each person, what already exists between you - nobody is hidden, since the same
@@ -2888,10 +2909,20 @@ function do_open_invite( )
 
    set_error( "room_dialog_error", "" );
 
-   document.getElementById( "room_dialog_invitees" ).textContent = "";
+   invite_picker( ).reset( );
 
    document.getElementById( "room_dialog" ).hidden = false;
 
+   render_invite_candidates( );
+
+   invite_picker( ).open( );
+
+   mark_already_invited( g_room );
+}
+
+// NOTE: Everyone known but the room's members.
+function render_invite_candidates( )
+{
    var members = { };
 
    for( var i = 0; i < g_members.length; i++ )
@@ -2900,16 +2931,6 @@ function do_open_invite( )
    var candidates = ( g_known_users.length > 0 ) ? g_known_users : [ ];
 
    render_invitees( candidates.filter( function( user ) { return !members[ user.name ]; } ) );
-
-   if( candidates.length > 0 )
-   {
-      var first = document.querySelector( "#room_dialog_invitees .chat-invitee-check" );
-
-      if( first !== null )
-         first.focus( );
-   }
-
-   mark_already_invited( g_room );
 }
 
 // NOTE: The server accepts the same invitation twice without complaint, so the picker
@@ -2930,30 +2951,11 @@ function mark_already_invited( room )
 
          var invited = invited_to_room( parse_fetch_response( response ).messages, room );
 
-         var checks = document.querySelectorAll( "#room_dialog_invitees .chat-invitee-check" );
-
-         for( var i = 0; i < checks.length; i++ )
+         Object.keys( invited ).forEach( function( name )
          {
-            var box = checks[ i ];
-
-            if( !invited[ box.value ] )
-               continue;
-
-            box.checked = false;
-            box.disabled = true;
-
-            var row = box.parentNode;
-
-            row.classList.add( "is-invited" );
-            row.title = "Already invited to this room";
-
-            var tag = document.createElement( "span" );
-
-            tag.className = "chat-invitee-tag";
-            tag.textContent = "invited";
-
-            row.appendChild( tag );
-         }
+            if( invited[ name ] )
+               invite_picker( ).mark_unavailable( name, "invited", "Already invited to this room" );
+         } );
       } );
    } );
 }
@@ -3015,55 +3017,34 @@ async function submit_invite( )
       set_error( "room_dialog_error", ciyam.error );
 }
 
+// NOTE: Anything already ticked is kept when the list is drawn again underneath ("people_picker( )").
 function render_invitees( members )
 {
-   var host = document.getElementById( "room_dialog_invitees" );
+   var others = ( members || [ ] ).filter( function( member ) { return member.name !== ciyam.username; } );
 
-   if( host === null )
+   invite_picker( ).set_people( others.map( function( member ) { return { name: member.name }; } ),
+    ( g_dialog_mode === "dm" ) ? "No one else to message yet." : "No other users to invite." );
+}
+
+// NOTE: The dialog opened before the first poll had brought anyone - its list offered now they are known (found 2026-10-27:
+// opening New message straight after a reload showed no one, and stayed that way).
+function offer_invitees_when_known( )
+{
+   if( ( g_invite_picker === null ) || ( g_invite_picker.people > 0 ) || document.getElementById( "room_dialog" ).hidden )
       return;
 
-   // NOTE: Keep anything already ticked when the list is refreshed underneath.
-   var ticked = { };
-
-   var existing = host.querySelectorAll( ".chat-invitee-check" );
-
-   for( var t = 0; t < existing.length; t++ )
+   if( g_dialog_mode === "invite" )
    {
-      if( existing[ t ].checked )
-         ticked[ existing[ t ].value ] = true;
+      render_invite_candidates( );
+
+      mark_already_invited( g_room );
    }
-
-   host.textContent = "";
-
-   var template = document.getElementById( "tpl_invitee" );
-
-   if( ( members === null ) || ( members === undefined ) )
-      members = [ ];
-
-   if( members.length === 0 )
+   else if( ( g_dialog_mode === "dm" ) || ( g_dialog_mode === "create" ) )
    {
-      host.textContent = "No other users to invite.";
+      load_invitees( );
 
-      return;
-   }
-
-   for( var i = 0; i < members.length; i++ )
-   {
-      var member = members[ i ];
-
-      if( member.name === ciyam.username )
-         continue;
-
-      var node = template.content.cloneNode( true );
-
-      node.querySelector( ".chat-invitee-name" ).textContent = member.name;
-
-      var box = node.querySelector( ".chat-invitee-check" );
-
-      box.value = member.name;
-      box.checked = ( ticked[ member.name ] === true );
-
-      host.appendChild( node );
+      if( g_dialog_mode === "dm" )
+         mark_new_message( );
    }
 }
 
@@ -3090,6 +3071,9 @@ function do_clear_room_name_error( )
 
 function do_close_room_dialog( )
 {
+   if( g_invite_picker !== null )
+      g_invite_picker.close( null );
+
    document.getElementById( "room_dialog" ).hidden = true;
 }
 

@@ -467,6 +467,9 @@ ok   - a message that starts with one, as shared in a direct message - words aft
 ok   - 64 hex digits taken too
 ok   - the whole message pasted, words after the key
 ok   - shown cut short in a message: its room, the first and last four digits, the words after it
+ok   picker: a search shows names holding it, in any case, and nothing typed shows everyone
+ok   - Enter with one person shown chooses them; with none, two, or one who cannot be chosen, no one
+ok   - the count above the list
 ok   found in the rail
 ok   their request found
 ok   a request to message you
