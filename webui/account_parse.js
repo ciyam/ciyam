@@ -255,23 +255,28 @@ function parse_devices( text, current )
    return devices.filter( function( d ) { return d.current; } ).concat( devices.filter( function( d ) { return !d.current; } ) );
 }
 
-// NOTE: What a device's row says, and what removing it does (Ian, 2026-10-26): removing one with a session signs it out - it is
-// listed as signed out then; removing one signed out blocks it, for this account, for good - its sign in refused as an invalid
-// device, and it leaves the list. So two steps, said as two: Sign out, then Block. This browser is neither.
+// NOTE: What a device's row says, and what can be done to it (Ian, 2026-10-26): a DELETE of one with a session signs it out - it is
+// listed as signed out then; of one signed out, it blocks it, for this account, for good - its sign in refused, and it leaves the
+// list. A browser still open was made one of the account's devices again by its next request, so Block only signed it out again
+// (ISS-053) - so Block sends "block" ("options"), which blocks whatever its state (Ian, "d370affc"), and is offered for a device
+// signed in too: a lost phone that is on. This browser is neither.
 function device_choice( entry )
 {
    var name = short_device( entry.device );
 
+   var block = { action: "block", options: "block", label: "Block", ask: "Block it? It is signed out, and can never sign in as you again.",
+    yes: "Block it", done: "The device " + name + " is blocked - it can't sign in as you again. If it may have your password saved, change"
+    + " your password too." };
+
    if( entry.current )
-      return { state: "This browser", action: "", label: "", ask: "", yes: "", done: "" };
+      return { state: "This browser", actions: [ ] };
 
    if( entry.signed_out )
-      return { state: "Signed out", action: "block", label: "Block", ask: "Block it? It can never sign in as you again.", yes: "Block it",
-       done: "The device " + name + " is blocked - it can't sign in as you again. If it may have your password saved, change your password too." };
+      return { state: "Signed out", actions: [ block ] };
 
-   return { state: entry.active ? "Signed in now" : "Not signed in", action: "sign_out", label: "Sign out",
+   return { state: entry.active ? "Signed in now" : "Not signed in", actions: [ { action: "sign_out", options: "", label: "Sign out",
     ask: "Sign it out? It can sign in again with your password.", yes: "Sign it out",
-    done: "The device " + name + " was signed out. To stop it signing in again, Block it." };
+    done: "The device " + name + " was signed out. To stop it signing in again, Block it." }, block ] };
 }
 
 // NOTE: A device token shortened, as the console's log shortens long values.

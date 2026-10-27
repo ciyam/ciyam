@@ -2028,6 +2028,9 @@ function sign_in_error_text( error, locked )
    if( text === c_connect_status_error )
       return "The server's answer to signing in was not what was expected. Please try again.";
 
+   if( is_blocked_device_error( text ) )
+      return c_sign_in_blocked;
+
    if( ( locked === true ) && ( text !== "" ) )
       return c_sign_in_locked;
 
@@ -2224,6 +2227,15 @@ function is_locked_sign_in_error( error )
 const c_sign_in_locked = "This node is locked - it restarted, and nobody can sign in until it is unlocked.";
 
 const c_sign_in_no_session = "The node couldn't start a session just now - wait a moment, then try again.";
+
+// NOTE: The node's refusal of a blocked device (Ian, "d370affc", ISS-053) - its own error since, where it had "Invalid device
+// identity", which a sign in with a typed password takes as a node set up again and tries once more as a new device.
+const c_sign_in_blocked = "This browser has been blocked from signing in as this account, from My account on one of its devices.";
+
+function is_blocked_device_error( error )
+{
+   return /This device is no longer available/.test( String( error || "" ) );
+}
 
 // NOTE: The node's chat (IRC) not turned on - every room and message request answered "IRC usage is not currently
 // available." (Ian, 2026-10-13: the default on his development node). The session itself is good; the chat says why.
@@ -3657,6 +3669,7 @@ if( typeof module !== "undefined" )
       password_refusal: password_refusal,
       user_initial: user_initial,
       sign_in_error_text: sign_in_error_text,
+      is_blocked_device_error: is_blocked_device_error,
       irc_unavailable: irc_unavailable,
       is_locked_sign_in_error: is_locked_sign_in_error,
       recovery_words: recovery_words,

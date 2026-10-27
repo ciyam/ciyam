@@ -66,7 +66,8 @@ ok   nothing
 == this account's devices ======================================
 ok   each device, this browser first
 ok   a device signed out - its session twenty zeros
-ok   - signed in: Sign out, asked first; signed out: Block, for good; this browser neither
+ok   - signed in: Sign out, or Block; signed out: Block; this browser neither
+ok   - each asked first
 ok   - and what each says once done
 ok   with Windows line ends too
 ok   nothing, or anything else, is none

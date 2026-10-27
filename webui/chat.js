@@ -1458,6 +1458,15 @@ function on_rooms_response( response )
    // NOTE: A time-out has its own notice, from 'note_timeout'.
    if( result.error !== "" )
    {
+      // NOTE: This browser blocked from My account on another device (ISS-053) - its session is gone with it, so it is signed
+      // out here and told why, not left with the node's words over a chat that can do nothing.
+      if( is_blocked_device_error( result.error ) )
+      {
+         do_disconnect( true ).then( function( ) { set_error( "signin_error", sign_in_error_text( result.error ) ); } );
+
+         return;
+      }
+
       if( !is_timeout_response( response ) )
          show_alert( result.error, "is-error", true );
 

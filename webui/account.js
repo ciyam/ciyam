@@ -934,45 +934,48 @@ function render_devices( )
 
       row.appendChild( label );
 
-      if( choice.action !== "" )
+      // NOTE: The one asked about, in place of the row's buttons ("arm_remove_device( )").
+      var armed = choice.actions.filter( function( action ) { return g_device_armed === entry.device + " " + action.action; } )[ 0 ];
+
+      if( armed )
       {
-         if( g_device_armed === entry.device )
-         {
-            var ask = document.createElement( "span" );
+         var ask = document.createElement( "span" );
 
-            ask.className = "account-confirm-text";
-            ask.textContent = choice.ask;
+         ask.className = "account-confirm-text";
+         ask.textContent = armed.ask;
 
-            var yes = document.createElement( "button" );
+         var yes = document.createElement( "button" );
 
-            yes.type = "button";
-            yes.className = "account-btn-danger";
-            yes.textContent = choice.yes;
-            yes.onclick = function( ) { do_remove_device( entry ); };
+         yes.type = "button";
+         yes.className = "account-btn-danger";
+         yes.textContent = armed.yes;
+         yes.onclick = function( ) { do_remove_device( entry, armed ); };
 
-            var no = document.createElement( "button" );
+         var no = document.createElement( "button" );
 
-            no.type = "button";
-            no.className = "chat-btn";
-            no.textContent = "Keep";
-            no.onclick = function( ) { arm_remove_device( "" ); };
+         no.type = "button";
+         no.className = "chat-btn";
+         no.textContent = "Keep";
+         no.onclick = function( ) { arm_remove_device( "", "" ); };
 
-            row.appendChild( ask );
-            row.appendChild( yes );
-            row.appendChild( no );
-         }
-         else
+         row.appendChild( ask );
+         row.appendChild( yes );
+         row.appendChild( no );
+      }
+      else
+      {
+         choice.actions.forEach( function( action )
          {
             var remove = document.createElement( "button" );
 
             remove.type = "button";
             remove.className = "chat-btn";
-            remove.textContent = choice.label;
-            remove.setAttribute( "aria-label", choice.label + " device " + short_device( entry.device ) );
-            remove.onclick = function( ) { arm_remove_device( entry.device ); };
+            remove.textContent = action.label;
+            remove.setAttribute( "aria-label", action.label + " device " + short_device( entry.device ) );
+            remove.onclick = function( ) { arm_remove_device( entry.device, action.action ); };
 
             row.appendChild( remove );
-         }
+         } );
       }
 
       list.appendChild( row );
@@ -990,51 +993,54 @@ function render_devices( )
 }
 
 // NOTE: Signing out or blocking asks once more in the row itself, as removing a person does.
-function arm_remove_device( device )
+function arm_remove_device( device, action )
 {
-   g_device_armed = device;
+   g_device_armed = ( device !== "" ) ? device + " " + action : "";
 
    render_devices( );
 }
 
-// NOTE: The one request for both (Ian, 2026-10-26) - what it does depends on whether the device has a session ("device_choice( )").
-async function do_remove_device( entry )
+// NOTE: One request for both (Ian, 2026-10-26) - a Block says so ("options=block", "d370affc"), and blocks whatever the device's
+// state. Without it, the node decides by whether the device has a session - "action" one of "device_choice( )"'s.
+async function do_remove_device( entry, action )
 {
-   var choice = device_choice( entry );
-
-   // NOTE: The same request signs out or blocks, by the device's state now - so the list is read again first, and nothing is done
-   // if it has changed since it was shown: a Sign out must never block (found by review, 2026-10-27).
-   var listed = await request( function( done )
+   // NOTE: So a Sign out never blocks, the list is read again first, and nothing is done if the device has signed out since it
+   // was shown (found by review, 2026-10-27) - until the node blocks only when asked (asked of Ian, 2026-10-27).
+   if( action.action === "sign_out" )
    {
-      return ciyam.fetch( devices_url( "" ), "GET", done );
-   } );
+      var listed = await request( function( done )
+      {
+         return ciyam.fetch( devices_url( "" ), "GET", done );
+      } );
 
-   var now = ( problem_text( listed ) === "" )
-    ? parse_devices( listed, ciyam.device ).filter( function( d ) { return d.device === entry.device; } )[ 0 ] : null;
+      var now = ( problem_text( listed ) === "" )
+       ? parse_devices( listed, ciyam.device ).filter( function( d ) { return d.device === entry.device; } )[ 0 ] : null;
 
-   if( !now || ( device_choice( now ).action !== choice.action ) )
-   {
-      g_device_armed = "";
+      if( !now || now.signed_out )
+      {
+         g_device_armed = "";
 
-      show_alert( now ? "That device has " + ( ( choice.action === "block" ) ? "signed in" : "signed out" ) + " since - nothing was done;"
-       + " choose again." : "That device is no longer listed - nothing was done.", true );
+         show_alert( now ? "That device has signed out since - nothing was done; choose again." : "That device is no longer listed -"
+          + " nothing was done.", true );
 
-      load_devices( );
+         load_devices( );
 
-      return;
+         return;
+      }
    }
 
    var response = await request( function( done )
    {
-      return ciyam.fetch( devices_url( "/" + encodeURIComponent( entry.device ) ), "DELETE", done );
+      return ciyam.fetch( devices_url( "/" + encodeURIComponent( entry.device ) )
+       + ( ( action.options !== "" ) ? "&options=" + encodeURIComponent( action.options ) : "" ), "DELETE", done );
    } );
 
    g_device_armed = "";
 
    if( problem_text( response ) !== "" )
-      show_alert( ( ( choice.action === "block" ) ? "Not blocked: " : "Not signed out: " ) + problem_text( response ), true );
+      show_alert( ( ( action.action === "block" ) ? "Not blocked: " : "Not signed out: " ) + problem_text( response ), true );
    else
-      show_alert( choice.done );
+      show_alert( action.done );
 
    load_devices( );
 }

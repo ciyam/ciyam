@@ -999,6 +999,9 @@ check( "a locked node's refusal known", [ cp.is_locked_sign_in_error( "Error: Wa
  cp.is_locked_sign_in_error( "Error: Invalid password." ) ], [ true, false ] );
 check( "any other error as it is, less its 'Error:'", cp.sign_in_error_text( "Error: Web session is currently busy (try again shortly)." ),
  "Web session is currently busy (try again shortly)." );
+check( "a blocked browser, said so (ISS-053) - not taken as a node set up again", [ cp.sign_in_error_text( "Error: This device is no longer available." ),
+ cp.is_blocked_device_error( "Error: Invalid device identity 'abc'." ) ],
+ [ "This browser has been blocked from signing in as this account, from My account on one of its devices.", false ] );
 check( "nothing", cp.sign_in_error_text( "" ), "" );
 check( "unable to start a session on a node known not to be locked - not called locked (2026-10-13)",
  cp.sign_in_error_text( "Error: Was unable to start a web session for 'admin'.", false ),
