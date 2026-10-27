@@ -374,12 +374,15 @@ http://www.opensource.org/licenses/mit-license.php.
                   </div>
                </div>
                <div class="chat-room-key-actions" id="room_key_have_actions" hidden>
+                  <button type="button" class="chat-btn chat-btn--small" id="room_key_send" onclick="do_send_room_key( )">Send to members</button>
                   <button type="button" class="chat-btn chat-btn--small" id="room_key_share" onclick="do_share_room_key( )">Share the key</button>
                   <button type="button" class="chat-btn chat-btn--small" id="room_key_remove" onclick="do_remove_room_key( )">Remove the key</button>
                </div>
+               <!-- NOTE: What came of sending the key to the members ("chat_send_room_key( )", 2026-10-27). -->
+               <div class="chat-room-key-note chat-room-key-sent" id="room_key_sent" role="status"></div>
                <div class="chat-room-key-share" id="room_key_share_part" hidden>
-                  <p class="chat-room-key-note">Send this to each member in an encrypted direct message - they add it here, or with
-                     the button under it. Anyone who has it can read this room.</p>
+                  <p class="chat-room-key-note">Send to members sends it to each in an encrypted direct message. Or send it
+                     yourself - they add it here, or with the button under it. Anyone who has it can read this room.</p>
                   <code class="chat-room-key-text chat-mono" id="room_key_share_text" aria-label="The room key"></code>
                   <div class="chat-room-key-actions">
                      <button type="button" class="chat-btn chat-btn--small" id="room_key_copy" onclick="do_copy_room_key( )">Copy</button>

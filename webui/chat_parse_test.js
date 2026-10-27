@@ -901,6 +901,18 @@ check( "- what the line under it says", [ cp.dm_encryption_note( "verify-a", tru
  cp.dm_encryption_note( "verify-a", "unread", false ) ],
  [ "encrypted", "not encrypted - add verify-a's public key on My account", "not encrypted - set up your keys on My account", "", "",
  "not encrypted - your keys could not be read just now; reload to try again" ] );
+check( "- a group's, with a room key or without", [ cp.group_encryption_note( true, true ), cp.group_encryption_note( true, false ),
+ cp.group_encryption_note( false, false ), cp.group_encryption_note( null, true ), cp.group_encryption_note( "unread", false ) ],
+ [ "encrypted with the room key", "not encrypted - encrypt it in Chat Details", "not encrypted - set up your keys on My account", "",
+ "not encrypted - your keys could not be read just now; reload to try again" ] );
+check( "- a room key sent to each other person once", cp.room_key_recipients( [ "tester-2", "damon", "Tester-1", "tester-2", "" ], "damon" ),
+ [ "tester-1", "tester-2" ] );
+check( "- and what came of it", [ cp.room_key_sent_text( [ { name: "tester-1", how: "sent" }, { name: "tester-2", how: "held" } ] ),
+ cp.room_key_sent_text( [ { name: "a", how: "no_key" }, { name: "b", how: "no_key" }, { name: "c", how: "request" }, { name: "d", how: "failed" } ] ),
+ cp.room_key_sent_text( [ ] ) ],
+ [ "Sent to tester-1. Sent to tester-2 once they accept your direct message - keep this page open until then.",
+ "Not sent to a and b - add their public keys on My account first. Not sent to c - accept their direct message first. Could not send it to d - try again.",
+ "There is no one else here to send it to." ] );
 check( "- a message too long to encrypt: over 500 bytes", [ cp.sealed_too_long( "a".repeat( 500 ) ), cp.sealed_too_long( "a".repeat( 501 ) ),
  cp.sealed_too_long( "ä".repeat( 250 ) ), cp.sealed_too_long( "ä".repeat( 251 ) ) ], [ false, true, false, true ] );
 

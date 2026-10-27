@@ -493,6 +493,12 @@ button.chat-avatar:hover
    color: var(--color-chat-text-secondary);
 }
 
+/* NOTE: What came of sending the key - no gap while there is nothing to say. */
+.chat-room-key-sent:empty
+{
+   display: none;
+}
+
 .chat-room-key-actions
 {
    display: flex;

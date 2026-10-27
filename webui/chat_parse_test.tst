@@ -458,6 +458,9 @@ ok   trusted as it is - the server built it
 ok   the same conversation as the prototype's, by its people
 ok   the other person in a direct message, to encrypt to
 ok   - what the line under it says
+ok   - a group's, with a room key or without
+ok   - a room key sent to each other person once
+ok   - and what came of it
 ok   - a message too long to encrypt: over 500 bytes
 ok   a room key - for a room, not the entrance or reserved ones, nor a direct message
 ok   - shown as the console shows it

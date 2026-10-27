@@ -187,18 +187,25 @@ function chat_room_secret( )
    return ( other !== "" ) ? chat_secret_with( other ) : chat_room_key( g_room );
 }
 
-// NOTE: For the line under a direct message ("dm_encryption_note( )").
+// NOTE: The secret for "room", open or not - with the other person in a direct message the server named, else its room key.
+function chat_secret_for_room( room )
+{
+   var entry = ( room === g_room ) ? { name: g_room_name } : find_room( room );
+   var other = entry ? dm_other_person( entry.name, ciyam.username ) : "";
+
+   return ( other !== "" ) ? chat_secret_with( other ) : chat_room_key( room );
+}
+
+// NOTE: For the line under a direct message ("dm_encryption_note( )"), or a group's ("group_encryption_note( )").
 function chat_encryption_note( )
 {
    var other = chat_dm_other( );
+   var keys = ( g_chat_keys === null ) ? null : ( g_chat_keys_unread ? "unread" : !!g_chat_keys );
 
-   if( g_chat_keys === null )
-      return dm_encryption_note( other, null, false );
+   if( ( other === "" ) && can_have_room_key( g_room, g_room_name ) )
+      return group_encryption_note( keys, chat_room_key( g_room ) !== "" );
 
-   if( g_chat_keys_unread )
-      return dm_encryption_note( other, "unread", false );
-
-   return dm_encryption_note( other, !!g_chat_keys, !!g_chat_keys && g_chat_keys.contacts.hasOwnProperty( other ) );
+   return dm_encryption_note( other, keys, !!g_chat_keys && g_chat_keys.contacts.hasOwnProperty( other ) );
 }
 
 function chat_draw_opened( element, opened )
@@ -429,10 +436,13 @@ function chat_render_room_key( )
     || !document.getElementById( "room_key_add_part" ).hidden;
    document.getElementById( "room_key_have_actions" ).hidden = !g_chat_keys || ( key === "" );
 
+   // NOTE: A group's direct message is encrypted in one go ("do_make_room_key( )").
+   document.getElementById( "room_key_make" ).textContent = room_is_dm( ) ? "Encrypt this conversation" : "Make a room key";
+
    if( key === "" )
       chat_hide_room_key_share( );
 
-   [ "room_key_make", "room_key_add_open", "room_key_add_go", "room_key_share", "room_key_remove" ].forEach( function( id )
+   [ "room_key_make", "room_key_add_open", "room_key_add_go", "room_key_send", "room_key_share", "room_key_remove" ].forEach( function( id )
    {
       document.getElementById( id ).disabled = g_room_key_busy;
    } );
@@ -443,6 +453,7 @@ function chat_room_key_reset( )
    document.getElementById( "room_key_add_part" ).hidden = true;
    document.getElementById( "room_key_add_input" ).value = "";
    document.getElementById( "room_key_error" ).textContent = "";
+   document.getElementById( "room_key_sent" ).textContent = "";
 
    chat_hide_room_key_share( );
 }
@@ -476,6 +487,16 @@ async function chat_room_key_change( room, key )
 
 async function do_make_room_key( )
 {
+   // NOTE: A group's direct message is encrypted in one go - the key made and sent to each of them (Damon, 2026-10-27).
+   if( room_is_dm( ) )
+   {
+      if( confirm( "Encrypt this conversation? A key is made for it and sent to each of its people in an encrypted direct message"
+       + " - one is started with anyone you have none with yet." ) )
+         chat_encrypt_group( g_room, chat_room_people( ) );
+
+      return;
+   }
+
    if( !confirm( "Make a key for this room? From now on your messages here are encrypted - members can read them once you've sent"
     + " them the key in an encrypted direct message." ) )
       return;
@@ -484,6 +505,145 @@ async function do_make_room_key( )
 
    if( await chat_room_key_change( room, chat_random_room_key( ) ) && ( g_room === room ) )
       do_share_room_key( );
+}
+
+// ---- Sending a room key to its people (Damon, 2026-10-27: sharing it with each by hand in a group, one was missed - they had no
+// direct message with its owner, the only way a key is added)
+
+// NOTE: The open room's people - its members, and a group's people from its name, those who have not joined yet among them.
+function chat_room_people( )
+{
+   var dm = room_is_dm( ) ? parse_dm_name( g_room_name ) : null;
+
+   return g_members.map( function( member ) { return member.name; } ).concat( dm ? dm.people : [ ] );
+}
+
+// NOTE: Whether each of "people" can be sent a key - a public key here for each, and the keys read.
+function chat_can_encrypt_for( people )
+{
+   return !!g_chat_keys && !g_chat_keys_unread && ( people.length > 0 ) && people.every( function( person )
+   {
+      return g_chat_keys.contacts.hasOwnProperty( person );
+   } );
+}
+
+// NOTE: A key made for a group's "room", if it has none, and sent to "people" - what came of it said.
+async function chat_encrypt_group( room, people )
+{
+   if( ( chat_room_key( room ) === "" ) && !( await chat_room_key_change( room, chat_random_room_key( ) ) ) )
+      return;
+
+   chat_room_key_sent( room, await chat_send_room_key( room, people ) );
+}
+
+function chat_room_key_sent( room, text )
+{
+   if( g_room === room )
+      document.getElementById( "room_key_sent" ).textContent = text;
+
+   show_alert( text, "is-info" );
+}
+
+async function do_send_room_key( )
+{
+   if( !confirm( "Send the key to each member in an encrypted direct message? One is started with anyone you have none with yet." ) )
+      return;
+
+   var room = g_room;
+
+   g_room_key_busy = true;
+
+   chat_render_room_key( );
+
+   var text = await chat_send_room_key( room, chat_room_people( ) );
+
+   g_room_key_busy = false;
+
+   chat_render_room_key( );
+   chat_room_key_sent( room, text );
+}
+
+// NOTE: "room"'s key sent to each of "people" in an encrypted direct message - the one with them, or one started for it and sent
+// once they accept. Never in the clear: anyone without a public key here is left out. What came of it ("room_key_sent_text( )").
+async function chat_send_room_key( room, people )
+{
+   var key = chat_room_key( room );
+
+   if( key === "" )
+      return "";
+
+   var text = room_key_text( room, key );
+   var outcomes = [ ];
+   var started = false;
+
+   var recipients = room_key_recipients( people, ciyam.username ).filter( function( person ) { return dm_allowed( dm_me( ), person ); } );
+
+   for( var i = 0; i < recipients.length; i++ )
+   {
+      var how = await chat_send_room_key_to( recipients[ i ], text );
+
+      if( how === "started" )
+      {
+         started = true;
+         how = "held";
+      }
+
+      outcomes.push( { name: recipients[ i ], how: how } );
+   }
+
+   // NOTE: The rail knows the conversations started for it - a held one is watched only once it is listed ("watch_held_rooms( )").
+   if( started )
+      await load_rooms( );
+
+   return room_key_sent_text( outcomes );
+}
+
+async function chat_send_room_key_to( person, text )
+{
+   if( chat_secret_with( person ) === "" )
+      return "no_key";
+
+   var existing = dm_existing( [ person ], ciyam.username, g_rooms, g_invitations, dm_waiting_rooms( ) );
+
+   if( existing.kind === "request" )
+      return "request";
+
+   if( existing.kind === "waiting" )
+   {
+      g_dm_pending[ existing.room ].texts.push( text );
+
+      return "held";
+   }
+
+   if( existing.kind === "" )
+   {
+      var dm = await start_dm( [ person ] );
+
+      if( dm.problem !== "" )
+         return "failed";
+
+      g_dm_pending[ dm.room ].texts.push( text );
+
+      return "started";
+   }
+
+   // NOTE: They declined it - nothing sent there reaches them.
+   if( g_dm_shut[ existing.room ] )
+      return "failed";
+
+   var sealing = await chat_seal_for( person, text );
+
+   if( !sealing.sealed || ( sealing.text === "" ) )
+      return "failed";
+
+   var answer = null;
+
+   await serialised( function( )
+   {
+      return ciyam.create_message( existing.room, "text=" + sealing.text, function( response ) { answer = String( response ); } );
+   } );
+
+   return ( ( answer === null ) || is_timeout_response( answer ) || is_error_response( answer ) ) ? "failed" : "sent";
 }
 
 function do_open_add_room_key( )
@@ -613,10 +773,20 @@ function chat_room_key_removed( shared, removed )
 // (found by review). Each is added by itself only once a sign in, so a save that fails is not tried again at every redraw.
 var g_room_keys_tried = { };
 
+// NOTE: A room this person is invited to and has not joined yet, as a room - whoever invited them taken as its owner. A group's key
+// is sent as it is started, so it usually arrives before the group is joined; only rooms already joined counted, and it was never
+// added (Damon, 2026-10-27).
+function chat_invited_room( room )
+{
+   var invite = g_invitations.filter( function( entry ) { return entry.room === room; } )[ 0 ];
+
+   return invite ? { room: invite.room, name: invite.name, owner: invite.inviter } : null;
+}
+
 function chat_offer_room_key( element, text )
 {
    var shared = room_key_in_message( text );
-   var entry = shared ? find_room( shared.room ) : null;
+   var entry = shared ? ( find_room( shared.room ) || chat_invited_room( shared.room ) ) : null;
 
    if( !entry || !g_chat_keys || !can_have_room_key( shared.room, entry.name ) )
       return;

@@ -2104,7 +2104,13 @@ function refresh_invitations( )
 {
    refresh_announcements( );
 
+   var invited_before = g_invitations.map( function( invite ) { return invite.room; } ).join( "," );
+
    g_invitations = pending_invitations( g_invite_messages, g_rooms, ciyam.username );
+
+   // NOTE: A room key in the open direct message can be for a room just invited to ("chat_offer_room_key( )").
+   if( g_invitations.map( function( invite ) { return invite.room; } ).join( "," ) !== invited_before )
+      chat_keys_redraw( );
 
    restore_dm_outcomes( );
 
@@ -2296,8 +2302,6 @@ async function open_dm( people )
       return;
    }
 
-   var everyone = others.concat( [ ciyam.username ] );
-
    // NOTE: A conversation - open, or waiting for them - or their request to the user.
    var existing = dm_existing( others, ciyam.username, g_rooms, g_invitations, dm_waiting_rooms( ) );
 
@@ -2315,17 +2319,37 @@ async function open_dm( people )
       return;
    }
 
+   var started = await start_dm( others );
+
+   if( started.problem !== "" )
+   {
+      show_alert( started.problem, "is-error" );
+
+      return;
+   }
+
+   await open_new_room( started.reply );
+
+   // NOTE: A group is encrypted from the start when it can be - a room key made for it and sent to each of them (Damon,
+   // 2026-10-27). Not asked: with everyone's public key here, nothing is lost, and the line under it says so.
+   if( ( others.length > 1 ) && chat_can_encrypt_for( others ) )
+      chat_encrypt_group( started.room, others );
+}
+
+// NOTE: A conversation with "others" started - not opened - its first messages held until they accept ("g_dm_pending").
+// "room", and the server's "reply" to open it with; or "problem", in plain words.
+async function start_dm( others )
+{
+   var everyone = others.concat( [ ciyam.username ] );
+
    // NOTE: Two people - Ian's server direct message, ".<the other>"; a group - the prototype's room
    // ("dm_create_text( )"), until the server has groups.
    var name = dm_create_text( everyone, ciyam.username );
 
    // NOTE: Too many names to fit a room name - see "dm_room_name( )".
    if( name === "" )
-   {
-      show_alert( "That is too many people for a direct message - it fits two, or three with short names. Create a room for a bigger group.", "is-error" );
-
-      return;
-   }
+      return { room: "", reply: "", problem: "That is too many people for a direct message - it fits two, or three with short names."
+       + " Create a room for a bigger group." };
 
    ciyam.error = "";
 
@@ -2345,25 +2369,17 @@ async function open_dm( people )
    // NOTE: In plain words - someone not signed in yet, a conversation that already exists, or a group's
    // name another room holds ("dm_create_problem( )").
    if( is_error_response( reply ) || ( ciyam.error !== "" ) )
-   {
-      show_alert( is_error_response( reply ) ? dm_create_problem( reply, others ) : ciyam.error, "is-error" );
-
-      return;
-   }
+      return { room: "", reply: "", problem: is_error_response( reply ) ? dm_create_problem( reply, others ) : ciyam.error };
 
    var room = reply.trim( ).replace( /^:/, "" ).split( "-" )[ 0 ];
 
    if( !/^\d{7}$/.test( room ) )
-   {
-      show_alert( "The conversation could not be started - the server answered: " + reply.trim( ), "is-error" );
-
-      return;
-   }
+      return { room: "", reply: "", problem: "The conversation could not be started - the server answered: " + reply.trim( ) };
 
    g_dm_pending[ room ] = { waiting: others, texts: [ ], total: -1, checked: true };
    g_dm_checked[ room ] = true;
 
-   await open_new_room( reply );
+   return { room: room, reply: reply, problem: "" };
 }
 
 // NOTE: What is held for the open conversation, and who it is waiting for.
@@ -2417,7 +2433,8 @@ function render_held( )
 
       held.className = "chat-held-message";
 
-      draw_formatted( held, format_pieces( text ) );
+      // NOTE: A room key cut short, as in the conversation ("room_key_masked( )").
+      draw_formatted( held, format_pieces( room_key_masked( text ) ) );
 
       host.appendChild( held );
    } );
@@ -2458,20 +2475,21 @@ function note_dm_joins( room, messages, members )
 // last join, or a decline by the last still to answer ("restore_dm_outcomes( )").
 function send_held( room, pending )
 {
-   // NOTE: Sealed as any other message there would be ("chat_keys.js") - the conversation's other person by its name.
-   var entry = find_room( room );
-   var other = entry ? dm_other_person( entry.name, ciyam.username ) : "";
+   // NOTE: Sealed as any other message there would be ("chat_keys.js") - with the other person, or a group's room key (a group's
+   // held messages went as they were - found 2026-10-27).
+   var secret = chat_secret_for_room( room );
 
    // NOTE: Each resolves with its text if it was not sent - an error, a time-out, no answer, or too long to seal.
    var sends = pending.texts.map( function( text )
    {
-      return chat_seal_for( other, text ).then( function( sealing )
+      return chat_seal_with( secret, text ).then( function( sealing )
       {
          return new Promise( function( resolve )
          {
             var answered = false;
 
-            if( sealing.sealed && ( sealing.text === "" ) )
+            // NOTE: Nor a room key that could not be sealed - never sent in the clear ("chat_send_room_key( )").
+            if( ( sealing.sealed && ( sealing.text === "" ) ) || ( !sealing.sealed && ( room_key_in_message( text ) !== null ) ) )
             {
                resolve( text );
 
@@ -2499,7 +2517,7 @@ function send_held( room, pending )
 
       if( lost.length > 0 )
          show_alert( ( ( lost.length === 1 ) ? "A held message could not be sent: " : ( lost.length + " held messages could not be sent: " ) )
-          + lost.map( function( text ) { return "\u201C" + text + "\u201D"; } ).join( ", " ) + " - please send again.", "is-error" );
+          + lost.map( function( text ) { return "\u201C" + room_key_masked( text ) + "\u201D"; } ).join( ", " ) + " - please send again.", "is-error" );
 
       if( ( room === g_room ) && ( pending.texts.length > 0 ) )
          load_messages( "from=0", true );

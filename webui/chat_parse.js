@@ -1354,6 +1354,65 @@ function dm_encryption_note( other, keys, theirs )
    return "encrypted";
 }
 
+// NOTE: The same for a group's direct message (Damon, 2026-10-27: it said nothing, the warning signs the only sign) - with no one
+// other person to share a key with, it takes a room key, sent to each of them in an encrypted direct message. "keyed": whether
+// this browser has one for it.
+function group_encryption_note( keys, keyed )
+{
+   if( keys === null )
+      return "";
+
+   if( keys === "unread" )
+      return "not encrypted - your keys could not be read just now; reload to try again";
+
+   if( !keys )
+      return "not encrypted - set up your keys on My account";
+
+   return keyed ? "encrypted with the room key" : "not encrypted - encrypt it in Chat Details";
+}
+
+// NOTE: Who a room's key is sent to - each other person once, in order; not "me".
+function room_key_recipients( names, me )
+{
+   return dm_people( names ).filter( function( name ) { return name !== me; } );
+}
+
+// NOTE: What sending a room's key to its members came to. Each of "outcomes" is { name, how }: "sent"; "held" - in a direct
+// message started for it, sent once they accept; "no_key" - no public key for them, so it could not be sealed; "request" - their
+// direct message is to be accepted first; "failed".
+function room_key_sent_text( outcomes )
+{
+   var by = { sent: [ ], held: [ ], no_key: [ ], request: [ ], failed: [ ] };
+
+   ( outcomes || [ ] ).forEach( function( outcome )
+   {
+      if( by.hasOwnProperty( outcome.how ) )
+         by[ outcome.how ].push( outcome.name );
+   } );
+
+   var parts = [ ];
+
+   if( by.sent.length > 0 )
+      parts.push( "Sent to " + name_list( by.sent ) + "." );
+
+   if( by.held.length > 0 )
+      parts.push( "Sent to " + name_list( by.held ) + " once " + ( ( by.held.length === 1 ) ? "they accept" : "each accepts" )
+       + " your direct message - keep this page open until then." );
+
+   if( by.no_key.length > 0 )
+      parts.push( "Not sent to " + name_list( by.no_key ) + " - add " + ( ( by.no_key.length === 1 ) ? "their public key" : "their public keys" )
+       + " on My account first." );
+
+   if( by.request.length > 0 )
+      parts.push( "Not sent to " + name_list( by.request ) + " - accept " + ( ( by.request.length === 1 ) ? "their direct message" : "their direct messages" )
+       + " first." );
+
+   if( by.failed.length > 0 )
+      parts.push( "Could not send it to " + name_list( by.failed ) + " - try again." );
+
+   return ( parts.length > 0 ) ? parts.join( " " ) : "There is no one else here to send it to.";
+}
+
 // NOTE: Room keys (Ian, 2026-10-25) - "irc.cin"'s "k" makes "<room>#<32 hex digits>" to send each member in an encrypted direct
 // message, and "r" with it saves it; every message in that room is then sealed with the 32 digits as they are. Not for the
 // entrance or reserved rooms, nor a direct message (named "/..."), which uses the other person's public key.
@@ -3631,6 +3690,9 @@ if( typeof module !== "undefined" )
       dm_key: dm_key,
       dm_other_person: dm_other_person,
       dm_encryption_note: dm_encryption_note,
+      group_encryption_note: group_encryption_note,
+      room_key_recipients: room_key_recipients,
+      room_key_sent_text: room_key_sent_text,
       sealed_too_long: sealed_too_long,
       can_have_room_key: can_have_room_key,
       room_key_text: room_key_text,
