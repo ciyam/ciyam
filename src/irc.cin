@@ -604,6 +604,9 @@ MESSAGE=@file:$FILE_NAME
 @endif
 @ifndef $NAMES
 MESSAGE=_ $MESSAGE
+@else
+MESSAGE=_!$MESSAGE
+@endif
 ;
 ; NOTE: If is able to encrypt the message then will now do so.
 @ifdef $KEY_FILE_DATA
@@ -618,9 +621,9 @@ PREFIX=!
 ;
 @endif
 ;
-@else
-MESSAGE=_!$MESSAGE
-@endif
+;@else
+;MESSAGE=_!$MESSAGE
+;@endif
 @endif
 @endif
 @endif
