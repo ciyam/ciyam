@@ -43,8 +43,11 @@ const c_signin_storage_access = "cws.access";
 const c_signin_storage_hashed_prefix = "cws.hashed_";
 
 // NOTE: What opens an account's keys, kept on this browser ("account_keys.js", 2026-10-25) - a hash of its twelve words, not
-// the words (Ian). Forgotten with the account.
+// the words (Ian). Forgotten with the account, and the tab's copy on signing out ("signin_forget_tab_keys( )").
 const c_signin_storage_keys_prefix = "cws.user_keys_";
+
+// NOTE: One brought by another browser's QR code, held for the tab until the keys are shown ("account_keys.js").
+const c_signin_pending_keys_name = "cws.pending_keys";
 
 const c_signin_saved_mark = "  ·  saved password";
 
@@ -504,6 +507,8 @@ function signin_reset_browser( )
    {
    }
 
+   signin_forget_tab_keys( "" );
+
    location.reload( );
 }
 
@@ -650,6 +655,8 @@ function signin_keep_session( )
       {
          sessionStorage.setItem( c_tab_session_key, format_tab_session( ciyam ) );
 
+         signin_forget_tab_keys( ciyam.access );
+
          // NOTE: Only an account saved on this browser - "Remember: Nothing" leaves no PIN behind (found by review).
          if( signin_saved_pins( ).indexOf( ciyam.access ) >= 0 )
             sessionStorage.setItem( c_signin_last_account_key, ciyam.access );
@@ -667,6 +674,35 @@ function signin_forget_session( )
    try
    {
       sessionStorage.removeItem( c_tab_session_key );
+   }
+   catch( e )
+   {
+   }
+
+   signin_forget_tab_keys( "" );
+}
+
+// NOTE: The access keys this tab keeps - an account not remembered keeps its in "sessionStorage", which outlived signing out,
+// a reload and clearing "localStorage" (Ian, 2026-10-27). All but "kept_pin"'s go: none on signing out, the account's own
+// on signing in, so a reload while signed in still has it.
+function signin_forget_tab_keys( kept_pin )
+{
+   try
+   {
+      var names = [ ];
+
+      for( var i = 0; i < sessionStorage.length; i++ )
+      {
+         var name = sessionStorage.key( i );
+
+         if( ( name.indexOf( c_signin_storage_keys_prefix ) === 0 ) && ( name !== c_signin_storage_keys_prefix + kept_pin ) )
+            names.push( name );
+      }
+
+      if( kept_pin === "" )
+         names.push( c_signin_pending_keys_name );
+
+      names.forEach( function( name ) { sessionStorage.removeItem( name ); } );
    }
    catch( e )
    {
@@ -1689,6 +1725,8 @@ async function recover_submit( event )
    catch( e )
    {
    }
+
+   signin_forget_tab_keys( "" );
 
    signin_remember_device( );
 

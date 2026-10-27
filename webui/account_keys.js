@@ -27,7 +27,7 @@ const c_keys_device_qr_size = 168;
 // NOTE: An access key brought by another browser's QR code ("#keys=" - the part after "#" never goes to the server), held for the
 // tab until this account's keys are known.
 const c_keys_link_prefix = "#keys=";
-const c_keys_pending_name = "cws.pending_keys";
+const c_keys_pending_name = c_signin_pending_keys_name;
 
 // NOTE: What browsers kept before 2026-10-25's change - the entropy itself. Removed wherever it is found.
 const c_keys_old_prefix = "cws.user_entropy_";
