@@ -528,12 +528,24 @@ function chat_can_encrypt_for( people )
 }
 
 // NOTE: A key made for a group's "room", if it has none, and sent to "people" - what came of it said.
+// NOTE: Busy meanwhile, as "do_send_room_key( )" is - Send to members pressed while it ran sent the key twice (found by review).
 async function chat_encrypt_group( room, people )
 {
    if( ( chat_room_key( room ) === "" ) && !( await chat_room_key_change( room, chat_random_room_key( ) ) ) )
       return;
 
-   chat_room_key_sent( room, await chat_send_room_key( room, people ) );
+   g_room_key_busy = true;
+
+   chat_render_room_key( );
+
+   var text = await chat_send_room_key( room, people );
+
+   g_room_key_busy = false;
+
+   chat_render_room_key( );
+
+   if( text !== "" )
+      chat_room_key_sent( room, text );
 }
 
 function chat_room_key_sent( room, text )
@@ -560,7 +572,9 @@ async function do_send_room_key( )
    g_room_key_busy = false;
 
    chat_render_room_key( );
-   chat_room_key_sent( room, text );
+
+   if( text !== "" )
+      chat_room_key_sent( room, text );
 }
 
 // NOTE: "room"'s key sent to each of "people" in an encrypted direct message - the one with them, or one started for it and sent
@@ -576,11 +590,17 @@ async function chat_send_room_key( room, people )
    var outcomes = [ ];
    var started = false;
 
+   // NOTE: Signed out (or in again) meanwhile - nothing more sent, and nothing of it said over the next sign in (found by review).
+   var read = g_chat_keys_read;
+
    var recipients = room_key_recipients( people, ciyam.username ).filter( function( person ) { return dm_allowed( dm_me( ), person ); } );
 
    for( var i = 0; i < recipients.length; i++ )
    {
       var how = await chat_send_room_key_to( recipients[ i ], text );
+
+      if( read !== g_chat_keys_read )
+         return "";
 
       if( how === "started" )
       {
@@ -619,7 +639,8 @@ async function chat_send_room_key_to( person, text )
    {
       var dm = await start_dm( [ person ] );
 
-      if( dm.problem !== "" )
+      // NOTE: Not started, or signed out meanwhile (no room) - "chat_send_room_key( )" then says nothing.
+      if( ( dm.problem !== "" ) || ( dm.room === "" ) )
          return "failed";
 
       g_dm_pending[ dm.room ].texts.push( text );

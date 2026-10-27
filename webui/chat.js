@@ -2337,6 +2337,10 @@ async function open_dm( people )
       return;
    }
 
+   // NOTE: Signed out meanwhile ("start_dm( )").
+   if( started.room === "" )
+      return;
+
    await open_new_room( started.reply );
 
    // NOTE: A group is encrypted from the start when it can be - a room key made for it and sent to each of them (Damon,
@@ -2367,6 +2371,9 @@ async function start_dm( others )
    // NOTE: One request makes the room and invites its people ("dm_create_options( )").
    var options = dm_create_options( name, others );
 
+   // NOTE: Signed out meanwhile - not the next account's to wait on ("g_chat_keys_read" moves at each sign out; found by review).
+   var read = g_chat_keys_read;
+
    await serialised( function( )
    {
       return ciyam.create_message( c_lobby_room, options, function( response )
@@ -2384,6 +2391,9 @@ async function start_dm( others )
 
    if( !/^\d{7}$/.test( room ) )
       return { room: "", reply: "", problem: "The conversation could not be started - the server answered: " + reply.trim( ) };
+
+   if( read !== g_chat_keys_read )
+      return { room: "", reply: "", problem: "" };
 
    g_dm_pending[ room ] = { waiting: others, texts: [ ], total: -1, checked: true };
    g_dm_checked[ room ] = true;
