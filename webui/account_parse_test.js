@@ -162,8 +162,9 @@ check( "a device signed out - its session twenty zeros", known.map( function( d 
 const actions_of = function( entry ) { return ap.device_choice( entry ).actions.map( function( a ) { return a.label + ":" + a.options; } ); };
 check( "- signed in: Sign out, or Block; signed out: Block; this browser neither", [ actions_of( known[ 0 ] ), actions_of( known[ 1 ] ),
  actions_of( { device: "x", current: true } ) ], [ [ "Sign out:", "Block:block" ], [ "Block:block" ], [ ] ] );
-check( "- each asked first", ap.device_choice( known[ 0 ] ).actions.map( function( a ) { return a.ask; } ),
- [ "Sign it out? It can sign in again with your password.", "Block it? It is signed out, and can never sign in as you again." ] );
+check( "- each asked first, as it is", [ ap.device_choice( known[ 0 ] ).actions.map( function( a ) { return a.ask; } ),
+ ap.device_choice( known[ 1 ] ).actions[ 0 ].ask ], [ [ "Sign it out? It can sign in again with your password.",
+ "Block it? It is signed out now, and can never sign in as you again." ], "Block it? It can never sign in as you again." ] );
 check( "- and what each says once done", [ ap.device_choice( known[ 0 ] ).actions[ 0 ].done, ap.device_choice( known[ 1 ] ).actions[ 0 ].done ], [
  "The device a1b2c3…a7b8 was signed out. To stop it signing in again, Block it.",
  "The device f0e1d2…9687 is blocked - it can't sign in as you again. If it may have your password saved, change your password too." ] );

@@ -264,8 +264,9 @@ function device_choice( entry )
 {
    var name = short_device( entry.device );
 
-   var block = { action: "block", options: "block", label: "Block", ask: "Block it? It is signed out, and can never sign in as you again.",
-    yes: "Block it", done: "The device " + name + " is blocked - it can't sign in as you again. If it may have your password saved, change"
+   // NOTE: What it asks says what it does to the device as it is - one signed in is signed out too (found by review).
+   var block = { action: "block", options: "block", label: "Block", ask: entry.signed_out ? "Block it? It can never sign in as you again."
+    : "Block it? It is signed out now, and can never sign in as you again.", yes: "Block it", done: "The device " + name + " is blocked - it can't sign in as you again. If it may have your password saved, change"
     + " your password too." };
 
    if( entry.current )
