@@ -2330,12 +2330,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      found = true;
 
-                     bool force_block = false;
-
                      if( option_parameters.count( c_cws_request_devices_delete_options_block ) )
-                        force_block = true;
-
-                     if( force_block || !g_cws_access_devices[ access ].count( target ) )
                      {
                         if( g_cws_known_devices.count( target ) )
                         {
