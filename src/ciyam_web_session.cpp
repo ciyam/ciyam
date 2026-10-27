@@ -57,6 +57,8 @@ namespace
 
 const char c_omit_edits = '~';
 
+const char c_block_prefix = '~';
+
 const size_t c_cws_helpers = 5;
 
 const size_t c_helper_seconds = 5;
@@ -264,6 +266,7 @@ string g_cws_device_map_file;
 bool g_cws_admin_locked = false;
 
 int64_t g_helper_check_tm_val = 0;
+int64_t g_devices_check_tm_val = 0;
 
 atomic< size_t > g_cws_active_commands;
 
@@ -880,8 +883,32 @@ bool verify_whether_device_is_valid( const string& access, const string& device 
       {
          bool locked = false;
 
+         // NOTE: Need to check known devices just
+         // in case access using this PIN has been
+         // specifically blocked.
          if( g_cws_known_devices.count( device ) )
+         {
+            string pins( g_cws_known_devices[ device ] );
+
+            vector< string > all_pins;
+
+            split( pins, all_pins );
+
             retval = true;
+
+            for( size_t i = 0; i < all_pins.size( ); i++ )
+            {
+               string::size_type pos = all_pins[ i ].find( access );
+
+               if( pos != string::npos )
+               {
+                  if( pos == 1 )
+                     retval = false;
+
+                  break;
+               }
+            }
+         }
          else
          {
             // NOTE: If the system identity is locked (and no identity
@@ -1585,6 +1612,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
    {
       guard g( g_mutex );
 
+      int64_t now = unix_time( );
+
       // NOTE: Allows for a "html/.ciyam"
       // link to be used in order to have
       // artifacts (such as "javascripts"
@@ -1605,11 +1634,42 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       if( g_cws_device_map_file.empty( ) )
          g_cws_device_map_file = g_cws_artifacts_dir + '/' + string( c_device_map_file );
 
-      if( g_cws_known_devices.empty( )
-       && file_exists( g_cws_device_map_file ) )
-         buffer_file_items( g_cws_device_map_file, g_cws_known_devices );
+      if( !is_identity_none && file_exists( g_cws_device_map_file ) )
+      {
+         int64_t new_tm_val = last_modification_time( g_cws_device_map_file );
 
-      int64_t now = unix_time( );
+         if( new_tm_val > g_devices_check_tm_val )
+         {
+            g_devices_check_tm_val = new_tm_val;
+
+            g_cws_known_devices.clear( );
+
+            buffer_file_items( g_cws_device_map_file, g_cws_known_devices );
+
+            for( auto i = g_cws_known_devices.begin( ); i != g_cws_known_devices.end( ); ++i )
+            {
+               string next_dev( i->first );
+               string next_pins( i->second );
+
+               vector< string > all_pins;
+
+               split( next_pins, all_pins );
+
+               for( size_t j = 0; j < all_pins.size( ); j++ )
+               {
+                  string next_pin( all_pins[ j ] );
+
+                  if( !next_pin.empty( ) && ( next_pin[ 0 ] == c_block_prefix ) )
+                  {
+                     next_pin.erase( 0, 1 );
+
+                     remove_access_device_if_present( next_pin, next_dev );
+                     remove_session_for_device_if_present( next_pin, next_dev );
+                  }
+               }
+            }
+         }
+      }
 
       if( !is_locked && !is_identity_none && ( g_helper_check_tm_val < now ) )
       {
@@ -1641,7 +1701,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          // these helpers to begin the
          // first web session with.
          if( !num_found )
-            msleep( 100 );
+            msleep( 150 );
       }
    }
 
@@ -2265,7 +2325,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                  new_pins += ',';
 
                               if( all_pins[ i ] == access )
-                                 new_pins += '~';
+                                 new_pins += c_block_prefix;
 
                               new_pins += all_pins[ i ];
                            }
