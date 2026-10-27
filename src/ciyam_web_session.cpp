@@ -173,6 +173,8 @@ constexpr const char* c_cws_request_users_create_options_nomimated = "nominated"
 
 constexpr const char* c_cws_request_users_update_options_password = "password";
 
+constexpr const char* c_cws_request_devices_delete_options_block = "block";
+
 constexpr const char* c_cws_request_messages_create_options_for = "for";
 constexpr const char* c_cws_request_messages_create_options_text = "text";
 
@@ -869,7 +871,7 @@ string create_or_check_device( const string* p_device = 0, bool* p_locked = 0 )
    return device;
 }
 
-bool verify_whether_device_is_valid( const string& access, const string& device )
+bool verify_whether_device_is_valid( const string& access, const string& device, bool* p_is_blocked = 0 )
 {
    guard g( g_mutex );
 
@@ -903,7 +905,12 @@ bool verify_whether_device_is_valid( const string& access, const string& device 
                if( pos != string::npos )
                {
                   if( pos == 1 )
+                  {
                      retval = false;
+
+                     if( p_is_blocked )
+                        *p_is_blocked = true;
+                  }
 
                   break;
                }
@@ -1634,37 +1641,46 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
       if( g_cws_device_map_file.empty( ) )
          g_cws_device_map_file = g_cws_artifacts_dir + '/' + string( c_device_map_file );
 
-      if( !is_identity_none && file_exists( g_cws_device_map_file ) )
+      if( !is_identity_none )
       {
-         int64_t new_tm_val = last_modification_time( g_cws_device_map_file );
-
-         if( new_tm_val > g_devices_check_tm_val )
+         if( !file_exists( g_cws_device_map_file ) )
          {
-            g_devices_check_tm_val = new_tm_val;
+            g_devices_check_tm_val = 0;
 
             g_cws_known_devices.clear( );
+         }
+         else
+         {
+            int64_t new_tm_val = last_modification_time( g_cws_device_map_file );
 
-            buffer_file_items( g_cws_device_map_file, g_cws_known_devices );
-
-            for( auto i = g_cws_known_devices.begin( ); i != g_cws_known_devices.end( ); ++i )
+            if( new_tm_val > g_devices_check_tm_val )
             {
-               string next_dev( i->first );
-               string next_pins( i->second );
+               g_devices_check_tm_val = new_tm_val;
 
-               vector< string > all_pins;
+               g_cws_known_devices.clear( );
 
-               split( next_pins, all_pins );
+               buffer_file_items( g_cws_device_map_file, g_cws_known_devices );
 
-               for( size_t j = 0; j < all_pins.size( ); j++ )
+               for( auto i = g_cws_known_devices.begin( ); i != g_cws_known_devices.end( ); ++i )
                {
-                  string next_pin( all_pins[ j ] );
+                  string next_dev( i->first );
+                  string next_pins( i->second );
 
-                  if( !next_pin.empty( ) && ( next_pin[ 0 ] == c_block_prefix ) )
+                  vector< string > all_pins;
+
+                  split( next_pins, all_pins );
+
+                  for( size_t j = 0; j < all_pins.size( ); j++ )
                   {
-                     next_pin.erase( 0, 1 );
+                     string next_pin( all_pins[ j ] );
 
-                     remove_access_device_if_present( next_pin, next_dev );
-                     remove_session_for_device_if_present( next_pin, next_dev );
+                     if( !next_pin.empty( ) && ( next_pin[ 0 ] == c_block_prefix ) )
+                     {
+                        next_pin.erase( 0, 1 );
+
+                        remove_access_device_if_present( next_pin, next_dev );
+                        remove_session_for_device_if_present( next_pin, next_dev );
+                     }
                   }
                }
             }
@@ -2115,9 +2131,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          error = "Invalid device identity '" + device + "'.";
       else if( !has_access_device( access, device, now ) )
       {
-         if( !verify_whether_device_is_valid( access, device ) )
-            // FUTURE: This message should be handled as a server string message.
-            error = "Invalid device identity '" + device + "'.";
+         bool is_blocked = false;
+
+         if( !verify_whether_device_is_valid( access, device, &is_blocked ) )
+         {
+            // FUTURE: These messages should be handled as server string messages.
+            if( is_blocked )
+               error = "This device is no longer available.";
+            else
+               error = "Invalid device identity '" + device + "'.";
+         }
          else
          {
             if( !has_added_access_device( access, device, now ) )
@@ -2307,7 +2330,12 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      found = true;
 
-                     if( !g_cws_access_devices[ access ].count( target ) )
+                     bool force_block = false;
+
+                     if( option_parameters.count( c_cws_request_devices_delete_options_block ) )
+                        force_block = true;
+
+                     if( force_block || !g_cws_access_devices[ access ].count( target ) )
                      {
                         if( g_cws_known_devices.count( target ) )
                         {
@@ -2335,8 +2363,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            store_known_devices( );
                         }
                      }
-                     else
-                        remove_access_device_if_present( access, target );
+
+                     remove_access_device_if_present( access, target );
 
                      remove_session_for_device_if_present( access, target );
 
@@ -2916,6 +2944,17 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   else
                   {
                      found = true;
+
+                     // NOTE: Keeps a ".KEYS" backup of the old keys (so they can be restored if need be)
+                     // but will not overwrite an existing backup (in case the key replacement was issued
+                     // from a compromised device).
+                     if( file_exists( file_name ) )
+                     {
+                        string original_keys( replaced( file_name, c_keys_suffix, upper( c_keys_suffix ) ) );
+
+                        if( !file_exists( original_keys ) )
+                           file_rename( file_name, original_keys );
+                     }
 
                      write_file( file_name, payload );
 

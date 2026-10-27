@@ -36,6 +36,7 @@ SKEY=
 ;
 ERROR=
 ;
+EYE_EMOJI=👁️
 LOCK_EMOJI=🔒
 WARN_EMOJI=⚠️
 ;
@@ -604,6 +605,9 @@ MESSAGE=@file:$FILE_NAME
 @endif
 @ifndef $NAMES
 MESSAGE=_ $MESSAGE
+@else
+MESSAGE=_!$MESSAGE
+@endif
 ;
 ; NOTE: If is able to encrypt the message then will now do so.
 @ifdef $KEY_FILE_DATA
@@ -618,9 +622,6 @@ PREFIX=!
 ;
 @endif
 ;
-@else
-MESSAGE=_!$MESSAGE
-@endif
 @endif
 @endif
 @endif
@@ -859,6 +860,13 @@ PREFIX=!
 ;
 DECODED_MESSAGE=$MESSAGE
 MESSAGE=
+;
+PREFIX=@substr:0,2:$DECODED_MESSAGE
+DECODED_MESSAGE=@substr:2:$DECODED_MESSAGE
+;
+@ifeq "$PREFIX" "!X"
+DECODED_MESSAGE=$EYE_EMOJI$DECODED_MESSAGE
+@endif
 ;
 @else
 @ifdef $DIRECT_PUB_SUFFIX
