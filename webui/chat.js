@@ -207,6 +207,12 @@ function chat( )
 
          event.preventDefault( );
       }
+      else if( !document.getElementById( "room_key_dialog" ).hidden )
+      {
+         do_close_room_key_dialog( );
+
+         event.preventDefault( );
+      }
       else if( !document.getElementById( "emoji_panel" ).hidden )
       {
          close_emoji_panel( true );
@@ -3026,6 +3032,7 @@ async function submit_invite( )
    ciyam.error = "";
 
    var room = g_room;
+   var invited = "";
 
    // NOTE: Through the queue like every other request (ISS-005).
    await serialised( function( )
@@ -3041,7 +3048,9 @@ async function submit_invite( )
 
          do_close_room_dialog( );
 
-         show_alert( "Invited " + names.join( ", " ) + " to " + g_room_name + ".", "is-info" );
+         invited = "Invited " + names.join( ", " ) + " to " + g_room_name + ".";
+
+         show_alert( invited, "is-info" );
 
          // NOTE: The invitation is posted as a system event, so a reload shows the
          // receipt without waiting for the next poll.
@@ -3052,6 +3061,15 @@ async function submit_invite( )
 
    if( ciyam.error !== "" )
       set_error( "room_dialog_error", ciyam.error );
+
+   // NOTE: Those invited to a room with a key are sent it too (Ian, 2026-10-28) - after the invitation, as it queues its own.
+   if( invited !== "" )
+   {
+      var sent = await chat_send_key_to_invited( room, names );
+
+      if( sent !== "" )
+         chat_room_key_sent( room, sent, invited );
+   }
 }
 
 // NOTE: Anything already ticked is kept when the list is drawn again underneath ("people_picker( )").
@@ -3183,6 +3201,8 @@ async function do_submit_room_dialog( )
 
    ciyam.error = "";
 
+   var created = null;
+
    // NOTE: Through the queue like every other request (ISS-005).
    await serialised( function( )
    {
@@ -3198,7 +3218,7 @@ async function do_submit_room_dialog( )
          do_close_room_dialog( );
 
          if( g_dialog_mode === "create" )
-            open_new_room( response );
+            created = response;
          else
          {
             g_room_name = name;
@@ -3212,6 +3232,15 @@ async function do_submit_room_dialog( )
 
    if( ciyam.error !== "" )
       set_error( "room_dialog_error", ciyam.error );
+
+   // NOTE: Opened once the create has answered - then keyed, the key sent to those invited (Ian, 2026-10-28), which queues its own.
+   if( created !== null )
+   {
+      var room = await open_new_room( created );
+
+      if( room !== "" )
+         await chat_key_new_room( room, invitees );
+   }
 }
 
 // NOTE: Switches to the room just created, so the user ends up in it rather than having
@@ -3231,7 +3260,7 @@ async function open_new_room( response )
    var pos = value.indexOf( "-" );
 
    if( pos < 0 )
-      return;
+      return "";
 
    var room = value.substring( 0, pos );
    var token = value.substring( pos + 1 );
@@ -3240,6 +3269,8 @@ async function open_new_room( response )
    await load_rooms( );
 
    select_room( room, token );
+
+   return room;
 }
 
 // ====================================================================

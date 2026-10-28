@@ -471,7 +471,20 @@ button.chat-avatar:hover
 }
 
 .chat-room-key[hidden],
-.chat-room-key [hidden]
+.chat-room-key [hidden],
+.chat-room-key-dialog [hidden]
+{
+   display: none;
+}
+
+/* NOTE: The Room key dialog (2026-10-28) - its parts where Room Details had them. */
+.chat-room-key-dialog .chat-room-key-state,
+.chat-room-key-dialog .chat-room-key-note
+{
+   font-size: var(--font-size-chat-meta);
+}
+
+.chat-room-key-dialog .chat-error-text:empty
 {
    display: none;
 }

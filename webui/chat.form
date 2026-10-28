@@ -353,42 +353,14 @@ http://www.opensource.org/licenses/mit-license.php.
                <button type="button" class="chat-btn chat-btn--small" onclick="do_open_rename_room( )">Rename</button>
                <button type="button" class="chat-btn chat-btn--small chat-btn--accent" id="owner_invite" onclick="do_open_invite( )">Invite</button>
             </div>
-            <!-- NOTE: A room key (Ian, 2026-10-25: "irc.cin"'s "k" and "r") - made, added, shared and removed here ("chat_keys.js"). -->
+            <!-- NOTE: A room key (Ian, 2026-10-25: "irc.cin"'s "k" and "r") - made with every new room and sent to whoever is invited
+                 (Ian, 2026-10-28), so here only what it is; made, added, sent, shared and removed in the Room key dialog. -->
             <div class="chat-room-key" id="room_key_part" hidden>
                <div class="chat-room-key-head">Room key</div>
                <div class="chat-room-key-state" id="room_key_state"></div>
-               <div class="chat-room-key-actions" id="room_key_none_actions" hidden>
-                  <button type="button" class="chat-btn chat-btn--small" id="room_key_make" onclick="do_make_room_key( )">Make a room key</button>
-                  <button type="button" class="chat-btn chat-btn--small" id="room_key_add_open" onclick="do_open_add_room_key( )">Add a room key</button>
+               <div class="chat-room-key-actions">
+                  <button type="button" class="chat-btn chat-btn--small" id="room_key_open" onclick="do_open_room_key_dialog( )">Room key…</button>
                </div>
-               <div class="chat-room-key-add" id="room_key_add_part" hidden>
-                  <!-- NOTE: A box that wraps, so all of a key is seen as it is pasted (Ian, 2026-10-26: the field was too small);
-                       Enter adds it. -->
-                  <label class="chat-label" for="room_key_add_input">The room key, or the whole message it came in</label>
-                  <textarea class="chat-field chat-mono chat-room-key-input" id="room_key_add_input" rows="3" autocomplete="off"
-                   autocapitalize="off" spellcheck="false"
-                   onkeydown="if( ( event.key === 'Enter' ) &amp;&amp; !event.shiftKey ) { event.preventDefault( ); do_add_room_key( ); }"></textarea>
-                  <div class="chat-room-key-actions">
-                     <button type="button" class="chat-btn chat-btn--small chat-btn--accent" id="room_key_add_go" onclick="do_add_room_key( )">Add</button>
-                     <button type="button" class="chat-btn chat-btn--small" onclick="do_cancel_add_room_key( )">Cancel</button>
-                  </div>
-               </div>
-               <div class="chat-room-key-actions" id="room_key_have_actions" hidden>
-                  <button type="button" class="chat-btn chat-btn--small" id="room_key_send" onclick="do_send_room_key( )">Send to members</button>
-                  <button type="button" class="chat-btn chat-btn--small" id="room_key_share" onclick="do_share_room_key( )">Share the key</button>
-                  <button type="button" class="chat-btn chat-btn--small" id="room_key_remove" onclick="do_remove_room_key( )">Remove the key</button>
-               </div>
-               <!-- NOTE: What came of sending the key to the members ("chat_send_room_key( )", 2026-10-27). -->
-               <div class="chat-room-key-note chat-room-key-sent" id="room_key_sent" role="status"></div>
-               <div class="chat-room-key-share" id="room_key_share_part" hidden>
-                  <p class="chat-room-key-note">Send to members sends it to each in an encrypted direct message. Or send it
-                     yourself - they add it here, or with the button under it. Anyone who has it can read this room.</p>
-                  <code class="chat-room-key-text chat-mono" id="room_key_share_text" aria-label="The room key"></code>
-                  <div class="chat-room-key-actions">
-                     <button type="button" class="chat-btn chat-btn--small" id="room_key_copy" onclick="do_copy_room_key( )">Copy</button>
-                  </div>
-               </div>
-               <div class="chat-error-text" id="room_key_error" role="alert"></div>
             </div>
             <!-- NOTE: Leaving a room - asked again in place (Ian, 2026-10-12). -->
             <div class="chat-room-leave" id="room_leave_row" hidden>
@@ -454,6 +426,50 @@ http://www.opensource.org/licenses/mit-license.php.
          <button type="submit" class="chat-btn chat-btn--accent" id="room_dialog_submit">Create</button>
       </div>
    </form>
+</div>
+
+<!-- NOTE: The Room key dialog (Ian, 2026-10-28: "Make" and "Add" rarely needed once every room has a key, so tucked away) - the
+     owner makes, sends and shares it, anyone adds or removes it ("chat_keys.js"). -->
+<div id="room_key_dialog" class="chat-scrim" hidden onclick="if( event.target === this ) do_close_room_key_dialog( );">
+   <div class="chat-dialog chat-room-key-dialog" role="dialog" aria-modal="true" aria-labelledby="room_key_dialog_title">
+      <h2 id="room_key_dialog_title" tabindex="-1">Room key</h2>
+      <p class="chat-dialog-note" id="room_key_dialog_state"></p>
+      <div class="chat-room-key-actions" id="room_key_none_actions" hidden>
+         <button type="button" class="chat-btn" id="room_key_make" onclick="do_make_room_key( )">Make a room key</button>
+         <button type="button" class="chat-btn" id="room_key_add_open" onclick="do_open_add_room_key( )">Add a room key</button>
+      </div>
+      <div class="chat-room-key-add" id="room_key_add_part" hidden>
+         <!-- NOTE: A box that wraps, so all of a key is seen as it is pasted (Ian, 2026-10-26: the field was too small);
+              Enter adds it. -->
+         <label class="chat-label" for="room_key_add_input">The room key, or the whole message it came in</label>
+         <textarea class="chat-field chat-mono chat-room-key-input" id="room_key_add_input" rows="3" autocomplete="off"
+          autocapitalize="off" spellcheck="false"
+          onkeydown="if( ( event.key === 'Enter' ) &amp;&amp; !event.shiftKey ) { event.preventDefault( ); do_add_room_key( ); }"></textarea>
+         <div class="chat-room-key-actions">
+            <button type="button" class="chat-btn chat-btn--accent" id="room_key_add_go" onclick="do_add_room_key( )">Add</button>
+            <button type="button" class="chat-btn" onclick="do_cancel_add_room_key( )">Cancel</button>
+         </div>
+      </div>
+      <div class="chat-room-key-actions" id="room_key_have_actions" hidden>
+         <button type="button" class="chat-btn" id="room_key_send" onclick="do_send_room_key( )">Send to members</button>
+         <button type="button" class="chat-btn" id="room_key_share" onclick="do_share_room_key( )">Share the key</button>
+         <button type="button" class="chat-btn" id="room_key_remove" onclick="do_remove_room_key( )">Remove the key</button>
+      </div>
+      <!-- NOTE: What came of sending the key to the members ("chat_send_room_key( )", 2026-10-27). -->
+      <div class="chat-room-key-note chat-room-key-sent" id="room_key_sent" role="status"></div>
+      <div class="chat-room-key-share" id="room_key_share_part" hidden>
+         <p class="chat-room-key-note">Send to members sends it to each in an encrypted direct message. Or send it
+            yourself - they add it with Room key… in Room Details, or with the button under it. Anyone who has it can read this room.</p>
+         <code class="chat-room-key-text chat-mono" id="room_key_share_text" aria-label="The room key"></code>
+         <div class="chat-room-key-actions">
+            <button type="button" class="chat-btn" id="room_key_copy" onclick="do_copy_room_key( )">Copy</button>
+         </div>
+      </div>
+      <div class="chat-error-text" id="room_key_error" role="alert"></div>
+      <div class="chat-dialog-actions">
+         <button type="button" class="chat-btn" id="room_key_dialog_close" onclick="do_close_room_key_dialog( )">Close</button>
+      </div>
+   </div>
 </div>
 
 <!-- ================================================================

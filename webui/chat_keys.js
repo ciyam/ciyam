@@ -297,7 +297,8 @@ async function chat_seal_with( secret, text )
    return { sealed: true, text: await ciyam_module_named( "secure_message" ).seal( secret, text ) };
 }
 
-// ---- Room keys (Ian, 2026-10-25) - made or added under Room Details, or from one shared in an encrypted direct message
+// ---- Room keys (Ian, 2026-10-25) - made with a new room (Ian, 2026-10-28), in the Room key dialog, or added from one shared in an
+// encrypted direct message
 
 // NOTE: The room key for "room" set - or taken away, with "" - on the node's latest copy of the keys (another browser, or My
 // account, may have changed them since they were read), locked again and sent. "" when done, else what to say.
@@ -396,11 +397,18 @@ function chat_random_room_key( )
    return Array.from( crypto.getRandomValues( new Uint8Array( 16 ) ), function( b ) { return b.toString( 16 ).padStart( 2, "0" ); } ).join( "" );
 }
 
-// NOTE: The room the Room key part was last drawn for - a change of room puts away what was open there.
+// NOTE: The room the Room key part was last drawn for - a change of room puts away what was open there, the dialog too.
 var g_room_key_drawn_for = "";
 var g_room_key_busy = false;
 
-// NOTE: The Room key part of Room Details - what this browser can do in the open room.
+// NOTE: Only the owner makes, sends and shares a room's key (Damon, 2026-10-27: a member given the key was offered Make) - only
+// the owner's is added by itself as it arrives, so a member's could split the room between two keys. Members add or remove one.
+function chat_is_room_owner( )
+{
+   return ( g_room_owner !== "" ) && ( g_room_owner === ciyam.username );
+}
+
+// NOTE: The Room key part of Room Details - what it is - and the Room key dialog, with what this browser can do in the open room.
 function chat_render_room_key( )
 {
    var part = document.getElementById( "room_key_part" );
@@ -413,9 +421,12 @@ function chat_render_room_key( )
       g_room_key_drawn_for = g_room;
 
       chat_room_key_reset( );
+
+      document.getElementById( "room_key_dialog" ).hidden = true;
    }
 
    var key = chat_room_key( g_room );
+   var owner = chat_is_room_owner( );
    var state = "";
 
    if( !can_have_room_key( g_room, g_room_name ) || ( g_chat_keys === null ) )
@@ -424,28 +435,68 @@ function chat_render_room_key( )
       state = "Your keys could not be read just now - reload the page to use a room key.";
    else if( !g_chat_keys )
       state = "Not encrypted. To use a room key, set up your keys on My account.";
-   else if( key === "" )
+   else if( key !== "" )
+      state = "Encrypted with the room key - members without it see your messages as unreadable.";
+   else if( owner )
       state = "Not encrypted - messages here are sent as they are.";
    else
-      state = "Encrypted with the room key - members without it see your messages as unreadable.";
+      state = "Not encrypted - messages here are sent as they are. If the owner has a room key, they can send it to you.";
 
    part.hidden = ( state === "" );
 
    document.getElementById( "room_key_state" ).textContent = state;
+   document.getElementById( "room_key_dialog_state" ).textContent = state;
+   document.getElementById( "room_key_open" ).hidden = !g_chat_keys;
+
+   // NOTE: Nothing to do there without keys - the dialog put away if they are forgotten meanwhile.
+   if( !g_chat_keys || ( state === "" ) )
+      document.getElementById( "room_key_dialog" ).hidden = true;
+
    document.getElementById( "room_key_none_actions" ).hidden = !g_chat_keys || ( key !== "" )
     || !document.getElementById( "room_key_add_part" ).hidden;
    document.getElementById( "room_key_have_actions" ).hidden = !g_chat_keys || ( key === "" );
 
+   document.getElementById( "room_key_make" ).hidden = !owner;
+   document.getElementById( "room_key_send" ).hidden = !owner;
+   document.getElementById( "room_key_share" ).hidden = !owner;
+
    // NOTE: A group's direct message is encrypted in one go ("do_make_room_key( )").
    document.getElementById( "room_key_make" ).textContent = room_is_dm( ) ? "Encrypt this conversation" : "Make a room key";
 
-   if( key === "" )
+   if( ( key === "" ) || !owner )
       chat_hide_room_key_share( );
 
    [ "room_key_make", "room_key_add_open", "room_key_add_go", "room_key_send", "room_key_share", "room_key_remove" ].forEach( function( id )
    {
       document.getElementById( id ).disabled = g_room_key_busy;
    } );
+}
+
+function do_open_room_key_dialog( )
+{
+   chat_room_key_reset( );
+   chat_render_room_key( );
+
+   var dialog = document.getElementById( "room_key_dialog" );
+
+   dialog.hidden = false;
+
+   var first = Array.prototype.slice.call( dialog.querySelectorAll( "button" ) ).filter( function( button )
+   {
+      return button.offsetParent !== null;
+   } )[ 0 ];
+
+   ( first || document.getElementById( "room_key_dialog_close" ) ).focus( );
+}
+
+function do_close_room_key_dialog( )
+{
+   document.getElementById( "room_key_dialog" ).hidden = true;
+
+   chat_room_key_reset( );
+   chat_render_room_key( );
+
+   document.getElementById( "room_key_open" ).focus( );
 }
 
 function chat_room_key_reset( )
@@ -487,21 +538,23 @@ async function chat_room_key_change( room, key )
 
 async function do_make_room_key( )
 {
+   var room = g_room;
+
    // NOTE: A group's direct message is encrypted in one go - the key made and sent to each of them (Damon, 2026-10-27).
    if( room_is_dm( ) )
    {
-      if( confirm( "Encrypt this conversation? A key is made for it and sent to each of its people in an encrypted direct message"
-       + " - one is started with anyone you have none with yet." ) )
-         chat_encrypt_group( g_room, chat_room_people( ) );
+      var people = chat_room_people( );
+
+      if( await ask_dialog( { title: "Encrypt this conversation?", text: "A key is made for it and sent to each of its people in an"
+       + " encrypted direct message - one is started with anyone you have none with yet.", yes: "Encrypt it" } ) && ( g_room === room ) )
+         chat_encrypt_group( room, people );
 
       return;
    }
 
-   if( !confirm( "Make a key for this room? From now on your messages here are encrypted - members can read them once you've sent"
-    + " them the key in an encrypted direct message." ) )
+   if( !await ask_dialog( { title: "Make a key for this room?", text: "From now on your messages here are encrypted - members can"
+    + " read them once you've sent them the key with Send to members.", yes: "Make the key" } ) || ( g_room !== room ) )
       return;
-
-   var room = g_room;
 
    if( await chat_room_key_change( room, chat_random_room_key( ) ) && ( g_room === room ) )
       do_share_room_key( );
@@ -548,20 +601,61 @@ async function chat_encrypt_group( room, people )
       chat_room_key_sent( room, text );
 }
 
-function chat_room_key_sent( room, text )
+// NOTE: Said in the Room key dialog, and in the alert after "lead" (what was done, an invitation say) - "Room key:" there, as the
+// alert is seen with the dialog shut.
+function chat_room_key_sent( room, text, lead )
 {
    if( g_room === room )
       document.getElementById( "room_key_sent" ).textContent = text;
 
-   show_alert( text, "is-info" );
+   show_alert( ( lead ? lead + " " : "" ) + "Room key: " + text, "is-info" );
+}
+
+// NOTE: Every new room keyed (Ian, 2026-10-28) - a key made as it is created and sent to each invited in an encrypted direct message,
+// as a group's is ("chat_encrypt_group( )"). Without keys of one's own the room is made as it was, Room Details saying why it is
+// not encrypted.
+async function chat_key_new_room( room, invitees )
+{
+   var entry = find_room( room );
+
+   if( !g_chat_keys || g_chat_keys_unread || !entry || !can_have_room_key( room, entry.name ) || ( chat_room_key( room ) !== "" ) )
+      return;
+
+   if( invitees.length > 0 )
+      await chat_encrypt_group( room, invitees );
+   else
+      await chat_room_key_change( room, chat_random_room_key( ) );
+}
+
+// NOTE: Anyone invited later is sent the key too (Ian, 2026-10-28) - by the owner, as only the owner's is added by itself. What came
+// of it, or "" if nothing was sent.
+async function chat_send_key_to_invited( room, names )
+{
+   var entry = find_room( room );
+
+   if( !entry || ( entry.owner !== ciyam.username ) || ( chat_room_key( room ) === "" ) )
+      return "";
+
+   g_room_key_busy = true;
+
+   chat_render_room_key( );
+
+   var text = await chat_send_room_key( room, names );
+
+   g_room_key_busy = false;
+
+   chat_render_room_key( );
+
+   return text;
 }
 
 async function do_send_room_key( )
 {
-   if( !confirm( "Send the key to each member in an encrypted direct message? One is started with anyone you have none with yet." ) )
-      return;
-
    var room = g_room;
+
+   if( !await ask_dialog( { title: "Send the key to each member?", text: "In an encrypted direct message - one is started with anyone"
+    + " you have none with yet.", yes: "Send it" } ) || ( g_room !== room ) )
+      return;
 
    g_room_key_busy = true;
 
@@ -738,11 +832,11 @@ function do_copy_room_key( )
 
 async function do_remove_room_key( )
 {
-   if( !confirm( "Remove this room's key from your keys? Messages sealed with it can't be read here any more, and yours are sent"
-    + " unencrypted - unless it's added again." ) )
-      return;
-
    var room = g_room;
+
+   if( !await ask_dialog( { title: "Remove this room's key?", text: "Messages sealed with it can't be read here any more, and yours"
+    + " are sent unencrypted - unless it's added again.", yes: "Remove it", danger: true } ) || ( g_room !== room ) )
+      return;
    var removed = chat_room_key( room );
 
    if( await chat_room_key_change( room, "" ) && ( removed !== "" ) )
@@ -858,12 +952,13 @@ function chat_offer_room_key( element, text )
 
    button.textContent = offered;
 
-   button.addEventListener( "click", function( )
+   button.addEventListener( "click", async function( )
    {
       var now = g_chat_keys ? ( g_chat_keys.rooms[ shared.room ] || "" ) : "";
 
-      if( ( now !== "" ) && ( now !== shared.key ) && !confirm( "You already have a key for " + entry.name + ". Use this one"
-       + " instead? Your messages there will be encrypted with it - only those who have this key can read them." ) )
+      if( ( now !== "" ) && ( now !== shared.key ) && !await ask_dialog( { title: "Use this key for " + entry.name + "?",
+       text: "You already have a key for it. Your messages there will be encrypted with this one - only those who have it can read"
+       + " them.", yes: "Use this key", danger: true } ) )
          return;
 
       save( false );
