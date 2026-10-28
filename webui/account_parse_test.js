@@ -185,6 +185,10 @@ check( "- an error, or not locked keys, unreadable", [ ap.keys_state( true, "Err
  ap.keys_state( false, "UK4:" + locked.substring( 4 ) ), ap.keys_state( false, locked.replace( ":9a9e:", ":9a9:" ) ) ],
  [ "unreadable", "unreadable", "unreadable", "unreadable" ] );
 
+check( "the last step of joining - Later until the keys are set up, then on to the chat", [ ap.keys_onboard_text( false ).button,
+ ap.keys_onboard_text( false ).primary, ap.keys_onboard_text( true ).button, ap.keys_onboard_text( true ).primary ],
+ [ "Later - open the chat", false, "Open the chat", true ] );
+
 var draws = [ 0.99, 0, 0.5 ];
 
 check( "words to check back - three different, in order", [ ap.keys_check_indexes( function( ) { return draws.shift( ); } ),
@@ -213,9 +217,9 @@ check( "- the one an address asks for, else the first", [ ap.account_section( "#
  ap.account_section( "#mine" ), ap.account_section( "" ), ap.account_section( "#keys=00ff" ) ], [ "devices", "keys", "profile", "profile", "profile" ] );
 check( "the room keys kept - none, one, or several in order", [ ap.room_keys_text( { } ), ap.room_keys_text( { "0000069": "ab" } ),
  ap.room_keys_text( { "0000072": "cd", "0000069": "ab", "0000070": "ef" } ) ], [
- "None yet. A room's owner makes one in the chat, under Room Details, and sends it to each member.",
- "Kept for room #0000069. Made, shared and removed in the chat, under Room Details.",
- "Kept for rooms #0000069, #0000070 and #0000072. Made, shared and removed in the chat, under Room Details." ] );
+ "None yet. A room gets one in the chat as it is made, and its owner sends it to each member.",
+ "Kept for room #0000069. Made, shared and removed in the chat, with Room key in Room Details.",
+ "Kept for rooms #0000069, #0000070 and #0000072. Made, shared and removed in the chat, with Room key in Room Details." ] );
 
 console.log( "" );
 console.log( failures === 0 ? "All checks passed." : ( failures + " check(s) FAILED." ) );

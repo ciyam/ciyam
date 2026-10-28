@@ -405,19 +405,32 @@ function room_keys_text( rooms )
    var numbers = Object.keys( rooms || { } ).filter( function( room ) { return /^[0-9]{7}$/.test( room ); } ).sort( );
 
    if( numbers.length === 0 )
-      return "None yet. A room's owner makes one in the chat, under Room Details, and sends it to each member.";
+      return "None yet. A room gets one in the chat as it is made, and its owner sends it to each member.";
 
    var named = numbers.map( function( room ) { return "#" + room; } );
    var listed = ( named.length === 1 ) ? named[ 0 ] : named.slice( 0, -1 ).join( ", " ) + " and " + named[ named.length - 1 ];
 
    return "Kept for " + ( ( named.length === 1 ) ? "room " : "rooms " ) + listed + ". Made, shared and removed in the chat,"
-    + " under Room Details.";
+    + " with Room key in Room Details.";
+}
+
+// NOTE: Keys as the last step of joining (Damon, 2026-10-28) - after "Write these down", at the top of Your keys: why, and
+// "Later" until they are set up ("have"), then on to the chat. Skipped, Profile and Home remind until they are.
+function keys_onboard_text( have )
+{
+   if( have )
+      return { text: "Your keys are set up - people can now send you encrypted messages and room keys.", button: "Open the chat",
+       primary: true };
+
+   return { text: "Last step: your keys. With them, people can send you encrypted messages and room keys. It takes a minute - or"
+    + " set them up later, here under Your keys.", button: "Later - open the chat", primary: false };
 }
 
 if( typeof module !== "undefined" )
 {
    module.exports = {
       account_sections: account_sections,
+      keys_onboard_text: keys_onboard_text,
       account_section: account_section,
       room_keys_text: room_keys_text,
       parse_devices: parse_devices,

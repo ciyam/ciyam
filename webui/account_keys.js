@@ -233,6 +233,10 @@ function keys_show( part )
    document.getElementById( "contacts_need_keys" ).hidden = here || looking;
    document.getElementById( "device_add_part" ).hidden = !here;
    document.getElementById( "device_need_keys" ).hidden = here || looking;
+
+   // NOTE: The last step of joining, and Profile's reminder ("account.js").
+   if( typeof onboard_draw === "function" )
+      onboard_draw( part );
 }
 
 // NOTE: Words shown, and perhaps written down, but not yet saved - for the switcher's warning on leaving ("unsent_work( )").

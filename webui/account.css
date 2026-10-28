@@ -376,6 +376,56 @@ h2[tabindex="-1"]:focus
    margin-top: 16px;
 }
 
+/* NOTE: Which step of joining (Damon, 2026-10-28) - at the end of the brand's row, and over the band at the top of Your keys. */
+.account-step
+{
+   display: block;
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 600;
+   letter-spacing: 0.06em;
+   text-transform: uppercase;
+   color: var(--color-chat-accent-deep);
+}
+
+.chat-brand .account-step
+{
+   margin-left: auto;
+}
+
+/* NOTE: The last step of joining, at the top of Your keys, and Profile's reminder when it was skipped. */
+.account-callout
+{
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   justify-content: space-between;
+   gap: 12px 18px;
+   max-width: 640px;
+   padding: 14px 18px;
+   border: 1px solid var(--color-chat-border-selected);
+   border-radius: var(--radius-md);
+   background: var(--color-chat-bg-selected);
+   color: var(--color-chat-text-strong);
+   font-size: var(--font-size-chat-body);
+   line-height: 1.5;
+}
+
+.account-callout[hidden]
+{
+   display: none;
+}
+
+.account-callout p
+{
+   flex: 1 1 280px;
+   margin: 0;
+}
+
+.account-callout .account-step
+{
+   margin: 0 0 2px;
+}
+
 .account-facts
 {
    display: flex;

@@ -756,6 +756,8 @@ function clear_session( )
 {
    unlink_others( );
 
+   g_onboarding = false;
+
    if( typeof keys_clear === "function" )
       keys_clear( );
 
@@ -1483,6 +1485,10 @@ function remember_pin( pin )
    }
 }
 
+// NOTE: Keys as the last step of joining (Damon, 2026-10-28) - set after "Write these down", until the chat is opened from the
+// band at the top of Your keys ("onboard_draw( )"), or the account signs out.
+var g_onboarding = false;
+
 function show_written( pin, username )
 {
    [ "join_code", "join_pin", "join_username", "join_password", "join_confirm" ].forEach( function( id )
@@ -1501,6 +1507,12 @@ function show_written( pin, username )
    document.getElementById( "written_username" ).textContent = username;
    document.getElementById( "written_check" ).checked = false;
 
+   // NOTE: Not signed in by the claim - no keys to set up here, so two steps, and on to the chat's own sign in.
+   var signed_in = ( ciyam.sessid !== "" );
+
+   document.getElementById( "written_step" ).textContent = signed_in ? "Step 2 of 3" : "Step 2 of 2";
+   document.getElementById( "written_open" ).textContent = signed_in ? "Next: your keys" : "Open the chat";
+
    update_written( );
 
    show_view( "written_view" );
@@ -1511,6 +1523,54 @@ function show_written( pin, username )
 function update_written( )
 {
    document.getElementById( "written_open" ).disabled = !document.getElementById( "written_check" ).checked;
+}
+
+// NOTE: On to Your keys, the last step - the band at its top says why, and offers the chat for later.
+function do_written_next( )
+{
+   if( ciyam.sessid === "" )
+   {
+      do_open_chat( );
+
+      return;
+   }
+
+   g_onboarding = true;
+
+   history.replaceState( null, "", window.location.pathname + window.location.search + "#keys" );
+
+   enter_app( );
+}
+
+// NOTE: The band at the top of Your keys while joining - "part" the part of the keys card shown ("keys_show( )"). And Profile's
+// reminder, while there are none.
+function onboard_draw( part )
+{
+   document.getElementById( "keys_reminder" ).hidden = ( part !== "keys_none" );
+
+   var band = document.getElementById( "keys_onboard" );
+
+   band.hidden = !g_onboarding;
+
+   if( !g_onboarding )
+      return;
+
+   var said = keys_onboard_text( part === "keys_here" );
+   var go = document.getElementById( "keys_onboard_go" );
+
+   document.getElementById( "keys_onboard_text" ).textContent = said.text;
+
+   go.textContent = said.button;
+   go.className = "chat-btn" + ( said.primary ? " chat-btn--primary" : "" );
+}
+
+function do_onboard_open_chat( )
+{
+   g_onboarding = false;
+
+   document.getElementById( "keys_onboard" ).hidden = true;
+
+   do_open_chat( );
 }
 
 // NOTE: Signed in by the claim, the chat opens on this session - no second sign in - and this page
