@@ -310,6 +310,10 @@ check( "needs you - a request and an invitation", hp.needs_you( invitations, "ve
  { kind: "request", text: "bob wants to message you.", detail: "Message request", inviter: "bob", room: "0000011" },
  { kind: "invitation", text: "carol invited you to Recipes", detail: "Room invitation", inviter: "carol", room: "0000012" } ] );
 check( "needs you - nothing", hp.needs_you( [ ], "verify-a" ), [ ] );
+check( "needs you - keys not set up, first", hp.needs_you( invitations, "verify-a", true ).map( function( item ) { return item.kind; } ),
+ [ "keys", "request", "invitation" ] );
+check( "- said as such", hp.needs_you( [ ], "verify-a", true ), [ { kind: "keys", text: "Set up your keys",
+ detail: "So people can send you encrypted messages and room keys", inviter: "", room: "" } ] );
 
 check( "a device shortened", hp.short_device( "6034a59f4554116a" ), "6034a5…116a" );
 check( "a short one kept", hp.short_device( "abc" ), "abc" );

@@ -155,6 +155,8 @@ ok   requests only, plural
 ok   nothing new
 ok   needs you - a request and an invitation
 ok   needs you - nothing
+ok   needs you - keys not set up, first
+ok   - said as such
 ok   a device shortened
 ok   a short one kept
 ok   the devices

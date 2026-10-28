@@ -622,10 +622,14 @@ function chat_summary_text( summary )
 }
 
 // NOTE: "Needs you" - each invitation waiting, said as the chat says it, a message request first by
-// kind. They are answered in the chat.
-function needs_you( invitations, me )
+// kind. They are answered in the chat. First, keys not set up ("no_keys" - skipped while joining, say; Damon,
+// 2026-10-28), set up on My account.
+function needs_you( invitations, me, no_keys )
 {
-   return ( invitations || [ ] ).map( function( invite )
+   var keys = no_keys ? [ { kind: "keys", text: "Set up your keys", detail: "So people can send you encrypted messages and room keys",
+    inviter: "", room: "" } ] : [ ];
+
+   return keys.concat( ( invitations || [ ] ).map( function( invite )
    {
       var request = is_dm_name( invite.name );
 
@@ -636,7 +640,7 @@ function needs_you( invitations, me )
          inviter: invite.inviter,
          room: invite.room
       };
-   } );
+   } ) );
 }
 
 // NOTE: A device token shortened for a list - the first six and last four characters, as the accounts page

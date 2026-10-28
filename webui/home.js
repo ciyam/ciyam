@@ -1410,6 +1410,8 @@ async function enter_app( )
    g_starting_messages = [ ];
    g_starting_total = -1;
    g_devices = [ ];
+   g_no_keys = false;
+   g_keys_known = false;
 
    render_member_home( );
 
@@ -1433,6 +1435,11 @@ var g_starting_messages = [ ];
 var g_starting_total = -1;
 var g_devices = [ ];
 var g_refresh_timer = null;
+
+// NOTE: Whether the account's keys are not set up - asked at each look until they are (Damon, 2026-10-28: a reminder in Needs
+// you, keys being skippable as the last step of joining).
+var g_no_keys = false;
+var g_keys_known = false;
 
 function devices_url( )
 {
@@ -1524,6 +1531,24 @@ async function load_member_home( )
 
    g_devices = is_error_response( devices ) ? [ ] : parse_devices( devices, ciyam.device );
 
+   if( !g_keys_known )
+   {
+      var keys = await request( function( done )
+      {
+         return ciyam.fetch( ciyam.get_cws_url( ) + "/user-keys?access=" + ciyam.access + "&device=" + ciyam.device + "&format=text&session="
+          + ciyam.sessid, "GET", done );
+      } );
+
+      if( ciyam.access !== asked_for )
+         return;
+
+      // NOTE: Only "none" is said - an error, or keys this browser cannot read, is My account's to explain.
+      var state = keys_state( false, keys );
+
+      g_no_keys = ( state === "none" );
+      g_keys_known = ( state === "elsewhere" );
+   }
+
    render_member_home( );
 }
 
@@ -1549,7 +1574,7 @@ function render_member_home( )
 
    // ---- Needs you
    var list = document.getElementById( "needs_list" );
-   var items = needs_you( invitations, ciyam.username );
+   var items = needs_you( invitations, ciyam.username, g_no_keys );
 
    list.replaceChildren( );
 
@@ -1561,10 +1586,10 @@ function render_member_home( )
 
       var avatar = document.createElement( "span" );
 
-      avatar.className = "shell-avatar" + ( ( item.kind === "invitation" ) ? " is-room" : "" );
-      avatar.textContent = ( item.kind === "invitation" ) ? "#" : user_initial( item.inviter );
+      avatar.className = "shell-avatar" + ( ( item.kind !== "request" ) ? " is-room" : "" );
+      avatar.textContent = { invitation: "#", keys: "🔑" }[ item.kind ] || user_initial( item.inviter );
 
-      if( item.kind !== "invitation" )
+      if( item.kind === "request" )
          avatar.style.background = "var(--color-sender-" + sender_colour_index( item.inviter ) + ")";
 
       var text = document.createElement( "span" );
@@ -1588,8 +1613,17 @@ function render_member_home( )
 
       answer.className = "chat-btn home-need-answer";
       answer.href = "#";
-      answer.textContent = "Answer in Chat";
-      shell_bind_link( answer, function( event ) { open_app_by_key( "chat", "", event ); } );
+
+      if( item.kind === "keys" )
+      {
+         answer.textContent = "Set them up";
+         shell_bind_link( answer, function( event ) { open_app_by_key( "account", "#keys", event ); } );
+      }
+      else
+      {
+         answer.textContent = "Answer in Chat";
+         shell_bind_link( answer, function( event ) { open_app_by_key( "chat", "", event ); } );
+      }
 
       row.appendChild( avatar );
       row.appendChild( text );
