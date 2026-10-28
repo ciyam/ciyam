@@ -5127,8 +5127,9 @@ async function do_send( )
    var sent = escape_message_text( text );
 
    // NOTE: Sealed in a direct message with a key for the other person, or in a room with a room key ("chat_keys.js", 2026-10-25
-   // and 26) - as it is, CRs and all, as nothing in it needs escaping. Not an edit, nor a message for some only: those go as before.
-   if( ( g_edit_unique === "" ) && ( g_recipients.length === 0 ) )
+   // and 26) - as it is, CRs and all, as nothing in it needs escaping. A message for some only too, as the console seals them (Ian's
+   // "d18eb1e2", 2026-10-27: kept as "!X\r..."). Not an edit: that goes as before.
+   if( g_edit_unique === "" )
    {
       var sealing = await chat_seal_here( text );
 
