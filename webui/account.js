@@ -506,7 +506,7 @@ function route( )
 
 function show_view( id )
 {
-   [ "linking_view", "signin_view", "welcome_view", "written_view", "app_view" ].forEach( function( view )
+   [ "linking_view", "signin_view", "welcome_view", "written_view", "keys_step_view", "app_view" ].forEach( function( view )
    {
       document.getElementById( view ).hidden = ( view !== id );
    } );
@@ -608,8 +608,26 @@ function build_shell( )
    {
       var go = function( ) { show_section( section.key ); };
 
-      rail_sections.appendChild( shell_rail_item( section.key, section.title, false, go ) );
-      chips.appendChild( shell_chip( section.key, section.title, go ) );
+      var item = shell_rail_item( section.key, section.title, false, go );
+      var chip = shell_chip( section.key, section.title, go );
+
+      // NOTE: Your keys' badge - 1 while there are none ("onboard_draw( )"), as Home counts what needs admin beside Health.
+      if( section.key === "keys" )
+      {
+         [ item, chip ].forEach( function( element )
+         {
+            var badge = document.createElement( "span" );
+
+            badge.className = "shell-badge";
+            badge.dataset.badge = "keys";
+            badge.hidden = true;
+
+            element.appendChild( badge );
+         } );
+      }
+
+      rail_sections.appendChild( item );
+      chips.appendChild( chip );
    } );
 
    var name = account_display_name( ciyam.username, ciyam.is_admin );
@@ -757,6 +775,8 @@ function clear_session( )
    unlink_others( );
 
    g_onboarding = false;
+
+   keys_card_return( );
 
    if( typeof keys_clear === "function" )
       keys_clear( );
@@ -1485,9 +1505,10 @@ function remember_pin( pin )
    }
 }
 
-// NOTE: Keys as the last step of joining (Damon, 2026-10-28) - set after "Write these down", until the chat is opened from the
-// band at the top of Your keys ("onboard_draw( )"), or the account signs out.
+// NOTE: Keys as the last step of joining (Damon, 2026-10-28) - set after "Write these down", until the step is ended (Skip, or Open
+// the chat), or the account signs out. Your keys' card is brought into the step meanwhile - "g_keys_card_home" where it goes back.
 var g_onboarding = false;
+var g_keys_card_home = null;
 
 function show_written( pin, username )
 {
@@ -1537,40 +1558,69 @@ function do_written_next( )
 
    g_onboarding = true;
 
-   history.replaceState( null, "", window.location.pathname + window.location.search + "#keys" );
+   var card = document.getElementById( "mine_keys" );
 
-   enter_app( );
+   g_keys_card_home = { parent: card.parentNode, next: card.nextSibling };
+
+   document.getElementById( "keys_step_host" ).appendChild( card );
+
+   onboard_draw( "keys_loading" );
+
+   show_view( "keys_step_view" );
+
+   document.getElementById( "keys_step_title" ).focus( { preventScroll: true } );
+
+   render_keys( );
 }
 
-// NOTE: The band at the top of Your keys while joining - "part" the part of the keys card shown ("keys_show( )"). And Profile's
-// reminder, while there are none.
+// NOTE: Your keys' card back where it belongs, once the step has ended.
+function keys_card_return( )
+{
+   if( g_keys_card_home === null )
+      return;
+
+   g_keys_card_home.parent.insertBefore( document.getElementById( "mine_keys" ), g_keys_card_home.next );
+
+   g_keys_card_home = null;
+}
+
+// NOTE: Skip, or Open the chat once they are set up - on to the chat, and this page to My account, which says what needs you.
+function do_keys_step_end( )
+{
+   g_onboarding = false;
+
+   keys_card_return( );
+
+   do_open_chat( );
+}
+
+// NOTE: As the keys card changes - "part" the part shown ("keys_show( )"): the last step of joining, while it is open, and what
+// needs you on My account - Profile's card and Your keys' badge - while there are no keys.
 function onboard_draw( part )
 {
-   document.getElementById( "keys_reminder" ).hidden = ( part !== "keys_none" );
+   var none = ( part === "keys_none" );
 
-   var band = document.getElementById( "keys_onboard" );
+   document.getElementById( "keys_reminder" ).hidden = !none;
 
-   band.hidden = !g_onboarding;
+   document.querySelectorAll( "[data-badge='keys']" ).forEach( function( badge )
+   {
+      badge.textContent = "1";
+      badge.hidden = !none;
+   } );
 
    if( !g_onboarding )
       return;
 
-   var said = keys_onboard_text( part === "keys_here" );
-   var go = document.getElementById( "keys_onboard_go" );
+   var here = ( part === "keys_here" );
+   var said = keys_step_text( here );
 
-   document.getElementById( "keys_onboard_text" ).textContent = said.text;
+   document.getElementById( "keys_step_title" ).textContent = said.title;
+   document.getElementById( "keys_step_lede" ).textContent = said.text;
 
-   go.textContent = said.button;
-   go.className = "chat-btn" + ( said.primary ? " chat-btn--primary" : "" );
-}
-
-function do_onboard_open_chat( )
-{
-   g_onboarding = false;
-
-   document.getElementById( "keys_onboard" ).hidden = true;
-
-   do_open_chat( );
+   // NOTE: Create keys and Skip until the words are being made - the card's own buttons then - and Open the chat once saved.
+   document.getElementById( "keys_step_choose" ).hidden = !none && ( part !== "keys_loading" );
+   document.getElementById( "keys_step_create" ).disabled = !none;
+   document.getElementById( "keys_step_done" ).hidden = !here;
 }
 
 // NOTE: Signed in by the claim, the chat opens on this session - no second sign in - and this page

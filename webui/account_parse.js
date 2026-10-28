@@ -414,23 +414,23 @@ function room_keys_text( rooms )
     + " with Room key in Room Details.";
 }
 
-// NOTE: Keys as the last step of joining (Damon, 2026-10-28) - after "Write these down", at the top of Your keys: why, and
-// "Later" until they are set up ("have"), then on to the chat. Skipped, Profile and Home remind until they are.
-function keys_onboard_text( have )
+// NOTE: Keys as the last step of joining (Damon, 2026-10-28) - after "Write these down", in the same card: what they are for, then
+// Create keys or Skip; once set up ("have"), on to the chat. Skipped, My account and Home say they need setting up until they are.
+function keys_step_text( have )
 {
    if( have )
-      return { text: "Your keys are set up - people can now send you encrypted messages and room keys.", button: "Open the chat",
-       primary: true };
+      return { title: "Your keys are set up", text: "People can now send you encrypted messages and room keys. Keep your twelve words"
+       + " safe - they are the only way to get your keys back." };
 
-   return { text: "Last step: your keys. With them, people can send you encrypted messages and room keys. It takes a minute - or"
-    + " set them up later, here under Your keys.", button: "Later - open the chat", primary: false };
+   return { title: "Last step: your keys", text: "Your keys let people send you encrypted messages and room keys that only you can"
+    + " read. They come from twelve words you write down, and take a minute. You can skip this and set them up later on My account." };
 }
 
 if( typeof module !== "undefined" )
 {
    module.exports = {
       account_sections: account_sections,
-      keys_onboard_text: keys_onboard_text,
+      keys_step_text: keys_step_text,
       account_section: account_section,
       room_keys_text: room_keys_text,
       parse_devices: parse_devices,

@@ -581,88 +581,6 @@
    color: var(--color-chat-text-secondary);
 }
 
-.home-attention
-{
-   margin-bottom: 8px;
-   border: 1px solid var(--color-chat-warning-border);
-   border-radius: var(--radius-lg);
-   background: var(--color-chat-bg);
-   overflow: hidden;
-}
-
-.home-attention-head
-{
-   display: flex;
-   flex-wrap: wrap;
-   align-items: baseline;
-   justify-content: space-between;
-   gap: 8px;
-   padding: 16px 22px 12px;
-   border-bottom: 1px solid var(--color-chat-rule);
-}
-
-.home-attention-head h2
-{
-   margin: 0;
-   font-size: 17px;
-   font-weight: 600;
-}
-
-.home-attention-list
-{
-   margin: 0;
-   padding: 0;
-   list-style: none;
-}
-
-.home-attention-item
-{
-   display: flex;
-   align-items: center;
-   gap: 12px;
-   padding: 14px 22px;
-}
-
-.home-attention-item + .home-attention-item
-{
-   border-top: 1px solid var(--color-chat-rule);
-}
-
-.home-attention-dot
-{
-   flex: none;
-   width: 10px;
-   height: 10px;
-   border-radius: 5px;
-   background: var(--color-chat-warning);
-}
-
-.home-attention-item.is-problem .home-attention-dot
-{
-   background: var(--color-chat-critical);
-}
-
-.home-attention-body
-{
-   flex: 1 1 240px;
-   min-width: 0;
-   display: flex;
-   flex-direction: column;
-   gap: 2px;
-}
-
-.home-attention-detail
-{
-   font-size: 13px;
-   color: var(--color-chat-text-secondary);
-   overflow-wrap: anywhere;
-}
-
-.home-attention-item > .chat-btn
-{
-   flex: none;
-}
-
 #attention_rest
 {
    margin: 0 0 24px;
@@ -1275,16 +1193,6 @@
    {
       grid-template-columns: minmax( 0, 1fr );
       gap: 12px;
-   }
-
-   .home-attention-item
-   {
-      flex-wrap: wrap;
-   }
-
-   .home-attention-item > .chat-btn
-   {
-      margin-left: 22px;
    }
 
    .home-room-bars li

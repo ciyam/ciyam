@@ -147,6 +147,34 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </div>
 
+<!-- ================================================================ your keys, the last step -->
+<!-- NOTE: Keys as the last step of joining (Damon, 2026-10-28: in the same card as making the account, not My account) - Your keys'
+     card is brought in to "keys_step_host" for it ("do_written_next( )"), its own first part and last left out for Create keys and
+     Skip, then Open the chat. -->
+<div class="chat-signin" id="keys_step_view" hidden>
+   <div class="chat-signin-form">
+      <div class="chat-brand">
+         <span class="chat-logo"></span>
+         <span class="chat-wordmark">CIYAM</span>
+         <span class="chat-brand-note">accounts</span>
+         <span class="account-step">Step 3 of 3</span>
+      </div>
+
+      <h2 tabindex="-1" id="keys_step_title"></h2>
+      <p class="chat-signin-lede" id="keys_step_lede"></p>
+
+      <div class="account-keys-step" id="keys_step_host"></div>
+
+      <div class="chat-signin-actions" id="keys_step_choose">
+         <button type="button" class="chat-btn chat-btn--primary" id="keys_step_create" onclick="keys_start( )" disabled>Create keys</button>
+         <button type="button" class="chat-btn chat-signin-setup" id="keys_step_skip" onclick="do_keys_step_end( )">Skip</button>
+      </div>
+      <div class="chat-signin-actions" id="keys_step_done" hidden>
+         <button type="button" class="chat-btn chat-btn--primary" id="keys_step_open" onclick="do_keys_step_end( )">Open the chat</button>
+      </div>
+   </div>
+</div>
+
 <!-- ================================================================ signed in -->
 <!-- NOTE: Home's shell ("shell.css", "shell.js" - Damon, 2026-10-26): a side menu of the apps and My account's sections, who is
      signed in and Sign out; on a phone the menu a drawer, the sections chips under the top bar and the apps a bar along the
@@ -210,11 +238,23 @@ http://www.opensource.org/licenses/mit-license.php.
                <p class="account-lede">How you appear to others on this node.</p>
             </div>
 
-            <!-- NOTE: Keys skipped while joining (or never set up) - said here until they are (Damon, 2026-10-28; "keys_show( )"). -->
-            <div class="account-callout" id="keys_reminder" hidden>
-               <p>Your keys aren't set up yet - until they are, people can't send you encrypted messages or room keys.</p>
-               <button type="button" class="chat-btn chat-btn--primary" id="keys_reminder_go" onclick="show_section( 'keys' )">Set up your keys</button>
-            </div>
+            <!-- NOTE: What needs you (Damon, 2026-10-28) - keys skipped while joining, or never set up - as Home shows admin what
+                 needs them, and counted by Your keys' badge ("onboard_draw( )"). -->
+            <section class="home-attention" id="keys_reminder" aria-labelledby="keys_reminder_heading" hidden>
+               <div class="home-attention-head">
+                  <h2 id="keys_reminder_heading">1 thing needs you</h2>
+               </div>
+               <ul class="home-attention-list">
+                  <li class="home-attention-item">
+                     <span class="home-attention-dot" aria-hidden="true"></span>
+                     <span class="home-attention-body">
+                        <b>Your keys aren't set up</b>
+                        <span class="home-attention-detail">Until they are, people can't send you encrypted messages or room keys.</span>
+                     </span>
+                     <button type="button" class="chat-btn chat-btn--primary" id="keys_reminder_go" onclick="show_section( 'keys' )">Set up your keys</button>
+                  </li>
+               </ul>
+            </section>
 
             <!-- NOTE: Two columns as Home's (Damon, 2026-10-26 - the page as wide as Home's), one under the other when narrow. -->
             <div class="account-columns">
@@ -250,12 +290,6 @@ http://www.opensource.org/licenses/mit-license.php.
             <div>
                <h1 tabindex="-1">Your keys</h1>
                <p class="account-lede" id="keys_lede">For encrypted messages - only the people you write to can read them.</p>
-            </div>
-
-            <!-- NOTE: The last step of joining (Damon, 2026-10-28) - after "Write these down" ("do_written_next( )"). -->
-            <div class="account-callout" id="keys_onboard" hidden>
-               <p><span class="account-step">Step 3 of 3</span><span id="keys_onboard_text"></span></p>
-               <button type="button" class="chat-btn" id="keys_onboard_go" onclick="do_onboard_open_chat( )"></button>
             </div>
 
             <div class="account-columns">

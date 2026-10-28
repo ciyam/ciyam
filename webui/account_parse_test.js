@@ -185,9 +185,8 @@ check( "- an error, or not locked keys, unreadable", [ ap.keys_state( true, "Err
  ap.keys_state( false, "UK4:" + locked.substring( 4 ) ), ap.keys_state( false, locked.replace( ":9a9e:", ":9a9:" ) ) ],
  [ "unreadable", "unreadable", "unreadable", "unreadable" ] );
 
-check( "the last step of joining - Later until the keys are set up, then on to the chat", [ ap.keys_onboard_text( false ).button,
- ap.keys_onboard_text( false ).primary, ap.keys_onboard_text( true ).button, ap.keys_onboard_text( true ).primary ],
- [ "Later - open the chat", false, "Open the chat", true ] );
+check( "the last step of joining - what keys are for, then set up", [ ap.keys_step_text( false ).title, ap.keys_step_text( true ).title ],
+ [ "Last step: your keys", "Your keys are set up" ] );
 
 var draws = [ 0.99, 0, 0.5 ];
 
