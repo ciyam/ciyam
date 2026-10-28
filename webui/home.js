@@ -2971,6 +2971,10 @@ const c_hidden_pin = "•••••";
 var g_people = [ ];
 var g_people_armed = "";
 var g_people_shown = { };
+
+// NOTE: People's search and the page shown (2026-10-28) - kept while Home is open, the page held within those there are.
+var g_people_query = "";
+var g_people_page = 1;
 var g_handover_code = "";
 var g_ready = null;
 var g_people_alert_timer = null;
@@ -3057,15 +3061,32 @@ async function load_people( )
    render_people( );
 }
 
+// NOTE: A page of those the search matches - the search, the count and the pages only once there is more than a page.
 function render_people( )
 {
    var body = document.getElementById( "people_rows" );
 
    body.replaceChildren( );
 
-   set_text( "people_empty", ( g_people.length === 0 ) ? "Nobody yet." : "" );
+   var many = ( g_people.length > c_people_page_size );
+   var query = many ? g_people_query.trim( ) : "";
+   var matched = people_matching( g_people, query );
+   var shown = people_page( matched.length, g_people_page, c_people_page_size );
 
-   g_people.forEach( function( person )
+   g_people_page = shown.page;
+
+   document.getElementById( "people_tools" ).hidden = !many;
+   document.getElementById( "people_pager" ).hidden = ( shown.pages <= 1 );
+
+   set_text( "people_count", people_count_text( g_people.length, matched.length, query !== "", shown ) );
+   set_text( "people_page", "Page " + shown.page + " of " + shown.pages );
+
+   document.getElementById( "people_prev" ).disabled = ( shown.page <= 1 );
+   document.getElementById( "people_next" ).disabled = ( shown.page >= shown.pages );
+
+   set_text( "people_empty", ( g_people.length === 0 ) ? "Nobody yet." : ( ( matched.length === 0 ) ? "No one matches that search." : "" ) );
+
+   matched.slice( shown.from, shown.to ).forEach( function( person )
    {
       var row = document.getElementById( "tpl_person" ).content.firstElementChild.cloneNode( true );
 
@@ -3144,6 +3165,29 @@ function render_people( )
       if( keep !== null )
          keep.focus( );
    }
+}
+
+function do_people_search( )
+{
+   g_people_query = document.getElementById( "people_search" ).value;
+   g_people_page = 1;
+   g_people_armed = "";
+
+   render_people( );
+}
+
+// NOTE: Another page - the list's top kept in view, as the pager is under it.
+function do_people_page( step )
+{
+   g_people_page += step;
+   g_people_armed = "";
+
+   render_people( );
+
+   var table = document.querySelector( "#people_section .account-table-wrap" );
+
+   if( table.getBoundingClientRect( ).top < 0 )
+      table.scrollIntoView( { block: "start" } );
 }
 
 function toggle_pin( pin )
@@ -3404,6 +3448,10 @@ function forget_people( )
    g_people = [ ];
    g_people_armed = "";
    g_people_shown = { };
+   g_people_query = "";
+   g_people_page = 1;
+
+   document.getElementById( "people_search" ).value = "";
 
    forget_ready( );
    forget_handover( );
@@ -3417,6 +3465,26 @@ function forget_people( )
 function install_people( )
 {
    document.getElementById( "people_add" ).addEventListener( "click", function( ) { show_people( "add" ); } );
+
+   var search = document.getElementById( "people_search" );
+
+   search.addEventListener( "input", do_people_search );
+
+   // NOTE: Escape clears it, as a search box does.
+   search.addEventListener( "keydown", function( event )
+   {
+      if( ( event.key === "Escape" ) && ( search.value !== "" ) )
+      {
+         event.preventDefault( );
+
+         search.value = "";
+
+         do_people_search( );
+      }
+   } );
+
+   document.getElementById( "people_prev" ).addEventListener( "click", function( ) { do_people_page( -1 ); } );
+   document.getElementById( "people_next" ).addEventListener( "click", function( ) { do_people_page( 1 ); } );
    document.getElementById( "add_form" ).addEventListener( "submit", do_add );
    document.getElementById( "handover_copy" ).addEventListener( "click", do_copy_code );
 

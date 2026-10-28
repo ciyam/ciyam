@@ -1086,9 +1086,59 @@ function word_choices( words, index, wordlist, random )
    return choices;
 }
 
+// ---- People's search and pages (Damon, 2026-10-28: the list had grown long enough to scroll)
+
+// NOTE: How many people a page shows - and the search is offered only when there are more than this.
+const c_people_page_size = 10;
+
+const c_people_status_words = { admin: "administrator", active: "active", unclaimed: "not yet claimed no username" };
+
+// NOTE: Those of "people" (from "parse_people( )") matching "query" - each of its words found in the name, the PIN or the
+// status as People shows it ("not yet claimed"), case aside. Nothing typed matches everyone.
+function people_matching( people, query )
+{
+   var words = String( query || "" ).toLowerCase( ).split( /\s+/ ).filter( function( word ) { return word !== ""; } );
+
+   return ( people || [ ] ).filter( function( person )
+   {
+      var said = ( person.name + " " + person.pin + " " + ( c_people_status_words[ person.status ] || "" ) ).toLowerCase( );
+
+      return words.every( function( word ) { return said.indexOf( word ) >= 0; } );
+   } );
+}
+
+// NOTE: Page "page" (from 1) of "count" rows, "size" a page - held within the pages there are, so a page emptied by a removal
+// or a narrower search shows the last one: { page, pages, from, to }, "from" and "to" indexes ("to" not included).
+function people_page( count, page, size )
+{
+   var each = size || c_people_page_size;
+   var pages = Math.max( 1, Math.ceil( count / each ) );
+   var at = Math.min( Math.max( 1, Math.floor( Number( page ) || 1 ) ), pages );
+
+   return { page: at, pages: pages, from: ( at - 1 ) * each, to: Math.min( count, at * each ) };
+}
+
+// NOTE: Above the list - how many, which of them shown, and how many a search matched: "57 people", "11-20 of 57 people",
+// "3 of 57 match", "11-20 of 23 matching"; "No one matches" for none.
+function people_count_text( total, matched, searching, shown )
+{
+   var ranged = ( shown.pages > 1 ) ? ( shown.from + 1 ) + "–" + shown.to + " of " : "";
+
+   if( !searching )
+      return ranged + counted( total, "person", "people" );
+
+   if( matched === 0 )
+      return "No one matches";
+
+   return ( ranged !== "" ) ? ranged + matched + " matching" : matched + " of " + total + " match";
+}
+
 if( typeof module !== "undefined" )
 {
    module.exports = {
+      people_matching: people_matching,
+      people_page: people_page,
+      people_count_text: people_count_text,
       parse_system: parse_system,
       setup_reply: setup_reply,
       setup_refused: setup_refused,

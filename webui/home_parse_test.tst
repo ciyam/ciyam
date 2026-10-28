@@ -158,6 +158,14 @@ ok   needs you - nothing
 ok   needs you - keys not set up, first
 ok   - said as such
 ok   a device shortened
+ok   people matching - nothing typed, everyone
+ok   - a name, case aside
+ok   - a PIN, or part of one
+ok   - the status as shown
+ok   - every word found
+ok   a page of people
+ok   - held within the pages there are
+ok   the count over the list
 ok   a short one kept
 ok   the devices
 ok   devices shown - this browser, then signed in, four in all

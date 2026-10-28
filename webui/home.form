@@ -644,6 +644,13 @@ http://www.opensource.org/licenses/mit-license.php.
                   <button type="button" class="chat-btn chat-btn--primary" id="people_add">Add a person</button>
                </div>
 
+               <!-- NOTE: Search and pages (Damon, 2026-10-28: the list scrolled) - offered once there is more than a page ("render_people( )"). -->
+               <div class="home-people-tools" id="people_tools" hidden>
+                  <input type="search" class="chat-field home-people-search" id="people_search" placeholder="Search by name, PIN or status"
+                   aria-label="Search people" autocomplete="off" spellcheck="false">
+                  <span class="home-people-count" id="people_count" role="status"></span>
+               </div>
+
                <div class="account-card account-table-wrap">
                   <table class="account-table">
                      <thead>
@@ -657,6 +664,11 @@ http://www.opensource.org/licenses/mit-license.php.
                      <tbody id="people_rows"></tbody>
                   </table>
                   <p class="account-empty" id="people_empty">Loading...</p>
+                  <nav class="home-pager" id="people_pager" aria-label="Pages of people" hidden>
+                     <button type="button" class="chat-btn" id="people_prev">&larr; Previous</button>
+                     <span class="home-pager-at" id="people_page"></span>
+                     <button type="button" class="chat-btn" id="people_next">Next &rarr;</button>
+                  </nav>
                </div>
 
                <p class="account-note">PINs are hidden while Home is open - <b>Show</b> one to read it. Codes you've handed out
