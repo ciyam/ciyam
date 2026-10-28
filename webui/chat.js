@@ -3530,6 +3530,42 @@ function regroup_thread( )
    } );
 
    close_run( );
+
+   band_notices( list );
+}
+
+// NOTE: Each block of notices one after another is drawn on a light band, so what happened in the room sits apart from the
+// conversation (Damon, 2026-10-28) - the first and last rows drawn round its ends; a folded row is not drawn, so is none of it.
+function band_notices( list )
+{
+   var block = [ ];
+
+   var close_block = function( )
+   {
+      block.forEach( function( row, n )
+      {
+         row.classList.add( "is-band" );
+         row.classList.toggle( "is-band-first", n === 0 );
+         row.classList.toggle( "is-band-last", n === block.length - 1 );
+      } );
+
+      block = [ ];
+   };
+
+   Array.prototype.slice.call( list.children ).forEach( function( row )
+   {
+      row.classList.remove( "is-band", "is-band-first", "is-band-last" );
+
+      if( row.classList.contains( "is-folded" ) )
+         return;
+
+      if( row.classList.contains( "chat-notice" ) || row.classList.contains( "chat-notice-run" ) )
+         block.push( row );
+      else
+         close_block( );
+   } );
+
+   close_block( );
 }
 
 function draw_notice_run( list, rows )

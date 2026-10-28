@@ -1636,7 +1636,7 @@ button.chat-avatar:hover
    grid-template-columns: var(--chat-time-width) var(--chat-sender-width) minmax(0, 1fr) auto;
    align-items: baseline;
    gap: 12px;
-   padding: 7px 0 2px;
+   padding: 8px 0 3px;
 }
 
 /* NOTE: A person's run of messages (Damon, 2026-10-28) - the name and time on the first only, the time back on hover. */
@@ -1875,8 +1875,6 @@ button.chat-avatar:hover
    }
 }
 
-/* system notices sit between messages as a centred rule */
-
 /* NOTE: A day boundary - the only row centred, with a rule either side (Damon, 2026-10-28: as Element has it); notices sit in the
    time column, as messages do. */
 .chat-day
@@ -1915,12 +1913,41 @@ button.chat-avatar:hover
    grid-template-columns: var(--chat-time-width) minmax(0, 1fr) auto;
    align-items: center;
    gap: 12px;
-   padding: 4px 0;
+   padding: 2px 0;
 }
 
 .chat-notice.is-folded
 {
    display: none;
+}
+
+/* NOTE: A block of notices one after another on a light band, wider than the text by its padding so the time column still lines
+   up, and over the list's gap so the band is unbroken (Damon, 2026-10-28: the conversation the main thing, the room's events
+   set apart). "band_notices( )" marks the rows. */
+.chat-notice.is-band,
+.chat-notice-run.is-band
+{
+   margin: -2px -10px 0;
+   padding: 2px 10px;
+   background: var(--color-chat-bg-band);
+}
+
+.chat-notice.is-band-first,
+.chat-notice-run.is-band-first
+{
+   margin-top: 5px;
+   padding-top: 5px;
+   border-top-left-radius: var(--radius-sm);
+   border-top-right-radius: var(--radius-sm);
+}
+
+.chat-notice.is-band-last,
+.chat-notice-run.is-band-last
+{
+   margin-bottom: 5px;
+   padding-bottom: 5px;
+   border-bottom-left-radius: var(--radius-sm);
+   border-bottom-right-radius: var(--radius-sm);
 }
 
 .chat-notice-time
@@ -1931,11 +1958,13 @@ button.chat-avatar:hover
    text-align: right;
 }
 
+/* NOTE: Smaller and lighter than a message, the names not bold - darker than the secondary text, which on the band would fall
+   short of 4.5:1. */
 .chat-notice-text
 {
-   font-size: var(--font-size-chat-meta);
+   font-size: var(--font-size-chat-small);
    line-height: 1.45;
-   color: var(--color-chat-text-secondary);
+   color: var(--color-chat-text-band);
    overflow-wrap: anywhere;
 }
 
@@ -1944,7 +1973,7 @@ button.chat-avatar:hover
    margin-right: 8px;
    vertical-align: -2px;
    fill: none;
-   stroke: var(--color-chat-text-faint);
+   stroke: var(--color-chat-text-ghost);
    stroke-width: 2;
    stroke-linecap: round;
    stroke-linejoin: round;
@@ -1952,13 +1981,7 @@ button.chat-avatar:hover
 
 .chat-notice-who
 {
-   font-weight: 600;
-   color: var(--color-chat-text-strong);
-}
-
-.chat-notice-verb
-{
-   color: var(--color-chat-text-secondary);
+   font-weight: 500;
 }
 
 .chat-notice-run-toggle

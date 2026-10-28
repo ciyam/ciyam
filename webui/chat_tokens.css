@@ -53,6 +53,8 @@
    --color-chat-bg-raised: var(--color-cool-150);
    --color-chat-bg-rail: var(--color-cool-200);
    --color-chat-bg-selected: #eceefe;
+   --color-chat-bg-band: var(--color-cool-200);
+   --color-chat-text-band: #5f6879;
 
    --color-chat-rule: var(--color-cool-250);
    --color-chat-border: var(--color-cool-300);
@@ -211,6 +213,8 @@
       --color-chat-bg-raised: #1b1d26;
       --color-chat-bg-rail: #12131a;
       --color-chat-bg-selected: #232651;
+      --color-chat-bg-band: #1c1e28;
+      --color-chat-text-band: var(--color-cool-550);
 
       --color-chat-rule: #24262f;
       --color-chat-border: #2c2e39;
@@ -259,6 +263,8 @@
    --color-chat-bg-raised: #1b1d26;
    --color-chat-bg-rail: #12131a;
    --color-chat-bg-selected: #232651;
+   --color-chat-bg-band: #1c1e28;
+   --color-chat-text-band: var(--color-cool-550);
 
    --color-chat-rule: #24262f;
    --color-chat-border: #2c2e39;
@@ -306,6 +312,8 @@
    --color-chat-bg-raised: var(--color-cool-150);
    --color-chat-bg-rail: var(--color-cool-200);
    --color-chat-bg-selected: #eceefe;
+   --color-chat-bg-band: var(--color-cool-200);
+   --color-chat-text-band: #5f6879;
 
    --color-chat-rule: var(--color-cool-250);
    --color-chat-border: var(--color-cool-300);
