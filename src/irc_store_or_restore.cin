@@ -107,16 +107,17 @@ NEXT_ROOM=%ALL_ROOMS:1%
 ;
 NEXT_ROOM=@repstr:@irc_names_/@keyed_irc_:$NEXT_ROOM
 ;
-NEXT_EDIT_ROOM=@strlit:%NEXT_ROOM%_ME
-NEXT_PINS_ROOM=@strlit:%NEXT_ROOM%_MP
+NEXT_EDITS_ROOM=@strlit:%NEXT_ROOM%_ME
+NEXT_PINNED_ROOM=@strlit:%NEXT_ROOM%_MP
+NEXT_REACTS_ROOM=@strlit:%NEXT_ROOM%_MR
 ;
 .session_variable @index_keyed_items 1
 .session_variable @limit_keyed_items 100
 ;
-.system_variable $NEXT_EDIT_ROOM
-MESSAGE_EDIT_ITEMS=$OUTPUT
+.system_variable $NEXT_ROOM
+MESSAGE_ITEMS=$OUTPUT
 ;
-@ifdef $MESSAGE_EDIT_ITEMS
+@ifdef $MESSAGE_ITEMS
 ;
 NEXT_QUEUE_PREFIX=@repstr:@keyed_/@queue_:$NEXT_ROOM
 ;
@@ -129,22 +130,22 @@ OLDEST_QUEUED_MESSAGE=
 OLDEST_QUEUED_MESSAGE=@file:$IRC_TEMP_FILE
 @endif
 ;
-@:CHECK_EDIT_LOOP
+@:CHECK_ITEM_LOOP
 ;
-@label NEXT_CHECK_EDIT
+@label NEXT_CHECK_ITEM
 ;
-NEXT_EDIT_ITEM=%MESSAGE_EDIT_ITEMS:1%
+NEXT_ITEM=%MESSAGE_ITEMS:1%
 ;
-@ifndef $NEXT_EDIT_ITEM
-@label END_CHECK_EDIT_LOOP
+@ifndef $NEXT_ITEM
+@label END_CHECK_ITEM_LOOP
 @endif
 ;
 @skip
 ;
-@:NEXT_CHECK_EDIT
+@:NEXT_CHECK_ITEM
 ;
 IS_PINNED=
-.system_variable $NEXT_PINS_ROOM:$NEXT_EDIT_ITEM
+.system_variable $NEXT_PINNED_ROOM:$NEXT_ITEM
 @ifdef $OUTPUT
 IS_PINNED=1
 @endif
@@ -155,22 +156,24 @@ PURGE_THIS_MESSAGE=
 @ifndef $OLDEST_QUEUED_MESSAGE
 PURGE_THIS_MESSAGE=1
 @else
-@if $NEXT_EDIT_ITEM < $OLDEST_QUEUED_MESSAGE
+@if $NEXT_ITEM < $OLDEST_QUEUED_MESSAGE
 PURGE_THIS_MESSAGE=1
 @endif
 @endif
 ;
 @ifdef $PURGE_THIS_MESSAGE
-.system_variable $NEXT_EDIT_ROOM:$NEXT_EDIT_ITEM ""
+.system_variable $NEXT_ROOM:$NEXT_ITEM ""
+.system_variable $NEXT_EDITS_ROOM:$NEXT_ITEM ""
+.system_variable $NEXT_REACTS_ROOM:$NEXT_ITEM ""
 @endif
 ;
 @endif
 ;
-MESSAGE_EDIT_ITEMS=%MESSAGE_EDIT_ITEMS:-1%
+MESSAGE_ITEMS=%MESSAGE_ITEMS:-1%
 ;
-!!@:CHECK_EDIT_LOOP
+!!@:CHECK_ITEM_LOOP
 ;
-@:END_CHECK_EDIT_LOOP
+@:END_CHECK_ITEM_LOOP
 ;
 @endif
 ;
@@ -220,6 +223,8 @@ ALL_ROOMS=$OUTPUT
 .system_variable -s=_ME @irc_names_**
 ALL_ROOMS=@strlit:$ALL_ROOMS\n$OUTPUT
 .system_variable -s=_MP @irc_names_**
+ALL_ROOMS=@strlit:$ALL_ROOMS\n$OUTPUT
+.system_variable -s=_MR @irc_names_**
 ALL_ROOMS=@strlit:$ALL_ROOMS\n$OUTPUT
 @endif
 ;

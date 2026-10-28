@@ -227,8 +227,14 @@ SOURCE_MESSAGE=$OUTPUT
 ;
 SOURCE_PARTS=@repstr: /\n:$SOURCE_MESSAGE
 ;
+IS_REACTION=
+;
 @ifneq "$USER_NAME" "%SOURCE_PARTS:1%"
 NOT_FOUND=1
+MSG_LENGTH=@strlen:$MESSAGE
+@ifeq $MSG_LENGTH 7
+IS_REACTION=1
+@endif
 @else
 OLD_MESSAGE=%SOURCE_PARTS:2%
 ;
@@ -254,7 +260,95 @@ BAD_TARGET=1
 @endif
 ;
 @ifdef $NOT_FOUND
+@ifndef $IS_REACTION
 ERROR=Source message for edit was not found (or is not own).
+@else
+DECODED=@base64:$MESSAGE
+REACTION=@substr:3:$DECODED
+;
+; NOTE: Only accepts values
+; that are between 0 and 9.
+REACT_NUM=@$REACTION+0
+@if $REACT_NUM #> 9
+REACTION=00
+@endif
+;
+HASH_OFF=10
+SHORT_LEN=6
+;
+HASH=@sha256:$USER_NAME
+SHORT=@substr:$HASH_OFF,$SHORT_LEN:$HASH
+;
+.system_variable @keyed_irc_%ROOM%_MR:$NAMES
+REACTIONS=$OUTPUT
+;
+@ifdef $REACTIONS
+;
+LINES=@repstr:o/\n:$REACTIONS
+;
+@label RNEXT
+;
+@:RLOOP
+NEXT_LINE=%LINES:1%
+;
+@ifndef $NEXT_LINE
+@label END_RLOOP
+@endif
+;
+@skip
+;
+@:RNEXT
+;
+EMOJI=@substr:0,2:$NEXT_LINE
+;
+@ifdef $REACTION
+@if $REACTION #< $EMOJI
+REPLACEMENT=%REACTION%%SHORT%xo
+REACTION=
+@endif
+@endif
+;
+@ifndef $REPLACEMENT
+REPLACEMENT=$EMOJI
+@else
+REPLACEMENT=%REPLACEMENT%o$EMOJI
+@endif
+;
+SHORTS=@substr:2:$NEXT_LINE
+;
+REMOVE=@repstr:%SHORT%x/:$SHORTS
+@ifneq "$SHORTS" "$REMOVE"
+SHORTS=@strlit:$REMOVE
+@else
+@ifeq "$EMOJI" "$REACTION"
+SHORTS=@strlit:%SHORTS%%SHORT%x
+@endif
+@endif
+;
+@ifeq "$EMOJI" "$REACTION"
+REACTION=
+@endif
+;
+REPLACEMENT=%REPLACEMENT%$SHORTS
+;
+LINES=%LINES:-1%
+;
+!!@:RLOOP
+;
+@:END_RLOOP
+;
+@endif
+;
+@ifdef $REACTION
+@ifndef $REPLACEMENT
+REPLACEMENT=%REACTION%%SHORT%x
+@else
+REPLACEMENT=%REPLACEMENT%o%REACTION%%SHORT%x
+@endif
+@endif
+;
+.system_variable @keyed_irc_%ROOM%_MR:$NAMES "$REPLACEMENT"
+@endif
 @elif "$BAD_TARGET" = "1"
 ERROR=Source message must not be modified to or from private.
 @elif "$NOT_EDITABLE" = "1"

@@ -25,6 +25,17 @@ ROOM=$1
 USER=$2
 SESSION=$3
 ;
+EMOJI_00=👌
+EMOJI_01=👍
+EMOJI_02=👎
+EMOJI_03=🙂
+EMOJI_04=🙁
+EMOJI_05=😀
+EMOJI_06=😲
+EMOJI_07=🤓
+EMOJI_08=🤦‍♂️
+EMOJI_09=❤️
+;
 ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
 ;
@@ -116,9 +127,11 @@ START_POINTS=,$START_POINTS
 @endif
 ;
 OUTPUT_LINES=
-@label NEXT
 ;
 @:LOOP
+;
+@label NEXT
+;
 NEXT_LINE=@strlit:%INPUT_LINES:1%
 ;
 @ifeq "$NEXT_LINE" ""
@@ -295,9 +308,10 @@ LAST_UNIQUE=
 >/tmp/ciyam/$UUID
 @ifndef $WAS_ENTRANCE
 ;
+@:MSG_LOOP
+;
 @label MSG_NEXT
 ;
-@:MSG_LOOP
 .session_variable @deque front
 @ifndef $OUTPUT
 @label END_MSG_LOOP
@@ -391,6 +405,58 @@ NEXT_MESSAGE=$MSG_UNIQUE $MSG_AUTHOR* $NEW_MSG_BASE64
 ;
 @endif
 @endif
+@endif
+@endif
+;
+.system_variable @keyed_irc_%ROOM%_MR:$MSG_UNIQUE
+@ifdef $OUTPUT
+REACTIONS=$OUTPUT
+;
+RLINES=@repstr:o/\n:$REACTIONS
+;
+ALL_EMOJIS=
+SHORT_LEN=6
+;
+@label RNEXT
+;
+@:RLOOP
+NEXT_RLINE=%RLINES:1%
+;
+@ifndef $NEXT_RLINE
+@label END_RLOOP
+@endif
+;
+@skip
+;
+@:RNEXT
+;
+EMOJI=@substr:0,2:$NEXT_RLINE
+;
+SHORTS=@substr:2:$NEXT_RLINE
+SHORTS=@repstr:x/:$SHORTS
+;
+SHORTS_LEN=@strlen:$SHORTS
+NUM_USERS=@$SHORTS_LEN/$SHORT_LEN
+;
+@if $NUM_USERS #> 0
+NUM_EXTRA=@$NUM_USERS-1
+@ifeq $NUM_EXTRA 0
+NEXT_EMOJI=@strlit:$EMOJI_%EMOJI%
+@else
+NEXT_EMOJI=@strlit:$EMOJI_%EMOJI%(+$NUM_EXTRA)
+@endif
+;
+ALL_EMOJIS=@strlit:$ALL_EMOJIS$NEXT_EMOJI
+@endif
+;
+RLINES=%RLINES:-1%
+;
+!!@:RLOOP
+;
+@:END_RLOOP
+;
+@ifdef $ALL_EMOJIS
+NEXT_MESSAGE=$NEXT_MESSAGE $ALL_EMOJIS
 @endif
 @endif
 ;
