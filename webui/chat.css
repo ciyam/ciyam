@@ -1633,10 +1633,27 @@ button.chat-avatar:hover
 .chat-message
 {
    display: grid;
-   grid-template-columns: var(--chat-time-width) var(--chat-sender-width) 1fr;
+   grid-template-columns: var(--chat-time-width) var(--chat-sender-width) minmax(0, 1fr) auto;
    align-items: baseline;
    gap: 12px;
-   padding: 5px 0;
+   padding: 7px 0 2px;
+}
+
+/* NOTE: A person's run of messages (Damon, 2026-10-28) - the name and time on the first only, the time back on hover. */
+.chat-message.is-continued
+{
+   padding-top: 1px;
+}
+
+.chat-message.is-continued .chat-message-time,
+.chat-message.is-continued .chat-message-sender
+{
+   visibility: hidden;
+}
+
+.chat-message.is-continued:hover .chat-message-time
+{
+   visibility: visible;
 }
 
 .chat-message-time
@@ -1683,12 +1700,47 @@ button.chat-avatar:hover
 }
 
 /* NOTE: Read markers - who has read up to this message. Quiet, and to the right. */
+/* NOTE: "Seen by" at the end of the row read up to (Damon, 2026-10-28) - small initials, then how many more; drawn from the marks'
+   attributes, so they are not taken for part of what was said. */
 .chat-seen
 {
-   margin: 0 0 4px;
-   text-align: right;
-   font-size: var(--font-size-chat-micro);
-   color: var(--color-chat-text-faint);
+   display: inline-flex;
+   align-items: center;
+   gap: 2px;
+   justify-self: end;
+   align-self: center;
+   cursor: default;
+}
+
+.chat-seen-chip
+{
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   width: 16px;
+   height: 16px;
+   border-radius: 50%;
+   color: #ffffff;
+   font-size: 9px;
+   font-weight: 700;
+   line-height: 1;
+}
+
+.chat-seen-chip::before
+{
+   content: attr(data-initial);
+}
+
+.chat-seen-more
+{
+   margin-left: 3px;
+   font-size: var(--font-size-chat-nano);
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-seen-more::before
+{
+   content: attr(data-more);
 }
 
 /* NOTE: The private marker - a small pill before the text, so a message only some can see
@@ -1825,9 +1877,8 @@ button.chat-avatar:hover
 
 /* system notices sit between messages as a centred rule */
 
-/* NOTE: A day boundary. It shares the rule-either-side shape with .chat-notice, so the
-   label is given more weight and more room around it - otherwise a divider and a system
-   event read as the same kind of thing. */
+/* NOTE: A day boundary - the only row centred, with a rule either side (Damon, 2026-10-28: as Element has it); notices sit in the
+   time column, as messages do. */
 .chat-day
 {
    display: flex;
@@ -1855,42 +1906,77 @@ button.chat-avatar:hover
    white-space: nowrap;
 }
 
-/* NOTE: Sits ahead of the sender on a system event, matching the column of times down the
-   left of ordinary messages as closely as a centred row allows. */
-.chat-notice-time
+/* NOTE: A notice, or a run of them as one line - in the time column as a message is, quiet, an icon for what happened (Damon,
+   2026-10-28: centred with a rule either side, each read as a day). A notice folded into a run is not drawn until Show all. */
+.chat-notice,
+.chat-notice-run
 {
-   margin-right: 8px;
-   color: var(--color-chat-text-ghost);
-}
-
-.chat-notice
-{
-   display: flex;
+   display: grid;
+   grid-template-columns: var(--chat-time-width) minmax(0, 1fr) auto;
    align-items: center;
    gap: 12px;
-   padding: 6px 0;
+   padding: 4px 0;
 }
 
-.chat-notice::before,
-.chat-notice::after
+.chat-notice.is-folded
 {
-   content: "";
-   height: 1px;
-   flex: 1;
-   background: var(--color-chat-rule);
+   display: none;
+}
+
+.chat-notice-time
+{
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-micro);
+   color: var(--color-chat-text-ghost);
+   text-align: right;
 }
 
 .chat-notice-text
 {
-   font-family: var(--font-family-chat-mono);
-   font-size: var(--font-size-chat-nano);
+   font-size: var(--font-size-chat-meta);
+   line-height: 1.45;
    color: var(--color-chat-text-secondary);
-   text-align: center;
+   overflow-wrap: anywhere;
+}
+
+.chat-notice-icon
+{
+   margin-right: 8px;
+   vertical-align: -2px;
+   fill: none;
+   stroke: var(--color-chat-text-faint);
+   stroke-width: 2;
+   stroke-linecap: round;
+   stroke-linejoin: round;
+}
+
+.chat-notice-who
+{
+   font-weight: 600;
+   color: var(--color-chat-text-strong);
 }
 
 .chat-notice-verb
 {
-   color: var(--color-chat-text-faint);
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-notice-run-toggle
+{
+   margin-left: 8px;
+   padding: 0;
+   border: 0;
+   background: none;
+   font-family: inherit;
+   font-size: var(--font-size-chat-small);
+   font-weight: 500;
+   color: var(--color-chat-accent-deep);
+   cursor: pointer;
+}
+
+.chat-notice-run-toggle:hover
+{
+   text-decoration: underline;
 }
 
 .chat-notice-action
@@ -3162,6 +3248,18 @@ button.chat-avatar:hover
    }
 
    .chat-message-text
+   {
+      grid-column: 1 / -1;
+   }
+
+   /* NOTE: A run's later messages - no line of their own for the name and time. */
+   .chat-message.is-continued .chat-message-time,
+   .chat-message.is-continued .chat-message-sender
+   {
+      display: none;
+   }
+
+   .chat-message .chat-seen
    {
       grid-column: 1 / -1;
    }

@@ -191,7 +191,7 @@
    --chat-console-top: 210px;
 
    /* Message rows are a three column grid - time, sender, text. */
-   --chat-time-width: 68px;
+   --chat-time-width: 44px;
    --chat-sender-width: 104px;
 }
 

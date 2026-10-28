@@ -433,10 +433,12 @@ check( "an encrypted message said so, not shown as its ciphertext", [ cp.message
 check( "- and in the plain places, the pinned line and Home", [ cp.message_plain_text( "X\r9f3c" ),
  cp.message_plain_text( "\u001b[31mred\u001b[0m words" ) ], [ "Encrypted message - this chat cannot read it yet", "red words" ] );
 // NOTE: Only a message that isn't encrypted is marked (Ian, 2026-10-26) - not in the entrance room, nor one of only spaces.
-check( "a message not encrypted is marked, as 'irc.cin' marks one", [ cp.is_unencrypted_message( "hello", "0000069" ),
- cp.is_unencrypted_message( "X\r9f3c", "0000069" ), cp.is_unencrypted_message( "Q\rzz", "0000069" ),
- cp.is_unencrypted_message( "hello", "0000000" ), cp.is_unencrypted_message( "  \n ", "0000069" ),
- cp.is_unencrypted_message( "hi", "0000070" ) ], [ true, false, false, false, false, true ] );
+check( "a message not encrypted is marked, as 'irc.cin' marks one", [ cp.is_unencrypted_message( "hello", "0000069", true ),
+ cp.is_unencrypted_message( "X\r9f3c", "0000069", true ), cp.is_unencrypted_message( "Q\rzz", "0000069", true ),
+ cp.is_unencrypted_message( "hello", "0000000", true ), cp.is_unencrypted_message( "  \n ", "0000069", true ),
+ cp.is_unencrypted_message( "hi", "0000070", true ) ], [ true, false, false, false, false, true ] );
+check( "- only where it could have been encrypted - a room with no key says so once instead",
+ cp.is_unencrypted_message( "hello", "0000069", false ), false );
 
 heading( "message size" );
 
@@ -516,6 +518,19 @@ check( "the user's own is left out", Object.keys( cp.seen_by( in_room, readers, 
 check( "a read point equal to a message's unique has read that message",
  cp.seen_by( in_room, [ { name: "bob", read: "1790521522000" } ], "admin" ), { "1790521522000": [ "bob" ] } );
 check( "a read point before every message shows nothing", cp.seen_by( in_room, [ { name: "x", read: "1790000000000" } ], "admin" ), { } );
+check( "a run of one person's messages - in order, within five minutes", [ cp.continues_run( "amy", "1790530000000", "amy", "1790530299000" ),
+ cp.continues_run( "amy", "1790530000000", "amy", "1790530301000" ), cp.continues_run( "amy", "1790530000000", "bob", "1790530001000" ),
+ cp.continues_run( "amy", "1790530000000", "amy", "1790529999000" ), cp.continues_run( "", "1790530000000", "", "1790530001000" ),
+ cp.continues_run( "amy", "x", "amy", "1790530001000" ) ], [ true, false, false, false, false, false ] );
+check( "a run of notices as one line", [ cp.notice_run( [ "tester-1", "tester-2", "verify-a" ], "joined" ).text,
+ cp.notice_run( [ "amy", "bob" ], "left the room" ).text, cp.notice_run( [ "amy" ], "joined" ).text,
+ cp.notice_run( [ "a", "b", "c", "d" ], "joined" ).text, cp.notice_run( [ "a", "b", "c", "d", "e", "a" ], "joined" ).text ],
+ [ "tester-1, tester-2 and verify-a joined", "amy and bob left the room", "amy joined", "a, b, c and 1 other joined", "a, b, c and 2 others joined" ] );
+check( "- the names shown, and how many others", cp.notice_run( [ "a", "b", "c", "d", "e" ], "joined", 2 ), { shown: [ "a", "b" ], others: 3,
+ text: "a, b and 3 others joined" } );
+check( "seen by, as initials - the first three, then how many more", [ cp.seen_chips( [ "amy", "bob" ] ), cp.seen_chips( [ "a", "b", "c", "d", "e" ] ),
+ cp.seen_chips( [ ] ) ], [ { shown: [ "amy", "bob" ], more: 0, label: "Seen by amy and bob" },
+ { shown: [ "a", "b", "c" ], more: 2, label: "Seen by a, b, c, d and e" }, { shown: [ ], more: 0, label: "" } ] );
 check( "names under one message are sorted", cp.seen_by( in_room, [ { name: "zed", read: "1790530000000" }, { name: "amy", read: "1790530000000" } ], "admin" ), { "1790521522000": [ "amy", "zed" ] } );
 
 heading( "reading only what is new" );
@@ -652,8 +667,8 @@ check( "an edited one in the old form is unchanged", cp.parse_message_line( "179
 check( "a message starting ! in the old format is not private", cp.parse_message_line( "1790514104000 admin  !not private" ).private, false );
 check( "and keeps its !", cp.parse_message_line( "1790514104000 admin  !not private" ).text, "!not private" );
 
-check( "label on a received one", cp.private_label( received_side[ 1 ] ), { text: "private", title: "Private - sent to you, not to the whole room" } );
-check( "label on a sent copy", cp.private_label( sent_side[ 2 ] ), { text: "private · to verify-a", title: "Private - only you and verify-a can see this" } );
+check( "label on a received one", cp.private_label( received_side[ 1 ] ), { text: "to you", title: "Private - sent to you, not to the whole room" } );
+check( "label on a sent copy", cp.private_label( sent_side[ 2 ] ), { text: "to verify-a", title: "Private - only you and verify-a can see this" } );
 check( "the sender is added to for", cp.with_sender( [ "verify-a" ], "admin" ), [ "verify-a", "admin" ] );
 check( "only once", cp.with_sender( [ "verify-a", "admin" ], "admin" ), [ "verify-a", "admin" ] );
 check( "not when unknown", cp.with_sender( [ "verify-a" ], "" ), [ "verify-a" ] );

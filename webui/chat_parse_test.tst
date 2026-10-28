@@ -192,6 +192,7 @@ ok   a message's kind from its start - a letter and a CR
 ok   an encrypted message said so, not shown as its ciphertext
 ok   - and in the plain places, the pinned line and Home
 ok   a message not encrypted is marked, as 'irc.cin' marks one
+ok   - only where it could have been encrypted - a room with no key says so once instead
 
 == message size ================================================
 ok   letters are a byte each
@@ -243,6 +244,10 @@ ok   each marker under the last message before the read point
 ok   the user's own is left out
 ok   a read point equal to a message's unique has read that message
 ok   a read point before every message shows nothing
+ok   a run of one person's messages - in order, within five minutes
+ok   a run of notices as one line
+ok   - the names shown, and how many others
+ok   seen by, as initials - the first three, then how many more
 ok   names under one message are sorted
 
 == reading only what is new ====================================

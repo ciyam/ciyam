@@ -394,13 +394,15 @@ function message_plain_text( text )
 }
 
 // NOTE: Whether a message is marked as not encrypted - a warning sign before it, as "irc.cin" marks one (Ian, 2026-10-26: as
-// nearly every message should be encrypted, only those that aren't are marked, as Element does). Not in the entrance room, nor
-// a message of only spaces; an encrypted one ("X\r") or one of another kind is never marked.
-function is_unencrypted_message( text, room )
+// nearly every message should be encrypted, only those that aren't are marked, as Element does). Only where it could have been -
+// "keyed", a room with a key here, or a direct message with one for the other person: a room with none says so once, under its
+// name (Damon, 2026-10-28: a sign before every message was clutter). Not in the entrance room, nor a message of only spaces; an
+// encrypted one ("X\r") or one of another kind is never marked.
+function is_unencrypted_message( text, room, keyed )
 {
    var value = String( text || "" );
 
-   if( ( message_prefix( value ) !== "" ) || is_entrance_room( room ) )
+   if( !keyed || ( message_prefix( value ) !== "" ) || is_entrance_room( room ) )
       return false;
 
    return value.trim( ) !== "";
@@ -550,13 +552,14 @@ function pair_private_copies( messages )
 
 // NOTE: The small label on a private message. A copy the user sent says who it went to;
 // one they received can only say it was sent to them - the server does not say who else.
+// NOTE: Who it is to, beside the crossed-out eye - the amber and the eye say private (Damon, 2026-10-28: "private ·" said it twice).
 function private_label( entry )
 {
    if( entry.recipients && entry.recipients.length )
-      return { text: "private · to " + entry.recipients.join( ", " ),
+      return { text: "to " + entry.recipients.join( ", " ),
        title: "Private - only you and " + entry.recipients.join( ", " ) + " can see this" };
 
-   return { text: "private", title: "Private - sent to you, not to the whole room" };
+   return { text: "to you", title: "Private - sent to you, not to the whole room" };
 }
 
 // NOTE: What the message box says about who will see what is typed - Damon, 2026-09-28: a
@@ -909,6 +912,48 @@ function seen_by( uniques, members, me )
    Object.keys( marks ).forEach( function( unique ) { marks[ unique ].sort( ); } );
 
    return marks;
+}
+
+// ---- A quieter conversation (Damon, 2026-10-28: centred notices among left-aligned messages, every message with its own time and
+// name, "Seen by" lines between them - cluttered)
+
+// NOTE: How long apart two of one person's messages may be and still be drawn as one run - the name and time on the first only.
+const c_message_run_ms = 5 * 60 * 1000;
+
+// NOTE: Whether a message from "sender" at "unique" goes on the run of the one before it, from "prev_sender" at "prev_unique" -
+// the same person, in order, within five minutes. The caller sees to the rest: nothing else between them, and the same day.
+function continues_run( prev_sender, prev_unique, sender, unique )
+{
+   var gap = Number( unique ) - Number( prev_unique );
+
+   return ( sender !== "" ) && ( sender === prev_sender ) && !isNaN( gap ) && ( gap >= 0 ) && ( gap <= c_message_run_ms );
+}
+
+// NOTE: A run of notices of one kind ("joined", "left the room") as one line - "tester-1, tester-2 and verify-a joined", or the
+// first "most" and how many others: "claim-1, keep-1, test-99 and 25 others joined". Each person once, in order.
+function notice_run( names, verb, most )
+{
+   var seen = { };
+   var people = ( names || [ ] ).filter( function( name ) { return seen.hasOwnProperty( name ) ? false : ( seen[ name ] = true ); } );
+   var limit = most || 3;
+   var shown = ( people.length > limit ) ? people.slice( 0, limit ) : people;
+   var others = people.length - shown.length;
+
+   var text = ( others > 0 ) ? shown.join( ", " ) + " and " + others + ( ( others === 1 ) ? " other " : " others " ) + verb
+    : name_list( shown ) + " " + verb;
+
+   return { shown: shown, others: others, text: text };
+}
+
+// NOTE: "Seen by" as small initials at the end of the row read up to (Damon, 2026-10-28: a line of its own between messages) - the
+// first "most", then how many more; the whole said in "label".
+function seen_chips( names, most )
+{
+   var list = names || [ ];
+   var limit = most || 3;
+   var shown = list.slice( 0, limit );
+
+   return { shown: shown, more: list.length - shown.length, label: ( list.length > 0 ) ? "Seen by " + name_list( list ) : "" };
 }
 
 // NOTE: New messages added to those already held, as a read without "from" returns only what
@@ -3726,6 +3771,9 @@ if( typeof module !== "undefined" )
       announcement_audience: announcement_audience,
       c_announcements_collapsed: c_announcements_collapsed,
       seen_by: seen_by,
+      continues_run: continues_run,
+      notice_run: notice_run,
+      seen_chips: seen_chips,
       merge_new_messages: merge_new_messages,
       needs_full_read: needs_full_read,
       posts_request_value: posts_request_value,

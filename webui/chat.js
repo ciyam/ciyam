@@ -1880,8 +1880,13 @@ function show_thread_title( )
       sub.textContent = "Not private - " + name_list( outsiders ) + " can read this too";
    else if( chat_room_key( g_room ) !== "" )
       sub.textContent = "Encrypted with the room key";
+   else if( ( g_chat_keys !== null ) && !g_chat_keys_unread && can_have_room_key( g_room, g_room_name ) )
+      sub.textContent = "Not encrypted - messages here are sent as they are";
    else
       sub.textContent = "";
+
+   // NOTE: Said once here, a warning sign before it, rather than before every message (Damon, 2026-10-28).
+   sub.classList.toggle( "chat-unencrypted", /^Not encrypted - /.test( sub.textContent ) );
 
    sub.hidden = ( sub.textContent === "" );
 }
@@ -3379,9 +3384,11 @@ function on_messages_response( response, asked_for, replace )
    }
 }
 
-// NOTE: "Seen by ..." under the last message each other member has read, from their read
-// points ("seen_by( )" in "chat_parse.js"). Redrawn on every read of the room, as read points
-// only move forward and a marker moves down with them.
+// NOTE: "Seen by" at the end of the last row each other member has read, from their read points ("seen_by( )" in
+// "chat_parse.js") - their initials, the first three and how many more (Damon, 2026-10-28: a line of its own between messages was
+// clutter); the names said for a screen reader and on hover. A row folded into a run of notices gives its mark to the run's line.
+// Redrawn on every read of the room, as read points only move forward and a mark moves down with them. The initials are drawn
+// from the marks' attributes, so a row's text is still only what was said.
 function render_seen_markers( )
 {
    var list = document.getElementById( "message_list" );
@@ -3396,6 +3403,8 @@ function render_seen_markers( )
 
    var marks = seen_by( rows.map( function( row ) { return row.dataset.unique; } ), g_members, ciyam.username );
 
+   var targets = [ ];
+
    rows.forEach( function( row )
    {
       var names = marks[ row.dataset.unique ];
@@ -3403,20 +3412,194 @@ function render_seen_markers( )
       if( !names )
          return;
 
-      var marker = document.createElement( "div" );
+      var target = row;
+
+      while( target.classList.contains( "is-folded" ) && target.previousElementSibling )
+      {
+         target = target.previousElementSibling;
+
+         if( target.classList.contains( "chat-notice-run" ) )
+            break;
+      }
+
+      var held = targets.filter( function( pair ) { return pair.target === target; } )[ 0 ];
+
+      if( held )
+         held.names = held.names.concat( names );
+      else
+         targets.push( { target: target, names: names.slice( ) } );
+   } );
+
+   targets.forEach( function( pair )
+   {
+      var chips = seen_chips( pair.names.sort( ), 3 );
+
+      var marker = document.createElement( "span" );
 
       marker.className = "chat-seen";
-      marker.textContent = "Seen by " + names.join( ", " );
-      marker.title = names.join( ", " ) + ( ( names.length === 1 ) ? " has" : " have" ) + " read up to here";
+      marker.setAttribute( "role", "img" );
+      marker.setAttribute( "aria-label", chips.label );
+      marker.title = chips.label + " - read up to here";
 
-      // NOTE: The day of the row it follows - "last_rendered_day( )" reads the last element.
-      marker.dataset.day = row.dataset.day || "";
+      chips.shown.forEach( function( name )
+      {
+         var chip = document.createElement( "span" );
 
-      row.after( marker );
+         chip.className = "chat-seen-chip";
+         chip.dataset.initial = user_initial( name );
+         chip.style.background = "var(--color-sender-" + sender_colour_index( name ) + ")";
+
+         marker.appendChild( chip );
+      } );
+
+      if( chips.more > 0 )
+      {
+         var more = document.createElement( "span" );
+
+         more.className = "chat-seen-more";
+         more.dataset.more = "+" + chips.more;
+
+         marker.appendChild( more );
+      }
+
+      pair.target.appendChild( marker );
    } );
 
    if( was_at_end )
       list.scrollTop = list.scrollHeight;
+}
+
+// ---- A quieter conversation (Damon, 2026-10-28: centred notices among left-aligned messages, every message with its own time and
+// name, "Seen by" lines between them - cluttered)
+
+// NOTE: The notices folded into a run, by what happened - a join or a leaving.
+const c_notice_run_verbs = [ "joined", "remove" ];
+
+// NOTE: An icon for each kind of notice - stroked, as the rest of the chat's are.
+const c_notice_icons = {
+   joined: "M10 17l5-5-5-5M15 12H3M15 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4",
+   remove: "M14 17l5-5-5-5M19 12H7M9 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4",
+   create: "M12 5v14M5 12h14",
+   invite: "M4 6h16v12H4zM4 7l8 6 8-6",
+   issued: "M4 6h16v12H4zM4 7l8 6 8-6"
+};
+
+const c_notice_icon_other = "M12 8v5M12 16h.01M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18";
+
+// NOTE: The runs opened by Show all, by the unique of their first notice.
+var g_notice_runs_open = { };
+
+// NOTE: Drawn again over the whole list after each read: a person's messages close together show the name and time once
+// ("continues_run( )"), and two or more joins (or leavings) one after another are one line ("notice_run( )"), the rows themselves
+// folded away under it - so each is still known by its unique, and Show all opens them.
+function regroup_thread( )
+{
+   var list = document.getElementById( "message_list" );
+
+   list.querySelectorAll( ":scope > .chat-notice-run" ).forEach( function( run ) { run.remove( ); } );
+
+   var run = [ ];
+   var prev = null;
+
+   var close_run = function( )
+   {
+      if( run.length >= 2 )
+         draw_notice_run( list, run );
+      else
+         run.forEach( function( row ) { row.classList.remove( "is-folded" ); } );
+
+      run = [ ];
+   };
+
+   Array.prototype.slice.call( list.children ).forEach( function( row )
+   {
+      var foldable = row.classList.contains( "chat-notice" ) && ( c_notice_run_verbs.indexOf( row.dataset.verb ) >= 0 );
+
+      if( !foldable || ( ( run.length > 0 ) && ( ( run[ 0 ].dataset.verb !== row.dataset.verb ) || ( run[ 0 ].dataset.day !== row.dataset.day ) ) ) )
+         close_run( );
+
+      if( foldable )
+         run.push( row );
+
+      if( row.classList.contains( "chat-message" ) )
+         row.classList.toggle( "is-continued", ( prev !== null ) && prev.classList.contains( "chat-message" )
+          && ( prev.dataset.day === row.dataset.day )
+          && continues_run( prev.dataset.sender || "", prev.dataset.unique || "", row.dataset.sender || "", row.dataset.unique || "" ) );
+
+      prev = row;
+   } );
+
+   close_run( );
+}
+
+function draw_notice_run( list, rows )
+{
+   var key = rows[ 0 ].dataset.unique || "";
+   var open = !!g_notice_runs_open[ key ];
+
+   var said = notice_run( rows.map( function( row ) { return row.dataset.sender || ""; } ),
+    rows[ 0 ].querySelector( ".chat-notice-verb" ).textContent, 3 );
+
+   var node = document.getElementById( "tpl_notice_run" ).content.cloneNode( true ).querySelector( ".chat-notice-run" );
+
+   node.dataset.day = rows[ 0 ].dataset.day || "";
+
+   var first = rows[ 0 ].querySelector( ".chat-notice-time" );
+   var time = node.querySelector( ".chat-notice-time" );
+
+   time.textContent = first.textContent;
+   time.title = first.title;
+
+   node.querySelector( ".chat-notice-icon path" ).setAttribute( "d", c_notice_icons[ rows[ 0 ].dataset.verb ] || c_notice_icon_other );
+
+   var names = node.querySelector( ".chat-notice-names" );
+
+   said.shown.forEach( function( name, n )
+   {
+      if( n > 0 )
+         names.appendChild( document.createTextNode( ( ( n === said.shown.length - 1 ) && ( said.others === 0 ) ) ? " and " : ", " ) );
+
+      var who = document.createElement( "b" );
+
+      who.className = "chat-notice-who";
+      who.textContent = name;
+
+      names.appendChild( who );
+   } );
+
+   names.appendChild( document.createTextNode( ( said.others > 0 ) ? " and " + said.others + ( ( said.others === 1 ) ? " other " : " others " ) : " " ) );
+
+   var verb = document.createElement( "span" );
+
+   verb.className = "chat-notice-verb";
+   verb.textContent = rows[ 0 ].querySelector( ".chat-notice-verb" ).textContent;
+
+   names.appendChild( verb );
+
+   var toggle = node.querySelector( ".chat-notice-run-toggle" );
+
+   toggle.hidden = ( said.others === 0 );
+   toggle.textContent = open ? "Hide" : "Show all";
+   toggle.setAttribute( "aria-expanded", open ? "true" : "false" );
+
+   toggle.addEventListener( "click", function( )
+   {
+      g_notice_runs_open[ key ] = !open;
+
+      regroup_thread( );
+      render_seen_markers( );
+
+      var again = document.querySelector( "#message_list > .chat-notice-run[data-first=\"" + key + "\"] .chat-notice-run-toggle" );
+
+      if( again !== null )
+         again.focus( );
+   } );
+
+   node.dataset.first = key;
+
+   rows.forEach( function( row ) { row.classList.toggle( "is-folded", !open ); } );
+
+   list.insertBefore( node, rows[ 0 ] );
 }
 
 // NOTE: Every row carries its day, so the last one in the list says which day the list
@@ -3458,12 +3641,16 @@ function append_messages( messages )
 
    var was_at_end = ( list.scrollTop + list.clientHeight >= list.scrollHeight - 40 );
 
+   var added = 0;
+
    for( var i = 0; i < messages.length; i++ )
    {
       var entry = messages[ i ];
 
       if( already_rendered( list, entry.unique ) )
          continue;
+
+      ++added;
 
       var key = day_key( entry.unique );
 
@@ -3491,6 +3678,12 @@ function append_messages( messages )
       list.appendChild( row );
    }
 
+   if( added > 0 )
+   {
+      regroup_thread( );
+      render_seen_markers( );
+   }
+
    if( was_at_end )
       list.scrollTop = list.scrollHeight;
 }
@@ -3503,11 +3696,15 @@ function build_message( entry )
 
    var time = row.querySelector( ".chat-message-time" );
 
-   time.textContent = unique_to_time( entry.unique );
+   // NOTE: Hours and minutes (Damon, 2026-10-28) - the seconds were noise.
+   time.textContent = unique_to_time( entry.unique ).substring( 0, 5 );
 
    // NOTE: The row shows the time only - the divider above it carries the day. The full
    // stamp is on hover, for when a message is far from its divider.
    time.title = unique_to_full( entry.unique );
+
+   // NOTE: Who sent it, for a run of one person's messages ("regroup_thread( )").
+   row.dataset.sender = entry.sender || "";
 
    var name = row.querySelector( ".chat-message-sender-name" );
 
@@ -3896,8 +4093,16 @@ function build_notice( entry )
    // joins and invitations - read as undated.
    var time = node.querySelector( ".chat-notice-time" );
 
-   time.textContent = unique_to_time( entry.unique );
+   time.textContent = unique_to_time( entry.unique ).substring( 0, 5 );
    time.title = unique_to_full( entry.unique );
+
+   // NOTE: What happened, and to whom - a run of joins is folded into one line ("regroup_thread( )").
+   var row = node.querySelector( ".chat-notice" );
+
+   row.dataset.verb = event.verb || "";
+   row.dataset.sender = entry.sender || "";
+
+   node.querySelector( ".chat-notice-icon path" ).setAttribute( "d", c_notice_icons[ event.verb ] || c_notice_icon_other );
 
    // NOTE: Plain words - "verify-a joined", "admin sent a private message to verify-a" -
    // from "describe_event( )" in "chat_parse.js", where every verb's wording is tested.
@@ -4573,7 +4778,7 @@ function render_composer_mirror( )
 // (Ian, 2026-10-26 - "is_unencrypted_message( )"); the padlock is only for an encrypted one that can't be read.
 function draw_message_text( element, text, room )
 {
-   element.classList.toggle( "chat-unencrypted", ( room !== undefined ) && is_unencrypted_message( text, room ) );
+   element.classList.toggle( "chat-unencrypted", ( room !== undefined ) && is_unencrypted_message( text, room, chat_secret_for_room( room ) !== "" ) );
    element.classList.remove( "chat-locked" );
 
    // NOTE: Opened, in a direct message with a key for the other person ("chat_keys.js", 2026-10-25).

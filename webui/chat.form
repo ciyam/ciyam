@@ -493,6 +493,18 @@ http://www.opensource.org/licenses/mit-license.php.
    </button>
 </template>
 
+<!-- NOTE: A run of joins (or leavings) as one line - "tester-1, tester-2 and verify-a joined" - each opened by Show all
+     ("regroup_thread( )"). -->
+<template id="tpl_notice_run">
+   <div class="chat-notice-run">
+      <span class="chat-notice-time"></span>
+      <span class="chat-notice-text">
+         <svg class="chat-notice-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false"><path d=""/></svg>
+         <span class="chat-notice-names"></span>
+         <button type="button" class="chat-notice-run-toggle" aria-expanded="false" hidden>Show all</button>
+      </span>
+   </div>
+</template>
 <template id="tpl_day">
    <div class="chat-day">
       <span class="chat-day-label"></span>
@@ -575,10 +587,13 @@ http://www.opensource.org/licenses/mit-license.php.
    </div>
 </template>
 
+<!-- NOTE: A notice in the time column, as a message is (Damon, 2026-10-28) - quiet, with an icon for what happened; only a day
+     is centred. -->
 <template id="tpl_notice">
    <div class="chat-notice">
+      <span class="chat-notice-time"></span>
       <span class="chat-notice-text">
-         <span class="chat-notice-time"></span>
+         <svg class="chat-notice-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false"><path d=""/></svg>
          <span class="chat-notice-who"></span>
          <span class="chat-notice-verb"></span>
          <span class="chat-notice-detail"></span>

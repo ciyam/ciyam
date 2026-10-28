@@ -263,13 +263,18 @@ function chat_open_message( element, text )
    return true;
 }
 
-// NOTE: Once the keys are read, the encrypted messages already drawn are drawn again.
+// NOTE: Once the keys are read, the encrypted messages already drawn are drawn again - and the others marked, or not, as not
+// encrypted, as there is now a key for the room or not ("is_unencrypted_message( )").
 function chat_keys_redraw( )
 {
+   var keyed = ( chat_secret_for_room( g_room ) !== "" );
+
    document.querySelectorAll( "#message_list .chat-message-body" ).forEach( function( body )
    {
       if( message_prefix( body.dataset.text || "" ) === "X" )
          draw_message_text( body, body.dataset.text, g_room );
+      else
+         body.classList.toggle( "chat-unencrypted", is_unencrypted_message( body.dataset.text || "", g_room, keyed ) );
    } );
 }
 
