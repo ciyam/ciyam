@@ -221,10 +221,12 @@ POS=@strpos:*:$EDIT_MSG_OWNER
 EDIT_MSG_OWNER=@substr:0,$POS:$EDIT_MSG_OWNER
 @endif
 ;
+IS_REACTION=
 @ifneq "$USER" "$EDIT_MSG_OWNER"
-EDIT_UNIX_UNIQUE=
-#(own messages only are editable)
-@elif "$EDIT_MSG_PREFIX" = "_:"
+IS_REACTION=1
+@endif
+;
+@ifeq "$EDIT_MSG_PREFIX" "_:"
 EDIT_UNIX_UNIQUE=
 #(system messages are not editable)
 @else
@@ -259,7 +261,9 @@ EDIT_MSG_CONTENT=$LOCK_EMOJI (room key unknown)
 ;
 EDIT_MSG_CONTENT=@substr:2:$EDIT_MSG_CONTENT
 #$EDIT_MSG_CONTENT
+@ifndef $IS_REACTION
 #(type new content or one space to pin/upin and two spaces to delete or just enter to cancel)
+@endif
 @endif
 ;
 @else
@@ -267,7 +271,11 @@ EDIT_MSG_CONTENT=@substr:2:$EDIT_MSG_CONTENT
 @endif
 ;
 @ifdef $EDIT_UNIX_UNIQUE
+@ifndef $IS_REACTION
 &:EDITED_MESSAGE=_
+@else
+&Reaction? [EDITED_MESSAGE:none==_|a 👌=_ 00|b 👍=_ 01|c 👎=_ 02|d 🙂=_ 03|e 🙁=_ 04|f 😀=_ 05|g 😲=_ 06|h 🤓=_ 07|i 🤦‍♂️=_ 08|j ❤️=_ 09] (hit 'a'..'j' or Enter)
+@endif
 ;
 MLEN=@strlen:$EDITED_MESSAGE
 @ifeq "$MLEN" "1"
@@ -277,6 +285,8 @@ EDIT_UNIX_UNIQUE=
 @else
 ;
 CAN_ENCRYPT=
+;
+@ifndef $IS_REACTION
 @ifdef $KEY_FILE_DATA
 CAN_ENCRYPT=1
 @endif
@@ -285,6 +295,7 @@ CAN_ENCRYPT=1
 CAN_ENCRYPT=
 @elif "$EDITED_MESSAGE" = "_$SP$SP"
 CAN_ENCRYPT=
+@endif
 @endif
 ;
 ; NOTE: If is able to encrypt the message then will now do so.
@@ -836,7 +847,7 @@ EXTRA_MESSAGE=@strlit:%NEXT_MSG_PARTS:4%
 ENCODED_MESSAGE=@strlit:%NEXT_MSG_PARTS:3%
 ;
 DECODED_MESSAGE=@base64:$ENCODED_MESSAGE
-DECODED_MESSAGE=@substr:1,0:$DECODED_MESSAGE$EXTRA_MESSAGE
+DECODED_MESSAGE=@substr:1,0:$DECODED_MESSAGE
 ;
 LAST_MSG_UNIX=%NEXT_MSG_PARTS:1%
 ;
@@ -866,6 +877,10 @@ DECODED_MESSAGE=@substr:2:$DECODED_MESSAGE
 ;
 @ifeq "$PREFIX" "!X"
 DECODED_MESSAGE=$EYE_EMOJI$DECODED_MESSAGE
+@endif
+;
+@ifdef $EXTRA_MESSAGE
+DECODED_MESSAGE=$DECODED_MESSAGE\n$EXTRA_MESSAGE
 @endif
 ;
 @else
