@@ -1002,33 +1002,10 @@ function arm_remove_device( device, action )
 
 // NOTE: One request for both (Ian, 2026-10-26) - a Block says so ("options=block", "d370affc"), and blocks whatever the device's
 // state. Without it, the node decides by whether the device has a session - "action" one of "device_choice( )"'s.
+// NOTE: A DELETE blocks only with the "block" option (Ian's "54d1f99b", 2026-10-28) - without it, it only ever signs out, so a
+// Sign out no longer reads the list again first.
 async function do_remove_device( entry, action )
 {
-   // NOTE: So a Sign out never blocks, the list is read again first, and nothing is done if the device has signed out since it
-   // was shown (found by review, 2026-10-27) - until the node blocks only when asked (asked of Ian, 2026-10-27).
-   if( action.action === "sign_out" )
-   {
-      var listed = await request( function( done )
-      {
-         return ciyam.fetch( devices_url( "" ), "GET", done );
-      } );
-
-      var now = ( problem_text( listed ) === "" )
-       ? parse_devices( listed, ciyam.device ).filter( function( d ) { return d.device === entry.device; } )[ 0 ] : null;
-
-      if( !now || now.signed_out )
-      {
-         g_device_armed = "";
-
-         show_alert( now ? "That device has signed out since - nothing was done; choose again." : "That device is no longer listed -"
-          + " nothing was done.", true );
-
-         load_devices( );
-
-         return;
-      }
-   }
-
    var response = await request( function( done )
    {
       return ciyam.fetch( devices_url( "/" + encodeURIComponent( entry.device ) )
