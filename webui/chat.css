@@ -576,11 +576,19 @@ button.chat-avatar:hover
    gap: 8px;
 }
 
+/* NOTE: The same red in both themes - the critical text colour, used before, is a light pink in the dark one, too pale for white
+   text - and darker on hover, not the plain button's pale hover, which left the white text unreadable (Damon, 2026-10-28). */
 .chat-btn--danger
 {
-   border-color: var(--color-chat-critical-text);
-   background: var(--color-chat-critical-text);
+   border-color: var(--color-chat-critical);
+   background: var(--color-chat-critical);
    color: #ffffff;
+}
+
+.chat-btn--danger:hover
+{
+   border-color: color-mix( in srgb, var(--color-chat-critical) 78%, #000000 );
+   background: color-mix( in srgb, var(--color-chat-critical) 78%, #000000 );
 }
 
 .chat-btn--small
