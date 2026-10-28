@@ -1281,6 +1281,17 @@ async function do_disconnect( already_ended )
 
    close_drawers( false );
 
+   // NOTE: A dialog open as the session ended goes with it - it sat over the sign in, and a room key shared in it stayed in the
+   // page (found by review, 2026-10-29). Runs of notices opened were this account's too.
+   do_close_room_dialog( );
+
+   document.getElementById( "room_key_dialog" ).hidden = true;
+
+   chat_room_key_reset( );
+
+   g_room_key_drawn_for = "";
+   g_notice_runs_open = { };
+
    close_emoji_panel( false );
    close_emoji_suggest( );
 
