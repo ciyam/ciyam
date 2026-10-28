@@ -266,8 +266,8 @@ function device_choice( entry )
 
    // NOTE: What it asks says what it does to the device as it is - one signed in is signed out too (found by review).
    var block = { action: "block", options: "block", label: "Block", ask: entry.signed_out ? "Block it? It can never sign in as you again."
-    : "Block it? It is signed out now, and can never sign in as you again.", yes: "Block it", done: "The device " + name + " is blocked - it can't sign in as you again. If it may have your password saved, change"
-    + " your password too." };
+    : "Block it? It is signed out now, and can never sign in as you again.", yes: "Block it",
+    done: "The device " + name + " is blocked - it can't sign in as you again. If it may have your password saved, change your password too." };
 
    if( entry.current )
       return { state: "This browser", actions: [ ] };
@@ -415,7 +415,7 @@ function room_keys_text( rooms )
 }
 
 // NOTE: Keys as the last step of joining (Damon, 2026-10-28) - after "Write these down", in the same card: what they are for, then
-// Create keys or Skip; once set up ("have"), on to the chat. Skipped, My account and Home say they need setting up until they are.
+// Create keys or Skip; once set up ("have"), on to Home. Skipped, My account and Home say they need setting up until they are.
 function keys_step_text( have )
 {
    if( have )

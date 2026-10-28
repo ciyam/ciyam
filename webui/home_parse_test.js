@@ -321,15 +321,21 @@ check( "a device shortened", hp.short_device( "6034a59f4554116a" ), "6034a5…11
 const folk = [ { name: "admin", pin: "10301", status: "admin" }, { name: "verify-a", pin: "20401", status: "active" },
  { name: "Verify-b", pin: "20402", status: "active" }, { name: "", pin: "31415", status: "unclaimed" } ];
 
+function pins_of( people )
+{
+   return people.map( function( p ) { return p.pin; } );
+}
+
 check( "people matching - nothing typed, everyone", hp.people_matching( folk, "  " ).length, 4 );
-check( "- a name, case aside", hp.people_matching( folk, "VERIFY" ).map( p => p.pin ), [ "20401", "20402" ] );
-check( "- a PIN, or part of one", hp.people_matching( folk, "314" ).map( p => p.pin ), [ "31415" ] );
-check( "- the status as shown", hp.people_matching( folk, "not yet" ).map( p => p.pin ), [ "31415" ] );
+check( "- a name, case aside", pins_of( hp.people_matching( folk, "VERIFY" ) ), [ "20401", "20402" ] );
+check( "- a PIN, or part of one", pins_of( hp.people_matching( folk, "314" ) ), [ "31415" ] );
+check( "- the status as shown", pins_of( hp.people_matching( folk, "not yet" ) ), [ "31415" ] );
 check( "- every word found", [ hp.people_matching( folk, "verify active" ).length, hp.people_matching( folk, "verify admin" ).length ], [ 2, 0 ] );
 
 check( "a page of people", [ hp.people_page( 57, 2, 10 ), hp.people_page( 57, 6, 10 ), hp.people_page( 0, 1, 10 ) ], [
  { page: 2, pages: 6, from: 10, to: 20 }, { page: 6, pages: 6, from: 50, to: 57 }, { page: 1, pages: 1, from: 0, to: 0 } ] );
-check( "- held within the pages there are", [ hp.people_page( 21, 9, 10 ).page, hp.people_page( 21, 0, 10 ).page, hp.people_page( 21, "x" ).page ], [ 3, 1, 1 ] );
+check( "- held within the pages there are", [ hp.people_page( 21, 9, 10 ).page,
+ hp.people_page( 21, 0, 10 ).page, hp.people_page( 21, "x" ).page ], [ 3, 1, 1 ] );
 
 check( "the count over the list", [ hp.people_count_text( 8, 8, false, hp.people_page( 8, 1 ) ),
  hp.people_count_text( 57, 57, false, hp.people_page( 57, 2 ) ), hp.people_count_text( 57, 3, true, hp.people_page( 3, 1 ) ),

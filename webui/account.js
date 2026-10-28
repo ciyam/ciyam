@@ -1018,9 +1018,8 @@ function arm_remove_device( device, action )
 }
 
 // NOTE: One request for both (Ian, 2026-10-26) - a Block says so ("options=block", "d370affc"), and blocks whatever the device's
-// state. Without it, the node decides by whether the device has a session - "action" one of "device_choice( )"'s.
-// NOTE: A DELETE blocks only with the "block" option (Ian's "54d1f99b", 2026-10-28) - without it, it only ever signs out, so a
-// Sign out no longer reads the list again first.
+// state; without it (Ian's "54d1f99b", 2026-10-28) a DELETE only ever signs out, so a Sign out no longer reads the list again
+// first. "action" is one of "device_choice( )"'s.
 async function do_remove_device( entry, action )
 {
    var response = await request( function( done )
@@ -1500,8 +1499,8 @@ function remember_pin( pin )
    }
 }
 
-// NOTE: Keys as the last step of joining (Damon, 2026-10-28) - set after "Write these down", until the step is ended (Skip, or Open
-// the chat), or the account signs out. Your keys' card is brought into the step meanwhile - "g_keys_card_home" where it goes back.
+// NOTE: Keys as the last step of joining (Damon, 2026-10-28) - set after "Write these down", until the step is ended (Skip, or Go
+// to Home), or the account signs out. Your keys' card is brought into the step meanwhile - "g_keys_card_home" where it goes back.
 var g_onboarding = false;
 var g_keys_card_home = null;
 
@@ -1613,7 +1612,7 @@ function onboard_draw( part )
    document.getElementById( "keys_step_title" ).textContent = said.title;
    document.getElementById( "keys_step_lede" ).textContent = said.text;
 
-   // NOTE: Create keys and Skip until the words are being made - the card's own buttons then - and Open the chat once saved.
+   // NOTE: Create keys and Skip until the words are being made - the card's own buttons then - and Go to Home once saved.
    document.getElementById( "keys_step_choose" ).hidden = !none && ( part !== "keys_loading" );
    document.getElementById( "keys_step_create" ).disabled = !none;
    document.getElementById( "keys_step_done" ).hidden = !here;

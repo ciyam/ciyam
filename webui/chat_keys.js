@@ -842,6 +842,7 @@ async function do_remove_room_key( )
    if( !await ask_dialog( { title: "Remove this room's key?", text: "Messages sealed with it can't be read here any more, and yours"
     + " are sent unencrypted - unless it's added again.", yes: "Remove it", danger: true } ) || ( g_room !== room ) )
       return;
+
    var removed = chat_room_key( room );
 
    if( await chat_room_key_change( room, "" ) && ( removed !== "" ) )
