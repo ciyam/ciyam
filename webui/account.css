@@ -50,12 +50,14 @@
 
 #welcome_view .chat-signin-form
 {
-   padding: 28px 48px 24px;
+   padding: 24px 48px 20px;
 }
 
-#welcome_view .chat-signin-lede
+/* NOTE: And with a password suggested (Damon, 2026-10-28: it pushed the card past the bottom) - its note one line, close under the
+   checkbox. */
+#welcome_view .chat-suggested
 {
-   margin-bottom: 18px;
+   margin: 4px 0 0;
 }
 
 #welcome_view .chat-field + .chat-label,
@@ -77,12 +79,12 @@
 
 #welcome_view .chat-field
 {
-   height: 42px;
+   height: 40px;
 }
 
 #welcome_view h2
 {
-   margin-top: 18px;
+   margin: 16px 0 14px;
 }
 
 #welcome_view .chat-signin-actions

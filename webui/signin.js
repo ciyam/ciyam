@@ -1270,7 +1270,8 @@ async function offer_passphrase( password_id, confirm_id, note_id )
       set_revealed( field, true );
    } );
 
-   signin_set_text( note_id, "Your new password: " + phrase + " - write it down; it is all you need, with the PIN." );
+   // NOTE: One line - it is in both fields too (Damon, 2026-10-28: Welcome pushed past the bottom of the screen).
+   signin_set_text( note_id, "Write this down: " + phrase );
    document.getElementById( note_id ).hidden = false;
 }
 

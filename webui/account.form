@@ -39,8 +39,8 @@ http://www.opensource.org/licenses/mit-license.php.
          <span class="account-step">Step 1 of 3</span>
       </div>
 
+      <!-- NOTE: No lede - the tabs say what to use - so the card stays on one screen with a password suggested (Damon, 2026-10-28). -->
       <h2 tabindex="-1">Welcome</h2>
-      <p class="chat-signin-lede">Use what you were given to set up your account.</p>
 
       <div class="account-tabs" role="tablist" aria-label="What you were given">
          <button type="button" role="tab" id="join_tab_code" aria-selected="true" onclick="set_join_mode( 'code' )">I have a code</button>
