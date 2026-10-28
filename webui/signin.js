@@ -100,7 +100,7 @@ function signin_build( host, options )
    form.appendChild( signin_element( "h2", { tabindex: "-1" }, c_signin_title ) );
    form.appendChild( signin_element( "p", { class: "chat-signin-lede" }, c_signin_lede ) );
 
-   form.appendChild( signin_element( "label", { class: "chat-label", for: g_signin_ids.access }, "Account" ) );
+   form.appendChild( signin_element( "label", { class: "chat-label", for: g_signin_ids.access, id: "signin_access_label" }, "Account" ) );
 
    var access = signin_element( "select", { id: g_signin_ids.access, class: "chat-field chat-field--mono" } );
 
@@ -133,8 +133,7 @@ function signin_build( host, options )
    retain.appendChild( new Option( "The PIN and the password", "full" ) );
 
    form.appendChild( retain );
-   form.appendChild( signin_element( "div", { class: "signin-hint" },
-    "Shared by every part of your node on this browser. Saving the password as well signs you in without typing it." ) );
+   form.appendChild( signin_element( "div", { class: "signin-hint" }, "Saving the password as well signs you in without typing it." ) );
 
    // NOTE: A refusal stands out - a panel of its own (Damon, 2026-10-10: it was small grey-red type).
    form.appendChild( signin_element( "div", { class: "chat-error-text signin-error", id: "signin_error", role: "alert" } ) );
@@ -173,14 +172,15 @@ function signin_build( host, options )
       form.appendChild( signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_setup_hint" },
        "With the code or PIN from the person who added you." ) );
 
+   // NOTE: One line (Damon, 2026-10-28: the sign in scrolled) - what it forgets is said by the question it asks first.
    var foot = signin_element( "div", { class: "chat-signin-foot" } );
    var reset = signin_element( "button", { type: "button", class: "chat-btn--link", id: "signin_reset" }, "Reset this browser" );
 
    reset.addEventListener( "click", signin_reset_browser );
 
+   foot.appendChild( signin_element( "span", { }, "Trouble signing in?" ) );
+   foot.appendChild( document.createTextNode( " " ) );
    foot.appendChild( reset );
-   foot.appendChild( signin_element( "div", { class: "chat-signin-foot-note" },
-    "Forgets the device token, every saved account and this browser's other settings for the node." ) );
 
    form.appendChild( foot );
    view.appendChild( form );
@@ -426,6 +426,11 @@ function signin_fill_saved( )
    }
 
    select.selectedIndex = chosen_saved_index( ordered, last );
+
+   // NOTE: The list only once there is an account saved here - with none, its one choice is "Enter a PIN…" (Damon, 2026-10-28:
+   // the sign in scrolled).
+   document.getElementById( "signin_access_label" ).hidden = ( ordered.length === 0 );
+   select.hidden = ( ordered.length === 0 );
 
    signin_on_access( );
 }

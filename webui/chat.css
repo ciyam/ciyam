@@ -636,7 +636,7 @@ button.chat-avatar:hover
    display: flex;
    min-height: 100vh;
    min-height: 100dvh;
-   padding: 40px 16px;
+   padding: 24px 16px;
    background: var(--color-chat-bg-raised);
 }
 
@@ -645,7 +645,7 @@ button.chat-avatar:hover
    width: 100%;
    max-width: 520px;
    margin: auto;
-   padding: 48px 56px 36px;
+   padding: 36px 56px 28px;
    display: flex;
    flex-direction: column;
    background: var(--color-chat-bg);
@@ -676,7 +676,7 @@ button.chat-avatar:hover
 
 .chat-signin h2
 {
-   margin: 34px 0 8px;
+   margin: 24px 0 8px;
    font-size: 26px;
    font-weight: 600;
    letter-spacing: -0.01em;
@@ -684,7 +684,7 @@ button.chat-avatar:hover
 
 .chat-signin-lede
 {
-   margin: 0 0 26px;
+   margin: 0 0 22px;
    font-size: var(--font-size-chat-body);
    line-height: 1.5;
    color: var(--color-chat-text-secondary);
@@ -705,6 +705,12 @@ button.chat-avatar:hover
 .chat-reveal-wrap + .chat-label
 {
    margin-top: 26px;
+}
+
+/* NOTE: The sign in's account list hidden, with none saved (2026-10-28) - the PIN's label then first, under the lede. */
+#signin_access[hidden] + .chat-label
+{
+   margin-top: 0;
 }
 
 /* NOTE: A new password's field with its reveal button inside, at the end (2026-10-25). */
@@ -834,23 +840,19 @@ button.chat-avatar:hover
    text-align: center;
 }
 
+/* NOTE: One line - "Trouble signing in? Reset this browser" (Damon, 2026-10-28: the sign in scrolled). */
 .chat-signin-foot
 {
-   margin-top: 32px;
-   padding-top: 20px;
+   margin-top: 22px;
+   padding-top: 14px;
    border-top: 1px solid var(--color-chat-rule);
    display: flex;
-   flex-direction: column;
-   gap: 10px;
-   align-items: flex-start;
-}
-
-.chat-signin-foot-note
-{
-   font-size: var(--font-size-chat-tiny);
+   flex-wrap: wrap;
+   justify-content: center;
+   align-items: baseline;
+   gap: 6px;
+   font-size: var(--font-size-chat-meta);
    color: var(--color-chat-text-faint);
-   max-width: 380px;
-   line-height: 1.5;
 }
 
 /* ====================================================================
