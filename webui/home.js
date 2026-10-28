@@ -1273,10 +1273,9 @@ function build_shell( )
 
    var rail_apps = document.getElementById( "rail_apps" );
    var rail_sections = document.getElementById( "rail_sections" );
-   var chips = document.getElementById( "shell_chips" );
    var bottom = document.getElementById( "shell_bottombar" );
 
-   [ rail_apps, rail_sections, chips, bottom ].forEach( function( element ) { element.replaceChildren( ); } );
+   [ rail_apps, rail_sections, bottom ].forEach( function( element ) { element.replaceChildren( ); } );
 
    apps.forEach( function( app )
    {
@@ -1292,17 +1291,9 @@ function build_shell( )
    sections.forEach( function( section )
    {
       rail_sections.appendChild( rail_item( section.key, section.title, false, function( ) { shell_close_rail( ); go( section.key ); } ) );
-
-      var chip = shell_chip( section.key, section.title, function( ) { go( section.key ); } );
-
-      if( section.key === "health" )
-         chip.appendChild( health_badge( ) );
-
-      chips.appendChild( chip );
    } );
 
    document.getElementById( "rail_node" ).hidden = ( sections.length === 0 );
-   chips.hidden = ( sections.length === 0 );
 
    var name = account_display_name( ciyam.username, ciyam.is_admin );
 

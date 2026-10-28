@@ -362,8 +362,6 @@ http://www.opensource.org/licenses/mit-license.php.
 
       </header>
 
-      <nav class="shell-chips" id="shell_chips" aria-label="Node" hidden></nav>
-
       <main class="shell-main">
          <!-- NOTE: A member's Home (build step 5) - their apps, what needs them, announcements and their account.
               What it says of the chat is read as the chat reads it ("chat_parse.js"). -->

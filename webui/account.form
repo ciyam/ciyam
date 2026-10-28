@@ -226,8 +226,6 @@ http://www.opensource.org/licenses/mit-license.php.
          <button type="button" class="chat-btn chat-btn--mono shell-console-toggle" id="console_toggle" onclick="do_toggle_console( )">Console</button>
       </header>
 
-      <nav class="shell-chips" id="shell_chips" aria-label="My account"></nav>
-
       <main class="shell-main account-main">
          <div class="account-alert" id="account_alert" role="status" hidden></div>
 

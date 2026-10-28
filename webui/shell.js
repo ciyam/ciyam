@@ -6,8 +6,9 @@
 
 // NOTE: The shell an app's pages share (Damon, 2026-10-26: consistency across the apps) - "shell.css". Each page builds its own
 // into the same markup: a side menu ("shell_rail") of the apps and the page's sections, with who is signed in; a top bar with the
-// menu's button ("rail_open"); on a phone the menu a drawer over a scrim ("rail_scrim"), the sections chips under the top bar
-// ("shell_chips") and the apps a bar along the bottom ("shell_bottombar"). Moved out of Home for My account.
+// menu's button ("rail_open"); on a phone the menu a drawer over a scrim ("rail_scrim"), its button marked when a section in it needs
+// you ("shell_attention( )"), and the apps a bar along the bottom ("shell_bottombar"). Moved out of Home for My account. The sections
+// were chips under a phone's top bar too, until they scrolled sideways (Damon, 2026-10-28) - the menu has them.
 
 const c_shell_icons = {
    home: "M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z",
@@ -131,25 +132,10 @@ function shell_bottom_item( key, title, on_click )
    return item;
 }
 
-// NOTE: One of the page's sections as a chip, under a phone's top bar.
-function shell_chip( key, title, on_click )
-{
-   var chip = document.createElement( "a" );
-
-   chip.className = "shell-chip";
-   chip.href = "#" + key;
-   chip.dataset.key = key;
-   chip.textContent = title;
-
-   shell_bind_section( chip, on_click );
-
-   return chip;
-}
-
-// NOTE: The items for "keys" marked as where the page is - the menu's, the chips and the bottom bar's alike.
+// NOTE: The items for "keys" marked as where the page is - the menu's and the bottom bar's alike.
 function shell_mark( keys )
 {
-   document.querySelectorAll( ".shell-rail-item, .shell-chip, .shell-bottom-item" ).forEach( function( item )
+   document.querySelectorAll( ".shell-rail-item, .shell-bottom-item" ).forEach( function( item )
    {
       var current = ( keys.indexOf( item.dataset.key ) >= 0 );
 
@@ -188,9 +174,40 @@ function shell_close_rail( )
    document.getElementById( "rail_open" ).setAttribute( "aria-expanded", "false" );
 }
 
-// NOTE: Once, as the page starts - the menu's button, the scrim and Escape.
+// NOTE: The menu's button on a phone marked while a section in the menu has a badge - Your keys, Health - as the sections are seen
+// only in the menu there (Damon, 2026-10-28): amber, red when one is a problem, and said to a screen reader. The apps' badges are
+// left out - the chat's count is in the bottom bar. Kept up by watching the badges, so nothing showing one need say so.
+function shell_attention( )
+{
+   var badges = Array.prototype.slice.call( document.querySelectorAll( "#rail_sections .shell-badge" ) ).filter( function( badge )
+   {
+      return !badge.hidden;
+   } );
+
+   var button = document.getElementById( "rail_open" );
+   var dot = document.getElementById( "rail_attention" );
+
+   dot.hidden = ( badges.length === 0 );
+   dot.classList.toggle( "is-problem", badges.some( function( badge ) { return badge.classList.contains( "is-problem" ); } ) );
+
+   button.setAttribute( "aria-label", ( badges.length > 0 ) ? "Open the menu - something needs you" : "Open the menu" );
+}
+
+// NOTE: Once, as the page starts - the menu's button (and its mark), the scrim and Escape.
 function shell_install( )
 {
+   var dot = document.createElement( "span" );
+
+   dot.className = "shell-menu-dot";
+   dot.id = "rail_attention";
+   dot.hidden = true;
+   dot.setAttribute( "aria-hidden", "true" );
+
+   document.getElementById( "rail_open" ).appendChild( dot );
+
+   new MutationObserver( shell_attention ).observe( document.getElementById( "rail_sections" ),
+    { subtree: true, childList: true, attributes: true, attributeFilter: [ "hidden", "class" ] } );
+
    document.getElementById( "rail_open" ).addEventListener( "click", shell_open_rail );
    document.getElementById( "rail_scrim" ).addEventListener( "click", shell_close_rail );
 

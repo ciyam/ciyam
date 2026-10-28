@@ -176,7 +176,6 @@
 
 .shell-menu-button,
 .shell-topbar-sub,
-.shell-chips,
 .shell-bottombar
 {
    display: none;
@@ -215,11 +214,28 @@
    font-weight: 700;
 }
 
-.shell-chip .shell-badge
+/* NOTE: The menu's button marked on a phone while a section in the menu needs you ("shell_attention( )") - amber as Health's and
+   Your keys' badges are, red for a problem. */
+.shell-menu-dot
 {
-   min-width: 18px;
-   height: 18px;
-   margin-left: 6px;
+   position: absolute;
+   top: 8px;
+   right: 8px;
+   width: 10px;
+   height: 10px;
+   border: 2px solid var(--color-chat-bg);
+   border-radius: 50%;
+   background: var(--color-chat-warning);
+}
+
+.shell-menu-dot[hidden]
+{
+   display: none;
+}
+
+.shell-menu-dot.is-problem
+{
+   background: var(--color-chat-critical);
 }
 
 @media ( max-width: 760px )
@@ -266,6 +282,7 @@
 
    .shell-menu-button
    {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -281,40 +298,6 @@
    .shell-topbar-sub
    {
       display: flex;
-   }
-
-   .shell-chips:not( [hidden] )
-   {
-      display: flex;
-      gap: 6px;
-      padding: 6px 14px 12px;
-      overflow-x: auto;
-      background: var(--color-chat-bg);
-      border-bottom: 1px solid var(--color-chat-border);
-   }
-
-   .shell-chip
-   {
-      flex: 0 0 auto;
-      display: flex;
-      align-items: center;
-      height: 36px;
-      padding: 0 14px;
-      border-radius: 18px;
-      border: 1px solid var(--color-chat-border);
-      background: var(--color-chat-bg-raised);
-      color: var(--color-chat-text);
-      font-size: 13px;
-      font-weight: 500;
-      text-decoration: none;
-   }
-
-   .shell-chip.is-current
-   {
-      border-color: var(--color-chat-accent);
-      background: var(--color-chat-accent);
-      color: #ffffff;
-      font-weight: 600;
    }
 
    .shell-main

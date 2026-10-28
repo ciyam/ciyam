@@ -562,16 +562,15 @@ function show_section( name )
       heading.focus( { preventScroll: true } );
 }
 
-// NOTE: The side menu, the chips and the bottom bar - built at each sign in, as Home's are ("build_shell( )" in "home.js"): the
+// NOTE: The side menu and the bottom bar - built at each sign in, as Home's are ("build_shell( )" in "home.js"): the
 // apps as the switcher lists them, My account's sections, and who is signed in.
 function build_shell( )
 {
    var rail_apps = document.getElementById( "rail_apps" );
    var rail_sections = document.getElementById( "rail_sections" );
-   var chips = document.getElementById( "shell_chips" );
    var bottom = document.getElementById( "shell_bottombar" );
 
-   [ rail_apps, rail_sections, chips, bottom ].forEach( function( element ) { element.replaceChildren( ); } );
+   [ rail_apps, rail_sections, bottom ].forEach( function( element ) { element.replaceChildren( ); } );
 
    var open = function( app )
    {
@@ -609,25 +608,21 @@ function build_shell( )
       var go = function( ) { show_section( section.key ); };
 
       var item = shell_rail_item( section.key, section.title, false, go );
-      var chip = shell_chip( section.key, section.title, go );
 
-      // NOTE: Your keys' badge - 1 while there are none ("onboard_draw( )"), as Home counts what needs admin beside Health.
+      // NOTE: Your keys' badge - 1 while there are none ("onboard_draw( )"), as Home counts what needs admin beside Health; on a
+      // phone the menu's button says so ("shell_attention( )").
       if( section.key === "keys" )
       {
-         [ item, chip ].forEach( function( element )
-         {
-            var badge = document.createElement( "span" );
+         var badge = document.createElement( "span" );
 
-            badge.className = "shell-badge";
-            badge.dataset.badge = "keys";
-            badge.hidden = true;
+         badge.className = "shell-badge";
+         badge.dataset.badge = "keys";
+         badge.hidden = true;
 
-            element.appendChild( badge );
-         } );
+         item.appendChild( badge );
       }
 
       rail_sections.appendChild( item );
-      chips.appendChild( chip );
    } );
 
    var name = account_display_name( ciyam.username, ciyam.is_admin );
