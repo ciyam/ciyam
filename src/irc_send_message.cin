@@ -284,6 +284,8 @@ REACTIONS=$OUTPUT
 ;
 @ifdef $REACTIONS
 ;
+REPLACEMENT=
+;
 LINES=@repstr:o/\n:$REACTIONS
 ;
 @label RNEXT
@@ -303,7 +305,7 @@ EMOJI=@substr:0,2:$NEXT_LINE
 ;
 @ifdef $REACTION
 @if $REACTION #< $EMOJI
-REPLACEMENT=%REACTION%%SHORT%xo
+REPLACEMENT=%REACTION%%SHORT%x
 REACTION=
 @endif
 @endif
@@ -331,6 +333,10 @@ REACTION=
 ;
 REPLACEMENT=%REPLACEMENT%$SHORTS
 ;
+@ifeq "$REPLACEMENT" "$EMOJI"
+REPLACEMENT=
+@endif
+;
 LINES=%LINES:-1%
 ;
 !!@:RLOOP
@@ -347,6 +353,7 @@ REPLACEMENT=%REPLACEMENT%o%REACTION%%SHORT%x
 @endif
 @endif
 ;
+CHANGED=1
 .system_variable @keyed_irc_%ROOM%_MR:$NAMES "$REPLACEMENT"
 @endif
 @elif "$BAD_TARGET" = "1"
@@ -375,6 +382,7 @@ ERROR=Maximum pinned messages for this room already exist.
 .system_gen_key -unix_unique
 UNIX_UNIQUE=$OUTPUT
 ;
+CHANGED=1
 @ifeq "$MESSAGE" "$OLD_MESSAGE"
 .system_variable @keyed_irc_%ROOM%_ME:$NAMES ""
 @else
@@ -413,6 +421,7 @@ PREFIX=@substr:0,3:$MESSAGE
 ;
 ; NOTE: Prefix being "_/".
 @ifeq "$PREFIX" "Xy9"
+;
 @ifeq "$MESSAGE" "Xy9jbGVhcg"
 CHANGED=1
 .system_variable @queue_irc_$ROOM_AND_USER ""
@@ -422,6 +431,7 @@ RETURN=Available commands are:\n
 RETURN=$RETURN\nhelp (show this output)
 RETURN=$RETURN\nclear (clears room history)
 @endif
+;
 @else
 ;
 .system_variable @irc_users_$ROOM
@@ -483,7 +493,6 @@ CREATED_KEYED=1
 @endif
 ;
 @ifdef $USER_MESSAGE
-CHANGED=1
 .system_variable @queue_irc_$ROOM_AND_USER "$UNIX_UNIQUE $USER_NAME $USER_MESSAGE"
 @endif
 ;
