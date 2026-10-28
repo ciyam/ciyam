@@ -1584,14 +1584,15 @@ function keys_card_return( )
    g_keys_card_home = null;
 }
 
-// NOTE: Skip, or Open the chat once they are set up - on to the chat, and this page to My account, which says what needs you.
+// NOTE: Skip, or Go to Home once they are set up - Home, in this tab on this session, being the hub (Damon, 2026-10-28: rather than
+// the chat); its Needs you, and My account, say if the keys still need setting up.
 function do_keys_step_end( )
 {
    g_onboarding = false;
 
    keys_card_return( );
 
-   do_open_chat( );
+   apps_go( "home", "", null );
 }
 
 // NOTE: As the keys card changes - "part" the part shown ("keys_show( )"): the last step of joining, while it is open, and what
