@@ -831,7 +831,8 @@ async function keys_add_contact( )
 
 async function keys_remove_contact( name )
 {
-   if( !confirm( "Remove " + name + "'s public key? You can add it again later." ) )
+   if( !await ask_dialog( { title: "Remove " + name + "'s public key?", text: "You can add it again later.", yes: "Remove",
+    danger: true } ) )
       return;
 
    await keys_store_contacts( function( contacts ) { delete contacts[ name ]; return ""; }, "Removing " + name + "'s key…" );
@@ -908,18 +909,20 @@ async function keys_enter_go( )
    await keys_show_here( access, "Your keys are on this browser.", false );
 }
 
-function keys_start_again( )
+async function keys_start_again( )
 {
-   if( !confirm( "Set up new keys from new twelve words? The keys on the node are replaced, the public keys you've added for others"
-    + " and your room keys are removed, and anyone with your old public key will need your new one." ) )
+   if( !await ask_dialog( { title: "Set up new keys?", text: "From new twelve words. The keys on the node are replaced, the public"
+    + " keys you've added for others and your room keys are removed, and anyone with your old public key will need your new one.",
+    yes: "Set up new keys", danger: true } ) )
       return;
 
    keys_start( );
 }
 
-function keys_forget( )
+async function keys_forget( )
 {
-   if( !confirm( "Forget your keys on this browser? To use them here again you'll need your twelve words, or another browser's QR code." ) )
+   if( !await ask_dialog( { title: "Forget your keys on this browser?", text: "To use them here again you'll need your twelve words,"
+    + " or another browser's QR code.", yes: "Forget them", danger: true } ) )
       return;
 
    keys_forget_here( );

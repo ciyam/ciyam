@@ -490,12 +490,13 @@ function signin_apply_retain( mode, hashed )
 // NOTE: Everything this browser keeps for the node goes: the device token, which a rebuilt node no
 // longer knows, every saved account - for every app, as they share them - and the rest: dismissed
 // announcements and recent emoji. Said so on the page (found by review).
-function signin_reset_browser( )
+async function signin_reset_browser( )
 {
    if( ciyam.sessid !== "" )
       return;
 
-   if( !confirm( "Forget the device token, every saved account and this browser's other settings for the node?" ) )
+   if( !await ask_dialog( { title: "Reset this browser?", text: "The device token, every saved account and this browser's other"
+    + " settings for the node are forgotten.", yes: "Reset", danger: true } ) )
       return;
 
    try

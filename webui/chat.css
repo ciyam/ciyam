@@ -2487,6 +2487,24 @@ button.chat-avatar:hover
    margin-top: 6px;
 }
 
+/* ---- a question in place of "confirm( )" ("dialog.js", Damon, 2026-10-27) - over every other dialog, drawer and menu ---- */
+
+.chat-ask-scrim
+{
+   z-index: 70;
+}
+
+.chat-ask
+{
+   max-width: 400px;
+}
+
+.chat-ask-text
+{
+   font-size: var(--font-size-chat-body);
+   white-space: pre-line;
+}
+
 /* ---- the people picker ("picker.js", Damon, 2026-10-27) - the chosen as chips in a field, and a popup list with a search ---- */
 
 .chat-picker
