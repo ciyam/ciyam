@@ -368,7 +368,7 @@ SALT=@file:~xxd -l 16 -p /dev/urandom
 SPUB=@public:$SKEY
 OWN_ECDHE=@shared:$PKEY:$~SPUB
 ENCRTYPED=@crypt:cc $~OWN_ECDHE$SALT:$~QR_CODE
-~echo -e "$SALT\r$ENCRTYPED" > $LOCAL_FILES_DIR/$FILE_NAME
+~printf "%b\n" "$SALT\r$ENCRTYPED" > $LOCAL_FILES_DIR/$FILE_NAME
 @endif
 @endif
 @endif
@@ -496,7 +496,7 @@ SALT=@file:~xxd -l 16 -p /dev/urandom
 SPUB=@public:$SKEY
 OWN_ECDHE=@shared:$PKEY:$~SPUB
 ENCRTYPED=@crypt:cc $~OWN_ECDHE$SALT:$~ROOM_KEY
-~echo -e "$SALT\r$ENCRTYPED" > $LOCAL_FILES_DIR/$FILE_NAME
+~printf "%b\n" "$SALT\r$ENCRTYPED" > $LOCAL_FILES_DIR/$FILE_NAME
 @endif
 ;
 LEN=@strlen:$ROOM
