@@ -1360,6 +1360,8 @@ check( "- a private one", cp.pin_error_text( "Error: Source message must not be 
 check( "- anything else as it came", cp.pin_error_text( "Error: Something else." ), "Something else." );
 check( "- redrawn when what it shows changes", [ cp.pinned_signature( pinned_read.pinned ) === cp.pinned_signature( pinned_only.pinned ),
  cp.pinned_signature( pinned_read.pinned ) === cp.pinned_signature( [ ] ) ], [ true, false ] );
+check( "- its reactions too", cp.pinned_signature( [ { unique: "1", sender: "a", text: "t" } ] ) === cp.pinned_signature( [ { unique: "1", sender: "a",
+ text: "t", reactions: [ { code: "01", people: [ "4b573f" ] } ] } ] ), false );
 
 // NOTE: Colour and style - Ian's shorthand typed, real escapes stored and drawn (Ian, 2026-10-15; "Message Formatting Design").
 heading( "formatting" );

@@ -1837,6 +1837,18 @@ button.chat-avatar:hover
    display: none;
 }
 
+/* NOTE: In the pinned strip, under the message's words - the strip is not the row's grid. */
+.chat-pinned .chat-reactions
+{
+   margin-top: 2px;
+}
+
+.chat-pinned .chat-reaction
+{
+   height: 20px;
+   padding: 0 6px;
+}
+
 .chat-reaction
 {
    display: inline-flex;

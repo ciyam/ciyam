@@ -3943,31 +3943,36 @@ function reaction_short_names( )
 // ("data-reactions") for what a reaction then does ("apply_reaction( )").
 function draw_reactions( row, reactions, may_react )
 {
-   var holder = row.querySelector( ".chat-reactions" );
-
    row.dataset.reactions = JSON.stringify( reactions || [ ] );
 
+   fill_reactions( row.querySelector( ".chat-reactions" ), reactions, may_react ? function( code ) { do_react( row.dataset.unique || "", code ); } : null );
+}
+
+// NOTE: The chips themselves - "give", what one does when clicked, or null for chips that only say who (one's own message, and the
+// pinned strip).
+function fill_reactions( holder, reactions, give )
+{
    holder.textContent = "";
 
    var chips = reaction_chips( reactions, reaction_short( ciyam.username ), reaction_short_names( ) );
 
    chips.forEach( function( chip )
    {
-      var item = document.createElement( may_react ? "button" : "span" );
+      var item = document.createElement( give ? "button" : "span" );
 
       item.className = "chat-reaction" + ( chip.mine ? " is-mine" : "" );
       item.title = chip.label;
 
       item.setAttribute( "aria-label", chip.label );
 
-      if( may_react )
+      if( give )
       {
          item.type = "button";
          item.dataset.code = chip.code;
 
          item.setAttribute( "aria-pressed", chip.mine ? "true" : "false" );
 
-         item.addEventListener( "click", function( ) { do_react( row.dataset.unique || "", chip.code ); } );
+         item.addEventListener( "click", function( ) { give( chip.code ); } );
       }
       else
          item.setAttribute( "role", "img" );
@@ -4310,6 +4315,8 @@ function render_pinned( )
          node.querySelector( ".chat-pinned-text" ).textContent = "Message deleted";
       else
          draw_message_text( node.querySelector( ".chat-pinned-text" ), message.text );
+
+      fill_reactions( node.querySelector( ".chat-reactions" ), message.reactions || [ ], null );
 
       var open = node.querySelector( ".chat-pinned-open" );
 

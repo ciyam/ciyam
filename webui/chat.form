@@ -588,6 +588,8 @@ http://www.opensource.org/licenses/mit-license.php.
             <span class="chat-pinned-when"></span>
          </span>
          <span class="chat-pinned-text"></span>
+         <!-- NOTE: Its reactions, saying who - to react, the message is opened in the conversation (Damon, 2026-10-29). -->
+         <span class="chat-reactions" hidden></span>
       </button>
       <button type="button" class="chat-btn chat-btn--small chat-pinned-unpin" hidden>Unpin</button>
    </div>

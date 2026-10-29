@@ -2312,7 +2312,11 @@ function pin_error_text( error )
 // NOTE: What the pinned strip shows, to redraw it only when that changes.
 function pinned_signature( list )
 {
-   return ( list || [ ] ).map( function( m ) { return m.unique + ( m.edited ? "*" : "" ) + m.sender + " " + m.text; } ).join( "\n" );
+   // NOTE: Its reactions too - shown in the strip (Damon, 2026-10-29).
+   return ( list || [ ] ).map( function( m )
+   {
+      return m.unique + ( m.edited ? "*" : "" ) + m.sender + " " + m.text + "\t" + JSON.stringify( m.reactions || [ ] );
+   } ).join( "\n" );
 }
 
 // NOTE: The node's refusals, said plainly - anything else as it came. Words that are not the node's are answered

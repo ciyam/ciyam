@@ -692,6 +692,7 @@ ok   the ninth pin refused - said plainly
 ok   - a private one
 ok   - anything else as it came
 ok   - redrawn when what it shows changes
+ok   - its reactions too
 
 == formatting ==================================================
 ok   his codes as his console sends them - bold red is bold, then red
