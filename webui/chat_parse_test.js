@@ -1606,17 +1606,16 @@ check( "reactions read", cp.parse_reactions( "014b573fx159e43xo02159e43x" ), [ {
 check( "- only exactly their form", [ cp.parse_reactions( "" ), cp.parse_reactions( "01" ), cp.parse_reactions( "014b573f" ),
  cp.parse_reactions( "014b573fxo" ), cp.parse_reactions( "104b573fx" ), cp.parse_reactions( "014B573Fx" ), cp.parse_reactions( "nice 014b573fx" ) ],
  [ null, null, null, null, null, null, null ] );
-check( "- after the text, for now: the last word, if exactly their form", [ cp.split_trailing_reactions( "nice one 014b573fx" ),
- cp.split_trailing_reactions( "nice one 01" ), cp.split_trailing_reactions( "014b573fx" ) ], [
- { text: "nice one", reactions: [ { code: "01", people: [ "4b573f" ] } ] }, { text: "nice one 01", reactions: null },
- { text: "014b573fx", reactions: null } ] );
-check( "- a message with them after a space: its text without them", cp.parse_message_line( "1793192805000 maya  well done 014b573fx" ),
- { kind: "chat", unique: "1793192805000", sender: "maya", edited: false, private: false, text: "well done",
- reactions: [ { code: "01", people: [ "4b573f" ] } ] } );
-check( "- an encrypted one's too, so it can still be opened", cp.parse_message_line( "1793192805000 maya  X\rAbCd+/== 09159e43x" ).text, "X\rAbCd+/==" );
-check( "- on a line of their own, after their message", cp.parse_fetch_response( "maya+1 ian+1\n1793192805000 maya  well done\n014b573fx\n"
- + "1793192806000 ian  thanks" ).messages.map( function( m ) { return [ m.text, m.reactions || null ]; } ),
+check( "- on a line of their own, after their message (Ian's '842fc32f')", cp.parse_fetch_response( "maya+1 ian+1\n1793192805000 maya  well done\n"
+ + "014b573fx\n1793192806000 ian  thanks" ).messages.map( function( m ) { return [ m.text, m.reactions || null ]; } ),
  [ [ "well done", [ { code: "01", people: [ "4b573f" ] } ] ], [ "thanks", null ] ] );
+check( "- an encrypted one's apart from it, so it can still be opened", cp.parse_fetch_response( "maya+1\n1793192805000 maya  X\rAbCd+/==\n"
+ + "09159e43x" ).messages[ 0 ].text, "X\rAbCd+/==" );
+check( "- a message that only ends like them is words", cp.parse_message_line( "1793192805000 maya  well done 014b573fx" ).text, "well done 014b573fx" );
+check( "- as the web session sends them for now: a last line, its break escaped", cp.parse_fetch_response( "maya+1\n1793192805000 maya  well done\\\n"
+ + "014b573fx\n1793192806000 maya  two\\\nlines" ).messages.map( function( m ) { return [ m.text, m.reactions || null ]; } ),
+ [ [ "well done", [ { code: "01", people: [ "4b573f" ] } ] ], [ "two\nlines", null ] ] );
+check( "- an encrypted one's too", cp.parse_fetch_response( "maya+1\n1793192805000 maya  X\rAbCd+/==\\\n09159e43x" ).messages[ 0 ].text, "X\rAbCd+/==" );
 check( "- after a message ending in a line break", cp.parse_fetch_response( "maya+1\n1793192805000 maya  two\\\n\n094b573fx" ).messages[ 0 ].reactions,
  [ { code: "09", people: [ "4b573f" ] } ] );
 check( "- none, none shown", cp.parse_message_line( "1793192805000 maya  plain" ).reactions, undefined );
@@ -1633,6 +1632,11 @@ check( "reacting - given, the same again taken off, another replacing it", [
  [ { code: "01", people: [ "159e43" ] }, { code: "09", people: [ "4b573f" ] } ],
  [ { code: "01", people: [ "4b573f" ] }, { code: "05", people: [ "159e43" ] } ] ] );
 check( "- sent as an edit to a space and its digits", cp.reaction_options( "1793192805000", "07" ), "for=1793192805000;text= 07" );
+check( "a message as drawn, but for its reactions - changed when edited, deleted or pinned since", [
+ cp.message_state( { text: "hi", reactions: [ { code: "01", people: [ "4b573f" ] } ] } ) === cp.message_state( { text: "hi" } ),
+ cp.message_state( { text: "hi" } ) === cp.message_state( { text: "hi!", edited: true } ),
+ cp.message_state( { text: "  ", edited: true, deleted: true } ) === cp.message_state( { text: "  ", edited: true } ),
+ cp.message_state( { text: "hi" } ) === cp.message_state( { text: "hi", pinned: true } ) ], [ true, false, false, false ] );
 check( "- on someone else's message only, not deleted, not for some only", [
  cp.can_react( { kind: "chat", sender: "maya" }, "ian" ), cp.can_react( { kind: "chat", sender: "ian" }, "ian" ),
  cp.can_react( { kind: "system", sender: "maya" }, "ian" ), cp.can_react( { kind: "chat", sender: "maya", deleted: true }, "ian" ),

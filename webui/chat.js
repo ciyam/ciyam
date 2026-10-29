@@ -258,6 +258,13 @@ function chat( )
          close_react_menu( false );
    } );
 
+   // NOTE: Back to the tab, the room read whole at the next poll - what changed while away is shown ("poll( )").
+   document.addEventListener( "visibilitychange", function( )
+   {
+      if( !document.hidden )
+         g_last_whole_read = 0;
+   } );
+
    // NOTE: The reactions sit beside their message - scrolled away from it, they close.
    document.getElementById( "message_list" ).addEventListener( "scroll", function( )
    {
@@ -1313,6 +1320,7 @@ async function do_disconnect( already_ended )
    close_react_menu( false );
 
    g_react_in_flight = false;
+   g_last_whole_read = 0;
 
    close_emoji_panel( false );
    close_emoji_suggest( );
@@ -3317,7 +3325,8 @@ async function open_new_room( response )
 // Messages
 // ====================================================================
 
-function load_messages( options, replace )
+// NOTE: "again" - the room read whole again to see what changed in it ("poll( )"): drawn in place, nothing notified.
+function load_messages( options, replace, again )
 {
    if( g_room === "" )
       return Promise.resolve( );
@@ -3333,12 +3342,12 @@ function load_messages( options, replace )
    {
       return ciyam.fetch_messages( asked_for, asked, function( response )
       {
-         on_messages_response( response, asked_for, replace );
+         on_messages_response( response, asked_for, replace, again );
       } );
    } );
 }
 
-function on_messages_response( response, asked_for, replace )
+function on_messages_response( response, asked_for, replace, again )
 {
    {
       var result = parse_fetch_response( response );
@@ -3391,8 +3400,11 @@ function on_messages_response( response, asked_for, replace )
 
       append_messages( result.messages );
 
+      if( replace || again )
+         g_last_whole_read = Date.now( );
+
       // NOTE: Only what a poll brings - not a room's first read, nor reading it whole again.
-      if( !replace )
+      if( !replace && !again )
          notify_messages( result.messages );
 
       apply_pinned( result.pinned );
@@ -3713,6 +3725,7 @@ function append_messages( messages )
    var was_at_end = ( list.scrollTop + list.clientHeight >= list.scrollHeight - 40 );
 
    var added = 0;
+   var changed = 0;
 
    for( var i = 0; i < messages.length; i++ )
    {
@@ -3720,10 +3733,25 @@ function append_messages( messages )
 
       if( already_rendered( list, entry.unique ) )
       {
-         // NOTE: A message read again brings its reactions as they are now - a pinned one comes with every read.
+         // NOTE: A message read again comes as it is now - a pinned one with every read, every one when the room is read whole
+         // ("poll( )"). Edited or deleted since, it is drawn again in its place; its reactions changed, only they are.
          var drawn = list.querySelector( ":scope > .chat-message[data-unique=\"" + entry.unique + "\"]" );
 
-         if( ( drawn !== null ) && ( entry.kind === "chat" ) && ( drawn.dataset.sender === entry.sender ) && !g_react_in_flight )
+         if( ( drawn === null ) || ( entry.kind !== "chat" ) || ( drawn.dataset.sender !== entry.sender ) )
+            continue;
+
+         if( drawn.dataset.state !== message_state( entry ) )
+         {
+            var again = build_message( entry ).firstElementChild;
+
+            again.dataset.day = drawn.dataset.day || "";
+            again.dataset.unique = entry.unique;
+
+            drawn.replaceWith( again );
+
+            ++changed;
+         }
+         else if( !g_react_in_flight && ( drawn.dataset.reactions !== JSON.stringify( entry.reactions || [ ] ) ) )
             draw_reactions( drawn, entry.reactions || [ ], can_react( entry, ciyam.username ) );
 
          continue;
@@ -3757,7 +3785,7 @@ function append_messages( messages )
       list.appendChild( row );
    }
 
-   if( added > 0 )
+   if( ( added > 0 ) || ( changed > 0 ) )
    {
       regroup_thread( );
       render_seen_markers( );
@@ -3782,8 +3810,9 @@ function build_message( entry )
    // stamp is on hover, for when a message is far from its divider.
    time.title = unique_to_full( entry.unique );
 
-   // NOTE: Who sent it, for a run of one person's messages ("regroup_thread( )").
+   // NOTE: Who sent it, for a run of one person's messages ("regroup_thread( )"); how it is drawn, to know when it has changed.
    row.dataset.sender = entry.sender || "";
+   row.dataset.state = message_state( entry );
 
    var name = row.querySelector( ".chat-message-sender-name" );
 
@@ -6181,7 +6210,25 @@ async function poll( )
 
       await messages;
    }
+
+   // NOTE: Now and then the room read whole again (Ian's suggestion, 2026-10-29) - a poll brings only new messages, so someone
+   // else's reaction, edit or deletion on an older one waits for it ("append_messages( )" draws again only what changed).
+   if( ( g_room !== "" ) && ( Date.now( ) - g_last_whole_read >= c_whole_read_every_ms ) )
+   {
+      g_in_poll = true;
+
+      var whole = load_messages( "from=0", false, true );
+
+      g_in_poll = false;
+
+      await whole;
+   }
 }
+
+const c_whole_read_every_ms = 30000;
+
+// NOTE: When the room was last read whole - opened, refreshed, or by "poll( )"; 0 to have the next poll read it whole.
+var g_last_whole_read = 0;
 
 // NOTE: The button turns its icon while the refresh runs, and cannot be pressed again until
 // it is done.

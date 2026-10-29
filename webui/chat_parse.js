@@ -279,8 +279,8 @@ function parse_message_line( line )
 
    var text = ( ( first === " " ) || is_private ) ? remainder.substring( 1 ) : remainder;
 
-   // NOTE: Reactions after the text, for now - see "split_trailing_reactions( )".
-   var split = split_trailing_reactions( text );
+   // NOTE: Reactions as a last line, for now - see "split_escaped_reactions( )".
+   var split = split_escaped_reactions( text );
 
    var entry = {
       kind: c_kind_chat,
@@ -291,7 +291,7 @@ function parse_message_line( line )
       text: unescape_message_text( split.text )
    };
 
-   // NOTE: Only when pinned, or when it has reactions, so every other message reads as it always has.
+   // NOTE: Only when pinned, or with reactions, so every other message reads as it always has.
    if( pinned )
       entry.pinned = true;
 
@@ -1002,20 +1002,6 @@ function parse_reactions( text )
    } );
 }
 
-// NOTE: Until the web session puts a line break before them (Ian, 2026-10-29), reactions follow a message's text after a space -
-// taken only when the last word is exactly their form. It goes once the line break is there: one's own message ending in that form
-// would be read as reactions.
-function split_trailing_reactions( text )
-{
-   var value = String( text || "" );
-
-   var pos = value.lastIndexOf( " " );
-
-   var reactions = ( pos < 0 ) ? null : parse_reactions( value.substring( pos + 1 ) );
-
-   return reactions ? { text: value.substring( 0, pos ), reactions: reactions } : { text: value, reactions: null };
-}
-
 // NOTE: Reactions as shown - each one's emoji, how many gave it, whether one was "mine", and who: "short_names" maps each member's
 // six hex to their name; one who is not a member now is "someone".
 function reaction_chips( reactions, my_short, short_names )
@@ -1070,6 +1056,27 @@ function apply_reaction( reactions, code, my_short )
 function reaction_options( unique, code )
 {
    return "for=" + unique + ";text= " + code;
+}
+
+// NOTE: Ian's line break before the reactions ("842fc32f") comes escaped, as one within a message does - the web session's "join( )"
+// escapes every line break in a line - so for now they are a message's last line, taken only when exactly their form. It goes once
+// they are a line of their own: a message whose last line is only that would be read as reactions.
+function split_escaped_reactions( text )
+{
+   var value = String( text || "" );
+
+   var m = /\\\n([^\n]*)$/.exec( value );
+
+   var reactions = m ? parse_reactions( m[ 1 ] ) : null;
+
+   return reactions ? { text: value.substring( 0, m.index ), reactions: reactions } : { text: value, reactions: null };
+}
+
+// NOTE: How a message is drawn, but for its reactions (drawn on their own) - so a room read whole again redraws only a message
+// someone has edited or deleted since (Ian, 2026-10-29: a poll brings only new messages).
+function message_state( entry )
+{
+   return ( entry.edited ? "*" : "" ) + ( entry.deleted ? "-" : "" ) + ( entry.pinned ? "!" : "" ) + " " + ( entry.text || "" );
 }
 
 // NOTE: Only someone else's ordinary message, not deleted - not one for some only, for now, nor a system line.
@@ -3826,7 +3833,8 @@ if( typeof module !== "undefined" )
       c_reaction_emojis: c_reaction_emojis,
       c_reaction_names: c_reaction_names,
       parse_reactions: parse_reactions,
-      split_trailing_reactions: split_trailing_reactions,
+      split_escaped_reactions: split_escaped_reactions,
+      message_state: message_state,
       reaction_chips: reaction_chips,
       apply_reaction: apply_reaction,
       reaction_options: reaction_options,
