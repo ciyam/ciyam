@@ -126,7 +126,7 @@ OLDEST_QUEUED_MESSAGE=
 ; NOTE: Finds the oldest queued unix unique key value for any user.
 .system_variable %NEXT_QUEUE_PREFIX%_***
 @ifdef $OUTPUT
-~echo -e "$OUTPUT" | cut -c 1-13 | sort | head -c 13 >$IRC_TEMP_FILE
+~printf '%b\n' "$OUTPUT" | cut -c 1-13 | sort | head -c 13 >$IRC_TEMP_FILE
 OLDEST_QUEUED_MESSAGE=@file:$IRC_TEMP_FILE
 @endif
 ;
