@@ -3239,9 +3239,10 @@ async function do_remove( pin )
 // kept. The person sets it up again with the PIN, as a new household member does.
 async function do_reset_password( person )
 {
-   if( !await ask_dialog( { title: "Reset " + person.name + "'s password?", text: "It stops working now. They set up their account"
-    + " again with their PIN and choose a new password - you won't see it. Their username, rooms, messages and keys stay.",
-    yes: "Reset password" } ) )
+   // NOTE: The username is offered back to them when they set up again, not yet held for them (ISS-035) - so said as that.
+   if( !await ask_dialog( { title: "Reset " + person.name + "'s password?", text: "Their password stops working now. They set up their"
+    + " account again with their PIN, keeping the username " + person.name + ", and choose a new password - you won't see it. Their"
+    + " rooms, messages and keys stay with that username.", yes: "Reset password" } ) )
       return;
 
    var asked_for = ciyam.access;
