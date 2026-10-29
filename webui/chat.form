@@ -198,6 +198,9 @@ http://www.opensource.org/licenses/mit-license.php.
 
          <div class="chat-messages" id="message_list" hidden></div>
 
+         <!-- NOTE: The ten reactions, opened by a message's "react" (Ian, 2026-10-28) - one at a time, beside it. -->
+         <div class="chat-react-menu" id="react_menu" role="dialog" aria-label="React" hidden></div>
+
          <!-- NOTE: A new conversation's first messages, held until the others accept - a member
               sees nothing posted before they joined. In memory only. -->
          <div class="chat-held" id="held_list" hidden></div>
@@ -553,7 +556,10 @@ http://www.opensource.org/licenses/mit-license.php.
          <button type="button" class="chat-message-edit" hidden>edit</button>
          <button type="button" class="chat-message-pin" hidden>pin</button>
          <button type="button" class="chat-message-delete" hidden>delete</button>
+         <button type="button" class="chat-message-react" aria-haspopup="dialog" hidden>react</button>
       </span>
+      <!-- NOTE: Reactions, beneath the message (Ian, 2026-10-29) - "draw_reactions( )". -->
+      <div class="chat-reactions" hidden></div>
    </div>
 </template>
 

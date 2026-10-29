@@ -771,5 +771,17 @@ ok   the switch's line, as the browser allows
 ok   - and its word in the account menu
 ok   - offered once: not asked yet, and the browser can
 ok   kept per account, by name
+ok   reactions read
+ok   - only exactly their form
+ok   - after the text, for now: the last word, if exactly their form
+ok   - a message with them after a space: its text without them
+ok   - an encrypted one's too, so it can still be opened
+ok   - on a line of their own, after their message
+ok   - after a message ending in a line break
+ok   - none, none shown
+ok   reactions as shown - who, how many, one's own
+ok   reacting - given, the same again taken off, another replacing it
+ok   - sent as an edit to a space and its digits
+ok   - on someone else's message only, not deleted, not for some only
 
 All checks passed.

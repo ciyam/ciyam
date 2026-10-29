@@ -213,6 +213,12 @@ function chat( )
 
          event.preventDefault( );
       }
+      else if( !document.getElementById( "react_menu" ).hidden )
+      {
+         close_react_menu( true );
+
+         event.preventDefault( );
+      }
       else if( !document.getElementById( "emoji_panel" ).hidden )
       {
          close_emoji_panel( true );
@@ -245,6 +251,18 @@ function chat( )
       if( !document.getElementById( "emoji_panel" ).hidden
        && !event.target.closest( "#emoji_panel" ) && !event.target.closest( "#emoji_toggle" ) )
          close_emoji_panel( false );
+
+      // NOTE: And the reactions - a message's "react" toggles them instead.
+      if( !document.getElementById( "react_menu" ).hidden
+       && !event.target.closest( "#react_menu" ) && !event.target.closest( ".chat-message-react" ) )
+         close_react_menu( false );
+   } );
+
+   // NOTE: The reactions sit beside their message - scrolled away from it, they close.
+   document.getElementById( "message_list" ).addEventListener( "scroll", function( )
+   {
+      if( !document.getElementById( "react_menu" ).hidden )
+         close_react_menu( false );
    } );
 
    bind_emoji_search( );
@@ -1292,6 +1310,10 @@ async function do_disconnect( already_ended )
    g_room_key_drawn_for = "";
    g_notice_runs_open = { };
 
+   close_react_menu( false );
+
+   g_react_in_flight = false;
+
    close_emoji_panel( false );
    close_emoji_suggest( );
 
@@ -1801,6 +1823,8 @@ function select_room( room, token )
    // NOTE: An edit open in the last room is given up - its text is that room's (found by review, 2026-10-15).
    if( g_edit_unique !== "" )
       do_abandon_edit( );
+
+   close_react_menu( false );
 
    g_room = room;
    g_start_point = "";
@@ -3695,7 +3719,15 @@ function append_messages( messages )
       var entry = messages[ i ];
 
       if( already_rendered( list, entry.unique ) )
+      {
+         // NOTE: A message read again brings its reactions as they are now - a pinned one comes with every read.
+         var drawn = list.querySelector( ":scope > .chat-message[data-unique=\"" + entry.unique + "\"]" );
+
+         if( ( drawn !== null ) && ( entry.kind === "chat" ) && ( drawn.dataset.sender === entry.sender ) && !g_react_in_flight )
+            draw_reactions( drawn, entry.reactions || [ ], can_react( entry, ciyam.username ) );
+
          continue;
+      }
 
       ++added;
 
@@ -3839,7 +3871,243 @@ function build_message( entry )
       remove.addEventListener( "click", function( event ) { do_delete_message( event.currentTarget ); } );
    }
 
+   // NOTE: React - to someone else's message ("can_react( )"), one of the ten (Ian, 2026-10-28).
+   var may_react = can_react( entry, ciyam.username );
+
+   if( may_react )
+   {
+      var react = row.querySelector( ".chat-message-react" );
+
+      react.hidden = false;
+      react.dataset.unique = entry.unique;
+
+      react.addEventListener( "click", function( event ) { open_react_menu( event.currentTarget ); } );
+   }
+
+   draw_reactions( row, entry.reactions || [ ], may_react );
+
    return node;
+}
+
+// NOTE: Each member's six hex as reactions name them - the SHA-256 of the name from the eleventh character (Ian, 2026-10-29).
+var g_reaction_shorts = { };
+
+function reaction_short( name )
+{
+   if( !g_reaction_shorts[ name ] )
+      g_reaction_shorts[ name ] = hex_sha256( name ).substring( 10, 16 );
+
+   return g_reaction_shorts[ name ];
+}
+
+function reaction_short_names( )
+{
+   var names = { };
+
+   g_members.forEach( function( member ) { names[ reaction_short( member.name ) ] = member.name; } );
+
+   return names;
+}
+
+// NOTE: A message's reactions beneath it - each its emoji and how many, who on hover, one's own marked ("reaction_chips( )"). On
+// someone else's message a chip gives that reaction, or takes one's own off; on one's own they only say who. Kept on the row
+// ("data-reactions") for what a reaction then does ("apply_reaction( )").
+function draw_reactions( row, reactions, may_react )
+{
+   var holder = row.querySelector( ".chat-reactions" );
+
+   row.dataset.reactions = JSON.stringify( reactions || [ ] );
+
+   holder.textContent = "";
+
+   var chips = reaction_chips( reactions, reaction_short( ciyam.username ), reaction_short_names( ) );
+
+   chips.forEach( function( chip )
+   {
+      var item = document.createElement( may_react ? "button" : "span" );
+
+      item.className = "chat-reaction" + ( chip.mine ? " is-mine" : "" );
+      item.title = chip.label;
+
+      item.setAttribute( "aria-label", chip.label );
+
+      if( may_react )
+      {
+         item.type = "button";
+         item.dataset.code = chip.code;
+
+         item.setAttribute( "aria-pressed", chip.mine ? "true" : "false" );
+
+         item.addEventListener( "click", function( ) { do_react( row.dataset.unique || "", chip.code ); } );
+      }
+      else
+         item.setAttribute( "role", "img" );
+
+      var emoji = document.createElement( "span" );
+
+      emoji.className = "chat-reaction-emoji";
+      emoji.textContent = chip.emoji;
+      emoji.setAttribute( "aria-hidden", "true" );
+
+      var count = document.createElement( "span" );
+
+      count.className = "chat-reaction-count";
+      count.textContent = String( chip.count );
+      count.setAttribute( "aria-hidden", "true" );
+
+      item.appendChild( emoji );
+      item.appendChild( count );
+
+      holder.appendChild( item );
+   } );
+
+   holder.hidden = ( chips.length === 0 );
+}
+
+// NOTE: The "react" the ten were opened from - focus goes back to it as they close.
+var g_react_for = null;
+
+function open_react_menu( button )
+{
+   var menu = document.getElementById( "react_menu" );
+
+   if( !menu.hidden && ( g_react_for === button ) )
+   {
+      close_react_menu( true );
+
+      return;
+   }
+
+   if( menu.children.length === 0 )
+   {
+      c_reaction_emojis.forEach( function( emoji, n )
+      {
+         var option = document.createElement( "button" );
+
+         option.type = "button";
+         option.className = "chat-react-option";
+         option.textContent = emoji;
+         option.title = c_reaction_names[ n ];
+         option.dataset.code = "0" + n;
+
+         option.setAttribute( "aria-label", c_reaction_names[ n ] );
+
+         option.addEventListener( "click", function( event )
+         {
+            var unique = ( g_react_for !== null ) ? ( g_react_for.dataset.unique || "" ) : "";
+
+            close_react_menu( true );
+
+            do_react( unique, event.currentTarget.dataset.code );
+         } );
+
+         menu.appendChild( option );
+      } );
+
+      // NOTE: Left and right move along them, as a toolbar does.
+      menu.addEventListener( "keydown", function( event )
+      {
+         if( ( event.key !== "ArrowLeft" ) && ( event.key !== "ArrowRight" ) )
+            return;
+
+         var options = Array.prototype.slice.call( menu.children );
+         var at = options.indexOf( document.activeElement );
+         var next = ( at + ( ( event.key === "ArrowRight" ) ? 1 : options.length - 1 ) ) % options.length;
+
+         options[ next ].focus( );
+
+         event.preventDefault( );
+      } );
+   }
+
+   g_react_for = button;
+
+   var row = button.closest( ".chat-message" );
+   var mine = "";
+
+   JSON.parse( ( row && row.dataset.reactions ) || "[]" ).forEach( function( reaction )
+   {
+      if( reaction.people.indexOf( reaction_short( ciyam.username ) ) >= 0 )
+         mine = reaction.code;
+   } );
+
+   Array.prototype.forEach.call( menu.children, function( option )
+   {
+      var is_mine = ( option.dataset.code === mine );
+
+      option.classList.toggle( "is-mine", is_mine );
+      option.setAttribute( "aria-pressed", is_mine ? "true" : "false" );
+   } );
+
+   menu.hidden = false;
+
+   // NOTE: Under its "react", kept on the screen - above it if there is no room below.
+   var at = button.getBoundingClientRect( );
+
+   var left = Math.max( 8, Math.min( at.left, window.innerWidth - menu.offsetWidth - 8 ) );
+   var top = at.bottom + 4;
+
+   if( top + menu.offsetHeight > window.innerHeight - 8 )
+      top = Math.max( 8, at.top - menu.offsetHeight - 4 );
+
+   menu.style.left = left + "px";
+   menu.style.top = top + "px";
+
+   ( menu.querySelector( ".is-mine" ) || menu.firstElementChild ).focus( );
+}
+
+function close_react_menu( refocus )
+{
+   document.getElementById( "react_menu" ).hidden = true;
+
+   if( refocus && ( g_react_for !== null ) && g_react_for.isConnected )
+      g_react_for.focus( );
+
+   g_react_for = null;
+}
+
+// NOTE: A reaction sent - shown at once ("apply_reaction( )"), as others see it when they next read the room whole; the answer taken
+// as a read, as a pin's is. Refused, it is put back as it was; a time-out leaves it, as it most likely went.
+var g_react_in_flight = false;
+
+function do_react( unique, code )
+{
+   var room = g_room;
+
+   var row = unique ? document.querySelector( "#message_list > .chat-message[data-unique=\"" + unique + "\"]" ) : null;
+
+   if( ( room === "" ) || ( row === null ) || g_react_in_flight )
+      return;
+
+   var before = JSON.parse( row.dataset.reactions || "[]" );
+
+   g_react_in_flight = true;
+
+   draw_reactions( row, apply_reaction( before, code, reaction_short( ciyam.username ) ), true );
+
+   serialised( function( )
+   {
+      return ciyam.create_message( room, reaction_options( unique, code ), function( response )
+      {
+         g_react_in_flight = false;
+
+         if( is_error_response( response ) )
+         {
+            if( !is_timeout_response( response ) )
+            {
+               if( row.isConnected )
+                  draw_reactions( row, before, true );
+
+               show_alert( "The reaction was not sent - " + error_text( response ), "is-error", true );
+            }
+
+            return;
+         }
+
+         if( room === g_room )
+            on_messages_response( response, room, false );
+      } );
+   } );
 }
 
 // NOTE: The first click arms it for five seconds - "delete?" - and the second sends.

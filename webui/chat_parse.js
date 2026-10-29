@@ -279,18 +279,24 @@ function parse_message_line( line )
 
    var text = ( ( first === " " ) || is_private ) ? remainder.substring( 1 ) : remainder;
 
+   // NOTE: Reactions after the text, for now - see "split_trailing_reactions( )".
+   var split = split_trailing_reactions( text );
+
    var entry = {
       kind: c_kind_chat,
       unique: unique,
       sender: sender,
       edited: edited,
       private: is_private,
-      text: unescape_message_text( text )
+      text: unescape_message_text( split.text )
    };
 
-   // NOTE: Only when pinned, so every other message reads as it always has.
+   // NOTE: Only when pinned, or when it has reactions, so every other message reads as it always has.
    if( pinned )
       entry.pinned = true;
+
+   if( split.reactions )
+      entry.reactions = split.reactions;
 
    // NOTE: Only spaces - deleted (Ian, 2026-10-15): there is no deleting yet, so a message is edited to spaces, which the
    // node takes (a new one of only spaces it refuses).
@@ -480,6 +486,8 @@ function parse_fetch_response( response )
 
    result.members = parse_members( lines[ 0 ] );
 
+   var previous = null;
+
    for( var i = 1; i < lines.length; i++ )
    {
       var line = lines[ i ];
@@ -487,7 +495,21 @@ function parse_fetch_response( response )
       if( line === "" )
          continue;
 
+      // NOTE: Reactions on a line of their own, after their message (Ian, 2026-10-29) - a line no message can be, as one starts
+      // with its unique and a space, and a line break within a message comes as "\" at the end of the line before.
+      var reactions = parse_reactions( line );
+
+      if( reactions !== null )
+      {
+         if( previous && ( previous.kind === c_kind_chat ) )
+            previous.reactions = reactions;
+
+         continue;
+      }
+
       var entry = parse_message_line( line );
+
+      previous = entry;
 
       if( entry === null )
          continue;
@@ -954,6 +976,106 @@ function seen_chips( names, most )
    var shown = list.slice( 0, limit );
 
    return { shown: shown, more: list.length - shown.length, label: ( list.length > 0 ) ? "Seen by " + name_list( list ) : "" };
+}
+
+// NOTE: Reactions (Ian, 2026-10-28 and 29) - one of ten, one each on someone else's message: the same again takes it off, another
+// replaces it. A web session reads them as the node keeps them: a reaction's two digits, then each person who gave it as six hex of
+// the SHA-256 of their name from the eleventh character, an "x" after each, and an "o" between reactions - "014b573fx159e43xo02…".
+// Hex has no "o" and no "x", so they cannot be mistaken.
+const c_reaction_emojis = [ "👌", "👍", "👎", "🙂", "🙁", "😀", "😲", "🤓", "🤦‍♂️", "❤️" ];
+const c_reaction_names = [ "OK", "Thumbs up", "Thumbs down", "Smile", "Frown", "Grin", "Surprised", "Nerd", "Facepalm", "Heart" ];
+
+const c_reactions_pattern = /^0\d(?:[0-9a-f]{6}x)+(?:o0\d(?:[0-9a-f]{6}x)+)*$/;
+
+// NOTE: A message's reactions - [ { code: "01", people: [ "4b573f", ... ] } ], in the node's order - or null if "text" is not
+// exactly their form.
+function parse_reactions( text )
+{
+   var value = String( text || "" );
+
+   if( !c_reactions_pattern.test( value ) )
+      return null;
+
+   return value.split( "o" ).map( function( part )
+   {
+      return { code: part.substring( 0, 2 ), people: part.substring( 2 ).split( "x" ).filter( function( s ) { return s !== ""; } ) };
+   } );
+}
+
+// NOTE: Until the web session puts a line break before them (Ian, 2026-10-29), reactions follow a message's text after a space -
+// taken only when the last word is exactly their form. It goes once the line break is there: one's own message ending in that form
+// would be read as reactions.
+function split_trailing_reactions( text )
+{
+   var value = String( text || "" );
+
+   var pos = value.lastIndexOf( " " );
+
+   var reactions = ( pos < 0 ) ? null : parse_reactions( value.substring( pos + 1 ) );
+
+   return reactions ? { text: value.substring( 0, pos ), reactions: reactions } : { text: value, reactions: null };
+}
+
+// NOTE: Reactions as shown - each one's emoji, how many gave it, whether one was "mine", and who: "short_names" maps each member's
+// six hex to their name; one who is not a member now is "someone".
+function reaction_chips( reactions, my_short, short_names )
+{
+   return ( reactions || [ ] ).map( function( reaction )
+   {
+      var n = parseInt( reaction.code, 10 );
+
+      var names = reaction.people.map( function( short )
+      {
+         return ( short === my_short ) ? "you" : ( ( short_names || { } )[ short ] || "someone" );
+      } );
+
+      return { code: reaction.code, emoji: c_reaction_emojis[ n ] || "?", count: reaction.people.length,
+       mine: reaction.people.indexOf( my_short ) >= 0, label: ( c_reaction_names[ n ] || "Reaction" ) + " - " + name_list( names ) };
+   } );
+}
+
+// NOTE: What a reaction does, as the node does it - so it is shown at once, before the room is next read whole: one's own taken off
+// wherever it was, then given unless it was this one; in the order of their digits.
+function apply_reaction( reactions, code, my_short )
+{
+   var had = "";
+
+   var kept = [ ];
+
+   ( reactions || [ ] ).forEach( function( reaction )
+   {
+      var people = reaction.people.filter( function( short ) { return short !== my_short; } );
+
+      if( people.length < reaction.people.length )
+         had = reaction.code;
+
+      if( people.length > 0 )
+         kept.push( { code: reaction.code, people: people } );
+   } );
+
+   if( had !== code )
+   {
+      var found = kept.filter( function( reaction ) { return reaction.code === code; } );
+
+      if( found.length > 0 )
+         found[ 0 ].people.push( my_short );
+      else
+         kept.push( { code: code, people: [ my_short ] } );
+   }
+
+   return kept.sort( function( a, b ) { return ( a.code < b.code ) ? -1 : ( ( a.code > b.code ) ? 1 : 0 ); } );
+}
+
+// NOTE: A reaction is an edit of someone else's message to a space and its two digits (Ian, 2026-10-28).
+function reaction_options( unique, code )
+{
+   return "for=" + unique + ";text= " + code;
+}
+
+// NOTE: Only someone else's ordinary message, not deleted - not one for some only, for now, nor a system line.
+function can_react( entry, me )
+{
+   return !!entry && ( entry.kind === c_kind_chat ) && ( me !== "" ) && ( entry.sender !== me ) && !entry.deleted && !entry.private;
 }
 
 // NOTE: New messages added to those already held, as a read without "from" returns only what
@@ -3701,6 +3823,14 @@ if( typeof module !== "undefined" )
       message_unreadable_label: message_unreadable_label,
       message_plain_text: message_plain_text,
       is_unencrypted_message: is_unencrypted_message,
+      c_reaction_emojis: c_reaction_emojis,
+      c_reaction_names: c_reaction_names,
+      parse_reactions: parse_reactions,
+      split_trailing_reactions: split_trailing_reactions,
+      reaction_chips: reaction_chips,
+      apply_reaction: apply_reaction,
+      reaction_options: reaction_options,
+      can_react: can_react,
       keeps_focus_after_send: keeps_focus_after_send,
       message_bytes: message_bytes,
       c_max_message_bytes: c_max_message_bytes,
