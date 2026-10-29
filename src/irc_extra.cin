@@ -88,7 +88,9 @@ MESSAGE=
 @else
 SLEN=@$MAX_TO_ENCRYPT-$TOTAL
 SUFFIX=@entropy:$SLEN:alpha_numeric
-ENCODED=@aschex:$~PREFIX\r$~CRYPT_MESSAGE\r$~SUFFIX
+PREFIX=@aschex:$PREFIX\r
+SUFFIX=@aschex:\r$SUFFIX
+ENCODED=$~PREFIX$~CRYPT_MESSAGE$~SUFFIX
 SALT=@file:~xxd -l 16 -p /dev/urandom
 ENCRYPT=@crypt:cc $MSG_KEY$SALT:$~ENCODED
 HMAC=@hmac256:mac$MSG_KEY$SALT:$ENCRYPT

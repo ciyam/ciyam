@@ -306,6 +306,13 @@ PREFIX=
 PREFIX=!
 @endif
 ;
+; NOTE: Convert message text
+; to hex in order to prevent
+; parsing issues.
+EDITED_MESSAGE=@substr:1:$EDITED_MESSAGE
+EDITED_MESSAGE=@aschex:$EDITED_MESSAGE
+EDITED_MESSAGE=$SP$EDITED_MESSAGE
+;
 @retain MESSAGE
 <irc_extra.cin %PREFIX%encrypt "_$EDITED_MESSAGE" "$KEY_FILE_DATA" $PKEY $SKEY
 ;
@@ -614,6 +621,15 @@ FILE_NAME=@files::$FILE_NAME
 MESSAGE=@file:$FILE_NAME
 @endif
 @endif
+;
+; NOTE: If the message will
+; be encrypted then convert
+; it to hex now in order to
+; prevent parsing issues.
+@ifdef $KEY_FILE_DATA
+MESSAGE=@aschex:$MESSAGE
+@endif
+;
 @ifndef $NAMES
 MESSAGE=_ $MESSAGE
 @else
