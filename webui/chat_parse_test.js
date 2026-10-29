@@ -396,24 +396,25 @@ check( "without 'me', declines are not counted", cp.pending_invitations( decline
 
 heading( "line breaks and backslashes" );
 
-// NOTE: The lines the container returned on 2026-09-26 for messages sent as "one<break>two",
-// "double\\slash" (one backslash stored), "bs then nl\<break>next", and "ends with\\"
-// (one backslash stored, so it comes back doubled and must not join the next line).
+// NOTE: As the web session sends them since 2026-10-29 - one line a message, "\\", "\n", "\r" and "\t" escaped - for messages
+// sent as "one<break>two", "double\\slash" (one backslash stored), "bs then nl\<break>next", "ends with\\" and "a<tab>b".
 var multi = cp.parse_fetch_response( [
  "admin+1",
- "1790426390001 admin  one\\",
- "two",
+ "1790426390001 admin  one\\ntwo",
  "1790426391000 admin  double\\\\slash",
- "1790426392000 admin  bs then nl\\\\\\",
- "next",
+ "1790426392000 admin  bs then nl\\\\\\nnext",
  "1790426393000 admin  ends with\\\\",
- "1790426394000 admin  after" ].join( "\n" ) ).messages;
+ "1790426394000 admin  after",
+ "1790426395000 admin  a\\tb" ].join( "\n" ) ).messages;
 
-check( "five messages, none lost to a break", multi.length, 5 );
+check( "six messages, one line each", multi.length, 6 );
 check( "a line break comes back as one", multi[ 0 ].text, "one\ntwo" );
 check( "a stored backslash comes back single", multi[ 1 ].text, "double\\slash" );
 check( "backslash then break", multi[ 2 ].text, "bs then nl\\\nnext" );
-check( "an ending backslash does not swallow the next message", [ multi[ 3 ].text, multi[ 4 ].text ], [ "ends with\\", "after" ] );
+check( "an ending backslash is only that", [ multi[ 3 ].text, multi[ 4 ].text ], [ "ends with\\", "after" ] );
+check( "a tab comes back as one", multi[ 5 ].text, "a\tb" );
+check( "a carriage return too - an encrypted message's mark", cp.parse_message_line( "1790426396000 admin  X\\rAbCd" ).text, "X\rAbCd" );
+check( "anything else after a backslash kept as it came", cp.unescape_message_text( "a\\qb" ), "a\\qb" );
 
 check( "sending doubles a backslash", cp.escape_message_text( "a\\b \\\\ c" ), "a\\\\b \\\\\\\\ c" );
 check( "sending leaves breaks alone", cp.escape_message_text( "one\ntwo" ), "one\ntwo" );
@@ -679,8 +680,7 @@ heading( "announcements" );
 var admin_room = cp.parse_fetch_response( [
    "admin+1 verify-e+1",
    "1790435700000 admin  Announcement",
-   "1790435793000 admin  Announcement 2\\",
-   "Welcome to the new chat!",
+   "1790435793000 admin  Announcement 2\\nWelcome to the new chat!",
    "1790436690000 tester-1 :joined",
    "1790436716001 admin :invite room 0000006-7e8dc218f33200c07e43ead73911af9a Common room",
    "1790436800000 tester-1  not from admin",
@@ -1606,18 +1606,16 @@ check( "reactions read", cp.parse_reactions( "014b573fx159e43xo02159e43x" ), [ {
 check( "- only exactly their form", [ cp.parse_reactions( "" ), cp.parse_reactions( "01" ), cp.parse_reactions( "014b573f" ),
  cp.parse_reactions( "014b573fxo" ), cp.parse_reactions( "104b573fx" ), cp.parse_reactions( "014B573Fx" ), cp.parse_reactions( "nice 014b573fx" ) ],
  [ null, null, null, null, null, null, null ] );
-check( "- on a line of their own, after their message (Ian's '842fc32f')", cp.parse_fetch_response( "maya+1 ian+1\n1793192805000 maya  well done\n"
- + "014b573fx\n1793192806000 ian  thanks" ).messages.map( function( m ) { return [ m.text, m.reactions || null ]; } ),
+check( "- after a tab, on their message's line (2026-10-29)", cp.parse_fetch_response( "maya+1 ian+1\n1793192805000 maya  well done\t014b573fx\n"
+ + "1793192806000 ian  thanks" ).messages.map( function( m ) { return [ m.text, m.reactions || null ]; } ),
  [ [ "well done", [ { code: "01", people: [ "4b573f" ] } ] ], [ "thanks", null ] ] );
-check( "- an encrypted one's apart from it, so it can still be opened", cp.parse_fetch_response( "maya+1\n1793192805000 maya  X\rAbCd+/==\n"
- + "09159e43x" ).messages[ 0 ].text, "X\rAbCd+/==" );
-check( "- a message that only ends like them is words", cp.parse_message_line( "1793192805000 maya  well done 014b573fx" ).text, "well done 014b573fx" );
-check( "- as the web session sends them for now: a last line, its break escaped", cp.parse_fetch_response( "maya+1\n1793192805000 maya  well done\\\n"
- + "014b573fx\n1793192806000 maya  two\\\nlines" ).messages.map( function( m ) { return [ m.text, m.reactions || null ]; } ),
- [ [ "well done", [ { code: "01", people: [ "4b573f" ] } ] ], [ "two\nlines", null ] ] );
-check( "- an encrypted one's too", cp.parse_fetch_response( "maya+1\n1793192805000 maya  X\rAbCd+/==\\\n09159e43x" ).messages[ 0 ].text, "X\rAbCd+/==" );
-check( "- after a message ending in a line break", cp.parse_fetch_response( "maya+1\n1793192805000 maya  two\\\n\n094b573fx" ).messages[ 0 ].reactions,
- [ { code: "09", people: [ "4b573f" ] } ] );
+check( "- an encrypted one's apart from it, so it can still be opened", cp.parse_message_line( "1793192805000 maya  X\\rAbCd+/==\t09159e43x" ).text,
+ "X\rAbCd+/==" );
+check( "- after a message with a line break", cp.parse_message_line( "1793192805000 maya  two\\nlines\t094b573fx" ), { kind: "chat",
+ unique: "1793192805000", sender: "maya", edited: false, private: false, text: "two\nlines", reactions: [ { code: "09", people: [ "4b573f" ] } ] } );
+check( "- a message only ending like them, or with a tab typed, is words", [ cp.parse_message_line( "1793192805000 maya  well done 014b573fx" ).text,
+ cp.parse_message_line( "1793192805000 maya  well done\\t014b573fx" ).text, cp.parse_message_line( "1793192805000 maya  well done\\t014b573fx" ).reactions ],
+ [ "well done 014b573fx", "well done\t014b573fx", undefined ] );
 check( "- none, none shown", cp.parse_message_line( "1793192805000 maya  plain" ).reactions, undefined );
 
 check( "reactions as shown - who, how many, one's own", cp.reaction_chips( cp.parse_reactions( "014b573fx159e43xo02aaaaaax" ), "4b573f",

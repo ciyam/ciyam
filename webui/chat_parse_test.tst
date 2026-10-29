@@ -175,11 +175,14 @@ ok   another's decline leaves this user's invitation
 ok   without 'me', declines are not counted
 
 == line breaks and backslashes =================================
-ok   five messages, none lost to a break
+ok   six messages, one line each
 ok   a line break comes back as one
 ok   a stored backslash comes back single
 ok   backslash then break
-ok   an ending backslash does not swallow the next message
+ok   an ending backslash is only that
+ok   a tab comes back as one
+ok   a carriage return too - an encrypted message's mark
+ok   anything else after a backslash kept as it came
 ok   sending doubles a backslash
 ok   sending leaves breaks alone
 ok   sending keeps a ';' - the server splits on it otherwise
@@ -773,12 +776,10 @@ ok   - offered once: not asked yet, and the browser can
 ok   kept per account, by name
 ok   reactions read
 ok   - only exactly their form
-ok   - on a line of their own, after their message (Ian's '842fc32f')
+ok   - after a tab, on their message's line (2026-10-29)
 ok   - an encrypted one's apart from it, so it can still be opened
-ok   - a message that only ends like them is words
-ok   - as the web session sends them for now: a last line, its break escaped
-ok   - an encrypted one's too
-ok   - after a message ending in a line break
+ok   - after a message with a line break
+ok   - a message only ending like them, or with a tab typed, is words
 ok   - none, none shown
 ok   reactions as shown - who, how many, one's own
 ok   reacting - given, the same again taken off, another replacing it

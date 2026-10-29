@@ -252,6 +252,14 @@ function parse_message_line( line )
       sender = sender.substring( 0, sender.length - 1 );
    }
 
+   // NOTE: Reactions after a tab - a tab in the text comes as "\t", so one as it is can only be theirs (2026-10-29, with Ian);
+   // then the text's escapes undone ("unescape_message_text( )").
+   var tab = remainder.indexOf( "\t" );
+
+   var reactions = ( tab < 0 ) ? null : parse_reactions( remainder.substring( tab + 1 ) );
+
+   remainder = unescape_message_text( ( tab < 0 ) ? remainder : remainder.substring( 0, tab ) );
+
    var first = remainder.charAt( 0 );
 
    if( first === "#" )
@@ -279,24 +287,21 @@ function parse_message_line( line )
 
    var text = ( ( first === " " ) || is_private ) ? remainder.substring( 1 ) : remainder;
 
-   // NOTE: Reactions as a last line, for now - see "split_escaped_reactions( )".
-   var split = split_escaped_reactions( text );
-
    var entry = {
       kind: c_kind_chat,
       unique: unique,
       sender: sender,
       edited: edited,
       private: is_private,
-      text: unescape_message_text( split.text )
+      text: text
    };
 
    // NOTE: Only when pinned, or with reactions, so every other message reads as it always has.
    if( pinned )
       entry.pinned = true;
 
-   if( split.reactions )
-      entry.reactions = split.reactions;
+   if( reactions )
+      entry.reactions = reactions;
 
    // NOTE: Only spaces - deleted (Ian, 2026-10-15): there is no deleting yet, so a message is edited to spaces, which the
    // node takes (a new one of only spaces it refuses).
@@ -350,17 +355,13 @@ function parse_room_entry( unique, owner, remainder )
 // NOTE: Splits a complete "format=text" fetch into its member list and its
 // rows. The caller does not need to know whether it asked for the entrance
 // room - the row kinds say what came back.
-// NOTE: How the server carries a message's backslashes and line breaks - verified against
-// the container, 2026-09-26:
+// NOTE: How the server carries a message's backslashes and line breaks:
 //
 //   on the way in   "\" escapes the next character and is dropped: "a\b" is stored "ab",
-//                   and "\\" is stored as one "\"
-//   on the way out  a stored "\" comes back as "\\", and a line break as "\" at the end of
-//                   the line, the message carrying on on the next - the response is one
-//                   message per line, so a raw break would split it
+//                   and "\\" is stored as one "\" (verified against the container, 2026-09-26)
+//   on the way out  one line a message, its text escaped - see "unescape_message_text( )"
 //
-// So a backslash the user typed is doubled before sending, and on receipt the continued
-// lines are joined and the escapes undone.
+// So a backslash the user typed is doubled before sending, and on receipt the escapes undone.
 //
 // A ";" too (found 2026-10-15): the server splits a request's options on it, so "a; b" was
 // stored as "a" - every message with a semicolon was cut short there. After a backslash it is
@@ -442,28 +443,17 @@ function message_bytes( text )
    return unescape( encodeURIComponent( value ) ).length;
 }
 
+// NOTE: A message comes as one line, its text escaped by the web session (2026-10-29, agreed with Ian - the text and JSON
+// formats alike): "\\" a backslash, "\n" a line break, "\r" a carriage return and "\t" a tab. Nothing else follows a backslash;
+// were it to, it is kept as it came.
+const c_message_escapes = { "\\": "\\", "n": "\n", "r": "\r", "t": "\t" };
+
 function unescape_message_text( text )
 {
-   return String( text || "" ).replace( /\\([\s\S])/g, "$1" );
-}
-
-// NOTE: A line ends in a continuation when it ends in an odd number of backslashes - an even
-// number is escaped backslashes, and the message genuinely ends there.
-function join_continued_lines( lines )
-{
-   var joined = [ ];
-
-   for( var i = 0; i < lines.length; i++ )
+   return String( text || "" ).replace( /\\([\s\S])/g, function( all, c )
    {
-      var line = lines[ i ];
-
-      while( ( /(?:^|[^\\])(?:\\\\)*\\$/.test( line ) ) && ( i + 1 < lines.length ) )
-         line = line + "\n" + lines[ ++i ];
-
-      joined.push( line );
-   }
-
-   return joined;
+      return c_message_escapes.hasOwnProperty( c ) ? c_message_escapes[ c ] : all;
+   } );
 }
 
 function parse_fetch_response( response )
@@ -480,13 +470,10 @@ function parse_fetch_response( response )
    if( !response )
       return result;
 
-   // NOTE: A message with a line break arrives over several lines - see
-   // "escape_message_text( )" above.
-   var lines = join_continued_lines( response.split( "\n" ) );
+   // NOTE: One line a message - see "unescape_message_text( )".
+   var lines = response.split( "\n" );
 
    result.members = parse_members( lines[ 0 ] );
-
-   var previous = null;
 
    for( var i = 1; i < lines.length; i++ )
    {
@@ -495,21 +482,7 @@ function parse_fetch_response( response )
       if( line === "" )
          continue;
 
-      // NOTE: Reactions on a line of their own, after their message (Ian, 2026-10-29) - a line no message can be, as one starts
-      // with its unique and a space, and a line break within a message comes as "\" at the end of the line before.
-      var reactions = parse_reactions( line );
-
-      if( reactions !== null )
-      {
-         if( previous && ( previous.kind === c_kind_chat ) )
-            previous.reactions = reactions;
-
-         continue;
-      }
-
       var entry = parse_message_line( line );
-
-      previous = entry;
 
       if( entry === null )
          continue;
@@ -1056,20 +1029,6 @@ function apply_reaction( reactions, code, my_short )
 function reaction_options( unique, code )
 {
    return "for=" + unique + ";text= " + code;
-}
-
-// NOTE: Ian's line break before the reactions ("842fc32f") comes escaped, as one within a message does - the web session's "join( )"
-// escapes every line break in a line - so for now they are a message's last line, taken only when exactly their form. It goes once
-// they are a line of their own: a message whose last line is only that would be read as reactions.
-function split_escaped_reactions( text )
-{
-   var value = String( text || "" );
-
-   var m = /\\\n([^\n]*)$/.exec( value );
-
-   var reactions = m ? parse_reactions( m[ 1 ] ) : null;
-
-   return reactions ? { text: value.substring( 0, m.index ), reactions: reactions } : { text: value, reactions: null };
 }
 
 // NOTE: How a message is drawn, but for its reactions (drawn on their own) - so a room read whole again redraws only a message
@@ -3833,7 +3792,6 @@ if( typeof module !== "undefined" )
       c_reaction_emojis: c_reaction_emojis,
       c_reaction_names: c_reaction_names,
       parse_reactions: parse_reactions,
-      split_escaped_reactions: split_escaped_reactions,
       message_state: message_state,
       reaction_chips: reaction_chips,
       apply_reaction: apply_reaction,
@@ -3843,7 +3801,6 @@ if( typeof module !== "undefined" )
       message_bytes: message_bytes,
       c_max_message_bytes: c_max_message_bytes,
       unescape_message_text: unescape_message_text,
-      join_continued_lines: join_continued_lines,
       describe_event: describe_event,
       password_strength: password_strength,
       sign_in_progress: sign_in_progress,
