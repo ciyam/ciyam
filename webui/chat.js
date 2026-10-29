@@ -1321,6 +1321,7 @@ async function do_disconnect( already_ended )
 
    g_react_in_flight = false;
    g_last_whole_read = 0;
+   g_whole_read_wait = c_whole_read_every_ms;
 
    close_emoji_panel( false );
    close_emoji_suggest( );
@@ -3352,6 +3353,9 @@ function on_messages_response( response, asked_for, replace, again )
    {
       var result = parse_fetch_response( response );
 
+      if( again )
+         g_whole_read_wait = is_timeout_response( response ) ? Math.min( g_whole_read_wait * 2, c_whole_read_longest_ms ) : c_whole_read_every_ms;
+
       // NOTE: The first room's messages are what the loading state was waiting for -
       // including when they fail, so an error is shown rather than a spinner forever.
       if( g_first_load && replace )
@@ -3403,8 +3407,9 @@ function on_messages_response( response, asked_for, replace, again )
       if( replace || again )
          g_last_whole_read = Date.now( );
 
-      // NOTE: Only what a poll brings - not a room's first read, nor reading it whole again.
-      if( !replace && !again )
+      // NOTE: Only what a poll brings - not a room's first read. A read whole again too: one that came since the poll just before
+      // is in it, and only what is after the start point is told of ("messages_notification( )") - found by review.
+      if( !replace )
          notify_messages( result.messages );
 
       apply_pinned( result.pinned );
@@ -6220,8 +6225,11 @@ async function poll( )
 
    // NOTE: Now and then the room read whole again (Ian's suggestion, 2026-10-29) - a poll brings only new messages, so someone
    // else's reaction, edit or deletion on an older one waits for it ("append_messages( )" draws again only what changed).
-   if( ( g_room !== "" ) && ( Date.now( ) - g_last_whole_read >= c_whole_read_every_ms ) )
+   if( ( g_room !== "" ) && ( Date.now( ) - g_last_whole_read >= g_whole_read_wait ) )
    {
+      // NOTE: Taken as it is sent - one that times out is not tried again at the next poll (found by review).
+      g_last_whole_read = Date.now( );
+
       g_in_poll = true;
 
       var whole = load_messages( "from=0", false, true );
@@ -6233,9 +6241,14 @@ async function poll( )
 }
 
 const c_whole_read_every_ms = 30000;
+const c_whole_read_longest_ms = 240000;
 
 // NOTE: When the room was last read whole - opened, refreshed, or by "poll( )"; 0 to have the next poll read it whole.
 var g_last_whole_read = 0;
+
+// NOTE: How long until the next - twice as long after one that timed out, up to four minutes, back to half a minute once one answers:
+// a long room is not to end the session, as three time-outs in a row do (ISS-020; found by review, 2026-10-29).
+var g_whole_read_wait = c_whole_read_every_ms;
 
 // NOTE: The button turns its icon while the refresh runs, and cannot be pressed again until
 // it is done.
