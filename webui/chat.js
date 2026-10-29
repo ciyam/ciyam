@@ -3862,8 +3862,10 @@ function build_message( entry )
    row.classList.toggle( "is-own", ( entry.sender === ciyam.username ) );
 
    // NOTE: Private messages too, since 2026-09-28 - the edit says it is private
-   // ("edit_for_value( )"), and the server keeps it so. Not one the chat cannot read - an edit would send its ciphertext as words.
-   if( ( entry.sender === ciyam.username ) && !entry.deleted && ( message_unreadable_label( entry.text ) === "" ) )
+   // ("edit_for_value( )"), and the server keeps it so. An encrypted one too, edited as it reads ("begin_edit( )"); not one of a
+   // kind the chat cannot read - an edit would send it as words.
+   if( ( entry.sender === ciyam.username ) && !entry.deleted
+    && ( ( message_unreadable_label( entry.text ) === "" ) || ( message_prefix( entry.text ) === "X" ) ) )
    {
       var edit = row.querySelector( ".chat-message-edit" );
 
@@ -5689,21 +5691,19 @@ async function do_send( )
 
    // NOTE: Sealed in a direct message with a key for the other person, or in a room with a room key ("chat_keys.js", 2026-10-25
    // and 26) - as it is, CRs and all, as nothing in it needs escaping. A message for some only too, as the console seals them (Ian's
-   // "d18eb1e2", 2026-10-27: kept as "!X\r..."). Not an edit: that goes as before.
-   if( g_edit_unique === "" )
+   // "d18eb1e2", 2026-10-27: kept as "!X\r..."). An edit too, as "irc.cin" seals one (Ian, 2026-10-29: encrypted messages could not
+   // be edited).
+   var sealing = await chat_seal_here( text );
+
+   if( sealing.sealed && ( sealing.text === "" ) )
    {
-      var sealing = await chat_seal_here( text );
+      show_alert( "That message is too long to encrypt - at most " + c_sealed_most_bytes + " bytes. Split it in two.", "is-error" );
 
-      if( sealing.sealed && ( sealing.text === "" ) )
-      {
-         show_alert( "That message is too long to encrypt - at most " + c_sealed_most_bytes + " bytes. Split it in two.", "is-error" );
-
-         return;
-      }
-
-      if( sealing.sealed )
-         sent = sealing.text;
+      return;
    }
+
+   if( sealing.sealed )
+      sent = sealing.text;
 
    if( g_edit_unique !== "" )
       options = "for=" + edit_for_value( g_edit_unique, g_edit_private ) + ";text=" + sent;
@@ -5916,6 +5916,22 @@ function composer_refresh( )
 function begin_edit( unique, text, is_private )
 {
    var input = document.getElementById( "composer_input" );
+
+   // NOTE: An encrypted one is edited as it reads - its words as opened here ("chat_opened_text( )"), sealed again as it is sent
+   // ("do_send( )"). One not opened here cannot be.
+   if( message_prefix( text ) === "X" )
+   {
+      var opened = chat_opened_text( text );
+
+      if( opened === null )
+      {
+         show_alert( "That message can't be edited here - it isn't readable with your keys.", "is-error", true );
+
+         return;
+      }
+
+      text = opened;
+   }
 
    // NOTE: What was in the box before, for Escape or Cancel edit to put back - kept from the first edit if one follows another.
    // Kept as it would be sent, so it comes back whether Codes is on or off by then.

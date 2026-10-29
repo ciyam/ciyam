@@ -263,6 +263,15 @@ function chat_open_message( element, text )
    return true;
 }
 
+// NOTE: An encrypted message's words as this chat opened them - to edit it (Ian, 2026-10-29: encrypted messages could not be edited)
+// - or null if it was not opened here.
+function chat_opened_text( text )
+{
+   var opened = g_chat_opened[ chat_room_secret( ) + "|" + text ];
+
+   return ( opened && opened.ok ) ? opened.text : null;
+}
+
 // NOTE: Once the keys are read, the encrypted messages already drawn are drawn again - and the others marked, or not, as not
 // encrypted, as there is now a key for the room or not ("is_unencrypted_message( )").
 function chat_keys_redraw( )
