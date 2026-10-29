@@ -2740,6 +2740,15 @@ button.chat-reaction:hover
    margin-top: 6px;
 }
 
+/* NOTE: A dialog's buttons one size - the primary one is the sign in's, larger, elsewhere (Damon, 2026-10-30: Cancel beside Reset
+   password was the smaller). */
+.chat-dialog-actions .chat-btn
+{
+   height: 36px;
+   padding: 0 16px;
+   font-size: var(--font-size-chat-meta);
+}
+
 /* ---- a question in place of "confirm( )" ("dialog.js", Damon, 2026-10-27) - over every other dialog, drawer and menu ---- */
 
 .chat-ask-scrim
