@@ -3009,7 +3009,8 @@ function show_people( view )
       heading.focus( { preventScroll: true } );
 }
 
-function people_alert( text, is_error )
+// NOTE: "stays" - kept until the next is said, as one with a PIN to pass on (a password reset) must be read in full.
+function people_alert( text, is_error, stays )
 {
    var alert = document.getElementById( "people_alert" );
 
@@ -3020,7 +3021,7 @@ function people_alert( text, is_error )
    if( g_people_alert_timer !== null )
       window.clearTimeout( g_people_alert_timer );
 
-   g_people_alert_timer = window.setTimeout( function( ) { alert.hidden = true; }, c_people_alert_ms );
+   g_people_alert_timer = stays ? null : window.setTimeout( function( ) { alert.hidden = true; }, c_people_alert_ms );
 }
 
 async function load_people( )
@@ -3144,6 +3145,16 @@ function render_people( )
       {
          remove.setAttribute( "aria-label", "Remove " + called );
          remove.onclick = function( ) { arm_remove( person.pin ); };
+
+         // NOTE: Only for someone who has claimed their account - one not yet claimed has no password to forget.
+         if( ( person.status === "active" ) && ( person.name !== "" ) )
+         {
+            var reset = row.querySelector( ".account-reset" );
+
+            reset.hidden = false;
+            reset.setAttribute( "aria-label", "Reset the password of " + person.name );
+            reset.onclick = function( ) { do_reset_password( person ); };
+         }
       }
 
       body.appendChild( row );
@@ -3219,6 +3230,35 @@ async function do_remove( pin )
       people_alert( "Not removed: " + people_problem( response ), true );
    else
       people_alert( ( person && person.name ? person.name : "The unclaimed account" ) + " was removed." );
+
+   load_people( );
+}
+
+// NOTE: A forgotten password (Damon and Ian, 2026-10-29) - the account made again as a nominated one with its own PIN and username,
+// in one request ("nominated=!<pin>:<name>"): the password gone, admin never knowing the new one; its rooms, messages and keys
+// kept. The person sets it up again with the PIN, as a new household member does.
+async function do_reset_password( person )
+{
+   if( !await ask_dialog( { title: "Reset " + person.name + "'s password?", text: "It stops working now. They set up their account"
+    + " again with their PIN and choose a new password - you won't see it. Their username, rooms, messages and keys stay.",
+    yes: "Reset password" } ) )
+      return;
+
+   var asked_for = ciyam.access;
+
+   var response = await request( function( done )
+   {
+      return ciyam.create_user( "nominated=!" + person.pin + ":" + person.name, done );
+   } );
+
+   if( ciyam.access !== asked_for )
+      return;
+
+   if( people_problem( response ) !== "" )
+      people_alert( "Not reset: " + people_problem( response ), true );
+   else
+      people_alert( person.name + "'s password was reset. Give them their PIN, " + person.pin + " - they set up their account again with"
+       + " it (New here? on the sign in) and choose a new password.", false, true );
 
    load_people( );
 }

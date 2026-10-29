@@ -826,6 +826,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   <td><span class="account-pill"></span></td>
                   <td class="account-row-actions">
                      <span class="account-you" hidden>You</span>
+                     <button type="button" class="chat-btn account-reset" hidden>Reset password</button>
                      <button type="button" class="chat-btn account-remove">Remove</button>
                      <div class="account-confirm" hidden>
                         <span class="account-confirm-text"></span>

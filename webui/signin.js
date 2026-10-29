@@ -184,6 +184,10 @@ function signin_build( host, options )
       form.appendChild( signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_setup_hint" },
        "With the code or PIN from the person who added you." ) );
 
+   // NOTE: A forgotten password is reset by admin, the account then set up again with its PIN (Damon and Ian, 2026-10-29).
+   form.appendChild( signin_element( "div", { class: "chat-hint chat-signin-centred", id: "signin_forgot" },
+    "Forgotten your password? Ask your admin to reset it." ) );
+
    // NOTE: One line (Damon, 2026-10-28: the sign in scrolled) - what it forgets is said by the question it asks first.
    var foot = signin_element( "div", { class: "chat-signin-foot" } );
    var reset = signin_element( "button", { type: "button", class: "chat-btn--link", id: "signin_reset" }, "Reset this browser" );
