@@ -1277,7 +1277,7 @@ void process_messages_response( string& response, bool needs_decoding,
                         }
 
                         if( parts.size( ) > 3 )
-                           next_message += ' ' + parts[ 3 ];
+                           next_message += '\n' + parts[ 3 ];
                      }
                   }
                }
