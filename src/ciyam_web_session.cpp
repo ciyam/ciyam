@@ -1272,12 +1272,14 @@ void process_messages_response( string& response, bool needs_decoding,
                            {
                               string decoded( base64::decode( content, true ) );
 
-                              next_message += ' ' + decoded.substr( 1 );
+                              // NOTE: Each message is one line with its "specials" escaped (so the same
+                              // for both text and JSON) and with any "reactions" appended after a tab.
+                              next_message += ' ' + escaped( decoded.substr( 1 ), 0, c_esc, "nrt\n\r\t" );
                            }
                         }
 
                         if( parts.size( ) > 3 )
-                           next_message += '\n' + parts[ 3 ];
+                           next_message += '\t' + parts[ 3 ];
                      }
                   }
                }
@@ -1298,7 +1300,7 @@ void process_messages_response( string& response, bool needs_decoding,
       }
 
       if( !is_json_format )
-         response = join( messages, '\n' );
+         response = needs_decoding ? join( messages, '\n', '\0', false ) : join( messages, '\n' );
       else
          response = as_json_array( "all_messages", messages, true );
    }
