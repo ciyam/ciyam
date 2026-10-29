@@ -55,6 +55,7 @@ ok   nothing
 == a device token the node has never seen ======================
 ok   the server's words
 ok   anything else
+ok   a saved password refused - the password or the device, nothing else
 
 == a code or PIN the node does not know ========================
 ok   a code

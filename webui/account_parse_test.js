@@ -128,6 +128,10 @@ heading( "a device token the node has never seen" );
 check( "the server's words", ap.is_unknown_device_error( "Error: Invalid device identity 'c6f7ea5f172a64b'." ), true );
 check( "anything else", [ ap.is_unknown_device_error( "Error: User credentials are either invalid or incorrect." ),
  ap.is_unknown_device_error( "" ) ], [ false, false ] );
+check( "a saved password refused - the password or the device, nothing else", [
+ ap.is_saved_password_refused( "Error: User credentials are either invalid or incorrect." ),
+ ap.is_saved_password_refused( "Error: Invalid device identity 'c6f7ea5f172a64b'." ),
+ ap.is_saved_password_refused( "Error: Too many attempts." ), ap.is_saved_password_refused( "" ) ], [ true, true, false, false ] );
 
 // --------------------------------------------------------------------
 heading( "a code or PIN the node does not know" );

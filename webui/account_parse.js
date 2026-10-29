@@ -203,6 +203,13 @@ function is_unknown_device_error( error )
    return /Invalid device identity/.test( String( error || "" ) );
 }
 
+// NOTE: Whether a saved password was what was refused - the password, or the device it was hashed with - so the field is offered
+// for one to be typed; not for anything else (the sign in's three seconds, the node unreachable) - found by review, 2026-10-29.
+function is_saved_password_refused( error )
+{
+   return is_unknown_device_error( error ) || /credentials are either invalid or incorrect/i.test( String( error || "" ) );
+}
+
 // NOTE: The server answers a code or a PIN it does not know - made up, mistyped, or a code already
 // used (since ISS-034's fix) - as an invalid session, which reads as something wrong with the
 // browser. So that one is said in the page's own words; any other error is passed on as it came.
@@ -445,6 +452,7 @@ if( typeof module !== "undefined" )
       join_problem: join_problem,
       join_url: join_url,
       is_unknown_device_error: is_unknown_device_error,
+      is_saved_password_refused: is_saved_password_refused,
       refused_join_text: refused_join_text,
       parse_account_hash: parse_account_hash,
       keys_state: keys_state,

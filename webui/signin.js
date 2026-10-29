@@ -662,7 +662,7 @@ async function signin_submit( event )
    if( ciyam.error !== "" )
    {
       // NOTE: The saved password refused - changed since, or saved before the node was set up again - so the field is offered.
-      if( password === "" )
+      if( ( password === "" ) && is_saved_password_refused( ciyam.error ) )
          signin_type_password( true );
 
       signin_show_refusal( ciyam.error );
