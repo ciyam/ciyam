@@ -105,7 +105,7 @@ function signin_build( host, options )
    var access = signin_element( "select", { id: g_signin_ids.access, class: "chat-field chat-field--mono" } );
 
    access.appendChild( new Option( "Enter a PIN…", "" ) );
-   access.addEventListener( "change", signin_on_access );
+   access.addEventListener( "change", signin_choose_access );
 
    form.appendChild( access );
 
@@ -115,14 +115,26 @@ function signin_build( host, options )
    var pin = signin_element( "input", { type: "password", id: "signin_pin", class: "chat-field chat-field--mono",
     inputmode: "numeric", maxlength: "5", autocomplete: "off" } );
 
-   pin.addEventListener( "input", signin_on_access );
+   pin.addEventListener( "input", signin_choose_access );
 
    form.appendChild( pin );
 
-   form.appendChild( signin_element( "label", { class: "chat-label", for: "signin_password" }, "Password" ) );
+   form.appendChild( signin_element( "label", { class: "chat-label", for: "signin_password", id: "signin_password_label" }, "Password" ) );
    form.appendChild( signin_element( "input", { type: "password", id: "signin_password", class: "chat-field",
     autocomplete: "current-password" } ) );
-   form.appendChild( signin_element( "div", { class: "signin-hint", id: "signin_hint" } ) );
+
+   // NOTE: A saved password is used without its field (Ian, 2026-10-29: an empty field looks as if a password must be typed) -
+   // typed instead if it no longer works.
+   var saved = signin_element( "div", { class: "signin-hint", id: "signin_hint", hidden: "" } );
+   var type_it = signin_element( "button", { type: "button", class: "chat-btn--link", id: "signin_type_password" }, "Type it instead" );
+
+   type_it.addEventListener( "click", function( ) { signin_type_password( true ); } );
+
+   saved.appendChild( signin_element( "span", { }, "The password is saved on this browser." ) );
+   saved.appendChild( document.createTextNode( " " ) );
+   saved.appendChild( type_it );
+
+   form.appendChild( saved );
 
    form.appendChild( signin_element( "label", { class: "chat-label", for: "signin_retain" }, "Remember on this browser" ) );
 
@@ -432,7 +444,7 @@ function signin_fill_saved( )
    document.getElementById( "signin_access_label" ).hidden = ( ordered.length === 0 );
    select.hidden = ( ordered.length === 0 );
 
-   signin_on_access( );
+   signin_choose_access( );
 }
 
 function signin_pin( )
@@ -442,9 +454,20 @@ function signin_pin( )
    return ( chosen !== "" ) ? chosen : document.getElementById( "signin_pin" ).value.trim( );
 }
 
-// NOTE: The PIN field only for a PIN not saved here; the Remember box shows what is saved for the
-// account now, so signing in never silently forgets it. A saved password is used by leaving the field
-// empty - it stays open, so a password that no longer works can be typed instead.
+// NOTE: Whether the password is being typed rather than the saved one used - "Type it instead", or the saved one refused;
+// forgotten as another account is chosen.
+var g_signin_typing = false;
+
+function signin_choose_access( )
+{
+   g_signin_typing = false;
+
+   signin_on_access( );
+}
+
+// NOTE: The PIN field only for a PIN not saved here; the Remember box shows what is saved for the account now, so signing in
+// never silently forgets it. With a saved password, no password field - the saved one is used - but a line saying so, and
+// "Type it instead" for one that no longer works.
 function signin_on_access( )
 {
    var typed = ( document.getElementById( g_signin_ids.access ).value === "" );
@@ -456,10 +479,28 @@ function signin_on_access( )
 
    var has_hash = is_account_pin( pin ) && ( signin_saved_hash( pin ) !== null );
 
-   signin_set_text( "signin_hint", has_hash ? "The password is saved on this browser - leave it empty to use it." : "" );
+   var use_saved = has_hash && !g_signin_typing;
+
+   document.getElementById( "signin_password_label" ).hidden = use_saved;
+   document.getElementById( "signin_password" ).hidden = use_saved;
+   document.getElementById( "signin_hint" ).hidden = !use_saved;
+
+   if( use_saved )
+      document.getElementById( "signin_password" ).value = "";
 
    document.getElementById( "signin_retain" ).value =
     retain_mode_of( signin_storage_get( c_signin_storage_access ), is_account_pin( pin ) ? pin : "", has_hash );
+}
+
+// NOTE: The password field back for the account chosen - asked for, or as the saved password was refused.
+function signin_type_password( focus )
+{
+   g_signin_typing = true;
+
+   signin_on_access( );
+
+   if( focus )
+      document.getElementById( "signin_password" ).focus( );
 }
 
 // NOTE: After a sign in, what the Remember box asked for - "plan_retain_choice( )" in "chat_parse.js". "mode" - another
@@ -620,6 +661,10 @@ async function signin_submit( event )
 
    if( ciyam.error !== "" )
    {
+      // NOTE: The saved password refused - changed since, or saved before the node was set up again - so the field is offered.
+      if( password === "" )
+         signin_type_password( true );
+
       signin_show_refusal( ciyam.error );
 
       return;

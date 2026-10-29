@@ -42,6 +42,12 @@
    margin-top: 22px;
 }
 
+/* NOTE: The password typed rather than the saved one - the accent, not the red of "Reset this browser", as nothing is lost. */
+#signin_type_password
+{
+   color: var(--color-chat-accent-deep);
+}
+
 /* NOTE: A refusal stands out - a panel in the card's own type, with the critical colours (Damon, 2026-10-10: it was
    small mono type, easily missed). Nothing shows while there is no refusal. */
 .chat-signin .signin-error:not( :empty )
