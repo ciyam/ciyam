@@ -1644,9 +1644,9 @@ function picker_count_text( chosen, total )
    return chosen + " chosen of " + total;
 }
 
-// NOTE: Whether a message can be sealed - at most 500 bytes of it ("ciyam_secure_message.js", as "irc.cin"'s "MAX_TO_ENCRYPT",
-// the padding fitted to what is left over since 2026-10-25).
-const c_sealed_most_bytes = 500;
+// NOTE: Whether a message can be sealed - at most 1,000 bytes of it ("ciyam_secure_message.js", as "irc_extra.cin"'s
+// "MAX_TO_ENCRYPT" - 500 until Ian's "21ae2f5f", 2026-10-29).
+const c_sealed_most_bytes = 1000;
 
 function sealed_too_long( text )
 {

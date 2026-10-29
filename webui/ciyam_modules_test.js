@@ -596,10 +596,10 @@ async function steps( module_class, list )
    var sealed_parts = sealed.substring( 2 ).split( "\r" );
    var padded = new TextDecoder( ).decode( await m.ciyam_module_named( "chacha20" ).crypt( own + sealed_parts[ 0 ], hex_bytes( sealed_parts[ 1 ] ) ) );
 
-   check( "sealed afresh - salt, ciphertext and HMAC, padded to 502 bytes, opened again with CR as a line break", [ sealed.startsWith( "X\r" ),
+   check( "sealed afresh - salt, ciphertext and HMAC, padded to 1,002 bytes, opened again with CR as a line break", [ sealed.startsWith( "X\r" ),
     /^[0-9a-f]{32}$/.test( sealed_parts[ 0 ] ), sealed_parts[ 1 ].length, /^[0-9a-f]{32}$/.test( sealed_parts[ 2 ] ),
     /^[0-9A-Za-z]+\rA line\nand another, café\r[0-9A-Za-z]+$/.test( padded ), await sm.open( own, sealed ) ],
-    [ true, true, 1004, true, true, "A line\nand another, café" ] );
+    [ true, true, 2004, true, true, "A line\nand another, café" ] );
    check( "- each time a new salt and padding", ( await sm.seal( own, "same" ) ) !== ( await sm.seal( own, "same" ) ), true );
 
    var refused = async function( promise ) { try { await promise; return "opened"; } catch( e ) { return e.message; } };
@@ -607,14 +607,14 @@ async function steps( module_class, list )
 
    check( "not opened - changed, another secret, not sealed, or too long to seal", [ await refused( sm.open( own, changed ) ),
     await refused( sm.open( sm.own_secret( "0123456789abcdef0123456789abcdef" ), known ) ), await refused( sm.open( own, "Hello" ) ),
-    await refused( sm.open( own, known + "\r00" ) ), await refused( sm.seal( own, "x".repeat( 501 ) ) ), await refused( sm.seal( "abc", "hi" ) ),
+    await refused( sm.open( own, known + "\r00" ) ), await refused( sm.seal( own, "x".repeat( 1001 ) ) ), await refused( sm.seal( "abc", "hi" ) ),
     await refused( sm.seal( own, "hi", { salt: "XYZ" } ) ) ],
     [ "That message has been changed, or was sealed with another secret.", "That message has been changed, or was sealed with another secret.",
-    "That is not a sealed message.", "That is not a sealed message.", "That message is too long to seal - at most 500 bytes.",
+    "That is not a sealed message.", "That is not a sealed message.", "That message is too long to seal - at most 1000 bytes.",
     "A secret is 64 hex digits - the own secret, or one with another person - or a room key's 32.",
     "A salt is 32 lower-case hex digits, and the padding has no CR." ] );
-   // NOTE: The padding (Ian, 2026-10-25) - the padded message always 500 bytes and two CRs: a message of 500 bytes with none; up
-   // to 10 left over all before it; more than that split at random, some before and some after. Each opened again.
+   // NOTE: The padding (Ian, 2026-10-29) - the padded message always 1,000 bytes and two CRs: a message of 1,000 bytes with none;
+   // up to 5 left over all before it; more than that half before (rounded down) and the rest after. Each opened again.
    var padding_of = async function( message )
    {
       var s = await sm.seal( own, message );
@@ -626,23 +626,19 @@ async function steps( module_class, list )
        opened: ( await sm.open( own, s ) ) === message };
    };
 
-   var full = await padding_of( "y".repeat( 500 ) );
-   var nearly = await padding_of( "y".repeat( 490 ) );
-   var short_ones = [ ];
+   var full = await padding_of( "y".repeat( 1000 ) );
+   var nearly = await padding_of( "y".repeat( 995 ) );
+   var odd = await padding_of( "y".repeat( 994 ) );
+   var short_one = await padding_of( "y".repeat( 489 ) );
 
-   for( var n = 0; n < 40; n++ )
-      short_ones.push( await padding_of( "y".repeat( 489 - ( n % 3 ) * 200 ) ) );
-
-   check( "- 500 bytes sealed, the most, with no padding", [ full.bytes, full.before, full.after, full.opened ], [ 502, 0, 0, true ] );
-   check( "- 10 left over, all before it", [ nearly.bytes, nearly.before, nearly.after, nearly.opened ], [ 502, 10, 0, true ] );
-   check( "- more than 10 left over, some before and some after, split at random", [ short_ones.every( function( r )
-   {
-      return ( r.bytes === 502 ) && ( r.before >= 1 ) && ( r.after >= 1 ) && r.opened;
-   } ), new Set( short_ones.map( function( r ) { return r.before; } ) ).size > 10 ], [ true, true ] );
-   check( "- how many go before: all up to 10, otherwise at least one each side; a random number in range",
-    [ sm.padding_before( 0 ), sm.padding_before( 7 ), sm.padding_before( 10 ), sm.padding_before( 11 ) >= 1 && sm.padding_before( 11 ) <= 10,
+   check( "- 1,000 bytes sealed, the most, with no padding", [ full.bytes, full.before, full.after, full.opened ], [ 1002, 0, 0, true ] );
+   check( "- 5 left over, all before it", [ nearly.bytes, nearly.before, nearly.after, nearly.opened ], [ 1002, 5, 0, true ] );
+   check( "- more than 5, half before and the rest after", [ odd.bytes, odd.before, odd.after, short_one.before, short_one.after, short_one.opened ],
+    [ 1002, 3, 3, 255, 256, true ] );
+   check( "- how many go before: all up to 5, otherwise half rounded down; a random number in range",
+    [ sm.padding_before( 0 ), sm.padding_before( 5 ), sm.padding_before( 6 ), sm.padding_before( 511 ),
     Array.from( { length: 200 }, function( ) { return sm.random_below( 3 ); } ).every( function( v ) { return v >= 0 && v < 3; } ) ],
-    [ 0, 7, 10, true, true ] );
+    [ 0, 5, 3, 255, true ] );
 
    // NOTE: Under a room key (Ian, 2026-10-25) - "irc_extra.cin"'s steps for a room that is not direct: its 32 hex digits are the
    // secret as they are - ChaCha20 under them and the salt, the HMAC (Node's own) keyed "mac", them and the salt.

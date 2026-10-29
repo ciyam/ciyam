@@ -928,8 +928,8 @@ check( "- and what came of it", [ cp.room_key_sent_text( [ { name: "tester-1", h
  [ "Sent to tester-1. Sent to tester-2 once they accept your direct message - keep this page open until then.",
  "Not sent to a and b - add their public keys on My account first. Not sent to c - accept their direct message first. Could not send it to d - try again.",
  "There is no one else here to send it to." ] );
-check( "- a message too long to encrypt: over 500 bytes", [ cp.sealed_too_long( "a".repeat( 500 ) ), cp.sealed_too_long( "a".repeat( 501 ) ),
- cp.sealed_too_long( "ä".repeat( 250 ) ), cp.sealed_too_long( "ä".repeat( 251 ) ) ], [ false, true, false, true ] );
+check( "- a message too long to encrypt: over 1,000 bytes", [ cp.sealed_too_long( "a".repeat( 1000 ) ), cp.sealed_too_long( "a".repeat( 1001 ) ),
+ cp.sealed_too_long( "ä".repeat( 500 ) ), cp.sealed_too_long( "ä".repeat( 501 ) ) ], [ false, true, false, true ] );
 
 // NOTE: Room keys (Ian, 2026-10-25) - "<room>#<32 hex digits>" as "irc.cin"'s "k" makes them.
 var room_key = "0123456789abcdef0123456789abcdef";

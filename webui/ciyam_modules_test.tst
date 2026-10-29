@@ -81,13 +81,13 @@ ok   the own secret - as the console's, from the entropy and it reversed
 ok   - entropy not 32 to 64 hex digits, said
 ok   sealed - as the console seals it, given its salt and padding
 ok   - and opened
-ok   sealed afresh - salt, ciphertext and HMAC, padded to 502 bytes, opened again with CR as a line break
+ok   sealed afresh - salt, ciphertext and HMAC, padded to 1,002 bytes, opened again with CR as a line break
 ok   - each time a new salt and padding
 ok   not opened - changed, another secret, not sealed, or too long to seal
-ok   - 500 bytes sealed, the most, with no padding
-ok   - 10 left over, all before it
-ok   - more than 10 left over, some before and some after, split at random
-ok   - how many go before: all up to 10, otherwise at least one each side; a random number in range
+ok   - 1,000 bytes sealed, the most, with no padding
+ok   - 5 left over, all before it
+ok   - more than 5, half before and the rest after
+ok   - how many go before: all up to 5, otherwise half rounded down; a random number in range
 ok   sealed under a room key's 32 hex digits, as the console does, and opened
 ok   to another person - the public keys and the secret between them, as the console's, from either side
 ok   - sealed by one, opened by the other, and not under either's own secret

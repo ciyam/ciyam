@@ -469,7 +469,7 @@ ok   - what the line under it says
 ok   - a group's, with a room key or without
 ok   - a room key sent to each other person once
 ok   - and what came of it
-ok   - a message too long to encrypt: over 500 bytes
+ok   - a message too long to encrypt: over 1,000 bytes
 ok   a room key - for a room, not the entrance or reserved ones, nor a direct message
 ok   - shown as the console shows it
 ok   - given as the console shows it, or alone, spaces and case aside

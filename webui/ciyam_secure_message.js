@@ -29,12 +29,12 @@ ciyam_register_module( class extends ciyam_module
    static c_salt_bytes = 16;
    static c_hmac_digits = 32;
 
-   // NOTE: As "irc.cin"'s "MAX_TO_ENCRYPT" (Ian, 2026-10-24) - the message padded with random letters to 500 bytes, so every
-   // message is the same size. Padding (Ian, 2026-10-25): none for a message of 500 bytes; up to 10 left over all before it;
-   // more than that split at random, some before and some after.
-   static c_max_length = 500;
-   static c_padded_length = 500;
-   static c_most_before_only = 10;
+   // NOTE: As "irc_extra.cin"'s "MAX_TO_ENCRYPT" (Ian, 2026-10-29, "21ae2f5f" - 500 before) - the message padded with random
+   // letters to 1,000 bytes, so every message is the same size: up to 5 left over all before it, more than that half before
+   // and the rest after.
+   static c_max_length = 1000;
+   static c_padded_length = 1000;
+   static c_most_before_only = 5;
 
    static c_alpha_numeric = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
@@ -105,14 +105,14 @@ ciyam_register_module( class extends ciyam_module
       }
    }
 
-   // NOTE: How many of the bytes left over go before the message (Ian, 2026-10-25) - all of them up to 10, otherwise from one
-   // to one less than all, the rest after it.
+   // NOTE: How many of the bytes left over go before the message (Ian, 2026-10-29) - all of them up to 5, otherwise half (rounded
+   // down, as "irc_extra.cin" divides), the rest after it.
    static padding_before( left_over )
    {
       if( left_over <= this.c_most_before_only )
          return left_over;
 
-      return 1 + this.random_below( left_over - 1 );
+      return Math.floor( left_over / 2 );
    }
 
    // NOTE: SHA-256 of bytes - the browser's own where it has one (a secure context), "sha2.min.js" otherwise, given the bytes
