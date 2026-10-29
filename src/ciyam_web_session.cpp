@@ -199,7 +199,7 @@ constexpr const char* c_cws_help_request_output = "quit\n"
  "update user *** password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
- "attach storage <name>\ncreate user [secret|nominated=[<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
+ "attach storage <name>\ncreate user [secret|nominated=[[!]<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
  "create unlock-key [encrypted=<prefix>-<xor_hash>]\ndelete user <pin>\ndelete device <ident>\ndelete message <room>\ndelete javascript\ndelete stylesheet\n"
  "delete webcmdlist\ndelete user-keys\nemploy unlock-key <key>\nretain javascript\nretain stylesheet\nretain webcmdlist\n"
  "retain user-keys\nreview logs [<name> [lines=10]]\n"
@@ -2985,6 +2985,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   else
                   {
                      bool is_secret = false;
+                     bool is_reset = false;
 
                      string pin, nominated_username;
 
@@ -3012,6 +3013,15 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                            value.erase( 0, pos + 1 );
                         }
 
+                        // NOTE: A PIN prefixed with '!' resets that existing user so that it
+                        // can be claimed again (with a new password) keeping its username.
+                        if( !pin.empty( ) && ( pin[ 0 ] == '!' ) )
+                        {
+                           is_reset = true;
+
+                           pin.erase( 0, 1 );
+                        }
+
                         if( value == c_admin )
                            // FUTURE: This message should be handled as a server string message.
                            error = "Invalid attempt to create an 'admin' user.";
@@ -3024,7 +3034,24 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         error = "Invalid options '" + options + "' for user creation.";
                      else if( error.empty( ) )
                      {
-                        if( !pin.empty( ) )
+                        if( is_reset )
+                        {
+                           string existing_username;
+
+                           if( !pin.empty( ) && has_user_info( pin ) )
+                              existing_username = get_user_name( pin );
+
+                           if( is_secret || pin.empty( ) || nominated_username.empty( ) )
+                              // FUTURE: This message should be handled as a server string message.
+                              error = "A user reset requires both the access token and the username.";
+                           else if( !has_user_info( pin ) )
+                              // FUTURE: This message should be handled as a server string message.
+                              error = "Unknown access pin '" + pin + "' for user reset.";
+                           else if( !existing_username.empty( ) && ( existing_username != nominated_username ) )
+                              // FUTURE: This message should be handled as a server string message.
+                              error = "Username '" + nominated_username + "' does not match that of '" + pin + "'.";
+                        }
+                        else if( !pin.empty( ) )
                         {
                            if( has_user_info( pin ) )
                               // FUTURE: This message should be handled as a server string message.
@@ -3037,6 +3064,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         if( error.empty( ) )
                         {
                            found = true;
+
+                           if( is_reset )
+                              remove_user_info_from_storage( pin );
 
                            temp_umask tum( 077 );
 

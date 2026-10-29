@@ -226,7 +226,7 @@ admin
 Finally will perform admin structured I/O queries for enums/lists and views after attaching to the Meta storage.
 quit
 attach storage <name>
-create user [secret|nominated=[<pin>:][<username>]]
+create user [secret|nominated=[[!]<pin>:][<username>]]
 create message <room> [for=<name,>;]text=<text>
 create unlock-key [encrypted=<prefix>-<xor_hash>]
 delete user <pin>
