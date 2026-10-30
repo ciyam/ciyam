@@ -34,6 +34,7 @@ USER_NAME=$4
 SESSION_ID=$5
 ;
 CHANGED=
+HAS_LOCK=
 ;
 TARGET_ROOM=
 ;
@@ -87,6 +88,13 @@ LEN_UNIX_UNIQUE=@strlen:$DUMMY_UNIX_UNIQUE
 .system_variable @queue_irc "$DUMMY_UNIX_UNIQUE $DUMMY_USER_NAME $MESSAGE"
 @ifndef $ERROR
 .system_variable @queue_irc ""
+@endif
+;
+.system_variable @irc_lock 1 "" 100
+@ifneq "$OUTPUT" "0"
+HAS_LOCK=1
+@else
+ERROR=Unable to obtain the system IRC lock (try again later).
 @endif
 ;
 @ifndef $ERROR
@@ -511,6 +519,10 @@ ERROR_OR_RETURN=
 ;
 @ifdef $CHANGED
 .system_variable @irc_alter 1
+@endif
+;
+@ifdef $HAS_LOCK
+.system_variable @irc_lock ""
 @endif
 ;
 @ifdef $ERROR
