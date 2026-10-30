@@ -6387,11 +6387,11 @@ var g_resyncing = false;
 var g_uncertain_send = null;
 var g_losing_contact = false;
 
-// NOTE: Every response passes here first, whatever asked for it - polls, sends, the linked
-// console's requests. The callbacks are otherwise untouched.
 // NOTE: How long before a message the node refused while handling another is tried again ("is_irc_lock_refusal( )").
 const c_irc_lock_retry_ms = 400;
 
+// NOTE: Every response passes here first, whatever asked for it - polls, sends, the linked
+// console's requests. The callbacks are otherwise untouched.
 function watch_timeouts( )
 {
    [ "fetch", "post" ].forEach( function( name )
@@ -6412,9 +6412,15 @@ function watch_timeouts( )
          {
             await new Promise( function( done ) { window.setTimeout( done, c_irc_lock_retry_ms ); } );
 
+            var refusal = answer;
+
             answer = null;
 
             await original( url, arg, take );
+
+            // NOTE: The second try lost on the way - the refusal is said, so the words are not lost with it (found by review).
+            if( answer === null )
+               answer = refusal;
          }
 
          // NOTE: No answer - the request failed - is passed on as before: not at all.
@@ -6423,8 +6429,17 @@ function watch_timeouts( )
 
          note_response( answer );
 
-         if( callback )
-            callback( answer );
+         // NOTE: Caught and logged as "ciyam.fetch( )" did when it ran the callback itself - an error in one is not the caller's
+         // (found by review).
+         try
+         {
+            if( callback )
+               callback( answer );
+         }
+         catch( e )
+         {
+            console.error( "Error fetching data: ", e );
+         }
       };
    } );
 }

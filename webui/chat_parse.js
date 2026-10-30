@@ -1033,9 +1033,10 @@ function reaction_options( unique, code )
 
 // NOTE: The node refusing a message while it handles another (Ian's "@irc_lock", "a658ef5b", 2026-10-30) - one at a time, the next
 // refused rather than kept waiting; the chat tries it once more ("watch_timeouts( )").
+// The node's own error only - a message's answer brings the room's new messages, and one may say the same words (found by review).
 function is_irc_lock_refusal( response )
 {
-   return /Unable to obtain the system IRC lock/.test( String( response || "" ) );
+   return is_error_response( response ) && /^Error:\s*Unable to obtain the system IRC lock/.test( response );
 }
 
 // NOTE: How a message is drawn, but for its reactions (drawn on their own) - so a room read whole again redraws only a message

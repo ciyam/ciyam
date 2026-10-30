@@ -1634,6 +1634,8 @@ check( "reacting - given, the same again taken off, another replacing it", [
 check( "- sent as an edit to a space and its digits", cp.reaction_options( "1793192805000", "07" ), "for=1793192805000;text= 07" );
 check( "the node busy with another message - tried once more", [ cp.is_irc_lock_refusal( "Error: Unable to obtain the system IRC lock (try again later)." ),
  cp.is_irc_lock_refusal( "Error: Maximum message size was exceeded." ), cp.is_irc_lock_refusal( "" ) ], [ true, false, false ] );
+check( "- not a room's messages that only say the same words", cp.is_irc_lock_refusal( "admin+1\n1793192805000 admin  Unable to obtain the system"
+ + " IRC lock (try again later)." ), false );
 check( "a message as drawn, but for its reactions - changed when edited, deleted or pinned since", [
  cp.message_state( { text: "hi", reactions: [ { code: "01", people: [ "4b573f" ] } ] } ) === cp.message_state( { text: "hi" } ),
  cp.message_state( { text: "hi" } ) === cp.message_state( { text: "hi!", edited: true } ),

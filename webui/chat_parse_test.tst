@@ -786,6 +786,7 @@ ok   reactions as shown - who, how many, one's own
 ok   reacting - given, the same again taken off, another replacing it
 ok   - sent as an edit to a space and its digits
 ok   the node busy with another message - tried once more
+ok   - not a room's messages that only say the same words
 ok   a message as drawn, but for its reactions - changed when edited, deleted or pinned since
 ok   - on someone else's message only, not deleted, not for some only
 
