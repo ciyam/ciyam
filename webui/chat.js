@@ -2229,6 +2229,7 @@ function do_open_create_room( )
    // carried over - render_invitees deliberately preserves whatever is already ticked
    // when it refreshes underneath the user.
    invite_picker( ).reset( );
+   invite_picker( ).set_single( false );
 
    document.getElementById( "room_dialog" ).hidden = false;
    document.getElementById( "room_dialog_name" ).focus( );
@@ -2269,8 +2270,9 @@ function load_invitees( )
    render_invitees( people );
 }
 
-// NOTE: Pick one or more people; the chat opens the conversation with exactly them, starting it
-// if there is none - see "open_dm( )".
+// NOTE: Pick the person; the chat opens the conversation with them, starting it if there is none - see "open_dm( )". One
+// person only (Ian, 2026-10-30: "for Direct Messages you should only choose the one user - otherwise it's a normal room"); a
+// group made before then still opens.
 function do_open_new_message( )
 {
    g_dialog_mode = "dm";
@@ -2284,6 +2286,7 @@ function do_open_new_message( )
    set_error( "room_dialog_error", "" );
 
    invite_picker( ).reset( );
+   invite_picker( ).set_single( true );
 
    document.getElementById( "room_dialog" ).hidden = false;
 
@@ -2345,6 +2348,13 @@ function submit_new_message( )
    if( names.length === 0 )
    {
       set_error( "room_dialog_error", "Choose who to message." );
+
+      return;
+   }
+
+   if( names.length > 1 )
+   {
+      set_error( "room_dialog_error", "A direct message is with one person - for more, create a room." );
 
       return;
    }
@@ -3016,6 +3026,7 @@ function do_open_invite( )
    set_error( "room_dialog_error", "" );
 
    invite_picker( ).reset( );
+   invite_picker( ).set_single( false );
 
    document.getElementById( "room_dialog" ).hidden = false;
 

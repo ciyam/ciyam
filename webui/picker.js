@@ -13,7 +13,11 @@
 //
 //    var picker = people_picker( host, { list_id: "...", add_id: "...", none_text: "...", done_id: "...", on_change: f } );
 //    picker.set_people( [ { name: "verify-a", note: "conversation open" } ] );  picker.chosen( );  picker.reset( );
+//
+// "picker.set_single( true )" makes it a choice of one person (Ian, 2026-10-30: a direct message is with one person - "otherwise
+// it's a normal room"): choosing someone replaces whoever was chosen, and closes the list.
 const c_picker_hint = "↑ ↓ move · Space ticks · Enter done";
+const c_picker_single_hint = "↑ ↓ move · Space or Enter chooses";
 
 function picker_element( tag, class_name, text )
 {
@@ -32,7 +36,7 @@ function people_picker( host, options )
 {
    var opts = options || { };
 
-   var picker = { host: host, opts: opts, query: "", people: 0 };
+   var picker = { host: host, opts: opts, query: "", people: 0, single: false };
 
    host.textContent = "";
    host.classList.add( "chat-picker" );
@@ -82,7 +86,9 @@ function people_picker( host, options )
    var done = picker_element( "button", "chat-btn chat-btn--accent chat-btn--small", "Done" );
    done.type = "button";
 
-   foot.appendChild( picker_element( "span", "chat-picker-hint", c_picker_hint ) );
+   picker.hint = picker_element( "span", "chat-picker-hint", c_picker_hint );
+
+   foot.appendChild( picker.hint );
    foot.appendChild( done );
 
    picker.popup.appendChild( picker.search );
@@ -103,6 +109,28 @@ function people_picker( host, options )
    picker.chosen = function( )
    {
       return picker.boxes( ).filter( function( box ) { return box.checked; } ).map( function( box ) { return box.value; } );
+   };
+
+   // NOTE: One person only, or any number.
+   picker.set_single = function( single )
+   {
+      picker.single = !!single;
+
+      picker.hint.textContent = picker.single ? c_picker_single_hint : c_picker_hint;
+
+      picker.refresh( );
+   };
+
+   // NOTE: "name" chosen - in a choice of one, in place of whoever was.
+   picker.choose = function( name )
+   {
+      picker.boxes( ).forEach( function( box )
+      {
+         if( box.value === name )
+            box.checked = true;
+         else if( picker.single )
+            box.checked = false;
+      } );
    };
 
    picker.changed = function( )
@@ -210,9 +238,12 @@ function people_picker( host, options )
          picker.chips.appendChild( chip );
       } );
 
-      picker.add.textContent = ( chosen.length === 0 ) ? ( opts.add_text || "Choose people" ) : "Add more";
+      if( picker.single )
+         picker.add.textContent = ( chosen.length === 0 ) ? "Choose a person" : "Change";
+      else
+         picker.add.textContent = ( chosen.length === 0 ) ? ( opts.add_text || "Choose people" ) : "Add more";
 
-      picker.count.textContent = picker_count_text( chosen.length, picker.people );
+      picker.count.textContent = picker_count_text( picker.single ? 0 : chosen.length, picker.people );
       picker.clear.hidden = ( chosen.length === 0 );
 
       var shown = 0;
@@ -315,9 +346,21 @@ function people_picker( host, options )
       picker.search.focus( );
    };
 
-   picker.list.addEventListener( "change", function( )
+   // NOTE: In a choice of one, ticking someone chooses them in place of whoever was, and that is the choice made; unticking
+   // leaves no one.
+   picker.list.addEventListener( "change", function( event )
    {
+      var box = event.target;
+
+      var chose = picker.single && box.classList.contains( "chat-invitee-check" ) && box.checked;
+
+      if( chose )
+         picker.choose( box.value );
+
       picker.changed( );
+
+      if( chose )
+         picker.close( "done" );
    } );
 
    picker.search.addEventListener( "input", function( )
@@ -342,7 +385,7 @@ function people_picker( host, options )
          if( name === "" )
             return;
 
-         picker.boxes( ).forEach( function( box ) { if( box.value === name ) box.checked = true; } );
+         picker.choose( name );
 
          picker.changed( );
 
@@ -372,6 +415,14 @@ function people_picker( host, options )
       if( event.key === "Enter" )
       {
          event.preventDefault( );
+
+         // NOTE: In a choice of one, Enter chooses the one with the focus.
+         if( picker.single )
+         {
+            picker.choose( event.target.value );
+
+            picker.changed( );
+         }
 
          picker.close( "done" );
       }
