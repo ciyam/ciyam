@@ -3,8 +3,6 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-<ciyam.fissile
-;
 HUB=
 DATA=
 DEMO=
@@ -245,7 +243,7 @@ IDENT=@substr:0,9:$IDENTITY_HASH
 ;
 ; NOTE: If identity is palindromic then increment (or zero) the last character.
 ;
-REVERSE=*!reverse?$IDENT
+REVERSE=@reverse:$IDENT
 ;
 @ifeq "$IDENT" "$REVERSE"
 LAST=@substr:8,1:$IDENT
@@ -266,7 +264,7 @@ IDENT=$START$HEX
 ERROR=No backup blockchain identity was found.
 #Error: $ERROR
 @else
-IDENT=*!reverse?$OUTPUT
+IDENT=@reverse:$OUTPUT
 @endif
 @endif
 ;

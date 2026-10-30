@@ -3,8 +3,6 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-<ciyam.fissile
-;
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -22,7 +20,7 @@ IDENTITY=$1
 DESCRIPTION=$2
 SHARED_SECRET_HASH=$3
 ;
-REVERSED=*!reverse?$IDENTITY
+REVERSED=@reverse:$IDENTITY
 ;
 PEER_HUB=
 PEER_TYPE=1

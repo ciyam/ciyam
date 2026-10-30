@@ -7,8 +7,6 @@
 #Usage: destroy_channel.cin <identity>
 @else
 ;
-<ciyam.fissile
-;
 IDENT=$1
 ;
 PREFIX=$$
@@ -21,7 +19,7 @@ IDENTITY_VAR=%PREFIX%$%IDENT%_identity
 ;
 @ifdef "$OUTPUT"
 CHANNEL=$OUTPUT
-REVERSE=*!reverse?$CHANNEL
+REVERSE=@reverse:$CHANNEL
 ;
 .file_archive -destroy $CHANNEL
 .file_archive -destroy $REVERSE

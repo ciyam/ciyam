@@ -3,8 +3,6 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-<ciyam.fissile
-;
 @ifndef $1
 #Usage: create_peer_info_file_list.cin <file_name>
 @else
@@ -58,7 +56,7 @@ REVERSE=
 @ifdef $REVERSE
 PREFIXED=@repstr:.0.blk/:$NEXT_GENESIS_TAG
 IDENTITY=@repstr:bc./:$PREFIXED
-REVERSED=*!reverse?$IDENTITY
+REVERSED=@reverse:$IDENTITY
 .session_variable @set bc.$REVERSED.0.blk
 @endif
 @endif
