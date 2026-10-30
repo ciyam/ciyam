@@ -35,7 +35,7 @@ Reserve a new access token and suggest the username 'test-1'.
 Prepare to activate the newly reserved access token.
 88888 @none test-1
 Attempt to use 'test_1' rather than 'test-1' username.
-Error: Username must start with 'a-z' followed by 'a-z' or '0-9' characters (optionally use '-' for separators).
+Error: Username must be 'test-1' for this account.
 Activates the access token using the nominated 'test-1' username.
 Error: This web session is not valid (or has expired).
 quit
