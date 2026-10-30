@@ -157,10 +157,11 @@ bc.e3733d121.5.blk
 bc.e3733d121.5.pub
 bc.e3733d121.5.put
 bc.e3733d121.9.pub
+bc.e3733d121.pinned
 bc.e3733d121.zenith
 
 > file_stats
-[10/100000]96.8 kB/100.0 GB:11 tag(s)
+[10/100000]96.8 kB/100.0 GB:12 tag(s)
 
 > file_archives
 e3733d121 [okay      ] (178.4 kB/10.0 MB) bc.e3733d121/e3733d121
@@ -262,10 +263,11 @@ bc.e3733d121.5.blk
 bc.e3733d121.5.pub
 bc.e3733d121.5.put
 bc.e3733d121.9.pub
+bc.e3733d121.pinned
 bc.e3733d121.zenith
 
 > file_stats
-[10/100000]97.1 kB/100.0 GB:11 tag(s)
+[10/100000]97.1 kB/100.0 GB:12 tag(s)
 
 > file_archives
 e3733d121 [okay      ] (178.4 kB/10.0 MB) .files/e3733d121
@@ -331,10 +333,11 @@ bc.e3733d121.5.blk
 bc.e3733d121.5.pub
 bc.e3733d121.5.put
 bc.e3733d121.9.pub
+bc.e3733d121.pinned
 bc.e3733d121.zenith
 
 > file_stats
-[10/100000]97.1 kB/100.0 GB:11 tag(s)
+[10/100000]97.1 kB/100.0 GB:12 tag(s)
 
 > file_archives
 e3733d121 [okay      ] (178.4 kB/10.0 MB) bc.e3733d121/e3733d121

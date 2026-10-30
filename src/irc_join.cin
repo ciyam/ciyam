@@ -54,6 +54,13 @@ POS=@strpos:-:$ROOM_NO
 JPOS=@$POS+1
 JOIN_TOKEN=@substr:$JPOS:$ROOM_NO
 ROOM_NO=@substr:0,$POS:$ROOM_NO
+.system_variable @irc_close_$ROOM_NO
+@ifdef $OUTPUT
+NOW=@unix:
+@if $NOW #> $OUTPUT
+ERROR=Room has been clossed.
+@endif
+@endif
 @endif
 ;
 @ifeq "$ROOM_NO" "$ENTRANCE_ROOM"
