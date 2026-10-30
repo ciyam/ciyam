@@ -3,8 +3,6 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-<ciyam.fissile
-;
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -122,7 +120,7 @@ STORAGE=
 @ifeq "$STORAGE" ""
 ENTRY_IDENTITY=$EXT_IDENTITY
 @ifeq "$PEER_TYPE" "3"
-ENTRY_IDENTITY=*!reverse?$EXT_IDENTITY
+ENTRY_IDENTITY=@reverse:$EXT_IDENTITY
 @endif
 run_script create_peerchain_entry "@identity=$ENTRY_IDENTITY\
 ,@auto_start=$AUTO_START,@peer_type=$PEER_TYPE,@description=$EXT_NAME,@host_name=$EXT_DOMAIN\

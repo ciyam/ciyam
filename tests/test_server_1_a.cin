@@ -496,6 +496,22 @@ ERASER=@eraser:$TEST
 #xxx%TEST%yyy
 #xxx$TEST%ERASER%yyyzzz
 ;
+TEST=
+TEST=@reverse:$TEST
+#TEST is '$TEST'
+TEST=ab
+TEST=@reverse:$TEST
+#TEST is '$TEST'
+TEST=abc
+TEST=@reverse:$TEST
+#TEST is '$TEST'
+TEST=0123456789
+TEST=@reverse:$TEST
+#TEST is '$TEST'
+TEST=abcdefghijkl
+TEST=@reverse:$TEST
+#TEST is '$TEST'
+;
 encode -text a
 decode -text $OUTPUT
 encode -text ab

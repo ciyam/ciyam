@@ -3,8 +3,6 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-<ciyam.fissile
-;
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -34,7 +32,7 @@ UUID=$OUTPUT
 BLOCKCHAIN=$OUTPUT
 ;
 @ifdef $BLOCKCHAIN
-IN_REVERSE=*!reverse?$BLOCKCHAIN
+IN_REVERSE=@reverse:$BLOCKCHAIN
 ;
 .system_variable $$%IDENTITY%_error ""
 ;

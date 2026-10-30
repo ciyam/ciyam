@@ -3,8 +3,6 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-<ciyam.fissile
-;
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -72,7 +70,7 @@ ERROR=Found an existing session for '$IDENTITY' ($SUBMIT_IDENTITY).
 ;
 .system_variable @queue_peers $QUEUE_CONNECT
 ;
-RECEIVE_IDENTITY=*!reverse?$SUBMIT_IDENTITY
+RECEIVE_IDENTITY=@reverse:$SUBMIT_IDENTITY
 ;
 .wait 50
 .session_list $SUBMIT_IDENTITY,$RECEIVE_IDENTITY
