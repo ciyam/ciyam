@@ -365,7 +365,7 @@ http://www.opensource.org/licenses/mit-license.php.
                   <input type="datetime-local" class="chat-room-posts chat-room-close-input" id="room_close_input">
                   <button type="button" class="chat-btn chat-btn--small" id="room_close_set" onclick="do_set_room_close( )">Set</button>
                </div>
-               <p class="chat-room-key-note" id="room_close_note">After it nothing can be posted, edited or reacted to, and nobody can join.
+               <p class="chat-room-key-note" id="room_close_note">After that time nothing can be posted, edited or reacted to, and nobody can join.
                 Once set it can only be brought forward.</p>
             </div>
             <!-- NOTE: A room key (Ian, 2026-10-25: "irc.cin"'s "k" and "r") - made with every new room and sent to whoever is invited

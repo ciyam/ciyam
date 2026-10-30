@@ -192,8 +192,11 @@ check( "label today", cp.room_close_label( close_at, new Date( 2026, 10, 6, 9, 0
 check( "label tomorrow", cp.room_close_label( close_at, new Date( 2026, 10, 5, 9, 0, 0 ) ), "Closes tomorrow 17:00" );
 check( "label within the week", cp.room_close_label( close_at, new Date( 2026, 10, 2, 9, 0, 0 ) ),
  "Closes " + new Date( close_at * 1000 ).toLocaleDateString( undefined, { weekday: "short" } ) + " 17:00" );
-check( "label past the week gives the date",
- cp.room_close_label( close_at, new Date( 2026, 9, 28, 9, 0, 0 ) ).indexOf( "6" ) > 0, true );
+// NOTE: The date's words are the locale's, so its shape is checked - "Closes", the day of the month, the time - not the words.
+var past_week = cp.room_close_label( close_at, new Date( 2026, 9, 28, 9, 0, 0 ) );
+
+check( "label past the week gives the date", past_week.indexOf( "Closes " ) === 0 && / 0?6[ ,]/.test( past_week + " " )
+ && / 17:00$/.test( past_week ) && past_week !== "Closes " + new Date( close_at * 1000 ).toLocaleDateString( undefined, { weekday: "short" } ) + " 17:00", true );
 check( "label closed", cp.room_close_label( close_at, new Date( 2026, 10, 6, 18, 0, 0 ) ), "Closed" );
 check( "label none", cp.room_close_label( undefined, new Date( 2026, 10, 6, 18, 0, 0 ) ), "" );
 

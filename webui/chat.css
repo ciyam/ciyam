@@ -493,7 +493,8 @@ button.chat-avatar:hover
 .chat-messages.is-closed .chat-message-edit,
 .chat-messages.is-closed .chat-message-pin,
 .chat-messages.is-closed .chat-message-delete,
-.chat-messages.is-closed .chat-message-react
+.chat-messages.is-closed .chat-message-react,
+.chat-pinned-strip.is-closed .chat-pinned-unpin
 {
    display: none;
 }

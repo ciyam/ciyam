@@ -4445,7 +4445,8 @@ function do_toggle_pin( unique )
 {
    var room = g_room;
 
-   if( ( room === "" ) || !unique || g_pin_in_flight )
+   // NOTE: Not once the room has closed - a pin is an edit, which the node refuses then.
+   if( ( room === "" ) || !unique || g_pin_in_flight || room_has_closed( ) )
       return;
 
    g_pin_in_flight = true;
@@ -4714,8 +4715,9 @@ function apply_posting_rules( )
    send.disabled = !status.can_post;
    scope.disabled = !status.can_post;
 
-   // NOTE: Closed - the messages stay to read, without edit, pin, delete or react ("chat.css").
+   // NOTE: Closed - the messages stay to read, without edit, pin, delete or react, and the pinned without Unpin ("chat.css").
    document.getElementById( "message_list" ).classList.toggle( "is-closed", !!status.closed );
+   document.getElementById( "pinned" ).classList.toggle( "is-closed", !!status.closed );
 
    if( status.closed )
       close_react_menu( );
@@ -4820,6 +4822,7 @@ function update_thread_meta( )
 
    if( closable )
       prepare_close_input( entry );
+
    document.getElementById( "room_fact_inviter_row" ).hidden = !invite;
 
    var is_owner = !invite && !is_dm && ( ( g_room_owner === ciyam.username ) || ciyam.is_admin );
@@ -5048,7 +5051,8 @@ async function do_set_room_close( )
 
    if( ( typeof entry.closes === "number" ) && ( closes > entry.closes ) )
    {
-      show_alert( "A close time can only be brought forward - this room already closes " + room_close_label( entry.closes ).replace( /^Closes /, "" ) + ".", "is-error" );
+      show_alert( "A close time can only be brought forward - this room already closes "
+       + room_close_label( entry.closes ).replace( /^Closes /, "" ) + ".", "is-error" );
 
       return;
    }
@@ -5080,6 +5084,14 @@ async function do_set_room_close( )
 
    // NOTE: Straight away rather than on the next listing, as for who may post.
    entry.closes = closes;
+
+   // NOTE: Another room opened meanwhile - it is not the one said to close (found by review).
+   if( room !== g_room )
+   {
+      load_rooms( );
+
+      return;
+   }
 
    show_alert( "This room " + room_close_label( closes ).replace( /^Closes /, "closes " ) + " - it can be brought forward, not put back.", "is-info" );
 
