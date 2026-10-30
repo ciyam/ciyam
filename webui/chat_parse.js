@@ -1031,6 +1031,13 @@ function reaction_options( unique, code )
    return "for=" + unique + ";text= " + code;
 }
 
+// NOTE: The node refusing a message while it handles another (Ian's "@irc_lock", "a658ef5b", 2026-10-30) - one at a time, the next
+// refused rather than kept waiting; the chat tries it once more ("watch_timeouts( )").
+function is_irc_lock_refusal( response )
+{
+   return /Unable to obtain the system IRC lock/.test( String( response || "" ) );
+}
+
 // NOTE: How a message is drawn, but for its reactions (drawn on their own) - so a room read whole again redraws only a message
 // someone has edited or deleted since (Ian, 2026-10-29: a poll brings only new messages).
 function message_state( entry )
@@ -3796,6 +3803,7 @@ if( typeof module !== "undefined" )
       c_reaction_emojis: c_reaction_emojis,
       c_reaction_names: c_reaction_names,
       parse_reactions: parse_reactions,
+      is_irc_lock_refusal: is_irc_lock_refusal,
       message_state: message_state,
       reaction_chips: reaction_chips,
       apply_reaction: apply_reaction,

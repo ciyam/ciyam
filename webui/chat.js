@@ -6380,21 +6380,42 @@ var g_losing_contact = false;
 
 // NOTE: Every response passes here first, whatever asked for it - polls, sends, the linked
 // console's requests. The callbacks are otherwise untouched.
+// NOTE: How long before a message the node refused while handling another is tried again ("is_irc_lock_refusal( )").
+const c_irc_lock_retry_ms = 400;
+
 function watch_timeouts( )
 {
    [ "fetch", "post" ].forEach( function( name )
    {
       var original = ciyam[ name ].bind( ciyam );
 
-      ciyam[ name ] = function( url, arg, callback )
+      ciyam[ name ] = async function( url, arg, callback )
       {
-         return original( url, arg, function( response )
-         {
-            note_response( response );
+         var answer = null;
 
-            if( callback )
-               callback( response );
-         } );
+         var take = function( response ) { answer = response; };
+
+         await original( url, arg, take );
+
+         // NOTE: A message, edit or reaction refused as the node handled another (Ian's "@irc_lock", 2026-10-30) is tried once more
+         // after a moment - awaited here, so the queue sends nothing else meanwhile (ISS-005); refused again, it is said as before.
+         if( ( name === "fetch" ) && ( arg === "POST" ) && ( String( url ).indexOf( "/messages/" ) >= 0 ) && is_irc_lock_refusal( answer ) )
+         {
+            await new Promise( function( done ) { window.setTimeout( done, c_irc_lock_retry_ms ); } );
+
+            answer = null;
+
+            await original( url, arg, take );
+         }
+
+         // NOTE: No answer - the request failed - is passed on as before: not at all.
+         if( answer === null )
+            return;
+
+         note_response( answer );
+
+         if( callback )
+            callback( answer );
       };
    } );
 }
