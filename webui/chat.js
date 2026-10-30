@@ -5150,6 +5150,10 @@ function draw_message_text( element, text, room )
 
    var unreadable = message_unreadable_label( text );
 
+   // NOTE: Encrypted and not opened here - no key for it now (one removed, say) - so not offered to edit.
+   if( message_prefix( text ) === "X" )
+      chat_offer_sealed_edit( element, false );
+
    element.classList.remove( "chat-encrypted" );
    element.classList.toggle( "chat-unreadable", unreadable !== "" );
    element.classList.toggle( "chat-locked", message_prefix( text ) === "X" );

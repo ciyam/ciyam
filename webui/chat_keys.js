@@ -220,16 +220,22 @@ function chat_draw_opened( element, opened )
    else
       element.textContent = "Encrypted message - not readable with the keys you have";
 
-   // NOTE: One's own is offered to edit once opened here, and not otherwise - nor taken by Up (found by review, 2026-10-30).
-   var row = element.closest( ".chat-message" );
-   var edit = row ? row.querySelector( ".chat-message-edit" ) : null;
-
-   if( ( edit !== null ) && ( edit.dataset.sealed === "1" ) )
-      edit.hidden = !opened.ok;
+   chat_offer_sealed_edit( element, opened.ok );
 
    // NOTE: A room key is shared in an encrypted direct message, as the console's owner sends it.
    if( opened.ok && ( chat_dm_other( ) !== "" ) )
       chat_offer_room_key( element, opened.text );
+}
+
+// NOTE: One's own encrypted message offered to edit once opened here, and not otherwise - nor taken by Up (found by review,
+// 2026-10-30). "element" the message's words; a pinned line or an announcement has no row, and is left alone.
+function chat_offer_sealed_edit( element, opened )
+{
+   var row = element.closest( ".chat-message" );
+   var edit = row ? row.querySelector( ".chat-message-edit" ) : null;
+
+   if( ( edit !== null ) && ( edit.dataset.sealed === "1" ) )
+      edit.hidden = !opened;
 }
 
 // NOTE: Drawn opened, when the open room has a secret - true if it is being handled here, false to show it can't be read.
