@@ -687,7 +687,8 @@ ok   - an ordinary one carries no deleted mark
 ok   deleting - an edit to two spaces, private with its "!"
 ok   - not pinned, nor announced
 ok   pinning - an edit to a single space
-ok   who may pin - their own ordinary messages only
+ok   who may pin - the room's owner, any ordinary message (2026-10-30)
+ok   - a member refused, said plainly
 ok   the ninth pin refused - said plainly
 ok   - a private one
 ok   - anything else as it came

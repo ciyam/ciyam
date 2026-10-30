@@ -1347,13 +1347,16 @@ check( "a message edited to spaces - deleted, public or private (Ian, 2026-10-15
 check( "- an ordinary one carries no deleted mark", "deleted" in cp.parse_message_line( "1792032683000 admin  still here" ), false );
 check( "deleting - an edit to two spaces, private with its \"!\"", [ cp.delete_options( "1792032681000", false ), cp.delete_options( "1792032682000", true ) ],
  [ "for=1792032681000;text=  ", "for=!1792032682000;text=  " ] );
-check( "- not pinned, nor announced", [ cp.can_pin( cp.parse_message_line( "1792032681000 admin*    " ), "admin" ),
+check( "- not pinned, nor announced", [ cp.can_pin( cp.parse_message_line( "1792032681000 admin*    " ), "admin", "admin" ),
  cp.pending_announcements( [ cp.parse_message_line( "1792032681000 admin*    " ) ], [ ] ).length ], [ false, 0 ] );
 check( "pinning - an edit to a single space", cp.pin_options( "1791951506000" ), "for=1791951506000;text= " );
 var own = cp.parse_message_line( "1791951508000 admin  mine" );
-check( "who may pin - their own ordinary messages only", [ cp.can_pin( own, "admin" ), cp.can_pin( own, "verify-a" ),
- cp.can_pin( cp.parse_message_line( "1791951587000 admin !private" ), "admin" ), cp.can_pin( cp.parse_message_line( "1791951397000 admin :joined" ), "admin" ),
- cp.can_pin( null, "admin" ), cp.can_pin( own, "" ) ], [ true, false, false, false, false, false ] );
+check( "who may pin - the room's owner, any ordinary message (2026-10-30)", [ cp.can_pin( own, "admin", "admin" ), cp.can_pin( own, "verify-a", "admin" ),
+ cp.can_pin( own, "verify-a", "verify-a" ), cp.can_pin( cp.parse_message_line( "1791951587000 admin !private" ), "admin", "admin" ),
+ cp.can_pin( cp.parse_message_line( "1791951397000 admin :joined" ), "admin", "admin" ), cp.can_pin( null, "admin", "admin" ),
+ cp.can_pin( own, "", "" ) ], [ true, false, true, false, false, false, false ] );
+check( "- a member refused, said plainly", cp.pin_error_text( "Error: Pinning messages for this room is owner only." ),
+ "Only the room's owner can pin or unpin its messages." );
 check( "the ninth pin refused - said plainly", cp.pin_error_text( "Error: Maximum pinned messages for this room already exist." ),
  "This room already has 8 pinned messages, the most it can hold - unpin one first." );
 check( "- a private one", cp.pin_error_text( "Error: Source message must not be modified to or from private." ), "A private message can't be pinned." );

@@ -2284,16 +2284,17 @@ function in_time_order( messages )
    } ).map( function( item ) { return item.entry; } );
 }
 
-// NOTE: Pinning is an edit to a single space, which pins or unpins (Ian, 2026-10-14). Only the sender's own, and only
-// ordinary messages - not private ones, nor system events ("can_pin( )").
+// NOTE: Pinning is an edit to a single space, which pins or unpins (Ian, 2026-10-14). Only ordinary messages - not private
+// ones, nor system events - and only by the room's owner, of anyone's message (Damon and Ian, 2026-10-30: anyone could pin
+// their own, in any room) - "can_pin( )".
 function pin_options( unique )
 {
    return "for=" + unique + ";text= ";
 }
 
-function can_pin( entry, me )
+function can_pin( entry, me, owner )
 {
-   return !!entry && ( entry.kind === c_kind_chat ) && ( entry.sender === me ) && !entry.private && !entry.deleted && ( me !== "" );
+   return !!entry && ( entry.kind === c_kind_chat ) && ( me !== "" ) && ( owner === me ) && !entry.private && !entry.deleted;
 }
 
 // NOTE: Deleting one's own message - an edit to two spaces, public or private ("edit_for_value( )"); a single space would
@@ -2311,8 +2312,11 @@ function pin_error_text( error )
    if( /Maximum pinned messages/i.test( text ) )
       return "This room already has " + c_most_pinned + " pinned messages, the most it can hold - unpin one first.";
 
-   if( /modified to or from private/i.test( text ) )
+   if( /modified to or from private|Pinning of private messages/i.test( text ) )
       return "A private message can't be pinned.";
+
+   if( /Pinning messages for this room is owner only/i.test( text ) )
+      return "Only the room's owner can pin or unpin its messages.";
 
    return text;
 }

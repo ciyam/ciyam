@@ -1812,7 +1812,7 @@ button.chat-avatar:hover
 }
 
 .chat-message.is-own:hover .chat-message-edit,
-.chat-message.is-own:hover .chat-message-pin,
+.chat-message:hover .chat-message-pin,
 .chat-message.is-own:hover .chat-message-delete,
 .chat-message-delete.is-armed,
 .chat-message:hover .chat-message-react,

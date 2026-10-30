@@ -3887,8 +3887,8 @@ function build_message( entry )
       } );
    }
 
-   // NOTE: Pin or unpin - the sender's own ordinary messages only ("can_pin( )"); said pin or unpin by "mark_pinned_rows( )".
-   if( can_pin( entry, ciyam.username ) )
+   // NOTE: Pin or unpin - for the room's owner, any ordinary message ("can_pin( )"); said pin or unpin by "mark_pinned_rows( )".
+   if( can_pin( entry, ciyam.username, g_room_owner ) )
    {
       var pin = row.querySelector( ".chat-message-pin" );
 
@@ -4337,7 +4337,8 @@ function render_pinned( )
 
       open.addEventListener( "click", function( ) { show_pinned_message( message.unique, node ); } );
 
-      if( message.sender === ciyam.username )
+      // NOTE: The room's owner unpins, whoever wrote it (2026-10-30).
+      if( chat_is_room_owner( ) )
       {
          var unpin = node.querySelector( ".chat-pinned-unpin" );
 
