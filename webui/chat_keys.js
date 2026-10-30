@@ -220,12 +220,12 @@ function chat_draw_opened( element, opened )
    else
       element.textContent = "Encrypted message - not readable with the keys you have";
 
-   // NOTE: One's own, not opened here, is not offered to edit - nor taken by Up (found by review, 2026-10-30).
+   // NOTE: One's own is offered to edit once opened here, and not otherwise - nor taken by Up (found by review, 2026-10-30).
    var row = element.closest( ".chat-message" );
    var edit = row ? row.querySelector( ".chat-message-edit" ) : null;
 
-   if( ( edit !== null ) && !opened.ok )
-      edit.hidden = true;
+   if( ( edit !== null ) && ( edit.dataset.sealed === "1" ) )
+      edit.hidden = !opened.ok;
 
    // NOTE: A room key is shared in an encrypted direct message, as the console's owner sends it.
    if( opened.ok && ( chat_dm_other( ) !== "" ) )

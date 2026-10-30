@@ -3869,7 +3869,12 @@ function build_message( entry )
    {
       var edit = row.querySelector( ".chat-message-edit" );
 
-      edit.hidden = false;
+      // NOTE: An encrypted one only once it is open here - "chat_draw_opened( )" shows it then, and keeps it hidden if it cannot be;
+      // in a room with no key it never is (found by "message_format.js", 2026-10-30).
+      var sealed = ( message_prefix( entry.text ) === "X" );
+
+      edit.hidden = sealed && ( chat_opened_text( entry.text ) === null );
+      edit.dataset.sealed = sealed ? "1" : "";
       edit.dataset.unique = entry.unique;
       edit.dataset.text = entry.text;
       edit.dataset.private = entry.private ? "1" : "";
