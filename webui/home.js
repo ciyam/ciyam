@@ -3239,7 +3239,7 @@ async function do_remove( pin )
 // kept. The person sets it up again with the PIN, as a new household member does.
 async function do_reset_password( person )
 {
-   // NOTE: The username is offered back to them when they set up again, not yet held for them (ISS-035) - so said as that.
+   // NOTE: The username is theirs again when they set up - the node takes no other for it (ISS-035, 2026-10-30).
    if( !await ask_dialog( { title: "Reset " + person.name + "'s password?", text: "Their password stops working now. They set up their"
     + " account again with their PIN, keeping the username " + person.name + ", and choose a new password - you won't see it. Their"
     + " rooms, messages and keys stay with that username.", yes: "Reset password" } ) )
