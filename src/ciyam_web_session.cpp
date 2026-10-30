@@ -185,6 +185,7 @@ constexpr const char* c_cws_request_messages_update_options_for = "for";
 constexpr const char* c_cws_request_messages_update_options_name = "name";
 constexpr const char* c_cws_request_messages_update_options_owner = "owner";
 constexpr const char* c_cws_request_messages_update_options_posts = "posts";
+constexpr const char* c_cws_request_messages_update_options_closes = "closes";
 
 constexpr const char* c_cws_request_unlock_keys_create_options_encrypted = "encrypted";
 
@@ -196,7 +197,7 @@ constexpr const char* c_cws_help_request_output = "quit\n"
  "review messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\n"
  "review webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
- "update user *** password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}";
+ "update user *** password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}|closes=<unix_time>";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|nominated=[[!]<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
@@ -206,7 +207,7 @@ constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "review users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\nreview javascript[s] [<name>]\n"
  "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user <pin> password=<password>\n"
- "update message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}";
+ "update message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE}|closes=<unix_time>";
 
 constexpr const char* c_web_session_script = "web_session.cin";
 
@@ -3595,6 +3596,18 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                                     string room_assign( room );
 
                                     room_assign += "=@" + option_parameters[ c_cws_request_messages_update_options_posts ];
+
+                                    request_and_args = "<web_session_add_room.cin \"" + room_assign + "\" \"" + username + "\"";
+                                 }
+
+                                 if( is_put_request
+                                  && option_parameters.count( c_cws_request_messages_update_options_closes ) )
+                                 {
+                                    use_none_response = false;
+
+                                    string room_assign( room );
+
+                                    room_assign += "=~" + option_parameters[ c_cws_request_messages_update_options_closes ];
 
                                     request_and_args = "<web_session_add_room.cin \"" + room_assign + "\" \"" + username + "\"";
                                  }
