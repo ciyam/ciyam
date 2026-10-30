@@ -63,6 +63,42 @@ ok   name still parsed past a suffix
 ok   locked convenience flag
 ok   not locked when owner only
 
+== room close times ============================================
+ok   close time read
+ok   total before a close time
+ok   name past a close time
+ok   posts open with a close time
+ok   owner only marker before a close time
+ok   locked marker before a close time
+ok   total before a marker and a close time
+ok   no close time, none read
+ok   no close time, no state
+ok   hours before, open
+ok   the last hour, closing
+ok   at the time, closed
+ok   after, closed
+ok   label today
+ok   label tomorrow
+ok   label within the week
+ok   label past the week gives the date
+ok   label closed
+ok   label none
+ok   input to seconds
+ok   empty input
+ok   a partial input
+ok   posting before the close
+ok   no posting once closed
+ok   not for admin either
+ok   not for the owner either
+ok   the owner may close
+ok   admin may close
+ok   a member may not
+ok   not General
+ok   not the Admin room
+ok   not a direct message
+ok   not once closed
+ok   with no close time yet
+
 == who may post ================================================
 ok   entrance room never accepts posts
 ok   reserved room refused for a standard user

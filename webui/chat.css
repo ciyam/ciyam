@@ -460,6 +460,51 @@ button.chat-avatar:hover
    padding: 0 16px;
 }
 
+/* NOTE: The owner's close time in Room Details - laid out as the room key part is. */
+.chat-room-close
+{
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   margin-top: 14px;
+   padding: 0 16px;
+}
+
+.chat-room-close[hidden]
+{
+   display: none;
+}
+
+.chat-room-close-row
+{
+   display: flex;
+   gap: 8px;
+   align-items: center;
+}
+
+.chat-room-close-input
+{
+   flex: 1 1 auto;
+   min-width: 0;
+   cursor: text;
+}
+
+/* NOTE: A closed room keeps its messages to read, but nothing on them can be changed (Ian, 2026-10-30). */
+.chat-messages.is-closed .chat-message-edit,
+.chat-messages.is-closed .chat-message-pin,
+.chat-messages.is-closed .chat-message-delete,
+.chat-messages.is-closed .chat-message-react
+{
+   display: none;
+}
+
+/* NOTE: The reactions stay - for a poll they are the result - but are no longer given by clicking them. */
+.chat-messages.is-closed button.chat-reaction
+{
+   pointer-events: none;
+   cursor: default;
+}
+
 /* NOTE: The room key part of Room Details ("chat_keys.js"). */
 .chat-room-key
 {

@@ -1614,7 +1614,8 @@ function rooms_signature( )
    {
       var r = g_rooms[ i ];
 
-      parts.push( r.room + ":" + r.name + ":" + r.owner + ":" + r.unread + "/" + r.total + ":" + r.posts );
+      // NOTE: The close label too - it moves on by itself, to "Closed" (found by "room_close.js": the rail kept "Closes today").
+      parts.push( r.room + ":" + r.name + ":" + r.owner + ":" + r.unread + "/" + r.total + ":" + r.posts + ":" + room_close_label( r.closes ) );
    }
 
    return parts.join( "|" );
@@ -1797,9 +1798,14 @@ function update_rail_item( node, item )
 
    var room_sub = node.querySelector( ".chat-room-sub" );
 
-   set_text( room_sub, ( declined.length > 0 ) ? ( name_list( declined ) + " declined" ) : ( waiting ? "waiting for them to accept" : "" ) );
+   // NOTE: A room in its last hour, or closed, says so here (Ian, 2026-10-30) - an earlier close time is in Room Details.
+   var close_state = room_close_state( entry.closes );
 
-   room_sub.hidden = !waiting && ( declined.length === 0 );
+   var closing = ( ( close_state === "closing" ) || ( close_state === "closed" ) ) ? room_close_label( entry.closes ) : "";
+
+   set_text( room_sub, ( declined.length > 0 ) ? ( name_list( declined ) + " declined" ) : ( waiting ? "waiting for them to accept" : closing ) );
+
+   room_sub.hidden = ( room_sub.textContent === "" );
 
    var mark = node.querySelector( ".chat-room-lock" );
 
@@ -1931,6 +1937,14 @@ function show_thread_title( )
 
    // NOTE: Said once here, a warning sign before it, rather than before every message (Damon, 2026-10-28).
    sub.classList.toggle( "chat-unencrypted", /^Not encrypted - /.test( sub.textContent ) );
+
+   // NOTE: And when the room closes (Ian, 2026-10-30) - after the rest, so the warning sign stays at the start.
+   var entry = find_room( g_room );
+
+   g_close_label_applied = entry ? room_close_label( entry.closes ) : "";
+
+   if( g_close_label_applied !== "" )
+      sub.textContent = ( sub.textContent !== "" ) ? ( sub.textContent + " · " + g_close_label_applied ) : g_close_label_applied;
 
    sub.hidden = ( sub.textContent === "" );
 }
@@ -4122,7 +4136,7 @@ function do_react( unique, code )
 
    var row = unique ? document.querySelector( "#message_list > .chat-message[data-unique=\"" + unique + "\"]" ) : null;
 
-   if( ( room === "" ) || ( row === null ) || g_react_in_flight )
+   if( ( room === "" ) || ( row === null ) || g_react_in_flight || room_has_closed( ) )
       return;
 
    var before = JSON.parse( row.dataset.reactions || "[]" );
@@ -4632,15 +4646,36 @@ function posting_key( status )
    return g_room + " " + status.can_post + " " + status.reason;
 }
 
+// NOTE: The open room's close label as last shown - it moves on by itself ("today" to "Closed"), so each listing checks it.
+var g_close_label_applied = "";
+
 function sync_posting_rules( )
 {
    if( g_room === "" )
       return;
 
-   var status = posting_status( g_room, find_room( g_room ), ciyam.username, ciyam.is_admin );
+   var entry = find_room( g_room );
+
+   var status = posting_status( g_room, entry, ciyam.username, ciyam.is_admin );
 
    if( posting_key( status ) !== g_posting_applied )
       apply_posting_rules( );
+
+   var label = entry ? room_close_label( entry.closes ) : "";
+
+   if( label !== g_close_label_applied )
+   {
+      show_thread_title( );
+      update_thread_meta( );
+   }
+}
+
+// NOTE: Whether the open room is past its close time.
+function room_has_closed( )
+{
+   var entry = find_room( g_room );
+
+   return !!entry && ( room_close_state( entry.closes ) === "closed" );
 }
 
 // NOTE: The rules themselves live in "chat_parse.js" so they are covered by the regression
@@ -4661,6 +4696,12 @@ function apply_posting_rules( )
    input.disabled = !status.can_post;
    send.disabled = !status.can_post;
    scope.disabled = !status.can_post;
+
+   // NOTE: Closed - the messages stay to read, without edit, pin, delete or react ("chat.css").
+   document.getElementById( "message_list" ).classList.toggle( "is-closed", !!status.closed );
+
+   if( status.closed )
+      close_react_menu( );
 
    document.getElementById( "emoji_toggle" ).disabled = !status.can_post;
 
@@ -4748,6 +4789,20 @@ function update_thread_meta( )
    document.getElementById( "room_fact_owner_row" ).hidden = !!invite || is_dm;
    document.getElementById( "room_fact_posts_row" ).hidden = !!invite || is_dm;
    document.getElementById( "room_fact_messages_row" ).hidden = !!invite;
+
+   // NOTE: The close time, once there is one; and the owner's, or admin's, field to set it or bring it forward.
+   var closes = ( !invite && entry ) ? room_close_label( entry.closes ) : "";
+
+   set_text( document.getElementById( "room_fact_closes" ), closes.replace( /^Closes /, "" ) );
+
+   document.getElementById( "room_fact_closes_row" ).hidden = ( closes === "" );
+
+   var closable = !invite && can_close_room( g_room, entry, ciyam.username, ciyam.is_admin, is_dm );
+
+   document.getElementById( "room_close_part" ).hidden = !closable;
+
+   if( closable )
+      prepare_close_input( entry );
    document.getElementById( "room_fact_inviter_row" ).hidden = !invite;
 
    var is_owner = !invite && !is_dm && ( ( g_room_owner === ciyam.username ) || ciyam.is_admin );
@@ -4911,6 +4966,109 @@ async function do_change_posting( )
 
    apply_posting_rules( );
    update_thread_meta( );
+
+   load_rooms( );
+}
+
+// NOTE: The close field offers from now to the present close time, if any - the server refuses a time in the past and
+// putting one back ("Room opening may not be extended."). Left alone while being used or while a change is on its way.
+function prepare_close_input( entry )
+{
+   var input = document.getElementById( "room_close_input" );
+
+   if( input.disabled || ( document.activeElement === input ) )
+      return;
+
+   input.min = local_input_time( new Date( ) );
+   input.max = ( typeof entry.closes === "number" ) ? local_input_time( new Date( entry.closes * 1000 ) ) : "";
+
+   if( input.dataset.room !== g_room )
+   {
+      input.dataset.room = g_room;
+      input.value = "";
+   }
+}
+
+// NOTE: A time as a "datetime-local" field takes it, in local time.
+function local_input_time( when )
+{
+   function pad( n )
+   {
+      return ( n < 10 ) ? ( "0" + n ) : String( n );
+   }
+
+   return when.getFullYear( ) + "-" + pad( when.getMonth( ) + 1 ) + "-" + pad( when.getDate( ) )
+    + "T" + pad( when.getHours( ) ) + ":" + pad( when.getMinutes( ) );
+}
+
+// NOTE: Sets the open room's close time (Ian, 2026-10-30: "update message <room> closes=<unix_time>"). The listing then
+// carries it as "@<unix>" after the counts.
+async function do_set_room_close( )
+{
+   var input = document.getElementById( "room_close_input" );
+   var button = document.getElementById( "room_close_set" );
+
+   var room = g_room;
+   var entry = find_room( room );
+   var closes = close_time_from_input( input.value );
+
+   if( !entry )
+      return;
+
+   if( closes === null )
+   {
+      show_alert( "Choose the day and time the room is to close.", "is-error" );
+
+      return;
+   }
+
+   if( closes <= Math.floor( Date.now( ) / 1000 ) )
+   {
+      show_alert( "The close time has to be in the future.", "is-error" );
+
+      return;
+   }
+
+   if( ( typeof entry.closes === "number" ) && ( closes > entry.closes ) )
+   {
+      show_alert( "A close time can only be brought forward - this room already closes " + room_close_label( entry.closes ).replace( /^Closes /, "" ) + ".", "is-error" );
+
+      return;
+   }
+
+   input.disabled = true;
+   button.disabled = true;
+
+   ciyam.error = "";
+
+   var answer = await serialised( function( )
+   {
+      return new Promise( function( resolve )
+      {
+         ciyam.update_message_room( room, "closes=" + closes, resolve );
+      } );
+   } );
+
+   input.disabled = false;
+   button.disabled = false;
+
+   if( is_error_response( answer ) || ( ciyam.error !== "" ) )
+   {
+      show_alert( error_text( is_error_response( answer ) ? answer : ciyam.error ), "is-error" );
+
+      return;
+   }
+
+   input.value = "";
+
+   // NOTE: Straight away rather than on the next listing, as for who may post.
+   entry.closes = closes;
+
+   show_alert( "This room " + room_close_label( closes ).replace( /^Closes /, "closes " ) + " - it can be brought forward, not put back.", "is-info" );
+
+   show_thread_title( );
+   update_thread_meta( );
+   apply_posting_rules( );
 
    load_rooms( );
 }

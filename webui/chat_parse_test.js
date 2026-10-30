@@ -164,6 +164,61 @@ check( "name still parsed past a suffix", shut_room.name, "Locked Room" );
 check( "locked convenience flag", shut_room.locked, true );
 check( "not locked when owner only", own_room.locked, false );
 
+heading( "room close times" );
+
+var closing_room = cp.parse_message_line( "1793341887001 admin #0000002 0/5@1793341887 General" );
+var closing_own = cp.parse_message_line( "0000000000001 admin #0000003 3/47!@1793341887 Owner Only" );
+var closing_shut = cp.parse_message_line( "0000000000001 admin #0000004 0/12~@1793341887 Locked Room" );
+
+check( "close time read", closing_room.closes, 1793341887 );
+check( "total before a close time", closing_room.total, 5 );
+check( "name past a close time", closing_room.name, "General" );
+check( "posts open with a close time", closing_room.posts, "any" );
+check( "owner only marker before a close time", closing_own.posts, "own" );
+check( "locked marker before a close time", closing_shut.posts, "none" );
+check( "total before a marker and a close time", closing_own.total, 47 );
+check( "no close time, none read", open_room.closes, undefined );
+
+// NOTE: Friday 6 November 2026, 17:00 local, against a fixed "now".
+var close_at = Math.floor( new Date( 2026, 10, 6, 17, 0, 0 ).getTime( ) / 1000 );
+
+check( "no close time, no state", cp.room_close_state( undefined, new Date( 2026, 10, 6, 12, 0, 0 ) ), "" );
+check( "hours before, open", cp.room_close_state( close_at, new Date( 2026, 10, 6, 12, 0, 0 ) ), "open" );
+check( "the last hour, closing", cp.room_close_state( close_at, new Date( 2026, 10, 6, 16, 30, 0 ) ), "closing" );
+check( "at the time, closed", cp.room_close_state( close_at, new Date( 2026, 10, 6, 17, 0, 0 ) ), "closed" );
+check( "after, closed", cp.room_close_state( close_at, new Date( 2026, 10, 7, 9, 0, 0 ) ), "closed" );
+
+check( "label today", cp.room_close_label( close_at, new Date( 2026, 10, 6, 9, 0, 0 ) ), "Closes today 17:00" );
+check( "label tomorrow", cp.room_close_label( close_at, new Date( 2026, 10, 5, 9, 0, 0 ) ), "Closes tomorrow 17:00" );
+check( "label within the week", cp.room_close_label( close_at, new Date( 2026, 10, 2, 9, 0, 0 ) ),
+ "Closes " + new Date( close_at * 1000 ).toLocaleDateString( undefined, { weekday: "short" } ) + " 17:00" );
+check( "label past the week gives the date",
+ cp.room_close_label( close_at, new Date( 2026, 9, 28, 9, 0, 0 ) ).indexOf( "6" ) > 0, true );
+check( "label closed", cp.room_close_label( close_at, new Date( 2026, 10, 6, 18, 0, 0 ) ), "Closed" );
+check( "label none", cp.room_close_label( undefined, new Date( 2026, 10, 6, 18, 0, 0 ) ), "" );
+
+check( "input to seconds", cp.close_time_from_input( "2026-11-06T17:00" ), close_at );
+check( "empty input", cp.close_time_from_input( "" ), null );
+check( "a partial input", cp.close_time_from_input( "2026-11-06" ), null );
+
+var close_entry = { owner: "alice", posts: "any", closes: close_at };
+var before_close = new Date( 2026, 10, 6, 12, 0, 0 );
+var after_close = new Date( 2026, 10, 6, 18, 0, 0 );
+
+check( "posting before the close", cp.posting_status( "0000005", close_entry, "bob", false, before_close ).can_post, true );
+check( "no posting once closed", cp.posting_status( "0000005", close_entry, "bob", false, after_close ).can_post, false );
+check( "not for admin either", cp.posting_status( "0000005", close_entry, "admin", true, after_close ).can_post, false );
+check( "not for the owner either", cp.posting_status( "0000005", close_entry, "alice", false, after_close ).closed, true );
+
+check( "the owner may close", cp.can_close_room( "0000005", close_entry, "alice", false, false, before_close ), true );
+check( "admin may close", cp.can_close_room( "0000005", close_entry, "admin", true, false, before_close ), true );
+check( "a member may not", cp.can_close_room( "0000005", close_entry, "bob", false, false, before_close ), false );
+check( "not General", cp.can_close_room( "0000002", close_entry, "alice", false, false, before_close ), false );
+check( "not the Admin room", cp.can_close_room( "0000001", close_entry, "admin", true, false, before_close ), false );
+check( "not a direct message", cp.can_close_room( "0000005", close_entry, "alice", false, true, before_close ), false );
+check( "not once closed", cp.can_close_room( "0000005", close_entry, "alice", false, false, after_close ), false );
+check( "with no close time yet", cp.can_close_room( "0000005", { owner: "alice" }, "alice", false, false, before_close ), true );
+
 heading( "who may post" );
 
 var open_entry = { owner: "alice", posts: "any" };

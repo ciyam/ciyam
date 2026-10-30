@@ -349,12 +349,24 @@ http://www.opensource.org/licenses/mit-license.php.
                      <option value="none">Locked</option>
                   </select>
                </dd></div>
+               <!-- NOTE: A room's close time (Ian, 2026-10-30) - once set, for everyone to see. -->
+               <div class="chat-room-fact" id="room_fact_closes_row" hidden><dt>Closes</dt><dd id="room_fact_closes"></dd></div>
                <div class="chat-room-fact" id="room_fact_messages_row"><dt>Messages</dt><dd id="room_fact_messages"></dd></div>
                <div class="chat-room-fact" id="room_fact_inviter_row" hidden><dt>Invited by</dt><dd id="room_fact_inviter"></dd></div>
             </dl>
             <div class="chat-owner-actions" id="owner_actions" hidden>
                <button type="button" class="chat-btn chat-btn--small" onclick="do_open_rename_room( )">Rename</button>
                <button type="button" class="chat-btn chat-btn--small chat-btn--accent" id="owner_invite" onclick="do_open_invite( )">Invite</button>
+            </div>
+            <!-- NOTE: The owner, or admin, sets the close time or brings it forward - the server refuses putting it back. -->
+            <div class="chat-room-close" id="room_close_part" hidden>
+               <label class="chat-room-key-head" for="room_close_input">Close the room</label>
+               <div class="chat-room-close-row">
+                  <input type="datetime-local" class="chat-room-posts chat-room-close-input" id="room_close_input">
+                  <button type="button" class="chat-btn chat-btn--small" id="room_close_set" onclick="do_set_room_close( )">Set</button>
+               </div>
+               <p class="chat-room-key-note" id="room_close_note">After it nothing can be posted, edited or reacted to, and nobody can join.
+                Once set it can only be brought forward.</p>
             </div>
             <!-- NOTE: A room key (Ian, 2026-10-25: "irc.cin"'s "k" and "r") - made with every new room and sent to whoever is invited
                  (Ian, 2026-10-28), so here only what it is; made, added, sent, shared and removed in the Room key dialog. -->

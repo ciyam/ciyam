@@ -35,11 +35,19 @@ const c_posts_none = "none";
 
 const c_posts_own_marker = "!";
 const c_posts_none_marker = "~";
+const c_room_closes_marker = "@";
+
+const c_room_open = "open";
+const c_room_closing = "closing";
+const c_room_closed = "closed";
+
+const c_room_closing_seconds = 3600;
 
 // NOTE: Room 0000001 - Ian's RESERVED_ROOM, named "Admin" (until 2026-10-11 "Administration", and here the "starting
 // room"): invitations and admin's messages; only admin sees it as a room. Ian's STARTING_ROOM is now General, 0000002,
 // which everyone joins - an ordinary room to the client.
 const c_reserved_room = "0000001";
+const c_starting_room = "0000002";
 
 const c_num_sender_colours = 6;
 
@@ -334,6 +342,20 @@ function parse_room_entry( unique, owner, remainder )
       entry.unread = parseInt( counts[ 0 ], 10 ) || 0;
 
       var total = ( counts.length > 1 ) ? counts[ 1 ] : "";
+
+      // NOTE: A room with a close time has "@<unix seconds>" after the total and its marker (Ian, 2026-10-30):
+      // "0/5@1793341887", "3/5!@1793341887".
+      var at = total.indexOf( c_room_closes_marker );
+
+      if( at >= 0 )
+      {
+         var closes = parseInt( total.substring( at + 1 ), 10 );
+
+         if( !isNaN( closes ) )
+            entry.closes = closes;
+
+         total = total.substring( 0, at );
+      }
 
       var suffix = total.slice( -1 );
 
@@ -802,6 +824,83 @@ function day_label( unique, p_now )
    return when.toLocaleDateString( undefined, options );
 }
 
+// NOTE: A room's close time (Unix seconds) against now - "" when it has none, "closing" in its last hour (as Ian's
+// "irc.cin" shows "[CLOSING]"), "closed" from then on. "p_now" is injectable for the tests.
+function room_close_state( closes, p_now )
+{
+   if( typeof closes !== "number" )
+      return "";
+
+   var now = Math.floor( ( ( p_now == null ) ? new Date( ) : p_now ).getTime( ) / 1000 );
+
+   if( now >= closes )
+      return c_room_closed;
+
+   if( closes - now <= c_room_closing_seconds )
+      return c_room_closing;
+
+   return c_room_open;
+}
+
+// NOTE: "Closes today 17:00", "Closes tomorrow 09:30", "Closes Fri 17:00" within the week, then the date; "Closed"
+// once it has.
+function room_close_label( closes, p_now )
+{
+   var state = room_close_state( closes, p_now );
+
+   if( state === "" )
+      return "";
+
+   if( state === c_room_closed )
+      return "Closed";
+
+   var now = ( p_now == null ) ? new Date( ) : p_now;
+   var when = new Date( closes * 1000 );
+
+   function pad( n )
+   {
+      return ( n < 10 ) ? ( "0" + n ) : String( n );
+   }
+
+   var time = pad( when.getHours( ) ) + ":" + pad( when.getMinutes( ) );
+
+   var diff = days_between( now, when );
+
+   var day;
+
+   if( diff === 0 )
+      day = "today";
+   else if( diff === 1 )
+      day = "tomorrow";
+   else if( diff < 7 )
+      day = when.toLocaleDateString( undefined, { weekday: "short" } );
+   else
+   {
+      var options = { weekday: "short", day: "numeric", month: "short" };
+
+      if( when.getFullYear( ) !== now.getFullYear( ) )
+         options.year = "numeric";
+
+      day = when.toLocaleDateString( undefined, options );
+   }
+
+   return "Closes " + day + " " + time;
+}
+
+// NOTE: A "datetime-local" field's value ("2026-11-06T17:00", local time) as Unix seconds, or null.
+function close_time_from_input( value )
+{
+   if( !/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}/.test( value || "" ) )
+      return null;
+
+   var when = new Date( value );
+
+   if( isNaN( when.getTime( ) ) )
+      return null;
+
+   return Math.floor( when.getTime( ) / 1000 );
+}
+
 // NOTE: The full stamp shown on hover. Seconds are included because the sequence counter
 // makes same-second ordering visible, and without them two adjacent entries can look like
 // they arrived out of order.
@@ -849,13 +948,18 @@ function is_reserved_room( room )
 //  - the entrance room is a lobby and never accepts messages
 //  - the reserved room is kept for invitations and admin messages
 //  - a room may be set to owner-only or locked with the "posts" option
-function posting_status( room, entry, username, is_admin )
+//
+// And a room past its close time (Ian, 2026-10-30) takes nothing from anyone, admin included.
+function posting_status( room, entry, username, is_admin, p_now )
 {
    if( is_entrance_room( room ) )
       return { can_post: false, reason: "The entrance room is a lobby - pick a room to chat in." };
 
    if( is_reserved_room( room ) && !is_admin )
       return { can_post: false, reason: "Room 0000001 is reserved for invitations and admin messages." };
+
+   if( entry && ( room_close_state( entry.closes, p_now ) === c_room_closed ) )
+      return { can_post: false, locked: true, closed: true, reason: "This room has closed - nothing more can be posted." };
 
    var posts = ( entry && entry.posts ) ? entry.posts : c_posts_any;
 
@@ -1109,6 +1213,17 @@ function can_change_posting( room, entry, username, is_admin )
       return false;
 
    return is_admin || ( ( entry.owner || "" ) === username );
+}
+
+// NOTE: Whether this user may set or bring forward a room's close time - its owner or admin, as for posting, but not for
+// General (Ian refuses "This room may not be closed.") nor a direct message ("A private messages room may not be
+// changed."), and not once it has closed.
+function can_close_room( room, entry, username, is_admin, is_dm, p_now )
+{
+   if( is_dm || ( room === c_starting_room ) || !can_change_posting( room, entry, username, is_admin ) )
+      return false;
+
+   return room_close_state( entry.closes, p_now ) !== c_room_closed;
 }
 
 // NOTE: Whether this user may leave a room (Ian, 2026-10-12: "I can't seem to find any UI to leave a room"). Not the
@@ -3793,6 +3908,10 @@ if( typeof module !== "undefined" )
       unique_to_full: unique_to_full,
       day_key: day_key,
       day_label: day_label,
+      room_close_state: room_close_state,
+      can_close_room: can_close_room,
+      room_close_label: room_close_label,
+      close_time_from_input: close_time_from_input,
       days_between: days_between,
       sender_colour_index: sender_colour_index,
       is_entrance_room: is_entrance_room,
