@@ -27,7 +27,9 @@ PRIVATE=
 EXISTING=
 NEW_ROOM=
 ;
+ENTRANCE_ROOM=0000000
 RESERVED_ROOM=0000001
+STARTING_ROOM=0000002
 ;
 DUMMY_JOIN_UUID=00000000000000000000000000000000
 ;
@@ -159,9 +161,33 @@ ERROR=Invalid room name '$NAME'.
 ERROR=Unable to obtain the system IRC lock (try again later).
 @else
 ;
+@ifdef $EXISTING
+.system_variable @irc_close_$EXISTING
+@ifdef $OUTPUT
+NOW=@unix:
+@if $NOW #> $OUTPUT
+ERROR=This room has been closed.
+@endif
+@endif
+@endif
+;
 @ifdef $ASSIGN
 FIRST=@substr:0,1:$NAME
-@ifeq "$FIRST" "@"
+@ifeq "$FIRST" "~"
+CLOSE=1
+WHEN=@substr:1,10:$NAME
+DISALLOWED=
+@ifeq "$EXISTING" "$ENTRANCE_ROOM"
+DISALLOWED=1
+@elif "$EXISTING" = "$RESERVED_ROOM"
+DISALLOWED=1
+@elif "$EXISTING" = "$STARTING_ROOM"
+DISALLOWED=1
+@endif
+@ifdef $DISALLOWED
+ERROR=This room may not be closed.
+@endif
+@elif "$FIRST" = "@"
 POSTS=1
 NAME=@substr:1:$NAME
 @ifneq "$NAME" "ANY"
@@ -243,12 +269,28 @@ ERROR=A room can only be changed by its owner or the administrator.
 .system_variable @irc_names_$EXISTING
 FIRST=@substr:0,1:$OUTPUT
 @ifeq "$FIRST" "/"
-ERROR=A private messages room may not be renamed nor have its owner or posters changed.
+ERROR=A private messages room may not be changed.
 @endif
 @endif
 ;
 @ifndef $ERROR
 ;
+@ifdef $CLOSE
+.system_variable @irc_close_$EXISTING
+@ifdef $OUTPUT
+@if $WHEN #> $OUTPUT
+ERROR=Room opening may not be extended.
+@endif
+@else
+NOW=@unix:
+@if $WHEN #< $NOW
+ERROR=Room closing may not be in the past.
+@endif
+@endif
+@ifndef $ERROR
+.system_variable @irc_close_$EXISTING "$WHEN"
+@endif
+@else
 @ifdef $POSTS
 .system_variable @irc_posts_$EXISTING "$NAME"
 @else
@@ -261,6 +303,7 @@ OLD_NAME=$OUTPUT
 OLD_NAME=$OUTPUT
 ;
 .system_variable @irc_names_$EXISTING "$NAME"
+@endif
 @endif
 @endif
 ;
