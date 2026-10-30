@@ -614,6 +614,11 @@ xxx
 ......xxx......
 xxxabcyyy
 xxxabc   yyyzzz
+TEST is ''
+TEST is 'ba'
+TEST is 'cba'
+TEST is '9876543210'
+TEST is 'lkjihgfedcba'
 encode -text a
 YQ==
 decode -text $OUTPUT
