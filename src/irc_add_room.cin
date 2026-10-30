@@ -348,10 +348,14 @@ SEND_ROOM=$EXISTING
 @ifdef $POSTS
 MESSAGE=@strlit:_:allows set to $NAME
 @else
+@ifdef $CLOSE
+MESSAGE=@strlit:_:closes set to $WHEN
+@else
 @ifdef $ASSIGN
 MESSAGE=@strlit:_:assign '$OLD_NAME' to '$NAME'
 @else
 MESSAGE=@strlit:_:rename '$OLD_NAME' to '$NAME'
+@endif
 @endif
 @endif
 @endif
