@@ -58,7 +58,7 @@ ROOM_NO=@substr:0,$POS:$ROOM_NO
 @ifdef $OUTPUT
 NOW=@unix:
 @if $NOW #> $OUTPUT
-ERROR=Room has been clossed.
+ERROR=This room has been clossed.
 @endif
 @endif
 @endif
