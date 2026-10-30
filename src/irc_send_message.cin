@@ -237,11 +237,44 @@ SOURCE_PARTS=@repstr: /\n:$SOURCE_MESSAGE
 ;
 IS_REACTION=
 ;
+; NOTE: Only the room's owner can pin (or unpin)
+; messages but can do so for any user's message.
+IS_OWNER=
+.system_variable @irc_owner_$ROOM
+@ifeq "$OUTPUT" "$USER_NAME"
+IS_OWNER=1
+@endif
+;
+PIN_AUTHOR=$USER_NAME
+PRIVATE_PIN=
+;
 @ifneq "$USER_NAME" "%SOURCE_PARTS:1%"
+@ifeq "$MESSAGE" "XyAg"
+@ifdef $IS_OWNER
+PIN_AUTHOR=%SOURCE_PARTS:1%
+OLD_MESSAGE=%SOURCE_PARTS:2%
+;
+PREFIX=@substr:0,2:%SOURCE_PARTS:2%
+OLD_PREFIX=@substr:0,3:%SOURCE_PARTS:2%
+;
+@ifeq "$PREFIX" "Xz"
+NOT_EDITABLE=1
+@elif "$OLD_PREFIX" = "XyE"
+PRIVATE_PIN=1
+@elif "$OLD_PREFIX" = "XyF"
+PRIVATE_PIN=1
+@elif "$OLD_PREFIX" = "XyH"
+PRIVATE_PIN=1
+@endif
+@else
+NOT_FOUND=1
+@endif
+@else
 NOT_FOUND=1
 MSG_LENGTH=@strlen:$MESSAGE
 @ifeq $MSG_LENGTH 7
 IS_REACTION=1
+@endif
 @endif
 @else
 OLD_MESSAGE=%SOURCE_PARTS:2%
@@ -372,8 +405,13 @@ ERROR=Source message is designated as a system generated message.
 ; NOTE: If the new message is just a space then will pin/unpin it.
 @ifeq  "$MESSAGE" "XyEg"
 ERROR=Pinning of private messages is not supported.
+@elif "$PRIVATE_PIN" = "1"
+ERROR=Pinning of private messages is not supported.
 @else
 @ifeq "$MESSAGE" "XyAg"
+@ifndef $IS_OWNER
+ERROR=Pinning messages for this room is owner only.
+@else
 .system_variable @keyed_irc_%ROOM%_MP:$NAMES
 @ifdef $OUTPUT
 .system_variable @keyed_irc_%ROOM%_MP:$NAMES ""
@@ -383,7 +421,8 @@ PINNED=$OUTPUT
 @ifdef %PINNED:8%
 ERROR=Maximum pinned messages for this room already exist.
 @else
-.system_variable @keyed_irc_%ROOM%_MP:$NAMES "$USER_NAME $OLD_MESSAGE"
+.system_variable @keyed_irc_%ROOM%_MP:$NAMES "$PIN_AUTHOR $OLD_MESSAGE"
+@endif
 @endif
 @endif
 @else
