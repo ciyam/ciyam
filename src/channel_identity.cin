@@ -35,7 +35,7 @@ COMBINED=*!bin2hex?$COMBINED
 COMBINED=000000000$COMBINED
 COMBINED=@substr:-9:$COMBINED
 ;
-REVERSED=*!reverse?$COMBINED
+REVERSED=@reverse:$COMBINED
 ;
 @ifeq "$COMBINED" "$REVERSED"
 LAST=@substr:8,1:$COMBINED
@@ -47,7 +47,7 @@ DEC=0
 HEX=@dechex:$DEC
 PREFIX=@substr:0,8:$COMBINED
 COMBINED=$PREFIX$HEX
-REVERSED=*!reverse?$COMBINED
+REVERSED=@reverse:$COMBINED
 @endif
 ;
 .session_variable @set "$IDENT"
