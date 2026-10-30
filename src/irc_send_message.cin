@@ -97,8 +97,16 @@ HAS_LOCK=1
 ERROR=Unable to obtain the system IRC lock (try again later).
 @endif
 ;
-@ifndef $ERROR
+.system_variable @irc_close_$ROOM
+@ifdef $OUTPUT
+NOW=@unix:
+@if $NOW #> $OUTPUT
+ERROR=This room has been closed.
+@endif
+@endif
+;
 ROOM_POSTS=
+@ifndef $ERROR
 .system_variable @irc_posts_$ROOM
 @ifdef $OUTPUT
 ROOM_POSTS=$OUTPUT
