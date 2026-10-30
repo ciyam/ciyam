@@ -498,8 +498,10 @@ button.chat-avatar:hover
    display: none;
 }
 
-/* NOTE: The reactions stay - for a poll they are the result - but are no longer given by clicking them. */
-.chat-messages.is-closed button.chat-reaction
+/* NOTE: The reactions stay - for a poll they are the result - but are no longer given by clicking them; nor on an encrypted
+   message that cannot be read here (Ian, 2026-10-30). */
+.chat-messages.is-closed button.chat-reaction,
+.chat-message.is-unopened button.chat-reaction
 {
    pointer-events: none;
    cursor: default;

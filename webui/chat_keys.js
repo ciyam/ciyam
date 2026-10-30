@@ -220,7 +220,7 @@ function chat_draw_opened( element, opened )
    else
       element.textContent = "Encrypted message - not readable with the keys you have";
 
-   chat_offer_sealed_edit( element, opened.ok );
+   chat_offer_sealed_actions( element, opened.ok );
 
    // NOTE: A room key is shared in an encrypted direct message, as the console's owner sends it.
    if( opened.ok && ( chat_dm_other( ) !== "" ) )
@@ -228,14 +228,26 @@ function chat_draw_opened( element, opened )
 }
 
 // NOTE: One's own encrypted message offered to edit once opened here, and not otherwise - nor taken by Up (found by review,
-// 2026-10-30). "element" the message's words; a pinned line or an announcement has no row, and is left alone.
-function chat_offer_sealed_edit( element, opened )
+// 2026-10-30). Someone else's offered to react to only then too (Ian, 2026-10-30: not to a message you cannot read), its chips
+// not given by a click either ("is-unopened", "chat.css"). "element" the message's words; a pinned line or an announcement has
+// no row, and is left alone.
+function chat_offer_sealed_actions( element, opened )
 {
    var row = element.closest( ".chat-message" );
-   var edit = row ? row.querySelector( ".chat-message-edit" ) : null;
+
+   if( row === null )
+      return;
+
+   row.classList.toggle( "is-unopened", !opened );
+
+   var edit = row.querySelector( ".chat-message-edit" );
+   var react = row.querySelector( ".chat-message-react" );
 
    if( ( edit !== null ) && ( edit.dataset.sealed === "1" ) )
       edit.hidden = !opened;
+
+   if( ( react !== null ) && ( react.dataset.sealed === "1" ) )
+      react.hidden = !opened;
 }
 
 // NOTE: Drawn opened, when the open room has a secret - true if it is being handled here, false to show it can't be read.

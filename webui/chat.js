@@ -3929,11 +3929,17 @@ function build_message( entry )
    // NOTE: React - to someone else's message ("can_react( )"), one of the ten (Ian, 2026-10-28).
    var may_react = can_react( entry, ciyam.username );
 
+   // NOTE: An encrypted one only once it is open here, as for edit ("chat_offer_sealed_actions( )").
+   var unopened = ( message_prefix( entry.text ) === "X" ) && ( chat_opened_text( entry.text ) === null );
+
+   row.classList.toggle( "is-unopened", unopened );
+
    if( may_react )
    {
       var react = row.querySelector( ".chat-message-react" );
 
-      react.hidden = false;
+      react.hidden = unopened;
+      react.dataset.sealed = ( message_prefix( entry.text ) === "X" ) ? "1" : "";
       react.dataset.unique = entry.unique;
 
       react.addEventListener( "click", function( event ) { open_react_menu( event.currentTarget ); } );
@@ -4136,7 +4142,7 @@ function do_react( unique, code )
 
    var row = unique ? document.querySelector( "#message_list > .chat-message[data-unique=\"" + unique + "\"]" ) : null;
 
-   if( ( room === "" ) || ( row === null ) || g_react_in_flight || room_has_closed( ) )
+   if( ( room === "" ) || ( row === null ) || g_react_in_flight || room_has_closed( ) || row.classList.contains( "is-unopened" ) )
       return;
 
    var before = JSON.parse( row.dataset.reactions || "[]" );
@@ -5309,9 +5315,9 @@ function draw_message_text( element, text, room )
 
    var unreadable = message_unreadable_label( text );
 
-   // NOTE: Encrypted and not opened here - no key for it now (one removed, say) - so not offered to edit.
+   // NOTE: Encrypted and not opened here - no key for it now (one removed, say) - so not offered to edit or react to.
    if( message_prefix( text ) === "X" )
-      chat_offer_sealed_edit( element, false );
+      chat_offer_sealed_actions( element, false );
 
    element.classList.remove( "chat-encrypted" );
    element.classList.toggle( "chat-unreadable", unreadable !== "" );
