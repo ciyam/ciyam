@@ -1152,7 +1152,11 @@ bool has_web_session_access_token( const string& token,
                string pwd_hash( sha256( password ).get_digest_as_string( ) );
 
                if( name != c_admin )
+               {
                   set_new_user_info( token, name, pwd_hash );
+
+                  set_system_variable( g_cws_username_for_prefix + token, "" );
+               }
                else
                {
                   ofstream outf( token_file );
@@ -2078,11 +2082,14 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
             string suggestion( get_system_variable( g_cws_username_for_prefix + pin ) );
 
+            // NOTE: A suggestion ('?' prefixed) is only provided once whereas a nominated username
+            // is kept until the user has been claimed (as it must then be used).
             if( !suggestion.empty( ) )
             {
                seed += ' ' + suggestion;
 
-               set_system_variable( g_cws_username_for_prefix + access, "" );
+               if( suggestion[ 0 ] == '?' )
+                  set_system_variable( g_cws_username_for_prefix + access, "" );
             }
          }
       }
@@ -3061,6 +3068,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               error = "Invalid nominated access token '" + pin + "' was provided.";
                         }
 
+                        // NOTE: As a nominated username must be used when claimed it cannot be one already taken.
+                        string check_username( nominated_username );
+
+                        if( !check_username.empty( ) && ( check_username[ 0 ] == '?' ) )
+                           check_username.erase( 0, 1 );
+
+                        if( error.empty( ) && !is_reset && !check_username.empty( ) && has_user_name( check_username ) )
+                           // FUTURE: This message should be handled as a server string message.
+                           error = "Username '" + check_username + "' has already been taken.";
+
                         if( error.empty( ) )
                         {
                            found = true;
@@ -3144,6 +3161,8 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         found = true;
 
                         remove_user_info_from_storage( pin );
+
+                        set_system_variable( g_cws_username_for_prefix + pin, "" );
                      }
                   }
                }

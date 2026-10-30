@@ -1216,8 +1216,18 @@ void http_request_handler::on_start( )
                         }
                         else
                         {
+                           // NOTE: A nominated (or reset) user can only be claimed with its nominated username
+                           // (unless it had been prefixed with a '?' to indicate that it is only a suggestion).
+                           string nominated( get_system_variable( g_cws_username_for_prefix + cws_params.access ) );
+
+                           if( !nominated.empty( ) && ( nominated[ 0 ] == '?' ) )
+                              nominated.erase( );
+
                            if( !has_empty_user_hash( cws_params.access ) )
                               bad_credentials = true;
+                           else if( !nominated.empty( ) && ( name != nominated ) )
+                              // FUTURE: This message should be handled as a server string message.
+                              error = "Username must be '" + nominated + "' for this account.";
                            else if( has_user_name( name ) )
                               // FUTURE: This message should be handled as a server string message.
                               error = "Username '" + name + "' has already been taken.";
