@@ -998,15 +998,26 @@ async function keys_add_guard( entropy )
 
    try
    {
-      var kept = uk.kept_text( await uk.guard( entropy, uk.rounds_of( g_keys.node ) ), uk.parts_of( g_keys.node ).locked );
+      var rounds = uk.rounds_of( g_keys.node );
+      var guard = await uk.guard( entropy, rounds );
 
-      var response = await request( function( done )
+      // NOTE: The keys as the node has them now, just before - a room key or contact saved meanwhile (by the chat, or another
+      // browser, while the words were typed) is kept, not overwritten (found by review). Guarded since, or changed - left alone.
+      var latest = String( await request( function( done ) { return ciyam.fetch( keys_url( "" ), "GET", done ); } ) ).trim( );
+
+      if( ( uk.parts_of( latest ).guard !== "" ) || ( uk.rounds_of( latest ) !== rounds ) )
+         g_keys.node = latest;
+      else
       {
-         return ciyam.fetch( keys_url( "&payload=" + encodeURIComponent( kept ) ), "PUT", done );
-      } );
+         var kept = uk.kept_text( guard, uk.parts_of( latest ).locked );
 
-      if( problem_text( response ) === "" )
-         g_keys.node = kept;
+         var response = await request( function( done )
+         {
+            return ciyam.fetch( keys_url( "&payload=" + encodeURIComponent( kept ) ), "PUT", done );
+         } );
+
+         g_keys.node = ( problem_text( response ) === "" ) ? kept : latest;
+      }
    }
    catch( e )
    {
