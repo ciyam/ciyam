@@ -901,6 +901,138 @@ function close_time_from_input( value )
    return Math.floor( when.getTime( ) / 1000 );
 }
 
+// NOTE: The day and time picker ("when_picker.js" - Damon, 2026-10-31: the browser's own could not take the Select Ian asked
+// for). Its value is a "datetime-local" field's ("2026-11-06T17:00", local time), so "close_time_from_input( )" reads it; it
+// shows days as Ian prefers (2026-10-31: yyyy-mm-dd, "becoming a more widely accepted global standard"); weeks start on Monday.
+const c_when_weekdays = [ "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su" ];
+
+const c_when_months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+ "November", "December" ];
+
+const c_when_before = "before";
+const c_when_after = "after";
+
+function when_pad( n )
+{
+   return ( n < 10 ) ? ( "0" + n ) : String( n );
+}
+
+// NOTE: A day as "2026-11-06" ("month" from 1).
+function when_day_text( year, month, day )
+{
+   return year + "-" + when_pad( month ) + "-" + when_pad( day );
+}
+
+function when_value( year, month, day, hour, minute )
+{
+   return when_day_text( year, month, day ) + "T" + when_pad( hour ) + ":" + when_pad( minute );
+}
+
+// NOTE: A value's parts, or null for anything that is not a real day and time.
+function when_parts( value )
+{
+   var found = String( value || "" ).match( /^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2})$/ );
+
+   if( found === null )
+      return null;
+
+   var parts = { year: Number( found[ 1 ] ), month: Number( found[ 2 ] ), day: Number( found[ 3 ] ),
+    hour: Number( found[ 4 ] ), minute: Number( found[ 5 ] ) };
+
+   if( ( parts.month < 1 ) || ( parts.month > 12 ) || ( parts.day < 1 ) || ( parts.day > when_month_length( parts.year, parts.month ) )
+    || ( parts.hour > 23 ) || ( parts.minute > 59 ) )
+      return null;
+
+   return parts;
+}
+
+function when_month_length( year, month )
+{
+   return new Date( year, month, 0 ).getDate( );
+}
+
+// NOTE: "2026-11-06 17:00", or "" for no value.
+function when_label( value )
+{
+   var parts = when_parts( value );
+
+   if( parts === null )
+      return "";
+
+   return when_day_text( parts.year, parts.month, parts.day ) + " " + when_pad( parts.hour ) + ":" + when_pad( parts.minute );
+}
+
+// NOTE: "November 2026".
+function when_month_label( year, month )
+{
+   return c_when_months[ month - 1 ] + " " + year;
+}
+
+// NOTE: The month "delta" months on - { year, month }.
+function when_add_months( year, month, delta )
+{
+   var index = ( year * 12 ) + ( month - 1 ) + delta;
+
+   return { year: Math.floor( index / 12 ), month: ( ( index % 12 ) + 12 ) % 12 + 1 };
+}
+
+// NOTE: A month as six weeks from the Monday on or before its first - each day's "text" ("2026-11-06") and whether it is
+// "outside" the month (shown faint, still chosen by a click).
+function when_month_grid( year, month )
+{
+   var first = new Date( year, month - 1, 1 );
+   var lead = ( first.getDay( ) + 6 ) % 7;
+
+   var days = [ ];
+
+   for( var i = 0; i < 42; i++ )
+   {
+      var when = new Date( year, month - 1, 1 - lead + i );
+
+      days.push( { year: when.getFullYear( ), month: when.getMonth( ) + 1, day: when.getDate( ),
+       text: when_day_text( when.getFullYear( ), when.getMonth( ) + 1, when.getDate( ) ), outside: ( when.getMonth( ) + 1 ) !== month } );
+   }
+
+   return days;
+}
+
+// NOTE: The day "delta" days on from "2026-11-06" (a week is 7, either way) - as text.
+function when_add_days( text, delta )
+{
+   var parts = String( text ).split( "-" ).map( Number );
+   var when = new Date( parts[ 0 ], parts[ 1 ] - 1, parts[ 2 ] + delta );
+
+   return when_day_text( when.getFullYear( ), when.getMonth( ) + 1, when.getDate( ) );
+}
+
+// NOTE: Whether some time of a day ("2026-11-06") falls between "min" and "max" (values, either "" for no limit) - a day
+// outside cannot be chosen at all. The values sort as text, so they compare as it.
+function when_day_allowed( text, min, max )
+{
+   return ( !min || ( text >= min.substring( 0, 10 ) ) ) && ( !max || ( text <= max.substring( 0, 10 ) ) );
+}
+
+// NOTE: A value against the limits - "before" "min", "after" "max", or "".
+function when_range_problem( value, min, max )
+{
+   if( min && ( value < min ) )
+      return c_when_before;
+
+   if( max && ( value > max ) )
+      return c_when_after;
+
+   return "";
+}
+
+// NOTE: The time first offered - the next whole hour (from "p_now"), and the day it falls on.
+function when_first_offered( p_now )
+{
+   var now = ( p_now == null ) ? new Date( ) : p_now;
+   var next = new Date( now.getFullYear( ), now.getMonth( ), now.getDate( ), now.getHours( ) + 1, 0 );
+
+   return when_value( next.getFullYear( ), next.getMonth( ) + 1, next.getDate( ), next.getHours( ), 0 );
+}
+
 // NOTE: The full stamp shown on hover. Seconds are included because the sequence counter
 // makes same-second ordering visible, and without them two adjacent entries can look like
 // they arrived out of order.
@@ -3994,6 +4126,21 @@ if( typeof module !== "undefined" )
       can_close_room: can_close_room,
       room_close_label: room_close_label,
       close_time_from_input: close_time_from_input,
+      c_when_weekdays: c_when_weekdays,
+      c_when_before: c_when_before,
+      c_when_after: c_when_after,
+      when_day_text: when_day_text,
+      when_value: when_value,
+      when_parts: when_parts,
+      when_month_length: when_month_length,
+      when_label: when_label,
+      when_month_label: when_month_label,
+      when_add_months: when_add_months,
+      when_month_grid: when_month_grid,
+      when_add_days: when_add_days,
+      when_day_allowed: when_day_allowed,
+      when_range_problem: when_range_problem,
+      when_first_offered: when_first_offered,
       days_between: days_between,
       sender_colour_index: sender_colour_index,
       is_entrance_room: is_entrance_room,

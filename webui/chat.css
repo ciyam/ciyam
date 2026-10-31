@@ -475,18 +475,30 @@ button.chat-avatar:hover
    display: none;
 }
 
+/* NOTE: The picker's field and Set side by side, its month on a line of its own below them - the full width of the panel. */
 .chat-room-close-row
 {
    display: flex;
+   flex-wrap: wrap;
    gap: 8px;
    align-items: center;
 }
 
-.chat-room-close-input
+.chat-room-close-row .chat-when
 {
-   flex: 1 1 auto;
-   min-width: 0;
-   cursor: text;
+   display: contents;
+}
+
+.chat-room-close-row .chat-when-field
+{
+   flex: 1 1 0;
+}
+
+.chat-room-close-row .chat-when-popup
+{
+   order: 1;
+   flex: 1 1 100%;
+   margin-top: 0;
 }
 
 /* NOTE: A closed room keeps its messages to read, but nothing on them can be changed (Ian, 2026-10-30). */
@@ -883,6 +895,268 @@ button.chat-avatar:hover
 {
    text-decoration: underline wavy var(--color-chat-critical);
    text-underline-offset: 3px;
+}
+
+/* NOTE: The day and time picker ("when_picker.js") - a field, and below it the month, a time and Clear, Cancel and Select. */
+.chat-when-field
+{
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 8px;
+   min-width: 0;
+   height: 30px;
+   padding: 0 8px;
+   border: 1px solid var(--color-chat-border-strong);
+   border-radius: var(--radius-xs);
+   background: var(--color-chat-bg);
+   color: var(--color-chat-text-strong);
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-tiny);
+   cursor: pointer;
+}
+
+.chat-when-field.is-empty
+{
+   color: var(--color-chat-text-faint);
+   font-family: inherit;
+}
+
+.chat-when-field[aria-expanded="true"]
+{
+   border-color: var(--color-chat-border-selected);
+}
+
+.chat-when-field:disabled
+{
+   opacity: 0.6;
+   cursor: progress;
+}
+
+.chat-when-text
+{
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.chat-when-icon
+{
+   flex: none;
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-when-popup
+{
+   margin-top: 6px;
+   padding: 10px;
+   border: 1px solid var(--color-chat-border-strong);
+   border-radius: var(--radius-md);
+   background: var(--color-chat-bg);
+   box-shadow: var(--shadow-lg);
+}
+
+.chat-when-popup[hidden]
+{
+   display: none;
+}
+
+.chat-when-head
+{
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   margin-bottom: 8px;
+}
+
+.chat-when-month
+{
+   font-size: var(--font-size-chat-name);
+   font-weight: 600;
+   color: var(--color-chat-text-strong);
+}
+
+.chat-when-step
+{
+   width: 30px;
+   height: 30px;
+   padding: 0;
+   border: 0;
+   border-radius: var(--radius-sm);
+   background: none;
+   color: var(--color-chat-text-strong);
+   font-size: 20px;
+   line-height: 1;
+   cursor: pointer;
+}
+
+.chat-when-step:hover:not( :disabled )
+{
+   background: var(--color-chat-bg-raised);
+}
+
+.chat-when-step:disabled
+{
+   color: var(--color-chat-text-ghost);
+   cursor: default;
+}
+
+.chat-when-grid
+{
+   display: grid;
+   grid-template-columns: repeat( 7, 1fr );
+   gap: 2px;
+}
+
+.chat-when-weekday
+{
+   padding: 2px 0 4px;
+   text-align: center;
+   font-size: var(--font-size-chat-nano);
+   font-weight: 600;
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-when-day
+{
+   height: 32px;
+   padding: 0;
+   border: 1px solid transparent;
+   border-radius: var(--radius-sm);
+   background: none;
+   color: var(--color-chat-text);
+   font: inherit;
+   font-size: var(--font-size-chat-meta);
+   font-variant-numeric: tabular-nums;
+   cursor: pointer;
+}
+
+.chat-when-day:hover:not( :disabled )
+{
+   background: var(--color-chat-bg-raised);
+}
+
+.chat-when-day.is-outside
+{
+   color: var(--color-chat-text-faint);
+}
+
+.chat-when-day.is-today
+{
+   border-color: var(--color-chat-border-strong);
+   font-weight: 600;
+}
+
+.chat-when-day.is-chosen,
+.chat-when-day.is-chosen:hover
+{
+   border-color: var(--color-chat-accent);
+   background: var(--color-chat-accent);
+   color: #ffffff;
+   font-weight: 600;
+}
+
+.chat-when-day:disabled
+{
+   color: var(--color-chat-text-ghost);
+   cursor: default;
+}
+
+.chat-when-time
+{
+   display: flex;
+   align-items: center;
+   gap: 4px;
+   margin-top: 10px;
+   padding-top: 10px;
+   border-top: 1px solid var(--color-chat-rule);
+}
+
+.chat-when-time-label
+{
+   margin-right: auto;
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 600;
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-when-time select
+{
+   height: 30px;
+   padding: 0 6px;
+   border: 1px solid var(--color-chat-border-strong);
+   border-radius: var(--radius-xs);
+   background: var(--color-chat-bg);
+   color: var(--color-chat-text-strong);
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-tiny);
+   cursor: pointer;
+}
+
+.chat-when-colon
+{
+   font-family: var(--font-family-chat-mono);
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-when-problem
+{
+   margin: 8px 0 0;
+   font-size: var(--font-size-chat-tiny);
+   color: var(--color-chat-critical-text);
+}
+
+.chat-when-problem[hidden]
+{
+   display: none;
+}
+
+.chat-when-foot
+{
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 8px;
+   margin-top: 10px;
+}
+
+.chat-when-clear
+{
+   padding: 0;
+   border: 0;
+   background: none;
+   color: var(--color-chat-accent-deep);
+   font: inherit;
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 600;
+   cursor: pointer;
+}
+
+.chat-when-buttons
+{
+   display: flex;
+   gap: 6px;
+}
+
+.chat-when-select:disabled
+{
+   opacity: 0.5;
+   cursor: default;
+}
+
+/* NOTE: Days big enough to touch on a phone. */
+@media (max-width: 600px)
+{
+   .chat-when-day
+   {
+      height: 40px;
+   }
+
+   .chat-when-field,
+   .chat-when-time select
+   {
+      height: 36px;
+   }
 }
 
 .chat-field--mono

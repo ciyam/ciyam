@@ -85,6 +85,9 @@ var g_dialog_mode = "create";
 // NOTE: The dialog's people picker ("picker.js") - made the first time it is wanted.
 var g_invite_picker = null;
 
+// NOTE: Room Details' day and time picker for the close ("when_picker.js") - made the first time it is wanted too.
+var g_close_when = null;
+
 var g_known_users = [ ];
 
 const c_first_load_limit = 15000;
@@ -4995,18 +4998,35 @@ async function do_change_posting( )
 function prepare_close_input( entry )
 {
    var input = document.getElementById( "room_close_input" );
+   var when = close_when( );
 
-   if( input.disabled || ( document.activeElement === input ) )
+   // NOTE: Left open in another room - it was for that one.
+   if( input.dataset.room !== g_room )
+      when.close( );
+
+   if( input.disabled || when.is_open( ) )
       return;
 
-   input.min = local_input_time( new Date( ) );
-   input.max = ( typeof entry.closes === "number" ) ? local_input_time( new Date( entry.closes * 1000 ) ) : "";
+   when.set_range( local_input_time( new Date( ) ), ( typeof entry.closes === "number" ) ? local_input_time( new Date( entry.closes * 1000 ) ) : "" );
 
    if( input.dataset.room !== g_room )
    {
       input.dataset.room = g_room;
       input.value = "";
    }
+}
+
+function close_when( )
+{
+   if( g_close_when === null )
+   {
+      g_close_when = when_picker( document.getElementById( "room_close_input" ), {
+         field_id: "room_close_field", placeholder: "Day and time", label: "When the room closes",
+         before_text: "That time has passed - choose a later one.",
+         after_text: "That is after the room closes now - a close time can only be brought forward." } );
+   }
+
+   return g_close_when;
 }
 
 // NOTE: A time as a "datetime-local" field takes it, in local time.
@@ -5057,7 +5077,7 @@ async function do_set_room_close( )
       return;
    }
 
-   input.disabled = true;
+   close_when( ).set_disabled( true );
    button.disabled = true;
 
    ciyam.error = "";
@@ -5070,7 +5090,7 @@ async function do_set_room_close( )
       } );
    } );
 
-   input.disabled = false;
+   close_when( ).set_disabled( false );
    button.disabled = false;
 
    if( is_error_response( answer ) || ( ciyam.error !== "" ) )

@@ -222,6 +222,49 @@ check( "not a direct message", cp.can_close_room( "0000005", close_entry, "alice
 check( "not once closed", cp.can_close_room( "0000005", close_entry, "alice", false, false, after_close ), false );
 check( "with no close time yet", cp.can_close_room( "0000005", { owner: "alice" }, "alice", false, false, before_close ), true );
 
+heading( "choosing a day and time" );
+
+check( "a value from its parts", cp.when_value( 2026, 11, 6, 17, 5 ), "2026-11-06T17:05" );
+check( "- and back", cp.when_parts( "2026-11-06T17:05" ), { year: 2026, month: 11, day: 6, hour: 17, minute: 5 } );
+check( "- read as the close field's was", cp.close_time_from_input( cp.when_value( 2026, 11, 6, 17, 0 ) ), close_at );
+check( "not a real day or time - none", [ cp.when_parts( "2026-02-30T10:00" ), cp.when_parts( "2026-13-01T10:00" ), cp.when_parts( "2026-11-06T24:00" ),
+ cp.when_parts( "2026-11-06" ), cp.when_parts( "" ) ], [ null, null, null, null, null ] );
+check( "a leap year's 29 February", [ cp.when_parts( "2028-02-29T09:00" ) !== null, cp.when_parts( "2027-02-29T09:00" ) ], [ true, null ] );
+check( "shown yyyy-mm-dd", [ cp.when_label( "2026-11-06T17:05" ), cp.when_label( "" ) ], [ "2026-11-06 17:05", "" ] );
+check( "a month's heading", cp.when_month_label( 2026, 11 ), "November 2026" );
+check( "months on and back, over a year's end", [ cp.when_add_months( 2026, 12, 1 ), cp.when_add_months( 2026, 1, -1 ), cp.when_add_months( 2026, 10, 14 ) ],
+ [ { year: 2027, month: 1 }, { year: 2025, month: 12 }, { year: 2027, month: 12 } ] );
+
+var november = cp.when_month_grid( 2026, 11 );
+
+check( "a month as six weeks", november.length, 42 );
+check( "- from the Monday on or before the 1st (a Sunday)", [ november[ 0 ].text, november[ 0 ].outside, november[ 6 ].text, november[ 6 ].outside ],
+ [ "2026-10-26", true, "2026-11-01", false ] );
+check( "- to the end, the next month's days outside", [ november[ 35 ].text, november[ 35 ].outside, november[ 41 ].text ],
+ [ "2026-11-30", false, "2026-12-06" ] );
+check( "- a month starting on a Monday starts there", cp.when_month_grid( 2027, 2 )[ 0 ].text, "2027-02-01" );
+check( "weekdays from Monday", cp.c_when_weekdays.join( " " ), "Mo Tu We Th Fr Sa Su" );
+
+check( "a day on and back, over a month's and a year's end", [ cp.when_add_days( "2026-11-30", 1 ), cp.when_add_days( "2027-01-03", -7 ) ],
+ [ "2026-12-01", "2026-12-27" ] );
+
+var when_min = "2026-10-31T14:37", when_max = "2026-11-06T17:00";
+
+check( "a day between the limits may be chosen", cp.when_day_allowed( "2026-11-02", when_min, when_max ), true );
+check( "- the first and last days too, though only part of each is", [ cp.when_day_allowed( "2026-10-31", when_min, when_max ),
+ cp.when_day_allowed( "2026-11-06", when_min, when_max ) ], [ true, true ] );
+check( "- not one before or after", [ cp.when_day_allowed( "2026-10-30", when_min, when_max ), cp.when_day_allowed( "2026-11-07", when_min, when_max ) ],
+ [ false, false ] );
+check( "- with no latest, any day from the first", cp.when_day_allowed( "2030-01-01", when_min, "" ), true );
+check( "a time before the first allowed", cp.when_range_problem( "2026-10-31T14:30", when_min, when_max ), cp.c_when_before );
+check( "- after the last", cp.when_range_problem( "2026-11-06T17:05", when_min, when_max ), cp.c_when_after );
+check( "- between, or right on either", [ cp.when_range_problem( "2026-11-01T09:00", when_min, when_max ),
+ cp.when_range_problem( when_min, when_min, when_max ), cp.when_range_problem( when_max, when_min, when_max ),
+ cp.when_range_problem( "2040-01-01T00:00", "", "" ) ],
+ [ "", "", "", "" ] );
+check( "first offered - the next whole hour", cp.when_first_offered( new Date( 2026, 9, 31, 14, 37 ) ), "2026-10-31T15:00" );
+check( "- over midnight, the next day", cp.when_first_offered( new Date( 2026, 11, 31, 23, 10 ) ), "2027-01-01T00:00" );
+
 heading( "who may post" );
 
 var open_entry = { owner: "alice", posts: "any" };

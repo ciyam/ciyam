@@ -99,6 +99,31 @@ ok   not a direct message
 ok   not once closed
 ok   with no close time yet
 
+== choosing a day and time =====================================
+ok   a value from its parts
+ok   - and back
+ok   - read as the close field's was
+ok   not a real day or time - none
+ok   a leap year's 29 February
+ok   shown yyyy-mm-dd
+ok   a month's heading
+ok   months on and back, over a year's end
+ok   a month as six weeks
+ok   - from the Monday on or before the 1st (a Sunday)
+ok   - to the end, the next month's days outside
+ok   - a month starting on a Monday starts there
+ok   weekdays from Monday
+ok   a day on and back, over a month's and a year's end
+ok   a day between the limits may be chosen
+ok   - the first and last days too, though only part of each is
+ok   - not one before or after
+ok   - with no latest, any day from the first
+ok   a time before the first allowed
+ok   - after the last
+ok   - between, or right on either
+ok   first offered - the next whole hour
+ok   - over midnight, the next day
+
 == who may post ================================================
 ok   entrance room never accepts posts
 ok   reserved room refused for a standard user
