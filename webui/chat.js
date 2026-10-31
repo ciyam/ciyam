@@ -1332,6 +1332,10 @@ async function do_disconnect( already_ended )
 
    document.getElementById( "room_key_dialog" ).hidden = true;
 
+   // NOTE: A poll being written, and an encrypted message's QR code, were this account's too (found by review, 2026-11-01).
+   do_close_poll_dialog( );
+   do_close_qr_dialog( );
+
    chat_room_key_reset( );
 
    g_room_key_drawn_for = "";

@@ -1789,7 +1789,8 @@ check( "- only exactly their form", [ cp.parse_reactions( "" ), cp.parse_reactio
  cp.parse_reactions( "014b573fxo" ), cp.parse_reactions( "104b573fx" ), cp.parse_reactions( "014B573Fx" ), cp.parse_reactions( "nice 014b573fx" ) ],
  [ null, null, null, null, null, null, null ] );
 // NOTE: Moved from one reaction to an earlier one, the node leaves the later with nobody in it (2026-10-31) - left out, not all lost.
-check( "- one with nobody left in it, left out", [ cp.parse_reactions( "05aaaaaaxo09" ), cp.parse_reactions( "01o05aaaaaaxo09" ), cp.parse_reactions( "01o09" ) ],
+check( "- one with nobody left in it, left out", [ cp.parse_reactions( "05aaaaaaxo09" ), cp.parse_reactions( "01o05aaaaaaxo09" ),
+ cp.parse_reactions( "01o09" ) ],
  [ [ { code: "05", people: [ "aaaaaa" ] } ], [ { code: "05", people: [ "aaaaaa" ] } ], null ] );
 check( "- after a tab, on their message's line (2026-10-29)", cp.parse_fetch_response( "maya+1 ian+1\n1793192805000 maya  well done\t014b573fx\n"
  + "1793192806000 ian  thanks" ).messages.map( function( m ) { return [ m.text, m.reactions || null ]; } ),
@@ -1844,7 +1845,8 @@ var poll_votes = cp.poll_results( poll_read, [ { code: "00", people: [ "aaaaaa",
 check( "the votes - counts and shares, one's own, the leader; a reaction that is no option left out", [ poll_votes.total, poll_votes.votes,
  poll_votes.options.map( function( o ) { return o.count + ":" + o.percent + ( o.mine ? ":mine" : "" ) + ( o.leading ? ":leads" : "" ); } ) ],
  [ 3, "3 votes", [ "2:67:leads", "0:0", "1:33:mine" ] ] );
-check( "- none yet", [ cp.poll_results( poll_read, [ ], "x" ).votes, cp.poll_results( poll_read, [ ], "x" ).options.some( function( o ) { return o.leading; } ) ],
+check( "- none yet", [ cp.poll_results( poll_read, [ ], "x" ).votes,
+ cp.poll_results( poll_read, [ ], "x" ).options.some( function( o ) { return o.leading; } ) ],
  [ "0 votes", false ] );
 check( "the node busy with another message - tried once more", [ cp.is_irc_lock_refusal( "Error: Unable to obtain the system IRC lock (try again later)." ),
  cp.is_irc_lock_refusal( "Error: Maximum message size was exceeded." ), cp.is_irc_lock_refusal( "" ) ], [ true, false, false ] );
