@@ -188,6 +188,10 @@ check( "- keys in an older form, as none - set up again", [ ap.keys_state( false
 check( "- an error, or not locked keys, unreadable", [ ap.keys_state( true, "Error: Unknown request." ), ap.keys_state( false, "" ),
  ap.keys_state( false, "UK4:" + locked.substring( 4 ) ), ap.keys_state( false, locked.replace( ":9a9e:", ":9a9:" ) ) ],
  [ "unreadable", "unreadable", "unreadable", "unreadable" ] );
+// NOTE: Guarded (Ian, 2026-10-27) - a line before them, "UK#:<rounds>:<check>".
+check( "- guarded keys read as keys; a bad guard unreadable", [ ap.keys_state( false, "UK#:100000:" + "cd".repeat( 32 ) + "\n" + locked ),
+ ap.keys_state( true, "UK#:100000:" + "cd".repeat( 32 ) + "\n" + locked + "\n" ), ap.keys_state( false, "UK#:100000:cd\n" + locked ) ],
+ [ "elsewhere", "here", "unreadable" ] );
 
 check( "the last step of joining - what keys are for, then set up", [ ap.keys_step_text( false ).title, ap.keys_step_text( true ).title ],
  [ "Last step: your keys", "Your keys are set up" ] );

@@ -107,6 +107,11 @@ ok   - the rounds read before opening them, so typed words make the same access 
 ok   locked afresh - its own salt each time, the default rounds, unlocked again
 ok   not unlocked - another access key, changed, not locked keys, or an older form
 ok   - more rounds than ten times the default refused, before any hashing
+ok   the guard - rounds of the entropy's check, as worked out without the module
+ok   - one round fewer hashes on to it, as the node tests - more does not come back
+ok   the access key a round on - the one with a round more
+ok   guarded keys - the guard's line, then the keys; read as before, the guard given back
+ok   - not read: a guard of other rounds than the keys', a bad guard, or a line too many
 ok   not locked - no access key, no keys, or a public key not one
 ok   room keys - locked with the keys by room, in lower case, and unlocked
 ok   - a room key not 32 hex digits, or a room not a number of 7, refused

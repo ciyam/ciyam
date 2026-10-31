@@ -371,6 +371,7 @@ http://www.opensource.org/licenses/mit-license.php.
                         </div>
                         <div class="account-actions-row">
                            <button type="button" class="chat-btn" id="keys_forget">Forget them on this browser</button>
+                           <button type="button" class="chat-btn" id="keys_change">Change the access key</button>
                            <button type="button" class="chat-btn" id="keys_public_hide" hidden>Hide my public key</button>
                            <button type="button" class="chat-btn chat-btn--primary" id="keys_public_show">Show my public key</button>
                         </div>

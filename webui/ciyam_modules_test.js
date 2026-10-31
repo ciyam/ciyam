@@ -737,7 +737,7 @@ async function steps( module_class, list )
    check( "locked under the access key - as worked out without the module, given a salt and rounds", await uk.lock( known_access, known_contents,
     { salt: known_salt, rounds: 1000 } ), known_locked );
    check( "- unlocked, with the rounds they were made with", await uk.unlock( known_access, known_locked ),
-    Object.assign( { }, known_contents, { rooms: { }, rounds: 1000 } ) );
+    Object.assign( { }, known_contents, { rooms: { }, rounds: 1000, guard: "" } ) );
    check( "- the rounds read before opening them, so typed words make the same access key", uk.rounds_of( known_locked ), 1000 );
 
    var locked_afresh = await uk.lock( known_access, known_contents );
@@ -761,6 +761,38 @@ async function steps( module_class, list )
    check( "- more rounds than ten times the default refused, before any hashing", [ await not_opened( known_access, too_many ),
     await uk.access_key( test_entropy, 1000001 ).catch( function( e ) { return e.message; } ) ],
     [ "Those are not locked keys.", "The rounds are a whole number from 1 to 1000000." ] );
+
+   // NOTE: The guard (Ian, 2026-10-27) - worked out here without the module: the SHA-256 of "user_keys_check" and the entropy, then
+   // hashed again once a round. The node hashes one with fewer rounds on to its own, as here, to see that it came from the words.
+   var known_check = node_crypto.createHash( "sha256" ).update( "user_keys_check" + test_entropy, "utf8" ).digest( "hex" );
+   var check_at = { };
+
+   for( var g = 1; g <= 1000; g++ )
+   {
+      known_check = node_crypto.createHash( "sha256" ).update( known_check, "utf8" ).digest( "hex" );
+      check_at[ g ] = known_check;
+   }
+
+   var guard_line = await uk.guard( test_entropy, 1000 );
+
+   check( "the guard - rounds of the entropy's check, as worked out without the module", [ guard_line, await uk.guard( test_entropy, 999 ) ],
+    [ "UK#:1000:" + check_at[ 1000 ], "UK#:999:" + check_at[ 999 ] ] );
+   check( "- one round fewer hashes on to it, as the node tests - more does not come back", [
+    node_crypto.createHash( "sha256" ).update( check_at[ 999 ], "utf8" ).digest( "hex" ) === check_at[ 1000 ], check_at[ 999 ] !== check_at[ 1000 ] ],
+    [ true, true ] );
+
+   check( "the access key a round on - the one with a round more", await uk.next_access_key( test_entropy, await uk.access_key( test_entropy, 999 ) ),
+    known_access );
+
+   var guarded = uk.kept_text( guard_line, known_locked );
+
+   check( "guarded keys - the guard's line, then the keys; read as before, the guard given back", [ guarded, uk.rounds_of( guarded ),
+    ( await uk.unlock( known_access, guarded ) ).guard, uk.parts_of( known_locked ), uk.kept_text( "", known_locked ) ],
+    [ guard_line + "\n" + known_locked, 1000, guard_line, { guard: "", locked: known_locked }, known_locked ] );
+   check( "- not read: a guard of other rounds than the keys', a bad guard, or a line too many", [
+    await not_opened( known_access, uk.kept_text( "UK#:999:" + check_at[ 999 ], known_locked ) ),
+    await not_opened( known_access, "UK#:1000:xyz\n" + known_locked ), await not_opened( known_access, guarded + "\n" + known_locked ) ],
+    [ "Those are not locked keys.", "Those are not locked keys.", "Those are not locked keys." ] );
 
    var not_locked = async function( access, contents )
    {

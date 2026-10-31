@@ -187,15 +187,31 @@ function keys_url( extra )
     + "&session=" + ciyam.sessid;
 }
 
-// NOTE: Locked under the access key and sent - false, with the error said, if the node did not take them.
-async function keys_send( access, rounds, contents, error_id, what )
+// NOTE: The guard's line of the keys the node has (Ian, 2026-10-27) - "" for keys without one.
+function keys_guard_now( )
+{
+   try
+   {
+      return keys_module( "user_keys" ).parts_of( g_keys.node ).guard;
+   }
+   catch( e )
+   {
+      return "";
+   }
+}
+
+// NOTE: Locked under the access key and sent, with the guard's line before them ("guard" - made from the words, or the one the
+// node has) - false, with the error said, if the node did not take them.
+async function keys_send( access, rounds, contents, error_id, what, guard )
 {
    var response = "";
    var locked = "";
 
    try
    {
-      locked = await keys_module( "user_keys" ).lock( access, contents, { rounds: rounds } );
+      var uk = keys_module( "user_keys" );
+
+      locked = uk.kept_text( guard, await uk.lock( access, contents, { rounds: rounds } ) );
 
       response = await request( function( done )
       {
@@ -376,19 +392,27 @@ async function render_keys( )
 }
 
 // NOTE: The words asked for - "elsewhere": on a browser new to the keys; "other": what this browser kept does not open the
-// node's (set up again from another browser, say); "restore": nothing on the node, the keys made again from the words.
+// node's (set up again from another browser, or a new access key, say); "restore": nothing on the node, the keys made again
+// from the words; "change": a new access key (Ian, 2026-10-27: a round fewer each time). Guarded keys (Ian, 2026-10-27) the node
+// replaces only from the words they were set up with, so new words are not offered for them - the admin clears them.
 function keys_show_enter( mode )
 {
+   var guarded = ( keys_guard_now( ) !== "" ) && ( mode !== "restore" );
+   var lost = guarded ? " Lost them? Ask the administrator to clear your keys, then set up new ones." : "";
+
    g_keys.entering = mode;
 
    document.getElementById( "keys_enter_lede" ).textContent = {
       elsewhere: "Your keys are set up. To use them on this browser, type your twelve words - or open the QR code from"
-       + " \"Add another device\" on a browser that has them.",
-      other: "The keys on the node were locked by another browser since. Type the twelve words they were set up with.",
-      restore: "Type your twelve words, and your keys are made again from them." }[ mode ];
+       + " \"Add another device\" on a browser that has them." + lost,
+      other: "The keys on the node were locked by another browser since. Type the twelve words they were set up with." + lost,
+      restore: "Type your twelve words, and your keys are made again from them.",
+      change: "Type your twelve words for a new access key. Use it if a browser or phone with your keys is lost: any other browser"
+       + " that has them will then need your words, or this browser's QR code, again." }[ mode ];
 
-   document.getElementById( "keys_enter_new" ).hidden = ( mode === "restore" );
-   document.getElementById( "keys_enter_cancel" ).hidden = ( mode !== "restore" );
+   document.getElementById( "keys_enter_new" ).hidden = ( mode === "restore" ) || ( mode === "change" ) || guarded;
+   document.getElementById( "keys_enter_cancel" ).hidden = ( mode !== "restore" ) && ( mode !== "change" );
+   document.getElementById( "keys_enter_go" ).textContent = ( mode === "change" ) ? "Change the access key" : "Use my keys here";
    document.getElementById( "keys_enter_words" ).value = "";
 
    keys_show( "keys_enter" );
@@ -623,11 +647,13 @@ async function keys_make_and_save( entropy, lede )
    var uk = keys_module( "user_keys" );
    var rounds = uk.c_default_rounds;
    var access = "";
+   var guard = "";
    var seeds = null;
 
    try
    {
       access = await uk.access_key( entropy, rounds );
+      guard = await uk.guard( entropy, rounds );
       seeds = uk.seeds_of( entropy );
    }
    catch( e )
@@ -640,7 +666,8 @@ async function keys_make_and_save( entropy, lede )
 
    keys_busy( "Saving your keys…" );
 
-   var saved = await keys_send( access, rounds, { primary: seeds.primary, secondary: seeds.secondary, contacts: { } }, "keys_error", "Your keys" );
+   var saved = await keys_send( access, rounds, { primary: seeds.primary, secondary: seeds.secondary, contacts: { } }, "keys_error", "Your keys",
+    guard );
 
    keys_busy( "" );
 
@@ -821,7 +848,7 @@ async function keys_store_contacts( change, busy_text )
    }
 
    var saved = await keys_send( g_keys.access, g_keys.rounds, { primary: g_keys.primary, secondary: g_keys.secondary, contacts: contacts,
-    rooms: latest.rooms }, "keys_add_error", "That" );
+    rooms: latest.rooms }, "keys_add_error", "That", latest.guard );
 
    keys_contacts_busy( "" );
 
@@ -909,6 +936,13 @@ async function keys_enter_go( )
       return;
    }
 
+   if( g_keys.entering === "change" )
+   {
+      await keys_change_access( entropy );
+
+      return;
+   }
+
    // NOTE: Made with the rounds the node's were locked with, so it is the access key they were locked under.
    keys_busy( "Securing your keys…" );
 
@@ -941,11 +975,122 @@ async function keys_enter_go( )
       return;
    }
 
+   // NOTE: Keys from before the guard (2026-10-31) given one, now the words are here to make it.
+   if( keys_guard_now( ) === "" )
+      await keys_add_guard( entropy );
+
    keys_keep_here( access );
 
    document.getElementById( "keys_enter_words" ).value = "";
 
    await keys_show_here( access, "Your keys are on this browser.", false );
+}
+
+// NOTE: The guard's line put before keys without one, as they are - nothing said if the node does not take it, as the keys are
+// still as they were.
+async function keys_add_guard( entropy )
+{
+   var uk = keys_module( "user_keys" );
+
+   keys_busy( "Securing your keys…" );
+
+   await keys_drawn( );
+
+   try
+   {
+      var kept = uk.kept_text( await uk.guard( entropy, uk.rounds_of( g_keys.node ) ), uk.parts_of( g_keys.node ).locked );
+
+      var response = await request( function( done )
+      {
+         return ciyam.fetch( keys_url( "&payload=" + encodeURIComponent( kept ) ), "PUT", done );
+      } );
+
+      if( problem_text( response ) === "" )
+         g_keys.node = kept;
+   }
+   catch( e )
+   {
+   }
+
+   keys_busy( "" );
+}
+
+// NOTE: A new access key, a round fewer (Ian, 2026-10-27) - the words seen to be these keys' (the new key a round on is the one
+// this browser has), the keys locked again under it with a guard the node hashes on to its own, and kept here. Any other browser
+// with the old key can no longer open them, and cannot make the new one without the words.
+async function keys_change_access( entropy )
+{
+   var uk = keys_module( "user_keys" );
+   var rounds = g_keys.rounds - 1;
+
+   if( rounds < 1 )
+   {
+      set_error( "keys_error", "The access key can't be changed again - set up new keys." );
+
+      return;
+   }
+
+   keys_busy( "Securing your keys…" );
+
+   await keys_drawn( );
+
+   var access = "";
+   var guard = "";
+
+   try
+   {
+      access = await uk.access_key( entropy, rounds );
+
+      if( await uk.next_access_key( entropy, access ) === g_keys.access )
+         guard = await uk.guard( entropy, rounds );
+   }
+   catch( e )
+   {
+      keys_busy( "" );
+      set_error( "keys_error", "Your access key could not be changed: " + ( e && e.message ? e.message : "reload the page to try again." ) );
+
+      return;
+   }
+
+   if( guard === "" )
+   {
+      keys_busy( "" );
+      set_error( "keys_error", "Those are not the words your keys were set up with." );
+
+      return;
+   }
+
+   keys_busy( "Saving your keys…" );
+
+   // NOTE: What the node has now - another browser, or the chat with a room key, may have changed them since.
+   var latest = await keys_latest( );
+
+   if( latest === null )
+   {
+      keys_busy( "" );
+      set_error( "keys_error", "Your keys could not be read again from the node - reload the page to try again." );
+
+      return;
+   }
+
+   var saved = await keys_send( access, rounds, { primary: latest.primary, secondary: latest.secondary, contacts: latest.contacts,
+    rooms: latest.rooms }, "keys_error", "Your keys", guard );
+
+   keys_busy( "" );
+
+   if( !saved )
+      return;
+
+   keys_keep_here( access );
+
+   var node = g_keys.node;
+
+   keys_clear( );
+
+   g_keys.node = node;
+
+   await keys_show_here( access, "Your access key is changed. Any other browser that had your keys needs your twelve words, or this"
+    + " browser's QR code, to use them again.", false );
 }
 
 async function keys_start_again( )
@@ -992,6 +1137,7 @@ function install_keys( )
    } );
    document.getElementById( "keys_enter_go" ).addEventListener( "click", keys_enter_go );
    document.getElementById( "keys_enter_new" ).addEventListener( "click", keys_start_again );
+   document.getElementById( "keys_change" ).addEventListener( "click", function( ) { keys_show_enter( "change" ); } );
    document.getElementById( "keys_enter_cancel" ).addEventListener( "click", keys_cancel );
    document.getElementById( "keys_forget" ).addEventListener( "click", keys_forget );
    document.getElementById( "keys_public_show" ).addEventListener( "click", keys_show_public );

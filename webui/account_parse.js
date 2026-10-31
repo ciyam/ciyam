@@ -299,7 +299,8 @@ function short_device( device )
 // states, from whether this browser keeps that ("here") and what "GET /cws/user-keys" answered: "none" - nothing anywhere, to
 // set up; "lost" - kept here but gone from the node, where the keys were (what a browser keeps cannot make them again - the
 // words can); "elsewhere" - on the node but not here; "here"; or "unreadable" - an error, or something that is not locked keys.
-const c_keys_locked_pattern = /^UK3:[1-9][0-9]{0,8}:[0-9a-f]{32}:([0-9a-f]{2})+:[0-9a-f]{64}$/;
+// NOTE: With the guard's line before them, or without (keys from before it, 2026-10-31).
+const c_keys_locked_pattern = /^(UK#:[1-9][0-9]{0,6}:[0-9a-f]{64}\r?\n)?UK3:[1-9][0-9]{0,8}:[0-9a-f]{32}:([0-9a-f]{2})+:[0-9a-f]{64}$/;
 
 function keys_state( here, node_text )
 {

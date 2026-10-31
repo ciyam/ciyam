@@ -394,8 +394,9 @@ async function chat_keys_save_room_now( room, key )
 
    try
    {
-      locked = await uk.lock( access, { primary: latest.primary, secondary: latest.secondary, contacts: latest.contacts, rooms: rooms },
-       { rounds: latest.rounds } );
+      // NOTE: With the guard's line the node has, which only the words could change (Ian, 2026-10-27).
+      locked = uk.kept_text( latest.guard, await uk.lock( access, { primary: latest.primary, secondary: latest.secondary, contacts: latest.contacts,
+       rooms: rooms }, { rounds: latest.rounds } ) );
    }
    catch( e )
    {

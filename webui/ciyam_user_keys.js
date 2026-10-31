@@ -21,6 +21,14 @@
 // ciphertext "crypt -cc" (ChaCha20) under it, and the HMAC HMAC-SHA256 of the ciphertext's hex keyed with "mac" and the key, in
 // full. Locking again picks a new salt. ("UK1", under a passphrase, and "UK2", under the entropy itself, were never used.)
 //
+// Guarded (Ian's suggestion, 2026-10-27) with a line before them, the node keeping both:
+//
+//    UK#:<rounds>:<check>
+//
+// the check the SHA-256 of "user_keys_check" and the entropy, hashed again once a round. The node hashes a new check on to the
+// rounds it has, so it takes keys with fewer rounds - a new access key, which no browser that had the old one can make (a round
+// of "harden" needs the entropy) - only from the words; and only the same guard otherwise, or the same check to erase them.
+//
 // Needs "ciyam_harden.js", "ciyam_chacha20.js", "ciyam_ed25519.js" and "ciyam_secure_message.js" loaded too, and "bip39.min.js"
 // for the words.
 ciyam_register_module( class extends ciyam_module
@@ -30,7 +38,8 @@ ciyam_register_module( class extends ciyam_module
       name: "ciyam_user_keys",
       version: "3",
       description: "an account's own keys - locked under a hash of its twelve words before they go to the node, and opened again",
-      example: "access <entropy> | lock <entropy> | unlock <access key> <locked> | words <entropy> | entropy <twelve words>",
+      example: "access <entropy> | lock <entropy> | unlock <access key> <locked> | guard <entropy> [<rounds>] | words <entropy>"
+       + " | entropy <twelve words>",
       hint: "(i.e. the keys and others' public keys, locked so the node cannot read them, opened by what a browser keeps)",
       needs: [ "sha256", "harden", "chacha20", "ed25519", "secure_message", "bip39" ]
    };
@@ -38,6 +47,9 @@ ciyam_register_module( class extends ciyam_module
    static c_format = "UK3";
    static c_salt_bytes = 16;
    static c_label = "user_keys";
+
+   static c_guard_format = "UK#";
+   static c_check_label = "user_keys_check";
 
    // NOTE: About two thirds of a second in Chrome on a laptop, a few seconds on a phone - only when the words are typed or the
    // keys set up. Keys come back from the node, so it cannot ask for more than ten times as many - or it could keep a page
@@ -112,6 +124,55 @@ ciyam_register_module( class extends ciyam_module
       var count = this.checked_rounds( ( rounds !== undefined ) ? rounds : this.c_default_rounds );
 
       return harden.rounds( hasher, count, this.c_label + this.checked_entropy( entropy ), null );
+   }
+
+   // NOTE: The access key one round on from "access_key" - so one made with a round fewer (Ian, 2026-10-27: a new access key, a
+   // round fewer each time) is seen to come from the same words as the one it replaces, without hashing them all again.
+   static async next_access_key( entropy, access_key )
+   {
+      var harden = this.module_named( "harden" );
+      var hasher = ( typeof ciyam_sha256_fastest === "function" ) ? await ciyam_sha256_fastest( ) : { native: true, hash: ciyam_sha256_hex };
+
+      return harden.rounds( hasher, 1, this.c_label + this.checked_entropy( entropy ), this.checked_access( access_key ) );
+   }
+
+   // NOTE: The guard's line for keys locked with "rounds" - only the words make it.
+   static async guard( entropy, rounds )
+   {
+      var hasher = ( typeof ciyam_sha256_fastest === "function" ) ? await ciyam_sha256_fastest( ) : { native: true, hash: ciyam_sha256_hex };
+      var count = this.checked_rounds( ( rounds !== undefined ) ? Number( rounds ) : this.c_default_rounds );
+
+      var check = await hasher.hash( this.c_check_label + this.checked_entropy( entropy ) );
+
+      for( var i = 0; i < count; i++ )
+         check = hasher.native ? await hasher.hash( check ) : hasher.hash( check );
+
+      return this.c_guard_format + ":" + count + ":" + check;
+   }
+
+   // NOTE: What the node keeps, in its two parts - the guard's line ("" for keys without one) and the locked keys.
+   static parts_of( kept )
+   {
+      var lines = String( kept || "" ).trim( ).split( /\r?\n/ );
+
+      if( ( lines.length === 2 ) && ( lines[ 0 ].indexOf( this.c_guard_format + ":" ) === 0 ) )
+      {
+         if( !/^UK#:[1-9][0-9]{0,6}:[0-9a-f]{64}$/.test( lines[ 0 ] ) )
+            throw new Error( "Those are not locked keys." );
+
+         return { guard: lines[ 0 ], locked: lines[ 1 ] };
+      }
+
+      if( lines.length !== 1 )
+         throw new Error( "Those are not locked keys." );
+
+      return { guard: "", locked: lines[ 0 ] };
+   }
+
+   // NOTE: Keys to send - with their guard's line before them, when they have one.
+   static kept_text( guard, locked )
+   {
+      return guard ? ( guard + "\n" + locked ) : locked;
    }
 
    // NOTE: The keys from the entropy - the seed from it and from it reversed, in hex ("@secret", as "irc.cin" makes them).
@@ -196,24 +257,29 @@ ciyam_register_module( class extends ciyam_module
       return [ this.c_format, String( rounds ), salt, ciphertext, hmac ].join( ":" );
    }
 
-   // NOTE: The rounds locked keys were made with - so typing the words makes the same access key - or an error.
-   static rounds_of( locked )
+   // NOTE: The rounds locked keys were made with - so typing the words makes the same access key - or an error. With or without
+   // the guard's line, whose rounds must be theirs.
+   static rounds_of( kept )
    {
-      var parts = String( locked || "" ).trim( ).split( ":" );
+      var both = this.parts_of( kept );
+      var parts = both.locked.split( ":" );
 
       if( ( parts.length !== 5 ) || ( parts[ 0 ] !== this.c_format ) || !/^[1-9][0-9]{0,8}$/.test( parts[ 1 ] )
        || ( Number( parts[ 1 ] ) > this.c_most_rounds ) || !/^[0-9a-f]{32}$/.test( parts[ 2 ] )
-       || !/^([0-9a-f]{2})+$/.test( parts[ 3 ] ) || !/^[0-9a-f]{64}$/.test( parts[ 4 ] ) )
+       || !/^([0-9a-f]{2})+$/.test( parts[ 3 ] ) || !/^[0-9a-f]{64}$/.test( parts[ 4 ] )
+       || ( ( both.guard !== "" ) && ( both.guard.split( ":" )[ 1 ] !== parts[ 1 ] ) ) )
          throw new Error( "Those are not locked keys." );
 
       return Number( parts[ 1 ] );
    }
 
-   // NOTE: The contents, or an error: not locked keys, or not the access key they were locked with (or they were changed).
-   static async unlock( access_key, locked )
+   // NOTE: The contents, or an error: not locked keys, or not the access key they were locked with (or they were changed). The
+   // guard's line comes back with them, to send again with any change.
+   static async unlock( access_key, kept )
    {
-      var rounds = this.rounds_of( locked );
-      var parts = String( locked ).trim( ).split( ":" );
+      var rounds = this.rounds_of( kept );
+      var guard = this.parts_of( kept ).guard;
+      var parts = this.parts_of( kept ).locked.split( ":" );
 
       var key = await this.key_for( access_key, parts[ 2 ] );
       var expected = await this.module_named( "secure_message" ).hmac_sha256( "mac" + key, parts[ 3 ] );
@@ -231,7 +297,7 @@ ciyam_register_module( class extends ciyam_module
       var contents = JSON.parse( new TextDecoder( ).decode( await chacha.crypt( key, chacha.bytes_of( parts[ 3 ] ) ) ) );
 
       return { primary: contents.primary, secondary: contents.secondary, contacts: contents.contacts || { }, rooms: contents.rooms || { },
-       rounds: rounds };
+       rounds: rounds, guard: guard };
    }
 
    // NOTE: "access <entropy>", "lock <entropy>" (the keys from it, no one else's yet - the access key shown before them),
@@ -255,6 +321,9 @@ ciyam_register_module( class extends ciyam_module
 
       if( ( what === "unlock" ) && ( words.length === 2 ) )
          return JSON.stringify( await it.unlock( words[ 0 ], words[ 1 ] ) );
+
+      if( ( what === "guard" ) && ( ( words.length === 1 ) || ( words.length === 2 ) ) )
+         return it.guard( words[ 0 ], ( words.length === 2 ) ? Number( words[ 1 ] ) : undefined );
 
       if( ( what === "words" ) && ( words.length === 1 ) )
          return it.words_of_entropy( words[ 0 ] );
