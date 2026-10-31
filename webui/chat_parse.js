@@ -645,6 +645,13 @@ function last_editable( rows )
    return null;
 }
 
+// NOTE: An edit saved as it was opened - both as they would be sent - so nothing need be (Ian, 2026-10-31). Space at either end
+// does not count, as the box's own is not sent.
+function edit_unchanged( original, text )
+{
+   return String( original || "" ).trim( ) === String( text || "" ).trim( );
+}
+
 // NOTE: The "for" value that edits a message: its unique, with "!" in front for a private one
 // (Ian, 2026-09-28). The server keeps public and private apart - an edit must say which, and
 // the wrong one is refused ("Source message must not be modified to or from private.").
@@ -4228,6 +4235,7 @@ if( typeof module !== "undefined" )
       recovery_error_step: recovery_error_step,
       in_time_order: in_time_order,
       last_editable: last_editable,
+      edit_unchanged: edit_unchanged,
       later_start_point: later_start_point,
       pin_options: pin_options,
       delete_options: delete_options,

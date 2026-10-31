@@ -57,6 +57,9 @@ var g_last_poll = 0;
 var g_edit_unique = "";
 var g_edit_private = false;
 var g_edit_draft = "";
+
+// NOTE: The message being edited as it would be sent, unchanged - so saving it unchanged sends nothing (Ian, 2026-10-31).
+var g_edit_original = "";
 var g_recipients = [ ];
 
 // NOTE: Direct messages started here and waiting for the others to accept - room number to
@@ -1844,11 +1847,18 @@ function select_room( room, token )
 
    close_react_menu( false );
 
+   // NOTE: An alert about the last room goes with it (Ian, 2026-10-31) - one shown before any room, about the session, stays.
+   var alert = document.getElementById( "chat_alert" );
+
+   if( !alert.hidden && ( alert.dataset.room || "" ) !== "" && ( alert.dataset.room !== room ) )
+      alert.hidden = true;
+
    g_room = room;
    g_start_point = "";
    g_edit_unique = "";
    g_edit_private = false;
    g_edit_draft = "";
+   g_edit_original = "";
    g_recipients = [ ];
 
    // NOTE: The last room's pinned are not this one's - its first read brings its own.
@@ -5904,6 +5914,14 @@ async function do_send( )
       return;
    }
 
+   // NOTE: An edit saved as it was - nothing to send, so the edit is just closed (Ian, 2026-10-31).
+   if( ( g_edit_unique !== "" ) && edit_unchanged( g_edit_original, text ) )
+   {
+      do_abandon_edit( );
+
+      return;
+   }
+
    // NOTE: Nobody else will read it - the conversation's only other person declined. The text is
    // left in the box.
    if( !g_dm_pending[ g_room ] && g_dm_shut[ g_room ] && ( g_edit_unique === "" ) )
@@ -6194,6 +6212,8 @@ function begin_edit( unique, text, is_private )
    // NOTE: Its formatting in the box, or Ian's shorthand with Codes on - never an escape.
    set_composer_message( text );
 
+   g_edit_original = composer_message( );
+
    input.focus( );
 
    document.getElementById( "composer_cancel_edit" ).hidden = false;
@@ -6251,6 +6271,7 @@ function do_cancel_edit( )
    g_edit_unique = "";
    g_edit_private = false;
    g_edit_draft = "";
+   g_edit_original = "";
 
    document.getElementById( "composer_cancel_edit" ).hidden = true;
 
@@ -6960,6 +6981,7 @@ function show_alert( text, kind, from_loading )
    document.getElementById( "chat_alert_text" ).textContent = text;
 
    alert.className = "chat-alert " + ( kind || "is-error" );
+   alert.dataset.room = g_room;
    alert.dataset.fromLoading = from_loading ? "1" : "";
    alert.dataset.scopeHint = "";
    alert.dataset.resync = "";

@@ -774,6 +774,7 @@ ok   in time order - by unique, a shared one as it came
 ok   the Admin room read whole when only its pinned came back - nothing new among them
 ok   the strip shut for a room, then open again - the others kept
 ok   Up edits the newest of your own - others' and nothing to edit passed over
+ok   an edit saved as it was - unchanged, space at the ends aside
 ok   a message edited to spaces - deleted, public or private (Ian, 2026-10-15)
 ok   - an ordinary one carries no deleted mark
 ok   deleting - an edit to two spaces, private with its "!"

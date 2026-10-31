@@ -1495,6 +1495,9 @@ check( "the strip shut for a room, then open again - the others kept", [ cp.with
 check( "Up edits the newest of your own - others' and nothing to edit passed over", [ cp.last_editable( [ { unique: "1", editable: true, text: "first" },
  { unique: "2", editable: true, text: "second" }, { unique: "3", editable: false, text: "theirs" } ] ).unique,
  cp.last_editable( [ { unique: "4", editable: false, text: "theirs" } ] ), cp.last_editable( [ ] ), cp.last_editable( [ { unique: "5", editable: true, text: "  " } ] ) ], [ "2", null, null, null ] );
+// NOTE: Saved unchanged, nothing sent (Ian, 2026-10-31).
+check( "an edit saved as it was - unchanged, space at the ends aside", [ cp.edit_unchanged( "Lunch at %B1%one%B0%", "Lunch at %B1%one%B0%" ),
+ cp.edit_unchanged( "Lunch", "  Lunch\n" ), cp.edit_unchanged( "Lunch", "Lunch!" ), cp.edit_unchanged( "Lunch", "lunch" ) ], [ true, true, false, false ] );
 check( "a message edited to spaces - deleted, public or private (Ian, 2026-10-15)", [ cp.parse_message_line( "1792032681000 admin*    " ),
  cp.parse_message_line( "1792032682000 admin* !  " ).deleted ], [ { kind: "chat", unique: "1792032681000", sender: "admin", edited: true, private: false,
  text: "  ", deleted: true }, true ] );
