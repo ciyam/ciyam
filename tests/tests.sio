@@ -421,11 +421,11 @@
   </group>
   <group/>
    <name>test_cache
+   <kill>test_cache.dat
    <tests/>
     <test/>
      <name>1
      <description>Populate cache data and perform basic single region tests.
-     <kill>test_cache.dat
      <test_step/>
       <name>a
       <exec>test_cache -quiet -no_prompt -no_stderr -no_progress 5 10
@@ -760,14 +760,14 @@
   </group>
   <group/>
    <name>test_ods
+   <kill>test_ods.dat
+   <kill>test_ods.idx
+   <kill>test_ods.hdr
+   <kill>test_ods.tlg
    <tests/>
     <test/>
      <name>1
      <description>Populate DB using nested transactions.
-     <kill>test_ods.dat
-     <kill>test_ods.idx
-     <kill>test_ods.hdr
-     <kill>test_ods.tlg
      <test_step/>
       <name>a
       <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test
@@ -796,10 +796,10 @@
     <test/>
      <name>2
      <description>Test a couple of larger capacity transactions.
-     <kill>test_ods.dat
-     <kill>test_ods.idx
-     <kill>test_ods.hdr
-     <kill>test_ods.tlg
+     <kill>!test_ods.dat
+     <kill>!test_ods.idx
+     <kill>!test_ods.hdr
+     <kill>!test_ods.tlg
      <test_step/>
       <name>a
       <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test
