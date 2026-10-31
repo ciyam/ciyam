@@ -81,6 +81,7 @@ ok   label today
 ok   label tomorrow
 ok   label within the week
 ok   label past the week gives the date
+ok   - a year on too
 ok   label closed
 ok   label none
 ok   input to seconds
@@ -207,6 +208,11 @@ ok   allows keeps its detail
 ok   assign verb
 ok   assign names the old owner
 ok   assign names the new owner
+ok   closes verb
+ok   - said with the day and time
+ok   - the earlier form said the same
+ok   - a real owner change is not one
+ok   - a close not as expected keeps its detail
 ok   a bare verb has no detail
 ok   a bare verb still parses
 
@@ -636,7 +642,8 @@ ok   same day is Today
 ok   one day back is Yesterday
 ok   two days back is a weekday
 ok   six days back is still a weekday
-ok   seven days back gives a date
+ok   seven days back gives a date - yyyy-mm-dd, after its weekday
+ok   - a year back too
 ok   seven days back drops the bare weekday
 ok   a bad unique has no label
 ok   day key shape
@@ -644,7 +651,7 @@ ok   day key of a bad unique
 ok   same day shares a key
 ok   different days differ
 ok   days between counts calendar days
-ok   full stamp mentions the year
+ok   full stamp - weekday, yyyy-mm-dd, the time to the second
 ok   full stamp of a bad unique
 
 == the app switcher ============================================

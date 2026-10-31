@@ -814,14 +814,27 @@ function day_label( unique, p_now )
       return "Yesterday";
 
    if( ( diff > 1 ) && ( diff < 7 ) )
-      return when.toLocaleDateString( undefined, { weekday: "long" } );
+      return c_weekdays_long[ when.getDay( ) ];
 
-   var options = { weekday: "long", day: "numeric", month: "long" };
+   return c_weekdays_long[ when.getDay( ) ] + " " + date_text( when );
+}
 
-   if( when.getFullYear( ) !== now.getFullYear( ) )
-      options.year = "numeric";
+// NOTE: Days as Ian prefers them (2026-10-31: yyyy-mm-dd, "becoming a more widely accepted global standard") - the same
+// wherever the browser is, its weekdays included.
+const c_weekdays_long = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ];
+const c_weekdays_short = [ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" ];
 
-   return when.toLocaleDateString( undefined, options );
+function date_text( when )
+{
+   return when_day_text( when.getFullYear( ), when.getMonth( ) + 1, when.getDate( ) );
+}
+
+// NOTE: Unix seconds as "2026-11-07 17:00", local time.
+function unix_label( seconds )
+{
+   var when = new Date( seconds * 1000 );
+
+   return date_text( when ) + " " + when_pad( when.getHours( ) ) + ":" + when_pad( when.getMinutes( ) );
 }
 
 // NOTE: A room's close time (Unix seconds) against now - "" when it has none, "closing" in its last hour (as Ian's
@@ -873,16 +886,9 @@ function room_close_label( closes, p_now )
    else if( diff === 1 )
       day = "tomorrow";
    else if( diff < 7 )
-      day = when.toLocaleDateString( undefined, { weekday: "short" } );
+      day = c_weekdays_short[ when.getDay( ) ];
    else
-   {
-      var options = { weekday: "short", day: "numeric", month: "short" };
-
-      if( when.getFullYear( ) !== now.getFullYear( ) )
-         options.year = "numeric";
-
-      day = when.toLocaleDateString( undefined, options );
-   }
+      day = date_text( when );
 
    return "Closes " + day + " " + time;
 }
@@ -1043,9 +1049,8 @@ function unique_to_full( unique )
    if( when === null )
       return "";
 
-   return when.toLocaleString( undefined,
-    { weekday: "short", year: "numeric", month: "short", day: "numeric",
-      hour: "2-digit", minute: "2-digit", second: "2-digit" } );
+   return c_weekdays_short[ when.getDay( ) ] + " " + date_text( when ) + " " + when_pad( when.getHours( ) ) + ":" + when_pad( when.getMinutes( ) )
+    + ":" + when_pad( when.getSeconds( ) );
 }
 
 // NOTE: A stable colour index so that a participant keeps the same colour
@@ -1505,7 +1510,26 @@ function describe_event( event, label )
          return "renamed the room from '" + ( event.from_name || "" ) + "' to '" + ( event.to_name || "" ) + "'";
 
       case "assign":
+      {
+         // NOTE: A close before Ian's own notice for it (2026-10-31) was posted as one of these - "assign '' to '~<unix>'".
+         var old_close = String( event.to_name || "" ).match( /^~([0-9]+)$/ );
+
+         if( old_close && !event.from_name )
+            return "set the room to close " + unix_label( Number( old_close[ 1 ] ) );
+
          return "handed the room from '" + ( event.from_name || "" ) + "' to '" + ( event.to_name || "" ) + "'";
+      }
+
+      // NOTE: "_:closes set to <unix>" (Ian, 2026-10-31).
+      case "closes":
+      {
+         var closes = String( event.detail || "" ).match( /^set to ([0-9]+)$/ );
+
+         if( closes )
+            return "set the room to close " + unix_label( Number( closes[ 1 ] ) );
+
+         break;
+      }
 
       case "allows":
       {

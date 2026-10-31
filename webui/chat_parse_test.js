@@ -190,13 +190,10 @@ check( "after, closed", cp.room_close_state( close_at, new Date( 2026, 10, 7, 9,
 
 check( "label today", cp.room_close_label( close_at, new Date( 2026, 10, 6, 9, 0, 0 ) ), "Closes today 17:00" );
 check( "label tomorrow", cp.room_close_label( close_at, new Date( 2026, 10, 5, 9, 0, 0 ) ), "Closes tomorrow 17:00" );
-check( "label within the week", cp.room_close_label( close_at, new Date( 2026, 10, 2, 9, 0, 0 ) ),
- "Closes " + new Date( close_at * 1000 ).toLocaleDateString( undefined, { weekday: "short" } ) + " 17:00" );
-// NOTE: The date's words are the locale's, so its shape is checked - "Closes", the day of the month, the time - not the words.
-var past_week = cp.room_close_label( close_at, new Date( 2026, 9, 28, 9, 0, 0 ) );
-
-check( "label past the week gives the date", past_week.indexOf( "Closes " ) === 0 && / 0?6[ ,]/.test( past_week + " " )
- && / 17:00$/.test( past_week ) && past_week !== "Closes " + new Date( close_at * 1000 ).toLocaleDateString( undefined, { weekday: "short" } ) + " 17:00", true );
+check( "label within the week", cp.room_close_label( close_at, new Date( 2026, 10, 2, 9, 0, 0 ) ), "Closes Fri 17:00" );
+// NOTE: Dates as yyyy-mm-dd wherever the browser is (Ian, 2026-10-31) - so the whole label is checked, not its shape.
+check( "label past the week gives the date", cp.room_close_label( close_at, new Date( 2026, 9, 28, 9, 0, 0 ) ), "Closes 2026-11-06 17:00" );
+check( "- a year on too", cp.room_close_label( close_at, new Date( 2025, 10, 6, 9, 0, 0 ) ), "Closes 2026-11-06 17:00" );
 check( "label closed", cp.room_close_label( close_at, new Date( 2026, 10, 6, 18, 0, 0 ) ), "Closed" );
 check( "label none", cp.room_close_label( undefined, new Date( 2026, 10, 6, 18, 0, 0 ) ), "" );
 
@@ -413,6 +410,18 @@ ev = cp.parse_system_event( ":assign 'admin' to 'tester-1'" );
 check( "assign verb", ev.verb, "assign" );
 check( "assign names the old owner", ev.from_name, "admin" );
 check( "assign names the new owner", ev.to_name, "tester-1" );
+
+// NOTE: A room's close (Ian, 2026-10-31: "_:closes set to <unix>") - and as it was posted before that, an owner change to "~<unix>".
+var close_notice_at = Math.floor( new Date( 2026, 10, 7, 17, 0, 0 ).getTime( ) / 1000 );
+
+ev = cp.parse_system_event( ":closes set to " + close_notice_at );
+check( "closes verb", [ ev.verb, ev.detail ], [ "closes", "set to " + close_notice_at ] );
+check( "- said with the day and time", cp.describe_event( ev ), "set the room to close 2026-11-07 17:00" );
+check( "- the earlier form said the same", cp.describe_event( cp.parse_system_event( ":assign '' to '~" + close_notice_at + "'" ) ),
+ "set the room to close 2026-11-07 17:00" );
+check( "- a real owner change is not one", cp.describe_event( cp.parse_system_event( ":assign 'admin' to 'tester-1'" ) ),
+ "handed the room from 'admin' to 'tester-1'" );
+check( "- a close not as expected keeps its detail", cp.describe_event( cp.parse_system_event( ":closes soon" ) ), "closes soon" );
 
 ev = cp.parse_system_event( ":remove" );
 check( "a bare verb has no detail", ev.detail, "" );
@@ -1239,7 +1248,9 @@ check( "two days back is a weekday", cp.day_label( at( 21 ), now ), "Monday" );
 check( "six days back is still a weekday", cp.day_label( at( 17 ), now ), "Thursday" );
 
 // NOTE: Seven days back repeats today's weekday, so the name would be ambiguous.
-check( "seven days back gives a date", /September/.test( cp.day_label( at( 16 ), now ) ), true );
+check( "seven days back gives a date - yyyy-mm-dd, after its weekday", cp.day_label( at( 16 ), now ), "Wednesday 2026-09-16" );
+check( "- a year back too", cp.day_label( String( Math.floor( new Date( 2025, 11, 31, 10, 30, 0 ).getTime( ) / 1000 ) ) + "000", now ),
+ "Wednesday 2025-12-31" );
 check( "seven days back drops the bare weekday",
  cp.day_label( at( 16 ), now ) === "Wednesday", false );
 
@@ -1256,7 +1267,7 @@ check( "different days differ", cp.day_key( at( 21 ) ) === cp.day_key( at( 22 ) 
 check( "days between counts calendar days",
  cp.days_between( new Date( 2026, 8, 22, 23, 59, 0 ), new Date( 2026, 8, 23, 0, 1, 0 ) ), 1 );
 
-check( "full stamp mentions the year", /2026/.test( cp.unique_to_full( at( 21 ) ) ), true );
+check( "full stamp - weekday, yyyy-mm-dd, the time to the second", cp.unique_to_full( at( 21 ) ), "Mon 2026-09-21 10:30:00" );
 check( "full stamp of a bad unique", cp.unique_to_full( "not-a-number" ), "" );
 
 // --------------------------------------------------------------------
