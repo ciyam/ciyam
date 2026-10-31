@@ -112,9 +112,14 @@ ROOM_POSTS=
 ROOM_POSTS=$OUTPUT
 @endif
 ;
-@ifeq "$ROOM_POSTS" "OWN"
+IS_OWNER=
 .system_variable @irc_owner_$ROOM
-@ifneq "$OUTPUT" "$USER_NAME"
+@ifeq "$OUTPUT" "$USER_NAME"
+IS_OWNER=1
+@endif
+;
+@ifeq "$ROOM_POSTS" "OWN"
+@ifndef $IS_OWNER
 @ifndef $SPECIAL
 ERROR=Message creation for this room is owner only.
 @endif
@@ -122,6 +127,19 @@ ERROR=Message creation for this room is owner only.
 @elif "$ROOM_POSTS" = "NONE"
 @ifndef $SPECIAL
 ERROR=Message creation is not permitted for this room.
+@endif
+@elif "$ROOM_POSTS" = "REACT"
+IS_NOT_OKAY=
+@ifdef $IS_OWNER
+IS_NOT_OKAY=1
+@else
+MSG_LENGTH=@strlen:$MESSAGE
+@ifneq $MSG_LENGTH 7
+IS_NOT_OKAY=1
+@endif
+@endif
+@ifdef $IS_NOT_OKAY
+ERROR=Message reactions are only permitted for this room.
 @endif
 @endif
 @endif
@@ -245,16 +263,12 @@ SOURCE_PARTS=@repstr: /\n:$SOURCE_MESSAGE
 ;
 IS_REACTION=
 ;
+PIN_AUTHOR=$USER_NAME
+;
+PRIVATE_PIN=
+;
 ; NOTE: Only the room's owner can pin (or unpin)
 ; messages but can do so for any user's message.
-IS_OWNER=
-.system_variable @irc_owner_$ROOM
-@ifeq "$OUTPUT" "$USER_NAME"
-IS_OWNER=1
-@endif
-;
-PIN_AUTHOR=$USER_NAME
-PRIVATE_PIN=
 ;
 @ifneq "$USER_NAME" "%SOURCE_PARTS:1%"
 @ifeq "$MESSAGE" "XyAg"
