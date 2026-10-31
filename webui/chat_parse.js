@@ -1300,6 +1300,121 @@ function reaction_options( unique, code )
    return "for=" + unique + ";text= " + code;
 }
 
+// NOTE: Polls (Ian, 2026-10-31: everyone joins, the question is pinned, a close set, then reactions only - the poll itself all in
+// the client, so it can be encrypted). A poll is an ordinary message - "📊 <question>", then an option a line, each after the
+// reaction that votes for it - so it reads as it is anywhere, Ian's console included. A vote is a reaction to it, so one each.
+const c_poll_marker = "📊";
+
+// NOTE: The reactions given to the options, in turn - the plainest first.
+const c_poll_codes = [ "01", "09", "05", "03", "00", "07", "06", "02", "04", "08" ];
+const c_poll_most_question = 200;
+const c_poll_most_option = 60;
+
+// NOTE: What is wrong with a poll as written - "" if nothing. Empty options are left out.
+function poll_problem( question, options )
+{
+   var given = ( options || [ ] ).map( function( option ) { return String( option || "" ).trim( ); } ).filter( function( option ) { return option !== ""; } );
+
+   if( String( question || "" ).trim( ) === "" )
+      return "Write the question.";
+
+   if( String( question ).trim( ).length > c_poll_most_question )
+      return "The question is too long - at most " + c_poll_most_question + " characters.";
+
+   if( given.length < 2 )
+      return "Give at least two options.";
+
+   if( given.length > c_poll_codes.length )
+      return "At most " + c_poll_codes.length + " options - one for each reaction.";
+
+   if( given.some( function( option ) { return option.length > c_poll_most_option; } ) )
+      return "An option is too long - at most " + c_poll_most_option + " characters each.";
+
+   var seen = { };
+
+   if( given.some( function( option ) { var key = option.toLowerCase( ); var again = seen[ key ]; seen[ key ] = true; return again; } ) )
+      return "Two options are the same.";
+
+   return "";
+}
+
+// NOTE: The poll's message - each of its lines on one line, empty options left out.
+function poll_text( question, options )
+{
+   var one_line = function( text ) { return String( text || "" ).replace( /\s+/g, " " ).trim( ); };
+
+   var given = ( options || [ ] ).map( one_line ).filter( function( option ) { return option !== ""; } );
+
+   return c_poll_marker + " " + one_line( question ) + given.map( function( option, n )
+   {
+      return "\n" + c_reaction_emojis[ Number( c_poll_codes[ n ] ) ] + " " + option;
+   } ).join( "" );
+}
+
+// NOTE: A message read as a poll - { question, options: [ { code, emoji, label } ] } - or null for any other.
+function parse_poll( text )
+{
+   var lines = String( text || "" ).split( /\r?\n/ ).filter( function( line ) { return line.trim( ) !== ""; } );
+
+   if( ( lines.length < 3 ) || ( lines[ 0 ].indexOf( c_poll_marker + " " ) !== 0 ) )
+      return null;
+
+   var question = lines[ 0 ].substring( c_poll_marker.length + 1 ).trim( );
+   var options = [ ];
+   var codes = { };
+
+   for( var i = 1; i < lines.length; i++ )
+   {
+      var line = lines[ i ].trim( );
+      var n = c_reaction_emojis.findIndex( function( emoji ) { return line.indexOf( emoji + " " ) === 0; } );
+
+      if( n < 0 )
+         return null;
+
+      var code = ( n < 10 ? "0" : "" ) + n;
+      var label = line.substring( c_reaction_emojis[ n ].length + 1 ).trim( );
+
+      if( ( label === "" ) || codes[ code ] )
+         return null;
+
+      codes[ code ] = true;
+
+      options.push( { code: code, emoji: c_reaction_emojis[ n ], label: label } );
+   }
+
+   return ( question === "" ) ? null : { question: question, options: options };
+}
+
+// NOTE: A poll's votes from its reactions - each option's count, share and whether it is one's own or leads; reactions that are
+// none of its options left out.
+function poll_results( poll, reactions, my_short )
+{
+   var by_code = { };
+
+   ( reactions || [ ] ).forEach( function( reaction ) { by_code[ reaction.code ] = reaction.people || [ ]; } );
+
+   var total = 0;
+
+   var options = poll.options.map( function( option )
+   {
+      var people = by_code[ option.code ] || [ ];
+
+      total += people.length;
+
+      return { code: option.code, emoji: option.emoji, label: option.label, count: people.length, mine: people.indexOf( my_short ) >= 0 };
+   } );
+
+   var most = Math.max.apply( null, options.map( function( option ) { return option.count; } ) );
+
+   options.forEach( function( option )
+   {
+      option.percent = total ? Math.round( ( option.count * 100 ) / total ) : 0;
+      option.leading = ( option.count > 0 ) && ( option.count === most );
+   } );
+
+   return { options: options, total: total, votes: total + ( ( total === 1 ) ? " vote" : " votes" ) };
+}
+
 // NOTE: The node refusing a message while it handles another (Ian's "@irc_lock", "a658ef5b", 2026-10-30) - one at a time, the next
 // refused rather than kept waiting; the chat tries it once more ("watch_timeouts( )").
 // The node's own error only - a message's answer brings the room's new messages, and one may say the same words (found by review).
@@ -4240,6 +4355,11 @@ if( typeof module !== "undefined" )
       in_time_order: in_time_order,
       last_editable: last_editable,
       edit_unchanged: edit_unchanged,
+      c_poll_codes: c_poll_codes,
+      poll_problem: poll_problem,
+      poll_text: poll_text,
+      parse_poll: parse_poll,
+      poll_results: poll_results,
       later_start_point: later_start_point,
       pin_options: pin_options,
       delete_options: delete_options,

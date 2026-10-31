@@ -219,6 +219,14 @@ function chat( )
 
          event.preventDefault( );
       }
+      // NOTE: Not while its "Start the poll?" is asked over it - Escape answers that alone ("dialog.js").
+      else if( !document.getElementById( "poll_dialog" ).hidden
+       && !( document.getElementById( "dialog_scrim" ) && !document.getElementById( "dialog_scrim" ).hidden ) )
+      {
+         do_close_poll_dialog( );
+
+         event.preventDefault( );
+      }
       else if( !document.getElementById( "react_menu" ).hidden )
       {
          close_react_menu( true );
@@ -4000,8 +4008,112 @@ function reaction_short_names( )
 function draw_reactions( row, reactions, may_react )
 {
    row.dataset.reactions = JSON.stringify( reactions || [ ] );
+   row.dataset.mayReact = may_react ? "1" : "";
 
-   fill_reactions( row.querySelector( ".chat-reactions" ), reactions, may_react ? function( code ) { do_react( row.dataset.unique || "", code ); } : null );
+   var give = may_react ? function( code ) { do_react( row.dataset.unique || "", code ); } : null;
+
+   // NOTE: A poll's reactions are its votes - drawn against its options ("mark_poll( )").
+   if( row.dataset.poll )
+      fill_poll( row.querySelector( ".chat-reactions" ), JSON.parse( row.dataset.poll ), reactions, give );
+   else
+      fill_reactions( row.querySelector( ".chat-reactions" ), reactions, give );
+}
+
+// NOTE: A poll (Ian, 2026-10-31) - its question as the message, and its options beneath with the votes for each in place of the
+// reactions; an option clicked votes for it (a reaction), again takes the vote back. Only the words as text.
+function mark_poll( element, text )
+{
+   var poll = parse_poll( text );
+
+   // NOTE: Its question alone - in the pinned strip too, which has no options under it.
+   if( poll !== null )
+      draw_formatted( element, format_pieces( c_poll_marker + " " + poll.question ) );
+
+   var row = element.closest( ".chat-message" );
+
+   if( row === null )
+      return;
+
+   var was = !!row.dataset.poll;
+
+   row.classList.toggle( "is-poll", poll !== null );
+
+   if( poll === null )
+      delete row.dataset.poll;
+   else
+      row.dataset.poll = JSON.stringify( poll );
+
+   // NOTE: Opened after the row was drawn (an encrypted one) - its reactions drawn again, as the poll they are now.
+   if( ( ( poll !== null ) || was ) && ( row.dataset.reactions !== undefined ) )
+      draw_reactions( row, JSON.parse( row.dataset.reactions ), row.dataset.mayReact === "1" );
+}
+
+function fill_poll( holder, poll, reactions, give )
+{
+   holder.textContent = "";
+
+   var results = poll_results( poll, reactions, reaction_short( ciyam.username ) );
+
+   var list = document.createElement( "div" );
+
+   list.className = "chat-poll";
+   list.setAttribute( "role", "group" );
+   list.setAttribute( "aria-label", "Poll - " + results.votes );
+
+   results.options.forEach( function( option )
+   {
+      var item = document.createElement( give ? "button" : "div" );
+
+      item.className = "chat-poll-option" + ( option.mine ? " is-mine" : "" ) + ( option.leading ? " is-leading" : "" );
+
+      if( give )
+      {
+         item.type = "button";
+         item.setAttribute( "aria-pressed", option.mine ? "true" : "false" );
+         item.title = option.mine ? "Your vote - click to take it back" : "Vote for this";
+
+         item.addEventListener( "click", function( ) { give( option.code ); } );
+      }
+
+      var bar = document.createElement( "span" );
+
+      bar.className = "chat-poll-bar";
+      bar.style.width = option.percent + "%";
+      bar.setAttribute( "aria-hidden", "true" );
+
+      var emoji = document.createElement( "span" );
+
+      emoji.className = "chat-poll-emoji";
+      emoji.textContent = option.emoji;
+      emoji.setAttribute( "aria-hidden", "true" );
+
+      var label = document.createElement( "span" );
+
+      label.className = "chat-poll-label";
+      label.textContent = option.label;
+
+      var count = document.createElement( "span" );
+
+      count.className = "chat-poll-count";
+      count.textContent = option.count + " · " + option.percent + "%";
+
+      item.appendChild( bar );
+      item.appendChild( emoji );
+      item.appendChild( label );
+      item.appendChild( count );
+
+      list.appendChild( item );
+   } );
+
+   var total = document.createElement( "div" );
+
+   total.className = "chat-poll-total";
+   total.textContent = results.votes + ( room_has_closed( ) ? " · voting has closed" : "" );
+
+   list.appendChild( total );
+
+   holder.appendChild( list );
+   holder.hidden = false;
 }
 
 // NOTE: The chips themselves - "give", what one does when clicked, or null for chips that only say who (one's own message, and the
@@ -4845,6 +4957,9 @@ function update_thread_meta( )
    if( closable )
       prepare_close_input( entry );
 
+   // NOTE: A poll (Ian, 2026-10-31) - from a room that can close, has no close time yet, and still takes posts.
+   document.getElementById( "owner_poll" ).hidden = !closable || ( typeof entry.closes === "number" ) || ( entry.posts === "react" );
+
    document.getElementById( "room_fact_inviter_row" ).hidden = !invite;
 
    var is_owner = !invite && !is_dm && ( ( g_room_owner === ciyam.username ) || ciyam.is_admin );
@@ -5165,6 +5280,203 @@ async function do_set_room_close( )
    load_rooms( );
 }
 
+// NOTE: The poll dialog's day and time picker for when voting closes ("when_picker.js") - made the first time it is wanted.
+var g_poll_when = null;
+
+// NOTE: Starting a poll (Ian, 2026-10-31) - from Room Details, in a room that can close, has no close time yet and still takes
+// posts. Two options to start with, up to one for each reaction.
+function do_open_poll_dialog( )
+{
+   if( g_poll_when === null )
+   {
+      g_poll_when = when_picker( document.getElementById( "poll_close_input" ), {
+         field_id: "poll_close_field", placeholder: "Day and time", label: "When voting closes",
+         before_text: "That time has passed - choose a later one." } );
+   }
+
+   document.getElementById( "poll_question" ).value = "";
+   document.getElementById( "poll_options" ).replaceChildren( );
+   document.getElementById( "poll_close_input" ).value = "";
+   document.getElementById( "poll_dialog_error" ).textContent = "";
+   document.getElementById( "poll_dialog_submit" ).disabled = false;
+
+   g_poll_when.set_range( local_input_time( new Date( ) ), "" );
+   g_poll_when.close( );
+
+   do_add_poll_option( );
+   do_add_poll_option( );
+
+   document.getElementById( "poll_dialog" ).hidden = false;
+   document.getElementById( "poll_question" ).focus( );
+}
+
+// NOTE: An option's row - the reaction that votes for it, and its words.
+function do_add_poll_option( )
+{
+   var holder = document.getElementById( "poll_options" );
+   var n = holder.children.length;
+
+   if( n >= c_poll_codes.length )
+      return;
+
+   var row = document.createElement( "div" );
+   var emoji = document.createElement( "span" );
+   var input = document.createElement( "input" );
+
+   row.className = "chat-poll-option-row";
+
+   emoji.className = "chat-poll-emoji";
+   emoji.textContent = c_reaction_emojis[ Number( c_poll_codes[ n ] ) ];
+   emoji.setAttribute( "aria-hidden", "true" );
+
+   input.type = "text";
+   input.className = "chat-field chat-poll-option-input";
+   input.maxLength = 60;
+   input.autocomplete = "off";
+   input.setAttribute( "aria-label", "Option " + ( n + 1 ) + " - voted for with " + c_reaction_names[ Number( c_poll_codes[ n ] ) ] );
+
+   row.appendChild( emoji );
+   row.appendChild( input );
+
+   holder.appendChild( row );
+
+   document.getElementById( "poll_add_option" ).hidden = ( holder.children.length >= c_poll_codes.length );
+
+   if( n >= 2 )
+      input.focus( );
+}
+
+function do_close_poll_dialog( )
+{
+   if( g_poll_when !== null )
+      g_poll_when.close( );
+
+   document.getElementById( "poll_dialog" ).hidden = true;
+}
+
+// NOTE: One step of starting a poll, through the queue - its answer, or the error the CIYAM class was left with.
+function poll_step( request )
+{
+   ciyam.error = "";
+
+   return serialised( function( )
+   {
+      return new Promise( function( resolve ) { request( resolve ); } );
+   } ).then( function( answer )
+   {
+      var text = String( answer || "" );
+
+      return ( ciyam.error !== "" ) && !is_error_response( text ) ? ( "Error: " + ciyam.error ) : text;
+   } );
+}
+
+// NOTE: In Ian's order (2026-10-31): the poll posted - sealed in a room with a key - and pinned, the close set, then reactions
+// only. The owner can post nothing once it is reactions only, so the pin goes first. A step that fails stops it, and says which.
+async function do_start_poll( )
+{
+   var room = g_room;
+   var entry = find_room( room );
+   var error = document.getElementById( "poll_dialog_error" );
+
+   var question = document.getElementById( "poll_question" ).value;
+   var options = Array.from( document.querySelectorAll( "#poll_options .chat-poll-option-input" ) ).map( function( input ) { return input.value; } );
+   var closes = close_time_from_input( document.getElementById( "poll_close_input" ).value );
+
+   var problem = poll_problem( question, options );
+
+   if( ( problem === "" ) && ( closes === null ) )
+      problem = "Choose when voting closes.";
+
+   if( ( problem === "" ) && ( closes <= Math.floor( Date.now( ) / 1000 ) ) )
+      problem = "Voting has to close in the future.";
+
+   error.textContent = problem;
+
+   if( ( problem !== "" ) || !entry )
+      return;
+
+   var when = room_close_label( closes ).replace( /^Closes /, "" );
+
+   if( !await ask_dialog( { title: "Start the poll?", text: "It's posted and pinned, and the room takes reactions only until voting"
+    + " closes " + when + " (" + unix_label( closes ) + ") - then it closes. You can't post here again or vote yourself, and this"
+    + " can't be undone.", yes: "Start the poll", no: "Not yet", danger: true } ) || ( g_room !== room ) )
+      return;
+
+   document.getElementById( "poll_dialog_submit" ).disabled = true;
+
+   var text = poll_text( question, options );
+   var sealing = await chat_seal_here( text );
+
+   if( sealing.sealed && ( sealing.text === "" ) )
+   {
+      document.getElementById( "poll_dialog_submit" ).disabled = false;
+      error.textContent = "The poll is too long to encrypt - shorten the question or the options.";
+
+      return;
+   }
+
+   var sent = sealing.sealed ? sealing.text : escape_message_text( text );
+
+   var posted = await poll_step( function( done ) { ciyam.create_message( room, "text=" + sent, done ); } );
+
+   var mine = is_error_response( posted ) ? [ ] : parse_fetch_response( posted ).messages.filter( function( message )
+   {
+      return ( message.sender === ciyam.username ) && ( message.kind === c_kind_chat ) && !message.private;
+   } );
+
+   if( mine.length === 0 )
+   {
+      document.getElementById( "poll_dialog_submit" ).disabled = false;
+      error.textContent = "The poll could not be posted: " + ( is_error_response( posted ) ? error_text( posted ) : "it was not found after." );
+
+      return;
+   }
+
+   do_close_poll_dialog( );
+
+   if( room === g_room )
+      on_messages_response( posted, room, false );
+
+   var unique = mine[ mine.length - 1 ].unique;
+
+   var steps = [
+      { what: "pinned", request: function( done ) { ciyam.create_message( room, pin_options( unique ), done ); } },
+      { what: "given its close time", request: function( done ) { ciyam.update_message_room( room, "closes=" + closes, done ); } },
+      { what: "set to take reactions only", request: function( done ) { ciyam.update_message_room( room, "posts=REACT", done ); } } ];
+
+   for( var i = 0; i < steps.length; i++ )
+   {
+      var answer = await poll_step( steps[ i ].request );
+
+      if( is_error_response( answer ) )
+      {
+         show_alert( "The poll was posted but the room could not be " + steps[ i ].what + ": " + error_text( answer ), "is-error" );
+
+         load_rooms( );
+
+         return;
+      }
+
+      if( ( i === 0 ) && ( room === g_room ) )
+         on_messages_response( answer, room, false );
+   }
+
+   // NOTE: Straight away rather than on the next listing, as for a close and who may post.
+   entry.closes = closes;
+   entry.posts = "react";
+
+   if( room === g_room )
+   {
+      show_alert( "The poll is started - voting closes " + when + ".", "is-info" );
+
+      show_thread_title( );
+      update_thread_meta( );
+      apply_posting_rules( );
+   }
+
+   load_rooms( );
+}
+
 // NOTE: An upward arrow, for Send on a phone.
 function send_arrow( )
 {
@@ -5414,6 +5726,8 @@ function draw_message_text( element, text, room )
       element.textContent = unreadable;
    else
       draw_formatted( element, format_pieces( room_key_masked( text ) ) );
+
+   mark_poll( element, ( unreadable === "" ) ? text : "" );
 }
 
 // NOTE: A message's words with their colour and style - a span each run ("format_pieces( )"), the words always as text and

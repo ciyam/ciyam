@@ -222,6 +222,9 @@ function chat_draw_opened( element, opened )
 
    chat_offer_sealed_actions( element, opened.ok );
 
+   // NOTE: A poll in a room with a key is sealed like any message, and drawn as one once opened (Ian, 2026-10-31).
+   mark_poll( element, opened.ok ? opened.text : "" );
+
    // NOTE: A room key is shared in an encrypted direct message, as the console's owner sends it.
    if( opened.ok && ( chat_dm_other( ) !== "" ) )
       chat_offer_room_key( element, opened.text );

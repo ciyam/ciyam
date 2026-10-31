@@ -1975,6 +1975,7 @@ button.chat-avatar:hover
 
 .chat-room-panel .chat-owner-actions
 {
+   flex-wrap: wrap;
    margin: 12px 16px 0;
 }
 
@@ -2203,6 +2204,136 @@ button.chat-avatar:hover
 .chat-reactions[hidden]
 {
    display: none;
+}
+
+/* NOTE: A poll (Ian, 2026-10-31) - its options with the votes for each, a bar behind each as its share; voted for by clicking one,
+   not from the React button. */
+.chat-message.is-poll .chat-message-react
+{
+   display: none;
+}
+
+.chat-poll
+{
+   display: flex;
+   flex-direction: column;
+   gap: 4px;
+   width: 100%;
+   max-width: 420px;
+}
+
+.chat-poll-option
+{
+   position: relative;
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   min-height: 32px;
+   padding: 4px 10px;
+   overflow: hidden;
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-bg);
+   color: var(--color-chat-text);
+   font-family: var(--font-family-chat);
+   font-size: var(--font-size-chat-body);
+   text-align: left;
+}
+
+button.chat-poll-option
+{
+   cursor: pointer;
+}
+
+button.chat-poll-option:hover
+{
+   border-color: var(--color-chat-border-strong);
+}
+
+.chat-poll-option.is-mine
+{
+   border-color: var(--color-chat-accent);
+}
+
+.chat-poll-bar
+{
+   position: absolute;
+   top: 0;
+   bottom: 0;
+   left: 0;
+   background: var(--color-chat-bg-raised);
+   pointer-events: none;
+}
+
+.chat-poll-option.is-leading .chat-poll-bar
+{
+   background: var(--color-chat-bg-selected);
+}
+
+.chat-poll-emoji,
+.chat-poll-label,
+.chat-poll-count
+{
+   position: relative;
+}
+
+.chat-poll-label
+{
+   flex: 1 1 auto;
+   min-width: 0;
+   overflow-wrap: anywhere;
+}
+
+.chat-poll-option.is-mine .chat-poll-label
+{
+   font-weight: 600;
+}
+
+.chat-poll-count
+{
+   flex: none;
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-tiny);
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-poll-total
+{
+   font-size: var(--font-size-chat-tiny);
+   color: var(--color-chat-text-secondary);
+}
+
+/* NOTE: Closed, or one's own (the owner may not vote) - the options only say how it stands. */
+.chat-messages.is-closed button.chat-poll-option,
+.chat-message.is-unopened button.chat-poll-option
+{
+   pointer-events: none;
+   cursor: default;
+}
+
+.chat-poll-options
+{
+   display: flex;
+   flex-direction: column;
+   gap: 6px;
+}
+
+.chat-poll-option-row
+{
+   display: flex;
+   align-items: center;
+   gap: 8px;
+}
+
+.chat-poll-option-row .chat-poll-option-input
+{
+   flex: 1 1 auto;
+   min-width: 0;
+}
+
+.chat-poll-add
+{
+   align-self: flex-start;
 }
 
 /* NOTE: In the pinned strip, under the message's words - the strip is not the row's grid. */

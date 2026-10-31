@@ -359,6 +359,7 @@ http://www.opensource.org/licenses/mit-license.php.
             <div class="chat-owner-actions" id="owner_actions" hidden>
                <button type="button" class="chat-btn chat-btn--small" onclick="do_open_rename_room( )">Rename</button>
                <button type="button" class="chat-btn chat-btn--small chat-btn--accent" id="owner_invite" onclick="do_open_invite( )">Invite</button>
+               <button type="button" class="chat-btn chat-btn--small" id="owner_poll" onclick="do_open_poll_dialog( )" hidden>Start a poll</button>
             </div>
             <!-- NOTE: The owner, or admin, sets the close time or brings it forward - the server refuses putting it back. -->
             <div class="chat-room-close" id="room_close_part" hidden>
@@ -442,6 +443,28 @@ http://www.opensource.org/licenses/mit-license.php.
       <div class="chat-dialog-actions">
          <button type="button" class="chat-btn" onclick="do_close_room_dialog( )">Cancel</button>
          <button type="submit" class="chat-btn chat-btn--accent" id="room_dialog_submit">Create</button>
+      </div>
+   </form>
+</div>
+
+<!-- NOTE: Starting a poll (Ian, 2026-10-31: the question pinned, a close set, then reactions only) - the question, an option for
+     each reaction drawn beside it, and when voting closes ("when_picker.js"). Its rows are made by "chat.js". -->
+<div id="poll_dialog" class="chat-scrim" hidden>
+   <form class="chat-dialog chat-poll-dialog" role="dialog" aria-modal="true" aria-labelledby="poll_dialog_title"
+    onsubmit="do_start_poll( ); return false;">
+      <h2 id="poll_dialog_title">Start a poll</h2>
+      <p class="chat-dialog-note">Everyone who is in the room now can vote, one vote each, by reacting. Invite anyone else first.</p>
+      <label class="chat-label" for="poll_question">Question</label>
+      <input type="text" id="poll_question" class="chat-field" maxlength="200" autocomplete="off">
+      <div class="chat-label" id="poll_options_label">Options</div>
+      <div class="chat-poll-options" id="poll_options" role="group" aria-labelledby="poll_options_label"></div>
+      <button type="button" class="chat-btn chat-btn--small chat-poll-add" id="poll_add_option" onclick="do_add_poll_option( )">Add an option</button>
+      <label class="chat-label" for="poll_close_field">Voting closes</label>
+      <input type="hidden" id="poll_close_input">
+      <div class="chat-error-text" id="poll_dialog_error" role="alert"></div>
+      <div class="chat-dialog-actions">
+         <button type="button" class="chat-btn" onclick="do_close_poll_dialog( )">Cancel</button>
+         <button type="submit" class="chat-btn chat-btn--accent" id="poll_dialog_submit">Start the poll</button>
       </div>
    </form>
 </div>

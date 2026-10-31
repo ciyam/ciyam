@@ -1795,6 +1795,36 @@ check( "reacting - given, the same again taken off, another replacing it", [
  [ { code: "01", people: [ "159e43" ] }, { code: "09", people: [ "4b573f" ] } ],
  [ { code: "01", people: [ "4b573f" ] }, { code: "05", people: [ "159e43" ] } ] ] );
 check( "- sent as an edit to a space and its digits", cp.reaction_options( "1793192805000", "07" ), "for=1793192805000;text= 07" );
+
+// NOTE: Polls (Ian, 2026-10-31) - an ordinary message, a vote a reaction to it.
+heading( "polls" );
+
+var poll_written = cp.poll_text( "  Lunch on\nFriday? ", [ "Pizza", "", "  Sushi  rolls ", "Salad" ] );
+
+check( "a poll's message - the question, then each option after its reaction, one line each, empty ones left out", poll_written,
+ "📊 Lunch on Friday?\n👍 Pizza\n❤️ Sushi rolls\n😀 Salad" );
+check( "- read back as a poll", cp.parse_poll( poll_written ), { question: "Lunch on Friday?", options: [ { code: "01", emoji: "👍", label: "Pizza" },
+ { code: "09", emoji: "❤️", label: "Sushi rolls" }, { code: "05", emoji: "😀", label: "Salad" } ] } );
+check( "- all ten reactions, in turn - the facepalm's joined emoji too", cp.parse_poll( cp.poll_text( "Which?", [ "a", "b", "c", "d", "e", "f", "g", "h",
+ "i", "j" ] ) ).options.map( function( o ) { return o.code; } ), cp.c_poll_codes );
+check( "not a poll - plain words, one option, a line not after a reaction, the same reaction twice, no question", [ cp.parse_poll( "Lunch?" ),
+ cp.parse_poll( "📊 Lunch?\n👍 Pizza" ), cp.parse_poll( "📊 Lunch?\n👍 Pizza\nSushi" ), cp.parse_poll( "📊 Lunch?\n👍 Pizza\n👍 Sushi" ),
+ cp.parse_poll( "📊 \n👍 Pizza\n❤️ Sushi" ) ], [ null, null, null, null, null ] );
+
+check( "what is wrong with one - none, no question, too few, too many, the same twice", [ cp.poll_problem( "Lunch?", [ "Pizza", "Sushi" ] ),
+ cp.poll_problem( " ", [ "Pizza", "Sushi" ] ), cp.poll_problem( "Lunch?", [ "Pizza", " " ] ), cp.poll_problem( "Lunch?", "abcdefghijk".split( "" ) ),
+ cp.poll_problem( "Lunch?", [ "Pizza", "pizza" ] ) ], [ "", "Write the question.", "Give at least two options.",
+ "At most 10 options - one for each reaction.", "Two options are the same." ] );
+
+var poll_read = cp.parse_poll( poll_written );
+var poll_votes = cp.poll_results( poll_read, [ { code: "01", people: [ "aaaaaa", "bbbbbb" ] }, { code: "05", people: [ "cccccc" ] },
+ { code: "07", people: [ "dddddd" ] } ], "cccccc" );
+
+check( "the votes - counts and shares, one's own, the leader; a reaction that is no option left out", [ poll_votes.total, poll_votes.votes,
+ poll_votes.options.map( function( o ) { return o.count + ":" + o.percent + ( o.mine ? ":mine" : "" ) + ( o.leading ? ":leads" : "" ); } ) ],
+ [ 3, "3 votes", [ "2:67:leads", "0:0", "1:33:mine" ] ] );
+check( "- none yet", [ cp.poll_results( poll_read, [ ], "x" ).votes, cp.poll_results( poll_read, [ ], "x" ).options.some( function( o ) { return o.leading; } ) ],
+ [ "0 votes", false ] );
 check( "the node busy with another message - tried once more", [ cp.is_irc_lock_refusal( "Error: Unable to obtain the system IRC lock (try again later)." ),
  cp.is_irc_lock_refusal( "Error: Maximum message size was exceeded." ), cp.is_irc_lock_refusal( "" ) ], [ true, false, false ] );
 check( "- not a room's messages that only say the same words", cp.is_irc_lock_refusal( "admin+1\n1793192805000 admin  Unable to obtain the system"

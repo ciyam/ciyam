@@ -880,6 +880,15 @@ ok   - none, none shown
 ok   reactions as shown - who, how many, one's own
 ok   reacting - given, the same again taken off, another replacing it
 ok   - sent as an edit to a space and its digits
+
+== polls =======================================================
+ok   a poll's message - the question, then each option after its reaction, one line each, empty ones left out
+ok   - read back as a poll
+ok   - all ten reactions, in turn - the facepalm's joined emoji too
+ok   not a poll - plain words, one option, a line not after a reaction, the same reaction twice, no question
+ok   what is wrong with one - none, no question, too few, too many, the same twice
+ok   the votes - counts and shares, one's own, the leader; a reaction that is no option left out
+ok   - none yet
 ok   the node busy with another message - tried once more
 ok   - not a room's messages that only say the same words
 ok   a message as drawn, but for its reactions - changed when edited, deleted or pinned since
