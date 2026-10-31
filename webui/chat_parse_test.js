@@ -289,6 +289,18 @@ check( "locked is flagged as locked",
 check( "a reason is always given when refused",
  cp.posting_status( "0000002", shut_entry, "alice", false ).reason.length > 0, true );
 
+// NOTE: Reactions only (Ian, 2026-10-31: "REACT", "?" after the total) - nothing posted, and no reacting by the owner.
+var react_entry = cp.parse_message_line( "1761800000000 alice #0000005 2/9?@1793341887 Lunch vote" );
+
+check( "reactions only read from the listing - with a close after it", [ react_entry.posts, react_entry.total, react_entry.closes, react_entry.name ],
+ [ "react", 9, 1793341887, "Lunch vote" ] );
+check( "- a member: no posting, reacting allowed", cp.posting_status( "0000005", { owner: "alice", posts: "react" }, "bob", false ),
+ { can_post: false, locked: true, react_only: true, reason: "This room takes reactions only." } );
+check( "- the owner: no reacting either", cp.posting_status( "0000005", { owner: "alice", posts: "react" }, "alice", false ),
+ { can_post: false, locked: true, react_only: true, no_react: true, reason: "This room takes reactions only - and not from its owner." } );
+check( "- admin, not the owner, as a member", cp.posting_status( "0000005", { owner: "alice", posts: "react" }, "admin", true ).no_react, undefined );
+check( "- set, said", cp.describe_event( cp.parse_system_event( ":allows set to REACT" ) ), "set who may post to reactions only" );
+
 check( "reserved room recognised", cp.is_reserved_room( "0000001" ), true );
 check( "other room is not the reserved room", cp.is_reserved_room( "0000002" ), false );
 
@@ -666,7 +678,8 @@ check( "a join - read it whole", cp.needs_full_read( fresh_lines( [ "17905200000
 heading( "changing who may post" );
 
 // NOTE: Verified 2026-09-28 - "posts=own" is refused, "posts=OWN" is "[okay]".
-check( "the server's value is in capitals", [ cp.posts_request_value( "any" ), cp.posts_request_value( "own" ), cp.posts_request_value( "none" ) ], [ "ANY", "OWN", "NONE" ] );
+check( "the server's value is in capitals", [ cp.posts_request_value( "any" ), cp.posts_request_value( "own" ), cp.posts_request_value( "none" ),
+ cp.posts_request_value( "react" ) ], [ "ANY", "OWN", "NONE", "REACT" ] );
 check( "anything else is nothing", [ cp.posts_request_value( "all" ), cp.posts_request_value( "" ), cp.posts_request_value( null ) ], [ "", "", "" ] );
 
 var owned = { room: "0000004", owner: "verify-a", posts: "any" };

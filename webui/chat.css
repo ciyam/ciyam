@@ -506,7 +506,11 @@ button.chat-avatar:hover
 .chat-messages.is-closed .chat-message-pin,
 .chat-messages.is-closed .chat-message-delete,
 .chat-messages.is-closed .chat-message-react,
-.chat-pinned-strip.is-closed .chat-pinned-unpin
+.chat-pinned-strip.is-closed .chat-pinned-unpin,
+.chat-messages.is-react-only .chat-message-edit,
+.chat-messages.is-react-only .chat-message-pin,
+.chat-messages.is-react-only .chat-message-delete,
+.chat-pinned-strip.is-react-only .chat-pinned-unpin
 {
    display: none;
 }

@@ -33,8 +33,13 @@ const c_posts_any = "any";
 const c_posts_own = "own";
 const c_posts_none = "none";
 
+// NOTE: Reactions only (Ian, 2026-10-31: "REACT" - how a poll would be opened): nothing posted but reactions, and those not by
+// the owner - "?" after the total.
+const c_posts_react = "react";
+
 const c_posts_own_marker = "!";
 const c_posts_none_marker = "~";
+const c_posts_react_marker = "?";
 const c_room_closes_marker = "@";
 
 const c_room_open = "open";
@@ -363,6 +368,8 @@ function parse_room_entry( unique, owner, remainder )
          entry.posts = c_posts_own;
       else if( suffix === c_posts_none_marker )
          entry.posts = c_posts_none;
+      else if( suffix === c_posts_react_marker )
+         entry.posts = c_posts_react;
 
       entry.total = parseInt( total, 10 ) || 0;
    }
@@ -1103,6 +1110,16 @@ function posting_status( room, entry, username, is_admin, p_now )
    if( posts === c_posts_none )
       return { can_post: false, locked: true, reason: "This room is locked - nobody can post." };
 
+   // NOTE: Nothing posted, edited or pinned - only reactions, and none by the owner, whose script refuses them (Ian, 2026-10-31).
+   if( posts === c_posts_react )
+   {
+      if( ( ( entry && entry.owner ) ? entry.owner : "" ) === username )
+         return { can_post: false, locked: true, react_only: true, no_react: true,
+          reason: "This room takes reactions only - and not from its owner." };
+
+      return { can_post: false, locked: true, react_only: true, reason: "This room takes reactions only." };
+   }
+
    if( posts === c_posts_own )
    {
       var owner = ( entry && entry.owner ) ? entry.owner : "";
@@ -1331,13 +1348,13 @@ function needs_full_read( fresh )
 }
 
 // NOTE: The "posts" option for a room's messages PUT - who may post. The server takes only
-// "ANY", "OWN" or "NONE", in capitals ("Unknown room posts value 'own'" otherwise), from
+// "ANY", "OWN", "NONE" or "REACT", in capitals ("Unknown room posts value 'own'" otherwise), from
 // the owner or admin, and never for the Admin room. "" for anything else.
 function posts_request_value( posts )
 {
    var value = String( posts || "" ).toLowerCase( );
 
-   if( [ c_posts_any, c_posts_own, c_posts_none ].indexOf( value ) < 0 )
+   if( [ c_posts_any, c_posts_own, c_posts_none, c_posts_react ].indexOf( value ) < 0 )
       return "";
 
    return value.toUpperCase( );
@@ -1490,7 +1507,7 @@ function describe_event( event, label )
 {
    var name_of = label || function( room ) { return "#" + room; };
 
-   var posting = { any: "anyone", own: "the owner only", none: "nobody - locked" };
+   var posting = { any: "anyone", own: "the owner only", none: "nobody - locked", react: "reactions only" };
 
    switch( event.verb )
    {

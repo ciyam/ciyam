@@ -347,6 +347,8 @@ http://www.opensource.org/licenses/mit-license.php.
                      <option value="any">Anyone</option>
                      <option value="own">Owner only</option>
                      <option value="none">Locked</option>
+                     <!-- NOTE: Reactions only (Ian, 2026-10-31: "REACT") - for a poll; its owner can no longer post or react. -->
+                     <option value="react">Reactions only</option>
                   </select>
                </dd></div>
                <!-- NOTE: A room's close time (Ian, 2026-10-30) - once set, for everyone to see. -->

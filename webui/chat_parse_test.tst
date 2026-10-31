@@ -136,6 +136,11 @@ ok   owner-only allows admin
 ok   locked refuses the owner too
 ok   locked is flagged as locked
 ok   a reason is always given when refused
+ok   reactions only read from the listing - with a close after it
+ok   - a member: no posting, reacting allowed
+ok   - the owner: no reacting either
+ok   - admin, not the owner, as a member
+ok   - set, said
 ok   reserved room recognised
 ok   other room is not the reserved room
 

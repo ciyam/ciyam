@@ -4159,6 +4159,10 @@ function do_react( unique, code )
    if( ( room === "" ) || ( row === null ) || g_react_in_flight || room_has_closed( ) || row.classList.contains( "is-unopened" ) )
       return;
 
+   // NOTE: A reactions only room's owner may not react (Ian, 2026-10-31).
+   if( posting_status( room, find_room( room ), ciyam.username, ciyam.is_admin ).no_react )
+      return;
+
    var before = JSON.parse( row.dataset.reactions || "[]" );
 
    g_react_in_flight = true;
@@ -4664,7 +4668,7 @@ var g_posting_applied = "";
 
 function posting_key( status )
 {
-   return g_room + " " + status.can_post + " " + status.reason;
+   return g_room + " " + status.can_post + " " + status.reason + " " + !!status.react_only;
 }
 
 // NOTE: The open room's close label as last shown - it moves on by itself ("today" to "Closed"), so each listing checks it.
@@ -4719,10 +4723,15 @@ function apply_posting_rules( )
    scope.disabled = !status.can_post;
 
    // NOTE: Closed - the messages stay to read, without edit, pin, delete or react, and the pinned without Unpin ("chat.css").
-   document.getElementById( "message_list" ).classList.toggle( "is-closed", !!status.closed );
-   document.getElementById( "pinned" ).classList.toggle( "is-closed", !!status.closed );
+   // Reactions only (Ian, 2026-10-31) - the same but for reacting, which its owner may not either.
+   var no_change = !!status.closed || !!status.no_react;
 
-   if( status.closed )
+   document.getElementById( "message_list" ).classList.toggle( "is-closed", no_change );
+   document.getElementById( "pinned" ).classList.toggle( "is-closed", no_change );
+   document.getElementById( "message_list" ).classList.toggle( "is-react-only", !!status.react_only );
+   document.getElementById( "pinned" ).classList.toggle( "is-react-only", !!status.react_only );
+
+   if( no_change )
       close_react_menu( );
 
    document.getElementById( "emoji_toggle" ).disabled = !status.can_post;
@@ -4786,7 +4795,7 @@ function update_thread_meta( )
       }
    }
 
-   var posting = { any: "Anyone", own: "Owner only", none: "Locked" };
+   var posting = { any: "Anyone", own: "Owner only", none: "Locked", react: "Reactions only" };
 
    // NOTE: A direct message has no owner's controls - adding someone is a new conversation.
    var is_dm = invite ? dm_trusted( invite.name, invite.inviter ) : room_is_dm( );
