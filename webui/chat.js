@@ -5408,9 +5408,9 @@ async function do_start_poll( )
 
    var when = room_close_label( closes ).replace( /^Closes /, "" );
 
-   if( !await ask_dialog( { title: "Start the poll?", text: "It's posted and pinned, and the room takes reactions only until voting"
-    + " closes " + when + " (" + unix_label( closes ) + ") - then it closes. You can't post here again or vote yourself, and this"
-    + " can't be undone.", yes: "Start the poll", no: "Not yet", danger: true } ) || ( g_room !== room ) )
+   if( !await ask_dialog( { title: "Start the poll?", text: "It's posted and pinned, and from then this room takes only votes. When"
+    + " voting closes " + when + " (" + unix_label( closes ) + ") the room closes for good. You can't post here again or vote"
+    + " yourself, and this can't be undone.", yes: "Start the poll", no: "Not yet", danger: true } ) || ( g_room !== room ) )
       return;
 
    document.getElementById( "poll_dialog_submit" ).disabled = true;

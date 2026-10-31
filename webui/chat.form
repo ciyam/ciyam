@@ -453,13 +453,16 @@ http://www.opensource.org/licenses/mit-license.php.
    <form class="chat-dialog chat-poll-dialog" role="dialog" aria-modal="true" aria-labelledby="poll_dialog_title"
     onsubmit="do_start_poll( ); return false;">
       <h2 id="poll_dialog_title">Start a poll</h2>
-      <p class="chat-dialog-note">Everyone who is in the room now can vote, one vote each, by reacting. Invite anyone else first.</p>
+      <!-- NOTE: Said first, as the close is the room's (Damon, 2026-10-31: the wording suggested it was the poll's) - until Ian's
+           node can close a poll on its own, a poll ends the room. -->
+      <p class="chat-dialog-note">A poll takes over this room: until voting closes it takes only votes, and then the room closes for
+       good. Best in a room made for it. Everyone in the room now can vote, one vote each - invite anyone else first.</p>
       <label class="chat-label" for="poll_question">Question</label>
       <input type="text" id="poll_question" class="chat-field" maxlength="200" autocomplete="off">
       <div class="chat-label" id="poll_options_label">Options</div>
       <div class="chat-poll-options" id="poll_options" role="group" aria-labelledby="poll_options_label"></div>
       <button type="button" class="chat-btn chat-btn--small chat-poll-add" id="poll_add_option" onclick="do_add_poll_option( )">Add an option</button>
-      <label class="chat-label" for="poll_close_field">Voting closes</label>
+      <label class="chat-label" for="poll_close_field">Voting - and the room - close</label>
       <input type="hidden" id="poll_close_input">
       <div class="chat-error-text" id="poll_dialog_error" role="alert"></div>
       <div class="chat-dialog-actions">
