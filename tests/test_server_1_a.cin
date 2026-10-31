@@ -512,6 +512,47 @@ TEST=abcdefghijkl
 TEST=@reverse:$TEST
 #TEST is '$TEST'
 ;
+TEST=@duration:0
+#TEST is '$TEST'
+TEST=@duration:1
+#TEST is '$TEST'
+TEST=@duration:10
+#TEST is '$TEST'
+TEST=@duration:100
+#TEST is '$TEST'
+TEST=@duration:1000
+#TEST is '$TEST'
+TEST=@duration:10000
+#TEST is '$TEST'
+TEST=@duration:100000
+#TEST is '$TEST'
+TEST=@duration:1000000
+#TEST is '$TEST'
+TEST=@duration:10000000
+#TEST is '$TEST'
+TEST=@duration:100000000
+#TEST is '$TEST'
+TEST=@duration:mins:0
+#TEST is '$TEST'
+TEST=@duration:mins:1
+#TEST is '$TEST'
+TEST=@duration:mins:10
+#TEST is '$TEST'
+TEST=@duration:mins:100
+#TEST is '$TEST'
+TEST=@duration:mins:1000
+#TEST is '$TEST'
+TEST=@duration:mins:10000
+#TEST is '$TEST'
+TEST=@duration:mins:100000
+#TEST is '$TEST'
+TEST=@duration:mins:1000000
+#TEST is '$TEST'
+TEST=@duration:mins:10000000
+#TEST is '$TEST'
+TEST=@duration:mins:100000000
+#TEST is '$TEST'
+;
 encode -text a
 decode -text $OUTPUT
 encode -text ab
