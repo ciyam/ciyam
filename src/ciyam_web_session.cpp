@@ -1582,9 +1582,11 @@ bool get_keys_guard( const string& keys_data, size_t& rounds, string& check )
    return retval;
 }
 
-// NOTE: Once keys are guarded they can only be replaced or erased with the same guard, or one with
-// fewer rounds whose check (when hashed on to the old rounds) matches (Ian's suggestion, 2026-10-27).
-bool is_permitted_by_keys_guard( const string& file_name, const string& new_data )
+// NOTE: Once keys are guarded they can only be replaced with the same guard, or one with fewer rounds
+// whose check (when hashed on to the old rounds) matches (Ian's suggestion, 2026-10-27). They can only
+// be erased with the latter, as the guard itself can be read by anyone holding the access key (so then
+// a new guard could otherwise be created after erasing).
+bool is_permitted_by_keys_guard( const string& file_name, const string& new_data, bool is_erase = false )
 {
    bool retval = true;
 
@@ -1604,7 +1606,8 @@ bool is_permitted_by_keys_guard( const string& file_name, const string& new_data
 
          retval = false;
 
-         if( get_keys_guard( new_data, new_rounds, new_check ) && ( new_rounds <= old_rounds ) )
+         if( get_keys_guard( new_data, new_rounds, new_check )
+          && ( ( new_rounds < old_rounds ) || ( !is_erase && ( new_rounds == old_rounds ) ) ) )
          {
             for( size_t i = new_rounds; i < old_rounds; i++ )
             {
@@ -3048,7 +3051,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      // FUTURE: This message should be handled as a server string message.
                      error = "User keys data cannot be erased whilst the system is locked.";
                   else if( !is_permitted_by_keys_guard(
-                   g_cws_artifacts_dir + '/' + c_ciyam_prefix + access + c_keys_suffix, payload ) )
+                   g_cws_artifacts_dir + '/' + c_ciyam_prefix + access + c_keys_suffix, payload, true ) )
                      // FUTURE: This message should be handled as a server string message.
                      error = "User keys can only be erased using the words they were set up with.";
                   else
