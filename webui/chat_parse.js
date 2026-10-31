@@ -1223,10 +1223,12 @@ function seen_chips( names, most )
 const c_reaction_emojis = [ "👌", "👍", "👎", "🙂", "🙁", "😀", "😲", "🤓", "🤦‍♂️", "❤️" ];
 const c_reaction_names = [ "OK", "Thumbs up", "Thumbs down", "Smile", "Frown", "Grin", "Surprised", "Nerd", "Facepalm", "Heart" ];
 
-const c_reactions_pattern = /^0\d(?:[0-9a-f]{6}x)+(?:o0\d(?:[0-9a-f]{6}x)+)*$/;
+// NOTE: A reaction with nobody left in it can stay - "05aaaaaaxo09" when someone moves from 09 to 05 (the node only drops an emptied
+// first one, 2026-10-31) - so one is allowed, and left out.
+const c_reactions_pattern = /^0\d(?:[0-9a-f]{6}x)*(?:o0\d(?:[0-9a-f]{6}x)*)*$/;
 
-// NOTE: A message's reactions - [ { code: "01", people: [ "4b573f", ... ] } ], in the node's order - or null if "text" is not
-// exactly their form.
+// NOTE: A message's reactions - [ { code: "01", people: [ "4b573f", ... ] } ], in the node's order, those with nobody left out - or
+// null if "text" is not exactly their form, or nobody has reacted.
 function parse_reactions( text )
 {
    var value = String( text || "" );
@@ -1234,10 +1236,12 @@ function parse_reactions( text )
    if( !c_reactions_pattern.test( value ) )
       return null;
 
-   return value.split( "o" ).map( function( part )
+   var reactions = value.split( "o" ).map( function( part )
    {
       return { code: part.substring( 0, 2 ), people: part.substring( 2 ).split( "x" ).filter( function( s ) { return s !== ""; } ) };
-   } );
+   } ).filter( function( reaction ) { return reaction.people.length > 0; } );
+
+   return ( reactions.length > 0 ) ? reactions : null;
 }
 
 // NOTE: Reactions as shown - each one's emoji, how many gave it, whether one was "mine", and who: "short_names" maps each member's

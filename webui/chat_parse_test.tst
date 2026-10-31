@@ -871,6 +871,7 @@ ok   - offered once: not asked yet, and the browser can
 ok   kept per account, by name
 ok   reactions read
 ok   - only exactly their form
+ok   - one with nobody left in it, left out
 ok   - after a tab, on their message's line (2026-10-29)
 ok   - an encrypted one's apart from it, so it can still be opened
 ok   - after a message with a line break

@@ -1768,6 +1768,9 @@ check( "reactions read", cp.parse_reactions( "014b573fx159e43xo02159e43x" ), [ {
 check( "- only exactly their form", [ cp.parse_reactions( "" ), cp.parse_reactions( "01" ), cp.parse_reactions( "014b573f" ),
  cp.parse_reactions( "014b573fxo" ), cp.parse_reactions( "104b573fx" ), cp.parse_reactions( "014B573Fx" ), cp.parse_reactions( "nice 014b573fx" ) ],
  [ null, null, null, null, null, null, null ] );
+// NOTE: Moved from one reaction to an earlier one, the node leaves the later with nobody in it (2026-10-31) - left out, not all lost.
+check( "- one with nobody left in it, left out", [ cp.parse_reactions( "05aaaaaaxo09" ), cp.parse_reactions( "01o05aaaaaaxo09" ), cp.parse_reactions( "01o09" ) ],
+ [ [ { code: "05", people: [ "aaaaaa" ] } ], [ { code: "05", people: [ "aaaaaa" ] } ], null ] );
 check( "- after a tab, on their message's line (2026-10-29)", cp.parse_fetch_response( "maya+1 ian+1\n1793192805000 maya  well done\t014b573fx\n"
  + "1793192806000 ian  thanks" ).messages.map( function( m ) { return [ m.text, m.reactions || null ]; } ),
  [ [ "well done", [ { code: "01", people: [ "4b573f" ] } ] ], [ "thanks", null ] ] );
