@@ -364,7 +364,7 @@ http://www.opensource.org/licenses/mit-license.php.
                <label class="chat-room-key-head" for="room_close_field">Close the room</label>
                <div class="chat-room-close-row">
                   <input type="hidden" id="room_close_input">
-                  <button type="button" class="chat-btn chat-btn--small" id="room_close_set" onclick="do_set_room_close( )">Set</button>
+                  <button type="button" class="chat-btn chat-btn--small" id="room_close_set" onclick="do_set_room_close( )" disabled>Set</button>
                </div>
                <p class="chat-room-key-note" id="room_close_note">After that time nothing can be posted, edited or reacted to, and nobody can join.
                 Once set it can only be brought forward.</p>

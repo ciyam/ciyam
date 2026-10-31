@@ -5014,6 +5014,8 @@ function prepare_close_input( entry )
       input.dataset.room = g_room;
       input.value = "";
    }
+
+   sync_close_set( );
 }
 
 function close_when( )
@@ -5023,10 +5025,18 @@ function close_when( )
       g_close_when = when_picker( document.getElementById( "room_close_input" ), {
          field_id: "room_close_field", placeholder: "Day and time", label: "When the room closes",
          before_text: "That time has passed - choose a later one.",
-         after_text: "That is after the room closes now - a close time can only be brought forward." } );
+         after_text: "That is after the room closes now - a close time can only be brought forward.", on_change: sync_close_set } );
    }
 
    return g_close_when;
+}
+
+// NOTE: Set only once a day and time is selected (Damon, 2026-10-31), and not while a change is on its way.
+function sync_close_set( )
+{
+   var input = document.getElementById( "room_close_input" );
+
+   document.getElementById( "room_close_set" ).disabled = input.disabled || ( close_time_from_input( input.value ) === null );
 }
 
 // NOTE: A time as a "datetime-local" field takes it, in local time.
@@ -5055,24 +5065,37 @@ async function do_set_room_close( )
    if( !entry )
       return;
 
-   if( closes === null )
+   function problem( )
    {
-      show_alert( "Choose the day and time the room is to close.", "is-error" );
+      if( closes === null )
+         return "Choose the day and time the room is to close.";
+
+      if( closes <= Math.floor( Date.now( ) / 1000 ) )
+         return "The close time has to be in the future.";
+
+      if( ( typeof entry.closes === "number" ) && ( closes > entry.closes ) )
+         return "A close time can only be brought forward - this room already closes "
+          + room_close_label( entry.closes ).replace( /^Closes /, "" ) + ".";
+
+      return "";
+   }
+
+   if( problem( ) !== "" )
+   {
+      show_alert( problem( ), "is-error" );
 
       return;
    }
 
-   if( closes <= Math.floor( Date.now( ) / 1000 ) )
-   {
-      show_alert( "The close time has to be in the future.", "is-error" );
-
+   // NOTE: Asked first, as it cannot be undone (Damon, 2026-10-31) - and the time checked again after, in case it passed meanwhile.
+   if( !await ask_dialog( { title: "Close " + entry.name + "?", text: "It will close " + room_close_label( closes ).replace( /^Closes /, "" )
+    + " (" + when_label( input.value ) + "). From then nothing can be posted, edited or reacted to, and nobody can join. This"
+    + " can't be undone - the time can only be brought forward.", yes: "Set the close", no: "Not now", danger: true } ) || ( g_room !== room ) )
       return;
-   }
 
-   if( ( typeof entry.closes === "number" ) && ( closes > entry.closes ) )
+   if( problem( ) !== "" )
    {
-      show_alert( "A close time can only be brought forward - this room already closes "
-       + room_close_label( entry.closes ).replace( /^Closes /, "" ) + ".", "is-error" );
+      show_alert( problem( ), "is-error" );
 
       return;
    }
@@ -5091,7 +5114,7 @@ async function do_set_room_close( )
    } );
 
    close_when( ).set_disabled( false );
-   button.disabled = false;
+   sync_close_set( );
 
    if( is_error_response( answer ) || ( ciyam.error !== "" ) )
    {
@@ -5101,6 +5124,7 @@ async function do_set_room_close( )
    }
 
    input.value = "";
+   sync_close_set( );
 
    // NOTE: Straight away rather than on the next listing, as for who may post.
    entry.closes = closes;
