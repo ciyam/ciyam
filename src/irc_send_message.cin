@@ -129,6 +129,7 @@ ERROR=Message creation for this room is owner only.
 ERROR=Message creation is not permitted for this room.
 @endif
 @elif "$ROOM_POSTS" = "REACT"
+@ifndef $SPECIAL
 IS_NOT_OKAY=
 @ifdef $IS_OWNER
 IS_NOT_OKAY=1
@@ -140,6 +141,7 @@ IS_NOT_OKAY=1
 @endif
 @ifdef $IS_NOT_OKAY
 ERROR=Message reactions are only permitted for this room.
+@endif
 @endif
 @endif
 @endif
