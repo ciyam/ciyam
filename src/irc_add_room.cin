@@ -193,7 +193,9 @@ NAME=@substr:1:$NAME
 @ifneq "$NAME" "ANY"
 @ifneq "$NAME" "OWN"
 @ifneq "$NAME" "NONE"
+@ifneq "$NAME" "REACT"
 ERROR=Unknown room posts value '$NAME'.
+@endif
 @endif
 @endif
 @endif
@@ -320,7 +322,7 @@ RETURN=$NEW_ROOM-$UUID
 CHANGED=1
 .system_variable @irc_names_$NEW_ROOM "$NAME"
 .system_variable @irc_owner_$NEW_ROOM "$USER"
-.system_variable @irc_posts_$NEW_ROOM "any"
+.system_variable @irc_posts_$NEW_ROOM "ANY"
 .system_variable @irc_users_$NEW_ROOM "@$USER"
 .system_variable @irc_uuids_$NEW_ROOM "$UUID"
 ;

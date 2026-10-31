@@ -65,7 +65,10 @@ struct test
 struct group
 {
    string name;
+
    vector< test > tests;
+
+   vector< string > kills;
 };
 
 enum error_stop_point
@@ -93,7 +96,8 @@ vector< group > g_groups;
 typedef vector< group >::iterator group_iterator;
 typedef vector< group >::size_type group_size_type;
 
-vector< string > g_all_kills;
+vector< string > g_test_kills;
+vector< string > g_group_kills;
 
 const char c_env_var_prefix = '$';
 
@@ -393,6 +397,23 @@ void init_group( const group& g, string& group_name )
 
    if( !g_is_quiet )
       cout << '[' << group_name << "]\n";
+
+   for( vector< string >::size_type i = 0; i < g.kills.size( ); i++ )
+   {
+      string next( g.kills[ i ] );
+
+      if( !next.empty( ) )
+      {
+         // NOTE: If a name is prefixed with an exclamation then it will only
+         // be removed here (and not also later when the tests are completed).
+         if( next[ 0 ] == '!' )
+            next.erase( 0, 1 );
+         else
+            g_group_kills.push_back( next );
+
+         remove_file( next.c_str( ) );
+      }
+   }
 }
 
 void init_group_test( const test& t, string& test_name )
@@ -414,11 +435,19 @@ void init_group_test( const test& t, string& test_name )
          if( next[ 0 ] == '!' )
             next.erase( 0, 1 );
          else
-            g_all_kills.push_back( next );
+            g_test_kills.push_back( next );
 
          remove_file( next.c_str( ) );
       }
    }
+}
+
+void remove_kill_files( vector< string >& kills )
+{
+   for( vector< string >::size_type i = 0; i < kills.size( ); i++ )
+      remove_file( kills[ i ].c_str( ) );
+
+   kills.clear( );
 }
 
 void perform_test_step( const test_step& s, const string& test_name )
@@ -434,13 +463,16 @@ void perform_test_step( const test_step& s, const string& test_name )
    if( !exec.empty( ) && ( exec[ 0 ] == '!' ) )
    {
       exec.erase( 0, 1 );
+
       expecting_failure = true;
    }
 
    bool is_async = false;
+
    if( !exec.empty( ) && ( exec[ 0 ] == '*' ) )
    {
       is_async = true;
+
       exec.erase( 0, 1 );
    }
 
@@ -463,6 +495,7 @@ void perform_test_step( const test_step& s, const string& test_name )
    }
 
    string test_step_name;
+
    string temp_output_file_name;
    string test_output_file_name;
 
@@ -519,6 +552,7 @@ void perform_test_step( const test_step& s, const string& test_name )
                string str( "./diff -q " );
 
                str += test_output_file_name;
+
                str += ' ';
                str += temp_output_file_name;
 
@@ -529,6 +563,7 @@ void perform_test_step( const test_step& s, const string& test_name )
          else
          {
             ++g_num_test_steps_succeeded;
+
             if( !g_is_quiet )
                cout << "  " << test_step_name << ": passed" << endl;
 
@@ -593,6 +628,7 @@ int main( int argc, char* argv[ ] )
             else
             {
                cerr << "error: unknown error stop point '" << next_arg << "'" << endl;
+
                return 1;
             }
          }
@@ -615,7 +651,7 @@ int main( int argc, char* argv[ ] )
             g_tests_directory = next_arg;
          }
 
-         if( first_arg + 1 == argc )
+         if( argc == ( first_arg + 1 ) )
             break;
 
          next_arg = string( argv[ ++first_arg ] );
@@ -686,6 +722,7 @@ int main( int argc, char* argv[ ] )
       if( !inpf )
       {
          cerr << "error: unable to open file '" << test_set_file_name << "' for input" << endl;
+
          return 1;
       }
 
@@ -701,6 +738,8 @@ int main( int argc, char* argv[ ] )
       {
          group g;
 
+         string s;
+
          g.name = reader.read_attribute( c_group_name_value );
 
          if( group_names.count( g.name ) )
@@ -709,12 +748,22 @@ int main( int argc, char* argv[ ] )
 
          group_names.insert( g.name );
 
+         while( reader.has_read_attribute( c_test_step_kill_value, s ) )
+         {
+            string findstr( 1, c_env_var_prefix );
+
+            findstr += c_files_directory_var_name;
+
+            replace( s, findstr, g_files_directory );
+
+            g.kills.push_back( s );
+         }
+
          reader.start_section( c_section_tests );
 
          while( reader.has_started_section( c_section_test ) )
          {
             test t;
-            string s;
 
             t.name = reader.read_attribute( c_test_name_value );
 
@@ -817,7 +866,7 @@ int main( int argc, char* argv[ ] )
                {
                   perform_test_step( g_groups[ g ].tests[ t ].test_steps[ s ], test_name );
 
-                  if( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched )
+                  if( g_num_test_steps_mismatched && ( g_error_stop == e_error_stop_point_step ) )
                      break;
 
                   // NOTE: If the very first step in the first group test is named as an init
@@ -828,19 +877,23 @@ int main( int argc, char* argv[ ] )
                      had_init = true;
                }
 
-               if( ( g_error_stop == e_error_stop_point_step ) && g_num_test_steps_mismatched )
+               remove_kill_files( g_test_kills );
+
+               if( g_num_test_steps_mismatched && ( g_error_stop == e_error_stop_point_step ) )
                   break;
 
-               if( ( g_error_stop == e_error_stop_point_test ) && g_num_test_steps_mismatched )
+               if( g_num_test_steps_mismatched && ( g_error_stop == e_error_stop_point_test ) )
                   break;
             }
+
+            remove_kill_files( g_group_kills );
 
             size_t final_steps = g_groups[ g ].tests[ num_tests - 1 ].test_steps.size( );
 
             string final_step_name = g_groups[ g ].tests[ num_tests - 1 ].test_steps[ final_steps - 1 ].name;
 
-            if( ( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched )
-             || ( g_error_stop == e_error_stop_point_test && g_num_test_steps_mismatched ) )
+            if( ( g_num_test_steps_mismatched && ( g_error_stop == e_error_stop_point_step ) )
+             || ( g_num_test_steps_mismatched && ( g_error_stop == e_error_stop_point_test ) ) )
             {
                // NOTE: If an init step had been executed in the first group test then if
                // the final step of the final group test is a term step then execute it.
@@ -850,7 +903,7 @@ int main( int argc, char* argv[ ] )
                return 1;
             }
 
-            if( ( g_error_stop == e_error_stop_point_group ) && g_num_test_steps_mismatched )
+            if( g_num_test_steps_mismatched && ( g_error_stop == e_error_stop_point_group ) )
                return 1;
          }
       }
@@ -887,13 +940,17 @@ int main( int argc, char* argv[ ] )
                   {
                      perform_test_step( g_groups[ g ].tests[ t ].test_steps[ s ], test_name );
 
-                     if( ( g_error_stop == e_error_stop_point_step ) && g_num_test_steps_mismatched )
+                     if( g_num_test_steps_mismatched && ( g_error_stop == e_error_stop_point_step ) )
                         return 1;
                   }
 
-                  if( ( g_error_stop == e_error_stop_point_test ) && g_num_test_steps_mismatched )
+                  remove_kill_files( g_test_kills );
+
+                  if( g_num_test_steps_mismatched && ( g_error_stop == e_error_stop_point_test ) )
                      return 1;
                }
+
+               remove_kill_files( g_group_kills );
             }
             else
             {
@@ -927,7 +984,7 @@ int main( int argc, char* argv[ ] )
                      {
                         perform_test_step( g_groups[ g ].tests[ t ].test_steps[ s ], test_name );
 
-                        if( ( g_error_stop == e_error_stop_point_step ) && g_num_test_steps_mismatched )
+                        if( g_num_test_steps_mismatched && ( g_error_stop == e_error_stop_point_step ) )
                            return 1;
                      }
                   }
@@ -953,7 +1010,7 @@ int main( int argc, char* argv[ ] )
 
                         perform_test_step( g_groups[ g ].tests[ t ].test_steps[ s ], test_name );
 
-                        if( ( g_error_stop == e_error_stop_point_step ) && g_num_test_steps_mismatched )
+                        if( g_num_test_steps_mismatched && ( g_error_stop == e_error_stop_point_step ) )
                            return 1;
 
                         if( spos == string::npos )
@@ -965,7 +1022,9 @@ int main( int argc, char* argv[ ] )
                      }
                   }
 
-                  if( ( g_error_stop == e_error_stop_point_test ) && g_num_test_steps_mismatched )
+                  remove_kill_files( g_test_kills );
+
+                  if( g_num_test_steps_mismatched && ( g_error_stop == e_error_stop_point_test ) )
                      return 1;
 
                   if( tpos == string::npos )
@@ -975,9 +1034,11 @@ int main( int argc, char* argv[ ] )
 
                   tpos = tests.find( ',' );
                }
+
+               remove_kill_files( g_group_kills );
             }
 
-            if( ( g_error_stop == e_error_stop_point_group ) && g_num_test_steps_mismatched )
+            if( g_num_test_steps_mismatched && ( g_error_stop == e_error_stop_point_group ) )
                return 1;
          }
       }
@@ -1005,11 +1066,6 @@ int main( int argc, char* argv[ ] )
          }
 
          cout << ')' << endl;
-
-         // NOTE: If tests completed successfully then repeat kills that were performed during testing
-         // that had not been specifically prefixed not to (i.e. clean up).
-         for( vector< string >::size_type i = 0; i < g_all_kills.size( ); i++ )
-            remove_file( g_all_kills[ i ].c_str( ) );
       }
       else
       {

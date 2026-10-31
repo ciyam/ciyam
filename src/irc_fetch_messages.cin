@@ -232,6 +232,8 @@ SUFFIX=
 SUFFIX=!
 @elif "$OUTPUT" = "NONE"
 SUFFIX=~
+@elif "$OUTPUT" = "REACT"
+SUFFIX=?
 @endif
 @endif
 ;
