@@ -28,6 +28,8 @@ using namespace std;
 namespace
 {
 
+const char c_space = ' ';
+
 const char c_byte_suffix = 'B';
 
 const char* const c_iec_byte_suffix = "iB";
@@ -414,8 +416,55 @@ int64_t unformat_bytes( const string& size_string, int64_t default_val, bool use
    return retval;
 }
 
+string format_duration( int value, const string& extra )
+{
+   string retval;
+
+   bool is_approx = false;
+
+   if( extra != "mins" )
+      retval = format_duration( value );
+   else
+   {
+      is_approx = true;
+      retval = format_duration( value, false, true, true );
+   }
+
+   string::size_type pos = retval.find( 'w' );
+
+   if( pos != string::npos )
+   {
+      int num_weeks = from_string< int >( retval.substr( 0, pos ) );
+
+      if( num_weeks > 52 )
+      {
+         int years = ( num_weeks / 52 );
+
+         retval = to_string( years ) + "y";
+      }
+   }
+
+   if( is_approx && !retval.empty( ) )
+   {
+      if( retval[ 0 ] == '0' )
+      {
+         retval.erase( 0, 1 );
+         retval.insert( 0, "<1" );
+      }
+      else if( ( retval.size( ) == 2 ) && ( retval[ 0 ] == '1' ) )
+      {
+         retval.erase( 0, 1 );
+         retval.insert( 0, "<2" );
+      }
+      else
+         retval.insert( 0, "~" );
+   }
+
+   return retval;
+}
+
 string format_duration( int value,
- bool include_seconds, bool use_weeks_if_applicable )
+ bool include_seconds, bool use_weeks_if_applicable, bool use_only_one_value )
 {
    string str;
 
@@ -435,7 +484,7 @@ string format_duration( int value,
       }
 
       if( !str.empty( ) )
-         str += " ";
+         str += c_space;
 
       str += to_string( days ) + "d";
    }
@@ -445,7 +494,7 @@ string format_duration( int value,
       int hours = ( value / 3600 );
 
       if( !str.empty( ) )
-         str += " ";
+         str += c_space;
 
       value -= ( hours * 3600 );
 
@@ -457,14 +506,14 @@ string format_duration( int value,
       int minutes = ( value / 60 );
 
       if( !str.empty( ) )
-         str += " ";
+         str += c_space;
 
       value -= ( minutes * 60 );
 
       // NOTE: If not including seconds will round minutes up.
       if( !include_seconds )
       {
-         if( value )
+         if( value > 30 )
             ++minutes;
 
          value = 0;
@@ -476,9 +525,17 @@ string format_duration( int value,
    if( str.empty( ) || ( value > 0 ) )
    {
       if( !str.empty( ) )
-         str += " ";
+         str += c_space;
 
       str += to_string( value ) + "s";
+   }
+
+   if( use_only_one_value )
+   {
+      string::size_type pos = str.find( c_space );
+
+      if( pos != string::npos )
+         str.erase( pos );
    }
 
    return str;
