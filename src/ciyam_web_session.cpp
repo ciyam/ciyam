@@ -798,7 +798,7 @@ struct cws_active_command
          }
 
          if( g_cws_active_commands )
-            throw runtime_error( "timed out trying to lock for adminstration" );
+            throw runtime_error( "timed out trying to lock for administration" );
 
          g_cws_admin_locked = true;
       }
