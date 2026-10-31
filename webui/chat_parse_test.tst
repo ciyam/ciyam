@@ -682,6 +682,25 @@ ok   at most the limit
 ok   a whole word that is the only one - none
 ok   nothing typed, or not a word - none
 ok   no word starts so - none
+
+== typing the twelve words =====================================
+ok   the first word that starts so
+ok   a whole word before a longer one
+ok   any case
+ok   none starts so, nothing typed, not letters
+ok   drawn exactly as typed - the words, the spaces, the one being typed
+ok   - and the rest of the word offered
+ok   a part no word starts with - marked, nothing offered
+ok   after a space, nothing being typed - nothing offered
+ok   a whole word typed - nothing more offered
+ok   no list yet - nothing marked
+ok   nothing typed
+ok   a space after part of a word takes the word
+ok   the first word too
+ok   a whole word is left as typed
+ok   none starts so - left as typed
+ok   no space at the end - left alone
+ok   a line break is a space - and takes the word
 ok   an account's name on screen - its username
 ok   - admin, with none of its own
 ok   - never a PIN

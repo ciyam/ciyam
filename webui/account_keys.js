@@ -37,6 +37,9 @@ var g_keys_bubbles = null;
 var g_keys_scripts = null;
 var g_keys_installed = false;
 
+// NOTE: The twelve words field's typing help ("words_entry.js"), once installed.
+var g_keys_words_entry = null;
+
 // NOTE: Each showing of the card counted - My account can be shown again before the last has finished, and only the latest acts.
 var g_keys_render = 0;
 
@@ -368,6 +371,12 @@ function keys_show_enter( mode )
    document.getElementById( "keys_enter_words" ).value = "";
 
    keys_show( "keys_enter" );
+
+   // NOTE: The word list for the help in typing them - drawn again once it is in, and the field the right size now it shows.
+   recover_load_bip39( ).then( function( ) { if( g_keys_words_entry ) g_keys_words_entry.draw( ); } );
+
+   if( g_keys_words_entry )
+      g_keys_words_entry.draw( );
 }
 
 // NOTE: The keys opened with "access" and shown - or, if it does not open them, the words asked for. "from_link" - brought by
@@ -940,6 +949,9 @@ function install_keys( )
       return;
 
    g_keys_installed = true;
+
+   // NOTE: The twelve words typed with help, as "test_bip39.html" (Ian, 2026-10-31) - Enter as "Use my keys here".
+   g_keys_words_entry = words_entry( document.getElementById( "keys_enter_words" ), { wordlist: recover_wordlist, on_enter: keys_enter_go } );
 
    document.getElementById( "keys_start" ).addEventListener( "click", keys_start );
    document.getElementById( "keys_restore" ).addEventListener( "click", function( ) { keys_show_enter( "restore" ); } );

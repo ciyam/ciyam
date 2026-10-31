@@ -2350,6 +2350,88 @@ function word_completions( typed, wordlist, limit )
    return matches.slice( 0, ( limit > 0 ) ? limit : 6 );
 }
 
+// NOTE: The word a twelve words field offers for what is typed, as "test_bip39.html" does - the word itself when it is one
+// ("act", though "action" starts with it too), otherwise the first that starts with it; "" for none, or nothing typed.
+function word_first_match( typed, wordlist )
+{
+   var prefix = String( typed || "" ).toLowerCase( );
+
+   if( ( prefix === "" ) || /[^a-z]/.test( prefix ) )
+      return "";
+
+   var list = wordlist || [ ];
+
+   if( list.indexOf( prefix ) >= 0 )
+      return prefix;
+
+   for( var i = 0; i < list.length; i++ )
+   {
+      if( list[ i ].indexOf( prefix ) === 0 )
+         return list[ i ];
+   }
+
+   return "";
+}
+
+// NOTE: A twelve words field as it is drawn ("words_entry.js") - its text in pieces, exactly as typed: the words, each marked
+// "unknown" when it is not one of the list; the spaces between; and the last, if still being typed, "typing" while some word
+// starts with it - with "rest" what that word adds. With no list (not read in yet) nothing is marked.
+function words_entry_state( value, wordlist )
+{
+   var list = wordlist || [ ];
+   var parts = String( value || "" ).split( /(\s+)/ );
+
+   var pieces = [ ];
+   var rest = "";
+
+   parts.forEach( function( part, i )
+   {
+      if( part === "" )
+         return;
+
+      // NOTE: Split on a captured pattern - the spaces between are at the odd places.
+      if( ( i % 2 ) === 1 )
+      {
+         pieces.push( { text: part, kind: "space" } );
+
+         return;
+      }
+
+      if( i === parts.length - 1 )
+      {
+         var match = word_first_match( part, list );
+
+         pieces.push( { text: part, kind: ( ( match !== "" ) || ( list.length === 0 ) ) ? "typing" : "unknown" } );
+
+         if( match.length > part.length )
+            rest = match.substring( part.length );
+      }
+      else
+         pieces.push( { text: part, kind: ( ( list.length === 0 ) || ( list.indexOf( part.toLowerCase( ) ) >= 0 ) ) ? "word" : "unknown" } );
+   } );
+
+   return { pieces: pieces, rest: rest };
+}
+
+// NOTE: A space typed after part of a word takes the word offered for it - a phone's keyboard sends the text with no key to
+// catch, so it is done from the text. Line breaks are spaces. Anything else is left as it is.
+function words_entry_complete( value, wordlist )
+{
+   var text = String( value || "" ).replace( /[\r\n]+/g, " " );
+
+   var typed = text.match( /^([\s\S]*?)(\S+) $/ );
+
+   if( typed === null )
+      return text;
+
+   var match = word_first_match( typed[ 2 ], wordlist );
+
+   if( ( match === "" ) || ( match === typed[ 2 ].toLowerCase( ) ) )
+      return text;
+
+   return typed[ 1 ] + match + " ";
+}
+
 // NOTE: The recovery cards' words - for a locked node (the sign in's "Can't sign in?"), or, "fresh", for a node not set up
 // that takes the place of one lost, failed or moved (Damon, 2026-10-13: setting up's "Recover a node from its twelve
 // words"). There nothing can check the words - any twelve that fit together make a node - hence "caution"; and the
@@ -3951,6 +4033,9 @@ if( typeof module !== "undefined" )
       recovery_words: recovery_words,
       recovery_words_problem: recovery_words_problem,
       word_completions: word_completions,
+      word_first_match: word_first_match,
+      words_entry_state: words_entry_state,
+      words_entry_complete: words_entry_complete,
       recovery_error_text: recovery_error_text,
       recovery_error_step: recovery_error_step,
       in_time_order: in_time_order,

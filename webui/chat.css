@@ -843,6 +843,48 @@ button.chat-avatar:hover
    outline: none;
 }
 
+/* NOTE: The twelve words typed with help ("words_entry.js", Ian, 2026-10-31) - the field's text drawn by a ghost over it, which
+   takes its font, padding and border widths, so both wrap alike; the field grows rather than scrolls. */
+.words-entry
+{
+   position: relative;
+}
+
+/* NOTE: Under ".words-entry", so a page's own rule for the field (My account's "resize") does not undo these. */
+.words-entry > .words-entry-field
+{
+   color: transparent;
+   caret-color: var(--color-chat-text);
+   overflow: hidden;
+   resize: none;
+   white-space: pre-wrap;
+   overflow-wrap: break-word;
+}
+
+.words-entry-ghost
+{
+   position: absolute;
+   inset: 0;
+   border-style: solid;
+   border-color: transparent;
+   color: var(--color-chat-text);
+   white-space: pre-wrap;
+   overflow-wrap: break-word;
+   overflow: hidden;
+   pointer-events: none;
+}
+
+.words-entry-rest
+{
+   color: var(--color-chat-text-faint);
+}
+
+.words-entry-unknown
+{
+   text-decoration: underline wavy var(--color-chat-critical);
+   text-underline-offset: 3px;
+}
+
 .chat-field--mono
 {
    font-family: var(--font-family-chat-mono);

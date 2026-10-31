@@ -1319,6 +1319,35 @@ check( "a whole word that is the only one - none", cp.word_completions( "taxi", 
 check( "nothing typed, or not a word - none", [ cp.word_completions( "", completing, 6 ), cp.word_completions( "a1", completing, 6 ) ], [ [ ], [ ] ] );
 check( "no word starts so - none", cp.word_completions( "zz", completing, 6 ), [ ] );
 
+heading( "typing the twelve words" );
+
+check( "the first word that starts so", cp.word_first_match( "acti", completing ), "action" );
+check( "a whole word before a longer one", cp.word_first_match( "act", completing ), "act" );
+check( "any case", cp.word_first_match( "TAX", completing ), "taxi" );
+check( "none starts so, nothing typed, not letters", [ cp.word_first_match( "zz", completing ), cp.word_first_match( "", completing ),
+ cp.word_first_match( "a1", completing ) ], [ "", "", "" ] );
+
+var drawn = cp.words_entry_state( "taxi  acct adap", completing );
+
+check( "drawn exactly as typed - the words, the spaces, the one being typed",
+ drawn.pieces.map( function( p ) { return p.kind + ":" + p.text; } ), [ "word:taxi", "space:  ", "unknown:acct", "space: ", "typing:adap" ] );
+check( "- and the rest of the word offered", drawn.rest, "t" );
+check( "a part no word starts with - marked, nothing offered", cp.words_entry_state( "taxi zz", completing ).pieces[ 2 ].kind
+ + " " + cp.words_entry_state( "taxi zz", completing ).rest, "unknown " );
+check( "after a space, nothing being typed - nothing offered", cp.words_entry_state( "taxi ", completing ),
+ { pieces: [ { text: "taxi", kind: "word" }, { text: " ", kind: "space" } ], rest: "" } );
+check( "a whole word typed - nothing more offered", cp.words_entry_state( "act", completing ).rest, "" );
+check( "no list yet - nothing marked", cp.words_entry_state( "zz qq", [ ] ).pieces.map( function( p ) { return p.kind; } ),
+ [ "word", "space", "typing" ] );
+check( "nothing typed", cp.words_entry_state( "", completing ), { pieces: [ ], rest: "" } );
+
+check( "a space after part of a word takes the word", cp.words_entry_complete( "taxi acti ", completing ), "taxi action " );
+check( "the first word too", cp.words_entry_complete( "ta ", completing ), "taxi " );
+check( "a whole word is left as typed", cp.words_entry_complete( "taxi act ", completing ), "taxi act " );
+check( "none starts so - left as typed", cp.words_entry_complete( "taxi zz ", completing ), "taxi zz " );
+check( "no space at the end - left alone", cp.words_entry_complete( "taxi acti", completing ), "taxi acti" );
+check( "a line break is a space - and takes the word", cp.words_entry_complete( "taxi acti\n", completing ), "taxi action " );
+
 // NOTE: After a recovery - admin's PIN 10301, once 31324; 40311 another account, kept with its password.
 // NOTE: PINs out of sight (Ian, 2026-10-10) - names in their place.
 check( "an account's name on screen - its username", cp.account_display_name( "damon", false ), "damon" );
