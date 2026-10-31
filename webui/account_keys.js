@@ -253,10 +253,31 @@ function keys_unsent( )
    } );
 }
 
+// NOTE: While the keys are made or opened, nothing that would start it again can be pressed, and the words stay as typed (Ian,
+// 2026-10-31: they seemed lost meanwhile).
 function keys_busy( text )
 {
    document.getElementById( "keys_busy" ).hidden = !text;
    document.getElementById( "keys_busy_text" ).textContent = text || "";
+
+   [ "keys_enter_words", "keys_enter_go", "keys_enter_new", "keys_enter_cancel", "keys_check_back" ].forEach( function( id )
+   {
+      document.getElementById( id ).disabled = !!text;
+   } );
+
+   document.getElementById( "keys_save" ).disabled = !!text || ( g_keys.right < g_keys.checking.length );
+}
+
+// NOTE: A frame drawn before the hardening - the page's SHA-256 runs its rounds without pausing, so nothing said before it would
+// show until it ends (on a phone, some seconds).
+function keys_drawn( )
+{
+   return new Promise( function( resolve )
+   {
+      requestAnimationFrame( function( ) { setTimeout( resolve, 0 ); } );
+
+      setTimeout( resolve, 200 );
+   } );
 }
 
 // NOTE: A change to Contacts, said under it - its section's own (2026-10-26).
@@ -597,6 +618,8 @@ async function keys_make_and_save( entropy, lede )
    set_error( "keys_error", "" );
    keys_busy( "Securing your keys…" );
 
+   await keys_drawn( );
+
    var uk = keys_module( "user_keys" );
    var rounds = uk.c_default_rounds;
    var access = "";
@@ -878,8 +901,7 @@ async function keys_enter_go( )
       return;
    }
 
-   document.getElementById( "keys_enter_words" ).value = "";
-
+   // NOTE: The words are left in the field until the keys are open - wrong ones are put right, not typed again.
    if( g_keys.entering === "restore" )
    {
       await keys_make_and_save( entropy, "Your keys are made again from your words, and on this browser." );
@@ -889,6 +911,8 @@ async function keys_enter_go( )
 
    // NOTE: Made with the rounds the node's were locked with, so it is the access key they were locked under.
    keys_busy( "Securing your keys…" );
+
+   await keys_drawn( );
 
    var access = "";
 
@@ -918,6 +942,8 @@ async function keys_enter_go( )
    }
 
    keys_keep_here( access );
+
+   document.getElementById( "keys_enter_words" ).value = "";
 
    await keys_show_here( access, "Your keys are on this browser.", false );
 }
