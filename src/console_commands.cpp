@@ -167,6 +167,7 @@ constexpr const char* c_function_base64 = "base64";
 constexpr const char* c_function_entropy = "entropy";
 constexpr const char* c_function_hmac256 = "hmac256";
 constexpr const char* c_function_reverse = "reverse";
+constexpr const char* c_function_duration = "duration";
 constexpr const char* c_function_fullpath = "fullpath";
 constexpr const char* c_function_password = "password";
 constexpr const char* c_function_set_sort = "set_sort";
@@ -4158,6 +4159,22 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     }
                                  }
                               }
+                           }
+                           else if( lhs == c_function_duration )
+                           {
+                              string::size_type xpos = str.find( op, pos + 1 );
+
+                              string extra;
+
+                              if( xpos != string::npos )
+                              {
+                                 extra = str.substr( pos + 1, xpos - pos - 1 );
+                                 pos = xpos;
+                              }
+
+                              int val = from_string< int >( str.substr( pos + 1 ) );
+
+                              str = format_duration( val, extra );
                            }
                            else if( lhs == c_function_fullpath )
                            {
