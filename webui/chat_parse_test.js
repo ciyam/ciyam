@@ -550,6 +550,26 @@ check( "sending turns a CR, or a CR and line feed, into a line feed", cp.escape_
 check( "- so nothing typed can start 'X\\r'", cp.message_prefix( cp.escape_message_text( "X\r1234" ) ), "" );
 check( "a message's kind from its start - a letter and a CR", [ cp.message_prefix( "X\rab12" ), cp.message_prefix( "Q\rzz" ),
  cp.message_prefix( "X ab12" ), cp.message_prefix( "XY\rab" ), cp.message_prefix( "" ) ], [ "X", "Q", "", "", "" ] );
+
+// NOTE: An encrypted message as a QR code (Ian, 2026-10-30) - Base45, RFC 9285's own examples first.
+var b45_text = function( s ) { return cp.base45_encode( Array.from( Buffer.from( s, "utf8" ) ) ); };
+var b45_back = function( s ) { var b = cp.base45_decode( s ); return ( b === null ) ? null : Buffer.from( b ).toString( "utf8" ); };
+
+check( "Base45 - RFC 9285's examples", [ b45_text( "AB" ), b45_text( "Hello!!" ), b45_text( "base-45" ), b45_text( "ietf!" ) ],
+ [ "BB8", "%69 VD92EX0", "UJCLQE7W581", "QED8WEX0" ] );
+check( "- and back", [ b45_back( "BB8" ), b45_back( "%69 VD92EX0" ), b45_back( "UJCLQE7W581" ), b45_back( "QED8WEX0" ) ],
+ [ "AB", "Hello!!", "base-45", "ietf!" ] );
+check( "- not Base45: a value too big (RFC's 'GGW'), a lone character, one outside its 45", [ cp.base45_decode( "GGW" ),
+ cp.base45_decode( "BB8A" ), cp.base45_decode( "bb8" ) ], [ null, null, null ] );
+
+var sealed_kept = "X\r000102030405060708090a0b0c0d0e0f\r" + "ff00ab".repeat( 4 ) + "\r" + "f0e1d2c3b4a5968778695a4b3c2d1e0f";
+var sealed_qr = cp.sealed_qr_text( sealed_kept );
+
+check( "an encrypted message as a QR code's text - 'X:', then its bytes in Base45, only QR's alphanumeric characters", [
+ sealed_qr.indexOf( "X:" ) === 0, /^[0-9A-Z $%*+\-.\/:]+$/.test( sealed_qr ), sealed_qr.length ], [ true, true, 2 + ( ( 16 + 12 + 16 ) / 2 ) * 3 ] );
+check( "- read back exactly as kept", cp.sealed_from_qr( sealed_qr ), sealed_kept );
+check( "- nothing for what is not one", [ cp.sealed_qr_text( "hello" ), cp.sealed_qr_text( "X\rzz\r00\r00" ), cp.sealed_from_qr( "hello" ),
+ cp.sealed_from_qr( "X:BB8" ), cp.sealed_from_qr( "X:bb8" ) ], [ "", "", "", "", "" ] );
 check( "an encrypted message said so, not shown as its ciphertext", [ cp.message_unreadable_label( "X\r9f3c" ),
  cp.message_unreadable_label( "Q\rzz" ), cp.message_unreadable_label( "hello" ) ],
  [ "Encrypted message - this chat cannot read it yet", "A message of a kind this chat cannot show yet", "" ] );

@@ -2168,7 +2168,8 @@ button.chat-avatar:hover
 .chat-message-edit,
 .chat-message-pin,
 .chat-message-delete,
-.chat-message-react
+.chat-message-react,
+.chat-message-qr
 {
    opacity: 0;
    border: 0;
@@ -2185,9 +2186,33 @@ button.chat-avatar:hover
 .chat-message.is-own:hover .chat-message-delete,
 .chat-message-delete.is-armed,
 .chat-message:hover .chat-message-react,
-.chat-message-react:focus-visible
+.chat-message-react:focus-visible,
+.chat-message:hover .chat-message-qr,
+.chat-message-qr:focus-visible
 {
    opacity: 1;
+}
+
+/* NOTE: The QR code dialog - the code as large as the screen allows, as it is a dense one (about 1,550 characters). */
+.chat-qr-dialog
+{
+   max-width: 560px;
+}
+
+.chat-qr-box
+{
+   display: flex;
+   justify-content: center;
+   padding: 8px;
+   border-radius: var(--radius-sm);
+   background: #ffffff;
+}
+
+.chat-qr-box svg
+{
+   width: 100%;
+   max-width: 480px;
+   height: auto;
 }
 
 /* NOTE: Reactions beneath the message (Ian, 2026-10-29) - under its text; "seen by" stays on the first line. */

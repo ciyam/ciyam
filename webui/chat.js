@@ -219,6 +219,12 @@ function chat( )
 
          event.preventDefault( );
       }
+      else if( !document.getElementById( "qr_dialog" ).hidden )
+      {
+         do_close_qr_dialog( );
+
+         event.preventDefault( );
+      }
       // NOTE: Not while its "Start the poll?" is asked over it - Escape answers that alone ("dialog.js").
       else if( !document.getElementById( "poll_dialog" ).hidden
        && !( document.getElementById( "dialog_scrim" ) && !document.getElementById( "dialog_scrim" ).hidden ) )
@@ -3975,6 +3981,17 @@ function build_message( entry )
       react.dataset.unique = entry.unique;
 
       react.addEventListener( "click", function( event ) { open_react_menu( event.currentTarget ); } );
+   }
+
+   // NOTE: Encrypted, and not readable here - offered as a QR code for the offline device (Ian, 2026-10-30), its own or anyone's.
+   if( !entry.deleted && ( sealed_qr_text( entry.text ) !== "" ) )
+   {
+      var qr = row.querySelector( ".chat-message-qr" );
+
+      qr.hidden = !unopened;
+      qr.dataset.text = entry.text;
+
+      qr.addEventListener( "click", function( event ) { chat_show_qr( event.currentTarget.dataset.text ); } );
    }
 
    draw_reactions( row, entry.reactions || [ ], may_react );

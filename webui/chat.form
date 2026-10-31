@@ -472,6 +472,21 @@ http://www.opensource.org/licenses/mit-license.php.
    </form>
 </div>
 
+<!-- NOTE: An encrypted message that cannot be read here, as a QR code (Ian, 2026-10-30) - for a device with the keys for it,
+     the offline one. Base45 in the code's alphanumeric mode ("sealed_qr_text( )"); drawn here, sent nowhere. -->
+<div id="qr_dialog" class="chat-scrim" hidden onclick="if( event.target === this ) do_close_qr_dialog( );">
+   <div class="chat-dialog chat-qr-dialog" role="dialog" aria-modal="true" aria-labelledby="qr_dialog_title">
+      <h2 id="qr_dialog_title" tabindex="-1">Encrypted message</h2>
+      <p class="chat-dialog-note">Scan it with a device that has the keys for it - your offline one. The code holds only the
+       encrypted message, as anyone in the room has it.</p>
+      <div class="chat-qr-box" id="qr_dialog_code" role="img" aria-label="The encrypted message as a QR code"></div>
+      <div class="chat-error-text" id="qr_dialog_error" role="alert"></div>
+      <div class="chat-dialog-actions">
+         <button type="button" class="chat-btn" id="qr_dialog_close" onclick="do_close_qr_dialog( )">Close</button>
+      </div>
+   </div>
+</div>
+
 <!-- NOTE: The Room key dialog (Ian, 2026-10-28: "Make" and "Add" rarely needed once every room has a key, so tucked away) - the
      owner makes, sends and shares it, anyone adds or removes it ("chat_keys.js"). -->
 <div id="room_key_dialog" class="chat-scrim" hidden onclick="if( event.target === this ) do_close_room_key_dialog( );">
@@ -598,6 +613,8 @@ http://www.opensource.org/licenses/mit-license.php.
          <button type="button" class="chat-message-pin" hidden>pin</button>
          <button type="button" class="chat-message-delete" hidden>delete</button>
          <button type="button" class="chat-message-react" aria-haspopup="dialog" hidden>react</button>
+         <!-- NOTE: An encrypted message that cannot be read here, as a QR code - for the offline device (Ian, 2026-10-30). -->
+         <button type="button" class="chat-message-qr" aria-haspopup="dialog" hidden>qr code</button>
       </span>
       <!-- NOTE: Reactions, beneath the message (Ian, 2026-10-29) - "draw_reactions( )". -->
       <div class="chat-reactions" hidden></div>

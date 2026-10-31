@@ -411,6 +411,118 @@ function message_prefix( text )
    return m ? m[ 1 ] : "";
 }
 
+// NOTE: An encrypted message as a QR code (Ian, 2026-10-30: one that cannot be read here, for the offline device - where it may
+// be). Its bytes - salt, ciphertext, HMAC - as Base45 (RFC 9285: two bytes as three of the 45 characters a QR code's
+// alphanumeric mode takes, so it holds about as much as raw bytes would, and reads back exactly - tried 2026-10-21, where raw
+// bytes never did), after "X:" so it is known for what it is. Read back to the message as kept, for the reverse.
+const c_base45_alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+const c_sealed_qr_prefix = "X:";
+const c_sealed_salt_bytes = 16;
+const c_sealed_hmac_bytes = 16;
+
+function base45_encode( bytes )
+{
+   var out = "";
+
+   for( var i = 0; i < bytes.length; i += 2 )
+   {
+      if( i + 1 < bytes.length )
+      {
+         var n = ( bytes[ i ] * 256 ) + bytes[ i + 1 ];
+
+         out += c_base45_alphabet[ n % 45 ] + c_base45_alphabet[ Math.floor( n / 45 ) % 45 ] + c_base45_alphabet[ Math.floor( n / 2025 ) ];
+      }
+      else
+         out += c_base45_alphabet[ bytes[ i ] % 45 ] + c_base45_alphabet[ Math.floor( bytes[ i ] / 45 ) ];
+   }
+
+   return out;
+}
+
+// NOTE: The bytes, or null for anything that is not Base45 - a character outside it, a lone one at the end, or a value too big.
+function base45_decode( text )
+{
+   var value = String( text || "" );
+   var bytes = [ ];
+
+   if( ( value.length % 3 ) === 1 )
+      return null;
+
+   for( var i = 0; i < value.length; i += 3 )
+   {
+      var digits = value.substring( i, i + 3 ).split( "" ).map( function( c ) { return c_base45_alphabet.indexOf( c ); } );
+
+      if( digits.some( function( d ) { return d < 0; } ) )
+         return null;
+
+      var n = digits[ 0 ] + ( digits[ 1 ] * 45 ) + ( ( digits.length > 2 ) ? digits[ 2 ] * 2025 : 0 );
+
+      if( digits.length > 2 )
+      {
+         if( n > 65535 )
+            return null;
+
+         bytes.push( Math.floor( n / 256 ), n % 256 );
+      }
+      else
+      {
+         if( n > 255 )
+            return null;
+
+         bytes.push( n );
+      }
+   }
+
+   return bytes;
+}
+
+function hex_bytes( hex )
+{
+   var bytes = [ ];
+
+   for( var i = 0; i < hex.length; i += 2 )
+      bytes.push( parseInt( hex.substring( i, i + 2 ), 16 ) );
+
+   return bytes;
+}
+
+function bytes_hex( bytes )
+{
+   return bytes.map( function( b ) { return ( b < 16 ? "0" : "" ) + b.toString( 16 ); } ).join( "" );
+}
+
+// NOTE: An encrypted message, as kept ("X", CR, salt, CR, ciphertext, CR, HMAC), as a QR code's text - "" for anything else.
+function sealed_qr_text( sealed )
+{
+   var parts = String( sealed || "" ).split( "\r" );
+
+   if( ( parts.length !== 4 ) || ( parts[ 0 ] !== "X" ) || !/^[0-9a-f]{32}$/.test( parts[ 1 ] ) || !/^([0-9a-f]{2})+$/.test( parts[ 2 ] )
+    || !/^[0-9a-f]{32}$/.test( parts[ 3 ] ) )
+      return "";
+
+   return c_sealed_qr_prefix + base45_encode( hex_bytes( parts[ 1 ] + parts[ 2 ] + parts[ 3 ] ) );
+}
+
+// NOTE: A QR code's text back to the encrypted message, as kept - "" for anything else.
+function sealed_from_qr( text )
+{
+   var value = String( text || "" ).trim( );
+
+   if( value.indexOf( c_sealed_qr_prefix ) !== 0 )
+      return "";
+
+   var bytes = base45_decode( value.substring( c_sealed_qr_prefix.length ) );
+
+   if( ( bytes === null ) || ( bytes.length <= c_sealed_salt_bytes + c_sealed_hmac_bytes ) )
+      return "";
+
+   var hex = bytes_hex( bytes );
+   var salt = hex.substring( 0, c_sealed_salt_bytes * 2 );
+   var hmac = hex.substring( hex.length - ( c_sealed_hmac_bytes * 2 ) );
+
+   return "X\r" + salt + "\r" + hex.substring( salt.length, hex.length - hmac.length ) + "\r" + hmac;
+}
+
 // NOTE: What is shown for a message the chat cannot read - an encrypted one, until it can decrypt, and later one whose key it
 // does not have; "" for one it can.
 function message_unreadable_label( text )
@@ -4315,6 +4427,10 @@ if( typeof module !== "undefined" )
       pending_invitations: pending_invitations,
       escape_message_text: escape_message_text,
       message_prefix: message_prefix,
+      base45_encode: base45_encode,
+      base45_decode: base45_decode,
+      sealed_qr_text: sealed_qr_text,
+      sealed_from_qr: sealed_from_qr,
       message_unreadable_label: message_unreadable_label,
       message_plain_text: message_plain_text,
       is_unencrypted_message: is_unencrypted_message,

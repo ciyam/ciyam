@@ -54,6 +54,144 @@ function chat_keys_load_scripts( )
    return g_chat_keys_scripts;
 }
 
+// NOTE: An encrypted message that cannot be read here, as a QR code (Ian, 2026-10-30: for the offline device, where it may be).
+// "qrcode.min.js" read only the first time one is shown.
+var g_chat_qr_library = null;
+
+function chat_qr_library( )
+{
+   if( g_chat_qr_library === null )
+   {
+      g_chat_qr_library = ( typeof QRCode !== "undefined" ) ? Promise.resolve( true ) : chat_keys_load_script( "qrcode.min.js" ).then( function( ok )
+      {
+         if( !ok )
+            g_chat_qr_library = null;
+
+         return ok;
+      } );
+   }
+
+   return g_chat_qr_library;
+}
+
+// NOTE: "text" as a QR code in alphanumeric mode - "qrcode.min.js" makes byte mode only, so its model is given the text as
+// alphanumeric data (mode 2: two characters in 11 bits, a last one in 6), and the smallest version that holds it is found.
+// Null if none does. The model is made from the library's own (its prototype is an object written out, so "constructor" is
+// not it), with what its constructor would set.
+function chat_alphanumeric_qr( text )
+{
+   var model_kind = Object.getPrototypeOf( new QRCode( document.createElement( "div" ), { text: "0", correctLevel: QRCode.CorrectLevel.M } )._oQRCode );
+
+   var data = {
+      mode: 2,
+      getLength: function( ) { return text.length; },
+      write: function( buffer )
+      {
+         for( var i = 0; i < text.length; i += 2 )
+         {
+            if( i + 1 < text.length )
+               buffer.put( ( c_base45_alphabet.indexOf( text[ i ] ) * 45 ) + c_base45_alphabet.indexOf( text[ i + 1 ] ), 11 );
+            else
+               buffer.put( c_base45_alphabet.indexOf( text[ i ] ), 6 );
+         }
+      } };
+
+   for( var version = 1; version <= 40; version++ )
+   {
+      try
+      {
+         var model = Object.assign( Object.create( model_kind ), { typeNumber: version, errorCorrectLevel: QRCode.CorrectLevel.M, modules: null,
+          moduleCount: 0, dataCache: null, dataList: [ data ] } );
+
+         model.make( );
+
+         return model;
+      }
+      catch( e )
+      {
+      }
+   }
+
+   return null;
+}
+
+// NOTE: The code drawn as an SVG, four modules of quiet space around it - a path of its dark modules.
+function chat_qr_svg( model )
+{
+   var count = model.getModuleCount( );
+   var size = count + 8;
+   var path = "";
+
+   for( var row = 0; row < count; row++ )
+   {
+      for( var col = 0; col < count; col++ )
+      {
+         if( model.isDark( row, col ) )
+            path += "M" + ( col + 4 ) + " " + ( row + 4 ) + "h1v1h-1z";
+      }
+   }
+
+   var svg = document.createElementNS( "http://www.w3.org/2000/svg", "svg" );
+   var dark = document.createElementNS( "http://www.w3.org/2000/svg", "path" );
+
+   svg.setAttribute( "viewBox", "0 0 " + size + " " + size );
+   svg.setAttribute( "shape-rendering", "crispEdges" );
+   svg.setAttribute( "aria-hidden", "true" );
+   svg.dataset.modules = String( count );
+
+   dark.setAttribute( "d", path );
+   dark.setAttribute( "fill", "#000000" );
+
+   svg.appendChild( dark );
+
+   return svg;
+}
+
+async function chat_show_qr( sealed )
+{
+   var box = document.getElementById( "qr_dialog_code" );
+   var error = document.getElementById( "qr_dialog_error" );
+
+   box.replaceChildren( );
+   error.textContent = "";
+
+   document.getElementById( "qr_dialog" ).hidden = false;
+   document.getElementById( "qr_dialog_close" ).focus( );
+
+   var text = sealed_qr_text( sealed );
+
+   if( text === "" )
+   {
+      error.textContent = "That message can't be shown as a QR code.";
+
+      return;
+   }
+
+   if( !await chat_qr_library( ) )
+   {
+      error.textContent = "What draws QR codes could not be read - reload the page to try again.";
+
+      return;
+   }
+
+   var model = chat_alphanumeric_qr( text );
+
+   if( model === null )
+   {
+      error.textContent = "That message is too long for a QR code.";
+
+      return;
+   }
+
+   box.appendChild( chat_qr_svg( model ) );
+}
+
+function do_close_qr_dialog( )
+{
+   document.getElementById( "qr_dialog" ).hidden = true;
+   document.getElementById( "qr_dialog_code" ).replaceChildren( );
+}
+
 function chat_keys_kept( )
 {
    var name = c_signin_storage_keys_prefix + ciyam.access;
@@ -251,6 +389,12 @@ function chat_offer_sealed_actions( element, opened )
 
    if( ( react !== null ) && ( react.dataset.sealed === "1" ) )
       react.hidden = !opened;
+
+   // NOTE: As a QR code only while it cannot be read here.
+   var qr = row.querySelector( ".chat-message-qr" );
+
+   if( ( qr !== null ) && qr.dataset.text )
+      qr.hidden = opened;
 }
 
 // NOTE: Drawn opened, when the open room has a secret - true if it is being handled here, false to show it can't be read.

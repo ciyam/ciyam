@@ -264,6 +264,12 @@ ok   a round trip keeps what was typed
 ok   sending turns a CR, or a CR and line feed, into a line feed
 ok   - so nothing typed can start 'X\r'
 ok   a message's kind from its start - a letter and a CR
+ok   Base45 - RFC 9285's examples
+ok   - and back
+ok   - not Base45: a value too big (RFC's 'GGW'), a lone character, one outside its 45
+ok   an encrypted message as a QR code's text - 'X:', then its bytes in Base45, only QR's alphanumeric characters
+ok   - read back exactly as kept
+ok   - nothing for what is not one
 ok   an encrypted message said so, not shown as its ciphertext
 ok   - and in the plain places, the pinned line and Home
 ok   a message not encrypted is marked, as 'irc.cin' marks one
