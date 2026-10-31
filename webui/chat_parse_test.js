@@ -1801,23 +1801,24 @@ heading( "polls" );
 
 var poll_written = cp.poll_text( "  Lunch on\nFriday? ", [ "Pizza", "", "  Sushi  rolls ", "Salad" ] );
 
-check( "a poll's message - the question, then each option after its reaction, one line each, empty ones left out", poll_written,
- "📊 Lunch on Friday?\n👍 Pizza\n❤️ Sushi rolls\n😀 Salad" );
-check( "- read back as a poll", cp.parse_poll( poll_written ), { question: "Lunch on Friday?", options: [ { code: "01", emoji: "👍", label: "Pizza" },
- { code: "09", emoji: "❤️", label: "Sushi rolls" }, { code: "05", emoji: "😀", label: "Salad" } ] } );
-check( "- all ten reactions, in turn - the facepalm's joined emoji too", cp.parse_poll( cp.poll_text( "Which?", [ "a", "b", "c", "d", "e", "f", "g", "h",
- "i", "j" ] ) ).options.map( function( o ) { return o.code; } ), cp.c_poll_codes );
-check( "not a poll - plain words, one option, a line not after a reaction, the same reaction twice, no question", [ cp.parse_poll( "Lunch?" ),
- cp.parse_poll( "📊 Lunch?\n👍 Pizza" ), cp.parse_poll( "📊 Lunch?\n👍 Pizza\nSushi" ), cp.parse_poll( "📊 Lunch?\n👍 Pizza\n👍 Sushi" ),
- cp.parse_poll( "📊 \n👍 Pizza\n❤️ Sushi" ) ], [ null, null, null, null, null ] );
+// NOTE: Lettered, not the reactions' emoji (Damon, 2026-10-31: a serious question would not suit them) - A votes with "00", B "01".
+check( "a poll's message - the question, then each option after its letter, one line each, empty ones left out", poll_written,
+ "📊 Lunch on Friday?\nA) Pizza\nB) Sushi rolls\nC) Salad" );
+check( "- read back as a poll", cp.parse_poll( poll_written ), { question: "Lunch on Friday?", options: [ { code: "00", letter: "A", label: "Pizza" },
+ { code: "01", letter: "B", label: "Sushi rolls" }, { code: "02", letter: "C", label: "Salad" } ] } );
+check( "- ten at most, A to J, each its reaction in turn", cp.parse_poll( cp.poll_text( "Which?", "abcdefghij".split( "" ) ) ).options.map( function( o )
+ { return o.letter + o.code; } ).join( " " ), "A00 B01 C02 D03 E04 F05 G06 H07 I08 J09" );
+check( "not a poll - plain words, one option, a line with no letter, letters out of order, no question", [ cp.parse_poll( "Lunch?" ),
+ cp.parse_poll( "📊 Lunch?\nA) Pizza" ), cp.parse_poll( "📊 Lunch?\nA) Pizza\nSushi" ), cp.parse_poll( "📊 Lunch?\nA) Pizza\nC) Sushi" ),
+ cp.parse_poll( "📊 \nA) Pizza\nB) Sushi" ) ], [ null, null, null, null, null ] );
 
 check( "what is wrong with one - none, no question, too few, too many, the same twice", [ cp.poll_problem( "Lunch?", [ "Pizza", "Sushi" ] ),
  cp.poll_problem( " ", [ "Pizza", "Sushi" ] ), cp.poll_problem( "Lunch?", [ "Pizza", " " ] ), cp.poll_problem( "Lunch?", "abcdefghijk".split( "" ) ),
  cp.poll_problem( "Lunch?", [ "Pizza", "pizza" ] ) ], [ "", "Write the question.", "Give at least two options.",
- "At most 10 options - one for each reaction.", "Two options are the same." ] );
+ "At most 10 options.", "Two options are the same." ] );
 
 var poll_read = cp.parse_poll( poll_written );
-var poll_votes = cp.poll_results( poll_read, [ { code: "01", people: [ "aaaaaa", "bbbbbb" ] }, { code: "05", people: [ "cccccc" ] },
+var poll_votes = cp.poll_results( poll_read, [ { code: "00", people: [ "aaaaaa", "bbbbbb" ] }, { code: "02", people: [ "cccccc" ] },
  { code: "07", people: [ "dddddd" ] } ], "cccccc" );
 
 check( "the votes - counts and shares, one's own, the leader; a reaction that is no option left out", [ poll_votes.total, poll_votes.votes,

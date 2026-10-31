@@ -1301,12 +1301,13 @@ function reaction_options( unique, code )
 }
 
 // NOTE: Polls (Ian, 2026-10-31: everyone joins, the question is pinned, a close set, then reactions only - the poll itself all in
-// the client, so it can be encrypted). A poll is an ordinary message - "📊 <question>", then an option a line, each after the
-// reaction that votes for it - so it reads as it is anywhere, Ian's console included. A vote is a reaction to it, so one each.
+// the client, so it can be encrypted). A poll is an ordinary message - "📊 <question>", then an option a line, "A) ...", "B) ..."
+// - so it reads as it is anywhere. A vote is a reaction to it, so one each: option A's the reaction "00", B's "01" and so on. The
+// reactions' emoji are not shown for them (Damon, 2026-10-31: a serious question would not suit them); Ian's console still shows
+// the votes as them, until there are reactions for polls of their own (keycap numbers - to suggest to him).
 const c_poll_marker = "📊";
 
-// NOTE: The reactions given to the options, in turn - the plainest first.
-const c_poll_codes = [ "01", "09", "05", "03", "00", "07", "06", "02", "04", "08" ];
+const c_poll_letters = [ "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" ];
 const c_poll_most_question = 200;
 const c_poll_most_option = 60;
 
@@ -1324,8 +1325,8 @@ function poll_problem( question, options )
    if( given.length < 2 )
       return "Give at least two options.";
 
-   if( given.length > c_poll_codes.length )
-      return "At most " + c_poll_codes.length + " options - one for each reaction.";
+   if( given.length > c_poll_letters.length )
+      return "At most " + c_poll_letters.length + " options.";
 
    if( given.some( function( option ) { return option.length > c_poll_most_option; } ) )
       return "An option is too long - at most " + c_poll_most_option + " characters each.";
@@ -1347,39 +1348,36 @@ function poll_text( question, options )
 
    return c_poll_marker + " " + one_line( question ) + given.map( function( option, n )
    {
-      return "\n" + c_reaction_emojis[ Number( c_poll_codes[ n ] ) ] + " " + option;
+      return "\n" + c_poll_letters[ n ] + ") " + option;
    } ).join( "" );
 }
 
-// NOTE: A message read as a poll - { question, options: [ { code, emoji, label } ] } - or null for any other.
+// NOTE: A message read as a poll - { question, options: [ { code, letter, label } ] } - or null for any other. The options in
+// order from A, none missed.
 function parse_poll( text )
 {
    var lines = String( text || "" ).split( /\r?\n/ ).filter( function( line ) { return line.trim( ) !== ""; } );
 
-   if( ( lines.length < 3 ) || ( lines[ 0 ].indexOf( c_poll_marker + " " ) !== 0 ) )
+   if( ( lines.length < 3 ) || ( lines.length > c_poll_letters.length + 1 ) || ( lines[ 0 ].indexOf( c_poll_marker + " " ) !== 0 ) )
       return null;
 
    var question = lines[ 0 ].substring( c_poll_marker.length + 1 ).trim( );
    var options = [ ];
-   var codes = { };
 
    for( var i = 1; i < lines.length; i++ )
    {
       var line = lines[ i ].trim( );
-      var n = c_reaction_emojis.findIndex( function( emoji ) { return line.indexOf( emoji + " " ) === 0; } );
+      var letter = c_poll_letters[ i - 1 ];
 
-      if( n < 0 )
+      if( line.indexOf( letter + ") " ) !== 0 )
          return null;
 
-      var code = ( n < 10 ? "0" : "" ) + n;
-      var label = line.substring( c_reaction_emojis[ n ].length + 1 ).trim( );
+      var label = line.substring( letter.length + 2 ).trim( );
 
-      if( ( label === "" ) || codes[ code ] )
+      if( label === "" )
          return null;
 
-      codes[ code ] = true;
-
-      options.push( { code: code, emoji: c_reaction_emojis[ n ], label: label } );
+      options.push( { code: "0" + ( i - 1 ), letter: letter, label: label } );
    }
 
    return ( question === "" ) ? null : { question: question, options: options };
@@ -1401,7 +1399,7 @@ function poll_results( poll, reactions, my_short )
 
       total += people.length;
 
-      return { code: option.code, emoji: option.emoji, label: option.label, count: people.length, mine: people.indexOf( my_short ) >= 0 };
+      return { code: option.code, letter: option.letter, label: option.label, count: people.length, mine: people.indexOf( my_short ) >= 0 };
    } );
 
    var most = Math.max.apply( null, options.map( function( option ) { return option.count; } ) );
@@ -4355,7 +4353,7 @@ if( typeof module !== "undefined" )
       in_time_order: in_time_order,
       last_editable: last_editable,
       edit_unchanged: edit_unchanged,
-      c_poll_codes: c_poll_codes,
+      c_poll_letters: c_poll_letters,
       poll_problem: poll_problem,
       poll_text: poll_text,
       parse_poll: parse_poll,

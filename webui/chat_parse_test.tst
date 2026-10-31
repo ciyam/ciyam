@@ -882,10 +882,10 @@ ok   reacting - given, the same again taken off, another replacing it
 ok   - sent as an edit to a space and its digits
 
 == polls =======================================================
-ok   a poll's message - the question, then each option after its reaction, one line each, empty ones left out
+ok   a poll's message - the question, then each option after its letter, one line each, empty ones left out
 ok   - read back as a poll
-ok   - all ten reactions, in turn - the facepalm's joined emoji too
-ok   not a poll - plain words, one option, a line not after a reaction, the same reaction twice, no question
+ok   - ten at most, A to J, each its reaction in turn
+ok   not a poll - plain words, one option, a line with no letter, letters out of order, no question
 ok   what is wrong with one - none, no question, too few, too many, the same twice
 ok   the votes - counts and shares, one's own, the leader; a reaction that is no option left out
 ok   - none yet

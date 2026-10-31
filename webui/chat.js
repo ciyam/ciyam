@@ -4081,15 +4081,14 @@ function fill_poll( holder, poll, reactions, give )
       bar.style.width = option.percent + "%";
       bar.setAttribute( "aria-hidden", "true" );
 
-      var emoji = document.createElement( "span" );
+      var letter = document.createElement( "span" );
 
-      emoji.className = "chat-poll-emoji";
-      emoji.textContent = option.emoji;
-      emoji.setAttribute( "aria-hidden", "true" );
+      letter.className = "chat-poll-letter";
+      letter.textContent = option.letter;
 
       var label = document.createElement( "span" );
 
-      label.className = "chat-poll-label";
+      label.className = "chat-poll-choice";
       label.textContent = option.label;
 
       var count = document.createElement( "span" );
@@ -4098,7 +4097,7 @@ function fill_poll( holder, poll, reactions, give )
       count.textContent = option.count + " · " + option.percent + "%";
 
       item.appendChild( bar );
-      item.appendChild( emoji );
+      item.appendChild( letter );
       item.appendChild( label );
       item.appendChild( count );
 
@@ -4488,7 +4487,19 @@ function render_pinned( )
       else
          draw_message_text( node.querySelector( ".chat-pinned-text" ), message.text );
 
-      fill_reactions( node.querySelector( ".chat-reactions" ), message.reactions || [ ], null );
+      // NOTE: A poll's votes say how many, not the reactions they are cast with (Damon, 2026-10-31).
+      var words = ( message_prefix( message.text ) === "X" ) ? chat_opened_text( message.text ) : message.text;
+      var poll = message.deleted ? null : parse_poll( words || "" );
+      var reactions_part = node.querySelector( ".chat-reactions" );
+
+      if( poll === null )
+         fill_reactions( reactions_part, message.reactions || [ ], null );
+      else
+      {
+         reactions_part.textContent = poll_results( poll, message.reactions || [ ], "" ).votes;
+         reactions_part.classList.add( "chat-poll-total" );
+         reactions_part.hidden = false;
+      }
 
       var open = node.querySelector( ".chat-pinned-open" );
 
@@ -5310,37 +5321,37 @@ function do_open_poll_dialog( )
    document.getElementById( "poll_question" ).focus( );
 }
 
-// NOTE: An option's row - the reaction that votes for it, and its words.
+// NOTE: An option's row - its letter, and its words.
 function do_add_poll_option( )
 {
    var holder = document.getElementById( "poll_options" );
    var n = holder.children.length;
 
-   if( n >= c_poll_codes.length )
+   if( n >= c_poll_letters.length )
       return;
 
    var row = document.createElement( "div" );
-   var emoji = document.createElement( "span" );
+   var letter = document.createElement( "span" );
    var input = document.createElement( "input" );
 
    row.className = "chat-poll-option-row";
 
-   emoji.className = "chat-poll-emoji";
-   emoji.textContent = c_reaction_emojis[ Number( c_poll_codes[ n ] ) ];
-   emoji.setAttribute( "aria-hidden", "true" );
+   letter.className = "chat-poll-letter";
+   letter.textContent = c_poll_letters[ n ];
+   letter.setAttribute( "aria-hidden", "true" );
 
    input.type = "text";
    input.className = "chat-field chat-poll-option-input";
    input.maxLength = 60;
    input.autocomplete = "off";
-   input.setAttribute( "aria-label", "Option " + ( n + 1 ) + " - voted for with " + c_reaction_names[ Number( c_poll_codes[ n ] ) ] );
+   input.setAttribute( "aria-label", "Option " + c_poll_letters[ n ] );
 
-   row.appendChild( emoji );
+   row.appendChild( letter );
    row.appendChild( input );
 
    holder.appendChild( row );
 
-   document.getElementById( "poll_add_option" ).hidden = ( holder.children.length >= c_poll_codes.length );
+   document.getElementById( "poll_add_option" ).hidden = ( holder.children.length >= c_poll_letters.length );
 
    if( n >= 2 )
       input.focus( );

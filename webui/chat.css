@@ -2270,21 +2270,46 @@ button.chat-poll-option:hover
    background: var(--color-chat-bg-selected);
 }
 
-.chat-poll-emoji,
-.chat-poll-label,
+.chat-poll-letter,
+.chat-poll-choice,
 .chat-poll-count
 {
    position: relative;
 }
 
-.chat-poll-label
+/* NOTE: An option's letter - plain, whatever the question (Damon, 2026-10-31: the reactions' emoji would not suit a serious one). */
+.chat-poll-letter
+{
+   flex: none;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   width: 22px;
+   height: 22px;
+   border: 1px solid var(--color-chat-border-strong);
+   border-radius: var(--radius-circle);
+   background: var(--color-chat-bg);
+   color: var(--color-chat-text-secondary);
+   font-family: var(--font-family-chat-mono);
+   font-size: var(--font-size-chat-tiny);
+   font-weight: 600;
+}
+
+.chat-poll-option.is-mine .chat-poll-letter
+{
+   border-color: var(--color-chat-accent);
+   background: var(--color-chat-accent);
+   color: #ffffff;
+}
+
+.chat-poll-choice
 {
    flex: 1 1 auto;
    min-width: 0;
    overflow-wrap: anywhere;
 }
 
-.chat-poll-option.is-mine .chat-poll-label
+.chat-poll-option.is-mine .chat-poll-choice
 {
    font-weight: 600;
 }
