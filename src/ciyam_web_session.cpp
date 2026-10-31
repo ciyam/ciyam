@@ -101,6 +101,10 @@ constexpr const char* c_css_suffix = ".css";
 constexpr const char* c_keys_suffix = ".keys";
 constexpr const char* c_list_suffix = ".list";
 
+constexpr const char* c_keys_guard_prefix = "UK#:";
+
+const size_t c_keys_guard_max_rounds = 1000000;
+
 constexpr const char* c_username_suffix = "@";
 
 constexpr const char* c_device_map_file = ".devices";
@@ -1549,6 +1553,74 @@ void dump_session_info( ostream& os, bool full )
        << ' ' << ( i->second->username.empty( ) ? g_none_tag : i->second->username ) << " (" << i->second->ip_addr << ")\n";
 }
 
+// NOTE: User keys can start with a guard line "UK#:<rounds>:<check>" where the "check" is the SHA-256
+// of "user_keys_check" and the user's entropy which is then re-hashed once per round. As a hash cannot
+// be reversed only the twelve words will produce the check for fewer rounds (whereas anyone could hash
+// it on to more rounds).
+bool get_keys_guard( const string& keys_data, size_t& rounds, string& check )
+{
+   bool retval = false;
+
+   if( keys_data.find( c_keys_guard_prefix ) == 0 )
+   {
+      vector< string > parts;
+
+      split( keys_data.substr( 0, keys_data.find( '\n' ) ), parts, ':' );
+
+      if( ( parts.size( ) == 3 ) && !parts[ 1 ].empty( ) && ( parts[ 1 ].length( ) <= 7 )
+       && ( parts[ 1 ][ 0 ] != '0' ) && ( parts[ 1 ].find_first_not_of( "0123456789" ) == string::npos )
+       && ( parts[ 2 ].length( ) == ( c_sha256_digest_size * 2 ) )
+       && ( parts[ 2 ].find_first_not_of( "0123456789abcdef" ) == string::npos ) )
+      {
+         rounds = from_string< size_t >( parts[ 1 ] );
+         check = parts[ 2 ];
+
+         retval = ( rounds <= c_keys_guard_max_rounds );
+      }
+   }
+
+   return retval;
+}
+
+// NOTE: Once keys are guarded they can only be replaced or erased with the same guard, or one with
+// fewer rounds whose check (when hashed on to the old rounds) matches (Ian's suggestion, 2026-10-27).
+bool is_permitted_by_keys_guard( const string& file_name, const string& new_data )
+{
+   bool retval = true;
+
+   if( file_exists( file_name ) )
+   {
+      string old_data;
+
+      buffer_file( old_data, file_name );
+
+      size_t old_rounds = 0;
+      string old_check;
+
+      if( get_keys_guard( old_data, old_rounds, old_check ) )
+      {
+         size_t new_rounds = 0;
+         string new_check;
+
+         retval = false;
+
+         if( get_keys_guard( new_data, new_rounds, new_check ) && ( new_rounds <= old_rounds ) )
+         {
+            for( size_t i = new_rounds; i < old_rounds; i++ )
+            {
+               sha256 hash( new_check );
+
+               new_check = hash.get_digest_as_string( );
+            }
+
+            retval = ( new_check == old_check );
+         }
+      }
+   }
+
+   return retval;
+}
+
 bool ip_addr_belongs_to_a_web_session( const string& ip_addr )
 {
    guard g( g_mutex );
@@ -2946,6 +3018,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   else if( is_locked )
                      // FUTURE: This message should be handled as a server string message.
                      error = "User keys data cannot be saved whilst system is locked.";
+                  else if( !is_permitted_by_keys_guard( file_name, payload ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "User keys can only be replaced using the words they were set up with.";
                   else
                   {
                      found = true;
@@ -2972,6 +3047,10 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   if( is_locked )
                      // FUTURE: This message should be handled as a server string message.
                      error = "User keys data cannot be erased whilst the system is locked.";
+                  else if( !is_permitted_by_keys_guard(
+                   g_cws_artifacts_dir + '/' + c_ciyam_prefix + access + c_keys_suffix, payload ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     error = "User keys can only be erased using the words they were set up with.";
                   else
                   {
                      string file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + access + c_keys_suffix );
