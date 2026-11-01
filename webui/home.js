@@ -3529,6 +3529,21 @@ function install_people( )
    {
       button.addEventListener( "click", function( ) { show_people( "people" ); } );
    } );
+
+   // NOTE: Enter on the code or the PIN made, while its heading has the focus (as it does when shown), is "Done" - so
+   // a person is added with Enter twice (Ian, 2026-11-01). An Enter held down from creating it is not taken as well.
+   [ "handover", "ready" ].forEach( function( view )
+   {
+      document.getElementById( view + "_section" ).addEventListener( "keydown", function( event )
+      {
+         if( ( event.key === "Enter" ) && !event.repeat && ( event.target.tagName === "H1" ) )
+         {
+            event.preventDefault( );
+
+            document.getElementById( view + "_done" ).click( );
+         }
+      } );
+   } );
 }
 
 // NOTE: Admin's figures, logs and the log chosen are not left for whoever signs in next in this tab (found by review).
