@@ -2574,7 +2574,7 @@ function render_held( )
       held.className = "chat-held-message";
 
       // NOTE: A room key cut short, as in the conversation ("room_key_masked( )").
-      draw_formatted( held, format_pieces( room_key_masked( text ) ) );
+      draw_formatted( held, format_pieces( room_key_masked( text ) ), true );
 
       host.appendChild( held );
    } );
@@ -4066,7 +4066,7 @@ function mark_poll( element, text )
 
    // NOTE: Its question alone - in the pinned strip too, which has no options under it.
    if( poll !== null )
-      draw_formatted( element, format_pieces( c_poll_marker + " " + poll.question ) );
+      draw_formatted( element, format_pieces( c_poll_marker + " " + poll.question ), links_here( element ) );
 
    var row = element.closest( ".chat-message, .chat-pinned" );
 
@@ -5799,14 +5799,14 @@ function draw_message_text( element, text, room )
    if( unreadable !== "" )
       element.textContent = unreadable;
    else
-      draw_formatted( element, format_pieces( room_key_masked( text ) ) );
+      draw_formatted( element, format_pieces( room_key_masked( text ) ), links_here( element ) );
 
    mark_poll( element, ( unreadable === "" ) ? text : "" );
 }
 
 // NOTE: A message's words with their colour and style - a span each run ("format_pieces( )"), the words always as text and
-// the class names only from Ian's codes, never from the message.
-function draw_formatted( element, pieces )
+// the class names only from Ian's codes, never from the message. With "links" its web addresses are links too ("links_here( )").
+function draw_formatted( element, pieces, links )
 {
    element.replaceChildren( );
 
@@ -5825,7 +5825,7 @@ function draw_formatted( element, pieces )
 
       if( classes.length === 0 )
       {
-         element.appendChild( document.createTextNode( piece.text ) );
+         draw_words( element, piece.text, links );
 
          return;
       }
@@ -5833,10 +5833,44 @@ function draw_formatted( element, pieces )
       var span = document.createElement( "span" );
 
       span.className = classes.join( " " );
-      span.textContent = piece.text;
+      draw_words( span, piece.text, links );
 
       element.appendChild( span );
    } );
+}
+
+// NOTE: Words, and with "links" each web address in them as a link ("message_links( )") - the address set as a property and
+// shown as text, opened in a new tab that is told neither where it came from nor given a hold on this one. Nothing is fetched
+// until it is clicked, so there are no previews (the client makes no outside requests).
+function draw_words( parent, text, links )
+{
+   ( links ? message_links( text ) : [ { text: text, url: "" } ] ).forEach( function( piece )
+   {
+      if( piece.url === "" )
+      {
+         parent.appendChild( document.createTextNode( piece.text ) );
+
+         return;
+      }
+
+      var link = document.createElement( "a" );
+
+      link.className = "chat-link";
+      link.href = piece.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.title = "Opens " + piece.url + " in a new tab";
+      link.textContent = piece.text;
+
+      parent.appendChild( link );
+   } );
+}
+
+// NOTE: Whether a message's addresses are links where it is drawn - not in the pinned strip, whose words are in a button that
+// shows the message itself (its links there), as a link cannot be clicked inside one.
+function links_here( element )
+{
+   return element.closest( "button" ) === null;
 }
 
 // NOTE: The preview above the box - while what is typed holds one of Ian's codes. Not in the Admin room while its

@@ -276,6 +276,21 @@ ok   - and in the plain places, the pinned line and Home
 ok   a message not encrypted is marked, as 'irc.cin' marks one
 ok   - only where it could have been encrypted - a room with no key says so once instead
 
+== links in messages ===========================================
+ok   an address in words becomes a link, the words either side kept
+ok   - a message with none is one piece of words, and nothing is none
+ok   - http too, two in one message, and one at each end
+ok   - the full stop, comma or quote after one left out
+ok   - a closing bracket only with its opening one, as Wikipedia's are
+ok   - the query and the part after a '#' are its own
+ok   not 'javascript:', 'data:', 'ftp:' nor a bare 'www.' - those stay words
+ok   - nor one inside a longer word, nor one with no host
+ok   - nor one with a name before its host, that reads as somewhere it is not
+ok   a look-alike international host shown as it is opened, in its 'xn--' form
+ok   - as is one with a hidden right to left mark, or a host encoded in '%'
+ok   - a host in capitals or a path in another script shown as typed
+ok   an address stops at a space, a line break or a '<'
+
 == message size ================================================
 ok   letters are a byte each
 ok   an accented letter is two

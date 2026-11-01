@@ -2167,6 +2167,25 @@ button.chat-avatar:hover
    white-space: pre-wrap;
 }
 
+/* NOTE: A web address in a message ("draw_words( )") - a long one breaks anywhere rather than widening the message, and in
+   words given a colour it keeps theirs. */
+.chat-link
+{
+   color: var(--color-chat-accent-deep);
+   text-decoration: underline;
+   overflow-wrap: anywhere;
+}
+
+.chat-link:hover
+{
+   text-decoration-thickness: 2px;
+}
+
+[class*="chat-fg-"] > .chat-link
+{
+   color: inherit;
+}
+
 .chat-edit-tag
 {
    margin-left: 6px;

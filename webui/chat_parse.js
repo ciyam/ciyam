@@ -556,6 +556,91 @@ function message_plain_text( text )
    return message_unreadable_label( text ) || strip_format( text );
 }
 
+// NOTE: A message's words split at its web addresses (Damon, 2026-09-28; the rules in "Room Joining and Links" in the vault) -
+// pieces of "{ text, url }", "url" being "" for words. Only "http" and "https", and only as "URL" reads them; a full stop, comma
+// or quote after one is not part of it, nor a closing bracket without its opening one (Wikipedia's "..._(x)" keeps its own). One
+// with a name before its host ("https://bank.example@other.example") stays words, as it reads as somewhere it is not. It is
+// shown as typed, but where its host is not as typed - a look-alike international name, a "%" in it - or it has an invisible
+// character (a right to left mark, say), as "URL" has it: the name in its "xn--" form, and the rest encoded.
+const c_link_after = ".,;:!?'\"*’”»…";
+const c_link_closers = { ")": "(", "]": "[", "}": "{" };
+
+function link_length( candidate )
+{
+   var end = candidate.length;
+
+   while( end > 0 )
+   {
+      var c = candidate.charAt( end - 1 );
+      var part = candidate.substring( 0, end );
+
+      if( ( c_link_after.indexOf( c ) < 0 ) && ( !c_link_closers.hasOwnProperty( c )
+       || ( part.split( c_link_closers[ c ] ).length >= part.split( c ).length ) ) )
+         break;
+
+      --end;
+   }
+
+   return end;
+}
+
+function link_url( candidate )
+{
+   var url = null;
+
+   try
+   {
+      url = new URL( candidate );
+   }
+   catch( e )
+   {
+      return null;
+   }
+
+   if( ( ( url.protocol !== "http:" ) && ( url.protocol !== "https:" ) ) || ( url.hostname === "" )
+    || ( url.username !== "" ) || ( url.password !== "" ) )
+      return null;
+
+   return url;
+}
+
+function message_links( text )
+{
+   var value = String( text || "" );
+   var pattern = /https?:\/\/[^\s<>"]+/gi;
+   var pieces = [ ];
+   var from = 0;
+   var found = null;
+
+   while( ( found = pattern.exec( value ) ) !== null )
+   {
+      // NOTE: Not the end of a longer word ("xhttp://").
+      if( ( found.index > 0 ) && /[a-z0-9]/i.test( value.charAt( found.index - 1 ) ) )
+         continue;
+
+      var candidate = found[ 0 ].substring( 0, link_length( found[ 0 ] ) );
+      var url = link_url( candidate );
+
+      if( url === null )
+         continue;
+
+      var typed_host = candidate.substring( candidate.indexOf( "://" ) + 3 ).split( /[\/?#]/ )[ 0 ].toLowerCase( );
+
+      if( found.index > from )
+         pieces.push( { text: value.substring( from, found.index ), url: "" } );
+
+      pieces.push( { text: ( ( typed_host === url.host ) && !/\p{Cf}/u.test( candidate ) ) ? candidate : url.href, url: url.href } );
+
+      from = found.index + candidate.length;
+      pattern.lastIndex = from;
+   }
+
+   if( from < value.length )
+      pieces.push( { text: value.substring( from ), url: "" } );
+
+   return pieces;
+}
+
 // NOTE: Whether a message is marked as not encrypted - a warning sign before it, as "irc.cin" marks one (Ian, 2026-10-26: as
 // nearly every message should be encrypted, only those that aren't are marked, as Element does). Only where it could have been -
 // "keyed", a room with a key here, or a direct message with one for the other person: a room with none says so once, under its
@@ -4449,6 +4534,7 @@ if( typeof module !== "undefined" )
       scanned_message: scanned_message,
       message_unreadable_label: message_unreadable_label,
       message_plain_text: message_plain_text,
+      message_links: message_links,
       is_unencrypted_message: is_unencrypted_message,
       c_reaction_emojis: c_reaction_emojis,
       c_reaction_names: c_reaction_names,

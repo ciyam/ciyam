@@ -588,6 +588,46 @@ check( "a message not encrypted is marked, as 'irc.cin' marks one", [ cp.is_unen
 check( "- only where it could have been encrypted - a room with no key says so once instead",
  cp.is_unencrypted_message( "hello", "0000069", false ), false );
 
+heading( "links in messages" );
+
+// NOTE: Each piece as "words" or "[shown -> opened]", so a check reads as the message does.
+function linked( text )
+{
+   return cp.message_links( text ).map( function( p ) { return p.url ? "[" + p.text + " -> " + p.url + "]" : p.text; } );
+}
+
+check( "an address in words becomes a link, the words either side kept", linked( "see https://ciyam.org/docs for more" ),
+ [ "see ", "[https://ciyam.org/docs -> https://ciyam.org/docs]", " for more" ] );
+check( "- a message with none is one piece of words, and nothing is none", [ linked( "no links here" ), linked( "" ) ],
+ [ [ "no links here" ], [ ] ] );
+check( "- http too, two in one message, and one at each end", linked( "http://a.example and https://b.example/x" ),
+ [ "[http://a.example -> http://a.example/]", " and ", "[https://b.example/x -> https://b.example/x]" ] );
+check( "- the full stop, comma or quote after one left out", [ linked( "Go to https://ciyam.org." ), linked( "https://a.example/x, then" ),
+ linked( "\"https://a.example/q?x=1\"" ) ], [ [ "Go to ", "[https://ciyam.org -> https://ciyam.org/]", "." ],
+ [ "[https://a.example/x -> https://a.example/x]", ", then" ], [ "\"", "[https://a.example/q?x=1 -> https://a.example/q?x=1]", "\"" ] ] );
+check( "- a closing bracket only with its opening one, as Wikipedia's are", [ linked( "(see https://a.example/x)" ),
+ linked( "https://en.wikipedia.org/wiki/Bit_(unit)" ) ], [ [ "(see ", "[https://a.example/x -> https://a.example/x]", ")" ],
+ [ "[https://en.wikipedia.org/wiki/Bit_(unit) -> https://en.wikipedia.org/wiki/Bit_(unit)]" ] ] );
+check( "- the query and the part after a '#' are its own", linked( "https://a.example/p?q=a&b=2#top" ),
+ [ "[https://a.example/p?q=a&b=2#top -> https://a.example/p?q=a&b=2#top]" ] );
+check( "not 'javascript:', 'data:', 'ftp:' nor a bare 'www.' - those stay words", [ linked( "javascript:alert(1)" ),
+ linked( "data:text/html,<b>x</b>" ), linked( "ftp://a.example" ), linked( "www.a.example" ) ],
+ [ [ "javascript:alert(1)" ], [ "data:text/html,<b>x</b>" ], [ "ftp://a.example" ], [ "www.a.example" ] ] );
+check( "- nor one inside a longer word, nor one with no host", [ linked( "xhttps://a.example" ), linked( "https:// nothing" ) ],
+ [ [ "xhttps://a.example" ], [ "https:// nothing" ] ] );
+check( "- nor one with a name before its host, that reads as somewhere it is not", linked( "https://bank.example@other.example/" ),
+ [ "https://bank.example@other.example/" ] );
+check( "a look-alike international host shown as it is opened, in its 'xn--' form", linked( "https://аpple.com/" ),
+ [ "[https://xn--pple-43d.com/ -> https://xn--pple-43d.com/]" ] );
+check( "- as is one with a hidden right to left mark, or a host encoded in '%'", [ linked( "https://a.example/‮fdp.exe" ),
+ linked( "https://%61.example/" ) ], [ [ "[https://a.example/%E2%80%AEfdp.exe -> https://a.example/%E2%80%AEfdp.exe]" ],
+ [ "[https://a.example/ -> https://a.example/]" ] ] );
+check( "- a host in capitals or a path in another script shown as typed", [ linked( "HTTPS://CIYAM.org" ),
+ linked( "https://de.wikipedia.org/wiki/Köln" ) ], [ [ "[HTTPS://CIYAM.org -> https://ciyam.org/]" ],
+ [ "[https://de.wikipedia.org/wiki/Köln -> https://de.wikipedia.org/wiki/K%C3%B6ln]" ] ] );
+check( "an address stops at a space, a line break or a '<'", linked( "https://a.example/x<y\nhttps://b.example z" ),
+ [ "[https://a.example/x -> https://a.example/x]", "<y\n", "[https://b.example -> https://b.example/]", " z" ] );
+
 heading( "message size" );
 
 check( "letters are a byte each", cp.message_bytes( "hello" ), 5 );
