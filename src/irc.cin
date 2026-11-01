@@ -285,7 +285,7 @@ NUM_OPTS=@$NUM_OPTS+1
 POS=@strpos:\nG):$EDIT_MSG_CONTENT
 @ifdef $POS
 NUM_OPTS=@$NUM_OPTS+1
-;;;POS=@strpos:\nH):$EDIT_MSG_CONTENT
+POS=@strpos:\nH):$EDIT_MSG_CONTENT
 @ifdef $POS
 NUM_OPTS=@$NUM_OPTS+1
 POS=@strpos:\nI):$EDIT_MSG_CONTENT
@@ -322,27 +322,44 @@ NUM_OPTS=@$NUM_OPTS+1
 @ifndef $IS_POLL
 &Reaction? [EDITED_MESSAGE:none==_|a 👌=_ 00|b 👍=_ 01|c 👎=_ 02|d 🙂=_ 03|e 🙁=_ 04|f 😀=_ 05|g 😲=_ 06|h 🤓=_ 07|i 🤦‍♂️=_ 08|j ❤️=_ 09] (hit 'a'..'j' or Enter)
 @else
-@ifeq $NUM_OPTS 1
-&Choose option? [EDITED_MESSAGE:none==_|a 🇦=_ 00] (hit 'a' or Enter)
-@elif $NUM_OPTS = 2
-&Choose option? [EDITED_MESSAGE:none==_|a 🇦=_ 00|b 🇧=_ 01] (hit 'a', 'b' or Enter)
-@elif $NUM_OPTS = 3
-&Choose option? [EDITED_MESSAGE:none==_|a 🇦=_ 00|b 🇧=_ 01|c 🇨=_ 02] (hit 'a'..'c' or Enter)
-@elif $NUM_OPTS = 4
-&Choose option? [EDITED_MESSAGE:none==_|a 🇦=_ 00|b 🇧=_ 01|c 🇨=_ 02|d 🇩=_ 03] (hit 'a'..'d' or Enter)
-@elif $NUM_OPTS = 5
-&Choose option? [EDITED_MESSAGE:none==_|a 🇦=_ 00|b 🇧=_ 01|c 🇨=_ 02|d 🇩=_ 03|e 🇪=_ 04] (hit 'a'..'e' or Enter)
-@elif $NUM_OPTS = 6
-&Choose option? [EDITED_MESSAGE:none==_|a 🇦=_ 00|b 🇧=_ 01|c 🇨=_ 02|d 🇩=_ 03|e 🇪=_ 04|f 🇫=_ 05] (hit 'a'..'f' or Enter)
-@elif $NUM_OPTS = 6
-&Choose option? [EDITED_MESSAGE:none==_|a 🇦=_ 00|b 🇧=_ 01|c 🇨=_ 02|d 🇩=_ 03|e 🇪=_ 04|f 🇫=_ 05|g 🇬=_ 06] (hit 'a'..'g' or Enter)
-@elif $NUM_OPTS = 7
-&Choose option? [EDITED_MESSAGE:none==_|a 🇦=_ 00|b 🇧=_ 01|c 🇨=_ 02|d 🇩=_ 03|e 🇪=_ 04|f 🇫=_ 05|g 🇬=_ 06|h ​🇭=_ 07] (hit 'a'..'h' or Enter)
-@elif $NUM_OPTS = 8
-&Choose option? [EDITED_MESSAGE:none==_|a 🇦=_ 00|b 🇧=_ 01|c 🇨=_ 02|d 🇩=_ 03|e 🇪=_ 04|f 🇫=_ 05|g 🇬=_ 06|h ​🇭=_ 07|i 🇮=_ 08] (hit 'a'..'i' or Enter)
-@else
-&Choose option? [EDITED_MESSAGE:none==_|a 🇦=_ 00|b 🇧=_ 01|c 🇨=_ 02|d 🇩=_ 03|e 🇪=_ 04|f 🇫=_ 05|g 🇬=_ 06|h ​🇭=_ 07|i 🇮=_ 08|j 🇯=_ 09] (hit 'a'..'j' or Enter)
+;
+OPTS_PREFIX=[EDITED_MESSAGE:none==_|a 🇦=_ 00
+OPTS_SUFFIX=] (hit letter or Enter)
+;
+OPTS_OTHERS=
+;
+@if $NUM_OPTS #> 1
+OPTS_OTHERS=|b 🇧=_ 01
 @endif
+@if $NUM_OPTS #> 2
+OPTS_OTHERS=$OPTS_OTHERS|c 🇨=_ 02
+@endif
+@if $NUM_OPTS #> 3
+OPTS_OTHERS=$OPTS_OTHERS|d 🇩=_ 03
+@endif
+@if $NUM_OPTS #> 4
+OPTS_OTHERS=$OPTS_OTHERS|e 🇪=_ 04
+@endif
+@if $NUM_OPTS #> 5
+OPTS_OTHERS=$OPTS_OTHERS|f 🇫=_ 05
+@endif
+@if $NUM_OPTS #> 6
+OPTS_OTHERS=$OPTS_OTHERS|g 🇬=_ 06
+@endif
+@if $NUM_OPTS #> 7
+OPTS_OTHERS=$OPTS_OTHERS|h ​🇭=_ 07
+@endif
+@if $NUM_OPTS #> 8
+OPTS_OTHERS=$OPTS_OTHERS|i 🇮=_ 08
+@endif
+@if $NUM_OPTS #> 9
+OPTS_OTHERS=$OPTS_OTHERS|j 🇯=_ 09
+@endif
+;
+CHOOSE_OPTS=&Choose option? $OPTS_PREFIX$OPTS_OTHERS$OPTS_SUFFIX
+;
+$CHOOSE_OPTS
+;
 @endif
 @endif
 ;
