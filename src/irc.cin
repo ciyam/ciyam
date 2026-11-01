@@ -980,6 +980,16 @@ CHECK_MESSAGE=@repstr: /:$DECODED_MESSAGE
 @ifneq "$CHECK_MESSAGE" ""
 DECODED_MESSAGE=$WARN_EMOJI$DECODED_MESSAGE
 @endif
+@else
+; NOTE: If found "closes" then replace
+; "unix time" with a local time stamp.
+POS=@strpos:closes :$DECODED_MESSAGE
+@ifeq "$POS" "1"
+PARTS=@repstr: /\n:$DECODED_MESSAGE
+WHEN=@date:%PARTS:4%:yyyy-mm-dd hh:mm
+DECODED_MESSAGE=@repstr:%PARTS:4%/:$DECODED_MESSAGE
+DECODED_MESSAGE=@strlit:$DECODED_MESSAGE$WHEN
+@endif
 @endif
 @endif
 @endif
