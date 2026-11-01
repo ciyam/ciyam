@@ -70,8 +70,19 @@ function people_picker( host, options )
    picker.clear = picker_element( "button", "chat-picker-clear", "Clear" );
    picker.clear.type = "button";
 
+   // NOTE: Everyone ticked at once, where the page offers it ("picker.set_everyone( )").
+   picker.everyone = picker_element( "button", "chat-picker-everyone", "Everyone" );
+   picker.everyone.type = "button";
+   picker.everyone.hidden = true;
+   picker.offer_everyone = false;
+
+   var actions = picker_element( "span", "chat-picker-actions" );
+
+   actions.appendChild( picker.everyone );
+   actions.appendChild( picker.clear );
+
    meta.appendChild( picker.count );
-   meta.appendChild( picker.clear );
+   meta.appendChild( actions );
 
    picker.list = picker_element( "div", "chat-picker-list" );
 
@@ -109,6 +120,15 @@ function people_picker( host, options )
    picker.chosen = function( )
    {
       return picker.boxes( ).filter( function( box ) { return box.checked; } ).map( function( box ) { return box.value; } );
+   };
+
+   // NOTE: "Everyone" offered - ticking everyone who can be chosen, those the search hides too (Damon, 2026-09-28: "Invite
+   // everyone"). Only in a choice of any number, and only while someone is left to tick.
+   picker.set_everyone = function( offer )
+   {
+      picker.offer_everyone = !!offer;
+
+      picker.refresh( );
    };
 
    // NOTE: One person only, or any number.
@@ -245,6 +265,8 @@ function people_picker( host, options )
 
       picker.count.textContent = picker_count_text( picker.single ? 0 : chosen.length, picker.people );
       picker.clear.hidden = ( chosen.length === 0 );
+      picker.everyone.hidden = !picker.offer_everyone || picker.single
+       || !picker.boxes( ).some( function( box ) { return !box.disabled && !box.checked; } );
 
       var shown = 0;
 
@@ -335,6 +357,15 @@ function people_picker( host, options )
    done.onclick = function( )
    {
       picker.close( "done" );
+   };
+
+   picker.everyone.onclick = function( )
+   {
+      picker.boxes( ).forEach( function( box ) { if( !box.disabled ) box.checked = true; } );
+
+      picker.changed( );
+
+      picker.search.focus( );
    };
 
    picker.clear.onclick = function( )

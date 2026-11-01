@@ -2296,6 +2296,9 @@ function do_open_create_room( )
    invite_picker( ).reset( );
    invite_picker( ).set_single( false );
 
+   // NOTE: "Everyone" - its maker is the room's owner (Damon, 2026-09-28: "Invite everyone").
+   invite_picker( ).set_everyone( true );
+
    document.getElementById( "room_dialog" ).hidden = false;
    document.getElementById( "room_dialog_name" ).focus( );
 
@@ -3092,6 +3095,10 @@ function do_open_invite( )
 
    invite_picker( ).reset( );
    invite_picker( ).set_single( false );
+
+   // NOTE: "Everyone" not in the room or invited already - for its owner or admin (Damon, 2026-09-28: "Invite everyone"); those
+   // in it were left out of the list, and those invited are greyed as their receipts arrive ("mark_already_invited( )").
+   invite_picker( ).set_everyone( chat_is_room_owner( ) || ciyam.is_admin );
 
    document.getElementById( "room_dialog" ).hidden = false;
 

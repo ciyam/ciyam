@@ -3516,7 +3516,14 @@ button.chat-reaction:hover
    color: var(--color-chat-text-secondary);
 }
 
-.chat-picker-clear
+.chat-picker-actions
+{
+   display: flex;
+   gap: 12px;
+}
+
+.chat-picker-clear,
+.chat-picker-everyone
 {
    padding: 0;
    border: 0;
