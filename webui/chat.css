@@ -2234,6 +2234,45 @@ button.chat-avatar:hover
    height: auto;
 }
 
+/* NOTE: Scanning one back in - the camera's picture, put here by "html5-qrcode", and nothing while there is none. */
+.chat-scan-reader
+{
+   overflow: hidden;
+   border-radius: var(--radius-sm);
+   background: #000000;
+}
+
+.chat-scan-reader:empty
+{
+   display: none;
+}
+
+.chat-scan-reader video
+{
+   display: block;
+   width: 100% !important;
+   height: auto;
+}
+
+/* NOTE: What a scanned message says, where it can be read here - as typed, line breaks and all. */
+.chat-scan-text
+{
+   max-height: 200px;
+   overflow-y: auto;
+   padding: 8px 12px;
+   border-left: 3px solid var(--color-chat-accent);
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-bg-raised);
+   white-space: pre-wrap;
+   overflow-wrap: anywhere;
+}
+
+/* NOTE: The picture on the left, apart from Cancel and Post. */
+.chat-scan-picture
+{
+   margin-right: auto;
+}
+
 /* NOTE: Reactions beneath the message (Ian, 2026-10-29) - under its text; "seen by" stays on the first line. */
 .chat-reactions
 {

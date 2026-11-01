@@ -270,6 +270,7 @@ ok   - not Base45: a value too big (RFC's 'GGW'), a lone character, one outside 
 ok   an encrypted message as a QR code's text - 'X:', then its bytes in Base45, only QR's alphanumeric characters
 ok   - read back exactly as kept
 ok   - nothing for what is not one
+ok   a code scanned in to post - the message as kept, or why not
 ok   an encrypted message said so, not shown as its ciphertext
 ok   - and in the plain places, the pinned line and Home
 ok   a message not encrypted is marked, as 'irc.cin' marks one

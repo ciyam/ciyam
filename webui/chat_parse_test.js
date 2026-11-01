@@ -570,6 +570,11 @@ check( "an encrypted message as a QR code's text - 'X:', then its bytes in Base4
 check( "- read back exactly as kept", cp.sealed_from_qr( sealed_qr ), sealed_kept );
 check( "- nothing for what is not one", [ cp.sealed_qr_text( "hello" ), cp.sealed_qr_text( "X\rzz\r00\r00" ), cp.sealed_from_qr( "hello" ),
  cp.sealed_from_qr( "X:BB8" ), cp.sealed_from_qr( "X:bb8" ) ], [ "", "", "", "", "" ] );
+check( "a code scanned in to post - the message as kept, or why not", [ cp.scanned_message( " " + sealed_qr + "\n" ),
+ cp.scanned_message( "https://example.com" ), cp.scanned_message( "X:BB8" ),
+ cp.scanned_message( cp.sealed_qr_text( "X\r" + "00".repeat( 16 ) + "\r" + "ab".repeat( 1200 ) + "\r" + "00".repeat( 16 ) ) ) ], [
+ { sealed: sealed_kept }, { problem: "That QR code isn't an encrypted message." }, { problem: "That QR code isn't an encrypted message." },
+ { problem: "That encrypted message is too long to post - at most 2200 bytes." } ] );
 check( "an encrypted message said so, not shown as its ciphertext", [ cp.message_unreadable_label( "X\r9f3c" ),
  cp.message_unreadable_label( "Q\rzz" ), cp.message_unreadable_label( "hello" ) ],
  [ "Encrypted message - this chat cannot read it yet", "A message of a kind this chat cannot show yet", "" ] );

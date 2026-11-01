@@ -225,6 +225,12 @@ function chat( )
 
          event.preventDefault( );
       }
+      else if( !document.getElementById( "scan_dialog" ).hidden )
+      {
+         do_close_scan_dialog( );
+
+         event.preventDefault( );
+      }
       // NOTE: Not while its "Start the poll?" is asked over it - Escape answers that alone ("dialog.js").
       else if( !document.getElementById( "poll_dialog" ).hidden
        && !( document.getElementById( "dialog_scrim" ) && !document.getElementById( "dialog_scrim" ).hidden ) )
@@ -1335,6 +1341,7 @@ async function do_disconnect( already_ended )
    // NOTE: A poll being written, and an encrypted message's QR code, were this account's too (found by review, 2026-11-01).
    do_close_poll_dialog( );
    do_close_qr_dialog( );
+   do_close_scan_dialog( );
 
    chat_room_key_reset( );
 
@@ -1864,6 +1871,10 @@ function select_room( room, token )
       do_abandon_edit( );
 
    close_react_menu( false );
+
+   // NOTE: A message being scanned in is posted in the room it was scanned in, so it goes with it.
+   if( !document.getElementById( "scan_dialog" ).hidden )
+      do_close_scan_dialog( );
 
    // NOTE: An alert about the last room goes with it (Ian, 2026-10-31) - one shown before any room, about the session, stays.
    var alert = document.getElementById( "chat_alert" );
@@ -6769,6 +6780,11 @@ function render_composer( )
    send.appendChild( short );
 
    send.setAttribute( "aria-label", mode.send );
+
+   // NOTE: Scanning in an encrypted message from the offline device (Ian, 2026-11-01) - where a message can be encrypted, and not
+   // while editing.
+   document.getElementById( "composer_scan" ).hidden = ( g_edit_unique !== "" )
+    || !( ( chat_dm_other( ) !== "" ) || can_have_room_key( g_room, g_room_name ) );
 
    var template = document.getElementById( "tpl_recipient" );
 

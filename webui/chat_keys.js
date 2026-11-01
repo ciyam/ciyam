@@ -192,6 +192,300 @@ function do_close_qr_dialog( )
    document.getElementById( "qr_dialog_code" ).replaceChildren( );
 }
 
+// NOTE: The other way (Ian, 2026-11-01: "we will need to be able to scan back an encrypted message if one has been created using
+// an offline device") - its QR code read by the camera, or from a picture of it where there is no camera or no https, and posted
+// in the open room just as it was encrypted ("scanned_message( )"). "html5-qrcode.min.js" read only the first time.
+var g_chat_scan_library = null;
+var g_chat_scanner = null;
+var g_chat_scanned = "";
+var g_chat_scan_room = "";
+var g_chat_scan_opened = 0;
+
+function chat_scan_library( )
+{
+   if( g_chat_scan_library === null )
+   {
+      g_chat_scan_library = ( typeof Html5Qrcode !== "undefined" ) ? Promise.resolve( true )
+       : chat_keys_load_script( "html5-qrcode.min.js" ).then( function( ok )
+      {
+         if( !ok )
+            g_chat_scan_library = null;
+
+         return ok;
+      } );
+   }
+
+   return g_chat_scan_library;
+}
+
+function chat_scan_status( text, problem )
+{
+   document.getElementById( "scan_dialog_status" ).textContent = text;
+   document.getElementById( "scan_dialog_error" ).textContent = problem || "";
+}
+
+function chat_scan_reader( )
+{
+   return new Html5Qrcode( "scan_dialog_reader", { verbose: false, formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
+    experimentalFeatures: { useBarCodeDetectorIfSupported: true } } );
+}
+
+// NOTE: The camera let go - "stop( )" throws if it never started, so it is asked in a promise and the error ignored.
+function chat_scan_stop( )
+{
+   var scanner = g_chat_scanner;
+
+   g_chat_scanner = null;
+
+   if( scanner === null )
+      return Promise.resolve( );
+
+   return Promise.resolve( ).then( function( ) { return scanner.stop( ); } ).then( function( ) { scanner.clear( ); } ).catch( function( ) { } );
+}
+
+async function do_open_scan_dialog( )
+{
+   var opened = ++g_chat_scan_opened;
+
+   g_chat_scanned = "";
+   g_chat_scan_room = g_room;
+
+   document.getElementById( "scan_dialog_reader" ).replaceChildren( );
+   document.getElementById( "scan_dialog_text" ).textContent = "";
+   document.getElementById( "scan_dialog_text" ).hidden = true;
+   document.getElementById( "scan_dialog_post" ).disabled = true;
+   document.getElementById( "scan_dialog" ).hidden = false;
+   document.getElementById( "scan_dialog_picture" ).focus( );
+
+   chat_scan_status( "Starting the camera…" );
+
+   if( !await chat_scan_library( ) )
+   {
+      if( opened === g_chat_scan_opened )
+         chat_scan_status( "", "What reads QR codes could not be loaded - reload the page to try again." );
+
+      return;
+   }
+
+   if( opened !== g_chat_scan_opened )
+      return;
+
+   if( !window.isSecureContext || !navigator.mediaDevices )
+   {
+      chat_scan_status( "The camera needs the chat opened as https - choose a picture of the code instead." );
+
+      return;
+   }
+
+   var scanner = chat_scan_reader( );
+
+   g_chat_scanner = scanner;
+
+   try
+   {
+      await scanner.start( { facingMode: "environment" }, { fps: 10 }, chat_scan_read, function( ) { } );
+   }
+   catch( e )
+   {
+      if( g_chat_scanner === scanner )
+         g_chat_scanner = null;
+
+      if( opened === g_chat_scan_opened )
+         chat_scan_status( "No camera could be used - choose a picture of the code instead." );
+
+      return;
+   }
+
+   // NOTE: Closed while the camera was starting - let go of it now.
+   if( ( opened !== g_chat_scan_opened ) || ( g_chat_scanner !== scanner ) )
+   {
+      g_chat_scanner = scanner;
+
+      chat_scan_stop( );
+
+      return;
+   }
+
+   chat_scan_status( "Hold the QR code from your offline device up to the camera." );
+}
+
+async function do_scan_picture( input )
+{
+   var file = ( input.files && input.files.length ) ? input.files[ 0 ] : null;
+   var opened = g_chat_scan_opened;
+
+   input.value = "";
+
+   if( file === null )
+      return;
+
+   if( !await chat_scan_library( ) )
+   {
+      chat_scan_status( "", "What reads QR codes could not be loaded - reload the page to try again." );
+
+      return;
+   }
+
+   await chat_scan_stop( );
+
+   if( opened !== g_chat_scan_opened )
+      return;
+
+   g_chat_scanned = "";
+
+   document.getElementById( "scan_dialog_reader" ).replaceChildren( );
+   document.getElementById( "scan_dialog_text" ).hidden = true;
+   document.getElementById( "scan_dialog_post" ).disabled = true;
+
+   chat_scan_status( "Reading the picture…" );
+
+   var text = null;
+
+   try
+   {
+      text = await chat_scan_reader( ).scanFile( file, false );
+   }
+   catch( e )
+   {
+      text = null;
+   }
+
+   if( opened !== g_chat_scan_opened )
+      return;
+
+   if( text === null )
+      chat_scan_status( "", "No QR code could be read in that picture - try one closer up, or straighter." );
+   else
+      chat_scan_read( text );
+}
+
+// NOTE: What was read. The camera reads a code many times a second, so once one is taken the rest are not. Opened first where
+// this browser has the room's secret: what it says shown, and one sealed for somewhere else not posted, as nobody here could read
+// it. Without the secret it is posted as it is, for those with the keys.
+async function chat_scan_read( text )
+{
+   if( g_chat_scanned !== "" )
+      return;
+
+   var opened = g_chat_scan_opened;
+   var scanned = scanned_message( text );
+
+   if( scanned.problem )
+   {
+      chat_scan_status( "", scanned.problem );
+
+      return;
+   }
+
+   g_chat_scanned = scanned.sealed;
+
+   await chat_scan_stop( );
+
+   if( ( opened !== g_chat_scan_opened ) || ( g_room !== g_chat_scan_room ) )
+      return;
+
+   var secret = chat_room_secret( );
+   var shown = document.getElementById( "scan_dialog_text" );
+
+   if( secret === "" )
+   {
+      chat_scan_status( "An encrypted message - it can't be read here, so it is posted just as it is, for those with the keys." );
+
+      document.getElementById( "scan_dialog_post" ).disabled = false;
+
+      return;
+   }
+
+   try
+   {
+      var plain = await ciyam_module_named( "secure_message" ).open( secret, scanned.sealed );
+
+      if( opened !== g_chat_scan_opened )
+         return;
+
+      shown.textContent = room_key_masked( plain );
+      shown.hidden = false;
+
+      chat_scan_status( "An encrypted message for this room. It reads:" );
+
+      document.getElementById( "scan_dialog_post" ).disabled = false;
+   }
+   catch( e )
+   {
+      if( opened === g_chat_scan_opened )
+         chat_scan_status( "", "That message was not encrypted for this room - nobody here could read it. Open the room it was meant for." );
+   }
+}
+
+async function do_post_scanned( )
+{
+   var sealed = g_chat_scanned;
+   var opened = g_chat_scan_opened;
+   var post = document.getElementById( "scan_dialog_post" );
+
+   if( ( sealed === "" ) || ( g_room !== g_chat_scan_room ) )
+      return;
+
+   post.disabled = true;
+
+   chat_scan_status( "Posting…" );
+
+   var answer = null;
+
+   ciyam.error = "";
+
+   await serialised( function( )
+   {
+      return ciyam.create_message( g_chat_scan_room, "text=" + sealed, function( response ) { answer = response; } );
+   } );
+
+   if( opened !== g_chat_scan_opened )
+      return;
+
+   var problem = ( ciyam.error !== "" ) ? ciyam.error : ( answer === null ) ? "The server did not answer." : "";
+
+   if( ( problem === "" ) && is_timeout_response( answer ) )
+      problem = "The server did not answer in time - check whether it arrived before posting it again.";
+   else if( ( problem === "" ) && is_error_response( answer ) )
+      problem = error_text( answer );
+
+   if( problem !== "" )
+   {
+      chat_scan_status( "", problem );
+
+      post.disabled = false;
+
+      return;
+   }
+
+   do_close_scan_dialog( );
+
+   if( g_room !== g_chat_scan_room )
+      return;
+
+   var result = parse_fetch_response( answer );
+
+   g_members = apply_presence( result.members );
+
+   render_members( );
+   append_messages( result.messages );
+   apply_pinned( result.pinned );
+
+   g_start_point = later_start_point( g_start_point, next_start_point( result.messages ) );
+}
+
+function do_close_scan_dialog( )
+{
+   g_chat_scan_opened++;
+   g_chat_scanned = "";
+
+   // NOTE: The camera's picture is taken away by the library as it stops ("clear( )").
+   chat_scan_stop( );
+
+   document.getElementById( "scan_dialog" ).hidden = true;
+   document.getElementById( "scan_dialog_text" ).textContent = "";
+}
+
 function chat_keys_kept( )
 {
    var name = c_signin_storage_keys_prefix + ciyam.access;

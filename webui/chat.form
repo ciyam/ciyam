@@ -313,6 +313,9 @@ http://www.opensource.org/licenses/mit-license.php.
             <div class="chat-composer-foot">
                <button type="button" class="chat-btn chat-btn--small" id="composer_scope" onclick="do_toggle_scope( )">Send to selected&hellip;</button>
                <button type="button" class="chat-btn chat-btn--small" id="composer_cancel_edit" hidden onclick="do_abandon_edit( )">Cancel edit</button>
+               <!-- NOTE: Where a message can be encrypted - a direct message, or a room that takes a key ("render_composer( )"). -->
+               <button type="button" class="chat-btn chat-btn--small" id="composer_scan" hidden onclick="do_open_scan_dialog( )"
+                title="Post an encrypted message made on your offline device, from its QR code">Scan a code&hellip;</button>
                <span class="chat-composer-note" id="composer_note">Ordinary chat only &mdash; system and slash messages are server-side.</span>
                <span class="chat-format-hint">Select words to format them</span>
                <!-- NOTE: Codes, under Send - Ian's "%R%" codes in the box instead of the formatting, as before; this browser
@@ -483,6 +486,27 @@ http://www.opensource.org/licenses/mit-license.php.
       <div class="chat-error-text" id="qr_dialog_error" role="alert"></div>
       <div class="chat-dialog-actions">
          <button type="button" class="chat-btn" id="qr_dialog_close" onclick="do_close_qr_dialog( )">Close</button>
+      </div>
+   </div>
+</div>
+
+<!-- NOTE: The other way (Ian, 2026-11-01) - an encrypted message made on the offline device, scanned in from its QR code and
+     posted in the open room as it is ("do_open_scan_dialog( )"). The camera's picture goes in the reader; a picture of the code
+     can be chosen instead - on a phone that can be a photo taken there and then. -->
+<div id="scan_dialog" class="chat-scrim" hidden onclick="if( event.target === this ) do_close_scan_dialog( );">
+   <div class="chat-dialog chat-qr-dialog" role="dialog" aria-modal="true" aria-labelledby="scan_dialog_title">
+      <h2 id="scan_dialog_title">Scan an encrypted message</h2>
+      <p class="chat-dialog-note">For a message encrypted on your offline device - it is posted here just as it was encrypted.</p>
+      <div class="chat-scan-reader" id="scan_dialog_reader"></div>
+      <p class="chat-dialog-note" id="scan_dialog_status" role="status" aria-live="polite"></p>
+      <div class="chat-scan-text" id="scan_dialog_text" hidden></div>
+      <div class="chat-error-text" id="scan_dialog_error" role="alert"></div>
+      <input type="file" id="scan_dialog_file" accept="image/*" hidden onchange="do_scan_picture( this )">
+      <div class="chat-dialog-actions">
+         <button type="button" class="chat-btn chat-scan-picture" id="scan_dialog_picture"
+          onclick="document.getElementById( 'scan_dialog_file' ).click( )">Choose a picture&hellip;</button>
+         <button type="button" class="chat-btn" onclick="do_close_scan_dialog( )">Cancel</button>
+         <button type="button" class="chat-btn chat-btn--accent" id="scan_dialog_post" onclick="do_post_scanned( )" disabled>Post</button>
       </div>
    </div>
 </div>

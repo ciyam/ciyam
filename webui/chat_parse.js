@@ -523,6 +523,21 @@ function sealed_from_qr( text )
    return "X\r" + salt + "\r" + hex.substring( salt.length, hex.length - hmac.length ) + "\r" + hmac;
 }
 
+// NOTE: A QR code scanned in to be posted (Ian, 2026-11-01: one made on the offline device) - { sealed } the encrypted message as
+// kept, or { problem } to say.
+function scanned_message( text )
+{
+   var sealed = sealed_from_qr( text );
+
+   if( sealed === "" )
+      return { problem: "That QR code isn't an encrypted message." };
+
+   if( message_bytes( sealed ) > c_max_message_bytes )
+      return { problem: "That encrypted message is too long to post - at most " + c_max_message_bytes + " bytes." };
+
+   return { sealed: sealed };
+}
+
 // NOTE: What is shown for a message the chat cannot read - an encrypted one, until it can decrypt, and later one whose key it
 // does not have; "" for one it can.
 function message_unreadable_label( text )
@@ -4431,6 +4446,7 @@ if( typeof module !== "undefined" )
       base45_decode: base45_decode,
       sealed_qr_text: sealed_qr_text,
       sealed_from_qr: sealed_from_qr,
+      scanned_message: scanned_message,
       message_unreadable_label: message_unreadable_label,
       message_plain_text: message_plain_text,
       is_unencrypted_message: is_unencrypted_message,
