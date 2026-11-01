@@ -1250,6 +1250,8 @@ function show_thread_view( )
    document.getElementById( "pinned" ).hidden = loading || !has_room || ( g_pinned.length === 0 );
 }
 
+const c_sign_out_wait_ms = 6000;
+
 // NOTE: "already_ended" - another tab signed out of every app - clears this page without a request: the session has
 // gone, and a request made now would be outside the queue (ISS-005, found by review).
 async function do_disconnect( already_ended )
@@ -1266,7 +1268,13 @@ async function do_disconnect( already_ended )
       ciyam.unique = "";
    }
    else
+   {
+      // NOTE: After what is already queued, so it cannot cross a request still waiting for its answer and the two swap answers
+      // (ISS-005) - but not waiting long behind one: after a few seconds it goes anyway (found by review, 2026-11-01).
+      await Promise.race( [ g_request_chain, new Promise( function( done ) { window.setTimeout( done, c_sign_out_wait_ms ); } ) ] );
+
       await ciyam.disconnect( function( ) { } );
+   }
 
    // NOTE: Signed out, a linked chat is linked no more - see "forget_source( )".
    forget_source( );
