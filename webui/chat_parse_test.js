@@ -1115,7 +1115,8 @@ check( "- encrypted, and who can read it", [ cp.encryption_badge( "encrypted", [
  cp.encryption_badge( "encrypted with the room key", [ ], "room", true ) ],
  [ { locked: true, label: "Encrypted", detail: "Only you and verify-a can read this conversation." },
  { locked: true, label: "Encrypted", detail: "Encrypted with the room key - only those who have it can read what is posted here." } ] );
-check( "- not encrypted, and what would encrypt it", [ cp.encryption_badge( "not encrypted - add verify-a's public key on My account", [ "verify-a" ], "dm" ).detail,
+check( "- not encrypted, and what would encrypt it", [
+ cp.encryption_badge( "not encrypted - add verify-a's public key on My account", [ "verify-a" ], "dm" ).detail,
  cp.encryption_badge( "not encrypted - set up your keys on My account", [ ], "room", false ).detail,
  cp.encryption_badge( "not encrypted - your keys could not be read just now; reload to try again", [ ], "room", false ).detail ],
  [ "Add verify-a's public key on My account.", "Set up your keys on My account.", "Your keys could not be read just now; reload to try again." ] );
@@ -1123,9 +1124,9 @@ check( "- a room with no key: for its owner, for anyone else, and a group's dire
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", true ),
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false ).detail,
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ "a", "b" ], "group", false ).detail ],
- [ { locked: false, label: "Not encrypted", detail: "Messages here are sent as they are - make a room key with Room key below." },
+ [ { locked: false, label: "Not encrypted", detail: "Messages here are sent as they are - make a room key with Room key in the details." },
  "Messages here are sent as they are. If the owner has a room key, they can send it to you.",
- "Messages here are sent as they are - encrypt it with Room key below." ] );
+ "Messages here are sent as they are - encrypt it with Room key in the details." ] );
 check( "- a room key sent to each other person once", cp.room_key_recipients( [ "tester-2", "damon", "Tester-1", "tester-2", "" ], "damon" ),
  [ "tester-1", "tester-2" ] );
 check( "- and what came of it", [ cp.room_key_sent_text( [ { name: "tester-1", how: "sent" }, { name: "tester-2", how: "held" } ] ),

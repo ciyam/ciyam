@@ -2159,9 +2159,9 @@ function encryption_badge( note, others, kind, owner )
    if( reason === "encrypt it in Chat Details" )
    {
       if( kind === "group" )
-         reason = "messages here are sent as they are - encrypt it with Room key below";
+         reason = "messages here are sent as they are - encrypt it with Room key in the details";
       else
-         reason = "messages here are sent as they are" + ( owner ? " - make a room key with Room key below"
+         reason = "messages here are sent as they are" + ( owner ? " - make a room key with Room key in the details"
           : ". If the owner has a room key, they can send it to you" );
    }
 
