@@ -143,6 +143,16 @@ http://www.opensource.org/licenses/mit-license.php.
                <h1 id="thread_name">&mdash;</h1>
                <p class="chat-thread-sub" id="thread_sub" hidden></p>
             </div>
+            <!-- NOTE: Whether the room is encrypted (Damon, 2026-11-02: in the line under the name it was too easily missed) - a
+                 padlock shut or open, and what it means in the details it opens ("show_encryption( )"). -->
+            <button type="button" class="chat-encryption-badge" id="encryption_badge" onclick="do_show_encryption( )" hidden>
+               <svg class="chat-padlock" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+                  <rect x="3" y="7" width="10" height="7.5" rx="1.5" fill="currentColor"/>
+                  <path class="chat-padlock-shut" d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                  <path class="chat-padlock-open" d="M5.5 7V4.5a2.5 2.5 0 0 1 5 0" fill="none" stroke="currentColor" stroke-width="1.6"/>
+               </svg>
+               <span class="chat-encryption-word" id="encryption_badge_label"></span>
+            </button>
             <button type="button" class="chat-head-btn chat-details-toggle" id="details_toggle" aria-controls="room_details"
              aria-expanded="false" aria-label="Show room details" title="Room details" onclick="do_toggle_details( )">
                <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" focusable="false">
@@ -340,6 +350,18 @@ http://www.opensource.org/licenses/mit-license.php.
          <section class="chat-room-panel" id="room_panel" aria-label="Room details" hidden>
             <div class="chat-presence-head" id="room_panel_head">Room Details</div>
             <div class="chat-room-panel-name" id="room_fact_name"></div>
+            <!-- NOTE: Encrypted or not, and who can read it or what would encrypt it - as the badge in the bar says. -->
+            <div class="chat-encryption-row" id="encryption_row" hidden>
+               <svg class="chat-padlock" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+                  <rect x="3" y="7" width="10" height="7.5" rx="1.5" fill="currentColor"/>
+                  <path class="chat-padlock-shut" d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                  <path class="chat-padlock-open" d="M5.5 7V4.5a2.5 2.5 0 0 1 5 0" fill="none" stroke="currentColor" stroke-width="1.6"/>
+               </svg>
+               <div>
+                  <div class="chat-encryption-word" id="encryption_row_label"></div>
+                  <div class="chat-encryption-detail" id="encryption_row_detail"></div>
+               </div>
+            </div>
             <dl class="chat-room-facts">
                <div class="chat-room-fact"><dt>Number</dt><dd class="chat-mono" id="room_fact_number"></dd></div>
                <div class="chat-room-fact" id="room_fact_owner_row"><dt>Owner</dt><dd id="room_fact_owner"></dd></div>

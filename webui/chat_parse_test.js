@@ -1108,6 +1108,24 @@ check( "- a group's, with a room key or without", [ cp.group_encryption_note( tr
  cp.group_encryption_note( false, false ), cp.group_encryption_note( null, true ), cp.group_encryption_note( "unread", false ) ],
  [ "encrypted with the room key", "not encrypted - encrypt it in Chat Details", "not encrypted - set up your keys on My account", "",
  "not encrypted - your keys could not be read just now; reload to try again" ] );
+// NOTE: The badge at the right of the bar and the row in the details (Damon, 2026-11-02) - a label and a sentence from the note.
+check( "the encryption badge - none while the keys are read, or where it cannot be encrypted", cp.encryption_badge( "", [ "verify-a" ], "dm", false ),
+ null );
+check( "- encrypted, and who can read it", [ cp.encryption_badge( "encrypted", [ "verify-a" ], "dm", false ),
+ cp.encryption_badge( "encrypted with the room key", [ ], "room", true ) ],
+ [ { locked: true, label: "Encrypted", detail: "Only you and verify-a can read this conversation." },
+ { locked: true, label: "Encrypted", detail: "Encrypted with the room key - only those who have it can read what is posted here." } ] );
+check( "- not encrypted, and what would encrypt it", [ cp.encryption_badge( "not encrypted - add verify-a's public key on My account", [ "verify-a" ], "dm" ).detail,
+ cp.encryption_badge( "not encrypted - set up your keys on My account", [ ], "room", false ).detail,
+ cp.encryption_badge( "not encrypted - your keys could not be read just now; reload to try again", [ ], "room", false ).detail ],
+ [ "Add verify-a's public key on My account.", "Set up your keys on My account.", "Your keys could not be read just now; reload to try again." ] );
+check( "- a room with no key: for its owner, for anyone else, and a group's direct message", [
+ cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", true ),
+ cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false ).detail,
+ cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ "a", "b" ], "group", false ).detail ],
+ [ { locked: false, label: "Not encrypted", detail: "Messages here are sent as they are - make a room key with Room key below." },
+ "Messages here are sent as they are. If the owner has a room key, they can send it to you.",
+ "Messages here are sent as they are - encrypt it with Room key below." ] );
 check( "- a room key sent to each other person once", cp.room_key_recipients( [ "tester-2", "damon", "Tester-1", "tester-2", "" ], "damon" ),
  [ "tester-1", "tester-2" ] );
 check( "- and what came of it", [ cp.room_key_sent_text( [ { name: "tester-1", how: "sent" }, { name: "tester-2", how: "held" } ] ),

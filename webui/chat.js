@@ -1997,35 +1997,84 @@ function show_thread_title( )
 
    var outsiders = dm_trusted( g_room_name, g_room_owner ) ? room_outsiders( ) : [ ];
 
-   var note = is_dm ? chat_encryption_note( ) : "";
-
+   // NOTE: Encrypted or not is the badge's to say now ("show_encryption( )"), not this line's (Damon, 2026-11-02).
    if( is_dm )
-      sub.textContent = ( ( others.length > 0 ) ? ( "Direct message · only you and " + name_list( others ) ) : "Direct message" )
-       + ( note !== "" ? " · " + note : "" );
+      sub.textContent = ( others.length > 0 ) ? ( "Direct message · only you and " + name_list( others ) ) : "Direct message";
    else if( ( outsiders.length > 0 ) && ( chat_room_secret( ) !== "" ) )
       sub.textContent = "Not private - " + name_list( outsiders ) + ( ( outsiders.length === 1 ) ? " is" : " are" )
        + " here too, but cannot read it: it stays encrypted for " + name_list( [ "you" ].concat( others ) );
    else if( outsiders.length > 0 )
       sub.textContent = "Not private - " + name_list( outsiders ) + " can read this too";
-   else if( chat_room_key( g_room ) !== "" )
-      sub.textContent = "Encrypted with the room key";
-   else if( ( g_chat_keys !== null ) && !g_chat_keys_unread && can_have_room_key( g_room, g_room_name ) )
-      sub.textContent = "Not encrypted - messages here are sent as they are";
    else
       sub.textContent = "";
 
-   // NOTE: Said once here, a warning sign before it, rather than before every message (Damon, 2026-10-28).
-   sub.classList.toggle( "chat-unencrypted", /^Not encrypted - /.test( sub.textContent ) );
+   // NOTE: Only who it is with - which a phone leaves out, its name above saying as much (Damon, 2026-11-02).
+   sub.classList.toggle( "is-plain", is_dm );
 
-   // NOTE: And when the room closes (Ian, 2026-10-30) - after the rest, so the warning sign stays at the start.
+   // NOTE: And when the room closes (Ian, 2026-10-30).
    var entry = find_room( g_room );
 
    g_close_label_applied = entry ? room_close_label( entry.closes ) : "";
 
    if( g_close_label_applied !== "" )
+   {
       sub.textContent = ( sub.textContent !== "" ) ? ( sub.textContent + " · " + g_close_label_applied ) : g_close_label_applied;
+      sub.classList.remove( "is-plain" );
+   }
 
    sub.hidden = ( sub.textContent === "" );
+
+   show_encryption( );
+}
+
+// NOTE: The badge at the right of the bar, the row at the top of the details and a line along the bar's foot, green or amber
+// (Damon, 2026-11-02) - encrypted or not, and in the badge's title and the row who can read it or what would encrypt it.
+function show_encryption( )
+{
+   var badge = ( g_room === "" ) ? null : chat_encryption_badge( );
+   var head = document.getElementById( "thread_head" );
+
+   head.classList.toggle( "is-encrypted", ( badge !== null ) && badge.locked );
+   head.classList.toggle( "is-unencrypted", ( badge !== null ) && !badge.locked );
+
+   [ "encryption_badge", "encryption_row" ].forEach( function( id )
+   {
+      var element = document.getElementById( id );
+
+      element.hidden = ( badge === null );
+      element.classList.toggle( "is-open", ( badge !== null ) && !badge.locked );
+   } );
+
+   if( badge === null )
+      return;
+
+   var button = document.getElementById( "encryption_badge" );
+
+   document.getElementById( "encryption_badge_label" ).textContent = badge.label;
+   button.title = badge.detail;
+   button.setAttribute( "aria-label", badge.label + " - " + badge.detail );
+
+   document.getElementById( "encryption_row_label" ).textContent = badge.label;
+   document.getElementById( "encryption_row_detail" ).textContent = badge.detail;
+}
+
+// NOTE: The badge clicked - the details, where a phone has them out of sight brought in, with its row shown.
+function do_show_encryption( )
+{
+   var toggle = document.getElementById( "details_toggle" );
+
+   if( ( toggle.offsetParent !== null ) && ( toggle.getAttribute( "aria-expanded" ) !== "true" ) )
+      do_toggle_details( );
+
+   var row = document.getElementById( "encryption_row" );
+
+   row.scrollIntoView( { block: "nearest" } );
+   row.classList.remove( "is-flash" );
+
+   // NOTE: Read once between, so taking the class off and putting it back starts the flash again.
+   void row.offsetWidth;
+
+   row.classList.add( "is-flash" );
 }
 
 function find_room( room )

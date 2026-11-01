@@ -2136,6 +2136,38 @@ function group_encryption_note( keys, keyed )
    return keyed ? "encrypted with the room key" : "not encrypted - encrypt it in Chat Details";
 }
 
+// NOTE: The badge at the right of a room's bar and the row at the top of its details (Damon, 2026-11-02: in the line under the
+// name it was too easily missed) - from what "dm_encryption_note( )" or "group_encryption_note( )" said: null for none (the keys
+// still being read, or a room that cannot be encrypted), else { locked, label, detail } - "detail" who can read it, or why it is
+// not encrypted and what would encrypt it. "others": the other people in a direct message; "kind": "dm", "group" (a group's
+// direct message) or "room"; "owner": whether you own the room.
+function encryption_badge( note, others, kind, owner )
+{
+   var value = String( note || "" );
+
+   if( value === "" )
+      return null;
+
+   if( value === "encrypted" )
+      return { locked: true, label: "Encrypted", detail: "Only you and " + name_list( others || [ ] ) + " can read this conversation." };
+
+   if( value === "encrypted with the room key" )
+      return { locked: true, label: "Encrypted", detail: "Encrypted with the room key - only those who have it can read what is posted here." };
+
+   var reason = value.replace( /^not encrypted - /, "" );
+
+   if( reason === "encrypt it in Chat Details" )
+   {
+      if( kind === "group" )
+         reason = "messages here are sent as they are - encrypt it with Room key below";
+      else
+         reason = "messages here are sent as they are" + ( owner ? " - make a room key with Room key below"
+          : ". If the owner has a room key, they can send it to you" );
+   }
+
+   return { locked: false, label: "Not encrypted", detail: reason.charAt( 0 ).toUpperCase( ) + reason.substring( 1 ) + "." };
+}
+
 // NOTE: Who a room's key is sent to - each other person once, in order; not "me".
 function room_key_recipients( names, me )
 {
@@ -4601,6 +4633,7 @@ if( typeof module !== "undefined" )
       dm_other_person: dm_other_person,
       dm_encryption_note: dm_encryption_note,
       group_encryption_note: group_encryption_note,
+      encryption_badge: encryption_badge,
       room_key_recipients: room_key_recipients,
       room_key_sent_text: room_key_sent_text,
       sealed_too_long: sealed_too_long,

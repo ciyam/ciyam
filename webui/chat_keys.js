@@ -723,6 +723,16 @@ function chat_encryption_note( )
    return dm_encryption_note( other, keys, !!g_chat_keys && g_chat_keys.contacts.hasOwnProperty( other ) );
 }
 
+// NOTE: The open room's badge and details row ("encryption_badge( )"), or null for none.
+function chat_encryption_badge( )
+{
+   var dm = parse_dm_name( g_room_name );
+   var others = ( dm && dm.people ) ? dm.people.filter( function( person ) { return person !== ciyam.username; } ) : [ ];
+   var kind = ( chat_dm_other( ) !== "" ) ? "dm" : ( dm !== null ) ? "group" : "room";
+
+   return encryption_badge( chat_encryption_note( ), others, kind, chat_is_room_owner( ) );
+}
+
 function chat_draw_opened( element, opened )
 {
    element.classList.toggle( "chat-unreadable", !opened.ok );
