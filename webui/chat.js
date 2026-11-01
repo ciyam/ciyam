@@ -2002,6 +2002,9 @@ function show_thread_title( )
    if( is_dm )
       sub.textContent = ( ( others.length > 0 ) ? ( "Direct message · only you and " + name_list( others ) ) : "Direct message" )
        + ( note !== "" ? " · " + note : "" );
+   else if( ( outsiders.length > 0 ) && ( chat_room_secret( ) !== "" ) )
+      sub.textContent = "Not private - " + name_list( outsiders ) + ( ( outsiders.length === 1 ) ? " is" : " are" )
+       + " here too, but cannot read it: it stays encrypted for " + name_list( [ "you" ].concat( others ) );
    else if( outsiders.length > 0 )
       sub.textContent = "Not private - " + name_list( outsiders ) + " can read this too";
    else if( chat_room_key( g_room ) !== "" )

@@ -663,10 +663,12 @@ function chat_keys_forget( )
    g_room_keys_tried = { };
 }
 
-// NOTE: The open room's other person, if it is a direct message the console would encrypt too.
+// NOTE: The open room's other person, if it is a direct message the console would encrypt too - by its name, whoever else is in
+// it, as the console does (Damon, 2026-11-02): someone let in besides the two sees only what is sealed for them. It had stopped
+// encrypting then, and posted in the clear to that someone too (found by review, 2026-11-01).
 function chat_dm_other( )
 {
-   return room_is_dm( ) ? dm_other_person( g_room_name, ciyam.username ) : "";
+   return dm_trusted( g_room_name, g_room_owner ) ? dm_other_person( g_room_name, ciyam.username ) : "";
 }
 
 // NOTE: The secret with "other", or "" - no one, no keys here, or no key for them.
