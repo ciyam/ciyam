@@ -894,6 +894,7 @@ async function chat_keys_save_room_now( room, key )
    var uk = ciyam_module_named( "user_keys" );
    var access = g_chat_keys.access;
    var asked_for = ciyam.access;
+   var read = g_chat_keys_read;
    var latest = null;
 
    try
@@ -925,12 +926,11 @@ async function chat_keys_save_room_now( room, key )
       return e.message;
    }
 
-   var answer = "";
-
-   await serialised( function( )
+   // NOTE: Lost on the way, it is said as not saved, not taken as saved ("answer_of( )", found by review).
+   var answer = String( await serialised( function( )
    {
-      return ciyam.fetch( chat_keys_url( "&payload=" + encodeURIComponent( locked ) ), "PUT", function( r ) { answer = String( r || "" ); } );
-   } );
+      return answer_of( function( take ) { return ciyam.fetch( chat_keys_url( "&payload=" + encodeURIComponent( locked ) ), "PUT", take ); } );
+   } ) || "" );
 
    if( is_timeout_response( answer ) )
       return "The server didn't answer in time - try again.";
@@ -938,8 +938,9 @@ async function chat_keys_save_room_now( room, key )
    if( is_error_response( answer ) )
       return "The room key could not be saved: " + error_text( answer );
 
-   // NOTE: Signed out, or in again, meanwhile - saved, but not this sign in's to keep.
-   if( ciyam.access !== asked_for )
+   // NOTE: Signed out, or in again, meanwhile - saved, but not this sign in's to keep. Signing out leaves "ciyam.access" as it
+   // was, so it is the keys read's count that says so - else the keys came back after signing out (found by review).
+   if( ( read !== g_chat_keys_read ) || ( ciyam.access !== asked_for ) )
       return "";
 
    latest.rooms = rooms;
