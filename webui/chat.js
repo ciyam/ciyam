@@ -1278,6 +1278,10 @@ async function do_disconnect( already_ended )
 
    clear_pinned( );
 
+   // NOTE: The room's messages go too - hidden was not enough, as those opened with this account's keys stayed in the page,
+   // readable there until the next room was opened (found by review, 2026-11-01).
+   document.getElementById( "message_list" ).replaceChildren( );
+
    // NOTE: The chat not turned on was this sign in's - the next may find it on (found by review).
    g_chat_off = false;
 

@@ -792,6 +792,8 @@ function chat_open_message( element, text )
    element.classList.add( "chat-unreadable" );
    element.textContent = "Opening…";
 
+   var read = g_chat_keys_read;
+
    ciyam_module_named( "secure_message" ).open( secret, text ).then( function( plain )
    {
       return { ok: true, text: plain };
@@ -800,6 +802,10 @@ function chat_open_message( element, text )
       return { ok: false, text: "" };
    } ).then( function( opened )
    {
+      // NOTE: Signed out while it was opened - its words are not kept, nor drawn (found by review, 2026-11-01).
+      if( read !== g_chat_keys_read )
+         return;
+
       g_chat_opened[ key ] = opened;
 
       // NOTE: A message's row keeps its text ("build_message( )"); a pinned line or an announcement does not.
