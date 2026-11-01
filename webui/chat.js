@@ -1487,6 +1487,28 @@ function serialised( fn )
    return next;
 }
 
+// NOTE: A request's answer, through its callback - or "c_no_answer_error" once it has finished without one. A request that
+// failed has no answer at all ("watch_timeouts( )"), so what waited for one waited for ever - and through "serialised( )",
+// every request after it too, until a reload (found by review, 2026-11-01). "request" is called at once, so a request queued
+// by the poll is still marked as one, and returns the CIYAM class's promise for it.
+const c_no_answer_error = "Error: The node did not answer - try again.";
+
+function answer_of( request )
+{
+   return new Promise( function( resolve )
+   {
+      var answered = false;
+
+      var unanswered = function( )
+      {
+         if( !answered )
+            resolve( c_no_answer_error );
+      };
+
+      Promise.resolve( request( function( response ) { answered = true; resolve( response ); } ) ).then( unanswered, unanswered );
+   } );
+}
+
 // ====================================================================
 // Rooms
 // ====================================================================
@@ -2118,13 +2140,10 @@ async function do_decline_invitation( )
 
    // NOTE: "messages delete <room>" - for someone only invited it declines; for a member
    // it would leave the room.
-   var response = await new Promise( function( resolve )
+   var response = String( await serialised( function( )
    {
-      serialised( function( )
-      {
-         return ciyam.delete_message_room( invite.room, function( r ) { resolve( String( r ) ); } );
-      } );
-   } );
+      return answer_of( function( take ) { return ciyam.delete_message_room( invite.room, take ); } );
+   } ) );
 
    if( is_error_response( response ) )
    {
@@ -5118,13 +5137,10 @@ async function do_leave_room( )
 
    document.getElementById( "room_leave_go" ).disabled = true;
 
-   var response = await new Promise( function( resolve )
+   var response = String( await serialised( function( )
    {
-      serialised( function( )
-      {
-         return ciyam.delete_message_room( room, function( r ) { resolve( String( r ) ); } );
-      } );
-   } );
+      return answer_of( function( take ) { return ciyam.delete_message_room( room, take ); } );
+   } ) );
 
    document.getElementById( "room_leave_go" ).disabled = false;
 
@@ -5175,10 +5191,7 @@ async function do_change_posting( )
 
    var answer = await serialised( function( )
    {
-      return new Promise( function( resolve )
-      {
-         ciyam.update_message_room( room, "posts=" + value, resolve );
-      } );
+      return answer_of( function( take ) { return ciyam.update_message_room( room, "posts=" + value, take ); } );
    } );
 
    select.disabled = false;
@@ -5315,10 +5328,7 @@ async function do_set_room_close( )
 
    var answer = await serialised( function( )
    {
-      return new Promise( function( resolve )
-      {
-         ciyam.update_message_room( room, "closes=" + closes, resolve );
-      } );
+      return answer_of( function( take ) { return ciyam.update_message_room( room, "closes=" + closes, take ); } );
    } );
 
    close_when( ).set_disabled( false );
@@ -5435,7 +5445,7 @@ function poll_step( request )
 
    return serialised( function( )
    {
-      return new Promise( function( resolve ) { request( resolve ); } );
+      return answer_of( request );
    } ).then( function( answer )
    {
       var text = String( answer || "" );
@@ -5491,7 +5501,7 @@ async function do_start_poll( )
 
    var sent = sealing.sealed ? sealing.text : escape_message_text( text );
 
-   var posted = await poll_step( function( done ) { ciyam.create_message( room, "text=" + sent, done ); } );
+   var posted = await poll_step( function( done ) { return ciyam.create_message( room, "text=" + sent, done ); } );
 
    var mine = is_error_response( posted ) ? [ ] : parse_fetch_response( posted ).messages.filter( function( message )
    {
@@ -5514,9 +5524,9 @@ async function do_start_poll( )
    var unique = mine[ mine.length - 1 ].unique;
 
    var steps = [
-      { what: "pinned", request: function( done ) { ciyam.create_message( room, pin_options( unique ), done ); } },
-      { what: "given its close time", request: function( done ) { ciyam.update_message_room( room, "closes=" + closes, done ); } },
-      { what: "set to take reactions only", request: function( done ) { ciyam.update_message_room( room, "posts=REACT", done ); } } ];
+      { what: "pinned", request: function( done ) { return ciyam.create_message( room, pin_options( unique ), done ); } },
+      { what: "given its close time", request: function( done ) { return ciyam.update_message_room( room, "closes=" + closes, done ); } },
+      { what: "set to take reactions only", request: function( done ) { return ciyam.update_message_room( room, "posts=REACT", done ); } } ];
 
    for( var i = 0; i < steps.length; i++ )
    {
