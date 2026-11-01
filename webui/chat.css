@@ -3532,6 +3532,10 @@ button.chat-reaction:hover
    align-items: center;
    gap: 6px;
    min-height: 46px;
+   /* NOTE: Four rows of chips at most, then scrolled - "Everyone" ticks dozens, and the list under it was pushed off the screen
+      (found by the full run, 2026-11-02). */
+   max-height: 146px;
+   overflow-y: auto;
    padding: 8px;
    border: 1px solid var(--color-chat-border-strong);
    border-radius: var(--radius-sm);
