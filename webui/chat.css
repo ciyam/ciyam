@@ -1724,6 +1724,7 @@ button.chat-avatar:hover
 .chat-pinned
 {
    display: flex;
+   flex-wrap: wrap;
    align-items: center;
    gap: 10px;
    padding: 6px 10px;
@@ -1791,6 +1792,24 @@ button.chat-avatar:hover
 .chat-pinned-unpin
 {
    flex: none;
+}
+
+/* NOTE: A pinned poll's options on a line of their own, under the question and Unpin (Ian, 2026-11-01). */
+.chat-pinned-poll
+{
+   order: 1;
+   flex: 1 1 100%;
+}
+
+.chat-pinned-poll[hidden]
+{
+   display: none;
+}
+
+.chat-pinned-strip.is-closed button.chat-poll-option
+{
+   pointer-events: none;
+   cursor: default;
 }
 
 /* NOTE: Its original gone from the conversation - the whole message here instead. */

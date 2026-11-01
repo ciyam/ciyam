@@ -4033,6 +4033,13 @@ function draw_reactions( row, reactions, may_react )
 
    var give = may_react ? function( code ) { do_react( row.dataset.unique || "", code ); } : null;
 
+   if( row.classList.contains( "chat-pinned" ) )
+   {
+      draw_pinned_reactions( row );
+
+      return;
+   }
+
    // NOTE: A poll's reactions are its votes - drawn against its options ("mark_poll( )").
    if( row.dataset.poll )
       fill_poll( row.querySelector( ".chat-reactions" ), JSON.parse( row.dataset.poll ), reactions, give );
@@ -4050,7 +4057,7 @@ function mark_poll( element, text )
    if( poll !== null )
       draw_formatted( element, format_pieces( c_poll_marker + " " + poll.question ) );
 
-   var row = element.closest( ".chat-message" );
+   var row = element.closest( ".chat-message, .chat-pinned" );
 
    if( row === null )
       return;
@@ -4067,6 +4074,31 @@ function mark_poll( element, text )
    // NOTE: Opened after the row was drawn (an encrypted one) - its reactions drawn again, as the poll they are now.
    if( ( ( poll !== null ) || was ) && ( row.dataset.reactions !== undefined ) )
       draw_reactions( row, JSON.parse( row.dataset.reactions ), row.dataset.mayReact === "1" );
+}
+
+// NOTE: A pinned message's reactions - the chips saying who, or for a poll its options and votes in their own place, voted on
+// there when allowed ("data-may-react"); the chips are inside the line that opens it, so a poll's buttons go after it.
+function draw_pinned_reactions( node )
+{
+   var reactions = JSON.parse( node.dataset.reactions || "[]" );
+   var chips = node.querySelector( ".chat-reactions" );
+   var poll_part = node.querySelector( ".chat-pinned-poll" );
+
+   if( node.dataset.poll )
+   {
+      chips.hidden = true;
+      chips.textContent = "";
+
+      fill_poll( poll_part, JSON.parse( node.dataset.poll ), reactions,
+       ( node.dataset.mayReact === "1" ) ? function( code ) { do_react( node.dataset.unique || "", code ); } : null );
+   }
+   else
+   {
+      poll_part.hidden = true;
+      poll_part.textContent = "";
+
+      fill_reactions( chips, reactions, null );
+   }
 }
 
 function fill_poll( holder, poll, reactions, give )
@@ -4298,6 +4330,10 @@ function do_react( unique, code )
 
    var row = unique ? document.querySelector( "#message_list > .chat-message[data-unique=\"" + unique + "\"]" ) : null;
 
+   // NOTE: Voted on in the pinned strip, the poll perhaps no longer in the conversation (Ian, 2026-11-01).
+   if( unique && ( row === null ) )
+      row = document.querySelector( "#pinned .chat-pinned[data-unique=\"" + unique + "\"]" );
+
    if( ( room === "" ) || ( row === null ) || g_react_in_flight || room_has_closed( ) || row.classList.contains( "is-unopened" ) )
       return;
 
@@ -4503,24 +4539,19 @@ function render_pinned( )
       when.textContent = day_label( message.unique ) + " " + unique_to_time( message.unique ).substring( 0, 5 );
       when.title = unique_to_full( message.unique );
 
+      // NOTE: Its reactions known before its words are drawn - a poll among them is drawn as one then ("mark_poll( )"), or once
+      // opened if encrypted; voted on here only as it could be in the conversation.
+      node.dataset.unique = message.unique;
+      node.dataset.reactions = JSON.stringify( message.reactions || [ ] );
+      node.dataset.mayReact = ( can_react( message, ciyam.username ) && !room_has_closed( )
+       && !posting_status( g_room, find_room( g_room ), ciyam.username, ciyam.is_admin ).no_react ) ? "1" : "";
+
       if( message.deleted )
          node.querySelector( ".chat-pinned-text" ).textContent = "Message deleted";
       else
          draw_message_text( node.querySelector( ".chat-pinned-text" ), message.text );
 
-      // NOTE: A poll's votes say how many, not the reactions they are cast with (Damon, 2026-10-31).
-      var words = ( message_prefix( message.text ) === "X" ) ? chat_opened_text( message.text ) : message.text;
-      var poll = message.deleted ? null : parse_poll( words || "" );
-      var reactions_part = node.querySelector( ".chat-reactions" );
-
-      if( poll === null )
-         fill_reactions( reactions_part, message.reactions || [ ], null );
-      else
-      {
-         reactions_part.textContent = poll_results( poll, message.reactions || [ ], "" ).votes;
-         reactions_part.classList.add( "chat-poll-total" );
-         reactions_part.hidden = false;
-      }
+      draw_pinned_reactions( node );
 
       var open = node.querySelector( ".chat-pinned-open" );
 

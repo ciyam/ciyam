@@ -649,6 +649,9 @@ http://www.opensource.org/licenses/mit-license.php.
          <!-- NOTE: Its reactions, saying who - to react, the message is opened in the conversation (Damon, 2026-10-29). -->
          <span class="chat-reactions" hidden></span>
       </button>
+      <!-- NOTE: A poll's options and votes in their place, voted on here (Ian, 2026-11-01: with more than one poll a room, the pinned
+           one must carry its options) - outside the button, as they are buttons themselves. -->
+      <div class="chat-pinned-poll" hidden></div>
       <button type="button" class="chat-btn chat-btn--small chat-pinned-unpin" hidden>Unpin</button>
    </div>
 </template>
