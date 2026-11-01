@@ -1252,10 +1252,16 @@ function show_thread_view( )
 
 const c_sign_out_wait_ms = 6000;
 
+// NOTE: Signing out - the keys already forgotten, so nothing is sent meanwhile: it would go unsealed in a room that is encrypted,
+// and alongside the sign out (found by review, 2026-11-02).
+var g_signing_out = false;
+
 // NOTE: "already_ended" - another tab signed out of every app - clears this page without a request: the session has
 // gone, and a request made now would be outside the queue (ISS-005, found by review).
 async function do_disconnect( already_ended )
 {
+   g_signing_out = true;
+
    stop_polling( );
 
    chat_keys_forget( );
@@ -1283,6 +1289,9 @@ async function do_disconnect( already_ended )
    g_rooms = [ ];
    g_members = [ ];
    g_start_point = "";
+
+   // NOTE: The badge and the bar's line go with the room (found by review, 2026-11-02).
+   show_encryption( );
 
    clear_pinned( );
 
@@ -1381,6 +1390,8 @@ async function do_disconnect( already_ended )
    document.getElementById( "chat_view" ).hidden = true;
 
    document.title = c_chat_title;
+
+   g_signing_out = false;
 
    signin_show( );
 }
@@ -5529,6 +5540,9 @@ function poll_step( request )
 // only. The owner can post nothing once it is reactions only, so the pin goes first. A step that fails stops it, and says which.
 async function do_start_poll( )
 {
+   if( g_signing_out )
+      return;
+
    var room = g_room;
    var entry = find_room( room );
    var error = document.getElementById( "poll_dialog_error" );
@@ -6396,7 +6410,7 @@ async function do_send( )
 {
    var input = document.getElementById( "composer_input" );
 
-   if( ( input.value.trim( ) === "" ) || ( g_room === "" ) )
+   if( ( input.value.trim( ) === "" ) || ( g_room === "" ) || g_signing_out )
       return;
 
    // NOTE: As it is sent - the formatting as escapes, whichever way the box shows it.
