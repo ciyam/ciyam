@@ -206,6 +206,7 @@ EDIT_MSG_PARTS=@repstr: /\n:$CHECK_MESSAGE
 EDIT_UNIX_UNIQUE=%EDIT_MSG_PARTS:1%
 EDIT_MSG_OWNER=%EDIT_MSG_PARTS:2%
 EDIT_MSG_CONTENT=@base64:%EDIT_MSG_PARTS:3%
+EDIT_MSG_REACTIONS=%EDIT_MSG_PARTS:4%
 EDIT_MSG_PREFIX=@substr:0,2:$EDIT_MSG_CONTENT
 ;
 ; NOTE: If was pinned then remove the prefix.
@@ -308,6 +309,12 @@ NUM_OPTS=@$NUM_OPTS+1
 #$EDIT_MSG_CONTENT
 @ifndef $IS_REACTION
 #(type new content or one space to pin/upin and two spaces to delete or just enter to cancel)
+@else
+@retain ALL_EMOJIS
+<irc_reactions.cin $EDIT_MSG_REACTIONS $IS_POLL
+@ifdef $ALL_EMOJIS
+#$ALL_EMOJIS
+@endif
 @endif
 @endif
 ;
@@ -1012,7 +1019,19 @@ DECODED_MESSAGE=@strlit:$DECODED_MESSAGE$WHEN
 @endif
 ;
 @ifdef $EXTRA_MESSAGE
-DECODED_MESSAGE=$DECODED_MESSAGE\n$EXTRA_MESSAGE
+IS_POLL=
+;
+POS=@strpos:$POLL_EMOJI:$DECODED_MESSAGE
+@ifdef $POS
+IS_POLL=1
+@endif
+;
+@retain ALL_EMOJIS
+<irc_reactions.cin $EXTRA_MESSAGE $IS_POLL
+;
+@ifdef $ALL_EMOJIS
+DECODED_MESSAGE=$DECODED_MESSAGE\n$ALL_EMOJIS
+@endif
 @endif
 ;
 ; NOTE: Pad the start of each line if is multi-line.
