@@ -82,12 +82,13 @@ http://www.opensource.org/licenses/mit-license.php.
          <label class="chat-label" for="join_confirm">Type it again</label>
          <input type="password" id="join_confirm" class="chat-field" autocomplete="new-password">
 
-         <!-- NOTE: As on the sign in - you are signed in once the account is made (Damon, 2026-10-05). -->
+         <!-- NOTE: As on the sign in - you are signed in once the account is made (Damon, 2026-10-05). Both remembered to begin
+              with (Ian, 2026-11-01: friendlier for someone new - those who know better change it). -->
          <label class="chat-label" for="join_retain">Remember on this browser</label>
          <select id="join_retain" class="chat-field">
             <option value="none">Nothing &mdash; forget this account</option>
             <option value="access">The PIN only</option>
-            <option value="full">The PIN and the password</option>
+            <option value="full" selected>The PIN and the password</option>
          </select>
          <div class="account-hint">Saving the password too signs you in next time without typing it.</div>
       </div>
