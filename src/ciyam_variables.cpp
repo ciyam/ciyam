@@ -353,6 +353,7 @@ constexpr const char* c_special_variable_blockchain_check_dummy = "@blockchain_c
 constexpr const char* c_special_variable_blockchain_is_checking = "@blockchain_is_checking";
 constexpr const char* c_special_variable_blockchain_is_combined = "@blockchain_is_combined";
 constexpr const char* c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
+constexpr const char* c_special_variable_decrypt_check_internal = "@decrypt_check_internal";
 constexpr const char* c_special_variable_exporting_for_identity = "@exporting_for_identity";
 constexpr const char* c_special_variable_peer_limited_arguments = "@peer_limited_arguments";
 constexpr const char* c_special_variable_single_string_response = "@single_string_response";
@@ -743,6 +744,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_is_checking );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_combined );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_fetching );
+      g_special_variable_names.push_back( c_special_variable_decrypt_check_internal );
       g_special_variable_names.push_back( c_special_variable_exporting_for_identity );
       g_special_variable_names.push_back( c_special_variable_peer_limited_arguments );
       g_special_variable_names.push_back( c_special_variable_single_string_response );
