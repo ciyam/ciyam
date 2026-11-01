@@ -3168,8 +3168,9 @@ function do_open_invite( )
    invite_picker( ).set_single( false );
 
    // NOTE: "Everyone" not in the room or invited already - for its owner or admin (Damon, 2026-09-28: "Invite everyone"); those
-   // in it were left out of the list, and those invited are greyed as their receipts arrive ("mark_already_invited( )").
-   invite_picker( ).set_everyone( chat_is_room_owner( ) || ciyam.is_admin );
+   // in it were left out of the list, and it is offered once those invited are greyed, as their receipts arrive - before that it
+   // would tick them too (found by review, 2026-11-02; "mark_already_invited( )").
+   invite_picker( ).set_everyone( false );
 
    document.getElementById( "room_dialog" ).hidden = false;
 
@@ -3216,6 +3217,8 @@ function mark_already_invited( room )
             if( invited[ name ] )
                invite_picker( ).mark_unavailable( name, "invited", "Already invited to this room" );
          } );
+
+         invite_picker( ).set_everyone( chat_is_room_owner( ) || ciyam.is_admin );
       } );
    } );
 }
