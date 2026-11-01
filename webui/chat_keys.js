@@ -262,7 +262,7 @@ async function do_open_scan_dialog( )
    if( !await chat_scan_library( ) )
    {
       if( opened === g_chat_scan_opened )
-         chat_scan_status( "", "What reads QR codes could not be loaded - reload the page to try again." );
+         chat_scan_status( "", "The QR code reader could not be loaded - reload the page to try again." );
 
       return;
    }
@@ -321,7 +321,7 @@ async function do_scan_picture( input )
 
    if( !await chat_scan_library( ) )
    {
-      chat_scan_status( "", "What reads QR codes could not be loaded - reload the page to try again." );
+      chat_scan_status( "", "The QR code reader could not be loaded - reload the page to try again." );
 
       return;
    }
@@ -406,15 +406,22 @@ async function chat_scan_read( text )
       shown.textContent = room_key_masked( plain );
       shown.hidden = false;
 
-      chat_scan_status( "An encrypted message for this room. It reads:" );
+      chat_scan_status( "An encrypted message for this " + chat_scan_place( ) + ". It reads:" );
 
       document.getElementById( "scan_dialog_post" ).disabled = false;
    }
    catch( e )
    {
       if( opened === g_chat_scan_opened )
-         chat_scan_status( "", "That message was not encrypted for this room - nobody here could read it. Open the room it was meant for." );
+         chat_scan_status( "", "That message was not encrypted for this " + chat_scan_place( ) + " - nobody here could read it. Open the "
+          + chat_scan_place( ) + " it was meant for, or choose a picture of another code." );
    }
+}
+
+// NOTE: What the open room is called, in what the dialog says - a direct message is a conversation (found by review).
+function chat_scan_place( )
+{
+   return ( chat_dm_other( ) !== "" ) ? "conversation" : "room";
 }
 
 async function do_post_scanned( )
@@ -425,6 +432,24 @@ async function do_post_scanned( )
 
    if( ( sealed === "" ) || ( g_room !== g_chat_scan_room ) )
       return;
+
+   // NOTE: As "do_send( )" - nobody would read it where the only other person declined, and a new conversation's first messages
+   // wait until the others have joined. A scanned message is not held with them, so it is posted once they have (found by review).
+   var pending = g_dm_pending[ g_chat_scan_room ];
+
+   if( !pending && g_dm_shut[ g_chat_scan_room ] )
+   {
+      chat_scan_status( "", name_list( g_dm_declined[ g_chat_scan_room ] ) + " declined this conversation - nothing posted here would reach them." );
+
+      return;
+   }
+
+   if( pending )
+   {
+      chat_scan_status( "", "This conversation is waiting for " + name_list( pending.waiting ) + " to join - post it once they have." );
+
+      return;
+   }
 
    post.disabled = true;
 

@@ -6782,8 +6782,8 @@ function render_composer( )
    send.setAttribute( "aria-label", mode.send );
 
    // NOTE: Scanning in an encrypted message from the offline device (Ian, 2026-11-01) - where a message can be encrypted, and not
-   // while editing.
-   document.getElementById( "composer_scan" ).hidden = ( g_edit_unique !== "" )
+   // while editing or sending privately, as it is posted for everyone (found by review).
+   document.getElementById( "composer_scan" ).hidden = ( g_edit_unique !== "" ) || ( g_recipients.length > 0 )
     || !( ( chat_dm_other( ) !== "" ) || can_have_room_key( g_room, g_room_name ) );
 
    var template = document.getElementById( "tpl_recipient" );
