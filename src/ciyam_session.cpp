@@ -9668,7 +9668,23 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          scoped_clear_key clear_data( data );
 
-         decrypt_data( response, data, false, harden_key, pwd_and_data );
+         bool check_internal = false;
+
+         // NOTE: Data that was encrypted using "internal" is never output
+         // but a SHA256 digest using a random prefix can be used in order
+         // to verify whether the cipher text is for already known data. A
+         // small delay has been also included just to ensure that this is
+         // not useful for brute forcing non-trivial internal passwords.
+         if( has_session_variable( e_special_var_decrypt_check_internal ) )
+         {
+            msleep( 250 );
+
+            check_internal = true;
+
+            set_session_variable( e_special_var_decrypt_check_internal, "" );
+         }
+
+         decrypt_data( response, data, check_internal, harden_key, pwd_and_data );
 
          clear_response = true;
 
@@ -9689,6 +9705,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( invalid )
                throw runtime_error( "unexpected non-printable response (incorrect password?)" );
+            else if( check_internal )
+            {
+               string prefix( random_characters( 8 ) );
+
+               sha256 hash( prefix + response );
+
+               response = "crypto_hash " + prefix + "$DATA\n" + hash.get_digest_as_string( );
+            }
          }
       }
       else if( command == c_cmd_ciyam_session_utils_encrypt )
