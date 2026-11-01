@@ -309,6 +309,71 @@ async function do_open_scan_dialog( )
    chat_scan_status( "Hold the QR code from your offline device up to the camera." );
 }
 
+// NOTE: The reader misses about one sharp picture of a valid code in ten - where the browser has no "BarcodeDetector" (as on
+// Windows) it binarises in blocks of 8 px, so large crisp modules can leave a block all one shade. Drawn again smaller, from a
+// half down to a twelfth while still 100 px across, it read every one of them (found by testing, 2026-11-01).
+async function chat_scan_read_file( file )
+{
+   try
+   {
+      return await chat_scan_reader( ).scanFile( file, false );
+   }
+   catch( e )
+   {
+      return null;
+   }
+}
+
+async function chat_scan_picture( file, opened )
+{
+   var text = await chat_scan_read_file( file );
+
+   if( text !== null )
+      return text;
+
+   var bitmap = null;
+
+   try
+   {
+      bitmap = await createImageBitmap( file );
+   }
+   catch( e )
+   {
+      return null;
+   }
+
+   var parts = [ 2, 3, 4, 5, 6, 8, 10, 12 ];
+
+   for( var i = 0; ( i < parts.length ) && ( text === null ) && ( opened === g_chat_scan_opened ); i++ )
+   {
+      var width = Math.round( bitmap.width / parts[ i ] );
+      var height = Math.round( bitmap.height / parts[ i ] );
+
+      if( Math.min( width, height ) < 100 )
+         break;
+
+      var canvas = document.createElement( "canvas" );
+
+      canvas.width = width;
+      canvas.height = height;
+
+      var context = canvas.getContext( "2d" );
+
+      context.fillStyle = "#ffffff";
+      context.fillRect( 0, 0, width, height );
+      context.drawImage( bitmap, 0, 0, width, height );
+
+      var blob = await new Promise( function( resolve ) { canvas.toBlob( resolve, "image/png" ); } );
+
+      if( blob !== null )
+         text = await chat_scan_read_file( new File( [ blob ], "picture.png", { type: "image/png" } ) );
+   }
+
+   bitmap.close( );
+
+   return text;
+}
+
 async function do_scan_picture( input )
 {
    var file = ( input.files && input.files.length ) ? input.files[ 0 ] : null;
@@ -339,16 +404,7 @@ async function do_scan_picture( input )
 
    chat_scan_status( "Reading the picture…" );
 
-   var text = null;
-
-   try
-   {
-      text = await chat_scan_reader( ).scanFile( file, false );
-   }
-   catch( e )
-   {
-      text = null;
-   }
+   var text = await chat_scan_picture( file, opened );
 
    if( opened !== g_chat_scan_opened )
       return;
