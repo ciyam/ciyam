@@ -7853,7 +7853,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
                throw runtime_error( "unable to open '" + args_file + "' for output" );
 
             // NOTE: Underbar prefix is used in case arguments contain '$' characters.
-            outf << "_<<" << arguments << endl;
+            outf << "_<" << arguments << endl;
 
             outf.flush( );
 
