@@ -3897,7 +3897,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            }
                            else if( lhs == c_function_strpos )
                            {
-                              pos = str.find( op, pos + 1 );
+                              pos = find_non_escaped_char( str, op, pos + 1 );
 
                               if( pos != string::npos )
                               {
