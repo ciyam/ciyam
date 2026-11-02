@@ -16,7 +16,6 @@
 //   options.setup_href     where "New here?" goes - the accounts page's Welcome
 //   options.request        the page's one-at-a-time request wrapper (ISS-005), resolving to the answer
 //   options.on_signed_in   called once "ciyam" has a session
-//   options.error_text     optional - a refusal in the page's own words, or "" to leave it as it is
 //   options.ids            optional - { access, submit }: the ids a page's suites know its list and button by
 //   options.on_busy        optional - called with true as the sign in starts and false as it ends
 //
@@ -306,17 +305,15 @@ function signin_set_text( id, text )
    document.getElementById( id ).textContent = text;
 }
 
-// NOTE: The refusal, in words - the node's own, locked or not (ISS-056), unless the page has words of its own for it. The
-// node is asked whether it is locked, so that a locked one offers its recovery beneath.
+// NOTE: The refusal, in words - the node's own, locked or not (ISS-056). The node is asked whether it is locked, so that a
+// locked one offers its recovery beneath.
 async function signin_show_refusal( error )
 {
-   var own = g_signin_options.error_text ? g_signin_options.error_text( error ) : "";
-
    var locked = await signin_check_locked( );
 
-   signin_set_text( "signin_error", ( own !== "" ) ? own : ( ( is_unknown_device_error( error ) && !locked )
+   signin_set_text( "signin_error", ( is_unknown_device_error( error ) && !locked )
     ? "This browser's saved sign in is from before the node was set up again - type your password."
-    : sign_in_error_text( error ) ) );
+    : sign_in_error_text( error ) );
 }
 
 function signin_storage_get( key )

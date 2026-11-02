@@ -1572,7 +1572,17 @@ async function chat_look_for_owner_key( )
 
    g_room_keys_tried[ whole ] = true;
 
-   var problem = await chat_keys_save_room( room, key, true );
+   var problem = "";
+
+   // NOTE: Called without waiting for it as well, so nothing it meets is left unhandled (found by review).
+   try
+   {
+      problem = await chat_keys_save_room( room, key, true );
+   }
+   catch( e )
+   {
+      problem = "The room key could not be saved - reload the page to try again.";
+   }
 
    if( read !== g_chat_keys_read )
       return;
