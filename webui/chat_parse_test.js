@@ -1125,8 +1125,22 @@ check( "- a room with no key: for its owner, for anyone else, and a group's dire
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false ).detail,
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ "a", "b" ], "group", false ).detail ],
  [ { locked: false, label: "Not encrypted", detail: "Messages here are sent as they are - make a room key with Room key in the details." },
- "Messages here are sent as they are. If the owner has a room key, they can send it to you.",
+ "Messages here are sent as they are. For a room key from the owner, each of you needs the other's public key on My account.",
  "Messages here are sent as they are - encrypt it with Room key in the details." ] );
+check( "- a member: where the owner's key comes from, and what it needs (Damon, 2026-11-02)", [
+ cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false, "damon", true ).detail,
+ cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false, "damon", false ).detail ],
+ [ "Messages here are sent as they are. A room key from damon is added by itself once it arrives in your direct message with them.",
+ "Messages here are sent as they are. For a room key from damon, each of you needs the other's public key on My account." ] );
+check( "the owner's room key in their direct message - the newest for the room, from them", cp.owner_room_key( [
+ { sender: "damon", text: "0000124#" + "a".repeat( 32 ) + " for the room" }, { sender: "tester-1", text: "0000124#" + "b".repeat( 32 ) },
+ { sender: "damon", text: "0000099#" + "c".repeat( 32 ) }, { sender: "damon", text: "0000124#" + "d".repeat( 32 ) }, { sender: "damon", text: "hello" } ],
+ "damon", "0000124", [ ] ), "d".repeat( 32 ) );
+check( "- none from the owner, or none for the room", [ cp.owner_room_key( [ { sender: "tester-1", text: "0000124#" + "b".repeat( 32 ) } ],
+ "damon", "0000124", [ ] ), cp.owner_room_key( [ { sender: "damon", text: "0000099#" + "c".repeat( 32 ) } ], "damon", "0000124", [ ] ),
+ cp.owner_room_key( [ ], "damon", "0000124" ) ], [ "", "", "" ] );
+check( "- not one this person removed", cp.owner_room_key( [ { sender: "damon", text: "0000124#" + "d".repeat( 32 ) } ], "damon", "0000124",
+ [ "0000124#" + "d".repeat( 32 ) ] ), "" );
 check( "- a room key sent to each other person once", cp.room_key_recipients( [ "tester-2", "damon", "Tester-1", "tester-2", "" ], "damon" ),
  [ "tester-1", "tester-2" ] );
 check( "- and what came of it", [ cp.room_key_sent_text( [ { name: "tester-1", how: "sent" }, { name: "tester-2", how: "held" } ] ),

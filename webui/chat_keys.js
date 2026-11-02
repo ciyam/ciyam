@@ -639,10 +639,13 @@ async function chat_keys_read( )
 
    g_chat_keys = found;
    g_chat_keys_unread = unread;
+   g_owner_key_looked = { };
 
    show_thread_title( );
    chat_render_room_key( );
    chat_keys_redraw( );
+
+   chat_look_for_owner_key( );
 }
 
 // NOTE: What the chat keeps of them - all of it, as a room key's change locks them again ("chat_keys_save_room( )").
@@ -661,6 +664,7 @@ function chat_keys_forget( )
    g_chat_opened = { };
    g_chat_secrets = { };
    g_room_keys_tried = { };
+   g_owner_key_looked = { };
 }
 
 // NOTE: The open room's other person, if it is a direct message the console would encrypt too - by its name, whoever else is in
@@ -730,7 +734,7 @@ function chat_encryption_badge( )
    var others = ( dm && dm.people ) ? dm.people.filter( function( person ) { return person !== ciyam.username; } ) : [ ];
    var kind = ( chat_dm_other( ) !== "" ) ? "dm" : ( dm !== null ) ? "group" : "room";
 
-   return encryption_badge( chat_encryption_note( ), others, kind, chat_is_room_owner( ) );
+   return encryption_badge( chat_encryption_note( ), others, kind, chat_is_room_owner( ), g_room_owner, chat_has_owner_key( ) );
 }
 
 function chat_draw_opened( element, opened )
@@ -982,6 +986,12 @@ function chat_random_room_key( )
 var g_room_key_drawn_for = "";
 var g_room_key_busy = false;
 
+// NOTE: Whether the open room's owner's public key is here - which a room key from them needs ("member_key_hint( )").
+function chat_has_owner_key( )
+{
+   return !!g_chat_keys && ( g_room_owner !== "" ) && g_chat_keys.contacts.hasOwnProperty( g_room_owner );
+}
+
 // NOTE: Only the owner makes, sends and shares a room's key (Damon, 2026-10-27: a member given the key was offered Make) - only
 // the owner's is added by itself as it arrives, so a member's could split the room between two keys. Members add or remove one.
 function chat_is_room_owner( )
@@ -1021,7 +1031,7 @@ function chat_render_room_key( )
    else if( owner )
       state = "Not encrypted - messages here are sent as they are.";
    else
-      state = "Not encrypted - messages here are sent as they are. If the owner has a room key, they can send it to you.";
+      state = "Not encrypted - messages here are sent as they are. " + member_key_hint( g_room_owner, chat_has_owner_key( ) ) + ".";
 
    part.hidden = ( state === "" );
 
@@ -1469,6 +1479,109 @@ function chat_room_key_removed( shared, removed )
 // key already kept is asked first: whoever sent it could read what is sent there with it, and members with the old key could not
 // (found by review). Each is added by itself only once a sign in, so a save that fails is not tried again at every redraw.
 var g_room_keys_tried = { };
+
+// ---- A room's key looked for in the direct message with its owner (Damon, 2026-11-02: a member who joined and stayed in the room
+// had it unencrypted - the owner's key was added only as their direct message was drawn, and they never opened it)
+
+// NOTE: For each room, its owner's direct message as it was last looked through - "<room>/<total>" from the listing - so it is
+// read again only once something new is there.
+var g_owner_key_looked = { };
+
+// NOTE: The open room, if it has no key here and is someone else's - their direct message read quietly, their sealed messages
+// opened, and the newest key for the room added as opening it would ("chat_offer_room_key( )"). Called as the room is first read,
+// at each poll, and once the keys are read.
+async function chat_look_for_owner_key( )
+{
+   var room = g_room;
+   var entry = ( room !== "" ) ? find_room( room ) : null;
+
+   if( !entry || !g_chat_keys || g_chat_keys_unread || ( entry.owner === ciyam.username ) || !can_have_room_key( room, entry.name )
+    || ( chat_room_key( room ) !== "" ) )
+      return;
+
+   var owner = entry.owner;
+   var secret = chat_secret_with( owner );
+   var dm = dm_existing( [ owner ], ciyam.username, g_rooms, g_invitations, dm_waiting_rooms( ) );
+   var listed = ( dm.kind === "open" ) ? find_room( dm.room ) : null;
+
+   if( ( secret === "" ) || !listed || ( g_owner_key_looked[ room ] === dm.room + "/" + listed.total ) )
+      return;
+
+   g_owner_key_looked[ room ] = dm.room + "/" + listed.total;
+
+   var read = g_chat_keys_read;
+   var response = null;
+
+   // NOTE: Quiet, like the poll it comes from ("watch_held_rooms( )").
+   g_in_poll = true;
+
+   var reading = serialised( function( )
+   {
+      return ciyam.fetch_messages( dm.room, "from=0", function( text ) { response = String( text ); } );
+   } );
+
+   g_in_poll = false;
+
+   await reading;
+
+   var result = parse_fetch_response( response );
+
+   // NOTE: Not read - looked for again at the next poll.
+   if( ( response === null ) || is_timeout_response( response ) || ( result.error !== "" ) || ( result.rooms.length > 0 ) )
+   {
+      delete g_owner_key_looked[ room ];
+
+      return;
+   }
+
+   var opened = [ ];
+   var sealer = ciyam_module_named( "secure_message" );
+
+   for( var i = 0; i < result.messages.length; i++ )
+   {
+      var message = result.messages[ i ];
+
+      if( ( message.kind !== c_kind_chat ) || ( message.sender !== owner ) || ( message_prefix( message.text ) !== "X" ) )
+         continue;
+
+      var cached = g_chat_opened[ secret + "|" + message.text ];
+      var plain = ( cached && cached.ok ) ? cached.text : null;
+
+      if( !cached )
+      {
+         try
+         {
+            plain = await sealer.open( secret, message.text );
+         }
+         catch( e )
+         {
+            plain = null;
+         }
+      }
+
+      if( plain !== null )
+         opened.push( { sender: message.sender, text: plain } );
+   }
+
+   var key = owner_room_key( opened, owner, room, chat_room_keys_removed( ) );
+   var whole = room_key_text( room, key );
+
+   // NOTE: Signed out, or the key added meanwhile - by its direct message opened in another tab, say.
+   if( ( key === "" ) || ( read !== g_chat_keys_read ) || ( chat_room_key( room ) !== "" ) || g_room_keys_tried.hasOwnProperty( whole ) )
+      return;
+
+   g_room_keys_tried[ whole ] = true;
+
+   var problem = await chat_keys_save_room( room, key, true );
+
+   if( read !== g_chat_keys_read )
+      return;
+
+   if( problem === "" )
+      show_alert( "Room key for " + entry.name + " added - " + owner + " sent it in your direct message.", "is-info" );
+   else if( problem !== "kept" )
+      show_alert( problem, "is-error" );
+}
 
 // NOTE: A room this person is invited to and has not joined yet, as a room - whoever invited them taken as its owner. A group's key
 // is sent as it is started, so it usually arrives before the group is joined; only rooms already joined counted, and it was never

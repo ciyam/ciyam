@@ -3604,6 +3604,10 @@ function on_messages_response( response, asked_for, replace, again )
       update_thread_meta( );
 
       note_dm_joins( asked_for, result.messages, result.members );
+
+      // NOTE: Its key looked for in the direct message with its owner, if it has none here ("chat_look_for_owner_key( )").
+      if( replace )
+         chat_look_for_owner_key( );
    }
 }
 
@@ -5085,7 +5089,13 @@ function update_thread_meta( )
    // here the same way.
    if( entry )
    {
-      g_room_owner = entry.owner;
+      // NOTE: A member without the key is told whose it would be ("member_key_hint( )") - redrawn once the owner is known.
+      if( entry.owner !== g_room_owner )
+      {
+         g_room_owner = entry.owner;
+
+         show_encryption( );
+      }
 
       if( entry.name && ( entry.name !== g_room_name ) )
       {
@@ -7023,6 +7033,9 @@ async function poll( )
    g_in_poll = false;
 
    await rooms;
+
+   // NOTE: Read again only once the owner's direct message has something new ("chat_look_for_owner_key( )").
+   await chat_look_for_owner_key( );
 
    if( g_room !== "" )
    {

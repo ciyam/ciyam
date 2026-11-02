@@ -565,6 +565,10 @@ ok   the encryption badge - none while the keys are read, or where it cannot be 
 ok   - encrypted, and who can read it
 ok   - not encrypted, and what would encrypt it
 ok   - a room with no key: for its owner, for anyone else, and a group's direct message
+ok   - a member: where the owner's key comes from, and what it needs (Damon, 2026-11-02)
+ok   the owner's room key in their direct message - the newest for the room, from them
+ok   - none from the owner, or none for the room
+ok   - not one this person removed
 ok   - a room key sent to each other person once
 ok   - and what came of it
 ok   - a message too long to encrypt: over 1,000 bytes

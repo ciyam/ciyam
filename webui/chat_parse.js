@@ -2136,12 +2136,25 @@ function group_encryption_note( keys, keyed )
    return keyed ? "encrypted with the room key" : "not encrypted - encrypt it in Chat Details";
 }
 
+// NOTE: Where a member's room key comes from, for a room without one here (Damon, 2026-11-02: "If the owner has a room key, they
+// can send it to you" did not say that it comes in the direct message with them, nor that each needs the other's public key).
+// "room_owner" its owner's name ("the owner" if not known); "known" whether their public key is here.
+function member_key_hint( room_owner, known )
+{
+   var name = String( room_owner || "" ) || "the owner";
+
+   if( !known )
+      return "For a room key from " + name + ", each of you needs the other's public key on My account";
+
+   return "A room key from " + name + " is added by itself once it arrives in your direct message with them";
+}
+
 // NOTE: The badge at the right of a room's bar and the row at the top of its details (Damon, 2026-11-02: in the line under the
 // name it was too easily missed) - from what "dm_encryption_note( )" or "group_encryption_note( )" said: null for none (the keys
 // still being read, or a room that cannot be encrypted), else { locked, label, detail } - "detail" who can read it, or why it is
 // not encrypted and what would encrypt it. "others": the other people in a direct message; "kind": "dm", "group" (a group's
-// direct message) or "room"; "owner": whether you own the room.
-function encryption_badge( note, others, kind, owner )
+// direct message) or "room"; "owner": whether you own the room; "room_owner" and "known" for anyone else ("member_key_hint( )").
+function encryption_badge( note, others, kind, owner, room_owner, known )
 {
    var value = String( note || "" );
 
@@ -2162,7 +2175,7 @@ function encryption_badge( note, others, kind, owner )
          reason = "messages here are sent as they are - encrypt it with Room key in the details";
       else
          reason = "messages here are sent as they are" + ( owner ? " - make a room key with Room key in the details"
-          : ". If the owner has a room key, they can send it to you" );
+          : ". " + member_key_hint( room_owner, known ) );
    }
 
    return { locked: false, label: "Not encrypted", detail: reason.charAt( 0 ).toUpperCase( ) + reason.substring( 1 ) + "." };
@@ -2255,6 +2268,27 @@ function parse_room_key( text, room )
       return { key: "", problem: "A room key is " + room + "# followed by 32 or 64 letters and digits (0-9, a-f) - copy all of it." };
 
    return { key: key, problem: "" };
+}
+
+// NOTE: The key for "room" in the direct message with its owner, as opened here - "opened" oldest first, each { sender, text }:
+// the newest from "owner", or "" for none. One this person removed ("removed", each "<room>#<key>") is not taken back by itself
+// (Damon, 2026-11-02: a member who joined and stayed in the room never had it - it was added only as the direct message was drawn).
+function owner_room_key( opened, owner, room, removed )
+{
+   var found = "";
+
+   ( opened || [ ] ).forEach( function( message )
+   {
+      var shared = ( message && ( message.sender === owner ) ) ? room_key_in_message( message.text ) : null;
+
+      if( shared && ( shared.room === room ) )
+         found = shared.key;
+   } );
+
+   if( ( found === "" ) || ( ( removed || [ ] ).indexOf( room_key_text( room, found ) ) >= 0 ) )
+      return "";
+
+   return found;
 }
 
 // NOTE: A message that starts with a room key - one shared in an encrypted direct message, perhaps with words after it (Ian,
@@ -4629,6 +4663,7 @@ if( typeof module !== "undefined" )
       dm_encryption_note: dm_encryption_note,
       group_encryption_note: group_encryption_note,
       encryption_badge: encryption_badge,
+      member_key_hint: member_key_hint,
       room_key_recipients: room_key_recipients,
       room_key_sent_text: room_key_sent_text,
       sealed_too_long: sealed_too_long,
@@ -4636,6 +4671,7 @@ if( typeof module !== "undefined" )
       room_key_text: room_key_text,
       parse_room_key: parse_room_key,
       room_key_in_message: room_key_in_message,
+      owner_room_key: owner_room_key,
       room_key_masked: room_key_masked,
       picker_matches: picker_matches,
       picker_enter_choice: picker_enter_choice,
