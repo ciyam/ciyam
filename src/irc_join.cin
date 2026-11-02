@@ -100,10 +100,9 @@ ERROR=Unknown or invalid join token '$JOIN_TOKEN'.
 CHECK_NAME=$OUTPUT
 FIRST=@substr:0,1:$CHECK_NAME
 @ifeq "$FIRST" "/"
-CHECK_NAME=@substr:1:$CHECK_NAME
 CHECK_NAME=@strlit:$CHECK_NAME/
 CHECK_NAME=@repstr:\//@:$CHECK_NAME
-VERIFY_NAME=@repstr:$USER@:$CHECK_NAME
+VERIFY_NAME=@repstr:@$USER@/:$CHECK_NAME
 @ifeq "$CHECK_NAME" "$VERIFY_NAME"
 ERROR=Invalid attempt to join a private room.
 @endif
