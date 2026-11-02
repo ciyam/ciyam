@@ -459,7 +459,10 @@ NAMES=
 @ifeq "$USER" "$USER_FOR_PUB"
 #Error: User name must not be your own one.
 @else
+&Paste public key text or just Enter to scan: :QR_CODE=
+@ifndef $QR_CODE
 QR_CODE=@file:~zbarcam -1 -q --raw
+@endif
 @ifdef $QR_CODE
 CHECK_QR_CODE=@regex:^[0-9a-fA-F]{64}$$:$QR_CODE
 @ifneq "$QR_CODE" "$CHECK_QR_CODE"
