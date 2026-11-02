@@ -70,7 +70,8 @@ admin #0000001 1/1 Admin
 Normal messages for this room are disallowed.
 0000003
 Now check for messages as 'admin' and join the room created by 'test-1'.
-admin #0000001 2/2 Admin
+0000000000000 admin #0000001 2/2 Admin
+0000000000000 admin #0000002 0/0 General
 test-1+1
 test-1 :joined
 test-1 :invite room 0000003-NEW-ROOM-UUID-VALUE Testing
