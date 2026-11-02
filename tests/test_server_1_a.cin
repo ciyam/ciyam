@@ -76,6 +76,12 @@ TEST=a\tb
 #$TEST
 POS=@strpos:\t:$TEST
 #$POS
+TEST=ab:cd
+#$TEST
+POS=@strpos:\::$TEST
+#$POS
+TEST=@repstr:\://:$TEST
+#$TEST
 TEST=@abc
 #$TEST
 TEST=@abc-1

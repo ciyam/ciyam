@@ -241,6 +241,9 @@ abcXXX
 *
 a	b
 1
+ab:cd
+2
+ab/cd
 @abc
 -1
 @abc-1
