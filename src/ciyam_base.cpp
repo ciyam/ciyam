@@ -6151,6 +6151,12 @@ void set_identity( const string& info, const char* p_encrypted_sid )
                      throw runtime_error( "Invalid attempt to change the system identity." );
                }
             }
+            else if( file_exists( c_ciyam_server_sid_file ) )
+            {
+               write_file( c_ciyam_server_sid_chk_file, dbl_hash );
+
+               TRACE_LOG( TRACE_MINIMAL, "*** created system identity verify file ***" );
+            }
 
             set_sid( sid );
 
