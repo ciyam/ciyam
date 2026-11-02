@@ -83,7 +83,7 @@ IRC_ALLOWED=1
 .system_variable @irc_allow
 @ifndef $OUTPUT
 .wait 500
-x.system_variable @irc_allow
+.system_variable @irc_allow
 @ifndef $OUTPUT
 IRC_ALLOWED=
 @endif
