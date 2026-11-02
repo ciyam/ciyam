@@ -1215,21 +1215,19 @@ heading( "sign in errors" );
 
 check( "a missing connect status, in plain words", cp.sign_in_error_text( "invalid or missing connect status" ),
  "The server's answer to signing in was not what was expected. Please try again." );
-check( "a locked node, said so", cp.sign_in_error_text( "Error: Was unable to start a web session with access token '10301'." ),
- "This node is locked - it restarted, and nobody can sign in until it is unlocked." );
-check( "a locked node's refusal known", [ cp.is_locked_sign_in_error( "Error: Was unable to start a web session with access token '1'." ),
- cp.is_locked_sign_in_error( "Error: Invalid password." ) ], [ true, false ] );
+check( "a session the node could not start, said so - not called a lock (ISS-056)",
+ cp.sign_in_error_text( "Error: Was unable to start a web session with access token '10301'." ),
+ "The node couldn't start a session just now - wait a moment, then try again." );
+check( "a session not started, known", [ cp.is_no_session_error( "Error: Was unable to start a web session with access token '1'." ),
+ cp.is_no_session_error( "Error: Invalid password." ) ], [ true, false ] );
 check( "any other error as it is, less its 'Error:'", cp.sign_in_error_text( "Error: Web session is currently busy (try again shortly)." ),
  "Web session is currently busy (try again shortly)." );
 check( "a blocked browser, said so (ISS-053) - not taken as a node set up again", [ cp.sign_in_error_text( "Error: This device is no longer available." ),
  cp.is_blocked_device_error( "Error: Invalid device identity 'abc'." ) ],
  [ "This browser has been blocked from signing in as this account, from My account on one of its devices.", false ] );
 check( "nothing", cp.sign_in_error_text( "" ), "" );
-check( "unable to start a session on a node known not to be locked - not called locked (2026-10-13)",
- cp.sign_in_error_text( "Error: Was unable to start a web session for 'admin'.", false ),
- "The node couldn't start a session just now - wait a moment, then try again." );
-check( "a node known to be locked - said so, whatever it answered", cp.sign_in_error_text( "Error: This web session is not valid (or has expired).", true ),
- "This node is locked - it restarted, and nobody can sign in until it is unlocked." );
+check( "a wrong password on a locked node - the node's own words, as on any other (ISS-056)",
+ cp.sign_in_error_text( "Error: Invalid password." ), "Invalid password." );
 check( "recovering onto a node not set up, refused - someone else setting it up, not the words", [
  cp.recovery_error_text( "Error: System is currently locked for administration.", true ),
  cp.recovery_error_text( "Error: System is currently locked for administration.", false ) ],

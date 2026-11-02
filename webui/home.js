@@ -57,8 +57,7 @@ function home_main( )
       note: "home",
       setup_href: "account.html#welcome",
       request: request,
-      on_signed_in: on_signed_in,
-      error_text: function( error ) { return ( g_system.state === "locked" ) ? locked_sign_in_text( error, true ) : ""; }
+      on_signed_in: on_signed_in
    } );
 
    document.getElementById( "unreachable_retry" ).addEventListener( "click", check_node );

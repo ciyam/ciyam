@@ -601,13 +601,12 @@ ok   the server's words for admin, as they come
 
 == sign in errors ==============================================
 ok   a missing connect status, in plain words
-ok   a locked node, said so
-ok   a locked node's refusal known
+ok   a session the node could not start, said so - not called a lock (ISS-056)
+ok   a session not started, known
 ok   any other error as it is, less its 'Error:'
 ok   a blocked browser, said so (ISS-053) - not taken as a node set up again
 ok   nothing
-ok   unable to start a session on a node known not to be locked - not called locked (2026-10-13)
-ok   a node known to be locked - said so, whatever it answered
+ok   a wrong password on a locked node - the node's own words, as on any other (ISS-056)
 ok   recovering onto a node not set up, refused - someone else setting it up, not the words
 ok   recovering a locked node - the sign in's words, back to the sign in
 ok   recovering onto a node not set up - its own words, the caution, back to setting up

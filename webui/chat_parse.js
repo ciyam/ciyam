@@ -2815,10 +2815,10 @@ function user_initial( name )
 // is already a sentence and is shown as it is.
 const c_connect_status_error = "invalid or missing connect status";
 
-// NOTE: "locked", when known - whether "/system" says the node is locked. "Unable to start a web session" is how a locked
-// node refuses a sign in, but not only a locked one: a node waiting on its chat (IRC) that never starts refuses it too
-// (Ian's "web_session.cin", 2026-10-13) - so a node known not to be locked is not called locked.
-function sign_in_error_text( error, locked )
+// NOTE: A locked node lets people sign in (ISS-056, Ian's "1ccd62ee": a stray "x" in "web_session.cin" had refused every
+// one), so its refusals are the node's own words like any other - "unable to start a web session" is a session that did
+// not start, and nothing to do with the lock (a node waiting on its chat refuses so too, 2026-10-13).
+function sign_in_error_text( error )
 {
    var text = String( error || "" );
 
@@ -2828,11 +2828,8 @@ function sign_in_error_text( error, locked )
    if( is_blocked_device_error( text ) )
       return c_sign_in_blocked;
 
-   if( ( locked === true ) && ( text !== "" ) )
-      return c_sign_in_locked;
-
-   if( is_locked_sign_in_error( text ) )
-      return ( locked === false ) ? c_sign_in_no_session : c_sign_in_locked;
+   if( is_no_session_error( text ) )
+      return c_sign_in_no_session;
 
    // NOTE: The node's own words, without its "Error: " - the panel says it is one (2026-10-10).
    return text.replace( /^Error:\s*/, "" );
@@ -3105,13 +3102,11 @@ function recovery_error_step( error, fresh )
    return /identity mismatch|locked for administration/i.test( String( error || "" ) ) ? "words" : "password";
 }
 
-// NOTE: How a locked node answers a sign in today - it cannot start the session (2026-10-07, for Ian).
-function is_locked_sign_in_error( error )
+// NOTE: A session the node could not start - "Was unable to start a web session".
+function is_no_session_error( error )
 {
    return /unable to start a web session/i.test( String( error || "" ) );
 }
-
-const c_sign_in_locked = "This node is locked - it restarted, and nobody can sign in until it is unlocked.";
 
 const c_sign_in_no_session = "The node couldn't start a session just now - wait a moment, then try again.";
 
@@ -4591,7 +4586,7 @@ if( typeof module !== "undefined" )
       sign_in_error_text: sign_in_error_text,
       is_blocked_device_error: is_blocked_device_error,
       irc_unavailable: irc_unavailable,
-      is_locked_sign_in_error: is_locked_sign_in_error,
+      is_no_session_error: is_no_session_error,
       recovery_words: recovery_words,
       recovery_words_problem: recovery_words_problem,
       word_completions: word_completions,

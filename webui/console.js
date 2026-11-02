@@ -1382,7 +1382,7 @@ async function run_init( target )
 
    if( ( ciyam.error !== "" ) || ( ciyam.sessid === "" ) )
    {
-      print_line( "Error: " + sign_in_error_text( ciyam.error || "No session was established.", false ), "is-err" );
+      print_line( "Error: " + sign_in_error_text( ciyam.error || "No session was established." ), "is-err" );
 
       ciyam.error = "";
 

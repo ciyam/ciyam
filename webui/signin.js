@@ -249,15 +249,12 @@ function signin_show( )
 
 var g_signin_plain = false;
 
-var g_signin_node_known = false;
-
 // NOTE: Whether the node is locked - "/system" names a locked one ":CIYAM:". A locked node offers recovery and not
 // "New here?", which cannot work on it. Answers whether it is; "(NONE)" there is a connection not encrypted.
 async function signin_check_locked( )
 {
    var locked = false;
    var fresh = false;
-   var known = false;
 
    try
    {
@@ -265,7 +262,6 @@ async function signin_check_locked( )
 
       locked = ( system.indexOf( ":CIYAM:" ) === 0 );
       fresh = ( system.indexOf( "*CIYAM*" ) === 0 );
-      known = ( system.indexOf( "CIYAM" ) >= 0 );
 
       g_signin_plain = / \(NONE\)$/.test( system );
    }
@@ -273,12 +269,9 @@ async function signin_check_locked( )
    {
    }
 
-   // NOTE: Not set up - the sign in gives way to the way to Home ("signin_new_node"). Whether the node answered at all is
-   // kept, so a refusal is not said to be a lock unless the node said so ("g_signin_node_known").
+   // NOTE: Not set up - the sign in gives way to the way to Home ("signin_new_node").
    document.getElementById( "signin_form" ).hidden = fresh;
    document.getElementById( "signin_new_node" ).hidden = !fresh;
-
-   g_signin_node_known = known;
 
    document.getElementById( "recover_offer" ).hidden = !locked;
 
@@ -313,22 +306,17 @@ function signin_set_text( id, text )
    document.getElementById( id ).textContent = text;
 }
 
-// NOTE: The refusal, in words. A locked node answers a sign in in more than one way ("unable to start a web session",
-// "not valid (or has expired)" - both seen 2026-10-10), so the node is asked, and a locked one said so - with its
-// recovery offered beneath - unless the page has words of its own for it (Home's).
+// NOTE: The refusal, in words - the node's own, locked or not (ISS-056), unless the page has words of its own for it. The
+// node is asked whether it is locked, so that a locked one offers its recovery beneath.
 async function signin_show_refusal( error )
 {
    var own = g_signin_options.error_text ? g_signin_options.error_text( error ) : "";
 
    var locked = await signin_check_locked( );
 
-   // NOTE: Locked only when the node says so - "unable to start a web session" from one that is not is said as that
-   // (2026-10-13: a node waiting on its chat refuses so too).
-   var state = g_signin_node_known ? locked : undefined;
-
    signin_set_text( "signin_error", ( own !== "" ) ? own : ( ( is_unknown_device_error( error ) && !locked )
     ? "This browser's saved sign in is from before the node was set up again - type your password."
-    : sign_in_error_text( error, state ) ) );
+    : sign_in_error_text( error ) ) );
 }
 
 function signin_storage_get( key )
