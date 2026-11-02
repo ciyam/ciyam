@@ -95,6 +95,23 @@ ERROR=Unknown or invalid join token '$JOIN_TOKEN'.
 @endif
 ;
 @ifndef $ERROR
+@ifdef $JOIN_TOKEN
+.system_variable @irc_names_$ROOM_NO
+CHECK_NAME=$OUTPUT
+FIRST=@substr:0,1:$CHECK_NAME
+@ifeq "$FIRST" "/"
+CHECK_NAME=@substr:1:$CHECK_NAME
+CHECK_NAME=@strlit:$CHECK_NAME/
+CHECK_NAME=@repstr:\//@:$CHECK_NAME
+VERIFY_NAME=@repstr:$USER@:$CHECK_NAME
+@ifeq "$CHECK_NAME" "$VERIFY_NAME"
+ERROR=Invalid attempt to join a private room.
+@endif
+@endif
+@endif
+@endif
+;
+@ifndef $ERROR
 ;
 ROOM_AND_USER=@strlit:%ROOM_NO%_$USER
 ;
