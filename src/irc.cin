@@ -310,10 +310,14 @@ NUM_OPTS=@$NUM_OPTS+1
 @ifndef $IS_REACTION
 #(type new content or one space to pin/upin and two spaces to delete or just enter to cancel)
 @else
+@ifndef $EDIT_MSG_REACTIONS
+#(none current)
+@else
 @retain ALL_EMOJIS
-<irc_reactions.cin $EDIT_MSG_REACTIONS $IS_POLL
+<reactions.cin $EDIT_MSG_REACTIONS $USER $IS_POLL
 @ifdef $ALL_EMOJIS
-#$ALL_EMOJIS
+#(currently) $ALL_EMOJIS
+@endif
 @endif
 @endif
 @endif
@@ -327,10 +331,10 @@ NUM_OPTS=@$NUM_OPTS+1
 &:EDITED_MESSAGE=_
 @else
 @ifndef $IS_POLL
-&Reaction? [EDITED_MESSAGE:none==_|a 👌=_ 00|b 👍=_ 01|c 👎=_ 02|d 🙂=_ 03|e 🙁=_ 04|f 😀=_ 05|g 😲=_ 06|h 🤓=_ 07|i 🤦‍♂️=_ 08|j ❤️=_ 09] (hit 'a'..'j' or Enter)
+&Reaction? [EDITED_MESSAGE:retain==_|a 👌=_ 00|b 👍=_ 01|c 👎=_ 02|d 🙂=_ 03|e 🙁=_ 04|f 😀=_ 05|g 😲=_ 06|h 🤓=_ 07|i 🤦‍♂️=_ 08|j ❤️=_ 09] (hit 'a'..'j' or Enter)
 @else
 ;
-OPTS_PREFIX=[EDITED_MESSAGE:none==_|a 🇦=_ 00
+OPTS_PREFIX=[EDITED_MESSAGE:retain==_|a 🇦=_ 00
 OPTS_SUFFIX=] (hit letter or Enter)
 ;
 OPTS_OTHERS=
@@ -1027,7 +1031,7 @@ IS_POLL=1
 @endif
 ;
 @retain ALL_EMOJIS
-<irc_reactions.cin $EXTRA_MESSAGE $IS_POLL
+<reactions.cin $EXTRA_MESSAGE ALL $IS_POLL
 ;
 @ifdef $ALL_EMOJIS
 DECODED_MESSAGE=$DECODED_MESSAGE\n$ALL_EMOJIS

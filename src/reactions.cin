@@ -7,15 +7,31 @@ NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
 @endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
 ;
-@ifneq "$NUM_ARGS" "1"
-ERROR=Encoded reactions are required for "irc_reactions".
+@ifneq "$NUM_ARGS" "2"
+ERROR=Encoded reactions and user are required for "reactions".
 @else
 ;
 ENCODED=$1
-IS_POLL=$2
-;idk
-trace_message "ENCODED is $ENCODED IS_POLL is '$IS_POLL'"
+USER_NAME=$2
+IS_FOR_POLL=$3
+;
+@ifndef $CIYAM_ANSI
+@retain *
+<ansi.cin
+@endif
+;
+USER_SHORT=
+@ifneq "$USER_NAME" "ALL"
+HASH_OFF=10
+SHORT_LEN=6
+;
+HASH=@sha256:$USER_NAME
+USER_SHORT=@substr:$HASH_OFF,$SHORT_LEN:$HASH
+@endif
 ;
 POLL_00=🇦
 POLL_01=🇧
@@ -60,21 +76,32 @@ NEXT_RLINE=%RLINES:1%
 EMOJI=@substr:0,2:$NEXT_RLINE
 ;
 SHORTS=@substr:2:$NEXT_RLINE
+;
+@ifdef $USER_SHORT
+CHECK_SHORTS=@repstr:%USER_SHORT%x/:$SHORTS
+@ifeq "$SHORTS" "$CHECK_SHORTS"
+SHORTS=
+@endif
+@endif
+;
+NUM_USERS=0
+@ifdef $SHORTS
 SHORTS=@repstr:x/:$SHORTS
 ;
 SHORTS_LEN=@strlen:$SHORTS
 NUM_USERS=@$SHORTS_LEN/$SHORT_LEN
+@endif
 ;
 @if $NUM_USERS #> 0
 NUM_EXTRA=@$NUM_USERS-1
 @ifeq $NUM_EXTRA 0
-@ifdef $IS_POLL
+@ifdef $IS_FOR_POLL
 NEXT_EMOJI=@strlit:$POLL_%EMOJI%($NUM_USERS)
 @else
 NEXT_EMOJI=@strlit:$EMOJI_%EMOJI%
 @endif
 @else
-@ifdef $IS_POLL
+@ifdef $IS_FOR_POLL
 NEXT_EMOJI=@strlit:$POLL_%EMOJI%($NUM_USERS)
 @else
 NEXT_EMOJI=@strlit:$EMOJI_%EMOJI%(+$NUM_EXTRA)
