@@ -2146,7 +2146,7 @@ function member_key_hint( room_owner, known )
    if( !known )
       return "For a room key from " + name + ", each of you needs the other's public key on My account";
 
-   return "A room key from " + name + " is added by itself once it arrives in your direct message with them";
+   return "A room key from " + name + " comes in your direct message with them, and is added the next time you open this room or that conversation";
 }
 
 // NOTE: The badge at the right of a room's bar and the row at the top of its details (Damon, 2026-11-02: in the line under the

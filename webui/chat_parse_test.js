@@ -1130,7 +1130,8 @@ check( "- a room with no key: for its owner, for anyone else, and a group's dire
 check( "- a member: where the owner's key comes from, and what it needs (Damon, 2026-11-02)", [
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false, "damon", true ).detail,
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false, "damon", false ).detail ],
- [ "Messages here are sent as they are. A room key from damon is added by itself once it arrives in your direct message with them.",
+ [ "Messages here are sent as they are. A room key from damon comes in your direct message with them, and is added the next time"
+  + " you open this room or that conversation.",
  "Messages here are sent as they are. For a room key from damon, each of you needs the other's public key on My account." ] );
 check( "the owner's room key in their direct message - the newest for the room, from them", cp.owner_room_key( [
  { sender: "damon", text: "0000124#" + "a".repeat( 32 ) + " for the room" }, { sender: "tester-1", text: "0000124#" + "b".repeat( 32 ) },

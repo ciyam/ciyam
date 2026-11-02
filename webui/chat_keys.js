@@ -1483,13 +1483,14 @@ var g_room_keys_tried = { };
 // ---- A room's key looked for in the direct message with its owner (Damon, 2026-11-02: a member who joined and stayed in the room
 // had it unencrypted - the owner's key was added only as their direct message was drawn, and they never opened it)
 
-// NOTE: For each room, its owner's direct message as it was last looked through - "<room>/<total>" from the listing - so it is
-// read again only once something new is there.
+// NOTE: For each room, its owner's direct message as it was last looked through - "<room>/<total>" from the listing - so opening
+// the room again reads it only once something new is there.
 var g_owner_key_looked = { };
 
 // NOTE: The open room, if it has no key here and is someone else's - their direct message read quietly, their sealed messages
-// opened, and the newest key for the room added as opening it would ("chat_offer_room_key( )"). Called as the room is first read,
-// at each poll, and once the keys are read.
+// opened, and the newest key for the room added as opening it would ("chat_offer_room_key( )"). Called as the room is first read
+// and once the keys are read - not at each poll: a read marks the direct message read and seen by this person, so one sent while
+// they stay in the room waits for it to be opened again (Damon, 2026-11-03, after review).
 async function chat_look_for_owner_key( )
 {
    var room = g_room;

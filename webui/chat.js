@@ -5095,6 +5095,9 @@ function update_thread_meta( )
          g_room_owner = entry.owner;
 
          show_encryption( );
+
+         // NOTE: A room joined from an invitation is in the listing only now - its key looked for then.
+         chat_look_for_owner_key( );
       }
 
       if( entry.name && ( entry.name !== g_room_name ) )
@@ -7033,9 +7036,6 @@ async function poll( )
    g_in_poll = false;
 
    await rooms;
-
-   // NOTE: Read again only once the owner's direct message has something new ("chat_look_for_owner_key( )").
-   await chat_look_for_owner_key( );
 
    if( g_room !== "" )
    {
