@@ -261,6 +261,9 @@ CHANGED=1
 .system_variable @irc_users_$STARTING_ROOM @admin
 ;
 .system_variable @irc_rooms 0000003
+;
+.system_variable @session_@queue_irc_%RESERVED_ROOM%_admin 1
+.system_variable @session_@queue_irc_%STARTING_ROOM%_admin 1
 @endif
 ;
 .system_variable @irc_users_$ROOM_NO
