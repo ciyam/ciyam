@@ -341,19 +341,57 @@ function normalise_public_key( text )
    return /^[0-9a-f]{64}$/.test( key ) ? key : "";
 }
 
-// NOTE: What is wrong with adding "name" and "key" - "" if nothing. "contacts" - those kept; "own_key" - this account's own.
-function contact_problem( name, key, contacts, own_key )
+// NOTE: A contact code - a username and its public key together, as the console shows and reads one (Ian, 2026-11-03,
+// "irc.cin"): "<name>:<key>", the name as hex of its letters, then an "I", then random hex digits to make it 25 characters
+// long - always that size, and the name a little hidden. "padding" - random hex digits, at least 25 of them. "" if the name or
+// the key cannot be one.
+const c_contact_name_length = 25;
+const c_contact_name_end = "I";
+
+function contact_code( name, key, padding )
+{
+   if( !is_valid_username( name ) || ( normalise_public_key( key ) === "" ) )
+      return "";
+
+   var hex = Array.from( name ).map( function( letter ) { return letter.charCodeAt( 0 ).toString( 16 ).padStart( 2, "0" ); } ).join( "" );
+
+   hex += c_contact_name_end;
+   hex += String( padding || "" ).substr( 0, c_contact_name_length - hex.length );
+
+   return ( hex.length === c_contact_name_length ) ? hex + ":" + normalise_public_key( key ) : "";
+}
+
+// NOTE: The username and public key in a contact code as copied or scanned - spaces and line breaks taken out, hex in either
+// case - or null if it is not one.
+function parse_contact_code( text )
+{
+   var m = /^((?:[0-9a-fA-F]{2})+)I([0-9a-fA-F]*):([0-9a-fA-F]{64})$/.exec( String( text || "" ).replace( /\s+/g, "" ) );
+
+   if( !m || ( m[ 1 ].length + 1 + m[ 2 ].length !== c_contact_name_length ) )
+      return null;
+
+   var name = m[ 1 ].match( /../g ).map( function( pair ) { return String.fromCharCode( parseInt( pair, 16 ) ); } ).join( "" );
+
+   if( !is_valid_username( name ) )
+      return null;
+
+   return { name: name, key: m[ 3 ].toLowerCase( ) };
+}
+
+// NOTE: What is wrong with adding "contact" ("parse_contact_code( )") - "" if nothing. "contacts" - those kept; "own_key" and
+// "own_name" - this account's own (Ian, 2026-11-03: your own name could be added).
+function contact_problem( contact, contacts, own_key, own_name )
 {
    var kept = contacts || { };
 
-   if( !is_valid_username( name ) )
-      return "Type their username - 3 to 12 characters: a-z, 0-9 and single hyphens, starting with a letter.";
+   if( !contact )
+      return "That isn't a contact code - copy all of it, or scan it, from Contacts on their My account.";
 
-   if( key === "" )
-      return "A public key is 64 letters and digits, 0-9 and a-f - copy all of it.";
+   var name = contact.name;
+   var key = contact.key;
 
-   if( key === own_key )
-      return "That's your own public key - theirs is shown on their My account.";
+   if( ( key === own_key ) || ( name === own_name ) )
+      return "That's your own contact code - theirs is shown on their My account, under Contacts.";
 
    if( kept.hasOwnProperty( name ) )
       return "You have a key for " + name + " already - remove it first to change it.";
@@ -459,6 +497,8 @@ if( typeof module !== "undefined" )
       keys_state: keys_state,
       keys_check_indexes: keys_check_indexes,
       normalise_public_key: normalise_public_key,
+      contact_code: contact_code,
+      parse_contact_code: parse_contact_code,
       contact_problem: contact_problem,
       contact_rows: contact_rows,
       short_public_key: short_public_key

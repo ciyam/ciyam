@@ -1080,11 +1080,30 @@ button.account-back,
    display: none;
 }
 
-.account-keys-public
+/* NOTE: Adding a contact (2026-11-03) - your code, then theirs, the camera's picture while scanning, and the buttons. */
+.account-contact-add
 {
    display: flex;
+   flex-direction: column;
+   gap: 14px;
+}
+
+.account-contact-add[hidden]
+{
+   display: none;
+}
+
+.account-contact-own
+{
+   display: flex;
+   flex-direction: column;
    align-items: flex-start;
-   gap: 16px;
+   gap: 8px;
+}
+
+.account-contact-add .account-lede:empty
+{
+   display: none;
 }
 
 .account-keys-qr
@@ -1231,14 +1250,6 @@ button.account-back,
    min-height: 72px;
    padding-top: 8px;
    line-height: 1.5;
-}
-
-@media ( max-width: 480px )
-{
-   .account-keys-public
-   {
-      flex-direction: column;
-   }
 }
 
 /* NOTE: Making twelve words - the bubbles to pop, the words to write down and the check of them. First in Home's set up, and

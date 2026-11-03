@@ -207,12 +207,34 @@ const own_key = "bd03d5c91f430fc9bc585d232043d781d31b61616abcf19c7333cea4ea1b6bc
 check( "a public key as pasted - capitals, spaces, broken over lines", [ ap.normalise_public_key( verify_a_key.toUpperCase( ) ),
  ap.normalise_public_key( " " + verify_a_key.substr( 0, 32 ) + "\n  " + verify_a_key.substr( 32 ) + " " ), ap.normalise_public_key( verify_a_key + "0" ),
  ap.normalise_public_key( verify_a_key.replace( "0", "g" ) ), ap.normalise_public_key( "" ) ], [ verify_a_key, verify_a_key, "", "", "" ] );
-check( "adding someone's key - fine", ap.contact_problem( "verify-a", verify_a_key, { }, own_key ), "" );
-check( "- not a username, no key, your own, one already kept, or theirs under another name", [
- ap.contact_problem( "Verify A", verify_a_key, { }, own_key ).indexOf( "Type their username" ), ap.contact_problem( "verify-a", "", { }, own_key ),
- ap.contact_problem( "verify-a", own_key, { }, own_key ), ap.contact_problem( "verify-a", verify_a_key, { "verify-a": own_key.replace( "b", "c" ) }, own_key ),
- ap.contact_problem( "verify-b", verify_a_key, { "verify-a": verify_a_key }, own_key ) ], [ 0,
- "A public key is 64 letters and digits, 0-9 and a-f - copy all of it.", "That's your own public key - theirs is shown on their My account.",
+// NOTE: A contact code (Ian, 2026-11-03) - "ian"'s from the console as he gave it, read as the console reads it.
+const ian_code = "69616eI8f4ea05e77e9149ea7:f2db5800e0ba20fe4b8f23ea3544f115fc7aa5b5266d73566c80143ddce79b32";
+const padding = "0123456789abcdef0123456789";
+const verify_a_code = ap.contact_code( "verify-a", verify_a_key, padding );
+
+check( "a contact code - the name as hex, an \"I\", padded to 25, then the key", [ verify_a_code,
+ ap.contact_code( "ann", verify_a_key.toUpperCase( ), padding ), ap.contact_code( "twelve-chars", verify_a_key, padding ).split( ":" )[ 0 ] ], [
+ "7665726966792d61I01234567:" + verify_a_key, "616e6eI0123456789abcdef01:" + verify_a_key, "7477656c76652d6368617273I" ] );
+check( "- none for a name or key that cannot be one, or too little padding", [ ap.contact_code( "Ann", verify_a_key, padding ),
+ ap.contact_code( "ann", verify_a_key + "0", padding ), ap.contact_code( "ann", verify_a_key, "0123" ) ], [ "", "", "" ] );
+check( "reading one - the console's, ours, and one copied with spaces, a break and capitals", [ ap.parse_contact_code( ian_code ),
+ ap.parse_contact_code( verify_a_code ), ap.parse_contact_code( " " + verify_a_code.substr( 0, 30 ) + "\n " + verify_a_code.substr( 30 ).toUpperCase( ) ) ], [
+ { name: "ian", key: "f2db5800e0ba20fe4b8f23ea3544f115fc7aa5b5266d73566c80143ddce79b32" }, { name: "verify-a", key: verify_a_key },
+ { name: "verify-a", key: verify_a_key } ] );
+check( "- not one: a bare key, the wrong length, no \"I\", a name that isn't a username, a short key", [ ap.parse_contact_code( verify_a_key ),
+ ap.parse_contact_code( "69616eI8f4ea05e77e9149ea:" + verify_a_key ), ap.parse_contact_code( "69616e08f4ea05e77e9149ea7:" + verify_a_key ),
+ ap.parse_contact_code( "41626eI8f4ea05e77e9149ea7:" + verify_a_key ), ap.parse_contact_code( ian_code.slice( 0, -1 ) ),
+ ap.parse_contact_code( "" ) ], [ null, null, null, null, null, null ] );
+
+check( "adding someone - fine", ap.contact_problem( ap.parse_contact_code( verify_a_code ), { }, own_key, "damon" ), "" );
+check( "- not a code, your own key or name, one already kept, or theirs under another name", [
+ ap.contact_problem( null, { }, own_key, "damon" ), ap.contact_problem( { name: "verify-a", key: own_key }, { }, own_key, "damon" ),
+ ap.contact_problem( { name: "damon", key: verify_a_key }, { }, own_key, "damon" ),
+ ap.contact_problem( { name: "verify-a", key: verify_a_key }, { "verify-a": own_key.replace( "b", "c" ) }, own_key, "damon" ),
+ ap.contact_problem( { name: "verify-b", key: verify_a_key }, { "verify-a": verify_a_key }, own_key, "damon" ) ], [
+ "That isn't a contact code - copy all of it, or scan it, from Contacts on their My account.",
+ "That's your own contact code - theirs is shown on their My account, under Contacts.",
+ "That's your own contact code - theirs is shown on their My account, under Contacts.",
  "You have a key for verify-a already - remove it first to change it.", "That key is saved for verify-a already." ] );
 check( "the keys kept, by name, shortened", ap.contact_rows( { "verify-b": own_key, "verify-a": verify_a_key } ), [
  { name: "verify-a", key: verify_a_key, short: "0028b35f…789493e0" }, { name: "verify-b", key: own_key, short: "bd03d5c9…ea1b6bc9" } ] );

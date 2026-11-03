@@ -14,7 +14,8 @@
 // What the card needs is read in the first time it is shown - "bip39.min.js" only when words are made or typed
 // ("recover_load_bip39( )" in "signin.js"), being large.
 const c_keys_scripts = [ "ed25519.min.js", "ciyam_harden.js", "ciyam_chacha20.js", "ciyam_ed25519.js", "ciyam_secure_message.js",
- "ciyam_user_keys.js", "home_parse.js", "bubbles.js", "qrcode.min.js" ];
+ "ciyam_user_keys.js", "home_parse.js", "bubbles.js", "qrcode.min.js",
+ "qr_scan.js" ];
 
 const c_keys_parts = [ "keys_loading", "keys_none", "keys_random", "keys_words", "keys_check", "keys_enter", "keys_here" ];
 
@@ -316,7 +317,7 @@ function keys_clear( )
       document.getElementById( id ).replaceChildren( );
    } );
 
-   [ "keys_enter_words", "keys_add_name", "keys_add_key", "keys_device_link" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );
+   [ "keys_enter_words", "keys_add_key", "keys_device_link" ].forEach( function( id ) { document.getElementById( id ).value = ""; } );
 
    document.getElementById( "keys_written" ).checked = false;
    keys_hide_public( );
@@ -752,38 +753,205 @@ function keys_draw_contacts( )
    document.getElementById( "keys_contacts" ).hidden = ( rows.length > 0 );
 }
 
-// NOTE: The public key, as text and a QR code, only when asked (Ian, 2026-10-27: with quantum attacks to come, shown only when it
-// is known to be safe) - and taken out of the page again when hidden, or on leaving Your keys.
+// NOTE: Your contact code - your username and public key ("contact_code( )") - as text and a QR code, only when asked (Ian,
+// 2026-10-27: with quantum attacks to come, shown only when it is known to be safe; 2026-11-03: shown on adding a contact, for
+// each to scan the other's) - and taken out of the page again on Done, or on leaving Contacts.
 function keys_show_public( )
 {
    if( !g_keys || !g_keys.own )
       return;
 
+   var bytes = new Uint8Array( 13 );
+
+   crypto.getRandomValues( bytes );
+
+   var padding = Array.from( bytes ).map( function( b ) { return b.toString( 16 ).padStart( 2, "0" ); } ).join( "" );
+   var code = contact_code( account_display_name( ciyam.username, ciyam.is_admin ), g_keys.own, padding );
+
+   if( code === "" )
+      return;
+
    var box = document.getElementById( "keys_qr" );
 
-   document.getElementById( "keys_public" ).textContent = g_keys.own;
+   document.getElementById( "keys_public" ).textContent = code;
 
    // NOTE: Drawn in the page - "qrcode.min.js" - so the key goes nowhere else; the library's own title taken off, as Home's.
    box.replaceChildren( );
 
-   new QRCode( box, { text: g_keys.own, width: c_keys_qr_size, height: c_keys_qr_size, colorDark: "#1b1f2a", colorLight: "#ffffff",
+   new QRCode( box, { text: code, width: c_keys_qr_size, height: c_keys_qr_size, colorDark: "#1b1f2a", colorLight: "#ffffff",
     correctLevel: QRCode.CorrectLevel.M } );
 
    box.removeAttribute( "title" );
    box.querySelectorAll( "[title]" ).forEach( function( node ) { node.removeAttribute( "title" ); } );
 
+   set_error( "keys_add_error", "" );
+   keys_scan_status( "" );
+
    document.getElementById( "keys_public_part" ).hidden = false;
-   document.getElementById( "keys_public_show" ).hidden = true;
-   document.getElementById( "keys_public_hide" ).hidden = false;
+   document.getElementById( "contacts_start_row" ).hidden = true;
+   document.getElementById( "keys_add_key" ).focus( );
 }
 
 function keys_hide_public( )
 {
+   keys_scan_stop( );
+
    document.getElementById( "keys_qr" ).replaceChildren( );
    document.getElementById( "keys_public" ).textContent = "";
+   document.getElementById( "keys_add_key" ).value = "";
    document.getElementById( "keys_public_part" ).hidden = true;
-   document.getElementById( "keys_public_show" ).hidden = false;
-   document.getElementById( "keys_public_hide" ).hidden = true;
+   document.getElementById( "contacts_start_row" ).hidden = false;
+
+   keys_scan_status( "" );
+   set_error( "keys_add_error", "" );
+}
+
+// NOTE: Their contact code read by the camera, or from a picture of it where there is no camera or no https ("qr_scan.js") -
+// added once read. Each start counted, as Done or leaving can come while the camera is still starting.
+var g_keys_scanner = null;
+var g_keys_scan_opened = 0;
+
+function keys_scan_status( text )
+{
+   document.getElementById( "contacts_scan_status" ).textContent = text;
+}
+
+function keys_scan_stop( )
+{
+   var scanner = g_keys_scanner;
+
+   g_keys_scan_opened++;
+   g_keys_scanner = null;
+
+   document.getElementById( "contacts_scan" ).disabled = false;
+
+   // NOTE: Not "qr_scan_stop( )" without a camera - "qr_scan.js" is read with the keys' scripts, and this can come before them.
+   if( scanner === null )
+   {
+      document.getElementById( "contacts_scan_reader" ).replaceChildren( );
+
+      return Promise.resolve( );
+   }
+
+   return qr_scan_stop( scanner ).then( function( ) { document.getElementById( "contacts_scan_reader" ).replaceChildren( ); } );
+}
+
+async function keys_scan_start( )
+{
+   await keys_scan_stop( );
+
+   var opened = g_keys_scan_opened;
+
+   set_error( "keys_add_error", "" );
+   keys_scan_status( "Starting the camera…" );
+
+   if( !await qr_scan_library( ) )
+   {
+      if( opened === g_keys_scan_opened )
+         keys_scan_status( "The QR code reader could not be loaded - reload the page to try again." );
+
+      return;
+   }
+
+   if( opened !== g_keys_scan_opened )
+      return;
+
+   if( !qr_scan_can_use_camera( ) )
+   {
+      keys_scan_status( "The camera needs this page opened as https - choose a picture of their code instead." );
+
+      return;
+   }
+
+   var scanner = qr_scan_reader( "contacts_scan_reader" );
+
+   g_keys_scanner = scanner;
+   document.getElementById( "contacts_scan" ).disabled = true;
+
+   try
+   {
+      await scanner.start( { facingMode: "environment" }, { fps: 10 }, keys_scan_read, function( ) { } );
+   }
+   catch( e )
+   {
+      if( opened === g_keys_scan_opened )
+      {
+         g_keys_scanner = null;
+         document.getElementById( "contacts_scan" ).disabled = false;
+
+         keys_scan_status( "No camera could be used - choose a picture of their code instead." );
+      }
+
+      return;
+   }
+
+   // NOTE: Stopped while the camera was starting - let go of it now.
+   if( opened !== g_keys_scan_opened )
+   {
+      qr_scan_stop( scanner );
+
+      return;
+   }
+
+   keys_scan_status( "Hold their contact code up to the camera." );
+}
+
+// NOTE: The camera reads a code many times a second - the first taken, then the camera let go.
+async function keys_scan_read( text )
+{
+   if( g_keys_scanner === null )
+      return;
+
+   await keys_scan_stop( );
+
+   keys_scan_status( "" );
+   document.getElementById( "keys_add_key" ).value = text;
+
+   await keys_add_contact( );
+}
+
+async function keys_scan_picture( input )
+{
+   var file = ( input.files && input.files.length ) ? input.files[ 0 ] : null;
+
+   input.value = "";
+
+   if( file === null )
+      return;
+
+   await keys_scan_stop( );
+
+   var opened = g_keys_scan_opened;
+
+   set_error( "keys_add_error", "" );
+
+   if( !await qr_scan_library( ) )
+   {
+      keys_scan_status( "The QR code reader could not be loaded - reload the page to try again." );
+
+      return;
+   }
+
+   keys_scan_status( "Reading the picture…" );
+
+   var text = await qr_scan_picture( "contacts_scan_reader", file, function( ) { return opened === g_keys_scan_opened; } );
+
+   if( opened !== g_keys_scan_opened )
+      return;
+
+   document.getElementById( "contacts_scan_reader" ).replaceChildren( );
+
+   if( text === null )
+   {
+      keys_scan_status( "No QR code could be read in that picture - try one closer up, or straighter." );
+
+      return;
+   }
+
+   keys_scan_status( "" );
+   document.getElementById( "keys_add_key" ).value = text;
+
+   await keys_add_contact( );
 }
 
 // NOTE: Which rooms have a key kept with these ("room_keys_text( )") - made and removed in the chat.
@@ -862,11 +1030,14 @@ async function keys_store_contacts( change, busy_text )
    return true;
 }
 
+// NOTE: Their contact code as pasted or scanned - your code stays shown, as they may still be reading it.
 async function keys_add_contact( )
 {
-   var name = document.getElementById( "keys_add_name" ).value.trim( ).toLowerCase( );
-   var key = normalise_public_key( document.getElementById( "keys_add_key" ).value );
-   var problem = contact_problem( name, key, g_keys.contacts, g_keys.own );
+   var contact = parse_contact_code( document.getElementById( "keys_add_key" ).value );
+   var own_name = account_display_name( ciyam.username, ciyam.is_admin );
+   var problem = contact_problem( contact, g_keys.contacts, g_keys.own, own_name );
+
+   keys_scan_status( "" );
 
    if( problem !== "" )
    {
@@ -877,18 +1048,19 @@ async function keys_add_contact( )
 
    var add = function( contacts )
    {
-      var again = contact_problem( name, key, contacts, g_keys.own );
+      var again = contact_problem( contact, contacts, g_keys.own, own_name );
 
       if( again === "" )
-         contacts[ name ] = key;
+         contacts[ contact.name ] = contact.key;
 
       return again;
    };
 
-   if( await keys_store_contacts( add, "Saving " + name + "'s key…" ) )
+   if( await keys_store_contacts( add, "Saving " + contact.name + "'s key…" ) )
    {
-      document.getElementById( "keys_add_name" ).value = "";
       document.getElementById( "keys_add_key" ).value = "";
+
+      keys_scan_status( contact.name + " added - their messages to you and yours to them are encrypted now." );
    }
 }
 
@@ -1156,6 +1328,9 @@ function install_keys( )
    document.getElementById( "keys_device" ).addEventListener( "click", keys_show_device );
    document.getElementById( "keys_device_hide" ).addEventListener( "click", keys_hide_device );
    document.getElementById( "keys_add" ).addEventListener( "click", keys_add_contact );
+   document.getElementById( "contacts_scan" ).addEventListener( "click", keys_scan_start );
+   document.getElementById( "contacts_picture" ).addEventListener( "click", function( ) { document.getElementById( "contacts_scan_file" ).click( ); } );
+   document.getElementById( "contacts_scan_file" ).addEventListener( "change", function( ) { keys_scan_picture( this ); } );
 
    document.getElementById( "keys_written" ).addEventListener( "change", function( event )
    {
