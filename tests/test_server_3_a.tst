@@ -253,7 +253,7 @@ review webcmdlist[s] [<name>]
 review user-keys
 review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
-update user <pin> password=<password>
+update user <pin> keys={REPLACE|RESTORE}|password=<password>
 update message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>
 100 Meta
 Error: Unknonwn module id '99' for storage 'Meta'.
