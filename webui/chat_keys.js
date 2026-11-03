@@ -547,6 +547,7 @@ async function chat_keys_read( )
    g_chat_keys = found;
    g_chat_keys_unread = unread;
    g_owner_key_looked = { };
+   g_owner_key_unopened = { };
    g_owner_keys_checked = { };
 
    show_thread_title( );
@@ -573,6 +574,7 @@ function chat_keys_forget( )
    g_chat_secrets = { };
    g_room_keys_tried = { };
    g_owner_key_looked = { };
+   g_owner_key_unopened = { };
    g_owner_keys_checked = { };
 }
 
@@ -1410,6 +1412,9 @@ var g_room_keys_tried = { };
 // the room again reads it only once something new is there.
 var g_owner_key_looked = { };
 
+// NOTE: Rooms whose owner's messages would not open, said once a sign in ("chat_look_for_owner_key( )").
+var g_owner_key_unopened = { };
+
 // NOTE: The sealed messages "sender" posted in direct message "dm_room", read quietly from the start and opened with "secret" - as
 // { opened: [ { sender, text } ], failed: <how many would not open> }, or null if it could not be read (looked for again later).
 async function chat_dm_opened( dm_room, sender, secret )
@@ -1471,15 +1476,20 @@ async function chat_dm_opened( dm_room, sender, secret )
 // NOTE: The open room, if it has no key here and is someone else's - their direct message read quietly, their sealed messages
 // opened, and the newest key for the room added as opening it would ("chat_offer_room_key( )"). Called as the room is first read
 // and once the keys are read - not at each poll: a read marks the direct message read and seen by this person, so one sent while
-// they stay in the room waits for it to be opened again (Damon, 2026-11-03, after review). The owner's own room has its members
-// sent the key instead ("chat_owner_send_keys( )").
-async function chat_look_for_owner_key( )
+// they stay in the room waits for it to be opened again (Damon, 2026-11-03, after review). Since 2026-11-04 at each poll too, but
+// read only once the direct message has something new - the key often comes a moment after the room is joined (Damon accepting
+// that a message arriving there meanwhile is marked read). The owner's own room has its members sent the key instead
+// ("chat_owner_send_keys( )") - not at a poll ("member_only").
+async function chat_look_for_owner_key( member_only )
 {
    var room = g_room;
    var entry = ( room !== "" ) ? find_room( room ) : null;
 
    if( entry && ( entry.owner === ciyam.username ) )
    {
+      if( member_only )
+         return;
+
       chat_owner_send_keys( );
 
       return;
@@ -1517,8 +1527,10 @@ async function chat_look_for_owner_key( )
 
    // NOTE: Their messages there would not open (Damon, 2026-11-03: a key sent, and never added) - the public key each keeps for the
    // other is not the other's now, one of them having made new keys since. Said once a sign in for the room.
-   if( ( key === "" ) && ( found.failed > 0 ) && ( g_room === room ) )
+   if( ( key === "" ) && ( found.failed > 0 ) && ( g_room === room ) && !g_owner_key_unopened[ room ] )
    {
+      g_owner_key_unopened[ room ] = true;
+
       show_alert( owner + "'s messages in your direct message can't be opened here, so a room key in them can't be added - one of you"
        + " has new keys since you added each other. Add each other's contact code again, under Contacts on My account.", "is-error" );
 

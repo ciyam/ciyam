@@ -7409,6 +7409,11 @@ async function poll( )
 
    await rooms;
 
+   // NOTE: A member in a room without its key looks again once the owner's direct message has something new (Damon, 2026-11-04:
+   // the room accepted first, the key came a moment later and waited for the room to be opened again) - "chat_look_for_owner_key(
+   // )". Not the owner's side, which sends as the room is opened or joined.
+   await chat_look_for_owner_key( true );
+
    if( g_room !== "" )
    {
       g_in_poll = true;
