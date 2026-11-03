@@ -1551,6 +1551,43 @@ function poll_problem( question, options )
    return "";
 }
 
+// NOTE: What is wrong with each part of the poll dialog, in the order they are shown (Damon, 2026-11-04: filled in from the top, not
+// every part said what it lacked, and a room's name taken out was never said) - { question, options, voters, name, closes }, each
+// "" if nothing. "closes" Unix seconds or null; "now" a Date; "room" null in an open room, or { chosen: <how many vote>, name } for
+// a poll with a room of its own.
+function poll_field_problems( question, options, closes, now, room )
+{
+   var problems = { question: "", options: "", voters: "", name: "", closes: "" };
+   var asked = String( question || "" ).trim( );
+
+   if( asked === "" )
+      problems.question = "Write the question.";
+   else if( asked.length > c_poll_most_question )
+      problems.question = "The question is too long - at most " + c_poll_most_question + " characters.";
+
+   problems.options = poll_problem( asked || "?", options );
+
+   if( room )
+   {
+      if( !room.chosen )
+         problems.voters = "Choose who votes - Everyone, or some people.";
+
+      var name = String( room.name || "" ).trim( );
+
+      if( name === "" )
+         problems.name = "Give its room a name.";
+      else if( !is_valid_room_name( name ) )
+         problems.name = "5 to 50 letters, digits and spaces (and - + & ( ) '), starting with a letter.";
+   }
+
+   if( closes === null || closes === undefined )
+      problems.closes = "Choose when voting closes.";
+   else if( closes <= Math.floor( now.getTime( ) / 1000 ) )
+      problems.closes = "Voting has to close in the future - choose a later time.";
+
+   return problems;
+}
+
 // NOTE: The poll's message - each of its lines on one line, empty options left out.
 function poll_text( question, options )
 {
@@ -4773,6 +4810,7 @@ if( typeof module !== "undefined" )
       poll_text: poll_text,
       parse_poll: parse_poll,
       poll_results: poll_results,
+      poll_field_problems: poll_field_problems,
       poll_close_choices: poll_close_choices,
       duration_text: duration_text,
       poll_close_said: poll_close_said,

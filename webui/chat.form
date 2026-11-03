@@ -497,27 +497,48 @@ http://www.opensource.org/licenses/mit-license.php.
     aria-describedby="poll_dialog_where" onsubmit="do_start_poll( ); return false;">
       <h2 id="poll_dialog_title">New poll</h2>
       <p class="chat-dialog-note" id="poll_dialog_where"></p>
-      <label class="chat-label" for="poll_question">Question</label>
-      <textarea id="poll_question" class="chat-field chat-poll-question" rows="2" maxlength="200" autocomplete="off"></textarea>
-      <div class="chat-label" id="poll_options_label">Options</div>
-      <div class="chat-poll-options" id="poll_options" role="group" aria-labelledby="poll_options_label"></div>
-      <button type="button" class="chat-btn chat-btn--small chat-poll-add" id="poll_add_option" onclick="do_add_poll_option( true )">Add an option</button>
+      <!-- NOTE: Each part with its label, what is needed marked, and what it lacks said under it once Start is pressed (Damon,
+           2026-11-04: nothing said which were needed, not every one said what it lacked, and the spacing was uneven). -->
+      <p class="chat-poll-needed" aria-hidden="true"><span class="chat-needed">*</span> needed</p>
+      <div class="chat-poll-field">
+         <label class="chat-label" for="poll_question">Question <span class="chat-needed" aria-hidden="true">*</span></label>
+         <textarea id="poll_question" class="chat-field chat-poll-question" rows="1" maxlength="200" autocomplete="off" aria-required="true"
+          aria-describedby="poll_question_error"></textarea>
+         <div class="chat-field-error" id="poll_question_error"></div>
+      </div>
+      <div class="chat-poll-field">
+         <div class="chat-label" id="poll_options_label">Options <span class="chat-needed" aria-hidden="true">*</span>
+          <span class="chat-label-aside">at least two</span></div>
+         <div class="chat-poll-options" id="poll_options" role="group" aria-labelledby="poll_options_label"
+          aria-describedby="poll_options_error"></div>
+         <button type="button" class="chat-btn chat-btn--small chat-poll-add" id="poll_add_option" onclick="do_add_poll_option( true )">Add an option</button>
+         <div class="chat-field-error" id="poll_options_error"></div>
+      </div>
       <!-- NOTE: A poll with a room of its own, from + New (the poll review, 2026-11-03: make a room, invite everyone, then start
            the poll - three trips) - who votes and the room's name too; the chat makes the room, invites them and starts the poll in
            it ("do_open_new_poll( )"). Those invited join after it is posted, and see it pinned. -->
-      <div class="chat-poll-new" id="poll_new_part" hidden>
-         <label class="chat-label" for="poll_picker_add">Who votes</label>
+      <div class="chat-poll-field" id="poll_voters_part" hidden>
+         <label class="chat-label" for="poll_picker_add">Who votes <span class="chat-needed" aria-hidden="true">*</span></label>
          <div id="poll_picker"></div>
-         <label class="chat-label" for="poll_room_name">Its room</label>
-         <input type="text" id="poll_room_name" class="chat-field" maxlength="50" autocomplete="off" aria-describedby="poll_room_note">
+         <div class="chat-field-error" id="poll_voters_error"></div>
+      </div>
+      <div class="chat-poll-field" id="poll_new_part" hidden>
+         <label class="chat-label" for="poll_room_name">Its room <span class="chat-needed" aria-hidden="true">*</span></label>
+         <input type="text" id="poll_room_name" class="chat-field" maxlength="50" autocomplete="off" aria-required="true"
+          aria-describedby="poll_room_note poll_name_error">
          <p class="chat-dialog-note" id="poll_room_note">Named from the question - change it if you like.</p>
+         <div class="chat-field-error" id="poll_name_error"></div>
       </div>
-      <div class="chat-label" id="poll_close_label">Voting closes</div>
-      <div class="chat-poll-closes" id="poll_close_choices" role="group" aria-labelledby="poll_close_label"></div>
-      <div class="chat-poll-pick" id="poll_close_pick" hidden>
-         <input type="hidden" id="poll_close_input">
+      <div class="chat-poll-field">
+         <div class="chat-label" id="poll_close_label">Voting closes <span class="chat-needed" aria-hidden="true">*</span></div>
+         <div class="chat-poll-closes" id="poll_close_choices" role="group" aria-labelledby="poll_close_label"
+          aria-describedby="poll_close_said poll_closes_error"></div>
+         <div class="chat-poll-pick" id="poll_close_pick" hidden>
+            <input type="hidden" id="poll_close_input">
+         </div>
+         <p class="chat-dialog-note chat-poll-close-said" id="poll_close_said" aria-live="polite"></p>
+         <div class="chat-field-error" id="poll_closes_error"></div>
       </div>
-      <p class="chat-dialog-note chat-poll-close-said" id="poll_close_said" aria-live="polite"></p>
       <p class="chat-poll-room-note">While voting is open this room takes only votes. When voting closes, so does the room.</p>
       <div class="chat-error-text" id="poll_dialog_error" role="alert"></div>
       <div class="chat-dialog-actions">

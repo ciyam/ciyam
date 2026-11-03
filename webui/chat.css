@@ -260,16 +260,73 @@ button.chat-avatar:hover
    background: var(--color-chat-bg-selected);
 }
 
-.chat-poll-new
+/* NOTE: The poll dialog's parts - each label with its field, what it lacks under it, and the parts evenly apart (Damon, 2026-11-04:
+   the label's own margins on top of the dialog's gap left the spacing uneven). */
+.chat-dialog.chat-poll-dialog
+{
+   gap: 18px;
+}
+
+.chat-poll-field
 {
    display: flex;
    flex-direction: column;
-   gap: 8px;
+   gap: 6px;
 }
 
-.chat-poll-new[hidden]
+.chat-poll-field[hidden]
 {
    display: none;
+}
+
+.chat-poll-dialog .chat-label,
+.chat-poll-dialog .chat-dialog-note
+{
+   margin: 0;
+}
+
+.chat-poll-dialog > .chat-dialog-note
+{
+   margin-top: -10px;
+}
+
+/* NOTE: What is needed - an asterisk after its label, said once at the top. */
+.chat-needed
+{
+   color: var(--color-chat-critical-text);
+   font-weight: 700;
+}
+
+.chat-poll-needed
+{
+   margin: -8px 0 0;
+   font-size: var(--font-size-chat-tiny);
+   color: var(--color-chat-text-secondary);
+}
+
+.chat-label-aside
+{
+   margin-left: 4px;
+   font-weight: 400;
+   letter-spacing: 0;
+   text-transform: none;
+}
+
+.chat-field-error
+{
+   font-size: var(--font-size-chat-meta);
+   color: var(--color-chat-critical-text);
+}
+
+.chat-field-error:empty,
+.chat-poll-dialog .chat-error-text:empty
+{
+   display: none;
+}
+
+.chat-poll-dialog [aria-invalid="true"]
+{
+   border-color: var(--color-chat-critical-text);
 }
 
 .chat-user-menu-head
@@ -2637,11 +2694,19 @@ button.chat-poll-option:hover
 
 /* NOTE: The poll dialog after the review (2026-11-03) - the question two lines, a remove by each option, the close as quick
    choices with the calendar only for Pick a time, and one plain line on what happens to the room. */
+/* NOTE: The question - one line to begin, its words in the middle of it as a field's are, growing as it wraps ("resize_poll_question(
+   )"). */
 .chat-poll-question
 {
-   min-height: 0;
+   display: block;
+   height: auto;
+   min-height: 46px;
+   padding: 11px 14px;
    resize: none;
-   line-height: 1.4;
+   overflow-y: hidden;
+   font-family: var(--font-family-chat);
+   font-size: var(--font-size-chat-body);
+   line-height: 22px;
 }
 
 .chat-poll-remove

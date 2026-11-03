@@ -4367,6 +4367,7 @@ function fill_poll( holder, poll, reactions, give )
    var entry = find_room( g_room );
 
    total.className = "chat-poll-total";
+   total.dataset.votes = String( results.total );
    total.textContent = poll_status_text( results.total, poll_voters( ), entry ? Number( entry.closes || 0 ) : 0, new Date( ) );
 
    list.appendChild( total );
@@ -5100,6 +5101,26 @@ function sync_posting_rules( )
       show_thread_title( );
       update_thread_meta( );
    }
+
+   refresh_poll_totals( entry );
+}
+
+// NOTE: Each poll's line said again at each listing - how long is left moves on, the close may arrive after the poll was drawn, and
+// those who can vote change as they join (found 2026-11-04: drawn before its close was known, it never said how long was left).
+// Only the words, so an option focused to vote keeps its focus.
+function refresh_poll_totals( entry )
+{
+   var closes = entry ? Number( entry.closes || 0 ) : 0;
+   var now = new Date( );
+   var voters = poll_voters( );
+
+   document.querySelectorAll( "#message_list .chat-poll-total, #pinned .chat-poll-total" ).forEach( function( total )
+   {
+      var said = poll_status_text( Number( total.dataset.votes || 0 ), voters, closes, now );
+
+      if( total.textContent !== said )
+         total.textContent = said;
+   } );
 }
 
 // NOTE: Whether the open room is past its close time.
@@ -5632,7 +5653,8 @@ function poll_picker( )
    if( g_poll_picker === null )
    {
       g_poll_picker = people_picker( document.getElementById( "poll_picker" ), {
-         list_id: "poll_picker_list", add_id: "poll_picker_add", done_id: "poll_dialog_submit", none_text: "No other users to invite." } );
+         list_id: "poll_picker_list", add_id: "poll_picker_add", done_id: "poll_dialog_submit", none_text: "No other users to invite.",
+         on_change: function( ) { clear_poll_problem( "voters" ); } } );
    }
 
    return g_poll_picker;
@@ -5649,6 +5671,7 @@ function do_open_new_poll( )
    document.getElementById( "poll_dialog_where" ).textContent = "In a room of its own - those you choose are invited, and each can"
     + " vote once they join.";
    document.getElementById( "poll_new_part" ).hidden = false;
+   document.getElementById( "poll_voters_part" ).hidden = false;
    document.getElementById( "poll_room_name" ).value = "";
    document.getElementById( "poll_room_name" ).dataset.typed = "";
 
@@ -5666,6 +5689,7 @@ function do_open_poll_dialog( )
 {
    g_poll_new = false;
    document.getElementById( "poll_new_part" ).hidden = true;
+   document.getElementById( "poll_voters_part" ).hidden = true;
 
    if( g_poll_when === null )
    {
@@ -5682,7 +5706,15 @@ function do_open_poll_dialog( )
             field.value = poll_room_name( this.value );
       } );
 
-      document.getElementById( "poll_room_name" ).addEventListener( "input", function( ) { this.dataset.typed = "1"; } );
+      document.getElementById( "poll_room_name" ).addEventListener( "input", function( ) { this.dataset.typed = "1"; clear_poll_problem( "name" ); } );
+
+      document.getElementById( "poll_question" ).addEventListener( "input", function( )
+      {
+         resize_poll_question( );
+         clear_poll_problem( "question" );
+      } );
+
+      document.getElementById( "poll_options" ).addEventListener( "input", function( ) { clear_poll_problem( "options" ); } );
 
       // NOTE: The question is one line in the poll - Enter goes on to the options.
       document.getElementById( "poll_question" ).addEventListener( "keydown", function( event )
@@ -5704,6 +5736,8 @@ function do_open_poll_dialog( )
 
    document.getElementById( "poll_question" ).value = "";
    document.getElementById( "poll_options" ).replaceChildren( );
+
+   show_poll_problems( null );
    document.getElementById( "poll_close_input" ).value = "";
    document.getElementById( "poll_dialog_error" ).textContent = "";
    document.getElementById( "poll_dialog_submit" ).disabled = false;
@@ -5717,6 +5751,7 @@ function do_open_poll_dialog( )
    do_add_poll_option( false );
 
    document.getElementById( "poll_dialog" ).hidden = false;
+   resize_poll_question( );
    document.getElementById( "poll_question" ).focus( );
 }
 
@@ -5763,6 +5798,9 @@ function poll_close_chosen( key )
    } );
 
    document.getElementById( "poll_close_pick" ).hidden = ( key !== "pick" );
+
+   if( key !== "" )
+      clear_poll_problem( "closes" );
 
    var closes = close_time_from_input( document.getElementById( "poll_close_input" ).value );
 
@@ -5867,6 +5905,81 @@ function do_close_poll_dialog( )
    document.getElementById( "poll_dialog" ).hidden = true;
 }
 
+// NOTE: The poll dialog's parts and where each says what it lacks ("poll_field_problems( )"), in the order shown - with the field
+// that is marked, and focused when it is the first.
+const c_poll_parts = [
+   { key: "question", error: "poll_question_error", field: function( ) { return document.getElementById( "poll_question" ); } },
+   { key: "options", error: "poll_options_error", field: function( )
+     {
+        return Array.from( document.querySelectorAll( "#poll_options .chat-poll-option-input" ) ).filter( function( input )
+         { return input.value.trim( ) === ""; } )[ 0 ] || document.querySelector( "#poll_options .chat-poll-option-input" );
+     } },
+   { key: "voters", error: "poll_voters_error", field: function( ) { return document.getElementById( "poll_picker_add" ); } },
+   { key: "name", error: "poll_name_error", field: function( ) { return document.getElementById( "poll_room_name" ); } },
+   { key: "closes", error: "poll_closes_error", unmarked: true,
+     field: function( ) { return document.querySelector( "#poll_close_choices .chat-poll-close-choice" ); } } ];
+
+// NOTE: Each part's problem said under it, all at once, and the first focused - true when there are none.
+function show_poll_problems( problems )
+{
+   var first = null;
+
+   c_poll_parts.forEach( function( part )
+   {
+      var said = problems ? ( problems[ part.key ] || "" ) : "";
+      var field = part.field( );
+
+      document.getElementById( part.error ).textContent = said;
+
+      // NOTE: A close not chosen is not drawn on its first choice, which is only where the focus goes.
+      if( field && !part.unmarked )
+         field.setAttribute( "aria-invalid", said ? "true" : "false" );
+
+      if( said && ( first === null ) )
+         first = field;
+   } );
+
+   if( first !== null )
+      first.focus( );
+
+   return first === null;
+}
+
+// NOTE: A part's problem taken away once it is changed - the others stay until Start is pressed again.
+function clear_poll_problem( key )
+{
+   c_poll_parts.forEach( function( part )
+   {
+      if( part.key !== key )
+         return;
+
+      document.getElementById( part.error ).textContent = "";
+
+      var field = part.field( );
+
+      if( field )
+         field.removeAttribute( "aria-invalid" );
+   } );
+}
+
+// NOTE: The question grows a line at a time as it wraps, as the message box does, to four lines (Damon, 2026-11-04: a fixed box,
+// its words at its top).
+function resize_poll_question( )
+{
+   var input = document.getElementById( "poll_question" );
+
+   input.style.height = "auto";
+
+   var style = getComputedStyle( input );
+   var borders = parseFloat( style.borderTopWidth ) + parseFloat( style.borderBottomWidth );
+   var padding = parseFloat( style.paddingTop ) + parseFloat( style.paddingBottom );
+   var tallest = Math.ceil( ( parseFloat( style.lineHeight ) * 4 ) + padding + borders );
+   var wanted = input.scrollHeight + borders;
+
+   input.style.height = Math.min( wanted, tallest ) + "px";
+   input.style.overflowY = ( wanted > tallest ) ? "auto" : "hidden";
+}
+
 // NOTE: One step of starting a poll, through the queue - its answer, or the error the CIYAM class was left with.
 function poll_step( request )
 {
@@ -5898,27 +6011,14 @@ async function do_start_poll( )
    var options = Array.from( document.querySelectorAll( "#poll_options .chat-poll-option-input" ) ).map( function( input ) { return input.value; } );
    var closes = close_time_from_input( document.getElementById( "poll_close_input" ).value );
 
-   var problem = poll_problem( question, options );
-
-   if( ( problem === "" ) && ( closes === null ) )
-      problem = "Choose when voting closes.";
-
-   if( ( problem === "" ) && ( closes <= Math.floor( Date.now( ) / 1000 ) ) )
-      problem = "Voting has to close in the future.";
-
    // NOTE: A poll with a room of its own - its name, and someone to vote ("do_open_new_poll( )").
    var name = document.getElementById( "poll_room_name" ).value.trim( );
    var voters = g_poll_new ? poll_picker( ).chosen( ) : [ ];
 
-   if( ( problem === "" ) && g_poll_new && ( voters.length === 0 ) )
-      problem = "Choose who votes - Everyone, or some people.";
+   error.textContent = "";
 
-   if( ( problem === "" ) && g_poll_new && !is_valid_room_name( name ) )
-      problem = "Give its room a name - 5 to 50 letters, digits and spaces, starting with a letter.";
-
-   error.textContent = problem;
-
-   if( ( problem !== "" ) || ( !g_poll_new && !entry ) )
+   if( !show_poll_problems( poll_field_problems( question, options, closes, new Date( ), g_poll_new ? { chosen: voters.length, name: name } : null ) )
+    || ( !g_poll_new && !entry ) )
       return;
 
    var when = room_close_label( closes ).replace( /^Closes /, "" );
@@ -5955,6 +6055,7 @@ async function do_start_poll( )
 
       g_poll_new = false;
       document.getElementById( "poll_new_part" ).hidden = true;
+      document.getElementById( "poll_voters_part" ).hidden = true;
 
       await chat_key_new_room( room, voters );
    }

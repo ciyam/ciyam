@@ -1959,6 +1959,17 @@ check( "a room's name from a poll's question - what a name may have, cut at a wo
  cp.poll_room_name( "Shall we meet at the Thai place, the pizza place, or somewhere else entirely this week?" ), cp.poll_room_name( "Rock & roll?" ),
  cp.poll_room_name( "??" ), cp.poll_room_name( "Hi?" ) ], [ "Where shall we go for the team lunch on Friday", "budget yes or no",
  "Shall we meet at the Thai place the pizza place or", "Rock & roll", "", "" ] );
+// NOTE: Each part of the dialog said on its own, in the order shown (Damon, 2026-11-04).
+var poll_t = Math.floor( poll_now.getTime( ) / 1000 );
+
+check( "the poll dialog's problems - everything missing, each said", cp.poll_field_problems( "", [ "", "" ], null, poll_now, { chosen: 0, name: "" } ), {
+ question: "Write the question.", options: "Give at least two options.", voters: "Choose who votes - Everyone, or some people.",
+ name: "Give its room a name.", closes: "Choose when voting closes." } );
+check( "- options the same, a name that cannot be one, a close passed; in an open room no voters or name asked",
+ [ cp.poll_field_problems( "Lunch?", [ "Pizza", "pizza" ], poll_t - 5, poll_now, { chosen: 1, name: "1 bad" } ),
+ cp.poll_field_problems( "Lunch?", [ "Pizza", "Sushi" ], poll_t + 60, poll_now, null ) ], [ { question: "", options: "Two options are the same.",
+ voters: "", name: "5 to 50 letters, digits and spaces (and - + & ( ) '), starting with a letter.",
+ closes: "Voting has to close in the future - choose a later time." }, { question: "", options: "", voters: "", name: "", closes: "" } ] );
 check( "a closed poll's outcome - the most votes, a tie, none", [ cp.poll_outcome( poll_votes ),
  cp.poll_outcome( cp.poll_results( poll_read, [ { code: "00", people: [ "a" ] }, { code: "01", people: [ "b" ] } ], "x" ) ),
  cp.poll_outcome( cp.poll_results( poll_read, [ ], "x" ) ) ], [ "Most votes: Pizza", "A tie between Pizza and Sushi rolls", "" ] );

@@ -926,6 +926,8 @@ ok   the line under a poll - how many of how many have voted, and how long is le
 ok   a poll started, said as one notice - from its close; none for anything else
 ok   a poll's room in place of its message box - before voting, voted, its owner
 ok   a room's name from a poll's question - what a name may have, cut at a word to fit; none where nothing would do
+ok   the poll dialog's problems - everything missing, each said
+ok   - options the same, a name that cannot be one, a close passed; in an open room no voters or name asked
 ok   a closed poll's outcome - the most votes, a tie, none
 ok   the node busy with another message - tried once more
 ok   - not a room's messages that only say the same words
