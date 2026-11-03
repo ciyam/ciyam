@@ -3127,6 +3127,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   msg.erase( 0, pos + 1 );
                }
 
+               unescape( prompt, c_special_characters );
+
                str = msg + get_line( prompt.c_str( ), false );
             }
             else
