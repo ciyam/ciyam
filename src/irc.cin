@@ -446,23 +446,58 @@ ENTROPY=@entropy:32:hex_digits
 @else
 ~echo ""
 PPUB=@public:$PKEY
-#Can copy or scan: $PPUB
-~qrencode -tANSI $~PPUB
+USER_HEX=@aschex:$USER
+PAD_SEP=@aschex:_
+USER_HEX=$USER_HEX$PAD_SEP
+LEN=@strlen:$USER_HEX
+@if $LEN #< 25
+APPEND=@25-$LEN
+RANDOM=@entropy:$APPEND:hex_digits
+USER_HEX=$USER_HEX$RANDOM
+@endif
+#$USER_HEX:$PPUB
+~qrencode -tANSI $USER_HEX:$~PPUB
 ;
-@retain NAMES
-<names.cin $ALL_USERS 1
+USER_FOR_PUB=
 ;
-USER_FOR_PUB=$NAMES
-NAMES=
-;
-@ifdef $USER_FOR_PUB
-@ifeq "$USER" "$USER_FOR_PUB"
-#Error: User name must not be your own one.
-@else
-&Paste public key text or just Enter to scan: :QR_CODE=
+&(either copy the contact information or just hit the Enter key in order to scan a QR code)\n:QR_CODE=
 @ifndef $QR_CODE
 QR_CODE=@file:~zbarcam -1 -q --raw
 @endif
+;
+POS=@strpos:\::$QR_CODE
+@ifdef $POS
+USER_FOR_PUB=@substr:0,$POS:$QR_CODE
+POS=@$POS+1
+QR_CODE=@substr:$POS:$QR_CODE
+POS=@strpos:5f:$USER_FOR_PUB
+@ifndef $POS
+USER_FOR_PUB=
+@else
+USER_FOR_PUB=@substr:0,$POS:$USER_FOR_PUB
+USER_FOR_PUB=@hexasc:$USER_FOR_PUB
+@endif
+@endif
+;
+@ifndef $USER_FOR_PUB
+#Error: Invalid user information format (or camera usage was not permitted).
+QR_CODE=
+@else
+LEN=@strlen:$USER_FOR_PUB
+@if $LEN #< 3
+#Error: User name has too few characters.
+QR_CODE=
+@elif $LEN #> 12
+#Error: User name has too many characters.
+QR_CODE=
+@endif
+@endif
+;
+@ifeq "$USER" "$USER_FOR_PUB"
+#Error: User name must not be your own one.
+QR_CODE=
+@endif
+;
 @ifdef $QR_CODE
 CHECK_QR_CODE=@regex:^[0-9a-fA-F]{64}$$:$QR_CODE
 @ifneq "$QR_CODE" "$CHECK_QR_CODE"
@@ -476,8 +511,6 @@ SPUB=@public:$SKEY
 OWN_ECDHE=@shared:$PKEY:$~SPUB
 ENCRTYPED=@crypt:cc $~OWN_ECDHE$SALT:$~QR_CODE
 ~printf "%b\n" "$SALT\r$ENCRTYPED" > $LOCAL_FILES_DIR/$FILE_NAME
-@endif
-@endif
 @endif
 @endif
 ;
