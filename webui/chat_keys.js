@@ -194,29 +194,11 @@ function do_close_qr_dialog( )
 
 // NOTE: The other way (Ian, 2026-11-01: "we will need to be able to scan back an encrypted message if one has been created using
 // an offline device") - its QR code read by the camera, or from a picture of it where there is no camera or no https, and posted
-// in the open room just as it was encrypted ("scanned_message( )"). "html5-qrcode.min.js" read only the first time.
-var g_chat_scan_library = null;
+// in the open room just as it was encrypted ("scanned_message( )"). The reading is "qr_scan.js"'s.
 var g_chat_scanner = null;
 var g_chat_scanned = "";
 var g_chat_scan_room = "";
 var g_chat_scan_opened = 0;
-
-function chat_scan_library( )
-{
-   if( g_chat_scan_library === null )
-   {
-      g_chat_scan_library = ( typeof Html5Qrcode !== "undefined" ) ? Promise.resolve( true )
-       : chat_keys_load_script( "html5-qrcode.min.js" ).then( function( ok )
-      {
-         if( !ok )
-            g_chat_scan_library = null;
-
-         return ok;
-      } );
-   }
-
-   return g_chat_scan_library;
-}
 
 function chat_scan_status( text, problem )
 {
@@ -224,23 +206,13 @@ function chat_scan_status( text, problem )
    document.getElementById( "scan_dialog_error" ).textContent = problem || "";
 }
 
-function chat_scan_reader( )
-{
-   return new Html5Qrcode( "scan_dialog_reader", { verbose: false, formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
-    experimentalFeatures: { useBarCodeDetectorIfSupported: true } } );
-}
-
-// NOTE: The camera let go - "stop( )" throws if it never started, so it is asked in a promise and the error ignored.
 function chat_scan_stop( )
 {
    var scanner = g_chat_scanner;
 
    g_chat_scanner = null;
 
-   if( scanner === null )
-      return Promise.resolve( );
-
-   return Promise.resolve( ).then( function( ) { return scanner.stop( ); } ).then( function( ) { scanner.clear( ); } ).catch( function( ) { } );
+   return qr_scan_stop( scanner );
 }
 
 async function do_open_scan_dialog( )
@@ -259,7 +231,7 @@ async function do_open_scan_dialog( )
 
    chat_scan_status( "Starting the camera…" );
 
-   if( !await chat_scan_library( ) )
+   if( !await qr_scan_library( ) )
    {
       if( opened === g_chat_scan_opened )
          chat_scan_status( "", "The QR code reader could not be loaded - reload the page to try again." );
@@ -270,14 +242,14 @@ async function do_open_scan_dialog( )
    if( opened !== g_chat_scan_opened )
       return;
 
-   if( !window.isSecureContext || !navigator.mediaDevices )
+   if( !qr_scan_can_use_camera( ) )
    {
       chat_scan_status( "The camera needs the chat opened as https - choose a picture of the code instead." );
 
       return;
    }
 
-   var scanner = chat_scan_reader( );
+   var scanner = qr_scan_reader( "scan_dialog_reader" );
 
    g_chat_scanner = scanner;
 
@@ -309,71 +281,6 @@ async function do_open_scan_dialog( )
    chat_scan_status( "Hold the QR code from your offline device up to the camera." );
 }
 
-// NOTE: The reader misses about one sharp picture of a valid code in ten - where the browser has no "BarcodeDetector" (as on
-// Windows) it binarises in blocks of 8 px, so large crisp modules can leave a block all one shade. Drawn again smaller, from a
-// half down to a twelfth while still 100 px across, it read every one of them (found by testing, 2026-11-01).
-async function chat_scan_read_file( file )
-{
-   try
-   {
-      return await chat_scan_reader( ).scanFile( file, false );
-   }
-   catch( e )
-   {
-      return null;
-   }
-}
-
-async function chat_scan_picture( file, opened )
-{
-   var text = await chat_scan_read_file( file );
-
-   if( text !== null )
-      return text;
-
-   var bitmap = null;
-
-   try
-   {
-      bitmap = await createImageBitmap( file );
-   }
-   catch( e )
-   {
-      return null;
-   }
-
-   var parts = [ 2, 3, 4, 5, 6, 8, 10, 12 ];
-
-   for( var i = 0; ( i < parts.length ) && ( text === null ) && ( opened === g_chat_scan_opened ); i++ )
-   {
-      var width = Math.round( bitmap.width / parts[ i ] );
-      var height = Math.round( bitmap.height / parts[ i ] );
-
-      if( Math.min( width, height ) < 100 )
-         break;
-
-      var canvas = document.createElement( "canvas" );
-
-      canvas.width = width;
-      canvas.height = height;
-
-      var context = canvas.getContext( "2d" );
-
-      context.fillStyle = "#ffffff";
-      context.fillRect( 0, 0, width, height );
-      context.drawImage( bitmap, 0, 0, width, height );
-
-      var blob = await new Promise( function( resolve ) { canvas.toBlob( resolve, "image/png" ); } );
-
-      if( blob !== null )
-         text = await chat_scan_read_file( new File( [ blob ], "picture.png", { type: "image/png" } ) );
-   }
-
-   bitmap.close( );
-
-   return text;
-}
-
 async function do_scan_picture( input )
 {
    var file = ( input.files && input.files.length ) ? input.files[ 0 ] : null;
@@ -384,7 +291,7 @@ async function do_scan_picture( input )
    if( file === null )
       return;
 
-   if( !await chat_scan_library( ) )
+   if( !await qr_scan_library( ) )
    {
       chat_scan_status( "", "The QR code reader could not be loaded - reload the page to try again." );
 
@@ -404,7 +311,7 @@ async function do_scan_picture( input )
 
    chat_scan_status( "Reading the picture…" );
 
-   var text = await chat_scan_picture( file, opened );
+   var text = await qr_scan_picture( "scan_dialog_reader", file, function( ) { return opened === g_chat_scan_opened; } );
 
    if( opened !== g_chat_scan_opened )
       return;
