@@ -316,7 +316,7 @@ NUM_OPTS=@$NUM_OPTS+1
 @retain ALL_EMOJIS
 <reactions.cin $EDIT_MSG_REACTIONS $USER $IS_POLL
 @ifdef $ALL_EMOJIS
-#(currently) $ALL_EMOJIS
+#(current choice) $ALL_EMOJIS
 @endif
 @endif
 @endif
@@ -330,12 +330,24 @@ NUM_OPTS=@$NUM_OPTS+1
 @ifndef $IS_REACTION
 &:EDITED_MESSAGE=_
 @else
+;
 @ifndef $IS_POLL
-&Reaction? [EDITED_MESSAGE:retain==_|a 👌=_ 00|b 👍=_ 01|c 👎=_ 02|d 🙂=_ 03|e 🙁=_ 04|f 😀=_ 05|g 😲=_ 06|h 🤓=_ 07|i 🤦‍♂️=_ 08|j ❤️=_ 09] (hit 'a'..'j' or Enter)
+;
+OPTS_PREFIX=[EDITED_MESSAGE:_==_|a 👌=_ 00
+;
+OPTS_OTHERS=|b 👍=_ 01
+OPTS_OTHERS=$OPTS_OTHERS|c 👎=_ 02
+OPTS_OTHERS=$OPTS_OTHERS|d 🙂=_ 03
+OPTS_OTHERS=$OPTS_OTHERS|e 🙁=_ 04
+OPTS_OTHERS=$OPTS_OTHERS|f 😀=_ 05
+OPTS_OTHERS=$OPTS_OTHERS|g 😲=_ 06
+OPTS_OTHERS=$OPTS_OTHERS|h 🤓=_ 07
+OPTS_OTHERS=$OPTS_OTHERS|i 🤦‍♂️=_ 08
+OPTS_OTHERS=$OPTS_OTHERS|j ❤️=_ 09
+;
 @else
 ;
-OPTS_PREFIX=[EDITED_MESSAGE:retain==_|a 🇦=_ 00
-OPTS_SUFFIX=] (hit letter or Enter)
+OPTS_PREFIX=[EDITED_MESSAGE:_==_|a 🇦=_ 00
 ;
 OPTS_OTHERS=
 ;
@@ -367,11 +379,14 @@ OPTS_OTHERS=$OPTS_OTHERS|i 🇮=_ 08
 OPTS_OTHERS=$OPTS_OTHERS|j 🇯=_ 09
 @endif
 ;
-CHOOSE_OPTS=&Choose option? $OPTS_PREFIX$OPTS_OTHERS$OPTS_SUFFIX
+@endif
+;
+OPTS_SUFFIX=] (hit letter or Enter)
+;
+CHOOSE_OPTS=&Choose option: $OPTS_PREFIX$OPTS_OTHERS$OPTS_SUFFIX
 ;
 $CHOOSE_OPTS
 ;
-@endif
 @endif
 ;
 MLEN=@strlen:$EDITED_MESSAGE
