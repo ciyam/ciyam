@@ -2254,11 +2254,33 @@ function do_join_invitation( )
    if( invite === null )
       return;
 
+   // NOTE: The inviter's direct message with this person, if one is waiting to be accepted, is accepted with it (Damon, 2026-11-03:
+   // a room's key comes in a direct message from its owner, so an invitation to a keyed room was two to accept - and the key waited
+   // until the second was found).
+   var dm = parse_dm_name( invite.name ) ? null : dm_existing( [ invite.inviter ], ciyam.username, g_rooms, g_invitations, dm_waiting_rooms( ) );
+   var dm_invite = ( dm && ( dm.kind === "request" ) ) ? find_invitation( dm.room ) : null;
+
    // NOTE: The token goes in "from", which is how the server recognises a join. Once the
    // listing includes the room, the invitation drops out of the rail by itself.
    select_room( invite.room, invite.token );
 
+   if( dm_invite !== null )
+      join_quietly( dm_invite );
+
    load_rooms( );
+}
+
+// NOTE: An invitation accepted without opening its room - its token given in a quiet read, as opening it would.
+function join_quietly( invite )
+{
+   g_in_poll = true;
+
+   serialised( function( )
+   {
+      return ciyam.fetch_messages( invite.room, "from=" + invite.token, function( ) { } );
+   } ).then( function( ) { load_rooms( ); } );
+
+   g_in_poll = false;
 }
 
 // NOTE: Only for someone who cannot see the Admin room - admin reads it as a room, and a
@@ -3605,9 +3627,13 @@ function on_messages_response( response, asked_for, replace, again )
 
       note_dm_joins( asked_for, result.messages, result.members );
 
-      // NOTE: Its key looked for in the direct message with its owner, if it has none here ("chat_look_for_owner_key( )").
+      // NOTE: Its key looked for in the direct message with its owner, if it has none here ("chat_look_for_owner_key( )") - or, in
+      // the owner's own room, sent to each member not given it yet, and again as someone joins ("chat_owner_send_keys( )").
       if( replace )
          chat_look_for_owner_key( );
+      else if( result.messages.some( function( message ) { return ( message.kind === c_kind_system ) && message.event
+       && ( message.event.verb === "joined" ); } ) )
+         chat_owner_send_keys( );
    }
 }
 

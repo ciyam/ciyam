@@ -2207,7 +2207,7 @@ function room_key_sent_text( outcomes )
 
    if( by.held.length > 0 )
       parts.push( "Sent to " + name_list( by.held ) + " once " + ( ( by.held.length === 1 ) ? "they accept" : "each accepts" )
-       + " your direct message - keep this page open until then." );
+       + " your direct message." );
 
    if( by.no_key.length > 0 )
       parts.push( "Not sent to " + name_list( by.no_key ) + " - add " + ( ( by.no_key.length === 1 ) ? "their contact code" : "their contact codes" )
@@ -2220,7 +2220,9 @@ function room_key_sent_text( outcomes )
    if( by.failed.length > 0 )
       parts.push( "Could not send it to " + name_list( by.failed ) + " - try again." );
 
-   return ( parts.length > 0 ) ? parts.join( " " ) : "There is no one else here to send it to.";
+   // NOTE: Nobody but the owner yet - those invited are sent it as they join ("chat_owner_send_keys( )"), Damon having pressed Send
+   // before anyone had (2026-11-03) and seen nothing come of it.
+   return ( parts.length > 0 ) ? parts.join( " " ) : "No one else has joined yet - each is sent it as they join, or when you next open this room.";
 }
 
 // NOTE: Room keys (Ian, 2026-10-25) - "irc.cin"'s "k" makes "<room>#<32 hex digits>" to send each member in an encrypted direct

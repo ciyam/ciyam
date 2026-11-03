@@ -1147,9 +1147,9 @@ check( "- a room key sent to each other person once", cp.room_key_recipients( [ 
 check( "- and what came of it", [ cp.room_key_sent_text( [ { name: "tester-1", how: "sent" }, { name: "tester-2", how: "held" } ] ),
  cp.room_key_sent_text( [ { name: "a", how: "no_key" }, { name: "b", how: "no_key" }, { name: "c", how: "request" }, { name: "d", how: "failed" } ] ),
  cp.room_key_sent_text( [ ] ) ],
- [ "Sent to tester-1. Sent to tester-2 once they accept your direct message - keep this page open until then.",
+ [ "Sent to tester-1. Sent to tester-2 once they accept your direct message.",
  "Not sent to a and b - add their contact codes to Contacts on My account first. Not sent to c - accept their direct message first. Could not send it to d - try again.",
- "There is no one else here to send it to." ] );
+ "No one else has joined yet - each is sent it as they join, or when you next open this room." ] );
 check( "- a message too long to encrypt: over 1,000 bytes", [ cp.sealed_too_long( "a".repeat( 1000 ) ), cp.sealed_too_long( "a".repeat( 1001 ) ),
  cp.sealed_too_long( "ä".repeat( 500 ) ), cp.sealed_too_long( "ä".repeat( 501 ) ) ], [ false, true, false, true ] );
 
