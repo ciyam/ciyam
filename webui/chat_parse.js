@@ -2114,7 +2114,7 @@ function dm_encryption_note( other, keys, theirs )
       return "not encrypted - set up your keys on My account";
 
    if( !theirs )
-      return "not encrypted - add " + other + "'s public key on My account";
+      return "not encrypted - add " + other + "'s contact code to Contacts on My account";
 
    return "encrypted";
 }
@@ -2144,7 +2144,7 @@ function member_key_hint( room_owner, known )
    var name = String( room_owner || "" ) || "the owner";
 
    if( !known )
-      return "For a room key from " + name + ", each of you needs the other's public key on My account";
+      return "For a room key from " + name + ", each of you needs the other in Contacts on My account";
 
    return "A room key from " + name + " comes in your direct message with them, and is added the next time you open this room or that conversation";
 }
@@ -2210,8 +2210,8 @@ function room_key_sent_text( outcomes )
        + " your direct message - keep this page open until then." );
 
    if( by.no_key.length > 0 )
-      parts.push( "Not sent to " + name_list( by.no_key ) + " - add " + ( ( by.no_key.length === 1 ) ? "their public key" : "their public keys" )
-       + " on My account first." );
+      parts.push( "Not sent to " + name_list( by.no_key ) + " - add " + ( ( by.no_key.length === 1 ) ? "their contact code" : "their contact codes" )
+       + " to Contacts on My account first." );
 
    if( by.request.length > 0 )
       parts.push( "Not sent to " + name_list( by.request ) + " - accept " + ( ( by.request.length === 1 ) ? "their direct message" : "their direct messages" )

@@ -1102,7 +1102,7 @@ check( "the other person in a direct message, to encrypt to", [ cp.dm_other_pers
 check( "- what the line under it says", [ cp.dm_encryption_note( "verify-a", true, true ), cp.dm_encryption_note( "verify-a", true, false ),
  cp.dm_encryption_note( "verify-a", false, false ), cp.dm_encryption_note( "verify-a", null, false ), cp.dm_encryption_note( "", true, true ),
  cp.dm_encryption_note( "verify-a", "unread", false ) ],
- [ "encrypted", "not encrypted - add verify-a's public key on My account", "not encrypted - set up your keys on My account", "", "",
+ [ "encrypted", "not encrypted - add verify-a's contact code to Contacts on My account", "not encrypted - set up your keys on My account", "", "",
  "not encrypted - your keys could not be read just now; reload to try again" ] );
 check( "- a group's, with a room key or without", [ cp.group_encryption_note( true, true ), cp.group_encryption_note( true, false ),
  cp.group_encryption_note( false, false ), cp.group_encryption_note( null, true ), cp.group_encryption_note( "unread", false ) ],
@@ -1116,23 +1116,23 @@ check( "- encrypted, and who can read it", [ cp.encryption_badge( "encrypted", [
  [ { locked: true, label: "Encrypted", detail: "Only you and verify-a can read this conversation." },
  { locked: true, label: "Encrypted", detail: "Encrypted with the room key - only those who have it can read what is posted here." } ] );
 check( "- not encrypted, and what would encrypt it", [
- cp.encryption_badge( "not encrypted - add verify-a's public key on My account", [ "verify-a" ], "dm" ).detail,
+ cp.encryption_badge( "not encrypted - add verify-a's contact code to Contacts on My account", [ "verify-a" ], "dm" ).detail,
  cp.encryption_badge( "not encrypted - set up your keys on My account", [ ], "room", false ).detail,
  cp.encryption_badge( "not encrypted - your keys could not be read just now; reload to try again", [ ], "room", false ).detail ],
- [ "Add verify-a's public key on My account.", "Set up your keys on My account.", "Your keys could not be read just now; reload to try again." ] );
+ [ "Add verify-a's contact code to Contacts on My account.", "Set up your keys on My account.", "Your keys could not be read just now; reload to try again." ] );
 check( "- a room with no key: for its owner, for anyone else, and a group's direct message", [
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", true ),
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false ).detail,
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ "a", "b" ], "group", false ).detail ],
  [ { locked: false, label: "Not encrypted", detail: "Messages here are sent as they are - make a room key with Room key in the details." },
- "Messages here are sent as they are. For a room key from the owner, each of you needs the other's public key on My account.",
+ "Messages here are sent as they are. For a room key from the owner, each of you needs the other in Contacts on My account.",
  "Messages here are sent as they are - encrypt it with Room key in the details." ] );
 check( "- a member: where the owner's key comes from, and what it needs (Damon, 2026-11-02)", [
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false, "damon", true ).detail,
  cp.encryption_badge( "not encrypted - encrypt it in Chat Details", [ ], "room", false, "damon", false ).detail ],
  [ "Messages here are sent as they are. A room key from damon comes in your direct message with them, and is added the next time"
   + " you open this room or that conversation.",
- "Messages here are sent as they are. For a room key from damon, each of you needs the other's public key on My account." ] );
+ "Messages here are sent as they are. For a room key from damon, each of you needs the other in Contacts on My account." ] );
 check( "the owner's room key in their direct message - the newest for the room, from them", cp.owner_room_key( [
  { sender: "damon", text: "0000124#" + "a".repeat( 32 ) + " for the room" }, { sender: "tester-1", text: "0000124#" + "b".repeat( 32 ) },
  { sender: "damon", text: "0000099#" + "c".repeat( 32 ) }, { sender: "damon", text: "0000124#" + "d".repeat( 32 ) }, { sender: "damon", text: "hello" } ],
@@ -1148,7 +1148,7 @@ check( "- and what came of it", [ cp.room_key_sent_text( [ { name: "tester-1", h
  cp.room_key_sent_text( [ { name: "a", how: "no_key" }, { name: "b", how: "no_key" }, { name: "c", how: "request" }, { name: "d", how: "failed" } ] ),
  cp.room_key_sent_text( [ ] ) ],
  [ "Sent to tester-1. Sent to tester-2 once they accept your direct message - keep this page open until then.",
- "Not sent to a and b - add their public keys on My account first. Not sent to c - accept their direct message first. Could not send it to d - try again.",
+ "Not sent to a and b - add their contact codes to Contacts on My account first. Not sent to c - accept their direct message first. Could not send it to d - try again.",
  "There is no one else here to send it to." ] );
 check( "- a message too long to encrypt: over 1,000 bytes", [ cp.sealed_too_long( "a".repeat( 1000 ) ), cp.sealed_too_long( "a".repeat( 1001 ) ),
  cp.sealed_too_long( "ä".repeat( 500 ) ), cp.sealed_too_long( "ä".repeat( 501 ) ) ], [ false, true, false, true ] );
