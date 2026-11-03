@@ -854,6 +854,11 @@ function chat_keys_redraw( )
       else
          body.classList.toggle( "chat-unencrypted", is_unencrypted_message( body.dataset.text || "", g_room, keyed ) );
    } );
+
+   // NOTE: The pinned strip too - its lines keep no text to be drawn again from, so they stayed sealed until the room was read
+   // again (Ian, 2026-11-03: a room key added, the pinned ones not opened).
+   if( g_pinned.length > 0 )
+      render_pinned( );
 }
 
 // NOTE: What is sent for "text" to "other" - sealed when there is a secret with them, or the text as it is. "sealed" with no text
