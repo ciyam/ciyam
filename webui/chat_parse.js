@@ -1625,6 +1625,140 @@ function poll_results( poll, reactions, my_short )
    return { options: options, total: total, votes: total + ( ( total === 1 ) ? " vote" : " votes" ) };
 }
 
+// NOTE: Quick choices for when voting closes (Damon, 2026-11-03, the poll review: only a full calendar, which ran off the dialog) -
+// in an hour, at five today while that is an hour off or more, at nine tomorrow, and in a week; "now" a Date. Each { key, label,
+// unix }, an hour and a week rounded up to five minutes.
+function poll_close_choices( now )
+{
+   var seconds = Math.floor( now.getTime( ) / 1000 );
+
+   var at = function( days, hours )
+   {
+      var when = new Date( now.getTime( ) );
+
+      when.setDate( when.getDate( ) + days );
+      when.setHours( hours, 0, 0, 0 );
+
+      return Math.floor( when.getTime( ) / 1000 );
+   };
+
+   var rounded = function( later ) { return Math.ceil( ( seconds + later ) / 300 ) * 300; };
+
+   var choices = [ { key: "hour", label: "In 1 hour", unix: rounded( 3600 ) } ];
+
+   if( at( 0, 17 ) - seconds >= 3600 )
+      choices.push( { key: "today", label: "Today 17:00", unix: at( 0, 17 ) } );
+
+   choices.push( { key: "tomorrow", label: "Tomorrow 9:00", unix: at( 1, 9 ) } );
+   choices.push( { key: "week", label: "In a week", unix: rounded( 7 * 86400 ) } );
+
+   return choices;
+}
+
+// NOTE: How long until "seconds" from now, in words - "40 minutes", "3 hours 40 minutes", "2 days 5 hours", "9 days".
+function duration_text( seconds )
+{
+   var minutes = Math.max( 1, Math.round( seconds / 60 ) );
+   var plural = function( n, unit ) { return n + " " + unit + ( ( n === 1 ) ? "" : "s" ); };
+
+   if( minutes < 60 )
+      return plural( minutes, "minute" );
+
+   var hours = Math.floor( minutes / 60 );
+
+   if( hours < 24 )
+      return plural( hours, "hour" ) + ( ( minutes % 60 ) ? " " + plural( minutes % 60, "minute" ) : "" );
+
+   var days = Math.floor( hours / 24 );
+
+   return plural( days, "day" ) + ( ( ( days < 3 ) && ( hours % 24 ) ) ? " " + plural( hours % 24, "hour" ) : "" );
+}
+
+// NOTE: When voting closes, said under the choices - "Closes today 17:00 - in 3 hours 40 minutes".
+function poll_close_said( unix, now )
+{
+   var left = unix - Math.floor( now.getTime( ) / 1000 );
+
+   return ( left <= 0 ) ? "That time has passed - choose a later one." : room_close_label( unix, now ) + " - in " + duration_text( left );
+}
+
+// NOTE: A poll's line under its options (the poll review: nothing said how long was left, or how many had voted) - "4 of 6 have
+// voted · closes in 3 hours 40 minutes", "voting has closed" once it has. "voters" - those who can vote, 0 if not known.
+function poll_status_text( total, voters, closes, now )
+{
+   var voted = ( voters > 0 ) ? total + " of " + voters + ( ( total === 1 ) ? " has voted" : " have voted" )
+    : total + ( ( total === 1 ) ? " vote" : " votes" );
+
+   if( !closes )
+      return voted;
+
+   var left = closes - Math.floor( now.getTime( ) / 1000 );
+
+   return voted + " · " + ( ( left <= 0 ) ? "voting has closed" : "closes in " + duration_text( left ) );
+}
+
+// NOTE: What a poll's room says in place of its message box (the poll review, 2026-11-03: a disabled box saying the room takes
+// reactions only) - "until" when voting closes ("today 17:00"), "mine" the option voted for or "", "owner" whether it is theirs.
+function poll_bar_text( until, mine, owner )
+{
+   var open = "Voting is open" + ( until ? " until " + until : "" );
+
+   if( owner )
+      return open + " - as its owner you can't vote.";
+
+   if( mine )
+      return "You voted for " + mine + " - choose it again to take your vote back, or another to change it.";
+
+   return open + " - choose an option above.";
+}
+
+// NOTE: A room's name made from a poll's question (the poll review, 2026-11-03: a poll and its room in one step) - only what a
+// room's name may have ("is_valid_room_name( )"), cut at a word to fit, or "" if nothing of it would do.
+function poll_room_name( question )
+{
+   var words = String( question || "" ).replace( /[^-+&()' a-zA-Z0-9]+/g, " " ).replace( /[&(')+-]{2,}/g, " " ).trim( ).split( / +/ );
+   var name = "";
+
+   while( ( words.length > 0 ) && !/^[a-zA-Z]/.test( words[ 0 ] ) )
+      words.shift( );
+
+   words.some( function( word )
+   {
+      if( ( name + " " + word ).trim( ).length > 50 )
+         return true;
+
+      name = ( name + " " + word ).trim( );
+
+      return false;
+   } );
+
+   name = name.replace( /[^)a-zA-Z0-9]+$/, "" );
+
+   return is_valid_room_name( name ) ? name : "";
+}
+
+// NOTE: A poll started, said as one notice (the poll review, 2026-11-03: two about the room's settings) - its close ("_:closes set
+// to <unix>") and then reactions only, one after the other from its owner, as "started a poll - voting closes ...". "" if "closes"
+// is not a close.
+function poll_start_notice( closes )
+{
+   var set = String( closes || "" ).match( /^set to ([0-9]+)$/ );
+
+   return set ? "started a poll - voting closes " + unix_label( Number( set[ 1 ] ) ) : "";
+}
+
+// NOTE: A closed poll's outcome - "Most votes" on the one that has them, "A tie between A and B" for more than one, "" with no votes.
+function poll_outcome( results )
+{
+   var leading = results.options.filter( function( option ) { return option.leading; } );
+
+   if( leading.length === 0 )
+      return "";
+
+   return ( leading.length === 1 ) ? "Most votes: " + leading[ 0 ].label
+    : "A tie between " + name_list( leading.map( function( option ) { return option.label; } ) );
+}
+
 // NOTE: The node refusing a message while it handles another (Ian's "@irc_lock", "a658ef5b", 2026-10-30) - one at a time, the next
 // refused rather than kept waiting; the chat tries it once more ("watch_timeouts( )").
 // The node's own error only - a message's answer brings the room's new messages, and one may say the same words (found by review).
@@ -4639,6 +4773,14 @@ if( typeof module !== "undefined" )
       poll_text: poll_text,
       parse_poll: parse_poll,
       poll_results: poll_results,
+      poll_close_choices: poll_close_choices,
+      duration_text: duration_text,
+      poll_close_said: poll_close_said,
+      poll_status_text: poll_status_text,
+      poll_outcome: poll_outcome,
+      poll_start_notice: poll_start_notice,
+      poll_bar_text: poll_bar_text,
+      poll_room_name: poll_room_name,
       later_start_point: later_start_point,
       pin_options: pin_options,
       delete_options: delete_options,

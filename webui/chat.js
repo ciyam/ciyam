@@ -231,7 +231,15 @@ function chat( )
 
          event.preventDefault( );
       }
-      // NOTE: Not while its "Start the poll?" is asked over it - Escape answers that alone ("dialog.js").
+      else if( !document.getElementById( "room_new_menu" ).hidden )
+      {
+         do_toggle_new_menu( false );
+
+         document.getElementById( "room_new" ).focus( );
+
+         event.preventDefault( );
+      }
+      // NOTE: Not while something is asked over it - Escape answers that alone ("dialog.js").
       else if( !document.getElementById( "poll_dialog" ).hidden
        && !( document.getElementById( "dialog_scrim" ) && !document.getElementById( "dialog_scrim" ).hidden ) )
       {
@@ -282,6 +290,10 @@ function chat( )
       if( !document.getElementById( "react_menu" ).hidden
        && !event.target.closest( "#react_menu" ) && !event.target.closest( ".chat-message-react" ) )
          close_react_menu( false );
+
+      // NOTE: And the rooms' + New menu - its button toggles it instead.
+      if( !document.getElementById( "room_new_menu" ).hidden && !event.target.closest( ".chat-new-wrap" ) )
+         do_toggle_new_menu( false );
    } );
 
    // NOTE: Back to the tab, the room read whole at the next poll - what changed while away is shown ("poll( )").
@@ -3784,7 +3796,33 @@ function regroup_thread( )
 
    close_run( );
 
+   fold_poll_notices( list );
+
    band_notices( list );
+}
+
+// NOTE: A poll started - the room's close, then reactions only, one after the other from its owner (Ian's order, "do_start_poll( )")
+// - said as one line, "started a poll - voting closes ..." ("poll_start_notice( )"), the close's own row folded away.
+function fold_poll_notices( list )
+{
+   var rows = Array.prototype.slice.call( list.querySelectorAll( ":scope > .chat-notice" ) );
+
+   rows.forEach( function( row, n )
+   {
+      var before = ( n > 0 ) ? rows[ n - 1 ] : null;
+
+      if( ( row.dataset.verb !== "allows" ) || !/^set to REACT/i.test( row.dataset.detail || "" ) || ( before === null )
+       || ( before.dataset.verb !== "closes" ) || ( before.dataset.sender !== row.dataset.sender ) )
+         return;
+
+      var said = poll_start_notice( before.dataset.detail );
+
+      if( said === "" )
+         return;
+
+      before.classList.add( "is-folded" );
+      row.querySelector( ".chat-notice-verb" ).textContent = said;
+   } );
 }
 
 // NOTE: Each block of notices one after another is drawn on a light band, so what happened in the room sits apart from the
@@ -4192,6 +4230,19 @@ function draw_reactions( row, reactions, may_react )
       fill_reactions( row.querySelector( ".chat-reactions" ), reactions, give );
 }
 
+// NOTE: The open room's polls drawn again - in the conversation and the pinned strip - once what their line says has changed (a
+// close set as the poll is started).
+function redraw_polls( )
+{
+   document.querySelectorAll( "#message_list .chat-message.is-poll" ).forEach( function( row )
+   {
+      if( row.dataset.reactions !== undefined )
+         draw_reactions( row, JSON.parse( row.dataset.reactions ), row.dataset.mayReact === "1" );
+   } );
+
+   document.querySelectorAll( "#pinned .chat-pinned.is-poll" ).forEach( function( node ) { draw_pinned_reactions( node ); } );
+}
+
 // NOTE: A poll (Ian, 2026-10-31) - its question as the message, and its options beneath with the votes for each in place of the
 // reactions; an option clicked votes for it (a reaction), again takes the vote back. Only the words as text.
 function mark_poll( element, text )
@@ -4251,6 +4302,11 @@ function fill_poll( holder, poll, reactions, give )
    holder.textContent = "";
 
    var results = poll_results( poll, reactions, reaction_short( ciyam.username ) );
+   var closed = room_has_closed( );
+
+   // NOTE: The counts shown once you have voted - or where you cannot (its owner), or once voting has closed - so the first votes do
+   // not sway the rest (the poll review, 2026-11-03: "0 · 0%" on every option before anyone had).
+   var shown = !give || closed || results.options.some( function( option ) { return option.mine; } );
 
    var list = document.createElement( "div" );
 
@@ -4276,7 +4332,7 @@ function fill_poll( holder, poll, reactions, give )
       var bar = document.createElement( "span" );
 
       bar.className = "chat-poll-bar";
-      bar.style.width = option.percent + "%";
+      bar.style.width = ( shown ? option.percent : 0 ) + "%";
       bar.setAttribute( "aria-hidden", "true" );
 
       var letter = document.createElement( "span" );
@@ -4292,7 +4348,11 @@ function fill_poll( holder, poll, reactions, give )
       var count = document.createElement( "span" );
 
       count.className = "chat-poll-count";
-      count.textContent = option.count + " · " + option.percent + "%";
+      count.textContent = shown ? option.count + " · " + option.percent + "%" : "";
+
+      // NOTE: Closed, the one with the most votes ticked (the poll review).
+      if( closed && option.leading )
+         item.classList.add( "is-winner" );
 
       item.appendChild( bar );
       item.appendChild( letter );
@@ -4304,13 +4364,29 @@ function fill_poll( holder, poll, reactions, give )
 
    var total = document.createElement( "div" );
 
+   var entry = find_room( g_room );
+
    total.className = "chat-poll-total";
-   total.textContent = results.votes + ( room_has_closed( ) ? " · voting has closed" : "" );
+   total.textContent = poll_status_text( results.total, poll_voters( ), entry ? Number( entry.closes || 0 ) : 0, new Date( ) );
 
    list.appendChild( total );
 
+   var outcome = closed ? poll_outcome( results ) : "";
+
+   if( outcome !== "" )
+   {
+      var said = document.createElement( "div" );
+
+      said.className = "chat-poll-outcome";
+      said.textContent = outcome;
+
+      list.appendChild( said );
+   }
+
    holder.appendChild( list );
    holder.hidden = false;
+
+   update_poll_bar( );
 }
 
 // NOTE: The chips themselves - "give", what one does when clicked, or null for chips that only say who (one's own message, and the
@@ -4834,6 +4910,7 @@ function build_notice( entry )
 
    row.dataset.verb = event.verb || "";
    row.dataset.sender = entry.sender || "";
+   row.dataset.detail = event.detail || "";
 
    node.querySelector( ".chat-notice-icon path" ).setAttribute( "d", c_notice_icons[ event.verb ] || c_notice_icon_other );
 
@@ -5072,6 +5149,8 @@ function apply_posting_rules( )
       close_emoji_suggest( );
    }
 
+   update_poll_bar( status );
+
    // NOTE: The standard note gives way on a phone; a reason the user cannot post does not.
    note.classList.toggle( "is-reason", !status.can_post );
 
@@ -5099,6 +5178,26 @@ function apply_posting_rules( )
 
       resize_composer( );
    }
+}
+
+// NOTE: A poll's room - open, and taking only votes - says how voting stands in place of the message box ("poll_bar_text( )"),
+// drawn again as votes change ("fill_poll( )"). "status" from "posting_status( )", or worked out again.
+function update_poll_bar( status )
+{
+   var entry = find_room( g_room );
+   var now = status || posting_status( g_room, entry, ciyam.username, ciyam.is_admin );
+   var on = !!now.react_only && !now.closed;
+
+   document.getElementById( "composer" ).classList.toggle( "is-poll", on );
+   document.getElementById( "composer_poll" ).hidden = !on;
+
+   if( !on )
+      return;
+
+   var mine = document.querySelector( "#message_list .chat-poll-option.is-mine .chat-poll-choice, #pinned .chat-poll-option.is-mine .chat-poll-choice" );
+   var until = room_close_label( entry ? entry.closes : 0 ).replace( /^Closes /, "" );
+
+   document.getElementById( "composer_poll_text" ).textContent = poll_bar_text( until, mine ? mine.textContent : "", !!now.no_react );
 }
 
 // NOTE: Fills the Room section of the right panel - the room's number, owner, who may post
@@ -5488,19 +5587,120 @@ async function do_set_room_close( )
    load_rooms( );
 }
 
-// NOTE: The poll dialog's day and time picker for when voting closes ("when_picker.js") - made the first time it is wanted.
+// NOTE: The poll dialog's day and time picker for when voting closes ("when_picker.js") - made the first time it is wanted, and
+// shown only for Pick a time (the poll review, 2026-11-03: the calendar was all there was).
 var g_poll_when = null;
+
+// NOTE: Who can vote in the open room - its members but its owner, as a room that takes only reactions takes none from its owner
+// (Ian, 2026-10-31).
+function poll_voters( )
+{
+   return g_members.filter( function( member ) { return member.name !== g_room_owner; } ).length;
+}
+
+// NOTE: A poll with a room of its own ("do_open_new_poll( )") rather than in the open room.
+var g_poll_new = false;
+var g_poll_picker = null;
+
+// NOTE: The rooms' + New - a room, or a poll with a room of its own (the poll review, 2026-11-03: Start a poll was found only in
+// Room Details, once a room had been made and everyone had joined).
+function do_toggle_new_menu( force )
+{
+   var menu = document.getElementById( "room_new_menu" );
+   var open = ( force === undefined ) ? menu.hidden : !!force;
+
+   menu.hidden = !open;
+   document.getElementById( "room_new" ).setAttribute( "aria-expanded", open ? "true" : "false" );
+
+   if( open )
+      menu.querySelector( "button" ).focus( );
+}
+
+function do_new_menu_choice( what )
+{
+   do_toggle_new_menu( false );
+
+   if( what === "poll" )
+      do_open_new_poll( );
+   else
+      do_open_create_room( );
+}
+
+// NOTE: Who votes in a poll with a room of its own - a people picker as the room dialog's, Everyone offered.
+function poll_picker( )
+{
+   if( g_poll_picker === null )
+   {
+      g_poll_picker = people_picker( document.getElementById( "poll_picker" ), {
+         list_id: "poll_picker_list", add_id: "poll_picker_add", done_id: "poll_dialog_submit", none_text: "No other users to invite." } );
+   }
+
+   return g_poll_picker;
+}
+
+// NOTE: A poll and its room in one step - the poll dialog with who votes and the room's name too, named from the question until
+// it is changed. Started, the room is made, they are invited, and the poll is started in it ("do_start_poll( )").
+function do_open_new_poll( )
+{
+   do_open_poll_dialog( );
+
+   g_poll_new = true;
+
+   document.getElementById( "poll_dialog_where" ).textContent = "In a room of its own - those you choose are invited, and each can"
+    + " vote once they join.";
+   document.getElementById( "poll_new_part" ).hidden = false;
+   document.getElementById( "poll_room_name" ).value = "";
+   document.getElementById( "poll_room_name" ).dataset.typed = "";
+
+   poll_picker( ).reset( );
+   poll_picker( ).set_everyone( true );
+   poll_picker( ).set_people( ( ( g_known_users.length > 0 ) ? g_known_users : [ ] ).filter( function( person )
+   {
+      return person.name !== ciyam.username;
+   } ).map( function( person ) { return { name: person.name }; } ), "No other users to invite." );
+}
 
 // NOTE: Starting a poll (Ian, 2026-10-31) - from Room Details, in a room that can close, has no close time yet and still takes
 // posts. Two options to start with, up to one for each reaction.
 function do_open_poll_dialog( )
 {
+   g_poll_new = false;
+   document.getElementById( "poll_new_part" ).hidden = true;
+
    if( g_poll_when === null )
    {
       g_poll_when = when_picker( document.getElementById( "poll_close_input" ), {
          field_id: "poll_close_field", placeholder: "Day and time", label: "When voting closes",
-         before_text: "That time has passed - choose a later one." } );
+         before_text: "That time has passed - choose a later one.", on_change: function( ) { poll_close_chosen( "pick" ); } } );
+
+      // NOTE: A new poll's room named from its question, until its name is typed ("poll_room_name( )").
+      document.getElementById( "poll_question" ).addEventListener( "input", function( )
+      {
+         var field = document.getElementById( "poll_room_name" );
+
+         if( g_poll_new && ( field.dataset.typed !== "1" ) )
+            field.value = poll_room_name( this.value );
+      } );
+
+      document.getElementById( "poll_room_name" ).addEventListener( "input", function( ) { this.dataset.typed = "1"; } );
+
+      // NOTE: The question is one line in the poll - Enter goes on to the options.
+      document.getElementById( "poll_question" ).addEventListener( "keydown", function( event )
+      {
+         if( ( event.key === "Enter" ) && !event.isComposing )
+         {
+            event.preventDefault( );
+
+            document.querySelector( "#poll_options .chat-poll-option-input" ).focus( );
+         }
+      } );
    }
+
+   var voters = poll_voters( );
+
+   document.getElementById( "poll_dialog_where" ).textContent = "In " + g_room_name + " · " + ( ( voters === 0 )
+    ? "nobody else is in it yet, so invite people first - those in the room can vote" : voters + ( ( voters === 1 ) ? " person" : " people" )
+    + " can vote, one vote each" );
 
    document.getElementById( "poll_question" ).value = "";
    document.getElementById( "poll_options" ).replaceChildren( );
@@ -5511,15 +5711,67 @@ function do_open_poll_dialog( )
    g_poll_when.set_range( local_input_time( new Date( ) ), "" );
    g_poll_when.close( );
 
-   do_add_poll_option( );
-   do_add_poll_option( );
+   draw_poll_close_choices( );
+
+   do_add_poll_option( false );
+   do_add_poll_option( false );
 
    document.getElementById( "poll_dialog" ).hidden = false;
    document.getElementById( "poll_question" ).focus( );
 }
 
-// NOTE: An option's row - its letter, and its words.
-function do_add_poll_option( )
+// NOTE: The quick choices for the close ("poll_close_choices( )"), then Pick a time for the calendar. None chosen to begin with.
+function draw_poll_close_choices( )
+{
+   var holder = document.getElementById( "poll_close_choices" );
+
+   holder.replaceChildren( );
+
+   poll_close_choices( new Date( ) ).concat( [ { key: "pick", label: "Pick a time…", unix: 0 } ] ).forEach( function( choice )
+   {
+      var button = document.createElement( "button" );
+
+      button.type = "button";
+      button.className = "chat-poll-close-choice";
+      button.textContent = choice.label;
+      button.dataset.key = choice.key;
+      button.setAttribute( "aria-pressed", "false" );
+
+      button.addEventListener( "click", function( )
+      {
+         if( choice.key !== "pick" )
+            document.getElementById( "poll_close_input" ).value = local_input_time( new Date( choice.unix * 1000 ) );
+
+         poll_close_chosen( choice.key );
+
+         if( choice.key === "pick" )
+            document.getElementById( "poll_close_field" ).focus( );
+      } );
+
+      holder.appendChild( button );
+   } );
+
+   poll_close_chosen( "" );
+}
+
+// NOTE: A close chosen - its choice marked, the calendar shown only for Pick a time, and when it is and how long until then said.
+function poll_close_chosen( key )
+{
+   document.querySelectorAll( "#poll_close_choices .chat-poll-close-choice" ).forEach( function( button )
+   {
+      button.setAttribute( "aria-pressed", ( button.dataset.key === key ) ? "true" : "false" );
+   } );
+
+   document.getElementById( "poll_close_pick" ).hidden = ( key !== "pick" );
+
+   var closes = close_time_from_input( document.getElementById( "poll_close_input" ).value );
+
+   document.getElementById( "poll_close_said" ).textContent = ( closes === null ) ? "" : poll_close_said( closes, new Date( ) );
+}
+
+// NOTE: An option's row - its letter, its words, and a remove once there are more than two. Enter in one goes to the next, or adds
+// it after the last (the poll review: Enter did nothing). "focus" - the new row's field focused, as when asked for.
+function do_add_poll_option( focus )
 {
    var holder = document.getElementById( "poll_options" );
    var n = holder.children.length;
@@ -5530,28 +5782,81 @@ function do_add_poll_option( )
    var row = document.createElement( "div" );
    var letter = document.createElement( "span" );
    var input = document.createElement( "input" );
+   var remove = document.createElement( "button" );
 
    row.className = "chat-poll-option-row";
 
    letter.className = "chat-poll-letter";
-   letter.textContent = c_poll_letters[ n ];
    letter.setAttribute( "aria-hidden", "true" );
 
    input.type = "text";
    input.className = "chat-field chat-poll-option-input";
    input.maxLength = 60;
    input.autocomplete = "off";
-   input.setAttribute( "aria-label", "Option " + c_poll_letters[ n ] );
+
+   input.addEventListener( "keydown", function( event )
+   {
+      if( ( event.key !== "Enter" ) || event.isComposing )
+         return;
+
+      event.preventDefault( );
+
+      var rows = Array.from( holder.children );
+      var at = rows.indexOf( row );
+
+      if( at < rows.length - 1 )
+         rows[ at + 1 ].querySelector( "input" ).focus( );
+      else if( input.value.trim( ) !== "" )
+         do_add_poll_option( true );
+   } );
+
+   remove.type = "button";
+   remove.className = "chat-btn chat-btn--small chat-poll-remove";
+   remove.textContent = "×";
+
+   remove.addEventListener( "click", function( )
+   {
+      var rows = Array.from( holder.children );
+      var at = rows.indexOf( row );
+
+      row.remove( );
+
+      letter_poll_options( );
+
+      var left = Array.from( holder.children );
+
+      left[ Math.min( at, left.length - 1 ) ].querySelector( "input" ).focus( );
+   } );
 
    row.appendChild( letter );
    row.appendChild( input );
+   row.appendChild( remove );
 
    holder.appendChild( row );
 
-   document.getElementById( "poll_add_option" ).hidden = ( holder.children.length >= c_poll_letters.length );
+   letter_poll_options( );
 
-   if( n >= 2 )
+   if( focus )
       input.focus( );
+}
+
+// NOTE: The rows lettered in order again - after one is removed - and a remove only while more than two are left.
+function letter_poll_options( )
+{
+   var rows = Array.from( document.getElementById( "poll_options" ).children );
+
+   rows.forEach( function( row, n )
+   {
+      row.querySelector( ".chat-poll-letter" ).textContent = c_poll_letters[ n ];
+      row.querySelector( "input" ).setAttribute( "aria-label", "Option " + c_poll_letters[ n ] );
+
+      var remove = row.querySelector( ".chat-poll-remove" );
+
+      remove.hidden = ( rows.length <= 2 );
+      remove.setAttribute( "aria-label", "Remove option " + c_poll_letters[ n ] );
+   } );
+
+   document.getElementById( "poll_add_option" ).hidden = ( rows.length >= c_poll_letters.length );
 }
 
 function do_close_poll_dialog( )
@@ -5601,19 +5906,58 @@ async function do_start_poll( )
    if( ( problem === "" ) && ( closes <= Math.floor( Date.now( ) / 1000 ) ) )
       problem = "Voting has to close in the future.";
 
+   // NOTE: A poll with a room of its own - its name, and someone to vote ("do_open_new_poll( )").
+   var name = document.getElementById( "poll_room_name" ).value.trim( );
+   var voters = g_poll_new ? poll_picker( ).chosen( ) : [ ];
+
+   if( ( problem === "" ) && g_poll_new && ( voters.length === 0 ) )
+      problem = "Choose who votes - Everyone, or some people.";
+
+   if( ( problem === "" ) && g_poll_new && !is_valid_room_name( name ) )
+      problem = "Give its room a name - 5 to 50 letters, digits and spaces, starting with a letter.";
+
    error.textContent = problem;
 
-   if( ( problem !== "" ) || !entry )
+   if( ( problem !== "" ) || ( !g_poll_new && !entry ) )
       return;
 
    var when = room_close_label( closes ).replace( /^Closes /, "" );
 
-   if( !await ask_dialog( { title: "Start the poll?", text: "It's posted and pinned, and from then this room takes only votes. When"
-    + " voting closes " + when + " (" + unix_label( closes ) + ") the room closes for good. You can't post here again or vote"
-    + " yourself, and this can't be undone.", yes: "Start the poll", no: "Not yet", danger: true } ) || ( g_room !== room ) )
-      return;
+   // NOTE: Not asked again (the poll review, 2026-11-03: a red "can't be undone" after the dialog had said it) - the dialog's own
+   // line says what happens to the room.
 
    document.getElementById( "poll_dialog_submit" ).disabled = true;
+
+   // NOTE: The room made first, those voting invited, and opened - keyed as any new room is, the key sent to them ("chat_key_new_room(
+   // )") - then the poll started in it. Those invited join after it is posted, and see it pinned.
+   if( g_poll_new )
+   {
+      var made = await poll_step( function( done ) { return ciyam.create_message( c_lobby_room, "for=" + voters.join( "," ) + ";text=" + name, done ); } );
+
+      if( is_error_response( made ) )
+      {
+         document.getElementById( "poll_dialog_submit" ).disabled = false;
+         error.textContent = "Its room could not be made: " + error_text( made );
+
+         return;
+      }
+
+      room = await open_new_room( made );
+      entry = find_room( room );
+
+      if( !entry )
+      {
+         document.getElementById( "poll_dialog_submit" ).disabled = false;
+         error.textContent = "Its room was made but could not be opened - find it in the rail, and start the poll from Room Details.";
+
+         return;
+      }
+
+      g_poll_new = false;
+      document.getElementById( "poll_new_part" ).hidden = true;
+
+      await chat_key_new_room( room, voters );
+   }
 
    var text = poll_text( question, options );
    var sealing = await chat_seal_here( text );
@@ -5678,6 +6022,8 @@ async function do_start_poll( )
 
    if( room === g_room )
    {
+      redraw_polls( );
+
       show_alert( "The poll is started - voting closes " + when + ".", "is-info" );
 
       show_thread_title( );

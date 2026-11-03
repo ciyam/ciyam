@@ -1925,6 +1925,43 @@ check( "the votes - counts and shares, one's own, the leader; a reaction that is
 check( "- none yet", [ cp.poll_results( poll_read, [ ], "x" ).votes,
  cp.poll_results( poll_read, [ ], "x" ).options.some( function( o ) { return o.leading; } ) ],
  [ "0 votes", false ] );
+
+// NOTE: The poll review (2026-11-03) - quick choices for the close, how long is left, how many have voted, and who won.
+var poll_now = new Date( 2026, 10, 3, 13, 22, 10 );
+var poll_late = new Date( 2026, 10, 3, 16, 30, 0 );
+var at_unix = function( y, mo, d, h, mi ) { return Math.floor( new Date( y, mo, d, h, mi, 0 ).getTime( ) / 1000 ); };
+
+check( "when voting closes - in an hour and in a week rounded up to five minutes, five today, nine tomorrow", cp.poll_close_choices( poll_now ), [
+ { key: "hour", label: "In 1 hour", unix: at_unix( 2026, 10, 3, 14, 25 ) }, { key: "today", label: "Today 17:00", unix: at_unix( 2026, 10, 3, 17, 0 ) },
+ { key: "tomorrow", label: "Tomorrow 9:00", unix: at_unix( 2026, 10, 4, 9, 0 ) },
+ { key: "week", label: "In a week", unix: at_unix( 2026, 10, 10, 13, 25 ) } ] );
+check( "- five today left out once it is less than an hour off", cp.poll_close_choices( poll_late ).map( function( c ) { return c.key; } ),
+ [ "hour", "tomorrow", "week" ] );
+check( "how long, in words", [ cp.duration_text( 40 * 60 ), cp.duration_text( 3600 ), cp.duration_text( 3 * 3600 + 40 * 60 ),
+ cp.duration_text( 53 * 3600 ), cp.duration_text( 9 * 86400 + 3600 ), cp.duration_text( 5 ) ],
+ [ "40 minutes", "1 hour", "3 hours 40 minutes", "2 days 5 hours", "9 days", "1 minute" ] );
+check( "the close said - when, and how long until then; one passed", [ cp.poll_close_said( at_unix( 2026, 10, 3, 17, 0 ), poll_now ),
+ cp.poll_close_said( at_unix( 2026, 10, 3, 12, 0 ), poll_now ) ], [ "Closes today 17:00 - in 3 hours 38 minutes",
+ "That time has passed - choose a later one." ] );
+check( "the line under a poll - how many of how many have voted, and how long is left", [
+ cp.poll_status_text( 4, 6, at_unix( 2026, 10, 3, 17, 0 ), poll_now ), cp.poll_status_text( 1, 6, at_unix( 2026, 10, 3, 17, 0 ), poll_now ),
+ cp.poll_status_text( 3, 0, 0, poll_now ), cp.poll_status_text( 5, 6, at_unix( 2026, 10, 3, 12, 0 ), poll_now ) ], [
+ "4 of 6 have voted · closes in 3 hours 38 minutes", "1 of 6 has voted · closes in 3 hours 38 minutes", "3 votes",
+ "5 of 6 have voted · voting has closed" ] );
+check( "a poll started, said as one notice - from its close; none for anything else", [ cp.poll_start_notice( "set to " + close_notice_at ),
+ cp.poll_start_notice( "set to soon" ), cp.poll_start_notice( "" ) ], [ "started a poll - voting closes 2026-11-07 17:00", "", "" ] );
+check( "a poll's room in place of its message box - before voting, voted, its owner", [ cp.poll_bar_text( "today 17:00", "", false ),
+ cp.poll_bar_text( "today 17:00", "Pizza", false ), cp.poll_bar_text( "today 17:00", "", true ), cp.poll_bar_text( "", "", false ) ], [
+ "Voting is open until today 17:00 - choose an option above.", "You voted for Pizza - choose it again to take your vote back, or another to change it.",
+ "Voting is open until today 17:00 - as its owner you can't vote.", "Voting is open - choose an option above." ] );
+check( "a room's name from a poll's question - what a name may have, cut at a word to fit; none where nothing would do", [
+ cp.poll_room_name( "Where shall we go for the team lunch on Friday?" ), cp.poll_room_name( "2026 budget: yes or no?" ),
+ cp.poll_room_name( "Shall we meet at the Thai place, the pizza place, or somewhere else entirely this week?" ), cp.poll_room_name( "Rock & roll?" ),
+ cp.poll_room_name( "??" ), cp.poll_room_name( "Hi?" ) ], [ "Where shall we go for the team lunch on Friday", "budget yes or no",
+ "Shall we meet at the Thai place the pizza place or", "Rock & roll", "", "" ] );
+check( "a closed poll's outcome - the most votes, a tie, none", [ cp.poll_outcome( poll_votes ),
+ cp.poll_outcome( cp.poll_results( poll_read, [ { code: "00", people: [ "a" ] }, { code: "01", people: [ "b" ] } ], "x" ) ),
+ cp.poll_outcome( cp.poll_results( poll_read, [ ], "x" ) ) ], [ "Most votes: Pizza", "A tie between Pizza and Sushi rolls", "" ] );
 check( "the node busy with another message - tried once more", [ cp.is_irc_lock_refusal( "Error: Unable to obtain the system IRC lock (try again later)." ),
  cp.is_irc_lock_refusal( "Error: Maximum message size was exceeded." ), cp.is_irc_lock_refusal( "" ) ], [ true, false, false ] );
 check( "- not a room's messages that only say the same words", cp.is_irc_lock_refusal( "admin+1\n1793192805000 admin  Unable to obtain the system"

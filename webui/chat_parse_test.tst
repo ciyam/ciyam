@@ -918,6 +918,15 @@ ok   not a poll - plain words, one option, a line with no letter, letters out of
 ok   what is wrong with one - none, no question, too few, too many, the same twice
 ok   the votes - counts and shares, one's own, the leader; a reaction that is no option left out
 ok   - none yet
+ok   when voting closes - in an hour and in a week rounded up to five minutes, five today, nine tomorrow
+ok   - five today left out once it is less than an hour off
+ok   how long, in words
+ok   the close said - when, and how long until then; one passed
+ok   the line under a poll - how many of how many have voted, and how long is left
+ok   a poll started, said as one notice - from its close; none for anything else
+ok   a poll's room in place of its message box - before voting, voted, its owner
+ok   a room's name from a poll's question - what a name may have, cut at a word to fit; none where nothing would do
+ok   a closed poll's outcome - the most votes, a tie, none
 ok   the node busy with another message - tried once more
 ok   - not a room's messages that only say the same words
 ok   a message as drawn, but for its reactions - changed when edited, deleted or pinned since

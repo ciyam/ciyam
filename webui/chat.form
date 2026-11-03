@@ -92,7 +92,16 @@ http://www.opensource.org/licenses/mit-license.php.
                </svg>
             </button>
             <span class="chat-section-label">Rooms</span>
-            <button type="button" class="chat-btn chat-btn--small" id="room_new" onclick="do_open_create_room( )">+ New</button>
+            <!-- NOTE: A room, or a poll with a room of its own (the poll review, 2026-11-03: Start a poll was found only in Room
+                 Details). -->
+            <div class="chat-new-wrap">
+               <button type="button" class="chat-btn chat-btn--small" id="room_new" aria-haspopup="menu" aria-expanded="false"
+                aria-controls="room_new_menu" onclick="do_toggle_new_menu( )">+ New</button>
+               <div class="chat-new-menu" id="room_new_menu" role="menu" hidden>
+                  <button type="button" role="menuitem" onclick="do_new_menu_choice( 'room' )">Room</button>
+                  <button type="button" role="menuitem" onclick="do_new_menu_choice( 'poll' )">Poll</button>
+               </div>
+            </div>
          </div>
          <!-- NOTE: Rooms, then direct messages - one scrolling area, so neither squeezes the other. -->
          <div class="chat-rail-lists">
@@ -216,6 +225,13 @@ http://www.opensource.org/licenses/mit-license.php.
          <div class="chat-held" id="held_list" hidden></div>
 
          <div class="chat-composer" id="composer" hidden>
+            <!-- NOTE: A poll's room - this line in place of the message box, which takes nothing there (the poll review, 2026-11-03:
+                 a disabled box saying the room takes reactions only). "update_poll_bar( )". -->
+            <div class="chat-composer-poll" id="composer_poll" role="status" hidden>
+               <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+               <span id="composer_poll_text"></span>
+            </div>
             <!-- NOTE: The emoji panel - the device's own emoji font, from the curated list in
                  "chat_emoji.js". Opens above the message box; an emoji goes in at the cursor
                  and the panel stays open for more. -->
@@ -473,22 +489,36 @@ http://www.opensource.org/licenses/mit-license.php.
 </div>
 
 <!-- NOTE: Starting a poll (Ian, 2026-10-31: the question pinned, a close set, then reactions only) - the question, an option for
-     each reaction drawn beside it, and when voting closes ("when_picker.js"). Its rows are made by "chat.js". -->
+     each reaction drawn beside it, and when voting closes. Made plainer after the poll review (2026-11-03): quick choices for the
+     close, the calendar only when asked ("when_picker.js"), an option removed or the next added with Enter, one plain line on
+     what happens to the room, and no second asking. Its rows are made by "chat.js". -->
 <div id="poll_dialog" class="chat-scrim" hidden>
    <form class="chat-dialog chat-poll-dialog" role="dialog" aria-modal="true" aria-labelledby="poll_dialog_title"
-    onsubmit="do_start_poll( ); return false;">
-      <h2 id="poll_dialog_title">Start a poll</h2>
-      <!-- NOTE: Said first, as the close is the room's (Damon, 2026-10-31: the wording suggested it was the poll's) - until Ian's
-           node can close a poll on its own, a poll ends the room. -->
-      <p class="chat-dialog-note">A poll takes over this room: until voting closes it takes only votes, and then the room closes for
-       good. Best in a room made for it. Everyone in the room now can vote, one vote each - invite anyone else first.</p>
+    aria-describedby="poll_dialog_where" onsubmit="do_start_poll( ); return false;">
+      <h2 id="poll_dialog_title">New poll</h2>
+      <p class="chat-dialog-note" id="poll_dialog_where"></p>
       <label class="chat-label" for="poll_question">Question</label>
-      <input type="text" id="poll_question" class="chat-field" maxlength="200" autocomplete="off">
+      <textarea id="poll_question" class="chat-field chat-poll-question" rows="2" maxlength="200" autocomplete="off"></textarea>
       <div class="chat-label" id="poll_options_label">Options</div>
       <div class="chat-poll-options" id="poll_options" role="group" aria-labelledby="poll_options_label"></div>
-      <button type="button" class="chat-btn chat-btn--small chat-poll-add" id="poll_add_option" onclick="do_add_poll_option( )">Add an option</button>
-      <label class="chat-label" for="poll_close_field">Voting - and the room - close</label>
-      <input type="hidden" id="poll_close_input">
+      <button type="button" class="chat-btn chat-btn--small chat-poll-add" id="poll_add_option" onclick="do_add_poll_option( true )">Add an option</button>
+      <!-- NOTE: A poll with a room of its own, from + New (the poll review, 2026-11-03: make a room, invite everyone, then start
+           the poll - three trips) - who votes and the room's name too; the chat makes the room, invites them and starts the poll in
+           it ("do_open_new_poll( )"). Those invited join after it is posted, and see it pinned. -->
+      <div class="chat-poll-new" id="poll_new_part" hidden>
+         <label class="chat-label" for="poll_picker_add">Who votes</label>
+         <div id="poll_picker"></div>
+         <label class="chat-label" for="poll_room_name">Its room</label>
+         <input type="text" id="poll_room_name" class="chat-field" maxlength="50" autocomplete="off" aria-describedby="poll_room_note">
+         <p class="chat-dialog-note" id="poll_room_note">Named from the question - change it if you like.</p>
+      </div>
+      <div class="chat-label" id="poll_close_label">Voting closes</div>
+      <div class="chat-poll-closes" id="poll_close_choices" role="group" aria-labelledby="poll_close_label"></div>
+      <div class="chat-poll-pick" id="poll_close_pick" hidden>
+         <input type="hidden" id="poll_close_input">
+      </div>
+      <p class="chat-dialog-note chat-poll-close-said" id="poll_close_said" aria-live="polite"></p>
+      <p class="chat-poll-room-note">While voting is open this room takes only votes. When voting closes, so does the room.</p>
       <div class="chat-error-text" id="poll_dialog_error" role="alert"></div>
       <div class="chat-dialog-actions">
          <button type="button" class="chat-btn" onclick="do_close_poll_dialog( )">Cancel</button>

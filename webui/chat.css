@@ -212,6 +212,66 @@ button.chat-avatar:hover
    box-shadow: var(--shadow-lg);
 }
 
+/* NOTE: The rooms' + New - a room, or a poll with a room of its own (2026-11-03). */
+.chat-new-wrap
+{
+   position: relative;
+   margin-left: auto;
+}
+
+.chat-new-menu
+{
+   position: absolute;
+   top: calc(100% + 4px);
+   right: 0;
+   z-index: 35;
+   display: flex;
+   flex-direction: column;
+   min-width: 140px;
+   padding: 4px;
+   background: var(--color-chat-bg);
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-md);
+   box-shadow: var(--shadow-lg);
+}
+
+.chat-new-menu[hidden]
+{
+   display: none;
+}
+
+.chat-new-menu button
+{
+   min-height: 36px;
+   padding: 0 12px;
+   border: 0;
+   border-radius: var(--radius-sm);
+   background: transparent;
+   color: var(--color-chat-text);
+   font-family: var(--font-family-chat);
+   font-size: var(--font-size-chat-body);
+   text-align: left;
+   cursor: pointer;
+}
+
+.chat-new-menu button:hover,
+.chat-new-menu button:focus-visible
+{
+   background: var(--color-chat-bg-selected);
+}
+
+.chat-poll-new
+{
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+}
+
+.chat-poll-new[hidden]
+{
+   display: none;
+}
+
 .chat-user-menu-head
 {
    display: flex;
@@ -2573,6 +2633,133 @@ button.chat-poll-option:hover
 .chat-poll-add
 {
    align-self: flex-start;
+}
+
+/* NOTE: The poll dialog after the review (2026-11-03) - the question two lines, a remove by each option, the close as quick
+   choices with the calendar only for Pick a time, and one plain line on what happens to the room. */
+.chat-poll-question
+{
+   min-height: 0;
+   resize: none;
+   line-height: 1.4;
+}
+
+.chat-poll-remove
+{
+   flex: none;
+   width: 32px;
+   padding: 0;
+   font-size: 18px;
+   line-height: 1;
+}
+
+.chat-poll-remove[hidden]
+{
+   display: none;
+}
+
+.chat-poll-closes
+{
+   display: flex;
+   flex-wrap: wrap;
+   gap: 6px;
+}
+
+.chat-poll-close-choice
+{
+   min-height: 36px;
+   padding: 0 14px;
+   border: 1px solid var(--color-chat-border-strong);
+   border-radius: 999px;
+   background: var(--color-chat-bg);
+   color: var(--color-chat-text);
+   font-family: var(--font-family-chat);
+   font-size: var(--font-size-chat-body);
+   cursor: pointer;
+}
+
+.chat-poll-close-choice:hover
+{
+   border-color: var(--color-chat-accent);
+}
+
+.chat-poll-close-choice[aria-pressed="true"]
+{
+   border-color: var(--color-chat-accent);
+   background: var(--color-chat-bg-selected);
+   font-weight: 600;
+}
+
+.chat-poll-pick[hidden],
+.chat-poll-close-said:empty
+{
+   display: none;
+}
+
+/* NOTE: A poll's room shows its poll once (the poll review, 2026-11-03: pinned and in the conversation both) - pinned, as those
+   who join after it was posted see only that. */
+.chat-messages.is-react-only > .chat-message.is-poll.is-pinned
+{
+   display: none;
+}
+
+/* NOTE: A poll's room - a line on voting in place of the message box ("update_poll_bar( )"). */
+.chat-composer.is-poll .chat-composer-row,
+.chat-composer.is-poll .chat-composer-foot,
+.chat-composer.is-poll .chat-composer-private
+{
+   display: none;
+}
+
+.chat-composer-poll
+{
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   padding: 12px 14px;
+   border: 1px solid var(--color-chat-border);
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-bg-raised);
+   color: var(--color-chat-text);
+   font-size: var(--font-size-chat-body);
+   line-height: 1.4;
+}
+
+.chat-composer-poll[hidden]
+{
+   display: none;
+}
+
+.chat-composer-poll svg
+{
+   flex: none;
+   color: var(--color-chat-accent);
+}
+
+/* NOTE: A closed poll - the option with the most votes ticked, and said under them. */
+.chat-poll-option.is-winner .chat-poll-choice::after
+{
+   content: " \2713";
+   color: var(--color-chat-accent);
+   font-weight: 700;
+}
+
+.chat-poll-outcome
+{
+   font-size: var(--font-size-chat-meta);
+   font-weight: 600;
+   color: var(--color-chat-text);
+}
+
+.chat-poll-room-note
+{
+   margin: 0;
+   padding: 10px 12px;
+   border-radius: var(--radius-sm);
+   background: var(--color-chat-bg-raised);
+   color: var(--color-chat-text-secondary);
+   font-size: var(--font-size-chat-meta);
+   line-height: 1.5;
 }
 
 /* NOTE: In the pinned strip, under the message's words - the strip is not the row's grid. */
