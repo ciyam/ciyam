@@ -447,8 +447,7 @@ ENTROPY=@entropy:32:hex_digits
 ~echo ""
 PPUB=@public:$PKEY
 USER_HEX=@aschex:$USER
-PAD_SEP=@aschex:_
-USER_HEX=$USER_HEX$PAD_SEP
+USER_HEX=%USER_HEX%I
 LEN=@strlen:$USER_HEX
 @if $LEN #< 25
 APPEND=@25-$LEN
@@ -470,7 +469,7 @@ POS=@strpos:\::$QR_CODE
 USER_FOR_PUB=@substr:0,$POS:$QR_CODE
 POS=@$POS+1
 QR_CODE=@substr:$POS:$QR_CODE
-POS=@strpos:5f:$USER_FOR_PUB
+POS=@strpos:I:$USER_FOR_PUB
 @ifndef $POS
 USER_FOR_PUB=
 @else
