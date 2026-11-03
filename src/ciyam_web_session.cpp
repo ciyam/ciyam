@@ -175,6 +175,7 @@ constexpr const char* c_cws_request_logs_review_options_lines = "lines";
 constexpr const char* c_cws_request_users_create_options_secret = "secret";
 constexpr const char* c_cws_request_users_create_options_nomimated = "nominated";
 
+constexpr const char* c_cws_request_users_update_options_keys = "keys";
 constexpr const char* c_cws_request_users_update_options_password = "password";
 
 constexpr const char* c_cws_request_devices_delete_options_block = "block";
@@ -210,8 +211,8 @@ constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "retain user-keys\nreview logs [<name> [lines=10]]\n"
  "review users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\nreview javascript[s] [<name>]\n"
  "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
- "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\nupdate user <pin> password=<password>\n"
- "update message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>";
+ "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
+ "update user <pin> keys={REPLACE|RESTORE}|password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>";
 
 constexpr const char* c_web_session_script = "web_session.cin";
 
@@ -219,6 +220,9 @@ constexpr const char* c_web_session_none_response = "[none]";
 constexpr const char* c_web_session_okay_response = "[okay]";
 
 constexpr const char* c_web_session_unknown_response = "[unknown]";
+
+constexpr const char* c_web_session_users_keys_replace = "REPLACE";
+constexpr const char* c_web_session_users_keys_restore = "RESTORE";
 
 constexpr const char* c_web_session_default_message_for = "ALL";
 constexpr const char* c_web_session_special_message_for = "IRC";
@@ -3203,14 +3207,35 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      size_t valid_options = 0;
 
-                     if( option_parameters.count( c_cws_request_users_update_options_password ) )
+                     bool is_keys_op = false;
+                     bool is_replace = false;
+
+                     bool is_admin_key_op = false;
+
+                     if( option_parameters.count( c_cws_request_users_update_options_keys ) )
+                     {
+                        ++valid_options;
+
+                        string keys_op( option_parameters[ c_cws_request_users_update_options_keys ] );
+
+                        is_keys_op = true;
+
+                        if( pin == g_cws_admin_token )
+                           is_admin_key_op = true;
+
+                        if( keys_op == c_web_session_users_keys_replace )
+                           is_replace = true;
+                        else if( keys_op != c_web_session_users_keys_restore )
+                           --valid_options;
+                     }
+                     else if( option_parameters.count( c_cws_request_users_update_options_password ) )
                      {
                         ++valid_options;
 
                         password = option_parameters[ c_cws_request_users_update_options_password ];
                      }
 
-                     if( !has_user_info( pin ) )
+                     if( !is_admin_key_op && !has_user_info( pin ) )
                         // FUTURE: This message should be handled as a server string message.
                         error = "Unknown access pin '" + pin + "' for user update.";
                      else if( !valid_options || ( option_parameters.size( ) > valid_options ) )
@@ -3220,9 +3245,42 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                      {
                         found = true;
 
-                        string pwd_hash( sha256( password ).get_digest_as_string( ) );
+                        if( !is_keys_op )
+                        {
+                           string pwd_hash( sha256( password ).get_digest_as_string( ) );
 
-                        replace_user_pwd_hash( pin, pwd_hash );
+                           replace_user_pwd_hash( pin, pwd_hash );
+                        }
+                        else
+                        {
+                           string keys_file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + pin + c_keys_suffix );
+                           string save_file_name( g_cws_artifacts_dir + '/' + c_ciyam_prefix + pin + upper( c_keys_suffix ) );
+
+                           if( is_replace )
+                           {
+                              if( file_exists( keys_file_name ) )
+                                 file_copy( keys_file_name, save_file_name );
+                              else
+                              {
+                                 found = false;
+
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Current keys (" + pin + ") not found for user upddate.";
+                              }
+                           }
+                           else
+                           {
+                              if( file_exists( save_file_name ) )
+                                 file_copy( save_file_name, keys_file_name );
+                              else
+                              {
+                                 found = false;
+
+                                 // FUTURE: This message should be handled as a server string message.
+                                 error = "Restore keys (" + pin + ") not found for user upddate.";
+                              }
+                           }
+                        }
                      }
                   }
                }
