@@ -64,6 +64,7 @@ review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 update user *** password=<password>
 update message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>
+update storage-instance <id>/<cid>/<key> assigns=<names_and_values>
 Check for messages and attempt to create a non-special message and then create a new room.
 IRC usage is not currently available.
 admin #0000001 1/1 Admin
@@ -255,6 +256,7 @@ review storage-modules [<id>/enums|lists|views[/<item_id>]]
 review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]
 update user <pin> keys={REPLACE|RESTORE}|password=<password>
 update message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>
+update storage-instance <id>/<cid>/<key> assigns=<names_and_values>
 100 Meta
 Error: Unknonwn module id '99' for storage 'Meta'.
 id=575,name=enum_add_packages
