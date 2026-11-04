@@ -182,6 +182,8 @@ ok   rejects doubled ampersands
 ok   rejects empty parentheses
 ok   rejects reversed parentheses
 ok   rejects two open parentheses
+ok   the rule a name breaks, said
+ok   the room dialog's problems by part - each mode
 
 == username validation =========================================
 ok   accepts a simple name

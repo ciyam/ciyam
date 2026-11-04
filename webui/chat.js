@@ -2385,7 +2385,9 @@ function do_open_create_room( )
 {
    g_dialog_mode = "create";
 
-   document.getElementById( "room_dialog_invitees_label" ).textContent = "Invite";
+   document.getElementById( "room_dialog_invitees_text" ).textContent = "Invite";
+
+   room_dialog_people_needed( false );
 
    document.getElementById( "room_dialog_title" ).textContent = "Create a room";
    document.getElementById( "room_dialog_submit" ).textContent = "Create";
@@ -2394,6 +2396,7 @@ function do_open_create_room( )
    document.getElementById( "room_dialog_invitees_row" ).hidden = false;
 
    set_error( "room_dialog_error", "" );
+   show_room_problems( null );
 
    // NOTE: Emptied before the list is drawn so ticks from a previous room are not
    // carried over - render_invitees deliberately preserves whatever is already ticked
@@ -2421,6 +2424,8 @@ function invite_picker( )
          none_text: "No other users to invite.",
          on_change: function( )
          {
+            room_dialog_problem( "people", "" );
+
             if( g_dialog_mode === "dm" )
                mark_new_message( );
          } } );
@@ -2452,11 +2457,14 @@ function do_open_new_message( )
 
    document.getElementById( "room_dialog_title" ).textContent = "New message";
    document.getElementById( "room_dialog_submit" ).textContent = "Message";
-   document.getElementById( "room_dialog_invitees_label" ).textContent = "To";
+   document.getElementById( "room_dialog_invitees_text" ).textContent = "To";
+
+   room_dialog_people_needed( true );
    document.getElementById( "room_dialog_name_row" ).hidden = true;
    document.getElementById( "room_dialog_invitees_row" ).hidden = false;
 
    set_error( "room_dialog_error", "" );
+   show_room_problems( null );
 
    invite_picker( ).reset( );
    invite_picker( ).set_single( true );
@@ -2518,19 +2526,8 @@ function submit_new_message( )
 {
    var names = ticked_invitees( );
 
-   if( names.length === 0 )
-   {
-      set_error( "room_dialog_error", "Choose who to message." );
-
+   if( !show_room_problems( room_dialog_problems( "dm", "", names.length ) ) )
       return;
-   }
-
-   if( names.length > 1 )
-   {
-      set_error( "room_dialog_error", "A direct message is with one person - for more, create a room." );
-
-      return;
-   }
 
    do_close_room_dialog( );
 
@@ -2920,6 +2917,7 @@ function do_open_rename_room( )
    document.getElementById( "room_dialog_invitees_row" ).hidden = true;
 
    set_error( "room_dialog_error", "" );
+   show_room_problems( null );
 
    document.getElementById( "room_dialog" ).hidden = false;
    document.getElementById( "room_dialog_name" ).focus( );
@@ -3189,7 +3187,9 @@ function do_open_invite( )
 
    g_dialog_mode = "invite";
 
-   document.getElementById( "room_dialog_invitees_label" ).textContent = "Invite";
+   document.getElementById( "room_dialog_invitees_text" ).textContent = "Invite";
+
+   room_dialog_people_needed( true );
 
    document.getElementById( "room_dialog_title" ).textContent = "Invite to " + g_room_name;
    document.getElementById( "room_dialog_submit" ).textContent = "Invite";
@@ -3197,6 +3197,7 @@ function do_open_invite( )
    document.getElementById( "room_dialog_invitees_row" ).hidden = false;
 
    set_error( "room_dialog_error", "" );
+   show_room_problems( null );
 
    invite_picker( ).reset( );
    invite_picker( ).set_single( false );
@@ -3276,12 +3277,8 @@ async function submit_invite( )
 {
    var names = ticked_invitees( );
 
-   if( names.length === 0 )
-   {
-      set_error( "room_dialog_error", "Choose at least one person to invite." );
-
+   if( !show_room_problems( room_dialog_problems( "invite", "", names.length ) ) )
       return;
-   }
 
    ciyam.error = "";
 
@@ -3365,17 +3362,70 @@ function do_validate_room_name( )
 {
    var name = document.getElementById( "room_dialog_name" ).value.trim( );
 
-   if( ( name !== "" ) && !is_valid_room_name( name ) )
-      set_error( "room_dialog_error", "That name does not satisfy the room name rules." );
-   else
-      set_error( "room_dialog_error", "" );
+   room_dialog_problem( "name", ( name !== "" ) ? room_name_problem( name ) : "" );
 }
 
 // NOTE: Typing clears a standing error so the message goes away as it is corrected,
 // without a new one appearing mid-word.
 function do_clear_room_name_error( )
 {
+   room_dialog_problem( "name", "" );
    set_error( "room_dialog_error", "" );
+}
+
+// NOTE: The room dialog's parts and where each says what it lacks ("room_dialog_problems( )") - the poll dialog's pattern
+// (Damon, 2026-11-04).
+const c_room_dialog_parts = [
+   { key: "name", error: "room_dialog_name_error", field: "room_dialog_name" },
+   { key: "people", error: "room_dialog_people_error", field: "room_dialog_picker_add" } ];
+
+function room_dialog_problem( key, said )
+{
+   c_room_dialog_parts.forEach( function( part )
+   {
+      if( part.key !== key )
+         return;
+
+      document.getElementById( part.error ).textContent = said;
+
+      var field = document.getElementById( part.field );
+
+      if( field !== null )
+      {
+         if( said )
+            field.setAttribute( "aria-invalid", "true" );
+         else
+            field.removeAttribute( "aria-invalid" );
+      }
+   } );
+}
+
+// NOTE: Each part's problem said under it, and the first focused - true when there are none; null clears them.
+function show_room_problems( problems )
+{
+   var first = null;
+
+   c_room_dialog_parts.forEach( function( part )
+   {
+      var said = problems ? ( problems[ part.key ] || "" ) : "";
+
+      room_dialog_problem( part.key, said );
+
+      if( said && ( first === null ) )
+         first = document.getElementById( part.field );
+   } );
+
+   if( first !== null )
+      first.focus( );
+
+   return first === null;
+}
+
+// NOTE: Choosing people is needed to invite or to message someone, and a choice in creating a room - marked so.
+function room_dialog_people_needed( needed )
+{
+   document.getElementById( "room_dialog_people_needed" ).hidden = !needed;
+   document.getElementById( "room_dialog_people_optional" ).hidden = needed;
 }
 
 function do_close_room_dialog( )
@@ -3397,12 +3447,8 @@ async function do_submit_room_dialog( )
 
    var name = document.getElementById( "room_dialog_name" ).value.trim( );
 
-   if( !is_valid_room_name( name ) )
-   {
-      set_error( "room_dialog_error", "That name does not satisfy the room name rules." );
-
+   if( !show_room_problems( room_dialog_problems( g_dialog_mode, name, 0 ) ) )
       return;
-   }
 
    // NOTE: Renaming moved to PUT with a "name" option. The POST form still works but is
    // expected to be withdrawn.

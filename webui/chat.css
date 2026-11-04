@@ -260,32 +260,32 @@ button.chat-avatar:hover
    background: var(--color-chat-bg-selected);
 }
 
-/* NOTE: The poll dialog's parts - each label with its field, what it lacks under it, and the parts evenly apart (Damon, 2026-11-04:
-   the label's own margins on top of the dialog's gap left the spacing uneven). */
-.chat-dialog.chat-poll-dialog
+/* NOTE: A dialog of fields - the poll's and the room's - each label with its field, what it lacks under it, and the parts evenly
+   apart (Damon, 2026-11-04: the label's own margins on top of the dialog's gap left the spacing uneven). */
+.chat-dialog.chat-form-dialog
 {
    gap: 18px;
 }
 
-.chat-poll-field
+.chat-form-field
 {
    display: flex;
    flex-direction: column;
    gap: 6px;
 }
 
-.chat-poll-field[hidden]
+.chat-form-field[hidden]
 {
    display: none;
 }
 
-.chat-poll-dialog .chat-label,
-.chat-poll-dialog .chat-dialog-note
+.chat-form-dialog .chat-label,
+.chat-form-dialog .chat-dialog-note
 {
    margin: 0;
 }
 
-.chat-poll-dialog > .chat-dialog-note
+.chat-form-dialog > .chat-dialog-note
 {
    margin-top: -10px;
 }
@@ -297,7 +297,7 @@ button.chat-avatar:hover
    font-weight: 700;
 }
 
-.chat-poll-needed
+.chat-form-needed
 {
    margin: -8px 0 0;
    font-size: var(--font-size-chat-tiny);
@@ -319,12 +319,12 @@ button.chat-avatar:hover
 }
 
 .chat-field-error:empty,
-.chat-poll-dialog .chat-error-text:empty
+.chat-form-dialog .chat-error-text:empty
 {
    display: none;
 }
 
-.chat-poll-dialog [aria-invalid="true"]
+.chat-form-dialog [aria-invalid="true"]
 {
    border-color: var(--color-chat-critical-text);
 }

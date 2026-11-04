@@ -466,21 +466,29 @@ http://www.opensource.org/licenses/mit-license.php.
      Dialogs
      ================================================================ -->
 <div id="room_dialog" class="chat-scrim" hidden>
-   <form class="chat-dialog" onsubmit="do_submit_room_dialog( ); return false;">
+   <form class="chat-dialog chat-form-dialog" onsubmit="do_submit_room_dialog( ); return false;">
       <h2 id="room_dialog_title">Create a room</h2>
-      <div id="room_dialog_name_row">
+      <!-- NOTE: As the poll dialog (Damon, 2026-11-04) - what is needed marked, what each part lacks said under it, the rule a name
+           breaks said in plain words ("room_dialog_problems( )"), and the parts evenly spaced. -->
+      <p class="chat-form-needed" aria-hidden="true"><span class="chat-needed">*</span> needed</p>
+      <div class="chat-form-field" id="room_dialog_name_row">
+         <label class="chat-label" for="room_dialog_name">Room name <span class="chat-needed" aria-hidden="true">*</span></label>
+         <input type="text" id="room_dialog_name" class="chat-field" maxlength="50" autocomplete="off" aria-required="true"
+          aria-describedby="room_dialog_note room_dialog_name_error" oninput="do_clear_room_name_error( )" onblur="do_validate_room_name( )">
          <p class="chat-dialog-note" id="room_dialog_note">5 to 50 characters. Letters, digits, spaces and
          <span class="chat-mono">- + &amp; ( ) '</span> &mdash; one pair of brackets at most.</p>
-         <label class="chat-label" for="room_dialog_name">Room name</label>
-         <input type="text" id="room_dialog_name" class="chat-field" maxlength="50" autocomplete="off"
-          oninput="do_clear_room_name_error( )" onblur="do_validate_room_name( )">
+         <div class="chat-field-error" id="room_dialog_name_error"></div>
       </div>
-      <div class="chat-error-text" id="room_dialog_error"></div>
-      <!-- NOTE: The people picker ("picker.js", 2026-10-27) - the chosen as chips, and a popup list with a search. -->
-      <div id="room_dialog_invitees_row" hidden>
-         <label class="chat-label" for="room_dialog_picker_add" id="room_dialog_invitees_label">Invite</label>
+      <!-- NOTE: The people picker ("picker.js", 2026-10-27) - the chosen as chips, and a popup list with a search. Needed to invite
+           or to message someone; a choice when creating a room. -->
+      <div class="chat-form-field" id="room_dialog_invitees_row" hidden>
+         <label class="chat-label" for="room_dialog_picker_add" id="room_dialog_invitees_label"><span id="room_dialog_invitees_text">Invite</span>
+          <span class="chat-needed" id="room_dialog_people_needed" aria-hidden="true">*</span>
+          <span class="chat-label-aside" id="room_dialog_people_optional">optional</span></label>
          <div id="room_dialog_picker"></div>
+         <div class="chat-field-error" id="room_dialog_people_error"></div>
       </div>
+      <div class="chat-error-text" id="room_dialog_error" role="alert"></div>
       <div class="chat-dialog-actions">
          <button type="button" class="chat-btn" onclick="do_close_room_dialog( )">Cancel</button>
          <button type="submit" class="chat-btn chat-btn--accent" id="room_dialog_submit">Create</button>
@@ -493,20 +501,20 @@ http://www.opensource.org/licenses/mit-license.php.
      close, the calendar only when asked ("when_picker.js"), an option removed or the next added with Enter, one plain line on
      what happens to the room, and no second asking. Its rows are made by "chat.js". -->
 <div id="poll_dialog" class="chat-scrim" hidden>
-   <form class="chat-dialog chat-poll-dialog" role="dialog" aria-modal="true" aria-labelledby="poll_dialog_title"
+   <form class="chat-dialog chat-poll-dialog chat-form-dialog" role="dialog" aria-modal="true" aria-labelledby="poll_dialog_title"
     aria-describedby="poll_dialog_where" onsubmit="do_start_poll( ); return false;">
       <h2 id="poll_dialog_title">New poll</h2>
       <p class="chat-dialog-note" id="poll_dialog_where"></p>
       <!-- NOTE: Each part with its label, what is needed marked, and what it lacks said under it once Start is pressed (Damon,
            2026-11-04: nothing said which were needed, not every one said what it lacked, and the spacing was uneven). -->
-      <p class="chat-poll-needed" aria-hidden="true"><span class="chat-needed">*</span> needed</p>
-      <div class="chat-poll-field">
+      <p class="chat-form-needed" aria-hidden="true"><span class="chat-needed">*</span> needed</p>
+      <div class="chat-form-field">
          <label class="chat-label" for="poll_question">Question <span class="chat-needed" aria-hidden="true">*</span></label>
          <textarea id="poll_question" class="chat-field chat-poll-question" rows="1" maxlength="200" autocomplete="off" aria-required="true"
           aria-describedby="poll_question_error"></textarea>
          <div class="chat-field-error" id="poll_question_error"></div>
       </div>
-      <div class="chat-poll-field">
+      <div class="chat-form-field">
          <div class="chat-label" id="poll_options_label">Options <span class="chat-needed" aria-hidden="true">*</span>
           <span class="chat-label-aside">at least two</span></div>
          <div class="chat-poll-options" id="poll_options" role="group" aria-labelledby="poll_options_label"
@@ -517,19 +525,19 @@ http://www.opensource.org/licenses/mit-license.php.
       <!-- NOTE: A poll with a room of its own, from + New (the poll review, 2026-11-03: make a room, invite everyone, then start
            the poll - three trips) - who votes and the room's name too; the chat makes the room, invites them and starts the poll in
            it ("do_open_new_poll( )"). Those invited join after it is posted, and see it pinned. -->
-      <div class="chat-poll-field" id="poll_voters_part" hidden>
+      <div class="chat-form-field" id="poll_voters_part" hidden>
          <label class="chat-label" for="poll_picker_add">Who votes <span class="chat-needed" aria-hidden="true">*</span></label>
          <div id="poll_picker"></div>
          <div class="chat-field-error" id="poll_voters_error"></div>
       </div>
-      <div class="chat-poll-field" id="poll_new_part" hidden>
+      <div class="chat-form-field" id="poll_new_part" hidden>
          <label class="chat-label" for="poll_room_name">Its room <span class="chat-needed" aria-hidden="true">*</span></label>
          <input type="text" id="poll_room_name" class="chat-field" maxlength="50" autocomplete="off" aria-required="true"
           aria-describedby="poll_room_note poll_name_error">
          <p class="chat-dialog-note" id="poll_room_note">Named from the question - change it if you like.</p>
          <div class="chat-field-error" id="poll_name_error"></div>
       </div>
-      <div class="chat-poll-field">
+      <div class="chat-form-field">
          <div class="chat-label" id="poll_close_label">Voting closes <span class="chat-needed" aria-hidden="true">*</span></div>
          <div class="chat-poll-closes" id="poll_close_choices" role="group" aria-labelledby="poll_close_label"
           aria-describedby="poll_close_said poll_closes_error"></div>

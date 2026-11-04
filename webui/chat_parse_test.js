@@ -376,6 +376,20 @@ check( "rejects empty parentheses", cp.is_valid_room_name( "Ledger () Ops" ), fa
 check( "rejects reversed parentheses", cp.is_valid_room_name( "Ledger )x( Ops" ), false );
 check( "rejects two open parentheses", cp.is_valid_room_name( "Ledger ((x) Ops" ), false );
 
+// NOTE: Which rule, in plain words (Damon, 2026-11-04: only "does not satisfy the room name rules" was said).
+check( "the rule a name breaks, said", [ "", "Ops", "x".repeat( 51 ), "1st Room", "Name_Not_Valid", "Ledger Ops -", "Ledger  Ops", "Dev && Ops",
+ "Ledger () Ops", "Ledger )x( Ops", "Ledger ((x) Ops", "Private (test-1 and test-2)", "  Ledger Ops  " ].map( cp.room_name_problem ), [
+ "Give the room a name.", "At least 5 characters.", "At most 50 characters.", "Start it with a letter.",
+ "Only letters, digits, spaces and - + & ( ) ' - not \"_\".", "End it with a letter, a digit or a closing bracket.", "Only one space between words.",
+ "No && or '' together.", "No empty brackets.", "One pair of brackets at most, opened before it is closed.",
+ "One pair of brackets at most, opened before it is closed.", "", "" ] );
+check( "the room dialog's problems by part - each mode", [ cp.room_dialog_problems( "create", "", 0 ), cp.room_dialog_problems( "create", "Ledger Ops", 0 ),
+ cp.room_dialog_problems( "rename", "Ops", 0 ), cp.room_dialog_problems( "invite", "", 0 ), cp.room_dialog_problems( "dm", "", 0 ),
+ cp.room_dialog_problems( "dm", "", 2 ), cp.room_dialog_problems( "dm", "", 1 ) ], [ { name: "Give the room a name.", people: "" },
+ { name: "", people: "" }, { name: "At least 5 characters.", people: "" }, { name: "", people: "Choose at least one person to invite." },
+ { name: "", people: "Choose who to message." }, { name: "", people: "A direct message is with one person - for more, create a room." },
+ { name: "", people: "" } ] );
+
 heading( "username validation" );
 
 check( "accepts a simple name", cp.is_valid_username( "alice" ), true );

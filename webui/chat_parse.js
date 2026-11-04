@@ -3970,6 +3970,68 @@ function is_valid_room_name( name )
    return true;
 }
 
+// NOTE: Which of the rules a room's name breaks, in plain words - the first of them - or "" if none (Damon, 2026-11-04: the room
+// dialog said only "That name does not satisfy the room name rules"). The same rules as "is_valid_room_name( )".
+function room_name_problem( name )
+{
+   var text = String( name || "" ).trim( );
+
+   if( text === "" )
+      return "Give the room a name.";
+
+   if( text.length < 5 )
+      return "At least 5 characters.";
+
+   if( text.length > 50 )
+      return "At most 50 characters.";
+
+   if( !/^[a-zA-Z]/.test( text ) )
+      return "Start it with a letter.";
+
+   var bad = text.match( /[^-+&()' a-zA-Z0-9]/ );
+
+   if( bad )
+      return "Only letters, digits, spaces and - + & ( ) ' - not \"" + bad[ 0 ] + "\".";
+
+   if( !/[)a-zA-Z0-9]$/.test( text ) )
+      return "End it with a letter, a digit or a closing bracket.";
+
+   if( text.indexOf( "  " ) >= 0 )
+      return "Only one space between words.";
+
+   if( ( text.indexOf( "&&" ) >= 0 ) || ( text.indexOf( "''" ) >= 0 ) )
+      return "No && or '' together.";
+
+   if( text.indexOf( "()" ) >= 0 )
+      return "No empty brackets.";
+
+   return is_valid_room_name( text ) ? "" : "One pair of brackets at most, opened before it is closed.";
+}
+
+// NOTE: What is wrong with the room dialog, by its part - { name, people }, "" for each that is fine. "mode" as the dialog's: a
+// room created ("create", the name needed, inviting anyone left to choose), renamed ("rename"), people invited ("invite", one at
+// least), or a direct message started ("dm", one person). "chosen" - how many people are ticked.
+function room_dialog_problems( mode, name, chosen )
+{
+   var problems = { name: "", people: "" };
+
+   if( ( mode === "create" ) || ( mode === "rename" ) )
+      problems.name = room_name_problem( name );
+
+   if( ( mode === "invite" ) && !chosen )
+      problems.people = "Choose at least one person to invite.";
+
+   if( mode === "dm" )
+   {
+      if( !chosen )
+         problems.people = "Choose who to message.";
+      else if( chosen > 1 )
+         problems.people = "A direct message is with one person - for more, create a room.";
+   }
+
+   return problems;
+}
+
 // NOTE: Usernames are validated by "irc_join" using the same shape.
 function is_valid_username( name )
 {
@@ -4811,6 +4873,8 @@ if( typeof module !== "undefined" )
       parse_poll: parse_poll,
       poll_results: poll_results,
       poll_field_problems: poll_field_problems,
+      room_name_problem: room_name_problem,
+      room_dialog_problems: room_dialog_problems,
       poll_close_choices: poll_close_choices,
       duration_text: duration_text,
       poll_close_said: poll_close_said,
