@@ -467,10 +467,12 @@ http://www.opensource.org/licenses/mit-license.php.
      ================================================================ -->
 <div id="room_dialog" class="chat-scrim" hidden>
    <form class="chat-dialog chat-form-dialog" onsubmit="do_submit_room_dialog( ); return false;">
-      <h2 id="room_dialog_title">Create a room</h2>
+      <div class="chat-form-head">
+         <h2 id="room_dialog_title">Create a room</h2>
+         <span class="chat-form-needed" aria-hidden="true"><span class="chat-needed">*</span> needed</span>
+      </div>
       <!-- NOTE: As the poll dialog (Damon, 2026-11-04) - what is needed marked, what each part lacks said under it, the rule a name
            breaks said in plain words ("room_dialog_problems( )"), and the parts evenly spaced. -->
-      <p class="chat-form-needed" aria-hidden="true"><span class="chat-needed">*</span> needed</p>
       <div class="chat-form-field" id="room_dialog_name_row">
          <label class="chat-label" for="room_dialog_name">Room name <span class="chat-needed" aria-hidden="true">*</span></label>
          <input type="text" id="room_dialog_name" class="chat-field" maxlength="50" autocomplete="off" aria-required="true"
@@ -503,11 +505,13 @@ http://www.opensource.org/licenses/mit-license.php.
 <div id="poll_dialog" class="chat-scrim" hidden>
    <form class="chat-dialog chat-poll-dialog chat-form-dialog" role="dialog" aria-modal="true" aria-labelledby="poll_dialog_title"
     aria-describedby="poll_dialog_where" onsubmit="do_start_poll( ); return false;">
-      <h2 id="poll_dialog_title">New poll</h2>
+      <div class="chat-form-head">
+         <h2 id="poll_dialog_title">New poll</h2>
+         <span class="chat-form-needed" aria-hidden="true"><span class="chat-needed">*</span> needed</span>
+      </div>
       <p class="chat-dialog-note" id="poll_dialog_where"></p>
       <!-- NOTE: Each part with its label, what is needed marked, and what it lacks said under it once Start is pressed (Damon,
            2026-11-04: nothing said which were needed, not every one said what it lacked, and the spacing was uneven). -->
-      <p class="chat-form-needed" aria-hidden="true"><span class="chat-needed">*</span> needed</p>
       <div class="chat-form-field">
          <label class="chat-label" for="poll_question">Question <span class="chat-needed" aria-hidden="true">*</span></label>
          <textarea id="poll_question" class="chat-field chat-poll-question" rows="1" maxlength="200" autocomplete="off" aria-required="true"
@@ -531,10 +535,10 @@ http://www.opensource.org/licenses/mit-license.php.
          <div class="chat-field-error" id="poll_voters_error"></div>
       </div>
       <div class="chat-form-field" id="poll_new_part" hidden>
-         <label class="chat-label" for="poll_room_name">Its room <span class="chat-needed" aria-hidden="true">*</span></label>
+         <label class="chat-label" for="poll_room_name">Its room <span class="chat-needed" aria-hidden="true">*</span>
+          <span class="chat-label-aside" id="poll_room_note">named from the question - change it if you like</span></label>
          <input type="text" id="poll_room_name" class="chat-field" maxlength="50" autocomplete="off" aria-required="true"
-          aria-describedby="poll_room_note poll_name_error">
-         <p class="chat-dialog-note" id="poll_room_note">Named from the question - change it if you like.</p>
+          aria-describedby="poll_name_error">
          <div class="chat-field-error" id="poll_name_error"></div>
       </div>
       <div class="chat-form-field">
@@ -547,7 +551,7 @@ http://www.opensource.org/licenses/mit-license.php.
          <p class="chat-dialog-note chat-poll-close-said" id="poll_close_said" aria-live="polite"></p>
          <div class="chat-field-error" id="poll_closes_error"></div>
       </div>
-      <p class="chat-poll-room-note">While voting is open this room takes only votes. When voting closes, so does the room.</p>
+      <p class="chat-poll-room-note">Until voting closes the room takes only votes - then it closes too.</p>
       <div class="chat-error-text" id="poll_dialog_error" role="alert"></div>
       <div class="chat-dialog-actions">
          <button type="button" class="chat-btn" onclick="do_close_poll_dialog( )">Cancel</button>

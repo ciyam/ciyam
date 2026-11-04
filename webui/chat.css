@@ -287,7 +287,7 @@ button.chat-avatar:hover
 
 .chat-form-dialog > .chat-dialog-note
 {
-   margin-top: -10px;
+   margin-top: -6px;
 }
 
 /* NOTE: What is needed - an asterisk after its label, said once at the top. */
@@ -297,11 +297,53 @@ button.chat-avatar:hover
    font-weight: 700;
 }
 
+/* NOTE: "* needed" on the title's line, so it takes no line of its own (Damon, 2026-11-04: the poll dialog opened scrolling). */
+.chat-form-head
+{
+   display: flex;
+   align-items: baseline;
+   justify-content: space-between;
+   gap: 12px;
+}
+
 .chat-form-needed
 {
-   margin: -8px 0 0;
    font-size: var(--font-size-chat-tiny);
    color: var(--color-chat-text-secondary);
+   white-space: nowrap;
+}
+
+/* NOTE: The poll dialog made compact enough to open without scrolling on a laptop's screen (Damon, 2026-11-04) - a little wider,
+   so the close's choices fit on one line, closer parts, and lower fields. */
+.chat-dialog.chat-poll-dialog
+{
+   max-width: 540px;
+   padding: 20px 24px;
+   gap: 12px;
+}
+
+.chat-poll-dialog .chat-field
+{
+   height: 40px;
+}
+
+.chat-poll-dialog .chat-field.chat-poll-question
+{
+   height: auto;
+   min-height: 40px;
+   padding: 8px 14px;
+}
+
+.chat-poll-dialog .chat-poll-options
+{
+   gap: 6px;
+}
+
+.chat-poll-dialog .chat-poll-close-choice
+{
+   min-height: 32px;
+   padding: 0 10px;
+   font-size: var(--font-size-chat-meta);
 }
 
 .chat-label-aside
@@ -2819,7 +2861,7 @@ button.chat-poll-option:hover
 .chat-poll-room-note
 {
    margin: 0;
-   padding: 10px 12px;
+   padding: 8px 12px;
    border-radius: var(--radius-sm);
    background: var(--color-chat-bg-raised);
    color: var(--color-chat-text-secondary);

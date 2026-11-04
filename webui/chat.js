@@ -5714,8 +5714,7 @@ function do_open_new_poll( )
 
    g_poll_new = true;
 
-   document.getElementById( "poll_dialog_where" ).textContent = "In a room of its own - those you choose are invited, and each can"
-    + " vote once they join.";
+   document.getElementById( "poll_dialog_where" ).textContent = "In a room of its own - those you choose are invited, and vote as they join.";
    document.getElementById( "poll_new_part" ).hidden = false;
    document.getElementById( "poll_voters_part" ).hidden = false;
    document.getElementById( "poll_room_name" ).value = "";
@@ -5825,8 +5824,9 @@ function draw_poll_close_choices( )
 
          poll_close_chosen( choice.key );
 
+         // NOTE: Pick a time opens the month straight away (Damon, 2026-11-04: it needed a second click, on the field).
          if( choice.key === "pick" )
-            document.getElementById( "poll_close_field" ).focus( );
+            g_poll_when.open( );
       } );
 
       holder.appendChild( button );

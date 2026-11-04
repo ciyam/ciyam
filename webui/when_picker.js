@@ -13,7 +13,7 @@
 //
 //    var when = when_picker( input, { field_id: "...", placeholder: "...", label: "...", before_text: "...", after_text: "...",
 //     on_change: f } );
-//    when.set_range( "2026-10-31T14:37", "" );  when.set_disabled( true );  when.is_open( );  when.close( );
+//    when.set_range( "2026-10-31T14:37", "" );  when.set_disabled( true );  when.is_open( );  when.open( );  when.close( );
 //
 // Keys in the month: the arrows move a day or a week, Home and End to the week's start and end, Page Up and Page Down a month,
 // Enter or Space marks the day.
@@ -453,6 +453,8 @@ function when_picker( input, options )
 
    return {
       is_open: is_open,
+      // NOTE: Opened by the page - the poll dialog's Pick a time opens the month at once (Damon, 2026-11-04: it took a second click).
+      open: function( ) { if( !is_open( ) && !field.disabled ) open( ); },
       close: function( ) { close( false ); },
       set_range: function( min, max )
       {
