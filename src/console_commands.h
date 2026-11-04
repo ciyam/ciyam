@@ -147,12 +147,15 @@ class console_command_processor : public command_processor
    console_command_processor( console_command_handler& handler )
     : command_processor( handler ),
     handler( handler ),
+    is_first( true ),
     lines_joined( 0 )
    {
    }
 
    private:
    console_command_handler& handler;
+
+   bool is_first;
 
    size_t lines_joined;
 

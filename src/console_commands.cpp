@@ -4500,7 +4500,10 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                      next_command += next;
 
-                     if( is_continuation )
+                     // NOTE: A line that is only a continuation leaves nothing to continue (so is counted as empty).
+                     if( is_continuation && next_command.empty( ) )
+                        ++line_number;
+                     else if( is_continuation )
                         ++lines_joined;
                      else
                      {
@@ -5636,10 +5639,30 @@ void console_command_processor::get_cmd_and_args( string& cmd_and_args )
    // NOTE: Input that is not typed is read in the same way as a script run with "<" (so either way a script can be used).
    if( !isatty( STDIN_FILENO ) && cin )
    {
+      // NOTE: Lines are counted from the first line of input (and not from any commands a program ran before it).
+      if( is_first )
+         handler.line_number = 0;
+
+      remove_trailing_cr_from_text_file_line( cmd_and_args, is_first );
+
+      is_first = false;
+
       // NOTE: The lines a continued command was joined from are counted when the next command begins (so that an error
       // will report the line that its command began on).
       if( get_is_continuation( ) )
+      {
+         // NOTE: Empty lines within a continued command are skipped (so do not end it).
+         while( cmd_and_args.empty( ) && cin )
+         {
+            ++lines_joined;
+
+            get_line( cmd_and_args, prompt.c_str( ) );
+
+            remove_trailing_cr_from_text_file_line( cmd_and_args );
+         }
+
          ++lines_joined;
+      }
       else
       {
          handler.line_number += lines_joined;
@@ -5650,11 +5673,12 @@ void console_command_processor::get_cmd_and_args( string& cmd_and_args )
          cmd_and_args.erase( 0, cmd_and_args.find_first_not_of( ' ' ) );
 
          // NOTE: Empty lines are skipped but still counted (so errors report the correct line number).
-         if( cmd_and_args.empty( ) || ( cmd_and_args == "\r" ) )
-         {
-            cmd_and_args.erase( );
+         if( cmd_and_args.empty( ) )
             ++handler.line_number;
-         }
+
+         // NOTE: A line that is only a continuation leaves nothing to continue (so is counted as empty).
+         if( cmd_and_args == "\\" )
+            ++lines_joined;
       }
    }
 #endif
