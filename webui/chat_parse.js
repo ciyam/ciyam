@@ -815,7 +815,7 @@ function composer_mode( recipients, editing, edit_private )
    return { is_private: to_people, label: to_people ? "Private to" : "", send: to_people ? "Send privately" : "Send", send_short: "Send" };
 }
 
-// NOTE: Time-outs (ISS-020). The server gives up on a request after 5 seconds - "Error: Timed out
+// NOTE: Time-outs (ISS-020). The server gives up on a request after about 5.5 seconds - "Error: Timed out
 // waiting for web session response." - but may still finish it, and its late answer could
 // reach the next request. The chat then absorbs any late answer, re-reads what is on screen,
 // and after this many in a row gives up on the session.

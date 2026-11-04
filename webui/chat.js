@@ -7700,7 +7700,7 @@ function install_request_log( )
 // Time-outs (ISS-020)
 // ====================================================================
 
-// NOTE: The server gives up on a request after 5 seconds, but may still finish it - and Ian
+// NOTE: The server gives up on a request after about 5.5 seconds, but may still finish it - and Ian
 // warns its late answer could reach the next request on the session. So after a time-out the
 // chat sends one request only to absorb a late answer, then re-reads the room list and the
 // open room whole, so nothing wrongly added stays on screen. A send that timed out may have
