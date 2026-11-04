@@ -1,0 +1,61 @@
+; Copyright (c) 2026 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $4
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $5
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+ERROR=
+;
+@ifneq "$NUM_ARGS" "5"
+ERROR=Requires module, class, user key, record key and field assignments.
+#Error: $ERROR
+@else
+;
+MODULE=$1
+MCLASS=$2
+USER_KEY=$3
+RECORD_KEY=$4
+FIELD_ASSIGNS=$5
+;
+.session_variable @storage_var_name
+STORAGE_VAR_NAME=@strlit:$OUTPUT
+;
+; NOTE: If no specific storage provided
+; then instead uses the system default.
+@ifndef $STORAGE_VAR_NAME
+STORAGE_VAR_NAME=@strlit:@storage
+@endif
+;
+.system_variable $STORAGE_VAR_NAME
+STORAGE=$OUTPUT
+;
+.storage_info -name
+@ifneq "$OUTPUT" "$STORAGE"
+@ifneq "$OUTPUT" "<none>"
+.storage_term
+@endif
+.storage_init $STORAGE
+@endif
+;
+;
+@ifndef $ERROR
+perform_update $USER_KEY @now $MODULE $MCLASS $RECORD_KEY "$FIELD_ASSIGNS"
+@endif
+;
+@endif

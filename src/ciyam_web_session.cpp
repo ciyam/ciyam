@@ -202,7 +202,8 @@ constexpr const char* c_cws_help_request_output = "quit\n"
  "review messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\nreview javascript[s] [<name>]\nreview stylesheet[s] [<name>]\n"
  "review webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
- "update user *** password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>";
+ "update user *** password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>\n"
+ "update storage-instance <id>/<cid>/<key> assigns=<names_and_values>";
 
 constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "attach storage <name>\ncreate user [secret|nominated=[[!]<pin>:][<username>]]\ncreate message <room> [for=<name,>;]text=<text>\n"
@@ -212,7 +213,8 @@ constexpr const char* c_cws_help_request_admin_output = "quit\n"
  "review users\nreview devices\nreview messages <room> [[from=<unix_time>;]extra={NONE|TIME}]\nreview storages\nreview javascript[s] [<name>]\n"
  "review stylesheet[s] [<name>]\nreview webcmdlist[s] [<name>]\nreview user-keys\nreview storage-modules [<id>/enums|lists|views[/<item_id>]]\n"
  "review storage-instances <id>/<cid>[/<key>] [[key=<key>;][num=[-|+]<num>;][path=<path>;][query=<query>;][fields=<fields>]]\n"
- "update user <pin> keys={REPLACE|RESTORE}|password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>";
+ "update user <pin> keys={REPLACE|RESTORE}|password=<password>\nupdate message <room> name=<name>|owner=<user>|posts={ANY|OWN|NONE|REACT}|closes=<unix_time>\n"
+ "update storage-instance <id>/<cid>/<key> assigns=<names_and_values>";
 
 constexpr const char* c_web_session_script = "web_session.cin";
 
@@ -257,6 +259,7 @@ constexpr const char* c_storage_module_instance_options_num = "num";
 constexpr const char* c_storage_module_instance_options_path = "path";
 constexpr const char* c_storage_module_instance_options_query = "query";
 constexpr const char* c_storage_module_instance_options_fields = "fields";
+constexpr const char* c_storage_module_instance_options_assigns = "assigns";
 
 constexpr const char* c_sanctioned_command_system_schedule = "system_schedule";
 constexpr const char* c_sanctioned_command_system_listeners = "system_listeners";
@@ -2713,7 +2716,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   // FUTURE: This message should be handled as a server string message.
                   error = "No storage is currently attached to this session.";
                }
-               else if( is_get_request
+               else if( ( is_get_request || is_put_request )
                 && ( instance_module_id.empty( ) || instance_mclass_id.empty( ) )
                 && HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storage_instances_prefix ) )
                {
@@ -3460,6 +3463,7 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   bool is_user_info_request = false;
                   bool is_module_info_request = false;
                   bool is_instance_fetch_request = false;
+                  bool is_instance_update_request = false;
 
                   string response_suffix;
 
@@ -3497,7 +3501,12 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                   else if( uri_suffix == c_cws_uri_suffix_storage_modules )
                      is_module_info_request = true;
                   else if( HAS_CONST_CHAR_PREFIX( uri_suffix, c_cws_uri_suffix_storage_instances_prefix ) )
-                     is_instance_fetch_request = true;
+                  {
+                     if( is_get_request )
+                        is_instance_fetch_request = true;
+                     else if( is_put_request )
+                        is_instance_update_request = true;
+                  }
                   else if( !uri_suffix.empty( ) )
                   {
                      if( uri_suffix == c_cws_uri_suffix_status )
@@ -3650,9 +3659,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                         {
                            string web_session_commands;
 
-                           if( !request.empty( )
-                            || is_messages_request || is_user_info_request
-                            || is_module_info_request || is_instance_fetch_request )
+                           if( !request.empty( ) || is_messages_request
+                            || is_user_info_request || is_module_info_request
+                            || is_instance_fetch_request || is_instance_update_request )
                            {
                               if( is_messages_request )
                               {
@@ -4066,6 +4075,18 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                                     request_and_args += " 1 " + fields + " _key=" + instance_record_key;
                                  }
+                              }
+                              else if( is_instance_update_request )
+                              {
+                                 string user_key = get_session_info_user_key( session );
+
+                                 string fields_and_values;
+
+                                 if( option_parameters.count( c_storage_module_instance_options_assigns ) )
+                                    fields_and_values = option_parameters[ c_storage_module_instance_options_assigns ];
+
+                                 request_and_args = "<web_session_instance_update.cin " + instance_module_id + ' '
+                                  + instance_mclass_id + ' ' + user_key + ' ' + instance_record_key + " \"" + escaped( fields_and_values, "\"" ) + "\"";
                               }
 
                               update_session_info( session, ip_addr, now );
