@@ -4453,17 +4453,39 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   // input scripts).
                   next_retaining.clear( );
 
+                  // NOTE: The lines a continued command was joined from (counted after it has run so that an error will
+                  // report the line that its command began on).
+                  size_t lines_joined = 0;
+
                   while( getline( inpf, next ) )
                   {
                      bool is_continuation = false;
 
+                     if( !next.empty( ) )
+                     {
+                        remove_trailing_cr_from_text_file_line( next, is_first );
+
+                        if( is_first )
+                           is_first = false;
+                     }
+
+                     // NOTE: Leading spaces in a script run this way only show its nesting so are removed from the
+                     // first line of each command (as the lines that continue a command keep theirs). Input that is
+                     // typed or redirected is not read here so a leading space still keeps a line out of the history
+                     // (and a script that is redirected as input therefore must not be indented).
+                     if( next_command.empty( ) )
+                        next.erase( 0, next.find_first_not_of( ' ' ) );
+
+                     // NOTE: Empty lines are skipped but still counted (so errors report the correct line number).
                      if( next.empty( ) )
+                     {
+                        if( next_command.empty( ) )
+                           ++line_number;
+                        else
+                           ++lines_joined;
+
                         continue;
-
-                     remove_trailing_cr_from_text_file_line( next, is_first );
-
-                     if( is_first )
-                        is_first = false;
+                     }
 
                      // NOTE: A trailing backslash (which is not escaped)
                      // will be interpreted as being a line continuation.
@@ -4478,10 +4500,15 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                      next_command += next;
 
-                     if( !is_continuation )
+                     if( is_continuation )
+                        ++lines_joined;
+                     else
                      {
                         execute_command( next_command );
                         next_command.erase( );
+
+                        line_number += lines_joined;
+                        lines_joined = 0;
                      }
                   }
 
