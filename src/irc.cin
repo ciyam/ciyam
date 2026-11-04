@@ -21,9 +21,12 @@ USER=$1
 @ifndef $CIYAM_HOST_NAME
 CIYAM_HOST_NAME=localhost
 @endif
+
 ~mkdir -p /home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_NAME
 ~touch /home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_NAME/.do_not_remove
+
 CHECK_LOCAL_SHARE_FILE=@files:/home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_NAME:.do_not_remove
+
 @ifndef $CHECK_LOCAL_SHARE_FILE
 #Error: Unable to access '/home/$LOCAL_USER/.local/share/ciyam/$CIYAM_HOST_NAME/.do_not_remove'.
 @else
@@ -43,6 +46,7 @@ UNLOCK_SCRIPT=.irc_$USER.unlock
 STORED_SECRET=.irc_$USER.secret
 
 EXISTS_UNLOCK=@files:$LOCAL_FILES_DIR:$UNLOCK_SCRIPT
+
    @ifdef $EXISTS_UNLOCK
    SECRET_ENTROPY=@file:~$LOCAL_FILES_DIR/$UNLOCK_SCRIPT
    @else
@@ -81,6 +85,7 @@ POS=@strpos:error:$CHECK_ENTROPY
       ERROR=Invalid secret entropy (incorrect size or content).
       #Error: $ERROR
       @endif
+
    @endif
 
 QUIT=
@@ -114,9 +119,11 @@ ROOM_LEN=@strlen:$ROOM
    @ifndef $ERROR
    IS_NEW=
    CHECK_START_POINTS=@files:$LOCAL_FILES_DIR:.irc_$USER
+
       @ifndef $CHECK_START_POINTS
       IS_NEW=1
       @endif
+
    .run_script !irc_join "@name=$USER,@room=$ROOM"
    @endif
 
@@ -127,6 +134,7 @@ ROOM_LEN=@strlen:$ROOM
       .run_script !irc_join "@name=$USER,@room=$STARTING_ROOM"
       IS_NEW=
       @endif
+
    @endif
 
    @ifdef $ERROR
@@ -145,6 +153,7 @@ IS_DIRECT=
 
    @ifdef $INVITATION_INFORMATION
    .run_script !irc_add_room "@name=$INVITATION_INFORMATION"
+
       @ifdef $ERROR
       ERROR=
       @endif
@@ -154,6 +163,7 @@ IS_DIRECT=
 
    @ifndef $CHECK_PRIOR
    NOT_TO_SELF=
+
    ^[hit 'a' for ANSI help, 'e' to edit, 'k' to add a key, 'n' for new room, 'q' to quit, 'r' to change room, 'u' for users, 's/v' to scan/view a QR Code or space to type]
 
       @ifdef $CIYAM_KEY_PRESSED
@@ -170,11 +180,14 @@ IS_DIRECT=
          @elif "$CIYAM_KEY_PRESSED" = "e"
             @ifeq "$ROOM" "$ENTRANCE_ROOM"
             &Enter Room No: :ROOM_NO=
+
                @ifdef $ROOM_NO
                LEN=@strlen:$ROOM_NO
+
                   @if $LEN #< $ROOM_LEN
                   ROOM_NO=@padlen:$ROOM_LEN,0:$ROOM_NO
                   @endif
+
                &Enter New Room Name: :NAME=
                   @ifdef $NAME
                   .run_script !irc_add_room "@name=%ROOM_NO%_$NAME"
@@ -186,6 +199,7 @@ IS_DIRECT=
                   @endif
                @endif
             @else
+
             &Enter Message #: :EDIT_LINE_NUM=
 
                @ifeq "$EDIT_LINE_NUM" "0"
@@ -199,24 +213,29 @@ IS_DIRECT=
                @ifdef $EDIT_LINE_NUM
                MESSAGE_PROMPT=CHECK_MESSAGE=?MESSAGE_LINES:$EDIT_LINE_NUM?
                MESSAGE_PROMPT=@repstr:?/%%:$MESSAGE_PROMPT
+
                $MESSAGE_PROMPT
 
                   @ifdef $CHECK_MESSAGE
                   EDIT_MSG_PARTS=@repstr: /\n:$CHECK_MESSAGE
+
                   EDIT_UNIX_UNIQUE=%EDIT_MSG_PARTS:1%
                   EDIT_MSG_OWNER=%EDIT_MSG_PARTS:2%
                   EDIT_MSG_CONTENT=@base64:%EDIT_MSG_PARTS:3%
                   EDIT_MSG_REACTIONS=%EDIT_MSG_PARTS:4%
+
                   EDIT_MSG_PREFIX=@substr:0,2:$EDIT_MSG_CONTENT
 
                   ; NOTE: If was pinned then remove the prefix.
                   FIRST=@substr:0,1:$EDIT_MSG_OWNER
+
                      @ifeq "$FIRST" "!"
                      EDIT_MSG_OWNER=@substr:1:$EDIT_MSG_OWNER
                      @endif
 
                   ; NOTE: If was edited then remove the suffix.
                   POS=@strpos:*:$EDIT_MSG_OWNER
+
                      @ifdef $POS
                      EDIT_MSG_OWNER=@substr:0,$POS:$EDIT_MSG_OWNER
                      @endif
@@ -234,9 +253,7 @@ IS_DIRECT=
                      CHECK_ENCRYPTED=@substr:1,2:$MESSAGE_CONTENT
 
                         @ifeq "$CHECK_ENCRYPTED" "$ENCRYPTED_PREFIX"
-
                            @ifdef $KEY_FILE_DATA
-
                            PREFIX=_
                               @ifdef $DIRECT_PUB_SUFFIX
                               PREFIX=_!
@@ -247,9 +264,7 @@ IS_DIRECT=
 
                            EDIT_MSG_CONTENT=$MESSAGE
                            MESSAGE=
-
                            @else
-
                               @ifdef $DIRECT_PUB_SUFFIX
                               EDIT_MSG_CONTENT=$LOCK_EMOJI ($CHECK_USER_NAME)
                               @else
@@ -307,6 +322,7 @@ IS_DIRECT=
                         @endif
 
                      #$EDIT_MSG_CONTENT
+
                         @ifndef $IS_REACTION
                         #(type new content or one space to pin/upin and two spaces to delete or just enter to cancel)
                         @else
@@ -330,12 +346,11 @@ IS_DIRECT=
                      @ifndef $IS_REACTION
                      &:EDITED_MESSAGE=_
                      @else
-
                         @ifndef $IS_POLL
-
                         OPTS_PREFIX=[EDITED_MESSAGE:_==_|a 👌=_ 00
 
                         OPTS_OTHERS=|b 👍=_ 01
+
                         OPTS_OTHERS=$OPTS_OTHERS|c 👎=_ 02
                         OPTS_OTHERS=$OPTS_OTHERS|d 🙂=_ 03
                         OPTS_OTHERS=$OPTS_OTHERS|e 🙁=_ 04
@@ -346,7 +361,6 @@ IS_DIRECT=
                         OPTS_OTHERS=$OPTS_OTHERS|j ❤️=_ 09
 
                         @else
-
                         OPTS_PREFIX=[EDITED_MESSAGE:_==_|a 🇦=_ 00
 
                         OPTS_OTHERS=
@@ -390,6 +404,7 @@ IS_DIRECT=
                      @endif
 
                   MLEN=@strlen:$EDITED_MESSAGE
+
                      @ifeq "$MLEN" "1"
                      EDIT_LINE_NUM=
                      EDITED_MESSAGE=
@@ -436,6 +451,7 @@ IS_DIRECT=
                      EDITED_MESSAGE=@substr:1:$EDITED_MESSAGE
                      EDITED_MESSAGE=$EDIT_MSG_PREFIX$EDITED_MESSAGE
                      ENCODED=@base64::$EDITED_MESSAGE
+
                      .run_script !irc_send_message "@room=$ROOM,@names=$EDIT_UNIX_UNIQUE,@message=$ENCODED"
                         @ifdef $ERROR
                         ERROR=
@@ -531,6 +547,7 @@ IS_DIRECT=
             @endif
 
          @elif "$CIYAM_KEY_PRESSED" = "n"
+
          &Enter Room Name: :NAME=
             @ifndef $NAME
             ERROR=1
@@ -601,6 +618,7 @@ IS_DIRECT=
             @endif
 
          @elif "$CIYAM_KEY_PRESSED" = "r"
+
          OLD_ROOM=$ROOM
          SHOW_CHANGED=
          PINNED_LAST_MSG_UNIX=
@@ -705,10 +723,13 @@ IS_DIRECT=
             @ifeq "$ROOM" "$ENTRANCE_ROOM"
             FORCE_OUTPUT=1
             @endif
+
          @elif "$CIYAM_KEY_PRESSED" = "u"
+
          @retain NAMES
          <names.cin $ALL_USERS
          RESTRICT=@repstr:,/.:$NAMES
+
             @ifdef $RESTRICT
                @ifeq "$ROOM" "$ENTRANCE_ROOM"
                &Invite to Room No: :INV_ROOM=
@@ -728,22 +749,26 @@ IS_DIRECT=
             @endif
 
          @elif "$CIYAM_KEY_PRESSED" = "v"
+
          &Enter QR Code: :QR_CODE=
          #^^Entered QR Code: $QR_CODE
          ~qrencode -tANSI $QR_CODE
 
          @elif "$CIYAM_KEY_PRESSED" = "s"
+
          #Scan QR_CODE:
          QR_CODE=@file:~zbarcam -1 -q --raw
          #^^Scanned QR Code: $QR_CODE
 
          @elif "$CIYAM_KEY_PRESSED" = "/"
+
          &/:MESSAGE=_/
             @ifeq "$MESSAGE" "_/"
             MESSAGE=_/help
             @endif
 
          @elif "$CIYAM_KEY_PRESSED" = "$SP"
+
          &:MESSAGE=_
          MLEN=@strlen:$MESSAGE
             @ifeq "$MLEN" "1"
@@ -1095,6 +1120,7 @@ IS_DIRECT=
 
    IS_PINNED=
    FIRST=@substr:0,1:$USER_NAME
+
       @ifeq "$FIRST" "!"
       IS_PINNED=1
       LOCAL= * * * * * * * * *$SP
@@ -1110,6 +1136,7 @@ IS_DIRECT=
       ; expected to contain quotes only
       ; check if is a special message.
       FIRST=@substr:0,1:$DECODED_MESSAGE
+
          @if "$FIRST" = ":"
             @ifeq "$DECODED_MESSAGE" ":joined"
             ALL_USERS=@strlit:$ALL_USERS@$USER_NAME
@@ -1150,12 +1177,16 @@ IS_DIRECT=
       @endif
 
       @ifeq "$ROOM" "$ENTRANCE_ROOM"
+
       UNDECORATED=@substr:1,$ROOM_LEN:$MESSAGE_ROOM_NUM
       CHECK=@strlit:LAST_CHECK=@strlit:$$LAST_$UNDECORATED
+
       $CHECK
          @ifneq "$LAST_CHECK$FORCE_OUTPUT" "$DECODED_MESSAGE"
          ASSIGN=@strlit:LAST_$UNDECORATED=@strlit:$DECODED_MESSAGE
+
          $ASSIGN
+
          @else
          SKIP_MESSAGE=1
          @endif
@@ -1191,7 +1222,9 @@ IS_DIRECT=
             @endif
          SHOW_CHANGED=
          @endif
+
       #$PREFIX$LINE_NUM $NEXT_MESSAGE
+
       @endif
 
    LINE_NUM=@$LINE_NUM+1
