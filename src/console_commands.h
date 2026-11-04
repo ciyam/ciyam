@@ -21,10 +21,12 @@
 
 const char* const c_prompt_prefix_option = "prompt_prefix";
 
+class console_command_processor;
 class startup_command_processor;
 
 class console_command_handler : public command_handler
 {
+   friend class console_command_processor;
    friend class startup_command_processor;
 
    public:
@@ -142,14 +144,17 @@ class console_command_handler : public command_handler
 class console_command_processor : public command_processor
 {
    public:
-   console_command_processor( command_handler& handler )
+   console_command_processor( console_command_handler& handler )
     : command_processor( handler ),
-    handler( handler )
+    handler( handler ),
+    lines_joined( 0 )
    {
    }
 
    private:
-   command_handler& handler;
+   console_command_handler& handler;
+
+   size_t lines_joined;
 
    bool is_still_processing( );
 

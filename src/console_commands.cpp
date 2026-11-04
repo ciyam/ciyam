@@ -4469,10 +4469,10 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            is_first = false;
                      }
 
-                     // NOTE: Leading spaces in a script run this way only show its nesting so are removed from the
-                     // first line of each command (as the lines that continue a command keep theirs). Input that is
-                     // typed or redirected is not read here so a leading space still keeps a line out of the history
-                     // (and a script that is redirected as input therefore must not be indented).
+                     // NOTE: Leading spaces in a script only show its nesting so are removed from the first line of
+                     // each command (as the lines that continue a command keep theirs). Input that is not typed has
+                     // this done in "get_cmd_and_args" (so only typed input can use a leading space to keep a line
+                     // out of the history).
                      if( next_command.empty( ) )
                         next.erase( 0, next.find_first_not_of( ' ' ) );
 
@@ -5631,6 +5631,33 @@ void console_command_processor::get_cmd_and_args( string& cmd_and_args )
    }
 
    get_line( cmd_and_args, prompt.c_str( ) );
+
+#ifdef __GNUG__
+   // NOTE: Input that is not typed is read in the same way as a script run with "<" (so either way a script can be used).
+   if( !isatty( STDIN_FILENO ) && cin )
+   {
+      // NOTE: The lines a continued command was joined from are counted when the next command begins (so that an error
+      // will report the line that its command began on).
+      if( get_is_continuation( ) )
+         ++lines_joined;
+      else
+      {
+         handler.line_number += lines_joined;
+         lines_joined = 0;
+
+         // NOTE: Leading spaces only show the nesting so are removed from the first line of each command (as the lines
+         // that continue a command keep theirs).
+         cmd_and_args.erase( 0, cmd_and_args.find_first_not_of( ' ' ) );
+
+         // NOTE: Empty lines are skipped but still counted (so errors report the correct line number).
+         if( cmd_and_args.empty( ) || ( cmd_and_args == "\r" ) )
+         {
+            cmd_and_args.erase( );
+            ++handler.line_number;
+         }
+      }
+   }
+#endif
 }
 
 void console_command_processor::output_command_usage( const string& wildcard_match_expr ) const
