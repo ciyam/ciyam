@@ -3214,19 +3214,25 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                      if( option_parameters.count( c_cws_request_users_update_options_keys ) )
                      {
-                        ++valid_options;
+                        if( access != g_cws_admin_token )
+                           // FUTURE: This message should be handled as a server string message.
+                           error = "User key replace/restore is only available to the administrator.";
+                        else
+                        {
+                           ++valid_options;
 
-                        string keys_op( option_parameters[ c_cws_request_users_update_options_keys ] );
+                           string keys_op( option_parameters[ c_cws_request_users_update_options_keys ] );
 
-                        is_keys_op = true;
+                           is_keys_op = true;
 
-                        if( pin == g_cws_admin_token )
-                           is_admin_key_op = true;
+                           if( pin == g_cws_admin_token )
+                              is_admin_key_op = true;
 
-                        if( keys_op == c_web_session_users_keys_replace )
-                           is_replace = true;
-                        else if( keys_op != c_web_session_users_keys_restore )
-                           --valid_options;
+                           if( keys_op == c_web_session_users_keys_replace )
+                              is_replace = true;
+                           else if( keys_op != c_web_session_users_keys_restore )
+                              --valid_options;
+                        }
                      }
                      else if( option_parameters.count( c_cws_request_users_update_options_password ) )
                      {
@@ -3261,24 +3267,16 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
                               if( file_exists( keys_file_name ) )
                                  file_copy( keys_file_name, save_file_name );
                               else
-                              {
-                                 found = false;
-
                                  // FUTURE: This message should be handled as a server string message.
                                  error = "Current keys (" + pin + ") not found for user upddate.";
-                              }
                            }
                            else
                            {
                               if( file_exists( save_file_name ) )
                                  file_copy( save_file_name, keys_file_name );
                               else
-                              {
-                                 found = false;
-
                                  // FUTURE: This message should be handled as a server string message.
                                  error = "Restore keys (" + pin + ") not found for user upddate.";
-                              }
                            }
                         }
                      }
@@ -4092,9 +4090,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                            bool found_response = false;
 
-                           // NOTE: Allows five seconds for
+                           // NOTE: Waits a few seconds for
                            // the commands to be processed.
-                           for( size_t i = 0; i < 55; i++ )
+                           for( size_t i = 0; i < 60; i++ )
                            {
                               if( file_exists( output_file_name ) )
                               {
@@ -4150,8 +4148,6 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
 
                            if( !found_response || has_error_prefix( response ) )
                            {
-                              found = false;
-
                               if( !found_response )
                                  // FUTURE: This message should be handled as a server string message.
                                  error = "Timed out waiting for web session response.";
@@ -4292,6 +4288,9 @@ bool process_cws_request( http_request_type request_type, const string& uri_suff
          }
       }
    }
+
+   if( !error.empty( ) )
+      found = false;
 
    return found;
 }
